@@ -10,6 +10,7 @@
 #include "tools/gn/scope.h"
 #include "tools/gn/target_generator.h"
 #include "tools/gn/value.h"
+#include "tools/gn/variables.h"
 
 #define DEPENDENT_CONFIG_VARS \
     "  Dependent configs: all_dependent_configs, direct_dependent_configs\n"
@@ -75,7 +76,8 @@ Value RunComponent(Scope* scope,
                    Err* err) {
   // A component is either a shared or static library, depending on the value
   // of |component_mode|.
-  const Value* component_mode_value = scope->GetValue("component_mode");
+  const Value* component_mode_value =
+      scope->GetValue(variables::kComponentMode);
 
   static const char helptext[] =
       "You're declaring a component here but have not defined "

@@ -176,7 +176,7 @@ void Err::InternalPrintToStdout(bool is_sub_err) const {
     std::string line = GetNthLine(input_file->contents(),
                                   location_.line_number());
     if (!ContainsOnlyWhitespaceASCII(line)) {
-      OutputString(line + "\n", DECORATION_BOLD);
+      OutputString(line + "\n", DECORATION_DIM);
       OutputHighlighedPosition(location_, ranges_, line.size());
     }
   }

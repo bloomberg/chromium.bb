@@ -213,7 +213,42 @@ Value RunAssert(Scope* scope,
 
 const char kConfig[] = "config";
 const char kConfig_Help[] =
-    "TODO(brettw) write this.";
+    "config: Defines a configuration object.\n"
+    "\n"
+    "  Configuration objects can be applied to targets and specify sets of\n"
+    "  compiler flags, includes, defines, etc. They provide a way to\n"
+    "  conveniently group sets of this configuration information.\n"
+    "\n"
+    "  A config is referenced by its label just like a target.\n"
+    "\n"
+    "  The values in a config are additive only. If you want to remove a flag\n"
+    "  you need to remove the corresponding config that sets it. The final\n"
+    "  set of flags, defines, etc. for a target is generated in this order:\n"
+    "\n"
+    "   1. The values specified directly on the target (rather than using a\n"
+    "      config.\n"
+    "   2. The configs specified in the target's \"configs\" list, in order.\n"
+    "   3. Direct dependent configs from a breadth-first traversal of the\n"
+    "      dependency tree in the order that the targets appear in \"deps\".\n"
+    "   4. All dependent configs from a breadth-first traversal of the\n"
+    "      dependency tree in the order that the targets appear in \"deps\".\n"
+    "\n"
+    "Variables valid in a config definition:\n"
+    CONFIG_VALUES_VARS_HELP
+    "\n"
+    "Variables on a target used to apply configs:\n"
+    "  all_dependent_configs, configs, direct_dependent_configs,\n"
+    "  forward_dependent_configs_from\n"
+    "\n"
+    "Example:\n"
+    "  config(\"myconfig\") {\n"
+    "    includes = [ \"include/common\" ]\n"
+    "    defines = [ \"ENABLE_DOOM_MELON\" ]\n"
+    "  }\n"
+    "\n"
+    "  executable(\"mything\") {\n"
+    "    configs = [ \":myconfig\" ]\n"
+    "  }\n";
 
 Value RunConfig(const FunctionCallNode* function,
                 const std::vector<Value>& args,
@@ -389,7 +424,28 @@ Value RunImport(Scope* scope,
 
 const char kSetSourcesAssignmentFilter[] = "set_sources_assignment_filter";
 const char kSetSourcesAssignmentFilter_Help[] =
-    "TODO(brettw) write this.";
+    "set_sources_assignment_filter: Set a pattern to filter source files.\n"
+    "\n"
+    "  The sources assignment filter is a list of patterns that remove files\n"
+    "  from the list implicitly whenever the \"sources\" variable is\n"
+    "  assigned to. This is intended to be used to globally filter out files\n"
+    "  with platform-specific naming schemes when they don't apply, for\n"
+    "  example, you may want to filter out all \"*_win.cc\" files on non-\n"
+    "  Windows platforms.\n"
+    "\n"
+    "  See \"gn help patterns\" for specifics on patterns.\n"
+    "\n"
+    "  Typically this will be called once in the master build config script\n"
+    "  to set up the filter for the current platform. Subsequent calls will\n"
+    "  overwrite the previous values.\n"
+    "\n"
+    "  If you want to bypass the filter and add a file even if it might\n"
+    "  be filtered out, call set_sources_assignment_filter([]) to clear the\n"
+    "  list of filters. This will apply until the current scope exits\n"
+    "\n"
+    "Example:\n"
+    "  # Filter out all _win files.\n"
+    "  set_sources_assignment_filter([ \"*_win.cc\", \"*_win.h\" ])\n";
 
 Value RunSetSourcesAssignmentFilter(Scope* scope,
                                     const FunctionCallNode* function,

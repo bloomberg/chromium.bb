@@ -9,6 +9,7 @@
 #include "tools/gn/settings.h"
 #include "tools/gn/value.h"
 #include "tools/gn/value_extractors.h"
+#include "tools/gn/variables.h"
 
 namespace {
 
@@ -63,7 +64,7 @@ void ConfigValuesGenerator::Run() {
 }
 
 void ConfigValuesGenerator::FillIncludes() {
-  const Value* value = scope_->GetValue("includes", true);
+  const Value* value = scope_->GetValue(variables::kIncludes, true);
   if (!value)
     return;  // No value, empty input and succeed.
 

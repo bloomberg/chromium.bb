@@ -9,6 +9,7 @@
 #include "tools/gn/scope.h"
 #include "tools/gn/value.h"
 #include "tools/gn/value_extractors.h"
+#include "tools/gn/variables.h"
 
 ScriptTargetGenerator::ScriptTargetGenerator(Target* target,
                                              Scope* scope,
@@ -54,8 +55,7 @@ void ScriptTargetGenerator::DoRun() {
 void ScriptTargetGenerator::FillScript() {
   // If this gets called, the target type requires a script, so error out
   // if it doesn't have one.
-  // TODO(brettw) hook up a constant in variables.h
-  const Value* value = scope_->GetValue("script", true);
+  const Value* value = scope_->GetValue(variables::kScript, true);
   if (!value) {
     *err_ = Err(function_token_, "This target type requires a \"script\".");
     return;
@@ -68,7 +68,7 @@ void ScriptTargetGenerator::FillScript() {
 }
 
 void ScriptTargetGenerator::FillScriptArgs() {
-  const Value* value = scope_->GetValue("args", true);
+  const Value* value = scope_->GetValue(variables::kArgs, true);
   if (!value)
     return;
 

@@ -10,6 +10,7 @@
 #include <windows.h>
 #else
 #include <stdio.h>
+#include <unistd.h>
 #endif
 
 namespace {
@@ -19,9 +20,8 @@ bool initialized = false;
 #if defined(OS_WIN)
 HANDLE hstdout;
 WORD default_attributes;
-
-bool is_console = false;
 #endif
+bool is_console = false;
 
 void EnsureInitialized() {
   if (initialized)
@@ -33,6 +33,8 @@ void EnsureInitialized() {
   CONSOLE_SCREEN_BUFFER_INFO info;
   is_console = !!::GetConsoleScreenBufferInfo(hstdout, &info);
   default_attributes = info.wAttributes;
+#else
+  is_console = isatty(fileno(stdout));
 #endif
 }
 
@@ -46,7 +48,7 @@ void OutputString(const std::string& output, TextDecoration dec) {
     switch (dec) {
       case DECORATION_NONE:
         break;
-      case DECORATION_BOLD:
+      case DECORATION_DIM:
         ::SetConsoleTextAttribute(hstdout, FOREGROUND_INTENSITY);
         break;
       case DECORATION_RED:
@@ -78,7 +80,33 @@ void OutputString(const std::string& output, TextDecoration dec) {
 #else
 
 void OutputString(const std::string& output, TextDecoration dec) {
-  printf("%s", output.c_str());
+  EnsureInitialized();
+  if (is_console) {
+    switch (dec) {
+      case DECORATION_NONE:
+        break;
+      case DECORATION_DIM:
+        fwrite("\e[2m", 1, 4, stdout);
+        break;
+      case DECORATION_RED:
+        fwrite("\e[31m\e[1m", 1, 9, stdout);
+        break;
+      case DECORATION_GREEN:
+        fwrite("\e[32m", 1, 5, stdout);
+        break;
+      case DECORATION_BLUE:
+        fwrite("\e[34m\e[1m", 1, 9, stdout);
+        break;
+      case DECORATION_YELLOW:
+        fwrite("\e[33m\e[1m", 1, 9, stdout);
+        break;
+    }
+  }
+
+  fwrite(output.data(), 1, output.size(), stdout);
+
+  if (dec != DECORATION_NONE)
+    fwrite("\e[0m", 1, 4, stdout);
 }
 
 #endif

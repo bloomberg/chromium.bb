@@ -13,6 +13,10 @@ namespace variables {
 
 // Builtin vars ----------------------------------------------------------------
 
+extern const char kComponentMode[];
+extern const char kComponentMode_HelpShort[];
+extern const char kComponentMode_Help[];
+
 extern const char kCurrentToolchain[];
 extern const char kCurrentToolchain_HelpShort[];
 extern const char kCurrentToolchain_Help[];
@@ -62,6 +66,10 @@ extern const char kTargetOutDir_Help[];
 extern const char kAllDependentConfigs[];
 extern const char kAllDependentConfigs_HelpShort[];
 extern const char kAllDependentConfigs_Help[];
+
+extern const char kArgs[];
+extern const char kArgs_HelpShort[];
+extern const char kArgs_Help[];
 
 extern const char kCflags[];
 extern const char kCflags_HelpShort[];
@@ -119,6 +127,10 @@ extern const char kHardDep[];
 extern const char kHardDep_HelpShort[];
 extern const char kHardDep_Help[];
 
+extern const char kIncludes[];
+extern const char kIncludes_HelpShort[];
+extern const char kIncludes_Help[];
+
 extern const char kLdflags[];
 extern const char kLdflags_HelpShort[];
 extern const char kLdflags_Help[];
@@ -130,6 +142,10 @@ extern const char kOutputName_Help[];
 extern const char kOutputs[];
 extern const char kOutputs_HelpShort[];
 extern const char kOutputs_Help[];
+
+extern const char kScript[];
+extern const char kScript_HelpShort[];
+extern const char kScript_Help[];
 
 extern const char kSourcePrereqs[];
 extern const char kSourcePrereqs_HelpShort[];

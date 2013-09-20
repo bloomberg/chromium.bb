@@ -21,8 +21,8 @@ namespace commands {
 namespace {
 
 // Prints a line for a command, assuming there is a colon. Everything before
-// the colon is the command (and is highlighted) and everything after it is
-// normal.
+// the colon is the command (and is highlighted). After the colon if there is
+// a square bracket, the contents of the bracket is dimmed.
 void PrintShortHelp(const std::string& line) {
   size_t colon_offset = line.find(':');
   size_t first_normal = 0;
@@ -30,6 +30,22 @@ void PrintShortHelp(const std::string& line) {
     OutputString("  " + line.substr(0, colon_offset), DECORATION_YELLOW);
     first_normal = colon_offset;
   }
+
+  // See if the colon is followed by a " [" and if so, dim the contents of [ ].
+  if (first_normal > 0 &&
+      line.size() > first_normal + 2 &&
+      line[first_normal + 1] == ' ' && line[first_normal + 2] == '[') {
+    size_t begin_bracket = first_normal + 2;
+    OutputString(": ");
+    first_normal = line.find(']', begin_bracket);
+    if (first_normal == std::string::npos)
+      first_normal = line.size();
+    else
+      first_normal++;
+    OutputString(line.substr(begin_bracket, first_normal - begin_bracket),
+                 DECORATION_DIM);
+  }
+
   OutputString(line.substr(first_normal) + "\n");
 }
 
@@ -45,13 +61,19 @@ void PrintToplevelHelp() {
       "\n"
       "  When run with no arguments \"gn gen\" is assumed.\n"
       "\n"
-      "Common switches:\n"
-      "  --args: Specifies build args overrides. See \"gn help buildargs\".\n"
-      "  -q: Quiet mode, don't print anything on success.\n"
-      "  --output: Directory for build output (relative to source root).\n"
-      "  --root: Specifies source root (overrides .gn file).\n"
-      "  --secondary: Specifies secondary source root (overrides .gn file).\n"
-      "  -v: Verbose mode, print lots of logging.\n");
+      "Common switches:\n");
+  PrintShortHelp(
+      "--args: Specifies build args overrides. See \"gn help buildargs\".");
+  PrintShortHelp(
+      "-q: Quiet mode, don't print anything on success.");
+  PrintShortHelp(
+      "--output: Directory for build output (relative to source root).");
+  PrintShortHelp(
+      "--root: Specifies source root (overrides .gn file).");
+  PrintShortHelp(
+      "--secondary: Specifies secondary source root (overrides .gn file).");
+  PrintShortHelp(
+      "-v: Verbose mode, print lots of logging.");
 
   // Functions.
   OutputString("\nBuildfile functions (type \"gn help <function>\" for more "
