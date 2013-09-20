@@ -27,6 +27,7 @@
 #ifndef TextEvent_h
 #define TextEvent_h
 
+#include "core/dom/EventNames.h"
 #include "core/dom/TextEventInputType.h"
 #include "core/dom/UIEvent.h"
 
@@ -75,6 +76,12 @@ namespace WebCore {
         bool m_shouldSmartReplace;
         bool m_shouldMatchStyle;
     };
+
+inline TextEvent* toTextEvent(Event* event)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!event || (event->type() == eventNames().textInputEvent && event->hasInterface(eventNames().interfaceForTextEvent)));
+    return static_cast<TextEvent*>(event);
+}
 
 } // namespace WebCore
 

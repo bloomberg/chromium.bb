@@ -26,7 +26,7 @@
 #define HTMLInputElement_h
 
 #include "core/html/HTMLTextFormControlElement.h"
-#include "core/html/StepRange.h"
+#include "core/html/forms/StepRange.h"
 #include "core/platform/FileChooser.h"
 
 namespace WebCore {

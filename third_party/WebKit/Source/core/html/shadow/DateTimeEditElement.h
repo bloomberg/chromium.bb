@@ -27,7 +27,7 @@
 #define DateTimeEditElement_h
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "core/html/StepRange.h"
+#include "core/html/forms/StepRange.h"
 #include "core/html/shadow/DateTimeFieldElement.h"
 #include "core/platform/DateComponents.h"
 

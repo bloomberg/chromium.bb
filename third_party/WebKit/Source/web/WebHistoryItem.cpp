@@ -34,7 +34,7 @@
 #include "WebSerializedScriptValue.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/history/HistoryItem.h"
-#include "core/html/FormController.h"
+#include "core/html/forms/FormController.h"
 #include "core/platform/network/FormData.h"
 #include "public/platform/WebHTTPBody.h"
 #include "public/platform/WebPoint.h"

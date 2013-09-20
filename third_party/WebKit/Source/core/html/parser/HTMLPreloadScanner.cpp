@@ -29,8 +29,8 @@
 #include "core/html/parser/HTMLPreloadScanner.h"
 
 #include "HTMLNames.h"
-#include "core/html/InputTypeNames.h"
 #include "core/html/LinkRelAttribute.h"
+#include "core/html/forms/InputTypeNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/platform/chromium/TraceEvent.h"

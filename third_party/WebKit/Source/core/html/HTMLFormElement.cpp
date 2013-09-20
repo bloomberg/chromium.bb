@@ -25,7 +25,6 @@
 #include "config.h"
 #include "core/html/HTMLFormElement.h"
 
-#include <limits>
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptEventListener.h"
@@ -36,12 +35,12 @@
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/NamedNodesCollection.h"
-#include "core/html/FormController.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/html/forms/FormController.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -49,6 +48,7 @@
 #include "core/page/Frame.h"
 #include "core/page/UseCounter.h"
 #include "core/rendering/RenderTextControl.h"
+#include <limits>
 
 using namespace std;
 

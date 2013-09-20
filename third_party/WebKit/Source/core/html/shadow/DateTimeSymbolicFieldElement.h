@@ -27,7 +27,7 @@
 #define DateTimeSymbolicFieldElement_h
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "core/html/TypeAhead.h"
+#include "core/html/forms/TypeAhead.h"
 #include "core/html/shadow/DateTimeFieldElement.h"
 
 namespace WebCore {

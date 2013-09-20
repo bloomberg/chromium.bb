@@ -36,7 +36,7 @@
 #include "ChromeClientImpl.h"
 #include "PickerCommon.h"
 #include "WebViewImpl.h"
-#include "core/html/InputTypeNames.h"
+#include "core/html/forms/InputTypeNames.h"
 #include "core/page/FrameView.h"
 #include "core/platform/DateComponents.h"
 #include "core/platform/DateTimeChooserClient.h"

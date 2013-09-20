@@ -29,7 +29,7 @@
 #include "core/dom/Event.h"
 #include "core/html/HTMLFormControlElementWithState.h"
 #include "core/html/HTMLOptionsCollection.h"
-#include "core/html/TypeAhead.h"
+#include "core/html/forms/TypeAhead.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

@@ -37,7 +37,7 @@
 #include "core/dom/MouseEvent.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/StepRange.h"
+#include "core/html/forms/StepRange.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/EventHandler.h"

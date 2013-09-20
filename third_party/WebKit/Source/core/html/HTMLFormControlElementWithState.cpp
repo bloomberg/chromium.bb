@@ -25,8 +25,8 @@
 #include "config.h"
 #include "core/html/HTMLFormControlElementWithState.h"
 
-#include "core/html/FormController.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/forms/FormController.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Frame.h"
