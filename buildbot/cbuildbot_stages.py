@@ -1372,13 +1372,13 @@ class PreCQLauncherStage(SyncStage):
             pool.SendNotification(change, '%(details)s', details=msg)
             pool.RemoveCommitReady(change)
             pool.UpdateCLStatus(PRE_CQ, change, self.STATUS_FAILED,
-                                self._options.debug_forced)
+                                self._options.debug)
             self.retried.discard(change)
           else:
             # Try the change again.
             self.retried.add(change)
             pool.UpdateCLStatus(PRE_CQ, change, self.STATUS_WAITING,
-                                self._options.debug_forced)
+                                self._options.debug)
       elif status == self.STATUS_INFLIGHT:
         # Once a Pre-CQ run actually starts, it'll set the status to
         # STATUS_INFLIGHT.
@@ -1390,7 +1390,7 @@ class PreCQLauncherStage(SyncStage):
         # as 'Ready' next time we check, we'll know the CL is truly still ready.
         busy.add(change)
         pool.UpdateCLStatus(PRE_CQ, change, self.STATUS_WAITING,
-                            self._options.debug_forced)
+                            self._options.debug)
       elif status == self.STATUS_PASSED:
         passed.add(change)
 
@@ -1404,7 +1404,7 @@ class PreCQLauncherStage(SyncStage):
     """
     cmd = ['cbuildbot', '--remote', '--nobootstrap',
            constants.PRE_CQ_BUILDER_NAME]
-    if self._options.debug_forced:
+    if self._options.debug:
       cmd.append('--debug')
     for patch in plan:
       number = cros_patch.FormatGerritNumber(
@@ -1414,7 +1414,7 @@ class PreCQLauncherStage(SyncStage):
     for patch in plan:
       if pool.GetCLStatus(PRE_CQ, patch) != self.STATUS_PASSED:
         pool.UpdateCLStatus(PRE_CQ, patch, self.STATUS_LAUNCHING,
-                            self._options.debug_forced)
+                            self._options.debug)
 
   def GetDisjointTransactionsToTest(self, pool, changes):
     """Get the list of disjoint transactions to test.
@@ -1482,7 +1482,7 @@ class PreCQLauncherStage(SyncStage):
     validation_pool.ValidationPool.AcquirePool(
         self._build_config['overlays'], self.repo,
         self._options.buildnumber, urllib.quote(constants.PRE_CQ_LAUNCHER_NAME),
-        dryrun=self._options.debug_forced,
+        dryrun=self._options.debug,
         changes_query=self._options.cq_gerrit_override,
         check_tree_open=False, change_filter=self.ProcessChanges)
 
