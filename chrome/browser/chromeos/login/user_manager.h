@@ -93,6 +93,9 @@ class UserManager {
   // Registers user manager preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Returns true if multiple profiles support is allowed.
+  static bool IsMultipleProfilesAllowed();
+
   virtual ~UserManager();
 
   virtual UserImageManager* GetUserImageManager() = 0;

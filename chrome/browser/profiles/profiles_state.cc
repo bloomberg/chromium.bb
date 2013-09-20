@@ -11,6 +11,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 namespace profiles {
 
 bool IsMultipleProfilesEnabled() {
@@ -18,8 +22,7 @@ bool IsMultipleProfilesEnabled() {
   return false;
 #endif
 #if defined(OS_CHROMEOS)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles))
-    return false;
+  return chromeos::UserManager::IsMultipleProfilesAllowed();
 #endif
 
   return true;

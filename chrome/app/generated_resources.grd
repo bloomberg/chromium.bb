@@ -6386,6 +6386,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_SAML_SIGNIN_DESCRIPTION" desc="Description for the flag to enable SAML signin support.">
           Enables SAML signin support for ChromeOS login.
         </message>
+        <message name="IDS_FLAGS_ENABLE_MULTI_PROFILES_NAME" desc="Name for the flag to enable multi-profile support.">
+          Enable multiprofiles mode.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_MULTI_PROFILES_DESCRIPTION" desc="Description for the flag to enable multi-profile support.">
+          This is an unsupported experimental mode, currently limited for testing purposes to devices enrolled on google.com, and with an @google.com account as the primary user. Features may break or change significantly.
+        </message>
       </if>
       <message name="IDS_FLAGS_FULL_HISTORY_SYNC_NAME" desc="Name of the flag to disable full history sync.">
         Disable full history sync
@@ -11174,6 +11180,12 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           This account is already being used on this computer.
         </message>
       </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_MULTI_PROFILES_WARNING" desc="A notification message when user signs into a multiprofile session for the first time.">
+          You have enabled multiprofiles, an unsupported experimental mode in Chrome OS. Features may change or break.
+        </message>
+      </if>
+
      <!-- SafeBrowsing -->
       <message name="IDS_SAFE_BROWSING_MALWARE_TITLE" desc="SafeBrowsing Malware HTML title">
         Malware Detected!

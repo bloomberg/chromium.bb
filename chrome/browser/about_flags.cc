@@ -1139,6 +1139,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableSamlSignin),
   },
+  {
+    "enable-multi-profiles",
+    IDS_FLAGS_ENABLE_MULTI_PROFILES_NAME,
+    IDS_FLAGS_ENABLE_MULTI_PROFILES_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kMultiProfiles),
+  },
 #endif  // defined(OS_CHROMEOS)
   {
     "views-textfield",

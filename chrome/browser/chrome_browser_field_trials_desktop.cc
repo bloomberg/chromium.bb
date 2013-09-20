@@ -69,17 +69,10 @@ void SetupInfiniteCacheFieldTrial() {
 
 void DisableShowProfileSwitcherTrialIfNecessary() {
   // This trial is created by the VariationsService, but it needs to be disabled
-  // if multi-profiles isn't enabled or if browser frame avatar menu is
-  // always hidden (Chrome OS).
-  bool avatar_menu_always_hidden = false;
-#if defined(OS_CHROMEOS)
-  avatar_menu_always_hidden = true;
-#endif
+  // if multi-profiles isn't enabled.
   base::FieldTrial* trial = base::FieldTrialList::Find("ShowProfileSwitcher");
-  if (trial && (!profiles::IsMultipleProfilesEnabled() ||
-                avatar_menu_always_hidden)) {
+  if (trial && !profiles::IsMultipleProfilesEnabled())
     trial->Disable();
-  }
 }
 
 void SetupLowLatencyFlashAudioFieldTrial() {
