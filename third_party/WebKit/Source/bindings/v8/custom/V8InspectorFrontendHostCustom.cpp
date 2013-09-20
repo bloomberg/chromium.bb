@@ -45,16 +45,10 @@ void V8InspectorFrontendHost::platformMethodCustom(const v8::FunctionCallbackInf
 {
 #if OS(MACOSX)
     v8SetReturnValue(args, v8::String::NewSymbol("mac"));
-#elif OS(LINUX)
-    v8SetReturnValue(args, v8::String::NewSymbol("linux"));
-#elif OS(FREEBSD)
-    v8SetReturnValue(args, v8::String::NewSymbol("freebsd"));
-#elif OS(OPENBSD)
-    v8SetReturnValue(args, v8::String::NewSymbol("openbsd"));
 #elif OS(WIN)
     v8SetReturnValue(args, v8::String::NewSymbol("windows"));
-#else
-    v8SetReturnValue(args, v8::String::NewSymbol("unknown"));
+#else // Unix-like systems
+    v8SetReturnValue(args, v8::String::NewSymbol("linux"));
 #endif
 }
 
