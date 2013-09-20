@@ -840,6 +840,15 @@ TEST_F(SearchTest, ShouldUseCacheableNTP_EnabledViaFinch) {
   EXPECT_TRUE(ShouldUseCacheableNTP());
 }
 
+TEST_F(SearchTest, ShouldUseCacheableNTP_EnabledViaCommandLine) {
+  EnableInstantExtendedAPIForTesting();
+  CommandLine::ForCurrentProcess()->
+      AppendSwitch(switches::kUseCacheableNewTabPage);
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
+      "Group1 use_cacheable_ntp:0"));
+  EXPECT_TRUE(ShouldUseCacheableNTP());
+}
+
 TEST_F(SearchTest, IsNTPURL) {
   GURL invalid_url;
   GURL ntp_url(chrome::kChromeUINewTabURL);
