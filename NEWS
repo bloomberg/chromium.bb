@@ -32,6 +32,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
        US table.
      - Added todo for accents, to define according to the formal docs.
      - Corrected mathematical forall symbol.
+   - Bulgarian bg.ctb: updated to meet modern standards (added latinn letters,
+     corrected punctuation/mathematical symbols, misc typos). Thanks to Rumiana
+     Kamenska
 
 ** Backwards incompatible changes
    - Delete the table chardefs-ueb.cti as these rules are now
