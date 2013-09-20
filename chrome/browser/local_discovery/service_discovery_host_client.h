@@ -8,12 +8,8 @@
 #include <map>
 #include <string>
 
-#include "base/cancelable_callback.h"
-#include "base/memory/singleton.h"
-#include "base/threading/non_thread_safe.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "content/public/browser/utility_process_host_client.h"
-#include "net/base/network_change_notifier.h"
 
 namespace base {
 class TaskRunner;
@@ -28,8 +24,7 @@ namespace local_discovery {
 // Implementation of ServiceDiscoveryClient that delegates all functionality to
 // utility process.
 class ServiceDiscoveryHostClient
-    : public base::NonThreadSafe,
-      public ServiceDiscoveryClient,
+    : public ServiceDiscoveryClient,
       public content::UtilityProcessHostClient {
  public:
   ServiceDiscoveryHostClient();
@@ -62,7 +57,7 @@ class ServiceDiscoveryHostClient
   class ServiceWatcherProxy;
   class ServiceResolverProxy;
   class LocalDomainResolverProxy;
-  friend class ServiceDiscoverySharedClient;
+  friend class ServiceDiscoveryClientMdns;
 
   typedef std::map<uint64, ServiceWatcher::UpdatedCallback> WatcherCallbacks;
   typedef std::map<uint64, ServiceResolver::ResolveCompleteCallback>
@@ -128,44 +123,6 @@ class ServiceDiscoveryHostClient
   scoped_refptr<base::TaskRunner> io_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceDiscoveryHostClient);
-};
-
-class ServiceDiscoverySharedClient
-    : public base::RefCounted<ServiceDiscoverySharedClient>,
-      public base::NonThreadSafe,
-      public ServiceDiscoveryClient,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
- public:
-  static scoped_refptr<ServiceDiscoverySharedClient> GetInstance();
-
-  // ServiceDiscoveryClient implementation.
-  virtual scoped_ptr<ServiceWatcher> CreateServiceWatcher(
-      const std::string& service_type,
-      const ServiceWatcher::UpdatedCallback& callback) OVERRIDE;
-  virtual scoped_ptr<ServiceResolver> CreateServiceResolver(
-      const std::string& service_name,
-      const ServiceResolver::ResolveCompleteCallback& callback) OVERRIDE;
-  virtual scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
-      const std::string& domain,
-      net::AddressFamily address_family,
-      const LocalDomainResolver::IPAddressCallback& callback) OVERRIDE;
-
-  // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
-  virtual void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
-
- private:
-  friend class base::RefCounted<ServiceDiscoverySharedClient>;
-  ServiceDiscoverySharedClient();
-  virtual ~ServiceDiscoverySharedClient();
-
-  void StartNewClient();
-
-  base::CancelableClosure network_change_callback_;
-
-  scoped_refptr<ServiceDiscoveryHostClient> host_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceDiscoverySharedClient);
 };
 
 }  // namespace local_discovery
