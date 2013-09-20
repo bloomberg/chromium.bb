@@ -108,6 +108,7 @@ static StylePropertySet* rightToLeftDeclaration()
 StyleResolver::StyleResolver(Document& document, bool matchAuthorAndUserStyles)
     : m_document(document)
     , m_matchAuthorAndUserStyles(matchAuthorAndUserStyles)
+    , m_fontSelector(CSSFontSelector::create(&document))
     , m_viewportStyleResolver(ViewportStyleResolver::create(&document))
     , m_styleResourceLoader(document.fetcher())
 {
@@ -143,7 +144,7 @@ StyleResolver::StyleResolver(Document& document, bool matchAuthorAndUserStyles)
         const HashSet<SVGFontFaceElement*>& svgFontFaceElements = document.svgExtensions()->svgFontFaceElements();
         HashSet<SVGFontFaceElement*>::const_iterator end = svgFontFaceElements.end();
         for (HashSet<SVGFontFaceElement*>::const_iterator it = svgFontFaceElements.begin(); it != end; ++it)
-            document.styleEngine()->fontSelector()->addFontFaceRule((*it)->fontFaceRule());
+            fontSelector()->addFontFaceRule((*it)->fontFaceRule());
     }
 #endif
 
@@ -173,9 +174,8 @@ void StyleResolver::finishAppendAuthorStyleSheets()
 {
     collectFeatures();
 
-    // FIXME: This should be folded into StyleEngine.
     if (document().renderer() && document().renderer()->style())
-        document().renderer()->style()->font().update(document().styleEngine()->fontSelector());
+        document().renderer()->style()->font().update(fontSelector());
 
     collectViewportRules();
 }
@@ -338,6 +338,7 @@ void StyleResolver::popParentShadowRoot(const ShadowRoot& shadowRoot)
 
 StyleResolver::~StyleResolver()
 {
+    m_fontSelector->clearDocument();
     m_viewportStyleResolver->clearDocument();
 }
 
@@ -618,7 +619,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         if (!s_styleNotYetAvailable) {
             s_styleNotYetAvailable = RenderStyle::create().leakRef();
             s_styleNotYetAvailable->setDisplay(NONE);
-            s_styleNotYetAvailable->font().update(element->document().styleEngine()->fontSelector());
+            s_styleNotYetAvailable->font().update(m_fontSelector);
         }
         element->document().setHasNodesWithPlaceholderStyle();
         return s_styleNotYetAvailable;
@@ -1096,7 +1097,7 @@ PassRefPtr<RenderStyle> StyleResolver::defaultStyleForElement()
     state.style()->setLineHeight(RenderStyle::initialLineHeight());
     state.setLineHeightValue(0);
     state.fontBuilder().setInitial(state.style()->effectiveZoom());
-    state.style()->font().update(document().styleEngine()->fontSelector());
+    state.style()->font().update(fontSelector());
     return state.takeStyle();
 }
 
@@ -1134,7 +1135,7 @@ bool StyleResolver::checkRegionStyle(Element* regionElement)
 
 void StyleResolver::updateFont(StyleResolverState& state)
 {
-    state.fontBuilder().createFont(state.document().styleEngine()->fontSelector(), state.parentStyle(), state.style());
+    state.fontBuilder().createFont(m_fontSelector, state.parentStyle(), state.style());
 }
 
 PassRefPtr<CSSRuleList> StyleResolver::styleRulesForElement(Element* e, unsigned rulesToInclude)

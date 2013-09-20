@@ -45,7 +45,6 @@
 namespace WebCore {
 
 class CSSAnimationUpdate;
-// FIXME: StyleResolver should not know about CSSFontSelector.
 class CSSFontSelector;
 class CSSRuleList;
 class CSSSelector;
@@ -207,7 +206,6 @@ public:
     PassRefPtr<RenderStyle> defaultStyleForElement();
     PassRefPtr<RenderStyle> styleForText(Text*);
 
-    // FIXME: Should not take in CSSFontSelector as argument.
     static PassRefPtr<RenderStyle> styleForDocument(Document&, CSSFontSelector* = 0);
 
     // FIXME: This only has 5 callers and should be removed. Callers should be explicit about
@@ -251,6 +249,7 @@ public:
     // |properties| is an array with |count| elements.
     void applyPropertiesToStyle(const CSSPropertyValue* properties, size_t count, RenderStyle*);
 
+    CSSFontSelector* fontSelector() const { return m_fontSelector.get(); }
     ViewportStyleResolver* viewportStyleResolver() { return m_viewportStyleResolver.get(); }
 
     // FIXME: This logic belongs in MediaQueryEvaluator.
@@ -351,6 +350,7 @@ private:
 
     bool m_matchAuthorAndUserStyles;
 
+    RefPtr<CSSFontSelector> m_fontSelector;
     Vector<OwnPtr<MediaQueryResult> > m_viewportDependentMediaQueryResults;
 
     RefPtr<ViewportStyleResolver> m_viewportStyleResolver;

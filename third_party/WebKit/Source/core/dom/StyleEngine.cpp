@@ -30,7 +30,6 @@
 
 #include "HTMLNames.h"
 #include "SVGNames.h"
-#include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleInvalidationAnalysis.h"
 #include "core/css/StyleSheetContents.h"
@@ -55,7 +54,6 @@ using namespace HTMLNames;
 
 StyleEngine::StyleEngine(Document& document)
     : m_document(document)
-    , m_fontSelector(CSSFontSelector::create(&document))
     , m_pendingStylesheets(0)
     , m_injectedStyleSheetCacheValid(false)
     , m_needsUpdateActiveStylesheetsOnStyleRecalc(false)
@@ -455,11 +453,6 @@ void StyleEngine::appendActiveAuthorStyleSheets(StyleResolver* styleResolver)
     }
     styleResolver->finishAppendAuthorStyleSheets();
     styleResolver->setBuildScopedStyleTreeInDocumentOrder(false);
-}
-
-void StyleEngine::resetFontSelector()
-{
-    m_fontSelector = CSSFontSelector::create(&m_document);
 }
 
 }

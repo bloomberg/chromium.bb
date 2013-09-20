@@ -2085,16 +2085,15 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
         CSSPropertyValue(CSSPropertyLineHeight, *parsedStyle),
     };
 
-    // FIXME: Eliminate the use of StyleResolver here.
     StyleResolver* styleResolver = canvas()->styleResolver();
     styleResolver->applyPropertiesToStyle(properties, WTF_ARRAY_LENGTH(properties), newStyle.get());
 
     if (state().m_realizedFont)
         state().m_font.fontSelector()->unregisterForInvalidationCallbacks(&modifiableState());
     modifiableState().m_font = newStyle->font();
-    modifiableState().m_font.update(canvas()->document().styleEngine()->fontSelector());
+    modifiableState().m_font.update(styleResolver->fontSelector());
     modifiableState().m_realizedFont = true;
-    canvas()->document().styleEngine()->fontSelector()->registerForInvalidationCallbacks(&modifiableState());
+    styleResolver->fontSelector()->registerForInvalidationCallbacks(&modifiableState());
 }
 
 String CanvasRenderingContext2D::textAlign() const

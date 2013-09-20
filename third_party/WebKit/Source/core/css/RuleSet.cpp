@@ -350,7 +350,6 @@ void RuleSet::addRegionRule(StyleRuleRegion* regionRule, bool hasDocumentSecurit
     m_regionSelectorsAndRuleSets.append(RuleSetSelectorPair(regionRule->selectorList().first(), regionRuleSet.release()));
 }
 
-// FIXME: Eliminate StyleResolver as argument here. It's just being used as a parameter-passing bag.
 void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const MediaQueryEvaluator& medium, StyleResolver* resolver, const ContainerNode* scope, bool hasDocumentSecurityOrigin, AddRuleFlags addRuleFlags)
 {
     for (unsigned i = 0; i < rules.size(); ++i) {
@@ -380,7 +379,7 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
             if (!isDocumentScope(scope))
                 continue;
             const StyleRuleFontFace* fontFaceRule = static_cast<StyleRuleFontFace*>(rule);
-            resolver->document().styleEngine()->fontSelector()->addFontFaceRule(fontFaceRule);
+            resolver->fontSelector()->addFontFaceRule(fontFaceRule);
             resolver->invalidateMatchedPropertiesCache();
         } else if (rule->isKeyframesRule() && resolver) {
             resolver->ensureScopedStyleResolver(scope)->addKeyframeStyle(static_cast<StyleRuleKeyframes*>(rule));
