@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/time/time.h"
 #include "ui/events/event_handler.h"
 
 namespace aura {
@@ -90,6 +91,9 @@ class WindowOverview : public ui::EventHandler {
   // display. Otherwise, all windows are in a single overview on
   // |single_root_window_|.
   aura::RootWindow* single_root_window_;
+
+  // The time when overview was started.
+  base::Time overview_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowOverview);
 };

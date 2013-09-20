@@ -13,6 +13,7 @@
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "ui/aura/window_observer.h"
 
 namespace aura {
@@ -59,7 +60,11 @@ class ASH_EXPORT WindowSelectorController
  private:
   friend class internal::WindowSelectorTest;
 
+  // Dispatched when window selection begins.
+  void OnSelectionStarted();
+
   scoped_ptr<WindowSelector> window_selector_;
+  base::Time last_selection_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorController);
 };

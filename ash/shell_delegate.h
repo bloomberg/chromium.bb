@@ -89,6 +89,15 @@ enum UserMetricsAction {
   UMA_WINDOW_MAXIMIZE_BUTTON_MINIMIZE,
   UMA_WINDOW_MAXIMIZE_BUTTON_RESTORE,
   UMA_WINDOW_MAXIMIZE_BUTTON_SHOW_BUBBLE,
+
+  // Thumbnail sized overview of windows triggered. This is a subset of
+  // UMA_WINDOW_SELECTION triggered by lingering during alt+tab cycles or
+  // pressing the overview key.
+  UMA_WINDOW_OVERVIEW,
+
+  // Window selection started by beginning an alt+tab cycle or pressing the
+  // overview key. This does not count each step through an alt+tab cycle.
+  UMA_WINDOW_SELECTION,
 };
 
 enum AccessibilityNotificationVisibility {

@@ -417,6 +417,14 @@ void ChromeShellDelegate::RecordUserMetricsAction(
     case ash::UMA_WINDOW_MAXIMIZE_BUTTON_SHOW_BUBBLE:
       content::RecordAction(content::UserMetricsAction("MaxButton_ShowBubble"));
       break;
+    case ash::UMA_WINDOW_OVERVIEW:
+      content::RecordAction(
+          content::UserMetricsAction("WindowSelector_Overview"));
+      break;
+    case ash::UMA_WINDOW_SELECTION:
+      content::RecordAction(
+          content::UserMetricsAction("WindowSelector_Selection"));
+      break;
   }
 }
 

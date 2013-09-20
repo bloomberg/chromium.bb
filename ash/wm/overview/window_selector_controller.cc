@@ -6,9 +6,11 @@
 
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/window_util.h"
+#include "base/metrics/histogram.h"
 
 namespace ash {
 
@@ -36,9 +38,9 @@ void WindowSelectorController::ToggleOverview() {
     if (windows.empty())
       return;
 
-    // Removing focus will hide popup windows like the omnibar or open menus.
     window_selector_.reset(
         new WindowSelector(windows, WindowSelector::OVERVIEW, this));
+    OnSelectionStarted();
   }
 }
 
@@ -54,9 +56,9 @@ void WindowSelectorController::HandleCycleWindow(
     if (windows.empty())
       return;
 
-    // Removing focus will hide popup windows like the omnibar or open menus.
     window_selector_.reset(
         new WindowSelector(windows, WindowSelector::CYCLE, this));
+    OnSelectionStarted();
     window_selector_->Step(direction);
   } else if (window_selector_->mode() == WindowSelector::CYCLE) {
     window_selector_->Step(direction);
@@ -70,10 +72,22 @@ bool WindowSelectorController::IsSelecting() {
 void WindowSelectorController::OnWindowSelected(aura::Window* window) {
   window_selector_.reset();
   wm::ActivateWindow(window);
+  last_selection_time_ = base::Time::Now();
 }
 
 void WindowSelectorController::OnSelectionCanceled() {
   window_selector_.reset();
+  last_selection_time_ = base::Time::Now();
+}
+
+void WindowSelectorController::OnSelectionStarted() {
+  Shell* shell = Shell::GetInstance();
+  shell->delegate()->RecordUserMetricsAction(UMA_WINDOW_SELECTION);
+  if (!last_selection_time_.is_null()) {
+    UMA_HISTOGRAM_LONG_TIMES(
+        "Ash.WindowSelector.TimeBetweenUse",
+        base::Time::Now() - last_selection_time_);
+  }
 }
 
 }  // namespace ash

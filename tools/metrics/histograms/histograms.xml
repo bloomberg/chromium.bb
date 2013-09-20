@@ -254,6 +254,32 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Ash.WindowSelector.Items">
+  <summary>
+    The number of items (single windows or groups of windows such as panels) in
+    the window selection. Window selection occurs when a user begins alt-tabbing
+    or presses the overview button (F5 key).
+  </summary>
+</histogram>
+
+<histogram name="Ash.WindowSelector.TimeBetweenUse" units="milliseconds">
+  <summary>
+    The amount of time between uses of window selection to switch between
+    windows. Window selection is entered by alt-tabbing or by pressing the
+    overview button (F5 key).
+  </summary>
+</histogram>
+
+<histogram name="Ash.WindowSelector.TimeInOverview" units="milliseconds">
+  <summary>
+    The amount of time spent in overview mode. Overview mode is engaged when
+    lingering on a window while alt-tabbing or by pressing the overview button.
+    The time is measured from the moment the windows begin animating to a
+    thumbnail size preview to when a window is selected or selection is
+    canceled.
+  </summary>
+</histogram>
+
 <histogram name="AsyncDNS.AttemptCountFail">
   <summary>
     Count of DnsAttempts before DnsTransaction completes with failure.

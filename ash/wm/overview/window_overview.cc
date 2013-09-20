@@ -8,9 +8,11 @@
 
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_item.h"
+#include "base/metrics/histogram.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -51,13 +53,19 @@ WindowOverview::WindowOverview(WindowSelector* window_selector,
                                aura::RootWindow* single_root_window)
     : window_selector_(window_selector),
       windows_(windows),
-      single_root_window_(single_root_window) {
+      single_root_window_(single_root_window),
+      overview_start_time_(base::Time::Now()) {
   PositionWindows();
   ash::Shell::GetInstance()->AddPreTargetHandler(this);
+  Shell* shell = Shell::GetInstance();
+  shell->delegate()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
 }
 
 WindowOverview::~WindowOverview() {
   ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "Ash.WindowSelector.TimeInOverview",
+      base::Time::Now() - overview_start_time_);
 }
 
 void WindowOverview::SetSelection(size_t index) {

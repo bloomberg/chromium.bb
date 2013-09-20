@@ -14,6 +14,7 @@
 #include "ash/wm/overview/window_selector_window.h"
 #include "ash/wm/window_settings.h"
 #include "base/auto_reset.h"
+#include "base/metrics/histogram.h"
 #include "base/timer/timer.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -132,6 +133,7 @@ WindowSelector::WindowSelector(const WindowList& windows,
     }
   }
   RemoveFocusAndSetRestoreWindow();
+  UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", windows_.size());
 
   // Observe window activations and switchable containers on all root windows
   // for newly created windows during overview.
