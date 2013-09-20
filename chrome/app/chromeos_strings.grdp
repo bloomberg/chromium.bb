@@ -613,7 +613,7 @@ Press any key to continue exploring.
     This is taking much longer than it should.
   </message>
   <message name="IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE" desc="Text for notifications showing that this user is locally managed">
-    This user is supervised by <ph name="MANAGER_EMAIL">$1<ex>user@example.com</ex></ph>. Usage and history from this user can be reviewed by the manager on chrome.com.
+    Usage and history of this user can be reviewed by the manager (<ph name="MANAGER_EMAIL">$1<ex>user@example.com</ex></ph>) on chrome.com.
   </message>
   <message name="IDS_SUPERVISED_USER_EXPIRED_TOKEN_WARNING" desc="Warning text that is shown on login screen trying to sign in as a supervised user that has expired token">
     This supervised user may have been deleted or disabled by the manager. Please contact the manager if you would like to continue signing in as this user.
