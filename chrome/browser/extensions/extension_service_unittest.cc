@@ -6271,7 +6271,13 @@ TEST_F(ExtensionServiceTest, ExternalInstallInitiallyDisabled) {
 }
 
 // Test that installing multiple external extensions works.
-TEST_F(ExtensionServiceTest, ExternalInstallMultiple) {
+// Flaky on windows; http://crbug.com/295757 .
+#if defined(OS_WIN)
+#define MAYBE_ExternalInstallMultiple DISABLED_ExternalInstallMultiple
+#else
+#define MAYBE_ExternalInstallMultiple ExternalInstallMultiple
+#endif
+TEST_F(ExtensionServiceTest, MAYBE_ExternalInstallMultiple) {
   FeatureSwitch::ScopedOverride prompt(
       FeatureSwitch::prompt_for_external_extensions(), true);
 
