@@ -1560,8 +1560,8 @@ function load() {
       });
     }
 
-    // Move the button to the bottom of the body.
-    document.body.appendChild($('clear-browsing-data'));
+    // Move the button to the bottom of the page.
+    $('history-page').appendChild($('clear-browsing-data'));
   } else {
     window.addEventListener('message', function(e) {
       if (e.data.method == 'frameSelected')
