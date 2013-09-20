@@ -189,9 +189,7 @@ public:
     virtual void moveRangeSelection(const WebPoint& base, const WebPoint& extent);
     virtual void moveCaretSelection(const WebPoint&);
     virtual void setCaretVisible(bool);
-    virtual int printBegin(const WebPrintParams&,
-                           const WebNode& constrainToNode,
-                           bool* useBrowserOverlays);
+    virtual int printBegin(const WebPrintParams&, const WebNode& constrainToNode);
     virtual float printPage(int pageToPrint, WebCanvas*);
     virtual float getPrintPageShrink(int page);
     virtual void printEnd();

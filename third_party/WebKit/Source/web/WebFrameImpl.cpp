@@ -403,11 +403,6 @@ public:
         return PrintContext::pageCount();
     }
 
-    virtual bool shouldUseBrowserOverlays() const
-    {
-        return true;
-    }
-
 private:
     // Set when printing.
     float m_printedPageWidth;
@@ -458,11 +453,6 @@ public:
     {
         m_plugin->printPage(pageNumber, &context);
         return 1.0;
-    }
-
-    virtual bool shouldUseBrowserOverlays() const
-    {
-        return false;
     }
 
 private:
@@ -1379,7 +1369,7 @@ VisiblePosition WebFrameImpl::visiblePositionForWindowPoint(const WebPoint& poin
     return VisiblePosition();
 }
 
-int WebFrameImpl::printBegin(const WebPrintParams& printParams, const WebNode& constrainToNode, bool* useBrowserOverlays)
+int WebFrameImpl::printBegin(const WebPrintParams& printParams, const WebNode& constrainToNode)
 {
     ASSERT(!frame()->document()->isFrameSet());
     WebPluginContainerImpl* pluginContainer = 0;
@@ -1403,8 +1393,6 @@ int WebFrameImpl::printBegin(const WebPrintParams& printParams, const WebNode& c
     // We ignore the overlays calculation for now since they are generated in the
     // browser. pageHeight is actually an output parameter.
     m_printContext->computePageRects(rect, 0, 0, 1.0, pageHeight);
-    if (useBrowserOverlays)
-        *useBrowserOverlays = m_printContext->shouldUseBrowserOverlays();
 
     return m_printContext->pageCount();
 }

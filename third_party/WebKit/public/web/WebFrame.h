@@ -465,12 +465,8 @@ public:
     // scaling option. If constrainToNode node is specified, then only the given node
     // is printed (for now only plugins are supported), instead of the entire frame.
     // Returns the number of pages that can be printed at the given
-    // page size. The out param useBrowserOverlays specifies whether the browser
-    // process should use its overlays (header, footer, margins etc) or whether
-    // the renderer controls this.
-    virtual int printBegin(const WebPrintParams&,
-                           const WebNode& constrainToNode = WebNode(),
-                           bool* useBrowserOverlays = 0) = 0;
+    // page size.
+    virtual int printBegin(const WebPrintParams&, const WebNode& constrainToNode = WebNode()) = 0;
 
     // Returns the page shrinking factor calculated by webkit (usually
     // between 1/1.25 and 1/2). Returns 0 if the page number is invalid or
