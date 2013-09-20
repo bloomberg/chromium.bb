@@ -59,7 +59,7 @@ void StyleRuleBase::destroy()
 {
     switch (type()) {
     case Style:
-        delete static_cast<StyleRule*>(this);
+        delete toStyleRule(this);
         return;
     case Page:
         delete static_cast<StyleRulePage*>(this);
@@ -143,7 +143,7 @@ PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet
     StyleRuleBase* self = const_cast<StyleRuleBase*>(this);
     switch (type()) {
     case Style:
-        rule = CSSStyleRule::create(static_cast<StyleRule*>(self), parentSheet);
+        rule = CSSStyleRule::create(toStyleRule(self), parentSheet);
         break;
     case Page:
         rule = CSSPageRule::create(static_cast<StyleRulePage*>(self), parentSheet);

@@ -227,11 +227,11 @@ LayoutRect AccessibilityRenderObject::elementRect() const
 
     for (const AccessibilityObject* obj = this; obj; obj = obj->parentObject()) {
         if (obj->isAccessibilityRenderObject())
-            static_cast<const AccessibilityRenderObject*>(obj)->checkCachedElementRect();
+            toAccessibilityRenderObject(obj)->checkCachedElementRect();
     }
     for (const AccessibilityObject* obj = this; obj; obj = obj->parentObject()) {
         if (obj->isAccessibilityRenderObject())
-            static_cast<const AccessibilityRenderObject*>(obj)->updateCachedElementRect();
+            toAccessibilityRenderObject(obj)->updateCachedElementRect();
     }
 
     return m_cachedElementRect;
@@ -1157,7 +1157,7 @@ String AccessibilityRenderObject::textUnderElement() const
         // CSS content is used to insert text or when a RenderCounter is used.)
         RenderText* renderTextObject = toRenderText(m_renderer);
         if (renderTextObject->isTextFragment())
-            return String(static_cast<RenderTextFragment*>(m_renderer)->contentString());
+            return String(toRenderTextFragment(m_renderer)->contentString());
         else
             return String(renderTextObject->text());
     }
@@ -1324,7 +1324,7 @@ AccessibilityObject* AccessibilityRenderObject::accessibilityHitTest(const IntPo
     if (result && result->accessibilityIsIgnored()) {
         // If this element is the label of a control, a hit test should return the control.
         if (result->isAccessibilityRenderObject()) {
-            AccessibilityObject* controlObject = static_cast<AccessibilityRenderObject*>(result)->correspondingControlForLabelElement();
+            AccessibilityObject* controlObject = toAccessibilityRenderObject(result)->correspondingControlForLabelElement();
             if (controlObject && !controlObject->exposesTitleUIElement())
                 return controlObject;
         }
@@ -1694,7 +1694,7 @@ void AccessibilityRenderObject::handleActiveDescendantChanged()
     Document& doc = renderer()->document();
     if (!doc.frame()->selection().isFocusedAndActive() || doc.focusedElement() != element)
         return;
-    AccessibilityRenderObject* activedescendant = static_cast<AccessibilityRenderObject*>(activeDescendant());
+    AccessibilityRenderObject* activedescendant = toAccessibilityRenderObject(activeDescendant());
 
     if (activedescendant && shouldNotifyActiveDescendant())
         doc.axObjectCache()->postNotification(m_renderer, AXObjectCache::AXActiveDescendantChanged, true);
@@ -2197,7 +2197,7 @@ void AccessibilityRenderObject::addTextFieldChildren()
     if (!spinButtonElement || !spinButtonElement->isSpinButtonElement())
         return;
 
-    AccessibilitySpinButton* axSpinButton = static_cast<AccessibilitySpinButton*>(axObjectCache()->getOrCreate(SpinButtonRole));
+    AccessibilitySpinButton* axSpinButton = toAccessibilitySpinButton(axObjectCache()->getOrCreate(SpinButtonRole));
     axSpinButton->setSpinButtonElement(toSpinButtonElement(spinButtonElement));
     axSpinButton->setParent(this);
     m_children.append(axSpinButton);
@@ -2326,7 +2326,7 @@ bool AccessibilityRenderObject::inheritsPresentationalRole() const
     if (!parent->isAccessibilityRenderObject())
         return false;
 
-    Node* elementNode = static_cast<AccessibilityRenderObject*>(parent)->node();
+    Node* elementNode = toAccessibilityRenderObject(parent)->node();
     if (!elementNode || !elementNode->isElementNode())
         return false;
 

@@ -128,6 +128,14 @@ inline const StyleRule* toStyleRule(const StyleRuleBase* rule)
     return static_cast<const StyleRule*>(rule);
 }
 
+inline StyleRule* toStyleRule(StyleRuleBase* rule)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!rule || rule->isStyleRule());
+    return static_cast<StyleRule*>(rule);
+}
+
+void toStyleRule(const StyleRule*);
+
 class StyleRuleFontFace : public StyleRuleBase {
 public:
     static PassRefPtr<StyleRuleFontFace> create() { return adoptRef(new StyleRuleFontFace); }

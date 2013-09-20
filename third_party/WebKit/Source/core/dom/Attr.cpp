@@ -103,7 +103,7 @@ void Attr::setPrefix(const AtomicString& prefix, ExceptionState& es)
         return;
     }
 
-    if (static_cast<Attr*>(this)->qualifiedName() == xmlnsAtom) {
+    if (this->qualifiedName() == xmlnsAtom) {
         es.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Attr", "The prefix '" + prefix + "' may not be used as a namespace prefix for attributes whose qualified name is '" + xmlnsAtom + "'."));
         return;
     }

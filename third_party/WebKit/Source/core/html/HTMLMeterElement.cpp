@@ -214,11 +214,11 @@ void HTMLMeterElement::didElementStateChange()
 RenderMeter* HTMLMeterElement::renderMeter() const
 {
     if (renderer() && renderer()->isMeter())
-        return static_cast<RenderMeter*>(renderer());
+        return toRenderMeter(renderer());
 
     RenderObject* renderObject = userAgentShadowRoot()->firstChild()->renderer();
     ASSERT(!renderObject || renderObject->isMeter());
-    return static_cast<RenderMeter*>(renderObject);
+    return toRenderMeter(renderObject);
 }
 
 void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot* root)

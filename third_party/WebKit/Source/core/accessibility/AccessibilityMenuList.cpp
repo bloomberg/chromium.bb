@@ -44,7 +44,7 @@ PassRefPtr<AccessibilityMenuList> AccessibilityMenuList::create(RenderMenuList* 
 
 bool AccessibilityMenuList::press() const
 {
-    RenderMenuList* menuList = static_cast<RenderMenuList*>(m_renderer);
+    RenderMenuList* menuList = toRenderMenuList(m_renderer);
     if (menuList->popupIsVisible())
         menuList->hidePopup();
     else
@@ -62,7 +62,7 @@ void AccessibilityMenuList::addChildren()
     if (!list)
         return;
 
-    static_cast<AccessibilityMockObject*>(list)->setParent(this);
+    toAccessibilityMockObject(list)->setParent(this);
     if (list->accessibilityIsIgnored()) {
         cache->remove(list->axObjectID());
         return;
@@ -84,7 +84,7 @@ void AccessibilityMenuList::childrenChanged()
 
 bool AccessibilityMenuList::isCollapsed() const
 {
-    return !static_cast<RenderMenuList*>(m_renderer)->popupIsVisible();
+    return !toRenderMenuList(m_renderer)->popupIsVisible();
 }
 
 bool AccessibilityMenuList::canSetFocusAttribute() const

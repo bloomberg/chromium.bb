@@ -81,7 +81,7 @@ void AccessibilityARIAGridCell::rowIndexRange(pair<unsigned, unsigned>& rowRange
     } else if (parent->isAccessibilityTable()) {
         // We reached the parent table, so we need to inspect its
         // children to determine the row index for the cell in it.
-        unsigned columnCount = static_cast<AccessibilityTable*>(parent)->columnCount();
+        unsigned columnCount = toAccessibilityTable(parent)->columnCount();
         if (!columnCount)
             return;
 

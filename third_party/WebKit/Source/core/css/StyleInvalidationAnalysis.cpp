@@ -149,7 +149,7 @@ void StyleInvalidationAnalysis::analyzeStyleSheet(StyleSheetContents* styleSheet
             m_dirtiesAllStyle = true;
             return;
         }
-        StyleRule* styleRule = static_cast<StyleRule*>(rule);
+        StyleRule* styleRule = toStyleRule(rule);
         if (!determineSelectorScopes(styleRule->selectorList(), m_idScopes, m_classScopes)) {
             m_dirtiesAllStyle = true;
             return;

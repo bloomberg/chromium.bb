@@ -1129,7 +1129,7 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
     }
 
     if (evt->isTouchEvent()) {
-        m_inputTypeView->handleTouchEvent(static_cast<TouchEvent*>(evt));
+        m_inputTypeView->handleTouchEvent(toTouchEvent(evt));
         if (evt->defaultHandled())
             return;
     }

@@ -105,7 +105,7 @@ public:
         for (unsigned i = 0, size = styleSheet->length(); i < size; ++i) {
             CSSRule* rule = styleSheet->item(i);
             if (rule->type() == CSSRule::IMPORT_RULE) {
-                CSSStyleSheet* importedStyleSheet = static_cast<CSSImportRule*>(rule)->styleSheet();
+                CSSStyleSheet* importedStyleSheet = toCSSImportRule(rule)->styleSheet();
                 if (importedStyleSheet)
                     run(importedStyleSheet);
             }
@@ -537,7 +537,7 @@ CSSStyleRule* InspectorCSSAgent::asCSSStyleRule(CSSRule* rule)
 {
     if (!rule || rule->type() != CSSRule::STYLE_RULE)
         return 0;
-    return static_cast<CSSStyleRule*>(rule);
+    return toCSSStyleRule(rule);
 }
 
 template <typename CharType, size_t bufferLength>
@@ -1375,7 +1375,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > InspectorCSSAgent::b
             mediaList = mediaRule->media();
             parentStyleSheet = mediaRule->parentStyleSheet();
         } else if (parentRule->type() == CSSRule::IMPORT_RULE) {
-            CSSImportRule* importRule = static_cast<CSSImportRule*>(parentRule);
+            CSSImportRule* importRule = toCSSImportRule(parentRule);
             mediaList = importRule->media();
             parentStyleSheet = importRule->parentStyleSheet();
             isMediaRule = false;
@@ -1483,7 +1483,7 @@ void InspectorCSSAgent::collectStyleSheets(CSSStyleSheet* styleSheet, Vector<Ins
     for (unsigned i = 0, size = styleSheet->length(); i < size; ++i) {
         CSSRule* rule = styleSheet->item(i);
         if (rule->type() == CSSRule::IMPORT_RULE) {
-            CSSStyleSheet* importedStyleSheet = static_cast<CSSImportRule*>(rule)->styleSheet();
+            CSSStyleSheet* importedStyleSheet = toCSSImportRule(rule)->styleSheet();
             if (importedStyleSheet)
                 collectStyleSheets(importedStyleSheet, result);
         }

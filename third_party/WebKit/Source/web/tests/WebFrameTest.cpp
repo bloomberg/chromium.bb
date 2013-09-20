@@ -885,7 +885,7 @@ TEST_F(WebFrameTest, WideViewportInitialScaleDoesNotExpandFixedLayoutWidth)
     m_webView->settings()->setViewportMetaLayoutSizeQuirk(true);
     m_webView->resize(WebSize(viewportWidth, viewportHeight));
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
+    WebViewImpl* webViewImpl = toWebViewImpl(m_webView);
     EXPECT_EQ(viewportWidth, webViewImpl->mainFrameImpl()->frameView()->fixedLayoutSize().width());
 }
 
@@ -907,7 +907,7 @@ TEST_F(WebFrameTest, ZeroValuesQuirk)
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     m_webView->resize(WebSize(viewportWidth, viewportHeight));
 
-    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
+    WebViewImpl* webViewImpl = toWebViewImpl(m_webView);
     EXPECT_EQ(viewportWidth, webViewImpl->mainFrameImpl()->frameView()->fixedLayoutSize().width());
     EXPECT_EQ(1.0f, m_webView->pageScaleFactor());
 

@@ -102,7 +102,7 @@ TouchEventDispatchMediator::TouchEventDispatchMediator(PassRefPtr<TouchEvent> to
 
 TouchEvent* TouchEventDispatchMediator::event() const
 {
-    return static_cast<TouchEvent*>(EventDispatchMediator::event());
+    return toTouchEvent(EventDispatchMediator::event());
 }
 
 bool TouchEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const

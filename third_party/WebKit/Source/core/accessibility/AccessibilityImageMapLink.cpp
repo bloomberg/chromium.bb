@@ -145,7 +145,7 @@ LayoutRect AccessibilityImageMapLink::elementRect() const
 
     RenderObject* renderer;
     if (m_parent && m_parent->isAccessibilityRenderObject())
-        renderer = static_cast<AccessibilityRenderObject*>(m_parent)->renderer();
+        renderer = toAccessibilityRenderObject(m_parent)->renderer();
     else
         renderer = m_mapElement->renderer();
 

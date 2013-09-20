@@ -413,7 +413,7 @@ void StyleSheetContents::addSubresourceStyleURLs(ListHashSet<KURL>& urls)
         for (unsigned i = 0; i < styleSheet->m_childRules.size(); ++i) {
             StyleRuleBase* rule = styleSheet->m_childRules[i].get();
             if (rule->isStyleRule())
-                static_cast<StyleRule*>(rule)->properties()->addSubresourceStyleURLs(urls, this);
+                toStyleRule(rule)->properties()->addSubresourceStyleURLs(urls, this);
             else if (rule->isFontFaceRule())
                 static_cast<StyleRuleFontFace*>(rule)->properties()->addSubresourceStyleURLs(urls, this);
         }

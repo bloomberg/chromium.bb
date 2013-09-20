@@ -68,11 +68,11 @@ RenderObject* HTMLProgressElement::createRenderer(RenderStyle* style)
 RenderProgress* HTMLProgressElement::renderProgress() const
 {
     if (renderer() && renderer()->isProgress())
-        return static_cast<RenderProgress*>(renderer());
+        return toRenderProgress(renderer());
 
     RenderObject* renderObject = userAgentShadowRoot()->firstChild()->renderer();
     ASSERT_WITH_SECURITY_IMPLICATION(!renderObject || renderObject->isProgress());
-    return static_cast<RenderProgress*>(renderObject);
+    return toRenderProgress(renderObject);
 }
 
 void HTMLProgressElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

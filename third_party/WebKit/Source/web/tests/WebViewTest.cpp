@@ -270,7 +270,7 @@ TEST_F(WebViewTest, FocusIsInactive)
     WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
     EXPECT_TRUE(frame->frame()->document()->isHTMLDocument());
 
-    WebCore::HTMLDocument* document = static_cast<WebCore::HTMLDocument*>(frame->frame()->document());
+    WebCore::HTMLDocument* document = WebCore::toHTMLDocument(frame->frame()->document());
     EXPECT_TRUE(document->hasFocus());
     webView->setFocus(false);
     webView->setIsActive(false);

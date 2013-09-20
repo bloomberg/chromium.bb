@@ -97,6 +97,20 @@ inline SpinButtonElement* toSpinButtonElement(Element* element)
     return static_cast<SpinButtonElement*>(element);
 }
 
+inline SpinButtonElement* toSpinButtonElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || toElement(node)->isSpinButtonElement());
+    return static_cast<SpinButtonElement*>(node);
+}
+
+inline const SpinButtonElement* toSpinButtonElement(const Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || toElement(node)->isSpinButtonElement());
+    return static_cast<const SpinButtonElement*>(node);
+}
+
+void toSpinButtonElement(const SpinButtonElement*);
+
 } // namespace
 
 #endif

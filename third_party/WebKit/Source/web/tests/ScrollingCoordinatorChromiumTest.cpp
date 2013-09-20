@@ -373,7 +373,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, rtlIframe)
     ASSERT_TRUE(renderWidget->widget());
     ASSERT_TRUE(renderWidget->widget()->isFrameView());
 
-    FrameView* innerFrameView = static_cast<FrameView*>(renderWidget->widget());
+    FrameView* innerFrameView = toFrameView(renderWidget->widget());
     RenderView* innerRenderView = innerFrameView->renderView();
     ASSERT_TRUE(innerRenderView);
 

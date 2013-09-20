@@ -194,7 +194,7 @@ void WebPluginContainerImpl::handleEvent(Event* event)
     else if (event->isKeyboardEvent())
         handleKeyboardEvent(toKeyboardEvent(event));
     else if (eventNames().isTouchEventType(event->type()))
-        handleTouchEvent(static_cast<TouchEvent*>(event));
+        handleTouchEvent(toTouchEvent(event));
     else if (eventNames().isGestureEventType(event->type()))
         handleGestureEvent(static_cast<GestureEvent*>(event));
 
@@ -856,7 +856,7 @@ void WebPluginContainerImpl::synthesizeMouseEventIfPossible(TouchEvent* event)
 
 void WebPluginContainerImpl::focusPlugin()
 {
-    Frame& containingFrame = static_cast<FrameView*>(parent())->frame();
+    Frame& containingFrame = toFrameView(parent())->frame();
     if (Page* currentPage = containingFrame.page())
         currentPage->focusController().setFocusedElement(m_element, &containingFrame);
     else

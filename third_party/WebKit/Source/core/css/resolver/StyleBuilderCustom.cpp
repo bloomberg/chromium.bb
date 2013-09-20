@@ -1111,7 +1111,7 @@ static EPaintOrder paintOrderFlattened(CSSValue* cssPaintOrder)
         int paintOrder = 0;
         CSSValueListInspector iter(cssPaintOrder);
         for (size_t i = 0; i < iter.length(); i++) {
-            CSSPrimitiveValue* value = static_cast<CSSPrimitiveValue*>(iter.item(i));
+            CSSPrimitiveValue* value = toCSSPrimitiveValue(iter.item(i));
 
             EPaintOrderType paintOrderType = PT_NONE;
             switch (value->getValueID()) {

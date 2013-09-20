@@ -317,7 +317,7 @@ AccessibilityObject* AXObjectCache::getOrCreate(Widget* widget)
 
     RefPtr<AccessibilityObject> newObj = 0;
     if (widget->isFrameView())
-        newObj = AccessibilityScrollView::create(static_cast<ScrollView*>(widget));
+        newObj = AccessibilityScrollView::create(toScrollView(widget));
     else if (widget->isScrollbar())
         newObj = AccessibilityScrollbar::create(static_cast<Scrollbar*>(widget));
 
@@ -635,7 +635,7 @@ void AXObjectCache::notificationPostTimerFired(Timer<AXObjectCache>*)
         // Make sure none of the render views are in the process of being layed out.
         // Notifications should only be sent after the renderer has finished
         if (obj->isAccessibilityRenderObject()) {
-            AccessibilityRenderObject* renderObj = static_cast<AccessibilityRenderObject*>(obj);
+            AccessibilityRenderObject* renderObj = toAccessibilityRenderObject(obj);
             RenderObject* renderer = renderObj->renderer();
             if (renderer && renderer->view())
                 ASSERT(!renderer->view()->layoutState());
