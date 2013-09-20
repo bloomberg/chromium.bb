@@ -679,8 +679,10 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_PopupPositioningMoved) {
 // Drag and drop inside a webview is currently only enabled for linux and mac,
 // but the tests don't work on anything except chromeos for now. This is because
 // of simulating mouse drag code's dependency on platforms.
+//
+// Disabled because of flake on CrOS: http://crbug.com/161112
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DragDropWithinWebView) {
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_DragDropWithinWebView) {
   SetupTest(
       "web_view/dnd_within_webview",
       "/extensions/platform_apps/web_view/dnd_within_webview/guest.html");
