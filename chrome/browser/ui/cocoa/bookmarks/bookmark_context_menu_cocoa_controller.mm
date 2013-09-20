@@ -126,7 +126,8 @@ class BookmarkContextMenuDelegateBridge :
   }
 
   [bookmarkBarController_ closeFolderAndStopTrackingMenus];
-  [bookmarkBarController_ unhighlightBookmark:bookmarkNode_];
+  if (bookmarkNode_)
+    [bookmarkBarController_ unhighlightBookmark:bookmarkNode_];
 }
 
 - (void)cancelTracking {
