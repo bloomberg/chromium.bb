@@ -61,7 +61,8 @@ bool CheckLinearValues(const std::string& name, int maximum) {
 void SetupProgressiveScanFieldTrial() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   const char name_of_experiment[] = "ProgressiveScan";
-  const char path_to_group_file[] = "/home/chronos/.progressive_scan_variation";
+  const base::FilePath group_file_path(
+      "/home/chronos/.progressive_scan_variation");
   const base::FieldTrial::Probability kDivisor = 1000;
   scoped_refptr<base::FieldTrial> trial =
       base::FieldTrialList::FactoryGetFieldTrial(
@@ -85,15 +86,13 @@ void SetupProgressiveScanFieldTrial() {
     group_char = group_to_char[group_num];
 
   // Write the group to the file to be read by ChromeOS.
-  const base::FilePath kPathToGroupFile(path_to_group_file);
-
-  if (file_util::WriteFile(kPathToGroupFile, group_char.c_str(),
-                           group_char.length())) {
+  int size = static_cast<int>(group_char.length());
+  if (file_util::WriteFile(group_file_path, group_char.c_str(), size) == size) {
     LOG(INFO) << "Configured in group '" << trial->group_name()
               << "' ('" << group_char << "') for "
               << name_of_experiment << " field trial";
   } else {
-    LOG(ERROR) << "Couldn't write to " << path_to_group_file;
+    LOG(ERROR) << "Couldn't write to " << group_file_path.value();
   }
 }
 

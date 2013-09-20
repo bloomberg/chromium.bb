@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
+#include "base/safe_numerics.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 
@@ -79,9 +80,10 @@ bool ResourceCache::Store(const std::string& key,
   // between these two calls. There is nothing in file_util that could be used
   // to protect against such races, especially as the cache is cross-platform
   // and therefore cannot use any POSIX-only tricks.
+  int size = base::checked_numeric_cast<int>(data.size());
   return VerifyKeyPathAndGetSubkeyPath(key, true, subkey, &subkey_path) &&
          base::DeleteFile(subkey_path, false) &&
-         file_util::WriteFile(subkey_path, data.data(), data.size());
+         (file_util::WriteFile(subkey_path, data.data(), size) == size);
 }
 
 bool ResourceCache::Load(const std::string& key,
