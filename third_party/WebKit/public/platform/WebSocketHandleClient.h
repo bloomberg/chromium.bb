@@ -43,10 +43,10 @@ class WebURL;
 class WebSocketHandleClient {
 public:
     // Called when the handle is opened.
-    virtual void didConnect(WebSocketHandle*, bool succeed, const WebString& selectedProtocol, const WebString& extensions) = 0;
+    virtual void didConnect(WebSocketHandle*, bool fail, const WebString& selectedProtocol, const WebString& extensions) = 0;
 
     // Called when data are received.
-    virtual void didReceiveData(WebSocketHandle*, WebSocketHandle::MessageType, const char* data, size_t /* size */, bool fin) = 0;
+    virtual void didReceiveData(WebSocketHandle*, bool fin, WebSocketHandle::MessageType, const char* data, size_t /* size */) = 0;
 
     // Called when the handle is closed.
     virtual void didClose(WebSocketHandle*, unsigned short code, const WebString& reason) = 0;

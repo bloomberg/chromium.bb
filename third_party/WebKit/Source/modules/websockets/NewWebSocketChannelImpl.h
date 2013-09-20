@@ -125,8 +125,8 @@ private:
     void abortAsyncOperations();
 
     // WebSocketHandleClient functions.
-    virtual void didConnect(WebKit::WebSocketHandle*, bool succeed, const WebKit::WebString& selectedProtocol, const WebKit::WebString& extensions) OVERRIDE;
-    virtual void didReceiveData(WebKit::WebSocketHandle*, WebKit::WebSocketHandle::MessageType, const char* data, size_t /* size */, bool fin) OVERRIDE;
+    virtual void didConnect(WebKit::WebSocketHandle*, bool fail, const WebKit::WebString& selectedProtocol, const WebKit::WebString& extensions) OVERRIDE;
+    virtual void didReceiveData(WebKit::WebSocketHandle*, bool fin, WebKit::WebSocketHandle::MessageType, const char* data, size_t /* size */) OVERRIDE;
     virtual void didClose(WebKit::WebSocketHandle*, unsigned short code, const WebKit::WebString& reason) OVERRIDE;
     virtual void didReceiveFlowControl(WebKit::WebSocketHandle*, int64_t quota) OVERRIDE { m_sendingQuota += quota; }
 

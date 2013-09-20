@@ -41,23 +41,29 @@ class WebString;
 class WebURL;
 
 // FIXME: This class will replace WebSocketStreamHandle.
+//
+// WebSocketHandle is an interface class designed to be a handle of WebSocket connection.
+// WebSocketHandle will be used together with WebSocketHandleClient.
+//
+// Once a WebSocketHandle is deleted there will be no notification to the corresponding WebSocketHandleClient.
+// Once a WebSocketHandleClient receives DidClose, any method of the corresponding WebSocketHandle can't be called.
+
 class WebSocketHandle {
 public:
     enum MessageType {
+        MessageTypeContinuation,
         MessageTypeText,
         MessageTypeBinary,
-        MessageTypeContinuation,
     };
 
     virtual ~WebSocketHandle() { }
 
     virtual void connect(const WebURL& /* url */, const WebVector<WebString>& protocols, const WebString& origin, WebSocketHandleClient*) = 0;
-    virtual void send(MessageType, const char* data, size_t /* size */, bool fin) = 0;
-    virtual void flowControl(int64_t quota);
+    virtual void send(bool fin, MessageType, const char* data, size_t /* size */) = 0;
+    virtual void flowControl(int64_t quota) = 0;
     virtual void close(unsigned short code, const WebString& reason) = 0;
 };
 
 } // namespace WebKit
 
 #endif // WebSocketHandle_h
-

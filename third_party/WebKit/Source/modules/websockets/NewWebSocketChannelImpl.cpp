@@ -448,7 +448,7 @@ void NewWebSocketChannelImpl::sendInternal()
                 m_sentSizeOfTopMessage ? WebSocketHandle::MessageTypeContinuation : WebSocketHandle::MessageTypeText;
             size_t size = std::min(static_cast<size_t>(m_sendingQuota), message.text.length() - m_sentSizeOfTopMessage);
             final = (m_sendingQuota == size);
-            m_handle->send(type, message.text.data() + m_sentSizeOfTopMessage, size, final);
+            m_handle->send(final, type, message.text.data() + m_sentSizeOfTopMessage, size);
             m_sentSizeOfTopMessage += size;
             m_sendingQuota -= size;
             break;
@@ -462,7 +462,7 @@ void NewWebSocketChannelImpl::sendInternal()
                 m_sentSizeOfTopMessage ? WebSocketHandle::MessageTypeContinuation : WebSocketHandle::MessageTypeBinary;
             size_t size = std::min(static_cast<size_t>(m_sendingQuota), message.arrayBuffer->byteLength() - m_sentSizeOfTopMessage);
             final = (m_sendingQuota == size);
-            m_handle->send(type, static_cast<const char*>(message.arrayBuffer->data()) + m_sentSizeOfTopMessage, size, final);
+            m_handle->send(final, type, static_cast<const char*>(message.arrayBuffer->data()) + m_sentSizeOfTopMessage, size);
             m_sentSizeOfTopMessage += size;
             m_sendingQuota -= size;
             break;
@@ -496,12 +496,12 @@ void NewWebSocketChannelImpl::abortAsyncOperations()
     m_resumer->abort();
 }
 
-void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool succeed, const WebKit::WebString& selectedProtocol, const WebKit::WebString& extensions)
+void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, const WebKit::WebString& selectedProtocol, const WebKit::WebString& extensions)
 {
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
     ASSERT(m_client);
-    if (!succeed) {
+    if (fail) {
         failAsError("Cannot connect to " + m_url.string() + ".");
         // failAsError may delete this object.
         return;
@@ -514,7 +514,7 @@ void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool succeed, 
         m_client->didConnect();
 }
 
-void NewWebSocketChannelImpl::didReceiveData(WebSocketHandle* handle, WebSocketHandle::MessageType type, const char* data, size_t size, bool fin)
+void NewWebSocketChannelImpl::didReceiveData(WebSocketHandle* handle, bool fin, WebSocketHandle::MessageType type, const char* data, size_t size)
 {
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
