@@ -728,7 +728,11 @@ class HWTestStageTest(AbstractStageTest):
     self.suite = 'perf_v2'
     self.bot_id = 'lumpy-chrome-perf'
     self.build_config = config.config['lumpy-chrome-perf'].copy()
-    self.suite_config = self.build_config['hw_tests'][0]
+    hw_tests = self.build_config['hw_tests']
+    if not hw_tests:
+      # TODO(milleral): Add HWTests back to lumpy-chrome-perf.
+      raise unittest.SkipTest('Missing HWTest for lumpy-chrome-perf')
+    self.suite_config = hw_tests[0]
     self.mox.StubOutWithMock(stages.HWTestStage, '_PrintFile')
 
     results_file = 'perf_v2.results'
