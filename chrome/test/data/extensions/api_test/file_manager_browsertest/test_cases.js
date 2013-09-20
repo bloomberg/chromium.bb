@@ -58,6 +58,10 @@ var TestEntryInfo = function(type,
   Object.freeze(this);
 };
 
+TestEntryInfo.getExpectedRows = function(entries) {
+  return entries.map(function(entry) { return entry.getExpectedRow(); });
+};
+
 /**
  * Obtains a expected row contents of the file in the file list.
  */
@@ -147,35 +151,44 @@ var BASIC_DRIVE_ENTRY_SET = [
 ];
 
 /**
- * Expected files before tests are performed. Entries for Local tests.
- * TODO(hirono): Remove the constant.
- * @type {Array.<Array.<string>>}
+ * Expected files shown in "Recent". Directories (e.g. 'photos') are not in this
+ * list as they are not expected in "Recent".
+ *
+ * @type {Array.<TestEntryInfo>}
  * @const
  */
-var EXPECTED_FILES_BEFORE_LOCAL = BASIC_LOCAL_ENTRY_SET.map(function(entry) {
-  return entry.getExpectedRow();
-}).sort();
+var RECENT_ENTRY_SET = [
+  ENTRIES.hello,
+  ENTRIES.world,
+  ENTRIES.desktop,
+  ENTRIES.beautiful,
+  ENTRIES.testDocument,
+  ENTRIES.testSharedDocument
+];
 
 /**
- * Expected files before tests are performed. Entries for Drive tests.
- * TODO(hirono): Remove the constant.
- * @type {Array.<Array.<string>>}
+ * Expected files shown in "Offline", which should have the files
+ * "available offline". Google Documents, Google Spreadsheets, and the files
+ * cached locally are "available offline".
+ *
+ * @type {Array.<TestEntryInfo>}
  * @const
  */
-var EXPECTED_FILES_BEFORE_DRIVE = BASIC_DRIVE_ENTRY_SET.map(function(entry) {
-  return entry.getExpectedRow();
-}).sort();
+var OFFLINE_ENTRY_SET = [
+  ENTRIES.testDocument,
+  ENTRIES.testSharedDocument
+];
 
 /**
- * @param {boolean} isDrive True if the test is for Drive.
- * @return {Array.<Array.<string>>} A sorted list of expected entries at the
- *     initial state.
+ * Expected files shown in "Shared with me", which should be the entries labeled
+ * with "shared-with-me".
+ *
+ * @type {Array.<TestEntryInfo>}
+ * @const
  */
-function getExpectedFilesBefore(isDrive) {
-  return isDrive ?
-      EXPECTED_FILES_BEFORE_DRIVE :
-      EXPECTED_FILES_BEFORE_LOCAL;
-}
+var SHARED_WITH_ME_ENTRY_SET = [
+  ENTRIES.testSharedDocument
+];
 
 /**
  * Opens a Files.app's main window and waits until it is initialized.
@@ -222,52 +235,7 @@ function checkIfNoErrorsOccured(callback) {
   });
 }
 
-/**
- * Expected files shown in "Recent". Directories (e.g. 'photos') are not in this
- * list as they are not expected in "Recent".
- *
- *  TODO(hirono): Remove the constant.
- *
- * @type {Array.<Array.<string>>}
- * @const
- */
-var EXPECTED_FILES_IN_RECENT = [
-  ['hello.txt', '51 bytes', 'Plain text', 'Sep 4, 1998 12:34 PM'],
-  ['world.ogv', '59 KB', 'OGG video', 'Jul 4, 2012 10:35 AM'],
-  ['My Desktop Background.png', '272 bytes', 'PNG image',
-      'Jan 18, 2038 1:02 AM'],
-  ['Beautiful Song.ogg', '14 KB', 'OGG audio', 'Nov 12, 2086 12:00 PM'],
-  ['Test Document.gdoc','--','Google document','Apr 10, 2013 4:20 PM'],
-  ['Test Shared Document.gdoc','--','Google document','Mar 20, 2013 10:40 PM']
-].sort();
 
-/**
- * Expected files shown in "Offline", which should have the files
- * "available offline". Google Documents, Google Spreadsheets, and the files
- * cached locally are "available offline".
- *
- * TODO(hirono): Remove the constant.
- *
- * @type {Array.<Array.<string>>}
- * @const
- */
-var EXPECTED_FILES_IN_OFFLINE = [
-  ['Test Document.gdoc','--','Google document','Apr 10, 2013 4:20 PM'],
-  ['Test Shared Document.gdoc','--','Google document','Mar 20, 2013 10:40 PM']
-];
-
-/**
- * Expected files shown in "Shared with me", which should be the entries labeled
- * with "shared-with-me".
- *
- * TODO(hirono): Remove the constant.
- *
- * @type {Array.<Array.<string>>}
- * @const
- */
-var EXPECTED_FILES_IN_SHARED_WITH_ME = [
-  ['Test Shared Document.gdoc','--','Google document','Mar 20, 2013 10:40 PM']
-];
 
 /**
  * Returns the name of the given file list entry.
@@ -315,7 +283,10 @@ testcase.intermediate = {};
 testcase.intermediate.fileDisplay = function(path) {
   var appId;
 
-  var expectedFilesBefore = getExpectedFilesBefore(path == '/drive/root');
+  var expectedFilesBefore =
+      TestEntryInfo.getExpectedRows(path == '/drive/root' ?
+          BASIC_DRIVE_ENTRY_SET : BASIC_LOCAL_ENTRY_SET).sort();
+
   var expectedFilesAfter =
       expectedFilesBefore.concat([ENTRIES.newlyAdded.getExpectedRow()]).sort();
 
@@ -552,30 +523,13 @@ testcase.intermediate.videoOpen = function(path) {
  * @param {string} path Directory path to be tested.
  */
 testcase.intermediate.keyboardCopy = function(path, callback) {
-  // Returns true if |fileList| contains a copy of |filename|.
-  var isCopyPresent = function(filename, fileList) {
-    var originalEntry;
-    for (var i = 0; i < fileList.length; i++) {
-      if (getFileName(fileList[i]) == filename)
-        originalEntry = fileList[i];
-    }
-    if (!originalEntry)
-      return false;
-
-    var baseName = filename.substring(0, filename.lastIndexOf('.'));
-    var extension = filename.substring(filename.lastIndexOf('.'));
-    var filenamePattern = new RegExp('^' + baseName + '.+' + extension + '$');
-    for (var i = 0; i < fileList.length; i++) {
-      // Check size, type and file name pattern to find a copy.
-      if (getFileSize(fileList[i]) == getFileSize(originalEntry) &&
-          getFileType(fileList[i]) == getFileType(originalEntry) &&
-          filenamePattern.exec(getFileName(fileList[i])))
-        return true;
-    }
-    return false;
-  };
-
   var filename = 'world.ogv';
+  var expectedFilesBefore =
+      TestEntryInfo.getExpectedRows(path == '/drive/root' ?
+          BASIC_DRIVE_ENTRY_SET : BASIC_LOCAL_ENTRY_SET).sort();
+  var expectedFilesAfter =
+      expectedFilesBefore.concat([['world (1).ogv', '59 KB', 'OGG video']]);
+
   var appId, fileListBefore;
   StepsRunner.run([
     // Set up File Manager.
@@ -586,20 +540,20 @@ testcase.intermediate.keyboardCopy = function(path, callback) {
     function(inAppId, inFileListBefore) {
       appId = inAppId;
       fileListBefore = inFileListBefore;
-      chrome.test.assertFalse(isCopyPresent(filename, fileListBefore));
+      chrome.test.assertEq(expectedFilesBefore, inFileListBefore);
       callRemoteTestUtil('copyFile', appId, [filename], this.next);
     },
     // Wait for a file list change.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('waitForFileListChange',
+      callRemoteTestUtil('waitForFiles',
                          appId,
-                         [fileListBefore.length],
+                         [expectedFilesAfter,
+                          {ignoreLastModifiedTime: true}],
                          this.next);
     },
     // Verify the result.
     function(fileList) {
-      chrome.test.assertTrue(isCopyPresent(filename, fileList));
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -745,12 +699,14 @@ testcase.openSidebarRecent = function() {
       callRemoteTestUtil(
           'waitForFileListChange',
           appId,
-          [getExpectedFilesBefore(true /* isDrive */).length],
+          [BASIC_DRIVE_ENTRY_SET.length],
           this.next);
     },
     // Verify the file list.
     function(actualFilesAfter) {
-      chrome.test.assertEq(EXPECTED_FILES_IN_RECENT, actualFilesAfter);
+      chrome.test.assertEq(
+          TestEntryInfo.getExpectedRows(RECENT_ENTRY_SET).sort(),
+          actualFilesAfter);
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -780,12 +736,14 @@ testcase.openSidebarOffline = function() {
       callRemoteTestUtil(
           'waitForFileListChange',
           appId,
-          [getExpectedFilesBefore(true /* isDrive */).length],
+          [BASIC_DRIVE_ENTRY_SET.length],
           this.next);
     },
     // Verify the file list.
     function(actualFilesAfter) {
-      chrome.test.assertEq(EXPECTED_FILES_IN_OFFLINE, actualFilesAfter);
+      chrome.test.assertEq(
+          TestEntryInfo.getExpectedRows(OFFLINE_ENTRY_SET).sort(),
+          actualFilesAfter);
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -816,12 +774,14 @@ testcase.openSidebarSharedWithMe = function() {
       callRemoteTestUtil(
           'waitForFileListChange',
           appId,
-          [getExpectedFilesBefore(true /* isDrive */).length],
+          [BASIC_DRIVE_ENTRY_SET.length],
           this.next);
     },
     // Verify the file list.
     function(actualFilesAfter) {
-      chrome.test.assertEq(EXPECTED_FILES_IN_SHARED_WITH_ME, actualFilesAfter);
+      chrome.test.assertEq(
+          TestEntryInfo.getExpectedRows(SHARED_WITH_ME_ENTRY_SET).sort(),
+          actualFilesAfter);
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -862,17 +822,20 @@ testcase.autocomplete = function() {
  * @param {string} targetFile Name of target file to be copied.
  * @param {string} srcName Type of source volume. e.g. downloads, drive,
  *     drive_recent, drive_shared_with_me, drive_offline.
- * @param {Array.<Array.<string>>} srcContents Expected initial contents in the
+ * @param {Array.<TestEntryInfo>} srcEntries Expected initial contents in the
  *     source volume.
  * @param {string} dstName Type of destination volume.
- * @param {Array.<Array.<string>>} dstContents Expected initial contents in the
+ * @param {Array.<TestEntryInfo>} dstEntries Expected initial contents in the
  *     destination volume.
  */
 testcase.intermediate.copyBetweenVolumes = function(targetFile,
                                                     srcName,
-                                                    srcContents,
+                                                    srcEntries,
                                                     dstName,
-                                                    dstContents) {
+                                                    dstEntries) {
+  var srcContents = TestEntryInfo.getExpectedRows(srcEntries).sort();
+  var dstContents = TestEntryInfo.getExpectedRows(dstEntries).sort();
+
   var appId;
   StepsRunner.run([
     // Set up File Manager.
@@ -1047,9 +1010,9 @@ testcase.intermediate.share = function(path) {
 testcase.transferFromDriveToDownloads = function() {
   testcase.intermediate.copyBetweenVolumes('hello.txt',
                                            'drive',
-                                           EXPECTED_FILES_BEFORE_DRIVE,
+                                           BASIC_DRIVE_ENTRY_SET,
                                            'downloads',
-                                           EXPECTED_FILES_BEFORE_LOCAL);
+                                           BASIC_LOCAL_ENTRY_SET);
 };
 
 /**
@@ -1058,9 +1021,9 @@ testcase.transferFromDriveToDownloads = function() {
 testcase.transferFromDownloadsToDrive = function() {
   testcase.intermediate.copyBetweenVolumes('hello.txt',
                                            'downloads',
-                                           EXPECTED_FILES_BEFORE_LOCAL,
+                                           BASIC_LOCAL_ENTRY_SET,
                                            'drive',
-                                           EXPECTED_FILES_BEFORE_DRIVE);
+                                           BASIC_DRIVE_ENTRY_SET);
 };
 
 /**
@@ -1069,9 +1032,9 @@ testcase.transferFromDownloadsToDrive = function() {
 testcase.transferFromSharedToDownloads = function() {
   testcase.intermediate.copyBetweenVolumes('Test Shared Document.gdoc',
                                            'drive_shared_with_me',
-                                           EXPECTED_FILES_IN_SHARED_WITH_ME,
+                                           SHARED_WITH_ME_ENTRY_SET,
                                            'downloads',
-                                           EXPECTED_FILES_BEFORE_LOCAL);
+                                           BASIC_LOCAL_ENTRY_SET);
 };
 
 /**
@@ -1080,9 +1043,9 @@ testcase.transferFromSharedToDownloads = function() {
 testcase.transferFromSharedToDrive = function() {
   testcase.intermediate.copyBetweenVolumes('Test Shared Document.gdoc',
                                            'drive_shared_with_me',
-                                           EXPECTED_FILES_IN_SHARED_WITH_ME,
+                                           SHARED_WITH_ME_ENTRY_SET,
                                            'drive',
-                                           EXPECTED_FILES_BEFORE_DRIVE);
+                                           BASIC_DRIVE_ENTRY_SET);
 };
 
 /**
@@ -1091,9 +1054,9 @@ testcase.transferFromSharedToDrive = function() {
 testcase.transferFromRecentToDownloads = function() {
   testcase.intermediate.copyBetweenVolumes('hello.txt',
                                            'drive_recent',
-                                           EXPECTED_FILES_IN_RECENT,
+                                           RECENT_ENTRY_SET,
                                            'downloads',
-                                           EXPECTED_FILES_BEFORE_LOCAL);
+                                           BASIC_LOCAL_ENTRY_SET);
 };
 
 /**
@@ -1102,9 +1065,9 @@ testcase.transferFromRecentToDownloads = function() {
 testcase.transferFromRecentToDrive = function() {
   testcase.intermediate.copyBetweenVolumes('hello.txt',
                                            'drive_recent',
-                                           EXPECTED_FILES_IN_RECENT,
+                                           RECENT_ENTRY_SET,
                                            'drive',
-                                           EXPECTED_FILES_BEFORE_DRIVE);
+                                           BASIC_DRIVE_ENTRY_SET);
 };
 
 /**
@@ -1113,9 +1076,9 @@ testcase.transferFromRecentToDrive = function() {
 testcase.transferFromOfflineToDownloads = function() {
   testcase.intermediate.copyBetweenVolumes('Test Document.gdoc',
                                            'drive_offline',
-                                           EXPECTED_FILES_IN_OFFLINE,
+                                           OFFLINE_ENTRY_SET,
                                            'downloads',
-                                           EXPECTED_FILES_BEFORE_LOCAL);
+                                           BASIC_LOCAL_ENTRY_SET);
 };
 
 /**
@@ -1124,9 +1087,9 @@ testcase.transferFromOfflineToDownloads = function() {
 testcase.transferFromOfflineToDrive = function() {
   testcase.intermediate.copyBetweenVolumes('Test Document.gdoc',
                                            'drive_offline',
-                                           EXPECTED_FILES_IN_OFFLINE,
+                                           OFFLINE_ENTRY_SET,
                                            'drive',
-                                           EXPECTED_FILES_BEFORE_DRIVE);
+                                           BASIC_DRIVE_ENTRY_SET);
 };
 
 /**
@@ -1184,14 +1147,13 @@ testcase.hideSearchBox = function() {
  */
 testcase.restoreSortColumn = function() {
   var appId;
-  var EXPECTED_FILES = [
-    ['world.ogv', '59 KB', 'OGG video', 'Jul 4, 2012 10:35 AM'],
-    ['photos', '--', 'Folder', 'Jan 1, 1980 11:59 PM'],
-    ['My Desktop Background.png', '272 bytes', 'PNG image',
-     'Jan 18, 2038 1:02 AM'],
-    ['hello.txt', '51 bytes', 'Plain text', 'Sep 4, 1998 12:34 PM'],
-    ['Beautiful Song.ogg', '14 KB', 'OGG audio', 'Nov 12, 2086 12:00 PM']
-  ];
+  var EXPECTED_FILES = TestEntryInfo.getExpectedRows([
+    ENTRIES.world,
+    ENTRIES.photos,
+    ENTRIES.desktop,
+    ENTRIES.hello,
+    ENTRIES.beautiful
+  ]);
   StepsRunner.run([
     // Set up File Manager.
     function() {
@@ -1230,7 +1192,7 @@ testcase.restoreSortColumn = function() {
     function() {
       callRemoteTestUtil('waitForFiles',
                          appId,
-                         [EXPECTED_FILES, true /* Check the order */],
+                         [EXPECTED_FILES, {orderCheck: true}],
                          this.next);
     },
     // Open another window, where the sorted column should be restored.
@@ -1249,7 +1211,7 @@ testcase.restoreSortColumn = function() {
     function() {
       callRemoteTestUtil('waitForFiles',
                          appId,
-                         [EXPECTED_FILES, true /* Check the order */],
+                         [EXPECTED_FILES, {orderCheck: true}],
                          this.next);
     },
     // Check the error.

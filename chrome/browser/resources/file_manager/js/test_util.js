@@ -423,17 +423,28 @@ test.util.async.selectVolume = function(contentWindow, iconName, callback) {
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {Array.<Array.<string>>} expected Expected contents of file list.
- * @param {boolean=} opt_orderCheck If it is true, this function also compares
- *     the order of files.
+ * @param {{orderCheck:boolean=, ignoreLastModifiedTime:boolean=}=} opt_options
+ *     Options of the comparision. If orderCheck is true, it also compares the
+ *     order of files. If ignoreLastModifiedTime is true, it compares the file
+ *     without its last modified time.
  * @param {function()} callback Callback function to notify the caller that
  *     expected files turned up.
  */
 test.util.async.waitForFiles = function(
-    contentWindow, expected, opt_orderCheck, callback) {
+    contentWindow, expected, opt_options, callback) {
+  var options = opt_options || {};
   test.util.repeatUntilTrue_(function() {
     var files = test.util.sync.getFileList(contentWindow);
-    if (!opt_orderCheck)
+    if (!options.orderCheck) {
       files.sort();
+      expected.sort();
+    }
+    if (options.ignoreLastModifiedTime) {
+      for (var i = 0; i < Math.min(files.length, expected.length); i++) {
+        files[i][3] = '';
+        expected[i][3] = '';
+      }
+    }
     if (chrome.test.checkDeepEq(expected, files)) {
       callback(true);
       return true;
