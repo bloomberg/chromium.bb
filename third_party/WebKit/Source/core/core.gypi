@@ -2632,6 +2632,7 @@
             'platform/MIMETypeFromURL.cpp',
             'platform/MIMETypeFromURL.h',
             'platform/NotImplemented.cpp',
+            'platform/ParsingUtilities.h',
             'platform/Partitions.cpp',
             'platform/Partitions.h',
             'platform/Pasteboard.cpp',
