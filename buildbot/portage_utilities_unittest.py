@@ -252,7 +252,7 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
     self.mox.StubOutWithMock(cros_build_lib, 'Die')
     self.mox.StubOutWithMock(portage_utilities.shutil, 'copyfile')
     self.mox.StubOutWithMock(os, 'unlink')
-    self.mox.StubOutWithMock(portage_utilities.EBuild, '_RunCommand')
+    self.mox.StubOutWithMock(portage_utilities.EBuild, '_RunGit')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.mox.StubOutWithMock(portage_utilities.filecmp, 'cmp')
     self.mox.StubOutWithMock(portage_utilities.fileinput, 'input')
@@ -300,13 +300,11 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
                                   self.revved_ebuild_path,
                                   shallow=False).AndReturn(not rev)
     if rev:
-      portage_utilities.EBuild._RunCommand(
-          ['git', 'add', self.revved_ebuild_path],
-          cwd=self.overlay)
+      cmd = ['add', self.revved_ebuild_path]
+      portage_utilities.EBuild._RunGit(self.overlay, cmd)
       if self.m_ebuild.is_stable:
-        portage_utilities.EBuild._RunCommand(
-            ['git', 'rm', self.m_ebuild.ebuild_path],
-            cwd=self.overlay)
+        cmd = ['rm', self.m_ebuild.ebuild_path]
+        portage_utilities.EBuild._RunGit(self.overlay, cmd)
     else:
       os.unlink(self.revved_ebuild_path)
 
@@ -359,8 +357,7 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
   def testCommitChange(self):
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     mock_message = 'Commitme'
-    cros_build_lib.RunCommand(
-        ['git', 'commit', '-a', '-m', mock_message], cwd='.', print_cmd=False)
+    git.RunGit('.', ['commit', '-a', '-m', mock_message])
     self.mox.ReplayAll()
     self.m_ebuild.CommitChange(mock_message, '.')
     self.mox.VerifyAll()
@@ -399,10 +396,8 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
 
   def testGitRepoHasChanges(self):
     """Tests that GitRepoHasChanges works correctly."""
-    cros_build_lib.RunCommand(
-        ['git', 'clone', '--depth=1',
-         'file://' + os.path.join(constants.SOURCE_ROOT, 'chromite'),
-         self.tempdir])
+    url = 'file://' + os.path.join(constants.SOURCE_ROOT, 'chromite')
+    git.RunGit(self.tempdir, ['clone', '--depth=1', url, self.tempdir])
     # No changes yet as we just cloned the repo.
     self.assertFalse(portage_utilities.EBuild.GitRepoHasChanges(self.tempdir))
     # Update metadata but no real changes.

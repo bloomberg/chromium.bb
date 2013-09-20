@@ -146,9 +146,9 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
     cros_build_lib.Info('All changes already pushed for %s. Exiting', cwd)
     return
 
-  description = cros_build_lib.RunCommandCaptureOutput(
-      ['git', 'log', '--format=format:%s%n%n%b', '%s..%s' % (
-       push_branch, stable_branch)], cwd=cwd).output
+  description = git.RunGit(cwd,
+      ['log', '--format=format:%s%n%n%b', '%s..%s' % (
+       push_branch, stable_branch)]).output
   description = 'Marking set of ebuilds as stable\n\n%s' % description
   cros_build_lib.Info('For %s, using description %s', cwd, description)
   git.CreatePushBranch(constants.MERGE_BRANCH, cwd)
@@ -185,9 +185,7 @@ class GitBranch(object):
     """Returns True if the branch exists."""
     if not branch:
       branch = self.branch_name
-    branches = cros_build_lib.RunCommandCaptureOutput(['git', 'branch'],
-                                                      print_cmd=False,
-                                                      cwd=self.cwd).output
+    branches = git.RunGit(self.cwd, ['branch']).output
     return branch in branches.split()
 
 
@@ -294,8 +292,7 @@ def main(_argv):
         # In the case of uprevving overlays that have patches applied to them,
         # include the patched changes in the stabilizing branch.
         if existing_branch:
-          cros_build_lib.RunCommand(['git', 'rebase', existing_branch],
-                                    print_cmd=False, cwd=overlay)
+          git.RunGit(overlay, ['rebase', existing_branch])
 
         messages = []
         for ebuild in ebuilds:

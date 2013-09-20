@@ -20,6 +20,7 @@ from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gclient
+from chromite.lib import git
 from chromite.scripts import cros_mark_chrome_as_stable
 
 # pylint: disable=W0212,R0904
@@ -260,6 +261,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
       commit_string_indicator: a string that the commit message must contain
     """
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    self.mox.StubOutWithMock(git, 'RunGit')
     self.mox.StubOutWithMock(portage_utilities.EBuild, 'CommitChange')
     stable_candidate = cros_mark_chrome_as_stable.ChromeEBuild(old_ebuild_path)
     unstable_ebuild = cros_mark_chrome_as_stable.ChromeEBuild(self.unstable)
@@ -267,8 +269,8 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
     commit = None
     overlay_dir = self.mock_chrome_dir
 
-    cros_build_lib.RunCommand(['git', 'add', new_ebuild_path], cwd=overlay_dir)
-    cros_build_lib.RunCommand(['git', 'rm', old_ebuild_path], cwd=overlay_dir)
+    git.RunGit(overlay_dir, ['add', new_ebuild_path])
+    git.RunGit(overlay_dir, ['rm', old_ebuild_path])
     portage_utilities.EBuild.CommitChange(
         mox.StrContains(commit_string_indicator), overlay_dir)
 

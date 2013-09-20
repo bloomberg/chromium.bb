@@ -50,9 +50,8 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
   """
   reinitialize = True
   if os.path.exists(manifest_dir):
-    result = cros_build_lib.RunCommand(['git', 'config', 'remote.origin.url'],
-                                       cwd=manifest_dir, print_cmd=False,
-                                       redirect_stdout=True, error_code_ok=True)
+    result = git.RunGit(manifest_dir, ['config', 'remote.origin.url'],
+                        error_code_ok=True)
     if (result.returncode == 0 and
         result.output.rstrip() == manifest_repo):
       logging.info('Updating manifest-versions checkout.')

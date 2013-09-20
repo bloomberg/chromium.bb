@@ -28,13 +28,25 @@ from chromite.lib import osutils
 sys.path.pop(0)
 del _path
 
-# Retry a push in GitPush if git returns a error response with any of that
+# Retry a git operation if git returns a error response with any of these
 # messages. It's all observed 'bad' GoB responses so far.
 GIT_TRANSIENT_ERRORS = (
-    r'! \[remote rejected\].* -> .* \(error in hook\)',
-    r'! \[remote rejected\].* -> .* \(failed to lock\)',
-    r'remote error: Internal Server Error',
+    r'! \[remote rejected\].* -> .* \(error in hook\)', # crbug.com/285832
+    r'! \[remote rejected\].* -> .* \(failed to lock\)', # crbug.com/289932
+    r'remote error: Internal Server Error', # crbug.com/285832
+    r'fatal: Couldn\'t find remote ref ', # crbug.com/294449
+    r'git fetch_pack: expected ACK/NAK, got', # crbug.com/220543
+    r'protocol error: bad pack header', # crbug.com/189455
+    r'The remote end hung up unexpectedly', # crbug.com/202807
+    r'error: gnutls_handshake\(\) failed: A TLS packet with unexpected length '
+    r'was received. while accessing', # crbug.com/298189
+    r'RPC failed; result=\d+, HTTP code = \d+', # crbug.com/187444
 )
+
+GIT_TRANSIENT_ERRORS_RE = re.compile('|'.join(GIT_TRANSIENT_ERRORS))
+
+DEFAULT_RETRY_INTERVAL = 3
+DEFAULT_RETRIES = 5
 
 
 class RemoteRef(object):
@@ -641,7 +653,7 @@ def _GitRepoIsContentMerging(git_repo, remote):
   return False
 
 
-def RunGit(git_repo, cmd, **kwds):
+def RunGit(git_repo, cmd, retry=True, **kwds):
   """RunCommandCaptureOutput wrapper for git commands.
 
   This suppresses print_cmd, and suppresses output by default.  Git
@@ -654,13 +666,28 @@ def RunGit(git_repo, cmd, **kwds):
     cmd: A sequence of the git subcommand to run.  The 'git' prefix is
       added automatically.  If you wished to run 'git remote update',
       this would be ['remote', 'update'] for example.
-    kwds: Any RunCommand options/overrides to use.
+    retry: If set, retry on transient errors. Defaults to True.
+    kwds: Any RunCommand or GenericRetry options/overrides to use.
   Returns:
     A CommandResult object."""
+
+  def _ShouldRetry(exc):
+    """Returns True if push operation failed with a transient error."""
+    if (isinstance(exc, cros_build_lib.RunCommandError)
+        and exc.result and exc.result.error and
+        GIT_TRANSIENT_ERRORS_RE.search(exc.result.error)):
+      cros_build_lib.Warning('git reported transient error (cmd=%s); retrying',
+                             ' '.join(map(repr, cmd)), exc_info=True)
+      return True
+    return False
+
+  max_retry = kwds.pop('max_retry', DEFAULT_RETRIES if retry else 0)
   kwds.setdefault('print_cmd', False)
-  cros_build_lib.Debug("RunGit(%r, %r, **%r)", git_repo, cmd, kwds)
-  return cros_build_lib.RunCommandCaptureOutput(['git'] + cmd, cwd=git_repo,
-                                                **kwds)
+  kwds.setdefault('sleep', DEFAULT_RETRY_INTERVAL)
+  kwds.setdefault('cwd', git_repo)
+  return cros_build_lib.GenericRetry(
+      _ShouldRetry, max_retry, cros_build_lib.RunCommandCaptureOutput,
+      ['git'] + cmd, **kwds)
 
 
 def GetProjectUserEmail(git_repo):
@@ -920,17 +947,7 @@ def GitPush(git_repo, refspec, push_to, dryrun=False, force=False, retry=True):
   if force:
     cmd.append('--force')
 
-  def _ShouldRetry(exc):
-    """Returns True if push operation failed with a transient error."""
-    if not isinstance(exc, cros_build_lib.RunCommandError):
-      return False
-    return any(re.search(msg, exc.result.error) for msg in GIT_TRANSIENT_ERRORS)
-
-  if retry:
-    cros_build_lib.GenericRetry(_ShouldRetry, 10, RunGit, git_repo,
-                                cmd, sleep=3)
-  else:
-    RunGit(git_repo, cmd)
+  RunGit(git_repo, cmd, retry=retry)
 
 
 # TODO(build): Switch callers of this function to use CreateBranch instead.
@@ -953,8 +970,7 @@ def CreatePushBranch(branch, git_repo, sync=True, remote_push_branch=None):
 
   if sync:
     cmd = ['remote', 'update', remote]
-    cros_build_lib.RetryCommand(RunGit, 3, git_repo, cmd, sleep=10,
-                                retry_on=(1,))
+    RunGit(git_repo, cmd)
 
   RunGit(git_repo, ['checkout', '-B', branch, '-t', push_branch])
 
@@ -976,8 +992,7 @@ def SyncPushBranch(git_repo, remote, rebase_target):
         % (remote, rebase_target))
 
   cmd = ['remote', 'update', remote]
-  cros_build_lib.RetryCommand(RunGit, 3, git_repo, cmd, sleep=10,
-                              retry_on=(1,))
+  RunGit(git_repo, cmd)
 
   try:
     RunGit(git_repo, ['rebase', rebase_target])
@@ -1050,9 +1065,7 @@ def CleanAndCheckoutUpstream(git_repo, refresh_upstream=True):
   RunGit(git_repo, ['am', '--abort'], error_code_ok=True)
   RunGit(git_repo, ['rebase', '--abort'], error_code_ok=True)
   if refresh_upstream:
-    cmd = ['remote', 'update', remote]
-    cros_build_lib.RetryCommand(RunGit, 3, git_repo, cmd, sleep=10,
-                                retry_on=(1,))
+    RunGit(git_repo, ['remote', 'update', remote])
   RunGit(git_repo, ['clean', '-dfx'])
   RunGit(git_repo, ['reset', '--hard', 'HEAD'])
   RunGit(git_repo, ['checkout', local_upstream])

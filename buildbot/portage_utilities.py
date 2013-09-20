@@ -169,6 +169,11 @@ class EBuild(object):
     return cros_build_lib.RunCommandCaptureOutput(
         command, print_cmd=cls.VERBOSE, **kwargs).output
 
+  @classmethod
+  def _RunGit(cls, cwd, command, **kwargs):
+    result = git.RunGit(cwd, command, print_cmd=cls.VERBOSE, **kwargs)
+    return None if result is None else result.output
+
   def IsSticky(self):
     """Returns True if the ebuild is sticky."""
     return self.is_stable and self.current_revision == 0
@@ -244,9 +249,8 @@ class EBuild(object):
       RunCommandError: Error occurred while committing.
     """
     logging.info('Committing changes with commit message: %s', message)
-    git_commit_cmd = ['git', 'commit', '-a', '-m', message]
-    cros_build_lib.RunCommand(git_commit_cmd, cwd=overlay,
-                              print_cmd=cls.VERBOSE)
+    git_commit_cmd = ['commit', '-a', '-m', message]
+    cls._RunGit(overlay, git_commit_cmd)
 
   def __init__(self, path):
     """Sets up data about an ebuild from its path.
@@ -365,7 +369,7 @@ class EBuild(object):
 
   def GetCommitId(self, srcdir):
     """Get the commit id for this ebuild."""
-    output = self._RunCommand(['git', 'rev-parse', 'HEAD'], cwd=srcdir)
+    output = self._RunGit(srcdir, ['rev-parse', 'HEAD'])
     if not output:
       cros_build_lib.Die('Cannot determine HEAD commit for %s' % srcdir)
     return output.rstrip()
@@ -376,7 +380,7 @@ class EBuild(object):
     Unlike the commit hash, the SHA1 of the source tree is unaffected by the
     history of the repository, or by commit messages.
     """
-    output = self._RunCommand(['git', 'log', '-1', '--format=%T'], cwd=srcdir)
+    output = self._RunGit(srcdir, ['log', '-1', '--format=%T'])
     if not output:
       cros_build_lib.Die('Cannot determine HEAD tree hash for %s' % srcdir)
     return output.rstrip()
@@ -483,13 +487,11 @@ class EBuild(object):
       return None
     else:
       self._Print('Adding new stable ebuild to git')
-      self._RunCommand(['git', 'add', new_stable_ebuild_path],
-                       cwd=self._overlay)
+      self._RunGit(self._overlay, ['add', new_stable_ebuild_path])
 
       if self.is_stable:
         self._Print('Removing old ebuild from git')
-        self._RunCommand(['git', 'rm', old_ebuild_path],
-                         cwd=self._overlay)
+        self._RunGit(self._overlay, ['rm', old_ebuild_path])
 
       return '%s-%s' % (self.package, new_version)
 
@@ -497,12 +499,9 @@ class EBuild(object):
   def GitRepoHasChanges(cls, directory):
     """Returns True if there are changes in the given directory."""
     # Refresh the index first. This squashes just metadata changes.
-    cros_build_lib.RunCommand(['git', 'update-index', '-q', '--refresh'],
-                              cwd=directory, print_cmd=cls.VERBOSE)
-    ret_obj = cros_build_lib.RunCommand(
-        ['git', 'diff-index', '--name-only', 'HEAD'], cwd=directory,
-        print_cmd=cls.VERBOSE, redirect_stdout=True)
-    return ret_obj.output not in [None, '']
+    cls._RunGit(directory, ['update-index', '-q', '--refresh'])
+    output = cls._RunGit(directory, ['diff-index', '--name-only', 'HEAD'])
+    return output not in [None, '']
 
   @staticmethod
   def _GetSHA1ForProject(manifest, project):
@@ -693,15 +692,13 @@ def RegenCache(overlay):
   cros_build_lib.RunCommand(['egencache', '--update', '--repo', repo_name,
                              '--jobs', str(multiprocessing.cpu_count())])
   # If there was nothing new generated, then let's just bail.
-  result = cros_build_lib.RunCommand(['git', 'status', '-s', 'metadata/'],
-                                     cwd=overlay, redirect_stdout=True)
+  result = git.RunGit(overlay, ['status', '-s', 'metadata/'])
   if not result.output:
     return
   # Explicitly add any new files to the index.
-  cros_build_lib.RunCommand(['git', 'add', 'metadata/'], cwd=overlay)
+  git.RunGit(overlay, ['add', 'metadata/'])
   # Explicitly tell git to also include rm-ed files.
-  cros_build_lib.RunCommand(['git', 'commit', '-m', 'regen cache',
-                             'metadata/'], cwd=overlay)
+  git.RunGit(overlay, ['commit', '-m', 'regen cache', 'metadata/'])
 
 
 def ParseBashArray(value):

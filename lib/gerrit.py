@@ -11,6 +11,7 @@ import operator
 
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import patch as cros_patch
 
@@ -195,9 +196,8 @@ class GerritHelper(object):
     """
     ssh_url_project = '%s/%s' % (self.ssh_url, project)
     try:
-      result = cros_build_lib.RunCommandWithRetries(3,
-          ['git', 'ls-remote', ssh_url_project, 'refs/heads/%s' % (branch,)],
-          redirect_stdout=True, print_cmd=self.print_cmd)
+      cmd = ['ls-remote', ssh_url_project, 'refs/heads/%s' % (branch,)]
+      result = git.RunGit('.', cmd, print_cmd=self.print_cmd)
       if result:
         return result.output.split()[0]
     except cros_build_lib.RunCommandError as e:
@@ -512,10 +512,9 @@ class GerritOnBorgHelper(GerritHelper):
 
   def GetLatestSHA1ForBranch(self, project, branch):
     url = 'https://%s/a/%s' % (self.host, project)
-    cmd = ['git', 'ls-remote', url, 'refs/heads/%s' % branch]
+    cmd = ['ls-remote', url, 'refs/heads/%s' % branch]
     try:
-      result = cros_build_lib.RunCommandWithRetries(
-          3, cmd, redirect_stdout=True, print_cmd=self.print_cmd)
+      result = git.RunGit('.', cmd, print_cmd=self.print_cmd)
       if result:
         return result.output.split()[0]
     except cros_build_lib.RunCommandError:

@@ -39,8 +39,8 @@ class RemoteTryTests(cros_test_lib.MoxTempDirTestCase):
     self.checkout_dir = os.path.join(self.tempdir, 'test_checkout')
     self.int_mirror, self.ext_mirror = None, None
 
-  def _RunCommandSingleOutput(self, cmd, cwd):
-    result = cros_build_lib.RunCommandCaptureOutput(cmd, cwd=cwd)
+  def _RunGitSingleOutput(self, cwd, cmd):
+    result = git.RunGit(cwd, cmd)
     out_lines = result.output.split()
     self.assertEqual(len(out_lines), 1)
     return out_lines[0]
@@ -48,12 +48,12 @@ class RemoteTryTests(cros_test_lib.MoxTempDirTestCase):
   def _GetNewestFile(self, dirname, basehash):
     newhash = git.GetGitRepoRevision(dirname)
     self.assertNotEqual(basehash, newhash)
-    cmd = ['git', 'log', '--format=%H', '%s..' % basehash]
+    cmd = ['log', '--format=%H', '%s..' % basehash]
     # Make sure we have a single commit.
-    self._RunCommandSingleOutput(cmd, cwd=dirname)
-    cmd = ['git', 'diff', '--name-only', 'HEAD^']
+    self._RunGitSingleOutput(dirname, cmd)
+    cmd = ['diff', '--name-only', 'HEAD^']
     # Make sure only one file per commit.
-    return self._RunCommandSingleOutput(cmd, cwd=dirname)
+    return self._RunGitSingleOutput(dirname, cmd)
 
   def _SubmitJob(self, checkout_dir, job, version=None):
     """Returns the path to the tryjob description."""

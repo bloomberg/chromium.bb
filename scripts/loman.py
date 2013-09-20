@@ -78,9 +78,8 @@ def _AddProjectsToManifestGroups(options, *projects):
 
   git_config = options.git_config
 
-  enabled_groups = cros_build_lib.RunCommandCaptureOutput(
-      ['git', 'config', '-f', git_config, '--get', 'manifest.groups'],
-      error_code_ok=True, print_cmd=False).output.split(',')
+  cmd = ['config', '-f', git_config, '--get', 'manifest.groups']
+  enabled_groups = git.RunGit('.', cmd, error_code_ok=True).output.split(',')
 
   # Note that ordering actually matters, thus why the following code
   # is written this way.
@@ -100,9 +99,9 @@ def _AddProjectsToManifestGroups(options, *projects):
       finalized_groups.append(group)
       processed_groups.add(group)
 
-  cros_build_lib.RunCommandCaptureOutput(
-      ['git', 'config', '-f', git_config, 'manifest.groups',
-       ','.join(finalized_groups)], print_cmd=False)
+  cmd = ['config', '-f', git_config, 'manifest.groups',
+         ','.join(finalized_groups)]
+  git.RunGit('.', cmd)
 
 
 def _UpgradeMinilayout(options):

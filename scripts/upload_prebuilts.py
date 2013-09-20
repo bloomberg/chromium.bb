@@ -151,7 +151,7 @@ def RevGitFile(filename, data, retries=5, dryrun=False):
     git.RunGit(cwd, ['commit', '-m', description])
     git.PushWithRetry(prebuilt_branch, cwd, dryrun=dryrun, retries=retries)
   finally:
-    cros_build_lib.RunCommand(['git', 'checkout', commit], cwd=cwd)
+    git.RunGit(cwd, ['checkout', commit])
 
 
 def GetVersion():
@@ -286,9 +286,9 @@ def UpdateBinhostConfFile(path, key, value):
     git.CreatePushBranch(constants.STABLE_EBUILD_BRANCH, cwd, sync=False)
   osutils.WriteFile(path, '', mode='a')
   UpdateLocalFile(path, value, key)
-  cros_build_lib.RunCommand(['git', 'add', filename], cwd=cwd)
+  git.RunGit(cwd, ['add', filename])
   description = '%s: updating %s' % (os.path.basename(filename), key)
-  cros_build_lib.RunCommand(['git', 'commit', '-m', description], cwd=cwd)
+  git.RunGit(cwd, ['commit', '-m', description])
 
 
 def _GrabAllRemotePackageIndexes(binhost_urls):

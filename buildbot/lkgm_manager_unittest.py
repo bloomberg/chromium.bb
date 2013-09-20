@@ -435,11 +435,8 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     git.Manifest(
         self.tmpmandir + '/LKGM/lkgm.xml').AndReturn(fake_project_handler)
     os.path.exists(mox.StrContains('fake/path')).AndReturn(True)
-    cros_build_lib.RunCommand(['git', 'log', '--pretty=full',
-                               '%s..HEAD' % fake_revision],
-                              print_cmd=False, redirect_stdout=True,
-                              cwd=self.tmpdir + '/fake/path').AndReturn(
-                                  fake_result)
+    cmd = ['log', '--pretty=full', '%s..HEAD' % fake_revision]
+    git.RunGit(self.tmpdir + '/fake/path', cmd).AndReturn(fake_result)
     cros_build_lib.PrintBuildbotLink('CHUMP | repo | fake | 1234',
                                      'http://gerrit.chromium.org/gerrit/1234')
     cros_build_lib.PrintBuildbotLink('repo | fake | 1235',

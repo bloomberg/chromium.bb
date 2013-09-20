@@ -1551,10 +1551,8 @@ class BranchUtilStage(bs.BuilderStage):
 
   def ProcessProject(self, project):
     """Performs per-project push operations."""
-    ls_remote = cros_build_lib.RunCommandCaptureOutput(
-        ['git', 'ls-remote', project['remote_alias'],
-        self.dest_ref],
-        cwd=project['local_path']).output.strip()
+    cmd = ['ls-remote', project['remote_alias'], self.dest_ref]
+    ls_remote = git.RunGit(project['local_path'], cmd).output.strip()
 
     if self.rename_to and ls_remote:
       git.RunGit(project['local_path'], ['remote', 'update'])

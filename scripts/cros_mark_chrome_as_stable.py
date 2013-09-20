@@ -382,10 +382,9 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
                                                 new_ebuild,
                                                 chrome_rev))
 
-  cros_build_lib.RunCommand(['git', 'add', new_ebuild_path], cwd=overlay_dir)
+  git.RunGit(overlay_dir, ['add', new_ebuild_path])
   if stable_candidate and not stable_candidate.IsSticky():
-    cros_build_lib.RunCommand(['git', 'rm', stable_candidate.ebuild_path],
-                              cwd=overlay_dir)
+    git.RunGit(overlay_dir, ['rm', stable_candidate.ebuild_path])
 
   portage_utilities.EBuild.CommitChange(
       _GIT_COMMIT_MESSAGE % {'chrome_rev': chrome_rev,
@@ -476,8 +475,7 @@ def main(_argv):
   # In the case of uprevving overlays that have patches applied to them,
   # include the patched changes in the stabilizing branch.
   if existing_branch:
-    cros_build_lib.RunCommand(['git', 'rebase', existing_branch],
-                              cwd=overlay_dir)
+    git.RunGit(overlay_dir, ['rebase', existing_branch])
 
   chrome_version_atom = MarkChromeEBuildAsStable(
       stable_candidate, unstable_ebuild, chrome_rev, version_to_uprev,

@@ -41,7 +41,7 @@ def IsInternalRepoCheckout(root):
 
 
 def CloneGitRepo(working_dir, repo_url, reference=None, bare=False,
-                 mirror=False, retries=constants.SYNC_RETRIES, depth=None):
+                 mirror=False, depth=None):
   """Clone given git repo
   Args:
     working_dir: location where it should be cloned to
@@ -51,15 +51,12 @@ def CloneGitRepo(working_dir, repo_url, reference=None, bare=False,
       repo is to be usable.
     bare: Clone a bare checkout.
     mirror: Clone a mirror checkout.
-    retries: If error code 128 is encountered, how many times to retry.  When
-      128 is returned from git, it's essentially a server error- specifically
-      common to manifest-versions and gerrit.
     depth: If given, do a shallow clone limiting the objects pulled to just
       that # of revs of history.  This option is mutually exclusive to
       reference.
   """
   osutils.SafeMakedirs(working_dir)
-  cmd = ['git', 'clone', repo_url, working_dir]
+  cmd = ['clone', repo_url, working_dir]
   if reference:
     if depth:
       raise ValueError("reference and depth are mutually exclusive "
@@ -71,9 +68,7 @@ def CloneGitRepo(working_dir, repo_url, reference=None, bare=False,
     cmd += ['--mirror']
   if depth:
     cmd += ['--depth', str(int(depth))]
-  cros_build_lib.RunCommandWithRetries(
-      retries, cmd, cwd=working_dir, redirect_stdout=True, redirect_stderr=True,
-      retry_on=[128])
+  git.RunGit(working_dir, cmd)
 
 
 def UpdateGitRepo(working_dir, repo_url, **kwargs):
@@ -285,9 +280,9 @@ class RepoRepository(object):
     # that it was invoked w/out the reference arg.  Note this must be
     # an absolute path to the source repo- enter_chroot uses that to know
     # what to bind mount into the chroot.
-    cros_build_lib.RunCommand(
-        ['git', 'config', '--file', self._ManifestConfig, 'repo.reference',
-         self._referenced_repo])
+    cmd = ['config', '--file', self._ManifestConfig, 'repo.reference',
+           self._referenced_repo]
+    git.RunGit('.', cmd)
 
   def Detach(self):
     """Detach projects back to manifest versions.  Effectively a 'reset'."""

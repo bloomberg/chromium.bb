@@ -431,8 +431,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         git.CreatePushBranch(manifest_version.PUSH_BRANCH,
                                         self.manifest_dir, sync=False)
         manifest_version.CreateSymlink(path_to_candidate, self.lkgm_path)
-        cros_build_lib.RunCommand(['git', 'add', self.LKGM_PATH],
-                                  cwd=self.manifest_dir)
+        git.RunGit(self.manifest_dir, ['add', self.LKGM_PATH])
         self.PushSpecChanges(
             'Automatic: %s promoting %s to LKGM' % (self.build_name,
                                                     self.current_version))
@@ -501,11 +500,9 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
       continue
 
     revision = handler.projects[project]['revision']
+    cmd = ['log', '--pretty=full', '%s..HEAD' % revision]
     try:
-      result = cros_build_lib.RunCommand(['git', 'log', '--pretty=full',
-                                          '%s..HEAD' % revision],
-                                         print_cmd=False, redirect_stdout=True,
-                                         cwd=src_path)
+      result = git.RunGit(src_path, cmd)
     except cros_build_lib.RunCommandError as ex:
       # Git returns 128 when the revision does not exist.
       if ex.result.returncode != 128:
