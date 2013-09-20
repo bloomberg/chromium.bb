@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.16",
+  "version": "2.17",
   "entries": [
     {
       "id": 1,
@@ -573,6 +573,25 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "disable_d3d11"
+      ]
+    },
+    {
+      "id": 42,
+      "cr_bugs": [290876],
+      "description": "Framebuffer discarding causes flickering on older IMG drivers.",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "Imagination"
+      },
+      "gl_renderer": {
+        "op": "=",
+        "value": "PowerVR SGX 540"
+      },
+      "features": [
+        "disable_ext_discard_framebuffer"
       ]
     }
   ]
