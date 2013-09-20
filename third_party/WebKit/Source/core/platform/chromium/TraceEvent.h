@@ -166,12 +166,23 @@
 #include "core/platform/EventTracer.h"
 
 #include "wtf/DynamicAnnotations.h"
+#include "wtf/UnusedParam.h"
 #include "wtf/text/CString.h"
 
 // By default, const char* argument values are assumed to have long-lived scope
 // and will not be copied. Use this macro to force a const char* to be copied.
 #define TRACE_STR_COPY(str) \
     WebCore::TraceEvent::TraceStringWithCopy(str)
+
+// By default, uint64 ID argument values are not mangled with the Process ID in
+// TRACE_EVENT_ASYNC macros. Use this macro to force Process ID mangling.
+#define TRACE_ID_MANGLE(id) \
+    TraceID::ForceMangle(id)
+
+// By default, pointers are mangled with the Process ID in TRACE_EVENT_ASYNC
+// macros. Use this macro to prevent Process ID mangling.
+#define TRACE_ID_DONT_MANGLE(id) \
+    TraceID::DontMangle(id)
 
 // Records a pair of begin and end events called "name" for the current
 // scope, with 0, 1 or 2 associated arguments. If the category is not
@@ -467,6 +478,16 @@
 #define TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(categoryAndName) \
     TRACE_EVENT_SET_NONCONST_SAMPLING_STATE_FOR_BUCKET(0, categoryAndName)
 
+// Macros to track the life time and value of arbitrary client objects.
+// See also TraceTrackableObject.
+#define TRACE_EVENT_OBJECT_CREATED_WITH_ID(categoryGroup, name, id) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_CREATE_OBJECT, \
+        categoryGroup, name, TRACE_ID_DONT_MANGLE(id), TRACE_EVENT_FLAG_NONE)
+
+#define TRACE_EVENT_OBJECT_DELETED_WITH_ID(categoryGroup, name, id) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_DELETE_OBJECT, \
+        categoryGroup, name, TRACE_ID_DONT_MANGLE(id), TRACE_EVENT_FLAG_NONE)
+
 ////////////////////////////////////////////////////////////////////////////////
 // Implementation specific tracing API definitions.
 
@@ -580,6 +601,8 @@
 #define TRACE_EVENT_PHASE_METADATA ('M')
 #define TRACE_EVENT_PHASE_COUNTER  ('C')
 #define TRACE_EVENT_PHASE_SAMPLE  ('P')
+#define TRACE_EVENT_PHASE_CREATE_OBJECT ('N')
+#define TRACE_EVENT_PHASE_DELETE_OBJECT ('D')
 
 // Flags for changing the behavior of TRACE_EVENT_API_ADD_TRACE_EVENT.
 #define TRACE_EVENT_FLAG_NONE        (static_cast<unsigned char>(0))
@@ -611,26 +634,41 @@ const unsigned long long noEventId = 0;
 // same pointer is used on different processes.
 class TraceID {
 public:
-    explicit TraceID(const void* id, unsigned char* flags) :
+    template<bool dummyMangle> class MangleBehavior {
+    public:
+        template<typename T> explicit MangleBehavior(T id) : m_data(reinterpret_cast<unsigned long long>(id)) { }
+        unsigned long long data() const { return m_data; }
+    private:
+        unsigned long long m_data;
+    };
+    typedef MangleBehavior<false> DontMangle;
+    typedef MangleBehavior<true> ForceMangle;
+
+    TraceID(const void* id, unsigned char* flags) :
         m_data(static_cast<unsigned long long>(reinterpret_cast<unsigned long>(id)))
     {
         *flags |= TRACE_EVENT_FLAG_MANGLE_ID;
     }
-    explicit TraceID(unsigned long long id, unsigned char* flags) : m_data(id) { (void)flags; }
-    explicit TraceID(unsigned long id, unsigned char* flags) : m_data(id) { (void)flags; }
-    explicit TraceID(unsigned int id, unsigned char* flags) : m_data(id) { (void)flags; }
-    explicit TraceID(unsigned short id, unsigned char* flags) : m_data(id) { (void)flags; }
-    explicit TraceID(unsigned char id, unsigned char* flags) : m_data(id) { (void)flags; }
-    explicit TraceID(long long id, unsigned char* flags) :
-        m_data(static_cast<unsigned long long>(id)) { (void)flags; }
-    explicit TraceID(long id, unsigned char* flags) :
-        m_data(static_cast<unsigned long long>(id)) { (void)flags; }
-    explicit TraceID(int id, unsigned char* flags) :
-        m_data(static_cast<unsigned long long>(id)) { (void)flags; }
-    explicit TraceID(short id, unsigned char* flags) :
-        m_data(static_cast<unsigned long long>(id)) { (void)flags; }
-    explicit TraceID(signed char id, unsigned char* flags) :
-        m_data(static_cast<unsigned long long>(id)) { (void)flags; }
+    TraceID(ForceMangle id, unsigned char* flags) : m_data(id.data())
+    {
+        *flags |= TRACE_EVENT_FLAG_MANGLE_ID;
+    }
+    TraceID(DontMangle id, unsigned char* flags) : m_data(id.data()) { UNUSED_PARAM(flags); }
+    TraceID(unsigned long long id, unsigned char* flags) : m_data(id) { UNUSED_PARAM(flags); }
+    TraceID(unsigned long id, unsigned char* flags) : m_data(id) { UNUSED_PARAM(flags); }
+    TraceID(unsigned id, unsigned char* flags) : m_data(id) { UNUSED_PARAM(flags); }
+    TraceID(unsigned short id, unsigned char* flags) : m_data(id) { UNUSED_PARAM(flags); }
+    TraceID(unsigned char id, unsigned char* flags) : m_data(id) { UNUSED_PARAM(flags); }
+    TraceID(long long id, unsigned char* flags) :
+        m_data(static_cast<unsigned long long>(id)) { UNUSED_PARAM(flags); }
+    TraceID(long id, unsigned char* flags) :
+        m_data(static_cast<unsigned long long>(id)) { UNUSED_PARAM(flags); }
+    TraceID(int id, unsigned char* flags) :
+        m_data(static_cast<unsigned long long>(id)) { UNUSED_PARAM(flags); }
+    TraceID(short id, unsigned char* flags) :
+        m_data(static_cast<unsigned long long>(id)) { UNUSED_PARAM(flags); }
+    TraceID(signed char id, unsigned char* flags) :
+        m_data(static_cast<unsigned long long>(id)) { UNUSED_PARAM(flags); }
 
     unsigned long long data() const { return m_data; }
 
@@ -844,6 +882,26 @@ public:
 
 private:
     const char* m_previousState;
+};
+
+template<typename IDType> class TraceScopedTrackableObject {
+    WTF_MAKE_NONCOPYABLE(TraceScopedTrackableObject);
+public:
+    TraceScopedTrackableObject(const char* categoryGroup, const char* name, IDType id)
+        : m_categoryGroup(categoryGroup), m_name(name), m_id(id)
+    {
+        TRACE_EVENT_OBJECT_CREATED_WITH_ID(m_categoryGroup, m_name, m_id);
+    }
+
+    ~TraceScopedTrackableObject()
+    {
+        TRACE_EVENT_OBJECT_DELETED_WITH_ID(m_categoryGroup, m_name, m_id);
+    }
+
+private:
+    const char* m_categoryGroup;
+    const char* m_name;
+    IDType m_id;
 };
 
 } // namespace TraceEvent
