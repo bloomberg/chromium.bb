@@ -7,7 +7,7 @@
 <polymer-element name="kb-keyboard" on-key-over="keyOver" on-key-up="keyUp"
     on-key-down="keyDown" on-key-longpress="keyLongpress" on-pointerup="up"
     on-pointerdown="down" on-enable-sel="enableSel"
-    on-enable-dbl="enableDbl" attributes="keyset layout rows capsLocked">
+    on-enable-dbl="enableDbl" attributes="keyset layout rows">
   <template>
     <style>
       @host {
@@ -193,19 +193,7 @@
       dblDetail_: null,
       dblTimer_: null,
       swipeHandler: null,
-      capsLock: null,
-
-      /**
-      * Handles the state of the shift key.
-      */
-      keysetChanged: function() {
-        // If capslock is enabled and the current keyset should be redirected,
-        // changes to the keyset specified by capsLockTo.
-        if (this.classList.contains('caps-locked') &&
-            (this.keyset == this.capsLock.unlockedCase)) {
-             this.keyset = this.capsLock.lockedCase;
-        }
-      },
+      shift: null,
 
       ready: function() {
         this.voiceInput_ = new VoiceInput(this);
@@ -299,6 +287,10 @@
             }
             break;
           default:
+            // Non-control key pressed, notify control keys.
+            // Control keys are shift, control and alt.
+            if(this.shift)
+              this.shift.onNonControlKeyDown();
             break;
         }
 
@@ -409,7 +401,7 @@
         if (swipeInProgress)
           return;
         this.lastPressedKey.classList.remove('active');
-        if (this.lastPressedKey != event.target)
+        if (this.lastPressedKey.char != event.target.char)
           return;
         if (repeatKey.key == event.target) {
           repeatKey.cancel();
@@ -430,8 +422,14 @@
         var char = detail.char;
         if (enterUpperOnSpace) {
           enterUpperOnSpace = false;
-          if (char == ' ')
-            this.keyset = 'upper';
+          if (char == ' ') {
+            if(this.shift) {
+              this.keyset = this.shift.onSpaceAfterPunctuation();
+            } else {
+              console.error('Capitalization on space after punctuation \
+                            enabled, but cannot find target keyset.');
+            }
+          }
         }
         switch(char) {
           case 'Invalid':
@@ -514,22 +512,9 @@
           }
         }
         this.classList.remove('caps-locked');
-        this.cacheCapsLock();
-      },
-
-      /**
-       * Caches the keyset transitions required when caps lock is enabled.
-       */
-      cacheCapsLock: function() {
-        var shift = this.querySelector('kb-shift-key');
-        if (shift) {
-          shift.reset();
-          // TODO(rsadam@): Change this such that the keyboard knows
-          // only about the shift state. Move this logic into the shift key.
-          this.capsLock = { 'lockedCase' : shift.lockedCase,
-                            'unlockedCase' : shift.unlockedCase
-                          };
-        }
+        this.shift = this.querySelector('kb-shift-key');
+        if(this.shift)
+          this.shift.reset();
       },
 
       /**
