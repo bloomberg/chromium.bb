@@ -5,15 +5,6 @@
 #ifndef CHROME_BROWSER_BROWSER_ABOUT_HANDLER_H_
 #define CHROME_BROWSER_BROWSER_ABOUT_HANDLER_H_
 
-#include <map>
-#include <string>
-#include <vector>
-
-#include "base/process/process.h"
-#include "base/strings/stringprintf.h"
-#include "build/build_config.h"  // USE_TCMALLOC
-
-template <typename T> struct DefaultSingletonTraits;
 class GURL;
 
 namespace content {
@@ -35,46 +26,5 @@ bool WillHandleBrowserAboutURL(GURL* url,
 // dialogs. This function handles those cases, and returns true if so. In this
 // case, normal tab navigation should be skipped.
 bool HandleNonNavigationAboutURL(const GURL& url);
-
-#if defined(USE_TCMALLOC)
-// A map of header strings (e.g. "Browser", "Renderer PID 123")
-// to the tcmalloc output collected for each process.
-typedef std::map<std::string, std::string> AboutTcmallocOutputsType;
-
-class AboutTcmallocOutputs {
- public:
-  // Returns the singleton instance.
-  static AboutTcmallocOutputs* GetInstance();
-
-  AboutTcmallocOutputsType* outputs() { return &outputs_; }
-
-  // Records the output for a specified header string.
-  void SetOutput(const std::string& header, const std::string& output) {
-    outputs_[header] = output;
-  }
-
-  // Callback for output returned from renderer processes.  Adds
-  // the output for a canonical renderer header string that
-  // incorporates the pid.
-  void RendererCallback(base::ProcessId pid, const std::string& output) {
-    SetOutput(
-        base::StringPrintf("Renderer PID %d", static_cast<int>(pid)), output);
-  }
-
- private:
-  AboutTcmallocOutputs();
-  ~AboutTcmallocOutputs();
-
-  AboutTcmallocOutputsType outputs_;
-
-  friend struct DefaultSingletonTraits<AboutTcmallocOutputs>;
-
-  DISALLOW_COPY_AND_ASSIGN(AboutTcmallocOutputs);
-};
-
-// Glue between the callback task and the method in the singleton.
-void AboutTcmallocRendererCallback(base::ProcessId pid,
-                                   const std::string& output);
-#endif  // defined(USE_TCMALLOC)
 
 #endif  // CHROME_BROWSER_BROWSER_ABOUT_HANDLER_H_
