@@ -41,16 +41,16 @@ MESSAGE_CENTER_EXPORT
   base::scoped_nsobject<NSImageView> icon_;
 
   // The title of the message.
-  base::scoped_nsobject<NSTextField> title_;
+  base::scoped_nsobject<NSTextView> title_;
 
   // Body text of the message. Hidden for list notifications.
-  base::scoped_nsobject<NSTextField> message_;
+  base::scoped_nsobject<NSTextView> message_;
 
   // Context-giving text of the message.  Alternate font used to distinguish it.
-  base::scoped_nsobject<NSTextField> contextMessage_;
+  base::scoped_nsobject<NSTextView> contextMessage_;
 
-  // Container for optional list item views.
-  base::scoped_nsobject<NSView> listItemView_;
+  // Container for optional list view that contains multiple items.
+  base::scoped_nsobject<NSView> listView_;
 
   // Container for optional progress bar view.
   base::scoped_nsobject<NSProgressIndicator> progressBarView_;

@@ -76,20 +76,20 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   return icon_.get();
 }
 
-- (NSTextField*)titleView {
+- (NSTextView*)titleView {
   return title_.get();
 }
 
-- (NSTextField*)messageView {
+- (NSTextView*)messageView {
   return message_.get();
 }
 
-- (NSTextField*)contextMessageView {
+- (NSTextView*)contextMessageView {
   return contextMessage_.get();
 }
 
-- (NSView*)listItemView {
-  return listItemView_.get();
+- (NSView*)listView {
+  return listView_.get();
 }
 @end
 
@@ -120,9 +120,9 @@ TEST_F(NotificationControllerTest, BasicLayout) {
   [controller view];
 
   EXPECT_EQ(TestIcon(), [[controller iconView] image]);
-  EXPECT_EQ(base::SysNSStringToUTF16([[controller titleView] stringValue]),
+  EXPECT_EQ(base::SysNSStringToUTF16([[controller titleView] string]),
             notification->title());
-  EXPECT_EQ(base::SysNSStringToUTF16([[controller messageView] stringValue]),
+  EXPECT_EQ(base::SysNSStringToUTF16([[controller messageView] string]),
             notification->message());
   EXPECT_EQ(controller.get(), [[controller closeButton] target]);
 }
@@ -300,7 +300,7 @@ TEST_F(NotificationControllerTest, List) {
   EXPECT_TRUE([[controller messageView] isHidden]);
   EXPECT_FALSE([[controller contextMessageView] isHidden]);
 
-  EXPECT_EQ(2u, [[[controller listItemView] subviews] count]);
-  EXPECT_LT(NSMaxY([[controller listItemView] frame]),
+  EXPECT_EQ(2u, [[[controller listView] subviews] count]);
+  EXPECT_LT(NSMaxY([[controller listView] frame]),
             NSMinY([[controller titleView] frame]));
 }
