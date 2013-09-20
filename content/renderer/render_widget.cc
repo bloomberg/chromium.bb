@@ -2552,18 +2552,19 @@ RenderWidget::CreateGraphicsContext3D(
   // know our upload throughput yet, this just caps our memory usage.
   size_t divider = 1;
   if (base::android::SysUtils::IsLowEndDevice())
-    divider = 3;
-
+    divider = 6;
   // For reference Nexus10 can upload 1MB in about 2.5ms.
-  const size_t max_bytes_uploaded_per_ms = (2 * 1024 * 1024) / (5 * divider);
+  const double max_mb_uploaded_per_ms = 2.0 / (5 * divider);
   // Deadline to draw a frame to achieve 60 frames per second.
   const size_t kMillisecondsPerFrame = 16;
   // Assuming a two frame deep pipeline between the CPU and the GPU.
-  const size_t max_transfer_buffer_usage_bytes =
-      2 * kMillisecondsPerFrame * max_bytes_uploaded_per_ms;
+  size_t max_transfer_buffer_usage_mb =
+      static_cast<size_t>(2 * kMillisecondsPerFrame * max_mb_uploaded_per_ms);
+  static const size_t kBytesPerMegabyte = 1024 * 1024;
   // We keep the MappedMemoryReclaimLimit the same as the upload limit
   // to avoid unnecessarily stalling the compositor thread.
-  const size_t mapped_memory_reclaim_limit = max_transfer_buffer_usage_bytes;
+  const size_t mapped_memory_reclaim_limit =
+      max_transfer_buffer_usage_mb * kBytesPerMegabyte;
 #else
   const size_t mapped_memory_reclaim_limit =
       WebGraphicsContext3DCommandBufferImpl::kNoLimit;
