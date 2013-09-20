@@ -79,28 +79,43 @@ class LoginDatabase {
  private:
   friend class LoginDatabaseTest;
 
+  // Result values for encryption/decryption actions.
+  enum EncryptionResult {
+    // Success.
+    ENCRYPTION_RESULT_SUCCESS,
+    // Failure for a specific item (e.g., the encrypted value was manually
+    // moved from another machine, and can't be decrypted on this machine).
+    // This is presumed to be a permanent failure.
+    ENCRYPTION_RESULT_ITEM_FAILURE,
+    // A service-level failure (e.g., on a platform using a keyring, the keyring
+    // is temporarily unavailable).
+    // This is presumed to be a temporary failure.
+    ENCRYPTION_RESULT_SERVICE_FAILURE,
+  };
+
   // Encrypts plain_text, setting the value of cipher_text and returning true if
   // successful, or returning false and leaving cipher_text unchanged if
   // encryption fails (e.g., if the underlying OS encryption system is
   // temporarily unavailable).
-  bool EncryptedString(const string16& plain_text,
-                       std::string* cipher_text) const;
+  EncryptionResult EncryptedString(const string16& plain_text,
+                                   std::string* cipher_text) const;
 
   // Decrypts cipher_text, setting the value of plain_text and returning true if
   // successful, or returning false and leaving plain_text unchanged if
   // decryption fails (e.g., if the underlying OS encryption system is
   // temporarily unavailable).
-  bool DecryptedString(const std::string& cipher_text,
-                       string16* plain_text) const;
+  EncryptionResult DecryptedString(const std::string& cipher_text,
+                                   string16* plain_text) const;
 
   bool InitLoginsTable();
   bool MigrateOldVersionsAsNeeded();
 
   // Fills |form| from the values in the given statement (which is assumed to
   // be of the form used by the Get*Logins methods).
-  // Returns true if |form| was successfully filled.
-  bool InitPasswordFormFromStatement(autofill::PasswordForm* form,
-                                     sql::Statement& s) const;
+  // Returns the EncryptionResult from decrypting the password in |s|; if not
+  // ENCRYPTION_RESULT_SUCCESS, |form| is not filled.
+  EncryptionResult InitPasswordFormFromStatement(autofill::PasswordForm* form,
+                                                 sql::Statement& s) const;
 
   // Loads all logins whose blacklist setting matches |blacklisted| into
   // |forms|.

@@ -8,14 +8,16 @@
 // rest of the database as a suplemental storage system to complement Keychain,
 // providing storage of fields Keychain doesn't allow.
 
-bool LoginDatabase::EncryptedString(const string16& plain_text,
-                                    std::string* cipher_text) const {
+LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
+    const string16& plain_text,
+    std::string* cipher_text) const {
   *cipher_text = std::string();
-  return true;
+  return ENCRYPTION_RESULT_SUCCESS;
 }
 
-bool LoginDatabase::DecryptedString(const std::string& cipher_text,
-                                    string16* plain_text) const {
+LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
+    const std::string& cipher_text,
+    string16* plain_text) const {
   *plain_text = string16();
-  return true;
+  return ENCRYPTION_RESULT_SUCCESS;
 }

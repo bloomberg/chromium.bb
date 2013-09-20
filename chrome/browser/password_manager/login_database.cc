@@ -295,7 +295,8 @@ void LoginDatabase::ReportMetrics() {
 
 bool LoginDatabase::AddLogin(const PasswordForm& form) {
   std::string encrypted_password;
-  if (!EncryptedString(form.password_value, &encrypted_password))
+  if (EncryptedString(form.password_value, &encrypted_password) !=
+          ENCRYPTION_RESULT_SUCCESS)
     return false;
 
   // You *must* change LoginTableColumns if this query changes.
@@ -338,7 +339,8 @@ bool LoginDatabase::AddLogin(const PasswordForm& form) {
 
 bool LoginDatabase::UpdateLogin(const PasswordForm& form, int* items_changed) {
   std::string encrypted_password;
-  if (!EncryptedString(form.password_value, &encrypted_password))
+  if (EncryptedString(form.password_value, &encrypted_password) !=
+          ENCRYPTION_RESULT_SUCCESS)
     return false;
 
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
@@ -409,13 +411,16 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(const base::Time delete_begin,
   return s.Run();
 }
 
-bool LoginDatabase::InitPasswordFormFromStatement(PasswordForm* form,
-                                                  sql::Statement& s) const {
+LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
+    PasswordForm* form,
+    sql::Statement& s) const {
   std::string encrypted_password;
   s.ColumnBlobAsString(COLUMN_PASSWORD_VALUE, &encrypted_password);
   string16 decrypted_password;
-  if (!DecryptedString(encrypted_password, &decrypted_password))
-    return false;
+  EncryptionResult encryption_result =
+      DecryptedString(encrypted_password, &decrypted_password);
+  if (encryption_result != ENCRYPTION_RESULT_SUCCESS)
+    return encryption_result;
 
   std::string tmp = s.ColumnString(COLUMN_ORIGIN_URL);
   form->origin = GURL(tmp);
@@ -449,7 +454,7 @@ bool LoginDatabase::InitPasswordFormFromStatement(PasswordForm* form,
       s.ColumnByteLength(COLUMN_FORM_DATA));
   PickleIterator form_data_iter(form_data_pickle);
   autofill::DeserializeFormData(&form_data_iter, &form->form_data);
-  return true;
+  return ENCRYPTION_RESULT_SUCCESS;
 }
 
 bool LoginDatabase::GetLogins(const PasswordForm& form,
@@ -502,8 +507,12 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
 
   while (s.Step()) {
     scoped_ptr<PasswordForm> new_form(new PasswordForm());
-    if (!InitPasswordFormFromStatement(new_form.get(), s))
+    EncryptionResult result = InitPasswordFormFromStatement(new_form.get(), s);
+    if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)
       return false;
+    if (result == ENCRYPTION_RESULT_ITEM_FAILURE)
+      continue;
+    DCHECK(result == ENCRYPTION_RESULT_SUCCESS);
     if (public_suffix_domain_matching_) {
       if (!SchemeMatches(new_form, form) ||
           !RegistryControlledDomainMatches(new_form, form) ||
@@ -548,8 +557,12 @@ bool LoginDatabase::GetLoginsCreatedBetween(
 
   while (s.Step()) {
     scoped_ptr<PasswordForm> new_form(new PasswordForm());
-    if (!InitPasswordFormFromStatement(new_form.get(), s))
+    EncryptionResult result = InitPasswordFormFromStatement(new_form.get(), s);
+    if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)
       return false;
+    if (result == ENCRYPTION_RESULT_ITEM_FAILURE)
+      continue;
+    DCHECK(result == ENCRYPTION_RESULT_SUCCESS);
     forms->push_back(new_form.release());
   }
   return s.Succeeded();
@@ -581,8 +594,12 @@ bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
 
   while (s.Step()) {
     scoped_ptr<PasswordForm> new_form(new PasswordForm());
-    if (!InitPasswordFormFromStatement(new_form.get(), s))
+    EncryptionResult result = InitPasswordFormFromStatement(new_form.get(), s);
+    if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)
       return false;
+    if (result == ENCRYPTION_RESULT_ITEM_FAILURE)
+      continue;
+    DCHECK(result == ENCRYPTION_RESULT_SUCCESS);
     forms->push_back(new_form.release());
   }
   return s.Succeeded();
