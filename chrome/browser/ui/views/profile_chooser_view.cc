@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/profile_chooser_view.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -30,7 +29,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
-
 
 // Helpers --------------------------------------------------------------------
 
@@ -137,9 +135,12 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
   set_margins(gfx::Insets());
 
   ResetLinksAndButtons();
-  avatar_menu_model_.reset(new AvatarMenuModel(
+
+  avatar_menu_.reset(new AvatarMenu(
       &g_browser_process->profile_manager()->GetProfileInfoCache(),
-      this, browser_));
+      this,
+      browser_));
+  avatar_menu_->RebuildMenu();
 }
 
 ProfileChooserView::~ProfileChooserView() {
@@ -157,24 +158,24 @@ void ProfileChooserView::ResetLinksAndButtons() {
 }
 
 void ProfileChooserView::Init() {
-  ShowView(PROFILE_CHOOSER_VIEW, avatar_menu_model_.get());
+  ShowView(PROFILE_CHOOSER_VIEW, avatar_menu_.get());
 }
 
-void ProfileChooserView::OnAvatarMenuModelChanged(
-    AvatarMenuModel* avatar_menu_model) {
-  // Refresh the view with the new model. We can't just update the local copy
+void ProfileChooserView::OnAvatarMenuChanged(
+    AvatarMenu* avatar_menu) {
+  // Refresh the view with the new menu. We can't just update the local copy
   // as this may have been triggered by a sign out action, in which case
   // the view is being destroyed.
-  ShowView(PROFILE_CHOOSER_VIEW, avatar_menu_model);
+  ShowView(PROFILE_CHOOSER_VIEW, avatar_menu);
 }
 
 void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
-                                  AvatarMenuModel* avatar_menu_model) {
+                                  AvatarMenu* avatar_menu) {
   // The account management view should only be displayed if the active profile
   // is signed in.
   if (view_to_display == ACCOUNT_MANAGEMENT_VIEW) {
-    const AvatarMenuModel::Item& active_item = avatar_menu_model->GetItemAt(
-        avatar_menu_model->GetActiveProfileIndex());
+    const AvatarMenu::Item& active_item = avatar_menu->GetItemAt(
+        avatar_menu->GetActiveProfileIndex());
     DCHECK(active_item.signed_in);
   }
 
@@ -189,8 +190,8 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
   bool is_guest_view = true;
   views::View* current_profile_view = NULL;
   views::View* current_profile_accounts = NULL;
-  for (size_t i = 0; i < avatar_menu_model->GetNumberOfItems(); ++i) {
-    const AvatarMenuModel::Item& item = avatar_menu_model->GetItemAt(i);
+  for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
+    const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
     if (item.active) {
       if (view_to_display == PROFILE_CHOOSER_VIEW) {
         current_profile_view = CreateCurrentProfileView(item, false);
@@ -246,7 +247,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     sender->SetEnabled(false);
 
   if (sender == guest_button_) {
-    avatar_menu_model_->SwitchToGuestProfileWindow(browser_);
+    avatar_menu_->SwitchToGuestProfileWindow(browser_);
   } else if (sender == end_guest_button_) {
     profiles::CloseGuestProfileWindows();
   } else if (sender == users_button_) {
@@ -256,7 +257,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     ButtonIndexes::const_iterator match =
         open_other_profile_indexes_map_.find(sender);
     DCHECK(match != open_other_profile_indexes_map_.end());
-    avatar_menu_model_->SwitchToProfile(
+    avatar_menu_->SwitchToProfile(
         match->second,
         ui::DispositionFromEventFlags(event.flags()) == NEW_WINDOW);
   }
@@ -265,22 +266,22 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
 void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
   if (sender == manage_accounts_link_) {
     // ShowView() will DCHECK if this view is displayed for non signed-in users.
-    ShowView(ACCOUNT_MANAGEMENT_VIEW, avatar_menu_model_.get());
+    ShowView(ACCOUNT_MANAGEMENT_VIEW, avatar_menu_.get());
     SizeToContents();   // The account list changes the height of the bubble.
   } else if (sender == signout_current_profile_link_) {
-    avatar_menu_model_->BeginSignOut();
+    avatar_menu_->BeginSignOut();
   } else if (sender == signin_current_profile_link_) {
     GURL page = signin::GetPromoURL(signin::SOURCE_MENU, false);
     chrome::ShowSingletonTab(browser_, page);
   } else {
     DCHECK(sender == change_photo_link_);
-    avatar_menu_model_->EditProfile(
-        avatar_menu_model_->GetActiveProfileIndex());
+    avatar_menu_->EditProfile(
+        avatar_menu_->GetActiveProfileIndex());
   }
 }
 
 views::View* ProfileChooserView::CreateCurrentProfileView(
-    const AvatarMenuModel::Item& avatar_item,
+    const AvatarMenu::Item& avatar_item,
     bool is_guest) {
   views::View* view = new views::View();
   views::GridLayout* layout = CreateDoubleColumnLayout(view);
@@ -337,7 +338,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
 }
 
 views::View* ProfileChooserView::CreateCurrentProfileEditableView(
-    const AvatarMenuModel::Item& avatar_item) {
+    const AvatarMenu::Item& avatar_item) {
   DCHECK(avatar_item.signed_in);
   views::View* view = new views::View();
   views::GridLayout* layout = CreateDoubleColumnLayout(view);
@@ -377,7 +378,7 @@ views::View* ProfileChooserView::CreateCurrentProfileEditableView(
 views::View* ProfileChooserView::CreateGuestProfileView() {
   gfx::Image guest_icon =
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(IDR_GUEST_ICON);
-  AvatarMenuModel::Item guest_avatar_item(0, guest_icon);
+  AvatarMenu::Item guest_avatar_item(0, 0, guest_icon);
   guest_avatar_item.active = true;
   guest_avatar_item.name = l10n_util::GetStringUTF16(
       IDS_PROFILES_GUEST_PROFILE_NAME);
@@ -399,7 +400,7 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
        iter != avatars_to_show.end();
        ++iter) {
     const size_t index = *iter;
-    const AvatarMenuModel::Item& item = avatar_menu_model_->GetItemAt(index);
+    const AvatarMenu::Item& item = avatar_menu_->GetItemAt(index);
 
     gfx::Image image = profiles::GetSizedAvatarIconWithBorder(
         item.icon, true,
@@ -460,7 +461,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool is_guest_view) {
 }
 
 views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
-    const AvatarMenuModel::Item& avatar_item) {
+    const AvatarMenu::Item& avatar_item) {
   DCHECK(avatar_item.signed_in);
   views::View* view = new views::View();
   views::GridLayout* layout = CreateSingleColumnLayout(view);

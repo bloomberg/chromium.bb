@@ -11,19 +11,19 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/profiles/avatar_menu_model_observer.h"
+#include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/ui/gtk/avatar_menu_item_gtk.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 
-class AvatarMenuModel;
+class AvatarMenu;
 class Browser;
 class GtkThemeService;
 
 // This bubble is displayed when the user clicks on the avatar button.
 // It displays a list of profiles and allows users to switch between profiles.
 class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
-                            public AvatarMenuModelObserver,
+                            public AvatarMenuObserver,
                             public AvatarMenuItemGtk::Delegate {
  public:
   AvatarMenuBubbleGtk(Browser* browser,
@@ -36,9 +36,9 @@ class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
   virtual void BubbleClosing(BubbleGtk* bubble,
                              bool closed_by_escape) OVERRIDE;
 
-  // AvatarMenuModelObserver implementation.
-  virtual void OnAvatarMenuModelChanged(
-      AvatarMenuModel* avatar_menu_model) OVERRIDE;
+  // AvatarMenuObserver implementation.
+  virtual void OnAvatarMenuChanged(
+      AvatarMenu* avatar_menu) OVERRIDE;
 
   // AvatarMenuItemGtk::Delegate implementation.
   virtual void OpenProfile(size_t profile_index) OVERRIDE;
@@ -65,7 +65,7 @@ class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
   void CloseBubble();
 
   // A model of all the profile information to be displayed in the menu.
-  scoped_ptr<AvatarMenuModel> avatar_menu_model_;
+  scoped_ptr<AvatarMenu> avatar_menu_;
 
   // A weak pointer to the parent widget of all widgets in the bubble.
   GtkWidget* contents_;

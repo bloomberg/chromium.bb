@@ -20,7 +20,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/avatar_menu_model.h"
+#include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -1089,7 +1089,7 @@ bool BrowserTitlebar::ShouldDisplayAvatar() {
   if (!browser_window_->browser()->is_type_tabbed())
     return false;
 
-  return AvatarMenuModel::ShouldShowAvatarMenu();
+  return AvatarMenu::ShouldShowAvatarMenu();
 }
 
 bool BrowserTitlebar::IsOffTheRecord() {
