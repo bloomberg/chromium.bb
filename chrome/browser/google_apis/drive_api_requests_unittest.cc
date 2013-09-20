@@ -345,6 +345,48 @@ class DriveApiRequestsTest : public testing::Test {
   int64 content_length_;
 };
 
+TEST_F(DriveApiRequestsTest, DriveApiDataRequest_Fields) {
+  // Make sure that "fields" query param is supported by using its subclass,
+  // AboutGetRequest.
+
+  // Set an expected data file containing valid result.
+  expected_data_file_path_ = test_util::GetTestFilePath(
+      "drive/about.json");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<AboutResource> about_resource;
+
+  {
+    base::RunLoop run_loop;
+    drive::AboutGetRequest* request = new drive::AboutGetRequest(
+        request_sender_.get(),
+        *url_generator_,
+        test_util::CreateQuitCallback(
+            &run_loop,
+            test_util::CreateCopyResultCallback(&error, &about_resource)));
+    request->set_fields(
+        "kind,quotaBytesTotal,quotaBytesUsed,largestChangeId,rootFolderId");
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/drive/v2/about?"
+            "fields=kind%2CquotaBytesTotal%2CquotaBytesUsed%2C"
+            "largestChangeId%2CrootFolderId",
+            http_request_.relative_url);
+
+  scoped_ptr<AboutResource> expected(
+      AboutResource::CreateFrom(
+          *test_util::LoadJSONFile("drive/about.json")));
+  ASSERT_TRUE(about_resource.get());
+  EXPECT_EQ(expected->largest_change_id(), about_resource->largest_change_id());
+  EXPECT_EQ(expected->quota_bytes_total(), about_resource->quota_bytes_total());
+  EXPECT_EQ(expected->quota_bytes_used(), about_resource->quota_bytes_used());
+  EXPECT_EQ(expected->root_folder_id(), about_resource->root_folder_id());
+}
+
 TEST_F(DriveApiRequestsTest, FilesInsertRequest) {
   // Set an expected data file containing the directory's entry data.
   expected_data_file_path_ =

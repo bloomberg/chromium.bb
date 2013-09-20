@@ -14,6 +14,7 @@
 #include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/request_util.h"
 #include "chrome/browser/google_apis/time_util.h"
+#include "net/base/url_util.h"
 
 namespace google_apis {
 namespace {
@@ -116,21 +117,39 @@ void ParseFileResourceWithUploadRangeAndRun(
 
 namespace drive {
 
+//============================ DriveApiDataRequest ===========================
+
+DriveApiDataRequest::DriveApiDataRequest(RequestSender* sender,
+                                         const GetDataCallback& callback)
+    : GetDataRequest(sender, callback) {
+}
+
+DriveApiDataRequest::~DriveApiDataRequest() {
+}
+
+GURL DriveApiDataRequest::GetURL() const {
+  GURL url = GetURLInternal();
+  if (!fields_.empty())
+    url = net::AppendOrReplaceQueryParameter(url, "fields", fields_);
+  return url;
+}
+
 //=============================== FilesGetRequest =============================
 
 FilesGetRequest::FilesGetRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const FileResourceCallback& callback)
-    : GetDataRequest(sender,
-                     base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+    : DriveApiDataRequest(
+          sender,
+          base::Bind(&ParseJsonAndRun<FileResource>, callback)),
       url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
 
 FilesGetRequest::~FilesGetRequest() {}
 
-GURL FilesGetRequest::GetURL() const {
+GURL FilesGetRequest::GetURLInternal() const {
   return url_generator_.GetFilesGetUrl(file_id_);
 }
 
@@ -140,8 +159,9 @@ FilesInsertRequest::FilesInsertRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const FileResourceCallback& callback)
-    : GetDataRequest(sender,
-                     base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+    : DriveApiDataRequest(
+          sender,
+          base::Bind(&ParseJsonAndRun<FileResource>, callback)),
       url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
@@ -150,10 +170,6 @@ FilesInsertRequest::~FilesInsertRequest() {}
 
 net::URLFetcher::RequestType FilesInsertRequest::GetRequestType() const {
   return net::URLFetcher::POST;
-}
-
-GURL FilesInsertRequest::GetURL() const {
-  return url_generator_.GetFilesInsertUrl();
 }
 
 bool FilesInsertRequest::GetContentData(std::string* upload_content_type,
@@ -184,14 +200,19 @@ bool FilesInsertRequest::GetContentData(std::string* upload_content_type,
   return true;
 }
 
+GURL FilesInsertRequest::GetURLInternal() const {
+  return url_generator_.GetFilesInsertUrl();
+}
+
 //============================== FilesPatchRequest ============================
 
 FilesPatchRequest::FilesPatchRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const FileResourceCallback& callback)
-    : GetDataRequest(sender,
-                     base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+    : DriveApiDataRequest(
+          sender,
+          base::Bind(&ParseJsonAndRun<FileResource>, callback)),
       url_generator_(url_generator),
       set_modified_date_(false),
       update_viewed_date_(true) {
@@ -210,7 +231,7 @@ std::vector<std::string> FilesPatchRequest::GetExtraRequestHeaders() const {
   return headers;
 }
 
-GURL FilesPatchRequest::GetURL() const {
+GURL FilesPatchRequest::GetURLInternal() const {
   return url_generator_.GetFilesPatchUrl(
       file_id_, set_modified_date_, update_viewed_date_);
 }
@@ -259,8 +280,9 @@ FilesCopyRequest::FilesCopyRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const FileResourceCallback& callback)
-    : GetDataRequest(sender,
-                     base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+    : DriveApiDataRequest(
+          sender,
+          base::Bind(&ParseJsonAndRun<FileResource>, callback)),
       url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
@@ -272,7 +294,7 @@ net::URLFetcher::RequestType FilesCopyRequest::GetRequestType() const {
   return net::URLFetcher::POST;
 }
 
-GURL FilesCopyRequest::GetURL() const {
+GURL FilesCopyRequest::GetURLInternal() const {
   return url_generator_.GetFilesCopyUrl(file_id_);
 }
 
@@ -310,7 +332,7 @@ FilesListRequest::FilesListRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const FileListCallback& callback)
-    : GetDataRequest(
+    : DriveApiDataRequest(
           sender,
           base::Bind(&ParseJsonOnBlockingPoolAndRun<FileList>,
                      make_scoped_refptr(sender->blocking_task_runner()),
@@ -322,7 +344,7 @@ FilesListRequest::FilesListRequest(
 
 FilesListRequest::~FilesListRequest() {}
 
-GURL FilesListRequest::GetURL() const {
+GURL FilesListRequest::GetURLInternal() const {
   return url_generator_.GetFilesListUrl(max_results_, page_token_, q_);
 }
 
@@ -331,7 +353,7 @@ GURL FilesListRequest::GetURL() const {
 FilesListNextPageRequest::FilesListNextPageRequest(
     RequestSender* sender,
     const FileListCallback& callback)
-    : GetDataRequest(
+    : DriveApiDataRequest(
           sender,
           base::Bind(&ParseJsonOnBlockingPoolAndRun<FileList>,
                      make_scoped_refptr(sender->blocking_task_runner()),
@@ -342,7 +364,7 @@ FilesListNextPageRequest::FilesListNextPageRequest(
 FilesListNextPageRequest::~FilesListNextPageRequest() {
 }
 
-GURL FilesListNextPageRequest::GetURL() const {
+GURL FilesListNextPageRequest::GetURLInternal() const {
   return next_link_;
 }
 
@@ -352,8 +374,9 @@ FilesTrashRequest::FilesTrashRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const FileResourceCallback& callback)
-    : GetDataRequest(sender,
-                     base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+    : DriveApiDataRequest(
+          sender,
+          base::Bind(&ParseJsonAndRun<FileResource>, callback)),
       url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
@@ -364,7 +387,7 @@ net::URLFetcher::RequestType FilesTrashRequest::GetRequestType() const {
   return net::URLFetcher::POST;
 }
 
-GURL FilesTrashRequest::GetURL() const {
+GURL FilesTrashRequest::GetURLInternal() const {
   return url_generator_.GetFilesTrashUrl(file_id_);
 }
 
@@ -374,15 +397,16 @@ AboutGetRequest::AboutGetRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const AboutResourceCallback& callback)
-    : GetDataRequest(sender,
-                     base::Bind(&ParseJsonAndRun<AboutResource>, callback)),
+    : DriveApiDataRequest(
+          sender,
+          base::Bind(&ParseJsonAndRun<AboutResource>, callback)),
       url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
 
 AboutGetRequest::~AboutGetRequest() {}
 
-GURL AboutGetRequest::GetURL() const {
+GURL AboutGetRequest::GetURLInternal() const {
   return url_generator_.GetAboutGetUrl();
 }
 
@@ -392,7 +416,7 @@ ChangesListRequest::ChangesListRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const ChangeListCallback& callback)
-    : GetDataRequest(
+    : DriveApiDataRequest(
           sender,
           base::Bind(&ParseJsonOnBlockingPoolAndRun<ChangeList>,
                      make_scoped_refptr(sender->blocking_task_runner()),
@@ -406,7 +430,7 @@ ChangesListRequest::ChangesListRequest(
 
 ChangesListRequest::~ChangesListRequest() {}
 
-GURL ChangesListRequest::GetURL() const {
+GURL ChangesListRequest::GetURLInternal() const {
   return url_generator_.GetChangesListUrl(
       include_deleted_, max_results_, page_token_, start_change_id_);
 }
@@ -416,7 +440,7 @@ GURL ChangesListRequest::GetURL() const {
 ChangesListNextPageRequest::ChangesListNextPageRequest(
     RequestSender* sender,
     const ChangeListCallback& callback)
-    : GetDataRequest(
+    : DriveApiDataRequest(
           sender,
           base::Bind(&ParseJsonOnBlockingPoolAndRun<ChangeList>,
                      make_scoped_refptr(sender->blocking_task_runner()),
@@ -427,7 +451,7 @@ ChangesListNextPageRequest::ChangesListNextPageRequest(
 ChangesListNextPageRequest::~ChangesListNextPageRequest() {
 }
 
-GURL ChangesListNextPageRequest::GetURL() const {
+GURL ChangesListNextPageRequest::GetURLInternal() const {
   return next_link_;
 }
 
@@ -437,15 +461,16 @@ AppsListRequest::AppsListRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const AppListCallback& callback)
-    : GetDataRequest(sender,
-                     base::Bind(&ParseJsonAndRun<AppList>, callback)),
+    : DriveApiDataRequest(
+          sender,
+          base::Bind(&ParseJsonAndRun<AppList>, callback)),
       url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
 
 AppsListRequest::~AppsListRequest() {}
 
-GURL AppsListRequest::GetURL() const {
+GURL AppsListRequest::GetURLInternal() const {
   return url_generator_.GetAppsListUrl();
 }
 
