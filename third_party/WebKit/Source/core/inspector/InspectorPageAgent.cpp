@@ -156,17 +156,16 @@ static bool hasTextContent(Resource* cachedResource)
 
 static PassRefPtr<TextResourceDecoder> createXHRTextDecoder(const String& mimeType, const String& textEncodingName)
 {
-    RefPtr<TextResourceDecoder> decoder;
     if (!textEncodingName.isEmpty())
-        decoder = TextResourceDecoder::create("text/plain", textEncodingName);
-    else if (DOMImplementation::isXMLMIMEType(mimeType.lower())) {
-        decoder = TextResourceDecoder::create("application/xml");
+        return TextResourceDecoder::create("text/plain", textEncodingName);
+    if (DOMImplementation::isXMLMIMEType(mimeType.lower())) {
+        RefPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("application/xml");
         decoder->useLenientXMLDecoding();
-    } else if (equalIgnoringCase(mimeType, "text/html"))
-        decoder = TextResourceDecoder::create("text/html", "UTF-8");
-    else
-        decoder = TextResourceDecoder::create("text/plain", "UTF-8");
-    return decoder;
+        return decoder;
+    }
+    if (equalIgnoringCase(mimeType, "text/html"))
+        return TextResourceDecoder::create("text/html", "UTF-8");
+    return TextResourceDecoder::create("text/plain", "UTF-8");
 }
 
 bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String* result, bool* base64Encoded)
@@ -207,9 +206,6 @@ bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String*
             if (!buffer)
                 return false;
             RefPtr<TextResourceDecoder> decoder = createXHRTextDecoder(cachedResource->response().mimeType(), cachedResource->response().textEncodingName());
-            // We show content for raw resources only for certain mime types (text, html and xml). Otherwise decoder will be null.
-            if (!decoder)
-                return false;
             String content = decoder->decode(buffer->data(), buffer->size());
             *result = content + decoder->flush();
             return true;
