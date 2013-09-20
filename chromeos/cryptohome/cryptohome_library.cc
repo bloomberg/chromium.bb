@@ -33,7 +33,7 @@ void DoNothing(DBusMethodCallStatus call_status) {}
 // This class handles the interaction with the ChromeOS cryptohome library APIs.
 class CryptohomeLibraryImpl : public CryptohomeLibrary {
  public:
-  CryptohomeLibraryImpl() : weak_ptr_factory_(this) {
+  CryptohomeLibraryImpl() {
   }
 
   virtual ~CryptohomeLibraryImpl() {
@@ -117,9 +117,7 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
 
   virtual std::string GetSystemSalt() OVERRIDE {
     LoadSystemSalt();  // no-op if it's already loaded.
-    return StringToLowerASCII(base::HexEncode(
-        reinterpret_cast<const void*>(system_salt_.data()),
-        system_salt_.size()));
+    return system_salt_;
   }
 
   virtual std::string EncryptWithSystemSalt(const std::string& token) OVERRIDE {
@@ -132,7 +130,7 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
       return std::string();
     }
     return EncryptTokenWithKey(system_salt_key_.get(),
-                               GetSystemSalt(),
+                               system_salt_,
                                token);
   }
 
@@ -147,7 +145,7 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
       return std::string();
     }
     return DecryptTokenWithKey(system_salt_key_.get(),
-                               GetSystemSalt(),
+                               system_salt_,
                                encrypted_token_hex);
   }
 
@@ -155,17 +153,23 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
   void LoadSystemSalt() {
     if (!system_salt_.empty())
       return;
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        GetSystemSalt(&system_salt_);
-    CHECK(!system_salt_.empty());
-    CHECK_EQ(system_salt_.size() % 2, 0U);
+    std::vector<uint8> salt;
+    DBusThreadManager::Get()->GetCryptohomeClient()->GetSystemSalt(&salt);
+    if (salt.empty() || salt.size() % 2 != 0U) {
+      LOG(WARNING) << "System salt not available";
+      return;
+    }
+    system_salt_ = StringToLowerASCII(base::HexEncode(
+        reinterpret_cast<const void*>(salt.data()), salt.size()));
   }
 
   // TODO: should this use the system salt for both the password and the salt
   // value, or should this use a separate salt value?
   bool LoadSystemSaltKey() {
+    if (system_salt_.empty())
+      return false;
     if (!system_salt_key_.get())
-      system_salt_key_.reset(PassphraseToKey(GetSystemSalt(), GetSystemSalt()));
+      system_salt_key_.reset(PassphraseToKey(system_salt_, system_salt_));
     return system_salt_key_.get();
   }
 
@@ -227,8 +231,7 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     return token;
   }
 
-  base::WeakPtrFactory<CryptohomeLibraryImpl> weak_ptr_factory_;
-  std::vector<uint8> system_salt_;
+  std::string system_salt_;
   // A key based on the system salt.  Useful for encrypting device-level
   // data for which we have no additional credentials.
   scoped_ptr<crypto::SymmetricKey> system_salt_key_;

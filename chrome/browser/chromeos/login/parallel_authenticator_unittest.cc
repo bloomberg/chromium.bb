@@ -517,7 +517,7 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecover) {
         .Times(1)
         .RetiresOnSaturation();
   EXPECT_CALL(*mock_cryptohome_library_, GetSystemSalt())
-      .WillOnce(Return(std::string()))
+      .WillOnce(Return(std::string("mock_system_salt")))
       .RetiresOnSaturation();
 
   state_->PresetOnlineLoginStatus(LoginFailure::LoginFailureNone());
@@ -538,7 +538,7 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecoverButFail) {
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_cryptohome_library_, GetSystemSalt())
-      .WillOnce(Return(std::string()))
+      .WillOnce(Return(std::string("mock_system_salt")))
       .RetiresOnSaturation();
 
   SetAttemptState(auth_.get(), state_.release());
@@ -649,7 +649,7 @@ TEST_F(ParallelAuthenticatorTest, DriveUnlock) {
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_cryptohome_library_, GetSystemSalt())
-      .WillOnce(Return(std::string()))
+      .WillOnce(Return(std::string("mock_system_salt")))
       .RetiresOnSaturation();
 
   auth_->AuthenticateToUnlock(UserContext(username_,

@@ -59,7 +59,9 @@ class CHROMEOS_EXPORT CryptohomeLibrary {
   virtual bool InstallAttributesIsInvalid() = 0;
   virtual bool InstallAttributesIsFirstInstall() = 0;
 
-  // Returns system hash in hex encoded ascii format.
+  // Returns system hash in hex encoded ascii format. Note: this may return
+  // an empty string (e.g. if cryptohome is not running). It is up to the
+  // calling function to try again after a delay if desired.
   virtual std::string GetSystemSalt() = 0;
 
   // Encrypts |token| with the system salt key (stable for the lifetime
