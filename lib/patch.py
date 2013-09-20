@@ -1044,7 +1044,11 @@ class GerritPatch(GitRepoPatch):
     self.revision = current_patch_set.get('revision')
     self.patch_number = current_patch_set.get('number')
     self.commit = self.revision
-    self.owner, _, _ = patch_dict['owner']['email'].partition('@')
+    self.owner_email = patch_dict['owner']['email']
+    if self.owner_email:
+      self.owner, _, _ = self.owner_email.partition('@')
+    else:
+      self.owner = None
     self.gerrit_number = FormatGerritNumber(str(patch_dict['number']),
                                             strict=True)
     prefix_str = '*' if self.internal else ''
@@ -1053,7 +1057,9 @@ class GerritPatch(GitRepoPatch):
     # status - Current state of this change.  Can be one of
     # ['NEW', 'SUBMITTED', 'MERGED', 'ABANDONED'].
     self.status = patch_dict['status']
-    self._approvals = self.patch_dict['currentPatchSet'].get('approvals', [])
+    self._approvals = []
+    if 'currentPatchSet' in self.patch_dict:
+      self._approvals = self.patch_dict['currentPatchSet'].get('approvals', [])
     self.approval_timestamp = \
         max(x['grantedOn'] for x in self._approvals) if self._approvals else 0
     self.commit_message = patch_dict.get('commitMessage')
@@ -1108,17 +1114,20 @@ class GerritPatch(GitRepoPatch):
               'grantedOn': _convert_tm(granted_on),
               'by': _convert_user(review_data),
           })
+
       patch_dict['currentPatchSet'] = {
           'approvals': approvals,
           'ref': current_revision_info['fetch']['http']['ref'],
           'revision': current_revision,
           'number': str(current_revision_info['_number']),
       }
+
       current_commit = current_revision_info.get('commit')
       if current_commit:
         patch_dict['commitMessage'] = current_commit['message']
         parents = current_commit.get('parents', [])
         patch_dict['dependsOn'] = [{'revision': p['commit']} for p in parents]
+
     return patch_dict
 
   def __reduce__(self):

@@ -4,13 +4,28 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import optparse
-from chromite.buildbot import constants
-from chromite.lib import gerrit
+import getpass
 import logging
+import optparse
+
+from chromite.buildbot import constants
+from chromite.lib import cros_build_lib
+from chromite.lib import gerrit
 
 
-def find_user(helper, username):
+def _FindUserEmails(helper, username=None):
+  """Find the emails for a given user that gerrit knows about.
+
+  Args:
+    helper: GerritHelper object.
+    username: A gerrit username.  If none, then the current username
+      according to getpass.getuser() will be assumed.
+  Returns:
+    List of email addresses.
+  """
+  if not username:
+    username = getpass.getuser()
+
   # Try querying both initially; if it works, we can save a query.
   emails = ["%s@%s" % (username, domain)
             for domain in ("google.com", "chromium.org")]
@@ -21,6 +36,7 @@ def find_user(helper, username):
   except gerrit.GerritException:
     # find the offender.
     pass
+
   recomposed = []
   for email in emails:
     try:
@@ -28,15 +44,20 @@ def find_user(helper, username):
       recomposed.append(email)
     except gerrit.GerritException:
       pass
+
   if not recomposed:
     raise Exception("no email addresses found for %r" % username)
+
   return recomposed
 
 
 def main(argv):
   parser = optparse.OptionParser(usage=
-    "usage: prog [--internal|--external] [--query|--age] "
-    "[email_addresses|usernames]")
+      "usage: prog [--internal|--external] [--query|--age] "
+      "[email_addresses|usernames]"
+      "\n"
+      "\nIf no email addresses or usernames are given, then 'self' is assumed."
+                                )
   parser.add_option("-i", "--internal", default=False, action="store_true",
                     help="Query gerrit-int.")
   parser.add_option("-e", "--external", dest="internal", action="store_false",
@@ -52,100 +73,112 @@ def main(argv):
                     "what you're doing.")
 
   opts, args = parser.parse_args(argv)
-  if not args and not opts.query:
-    parser.error("no querying parameters given.")
 
-  logging.getLogger().setLevel(logging.WARNING)
-  query = []
+  cros_build_lib.logger.setLevel(logging.INFO)
+  summary_lines = []
 
   helper = gerrit.GetGerritHelper(
       constants.INTERNAL_REMOTE if opts.internal else constants.EXTERNAL_REMOTE)
-  recomposed_args = []
-  for arg in args:
-    if "@" not in arg:
-      recomposed_args.extend(find_user(helper, arg))
-    else:
-      recomposed_args.append(arg)
 
-  args = set(recomposed_args)
-  addresses = [x.replace(":", "\:") for x in args]
-  owners = ["owner:%s" % x for x in addresses]
-  reviewers = ["reviewer:%s" % x for x in addresses]
+  # Expand args into chromium.org/google.com emails or just 'self'.
+  if args:
+    recomposed_args = []
+    for arg in args:
+      if "@" not in arg:
+        recomposed_args.extend(_FindUserEmails(helper, arg))
+      else:
+        recomposed_args.append(arg)
+    target_emails = frozenset(recomposed_args)
+  else:
+    target_emails = frozenset(_FindUserEmails(helper))
 
+  owners = ["owner:%s" % x for x in target_emails]
+  reviewers = ["reviewer:%s" % x for x in target_emails]
+
+  # Get owner stats.
+  query_tokens = []
   if opts.query:
-    query.append(opts.query)
-  elif args:
-    query.append("( %s )" % " OR ".join(owners))
-    query.append("-age:%s" % opts.age)
+    # User has provided a custom query.
+    query_tokens.append(opts.query)
+    cros_build_lib.Info('Looking for CLs with custom query.')
+  else:
+    query_tokens.append("( %s )" % " OR ".join(owners))
+    query_tokens.append("-age:%s" % opts.age)
+    cros_build_lib.Info('Looking for CLs owned by %s within last %s.',
+                        ', '.join(target_emails), opts.age)
 
-  query = " AND ".join(query)
+  query = " AND ".join(query_tokens)
+  owner_changes = helper.Query(query, sort="lastUpdated")
 
-
-  results = helper.Query(query, current_patch=False, sort="lastUpdated")
-  targets = frozenset(args)
-
-  if not args:
-    print "query resulted in %i owned CLs." % len(results)
-    print "no email addresses given so unable to do scoring stats"
-    return 0
-
-  print "Owner stats: %i CLs." % len(results)
+  # Create summary information about owned CLs.
+  summary_lines.append('\nOwner stats for %s:' % ', '.join(target_emails))
+  summary_lines.append('  total CLs: %i' % len(owner_changes))
   stats = {}
-  for x in results:
-    status = x["status"].lower()
+  for change in owner_changes:
+    status = change.status.lower()
     stats[status] = stats.get(status, 0) + 1
-  if "new" in stats:
-    stats["open"] = stats.pop("new")
+
+  if 'new' in stats:
+    stats['open'] = stats.pop('new')
   for status, value in sorted(stats.iteritems(), key=lambda x:x[0]):
-    print "  %s: %i" % (status, value)
+    summary_lines.append('  %s: %i' % (status, value))
 
-  # Get approval stats.
-  requested = helper.Query(
-      "( %s  AND NOT ( %s ) ) AND -age:%s" % (" OR ".join(reviewers),
-                                              " OR ".join(owners), opts.age),
-      current_patch=False, options=("--all-approvals",))
+  # Get reviewer stats.
+  cros_build_lib.Info('Looking for CLs reviewed by %s within last %s.',
+                      ', '.join(target_emails), opts.age)
+  query = ('( ( %s ) AND NOT ( %s ) ) AND -age:%s' %
+           (' OR '.join(reviewers), ' OR '.join(owners), opts.age))
+  reviewer_changes = helper.Query(query, current_patch=False)
 
-  total_scored_patchsets = scoring = 0
-  lgtms = 0
-  for cl in requested:
-    touched_it = False
-    lgtmed = False
-    for patchset in cl.get("patchSets", ()):
-      for approval in patchset.get("approvals", ()):
-        if targets.intersection([approval["by"].get("email")]):
-          touched_it = True
-          if (("CRVW", 2) ==
-              (approval.get("type"), int(approval.get("value", 0)))):
-            lgtmed = True
-          total_scored_patchsets += 1
-    if touched_it:
-      scoring += 1
+  lgtms = plusones = owner_lgtms = 0
+  for change in reviewer_changes:
+    # TODO(?): Still need a way to get the following info from CL:
+    # 1) Include LGTMs on earlier patches.  It looks like that info is sort
+    # of included in the json returned for the following query:
+    # detailed_cl = helper.Query(cl.gerrit_number, current_patch=False)
+    # But that info is not preserved in GerritPatch class.
+    # 2) Count the number of comments (by targets) on this CL.  It is not
+    # clear how to get that included in the json response.
+
+    # Loop through all "approvals" on CL.  These include the code-review value,
+    # the verified value, and the commit-queue value.
+    # pylint: disable=W0212
+    lgtmed = plusoned = owner_lgtmed = False
+    for approval in change._approvals:
+      approval_type = approval.get('type')
+      approval_value = int(approval.get('value', 0))
+
+      lgtm = ('CRVW', 2) == (approval_type, approval_value)
+      plusone = ('CRVW', 1) == (approval_type, approval_value)
+
+      approval_email = approval['by'].get('email')
+
+      # See if this approval was given by the target person or people.
+      if approval_email in target_emails:
+        lgtmed = lgtmed or lgtm
+        plusoned = plusoned or plusone
+
+      # See if this approval was given by the owner of the CL.
+      if approval_email and change.owner_email == approval_email:
+        owner_lgtmed = owner_lgtmed or lgtm
+
+    if plusoned:
+      plusones += 1
+
     if lgtmed:
       lgtms += 1
+    elif owner_lgtmed:
+      # Only counter owner LGTMs that were not also LGTM by target.
+      owner_lgtms += 1
 
-  # Find comments; gerrit doesn't give that information in --all-approvals
-  # unfortunately.
-  comments = helper.Query(
-      "( %s AND NOT ( %s ) ) AND -age:%s" % (" OR ".join(reviewers),
-                                             " OR ".join(owners), opts.age),
-      options=("--comments", "--patch-sets"), raw=True, current_patch=False)
-  requested_review = len(comments)
+  # Create summary information about reviewed CLs.
+  summary_lines.append('\nReviewer stats for %s:' % ', '.join(target_emails))
+  summary_lines.append('Only stats for final (committed) patch are available.')
+  summary_lines.append('  Total CLs: %i (listed as reviewer)' %
+                       len(reviewer_changes))
+  summary_lines.append('  LGTMs: %i' % lgtms)
+  summary_lines.append('  +1s  : %i' % plusones)
+  summary_lines.append('  LGTMs from CL owners (possibly carried forward): %i' %
+                       owner_lgtms)
 
-  commented_changes = total_comments = 0
-  for change in comments:
-    touched = False
-    for comment in change.get("comments", ()):
-      if comment["reviewer"].get("email", None) in targets:
-        total_comments += 1
-        touched = True
-    if touched:
-      commented_changes += 1
-
-  print ("Requested as a reviewer for %i changes, commented on %i, "
-         "%i comments total; lgtm'd %i changes" % (
-            requested_review, commented_changes,
-            total_comments, lgtms))
-  ratio = float(total_scored_patchsets)/scoring if total_scored_patchsets else 0
-  print ("Review stats: %i Changes scored; %i individual patchsets scored "
-         "(for a %2.2fx scoring/change rate)" % (
-             scoring, total_scored_patchsets, ratio))
+  cros_build_lib.Info('\n%s', '\n'.join(summary_lines))

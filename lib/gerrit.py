@@ -541,9 +541,12 @@ class GerritOnBorgHelper(GerritHelper):
     if options:
       raise GerritException('"options" argument unsupported on gerrit-on-borg.')
     url_prefix = gob_util.GetGerritFetchUrl(self.host)
-    o_params = ['DETAILED_ACCOUNTS']
+    # All possible params are documented at
+    # pylint: disable=C0301
+    # https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
+    o_params = ['DETAILED_ACCOUNTS', 'ALL_REVISIONS', 'DETAILED_LABELS']
     if current_patch:
-      o_params.extend(['CURRENT_COMMIT', 'CURRENT_REVISION', 'DETAILED_LABELS'])
+      o_params.extend(['CURRENT_COMMIT', 'CURRENT_REVISION'])
 
     if change and change.isdigit() and not query_kwds:
       if dryrun:
@@ -581,6 +584,7 @@ class GerritOnBorgHelper(GerritHelper):
           self.host, query_kwds, first_param=change, sortkey=sortkey,
           limit=self._GERRIT_MAX_QUERY_RETURN, o_params=o_params)
       result.extend(moar)
+
     result = [cros_patch.GerritPatch.ConvertQueryResults(
         x, self.host) for x in result]
     if sort:
