@@ -3297,15 +3297,6 @@ bool RenderObject::nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const
     return false;
 }
 
-bool RenderObject::isContainedInParentBoundingBox() const
-{
-    if (!parent())
-        return false;
-
-    IntRect parentRect = parent()->absoluteBoundingBoxRect();
-    return parentRect.contains(absoluteBoundingBoxRect());
-}
-
 } // namespace WebCore
 
 #ifndef NDEBUG
