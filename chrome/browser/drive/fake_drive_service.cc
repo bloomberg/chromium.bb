@@ -278,7 +278,7 @@ GURL FakeDriveService::GetFakeLinkUrl(const std::string& resource_id) {
   return GURL("https://fake_server/" + net::EscapePath(resource_id));
 }
 
-void FakeDriveService::Initialize() {
+void FakeDriveService::Initialize(const std::string& account_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

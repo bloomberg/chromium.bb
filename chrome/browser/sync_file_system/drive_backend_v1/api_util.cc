@@ -44,6 +44,7 @@ const char kSyncRootDirectoryName[] = "Chrome Syncable FileSystem";
 const char kSyncRootDirectoryNameDev[] = "Chrome Syncable FileSystem Dev";
 const char kMimeTypeOctetStream[] = "application/octet-stream";
 
+const char kFakeAccountId[] = "test_user@gmail.com";
 const char kFakeServerBaseUrl[] = "https://fake_server/";
 const char kFakeDownloadServerBaseUrl[] = "https://fake_download_server/";
 
@@ -168,7 +169,7 @@ APIUtil::APIUtil(Profile* profile,
                kBaseDownloadUrlForProduction)),
       upload_next_key_(0),
       temp_dir_path_(temp_dir_path) {
-  OAuth2TokenService* oauth_service =
+  ProfileOAuth2TokenService* oauth_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   if (IsDriveAPIDisabled()) {
     drive_service_.reset(new drive::GDataWapiService(
@@ -189,7 +190,7 @@ APIUtil::APIUtil(Profile* profile,
         std::string() /* custom_user_agent */));
   }
 
-  drive_service_->Initialize();
+  drive_service_->Initialize(oauth_service->GetPrimaryAccountId());
   drive_service_->AddObserver(this);
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 
@@ -206,20 +207,22 @@ scoped_ptr<APIUtil> APIUtil::CreateForTesting(
       GURL(kFakeServerBaseUrl),
       GURL(kFakeDownloadServerBaseUrl),
       drive_service.Pass(),
-      drive_uploader.Pass()));
+      drive_uploader.Pass(),
+      kFakeAccountId));
 }
 
 APIUtil::APIUtil(const base::FilePath& temp_dir_path,
                  const GURL& base_url,
                  const GURL& base_download_url,
                  scoped_ptr<drive::DriveServiceInterface> drive_service,
-                 scoped_ptr<drive::DriveUploaderInterface> drive_uploader)
+                 scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+                 const std::string& account_id)
     : wapi_url_generator_(base_url, base_download_url),
       drive_api_url_generator_(base_url, base_download_url),
       upload_next_key_(0),
       temp_dir_path_(temp_dir_path) {
   drive_service_ = drive_service.Pass();
-  drive_service_->Initialize();
+  drive_service_->Initialize(account_id);
   drive_service_->AddObserver(this);
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 

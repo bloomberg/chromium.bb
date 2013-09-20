@@ -58,7 +58,7 @@ class GDataWapiService : public DriveServiceInterface,
   virtual ~GDataWapiService();
 
   // DriveServiceInterface Overrides
-  virtual void Initialize() OVERRIDE;
+  virtual void Initialize(const std::string& account_id) OVERRIDE;
   virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual bool CanSendRequest() const OVERRIDE;

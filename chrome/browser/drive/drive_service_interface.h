@@ -41,8 +41,8 @@ class DriveServiceInterface {
 
   // Common service:
 
-  // Initializes the documents service.
-  virtual void Initialize() = 0;
+  // Initializes the documents service with |account_id|.
+  virtual void Initialize(const std::string& account_id) = 0;
 
   // Adds an observer.
   virtual void AddObserver(DriveServiceObserver* observer) = 0;

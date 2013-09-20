@@ -101,7 +101,7 @@ class ProfileSyncServiceTest : public testing::Test {
     SigninManagerBase* signin =
         SigninManagerFactory::GetForProfile(profile_.get());
     signin->SetAuthenticatedUsername("test");
-    OAuth2TokenService* oauth2_token_service =
+    ProfileOAuth2TokenService* oauth2_token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
     ProfileSyncComponentsFactoryMock* factory =
         new ProfileSyncComponentsFactoryMock();
@@ -147,12 +147,10 @@ class ProfileSyncServiceTest : public testing::Test {
   }
 
   void IssueTestTokens() {
-    TokenService* token_service =
-        TokenServiceFactory::GetForProfile(profile_.get());
-    token_service->IssueAuthTokenForTest(
-        GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
-    token_service->IssueAuthTokenForTest(
-          GaiaConstants::kSyncService, "token");
+    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())
+        ->UpdateCredentials("test", "oauth2_login_token");
+    TokenServiceFactory::GetForProfile(profile_.get())
+        ->IssueAuthTokenForTest(GaiaConstants::kSyncService, "token");
   }
 
   scoped_ptr<TestProfileSyncService> service_;
@@ -178,7 +176,7 @@ class TestProfileSyncServiceObserver : public ProfileSyncServiceObserver {
 TEST_F(ProfileSyncServiceTest, InitialState) {
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(profile_.get());
-  OAuth2TokenService* oauth2_token_service =
+  ProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
   service_.reset(new TestProfileSyncService(
       new ProfileSyncComponentsFactoryMock(),
@@ -215,7 +213,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicy) {
       Value::CreateBooleanValue(true));
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(profile_.get());
-  OAuth2TokenService* oauth2_token_service =
+  ProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
   service_.reset(new TestProfileSyncService(
       new ProfileSyncComponentsFactoryMock(),
@@ -232,7 +230,7 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(profile_.get());
   signin->SetAuthenticatedUsername("test");
-  OAuth2TokenService* oauth2_token_service =
+  ProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
   ProfileSyncComponentsFactoryMock* factory =
       new ProfileSyncComponentsFactoryMock();
@@ -260,7 +258,7 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(profile_.get());
   signin->SetAuthenticatedUsername("test");
-  OAuth2TokenService* oauth2_token_service =
+  ProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
   ProfileSyncComponentsFactoryMock* factory =
       new ProfileSyncComponentsFactoryMock();
@@ -301,8 +299,8 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
 TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
   SigninManager* signin =
       SigninManagerFactory::GetForProfile(profile_.get());
-  signin->SetAuthenticatedUsername("test@test.com");
-  OAuth2TokenService* oauth2_token_service =
+  signin->SetAuthenticatedUsername("test");
+  ProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
   ProfileSyncComponentsFactoryMock* factory =
       new ProfileSyncComponentsFactoryMock();

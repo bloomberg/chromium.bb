@@ -30,6 +30,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
@@ -147,11 +148,12 @@ bool ShouldShowActionOnUI(
           error.action != syncer::STOP_SYNC_FOR_DISABLED_ACCOUNT);
 }
 
-ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
-                                       Profile* profile,
-                                       SigninManagerBase* signin_manager,
-                                       OAuth2TokenService* oauth2_token_service,
-                                       StartBehavior start_behavior)
+ProfileSyncService::ProfileSyncService(
+    ProfileSyncComponentsFactory* factory,
+    Profile* profile,
+    SigninManagerBase* signin_manager,
+    ProfileOAuth2TokenService* oauth2_token_service,
+    StartBehavior start_behavior)
     : last_auth_error_(AuthError::AuthErrorNone()),
       passphrase_required_reason_(syncer::REASON_PASSPHRASE_NOT_REQUIRED),
       factory_(factory),
@@ -214,7 +216,8 @@ bool ProfileSyncService::IsOAuthRefreshTokenAvailable() {
   if (use_oauth2_token_) {
     if (!oauth2_token_service_)
       return false;
-    return oauth2_token_service_->RefreshTokenIsAvailable();
+    return oauth2_token_service_->RefreshTokenIsAvailable(
+        oauth2_token_service_->GetPrimaryAccountId());
   } else {
     TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
     if (!token_service)
@@ -711,12 +714,14 @@ void ProfileSyncService::OnGetTokenFailure(
 
 void ProfileSyncService::OnRefreshTokenAvailable(
     const std::string& account_id) {
-  OnRefreshTokensLoaded();
+  if (oauth2_token_service_->GetPrimaryAccountId() == account_id)
+    OnRefreshTokensLoaded();
 }
 
 void ProfileSyncService::OnRefreshTokenRevoked(
     const std::string& account_id) {
   if (!IsOAuthRefreshTokenAvailable()) {
+    access_token_.clear();
     // The additional check around IsOAuthRefreshTokenAvailable() above
     // prevents us sounding the alarm if we actually have a valid token but
     // a refresh attempt by TokenService failed for any variety of reasons
@@ -739,10 +744,6 @@ void ProfileSyncService::OnRefreshTokensLoaded() {
   } else {
     TryStart();
   }
-}
-
-void ProfileSyncService::OnRefreshTokensCleared() {
-  access_token_.clear();
 }
 
 void ProfileSyncService::Shutdown() {
@@ -1902,12 +1903,15 @@ void ProfileSyncService::RequestAccessToken() {
 
   // Invalidate previous token, otherwise token service will return the same
   // token again.
-  if (!access_token_.empty())
-    oauth2_token_service_->InvalidateToken(oauth2_scopes, access_token_);
+  const std::string& account_id = oauth2_token_service_->GetPrimaryAccountId();
+  if (!access_token_.empty()) {
+    oauth2_token_service_->InvalidateToken(
+        account_id, oauth2_scopes, access_token_);
+  }
 
   access_token_.clear();
   access_token_request_ =
-      oauth2_token_service_->StartRequest(oauth2_scopes, this);
+      oauth2_token_service_->StartRequest(account_id, oauth2_scopes, this);
 }
 
 void ProfileSyncService::SetEncryptionPassphrase(const std::string& passphrase,

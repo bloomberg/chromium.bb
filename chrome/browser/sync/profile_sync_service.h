@@ -47,7 +47,7 @@
 #include "sync/js/sync_js_controller.h"
 #include "url/gurl.h"
 
-class OAuth2TokenService;
+class ProfileOAuth2TokenService;
 class Profile;
 class ProfileSyncComponentsFactory;
 class SigninManagerBase;
@@ -237,7 +237,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   ProfileSyncService(ProfileSyncComponentsFactory* factory,
                      Profile* profile,
                      SigninManagerBase* signin,
-                     OAuth2TokenService* oauth2_token_service,
+                     ProfileOAuth2TokenService* oauth2_token_service,
                      StartBehavior start_behavior);
   virtual ~ProfileSyncService();
 
@@ -637,7 +637,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
   virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
   virtual void OnRefreshTokensLoaded() OVERRIDE;
-  virtual void OnRefreshTokensCleared() OVERRIDE;
 
   // BrowserContextKeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
@@ -957,7 +956,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   bool use_oauth2_token_;
 
   // ProfileSyncService uses this service to get access tokens.
-  OAuth2TokenService* oauth2_token_service_;
+  ProfileOAuth2TokenService* oauth2_token_service_;
 
   // ProfileSyncService needs to remember access token in order to invalidate it
   // with OAuth2TokenService.

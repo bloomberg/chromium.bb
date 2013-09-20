@@ -118,7 +118,8 @@ class APIUtil : public APIUtilInterface,
           const GURL& base_url,
           const GURL& base_download_url,
           scoped_ptr<drive::DriveServiceInterface> drive_service,
-          scoped_ptr<drive::DriveUploaderInterface> drive_uploader);
+          scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+          const std::string& account_id);
 
   void GetDriveRootResourceId(const GDataErrorCallback& callback);
   void DidGetDriveRootResourceId(

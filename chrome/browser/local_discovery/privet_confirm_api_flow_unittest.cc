@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/local_discovery/privet_confirm_api_flow.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/host_port_pair.h"
@@ -33,13 +34,15 @@ const char kFailedConfirmResponseBadJson[] = "["
     "   \"success\""
     "]";
 
+const char kAccountId[] = "account_id";
+
 class TestOAuth2TokenService : public OAuth2TokenService {
  public:
   explicit TestOAuth2TokenService(net::URLRequestContextGetter* request_context)
       : request_context_(request_context) {
   }
  protected:
-  virtual std::string GetRefreshToken() OVERRIDE {
+  virtual std::string GetRefreshToken(const std::string& account_id) OVERRIDE {
     return "SampleToken";
   }
 
@@ -68,7 +71,8 @@ class PrivetConfirmApiFlowTest : public testing::Test {
                    &loop_),
         request_context_(new net::TestURLRequestContextGetter(
             base::MessageLoopProxy::current())),
-        token_service_(request_context_.get()) {
+        token_service_(request_context_.get()),
+        account_id_(kAccountId) {
     ui_thread_.Stop();  // HACK: Fake being on the UI thread
   }
 
@@ -82,11 +86,13 @@ class PrivetConfirmApiFlowTest : public testing::Test {
   net::TestURLFetcherFactory fetcher_factory_;
   TestOAuth2TokenService token_service_;
   MockableConfirmCallback callback_;
+  std::string account_id_;
 };
 
 TEST_F(PrivetConfirmApiFlowTest, SuccessOAuth2) {
   PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
                                         &token_service_,
+                                        account_id_,
                                         GURL("http://SoMeUrL.com"),
                                         callback_.callback());
   CloudPrintBaseApiFlow* cloudprint_flow =
@@ -151,6 +157,7 @@ TEST_F(PrivetConfirmApiFlowTest, SuccessCookies) {
 TEST_F(PrivetConfirmApiFlowTest, BadToken) {
   PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
                                         &token_service_,
+                                        account_id_,
                                         GURL("http://SoMeUrL.com"),
                                         callback_.callback());
 
@@ -168,6 +175,7 @@ TEST_F(PrivetConfirmApiFlowTest, BadToken) {
 TEST_F(PrivetConfirmApiFlowTest, ServerFailure) {
   PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
                                         &token_service_,
+                                        account_id_,
                                         GURL("http://SoMeUrL.com"),
                                         callback_.callback());
 
@@ -195,6 +203,7 @@ TEST_F(PrivetConfirmApiFlowTest, ServerFailure) {
 TEST_F(PrivetConfirmApiFlowTest, BadJson) {
   PrivetConfirmApiCallFlow confirm_flow(request_context_.get(),
                                         &token_service_,
+                                        account_id_,
                                         GURL("http://SoMeUrL.com"),
                                         callback_.callback());
 

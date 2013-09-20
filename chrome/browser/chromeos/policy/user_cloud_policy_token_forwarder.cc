@@ -79,7 +79,8 @@ void UserCloudPolicyTokenForwarder::Initialize() {
     return;
   }
 
-  if (token_service_->RefreshTokenIsAvailable())
+  if (token_service_->RefreshTokenIsAvailable(
+          token_service_->GetPrimaryAccountId()))
     RequestAccessToken();
   else
     token_service_->AddObserver(this);
@@ -88,7 +89,8 @@ void UserCloudPolicyTokenForwarder::Initialize() {
 void UserCloudPolicyTokenForwarder::RequestAccessToken() {
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
-  request_ = token_service_->StartRequest(scopes, this);
+  request_ = token_service_->StartRequest(
+      token_service_->GetPrimaryAccountId(), scopes, this);
 }
 
 }  // namespace policy

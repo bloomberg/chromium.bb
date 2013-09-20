@@ -271,7 +271,7 @@ DriveAPIService::~DriveAPIService() {
     sender_->auth_service()->RemoveObserver(this);
 }
 
-void DriveAPIService::Initialize() {
+void DriveAPIService::Initialize(const std::string& account_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::vector<std::string> scopes;
@@ -283,11 +283,13 @@ void DriveAPIService::Initialize() {
   scopes.push_back(util::kDriveAppsScope);
 
   sender_.reset(new RequestSender(
-     new google_apis::AuthService(
-         oauth2_token_service_, url_request_context_getter_, scopes),
-     url_request_context_getter_,
-     blocking_task_runner_.get(),
-     custom_user_agent_));
+      new google_apis::AuthService(oauth2_token_service_,
+                                   account_id,
+                                   url_request_context_getter_,
+                                   scopes),
+      url_request_context_getter_,
+      blocking_task_runner_.get(),
+      custom_user_agent_));
   sender_->auth_service()->AddObserver(this);
 }
 

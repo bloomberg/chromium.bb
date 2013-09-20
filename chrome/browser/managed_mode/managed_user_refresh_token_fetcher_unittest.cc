@@ -23,8 +23,9 @@
 
 namespace {
 
-const char kManagedUserId[] = "abcdef";
+const char kAccountId[] = "account_id";
 const char kDeviceName[] = "Compy";
+const char kManagedUserId[] = "abcdef";
 
 const char kAccessToken[] = "accesstoken";
 const char kAuthorizationCode[] = "authorizationcode";
@@ -123,7 +124,8 @@ class ManagedUserRefreshTokenFetcherTest : public testing::Test {
 ManagedUserRefreshTokenFetcherTest::ManagedUserRefreshTokenFetcherTest()
     : token_fetcher_(
           ManagedUserRefreshTokenFetcher::Create(&oauth2_token_service_,
-                                          profile_.GetRequestContext())),
+                                                 kAccountId,
+                                                 profile_.GetRequestContext())),
       error_(GoogleServiceAuthError::NONE),
       weak_ptr_factory_(this) {}
 

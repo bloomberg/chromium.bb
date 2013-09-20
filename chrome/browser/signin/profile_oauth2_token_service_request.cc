@@ -24,9 +24,11 @@ class ProfileOAuth2TokenServiceRequest::Core
   // the "owner thread" here. This will be the thread of |owner_task_runner_|.
   Core(Profile* profile,
        ProfileOAuth2TokenServiceRequest* owner);
-  // Starts fetching an OAuth2 access token for |scopes|. It should be called
-  // on the owner thread.
-  void Start(const OAuth2TokenService::ScopeSet& scopes);
+  // Starts fetching an OAuth2 access token for |account_id| and |scopes|. It
+  // should be called on the owner thread.
+  void Start(
+      const std::string& account_id,
+      const OAuth2TokenService::ScopeSet& scopes);
   // Stops the OAuth2 access token fetching. It should be called on the owner
   // thread.
   void Stop();
@@ -47,7 +49,9 @@ class ProfileOAuth2TokenServiceRequest::Core
   virtual ~Core();
 
   // Starts an OAuth2TokenService::Request on the UI thread.
-  void StartOnUIThread(const OAuth2TokenService::ScopeSet& scopes);
+  void StartOnUIThread(
+      const std::string& account_id,
+      const OAuth2TokenService::ScopeSet& scopes);
   // Stops the OAuth2TokenService::Request on the UI thread.
   void StopOnUIThread();
 
@@ -88,17 +92,18 @@ ProfileOAuth2TokenServiceRequest::Core::~Core() {
 }
 
 void ProfileOAuth2TokenServiceRequest::Core::Start(
+    const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes) {
   DCHECK(owner_task_runner_->BelongsToCurrentThread());
 
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    StartOnUIThread(scopes);
+    StartOnUIThread(account_id, scopes);
   } else {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,
         FROM_HERE,
         base::Bind(&ProfileOAuth2TokenServiceRequest::Core::StartOnUIThread,
-                   this, scopes));
+                   this, account_id, scopes));
   }
 }
 
@@ -125,13 +130,14 @@ void ProfileOAuth2TokenServiceRequest::Core::StopOnUIThread() {
 }
 
 void ProfileOAuth2TokenServiceRequest::Core::StartOnUIThread(
+    const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   ProfileOAuth2TokenService* service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   DCHECK(service);
-  request_.reset(service->StartRequest(scopes, this).release());
+  request_.reset(service->StartRequest(account_id, scopes, this).release());
 }
 
 void ProfileOAuth2TokenServiceRequest::Core::OnGetTokenSuccess(
@@ -181,18 +187,21 @@ void ProfileOAuth2TokenServiceRequest::Core::InformOwnerOnGetTokenFailure(
 ProfileOAuth2TokenServiceRequest*
     ProfileOAuth2TokenServiceRequest::CreateAndStart(
         Profile* profile,
+        const std::string& account_id,
         const OAuth2TokenService::ScopeSet& scopes,
         OAuth2TokenService::Consumer* consumer) {
-  return new ProfileOAuth2TokenServiceRequest(profile, scopes, consumer);
+  return new ProfileOAuth2TokenServiceRequest(profile, account_id, scopes,
+      consumer);
 }
 
 ProfileOAuth2TokenServiceRequest::ProfileOAuth2TokenServiceRequest(
     Profile* profile,
+    const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenService::Consumer* consumer)
     : consumer_(consumer),
       core_(new Core(profile, this)) {
-  core_->Start(scopes);
+  core_->Start(account_id, scopes);
 }
 
 ProfileOAuth2TokenServiceRequest::~ProfileOAuth2TokenServiceRequest() {

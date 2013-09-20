@@ -229,7 +229,7 @@ bool FileBrowserPrivateRequestWebStoreAccessTokenFunction::RunImpl() {
   std::vector<std::string> scopes;
   scopes.push_back(kCWSScope);
 
-  OAuth2TokenService* oauth_service =
+  ProfileOAuth2TokenService* oauth_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
   net::URLRequestContextGetter* url_request_context_getter =
       g_browser_process->system_request_context();
@@ -244,6 +244,7 @@ bool FileBrowserPrivateRequestWebStoreAccessTokenFunction::RunImpl() {
 
   auth_service_.reset(new google_apis::AuthService(
       oauth_service,
+      oauth_service->GetPrimaryAccountId(),
       url_request_context_getter,
       scopes));
   auth_service_->StartAuthentication(base::Bind(

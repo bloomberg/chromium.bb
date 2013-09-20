@@ -92,10 +92,11 @@ class NullPasswordStore : public MockPasswordStore {
 
 class PasswordTestProfileSyncService : public TestProfileSyncService {
  public:
-  PasswordTestProfileSyncService(ProfileSyncComponentsFactory* factory,
-                                 Profile* profile,
-                                 SigninManagerBase* signin,
-                                 OAuth2TokenService* oauth2_token_service)
+  PasswordTestProfileSyncService(
+      ProfileSyncComponentsFactory* factory,
+      Profile* profile,
+      SigninManagerBase* signin,
+      ProfileOAuth2TokenService* oauth2_token_service)
       : TestProfileSyncService(factory,
                                profile,
                                signin,
@@ -116,7 +117,7 @@ class PasswordTestProfileSyncService : public TestProfileSyncService {
     Profile* profile = static_cast<Profile*>(context);
     SigninManagerBase* signin =
         SigninManagerFactory::GetForProfile(profile);
-    OAuth2TokenService* oauth2_token_service =
+    ProfileOAuth2TokenService* oauth2_token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
     ProfileSyncComponentsFactoryMock* factory =
         new ProfileSyncComponentsFactoryMock();
@@ -233,10 +234,10 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
           WillOnce(ReturnNewDataTypeManager());
 
       // We need tokens to get the tests going
-      token_service_->IssueAuthTokenForTest(
-          GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
-      token_service_->IssueAuthTokenForTest(
-          GaiaConstants::kSyncService, "token");
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())
+          ->UpdateCredentials("test_user@gmail.com", "oauth2_login_token");
+      token_service_->IssueAuthTokenForTest(GaiaConstants::kSyncService,
+                                            "token");
 
       sync_service_->RegisterDataTypeController(data_type_controller);
       sync_service_->Initialize();

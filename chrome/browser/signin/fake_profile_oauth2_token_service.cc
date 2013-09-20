@@ -24,6 +24,11 @@ FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService() {
 FakeProfileOAuth2TokenService::~FakeProfileOAuth2TokenService() {
 }
 
+bool FakeProfileOAuth2TokenService::RefreshTokenIsAvailable(
+    const std::string& account_id) {
+  return !GetRefreshToken(account_id).empty();
+}
+
 void FakeProfileOAuth2TokenService::IssueRefreshToken(
     const std::string& token) {
   refresh_token_ = token;
@@ -82,7 +87,8 @@ void FakeProfileOAuth2TokenService::CompleteRequests(
   }
 }
 
-std::string FakeProfileOAuth2TokenService::GetRefreshToken() {
+std::string FakeProfileOAuth2TokenService::GetRefreshToken(
+    const std::string& account_id) {
   return refresh_token_;
 }
 
@@ -104,11 +110,13 @@ FakeProfileOAuth2TokenService::GetPendingRequests() {
 
 void FakeProfileOAuth2TokenService::FetchOAuth2Token(
     RequestImpl* request,
+    const std::string& account_id,
     net::URLRequestContextGetter* getter,
     const std::string& client_id,
     const std::string& client_secret,
     const ScopeSet& scopes) {
   PendingRequest pending_request;
+  pending_request.account_id = account_id;
   pending_request.client_id = client_id;
   pending_request.client_secret = client_secret;
   pending_request.scopes = scopes;

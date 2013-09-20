@@ -208,7 +208,7 @@ TestProfileSyncService::TestProfileSyncService(
     ProfileSyncComponentsFactory* factory,
     Profile* profile,
     SigninManagerBase* signin,
-    OAuth2TokenService* oauth2_token_service,
+    ProfileOAuth2TokenService* oauth2_token_service,
     ProfileSyncService::StartBehavior behavior,
     bool synchronous_backend_initialization)
         : ProfileSyncService(factory,
@@ -234,7 +234,7 @@ BrowserContextKeyedService* TestProfileSyncService::BuildAutoStartAsyncInit(
   Profile* profile = static_cast<Profile*>(context);
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(profile);
-  OAuth2TokenService* oauth2_token_service =
+  ProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   ProfileSyncComponentsFactoryMock* factory =
       new ProfileSyncComponentsFactoryMock();
@@ -322,16 +322,17 @@ void TestProfileSyncService::CreateBackend() {
 }
 
 scoped_ptr<OAuth2TokenService::Request> FakeOAuth2TokenService::StartRequest(
+    const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenService::Consumer* consumer) {
   // Ensure token in question is cached and never expires. Request will succeed
   // without network IO.
   RegisterCacheEntry("test_client_id",
-                     GetRefreshToken(),
+                     account_id,
                      scopes,
                      "access_token",
                      base::Time::Max());
-  return ProfileOAuth2TokenService::StartRequest(scopes, consumer);
+  return ProfileOAuth2TokenService::StartRequest(account_id, scopes, consumer);
 }
 
 BrowserContextKeyedService* FakeOAuth2TokenService::BuildTokenService(
@@ -341,4 +342,15 @@ BrowserContextKeyedService* FakeOAuth2TokenService::BuildTokenService(
   FakeOAuth2TokenService* service = new FakeOAuth2TokenService();
   service->Initialize(profile);
   return service;
+}
+
+void FakeOAuth2TokenService::PersistCredentials(
+    const std::string& account_id,
+    const std::string& refresh_token) {
+  // Disabling the token persistence.
+}
+
+void FakeOAuth2TokenService::ClearPersistedCredentials(
+    const std::string& account_id) {
+  // Disabling the token persistence.
 }

@@ -217,7 +217,8 @@ void ProfileDownloader::Start() {
     return;
   }
 
-  if (service->RefreshTokenIsAvailable()) {
+  if (service->RefreshTokenIsAvailable(
+          service->GetPrimaryAccountId())) {
     StartFetchingOAuth2AccessToken();
   } else {
     service->AddObserver(this);
@@ -264,9 +265,10 @@ void ProfileDownloader::StartFetchingOAuth2AccessToken() {
   Profile* profile = delegate_->GetBrowserProfile();
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(kAPIScope);
-  oauth2_access_token_request_ =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)
-          ->StartRequestWithContext(profile->GetRequestContext(), scopes, this);
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  oauth2_access_token_request_ = token_service->StartRequest(
+      token_service->GetPrimaryAccountId(), scopes, this);
 }
 
 ProfileDownloader::~ProfileDownloader() {}

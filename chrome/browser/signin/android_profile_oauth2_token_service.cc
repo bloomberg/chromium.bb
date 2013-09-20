@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/android_profile_oauth2_token_service.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -15,7 +16,6 @@
 #include "jni/AndroidProfileOAuth2TokenServiceHelper_jni.h"
 
 using base::android::AttachCurrentThread;
-using base::android::CheckException;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
@@ -54,59 +54,45 @@ AndroidProfileOAuth2TokenService::AndroidProfileOAuth2TokenService() {
 AndroidProfileOAuth2TokenService::~AndroidProfileOAuth2TokenService() {
 }
 
-scoped_ptr<OAuth2TokenService::Request>
-    AndroidProfileOAuth2TokenService::StartRequestForUsername(
-        const std::string& username,
-        const OAuth2TokenService::ScopeSet& scopes,
-        OAuth2TokenService::Consumer* consumer) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  scoped_ptr<RequestImpl> request(new RequestImpl(consumer));
-  FetchOAuth2TokenWithUsername(request.get(), username, scopes);
-  return request.PassAs<Request>();
-}
-
-bool AndroidProfileOAuth2TokenService::RefreshTokenIsAvailable() {
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile());
-  return !signin_manager->GetAuthenticatedUsername().empty();
-}
-
-void AndroidProfileOAuth2TokenService::InvalidateToken(
-    const ScopeSet& scopes,
-    const std::string& invalid_token) {
-  OAuth2TokenService::InvalidateToken(scopes, invalid_token);
-
+bool AndroidProfileOAuth2TokenService::RefreshTokenIsAvailable(
+    const std::string& account_id) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_invalid_token =
-      ConvertUTF8ToJavaString(env, invalid_token);
-  Java_AndroidProfileOAuth2TokenServiceHelper_invalidateOAuth2AuthToken(
-      env, base::android::GetApplicationContext(),
-      j_invalid_token.obj());
+  ScopedJavaLocalRef<jstring> j_account_id =
+      ConvertUTF8ToJavaString(env, account_id);
+  jboolean refresh_token_is_available =
+      Java_AndroidProfileOAuth2TokenServiceHelper_hasOAuth2RefreshToken(
+          env, base::android::GetApplicationContext(),
+          j_account_id.obj());
+  return refresh_token_is_available != JNI_FALSE;
+}
+
+std::vector<std::string> AndroidProfileOAuth2TokenService::GetAccounts() {
+  std::vector<std::string> accounts;
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobjectArray> j_accounts =
+      Java_AndroidProfileOAuth2TokenServiceHelper_getAccounts(
+          env, base::android::GetApplicationContext());
+  // TODO(fgorski): We may decide to filter out some of the accounts.
+  base::android::AppendJavaStringArrayToStringVector(env,
+                                                     j_accounts.obj(),
+                                                     &accounts);
+  return accounts;
 }
 
 void AndroidProfileOAuth2TokenService::FetchOAuth2Token(
     RequestImpl* request,
+    const std::string& account_id,
     net::URLRequestContextGetter* getter,
     const std::string& client_id,
     const std::string& client_secret,
     const OAuth2TokenService::ScopeSet& scopes) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  std::string username = SigninManagerFactory::GetForProfile(profile())->
-      GetAuthenticatedUsername();
-  DCHECK(!username.empty());
-  // Just ignore client_id, getter, etc since we don't use them on Android.
-  FetchOAuth2TokenWithUsername(request, username, scopes);
-}
+  DCHECK(!account_id.empty());
 
-void AndroidProfileOAuth2TokenService::FetchOAuth2TokenWithUsername(
-    RequestImpl* request,
-    const std::string& username,
-    const OAuth2TokenService::ScopeSet& scopes) {
   JNIEnv* env = AttachCurrentThread();
   std::string scope = CombineScopes(scopes);
   ScopedJavaLocalRef<jstring> j_username =
-      ConvertUTF8ToJavaString(env, username);
+      ConvertUTF8ToJavaString(env, account_id);
   ScopedJavaLocalRef<jstring> j_scope =
       ConvertUTF8ToJavaString(env, scope);
 
@@ -123,6 +109,24 @@ void AndroidProfileOAuth2TokenService::FetchOAuth2TokenWithUsername(
       j_username.obj(),
       j_scope.obj(),
       reinterpret_cast<int>(heap_callback.release()));
+}
+
+void AndroidProfileOAuth2TokenService::InvalidateOAuth2Token(
+    const std::string& account_id,
+    const std::string& client_id,
+    const ScopeSet& scopes,
+    const std::string& access_token) {
+  OAuth2TokenService::InvalidateOAuth2Token(account_id,
+                                            client_id,
+                                            scopes,
+                                            access_token);
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_access_token =
+      ConvertUTF8ToJavaString(env, access_token);
+  Java_AndroidProfileOAuth2TokenServiceHelper_invalidateOAuth2AuthToken(
+      env, base::android::GetApplicationContext(),
+      j_access_token.obj());
 }
 
 // Called from Java when fetching of an OAuth2 token is finished. The

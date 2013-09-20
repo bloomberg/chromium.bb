@@ -15,7 +15,6 @@
 #include "chrome/browser/policy/cloud/user_info_fetcher.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 
-class AndroidProfileOAuth2TokenService;
 class OAuth2TokenService;
 
 namespace net {
@@ -43,18 +42,11 @@ class CloudPolicyClientRegistrationHelper : public UserInfoFetcher::Delegate,
 
   // Starts the client registration process. This version uses the
   // supplied OAuth2TokenService to mint the new token for the userinfo
-  // and DM services, using the |username| account.
+  // and DM services, using the |account_id|.
   // |callback| is invoked when the registration is complete.
   void StartRegistration(
-#if defined(OS_ANDROID)
-      // TODO(atwilson): Remove this when the Android StartRequestForUsername()
-      // API is folded into the base OAuth2TokenService class (when that class
-      // is made multi-account aware).
-      AndroidProfileOAuth2TokenService* token_service,
-#else
       OAuth2TokenService* token_service,
-#endif
-      const std::string& username,
+      const std::string& account_id,
       const base::Closure& callback);
 
 #if !defined(OS_ANDROID)

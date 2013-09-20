@@ -34,7 +34,7 @@ DummyDriveService::DummyDriveService() {}
 
 DummyDriveService::~DummyDriveService() {}
 
-void DummyDriveService::Initialize() {}
+void DummyDriveService::Initialize(const std::string& account_id) {}
 
 void DummyDriveService::AddObserver(DriveServiceObserver* observer) {}
 

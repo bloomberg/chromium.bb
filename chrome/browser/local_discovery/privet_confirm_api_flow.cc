@@ -12,10 +12,12 @@ namespace local_discovery {
 PrivetConfirmApiCallFlow::PrivetConfirmApiCallFlow(
     net::URLRequestContextGetter* request_context,
     OAuth2TokenService* token_service,
+    const std::string& account_id,
     const GURL& automated_claim_url,
     const ResponseCallback& callback)
     : flow_(request_context,
             token_service,
+            account_id,
             automated_claim_url,
             this),
       callback_(callback) {

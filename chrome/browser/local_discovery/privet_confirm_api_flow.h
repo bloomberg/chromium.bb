@@ -22,6 +22,7 @@ class PrivetConfirmApiCallFlow : public CloudPrintBaseApiFlow::Delegate {
   // Create an OAuth2-based confirmation
   PrivetConfirmApiCallFlow(net::URLRequestContextGetter* request_context,
                            OAuth2TokenService* token_service_,
+                           const std::string& account_id,
                            const GURL& automated_claim_url,
                            const ResponseCallback& callback);
 
