@@ -43,6 +43,19 @@ void DefaultComponentInstaller::OnUpdateError(int error) {
   NOTREACHED() << "Component update error: " << error;
 }
 
+bool DefaultComponentInstaller::InstallHelper(
+    const base::DictionaryValue& manifest,
+    const base::FilePath& unpack_path,
+    const base::FilePath& install_path) {
+  if (!base::Move(unpack_path, install_path))
+    return false;
+  if (!installer_traits_->OnCustomInstall(manifest, install_path))
+    return false;
+  if (!installer_traits_->VerifyInstallation(install_path))
+    return false;
+  return true;
+}
+
 bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
                                         const base::FilePath& unpack_path) {
   std::string manifest_version;
@@ -54,13 +67,12 @@ bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
     return false;
   base::FilePath install_path =
       installer_traits_->GetBaseDirectory().AppendASCII(version.GetString());
-  if (base::PathExists(install_path))
-    return false;
-  if (!base::Move(unpack_path, install_path))
-    return false;
-  if (!installer_traits_->OnCustomInstall(manifest, install_path))
-    return false;
-  if (!installer_traits_->VerifyInstallation(install_path)) {
+  if (base::PathExists(install_path)) {
+    if (!base::DeleteFile(install_path, true))
+      return false;
+  }
+  if (!InstallHelper(manifest, unpack_path, install_path)) {
+    base::DeleteFile(install_path, true);
     return false;
   }
   current_version_ = version;

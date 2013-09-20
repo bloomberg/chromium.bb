@@ -87,6 +87,9 @@ class DefaultComponentInstaller : public ComponentInstaller {
 
  private:
   base::FilePath GetInstallDirectory();
+  bool InstallHelper(const base::DictionaryValue& manifest,
+                     const base::FilePath& unpack_path,
+                     const base::FilePath& install_path);
   void StartRegistration(ComponentUpdateService* cus);
   void FinishRegistration(ComponentUpdateService* cus);
 
