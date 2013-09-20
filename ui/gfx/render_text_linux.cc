@@ -287,6 +287,7 @@ void RenderTextLinux::ResetLayout() {
   // set_cached_bounds_and_offset_valid(false) is done in RenderText for every
   // operation that triggers ResetLayout().
   if (layout_) {
+    // TODO(msw): Keep |layout_| across text changes, etc.; it can be re-used.
     g_object_unref(layout_);
     layout_ = NULL;
   }
@@ -306,9 +307,12 @@ void RenderTextLinux::EnsureLayout() {
   if (layout_ == NULL) {
     cairo_surface_t* surface =
         cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
+    CHECK_EQ(CAIRO_STATUS_SUCCESS, cairo_surface_status(surface));
     cairo_t* cr = cairo_create(surface);
+    CHECK_EQ(CAIRO_STATUS_SUCCESS, cairo_status(cr));
 
     layout_ = pango_cairo_create_layout(cr);
+    CHECK_NE(static_cast<PangoLayout*>(NULL), layout_);
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
 
@@ -331,6 +335,7 @@ void RenderTextLinux::EnsureLayout() {
     SetupPangoAttributes(layout_);
 
     current_line_ = pango_layout_get_line_readonly(layout_, 0);
+    CHECK_NE(static_cast<PangoLayoutLine*>(NULL), current_line_);
     pango_layout_line_ref(current_line_);
 
     pango_layout_get_log_attrs(layout_, &log_attrs_, &num_log_attrs_);
