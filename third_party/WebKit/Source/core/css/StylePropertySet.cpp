@@ -50,6 +50,7 @@ static size_t sizeForImmutableStylePropertySetWithPropertyCount(unsigned count)
 
 PassRefPtr<ImmutableStylePropertySet> ImmutableStylePropertySet::create(const CSSProperty* properties, unsigned count, CSSParserMode cssParserMode)
 {
+    ASSERT(count <= MaxArraySize);
     void* slot = WTF::fastMalloc(sizeForImmutableStylePropertySetWithPropertyCount(count));
     return adoptRef(new (slot) ImmutableStylePropertySet(properties, count, cssParserMode));
 }
