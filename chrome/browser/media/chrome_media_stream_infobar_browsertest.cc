@@ -156,8 +156,16 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
   GetUserMediaAndDeny(tab_contents);
 }
 
+// Times out on win debug builds; http://crbug.com/295723 .
+#if !defined(USE_AURA) && defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_DenyingMicDoesNotCauseStickyDenyForCameras \
+        DISABLED_DenyingMicDoesNotCauseStickyDenyForCameras
+#else
+#define MAYBE_DenyingMicDoesNotCauseStickyDenyForCameras \
+        DenyingMicDoesNotCauseStickyDenyForCameras
+#endif
 IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
-                       DenyingMicDoesNotCauseStickyDenyForCameras) {
+                       MAYBE_DenyingMicDoesNotCauseStickyDenyForCameras) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   // If mic blocking also blocked cameras, the second call here would hang.
