@@ -170,27 +170,28 @@
         replace(/\s+/g, ' ');
   }
 
-  function createTarget(id) {
-    var target = document.createElement('div');
+  function createTargetContainer(id) {
+    var targetContainer = document.createElement('div');
     var template = document.querySelector('#target-template');
     if (template) {
-      target.appendChild(template.content.cloneNode(true));
+      targetContainer.appendChild(template.content.cloneNode(true));
       // Remove whitespace text nodes at start / end.
-      while (target.firstChild.nodeType != Node.ELEMENT_NODE && !/\S/.test(target.firstChild.nodeValue)) {
-        target.removeChild(target.firstChild);
+      while (targetContainer.firstChild.nodeType != Node.ELEMENT_NODE && !/\S/.test(targetContainer.firstChild.nodeValue)) {
+        targetContainer.removeChild(targetContainer.firstChild);
       }
-      while (target.lastChild.nodeType != Node.ELEMENT_NODE && !/\S/.test(target.lastChild.nodeValue)) {
-        target.removeChild(target.lastChild);
+      while (targetContainer.lastChild.nodeType != Node.ELEMENT_NODE && !/\S/.test(targetContainer.lastChild.nodeValue)) {
+        targetContainer.removeChild(targetContainer.lastChild);
       }
       // If the template contains just one element, use that rather than a wrapper div.
-      if (target.children.length == 1 && target.childNodes.length == 1) {
-        target = target.firstChild;
-        target.remove();
+      if (targetContainer.children.length == 1 && targetContainer.childNodes.length == 1) {
+        targetContainer = targetContainer.firstChild;
+        targetContainer.remove();
       }
     }
-    target.classList.add(id);
+    var target = targetContainer.querySelector('.target') || targetContainer;
     target.classList.add('target');
-    return target;
+    target.classList.add(id);
+    return targetContainer;
   }
 
   function makeInterpolationTest(fraction, keyframeId, testId, params, expectation) {
@@ -203,11 +204,13 @@
       }
     }
     var id = keyframeId + '-' + testId;
-    var target = createTarget(id);
+    var targetContainer = createTargetContainer(id);
+    var target = targetContainer.querySelector('.target') || targetContainer;
     target.classList.add('active');
-    var replica;
+    var replicaContainer, replica;
     if (expectation !== undefined) {
-      replica = createTarget(id);
+      replicaContainer = createTargetContainer(id);
+      replica = replicaContainer.querySelector('.target') || replicaContainer;
       replica.classList.add('replica');
       replica.style.setProperty(params.property, expectation);
     }
@@ -239,8 +242,8 @@
         '  ' + prefix + 'animation-iteration-count: ' + iterationCount + ';\n' +
         '}\n';
     testCount++;
-    fragment.appendChild(target);
-    replica && fragment.appendChild(replica);
+    fragment.appendChild(targetContainer);
+    replica && fragment.appendChild(replicaContainer);
     fragment.appendChild(document.createTextNode('\n'));
   }
 
