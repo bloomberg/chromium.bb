@@ -694,6 +694,35 @@ TEST_F(QuicHttpStreamTest, Priority) {
   EXPECT_TRUE(AtEof());
 }
 
+// Regression test for http://crbug.com/294870
+TEST_F(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
+  SetRequestString("GET", "/", MEDIUM);
+  use_closing_stream_ = true;
+  Initialize();
+
+  request_.method = "GET";
+  request_.url = GURL("http://www.google.com/");
+
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, MEDIUM,
+                                          net_log_, callback_.callback()));
+
+  // Check that priority is highest.
+  QuicReliableClientStream* reliable_stream =
+      QuicHttpStreamPeer::GetQuicReliableClientStream(stream_.get());
+  DCHECK(reliable_stream);
+  QuicReliableClientStream::Delegate* delegate = reliable_stream->GetDelegate();
+  DCHECK(delegate);
+  DCHECK_EQ(static_cast<QuicPriority>(kHighestPriority),
+            reliable_stream->EffectivePriority());
+
+  // Set Delegate to NULL and make sure EffectivePriority returns highest
+  // priority.
+  reliable_stream->SetDelegate(NULL);
+  DCHECK_EQ(static_cast<QuicPriority>(kHighestPriority),
+            reliable_stream->EffectivePriority());
+  reliable_stream->SetDelegate(delegate);
+}
+
 }  // namespace test
 
 }  // namespace net
