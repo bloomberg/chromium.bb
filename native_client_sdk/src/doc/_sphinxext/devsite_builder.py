@@ -62,10 +62,11 @@ class DevsiteHTMLTranslator(HTMLTranslator):
       Hooked into the HTML builder by setting the html_translator_class
       option in conf.py
 
-      HTMLTranslator is provided by Sphinx. It's a subclass of the
-      HTMLTranslator provided by docutils, with Sphinx-specific features added.
-      Here we provide devsite-specific behavior by overriding some of the
-      visiting methods.
+      HTMLTranslator is provided by Sphinx. We're actually using
+      SmartyPantsHTMLTranslator to use its quote and dash-formatting
+      capabilities. It's a subclass of the HTMLTranslator provided by docutils,
+      with Sphinx-specific features added. Here we provide devsite-specific
+      behavior by overriding some of the visiting methods.
   """
   def __init__(self, builder, *args, **kwds):
     # HTMLTranslator is an old-style Python class, so 'super' doesn't work: use
@@ -91,6 +92,8 @@ class DevsiteHTMLTranslator(HTMLTranslator):
       self.body.append('</ul>\n')
 
   def visit_literal(self, node):
+    # Don't insert "smart" quotes here
+    self.no_smarty += 1
     # Sphinx emits <tt></tt> for literals (``like this``), with <span> per word
     # to protect against wrapping, etc. We're required to emit plain <code>
     # tags for them.
@@ -99,9 +102,12 @@ class DevsiteHTMLTranslator(HTMLTranslator):
     self.body.append(self.starttag(node, 'code', suffix=''))
 
   def depart_literal(self, node):
+    self.no_smarty -= 1
     self.body.append('</code>')
 
   def visit_literal_block(self, node):
+    # Don't insert "smart" quotes here
+    self.no_smarty += 1
     # We don't use Sphinx's buildin pygments integration for code highlighting,
     # because the devsite requires special <pre> tags for that and handles the
     # highlighting on its own.
@@ -109,6 +115,7 @@ class DevsiteHTMLTranslator(HTMLTranslator):
     self.body.append(self.starttag(node, 'pre', **attrs))
 
   def depart_literal_block(self, node):
+    self.no_smarty -= 1
     self.body.append('\n</pre>\n')
 
   def visit_paragraph(self, node):

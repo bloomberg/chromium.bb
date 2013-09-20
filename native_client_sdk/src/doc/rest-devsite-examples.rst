@@ -93,8 +93,8 @@ Fig
   Ficus, from the family Moraceae, known as the common fig (or just the fig),
   anjeer (Iran, Pakistan), and dumur (Bengali).
 Pear
-  The pear is any of several tree and shrub species of genus Pyrus /ˈpaɪrəs/, in
-  the family Rosaceae.
+  The pear is any of several tree and shrub species of genus Pyrus, in the
+  family Rosaceae.
 
 Notes and Admonitions
 =====================
@@ -130,6 +130,7 @@ without coloring:
   #include <iostream>
 
   int main() {
+    char c = 'x';
     std::cout << "Hello world\n";
     return 0;
   }
