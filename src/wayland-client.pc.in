@@ -1,5 +1,7 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
+datarootdir=@datarootdir@
+pkgdatadir=@datadir@/@PACKAGE@
 libdir=@libdir@
 includedir=@includedir@
 

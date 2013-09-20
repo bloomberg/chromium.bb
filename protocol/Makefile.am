@@ -1,1 +1,1 @@
-EXTRA_DIST = wayland.xml
+dist_pkgdata_DATA = wayland.xml
