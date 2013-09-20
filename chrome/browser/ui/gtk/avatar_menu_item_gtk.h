@@ -7,7 +7,7 @@
 
 #include <gtk/gtk.h>
 
-#include "chrome/browser/profiles/avatar_menu.h"
+#include "chrome/browser/profiles/avatar_menu_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -32,7 +32,7 @@ class AvatarMenuItemGtk : public content::NotificationObserver {
   };
 
   AvatarMenuItemGtk(Delegate* delegate,
-                    const AvatarMenu::Item& item,
+                    const AvatarMenuModel::Item& item,
                     size_t item_index,
                     GtkThemeService* theme_service);
   virtual ~AvatarMenuItemGtk();
@@ -73,7 +73,7 @@ class AvatarMenuItemGtk : public content::NotificationObserver {
   Delegate* delegate_;
 
   // Profile information to display for this item, e.g. user name, sync status.
-  AvatarMenu::Item item_;
+  AvatarMenuModel::Item item_;
 
   // The index of this profile. The delegate uses this value to distinguish
   // which profile should be switched to.

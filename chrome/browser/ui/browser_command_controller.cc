@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/profiles/avatar_menu.h"
+#include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -1194,7 +1194,7 @@ void BrowserCommandController::UpdateCommandsForMultipleProfiles() {
   bool enable = IsShowingMainUI() &&
       !profile()->IsOffTheRecord() &&
       profile_manager_ &&
-      AvatarMenu::ShouldShowAvatarMenu();
+      AvatarMenuModel::ShouldShowAvatarMenu();
   command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU,
                                         enable);
 }

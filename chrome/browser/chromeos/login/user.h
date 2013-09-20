@@ -167,7 +167,6 @@ class User {
   friend class UserImageManagerImpl;
   // For testing:
   friend class MockUserManager;
-  friend class FakeUserManager;
 
   // Do not allow anyone else to create new User instances.
   static User* CreateRegularUser(const std::string& email);

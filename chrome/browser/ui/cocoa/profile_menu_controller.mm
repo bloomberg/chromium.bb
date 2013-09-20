@@ -7,8 +7,8 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/avatar_menu.h"
-#include "chrome/browser/profiles/avatar_menu_observer.h"
+#include "chrome/browser/profiles/avatar_menu_model.h"
+#include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_interface.h"
@@ -29,7 +29,7 @@
 namespace ProfileMenuControllerInternal {
 
 class Observer : public chrome::BrowserListObserver,
-                 public AvatarMenuObserver {
+                 public AvatarMenuModelObserver {
  public:
   Observer(ProfileMenuController* controller) : controller_(controller) {
     BrowserList::AddObserver(this);
@@ -48,8 +48,8 @@ class Observer : public chrome::BrowserListObserver,
     [controller_ activeBrowserChangedTo:browser];
   }
 
-  // AvatarMenuObserver:
-  virtual void OnAvatarMenuChanged(AvatarMenu* menu) OVERRIDE {
+  // AvatarMenuModelObserver:
+  virtual void OnAvatarMenuModelChanged(AvatarMenuModel* model) OVERRIDE {
     [controller_ rebuildMenu];
   }
 
@@ -82,29 +82,29 @@ class Observer : public chrome::BrowserListObserver,
 }
 
 - (IBAction)switchToProfileFromMenu:(id)sender {
-  menu_->SwitchToProfile([sender tag], false);
+  model_->SwitchToProfile([sender tag], false);
   ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_MENU);
 }
 
 - (IBAction)switchToProfileFromDock:(id)sender {
   // Explicitly bring to the foreground when taking action from the dock.
   [NSApp activateIgnoringOtherApps:YES];
-  menu_->SwitchToProfile([sender tag], false);
+  model_->SwitchToProfile([sender tag], false);
   ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_DOCK);
 }
 
 - (IBAction)editProfile:(id)sender {
-  menu_->EditProfile(menu_->GetActiveProfileIndex());
+  model_->EditProfile(model_->GetActiveProfileIndex());
 }
 
 - (IBAction)newProfile:(id)sender {
-  menu_->AddNewProfile(ProfileMetrics::ADD_NEW_USER_MENU);
+  model_->AddNewProfile(ProfileMetrics::ADD_NEW_USER_MENU);
 }
 
 - (BOOL)insertItemsIntoMenu:(NSMenu*)menu
                    atOffset:(NSInteger)offset
                    fromDock:(BOOL)dock {
-  if (!menu_ || !menu_->ShouldShowAvatarMenu())
+  if (!model_ || !model_->ShouldShowAvatarMenu())
     return NO;
 
   if (dock) {
@@ -118,14 +118,14 @@ class Observer : public chrome::BrowserListObserver,
     [menu insertItem:header atIndex:offset++];
   }
 
-  for (size_t i = 0; i < menu_->GetNumberOfItems(); ++i) {
-    const AvatarMenu::Item& itemData = menu_->GetItemAt(i);
+  for (size_t i = 0; i < model_->GetNumberOfItems(); ++i) {
+    const AvatarMenuModel::Item& itemData = model_->GetItemAt(i);
     NSString* name = base::SysUTF16ToNSString(itemData.name);
     SEL action = dock ? @selector(switchToProfileFromDock:)
                       : @selector(switchToProfileFromMenu:);
     NSMenuItem* item = [self createItemWithTitle:name
                                           action:action];
-    [item setTag:itemData.menu_index];
+    [item setTag:itemData.model_index];
     if (dock) {
       [item setIndentationLevel:1];
     } else {
@@ -139,18 +139,20 @@ class Observer : public chrome::BrowserListObserver,
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
-  const AvatarMenu::Item& itemData = menu_->GetItemAt(
-      menu_->GetActiveProfileIndex());
+  size_t activeProfileIndex = model_->GetActiveProfileIndex();
+  ProfileInfoCache* cache =
+      &g_browser_process->profile_manager()->GetProfileInfoCache();
+  BOOL profileIsManaged = cache->ProfileIsManagedAtIndex(activeProfileIndex);
   if ([menuItem action] == @selector(switchToProfileFromDock:) ||
       [menuItem action] == @selector(switchToProfileFromMenu:)) {
-    if (!itemData.managed)
+    if (!profileIsManaged)
       return YES;
 
-    return [menuItem tag] == static_cast<NSInteger>(itemData.menu_index);
+    return [menuItem tag] == static_cast<NSInteger>(activeProfileIndex);
   }
 
   if ([menuItem action] == @selector(newProfile:))
-    return !itemData.managed;
+    return !profileIsManaged;
 
   return YES;
 }
@@ -163,11 +165,10 @@ class Observer : public chrome::BrowserListObserver,
 
 - (void)initializeMenu {
   observer_.reset(new ProfileMenuControllerInternal::Observer(self));
-  menu_.reset(new AvatarMenu(
+  model_.reset(new AvatarMenuModel(
       &g_browser_process->profile_manager()->GetProfileInfoCache(),
       observer_.get(),
       NULL));
-  menu_->RebuildMenu();
 
   [[self menu] addItem:[NSMenuItem separatorItem]];
 
@@ -188,12 +189,12 @@ class Observer : public chrome::BrowserListObserver,
 // Notifies the controller that the active browser has changed and that the
 // menu item and menu need to be updated to reflect that.
 - (void)activeBrowserChangedTo:(Browser*)browser {
-  // Tell the menu that the browser has changed.
-  menu_->ActiveBrowserChanged(browser);
+  // Tell the model that the browser has changed.
+  model_->set_browser(browser);
 
   // If |browser| is NULL, it may be because the current profile was deleted
   // and there are no other loaded profiles. In this case, calling
-  // |menu_->GetActiveProfileIndex()| may result in a profile being loaded,
+  // |model_->GetActiveProfileIndex()| may result in a profile being loaded,
   // which is inappropriate to do on the UI thread.
   //
   // An early return provides the desired behavior:
@@ -204,11 +205,11 @@ class Observer : public chrome::BrowserListObserver,
   if (!browser)
     return;
 
-  size_t active_profile_index = menu_->GetActiveProfileIndex();
+  size_t active_profile_index = model_->GetActiveProfileIndex();
 
   // Update the state for the menu items.
-  for (size_t i = 0; i < menu_->GetNumberOfItems(); ++i) {
-    size_t tag = menu_->GetItemAt(i).menu_index;
+  for (size_t i = 0; i < model_->GetNumberOfItems(); ++i) {
+    size_t tag = model_->GetItemAt(i).model_index;
     [[[self menu] itemWithTag:tag]
         setState:active_profile_index == tag ? NSOnState
                                              : NSOffState];

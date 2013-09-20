@@ -44,7 +44,7 @@ const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
 }  // namespace
 
 AvatarMenuItemGtk::AvatarMenuItemGtk(Delegate* delegate,
-                                     const AvatarMenu::Item& item,
+                                     const AvatarMenuModel::Item& item,
                                      size_t item_index,
                                      GtkThemeService* theme_service)
     : delegate_(delegate),

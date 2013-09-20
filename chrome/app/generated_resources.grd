@@ -11020,16 +11020,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           Switch Users
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos')">
-        <message name="IDS_PROFILES_CREATE_NEW_PROFILE_LINK" desc="Link in the avatar menu bubble view to create a new profile.">
-          New user
-        </message>
-      </if>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_PROFILES_CREATE_NEW_PROFILE_LINK" desc="Link in the avatar menu bubble view to create a new profile.">
-          Sign in another account
-        </message>
-      </if>
+      <message name="IDS_PROFILES_CREATE_NEW_PROFILE_LINK" desc="Link in the avatar menu bubble view to create a new profile.">
+        New user
+      </message>
       <message name="IDS_PROFILES_MANAGE_PROFILES_BUTTON" desc="Button in the avatar menu bubble view to manage profiles.">
         Manage
       </message>

@@ -10,12 +10,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/profiles/avatar_menu_observer.h"
+#include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 
-class AvatarMenu;
+class AvatarMenuModel;
 class Browser;
 class ProfileItemView;
 
@@ -36,7 +36,7 @@ class Separator;
 class AvatarMenuBubbleView : public views::BubbleDelegateView,
                              public views::ButtonListener,
                              public views::LinkListener,
-                             public AvatarMenuObserver {
+                             public AvatarMenuModelObserver {
  public:
   // Helper function to show the bubble and ensure that it doesn't reshow.
   // Normally this bubble is shown when there's a mouse down event on a button.
@@ -75,9 +75,9 @@ class AvatarMenuBubbleView : public views::BubbleDelegateView,
   virtual void Init() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
 
-  // AvatarMenuObserver implementation.
-  virtual void OnAvatarMenuChanged(
-      AvatarMenu* avatar_menu) OVERRIDE;
+  // AvatarMenuModelObserver implementation.
+  virtual void OnAvatarMenuModelChanged(
+      AvatarMenuModel* avatar_menu_model) OVERRIDE;
 
   // We normally close the bubble any time it becomes inactive but this can lead
   // to flaky tests where unexpected UI events are triggering this behavior.
@@ -98,12 +98,12 @@ class AvatarMenuBubbleView : public views::BubbleDelegateView,
   void SetBackgroundColors();
 
   // Create the menu contents for a normal profile.
-  void InitMenuContents(AvatarMenu* avatar_menu);
+  void InitMenuContents(AvatarMenuModel* avatar_menu_model);
 
   // Create the managed user specific contents of the menu.
-  void InitManagedUserContents(AvatarMenu* avatar_menu);
+  void InitManagedUserContents(AvatarMenuModel* avatar_menu_model);
 
-  scoped_ptr<AvatarMenu> avatar_menu_;
+  scoped_ptr<AvatarMenuModel> avatar_menu_model_;
   gfx::Rect anchor_rect_;
   Browser* browser_;
   std::vector<ProfileItemView*> item_views_;
@@ -112,13 +112,13 @@ class AvatarMenuBubbleView : public views::BubbleDelegateView,
   views::Separator* separator_;
 
   // This will be non-NULL if and only if
-  // avatar_menu_->ShouldShowAddNewProfileLink() returns true.  See
-  // OnAvatarMenuChanged().
+  // avatar_menu_model_->ShouldShowAddNewProfileLink() returns true.  See
+  // OnAvatarMenuModelChanged().
   views::View* buttons_view_;
 
   // This will be non-NULL if and only if |expanded_| is false and
-  // avatar_menu_->GetManagedUserInformation() returns a non-empty string.
-  // See OnAvatarMenuChanged().
+  // avatar_menu_model_->GetManagedUserInformation() returns a non-empty string.
+  // See OnAvatarMenuModelChanged().
   views::Label* managed_user_info_;
   views::ImageView* icon_view_;
   views::Separator* separator_switch_users_;
