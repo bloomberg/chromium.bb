@@ -137,11 +137,6 @@ IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_DisplayFileOpen,
 IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_DisplaySelectFolder,
                      string16)   /* title */
 
-// Informs the browser about the viewer activation state, i.e. active, lost
-// activation etc.
-IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_WindowActivated,
-                     bool) /* active */
-
 // Sent to the viewer process to set the cursor position.
 IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_SetCursorPos,
                      int,  /* x */

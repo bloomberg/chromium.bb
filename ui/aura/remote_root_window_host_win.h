@@ -165,7 +165,6 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   void OnMultiFileOpenDone(bool success,
                            const std::vector<base::FilePath>& files);
   void OnSelectFolderDone(bool success, const base::FilePath& folder);
-  void OnWindowActivated(bool active);
   void OnSetCursorPosAck();
   void OnWindowSizeChanged(uint32 width, uint32 height);
 

@@ -896,9 +896,6 @@ HRESULT ChromeAppViewAsh::OnWindowActivated(
   HRESULT hr = args->get_WindowActivationState(&state);
   if (FAILED(hr))
     return hr;
-  DVLOG(1) << "Window activation state: "  << state;
-  ui_channel_->Send(new MetroViewerHostMsg_WindowActivated(
-      state != winui::Core::CoreWindowActivationState_Deactivated));
   return S_OK;
 }
 

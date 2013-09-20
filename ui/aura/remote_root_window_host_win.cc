@@ -167,8 +167,6 @@ bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
                         OnMultiFileOpenDone)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SelectFolderDone,
                         OnSelectFolderDone)
-    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_WindowActivated,
-                        OnWindowActivated)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetCursorPosAck,
                         OnSetCursorPosAck)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_WindowSizeChanged,
@@ -542,10 +540,6 @@ void RemoteRootWindowHostWin::OnSelectFolderDone(
     failure_callback_.Run(NULL);
   select_folder_completion_callback_.Reset();
   failure_callback_.Reset();
-}
-
-void RemoteRootWindowHostWin::OnWindowActivated(bool active) {
-  active ? GetRootWindow()->Focus() : GetRootWindow()->Blur();
 }
 
 void RemoteRootWindowHostWin::OnSetCursorPosAck() {
