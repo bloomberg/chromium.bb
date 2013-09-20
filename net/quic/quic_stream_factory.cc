@@ -218,7 +218,7 @@ int QuicStreamFactory::Job::DoConnect() {
                                      cert_verifier_, address_list_, net_log_);
   session_->StartReading();
   int rv = session_->CryptoConnect(
-      factory_->require_confirmation(),
+      factory_->require_confirmation() || is_https_,
       base::Bind(&QuicStreamFactory::Job::OnIOComplete,
                  base::Unretained(this)));
   return rv;
