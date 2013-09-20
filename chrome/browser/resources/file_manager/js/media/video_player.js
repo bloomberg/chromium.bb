@@ -217,9 +217,8 @@ function reload() {
     }
 
     // Detach the previous video element, if exists.
-    if (video) {
+    if (video)
       video.parentNode.removeChild(video);
-    }
 
     video = document.createElement('video');
     document.querySelector('#video-container').appendChild(video);
@@ -269,8 +268,7 @@ function reload() {
     selectedItemFilesystemPath = null;
     webkitResolveLocalFileSystemURL(src,
       function(entry) {
-        var video = document.querySelector('video');
-        if (video.src != src) return;
+        if (video && video.src != src) return;
         selectedItemFilesystemPath = entry.fullPath;
       });
   });
