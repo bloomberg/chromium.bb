@@ -296,7 +296,8 @@ enum DisplayPowerState {
 };
 }  // namespace chromeos
 
-namespace flimflam {
+// TODO(benchan): Reorganize shill constants and remove deprecated ones.
+namespace shill {
 // Flimflam D-Bus service identifiers.
 const char kFlimflamManagerInterface[] = "org.chromium.flimflam.Manager";
 const char kFlimflamServiceName[] = "org.chromium.flimflam";
@@ -695,9 +696,7 @@ const char kErrorPinBlockedMsg[] = "org.chromium.flimflam.Error.PinBlocked";
 const char kErrorPinRequiredMsg[] = "org.chromium.flimflam.Error.PinRequired";
 
 const char kUnknownString[] = "UNKNOWN";
-}  // namespace flimflam
 
-namespace shill {
 // Function names.
 const char kSetPropertiesFunction[] = "SetProperties";
 const char kClearPropertiesFunction[] = "ClearProperties";
@@ -830,6 +829,10 @@ const char kGeoSignalToNoiseRatioProperty[] = "signalToNoiseRatio";
 const char kGeoAgeProperty[] = "age";
 const char kGeoSignalStrengthProperty[] = "signalStrength";
 }  // namespace shill
+
+// TODO(benchan): Remove this namespace alias once we finish replacing flimflam
+// namespace with shill namespace in shill and Chrome code.
+namespace flimflam = shill;
 
 namespace modemmanager {
 // ModemManager D-Bus service identifiers
