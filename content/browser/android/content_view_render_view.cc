@@ -29,18 +29,18 @@ bool ContentViewRenderView::RegisterContentViewRenderView(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-ContentViewRenderView::ContentViewRenderView()
-    : scheduled_composite_(false),
-      weak_factory_(this) {
+ContentViewRenderView::ContentViewRenderView(JNIEnv* env, jobject obj)
+    : buffers_swapped_during_composite_(false) {
+  java_obj_.Reset(env, obj);
 }
 
 ContentViewRenderView::~ContentViewRenderView() {
 }
 
 // static
-jint Init(JNIEnv* env, jclass clazz) {
+static jint Init(JNIEnv* env, jobject obj) {
   ContentViewRenderView* content_view_render_view =
-      new ContentViewRenderView();
+      new ContentViewRenderView(env, obj);
   return reinterpret_cast<jint>(content_view_render_view);
 }
 
@@ -55,6 +55,8 @@ void ContentViewRenderView::SetCurrentContentView(
       reinterpret_cast<ContentViewCoreImpl*>(native_content_view);
   if (content_view)
     compositor_->SetRootLayer(content_view->GetLayer());
+  else
+    compositor_->SetRootLayer(cc::Layer::Create());
 }
 
 void ContentViewRenderView::SurfaceCreated(
@@ -72,28 +74,32 @@ void ContentViewRenderView::SurfaceSetSize(
   compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 
-void ContentViewRenderView::ScheduleComposite() {
-  if (scheduled_composite_)
-    return;
+jboolean ContentViewRenderView::Composite(JNIEnv* env, jobject obj) {
+  if (!compositor_)
+    return false;
 
-  scheduled_composite_ = true;
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ContentViewRenderView::Composite,
-                 weak_factory_.GetWeakPtr()));
+  buffers_swapped_during_composite_ = false;
+  compositor_->Composite();
+  return buffers_swapped_during_composite_;
+}
+
+void ContentViewRenderView::ScheduleComposite() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_ContentViewRenderView_requestRender(env, java_obj_.obj());
+}
+
+void ContentViewRenderView::OnSwapBuffersPosted() {
+  buffers_swapped_during_composite_ = true;
+}
+
+void ContentViewRenderView::OnSwapBuffersCompleted() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_ContentViewRenderView_onSwapBuffersCompleted(env, java_obj_.obj());
 }
 
 void ContentViewRenderView::InitCompositor() {
   if (!compositor_)
     compositor_.reset(Compositor::Create(this));
-}
-
-void ContentViewRenderView::Composite() {
-  if (!compositor_)
-    return;
-
-  scheduled_composite_ = false;
-  compositor_->Composite();
 }
 
 }  // namespace content
