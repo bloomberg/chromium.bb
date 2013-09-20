@@ -76,6 +76,21 @@ VALID_TESTS = set(['chromedriver', 'gpu', 'ui', 'unit', 'webkit',
 RunCmd = bb_utils.RunCmd
 
 
+def _GetRevision(options):
+  """Get the SVN revision number.
+
+  Args:
+    options: options object.
+
+  Returns:
+    The revision number.
+  """
+  revision = options.build_properties.get('got_revision')
+  if not revision:
+    revision = options.build_properties.get('revision', 'testing')
+  return revision
+
+
 # multiprocessing map_async requires a top-level function for pickle library.
 def RebootDeviceSafe(device):
   """Reboot a device, wait for it to start, and squelch timeout exceptions."""
@@ -126,14 +141,16 @@ def RunTestSuites(options, suites):
       cmd.append('--num_retries=1')
     RunCmd(cmd)
 
-def RunChromeDriverTests(_):
+def RunChromeDriverTests(options):
   """Run all the steps for running chromedriver tests."""
   bb_annotations.PrintNamedStep('chromedriver_annotation')
   RunCmd(['chrome/test/chromedriver/run_buildbot_steps.py',
           '--android-packages=%s,%s,%s' %
            (constants.PACKAGE_INFO['chromium_test_shell'].package,
             constants.PACKAGE_INFO['chrome_stable'].package,
-            constants.PACKAGE_INFO['chrome_beta'].package)])
+            constants.PACKAGE_INFO['chrome_beta'].package),
+          '--revision=%s' % _GetRevision(options),
+          '--update_log'])
 
 def InstallApk(options, test, print_step=False):
   """Install an apk to all phones.
@@ -362,9 +379,7 @@ def UploadHTML(options, gs_base_dir, dir_to_upload, link_text,
     link_rel_path: Link path relative to |dir_to_upload|.
     gs_url: Google storage URL.
   """
-  revision = options.build_properties.get('got_revision')
-  if not revision:
-    revision = options.build_properties.get('revision', 'testing')
+  revision = _GetRevision(options)
   bot_id = options.build_properties.get('buildername', 'testing')
   randhash = hashlib.sha1(str(random.random())).hexdigest()
   gs_path = '%s/%s/%s/%s' % (gs_base_dir, bot_id, revision, randhash)

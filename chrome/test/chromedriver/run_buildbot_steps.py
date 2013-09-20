@@ -391,8 +391,9 @@ def main():
       help='Comma separated list of application package names, '
            'if running tests on Android.')
   parser.add_option(
-      '-r', '--revision', type='int', default=None,
-      help='Chromium revision')
+      '-r', '--revision', type='int', help='Chromium revision')
+  parser.add_option('', '--update-log', action='store_true',
+      help='Update the test results log (only applicable to Android)')
   options, _ = parser.parse_args()
 
   bitness = '32'
@@ -407,11 +408,12 @@ def main():
   CleanTmpDir()
 
   if platform == 'android':
+    if not options.revision and options.update_log:
+      parser.error('Must supply a --revision with --update-log')
     DownloadPrebuilts()
   else:
     if not options.revision:
       parser.error('Must supply a --revision')
-
     if platform == 'linux64':
       ArchivePrebuilts(options.revision)
 
@@ -427,7 +429,8 @@ def main():
   passed = (util.RunCommand(cmd) == 0)
 
   if platform == 'android':
-    UpdateTestResultsLog(platform, options.revision, passed)
+    if options.update_log:
+      UpdateTestResultsLog(platform, options.revision, passed)
   elif passed:
     _MaybeUpdateReleaseCandidate(platform, options.revision)
     _MaybeRelease(platform)
