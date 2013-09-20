@@ -22,11 +22,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
    - UEB chardefs - correct title and fixed a long standing bug where
      dots 46 was inserted between letters (especialy for web
      addresses). Thanks to Joseph Lee.
-   - UEB-g1: corrected the at sign dot combination. Thanks to Joseph
-     Lee.
    - Fixed letter sign in en-us and en-ueb tables. Thanks to John
      Boyer and Ken Perry.
-   - UEB Fixes thanks to Mesar Hameed and Ken Perry:
+   - UEB Fixes thanks to Mesar Hameed, Ken Perry and Joseph lee:
      - Fix problem with at sign.
      - Removed section of accented letters, that were left behind from
        US table.
