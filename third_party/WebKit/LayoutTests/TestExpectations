@@ -1324,6 +1324,3 @@ crbug.com/51854 [ Win ] http/tests/storage/callbacks-are-called-in-correct-conte
 
 crbug.com/295011 [ Win ] http/tests/cache/subresource-expiration-1.html [ Timeout Pass ]
 crbug.com/295011 [ Win ] http/tests/cache/subresource-expiration-2.html [ Timeout Pass ]
-
-#Below test case need to rebaseline after crbug.com/31286
-crbug.com/31286 [ Win Mac ] fast/css/css-properties-position-relative-as-parent-fixed.html [ NeedsRebaseline ]
