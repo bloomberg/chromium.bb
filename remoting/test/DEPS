@@ -4,4 +4,5 @@ include_rules = [
   "+chrome/test",
   "+content/public",
   "+net",
+  "+ui/events/keycodes",
 ]

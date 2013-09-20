@@ -88,6 +88,12 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
                                 bool alt,
                                 bool command);
 
+  // Simulate typing a character
+  void SimulateCharInput(char c);
+
+  // Simulate typing a string
+  void SimulateStringInput(const std::string& input);
+
   // The following helpers each perform a composite task.
 
   // Install the chromoting extension

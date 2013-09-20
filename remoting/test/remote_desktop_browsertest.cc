@@ -12,6 +12,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_utils.h"
+#include "remoting/test/key_code_conv.h"
 #include "remoting/test/waiter.h"
 
 using extensions::Extension;
@@ -264,6 +265,20 @@ void RemoteDesktopBrowserTest::SimulateKeyPressWithCode(
       shift,
       alt,
       command);
+}
+
+void RemoteDesktopBrowserTest::SimulateCharInput(char c) {
+  const char* code;
+  ui::KeyboardCode keyboard_code;
+  bool shift;
+  GetKeyValuesFromChar(c, &code, &keyboard_code, &shift);
+  ASSERT_TRUE(code != NULL);
+  SimulateKeyPressWithCode(keyboard_code, code, false, shift, false, false);
+}
+
+void RemoteDesktopBrowserTest::SimulateStringInput(const std::string& input) {
+  for (size_t i = 0; i < input.length(); ++i)
+    SimulateCharInput(input[i]);
 }
 
 void RemoteDesktopBrowserTest::Install() {
