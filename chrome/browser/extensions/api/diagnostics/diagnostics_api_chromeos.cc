@@ -31,27 +31,27 @@ typedef base::Callback<void(
 bool ParseResult(const std::string& status,
                  std::string* ip,
                  double* latency) {
-    // Parses the result and returns IP and latency.
-    scoped_ptr<base::Value> parsed_value(base::JSONReader::Read(status));
-    if (!parsed_value)
-      return false;
+  // Parses the result and returns IP and latency.
+  scoped_ptr<base::Value> parsed_value(base::JSONReader::Read(status));
+  if (!parsed_value)
+    return false;
 
-    base::DictionaryValue* result = NULL;
-    if (!parsed_value->GetAsDictionary(&result) || result->size() != 1)
-      return false;
+  base::DictionaryValue* result = NULL;
+  if (!parsed_value->GetAsDictionary(&result) || result->size() != 1)
+    return false;
 
-    // Returns the first item.
-    base::DictionaryValue::Iterator iterator(*result);
+  // Returns the first item.
+  base::DictionaryValue::Iterator iterator(*result);
 
-    const base::DictionaryValue* info;
-    if (!iterator.value().GetAsDictionary(&info))
-      return false;
+  const base::DictionaryValue* info;
+  if (!iterator.value().GetAsDictionary(&info))
+    return false;
 
-    if (info->GetDouble("avg", latency))
-      return false;
+  if (!info->GetDouble("avg", latency))
+    return false;
 
-    *ip = iterator.key();
-    return true;
+  *ip = iterator.key();
+  return true;
 }
 
 void OnTestICMPCompleted(
