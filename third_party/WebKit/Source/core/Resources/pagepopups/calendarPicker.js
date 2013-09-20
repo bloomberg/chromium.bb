@@ -3813,19 +3813,19 @@ CalendarPicker.prototype.setSelection = function(dayOrWeekOrMonth) {
         return;
     var firstDayInSelection = dayOrWeekOrMonth.firstDay();    
     var lastDayInSelection = dayOrWeekOrMonth.lastDay();
-    if (this.firstVisibleDay() < firstDayInSelection || this.lastVisibleDay() > lastDayInSelection) {
-        // Change current month only if the entire selection will be visible.
-        var candidateCurrentMonth = null;
-        if (this.firstVisibleDay() > firstDayInSelection || this.lastVisibleDay() < lastDayInSelection)
-            candidateCurrentMonth = Month.createFromDay(firstDayInSelection);
-        if (candidateCurrentMonth) {
-            var firstVisibleRow = this.calendarTableView.columnAndRowForDay(candidateCurrentMonth.firstDay()).row;
-            var firstVisibleDay = this.calendarTableView.dayAtColumnAndRow(0, firstVisibleRow);
-            var lastVisibleRow = this.calendarTableView.columnAndRowForDay(candidateCurrentMonth.lastDay()).row;
-            var lastVisibleDay = this.calendarTableView.dayAtColumnAndRow(DaysPerWeek - 1, lastVisibleRow);
-            if (firstDayInSelection >= firstVisibleDay && lastDayInSelection <= lastVisibleDay)
-                this.setCurrentMonth(candidateCurrentMonth, CalendarPicker.NavigationBehavior.WithAnimation);
-        }
+    var candidateCurrentMonth = Month.createFromDay(firstDayInSelection);
+    if (this.firstVisibleDay() > lastDayInSelection || this.lastVisibleDay() < firstDayInSelection) {
+        // Change current month if the selection is not visible at all.
+        this.setCurrentMonth(candidateCurrentMonth, CalendarPicker.NavigationBehavior.WithAnimation);
+    } else if (this.firstVisibleDay() < firstDayInSelection || this.lastVisibleDay() > lastDayInSelection) {
+        // If the selection is partly visible, only change the current month if
+        // doing so will make the whole selection visible.
+        var firstVisibleRow = this.calendarTableView.columnAndRowForDay(candidateCurrentMonth.firstDay()).row;
+        var firstVisibleDay = this.calendarTableView.dayAtColumnAndRow(0, firstVisibleRow);
+        var lastVisibleRow = this.calendarTableView.columnAndRowForDay(candidateCurrentMonth.lastDay()).row;
+        var lastVisibleDay = this.calendarTableView.dayAtColumnAndRow(DaysPerWeek - 1, lastVisibleRow);
+        if (firstDayInSelection >= firstVisibleDay && lastDayInSelection <= lastVisibleDay)
+            this.setCurrentMonth(candidateCurrentMonth, CalendarPicker.NavigationBehavior.WithAnimation);
     }
     this._setHighlight(dayOrWeekOrMonth);
     if (!this.isValid(dayOrWeekOrMonth))
