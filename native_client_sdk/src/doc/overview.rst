@@ -155,7 +155,7 @@ The *PNaCl translator* is a component embedded in the web browser; its task is
 to run a **pexe**. Internally, the translator compiles a **pexe** to a **nexe**
 (a native executable for the host platform's architecture) and then executes it
 within the Native Client sandbox as described above. It also uses intelligent
-caching to avoid this compilation if this **pexe** was already compiled on the
+caching to avoid re-compiling the **pexe** if it was already compiled on the
 client's browser.
 
 Native Client also supports running a **nexe** directly in the browser. However,
@@ -203,7 +203,8 @@ A Native Client application consists of a set of files:
 
 .. image:: /images/nacl-in-a-web-app.png
 
-For more details, see TODO (link to example walk-through).
+For more details, see :doc:`Application Structure
+<devguide/coding/application-structure>`.
 
 .. _link_pepper:
 
@@ -234,15 +235,15 @@ written on top of the C API. For additional information about Pepper, see
 Versioning
 ==========
 
-Chrome releases on a six week cycle, and developer versions of Chrome are
+Chrome is released on a six week cycle, and developer versions of Chrome are
 pushed to the public beta channel three weeks before release. As with any
-software, each release of Chrome includes changes to Native Client and the
+software, each release of Chrome may include changes to Native Client and the
 Pepper interfaces that may require modification to existing applications.
-However, modules compiled for one version of Pepper/Chrome should generally
-work with subsequent versions of Pepper/Chrome. The SDK includes multiple
-`versions <https://developers.google.com/native-client/version>`_ of the Pepper
-APIs to help developers make adjustments to API changes and take advantage of
-new features.
+However, modules compiled for one version of Pepper/Chrome should work with
+subsequent versions of Pepper/Chrome. The SDK includes multiple `versions
+<https://developers.google.com/native-client/version>`_ of the Pepper APIs to
+help developers make adjustments to API changes and take advantage of new
+features.
 
 Where to go next
 ================
