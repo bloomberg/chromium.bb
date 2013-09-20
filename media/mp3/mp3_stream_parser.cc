@@ -157,18 +157,25 @@ bool MP3StreamParser::Parse(const uint8* buf, int size) {
 
   queue_.Push(buf, size);
 
+  bool end_of_segment = true;
+  BufferQueue buffers;
   for (;;) {
     const uint8* data;
     int data_size;
     queue_.Peek(&data, &data_size);
 
     if (size < 4)
-      return true;
+      break;
 
     uint32 start_code = data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3];
     int bytes_read = 0;
+    bool parsed_metadata = true;
     if ((start_code & kMP3StartCodeMask) == kMP3StartCodeMask) {
-      bytes_read = ParseMP3Frame(data, data_size);
+      bytes_read = ParseMP3Frame(data, data_size, &buffers);
+
+      // Only allow the current segment to end if a full frame has been parsed.
+      end_of_segment = bytes_read > 0;
+      parsed_metadata = false;
     } else if (start_code == kICYStartCode) {
       bytes_read = ParseIcecastHeader(data, data_size);
     } else if ((start_code & kID3StartCodeMask) == kID3v1StartCode) {
@@ -191,13 +198,22 @@ bool MP3StreamParser::Parse(const uint8* buf, int size) {
       return false;
     } else if (bytes_read == 0) {
       // Need more data.
-      return true;
+      break;
     }
 
+    // Send pending buffers if we have encountered metadata.
+    if (parsed_metadata && !buffers.empty() && !SendBuffers(&buffers, true))
+      return false;
+
     queue_.Pop(bytes_read);
+    end_of_segment = true;
   }
 
-  return true;
+  if (buffers.empty())
+    return true;
+
+  // Send buffers collected in this append that haven't been sent yet.
+  return SendBuffers(&buffers, end_of_segment);
 }
 
 void MP3StreamParser::ChangeState(State state) {
@@ -348,7 +364,9 @@ int MP3StreamParser::ParseFrameHeader(const uint8* data, int size,
   return 4;
 }
 
-int MP3StreamParser::ParseMP3Frame(const uint8* data, int size) {
+int MP3StreamParser::ParseMP3Frame(const uint8* data,
+                                   int size,
+                                   BufferQueue* buffers) {
   DVLOG(2) << __FUNCTION__ << "(" << size << ")";
 
   int sample_rate;
@@ -374,6 +392,10 @@ int MP3StreamParser::ParseMP3Frame(const uint8* data, int size) {
        config_.channel_layout() != channel_layout)) {
     // Clear config data so that a config change is initiated.
     config_ = AudioDecoderConfig();
+
+    // Send all buffers associated with the previous config.
+    if (!buffers->empty() && !SendBuffers(buffers, true))
+      return -1;
   }
 
   if (!config_.IsValidConfig()) {
@@ -398,22 +420,11 @@ int MP3StreamParser::ParseMP3Frame(const uint8* data, int size) {
       return -1;
   }
 
-  if (!in_media_segment_) {
-    in_media_segment_ = true;
-    new_segment_cb_.Run();
-  }
-
-  BufferQueue audio_buffers;
-  BufferQueue video_buffers;
-
-  // TODO(acolwell): Change this code to parse as many frames as
-  // possible before calling |new_buffers_cb_|.
   scoped_refptr<StreamParserBuffer> buffer =
       StreamParserBuffer::CopyFrom(data, frame_size, true);
-  audio_buffers.push_back(buffer);
-
-  if (!new_buffers_cb_.Run(audio_buffers, video_buffers))
-    return -1;
+  buffer->set_timestamp(timestamp_helper_->GetTimestamp());
+  buffer->set_duration(timestamp_helper_->GetFrameDuration(sample_count));
+  buffers->push_back(buffer);
 
   timestamp_helper_->AddFrames(sample_count);
 
@@ -561,6 +572,27 @@ int MP3StreamParser::FindNextValidStartCode(const uint8* data, int size) const {
   }
 
   return 0;
+}
+
+bool MP3StreamParser::SendBuffers(BufferQueue* buffers, bool end_of_segment) {
+  DCHECK(!buffers->empty());
+
+  if (!in_media_segment_) {
+    in_media_segment_ = true;
+    new_segment_cb_.Run();
+  }
+
+  BufferQueue empty_video_buffers;
+  if (!new_buffers_cb_.Run(*buffers, empty_video_buffers))
+    return false;
+  buffers->clear();
+
+  if (end_of_segment) {
+    in_media_segment_ = false;
+    end_of_segment_cb_.Run();
+  }
+
+  return true;
 }
 
 }  // namespace media

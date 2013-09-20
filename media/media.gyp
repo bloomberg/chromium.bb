@@ -1001,6 +1001,7 @@
             'filters/ffmpeg_video_decoder_unittest.cc',
             'filters/pipeline_integration_test.cc',
             'filters/pipeline_integration_test_base.cc',
+            'mp3/mp3_stream_parser_unittest.cc',
             'mp4/mp4_stream_parser_unittest.cc',
             'webm/webm_cluster_parser_unittest.cc',
           ],
@@ -1037,8 +1038,9 @@
             'base/simd/convert_rgb_to_yuv_unittest.cc',
           ],
         }],
-        ['proprietary_codecs==1 or branding=="Chrome"', {
+        ['proprietary_codecs==1', {
           'sources': [
+            'mp3/mp3_stream_parser_unittest.cc',
             'mp4/aac_unittest.cc',
             'mp4/avc_unittest.cc',
             'mp4/box_reader_unittest.cc',

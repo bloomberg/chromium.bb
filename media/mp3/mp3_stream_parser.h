@@ -88,7 +88,7 @@ class MEDIA_EXPORT MP3StreamParser : public StreamParser {
                        int* sample_rate,
                        ChannelLayout* channel_layout,
                        int* sample_count) const;
-  int ParseMP3Frame(const uint8* data, int size);
+  int ParseMP3Frame(const uint8* data, int size, BufferQueue* buffers);
   int ParseIcecastHeader(const uint8* data, int size);
   int ParseID3v1(const uint8* data, int size);
   int ParseID3v2(const uint8* data, int size);
@@ -110,6 +110,14 @@ class MEDIA_EXPORT MP3StreamParser : public StreamParser {
   //   0 : If a valid start code was not found and more data is needed.
   // < 0 : An error was encountered during parsing.
   int FindNextValidStartCode(const uint8* data, int size) const;
+
+  // Sends the buffers in |buffers| to |new_buffers_cb_| and then clears
+  // |buffers|.
+  // If |end_of_segment| is set to true, then |end_of_segment_cb_| is called
+  // after |new_buffers_cb_| to signal that these buffers represent the end of a
+  // media segment.
+  // Returns true if the buffers are sent successfully.
+  bool SendBuffers(BufferQueue* buffers, bool end_of_segment);
 
   DISALLOW_COPY_AND_ASSIGN(MP3StreamParser);
 };
