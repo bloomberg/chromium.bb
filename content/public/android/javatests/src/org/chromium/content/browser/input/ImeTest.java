@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -203,15 +203,17 @@ public class ImeTest extends ContentShellTestBase {
         mConnection.setComposingText("h", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "h", 1, 1, 0, 1);
         assertTrue(mConnection.isIgnoringTextInputStateUpdates());
+        assertEquals(0, mInputMethodManagerWrapper.getUpdateSelectionCounter());
 
         mConnection.setComposingText("he", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "he", 2, 2, 0, 2);
         assertTrue(mConnection.isIgnoringTextInputStateUpdates());
+        assertEquals(0, mInputMethodManagerWrapper.getUpdateSelectionCounter());
 
         mConnection.setComposingText("hel", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 3, "hel", 3, 3, 0, 3);
 
-        assertEquals(0, mConnection.mUpdateSelectionCounter);
+        assertEquals(0, mInputMethodManagerWrapper.getUpdateSelectionCounter());
         assertTrue(mConnection.isIgnoringTextInputStateUpdates());
         mConnection.endBatchEdit();
         assertWaitForSetIgnoreUpdates(false, mConnection);
@@ -391,7 +393,6 @@ public class ImeTest extends ContentShellTestBase {
     }
 
     private static class TestAdapterInputConnection extends AdapterInputConnection {
-        private int mUpdateSelectionCounter = 0;
         private ArrayList<TestImeState> mImeUpdateQueue = new ArrayList<ImeTest.TestImeState>();
 
         public TestAdapterInputConnection(View view, ImeAdapter imeAdapter, EditorInfo outAttrs) {
@@ -405,13 +406,6 @@ public class ImeTest extends ContentShellTestBase {
                     compositionStart, compositionEnd));
             super.setEditableText(
                     text, selectionStart, selectionEnd, compositionStart, compositionEnd);
-        }
-
-        @Override
-        protected void updateSelection(
-                int selectionStart, int selectionEnd,
-                int compositionStart, int compositionEnd) {
-            mUpdateSelectionCounter++;
         }
     }
 
