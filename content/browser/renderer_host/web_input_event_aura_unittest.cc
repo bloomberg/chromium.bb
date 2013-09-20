@@ -12,6 +12,7 @@
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include "ui/gfx/x/x11_types.h"
+#include "ui/base/x/x11_util.h"
 #endif
 
 namespace content {
