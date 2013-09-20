@@ -230,10 +230,10 @@ public:
         { return m_impl ? m_impl->findNextLineStart(start) : kNotFound; }
 
     // Find the last instance of a single character or string.
-    size_t reverseFind(UChar c, unsigned start = UINT_MAX) const
-        { return m_impl ? m_impl->reverseFind(c, start) : kNotFound; }
-    size_t reverseFind(const String& str, unsigned start = UINT_MAX) const
-        { return m_impl ? m_impl->reverseFind(str.impl(), start) : kNotFound; }
+    size_t reverseFind(UChar c, unsigned start = UINT_MAX, unsigned stop = 0) const
+        { return m_impl ? m_impl->reverseFind(c, start, stop) : kNotFound; }
+    size_t reverseFind(const String& str, unsigned start = UINT_MAX, unsigned stop = 0) const
+        { return m_impl ? m_impl->reverseFind(str.impl(), start, stop) : kNotFound; }
 
     // Case insensitive string matching.
     size_t findIgnoringCase(const LChar* str, unsigned start = 0) const

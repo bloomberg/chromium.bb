@@ -383,8 +383,8 @@ public:
 
     size_t findNextLineStart(unsigned index = UINT_MAX);
 
-    size_t reverseFind(UChar, unsigned index = UINT_MAX);
-    size_t reverseFind(StringImpl*, unsigned index = UINT_MAX);
+    size_t reverseFind(UChar, unsigned start = UINT_MAX, unsigned stop = 0);
+    size_t reverseFind(StringImpl*, unsigned start = UINT_MAX, unsigned stop = 0);
     size_t reverseFindIgnoringCase(StringImpl*, unsigned index = UINT_MAX);
 
     size_t count(LChar) const;
@@ -590,29 +590,29 @@ inline size_t reverseFindLineTerminator(const CharacterType* characters, unsigne
 }
 
 template<typename CharacterType>
-inline size_t reverseFind(const CharacterType* characters, unsigned length, CharacterType matchCharacter, unsigned index = UINT_MAX)
+inline size_t reverseFind(const CharacterType* characters, unsigned length, CharacterType matchCharacter, unsigned index = UINT_MAX, unsigned stop = 0)
 {
     if (!length)
         return kNotFound;
     if (index >= length)
         index = length - 1;
     while (characters[index] != matchCharacter) {
-        if (!index--)
+        if (index-- <= stop)
             return kNotFound;
     }
     return index;
 }
 
-ALWAYS_INLINE size_t reverseFind(const UChar* characters, unsigned length, LChar matchCharacter, unsigned index = UINT_MAX)
+ALWAYS_INLINE size_t reverseFind(const UChar* characters, unsigned length, LChar matchCharacter, unsigned index = UINT_MAX, unsigned stop = 0)
 {
-    return reverseFind(characters, length, static_cast<UChar>(matchCharacter), index);
+    return reverseFind(characters, length, static_cast<UChar>(matchCharacter), index, stop);
 }
 
-inline size_t reverseFind(const LChar* characters, unsigned length, UChar matchCharacter, unsigned index = UINT_MAX)
+inline size_t reverseFind(const LChar* characters, unsigned length, UChar matchCharacter, unsigned index = UINT_MAX, unsigned stop = 0)
 {
     if (matchCharacter & ~0xFF)
         return kNotFound;
-    return reverseFind(characters, length, static_cast<LChar>(matchCharacter), index);
+    return reverseFind(characters, length, static_cast<LChar>(matchCharacter), index, stop);
 }
 
 inline size_t StringImpl::find(LChar character, unsigned start)

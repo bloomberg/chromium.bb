@@ -1223,16 +1223,26 @@ size_t StringImpl::count(LChar c) const
     return count;
 }
 
-size_t StringImpl::reverseFind(UChar c, unsigned index)
+size_t StringImpl::reverseFind(UChar c, unsigned index, unsigned stop)
 {
     if (is8Bit())
-        return WTF::reverseFind(characters8(), m_length, c, index);
-    return WTF::reverseFind(characters16(), m_length, c, index);
+        return WTF::reverseFind(characters8(), m_length, c, index, stop);
+    return WTF::reverseFind(characters16(), m_length, c, index, stop);
 }
 
 template <typename SearchCharacterType, typename MatchCharacterType>
-ALWAYS_INLINE static size_t reverseFindInner(const SearchCharacterType* searchCharacters, const MatchCharacterType* matchCharacters, unsigned index, unsigned length, unsigned matchLength)
+ALWAYS_INLINE static size_t reverseFindInner(const SearchCharacterType* searchCharacters, const MatchCharacterType* matchCharacters, unsigned index, unsigned stop, unsigned length, unsigned matchLength)
 {
+    if (stop > index || stop > length)
+        return kNotFound;
+
+    searchCharacters += stop;
+    length -= stop;
+    index -= stop;
+
+    if (matchLength > length)
+        return kNotFound;
+
     // Optimization: keep a running hash of the strings,
     // only call equal if the hashes match.
 
@@ -1254,10 +1264,10 @@ ALWAYS_INLINE static size_t reverseFindInner(const SearchCharacterType* searchCh
         searchHash -= searchCharacters[delta + matchLength];
         searchHash += searchCharacters[delta];
     }
-    return delta;
+    return stop + delta;
 }
 
-size_t StringImpl::reverseFind(StringImpl* matchString, unsigned index)
+size_t StringImpl::reverseFind(StringImpl* matchString, unsigned index, unsigned stop)
 {
     // Check for null or empty string to match against
     if (!matchString)
@@ -1270,24 +1280,24 @@ size_t StringImpl::reverseFind(StringImpl* matchString, unsigned index)
     // Optimization 1: fast case for strings of length 1.
     if (matchLength == 1) {
         if (is8Bit())
-            return WTF::reverseFind(characters8(), ourLength, (*matchString)[0], index);
-        return WTF::reverseFind(characters16(), ourLength, (*matchString)[0], index);
+            return WTF::reverseFind(characters8(), ourLength, (*matchString)[0], index, stop);
+        return WTF::reverseFind(characters16(), ourLength, (*matchString)[0], index, stop);
     }
 
     // Check index & matchLength are in range.
-    if (matchLength > ourLength)
+    if (stop + matchLength > ourLength)
         return kNotFound;
 
     if (is8Bit()) {
         if (matchString->is8Bit())
-            return reverseFindInner(characters8(), matchString->characters8(), index, ourLength, matchLength);
-        return reverseFindInner(characters8(), matchString->characters16(), index, ourLength, matchLength);
+            return reverseFindInner(characters8(), matchString->characters8(), index, stop, ourLength, matchLength);
+        return reverseFindInner(characters8(), matchString->characters16(), index, stop, ourLength, matchLength);
     }
 
     if (matchString->is8Bit())
-        return reverseFindInner(characters16(), matchString->characters8(), index, ourLength, matchLength);
+        return reverseFindInner(characters16(), matchString->characters8(), index, stop, ourLength, matchLength);
 
-    return reverseFindInner(characters16(), matchString->characters16(), index, ourLength, matchLength);
+    return reverseFindInner(characters16(), matchString->characters16(), index, stop, ourLength, matchLength);
 }
 
 template <typename SearchCharacterType, typename MatchCharacterType>
