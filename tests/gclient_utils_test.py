@@ -38,8 +38,8 @@ class GclientUtilsUnittest(GclientUtilBase):
         'GCLIENT_CHILDREN_LOCK', 'GClientChildren',
         'SplitUrlRevision', 'SyntaxErrorToError', 'UpgradeToHttps', 'Wrapper',
         'WorkItem', 'codecs', 'lockedmethod', 'logging', 'os', 'pipes', 'Queue',
-        're', 'rmtree', 'safe_makedirs', 'stat', 'subprocess', 'subprocess2',
-        'sys', 'tempfile', 'threading', 'time', 'urlparse',
+        're', 'rmtree', 'safe_makedirs', 'safe_rename', 'stat', 'subprocess', 
+        'subprocess2', 'sys', 'tempfile', 'threading', 'time', 'urlparse',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gclient_utils, members)

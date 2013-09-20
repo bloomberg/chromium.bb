@@ -96,6 +96,29 @@ def FileWrite(filename, content, mode='w'):
     f.write(content)
 
 
+def safe_rename(old, new):
+  """Renames a file reliably.
+
+  Sometimes os.rename does not work because a dying git process keeps a handle 
+  on it for a few seconds. An exception is then thrown, which make the program 
+  give up what it was doing and remove what was deleted.
+  The only solution is to catch the exception and try again until it works. 
+  """
+  # roughly 10s
+  retries = 100
+  for i in range(retries):
+    try:
+      os.rename(old, new)
+      break
+    except OSError:
+      if i == (retries - 1):
+        # Give up.
+        raise
+      # retry
+      logging.debug("Renaming failed from %s to %s. Retrying ..." % (old, new))
+      time.sleep(0.1)
+
+
 def rmtree(path):
   """shutil.rmtree() on steroids.
 

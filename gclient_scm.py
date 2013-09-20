@@ -873,8 +873,8 @@ class GitWrapper(SCMWrapper):
           print(str(e))
           print('Retrying...')
       gclient_utils.safe_makedirs(self.checkout_path)
-      os.rename(os.path.join(tmp_dir, '.git'),
-                os.path.join(self.checkout_path, '.git'))
+      gclient_utils.safe_rename(os.path.join(tmp_dir, '.git'),
+                                os.path.join(self.checkout_path, '.git'))
     finally:
       if os.listdir(tmp_dir):
         print('\n_____ removing non-empty tmp dir %s' % tmp_dir)
