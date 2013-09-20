@@ -8,7 +8,7 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/avatar_menu_model.h"
+#include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
@@ -211,7 +211,7 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
 void UserManagerScreenHandler::HandleLaunchGuest(const base::ListValue* args) {
   Browser* browser = chrome::FindOrCreateTabbedBrowser(
       ProfileManager::GetLastUsedProfileAllowedByPolicy(), desktop_type_);
-  AvatarMenuModel::SwitchToGuestProfileWindow(browser);
+  AvatarMenu::SwitchToGuestProfileWindow(browser);
 }
 
 void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {

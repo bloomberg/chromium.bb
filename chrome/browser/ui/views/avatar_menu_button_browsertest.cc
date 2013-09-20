@@ -8,7 +8,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/avatar_menu_model.h"
+#include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -150,21 +150,21 @@ IN_PROC_BROWSER_TEST_P(AvatarMenuButtonTest, NewSignOut) {
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(browser()));
 
-  AvatarMenuModel* model =
-      ProfileChooserView::profile_bubble_->avatar_menu_model_.get();
-  const AvatarMenuModel::Item& model_item_before =
-      model->GetItemAt(model->GetActiveProfileIndex());
-  EXPECT_FALSE(model_item_before.signin_required);
+  AvatarMenu* menu =
+      ProfileChooserView::profile_bubble_->avatar_menu_.get();
+  const AvatarMenu::Item& menu_item_before =
+      menu->GetItemAt(menu->GetActiveProfileIndex());
+  EXPECT_FALSE(menu_item_before.signin_required);
 
   ui::MouseEvent mouse_ev(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), 0);
-  model->SetLogoutURL("about:blank");
+  menu->SetLogoutURL("about:blank");
 
   ProfileChooserView::profile_bubble_->LinkClicked(
       static_cast<views::Link*>(
           ProfileChooserView::profile_bubble_->signout_current_profile_link_),
       0);
 
-  EXPECT_TRUE(model->GetItemAt(model->GetActiveProfileIndex()).signin_required);
+  EXPECT_TRUE(menu->GetItemAt(menu->GetActiveProfileIndex()).signin_required);
 
   window_close_observer.Wait();  // Rely on test timeout for failure indication.
   EXPECT_TRUE(browser_list->empty());

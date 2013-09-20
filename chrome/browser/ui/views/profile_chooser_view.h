@@ -8,8 +8,8 @@
 #include <map>
 #include <vector>
 
-#include "chrome/browser/profiles/avatar_menu_model.h"
-#include "chrome/browser/profiles/avatar_menu_model_observer.h"
+#include "chrome/browser/profiles/avatar_menu.h"
+#include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
@@ -32,7 +32,7 @@ class ProfileItemView;
 class ProfileChooserView : public views::BubbleDelegateView,
                            public views::ButtonListener,
                            public views::LinkListener,
-                           public AvatarMenuModelObserver {
+                           public AvatarMenuObserver {
  public:
   // Shows the bubble if one is not already showing.  This allows us to easily
   // make a button toggle the bubble on and off when clicked: we unconditionally
@@ -63,7 +63,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   typedef std::map<views::Button*, int> ButtonIndexes;
 
   // Different views that can be displayed in the bubble.
-  enum BubbleViewMode{
+  enum BubbleViewMode {
     PROFILE_CHOOSER_VIEW,    // Displays a "fast profile switcher" view.
     ACCOUNT_MANAGEMENT_VIEW  // Displays a list of accounts for the active user.
   };
@@ -85,9 +85,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // LinkListener:
   virtual void LinkClicked(views::Link* sender, int event_flags) OVERRIDE;
 
-  // AvatarMenuModelObserver:
-  virtual void OnAvatarMenuModelChanged(
-      AvatarMenuModel* avatar_menu_model) OVERRIDE;
+  // AvatarMenuObserver:
+  virtual void OnAvatarMenuChanged(
+      AvatarMenu* avatar_menu) OVERRIDE;
 
   static ProfileChooserView* profile_bubble_;
   static bool close_on_deactivate_;
@@ -96,13 +96,13 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   // Shows either the profile chooser or the account management views.
   void ShowView(BubbleViewMode view_to_display,
-                AvatarMenuModel* avatar_menu_model);
+                AvatarMenu* avatar_menu);
 
   // Creates the main profile card for the profile |avatar_item|. |is_guest|
   // is used to determine whether to show any Sign in/Sign out/Manage accounts
   // links.
   views::View* CreateCurrentProfileView(
-      const AvatarMenuModel::Item& avatar_item,
+      const AvatarMenu::Item& avatar_item,
       bool is_guest);
   views::View* CreateGuestProfileView();
   views::View* CreateOtherProfilesView(const Indexes& avatars_to_show);
@@ -110,11 +110,11 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   // Account Management view for the profile |avatar_item|.
   views::View* CreateCurrentProfileEditableView(
-      const AvatarMenuModel::Item& avatar_item);
+      const AvatarMenu::Item& avatar_item);
   views::View* CreateCurrentProfileAccountsView(
-      const AvatarMenuModel::Item& avatar_item);
+      const AvatarMenu::Item& avatar_item);
 
-  scoped_ptr<AvatarMenuModel> avatar_menu_model_;
+  scoped_ptr<AvatarMenu> avatar_menu_;
   Browser* browser_;
 
   // Other profiles used in the "fast profile switcher" view.

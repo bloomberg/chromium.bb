@@ -8,7 +8,7 @@
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/avatar_menu_model.h"
+#include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -25,7 +25,7 @@
 #include "ui/gfx/image/image.h"
 
 @interface AvatarMenuBubbleController (Private)
-- (AvatarMenuModel*)model;
+- (AvatarMenu*)menu;
 - (NSView*)configureManagedUserInformation:(CGFloat)width;
 - (NSButton*)configureNewUserButton:(CGFloat)yOffset
                   updateWidthAdjust:(CGFloat*)widthAdjust;
@@ -72,11 +72,12 @@ const CGFloat kManagedUserSpacing = 26.0;
   // to be positioned incorrectly. Since the bubble will be dismissed on losing
   // key status, it's impossible for the user to edit the information in a
   // meaningful way such that it would need to be redrawn.
-  AvatarMenuModel* model = new AvatarMenuModel(
+  AvatarMenu* menu = new AvatarMenu(
       &g_browser_process->profile_manager()->GetProfileInfoCache(),
       NULL, parentBrowser);
+  menu->RebuildMenu();
 
-  if ((self = [self initWithModel:model
+  if ((self = [self initWithMenu:menu
                      parentWindow:parentBrowser->window()->GetNativeWindow()
                        anchoredAt:point])) {
   }
@@ -84,18 +85,18 @@ const CGFloat kManagedUserSpacing = 26.0;
 }
 
 - (IBAction)newProfile:(id)sender {
-  model_->AddNewProfile(ProfileMetrics::ADD_NEW_USER_ICON);
+  menu_->AddNewProfile(ProfileMetrics::ADD_NEW_USER_ICON);
 }
 
 - (IBAction)switchToProfile:(id)sender {
   // Check the event flags to see if a new window should be crated.
   bool always_create = ui::WindowOpenDispositionFromNSEvent(
       [NSApp currentEvent]) == NEW_WINDOW;
-  model_->SwitchToProfile([sender modelIndex], always_create);
+  menu_->SwitchToProfile([sender menuIndex], always_create);
 }
 
 - (IBAction)editProfile:(id)sender {
-  model_->EditProfile([sender modelIndex]);
+  menu_->EditProfile([sender menuIndex]);
 }
 
 - (IBAction)switchProfile:(id)sender {
@@ -105,7 +106,7 @@ const CGFloat kManagedUserSpacing = 26.0;
 
 // Private /////////////////////////////////////////////////////////////////////
 
-- (id)initWithModel:(AvatarMenuModel*)model
+- (id)initWithMenu:(AvatarMenu*)menu
        parentWindow:(NSWindow*)parent
          anchoredAt:(NSPoint)point {
   // Use an arbitrary height because it will reflect the size of the content.
@@ -119,7 +120,7 @@ const CGFloat kManagedUserSpacing = 26.0;
   if ((self = [super initWithWindow:window
                        parentWindow:parent
                          anchoredAt:point])) {
-    model_.reset(model);
+    menu_.reset(menu);
 
     [window accessibilitySetOverrideValue:
         l10n_util::GetNSString(IDS_PROFILES_BUBBLE_ACCESSIBLE_NAME)
@@ -138,11 +139,11 @@ const CGFloat kManagedUserSpacing = 26.0;
                           updateWidthAdjust:(CGFloat*)widthAdjust
                                  setYOffset:(CGFloat)yOffset {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const AvatarMenuModel::Item& item = model_->GetItemAt(itemIndex);
+  const AvatarMenu::Item& item = menu_->GetItemAt(itemIndex);
   // Create the item view controller. Autorelease it because it will be owned
   // by the |items_| array.
   AvatarMenuItemController* itemView =
-      [[[AvatarMenuItemController alloc] initWithModelIndex:item.model_index
+      [[[AvatarMenuItemController alloc] initWithMenuIndex:itemIndex
                                              menuController:self] autorelease];
   itemView.iconView.image = item.icon.ToNSImage();
 
@@ -213,7 +214,7 @@ const CGFloat kManagedUserSpacing = 26.0;
   CGFloat yOffset = kLinkSpacing;
   CGFloat widthAdjust = 0;
 
-  if (model_->ShouldShowAddNewProfileLink()) {
+  if (menu_->ShouldShowAddNewProfileLink()) {
     // Since drawing happens bottom-up, start with the "New User" link.
     NSButton* newButton =
         [self configureNewUserButton:yOffset updateWidthAdjust:&widthAdjust];
@@ -231,7 +232,7 @@ const CGFloat kManagedUserSpacing = 26.0;
   }
 
   // Loop over the profiles in reverse, constructing the menu items.
-  for (int i = model_->GetNumberOfItems() - 1; i >= 0; --i) {
+  for (int i = menu_->GetNumberOfItems() - 1; i >= 0; --i) {
     AvatarMenuItemController* itemView = [self initAvatarItem:i
                                             updateWidthAdjust:&widthAdjust
                                                    setYOffset:yOffset];
@@ -269,7 +270,7 @@ const CGFloat kManagedUserSpacing = 26.0;
   // will have to adjust its frame later after adding general information about
   // managed users.
   AvatarMenuItemController* itemView =
-      [self initAvatarItem:model_->GetActiveProfileIndex()
+      [self initAvatarItem:menu_->GetActiveProfileIndex()
           updateWidthAdjust:&widthAdjust
                  setYOffset:yOffset];
 
@@ -308,7 +309,7 @@ const CGFloat kManagedUserSpacing = 26.0;
   items_.reset([[NSMutableArray alloc] init]);
   [contentView setSubviews:[NSArray array]];
 
-  if (model_->GetManagedUserInformation().empty() || expanded_)
+  if (menu_->GetManagedUserInformation().empty() || expanded_)
     [self initMenuContents];
   else
     [self initManagedUserContents];
@@ -321,11 +322,11 @@ const CGFloat kManagedUserSpacing = 26.0;
   // Add the limited user icon on the left side of the information TextView.
   base::scoped_nsobject<NSImageView> iconView(
       [[NSImageView alloc] initWithFrame:NSMakeRect(5, 0, 16, 16)]);
-  [iconView setImage:model_->GetManagedUserIcon().ToNSImage()];
+  [iconView setImage:menu_->GetManagedUserIcon().ToNSImage()];
   [container addSubview:iconView];
 
   NSString* info =
-      base::SysUTF16ToNSString(model_->GetManagedUserInformation());
+      base::SysUTF16ToNSString(menu_->GetManagedUserInformation());
   NSDictionary* attributes =
       @{ NSFontAttributeName : [NSFont labelFontOfSize:12] };
   base::scoped_nsobject<NSAttributedString> attrString(
@@ -463,7 +464,7 @@ const CGFloat kManagedUserSpacing = 26.0;
 
 @implementation AvatarMenuItemController
 
-@synthesize modelIndex = modelIndex_;
+@synthesize menuIndex = menuIndex_;
 @synthesize isHighlighted = isHighlighted_;
 @synthesize iconView = iconView_;
 @synthesize activeView = activeView_;
@@ -471,11 +472,11 @@ const CGFloat kManagedUserSpacing = 26.0;
 @synthesize emailField = emailField_;
 @synthesize editButton = editButton_;
 
-- (id)initWithModelIndex:(size_t)modelIndex
+- (id)initWithMenuIndex:(size_t)menuIndex
           menuController:(AvatarMenuBubbleController*)controller {
   if ((self = [super initWithNibName:@"AvatarMenuItem"
                               bundle:base::mac::FrameworkBundle()])) {
-    modelIndex_ = modelIndex;
+    menuIndex_ = menuIndex;
     controller_ = controller;
     [self loadView];
     [nameField_ setAutoresizingMask:NSViewNotSizable];

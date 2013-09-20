@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/avatar_menu_model.h"
+#include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -216,8 +216,9 @@ bool ProfileImageView::HitTestRect(const gfx::Rect& rect) const {
 class ProfileItemView : public views::CustomButton,
                         public HighlightDelegate {
  public:
-  ProfileItemView(const AvatarMenuModel::Item& item,
-                  AvatarMenuBubbleView* parent);
+  ProfileItemView(const AvatarMenu::Item& item,
+                  AvatarMenuBubbleView* parent,
+                  AvatarMenu* menu);
 
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
@@ -229,7 +230,7 @@ class ProfileItemView : public views::CustomButton,
   virtual void OnHighlightStateChanged() OVERRIDE;
   virtual void OnFocusStateChanged(bool has_focus) OVERRIDE;
 
-  const AvatarMenuModel::Item& item() const { return item_; }
+  const AvatarMenu::Item& item() const { return item_; }
   EditProfileLink* edit_link() { return edit_link_; }
 
  private:
@@ -237,8 +238,9 @@ class ProfileItemView : public views::CustomButton,
 
   bool IsHighlighted();
 
-  AvatarMenuModel::Item item_;
+  AvatarMenu::Item item_;
   AvatarMenuBubbleView* parent_;
+  AvatarMenu* menu_;
   views::ImageView* image_view_;
   views::Label* name_label_;
   views::Label* sync_state_label_;
@@ -247,11 +249,13 @@ class ProfileItemView : public views::CustomButton,
   DISALLOW_COPY_AND_ASSIGN(ProfileItemView);
 };
 
-ProfileItemView::ProfileItemView(const AvatarMenuModel::Item& item,
-                                 AvatarMenuBubbleView* parent)
+ProfileItemView::ProfileItemView(const AvatarMenu::Item& item,
+                                 AvatarMenuBubbleView* parent,
+                                 AvatarMenu* menu)
     : views::CustomButton(parent),
       item_(item),
-      parent_(parent) {
+      parent_(parent),
+      menu_(menu) {
   set_notify_enter_exit_on_child(true);
 
   image_view_ = new ProfileImageView();
@@ -365,7 +369,8 @@ void ProfileItemView::OnHighlightStateChanged() {
   sync_state_label_->SetBackgroundColor(color);
   edit_link_->SetBackgroundColor(color);
 
-  bool show_edit = IsHighlighted() && item_.active;
+  bool show_edit = IsHighlighted() && item_.active &&
+      menu_->ShouldShowEditProfileLink();
   sync_state_label_->SetVisible(!show_edit);
   edit_link_->SetVisible(show_edit);
   SchedulePaint();
@@ -518,9 +523,11 @@ AvatarMenuBubbleView::AvatarMenuBubbleView(
       managed_user_info_(NULL),
       separator_switch_users_(NULL),
       expanded_(false) {
-  avatar_menu_model_.reset(new AvatarMenuModel(
+  avatar_menu_.reset(new AvatarMenu(
       &g_browser_process->profile_manager()->GetProfileInfoCache(),
-      this, browser_));
+      this,
+      browser_));
+  avatar_menu_->RebuildMenu();
 }
 
 AvatarMenuBubbleView::~AvatarMenuBubbleView() {
@@ -651,7 +658,7 @@ void AvatarMenuBubbleView::ButtonPressed(views::Button* sender,
     chrome::ShowSettingsSubPage(browser_, subpage);
     return;
   } else if (sender->tag() == IDS_PROFILES_PROFILE_SIGNOUT_BUTTON) {
-    avatar_menu_model_->BeginSignOut();
+    avatar_menu_->BeginSignOut();
     return;
   }
 
@@ -660,7 +667,7 @@ void AvatarMenuBubbleView::ButtonPressed(views::Button* sender,
     if (sender == item_view) {
       // Clicking on the active profile shouldn't do anything.
       if (!item_view->item().active) {
-        avatar_menu_model_->SwitchToProfile(
+        avatar_menu_->SwitchToProfile(
             i, ui::DispositionFromEventFlags(event.flags()) == NEW_WINDOW);
       }
       break;
@@ -670,19 +677,19 @@ void AvatarMenuBubbleView::ButtonPressed(views::Button* sender,
 
 void AvatarMenuBubbleView::LinkClicked(views::Link* source, int event_flags) {
   if (source == buttons_view_) {
-    avatar_menu_model_->AddNewProfile(ProfileMetrics::ADD_NEW_USER_ICON);
+    avatar_menu_->AddNewProfile(ProfileMetrics::ADD_NEW_USER_ICON);
     return;
   }
   if (source == switch_profile_link_) {
     expanded_ = true;
-    OnAvatarMenuModelChanged(avatar_menu_model_.get());
+    OnAvatarMenuChanged(avatar_menu_.get());
     return;
   }
 
   for (size_t i = 0; i < item_views_.size(); ++i) {
     ProfileItemView* item_view = item_views_[i];
     if (source == item_view->edit_link()) {
-      avatar_menu_model_->EditProfile(i);
+      avatar_menu_->EditProfile(i);
       return;
     }
   }
@@ -694,7 +701,7 @@ gfx::Rect AvatarMenuBubbleView::GetAnchorRect() {
 
 void AvatarMenuBubbleView::Init() {
   // Build the menu for the first time.
-  OnAvatarMenuModelChanged(avatar_menu_model_.get());
+  OnAvatarMenuChanged(avatar_menu_.get());
   AddAccelerator(ui::Accelerator(ui::VKEY_DOWN, ui::EF_NONE));
   AddAccelerator(ui::Accelerator(ui::VKEY_UP, ui::EF_NONE));
 }
@@ -705,10 +712,12 @@ void AvatarMenuBubbleView::WindowClosing() {
 }
 
 void AvatarMenuBubbleView::InitMenuContents(
-    AvatarMenuModel* avatar_menu_model) {
-  for (size_t i = 0; i < avatar_menu_model->GetNumberOfItems(); ++i) {
-    const AvatarMenuModel::Item& item = avatar_menu_model->GetItemAt(i);
-    ProfileItemView* item_view = new ProfileItemView(item, this);
+    AvatarMenu* avatar_menu) {
+  for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
+    const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
+    ProfileItemView* item_view = new ProfileItemView(item,
+                                                     this,
+                                                     avatar_menu_.get());
     item_view->SetAccessibleName(l10n_util::GetStringFUTF16(
         IDS_PROFILES_SWITCH_TO_PROFILE_ACCESSIBLE_NAME, item.name));
     item_view->set_focusable(true);
@@ -722,7 +731,7 @@ void AvatarMenuBubbleView::InitMenuContents(
     AddChildView(separator_);
     buttons_view_ = new ActionButtonView(this, browser_->profile());
     AddChildView(buttons_view_);
-  } else if (avatar_menu_model_->ShouldShowAddNewProfileLink()) {
+  } else if (avatar_menu_->ShouldShowAddNewProfileLink()) {
     views::Link* add_profile_link = new views::Link(
         l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_NEW_PROFILE_LINK));
     add_profile_link->set_listener(this);
@@ -736,12 +745,14 @@ void AvatarMenuBubbleView::InitMenuContents(
 }
 
 void AvatarMenuBubbleView::InitManagedUserContents(
-    AvatarMenuModel* avatar_menu_model) {
+    AvatarMenu* avatar_menu) {
   // Show the profile of the managed user.
-  size_t active_index = avatar_menu_model->GetActiveProfileIndex();
-  const AvatarMenuModel::Item& item =
-      avatar_menu_model->GetItemAt(active_index);
-  ProfileItemView* item_view = new ProfileItemView(item, this);
+  size_t active_index = avatar_menu->GetActiveProfileIndex();
+  const AvatarMenu::Item& item =
+      avatar_menu->GetItemAt(active_index);
+  ProfileItemView* item_view = new ProfileItemView(item,
+                                                   this,
+                                                   avatar_menu_.get());
   item_view->SetAccessibleName(l10n_util::GetStringFUTF16(
       IDS_PROFILES_SWITCH_TO_PROFILE_ACCESSIBLE_NAME, item.name));
   item_views_.push_back(item_view);
@@ -751,7 +762,7 @@ void AvatarMenuBubbleView::InitManagedUserContents(
 
   // Add information about managed users.
   managed_user_info_ =
-      new views::Label(avatar_menu_model_->GetManagedUserInformation(),
+      new views::Label(avatar_menu_->GetManagedUserInformation(),
                        ui::ResourceBundle::GetSharedInstance().GetFont(
                            ui::ResourceBundle::SmallFont));
   managed_user_info_->SetMultiLine(true);
@@ -761,7 +772,7 @@ void AvatarMenuBubbleView::InitManagedUserContents(
 
   // Add the managed user icon.
   icon_view_ = new views::ImageView();
-  icon_view_->SetImage(avatar_menu_model_->GetManagedUserIcon().ToImageSkia());
+  icon_view_->SetImage(avatar_menu_->GetManagedUserIcon().ToImageSkia());
   AddChildView(icon_view_);
 
   // Add a link for switching profiles.
@@ -775,8 +786,8 @@ void AvatarMenuBubbleView::InitManagedUserContents(
   AddChildView(switch_profile_link_);
 }
 
-void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
-    AvatarMenuModel* avatar_menu_model) {
+void AvatarMenuBubbleView::OnAvatarMenuChanged(
+    AvatarMenu* avatar_menu) {
   // Unset all our child view references and call RemoveAllChildViews() which
   // will actually delete them.
   buttons_view_ = NULL;
@@ -784,10 +795,10 @@ void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
   item_views_.clear();
   RemoveAllChildViews(true);
 
-  if (avatar_menu_model_->GetManagedUserInformation().empty() || expanded_)
-    InitMenuContents(avatar_menu_model);
+  if (avatar_menu_->GetManagedUserInformation().empty() || expanded_)
+    InitMenuContents(avatar_menu);
   else
-    InitManagedUserContents(avatar_menu_model);
+    InitManagedUserContents(avatar_menu);
 
   // If the bubble has already been shown then resize and reposition the bubble.
   Layout();

@@ -9,8 +9,8 @@
 #include "base/message_loop/message_pump_mac.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
-#include "chrome/browser/profiles/avatar_menu_model.h"
-#include "chrome/browser/profiles/avatar_menu_model_observer.h"
+#include "chrome/browser/profiles/avatar_menu.h"
+#include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -34,19 +34,20 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
     manager_.CreateTestingProfile("test2", scoped_ptr<PrefServiceSyncable>(),
                                   ASCIIToUTF16("Test 2"), 0, std::string());
 
-    model_ = new AvatarMenuModel(manager_.profile_info_cache(), NULL, NULL);
+    menu_ = new AvatarMenu(manager_.profile_info_cache(), NULL, NULL);
+    menu_->RebuildMenu();
 
     NSRect frame = [test_window() frame];
     NSPoint point = NSMakePoint(NSMidX(frame), NSMidY(frame));
     controller_ =
-        [[AvatarMenuBubbleController alloc] initWithModel:model()
+        [[AvatarMenuBubbleController alloc] initWithMenu:menu()
                                              parentWindow:test_window()
                                                anchoredAt:point];
   }
 
   TestingProfileManager* manager() { return &manager_; }
   AvatarMenuBubbleController* controller() { return controller_; }
-  AvatarMenuModel* model() { return model_; }
+  AvatarMenu* menu() { return menu_; }
 
   AvatarMenuItemController* GetHighlightedItem() {
     for (AvatarMenuItemController* item in [controller() items]) {
@@ -63,7 +64,7 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
   AvatarMenuBubbleController* controller_;
 
   // Weak; owned by |controller_|.
-  AvatarMenuModel* model_;
+  AvatarMenu* menu_;
 };
 
 TEST_F(AvatarMenuBubbleControllerTest, InitialLayout) {
@@ -182,7 +183,7 @@ TEST_F(AvatarMenuBubbleControllerTest, PerformLayout) {
 
 TEST_F(AvatarMenuBubbleControllerTest, HighlightForEventType) {
   base::scoped_nsobject<TestingAvatarMenuItemController> item(
-      [[TestingAvatarMenuItemController alloc] initWithModelIndex:0
+      [[TestingAvatarMenuItemController alloc] initWithMenuIndex:0
                                                    menuController:nil]);
   // Test non-active states first.
   [[item activeView] setHidden:YES];
