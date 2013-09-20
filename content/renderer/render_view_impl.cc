@@ -6474,6 +6474,10 @@ void RenderViewImpl::SetMediaStreamClientForTesting(
   media_stream_client_ = media_stream_client;
 }
 
+bool RenderViewImpl::IsPluginFullscreenAllowed() {
+  return renderer_preferences_.plugin_fullscreen_allowed;
+}
+
 void RenderViewImpl::OnReleaseDisambiguationPopupDIB(
     TransportDIB::Handle dib_handle) {
   TransportDIB* dib = TransportDIB::CreateWithHandle(dib_handle);

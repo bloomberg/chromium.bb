@@ -79,8 +79,11 @@ class PepperPluginInstance {
   // Switches between fullscreen and normal mode. If |delay_report| is set to
   // false, it may report the new state through DidChangeView immediately. If
   // true, it will delay it. When called from the plugin, delay_report should
-  // be true to avoid re-entrancy.
-  virtual void FlashSetFullscreen(bool fullscreen, bool delay_report) = 0;
+  // be true to avoid re-entrancy. Returns true if the switch will be carried
+  // out, because of this call or because a switch was pending already anyway.
+  // Returns false if the switch will not be carried out because fullscreen mode
+  // is disallowed by a preference.
+  virtual bool FlashSetFullscreen(bool fullscreen, bool delay_report) = 0;
 
   virtual bool IsRectTopmost(const gfx::Rect& rect) = 0;
 

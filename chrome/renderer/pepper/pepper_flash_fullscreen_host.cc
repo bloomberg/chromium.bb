@@ -41,10 +41,8 @@ int32_t PepperFlashFullscreenHost::OnSetFullscreen(
     bool fullscreen) {
   content::PepperPluginInstance* plugin_instance =
       renderer_ppapi_host_->GetPluginInstance(pp_instance());
-  if (plugin_instance) {
-    plugin_instance->FlashSetFullscreen(fullscreen, true);
+  if (plugin_instance && plugin_instance->FlashSetFullscreen(fullscreen, true))
     return PP_OK;
-  }
   return PP_ERROR_FAILED;
 }
 

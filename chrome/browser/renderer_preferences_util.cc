@@ -145,6 +145,11 @@ void UpdateFromSystemSettings(
   prefs->subpixel_rendering =
       GetRendererPreferencesSubpixelRenderingEnum(params.subpixel_rendering);
 #endif
+
+#if !defined(OS_MACOSX)
+  prefs->plugin_fullscreen_allowed =
+      pref_service->GetBoolean(prefs::kFullscreenAllowed);
+#endif
 }
 
-}  // renderer_preferences_util
+}  // namespace renderer_preferences_util

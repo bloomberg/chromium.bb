@@ -141,6 +141,9 @@ struct CONTENT_EXPORT RendererPreferences {
   // Disables rendering default error page when client choses to block a page.
   // Corresponds to net::ERR_BLOCKED_BY_CLIENT.
   bool disable_client_blocked_error_page;
+
+  // Determines whether plugins are allowed to enter fullscreen mode.
+  bool plugin_fullscreen_allowed;
 };
 
 }  // namespace content

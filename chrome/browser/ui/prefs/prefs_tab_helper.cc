@@ -424,6 +424,10 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
     pref_change_registrar_.Add(prefs::kEnableDoNotTrack, renderer_callback);
     pref_change_registrar_.Add(prefs::kEnableReferrers, renderer_callback);
 
+#if !defined(OS_MACOSX)
+    pref_change_registrar_.Add(prefs::kFullscreenAllowed, renderer_callback);
+#endif
+
     PrefChangeRegistrar::NamedChangeCallback webkit_callback = base::Bind(
         &PrefsTabHelper::OnWebPrefChanged, base::Unretained(this));
     for (int i = 0; i < kPrefsToObserveLength; ++i) {

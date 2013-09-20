@@ -1639,6 +1639,9 @@ bool PepperPluginInstanceImpl::SetFullscreen(bool fullscreen) {
   if (fullscreen == IsFullscreenOrPending())
     return false;
 
+  if (fullscreen && !render_view_->IsPluginFullscreenAllowed())
+    return false;
+
   // Check whether we are trying to switch while the state is in transition.
   // The 2nd request gets dropped while messing up the internal state, so
   // disallow this.
@@ -2746,7 +2749,7 @@ bool PepperPluginInstanceImpl::IsFullPagePlugin() {
   return frame->view()->mainFrame()->document().isPluginDocument();
 }
 
-void PepperPluginInstanceImpl::FlashSetFullscreen(bool fullscreen,
+bool PepperPluginInstanceImpl::FlashSetFullscreen(bool fullscreen,
                                                   bool delay_report) {
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::FlashSetFullscreen");
   // Keep a reference on the stack. See NOTE above.
@@ -2756,7 +2759,10 @@ void PepperPluginInstanceImpl::FlashSetFullscreen(bool fullscreen,
   // to (i.e. if we're already switching to fullscreen but the fullscreen
   // container isn't ready yet, don't do anything more).
   if (fullscreen == FlashIsFullscreenOrPending())
-    return;
+    return true;
+
+  if (fullscreen && !render_view_->IsPluginFullscreenAllowed())
+    return false;
 
   // Unbind current 2D or 3D graphics context.
   VLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
@@ -2777,6 +2783,8 @@ void PepperPluginInstanceImpl::FlashSetFullscreen(bool fullscreen,
           base::Bind(&PepperPluginInstanceImpl::ReportGeometry, this));
     }
   }
+
+  return true;
 }
 
 bool PepperPluginInstanceImpl::IsRectTopmost(const gfx::Rect& rect) {

@@ -396,6 +396,9 @@ class CONTENT_EXPORT RenderViewImpl
   // Must be called before any players are created.
   void SetMediaStreamClientForTesting(MediaStreamClient* media_stream_client);
 
+  // Determines whether plugins are allowed to enter fullscreen mode.
+  bool IsPluginFullscreenAllowed();
+
   // IPC::Listener implementation ----------------------------------------------
 
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
