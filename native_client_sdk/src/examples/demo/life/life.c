@@ -197,7 +197,7 @@ void Stir(uint32_t width, uint32_t height) {
 
 void Render() {
   struct PP_Size* psize = &g_Context.size;
-  PP_ImageDataFormat format = g_pImageData->GetNativeImageDataFormat();
+  PP_ImageDataFormat format = PP_IMAGEDATAFORMAT_BGRA_PREMUL;
 
   /*
    * Create a buffer to draw into.  Since we are waiting until the next flush
