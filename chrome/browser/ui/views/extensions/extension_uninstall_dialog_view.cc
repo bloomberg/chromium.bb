@@ -42,19 +42,9 @@ int HorizontalMargin() {
 }
 
 // Returns parent window for extension uninstall dialog.
-// For platforms with an app list, use the app list window if it is visible.
-// For other platforms or when app list is not visible, use the given browser
-// window.
-// Note this function could return NULL if the app list is not visible and
-// there is no browser window.
 gfx::NativeWindow GetParent(Browser* browser) {
-  gfx::NativeWindow window = AppListService::Get()->GetAppListWindow();
-  if (window)
-    return window;
-
   if (browser && browser->window())
     return browser->window()->GetNativeWindow();
-
   return NULL;
 }
 
@@ -76,6 +66,7 @@ class ExtensionUninstallDialogViews : public ExtensionUninstallDialog {
   virtual void Show() OVERRIDE;
 
   ExtensionUninstallDialogDelegateView* view_;
+  bool show_in_app_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstallDialogViews);
 };
@@ -126,7 +117,8 @@ ExtensionUninstallDialogViews::ExtensionUninstallDialogViews(
     Browser* browser,
     ExtensionUninstallDialog::Delegate* delegate)
     : ExtensionUninstallDialog(profile, browser, delegate),
-      view_(NULL) {
+      view_(NULL),
+      show_in_app_list_(!browser) {
 }
 
 ExtensionUninstallDialogViews::~ExtensionUninstallDialogViews() {
@@ -138,7 +130,9 @@ ExtensionUninstallDialogViews::~ExtensionUninstallDialogViews() {
 }
 
 void ExtensionUninstallDialogViews::Show() {
-  gfx::NativeWindow parent = GetParent(browser_);
+  gfx::NativeWindow parent = show_in_app_list_ ?
+      AppListService::Get()->GetAppListWindow() :
+      GetParent(browser_);
   if (browser_ && !parent) {
     delegate_->ExtensionUninstallCanceled();
     return;
