@@ -63,4 +63,9 @@ crbug.com/292656 css3/filters/effect-reference-colorspace-hw.html [ ImageOnlyFai
 crbug.com/292656 css3/filters/effect-reference-hw.html [ ImageOnlyFailure ]
 crbug.com/292656 css3/filters/effect-reference-subregion-hw.html [ ImageOnlyFailure ]
 
+# Skia r11365 slightly changed how the GPU draws lines
+crbug.com/295579 virtual/gpu/fast/canvas/canvas-text-baseline.html [ ImageOnlyFailure ]
+crbug.com/295579 virtual/gpu/fast/canvas/canvas-transforms-during-path.html [ ImageOnlyFailure ]
+crbug.com/295579 virtual/gpu/fast/canvas/quadraticCurveTo.xml [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)

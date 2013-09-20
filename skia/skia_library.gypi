@@ -52,7 +52,6 @@
         'default_font_cache_limit': '(1*1024*1024)',
         'skia_export_defines': [
           'SK_BUILD_FOR_ANDROID',
-          'USE_CHROMIUM_SKIA',
         ],
       }],
     ],
