@@ -105,7 +105,7 @@
   // The settings bubble data structures assume that the settings dialog is
   // visible only for short periods of time: There's a fixed list of permissions
   // for example.
-  [viewController_ hideSettings:self];
+  [viewController_ cleanupSettings];
 
   tray_->HideMessageCenterBubble();
 }

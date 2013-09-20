@@ -280,7 +280,7 @@ const CGFloat kTrayBottomMargin = 75;
 
 - (void)showSettings:(id)sender {
   if (settingsController_)
-    return [self hideSettings:sender];
+    return [self showMessages:sender];
 
   message_center::NotifierSettingsProvider* provider =
       messageCenter_->GetNotifierSettingsProvider();
@@ -300,6 +300,7 @@ const CGFloat kTrayBottomMargin = 75;
   [scrollView_ setHidden:YES];
 
   [[[self view] window] recalculateKeyViewLoop];
+  messageCenter_->SetVisibility(message_center::VISIBILITY_SETTINGS);
 
   [self updateTrayViewAndWindow];
 }
@@ -315,7 +316,14 @@ const CGFloat kTrayBottomMargin = 75;
   [self updateTrayViewAndWindow];
 }
 
-- (void)hideSettings:(id)sender {
+- (void)showMessages:(id)sender {
+  messageCenter_->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
+  [self cleanupSettings];
+  [[[self view] window] recalculateKeyViewLoop];
+  [self updateTrayViewAndWindow];
+}
+
+- (void)cleanupSettings {
   [scrollView_ setHidden:NO];
 
   [[settingsController_ view] removeFromSuperview];
@@ -327,8 +335,6 @@ const CGFloat kTrayBottomMargin = 75;
   [backButton_ setHidden:YES];
   [clearAllButton_ setEnabled:YES];
 
-  [[[self view] window] recalculateKeyViewLoop];
-  [self updateTrayViewAndWindow];
 }
 
 - (void)scrollToTop {
@@ -427,7 +433,7 @@ const CGFloat kTrayBottomMargin = 75;
       rb.GetNativeImageNamed(IDR_NOTIFICATION_ARROW_HOVER).ToNSImage()];
   [backButton_ setPressedImage:
       rb.GetNativeImageNamed(IDR_NOTIFICATION_ARROW_PRESSED).ToNSImage()];
-  [backButton_ setAction:@selector(hideSettings:)];
+  [backButton_ setAction:@selector(showMessages:)];
   configureButton(backButton_);
   [backButton_ setHidden:YES];
   [backButton_ setKeyEquivalent:@"\e"];

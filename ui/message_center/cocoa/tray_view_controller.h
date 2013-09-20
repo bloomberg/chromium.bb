@@ -134,7 +134,11 @@ MESSAGE_CENTER_EXPORT
 - (void)updateSettings;
 
 // Hides the settings dialog if it's open.
-- (void)hideSettings:(id)sender;
+- (void)showMessages:(id)sender;
+
+// Cleans up settings data structures.  Called when messages are shown and when
+// closing the center directly from the settings.
+- (void)cleanupSettings;
 
 // Scroll to the topmost notification in the tray.
 - (void)scrollToTop;
