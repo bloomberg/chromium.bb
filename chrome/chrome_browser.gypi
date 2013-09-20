@@ -1688,6 +1688,8 @@
         'browser/profiles/chrome_browser_main_extra_parts_profiles.h',
         'browser/profiles/chrome_version_service.cc',
         'browser/profiles/chrome_version_service.h',
+        'browser/profiles/file_path_verifier_win.cc',
+        'browser/profiles/file_path_verifier_win.h',
         'browser/profiles/gaia_info_update_service.cc',
         'browser/profiles/gaia_info_update_service.h',
         'browser/profiles/gaia_info_update_service_factory.cc',
