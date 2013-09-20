@@ -62,7 +62,7 @@ static bool parseFontSize(const CharacterType* characters, unsigned length, int&
 
     // Step 3
     while (position < end) {
-        if (!isHTMLSpace(*position))
+        if (!isHTMLSpace<CharacterType>(*position))
             break;
         ++position;
     }

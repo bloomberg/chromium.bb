@@ -57,12 +57,12 @@ inline void SpaceSplitStringData::createVector(const CharacterType* characters, 
 {
     unsigned start = 0;
     while (true) {
-        while (start < length && isHTMLSpace(characters[start]))
+        while (start < length && isHTMLSpace<CharacterType>(characters[start]))
             ++start;
         if (start >= length)
             break;
         unsigned end = start + 1;
-        while (end < length && isNotHTMLSpace(characters[end]))
+        while (end < length && isNotHTMLSpace<CharacterType>(characters[end]))
             ++end;
 
         m_vector.append(AtomicString(characters + start, end - start));

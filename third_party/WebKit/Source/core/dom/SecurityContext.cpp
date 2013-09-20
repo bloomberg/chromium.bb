@@ -94,12 +94,12 @@ SandboxFlags SecurityContext::parseSandboxPolicy(const String& policy, String& i
     unsigned numberOfTokenErrors = 0;
     StringBuilder tokenErrors;
     while (true) {
-        while (start < length && isHTMLSpace(policy[start]))
+        while (start < length && isHTMLSpace<UChar>(policy[start]))
             ++start;
         if (start >= length)
             break;
         unsigned end = start + 1;
-        while (end < length && !isHTMLSpace(policy[end]))
+        while (end < length && !isHTMLSpace<UChar>(policy[end]))
             ++end;
 
         // Turn off the corresponding sandbox flag if it's set as "allowed".

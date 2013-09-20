@@ -67,7 +67,8 @@ bool parseHTMLNonNegativeInteger(const String&, unsigned int&);
 
 // Inline implementations of some of the functions declared above.
 
-inline bool isHTMLSpace(UChar character)
+template<typename CharType>
+inline bool isHTMLSpace(CharType character)
 {
     // Histogram from Apple's page load test combined with some ad hoc browsing some other test suites.
     //
@@ -82,14 +83,21 @@ inline bool isHTMLSpace(UChar character)
     return character <= ' ' && (character == ' ' || character == '\n' || character == '\t' || character == '\r' || character == '\f');
 }
 
+template<typename CharType>
+inline bool isHTMLSpaceOrComma(CharType character)
+{
+    return isHTMLSpace<CharType>(character) || character == ',';
+}
+
 inline bool isHTMLLineBreak(UChar character)
 {
     return character <= '\r' && (character == '\n' || character == '\r');
 }
 
-inline bool isNotHTMLSpace(UChar character)
+template<typename CharType>
+inline bool isNotHTMLSpace(CharType character)
 {
-    return !isHTMLSpace(character);
+    return !isHTMLSpace<CharType>(character);
 }
 
 bool threadSafeMatch(const QualifiedName&, const QualifiedName&);

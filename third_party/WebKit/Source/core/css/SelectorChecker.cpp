@@ -297,7 +297,7 @@ SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const Element*
 static inline bool containsHTMLSpace(const AtomicString& string)
 {
     for (unsigned i = 0; i < string.length(); i++)
-        if (isHTMLSpace(string[i]))
+        if (isHTMLSpace<UChar>(string[i]))
             return true;
     return false;
 }
@@ -324,9 +324,9 @@ static bool attributeValueMatches(const Attribute* attributeItem, CSSSelector::M
                 size_t foundPos = value.find(selectorValue, startSearchAt, caseSensitive);
                 if (foundPos == kNotFound)
                     return false;
-                if (!foundPos || isHTMLSpace(value[foundPos - 1])) {
+                if (!foundPos || isHTMLSpace<UChar>(value[foundPos - 1])) {
                     unsigned endStr = foundPos + selectorValue.length();
-                    if (endStr == value.length() || isHTMLSpace(value[endStr]))
+                    if (endStr == value.length() || isHTMLSpace<UChar>(value[endStr]))
                         break; // We found a match.
                 }
 

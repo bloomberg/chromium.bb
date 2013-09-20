@@ -300,10 +300,10 @@ AtomicString CSSParserString::atomicSubstring(unsigned position, unsigned length
 void CSSParserString::trimTrailingWhitespace()
 {
     if (is8Bit()) {
-        while (m_length > 0 && isHTMLSpace(m_data.characters8[m_length - 1]))
+        while (m_length > 0 && isHTMLSpace<LChar>(m_data.characters8[m_length - 1]))
             --m_length;
     } else {
-        while (m_length > 0 && isHTMLSpace(m_data.characters16[m_length - 1]))
+        while (m_length > 0 && isHTMLSpace<UChar>(m_data.characters16[m_length - 1]))
             --m_length;
     }
 }
@@ -5936,7 +5936,7 @@ static bool parseColorIntOrPercentage(const CharacterType*& string, const Charac
     const CharacterType* current = string;
     double localValue = 0;
     bool negative = false;
-    while (current != end && isHTMLSpace(*current))
+    while (current != end && isHTMLSpace<CharacterType>(*current))
         current++;
     if (current != end && *current == '-') {
         negative = true;
@@ -5988,7 +5988,7 @@ static bool parseColorIntOrPercentage(const CharacterType*& string, const Charac
     } else
         expect = CSSPrimitiveValue::CSS_NUMBER;
 
-    while (current != end && isHTMLSpace(*current))
+    while (current != end && isHTMLSpace<CharacterType>(*current))
         current++;
     if (current == end || *current++ != terminator)
         return false;
@@ -6015,7 +6015,7 @@ static inline bool isTenthAlpha(const CharacterType* string, const int length)
 template <typename CharacterType>
 static inline bool parseAlphaValue(const CharacterType*& string, const CharacterType* end, const char terminator, int& value)
 {
-    while (string != end && isHTMLSpace(*string))
+    while (string != end && isHTMLSpace<CharacterType>(*string))
         string++;
 
     bool negative = false;
@@ -9632,7 +9632,7 @@ static CharacterType* checkAndSkipEscape(CharacterType* currentCharacter)
         } while (isASCIIHexDigit(*currentCharacter) && --length);
 
         // Optional space after the escape sequence.
-        if (isHTMLSpace(*currentCharacter))
+        if (isHTMLSpace<CharacterType>(*currentCharacter))
             ++currentCharacter;
         return currentCharacter;
     }
@@ -9642,7 +9642,7 @@ static CharacterType* checkAndSkipEscape(CharacterType* currentCharacter)
 template <typename CharacterType>
 static inline CharacterType* skipWhiteSpace(CharacterType* currentCharacter)
 {
-    while (isHTMLSpace(*currentCharacter))
+    while (isHTMLSpace<CharacterType>(*currentCharacter))
         ++currentCharacter;
     return currentCharacter;
 }
@@ -9788,7 +9788,7 @@ unsigned CSSParser::parseEscape(CharacterType*& src)
             unicode = 0xfffd;
 
         // Optional space after the escape sequence.
-        if (isHTMLSpace(*src))
+        if (isHTMLSpace<CharacterType>(*src))
             ++src;
 
         return unicode;

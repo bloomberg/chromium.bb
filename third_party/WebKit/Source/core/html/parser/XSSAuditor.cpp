@@ -612,7 +612,7 @@ String XSSAuditor::decodedSnippetForAttribute(const FilterTokenRequest& request,
         // slash, or less-than sign.
         size_t position = 0;
         if ((position = decodedSnippet.find("=")) != kNotFound
-            && (position = decodedSnippet.find(isNotHTMLSpace, position + 1)) != kNotFound
+            && (position = decodedSnippet.find(isNotHTMLSpace<UChar>, position + 1)) != kNotFound
             && (position = decodedSnippet.find(isTerminatingCharacter, isHTMLQuote(decodedSnippet[position]) ? position + 1 : position)) != kNotFound) {
             decodedSnippet.truncate(position);
         }
@@ -629,7 +629,7 @@ String XSSAuditor::decodedSnippetForJavaScript(const FilterTokenRequest& request
 
     // Skip over initial comments to find start of code.
     while (startPosition < endPosition) {
-        while (startPosition < endPosition && isHTMLSpace(string[startPosition]))
+        while (startPosition < endPosition && isHTMLSpace<UChar>(string[startPosition]))
             startPosition++;
 
         // Under SVG/XML rules, only HTML comment syntax matters and the parser returns
@@ -672,7 +672,7 @@ String XSSAuditor::decodedSnippetForJavaScript(const FilterTokenRequest& request
                     break;
                 }
             }
-            if (string[foundPosition] == ',' || (foundPosition > startPosition + kMaximumFragmentLengthTarget && isHTMLSpace(string[foundPosition]))) {
+            if (string[foundPosition] == ',' || (foundPosition > startPosition + kMaximumFragmentLengthTarget && isHTMLSpace<UChar>(string[foundPosition]))) {
                 break;
             }
         }

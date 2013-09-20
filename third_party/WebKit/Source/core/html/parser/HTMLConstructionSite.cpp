@@ -84,7 +84,7 @@ static bool shouldUseLengthLimit(const ContainerNode* node)
 
 static inline bool isAllWhitespace(const String& string)
 {
-    return string.isAllSpecialCharacters<isHTMLSpace>();
+    return string.isAllSpecialCharacters<isHTMLSpace<UChar> >();
 }
 
 static inline void insert(HTMLConstructionSiteTask& task)

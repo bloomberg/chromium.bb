@@ -69,7 +69,7 @@ void InspectorStyleTextEditor::insertProperty(unsigned index, const String& prop
         propertyStart = styleBodyLength;
         if (propertyStart && textToSet.length()) {
             long curPos = propertyStart - 1; // The last position of style declaration, since propertyStart points past one.
-            while (curPos && isHTMLSpace(m_styleText[curPos]))
+            while (curPos && isHTMLSpace<UChar>(m_styleText[curPos]))
                 --curPos;
             if (curPos) {
                 bool terminated = m_styleText[curPos] == ';' || (m_styleText[curPos] == '/' && m_styleText[curPos - 1] == '*');

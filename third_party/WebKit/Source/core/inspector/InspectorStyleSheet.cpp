@@ -208,7 +208,7 @@ template <typename CharacterType>
 inline void StyleSheetHandler::setRuleHeaderEnd(const CharacterType* dataStart, unsigned listEndOffset)
 {
     while (listEndOffset > 1) {
-        if (isHTMLSpace(*(dataStart + listEndOffset - 1)))
+        if (isHTMLSpace<CharacterType>(*(dataStart + listEndOffset - 1)))
             --listEndOffset;
         else
             break;
@@ -303,7 +303,7 @@ static inline void fixUnparsedProperties(const CharacterType* characters, CSSRul
         else
             propertyEndInStyleSheet = styleStart + nextData->range.start - 1;
 
-        while (isHTMLSpace(characters[propertyEndInStyleSheet]))
+        while (isHTMLSpace<CharacterType>(characters[propertyEndInStyleSheet]))
             --propertyEndInStyleSheet;
 
         // propertyEndInStyleSheet points at the last property text character.
@@ -315,7 +315,7 @@ static inline void fixUnparsedProperties(const CharacterType* characters, CSSRul
                 ++valueStartInStyleSheet;
             if (valueStartInStyleSheet < propertyEndInStyleSheet)
                 ++valueStartInStyleSheet; // Shift past the ':'.
-            while (valueStartInStyleSheet < propertyEndInStyleSheet && isHTMLSpace(characters[valueStartInStyleSheet]))
+            while (valueStartInStyleSheet < propertyEndInStyleSheet && isHTMLSpace<CharacterType>(characters[valueStartInStyleSheet]))
                 ++valueStartInStyleSheet;
             // Need to exclude the trailing ';' from the property value.
             currentData->value = String(characters + valueStartInStyleSheet, propertyEndInStyleSheet - valueStartInStyleSheet + (characters[propertyEndInStyleSheet] == ';' ? 0 : 1));
@@ -914,7 +914,7 @@ NewLineAndWhitespace& InspectorStyle::newLineAndWhitespaceDelimiters() const
                 if (!lineFeedTerminated)
                     formatLineFeed.append(ch);
                 prefix.clear();
-            } else if (isHTMLSpace(ch))
+            } else if (isHTMLSpace<UChar>(ch))
                 prefix.append(ch);
             else {
                 candidatePrefix = prefix.toString();

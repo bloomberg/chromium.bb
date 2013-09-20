@@ -635,6 +635,7 @@ void HTMLDocumentParser::insert(const SegmentedString& source)
         // the main scanner can't deal with insertions.
         if (!m_insertionPreloadScanner)
             m_insertionPreloadScanner = adoptPtr(new HTMLPreloadScanner(m_options, document()->url()));
+
         m_insertionPreloadScanner->appendToEnd(source);
         m_insertionPreloadScanner->scan(m_preloader.get(), document()->baseElementURL());
     }

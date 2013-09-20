@@ -59,7 +59,7 @@ namespace {
 
 inline bool isHTMLSpaceOrReplacementCharacter(UChar character)
 {
-    return isHTMLSpace(character) || character == replacementCharacter;
+    return isHTMLSpace<UChar>(character) || character == replacementCharacter;
 }
 
 }
@@ -71,7 +71,7 @@ static TextPosition uninitializedPositionValue1()
 
 static inline bool isAllWhitespace(const String& string)
 {
-    return string.isAllSpecialCharacters<isHTMLSpace>();
+    return string.isAllSpecialCharacters<isHTMLSpace<UChar> >();
 }
 
 static inline bool isAllWhitespaceOrReplacementCharacters(const String& string)
@@ -185,17 +185,17 @@ public:
 
     void skipLeadingWhitespace()
     {
-        skipLeading<isHTMLSpace>();
+        skipLeading<isHTMLSpace<UChar> >();
     }
 
     String takeLeadingWhitespace()
     {
-        return takeLeading<isHTMLSpace>();
+        return takeLeading<isHTMLSpace<UChar> >();
     }
 
     void skipLeadingNonWhitespace()
     {
-        skipLeading<isNotHTMLSpace>();
+        skipLeading<isNotHTMLSpace<UChar> >();
     }
 
     String takeRemaining()
@@ -224,7 +224,7 @@ public:
 
         unsigned length = 0;
         for (unsigned i = start; i < m_end; ++i) {
-            if (isHTMLSpace((*m_characters)[i]))
+            if (isHTMLSpace<UChar>((*m_characters)[i]))
                 ++length;
         }
         // Returning the null string when there aren't any whitespace
@@ -239,7 +239,7 @@ public:
         result.reserveCapacity(length);
         for (unsigned i = start; i < m_end; ++i) {
             UChar c = (*m_characters)[i];
-            if (isHTMLSpace(c))
+            if (isHTMLSpace<UChar>(c))
                 result.append(c);
         }
 

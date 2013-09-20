@@ -968,7 +968,7 @@ static inline bool classStringHasClassName(const CharacterType* characters, unsi
 
     unsigned i = 0;
     do {
-        if (isNotHTMLSpace(characters[i]))
+        if (isNotHTMLSpace<CharacterType>(characters[i]))
             break;
         ++i;
     } while (i < length);

@@ -36,13 +36,13 @@
 namespace WebCore {
 
 template <typename CharType>
-static String stripLeadingAndTrailingHTMLSpaces(String string, CharType characters, unsigned length)
+static String stripLeadingAndTrailingHTMLSpaces(String string, const CharType* characters, unsigned length)
 {
     unsigned numLeadingSpaces = 0;
     unsigned numTrailingSpaces = 0;
 
     for (; numLeadingSpaces < length; ++numLeadingSpaces) {
-        if (isNotHTMLSpace(characters[numLeadingSpaces]))
+        if (isNotHTMLSpace<CharType>(characters[numLeadingSpaces]))
             break;
     }
 
@@ -50,7 +50,7 @@ static String stripLeadingAndTrailingHTMLSpaces(String string, CharType characte
         return string.isNull() ? string : emptyAtom.string();
 
     for (; numTrailingSpaces < length; ++numTrailingSpaces) {
-        if (isNotHTMLSpace(characters[length - numTrailingSpaces - 1]))
+        if (isNotHTMLSpace<CharType>(characters[length - numTrailingSpaces - 1]))
             break;
     }
 
@@ -70,9 +70,9 @@ String stripLeadingAndTrailingHTMLSpaces(const String& string)
         return string.isNull() ? string : emptyAtom.string();
 
     if (string.is8Bit())
-        return stripLeadingAndTrailingHTMLSpaces(string, string.characters8(), length);
+        return stripLeadingAndTrailingHTMLSpaces<LChar>(string, string.characters8(), length);
 
-    return stripLeadingAndTrailingHTMLSpaces(string, string.characters16(), length);
+    return stripLeadingAndTrailingHTMLSpaces<UChar>(string, string.characters16(), length);
 }
 
 String serializeForNumberType(const Decimal& number)
@@ -160,7 +160,7 @@ static bool parseHTMLIntegerInternal(const CharacterType* position, const Charac
 
     // Step 4
     while (position < end) {
-        if (!isHTMLSpace(*position))
+        if (!isHTMLSpace<CharacterType>(*position))
             break;
         ++position;
     }
@@ -221,7 +221,7 @@ static bool parseHTMLNonNegativeIntegerInternal(const CharacterType* position, c
 {
     // Step 3
     while (position < end) {
-        if (!isHTMLSpace(*position))
+        if (!isHTMLSpace<CharacterType>(*position))
             break;
         ++position;
     }

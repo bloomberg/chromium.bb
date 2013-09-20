@@ -41,7 +41,7 @@ bool DOMTokenList::validateToken(const AtomicString& token, ExceptionState& es)
 
     unsigned length = token.length();
     for (unsigned i = 0; i < length; ++i) {
-        if (isHTMLSpace(token[i])) {
+        if (isHTMLSpace<UChar>(token[i])) {
             es.throwDOMException(InvalidCharacterError);
             return false;
         }
@@ -171,7 +171,7 @@ String DOMTokenList::addTokens(const AtomicString& input, const Vector<String>& 
     StringBuilder builder;
     if (!input.isEmpty()) {
         builder.append(input);
-        needsSpace = !isHTMLSpace(input[input.length() - 1]);
+        needsSpace = !isHTMLSpace<UChar>(input[input.length() - 1]);
     }
 
     for (size_t i = 0; i < tokens.size(); ++i) {
@@ -203,26 +203,26 @@ String DOMTokenList::removeTokens(const AtomicString& input, const Vector<String
 
     // Step 5
     while (position < inputLength) {
-        if (isHTMLSpace(input[position])) { // 6
+        if (isHTMLSpace<UChar>(input[position])) { // 6
             output.append(input[position++]); // 6.1, 6.2
             continue; // 6.3
         }
 
         // Step 7
         StringBuilder tokenBuilder;
-        while (position < inputLength && isNotHTMLSpace(input[position]))
+        while (position < inputLength && isNotHTMLSpace<UChar>(input[position]))
             tokenBuilder.append(input[position++]);
 
         // Step 8
         String token = tokenBuilder.toString();
         if (tokens.contains(token)) {
             // Step 8.1
-            while (position < inputLength && isHTMLSpace(input[position]))
+            while (position < inputLength && isHTMLSpace<UChar>(input[position]))
                 ++position;
 
             // Step 8.2
             size_t j = output.length();
-            while (j > 0 && isHTMLSpace(output[j - 1]))
+            while (j > 0 && isHTMLSpace<UChar>(output[j - 1]))
                 --j;
             output.resize(j);
 
