@@ -140,6 +140,7 @@ void FileReaderLoader::cleanup()
     if (m_errorCode) {
         m_rawData = 0;
         m_stringResult = "";
+        m_isRawDataConverted = true;
     }
 }
 
@@ -233,6 +234,8 @@ void FileReaderLoader::didFinishLoading(unsigned long, double)
         RefPtr<ArrayBuffer> newData = m_rawData->slice(0, m_bytesLoaded);
 
         m_rawData = newData;
+        m_isRawDataConverted = false;
+
         m_totalBytes = m_bytesLoaded;
     }
     cleanup();
@@ -303,6 +306,7 @@ String FileReaderLoader::stringResult()
         break;
     case ReadAsBinaryString:
         m_stringResult = String(static_cast<const char*>(m_rawData->data()), m_bytesLoaded);
+        m_isRawDataConverted = true;
         break;
     case ReadAsText:
         convertToText();
@@ -321,8 +325,12 @@ String FileReaderLoader::stringResult()
 
 void FileReaderLoader::convertToText()
 {
-    if (!m_bytesLoaded)
+    m_isRawDataConverted = true;
+
+    if (!m_bytesLoaded) {
+        m_stringResult = "";
         return;
+    }
 
     // Decode the data.
     // The File API spec says that we should use the supplied encoding if it is valid. However, we choose to ignore this
@@ -342,6 +350,8 @@ void FileReaderLoader::convertToText()
 
 void FileReaderLoader::convertToDataURL()
 {
+    m_isRawDataConverted = true;
+
     StringBuilder builder;
     builder.append("data:");
 
