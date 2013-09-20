@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
 }
 
 // Times out on win debug builds; http://crbug.com/295723 .
-#if !defined(USE_AURA) && defined(OS_WIN) && !defined(NDEBUG)
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_DenyingMicDoesNotCauseStickyDenyForCameras \
         DISABLED_DenyingMicDoesNotCauseStickyDenyForCameras
 #else
