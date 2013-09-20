@@ -8,6 +8,7 @@
 """A git-command for integrating reviews on Rietveld."""
 
 from distutils.version import LooseVersion
+import glob
 import json
 import logging
 import optparse
@@ -38,6 +39,7 @@ import scm
 import subcommand
 import subprocess2
 import watchlists
+import owners_finder
 
 __version__ = '1.0'
 
@@ -2124,6 +2126,35 @@ def CMDset_close(parser, args):
   cl.GetDescription()
   cl.CloseIssue()
   return 0
+
+
+def CMDowners(parser, args):
+  """interactively find the owners for reviewing"""
+  parser.add_option(
+      '--no-color',
+      action='store_true',
+      help='Use this option to disable color output')
+  options, args = parser.parse_args(args)
+
+  author = RunGit(['config', 'user.email']).strip() or None
+
+  cl = Changelist()
+
+  if args:
+    if len(args) > 1:
+      parser.error('Unknown args')
+    base_branch = args[0]
+  else:
+    # Default to diffing against the common ancestor of the upstream branch.
+    base_branch = RunGit(['merge-base', cl.GetUpstreamBranch(), 'HEAD']).strip()
+
+  change = cl.GetChange(base_branch, None)
+  return owners_finder.OwnersFinder(
+      [f.LocalPath() for f in
+          cl.GetChange(base_branch, None).AffectedFiles()],
+      change.RepositoryRoot(), author,
+      fopen=file, os_path=os.path, glob=glob.glob,
+      disable_color=options.no_color).run()
 
 
 def CMDformat(parser, args):

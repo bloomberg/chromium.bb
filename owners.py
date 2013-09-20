@@ -78,7 +78,7 @@ class SyntaxErrorInOwnersFile(Exception):
     self.msg = msg
 
   def __str__(self):
-    return "%s:%d syntax error: %s" % (self.path, self.lineno, self.msg)
+    return '%s:%d syntax error: %s' % (self.path, self.lineno, self.msg)
 
 
 class Database(object):
@@ -111,6 +111,9 @@ class Database(object):
     # Mapping of paths to authorized owners.
     self.owners_for = {}
 
+    # Mapping reviewers to the preceding comment per file in the OWNERS files.
+    self.comments = {}
+
     # Set of paths that stop us from looking above them for owners.
     # (This is implicitly true for the root directory).
     self.stop_looking = set([''])
@@ -122,7 +125,7 @@ class Database(object):
     If author is nonempty, we ensure it is not included in the set returned
     in order avoid suggesting the author as a reviewer for their own changes."""
     self._check_paths(files)
-    self._load_data_needed_for(files)
+    self.load_data_needed_for(files)
     suggested_owners = self._covering_set_of_owners_for(files, author)
     if EVERYONE in suggested_owners:
       if len(suggested_owners) > 1:
@@ -140,7 +143,7 @@ class Database(object):
     """
     self._check_paths(files)
     self._check_reviewers(reviewers)
-    self._load_data_needed_for(files)
+    self.load_data_needed_for(files)
 
     covered_objs = self._objs_covered_by(reviewers)
     uncovered_files = [f for f in files
@@ -182,7 +185,7 @@ class Database(object):
       dirpath = self.os_path.dirname(dirpath)
     return dirpath
 
-  def _load_data_needed_for(self, files):
+  def load_data_needed_for(self, files):
     for f in files:
       dirpath = self.os_path.dirname(f)
       while not dirpath in self.owners_for:
@@ -195,18 +198,27 @@ class Database(object):
     owners_path = self.os_path.join(self.root, dirpath, 'OWNERS')
     if not self.os_path.exists(owners_path):
       return
-
+    comment = []
+    in_comment = False
     lineno = 0
     for line in self.fopen(owners_path):
       lineno += 1
       line = line.strip()
-      if line.startswith('#') or line == '':
+      if line.startswith('#'):
+        if not in_comment:
+          comment = []
+        comment.append(line[1:].strip())
+        in_comment = True
         continue
+      if line == '':
+        continue
+      in_comment = False
+
       if line == 'set noparent':
         self.stop_looking.add(dirpath)
         continue
 
-      m = re.match("per-file (.+)=(.+)", line)
+      m = re.match('per-file (.+)=(.+)', line)
       if m:
         glob_string = m.group(1).strip()
         directive = m.group(2).strip()
@@ -217,20 +229,24 @@ class Database(object):
               line)
         baselines = self.glob(full_glob_string)
         for baseline in (self.os_path.relpath(b, self.root) for b in baselines):
-          self._add_entry(baseline, directive, "per-file line",
-                          owners_path, lineno)
+          self._add_entry(baseline, directive, 'per-file line',
+                          owners_path, lineno, '\n'.join(comment))
         continue
 
       if line.startswith('set '):
         raise SyntaxErrorInOwnersFile(owners_path, lineno,
             'unknown option: "%s"' % line[4:].strip())
 
-      self._add_entry(dirpath, line, "line", owners_path, lineno)
+      self._add_entry(dirpath, line, 'line', owners_path, lineno,
+                      ' '.join(comment))
 
-  def _add_entry(self, path, directive, line_type, owners_path, lineno):
-    if directive == "set noparent":
+  def _add_entry(self, path, directive,
+                 line_type, owners_path, lineno, comment):
+    if directive == 'set noparent':
       self.stop_looking.add(path)
     elif self.email_regexp.match(directive) or directive == EVERYONE:
+      self.comments.setdefault(directive, {})
+      self.comments[directive][path] = comment
       self.owned_by.setdefault(directive, set()).add(path)
       self.owners_for.setdefault(path, set()).add(directive)
     else:
@@ -240,7 +256,7 @@ class Database(object):
 
   def _covering_set_of_owners_for(self, files, author):
     dirs_remaining = set(self._enclosing_dir_with_owners(f) for f in files)
-    all_possible_owners = self._all_possible_owners(dirs_remaining, author)
+    all_possible_owners = self.all_possible_owners(dirs_remaining, author)
     suggested_owners = set()
     while dirs_remaining:
       owner = self.lowest_cost_owner(all_possible_owners, dirs_remaining)
@@ -249,7 +265,7 @@ class Database(object):
       dirs_remaining -= dirs_to_remove
     return suggested_owners
 
-  def _all_possible_owners(self, dirs, author):
+  def all_possible_owners(self, dirs, author):
     """Returns a list of (potential owner, distance-from-dir) tuples; a
     distance of 1 is the lowest/closest possible distance (which makes the
     subsequent math easier)."""
@@ -273,13 +289,13 @@ class Database(object):
     return all_possible_owners
 
   @staticmethod
-  def lowest_cost_owner(all_possible_owners, dirs):
+  def total_costs_by_owner(all_possible_owners, dirs):
     # We want to minimize both the number of reviewers and the distance
     # from the files/dirs needing reviews. The "pow(X, 1.75)" below is
     # an arbitrarily-selected scaling factor that seems to work well - it
     # will select one reviewer in the parent directory over three reviewers
     # in subdirs, but not one reviewer over just two.
-    total_costs_by_owner = {}
+    result = {}
     for owner in all_possible_owners:
       total_distance = 0
       num_directories_owned = 0
@@ -287,13 +303,18 @@ class Database(object):
         if dirname in dirs:
           total_distance += distance
           num_directories_owned += 1
-        if num_directories_owned:
-          total_costs_by_owner[owner] = (total_distance /
-                                         pow(num_directories_owned, 1.75))
+      if num_directories_owned:
+        result[owner] = (total_distance /
+                         pow(num_directories_owned, 1.75))
+    return result
 
+  @staticmethod
+  def lowest_cost_owner(all_possible_owners, dirs):
+    total_costs_by_owner = Database.total_costs_by_owner(all_possible_owners,
+                                                         dirs)
     # Return the lowest cost owner. In the case of a tie, pick one randomly.
     lowest_cost = min(total_costs_by_owner.itervalues())
     lowest_cost_owners = filter(
-      lambda owner: total_costs_by_owner[owner] == lowest_cost,
-      total_costs_by_owner)
+        lambda owner: total_costs_by_owner[owner] == lowest_cost,
+        total_costs_by_owner)
     return random.Random().choice(lowest_cost_owners)
