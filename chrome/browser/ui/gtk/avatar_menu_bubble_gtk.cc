@@ -8,7 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/avatar_menu.h"
+#include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -45,12 +45,11 @@ AvatarMenuBubbleGtk::AvatarMenuBubbleGtk(Browser* browser,
       new_profile_link_(NULL),
       minimum_width_(kBubbleMinWidth),
       switching_(false) {
-  avatar_menu_.reset(new AvatarMenu(
+  avatar_menu_model_.reset(new AvatarMenuModel(
       &g_browser_process->profile_manager()->GetProfileInfoCache(),
       this, browser));
-  avatar_menu_->RebuildMenu();
 
-  OnAvatarMenuChanged(avatar_menu_.get());
+  OnAvatarMenuModelChanged(avatar_menu_model_.get());
 
   bubble_ = BubbleGtk::Show(anchor,
                             rect,
@@ -78,8 +77,8 @@ void AvatarMenuBubbleGtk::BubbleClosing(BubbleGtk* bubble,
   bubble_ = NULL;
 }
 
-void AvatarMenuBubbleGtk::OnAvatarMenuChanged(
-    AvatarMenu* avatar_menu) {
+void AvatarMenuBubbleGtk::OnAvatarMenuModelChanged(
+    AvatarMenuModel* avatar_menu_model) {
   items_.clear();
   minimum_width_ = kBubbleMinWidth;
 
@@ -92,7 +91,7 @@ void AvatarMenuBubbleGtk::OpenProfile(size_t profile_index) {
   GdkModifierType modifier_state;
   gtk_get_current_event_state(&modifier_state);
   guint modifier_state_uint = modifier_state;
-  avatar_menu_->SwitchToProfile(profile_index,
+  avatar_menu_model_->SwitchToProfile(profile_index,
       event_utils::DispositionFromGdkState(modifier_state_uint) == NEW_WINDOW);
   CloseBubble();
 }
@@ -100,7 +99,7 @@ void AvatarMenuBubbleGtk::OpenProfile(size_t profile_index) {
 void AvatarMenuBubbleGtk::EditProfile(size_t profile_index) {
   if (!bubble_)
     return;
-  avatar_menu_->EditProfile(profile_index);
+  avatar_menu_model_->EditProfile(profile_index);
   CloseBubble();
 }
 
@@ -116,20 +115,20 @@ void AvatarMenuBubbleGtk::OnSizeRequest(GtkWidget* widget,
 void AvatarMenuBubbleGtk::OnNewProfileLinkClicked(GtkWidget* link) {
   if (!bubble_)
     return;
-  avatar_menu_->AddNewProfile(ProfileMetrics::ADD_NEW_USER_ICON);
+  avatar_menu_model_->AddNewProfile(ProfileMetrics::ADD_NEW_USER_ICON);
   CloseBubble();
 }
 
 void AvatarMenuBubbleGtk::OnSwitchProfileLinkClicked(GtkWidget* link) {
   switching_ = true;
-  OnAvatarMenuChanged(avatar_menu_.get());
+  OnAvatarMenuModelChanged(avatar_menu_model_.get());
 }
 
 void AvatarMenuBubbleGtk::InitMenuContents() {
-  size_t profile_count = avatar_menu_->GetNumberOfItems();
+  size_t profile_count = avatar_menu_model_->GetNumberOfItems();
   GtkWidget* items_vbox = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
   for (size_t i = 0; i < profile_count; ++i) {
-    AvatarMenu::Item menu_item = avatar_menu_->GetItemAt(i);
+    AvatarMenuModel::Item menu_item = avatar_menu_model_->GetItemAt(i);
     AvatarMenuItemGtk* item = new AvatarMenuItemGtk(
         this, menu_item, i, theme_service_);
     items_.push_back(item);
@@ -141,7 +140,7 @@ void AvatarMenuBubbleGtk::InitMenuContents() {
   }
   gtk_box_pack_start(GTK_BOX(inner_contents_), items_vbox, TRUE, TRUE, 0);
 
-  if (avatar_menu_->ShouldShowAddNewProfileLink()) {
+  if (avatar_menu_model_->ShouldShowAddNewProfileLink()) {
     gtk_box_pack_start(GTK_BOX(inner_contents_),
                        gtk_hseparator_new(), TRUE, TRUE, 0);
 
@@ -158,12 +157,13 @@ void AvatarMenuBubbleGtk::InitMenuContents() {
 
     gtk_box_pack_start(GTK_BOX(inner_contents_), link_align, FALSE, FALSE, 0);
   }
+
 }
 
 void AvatarMenuBubbleGtk::InitManagedUserContents() {
-  int active_index = avatar_menu_->GetActiveProfileIndex();
-  AvatarMenu::Item menu_item =
-      avatar_menu_->GetItemAt(active_index);
+  int active_index = avatar_menu_model_->GetActiveProfileIndex();
+  AvatarMenuModel::Item menu_item =
+      avatar_menu_model_->GetItemAt(active_index);
   AvatarMenuItemGtk* item = new AvatarMenuItemGtk(
       this, menu_item, active_index, theme_service_);
   items_.push_back(item);
@@ -175,7 +175,7 @@ void AvatarMenuBubbleGtk::InitManagedUserContents() {
   // Add information about managed users within a hbox.
   GtkWidget* managed_user_info = gtk_hbox_new(FALSE, 5);
   GdkPixbuf* limited_user_pixbuf =
-      avatar_menu_->GetManagedUserIcon().ToGdkPixbuf();
+      avatar_menu_model_->GetManagedUserIcon().ToGdkPixbuf();
   GtkWidget* limited_user_img = gtk_image_new_from_pixbuf(limited_user_pixbuf);
   GtkWidget* icon_align = gtk_alignment_new(0, 0, 0, 0);
   gtk_container_add(GTK_CONTAINER(icon_align), limited_user_img);
@@ -184,7 +184,7 @@ void AvatarMenuBubbleGtk::InitManagedUserContents() {
       theme_service_->BuildLabel(std::string(), ui::kGdkBlack);
   char* markup = g_markup_printf_escaped(
       "<span size='small'>%s</span>",
-      UTF16ToUTF8(avatar_menu_->GetManagedUserInformation()).c_str());
+      UTF16ToUTF8(avatar_menu_model_->GetManagedUserInformation()).c_str());
   const int kLabelWidth = 150;
   gtk_widget_set_size_request(status_label, kLabelWidth, -1);
   gtk_label_set_markup(GTK_LABEL(status_label), markup);
@@ -222,7 +222,7 @@ void AvatarMenuBubbleGtk::InitContents() {
   g_signal_connect(inner_contents_, "size-request",
                    G_CALLBACK(OnSizeRequestThunk), this);
 
-  if (avatar_menu_->GetManagedUserInformation().empty() || switching_)
+  if (avatar_menu_model_->GetManagedUserInformation().empty() || switching_)
     InitMenuContents();
   else
     InitManagedUserContents();

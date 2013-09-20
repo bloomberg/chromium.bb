@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/profiles/profile_list_desktop.h"
-
-#include <string>
+#include "chrome/browser/profiles/avatar_menu_model.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
-#include "chrome/browser/profiles/avatar_menu_observer.h"
+#include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -22,27 +20,25 @@
 
 namespace {
 
-class MockObserver : public AvatarMenuObserver {
+class MockObserver : public AvatarMenuModelObserver {
  public:
   MockObserver() : count_(0) {}
   virtual ~MockObserver() {}
 
-  virtual void OnAvatarMenuChanged(
-      AvatarMenu* avatar_menu) OVERRIDE {
+  virtual void OnAvatarMenuModelChanged(
+      AvatarMenuModel* avatar_menu_model) OVERRIDE{
     ++count_;
   }
 
-  int change_count() const { return count_; }
+  int change_count() { return count_; }
 
  private:
   int count_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockObserver);
 };
 
-class ProfileListDesktopTest : public testing::Test {
+class AvatarMenuModelTest : public testing::Test {
  public:
-  ProfileListDesktopTest()
+  AvatarMenuModelTest()
       : manager_(TestingBrowserProcess::GetGlobal()) {
   }
 
@@ -54,34 +50,15 @@ class ProfileListDesktopTest : public testing::Test {
 #endif
   }
 
-  AvatarMenu* GetAvatarMenu() {
-    // Reset the MockObserver.
-    mock_observer_.reset(new MockObserver());
-    EXPECT_EQ(0, change_count());
-
-    // Reset the model.
-    avatar_menu_.reset(new AvatarMenu(
-        manager()->profile_info_cache(),
-        mock_observer_.get(),
-        NULL));
-    avatar_menu_->RebuildMenu();
-    EXPECT_EQ(0, change_count());
-    return avatar_menu_.get();
-  }
+  Browser* browser() { return NULL; }
 
   TestingProfileManager* manager() { return &manager_; }
 
-  int change_count() const { return mock_observer_->change_count(); }
-
  private:
   TestingProfileManager manager_;
-  scoped_ptr<MockObserver> mock_observer_;
-  scoped_ptr<AvatarMenu> avatar_menu_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileListDesktopTest);
 };
 
-TEST_F(ProfileListDesktopTest, InitialCreation) {
+TEST_F(AvatarMenuModelTest, InitialCreation) {
   string16 name1(ASCIIToUTF16("Test 1"));
   string16 name2(ASCIIToUTF16("Test 2"));
 
@@ -90,21 +67,24 @@ TEST_F(ProfileListDesktopTest, InitialCreation) {
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
                                   name2, 0, std::string());
 
-  AvatarMenu* model = GetAvatarMenu();
-  EXPECT_EQ(0, change_count());
+  MockObserver observer;
+  EXPECT_EQ(0, observer.change_count());
 
-  ASSERT_EQ(2U, model->GetNumberOfItems());
+  AvatarMenuModel model(manager()->profile_info_cache(), &observer, browser());
+  EXPECT_EQ(0, observer.change_count());
 
-  const AvatarMenu::Item& item1 = model->GetItemAt(0);
-  EXPECT_EQ(0U, item1.menu_index);
+  ASSERT_EQ(2U, model.GetNumberOfItems());
+
+  const AvatarMenuModel::Item& item1 = model.GetItemAt(0);
+  EXPECT_EQ(0U, item1.model_index);
   EXPECT_EQ(name1, item1.name);
 
-  const AvatarMenu::Item& item2 = model->GetItemAt(1);
-  EXPECT_EQ(1U, item2.menu_index);
+  const AvatarMenuModel::Item& item2 = model.GetItemAt(1);
+  EXPECT_EQ(1U, item2.model_index);
   EXPECT_EQ(name2, item2.name);
 }
 
-TEST_F(ProfileListDesktopTest, ActiveItem) {
+TEST_F(AvatarMenuModelTest, ActiveItem) {
   string16 name1(ASCIIToUTF16("Test 1"));
   string16 name2(ASCIIToUTF16("Test 2"));
 
@@ -113,14 +93,15 @@ TEST_F(ProfileListDesktopTest, ActiveItem) {
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
                                   name2, 0, std::string());
 
-  AvatarMenu* model = GetAvatarMenu();
-  ASSERT_EQ(2U, model->GetNumberOfItems());
+  MockObserver observer;
+  AvatarMenuModel model(manager()->profile_info_cache(), &observer, browser());
+  ASSERT_EQ(2U, model.GetNumberOfItems());
   // TODO(jeremy): Expand test to verify active profile index other than 0
   // crbug.com/100871
-  ASSERT_EQ(0U, model->GetActiveProfileIndex());
+  ASSERT_EQ(0U, model.GetActiveProfileIndex());
 }
 
-TEST_F(ProfileListDesktopTest, ModifyingNameResortsCorrectly) {
+TEST_F(AvatarMenuModelTest, ModifyingNameResortsCorrectly) {
   string16 name1(ASCIIToUTF16("Alpha"));
   string16 name2(ASCIIToUTF16("Beta"));
   string16 newname1(ASCIIToUTF16("Gamma"));
@@ -130,33 +111,34 @@ TEST_F(ProfileListDesktopTest, ModifyingNameResortsCorrectly) {
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
                                   name2, 0, std::string());
 
-  AvatarMenu* model = GetAvatarMenu();
-  EXPECT_EQ(0, change_count());
+  MockObserver observer;
+  AvatarMenuModel model(manager()->profile_info_cache(), &observer, browser());
+  EXPECT_EQ(0, observer.change_count());
 
-  ASSERT_EQ(2U, model->GetNumberOfItems());
+  ASSERT_EQ(2U, model.GetNumberOfItems());
 
-  const AvatarMenu::Item& item1 = model->GetItemAt(0);
-  EXPECT_EQ(0U, item1.menu_index);
+  const AvatarMenuModel::Item& item1 = model.GetItemAt(0);
+  EXPECT_EQ(0U, item1.model_index);
   EXPECT_EQ(name1, item1.name);
 
-  const AvatarMenu::Item& item2 = model->GetItemAt(1);
-  EXPECT_EQ(1U, item2.menu_index);
+  const AvatarMenuModel::Item& item2 = model.GetItemAt(1);
+  EXPECT_EQ(1U, item2.model_index);
   EXPECT_EQ(name2, item2.name);
 
   // Change name of the first profile, to trigger resorting of the profiles:
   // now the first model should be named "beta", and the second be "gamma".
   manager()->profile_info_cache()->SetNameOfProfileAtIndex(0, newname1);
-  const AvatarMenu::Item& item1next = model->GetItemAt(0);
-  EXPECT_GT(change_count(), 1);
-  EXPECT_EQ(0U, item1next.menu_index);
+  const AvatarMenuModel::Item& item1next = model.GetItemAt(0);
+  EXPECT_GT(observer.change_count(), 1);
+  EXPECT_EQ(0U, item1next.model_index);
   EXPECT_EQ(name2, item1next.name);
 
-  const AvatarMenu::Item& item2next = model->GetItemAt(1);
-  EXPECT_EQ(1U, item2next.menu_index);
+  const AvatarMenuModel::Item& item2next = model.GetItemAt(1);
+  EXPECT_EQ(1U, item2next.model_index);
   EXPECT_EQ(newname1, item2next.name);
 }
 
-TEST_F(ProfileListDesktopTest, ChangeOnNotify) {
+TEST_F(AvatarMenuModelTest, ChangeOnNotify) {
   string16 name1(ASCIIToUTF16("Test 1"));
   string16 name2(ASCIIToUTF16("Test 2"));
 
@@ -165,9 +147,12 @@ TEST_F(ProfileListDesktopTest, ChangeOnNotify) {
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
                                   name2, 0, std::string());
 
-  AvatarMenu* model = GetAvatarMenu();
-  EXPECT_EQ(0, change_count());
-  EXPECT_EQ(2U, model->GetNumberOfItems());
+  MockObserver observer;
+  EXPECT_EQ(0, observer.change_count());
+
+  AvatarMenuModel model(manager()->profile_info_cache(), &observer, browser());
+  EXPECT_EQ(0, observer.change_count());
+  EXPECT_EQ(2U, model.GetNumberOfItems());
 
   string16 name3(ASCIIToUTF16("Test 3"));
   manager()->CreateTestingProfile("p3", scoped_ptr<PrefServiceSyncable>(),
@@ -178,25 +163,23 @@ TEST_F(ProfileListDesktopTest, ChangeOnNotify) {
   // profiles after the name change, and changing the avatar.
   // On Windows, an extra change happens to set the shortcut name for the
   // profile.
-  // TODO(michaelpg): Determine why five changes happen on ChromeOS and
-  // investigate other platforms.
-  EXPECT_GE(change_count(), 4);
-  ASSERT_EQ(3U, model->GetNumberOfItems());
+  EXPECT_GE(observer.change_count(), 4);
+  ASSERT_EQ(3U, model.GetNumberOfItems());
 
-  const AvatarMenu::Item& item1 = model->GetItemAt(0);
-  EXPECT_EQ(0U, item1.menu_index);
+  const AvatarMenuModel::Item& item1 = model.GetItemAt(0);
+  EXPECT_EQ(0U, item1.model_index);
   EXPECT_EQ(name1, item1.name);
 
-  const AvatarMenu::Item& item2 = model->GetItemAt(1);
-  EXPECT_EQ(1U, item2.menu_index);
+  const AvatarMenuModel::Item& item2 = model.GetItemAt(1);
+  EXPECT_EQ(1U, item2.model_index);
   EXPECT_EQ(name2, item2.name);
 
-  const AvatarMenu::Item& item3 = model->GetItemAt(2);
-  EXPECT_EQ(2U, item3.menu_index);
+  const AvatarMenuModel::Item& item3 = model.GetItemAt(2);
+  EXPECT_EQ(2U, item3.model_index);
   EXPECT_EQ(name3, item3.name);
 }
 
-TEST_F(ProfileListDesktopTest, ShowAvatarMenuInTrial) {
+TEST_F(AvatarMenuModelTest, ShowAvatarMenuInTrial) {
   // If multiprofile mode is not enabled, the trial will not be enabled, so it
   // isn't tested.
   if (!profiles::IsMultipleProfilesEnabled())
@@ -206,18 +189,18 @@ TEST_F(ProfileListDesktopTest, ShowAvatarMenuInTrial) {
   base::FieldTrialList::CreateFieldTrial("ShowProfileSwitcher", "AlwaysShow");
 
 #if defined(OS_CHROMEOS)
-  EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
+  EXPECT_FALSE(AvatarMenuModel::ShouldShowAvatarMenu());
 #else
-  EXPECT_TRUE(AvatarMenu::ShouldShowAvatarMenu());
+  EXPECT_TRUE(AvatarMenuModel::ShouldShowAvatarMenu());
 #endif
 }
 
-TEST_F(ProfileListDesktopTest, DontShowAvatarMenu) {
+TEST_F(AvatarMenuModelTest, DontShowAvatarMenu) {
   string16 name1(ASCIIToUTF16("Test 1"));
   manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
                                   name1, 0, std::string());
 
-  EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
+  EXPECT_FALSE(AvatarMenuModel::ShouldShowAvatarMenu());
 
   // If multiprofile mode is enabled, there are no other cases when we wouldn't
   // show the menu.
@@ -228,10 +211,10 @@ TEST_F(ProfileListDesktopTest, DontShowAvatarMenu) {
   manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
                                   name2, 0, std::string());
 
-  EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
+  EXPECT_FALSE(AvatarMenuModel::ShouldShowAvatarMenu());
 }
 
-TEST_F(ProfileListDesktopTest, ShowAvatarMenu) {
+TEST_F(AvatarMenuModelTest, ShowAvatarMenu) {
   // If multiprofile mode is not enabled then the menu is never shown.
   if (!profiles::IsMultipleProfilesEnabled())
     return;
@@ -245,13 +228,13 @@ TEST_F(ProfileListDesktopTest, ShowAvatarMenu) {
                                   name2, 0, std::string());
 
 #if defined(OS_CHROMEOS)
-  EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
+  EXPECT_FALSE(AvatarMenuModel::ShouldShowAvatarMenu());
 #else
-  EXPECT_TRUE(AvatarMenu::ShouldShowAvatarMenu());
+  EXPECT_TRUE(AvatarMenuModel::ShouldShowAvatarMenu());
 #endif
 }
 
-TEST_F(ProfileListDesktopTest, SyncState) {
+TEST_F(AvatarMenuModelTest, SyncState) {
   // If multiprofile mode is not enabled then the menu is never shown.
   if (!profiles::IsMultipleProfilesEnabled())
     return;
@@ -264,19 +247,18 @@ TEST_F(ProfileListDesktopTest, SyncState) {
   manager()->profile_info_cache()->AddProfileToCache(
       cache->GetUserDataDir().AppendASCII("p2"), ASCIIToUTF16("Test 2"),
       string16(), 0, "TEST_ID");
-
-  AvatarMenu* model = GetAvatarMenu();
-  model->RebuildMenu();
-  EXPECT_EQ(2U, model->GetNumberOfItems());
+  MockObserver observer;
+  AvatarMenuModel model(manager()->profile_info_cache(), &observer, browser());
+  EXPECT_EQ(2U, model.GetNumberOfItems());
 
   // Now check that the sync_state of a managed user shows the managed user
   // avatar label instead.
   base::string16 managed_user_label =
       l10n_util::GetStringUTF16(IDS_MANAGED_USER_AVATAR_LABEL);
-  const AvatarMenu::Item& item1 = model->GetItemAt(0);
+  const AvatarMenuModel::Item& item1 = model.GetItemAt(0);
   EXPECT_NE(item1.sync_state, managed_user_label);
 
-  const AvatarMenu::Item& item2 = model->GetItemAt(1);
+  const AvatarMenuModel::Item& item2 = model.GetItemAt(1);
   EXPECT_EQ(item2.sync_state, managed_user_label);
 }
 

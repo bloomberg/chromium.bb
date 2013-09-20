@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/profiles/avatar_menu_model.h"
+
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,28 +27,9 @@ void OnUnblockOnProfileCreation(Profile* profile,
     base::MessageLoop::current()->Quit();
 }
 
-}  // namespace
+typedef InProcessBrowserTest AvatarMenuModelTest;
 
-class ProfileListDesktopBrowserTest : public InProcessBrowserTest {
- public:
-  ProfileListDesktopBrowserTest() {}
-
-  AvatarMenu* GetAvatarMenu(ProfileInfoCache* cache) {
-    // Reset the menu.
-    avatar_menu_.reset(new AvatarMenu(
-        cache,
-        NULL,
-        browser()));
-    return avatar_menu_.get();
-  }
-
- private:
-  scoped_ptr<AvatarMenu> avatar_menu_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileListDesktopBrowserTest);
-};
-
-IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, SignOut) {
+IN_PROC_BROWSER_TEST_F(AvatarMenuModelTest, SignOut) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
@@ -56,8 +38,7 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, SignOut) {
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
   size_t index = cache.GetIndexOfProfileWithPath(current_profile->GetPath());
 
-  AvatarMenu* menu = GetAvatarMenu(&cache);
-  menu->RebuildMenu();
+  AvatarMenuModel model(&cache, NULL, browser());
 
   BrowserList* browser_list =
       BrowserList::GetInstance(chrome::GetActiveDesktop());
@@ -67,15 +48,15 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, SignOut) {
       content::Source<Browser>(browser()));
 
   EXPECT_FALSE(cache.ProfileIsSigninRequiredAtIndex(index));
-  menu->SetLogoutURL("about:blank");
-  menu->BeginSignOut();
+  model.SetLogoutURL("about:blank");
+  model.BeginSignOut();
   EXPECT_TRUE(cache.ProfileIsSigninRequiredAtIndex(index));
 
   window_close_observer.Wait();  // rely on test time-out for failure indication
   EXPECT_EQ(0U, browser_list->size());
 }
 
-IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, SwitchToProfile) {
+IN_PROC_BROWSER_TEST_F(AvatarMenuModelTest, SwitchToProfile) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
@@ -103,25 +84,27 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, SwitchToProfile) {
   content::RunMessageLoop();
   ASSERT_EQ(cache.GetNumberOfProfiles(), 2U);
 
-  AvatarMenu* menu = GetAvatarMenu(&cache);
-  menu->RebuildMenu();
+  AvatarMenuModel model(&cache, NULL, browser());
   BrowserList* browser_list =
       BrowserList::GetInstance(chrome::GetActiveDesktop());
   EXPECT_EQ(1U, browser_list->size());
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
 
   // Open a browser window for the first profile.
-  menu->SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile1), false);
+  model.SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile1), false);
   EXPECT_EQ(1U, browser_list->size());
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
 
   // Open a browser window for the second profile.
-  menu->SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile2), false);
+  model.SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile2), false);
   EXPECT_EQ(2U, browser_list->size());
 
   // Switch to the first profile without opening a new window.
-  menu->SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile1), false);
+  model.SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile1), false);
   EXPECT_EQ(2U, browser_list->size());
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
   EXPECT_EQ(path_profile2, browser_list->get(1)->profile()->GetPath());
+
 }
+
+}  // namespace

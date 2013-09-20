@@ -12,15 +12,15 @@
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "ui/base/cocoa/tracking_area.h"
 
-class AvatarMenu;
+class AvatarMenuModel;
 class Browser;
 
 // This window controller manages the bubble that displays a "menu" of profiles.
 // It is brought open by clicking on the avatar icon in the window frame.
 @interface AvatarMenuBubbleController : BaseBubbleController {
  @private
-  // The menu that contains the data from the backend.
-  scoped_ptr<AvatarMenu> menu_;
+  // The model that contains the data from the backend.
+  scoped_ptr<AvatarMenuModel> model_;
 
   // Array of the below view controllers.
   base::scoped_nsobject<NSMutableArray> items_;
@@ -29,7 +29,7 @@ class Browser;
   BOOL expanded_;
 }
 
-// Designated initializer. The browser is passed to the menu for profile
+// Designated initializer. The browser is passed to the model for profile
 // information.
 - (id)initWithBrowser:(Browser*)parentBrowser
            anchoredAt:(NSPoint)point;
@@ -57,8 +57,8 @@ class Browser;
   // The parent menu controller; owns this.
   __weak AvatarMenuBubbleController* controller_;
 
-  // The index of the item in the AvatarMenu.
-  size_t menuIndex_;
+  // The AvatarMenuModel::item.model_index field.
+  size_t modelIndex_;
 
   // Tracks whether this item is currently highlighted.
   BOOL isHighlighted_;
@@ -77,7 +77,7 @@ class Browser;
   __weak NSTextField* emailField_;
   __weak NSButton* editButton_;
 }
-@property(readonly, nonatomic) size_t menuIndex;
+@property(readonly, nonatomic) size_t modelIndex;
 @property(assign, nonatomic) BOOL isHighlighted;
 @property(assign, nonatomic) IBOutlet NSImageView* iconView;
 @property(assign, nonatomic) IBOutlet NSImageView* activeView;
@@ -86,7 +86,7 @@ class Browser;
 @property(assign, nonatomic) IBOutlet NSButton* editButton;
 
 // Designated initializer.
-- (id)initWithMenuIndex:(size_t)menuIndex
+- (id)initWithModelIndex:(size_t)modelIndex
           menuController:(AvatarMenuBubbleController*)controller;
 
 // Actions that are forwarded to the |controller_|.
@@ -127,7 +127,7 @@ class Browser;
 // Testing API /////////////////////////////////////////////////////////////////
 
 @interface AvatarMenuBubbleController (ExposedForTesting)
-- (id)initWithMenu:(AvatarMenu*)menu
+- (id)initWithModel:(AvatarMenuModel*)model
        parentWindow:(NSWindow*)parent
          anchoredAt:(NSPoint)point;
 - (void)performLayout;
