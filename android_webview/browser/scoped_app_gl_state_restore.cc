@@ -61,18 +61,8 @@ ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) : mode_(mode) {
 
   switch(mode_) {
     case MODE_DRAW:
-      // TODO(boliu): These should always be 0 in draw case. When we have
-      // guarantee that we are no longer making GL calls outside of draw, DCHECK
-      // these are 0 here.
-      LOG_IF(ERROR, vertex_array_buffer_binding_)
-          << "GL_ARRAY_BUFFER_BINDING not zero in draw: "
-          << vertex_array_buffer_binding_;
-      LOG_IF(ERROR, index_array_buffer_binding_)
-          << "GL_ELEMENT_ARRAY_BUFFER_BINDING not zero in draw: "
-          << index_array_buffer_binding_;
-
-      vertex_array_buffer_binding_ = 0;
-      index_array_buffer_binding_ = 0;
+      DCHECK_EQ(0, vertex_array_buffer_binding_);
+      DCHECK_EQ(0, index_array_buffer_binding_);
       break;
     case MODE_DETACH_FROM_WINDOW:
       glGetBooleanv(GL_BLEND, &blend_enabled_);
