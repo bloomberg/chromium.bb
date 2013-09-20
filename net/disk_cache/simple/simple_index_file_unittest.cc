@@ -184,7 +184,8 @@ TEST_F(SimpleIndexFileTest, LegacyIsIndexFileStale) {
       WrappedSimpleIndexFile::LegacyIsIndexFileStale(cache_mtime, index_path));
 }
 
-TEST_F(SimpleIndexFileTest, WriteThenLoadIndex) {
+// This test is flaky, see http://crbug.com/255775.
+TEST_F(SimpleIndexFileTest, DISABLED_WriteThenLoadIndex) {
   base::ScopedTempDir cache_dir;
   ASSERT_TRUE(cache_dir.CreateUniqueTempDir());
 
