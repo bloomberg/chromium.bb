@@ -96,11 +96,6 @@
           'ENABLE_OPENTYPE_VERTICAL=1',
         ],
       }],
-      ['OS=="mac"', {
-        'feature_defines': [
-          'ENABLE_RUBBER_BANDING=1',
-        ],
-      }],
       ['use_default_render_theme==1', {
         'feature_defines': [
           'ENABLE_DEFAULT_RENDER_THEME=1',

@@ -1204,7 +1204,7 @@ void RenderLayerCompositor::frameViewDidChangeSize()
         frameViewDidScroll();
         updateOverflowControlsLayers();
 
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
         if (m_layerForOverhangAreas)
             m_layerForOverhangAreas->setSize(frameView->frameRect().size());
 #endif
@@ -1576,7 +1576,7 @@ void RenderLayerCompositor::updateRootLayerPosition()
         const IntRect& documentRect = m_renderView->documentRect();
         m_rootContentLayer->setSize(documentRect.size());
         m_rootContentLayer->setPosition(documentRect.location());
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
         if (m_layerForOverhangShadow)
             ScrollbarTheme::theme()->updateOverhangShadowLayer(m_layerForOverhangShadow.get(), m_rootContentLayer.get());
 #endif
@@ -2173,7 +2173,7 @@ void RenderLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gr
         transformedClip.moveBy(scrollCorner.location());
         m_renderView->frameView()->paintScrollCorner(&context, transformedClip);
         context.restore();
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
     } else if (graphicsLayer == layerForOverhangAreas()) {
         ScrollView* view = m_renderView->frameView();
         view->calculateAndPaintOverhangBackground(&context, clip);
@@ -2278,7 +2278,7 @@ bool RenderLayerCompositor::requiresScrollCornerLayer() const
     return shouldCompositeOverflowControls(view) && view->isScrollCornerVisible();
 }
 
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
 bool RenderLayerCompositor::requiresOverhangLayers() const
 {
     // We don't want a layer if this is a subframe.
@@ -2296,7 +2296,7 @@ bool RenderLayerCompositor::requiresOverhangLayers() const
 
 void RenderLayerCompositor::updateOverflowControlsLayers()
 {
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
     if (requiresOverhangLayers()) {
         if (!m_layerForOverhangAreas) {
             m_layerForOverhangAreas = GraphicsLayer::create(graphicsLayerFactory(), this);
@@ -2425,7 +2425,7 @@ void RenderLayerCompositor::destroyRootLayer()
 
     detachRootLayer();
 
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
     if (m_layerForOverhangAreas) {
         m_layerForOverhangAreas->removeFromParent();
         m_layerForOverhangAreas = nullptr;
@@ -2727,7 +2727,7 @@ String RenderLayerCompositor::debugName(const GraphicsLayer* graphicsLayer)
     String name;
     if (graphicsLayer == m_rootContentLayer.get()) {
         name = "Content Root Layer";
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
     } else if (graphicsLayer == m_layerForOverhangAreas.get()) {
         name = "Overhang Areas Layer";
     } else if (graphicsLayer == m_layerForOverhangAreas.get()) {

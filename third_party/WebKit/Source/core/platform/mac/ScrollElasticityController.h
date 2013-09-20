@@ -26,7 +26,7 @@
 #ifndef ScrollElasticityController_h
 #define ScrollElasticityController_h
 
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
 
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/graphics/FloatPoint.h"
@@ -98,6 +98,6 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(RUBBER_BANDING)
+#endif // USE(RUBBER_BANDING)
 
 #endif // ScrollElasticityController_h

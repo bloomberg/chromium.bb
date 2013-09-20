@@ -183,7 +183,7 @@ public:
     GraphicsLayer* layerForHorizontalScrollbar() const { return m_layerForHorizontalScrollbar.get(); }
     GraphicsLayer* layerForVerticalScrollbar() const { return m_layerForVerticalScrollbar.get(); }
     GraphicsLayer* layerForScrollCorner() const { return m_layerForScrollCorner.get(); }
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
     GraphicsLayer* layerForOverhangAreas() const { return m_layerForOverhangAreas.get(); }
 
     GraphicsLayer* updateLayerForTopOverhangArea(bool wantsLayer);
@@ -298,7 +298,7 @@ private:
     bool requiresHorizontalScrollbarLayer() const;
     bool requiresVerticalScrollbarLayer() const;
     bool requiresScrollCornerLayer() const;
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
     bool requiresOverhangLayers() const;
 #endif
 
@@ -349,7 +349,7 @@ private:
     OwnPtr<GraphicsLayer> m_layerForHorizontalScrollbar;
     OwnPtr<GraphicsLayer> m_layerForVerticalScrollbar;
     OwnPtr<GraphicsLayer> m_layerForScrollCorner;
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
     OwnPtr<GraphicsLayer> m_layerForOverhangAreas;
     OwnPtr<GraphicsLayer> m_layerForOverhangShadow;
 #endif

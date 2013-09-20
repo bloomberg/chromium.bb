@@ -40,7 +40,7 @@ OBJC_CLASS WebScrollbarPainterDelegate;
 
 typedef id ScrollbarPainterController;
 
-#if !ENABLE(RUBBER_BANDING)
+#if !USE(RUBBER_BANDING)
 class ScrollElasticityControllerClient { };
 #endif
 
@@ -88,7 +88,7 @@ private:
     virtual bool scroll(ScrollbarOrientation, ScrollGranularity, float step, float multiplier);
     virtual void scrollToOffsetWithoutAnimation(const FloatPoint&);
 
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
     virtual bool handleWheelEvent(const PlatformWheelEvent&) OVERRIDE;
 #endif
 
@@ -130,7 +130,7 @@ private:
 
     virtual bool isRubberBandInProgress() const OVERRIDE;
 
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
     /// ScrollElasticityControllerClient member functions.
     virtual IntSize stretchAmount() OVERRIDE;
     virtual bool allowsHorizontalStretching() OVERRIDE;

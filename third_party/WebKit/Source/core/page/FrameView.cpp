@@ -756,7 +756,7 @@ GraphicsLayer* FrameView::layerForScrollCorner() const
     return renderView->compositor()->layerForScrollCorner();
 }
 
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
 GraphicsLayer* FrameView::layerForOverhangAreas() const
 {
     RenderView* renderView = this->renderView();
@@ -764,7 +764,7 @@ GraphicsLayer* FrameView::layerForOverhangAreas() const
         return 0;
     return renderView->compositor()->layerForOverhangAreas();
 }
-#endif // ENABLE(RUBBER_BANDING)
+#endif // USE(RUBBER_BANDING)
 
 bool FrameView::hasCompositedContent() const
 {
@@ -3368,7 +3368,7 @@ bool FrameView::wheelEvent(const PlatformWheelEvent& wheelEvent)
 {
     // Note that to allow for rubber-band over-scroll behavior, even non-scrollable views
     // should handle wheel events.
-#if !ENABLE(RUBBER_BANDING)
+#if !USE(RUBBER_BANDING)
     if (!isScrollable())
         return false;
 #endif

@@ -107,6 +107,7 @@
 
 #if OS(MACOSX)
 #define WTF_USE_CF 1
+#define WTF_USE_RUBBER_BANDING 1
 
 /* We can't override the global operator new and delete on OS(MACOSX) because
  * some object are allocated by WebKit and deallocated by the embedder. */

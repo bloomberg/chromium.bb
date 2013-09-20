@@ -934,7 +934,7 @@ void ScrollView::paint(GraphicsContext* context, const IntRect& rect)
         paintContents(context, documentDirtyRect);
     }
 
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
     if (!layerForOverhangAreas())
         calculateAndPaintOverhangAreas(context, rect);
 #else
@@ -1008,7 +1008,7 @@ void ScrollView::updateOverhangAreas()
     IntRect horizontalOverhangRect;
     IntRect verticalOverhangRect;
     calculateOverhangAreasForPainting(horizontalOverhangRect, verticalOverhangRect);
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
     if (GraphicsLayer* overhangLayer = layerForOverhangAreas()) {
         bool hasOverhangArea = !horizontalOverhangRect.isEmpty() || !verticalOverhangRect.isEmpty();
         overhangLayer->setDrawsContent(hasOverhangArea);

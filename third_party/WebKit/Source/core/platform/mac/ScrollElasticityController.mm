@@ -30,7 +30,7 @@
 #include <sys/time.h>
 #include "core/platform/PlatformWheelEvent.h"
 
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
 
 static NSTimeInterval systemUptime()
 {
@@ -413,4 +413,4 @@ bool ScrollElasticityController::shouldRubberBandInHorizontalDirection(const Pla
 
 } // namespace WebCore
 
-#endif // ENABLE(RUBBER_BANDING)
+#endif // USE(RUBBER_BANDING)

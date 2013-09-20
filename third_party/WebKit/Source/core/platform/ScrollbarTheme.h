@@ -36,7 +36,7 @@ class PlatformMouseEvent;
 class ScrollbarThemeClient;
 class ScrollView;
 
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
 class GraphicsLayer;
 #endif
 
@@ -87,7 +87,7 @@ public:
     virtual void paintOverhangBackground(ScrollView*, GraphicsContext*, const IntRect&, const IntRect&, const IntRect&);
     virtual void paintOverhangShadows(ScrollView*, GraphicsContext*, const IntRect&, const IntRect&, const IntRect&) { }
 
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
     virtual void setUpOverhangShadowLayer(GraphicsLayer*) { }
     virtual void updateOverhangShadowLayer(GraphicsLayer* shadowLayer, GraphicsLayer* rootContentLayer) { }
 #endif

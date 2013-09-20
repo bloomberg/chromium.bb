@@ -600,7 +600,7 @@ ScrollAnimatorMac::ScrollAnimatorMac(ScrollableArea* scrollableArea)
     : ScrollAnimator(scrollableArea)
     , m_initialScrollbarPaintTimer(this, &ScrollAnimatorMac::initialScrollbarPaintTimerFired)
     , m_sendContentAreaScrolledTimer(this, &ScrollAnimatorMac::sendContentAreaScrolledTimerFired)
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
     , m_scrollElasticityController(this)
     , m_snapRubberBandTimer(this, &ScrollAnimatorMac::snapRubberBandTimerFired)
 #endif
@@ -639,7 +639,7 @@ static bool scrollAnimationEnabledForSystem()
     return enabled;
 }
 
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
 static bool rubberBandingEnabledForSystem()
 {
     static bool initialized = false;
@@ -720,7 +720,7 @@ void ScrollAnimatorMac::immediateScrollTo(const FloatPoint& newPosition)
 
 bool ScrollAnimatorMac::isRubberBandInProgress() const
 {
-#if !ENABLE(RUBBER_BANDING)
+#if !USE(RUBBER_BANDING)
     return false;
 #else
     return m_scrollElasticityController.isRubberBandInProgress();
@@ -1006,7 +1006,7 @@ void ScrollAnimatorMac::handleWheelEventPhase(PlatformWheelEventPhase phase)
         mayBeginScrollGesture();
 }
 
-#if ENABLE(RUBBER_BANDING)
+#if USE(RUBBER_BANDING)
 bool ScrollAnimatorMac::handleWheelEvent(const PlatformWheelEvent& wheelEvent)
 {
     m_haveScrolledSincePageLoad = true;
