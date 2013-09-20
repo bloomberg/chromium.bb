@@ -851,10 +851,12 @@ void NativeAppWindowCocoa::WindowDidResize() {
   else if (NSEqualPoints(frame.origin, screen.origin))
     is_maximized_ = true;
 
+  UpdateRestoredBounds();
   shell_window_->OnNativeWindowChanged();
 }
 
 void NativeAppWindowCocoa::WindowDidMove() {
+  UpdateRestoredBounds();
   shell_window_->OnNativeWindowChanged();
 }
 
