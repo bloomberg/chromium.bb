@@ -70,7 +70,8 @@ FileSystemBackendDelegate::CreateFileStreamWriter(
   DCHECK_EQ(fileapi::kFileSystemTypeDrive, url.type());
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
-  if (file_path.empty())
+  // Hosted documents don't support stream writer.
+  if (file_path.empty() || util::HasGDocFileExtension(file_path))
     return scoped_ptr<fileapi::FileStreamWriter>();
 
   return scoped_ptr<fileapi::FileStreamWriter>(
