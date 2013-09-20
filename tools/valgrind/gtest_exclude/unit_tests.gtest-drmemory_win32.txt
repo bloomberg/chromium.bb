@@ -71,3 +71,6 @@ OneClickSigninBubbleViewTest.ShowBubble
 # http://crbug.com/292960
 SyncBackendHostTest.DownloadControlTypes
 SyncBackendHostTest.SilentlyFailToDownloadControlTypes
+
+# DrM-i#1339: https://code.google.com/p/drmemory/issues/detail?id=1339
+ExtensionServiceTest.InstallTheme
