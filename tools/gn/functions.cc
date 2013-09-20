@@ -49,6 +49,7 @@ Value RunTemplateInvocation(Scope* scope,
   if (err->has_error())
     return Value();
 
+  block_scope.CheckForUnusedVars(err);
   return Value();
 }
 

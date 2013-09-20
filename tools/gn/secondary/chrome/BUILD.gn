@@ -130,6 +130,10 @@ static_library("debugger") {
   ]
 
   deps = [
+    ":chrome_extra_resources",
+    ":chrome_resources",
+    ":chrome_strings",
+    ":theme_resources",
     "//base",
     "//net",
     "//net:http_server",
@@ -175,6 +179,28 @@ static_library("utility") {
   external = true
 }
 
+
+# Credits ----------------------------------------------------------------------
+
+about_credits_file = "$root_gen_dir/about_credits.html"
+build_relative_about_credits_file = to_build_path(about_credits_file)
+
+custom("about_credits") {
+  script = "//tools/licenses.py"
+  outputs = [ about_credits_file ]
+
+  # This script is impossible to write proper input dependencies for because it
+  # basically greps the source tree for third_party directories. If a directory
+  # is added or removed, it will change the result, but there is no way to
+  # express this as a build dependency. We approximate this by depending on
+  # the last change file to force an update whenever the code is updated.
+  source_deps = [ "//build/utils/LASTCHANGE" ]
+
+  hard_dep = true
+
+  args = [ "credits", build_relative_about_credits_file ]
+}
+
 # Resources --------------------------------------------------------------------
 
 group("chrome_resources") {
@@ -185,15 +211,14 @@ group("chrome_resources") {
   ]
 }
 grit("browser_resources") {
-  external = true
   source = "browser/browser_resources.grd"
+  grit_flags = [ "-E", "about_credits_file=$build_relative_about_credits_file" ]
+  deps = [ ":about_credits" ]
 }
 grit("common_resources") {
-  external = true
   source = "common/common_resources.grd"
 }
 grit("renderer_resources") {
-  external = true
   source = "renderer/resources/renderer_resources.grd"
 }
 
@@ -206,19 +231,15 @@ group("chrome_strings") {
   ]
 }
 grit("locale_settings") {
-  external = true
   source = "app/resources/locale_settings.grd"
 }
 grit("chromium_strings") {
-  external = true
   source = "app/chromium_strings.grd"
 }
 grit("generated_resources") {
-  external = true
   source = "app/generated_resources.grd"
 }
 grit("google_chrome_strings") {
-  external = true
   source = "app/google_chrome_strings.grd"
 }
 
@@ -230,35 +251,57 @@ group("chrome_extra_resources") {
     ":sync_internals_resources",
     ":translate_internals_resources",
   ]
+
+  if (!is_ios) {
+    deps += [
+      ":component_extension_resources",
+      ":devtools_discovery_page_resources",
+      ":options_resources",
+      ":quota_internals_resources",
+      ":sync_file_system_internals_resources",
+    ]
+  }
+}
+grit("component_extension_resources") {
+  source = "browser/resources/component_extension_resources.grd"
+}
+grit("devtools_discovery_page_resources") {
+  source = "browser/devtools/frontend/devtools_discovery_page_resources.grd"
 }
 grit("memory_internals_resources") {
-  external = true
   source = "browser/resources/memory_internals_resources.grd"
 }
+grit("quota_internals_resources") {
+  source = "browser/resources/quota_internals_resources.grd"
+}
 grit("net_internals_resources") {
-  external = true
   source = "browser/resources/net_internals_resources.grd"
 }
+grit("options_resources") {
+  source = "browser/resources/options_resources.grd"
+}
 grit("signin_internals_resources") {
-  external = true
   source = "browser/resources/signin_internals_resources.grd"
 }
+grit("sync_file_system_internals_resources") {
+  source = "browser/resources/sync_file_system_internals_resources.grd"
+}
 grit("sync_internals_resources") {
-  external = true
   source = "browser/resources/sync_internals_resources.grd"
 }
 grit("translate_internals_resources") {
-  external = true
   source = "browser/resources/translate_internals_resources.grd"
 }
 
 group("theme_resources") {
   deps = [
-    ":app_theme_resources",
+    ":theme_resources_gen",
     #"//ui:ui_resources",
   ]
 }
-grit("app_theme_resources") {
-  external = true
+
+# TODO(brettw) rename "app_theme_resources" or something when we don't support
+# GYP any more. This name is required to match the GYP build.
+grit("theme_resources_gen") {
   source = "app/theme/theme_resources.grd"
 }

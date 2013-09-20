@@ -2,6 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Instantiate grit. This will produce a script target to run grit, and a
+# static library that compiles the .cc files.
+#
+# Example:
+#   grit("my_resources") {
+#     source = "myfile.grd"  # source is required.
+#     grit_flags = [ "-E", "foo=bar" ]  # Optional extra flags.
+#     # You can also put deps here if the grit source depends on generated
+#     # files.
+#   }
 template("grit") {
   assert(defined(source),
          "\"source\" must be defined for the grit template $target_name")
@@ -14,10 +24,19 @@ template("grit") {
   grit_info_script = to_build_path("//tools/grit/grit_info.py")
   source_path = to_build_path(source)
 
+  if (!defined(grit_flags)) {
+    grit_flags = []  # These are optional so default to empty list.
+  }
+
+  # TODO(brettw) these are wrong because grit outputs the file names relative
+  # to its current directory (the build output) and we want them relative
+  # to the current input directory. We need a way to rebase the paths we get
+  # back.
   grit_inputs = exec_script(grit_info_script,
-    [ "--inputs", source_path, "-f", resource_ids], "list lines")
+    [ "--inputs", source_path, "-f", resource_ids] + grit_flags, "list lines")
   grit_outputs = exec_script(grit_info_script,
-    [ "--outputs", "$output_dir", source_path, "-f", resource_ids ],
+    [ "--outputs", "$output_dir", source_path, "-f", resource_ids ] +
+    grit_flags,
     "list lines")
 
   # The current grit setup makes an file in $target_gen_dir/grit/foo.h that
@@ -40,7 +59,9 @@ template("grit") {
       "-i", source_path, "build",
       "-f", resource_ids,
       "-o", output_dir,
-    ]
+    ] + grit_flags
+
+    # Inherit deps from template invocation if any.
   }
 
   # This is the thing that people actually link with, it must be named the
@@ -51,6 +72,10 @@ template("grit") {
     hard_dep = true
 
     sources = grit_outputs
+
+    # Deps set on the template invocation will go on the grit script running
+    # target rather than this library.
+    deps = []
     deps = [ ":$grit_custom_target" ]
     direct_dependent_configs = [ ":$grit_config" ]
   }
