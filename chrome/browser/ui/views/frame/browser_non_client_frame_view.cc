@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/avatar_menu_model.h"
+#include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -86,7 +86,7 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
     avatar = rb.GetImageNamed(browser_view_->GetGuestIconResourceID());
   } else if (browser_view_->IsOffTheRecord()) {
     avatar = rb.GetImageNamed(browser_view_->GetOTRIconResourceID());
-  } else if (AvatarMenuModel::ShouldShowAvatarMenu()) {
+  } else if (AvatarMenu::ShouldShowAvatarMenu()) {
     ProfileInfoCache& cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
     Profile* profile = browser_view_->browser()->profile();
@@ -109,5 +109,5 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
   // need to draw the taskbar decoration.
   chrome::DrawTaskbarDecoration(
       frame_->GetNativeWindow(),
-      AvatarMenuModel::ShouldShowAvatarMenu() ? &avatar : NULL);
+      AvatarMenu::ShouldShowAvatarMenu() ? &avatar : NULL);
 }
