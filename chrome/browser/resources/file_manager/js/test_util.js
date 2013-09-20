@@ -372,6 +372,20 @@ test.util.sync.selectFile = function(contentWindow, filename) {
 };
 
 /**
+ * Open the file by selectFile and fakeMouseDoubleClick.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} filename Name of the file to be opened.
+ * @return {boolean} True if file got selected and a double click message is
+ *     sent, false otherwise.
+ */
+test.util.sync.openFile = function(contentWindow, filename) {
+  var query = '#file-list li.table-row[selected] .filename-label span';
+  return test.util.sync.selectFile(contentWindow, filename) &&
+         test.util.sync.fakeMouseDoubleClick(contentWindow, query);
+};
+
+/**
  * Selects a volume specified by its icon name
  *
  * @param {Window} contentWindow Window to be tested.

@@ -39,7 +39,7 @@ var SharedOption = Object.freeze({
  */
 var TestEntryInfo = function(type,
                              sourceFileName,
-                             targetName,
+                             targetPath,
                              mimeType,
                              sharedOption,
                              lastModifiedTime,
@@ -48,7 +48,7 @@ var TestEntryInfo = function(type,
                              typeText) {
   this.type = type;
   this.sourceFileName = sourceFileName || '';
-  this.targetName = targetName;
+  this.targetPath = targetPath;
   this.mimeType = mimeType || '';
   this.sharedOption = sharedOption;
   this.lastModifiedTime = lastModifiedTime;
@@ -115,7 +115,22 @@ var ENTRIES = {
   newlyAdded: new TestEntryInfo(
       EntryType.FILE, 'music.ogg', 'newly added file.ogg',
       'audio/ogg', SharedOption.NONE, 'Sep 4, 1998 12:00 AM',
-      'newly added file.ogg', '14 KB', 'OGG audio')
+      'newly added file.ogg', '14 KB', 'OGG audio'),
+
+  directoryA: new TestEntryInfo(
+      EntryType.DIRECTORY, null, 'A',
+      null, SharedOption.NONE, 'Jan 1, 2000 1:00 AM',
+      'A', '--', 'Folder'),
+
+  directoryB: new TestEntryInfo(
+      EntryType.DIRECTORY, null, 'A/B',
+      null, SharedOption.NONE, 'Jan 1, 2000 1:00 AM',
+      'B', '--', 'Folder'),
+
+  directoryC: new TestEntryInfo(
+      EntryType.DIRECTORY, null, 'A/B/C',
+      null, SharedOption.NONE, 'Jan 1, 2000 1:00 AM',
+      'C', '--', 'Folder')
 };
 
 /**
@@ -148,6 +163,12 @@ var BASIC_DRIVE_ENTRY_SET = [
   ENTRIES.photos,
   ENTRIES.testDocument,
   ENTRIES.testSharedDocument
+];
+
+var NESTED_ENTRY_SET = [
+  ENTRIES.directoryA,
+  ENTRIES.directoryB,
+  ENTRIES.directoryC
 ];
 
 /**
@@ -340,19 +361,10 @@ testcase.intermediate.galleryOpen = function(path) {
     // Select the image.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('selectFile',
+      callRemoteTestUtil('openFile',
                          appId,
                          ['My Desktop Background.png'],
                          this.next);
-    },
-    // Double click on the label to enter the photo viewer.
-    function(result) {
-      chrome.test.assertTrue(result);
-      callRemoteTestUtil(
-          'fakeMouseDoubleClick',
-          appId,
-          ['#file-list li.table-row[selected] .filename-label span'],
-          this.next);
     },
     // Wait for the image in the gallery's screen image.
     function(result) {
@@ -400,16 +412,7 @@ testcase.intermediate.audioOpen = function(path) {
     function(inAppId) {
       appId = inAppId;
       callRemoteTestUtil(
-          'selectFile', appId, ['Beautiful Song.ogg'], this.next);
-    },
-    // Double click on the label to enter the audio player.
-    function(result) {
-      chrome.test.assertTrue(result);
-      callRemoteTestUtil(
-          'fakeMouseDoubleClick',
-          appId,
-          ['#file-list li.table-row[selected] .filename-label span'],
-          this.next);
+          'openFile', appId, ['Beautiful Song.ogg'], this.next);
     },
     // Wait for the audio player.
     function(result) {
@@ -471,16 +474,7 @@ testcase.intermediate.videoOpen = function(path) {
       appId = inAppId;
       // Select the song.
       callRemoteTestUtil(
-          'selectFile', appId, ['world.ogv'], this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      // Double click on the label to enter the video player.
-      callRemoteTestUtil(
-          'fakeMouseDoubleClick',
-          appId,
-          ['#file-list li.table-row[selected] .filename-label span'],
-          this.next);
+          'openFile', appId, ['world.ogv'], this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
@@ -1005,6 +999,59 @@ testcase.intermediate.share = function(path) {
 };
 
 /**
+ * Test utility for traverse tests.
+ */
+testcase.intermediate.traverseDirectories = function(root) {
+  var appId;
+  StepsRunner.run([
+    // Set up File Manager.
+    function() {
+      callRemoteTestUtil('openMainWindow', null, [root], this.next);
+    },
+    // Check the initial view.
+    function(inAppId) {
+      appId = inAppId;
+      addEntries(['local', 'drive'], NESTED_ENTRY_SET, this.next);
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitForFiles',
+                         appId,
+                         [[ENTRIES.directoryA.getExpectedRow()]],
+                         this.next);
+    },
+    // Open the directory
+    function() {
+      callRemoteTestUtil('openFile', appId, ['A'], this.next);
+    },
+    // Check the contents of current directory.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitForFiles',
+                         appId,
+                         [[ENTRIES.directoryB.getExpectedRow()]],
+                         this.next);
+    },
+    // Open the directory
+    function() {
+      callRemoteTestUtil('openFile', appId, ['B'], this.next);
+    },
+    // Check the contents of current directory.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitForFiles',
+                         appId,
+                         [[ENTRIES.directoryC.getExpectedRow()]],
+                         this.next);
+    },
+    // Check the error.
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};
+
+/**
  * Tests copy from drive's root to local's downloads.
  */
 testcase.transferFromDriveToDownloads = function() {
@@ -1327,3 +1374,15 @@ testcase.restoreGeometry = function() {
     }
   ]);
 };
+
+/**
+ * Tests to traverse local directories.
+ */
+testcase.traverseDownloads =
+    testcase.intermediate.traverseDirectories.bind(null, '/Downloads');
+
+/**
+ * Tests to traverse drive directories.
+ */
+testcase.traverseDrive =
+    testcase.intermediate.traverseDirectories.bind(null, '/drive/root');

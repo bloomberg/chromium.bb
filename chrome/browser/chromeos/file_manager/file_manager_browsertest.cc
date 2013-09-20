@@ -22,6 +22,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
+#include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/chromeos/file_manager/drive_test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/api/test/test_api.h"
@@ -115,13 +116,13 @@ struct TestEntryInfo {
 
   TestEntryInfo(EntryType type,
                 const std::string& source_file_name,
-                const std::string& target_name,
+                const std::string& target_path,
                 const std::string& mime_type,
                 SharedOption shared_option,
                 const base::Time& last_modified_time) :
       type(type),
       source_file_name(source_file_name),
-      target_name(target_name),
+      target_path(target_path),
       mime_type(mime_type),
       shared_option(shared_option),
       last_modified_time(last_modified_time) {
@@ -129,7 +130,7 @@ struct TestEntryInfo {
 
   EntryType type;
   std::string source_file_name;  // Source file name to be used as a prototype.
-  std::string target_name;  // Target file or directory name.
+  std::string target_path;  // Target file or directory path.
   std::string mime_type;
   SharedOption shared_option;
   base::Time last_modified_time;
@@ -147,7 +148,7 @@ void TestEntryInfo::RegisterJSONConverter(
                                  &MapStringToEntryType);
   converter->RegisterStringField("sourceFileName",
                                  &TestEntryInfo::source_file_name);
-  converter->RegisterStringField("targetName", &TestEntryInfo::target_name);
+  converter->RegisterStringField("targetPath", &TestEntryInfo::target_path);
   converter->RegisterStringField("mimeType", &TestEntryInfo::mime_type);
   converter->RegisterCustomField("sharedOption",
                                  &TestEntryInfo::shared_option,
@@ -207,10 +208,13 @@ class LocalTestVolume {
   }
 
   void CreateEntry(const TestEntryInfo& entry) {
-    base::FilePath target_path = local_path_.AppendASCII(entry.target_name);
+    const base::FilePath target_path =
+        local_path_.AppendASCII(entry.target_path);
+
+    entries_.insert(std::make_pair(target_path, entry));
     switch (entry.type) {
       case FILE: {
-        base::FilePath source_path =
+        const base::FilePath source_path =
             google_apis::test_util::GetTestFilePath("chromeos/file_manager").
             AppendASCII(entry.source_file_name);
         ASSERT_TRUE(base::CopyFile(source_path, target_path))
@@ -223,13 +227,32 @@ class LocalTestVolume {
             "Failed to create a directory: " << target_path.value();
         break;
     }
-    ASSERT_TRUE(
-        file_util::SetLastModifiedTime(target_path, entry.last_modified_time));
+    ASSERT_TRUE(UpdateModifiedTime(entry));
   }
 
  private:
+  // Updates ModifiedTime of the entry and its parents by referring
+  // TestEntryInfo. Returns true on success.
+  bool UpdateModifiedTime(const TestEntryInfo& entry) {
+    const base::FilePath path = local_path_.AppendASCII(entry.target_path);
+    if (!file_util::SetLastModifiedTime(path, entry.last_modified_time))
+      return false;
+
+    // Update the modified time of parent directories because it may be also
+    // affected by the update of child items.
+    if (path.DirName() != local_path_) {
+      const std::map<base::FilePath, const TestEntryInfo>::iterator it =
+          entries_.find(path.DirName());
+      if (it == entries_.end())
+        return false;
+      return UpdateModifiedTime(it->second);
+    }
+    return true;
+  }
+
   base::FilePath local_path_;
   base::ScopedTempDir tmp_dir_;
+  std::map<base::FilePath, const TestEntryInfo> entries_;
 };
 
 // The drive volume class for test.
@@ -254,32 +277,51 @@ class DriveTestVolume {
   }
 
   void CreateEntry(const TestEntryInfo& entry) {
+    const base::FilePath path =
+        base::FilePath::FromUTF8Unsafe(entry.target_path);
+    const std::string target_name = path.BaseName().AsUTF8Unsafe();
+
+    // Obtain the parent entry.
+    drive::FileError error = drive::FILE_ERROR_OK;
+    scoped_ptr<drive::ResourceEntry> parent_entry(new drive::ResourceEntry);
+    integration_service_->file_system()->GetResourceEntryByPath(
+        drive::util::GetDriveMyDriveRootPath().Append(path).DirName(),
+        google_apis::test_util::CreateCopyResultCallback(
+            &error, &parent_entry));
+    drive::test_util::RunBlockingPoolTask();
+    ASSERT_EQ(drive::FILE_ERROR_OK, error);
+    ASSERT_TRUE(parent_entry);
+
     switch (entry.type) {
       case FILE:
         CreateFile(entry.source_file_name,
-                   entry.target_name,
+                   parent_entry->resource_id(),
+                   target_name,
                    entry.mime_type,
                    entry.shared_option == SHARED,
                    entry.last_modified_time);
         break;
       case DIRECTORY:
-        CreateDirectory(entry.target_name, entry.last_modified_time);
+        CreateDirectory(parent_entry->resource_id(),
+                        target_name,
+                        entry.last_modified_time);
         break;
     }
   }
 
   // Creates an empty directory with the given |name| and |modification_time|.
-  void CreateDirectory(const std::string& name,
+  void CreateDirectory(const std::string& parent_id,
+                       const std::string& target_name,
                        const base::Time& modification_time) {
     google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
     scoped_ptr<google_apis::ResourceEntry> resource_entry;
     fake_drive_service_->AddNewDirectory(
-        fake_drive_service_->GetRootResourceId(),
-        name,
+        parent_id,
+        target_name,
         google_apis::test_util::CreateCopyResultCallback(&error,
                                                          &resource_entry));
     base::MessageLoop::current()->RunUntilIdle();
-    ASSERT_TRUE(error == google_apis::HTTP_CREATED);
+    ASSERT_EQ(google_apis::HTTP_CREATED, error);
     ASSERT_TRUE(resource_entry);
 
     fake_drive_service_->SetLastModifiedTime(
@@ -296,7 +338,8 @@ class DriveTestVolume {
   // Creates a test file with the given spec.
   // Serves |test_file_name| file. Pass an empty string for an empty file.
   void CreateFile(const std::string& source_file_name,
-                  const std::string& target_file_name,
+                  const std::string& parent_id,
+                  const std::string& target_name,
                   const std::string& mime_type,
                   bool shared_with_me,
                   const base::Time& modification_time) {
@@ -314,8 +357,8 @@ class DriveTestVolume {
     fake_drive_service_->AddNewFile(
         mime_type,
         content_data,
-        fake_drive_service_->GetRootResourceId(),
-        target_file_name,
+        parent_id,
+        target_name,
         shared_with_me,
         google_apis::test_util::CreateCopyResultCallback(&error,
                                                          &resource_entry));
@@ -637,6 +680,13 @@ INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "restoreGeometry"),
                       TestParameter(IN_GUEST_MODE, "restoreGeometry")));
+
+INSTANTIATE_TEST_CASE_P(
+    Traverse,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(IN_GUEST_MODE, "traverseDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "traverseDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "traverseDrive")));
 
 }  // namespace
 }  // namespace file_manager
