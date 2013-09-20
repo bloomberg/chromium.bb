@@ -1246,7 +1246,7 @@ static void resolveVariables(StyleResolverState& state, CSSPropertyID id, CSSVal
 
 void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, CSSValue* value)
 {
-    if (id != CSSPropertyVariable && hasVariableReference(value)) {
+    if (RuntimeEnabledFeatures::cssVariablesEnabled() && id != CSSPropertyVariable && hasVariableReference(value)) {
         Vector<std::pair<CSSPropertyID, String> > knownExpressions;
         resolveVariables(state, id, value, knownExpressions);
         return;
