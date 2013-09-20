@@ -28,9 +28,12 @@ class OptionParserWithLogging(optparse.OptionParser):
         help='Use multiple times to increase verbosity')
     if self.enable_log_file:
       self.add_option(
-          '-l', '--log_file',
+          '-l', '--log-file',
           default=log_file,
-          help='The name of the file to store rotating log details.')
+          help='The name of the file to store rotating log details')
+      self.add_option(
+          '--no-log', action='store_const', const='', dest='log_file',
+          help='Disable log file')
 
   def parse_args(self, *args, **kwargs):
     options, args = optparse.OptionParser.parse_args(self, *args, **kwargs)
