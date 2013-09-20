@@ -116,9 +116,6 @@ namespace WebCore {
     String validationMessageTypeMismatchText();
     String validationMessageTypeMismatchForURLText();
     String validationMessagePatternMismatchText();
-    String validationMessageTooLongText(int valueLength, int maxLength);
-    String validationMessageRangeUnderflowText(const String& minimum);
-    String validationMessageRangeOverflowText(const String& maximum);
     String validationMessageBadInputForNumberText();
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     String validationMessageBadInputForDateTimeText();

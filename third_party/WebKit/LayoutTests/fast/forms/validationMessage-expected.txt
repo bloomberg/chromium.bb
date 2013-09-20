@@ -30,6 +30,8 @@ input stepMismatch: Please enter a valid value. The nearest valid value is 10.
 tooLong:
 input tooLong: Please shorten this text to 3 characters or less (you are currently using 5 characters).
 input tooLong: Please shorten this text to 2 characters or less (you are currently using 3 characters).
+input tooLong: Please shorten this text to ٢ characters or less (you are currently using ٣ characters).
+textarea tooLong: Please shorten this text to 3 characters or less (you are currently using 5 characters).
 PASS but.validationMessage is ''
 PASS anoninput.validationMessage is ''
 PASS happyFieldset.validationMessage is ''

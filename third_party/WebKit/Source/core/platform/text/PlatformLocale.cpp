@@ -202,6 +202,11 @@ String Locale::queryString(WebLocalizedString::Name name, const String& paramete
     return Platform::current()->queryLocalizedString(name, parameter1, parameter2);
 }
 
+String Locale::validationMessageTooLongText(unsigned valueLength, int maxLength)
+{
+    return queryString(WebLocalizedString::ValidationTooLong, convertToLocalizedNumber(String::number(valueLength)), convertToLocalizedNumber(String::number(maxLength)));
+}
+
 void Locale::setLocaleData(const Vector<String, DecimalSymbolsSize>& symbols, const String& positivePrefix, const String& positiveSuffix, const String& negativePrefix, const String& negativeSuffix)
 {
     for (size_t i = 0; i < symbols.size(); ++i) {

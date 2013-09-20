@@ -44,6 +44,7 @@ public:
     String queryString(WebKit::WebLocalizedString::Name);
     String queryString(WebKit::WebLocalizedString::Name, const String& parameter);
     String queryString(WebKit::WebLocalizedString::Name, const String& parameter1, const String& parameter2);
+    String validationMessageTooLongText(unsigned valueLength, int maxLength);
 
     // Converts the specified number string to another number string localized
     // for this Locale locale. The input string must conform to HTML

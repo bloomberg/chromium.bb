@@ -373,7 +373,7 @@ String InputType::validationMessage() const
         return validationMessagePatternMismatchText();
 
     if (element()->tooLong())
-        return validationMessageTooLongText(value.length(), element()->maxLength());
+        return locale().validationMessageTooLongText(value.length(), element()->maxLength());
 
     if (!isSteppable())
         return emptyString();
@@ -385,10 +385,10 @@ String InputType::validationMessage() const
     StepRange stepRange(createStepRange(RejectAny));
 
     if (numericValue < stepRange.minimum())
-        return validationMessageRangeUnderflowText(serialize(stepRange.minimum()));
+        return locale().queryString(WebLocalizedString::ValidationRangeUnderflow, localizeValue(serialize(stepRange.minimum())));
 
     if (numericValue > stepRange.maximum())
-        return validationMessageRangeOverflowText(serialize(stepRange.maximum()));
+        return locale().queryString(WebLocalizedString::ValidationRangeOverflow, localizeValue(serialize(stepRange.maximum())));
 
     if (stepRange.stepMismatch(numericValue)) {
         ASSERT(stepRange.hasStep());

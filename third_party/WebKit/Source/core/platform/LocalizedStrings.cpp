@@ -462,21 +462,6 @@ String validationMessagePatternMismatchText()
     return query(WebLocalizedString::ValidationPatternMismatch);
 }
 
-String validationMessageTooLongText(int valueLength, int maxLength)
-{
-    return query(WebLocalizedString::ValidationTooLong, String::number(valueLength), String::number(maxLength));
-}
-
-String validationMessageRangeUnderflowText(const String& minimum)
-{
-    return query(WebLocalizedString::ValidationRangeUnderflow, minimum);
-}
-
-String validationMessageRangeOverflowText(const String& maximum)
-{
-    return query(WebLocalizedString::ValidationRangeOverflow, maximum);
-}
-
 String validationMessageBadInputForNumberText()
 {
     return query(WebLocalizedString::ValidationBadInputForNumber);

@@ -8,7 +8,8 @@
 <div id="console"></div>
 <script>
 description("Test for validationMessage DOM property.");
-
+if (window.internals)
+    internals.settings.setLangAttributeAwareFormControlUIEnabled(true);
 var form = document.createElement("form");
 document.body.appendChild(form);
 
@@ -115,6 +116,17 @@ inputWithMax.focus();
 inputWithMax.setSelectionRange(4, 4);
 document.execCommand("delete");
 debug("input tooLong: " + inputWithMax.validationMessage);
+// The following test might show English text + Arabic digits. It's expected and
+// it never happens in products.
+inputWithMax.lang = "ar-eg";
+debug("input tooLong: " + inputWithMax.validationMessage);
+
+var textarea = document.createElement("textarea");
+document.body.appendChild(textarea);
+textarea.focus();
+document.execCommand("inserttext", false, "a\nbc");
+textarea.maxLength = 3;
+debug("textarea tooLong: " + textarea.validationMessage);
 
 // A button can't be valited and, thus, has a blank validationMessage
 var but = document.createElement("button");
