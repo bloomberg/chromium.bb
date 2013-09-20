@@ -411,7 +411,14 @@ TEST_F(SyncFileSystemServiceTest, SimpleSyncFlowWithFileBusy) {
   verify_file_error_run_loop.Run();
 }
 
-TEST_F(SyncFileSystemServiceTest, GetFileSyncStatus) {
+#if defined(THREAD_SANITIZER)
+// SyncFileSystemServiceTest.GetFileSyncStatus fails under ThreadSanitizer,
+// see http://crbug.com/294904.
+#define MAYBE_GetFileSyncStatus DISABLED_GetFileSyncStatus
+#else
+#define MAYBE_GetFileSyncStatus GetFileSyncStatus
+#endif
+TEST_F(SyncFileSystemServiceTest, MAYBE_GetFileSyncStatus) {
   InitializeApp();
 
   const FileSystemURL kFile(file_system_->URL("foo"));
