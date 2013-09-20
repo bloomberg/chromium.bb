@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/io_buffer.h"
@@ -116,29 +117,34 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_ChunkedBody) {
 }
 
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_FileBody) {
-  ScopedVector<UploadElementReader> element_readers;
+  {
+    ScopedVector<UploadElementReader> element_readers;
 
-  // Create an empty temporary file.
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath temp_file_path;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir.path(),
-                                                  &temp_file_path));
+    // Create an empty temporary file.
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    base::FilePath temp_file_path;
+    ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir.path(),
+                                                    &temp_file_path));
 
-  element_readers.push_back(
-      new UploadFileElementReader(base::MessageLoopProxy::current().get(),
-                                  temp_file_path,
-                                  0,
-                                  0,
-                                  base::Time()));
+    element_readers.push_back(
+        new UploadFileElementReader(base::MessageLoopProxy::current().get(),
+                                    temp_file_path,
+                                    0,
+                                    0,
+                                    base::Time()));
 
-  scoped_ptr<UploadDataStream> body(new UploadDataStream(&element_readers, 0));
-  TestCompletionCallback callback;
-  ASSERT_EQ(ERR_IO_PENDING, body->Init(callback.callback()));
-  ASSERT_EQ(OK, callback.WaitForResult());
-  // Shouldn't be merged if upload data carries a file, as it's not in-memory.
-  ASSERT_FALSE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
-      "some header", body.get()));
+    scoped_ptr<UploadDataStream> body(
+        new UploadDataStream(&element_readers, 0));
+    TestCompletionCallback callback;
+    ASSERT_EQ(ERR_IO_PENDING, body->Init(callback.callback()));
+    ASSERT_EQ(OK, callback.WaitForResult());
+    // Shouldn't be merged if upload data carries a file, as it's not in-memory.
+    ASSERT_FALSE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
+        "some header", body.get()));
+  }
+  // UploadFileElementReaders may post clean-up tasks on destruction.
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_SmallBodyInMemory) {
