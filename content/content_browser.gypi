@@ -1519,6 +1519,7 @@
     ['enable_plugins==1', {
       'dependencies': [
         '../ppapi/ppapi_internal.gyp:ppapi_ipc',
+        '../ppapi/ppapi_internal.gyp:ppapi_shared',
       ],
     }, {  # enable_plugins==0
       'sources!': [

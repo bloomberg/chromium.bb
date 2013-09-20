@@ -59,6 +59,12 @@ class PPAPI_PROXY_EXPORT TCPSocketPrivateResource
                             const PP_Var& value,
                             scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
+  // TCPSocketResourceBase implementation.
+  virtual PP_Resource CreateAcceptedSocket(
+      int pending_host_id,
+      const PP_NetAddress_Private& local_addr,
+      const PP_NetAddress_Private& remote_addr) OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TCPSocketPrivateResource);
 };

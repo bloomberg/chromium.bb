@@ -34,6 +34,11 @@ bool ResolveHost(PP_Instance instance,
                  const std::string& host,
                  uint16_t port,
                  pp::NetAddress* addr);
+bool ReplacePort(PP_Instance instance,
+                 const pp::NetAddress& input_addr,
+                 uint16_t port,
+                 pp::NetAddress* output_addr);
+uint16_t GetPort(const pp::NetAddress& addr);
 
 // NestedEvent allows you to run a nested MessageLoop and wait for a particular
 // event to complete. For example, you can use it to wait for a callback on a

@@ -8,11 +8,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/socket/tcp_socket.h"
+#include "ppapi/c/pp_resource.h"
 #include "ppapi/host/host_factory.h"
-
-namespace net {
-class StreamSocket;
-}
+#include "ppapi/shared_impl/ppb_tcp_socket_shared.h"
 
 namespace ppapi {
 class PpapiPermissions;
@@ -35,15 +34,19 @@ class ContentBrowserPepperHostFactory : public ppapi::host::HostFactory {
       PP_Instance instance,
       const IPC::Message& message) OVERRIDE;
 
-  // Creates ResourceHost for already accepted TCP |socket|.  Takes
-  // ownership of the |socket|. In the case of failure returns wrapped
-  // NULL.
+  // Creates ResourceHost for already accepted TCP |socket|. In the case of
+  // failure returns wrapped NULL.
   scoped_ptr<ppapi::host::ResourceHost> CreateAcceptedTCPSocket(
       PP_Instance instance,
-      bool private_api,
-      net::StreamSocket* socket);
+      ppapi::TCPSocketVersion version,
+      scoped_ptr<net::TCPSocket> socket);
 
  private:
+  scoped_ptr<ppapi::host::ResourceHost> CreateNewTCPSocket(
+      PP_Instance instance,
+      PP_Resource resource,
+      ppapi::TCPSocketVersion version);
+
   const ppapi::PpapiPermissions& GetPermissions() const;
 
   // Non-owning pointer.

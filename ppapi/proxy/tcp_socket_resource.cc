@@ -4,7 +4,9 @@
 
 #include "ppapi/proxy/tcp_socket_resource.h"
 
+#include "base/logging.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/ppb_tcp_socket_shared.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_net_address_api.h"
 
@@ -19,17 +21,38 @@ typedef thunk::EnterResourceNoLock<thunk::PPB_NetAddress_API>
 }  // namespace
 
 TCPSocketResource::TCPSocketResource(Connection connection,
-                                     PP_Instance instance)
-    : TCPSocketResourceBase(connection, instance, false) {
-  SendCreate(BROWSER, PpapiHostMsg_TCPSocket_Create());
+                                     PP_Instance instance,
+                                     TCPSocketVersion version)
+    : TCPSocketResourceBase(connection, instance, version) {
+  DCHECK_NE(version, TCP_SOCKET_VERSION_PRIVATE);
+  SendCreate(BROWSER, PpapiHostMsg_TCPSocket_Create(version));
+}
+
+TCPSocketResource::TCPSocketResource(Connection connection,
+                                     PP_Instance instance,
+                                     int pending_host_id,
+                                     const PP_NetAddress_Private& local_addr,
+                                     const PP_NetAddress_Private& remote_addr)
+    : TCPSocketResourceBase(connection, instance,
+                            TCP_SOCKET_VERSION_1_1_OR_ABOVE, local_addr,
+                            remote_addr) {
+  AttachToPendingHost(BROWSER, pending_host_id);
 }
 
 TCPSocketResource::~TCPSocketResource() {
-  DisconnectImpl();
 }
 
 thunk::PPB_TCPSocket_API* TCPSocketResource::AsPPB_TCPSocket_API() {
   return this;
+}
+
+int32_t TCPSocketResource::Bind(PP_Resource addr,
+                                scoped_refptr<TrackedCallback> callback) {
+  EnterNetAddressNoLock enter(addr, true);
+  if (enter.failed())
+    return PP_ERROR_BADARGUMENT;
+
+  return BindImpl(&enter.object()->GetNetAddressPrivate(), callback);
 }
 
 int32_t TCPSocketResource::Connect(PP_Resource addr,
@@ -78,14 +101,32 @@ int32_t TCPSocketResource::Write(const char* buffer,
   return WriteImpl(buffer, bytes_to_write, callback);
 }
 
+int32_t TCPSocketResource::Listen(int32_t backlog,
+                                  scoped_refptr<TrackedCallback> callback) {
+  return ListenImpl(backlog, callback);
+}
+
+int32_t TCPSocketResource::Accept(PP_Resource* accepted_tcp_socket,
+                                  scoped_refptr<TrackedCallback> callback) {
+  return AcceptImpl(accepted_tcp_socket, callback);
+}
+
 void TCPSocketResource::Close() {
-  DisconnectImpl();
+  CloseImpl();
 }
 
 int32_t TCPSocketResource::SetOption(PP_TCPSocket_Option name,
                                      const PP_Var& value,
                                      scoped_refptr<TrackedCallback> callback) {
   return SetOptionImpl(name, value, callback);
+}
+
+PP_Resource TCPSocketResource::CreateAcceptedSocket(
+    int pending_host_id,
+    const PP_NetAddress_Private& local_addr,
+    const PP_NetAddress_Private& remote_addr) {
+  return (new TCPSocketResource(connection(), pp_instance(), pending_host_id,
+                                local_addr, remote_addr))->GetReference();
 }
 
 }  // namespace proxy

@@ -179,6 +179,53 @@ bool ResolveHost(PP_Instance instance,
   }
 }
 
+bool ReplacePort(PP_Instance instance,
+                 const pp::NetAddress& input_addr,
+                 uint16_t port,
+                 pp::NetAddress* output_addr) {
+  switch (input_addr.GetFamily()) {
+    case PP_NETADDRESS_FAMILY_IPV4: {
+      PP_NetAddress_IPv4 ipv4_addr;
+      if (!input_addr.DescribeAsIPv4Address(&ipv4_addr))
+        return false;
+      ipv4_addr.port = ConvertToNetEndian16(port);
+      *output_addr = pp::NetAddress(pp::InstanceHandle(instance), ipv4_addr);
+      return true;
+    }
+    case PP_NETADDRESS_FAMILY_IPV6: {
+      PP_NetAddress_IPv6 ipv6_addr;
+      if (!input_addr.DescribeAsIPv6Address(&ipv6_addr))
+        return false;
+      ipv6_addr.port = ConvertToNetEndian16(port);
+      *output_addr = pp::NetAddress(pp::InstanceHandle(instance), ipv6_addr);
+      return true;
+    }
+    default: {
+      return false;
+    }
+  }
+}
+
+uint16_t GetPort(const pp::NetAddress& addr) {
+  switch (addr.GetFamily()) {
+    case PP_NETADDRESS_FAMILY_IPV4: {
+      PP_NetAddress_IPv4 ipv4_addr;
+      if (!addr.DescribeAsIPv4Address(&ipv4_addr))
+        return 0;
+      return ConvertFromNetEndian16(ipv4_addr.port);
+    }
+    case PP_NETADDRESS_FAMILY_IPV6: {
+      PP_NetAddress_IPv6 ipv6_addr;
+      if (!addr.DescribeAsIPv6Address(&ipv6_addr))
+        return 0;
+      return ConvertFromNetEndian16(ipv6_addr.port);
+    }
+    default: {
+      return 0;
+    }
+  }
+}
+
 void NestedEvent::Wait() {
   PP_DCHECK(pp::Module::Get()->core()->IsMainThread());
   // Don't allow nesting more than once; it doesn't work with the code as-is,

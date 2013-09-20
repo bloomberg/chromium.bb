@@ -15,10 +15,13 @@ namespace pp {
 class CompletionCallback;
 class InstanceHandle;
 
+template <typename T> class CompletionCallbackWithOutput;
+
 /// The <code>TCPSocket</code> class provides TCP socket operations.
 ///
 /// Permissions: Apps permission <code>socket</code> with subrule
-/// <code>tcp-connect</code> is required for <code>Connect()</code>.
+/// <code>tcp-connect</code> is required for <code>Connect()</code>; subrule
+/// <code>tcp-listen</code> is required for <code>Listen()</code>.
 /// For more details about network communication permissions, please see:
 /// http://developer.chrome.com/apps/app_network.html
 class TCPSocket : public Resource {
@@ -60,7 +63,20 @@ class TCPSocket : public Resource {
   /// @return true if the interface is available, false otherwise.
   static bool IsAvailable();
 
-  /// Connects the socket to the given address.
+  /// Binds the socket to the given address. The socket must not be bound.
+  ///
+  /// @param[in] addr A <code>NetAddress</code> object.
+  /// @param[in] callback A <code>CompletionCallback</code> to be called upon
+  /// completion.
+  ///
+  /// @return An int32_t containing an error code from <code>pp_errors.h</code>,
+  /// including (but not limited to):
+  /// - <code>PP_ERROR_ADDRESS_IN_USE</code>: the address is already in use.
+  /// - <code>PP_ERROR_ADDRESS_INVALID</code>: the address is invalid.
+  int32_t Bind(const NetAddress& addr, const CompletionCallback& callback);
+
+  /// Connects the socket to the given address. The socket must not be
+  /// listening. Binding the socket beforehand is optional.
   ///
   /// @param[in] addr A <code>NetAddress</code> object.
   /// @param[in] callback A <code>CompletionCallback</code> to be called upon
@@ -77,10 +93,14 @@ class TCPSocket : public Resource {
   /// - <code>PP_ERROR_CONNECTION_FAILED</code>: the connection attempt failed.
   /// - <code>PP_ERROR_CONNECTION_TIMEDOUT</code>: the connection attempt timed
   ///   out.
-  int32_t Connect(const NetAddress& addr,
-                  const CompletionCallback& callback);
+  ///
+  /// If the socket is listening/connected or has a pending listen/connect
+  /// request, <code>Connect()</code> will fail without starting a connection
+  /// attempt. Otherwise, any failure during the connection attempt will cause
+  /// the socket to be closed.
+  int32_t Connect(const NetAddress& addr, const CompletionCallback& callback);
 
-  /// Gets the local address of the socket, if it is connected.
+  /// Gets the local address of the socket, if it is bound.
   ///
   /// @return A <code>NetAddress</code> object. The object will be null
   /// (i.e., is_null() returns true) on failure.
@@ -135,11 +155,38 @@ class TCPSocket : public Resource {
                 int32_t bytes_to_write,
                 const CompletionCallback& callback);
 
-  /// Cancels all pending reads and writes and disconnects the socket. Any
-  /// pending callbacks will still run, reporting <code>PP_ERROR_ABORTED</code>
-  /// if pending IO was interrupted. After a call to this method, no output
-  /// buffer pointers passed into previous <code>Read()</code> calls will be
-  /// accessed. It is not valid to call <code>Connect()</code> again.
+  /// Starts listening. The socket must be bound and not connected.
+  ///
+  /// @param[in] backlog A hint to determine the maximum length to which the
+  /// queue of pending connections may grow.
+  /// @param[in] callback A <code>CompletionCallback</code> to be called upon
+  /// completion.
+  ///
+  /// @return An int32_t containing an error code from <code>pp_errors.h</code>,
+  /// including (but not limited to):
+  /// - <code>PP_ERROR_NOACCESS</code>: the caller doesn't have required
+  ///   permissions.
+  /// - <code>PP_ERROR_ADDRESS_IN_USE</code>: Another socket is already
+  ///   listening on the same port.
+  int32_t Listen(int32_t backlog,
+                 const CompletionCallback& callback);
+
+  /// Accepts a connection. The socket must be listening.
+  ///
+  /// @param[in] callback A <code>CompletionCallbackWithOutput</code> to be
+  /// called upon completion.
+  ///
+  /// @return An int32_t containing an error code from <code>pp_errors.h</code>,
+  /// including (but not limited to):
+  /// - <code>PP_ERROR_CONNECTION_ABORTED</code>: A connection has been aborted.
+  int32_t Accept(const CompletionCallbackWithOutput<TCPSocket>& callback);
+
+  /// Cancels all pending operations and closes the socket. Any pending
+  /// callbacks will still run, reporting <code>PP_ERROR_ABORTED</code> if
+  /// pending IO was interrupted. After a call to this method, no output buffer
+  /// pointers passed into previous <code>Read()</code> or <code>Accept()</code>
+  /// calls will be accessed. It is not valid to call <code>Connect()</code> or
+  /// <code>Listen()</code> again.
   ///
   /// The socket is implicitly closed if it is destroyed, so you are not
   /// required to call this method.
@@ -155,7 +202,6 @@ class TCPSocket : public Resource {
   /// completion.
   ///
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
-  ////
   int32_t SetOption(PP_TCPSocket_Option name,
                     const Var& value,
                     const CompletionCallback& callback);

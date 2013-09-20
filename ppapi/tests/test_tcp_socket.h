@@ -27,9 +27,16 @@ class TestTCPSocket: public TestCase {
   std::string TestConnect();
   std::string TestReadWrite();
   std::string TestSetOption();
+  std::string TestListen();
+  std::string TestBacklog();
 
-  int32_t ReadFirstLineFromSocket(pp::TCPSocket* socket, std::string* s);
-  int32_t WriteStringToSocket(pp::TCPSocket* socket, const std::string& s);
+  std::string ReadFirstLineFromSocket(pp::TCPSocket* socket, std::string* s);
+  std::string ReadFromSocket(pp::TCPSocket* socket,
+                             char* buffer,
+                             size_t num_bytes);
+  std::string WriteToSocket(pp::TCPSocket* socket, const std::string& s);
+  std::string GetAddressToBind(pp::NetAddress* address);
+  std::string StartListen(pp::TCPSocket* socket, int32_t backlog);
 
   pp::NetAddress addr_;
 };

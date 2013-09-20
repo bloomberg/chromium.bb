@@ -15,6 +15,7 @@
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
+#include "ppapi/shared_impl/ppb_tcp_socket_shared.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 
 namespace ppapi {
@@ -27,6 +28,7 @@ namespace proxy {
 
 class PPAPI_PROXY_EXPORT TCPSocketResourceBase : public PluginResource {
  public:
+  // TODO(yzshen): Move these constants to ppb_tcp_socket_shared.
   // The maximum number of bytes that each PpapiHostMsg_PPBTCPSocket_Read
   // message is allowed to request.
   static const int32_t kMaxReadSize;
@@ -46,33 +48,28 @@ class PPAPI_PROXY_EXPORT TCPSocketResourceBase : public PluginResource {
   static const int32_t kMaxReceiveBufferSize;
 
  protected:
-  enum ConnectionState {
-    // Before a connection is successfully established (including a connect
-    // request is pending or a previous connect request failed).
-    BEFORE_CONNECT,
-    // A connection has been successfully established (including a request of
-    // initiating SSL is pending).
-    CONNECTED,
-    // An SSL connection has been successfully established.
-    SSL_CONNECTED,
-    // The connection has been ended.
-    DISCONNECTED
-  };
-
   // C-tor used for new sockets.
   TCPSocketResourceBase(Connection connection,
                         PP_Instance instance,
-                        bool private_api);
+                        TCPSocketVersion version);
 
   // C-tor used for already accepted sockets.
   TCPSocketResourceBase(Connection connection,
                         PP_Instance instance,
-                        bool private_api,
+                        TCPSocketVersion version,
                         const PP_NetAddress_Private& local_addr,
                         const PP_NetAddress_Private& remote_addr);
 
   virtual ~TCPSocketResourceBase();
 
+  // Implemented by subclasses to create resources for accepted sockets.
+  virtual PP_Resource CreateAcceptedSocket(
+      int pending_host_id,
+      const PP_NetAddress_Private& local_addr,
+      const PP_NetAddress_Private& remote_addr) = 0;
+
+  int32_t BindImpl(const PP_NetAddress_Private* addr,
+                   scoped_refptr<TrackedCallback> callback);
   int32_t ConnectImpl(const char* host,
                       uint16_t port,
                       scoped_refptr<TrackedCallback> callback);
@@ -92,15 +89,19 @@ class PPAPI_PROXY_EXPORT TCPSocketResourceBase : public PluginResource {
   int32_t WriteImpl(const char* buffer,
                     int32_t bytes_to_write,
                     scoped_refptr<TrackedCallback> callback);
-  void DisconnectImpl();
+  int32_t ListenImpl(int32_t backlog, scoped_refptr<TrackedCallback> callback);
+  int32_t AcceptImpl(PP_Resource* accepted_tcp_socket,
+                     scoped_refptr<TrackedCallback> callback);
+  void CloseImpl();
   int32_t SetOptionImpl(PP_TCPSocket_Option name,
                         const PP_Var& value,
                         scoped_refptr<TrackedCallback> callback);
 
-  bool IsConnected() const;
   void PostAbortIfNecessary(scoped_refptr<TrackedCallback>* callback);
 
   // IPC message handlers.
+  void OnPluginMsgBindReply(const ResourceMessageReplyParams& params,
+                            const PP_NetAddress_Private& local_addr);
   void OnPluginMsgConnectReply(const ResourceMessageReplyParams& params,
                                const PP_NetAddress_Private& local_addr,
                                const PP_NetAddress_Private& remote_addr);
@@ -110,15 +111,23 @@ class PPAPI_PROXY_EXPORT TCPSocketResourceBase : public PluginResource {
   void OnPluginMsgReadReply(const ResourceMessageReplyParams& params,
                             const std::string& data);
   void OnPluginMsgWriteReply(const ResourceMessageReplyParams& params);
+  void OnPluginMsgListenReply(const ResourceMessageReplyParams& params);
+  void OnPluginMsgAcceptReply(const ResourceMessageReplyParams& params,
+                              int pending_host_id,
+                              const PP_NetAddress_Private& local_addr,
+                              const PP_NetAddress_Private& remote_addr);
   void OnPluginMsgSetOptionReply(const ResourceMessageReplyParams& params);
 
+  scoped_refptr<TrackedCallback> bind_callback_;
   scoped_refptr<TrackedCallback> connect_callback_;
   scoped_refptr<TrackedCallback> ssl_handshake_callback_;
   scoped_refptr<TrackedCallback> read_callback_;
   scoped_refptr<TrackedCallback> write_callback_;
+  scoped_refptr<TrackedCallback> listen_callback_;
+  scoped_refptr<TrackedCallback> accept_callback_;
   std::queue<scoped_refptr<TrackedCallback> > set_option_callbacks_;
 
-  ConnectionState connection_state_;
+  TCPSocketState state_;
   char* read_buffer_;
   int32_t bytes_to_read_;
 
@@ -130,10 +139,12 @@ class PPAPI_PROXY_EXPORT TCPSocketResourceBase : public PluginResource {
   std::vector<std::vector<char> > trusted_certificates_;
   std::vector<std::vector<char> > untrusted_certificates_;
 
+  PP_Resource* accepted_tcp_socket_;
+
  private:
   void RunCallback(scoped_refptr<TrackedCallback> callback, int32_t pp_result);
 
-  bool private_api_;
+  TCPSocketVersion version_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPSocketResourceBase);
 };

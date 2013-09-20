@@ -5,13 +5,14 @@
 #include "ppapi/proxy/tcp_socket_private_resource.h"
 
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/ppb_tcp_socket_shared.h"
 
 namespace ppapi {
 namespace proxy {
 
 TCPSocketPrivateResource::TCPSocketPrivateResource(Connection connection,
                                                    PP_Instance instance)
-    : TCPSocketResourceBase(connection, instance, true) {
+    : TCPSocketResourceBase(connection, instance, TCP_SOCKET_VERSION_PRIVATE) {
   SendCreate(BROWSER, PpapiHostMsg_TCPSocket_CreatePrivate());
 }
 
@@ -21,14 +22,12 @@ TCPSocketPrivateResource::TCPSocketPrivateResource(
     int pending_resource_id,
     const PP_NetAddress_Private& local_addr,
     const PP_NetAddress_Private& remote_addr)
-    : TCPSocketResourceBase(connection, instance, true,
-                            local_addr,
-                            remote_addr) {
+    : TCPSocketResourceBase(connection, instance, TCP_SOCKET_VERSION_PRIVATE,
+                            local_addr, remote_addr) {
   AttachToPendingHost(BROWSER, pending_resource_id);
 }
 
 TCPSocketPrivateResource::~TCPSocketPrivateResource() {
-  DisconnectImpl();
 }
 
 thunk::PPB_TCPSocket_Private_API*
@@ -91,7 +90,7 @@ int32_t TCPSocketPrivateResource::Write(
 }
 
 void TCPSocketPrivateResource::Disconnect() {
-  DisconnectImpl();
+  CloseImpl();
 }
 
 int32_t TCPSocketPrivateResource::SetOption(
@@ -107,6 +106,14 @@ int32_t TCPSocketPrivateResource::SetOption(
       NOTREACHED();
       return PP_ERROR_BADARGUMENT;
   }
+}
+
+PP_Resource TCPSocketPrivateResource::CreateAcceptedSocket(
+    int /* pending_host_id */,
+    const PP_NetAddress_Private& /* local_addr */,
+    const PP_NetAddress_Private& /* remote_addr */) {
+  NOTREACHED();
+  return 0;
 }
 
 }  // namespace proxy

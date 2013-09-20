@@ -323,9 +323,17 @@ PP_Resource ResourceCreationProxy::CreateTCPServerSocketPrivate(
       GetReference();
 }
 
+PP_Resource ResourceCreationProxy::CreateTCPSocket1_0(
+    PP_Instance instance) {
+  return (new TCPSocketResource(GetConnection(), instance,
+                                TCP_SOCKET_VERSION_1_0))->GetReference();
+}
+
 PP_Resource ResourceCreationProxy::CreateTCPSocket(
     PP_Instance instance) {
-  return (new TCPSocketResource(GetConnection(), instance))->GetReference();
+  return (new TCPSocketResource(
+      GetConnection(), instance, TCP_SOCKET_VERSION_1_1_OR_ABOVE))->
+          GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateTCPSocketPrivate(

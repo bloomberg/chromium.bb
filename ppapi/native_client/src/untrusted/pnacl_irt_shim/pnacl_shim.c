@@ -158,6 +158,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseLock_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkProxy_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TextInputController_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLLoader_1_0;
@@ -1072,6 +1073,70 @@ static int32_t Pnacl_M29_PPB_TCPSocket_SetOption(PP_Resource tcp_socket, PP_TCPS
 }
 
 /* End wrapper methods for PPB_TCPSocket_1_0 */
+
+/* Begin wrapper methods for PPB_TCPSocket_1_1 */
+
+static PP_Resource Pnacl_M31_PPB_TCPSocket_Create(PP_Instance instance) {
+  const struct PPB_TCPSocket_1_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_1_1.real_iface;
+  return iface->Create(instance);
+}
+
+static PP_Bool Pnacl_M31_PPB_TCPSocket_IsTCPSocket(PP_Resource resource) {
+  const struct PPB_TCPSocket_1_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_1_1.real_iface;
+  return iface->IsTCPSocket(resource);
+}
+
+static int32_t Pnacl_M31_PPB_TCPSocket_Bind(PP_Resource tcp_socket, PP_Resource addr, struct PP_CompletionCallback* callback) {
+  const struct PPB_TCPSocket_1_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_1_1.real_iface;
+  return iface->Bind(tcp_socket, addr, *callback);
+}
+
+static int32_t Pnacl_M31_PPB_TCPSocket_Connect(PP_Resource tcp_socket, PP_Resource addr, struct PP_CompletionCallback* callback) {
+  const struct PPB_TCPSocket_1_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_1_1.real_iface;
+  return iface->Connect(tcp_socket, addr, *callback);
+}
+
+static PP_Resource Pnacl_M31_PPB_TCPSocket_GetLocalAddress(PP_Resource tcp_socket) {
+  const struct PPB_TCPSocket_1_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_1_1.real_iface;
+  return iface->GetLocalAddress(tcp_socket);
+}
+
+static PP_Resource Pnacl_M31_PPB_TCPSocket_GetRemoteAddress(PP_Resource tcp_socket) {
+  const struct PPB_TCPSocket_1_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_1_1.real_iface;
+  return iface->GetRemoteAddress(tcp_socket);
+}
+
+static int32_t Pnacl_M31_PPB_TCPSocket_Read(PP_Resource tcp_socket, char* buffer, int32_t bytes_to_read, struct PP_CompletionCallback* callback) {
+  const struct PPB_TCPSocket_1_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_1_1.real_iface;
+  return iface->Read(tcp_socket, buffer, bytes_to_read, *callback);
+}
+
+static int32_t Pnacl_M31_PPB_TCPSocket_Write(PP_Resource tcp_socket, const char* buffer, int32_t bytes_to_write, struct PP_CompletionCallback* callback) {
+  const struct PPB_TCPSocket_1_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_1_1.real_iface;
+  return iface->Write(tcp_socket, buffer, bytes_to_write, *callback);
+}
+
+static int32_t Pnacl_M31_PPB_TCPSocket_Listen(PP_Resource tcp_socket, int32_t backlog, struct PP_CompletionCallback* callback) {
+  const struct PPB_TCPSocket_1_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_1_1.real_iface;
+  return iface->Listen(tcp_socket, backlog, *callback);
+}
+
+static int32_t Pnacl_M31_PPB_TCPSocket_Accept(PP_Resource tcp_socket, PP_Resource* accepted_tcp_socket, struct PP_CompletionCallback* callback) {
+  const struct PPB_TCPSocket_1_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_1_1.real_iface;
+  return iface->Accept(tcp_socket, accepted_tcp_socket, *callback);
+}
+
+static void Pnacl_M31_PPB_TCPSocket_Close(PP_Resource tcp_socket) {
+  const struct PPB_TCPSocket_1_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_1_1.real_iface;
+  iface->Close(tcp_socket);
+}
+
+static int32_t Pnacl_M31_PPB_TCPSocket_SetOption(PP_Resource tcp_socket, PP_TCPSocket_Option name, struct PP_Var* value, struct PP_CompletionCallback* callback) {
+  const struct PPB_TCPSocket_1_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_1_1.real_iface;
+  return iface->SetOption(tcp_socket, name, *value, *callback);
+}
+
+/* End wrapper methods for PPB_TCPSocket_1_1 */
 
 /* Begin wrapper methods for PPB_TextInputController_1_0 */
 
@@ -4265,6 +4330,21 @@ struct PPB_TCPSocket_1_0 Pnacl_Wrappers_PPB_TCPSocket_1_0 = {
     .SetOption = (int32_t (*)(PP_Resource tcp_socket, PP_TCPSocket_Option name, struct PP_Var value, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_TCPSocket_SetOption
 };
 
+struct PPB_TCPSocket_1_1 Pnacl_Wrappers_PPB_TCPSocket_1_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M31_PPB_TCPSocket_Create,
+    .IsTCPSocket = (PP_Bool (*)(PP_Resource resource))&Pnacl_M31_PPB_TCPSocket_IsTCPSocket,
+    .Bind = (int32_t (*)(PP_Resource tcp_socket, PP_Resource addr, struct PP_CompletionCallback callback))&Pnacl_M31_PPB_TCPSocket_Bind,
+    .Connect = (int32_t (*)(PP_Resource tcp_socket, PP_Resource addr, struct PP_CompletionCallback callback))&Pnacl_M31_PPB_TCPSocket_Connect,
+    .GetLocalAddress = (PP_Resource (*)(PP_Resource tcp_socket))&Pnacl_M31_PPB_TCPSocket_GetLocalAddress,
+    .GetRemoteAddress = (PP_Resource (*)(PP_Resource tcp_socket))&Pnacl_M31_PPB_TCPSocket_GetRemoteAddress,
+    .Read = (int32_t (*)(PP_Resource tcp_socket, char* buffer, int32_t bytes_to_read, struct PP_CompletionCallback callback))&Pnacl_M31_PPB_TCPSocket_Read,
+    .Write = (int32_t (*)(PP_Resource tcp_socket, const char* buffer, int32_t bytes_to_write, struct PP_CompletionCallback callback))&Pnacl_M31_PPB_TCPSocket_Write,
+    .Listen = (int32_t (*)(PP_Resource tcp_socket, int32_t backlog, struct PP_CompletionCallback callback))&Pnacl_M31_PPB_TCPSocket_Listen,
+    .Accept = (int32_t (*)(PP_Resource tcp_socket, PP_Resource* accepted_tcp_socket, struct PP_CompletionCallback callback))&Pnacl_M31_PPB_TCPSocket_Accept,
+    .Close = (void (*)(PP_Resource tcp_socket))&Pnacl_M31_PPB_TCPSocket_Close,
+    .SetOption = (int32_t (*)(PP_Resource tcp_socket, PP_TCPSocket_Option name, struct PP_Var value, struct PP_CompletionCallback callback))&Pnacl_M31_PPB_TCPSocket_SetOption
+};
+
 struct PPB_TextInputController_1_0 Pnacl_Wrappers_PPB_TextInputController_1_0 = {
     .SetTextInputType = (void (*)(PP_Instance instance, PP_TextInput_Type type))&Pnacl_M30_PPB_TextInputController_SetTextInputType,
     .UpdateCaretPosition = (void (*)(PP_Instance instance, const struct PP_Rect* caret))&Pnacl_M30_PPB_TextInputController_UpdateCaretPosition,
@@ -5239,6 +5319,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_1_0 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_1_1 = {
+  .iface_macro = PPB_TCPSOCKET_INTERFACE_1_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_TCPSocket_1_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TextInputController_1_0 = {
   .iface_macro = PPB_TEXTINPUTCONTROLLER_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_TextInputController_1_0,
@@ -5719,6 +5805,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_NetAddress_1_0,
   &Pnacl_WrapperInfo_PPB_NetworkProxy_1_0,
   &Pnacl_WrapperInfo_PPB_TCPSocket_1_0,
+  &Pnacl_WrapperInfo_PPB_TCPSocket_1_1,
   &Pnacl_WrapperInfo_PPB_TextInputController_1_0,
   &Pnacl_WrapperInfo_PPB_UDPSocket_1_0,
   &Pnacl_WrapperInfo_PPB_URLLoader_1_0,

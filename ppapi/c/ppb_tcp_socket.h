@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_tcp_socket.idl modified Sat Jun 22 11:17:34 2013. */
+/* From ppb_tcp_socket.idl modified Thu Sep 19 14:01:43 2013. */
 
 #ifndef PPAPI_C_PPB_TCP_SOCKET_H_
 #define PPAPI_C_PPB_TCP_SOCKET_H_
@@ -17,7 +17,8 @@
 #include "ppapi/c/pp_var.h"
 
 #define PPB_TCPSOCKET_INTERFACE_1_0 "PPB_TCPSocket;1.0"
-#define PPB_TCPSOCKET_INTERFACE PPB_TCPSOCKET_INTERFACE_1_0
+#define PPB_TCPSOCKET_INTERFACE_1_1 "PPB_TCPSocket;1.1"
+#define PPB_TCPSOCKET_INTERFACE PPB_TCPSOCKET_INTERFACE_1_1
 
 /**
  * @file
@@ -58,7 +59,14 @@ typedef enum {
    * size. Even if <code>SetOption()</code> succeeds, the browser doesn't
    * guarantee it will conform to the size.
    */
-  PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE = 2
+  PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE = 2,
+  /**
+   * Allows the socket to share the local address to which it will be bound.
+   * Value's type should be <code>PP_VARTYPE_BOOL</code>.
+   * This option can only be set before calling <code>Bind()</code>.
+   * Supported since version 1.1.
+   */
+  PP_TCPSOCKET_OPTION_ADDRESS_REUSE = 3
 } PP_TCPSocket_Option;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TCPSocket_Option, 4);
 /**
@@ -73,11 +81,12 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TCPSocket_Option, 4);
  * The <code>PPB_TCPSocket</code> interface provides TCP socket operations.
  *
  * Permissions: Apps permission <code>socket</code> with subrule
- * <code>tcp-connect</code> is required for <code>Connect()</code>.
+ * <code>tcp-connect</code> is required for <code>Connect()</code>; subrule
+ * <code>tcp-listen</code> is required for <code>Listen()</code>.
  * For more details about network communication permissions, please see:
  * http://developer.chrome.com/apps/app_network.html
  */
-struct PPB_TCPSocket_1_0 {
+struct PPB_TCPSocket_1_1 {
   /**
    * Creates a TCP socket resource.
    *
@@ -98,7 +107,25 @@ struct PPB_TCPSocket_1_0 {
    */
   PP_Bool (*IsTCPSocket)(PP_Resource resource);
   /**
-   * Connects the socket to the given address.
+   * Binds the socket to the given address. The socket must not be bound.
+   *
+   * @param[in] tcp_socket A <code>PP_Resource</code> corresponding to a TCP
+   * socket.
+   * @param[in] addr A <code>PPB_NetAddress</code> resource.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion.
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>,
+   * including (but not limited to):
+   * - <code>PP_ERROR_ADDRESS_IN_USE</code>: the address is already in use.
+   * - <code>PP_ERROR_ADDRESS_INVALID</code>: the address is invalid.
+   */
+  int32_t (*Bind)(PP_Resource tcp_socket,
+                  PP_Resource addr,
+                  struct PP_CompletionCallback callback);
+  /**
+   * Connects the socket to the given address. The socket must not be listening.
+   * Binding the socket beforehand is optional.
    *
    * @param[in] tcp_socket A <code>PP_Resource</code> corresponding to a TCP
    * socket.
@@ -117,12 +144,17 @@ struct PPB_TCPSocket_1_0 {
    * - <code>PP_ERROR_CONNECTION_FAILED</code>: the connection attempt failed.
    * - <code>PP_ERROR_CONNECTION_TIMEDOUT</code>: the connection attempt timed
    *   out.
+   *
+   * If the socket is listening/connected or has a pending listen/connect
+   * request, <code>Connect()</code> will fail without starting a connection
+   * attempt. Otherwise, any failure during the connection attempt will cause
+   * the socket to be closed.
    */
   int32_t (*Connect)(PP_Resource tcp_socket,
                      PP_Resource addr,
                      struct PP_CompletionCallback callback);
   /**
-   * Gets the local address of the socket, if it is connected.
+   * Gets the local address of the socket, if it is bound.
    *
    * @param[in] tcp_socket A <code>PP_Resource</code> corresponding to a TCP
    * socket.
@@ -178,11 +210,48 @@ struct PPB_TCPSocket_1_0 {
                    int32_t bytes_to_write,
                    struct PP_CompletionCallback callback);
   /**
-   * Cancels all pending reads and writes and disconnects the socket. Any
-   * pending callbacks will still run, reporting <code>PP_ERROR_ABORTED</code>
-   * if pending IO was interrupted. After a call to this method, no output
-   * buffer pointers passed into previous <code>Read()</code> calls will be
-   * accessed. It is not valid to call <code>Connect()</code> again.
+   * Starts listening. The socket must be bound and not connected.
+   *
+   * @param[in] tcp_socket A <code>PP_Resource</code> corresponding to a TCP
+   * socket.
+   * @param[in] backlog A hint to determine the maximum length to which the
+   * queue of pending connections may grow.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion.
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>,
+   * including (but not limited to):
+   * - <code>PP_ERROR_NOACCESS</code>: the caller doesn't have required
+   *   permissions.
+   * - <code>PP_ERROR_ADDRESS_IN_USE</code>: Another socket is already listening
+   *   on the same port.
+   */
+  int32_t (*Listen)(PP_Resource tcp_socket,
+                    int32_t backlog,
+                    struct PP_CompletionCallback callback);
+  /**
+   * Accepts a connection. The socket must be listening.
+   *
+   * @param[in] tcp_socket A <code>PP_Resource</code> corresponding to a TCP
+   * socket.
+   * @param[out] accepted_tcp_socket Stores the accepted TCP socket on success.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion.
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>,
+   * including (but not limited to):
+   * - <code>PP_ERROR_CONNECTION_ABORTED</code>: A connection has been aborted.
+   */
+  int32_t (*Accept)(PP_Resource tcp_socket,
+                    PP_Resource* accepted_tcp_socket,
+                    struct PP_CompletionCallback callback);
+  /**
+   * Cancels all pending operations and closes the socket. Any pending callbacks
+   * will still run, reporting <code>PP_ERROR_ABORTED</code> if pending IO was
+   * interrupted. After a call to this method, no output buffer pointers passed
+   * into previous <code>Read()</code> or <code>Accept()</code> calls will be
+   * accessed. It is not valid to call <code>Connect()</code> or
+   * <code>Listen()</code> again.
    *
    * The socket is implicitly closed if it is destroyed, so you are not required
    * to call this method.
@@ -211,7 +280,30 @@ struct PPB_TCPSocket_1_0 {
                        struct PP_CompletionCallback callback);
 };
 
-typedef struct PPB_TCPSocket_1_0 PPB_TCPSocket;
+typedef struct PPB_TCPSocket_1_1 PPB_TCPSocket;
+
+struct PPB_TCPSocket_1_0 {
+  PP_Resource (*Create)(PP_Instance instance);
+  PP_Bool (*IsTCPSocket)(PP_Resource resource);
+  int32_t (*Connect)(PP_Resource tcp_socket,
+                     PP_Resource addr,
+                     struct PP_CompletionCallback callback);
+  PP_Resource (*GetLocalAddress)(PP_Resource tcp_socket);
+  PP_Resource (*GetRemoteAddress)(PP_Resource tcp_socket);
+  int32_t (*Read)(PP_Resource tcp_socket,
+                  char* buffer,
+                  int32_t bytes_to_read,
+                  struct PP_CompletionCallback callback);
+  int32_t (*Write)(PP_Resource tcp_socket,
+                   const char* buffer,
+                   int32_t bytes_to_write,
+                   struct PP_CompletionCallback callback);
+  void (*Close)(PP_Resource tcp_socket);
+  int32_t (*SetOption)(PP_Resource tcp_socket,
+                       PP_TCPSocket_Option name,
+                       struct PP_Var value,
+                       struct PP_CompletionCallback callback);
+};
 /**
  * @}
  */

@@ -324,6 +324,8 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocket) {
       LIST_TEST(TCPSocket_Connect)
       LIST_TEST(TCPSocket_ReadWrite)
       LIST_TEST(TCPSocket_SetOption)
+      LIST_TEST(TCPSocket_Listen)
+      LIST_TEST(TCPSocket_Backlog)
   );
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, TCPSocket) {
@@ -331,6 +333,8 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, TCPSocket) {
       LIST_TEST(TCPSocket_Connect)
       LIST_TEST(TCPSocket_ReadWrite)
       LIST_TEST(TCPSocket_SetOption)
+      LIST_TEST(TCPSocket_Listen)
+      LIST_TEST(TCPSocket_Backlog)
   );
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(TCPSocket)) {
@@ -338,6 +342,8 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(TCPSocket)) {
       LIST_TEST(TCPSocket_Connect)
       LIST_TEST(TCPSocket_ReadWrite)
       LIST_TEST(TCPSocket_SetOption)
+      LIST_TEST(TCPSocket_Listen)
+      LIST_TEST(TCPSocket_Backlog)
   );
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, TCPSocket) {
@@ -345,6 +351,8 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, TCPSocket) {
       LIST_TEST(TCPSocket_Connect)
       LIST_TEST(TCPSocket_ReadWrite)
       LIST_TEST(TCPSocket_SetOption)
+      LIST_TEST(TCPSocket_Listen)
+      LIST_TEST(TCPSocket_Backlog)
   );
 }
 

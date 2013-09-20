@@ -245,6 +245,10 @@ PP_Resource ResourceCreationImpl::CreateTCPServerSocketPrivate(
   return 0;  // Not supported in-process.
 }
 
+PP_Resource ResourceCreationImpl::CreateTCPSocket1_0(PP_Instance instance) {
+  return 0;  // Not supported in-process.
+}
+
 PP_Resource ResourceCreationImpl::CreateTCPSocket(PP_Instance instance) {
   return 0;  // Not supported in-process.
 }

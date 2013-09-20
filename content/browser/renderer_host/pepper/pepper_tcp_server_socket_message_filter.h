@@ -10,15 +10,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "net/base/ip_endpoint.h"
+#include "net/socket/tcp_socket.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/host/resource_message_filter.h"
 
 struct PP_NetAddress_Private;
-
-namespace net {
-class ServerSocket;
-class StreamSocket;
-}
 
 namespace ppapi {
 namespace host {
@@ -31,6 +28,8 @@ namespace content {
 class BrowserPpapiHostImpl;
 class ContentBrowserPepperHostFactory;
 
+// TODO(yzshen): Remove this class entirely and let
+// TCPServerSocketPrivateResource inherit TCPSocketResourceBase.
 class CONTENT_EXPORT PepperTCPServerSocketMessageFilter
     : public ppapi::host::ResourceMessageFilter {
  public:
@@ -97,8 +96,9 @@ class CONTENT_EXPORT PepperTCPServerSocketMessageFilter
   PP_Instance instance_;
 
   State state_;
-  scoped_ptr<net::ServerSocket> socket_;
-  scoped_ptr<net::StreamSocket> socket_buffer_;
+  scoped_ptr<net::TCPSocket> socket_;
+  scoped_ptr<net::TCPSocket> accepted_socket_;
+  net::IPEndPoint accepted_address_;
 
   // Following fields are initialized on the IO thread but used only
   // on the UI thread.

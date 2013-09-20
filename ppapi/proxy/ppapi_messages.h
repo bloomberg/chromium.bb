@@ -62,6 +62,7 @@
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
+#include "ppapi/shared_impl/ppb_tcp_socket_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
 #include "ppapi/shared_impl/ppp_flash_browser_operations_shared.h"
 #include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
@@ -74,6 +75,8 @@
 
 #define IPC_MESSAGE_START PpapiMsgStart
 
+IPC_ENUM_TRAITS_MAX_VALUE(ppapi::TCPSocketVersion,
+                          ppapi::TCP_SOCKET_VERSION_1_1_OR_ABOVE)
 IPC_ENUM_TRAITS(PP_AudioSampleRate)
 IPC_ENUM_TRAITS(PP_DeviceType_Dev)
 IPC_ENUM_TRAITS(PP_DecryptorStreamType)
@@ -99,7 +102,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(PP_TalkEvent, PP_TALKEVENT_NUM_EVENTS - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_TalkPermission,
                           PP_TALKPERMISSION_NUM_PERMISSIONS - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_TCPSocket_Option,
-                          PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE)
+                          PP_TCPSOCKET_OPTION_ADDRESS_REUSE)
 IPC_ENUM_TRAITS(PP_TextInput_Type)
 IPC_ENUM_TRAITS(PP_TrueTypeFontFamily_Dev)
 IPC_ENUM_TRAITS(PP_TrueTypeFontStyle_Dev)
@@ -1450,11 +1453,16 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply,
 
 // TCP Socket ------------------------------------------------------------------
 // Creates a PPB_TCPSocket resource.
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_TCPSocket_Create)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_TCPSocket_Create,
+                     ppapi::TCPSocketVersion /* version */)
 
 // Creates a PPB_TCPSocket_Private resource.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_TCPSocket_CreatePrivate)
 
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_TCPSocket_Bind,
+                     PP_NetAddress_Private /* net_addr */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_TCPSocket_BindReply,
+                     PP_NetAddress_Private /* local_addr */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_TCPSocket_Connect,
                      std::string /* host */,
                      uint16_t /* port */)
@@ -1477,7 +1485,15 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_TCPSocket_ReadReply,
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_TCPSocket_Write,
                      std::string /* data */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_TCPSocket_WriteReply)
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_TCPSocket_Disconnect)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_TCPSocket_Listen,
+                     int32_t /* backlog */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_TCPSocket_ListenReply)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_TCPSocket_Accept)
+IPC_MESSAGE_CONTROL3(PpapiPluginMsg_TCPSocket_AcceptReply,
+                     int /* pending_host_id*/,
+                     PP_NetAddress_Private /* local_addr */,
+                     PP_NetAddress_Private /* remote_addr */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_TCPSocket_Close)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_TCPSocket_SetOption,
                      PP_TCPSocket_Option /* name */,
                      ppapi::SocketOptionData /* value */)

@@ -19,6 +19,8 @@ class PPAPI_THUNK_EXPORT PPB_TCPSocket_API {
  public:
   virtual ~PPB_TCPSocket_API() {}
 
+  virtual int32_t Bind(PP_Resource addr,
+                       scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t Connect(PP_Resource addr,
                           scoped_refptr<TrackedCallback> callback) = 0;
   virtual PP_Resource GetLocalAddress() = 0;
@@ -29,6 +31,10 @@ class PPAPI_THUNK_EXPORT PPB_TCPSocket_API {
   virtual int32_t Write(const char* buffer,
                         int32_t bytes_to_write,
                         scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t Listen(int32_t backlog,
+                         scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t Accept(PP_Resource* accepted_tcp_socket,
+                         scoped_refptr<TrackedCallback> callback) = 0;
   virtual void Close() = 0;
   virtual int32_t SetOption(PP_TCPSocket_Option name,
                             const PP_Var& value,

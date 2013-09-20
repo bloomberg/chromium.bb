@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_tcp_socket.idl modified Thu Jun 20 16:36:53 2013.
+// From ppb_tcp_socket.idl modified Sun Sep 15 16:14:21 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -19,6 +19,14 @@ namespace thunk {
 
 namespace {
 
+PP_Resource Create_1_0(PP_Instance instance) {
+  VLOG(4) << "PPB_TCPSocket::Create_1_0()";
+  EnterResourceCreation enter(instance);
+  if (enter.failed())
+    return 0;
+  return enter.functions()->CreateTCPSocket1_0(instance);
+}
+
 PP_Resource Create(PP_Instance instance) {
   VLOG(4) << "PPB_TCPSocket::Create()";
   EnterResourceCreation enter(instance);
@@ -31,6 +39,16 @@ PP_Bool IsTCPSocket(PP_Resource resource) {
   VLOG(4) << "PPB_TCPSocket::IsTCPSocket()";
   EnterResource<PPB_TCPSocket_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
+}
+
+int32_t Bind(PP_Resource tcp_socket,
+             PP_Resource addr,
+             struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_TCPSocket::Bind()";
+  EnterResource<PPB_TCPSocket_API> enter(tcp_socket, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->Bind(addr, enter.callback()));
 }
 
 int32_t Connect(PP_Resource tcp_socket,
@@ -85,6 +103,27 @@ int32_t Write(PP_Resource tcp_socket,
                                                enter.callback()));
 }
 
+int32_t Listen(PP_Resource tcp_socket,
+               int32_t backlog,
+               struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_TCPSocket::Listen()";
+  EnterResource<PPB_TCPSocket_API> enter(tcp_socket, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->Listen(backlog, enter.callback()));
+}
+
+int32_t Accept(PP_Resource tcp_socket,
+               PP_Resource* accepted_tcp_socket,
+               struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_TCPSocket::Accept()";
+  EnterResource<PPB_TCPSocket_API> enter(tcp_socket, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->Accept(accepted_tcp_socket,
+                                                enter.callback()));
+}
+
 void Close(PP_Resource tcp_socket) {
   VLOG(4) << "PPB_TCPSocket::Close()";
   EnterResource<PPB_TCPSocket_API> enter(tcp_socket, true);
@@ -107,7 +146,7 @@ int32_t SetOption(PP_Resource tcp_socket,
 }
 
 const PPB_TCPSocket_1_0 g_ppb_tcpsocket_thunk_1_0 = {
-  &Create,
+  &Create_1_0,
   &IsTCPSocket,
   &Connect,
   &GetLocalAddress,
@@ -118,10 +157,29 @@ const PPB_TCPSocket_1_0 g_ppb_tcpsocket_thunk_1_0 = {
   &SetOption
 };
 
+const PPB_TCPSocket_1_1 g_ppb_tcpsocket_thunk_1_1 = {
+  &Create,
+  &IsTCPSocket,
+  &Bind,
+  &Connect,
+  &GetLocalAddress,
+  &GetRemoteAddress,
+  &Read,
+  &Write,
+  &Listen,
+  &Accept,
+  &Close,
+  &SetOption
+};
+
 }  // namespace
 
 const PPB_TCPSocket_1_0* GetPPB_TCPSocket_1_0_Thunk() {
   return &g_ppb_tcpsocket_thunk_1_0;
+}
+
+const PPB_TCPSocket_1_1* GetPPB_TCPSocket_1_1_Thunk() {
+  return &g_ppb_tcpsocket_thunk_1_1;
 }
 
 }  // namespace thunk

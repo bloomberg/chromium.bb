@@ -15,23 +15,27 @@
 #include "content/browser/renderer_host/pepper/ssl_context_helper.h"
 #include "content/common/content_export.h"
 #include "net/base/address_list.h"
+#include "net/base/ip_endpoint.h"
+#include "net/socket/tcp_socket.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/ppb_tcp_socket.h"
+#include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/host/resource_message_filter.h"
-
-struct PP_NetAddress_Private;
+#include "ppapi/shared_impl/ppb_tcp_socket_shared.h"
 
 namespace net {
+enum AddressFamily;
 class DrainableIOBuffer;
 class IOBuffer;
 class SingleRequestHostResolver;
-class StreamSocket;
+class SSLClientSocket;
 }
 
 namespace ppapi {
 class SocketOptionData;
 
 namespace host {
+class PpapiHost;
 struct ReplyMessageContext;
 }
 }
@@ -39,47 +43,29 @@ struct ReplyMessageContext;
 namespace content {
 
 class BrowserPpapiHostImpl;
+class ContentBrowserPepperHostFactory;
 class ResourceContext;
 
 class CONTENT_EXPORT PepperTCPSocketMessageFilter
     : public ppapi::host::ResourceMessageFilter {
  public:
   PepperTCPSocketMessageFilter(
+      ContentBrowserPepperHostFactory* factory,
       BrowserPpapiHostImpl* host,
       PP_Instance instance,
-      bool private_api);
+      ppapi::TCPSocketVersion version);
 
-  // Used for creating already connected sockets.  Takes ownership of
-  // |socket|.
+  // Used for creating already connected sockets.
   PepperTCPSocketMessageFilter(
       BrowserPpapiHostImpl* host,
       PP_Instance instance,
-      bool private_api,
-      net::StreamSocket* socket);
+      ppapi::TCPSocketVersion version,
+      scoped_ptr<net::TCPSocket> socket);
 
   static size_t GetNumInstances();
 
- protected:
-  virtual ~PepperTCPSocketMessageFilter();
-
  private:
-  enum State {
-    // Before a connection is successfully established (including a previous
-    // connect request failed).
-    STATE_BEFORE_CONNECT,
-    // There is a connect request that is pending.
-    STATE_CONNECT_IN_PROGRESS,
-    // A connection has been successfully established.
-    STATE_CONNECTED,
-    // There is an SSL handshake request that is pending.
-    STATE_SSL_HANDSHAKE_IN_PROGRESS,
-    // An SSL connection has been successfully established.
-    STATE_SSL_CONNECTED,
-    // An SSL handshake has failed.
-    STATE_SSL_HANDSHAKE_FAILED,
-    // Socket is closed.
-    STATE_CLOSED
-  };
+  virtual ~PepperTCPSocketMessageFilter();
 
   // ppapi::host::ResourceMessageFilter overrides.
   virtual scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
@@ -88,6 +74,8 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
+  int32_t OnMsgBind(const ppapi::host::HostMessageContext* context,
+                    const PP_NetAddress_Private& net_addr);
   int32_t OnMsgConnect(const ppapi::host::HostMessageContext* context,
                        const std::string& host,
                        uint16_t port);
@@ -104,11 +92,16 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
                     int32_t bytes_to_read);
   int32_t OnMsgWrite(const ppapi::host::HostMessageContext* context,
                      const std::string& data);
-  int32_t OnMsgDisconnect(const ppapi::host::HostMessageContext* context);
+  int32_t OnMsgListen(const ppapi::host::HostMessageContext* context,
+                      int32_t backlog);
+  int32_t OnMsgAccept(const ppapi::host::HostMessageContext* context);
+  int32_t OnMsgClose(const ppapi::host::HostMessageContext* context);
   int32_t OnMsgSetOption(const ppapi::host::HostMessageContext* context,
                          PP_TCPSocket_Option name,
                          const ppapi::SocketOptionData& value);
 
+  void DoBind(const ppapi::host::ReplyMessageContext& context,
+              const PP_NetAddress_Private& net_addr);
   void DoConnect(const ppapi::host::ReplyMessageContext& context,
                  const std::string& host,
                  uint16_t port,
@@ -117,6 +110,8 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
       const ppapi::host::ReplyMessageContext& context,
       const PP_NetAddress_Private& net_addr);
   void DoWrite(const ppapi::host::ReplyMessageContext& context);
+  void DoListen(const ppapi::host::ReplyMessageContext& context,
+                int32_t backlog);
 
   void OnResolveCompleted(const ppapi::host::ReplyMessageContext& context,
                           int net_result);
@@ -130,7 +125,14 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
                        int net_result);
   void OnWriteCompleted(const ppapi::host::ReplyMessageContext& context,
                         int net_result);
+  void OnAcceptCompleted(const ppapi::host::ReplyMessageContext& context,
+                         int net_result);
 
+  void SendBindReply(const ppapi::host::ReplyMessageContext& context,
+                     int32_t pp_result,
+                     const PP_NetAddress_Private& local_addr);
+  void SendBindError(const ppapi::host::ReplyMessageContext& context,
+                     int32_t pp_error);
   void SendConnectReply(const ppapi::host::ReplyMessageContext& context,
                         int32_t pp_result,
                         const PP_NetAddress_Private& local_addr,
@@ -146,34 +148,69 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
                      int32_t pp_error);
   void SendWriteReply(const ppapi::host::ReplyMessageContext& context,
                       int32_t pp_result);
+  void SendListenReply(const ppapi::host::ReplyMessageContext& context,
+                       int32_t pp_result);
+  void SendAcceptReply(const ppapi::host::ReplyMessageContext& context,
+                       int32_t pp_result,
+                       int pending_host_id,
+                       const PP_NetAddress_Private& local_addr,
+                       const PP_NetAddress_Private& remote_addr);
+  void SendAcceptError(const ppapi::host::ReplyMessageContext& context,
+                       int32_t pp_error);
 
-  bool IsConnected() const;
-  bool IsSsl() const;
-  void SetState(State state);
+  int32_t OpenSocket(net::AddressFamily family);
 
-  bool external_plugin_;
-  bool private_api_;
+  bool IsPrivateAPI() const {
+    return version_ == ppapi::TCP_SOCKET_VERSION_PRIVATE;
+  }
+
+  // The following fields are used on both the UI and IO thread.
+  const ppapi::TCPSocketVersion version_;
+
+  // The following fields are used only on the UI thread.
+  const bool external_plugin_;
 
   int render_process_id_;
   int render_view_id_;
 
-  State state_;
+  // The following fields are used only on the IO thread.
+  // Non-owning ptr.
+  ppapi::host::PpapiHost* ppapi_host_;
+  // Non-owning ptr.
+  ContentBrowserPepperHostFactory* factory_;
+  PP_Instance instance_;
+
+  ppapi::TCPSocketState state_;
   bool end_of_file_reached_;
+
+  // This is the address requested to bind. Please note that this is not the
+  // bound address. For example, |bind_input_addr_| may have port set to 0.
+  // It is used to check permission for listening.
+  PP_NetAddress_Private bind_input_addr_;
 
   scoped_ptr<net::SingleRequestHostResolver> resolver_;
   net::AddressList address_list_;
 
-  scoped_ptr<net::StreamSocket> socket_;
+  // Non-null unless an SSL connection is requested.
+  scoped_ptr<net::TCPSocket> socket_;
+  // Non-null if an SSL connection is requested.
+  scoped_ptr<net::SSLClientSocket> ssl_socket_;
 
   scoped_refptr<net::IOBuffer> read_buffer_;
 
-  // StreamSocket::Write() may not always write the full buffer, but we would
+  // TCPSocket::Write() may not always write the full buffer, but we would
   // rather have our DoWrite() do so whenever possible. To do this, we may have
   // to call the former multiple times for each of the latter. This entails
   // using a DrainableIOBuffer, which requires an underlying base IOBuffer.
   scoped_refptr<net::IOBuffer> write_buffer_base_;
   scoped_refptr<net::DrainableIOBuffer> write_buffer_;
   scoped_refptr<SSLContextHelper> ssl_context_helper_;
+
+  bool pending_accept_;
+  scoped_ptr<net::TCPSocket> accepted_socket_;
+  net::IPEndPoint accepted_address_;
+
+  bool allow_address_reuse_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperTCPSocketMessageFilter);
 };

@@ -148,7 +148,8 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateNetworkMonitorPrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreatePrinting(PP_Instance instance) = 0;
   virtual PP_Resource CreateTCPServerSocketPrivate(PP_Instance instance) = 0;
-  virtual PP_Resource CreateTCPSocket(PP_Instance instace) = 0;
+  virtual PP_Resource CreateTCPSocket1_0(PP_Instance instace) = 0;
+  virtual PP_Resource CreateTCPSocket(PP_Instance instance) = 0;
   virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instace) = 0;
   virtual PP_Resource CreateUDPSocket(PP_Instance instace) = 0;
   virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instace) = 0;

@@ -15,8 +15,6 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "net/socket/tcp_client_socket.h"
-#include "net/socket/tcp_server_socket.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -25,6 +23,7 @@
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/api_id.h"
+#include "ppapi/shared_impl/ppb_tcp_socket_shared.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 
 using ppapi::NetAddressPrivateImpl;
@@ -134,7 +133,8 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgAccept(
   ppapi::host::ReplyMessageContext reply_context(
       context->MakeReplyMessageContext());
   int net_result = socket_->Accept(
-      &socket_buffer_,
+      &accepted_socket_,
+      &accepted_address_,
       base::Bind(&PepperTCPServerSocketMessageFilter::OnAcceptCompleted,
                  base::Unretained(this), reply_context));
   if (net_result != net::ERR_IO_PENDING)
@@ -169,8 +169,22 @@ void PepperTCPServerSocketMessageFilter::DoListen(
 
   state_ = STATE_LISTEN_IN_PROGRESS;
 
-  socket_.reset(new net::TCPServerSocket(NULL, net::NetLog::Source()));
-  int net_result = socket_->Listen(net::IPEndPoint(address, port), backlog);
+  socket_.reset(new net::TCPSocket(NULL, net::NetLog::Source()));
+  int net_result = net::OK;
+  do {
+    net::IPEndPoint ip_end_point(address, port);
+    net_result = socket_->Open(ip_end_point.GetFamily());
+    if (net_result != net::OK)
+      break;
+    net_result = socket_->SetDefaultOptionsForServer();
+    if (net_result != net::OK)
+      break;
+    net_result = socket_->Bind(ip_end_point);
+    if (net_result != net::OK)
+      break;
+    net_result = socket_->Listen(backlog);
+  } while (false);
+
   if (net_result != net::ERR_IO_PENDING)
     OnListenCompleted(context, net_result);
 }
@@ -229,16 +243,15 @@ void PepperTCPServerSocketMessageFilter::OnAcceptCompleted(
     return;
   }
 
-  DCHECK(socket_buffer_.get());
+  DCHECK(accepted_socket_.get());
 
-  scoped_ptr<net::StreamSocket> socket(socket_buffer_.release());
   net::IPEndPoint ip_end_point_local;
-  net::IPEndPoint ip_end_point_remote;
   PP_NetAddress_Private local_addr = NetAddressPrivateImpl::kInvalidNetAddress;
   PP_NetAddress_Private remote_addr = NetAddressPrivateImpl::kInvalidNetAddress;
 
   int32_t pp_result =
-      NetErrorToPepperError(socket->GetLocalAddress(&ip_end_point_local));
+      NetErrorToPepperError(accepted_socket_->GetLocalAddress(
+          &ip_end_point_local));
   if (pp_result != PP_OK) {
     SendAcceptError(context, pp_result);
     return;
@@ -246,19 +259,10 @@ void PepperTCPServerSocketMessageFilter::OnAcceptCompleted(
   if (!NetAddressPrivateImpl::IPEndPointToNetAddress(
           ip_end_point_local.address(),
           ip_end_point_local.port(),
-          &local_addr)) {
-    SendAcceptError(context, PP_ERROR_FAILED);
-    return;
-  }
-  pp_result =
-      NetErrorToPepperError(socket->GetPeerAddress(&ip_end_point_remote));
-  if (pp_result != PP_OK) {
-    SendAcceptError(context, pp_result);
-    return;
-  }
-  if (!NetAddressPrivateImpl::IPEndPointToNetAddress(
-          ip_end_point_remote.address(),
-          ip_end_point_remote.port(),
+          &local_addr) ||
+      !NetAddressPrivateImpl::IPEndPointToNetAddress(
+          accepted_address_.address(),
+          accepted_address_.port(),
           &remote_addr)) {
     SendAcceptError(context, PP_ERROR_FAILED);
     return;
@@ -266,7 +270,8 @@ void PepperTCPServerSocketMessageFilter::OnAcceptCompleted(
 
   scoped_ptr<ppapi::host::ResourceHost> host =
       factory_->CreateAcceptedTCPSocket(
-          instance_, true /* private_api */, socket.release());
+          instance_, ppapi::TCP_SOCKET_VERSION_PRIVATE,
+          accepted_socket_.Pass());
   if (!host) {
     SendAcceptError(context, PP_ERROR_NOSPACE);
     return;
