@@ -66,7 +66,7 @@ static Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLo
 
     if (openerFrame->settings() && !openerFrame->settings()->supportsMultipleWindows()) {
         created = false;
-        return openerFrame;
+        return openerFrame->tree()->top();
     }
 
     Page* oldPage = openerFrame->page();
