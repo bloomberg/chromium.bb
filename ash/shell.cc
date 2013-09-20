@@ -929,8 +929,6 @@ void Shell::InitRootWindowController(
     aura::client::SetUserActionClient(root_window, user_action_client_.get());
 
   controller->Init(first_run_after_boot);
-
-  mru_window_tracker_->OnRootWindowAdded(root_window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
