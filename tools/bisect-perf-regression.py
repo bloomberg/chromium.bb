@@ -369,7 +369,7 @@ class DesktopBuilder(Builder):
     Returns:
         True if build was successful.
     """
-    targets = ['chrome', 'performance_ui_tests']
+    targets = ['chromium_builder_perf']
 
     threads = None
     if opts.use_goma:
@@ -420,6 +420,9 @@ class AndroidBuilder(Builder):
         True if build was successful.
     """
     targets = ['chromium_testshell', 'forwarder2', 'md5sum']
+    if '--profile-dir' in opts.command:
+      targets.append('clear_system_cache')
+
     threads = None
     if opts.use_goma:
       threads = 64
@@ -1111,6 +1114,45 @@ class BisectPerformanceMetrics(object):
 
     return metric_values
 
+  def _GenerateProfileIfNecessary(self, command_args):
+    """Checks the command line of the performance test for dependencies on
+    profile generation, and runs tools/perf/generate_profile as necessary.
+
+    Args:
+      command_args: Command line being passed to performance test, as a list.
+
+    Returns:
+      False if profile generation was necessary and failed, otherwise True.
+    """
+
+    if '--profile-dir' in ' '.join(command_args):
+      # If we were using python 2.7+, we could just use the argparse
+      # module's parse_known_args to grab --profile-dir. Since some of the
+      # bots still run 2.6, have to grab the arguments manually.
+      arg_dict = {}
+      args_to_parse = ['--profile-dir', '--browser']
+
+      for arg_to_parse in args_to_parse:
+        for i, current_arg in enumerate(command_args):
+          if arg_to_parse in current_arg:
+            current_arg_split = current_arg.split('=')
+
+            # Check 2 cases, --arg=<val> and --arg <val>
+            if len(current_arg_split) == 2:
+              arg_dict[arg_to_parse] = current_arg_split[1]
+            elif i + 1 < len(command_args):
+              arg_dict[arg_to_parse] = command_args[i+1]
+
+      path_to_generate = os.path.join('tools', 'perf', 'generate_profile')
+
+      if arg_dict.has_key('--profile-dir') and arg_dict.has_key('--browser'):
+        profile_path, profile_type = os.path.split(arg_dict['--profile-dir'])
+        return not RunProcess(['python', path_to_generate,
+            '--profile-type-to-generate', profile_type,
+            '--browser', arg_dict['--browser'], '--output-dir', profile_path])
+      return False
+    return True
+
   def RunPerformanceTestAndParseResults(self, command_to_run, metric):
     """Runs a performance test on the current revision by executing the
     'command_to_run' and parses the results.
@@ -1131,6 +1173,9 @@ class BisectPerformanceMetrics(object):
       command_to_run = command_to_run.replace('/', r'\\')
 
     args = shlex.split(command_to_run)
+
+    if not self._GenerateProfileIfNecessary(args):
+      return ('Failed to generate profile for performance test.', -1)
 
     # If running a telemetry test for cros, insert the remote ip, and
     # identity parameters.
