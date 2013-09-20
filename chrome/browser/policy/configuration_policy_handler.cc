@@ -28,7 +28,6 @@
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
@@ -57,68 +56,8 @@ struct ProxyModeValidationEntry {
   int error_message_id;
 };
 
-// Maps a policy type to a preference path, and to the expected value type.
-struct DefaultSearchSimplePolicyHandlerEntry {
-  const char* policy_name;
-  const char* preference_path;
-  base::Value::Type value_type;
-};
-
 
 // Static data -----------------------------------------------------------------
-
-// List of policy types to preference names, for policies affecting the default
-// search provider.
-const DefaultSearchSimplePolicyHandlerEntry kDefaultSearchPolicyMap[] = {
-  { key::kDefaultSearchProviderEnabled,
-    prefs::kDefaultSearchProviderEnabled,
-    Value::TYPE_BOOLEAN },
-  { key::kDefaultSearchProviderName,
-    prefs::kDefaultSearchProviderName,
-    Value::TYPE_STRING },
-  { key::kDefaultSearchProviderKeyword,
-    prefs::kDefaultSearchProviderKeyword,
-    Value::TYPE_STRING },
-  { key::kDefaultSearchProviderSearchURL,
-    prefs::kDefaultSearchProviderSearchURL,
-    Value::TYPE_STRING },
-  { key::kDefaultSearchProviderSuggestURL,
-    prefs::kDefaultSearchProviderSuggestURL,
-    Value::TYPE_STRING },
-  { key::kDefaultSearchProviderInstantURL,
-    prefs::kDefaultSearchProviderInstantURL,
-    Value::TYPE_STRING },
-  { key::kDefaultSearchProviderIconURL,
-    prefs::kDefaultSearchProviderIconURL,
-    Value::TYPE_STRING },
-  { key::kDefaultSearchProviderEncodings,
-    prefs::kDefaultSearchProviderEncodings,
-    Value::TYPE_LIST },
-  { key::kDefaultSearchProviderAlternateURLs,
-    prefs::kDefaultSearchProviderAlternateURLs,
-    Value::TYPE_LIST },
-  { key::kDefaultSearchProviderSearchTermsReplacementKey,
-    prefs::kDefaultSearchProviderSearchTermsReplacementKey,
-    Value::TYPE_STRING },
-  { key::kDefaultSearchProviderImageURL,
-    prefs::kDefaultSearchProviderImageURL,
-    Value::TYPE_STRING },
-  { key::kDefaultSearchProviderNewTabURL,
-    prefs::kDefaultSearchProviderNewTabURL,
-    Value::TYPE_STRING },
-  { key::kDefaultSearchProviderSearchURLPostParams,
-    prefs::kDefaultSearchProviderSearchURLPostParams,
-    Value::TYPE_STRING },
-  { key::kDefaultSearchProviderSuggestURLPostParams,
-    prefs::kDefaultSearchProviderSuggestURLPostParams,
-    Value::TYPE_STRING },
-  { key::kDefaultSearchProviderInstantURLPostParams,
-    prefs::kDefaultSearchProviderInstantURLPostParams,
-    Value::TYPE_STRING },
-  { key::kDefaultSearchProviderImageURLPostParams,
-    prefs::kDefaultSearchProviderImageURLPostParams,
-    Value::TYPE_STRING },
-};
 
 // List of entries determining which proxy policies can be specified, depending
 // on the ProxyMode.
@@ -239,6 +178,7 @@ bool TypeCheckingPolicyHandler::CheckAndGetValue(const PolicyMap& policies,
   return true;
 }
 
+
 // IntRangePolicyHandlerBase implementation ------------------------------------
 
 IntRangePolicyHandlerBase::IntRangePolicyHandlerBase(
@@ -291,6 +231,7 @@ bool IntRangePolicyHandlerBase::EnsureInRange(const base::Value* input,
     *output = value;
   return true;
 }
+
 
 // StringToIntEnumListPolicyHandler implementation -----------------------------
 
@@ -369,6 +310,7 @@ bool StringToIntEnumListPolicyHandler::Convert(const base::Value* input,
   return true;
 }
 
+
 // IntRangePolicyHandler implementation ----------------------------------------
 
 IntRangePolicyHandler::IntRangePolicyHandler(const char* policy_name,
@@ -394,6 +336,7 @@ void IntRangePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                     base::Value::CreateIntegerValue(value_in_range));
   }
 }
+
 
 // IntPercentageToDoublePolicyHandler implementation ---------------------------
 
@@ -422,6 +365,7 @@ void IntPercentageToDoublePolicyHandler::ApplyPolicySettings(
         static_cast<double>(percentage) / 100.));
   }
 }
+
 
 // ExtensionListPolicyHandler implementation -----------------------------------
 
@@ -501,12 +445,14 @@ bool ExtensionListPolicyHandler::CheckAndGetList(
   return true;
 }
 
+
 // ExtensionInstallForcelistPolicyHandler implementation -----------------------
 
-ExtensionInstallForcelistPolicyHandler::
-    ExtensionInstallForcelistPolicyHandler()
-        : TypeCheckingPolicyHandler(key::kExtensionInstallForcelist,
-                                    base::Value::TYPE_LIST) {}
+ExtensionInstallForcelistPolicyHandler::ExtensionInstallForcelistPolicyHandler(
+    const char* pref_name)
+    : TypeCheckingPolicyHandler(key::kExtensionInstallForcelist,
+                                base::Value::TYPE_LIST),
+      pref_name_(pref_name) {}
 
 ExtensionInstallForcelistPolicyHandler::
     ~ExtensionInstallForcelistPolicyHandler() {}
@@ -527,7 +473,7 @@ void ExtensionInstallForcelistPolicyHandler::ApplyPolicySettings(
   if (CheckAndGetValue(policies, NULL, &value) &&
       value &&
       ParseList(value, dict.get(), NULL)) {
-    prefs->SetValue(prefs::kExtensionInstallForceList, dict.release());
+    prefs->SetValue(pref_name_, dict.release());
   }
 }
 
@@ -592,6 +538,7 @@ bool ExtensionInstallForcelistPolicyHandler::ParseList(
   return true;
 }
 
+
 // ExtensionURLPatternListPolicyHandler implementation -------------------------
 
 ExtensionURLPatternListPolicyHandler::ExtensionURLPatternListPolicyHandler(
@@ -652,6 +599,7 @@ void ExtensionURLPatternListPolicyHandler::ApplyPolicySettings(
     prefs->SetValue(pref_path_, value->DeepCopy());
 }
 
+
 // SimplePolicyHandler implementation ------------------------------------------
 
 SimplePolicyHandler::SimplePolicyHandler(
@@ -677,10 +625,9 @@ void SimplePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 
 // SyncPolicyHandler implementation --------------------------------------------
 
-SyncPolicyHandler::SyncPolicyHandler()
-    : TypeCheckingPolicyHandler(key::kSyncDisabled,
-                                Value::TYPE_BOOLEAN) {
-}
+SyncPolicyHandler::SyncPolicyHandler(const char* pref_name)
+    : TypeCheckingPolicyHandler(key::kSyncDisabled, Value::TYPE_BOOLEAN),
+      pref_name_(pref_name) {}
 
 SyncPolicyHandler::~SyncPolicyHandler() {
 }
@@ -690,16 +637,15 @@ void SyncPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   const Value* value = policies.GetValue(policy_name());
   bool disable_sync;
   if (value && value->GetAsBoolean(&disable_sync) && disable_sync)
-    prefs->SetValue(prefs::kSyncManaged, value->DeepCopy());
+    prefs->SetValue(pref_name_, value->DeepCopy());
 }
 
 
 // AutofillPolicyHandler implementation ----------------------------------------
 
-AutofillPolicyHandler::AutofillPolicyHandler()
-    : TypeCheckingPolicyHandler(key::kAutoFillEnabled,
-                                Value::TYPE_BOOLEAN) {
-}
+AutofillPolicyHandler::AutofillPolicyHandler(const char* pref_name)
+    : TypeCheckingPolicyHandler(key::kAutoFillEnabled, Value::TYPE_BOOLEAN),
+      pref_name_(pref_name) {}
 
 AutofillPolicyHandler::~AutofillPolicyHandler() {
 }
@@ -708,22 +654,23 @@ void AutofillPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                 PrefValueMap* prefs) {
   const Value* value = policies.GetValue(policy_name());
   bool auto_fill_enabled;
-  if (value && value->GetAsBoolean(&auto_fill_enabled) && !auto_fill_enabled) {
-    prefs->SetValue(autofill::prefs::kAutofillEnabled,
-                    Value::CreateBooleanValue(false));
-  }
+  if (value && value->GetAsBoolean(&auto_fill_enabled) && !auto_fill_enabled)
+    prefs->SetValue(pref_name_, Value::CreateBooleanValue(false));
 }
 
 // Android doesn't support these policies, and doesn't have a policy_path_parser
 // implementation.
 #if !defined(OS_ANDROID)
 
+
 // DownloadDirPolicyHandler implementation -------------------------------------
 
-DownloadDirPolicyHandler::DownloadDirPolicyHandler()
-    : TypeCheckingPolicyHandler(key::kDownloadDirectory,
-                                Value::TYPE_STRING) {
-}
+DownloadDirPolicyHandler::DownloadDirPolicyHandler(
+    const char* default_directory_pref_name,
+    const char* prompt_for_download_pref_name)
+    : TypeCheckingPolicyHandler(key::kDownloadDirectory, Value::TYPE_STRING),
+      default_directory_pref_name_(default_directory_pref_name),
+      prompt_for_download_pref_name_(prompt_for_download_pref_name) {}
 
 DownloadDirPolicyHandler::~DownloadDirPolicyHandler() {
 }
@@ -743,19 +690,18 @@ void DownloadDirPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   // lead to an empty path value after expansion (e.g. "\"\"").
   if (expanded_value.empty())
     expanded_value = DownloadPrefs::GetDefaultDownloadDirectory().value();
-  prefs->SetValue(prefs::kDownloadDefaultDirectory,
+  prefs->SetValue(default_directory_pref_name_,
                   Value::CreateStringValue(expanded_value));
-  prefs->SetValue(prefs::kPromptForDownload,
+  prefs->SetValue(prompt_for_download_pref_name_,
                   Value::CreateBooleanValue(false));
 }
 
 
 // DiskCacheDirPolicyHandler implementation ------------------------------------
 
-DiskCacheDirPolicyHandler::DiskCacheDirPolicyHandler()
-    : TypeCheckingPolicyHandler(key::kDiskCacheDir,
-                                Value::TYPE_STRING) {
-}
+DiskCacheDirPolicyHandler::DiskCacheDirPolicyHandler(const char* pref_name)
+    : TypeCheckingPolicyHandler(key::kDiskCacheDir, Value::TYPE_STRING),
+      pref_name_(pref_name) {}
 
 DiskCacheDirPolicyHandler::~DiskCacheDirPolicyHandler() {
 }
@@ -767,19 +713,22 @@ void DiskCacheDirPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   if (value && value->GetAsString(&string_value)) {
     base::FilePath::StringType expanded_value =
         policy::path_parser::ExpandPathVariables(string_value);
-    prefs->SetValue(prefs::kDiskCacheDir,
-                    Value::CreateStringValue(expanded_value));
+    prefs->SetValue(pref_name_, Value::CreateStringValue(expanded_value));
   }
 }
 
 #endif  // !defined(OS_ANDROID)
 
+
 // FileSelectionDialogsHandler implementation ----------------------------------
 
-FileSelectionDialogsHandler::FileSelectionDialogsHandler()
+FileSelectionDialogsHandler::FileSelectionDialogsHandler(
+    const char* allow_dialogs_pref_name,
+    const char* prompt_for_download_pref_name)
     : TypeCheckingPolicyHandler(key::kAllowFileSelectionDialogs,
-                                Value::TYPE_BOOLEAN) {
-}
+                                Value::TYPE_BOOLEAN),
+      allow_dialogs_pref_name_(allow_dialogs_pref_name),
+      prompt_for_download_pref_name_(prompt_for_download_pref_name) {}
 
 FileSelectionDialogsHandler::~FileSelectionDialogsHandler() {
 }
@@ -789,11 +738,11 @@ void FileSelectionDialogsHandler::ApplyPolicySettings(const PolicyMap& policies,
   bool allow_dialogs;
   const Value* value = policies.GetValue(policy_name());
   if (value && value->GetAsBoolean(&allow_dialogs)) {
-    prefs->SetValue(prefs::kAllowFileSelectionDialogs,
+    prefs->SetValue(allow_dialogs_pref_name_,
                     Value::CreateBooleanValue(allow_dialogs));
     // Disallow selecting the download location if file dialogs are disabled.
     if (!allow_dialogs) {
-      prefs->SetValue(prefs::kPromptForDownload,
+      prefs->SetValue(prompt_for_download_pref_name_,
                       Value::CreateBooleanValue(false));
     }
   }
@@ -802,8 +751,8 @@ void FileSelectionDialogsHandler::ApplyPolicySettings(const PolicyMap& policies,
 
 // IncognitoModePolicyHandler implementation -----------------------------------
 
-IncognitoModePolicyHandler::IncognitoModePolicyHandler() {
-}
+IncognitoModePolicyHandler::IncognitoModePolicyHandler(const char* pref_name)
+    : pref_name_(pref_name) {}
 
 IncognitoModePolicyHandler::~IncognitoModePolicyHandler() {
 }
@@ -854,7 +803,7 @@ void IncognitoModePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     if (availability->GetAsInteger(&int_value) &&
         IncognitoModePrefs::IntToAvailability(int_value,
                                               &availability_enum_value)) {
-      prefs->SetValue(prefs::kIncognitoModeAvailability,
+      prefs->SetValue(pref_name_,
                       Value::CreateIntegerValue(availability_enum_value));
     } else {
       NOTREACHED();
@@ -864,9 +813,9 @@ void IncognitoModePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     // kIncognitoEnabled.
     bool enabled = true;
     if (deprecated_enabled->GetAsBoolean(&enabled)) {
-      prefs->SetInteger(prefs::kIncognitoModeAvailability,
-                        enabled ? IncognitoModePrefs::ENABLED :
-                                  IncognitoModePrefs::DISABLED);
+      prefs->SetInteger(
+          pref_name_,
+          enabled ? IncognitoModePrefs::ENABLED : IncognitoModePrefs::DISABLED);
     } else {
       NOTREACHED();
     }
@@ -876,10 +825,11 @@ void IncognitoModePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 
 // DefaultSearchEncodingsPolicyHandler implementation --------------------------
 
-DefaultSearchEncodingsPolicyHandler::DefaultSearchEncodingsPolicyHandler()
+DefaultSearchEncodingsPolicyHandler::DefaultSearchEncodingsPolicyHandler(
+    const char* pref_name)
     : TypeCheckingPolicyHandler(key::kDefaultSearchProviderEncodings,
-                                Value::TYPE_LIST) {
-}
+                                Value::TYPE_LIST),
+      pref_name_(pref_name) {}
 
 DefaultSearchEncodingsPolicyHandler::~DefaultSearchEncodingsPolicyHandler() {
 }
@@ -904,23 +854,29 @@ void DefaultSearchEncodingsPolicyHandler::ApplyPolicySettings(
     }
   }
   std::string encodings = JoinString(string_parts, ';');
-  prefs->SetValue(prefs::kDefaultSearchProviderEncodings,
-                  Value::CreateStringValue(encodings));
+  prefs->SetValue(pref_name(), Value::CreateStringValue(encodings));
 }
 
 
 // DefaultSearchPolicyHandler implementation -----------------------------------
 
-DefaultSearchPolicyHandler::DefaultSearchPolicyHandler() {
-  for (size_t i = 0; i < arraysize(kDefaultSearchPolicyMap); ++i) {
-    const char* policy_name = kDefaultSearchPolicyMap[i].policy_name;
+DefaultSearchPolicyHandler::DefaultSearchPolicyHandler(
+    const char* id_pref_name,
+    const char* prepopulate_id_pref_name,
+    const PolicyToPreferenceMapEntry policy_to_pref_map[])
+    : id_pref_name_(id_pref_name),
+      prepopulate_id_pref_name_(prepopulate_id_pref_name),
+      policy_to_pref_map_(policy_to_pref_map) {
+  for (size_t i = 0; i < DEFAULT_SEARCH_KEY_SIZE; ++i) {
+    const char* policy_name = policy_to_pref_map[i].policy_name;
     if (policy_name == key::kDefaultSearchProviderEncodings) {
-      handlers_.push_back(new DefaultSearchEncodingsPolicyHandler());
+      handlers_.push_back(new DefaultSearchEncodingsPolicyHandler(
+          policy_to_pref_map[i].preference_path));
     } else {
-      handlers_.push_back(
-          new SimplePolicyHandler(policy_name,
-                                  kDefaultSearchPolicyMap[i].preference_path,
-                                  kDefaultSearchPolicyMap[i].value_type));
+      handlers_.push_back(new SimplePolicyHandler(
+          policy_name,
+          policy_to_pref_map[i].preference_path,
+          policy_to_pref_map[i].value_type));
     }
   }
 }
@@ -937,8 +893,11 @@ bool DefaultSearchPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
   if (DefaultSearchProviderIsDisabled(policies)) {
     // Add an error for all specified default search policies except
     // DefaultSearchProviderEnabled.
-    for (size_t i = 0; i < arraysize(kDefaultSearchPolicyMap); ++i) {
-      const char* policy_name = kDefaultSearchPolicyMap[i].policy_name;
+
+    for (std::vector<TypeCheckingPolicyHandler*>::const_iterator handler =
+             handlers_.begin();
+         handler != handlers_.end(); ++handler) {
+      const char* policy_name = (*handler)->policy_name();
       if (policy_name != key::kDefaultSearchProviderEnabled &&
           HasDefaultSearchPolicy(policies, policy_name)) {
         errors->AddError(policy_name, IDS_POLICY_DEFAULT_SEARCH_DISABLED);
@@ -957,33 +916,33 @@ bool DefaultSearchPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
   return false;
 }
 
+#define PREF_FOR(x) policy_to_pref_map_[x].preference_path
 void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                      PrefValueMap* prefs) {
   if (DefaultSearchProviderIsDisabled(policies)) {
-    prefs->SetBoolean(prefs::kDefaultSearchProviderEnabled, false);
+    prefs->SetBoolean(PREF_FOR(DEFAULT_SEARCH_ENABLED), false);
 
     // If default search is disabled, the other fields are ignored.
-    prefs->SetString(prefs::kDefaultSearchProviderName, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderSearchURL, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderSuggestURL, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderIconURL, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderEncodings, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderKeyword, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderInstantURL, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderNewTabURL, std::string());
-    prefs->SetValue(prefs::kDefaultSearchProviderAlternateURLs,
-                    new ListValue());
-    prefs->SetString(prefs::kDefaultSearchProviderSearchTermsReplacementKey,
-                     std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderImageURL, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderSearchURLPostParams,
-                     std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderSuggestURLPostParams,
-                     std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderInstantURLPostParams,
-                     std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderImageURLPostParams,
-                     std::string());
+    prefs->SetString(PREF_FOR(DEFAULT_SEARCH_NAME), std::string());
+    prefs->SetString(PREF_FOR(DEFAULT_SEARCH_SEARCH_URL), std::string());
+    prefs->SetString(PREF_FOR(DEFAULT_SEARCH_SUGGEST_URL), std::string());
+    prefs->SetString(PREF_FOR(DEFAULT_SEARCH_ICON_URL), std::string());
+    prefs->SetString(PREF_FOR(DEFAULT_SEARCH_ENCODINGS), std::string());
+    prefs->SetString(PREF_FOR(DEFAULT_SEARCH_KEYWORD), std::string());
+    prefs->SetString(PREF_FOR(DEFAULT_SEARCH_INSTANT_URL), std::string());
+    prefs->SetString(PREF_FOR(DEFAULT_SEARCH_NEW_TAB_URL), std::string());
+    prefs->SetValue(PREF_FOR(DEFAULT_SEARCH_ALTERNATE_URLS), new ListValue());
+    prefs->SetString(
+        PREF_FOR(DEFAULT_SEARCH_TERMS_REPLACEMENT_KEY), std::string());
+    prefs->SetString(PREF_FOR(DEFAULT_SEARCH_IMAGE_URL), std::string());
+    prefs->SetString(
+        PREF_FOR(DEFAULT_SEARCH_SEARCH_URL_POST_PARAMS), std::string());
+    prefs->SetString(
+        PREF_FOR(DEFAULT_SEARCH_SUGGEST_URL_POST_PARAMS), std::string());
+    prefs->SetString(
+        PREF_FOR(DEFAULT_SEARCH_INSTANT_URL_POST_PARAMS), std::string());
+    prefs->SetString(
+        PREF_FOR(DEFAULT_SEARCH_IMAGE_URL_POST_PARAMS), std::string());
   } else {
     // The search URL is required.  The other entries are optional.  Just make
     // sure that they are all specified via policy, so that the regular prefs
@@ -991,29 +950,36 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     const Value* dummy;
     std::string url;
     if (DefaultSearchURLIsValid(policies, &dummy, &url)) {
-      for (std::vector<ConfigurationPolicyHandler*>::const_iterator handler =
-           handlers_.begin(); handler != handlers_.end(); ++handler)
-        (*handler)->ApplyPolicySettings(policies, prefs);
 
-      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderSuggestURL);
-      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderIconURL);
-      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderEncodings);
-      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderKeyword);
-      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderInstantURL);
-      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderNewTabURL);
-      EnsureListPrefExists(prefs, prefs::kDefaultSearchProviderAlternateURLs);
-      EnsureStringPrefExists(prefs,
-          prefs::kDefaultSearchProviderSearchTermsReplacementKey);
-      EnsureStringPrefExists(prefs,
-          prefs::kDefaultSearchProviderImageURL);
-      EnsureStringPrefExists(prefs,
-          prefs::kDefaultSearchProviderSearchURLPostParams);
-      EnsureStringPrefExists(prefs,
-          prefs::kDefaultSearchProviderSuggestURLPostParams);
-      EnsureStringPrefExists(prefs,
-          prefs::kDefaultSearchProviderInstantURLPostParams);
-      EnsureStringPrefExists(prefs,
-          prefs::kDefaultSearchProviderImageURLPostParams);
+      for (std::vector<TypeCheckingPolicyHandler*>::const_iterator handler =
+               handlers_.begin();
+           handler != handlers_.end(); ++handler) {
+        (*handler)->ApplyPolicySettings(policies, prefs);
+      }
+
+      EnsureStringPrefExists(prefs, PREF_FOR(DEFAULT_SEARCH_SUGGEST_URL));
+      EnsureStringPrefExists(prefs, PREF_FOR(DEFAULT_SEARCH_ICON_URL));
+      EnsureStringPrefExists(prefs, PREF_FOR(DEFAULT_SEARCH_ENCODINGS));
+      EnsureStringPrefExists(prefs, PREF_FOR(DEFAULT_SEARCH_KEYWORD));
+      EnsureStringPrefExists(prefs, PREF_FOR(DEFAULT_SEARCH_INSTANT_URL));
+      EnsureStringPrefExists(prefs, PREF_FOR(DEFAULT_SEARCH_NEW_TAB_URL));
+      EnsureListPrefExists(prefs, PREF_FOR(DEFAULT_SEARCH_ALTERNATE_URLS));
+      EnsureStringPrefExists(
+          prefs,
+          PREF_FOR(DEFAULT_SEARCH_TERMS_REPLACEMENT_KEY));
+      EnsureStringPrefExists(prefs, PREF_FOR(DEFAULT_SEARCH_IMAGE_URL));
+      EnsureStringPrefExists(
+          prefs,
+          PREF_FOR(DEFAULT_SEARCH_SEARCH_URL_POST_PARAMS));
+      EnsureStringPrefExists(
+          prefs,
+          PREF_FOR(DEFAULT_SEARCH_SUGGEST_URL_POST_PARAMS));
+      EnsureStringPrefExists(
+          prefs,
+          PREF_FOR(DEFAULT_SEARCH_INSTANT_URL_POST_PARAMS));
+      EnsureStringPrefExists(
+          prefs,
+          PREF_FOR(DEFAULT_SEARCH_IMAGE_URL_POST_PARAMS));
 
       // For the name and keyword, default to the host if not specified.  If
       // there is no host (file: URLs?  Not sure), use "_" to guarantee that the
@@ -1022,17 +988,18 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
       std::string host(GURL(url).host());
       if (host.empty())
         host = "_";
-      if (!prefs->GetString(prefs::kDefaultSearchProviderName, &name) ||
-          name.empty())
-        prefs->SetString(prefs::kDefaultSearchProviderName, host);
-      if (!prefs->GetString(prefs::kDefaultSearchProviderKeyword, &keyword) ||
-          keyword.empty())
-        prefs->SetString(prefs::kDefaultSearchProviderKeyword, host);
+      if (!prefs->GetString(PREF_FOR(DEFAULT_SEARCH_NAME), &name) ||
+          name.empty()) {
+        prefs->SetString(PREF_FOR(DEFAULT_SEARCH_NAME), host);
+      }
+      if (!prefs->GetString(PREF_FOR(DEFAULT_SEARCH_KEYWORD), &keyword) ||
+          keyword.empty()) {
+        prefs->SetString(PREF_FOR(DEFAULT_SEARCH_KEYWORD), host);
+      }
 
       // And clear the IDs since these are not specified via policy.
-      prefs->SetString(prefs::kDefaultSearchProviderID, std::string());
-      prefs->SetString(prefs::kDefaultSearchProviderPrepopulateID,
-                       std::string());
+      prefs->SetString(id_pref_name_, std::string());
+      prefs->SetString(prepopulate_id_pref_name_, std::string());
     }
   }
   content::NotificationService::current()->Notify(
@@ -1040,12 +1007,14 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 }
+#undef PREF_FOR
 
 bool DefaultSearchPolicyHandler::CheckIndividualPolicies(
     const PolicyMap& policies,
     PolicyErrorMap* errors) {
-  std::vector<ConfigurationPolicyHandler*>::const_iterator handler;
-  for (handler = handlers_.begin() ; handler != handlers_.end(); ++handler) {
+  for (std::vector<TypeCheckingPolicyHandler*>::const_iterator handler =
+           handlers_.begin();
+       handler != handlers_.end(); ++handler) {
     if (!(*handler)->CheckPolicySettings(policies, errors))
       return false;
   }
@@ -1060,8 +1029,10 @@ bool DefaultSearchPolicyHandler::HasDefaultSearchPolicy(
 
 bool DefaultSearchPolicyHandler::AnyDefaultSearchPoliciesSpecified(
     const PolicyMap& policies) {
-  for (size_t i = 0; i < arraysize(kDefaultSearchPolicyMap); ++i) {
-    if (policies.Get(kDefaultSearchPolicyMap[i].policy_name))
+  for (std::vector<TypeCheckingPolicyHandler*>::const_iterator handler =
+           handlers_.begin();
+       handler != handlers_.end(); ++handler) {
+    if (policies.Get((*handler)->policy_name()))
       return true;
   }
   return false;
@@ -1116,8 +1087,8 @@ void DefaultSearchPolicyHandler::EnsureListPrefExists(
 // DictionaryValue. Once Dictionary policies are fully supported, the individual
 // proxy policies will be deprecated. http://crbug.com/108996
 
-ProxyPolicyHandler::ProxyPolicyHandler() {
-}
+ProxyPolicyHandler::ProxyPolicyHandler(const char* pref_name)
+    : pref_name_(pref_name) {}
 
 ProxyPolicyHandler::~ProxyPolicyHandler() {
 }
@@ -1233,15 +1204,16 @@ void ProxyPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 
   switch (proxy_mode) {
     case ProxyPrefs::MODE_DIRECT:
-      prefs->SetValue(prefs::kProxy, ProxyConfigDictionary::CreateDirect());
+      prefs->SetValue(pref_name_, ProxyConfigDictionary::CreateDirect());
       break;
     case ProxyPrefs::MODE_AUTO_DETECT:
-      prefs->SetValue(prefs::kProxy, ProxyConfigDictionary::CreateAutoDetect());
+      prefs->SetValue(pref_name_, ProxyConfigDictionary::CreateAutoDetect());
       break;
     case ProxyPrefs::MODE_PAC_SCRIPT: {
       std::string pac_url_string;
       if (pac_url && pac_url->GetAsString(&pac_url_string)) {
-        prefs->SetValue(prefs::kProxy,
+        prefs->SetValue(
+            pref_name_,
             ProxyConfigDictionary::CreatePacScript(pac_url_string, false));
       } else {
         NOTREACHED();
@@ -1254,15 +1226,14 @@ void ProxyPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
       if (server->GetAsString(&proxy_server)) {
         if (bypass_list)
           bypass_list->GetAsString(&bypass_list_string);
-        prefs->SetValue(prefs::kProxy,
+        prefs->SetValue(pref_name_,
                         ProxyConfigDictionary::CreateFixedServers(
                             proxy_server, bypass_list_string));
       }
       break;
     }
     case ProxyPrefs::MODE_SYSTEM:
-      prefs->SetValue(prefs::kProxy,
-                      ProxyConfigDictionary::CreateSystem());
+      prefs->SetValue(pref_name_, ProxyConfigDictionary::CreateSystem());
       break;
     case ProxyPrefs::kModeCount:
       NOTREACHED();
@@ -1394,8 +1365,8 @@ bool ProxyPolicyHandler::CheckProxyModeAndServerMode(const PolicyMap& policies,
 
 // JavascriptPolicyHandler implementation --------------------------------------
 
-JavascriptPolicyHandler::JavascriptPolicyHandler() {
-}
+JavascriptPolicyHandler::JavascriptPolicyHandler(const char* pref_name)
+    : pref_name_(pref_name) {}
 
 JavascriptPolicyHandler::~JavascriptPolicyHandler() {
 }
@@ -1446,16 +1417,15 @@ void JavascriptPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     }
   }
 
-  if (setting != CONTENT_SETTING_DEFAULT) {
-    prefs->SetValue(prefs::kManagedDefaultJavaScriptSetting,
-                    Value::CreateIntegerValue(setting));
-  }
+  if (setting != CONTENT_SETTING_DEFAULT)
+    prefs->SetValue(pref_name_, Value::CreateIntegerValue(setting));
 }
+
 
 // URLBlacklistPolicyHandler implementation ------------------------------------
 
-URLBlacklistPolicyHandler::URLBlacklistPolicyHandler() {
-}
+URLBlacklistPolicyHandler::URLBlacklistPolicyHandler(const char* pref_name)
+    : pref_name_(pref_name) {}
 
 URLBlacklistPolicyHandler::~URLBlacklistPolicyHandler() {
 }
@@ -1517,15 +1487,18 @@ void URLBlacklistPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   }
 
   if (disabled_schemes_policy || url_blacklist_policy)
-    prefs->SetValue(prefs::kUrlBlacklist, merged_url_blacklist.release());
+    prefs->SetValue(pref_name_, merged_url_blacklist.release());
 }
+
 
 // RestoreOnStartupPolicyHandler implementation --------------------------------
 
-RestoreOnStartupPolicyHandler::RestoreOnStartupPolicyHandler()
-    : TypeCheckingPolicyHandler(key::kRestoreOnStartup,
-                                Value::TYPE_INTEGER) {
-}
+RestoreOnStartupPolicyHandler::RestoreOnStartupPolicyHandler(
+    const char* restore_on_startup_pref_name,
+    const char* startup_url_list_pref_name)
+    : TypeCheckingPolicyHandler(key::kRestoreOnStartup, Value::TYPE_INTEGER),
+      restore_on_startup_pref_name_(restore_on_startup_pref_name),
+      startup_url_list_pref_name_(startup_url_list_pref_name) {}
 
 RestoreOnStartupPolicyHandler::~RestoreOnStartupPolicyHandler() {
 }
@@ -1542,7 +1515,7 @@ void RestoreOnStartupPolicyHandler::ApplyPolicySettings(
     if (restore_on_startup == SessionStartupPref::kPrefValueHomePage)
       ApplyPolicySettingsFromHomePage(policies, prefs);
     else
-      prefs->SetInteger(prefs::kRestoreOnStartup, restore_on_startup);
+      prefs->SetInteger(restore_on_startup_pref_name_, restore_on_startup);
   }
 }
 
@@ -1562,7 +1535,7 @@ void RestoreOnStartupPolicyHandler::ApplyPolicySettingsFromHomePage(
     return;
 
   if (homepage_is_new_tab_page) {
-    prefs->SetInteger(prefs::kRestoreOnStartup,
+    prefs->SetInteger(restore_on_startup_pref_name_,
                       SessionStartupPref::kPrefValueNewTab);
   } else {
     const base::Value* homepage_value =
@@ -1574,9 +1547,9 @@ void RestoreOnStartupPolicyHandler::ApplyPolicySettingsFromHomePage(
     }
     ListValue* url_list = new ListValue();
     url_list->Append(homepage_value->DeepCopy());
-    prefs->SetInteger(prefs::kRestoreOnStartup,
+    prefs->SetInteger(restore_on_startup_pref_name_,
                       SessionStartupPref::kPrefValueURLs);
-    prefs->SetValue(prefs::kURLsToRestoreOnStartup, url_list);
+    prefs->SetValue(startup_url_list_pref_name_, url_list);
   }
 }
 

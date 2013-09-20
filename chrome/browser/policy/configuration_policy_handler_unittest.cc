@@ -10,7 +10,6 @@
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/common/pref_names.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,8 +31,10 @@ TEST(StringToIntEnumListPolicyHandlerTest, CheckPolicySettings) {
   PolicyMap policy_map;
   PolicyErrorMap errors;
   StringToIntEnumListPolicyHandler handler(
-      key::kExtensionAllowedTypes, prefs::kExtensionAllowedTypes,
-      kTestTypeMap, kTestTypeMap + arraysize(kTestTypeMap));
+      key::kExtensionAllowedTypes,
+      kTestPref,
+      kTestTypeMap,
+      kTestTypeMap + arraysize(kTestTypeMap));
 
   policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, list.DeepCopy(), NULL);
@@ -72,13 +73,15 @@ TEST(StringToIntEnumListPolicyHandlerTest, ApplyPolicySettings) {
   PrefValueMap prefs;
   base::Value* value;
   StringToIntEnumListPolicyHandler handler(
-      key::kExtensionAllowedTypes, prefs::kExtensionAllowedTypes,
-      kTestTypeMap, kTestTypeMap + arraysize(kTestTypeMap));
+      key::kExtensionAllowedTypes,
+      kTestPref,
+      kTestTypeMap,
+      kTestTypeMap + arraysize(kTestTypeMap));
 
   policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
-  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionAllowedTypes, &value));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
 
   list.AppendString("two");
@@ -86,14 +89,14 @@ TEST(StringToIntEnumListPolicyHandlerTest, ApplyPolicySettings) {
   policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
-  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionAllowedTypes, &value));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
 
   list.AppendString("invalid");
   policy_map.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
-  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionAllowedTypes, &value));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
 }
 
@@ -486,9 +489,8 @@ TEST(ExtensionListPolicyHandlerTest, CheckPolicySettings) {
   base::ListValue list;
   PolicyMap policy_map;
   PolicyErrorMap errors;
-  ExtensionListPolicyHandler handler(key::kExtensionInstallBlacklist,
-                                     prefs::kExtensionInstallDenyList,
-                                     true);
+  ExtensionListPolicyHandler handler(
+      key::kExtensionInstallBlacklist, kTestPref, true);
 
   policy_map.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, list.DeepCopy(), NULL);
@@ -525,9 +527,8 @@ TEST(ExtensionListPolicyHandlerTest, ApplyPolicySettings) {
   PolicyMap policy_map;
   PrefValueMap prefs;
   base::Value* value = NULL;
-  ExtensionListPolicyHandler handler(key::kExtensionInstallBlacklist,
-                                     prefs::kExtensionInstallDenyList,
-                                     false);
+  ExtensionListPolicyHandler handler(
+      key::kExtensionInstallBlacklist, kTestPref, false);
 
   policy.Append(Value::CreateStringValue("abcdefghijklmnopabcdefghijklmnop"));
   expected.Append(Value::CreateStringValue("abcdefghijklmnopabcdefghijklmnop"));
@@ -535,14 +536,14 @@ TEST(ExtensionListPolicyHandlerTest, ApplyPolicySettings) {
   policy_map.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, policy.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
-  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallDenyList, &value));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
 
   policy.Append(Value::CreateStringValue("invalid"));
   policy_map.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, policy.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
-  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallDenyList, &value));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
 }
 
@@ -550,7 +551,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, CheckPolicySettings) {
   base::ListValue list;
   PolicyMap policy_map;
   PolicyErrorMap errors;
-  ExtensionInstallForcelistPolicyHandler handler;
+  ExtensionInstallForcelistPolicyHandler handler(kTestPref);
 
   policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, list.DeepCopy(), NULL);
@@ -597,16 +598,16 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, ApplyPolicySettings) {
   PolicyMap policy_map;
   PrefValueMap prefs;
   base::Value* value = NULL;
-  ExtensionInstallForcelistPolicyHandler handler;
+  ExtensionInstallForcelistPolicyHandler handler(kTestPref);
 
   handler.ApplyPolicySettings(policy_map, &prefs);
-  EXPECT_FALSE(prefs.GetValue(prefs::kExtensionInstallForceList, &value));
+  EXPECT_FALSE(prefs.GetValue(kTestPref, &value));
   EXPECT_FALSE(value);
 
   policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, policy.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
-  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallForceList, &value));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
 
   policy.AppendString("abcdefghijklmnopabcdefghijklmnop;http://example.com");
@@ -615,14 +616,14 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, ApplyPolicySettings) {
   policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, policy.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
-  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallForceList, &value));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
 
   policy.AppendString("invalid");
   policy_map.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, policy.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
-  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallForceList, &value));
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
 }
 
@@ -630,9 +631,8 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, CheckPolicySettings) {
   base::ListValue list;
   PolicyMap policy_map;
   PolicyErrorMap errors;
-  ExtensionURLPatternListPolicyHandler handler(
-      key::kExtensionInstallSources,
-      prefs::kExtensionAllowedInstallSites);
+  ExtensionURLPatternListPolicyHandler handler(key::kExtensionInstallSources,
+                                               kTestPref);
 
   policy_map.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, list.DeepCopy(), NULL);
@@ -678,15 +678,14 @@ TEST(ExtensionURLPatternListPolicyHandlerTest, ApplyPolicySettings) {
   PolicyMap policy_map;
   PrefValueMap prefs;
   base::Value* value = NULL;
-  ExtensionURLPatternListPolicyHandler handler(
-      key::kExtensionInstallSources,
-      prefs::kExtensionAllowedInstallSites);
+  ExtensionURLPatternListPolicyHandler handler(key::kExtensionInstallSources,
+                                               kTestPref);
 
   list.Append(Value::CreateStringValue("https://corp.monkey.net/*"));
   policy_map.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, list.DeepCopy(), NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
-  ASSERT_TRUE(prefs.GetValue(prefs::kExtensionAllowedInstallSites, &value));
+  ASSERT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(&list, value));
 }
 

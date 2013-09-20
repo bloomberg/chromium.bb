@@ -1071,6 +1071,7 @@
         'browser/policy/cloud/user_policy_signin_service_unittest.cc',
         'browser/policy/config_dir_policy_loader_unittest.cc',
         'browser/policy/configuration_policy_handler_unittest.cc',
+        'browser/policy/configuration_policy_handler_list_unittest.cc',
         'browser/policy/configuration_policy_pref_store_unittest.cc',
         'browser/policy/configuration_policy_provider_test.cc',
         'browser/policy/configuration_policy_provider_test.h',

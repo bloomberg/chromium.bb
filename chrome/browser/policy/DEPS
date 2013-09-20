@@ -46,7 +46,6 @@ specific_include_rules = {
     "+chrome/browser/search_engines/search_terms_data.h",
     "+chrome/browser/search_engines/template_url.h",
     "+chrome/common/extensions/extension.h",
-    "+chrome/common/pref_names.h",
     "+content/public/browser/notification_service.h",
   ],
 
@@ -64,7 +63,6 @@ specific_include_rules = {
 
   r"configuration_policy_handler_unittest\.cc": [
     "+chrome/browser/extensions/external_policy_loader.h",
-    "+chrome/common/pref_names.h",
   ],
 
   r"configuration_policy_pref_store_unittest\.cc": [

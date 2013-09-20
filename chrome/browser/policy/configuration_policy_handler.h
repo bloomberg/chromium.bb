@@ -21,6 +21,13 @@ namespace policy {
 class PolicyErrorMap;
 class PolicyMap;
 
+// Maps a policy type to a preference path, and to the expected value type.
+struct PolicyToPreferenceMapEntry {
+  const char* const policy_name;
+  const char* const preference_path;
+  const base::Value::Type value_type;
+};
+
 // An abstract super class that subclasses should implement to map policies to
 // their corresponding preferences, and to check whether the policies are valid.
 class ConfigurationPolicyHandler {
@@ -59,20 +66,19 @@ class TypeCheckingPolicyHandler : public ConfigurationPolicyHandler {
  public:
   TypeCheckingPolicyHandler(const char* policy_name,
                             base::Value::Type value_type);
+  virtual ~TypeCheckingPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
   virtual bool CheckPolicySettings(const PolicyMap& policies,
                                    PolicyErrorMap* errors) OVERRIDE;
 
- protected:
-  virtual ~TypeCheckingPolicyHandler();
+  const char* policy_name() const;
 
+ protected:
   // Runs policy checks and returns the policy value if successful.
   bool CheckAndGetValue(const PolicyMap& policies,
                         PolicyErrorMap* errors,
                         const Value** value);
-
-  const char* policy_name() const;
 
  private:
   // The name of the policy.
@@ -254,7 +260,7 @@ class ExtensionListPolicyHandler : public TypeCheckingPolicyHandler {
 class ExtensionInstallForcelistPolicyHandler
     : public TypeCheckingPolicyHandler {
  public:
-  ExtensionInstallForcelistPolicyHandler();
+  explicit ExtensionInstallForcelistPolicyHandler(const char* pref_name);
   virtual ~ExtensionInstallForcelistPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
@@ -269,6 +275,7 @@ class ExtensionInstallForcelistPolicyHandler
                  base::DictionaryValue* extension_dict,
                  PolicyErrorMap* errors);
 
+  const char* pref_name_;
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallForcelistPolicyHandler);
 };
 
@@ -295,7 +302,7 @@ class ExtensionURLPatternListPolicyHandler : public TypeCheckingPolicyHandler {
 // ConfigurationPolicyHandler for the SyncDisabled policy.
 class SyncPolicyHandler : public TypeCheckingPolicyHandler {
  public:
-  SyncPolicyHandler();
+  explicit SyncPolicyHandler(const char* pref_name);
   virtual ~SyncPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
@@ -303,13 +310,14 @@ class SyncPolicyHandler : public TypeCheckingPolicyHandler {
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
+  const char* pref_name_;
   DISALLOW_COPY_AND_ASSIGN(SyncPolicyHandler);
 };
 
 // ConfigurationPolicyHandler for the AutofillEnabled policy.
 class AutofillPolicyHandler : public TypeCheckingPolicyHandler {
  public:
-  AutofillPolicyHandler();
+  explicit AutofillPolicyHandler(const char* pref_name);
   virtual ~AutofillPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
@@ -317,6 +325,7 @@ class AutofillPolicyHandler : public TypeCheckingPolicyHandler {
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
+  const char* pref_name_;
   DISALLOW_COPY_AND_ASSIGN(AutofillPolicyHandler);
 };
 
@@ -325,7 +334,8 @@ class AutofillPolicyHandler : public TypeCheckingPolicyHandler {
 // ConfigurationPolicyHandler for the DownloadDirectory policy.
 class DownloadDirPolicyHandler : public TypeCheckingPolicyHandler {
  public:
-  DownloadDirPolicyHandler();
+  DownloadDirPolicyHandler(const char* default_directory_pref_name,
+                           const char* prompt_for_download_pref_name);
   virtual ~DownloadDirPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
@@ -333,13 +343,15 @@ class DownloadDirPolicyHandler : public TypeCheckingPolicyHandler {
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
+  const char* default_directory_pref_name_;
+  const char* prompt_for_download_pref_name_;
   DISALLOW_COPY_AND_ASSIGN(DownloadDirPolicyHandler);
 };
 
 // ConfigurationPolicyHandler for the DiskCacheDir policy.
 class DiskCacheDirPolicyHandler : public TypeCheckingPolicyHandler {
  public:
-  explicit DiskCacheDirPolicyHandler();
+  explicit DiskCacheDirPolicyHandler(const char* pref_name);
   virtual ~DiskCacheDirPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
@@ -347,6 +359,7 @@ class DiskCacheDirPolicyHandler : public TypeCheckingPolicyHandler {
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
+  const char* pref_name_;
   DISALLOW_COPY_AND_ASSIGN(DiskCacheDirPolicyHandler);
 };
 
@@ -355,7 +368,8 @@ class DiskCacheDirPolicyHandler : public TypeCheckingPolicyHandler {
 // ConfigurationPolicyHandler for the FileSelectionDialogsHandler policy.
 class FileSelectionDialogsHandler : public TypeCheckingPolicyHandler {
  public:
-  FileSelectionDialogsHandler();
+  FileSelectionDialogsHandler(const char* allow_dialogs_pref_name,
+                              const char* prompt_for_download_pref_name);
   virtual ~FileSelectionDialogsHandler();
 
   // ConfigurationPolicyHandler methods:
@@ -363,13 +377,15 @@ class FileSelectionDialogsHandler : public TypeCheckingPolicyHandler {
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
+  const char* allow_dialogs_pref_name_;
+  const char* prompt_for_download_pref_name_;
   DISALLOW_COPY_AND_ASSIGN(FileSelectionDialogsHandler);
 };
 
 // ConfigurationPolicyHandler for the incognito mode policies.
 class IncognitoModePolicyHandler : public ConfigurationPolicyHandler {
  public:
-  IncognitoModePolicyHandler();
+  explicit IncognitoModePolicyHandler(const char* pref_name);
   virtual ~IncognitoModePolicyHandler();
 
   // ConfigurationPolicyHandler methods:
@@ -382,27 +398,62 @@ class IncognitoModePolicyHandler : public ConfigurationPolicyHandler {
   IncognitoModePrefs::Availability GetAvailabilityValueAsEnum(
       const Value* availability);
 
+  const char* pref_name_;
   DISALLOW_COPY_AND_ASSIGN(IncognitoModePolicyHandler);
 };
 
 // ConfigurationPolicyHandler for the DefaultSearchEncodings policy.
 class DefaultSearchEncodingsPolicyHandler : public TypeCheckingPolicyHandler {
  public:
-  DefaultSearchEncodingsPolicyHandler();
+  explicit DefaultSearchEncodingsPolicyHandler(const char* pref_name);
   virtual ~DefaultSearchEncodingsPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
   virtual void ApplyPolicySettings(const PolicyMap& policies,
                                    PrefValueMap* prefs) OVERRIDE;
 
+  const char* pref_name() const { return pref_name_; }
+
  private:
+  const char* pref_name_;
   DISALLOW_COPY_AND_ASSIGN(DefaultSearchEncodingsPolicyHandler);
+};
+
+enum DefaultSearchKey {
+  DEFAULT_SEARCH_ENABLED,
+  DEFAULT_SEARCH_NAME,
+  DEFAULT_SEARCH_KEYWORD,
+  DEFAULT_SEARCH_SEARCH_URL,
+  DEFAULT_SEARCH_SUGGEST_URL,
+  DEFAULT_SEARCH_INSTANT_URL,
+  DEFAULT_SEARCH_ICON_URL,
+  DEFAULT_SEARCH_ENCODINGS,
+  DEFAULT_SEARCH_ALTERNATE_URLS,
+  DEFAULT_SEARCH_TERMS_REPLACEMENT_KEY,
+  DEFAULT_SEARCH_IMAGE_URL,
+  DEFAULT_SEARCH_NEW_TAB_URL,
+  DEFAULT_SEARCH_SEARCH_URL_POST_PARAMS,
+  DEFAULT_SEARCH_SUGGEST_URL_POST_PARAMS,
+  DEFAULT_SEARCH_INSTANT_URL_POST_PARAMS,
+  DEFAULT_SEARCH_IMAGE_URL_POST_PARAMS,
+  // Must be last.
+  DEFAULT_SEARCH_KEY_SIZE,
 };
 
 // ConfigurationPolicyHandler for the default search policies.
 class DefaultSearchPolicyHandler : public ConfigurationPolicyHandler {
  public:
-  DefaultSearchPolicyHandler();
+   // Constructs a new handler for the DefaultSearch policy with the specified
+   // preference names.
+   // |id_pref_name|: Pref name for the search provider ID.
+   // |prepopulate_id_pref_name|: Pref name for the prepopulated provider ID.
+   // |policy_to_pref_map|: Defines the pref names for respective policy keys.
+   //     Must contain exactly DEFAULT_SEARCH_KEY_SIZE entries and be ordered
+   //     according to the DefaultSearchKey enum.
+  DefaultSearchPolicyHandler(
+      const char* id_pref_name,
+      const char* prepopulate_id_pref_name,
+      const PolicyToPreferenceMapEntry policy_to_pref_map[]);
   virtual ~DefaultSearchPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
@@ -442,7 +493,11 @@ class DefaultSearchPolicyHandler : public ConfigurationPolicyHandler {
   void EnsureListPrefExists(PrefValueMap* prefs, const std::string& path);
 
   // The ConfigurationPolicyHandler handlers for each default search policy.
-  std::vector<ConfigurationPolicyHandler*> handlers_;
+  std::vector<TypeCheckingPolicyHandler*> handlers_;
+
+  const char* id_pref_name_;
+  const char* prepopulate_id_pref_name_;
+  const PolicyToPreferenceMapEntry* policy_to_pref_map_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(DefaultSearchPolicyHandler);
 };
@@ -468,7 +523,7 @@ class ProxyPolicyHandler : public ConfigurationPolicyHandler {
     MODE_COUNT
   };
 
-  ProxyPolicyHandler();
+  explicit ProxyPolicyHandler(const char* pref_name);
   virtual ~ProxyPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
@@ -488,13 +543,14 @@ class ProxyPolicyHandler : public ConfigurationPolicyHandler {
                                    PolicyErrorMap* errors,
                                    std::string* mode_value);
 
+  const char* pref_name_;
   DISALLOW_COPY_AND_ASSIGN(ProxyPolicyHandler);
 };
 
 // Handles JavaScript policies.
 class JavascriptPolicyHandler : public ConfigurationPolicyHandler {
  public:
-  JavascriptPolicyHandler();
+  explicit JavascriptPolicyHandler(const char* pref_name);
   virtual ~JavascriptPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
@@ -504,13 +560,14 @@ class JavascriptPolicyHandler : public ConfigurationPolicyHandler {
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
+  const char* pref_name_;
   DISALLOW_COPY_AND_ASSIGN(JavascriptPolicyHandler);
 };
 
 // Handles URLBlacklist policies.
 class URLBlacklistPolicyHandler : public ConfigurationPolicyHandler {
  public:
-  URLBlacklistPolicyHandler();
+  explicit URLBlacklistPolicyHandler(const char* pref_name);
   virtual ~URLBlacklistPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
@@ -520,13 +577,15 @@ class URLBlacklistPolicyHandler : public ConfigurationPolicyHandler {
                                    PrefValueMap* prefs) OVERRIDE;
 
  private:
+  const char* pref_name_;
   DISALLOW_COPY_AND_ASSIGN(URLBlacklistPolicyHandler);
 };
 
 // Handles RestoreOnStartup policy.
 class RestoreOnStartupPolicyHandler : public TypeCheckingPolicyHandler {
  public:
-  RestoreOnStartupPolicyHandler();
+  RestoreOnStartupPolicyHandler(const char* restore_on_startup_pref_name,
+                                const char* startup_url_list_pref_name);
   virtual ~RestoreOnStartupPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
@@ -539,6 +598,8 @@ class RestoreOnStartupPolicyHandler : public TypeCheckingPolicyHandler {
   void ApplyPolicySettingsFromHomePage(const PolicyMap& policies,
                                        PrefValueMap* prefs);
 
+  const char* restore_on_startup_pref_name_;
+  const char* startup_url_list_pref_name_;
   DISALLOW_COPY_AND_ASSIGN(RestoreOnStartupPolicyHandler);
 };
 
