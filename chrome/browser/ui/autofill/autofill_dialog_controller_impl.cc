@@ -641,6 +641,13 @@ void AutofillDialogControllerImpl::Show() {
   GetMetricLogger().LogDialogSecurityMetric(
       AutofillMetrics::SECURITY_METRIC_DIALOG_SHOWN);
 
+  // Determine what field types should be included in the dialog.
+  // Note that RequestingCreditCardInfo() below relies on parsed field types.
+  bool has_types = false;
+  bool has_sections = false;
+  form_structure_.ParseFieldTypesFromAutocompleteAttributes(
+      &has_types, &has_sections);
+
   if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
     GetMetricLogger().LogDialogSecurityMetric(
         AutofillMetrics::SECURITY_METRIC_CREDIT_CARD_OVER_HTTP);
@@ -650,12 +657,6 @@ void AutofillDialogControllerImpl::Show() {
     GetMetricLogger().LogDialogSecurityMetric(
         AutofillMetrics::SECURITY_METRIC_CROSS_ORIGIN_FRAME);
   }
-
-  // Determine what field types should be included in the dialog.
-  bool has_types = false;
-  bool has_sections = false;
-  form_structure_.ParseFieldTypesFromAutocompleteAttributes(
-      &has_types, &has_sections);
 
   // Fail if the author didn't specify autocomplete types.
   if (!has_types) {
