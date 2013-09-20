@@ -92,7 +92,6 @@ MessageEvent::MessageEvent(const String& data, const String& origin)
     , m_dataType(DataTypeString)
     , m_dataAsString(data)
     , m_origin(origin)
-    , m_lastEventId("")
 {
     ScriptWrappable::init(this);
 }
@@ -102,7 +101,6 @@ MessageEvent::MessageEvent(PassRefPtr<Blob> data, const String& origin)
     , m_dataType(DataTypeBlob)
     , m_dataAsBlob(data)
     , m_origin(origin)
-    , m_lastEventId("")
 {
     ScriptWrappable::init(this);
 }
@@ -112,7 +110,6 @@ MessageEvent::MessageEvent(PassRefPtr<ArrayBuffer> data, const String& origin)
     , m_dataType(DataTypeArrayBuffer)
     , m_dataAsArrayBuffer(data)
     , m_origin(origin)
-    , m_lastEventId("")
 {
     ScriptWrappable::init(this);
 }

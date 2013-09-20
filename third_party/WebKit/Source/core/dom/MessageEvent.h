@@ -53,23 +53,23 @@ public:
     {
         return adoptRef(new MessageEvent);
     }
-    static PassRefPtr<MessageEvent> create(PassOwnPtr<MessagePortArray> ports, const String& origin = "", const String& lastEventId = "", PassRefPtr<EventTarget> source = 0)
+    static PassRefPtr<MessageEvent> create(PassOwnPtr<MessagePortArray> ports, const String& origin = String(), const String& lastEventId = String(), PassRefPtr<EventTarget> source = 0)
     {
         return adoptRef(new MessageEvent(origin, lastEventId, source, ports));
     }
-    static PassRefPtr<MessageEvent> create(PassOwnPtr<MessagePortArray> ports, PassRefPtr<SerializedScriptValue> data, const String& origin = "", const String& lastEventId = "", PassRefPtr<EventTarget> source = 0)
+    static PassRefPtr<MessageEvent> create(PassOwnPtr<MessagePortArray> ports, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtr<EventTarget> source = 0)
     {
         return adoptRef(new MessageEvent(data, origin, lastEventId, source, ports));
     }
-    static PassRefPtr<MessageEvent> create(const String& data, const String& origin = "")
+    static PassRefPtr<MessageEvent> create(const String& data, const String& origin = String())
     {
         return adoptRef(new MessageEvent(data, origin));
     }
-    static PassRefPtr<MessageEvent> create(PassRefPtr<Blob> data, const String& origin = "")
+    static PassRefPtr<MessageEvent> create(PassRefPtr<Blob> data, const String& origin = String())
     {
         return adoptRef(new MessageEvent(data, origin));
     }
-    static PassRefPtr<MessageEvent> create(PassRefPtr<ArrayBuffer> data, const String& origin = "")
+    static PassRefPtr<MessageEvent> create(PassRefPtr<ArrayBuffer> data, const String& origin = String())
     {
         return adoptRef(new MessageEvent(data, origin));
     }

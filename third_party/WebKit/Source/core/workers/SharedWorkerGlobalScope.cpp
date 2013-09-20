@@ -43,10 +43,10 @@
 
 namespace WebCore {
 
-PassRefPtr<MessageEvent> createConnectEvent(PassRefPtr<MessagePort> port)
+PassRefPtr<MessageEvent> createConnectEvent(PassRefPtr<MessagePort> prpPort)
 {
-    RefPtr<MessagePort> sourcePort = port;
-    RefPtr<MessageEvent> event = MessageEvent::create(adoptPtr(new MessagePortArray(1, sourcePort)), "", "", sourcePort);
+    RefPtr<MessagePort> port = prpPort;
+    RefPtr<MessageEvent> event = MessageEvent::create(adoptPtr(new MessagePortArray(1, port)), String(), String(), port);
     event->initEvent(eventNames().connectEvent, false, false);
     return event.release();
 }
