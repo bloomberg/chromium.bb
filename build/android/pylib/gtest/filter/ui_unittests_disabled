@@ -32,6 +32,7 @@ ResourceBundleTest.DelegateGetFontList
 TextEliderTest.ElideEmail
 TextEliderTest.ElideEmailMoreSpace
 TextEliderTest.ElideRectangleText
+TextEliderTest.ElideRectangleTextCheckLineWidth
 TextEliderTest.ElideRectangleTextLongWords
 TextEliderTest.ElideRectangleTextPunctuation
 TextEliderTest.ElideTextEllipsis

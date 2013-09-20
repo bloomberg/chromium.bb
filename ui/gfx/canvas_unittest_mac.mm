@@ -4,6 +4,8 @@
 
 #include "ui/gfx/canvas.h"
 
+#include <cmath>
+
 #import <Cocoa/Cocoa.h>
 
 #include "base/strings/utf_string_conversions.h"
@@ -33,7 +35,7 @@ void CanvasMac_SizeStringInt(const base::string16& text,
       [NSDictionary dictionaryWithObject:native_font
                                   forKey:NSFontAttributeName];
   NSSize string_size = [ns_string sizeWithAttributes:attributes];
-  *width = string_size.width;
+  *width = std::ceil(string_size.width);
   *height = font_list.GetHeight();
 }
 

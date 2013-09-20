@@ -53,6 +53,20 @@ void RunUrlTest(Testcase* testcases, size_t num_testcases) {
   }
 }
 
+gfx::Font GetTestingFont() {
+  gfx::Font font;
+#if defined(OS_MACOSX)
+  // Use a specific font for certain tests on Mac.
+  // 1) Different Mac machines might be configured with different default font.
+  //    The number of extra pixels needed to make ElideEmail/TestFilenameEliding
+  //    tests work might vary per the default font.
+  // 2) This specific font helps expose the line width exceeding problem as in
+  //    ElideRectangleTextCheckLineWidth.
+  font = gfx::Font("LucidaGrande", 12);
+#endif
+  return font;
+}
+
 }  // namespace
 
 // TODO(ios): Complex eliding is off by one for some of those tests on iOS.
@@ -107,13 +121,22 @@ TEST(TextEliderTest, MAYBE_ElideEmail) {
       {"mmmmm@llllllllll", "m" + kEllipsisStr + "@l" + kEllipsisStr},
   };
 
-  const gfx::Font font;
+  const gfx::Font font = GetTestingFont();
   for (size_t i = 0; i < arraysize(testcases); ++i) {
     const string16 expected_output = UTF8ToUTF16(testcases[i].output);
+    int available_width = font.GetStringWidth(expected_output);
+#if defined(OS_MACOSX)
+    // Give two extra pixels to offset the ceiling width returned by
+    // GetStringWidth on Mac. This workaround will no longer be needed once
+    // the floating point width is adopted (http://crbug.com/288987).
+    // Note that we need one more pixel than TestFilenameEliding because
+    // multiple strings are elided and we need to offset more.
+    available_width += 2;
+#endif
     EXPECT_EQ(expected_output,
               ElideEmail(UTF8ToUTF16(testcases[i].input),
                          font,
-                         font.GetStringWidth(expected_output)));
+                         available_width));
   }
 }
 
@@ -311,14 +334,19 @@ TEST(TextEliderTest, MAYBE_TestFilenameEliding) {
       "file.name.re" + kEllipsisStr + "emelylongext"}
   };
 
-  static const gfx::Font font;
+  static const gfx::Font font = GetTestingFont();
   for (size_t i = 0; i < arraysize(testcases); ++i) {
     base::FilePath filepath(testcases[i].input);
     string16 expected = UTF8ToUTF16(testcases[i].output);
     expected = base::i18n::GetDisplayStringInLTRDirectionality(expected);
-    EXPECT_EQ(expected, ElideFilename(filepath,
-        font,
-        font.GetStringWidth(UTF8ToUTF16(testcases[i].output))));
+    int available_width = font.GetStringWidth(UTF8ToUTF16(testcases[i].output));
+#if defined(OS_MACOSX)
+    // Give one extra pixel to offset the ceiling width returned by
+    // GetStringWidth on Mac. This workaround will no longer be needed once
+    // the floating point width is adopted (http://crbug.com/288987).
+    available_width += 1;
+#endif
+    EXPECT_EQ(expected, ElideFilename(filepath, font, available_width));
   }
 }
 
@@ -705,6 +733,37 @@ TEST(TextEliderTest, ElideRectangleTextLongWords) {
     const std::string result = UTF16ToUTF8(JoinString(lines, '|'));
     EXPECT_EQ(expected_output, result) << "Case " << i << " failed!";
   }
+}
+
+// TODO(ios): Complex eliding is off by one for some of those tests on iOS.
+// See crbug.com/154019
+#if defined(OS_IOS)
+#define MAYBE_ElideRectangleTextCheckLineWidth \
+    DISABLED_ElideRectangleTextCheckLineWidth
+#else
+#define MAYBE_ElideRectangleTextCheckLineWidth ElideRectangleTextCheckLineWidth
+#endif
+
+// This test is to make sure that the width of each wrapped line does not
+// exceed the available width. On some platform like Mac, this test used to
+// fail because the truncated integer width is returned for the string
+// and the accumulation of the truncated values causes the elide function
+// to wrap incorrectly.
+TEST(TextEliderTest, MAYBE_ElideRectangleTextCheckLineWidth) {
+  gfx::Font font = GetTestingFont();
+  const int kAvailableWidth = 235;
+  const int kAvailableHeight = 1000;
+  const char text[] = "that Russian place we used to go to after fencing";
+  std::vector<string16> lines;
+  EXPECT_EQ(0, ElideRectangleText(UTF8ToUTF16(text),
+                                  font,
+                                  kAvailableWidth,
+                                  kAvailableHeight,
+                                  WRAP_LONG_WORDS,
+                                  &lines));
+  ASSERT_EQ(2u, lines.size());
+  EXPECT_LE(font.GetStringWidth(lines[0]), kAvailableWidth);
+  EXPECT_LE(font.GetStringWidth(lines[1]), kAvailableWidth);
 }
 
 TEST(TextEliderTest, ElideRectangleString) {
