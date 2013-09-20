@@ -1260,7 +1260,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
     } else {
       net::TransportSecurityState::DomainState state;
       const bool found = transport_security_state->GetDomainState(
-          domain, true, true, &state);
+          domain, true, &state);
 
       result->SetBoolean("result", found);
       if (found) {

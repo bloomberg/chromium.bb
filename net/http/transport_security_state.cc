@@ -137,7 +137,6 @@ bool TransportSecurityState::DeleteDynamicDataForHost(const std::string& host) {
 
 bool TransportSecurityState::GetDomainState(const std::string& host,
                                             bool sni_enabled,
-                                            bool allow_dynamic,
                                             DomainState* result) {
   DCHECK(CalledOnValidThread());
 
@@ -148,12 +147,6 @@ bool TransportSecurityState::GetDomainState(const std::string& host,
 
   bool has_preload = GetStaticDomainState(canonicalized_host, sni_enabled,
                                           &state);
-  // If |allow_dynamic| is false, then return static state to the caller.
-  if (!allow_dynamic) {
-    if (has_preload)
-      *result = state;
-    return has_preload;
-  }
   std::string canonicalized_preload = CanonicalizeHost(state.domain);
   GetDynamicDomainState(host, &state);
 
@@ -843,7 +836,8 @@ TransportSecurityState::DomainState::DomainState()
     : upgrade_mode(MODE_DEFAULT),
       created(base::Time::Now()),
       sts_include_subdomains(false),
-      pkp_include_subdomains(false) {}
+      pkp_include_subdomains(false) {
+}
 
 TransportSecurityState::DomainState::~DomainState() {
 }

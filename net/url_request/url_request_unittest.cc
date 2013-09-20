@@ -2031,7 +2031,7 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy) {
     EXPECT_TRUE(d.data_received().find("Cookie: CookieToNotSend=1")
                 == std::string::npos);
 
-    EXPECT_EQ(2, network_delegate.blocked_get_cookies_count());
+    EXPECT_EQ(1, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
   }
 }
@@ -2162,7 +2162,7 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy_Async) {
     EXPECT_TRUE(d.data_received().find("Cookie: CookieToNotSend=1")
                 == std::string::npos);
 
-    EXPECT_EQ(2, network_delegate.blocked_get_cookies_count());
+    EXPECT_EQ(1, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
   }
 }
@@ -3930,10 +3930,11 @@ TEST_F(URLRequestTestHTTP, ProcessSTS) {
   bool sni_available = true;
   TransportSecurityState::DomainState domain_state;
   EXPECT_TRUE(security_state->GetDomainState(
-      SpawnedTestServer::kLocalhost, sni_available, true, &domain_state));
+      SpawnedTestServer::kLocalhost, sni_available, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
             domain_state.upgrade_mode);
   EXPECT_TRUE(domain_state.sts_include_subdomains);
+  EXPECT_FALSE(domain_state.pkp_include_subdomains);
 #if defined(OS_ANDROID)
   // Android's CertVerifyProc does not (yet) handle pins.
 #else
@@ -3973,49 +3974,14 @@ TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKP) {
   bool sni_available = true;
   TransportSecurityState::DomainState domain_state;
   EXPECT_TRUE(security_state->GetDomainState(
-      SpawnedTestServer::kLocalhost, sni_available, true, &domain_state));
+      SpawnedTestServer::kLocalhost, sni_available, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_DEFAULT,
             domain_state.upgrade_mode);
   EXPECT_FALSE(domain_state.sts_include_subdomains);
   EXPECT_FALSE(domain_state.pkp_include_subdomains);
   EXPECT_TRUE(domain_state.HasPublicKeyPins());
-
   EXPECT_NE(domain_state.upgrade_expiry,
             domain_state.dynamic_spki_hashes_expiry);
-}
-
-// Android's CertVerifyProc does not (yet) handle pins. Therefore, it will
-// reject HPKP headers, and a test setting only HPKP headers will fail (no
-// DomainState present because header rejected).
-#if defined(OS_ANDROID)
-#define MAYBE_ProcessPKP_PrivacyMode DISABLED_ProcessPKP_PrivacyMode
-#else
-#define MAYBE_ProcessPKP_PrivacyMode ProcessPKP_PrivacyMode
-#endif
-// Tests that DynamicDomainState is not added if cookies are not set.
-TEST_F(URLRequestTestHTTP, ProcessPKP_PrivacyMode) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  SpawnedTestServer https_test_server(
-      SpawnedTestServer::TYPE_HTTPS,
-      ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
-  ASSERT_TRUE(https_test_server.Start());
-
-  default_network_delegate_.set_cookie_options(
-      TestNetworkDelegate::NO_SET_COOKIE);
-  TestDelegate d;
-  URLRequest request(https_test_server.GetURL("files/hpkp-headers.html"),
-                     &d,
-                     &default_context_);
-  request.Start();
-  base::MessageLoop::current()->Run();
-
-  TransportSecurityState* security_state =
-      default_context_.transport_security_state();
-  bool sni_available = true;
-  TransportSecurityState::DomainState domain_state;
-  EXPECT_FALSE(security_state->GetDomainState(
-      SpawnedTestServer::kLocalhost, sni_available, true, &domain_state));
 }
 
 TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
@@ -4040,7 +4006,7 @@ TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
   bool sni_available = true;
   TransportSecurityState::DomainState domain_state;
   EXPECT_TRUE(security_state->GetDomainState(
-      SpawnedTestServer::kLocalhost, sni_available, true, &domain_state));
+      SpawnedTestServer::kLocalhost, sni_available, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
             domain_state.upgrade_mode);
   EXPECT_FALSE(domain_state.sts_include_subdomains);
@@ -4069,7 +4035,7 @@ TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP) {
   bool sni_available = true;
   TransportSecurityState::DomainState domain_state;
   EXPECT_TRUE(security_state->GetDomainState(
-      SpawnedTestServer::kLocalhost, sni_available, true, &domain_state));
+      SpawnedTestServer::kLocalhost, sni_available, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
             domain_state.upgrade_mode);
 #if defined(OS_ANDROID)
@@ -4110,7 +4076,7 @@ TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP2) {
   bool sni_available = true;
   TransportSecurityState::DomainState domain_state;
   EXPECT_TRUE(security_state->GetDomainState(
-      SpawnedTestServer::kLocalhost, sni_available, true, &domain_state));
+      SpawnedTestServer::kLocalhost, sni_available, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
             domain_state.upgrade_mode);
 #if defined(OS_ANDROID)
@@ -5119,8 +5085,8 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
   context.set_host_resolver(&host_resolver);
   TransportSecurityState transport_security_state;
   TransportSecurityState::DomainState domain_state;
-  EXPECT_TRUE(transport_security_state.GetDomainState(
-      "www.google.com", true, true, &domain_state));
+  EXPECT_TRUE(transport_security_state.GetDomainState("www.google.com", true,
+                                                      &domain_state));
   context.set_transport_security_state(&transport_security_state);
   context.Init();
 
@@ -5142,8 +5108,8 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
 
   // Get a fresh copy of the state, and check that it hasn't been updated.
   TransportSecurityState::DomainState new_domain_state;
-  EXPECT_TRUE(transport_security_state.GetDomainState(
-      "www.google.com", true, true, &new_domain_state));
+  EXPECT_TRUE(transport_security_state.GetDomainState("www.google.com", true,
+                                                      &new_domain_state));
   EXPECT_EQ(new_domain_state.upgrade_mode, domain_state.upgrade_mode);
   EXPECT_EQ(new_domain_state.sts_include_subdomains,
             domain_state.sts_include_subdomains);

@@ -124,7 +124,6 @@ class NET_EXPORT SocketStream
   void SetUserData(const void* key, UserData* data);
 
   const GURL& url() const { return url_; }
-  GURL url_for_cookies() const { return GetURLForCookies(url_); }
   bool is_secure() const;
   const AddressList& address_list() const { return addresses_; }
   Delegate* delegate() const { return delegate_; }
@@ -180,12 +179,6 @@ class NET_EXPORT SocketStream
   // case happens because users allow certificate with an error by manual
   // actions on alert dialog or browser cached such kinds of user actions.
   void ContinueDespiteError();
-
-  // Returns the URL to be used for cookie policy checking. Note that
-  // this may be different than |url|; for example, the cookie policy
-  // for a ws:// URL is based upon the http:// scheme for that
-  // host:port pair.
-  static GURL GetURLForCookies(const GURL& url);
 
  protected:
   friend class base::RefCountedThreadSafe<SocketStream>;

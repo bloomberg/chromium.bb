@@ -67,7 +67,7 @@ TEST_F(TransportSecurityPersisterTest, SerializeData2) {
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
   static const char kYahooDomain[] = "yahoo.com";
 
-  EXPECT_FALSE(state_.GetDomainState(kYahooDomain, true, true, &domain_state));
+  EXPECT_FALSE(state_.GetDomainState(kYahooDomain, true, &domain_state));
 
   bool include_subdomains = true;
   state_.AddHSTS(kYahooDomain, expiry, include_subdomains);
@@ -77,22 +77,20 @@ TEST_F(TransportSecurityPersisterTest, SerializeData2) {
   EXPECT_TRUE(persister_->SerializeData(&output));
   EXPECT_TRUE(persister_->LoadEntries(output, &dirty));
 
-  EXPECT_TRUE(state_.GetDomainState(kYahooDomain, true, true, &domain_state));
+  EXPECT_TRUE(state_.GetDomainState(kYahooDomain, true, &domain_state));
   EXPECT_EQ(domain_state.upgrade_mode,
             TransportSecurityState::DomainState::MODE_FORCE_HTTPS);
-  EXPECT_TRUE(state_.GetDomainState("foo.yahoo.com", true, true,
-                                    &domain_state));
+  EXPECT_TRUE(state_.GetDomainState("foo.yahoo.com", true, &domain_state));
   EXPECT_EQ(domain_state.upgrade_mode,
             TransportSecurityState::DomainState::MODE_FORCE_HTTPS);
-  EXPECT_TRUE(state_.GetDomainState("foo.bar.yahoo.com", true, true,
-                                    &domain_state));
+  EXPECT_TRUE(state_.GetDomainState("foo.bar.yahoo.com", true, &domain_state));
   EXPECT_EQ(domain_state.upgrade_mode,
             TransportSecurityState::DomainState::MODE_FORCE_HTTPS);
   EXPECT_TRUE(state_.GetDomainState("foo.bar.baz.yahoo.com", true,
-                                   true, &domain_state));
+                                   &domain_state));
   EXPECT_EQ(domain_state.upgrade_mode,
             TransportSecurityState::DomainState::MODE_FORCE_HTTPS);
-  EXPECT_FALSE(state_.GetDomainState("com", true, true, &domain_state));
+  EXPECT_FALSE(state_.GetDomainState("com", true, &domain_state));
 }
 
 TEST_F(TransportSecurityPersisterTest, SerializeData3) {
@@ -179,7 +177,7 @@ TEST_F(TransportSecurityPersisterTest, SerializeDataOld) {
 TEST_F(TransportSecurityPersisterTest, PublicKeyHashes) {
   TransportSecurityState::DomainState domain_state;
   static const char kTestDomain[] = "example.com";
-  EXPECT_FALSE(state_.GetDomainState(kTestDomain, false, true, &domain_state));
+  EXPECT_FALSE(state_.GetDomainState(kTestDomain, false, &domain_state));
   net::HashValueVector hashes;
   EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes));
 
@@ -205,7 +203,7 @@ TEST_F(TransportSecurityPersisterTest, PublicKeyHashes) {
   EXPECT_TRUE(persister_->SerializeData(&ser));
   bool dirty;
   EXPECT_TRUE(persister_->LoadEntries(ser, &dirty));
-  EXPECT_TRUE(state_.GetDomainState(kTestDomain, false, true, &domain_state));
+  EXPECT_TRUE(state_.GetDomainState(kTestDomain, false, &domain_state));
   EXPECT_EQ(1u, domain_state.dynamic_spki_hashes.size());
   EXPECT_EQ(sha1.tag, domain_state.dynamic_spki_hashes[0].tag);
   EXPECT_EQ(0, memcmp(domain_state.dynamic_spki_hashes[0].data(), sha1.data(),
