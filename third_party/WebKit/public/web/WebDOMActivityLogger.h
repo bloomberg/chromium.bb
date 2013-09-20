@@ -33,6 +33,7 @@
 
 #include "../platform/WebCommon.h"
 #include "../platform/WebString.h"
+#include "../platform/WebURL.h"
 #include <v8.h>
 
 namespace WebKit {
@@ -41,6 +42,7 @@ class WebDOMActivityLogger {
 public:
     virtual ~WebDOMActivityLogger() { }
     virtual void log(const WebString& apiName, int argc, const v8::Handle<v8::Value>* argv, const WebString& extraInfo) { }
+    virtual void log(const WebString& apiName, int argc, const v8::Handle<v8::Value>* argv, const WebString& extraInfo, const WebURL& url, const WebString& title) { }
 };
 
 // Checks if a logger already exists for the world identified
