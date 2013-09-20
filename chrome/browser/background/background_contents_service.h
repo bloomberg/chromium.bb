@@ -6,16 +6,12 @@
 #define CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_SERVICE_H_
 
 #include <map>
-#include <queue>
-#include <set>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/time/time.h"
 #include "chrome/browser/tab_contents/background_contents.h"
-#include "chrome/common/extensions/extension.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -33,6 +29,10 @@ class DictionaryValue;
 
 namespace content {
 class SessionStorageNamespace;
+}
+
+namespace extensions {
+class Extension;
 }
 
 namespace gfx {
@@ -57,10 +57,9 @@ class BackgroundContentsService : private content::NotificationObserver,
   virtual ~BackgroundContentsService();
 
   // Allows tests to reduce the time between a force-installed app/extension
-  // crashing and when we reload it, and the amount of time we wait for further
-  // crashes before showing a balloon saying the app/extension is misbehaving.
-  static void SetCrashDelaysForForceInstalledAppsAndExtensionsForTesting(
-      int restart_delay_in_ms, int crash_window_in_ms);
+  // crashing and when we reload it.
+  static void SetRestartDelayForForceInstalledAppsAndExtensionsForTesting(
+      int restart_delay_in_ms);
 
   // Returns the BackgroundContents associated with the passed application id,
   // or NULL if none.
@@ -131,10 +130,10 @@ class BackgroundContentsService : private content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Restarts a force-installed app/extension after a crash. Notifies user if
-  // crash recurs frequently.
+  // Restarts a force-installed app/extension after a crash.
   void RestartForceInstalledExtensionOnCrash(
-      const extensions::Extension* extension, Profile* profile);
+      const extensions::Extension* extension,
+      Profile* profile);
 
   // Loads all registered BackgroundContents at startup.
   void LoadBackgroundContentsFromPrefs(Profile* profile);
@@ -188,12 +187,6 @@ class BackgroundContentsService : private content::NotificationObserver,
   // Delay (in ms) before restarting a force-installed extension that crashed.
   static int restart_delay_in_ms_;
 
-  // When a force-installed app/extension crashes, we check if it's in a crash/
-  // reload loop by checking if the number of crashes exceeds a threshold in a
-  // given time window. The duration of that window is given by:
-  // kMisbehaveCrashCountThreshold * (restart_delay_in_ms + crash_window_in_ms)
-  static int crash_window_in_ms_;
-
   // PrefService used to store list of background pages (or NULL if this is
   // running under an incognito profile).
   PrefService* prefs_;
@@ -213,16 +206,6 @@ class BackgroundContentsService : private content::NotificationObserver,
   // Value: BackgroundContentsInfo for the BC associated with that application
   typedef std::map<string16, BackgroundContentsInfo> BackgroundContentsMap;
   BackgroundContentsMap contents_map_;
-
-  // Map associating IDs of force-installed extensions/apps with their most
-  // recent crash timestamps.
-  // Key: app/extension id.
-  // Value: queue containing up to 5 most recent crash timestamps.
-  std::map<std::string, std::queue<base::TimeTicks> > extension_crashlog_map_;
-
-  // Map containing ids of force-installed apps/extensions for which we have
-  // already shown an 'App/Extension is misbehaving' balloon.
-  std::set<std::string> misbehaving_extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundContentsService);
 };

@@ -12,6 +12,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -56,38 +57,22 @@ using extensions::UnloadedExtensionInfo;
 
 namespace {
 
-const char kCrashNotificationPrefix[] = "app.background.crashed.";
-const char kMisbehaveNotificationPrefix[] = "app.background.misbehaved.";
-
-// Number of recent crashes of a force-installed app/extension that will
-// trigger an 'App/Extension is misbehaving' balloon.
-const unsigned int kMisbehaveCrashCountThreshold = 5;
+const char kNotificationPrefix[] = "app.background.crashed.";
 
 void CloseBalloon(const std::string& balloon_id) {
   g_browser_process->notification_ui_manager()->
       CancelById(balloon_id);
 }
 
-// Closes the balloon with this id.
-void ScheduleCloseBalloon(const std::string& balloon_id) {
+// Closes the crash notification balloon for the app/extension with this id.
+void ScheduleCloseBalloon(const std::string& extension_id) {
   if (!base::MessageLoop::current())  // For unit_tests
     return;
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&CloseBalloon, balloon_id));
+      FROM_HERE, base::Bind(&CloseBalloon, kNotificationPrefix + extension_id));
 }
 
-// Closes the crash notification balloon for the app/extension with this id.
-void ScheduleCloseCrashBalloon(const std::string& extension_id) {
-  ScheduleCloseBalloon(kCrashNotificationPrefix + extension_id);
-}
-
-// Closes all notification balloons relating to the app/extension with this id.
-void ScheduleCloseBalloons(const std::string& extension_id) {
-  ScheduleCloseBalloon(kMisbehaveNotificationPrefix + extension_id);
-  ScheduleCloseBalloon(kCrashNotificationPrefix + extension_id);
-}
-
-// Delegate for the 'app/extension has crashed' popup balloon. Restarts the
+// Delegate for the app/extension crash notification balloon. Restarts the
 // app/extension when the balloon is clicked.
 class CrashNotificationDelegate : public NotificationDelegate {
  public:
@@ -129,15 +114,15 @@ class CrashNotificationDelegate : public NotificationDelegate {
           ReloadExtension(copied_extension_id);
     }
 
-    // Closing the 'app/extension has crashed' balloon here should be OK, but it
-    // causes a crash on Mac (http://crbug.com/78167).
-    ScheduleCloseCrashBalloon(copied_extension_id);
+    // Closing the crash notification balloon for the app/extension here should
+    // be OK, but it causes a crash on Mac, see: http://crbug.com/78167
+    ScheduleCloseBalloon(copied_extension_id);
   }
 
   virtual bool HasClickedListener() OVERRIDE { return true; }
 
   virtual std::string id() const OVERRIDE {
-    return kCrashNotificationPrefix + extension_id_;
+    return kNotificationPrefix + extension_id_;
   }
 
   virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
@@ -155,48 +140,12 @@ class CrashNotificationDelegate : public NotificationDelegate {
   DISALLOW_COPY_AND_ASSIGN(CrashNotificationDelegate);
 };
 
-// Empty delegate for the 'app/extension is misbehaving' popup balloon, which is
-// triggered if a force-installed app/extension gets stuck in a crash/reload
-// cycle. Doesn't do anything on click because force-installed apps/extensions
-// get restarted automatically.
-class MisbehaveNotificationDelegate : public NotificationDelegate {
- public:
-  explicit MisbehaveNotificationDelegate(const Extension* extension)
-      : extension_id_(extension->id()) {
-  }
-
-  virtual void Display() OVERRIDE {}
-
-  virtual void Error() OVERRIDE {}
-
-  virtual void Close(bool by_user) OVERRIDE {}
-
-  virtual void Click() OVERRIDE {}
-
-  virtual bool HasClickedListener() OVERRIDE { return true; }
-
-  virtual std::string id() const OVERRIDE {
-    return kMisbehaveNotificationPrefix + extension_id_;
-  }
-
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
-    return NULL;
-  }
-
- private:
-  virtual ~MisbehaveNotificationDelegate() {}
-
-  std::string extension_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(MisbehaveNotificationDelegate);
-};
-
 #if defined(ENABLE_NOTIFICATIONS)
 void NotificationImageReady(
     const std::string extension_name,
     const string16 message,
     const GURL extension_url,
-    scoped_refptr<NotificationDelegate> delegate,
+    scoped_refptr<CrashNotificationDelegate> delegate,
     Profile* profile,
     const gfx::Image& icon) {
   gfx::Image notification_icon(icon);
@@ -216,27 +165,13 @@ void NotificationImageReady(
 #endif
 
 // Show a popup notification balloon with a crash message for a given app/
-// extension. If |force_installed| is true we show an 'App/extension
-// is misbehaving' message instead of a crash message.
-void ShowBalloon(const Extension* extension, Profile* profile,
-                 bool force_installed) {
+// extension.
+void ShowBalloon(const Extension* extension, Profile* profile) {
 #if defined(ENABLE_NOTIFICATIONS)
-  string16 message;
-  scoped_refptr<NotificationDelegate> delegate;
-  if (force_installed) {
-    message = l10n_util::GetStringFUTF16(
-        extension->is_app() ?
-            IDS_BACKGROUND_MISBEHAVING_APP_BALLOON_MESSAGE :
-            IDS_BACKGROUND_MISBEHAVING_EXTENSION_BALLOON_MESSAGE,
-        UTF8ToUTF16(extension->name()));
-    delegate = new MisbehaveNotificationDelegate(extension);
-  } else {
-    message = l10n_util::GetStringFUTF16(
-        extension->is_app() ? IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
-                              IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
-        UTF8ToUTF16(extension->name()));
-    delegate = new CrashNotificationDelegate(profile, extension);
-  }
+  const string16 message = l10n_util::GetStringFUTF16(
+      extension->is_app() ? IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
+                            IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
+      UTF8ToUTF16(extension->name()));
   extension_misc::ExtensionIcons size(extension_misc::EXTENSION_ICON_MEDIUM);
   extensions::ExtensionResource resource =
       extensions::IconsInfo::GetIconResource(
@@ -254,13 +189,12 @@ void ShowBalloon(const Extension* extension, Profile* profile,
           extension->name(),
           message,
           extension->url(),
-          delegate,
+          make_scoped_refptr(new CrashNotificationDelegate(profile, extension)),
           profile));
 #endif
 }
 
-void ReloadExtension(
-    const std::string& extension_id, Profile* profile) {
+void ReloadExtension(const std::string& extension_id, Profile* profile) {
   if (g_browser_process->IsShuttingDown() ||
       !g_browser_process->profile_manager()->IsValidProfile(profile)) {
       return;
@@ -296,7 +230,6 @@ const char kUrlKey[] = "url";
 const char kFrameNameKey[] = "name";
 
 int BackgroundContentsService::restart_delay_in_ms_ = 3000;  // 3 seconds.
-int BackgroundContentsService::crash_window_in_ms_ = 1000;  // 1 second.
 
 BackgroundContentsService::BackgroundContentsService(
     Profile* profile, const CommandLine* command_line)
@@ -320,10 +253,9 @@ BackgroundContentsService::~BackgroundContentsService() {
 
 // static
 void BackgroundContentsService::
-    SetCrashDelaysForForceInstalledAppsAndExtensionsForTesting(
-        int restart_delay_in_ms, int crash_window_in_ms) {
+    SetRestartDelayForForceInstalledAppsAndExtensionsForTesting(
+        int restart_delay_in_ms) {
   restart_delay_in_ms_ = restart_delay_in_ms;
-  crash_window_in_ms_ = crash_window_in_ms;
 }
 
 std::vector<BackgroundContents*>
@@ -451,8 +383,8 @@ void BackgroundContentsService::Observe(
         }
       }
 
-      // Remove any "app/extension has crashed" balloons.
-      ScheduleCloseCrashBalloon(extension->id());
+      // Close the crash notification balloon for the app/extension, if any.
+      ScheduleCloseBalloon(extension->id());
       SendChangeNotification(profile);
       break;
     }
@@ -487,9 +419,9 @@ void BackgroundContentsService::Observe(
         // handling code as a task here so that it is not executed before this
         // event.
         base::MessageLoop::current()->PostTask(
-            FROM_HERE, base::Bind(&ShowBalloon, extension, profile, false));
+            FROM_HERE, base::Bind(&ShowBalloon, extension, profile));
       } else {
-        // Restart the extension; notify user if crash recurs frequently.
+        // Restart the extension.
         RestartForceInstalledExtensionOnCrash(extension, profile);
       }
       break;
@@ -528,12 +460,9 @@ void BackgroundContentsService::Observe(
       break;
 
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
-      const std::string& extension_id =
-          content::Details<const Extension>(details).ptr()->id();
-      // Remove any balloons shown for this app/extension.
-      ScheduleCloseBalloons(extension_id);
-      misbehaving_extensions_.erase(extension_id);
-      extension_crashlog_map_.erase(extension_id);
+      // Close the crash notification balloon for the app/extension, if any.
+      ScheduleCloseBalloon(
+          content::Details<const Extension>(details).ptr()->id());
       break;
     }
 
@@ -544,38 +473,10 @@ void BackgroundContentsService::Observe(
 }
 
 void BackgroundContentsService::RestartForceInstalledExtensionOnCrash(
-    const Extension* extension, Profile* profile) {
-  const std::string& extension_id = extension->id();
-  const bool already_notified = misbehaving_extensions_.find(extension_id) !=
-      misbehaving_extensions_.end();
-  std::queue<base::TimeTicks>& crashes = extension_crashlog_map_[extension_id];
-  const base::TimeDelta recent_time_window =
-      base::TimeDelta::FromMilliseconds(kMisbehaveCrashCountThreshold *
-          (restart_delay_in_ms_ + crash_window_in_ms_));
-  if (!already_notified) {
-    // Show a notification if the threshold number of crashes has occurred
-    // within a recent time period.
-    const bool should_notify =
-        crashes.size() == kMisbehaveCrashCountThreshold - 1 &&
-        base::TimeTicks::Now() - crashes.front() < recent_time_window;
-    if (should_notify) {
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-          base::Bind(&ShowBalloon, extension, profile, true));
-      misbehaving_extensions_.insert(extension_id);
-      extension_crashlog_map_.erase(extension_id);
-    } else {
-      while (!crashes.empty() &&
-             base::TimeTicks::Now() - crashes.front() > recent_time_window) {
-        // Remove old timestamps.
-        crashes.pop();
-      }
-      crashes.push(base::TimeTicks::Now());
-      if (crashes.size() == kMisbehaveCrashCountThreshold)
-        crashes.pop();
-    }
-  }
+    const Extension* extension,
+    Profile* profile) {
   base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      base::Bind(&ReloadExtension, extension_id, profile),
+      base::Bind(&ReloadExtension, extension->id(), profile),
       base::TimeDelta::FromMilliseconds(restart_delay_in_ms_));
 }
 
@@ -801,7 +702,7 @@ void BackgroundContentsService::BackgroundContentsOpened(
   contents_map_[details->application_id].contents = details->contents;
   contents_map_[details->application_id].frame_name = details->frame_name;
 
-  ScheduleCloseCrashBalloon(UTF16ToASCII(details->application_id));
+  ScheduleCloseBalloon(UTF16ToASCII(details->application_id));
 }
 
 // Used by test code and debug checks to verify whether a given

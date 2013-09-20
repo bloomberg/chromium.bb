@@ -1569,7 +1569,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
 
   // Test policy-installed extensions are reloaded when killed.
   BackgroundContentsService::
-      SetCrashDelaysForForceInstalledAppsAndExtensionsForTesting(0, 0);
+      SetRestartDelayForForceInstalledAppsAndExtensionsForTesting(0);
   content::WindowedNotificationObserver extension_crashed_observer(
       chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
       content::NotificationService::AllSources());
