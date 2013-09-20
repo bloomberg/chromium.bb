@@ -76,7 +76,6 @@ class GpuMemoryTest : public ContentBrowserTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kEnableLogging);
-    command_line->AppendSwitch(switches::kForceCompositingMode);
     command_line->AppendSwitchASCII(switches::kForceGpuMemAvailableMb,
                                     kMemoryLimitMBSwitch);
     // Only run this on GPU bots for now. These tests should work with
