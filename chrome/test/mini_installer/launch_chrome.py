@@ -8,9 +8,9 @@ This script launches Chrome and waits until its window shows up.
 """
 
 import optparse
-import subprocess
 import sys
 import time
+import win32process
 
 import chrome_helper
 
@@ -42,8 +42,12 @@ def main():
     parser.error('Incorrect number of arguments.')
   chrome_path = args[0]
 
-  process = subprocess.Popen(chrome_path)
-  if not WaitForWindow(process.pid, 'Chrome_WidgetWin_'):
+  # Use CreateProcess rather than subprocess.Popen to avoid side effects such as
+  # handle interitance.
+  _, _, process_id, _ = win32process.CreateProcess(None, chrome_path, None,
+                                                   None, 0, 0, None, None,
+                                                   win32process.STARTUPINFO())
+  if not WaitForWindow(process_id, 'Chrome_WidgetWin_'):
     raise Exception('Could not launch Chrome.')
   return 0
 
