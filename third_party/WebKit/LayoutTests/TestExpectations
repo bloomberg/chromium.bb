@@ -1328,3 +1328,6 @@ crbug.com/289420 css3/masking/mask-luminance-png.html [ NeedsRebaseline ]
 
 crbug.com/295605 [ Win Debug ] fast/dom/custom/document-register-reentrant-null-constructor.html [ Crash ]
 crbug.com/295605 [ Win Debug ] fast/dom/custom/document-register-reentrant-throwing-constructor.html [ Crash ]
+
+# Flaky on most bots, but linux debug particularly.
+crbug.com/295789 fast/html/imports/import-in-iframe.html [ Failure Pass ]
