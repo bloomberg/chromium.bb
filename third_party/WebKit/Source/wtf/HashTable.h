@@ -271,6 +271,8 @@ namespace WTF {
         HashTable();
         ~HashTable()
         {
+            if (LIKELY(!m_table))
+                return;
             deallocateTable(m_table, m_tableSize);
             m_table = 0;
         }
