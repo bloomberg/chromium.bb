@@ -14,8 +14,8 @@ class APP_LIST_EXPORT AppListModelObserver {
   // Invoked when AppListModel's status has changed.
   virtual void OnAppListModelStatusChanged() {}
 
-  // Invoked when AppListModel's current user details have changed.
-  virtual void OnAppListModelCurrentUserChanged() {}
+  // Invoked when AppListModel's profile menu items have changed.
+  virtual void OnAppListModelUsersChanged() {}
 
   // Invoked when AppListModel's current user's signin status has changed.
   virtual void OnAppListModelSigninStatusChanged() {}

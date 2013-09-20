@@ -54,28 +54,20 @@ bool ShouldDisplayInAppLauncher(Profile* profile,
 AppsModelBuilder::AppsModelBuilder(Profile* profile,
                                    app_list::AppListModel::Apps* model,
                                    AppListControllerDelegate* controller)
-    : profile_(profile),
+    : profile_(NULL),
       controller_(controller),
       model_(model),
       highlighted_app_pending_(false),
       ignore_changes_(false),
-      tracker_(extensions::InstallTrackerFactory::GetForProfile(profile_)) {
+      tracker_(NULL) {
   model_->AddObserver(this);
+  // Build the model.
+  SwitchProfile(profile);
 }
 
 AppsModelBuilder::~AppsModelBuilder() {
   OnShutdown();
   model_->RemoveObserver(this);
-}
-
-void AppsModelBuilder::Build() {
-  DCHECK(model_ && model_->item_count() == 0);
-
-  PopulateApps();
-  UpdateHighlight();
-
-  // Start observing after model is built.
-  tracker_->AddObserver(this);
 }
 
 void AppsModelBuilder::OnBeginExtensionInstall(
@@ -170,6 +162,26 @@ void AppsModelBuilder::AddApps(const ExtensionSet* extensions, Apps* apps) {
                                            gfx::ImageSkia(),
                                            (*app)->is_platform_app()));
   }
+}
+
+void AppsModelBuilder::SwitchProfile(Profile* profile) {
+  if (profile_ == profile)
+    return;
+
+  profile_ = profile;
+  model_->DeleteAll();
+  if (tracker_)
+    tracker_->RemoveObserver(this);
+
+  tracker_ = extensions::InstallTrackerFactory::GetForProfile(profile_);
+
+  DCHECK(model_ && model_->item_count() == 0);
+
+  PopulateApps();
+  UpdateHighlight();
+
+  // Start observing after model is built.
+  tracker_->AddObserver(this);
 }
 
 void AppsModelBuilder::PopulateApps() {

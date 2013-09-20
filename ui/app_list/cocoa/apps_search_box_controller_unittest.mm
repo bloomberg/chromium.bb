@@ -9,16 +9,17 @@
 #include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"
 #include "ui/app_list/app_list_menu.h"
-#import "ui/app_list/cocoa/current_user_menu_item_view.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
+#import "ui/base/cocoa/menu_controller.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
 @interface TestAppsSearchBoxDelegate : NSObject<AppsSearchBoxDelegate> {
  @private
   app_list::SearchBoxModel searchBoxModel_;
   app_list::test::AppListTestViewDelegate appListDelegate_;
+  app_list::test::AppListTestModel appListModel_;
   int textChangeCount_;
 }
 
@@ -29,6 +30,18 @@
 @implementation TestAppsSearchBoxDelegate
 
 @synthesize textChangeCount = textChangeCount_;
+
+- (id)init {
+  if ((self = [super init])) {
+    app_list::AppListModel::Users users(2);
+    users[0].name = ASCIIToUTF16("user1");
+    users[1].name = ASCIIToUTF16("user2");
+    users[1].email = ASCIIToUTF16("user2@chromium.org");
+    users[1].active = true;
+    appListModel_.SetUsers(users);
+  }
+  return self;
+}
 
 - (app_list::SearchBoxModel*)searchBoxModel {
   return &searchBoxModel_;
@@ -52,12 +65,8 @@
   return 3;
 }
 
-- (NSString*)currentUserName {
-  return @"";
-}
-
-- (NSString*)currentUserEmail {
-  return @"";
+- (app_list::AppListModel*)appListModel {
+  return &appListModel_;
 }
 
 @end
@@ -139,8 +148,13 @@ TEST_F(AppsSearchBoxControllerTest, SearchBoxModel) {
   EXPECT_EQ(4, [delegate_ textChangeCount]);
 }
 
-// Test the popup menu items.
-TEST_F(AppsSearchBoxControllerTest, SearchBoxMenu) {
+// Test the popup menu items when there is only one user..
+TEST_F(AppsSearchBoxControllerTest, SearchBoxMenuSingleUser) {
+  // Set a single user. We need to set the delegate again because the
+  // AppListModel observer isn't hooked up in these tests.
+  [delegate_ appListModel]->SetUsers(app_list::AppListModel::Users(1));
+  [apps_search_box_controller_ setDelegate:delegate_];
+
   NSPopUpButton* menu_control = [apps_search_box_controller_ menuControl];
   EXPECT_TRUE([apps_search_box_controller_ appListMenu]);
   ui::MenuModel* menu_model
@@ -150,14 +164,53 @@ TEST_F(AppsSearchBoxControllerTest, SearchBoxMenu) {
   EXPECT_EQ(menu_model->GetItemCount() + 1,
             [[menu_control menu] numberOfItems]);
 
-  // The CURRENT_USER item should contain our custom view.
+  // All command ids should be less than |SELECT_PROFILE| as no user menu items
+  // are being shown.
+  for (int i = 0; i < menu_model->GetItemCount(); ++i)
+    EXPECT_LT(menu_model->GetCommandIdAt(i), AppListMenu::SELECT_PROFILE);
+
+  // The number of items should match the index that starts profile items.
+  EXPECT_EQ(AppListMenu::SELECT_PROFILE, menu_model->GetItemCount());
+}
+
+// Test the popup menu items for the multi-profile case.
+TEST_F(AppsSearchBoxControllerTest, SearchBoxMenu) {
+  const app_list::AppListModel::Users& users =
+      [delegate_ appListModel]->users();
+  NSPopUpButton* menu_control = [apps_search_box_controller_ menuControl];
+  EXPECT_TRUE([apps_search_box_controller_ appListMenu]);
+  ui::MenuModel* menu_model
+      = [apps_search_box_controller_ appListMenu]->menu_model();
+  // Add one to the item count to account for the blank, first item that Cocoa
+  // has in its popup menus.
+  EXPECT_EQ(menu_model->GetItemCount() + 1,
+            [[menu_control menu] numberOfItems]);
+
   ui::MenuModel* found_menu_model = menu_model;
   int index;
+  MenuController* controller = [[menu_control menu] delegate];
+
+  // The first user item is an unchecked label.
   EXPECT_TRUE(ui::MenuModel::GetModelAndIndexForCommandId(
-      AppListMenu::CURRENT_USER, &menu_model, &index));
+      AppListMenu::SELECT_PROFILE, &menu_model, &index));
   EXPECT_EQ(found_menu_model, menu_model);
-  NSMenuItem* current_user_item = [[menu_control menu] itemAtIndex:index + 1];
-  EXPECT_TRUE([current_user_item view]);
+  NSMenuItem* unchecked_user_item = [[menu_control menu] itemAtIndex:index + 1];
+  [controller validateUserInterfaceItem:unchecked_user_item];
+  // The profile name should be shown if there is no email available.
+  EXPECT_NSEQ(base::SysUTF16ToNSString(users[0].name),
+              [unchecked_user_item title]);
+  EXPECT_EQ(NSOffState, [unchecked_user_item state]);
+
+  // The second user item is a checked label because it is the active profile.
+  EXPECT_TRUE(ui::MenuModel::GetModelAndIndexForCommandId(
+      AppListMenu::SELECT_PROFILE + 1, &menu_model, &index));
+  EXPECT_EQ(found_menu_model, menu_model);
+  NSMenuItem* checked_user_item = [[menu_control menu] itemAtIndex:index + 1];
+  [controller validateUserInterfaceItem:checked_user_item];
+  // The email is shown when available.
+  EXPECT_NSEQ(base::SysUTF16ToNSString(users[1].email),
+              [checked_user_item title]);
+  EXPECT_EQ(NSOnState, [checked_user_item state]);
 
   // A regular item should have just the label.
   EXPECT_TRUE(ui::MenuModel::GetModelAndIndexForCommandId(
@@ -168,31 +221,6 @@ TEST_F(AppsSearchBoxControllerTest, SearchBoxMenu) {
   EXPECT_NSEQ(base::SysUTF16ToNSString(menu_model->GetLabelAt(index)),
               [settings_item title]);
 }
-
-// Test initialization and display of the custom menu item that shows the
-// currently signed-in user. This is a non-interactive view.
-class AppsSearchBoxCustomMenuItemTest : public ui::CocoaTest {
- public:
-  AppsSearchBoxCustomMenuItemTest() {
-    Init();
-  }
-
-  virtual void SetUp() OVERRIDE {
-    current_user_menu_item_.reset([[[CurrentUserMenuItemView alloc]
-        initWithCurrentUser:@"testUser"
-                  userEmail:@"testUser@chromium.org"] retain]);
-    ui::CocoaTest::SetUp();
-    [[test_window() contentView] addSubview:current_user_menu_item_];
-  }
-
- protected:
-  base::scoped_nsobject<NSView> current_user_menu_item_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppsSearchBoxCustomMenuItemTest);
-};
-
-TEST_VIEW(AppsSearchBoxCustomMenuItemTest, current_user_menu_item_);
 
 }  // namespace test
 }  // namespace app_list

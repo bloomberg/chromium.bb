@@ -10,7 +10,7 @@
 #include "grit/ui_resources.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #include "ui/app_list/app_list_menu.h"
-#import "ui/app_list/cocoa/current_user_menu_item_view.h"
+#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_box_model_observer.h"
 #import "ui/base/cocoa/controls/hover_image_menu_button.h"
@@ -177,7 +177,9 @@ void SearchBoxModelObserverBridge::TextChanged() {
   if (![delegate_ appListDelegate])
     return;
 
-  appListMenu_.reset(new app_list::AppListMenu([delegate_ appListDelegate]));
+  appListMenu_.reset(
+      new app_list::AppListMenu([delegate_ appListDelegate],
+                                [delegate_ appListModel]->users()));
   [self rebuildMenu];
 }
 
@@ -370,21 +372,6 @@ void SearchBoxModelObserverBridge::TextChanged() {
     [super setModel:[parent appListMenu]->menu_model()];
   }
   return self;
-}
-
-- (void)addItemToMenu:(NSMenu*)menu
-              atIndex:(NSInteger)index
-            fromModel:(ui::MenuModel*)model {
-  [super addItemToMenu:menu
-               atIndex:index
-             fromModel:model];
-  if (model->GetCommandIdAt(index) != app_list::AppListMenu::CURRENT_USER)
-    return;
-
-  base::scoped_nsobject<NSView> customItemView([[CurrentUserMenuItemView alloc]
-      initWithCurrentUser:[[searchBoxController_ delegate] currentUserName]
-                userEmail:[[searchBoxController_ delegate] currentUserEmail]]);
-  [[menu itemAtIndex:index] setView:customItemView];
 }
 
 - (NSRect)confinementRectForMenu:(NSMenu*)menu

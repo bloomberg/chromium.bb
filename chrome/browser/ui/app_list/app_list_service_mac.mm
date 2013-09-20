@@ -36,6 +36,7 @@
 #include "grit/google_chrome_strings.h"
 #import "ui/app_list/cocoa/app_list_view_controller.h"
 #import "ui/app_list/cocoa/app_list_window_controller.h"
+#include "ui/app_list/search_box_model.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/display.h"
@@ -96,6 +97,8 @@ class AppListControllerDelegateCocoa : public AppListControllerDelegate {
   virtual void LaunchApp(Profile* profile,
                          const extensions::Extension* extension,
                          int event_flags) OVERRIDE;
+  virtual void ShowForProfileByPath(
+      const base::FilePath& profile_path) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateCocoa);
 };
@@ -242,6 +245,13 @@ void AppListControllerDelegateCocoa::LaunchApp(
     Profile* profile, const extensions::Extension* extension, int event_flags) {
   chrome::OpenApplication(chrome::AppLaunchParams(
       profile, extension, NEW_FOREGROUND_TAB));
+}
+
+void AppListControllerDelegateCocoa::ShowForProfileByPath(
+    const base::FilePath& profile_path) {
+  AppListService* service = AppListServiceMac::GetInstance();
+  service->SetProfilePath(profile_path);
+  service->Show();
 }
 
 enum DockLocation {
@@ -409,15 +419,18 @@ void AppListServiceMac::CreateForProfile(Profile* requested_profile) {
   if (profile() == requested_profile)
     return;
 
-  // The Objective C objects might be released at some unknown point in the
-  // future, so explicitly clear references to C++ objects.
-  [[window_controller_ appListViewController]
-      setDelegate:scoped_ptr<app_list::AppListViewDelegate>()];
-
   SetProfile(requested_profile);
+
+  if (window_controller_) {
+    // Clear the search box.
+    [[window_controller_ appListViewController] searchBoxModel]
+        ->SetText(base::string16());
+  } else {
+    window_controller_.reset([[AppListWindowController alloc] init]);
+  }
+
   scoped_ptr<app_list::AppListViewDelegate> delegate(
       new AppListViewDelegate(new AppListControllerDelegateCocoa(), profile()));
-  window_controller_.reset([[AppListWindowController alloc] init]);
   [[window_controller_ appListViewController] setDelegate:delegate.Pass()];
 }
 
@@ -427,14 +440,12 @@ void AppListServiceMac::ShowForProfile(Profile* requested_profile) {
 
   InvalidatePendingProfileLoads();
 
-  if (IsAppListVisible() && (requested_profile == profile())) {
+  if (requested_profile == profile()) {
     ShowWindowNearDock();
     return;
   }
 
   SetProfilePath(requested_profile->GetPath());
-
-  DismissAppList();
   CreateForProfile(requested_profile);
   ShowWindowNearDock();
 }
@@ -506,6 +517,9 @@ void AppListServiceMac::OnShimSetHidden(apps::AppShimHandler::Host* host,
 void AppListServiceMac::OnShimQuit(apps::AppShimHandler::Host* host) {}
 
 void AppListServiceMac::ShowWindowNearDock() {
+  if (IsAppListVisible())
+    return;
+
   NSWindow* window = GetAppListWindow();
   DCHECK(window);
   NSPoint target_origin;

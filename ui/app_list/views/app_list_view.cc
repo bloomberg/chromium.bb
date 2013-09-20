@@ -54,7 +54,7 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       app_list_main_view_(NULL),
       signin_view_(NULL) {
   if (delegate_)
-    delegate_->SetModel(model_.get());
+    delegate_->InitModel(model_.get());
   model_->AddObserver(this);
 }
 
@@ -146,6 +146,10 @@ void AppListView::OnSigninStatusChanged() {
   app_list_main_view_->search_box_view()->InvalidateMenu();
 }
 
+void AppListView::SetProfileByPath(const base::FilePath& profile_path) {
+  delegate_->SetProfileByPath(profile_path);
+}
+
 void AppListView::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -188,7 +192,8 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
 #endif
 
   signin_view_ = new SigninView(
-      GetSigninDelegate(),
+      delegate_ ? delegate_->GetSigninDelegate()
+                : NULL,
       app_list_main_view_->GetPreferredSize().width());
   AddChildView(signin_view_);
 
@@ -309,15 +314,11 @@ void AppListView::OnWidgetVisibilityChanged(views::Widget* widget,
   Layout();
 }
 
-SigninDelegate* AppListView::GetSigninDelegate() {
-  return delegate_ ? delegate_->GetSigninDelegate() : NULL;
-}
-
 void AppListView::OnAppListModelSigninStatusChanged() {
   OnSigninStatusChanged();
 }
 
-void AppListView::OnAppListModelCurrentUserChanged() {
+void AppListView::OnAppListModelUsersChanged() {
   OnSigninStatusChanged();
 }
 

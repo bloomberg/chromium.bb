@@ -50,6 +50,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
+#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -372,6 +373,8 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
   virtual void LaunchApp(Profile* profile,
                          const extensions::Extension* extension,
                          int event_flags) OVERRIDE;
+  virtual void ShowForProfileByPath(
+      const base::FilePath& profile_path) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateWin);
 };
@@ -609,6 +612,10 @@ class AppListViewWin {
     view_->OnSigninStatusChanged();
   }
 
+  void SetProfileByPath(const base::FilePath profile_path) {
+    view_->SetProfileByPath(profile_path);
+  }
+
  private:
   void UpdateArrowPositionAndAnchorPoint(const gfx::Point& cursor) {
     gfx::Screen* screen =
@@ -685,13 +692,26 @@ class AppListShower {
       return;
     }
 
-    DismissAppList();
-    CreateViewForProfile(requested_profile);
+    // If the current view exists, switch the delegate's profile and rebuild the
+    // model.
+    if (!view_) {
+      CreateViewForProfile(requested_profile);
+    } else if (requested_profile != profile_) {
+      profile_ = requested_profile;
+      view_->SetProfileByPath(requested_profile->GetPath());
+    }
 
     DCHECK(view_);
     EnsureHaveKeepAliveForView();
-    gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
-    view_->ShowNearCursor(cursor);
+    // If the app list isn't visible, move the app list to the cursor position
+    // before showing it.
+    if (!IsAppListVisible()) {
+      gfx::Point cursor =
+          gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
+      view_->ShowNearCursor(cursor);
+    } else {
+      view_->Show();
+    }
   }
 
   gfx::NativeWindow GetWindow() {
@@ -881,6 +901,13 @@ bool AppListControllerDelegateWin::CanPin() {
   return false;
 }
 
+void AppListControllerDelegateWin::ShowForProfileByPath(
+    const base::FilePath& profile_path) {
+  AppListService* service = AppListController::GetInstance();
+  service->SetProfilePath(profile_path);
+  service->Show();
+}
+
 void AppListControllerDelegateWin::OnShowExtensionPrompt() {
   AppListController::GetInstance()->set_can_close(false);
 }
@@ -979,7 +1006,6 @@ void AppListController::ShowForProfile(Profile* requested_profile) {
   shower_->ShowForProfile(requested_profile);
   RecordAppListLaunch();
 }
-
 
 void AppListController::DismissAppList() {
   shower_->DismissAppList();

@@ -222,7 +222,11 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   }
 
   // Overridden from ash::AppListViewDelegate:
-  virtual void SetModel(app_list::AppListModel* model) OVERRIDE {
+  virtual void SetProfileByPath(const base::FilePath& profile_path) OVERRIDE {
+    // Nothing needs to be done.
+  }
+
+  virtual void InitModel(app_list::AppListModel* model) OVERRIDE {
     model_ = model;
     PopulateApps(model_->apps());
     DecorateSearchBox(model_->search_box());
@@ -306,6 +310,11 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   }
 
   virtual void OpenFeedback() OVERRIDE {
+    // Nothing needs to be done.
+  }
+
+  virtual void ShowForProfileByPath(
+      const base::FilePath& profile_path) OVERRIDE {
     // Nothing needs to be done.
   }
 

@@ -30,6 +30,8 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   virtual void LaunchApp(Profile* profile,
                          const extensions::Extension* extension,
                          int event_flags) OVERRIDE;
+  virtual void ShowForProfileByPath(
+      const base::FilePath& profile_path) OVERRIDE;
   virtual bool ShouldShowUserIcon() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateAsh);

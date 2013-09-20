@@ -57,8 +57,6 @@
         'cocoa/apps_search_results_model_bridge.mm',
         'cocoa/blue_label_button.h',
         'cocoa/blue_label_button.mm',
-        'cocoa/current_user_menu_item_view.h',
-        'cocoa/current_user_menu_item_view.mm',
         'cocoa/item_drag_controller.h',
         'cocoa/item_drag_controller.mm',
         'cocoa/scroll_view_with_no_scrollbars.h',

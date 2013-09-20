@@ -66,6 +66,12 @@ void AppListControllerDelegateAsh::LaunchApp(
   DismissView();
 }
 
+void AppListControllerDelegateAsh::ShowForProfileByPath(
+    const base::FilePath& profile_path) {
+  // Ash doesn't have profile switching.
+  NOTREACHED();
+}
+
 bool AppListControllerDelegateAsh::ShouldShowUserIcon() {
   return false;
 }

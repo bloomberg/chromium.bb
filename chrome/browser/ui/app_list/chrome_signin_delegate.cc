@@ -28,8 +28,13 @@ SigninManagerBase* GetSigninManager(Profile* profile) {
 
 }  // namespace
 
-ChromeSigninDelegate::ChromeSigninDelegate(Profile* profile)
-    : profile_(profile) {}
+ChromeSigninDelegate::ChromeSigninDelegate() {}
+
+ChromeSigninDelegate::~ChromeSigninDelegate() {}
+
+void ChromeSigninDelegate::SetProfile(Profile* profile) {
+  profile_ = profile;
+}
 
 bool ChromeSigninDelegate::NeedSignin()  {
 #if defined(OS_CHROMEOS)
@@ -96,5 +101,3 @@ string16 ChromeSigninDelegate::GetSettingsLinkText() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb.GetLocalizedString(IDS_APP_LIST_SIGNIN_SETTINGS_TEXT);
 }
-
-ChromeSigninDelegate::~ChromeSigninDelegate() {}

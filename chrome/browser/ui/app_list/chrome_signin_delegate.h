@@ -13,14 +13,11 @@ class Profile;
 
 class ChromeSigninDelegate : public app_list::SigninDelegate {
  public:
-  explicit ChromeSigninDelegate(Profile* profile);
+  ChromeSigninDelegate();
+  virtual ~ChromeSigninDelegate();
+  void SetProfile(Profile* profile);
 
  private:
-  virtual ~ChromeSigninDelegate();
-
-  bool IsActiveSignin();
-  void FinishSignin();
-
   // Overridden from app_list::SigninDelegate:
   virtual bool NeedSignin() OVERRIDE;
   virtual void ShowSignin() OVERRIDE;

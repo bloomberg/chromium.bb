@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/files/scoped_temp_dir.h"
+#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -39,6 +39,18 @@ class AppListControllerBrowserTest : public InProcessBrowserTest {
   AppListControllerBrowserTest()
     : profile2_(NULL) {}
 
+  void InitSecondProfile() {
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    base::FilePath temp_profile_dir =
+        profile_manager->user_data_dir().AppendASCII("Profile 1");
+    profile_manager->CreateProfileAsync(
+        temp_profile_dir,
+        base::Bind(&AppListControllerBrowserTest::OnProfileCreated,
+                   this),
+        string16(), string16(), std::string());
+    content::RunMessageLoop();  // Will stop in OnProfileCreated().
+  }
+
   void OnProfileCreated(Profile* profile, Profile::CreateStatus status) {
     if (status == Profile::CREATE_STATUS_INITIALIZED) {
       profile2_ = profile;
@@ -47,7 +59,6 @@ class AppListControllerBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  base::ScopedTempDir temp_profile_dir_;
   Profile* profile2_;
 
  private:
@@ -86,24 +97,76 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, ShowAndDismiss) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, SwitchAppListProfiles) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ASSERT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
-  profile_manager->CreateProfileAsync(
-      temp_profile_dir_.path(),
-      base::Bind(&AppListControllerBrowserTest::OnProfileCreated,
-                 this),
-      string16(), string16(), std::string());
-  content::RunMessageLoop();  // Will stop in OnProfileCreated().
+  InitSecondProfile();
 
   AppListService* service = AppListService::Get();
+  scoped_ptr<test::AppListServiceTestApi> test_api(
+      test::AppListServiceTestApi::Create(chrome::HOST_DESKTOP_TYPE_NATIVE));
+  ASSERT_TRUE(service);
+  ASSERT_TRUE(test_api);
+
+  scoped_ptr<AppListControllerDelegate> controller(
+      service->CreateControllerDelegate());
+  ASSERT_TRUE(controller);
+
+  // Open the app list with the browser's profile.
   ASSERT_FALSE(service->IsAppListVisible());
-  service->ShowForProfile(browser()->profile());
+  controller->ShowForProfileByPath(browser()->profile()->GetPath());
+  app_list::AppListModel* model = test_api->GetAppListModel();
+  ASSERT_TRUE(model);
+  model->SetSignedIn(true);
+  base::RunLoop().RunUntilIdle();
+
   ASSERT_TRUE(service->IsAppListVisible());
   ASSERT_EQ(browser()->profile(), service->GetCurrentAppListProfile());
-  service->ShowForProfile(profile2_);
+
+  // Open the app list with the second profile.
+  controller->ShowForProfileByPath(profile2_->GetPath());
+  model = test_api->GetAppListModel();
+  ASSERT_TRUE(model);
+  model->SetSignedIn(true);
+  base::RunLoop().RunUntilIdle();
+
   ASSERT_TRUE(service->IsAppListVisible());
   ASSERT_EQ(profile2_, service->GetCurrentAppListProfile());
-  service->DismissAppList();
+
+  controller->DismissView();
+}
+
+IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest,
+                       SwitchAppListProfilesDuringSearch) {
+  InitSecondProfile();
+
+  AppListService* service = AppListService::Get();
+  scoped_ptr<test::AppListServiceTestApi> test_api(
+      test::AppListServiceTestApi::Create(chrome::HOST_DESKTOP_TYPE_NATIVE));
+  ASSERT_TRUE(service);
+  ASSERT_TRUE(test_api);
+
+  scoped_ptr<AppListControllerDelegate> controller(
+      service->CreateControllerDelegate());
+  ASSERT_TRUE(controller);
+
+  // Set a search with original profile.
+  controller->ShowForProfileByPath(browser()->profile()->GetPath());
+  app_list::AppListModel* model = test_api->GetAppListModel();
+  ASSERT_TRUE(model);
+  model->SetSignedIn(true);
+  model->search_box()->SetText(ASCIIToUTF16("minimal"));
+  base::RunLoop().RunUntilIdle();
+
+  // Switch to the second profile.
+  controller->ShowForProfileByPath(profile2_->GetPath());
+  model = test_api->GetAppListModel();
+  ASSERT_TRUE(model);
+  model->SetSignedIn(true);
+  base::RunLoop().RunUntilIdle();
+
+  // Ensure the search box is empty.
+  ASSERT_TRUE(model->search_box()->text().empty());
+  ASSERT_EQ(profile2_, service->GetCurrentAppListProfile());
+
+  controller->DismissView();
   ASSERT_FALSE(service->IsAppListVisible());
 }
 

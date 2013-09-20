@@ -32,7 +32,7 @@ void PaginationModel::SetTotalPages(int total_pages) {
   if (selected_page_ < 0)
     SelectPage(0, false /* animate */);
   if (selected_page_ >= total_pages_)
-    SelectPage(total_pages_ - 1, false /* animate */);
+    SelectPage(std::max(total_pages_ - 1, 0), false /* animate */);
   FOR_EACH_OBSERVER(PaginationModelObserver, observers_, TotalPagesChanged());
 }
 
@@ -82,7 +82,7 @@ void PaginationModel::SelectPage(int page, bool animate) {
       }
     }
   } else {
-    DCHECK(page >= 0 && page < total_pages_);
+    DCHECK(total_pages_ == 0 || (page >= 0 && page < total_pages_));
 
     if (page == selected_page_)
       return;

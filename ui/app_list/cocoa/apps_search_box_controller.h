@@ -13,6 +13,7 @@
 
 namespace app_list {
 class AppListMenu;
+class AppListModel;
 class AppListViewDelegate;
 class SearchBoxModel;
 class SearchBoxModelObserverBridge;
@@ -26,9 +27,8 @@ class SearchBoxModelObserverBridge;
 
 - (app_list::AppListViewDelegate*)appListDelegate;
 - (app_list::SearchBoxModel*)searchBoxModel;
+- (app_list::AppListModel*)appListModel;
 - (void)modelTextDidChange;
-- (NSString*)currentUserName;
-- (NSString*)currentUserEmail;
 
 @end
 

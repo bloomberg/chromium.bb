@@ -26,7 +26,8 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
   }
 
   // AppListViewDelegate overrides:
-  virtual void SetModel(AppListModel* model) OVERRIDE {}
+  virtual void SetProfileByPath(const base::FilePath& profile_path) OVERRIDE {}
+  virtual void InitModel(AppListModel* model) OVERRIDE {}
   virtual SigninDelegate* GetSigninDelegate() OVERRIDE;
   virtual void GetShortcutPathForApp(
       const std::string& app_id,
@@ -46,6 +47,8 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
   virtual void OpenSettings() OVERRIDE {}
   virtual void OpenHelp() OVERRIDE {}
   virtual void OpenFeedback() OVERRIDE {}
+  virtual void ShowForProfileByPath(
+      const base::FilePath& profile_path) OVERRIDE {};
 
  private:
   int activate_count_;

@@ -12,6 +12,10 @@
 #include "ui/app_list/app_list_model_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace views {
 class Widget;
 }
@@ -87,6 +91,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // Invoked when the sign-in status is changed to switch on/off sign-in view.
   void OnSigninStatusChanged();
 
+  void SetProfileByPath(const base::FilePath& profile_path);
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -125,7 +131,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   // Overridden from AppListModelObserver:
   virtual void OnAppListModelSigninStatusChanged() OVERRIDE;
-  virtual void OnAppListModelCurrentUserChanged() OVERRIDE;
+  virtual void OnAppListModelUsersChanged() OVERRIDE;
 
   SigninDelegate* GetSigninDelegate();
 

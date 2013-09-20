@@ -5,7 +5,10 @@
 #ifndef UI_APP_LIST_APP_LIST_MODEL_H_
 #define UI_APP_LIST_APP_LIST_MODEL_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -25,6 +28,24 @@ class SearchResult;
 // the model for SearchBoxView. SearchResults owns a list of SearchResult.
 class APP_LIST_EXPORT AppListModel {
  public:
+  // A user of the app list.
+  struct APP_LIST_EXPORT User {
+    User();
+    ~User();
+
+    // Whether or not this user is the current user of the app list.
+    bool active;
+
+    // The name of this user.
+    base::string16 name;
+
+    // The email address of this user.
+    base::string16 email;
+
+    // The path to this user's profile directory.
+    base::FilePath profile_path;
+  };
+
   enum Status {
     STATUS_NORMAL,
     STATUS_SYNCING,  // Syncing apps or installing synced apps.
@@ -32,6 +53,7 @@ class APP_LIST_EXPORT AppListModel {
 
   typedef ui::ListModel<AppListItemModel> Apps;
   typedef ui::ListModel<SearchResult> SearchResults;
+  typedef std::vector<User> Users;
 
   AppListModel();
   ~AppListModel();
@@ -40,8 +62,7 @@ class APP_LIST_EXPORT AppListModel {
   void RemoveObserver(AppListModelObserver* observer);
 
   void SetStatus(Status status);
-  void SetCurrentUser(const base::string16& current_user_name,
-                      const base::string16& current_user_email);
+  void SetUsers(const Users& profile_menu_items);
   void SetSignedIn(bool signed_in);
 
   Apps* apps() { return apps_.get(); }
@@ -49,9 +70,9 @@ class APP_LIST_EXPORT AppListModel {
   SearchResults* results() { return results_.get(); }
   Status status() const { return status_; }
   bool signed_in() const { return signed_in_; }
-  const base::string16& current_user_name() const { return current_user_name_; }
-  const base::string16& current_user_email() const {
-    return current_user_email_;
+
+  const Users& users() const {
+    return users_;
   }
 
  private:
@@ -60,10 +81,9 @@ class APP_LIST_EXPORT AppListModel {
   scoped_ptr<SearchBoxModel> search_box_;
   scoped_ptr<SearchResults> results_;
 
-  base::string16 current_user_name_;
-  base::string16 current_user_email_;
-  bool signed_in_;
+  Users users_;
 
+  bool signed_in_;
   Status status_;
   ObserverList<AppListModelObserver> observers_;
 

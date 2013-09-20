@@ -27,6 +27,8 @@ namespace gfx {
 class ImageSkia;
 }
 
+// This class populates and maintains the given |model| with information from
+// |profile|.
 class AppsModelBuilder : public ui::ListModelObserver,
                          public extensions::InstallObserver {
  public:
@@ -35,11 +37,11 @@ class AppsModelBuilder : public ui::ListModelObserver,
                    AppListControllerDelegate* controller);
   virtual ~AppsModelBuilder();
 
-  // Populates the model.
-  void Build();
-
   // Returns app instance with id |extension_id|.
   ExtensionAppItem* GetApp(const std::string& extension_id);
+
+  // Rebuilds the model with the given profile.
+  void SwitchProfile(Profile* profile);
 
  private:
   typedef std::vector<ExtensionAppItem*> Apps;

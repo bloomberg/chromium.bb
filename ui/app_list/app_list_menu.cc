@@ -4,6 +4,7 @@
 
 #include "ui/app_list/app_list_menu.h"
 
+#include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -12,17 +13,40 @@
 
 namespace app_list {
 
-AppListMenu::AppListMenu(AppListViewDelegate* delegate)
+AppListMenu::AppListMenu(AppListViewDelegate* delegate,
+                         const AppListModel::Users& users)
     : menu_model_(this),
-      delegate_(delegate) {
+      delegate_(delegate),
+      users_(users) {
   InitMenu();
 }
 
 AppListMenu::~AppListMenu() {}
 
 void AppListMenu::InitMenu() {
-  menu_model_.AddItem(CURRENT_USER, base::string16());
-  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  // User selector menu section. We don't show the user selector if there is
+  // only 1 user.
+  if (users_.size() > 1) {
+    for (size_t i = 0; i < users_.size(); ++i) {
+#if defined(OS_MACOSX)
+      menu_model_.AddRadioItem(SELECT_PROFILE + i,
+                               users_[i].email.empty() ? users_[i].name
+                                                       : users_[i].email,
+                               0 /* group_id */);
+#elif defined(OS_WIN)
+      menu_model_.AddItem(SELECT_PROFILE + i, users_[i].name);
+      int menu_index = menu_model_.GetIndexOfCommandId(SELECT_PROFILE + i);
+      menu_model_.SetSublabel(menu_index, users_[i].email);
+      // Use custom check mark.
+      if (users_[i].active) {
+        ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+        menu_model_.SetIcon(menu_index, gfx::Image(*rb.GetImageSkiaNamed(
+            IDR_APP_LIST_USER_INDICATOR)));
+      }
+#endif
+    }
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  }
 
   menu_model_.AddItem(SHOW_SETTINGS, l10n_util::GetStringUTF16(
       IDS_APP_LIST_OPEN_SETTINGS));
@@ -35,7 +59,12 @@ void AppListMenu::InitMenu() {
 }
 
 bool AppListMenu::IsCommandIdChecked(int command_id) const {
+#if defined(OS_MACOSX)
+  DCHECK_LT(static_cast<unsigned>(command_id) - SELECT_PROFILE, users_.size());
+  return users_[command_id - SELECT_PROFILE].active;
+#else
   return false;
+#endif
 }
 
 bool AppListMenu::IsCommandIdEnabled(int command_id) const {
@@ -48,6 +77,11 @@ bool AppListMenu::GetAcceleratorForCommandId(int command_id,
 }
 
 void AppListMenu::ExecuteCommand(int command_id, int event_flags) {
+  if (command_id >= SELECT_PROFILE) {
+    delegate_->ShowForProfileByPath(
+        users_[command_id - SELECT_PROFILE].profile_path);
+    return;
+  }
   switch (command_id) {
     case CURRENT_USER:
       break;  // Do nothing.

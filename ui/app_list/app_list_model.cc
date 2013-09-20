@@ -11,6 +11,10 @@
 
 namespace app_list {
 
+AppListModel::User::User() : active(false) {}
+
+AppListModel::User::~User() {}
+
 AppListModel::AppListModel()
     : apps_(new Apps),
       search_box_(new SearchBoxModel),
@@ -40,17 +44,11 @@ void AppListModel::SetStatus(Status status) {
                     OnAppListModelStatusChanged());
 }
 
-void AppListModel::SetCurrentUser(const base::string16& current_user_name,
-                                  const base::string16& current_user_email) {
-  if (current_user_name_ == current_user_name &&
-      current_user_email_ == current_user_email) {
-    return;
-  }
-  current_user_name_ = current_user_name;
-  current_user_email_ = current_user_email;
+void AppListModel::SetUsers(const Users& users) {
+  users_ = users;
   FOR_EACH_OBSERVER(AppListModelObserver,
                     observers_,
-                    OnAppListModelCurrentUserChanged());
+                    OnAppListModelUsersChanged());
 }
 
 void AppListModel::SetSignedIn(bool signed_in) {

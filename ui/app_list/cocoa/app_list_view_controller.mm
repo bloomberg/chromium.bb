@@ -88,7 +88,7 @@ class AppListModelObserverBridge : public AppListModelObserver {
 
  private:
   // Overridden from app_list::AppListModelObserver:
-  virtual void OnAppListModelCurrentUserChanged() OVERRIDE;
+  virtual void OnAppListModelUsersChanged() OVERRIDE;
   virtual void OnAppListModelSigninStatusChanged() OVERRIDE;
 
   AppListViewController* parent_;  // Weak. Owns us.
@@ -106,7 +106,7 @@ AppListModelObserverBridge::~AppListModelObserverBridge() {
   [[parent_ appsGridController] model]->RemoveObserver(this);
 }
 
-void AppListModelObserverBridge::OnAppListModelCurrentUserChanged() {
+void AppListModelObserverBridge::OnAppListModelUsersChanged() {
   [parent_ onSigninStatusChanged];
 }
 
@@ -320,16 +320,6 @@ void AppListModelObserverBridge::OnAppListModelSigninStatusChanged() {
 
 - (app_list::AppListModel*)appListModel {
   return [appsGridController_ model];
-}
-
-- (NSString*)currentUserName {
-  return base::SysUTF16ToNSString(
-      [appsGridController_ model]->current_user_name());
-}
-
-- (NSString*)currentUserEmail {
-  return base::SysUTF16ToNSString(
-      [appsGridController_ model]->current_user_email());
 }
 
 - (void)openResult:(app_list::SearchResult*)result {

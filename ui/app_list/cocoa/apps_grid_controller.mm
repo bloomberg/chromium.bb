@@ -213,7 +213,7 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   scoped_ptr<app_list::AppListModel> newModel(new app_list::AppListModel);
   delegate_ = newDelegate;
   if (delegate_)
-    delegate_->SetModel(newModel.get());  // Populates items.
+    delegate_->InitModel(newModel.get());  // Populates items.
   [self setModel:newModel.Pass()];
 }
 
