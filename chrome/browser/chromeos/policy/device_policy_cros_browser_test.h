@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 class FakeSessionManagerClient;
@@ -19,19 +18,44 @@ class FakeSessionManagerClient;
 
 namespace policy {
 
-// Used to test Device policy changes in Chrome OS.
-class DevicePolicyCrosBrowserTest : public InProcessBrowserTest {
+class DevicePolicyCrosTestHelper {
  public:
+  DevicePolicyCrosTestHelper();
+  ~DevicePolicyCrosTestHelper();
+
   // Marks the device as enterprise-owned. Must be called to make device
   // policies apply Chrome-wide. If this is not called, device policies will
   // affect CrosSettings only.
   void MarkAsEnterpriseOwned();
 
+  // Writes the owner key to disk. To be called before installing a policy.
+  void InstallOwnerKey();
+
+  DevicePolicyBuilder* device_policy() { return &device_policy_; }
+
+ private:
+  // Stores the device owner key and the install attributes.
+  base::ScopedTempDir temp_dir_;
+
+  // Carries Chrome OS device policies for tests.
+  DevicePolicyBuilder device_policy_;
+
+  DISALLOW_COPY_AND_ASSIGN(DevicePolicyCrosTestHelper);
+};
+
+// Used to test Device policy changes in Chrome OS.
+class DevicePolicyCrosBrowserTest : public InProcessBrowserTest {
  protected:
   DevicePolicyCrosBrowserTest();
   virtual ~DevicePolicyCrosBrowserTest();
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
+
+  // Marks the device as enterprise-owned. Must be called to make device
+  // policies apply Chrome-wide. If this is not called, device policies will
+  // affect CrosSettings only.
+  void MarkAsEnterpriseOwned();
 
   // Writes the owner key to disk. To be called before installing a policy.
   void InstallOwnerKey();
@@ -39,8 +63,6 @@ class DevicePolicyCrosBrowserTest : public InProcessBrowserTest {
   // Reinstalls |device_policy_| as the policy (to be used when it was
   // recently changed).
   void RefreshDevicePolicy();
-
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
 
   chromeos::MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager() {
     return mock_dbus_thread_manager_;
@@ -50,17 +72,13 @@ class DevicePolicyCrosBrowserTest : public InProcessBrowserTest {
     return mock_dbus_thread_manager_->fake_session_manager_client();
   }
 
-  DevicePolicyBuilder* device_policy() { return &device_policy_; }
+  DevicePolicyBuilder* device_policy() { return test_helper_.device_policy(); }
 
  private:
-  // Stores the device owner key and the install attributes.
-  base::ScopedTempDir temp_dir_;
+  DevicePolicyCrosTestHelper test_helper_;
 
   // MockDBusThreadManagerWithoutGMock uses FakeSessionManagerClient.
   chromeos::MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
-
-  // Carries Chrome OS device policies for tests.
-  DevicePolicyBuilder device_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePolicyCrosBrowserTest);
 };

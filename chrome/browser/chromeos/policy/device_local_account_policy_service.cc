@@ -30,26 +30,6 @@ namespace policy {
 
 namespace {
 
-// Creates a broker for the device-local account with the given |user_id| and
-// |account_id|.
-scoped_ptr<DeviceLocalAccountPolicyBroker> CreateBroker(
-    const std::string& user_id,
-    const std::string& account_id,
-    chromeos::SessionManagerClient* session_manager_client,
-    chromeos::DeviceSettingsService* device_settings_service,
-    DeviceLocalAccountPolicyService* device_local_account_policy_service) {
-  scoped_ptr<DeviceLocalAccountPolicyStore> store(
-      new DeviceLocalAccountPolicyStore(account_id, session_manager_client,
-                                        device_settings_service));
-  scoped_ptr<DeviceLocalAccountPolicyBroker> broker(
-      new DeviceLocalAccountPolicyBroker(user_id,
-                                         store.Pass(),
-                                         base::MessageLoopProxy::current()));
-  broker->core()->store()->AddObserver(device_local_account_policy_service);
-  broker->core()->store()->Load();
-  return broker.Pass();
-}
-
 // Creates and initializes a cloud policy client. Returns NULL if the device
 // doesn't have credentials in device settings (i.e. is not
 // enterprise-enrolled).
@@ -124,10 +104,14 @@ DeviceLocalAccountPolicyService::PolicyBrokerWrapper::PolicyBrokerWrapper()
 DeviceLocalAccountPolicyBroker*
     DeviceLocalAccountPolicyService::PolicyBrokerWrapper::GetBroker() {
   if (!broker) {
-    broker = CreateBroker(user_id, account_id,
-                          parent->session_manager_client_,
-                          parent->device_settings_service_,
-                          parent).release();
+    scoped_ptr<DeviceLocalAccountPolicyStore> store(
+        new DeviceLocalAccountPolicyStore(account_id,
+                                          parent->session_manager_client_,
+                                          parent->device_settings_service_));
+    broker = new DeviceLocalAccountPolicyBroker(
+        user_id, store.Pass(), base::MessageLoopProxy::current());
+    broker->core()->store()->AddObserver(parent);
+    broker->core()->store()->Load();
   }
   return broker;
 }
@@ -257,19 +241,20 @@ void DeviceLocalAccountPolicyService::UpdateAccountList() {
   }
 
   // Update |policy_brokers_|, keeping existing entries.
-  PolicyBrokerMap new_policy_brokers;
+  PolicyBrokerMap old_policy_brokers;
+  policy_brokers_.swap(old_policy_brokers);
   const std::vector<DeviceLocalAccount> device_local_accounts =
       GetDeviceLocalAccounts(cros_settings_);
   for (std::vector<DeviceLocalAccount>::const_iterator it =
            device_local_accounts.begin();
        it != device_local_accounts.end(); ++it) {
-    PolicyBrokerWrapper& wrapper = new_policy_brokers[it->user_id];
+    PolicyBrokerWrapper& wrapper = policy_brokers_[it->user_id];
     wrapper.user_id = it->user_id;
     wrapper.account_id = it->account_id;
     wrapper.parent = this;
 
     // Reuse the existing broker if present.
-    PolicyBrokerWrapper& existing_wrapper = policy_brokers_[it->user_id];
+    PolicyBrokerWrapper& existing_wrapper = old_policy_brokers[it->user_id];
     wrapper.broker = existing_wrapper.broker;
     existing_wrapper.broker = NULL;
 
@@ -277,8 +262,7 @@ void DeviceLocalAccountPolicyService::UpdateAccountList() {
     // the cloud if this is an enterprise-managed device.
     wrapper.ConnectIfPossible();
   }
-  policy_brokers_.swap(new_policy_brokers);
-  DeleteBrokers(&new_policy_brokers);
+  DeleteBrokers(&old_policy_brokers);
 
   FOR_EACH_OBSERVER(Observer, observers_, OnDeviceLocalAccountsChanged());
 }

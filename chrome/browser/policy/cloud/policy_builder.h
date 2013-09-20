@@ -11,13 +11,10 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud/device_management_local.pb.h"
 #include "crypto/rsa_private_key.h"
-
-namespace enterprise_management {
-class CloudPolicySettings;
-class ExternalPolicyData;
-}  // namespace enterprise_management
+#include "policy/proto/cloud_policy.pb.h"
 
 namespace policy {
 

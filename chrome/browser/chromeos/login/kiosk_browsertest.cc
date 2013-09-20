@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "apps/native_app_window.h"
+#include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -20,12 +26,17 @@
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
+#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/policy/cloud/policy_builder.h"
+#include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -40,6 +51,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/fake_gaia.h"
 #include "google_apis/gaia/gaia_switches.h"
@@ -50,21 +62,35 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace em = enterprise_management;
 
 namespace chromeos {
 
 namespace {
 
-// Webstore data json is in
+// This is a simple test app that creates an app window and immediately closes
+// it again. Webstore data json is in
 //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
 //       detail/ggbflgnkafappblpkiflbgpmkfdpnhhe
 const char kTestKioskApp[] = "ggbflgnkafappblpkiflbgpmkfdpnhhe";
+
+// This app creates a window and declares usage of the identity API in its
+// manifest, so we can test device robot token minting via the identity API.
+// Webstore data json is in
+//   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
+//       detail/ibjkkfdnfcaoapcpheeijckmpcfkifob
+const char kTestEnterpriseKioskApp[] = "ibjkkfdnfcaoapcpheeijckmpcfkifob";
 
 // Timeout while waiting for network connectivity during tests.
 const int kTestNetworkTimeoutSeconds = 1;
 
 // Email of owner account for test.
 const char kTestOwnerEmail[] = "owner@example.com";
+
+const char kTestEnterpriseAccountId[] = "enterprise-kiosk-app@localhost";
+const char kTestEnterpriseServiceAccountId[] = "service_account@example.com";
+const char kTestRefreshToken[] = "fake-refresh-token";
+const char kTestAccessToken[] = "fake-access-token";
 
 // Helper function for GetConsumerKioskModeStatusCallback.
 void ConsumerKioskModeStatusCheck(
@@ -412,8 +438,8 @@ IN_PROC_BROWSER_TEST_P(KioskTest, LaunchAppNetworkDown) {
 
   // A network error screen should be shown after authenticating.
   OobeScreenWaiter error_screen_waiter(OobeDisplay::SCREEN_ERROR_MESSAGE);
-  static_cast<AppLaunchSigninScreen::Delegate*>(GetAppLaunchController())
-    ->OnOwnerSigninSuccess();
+   static_cast<AppLaunchSigninScreen::Delegate*>(GetAppLaunchController())
+     ->OnOwnerSigninSuccess();
   error_screen_waiter.Wait();
 
   ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
@@ -589,5 +615,155 @@ IN_PROC_BROWSER_TEST_P(KioskTest, KioskEnableConfirmed) {
 }
 
 INSTANTIATE_TEST_CASE_P(KioskTestInstantiation, KioskTest, testing::Bool());
+
+// Helper class that monitors app windows to wait for a window to appear.
+class ShellWindowObserver : public apps::ShellWindowRegistry::Observer {
+ public:
+  ShellWindowObserver(apps::ShellWindowRegistry* registry,
+                      const std::string& app_id)
+      : registry_(registry), app_id_(app_id), window_(NULL), running_(false) {
+    registry_->AddObserver(this);
+  }
+  virtual ~ShellWindowObserver() {
+    registry_->RemoveObserver(this);
+  }
+
+  apps::ShellWindow* Wait() {
+    running_ = true;
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+    EXPECT_TRUE(window_);
+    return window_;
+  }
+
+  // ShellWindowRegistry::Observer
+  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE {
+    if (!running_)
+      return;
+
+    if (shell_window->extension_id() == app_id_) {
+      window_ = shell_window;
+      message_loop_runner_->Quit();
+      running_ = false;
+    }
+  }
+  virtual void OnShellWindowIconChanged(
+      apps::ShellWindow* shell_window) OVERRIDE {}
+  virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) OVERRIDE {}
+
+ private:
+  apps::ShellWindowRegistry* registry_;
+  std::string app_id_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  apps::ShellWindow* window_;
+  bool running_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellWindowObserver);
+};
+
+class KioskEnterpriseTest : public KioskTest {
+ protected:
+  KioskEnterpriseTest() {}
+
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    device_policy_test_helper_.MarkAsEnterpriseOwned();
+    device_policy_test_helper_.InstallOwnerKey();
+
+    KioskTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    // Configure kTestEnterpriseKioskApp in device policy.
+    em::DeviceLocalAccountsProto* accounts =
+        device_policy_test_helper_.device_policy()->payload()
+            .mutable_device_local_accounts();
+    em::DeviceLocalAccountInfoProto* account = accounts->add_account();
+    account->set_account_id(kTestEnterpriseAccountId);
+    account->set_type(
+        em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_KIOSK_APP);
+    account->mutable_kiosk_app()->set_app_id(kTestEnterpriseKioskApp);
+    accounts->set_auto_login_id(kTestEnterpriseAccountId);
+    em::PolicyData& policy_data =
+        device_policy_test_helper_.device_policy()->policy_data();
+    policy_data.set_service_account_identity(kTestEnterpriseServiceAccountId);
+    device_policy_test_helper_.device_policy()->Build();
+    DBusThreadManager::Get()->GetSessionManagerClient()->StoreDevicePolicy(
+        device_policy_test_helper_.device_policy()->GetBlob(),
+        base::Bind(&KioskEnterpriseTest::StorePolicyCallback));
+
+    DeviceSettingsService::Get()->Load();
+
+    // Configure OAuth authentication.
+    FakeGaia::AccessTokenInfo token_info;
+    token_info.token = kTestAccessToken;
+    token_info.email = kTestEnterpriseServiceAccountId;
+    fake_gaia_.IssueOAuthToken(kTestRefreshToken, token_info);
+    DeviceOAuth2TokenServiceFactory::Get()
+        ->SetAndSaveRefreshToken(kTestRefreshToken);
+
+    KioskTest::SetUpOnMainThread();
+  }
+
+  static void StorePolicyCallback(bool result) {
+    ASSERT_TRUE(result);
+  }
+
+  policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(KioskEnterpriseTest);
+};
+
+IN_PROC_BROWSER_TEST_P(KioskEnterpriseTest, EnterpriseKioskApp) {
+  chromeos::WizardController::SkipPostLoginScreensForTesting();
+  chromeos::WizardController* wizard_controller =
+      chromeos::WizardController::default_controller();
+  wizard_controller->SkipToLoginForTesting();
+
+  // Wait for the Kiosk App configuration to reload, then launch the app.
+  KioskAppManager::App app;
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_KIOSK_APPS_LOADED,
+      base::Bind(&KioskAppManager::GetApp,
+                 base::Unretained(KioskAppManager::Get()),
+                 kTestEnterpriseKioskApp, &app)).Wait();
+
+  GetLoginUI()->CallJavascriptFunction(
+      "login.AppsMenuButton.runAppForTesting",
+      base::StringValue(kTestEnterpriseKioskApp));
+
+  // Wait for the Kiosk App to launch.
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_KIOSK_APP_LAUNCHED,
+      content::NotificationService::AllSources()).Wait();
+
+  // Check installer status.
+  EXPECT_EQ(chromeos::KioskAppLaunchError::NONE,
+            chromeos::KioskAppLaunchError::Get());
+
+  // Wait for the window to appear.
+  apps::ShellWindow* window = ShellWindowObserver(
+      apps::ShellWindowRegistry::Get(ProfileManager::GetDefaultProfile()),
+      kTestEnterpriseKioskApp).Wait();
+  ASSERT_TRUE(window);
+
+  // Check whether the app can retrieve an OAuth2 access token.
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      window->web_contents(),
+      "chrome.identity.getAuthToken({ 'interactive': false }, function(token) {"
+      "    window.domAutomationController.send(token);"
+      "});",
+      &result));
+  EXPECT_EQ(kTestAccessToken, result);
+
+  // Terminate the app.
+  window->GetBaseWindow()->Close();
+  content::RunAllPendingInMessageLoop();
+}
+
+INSTANTIATE_TEST_CASE_P(KioskEnterpriseTestInstantiation,
+                        KioskEnterpriseTest,
+                        testing::Bool());
 
 }  // namespace chromeos

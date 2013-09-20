@@ -21,8 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/files/scoped_temp_dir.h"
-#include "chrome/browser/chromeos/policy/cros_enterprise_test_utils.h"
+#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "crypto/nss_util.h"
@@ -40,10 +39,7 @@ class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
 #if defined(OS_CHROMEOS)
-    const char kFakeUsername[] = "fake_username@example.com";
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    policy::test_utils::MarkAsEnterpriseOwned(kFakeUsername,
-                                              temp_dir_.path());
+    device_policy_test_helper_.MarkAsEnterpriseOwned();
 #endif
     // Setup the policy provider for injecting certs through ONC policy.
     EXPECT_CALL(provider_, IsInitializationComplete(_))
@@ -91,7 +87,7 @@ class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
 
   policy::MockConfigurationPolicyProvider provider_;
 #if defined(OS_CHROMEOS)
-  base::ScopedTempDir temp_dir_;
+  policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
   crypto::ScopedTestNSSDB test_nssdb_;
 #endif
 };
