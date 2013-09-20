@@ -142,7 +142,7 @@ void MediaQueryMatcher::styleResolverChanged()
 {
     ASSERT(m_document);
 
-    ScriptState* scriptState = mainWorldScriptState(m_document->frame());
+    ScriptState* scriptState = m_document->frame() ? mainWorldScriptState(m_document->frame()) : 0;
     if (!scriptState)
         return;
 
