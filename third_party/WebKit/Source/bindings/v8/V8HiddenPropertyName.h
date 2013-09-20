@@ -64,7 +64,7 @@ namespace WebCore {
 class V8HiddenPropertyName {
 public:
     V8HiddenPropertyName() { }
-#define V8_DECLARE_PROPERTY(name) static v8::Handle<v8::String> name();
+#define V8_DECLARE_PROPERTY(name) static v8::Handle<v8::String> name(v8::Isolate*);
     V8_HIDDEN_PROPERTIES(V8_DECLARE_PROPERTY);
 #undef V8_DECLARE_PROPERTY
 

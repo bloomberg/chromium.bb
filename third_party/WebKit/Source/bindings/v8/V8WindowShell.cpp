@@ -362,7 +362,7 @@ void V8WindowShell::updateDocumentProperty()
     // We also stash a reference to the document on the inner global object so that
     // DOMWindow objects we obtain from JavaScript references are guaranteed to have
     // live Document objects.
-    toInnerGlobalObject(context)->SetHiddenValue(V8HiddenPropertyName::document(), documentWrapper);
+    toInnerGlobalObject(context)->SetHiddenValue(V8HiddenPropertyName::document(m_isolate), documentWrapper);
 }
 
 void V8WindowShell::clearDocumentProperty()

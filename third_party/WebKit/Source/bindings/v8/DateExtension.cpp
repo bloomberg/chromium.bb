@@ -84,7 +84,7 @@ void DateExtension::setAllowSleep(bool allow, v8::Isolate* isolate)
     if (dateObject.IsEmpty())
         return;
 
-    v8::Local<v8::Value> sleepFunctionHandle = dateObject->GetHiddenValue(V8HiddenPropertyName::sleepFunction());
+    v8::Local<v8::Value> sleepFunctionHandle = dateObject->GetHiddenValue(V8HiddenPropertyName::sleepFunction(isolate));
     if (sleepFunctionHandle.IsEmpty() || !sleepFunctionHandle->IsFunction())
         return;
 
@@ -111,7 +111,7 @@ void DateExtension::Setup(const v8::FunctionCallbackInfo<v8::Value>& args)
     v8::Handle<v8::Object> dateObject = v8::Handle<v8::Object>::Cast(args[0]);
     v8::Handle<v8::Function> enableSleepDetectionFunction = v8::Handle<v8::Function>::Cast(args[1]);
 
-    dateObject->SetHiddenValue(V8HiddenPropertyName::sleepFunction(), enableSleepDetectionFunction);
+    dateObject->SetHiddenValue(V8HiddenPropertyName::sleepFunction(args.GetIsolate()), enableSleepDetectionFunction);
     return;
 }
 

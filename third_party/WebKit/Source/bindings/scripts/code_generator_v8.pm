@@ -2721,7 +2721,7 @@ END
         $implementation{nameSpaceInternal}->add(<<END);
         options.get("${attrName}", ${attrName});
         if (!${attrName}.IsEmpty())
-            args.Holder()->SetHiddenValue(V8HiddenPropertyName::${attrName}(), ${attrName});
+            args.Holder()->SetHiddenValue(V8HiddenPropertyName::${attrName}(args.GetIsolate()), ${attrName});
 END
     }
 

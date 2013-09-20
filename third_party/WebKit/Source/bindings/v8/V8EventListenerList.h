@@ -49,41 +49,41 @@ enum ListenerLookupType {
 // This is a container for V8EventListener objects that uses hidden properties of v8::Object to speed up lookups.
 class V8EventListenerList {
 public:
-    static PassRefPtr<V8EventListener> findWrapper(v8::Local<v8::Value> value, bool isAttribute)
+    static PassRefPtr<V8EventListener> findWrapper(v8::Local<v8::Value> value, bool isAttribute, v8::Isolate* isolate)
     {
         ASSERT(v8::Context::InContext());
         if (!value->IsObject())
             return 0;
 
-        v8::Handle<v8::String> wrapperProperty = getHiddenProperty(isAttribute);
-        return doFindWrapper(v8::Local<v8::Object>::Cast(value), wrapperProperty);
+        v8::Handle<v8::String> wrapperProperty = getHiddenProperty(isAttribute, isolate);
+        return doFindWrapper(v8::Local<v8::Object>::Cast(value), wrapperProperty, isolate);
     }
 
     template<typename WrapperType>
     static PassRefPtr<V8EventListener> findOrCreateWrapper(v8::Local<v8::Value>, bool isAttribute, v8::Isolate*);
 
-    static void clearWrapper(v8::Handle<v8::Object> listenerObject, bool isAttribute)
+    static void clearWrapper(v8::Handle<v8::Object> listenerObject, bool isAttribute, v8::Isolate* isolate)
     {
-        v8::Handle<v8::String> wrapperProperty = getHiddenProperty(isAttribute);
+        v8::Handle<v8::String> wrapperProperty = getHiddenProperty(isAttribute, isolate);
         listenerObject->DeleteHiddenValue(wrapperProperty);
     }
 
     static PassRefPtr<EventListener> getEventListener(v8::Local<v8::Value>, bool isAttribute, ListenerLookupType);
 
 private:
-    static V8EventListener* doFindWrapper(v8::Local<v8::Object> object, v8::Handle<v8::String> wrapperProperty)
+    static V8EventListener* doFindWrapper(v8::Local<v8::Object> object, v8::Handle<v8::String> wrapperProperty, v8::Isolate* isolate)
     {
         ASSERT(v8::Context::InContext());
-        v8::HandleScope scope(v8::Isolate::GetCurrent());
+        v8::HandleScope scope(isolate);
         v8::Local<v8::Value> listener = object->GetHiddenValue(wrapperProperty);
         if (listener.IsEmpty())
             return 0;
         return static_cast<V8EventListener*>(v8::External::Cast(*listener)->Value());
     }
 
-    static inline v8::Handle<v8::String> getHiddenProperty(bool isAttribute)
+    static inline v8::Handle<v8::String> getHiddenProperty(bool isAttribute, v8::Isolate* isolate)
     {
-        return isAttribute ? V8HiddenPropertyName::attributeListener() : V8HiddenPropertyName::listener();
+        return isAttribute ? V8HiddenPropertyName::attributeListener(isolate) : V8HiddenPropertyName::listener(isolate);
     }
 };
 
@@ -95,9 +95,9 @@ PassRefPtr<V8EventListener> V8EventListenerList::findOrCreateWrapper(v8::Local<v
         return 0;
 
     v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
-    v8::Handle<v8::String> wrapperProperty = getHiddenProperty(isAttribute);
+    v8::Handle<v8::String> wrapperProperty = getHiddenProperty(isAttribute, isolate);
 
-    V8EventListener* wrapper = doFindWrapper(object, wrapperProperty);
+    V8EventListener* wrapper = doFindWrapper(object, wrapperProperty, isolate);
     if (wrapper)
         return wrapper;
 

@@ -72,12 +72,12 @@ ScriptState* ScriptState::forContext(v8::Handle<v8::Context> context)
 
     v8::Local<v8::Object> innerGlobal = v8::Local<v8::Object>::Cast(context->Global()->GetPrototype());
 
-    v8::Local<v8::Value> scriptStateWrapper = innerGlobal->GetHiddenValue(V8HiddenPropertyName::scriptState());
+    v8::Local<v8::Value> scriptStateWrapper = innerGlobal->GetHiddenValue(V8HiddenPropertyName::scriptState(context->GetIsolate()));
     if (!scriptStateWrapper.IsEmpty() && scriptStateWrapper->IsExternal())
         return static_cast<ScriptState*>(v8::External::Cast(*scriptStateWrapper)->Value());
 
     ScriptState* scriptState = new ScriptState(context);
-    innerGlobal->SetHiddenValue(V8HiddenPropertyName::scriptState(), v8::External::New(scriptState));
+    innerGlobal->SetHiddenValue(V8HiddenPropertyName::scriptState(context->GetIsolate()), v8::External::New(scriptState));
     return scriptState;
 }
 

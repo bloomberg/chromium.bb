@@ -66,7 +66,7 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptExecutionContext
         v8::Local<v8::Function> callFunction = v8::Local<v8::Function>::Cast(listener);
         v8::Local<v8::Object> thisValue = v8::Context::GetCurrent()->Global();
 
-        v8::Local<v8::Value> error = jsEvent->ToObject()->GetHiddenValue(V8HiddenPropertyName::error());
+        v8::Local<v8::Value> error = jsEvent->ToObject()->GetHiddenValue(V8HiddenPropertyName::error(isolate));
         if (error.IsEmpty())
             error = v8::Null(isolate);
 
@@ -87,7 +87,7 @@ void V8ErrorHandler::storeExceptionOnErrorEventWrapper(ErrorEvent* event, v8::Ha
     v8::Local<v8::Value> wrappedEvent = toV8(event, v8::Handle<v8::Object>(), isolate);
     if (!wrappedEvent.IsEmpty()) {
         ASSERT(wrappedEvent->IsObject());
-        v8::Local<v8::Object>::Cast(wrappedEvent)->SetHiddenValue(V8HiddenPropertyName::error(), data);
+        v8::Local<v8::Object>::Cast(wrappedEvent)->SetHiddenValue(V8HiddenPropertyName::error(isolate), data);
     }
 }
 

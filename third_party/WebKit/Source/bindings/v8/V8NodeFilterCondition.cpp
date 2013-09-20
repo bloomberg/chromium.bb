@@ -44,7 +44,7 @@ namespace WebCore {
 V8NodeFilterCondition::V8NodeFilterCondition(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
     : m_filter(isolate, filter)
 {
-    owner->SetHiddenValue(V8HiddenPropertyName::condition(), filter);
+    owner->SetHiddenValue(V8HiddenPropertyName::condition(isolate), filter);
     m_filter.makeWeak(this, &makeWeakCallback);
 }
 

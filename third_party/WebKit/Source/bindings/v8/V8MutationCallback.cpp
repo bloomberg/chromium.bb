@@ -42,7 +42,7 @@ V8MutationCallback::V8MutationCallback(v8::Handle<v8::Function> callback, Script
     , m_world(DOMWrapperWorld::current())
     , m_isolate(isolate)
 {
-    owner->SetHiddenValue(V8HiddenPropertyName::callback(), callback);
+    owner->SetHiddenValue(V8HiddenPropertyName::callback(m_isolate), callback);
     m_callback.makeWeak(this, &makeWeakCallback);
 }
 

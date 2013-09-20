@@ -51,12 +51,13 @@ namespace WebCore {
 
 PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredView, v8::Handle<v8::Function> leftView, v8::Handle<v8::Function> attributeChanged)
 {
+    v8::Isolate* isolate = toIsolate(scriptExecutionContext);
     // A given object can only be used as a Custom Element prototype
     // once; see customElementIsInterfacePrototypeObject
 #define SET_HIDDEN_PROPERTY(Value, Name) \
-    ASSERT(prototype->GetHiddenValue(V8HiddenPropertyName::customElement##Name()).IsEmpty()); \
+    ASSERT(prototype->GetHiddenValue(V8HiddenPropertyName::customElement##Name(isolate)).IsEmpty()); \
     if (!Value.IsEmpty()) \
-        prototype->SetHiddenValue(V8HiddenPropertyName::customElement##Name(), Value);
+        prototype->SetHiddenValue(V8HiddenPropertyName::customElement##Name(isolate), Value);
 
     CALLBACK_LIST(SET_HIDDEN_PROPERTY)
 #undef SET_HIDDEN_PROPERTY

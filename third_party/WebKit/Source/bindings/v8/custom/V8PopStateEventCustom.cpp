@@ -40,15 +40,15 @@
 namespace WebCore {
 
 // Save the state value to a hidden attribute in the V8PopStateEvent, and return it, for convenience.
-static v8::Handle<v8::Value> cacheState(v8::Handle<v8::Object> popStateEvent, v8::Handle<v8::Value> state)
+static v8::Handle<v8::Value> cacheState(v8::Handle<v8::Object> popStateEvent, v8::Handle<v8::Value> state, v8::Isolate* isolate)
 {
-    popStateEvent->SetHiddenValue(V8HiddenPropertyName::state(), state);
+    popStateEvent->SetHiddenValue(V8HiddenPropertyName::state(isolate), state);
     return state;
 }
 
 void V8PopStateEvent::stateAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Value> result = info.Holder()->GetHiddenValue(V8HiddenPropertyName::state());
+    v8::Handle<v8::Value> result = info.Holder()->GetHiddenValue(V8HiddenPropertyName::state(info.GetIsolate()));
 
     if (!result.IsEmpty()) {
         v8SetReturnValue(info, result);
@@ -61,7 +61,7 @@ void V8PopStateEvent::stateAttributeGetterCustom(v8::Local<v8::String> name, con
         if (!event->serializedState()) {
             // If we're in an isolated world and the event was created in the main world,
             // we need to find the 'state' property on the main world wrapper and clone it.
-            v8::Local<v8::Value> mainWorldState = getHiddenValueFromMainWorldWrapper(info.GetIsolate(), event, V8HiddenPropertyName::state());
+            v8::Local<v8::Value> mainWorldState = getHiddenValueFromMainWorldWrapper(info.GetIsolate(), event, V8HiddenPropertyName::state(info.GetIsolate()));
             if (!mainWorldState.IsEmpty())
                 event->setSerializedState(SerializedScriptValue::createAndSwallowExceptions(mainWorldState, info.GetIsolate()));
         }
@@ -69,7 +69,7 @@ void V8PopStateEvent::stateAttributeGetterCustom(v8::Local<v8::String> name, con
             result = event->serializedState()->deserialize();
         else
             result = v8::Null(info.GetIsolate());
-        v8SetReturnValue(info, cacheState(info.Holder(), result));
+        v8SetReturnValue(info, cacheState(info.Holder(), result, info.GetIsolate()));
         return;
     }
 
@@ -84,19 +84,19 @@ void V8PopStateEvent::stateAttributeGetterCustom(v8::Local<v8::String> name, con
     if (isSameState) {
         v8::Handle<v8::Object> v8History = toV8(history, info.Holder(), info.GetIsolate()).As<v8::Object>();
         if (!history->stateChanged()) {
-            result = v8History->GetHiddenValue(V8HiddenPropertyName::state());
+            result = v8History->GetHiddenValue(V8HiddenPropertyName::state(info.GetIsolate()));
             if (!result.IsEmpty()) {
-                v8SetReturnValue(info, cacheState(info.Holder(), result));
+                v8SetReturnValue(info, cacheState(info.Holder(), result, info.GetIsolate()));
                 return;
             }
         }
         result = event->serializedState()->deserialize(info.GetIsolate());
-        v8History->SetHiddenValue(V8HiddenPropertyName::state(), result);
+        v8History->SetHiddenValue(V8HiddenPropertyName::state(info.GetIsolate()), result);
     } else {
         result = event->serializedState()->deserialize(info.GetIsolate());
     }
 
-    v8SetReturnValue(info, cacheState(info.Holder(), result));
+    v8SetReturnValue(info, cacheState(info.Holder(), result, info.GetIsolate()));
 }
 
 } // namespace WebCore

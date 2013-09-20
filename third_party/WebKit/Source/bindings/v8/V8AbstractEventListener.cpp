@@ -58,7 +58,7 @@ V8AbstractEventListener::~V8AbstractEventListener()
 {
     if (!m_listener.isEmpty()) {
         v8::HandleScope scope(m_isolate);
-        V8EventListenerList::clearWrapper(m_listener.newLocal(m_isolate), m_isAttribute);
+        V8EventListenerList::clearWrapper(m_listener.newLocal(m_isolate), m_isAttribute, m_isolate);
     }
     ThreadLocalInspectorCounters::current().decrementCounter(ThreadLocalInspectorCounters::JSEventListenerCounter);
 }
@@ -109,7 +109,7 @@ void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context
         return;
 
     // We push the event being processed into the global object, so that it can be exposed by DOMWindow's bindings.
-    v8::Handle<v8::String> eventSymbol = V8HiddenPropertyName::event();
+    v8::Handle<v8::String> eventSymbol = V8HiddenPropertyName::event(v8Context->GetIsolate());
     v8::Local<v8::Value> returnValue;
 
     // In beforeunload/unload handlers, we want to avoid sleeps which do tight loops of calling Date.getTime().

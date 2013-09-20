@@ -45,7 +45,7 @@ void V8History::stateAttributeGetterCustom(v8::Local<v8::String> name, const v8:
 {
     History* history = V8History::toNative(info.Holder());
 
-    v8::Handle<v8::Value> value = info.Holder()->GetHiddenValue(V8HiddenPropertyName::state());
+    v8::Handle<v8::Value> value = info.Holder()->GetHiddenValue(V8HiddenPropertyName::state(info.GetIsolate()));
 
     if (!value.IsEmpty() && !history->stateChanged()) {
         v8SetReturnValue(info, value);
@@ -54,7 +54,7 @@ void V8History::stateAttributeGetterCustom(v8::Local<v8::String> name, const v8:
 
     RefPtr<SerializedScriptValue> serialized = history->state();
     value = serialized ? serialized->deserialize(info.GetIsolate()) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
-    info.Holder()->SetHiddenValue(V8HiddenPropertyName::state(), value);
+    info.Holder()->SetHiddenValue(V8HiddenPropertyName::state(info.GetIsolate()), value);
 
     v8SetReturnValue(info, value);
 }
@@ -72,7 +72,7 @@ void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     ExceptionState es(args.GetIsolate());
     History* history = V8History::toNative(args.Holder());
     history->stateObjectAdded(historyState.release(), title, url, SameDocumentNavigationPushState, es);
-    args.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state());
+    args.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state(args.GetIsolate()));
     es.throwIfNeeded();
 }
 
@@ -89,7 +89,7 @@ void V8History::replaceStateMethodCustom(const v8::FunctionCallbackInfo<v8::Valu
     ExceptionState es(args.GetIsolate());
     History* history = V8History::toNative(args.Holder());
     history->stateObjectAdded(historyState.release(), title, url, SameDocumentNavigationReplaceState, es);
-    args.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state());
+    args.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state(args.GetIsolate()));
     es.throwIfNeeded();
 }
 

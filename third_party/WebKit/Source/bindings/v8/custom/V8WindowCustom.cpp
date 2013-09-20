@@ -172,7 +172,7 @@ void V8Window::eventAttributeGetterCustom(v8::Local<v8::String> name, const v8::
     if (context.IsEmpty())
         return;
 
-    v8::Handle<v8::String> eventSymbol = V8HiddenPropertyName::event();
+    v8::Handle<v8::String> eventSymbol = V8HiddenPropertyName::event(info.GetIsolate());
     v8::Handle<v8::Value> jsEvent = context->Global()->GetHiddenValue(eventSymbol);
     if (jsEvent.IsEmpty())
         return;
@@ -197,7 +197,7 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::String> name, v8::Local<
     if (context.IsEmpty())
         return;
 
-    v8::Handle<v8::String> eventSymbol = V8HiddenPropertyName::event();
+    v8::Handle<v8::String> eventSymbol = V8HiddenPropertyName::event(info.GetIsolate());
     context->Global()->SetHiddenValue(eventSymbol, value);
 }
 
