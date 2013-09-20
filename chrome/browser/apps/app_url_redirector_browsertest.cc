@@ -384,8 +384,15 @@ IN_PROC_BROWSER_TEST_F(PlatformAppUrlRedirectorBrowserTest,
 
 // Test that a webview in an app can be navigated to a URL without interception
 // even when there are other (or the same) apps that have matching url_handlers.
+// Disabled as test is flaky on windows: http://crbug.com/295721 .
+#if defined(OS_WIN)
+#define MAYBE_WebviewNavigationNotIntercepted \
+        DISABLED_WebviewNavigationNotIntercepted
+#else
+#define MAYBE_WebviewNavigationNotIntercepted WebviewNavigationNotIntercepted
+#endif
 IN_PROC_BROWSER_TEST_F(PlatformAppUrlRedirectorBrowserTest,
-                       WebviewNavigationNotIntercepted) {
+                       MAYBE_WebviewNavigationNotIntercepted) {
   // The launcher clicks on a link, which gets intercepted and launches the
   // handler. The handler also redirects an embedded webview to the URL. The
   // webview should just navigate without creating an endless loop of
