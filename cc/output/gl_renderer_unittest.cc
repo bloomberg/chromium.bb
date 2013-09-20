@@ -143,7 +143,8 @@ class FakeRendererClient : public RendererClient {
       : host_impl_(&proxy_),
         set_full_root_layer_damage_count_(0),
         root_layer_(LayerImpl::Create(host_impl_.active_tree(), 1)),
-        viewport_size_(gfx::Size(1, 1)) {
+        viewport_(gfx::Rect(0, 0, 1, 1)),
+        clip_(gfx::Rect(0, 0, 1, 1)) {
     root_layer_->CreateRenderSurface();
     RenderPass::Id render_pass_id =
         root_layer_->render_surface()->RenderPassId();
@@ -154,11 +155,8 @@ class FakeRendererClient : public RendererClient {
   }
 
   // RendererClient methods.
-  virtual gfx::Rect DeviceViewport() const OVERRIDE {
-    static gfx::Size fake_size(1, 1);
-    return gfx::Rect(fake_size);
-  }
-  virtual gfx::Rect DeviceClip() const OVERRIDE { return DeviceViewport(); }
+  virtual gfx::Rect DeviceViewport() const OVERRIDE { return viewport_; }
+  virtual gfx::Rect DeviceClip() const OVERRIDE { return clip_; }
   virtual void SetFullRootLayerDamage() OVERRIDE {
     set_full_root_layer_damage_count_++;
   }
@@ -170,7 +168,8 @@ class FakeRendererClient : public RendererClient {
   int set_full_root_layer_damage_count() const {
     return set_full_root_layer_damage_count_;
   }
-  void set_viewport(gfx::Size viewport_size) { viewport_size_ = viewport_size; }
+  void set_viewport(gfx::Rect viewport) { viewport_ = viewport; }
+  void set_clip(gfx::Rect clip) { clip_ = clip; }
 
   RenderPass* root_render_pass() { return render_passes_in_draw_order_.back(); }
   RenderPassList* render_passes_in_draw_order() {
@@ -183,7 +182,8 @@ class FakeRendererClient : public RendererClient {
   int set_full_root_layer_damage_count_;
   scoped_ptr<LayerImpl> root_layer_;
   RenderPassList render_passes_in_draw_order_;
-  gfx::Size viewport_size_;
+  gfx::Rect viewport_;
+  gfx::Rect clip_;
 };
 
 class FakeRendererGL : public GLRenderer {
@@ -1137,22 +1137,184 @@ TEST(GLRendererTest2, ScissorTestWhenClearing) {
       renderer_client.render_passes_in_draw_order(), NULL, 1.f, true);
 }
 
+class DiscardCheckingContext : public TestWebGraphicsContext3D {
+ public:
+  DiscardCheckingContext() : discarded_(0) {
+    set_have_post_sub_buffer(true);
+    set_have_discard_framebuffer(true);
+  }
+
+  virtual void discardFramebufferEXT(WGC3Denum target,
+                                     WGC3Dsizei numAttachments,
+                                     const WGC3Denum* attachments) {
+    ++discarded_;
+  }
+
+  int discarded() const { return discarded_; }
+  void reset() { discarded_ = 0; }
+
+ private:
+  int discarded_;
+};
+
 class NonReshapableOutputSurface : public FakeOutputSurface {
  public:
   explicit NonReshapableOutputSurface(
       scoped_ptr<TestWebGraphicsContext3D> context3d)
-      : FakeOutputSurface(
-          TestContextProvider::Create(context3d.Pass()),
-          false) {}
-  virtual gfx::Size SurfaceSize() const OVERRIDE { return gfx::Size(500, 500); }
+      : FakeOutputSurface(TestContextProvider::Create(context3d.Pass()),
+                          false) {
+    surface_size_ = gfx::Size(500, 500);
+  }
+  virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE {}
+  void set_fixed_size(gfx::Size size) { surface_size_ = size; }
 };
 
-class OffsetViewportRendererClient : public FakeRendererClient {
- public:
-  virtual gfx::Rect DeviceViewport() const OVERRIDE {
-    return gfx::Rect(10, 10, 100, 100);
+TEST(GLRendererTest2, NoDiscardOnPartialUpdates) {
+  scoped_ptr<DiscardCheckingContext> context_owned(new DiscardCheckingContext);
+  DiscardCheckingContext* context = context_owned.get();
+
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<NonReshapableOutputSurface> output_surface(
+      new NonReshapableOutputSurface(
+          context_owned.PassAs<TestWebGraphicsContext3D>()));
+  CHECK(output_surface->BindToClient(&output_surface_client));
+  output_surface->set_fixed_size(gfx::Size(100, 100));
+
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(), 0, false));
+
+  LayerTreeSettings settings;
+  settings.partial_swap_enabled = true;
+  FakeRendererClient renderer_client;
+  renderer_client.set_viewport(gfx::Rect(0, 0, 100, 100));
+  renderer_client.set_clip(gfx::Rect(0, 0, 100, 100));
+  FakeRendererGL renderer(&renderer_client,
+                          &settings,
+                          output_surface.get(),
+                          resource_provider.get());
+  EXPECT_TRUE(renderer.Initialize());
+  EXPECT_TRUE(renderer.Capabilities().using_partial_swap);
+
+  gfx::Rect viewport_rect(renderer_client.DeviceViewport());
+  ScopedPtrVector<RenderPass>& render_passes =
+      *renderer_client.render_passes_in_draw_order();
+  render_passes.clear();
+
+  {
+    // Partial frame, should not discard.
+    RenderPass::Id root_pass_id(1, 0);
+    TestRenderPass* root_pass = AddRenderPass(
+        &render_passes, root_pass_id, viewport_rect, gfx::Transform());
+    AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
+    root_pass->damage_rect = gfx::RectF(2.f, 2.f, 3.f, 3.f);
+
+    renderer.DecideRenderPassAllocationsForFrame(
+        *renderer_client.render_passes_in_draw_order());
+    renderer.DrawFrame(
+        renderer_client.render_passes_in_draw_order(), NULL, 1.f, true);
+    EXPECT_EQ(0, context->discarded());
+    context->reset();
   }
-};
+  {
+    // Full frame, should discard.
+    RenderPass::Id root_pass_id(1, 0);
+    TestRenderPass* root_pass = AddRenderPass(
+        &render_passes, root_pass_id, viewport_rect, gfx::Transform());
+    AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
+    root_pass->damage_rect = gfx::RectF(root_pass->output_rect);
+
+    renderer.DecideRenderPassAllocationsForFrame(
+        *renderer_client.render_passes_in_draw_order());
+    renderer.DrawFrame(
+        renderer_client.render_passes_in_draw_order(), NULL, 1.f, true);
+    EXPECT_EQ(1, context->discarded());
+    context->reset();
+  }
+  {
+    // Partial frame, disallow partial swap, should discard.
+    RenderPass::Id root_pass_id(1, 0);
+    TestRenderPass* root_pass = AddRenderPass(
+        &render_passes, root_pass_id, viewport_rect, gfx::Transform());
+    AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
+    root_pass->damage_rect = gfx::RectF(2.f, 2.f, 3.f, 3.f);
+
+    renderer.DecideRenderPassAllocationsForFrame(
+        *renderer_client.render_passes_in_draw_order());
+    renderer.DrawFrame(
+        renderer_client.render_passes_in_draw_order(), NULL, 1.f, false);
+    EXPECT_EQ(1, context->discarded());
+    context->reset();
+  }
+  {
+    // Full frame, external scissor is set, should not discard.
+    output_surface->set_has_external_stencil_test(true);
+    RenderPass::Id root_pass_id(1, 0);
+    TestRenderPass* root_pass = AddRenderPass(
+        &render_passes, root_pass_id, viewport_rect, gfx::Transform());
+    AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
+    root_pass->damage_rect = gfx::RectF(root_pass->output_rect);
+    root_pass->has_transparent_background = false;
+
+    renderer.DecideRenderPassAllocationsForFrame(
+        *renderer_client.render_passes_in_draw_order());
+    renderer.DrawFrame(
+        renderer_client.render_passes_in_draw_order(), NULL, 1.f, true);
+    EXPECT_EQ(0, context->discarded());
+    context->reset();
+    output_surface->set_has_external_stencil_test(false);
+  }
+  {
+    // Full frame, clipped, should not discard.
+    renderer_client.set_clip(gfx::Rect(10, 10, 10, 10));
+    RenderPass::Id root_pass_id(1, 0);
+    TestRenderPass* root_pass = AddRenderPass(
+        &render_passes, root_pass_id, viewport_rect, gfx::Transform());
+    AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
+    root_pass->damage_rect = gfx::RectF(root_pass->output_rect);
+
+    renderer.DecideRenderPassAllocationsForFrame(
+        *renderer_client.render_passes_in_draw_order());
+    renderer.DrawFrame(
+        renderer_client.render_passes_in_draw_order(), NULL, 1.f, true);
+    EXPECT_EQ(0, context->discarded());
+    context->reset();
+  }
+  {
+    // Full frame, doesn't cover the surface, should not discard.
+    renderer_client.set_viewport(gfx::Rect(10, 10, 10, 10));
+    viewport_rect = renderer_client.DeviceViewport();
+    RenderPass::Id root_pass_id(1, 0);
+    TestRenderPass* root_pass = AddRenderPass(
+        &render_passes, root_pass_id, viewport_rect, gfx::Transform());
+    AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
+    root_pass->damage_rect = gfx::RectF(root_pass->output_rect);
+
+    renderer.DecideRenderPassAllocationsForFrame(
+        *renderer_client.render_passes_in_draw_order());
+    renderer.DrawFrame(
+        renderer_client.render_passes_in_draw_order(), NULL, 1.f, true);
+    EXPECT_EQ(0, context->discarded());
+    context->reset();
+  }
+  {
+    // Full frame, doesn't cover the surface (no offset), should not discard.
+    renderer_client.set_viewport(gfx::Rect(0, 0, 50, 50));
+    renderer_client.set_clip(gfx::Rect(0, 0, 100, 100));
+    viewport_rect = renderer_client.DeviceViewport();
+    RenderPass::Id root_pass_id(1, 0);
+    TestRenderPass* root_pass = AddRenderPass(
+        &render_passes, root_pass_id, viewport_rect, gfx::Transform());
+    AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
+    root_pass->damage_rect = gfx::RectF(root_pass->output_rect);
+
+    renderer.DecideRenderPassAllocationsForFrame(
+        *renderer_client.render_passes_in_draw_order());
+    renderer.DrawFrame(
+        renderer_client.render_passes_in_draw_order(), NULL, 1.f, true);
+    EXPECT_EQ(0, context->discarded());
+    context->reset();
+  }
+}
 
 class FlippedScissorAndViewportContext : public TestWebGraphicsContext3D {
  public:
@@ -1201,7 +1363,9 @@ TEST(GLRendererTest2, ScissorAndViewportWithinNonreshapableSurface) {
       ResourceProvider::Create(output_surface.get(), 0, false));
 
   LayerTreeSettings settings;
-  OffsetViewportRendererClient renderer_client;
+  FakeRendererClient renderer_client;
+  renderer_client.set_viewport(gfx::Rect(10, 10, 100, 100));
+  renderer_client.set_clip(gfx::Rect(10, 10, 100, 100));
   FakeRendererGL renderer(&renderer_client,
                           &settings,
                           output_surface.get(),
@@ -1606,7 +1770,7 @@ TEST_F(MockOutputSurfaceTest, DrawFrameAndResizeAndSwap) {
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
   renderer_->SwapBuffers();
 
-  set_viewport(gfx::Size(2, 2));
+  set_viewport(gfx::Rect(0, 0, 2, 2));
   renderer_->ViewportChanged();
 
   DrawFrame(2.f);
@@ -1617,7 +1781,7 @@ TEST_F(MockOutputSurfaceTest, DrawFrameAndResizeAndSwap) {
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
   renderer_->SwapBuffers();
 
-  set_viewport(gfx::Size(1, 1));
+  set_viewport(gfx::Rect(0, 0, 1, 1));
   renderer_->ViewportChanged();
 
   DrawFrame(1.f);

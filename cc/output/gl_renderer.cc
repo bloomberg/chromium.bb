@@ -290,23 +290,27 @@ void GLRenderer::ViewportChanged() {
   ReinitializeGrCanvas();
 }
 
-void GLRenderer::ClearFramebuffer(DrawingFrame* frame) {
+void GLRenderer::DiscardPixels(bool has_external_stencil_test,
+                               bool draw_rect_covers_full_surface) {
+  if (has_external_stencil_test || !draw_rect_covers_full_surface ||
+      !capabilities_.using_discard_framebuffer)
+    return;
+  bool using_default_framebuffer =
+      !current_framebuffer_lock_ &&
+      output_surface_->capabilities().uses_default_gl_framebuffer;
+  GLenum attachments[] = {static_cast<GLenum>(
+      using_default_framebuffer ? GL_COLOR_EXT : GL_COLOR_ATTACHMENT0_EXT)};
+  context_->discardFramebufferEXT(
+      GL_FRAMEBUFFER, arraysize(attachments), attachments);
+}
+
+void GLRenderer::ClearFramebuffer(DrawingFrame* frame,
+                                  bool has_external_stencil_test) {
   // It's unsafe to clear when we have a stencil test because glClear ignores
   // stencil.
-  if (output_surface_->HasExternalStencilTest() &&
-      frame->current_render_pass == frame->root_render_pass) {
+  if (has_external_stencil_test) {
     DCHECK(!frame->current_render_pass->has_transparent_background);
     return;
-  }
-
-  if (capabilities_.using_discard_framebuffer) {
-    bool using_default_framebuffer =
-        !current_framebuffer_lock_ &&
-        output_surface_->capabilities().uses_default_gl_framebuffer;
-    GLenum attachments[] = {static_cast<GLenum>(
-        using_default_framebuffer ? GL_COLOR_EXT : GL_COLOR_ATTACHMENT0_EXT)};
-    context_->discardFramebufferEXT(
-        GL_FRAMEBUFFER, arraysize(attachments), attachments);
   }
 
   // On DEBUG builds, opaque render passes are cleared to blue to easily see

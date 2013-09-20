@@ -182,7 +182,11 @@ void SoftwareRenderer::ClearCanvas(SkColor color) {
     current_canvas_->clear(color);
 }
 
-void SoftwareRenderer::ClearFramebuffer(DrawingFrame* frame) {
+void SoftwareRenderer::DiscardPixels(bool has_external_stencil_test,
+                                     bool draw_rect_covers_full_surface) {}
+
+void SoftwareRenderer::ClearFramebuffer(DrawingFrame* frame,
+                                        bool has_external_stencil_test) {
   if (frame->current_render_pass->has_transparent_background) {
     ClearCanvas(SkColorSetARGB(0, 0, 0, 0));
   } else {

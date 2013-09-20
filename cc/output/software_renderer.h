@@ -57,7 +57,10 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
       gfx::Rect target_rect) OVERRIDE;
   virtual void SetDrawViewport(gfx::Rect window_space_viewport) OVERRIDE;
   virtual void SetScissorTestRect(gfx::Rect scissor_rect) OVERRIDE;
-  virtual void ClearFramebuffer(DrawingFrame* frame) OVERRIDE;
+  virtual void DiscardPixels(bool has_external_stencil_test,
+                             bool draw_rect_covers_full_surface) OVERRIDE;
+  virtual void ClearFramebuffer(DrawingFrame* frame,
+                                bool has_external_stencil_test) OVERRIDE;
   virtual void DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) OVERRIDE;
   virtual void BeginDrawingFrame(DrawingFrame* frame) OVERRIDE;
   virtual void FinishDrawingFrame(DrawingFrame* frame) OVERRIDE;

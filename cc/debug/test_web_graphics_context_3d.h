@@ -190,6 +190,9 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   void set_have_post_sub_buffer(bool have) {
     test_capabilities_.post_sub_buffer = have;
   }
+  void set_have_discard_framebuffer(bool have) {
+    test_capabilities_.discard_framebuffer = have;
+  }
 
   // When this context is lost, all contexts in its share group are also lost.
   void add_share_group_context(WebKit::WebGraphicsContext3D* context3d) {

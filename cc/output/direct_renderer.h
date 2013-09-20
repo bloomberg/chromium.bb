@@ -118,7 +118,10 @@ class CC_EXPORT DirectRenderer : public Renderer {
                                         gfx::Rect target_rect) = 0;
   virtual void SetDrawViewport(gfx::Rect window_space_viewport) = 0;
   virtual void SetScissorTestRect(gfx::Rect scissor_rect) = 0;
-  virtual void ClearFramebuffer(DrawingFrame* frame) = 0;
+  virtual void DiscardPixels(bool has_external_stencil_test,
+                             bool draw_rect_covers_full_surface) = 0;
+  virtual void ClearFramebuffer(DrawingFrame* frame,
+                                bool has_external_stencil_test) = 0;
   virtual void DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) = 0;
   virtual void BeginDrawingFrame(DrawingFrame* frame) = 0;
   virtual void FinishDrawingFrame(DrawingFrame* frame) = 0;
