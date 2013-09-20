@@ -72,7 +72,7 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
 
 - (CGFloat)heightForWidth:(CGFloat)width {
   CGFloat height = kOverlayTextInterlineSpacing;
-  for (NSTextView* label in [self subviews]) {
+  for (NSTextField* label in [self subviews]) {
     height += NSHeight([label frame]);
     height += kOverlayTextInterlineSpacing;
   }
@@ -108,8 +108,8 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
 - (void)performLayout {
   CGFloat y = NSMaxY([self bounds]) - autofill::kArrowHeight -
       kOverlayTextInterlineSpacing;
-  for (NSTextView* label in [self subviews]) {
-    DCHECK([label isKindOfClass:[NSTextView class]]);
+  for (NSTextField* label in [self subviews]) {
+    DCHECK([label isKindOfClass:[NSTextField class]]);
     CGFloat labelHeight = NSHeight([label frame]);
     [label setFrame:NSMakeRect(0, y - labelHeight,
                                NSWidth([self bounds]), labelHeight)];
