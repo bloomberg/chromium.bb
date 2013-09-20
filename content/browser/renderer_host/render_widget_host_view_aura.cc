@@ -3167,8 +3167,10 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   gfx::Point local_point = screen_point;
   local_point.Offset(-screen_rect.x(), -screen_rect.y());
 
-  if (root_window->GetEventHandlerForPoint(local_point) != window_)
+  if (!root_window->HasFocus() ||
+      root_window->GetEventHandlerForPoint(local_point) != window_) {
     return;
+  }
 
   gfx::NativeCursor cursor = current_cursor_.GetNativeCursor();
   // Do not show loading cursor when the cursor is currently hidden.
