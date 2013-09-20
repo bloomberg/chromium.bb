@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.9",
+  "version": "6.10",
   "entries": [
     {
       "id": 1,
@@ -1105,6 +1105,23 @@ LONG_STRING_CONST(
       "device_id": ["0x0429", "0x042b"],
       "features": [
         "multisampling"
+      ]
+    },
+    {
+      "id": 78,
+      "description": "Accelerated video decode interferes with GPU blacklist on older Intel drivers",
+      "cr_bugs": [180695],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "between",
+        "value": "8.15.10.1883",
+        "value2": "8.15.10.2702"
+      },
+      "features": [
+        "accelerated_video_decode"
       ]
     }
   ]
