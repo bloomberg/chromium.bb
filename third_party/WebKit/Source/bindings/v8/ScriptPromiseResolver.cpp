@@ -65,8 +65,7 @@ PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(ScriptExecutionC
 {
     ASSERT(v8::Context::InContext());
     ASSERT(context);
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    return adoptRef(new ScriptPromiseResolver(toV8Context(context, DOMWrapperWorld::current())->Global(), isolate));
+    return adoptRef(new ScriptPromiseResolver(toV8Context(context, DOMWrapperWorld::current())->Global(), toIsolate(context)));
 }
 
 PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create()
