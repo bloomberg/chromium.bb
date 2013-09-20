@@ -598,7 +598,10 @@ class URLRequestTest : public PlatformTest {
     default_context_.set_job_factory(&job_factory_);
     default_context_.Init();
   }
-  virtual ~URLRequestTest() {}
+  virtual ~URLRequestTest() {
+    // URLRequestJobs may post clean-up tasks on destruction.
+    base::RunLoop().RunUntilIdle();
+  }
 
   // Adds the TestJobInterceptor to the default context.
   TestJobInterceptor* AddTestInterceptor() {
