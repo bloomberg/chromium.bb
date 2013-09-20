@@ -108,7 +108,6 @@ private:
     explicit IDBAny(Type);
     explicit IDBAny(PassRefPtr<DOMStringList>);
     explicit IDBAny(PassRefPtr<IDBCursor>);
-    explicit IDBAny(PassRefPtr<IDBCursorWithValue>);
     explicit IDBAny(PassRefPtr<IDBDatabase>);
     explicit IDBAny(PassRefPtr<IDBFactory>);
     explicit IDBAny(PassRefPtr<IDBIndex>);
@@ -124,7 +123,6 @@ private:
     // Only one of the following should ever be in use at any given time.
     const RefPtr<DOMStringList> m_domStringList;
     const RefPtr<IDBCursor> m_idbCursor;
-    const RefPtr<IDBCursorWithValue> m_idbCursorWithValue;
     const RefPtr<IDBDatabase> m_idbDatabase;
     const RefPtr<IDBFactory> m_idbFactory;
     const RefPtr<IDBIndex> m_idbIndex;

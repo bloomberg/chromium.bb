@@ -81,6 +81,8 @@ public:
     void setValueReady(PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value);
     PassRefPtr<IDBKey> idbPrimaryKey() { return m_primaryKey; }
     IDBRequest* request() { return m_request.get(); }
+    virtual bool isKeyCursor() const { return true; }
+    virtual bool isCursorWithValue() const { return false; }
 
     void deref()
     {
@@ -92,7 +94,6 @@ public:
 
 protected:
     IDBCursor(PassRefPtr<IDBCursorBackendInterface>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
-    virtual bool isKeyCursor() const { return true; }
 
 private:
     PassRefPtr<IDBObjectStore> effectiveObjectStore();

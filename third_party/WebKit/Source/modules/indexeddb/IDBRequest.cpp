@@ -208,13 +208,7 @@ void IDBRequest::setResultCursor(PassRefPtr<IDBCursor> cursor, PassRefPtr<IDBKey
     m_cursorKey = key;
     m_cursorPrimaryKey = primaryKey;
     m_cursorValue = value;
-
-    if (m_cursorType == IndexedDB::CursorKeyOnly) {
-        m_result = IDBAny::create(cursor);
-        return;
-    }
-
-    m_result = IDBAny::create(IDBCursorWithValue::fromCursor(cursor));
+    m_result = IDBAny::create(cursor);
 }
 
 void IDBRequest::checkForReferenceCycle()
