@@ -13,3 +13,8 @@ class SmoothnessTop25(test.Test):
   test = smoothness.Smoothness
   page_set = 'page_sets/top_25.json'
   options = {'report_all_results': False}
+
+
+class SmoothnessToughCanvasCases(test.Test):
+  test = smoothness.Smoothness
+  page_set = 'page_sets/tough_canvas_cases.json'
