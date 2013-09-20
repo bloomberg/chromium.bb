@@ -134,6 +134,7 @@
     'emma_instrument': '<(emma_coverage)',
     'apk_package_native_libs_dir': '<(apk_package_native_libs_dir)',
     'unsigned_standalone_apk_path': '<(unsigned_standalone_apk_path)',
+    'extra_native_libs': [],
   },
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
   # direct_dependent_settings, but a variable set by a direct_dependent_settings
@@ -182,13 +183,17 @@
           'destination': '<(apk_package_native_libs_dir)/<(android_app_abi)',
           'files': [
             '<(android_gdbserver)',
+            '<@(extra_native_libs)',
           ],
         },
       ],
       'actions': [
         {
           'variables': {
-            'input_libraries': ['<@(native_libs_paths)'],
+            'input_libraries': [
+              '<@(native_libs_paths)',
+              '<@(extra_native_libs)',
+            ],
           },
           'includes': ['../build/android/write_ordered_libraries.gypi'],
         },
@@ -235,7 +240,10 @@
           'variables': {
             'ordered_libraries_file%': '<(ordered_libraries_file)',
             'stripped_libraries_dir': '<(libraries_source_dir)',
-            'input_paths': ['<@(native_libs_paths)'],
+            'input_paths': [
+              '<@(native_libs_paths)',
+              '<@(extra_native_libs)',
+            ],
             'stamp': '<(strip_stamp)'
           },
           'includes': ['../build/android/strip_native_libraries.gypi'],
