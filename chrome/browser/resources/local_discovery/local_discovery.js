@@ -21,6 +21,21 @@ cr.define('local_discovery', function() {
    */
   var PRINTER_MANAGEMENT_PAGE_PREFIX = '#printers/';
 
+  // Histogram buckets for UMA tracking.
+  /** @const */ var DEVICES_PAGE_EVENTS = {
+    OPENED: 0,
+    LOG_IN_STARTED_FROM_REGISTER_PROMO: 1,
+    LOG_IN_STARTED_FROM_DEVICE_LIST_PROMO: 2,
+    ADD_PRINTER_CLICKED: 3,
+    REGISTER_CLICKED: 4,
+    REGISTER_CONFIRMED: 5,
+    REGISTER_SUCCESS: 6,
+    REGISTER_CANCEL: 7,
+    REGISTER_FAILURE: 8,
+    MANAGE_CLICKED: 9,
+    MAX_EVENT: 10,
+  };
+
   /**
    * Map of service names to corresponding service objects.
    * @type {Object.<string,Service>}
@@ -100,7 +115,7 @@ cr.define('local_discovery', function() {
      * Register the device.
      */
     register: function() {
-      recordUmaAction('DevicesPage_RegisterConfirmed');
+      recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_CONFIRMED);
       chrome.send('registerDevice', [this.info.service_name]);
       setRegisterPage('register-page-adding1');
     },
@@ -108,7 +123,7 @@ cr.define('local_discovery', function() {
      * Show registrtation UI for device.
      */
     showRegister: function() {
-      recordUmaAction('DevicesPage_RegisterClicked');
+      recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_CLICKED);
       $('register-message').textContent = loadTimeData.getStringF(
         'registerConfirmMessage',
         this.info.human_readable_name);
@@ -203,7 +218,7 @@ cr.define('local_discovery', function() {
    * Show the register overlay.
    */
   function showRegisterOverlay() {
-    recordUmaAction('DevicesPage_AddPrintersClicked');
+    recordUmaEvent(DEVICES_PAGE_EVENTS.ADD_PRINTER_CLICKED);
 
     var registerOverlay = $('register-overlay');
     registerOverlay.classList.add('showing');
@@ -236,7 +251,7 @@ cr.define('local_discovery', function() {
    */
   function onRegistrationFailed() {
     setRegisterPage('register-page-error');
-    recordUmaAction('DevicesPage_RegisterFailure');
+    recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_FAILURE);
   }
 
   /**
@@ -343,7 +358,7 @@ cr.define('local_discovery', function() {
   function onRegistrationSuccess() {
     hideRegisterOverlay();
     requestPrinterList();
-    recordUmaAction('DevicesPage_RegisterSuccess');
+    recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_SUCCESS);
   }
 
   /**
@@ -385,17 +400,19 @@ cr.define('local_discovery', function() {
    * @param {string} device_id ID of device.
    */
   function manageCloudDevice(device_id) {
-    recordUmaAction('DevicesPage_ManageClicked');
+    recordUmaEvent(DEVICES_PAGE_EVENTS.MANAGE_CLICKED);
     chrome.send('openCloudPrintURL',
                 [PRINTER_MANAGEMENT_PAGE_PREFIX + device_id]);
   }
 
   /**
-   * Record an action in UMA.
-   * @param {string} actionDesc The name of the action to be logged.
-   */
-  function recordUmaAction(actionDesc) {
-    chrome.send('metricsHandler:recordAction', [actionDesc]);
+  * Record an event in the UMA histogram.
+  * @param {number} eventId The id of the event to be recorded.
+  * @private
+  */
+  function recordUmaEvent(eventId) {
+    chrome.send('metricsHandler:recordInHistogram',
+      ['LocalDiscovery.DevicesPage', eventId, DEVICES_PAGE_EVENTS.MAX_EVENT]);
   }
 
   /**
@@ -404,7 +421,7 @@ cr.define('local_discovery', function() {
   function cancelRegistration() {
     hideRegisterOverlay();
     chrome.send('cancelRegistration');
-    recordUmaAction('DevicesPage_RegisterCancel');
+    recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_CANCEL);
   }
 
   /**
@@ -443,12 +460,12 @@ cr.define('local_discovery', function() {
   }
 
   function registerLoginButtonClicked() {
-    recordUmaAction('DevicesPage_LogInStartedFromRegisterPromo');
+    recordUmaEvent(DEVICES_PAGE_EVENTS.LOG_IN_STARTED_FROM_REGISTER_PROMO);
     openSignInPage();
   }
 
   function cloudDevicesLoginButtonClicked() {
-    recordUmaAction('DevicesPage_LogInStartedFromDeviceListPromo');
+    recordUmaEvent(DEVICES_PAGE_EVENTS.LOG_IN_STARTED_FROM_DEVICE_LIST_PROMO);
     openSignInPage();
   }
 
@@ -486,7 +503,7 @@ cr.define('local_discovery', function() {
     focusManager.initialize();
 
     chrome.send('start');
-    recordUmaAction('DevicesPage_Opened');
+    recordUmaEvent(DEVICES_PAGE_EVENTS.OPENED);
   });
 
   return {
