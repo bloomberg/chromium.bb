@@ -148,11 +148,15 @@ bool IsValidCookieValue(const std::string& value) {
   return true;
 }
 
+bool IsControlCharacter(unsigned char c) {
+    return (c >= 0) && (c <= 31);
+}
+
 bool IsValidCookieAttributeValue(const std::string& value) {
   // The greatest common denominator of cookie attribute values is
   // <any CHAR except CTLs or ";"> according to RFC 6265.
   for (std::string::const_iterator i = value.begin(); i != value.end(); ++i) {
-    if ((*i >= 0 && *i <= 31) || *i == ';')
+    if (IsControlCharacter(*i) || *i == ';')
       return false;
   }
   return true;
@@ -407,6 +411,7 @@ void ParsedCookie::ParseTokenValuePairs(const std::string& cookie_line) {
     // OK, now try to parse a value.
     std::string::const_iterator value_start, value_end;
     ParseValue(&it, end, &value_start, &value_end);
+
     // OK, we're finished with a Token/Value.
     pair.second = std::string(value_start, value_end);
 
@@ -418,6 +423,14 @@ void ParsedCookie::ParseTokenValuePairs(const std::string& cookie_line) {
     // From RFC2109: "Attributes (names) (attr) are case-insensitive."
     if (pair_num != 0)
       StringToLowerASCII(&pair.first);
+    // Ignore Set-Cookie directives contaning control characters. See
+    // http://crbug.com/238041.
+    if (!IsValidCookieAttributeValue(pair.first) ||
+        !IsValidCookieAttributeValue(pair.second)) {
+      pairs_.clear();
+      break;
+    }
+
     pairs_.push_back(pair);
 
     // We've processed a token/value pair, we're either at the end of

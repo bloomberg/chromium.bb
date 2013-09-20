@@ -379,6 +379,11 @@ class NET_EXPORT CookieMonster : public CookieStore {
     // already-expired expiration date. This captures that case.
     DELETE_COOKIE_EXPIRED_OVERWRITE,
 
+    // Cookies are not allowed to contain control characters in the name or
+    // value. However, we used to allow them, so we are now evicting any such
+    // cookies as we load them. See http://crbug.com/238041.
+    DELETE_COOKIE_CONTROL_CHAR,
+
     DELETE_COOKIE_LAST_ENTRY
   };
 
@@ -517,10 +522,11 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                  bool skip_httponly,
                                  bool already_expired);
 
-  // Takes ownership of *cc.
-  void InternalInsertCookie(const std::string& key,
-                            CanonicalCookie* cc,
-                            bool sync_to_store);
+  // Takes ownership of *cc. Returns an iterator that points to the inserted
+  // cookie in cookies_. Guarantee: all iterators to cookies_ remain valid.
+  CookieMap::iterator InternalInsertCookie(const std::string& key,
+                                           CanonicalCookie* cc,
+                                           bool sync_to_store);
 
   // Helper function that sets cookies with more control.
   // Not exposed as we don't want callers to have the ability
@@ -541,6 +547,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // |deletion_cause| argument is used for collecting statistics and choosing
   // the correct Delegate::ChangeCause for OnCookieChanged notifications.
+  // Guarantee: All iterators to cookies_ except to the deleted entry remain
+  // vaild.
   void InternalDeleteCookie(CookieMap::iterator it, bool sync_to_store,
                             DeletionCause deletion_cause);
 

@@ -112,6 +112,15 @@ const int CookieMonster::kSafeFromGlobalPurgeDays       = 30;
 
 namespace {
 
+bool ContainsControlCharacter(const std::string& s) {
+  for (std::string::const_iterator i = s.begin(); i != s.end(); ++i) {
+    if ((*i >= 0) && (*i <= 31))
+      return true;
+  }
+
+  return false;
+}
+
 typedef std::vector<CanonicalCookie*> CanonicalCookieVector;
 
 // Default minimum delay after updating a cookie's LastAccessDate before we
@@ -286,6 +295,8 @@ ChangeCausePair ChangeCauseMapping[] = {
   { CookieMonster::Delegate::CHANGE_COOKIE_EVICTED, true },
   // DELETE_COOKIE_EXPIRED_OVERWRITE
   { CookieMonster::Delegate::CHANGE_COOKIE_EXPIRED_OVERWRITE, true },
+  // DELETE_COOKIE_CONTROL_CHAR
+  { CookieMonster::Delegate::CHANGE_COOKIE_EVICTED, true},
   // DELETE_COOKIE_LAST_ENTRY
   { CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT, false }
 };
@@ -1477,16 +1488,24 @@ void CookieMonster::StoreLoadedCookies(
   // and sync'd.
   base::AutoLock autolock(lock_);
 
+  CookieItVector cookies_with_control_chars;
+
   for (std::vector<CanonicalCookie*>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
     int64 cookie_creation_time = (*it)->CreationDate().ToInternalValue();
 
     if (creation_times_.insert(cookie_creation_time).second) {
-      InternalInsertCookie(GetKey((*it)->Domain()), *it, false);
+      CookieMap::iterator inserted =
+          InternalInsertCookie(GetKey((*it)->Domain()), *it, false);
       const Time cookie_access_time((*it)->LastAccessDate());
       if (earliest_access_time_.is_null() ||
           cookie_access_time < earliest_access_time_)
         earliest_access_time_ = cookie_access_time;
+
+      if (ContainsControlCharacter((*it)->Name()) ||
+          ContainsControlCharacter((*it)->Value())) {
+          cookies_with_control_chars.push_back(inserted);
+      }
     } else {
       LOG(ERROR) << base::StringPrintf("Found cookies with duplicate creation "
                                        "times in backing store: "
@@ -1498,6 +1517,16 @@ void CookieMonster::StoreLoadedCookies(
       // away; reclaim the space.
       delete (*it);
     }
+  }
+
+  // Any cookies that contain control characters that we have loaded from the
+  // persistent store should be deleted. See http://crbug.com/238041.
+  for (CookieItVector::iterator it = cookies_with_control_chars.begin();
+       it != cookies_with_control_chars.end();) {
+    CookieItVector::iterator curit = it;
+    ++it;
+
+    InternalDeleteCookie(*curit, true, DELETE_COOKIE_CONTROL_CHAR);
   }
 
   // After importing cookies from the PersistentCookieStore, verify that
@@ -1733,19 +1762,23 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
   return skipped_httponly;
 }
 
-void CookieMonster::InternalInsertCookie(const std::string& key,
-                                         CanonicalCookie* cc,
-                                         bool sync_to_store) {
+CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
+    const std::string& key,
+    CanonicalCookie* cc,
+    bool sync_to_store) {
   lock_.AssertAcquired();
 
   if ((cc->IsPersistent() || persist_session_cookies_) && store_.get() &&
       sync_to_store)
     store_->AddCookie(*cc);
-  cookies_.insert(CookieMap::value_type(key, cc));
+  CookieMap::iterator inserted =
+      cookies_.insert(CookieMap::value_type(key, cc));
   if (delegate_.get()) {
     delegate_->OnCookieChanged(
         *cc, false, CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT);
   }
+
+  return inserted;
 }
 
 bool CookieMonster::SetCookieWithCreationTimeAndOptions(
@@ -1831,6 +1864,8 @@ void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc,
     store_->UpdateCookieAccessTime(*cc);
 }
 
+// InternalDeleteCookies must not invalidate iterators other than the one being
+// deleted.
 void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
                                          bool sync_to_store,
                                          DeletionCause deletion_cause) {

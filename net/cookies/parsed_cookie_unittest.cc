@@ -422,4 +422,73 @@ TEST(ParsedCookieTest, SetPriority) {
   EXPECT_EQ(COOKIE_PRIORITY_DEFAULT, pc.Priority());
 }
 
-}  // namespace net
+TEST(ParsedCookieTest, InvalidNonAlphanumericChars) {
+  ParsedCookie pc1("name=\x05");
+  ParsedCookie pc2("name=foo" "\x1c" "bar");
+  ParsedCookie pc3("name=foobar" "\x11");
+  ParsedCookie pc4("name=\x02" "foobar");
+
+  ParsedCookie pc5("\x05=value");
+  ParsedCookie pc6("foo" "\x05" "bar=value");
+  ParsedCookie pc7("foobar" "\x05" "=value");
+  ParsedCookie pc8("\x05" "foobar" "=value");
+
+  ParsedCookie pc9("foo" "\x05" "bar" "=foo" "\x05" "bar");
+
+  ParsedCookie pc10("foo=bar;ba" "\x05" "z=boo");
+  ParsedCookie pc11("foo=bar;baz=bo" "\x05" "o");
+  ParsedCookie pc12("foo=bar;ba" "\05" "z=bo" "\x05" "o");
+
+  EXPECT_FALSE(pc1.IsValid());
+  EXPECT_FALSE(pc2.IsValid());
+  EXPECT_FALSE(pc3.IsValid());
+  EXPECT_FALSE(pc4.IsValid());
+  EXPECT_FALSE(pc5.IsValid());
+  EXPECT_FALSE(pc6.IsValid());
+  EXPECT_FALSE(pc7.IsValid());
+  EXPECT_FALSE(pc8.IsValid());
+  EXPECT_FALSE(pc9.IsValid());
+  EXPECT_FALSE(pc10.IsValid());
+  EXPECT_FALSE(pc11.IsValid());
+  EXPECT_FALSE(pc12.IsValid());
+}
+
+TEST(ParsedCookieTest, ValidNonAlphanumericChars) {
+  // Note that some of these words are pasted backwords thanks to poor vim bidi
+  // support. This should not affect the tests, however.
+  const char* pc1_literal = "name=العربية";
+  const char* pc2_literal = "name=普通話";
+  const char* pc3_literal = "name=ภาษาไทย";
+  const char* pc4_literal = "name=עִבְרִית";
+  const char* pc5_literal = "العربية=value";
+  const char* pc6_literal = "普通話=value";
+  const char* pc7_literal = "ภาษาไทย=value";
+  const char* pc8_literal = "עִבְרִית=value";
+  ParsedCookie pc1(pc1_literal);
+  ParsedCookie pc2(pc2_literal);
+  ParsedCookie pc3(pc3_literal);
+  ParsedCookie pc4(pc4_literal);
+  ParsedCookie pc5(pc5_literal);
+  ParsedCookie pc6(pc6_literal);
+  ParsedCookie pc7(pc7_literal);
+  ParsedCookie pc8(pc8_literal);
+
+  EXPECT_TRUE(pc1.IsValid());
+  EXPECT_EQ(pc1_literal, pc1.ToCookieLine());
+  EXPECT_TRUE(pc2.IsValid());
+  EXPECT_EQ(pc2_literal, pc2.ToCookieLine());
+  EXPECT_TRUE(pc3.IsValid());
+  EXPECT_EQ(pc3_literal, pc3.ToCookieLine());
+  EXPECT_TRUE(pc4.IsValid());
+  EXPECT_EQ(pc4_literal, pc4.ToCookieLine());
+  EXPECT_TRUE(pc5.IsValid());
+  EXPECT_EQ(pc5_literal, pc5.ToCookieLine());
+  EXPECT_TRUE(pc6.IsValid());
+  EXPECT_EQ(pc6_literal, pc6.ToCookieLine());
+  EXPECT_TRUE(pc7.IsValid());
+  EXPECT_EQ(pc7_literal, pc7.ToCookieLine());
+  EXPECT_TRUE(pc8.IsValid());
+  EXPECT_EQ(pc8_literal, pc8.ToCookieLine());
+}
+
+}
