@@ -49,10 +49,12 @@ class ExternalCache : public content::NotificationObserver,
   // The |request_context| is used for the update checks.
   // By default updates are checked for the extensions with external_update_url.
   // If |always_check_webstore| set, updates will be check for external_crx too.
+  // If |wait_cache_initialization|, cache will wait for flag file in cache dir.
   ExternalCache(const std::string& cache_dir,
                 net::URLRequestContextGetter* request_context,
                 Delegate* delegate,
-                bool always_check_updates);
+                bool always_check_updates,
+                bool wait_cache_initialization);
   virtual ~ExternalCache();
 
   // Returns already cached extensions.
@@ -115,8 +117,10 @@ class ExternalCache : public content::NotificationObserver,
   // Ownership of |prefs| is transferred to this function.
   static void BlockingCheckCache(
       base::WeakPtr<ExternalCache> external_cache,
+      base::SequencedWorkerPool::SequenceToken token,
       const std::string& app_cache_dir,
-      scoped_ptr<base::DictionaryValue> prefs);
+      scoped_ptr<base::DictionaryValue> prefs,
+      bool wait_cache_initialization);
 
   // Helper for BlockingCheckCache(), updates |prefs|.
   static void BlockingCheckCacheInternal(
@@ -155,6 +159,9 @@ class ExternalCache : public content::NotificationObserver,
 
   // Updates needs to be check for the extensions with external_crx too.
   bool always_check_updates_;
+
+  // Set to true if cache should wait for initialization flag file.
+  bool wait_cache_initialization_;
 
   // This is the list of extensions currently configured.
   scoped_ptr<base::DictionaryValue> extensions_;

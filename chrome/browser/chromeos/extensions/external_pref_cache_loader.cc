@@ -72,7 +72,8 @@ class ExternalCacheDispatcher : public ExternalCache::Delegate {
 
   ExternalCacheDispatcher()
     : external_cache_(kPreinstalledAppsCacheDir,
-                      g_browser_process->system_request_context(), this, true),
+                      g_browser_process->system_request_context(),
+                      this, true, true),
       base_path_id_(0),
       is_extensions_list_ready_(false) {
   }
