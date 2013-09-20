@@ -86,11 +86,13 @@ class TestGithubFileSystem(unittest.TestCase):
   def testReads(self):
     self._gfs.Refresh().Get()
     expected = {
-      '/src/': ['hello.notpy', '__init__.notpy'],
-      '/': ['requirements.txt', '.gitignore', 'README.md', 'src/']
+      '/src/': sorted(['hello.notpy', '__init__.notpy']),
+      '/': sorted(['requirements.txt', '.gitignore', 'README.md', 'src/'])
     }
 
-    self.assertEqual(expected, self._gfs.Read(['/', '/src/']).Get())
+    read = self._gfs.Read(['/', '/src/']).Get()
+    self.assertEqual(expected['/src/'], sorted(read['/src/']))
+    self.assertEqual(expected['/'], sorted(read['/']))
 
   def testStat(self):
     self._gfs.Refresh().Get()
