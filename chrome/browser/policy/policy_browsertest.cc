@@ -1616,7 +1616,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes) {
 // Checks that a click on an extension CRX download triggers the extension
 // installation prompt without further user interaction when the source is
 // whitelisted by policy.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallSources) {
+// Flaky on windows; http://crbug.com/295729 .
+#if defined(OS_WIN)
+#define MAYBE_ExtensionInstallSources DISABLED_ExtensionInstallSources
+#else
+#define MAYBE_ExtensionInstallSources ExtensionInstallSources
+#endif
+IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 
