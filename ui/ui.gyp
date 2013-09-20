@@ -203,7 +203,6 @@
         'base/gtk/scoped_region.cc',
         'base/gtk/scoped_region.h',
         'base/hit_test.h',
-        'base/keycodes/usb_keycode_map.h',
         'base/latency_info.cc',
         'base/latency_info.h',
         'base/l10n/l10n_font_util.cc',
@@ -961,6 +960,18 @@
           '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources',
         ]
       }
+    },
+    {
+      'target_name': 'keycode_converter',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'base/keycodes/keycode_converter.cc',
+        'base/keycodes/keycode_converter.h',
+        'base/keycodes/keycode_converter_data.h',
+      ],
     }
   ],
   'conditions': [

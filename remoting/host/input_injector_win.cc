@@ -17,6 +17,7 @@
 // SkSize.h assumes that stdint.h-style types are already defined.
 #include "third_party/skia/include/core/SkTypes.h"
 #include "third_party/skia/include/core/SkSize.h"
+#include "ui/base/keycodes/keycode_converter.h"
 
 namespace remoting {
 
@@ -25,11 +26,6 @@ namespace {
 using protocol::ClipboardEvent;
 using protocol::KeyEvent;
 using protocol::MouseEvent;
-
-// USB to XKB keycode map table.
-#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, win, code}
-#include "ui/base/keycodes/usb_keycode_map.h"
-#undef USB_KEYMAP
 
 // A class to generate events on Windows.
 class InputInjectorWin : public InputInjector {
@@ -185,13 +181,13 @@ void InputInjectorWin::Core::HandleKey(const KeyEvent& event) {
   // Reset the system idle suspend timeout.
   SetThreadExecutionState(ES_SYSTEM_REQUIRED);
 
-  int scancode = UsbKeycodeToNativeKeycode(event.usb_keycode());
-
+  ui::KeycodeConverter* key_converter = ui::KeycodeConverter::GetInstance();
+  int scancode = key_converter->UsbKeycodeToNativeKeycode(event.usb_keycode());
   VLOG(3) << "Converting USB keycode: " << std::hex << event.usb_keycode()
           << " to scancode: " << scancode << std::dec;
 
   // Ignore events which can't be mapped.
-  if (scancode == InvalidNativeKeycode())
+  if (scancode == key_converter->InvalidNativeKeycode())
     return;
 
   // Populate the a Windows INPUT structure for the event.

@@ -22,6 +22,7 @@
 #include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/webrtc/modules/desktop_capture/mac/desktop_configuration.h"
+#include "ui/base/keycodes/keycode_converter.h"
 
 namespace remoting {
 
@@ -30,11 +31,6 @@ namespace {
 using protocol::ClipboardEvent;
 using protocol::KeyEvent;
 using protocol::MouseEvent;
-
-// USB to Mac keycode mapping table.
-#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, mac, code}
-#include "ui/base/keycodes/usb_keycode_map.h"
-#undef USB_KEYMAP
 
 // skia/ext/skia_utils_mac.h only defines CGRectToSkRect().
 SkIRect CGRectToSkIRect(const CGRect& rect) {
@@ -157,13 +153,14 @@ void InputInjectorMac::Core::InjectKeyEvent(const KeyEvent& event) {
   if (!event.has_pressed() || !event.has_usb_keycode())
     return;
 
-  int keycode = UsbKeycodeToNativeKeycode(event.usb_keycode());
+  ui::KeycodeConverter* key_converter = ui::KeycodeConverter::GetInstance();
+  int keycode = key_converter->UsbKeycodeToNativeKeycode(event.usb_keycode());
 
   VLOG(3) << "Converting USB keycode: " << std::hex << event.usb_keycode()
           << " to keycode: " << keycode << std::dec;
 
   // If we couldn't determine the Mac virtual key code then ignore the event.
-  if (keycode == InvalidNativeKeycode())
+  if (keycode == key_converter->InvalidNativeKeycode())
     return;
 
   base::ScopedCFTypeRef<CGEventRef> eventRef(

@@ -16,6 +16,7 @@
     '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
     '../ui/native_theme/native_theme.gyp:native_theme',
     '../ui/surface/surface.gyp:surface',
+    '../ui/ui.gyp:keycode_converter',
     '../v8/tools/gyp/v8.gyp:v8',
     '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
     '../webkit/common/webkit_common.gyp:webkit_common',

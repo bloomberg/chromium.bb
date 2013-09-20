@@ -31,19 +31,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_WIN)
-#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, win, code}
-#elif defined(OS_LINUX)
-#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, xkb, code}
-#elif defined(OS_MACOSX)
-#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, mac, code}
-#else
-#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, 0, code}
-#endif
-#include "ui/base/keycodes/usb_keycode_map.h"
-#undef USB_KEYMAP
-
+#include "ui/base/keycodes/keycode_converter.h"
 #include "ui/base/resource/resource_bundle.h"
 
 static const int kDefaultWsPort = 8880;
@@ -290,7 +278,8 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
                               bool shift,
                               bool alt,
                               bool command) {
-  int native_key_code = CodeToNativeKeycode(code);
+  ui::KeycodeConverter* key_converter = ui::KeycodeConverter::GetInstance();
+  int native_key_code = key_converter->CodeToNativeKeycode(code);
 
   int modifiers = 0;
 
@@ -302,7 +291,7 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
         web_contents,
         WebKit::WebInputEvent::RawKeyDown,
         ui::VKEY_CONTROL,
-        CodeToNativeKeycode("ControlLeft"),
+        key_converter->CodeToNativeKeycode("ControlLeft"),
         modifiers);
   }
 
@@ -312,7 +301,7 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
         web_contents,
         WebKit::WebInputEvent::RawKeyDown,
         ui::VKEY_SHIFT,
-        CodeToNativeKeycode("ShiftLeft"),
+        key_converter->CodeToNativeKeycode("ShiftLeft"),
         modifiers);
   }
 
@@ -322,7 +311,7 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
         web_contents,
         WebKit::WebInputEvent::RawKeyDown,
         ui::VKEY_MENU,
-        CodeToNativeKeycode("AltLeft"),
+        key_converter->CodeToNativeKeycode("AltLeft"),
         modifiers);
   }
 
@@ -332,7 +321,7 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
         web_contents,
         WebKit::WebInputEvent::RawKeyDown,
         ui::VKEY_COMMAND,
-        CodeToNativeKeycode("OSLeft"),
+        key_converter->CodeToNativeKeycode("OSLeft"),
         modifiers);
   }
 
@@ -364,7 +353,7 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
         web_contents,
         WebKit::WebInputEvent::KeyUp,
         ui::VKEY_CONTROL,
-        CodeToNativeKeycode("ControlLeft"),
+        key_converter->CodeToNativeKeycode("ControlLeft"),
         modifiers);
   }
 
@@ -374,7 +363,7 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
         web_contents,
         WebKit::WebInputEvent::KeyUp,
         ui::VKEY_SHIFT,
-        CodeToNativeKeycode("ShiftLeft"),
+        key_converter->CodeToNativeKeycode("ShiftLeft"),
         modifiers);
   }
 
@@ -384,7 +373,7 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
         web_contents,
         WebKit::WebInputEvent::KeyUp,
         ui::VKEY_MENU,
-        CodeToNativeKeycode("AltLeft"),
+        key_converter->CodeToNativeKeycode("AltLeft"),
         modifiers);
   }
 
@@ -394,7 +383,7 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
         web_contents,
         WebKit::WebInputEvent::KeyUp,
         ui::VKEY_COMMAND,
-        CodeToNativeKeycode("OSLeft"),
+        key_converter->CodeToNativeKeycode("OSLeft"),
         modifiers);
   }
 

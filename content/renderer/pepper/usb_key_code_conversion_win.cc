@@ -6,18 +6,11 @@
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/base/keycodes/keycode_converter.h"
 
 using WebKit::WebKeyboardEvent;
 
 namespace content {
-
-namespace {
-
-#define USB_KEYMAP(usb, xkb, win, mac, code) {usb, win, code}
-#include "ui/base/keycodes/usb_keycode_map.h"
-#undef USB_KEYMAP
-
-}  // anonymous namespace
 
 uint32_t UsbKeyCodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
   // Extract the scancode and extended bit from the native key event's lParam.
@@ -25,11 +18,13 @@ uint32_t UsbKeyCodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
   if ((key_event.nativeKeyCode & (1 << 24)) != 0)
     scancode |= 0xe000;
 
-  return NativeKeycodeToUsbKeycode(scancode);
+  ui::KeycodeConverter* key_converter = ui::KeycodeConverter::GetInstance();
+  return key_converter->NativeKeycodeToUsbKeycode(scancode);
 }
 
 const char* CodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
-  return NativeKeycodeToCode(key_event.nativeKeyCode);
+  ui::KeycodeConverter* key_converter = ui::KeycodeConverter::GetInstance();
+  return key_converter->NativeKeycodeToCode(key_event.nativeKeyCode);
 }
 
 }  // namespace content
