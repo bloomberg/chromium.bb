@@ -830,6 +830,10 @@ class AndroidCommands(object):
 
       device_hash_tuples = [h for h in device_hash_tuples if HostHas(h.path)]
 
+    if len(host_hash_tuples) > len(device_hash_tuples):
+      logging.info('%s files do not exist on the device' %
+                   (len(host_hash_tuples) - len(device_hash_tuples)))
+
     # Constructs the target device path from a given host path. Don't use when
     # only a single file is given as the base name given in device_path may
     # differ from that in host_path.
