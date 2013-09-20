@@ -10,8 +10,21 @@
     var altKeys = {};
     var idMap = {};
 
-    function createId(char) {
-      return 'id' + char.charCodeAt(0);
+    /**
+     * Creates a unique identifier based on the key provided.
+     * This identifier is of the form 'idHASH' where HASH is
+     * the concatenation of the keycodes of every character in the string.
+     * @param {string} key Key for which we want an identifier.
+     * @return {string} The unique id for key.
+     */
+    function createId(key) {
+      var hash = key.split('').map(
+        // Returns the key code for the character.
+        function(character) {
+          return character.charCodeAt(0);
+        }
+      ).join('');
+      return 'id' + hash;
     }
 
     Polymer('kb-altkey-data', {
