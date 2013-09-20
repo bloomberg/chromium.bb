@@ -10,7 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/property_util.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/basictypes.h"
@@ -227,25 +227,28 @@ TEST_F(BaseLayoutManagerTest, BoundsWithScreenEdgeVisible) {
 // restores the bounds.
 TEST_F(BaseLayoutManagerTest, MaximizeSetsRestoreBounds) {
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
 
   // Maximize it, which will keep the previous restore bounds.
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_EQ("1,2 3x4", GetRestoreBoundsInParent(window.get()).ToString());
+  EXPECT_EQ("1,2 3x4", window_state->GetRestoreBoundsInParent().ToString());
 
   // Restore it, which should restore bounds and reset restore bounds.
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_EQ("1,2 3x4", window->bounds().ToString());
-  EXPECT_TRUE(GetRestoreBoundsInScreen(window.get()) == NULL);
+  EXPECT_FALSE(window_state->HasRestoreBounds());
 }
 
 // Verifies maximizing keeps the restore bounds if set.
 TEST_F(BaseLayoutManagerTest, MaximizeResetsRestoreBounds) {
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
-  SetRestoreBoundsInParent(window.get(), gfx::Rect(10, 11, 12, 13));
+
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window_state->SetRestoreBoundsInParent(gfx::Rect(10, 11, 12, 13));
 
   // Maximize it, which will keep the previous restore bounds.
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_EQ("10,11 12x13", GetRestoreBoundsInParent(window.get()).ToString());
+  EXPECT_EQ("10,11 12x13", window_state->GetRestoreBoundsInParent().ToString());
 }
 
 // Verifies that the restore bounds do not get reset when restoring to a
@@ -255,24 +258,25 @@ TEST_F(BaseLayoutManagerTest, BoundsAfterRestoringToMaximizeFromMinimize) {
   gfx::Rect bounds(10, 15, 25, 35);
   window->SetBounds(bounds);
 
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
   // Maximize it, which should reset restore bounds.
-  wm::MaximizeWindow(window.get());
+  window_state->Maximize();
   EXPECT_EQ(bounds.ToString(),
-            GetRestoreBoundsInParent(window.get()).ToString());
+            window_state->GetRestoreBoundsInParent().ToString());
 
   // Minimize the window. The restore bounds should not change.
-  wm::MinimizeWindow(window.get());
+  window_state->Minimize();
   EXPECT_EQ(bounds.ToString(),
-            GetRestoreBoundsInParent(window.get()).ToString());
+            window_state->GetRestoreBoundsInParent().ToString());
 
   // Show the window again. The window should be maximized, and the restore
   // bounds should not change.
   window->Show();
   EXPECT_EQ(bounds.ToString(),
-            GetRestoreBoundsInParent(window.get()).ToString());
-  EXPECT_TRUE(wm::IsWindowMaximized(window.get()));
+            window_state->GetRestoreBoundsInParent().ToString());
+  EXPECT_TRUE(window_state->IsMaximized());
 
-  wm::RestoreWindow(window.get());
+  window_state->Restore();
   EXPECT_EQ(bounds.ToString(), window->bounds().ToString());
 }
 

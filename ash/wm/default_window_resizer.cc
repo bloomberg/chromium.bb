@@ -5,7 +5,7 @@
 #include "ash/wm/default_window_resizer.h"
 
 #include "ash/shell.h"
-#include "ash/wm/property_util.h"
+#include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -34,7 +34,7 @@ void DefaultWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   gfx::Rect bounds(CalculateBoundsForDrag(details_, location));
   if (bounds != details_.window->bounds()) {
     if (!did_move_or_resize_ && !details_.restore_bounds.IsEmpty())
-      ClearRestoreBounds(details_.window);
+      wm::GetWindowState(details_.window)->ClearRestoreBounds();
     did_move_or_resize_ = true;
     details_.window->SetBounds(bounds);
   }
@@ -50,7 +50,8 @@ void DefaultWindowResizer::RevertDrag() {
   details_.window->SetBounds(details_.initial_bounds_in_parent);
 
   if (!details_.restore_bounds.IsEmpty())
-    SetRestoreBoundsInScreen(details_.window, details_.restore_bounds);
+    wm::GetWindowState(details_.window)->SetRestoreBoundsInScreen(
+        details_.restore_bounds);
 }
 
 aura::Window* DefaultWindowResizer::GetTarget() {

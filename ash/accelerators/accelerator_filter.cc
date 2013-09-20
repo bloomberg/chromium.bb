@@ -6,7 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
-#include "ash/wm/window_util.h"
+#include "ash/wm/window_state.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
@@ -33,7 +33,7 @@ bool ShouldProcessAcceleratorsNow(const ui::Accelerator& accelerator,
 
   // A full screen window should be able to handle all key events including the
   // reserved ones.
-  if (wm::IsWindowFullscreen(target)) {
+  if (wm::GetWindowState(target)->IsFullscreen()) {
     // TODO(yusukes): On Chrome OS, only browser and flash windows can be full
     // screen. Launching an app in "open full-screen" mode is not supported yet.
     // That makes the IsWindowFullscreen() check above almost meaningless

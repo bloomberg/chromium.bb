@@ -15,6 +15,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -84,7 +85,7 @@ DockedWindowLayoutManager* GetDockLayoutManager(aura::Window* window,
 // Certain windows (minimized, hidden or popups) do not matter to docking.
 bool IsUsedByLayout(aura::Window* window) {
   return (window->IsVisible() &&
-          !wm::IsWindowMinimized(window) &&
+          !wm::GetWindowState(window)->IsMinimized() &&
           window->type() != aura::client::WINDOW_TYPE_POPUP);
 }
 
@@ -411,10 +412,10 @@ void DockedWindowLayoutManager::OnWindowPropertyChanged(aura::Window* window,
   // until WillChangeVisibilityState is called when the shelf is visible again
   if (shelf_hidden_)
     return;
-  if (wm::IsWindowMinimized(window))
-    MinimizeWindow(window);
+  if (wm::GetWindowState(window)->IsMinimized())
+    MinimizeDockedWindow(window);
   else
-    RestoreWindow(window);
+    RestoreDockedWindow(window);
 }
 
 void DockedWindowLayoutManager::OnWindowBoundsChanged(
@@ -479,10 +480,10 @@ void DockedWindowLayoutManager::WillChangeVisibilityState(
         continue;
       if (shelf_hidden_) {
         if (window->IsVisible())
-          MinimizeWindow(window);
+          MinimizeDockedWindow(window);
       } else {
-        if (!wm::IsWindowMinimized(window))
-          RestoreWindow(window);
+        if (!wm::GetWindowState(window)->IsMinimized())
+          RestoreDockedWindow(window);
       }
     }
   }
@@ -493,16 +494,17 @@ void DockedWindowLayoutManager::WillChangeVisibilityState(
 ////////////////////////////////////////////////////////////////////////////////
 // DockLayoutManager private implementation:
 
-void DockedWindowLayoutManager::MinimizeWindow(aura::Window* window) {
+void DockedWindowLayoutManager::MinimizeDockedWindow(aura::Window* window) {
   DCHECK_NE(window->type(), aura::client::WINDOW_TYPE_POPUP);
   views::corewm::SetWindowVisibilityAnimationType(
       window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
   window->Hide();
-  if (wm::IsActiveWindow(window))
-    wm::DeactivateWindow(window);
+  wm::WindowState* window_state = wm::GetWindowState(window);
+  if (window_state->IsActive())
+    window_state->Deactivate();
 }
 
-void DockedWindowLayoutManager::RestoreWindow(aura::Window* window) {
+void DockedWindowLayoutManager::RestoreDockedWindow(aura::Window* window) {
   DCHECK_NE(window->type(), aura::client::WINDOW_TYPE_POPUP);
   window->Show();
 }

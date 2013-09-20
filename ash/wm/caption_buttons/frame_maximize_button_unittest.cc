@@ -9,7 +9,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/wm/caption_buttons/maximize_bubble_controller.h"
-#include "ash/wm/property_util.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "base/command_line.h"
@@ -166,35 +166,37 @@ class FrameMaximizeButtonTest : public ash::test::AshTestBase {
 // Tests that clicking on the resize-button toggles between maximize and normal
 // state.
 TEST_F(FrameMaximizeButtonTest, ResizeButtonToggleMaximize) {
-  aura::Window* window = widget()->GetNativeWindow();
+  wm::WindowState* window_state =
+      wm::GetWindowState(widget()->GetNativeWindow());
   views::View* view = maximize_button();
   gfx::Point center = view->GetBoundsInScreen().CenterPoint();
 
-  aura::test::EventGenerator generator(window->GetRootWindow(), center);
+  aura::test::EventGenerator generator(
+      window_state->window()->GetRootWindow(), center);
 
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+  EXPECT_FALSE(window_state->IsMaximized());
 
   generator.ClickLeftButton();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
+  EXPECT_TRUE(window_state->IsMaximized());
 
   center = view->GetBoundsInScreen().CenterPoint();
   generator.MoveMouseTo(center);
   generator.ClickLeftButton();
   RunAllPendingInMessageLoop();
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+  EXPECT_FALSE(window_state->IsMaximized());
 
   generator.GestureTapAt(view->GetBoundsInScreen().CenterPoint());
-  EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
+  EXPECT_TRUE(window_state->IsMaximized());
 
   generator.GestureTapAt(view->GetBoundsInScreen().CenterPoint());
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+  EXPECT_FALSE(window_state->IsMaximized());
 
   generator.GestureTapDownAndUp(view->GetBoundsInScreen().CenterPoint());
-  EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
+  EXPECT_TRUE(window_state->IsMaximized());
 
   generator.GestureTapDownAndUp(view->GetBoundsInScreen().CenterPoint());
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+  EXPECT_FALSE(window_state->IsMaximized());
 }
 
 #if defined(OS_WIN)
@@ -212,7 +214,8 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), center);
 
-  EXPECT_TRUE(ash::wm::IsWindowNormal(window));
+  wm::WindowState* window_state = wm::GetWindowState(window);
+  EXPECT_TRUE(window_state->IsNormalShowState());
 
   // Snap right.
   {
@@ -221,8 +224,8 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
     generator.ReleaseLeftButton();
     RunAllPendingInMessageLoop();
 
-    EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
-    EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
+    EXPECT_FALSE(window_state->IsMaximized());
+    EXPECT_FALSE(window_state->IsMinimized());
     internal::SnapSizer sizer(window, center,
         internal::SnapSizer::RIGHT_EDGE,
         internal::SnapSizer::OTHER_INPUT);
@@ -238,8 +241,8 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
     generator.ReleaseLeftButton();
     RunAllPendingInMessageLoop();
 
-    EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
-    EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
+    EXPECT_FALSE(window_state->IsMaximized());
+    EXPECT_FALSE(window_state->IsMinimized());
     internal::SnapSizer sizer(window, center,
         internal::SnapSizer::LEFT_EDGE,
         internal::SnapSizer::OTHER_INPUT);
@@ -255,10 +258,10 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
     generator.ReleaseLeftButton();
     RunAllPendingInMessageLoop();
 
-    EXPECT_TRUE(ash::wm::IsWindowMinimized(window));
+    EXPECT_TRUE(window_state->IsMinimized());
   }
 
-  ash::wm::RestoreWindow(window);
+  window_state->Restore();
 
   // Now test the same behaviour for gesture events.
 
@@ -272,8 +275,8 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
         3);
     RunAllPendingInMessageLoop();
 
-    EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
-    EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
+    EXPECT_FALSE(window_state->IsMaximized());
+    EXPECT_FALSE(window_state->IsMinimized());
     // This is a short resizing distance and different touch behavior
     // applies which leads in half of the screen being used.
     EXPECT_EQ("400,0 400x553", window->bounds().ToString());
@@ -289,8 +292,8 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
         3);
     RunAllPendingInMessageLoop();
 
-    EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
-    EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
+    EXPECT_FALSE(window_state->IsMaximized());
+    EXPECT_FALSE(window_state->IsMinimized());
     internal::SnapSizer sizer(window, center,
         internal::SnapSizer::LEFT_EDGE,
         internal::SnapSizer::OTHER_INPUT);
@@ -307,7 +310,7 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
         3);
     RunAllPendingInMessageLoop();
 
-    EXPECT_TRUE(ash::wm::IsWindowMinimized(window));
+    EXPECT_TRUE(window_state->IsMinimized());
   }
 
   // Test with gesture events.
@@ -339,8 +342,9 @@ TEST_F(FrameMaximizeButtonTest,
   gfx::Point end_point = gfx::Point(work_area.width(), start_point.y());
 
   aura::test::EventGenerator generator(window->GetRootWindow(), start_point);
+  wm::WindowState* window_state = wm::GetWindowState(window);
 
-  EXPECT_TRUE(ash::wm::IsWindowNormal(window));
+  EXPECT_TRUE(window_state->IsNormalShowState());
 
   // Snap right with a touch drag.
   generator.GestureScrollSequence(start_point,
@@ -349,8 +353,8 @@ TEST_F(FrameMaximizeButtonTest,
                                   10);
   RunAllPendingInMessageLoop();
 
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
-  EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
+  EXPECT_FALSE(window_state->IsMaximized());
+  EXPECT_FALSE(window_state->IsMinimized());
   gfx::Rect touch_result = window->bounds();
   EXPECT_NE(bounds.ToString(), touch_result.ToString());
 
@@ -363,8 +367,8 @@ TEST_F(FrameMaximizeButtonTest,
   generator.ReleaseLeftButton();
   RunAllPendingInMessageLoop();
 
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
-  EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
+  EXPECT_FALSE(window_state->IsMaximized());
+  EXPECT_FALSE(window_state->IsMinimized());
   gfx::Rect mouse_result = window->bounds();
 
   // The difference between the two operations should be that the mouse
@@ -387,7 +391,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeButtonExternalShutDown) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_TRUE(ash::wm::IsWindowNormal(window));
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowState());
 
   // Move the mouse cursor over the button to bring up the maximizer bubble.
   generator.MoveMouseTo(button_pos);
@@ -410,13 +414,13 @@ TEST_F(FrameMaximizeButtonTest, MaximizeOnHoverThenClick) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_TRUE(ash::wm::IsWindowNormal(window));
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowState());
 
   // Move the mouse cursor over the button to bring up the maximizer bubble.
   generator.MoveMouseTo(button_pos);
   EXPECT_TRUE(maximize_button->maximizer());
   generator.ClickLeftButton();
-  EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
+  EXPECT_TRUE(wm::GetWindowState(window)->IsMaximized());
 }
 
 // Test that hovering over a button in the balloon dialog will show the phantom
@@ -433,7 +437,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeLeftButtonDragOut) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_TRUE(ash::wm::IsWindowNormal(window));
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowState());
   EXPECT_FALSE(maximize_button->phantom_window_open());
 
   // Move the mouse cursor over the button to bring up the maximizer bubble.
@@ -478,7 +482,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeLeftByButton) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_TRUE(ash::wm::IsWindowNormal(window));
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowState());
   EXPECT_FALSE(maximize_button->phantom_window_open());
 
   // Move the mouse cursor over the button to bring up the maximizer bubble.
@@ -495,8 +499,9 @@ TEST_F(FrameMaximizeButtonTest, MaximizeLeftByButton) {
   EXPECT_FALSE(maximize_button->maximizer());
   EXPECT_FALSE(maximize_button->phantom_window_open());
 
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
-  EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
+  wm::WindowState* window_state = wm::GetWindowState(window);
+  EXPECT_FALSE(window_state->IsMaximized());
+  EXPECT_FALSE(window_state->IsMinimized());
   internal::SnapSizer sizer(window, button_pos,
                             internal::SnapSizer::LEFT_EDGE,
                             internal::SnapSizer::OTHER_INPUT);
@@ -515,7 +520,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeKeepFocus) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_TRUE(ash::wm::IsWindowNormal(window));
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowState());
 
   aura::Window* active =
       aura::client::GetFocusClient(window)->GetFocusedWindow();
@@ -568,8 +573,9 @@ TEST_F(FrameMaximizeButtonTest, OnlyLeftButtonMaximizes) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_TRUE(ash::wm::IsWindowNormal(window));
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+  wm::WindowState* window_state = wm::GetWindowState(window);
+  EXPECT_TRUE(window_state->IsNormalShowState());
+  EXPECT_FALSE(window_state->IsMaximized());
 
   // Move the mouse cursor over the button.
   generator.MoveMouseTo(button_pos);
@@ -580,7 +586,7 @@ TEST_F(FrameMaximizeButtonTest, OnlyLeftButtonMaximizes) {
   generator.PressLeftButton();
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(maximize_button->is_snap_enabled());
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+  EXPECT_FALSE(window_state->IsMaximized());
 
   // Pressing the right button then should cancel the operation.
   generator.PressRightButton();
@@ -591,7 +597,7 @@ TEST_F(FrameMaximizeButtonTest, OnlyLeftButtonMaximizes) {
   generator.ReleaseRightButton();
   generator.ReleaseLeftButton();
   RunAllPendingInMessageLoop();
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+  EXPECT_FALSE(window_state->IsMaximized());
 
   // Second experiment: Starting with right should also not trigger.
   generator.MoveMouseTo(off_pos);
@@ -609,7 +615,7 @@ TEST_F(FrameMaximizeButtonTest, OnlyLeftButtonMaximizes) {
   EXPECT_FALSE(maximize_button->is_snap_enabled());
   generator.ReleaseRightButton();
   generator.ReleaseLeftButton();
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+  EXPECT_FALSE(window_state->IsMaximized());
 }
 
 // Click a button of window maximize functionality.
@@ -654,8 +660,9 @@ TEST_F(FrameMaximizeButtonTest, MaximizeLeftRestore) {
   maximize_button->set_bubble_appearance_delay_ms(0);
 
   ClickMaxButton(maximize_button, window, SNAP_LEFT);
+  wm::WindowState* window_state = wm::GetWindowState(window);
   // The window should not be maximized.
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+  EXPECT_FALSE(window_state->IsMaximized());
   // But the bounds should be different.
   gfx::Rect new_bounds = widget()->GetWindowBoundsInScreen();
   EXPECT_EQ(0, new_bounds.x());
@@ -670,7 +677,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeLeftRestore) {
   EXPECT_EQ(new_bounds.width(), initial_bounds.width());
   EXPECT_EQ(new_bounds.height(), initial_bounds.height());
   // Make sure that there is no restore rectangle left.
-  EXPECT_EQ(NULL, GetRestoreBoundsInScreen(window));
+  EXPECT_FALSE(window_state->HasRestoreBounds());
 }
 
 // Maximize, left/right maximize and then restore should works.
@@ -682,10 +689,12 @@ TEST_F(FrameMaximizeButtonTest, MaximizeMaximizeLeftRestore) {
   maximize_button->set_bubble_appearance_delay_ms(0);
 
   ClickMaxButton(maximize_button, window, SNAP_NONE);
-  EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
+
+  wm::WindowState* window_state = wm::GetWindowState(window);
+  EXPECT_TRUE(window_state->IsMaximized());
 
   ClickMaxButton(maximize_button, window, SNAP_LEFT);
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+  EXPECT_FALSE(window_state->IsMaximized());
   gfx::Rect new_bounds = widget()->GetWindowBoundsInScreen();
   EXPECT_EQ(0, new_bounds.x());
   EXPECT_EQ(0, new_bounds.y());
@@ -700,7 +709,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeMaximizeLeftRestore) {
   EXPECT_EQ(new_bounds.width(), initial_bounds.width());
   EXPECT_EQ(new_bounds.height(), initial_bounds.height());
   // Make sure that there is no restore rectangle left.
-  EXPECT_EQ(NULL, GetRestoreBoundsInScreen(window));
+  EXPECT_FALSE(window_state->HasRestoreBounds());
 }
 
 // Left/right maximize, maximize and then restore should work.
@@ -712,21 +721,24 @@ TEST_F(FrameMaximizeButtonTest, MaximizeLeftMaximizeRestore) {
   maximize_button->set_bubble_appearance_delay_ms(0);
 
   ClickMaxButton(maximize_button, window, SNAP_LEFT);
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+
+  wm::WindowState* window_state = wm::GetWindowState(window);
+  EXPECT_FALSE(window_state->IsMaximized());
 
   ClickMaxButton(maximize_button, window, SNAP_NONE);
-  EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
+  EXPECT_TRUE(window_state->IsMaximized());
 
   ClickMaxButton(maximize_button, window, SNAP_NONE);
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+  EXPECT_FALSE(window_state->IsMaximized());
   gfx::Rect new_bounds = widget()->GetWindowBoundsInScreen();
   EXPECT_EQ(new_bounds.x(), initial_bounds.x());
   EXPECT_EQ(new_bounds.y(), initial_bounds.x());
   EXPECT_EQ(new_bounds.width(), initial_bounds.width());
   EXPECT_EQ(new_bounds.height(), initial_bounds.height());
   // Make sure that there is no restore rectangle left.
-  EXPECT_EQ(NULL, GetRestoreBoundsInScreen(window));
+  EXPECT_FALSE(window_state->HasRestoreBounds());
 }
+
 // Test that minimizing the window per keyboard closes the maximize bubble.
 TEST_F(FrameMaximizeButtonTest, MinimizePerKeyClosesBubble) {
   aura::Window* window = widget()->GetNativeWindow();
@@ -745,9 +757,10 @@ TEST_F(FrameMaximizeButtonTest, MinimizePerKeyClosesBubble) {
   EXPECT_TRUE(maximize_button->maximizer());
 
   // We simulate the keystroke by calling minimizeWindow directly.
-  wm::MinimizeWindow(window);
+  wm::WindowState* window_state = wm::GetWindowState(window);
+  window_state->Minimize();
 
-  EXPECT_TRUE(ash::wm::IsWindowMinimized(window));
+  EXPECT_TRUE(window_state->IsMinimized());
   EXPECT_FALSE(maximize_button->maximizer());
 }
 
@@ -757,9 +770,10 @@ TEST_F(FrameMaximizeButtonTest, MaximizeButtonDragDownMinimizes) {
   ash::FrameMaximizeButton* maximize_button =
       FrameMaximizeButtonTest::maximize_button();
 
+  wm::WindowState* window_state = wm::GetWindowState(window);
   // Drag down on a maximized window.
-  wm::MaximizeWindow(window);
-  EXPECT_TRUE(wm::IsWindowMaximized(window));
+  window_state->Maximize();
+  EXPECT_TRUE(window_state->IsMaximized());
   gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
   gfx::Point off_pos(button_pos.x(), button_pos.y() + 100);
 
@@ -767,17 +781,17 @@ TEST_F(FrameMaximizeButtonTest, MaximizeButtonDragDownMinimizes) {
   generator.GestureScrollSequence(button_pos, off_pos,
       base::TimeDelta::FromMilliseconds(0), 1);
 
-  EXPECT_TRUE(wm::IsWindowMinimized(window));
+  EXPECT_TRUE(window_state->IsMinimized());
   EXPECT_FALSE(maximize_button->maximizer());
 
   // Drag down on a restored window.
-  wm::RestoreWindow(window);
+  window_state->Restore();
 
   button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
   off_pos = gfx::Point(button_pos.x(), button_pos.y() + 200);
   generator.GestureScrollSequence(button_pos, off_pos,
       base::TimeDelta::FromMilliseconds(10), 1);
-  EXPECT_TRUE(wm::IsWindowMinimized(window));
+  EXPECT_TRUE(window_state->IsMinimized());
   EXPECT_FALSE(maximize_button->maximizer());
 }
 

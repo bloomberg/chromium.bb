@@ -12,6 +12,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/aura/client/focus_change_observer.h"
@@ -259,7 +260,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
             fullscreen->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   // Test if the restore bounds are correctly updated.
-  wm::RestoreWindow(maximized->GetNativeView());
+  wm::GetWindowState(maximized->GetNativeView())->Restore();
   EXPECT_EQ("100,10 100x100", maximized->GetWindowBoundsInScreen().ToString());
   EXPECT_EQ("100,10 100x100",
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());

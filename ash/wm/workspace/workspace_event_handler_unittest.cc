@@ -7,7 +7,7 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/property_util.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace_controller_test_helper.h"
@@ -109,8 +109,10 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
   EXPECT_EQ(restored_bounds.width(), bounds_in_screen.width());
   EXPECT_EQ(work_area.y(), bounds_in_screen.y());
   EXPECT_EQ(work_area.height(), bounds_in_screen.height());
+
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
   // Single-axis maximization is not considered real maximization.
-  EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+  EXPECT_FALSE(window_state->IsMaximized());
 
   // Restore.
   generator.DoubleClickLeftButton();
@@ -118,14 +120,14 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
   EXPECT_EQ(restored_bounds.ToString(), bounds_in_screen.ToString());
   // Note that it should not even be restored at this point, it should have
   // also cleared the restore rectangle.
-  EXPECT_EQ(NULL, GetRestoreBoundsInScreen(window.get()));
+  EXPECT_FALSE(window_state->HasRestoreBounds());
 
   // Double-click the top resize edge again to maximize vertically, then double
   // click again to restore.
   generator.DoubleClickLeftButton();
   wd.set_window_component(HTCAPTION);
   generator.DoubleClickLeftButton();
-  EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+  EXPECT_FALSE(window_state->IsMaximized());
   bounds_in_screen = window->GetBoundsInScreen();
   EXPECT_EQ(restored_bounds.ToString(), bounds_in_screen.ToString());
 
@@ -138,7 +140,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
   EXPECT_EQ(work_area.x(), bounds_in_screen.x());
   EXPECT_EQ(work_area.width(), bounds_in_screen.width());
   // Single-axis maximization is not considered real maximization.
-  EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+  EXPECT_FALSE(window_state->IsMaximized());
 
   // Restore.
   wd.set_window_component(HTCAPTION);
@@ -174,7 +176,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
   EXPECT_EQ(restored_bounds.width(), bounds_in_screen.width());
   EXPECT_EQ(work_area2.y(), bounds_in_screen.y());
   EXPECT_EQ(work_area2.height(), bounds_in_screen.height());
-  EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+  EXPECT_FALSE(window_state->IsMaximized());
 
   // Restore.
   wd.set_window_component(HTCAPTION);
@@ -189,7 +191,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
   EXPECT_EQ(restored_bounds.height(), bounds_in_screen.height());
   EXPECT_EQ(work_area2.x(), bounds_in_screen.x());
   EXPECT_EQ(work_area2.width(), bounds_in_screen.width());
-  EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+  EXPECT_FALSE(window_state->IsMaximized());
 
   // Restore.
   wd.set_window_component(HTCAPTION);
@@ -251,16 +253,18 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
       CreateTestWindow(&wd, gfx::Rect(1, 2, 30, 40)));
   window->SetProperty(aura::client::kCanMaximizeKey, true);
   wd.set_window_component(HTCAPTION);
-  EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  EXPECT_FALSE(window_state->IsMaximized());
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   aura::test::EventGenerator generator(root, window.get());
   generator.DoubleClickLeftButton();
   EXPECT_NE("1,2 30x40", window->bounds().ToString());
 
-  EXPECT_TRUE(wm::IsWindowMaximized(window.get()));
+  EXPECT_TRUE(window_state->IsMaximized());
   generator.DoubleClickLeftButton();
 
-  EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+  EXPECT_FALSE(window_state->IsMaximized());
   EXPECT_EQ("1,2 30x40", window->bounds().ToString());
 
   // Double-clicking the middle button shouldn't toggle the maximized state.
@@ -274,7 +278,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
                          ui::EF_IS_DOUBLE_CLICK);
   root->AsRootWindowHostDelegate()->OnHostMouseEvent(&release);
 
-  EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+  EXPECT_FALSE(window_state->IsMaximized());
   EXPECT_EQ("1,2 30x40", window->bounds().ToString());
   EXPECT_FALSE(observer.DidPropertyChange(aura::client::kShowStateKey));
 }
@@ -285,19 +289,21 @@ TEST_F(WorkspaceEventHandlerTest, DoubleTapCaptionTogglesMaximize) {
   scoped_ptr<aura::Window> window(CreateTestWindow(&wd, bounds));
   window->SetProperty(aura::client::kCanMaximizeKey, true);
   wd.set_window_component(HTCAPTION);
-  EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  EXPECT_FALSE(window_state->IsMaximized());
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        window.get());
   generator.GestureTapAt(gfx::Point(25, 25));
   generator.GestureTapAt(gfx::Point(25, 25));
   RunAllPendingInMessageLoop();
   EXPECT_NE(bounds.ToString(), window->bounds().ToString());
-  EXPECT_TRUE(wm::IsWindowMaximized(window.get()));
+  EXPECT_TRUE(window_state->IsMaximized());
 
   generator.GestureTapAt(gfx::Point(5, 5));
   generator.GestureTapAt(gfx::Point(10, 10));
 
-  EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+  EXPECT_FALSE(window_state->IsMaximized());
   EXPECT_EQ(bounds.ToString(), window->bounds().ToString());
 }
 

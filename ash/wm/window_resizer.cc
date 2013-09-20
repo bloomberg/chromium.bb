@@ -9,7 +9,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
-#include "ash/wm/property_util.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -106,6 +106,7 @@ const int WindowResizer::kBoundsChangeDirection_Vertical = 2;
 
 WindowResizer::Details::Details()
     : window(NULL),
+      window_state(NULL),
       window_component(HTNOWHERE),
       bounds_change(0),
       position_change_direction(0),
@@ -119,6 +120,7 @@ WindowResizer::Details::Details(aura::Window* window,
                                 int window_component,
                                 aura::client::WindowMoveSource source)
     : window(window),
+      window_state(wm::GetWindowState(window)),
       initial_bounds_in_parent(window->bounds()),
       restore_bounds(gfx::Rect()),
       initial_location_in_parent(location),
@@ -131,10 +133,10 @@ WindowResizer::Details::Details(aura::Window* window,
           GetSizeChangeDirectionForWindowComponent(window_component)),
       is_resizable(bounds_change != kBoundsChangeDirection_None),
       source(source) {
-  if (wm::IsWindowNormal(window) &&
-      GetRestoreBoundsInScreen(window) &&
+  if (window_state->IsNormalShowState() &&
+      window_state->HasRestoreBounds() &&
       window_component == HTCAPTION)
-    restore_bounds = *GetRestoreBoundsInScreen(window);
+    restore_bounds = window_state->GetRestoreBoundsInScreen();
 }
 
 WindowResizer::Details::~Details() {

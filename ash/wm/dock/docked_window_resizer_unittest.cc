@@ -22,7 +22,7 @@
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/panels/panel_layout_manager.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
@@ -200,7 +200,7 @@ class DockedWindowResizerTest
     // x-coordinate can get adjusted by snapping or sticking.
     // y-coordinate could be changed by possible automatic layout if docked.
     if (window->parent()->id() != internal::kShellWindowId_DockedContainer &&
-        GetRestoreBoundsInScreen(window) == NULL) {
+        !wm::GetWindowState(window)->HasRestoreBounds()) {
       EXPECT_EQ(initial_bounds.y() + dy, window->GetBoundsInScreen().y());
     }
   }
@@ -701,7 +701,8 @@ TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther)
 
   // Maximize the second window - Maximized area should be shrunk.
   const gfx::Rect restored_bounds = w2->bounds();
-  wm::MaximizeWindow(w2.get());
+  wm::WindowState* w2_state = wm::GetWindowState(w2.get());
+  w2_state->Maximize();
   EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
             manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap,
             w2->bounds().width());
@@ -745,7 +746,7 @@ TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther)
             w2->bounds().width());
 
   // Unmaximize the second window.
-  wm::RestoreWindow(w2.get());
+  w2_state->Restore();
   // Its bounds should get restored.
   EXPECT_EQ(restored_bounds, w2->bounds());
 }
@@ -1029,7 +1030,7 @@ TEST_P(DockedWindowResizerTest, DragToShelf)
   if (test_panels()) {
     // The panel should be touching the shelf and attached.
     EXPECT_EQ(shelf_y, w1->bounds().bottom());
-    EXPECT_TRUE(wm::GetWindowSettings(w1.get())->panel_attached());
+    EXPECT_TRUE(wm::GetWindowState(w1.get())->panel_attached());
   } else {
     // The window should not be touching the shelf.
     EXPECT_EQ(shelf_y - kDistanceFromShelf, w1->bounds().bottom());

@@ -16,6 +16,9 @@ class Window;
 }
 
 namespace ash {
+namespace wm {
+class WindowState;
+}
 
 // WindowResizer is used by ToplevelWindowEventFilter to handle dragging, moving
 // or resizing a window. All coordinates passed to this are in the parent
@@ -65,7 +68,12 @@ class ASH_EXPORT WindowResizer {
     ~Details();
 
     // The window we're resizing.
+    // TODO(oshima): replace this with accessor method to
+    // |window_state->window()|.
     aura::Window* window;
+
+    // The ash window state for the |window| above.
+    wm::WindowState* window_state;
 
     // Initial bounds of the window in parent coordinates.
     gfx::Rect initial_bounds_in_parent;

@@ -9,7 +9,6 @@
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/dock/dock_types.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/workspace/snap_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -163,8 +162,8 @@ class ASH_EXPORT DockedWindowLayoutManager
   static const int kMinDockGap;
 
   // Minimize / restore window and relayout.
-  void MinimizeWindow(aura::Window* window);
-  void RestoreWindow(aura::Window* window);
+  void MinimizeDockedWindow(aura::Window* window);
+  void RestoreDockedWindow(aura::Window* window);
 
   // Updates docked layout state when a window gets inside the dock.
   void OnWindowDocked(aura::Window* window);

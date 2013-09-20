@@ -8,9 +8,8 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/base_layout_manager.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
@@ -65,16 +64,17 @@ WorkspaceWindowState WorkspaceController::GetWindowState() const {
   bool has_maximized_window = false;
   for (aura::Window::Windows::const_iterator i = windows.begin();
        i != windows.end(); ++i) {
-    if (wm::GetWindowSettings(*i)->ignored_by_shelf())
+    wm::WindowState* window_state = wm::GetWindowState(*i);
+    if (window_state->ignored_by_shelf())
       continue;
     ui::Layer* layer = (*i)->layer();
     if (!layer->GetTargetVisibility() || layer->GetTargetOpacity() == 0.0f)
       continue;
-    if (wm::IsWindowMaximized(*i)) {
+    if (window_state->IsMaximized()) {
       // An untracked window may still be fullscreen so we keep iterating when
       // we hit a maximized window.
       has_maximized_window = true;
-    } else if (wm::IsWindowFullscreen(*i)) {
+    } else if (window_state->IsFullscreen()) {
       return WORKSPACE_WINDOW_STATE_FULL_SCREEN;
     }
     if (!window_overlaps_launcher && (*i)->bounds().Intersects(shelf_bounds))

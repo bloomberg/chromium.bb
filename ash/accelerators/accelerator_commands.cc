@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/window_cycle_controller.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 
 namespace ash {
@@ -21,14 +22,15 @@ bool ToggleMinimized() {
         HandleCycleWindow(WindowCycleController::FORWARD, false);
     return true;
   }
+  wm::WindowState* window_state = wm::GetWindowState(window);
   // Disable the shortcut for minimizing full screen window due to
   // crbug.com/131709, which is a crashing issue related to minimizing
   // full screen pepper window.
-  if (wm::IsWindowFullscreen(window) || !wm::CanMinimizeWindow(window))
+  if (window_state->IsFullscreen() || !window_state->CanMinimize())
     return false;
   ash::Shell::GetInstance()->delegate()->RecordUserMetricsAction(
       ash::UMA_MINIMIZE_PER_KEY);
-  wm::MinimizeWindow(window);
+  window_state->Minimize();
   return true;
 }
 

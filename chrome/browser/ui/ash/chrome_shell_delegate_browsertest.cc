@@ -10,7 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/window_properties.h"
-#include "ash/wm/window_util.h"
+#include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -43,28 +43,28 @@ typedef InProcessBrowserTest ChromeShellDelegateBrowserTest;
 IN_PROC_BROWSER_TEST_F(ChromeShellDelegateBrowserTest, ToggleMaximized) {
   ash::ShellDelegate* shell_delegate = ash::Shell::GetInstance()->delegate();
   ASSERT_TRUE(shell_delegate);
-  aura::Window* window = ash::wm::GetActiveWindow();
-  ASSERT_TRUE(window);
+  ash::wm::WindowState* window_state = ash::wm::GetActiveWindowState();
+  ASSERT_TRUE(window_state);
 
   // When not in fullscreen, ShellDelegate::ToggleMaximized toggles Maximized.
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+  EXPECT_FALSE(window_state->IsMaximized());
   shell_delegate->ToggleMaximized();
-  EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
+  EXPECT_TRUE(window_state->IsMaximized());
   shell_delegate->ToggleMaximized();
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+  EXPECT_FALSE(window_state->IsMaximized());
 
   // When in fullscreen ShellDelegate::ToggleMaximized gets out of fullscreen.
-  EXPECT_FALSE(ash::wm::IsWindowFullscreen(window));
-  Browser* browser = chrome::FindBrowserWithWindow(window);
+  EXPECT_FALSE(window_state->IsFullscreen());
+  Browser* browser = chrome::FindBrowserWithWindow(window_state->window());
   ASSERT_TRUE(browser);
   chrome::ToggleFullscreenMode(browser);
-  EXPECT_TRUE(ash::wm::IsWindowFullscreen(window));
+  EXPECT_TRUE(window_state->IsFullscreen());
   shell_delegate->ToggleMaximized();
-  EXPECT_FALSE(ash::wm::IsWindowFullscreen(window));
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+  EXPECT_FALSE(window_state->IsFullscreen());
+  EXPECT_FALSE(window_state->IsMaximized());
   shell_delegate->ToggleMaximized();
-  EXPECT_FALSE(ash::wm::IsWindowFullscreen(window));
-  EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
+  EXPECT_FALSE(window_state->IsFullscreen());
+  EXPECT_TRUE(window_state->IsMaximized());
 }
 
 // Confirm that toggling window fullscren works properly.

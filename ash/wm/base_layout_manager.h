@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_state.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/client/activation_change_observer.h"
@@ -24,6 +24,10 @@ class Window;
 }
 
 namespace ash {
+namespace wm {
+class WindowState;
+}
+
 namespace internal {
 
 // BaseLayoutManager is the simplest possible implementation for a window
@@ -36,7 +40,7 @@ class ASH_EXPORT BaseLayoutManager
       public aura::WindowObserver,
       public aura::client::ActivationChangeObserver,
       public ShellObserver,
-      public wm::WindowSettings::Observer {
+      public wm::WindowState::Observer {
  public:
   typedef std::set<aura::Window*> WindowSet;
 
@@ -84,7 +88,7 @@ class ASH_EXPORT BaseLayoutManager
   };
 
   // Invoked from OnWindowPropertyChanged() if |kShowStateKey| changes.
-  virtual void ShowStateChanged(aura::Window* window,
+  virtual void ShowStateChanged(wm::WindowState* window_state,
                                 ui::WindowShowState last_show_state);
 
   // Adjusts the window's bounds when the display area changes for given
@@ -100,14 +104,15 @@ class ASH_EXPORT BaseLayoutManager
 
   // Adjusts the sizes of the specific window in respond to a screen change or
   // display-area size change.
-  virtual void AdjustWindowBoundsForWorkAreaChange(aura::Window* window,
-                                                   AdjustWindowReason reason);
+  virtual void AdjustWindowBoundsForWorkAreaChange(
+      wm::WindowState* window_state,
+      AdjustWindowReason reason);
 
   aura::RootWindow* root_window() { return root_window_; }
 
  private:
   // Update window bounds based on a change in show state.
-  void UpdateBoundsFromShowState(aura::Window* window);
+  void UpdateBoundsFromShowState(wm::WindowState* controller);
 
   // Set of windows we're listening to.
   WindowSet windows_;

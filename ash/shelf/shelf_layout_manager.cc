@@ -27,6 +27,7 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
@@ -1010,7 +1011,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   bool visible_window = false;
   for (size_t i = 0; i < windows.size(); ++i) {
     if (windows[i] && windows[i]->IsVisible() &&
-        !ash::wm::IsWindowMinimized(windows[i]) &&
+        !wm::GetWindowState(windows[i])->IsMinimized() &&
         root_window_ == windows[i]->GetRootWindow()) {
       visible_window = true;
       break;

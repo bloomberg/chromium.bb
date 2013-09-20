@@ -7,7 +7,6 @@
 #include "ash/display/display_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
-#include "ash/wm/property_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"

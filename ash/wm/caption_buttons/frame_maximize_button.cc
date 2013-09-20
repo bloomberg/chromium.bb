@@ -11,9 +11,8 @@
 #include "ash/shell_delegate.h"
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/caption_buttons/maximize_bubble_controller.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "grit/ash_strings.h"
@@ -94,7 +93,7 @@ FrameMaximizeButton::FrameMaximizeButton(views::ButtonListener* listener,
   // TODO(sky): nuke this. It's temporary while we don't have good images.
   SetImageAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
 
-  if (ash::Shell::IsForcedMaximizeMode())
+  if (Shell::IsForcedMaximizeMode())
     views::View::SetVisible(false);
 }
 
@@ -316,7 +315,7 @@ void FrameMaximizeButton::OnGestureEvent(ui::GestureEvent* event) {
 
 void FrameMaximizeButton::SetVisible(bool visible) {
   // In the enforced maximized mode we do not allow to be made visible.
-  if (ash::Shell::IsForcedMaximizeMode())
+  if (Shell::IsForcedMaximizeMode())
     return;
 
   views::View::SetVisible(visible);
@@ -499,8 +498,10 @@ gfx::Rect FrameMaximizeButton::ScreenBoundsForType(
       return rect;
     }
     case SNAP_RESTORE: {
-      const gfx::Rect* restore = GetRestoreBoundsInScreen(window);
-      return restore ? *restore : frame_->GetWindowBoundsInScreen();
+      wm::WindowState* window_state = wm::GetWindowState(window);
+      return window_state->HasRestoreBounds() ?
+          window_state->GetRestoreBoundsInScreen() :
+          frame_->GetWindowBoundsInScreen();
     }
     case SNAP_NONE:
       NOTREACHED();
@@ -516,7 +517,8 @@ gfx::Point FrameMaximizeButton::LocationForSnapSizer(
 }
 
 void FrameMaximizeButton::Snap(SnapSizer* snap_sizer) {
-  ash::Shell* shell = ash::Shell::GetInstance();
+  Shell* shell = Shell::GetInstance();
+  wm::WindowState* window_state = wm::GetWindowState(frame_->GetNativeWindow());
   switch (snap_type_) {
     case SNAP_LEFT:
     case SNAP_RIGHT: {
@@ -524,30 +526,28 @@ void FrameMaximizeButton::Snap(SnapSizer* snap_sizer) {
       // should not overwrite the restore rectangle.
       gfx::Rect current_bounds_in_screen = frame_->GetWindowBoundsInScreen();
       snap_sizer->SnapWindowToTargetBounds();
-      if (GetRestoreBoundsInScreen(frame_->GetNativeWindow()) == NULL) {
-        ash::SetRestoreBoundsInScreen(frame_->GetNativeWindow(),
-                                      current_bounds_in_screen);
-      }
+      if (!window_state->HasRestoreBounds())
+        window_state->SetRestoreBoundsInScreen(current_bounds_in_screen);
       shell->delegate()->RecordUserMetricsAction(
           snap_type_ == SNAP_LEFT ?
-              ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT :
-              ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
+              UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT :
+              UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
       break;
     }
     case SNAP_MAXIMIZE:
       frame_->Maximize();
       shell->delegate()->RecordUserMetricsAction(
-          ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE);
+          UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE);
       break;
     case SNAP_MINIMIZE:
       frame_->Minimize();
       shell->delegate()->RecordUserMetricsAction(
-          ash::UMA_WINDOW_MAXIMIZE_BUTTON_MINIMIZE);
+          UMA_WINDOW_MAXIMIZE_BUTTON_MINIMIZE);
       break;
     case SNAP_RESTORE:
       frame_->Restore();
       shell->delegate()->RecordUserMetricsAction(
-          ash::UMA_WINDOW_MAXIMIZE_BUTTON_RESTORE);
+          UMA_WINDOW_MAXIMIZE_BUTTON_RESTORE);
       break;
     case SNAP_NONE:
       NOTREACHED();
@@ -556,8 +556,10 @@ void FrameMaximizeButton::Snap(SnapSizer* snap_sizer) {
 
 MaximizeBubbleFrameState
 FrameMaximizeButton::GetMaximizeBubbleFrameState() const {
+  wm::WindowState* window_state =
+      wm::GetWindowState(frame_->GetNativeWindow());
   // When there are no restore bounds, we are in normal mode.
-  if (!ash::GetRestoreBoundsInScreen(frame_->GetNativeWindow()))
+  if (!window_state->HasRestoreBounds())
     return FRAME_STATE_NONE;
   // The normal maximized test can be used.
   if (frame_->IsMaximized())

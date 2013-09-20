@@ -4,8 +4,10 @@
 
 #include "ash/wm/window_properties.h"
 
+#include "ash/wm/window_state.h"
 #include "ui/aura/window_property.h"
-#include "ui/gfx/rect.h"
+
+DECLARE_WINDOW_PROPERTY_TYPE(ash::wm::WindowState*);
 
 namespace ash {
 namespace internal {
@@ -13,10 +15,7 @@ DEFINE_WINDOW_PROPERTY_KEY(bool, kAnimateToFullscreenKey, true);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kFullscreenUsesMinimalChromeKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kStayInSameRootWindowKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false);
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect,
-                                 kPreAutoManagedWindowBoundsKey,
-                                 NULL);
-DEFINE_WINDOW_PROPERTY_KEY(bool, kWindowRestoresToRestoreBounds, false);
-
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(wm::WindowState,
+                                 kWindowStateKey, NULL);
 }  // namespace internal
 }  // namespace ash

@@ -11,7 +11,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/wm/property_util.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"

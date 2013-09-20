@@ -45,8 +45,8 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/power_button_controller.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_cycle_controller.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "base/bind.h"
@@ -831,7 +831,7 @@ bool AcceleratorController::PerformAction(int action,
       // http://crbug.com/135487.
       if (!window ||
           window->type() != aura::client::WINDOW_TYPE_NORMAL ||
-          wm::IsWindowFullscreen(window)) {
+          wm::GetWindowState(window)->IsFullscreen()) {
         break;
       }
 

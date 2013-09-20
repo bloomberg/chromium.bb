@@ -13,8 +13,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/property_util.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
@@ -546,6 +545,8 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   int bottom =
       ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
   window_->SetBounds(gfx::Rect(20, 30, 50, 60));
+  wm::WindowState* window_state = wm::GetWindowState(window_.get());
+
   {
     scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
         window_.get(), gfx::Point(), HTCAPTION,
@@ -555,9 +556,9 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     resizer->CompleteDrag(0);
     EXPECT_EQ("0,0 720x" + base::IntToString(bottom),
               window_->bounds().ToString());
-    ASSERT_TRUE(GetRestoreBoundsInScreen(window_.get()));
+    ASSERT_TRUE(window_state->HasRestoreBounds());
     EXPECT_EQ("20,30 50x60",
-              GetRestoreBoundsInScreen(window_.get())->ToString());
+              window_state->GetRestoreBoundsInScreen().ToString());
   }
   // Try the same with the right side.
   {
@@ -569,13 +570,13 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     resizer->CompleteDrag(0);
     EXPECT_EQ("80,0 720x" + base::IntToString(bottom),
               window_->bounds().ToString());
-    ASSERT_TRUE(GetRestoreBoundsInScreen(window_.get()));
+    ASSERT_TRUE(window_state->HasRestoreBounds());
     EXPECT_EQ("20,30 50x60",
-              GetRestoreBoundsInScreen(window_.get())->ToString());
+              window_state->GetRestoreBoundsInScreen().ToString());
   }
 
   // Test if the restore bounds is correct in multiple displays.
-  ClearRestoreBounds(window_.get());
+  window_state->ClearRestoreBounds();
 
   if (!SupportsMultipleDisplays())
     return;
@@ -603,7 +604,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     EXPECT_EQ("100,0 100x" + base::IntToString(bottom),
               window_->bounds().ToString());
     EXPECT_EQ("800,10 50x60",
-              GetRestoreBoundsInScreen(window_.get())->ToString());
+              window_state->GetRestoreBoundsInScreen().ToString());
   }
 }
 
@@ -1146,7 +1147,8 @@ TEST_F(WorkspaceWindowResizerTest, CtrlCompleteDragMoveToExactPosition) {
 // Verifies that a dragged window will restore to its pre-maximized size.
 TEST_F(WorkspaceWindowResizerTest, RestoreToPreMaximizeCoordinates) {
   window_->SetBounds(gfx::Rect(0, 0, 1000, 1000));
-  SetRestoreBoundsInScreen(window_.get(), gfx::Rect(96, 112, 320, 160));
+  wm::WindowState* window_state = wm::GetWindowState(window_.get());
+  window_state->SetRestoreBoundsInScreen(gfx::Rect(96, 112, 320, 160));
   scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
       window_.get(), gfx::Point(), HTCAPTION,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, empty_windows()));
@@ -1157,14 +1159,16 @@ TEST_F(WorkspaceWindowResizerTest, RestoreToPreMaximizeCoordinates) {
   resizer->CompleteDrag(0);
   EXPECT_EQ("10,10 320x160", window_->bounds().ToString());
   // The restore rectangle should get cleared as well.
-  EXPECT_EQ(NULL, GetRestoreBoundsInScreen(window_.get()));
+  EXPECT_FALSE(window_state->HasRestoreBounds());
 }
 
 // Verifies that a dragged window will restore to its pre-maximized size.
 TEST_F(WorkspaceWindowResizerTest, RevertResizeOperation) {
   const gfx::Rect initial_bounds(0, 0, 200, 400);
   window_->SetBounds(initial_bounds);
-  SetRestoreBoundsInScreen(window_.get(), gfx::Rect(96, 112, 320, 160));
+
+  wm::WindowState* window_state = wm::GetWindowState(window_.get());
+  window_state->SetRestoreBoundsInScreen(gfx::Rect(96, 112, 320, 160));
   scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
       window_.get(), gfx::Point(), HTCAPTION,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, empty_windows()));
@@ -1175,7 +1179,7 @@ TEST_F(WorkspaceWindowResizerTest, RevertResizeOperation) {
   resizer->RevertDrag();
   EXPECT_EQ(initial_bounds.ToString(), window_->bounds().ToString());
   EXPECT_EQ("96,112 320x160",
-      GetRestoreBoundsInScreen(window_.get())->ToString());
+            window_state->GetRestoreBoundsInScreen().ToString());
 }
 
 // Check that only usable sizes get returned by the resizer.
@@ -1386,8 +1390,7 @@ TEST_F(WorkspaceWindowResizerTest, CheckUserWindowMangedFlags) {
     EXPECT_EQ("0,150 400x200", window_->bounds().ToString());
     resizer->RevertDrag();
 
-    EXPECT_FALSE(
-        wm::GetWindowSettings(window_.get())->bounds_changed_by_user());
+    EXPECT_FALSE(wm::GetWindowState(window_.get())->bounds_changed_by_user());
   }
 
   // Check that a completed move / size does change the user coordinates.
@@ -1400,8 +1403,7 @@ TEST_F(WorkspaceWindowResizerTest, CheckUserWindowMangedFlags) {
     resizer->Drag(CalculateDragPoint(*resizer, 0, 100), 0);
     EXPECT_EQ("0,150 400x200", window_->bounds().ToString());
     resizer->CompleteDrag(0);
-    EXPECT_TRUE(
-        wm::GetWindowSettings(window_.get())->bounds_changed_by_user());
+    EXPECT_TRUE(wm::GetWindowState(window_.get())->bounds_changed_by_user());
   }
 }
 

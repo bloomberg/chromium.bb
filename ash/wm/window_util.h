@@ -27,7 +27,7 @@ const int kMinimumOnScreenArea = 10;
 
 namespace wm {
 
-// Convenience setters/getters for |aura::client::kRootWindowActiveWindow|.
+// Utility functions for window activation.
 ASH_EXPORT void ActivateWindow(aura::Window* window);
 ASH_EXPORT void DeactivateWindow(aura::Window* window);
 ASH_EXPORT bool IsActiveWindow(aura::Window* window);
@@ -41,60 +41,14 @@ ASH_EXPORT bool CanActivateWindow(aura::Window* window);
 // this is probably what you're looking for.
 ASH_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
 
-// Returns true if |window| can be maximized.
-ASH_EXPORT bool CanMaximizeWindow(const aura::Window* window);
-
-// Returns true if |window| can be minimized.
-ASH_EXPORT bool CanMinimizeWindow(const aura::Window* window);
-
-// Returns true if |window| can be resized.
-ASH_EXPORT bool CanResizeWindow(const aura::Window* window);
-
-// Returns true if |window| can be snapped to the left or right.
-ASH_EXPORT bool CanSnapWindow(aura::Window* window);
-
-// Returns true if |window| is normal or default.
-ASH_EXPORT bool IsWindowNormal(const aura::Window* window);
-
-// Returns true if |state| is normal or default.
-ASH_EXPORT bool IsWindowStateNormal(const ui::WindowShowState state);
-
-// Returns true if |window| is in the maximized state.
-ASH_EXPORT bool IsWindowMaximized(const aura::Window* window);
-
-// Returns true if |window| is minimized.
-ASH_EXPORT bool IsWindowMinimized(const aura::Window* window);
-
-// Returns true if |window| is in the fullscreen state.
-ASH_EXPORT bool IsWindowFullscreen(const aura::Window* window);
-
-// Maximizes |window|, which must not be NULL.
-ASH_EXPORT void MaximizeWindow(aura::Window* window);
-
-// Minimizes |window|, which must not be NULL.
-ASH_EXPORT void MinimizeWindow(aura::Window* window);
-
-// Restores |window|, which must not be NULL.
-ASH_EXPORT void RestoreWindow(aura::Window* window);
-
-// Maximizes or restores |window| based on its state. |window| must not be NULL.
-ASH_EXPORT void ToggleMaximizedWindow(aura::Window* window);
+// TODO(oshima): remove this.
+ASH_EXPORT bool IsWindowMinimized(aura::Window* window);
 
 // Moves the window to the center of the display.
 ASH_EXPORT void CenterWindow(aura::Window* window);
 
 // Change the availability of animation to the fullscreen of the |window|.
 ASH_EXPORT void SetAnimateToFullscreen(aura::Window* window, bool animate);
-
-// Get |window| bounds of the window before it was moved by the auto window
-// management. As long as it was not managed, it will return NULL.
-ASH_EXPORT const gfx::Rect* GetPreAutoManageWindowBounds(
-    const aura::Window* window);
-
-// Remember the |bounds| of a |window| before an automated window management
-// operation takes place.
-ASH_EXPORT void SetPreAutoManageWindowBounds(aura::Window* window,
-                                             const gfx::Rect& bounds);
 
 // Move the given bounds inside the given |visible_area|, including a
 // safety margin given by |kMinimumOnScreenArea|.

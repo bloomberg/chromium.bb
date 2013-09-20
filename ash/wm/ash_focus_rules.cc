@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/window_util.h"
+#include "ash/wm/window_state.h"
 #include "ui/aura/window.h"
 
 namespace ash {
@@ -74,7 +74,7 @@ bool AshFocusRules::IsWindowConsideredVisibleForActivation(
 
   // Minimized windows are hidden in their minimized state, but they can always
   // be activated.
-  if (wm::IsWindowMinimized(window))
+  if (wm::GetWindowState(window)->IsMinimized())
     return true;
 
   return window->TargetVisibility() && (window->parent()->id() ==
@@ -154,7 +154,10 @@ aura::Window* AshFocusRules::GetTopmostWindowToActivateInContainer(
            container->children().rbegin();
        i != container->children().rend();
        ++i) {
-    if (*i != ignore && CanActivateWindow(*i) && !wm::IsWindowMinimized(*i))
+    WindowState* window_state = GetWindowState(*i);
+    if (*i != ignore &&
+        window_state->CanActivate() &&
+        !window_state->IsMinimized())
       return *i;
   }
   return NULL;

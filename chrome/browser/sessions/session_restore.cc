@@ -59,7 +59,7 @@
 #endif
 
 #if defined(USE_ASH)
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_state.h"
 #endif
 using content::NavigationController;
 using content::RenderWidgetHost;
@@ -1087,12 +1087,12 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
 #if defined(USE_ASH)
     // Prevent the auto window management for this window on show.
-    ash::wm::GetWindowSettings(browser->window()->GetNativeWindow())->
+    ash::wm::GetWindowState(browser->window()->GetNativeWindow())->
         set_bounds_changed_by_user(true);
 #endif
     browser->window()->Show();
 #if defined(USE_ASH)
-    ash::wm::GetWindowSettings(browser->window()->GetNativeWindow())->
+    ash::wm::GetWindowState(browser->window()->GetNativeWindow())->
         set_bounds_changed_by_user(false);
 #endif
     browser->set_is_session_restore(false);

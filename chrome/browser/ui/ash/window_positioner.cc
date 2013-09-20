@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_resizer.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -109,11 +110,11 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
     if (windows[i] && windows[i]->IsVisible() && windows[i]->layer() &&
         (!windows[i]->transparent() ||
          windows[i]->layer()->GetTargetOpacity() == 1.0)) {
+      ash::wm::WindowState* window_state = ash::wm::GetWindowState(windows[i]);
       // When any window is maximized we cannot find any free space.
-      if (ash::wm::IsWindowMaximized(windows[i]) ||
-          ash::wm::IsWindowFullscreen(windows[i]))
+      if (window_state->IsMaximizedOrFullscreen())
         return gfx::Rect(0, 0, 0, 0);
-      if (ash::wm::IsWindowNormal(windows[i]))
+      if (window_state->IsNormalShowState())
         regions.push_back(&windows[i]->bounds());
     }
   }

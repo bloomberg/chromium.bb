@@ -16,7 +16,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/root_window.h"

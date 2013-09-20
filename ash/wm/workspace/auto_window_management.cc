@@ -8,9 +8,8 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/aura/window.h"
@@ -30,20 +29,20 @@ const int kWindowAutoMoveDurationMS = 125;
 
 // Check if any management should be performed (with a given |window|).
 bool UseAutoWindowManager(const aura::Window* window) {
-  const wm::WindowSettings* settings = wm::GetWindowSettings(window);
-  return settings->tracked_by_workspace() &&
-      settings->window_position_managed();
+  const wm::WindowState* window_state = wm::GetWindowState(window);
+  return window_state->tracked_by_workspace() &&
+      window_state->window_position_managed();
 }
 
 // Check if a given |window| can be managed. This includes that it's state is
 // not minimized/maximized/the user has changed it's size by hand already.
 // It furthermore checks for the WindowIsManaged status.
 bool WindowPositionCanBeManaged(const aura::Window* window) {
-  const wm::WindowSettings* settings = wm::GetWindowSettings(window);
-  return settings->window_position_managed() &&
-      !wm::IsWindowMinimized(window) &&
-      !wm::IsWindowMaximized(window) &&
-      !settings->bounds_changed_by_user();
+  const wm::WindowState* window_state = wm::GetWindowState(window);
+  return window_state->window_position_managed() &&
+      !window_state->IsMinimized() &&
+      !window_state->IsMaximized() &&
+      !window_state->bounds_changed_by_user();
 }
 
 // Get the work area for a given |window| in parent coordinates.
@@ -104,7 +103,7 @@ void AutoPlaceSingleWindow(aura::Window* window, bool animated) {
   gfx::Rect work_area = GetWorkAreaForWindowInParent(window);
   gfx::Rect bounds = window->bounds();
   const gfx::Rect* user_defined_area =
-      ash::wm::GetPreAutoManageWindowBounds(window);
+      wm::GetWindowState(window)->pre_auto_manage_window_bounds();
   if (user_defined_area) {
     bounds = *user_defined_area;
     ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area, &bounds);
@@ -155,7 +154,7 @@ aura::Window* GetReferenceWindow(const aura::RootWindow* root_window,
         window->type() == aura::client::WINDOW_TYPE_NORMAL &&
         window->GetRootWindow() == root_window &&
         window->TargetVisibility() &&
-        wm::GetWindowSettings(window)->window_position_managed()) {
+        wm::GetWindowState(window)->window_position_managed()) {
       if (found && found != window) {
         // no need to check !signle_window because the function must have
         // been already returned in the "if (!single_window)" below.
@@ -187,8 +186,10 @@ void RearrangeVisibleWindowOnHideOrRemove(const aura::Window* removed_window) {
 }
 
 void RearrangeVisibleWindowOnShow(aura::Window* added_window) {
+  wm::WindowState* added_window_state = wm::GetWindowState(added_window);
+
   if (!UseAutoWindowManager(added_window) ||
-      wm::GetWindowSettings(added_window)->bounds_changed_by_user() ||
+      added_window_state->bounds_changed_by_user() ||
       !added_window->TargetVisibility())
     return;
   // Find a single open managed window.
@@ -213,17 +214,18 @@ void RearrangeVisibleWindowOnShow(aura::Window* added_window) {
 
   // Push the other window to the size only if there are two windows left.
   if (single_window) {
-    // When going from one to two windows both windows loose their "positioned
-    // by user" flags.
-    wm::GetWindowSettings(added_window)->set_bounds_changed_by_user(false);
-    wm::GetWindowSettings(other_shown_window)->
-        set_bounds_changed_by_user(false);
+    // When going from one to two windows both windows loose their
+    // "positioned by user" flags.
+    added_window_state->set_bounds_changed_by_user(false);
+    wm::WindowState* other_window_state =
+        wm::GetWindowState(other_shown_window);
+    other_window_state->set_bounds_changed_by_user(false);
 
     if (WindowPositionCanBeManaged(other_shown_window)) {
       // Don't override pre auto managed bounds as the current bounds
       // may not be original.
-      if (!ash::wm::GetPreAutoManageWindowBounds(other_shown_window))
-        ash::wm::SetPreAutoManageWindowBounds(other_shown_window, other_bounds);
+      if (!other_window_state->pre_auto_manage_window_bounds())
+        other_window_state->SetPreAutoManageWindowBounds(other_bounds);
 
       // Push away the other window after remembering its current position.
       if (MoveRectToOneSide(work_area, move_other_right, &other_bounds))
@@ -235,8 +237,8 @@ void RearrangeVisibleWindowOnShow(aura::Window* added_window) {
   // it also to the opposite location if needed.  Since it is just
   // being shown, we do not need to animate it.
   gfx::Rect added_bounds = added_window->bounds();
-  if (!ash::wm::GetPreAutoManageWindowBounds(added_window))
-    ash::wm::SetPreAutoManageWindowBounds(added_window, added_bounds);
+  if (!added_window_state->pre_auto_manage_window_bounds())
+    added_window_state->SetPreAutoManageWindowBounds(added_bounds);
   if (MoveRectToOneSide(work_area, !move_other_right, &added_bounds))
     added_window->SetBounds(added_bounds);
 }

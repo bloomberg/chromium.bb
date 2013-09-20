@@ -5,7 +5,6 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"

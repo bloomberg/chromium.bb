@@ -21,7 +21,6 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_properties.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/client/activation_client.h"

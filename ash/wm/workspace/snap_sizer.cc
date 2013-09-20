@@ -8,8 +8,8 @@
 
 #include "ash/ash_switches.h"
 #include "ash/screen_ash.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_resizer.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -125,20 +125,22 @@ std::vector<int> BuildIdealWidthList(aura::Window* window) {
 
 // Changes |window|'s bounds to |snap_bounds| while preserving the restore
 // bounds.
-void SnapWindowToBounds(aura::Window* window, const gfx::Rect& snap_bounds) {
-  if (wm::IsWindowMaximized(window) || wm::IsWindowFullscreen(window)) {
+void SnapWindowToBounds(wm::WindowState* window_state,
+                        const gfx::Rect& snap_bounds) {
+  if (window_state->IsMaximizedOrFullscreen()) {
     // Before we can set the bounds we need to restore the window.
     // Restoring the window will set the window to its restored bounds.
     // To avoid an unnecessary bounds changes (which may have side effects)
     // we set the restore bounds to the bounds we want, restore the window,
     // then reset the restore bounds. This way no unnecessary bounds
     // changes occurs and the original restore bounds is remembered.
-    gfx::Rect restore_bounds_in_screen = *GetRestoreBoundsInScreen(window);
-    SetRestoreBoundsInParent(window, snap_bounds);
-    wm::RestoreWindow(window);
-    SetRestoreBoundsInScreen(window, restore_bounds_in_screen);
+    gfx::Rect restore_bounds_in_screen =
+        window_state->GetRestoreBoundsInScreen();
+    window_state->SetRestoreBoundsInParent(snap_bounds);
+    window_state->Restore();
+    window_state->SetRestoreBoundsInScreen(restore_bounds_in_screen);
   } else {
-    window->SetBounds(snap_bounds);
+    window_state->window()->SetBounds(snap_bounds);
   }
 }
 
@@ -168,15 +170,17 @@ SnapSizer::~SnapSizer() {
 }
 
 void SnapSizer::SnapWindow(aura::Window* window, SnapSizer::Edge edge) {
-  if (!wm::CanSnapWindow(window))
+  wm::WindowState* window_state = wm::GetWindowState(window);
+  if (!window_state->CanSnap())
     return;
   internal::SnapSizer sizer(window, gfx::Point(), edge,
       internal::SnapSizer::OTHER_INPUT);
-  SnapWindowToBounds(window, sizer.GetSnapBounds(window->bounds()));
+  SnapWindowToBounds(window_state,
+                     sizer.GetSnapBounds(window_state->window()->bounds()));
 }
 
 void SnapSizer::SnapWindowToTargetBounds() {
-  SnapWindowToBounds(window_, target_bounds());
+  SnapWindowToBounds(wm::GetWindowState(window_), target_bounds());
 }
 
 void SnapSizer::Update(const gfx::Point& location) {

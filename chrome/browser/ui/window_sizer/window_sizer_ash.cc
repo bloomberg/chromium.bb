@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/auto_window_management.h"
 #include "base/command_line.h"
@@ -135,7 +136,7 @@ void WindowSizer::GetTabbedBrowserBoundsAsh(
       *show_state = ui::SHOW_STATE_MAXIMIZED;
     return;
   }
-  bool maximized = ash::wm::IsWindowMaximized(top_window);
+  bool maximized = ash::wm::GetWindowState(top_window)->IsMaximized();
   // We ignore the saved show state, but look instead for the top level
   // window's show state.
   if (passed_show_state == ui::SHOW_STATE_DEFAULT) {

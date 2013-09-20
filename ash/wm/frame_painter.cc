@@ -12,8 +12,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/wm/property_util.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"  // DCHECK
 #include "grit/ash_resources.h"
@@ -230,7 +229,7 @@ FramePainter::~FramePainter() {
   // Sometimes we are destroyed before the window closes, so ensure we clean up.
   if (window_) {
     window_->RemoveObserver(this);
-    wm::GetWindowSettings(window_)->RemoveObserver(this);
+    wm::GetWindowState(window_)->RemoveObserver(this);
   }
 }
 
@@ -274,7 +273,7 @@ void FramePainter::Init(
   // itself in OnWindowDestroying() below, or in the destructor if we go away
   // before the window.
   window_->AddObserver(this);
-  wm::GetWindowSettings(window_)->AddObserver(this);
+  wm::GetWindowState(window_)->AddObserver(this);
 
   // Solo-window header updates are handled by the workspace controller when
   // this window is added to the desktop.
@@ -394,7 +393,7 @@ bool FramePainter::ShouldUseMinimalHeaderStyle(Themed header_themed) const {
   //   for tab dragging).
   return (frame_->IsMaximized() || frame_->IsFullscreen()) &&
       header_themed == THEMED_NO &&
-      wm::GetWindowSettings(frame_->GetNativeWindow())->tracked_by_workspace();
+      wm::GetWindowState(frame_->GetNativeWindow())->tracked_by_workspace();
 }
 
 void FramePainter::PaintHeader(views::NonClientFrameView* view,
@@ -619,12 +618,12 @@ void FramePainter::OnThemeChanged() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// WindowSettings::jObserver overrides:
+// WindowState::Observer overrides:
 void FramePainter::OnTrackedByWorkspaceChanged(aura::Window* window,
                                                bool old) {
   // When 'TrackedByWorkspace' changes, we are going to paint the header
   // differently. Schedule a paint to ensure everything is updated correctly.
-  if (wm::GetWindowSettings(window)->tracked_by_workspace())
+  if (wm::GetWindowState(window)->tracked_by_workspace())
     frame_->non_client_view()->SchedulePaint();
 }
 
@@ -640,8 +639,8 @@ void FramePainter::OnWindowPropertyChanged(aura::Window* window,
   // Maximized and fullscreen windows don't want resize handles overlapping the
   // content area, because when the user moves the cursor to the right screen
   // edge we want them to be able to hit the scroll bar.
-  if (ash::wm::IsWindowMaximized(window) ||
-      ash::wm::IsWindowFullscreen(window)) {
+  wm::WindowState* window_state = wm::GetWindowState(window);
+  if (window_state->IsMaximizedOrFullscreen()) {
     window->set_hit_test_bounds_override_inner(gfx::Insets());
   } else {
     window->set_hit_test_bounds_override_inner(
@@ -667,7 +666,7 @@ void FramePainter::OnWindowDestroying(aura::Window* destroying) {
   // Must be removed here and not in the destructor, as the aura::Window is
   // already destroyed when our destructor runs.
   window_->RemoveObserver(this);
-  wm::GetWindowSettings(window_)->RemoveObserver(this);
+  wm::GetWindowState(window_)->RemoveObserver(this);
 
   // If we have two or more windows open and we close this one, we might trigger
   // the solo window appearance for another window.
@@ -727,7 +726,7 @@ int FramePainter::GetHeaderCornerRadius() const {
   // tracked by the workspace code. (Windows which are not tracked by the
   // workspace code are used for tab dragging.)
   bool square_corners = ((frame_->IsMaximized() || frame_->IsFullscreen())) &&
-      wm::GetWindowSettings(frame_->GetNativeWindow())->tracked_by_workspace();
+      wm::GetWindowState(frame_->GetNativeWindow())->tracked_by_workspace();
   const int kCornerRadius = 2;
   return square_corners ? 0 : kCornerRadius;
 }
@@ -784,7 +783,7 @@ bool FramePainter::UseSoloWindowHeaderInRoot(RootWindow* root_window,
         !IsSoloWindowHeaderCandidate(window) ||
         !IsVisibleToRoot(window))
       continue;
-    if (wm::IsWindowMaximized(window))
+    if (wm::GetWindowState(window)->IsMaximized())
       return false;
     ++visible_window_count;
     if (visible_window_count > 1)

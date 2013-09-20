@@ -18,6 +18,7 @@
 #include "ash/test/launcher_test_api.h"
 #include "ash/test/launcher_view_test_api.h"
 #include "ash/test/shell_test_api.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -888,7 +889,8 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchInBackground) {
 // activates the right window.
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchMaximized) {
   aura::Window* window1 = browser()->window()->GetNativeWindow();
-  ash::wm::MaximizeWindow(window1);
+  ash::wm::WindowState* window1_state = ash::wm::GetWindowState(window1);
+  window1_state->Maximize();
   content::WindowedNotificationObserver open_observer(
       chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       content::NotificationService::AllSources());
@@ -898,7 +900,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchMaximized) {
   aura::Window* window2 = browser2->window()->GetNativeWindow();
   TabStripModel* tab_strip = browser2->tab_strip_model();
   int tab_count = tab_strip->count();
-  ash::wm::MaximizeWindow(window2);
+  ash::wm::GetWindowState(window2)->Maximize();
 
   ash::LauncherID shortcut_id = CreateShortcut("app1");
   ActivateLauncherItem(model_->ItemIndexByID(shortcut_id));
@@ -906,7 +908,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchMaximized) {
   EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
 
   window1->Show();
-  ash::wm::ActivateWindow(window1);
+  window1_state->Activate();
   EXPECT_EQ(ash::STATUS_RUNNING, (*model_->ItemByID(shortcut_id)).status);
 
   ActivateLauncherItem(model_->ItemIndexByID(shortcut_id));
@@ -1711,9 +1713,9 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTestNoDefaultBrowser,
   EXPECT_TRUE(item_controller->IsOpen());
 
   // Minimize Window.
-  aura::Window* window = ash::wm::GetActiveWindow();
-  ash::wm::MinimizeWindow(window);
-  EXPECT_TRUE(ash::wm::IsWindowMinimized(window));
+  ash::wm::WindowState* window_state = ash::wm::GetActiveWindowState();
+  window_state->Minimize();
+  EXPECT_TRUE(window_state->IsMinimized());
 
   // Activate again. This doesn't create new browser.
   // It activates window.
@@ -1721,7 +1723,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTestNoDefaultBrowser,
   running_browser = chrome::GetTotalBrowserCount();
   EXPECT_EQ(1u, running_browser);
   EXPECT_TRUE(item_controller->IsOpen());
-  EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
+  EXPECT_FALSE(window_state->IsMinimized());
 }
 
 // Check that GetIDByWindow() returns |LauncherID| of the active tab.

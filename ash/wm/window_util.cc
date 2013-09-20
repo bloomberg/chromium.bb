@@ -7,16 +7,12 @@
 #include <vector>
 
 #include "ash/ash_constants.h"
-#include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_delegate.h"
-#include "ui/compositor/layer.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
@@ -53,77 +49,9 @@ bool CanActivateWindow(aura::Window* window) {
   return views::corewm::CanActivateWindow(window);
 }
 
-bool CanMaximizeWindow(const aura::Window* window) {
-  return window->GetProperty(aura::client::kCanMaximizeKey);
-}
-
-bool CanMinimizeWindow(const aura::Window* window) {
-  internal::RootWindowController* controller =
-      internal::RootWindowController::ForWindow(window);
-  if (!controller)
-    return false;
-  aura::Window* lockscreen = controller->GetContainer(
-      internal::kShellWindowId_LockScreenContainersContainer);
-  if (lockscreen->Contains(window))
-    return false;
-
-  return true;
-}
-
-bool CanResizeWindow(const aura::Window* window) {
-  return window->GetProperty(aura::client::kCanResizeKey);
-}
-
-bool CanSnapWindow(aura::Window* window) {
-  if (!CanResizeWindow(window))
-    return false;
-  if (window->type() == aura::client::WINDOW_TYPE_PANEL)
-    return false;
-  // If a window has a maximum size defined, snapping may make it too big.
-  return window->delegate() ? window->delegate()->GetMaximumSize().IsEmpty() :
-                              true;
-}
-
-bool IsWindowNormal(const aura::Window* window) {
-  return IsWindowStateNormal(window->GetProperty(aura::client::kShowStateKey));
-}
-
-bool IsWindowStateNormal(ui::WindowShowState state) {
-  return state == ui::SHOW_STATE_NORMAL || state == ui::SHOW_STATE_DEFAULT;
-}
-
-bool IsWindowMaximized(const aura::Window* window) {
-  return window->GetProperty(aura::client::kShowStateKey) ==
-      ui::SHOW_STATE_MAXIMIZED;
-}
-
-bool IsWindowMinimized(const aura::Window* window) {
+bool IsWindowMinimized(aura::Window* window) {
   return window->GetProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_MINIMIZED;
-}
-
-bool IsWindowFullscreen(const aura::Window* window) {
-  return window->GetProperty(aura::client::kShowStateKey) ==
-      ui::SHOW_STATE_FULLSCREEN;
-}
-
-void MaximizeWindow(aura::Window* window) {
-  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-}
-
-void MinimizeWindow(aura::Window* window) {
-  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
-}
-
-void RestoreWindow(aura::Window* window) {
-  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-}
-
-void ToggleMaximizedWindow(aura::Window* window) {
-  if (ash::wm::IsWindowMaximized(window))
-    ash::wm::RestoreWindow(window);
-  else if (ash::wm::CanMaximizeWindow(window))
-    ash::wm::MaximizeWindow(window);
 }
 
 void CenterWindow(aura::Window* window) {
@@ -136,16 +64,6 @@ void CenterWindow(aura::Window* window) {
 
 void SetAnimateToFullscreen(aura::Window* window, bool animate) {
   window->SetProperty(ash::internal::kAnimateToFullscreenKey, animate);
-}
-
-const gfx::Rect* GetPreAutoManageWindowBounds(const aura::Window* window) {
-  return window->GetProperty(ash::internal::kPreAutoManagedWindowBoundsKey);
-}
-
-void SetPreAutoManageWindowBounds(aura::Window* window,
-                                const gfx::Rect& bounds) {
-  window->SetProperty(ash::internal::kPreAutoManagedWindowBoundsKey,
-                      new gfx::Rect(bounds));
 }
 
 void AdjustBoundsToEnsureMinimumWindowVisibility(const gfx::Rect& visible_area,

@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/drag_window_controller.h"
-#include "ash/wm/property_util.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"

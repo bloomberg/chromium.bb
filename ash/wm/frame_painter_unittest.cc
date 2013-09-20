@@ -10,7 +10,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -481,7 +481,7 @@ TEST_F(FramePainterTest, MAYBE_UseSoloWindowHeaderMultiDisplay) {
   EXPECT_TRUE(checker1.IsPaintScheduledAndReset());
 
   // Change the w3 state to maximize.  Doesn't affect to w1.
-  wm::MaximizeWindow(w3->GetNativeWindow());
+  wm::GetWindowState(w3->GetNativeWindow())->Maximize();
   EXPECT_TRUE(p1->UseSoloWindowHeader());
   EXPECT_FALSE(p2->UseSoloWindowHeader());
   EXPECT_FALSE(p3->UseSoloWindowHeader());
@@ -541,7 +541,7 @@ TEST_F(FramePainterTest, GetHeaderOpacity) {
                                  0));
 
   // Regular maximized windows are fully opaque.
-  ash::wm::MaximizeWindow(w1->GetNativeWindow());
+  wm::GetWindowState(w1->GetNativeWindow())->Maximize();
   EXPECT_EQ(255,
             p1->GetHeaderOpacity(FramePainter::ACTIVE,
                                  IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
@@ -566,9 +566,9 @@ TEST_F(FramePainterTest, MinimalHeaderStyle) {
   // style.
   EXPECT_FALSE(p->ShouldUseMinimalHeaderStyle(FramePainter::THEMED_YES));
 
-  wm::GetWindowSettings(w->GetNativeWindow())->SetTrackedByWorkspace(false);
+  wm::GetWindowState(w->GetNativeWindow())->SetTrackedByWorkspace(false);
   EXPECT_FALSE(p->ShouldUseMinimalHeaderStyle(FramePainter::THEMED_NO));
-  wm::GetWindowSettings(w->GetNativeWindow())->SetTrackedByWorkspace(true);
+  wm::GetWindowState(w->GetNativeWindow())->SetTrackedByWorkspace(true);
 }
 
 // Ensure the title text is vertically aligned with the window icon.

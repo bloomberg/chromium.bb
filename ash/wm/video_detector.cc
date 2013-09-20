@@ -5,6 +5,7 @@
 #include "ash/wm/video_detector.h"
 
 #include "ash/shell.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -122,8 +123,8 @@ void VideoDetector::MaybeNotifyObservers(aura::Window* window,
     return;
 
   aura::Window* toplevel_window = wm::GetActivatableWindow(window);
-  bool is_fullscreen =
-      toplevel_window ? wm::IsWindowFullscreen(toplevel_window) : false;
+  bool is_fullscreen = toplevel_window ?
+      wm::GetWindowState(toplevel_window)->IsFullscreen() : false;
 
   FOR_EACH_OBSERVER(VideoDetectorObserver,
                     observers_,

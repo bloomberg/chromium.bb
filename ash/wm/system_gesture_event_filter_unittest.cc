@@ -18,6 +18,7 @@
 #include "ash/test/test_launcher_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/gestures/long_press_affordance_handler.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/time/time.h"
@@ -353,13 +354,16 @@ TEST_F(SystemGestureEventFilterTest, MultiFingerSwipeGestures) {
 
   // Swipe down to minimize.
   generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 0, 150);
-  EXPECT_TRUE(wm::IsWindowMinimized(toplevel->GetNativeWindow()));
+
+  wm::WindowState* toplevel_state =
+      wm::GetWindowState(toplevel->GetNativeWindow());
+  EXPECT_TRUE(toplevel_state->IsMinimized());
 
   toplevel->Restore();
 
   // Swipe up to maximize.
   generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 0, -150);
-  EXPECT_TRUE(wm::IsWindowMaximized(toplevel->GetNativeWindow()));
+  EXPECT_TRUE(toplevel_state->IsMaximized());
 
   toplevel->Restore();
 
@@ -405,16 +409,18 @@ TEST_F(SystemGestureEventFilterTest, TwoFingerDrag) {
   aura::test::EventGenerator generator(root_window,
                                        toplevel->GetNativeWindow());
 
+  wm::WindowState* toplevel_state =
+      wm::GetWindowState(toplevel->GetNativeWindow());
   // Swipe down to minimize.
   generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 0, 150);
-  EXPECT_TRUE(wm::IsWindowMinimized(toplevel->GetNativeWindow()));
+  EXPECT_TRUE(toplevel_state->IsMinimized());
 
   toplevel->Restore();
   toplevel->GetNativeWindow()->SetBounds(bounds);
 
   // Swipe up to maximize.
   generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 0, -150);
-  EXPECT_TRUE(wm::IsWindowMaximized(toplevel->GetNativeWindow()));
+  EXPECT_TRUE(toplevel_state->IsMaximized());
 
   toplevel->Restore();
   toplevel->GetNativeWindow()->SetBounds(bounds);
@@ -496,14 +502,16 @@ TEST_F(SystemGestureEventFilterTest, WindowsWithMaxSizeDontSnap) {
 
   // Swipe down to minimize.
   generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 0, 150);
-  EXPECT_TRUE(wm::IsWindowMinimized(toplevel->GetNativeWindow()));
+  wm::WindowState* toplevel_state =
+      wm::GetWindowState(toplevel->GetNativeWindow());
+  EXPECT_TRUE(toplevel_state->IsMinimized());
 
   toplevel->Restore();
   toplevel->GetNativeWindow()->SetBounds(bounds);
 
   // Check that swiping up doesn't maximize.
   generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 0, -150);
-  EXPECT_FALSE(wm::IsWindowMaximized(toplevel->GetNativeWindow()));
+  EXPECT_FALSE(toplevel_state->IsMaximized());
 
   toplevel->Restore();
   toplevel->GetNativeWindow()->SetBounds(bounds);

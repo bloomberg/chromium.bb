@@ -12,7 +12,7 @@
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_panels.h"
 #include "ash/wm/overview/window_selector_window.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram.h"
 #include "base/timer/timer.h"
@@ -113,7 +113,7 @@ WindowSelector::WindowSelector(const WindowList& windows,
     observed_windows_.insert(windows[i]);
 
     if (windows[i]->type() == aura::client::WINDOW_TYPE_PANEL &&
-        wm::GetWindowSettings(windows[i])->panel_attached()) {
+        wm::GetWindowState(windows[i])->panel_attached()) {
       // Attached panel windows are grouped into a single overview item per
       // root window (display).
       std::vector<WindowSelectorPanels*>::iterator iter =

@@ -10,7 +10,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/coordinate_conversion.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -92,7 +92,7 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* context,
       return GetContainerById(
           target_root, internal::kShellWindowId_UnparentedControlContainer);
     case aura::client::WINDOW_TYPE_PANEL:
-      if (wm::GetWindowSettings(window)->panel_attached())
+      if (wm::GetWindowState(window)->panel_attached())
         return GetContainerById(target_root,
                                 internal::kShellWindowId_PanelContainer);
       else

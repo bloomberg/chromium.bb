@@ -21,8 +21,7 @@
 #include "ash/wm/dock/docked_window_resizer.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/panels/panel_window_resizer.h"
-#include "ash/wm/property_util.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
@@ -47,8 +46,9 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
     int window_component,
     aura::client::WindowMoveSource source) {
   DCHECK(window);
+  wm::WindowState* window_state = wm::GetWindowState(window);
   // No need to return a resizer when the window cannot get resized.
-  if (!wm::CanResizeWindow(window) && window_component != HTCAPTION)
+  if (!window_state->CanResize() && window_component != HTCAPTION)
     return scoped_ptr<WindowResizer>();
 
   // TODO(varkha): The chaining of window resizers causes some of the logic
@@ -69,9 +69,9 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
        window->parent()->id() == internal::kShellWindowId_PanelContainer)) {
     // Allow dragging maximized windows if it's not tracked by workspace. This
     // is set by tab dragging code.
-    if (!wm::IsWindowNormal(window) &&
+    if (!window_state->IsNormalShowState() &&
         (window_component != HTCAPTION ||
-         wm::GetWindowSettings(window)->tracked_by_workspace())) {
+         window_state->tracked_by_workspace())) {
       return scoped_ptr<WindowResizer>();
     }
     window_resizer = internal::WorkspaceWindowResizer::Create(
@@ -80,7 +80,7 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
         window_component,
         source,
         std::vector<aura::Window*>());
-  } else if (wm::IsWindowNormal(window)) {
+  } else if (window_state->IsNormalShowState()) {
     window_resizer = DefaultWindowResizer::Create(
         window, point_in_parent, window_component, source);
   }
@@ -374,14 +374,13 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   }
   // |bounds| is in |window()->parent()|'s coordinates.
   gfx::Rect bounds = CalculateBoundsForDrag(details_, location_in_parent);
-
-  if (wm::IsWindowNormal(window()))
+  if (window_state()->IsNormalShowState())
     AdjustBoundsForMainWindow(sticky_size, &bounds);
 
   if (bounds != window()->bounds()) {
     if (!did_move_or_resize_) {
       if (!details_.restore_bounds.IsEmpty())
-        ClearRestoreBounds(window());
+        window_state()->ClearRestoreBounds();
       RestackWindows();
     }
     did_move_or_resize_ = true;
@@ -424,7 +423,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
 }
 
 void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
-  wm::GetWindowSettings(details_.window)->set_bounds_changed_by_user(true);
+  window_state()->set_bounds_changed_by_user(true);
   snap_phantom_window_controller_.reset();
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
     return;
@@ -434,19 +433,20 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
   // shortcut while dragging it. If the window is the result of dragging a tab
   // out of a maximized window, it's already in the normal show state when this
   // is called, so it does not matter.
-  if (wm::IsWindowNormal(window()) &&
+  if (window_state()->IsNormalShowState() &&
       (window()->type() != aura::client::WINDOW_TYPE_PANEL ||
-       !wm::GetWindowSettings(window())->panel_attached()) &&
+       !window_state()->panel_attached()) &&
       (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT)) {
-    if (!GetRestoreBoundsInScreen(window())) {
+    if (!window_state()->HasRestoreBounds()) {
       gfx::Rect initial_bounds = ScreenAsh::ConvertRectToScreen(
           window()->parent(), details_.initial_bounds_in_parent);
-      SetRestoreBoundsInScreen(window(), details_.restore_bounds.IsEmpty() ?
-                               initial_bounds :
-                               details_.restore_bounds);
+      window_state()->SetRestoreBoundsInScreen(
+          details_.restore_bounds.IsEmpty() ?
+          initial_bounds :
+          details_.restore_bounds);
     }
     DCHECK(snap_sizer_);
-    if (wm::CanResizeWindow(window()) &&
+    if (window_state()->CanResize() &&
         !dock_layout_->is_dragged_window_docked()) {
       snap_sizer_->SnapWindowToTargetBounds();
     }
@@ -460,8 +460,9 @@ void WorkspaceWindowResizer::RevertDrag() {
     return;
 
   window()->SetBounds(details_.initial_bounds_in_parent);
-  if (!details_.restore_bounds.IsEmpty())
-    SetRestoreBoundsInScreen(details_.window, details_.restore_bounds);
+  if (!details_.restore_bounds.IsEmpty()) {
+    window_state()->SetRestoreBoundsInScreen(details_.restore_bounds);
+  }
 
   if (details_.window_component == HTRIGHT) {
     int last_x = details_.initial_bounds_in_parent.right();
@@ -731,8 +732,7 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
 
   // Avoid magnetically snapping to popups, menus, tooltips, controls and
   // windows that are not tracked by workspace.
-  if (!wm::CanResizeWindow(window()) ||
-      !wm::GetWindowSettings(window())->tracked_by_workspace())
+  if (!window_state()->CanResize() || !window_state()->tracked_by_workspace())
     return false;
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
@@ -744,15 +744,16 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
         root_window, kShellWindowId_DefaultContainer)->children();
     for (aura::Window::Windows::const_reverse_iterator i = children.rbegin();
          i != children.rend() && !matcher.AreEdgesObscured(); ++i) {
-      aura::Window* other = *i;
-      if (other == window() ||
-          !other->IsVisible() ||
-          !wm::IsWindowNormal(other) ||
-          !wm::CanResizeWindow(other)) {
+      wm::WindowState* other_state = wm::GetWindowState(*i);
+      if (other_state->window() == window() ||
+          !other_state->window()->IsVisible() ||
+          !other_state->IsNormalShowState() ||
+          !other_state->CanResize()) {
         continue;
       }
-      if (matcher.ShouldAttach(other->GetBoundsInScreen(), &magnetism_edge_)) {
-        magnetism_window_ = other;
+      if (matcher.ShouldAttach(
+              other_state->window()->GetBoundsInScreen(), &magnetism_edge_)) {
+        magnetism_window_ = other_state->window();
         window_tracker_.Add(magnetism_window_);
         return true;
       }
@@ -910,7 +911,7 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   }
 
   const bool can_dock = dock_layout_->CanDockWindow(window(), snap_type_);
-  if (!wm::CanSnapWindow(window()) && !can_dock)
+  if (!window_state()->CanSnap() && !can_dock)
     return;
 
   // Update phantom window with snapped or docked guide bounds.

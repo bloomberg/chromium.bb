@@ -8,8 +8,8 @@
 #include "ash/screen_ash.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "ui/aura/window.h"
@@ -44,22 +44,20 @@ SystemGestureStatus SystemPinchHandler::ProcessGestureEvent(
   // The target has changed, somehow. Let's bale.
   if (!widget_ || !widget_->widget_delegate()->CanResize())
     return SYSTEM_GESTURE_END;
-
+  wm::WindowState* window_state = wm::GetWindowState(target_);
   switch (event.type()) {
     case ui::ET_GESTURE_END: {
       if (event.details().touch_points() > kSystemGesturePoints)
         break;
 
       if (phantom_state_ == PHANTOM_WINDOW_MAXIMIZED) {
-        if (!wm::IsWindowMaximized(target_) &&
-            !wm::IsWindowFullscreen(target_))
-          wm::MaximizeWindow(target_);
+        if (!window_state->IsMaximizedOrFullscreen())
+          window_state->Maximize();
       } else if (phantom_state_ == PHANTOM_WINDOW_MINIMIZED) {
-        if (wm::IsWindowMaximized(target_) ||
-            wm::IsWindowFullscreen(target_)) {
-          wm::RestoreWindow(target_);
+        if (window_state->IsMaximizedOrFullscreen()) {
+          window_state->Restore();
         } else {
-          wm::MinimizeWindow(target_);
+          window_state->Minimize();
 
           // NOTE: Minimizing the window will cause this handler to be
           // destroyed. So do not access anything from |this| from here.
@@ -92,11 +90,10 @@ SystemGestureStatus SystemPinchHandler::ProcessGestureEvent(
             event.details().swipe_left() ? internal::SnapSizer::LEFT_EDGE :
                                            internal::SnapSizer::RIGHT_EDGE);
       } else if (event.details().swipe_up()) {
-        if (!wm::IsWindowMaximized(target_) &&
-            !wm::IsWindowFullscreen(target_))
-          wm::MaximizeWindow(target_);
+        if (!window_state->IsMaximizedOrFullscreen())
+          window_state->Maximize();
       } else if (event.details().swipe_down()) {
-        wm::MinimizeWindow(target_);
+        window_state->Minimize();
       } else {
         NOTREACHED() << "Swipe happened without a direction.";
       }
@@ -121,11 +118,11 @@ gfx::Rect SystemPinchHandler::GetPhantomWindowScreenBounds(
   }
 
   if (pinch_factor_ < kPinchThresholdForMinimize) {
-    if (wm::IsWindowMaximized(window) || wm::IsWindowFullscreen(window)) {
-      const gfx::Rect* restore = GetRestoreBoundsInScreen(window);
-      if (restore) {
+    wm::WindowState* window_state = wm::GetWindowState(window);
+    if (window_state->IsMaximizedOrFullscreen()) {
+      if (window_state->HasRestoreBounds()) {
         phantom_state_ = PHANTOM_WINDOW_MINIMIZED;
-        return *restore;
+        return  window_state->GetRestoreBoundsInScreen();
       }
       return window->bounds();
     }

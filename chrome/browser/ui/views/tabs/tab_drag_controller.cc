@@ -52,7 +52,7 @@
 #if defined(USE_ASH)
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_state.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/gestures/gesture_recognizer.h"
@@ -193,13 +193,13 @@ class DockView : public views::View {
 
 void SetTrackedByWorkspace(gfx::NativeWindow window, bool value) {
 #if defined(USE_ASH)
-  ash::wm::GetWindowSettings(window)->SetTrackedByWorkspace(value);
+  ash::wm::GetWindowState(window)->SetTrackedByWorkspace(value);
 #endif
 }
 
 void SetWindowPositionManaged(gfx::NativeWindow window, bool value) {
 #if defined(USE_ASH)
-  ash::wm::GetWindowSettings(window)->set_window_position_managed(value);
+  ash::wm::GetWindowState(window)->set_window_position_managed(value);
 #endif
 }
 

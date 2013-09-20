@@ -23,7 +23,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_resizer.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -190,7 +190,7 @@ class DockedWindowLayoutManagerTest
     // x-coordinate can get adjusted by snapping or sticking.
     // y-coordinate could be changed by possible automatic layout if docked.
     if (window->parent()->id() != internal::kShellWindowId_DockedContainer &&
-        GetRestoreBoundsInScreen(window) == NULL) {
+        !wm::GetWindowState(window)->HasRestoreBounds()) {
       EXPECT_EQ(initial_bounds.y() + dy, window->GetBoundsInScreen().y());
     }
   }
@@ -243,7 +243,7 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingLeft) {
   // Create two additional windows and test their auto-placement
   scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
   gfx::Rect desktop_area = window1->parent()->bounds();
-  wm::GetWindowSettings(window1.get())->set_window_position_managed(true);
+  wm::GetWindowState(window1.get())->set_window_position_managed(true);
   window1->Hide();
   window1->SetBounds(gfx::Rect(250, 32, 231, 320));
   window1->Show();
@@ -255,7 +255,7 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingLeft) {
       ",32 231x320", window1->bounds().ToString());
 
   scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
-  wm::GetWindowSettings(window2.get())->set_window_position_managed(true);
+  wm::GetWindowState(window2.get())->set_window_position_managed(true);
   // To avoid any auto window manager changes due to SetBounds, the window
   // gets first hidden and then shown again.
   window2->Hide();
@@ -294,7 +294,7 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRight) {
   // Create two additional windows and test their auto-placement
   scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
   gfx::Rect desktop_area = window1->parent()->bounds();
-  wm::GetWindowSettings(window1.get())->set_window_position_managed(true);
+  wm::GetWindowState(window1.get())->set_window_position_managed(true);
   window1->Hide();
   window1->SetBounds(gfx::Rect(16, 32, 231, 320));
   window1->Show();
@@ -306,7 +306,7 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRight) {
       ",32 231x320", window1->bounds().ToString());
 
   scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
-  wm::GetWindowSettings(window2.get())->set_window_position_managed(true);
+  wm::GetWindowState(window2.get())->set_window_position_managed(true);
   // To avoid any auto window manager changes due to SetBounds, the window
   // gets first hidden and then shown again.
   window2->Hide();
@@ -350,7 +350,7 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRightSecondScreen) {
   scoped_ptr<aura::Window> window1(
       CreateTestWindowInShellWithDelegate(NULL, 1, bounds));
   gfx::Rect desktop_area = window1->parent()->bounds();
-  wm::GetWindowSettings(window1.get())->set_window_position_managed(true);
+  wm::GetWindowState(window1.get())->set_window_position_managed(true);
   window1->Hide();
   window1->Show();
 
@@ -363,7 +363,7 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRightSecondScreen) {
   bounds = gfx::Rect(632, 48, 256, 512);
   scoped_ptr<aura::Window> window2(
       CreateTestWindowInShellWithDelegate(NULL, 2, bounds));
-  wm::GetWindowSettings(window2.get())->set_window_position_managed(true);
+  wm::GetWindowState(window2.get())->set_window_position_managed(true);
   // To avoid any auto window manager changes due to SetBounds, the window
   // gets first hidden and then shown again.
   window2->Hide();

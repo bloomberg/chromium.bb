@@ -17,6 +17,10 @@
 #include "ui/aura/window_tracker.h"
 
 namespace ash {
+namespace wm {
+class WindowState;
+}
+
 namespace internal {
 
 class DockedWindowLayoutManager;
@@ -162,6 +166,8 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   void UpdateDockedState(bool is_docked);
 
   aura::Window* window() const { return details_.window; }
+
+  wm::WindowState* window_state() { return details_.window_state; }
 
   const Details details_;
 

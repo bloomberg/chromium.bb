@@ -40,6 +40,7 @@
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
@@ -96,10 +97,14 @@ aura::Window* CreateContainer(int window_id,
 // Reparents |window| to |new_parent|.
 void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
   // Update the restore bounds to make it relative to the display.
-  gfx::Rect restore_bounds(GetRestoreBoundsInParent(window));
+  wm::WindowState* state = wm::GetWindowState(window);
+  gfx::Rect restore_bounds;
+  bool has_restore_bounds = state->HasRestoreBounds();
+  if (has_restore_bounds)
+    restore_bounds = state->GetRestoreBoundsInParent();
   new_parent->AddChild(window);
-  if (!restore_bounds.IsEmpty())
-    SetRestoreBoundsInParent(window, restore_bounds);
+  if (has_restore_bounds)
+    state->SetRestoreBoundsInParent(restore_bounds);
 }
 
 // Reparents the appropriate set of windows from |src| to |dst|.
@@ -508,7 +513,7 @@ const aura::Window* RootWindowController::GetTopmostFullscreenWindow() const {
       GetContainer(kShellWindowId_DefaultContainer)->children();
   for (aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
        iter != windows.rend(); ++iter) {
-    if (wm::IsWindowFullscreen(*iter))
+    if (wm::GetWindowState(*iter)->IsFullscreen())
       return *iter;
   }
   return NULL;

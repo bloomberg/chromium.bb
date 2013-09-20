@@ -6,15 +6,19 @@
 #define ASH_WM_WINDOW_PROPERTIES_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/property_util.h"
-#include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 
-namespace gfx {
-class Rect;
+namespace aura {
+class Window;
+
+template<typename T>
+struct WindowProperty;
 }
 
 namespace ash {
+namespace wm {
+class WindowState;
+}  // namespace wm
 namespace internal {
 
 // Shell-specific window property keys.
@@ -37,18 +41,12 @@ ASH_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_EXPORT extern const aura::WindowProperty<bool>* const
     kStayInSameRootWindowKey;
 
-// A property to remember the window position which was set before the
-// auto window position manager changed the window bounds, so that it can get
-// restored when only this one window gets shown.
-ASH_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
-    kPreAutoManagedWindowBoundsKey;
-
 // Property to tell if the container uses the screen coordinates.
 extern const aura::WindowProperty<bool>* const kUsesScreenCoordinatesKey;
 
-// A property key to tell the workspace layout manager to always restore the
-// window to the restore-bounds (false by default).
-extern const aura::WindowProperty<bool>* const kWindowRestoresToRestoreBounds;
+// A property key to store WindowState in the window. The window state
+// is owned by the window.
+extern const aura::WindowProperty<wm::WindowState*>* const kWindowStateKey;
 
 // Alphabetical sort.
 

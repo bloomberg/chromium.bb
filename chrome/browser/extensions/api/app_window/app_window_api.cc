@@ -31,7 +31,6 @@
 
 #if defined(USE_ASH)
 #include "ash/shell.h"
-#include "ash/wm/property_util.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #endif

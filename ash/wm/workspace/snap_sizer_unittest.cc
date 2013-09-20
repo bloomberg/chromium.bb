@@ -8,8 +8,7 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/property_util.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/aura/root_window.h"
@@ -87,7 +86,8 @@ TEST_F(SnapSizerTest, MinimumSize) {
 
   // It should be possible to snap a window with a minimum size.
   delegate.set_minimum_size(gfx::Size(kWorkAreaBounds.width() - 1, 0));
-  EXPECT_TRUE(ash::wm::CanSnapWindow(window.get()));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  EXPECT_TRUE(window_state->CanSnap());
   SnapSizer::SnapWindow(window.get(), SnapSizer::RIGHT_EDGE);
   gfx::Rect expected = gfx::Rect(kWorkAreaBounds.x() + 1,
                                  kWorkAreaBounds.y(),
@@ -98,7 +98,7 @@ TEST_F(SnapSizerTest, MinimumSize) {
   // It should not be possible to snap a window with a maximum size.
   delegate.set_minimum_size(gfx::Size());
   delegate.set_maximum_size(gfx::Size(kWorkAreaBounds.width() - 1, INT_MAX));
-  EXPECT_FALSE(ash::wm::CanSnapWindow(window.get()));
+  EXPECT_FALSE(window_state->CanSnap());
 }
 
 // Test that repeadedly calling SnapSizer::SnapWindow() steps through the ideal
@@ -231,35 +231,37 @@ TEST_F(SnapSizerTest, AlternateFrameCaptionButtonStyle) {
 TEST_F(SnapSizerTest, RestoreBounds) {
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
-  EXPECT_TRUE(wm::IsWindowNormal(window.get()));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+
+  EXPECT_TRUE(window_state->IsNormalShowState());
 
   // 1) Start with restored window with restore bounds set.
   gfx::Rect restore_bounds = window->GetBoundsInScreen();
   restore_bounds.set_width(restore_bounds.width() + 1);
-  SetRestoreBoundsInScreen(window.get(), restore_bounds);
+  window_state->SetRestoreBoundsInScreen(restore_bounds);
   SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
   SnapSizer::SnapWindow(window.get(), SnapSizer::RIGHT_EDGE);
   EXPECT_NE(restore_bounds.ToString(), window->GetBoundsInScreen().ToString());
   EXPECT_EQ(restore_bounds.ToString(),
-            GetRestoreBoundsInScreen(window.get())->ToString());
-  wm::RestoreWindow(window.get());
+            window_state->GetRestoreBoundsInScreen().ToString());
+  window_state->Restore();
   EXPECT_EQ(restore_bounds.ToString(), window->GetBoundsInScreen().ToString());
 
   // 2) Start with restored bounds set as a result of maximizing the window.
-  wm::MaximizeWindow(window.get());
+  window_state->Maximize();
   gfx::Rect maximized_bounds = window->GetBoundsInScreen();
   EXPECT_NE(maximized_bounds.ToString(), restore_bounds.ToString());
   EXPECT_EQ(restore_bounds.ToString(),
-            GetRestoreBoundsInScreen(window.get())->ToString());
+            window_state->GetRestoreBoundsInScreen().ToString());
 
   SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
   EXPECT_NE(restore_bounds.ToString(), window->GetBoundsInScreen().ToString());
   EXPECT_NE(maximized_bounds.ToString(),
             window->GetBoundsInScreen().ToString());
   EXPECT_EQ(restore_bounds.ToString(),
-            GetRestoreBoundsInScreen(window.get())->ToString());
+            window_state->GetRestoreBoundsInScreen().ToString());
 
-  wm::RestoreWindow(window.get());
+  window_state->Restore();
   EXPECT_EQ(restore_bounds.ToString(), window->GetBoundsInScreen().ToString());
 }
 
@@ -267,12 +269,13 @@ TEST_F(SnapSizerTest, RestoreBounds) {
 // at the snapped bounds and not at the auto-managed (centered) bounds.
 TEST_F(SnapSizerTest, AutoManaged) {
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
-  wm::GetWindowSettings(window.get())->set_window_position_managed(true);
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window_state->set_window_position_managed(true);
   window->Hide();
   window->SetBounds(gfx::Rect(100, 100, 100, 100));
   window->Show();
 
-  wm::MaximizeWindow(window.get());
+  window_state->Maximize();
   SnapSizer::SnapWindow(window.get(), SnapSizer::RIGHT_EDGE);
 
   const gfx::Rect kWorkAreaBounds =
@@ -286,7 +289,7 @@ TEST_F(SnapSizerTest, AutoManaged) {
             window->GetBoundsInScreen().ToString());
 
   // The window should still be auto managed despite being right maximized.
-  EXPECT_TRUE(wm::GetWindowSettings(window.get())->window_position_managed());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->window_position_managed());
 }
 
 }  // namespace ash

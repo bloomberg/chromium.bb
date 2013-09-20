@@ -5,7 +5,7 @@
 #include "ash/accelerators/accelerator_commands.h"
 
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/window_util.h"
+#include "ash/wm/window_state.h"
 #include "ui/aura/window.h"
 
 namespace ash {
@@ -16,15 +16,16 @@ typedef test::AshTestBase AcceleratorCommandsTest;
 TEST_F(AcceleratorCommandsTest, ToggleMinimized) {
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  wm::ActivateWindow(window.get());
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window_state->Activate();
 
   ToggleMinimized();
-  EXPECT_TRUE(wm::IsWindowMinimized(window.get()));
-  EXPECT_FALSE(wm::IsWindowNormal(window.get()));
+  EXPECT_TRUE(window_state->IsMinimized());
+  EXPECT_FALSE(window_state->IsNormalShowState());
 
   ToggleMinimized();
-  EXPECT_FALSE(wm::IsWindowMinimized(window.get()));
-  EXPECT_TRUE(wm::IsWindowNormal(window.get()));
+  EXPECT_FALSE(window_state->IsMinimized());
+  EXPECT_TRUE(window_state->IsNormalShowState());
 }
 
 }  // namespace accelerators

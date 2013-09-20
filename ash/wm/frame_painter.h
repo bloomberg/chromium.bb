@@ -6,7 +6,7 @@
 #define ASH_WM_FRAME_PAINTER_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/window_settings.h"
+#include "ash/wm/window_state.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"  // OVERRIDE
 #include "base/gtest_prod_util.h"
@@ -41,7 +41,7 @@ class FrameCaptionButtonContainerView;
 // layout constants for Ash window frames.
 class ASH_EXPORT FramePainter : public aura::WindowObserver,
                                 public gfx::AnimationDelegate,
-                                public wm::WindowSettings::Observer {
+                                public wm::WindowState::Observer {
  public:
   // Opacity values for the window header in various states, from 0 to 255.
   static int kActiveWindowOpacity;

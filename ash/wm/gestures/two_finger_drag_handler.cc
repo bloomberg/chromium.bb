@@ -5,6 +5,7 @@
 #include "ash/wm/gestures/two_finger_drag_handler.h"
 
 #include "ash/wm/window_resizer.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "ui/aura/client/window_types.h"
@@ -91,9 +92,11 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
     return false;
   }
 
+  wm::WindowState* window_state = wm::GetWindowState(target);
+
   if (event.type() == ui::ET_GESTURE_BEGIN &&
       event.details().touch_points() == 2) {
-    if (!window_resizer_.get() && wm::IsWindowNormal(target) &&
+    if (!window_resizer_.get() && window_state->IsNormalShowState() &&
       target->type() == aura::client::WINDOW_TYPE_NORMAL) {
       if (WindowComponentsAllowMoving(first_finger_hittest_,
           target->delegate()->GetNonClientComponent(event.location()))) {
@@ -114,7 +117,7 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
     // Consume all two-finger gestures on a normal window.
     return event.details().touch_points() == 2 &&
            target->type() == aura::client::WINDOW_TYPE_NORMAL &&
-           wm::IsWindowNormal(target);
+           window_state->IsNormalShowState();
   }
 
   if (target != window_resizer_->GetTarget())
@@ -135,14 +138,12 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
       // For a swipe, the window either maximizes, minimizes, or snaps. In this
       // case, cancel the drag, and do the appropriate action.
       Reset();
-
       if (event.details().swipe_up()) {
-        if (wm::CanMaximizeWindow(target))
-          wm::MaximizeWindow(target);
-      } else if (event.details().swipe_down() &&
-                 wm::CanMinimizeWindow(target)) {
-        wm::MinimizeWindow(target);
-      } else if (wm::CanSnapWindow(target)) {
+        if (window_state->CanMaximize())
+          window_state->Maximize();
+      } else if (event.details().swipe_down() && window_state->CanMinimize()) {
+        window_state->Minimize();
+      } else if (window_state->CanSnap()) {
         ui::ScopedLayerAnimationSettings scoped_setter(
             target->layer()->GetAnimator());
         scoped_setter.SetPreemptionStrategy(

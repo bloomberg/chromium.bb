@@ -8,6 +8,7 @@
 
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
@@ -118,17 +119,16 @@ class WindowStateManager : public aura::WindowObserver {
     std::vector<aura::Window*>::iterator last =
         std::remove(windows_.begin(), windows_.end(), active_window);
     // Removes unfocusable windows.
-    last =
-        std::remove_if(
-            windows_.begin(),
-            last,
-            std::ptr_fun(ash::wm::IsWindowMinimized));
+    last = std::remove_if(
+        windows_.begin(),
+        last,
+        std::ptr_fun(ash::wm::IsWindowMinimized));
     windows_.erase(last, windows_.end());
 
     for (std::vector<aura::Window*>::iterator iter = windows_.begin();
          iter != windows_.end(); ++iter) {
       (*iter)->AddObserver(this);
-      ash::wm::MinimizeWindow(*iter);
+      ash::wm::GetWindowState(*iter)->Minimize();
     }
   }
 

@@ -10,9 +10,9 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/lock_state_controller_impl2.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/resize_shadow.h"
 #include "ash/wm/resize_shadow_controller.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "ash/wm/workspace_controller.h"
@@ -438,12 +438,14 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
       base::TimeDelta::FromMilliseconds(5),
       10);
   RunAllPendingInMessageLoop();
-  EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
-  EXPECT_TRUE(wm::IsWindowMaximized(target.get()));
-  EXPECT_EQ(old_bounds.ToString(),
-            GetRestoreBoundsInScreen(target.get())->ToString());
 
-  wm::RestoreWindow(target.get());
+  wm::WindowState* window_state = wm::GetWindowState(target.get());
+  EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
+  EXPECT_TRUE(window_state->IsMaximized());
+  EXPECT_EQ(old_bounds.ToString(),
+            window_state->GetRestoreBoundsInScreen().ToString());
+
+  window_state->Restore();
   target->SetBounds(old_bounds);
 
   // Minimize.
@@ -454,10 +456,10 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
       10);
   RunAllPendingInMessageLoop();
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
-  EXPECT_TRUE(wm::IsWindowMinimized(target.get()));
-  EXPECT_TRUE(GetWindowAlwaysRestoresToRestoreBounds(target.get()));
+  EXPECT_TRUE(window_state->IsMinimized());
+  EXPECT_TRUE(window_state->always_restores_to_restore_bounds());
   EXPECT_EQ(old_bounds.ToString(),
-            GetRestoreBoundsInScreen(target.get())->ToString());
+            window_state->GetRestoreBoundsInScreen().ToString());
 }
 
 // Tests that a gesture cannot minimize a window in login/lock screen.
@@ -485,7 +487,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragMinimizeLoginScreen) {
       base::TimeDelta::FromMilliseconds(5),
       10);
   RunAllPendingInMessageLoop();
-  EXPECT_FALSE(wm::IsWindowMinimized(target.get()));
+  EXPECT_FALSE(wm::GetWindowState(target.get())->IsMinimized());
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {
@@ -495,7 +497,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {
           0,
           gfx::Rect(10, 20, 30, 40)));
   window->Show();
-  ash::wm::ActivateWindow(window.get());
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window_state->Activate();
 
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        window.get());
@@ -508,10 +511,10 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {
       10);
   RunAllPendingInMessageLoop();
   EXPECT_NE(old_bounds.ToString(), window->bounds().ToString());
-  EXPECT_TRUE(wm::IsWindowMinimized(window.get()));
-  EXPECT_TRUE(GetWindowAlwaysRestoresToRestoreBounds(window.get()));
+  EXPECT_TRUE(window_state->IsMinimized());
+  EXPECT_TRUE(window_state->always_restores_to_restore_bounds());
   EXPECT_EQ(old_bounds.ToString(),
-            GetRestoreBoundsInScreen(window.get())->ToString());
+            window_state->GetRestoreBoundsInScreen().ToString());
 }
 
 // Tests that an unresizable window cannot be dragged or snapped using gestures.
@@ -655,9 +658,9 @@ TEST_F(ToplevelWindowEventHandlerTest, MAYBE_MinimizeMaximizeCompletes) {
     generator.MoveMouseBy(10, 11);
     RunAllPendingInMessageLoop();
     EXPECT_EQ("10,11 100x100", target->bounds().ToString());
-
-    wm::MinimizeWindow(target.get());
-    wm::RestoreWindow(target.get());
+    wm::WindowState* window_state = wm::GetWindowState(target.get());
+    window_state->Minimize();
+    window_state->Restore();
 
     generator.PressLeftButton();
     generator.MoveMouseBy(10, 11);
@@ -675,9 +678,9 @@ TEST_F(ToplevelWindowEventHandlerTest, MAYBE_MinimizeMaximizeCompletes) {
     generator.MoveMouseBy(10, 11);
     RunAllPendingInMessageLoop();
     EXPECT_EQ("10,11 100x100", target->bounds().ToString());
-
-    wm::MaximizeWindow(target.get());
-    wm::RestoreWindow(target.get());
+    wm::WindowState* window_state = wm::GetWindowState(target.get());
+    window_state->Maximize();
+    window_state->Restore();
 
     generator.PressLeftButton();
     generator.MoveMouseBy(10, 11);

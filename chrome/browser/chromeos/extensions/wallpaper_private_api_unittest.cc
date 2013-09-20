@@ -5,7 +5,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/wm/window_util.h"
+#include "ash/wm/window_state.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 #include "ui/aura/root_window.h"
@@ -50,28 +50,33 @@ TEST_F(WallpaperPrivateApiUnittest, HideAndRestoreWindows) {
   scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
   scoped_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
 
-  ash::wm::MinimizeWindow(window3.get());
-  ash::wm::MaximizeWindow(window1.get());
+  ash::wm::WindowState* window0_state = ash::wm::GetWindowState(window0.get());
+  ash::wm::WindowState* window1_state = ash::wm::GetWindowState(window1.get());
+  ash::wm::WindowState* window2_state = ash::wm::GetWindowState(window2.get());
+  ash::wm::WindowState* window3_state = ash::wm::GetWindowState(window3.get());
+
+  window3_state->Minimize();
+  window1_state->Maximize();
 
   // Window 3 starts minimized, window 1 starts maximized.
-  EXPECT_FALSE(ash::wm::IsWindowMinimized(window0.get()));
-  EXPECT_FALSE(ash::wm::IsWindowMinimized(window1.get()));
-  EXPECT_FALSE(ash::wm::IsWindowMinimized(window2.get()));
-  EXPECT_TRUE(ash::wm::IsWindowMinimized(window3.get()));
+  EXPECT_FALSE(window0_state->IsMinimized());
+  EXPECT_FALSE(window1_state->IsMinimized());
+  EXPECT_FALSE(window2_state->IsMinimized());
+  EXPECT_TRUE(window3_state->IsMinimized());
 
   // We then activate window 0 (i.e. wallpaper picker) and call the minimize
   // function.
-  ash::wm::ActivateWindow(window0.get());
-  EXPECT_TRUE(ash::wm::IsActiveWindow(window0.get()));
+  window0_state->Activate();
+  EXPECT_TRUE(window0_state->IsActive());
   scoped_refptr<TestMinimizeFunction> minimize_function(
       new TestMinimizeFunction());
   EXPECT_TRUE(minimize_function->RunImpl());
 
   // All windows except window 0 should be minimized.
-  EXPECT_FALSE(ash::wm::IsWindowMinimized(window0.get()));
-  EXPECT_TRUE(ash::wm::IsWindowMinimized(window1.get()));
-  EXPECT_TRUE(ash::wm::IsWindowMinimized(window2.get()));
-  EXPECT_TRUE(ash::wm::IsWindowMinimized(window3.get()));
+  EXPECT_FALSE(window0_state->IsMinimized());
+  EXPECT_TRUE(window1_state->IsMinimized());
+  EXPECT_TRUE(window2_state->IsMinimized());
+  EXPECT_TRUE(window3_state->IsMinimized());
 
   // Then we destroy window 0 and call the restore function.
   window0.reset();
@@ -81,8 +86,8 @@ TEST_F(WallpaperPrivateApiUnittest, HideAndRestoreWindows) {
 
   // Windows 1 and 2 should no longer be minimized. Window 1 should again
   // be maximized. Window 3 should still be minimized.
-  EXPECT_FALSE(ash::wm::IsWindowMinimized(window1.get()));
-  EXPECT_TRUE(ash::wm::IsWindowMaximized(window1.get()));
-  EXPECT_FALSE(ash::wm::IsWindowMinimized(window2.get()));
-  EXPECT_TRUE(ash::wm::IsWindowMinimized(window3.get()));
+  EXPECT_FALSE(window1_state->IsMinimized());
+  EXPECT_TRUE(window1_state->IsMaximized());
+  EXPECT_FALSE(window2_state->IsMinimized());
+  EXPECT_TRUE(window3_state->IsMinimized());
 }
