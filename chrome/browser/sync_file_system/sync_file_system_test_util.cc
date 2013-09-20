@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "content/public/browser/browser_thread.h"
@@ -84,6 +85,7 @@ INSTANTIATE_RECEIVER(google_apis::GDataErrorCode);
   template base::Callback<void(type1, scoped_ptr<type2>)> \
   CreateResultReceiver(type1*, scoped_ptr<type2>*)
 INSTANTIATE_RECEIVER(SyncStatusCode, drive_backend::MetadataDatabase);
+INSTANTIATE_RECEIVER(google_apis::GDataErrorCode, google_apis::ResourceEntry);
 #undef INSTANTIATE_RECEIVER
 
 }  // namespace sync_file_system

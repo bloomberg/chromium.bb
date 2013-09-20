@@ -86,7 +86,6 @@ void ExpectEquivalentResourceAndMetadata(
   }
 
   EXPECT_EQ(resource.md5_checksum(), details.md5());
-  EXPECT_EQ(resource.etag(), details.etag());
   EXPECT_EQ(resource.created_date(),
             base::Time::FromInternalValue(details.creation_time()));
   EXPECT_EQ(resource.modified_date(),

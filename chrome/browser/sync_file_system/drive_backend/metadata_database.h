@@ -216,6 +216,8 @@ class MetadataDatabase {
                      const SyncStatusCallback& callback);
 
  private:
+  friend class SyncEngineInitializerTest;
+
   struct DirtyTrackerComparator {
     bool operator()(const FileTracker* left,
                     const FileTracker* right) const;

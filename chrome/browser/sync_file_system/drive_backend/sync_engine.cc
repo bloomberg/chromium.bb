@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/drive/drive_api_service.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/local_to_remote_syncer.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/remote_to_local_syncer.h"
@@ -15,12 +16,6 @@
 
 namespace sync_file_system {
 namespace drive_backend {
-
-namespace {
-// TODO(tzik): Move this to separate file and consolidate with
-// DriveMetadataStore::kDatabaseName.
-base::FilePath::CharType kDatabaseName[] = FILE_PATH_LITERAL("DriveMetadata");
-}  // namespace
 
 SyncEngine::SyncEngine(
     const base::FilePath& base_dir,

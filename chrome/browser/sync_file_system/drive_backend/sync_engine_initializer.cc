@@ -11,6 +11,7 @@
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h"
 
@@ -18,9 +19,6 @@ namespace sync_file_system {
 namespace drive_backend {
 
 namespace {
-
-// TODO(tzik): Move them to separate file.
-const char kSyncRootFolderTitle[] = "Chrome Syncable FileSystem";
 
 ////////////////////////////////////////////////////////////////////////////////
 // Functions below are for wrapping the access to legacy GData WAPI classes.

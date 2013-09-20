@@ -105,7 +105,7 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
 
     scoped_ptr<drive_backend::SyncEngine> sync_engine(
         new drive_backend::SyncEngine(
-            context->GetPath(),
+            GetSyncFileSystemDir(context->GetPath()),
             task_runner.get(),
             drive_api_service.Pass(),
             notification_manager,
