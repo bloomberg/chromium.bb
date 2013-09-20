@@ -267,6 +267,8 @@ remoting.OAuth2.prototype.onTokens_ =
  * @return {void} Nothing.
  */
 remoting.OAuth2.prototype.doAuthRedirect = function() {
+  /** @type {remoting.OAuth2} */
+  var that = this;
   var xsrf_token = remoting.generateXsrfToken();
   window.localStorage.setItem(this.KEY_XSRF_TOKEN_, xsrf_token);
   var GET_CODE_URL = this.getOAuth2AuthEndpoint_() + '?' +
@@ -279,7 +281,34 @@ remoting.OAuth2.prototype.doAuthRedirect = function() {
           'access_type': 'offline',
           'approval_prompt': 'force'
         });
-  window.location.replace(GET_CODE_URL);
+
+  /**
+   * Processes the results of the oauth flow.
+   *
+   * @param {Object.<string, string>} message Dictionary containing the parsed
+   *   OAuth redirect URL parameters.
+   */
+  function oauth2MessageListener(message) {
+    if ('code' in message && 'state' in message) {
+      var onDone = function() {
+        window.location.reload();
+      };
+      that.exchangeCodeForToken(
+          message['code'], message['state'], onDone);
+    } else {
+      if ('error' in message) {
+        console.error(
+            'Could not obtain authorization code: ' + message['error']);
+      } else {
+        // We intentionally don't log the response - since we don't understand
+        // it, we can't tell if it has sensitive data.
+        console.error('Invalid oauth2 response.');
+      }
+    }
+    chrome.extension.onMessage.removeListener(oauth2MessageListener);
+  }
+  chrome.extension.onMessage.addListener(oauth2MessageListener);
+  window.open(GET_CODE_URL, '_blank', 'location=yes,toolbar=no,menubar=no');
 };
 
 /**

@@ -127,28 +127,7 @@ chrome.app.window = {
  */
 chrome.contextMenus = {
   /** @type {chrome.Event} */
-  onClicked: null,
-  /**
-   * @param {!Object} createProperties
-   * @param {function()=} opt_callback
-   * @return {string|number}
-   */
-  create: function(createProperties, opt_callback) {},
-  /**
-   * @param {string|number} menuItemId
-   * @param {function()=} opt_callback
-   */
-  remove: function(menuItemId, opt_callback) {},
-  /**
-   * @param {function()=} opt_callback
-   */
-  removeAll: function(opt_callback) {},
-  /**
-   * @param {string|number} id
-   * @param {!Object} updateProperties
-   * @param {function()=} opt_callback
-   */
-  update: function(id, updateProperties, opt_callback) {}
+  onClicked: null
 };
 
 /** @type {Object} */
@@ -234,7 +213,9 @@ chrome.Window = function() {
   this.type = '';
 };
 
-/** @param {string} message*/
+/**
+ * @param {*} message
+ */
 chrome.extension.sendMessage = function(message) {}
 
 /** @type {chrome.Event} */

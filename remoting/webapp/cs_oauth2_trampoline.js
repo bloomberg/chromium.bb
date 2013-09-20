@@ -13,6 +13,14 @@ var unofficialPath = '/talkgadget/oauth/chrome-remote-desktop/dev';
 
 if (window.location.pathname == officialPath ||
     window.location.pathname == unofficialPath) {
-  window.location.replace(
-      chrome.extension.getURL('oauth2_callback.html') + window.location.search);
+  var query = window.location.search.substring(1);
+  var parts = query.split('&');
+  var queryArgs = {};
+  for (var i = 0; i < parts.length; i++) {
+    var pair = parts[i].split('=');
+    queryArgs[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+  }
+
+  chrome.extension.sendMessage(queryArgs);
+  window.close();
 }
