@@ -33,13 +33,13 @@ PACKAGE_INFO = {
         'com.google.android.apps.chrome.tests'),
     'chrome_beta': PackageInfo(
         'com.chrome.beta',
-        'com.chrome.beta.Main',
+        'com.google.android.apps.chrome.Main',
         '/data/local/chrome-command-line',
         'chrome_devtools_remote',
         None),
     'chrome_stable': PackageInfo(
         'com.android.chrome',
-        'com.android.chrome.Main',
+        'com.google.android.apps.chrome.Main',
         '/data/local/chrome-command-line',
         'chrome_devtools_remote',
         None),
