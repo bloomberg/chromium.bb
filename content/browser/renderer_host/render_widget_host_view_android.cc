@@ -567,7 +567,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
   float device_scale_factor = display.device_scale_factor();
 
   DCHECK_EQ(device_scale_factor,
-            ui::GetImageScale(GetScaleFactorForView(this)));
+            ui::GetScaleFactorScale(GetScaleFactorForView(this)));
 
   const gfx::Size& dst_size_in_pixel = ConvertViewSizeToPixel(this, dst_size);
   gfx::Rect src_subrect_in_pixel =

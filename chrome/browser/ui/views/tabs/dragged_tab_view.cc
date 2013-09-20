@@ -138,7 +138,7 @@ gfx::Size DraggedTabView::GetPreferredSize() {
 void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
   gfx::Size ps = GetPreferredSize();
   // TODO(pkotwicz): DIP enable this class.
-  gfx::Canvas scale_canvas(ps, 1.0f, false);
+  gfx::Canvas scale_canvas(ps, ui::SCALE_FACTOR_100P, false);
   SkBitmap& bitmap_device = const_cast<SkBitmap&>(
       skia::GetTopDevice(*scale_canvas.sk_canvas())->accessBitmap(true));
   bitmap_device.eraseARGB(0, 0, 0, 0);

@@ -127,8 +127,10 @@ class CursorWindowDelegate : public aura::WindowDelegate {
   // take 2x's image and paint as if it's 1x image.
   void SetCursorImage(const gfx::ImageSkia& image,
                       const gfx::Display& display) {
+    device_scale_factor_ =
+        ui::GetScaleFactorFromScale(display.device_scale_factor());
     const gfx::ImageSkiaRep& image_rep =
-        image.GetRepresentation(display.device_scale_factor());
+        image.GetRepresentation(device_scale_factor_);
     size_ = image_rep.pixel_size();
     cursor_image_ = gfx::ImageSkia::CreateFrom1xBitmap(image_rep.sk_bitmap());
   }
@@ -137,6 +139,7 @@ class CursorWindowDelegate : public aura::WindowDelegate {
 
  private:
   gfx::ImageSkia cursor_image_;
+  ui::ScaleFactor device_scale_factor_;
   gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(CursorWindowDelegate);

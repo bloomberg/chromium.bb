@@ -8,6 +8,7 @@
 #ifndef UI_GFX_IMAGE_IMAGE_UNITTEST_UTIL_H_
 #define UI_GFX_IMAGE_IMAGE_UNITTEST_UTIL_H_
 
+#include "ui/base/layout.h"
 #include "ui/gfx/image/image.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -24,7 +25,7 @@ typedef GdkPixbuf* PlatformImage;
 typedef gfx::ImageSkia PlatformImage;
 #endif
 
-std::vector<float> Get1xAnd2xScales();
+std::vector<ui::ScaleFactor> Get1xAnd2xScaleFactors();
 
 // Create a bitmap of |width|x|height|.
 const SkBitmap CreateBitmap(int width, int height);
@@ -64,7 +65,7 @@ bool ImageSkiaStructureMatches(
     const gfx::ImageSkia& image_skia,
     int width,
     int height,
-    const std::vector<float>& scale_factors);
+    const std::vector<ui::ScaleFactor>& scale_factors);
 
 bool IsEmpty(const gfx::Image& image);
 

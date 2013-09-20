@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   std::vector<ui::ScaleFactor> supported_scale_factors;
   supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
   supported_scale_factors.push_back(ui::SCALE_FACTOR_200P);
-  ui::SetSupportedScaleFactors(supported_scale_factors);
+  ui::test::SetSupportedScaleFactors(supported_scale_factors);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(ModelMatchesVerifier(0));

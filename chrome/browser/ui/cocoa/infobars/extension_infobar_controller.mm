@@ -109,7 +109,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
     scoped_ptr<gfx::Canvas> canvas(
         new gfx::Canvas(
             gfx::Size(image_size + kDropArrowLeftMarginPx + drop_image->width(),
-                      image_size), 1.0f, false));
+                      image_size), ui::SCALE_FACTOR_100P, false));
     canvas->DrawImageInt(*icon,
                          0, 0, icon->width(), icon->height(),
                          0, 0, image_size, image_size,

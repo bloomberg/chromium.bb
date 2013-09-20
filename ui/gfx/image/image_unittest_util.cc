@@ -48,11 +48,11 @@ bool ColorsClose(SkColor color1, SkColor color2) {
 
 }  // namespace
 
-std::vector<float> Get1xAnd2xScales() {
-  std::vector<float> scales;
-  scales.push_back(1.0f);
-  scales.push_back(2.0f);
-  return scales;
+std::vector<ui::ScaleFactor> Get1xAnd2xScaleFactors() {
+  std::vector<ui::ScaleFactor> scale_factors;
+  scale_factors.push_back(ui::SCALE_FACTOR_100P);
+  scale_factors.push_back(ui::SCALE_FACTOR_200P);
+  return scale_factors;
 }
 
 const SkBitmap CreateBitmap(int width, int height) {
@@ -89,9 +89,10 @@ bool IsEqual(const gfx::Image& img1, const gfx::Image& img2) {
     return false;
 
   for (size_t i = 0; i < img1_reps.size(); ++i) {
-    float scale = img1_reps[i].scale();
-    const gfx::ImageSkiaRep& image_rep2 = image_skia2.GetRepresentation(scale);
-    if (image_rep2.scale() != scale ||
+    ui::ScaleFactor scale_factor = img1_reps[i].scale_factor();
+    const gfx::ImageSkiaRep& image_rep2 = image_skia2.GetRepresentation(
+        scale_factor);
+    if (image_rep2.scale_factor() != scale_factor ||
         !IsEqual(img1_reps[i].sk_bitmap(), image_rep2.sk_bitmap())) {
       return false;
     }
@@ -149,22 +150,24 @@ bool ImageSkiaStructureMatches(
     const gfx::ImageSkia& image_skia,
     int width,
     int height,
-    const std::vector<float>& scales) {
+    const std::vector<ui::ScaleFactor>& scale_factors) {
   if (image_skia.isNull() ||
       image_skia.width() != width ||
       image_skia.height() != height ||
-      image_skia.image_reps().size() != scales.size()) {
+      image_skia.image_reps().size() != scale_factors.size()) {
     return false;
   }
 
-  for (size_t i = 0; i < scales.size(); ++i) {
+  for (size_t i = 0; i < scale_factors.size(); ++i) {
     gfx::ImageSkiaRep image_rep =
-        image_skia.GetRepresentation(scales[i]);
-    if (image_rep.is_null() || image_rep.scale() != scales[i])
+        image_skia.GetRepresentation(scale_factors[i]);
+    if (image_rep.is_null() ||
+        image_rep.scale_factor() != scale_factors[i])
       return false;
 
-    if (image_rep.pixel_width() != static_cast<int>(width * scales[i]) ||
-        image_rep.pixel_height() != static_cast<int>(height * scales[i])) {
+    float scale = ui::GetScaleFactorScale(scale_factors[i]);
+    if (image_rep.pixel_width() != static_cast<int>(width * scale) ||
+        image_rep.pixel_height() != static_cast<int>(height * scale)) {
       return false;
     }
   }
@@ -180,7 +183,8 @@ bool IsEmpty(const gfx::Image& image) {
 PlatformImage CreatePlatformImage() {
   const SkBitmap bitmap(CreateBitmap(25, 25));
 #if defined(OS_IOS)
-  float scale = ImageSkia::GetMaxSupportedScale();
+  ui::ScaleFactor scale_factor = ui::GetMaxScaleFactor();
+  float scale = ui::GetScaleFactorScale(scale_factor);
 
   base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
       CGColorSpaceCreateDeviceRGB());

@@ -364,7 +364,7 @@ void OnImageLoaded(ShellIntegration::ShortcutInfo shortcut_info,
     // the icons, hackily put into a single ImageSkia. Separate them out into
     // individual ImageSkias and insert them into the icon family.
     const gfx::ImageSkia& multires_image_skia = image.AsImageSkia();
-    // NOTE: We do not call ImageSkia::EnsureRepsForSupportedScales here.
+    // NOTE: We do not call ImageSkia::EnsureRepsForSupportedScaleFactors here.
     // The image reps here are not really for different scale factors (ImageSkia
     // is just being used as a handy container for multiple images).
     std::vector<gfx::ImageSkiaRep> image_reps =

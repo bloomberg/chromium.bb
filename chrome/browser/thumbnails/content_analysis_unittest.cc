@@ -78,7 +78,7 @@ class ThumbnailContentAnalysisTest : public testing::Test {
 };
 
 TEST_F(ThumbnailContentAnalysisTest, ApplyGradientMagnitudeOnImpulse) {
-  gfx::Canvas canvas(gfx::Size(800, 600), 1.0f, true);
+  gfx::Canvas canvas(gfx::Size(800, 600), ui::SCALE_FACTOR_100P, true);
 
   // The image consists of vertical non-overlapping stripes 100 pixels wide.
   canvas.FillRect(gfx::Rect(0, 0, 800, 600), SkColorSetARGB(0, 10, 10, 10));
@@ -129,7 +129,7 @@ TEST_F(ThumbnailContentAnalysisTest, ApplyGradientMagnitudeOnImpulse) {
 #define MAYBE_ApplyGradientMagnitudeOnFrame ApplyGradientMagnitudeOnFrame
 #endif
 TEST_F(ThumbnailContentAnalysisTest, MAYBE_ApplyGradientMagnitudeOnFrame) {
-  gfx::Canvas canvas(gfx::Size(800, 600), 1.0f, true);
+  gfx::Canvas canvas(gfx::Size(800, 600), ui::SCALE_FACTOR_100P, true);
 
   // The image consists of a single white block in the centre.
   gfx::Rect draw_rect(300, 200, 200, 200);
@@ -168,7 +168,7 @@ TEST_F(ThumbnailContentAnalysisTest, MAYBE_ApplyGradientMagnitudeOnFrame) {
 }
 
 TEST_F(ThumbnailContentAnalysisTest, ExtractImageProfileInformation) {
-  gfx::Canvas canvas(gfx::Size(800, 600), 1.0f, true);
+  gfx::Canvas canvas(gfx::Size(800, 600), ui::SCALE_FACTOR_100P, true);
 
   // The image consists of a white frame drawn in the centre.
   gfx::Rect draw_rect(100, 100, 200, 100);
@@ -240,7 +240,7 @@ TEST_F(ThumbnailContentAnalysisTest, ExtractImageProfileInformation) {
 #endif
 TEST_F(ThumbnailContentAnalysisTest,
        MAYBE_ExtractImageProfileInformationWithClosing) {
-  gfx::Canvas canvas(gfx::Size(800, 600), 1.0f, true);
+  gfx::Canvas canvas(gfx::Size(800, 600), ui::SCALE_FACTOR_100P, true);
 
   // The image consists of a two white frames drawn side by side, with a
   // single-pixel vertical gap in between.
@@ -575,7 +575,7 @@ TEST_F(ThumbnailContentAnalysisTest, ConstrainedProfileSegmentation) {
 
 TEST_F(ThumbnailContentAnalysisTest, ComputeDecimatedImage) {
   gfx::Size image_size(1600, 1200);
-  gfx::Canvas canvas(image_size, 1.0f, true);
+  gfx::Canvas canvas(image_size, ui::SCALE_FACTOR_100P, true);
 
   // Make some content we will later want to keep.
   canvas.FillRect(gfx::Rect(100, 200, 100, 100), SkColorSetARGB(0, 125, 0, 0));
@@ -625,7 +625,7 @@ TEST_F(ThumbnailContentAnalysisTest, ComputeDecimatedImage) {
 
 TEST_F(ThumbnailContentAnalysisTest, CreateRetargetedThumbnailImage) {
   gfx::Size image_size(1200, 1300);
-  gfx::Canvas canvas(image_size, 1.0f, true);
+  gfx::Canvas canvas(image_size, ui::SCALE_FACTOR_100P, true);
 
   // The following will create a 'fake image' consisting of color blocks placed
   // on a neutral background. The entire layout is supposed to mimic a

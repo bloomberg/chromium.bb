@@ -144,7 +144,7 @@ const AcceleratorMap& GetAcceleratorTable() {
 }
 
 gfx::Image CreateImageForColor(SkColor color) {
-  gfx::Canvas canvas(gfx::Size(1, 1), 1.0f, true);
+  gfx::Canvas canvas(gfx::Size(1, 1), ui::SCALE_FACTOR_100P, true);
   canvas.DrawColor(color);
   return gfx::Image(gfx::ImageSkia(canvas.ExtractImageRep()));
 }

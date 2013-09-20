@@ -4,8 +4,6 @@
 
 #include "ash/launcher/launcher_item_delegate_manager.h"
 
-#include "base/logging.h"
-
 namespace ash {
 
 LauncherItemDelegateManager::LauncherItemDelegateManager() {

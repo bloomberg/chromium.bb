@@ -65,7 +65,7 @@ NSImage* NSImageFromPNG(const std::vector<gfx::ImagePNGRep>& image_png_reps,
         [[NSBitmapImageRep alloc] initWithData:ns_data]);
     if (!ns_image_rep) {
       LOG(ERROR) << "Unable to decode PNG at "
-                 << image_png_reps[i].scale
+                 << ui::GetScaleFactorScale(image_png_reps[i].scale_factor)
                  << ".";
       return GetErrorNSImage();
     }
@@ -88,7 +88,7 @@ NSImage* NSImageFromPNG(const std::vector<gfx::ImagePNGRep>& image_png_reps,
     }
 
     if (!image.get()) {
-      float scale = image_png_reps[i].scale;
+      float scale = ui::GetScaleFactorScale(image_png_reps[i].scale_factor);
       NSSize image_size = NSMakeSize([ns_image_rep pixelsWide] / scale,
                                      [ns_image_rep pixelsHigh] / scale);
       image.reset([[NSImage alloc] initWithSize:image_size]);

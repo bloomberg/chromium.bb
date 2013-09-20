@@ -30,7 +30,7 @@ TEST_F(SimpleThumbnailCropTest, CalculateBoringScore_Empty) {
 
 TEST_F(SimpleThumbnailCropTest, CalculateBoringScore_SingleColor) {
   const gfx::Size kSize(20, 10);
-  gfx::Canvas canvas(kSize, 1.0f, true);
+  gfx::Canvas canvas(kSize, ui::SCALE_FACTOR_100P, true);
   // Fill all pixels in black.
   canvas.FillRect(gfx::Rect(kSize), SK_ColorBLACK);
 
@@ -43,7 +43,7 @@ TEST_F(SimpleThumbnailCropTest, CalculateBoringScore_SingleColor) {
 TEST_F(SimpleThumbnailCropTest, CalculateBoringScore_TwoColors) {
   const gfx::Size kSize(20, 10);
 
-  gfx::Canvas canvas(kSize, 1.0f, true);
+  gfx::Canvas canvas(kSize, ui::SCALE_FACTOR_100P, true);
   // Fill all pixels in black.
   canvas.FillRect(gfx::Rect(kSize), SK_ColorBLACK);
   // Fill the left half pixels in white.
@@ -60,7 +60,7 @@ TEST_F(SimpleThumbnailCropTest, CalculateBoringScore_TwoColors) {
 
 TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_TallerThanWide) {
   // The input bitmap is vertically long.
-  gfx::Canvas canvas(gfx::Size(40, 90), 1.0f, true);
+  gfx::Canvas canvas(gfx::Size(40, 90), ui::SCALE_FACTOR_100P, true);
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
 
@@ -77,7 +77,7 @@ TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_TallerThanWide) {
 
 TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_WiderThanTall) {
   // The input bitmap is horizontally long.
-  gfx::Canvas canvas(gfx::Size(70, 40), 1.0f, true);
+  gfx::Canvas canvas(gfx::Size(70, 40), ui::SCALE_FACTOR_100P, true);
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
 
@@ -94,7 +94,7 @@ TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_WiderThanTall) {
 
 TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_TooWiderThanTall) {
   // The input bitmap is horizontally very long.
-  gfx::Canvas canvas(gfx::Size(90, 40), 1.0f, true);
+  gfx::Canvas canvas(gfx::Size(90, 40), ui::SCALE_FACTOR_100P, true);
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
 
@@ -111,7 +111,7 @@ TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_TooWiderThanTall) {
 
 TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_NotClipped) {
   // The input bitmap is square.
-  gfx::Canvas canvas(gfx::Size(40, 40), 1.0f, true);
+  gfx::Canvas canvas(gfx::Size(40, 40), ui::SCALE_FACTOR_100P, true);
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
 
@@ -128,7 +128,7 @@ TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_NotClipped) {
 
 TEST_F(SimpleThumbnailCropTest, GetClippedBitmap_NonSquareOutput) {
   // The input bitmap is square.
-  gfx::Canvas canvas(gfx::Size(40, 40), 1.0f, true);
+  gfx::Canvas canvas(gfx::Size(40, 40), ui::SCALE_FACTOR_100P, true);
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
 

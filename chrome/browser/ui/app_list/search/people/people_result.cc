@@ -84,7 +84,7 @@ void PeopleResult::OnIconLoaded() {
   // need to be re-created.
   const std::vector<gfx::ImageSkiaRep>& image_reps = image_.image_reps();
   for (size_t i = 0; i < image_reps.size(); ++i)
-    image_.RemoveRepresentation(image_reps[i].scale());
+    image_.RemoveRepresentation(image_reps[i].scale_factor());
 
   SetIcon(image_);
 }

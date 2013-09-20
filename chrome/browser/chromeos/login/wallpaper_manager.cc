@@ -420,7 +420,7 @@ void WallpaperManager::SetCustomWallpaper(const std::string& username,
   bool is_persistent =
       !UserManager::Get()->IsUserNonCryptohomeDataEphemeral(username);
 
-  wallpaper.image().EnsureRepsForSupportedScales();
+  wallpaper.image().EnsureRepsForSupportedScaleFactors();
   scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.image().DeepCopy());
 
   WallpaperInfo wallpaper_info = {

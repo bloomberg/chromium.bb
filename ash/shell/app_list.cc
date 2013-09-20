@@ -204,7 +204,8 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     const base::string16 icon_text = ASCIIToUTF16("ash");
     const gfx::Size icon_size(32, 32);
 
-    gfx::Canvas canvas(icon_size, 1.0f, false /* is_opaque */);
+    gfx::Canvas canvas(icon_size, ui::SCALE_FACTOR_100P,
+                       false /* is_opaque */);
     canvas.DrawStringInt(icon_text,
                          gfx::Font(),
                          SK_ColorBLACK,

@@ -1494,8 +1494,8 @@ void RenderViewHostImpl::OnStartDragging(
     if (policy->CanReadFile(GetProcess()->GetID(), path))
       filtered_data.filenames.push_back(*it);
   }
-  float scale = ui::GetImageScale(GetScaleFactorForView(GetView()));
-  gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, scale));
+  ui::ScaleFactor scale_factor = GetScaleFactorForView(GetView());
+  gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, scale_factor));
   view->StartDragging(filtered_data, drag_operations_mask, image,
       bitmap_offset_in_dip, event_info);
 }

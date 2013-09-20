@@ -147,7 +147,7 @@ void WebstoreResult::OnIconLoaded() {
   // need to be re-created.
   const std::vector<gfx::ImageSkiaRep>& image_reps = icon_.image_reps();
   for (size_t i = 0; i < image_reps.size(); ++i)
-    icon_.RemoveRepresentation(image_reps[i].scale());
+    icon_.RemoveRepresentation(image_reps[i].scale_factor());
 
   icon_ = gfx::ImageSkia(new BadgedIconSource(icon_),
                          gfx::Size(kIconSize, kIconSize));

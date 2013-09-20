@@ -47,9 +47,9 @@ class UI_EXPORT ImageSkia {
   ImageSkia(ImageSkiaSource* source, const gfx::Size& size);
 
   // Creates an instance that uses the |source|. The constructor loads the image
-  // at |scale| and uses its dimensions to calculate the size in DIP. ImageSkia
-  // owns |source|.
-  ImageSkia(ImageSkiaSource* source, float scale);
+  // at |scale_factor| and uses its dimensions to calculate the size in DIP.
+  // ImageSkia owns |source|.
+  ImageSkia(ImageSkiaSource* source, ui::ScaleFactor scale_factor);
 
   explicit ImageSkia(const gfx::ImageSkiaRep& image_rep);
 
@@ -60,16 +60,6 @@ class UI_EXPORT ImageSkia {
   ImageSkia& operator=(const ImageSkia& other);
 
   ~ImageSkia();
-
-  // Changes the value of GetSupportedScales() to |scales|.
-  static void SetSupportedScales(const std::vector<float>& scales);
-
-  // Returns a vector with the scale factors which are supported by this
-  // platform, in ascending order.
-  static const std::vector<float>& GetSupportedScales();
-
-  // Returns the maximum scale supported by this platform.
-  static float GetMaxSupportedScale();
 
   // Creates an image from the passed in bitmap.
   // DIP width and height are based on scale factor of 1x.
@@ -84,7 +74,7 @@ class UI_EXPORT ImageSkia {
   // Note that this does NOT generate ImageSkiaReps from its source.
   // If you want to create a deep copy with ImageSkiaReps for supported
   // scale factors, you need to explicitly call
-  // |EnsureRepsForSupportedScales()| first.
+  // |EnsureRepsForSupportedScaleFactors()| first.
   scoped_ptr<ImageSkia> DeepCopy() const;
 
   // Returns true if this object is backed by the same ImageSkiaStorage as
@@ -94,16 +84,18 @@ class UI_EXPORT ImageSkia {
   // Adds |image_rep| to the image reps contained by this object.
   void AddRepresentation(const gfx::ImageSkiaRep& image_rep);
 
-  // Removes the image rep of |scale| if present.
-  void RemoveRepresentation(float scale);
+  // Removes the image rep of |scale_factor| if present.
+  void RemoveRepresentation(ui::ScaleFactor scale_factor);
 
   // Returns true if the object owns an image rep whose density matches
-  // |scale| exactly.
-  bool HasRepresentation(float scale) const;
+  // |scale_factor| exactly.
+  bool HasRepresentation(ui::ScaleFactor scale_factor) const;
 
-  // Returns the image rep whose density best matches |scale|.
+  // Returns the image rep whose density best matches
+  // |scale_factor|.
   // Returns a null image rep if the object contains no image reps.
-  const gfx::ImageSkiaRep& GetRepresentation(float scale) const;
+  const gfx::ImageSkiaRep& GetRepresentation(
+      ui::ScaleFactor scale_factor) const;
 
   // Make the ImageSkia instance read-only. Note that this only prevent
   // modification from client code, and the storage may still be
@@ -144,7 +136,7 @@ class UI_EXPORT ImageSkia {
   // When the source is available, generates all ImageReps for
   // supported scale factors. This method is defined as const as
   // the state change in the storage is agnostic to the caller.
-  void EnsureRepsForSupportedScales() const;
+  void EnsureRepsForSupportedScaleFactors() const;
 
  private:
   friend class test::TestOnThread;

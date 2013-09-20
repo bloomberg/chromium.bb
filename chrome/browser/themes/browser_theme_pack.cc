@@ -245,7 +245,7 @@ bool InputScalesValid(const base::StringPiece& input,
   // Do a memcpy to avoid misaligned memory access.
   memcpy(scales.get(), input.data(), input.size());
   for (size_t index = 0; index < scales_size; ++index) {
-    if (scales[index] != ui::GetImageScale(expected[index]))
+    if (scales[index] != ui::GetScaleFactorScale(expected[index]))
       return false;
   }
   return true;
@@ -256,7 +256,7 @@ std::string GetScaleFactorsAsString(
     const std::vector<ui::ScaleFactor>& scale_factors) {
   scoped_ptr<float[]> scales(new float[scale_factors.size()]);
   for (size_t i = 0; i < scale_factors.size(); ++i)
-    scales[i] = ui::GetImageScale(scale_factors[i]);
+    scales[i] = ui::GetScaleFactorScale(scale_factors[i]);
   std::string out_string = std::string(
       reinterpret_cast<const char*>(scales.get()),
       scale_factors.size() * sizeof(float));
@@ -452,8 +452,8 @@ SkBitmap CreateLowQualityResizedBitmap(const SkBitmap& source_bitmap,
   gfx::Size scaled_size = gfx::ToCeiledSize(
       gfx::ScaleSize(gfx::Size(source_bitmap.width(),
                                source_bitmap.height()),
-                     ui::GetImageScale(desired_scale_factor) /
-                     ui::GetImageScale(source_scale_factor)));
+                     ui::GetScaleFactorScale(desired_scale_factor) /
+                     ui::GetScaleFactorScale(source_scale_factor)));
   SkBitmap scaled_bitmap;
   scaled_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                           scaled_size.width(),
@@ -477,15 +477,17 @@ class ThemeImageSource: public gfx::ImageSkiaSource {
   }
   virtual ~ThemeImageSource() {}
 
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
-    if (source_.HasRepresentation(scale))
-      return source_.GetRepresentation(scale);
-    const gfx::ImageSkiaRep& rep_100p = source_.GetRepresentation(1.0f);
+  virtual gfx::ImageSkiaRep GetImageForScale(
+      ui::ScaleFactor scale_factor) OVERRIDE {
+    if (source_.HasRepresentation(scale_factor))
+      return source_.GetRepresentation(scale_factor);
+    const gfx::ImageSkiaRep& rep_100p =
+        source_.GetRepresentation(ui::SCALE_FACTOR_100P);
     SkBitmap scaled_bitmap = CreateLowQualityResizedBitmap(
         rep_100p.sk_bitmap(),
         ui::SCALE_FACTOR_100P,
-        ui::GetSupportedScaleFactor(scale));
-    return gfx::ImageSkiaRep(scaled_bitmap, scale);
+        scale_factor);
+    return gfx::ImageSkiaRep(scaled_bitmap, scale_factor);
   }
 
  private:
@@ -507,13 +509,13 @@ class ThemeImagePngSource : public gfx::ImageSkiaSource {
   virtual ~ThemeImagePngSource() {}
 
  private:
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
-    ui::ScaleFactor scale_factor = ui::GetSupportedScaleFactor(scale);
+  virtual gfx::ImageSkiaRep GetImageForScale(
+      ui::ScaleFactor scale_factor) OVERRIDE {
     // Look up the bitmap for |scale factor| in the bitmap map. If found
     // return it.
     BitmapMap::const_iterator exact_bitmap_it = bitmap_map_.find(scale_factor);
     if (exact_bitmap_it != bitmap_map_.end())
-      return gfx::ImageSkiaRep(exact_bitmap_it->second, scale);
+      return gfx::ImageSkiaRep(exact_bitmap_it->second, scale_factor);
 
     // Look up the raw PNG data for |scale_factor| in the png map. If found,
     // decode it, store the result in the bitmap map and return it.
@@ -527,7 +529,7 @@ class ThemeImagePngSource : public gfx::ImageSkiaSource {
         return gfx::ImageSkiaRep();
       }
       bitmap_map_[scale_factor] = bitmap;
-      return gfx::ImageSkiaRep(bitmap, scale);
+      return gfx::ImageSkiaRep(bitmap, scale_factor);
     }
 
     // Find an available PNG for another scale factor. We want to use the
@@ -536,8 +538,8 @@ class ThemeImagePngSource : public gfx::ImageSkiaSource {
     for (PngMap::const_iterator png_it = png_map_.begin();
          png_it != png_map_.end(); ++png_it) {
       if (available_png_it == png_map_.end() ||
-          ui::GetImageScale(png_it->first) >
-          ui::GetImageScale(available_png_it->first)) {
+          ui::GetScaleFactorScale(png_it->first) >
+          ui::GetScaleFactorScale(available_png_it->first)) {
         available_png_it = png_it;
       }
     }
@@ -569,7 +571,7 @@ class ThemeImagePngSource : public gfx::ImageSkiaSource {
         available_scale_factor,
         scale_factor);
     bitmap_map_[scale_factor] = scaled_bitmap;
-    return gfx::ImageSkiaRep(scaled_bitmap, scale);
+    return gfx::ImageSkiaRep(scaled_bitmap, scale_factor);
   }
 
   PngMap png_map_;
@@ -1283,8 +1285,7 @@ bool BrowserThemePack::LoadRawBitmapsTo(
           if (gfx::PNGCodec::Decode(raw_data->front(), raw_data->size(),
                                     &bitmap)) {
             image_skia.AddRepresentation(
-                gfx::ImageSkiaRep(bitmap,
-                                  ui::GetImageScale(scale_factor)));
+                gfx::ImageSkiaRep(bitmap, scale_factor));
           } else {
             NOTREACHED() << "Unable to decode theme image resource "
                          << it->first;
@@ -1472,9 +1473,7 @@ void BrowserThemePack::RepackImages(const ImageCache& images,
         NOTREACHED() << "Image file for resource " << it->first
                      << " could not be encoded.";
       }
-      int raw_id = GetRawIDByPersistentID(
-          it->first,
-          ui::GetSupportedScaleFactor(rep_it->scale()));
+      int raw_id = GetRawIDByPersistentID(it->first, rep_it->scale_factor());
       (*reencoded_images)[raw_id] =
           base::RefCountedBytes::TakeVector(&bitmap_data);
     }
@@ -1534,7 +1533,7 @@ bool BrowserThemePack::GetScaleFactorFromManifestKey(
   if (base::StringToInt(key, &percent)) {
     float scale = static_cast<float>(percent) / 100.0f;
     for (size_t i = 0; i < scale_factors_.size(); ++i) {
-      if (fabs(ui::GetImageScale(scale_factors_[i]) - scale) < 0.001) {
+      if (fabs(ui::GetScaleFactorScale(scale_factors_[i]) - scale) < 0.001) {
         *scale_factor = scale_factors_[i];
         return true;
       }
@@ -1571,8 +1570,8 @@ void BrowserThemePack::GenerateRawImageForAllSupportedScales(int prs_id) {
   for (size_t i = 0; i < scale_factors_.size(); ++i) {
     int raw_id = GetRawIDByPersistentID(prs_id, scale_factors_[i]);
     if ((available_scale_factor == ui::SCALE_FACTOR_NONE ||
-         (ui::GetImageScale(scale_factors_[i]) >
-          ui::GetImageScale(available_scale_factor))) &&
+         (ui::GetScaleFactorScale(scale_factors_[i]) >
+          ui::GetScaleFactorScale(available_scale_factor))) &&
         image_memory_.find(raw_id) != image_memory_.end()) {
       available_scale_factor = scale_factors_[i];
     }

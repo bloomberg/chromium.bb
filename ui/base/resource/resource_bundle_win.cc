@@ -44,7 +44,7 @@ void ResourceBundle::LoadCommonResources() {
   // scaled up from 100% touch.
   float scale = gfx::win::GetDeviceScaleFactor();
   bool force_touch_resources = false;
-  switch(ui::GetSupportedScaleFactor(scale)) {
+  switch(ui::GetScaleFactorFromScale(scale)) {
     case ui::SCALE_FACTOR_180P:
       AddDataPackFromPath(GetResourcesPakFilePath(
           "chrome_touch_180_percent.pak"),

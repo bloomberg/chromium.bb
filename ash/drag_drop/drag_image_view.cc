@@ -90,17 +90,21 @@ void DragImageView::OnPaint(gfx::Canvas* canvas) {
       device_scale = ui::GetDeviceScaleFactor(
           widget_->GetNativeView()->layer());
     }
+    ui::ScaleFactor device_scale_factor =
+        ui::GetScaleFactorFromScale(device_scale);
+
     // The drag image already has device scale factor applied. But
     // |widget_size_| is in DIP units.
     gfx::Size scaled_widget_size = gfx::ToRoundedSize(
         gfx::ScaleSize(widget_size_, device_scale));
-    gfx::ImageSkiaRep image_rep = GetImage().GetRepresentation(device_scale);
+    gfx::ImageSkiaRep image_rep = GetImage().GetRepresentation(
+        device_scale_factor);
     if (image_rep.is_null())
       return;
     SkBitmap scaled = skia::ImageOperations::Resize(
         image_rep.sk_bitmap(), skia::ImageOperations::RESIZE_LANCZOS3,
         scaled_widget_size.width(), scaled_widget_size.height());
-    gfx::ImageSkia image_skia(gfx::ImageSkiaRep(scaled, device_scale));
+    gfx::ImageSkia image_skia(gfx::ImageSkiaRep(scaled, device_scale_factor));
     canvas->DrawImageInt(image_skia, 0, 0);
   }
 }

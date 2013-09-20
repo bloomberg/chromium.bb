@@ -188,7 +188,7 @@ SkBitmap* TaskbarWindowThumbnailerWin::CaptureWindowImage() const {
   if (!width || !height)
     return NULL;
 
-  gfx::Canvas canvas(gfx::Size(width, height), 1.0f, false);
+  gfx::Canvas canvas(gfx::Size(width, height), ui::SCALE_FACTOR_100P, false);
   {
     skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
     HDC target_dc = scoped_platform_paint.GetPlatformSurface();

@@ -8,10 +8,6 @@
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher_types.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ash {
 class Launcher;
 

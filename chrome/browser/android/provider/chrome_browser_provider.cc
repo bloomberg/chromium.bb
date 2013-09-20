@@ -39,7 +39,6 @@
 #include "sql/statement.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/favicon_size.h"
 
 using base::android::AttachCurrentThread;
@@ -677,7 +676,7 @@ class BookmarkIconFetchTask : public FaviconServiceTask {
                        url,
                        chrome::FAVICON | chrome::TOUCH_ICON,
                        gfx::kFaviconSize),
-                   ResourceBundle::GetSharedInstance().GetMaxScaleFactor(),
+                   ui::GetMaxScaleFactor(),
                    base::Bind(
                        &BookmarkIconFetchTask::OnFaviconRetrieved,
                        base::Unretained(this)),

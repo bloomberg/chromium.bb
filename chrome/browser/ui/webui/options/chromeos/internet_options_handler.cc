@@ -416,8 +416,7 @@ void SetCommonNetworkInfo(const ManagedState* state,
                           const gfx::ImageSkia& icon,
                           ui::ScaleFactor icon_scale_factor,
                           base::DictionaryValue* network_info) {
-  gfx::ImageSkiaRep image_rep =
-      icon.GetRepresentation(ui::GetImageScale(icon_scale_factor));
+  gfx::ImageSkiaRep image_rep = icon.GetRepresentation(icon_scale_factor);
   std::string icon_url =
       icon.isNull() ? "" : webui::GetBitmapDataUrl(image_rep.sk_bitmap());
   network_info->SetString(kNetworkInfoKeyIconURL, icon_url);
@@ -1218,7 +1217,7 @@ std::string InternetOptionsHandler::GetIconDataUrl(int resource_id) const {
   gfx::ImageSkia* icon =
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   gfx::ImageSkiaRep image_rep = icon->GetRepresentation(
-      ui::GetImageScale(web_ui()->GetDeviceScaleFactor()));
+      web_ui()->GetDeviceScaleFactor());
   return webui::GetBitmapDataUrl(image_rep.sk_bitmap());
 }
 

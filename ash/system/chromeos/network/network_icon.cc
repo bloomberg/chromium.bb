@@ -196,12 +196,13 @@ class EmptyImageSource: public gfx::ImageSkiaSource {
       : size_(size) {
   }
 
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
-    gfx::Size pixel_size = gfx::ToFlooredSize(gfx::ScaleSize(size_, scale));
+  virtual gfx::ImageSkiaRep GetImageForScale(
+      ui::ScaleFactor scale_factor) OVERRIDE {
+    gfx::Size pixel_size = gfx::ToFlooredSize(
+        gfx::ScaleSize(size_, ui::GetScaleFactorScale(scale_factor)));
     SkBitmap empty_bitmap = GetEmptyBitmap(pixel_size);
-    return gfx::ImageSkiaRep(empty_bitmap, scale);
+    return gfx::ImageSkiaRep(empty_bitmap, scale_factor);
   }
-
  private:
   const gfx::Size size_;
 
@@ -219,8 +220,9 @@ class NetworkIconImageSource : public gfx::ImageSkiaSource {
 
   // TODO(pkotwicz): Figure out what to do when a new image resolution becomes
   // available.
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
-    gfx::ImageSkiaRep icon_rep = icon_.GetRepresentation(scale);
+  virtual gfx::ImageSkiaRep GetImageForScale(
+      ui::ScaleFactor scale_factor) OVERRIDE {
+    gfx::ImageSkiaRep icon_rep = icon_.GetRepresentation(scale_factor);
     if (icon_rep.is_null())
       return gfx::ImageSkiaRep();
     gfx::Canvas canvas(icon_rep, false);

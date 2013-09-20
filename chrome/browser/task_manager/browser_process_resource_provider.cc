@@ -40,7 +40,8 @@ BrowserProcessResource::BrowserProcessResource()
     HICON icon = GetAppIcon();
     if (icon) {
       scoped_ptr<SkBitmap> bitmap(IconUtil::CreateSkBitmapFromHICON(icon));
-      default_icon_ = new gfx::ImageSkia(gfx::ImageSkiaRep(*bitmap, 1.0f));
+      default_icon_ = new gfx::ImageSkia(
+          gfx::ImageSkiaRep(*bitmap, ui::SCALE_FACTOR_100P));
     }
   }
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)

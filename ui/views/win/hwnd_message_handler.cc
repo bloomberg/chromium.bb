@@ -1041,8 +1041,10 @@ void HWNDMessageHandler::ClientAreaSizeChanged() {
   gfx::Size s(std::max(0, static_cast<int>(r.right - r.left)),
               std::max(0, static_cast<int>(r.bottom - r.top)));
   delegate_->HandleClientSizeChanged(s);
-  if (use_layered_buffer_)
-    layered_window_contents_.reset(new gfx::Canvas(s, 1.0f, false));
+  if (use_layered_buffer_) {
+    layered_window_contents_.reset(
+        new gfx::Canvas(s, ui::SCALE_FACTOR_100P, false));
+  }
 }
 
 bool HWNDMessageHandler::GetClientAreaInsets(gfx::Insets* insets) const {

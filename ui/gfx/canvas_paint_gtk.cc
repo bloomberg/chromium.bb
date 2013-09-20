@@ -53,7 +53,7 @@ CanvasSkiaPaint::~CanvasSkiaPaint() {
 void CanvasSkiaPaint::Init(bool opaque) {
   GdkRectangle bounds = rectangle();
   RecreateBackingCanvas(gfx::Size(bounds.width, bounds.height),
-                        1.0f, opaque);
+                        ui::SCALE_FACTOR_100P, opaque);
 
   skia::PlatformCanvas* canvas = platform_canvas();
 
@@ -66,4 +66,4 @@ void CanvasSkiaPaint::Init(bool opaque) {
 
 } // namespace gfx
 
-
+ 

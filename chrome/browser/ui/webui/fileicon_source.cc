@@ -103,8 +103,7 @@ void FileIconSource::FetchFileIcon(
   if (icon) {
     scoped_refptr<base::RefCountedBytes> icon_data(new base::RefCountedBytes);
     gfx::PNGCodec::EncodeBGRASkBitmap(
-        icon->ToImageSkia()->GetRepresentation(
-            ui::GetImageScale(scale_factor)).sk_bitmap(),
+        icon->ToImageSkia()->GetRepresentation(scale_factor).sk_bitmap(),
         false, &icon_data->data());
 
     callback.Run(icon_data.get());
@@ -151,8 +150,8 @@ void FileIconSource::OnFileIconDataAvailable(const IconRequestDetails& details,
   if (icon) {
     scoped_refptr<base::RefCountedBytes> icon_data(new base::RefCountedBytes);
     gfx::PNGCodec::EncodeBGRASkBitmap(
-        icon->ToImageSkia()->GetRepresentation(
-            ui::GetImageScale(details.scale_factor)).sk_bitmap(),
+        icon->ToImageSkia()->GetRepresentation(details.scale_factor)
+            .sk_bitmap(),
         false,
         &icon_data->data());
 

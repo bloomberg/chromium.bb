@@ -100,7 +100,8 @@ bool StringToSkBitmap(const std::string& str, SkBitmap* bitmap) {
 }
 
 // Conversion function for reading/writing to storage.
-std::string RepresentationToString(const gfx::ImageSkia& image, float scale) {
+std::string RepresentationToString(const gfx::ImageSkia& image,
+                                   ui::ScaleFactor scale) {
   SkBitmap bitmap = image.GetRepresentation(scale).sk_bitmap();
   IPC::Message bitmap_pickle;
   // Clear the header values so they don't vary in serialization.
@@ -143,8 +144,7 @@ void SetDefaultsFromValue(const base::DictionaryValue* dict,
       if (icon_value->GetString(kIconSizes[i].size_string, &str_value) &&
           StringToSkBitmap(str_value, &bitmap)) {
         CHECK(!bitmap.isNull());
-        float scale = ui::GetImageScale(kIconSizes[i].scale);
-        icon.AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
+        icon.AddRepresentation(gfx::ImageSkiaRep(bitmap, kIconSizes[i].scale));
       }
     }
     action->SetIcon(kTabId, gfx::Image(icon));
@@ -172,11 +172,10 @@ scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
   if (!icon.isNull()) {
     base::DictionaryValue* icon_value = new base::DictionaryValue();
     for (size_t i = 0; i < arraysize(kIconSizes); i++) {
-      float scale = ui::GetImageScale(kIconSizes[i].scale);
-      if (icon.HasRepresentation(scale)) {
+      if (icon.HasRepresentation(kIconSizes[i].scale)) {
         icon_value->SetString(
             kIconSizes[i].size_string,
-            RepresentationToString(icon, scale));
+            RepresentationToString(icon, kIconSizes[i].scale));
       }
     }
     dict->Set(kIconStorageKey, icon_value);
@@ -697,8 +696,7 @@ bool ExtensionActionSetIconFunction::RunExtensionAction() {
         SkBitmap bitmap;
         EXTENSION_FUNCTION_VALIDATE(IPC::ReadParam(&pickle, &iter, &bitmap));
         CHECK(!bitmap.isNull());
-        float scale = ui::GetImageScale(kIconSizes[i].scale);
-        icon.AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
+        icon.AddRepresentation(gfx::ImageSkiaRep(bitmap, kIconSizes[i].scale));
       }
     }
 

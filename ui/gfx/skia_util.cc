@@ -68,7 +68,7 @@ skia::RefPtr<SkShader> CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
       image_rep.sk_bitmap(), tile_mode, tile_mode));
   SkScalar scale_x = local_matrix.getScaleX();
   SkScalar scale_y = local_matrix.getScaleY();
-  SkScalar bitmap_scale = SkFloatToScalar(image_rep.scale());
+  SkScalar bitmap_scale = SkFloatToScalar(image_rep.GetScale());
 
   // Unscale matrix by |bitmap_scale| such that the bitmap is drawn at the
   // correct density.

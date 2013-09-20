@@ -639,7 +639,7 @@ void Layer::PaintContents(SkCanvas* sk_canvas,
                           gfx::RectF* opaque) {
   TRACE_EVENT0("ui", "Layer::PaintContents");
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(
-      sk_canvas, device_scale_factor_));
+      sk_canvas, ui::GetScaleFactorFromScale(device_scale_factor_)));
 
   bool scale_content = scale_content_;
   if (scale_content) {

@@ -45,7 +45,8 @@ class UrlIconSource : public gfx::ImageSkiaSource,
   void StartIconFetch();
 
   // gfx::ImageSkiaSource overrides:
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE;
+  virtual gfx::ImageSkiaRep GetImageForScale(
+      ui::ScaleFactor scale_factor) OVERRIDE;
 
   // net::URLFetcherDelegate overrides:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;

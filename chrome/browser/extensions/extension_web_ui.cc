@@ -404,7 +404,7 @@ void ExtensionWebUI::GetFaviconForURL(
       FaviconUtil::GetFaviconScaleFactors();
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
   for (size_t i = 0; i < scale_factors.size(); ++i) {
-    float scale = ui::GetImageScale(scale_factors[i]);
+    float scale = ui::GetScaleFactorScale(scale_factors[i]);
     int pixel_size = static_cast<int>(gfx::kFaviconSize * scale);
     extensions::ExtensionResource icon_resource =
         extensions::IconsInfo::GetIconResource(extension,

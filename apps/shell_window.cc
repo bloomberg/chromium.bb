@@ -457,7 +457,7 @@ void ShellWindow::UpdateExtensionAppIcon() {
 
   // Triggers actual image loading with 1x resources. The 2x resource will
   // be handled by IconImage class when requested.
-  app_icon_image_->image_skia().GetRepresentation(1.0f);
+  app_icon_image_->image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
 }
 
 void ShellWindow::CloseContents(WebContents* contents) {

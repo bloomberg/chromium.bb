@@ -15,7 +15,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_renderer_host.h"
-#include "ui/base/layout.h"
 #include "ui/gfx/vector2d_f.h"
 
 // This file provides a testing framework for mocking out the RenderProcessHost
@@ -371,9 +370,6 @@ class RenderViewHostImplTestHarness : public RenderViewHostTestHarness {
   TestWebContents* contents();
 
  private:
-  typedef scoped_ptr<ui::test::ScopedSetSupportedScaleFactors>
-      ScopedSetSupportedScaleFactors;
-  ScopedSetSupportedScaleFactors scoped_set_supported_scale_factors_;
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImplTestHarness);
 };
 

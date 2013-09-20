@@ -57,11 +57,12 @@ gfx::ImageSkia ImageSkiaFromResizedNSImage(NSImage* image,
   if (IsNSImageEmpty(image))
     return gfx::ImageSkia();
 
-  std::vector<float> supported_scales = ImageSkia::GetSupportedScales();
+  std::vector<ui::ScaleFactor> supported_scale_factors =
+      ui::GetSupportedScaleFactors();
 
   gfx::ImageSkia image_skia;
-  for (size_t i = 0; i < supported_scales.size(); ++i) {
-    float scale = supported_scales[i];
+  for (size_t i = 0; i < supported_scale_factors.size(); ++i) {
+    float scale = ui::GetScaleFactorScale(supported_scale_factors[i]);
     NSSize desired_size_for_scale = NSMakeSize(desired_size.width * scale,
                                                desired_size.height * scale);
     NSImageRep* ns_image_rep = GetNSImageRepWithPixelSize(image,
@@ -72,7 +73,8 @@ gfx::ImageSkia ImageSkiaFromResizedNSImage(NSImage* image,
     if (bitmap.isNull())
       continue;
 
-    image_skia.AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
+    image_skia.AddRepresentation(gfx::ImageSkiaRep(bitmap,
+        supported_scale_factors[i]));
   }
   return image_skia;
 }
@@ -88,7 +90,7 @@ NSImage* NSImageFromImageSkia(const gfx::ImageSkia& image_skia) {
     return nil;
 
   base::scoped_nsobject<NSImage> image([[NSImage alloc] init]);
-  image_skia.EnsureRepsForSupportedScales();
+  image_skia.EnsureRepsForSupportedScaleFactors();
   std::vector<gfx::ImageSkiaRep> image_reps = image_skia.image_reps();
   for (std::vector<gfx::ImageSkiaRep>::const_iterator it = image_reps.begin();
        it != image_reps.end(); ++it) {
@@ -106,7 +108,7 @@ NSImage* NSImageFromImageSkiaWithColorSpace(const gfx::ImageSkia& image_skia,
     return nil;
 
   base::scoped_nsobject<NSImage> image([[NSImage alloc] init]);
-  image_skia.EnsureRepsForSupportedScales();
+  image_skia.EnsureRepsForSupportedScaleFactors();
   std::vector<gfx::ImageSkiaRep> image_reps = image_skia.image_reps();
   for (std::vector<gfx::ImageSkiaRep>::const_iterator it = image_reps.begin();
        it != image_reps.end(); ++it) {

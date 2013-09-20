@@ -410,8 +410,7 @@ class FaviconHandlerTest : public ChromeRenderViewHostTestHarness {
     // results on all platforms.
     std::vector<ui::ScaleFactor> scale_factors;
     scale_factors.push_back(ui::SCALE_FACTOR_100P);
-    scoped_set_supported_scale_factors_.reset(
-        new ui::test::ScopedSetSupportedScaleFactors(scale_factors));
+    ui::test::SetSupportedScaleFactors(scale_factors);
 
     ChromeRenderViewHostTestHarness::SetUp();
   }
@@ -425,9 +424,6 @@ class FaviconHandlerTest : public ChromeRenderViewHostTestHarness {
   }
 
  private:
-  typedef scoped_ptr<ui::test::ScopedSetSupportedScaleFactors>
-      ScopedSetSupportedScaleFactors;
-  ScopedSetSupportedScaleFactors scoped_set_supported_scale_factors_;
   DISALLOW_COPY_AND_ASSIGN(FaviconHandlerTest);
 };
 

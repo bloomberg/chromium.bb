@@ -1202,13 +1202,13 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(
     gfx::Canvas* canvas,
     gfx::MultiAnimation* animation) {
   // Render the inactive tab background. We'll use this for clipping.
-  gfx::Canvas background_canvas(size(), canvas->image_scale(), false);
+  gfx::Canvas background_canvas(size(), canvas->scale_factor(), false);
   PaintInactiveTabBackground(&background_canvas);
 
   gfx::ImageSkia background_image(background_canvas.ExtractImageRep());
 
   // Draw a radial gradient to hover_canvas.
-  gfx::Canvas hover_canvas(size(), canvas->image_scale(), false);
+  gfx::Canvas hover_canvas(size(), canvas->scale_factor(), false);
   int radius = kMiniTitleChangeGradientRadius;
   int x0 = width() + radius - kMiniTitleChangeInitialXOffset;
   int x1 = radius;
@@ -1271,14 +1271,13 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
       !hover_controller_.ShouldDraw();
 
   if (can_cache) {
-    ui::ScaleFactor scale_factor =
-        ui::GetSupportedScaleFactor(canvas->image_scale());
-    gfx::ImageSkia cached_image(GetCachedImage(tab_id, size(), scale_factor));
+    gfx::ImageSkia cached_image(
+        GetCachedImage(tab_id, size(), canvas->scale_factor()));
     if (cached_image.width() == 0) {
-      gfx::Canvas tmp_canvas(size(), canvas->image_scale(), false);
+      gfx::Canvas tmp_canvas(size(), canvas->scale_factor(), false);
       PaintInactiveTabBackgroundUsingResourceId(&tmp_canvas, tab_id);
       cached_image = gfx::ImageSkia(tmp_canvas.ExtractImageRep());
-      SetCachedImage(tab_id, scale_factor, cached_image);
+      SetCachedImage(tab_id, canvas->scale_factor(), cached_image);
     }
     canvas->DrawImageInt(cached_image, 0, 0);
   } else {
@@ -1311,7 +1310,7 @@ void Tab::PaintInactiveTabBackgroundUsingResourceId(gfx::Canvas* canvas,
   // We need a gfx::Canvas object to be able to extract the image from.
   // We draw everything to this canvas and then output it to the canvas
   // parameter in addition to using it to mask the hover glow if needed.
-  gfx::Canvas background_canvas(size(), canvas->image_scale(), false);
+  gfx::Canvas background_canvas(size(), canvas->scale_factor(), false);
 
   // Draw left edge.  Don't draw over the toolbar, as we're not the foreground
   // tab.

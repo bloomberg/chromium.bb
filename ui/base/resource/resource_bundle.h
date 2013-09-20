@@ -255,7 +255,9 @@ class UI_EXPORT ResourceBundle {
 
   // Returns the maximum scale factor currently loaded.
   // Returns SCALE_FACTOR_100P if no resource is loaded.
-  ScaleFactor GetMaxScaleFactor() const;
+  ScaleFactor max_scale_factor() const {
+    return max_scale_factor_;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceBundleTest, DelegateGetPathForLocalePack);
@@ -271,9 +273,6 @@ class UI_EXPORT ResourceBundle {
   // Ctor/dtor are private, since we're a singleton.
   explicit ResourceBundle(Delegate* delegate);
   ~ResourceBundle();
-
-  // Shared initialization.
-  static void InitSharedInstance(Delegate* delegate);
 
   // Free skia_images_.
   void FreeImages();

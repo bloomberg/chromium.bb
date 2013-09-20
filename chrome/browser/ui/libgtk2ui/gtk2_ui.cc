@@ -868,7 +868,7 @@ SkBitmap Gtk2UI::GenerateFrameImage(
   SkColor base = it->second;
 
   gfx::Canvas canvas(gfx::Size(kToolbarImageWidth, kToolbarImageHeight),
-      1.0f, true);
+      ui::SCALE_FACTOR_100P, true);
 
   int gradient_size;
   GdkColor* gradient_top_color = NULL;

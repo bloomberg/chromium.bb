@@ -548,7 +548,7 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
 
       // Assume that |bitmap| is |gfx::kFaviconSize| x |gfx::kFaviconSize|
       // DIP.
-      float scale = ui::GetImageScale(scale_factors[i]);
+      float scale = ui::GetScaleFactorScale(scale_factors[i]);
       int edge_pixel_size =
           static_cast<int>(gfx::kFaviconSize * scale + 0.5f);
       bitmap_result.pixel_size = gfx::Size(edge_pixel_size, edge_pixel_size);

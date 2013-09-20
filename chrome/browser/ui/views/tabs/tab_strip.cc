@@ -393,8 +393,7 @@ void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
 #endif
 
 void NewTabButton::OnPaint(gfx::Canvas* canvas) {
-  gfx::ImageSkia image =
-      GetImageForScale(ui::GetSupportedScaleFactor(canvas->image_scale()));
+  gfx::ImageSkia image = GetImageForScale(canvas->scale_factor());
   canvas->DrawImageInt(image, 0, height() - image.height());
 }
 
@@ -444,12 +443,12 @@ gfx::ImageSkia NewTabButton::GetBackgroundImage(
       GetThemeProvider()->GetImageSkiaNamed(IDR_NEWTAB_BUTTON_MASK);
   int height = mask->height();
   int width = mask->width();
-  float scale = ui::GetImageScale(scale_factor);
+
   // The canvas and mask has to use the same scale factor.
-  if (!mask->HasRepresentation(scale))
+  if (!mask->HasRepresentation(scale_factor))
     scale_factor = ui::SCALE_FACTOR_100P;
 
-  gfx::Canvas canvas(gfx::Size(width, height), scale, false);
+  gfx::Canvas canvas(gfx::Size(width, height), scale_factor, false);
 
   // For custom images the background starts at the top of the tab strip.
   // Otherwise the background starts at the top of the frame.
@@ -495,9 +494,7 @@ gfx::ImageSkia NewTabButton::GetImageForState(
   gfx::ImageSkia* overlay = GetThemeProvider()->GetImageSkiaNamed(overlay_id);
 
   gfx::Canvas canvas(
-      gfx::Size(overlay->width(), overlay->height()),
-      ui::GetImageScale(scale_factor),
-      false);
+      gfx::Size(overlay->width(), overlay->height()), scale_factor, false);
   canvas.DrawImageInt(GetBackgroundImage(state, scale_factor), 0, 0);
 
   // Draw the button border with a slight alpha.

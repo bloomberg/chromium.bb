@@ -6,6 +6,7 @@
 #define UI_GFX_IMAGE_IMAGE_SKIA_REP_H_
 
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/layout.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/size.h"
 
@@ -20,11 +21,11 @@ class UI_EXPORT ImageSkiaRep {
 
   // Creates a bitmap with kARGB_8888_Config config with given |size| in DIP.
   // This allocates pixels in the bitmap.
-  ImageSkiaRep(const gfx::Size& size, float scale);
+  ImageSkiaRep(const gfx::Size& size, ui::ScaleFactor scale_factor);
 
-  // Creates a bitmap with given scale.
+  // Creates a bitmap with given scale factor.
   // Adds ref to |src|.
-  ImageSkiaRep(const SkBitmap& src, float scale);
+  ImageSkiaRep(const SkBitmap& src, ui::ScaleFactor scale_factor);
 
   // Returns true if the backing bitmap is null.
   bool is_null() const { return bitmap_.isNull(); }
@@ -41,7 +42,8 @@ class UI_EXPORT ImageSkiaRep {
   }
 
   // Retrieves the scale that the bitmap will be painted at.
-  float scale() const { return scale_; }
+  float GetScale() const;
+  ui::ScaleFactor scale_factor() const { return scale_factor_; }
 
   // Returns backing bitmap.
   const SkBitmap& sk_bitmap() const { return bitmap_; }
@@ -51,7 +53,7 @@ class UI_EXPORT ImageSkiaRep {
   SkBitmap& mutable_sk_bitmap() { return bitmap_; }
 
   SkBitmap bitmap_;
-  float scale_;
+  ui::ScaleFactor scale_factor_;
 };
 
 }  // namespace gfx

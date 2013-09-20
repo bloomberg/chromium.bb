@@ -293,7 +293,7 @@ void PanelStackWindowCocoa::Minimize() {
   // Provide the custom miniwindow image since there is nothing painted for
   // the background stack window.
   gfx::Size stack_window_size = GetStackWindowBounds().size();
-  gfx::Canvas canvas(stack_window_size, 1.0f, true);
+  gfx::Canvas canvas(stack_window_size, ui::SCALE_FACTOR_100P, true);
   int y = 0;
   Panels::const_iterator iter = panels_.begin();
   for (; iter != panels_.end(); ++iter) {

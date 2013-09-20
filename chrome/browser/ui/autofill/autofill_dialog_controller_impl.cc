@@ -469,7 +469,7 @@ gfx::Image GetGeneratedCardImage(const base::string16& card_number,
   const int kCardWidthPx = 300;
   const int kCardHeightPx = 190;
   const gfx::Size size(kCardWidthPx, kCardHeightPx);
-  gfx::Canvas canvas(size, 1.0f, false);
+  gfx::Canvas canvas(size, ui::SCALE_FACTOR_100P, false);
 
   gfx::Rect display_rect(size);
 

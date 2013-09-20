@@ -58,7 +58,7 @@ size_t GetCandidateIndexWithBestScore(
     ResizeMethod* resize_method) {
   DCHECK_NE(desired_size_in_dip, 0);
 
-  float scale = ui::GetImageScale(scale_factor);
+  float scale = ui::GetScaleFactorScale(scale_factor);
   int desired_size_in_pixel =
       static_cast<int>(desired_size_in_dip * scale + 0.5f);
 
@@ -179,7 +179,7 @@ SkBitmap GetResizedBitmap(const SkBitmap& source_bitmap,
                           int desired_size_in_dip,
                           ui::ScaleFactor scale_factor,
                           ResizeMethod resize_method) {
-  float scale = ui::GetImageScale(scale_factor);
+  float scale = ui::GetScaleFactorScale(scale_factor);
   int desired_size_in_pixel = static_cast<int>(
       desired_size_in_dip * scale + 0.5f);
 
@@ -216,8 +216,7 @@ gfx::ImageSkia SelectFaviconFrames(
     SkBitmap resized_bitmap = GetResizedBitmap(bitmaps[result.index],
         desired_size, result.scale_factor, result.resize_method);
     multi_image.AddRepresentation(
-        gfx::ImageSkiaRep(resized_bitmap,
-                          ui::GetImageScale(result.scale_factor)));
+        gfx::ImageSkiaRep(resized_bitmap, result.scale_factor));
   }
   return multi_image;
 }

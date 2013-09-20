@@ -163,7 +163,7 @@ static BOOL SupportsBackingPropertiesChangedNotification() {
 }
 
 static float ScaleFactor(NSView* view) {
-  return ui::GetImageScale(ui::GetScaleFactorForNativeView(view));
+  return ui::GetScaleFactorScale(ui::GetScaleFactorForNativeView(view));
 }
 
 // Private methods:

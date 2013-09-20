@@ -43,17 +43,18 @@ std::vector<gfx::ImagePNGRep> SelectFaviconFramesFromPNGsWithoutResizing(
         best_candidate = png_data[i].bitmap_data;
       }
     }
-    png_reps.push_back(gfx::ImagePNGRep(best_candidate, 1.0f));
+    png_reps.push_back(gfx::ImagePNGRep(best_candidate,
+                                        ui::SCALE_FACTOR_100P));
     return png_reps;
   }
 
   // Cache the scale factor for each pixel size as |scale_factors| may contain
   // any of GetFaviconScaleFactors() which may include scale factors not
-  // supported by the platform. (ui::GetSupportedScaleFactor() cannot be used.)
+  // supported by the platform. (ui::GetScaleFactorFromScale() cannot be used.)
   std::map<int, ui::ScaleFactor> desired_pixel_sizes;
   for (size_t i = 0; i < scale_factors.size(); ++i) {
     int pixel_size = floor(favicon_size *
-        ui::GetImageScale(scale_factors[i]));
+        ui::GetScaleFactorScale(scale_factors[i]));
     desired_pixel_sizes[pixel_size] = scale_factors[i];
   }
 
@@ -70,9 +71,7 @@ std::vector<gfx::ImagePNGRep> SelectFaviconFramesFromPNGsWithoutResizing(
     if (it == desired_pixel_sizes.end())
       continue;
 
-    png_reps.push_back(
-        gfx::ImagePNGRep(png_data[i].bitmap_data,
-                         ui::GetImageScale(it->second)));
+    png_reps.push_back(gfx::ImagePNGRep(png_data[i].bitmap_data, it->second));
   }
 
   return png_reps;
@@ -138,7 +137,7 @@ SkBitmap ResizeBitmapByDownsamplingIfPossible(
 
 // static
 std::vector<ui::ScaleFactor> FaviconUtil::GetFaviconScaleFactors() {
-  const float kScale1x = ui::GetImageScale(ui::SCALE_FACTOR_100P);
+  const float kScale1x = ui::GetScaleFactorScale(ui::SCALE_FACTOR_100P);
   std::vector<ui::ScaleFactor> favicon_scale_factors =
       ui::GetSupportedScaleFactors();
 
@@ -147,7 +146,7 @@ std::vector<ui::ScaleFactor> FaviconUtil::GetFaviconScaleFactors() {
   // well.
   size_t insert_index = favicon_scale_factors.size();
   for (size_t i = 0; i < favicon_scale_factors.size(); ++i) {
-    float scale = ui::GetImageScale(favicon_scale_factors[i]);
+    float scale = ui::GetScaleFactorScale(favicon_scale_factors[i]);
     if (scale == kScale1x) {
       return favicon_scale_factors;
     } else if (scale > kScale1x) {
@@ -202,7 +201,7 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
     std::vector<ui::ScaleFactor>::iterator it = std::find(
         scale_factors_to_generate.begin(),
         scale_factors_to_generate.end(),
-        ui::GetSupportedScaleFactor(png_reps[i].scale));
+        png_reps[i].scale_factor);
     CHECK(it != scale_factors_to_generate.end());
     scale_factors_to_generate.erase(it);
   }
@@ -230,7 +229,7 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
   for (size_t i = 0; i < scale_factors_to_generate.size(); ++i) {
     ui::ScaleFactor scale_factor = scale_factors_to_generate[i];
     int desired_size_in_pixel =
-        ceil(favicon_size * ui::GetImageScale(scale_factor));
+        ceil(favicon_size * ui::GetScaleFactorScale(scale_factor));
     SkBitmap bitmap = ResizeBitmapByDownsamplingIfPossible(
         bitmaps, desired_size_in_pixel);
     resized_image_skia.AddRepresentation(
@@ -247,7 +246,7 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
     if (gfx::PNGCodec::EncodeBGRASkBitmap(
         resized_image_skia_reps[i].sk_bitmap(), false, &png_bytes->data())) {
       png_reps.push_back(gfx::ImagePNGRep(png_bytes,
-          resized_image_skia_reps[i].scale()));
+          resized_image_skia_reps[i].scale_factor()));
     }
   }
 

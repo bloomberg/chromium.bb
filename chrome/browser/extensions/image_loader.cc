@@ -334,8 +334,7 @@ void ImageLoader::ReplyBack(
     const ImageRepresentation& image_rep = it->image_representation;
 
     image_skia.AddRepresentation(gfx::ImageSkiaRep(
-        bitmap,
-        ui::GetImageScale(image_rep.scale_factor)));
+        bitmap, image_rep.scale_factor));
   }
 
   gfx::Image image;

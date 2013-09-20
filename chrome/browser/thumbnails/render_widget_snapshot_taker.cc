@@ -45,7 +45,7 @@ void RenderWidgetSnapshotTaker::AskForSnapshot(
   // this callback for later lookup when the rendering is done.
   static int sequence_num = 0;
   sequence_num++;
-  float scale_factor = ui::GetImageScale(ui::GetScaleFactorForNativeView(
+  float scale_factor = ui::GetScaleFactorScale(ui::GetScaleFactorForNativeView(
       renderer->GetView()->GetNativeView()));
   gfx::Size desired_size_in_pixel = gfx::ToFlooredSize(
       gfx::ScaleSize(desired_size, scale_factor));

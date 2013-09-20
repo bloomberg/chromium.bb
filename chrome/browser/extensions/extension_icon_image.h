@@ -13,7 +13,6 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/base/layout.h"
 #include "ui/gfx/image/image_skia.h"
 
 class Profile;
@@ -82,7 +81,7 @@ class IconImage : public content::NotificationObserver {
   // observer's |OnExtensionIconImageLoaded| will be called.
   gfx::ImageSkiaRep LoadImageForScaleFactor(ui::ScaleFactor scale_factor);
 
-  void OnImageLoaded(float scale_factor, const gfx::Image& image);
+  void OnImageLoaded(ui::ScaleFactor scale_factor, const gfx::Image& image);
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,

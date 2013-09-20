@@ -541,7 +541,8 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
 
   gfx::Canvas canvas(gfx::Size(gdk_pixbuf_get_width(pixbuf.get()),
                                gdk_pixbuf_get_height(pixbuf.get())),
-                     1.0f, false);
+                     ui::SCALE_FACTOR_100P,
+                     false);
   {
     skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
     cairo_t* context = scoped_platform_paint.GetPlatformSurface();

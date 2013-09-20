@@ -433,10 +433,6 @@ TEST_F(ResourceBundleImageTest, GetRawDataResource) {
 // Test requesting image reps at various scale factors from the image returned
 // via ResourceBundle::GetImageNamed().
 TEST_F(ResourceBundleImageTest, GetImageNamed) {
-  std::vector<ScaleFactor> supported_factors;
-  supported_factors.push_back(SCALE_FACTOR_100P);
-  supported_factors.push_back(SCALE_FACTOR_200P);
-  test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
   base::FilePath data_1x_path = dir_path().AppendASCII("sample_1x.pak");
   base::FilePath data_2x_path = dir_path().AppendASCII("sample_2x.pak");
 
@@ -449,44 +445,35 @@ TEST_F(ResourceBundleImageTest, GetImageNamed) {
   resource_bundle->AddDataPackFromPath(data_1x_path, SCALE_FACTOR_100P);
   resource_bundle->AddDataPackFromPath(data_2x_path, SCALE_FACTOR_200P);
 
-  EXPECT_EQ(SCALE_FACTOR_200P, resource_bundle->GetMaxScaleFactor());
+  EXPECT_EQ(SCALE_FACTOR_200P, resource_bundle->max_scale_factor());
 
   gfx::ImageSkia* image_skia = resource_bundle->GetImageSkiaNamed(3);
 
 #if defined(OS_CHROMEOS)
   // ChromeOS loads highest scale factor first.
-  EXPECT_EQ(ui::SCALE_FACTOR_200P,
-            GetSupportedScaleFactor(image_skia->image_reps()[0].scale()));
+  EXPECT_EQ(ui::SCALE_FACTOR_200P, image_skia->image_reps()[0].scale_factor());
 #else
-  EXPECT_EQ(ui::SCALE_FACTOR_100P,
-            GetSupportedScaleFactor(image_skia->image_reps()[0].scale()));
+  EXPECT_EQ(ui::SCALE_FACTOR_100P, image_skia->image_reps()[0].scale_factor());
 #endif
 
   // Resource ID 3 exists in both 1x and 2x paks. Image reps should be
   // available for both scale factors in |image_skia|.
   gfx::ImageSkiaRep image_rep =
-      image_skia->GetRepresentation(GetImageScale(ui::SCALE_FACTOR_100P));
-  EXPECT_EQ(ui::SCALE_FACTOR_100P, GetSupportedScaleFactor(image_rep.scale()));
-  image_rep =
-      image_skia->GetRepresentation(GetImageScale(ui::SCALE_FACTOR_200P));
-  EXPECT_EQ(ui::SCALE_FACTOR_200P, GetSupportedScaleFactor(image_rep.scale()));
+      image_skia->GetRepresentation(ui::SCALE_FACTOR_100P);
+  EXPECT_EQ(ui::SCALE_FACTOR_100P, image_rep.scale_factor());
+  image_rep = image_skia->GetRepresentation(ui::SCALE_FACTOR_200P);
+  EXPECT_EQ(ui::SCALE_FACTOR_200P, image_rep.scale_factor());
 
   // The 1.4x pack was not loaded. Requesting the 1.4x resource should return
   // either the 1x or the 2x resource.
-  image_rep = image_skia->GetRepresentation(
-      ui::GetImageScale(ui::SCALE_FACTOR_140P));
-  ui::ScaleFactor scale_factor = GetSupportedScaleFactor(image_rep.scale());
-  EXPECT_TRUE(scale_factor == ui::SCALE_FACTOR_100P ||
-              scale_factor == ui::SCALE_FACTOR_200P);
+  image_rep = image_skia->GetRepresentation(ui::SCALE_FACTOR_140P);
+  EXPECT_TRUE(image_rep.scale_factor() == ui::SCALE_FACTOR_100P ||
+              image_rep.scale_factor() == ui::SCALE_FACTOR_200P);
 }
 
 // Test that GetImageNamed() behaves properly for images which GRIT has
 // annotated as having fallen back to 1x.
 TEST_F(ResourceBundleImageTest, GetImageNamedFallback1x) {
-  std::vector<ScaleFactor> supported_factors;
-  supported_factors.push_back(SCALE_FACTOR_100P);
-  supported_factors.push_back(SCALE_FACTOR_200P);
-  test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
   base::FilePath data_path = dir_path().AppendASCII("sample.pak");
   base::FilePath data_2x_path = dir_path().AppendASCII("sample_2x.pak");
 
@@ -508,8 +495,8 @@ TEST_F(ResourceBundleImageTest, GetImageNamedFallback1x) {
   // The image rep for 2x should be available. It should be resized to the
   // proper 2x size.
   gfx::ImageSkiaRep image_rep =
-    image_skia->GetRepresentation(GetImageScale(ui::SCALE_FACTOR_200P));
-  EXPECT_EQ(ui::SCALE_FACTOR_200P, GetSupportedScaleFactor(image_rep.scale()));
+    image_skia->GetRepresentation(ui::SCALE_FACTOR_200P);
+  EXPECT_EQ(ui::SCALE_FACTOR_200P, image_rep.scale_factor());
   EXPECT_EQ(20, image_rep.pixel_width());
   EXPECT_EQ(20, image_rep.pixel_height());
 }
@@ -519,12 +506,6 @@ TEST_F(ResourceBundleImageTest, GetImageNamedFallback1x) {
 // requires rounding as a result of using a non-integer scale factor.
 // Scale factors of 140 and 1805 are Windows specific.
 TEST_F(ResourceBundleImageTest, GetImageNamedFallback1xRounding) {
-  std::vector<ScaleFactor> supported_factors;
-  supported_factors.push_back(SCALE_FACTOR_100P);
-  supported_factors.push_back(SCALE_FACTOR_140P);
-  supported_factors.push_back(SCALE_FACTOR_180P);
-  test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
-
   base::FilePath data_path = dir_path().AppendASCII("sample.pak");
   base::FilePath data_140P_path = dir_path().AppendASCII("sample_140P.pak");
   base::FilePath data_180P_path = dir_path().AppendASCII("sample_180P.pak");
@@ -546,11 +527,9 @@ TEST_F(ResourceBundleImageTest, GetImageNamedFallback1xRounding) {
   // Non-integer dimensions should be rounded up.
   gfx::ImageSkia* image_skia = resource_bundle->GetImageSkiaNamed(3);
   gfx::ImageSkiaRep image_rep =
-    image_skia->GetRepresentation(
-      GetImageScale(ui::SCALE_FACTOR_140P));
+    image_skia->GetRepresentation(ui::SCALE_FACTOR_140P);
   EXPECT_EQ(12, image_rep.pixel_width());
-  image_rep = image_skia->GetRepresentation(
-    GetImageScale(ui::SCALE_FACTOR_180P));
+  image_rep = image_skia->GetRepresentation(ui::SCALE_FACTOR_180P);
   EXPECT_EQ(15, image_rep.pixel_width());
 }
 #endif
@@ -568,7 +547,7 @@ TEST_F(ResourceBundleImageTest, FallbackToNone) {
   gfx::ImageSkia* image_skia = resource_bundle->GetImageSkiaNamed(3);
   EXPECT_EQ(1u, image_skia->image_reps().size());
   EXPECT_EQ(ui::SCALE_FACTOR_100P,
-            GetSupportedScaleFactor(image_skia->image_reps()[0].scale()));
+            image_skia->image_reps()[0].scale_factor());
 }
 
 }  // namespace ui

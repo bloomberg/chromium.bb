@@ -90,34 +90,34 @@ class UI_EXPORT Canvas {
     NO_SUBPIXEL_RENDERING = 1 << 10,
   };
 
-  // Creates an empty canvas with image_scale of 1x.
+  // Creates an empty canvas with scale factor of 1x.
   Canvas();
 
-  // Creates canvas with provided DIP |size| and |image_scale|.
+  // Creates canvas with provided DIP |size| and |scale_factor|.
   // If this canvas is not opaque, it's explicitly cleared to transparent before
   // being returned.
-  Canvas(const Size& size, float image_scale, bool is_opaque);
+  Canvas(const Size& size, ui::ScaleFactor scale_factor, bool is_opaque);
 
-  // Constructs a canvas with the size and the image_scale of the provided
-  // |image_rep|, and draws the |image_rep| into it.
+  // Constructs a canvas with the size and the scale factor of the
+  // provided |image_rep|, and draws the |image_rep| into it.
   Canvas(const ImageSkiaRep& image_rep, bool is_opaque);
 
   virtual ~Canvas();
 
-  // Creates a Canvas backed by an |sk_canvas| with |image_scale_|.
-  // |sk_canvas| is assumed to be already scaled based on |image_scale|
+  // Creates a Canvas backed by an |sk_canvas| with |scale_factor|.
+  // |sk_canvas| is assumed to be already scaled based on |scale_factor|
   // so no additional scaling is applied.
   static Canvas* CreateCanvasWithoutScaling(SkCanvas* sk_canvas,
-                                            float image_scale);
+                                            ui::ScaleFactor scale_factor);
 
-  // Recreates the backing platform canvas with DIP |size| and |image_scale_|.
+  // Recreates the backing platform canvas with DIP |size| and |scale_factor|.
   // If the canvas is not opaque, it is explicitly cleared.
   // This method is public so that canvas_skia_paint can recreate the platform
   // canvas after having initialized the canvas.
-  // TODO(pkotwicz): Push the image_scale into skia::PlatformCanvas such that
+  // TODO(pkotwicz): Push the scale factor into skia::PlatformCanvas such that
   // this method can be private.
   void RecreateBackingCanvas(const Size& size,
-                             float image_scale,
+                             ui::ScaleFactor scale_factor,
                              bool is_opaque);
 
   // Compute the size required to draw some text with the provided fonts.
@@ -451,16 +451,16 @@ class UI_EXPORT Canvas {
 
   skia::PlatformCanvas* platform_canvas() const { return owned_canvas_.get(); }
   SkCanvas* sk_canvas() const { return canvas_; }
-  float image_scale() const { return image_scale_; }
+  ui::ScaleFactor scale_factor() const { return scale_factor_; }
 
  private:
-  Canvas(SkCanvas* canvas, float image_scale);
+  Canvas(SkCanvas* canvas, ui::ScaleFactor scale_factor);
 
   // Test whether the provided rectangle intersects the current clip rect.
   bool IntersectsClipRectInt(int x, int y, int w, int h);
   bool IntersectsClipRect(const Rect& rect);
 
-  // Returns the image rep which best matches the canvas |image_scale_|.
+  // Returns the image rep which best matches the canvas |scale_factor_|.
   // Returns a null image rep if |image| contains no image reps.
   // Builds mip map for returned image rep if necessary.
   //
@@ -473,8 +473,8 @@ class UI_EXPORT Canvas {
 
   // The device scale factor at which drawing on this canvas occurs.
   // An additional scale can be applied via Canvas::Scale(). However,
-  // Canvas::Scale() does not affect |image_scale_|.
-  float image_scale_;
+  // Canvas::Scale() does not affect |scale_factor_|.
+  ui::ScaleFactor scale_factor_;
 
   skia::RefPtr<skia::PlatformCanvas> owned_canvas_;
   SkCanvas* canvas_;

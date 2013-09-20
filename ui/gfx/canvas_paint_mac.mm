@@ -58,8 +58,9 @@ void CanvasSkiaPaint::Init(bool opaque) {
     // Assume that the x scale and the y scale are the same.
   CGFloat scale = scaled_unit_rect.size.width;
 
+  ui::ScaleFactor scale_factor = ui::GetScaleFactorFromScale(scale);
   gfx::Size size(NSWidth(rectangle_), NSHeight(rectangle_));
-  RecreateBackingCanvas(size, scale, opaque);
+  RecreateBackingCanvas(size, scale_factor, opaque);
   skia::PlatformCanvas* canvas = platform_canvas();
   canvas->clear(SkColorSetARGB(0, 0, 0, 0));
 
@@ -73,4 +74,4 @@ void CanvasSkiaPaint::Init(bool opaque) {
 
 }  // namespace skia
 
-
+ 

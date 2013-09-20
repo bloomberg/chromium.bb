@@ -26,7 +26,6 @@ gfx::ImageSkiaRep& NullImageRep() {
   return null_image_rep;
 }
 
-std::vector<float>* g_supported_scales = NULL;
 }  // namespace
 
 namespace internal {
@@ -34,15 +33,15 @@ namespace {
 
 class Matcher {
  public:
-  explicit Matcher(float scale) : scale_(scale) {
+  explicit Matcher(ui::ScaleFactor scale_factor) : scale_factor_(scale_factor) {
   }
 
   bool operator()(const ImageSkiaRep& rep) const {
-    return rep.scale() == scale_;
+    return rep.scale_factor() == scale_factor_;
   }
 
  private:
-  float scale_;
+  ui::ScaleFactor scale_factor_;
 };
 
 }  // namespace
@@ -62,10 +61,11 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage>,
         read_only_(false) {
   }
 
-  ImageSkiaStorage(ImageSkiaSource* source, float scale)
+  ImageSkiaStorage(ImageSkiaSource* source, ui::ScaleFactor scale_factor)
       : source_(source),
         read_only_(false) {
-    ImageSkia::ImageSkiaReps::iterator it = FindRepresentation(scale, true);
+    ImageSkia::ImageSkiaReps::iterator it =
+        FindRepresentation(scale_factor, true);
     if (it == image_reps_.end() || it->is_null())
       source_.reset();
     else
@@ -103,15 +103,16 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage>,
   }
 
   // Returns the iterator of the image rep whose density best matches
-  // |scale|. If the image for the |scale| doesn't exist in the storage and
-  // |storage| is set, it fetches new image by calling
-  // |ImageSkiaSource::GetImageForScale|. If the source returns the image with
-  // different scale (if the image doesn't exist in resource, for example), it
-  // will fallback to closest image rep.
+  // |scale_factor|. If the image for the |scale_factor| doesn't exist
+  // in the storage and |storage| is set, it fetches new image by calling
+  // |ImageSkiaSource::GetImageForScale|. If the source returns the
+  // image with different scale factor (if the image doesn't exist in
+  // resource, for example), it will fallback to closest image rep.
   std::vector<ImageSkiaRep>::iterator FindRepresentation(
-      float scale, bool fetch_new_image) const {
+      ui::ScaleFactor scale_factor, bool fetch_new_image) const {
     ImageSkiaStorage* non_const = const_cast<ImageSkiaStorage*>(this);
 
+    float scale = ui::GetScaleFactorScale(scale_factor);
     ImageSkia::ImageSkiaReps::iterator closest_iter =
         non_const->image_reps().end();
     ImageSkia::ImageSkiaReps::iterator exact_iter =
@@ -120,7 +121,7 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage>,
     for (ImageSkia::ImageSkiaReps::iterator it =
              non_const->image_reps().begin();
          it < image_reps_.end(); ++it) {
-      if (it->scale() == scale) {
+      if (it->GetScale() == scale) {
         // found exact match
         fetch_new_image = false;
         if (it->is_null())
@@ -128,7 +129,7 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage>,
         exact_iter = it;
         break;
       }
-      float diff = std::abs(it->scale() - scale);
+      float diff = std::abs(it->GetScale() - scale);
       if (diff < smallest_diff && !it->is_null()) {
         closest_iter = it;
         smallest_diff = diff;
@@ -139,24 +140,25 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage>,
       DCHECK(CalledOnValidThread()) <<
           "An ImageSkia with the source must be accessed by the same thread.";
 
-      ImageSkiaRep image = source_->GetImageForScale(scale);
+      ImageSkiaRep image = source_->GetImageForScale(scale_factor);
 
       // If the source returned the new image, store it.
       if (!image.is_null() &&
           std::find_if(image_reps_.begin(), image_reps_.end(),
-                       Matcher(image.scale())) == image_reps_.end()) {
+                       Matcher(image.scale_factor())) == image_reps_.end()) {
         non_const->image_reps().push_back(image);
       }
 
-      // If the result image's scale isn't same as the expected scale, create
-      // null ImageSkiaRep with the |scale| so that the next lookup will
-      // fallback to the closest scale.
-      if (image.is_null() || image.scale() != scale) {
-        non_const->image_reps().push_back(ImageSkiaRep(SkBitmap(), scale));
+      // If the result image's scale factor isn't same as the expected
+      // scale factor, create null ImageSkiaRep with the |scale_factor|
+      // so that the next lookup will fallback to the closest scale.
+      if (image.is_null() || image.scale_factor() != scale_factor) {
+        non_const->image_reps().push_back(
+            ImageSkiaRep(SkBitmap(), scale_factor));
       }
 
       // image_reps_ must have the exact much now, so find again.
-      return FindRepresentation(scale, false);
+      return FindRepresentation(scale_factor, false);
     }
     return exact_iter != image_reps_.end() ? exact_iter : closest_iter;
   }
@@ -168,7 +170,7 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage>,
     DetachFromThread();
   }
 
-  // Vector of bitmaps and their associated scale.
+  // Vector of bitmaps and their associated scale factor.
   std::vector<gfx::ImageSkiaRep> image_reps_;
 
   scoped_ptr<ImageSkiaSource> source_;
@@ -193,8 +195,8 @@ ImageSkia::ImageSkia(ImageSkiaSource* source, const gfx::Size& size)
   DetachStorageFromThread();
 }
 
-ImageSkia::ImageSkia(ImageSkiaSource* source, float scale)
-    : storage_(new internal::ImageSkiaStorage(source, scale)) {
+ImageSkia::ImageSkia(ImageSkiaSource* source, ui::ScaleFactor scale_factor)
+    : storage_(new internal::ImageSkiaStorage(source, scale_factor)) {
   DCHECK(source);
   if (!storage_->has_source())
     storage_ = NULL;
@@ -220,27 +222,8 @@ ImageSkia::~ImageSkia() {
 }
 
 // static
-void ImageSkia::SetSupportedScales(const std::vector<float>& supported_scales) {
-  if (g_supported_scales != NULL)
-    delete g_supported_scales;
-  g_supported_scales = new std::vector<float>(supported_scales);
-  std::sort(g_supported_scales->begin(), g_supported_scales->end());
-}
-
-// static
-const std::vector<float>& ImageSkia::GetSupportedScales() {
-  DCHECK(g_supported_scales != NULL);
-  return *g_supported_scales;
-}
-
-// static
-float ImageSkia::GetMaxSupportedScale() {
-  return g_supported_scales->back();
-}
-
-// static
 ImageSkia ImageSkia::CreateFrom1xBitmap(const SkBitmap& bitmap) {
-  return ImageSkia(ImageSkiaRep(bitmap, 1.0f));
+  return ImageSkia(ImageSkiaRep(bitmap, ui::SCALE_FACTOR_100P));
 }
 
 scoped_ptr<ImageSkia> ImageSkia::DeepCopy() const {
@@ -271,9 +254,10 @@ void ImageSkia::AddRepresentation(const ImageSkiaRep& image_rep) {
 
   // TODO(oshima): This method should be called |SetRepresentation|
   // and replace the existing rep if there is already one with the
-  // same scale so that we can guarantee that a ImageSkia instance contains only
-  // one image rep per scale. This is not possible now as ImageLoader currently
-  // stores need this feature, but this needs to be fixed.
+  // same scale factor so that we can guarantee that a ImageSkia
+  // instance contians only one image rep per scale factor. This is
+  // not possible now as ImageLoader currently stores need
+  // this feature, but this needs to be fixed.
   if (isNull()) {
     Init(image_rep);
   } else {
@@ -282,34 +266,37 @@ void ImageSkia::AddRepresentation(const ImageSkiaRep& image_rep) {
   }
 }
 
-void ImageSkia::RemoveRepresentation(float scale) {
+void ImageSkia::RemoveRepresentation(ui::ScaleFactor scale_factor) {
   if (isNull())
     return;
   CHECK(CanModify());
 
   ImageSkiaReps& image_reps = storage_->image_reps();
   ImageSkiaReps::iterator it =
-      storage_->FindRepresentation(scale, false);
-  if (it != image_reps.end() && it->scale() == scale)
+      storage_->FindRepresentation(scale_factor, false);
+  if (it != image_reps.end() && it->scale_factor() == scale_factor)
     image_reps.erase(it);
 }
 
-bool ImageSkia::HasRepresentation(float scale) const {
+bool ImageSkia::HasRepresentation(ui::ScaleFactor scale_factor) const {
   if (isNull())
     return false;
   CHECK(CanRead());
 
-  ImageSkiaReps::iterator it = storage_->FindRepresentation(scale, false);
-  return (it != storage_->image_reps().end() && it->scale() == scale);
+  ImageSkiaReps::iterator it =
+      storage_->FindRepresentation(scale_factor, false);
+  return (it != storage_->image_reps().end() &&
+          it->scale_factor() == scale_factor);
 }
 
-const ImageSkiaRep& ImageSkia::GetRepresentation(float scale) const {
+const ImageSkiaRep& ImageSkia::GetRepresentation(
+    ui::ScaleFactor scale_factor) const {
   if (isNull())
     return NullImageRep();
 
   CHECK(CanRead());
 
-  ImageSkiaReps::iterator it = storage_->FindRepresentation(scale, true);
+  ImageSkiaReps::iterator it = storage_->FindRepresentation(scale_factor, true);
   if (it == storage_->image_reps().end())
     return NullImageRep();
 
@@ -324,7 +311,7 @@ void ImageSkia::SetReadOnly() {
 
 void ImageSkia::MakeThreadSafe() {
   CHECK(storage_.get());
-  EnsureRepsForSupportedScales();
+  EnsureRepsForSupportedScaleFactors();
   // Delete source as we no longer needs it.
   if (storage_.get())
     storage_->DeleteSource();
@@ -367,15 +354,15 @@ std::vector<ImageSkiaRep> ImageSkia::image_reps() const {
   return image_reps;
 }
 
-void ImageSkia::EnsureRepsForSupportedScales() const {
-  DCHECK(g_supported_scales != NULL);
+void ImageSkia::EnsureRepsForSupportedScaleFactors() const {
   // Don't check ReadOnly because the source may generate images
   // even for read only ImageSkia. Concurrent access will be protected
   // by |DCHECK(CalledOnValidThread())| in FindRepresentation.
   if (storage_.get() && storage_->has_source()) {
-    for (std::vector<float>::const_iterator it = g_supported_scales->begin();
-         it != g_supported_scales->end(); ++it)
-      storage_->FindRepresentation(*it, true);
+    std::vector<ui::ScaleFactor> supported_scale_factors =
+        ui::GetSupportedScaleFactors();
+    for (size_t i = 0; i < supported_scale_factors.size(); ++i)
+      storage_->FindRepresentation(supported_scale_factors[i], true);
   }
 }
 
@@ -403,7 +390,8 @@ SkBitmap& ImageSkia::GetBitmap() const {
   CHECK(CanRead());
 #endif
 
-  ImageSkiaReps::iterator it = storage_->FindRepresentation(1.0f, true);
+  ImageSkiaReps::iterator it =
+      storage_->FindRepresentation(ui::SCALE_FACTOR_100P, true);
   if (it != storage_->image_reps().end())
     return it->mutable_sk_bitmap();
   return NullImageRep().mutable_sk_bitmap();

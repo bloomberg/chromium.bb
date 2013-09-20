@@ -85,7 +85,7 @@ bool CreateSiteSpecificLogo(const SkBitmap& bitmap,
   SkColor dominant_color = color_utils::CalculateKMeanColorOfBitmap(bitmap);
   SkPaint paint;
   paint.setColor(dominant_color);
-  gfx::Canvas canvas(gfx::Size(kLogoWidth, kLogoHeight), 1.0f,
+  gfx::Canvas canvas(gfx::Size(kLogoWidth, kLogoHeight), ui::SCALE_FACTOR_100P,
                      true);
   canvas.DrawRect(gfx::Rect(0, 0, kLogoWidth, kLogoHeight), paint);
 
@@ -381,7 +381,7 @@ void MetroPinTabHelper::TogglePinnedToStartScreen() {
   if (favicon_tab_helper->FaviconIsValid()) {
     // Only the 1x bitmap data is needed.
     favicon = favicon_tab_helper->GetFavicon().AsImageSkia().GetRepresentation(
-        1.0f).sk_bitmap();
+        ui::SCALE_FACTOR_100P).sk_bitmap();
   }
 
   favicon_chooser_.reset(new FaviconChooser(this, title, url_str, favicon));
