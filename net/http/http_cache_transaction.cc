@@ -452,7 +452,10 @@ void HttpCache::Transaction::DoneReading() {
     DCHECK_NE(mode_, UPDATE);
     if (mode_ & WRITE) {
       DoneWritingToEntry(true);
-    } else {
+    } else if (mode_ & READ) {
+      // It is necessary to check mode_ & READ because it is possible
+      // for mode_ to be NONE and entry_ non-NULL with a write entry
+      // if StopCaching was called.
       cache_->DoneReadingFromEntry(entry_, this);
       entry_ = NULL;
     }

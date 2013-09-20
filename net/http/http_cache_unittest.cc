@@ -5960,7 +5960,7 @@ TEST(HttpCache, StopCachingDeletesEntry) {
 
     scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(256));
     rv = trans->Read(buf.get(), 10, callback.callback());
-    EXPECT_EQ(callback.GetResult(rv), 10);
+    EXPECT_EQ(10, callback.GetResult(rv));
 
     trans->StopCaching();
 
@@ -5968,7 +5968,50 @@ TEST(HttpCache, StopCachingDeletesEntry) {
     rv = trans->Read(buf.get(), 256, callback.callback());
     EXPECT_GT(callback.GetResult(rv), 0);
     rv = trans->Read(buf.get(), 256, callback.callback());
-    EXPECT_EQ(callback.GetResult(rv), 0);
+    EXPECT_EQ(0, callback.GetResult(rv));
+  }
+
+  // Make sure that the ActiveEntry is gone.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Verify that the entry is gone.
+  RunTransactionTest(cache.http_cache(), kSimpleGET_Transaction);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+}
+
+// Tests that we stop caching when told, even if DoneReading is called
+// after StopCaching.
+TEST(HttpCache, StopCachingThenDoneReadingDeletesEntry) {
+  MockHttpCache cache;
+  net::TestCompletionCallback callback;
+  MockHttpRequest request(kSimpleGET_Transaction);
+
+  {
+    scoped_ptr<net::HttpTransaction> trans;
+    int rv = cache.http_cache()->CreateTransaction(
+        net::DEFAULT_PRIORITY, &trans, NULL);
+    EXPECT_EQ(net::OK, rv);
+
+    rv = trans->Start(&request, callback.callback(), net::BoundNetLog());
+    EXPECT_EQ(net::OK, callback.GetResult(rv));
+
+    scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(256));
+    rv = trans->Read(buf.get(), 10, callback.callback());
+    EXPECT_EQ(10, callback.GetResult(rv));
+
+    trans->StopCaching();
+
+    // We should be able to keep reading.
+    rv = trans->Read(buf.get(), 256, callback.callback());
+    EXPECT_GT(callback.GetResult(rv), 0);
+    rv = trans->Read(buf.get(), 256, callback.callback());
+    EXPECT_EQ(0, callback.GetResult(rv));
+
+    // We should be able to call DoneReading.
+    trans->DoneReading();
   }
 
   // Make sure that the ActiveEntry is gone.
