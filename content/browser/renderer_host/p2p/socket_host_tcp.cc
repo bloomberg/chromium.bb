@@ -134,20 +134,23 @@ void P2PSocketHostTcpBase::OnConnected(int result) {
   if (IsTlsClientSocket(type_)) {
     state_ = STATE_TLS_CONNECTING;
     StartTls();
-  } else {
-    if (IsPseudoTlsClientSocket(type_)) {
-      scoped_ptr<net::StreamSocket> transport_socket = socket_.Pass();
-      socket_.reset(
-          new jingle_glue::FakeSSLClientSocket(transport_socket.Pass()));
+  } else if (IsPseudoTlsClientSocket(type_)) {
+    scoped_ptr<net::StreamSocket> transport_socket = socket_.Pass();
+    socket_.reset(
+        new jingle_glue::FakeSSLClientSocket(transport_socket.Pass()));
+    state_ = STATE_TLS_CONNECTING;
+    int status = socket_->Connect(
+        base::Bind(&P2PSocketHostTcpBase::ProcessTlsSslConnectDone,
+                   base::Unretained(this)));
+    if (status != net::ERR_IO_PENDING) {
+      ProcessTlsSslConnectDone(status);
     }
-
+  } else {
     // If we are not doing TLS, we are ready to send data now.
     // In case of TLS, SignalConnect will be sent only after TLS handshake is
     // successfull. So no buffering will be done at socket handlers if any
     // packets sent before that by the application.
-    state_ = STATE_OPEN;
-    DoSendSocketCreateMsg();
-    DoRead();
+    OnOpen();
   }
 }
 
@@ -176,21 +179,24 @@ void P2PSocketHostTcpBase::StartTls() {
   socket_ = socket_factory->CreateSSLClientSocket(
       socket_handle.Pass(), dest_host_port_pair, ssl_config, context);
   int status = socket_->Connect(
-      base::Bind(&P2PSocketHostTcpBase::ProcessTlsConnectDone,
+      base::Bind(&P2PSocketHostTcpBase::ProcessTlsSslConnectDone,
                  base::Unretained(this)));
   if (status != net::ERR_IO_PENDING) {
-    ProcessTlsConnectDone(status);
+    ProcessTlsSslConnectDone(status);
   }
 }
 
-void P2PSocketHostTcpBase::ProcessTlsConnectDone(int status) {
+void P2PSocketHostTcpBase::ProcessTlsSslConnectDone(int status) {
   DCHECK_NE(status, net::ERR_IO_PENDING);
   DCHECK_EQ(state_, STATE_TLS_CONNECTING);
   if (status != net::OK) {
     OnError();
     return;
   }
+  OnOpen();
+}
 
+void P2PSocketHostTcpBase::OnOpen() {
   state_ = STATE_OPEN;
   DoSendSocketCreateMsg();
   DoRead();
