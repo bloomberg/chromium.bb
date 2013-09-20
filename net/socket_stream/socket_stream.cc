@@ -132,6 +132,14 @@ bool SocketStream::is_secure() const {
   return url_.SchemeIs("wss");
 }
 
+GURL SocketStream::GetURLForCookies(const GURL& url) {
+  std::string scheme = url.SchemeIs("wss") ? "https" : "http";
+  url_canon::Replacements<char> replacements;
+  replacements.SetScheme(scheme.c_str(),
+                         url_parse::Component(0, scheme.length()));
+  return url.ReplaceComponents(replacements);
+}
+
 void SocketStream::set_context(URLRequestContext* context) {
   const URLRequestContext* prev_context = context_;
 
@@ -1327,9 +1335,12 @@ int SocketStream::HandleCertificateError(int result) {
   ssl_socket->GetSSLInfo(&ssl_info);
 
   TransportSecurityState::DomainState domain_state;
-  const bool fatal = context_->transport_security_state() &&
-      context_->transport_security_state()->GetDomainState(url_.host(),
+  const bool fatal =
+      context_->transport_security_state() &&
+      context_->transport_security_state()->GetDomainState(
+          url_.host(),
           SSLConfigService::IsSNIAvailable(context_->ssl_config_service()),
+          delegate_->CanGetCookies(this, url_for_cookies()),
           &domain_state) &&
       domain_state.ShouldSSLErrorsBeFatal();
 

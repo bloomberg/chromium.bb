@@ -270,8 +270,7 @@ class TestNetworkDelegate : public NetworkDelegate {
                               CookieOptions* options) OVERRIDE;
   virtual bool OnCanAccessFile(const URLRequest& request,
                                const base::FilePath& path) const OVERRIDE;
-  virtual bool OnCanThrottleRequest(
-      const URLRequest& request) const OVERRIDE;
+  virtual bool OnCanThrottleRequest(const URLRequest& request) const OVERRIDE;
   virtual int OnBeforeSocketStreamConnect(
       SocketStream* stream,
       const CompletionCallback& callback) OVERRIDE;

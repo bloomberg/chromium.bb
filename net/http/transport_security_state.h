@@ -201,6 +201,9 @@ class NET_EXPORT TransportSecurityState
   // If |sni_enabled| is true, searches the static pins defined for
   // SNI-using hosts as well as the rest of the pins.
   //
+  // If |allow_dynamic| is true, then dynamic state is returned if present,
+  // otherwise only static state is used..
+  //
   // If |host| matches both an exact entry and is a subdomain of another
   // entry, the exact match determines the return value.
   //
@@ -208,6 +211,7 @@ class NET_EXPORT TransportSecurityState
   // entries that have expired.
   bool GetDomainState(const std::string& host,
                       bool sni_enabled,
+                      bool allow_dynamic,
                       DomainState* result);
 
   // Processes an HSTS header value from the host, adding entries to

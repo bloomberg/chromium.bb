@@ -264,6 +264,7 @@ void FilterDisabledTests() {
     // functionality they test (HTTP Strict Transport Security and
     // HTTP-based Public Key Pinning) does not work in Chrome Frame anyway.
     "URLRequestTestHTTP.ProcessPKP",
+    "URLRequestTestHTTP.ProcessPKP_PrivacyMode",
     "URLRequestTestHTTP.ProcessSTS",
     "URLRequestTestHTTP.ProcessSTSOnce",
     "URLRequestTestHTTP.ProcessSTSAndPKP",

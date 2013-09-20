@@ -919,20 +919,25 @@ void URLRequest::SetPriority(RequestPriority priority) {
 
 bool URLRequest::GetHSTSRedirect(GURL* redirect_url) const {
   const GURL& url = this->url();
-  if (!url.SchemeIs("http"))
+  if (redirect_url && !url.SchemeIs("http"))
     return false;
   TransportSecurityState::DomainState domain_state;
+  bool allow_dynamic_state =
+      !(load_flags_ & LOAD_DO_NOT_SEND_COOKIES) && CanGetCookies(CookieList());
   if (context()->transport_security_state() &&
       context()->transport_security_state()->GetDomainState(
           url.host(),
           SSLConfigService::IsSNIAvailable(context()->ssl_config_service()),
+          allow_dynamic_state,
           &domain_state) &&
       domain_state.ShouldUpgradeToSSL()) {
-    url_canon::Replacements<char> replacements;
-    const char kNewScheme[] = "https";
-    replacements.SetScheme(kNewScheme,
-                           url_parse::Component(0, strlen(kNewScheme)));
-    *redirect_url = url.ReplaceComponents(replacements);
+    if (redirect_url) {
+      url_canon::Replacements<char> replacements;
+      const char kNewScheme[] = "https";
+      replacements.SetScheme(kNewScheme,
+                             url_parse::Component(0, strlen(kNewScheme)));
+      *redirect_url = url.ReplaceComponents(replacements);
+    }
     return true;
   }
   return false;

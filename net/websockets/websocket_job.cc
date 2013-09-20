@@ -367,7 +367,8 @@ bool WebSocketJob::SendHandshakeRequest(const char* data, int len) {
 
 void WebSocketJob::AddCookieHeaderAndSend() {
   bool allow = true;
-  if (delegate_ && !delegate_->CanGetCookies(socket_.get(), GetURLForCookies()))
+  GURL url_for_cookies(socket_->url_for_cookies());
+  if (delegate_ && !delegate_->CanGetCookies(socket_.get(), url_for_cookies))
     allow = false;
 
   if (socket_.get() && delegate_ && state_ == CONNECTING) {
@@ -378,7 +379,8 @@ void WebSocketJob::AddCookieHeaderAndSend() {
       CookieOptions cookie_options;
       cookie_options.set_include_httponly();
       socket_->context()->cookie_store()->GetCookiesWithOptionsAsync(
-          GetURLForCookies(), cookie_options,
+          url_for_cookies,
+          cookie_options,
           base::Bind(&WebSocketJob::LoadCookieCallback,
                      weak_ptr_factory_.GetWeakPtr()));
     } else {
@@ -509,7 +511,7 @@ void WebSocketJob::SaveNextCookie() {
   save_next_cookie_running_ = true;
 
   if (socket_->context()->cookie_store()) {
-    GURL url_for_cookies = GetURLForCookies();
+    GURL url_for_cookies(socket_->url_for_cookies());
 
     CookieOptions options;
     options.set_include_httponly();
@@ -561,15 +563,6 @@ void WebSocketJob::OnCookieSaved(bool cookie_status) {
     return;
 
   SaveNextCookie();
-}
-
-GURL WebSocketJob::GetURLForCookies() const {
-  GURL url = socket_->url();
-  std::string scheme = socket_->is_secure() ? "https" : "http";
-  url_canon::Replacements<char> replacements;
-  replacements.SetScheme(scheme.c_str(),
-                         url_parse::Component(0, scheme.length()));
-  return url.ReplaceComponents(replacements);
 }
 
 const AddressList& WebSocketJob::address_list() const {

@@ -440,7 +440,7 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
 
   // docs.google.com has preloaded pins.
   std::string domain = "docs.google.com";
-  EXPECT_TRUE(state.GetDomainState(domain, true, &domain_state));
+  EXPECT_TRUE(state.GetDomainState(domain, true, true, &domain_state));
   EXPECT_GT(domain_state.static_spki_hashes.size(), 1UL);
   HashValueVector saved_hashes = domain_state.static_spki_hashes;
 
@@ -487,7 +487,7 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
   EXPECT_NE(dynamic_domain_state.dynamic_spki_hashes.end(), hash);
 
   // Expect the overall state to reflect the header, too.
-  EXPECT_TRUE(state.GetDomainState(domain, true, &domain_state));
+  EXPECT_TRUE(state.GetDomainState(domain, true, true, &domain_state));
   EXPECT_EQ(2UL, domain_state.dynamic_spki_hashes.size());
 
   hash = std::find_if(domain_state.dynamic_spki_hashes.begin(),

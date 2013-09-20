@@ -795,6 +795,13 @@ void URLRequestHttpJob::ProcessStrictTransportSecurityHeader() {
       !security_state)
     return;
 
+  CookieOptions options;
+  options.set_include_httponly();
+  options.set_server_time(response_date_);
+  // Don't persist HSTS if cookies are not saved to avoid tracking.
+  if ((request_info_.load_flags & LOAD_DO_NOT_SAVE_COOKIES) ||
+      !CanSetCookie("", &options))
+    return;
   // http://tools.ietf.org/html/draft-ietf-websec-strict-transport-sec:
   //
   //   If a UA receives more than one STS header field in a HTTP response
@@ -816,6 +823,14 @@ void URLRequestHttpJob::ProcessPublicKeyPinsHeader() {
   // certificate errors.
   if (!ssl_info.is_valid() || IsCertStatusError(ssl_info.cert_status) ||
       !security_state)
+    return;
+
+  CookieOptions options;
+  options.set_include_httponly();
+  options.set_server_time(response_date_);
+  // Don't persist HPKP if cookies are not saved to avoid tracking.
+  if ((request_info_.load_flags & LOAD_DO_NOT_SAVE_COOKIES) ||
+      !CanSetCookie("", &options))
     return;
 
   // http://tools.ietf.org/html/draft-ietf-websec-key-pinning:
@@ -894,11 +909,16 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
     // what we should do.
 
     TransportSecurityState::DomainState domain_state;
+    bool allow_dynamic_state =
+        !(request_info_.load_flags & LOAD_DO_NOT_SEND_COOKIES) &&
+        CanGetCookies(CookieList());
     const URLRequestContext* context = request_->context();
-    const bool fatal = context->transport_security_state() &&
+    const bool fatal =
+        context->transport_security_state() &&
         context->transport_security_state()->GetDomainState(
             request_info_.url.host(),
             SSLConfigService::IsSNIAvailable(context->ssl_config_service()),
+            allow_dynamic_state,
             &domain_state) &&
         domain_state.ShouldSSLErrorsBeFatal();
     NotifySSLCertificateError(transaction_->GetResponseInfo()->ssl_info, fatal);

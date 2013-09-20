@@ -110,8 +110,6 @@ class NET_EXPORT WebSocketJob
   void NotifyHeadersComplete();
   void DoSendData();
 
-  GURL GetURLForCookies() const;
-
   const AddressList& address_list() const;
   int TrySpdyStream();
   void SetWaiting();
