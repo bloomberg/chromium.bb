@@ -41,6 +41,7 @@
 #include "content/public/common/drop_data.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "net/url_request/url_request.h"
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
@@ -1356,10 +1357,11 @@ void BrowserPluginGuest::OnNavigateGuest(
     // This will block the embedder trying to load unwanted schemes, e.g.
     // chrome://settings.
     bool scheme_is_blocked =
-        !ChildProcessSecurityPolicyImpl::GetInstance()->IsWebSafeScheme(
+        (!ChildProcessSecurityPolicyImpl::GetInstance()->IsWebSafeScheme(
             url.scheme()) &&
         !ChildProcessSecurityPolicyImpl::GetInstance()->IsPseudoScheme(
-            url.scheme());
+            url.scheme())) ||
+        url.SchemeIs(kJavaScriptScheme);
     if (scheme_is_blocked || !url.is_valid()) {
       if (delegate_) {
         std::string error_type;

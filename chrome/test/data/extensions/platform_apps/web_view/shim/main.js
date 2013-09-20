@@ -890,6 +890,16 @@ function testLoadAbortIllegalFileURL() {
   document.body.appendChild(webview);
 }
 
+function testLoadAbortIllegalJavaScriptURL() {
+  var webview = document.createElement('webview');
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq('ERR_ABORTED', e.reason);
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', 'javascript:void(document.bgColor="#0000FF")');
+  document.body.appendChild(webview);
+}
+
 // This test verifies that the reload method on webview functions as expected.
 function testReload() {
   var triggerNavUrl = 'data:text/html,trigger navigation';
@@ -1044,6 +1054,7 @@ embedder.test.testList = {
   'testLoadAbortEmptyResponse': testLoadAbortEmptyResponse,
   'testLoadAbortIllegalChromeURL': testLoadAbortIllegalChromeURL,
   'testLoadAbortIllegalFileURL': testLoadAbortIllegalFileURL,
+  'testLoadAbortIllegalJavaScriptURL': testLoadAbortIllegalJavaScriptURL,
   'testNavigationToExternalProtocol': testNavigationToExternalProtocol,
   'testReload': testReload,
   'testRemoveWebviewOnExit': testRemoveWebviewOnExit,

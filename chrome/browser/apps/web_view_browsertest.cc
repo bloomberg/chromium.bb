@@ -849,6 +849,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortIllegalFileURL) {
              "web_view/shim");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortIllegalJavaScriptURL) {
+  TestHelper("testLoadAbortIllegalJavaScriptURL",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestReload) {
   TestHelper("testReload",
              "DoneShimTest.PASSED",
