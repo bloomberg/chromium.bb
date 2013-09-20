@@ -141,6 +141,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyFontWeight,
     CSSPropertyHeight,
     CSSPropertyImageRendering,
+    CSSPropertyIsolation,
     CSSPropertyLeft,
     CSSPropertyLetterSpacing,
     CSSPropertyLineHeight,
@@ -2090,6 +2091,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return cssValuePool().createIdentifierValue(CSSValueLines);
         case CSSPropertyImageRendering:
             return CSSPrimitiveValue::create(style->imageRendering());
+        case CSSPropertyIsolation:
+            return cssValuePool().createValue(style->isolation());
         case CSSPropertyLeft:
             return valueForPositionOffset(style.get(), CSSPropertyLeft, renderer, m_node->document().renderView());
         case CSSPropertyLetterSpacing:

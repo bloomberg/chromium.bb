@@ -1928,6 +1928,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyFontWeight:
     case CSSPropertyHeight:
     case CSSPropertyImageRendering:
+    case CSSPropertyIsolation:
     case CSSPropertyLeft:
     case CSSPropertyLetterSpacing:
     case CSSPropertyLineHeight:

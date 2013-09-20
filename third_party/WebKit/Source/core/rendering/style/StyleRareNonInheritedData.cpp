@@ -76,6 +76,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_effectiveBlendMode(RenderStyle::initialBlendMode())
     , m_touchAction(RenderStyle::initialTouchAction())
     , m_objectFit(RenderStyle::initialObjectFit())
+    , m_isolation(RenderStyle::initialIsolation())
 {
     m_maskBoxImage.setMaskDefaults();
 }
@@ -149,6 +150,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_effectiveBlendMode(o.m_effectiveBlendMode)
     , m_touchAction(o.m_touchAction)
     , m_objectFit(o.m_objectFit)
+    , m_isolation(o.m_isolation)
 {
 }
 
@@ -224,7 +226,8 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_effectiveBlendMode == o.m_effectiveBlendMode
         && m_hasAspectRatio == o.m_hasAspectRatio
         && m_touchAction == o.m_touchAction
-        && m_objectFit == o.m_objectFit;
+        && m_objectFit == o.m_objectFit
+        && m_isolation == o.m_isolation;
 }
 
 bool StyleRareNonInheritedData::contentDataEquivalent(const StyleRareNonInheritedData& o) const

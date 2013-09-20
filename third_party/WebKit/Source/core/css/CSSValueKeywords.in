@@ -992,3 +992,7 @@ markers
 // CSS3 viewport-length keywords
 //
 -internal-extend-to-zoom
+
+// isolation
+// auto
+isolate

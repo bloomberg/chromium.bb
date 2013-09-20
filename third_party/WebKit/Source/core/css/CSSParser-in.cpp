@@ -637,6 +637,10 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueAuto || valueID == CSSValueWebkitOptimizeContrast)
             return true;
         break;
+    case CSSPropertyIsolation: // auto | isolate
+        if (valueID == CSSValueAuto || valueID == CSSValueIsolate)
+            return RuntimeEnabledFeatures::cssCompositingEnabled();
+        break;
     case CSSPropertyListStylePosition: // inside | outside | inherit
         if (valueID == CSSValueInside || valueID == CSSValueOutside)
             return true;
@@ -942,6 +946,7 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
 {
     switch (propertyId) {
     case CSSPropertyMixBlendMode:
+    case CSSPropertyIsolation:
         return RuntimeEnabledFeatures::cssCompositingEnabled();
     case CSSPropertyTextAlignLast:
         return RuntimeEnabledFeatures::css3TextEnabled();
@@ -2322,9 +2327,9 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         }
         break;
     case CSSPropertyMixBlendMode:
+    case CSSPropertyIsolation:
         if (!RuntimeEnabledFeatures::cssCompositingEnabled())
             return false;
-
         validPrimitive = true;
         break;
     case CSSPropertyFlex: {

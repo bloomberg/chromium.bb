@@ -837,6 +837,19 @@ bool RenderStyle::hasBlendMode() const
     return false;
 }
 
+EIsolation RenderStyle::isolation() const
+{
+    if (RuntimeEnabledFeatures::cssCompositingEnabled())
+        return static_cast<EIsolation>(rareNonInheritedData->m_isolation);
+    return IsolationAuto;
+}
+
+void RenderStyle::setIsolation(EIsolation v)
+{
+    if (RuntimeEnabledFeatures::cssCompositingEnabled())
+        rareNonInheritedData.access()->m_isolation = v;
+}
+
 inline bool requireTransformOrigin(const Vector<RefPtr<TransformOperation> >& transformOperations, RenderStyle::ApplyTransformOrigin applyOrigin)
 {
     // transform-origin brackets the transform with translate operations.

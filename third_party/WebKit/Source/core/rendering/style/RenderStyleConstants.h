@@ -511,6 +511,8 @@ enum DraggableRegionMode { DraggableRegionNone, DraggableRegionDrag, DraggableRe
 
 enum TouchAction { TouchActionAuto, TouchActionNone };
 
+enum EIsolation { IsolationAuto, IsolationIsolate };
+
 // Reasonable maximum to prevent insane font sizes from causing crashes on some platforms (such as Windows).
 static const float maximumAllowedFontSize = 1000000.0f;
 

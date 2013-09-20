@@ -65,6 +65,7 @@ grid-auto-flow type_name=GridAutoFlow
 height type_name=Length, initial=initialSize, converter=convertLengthSizing
 justify-content
 image-rendering
+isolation
 left type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
 letter-spacing type_name=float, initial=initialLetterWordSpacing, converter=convertSpacing
 line-height getter=specifiedLineHeight, custom_value

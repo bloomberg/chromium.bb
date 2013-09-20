@@ -135,6 +135,7 @@ float
 font-stretch
 height
 image-rendering
+isolation
 left
 letter-spacing
 list-style

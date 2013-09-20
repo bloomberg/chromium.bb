@@ -108,6 +108,7 @@ static void setPropertySwitchesFromRuntimeFeatures()
 
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyBackgroundBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyMixBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
+    RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyIsolation, RuntimeEnabledFeatures::cssCompositingEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyTouchAction, RuntimeEnabledFeatures::cssTouchActionEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyPaintOrder, RuntimeEnabledFeatures::svgPaintOrderEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyVariable, RuntimeEnabledFeatures::cssVariablesEnabled());

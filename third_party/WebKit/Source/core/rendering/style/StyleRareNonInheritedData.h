@@ -182,6 +182,8 @@ public:
 
     unsigned m_objectFit : 3; // ObjectFit
 
+    unsigned m_isolation : 1; // Isolation
+
 private:
     StyleRareNonInheritedData();
     StyleRareNonInheritedData(const StyleRareNonInheritedData&);

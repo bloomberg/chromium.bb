@@ -907,6 +907,9 @@ public:
     void setBlendMode(BlendMode v);
     bool hasBlendMode() const;
 
+    EIsolation isolation() const;
+    void setIsolation(EIsolation v);
+
     bool shouldPlaceBlockDirectionScrollbarOnLogicalLeft() const { return !isLeftToRightDirection() && isHorizontalWritingMode(); }
 
     TouchAction touchAction() const { return static_cast<TouchAction>(rareNonInheritedData->m_touchAction); }
@@ -1642,6 +1645,7 @@ public:
     static Color initialTapHighlightColor();
     static const FilterOperations& initialFilter() { DEFINE_STATIC_LOCAL(FilterOperations, ops, ()); return ops; }
     static BlendMode initialBlendMode() { return BlendModeNormal; }
+    static EIsolation initialIsolation() { return IsolationAuto; }
 private:
     void setVisitedLinkColor(const Color&);
     void setVisitedLinkBackgroundColor(const Color& v) { SET_VAR(rareNonInheritedData, m_visitedLinkBackgroundColor, v); }

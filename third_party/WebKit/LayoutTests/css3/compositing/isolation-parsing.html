@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <script src="../../fast/js/resources/js-test-pre.js"></script>
+    <script>
+        function setProperty(value) {
+            var div = document.createElement('div');
+            document.body.appendChild(div);
+            div.style.setProperty("isolation", value);
+
+            var computedValue = getComputedStyle(div).getPropertyValue("isolation");
+            document.body.removeChild(div);
+
+            return computedValue;
+        }
+
+        function test(value, expected) {
+            shouldBeEqualToString('setProperty("' + value + '")', expected);
+        }
+
+        test("auto", "auto");
+        test("isolate", "isolate");
+        test("", "auto");
+        test("rubbish", "auto");
+    </script>
+    <script src="../../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>

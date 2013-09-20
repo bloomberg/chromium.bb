@@ -123,6 +123,7 @@ gridRowStart
 gridTemplate
 height
 imageRendering
+isolation
 justifyContent
 kerning
 left
