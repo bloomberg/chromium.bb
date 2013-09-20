@@ -493,7 +493,8 @@ login.createScreen('LocallyManagedUserCreationScreen',
       var managerPassword = selectedPod.passwordElement.value;
       if (managerPassword.empty)
         return;
-
+      if (this.disabled)
+        return;
       this.disabled = true;
       this.context_.managerId = managerId;
       this.context_.managerDisplayId = managerDisplayId;
@@ -517,6 +518,8 @@ login.createScreen('LocallyManagedUserCreationScreen',
             loadTimeData.getString('createManagedUserPasswordMismatchError'));
         return;
       }
+      if (this.disabled)
+        return;
       this.disabled = true;
       this.context_.managedName = userName;
       chrome.send('specifyLocallyManagedUserCreationFlowUserData',
