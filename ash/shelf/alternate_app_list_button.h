@@ -30,7 +30,7 @@ class AlternateAppListButton : public views::ImageButton {
   virtual ~AlternateAppListButton();
 
  protected:
-  // views::ImageButton:
+  // views::ImageButton overrides:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
@@ -40,6 +40,9 @@ class AlternateAppListButton : public views::ImageButton {
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+
+  // ui::EventHandler overrides:
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   LauncherButtonHost* host_;

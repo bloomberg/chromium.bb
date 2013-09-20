@@ -81,6 +81,27 @@ void AlternateAppListButton::OnMouseExited(const ui::MouseEvent& event) {
   host_->MouseExitedButton(this);
 }
 
+void AlternateAppListButton::OnGestureEvent(ui::GestureEvent* event) {
+  switch (event->type()) {
+   case ui::ET_GESTURE_SCROLL_BEGIN:
+     host_->PointerPressedOnButton(this, LauncherButtonHost::TOUCH, *event);
+     event->SetHandled();
+     return;
+   case ui::ET_GESTURE_SCROLL_UPDATE:
+     host_->PointerDraggedOnButton(this, LauncherButtonHost::TOUCH, *event);
+     event->SetHandled();
+     return;
+   case ui::ET_GESTURE_SCROLL_END:
+   case ui::ET_SCROLL_FLING_START:
+     host_->PointerReleasedOnButton(this, LauncherButtonHost::TOUCH, false);
+     event->SetHandled();
+     return;
+   default:
+     ImageButton::OnGestureEvent(event);
+     return;
+  }
+}
+
 void AlternateAppListButton::OnPaint(gfx::Canvas* canvas) {
   // Call the base class first to paint any background/borders.
   View::OnPaint(canvas);
