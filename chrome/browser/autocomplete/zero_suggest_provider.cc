@@ -202,12 +202,19 @@ bool ZeroSuggestProvider::ShouldRunZeroSuggest(const GURL& url) const {
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   browser_sync::SyncPrefs sync_prefs(prefs);
-  // The user has needs to have Chrome Sync enabled (for permissions to
-  // transmit their current URL) and be in the field trial.
+
+  // ZeroSuggest requires sending the current URL to the suggest provider, so we
+  // only want to enable it if the user is willing to have this data sent.
+  // Because tab sync involves sending the same data, we currently use
+  // "tab sync is enabled and tab sync data is unencrypted" as a proxy for
+  // "the user is OK with sending this data".  We might someday want to change
+  // this to a standalone setting or part of some other explicit general opt-in.
   if (!OmniboxFieldTrial::InZeroSuggestFieldTrial() ||
       service == NULL ||
       !service->IsSyncEnabledAndLoggedIn() ||
-      !sync_prefs.HasKeepEverythingSynced()) {
+      !sync_prefs.GetPreferredDataTypes(syncer::UserTypes()).Has(
+          syncer::PROXY_TABS) ||
+      service->GetEncryptedDataTypes().Has(syncer::SESSIONS)) {
     return false;
   }
   return true;
