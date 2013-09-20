@@ -191,6 +191,46 @@ TEST_F(DesktopMediaPickerModelTest, InitialSourceList) {
   EXPECT_EQ(model_->source(1).name, UTF8ToUTF16(window.title));
 }
 
+// Verifies that the window specified with SetViewDialogWindowId() is filtered
+// from the results.
+TEST_F(DesktopMediaPickerModelTest, Filtering) {
+  CreateWithDefaultCapturers();
+
+  webrtc::WindowCapturer::WindowList list;
+  webrtc::WindowCapturer::Window window;
+
+  window.id = 0;
+  window.title = "Test window";
+  list.push_back(window);
+
+  window.id = 1;
+  list.push_back(window);
+
+  window_capturer_->SetWindowList(list);
+
+  {
+    testing::InSequence dummy;
+    EXPECT_CALL(observer_, OnSourceAdded(0))
+      .WillOnce(CheckListSize(model_.get(), 1));
+    EXPECT_CALL(observer_, OnSourceAdded(1))
+      .WillOnce(CheckListSize(model_.get(), 2));
+    EXPECT_CALL(observer_, OnSourceThumbnailChanged(0));
+    EXPECT_CALL(observer_, OnSourceThumbnailChanged(1))
+      .WillOnce(QuitMessageLoop(&message_loop_));
+  }
+
+  model_->SetViewDialogWindowId(0);
+
+  model_->StartUpdating(&observer_);
+  message_loop_.Run();
+
+  EXPECT_EQ(model_->source(0).id.type, content::DesktopMediaID::TYPE_SCREEN);
+  EXPECT_EQ(model_->source(0).id.id, 0);
+  EXPECT_EQ(model_->source(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
+  EXPECT_EQ(model_->source(1).id.id, 1);
+  EXPECT_EQ(model_->source(1).name, UTF8ToUTF16(window.title));
+}
+
 TEST_F(DesktopMediaPickerModelTest, WindowsOnly) {
   window_capturer_ = new FakeWindowCapturer();
   model_.reset(new DesktopMediaPickerModelImpl(

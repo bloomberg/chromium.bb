@@ -71,6 +71,10 @@ class FakeDesktopMediaPickerModel : public DesktopMediaPickerModel {
   virtual void SetThumbnailSize(const gfx::Size& thumbnail_size) OVERRIDE {
   }
 
+  virtual void SetViewDialogWindowId(
+      content::DesktopMediaID::Id dialog_id) OVERRIDE {
+  }
+
   virtual void StartUpdating(Observer* observer) OVERRIDE {
     observer_ = observer;
 

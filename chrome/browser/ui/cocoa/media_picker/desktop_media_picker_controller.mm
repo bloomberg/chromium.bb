@@ -69,6 +69,7 @@ const int kExcessButtonPadding = 6;
     [window setDelegate:self];
     [self initializeContentsWithAppName:appName];
     model_ = model.Pass();
+    model_->SetViewDialogWindowId([window windowNumber]);
     doneCallback_ = callback;
     items_.reset([[NSMutableArray alloc] init]);
     bridge_.reset(new DesktopMediaPickerBridge(self));

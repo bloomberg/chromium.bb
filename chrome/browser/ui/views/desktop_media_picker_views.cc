@@ -23,6 +23,14 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#endif
+
+#if defined(OS_WIN)
+#include "ui/views/win/hwnd_util.h"
+#endif
+
 using content::DesktopMediaID;
 
 namespace {
@@ -99,6 +107,8 @@ class DesktopMediaListView : public views::View,
   DesktopMediaListView(DesktopMediaPickerDialogView* parent,
                        scoped_ptr<DesktopMediaPickerModel> model);
   virtual ~DesktopMediaListView();
+
+  void StartUpdating(content::DesktopMediaID::Id dialog_window_id);
 
   // Called by DesktopMediaSourceView when selection has changed.
   void OnSelectionChanged();
@@ -292,10 +302,14 @@ DesktopMediaListView::DesktopMediaListView(
     : parent_(parent),
       model_(model.Pass()) {
   model_->SetThumbnailSize(gfx::Size(kThumbnailWidth, kThumbnailHeight));
-  model_->StartUpdating(this);
 }
 
-DesktopMediaListView::~DesktopMediaListView() {
+DesktopMediaListView::~DesktopMediaListView() {}
+
+void DesktopMediaListView::StartUpdating(
+    content::DesktopMediaID::Id dialog_window_id) {
+  model_->SetViewDialogWindowId(dialog_window_id);
+  model_->StartUpdating(this);
 }
 
 void DesktopMediaListView::OnSelectionChanged() {
@@ -447,6 +461,29 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   AddChildView(scroll_view_);
 
   DialogDelegate::CreateDialogWidget(this, context, parent_window);
+
+  // DesktopMediaPickerModel needs to know the ID of the picker window which
+  // matches the ID it gets from the OS. Depending on the OS and configuration
+  // we get this ID differently.
+  //
+  // TODO(sergeyu): Update this code when Ash-specific window capturer is
+  // implemented. Currently this code will always get native windows ID
+  // which is not what we need in Ash. http://crbug.com/295102
+  content::DesktopMediaID::Id dialog_window_id;
+
+#if defined(OS_WIN)
+  dialog_window_id = reinterpret_cast<content::DesktopMediaID::Id>(
+      views::HWNDForWidget(GetWidget()));
+#elif defined(USE_AURA)
+  dialog_window_id = static_cast<content::DesktopMediaID::Id>(
+      GetWidget()->GetNativeWindow()->GetRootWindow()->GetAcceleratedWidget());
+#else
+  dialog_window_id = 0;
+  NOTIMPLEMENTED();
+#endif
+
+  list_view_->StartUpdating(dialog_window_id);
+
   GetWidget()->Show();
 }
 

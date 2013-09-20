@@ -95,7 +95,8 @@ class DesktopMediaPickerModelImpl::Worker
          scoped_ptr<webrtc::WindowCapturer> window_capturer);
   virtual ~Worker();
 
-  void Refresh(const gfx::Size& thumbnail_size);
+  void Refresh(const gfx::Size& thumbnail_size,
+               content::DesktopMediaID::Id view_dialog_id);
 
  private:
   typedef std::map<DesktopMediaID, uint32> ImageHashesMap;
@@ -132,7 +133,8 @@ DesktopMediaPickerModelImpl::Worker::Worker(
 DesktopMediaPickerModelImpl::Worker::~Worker() {}
 
 void DesktopMediaPickerModelImpl::Worker::Refresh(
-    const gfx::Size& thumbnail_size) {
+    const gfx::Size& thumbnail_size,
+    content::DesktopMediaID::Id view_dialog_id) {
   std::vector<SourceDescription> sources;
 
   if (screen_capturer_) {
@@ -147,9 +149,12 @@ void DesktopMediaPickerModelImpl::Worker::Refresh(
     if (window_capturer_->GetWindowList(&windows)) {
       for (webrtc::WindowCapturer::WindowList::iterator it = windows.begin();
            it != windows.end(); ++it) {
-        sources.push_back(SourceDescription(
-            DesktopMediaID(DesktopMediaID::TYPE_WINDOW, it->id),
-            base::UTF8ToUTF16(it->title)));
+        // Skip the picker dialog window.
+        if (it->id != view_dialog_id) {
+          sources.push_back(SourceDescription(
+              DesktopMediaID(DesktopMediaID::TYPE_WINDOW, it->id),
+              base::UTF8ToUTF16(it->title)));
+        }
       }
     }
   }
@@ -227,6 +232,7 @@ DesktopMediaPickerModelImpl::DesktopMediaPickerModelImpl(
       window_capturer_(window_capturer.Pass()),
       update_period_(base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
       thumbnail_size_(100, 100),
+      view_dialog_id_(-1),
       observer_(NULL),
       weak_factory_(this) {
   base::SequencedWorkerPool* worker_pool = BrowserThread::GetBlockingPool();
@@ -246,6 +252,11 @@ void DesktopMediaPickerModelImpl::SetUpdatePeriod(base::TimeDelta period) {
 void DesktopMediaPickerModelImpl::SetThumbnailSize(
     const gfx::Size& thumbnail_size) {
   thumbnail_size_ = thumbnail_size;
+}
+
+void DesktopMediaPickerModelImpl::SetViewDialogWindowId(
+    content::DesktopMediaID::Id dialog_id) {
+  view_dialog_id_ = dialog_id;
 }
 
 void DesktopMediaPickerModelImpl::StartUpdating(Observer* observer) {
@@ -277,7 +288,7 @@ bool DesktopMediaPickerModelImpl::CompareSources(const SourceDescription& a,
 void DesktopMediaPickerModelImpl::Refresh() {
   capture_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Worker::Refresh, base::Unretained(worker_.get()),
-                            thumbnail_size_));
+                            thumbnail_size_, view_dialog_id_));
 }
 
 void DesktopMediaPickerModelImpl::OnSourcesList(
