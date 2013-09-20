@@ -175,7 +175,7 @@ BrowserOptionsHandler::BrowserOptionsHandler()
     : page_initialized_(false),
       template_url_service_(NULL),
       weak_ptr_factory_(this),
-      importing_existing_managed_user_(false) {
+      profile_creation_type_(NO_CREATION_IN_PROGRESS) {
 #if !defined(OS_MACOSX)
   default_browser_worker_ = new ShellIntegration::DefaultBrowserWorker(this);
 #endif
@@ -1115,7 +1115,9 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
 
   DCHECK(profile_path_being_created_.empty());
   profile_creation_start_time_ = base::TimeTicks::Now();
-  importing_existing_managed_user_ = false;
+
+  DCHECK_EQ(NO_CREATION_IN_PROGRESS, profile_creation_type_);
+  profile_creation_type_ = NON_SUPERVISED_PROFILE_CREATION;
 
   string16 name;
   string16 icon;
@@ -1140,6 +1142,7 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
       return;
 
     if (managed_user_id.empty()) {
+      profile_creation_type_ = SUPERVISED_PROFILE_CREATION;
       managed_user_id =
           ManagedUserRegistrationUtility::GenerateNewManagedUserId();
 
@@ -1156,20 +1159,15 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
             IDS_PROFILES_CREATE_MANAGED_JUST_SIGNED_IN));
       }
     } else {
-      importing_existing_managed_user_ = true;
+      profile_creation_type_ = SUPERVISED_PROFILE_IMPORT;
     }
-
-    callbacks.push_back(
-        base::Bind(&BrowserOptionsHandler::RegisterManagedUser,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   GetDesktopType(),
-                   managed_user_id));
-  } else {
-    callbacks.push_back(
-        base::Bind(&BrowserOptionsHandler::ShowProfileCreationFeedback,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   GetDesktopType()));
   }
+
+  callbacks.push_back(
+      base::Bind(&BrowserOptionsHandler::FinalizeProfileCreation,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 GetDesktopType(),
+                 managed_user_id));
 
   ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_DIALOG);
 
@@ -1181,14 +1179,9 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
 void BrowserOptionsHandler::RegisterManagedUser(
     chrome::HostDesktopType desktop_type,
     const std::string& managed_user_id,
-    Profile* new_profile,
-    Profile::CreateStatus status) {
+    Profile* new_profile) {
   DCHECK_EQ(profile_path_being_created_.value(),
             new_profile->GetPath().value());
-  if (status != Profile::CREATE_STATUS_INITIALIZED) {
-    ShowProfileCreationFeedback(desktop_type, new_profile, status);
-    return;
-  }
 
   ManagedUserService* managed_user_service =
       ManagedUserServiceFactory::GetForProfile(new_profile);
@@ -1216,13 +1209,34 @@ void BrowserOptionsHandler::RecordProfileCreationMetrics(
       base::TimeTicks::Now() - profile_creation_start_time_);
 }
 
+void BrowserOptionsHandler::RecordSupervisedProfileCreationMetrics(
+    GoogleServiceAuthError::State error_state) {
+  if (profile_creation_type_ == SUPERVISED_PROFILE_CREATION) {
+    UMA_HISTOGRAM_ENUMERATION("Profile.SupervisedProfileCreateError",
+                              error_state,
+                              GoogleServiceAuthError::NUM_STATES);
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Profile.SupervisedProfileTotalCreateTime",
+        base::TimeTicks::Now() - profile_creation_start_time_);
+  } else {
+    DCHECK_EQ(SUPERVISED_PROFILE_IMPORT, profile_creation_type_);
+    UMA_HISTOGRAM_ENUMERATION("Profile.SupervisedProfileImportError",
+                              error_state,
+                              GoogleServiceAuthError::NUM_STATES);
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Profile.SupervisedProfileTotalImportTime",
+        base::TimeTicks::Now() - profile_creation_start_time_);
+  }
+}
+
 void BrowserOptionsHandler::OnManagedUserRegistered(
     chrome::HostDesktopType desktop_type,
     Profile* profile,
     const GoogleServiceAuthError& error) {
   GoogleServiceAuthError::State state = error.state();
+  RecordSupervisedProfileCreationMetrics(state);
   if (state == GoogleServiceAuthError::NONE) {
-    ShowProfileCreationSuccess(profile, desktop_type, true);
+    ShowProfileCreationSuccess(profile, desktop_type);
     return;
   }
 
@@ -1238,8 +1252,9 @@ void BrowserOptionsHandler::OnManagedUserRegistered(
   ShowProfileCreationError(profile, error_msg);
 }
 
-void BrowserOptionsHandler::ShowProfileCreationFeedback(
+void BrowserOptionsHandler::FinalizeProfileCreation(
     chrome::HostDesktopType desktop_type,
+    const std::string& managed_user_id,
     Profile* profile,
     Profile::CreateStatus status) {
   if (status != Profile::CREATE_STATUS_CREATED)
@@ -1256,9 +1271,7 @@ void BrowserOptionsHandler::ShowProfileCreationFeedback(
       break;
     }
     case Profile::CREATE_STATUS_INITIALIZED: {
-      // Managed user registration success is handled in
-      // OnManagedUserRegistered().
-      ShowProfileCreationSuccess(profile, desktop_type, false);
+      HandleProfileCreationSuccess(profile, managed_user_id, desktop_type);
       break;
     }
     // User-initiated cancellation is handled in CancelProfileRegistration and
@@ -1274,8 +1287,30 @@ void BrowserOptionsHandler::ShowProfileCreationFeedback(
   }
 }
 
+void BrowserOptionsHandler::HandleProfileCreationSuccess(
+    Profile* profile,
+    const std::string& managed_user_id,
+    chrome::HostDesktopType desktop_type) {
+  switch (profile_creation_type_) {
+    case NON_SUPERVISED_PROFILE_CREATION: {
+      DCHECK(managed_user_id.empty());
+      ShowProfileCreationSuccess(profile, desktop_type);
+      break;
+    }
+    case SUPERVISED_PROFILE_CREATION:
+    case SUPERVISED_PROFILE_IMPORT:
+      RegisterManagedUser(desktop_type, managed_user_id, profile);
+      break;
+    case NO_CREATION_IN_PROGRESS:
+      NOTREACHED();
+      break;
+  }
+}
+
 void BrowserOptionsHandler::ShowProfileCreationError(Profile* profile,
                                                      const string16& error) {
+  DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
+  profile_creation_type_ = NO_CREATION_IN_PROGRESS;
   profile_path_being_created_.clear();
   web_ui()->CallJavascriptFunction(
       GetJavascriptMethodName(PROFILE_CREATION_ERROR),
@@ -1285,30 +1320,35 @@ void BrowserOptionsHandler::ShowProfileCreationError(Profile* profile,
 
 void BrowserOptionsHandler::ShowProfileCreationWarning(
     const string16& warning) {
-  DCHECK(!importing_existing_managed_user_);
+  DCHECK_EQ(SUPERVISED_PROFILE_CREATION, profile_creation_type_);
   web_ui()->CallJavascriptFunction("BrowserOptions.showCreateProfileWarning",
                                    base::StringValue(warning));
 }
 
 void BrowserOptionsHandler::ShowProfileCreationSuccess(
     Profile* profile,
-    chrome::HostDesktopType desktop_type,
-    bool is_managed) {
+    chrome::HostDesktopType desktop_type) {
   DCHECK_EQ(profile_path_being_created_.value(), profile->GetPath().value());
   profile_path_being_created_.clear();
+  DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
+  profile_creation_type_ = NO_CREATION_IN_PROGRESS;
   DictionaryValue dict;
   dict.SetString("name",
                  profile->GetPrefs()->GetString(prefs::kProfileName));
   dict.Set("filePath", base::CreateFilePathValue(profile->GetPath()));
+  bool is_managed =
+      profile_creation_type_ == SUPERVISED_PROFILE_CREATION ||
+      profile_creation_type_ == SUPERVISED_PROFILE_IMPORT;
   dict.SetBoolean("isManaged", is_managed);
   web_ui()->CallJavascriptFunction(
       GetJavascriptMethodName(PROFILE_CREATION_SUCCESS), dict);
 
-  // If the new profile is a managed user, instead of opening a new window
+  // If the new profile is a supervised user, instead of opening a new window
   // right away, a confirmation overlay will be shown from the creation
-  // dialog. However, if we are importing an existing managed user we
+  // dialog. However, if we are importing an existing supervised profile or
+  // we are creating a new non-supervised user profile we
   // open the new window directly.
-  if (is_managed && !importing_existing_managed_user_)
+  if (profile_creation_type_ == SUPERVISED_PROFILE_CREATION)
     return;
 
   // Opening the new window must be the last action, after all callbacks
@@ -1374,6 +1414,9 @@ void BrowserOptionsHandler::CancelProfileRegistration(bool user_initiated) {
 
   DCHECK(managed_user_registration_utility_.get());
   managed_user_registration_utility_.reset();
+
+  DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
+  profile_creation_type_ = NO_CREATION_IN_PROGRESS;
 
   // Cancelling registration means the callback passed into
   // RegisterAndInitSync() won't be called, so the cleanup must be done here.
@@ -1830,19 +1873,19 @@ string16 BrowserOptionsHandler::GetProfileCreationErrorMessage(
   switch (error) {
     case SIGNIN_ERROR:
       message_id =
-          importing_existing_managed_user_ ?
+          profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
               IDS_MANAGED_USER_IMPORT_SIGN_IN_ERROR :
               IDS_PROFILES_CREATE_SIGN_IN_ERROR;
       break;
     case REMOTE_ERROR:
       message_id =
-          importing_existing_managed_user_ ?
+          profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
               IDS_MANAGED_USER_IMPORT_REMOTE_ERROR :
               IDS_PROFILES_CREATE_REMOTE_ERROR;
       break;
     case LOCAL_ERROR:
       message_id =
-          importing_existing_managed_user_ ?
+          profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
               IDS_MANAGED_USER_IMPORT_LOCAL_ERROR :
               IDS_PROFILES_CREATE_LOCAL_ERROR;
       break;
@@ -1855,11 +1898,11 @@ std::string BrowserOptionsHandler::GetJavascriptMethodName(
     ProfileCreationStatus status) const {
   switch (status) {
     case PROFILE_CREATION_SUCCESS:
-      return importing_existing_managed_user_ ?
+      return profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
           "BrowserOptions.showManagedUserImportSuccess" :
           "BrowserOptions.showCreateProfileSuccess";
     case PROFILE_CREATION_ERROR:
-      return importing_existing_managed_user_ ?
+      return profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
           "BrowserOptions.showManagedUserImportError" :
           "BrowserOptions.showCreateProfileError";
   }

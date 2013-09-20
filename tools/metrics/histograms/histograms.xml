@@ -10247,54 +10247,60 @@ other types of suffix sets.
   <summary>The pane selected when the user switches panes in the NTP.</summary>
 </histogram>
 
-<histogram name="OAuth2Login.GetOAuth2AccessTokenFailure" enum="GaiaAuthError">
+<histogram name="OAuth2Login.GetOAuth2AccessTokenFailure"
+    enum="GoogleServiceAuthError">
   <summary>
     Failure reason of final OAuth2 access token retreival call during ChromeOS
     login.
   </summary>
 </histogram>
 
-<histogram name="OAuth2Login.GetOAuth2AccessTokenRetry" enum="GaiaAuthError">
+<histogram name="OAuth2Login.GetOAuth2AccessTokenRetry"
+    enum="GoogleServiceAuthError">
   <summary>
     Retry reason of failed OAuth2 access token retreival call call during
     ChromeOS login.
   </summary>
 </histogram>
 
-<histogram name="OAuth2Login.MergeSessionFailure" enum="GaiaAuthError">
+<histogram name="OAuth2Login.MergeSessionFailure" enum="GoogleServiceAuthError">
   <summary>
     Failure reason of final MergeSession call during ChromeOS login.
   </summary>
 </histogram>
 
-<histogram name="OAuth2Login.MergeSessionRetry" enum="GaiaAuthError">
+<histogram name="OAuth2Login.MergeSessionRetry" enum="GoogleServiceAuthError">
   <summary>
     Retry reason of failed MergeSession call during ChromeOS login.
   </summary>
 </histogram>
 
-<histogram name="OAuth2Login.OAuthLoginGaiaCredFailure" enum="GaiaAuthError">
+<histogram name="OAuth2Login.OAuthLoginGaiaCredFailure"
+    enum="GoogleServiceAuthError">
   <summary>
     Failure reason of final OAuthLogin (with SID+LSID) call during ChromeOS
     login.
   </summary>
 </histogram>
 
-<histogram name="OAuth2Login.OAuthLoginGaiaCredRetry" enum="GaiaAuthError">
+<histogram name="OAuth2Login.OAuthLoginGaiaCredRetry"
+    enum="GoogleServiceAuthError">
   <summary>
     Retry reason of failed OAuthLogin (with SID+LSID) call during ChromeOS
     login.
   </summary>
 </histogram>
 
-<histogram name="OAuth2Login.OAuthLoginUberTokenFailure" enum="GaiaAuthError">
+<histogram name="OAuth2Login.OAuthLoginUberTokenFailure"
+    enum="GoogleServiceAuthError">
   <summary>
     Failure reason of final OAuthLogin (with uber token) call during ChromeOS
     login.
   </summary>
 </histogram>
 
-<histogram name="OAuth2Login.OAuthLoginUberTokenRetry" enum="GaiaAuthError">
+<histogram name="OAuth2Login.OAuthLoginUberTokenRetry"
+    enum="GoogleServiceAuthError">
   <summary>
     Retry reason of failed OAuthLogin (with uber token) call during ChromeOS
     login.
@@ -12800,6 +12806,39 @@ other types of suffix sets.
     'Create' until the creation either failed with a local error (see
     Profile.CreateResult), was canceled (also recorded in
     Profile.CreateTimeCanceledNoTimeout), or completed successfully.
+  </summary>
+</histogram>
+
+<histogram name="Profile.SupervisedProfileCreateError"
+    enum="GoogleServiceAuthError">
+  <summary>
+    The error code generated in the final step (registration step) of creating a
+    new supervised profile.
+  </summary>
+</histogram>
+
+<histogram name="Profile.SupervisedProfileImportError"
+    enum="GoogleServiceAuthError">
+  <summary>
+    The error code generated in the final step (registration step) of importing
+    a supervised profile.
+  </summary>
+</histogram>
+
+<histogram name="Profile.SupervisedProfileTotalCreateTime" units="milliseconds">
+  <summary>
+    Time elapsed from when the handler received the message that a user clicked
+    'Create' to create a new supervised user profile until the registration ends
+    either successfully or with a failure (both recorded in
+    Profile.SupervisedProfileCreateResult).
+  </summary>
+</histogram>
+
+<histogram name="Profile.SupervisedProfileTotalImportTime" units="milliseconds">
+  <summary>
+    Time elapsed from when the handler received the message that a user clicked
+    'Import supervised user' until the registration ends either successfully or
+    with a failure (both recorded in Profile.SupervisedProfileImportResult).
   </summary>
 </histogram>
 
@@ -21482,22 +21521,6 @@ other types of suffix sets.
   <int value="8" label="win16">
     win16 hosts: SuperTCP or NetManage Chameleon
   </int>
-</enum>
-
-<enum name="GaiaAuthError" type="int">
-  <summary>Google service authentication error cause.</summary>
-  <int value="0" label="NONE"/>
-  <int value="1" label="INVALID_GAIA_CREDENTIALS"/>
-  <int value="2" label="USER_NOT_SIGNED_UP"/>
-  <int value="3" label="CONNECTION_FAILED"/>
-  <int value="4" label="CAPTCHA_REQUIRED"/>
-  <int value="5" label="ACCOUNT_DELETED"/>
-  <int value="6" label="ACCOUNT_DISABLED"/>
-  <int value="7" label="SERVICE_UNAVAILABLE"/>
-  <int value="8" label="TWO_FACTOR"/>
-  <int value="9" label="REQUEST_CANCELED"/>
-  <int value="10" label="HOSTED_NOT_ALLOWED"/>
-  <int value="11" label="NUM_STATES"/>
 </enum>
 
 <enum name="GaiaSessionRestoreOutcome" type="int">

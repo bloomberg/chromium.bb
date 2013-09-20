@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -29,7 +30,6 @@
 class AutocompleteController;
 class CloudPrintSetupHandler;
 class CustomHomePagesTableModel;
-class GoogleServiceAuthError;
 class ManagedUserRegistrationUtility;
 class TemplateURLService;
 
@@ -82,6 +82,16 @@ class BrowserOptionsHandler
     REMOTE_ERROR,
     LOCAL_ERROR,
     SIGNIN_ERROR
+  };
+
+  // Represents the type of the in progress profile creation operation.
+  // It is used to map the type of the profile creation operation to the
+  // correct UMA metric name.
+  enum ProfileCreationOperationType {
+    SUPERVISED_PROFILE_CREATION,
+    SUPERVISED_PROFILE_IMPORT,
+    NON_SUPERVISED_PROFILE_CREATION,
+    NO_CREATION_IN_PROGRESS,
   };
 
   // content::NotificationObserver implementation.
@@ -173,8 +183,7 @@ class BrowserOptionsHandler
   // the management server.
   void RegisterManagedUser(chrome::HostDesktopType desktop_type,
                            const std::string& managed_user_id,
-                           Profile* new_profile,
-                           Profile::CreateStatus status);
+                           Profile* new_profile);
 
   // Called back with the result of the managed user registration.
   void OnManagedUserRegistered(chrome::HostDesktopType desktop_type,
@@ -184,11 +193,20 @@ class BrowserOptionsHandler
   // Records UMA histograms relevant to profile creation.
   void RecordProfileCreationMetrics(Profile::CreateStatus status);
 
-  // Updates the UI as the final task after a new profile has been created.
-  void ShowProfileCreationFeedback(
-      chrome::HostDesktopType desktop_type,
-      Profile* profile,
-      Profile::CreateStatus status);
+  // Records UMA histograms relevant to supervised user profiles
+  // creation and registration.
+  void RecordSupervisedProfileCreationMetrics(
+      GoogleServiceAuthError::State error_state);
+
+  // If a local error occurs during profile creation, then show an appropriate
+  // error message. However, if profile creation succeeded and the
+  // profile being created/imported is a supervised user profile,
+  // then proceed with the registration step. Otherwise, update the UI
+  // as the final task after a new profile has been created.
+  void FinalizeProfileCreation(chrome::HostDesktopType desktop_type,
+                               const std::string& managed_user_id,
+                               Profile* profile,
+                               Profile::CreateStatus status);
 
   // Updates the UI to show an error when creating a profile.
   void ShowProfileCreationError(Profile* profile, const string16& error);
@@ -198,8 +216,11 @@ class BrowserOptionsHandler
 
   // Updates the UI to indicate success when creating a profile.
   void ShowProfileCreationSuccess(Profile* profile,
-                                  chrome::HostDesktopType desktop_type,
-                                  bool is_managed);
+                                  chrome::HostDesktopType desktop_type);
+
+  void HandleProfileCreationSuccess(Profile* profile,
+                                    const std::string& managed_user_id,
+                                    chrome::HostDesktopType desktop_type);
 
   // Deletes the given profile. Expects one argument:
   //   0: profile file path (string)
@@ -389,11 +410,9 @@ class BrowserOptionsHandler
 
   scoped_ptr<ManagedUserRegistrationUtility> managed_user_registration_utility_;
 
-  // Indicates if the in progress user creation operation is an import operation
-  // for an existing managed user or a new user (either a new managed user or
-  // a new normal user) creation one.
-  // The value is only relevant while we are creating/importing a user.
-  bool importing_existing_managed_user_;
+  // Indicates the type of the in progress profile creation operation.
+  // The value is only relevant while we are creating/importing a profile.
+  ProfileCreationOperationType profile_creation_type_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserOptionsHandler);
 };
