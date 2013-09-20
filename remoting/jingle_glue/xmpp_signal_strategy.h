@@ -21,9 +21,10 @@
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
 
-namespace jingle_glue {
-class ResolvingClientSocketFactory;
-}  // namespace jingle_glue
+namespace net {
+class ClientSocketFactory;
+class URLRequestContextGetter;
+}  // namespace net
 
 namespace talk_base {
 class TaskRunner;
@@ -53,7 +54,8 @@ class XmppSignalStrategy : public base::NonThreadSafe,
   };
 
   XmppSignalStrategy(
-      scoped_ptr<jingle_glue::ResolvingClientSocketFactory> socket_factory,
+      net::ClientSocketFactory* socket_factory,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       const XmppServerConfig& xmpp_server_config);
   virtual ~XmppSignalStrategy();
 
@@ -91,7 +93,8 @@ class XmppSignalStrategy : public base::NonThreadSafe,
 
   void SendKeepAlive();
 
-  scoped_ptr<jingle_glue::ResolvingClientSocketFactory> socket_factory_;
+  net::ClientSocketFactory* socket_factory_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   std::string resource_name_;
   scoped_ptr<talk_base::TaskRunner> task_runner_;
   buzz::XmppClient* xmpp_client_;

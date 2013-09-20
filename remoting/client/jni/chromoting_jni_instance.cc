@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "jingle/glue/xmpp_client_socket_factory.h"
 #include "net/socket/client_socket_factory.h"
 #include "remoting/client/audio_player.h"
 #include "remoting/client/jni/android_keymap.h"
@@ -256,11 +255,9 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
 
   view_->set_frame_producer(client_->GetFrameProducer());
 
-  scoped_ptr<jingle_glue::ResolvingClientSocketFactory> socket_factory(
-      new jingle_glue::XmppClientSocketFactory(
-          net::ClientSocketFactory::GetDefaultFactory(), net::SSLConfig(),
-          jni_runtime_->url_requester(), false));
-  signaling_.reset(new XmppSignalStrategy(socket_factory.Pass(), xmpp_config_));
+  signaling_.reset(new XmppSignalStrategy(
+      net::ClientSocketFactory::GetDefaultFactory(),
+      jni_runtime_->url_requester(), xmpp_config_));
 
   network_settings_.reset(new NetworkSettings(
       NetworkSettings::NAT_TRAVERSAL_ENABLED));
