@@ -83,6 +83,9 @@ race:webrtc::VP8EncoderImpl::GetEncodedPartitions
 race:webrtc::VP8EncoderImpl::Encode
 race:webrtc::ViEEncoder::DeliverFrame
 
+# http://crbug.com/244856
+race:AutoPulseLock
+
 # http://crbug.com/246968
 race:webrtc::VideoCodingModuleImpl::RegisterPacketRequestCallback
 
@@ -128,3 +131,4 @@ race:content::WebRtcAudioCapturer::SetCapturerSource
 
 # http://crbug.com/290964
 race:PostponeInterruptsScope
+
