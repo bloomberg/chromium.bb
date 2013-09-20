@@ -1199,7 +1199,6 @@ crbug.com/280554 css3/filters/custom/custom-filter-clamp-css-mix-color.html [ Im
 crbug.com/280658  [ Win7 ] inspector-protocol/layers/get-layers.html [ Pass Failure ]
 crbug.com/280342 [ Win Release ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 crbug.com/280698 inspector/styles/multiple-imports-edit-crash.html [ Pass Failure ]
-crbug.com/280932 [ Linux Mac Debug ] inspector/elements/elements-panel-limited-children.html [ Failure Pass ]
 crbug.com/248938 [ SnowLeopard  Debug ] virtual/threaded/animations/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
 crbug.com/281911 [ Debug ] virtual/web-animations-css/animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/281911 [ XP Release ] virtual/web-animations-css/animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]

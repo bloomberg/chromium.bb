@@ -369,7 +369,7 @@ InspectorTest.dumpStyleTreeItem = function(treeItem, prefix, depth)
     }
 };
 
-InspectorTest.dumpElementsTree = function(rootNode, depth)
+InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
 {
     function beautify(element)
     {
@@ -420,7 +420,11 @@ InspectorTest.dumpElementsTree = function(rootNode, depth)
                 expander = "  ";
 
             var userProperties = userPropertyDataDump(treeItem);
-            InspectorTest.addResult(prefix + expander + beautify(treeItem.listItemElement) + userProperties);
+            var value = prefix + expander + beautify(treeItem.listItemElement) + userProperties;
+            if (resultsArray)
+                resultsArray.push(value);
+            else
+                InspectorTest.addResult(value);
         }
 
         if (!treeItem.expanded)

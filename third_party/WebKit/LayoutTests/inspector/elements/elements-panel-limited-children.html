@@ -17,6 +17,7 @@ function insertNode()
 
 function test()
 {
+    var results = [];
     var dataTreeElement;
     WebInspector.showPanel("elements");
     InspectorTest.nodeWithId("data", step1);
@@ -32,25 +33,31 @@ function test()
 
     function step2()
     {
-        InspectorTest.addResult("=========== Loaded 5 children ===========");
-        InspectorTest.dumpElementsTree();
+        results.push("=========== Loaded 5 children ===========");
+        dumpElementsTree();
         InspectorTest.addSniffer(WebInspector.ElementsTreeUpdater.prototype, "_updateModifiedNodes", step3);
         InspectorTest.evaluateInPage("insertNode()");
     }
 
     function step3()
     {
-        InspectorTest.addResult("=========== Modified children ===========");
-        InspectorTest.dumpElementsTree();
+        results.push("=========== Modified children ===========");
+        dumpElementsTree();
         dataTreeElement.handleLoadAllChildren();
         InspectorTest.runAfterPendingDispatches(step4);
     }
 
     function step4()
     {
-        InspectorTest.addResult("=========== Loaded all children ===========");
-        InspectorTest.dumpElementsTree();
+        results.push("=========== Loaded all children ===========");
+        dumpElementsTree();
+        InspectorTest.addResults(results);
         InspectorTest.completeTest();
+    }
+
+    function dumpElementsTree()
+    {
+        InspectorTest.dumpElementsTree(null, 0, results);
     }
 }
 </script>
