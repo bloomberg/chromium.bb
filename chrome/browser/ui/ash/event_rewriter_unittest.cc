@@ -26,6 +26,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/mock_xkeyboard.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/x11_types.h"
 
 namespace {
 
@@ -73,7 +74,7 @@ std::string GetExpectedResultAsString(ui::KeyboardCode ui_keycode,
 class EventRewriterTest : public testing::Test {
  public:
   EventRewriterTest()
-      : display_(ui::GetXDisplay()),
+      : display_(gfx::GetXDisplay()),
         keycode_a_(XKeysymToKeycode(display_, XK_a)),
         keycode_alt_l_(XKeysymToKeycode(display_, XK_Alt_L)),
         keycode_alt_r_(XKeysymToKeycode(display_, XK_Alt_R)),
