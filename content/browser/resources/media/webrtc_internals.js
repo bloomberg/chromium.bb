@@ -225,6 +225,8 @@ function updateAllPeerConnections(data) {
     var peerConnection = addPeerConnection(data[i]);
 
     var log = data[i].log;
+    if (!log)
+      continue;
     for (var j = 0; j < log.length; ++j) {
       addPeerConnectionUpdate(peerConnection, log[j]);
     }
