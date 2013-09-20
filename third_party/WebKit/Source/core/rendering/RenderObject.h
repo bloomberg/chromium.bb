@@ -139,7 +139,8 @@ const int showTreeCharacterOffset = 39;
 // Base class for all rendering tree objects.
 class RenderObject : public ImageResourceClient {
     friend class RenderBlock;
-    friend class RenderLayer;
+    friend class RenderLayer; // For setParent.
+    friend class RenderLayerScrollableArea; // For setParent.
     friend class RenderObjectChildList;
 public:
     // Anonymous objects should pass the document as their node, and they will then automatically be

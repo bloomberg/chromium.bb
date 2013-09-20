@@ -60,6 +60,7 @@ enum ScrollOffsetClamping {
 
 class RenderLayer;
 class RenderLayerModelObject;
+class RenderScrollbarPart;
 
 class RenderLayerScrollableArea FINAL : public ScrollableArea {
     // FIXME: Remove once the bits from RenderLayer have been moved here.
@@ -119,7 +120,10 @@ public:
     void updateAfterLayout();
     void updateAfterStyleChange(const RenderStyle*);
 
-    bool hasScrollbar() { return m_hBar || m_vBar; }
+    bool hasScrollbar() const { return m_hBar || m_vBar; }
+
+    // FIXME: This should be removed.
+    bool hasScrollCorner() const { return m_scrollCorner; }
 
 private:
     bool hasHorizontalOverflow() const;
@@ -156,7 +160,9 @@ private:
     int horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
 
     void positionOverflowControls(const IntSize& offsetFromRoot);
+    void updateScrollCornerStyle();
     void paintOverflowControls(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect, bool paintingOverlayControls);
+    void paintScrollCorner(GraphicsContext*, const IntPoint&, const IntRect& damageRect);
     bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint, const IntRect&);
 
     RenderLayerModelObject* renderer() const;
@@ -175,6 +181,9 @@ private:
     // For areas with overflow, we have a pair of scrollbars.
     RefPtr<Scrollbar> m_hBar;
     RefPtr<Scrollbar> m_vBar;
+
+    // Renderers to hold our custom scroll corner.
+    RenderScrollbarPart* m_scrollCorner;
 };
 
 } // Namespace WebCore

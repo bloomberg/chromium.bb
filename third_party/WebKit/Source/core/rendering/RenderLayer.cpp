@@ -158,7 +158,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_staticInlinePosition(0)
     , m_staticBlockPosition(0)
     , m_reflection(0)
-    , m_scrollCorner(0)
     , m_resizer(0)
     , m_enclosingPaginationLayer(0)
     , m_forceNeedsCompositedScrolling(DoNotForceCompositedScrolling)
@@ -212,8 +211,6 @@ RenderLayer::~RenderLayer()
 
     clearBacking(true);
 
-    if (m_scrollCorner)
-        m_scrollCorner->destroy();
     if (m_resizer)
         m_resizer->destroy();
 }
@@ -2712,13 +2709,6 @@ IntPoint RenderLayer::lastKnownMousePosition() const
 
 void RenderLayer::invalidateScrollCornerRect(const IntRect& rect)
 {
-    if (GraphicsLayer* layer = layerForScrollCorner()) {
-        layer->setNeedsDisplayInRect(rect);
-        return;
-    }
-
-    if (m_scrollCorner)
-        m_scrollCorner->repaintRectangle(rect);
     if (m_resizer)
         m_resizer->repaintRectangle(rect);
 }
@@ -2760,7 +2750,7 @@ IntSize RenderLayer::offsetFromResizeCorner(const IntPoint& absolutePoint) const
 
 bool RenderLayer::hasOverflowControls() const
 {
-    return m_scrollableArea->hasScrollbar() || m_scrollCorner || renderer()->style()->resize() != RESIZE_NONE;
+    return m_scrollableArea->hasScrollbar() || m_scrollableArea->hasScrollCorner() || renderer()->style()->resize() != RESIZE_NONE;
 }
 
 void RenderLayer::positionOverflowControls(const IntSize& offsetFromRoot)
@@ -2775,10 +2765,6 @@ void RenderLayer::positionOverflowControls(const IntSize& offsetFromRoot)
     m_scrollableArea->positionOverflowControls(offsetFromRoot);
 
     const IntRect borderBox = box->pixelSnappedBorderBoxRect();
-    const IntRect& scrollCorner = scrollCornerRect();
-    IntRect absBounds(borderBox.location() + offsetFromRoot, borderBox.size());
-    if (m_scrollCorner)
-        m_scrollCorner->setFrameRect(scrollCorner);
     if (m_resizer)
         m_resizer->setFrameRect(resizerCornerRect(borderBox, ResizerForPointer));
 
@@ -2848,38 +2834,13 @@ void RenderLayer::paintOverflowControls(GraphicsContext* context, const IntPoint
     if (layerForScrollCorner())
         return;
 
-    // We fill our scroll corner with white if we have a scrollbar that doesn't run all the way up to the
-    // edge of the box.
-    paintScrollCorner(context, adjustedPaintOffset, damageRect);
-
     // Paint our resizer last, since it sits on top of the scroll corner.
     paintResizer(context, adjustedPaintOffset, damageRect);
 }
 
 void RenderLayer::paintScrollCorner(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect)
 {
-    RenderBox* box = renderBox();
-    ASSERT(box);
-
-    IntRect absRect = scrollCornerRect();
-    absRect.moveBy(paintOffset);
-    if (!absRect.intersects(damageRect))
-        return;
-
-    if (context->updatingControlTints()) {
-        updateScrollCornerStyle();
-        return;
-    }
-
-    if (m_scrollCorner) {
-        m_scrollCorner->paintIntoRect(context, paintOffset, absRect);
-        return;
-    }
-
-    // We don't want to paint white if we have overlay scrollbars, since we need
-    // to see what is behind it.
-    if (!hasOverlayScrollbars())
-        context->fillRect(absRect, Color::white);
+    m_scrollableArea->paintScrollCorner(context, paintOffset, damageRect);
 }
 
 void RenderLayer::drawPlatformResizerImage(GraphicsContext* context, IntRect resizerCornerRect)
@@ -2978,8 +2939,6 @@ bool RenderLayer::hitTestOverflowControls(HitTestResult& result, const IntPoint&
         if (resizeControlRect.contains(localPoint))
             return true;
     }
-
-    // FIXME: We should hit test the m_scrollCorner and pass it back through the result.
 
     return m_scrollableArea->hitTestOverflowControls(result, localPoint, resizeControlRect);
 }
@@ -5650,7 +5609,6 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
         updateReflectionStyle();
     }
 
-    updateScrollCornerStyle();
     updateResizerStyle();
 
     updateDescendantDependentFlags();
@@ -5729,22 +5687,6 @@ void RenderLayer::updateScrollableAreaSet(bool hasOverflow)
             compositor()->setNeedsUpdateCompositingRequirementsState();
         else
             setNeedsCompositedScrolling(false);
-    }
-}
-
-void RenderLayer::updateScrollCornerStyle()
-{
-    RenderObject* actualRenderer = rendererForScrollbar(renderer());
-    RefPtr<RenderStyle> corner = renderer()->hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), actualRenderer->style()) : PassRefPtr<RenderStyle>(0);
-    if (corner) {
-        if (!m_scrollCorner) {
-            m_scrollCorner = RenderScrollbarPart::createAnonymous(&renderer()->document());
-            m_scrollCorner->setParent(renderer());
-        }
-        m_scrollCorner->setStyle(corner.release());
-    } else if (m_scrollCorner) {
-        m_scrollCorner->destroy();
-        m_scrollCorner = 0;
     }
 }
 

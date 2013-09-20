@@ -827,7 +827,6 @@ private:
     LayoutPoint absoluteToContents(const LayoutPoint&) const;
 
     void positionOverflowControls(const IntSize&);
-    void updateScrollCornerStyle();
     void updateResizerStyle();
 
     void drawPlatformResizerImage(GraphicsContext*, IntRect resizerCornerRect);
@@ -968,8 +967,7 @@ protected:
     // May ultimately be extended to many replicas (with their own paint order).
     RenderReplica* m_reflection;
 
-    // Renderers to hold our custom scroll corner and resizer.
-    RenderScrollbarPart* m_scrollCorner;
+    // Renderers to hold our custom resizer.
     RenderScrollbarPart* m_resizer;
 
     // Pointer to the enclosing RenderLayer that caused us to be paginated. It is 0 if we are not paginated.

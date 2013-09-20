@@ -44,6 +44,7 @@
 #include "config.h"
 #include "core/rendering/RenderLayer.h"
 
+#include "core/css/PseudoStyleRequest.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -56,6 +57,7 @@
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderScrollbar.h"
+#include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderView.h"
 
 namespace WebCore {
@@ -64,6 +66,7 @@ RenderLayerScrollableArea::RenderLayerScrollableArea(RenderLayer* layer)
     : m_layer(layer)
     , m_scrollDimensionsDirty(true)
     , m_inOverflowRelayout(false)
+    , m_scrollCorner(0)
 {
     ScrollableArea::setConstrainsScrollingToContentEdge(false);
 
@@ -100,6 +103,9 @@ RenderLayerScrollableArea::~RenderLayerScrollableArea()
 
     destroyScrollbar(HorizontalScrollbar);
     destroyScrollbar(VerticalScrollbar);
+
+    if (m_scrollCorner)
+        m_scrollCorner->destroy();
 }
 
 ScrollableArea* RenderLayerScrollableArea::enclosingScrollableArea() const
@@ -166,6 +172,13 @@ void RenderLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, co
 
 void RenderLayerScrollableArea::invalidateScrollCornerRect(const IntRect& rect)
 {
+    if (GraphicsLayer* layer = layerForScrollCorner()) {
+        layer->setNeedsDisplayInRect(rect);
+        return;
+    }
+
+    if (m_scrollCorner)
+        m_scrollCorner->repaintRectangle(rect);
     m_layer->invalidateScrollCornerRect(rect);
 }
 
@@ -586,6 +599,8 @@ void RenderLayerScrollableArea::updateAfterStyleChange(const RenderStyle* oldSty
         m_hBar->styleChanged();
     if (m_vBar)
         m_vBar->styleChanged();
+
+    updateScrollCornerStyle();
 }
 
 IntSize RenderLayerScrollableArea::clampScrollOffset(const IntSize& scrollOffset) const
@@ -778,6 +793,26 @@ void RenderLayerScrollableArea::positionOverflowControls(const IntSize& offsetFr
         hBarRect.move(offsetFromRoot);
         horizontalScrollbar->setFrameRect(hBarRect);
     }
+
+    const IntRect& scrollCorner = scrollCornerRect();
+    if (m_scrollCorner)
+        m_scrollCorner->setFrameRect(scrollCorner);
+}
+
+void RenderLayerScrollableArea::updateScrollCornerStyle()
+{
+    RenderObject* actualRenderer = rendererForScrollbar(renderer());
+    RefPtr<RenderStyle> corner = renderer()->hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), actualRenderer->style()) : PassRefPtr<RenderStyle>(0);
+    if (corner) {
+        if (!m_scrollCorner) {
+            m_scrollCorner = RenderScrollbarPart::createAnonymous(&renderer()->document());
+            m_scrollCorner->setParent(renderer());
+        }
+        m_scrollCorner->setStyle(corner.release());
+    } else if (m_scrollCorner) {
+        m_scrollCorner->destroy();
+        m_scrollCorner = 0;
+    }
 }
 
 // FIXME: Move m_cachedOverlayScrollbarOffset.
@@ -818,6 +853,42 @@ void RenderLayerScrollableArea::paintOverflowControls(GraphicsContext* context, 
         m_hBar->paint(context, damageRect);
     if (m_vBar && !layerForVerticalScrollbar())
         m_vBar->paint(context, damageRect);
+
+    if (layerForScrollCorner())
+        return;
+
+    // We fill our scroll corner with white if we have a scrollbar that doesn't run all the way up to the
+    // edge of the box.
+    IntPoint adjustedPaintOffset = paintOffset;
+    if (paintingOverlayControls)
+        adjustedPaintOffset = m_layer->m_cachedOverlayScrollbarOffset;
+
+    paintScrollCorner(context, adjustedPaintOffset, damageRect);
+}
+
+void RenderLayerScrollableArea::paintScrollCorner(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect)
+{
+    ASSERT(renderer()->isBox());
+
+    IntRect absRect = scrollCornerRect();
+    absRect.moveBy(paintOffset);
+    if (!absRect.intersects(damageRect))
+        return;
+
+    if (context->updatingControlTints()) {
+        updateScrollCornerStyle();
+        return;
+    }
+
+    if (m_scrollCorner) {
+        m_scrollCorner->paintIntoRect(context, paintOffset, absRect);
+        return;
+    }
+
+    // We don't want to paint white if we have overlay scrollbars, since we need
+    // to see what is behind it.
+    if (!hasOverlayScrollbars())
+        context->fillRect(absRect, Color::white);
 }
 
 bool RenderLayerScrollableArea::hitTestOverflowControls(HitTestResult& result, const IntPoint& localPoint, const IntRect& resizeControlRect)
@@ -847,6 +918,8 @@ bool RenderLayerScrollableArea::hitTestOverflowControls(HitTestResult& result, c
             return true;
         }
     }
+
+    // FIXME: We should hit test the m_scrollCorner and pass it back through the result.
 
     return false;
 }
