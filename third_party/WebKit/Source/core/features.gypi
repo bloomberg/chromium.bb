@@ -63,7 +63,6 @@
           'ENABLE_MEDIA_CAPTURE=1',
           'ENABLE_ORIENTATION_EVENTS=1',
           'ENABLE_NAVIGATOR_CONTENT_UTILS=0',
-          'WTF_USE_NATIVE_FULLSCREEN_VIDEO=1',
         ],
         'enable_touch_icon_loading': 1,
       }, { # OS!="android"
