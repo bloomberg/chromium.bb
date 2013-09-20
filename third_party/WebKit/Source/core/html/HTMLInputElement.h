@@ -121,7 +121,6 @@ public:
 
     HTMLElement* containerElement() const;
     virtual HTMLElement* innerTextElement() const;
-    HTMLElement* editingViewPortElement() const;
     HTMLElement* passwordGeneratorButtonElement() const;
 
     bool checked() const { return m_isChecked; }

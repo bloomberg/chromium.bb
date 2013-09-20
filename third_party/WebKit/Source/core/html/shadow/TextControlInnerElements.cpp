@@ -73,7 +73,9 @@ EditingViewPortElement::EditingViewPortElement(Document& document)
 
 PassRefPtr<EditingViewPortElement> EditingViewPortElement::create(Document& document)
 {
-    return adoptRef(new EditingViewPortElement(document));
+    RefPtr<EditingViewPortElement> element = adoptRef(new EditingViewPortElement(document));
+    element->setAttribute(idAttr, ShadowElementNames::editingViewPort());
+    return element.release();
 }
 
 PassRefPtr<RenderStyle> EditingViewPortElement::customStyleForRenderer()

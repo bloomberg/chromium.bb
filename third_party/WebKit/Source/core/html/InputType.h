@@ -168,7 +168,6 @@ public:
     virtual void destroyShadowSubtree();
 
     virtual HTMLElement* containerElement() const { return 0; }
-    virtual HTMLElement* editingViewPortElement() const { return 0; }
     virtual HTMLElement* innerTextElement() const { return 0; }
     virtual HTMLElement* passwordGeneratorButtonElement() const { return 0; }
 

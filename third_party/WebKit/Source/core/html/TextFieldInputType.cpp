@@ -238,9 +238,8 @@ bool TextFieldInputType::shouldHaveSpinButton() const
 void TextFieldInputType::createShadowSubtree()
 {
     ASSERT(element()->shadow());
-
-    ASSERT(!m_innerText);
-    ASSERT(!m_editingViewPort);
+    ShadowRoot* shadowRoot = element()->userAgentShadowRoot();
+    ASSERT(!shadowRoot->hasChildNodes());
 
     Document& document = element()->document();
     bool shouldHaveSpinButton = this->shouldHaveSpinButton();
@@ -248,18 +247,17 @@ void TextFieldInputType::createShadowSubtree()
 
     m_innerText = TextControlInnerTextElement::create(document);
     if (!createsContainer) {
-        element()->userAgentShadowRoot()->appendChild(m_innerText);
+        shadowRoot->appendChild(m_innerText);
         return;
     }
 
-    ShadowRoot* shadowRoot = element()->userAgentShadowRoot();
     m_container = TextControlInnerContainer::create(document);
     m_container->setPart(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
     shadowRoot->appendChild(m_container);
 
-    m_editingViewPort = EditingViewPortElement::create(document);
-    m_editingViewPort->appendChild(m_innerText);
-    m_container->appendChild(m_editingViewPort);
+    RefPtr<EditingViewPortElement> editingViewPort = EditingViewPortElement::create(document);
+    editingViewPort->appendChild(m_innerText);
+    m_container->appendChild(editingViewPort.release());
 
 #if ENABLE(INPUT_SPEECH)
     if (element()->isSpeechEnabled())
@@ -275,11 +273,6 @@ HTMLElement* TextFieldInputType::containerElement() const
     return m_container.get();
 }
 
-HTMLElement* TextFieldInputType::editingViewPortElement() const
-{
-    return m_editingViewPort.get();
-}
-
 HTMLElement* TextFieldInputType::innerTextElement() const
 {
     ASSERT(m_innerText);
@@ -290,7 +283,6 @@ void TextFieldInputType::destroyShadowSubtree()
 {
     InputType::destroyShadowSubtree();
     m_innerText.clear();
-    m_editingViewPort.clear();
     if (SpinButtonElement* spinButton = spinButtonElement())
         spinButton->removeSpinButtonOwner();
     m_container.clear();

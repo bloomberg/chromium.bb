@@ -91,7 +91,7 @@ void SearchInputType::createShadowSubtree()
 {
     TextFieldInputType::createShadowSubtree();
     HTMLElement* container = containerElement();
-    HTMLElement* viewPort = editingViewPortElement();
+    Element* viewPort = element()->userAgentShadowRoot()->getElementById(ShadowElementNames::editingViewPort());
     ASSERT(container);
     ASSERT(viewPort);
 

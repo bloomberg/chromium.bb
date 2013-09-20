@@ -53,6 +53,11 @@ RenderTextControlSingleLine::~RenderTextControlSingleLine()
 {
 }
 
+inline Element* RenderTextControlSingleLine::editingViewPortElement() const
+{
+    return inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::editingViewPort());
+}
+
 inline HTMLElement* RenderTextControlSingleLine::innerSpinButtonElement() const
 {
     return toHTMLElement(inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::spinButton()));
@@ -60,7 +65,7 @@ inline HTMLElement* RenderTextControlSingleLine::innerSpinButtonElement() const
 
 RenderStyle* RenderTextControlSingleLine::textBaseStyle() const
 {
-    HTMLElement* viewPort = editingViewPortElement();
+    Element* viewPort = editingViewPortElement();
     return viewPort ? viewPort->renderer()->style() : style();
 }
 
@@ -233,7 +238,7 @@ void RenderTextControlSingleLine::styleDidChange(StyleDifference diff, const Ren
 
     // We may have set the width and the height in the old style in layout().
     // Reset them now to avoid getting a spurious layout hint.
-    HTMLElement* viewPort = editingViewPortElement();
+    Element* viewPort = editingViewPortElement();
     if (RenderObject* viewPortRenderer = viewPort ? viewPort->renderer() : 0) {
         viewPortRenderer->style()->setHeight(Length());
         viewPortRenderer->style()->setWidth(Length());

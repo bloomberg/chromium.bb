@@ -49,7 +49,6 @@ protected:
     void handleKeydownEventForSpinButton(KeyboardEvent*);
 
     virtual HTMLElement* containerElement() const OVERRIDE;
-    virtual HTMLElement* editingViewPortElement() const OVERRIDE;
     virtual HTMLElement* innerTextElement() const OVERRIDE;
 
 protected:
@@ -98,7 +97,6 @@ private:
     SpinButtonElement* spinButtonElement() const;
 
     RefPtr<HTMLElement> m_container;
-    RefPtr<HTMLElement> m_editingViewPort;
     RefPtr<HTMLElement> m_innerText;
 };
 

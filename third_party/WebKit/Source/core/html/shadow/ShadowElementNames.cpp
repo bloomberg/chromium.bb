@@ -53,6 +53,12 @@ const AtomicString& clearButton()
     return name;
 }
 
+const AtomicString& editingViewPort()
+{
+    DEFINE_STATIC_LOCAL(AtomicString, name, ("editing-view-port", AtomicString::ConstructFromLiteral));
+    return name;
+}
+
 const AtomicString& pickerIndicator()
 {
     DEFINE_STATIC_LOCAL(AtomicString, name, ("picker", AtomicString::ConstructFromLiteral));
