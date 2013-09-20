@@ -125,7 +125,10 @@ bool GLContextEGL::GetTotalGpuMemory(size_t* bytes) {
       else
         limit_bytes = physical_memory_mb / 16;
     } else {
-      limit_bytes = physical_memory_mb / 64;
+      // Low-end devices have 512MB or less memory by definition
+      // so we hard code the limit rather than relying on the heuristics
+      // above. Low-end devices use 4444 textures so we can use a lower limit.
+      limit_bytes = 8;
     }
     limit_bytes = limit_bytes * 1024 * 1024;
   }
