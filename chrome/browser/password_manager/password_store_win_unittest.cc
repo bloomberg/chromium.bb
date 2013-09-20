@@ -150,12 +150,12 @@ class PasswordStoreWinTest : public testing::Test {
   // PasswordStore, WDS schedule work on this thread.
   content::TestBrowserThread db_thread_;
 
-  scoped_ptr<LoginDatabase> login_db_;
+  base::ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<LoginDatabase> login_db_;
   scoped_refptr<WebDataService> wds_;
   scoped_refptr<WebDatabaseService> wdbs_;
   scoped_refptr<PasswordStore> store_;
-  base::ScopedTempDir temp_dir_;
 };
 
 ACTION(STLDeleteElements0) {
