@@ -10,17 +10,6 @@ import verifier
 class RegistryVerifier(verifier.Verifier):
   """Verifies that the current registry matches the specified criteria."""
 
-  def Verify(self, entries, variable_expander):
-    """Overridden from verifier.Verifier.
-
-    Args:
-      entries: A dictionary whose keys are registry keys and values are
-          expectation dictionaries.
-      variable_expander: A VariableExpander object.
-    """
-    for key, expectation in entries.iteritems():
-      self._VerifyRegistryEntry(key, expectation, variable_expander)
-
   def _RootKeyConstant(self, root_key):
     """Converts a root registry key string into a _winreg.HKEY_* constant."""
     root_key_mapping = {
@@ -50,14 +39,15 @@ class RegistryVerifier(verifier.Verifier):
       raise KeyError("Unknown registry value type '%s'" % value_type)
     return value_type_mapping[value_type]
 
-  def _VerifyRegistryEntry(self, key, expectation, variable_expander):
-    """Verifies a registry key according to the |expectation|.
+  def _VerifyExpectation(self, expectation_name, expectation,
+                         variable_expander):
+    """Overridden from verifier.Verifier.
 
-    The |expectation| specifies whether or not the registry key should exist
-    (under 'exists') and optionally specifies expected 'values' for the key.
+    Verifies a registry key according to the |expectation|.
 
     Args:
-      key: Name of the registry key. It is expanded using Expand.
+      expectation_name: The registry key being verified. It is expanded using
+          Expand.
       expectation: A dictionary with the following keys and values:
           'exists' a boolean indicating whether the registry key should exist.
           'values' (optional) a dictionary where each key is a registry value
@@ -68,8 +58,8 @@ class RegistryVerifier(verifier.Verifier):
                       string, it is expanded using Expand.
       variable_expander: A VariableExpander object.
     """
-    expanded_key = variable_expander.Expand(key)
-    root_key, sub_key = expanded_key.split('\\', 1)
+    key = variable_expander.Expand(expectation_name)
+    root_key, sub_key = key.split('\\', 1)
     try:
       # Query the Windows registry for the registry key. It will throw a
       # WindowsError if the key doesn't exist.
@@ -78,10 +68,10 @@ class RegistryVerifier(verifier.Verifier):
     except WindowsError:
       # Key doesn't exist. See that it matches the expectation.
       assert not expectation['exists'], ('Registry key %s is missing' %
-                                         expanded_key)
+                                         key)
       return
     # The key exists, see that it matches the expectation.
-    assert expectation['exists'], ('Registry key %s exists' % expanded_key)
+    assert expectation['exists'], ('Registry key %s exists' % key)
 
     # Verify the expected values.
     if 'values' not in expectation:
@@ -93,13 +83,13 @@ class RegistryVerifier(verifier.Verifier):
         data, value_type = _winreg.QueryValueEx(key_handle, value)
       except WindowsError:
         raise KeyError("Value '%s' of registry key %s is missing" % (
-            value, expanded_key))
+            value, key))
 
       # Verify the type of the value.
       expected_value_type = value_expectation['type']
       assert self._ValueTypeConstant(expected_value_type) == value_type, \
           "Value '%s' of registry key %s has unexpected type '%s'" % (
-              value, expanded_key, expected_value_type)
+              value, key, expected_value_type)
 
       # Verify the associated data of the value.
       expected_data = value_expectation['data']
@@ -108,4 +98,4 @@ class RegistryVerifier(verifier.Verifier):
       assert expected_data == data, \
           ("Value '%s' of registry key %s has unexpected data.\n"
            "  Expected: %s\n"
-           "  Actual: %s" % (value, expanded_key, expected_data, data))
+           "  Actual: %s" % (value, key, expected_data, data))

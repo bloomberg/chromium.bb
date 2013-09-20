@@ -75,6 +75,9 @@ class VariableExpander:
         * $CHROME_HTML_PROG_ID: 'ChromeHTML' (or 'ChromiumHTM').
         * $USER_SPECIFIC_REGISTRY_SUFFIX: the output from the function
             _GetUserSpecificRegistrySuffix().
+        * $WINDOWS_VERSION: a 2-tuple representing the current Windows version.
+        * $VERSION_[XP/SERVER_2003/VISTA/WIN7/WIN8/WIN8_1]: a 2-tuple
+            representing the version of the corresponding OS.
 
     Args:
       mini_installer_path: The path to mini_installer.exe.
@@ -87,6 +90,10 @@ class VariableExpander:
     local_appdata_path = shell.SHGetFolderPath(0, shellcon.CSIDL_LOCAL_APPDATA,
                                                None, 0)
     user_specific_registry_suffix = _GetUserSpecificRegistrySuffix()
+    windows_major_ver, windows_minor_ver, _, _, _ = win32api.GetVersionEx()
+    # This string will be converted to a tuple once injected in eval() through
+    # conditional checks. Tuples are compared lexicographically.
+    windows_version = '(%s, %s)' % (windows_major_ver, windows_minor_ver)
     if mini_installer_product_name == 'Google Chrome':
       chrome_short_name = 'Chrome'
       chrome_long_name = 'Google Chrome'
@@ -115,6 +122,13 @@ class VariableExpander:
         'CHROME_UPDATE_REGISTRY_SUBKEY': chrome_update_registry_subkey,
         'CHROME_HTML_PROG_ID': chrome_html_prog_id,
         'USER_SPECIFIC_REGISTRY_SUFFIX': user_specific_registry_suffix,
+        'WINDOWS_VERSION': windows_version,
+        'VERSION_XP': '(5, 1)',
+        'VERSION_SERVER_2003': '(5, 2)',
+        'VERSION_VISTA': '(6, 0)',
+        'VERSION_WIN7': '(6, 1)',
+        'VERSION_WIN8': '(6, 2)',
+        'VERSION_WIN8_1': '(6, 3)',
     }
 
   def Expand(self, str):

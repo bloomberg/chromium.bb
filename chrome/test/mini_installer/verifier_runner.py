@@ -33,4 +33,5 @@ class VerifierRunner:
     for verifier_name, verifier_input in property.iteritems():
       if verifier_name not in self._verifiers:
         raise KeyError('Unknown verifier %s' % verifier_name)
-      self._verifiers[verifier_name].Verify(verifier_input, variable_expander)
+      self._verifiers[verifier_name].VerifyInput(verifier_input,
+                                                 variable_expander)

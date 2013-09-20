@@ -5,6 +5,9 @@
   "RegistryEntries": {
     "HKEY_LOCAL_MACHINE\\$CHROME_UPDATE_REGISTRY_SUBKEY": {"exists": false},
     "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\$CHROME_LONG_NAME":
-        {"exists": false}
+        {"exists": false},
+    "HKEY_LOCAL_MACHINE\\Software\\Classes\\$CHROME_SHORT_NAME": {
+      "exists": false
+    }
   }
 }

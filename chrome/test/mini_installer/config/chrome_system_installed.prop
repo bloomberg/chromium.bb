@@ -24,6 +24,10 @@
         },
         "Version": {"type": "SZ", "data": "$MINI_INSTALLER_FILE_VERSION"}
       }
+    },
+    "HKEY_LOCAL_MACHINE\\Software\\Classes\\$CHROME_SHORT_NAME": {
+      "condition": "$WINDOWS_VERSION >= $VERSION_WIN8",
+      "exists": true
     }
   }
 }
