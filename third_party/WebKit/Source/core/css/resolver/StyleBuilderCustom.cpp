@@ -667,7 +667,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitFontVariantLigatures(Styl
     state.fontBuilder().setFontVariantLigaturesValue(value);
 }
 
-void StyleBuilderFunctions::applyValueCSSPropertyWebkitMarqueeIncrement(StyleResolverState& state, CSSValue* value)
+void StyleBuilderFunctions::applyValueCSSPropertyInternalMarqueeIncrement(StyleResolverState& state, CSSValue* value)
 {
     if (!value->isPrimitiveValue())
         return;
@@ -694,7 +694,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitMarqueeIncrement(StyleRes
     }
 }
 
-void StyleBuilderFunctions::applyValueCSSPropertyWebkitMarqueeSpeed(StyleResolverState& state, CSSValue* value)
+void StyleBuilderFunctions::applyValueCSSPropertyInternalMarqueeSpeed(StyleResolverState& state, CSSValue* value)
 {
     if (!value->isPrimitiveValue())
         return;
@@ -2048,10 +2048,10 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitLineGrid:
     case CSSPropertyWebkitLineSnap:
     case CSSPropertyInternalMarqueeDirection:
-    case CSSPropertyWebkitMarqueeIncrement:
-    case CSSPropertyWebkitMarqueeRepetition:
-    case CSSPropertyWebkitMarqueeSpeed:
-    case CSSPropertyWebkitMarqueeStyle:
+    case CSSPropertyInternalMarqueeIncrement:
+    case CSSPropertyInternalMarqueeRepetition:
+    case CSSPropertyInternalMarqueeSpeed:
+    case CSSPropertyInternalMarqueeStyle:
     case CSSPropertyWebkitMaskBoxImage:
     case CSSPropertyWebkitMaskBoxImageOutset:
     case CSSPropertyWebkitMaskBoxImageRepeat:

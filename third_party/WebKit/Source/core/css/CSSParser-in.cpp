@@ -851,7 +851,7 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
             || valueID == CSSValueUp || valueID == CSSValueAuto)
             return true;
         break;
-    case CSSPropertyWebkitMarqueeStyle:
+    case CSSPropertyInternalMarqueeStyle:
         if (valueID == CSSValueNone || valueID == CSSValueSlide || valueID == CSSValueScroll || valueID == CSSValueAlternate)
             return true;
         break;
@@ -1024,7 +1024,7 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitMarginBottomCollapse:
     case CSSPropertyWebkitMarginTopCollapse:
     case CSSPropertyInternalMarqueeDirection:
-    case CSSPropertyWebkitMarqueeStyle:
+    case CSSPropertyInternalMarqueeStyle:
     case CSSPropertyWebkitPrintColorAdjust:
     case CSSPropertyWebkitRegionBreakAfter:
     case CSSPropertyWebkitRegionBreakBefore:
@@ -2365,19 +2365,19 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             }
         }
         break;
-    case CSSPropertyWebkitMarqueeIncrement:
+    case CSSPropertyInternalMarqueeIncrement:
         if (id == CSSValueSmall || id == CSSValueLarge || id == CSSValueMedium)
             validPrimitive = true;
         else
             validPrimitive = validUnit(value, FLength | FPercent);
         break;
-    case CSSPropertyWebkitMarqueeRepetition:
+    case CSSPropertyInternalMarqueeRepetition:
         if (id == CSSValueInfinite)
             validPrimitive = true;
         else
             validPrimitive = validUnit(value, FInteger | FNonNeg);
         break;
-    case CSSPropertyWebkitMarqueeSpeed:
+    case CSSPropertyInternalMarqueeSpeed:
         if (id == CSSValueNormal || id == CSSValueSlow || id == CSSValueFast)
             validPrimitive = true;
         else
@@ -2867,7 +2867,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitMarginBottomCollapse:
     case CSSPropertyWebkitMarginTopCollapse:
     case CSSPropertyInternalMarqueeDirection:
-    case CSSPropertyWebkitMarqueeStyle:
+    case CSSPropertyInternalMarqueeStyle:
     case CSSPropertyWebkitPrintColorAdjust:
     case CSSPropertyWebkitRegionBreakAfter:
     case CSSPropertyWebkitRegionBreakBefore:

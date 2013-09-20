@@ -287,9 +287,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitLocale,
     CSSPropertyWebkitMarginBeforeCollapse,
     CSSPropertyWebkitMarginAfterCollapse,
-    CSSPropertyWebkitMarqueeIncrement,
-    CSSPropertyWebkitMarqueeRepetition,
-    CSSPropertyWebkitMarqueeStyle,
     CSSPropertyWebkitMaskBoxImage,
     CSSPropertyWebkitMaskBoxImageOutset,
     CSSPropertyWebkitMaskBoxImageRepeat,
@@ -2150,14 +2147,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                 return zoomAdjustedPixelValueForLength(marginLeft, style.get());
             return zoomAdjustedPixelValue(toRenderBox(renderer)->marginLeft(), style.get());
         }
-        case CSSPropertyWebkitMarqueeIncrement:
-            return cssValuePool().createValue(style->marqueeIncrement());
-        case CSSPropertyWebkitMarqueeRepetition:
-            if (style->marqueeLoopCount() < 0)
-                return cssValuePool().createIdentifierValue(CSSValueInfinite);
-            return cssValuePool().createValue(style->marqueeLoopCount(), CSSPrimitiveValue::CSS_NUMBER);
-        case CSSPropertyWebkitMarqueeStyle:
-            return cssValuePool().createValue(style->marqueeBehavior());
         case CSSPropertyWebkitUserModify:
             return cssValuePool().createValue(style->userModify());
         case CSSPropertyMaxHeight: {
@@ -2888,7 +2877,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         /* Unimplemented -webkit- properties */
         case CSSPropertyWebkitBorderRadius:
         case CSSPropertyWebkitMarginCollapse:
-        case CSSPropertyWebkitMarqueeSpeed:
         case CSSPropertyWebkitMask:
         case CSSPropertyWebkitMaskRepeatX:
         case CSSPropertyWebkitMaskRepeatY:
@@ -2909,6 +2897,10 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
 
         // Internal properties that shouldn't be exposed throught getComputedStyle.
         case CSSPropertyInternalMarqueeDirection:
+        case CSSPropertyInternalMarqueeIncrement:
+        case CSSPropertyInternalMarqueeRepetition:
+        case CSSPropertyInternalMarqueeSpeed:
+        case CSSPropertyInternalMarqueeStyle:
             ASSERT_NOT_REACHED();
             return 0;
 

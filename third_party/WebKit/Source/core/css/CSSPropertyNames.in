@@ -340,10 +340,6 @@ grid-template
 -webkit-margin-before
 -webkit-margin-end
 -webkit-margin-start
--webkit-marquee-increment
--webkit-marquee-repetition
--webkit-marquee-speed
--webkit-marquee-style
 -webkit-mask
 -webkit-mask-box-image
 -webkit-mask-box-image-outset
@@ -425,3 +421,7 @@ user-zoom
 
 // Internal properties.
 -internal-marquee-direction
+-internal-marquee-increment
+-internal-marquee-repetition
+-internal-marquee-speed
+-internal-marquee-style

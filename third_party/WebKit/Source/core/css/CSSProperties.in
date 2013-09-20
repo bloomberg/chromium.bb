@@ -191,10 +191,10 @@ z-index type_name=int, custom_all
 -webkit-margin-bottom-collapse type_name=EMarginCollapse, name_for_methods=MarginAfterCollapse
 -webkit-margin-top-collapse type_name=EMarginCollapse, name_for_methods=MarginBeforeCollapse
 -internal-marquee-direction type_name=EMarqueeDirection, name_for_methods=MarqueeDirection
--webkit-marquee-increment custom_value
--webkit-marquee-repetition type_name=int, name_for_methods=MarqueeLoopCount, custom_value
--webkit-marquee-speed custom_value
--webkit-marquee-style name_for_methods=MarqueeBehavior
+-internal-marquee-increment custom_value, name_for_methods=MarqueeIncrement
+-internal-marquee-repetition type_name=int, name_for_methods=MarqueeLoopCount, custom_value
+-internal-marquee-speed custom_value, name_for_methods=MarqueeSpeed
+-internal-marquee-style name_for_methods=MarqueeBehavior
 -webkit-mask-box-image initial=initialNinePieceImage, custom_value
 -webkit-mask-box-image-outset custom_all
 -webkit-mask-box-image-repeat custom_all

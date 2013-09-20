@@ -88,20 +88,20 @@ void HTMLMarqueeElement::collectStyleForPresentationAttribute(const QualifiedNam
         }
     } else if (name == scrollamountAttr) {
         if (!value.isEmpty())
-            addHTMLLengthToStyle(style, CSSPropertyWebkitMarqueeIncrement, value);
+            addHTMLLengthToStyle(style, CSSPropertyInternalMarqueeIncrement, value);
     } else if (name == scrolldelayAttr) {
         if (!value.isEmpty())
-            addHTMLLengthToStyle(style, CSSPropertyWebkitMarqueeSpeed, value);
+            addHTMLLengthToStyle(style, CSSPropertyInternalMarqueeSpeed, value);
     } else if (name == loopAttr) {
         if (!value.isEmpty()) {
             if (value == "-1" || equalIgnoringCase(value, "infinite"))
-                addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitMarqueeRepetition, CSSValueInfinite);
+                addPropertyToPresentationAttributeStyle(style, CSSPropertyInternalMarqueeRepetition, CSSValueInfinite);
             else
-                addHTMLLengthToStyle(style, CSSPropertyWebkitMarqueeRepetition, value);
+                addHTMLLengthToStyle(style, CSSPropertyInternalMarqueeRepetition, value);
         }
     } else if (name == behaviorAttr) {
         if (!value.isEmpty())
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitMarqueeStyle, value);
+            addPropertyToPresentationAttributeStyle(style, CSSPropertyInternalMarqueeStyle, value);
     } else if (name == directionAttr) {
         if (!value.isEmpty())
             addPropertyToPresentationAttributeStyle(style, CSSPropertyInternalMarqueeDirection, value);

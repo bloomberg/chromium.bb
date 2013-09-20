@@ -330,10 +330,6 @@ webkitMarginCollapse
 webkitMarginEnd
 webkitMarginStart
 webkitMarginTopCollapse
-webkitMarqueeIncrement
-webkitMarqueeRepetition
-webkitMarqueeSpeed
-webkitMarqueeStyle
 webkitMask
 webkitMaskBoxImage
 webkitMaskBoxImageOutset
