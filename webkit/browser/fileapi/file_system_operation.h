@@ -131,8 +131,8 @@ class FileSystemOperation {
   //
   // END_COPY_ENTRY is fired for each copy creation finishing (for both
   // file and directory).
-  // The |source_url| is the URL of the source entry. |size| should not be
-  // used.
+  // The |source_url| is the URL of the source entry. The |destination_url| is
+  // the URL of the destination entry. |size| should not be used.
   //
   // PROGRESS is fired periodically during file copying (not fired for
   // directory copy).
@@ -147,10 +147,10 @@ class FileSystemOperation {
   // copy a to x recursively, then the progress update sequence will be:
   //
   // BEGIN_COPY_ENTRY a  (starting create "a" directory in x/).
-  // END_COPY_ENTRY a (creating "a" directory in x/ is finished).
+  // END_COPY_ENTRY a x/a (creating "a" directory in x/ is finished).
   //
   // BEGIN_COPY_ENTRY a/b (starting create "b" directory in x/a).
-  // END_COPY_ENTRY a/b (creating "b" directory in x/a/ is finished).
+  // END_COPY_ENTRY a/b x/a/b (creating "b" directory in x/a/ is finished).
   //
   // BEGIN_COPY_ENTRY a/b/c.txt (starting to copy "c.txt" in x/a/b/).
   // PROGRESS a/b/c.txt 0 (The first PROGRESS's |size| should be 0).
@@ -159,7 +159,7 @@ class FileSystemOperation {
   // PROGRESS a/b/c.txt 90
   // PROGRESS a/b/c.txt 100 (The last PROGRESS's |size| should be the size of
   //                         the file).
-  // END_COPY_ENTRY a/b/c.txt (copying "c.txt" is finished).
+  // END_COPY_ENTRY a/b/c.txt x/a/b/c.txt (copying "c.txt" is finished).
   //
   // BEGIN_COPY_ENTRY a/b/d.txt (starting to copy "d.txt" in x/a/b).
   // PROGRESS a/b/d.txt 0 (The first PROGRESS's |size| should be 0).
@@ -168,7 +168,7 @@ class FileSystemOperation {
   // PROGRESS a/b/d.txt 190
   // PROGRESS a/b/d.txt 200 (The last PROGRESS's |size| should be the size of
   //                         the file).
-  // END_COPY_ENTRY a/b/d.txt (copy "d.txt" is finished).
+  // END_COPY_ENTRY a/b/d.txt x/a/b/d.txt (copy "d.txt" is finished).
   //
   // Note that event sequence of a/b/c.txt and a/b/d.txt can be interlaced,
   // because they can be done in parallel. Also PROGRESS events are optional,
@@ -196,8 +196,10 @@ class FileSystemOperation {
     END_COPY_ENTRY,
     PROGRESS,
   };
-  typedef base::Callback<void(
-      CopyProgressType type, const FileSystemURL& source_url, int64 size)>
+  typedef base::Callback<void(CopyProgressType type,
+                              const FileSystemURL& source_url,
+                              const FileSystemURL& destination_url,
+                              int64 size)>
       CopyProgressCallback;
 
   // Used for CopyFileLocal() to report progress update.

@@ -52,6 +52,7 @@ class CopyOrMoveOperationDelegate
 
  private:
   void DidCopyOrMoveFile(const FileSystemURL& src_url,
+                         const FileSystemURL& dest_url,
                          const StatusCallback& callback,
                          CopyOrMoveImpl* impl,
                          base::PlatformFileError error);
@@ -61,6 +62,7 @@ class CopyOrMoveOperationDelegate
                                 const FileSystemURL& dest_url,
                                 const StatusCallback& callback);
   void DidCreateDirectory(const FileSystemURL& src_url,
+                          const FileSystemURL& dest_url,
                           const StatusCallback& callback,
                           base::PlatformFileError error);
   void DidRemoveSourceForMove(const StatusCallback& callback,

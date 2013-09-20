@@ -297,9 +297,9 @@ CopyProgressTypeToCopyProgressStatusType(
 
   switch (type) {
     case fileapi::FileSystemOperation::BEGIN_COPY_ENTRY:
-      return CopyProgressStatus::TYPE_BEGIN_ENTRY_COPY;
+      return CopyProgressStatus::TYPE_BEGIN_COPY_ENTRY;
     case fileapi::FileSystemOperation::END_COPY_ENTRY:
-      return CopyProgressStatus::TYPE_END_ENTRY_COPY;
+      return CopyProgressStatus::TYPE_END_COPY_ENTRY;
     case fileapi::FileSystemOperation::PROGRESS:
       return CopyProgressStatus::TYPE_PROGRESS;
   }
@@ -470,15 +470,18 @@ void EventRouter::RemoveFileWatch(const base::FilePath& local_path,
   }
 }
 
-void EventRouter::OnCopyCompleted(
-    int copy_id, const GURL& url, base::PlatformFileError error) {
+void EventRouter::OnCopyCompleted(int copy_id,
+                                  const GURL& source_url,
+                                  const GURL& destination_url,
+                                  base::PlatformFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_browser_private::CopyProgressStatus status;
   if (error == base::PLATFORM_FILE_OK) {
     // Send success event.
     status.type = file_browser_private::CopyProgressStatus::TYPE_SUCCESS;
-    status.url.reset(new std::string(url.spec()));
+    status.source_url.reset(new std::string(source_url.spec()));
+    status.destination_url.reset(new std::string(destination_url.spec()));
   } else {
     // Send error event.
     status.type = file_browser_private::CopyProgressStatus::TYPE_ERROR;
@@ -495,13 +498,16 @@ void EventRouter::OnCopyCompleted(
 void EventRouter::OnCopyProgress(
     int copy_id,
     fileapi::FileSystemOperation::CopyProgressType type,
-    const GURL& url,
+    const GURL& source_url,
+    const GURL& destination_url,
     int64 size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_browser_private::CopyProgressStatus status;
   status.type = CopyProgressTypeToCopyProgressStatusType(type);
-  status.url.reset(new std::string(url.spec()));
+  status.source_url.reset(new std::string(source_url.spec()));
+  if (type == fileapi::FileSystemOperation::END_COPY_ENTRY)
+    status.destination_url.reset(new std::string(destination_url.spec()));
   if (type == fileapi::FileSystemOperation::PROGRESS)
     status.size.reset(new double(size));
 

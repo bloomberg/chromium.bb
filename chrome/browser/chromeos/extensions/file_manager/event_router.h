@@ -72,12 +72,14 @@ class EventRouter
 
   // Called when a copy task is completed.
   void OnCopyCompleted(
-      int copy_id, const GURL& url, base::PlatformFileError error);
+      int copy_id, const GURL& source_url, const GURL& destination_url,
+      base::PlatformFileError error);
 
   // Called when a copy task progress is updated.
   void OnCopyProgress(int copy_id,
                       fileapi::FileSystemOperation::CopyProgressType type,
-                      const GURL& url,
+                      const GURL& source_url,
+                      const GURL& destination_url,
                       int64 size);
 
   // chromeos::NetworkStateHandlerObserver overrides.

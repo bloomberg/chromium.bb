@@ -611,15 +611,17 @@ void FileSystemOperationRunner::OnCopyProgress(
     const OperationHandle& handle,
     const CopyProgressCallback& callback,
     FileSystemOperation::CopyProgressType type,
-    const FileSystemURL& url,
+    const FileSystemURL& source_url,
+    const FileSystemURL& dest_url,
     int64 size) {
   if (handle.scope) {
     base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(&FileSystemOperationRunner::OnCopyProgress,
-                              AsWeakPtr(), handle, callback, type, url, size));
+        FROM_HERE, base::Bind(
+            &FileSystemOperationRunner::OnCopyProgress,
+            AsWeakPtr(), handle, callback, type, source_url, dest_url, size));
     return;
   }
-  callback.Run(type, url, size);
+  callback.Run(type, source_url, dest_url, size);
 }
 
 void FileSystemOperationRunner::PrepareForWrite(OperationID id,

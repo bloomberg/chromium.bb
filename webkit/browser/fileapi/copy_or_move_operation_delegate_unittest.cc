@@ -96,17 +96,20 @@ class TestValidatorFactory : public CopyOrMoveFileValidatorFactory {
 // Records CopyProgressCallback invocations.
 struct ProgressRecord {
   FileSystemOperation::CopyProgressType type;
-  FileSystemURL url;
+  FileSystemURL source_url;
+  FileSystemURL dest_url;
   int64 size;
 };
 
 void RecordProgressCallback(std::vector<ProgressRecord>* records,
                             FileSystemOperation::CopyProgressType type,
-                            const FileSystemURL& url,
+                            const FileSystemURL& source_url,
+                            const FileSystemURL& dest_url,
                             int64 size) {
   ProgressRecord record;
   record.type = type;
-  record.url = url;
+  record.source_url = source_url;
+  record.dest_url = dest_url;
   record.size = size;
   records->push_back(record);
 }
@@ -614,15 +617,16 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
   for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
     const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
 
-    FileSystemURL src_url =
-        helper.SourceURL(
-            std::string("a/") + base::FilePath(test_case.path).AsUTF8Unsafe());
+    FileSystemURL src_url = helper.SourceURL(
+        std::string("a/") + base::FilePath(test_case.path).AsUTF8Unsafe());
+    FileSystemURL dest_url = helper.DestURL(
+        std::string("b/") + base::FilePath(test_case.path).AsUTF8Unsafe());
 
     // Find the first and last progress record.
     size_t begin_index = records.size();
     size_t end_index = records.size();
     for (size_t j = 0; j < records.size(); ++j) {
-      if (records[j].url == src_url) {
+      if (records[j].source_url == src_url) {
         if (begin_index == records.size())
           begin_index = j;
         end_index = j;
@@ -636,7 +640,9 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
 
     EXPECT_EQ(FileSystemOperation::BEGIN_COPY_ENTRY,
               records[begin_index].type);
+    EXPECT_FALSE(records[begin_index].dest_url.is_valid());
     EXPECT_EQ(FileSystemOperation::END_COPY_ENTRY, records[end_index].type);
+    EXPECT_EQ(dest_url, records[end_index].dest_url);
 
     if (test_case.is_directory) {
       // For directory copy, the progress shouldn't be interlaced.
@@ -645,8 +651,9 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
       // PROGRESS event's size should be assending order.
       int64 current_size = 0;
       for (size_t j = begin_index + 1; j < end_index; ++j) {
-        if (records[j].url == src_url) {
+        if (records[j].source_url == src_url) {
           EXPECT_EQ(FileSystemOperation::PROGRESS, records[j].type);
+          EXPECT_FALSE(records[j].dest_url.is_valid());
           EXPECT_GE(records[j].size, current_size);
           current_size = records[j].size;
         }

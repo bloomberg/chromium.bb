@@ -198,7 +198,8 @@ void NotifyCopyProgress(
     void* profile_id,
     fileapi::FileSystemOperationRunner::OperationID operation_id,
     fileapi::FileSystemOperation::CopyProgressType type,
-    const FileSystemURL& url,
+    const FileSystemURL& source_url,
+    const FileSystemURL& destination_url,
     int64 size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -206,7 +207,8 @@ void NotifyCopyProgress(
       GetEventRouterByProfileId(profile_id);
   if (event_router) {
     event_router->OnCopyProgress(
-        operation_id, type, url.ToGURL(), size);
+        operation_id, type,
+        source_url.ToGURL(), destination_url.ToGURL(), size);
   }
 }
 
@@ -215,28 +217,33 @@ void OnCopyProgress(
     void* profile_id,
     fileapi::FileSystemOperationRunner::OperationID* operation_id,
     fileapi::FileSystemOperation::CopyProgressType type,
-    const FileSystemURL& url,
+    const FileSystemURL& source_url,
+    const FileSystemURL& destination_url,
     int64 size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&NotifyCopyProgress,
-                 profile_id, *operation_id, type, url, size));
+                 profile_id, *operation_id, type,
+                 source_url, destination_url, size));
 }
 
 // Notifies the copy completion to extensions via event router.
 void NotifyCopyCompletion(
     void* profile_id,
     fileapi::FileSystemOperationRunner::OperationID operation_id,
-    const FileSystemURL& dest_url,
+    const FileSystemURL& source_url,
+    const FileSystemURL& destination_url,
     base::PlatformFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_manager::EventRouter* event_router =
       GetEventRouterByProfileId(profile_id);
   if (event_router)
-    event_router->OnCopyCompleted(operation_id, dest_url.ToGURL(), error);
+    event_router->OnCopyCompleted(
+        operation_id,
+        source_url.ToGURL(), destination_url.ToGURL(), error);
 }
 
 // Callback invoked upon completion of Copy() (regardless of succeeded or
@@ -244,14 +251,16 @@ void NotifyCopyCompletion(
 void OnCopyCompleted(
     void* profile_id,
     fileapi::FileSystemOperationRunner::OperationID* operation_id,
-    const FileSystemURL& dest_url,
+    const FileSystemURL& source_url,
+    const FileSystemURL& destination_url,
     base::PlatformFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&NotifyCopyCompletion,
-                 profile_id, *operation_id, dest_url, error));
+                 profile_id, *operation_id,
+                 source_url, destination_url, error));
 }
 
 // Starts the copy operation via FileSystemOperationRunner.
@@ -259,7 +268,7 @@ fileapi::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
     void* profile_id,
     scoped_refptr<fileapi::FileSystemContext> file_system_context,
     const FileSystemURL& source_url,
-    const FileSystemURL& dest_url) {
+    const FileSystemURL& destination_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Note: |operation_id| is owned by the callback for
@@ -268,11 +277,12 @@ fileapi::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
   fileapi::FileSystemOperationRunner::OperationID* operation_id =
       new fileapi::FileSystemOperationRunner::OperationID;
   *operation_id = file_system_context->operation_runner()->Copy(
-      source_url, dest_url,
+      source_url, destination_url,
       base::Bind(&OnCopyProgress,
                  profile_id, base::Unretained(operation_id)),
       base::Bind(&OnCopyCompleted,
-                 profile_id, base::Owned(operation_id), dest_url));
+                 profile_id, base::Owned(operation_id),
+                 source_url, destination_url));
   return *operation_id;
 }
 
@@ -670,10 +680,10 @@ bool FileBrowserPrivateStartCopyFunction::RunImpl() {
 
   fileapi::FileSystemURL source_url(
       file_system_context->CrackURL(GURL(params->source_url)));
-  fileapi::FileSystemURL dest_url(file_system_context->CrackURL(
+  fileapi::FileSystemURL destination_url(file_system_context->CrackURL(
       GURL(params->parent + "/" + params->new_name)));
 
-  if (!source_url.is_valid() || !dest_url.is_valid()) {
+  if (!source_url.is_valid() || !destination_url.is_valid()) {
     error_ = base::IntToString(fileapi::PlatformFileErrorToWebFileError(
         base::PLATFORM_FILE_ERROR_INVALID_URL));
     return false;
@@ -683,7 +693,7 @@ bool FileBrowserPrivateStartCopyFunction::RunImpl() {
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&StartCopyOnIOThread,
-                 profile(), file_system_context, source_url, dest_url),
+                 profile(), file_system_context, source_url, destination_url),
       base::Bind(&FileBrowserPrivateStartCopyFunction::RunAfterStartCopy,
                  this));
 }

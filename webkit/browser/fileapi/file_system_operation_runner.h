@@ -277,7 +277,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
       const OperationHandle& handle,
       const CopyProgressCallback& callback,
       FileSystemOperation::CopyProgressType type,
-      const FileSystemURL& url,
+      const FileSystemURL& source_url,
+      const FileSystemURL& dest_url,
       int64 size);
 
   void PrepareForWrite(OperationID id, const FileSystemURL& url);
