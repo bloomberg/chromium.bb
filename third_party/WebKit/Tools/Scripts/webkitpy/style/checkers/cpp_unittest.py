@@ -764,17 +764,12 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_language_rules_check('foo.cpp', statement, error_message)
         self.assert_language_rules_check('foo.h', statement, error_message)
 
-    # Tests for static_cast readability.
-    def test_use_toFoo_readability(self):
+    # Test for static_cast readability.
+    def test_static_cast_readability(self):
         self.assert_lint(
             'Text* x = static_cast<Text*>(foo);',
-            'static_cast of class objects is not allowed. Use toText defined in Text.h.'
-            '  [readability/check] [4]')
-
-    def test_create_and_use_toFoo_readability(self):
-        self.assert_lint(
-            'HTMLButtonElement* x = static_cast<HTMLButtonElement*>(foo);',
-            'static_cast of class objects is not allowed. Add toHTMLButtonElement in HTMLButtonElement.h and use it instead.'
+            'Consider using toText helper function in WebCore/dom/Text.h '
+            'instead of static_cast<Text*>'
             '  [readability/check] [4]')
 
     # We cannot test this functionality because of difference of
