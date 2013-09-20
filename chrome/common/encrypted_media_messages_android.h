@@ -24,28 +24,6 @@ enum SupportedCodecs {
   MP4_AVC1 = 1 << 2,
 };
 
-struct SupportedKeySystemRequest {
-  SupportedKeySystemRequest();
-  ~SupportedKeySystemRequest();
-
-  // Key system UUID.
-  std::vector<uint8> uuid;
-  // Bitmask of requested codecs.
-  SupportedCodecs codecs;
-};
-
-struct SupportedKeySystemResponse {
-  SupportedKeySystemResponse();
-  ~SupportedKeySystemResponse();
-
-  // Key system UUID.
-  std::vector<uint8> uuid;
-  // Bitmask of supported compositing codecs.
-  SupportedCodecs compositing_codecs;
-  // Bitmask of supported non-compositing codecs.
-  SupportedCodecs non_compositing_codecs;
-};
-
 }  // namespace android
 
 #endif  // CHROME_COMMON_ENCRYPTED_MEDIA_MESSAGES_ANDROID_H
@@ -55,22 +33,24 @@ struct SupportedKeySystemResponse {
 
 IPC_ENUM_TRAITS(android::SupportedCodecs)
 
-IPC_STRUCT_TRAITS_BEGIN(android::SupportedKeySystemRequest)
-  IPC_STRUCT_TRAITS_MEMBER(uuid)
-  IPC_STRUCT_TRAITS_MEMBER(codecs)
-IPC_STRUCT_TRAITS_END()
+IPC_STRUCT_BEGIN(SupportedKeySystemRequest)
+  IPC_STRUCT_MEMBER(std::vector<uint8>, uuid)
+  IPC_STRUCT_MEMBER(android::SupportedCodecs, codecs,
+                    android::NO_SUPPORTED_CODECS)
+IPC_STRUCT_END()
 
-IPC_STRUCT_TRAITS_BEGIN(android::SupportedKeySystemResponse)
-  IPC_STRUCT_TRAITS_MEMBER(uuid)
-  IPC_STRUCT_TRAITS_MEMBER(compositing_codecs)
-  IPC_STRUCT_TRAITS_MEMBER(non_compositing_codecs)
-IPC_STRUCT_TRAITS_END()
-
+IPC_STRUCT_BEGIN(SupportedKeySystemResponse)
+  IPC_STRUCT_MEMBER(std::vector<uint8>, uuid)
+  IPC_STRUCT_MEMBER(android::SupportedCodecs, compositing_codecs,
+                    android::NO_SUPPORTED_CODECS)
+  IPC_STRUCT_MEMBER(android::SupportedCodecs, non_compositing_codecs,
+                    android::NO_SUPPORTED_CODECS)
+IPC_STRUCT_END()
 
 // Messages sent from the renderer to the browser.
 
 // Synchronously get a list of supported EME key systems.
 IPC_SYNC_MESSAGE_CONTROL1_1(
     ChromeViewHostMsg_GetSupportedKeySystems,
-    android::SupportedKeySystemRequest /* key system information request */,
-    android::SupportedKeySystemResponse /* key system information response */)
+    SupportedKeySystemRequest /* key system information request */,
+    SupportedKeySystemResponse /* key system information response */)

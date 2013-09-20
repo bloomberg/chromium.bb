@@ -8,10 +8,8 @@
 #include "base/basictypes.h"
 #include "content/public/browser/browser_message_filter.h"
 
-namespace android {
 struct SupportedKeySystemRequest;
 struct SupportedKeySystemResponse;
-}
 
 namespace chrome {
 
@@ -34,8 +32,8 @@ class EncryptedMediaMessageFilterAndroid
 
   // Retrieve the supported key systems.
   void OnGetSupportedKeySystems(
-      const android::SupportedKeySystemRequest& request,
-      android::SupportedKeySystemResponse* response);
+      const SupportedKeySystemRequest& request,
+      SupportedKeySystemResponse* response);
 
   DISALLOW_COPY_AND_ASSIGN(EncryptedMediaMessageFilterAndroid);
 };

@@ -69,8 +69,8 @@ void EncryptedMediaMessageFilterAndroid::OverrideThreadForMessage(
 }
 
 void EncryptedMediaMessageFilterAndroid::OnGetSupportedKeySystems(
-    const android::SupportedKeySystemRequest& request,
-    android::SupportedKeySystemResponse* response) {
+    const SupportedKeySystemRequest& request,
+    SupportedKeySystemResponse* response) {
   if (!MediaDrmBridge::IsAvailable() || !MediaCodecBridge::IsAvailable())
     return;
 

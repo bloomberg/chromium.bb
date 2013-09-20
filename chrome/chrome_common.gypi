@@ -180,7 +180,6 @@
         'common/descriptors_android.h',
         'common/dump_without_crashing.cc',
         'common/dump_without_crashing.h',
-        'common/encrypted_media_messages_android.cc',
         'common/encrypted_media_messages_android.h',
         'common/extensions/api/commands/commands_handler.cc',
         'common/extensions/api/commands/commands_handler.h',

@@ -77,7 +77,9 @@ static void AddExternalClearKey(
 enum WidevineCdmType {
   WIDEVINE,
   WIDEVINE_HR,
-  WIDEVINE_HRSURFACE,
+#if defined(OS_ANDROID)
+  WIDEVINE_HR_NON_COMPOSITING,
+#endif
 };
 
 // Defines bitmask values used to specify supported codecs.
@@ -133,9 +135,11 @@ static void AddWidevineWithCodecs(
     case WIDEVINE_HR:
       info.key_system.append(".hr");
       break;
-    case WIDEVINE_HRSURFACE:
-      info.key_system.append(".hrsurface");
+#if defined(OS_ANDROID)
+    case WIDEVINE_HR_NON_COMPOSITING:
+      info.key_system.append(".hrnoncompositing");
       break;
+#endif
     default:
       NOTREACHED();
   }
@@ -199,8 +203,8 @@ static void AddPepperBasedWidevine(
 #elif defined(OS_ANDROID)
 static void AddAndroidWidevine(
     std::vector<KeySystemInfo>* concrete_key_systems) {
-  android::SupportedKeySystemRequest request;
-  android::SupportedKeySystemResponse response;
+  SupportedKeySystemRequest request;
+  SupportedKeySystemResponse response;
 
   request.uuid.insert(request.uuid.begin(), kWidevineUuid,
                       kWidevineUuid + arraysize(kWidevineUuid));
@@ -212,16 +216,16 @@ static void AddAndroidWidevine(
       new ChromeViewHostMsg_GetSupportedKeySystems(request, &response));
   DCHECK_EQ(response.compositing_codecs >> 3, 0) << "unrecognized codec";
   DCHECK_EQ(response.non_compositing_codecs >> 3, 0) << "unrecognized codec";
-  if (response.compositing_codecs > 0) {
+  if (response.compositing_codecs != android::NO_SUPPORTED_CODECS) {
     AddWidevineWithCodecs(
         WIDEVINE,
         static_cast<SupportedCodecs>(response.compositing_codecs),
         concrete_key_systems);
   }
 
-  if (response.non_compositing_codecs > 0) {
+  if (response.non_compositing_codecs != android::NO_SUPPORTED_CODECS) {
     AddWidevineWithCodecs(
-        WIDEVINE_HRSURFACE,
+        WIDEVINE_HR_NON_COMPOSITING,
         static_cast<SupportedCodecs>(response.non_compositing_codecs),
         concrete_key_systems);
   }
