@@ -563,7 +563,7 @@ LayoutUnit RenderGrid::maxContentForChild(RenderBox* child, TrackSizingDirection
     return logicalContentHeightForChild(child, columnTracks);
 }
 
-void RenderGrid::resolveContentBasedTrackSizingFunctions(TrackSizingDirection direction, Vector<GridTrack>& columnTracks, Vector<GridTrack>& rowTracks, Vector<size_t> contentSizedTracks, LayoutUnit& availableLogicalSpace)
+void RenderGrid::resolveContentBasedTrackSizingFunctions(TrackSizingDirection direction, Vector<GridTrack>& columnTracks, Vector<GridTrack>& rowTracks, const Vector<size_t>& contentSizedTracks, LayoutUnit& availableLogicalSpace)
 {
     // FIXME: Split the grid tracks into groups that doesn't overlap a <flex> grid track (crbug.com/235258).
 
@@ -769,7 +769,7 @@ void RenderGrid::populateExplicitGridAndOrderIterator()
         m_grid[i].grow(maximumColumnIndex);
 }
 
-void RenderGrid::placeSpecifiedMajorAxisItemsOnGrid(Vector<RenderBox*> autoGridItems)
+void RenderGrid::placeSpecifiedMajorAxisItemsOnGrid(const Vector<RenderBox*>& autoGridItems)
 {
     for (size_t i = 0; i < autoGridItems.size(); ++i) {
         OwnPtr<GridSpan> majorAxisPositions = resolveGridPositionsFromStyle(autoGridItems[i], autoPlacementMajorAxisDirection());
@@ -786,7 +786,7 @@ void RenderGrid::placeSpecifiedMajorAxisItemsOnGrid(Vector<RenderBox*> autoGridI
     }
 }
 
-void RenderGrid::placeAutoMajorAxisItemsOnGrid(Vector<RenderBox*> autoGridItems)
+void RenderGrid::placeAutoMajorAxisItemsOnGrid(const Vector<RenderBox*>& autoGridItems)
 {
     for (size_t i = 0; i < autoGridItems.size(); ++i)
         placeAutoMajorAxisItemOnGrid(autoGridItems[i]);
@@ -1170,7 +1170,7 @@ void RenderGrid::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOff
 
         for (size_t row = dirtiedRows.initialPositionIndex; row < dirtiedRows.finalPositionIndex; ++row) {
             for (size_t column = dirtiedColumns.initialPositionIndex; column < dirtiedColumns.finalPositionIndex; ++column) {
-                const Vector<RenderBox*, 1> children = m_grid[row][column];
+                const Vector<RenderBox*, 1>& children = m_grid[row][column];
                 // FIXME: If we start adding spanning children in all grid areas they span, this
                 // would make us paint them several times, which is wrong!
                 for (size_t j = 0; j < children.size(); ++j)

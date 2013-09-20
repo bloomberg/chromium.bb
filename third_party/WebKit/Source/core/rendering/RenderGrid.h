@@ -77,15 +77,15 @@ private:
     LayoutUnit computeUsedBreadthOfMinLength(TrackSizingDirection, const GridLength&) const;
     LayoutUnit computeUsedBreadthOfMaxLength(TrackSizingDirection, const GridLength&, LayoutUnit usedBreadth) const;
     LayoutUnit computeUsedBreadthOfSpecifiedLength(TrackSizingDirection, const Length&) const;
-    void resolveContentBasedTrackSizingFunctions(TrackSizingDirection, Vector<GridTrack>& columnTracks, Vector<GridTrack>& rowTracks, Vector<size_t>, LayoutUnit& availableLogicalSpace);
+    void resolveContentBasedTrackSizingFunctions(TrackSizingDirection, Vector<GridTrack>& columnTracks, Vector<GridTrack>& rowTracks, const Vector<size_t>&, LayoutUnit& availableLogicalSpace);
 
     void growGrid(TrackSizingDirection);
     void insertItemIntoGrid(RenderBox*, size_t rowTrack, size_t columnTrack);
     void insertItemIntoGrid(RenderBox*, const GridCoordinate&);
     void placeItemsOnGrid();
     void populateExplicitGridAndOrderIterator();
-    void placeSpecifiedMajorAxisItemsOnGrid(Vector<RenderBox*>);
-    void placeAutoMajorAxisItemsOnGrid(Vector<RenderBox*>);
+    void placeSpecifiedMajorAxisItemsOnGrid(const Vector<RenderBox*>&);
+    void placeAutoMajorAxisItemsOnGrid(const Vector<RenderBox*>&);
     void placeAutoMajorAxisItemOnGrid(RenderBox*);
     TrackSizingDirection autoPlacementMajorAxisDirection() const;
     TrackSizingDirection autoPlacementMinorAxisDirection() const;
