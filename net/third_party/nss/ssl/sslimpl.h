@@ -1845,9 +1845,7 @@ extern SECStatus ssl_InitSymWrapKeysLock(void);
 
 extern SECStatus ssl_FreeSymWrapKeysLock(void);
 
-extern SECStatus ssl_InitSessionCacheLocks(PRBool lazyInit);
-
-extern SECStatus ssl_FreeSessionCacheLocks(void);
+extern SECStatus ssl_InitSessionCacheLocks(void);
 
 /***************** platform client auth ****************/
 

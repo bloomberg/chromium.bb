@@ -35,91 +35,55 @@ static PZLock *      cacheLock = NULL;
 #define LOCK_CACHE 	lock_cache()
 #define UNLOCK_CACHE	PZ_Unlock(cacheLock)
 
+static PRCallOnceType lockOnce;
+
+/* FreeSessionCacheLocks is a callback from NSS_RegisterShutdown which destroys
+ * the session cache locks on shutdown and resets them to their initial
+ * state. */
 static SECStatus
-ssl_InitClientSessionCacheLock(void)
+FreeSessionCacheLocks(void* appData, void* nssData)
 {
-    cacheLock = PZ_NewLock(nssILockCache);
-    return cacheLock ? SECSuccess : SECFailure;
-}
+    static const PRCallOnceType pristineCallOnce;
+    SECStatus rv;
 
-static SECStatus
-ssl_FreeClientSessionCacheLock(void)
-{
-    if (cacheLock) {
-        PZ_DestroyLock(cacheLock);
-        cacheLock = NULL;
-        return SECSuccess;
-    }
-    PORT_SetError(SEC_ERROR_NOT_INITIALIZED);
-    return SECFailure;
-}
-
-static PRBool LocksInitializedEarly = PR_FALSE;
-
-static SECStatus
-FreeSessionCacheLocks()
-{
-    SECStatus rv1, rv2;
-    rv1 = ssl_FreeSymWrapKeysLock();
-    rv2 = ssl_FreeClientSessionCacheLock();
-    if ( (SECSuccess == rv1) && (SECSuccess == rv2) ) {
-        return SECSuccess;
-    }
-    return SECFailure;
-}
-
-static SECStatus
-InitSessionCacheLocks(void)
-{
-    SECStatus rv1, rv2;
-    PRErrorCode rc;
-    rv1 = ssl_InitSymWrapKeysLock();
-    rv2 = ssl_InitClientSessionCacheLock();
-    if ( (SECSuccess == rv1) && (SECSuccess == rv2) ) {
-        return SECSuccess;
-    }
-    rc = PORT_GetError();
-    FreeSessionCacheLocks();
-    PORT_SetError(rc);
-    return SECFailure;
-}
-
-/* free the session cache locks if they were initialized early */
-SECStatus
-ssl_FreeSessionCacheLocks()
-{
-    PORT_Assert(PR_TRUE == LocksInitializedEarly);
-    if (!LocksInitializedEarly) {
+    if (!cacheLock) {
         PORT_SetError(SEC_ERROR_NOT_INITIALIZED);
         return SECFailure;
     }
-    FreeSessionCacheLocks();
-    LocksInitializedEarly = PR_FALSE;
-    return SECSuccess;
-}
 
-static PRCallOnceType lockOnce;
+    PZ_DestroyLock(cacheLock);
+    cacheLock = NULL;
 
-/* free the session cache locks if they were initialized lazily */
-static SECStatus ssl_ShutdownLocks(void* appData, void* nssData)
-{
-    PORT_Assert(PR_FALSE == LocksInitializedEarly);
-    if (LocksInitializedEarly) {
-        PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
-        return SECFailure;
+    rv = ssl_FreeSymWrapKeysLock();
+    if (rv != SECSuccess) {
+        return rv;
     }
-    FreeSessionCacheLocks();
-    memset(&lockOnce, 0, sizeof(lockOnce));
+
+    lockOnce = pristineCallOnce;
     return SECSuccess;
 }
 
-static PRStatus initSessionCacheLocksLazily(void)
+/* InitSessionCacheLocks is called, protected by lockOnce, to create the
+ * session cache locks. */
+static PRStatus
+InitSessionCacheLocks(void)
 {
-    SECStatus rv = InitSessionCacheLocks();
-    if (SECSuccess != rv) {
+    SECStatus rv;
+
+    cacheLock = PZ_NewLock(nssILockCache);
+    if (cacheLock == NULL) {
         return PR_FAILURE;
     }
-    rv = NSS_RegisterShutdown(ssl_ShutdownLocks, NULL);
+    rv = ssl_InitSymWrapKeysLock();
+    if (rv != SECSuccess) {
+        PRErrorCode error = PORT_GetError();
+        PZ_DestroyLock(cacheLock);
+        cacheLock = NULL;
+        PORT_SetError(error);
+        return PR_FAILURE;
+    }
+
+    rv = NSS_RegisterShutdown(FreeSessionCacheLocks, NULL);
     PORT_Assert(SECSuccess == rv);
     if (SECSuccess != rv) {
         return PR_FAILURE;
@@ -127,34 +91,18 @@ static PRStatus initSessionCacheLocksLazily(void)
     return PR_SUCCESS;
 }
 
-/* lazyInit means that the call is not happening during a 1-time
- * initialization function, but rather during dynamic, lazy initialization
- */
 SECStatus
-ssl_InitSessionCacheLocks(PRBool lazyInit)
+ssl_InitSessionCacheLocks(void)
 {
-    if (LocksInitializedEarly) {
-        return SECSuccess;
-    }
-
-    if (lazyInit) {
-        return (PR_SUCCESS ==
-                PR_CallOnce(&lockOnce, initSessionCacheLocksLazily)) ?
-               SECSuccess : SECFailure;
-    }
-     
-    if (SECSuccess == InitSessionCacheLocks()) {
-        LocksInitializedEarly = PR_TRUE;
-        return SECSuccess;
-    }
-
-    return SECFailure;
+    return (PR_SUCCESS ==
+            PR_CallOnce(&lockOnce, InitSessionCacheLocks)) ?
+           SECSuccess : SECFailure;
 }
 
-static void 
+static void
 lock_cache(void)
 {
-    ssl_InitSessionCacheLocks(PR_TRUE);
+    ssl_InitSessionCacheLocks();
     PZ_Lock(cacheLock);
 }
 

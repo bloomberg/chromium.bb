@@ -1353,7 +1353,7 @@ SSL_ConfigServerSessionIDCache(	int      maxCacheEntries,
 			       	PRUint32 ssl3_timeout, 
 			  const char *   directory)
 {
-    ssl_InitSessionCacheLocks(PR_FALSE);
+    ssl_InitSessionCacheLocks();
     return SSL_ConfigServerSessionIDCacheInstance(&globalCache, 
     		maxCacheEntries, ssl2_timeout, ssl3_timeout, directory, PR_FALSE);
 }
@@ -1467,7 +1467,7 @@ SSL_ConfigServerSessionIDCacheWithOpt(
                                 PRBool enableMPCache)
 {
     if (!enableMPCache) {
-        ssl_InitSessionCacheLocks(PR_FALSE);
+        ssl_InitSessionCacheLocks();
         return ssl_ConfigServerSessionIDCacheInstanceWithOpt(&globalCache, 
            ssl2_timeout, ssl3_timeout, directory, PR_FALSE,
            maxCacheEntries, maxCertCacheEntries, maxSrvNameCacheEntries);
@@ -1512,7 +1512,7 @@ SSL_InheritMPServerSIDCacheInstance(cacheDesc *cache, const char * envString)
     	return SECSuccess;	/* already done. */
     }
 
-    ssl_InitSessionCacheLocks(PR_FALSE);
+    ssl_InitSessionCacheLocks();
 
     ssl_sid_lookup  = ServerSessionIDLookup;
     ssl_sid_cache   = ServerSessionIDCache;
