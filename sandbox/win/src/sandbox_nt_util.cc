@@ -13,7 +13,7 @@ namespace sandbox {
 // This is the list of all imported symbols from ntdll.dll.
 SANDBOX_INTERCEPT NtExports g_nt = { NULL };
 
-}  // namespace
+}  // namespace sandbox
 
 namespace {
 
@@ -22,26 +22,20 @@ void* AllocateNearTo(void* source, size_t size) {
   using sandbox::g_nt;
 
   // Start with 1 GB above the source.
-  const unsigned int kOneGB = 0x40000000;
+  const size_t kOneGB = 0x40000000;
   void* base = reinterpret_cast<char*>(source) + kOneGB;
   SIZE_T actual_size = size;
   ULONG_PTR zero_bits = 0;  // Not the correct type if used.
   ULONG type = MEM_RESERVE;
 
-  if (reinterpret_cast<SIZE_T>(source) > 0x7ff80000000) {
-    // We are at the top of the address space. Let's try the highest available
-    // address.
-    base = NULL;
-    type |= MEM_TOP_DOWN;
-  }
-
   NTSTATUS ret;
   int attempts = 0;
-  for (; attempts < 20; attempts++) {
+  for (; attempts < 41; attempts++) {
     ret = g_nt.AllocateVirtualMemory(NtCurrentProcess, &base, zero_bits,
                                      &actual_size, type, PAGE_READWRITE);
     if (NT_SUCCESS(ret)) {
-      if (base < source) {
+      if (base < source ||
+          base >= reinterpret_cast<char*>(source) + 4 * kOneGB) {
         // We won't be able to patch this dll.
         VERIFY_SUCCESS(g_nt.FreeVirtualMemory(NtCurrentProcess, &base, &size,
                                               MEM_RELEASE));
@@ -50,11 +44,20 @@ void* AllocateNearTo(void* source, size_t size) {
       break;
     }
 
+    if (attempts == 30) {
+      // Try the first GB.
+      base = reinterpret_cast<char*>(source);
+    } else if (attempts == 40) {
+      // Try the highest available address.
+      base = NULL;
+      type |= MEM_TOP_DOWN;
+    }
+
     // Try 100 MB higher.
     base = reinterpret_cast<char*>(base) + 100 * 0x100000;
   };
 
-  if (attempts == 20)
+  if (attempts == 41)
     return NULL;
 
   ret = g_nt.AllocateVirtualMemory(NtCurrentProcess, &base, zero_bits,

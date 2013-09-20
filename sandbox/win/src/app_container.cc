@@ -23,6 +23,17 @@ PSID ConvertSid(const string16& sid) {
   return local_sid;
 }
 
+template <typename T>
+T BindFunction(const char* name) {
+  HMODULE module = GetModuleHandle(sandbox::kKerneldllName);
+  void* function = GetProcAddress(module, name);
+  if (!function) {
+    module = GetModuleHandle(sandbox::kKernelBasedllName);
+    function = GetProcAddress(module, name);
+  }
+  return reinterpret_cast<T>(function);
+}
+
 }  // namespace
 
 namespace sandbox {
@@ -94,9 +105,8 @@ ResultCode CreateAppContainer(const string16& sid, const string16& name) {
   static AppContainerRegisterSidPtr AppContainerRegisterSid = NULL;
 
   if (!AppContainerRegisterSid) {
-    HMODULE module = GetModuleHandle(kKerneldllName);
-    AppContainerRegisterSid = reinterpret_cast<AppContainerRegisterSidPtr>(
-        GetProcAddress(module, "AppContainerRegisterSid"));
+    AppContainerRegisterSid =
+        BindFunction<AppContainerRegisterSidPtr>("AppContainerRegisterSid");
   }
 
   ResultCode operation_result = SBOX_ERROR_GENERIC;
@@ -120,9 +130,8 @@ ResultCode DeleteAppContainer(const string16& sid) {
   static AppContainerUnregisterSidPtr AppContainerUnregisterSid = NULL;
 
   if (!AppContainerUnregisterSid) {
-    HMODULE module = GetModuleHandle(kKerneldllName);
-    AppContainerUnregisterSid = reinterpret_cast<AppContainerUnregisterSidPtr>(
-        GetProcAddress(module, "AppContainerUnregisterSid"));
+    AppContainerUnregisterSid =
+        BindFunction<AppContainerUnregisterSidPtr>("AppContainerUnregisterSid");
   }
 
   ResultCode operation_result = SBOX_ERROR_GENERIC;
@@ -150,11 +159,10 @@ string16 LookupAppContainer(const string16& sid) {
   static AppContainerFreeMemoryPtr AppContainerFreeMemory = NULL;
 
   if (!AppContainerLookupMoniker || !AppContainerFreeMemory) {
-    HMODULE module = GetModuleHandle(kKerneldllName);
-    AppContainerLookupMoniker = reinterpret_cast<AppContainerLookupMonikerPtr>(
-        GetProcAddress(module, "AppContainerLookupMoniker"));
-    AppContainerFreeMemory = reinterpret_cast<AppContainerFreeMemoryPtr>(
-        GetProcAddress(module, "AppContainerFreeMemory"));
+    AppContainerLookupMoniker =
+        BindFunction<AppContainerLookupMonikerPtr>("AppContainerLookupMoniker");
+    AppContainerFreeMemory =
+        BindFunction<AppContainerFreeMemoryPtr>("AppContainerFreeMemory");
   }
 
   if (!AppContainerLookupMoniker || !AppContainerFreeMemory)

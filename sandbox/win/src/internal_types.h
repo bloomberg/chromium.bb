@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_SRC_INTERNAL_TYPES_H_
-#define SANDBOX_SRC_INTERNAL_TYPES_H_
+#ifndef SANDBOX_WIN_SRC_INTERNAL_TYPES_H_
+#define SANDBOX_WIN_SRC_INTERNAL_TYPES_H_
 
 namespace sandbox {
 
 const wchar_t kNtdllName[] = L"ntdll.dll";
 const wchar_t kKerneldllName[] = L"kernel32.dll";
+const wchar_t kKernelBasedllName[] = L"kernelbase.dll";
 
 // Defines the supported C++ types encoding to numeric id. Like a poor's man
 // RTTI. Note that true C++ RTTI will not work because the types are not
@@ -72,4 +73,4 @@ class IPCInt {
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_SRC_INTERNAL_TYPES_H_
+#endif  // SANDBOX_WIN_SRC_INTERNAL_TYPES_H_
