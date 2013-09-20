@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_DATA_TYPE_DEBUG_INFO_LISTENER_H_
 #define SYNC_INTERNAL_API_PUBLIC_DATA_TYPE_DEBUG_INFO_LISTENER_H_
 
+#include <vector>
+
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/data_type_association_stats.h"
 
@@ -38,12 +40,9 @@ struct SYNC_EXPORT DataTypeConfigurationStats {
 // Interface for the sync internals to listen to external sync events.
 class DataTypeDebugInfoListener {
  public:
-  // Notify the listener that configuration of one data type has completed.
-  virtual void OnSingleDataTypeConfigureComplete(
-      const DataTypeConfigurationStats& configuration_stats) = 0;
-
-  // Notify the listener that configuration has completed and sync has begun.
-  virtual void OnConfigureComplete() = 0;
+  // Notify the listener that configuration of data types has completed.
+  virtual void OnDataTypeConfigureComplete(
+      const std::vector<DataTypeConfigurationStats>& configuration_stats) = 0;
 };
 
 }  // namespace syncer

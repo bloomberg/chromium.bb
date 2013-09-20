@@ -377,30 +377,25 @@ void DataTypeManagerImpl::OnSingleDataTypeAssociationDone(
   if (!debug_info_listener_.IsInitialized())
     return;
 
-  syncer::DataTypeConfigurationStats configuration_stats;
-  configuration_stats.model_type = type;
-  configuration_stats.association_stats = association_stats;
+  configuration_stats_.push_back(syncer::DataTypeConfigurationStats());
+  configuration_stats_.back().model_type = type;
+  configuration_stats_.back().association_stats = association_stats;
 
   AssociationTypesInfo& info = association_types_queue_.front();
-  configuration_stats.download_wait_time =
+  configuration_stats_.back().download_wait_time =
       info.download_start_time - last_restart_time_;
   if (info.first_sync_types.Has(type)) {
-    configuration_stats.download_time =
+    configuration_stats_.back().download_time =
         info.download_ready_time - info.download_start_time;
   }
-  configuration_stats.association_wait_time_for_high_priority =
+  configuration_stats_.back().association_wait_time_for_high_priority =
       info.association_request_time - info.download_ready_time;
-  configuration_stats.high_priority_types_configured_before =
+  configuration_stats_.back().high_priority_types_configured_before =
       info.high_priority_types_before;
-  configuration_stats.same_priority_types_configured_before =
+  configuration_stats_.back().same_priority_types_configured_before =
       info.configured_types;
 
   info.configured_types.Put(type);
-
-  debug_info_listener_.Call(
-      FROM_HERE,
-      &syncer::DataTypeDebugInfoListener::OnSingleDataTypeConfigureComplete,
-      configuration_stats);
 }
 
 void DataTypeManagerImpl::OnModelAssociationDone(
@@ -547,6 +542,14 @@ void DataTypeManagerImpl::NotifyDone(const ConfigureResult& result) {
       DVLOG(1) << "NotifyDone called with result: OK";
       UMA_HISTOGRAM_LONG_TIMES("Sync.ConfigureTime_Long.OK",
                                configure_time_delta_);
+      if (debug_info_listener_.IsInitialized() &&
+          !configuration_stats_.empty()) {
+        debug_info_listener_.Call(
+            FROM_HERE,
+            &syncer::DataTypeDebugInfoListener::OnDataTypeConfigureComplete,
+            configuration_stats_);
+      }
+      configuration_stats_.clear();
       break;
     case DataTypeManager::ABORTED:
       DVLOG(1) << "NotifyDone called with result: ABORTED";

@@ -177,76 +177,76 @@ base::WeakPtr<DataTypeDebugInfoListener> DebugInfoEventListener::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void DebugInfoEventListener::OnSingleDataTypeConfigureComplete(
-    const DataTypeConfigurationStats& configuration_stats) {
+void DebugInfoEventListener::OnDataTypeConfigureComplete(
+    const std::vector<DataTypeConfigurationStats>& configuration_stats) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ProtocolTypes().Has(configuration_stats.model_type));
 
-  const DataTypeAssociationStats& association_stats =
-      configuration_stats.association_stats;
+  for (size_t i = 0; i < configuration_stats.size(); ++i) {
+    DCHECK(ProtocolTypes().Has(configuration_stats[i].model_type));
+    const DataTypeAssociationStats& association_stats =
+        configuration_stats[i].association_stats;
 
-  sync_pb::DebugEventInfo association_event;
-  sync_pb::DatatypeAssociationStats* datatype_stats =
-      association_event.mutable_datatype_association_stats();
-  datatype_stats->set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(configuration_stats.model_type));
-  datatype_stats->set_num_local_items_before_association(
-      association_stats.num_local_items_before_association);
-  datatype_stats->set_num_sync_items_before_association(
-      association_stats.num_sync_items_before_association);
-  datatype_stats->set_num_local_items_after_association(
-      association_stats.num_local_items_after_association);
-  datatype_stats->set_num_sync_items_after_association(
-      association_stats.num_sync_items_after_association);
-  datatype_stats->set_num_local_items_added(
-      association_stats.num_local_items_added);
-  datatype_stats->set_num_local_items_deleted(
-      association_stats.num_local_items_deleted);
-  datatype_stats->set_num_local_items_modified(
-      association_stats.num_local_items_modified);
-  datatype_stats->set_num_sync_items_added(
-      association_stats.num_sync_items_added);
-  datatype_stats->set_num_sync_items_deleted(
-      association_stats.num_sync_items_deleted);
-  datatype_stats->set_num_sync_items_modified(
-      association_stats.num_sync_items_modified);
-  datatype_stats->set_local_version_pre_association(
-      association_stats.local_version_pre_association);
-  datatype_stats->set_sync_version_pre_association(
-      association_stats.sync_version_pre_association);
-  datatype_stats->set_had_error(association_stats.had_error);
-  datatype_stats->set_association_wait_time_for_same_priority_us(
-        association_stats.association_wait_time.InMicroseconds());
-  datatype_stats->set_association_time_us(
-      association_stats.association_time.InMicroseconds());
-  datatype_stats->set_download_wait_time_us(
-      configuration_stats.download_wait_time.InMicroseconds());
-  datatype_stats->set_download_time_us(
-      configuration_stats.download_time.InMicroseconds());
-  datatype_stats->set_association_wait_time_for_high_priority_us(
-      configuration_stats.association_wait_time_for_high_priority
-          .InMicroseconds());
+    sync_pb::DebugEventInfo association_event;
+    sync_pb::DatatypeAssociationStats* datatype_stats =
+        association_event.mutable_datatype_association_stats();
+    datatype_stats->set_data_type_id(
+        GetSpecificsFieldNumberFromModelType(
+            configuration_stats[i].model_type));
+    datatype_stats->set_num_local_items_before_association(
+        association_stats.num_local_items_before_association);
+    datatype_stats->set_num_sync_items_before_association(
+        association_stats.num_sync_items_before_association);
+    datatype_stats->set_num_local_items_after_association(
+        association_stats.num_local_items_after_association);
+    datatype_stats->set_num_sync_items_after_association(
+        association_stats.num_sync_items_after_association);
+    datatype_stats->set_num_local_items_added(
+        association_stats.num_local_items_added);
+    datatype_stats->set_num_local_items_deleted(
+        association_stats.num_local_items_deleted);
+    datatype_stats->set_num_local_items_modified(
+        association_stats.num_local_items_modified);
+    datatype_stats->set_num_sync_items_added(
+        association_stats.num_sync_items_added);
+    datatype_stats->set_num_sync_items_deleted(
+        association_stats.num_sync_items_deleted);
+    datatype_stats->set_num_sync_items_modified(
+        association_stats.num_sync_items_modified);
+    datatype_stats->set_local_version_pre_association(
+        association_stats.local_version_pre_association);
+    datatype_stats->set_sync_version_pre_association(
+        association_stats.sync_version_pre_association);
+    datatype_stats->set_had_error(association_stats.had_error);
+    datatype_stats->set_association_wait_time_for_same_priority_us(
+          association_stats.association_wait_time.InMicroseconds());
+    datatype_stats->set_association_time_us(
+        association_stats.association_time.InMicroseconds());
+    datatype_stats->set_download_wait_time_us(
+        configuration_stats[i].download_wait_time.InMicroseconds());
+    datatype_stats->set_download_time_us(
+        configuration_stats[i].download_time.InMicroseconds());
+    datatype_stats->set_association_wait_time_for_high_priority_us(
+        configuration_stats[i].association_wait_time_for_high_priority
+            .InMicroseconds());
 
-  for (ModelTypeSet::Iterator it =
-      configuration_stats.high_priority_types_configured_before.First();
-      it.Good(); it.Inc()) {
-    datatype_stats->add_high_priority_type_configured_before(
-        GetSpecificsFieldNumberFromModelType(it.Get()));
+    for (ModelTypeSet::Iterator it =
+             configuration_stats[i].high_priority_types_configured_before
+                 .First();
+         it.Good(); it.Inc()) {
+      datatype_stats->add_high_priority_type_configured_before(
+          GetSpecificsFieldNumberFromModelType(it.Get()));
+    }
+
+    for (ModelTypeSet::Iterator it =
+             configuration_stats[i].same_priority_types_configured_before
+                 .First();
+        it.Good(); it.Inc()) {
+      datatype_stats->add_same_priority_type_configured_before(
+          GetSpecificsFieldNumberFromModelType(it.Get()));
+    }
+
+    AddEventToQueue(association_event);
   }
-
-  for (ModelTypeSet::Iterator it =
-      configuration_stats.same_priority_types_configured_before.First();
-      it.Good(); it.Inc()) {
-    datatype_stats->add_same_priority_type_configured_before(
-        GetSpecificsFieldNumberFromModelType(it.Get()));
-  }
-
-  AddEventToQueue(association_event);
-}
-
-void DebugInfoEventListener::OnConfigureComplete() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  CreateAndAddEvent(sync_pb::DebugEventInfo::CONFIGURE_COMPLETE);
 }
 
 void DebugInfoEventListener::CreateAndAddEvent(

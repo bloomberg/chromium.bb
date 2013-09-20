@@ -144,7 +144,10 @@ TEST_F(DownloadUpdatesTest, VerifyAppendDebugInfo) {
   // Create a new session, record an event, and try again.
   scoped_ptr<sessions::SyncSession> session2(
       sessions::SyncSession::Build(context(), delegate()));
-  debug_info_event_listener()->OnConfigureComplete();
+  DataTypeConfigurationStats stats;
+  stats.model_type = BOOKMARKS;
+  debug_info_event_listener()->OnDataTypeConfigureComplete(
+      std::vector<DataTypeConfigurationStats>(1, stats));
   sync_pb::ClientToServerMessage msg2;
   BuildNormalDownloadUpdates(session2.get(),
                              false,

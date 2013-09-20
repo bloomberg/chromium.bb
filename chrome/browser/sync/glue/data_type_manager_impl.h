@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/glue/model_association_manager.h"
 
 namespace syncer {
+struct DataTypeConfigurationStats;
 class DataTypeDebugInfoListener;
 template <typename T> class WeakHandle;
 }
@@ -182,6 +183,9 @@ class DataTypeManagerImpl : public DataTypeManager,
   // The encryption handler lets the DataTypeManager know the state of sync
   // datatype encryption.
   const browser_sync::DataTypeEncryptionHandler* encryption_handler_;
+
+  // Association and time stats of data type configuration.
+  std::vector<syncer::DataTypeConfigurationStats> configuration_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl);
 };
