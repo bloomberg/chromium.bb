@@ -150,7 +150,7 @@ def RunChromeDriverTests(options):
             constants.PACKAGE_INFO['chrome_stable'].package,
             constants.PACKAGE_INFO['chrome_beta'].package),
           '--revision=%s' % _GetRevision(options),
-          '--update_log'])
+          '--update-log'])
 
 def InstallApk(options, test, print_step=False):
   """Install an apk to all phones.
