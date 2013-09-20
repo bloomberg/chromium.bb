@@ -15,7 +15,7 @@ function test(url, expectSuccess)
 {
     log("Testing: " + url + " (sync)");
     var req = new XMLHttpRequest();
-    req.open("GET", url, false);
+    req.open("GET", url + "?sync", false);
     try {
         req.send(null);
         log((expectSuccess ? "PASS: " : "FAIL: ") + req.responseText);
@@ -25,7 +25,7 @@ function test(url, expectSuccess)
 
     log("Testing: " + url + " (async)");
     req = new XMLHttpRequest();
-    req.open("GET", url, true);
+    req.open("GET", url + "?async", true);
     req.onload = function() {
         log((expectSuccess ? "PASS: " : "FAIL: ") + req.responseText);
         nextTest();
