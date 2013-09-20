@@ -32,7 +32,6 @@ from chromite.lib import gs
 from chromite.lib import osutils
 
 
-EXTENSIONS_CACHE_PREFIX = '/usr/share/google-chrome/extensions'
 UPLOAD_URL_BASE = 'gs://chromeos-localmirror-private/distfiles'
 
 
@@ -66,12 +65,8 @@ def DownloadCrx(ext, extension, crxdir):
   osutils.WriteFile(os.path.join(crxdir, 'extensions', filename),
                     response.read())
 
-  # Has to delete because only one of 'external_crx' or
-  # 'external_update_url' should present for the extension.
-  del extension['external_update_url']
-
-  extension['external_crx'] = os.path.join(EXTENSIONS_CACHE_PREFIX, filename)
-  extension['external_version'] = version
+  # Keep external_update_url in json file, ExternalCache will take care about
+  # replacing it with proper external_crx path and version.
 
   cros_build_lib.Info('Downloaded, current version %s', version)
   return True
