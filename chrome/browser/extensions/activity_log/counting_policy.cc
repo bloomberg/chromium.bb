@@ -80,7 +80,6 @@ const ApiList kAlwaysLog[] = {
     {Action::ACTION_CONTENT_SCRIPT, ""},
     {Action::ACTION_DOM_ACCESS, "Document.createElement"},
     {Action::ACTION_DOM_ACCESS, "Document.createElementNS"},
-    {Action::ACTION_DOM_ACCESS, "XMLHttpRequest.open"},
 };
 
 // Columns in the main database table.  See the file-level comment for a
