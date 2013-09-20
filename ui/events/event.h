@@ -12,10 +12,9 @@
 #include "base/time/time.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/gestures/gesture_types.h"
-#include "ui/base/latency_info.h"
-#include "ui/base/ui_export.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/point.h"
 
 namespace gfx {
@@ -25,7 +24,7 @@ class Transform;
 namespace ui {
 class EventTarget;
 
-class UI_EXPORT Event {
+class EVENTS_EXPORT Event {
  public:
   virtual ~Event();
 
@@ -238,13 +237,13 @@ class UI_EXPORT Event {
   EventResult result_;
 };
 
-class UI_EXPORT CancelModeEvent : public Event {
+class EVENTS_EXPORT CancelModeEvent : public Event {
  public:
   CancelModeEvent();
   virtual ~CancelModeEvent();
 };
 
-class UI_EXPORT LocatedEvent : public Event {
+class EVENTS_EXPORT LocatedEvent : public Event {
  public:
   // For testing.
   class TestApi : public Event::TestApi {
@@ -311,7 +310,7 @@ class UI_EXPORT LocatedEvent : public Event {
   gfx::Point root_location_;
 };
 
-class UI_EXPORT MouseEvent : public LocatedEvent {
+class EVENTS_EXPORT MouseEvent : public LocatedEvent {
  public:
   explicit MouseEvent(const base::NativeEvent& native_event);
 
@@ -408,7 +407,7 @@ class UI_EXPORT MouseEvent : public LocatedEvent {
 
 class ScrollEvent;
 
-class UI_EXPORT MouseWheelEvent : public MouseEvent {
+class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
  public:
   // See |offset| for details.
   static const int kWheelDelta;
@@ -442,7 +441,7 @@ class UI_EXPORT MouseWheelEvent : public MouseEvent {
   gfx::Vector2d offset_;
 };
 
-class UI_EXPORT TouchEvent : public LocatedEvent {
+class EVENTS_EXPORT TouchEvent : public LocatedEvent {
  public:
   explicit TouchEvent(const base::NativeEvent& native_event);
 
@@ -525,7 +524,7 @@ class UI_EXPORT TouchEvent : public LocatedEvent {
   float force_;
 };
 
-class UI_EXPORT KeyEvent : public Event {
+class EVENTS_EXPORT KeyEvent : public Event {
  public:
   KeyEvent(const base::NativeEvent& native_event, bool is_char);
 
@@ -585,7 +584,7 @@ class UI_EXPORT KeyEvent : public Event {
 // TranslatedKeyEvent(VKEY_SPACE) event. If the IME receives a KeyEvent and
 // it does consume the event, it might dispatch a
 // TranslatedKeyEvent(VKEY_PROCESSKEY) event as defined in the DOM spec.
-class UI_EXPORT TranslatedKeyEvent : public KeyEvent {
+class EVENTS_EXPORT TranslatedKeyEvent : public KeyEvent {
  public:
   TranslatedKeyEvent(const base::NativeEvent& native_event, bool is_char);
 
@@ -600,7 +599,7 @@ class UI_EXPORT TranslatedKeyEvent : public KeyEvent {
   DISALLOW_COPY_AND_ASSIGN(TranslatedKeyEvent);
 };
 
-class UI_EXPORT DropTargetEvent : public LocatedEvent {
+class EVENTS_EXPORT DropTargetEvent : public LocatedEvent {
  public:
   DropTargetEvent(const OSExchangeData& data,
                   const gfx::Point& location,
@@ -620,7 +619,7 @@ class UI_EXPORT DropTargetEvent : public LocatedEvent {
   DISALLOW_COPY_AND_ASSIGN(DropTargetEvent);
 };
 
-class UI_EXPORT ScrollEvent : public MouseEvent {
+class EVENTS_EXPORT ScrollEvent : public MouseEvent {
  public:
   explicit ScrollEvent(const base::NativeEvent& native_event);
   template <class T>
@@ -672,7 +671,7 @@ class UI_EXPORT ScrollEvent : public MouseEvent {
   int finger_count_;
 };
 
-class UI_EXPORT GestureEvent : public LocatedEvent {
+class EVENTS_EXPORT GestureEvent : public LocatedEvent {
  public:
   GestureEvent(EventType type,
                int x,

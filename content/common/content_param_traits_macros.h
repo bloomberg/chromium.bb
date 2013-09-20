@@ -11,7 +11,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/base/latency_info.h"
+#include "ui/events/latency_info.h"
 #include "webkit/common/resource_type.h"
 
 #undef IPC_MESSAGE_EXPORT

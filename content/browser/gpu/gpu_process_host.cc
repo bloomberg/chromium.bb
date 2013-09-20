@@ -36,7 +36,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
-#include "ui/base/latency_info.h"
+#include "ui/events/latency_info.h"
 #include "ui/gl/gl_switches.h"
 
 
