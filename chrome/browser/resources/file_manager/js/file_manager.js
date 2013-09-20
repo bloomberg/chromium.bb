@@ -616,11 +616,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     });
   };
 
+  /**
+   * Entry point of the initialization.
+   * This method is called from main.js.
+   */
   FileManager.prototype.initializeCore = function() {
     this.initializeQueue_.add(this.initGeneral_.bind(this), [], 'initGeneral');
     this.initializeQueue_.add(this.initStrings_.bind(this), [], 'initStrings');
     this.initializeQueue_.add(
-        this.initPreferences_.bind(this), [], 'initPreferences');
+        this.initPreferences_.bind(this), ['initGeneral'], 'initPreferences');
     this.initializeQueue_.add(
         this.initVolumeManager_.bind(this),
         ['initPreferences'], 'initVolumeManager');
