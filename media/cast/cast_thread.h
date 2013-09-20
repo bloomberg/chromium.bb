@@ -7,13 +7,11 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/task_runner.h"
 #include "base/time/time.h"
 
 namespace media {
 namespace cast {
-
-using base::MessageLoopProxy;
 
 class CastThread : public base::RefCountedThreadSafe<CastThread> {
  public:
@@ -34,11 +32,11 @@ class CastThread : public base::RefCountedThreadSafe<CastThread> {
     VIDEO_DECODER,
   };
 
-  CastThread(scoped_refptr<MessageLoopProxy> main_thread_proxy,
-             scoped_refptr<MessageLoopProxy> audio_encode_thread_proxy,
-             scoped_refptr<MessageLoopProxy> audio_decode_thread_proxy,
-             scoped_refptr<MessageLoopProxy> video_encode_thread_proxy,
-             scoped_refptr<MessageLoopProxy> video_decode_thread_proxy);
+  CastThread(scoped_refptr<base::TaskRunner> main_thread_proxy,
+             scoped_refptr<base::TaskRunner> audio_encode_thread_proxy,
+             scoped_refptr<base::TaskRunner> audio_decode_thread_proxy,
+             scoped_refptr<base::TaskRunner> video_encode_thread_proxy,
+             scoped_refptr<base::TaskRunner> video_decode_thread_proxy);
 
   // These are the same methods in message_loop.h, but are guaranteed to either
   // get posted to the MessageLoop if it's still alive, or be deleted otherwise.
@@ -55,14 +53,14 @@ class CastThread : public base::RefCountedThreadSafe<CastThread> {
                        base::TimeDelta delay);
 
  private:
-  scoped_refptr<base::MessageLoopProxy> GetMessageLoopProxyForThread(
+  scoped_refptr<base::TaskRunner> GetMessageTaskRunnerForThread(
       ThreadId identifier);
 
-  scoped_refptr<MessageLoopProxy> main_thread_proxy_;
-  scoped_refptr<MessageLoopProxy> audio_encode_thread_proxy_;
-  scoped_refptr<MessageLoopProxy> audio_decode_thread_proxy_;
-  scoped_refptr<MessageLoopProxy> video_encode_thread_proxy_;
-  scoped_refptr<MessageLoopProxy> video_decode_thread_proxy_;
+  scoped_refptr<base::TaskRunner> main_thread_proxy_;
+  scoped_refptr<base::TaskRunner> audio_encode_thread_proxy_;
+  scoped_refptr<base::TaskRunner> audio_decode_thread_proxy_;
+  scoped_refptr<base::TaskRunner> video_encode_thread_proxy_;
+  scoped_refptr<base::TaskRunner> video_decode_thread_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(CastThread);
 };

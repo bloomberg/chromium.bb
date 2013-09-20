@@ -2,29 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
-#include "base/threading/thread.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_thread.h"
+#include "media/cast/test/fake_task_runner.h"
 #include "media/cast/video_receiver/video_decoder.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
 namespace cast {
 
-using base::RunLoop;
-using base::MessageLoopProxy;
-using base::Thread;
 using testing::_;
 
 // Random frame size for testing.
 const int kFrameSize = 2345;
+
+static void ReleaseFrame(const EncodedVideoFrame* encoded_frame) {
+  // Empty since we in this test send in the same frame.
+}
 
 class TestVideoDecoderCallback :
     public base::RefCountedThreadSafe<TestVideoDecoderCallback> {
@@ -53,38 +51,34 @@ class VideoDecoderTest : public ::testing::Test {
 
   ~VideoDecoderTest() {}
   virtual void SetUp() {
-    cast_thread_ = new CastThread(MessageLoopProxy::current(),
-                                  MessageLoopProxy::current(),
-                                  MessageLoopProxy::current(),
-                                  MessageLoopProxy::current(),
-                                  MessageLoopProxy::current());
+    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
+    cast_thread_ = new CastThread(task_runner_, task_runner_, task_runner_,
+                                  task_runner_, task_runner_);
     decoder_ = new VideoDecoder(cast_thread_, config_);
   }
 
-  // Used in MessageLoopProxy::current().
-  base::MessageLoop loop_;
   scoped_refptr<VideoDecoder> decoder_;
   VideoReceiverConfig config_;
   EncodedVideoFrame encoded_frame_;
+  base::SimpleTestTickClock testing_clock_;
+  scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_refptr<CastThread> cast_thread_;
   scoped_refptr<TestVideoDecoderCallback> video_decoder_callback_;
 };
 
 // TODO(pwestin): Test decoding a real frame.
 TEST_F(VideoDecoderTest, SizeZero) {
-  RunLoop run_loop;
   encoded_frame_.codec = kVp8;
   base::TimeTicks render_time;
   VideoFrameDecodedCallback frame_decoded_callback =
       base::Bind(&TestVideoDecoderCallback::DecodeComplete,
                  video_decoder_callback_.get());
   decoder_->DecodeVideoFrame(&encoded_frame_, render_time,
-      frame_decoded_callback, run_loop.QuitClosure());
+      frame_decoded_callback, base::Bind(ReleaseFrame, &encoded_frame_));
   EXPECT_EQ(0, video_decoder_callback_->number_times_called());
 }
 
 TEST_F(VideoDecoderTest, InvalidCodec) {
-  RunLoop run_loop;
   base::TimeTicks render_time;
   VideoFrameDecodedCallback frame_decoded_callback =
       base::Bind(&TestVideoDecoderCallback::DecodeComplete,
@@ -92,7 +86,8 @@ TEST_F(VideoDecoderTest, InvalidCodec) {
   encoded_frame_.data.assign(kFrameSize, 0);
   encoded_frame_.codec = kExternalVideo;
   EXPECT_DEATH(decoder_->DecodeVideoFrame(&encoded_frame_, render_time,
-    frame_decoded_callback, run_loop.QuitClosure()), "Invalid codec");
+      frame_decoded_callback, base::Bind(ReleaseFrame, &encoded_frame_)),
+          "Invalid codec");
 }
 
 }  // namespace cast

@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "media/cast/audio_receiver/audio_decoder.h"
 #include "media/cast/cast_thread.h"
+#include "media/cast/test/fake_task_runner.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
 namespace cast {
@@ -25,24 +22,21 @@ class AudioDecoderTest : public ::testing::Test {
   ~AudioDecoderTest() {}
 
   virtual void SetUp() {
-    cast_thread_ = new CastThread(MessageLoopProxy::current(),
-                                  MessageLoopProxy::current(),
-                                  MessageLoopProxy::current(),
-                                  MessageLoopProxy::current(),
-                                  MessageLoopProxy::current());
+    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
+    cast_thread_ = new CastThread(task_runner_, task_runner_, task_runner_,
+                                  task_runner_, task_runner_);
   }
   void Configure(const AudioReceiverConfig& audio_config) {
     audio_decoder_ = new AudioDecoder(cast_thread_, audio_config);
   }
 
-  // Used in MessageLoopProxy::current().
-  base::MessageLoop loop_;
+  base::SimpleTestTickClock testing_clock_;
+  scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_refptr<CastThread> cast_thread_;
   scoped_refptr<AudioDecoder> audio_decoder_;
 };
 
 TEST_F(AudioDecoderTest, Pcm16MonoNoResampleOnePacket) {
-  base::RunLoop run_loop;
   AudioReceiverConfig audio_config;
   audio_config.rtp_payload_type = 127;
   audio_config.frequency = 16000;
@@ -86,11 +80,10 @@ TEST_F(AudioDecoderTest, Pcm16MonoNoResampleOnePacket) {
   for (size_t i = 10; i < audio_frame.samples.size(); ++i) {
     EXPECT_EQ(0x3412, audio_frame.samples[i]);
   }
-  run_loop.RunUntilIdle();
+  task_runner_->RunTasks();
 }
 
 TEST_F(AudioDecoderTest, Pcm16StereoNoResampleTwoPackets) {
-  base::RunLoop run_loop;
   AudioReceiverConfig audio_config;
   audio_config.rtp_payload_type = 127;
   audio_config.frequency = 16000;
@@ -150,11 +143,10 @@ TEST_F(AudioDecoderTest, Pcm16StereoNoResampleTwoPackets) {
       ++i) {
     EXPECT_EQ(0x3412, audio_frame.samples[i]);
   }
-  run_loop.RunUntilIdle();
+  task_runner_->RunTasks();
 }
 
 TEST_F(AudioDecoderTest, Pcm16Resample) {
-  base::RunLoop run_loop;
   AudioReceiverConfig audio_config;
   audio_config.rtp_payload_type = 127;
   audio_config.frequency = 16000;
@@ -202,7 +194,7 @@ TEST_F(AudioDecoderTest, Pcm16Resample) {
     EXPECT_NEAR(0x3412, audio_frame.samples[i], 400);
     if (0x3412 == audio_frame.samples[i])  count++;
   }
-  run_loop.RunUntilIdle();
+  task_runner_->RunTasks();
 }
 
 }  // namespace cast

@@ -6,14 +6,11 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "base/threading/platform_thread.h"
-#include "base/threading/thread.h"
 #include "media/cast/cast_thread.h"
 #include "media/cast/pacing/mock_paced_packet_sender.h"
 #include "media/cast/pacing/paced_sender.h"
+#include "media/cast/test/fake_task_runner.h"
 #include "media/cast/video_sender/mock_video_encoder_controller.h"
 #include "media/cast/video_sender/video_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,7 +21,6 @@ namespace cast {
 
 static const int64 kStartMillisecond = 123456789;
 
-using base::RunLoop;
 using testing::_;
 
 class PeerVideoSender : public VideoSender {
@@ -44,11 +40,11 @@ static void ReleaseVideoFrame(const I420VideoFrame* frame) {
   delete [] frame->u_plane.data;
   delete [] frame->v_plane.data;
   delete frame;
-};
+}
 
 static void ReleaseEncodedFrame(const EncodedVideoFrame* frame) {
   // Do nothing.
-};
+}
 
 class VideoSenderTest : public ::testing::Test {
  protected:
@@ -87,11 +83,9 @@ class VideoSenderTest : public ::testing::Test {
   }
 
   virtual void SetUp() {
-    cast_thread_ = new CastThread(MessageLoopProxy::current(),
-                                  MessageLoopProxy::current(),
-                                  MessageLoopProxy::current(),
-                                  MessageLoopProxy::current(),
-                                  MessageLoopProxy::current());
+    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
+    cast_thread_ = new CastThread(task_runner_, task_runner_, task_runner_,
+                                  task_runner_, task_runner_);
   }
 
   I420VideoFrame* AllocateNewVideoFrame() {
@@ -120,10 +114,10 @@ class VideoSenderTest : public ::testing::Test {
     return video_frame;
   }
 
-  base::MessageLoop loop_;
   MockVideoEncoderController mock_video_encoder_controller_;
   base::SimpleTestTickClock testing_clock_;
   MockPacedPacketSender mock_transport_;
+  scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_ptr<PeerVideoSender> video_sender_;
   scoped_refptr<CastThread> cast_thread_;
 };
@@ -131,7 +125,6 @@ class VideoSenderTest : public ::testing::Test {
 TEST_F(VideoSenderTest, BuiltInEncoder) {
   EXPECT_CALL(mock_transport_, SendPacket(_, _)).Times(1);
 
-  RunLoop run_loop;
   InitEncoder(false);
   I420VideoFrame* video_frame = AllocateNewVideoFrame();
 
@@ -139,7 +132,7 @@ TEST_F(VideoSenderTest, BuiltInEncoder) {
   video_sender_->InsertRawVideoFrame(video_frame, capture_time,
       base::Bind(&ReleaseVideoFrame, video_frame));
 
-  run_loop.RunUntilIdle();
+  task_runner_->RunTasks();
 }
 
 TEST_F(VideoSenderTest, ExternalEncoder) {
@@ -162,25 +155,20 @@ TEST_F(VideoSenderTest, ExternalEncoder) {
 
 TEST_F(VideoSenderTest, RtcpTimer) {
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).Times(1);
-  RunLoop run_loop;
   InitEncoder(false);
 
   // Make sure that we send at least one RTCP packet.
   base::TimeDelta max_rtcp_timeout =
       base::TimeDelta::FromMilliseconds(1 + kDefaultRtcpIntervalMs * 3 / 2);
-  testing_clock_.Advance(max_rtcp_timeout);
 
-  // TODO(pwestin): haven't found a way to make the post delayed task to go
-  // faster than a real-time.
-  base::PlatformThread::Sleep(max_rtcp_timeout);
-  run_loop.RunUntilIdle();
+  testing_clock_.Advance(max_rtcp_timeout);
+  task_runner_->RunTasks();
 }
 
 TEST_F(VideoSenderTest, ResendTimer) {
   EXPECT_CALL(mock_transport_, SendPacket(_, _)).Times(2);
   EXPECT_CALL(mock_transport_, ResendPacket(_, _)).Times(1);
 
-  RunLoop run_loop;
   InitEncoder(false);
 
   I420VideoFrame* video_frame = AllocateNewVideoFrame();
@@ -189,7 +177,7 @@ TEST_F(VideoSenderTest, ResendTimer) {
   video_sender_->InsertRawVideoFrame(video_frame, capture_time,
       base::Bind(&ReleaseVideoFrame, video_frame));
 
-  run_loop.RunUntilIdle();
+  task_runner_->RunTasks();
 
   // ACK the key frame.
   RtcpCastMessage cast_feedback(1);
@@ -201,24 +189,14 @@ TEST_F(VideoSenderTest, ResendTimer) {
   video_sender_->InsertRawVideoFrame(video_frame, capture_time,
       base::Bind(&ReleaseVideoFrame, video_frame));
 
-  {
-    RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
+  task_runner_->RunTasks();
 
   base::TimeDelta max_resend_timeout =
       base::TimeDelta::FromMilliseconds(1 + kDefaultRtpMaxDelayMs);
 
   // Make sure that we do a re-send.
   testing_clock_.Advance(max_resend_timeout);
-
-  // TODO(pwestin): haven't found a way to make the post delayed task to go
-  // faster than a real-time.
-  base::PlatformThread::Sleep(max_resend_timeout);
-  {
-    RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
+  task_runner_->RunTasks();
 }
 
 }  // namespace cast

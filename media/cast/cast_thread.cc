@@ -6,15 +6,17 @@
 
 #include "base/logging.h"
 
+using base::TaskRunner;
+
 namespace media {
 namespace cast {
 
 CastThread::CastThread(
-    scoped_refptr<MessageLoopProxy> main_thread_proxy,
-    scoped_refptr<MessageLoopProxy> audio_encode_thread_proxy,
-    scoped_refptr<MessageLoopProxy> audio_decode_thread_proxy,
-    scoped_refptr<MessageLoopProxy> video_encode_thread_proxy,
-    scoped_refptr<MessageLoopProxy> video_decode_thread_proxy)
+    scoped_refptr<TaskRunner> main_thread_proxy,
+    scoped_refptr<TaskRunner> audio_encode_thread_proxy,
+    scoped_refptr<TaskRunner> audio_decode_thread_proxy,
+    scoped_refptr<TaskRunner> video_encode_thread_proxy,
+    scoped_refptr<TaskRunner> video_decode_thread_proxy)
     : main_thread_proxy_(main_thread_proxy),
       audio_encode_thread_proxy_(audio_encode_thread_proxy),
       audio_decode_thread_proxy_(audio_decode_thread_proxy),
@@ -26,23 +28,23 @@ CastThread::CastThread(
 bool CastThread::PostTask(ThreadId identifier,
                           const tracked_objects::Location& from_here,
                           const base::Closure& task) {
-  scoped_refptr<base::MessageLoopProxy> message_proxy =
-      GetMessageLoopProxyForThread(identifier);
+  scoped_refptr<TaskRunner> task_runner =
+      GetMessageTaskRunnerForThread(identifier);
 
-  return message_proxy->PostTask(from_here, task);
+  return task_runner->PostTask(from_here, task);
 }
 
 bool CastThread::PostDelayedTask(ThreadId identifier,
                                  const tracked_objects::Location& from_here,
                                  const base::Closure& task,
                                  base::TimeDelta delay) {
-  scoped_refptr<base::MessageLoopProxy> message_proxy =
-      GetMessageLoopProxyForThread(identifier);
+  scoped_refptr<TaskRunner> task_runner =
+      GetMessageTaskRunnerForThread(identifier);
 
-  return message_proxy->PostDelayedTask(from_here, task, delay);
+  return task_runner->PostDelayedTask(from_here, task, delay);
 }
 
-scoped_refptr<base::MessageLoopProxy> CastThread::GetMessageLoopProxyForThread(
+scoped_refptr<TaskRunner> CastThread::GetMessageTaskRunnerForThread(
       ThreadId identifier) {
   switch (identifier) {
     case CastThread::MAIN:

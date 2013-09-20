@@ -4,11 +4,10 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "media/cast/audio_sender/audio_encoder.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_thread.h"
+#include "media/cast/test/fake_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -16,11 +15,9 @@ namespace cast {
 
 static const int64 kStartMillisecond = 123456789;
 
-using base::RunLoop;
-
 static void RelaseFrame(const PcmAudioFrame* frame) {
   delete frame;
-};
+}
 
 static void FrameEncoded(scoped_ptr<EncodedAudioFrame> encoded_frame,
                          const base::TimeTicks& recorded_time) {
@@ -28,14 +25,15 @@ static void FrameEncoded(scoped_ptr<EncodedAudioFrame> encoded_frame,
 
 class AudioEncoderTest : public ::testing::Test {
  protected:
-  AudioEncoderTest() {}
+  AudioEncoderTest() {
+    testing_clock_.Advance(
+        base::TimeDelta::FromMilliseconds(kStartMillisecond));
+  }
 
   virtual void SetUp() {
-    cast_thread_ = new CastThread(MessageLoopProxy::current(),
-                                  MessageLoopProxy::current(),
-                                  MessageLoopProxy::current(),
-                                  MessageLoopProxy::current(),
-                                  MessageLoopProxy::current());
+    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
+    cast_thread_ = new CastThread(task_runner_, task_runner_, task_runner_,
+                                  task_runner_, task_runner_);
     AudioSenderConfig audio_config;
     audio_config.codec = kOpus;
     audio_config.use_external_encoder = false;
@@ -49,14 +47,13 @@ class AudioEncoderTest : public ::testing::Test {
 
   ~AudioEncoderTest() {}
 
-  base::MessageLoop loop_;
+  base::SimpleTestTickClock testing_clock_;
+  scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_refptr<AudioEncoder> audio_encoder_;
   scoped_refptr<CastThread> cast_thread_;
 };
 
 TEST_F(AudioEncoderTest, Encode20ms) {
-  RunLoop run_loop;
-
   PcmAudioFrame* audio_frame = new PcmAudioFrame();
   audio_frame->channels = 2;
   audio_frame->frequency = 48000;
@@ -66,7 +63,7 @@ TEST_F(AudioEncoderTest, Encode20ms) {
   audio_encoder_->InsertRawAudioFrame(audio_frame, recorded_time,
       base::Bind(&FrameEncoded),
       base::Bind(&RelaseFrame, audio_frame));
-  run_loop.RunUntilIdle();
+  task_runner_->RunTasks();
 }
 
 }  // namespace cast

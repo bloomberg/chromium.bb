@@ -4,14 +4,12 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "base/threading/platform_thread.h"
 #include "media/cast/audio_sender/audio_sender.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_thread.h"
 #include "media/cast/pacing/mock_paced_packet_sender.h"
+#include "media/cast/test/fake_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -19,12 +17,11 @@ namespace cast {
 
 static const int64 kStartMillisecond = 123456789;
 
-using base::RunLoop;
 using testing::_;
 
 static void RelaseFrame(const PcmAudioFrame* frame) {
   delete frame;
-};
+}
 
 class AudioSenderTest : public ::testing::Test {
  protected:
@@ -34,11 +31,9 @@ class AudioSenderTest : public ::testing::Test {
   }
 
   virtual void SetUp() {
-    cast_thread_ = new CastThread(MessageLoopProxy::current(),
-                                  MessageLoopProxy::current(),
-                                  MessageLoopProxy::current(),
-                                  MessageLoopProxy::current(),
-                                  MessageLoopProxy::current());
+    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
+    cast_thread_ = new CastThread(task_runner_, task_runner_, task_runner_,
+                                  task_runner_, task_runner_);
     AudioSenderConfig audio_config;
     audio_config.codec = kOpus;
     audio_config.use_external_encoder = false;
@@ -54,17 +49,15 @@ class AudioSenderTest : public ::testing::Test {
 
   ~AudioSenderTest() {}
 
-  base::MessageLoop loop_;
-  MockPacedPacketSender mock_transport_;
   base::SimpleTestTickClock testing_clock_;
+  MockPacedPacketSender mock_transport_;
+  scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_ptr<AudioSender> audio_sender_;
   scoped_refptr<CastThread> cast_thread_;
 };
 
 TEST_F(AudioSenderTest, Encode20ms) {
   EXPECT_CALL(mock_transport_, SendPacket(_, _)).Times(1);
-
-  RunLoop run_loop;
 
   PcmAudioFrame* audio_frame = new PcmAudioFrame();
   audio_frame->channels = 2;
@@ -74,22 +67,18 @@ TEST_F(AudioSenderTest, Encode20ms) {
   base::TimeTicks recorded_time;
   audio_sender_->InsertRawAudioFrame(audio_frame, recorded_time,
       base::Bind(&RelaseFrame, audio_frame));
-  run_loop.RunUntilIdle();
+
+  task_runner_->RunTasks();
 }
 
 TEST_F(AudioSenderTest, RtcpTimer) {
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).Times(1);
 
-  RunLoop run_loop;
   // Make sure that we send at least one RTCP packet.
   base::TimeDelta max_rtcp_timeout =
       base::TimeDelta::FromMilliseconds(1 + kDefaultRtcpIntervalMs * 3 / 2);
   testing_clock_.Advance(max_rtcp_timeout);
-
-  // TODO(pwestin): haven't found a way to make the post delayed task to go
-  // faster than a real-time.
-  base::PlatformThread::Sleep(max_rtcp_timeout);
-  run_loop.RunUntilIdle();
+  task_runner_->RunTasks();
 }
 
 }  // namespace cast
