@@ -81,3 +81,5 @@ crbug.com/248938 virtual/threaded/animations/cross-fade-webkit-mask-image.html [
 crbug.com/248938 virtual/threaded/animations/missing-values-last-keyframe.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/suspend-transform-animation.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/transition-and-animation-1.html [ Slow ]
+
+crbug.com/295711 [ Win ] tables/mozilla/other/slashlogo.html [ Slow ]
