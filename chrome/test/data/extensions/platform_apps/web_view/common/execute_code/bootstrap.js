@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 config.IS_CHROME_TEST = true;
+// No TestServer.
+config.IS_JS_ONLY_GUEST = true;
 config.TEST_DIR = 'execute_code';
 
 var executeCodeTests = {};

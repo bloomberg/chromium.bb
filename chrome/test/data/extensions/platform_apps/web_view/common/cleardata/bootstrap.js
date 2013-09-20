@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 config.IS_CHROME_TEST = true;
+// Guest served from TestServer.
+config.IS_JS_ONLY_GUEST = false;
 config.TEST_DIR = 'cleardata';
 
 var clearDataTests = {};

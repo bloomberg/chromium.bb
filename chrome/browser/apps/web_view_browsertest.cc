@@ -1499,7 +1499,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow_TestAllowAsync) {
 // Checks that window.screenX/screenY/screenLeft/screenTop works correctly for
 // guests.
 IN_PROC_BROWSER_TEST_F(WebViewTest, ScreenCoordinates) {
-  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTestWithArg(
       "platform_apps/web_view/common", "screen_coordinates"))
           << message_;
@@ -1629,7 +1628,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ClearData) {
 #define MAYBE_ConsoleMessage ConsoleMessage
 #endif
 IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_ConsoleMessage) {
-  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTestWithArg(
       "platform_apps/web_view/common", "console_messages"))
           << message_;

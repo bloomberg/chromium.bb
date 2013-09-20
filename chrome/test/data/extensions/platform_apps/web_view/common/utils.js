@@ -6,7 +6,6 @@ var $ = function(id) { return document.getElementById(id); };
 var LOG = function(msg) { window.console.log(msg); };
 
 var embedder = {};
-embedder.baseGuestURL = '';
 embedder.guestURL = '';
 embedder.webview = null;
 
@@ -35,10 +34,14 @@ utils.test.assertEq = function(expected, actual) {
 };
 
 utils.setUp = function(chromeConfig, config) {
-  embedder.baseGuestURL = 'http://localhost:' + chromeConfig.testServer.port;
-  embedder.guestURL = embedder.baseGuestURL +
-      '/extensions/platform_apps/web_view/common/' +
-      config.TEST_DIR + '/guest.html';
+  if (config.IS_JS_ONLY_GUEST) {
+    embedder.guestURL = 'about:blank';
+  } else {
+    var baseGuestURL = 'http://localhost:' + chromeConfig.testServer.port;
+    embedder.guestURL = baseGuestURL +
+        '/extensions/platform_apps/web_view/common/' +
+        config.TEST_DIR + '/guest.html';
+  }
   chrome.test.log('Guest url is: ' + embedder.guestURL);
 };
 
@@ -65,11 +68,34 @@ embedder.loadGuest = function(
     return;
   }
 
+  embedder.webview.addEventListener('consolemessage', function(e) {
+    LOG('FROM GUEST: ' + e.message);
+  });
+
   // Step 1. loadstop.
   embedder.webview.addEventListener('loadstop', function(e) {
     LOG('embedder.webview.loadstop');
-    embedder.webview.contentWindow.postMessage(
-        JSON.stringify(['create-channel']), '*');
+
+    LOG('IS_JS_ONLY_GUEST: ' + config.IS_JS_ONLY_GUEST);
+    if (config.IS_JS_ONLY_GUEST) {
+      // We do not have a TestServer, we load a guest pointing to
+      // about:blank and inject script to it.
+      LOG('embedder.webview.inject');
+      embedder.webview.executeScript(
+          {file: config.TEST_DIR + '/guest.js'},
+          function(results) {
+            if (!results || !results.length) {
+              LOG('Error injecting JavaScript to guest');
+              utils.test.fail();
+              return;
+            }
+            embedder.webview.contentWindow.postMessage(
+                JSON.stringify(['create-channel']), '*');
+          });
+    } else {
+      embedder.webview.contentWindow.postMessage(
+          JSON.stringify(['create-channel']), '*');
+    }
   });
 
   // Step 2. Receive postMessage.
