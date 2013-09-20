@@ -245,8 +245,8 @@ def _MaybeUpdateReleaseCandidate(platform, revision):
   assert platform != 'android'
   version = GetVersion()
   if not ReleaseCandidateExists(platform):
-    rc_file = _ConstructReleaseCandidate(platform, revision)
     util.MarkBuildStepStart('upload release candidate')
+    rc_file = _ConstructReleaseCandidate(platform, revision)
     if slave_utils.GSUtilCopyFile(rc_file, GS_RC_BUCKET):
       util.MarkBuildStepError()
   else:
@@ -430,6 +430,7 @@ def main():
 
   if platform == 'android':
     if options.update_log:
+      util.MarkBuildStepStart('update test result log')
       UpdateTestResultsLog(platform, options.revision, passed)
   elif passed:
     _MaybeUpdateReleaseCandidate(platform, options.revision)
