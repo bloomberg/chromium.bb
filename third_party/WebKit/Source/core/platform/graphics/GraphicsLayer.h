@@ -27,6 +27,8 @@
 #ifndef GraphicsLayer_h
 #define GraphicsLayer_h
 
+#include "core/platform/animation/CSSAnimationData.h"
+#include "core/platform/animation/KeyframeValueList.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatPoint3D.h"
@@ -37,6 +39,7 @@
 #include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"
 
+#include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -52,7 +55,6 @@
 
 namespace WebKit {
 class GraphicsLayerFactoryChromium;
-class WebAnimation;
 class WebLayer;
 }
 
@@ -217,12 +219,15 @@ public:
     IntRect contentsRect() const { return m_contentsRect; }
     void setContentsRect(const IntRect&);
 
+    // Transitions are identified by a special animation name that cannot clash with a keyframe identifier.
+    static String animationNameForTransition(AnimatedPropertyID);
+
     // Return true if the animation is handled by the compositing system. If this returns
     // false, the animation will be run by AnimationController.
     // These methods handle both transitions and keyframe animations.
-    bool addAnimation(WebKit::WebAnimation*);
-    void pauseAnimation(int animationId, double /*timeOffset*/);
-    void removeAnimation(int animationId);
+    bool addAnimation(const KeyframeValueList&, const IntSize& /*boxSize*/, const CSSAnimationData*, const String& /*animationName*/, double /*timeOffset*/);
+    void pauseAnimation(const String& /*animationName*/, double /*timeOffset*/);
+    void removeAnimation(const String& /*animationName*/);
 
     void suspendAnimations(double time);
     void resumeAnimations();
@@ -404,6 +409,9 @@ private:
     OwnPtr<OpaqueRectTrackingContentLayerDelegate> m_opaqueRectTrackingContentLayerDelegate;
 
     ContentsLayerPurpose m_contentsLayerPurpose;
+
+    typedef HashMap<String, int> AnimationIdMap;
+    AnimationIdMap m_animationIdMap;
 
     ScrollableArea* m_scrollableArea;
     WebKit::WebCompositingReasons m_compositingReasons;

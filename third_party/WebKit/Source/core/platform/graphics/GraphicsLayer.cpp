@@ -35,6 +35,7 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayerFactory.h"
 #include "core/platform/graphics/LayoutRect.h"
+#include "core/platform/graphics/chromium/AnimationTranslationUtil.h"
 #include "core/platform/graphics/chromium/TransformSkMatrix44Conversions.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
@@ -43,6 +44,9 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
 #include "public/platform/Platform.h"
@@ -335,6 +339,16 @@ void GraphicsLayer::paintGraphicsLayerContents(GraphicsContext& context, const I
         return;
     incrementPaintCount();
     m_client->paintContents(this, context, m_paintingPhase, clip);
+}
+
+String GraphicsLayer::animationNameForTransition(AnimatedPropertyID property)
+{
+    // | is not a valid identifier character in CSS, so this can never conflict with a keyframe identifier.
+    StringBuilder id;
+    id.appendLiteral("-|transition");
+    id.appendNumber(static_cast<int>(property));
+    id.append('-');
+    return id.toString();
 }
 
 void GraphicsLayer::setZPosition(float position)
@@ -969,24 +983,39 @@ void GraphicsLayer::setContentsToMedia(WebLayer* layer)
     setContentsTo(ContentsLayerForVideo, layer);
 }
 
-bool GraphicsLayer::addAnimation(WebAnimation* animation)
+bool GraphicsLayer::addAnimation(const KeyframeValueList& values, const IntSize& boxSize, const CSSAnimationData* animation, const String& animationName, double timeOffset)
 {
-    ASSERT(animation);
     platformLayer()->setAnimationDelegate(this);
 
-    // Remove any existing animations with the same animation id and target property.
-    platformLayer()->removeAnimation(animation->id(), animation->targetProperty());
-    return platformLayer()->addAnimation(animation);
+    int animationId = 0;
+
+    if (m_animationIdMap.contains(animationName))
+        animationId = m_animationIdMap.get(animationName);
+
+    OwnPtr<WebAnimation> toAdd(createWebAnimation(values, animation, animationId, timeOffset, boxSize));
+
+    if (toAdd) {
+        animationId = toAdd->id();
+        m_animationIdMap.set(animationName, animationId);
+
+        // Remove any existing animations with the same animation id and target property.
+        platformLayer()->removeAnimation(animationId, toAdd->targetProperty());
+        return platformLayer()->addAnimation(toAdd.get());
+    }
+
+    return false;
 }
 
-void GraphicsLayer::pauseAnimation(int animationId, double timeOffset)
+void GraphicsLayer::pauseAnimation(const String& animationName, double timeOffset)
 {
-    platformLayer()->pauseAnimation(animationId, timeOffset);
+    if (m_animationIdMap.contains(animationName))
+        platformLayer()->pauseAnimation(m_animationIdMap.get(animationName), timeOffset);
 }
 
-void GraphicsLayer::removeAnimation(int animationId)
+void GraphicsLayer::removeAnimation(const String& animationName)
 {
-    platformLayer()->removeAnimation(animationId);
+    if (m_animationIdMap.contains(animationName))
+        platformLayer()->removeAnimation(m_animationIdMap.get(animationName));
 }
 
 void GraphicsLayer::suspendAnimations(double wallClockTime)
