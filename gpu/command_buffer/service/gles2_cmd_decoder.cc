@@ -7313,8 +7313,7 @@ error::Error GLES2DecoderImpl::HandleGetString(
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetString", name, "name");
     return error::kNoError;
   }
-  const char* gl_str = reinterpret_cast<const char*>(glGetString(name));
-  const char* str = NULL;
+  const char* str = reinterpret_cast<const char*>(glGetString(name));
   std::string extensions;
   switch (name) {
     case GL_VERSION:
@@ -7324,10 +7323,11 @@ error::Error GLES2DecoderImpl::HandleGetString(
       str = "OpenGL ES GLSL ES 1.0 Chromium";
       break;
     case GL_RENDERER:
-      str = "Chromium";
-      break;
     case GL_VENDOR:
-      str = "Chromium";
+      // Return the unmasked VENDOR/RENDERER string for WebGL contexts.
+      // They are used by WEBGL_debug_renderer_info.
+      if (!force_webgl_glsl_validation_)
+        str = "Chromium";
       break;
     case GL_EXTENSIONS:
       {
@@ -7366,7 +7366,6 @@ error::Error GLES2DecoderImpl::HandleGetString(
       }
       break;
     default:
-      str = gl_str;
       break;
   }
   Bucket* bucket = CreateBucket(c.bucket_id);
