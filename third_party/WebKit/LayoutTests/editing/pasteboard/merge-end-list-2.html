@@ -6,9 +6,6 @@
 <script src="../../resources/dump-as-markup.js"></script>
 <script src="../editing.js"></script>
 <script>
-if (window.testRunner)
-    testRunner.dumpEditingCallbacks();
-
 var e = document.getElementById("test2");
 var s = window.getSelection();
 
@@ -16,7 +13,8 @@ Markup.description(document.querySelector('p').textContent);
 Markup.dump(e, 'Before insertion');
 
 setSelectionCommand(e, 0, e, 0);
-moveSelectionForwardByWordCommand();
+for (var i = 0; i < 5; ++i)
+    moveSelectionForwardByCharacterCommand();
 insertHTMLCommand("<div>foo</div><div>bar</div>");
 
 Markup.dump(e, 'After insertion');
