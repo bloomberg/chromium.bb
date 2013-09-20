@@ -23,11 +23,10 @@
 
 namespace gfx {
 
-Canvas::Canvas(const Size& size, ui::ScaleFactor scale_factor, bool is_opaque)
-    : scale_factor_(scale_factor),
+Canvas::Canvas(const Size& size, float image_scale, bool is_opaque)
+    : image_scale_(image_scale),
       canvas_(NULL) {
-  Size pixel_size = ToCeiledSize(
-      ScaleSize(size, ui::GetScaleFactorScale(scale_factor)));
+  Size pixel_size = ToCeiledSize(ScaleSize(size, image_scale));
   owned_canvas_ = skia::AdoptRef(skia::CreatePlatformCanvas(pixel_size.width(),
                                                             pixel_size.height(),
                                                             is_opaque));
@@ -39,24 +38,24 @@ Canvas::Canvas(const Size& size, ui::ScaleFactor scale_factor, bool is_opaque)
     owned_canvas_->clear(SkColorSetARGB(0, 0, 0, 0));
 #endif
 
-  SkScalar scale = SkFloatToScalar(ui::GetScaleFactorScale(scale_factor));
-  canvas_->scale(scale, scale);
+  SkScalar scale_scalar = SkFloatToScalar(image_scale);
+  canvas_->scale(scale_scalar, scale_scalar);
 }
 
 Canvas::Canvas(const ImageSkiaRep& image_rep, bool is_opaque)
-    : scale_factor_(image_rep.scale_factor()),
+    : image_scale_(image_rep.scale()),
       owned_canvas_(skia::AdoptRef(
           skia::CreatePlatformCanvas(image_rep.pixel_width(),
                                      image_rep.pixel_height(),
                                      is_opaque))),
       canvas_(owned_canvas_.get()) {
-  SkScalar scale = SkFloatToScalar(ui::GetScaleFactorScale(scale_factor_));
-  canvas_->scale(scale, scale);
+  SkScalar scale_scalar = SkFloatToScalar(image_scale_);
+  canvas_->scale(scale_scalar, scale_scalar);
   DrawImageInt(ImageSkia(image_rep), 0, 0);
 }
 
 Canvas::Canvas()
-    : scale_factor_(ui::SCALE_FACTOR_100P),
+    : image_scale_(1.0),
       owned_canvas_(skia::AdoptRef(skia::CreatePlatformCanvas(0, 0, false))),
       canvas_(owned_canvas_.get()) {
 }
@@ -66,22 +65,21 @@ Canvas::~Canvas() {
 
 // static
 Canvas* Canvas::CreateCanvasWithoutScaling(SkCanvas* canvas,
-                                           ui::ScaleFactor scale_factor) {
-  return new Canvas(canvas, scale_factor);
+                                           float image_scale) {
+  return new Canvas(canvas, image_scale);
 }
 
 void Canvas::RecreateBackingCanvas(const Size& size,
-                                   ui::ScaleFactor scale_factor,
+                                   float image_scale,
                                    bool is_opaque) {
-  scale_factor_ = scale_factor;
-  Size pixel_size = ToFlooredSize(
-      ScaleSize(size, ui::GetScaleFactorScale(scale_factor)));
+  image_scale_ = image_scale;
+  Size pixel_size = ToFlooredSize(ScaleSize(size, image_scale));
   owned_canvas_ = skia::AdoptRef(skia::CreatePlatformCanvas(pixel_size.width(),
                                                             pixel_size.height(),
                                                             is_opaque));
   canvas_ = owned_canvas_.get();
-  SkScalar scale = SkFloatToScalar(ui::GetScaleFactorScale(scale_factor_));
-  canvas_->scale(scale, scale);
+  SkScalar scale_scalar = SkFloatToScalar(image_scale);
+  canvas_->scale(scale_scalar, scale_scalar);
 }
 
 // static
@@ -136,7 +134,7 @@ ImageSkiaRep Canvas::ExtractImageRep() const {
   SkBitmap result;
   device_bitmap.copyTo(&result, SkBitmap::kARGB_8888_Config);
 
-  return ImageSkiaRep(result, scale_factor_);
+  return ImageSkiaRep(result, image_scale_);
 }
 
 void Canvas::DrawDashedRect(const Rect& rect, SkColor color) {
@@ -329,7 +327,7 @@ void Canvas::DrawImageInt(const ImageSkia& image,
   if (image_rep.is_null())
     return;
   const SkBitmap& bitmap = image_rep.sk_bitmap();
-  float bitmap_scale = image_rep.GetScale();
+  float bitmap_scale = image_rep.scale();
 
   canvas_->save();
   canvas_->scale(SkFloatToScalar(1.0f / bitmap_scale),
@@ -392,7 +390,7 @@ void Canvas::DrawImageInt(const ImageSkia& image,
 
   if (src_w == dest_w && src_h == dest_h &&
       user_scale_x == 1.0f && user_scale_y == 1.0f &&
-      image_rep.scale_factor() == ui::SCALE_FACTOR_100P) {
+      image_rep.scale() == 1.0f) {
     // Workaround for apparent bug in Skia that causes image to occasionally
     // shift.
     SkIRect src_rect = { src_x, src_y, src_x + src_w, src_y + src_h };
@@ -574,8 +572,8 @@ void Canvas::Transform(const gfx::Transform& transform) {
   canvas_->concat(transform.matrix());
 }
 
-Canvas::Canvas(SkCanvas* canvas, ui::ScaleFactor scale_factor)
-    : scale_factor_(scale_factor),
+Canvas::Canvas(SkCanvas* canvas, float image_scale)
+    : image_scale_(image_scale),
       owned_canvas_(),
       canvas_(canvas) {
   DCHECK(canvas);
@@ -601,7 +599,7 @@ const ImageSkiaRep& Canvas::GetImageRepToPaint(
     const ImageSkia& image,
     float user_additional_scale_x,
     float user_additional_scale_y) const {
-  const ImageSkiaRep& image_rep = image.GetRepresentation(scale_factor_);
+  const ImageSkiaRep& image_rep = image.GetRepresentation(image_scale_);
 
   if (!image_rep.is_null()) {
     SkMatrix m = canvas_->getTotalMatrix();
@@ -610,7 +608,7 @@ const ImageSkiaRep& Canvas::GetImageRepToPaint(
     float scale_y = SkScalarToFloat(SkScalarAbs(m.getScaleY())) *
         user_additional_scale_y;
 
-    float bitmap_scale = image_rep.GetScale();
+    float bitmap_scale = image_rep.scale();
     if (scale_x < bitmap_scale || scale_y < bitmap_scale)
       const_cast<SkBitmap&>(image_rep.sk_bitmap()).buildMipMap();
   }

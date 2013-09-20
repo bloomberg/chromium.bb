@@ -36,7 +36,7 @@ void SoftwareOutputDeviceWin::Resize(gfx::Size viewport_size) {
     return;
 
   viewport_size_ = viewport_size;
-  contents_.reset(new gfx::Canvas(viewport_size, ui::SCALE_FACTOR_100P, true));
+  contents_.reset(new gfx::Canvas(viewport_size, 1.0f, true));
   memset(&bitmap_info_, 0, sizeof(bitmap_info_));
   gfx::CreateBitmapHeader(viewport_size_.width(), viewport_size_.height(),
                           &bitmap_info_.bmiHeader);

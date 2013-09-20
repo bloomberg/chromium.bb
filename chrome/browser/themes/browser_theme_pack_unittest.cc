@@ -36,8 +36,13 @@ class BrowserThemePackTest : public ::testing::Test {
   BrowserThemePackTest()
       : message_loop(),
         fake_ui_thread(BrowserThread::UI, &message_loop),
-        fake_file_thread(BrowserThread::FILE, &message_loop),
-        theme_pack_(new BrowserThemePack) {
+        fake_file_thread(BrowserThread::FILE, &message_loop) {
+    std::vector<ui::ScaleFactor> scale_factors;
+    scale_factors.push_back(ui::SCALE_FACTOR_100P);
+    scale_factors.push_back(ui::SCALE_FACTOR_200P);
+    scoped_set_supported_scale_factors_.reset(
+      new ui::test::ScopedSetSupportedScaleFactors(scale_factors));
+    theme_pack_ = new BrowserThemePack();
   }
 
   // Transformation for link underline colors.
@@ -270,8 +275,7 @@ class BrowserThemePackTest : public ::testing::Test {
     const gfx::ImageSkia* image_skia = image.ToImageSkia();
     ASSERT_TRUE(image_skia);
     // Scale 100%.
-    const gfx::ImageSkiaRep& rep1 = image_skia->GetRepresentation(
-        ui::SCALE_FACTOR_100P);
+    const gfx::ImageSkiaRep& rep1 = image_skia->GetRepresentation(1.0f);
     ASSERT_FALSE(rep1.is_null());
     EXPECT_EQ(80, rep1.sk_bitmap().width());
     EXPECT_EQ(80, rep1.sk_bitmap().height());
@@ -283,8 +287,7 @@ class BrowserThemePackTest : public ::testing::Test {
     EXPECT_EQ(SkColorSetRGB(  0, 241, 237), rep1.sk_bitmap().getColor(32, 32));
     rep1.sk_bitmap().unlockPixels();
     // Scale 200%.
-    const gfx::ImageSkiaRep& rep2 = image_skia->GetRepresentation(
-        ui::SCALE_FACTOR_200P);
+    const gfx::ImageSkiaRep& rep2 = image_skia->GetRepresentation(2.0f);
     ASSERT_FALSE(rep2.is_null());
     EXPECT_EQ(160, rep2.sk_bitmap().width());
     EXPECT_EQ(160, rep2.sk_bitmap().height());
@@ -312,8 +315,7 @@ class BrowserThemePackTest : public ::testing::Test {
     image_skia = image.ToImageSkia();
     ASSERT_TRUE(image_skia);
     // Scale 100%.
-    const gfx::ImageSkiaRep& rep3 = image_skia->GetRepresentation(
-        ui::SCALE_FACTOR_100P);
+    const gfx::ImageSkiaRep& rep3 = image_skia->GetRepresentation(1.0f);
     ASSERT_FALSE(rep3.is_null());
     EXPECT_EQ(80, rep3.sk_bitmap().width());
     EXPECT_EQ(80, rep3.sk_bitmap().height());
@@ -335,8 +337,7 @@ class BrowserThemePackTest : public ::testing::Test {
     EXPECT_EQ(static_cast<size_t>(9), normal.size());
     rep3.sk_bitmap().unlockPixels();
     // Scale 200%.
-    const gfx::ImageSkiaRep& rep4 = image_skia->GetRepresentation(
-        ui::SCALE_FACTOR_200P);
+    const gfx::ImageSkiaRep& rep4 = image_skia->GetRepresentation(2.0f);
     ASSERT_FALSE(rep4.is_null());
     EXPECT_EQ(160, rep4.sk_bitmap().width());
     EXPECT_EQ(160, rep4.sk_bitmap().height());
@@ -355,6 +356,9 @@ class BrowserThemePackTest : public ::testing::Test {
   content::TestBrowserThread fake_ui_thread;
   content::TestBrowserThread fake_file_thread;
 
+  typedef scoped_ptr<ui::test::ScopedSetSupportedScaleFactors>
+      ScopedSetSupportedScaleFactors;
+  ScopedSetSupportedScaleFactors scoped_set_supported_scale_factors_;
   scoped_refptr<BrowserThemePack> theme_pack_;
 };
 
@@ -584,10 +588,6 @@ TEST_F(BrowserThemePackTest, CanBuildAndReadPack) {
 }
 
 TEST_F(BrowserThemePackTest, HiDpiThemeTest) {
-  std::vector<ui::ScaleFactor> scale_factors;
-  scale_factors.push_back(ui::SCALE_FACTOR_100P);
-  scale_factors.push_back(ui::SCALE_FACTOR_200P);
-  ui::test::ScopedSetSupportedScaleFactors test_scale_factors(scale_factors);
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   base::FilePath file = dir.path().AppendASCII("theme_data.pak");

@@ -296,18 +296,15 @@ int32_t PepperPDFHost::OnHostMsgGetResourceImage(
   if (res_id == 0)
     return PP_ERROR_FAILED;
 
-  ui::ScaleFactor scale_factor = ui::GetScaleFactorFromScale(scale);
-
   gfx::ImageSkia* res_image_skia =
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(res_id);
 
   if (!res_image_skia)
     return PP_ERROR_FAILED;
 
-  gfx::ImageSkiaRep image_skia_rep = res_image_skia->GetRepresentation(
-      scale_factor);
+  gfx::ImageSkiaRep image_skia_rep = res_image_skia->GetRepresentation(scale);
 
-  if (image_skia_rep.is_null() || image_skia_rep.scale_factor() != scale_factor)
+  if (image_skia_rep.is_null() || image_skia_rep.scale() != scale)
     return PP_ERROR_FAILED;
 
   PP_Size pp_size;

@@ -134,7 +134,7 @@ TEST_F(ContentBasedThumbnailingAlgorithmTest, CreateRetargetedThumbnail) {
   // This tests the invocation of the main thumbnail-making apparatus.
   // The actual content is not really of concern here, just check the plumbing.
   const gfx::Size image_size(1200, 800);
-  gfx::Canvas canvas(image_size, ui::SCALE_FACTOR_100P, true);
+  gfx::Canvas canvas(image_size, 1.0f, true);
 
   // The image consists of vertical non-overlapping stripes 150 pixels wide.
   canvas.FillRect(gfx::Rect(200, 200, 800, 400), SkColorSetRGB(255, 255, 255));

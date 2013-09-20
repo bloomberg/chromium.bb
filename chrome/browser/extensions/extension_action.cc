@@ -39,13 +39,12 @@ class GetAttentionImageSource : public gfx::ImageSkiaSource {
       : icon_(icon) {}
 
   // gfx::ImageSkiaSource overrides:
-  virtual gfx::ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor)
-      OVERRIDE {
-    gfx::ImageSkiaRep icon_rep = icon_.GetRepresentation(scale_factor);
+  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+    gfx::ImageSkiaRep icon_rep = icon_.GetRepresentation(scale);
     color_utils::HSL shift = {-1, 0, 0.5};
     return gfx::ImageSkiaRep(
         SkBitmapOperations::CreateHSLShiftedBitmap(icon_rep.sk_bitmap(), shift),
-        icon_rep.scale_factor());
+        icon_rep.scale());
   }
 
  private:
@@ -68,7 +67,7 @@ class AnimatedIconImageSource : public gfx::ImageSkiaSource {
  private:
   virtual ~AnimatedIconImageSource() {}
 
-  virtual gfx::ImageSkiaRep GetImageForScale(ui::ScaleFactor scale) OVERRIDE {
+  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
     gfx::ImageSkiaRep original_rep = image_.GetRepresentation(scale);
     if (!animation_.get())
       return original_rep;
@@ -77,8 +76,7 @@ class AnimatedIconImageSource : public gfx::ImageSkiaSource {
     // factor passed to this method. We want to use the former (since we are
     // using bitmap for that scale).
     return gfx::ImageSkiaRep(
-        animation_->Apply(original_rep.sk_bitmap()),
-        original_rep.scale_factor());
+        animation_->Apply(original_rep.sk_bitmap()), original_rep.scale());
   }
 
   gfx::ImageSkia image_;

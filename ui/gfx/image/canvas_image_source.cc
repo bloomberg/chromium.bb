@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "ui/gfx/canvas.h"
-#include "ui/base/layout.h"
 
 namespace gfx {
 
@@ -18,9 +17,8 @@ CanvasImageSource::CanvasImageSource(const gfx::Size& size, bool is_opaque)
       is_opaque_(is_opaque) {
 }
 
-gfx::ImageSkiaRep CanvasImageSource::GetImageForScale(
-    ui::ScaleFactor scale_factor) {
-  gfx::Canvas canvas(size_, scale_factor, is_opaque_);
+gfx::ImageSkiaRep CanvasImageSource::GetImageForScale(float scale) {
+  gfx::Canvas canvas(size_, scale, is_opaque_);
   Draw(&canvas);
   return canvas.ExtractImageRep();
 }

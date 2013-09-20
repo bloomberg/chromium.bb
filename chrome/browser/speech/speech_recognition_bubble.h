@@ -184,7 +184,7 @@ class SpeechRecognitionBubbleBase : public SpeechRecognitionBubble {
   // The current image displayed in the bubble's icon widget.
   gfx::ImageSkia icon_image_;
   // The scale factor used for the web-contents.
-  ui::ScaleFactor scale_factor_;
+  float scale_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognitionBubbleBase);
 };

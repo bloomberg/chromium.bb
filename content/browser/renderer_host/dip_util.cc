@@ -18,7 +18,7 @@ namespace content {
 namespace {
 
 float GetScaleForView(const RenderWidgetHostView* view) {
-  return ui::GetScaleFactorScale(GetScaleFactorForView(view));
+  return ui::GetImageScale(GetScaleFactorForView(view));
 }
 
 }  // namespace

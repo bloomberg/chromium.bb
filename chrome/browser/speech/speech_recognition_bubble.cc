@@ -95,7 +95,7 @@ SpeechRecognitionBubbleImages::SpeechRecognitionBubbleImages() {
     // render properly and gets vertically squished in Linux due to a bug in
     // Skia. Until that gets fixed we work around by taking a real copy of it
     // below as the copied image has the correct rowBytes and renders fine.
-    frame.EnsureRepsForSupportedScaleFactors();
+    frame.EnsureRepsForSupportedScales();
     std::vector<gfx::ImageSkiaRep> image_reps = frame.image_reps();
     gfx::ImageSkia frame_copy;
     for (size_t i = 0; i < image_reps.size(); ++i) {
@@ -103,7 +103,7 @@ SpeechRecognitionBubbleImages::SpeechRecognitionBubbleImages() {
       SkBitmap copy_dst;
       copy_src.copyTo(&copy_dst, SkBitmap::kARGB_8888_Config);
       frame_copy.AddRepresentation(gfx::ImageSkiaRep(
-          copy_dst, image_reps[i].scale_factor()));
+          copy_dst, image_reps[i].scale()));
     }
     spinner_.push_back(frame_copy);
 
@@ -140,16 +140,15 @@ SpeechRecognitionBubbleBase::SpeechRecognitionBubbleBase(
       animation_step_(0),
       display_mode_(DISPLAY_MODE_RECORDING),
       web_contents_(web_contents),
-      scale_factor_(ui::SCALE_FACTOR_NONE) {
+      scale_(1.0f) {
   gfx::NativeView view =
       web_contents_ ? web_contents_->GetView()->GetNativeView() : NULL;
   gfx::Screen* screen = gfx::Screen::GetScreenFor(view);
   gfx::Display display = screen->GetDisplayNearestWindow(view);
-  scale_factor_ = ui::GetScaleFactorFromScale(
-      display.device_scale_factor());
+  scale_ = display.device_scale_factor();
 
   const gfx::ImageSkiaRep& rep =
-      g_images.Get().mic_empty()->GetRepresentation(scale_factor_);
+      g_images.Get().mic_empty()->GetRepresentation(scale_);
   mic_image_.reset(new SkBitmap());
   mic_image_->setConfig(SkBitmap::kARGB_8888_Config,
       rep.pixel_width(), rep.pixel_height());
@@ -235,13 +234,12 @@ void SpeechRecognitionBubbleBase::DrawVolumeOverlay(SkCanvas* canvas,
       (((1.0f - volume) * (width * (kVolumeSteps + 1))) - width) / kVolumeSteps;
   buffer_canvas.clipRect(SkRect::MakeLTRB(0, 0,
       SkIntToScalar(width) - clip_right, SkIntToScalar(height)));
-  buffer_canvas.drawBitmap(
-      image.GetRepresentation(scale_factor_).sk_bitmap(), 0, 0);
+  buffer_canvas.drawBitmap(image.GetRepresentation(scale_).sk_bitmap(), 0, 0);
   buffer_canvas.restore();
   SkPaint multiply_paint;
   multiply_paint.setXfermodeMode(SkXfermode::kModulate_Mode);
   buffer_canvas.drawBitmap(
-      g_images.Get().mic_mask()->GetRepresentation(scale_factor_).sk_bitmap(),
+      g_images.Get().mic_mask()->GetRepresentation(scale_).sk_bitmap(),
       -clip_right, 0, &multiply_paint);
 
   canvas->drawBitmap(*buffer_image_.get(), 0, 0);
@@ -255,12 +253,12 @@ void SpeechRecognitionBubbleBase::SetInputVolume(float volume,
   // Draw the empty volume image first and the current volume image on top,
   // and then the noise volume image on top of both.
   canvas.drawBitmap(
-      g_images.Get().mic_empty()->GetRepresentation(scale_factor_).sk_bitmap(),
+      g_images.Get().mic_empty()->GetRepresentation(scale_).sk_bitmap(),
       0, 0);
   DrawVolumeOverlay(&canvas, *g_images.Get().mic_full(), volume);
   DrawVolumeOverlay(&canvas, *g_images.Get().mic_noise(), noise_volume);
 
-  gfx::ImageSkia image(gfx::ImageSkiaRep(*mic_image_.get(), scale_factor_));
+  gfx::ImageSkia image(gfx::ImageSkiaRep(*mic_image_.get(), scale_));
   SetImage(image);
 }
 

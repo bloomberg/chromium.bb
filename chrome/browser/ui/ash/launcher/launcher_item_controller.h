@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
+#include "ui/events/event.h"
 
 class ChromeLauncherController;
 class ChromeLauncherAppMenuItem;

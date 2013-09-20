@@ -84,7 +84,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
     // The calculations depend on the size of the OTR resource, and chromeos
     // uses a different sized image, so hard code the size of the current
     // windows/linux one.
-    gfx::ImageSkiaRep rep(gfx::Size(40, 29), ui::SCALE_FACTOR_100P);
+    gfx::ImageSkiaRep rep(gfx::Size(40, 29), 1.0f);
     gfx::ImageSkia image(rep);
     return image;
   }
@@ -173,7 +173,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   views::ImageButton* InitWindowCaptionButton(ViewID view_id,
                                               const gfx::Size& size) {
     views::ImageButton* button = new views::ImageButton(NULL);
-    gfx::ImageSkiaRep rep(size, ui::SCALE_FACTOR_100P);
+    gfx::ImageSkiaRep rep(size, 1.0f);
     gfx::ImageSkia image(rep);
     button->SetImage(views::CustomButton::STATE_NORMAL, &image);
     button->set_id(view_id);

@@ -238,7 +238,7 @@ void FaviconService::SetFavicons(const GURL& page_url,
     return;
 
   gfx::ImageSkia image_skia = image.AsImageSkia();
-  image_skia.EnsureRepsForSupportedScaleFactors();
+  image_skia.EnsureRepsForSupportedScales();
   const std::vector<gfx::ImageSkiaRep>& image_reps = image_skia.image_reps();
   std::vector<chrome::FaviconBitmapData> favicon_bitmap_data;
   for (size_t i = 0; i < image_reps.size(); ++i) {
@@ -343,7 +343,7 @@ void FaviconService::RunFaviconRawCallbackWithBitmapResults(
   }
 
   // If history bitmap is already desired pixel size, return early.
-  float desired_scale = ui::GetScaleFactorScale(desired_scale_factor);
+  float desired_scale = ui::GetImageScale(desired_scale_factor);
   int desired_edge_width_in_pixel = static_cast<int>(
       desired_size_in_dip * desired_scale + 0.5f);
   gfx::Size desired_size_in_pixel(desired_edge_width_in_pixel,

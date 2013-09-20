@@ -59,9 +59,9 @@ gfx::ImageSkia AddBackgroundForViews(const gfx::ImageSkia& icon) {
 
 bool ImagesAreEqualAtScale(const gfx::ImageSkia& i1,
                            const gfx::ImageSkia& i2,
-                           ui::ScaleFactor scale_factor) {
-  SkBitmap bitmap1 = i1.GetRepresentation(scale_factor).sk_bitmap();
-  SkBitmap bitmap2 = i2.GetRepresentation(scale_factor).sk_bitmap();
+                           float scale) {
+  SkBitmap bitmap1 = i1.GetRepresentation(scale).sk_bitmap();
+  SkBitmap bitmap2 = i2.GetRepresentation(scale).sk_bitmap();
   return gfx::BitmapsAreEqual(bitmap1, bitmap2);
 }
 
@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   std::vector<ui::ScaleFactor> supported_scale_factors;
   supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
   supported_scale_factors.push_back(ui::SCALE_FACTOR_200P);
-  ui::test::SetSupportedScaleFactors(supported_scale_factors);
+  ui::SetSupportedScaleFactors(supported_scale_factors);
 #endif
 
   // We should not be creating icons asynchronously, so we don't need an
@@ -171,13 +171,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
   action_icon_last_id = action_icon_current_id;
 
-  EXPECT_FALSE(
-      action_icon.ToImageSkia()->HasRepresentation(ui::SCALE_FACTOR_200P));
+  EXPECT_FALSE(action_icon.ToImageSkia()->HasRepresentation(2.0f));
 
   EXPECT_TRUE(ImagesAreEqualAtScale(
       AddBackgroundForViews(*action_icon.ToImageSkia()),
       *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
-      ui::SCALE_FACTOR_100P));
+      1.0f));
 
   // Tell the extension to update the icon using path.
   GetBrowserActionsBar().Press(0);
@@ -190,12 +189,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   action_icon_last_id = action_icon_current_id;
 
   EXPECT_FALSE(
-      action_icon.ToImageSkia()->HasRepresentation(ui::SCALE_FACTOR_200P));
+      action_icon.ToImageSkia()->HasRepresentation(2.0f));
 
   EXPECT_TRUE(ImagesAreEqualAtScale(
       AddBackgroundForViews(*action_icon.ToImageSkia()),
       *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
-      ui::SCALE_FACTOR_100P));
+      1.0f));
 
   // Tell the extension to update the icon using dictionary of ImageData
   // objects.
@@ -208,13 +207,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
   action_icon_last_id = action_icon_current_id;
 
-  EXPECT_TRUE(
-      action_icon.ToImageSkia()->HasRepresentation(ui::SCALE_FACTOR_200P));
+  EXPECT_TRUE(action_icon.ToImageSkia()->HasRepresentation(2.0f));
 
   EXPECT_TRUE(ImagesAreEqualAtScale(
       AddBackgroundForViews(*action_icon.ToImageSkia()),
       *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
-      ui::SCALE_FACTOR_100P));
+      1.0f));
 
   // Tell the extension to update the icon using dictionary of paths.
   GetBrowserActionsBar().Press(0);
@@ -226,13 +224,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
   action_icon_last_id = action_icon_current_id;
 
-  EXPECT_TRUE(
-      action_icon.ToImageSkia()->HasRepresentation(ui::SCALE_FACTOR_200P));
+  EXPECT_TRUE(action_icon.ToImageSkia()->HasRepresentation(2.0f));
 
   EXPECT_TRUE(ImagesAreEqualAtScale(
       AddBackgroundForViews(*action_icon.ToImageSkia()),
       *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
-      ui::SCALE_FACTOR_100P));
+      1.0f));
 
   // Tell the extension to update the icon using dictionary of ImageData
   // objects, but setting only size 19.
@@ -245,13 +242,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
   action_icon_last_id = action_icon_current_id;
 
-  EXPECT_FALSE(
-      action_icon.ToImageSkia()->HasRepresentation(ui::SCALE_FACTOR_200P));
+  EXPECT_FALSE(action_icon.ToImageSkia()->HasRepresentation(2.0f));
 
   EXPECT_TRUE(ImagesAreEqualAtScale(
       AddBackgroundForViews(*action_icon.ToImageSkia()),
       *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
-      ui::SCALE_FACTOR_100P));
+      1.0f));
 
   // Tell the extension to update the icon using dictionary of paths, but
   // setting only size 19.
@@ -264,13 +260,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
   action_icon_last_id = action_icon_current_id;
 
-  EXPECT_FALSE(
-      action_icon.ToImageSkia()->HasRepresentation(ui::SCALE_FACTOR_200P));
+  EXPECT_FALSE(action_icon.ToImageSkia()->HasRepresentation(2.0f));
 
   EXPECT_TRUE(ImagesAreEqualAtScale(
       AddBackgroundForViews(*action_icon.ToImageSkia()),
       *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
-      ui::SCALE_FACTOR_100P));
+      1.0f));
 
   // Tell the extension to update the icon using dictionary of ImageData
   // objects, but setting only size 38.
@@ -281,8 +276,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 
   const gfx::ImageSkia* action_icon_skia = action_icon.ToImageSkia();
 
-  EXPECT_FALSE(action_icon_skia->HasRepresentation(ui::SCALE_FACTOR_100P));
-  EXPECT_TRUE(action_icon_skia->HasRepresentation(ui::SCALE_FACTOR_200P));
+  EXPECT_FALSE(action_icon_skia->HasRepresentation(1.0f));
+  EXPECT_TRUE(action_icon_skia->HasRepresentation(2.0f));
 
   action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
   EXPECT_GT(action_icon_current_id, action_icon_last_id);
@@ -290,12 +285,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       *action_icon.ToSkBitmap(),
-      action_icon_skia->GetRepresentation(ui::SCALE_FACTOR_200P).sk_bitmap()));
+      action_icon_skia->GetRepresentation(2.0f).sk_bitmap()));
 
   EXPECT_TRUE(ImagesAreEqualAtScale(
       AddBackgroundForViews(*action_icon_skia),
       *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
-      ui::SCALE_FACTOR_200P));
+      2.0f));
 
   // Try setting icon with empty dictionary of ImageData objects.
   GetBrowserActionsBar().Press(0);

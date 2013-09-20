@@ -4,6 +4,7 @@
 
 #include "ui/gfx/image/image_png_rep.h"
 
+#include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/size.h"
@@ -12,13 +13,13 @@ namespace gfx {
 
 ImagePNGRep::ImagePNGRep()
     : raw_data(NULL),
-      scale_factor(ui::SCALE_FACTOR_NONE) {
+      scale(1.0) {
 }
 
 ImagePNGRep::ImagePNGRep(const scoped_refptr<base::RefCountedMemory>& data,
-                         ui::ScaleFactor data_scale_factor)
+                         float data_scale)
     : raw_data(data),
-      scale_factor(data_scale_factor) {
+      scale(data_scale) {
 }
 
 ImagePNGRep::~ImagePNGRep() {

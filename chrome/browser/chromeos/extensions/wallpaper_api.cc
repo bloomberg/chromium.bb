@@ -72,7 +72,7 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   unsafe_wallpaper_decoder_ = NULL;
 
   if (generate_thumbnail_) {
-    wallpaper.EnsureRepsForSupportedScaleFactors();
+    wallpaper.EnsureRepsForSupportedScales();
     scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.DeepCopy());
     // Generates thumbnail before call api function callback. We can then
     // request thumbnail in the javascript callback.

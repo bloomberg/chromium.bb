@@ -57,7 +57,7 @@ namespace {
 // Convenience macro: Short-circuit a pass for platforms where setting up
 // high-DPI fails.
 #define PASS_TEST_IF_SCALE_FACTOR_NOT_SUPPORTED(factor) \
-  if (ui::GetScaleFactorScale( \
+  if (ui::GetImageScale( \
           GetScaleFactorForView(GetRenderWidgetHostViewPort())) != factor) {  \
     LOG(WARNING) << "Blindly passing this test: failed to set up "  \
                     "scale factor: " << factor;  \

@@ -77,7 +77,7 @@ class DragTestView : public views::View {
   virtual void WriteDragData(const gfx::Point& p,
                              OSExchangeData* data) OVERRIDE {
     data->SetString(UTF8ToUTF16("I am being dragged"));
-    gfx::ImageSkiaRep image_rep(gfx::Size(10, 20), ui::SCALE_FACTOR_100P);
+    gfx::ImageSkiaRep image_rep(gfx::Size(10, 20), 1.0f);
     gfx::ImageSkia image_skia(image_rep);
 
     drag_utils::SetDragImageOnDataObject(

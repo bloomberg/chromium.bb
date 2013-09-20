@@ -15,29 +15,23 @@
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "base/mac/mac_util.h"
-#endif
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
-#include "ui/gfx/win/dpi.h"
 #include <Windows.h>
 #endif  // defined(OS_WIN)
-
-#if defined(OS_CHROMEOS)
-#include "ui/base/resource/resource_bundle.h"
-#endif
 
 namespace ui {
 
 namespace {
 
 bool ScaleFactorComparator(const ScaleFactor& lhs, const ScaleFactor& rhs){
-  return GetScaleFactorScale(lhs) < GetScaleFactorScale(rhs);
+  return GetImageScale(lhs) < GetImageScale(rhs);
 }
+
+std::vector<ScaleFactor>* g_supported_scale_factors = NULL;
 
 #if defined(OS_WIN)
 // Helper function that determines whether we want to optimize the UI for touch.
@@ -72,7 +66,67 @@ COMPILE_ASSERT(NUM_SCALE_FACTORS == arraysize(kScaleFactorScales),
                kScaleFactorScales_incorrect_size);
 const size_t kScaleFactorScalesLength = arraysize(kScaleFactorScales);
 
-namespace {
+}  // namespace
+
+DisplayLayout GetDisplayLayout() {
+#if defined(OS_WIN)
+  if (UseTouchOptimizedUI())
+    return LAYOUT_TOUCH;
+#endif
+  return LAYOUT_DESKTOP;
+}
+
+void SetSupportedScaleFactors(
+    const std::vector<ui::ScaleFactor>& scale_factors) {
+  if (g_supported_scale_factors != NULL)
+    delete g_supported_scale_factors;
+
+  g_supported_scale_factors = new std::vector<ScaleFactor>(scale_factors);
+  std::sort(g_supported_scale_factors->begin(),
+            g_supported_scale_factors->end(),
+            ScaleFactorComparator);
+
+  // Set ImageSkia's supported scales.
+  std::vector<float> scales;
+  for (std::vector<ScaleFactor>::const_iterator it =
+          g_supported_scale_factors->begin();
+       it != g_supported_scale_factors->end(); ++it) {
+    scales.push_back(GetImageScale(*it));
+  }
+  gfx::ImageSkia::SetSupportedScales(scales);
+}
+
+const std::vector<ScaleFactor>& GetSupportedScaleFactors() {
+  DCHECK(g_supported_scale_factors != NULL);
+  return *g_supported_scale_factors;
+}
+
+ScaleFactor GetSupportedScaleFactor(float scale) {
+  DCHECK(g_supported_scale_factors != NULL);
+  ScaleFactor closest_match = SCALE_FACTOR_100P;
+  float smallest_diff =  std::numeric_limits<float>::max();
+  for (size_t i = 0; i < g_supported_scale_factors->size(); ++i) {
+    ScaleFactor scale_factor = (*g_supported_scale_factors)[i];
+    float diff = std::abs(kScaleFactorScales[scale_factor] - scale);
+    if (diff < smallest_diff) {
+      closest_match = scale_factor;
+      smallest_diff = diff;
+    }
+  }
+  DCHECK_NE(closest_match, SCALE_FACTOR_NONE);
+  return closest_match;
+}
+
+float GetImageScale(ScaleFactor scale_factor) {
+  return kScaleFactorScales[scale_factor];
+}
+
+bool IsScaleFactorSupported(ScaleFactor scale_factor) {
+  DCHECK(g_supported_scale_factors != NULL);
+  return std::find(g_supported_scale_factors->begin(),
+                   g_supported_scale_factors->end(),
+                   scale_factor) != g_supported_scale_factors->end();
+}
 
 // Returns the scale factor closest to |scale| from the full list of factors.
 // Note that it does NOT rely on the list of supported scale factors.
@@ -91,124 +145,27 @@ ScaleFactor FindClosestScaleFactorUnsafe(float scale) {
   return closest_match;
 }
 
-}  // namespace
-
-std::vector<ScaleFactor>& GetSupportedScaleFactorsInternal() {
-  static std::vector<ScaleFactor>* supported_scale_factors =
-      new std::vector<ScaleFactor>();
-  if (supported_scale_factors->empty()) {
-#if !defined(OS_IOS)
-    // On platforms other than iOS, 100P is always a supported scale factor.
-    supported_scale_factors->push_back(SCALE_FACTOR_100P);
-#endif
-
-#if defined(OS_ANDROID)
-    const gfx::Display display =
-        gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
-    const float display_density = display.device_scale_factor();
-    const ScaleFactor closest = FindClosestScaleFactorUnsafe(display_density);
-    if (closest != SCALE_FACTOR_100P)
-      supported_scale_factors->push_back(closest);
-#elif defined(OS_IOS)
-    gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
-    if (display.device_scale_factor() > 1.0) {
-      DCHECK_EQ(2.0, display.device_scale_factor());
-      supported_scale_factors->push_back(SCALE_FACTOR_200P);
-    } else {
-      supported_scale_factors->push_back(SCALE_FACTOR_100P);
-    }
-#elif defined(OS_MACOSX)
-    if (base::mac::IsOSLionOrLater())
-      supported_scale_factors->push_back(SCALE_FACTOR_200P);
-#elif defined(OS_WIN)
-    // Have high-DPI resources for 140% and 180% scaling on Windows based on
-    // default scaling for Metro mode.  Round to nearest supported scale in
-    // all cases.
-    if (gfx::IsInHighDPIMode()) {
-      supported_scale_factors->push_back(SCALE_FACTOR_140P);
-      supported_scale_factors->push_back(SCALE_FACTOR_180P);
-    }
-#elif defined(OS_CHROMEOS)
-    // TODO(oshima): Include 200P only if the device support 200P
-    supported_scale_factors->push_back(SCALE_FACTOR_200P);
-#endif
-    std::sort(supported_scale_factors->begin(),
-              supported_scale_factors->end(),
-              ScaleFactorComparator);
-  }
-  return *supported_scale_factors;
-}
-
-}  // namespace
-
-DisplayLayout GetDisplayLayout() {
-#if defined(OS_WIN)
-  if (UseTouchOptimizedUI())
-    return LAYOUT_TOUCH;
-#endif
-  return LAYOUT_DESKTOP;
-}
-
-ScaleFactor GetScaleFactorFromScale(float scale) {
-  ScaleFactor closest_match = SCALE_FACTOR_100P;
-  float smallest_diff =  std::numeric_limits<float>::max();
-  const std::vector<ScaleFactor>& supported =
-      GetSupportedScaleFactorsInternal();
-  for (size_t i = 0; i < supported.size(); ++i) {
-    ScaleFactor scale_factor = supported[i];
-    float diff = std::abs(kScaleFactorScales[scale_factor] - scale);
-    if (diff < smallest_diff) {
-      closest_match = scale_factor;
-      smallest_diff = diff;
-    }
-  }
-  DCHECK_NE(closest_match, SCALE_FACTOR_NONE);
-  return closest_match;
-}
-
-float GetScaleFactorScale(ScaleFactor scale_factor) {
-  return kScaleFactorScales[scale_factor];
-}
-
-ScaleFactor GetMaxScaleFactor() {
-#if defined(OS_CHROMEOS)
-  return ResourceBundle::GetSharedInstance().max_scale_factor();
-#else
-  return GetSupportedScaleFactorsInternal().back();
-#endif
-}
-
-std::vector<ScaleFactor> GetSupportedScaleFactors() {
-  return GetSupportedScaleFactorsInternal();
-}
-
-bool IsScaleFactorSupported(ScaleFactor scale_factor) {
-  const std::vector<ScaleFactor>& supported =
-      GetSupportedScaleFactorsInternal();
-  return std::find(supported.begin(), supported.end(), scale_factor) !=
-      supported.end();
-}
-
 namespace test {
 
-void SetSupportedScaleFactors(
-    const std::vector<ui::ScaleFactor>& scale_factors) {
-  std::vector<ui::ScaleFactor>& supported_scale_factors =
-      GetSupportedScaleFactorsInternal();
-  supported_scale_factors = scale_factors;
-  std::sort(supported_scale_factors.begin(),
-            supported_scale_factors.end(),
-            ScaleFactorComparator);
-}
-
 ScopedSetSupportedScaleFactors::ScopedSetSupportedScaleFactors(
-    const std::vector<ui::ScaleFactor>& new_scale_factors)
-    : original_scale_factors_(GetSupportedScaleFactors()) {
+    const std::vector<ui::ScaleFactor>& new_scale_factors) {
+  if (g_supported_scale_factors) {
+    original_scale_factors_ =
+        new std::vector<ScaleFactor>(*g_supported_scale_factors);
+  } else {
+    original_scale_factors_ = NULL;
+  }
   SetSupportedScaleFactors(new_scale_factors);
 }
 
 ScopedSetSupportedScaleFactors::~ScopedSetSupportedScaleFactors() {
-  SetSupportedScaleFactors(original_scale_factors_);
+  if (original_scale_factors_) {
+    SetSupportedScaleFactors(*original_scale_factors_);
+    delete original_scale_factors_;
+  } else {
+    delete g_supported_scale_factors;
+    g_supported_scale_factors = NULL;
+  }
 }
 
 }  // namespace test
@@ -218,7 +175,7 @@ ScaleFactor GetScaleFactorForNativeView(gfx::NativeView view) {
   gfx::Screen* screen = gfx::Screen::GetScreenFor(view);
   if (screen->IsDIPEnabled()) {
     gfx::Display display = screen->GetDisplayNearestWindow(view);
-    return GetScaleFactorFromScale(display.device_scale_factor());
+    return GetSupportedScaleFactor(display.device_scale_factor());
   }
   return ui::SCALE_FACTOR_100P;
 }

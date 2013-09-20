@@ -38,7 +38,7 @@ namespace {
 
 bool ImageRepsAreEqual(const gfx::ImageSkiaRep& image_rep1,
                        const gfx::ImageSkiaRep& image_rep2) {
-  return image_rep1.scale_factor() == image_rep2.scale_factor() &&
+  return image_rep1.scale() == image_rep2.scale() &&
          gfx::BitmapsAreEqual(image_rep1.sk_bitmap(), image_rep2.sk_bitmap());
 }
 
@@ -53,15 +53,14 @@ gfx::Image EnsureImageSize(const gfx::Image& original, int size) {
   return gfx::Image::CreateFrom1xBitmap(resized);
 }
 
-gfx::ImageSkiaRep CreateBlankRep(int size_dip, ui::ScaleFactor scale_factor) {
-    SkBitmap bitmap;
-    const float scale = ui::GetScaleFactorScale(scale_factor);
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                     static_cast<int>(size_dip * scale),
-                     static_cast<int>(size_dip * scale));
-    bitmap.allocPixels();
-    bitmap.eraseColor(SkColorSetARGB(0, 0, 0, 0));
-    return gfx::ImageSkiaRep(bitmap, scale_factor);
+gfx::ImageSkiaRep CreateBlankRep(int size_dip, float scale) {
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                   static_cast<int>(size_dip * scale),
+                   static_cast<int>(size_dip * scale));
+  bitmap.allocPixels();
+  bitmap.eraseColor(SkColorSetARGB(0, 0, 0, 0));
+  return gfx::ImageSkiaRep(bitmap, scale);
 }
 
 gfx::Image LoadIcon(const std::string& filename) {
@@ -203,8 +202,8 @@ TEST_F(ExtensionActionIconFactoryTest, NoIcons) {
   gfx::Image icon = icon_factory.GetIcon(0);
 
   EXPECT_TRUE(ImageRepsAreEqual(
-      favicon.GetRepresentation(ui::SCALE_FACTOR_100P),
-      icon.ToImageSkia()->GetRepresentation(ui::SCALE_FACTOR_100P)));
+      favicon.GetRepresentation(1.0f),
+      icon.ToImageSkia()->GetRepresentation(1.0f)));
 }
 
 // If the icon has been set using |SetIcon|, the factory should return that
@@ -234,15 +233,15 @@ TEST_F(ExtensionActionIconFactoryTest, AfterSetIcon) {
   gfx::Image icon = icon_factory.GetIcon(0);
 
   EXPECT_TRUE(ImageRepsAreEqual(
-      set_icon.ToImageSkia()->GetRepresentation(ui::SCALE_FACTOR_100P),
-      icon.ToImageSkia()->GetRepresentation(ui::SCALE_FACTOR_100P)));
+      set_icon.ToImageSkia()->GetRepresentation(1.0f),
+      icon.ToImageSkia()->GetRepresentation(1.0f)));
 
   // It should still return favicon for another tabs.
   icon = icon_factory.GetIcon(1);
 
   EXPECT_TRUE(ImageRepsAreEqual(
-      GetFavicon().GetRepresentation(ui::SCALE_FACTOR_100P),
-      icon.ToImageSkia()->GetRepresentation(ui::SCALE_FACTOR_100P)));
+      GetFavicon().GetRepresentation(1.0f),
+      icon.ToImageSkia()->GetRepresentation(1.0f)));
 }
 
 // If there is a default icon, and the icon has not been set using |SetIcon|,
@@ -277,8 +276,8 @@ TEST_F(ExtensionActionIconFactoryTest, DefaultIcon) {
   // The icon should be loaded asynchronously. Initially a transparent icon
   // should be returned.
   EXPECT_TRUE(ImageRepsAreEqual(
-      CreateBlankRep(19, ui::SCALE_FACTOR_100P),
-      icon.ToImageSkia()->GetRepresentation(ui::SCALE_FACTOR_100P)));
+      CreateBlankRep(19, 1.0f),
+      icon.ToImageSkia()->GetRepresentation(1.0f)));
 
   WaitForIconUpdate();
 
@@ -286,15 +285,15 @@ TEST_F(ExtensionActionIconFactoryTest, DefaultIcon) {
 
   // The default icon representation should be loaded at this point.
   EXPECT_TRUE(ImageRepsAreEqual(
-      default_icon.ToImageSkia()->GetRepresentation(ui::SCALE_FACTOR_100P),
-      icon.ToImageSkia()->GetRepresentation(ui::SCALE_FACTOR_100P)));
+      default_icon.ToImageSkia()->GetRepresentation(1.0f),
+      icon.ToImageSkia()->GetRepresentation(1.0f)));
 
   // The same icon should be returned for the other tabs.
   icon = icon_factory.GetIcon(1);
 
   EXPECT_TRUE(ImageRepsAreEqual(
-      default_icon.ToImageSkia()->GetRepresentation(ui::SCALE_FACTOR_100P),
-      icon.ToImageSkia()->GetRepresentation(ui::SCALE_FACTOR_100P)));
+      default_icon.ToImageSkia()->GetRepresentation(1.0f),
+      icon.ToImageSkia()->GetRepresentation(1.0f)));
 
 }
 

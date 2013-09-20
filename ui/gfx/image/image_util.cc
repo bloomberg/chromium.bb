@@ -26,8 +26,8 @@ Image ImageFrom1xJPEGEncodedData(const unsigned char* input,
 bool JPEG1xEncodedDataFromImage(const Image& image, int quality,
                               std::vector<unsigned char>* dst) {
   const gfx::ImageSkiaRep& image_skia_rep =
-      image.AsImageSkia().GetRepresentation(ui::SCALE_FACTOR_100P);
-  if (image_skia_rep.scale_factor() != ui::SCALE_FACTOR_100P)
+      image.AsImageSkia().GetRepresentation(1.0f);
+  if (image_skia_rep.scale() != 1.0f)
     return false;
 
   const SkBitmap& bitmap = image_skia_rep.sk_bitmap();

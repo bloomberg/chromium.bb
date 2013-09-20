@@ -38,7 +38,7 @@ BackingStoreAura::BackingStoreAura(RenderWidgetHost* widget,
                                    const gfx::Size& size)
     : BackingStore(widget, size) {
   device_scale_factor_ =
-      ui::GetScaleFactorScale(GetScaleFactorForView(widget->GetView()));
+      ui::GetImageScale(GetScaleFactorForView(widget->GetView()));
   gfx::Size pixel_size = ToPixelSize(size, device_scale_factor_);
   bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
       pixel_size.width(), pixel_size.height());
@@ -52,7 +52,7 @@ BackingStoreAura::~BackingStoreAura() {
 void BackingStoreAura::SkiaShowRect(const gfx::Point& point,
                                     gfx::Canvas* canvas) {
   gfx::ImageSkia image = gfx::ImageSkia(gfx::ImageSkiaRep(bitmap_,
-      ui::GetScaleFactorFromScale(device_scale_factor_)));
+      device_scale_factor_));
   canvas->DrawImageInt(image, point.x(), point.y());
 }
 

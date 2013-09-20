@@ -15,6 +15,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 
 namespace chromeos {
@@ -36,8 +37,7 @@ int GetCurrentUserImageSize() {
   float scale_factor = gfx::Display::GetForcedDeviceScaleFactor();
   if (scale_factor > 1.0f)
     return static_cast<int>(scale_factor * kBaseUserImageSize);
-  return kBaseUserImageSize *
-      ui::GetScaleFactorScale(ui::GetMaxScaleFactor());
+  return kBaseUserImageSize * gfx::ImageSkia::GetMaxSupportedScale();
 }
 
 namespace login {

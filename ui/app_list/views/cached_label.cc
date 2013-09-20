@@ -17,7 +17,7 @@ CachedLabel::CachedLabel()
 void CachedLabel::PaintToBackingImage() {
   if (image_.size() == size() && !needs_repaint_)
     return;
-  gfx::Canvas canvas(size(), ui::SCALE_FACTOR_100P, false /* is_opaque */);
+  gfx::Canvas canvas(size(), 1.0f, false /* is_opaque */);
   canvas.FillRect(GetLocalBounds(), SkColorSetARGB(0, 0, 0, 0),
                   SkXfermode::kSrc_Mode);
   Label::OnPaint(&canvas);

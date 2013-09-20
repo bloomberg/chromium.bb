@@ -1226,7 +1226,7 @@ bool CopyAreaToCanvas(XID drawable,
                      image->bytes_per_line);
     bitmap.setPixels(image->data);
     gfx::ImageSkia image_skia;
-    gfx::ImageSkiaRep image_rep(bitmap, canvas->scale_factor());
+    gfx::ImageSkiaRep image_rep(bitmap, canvas->image_scale());
     image_skia.AddRepresentation(image_rep);
     canvas->DrawImageInt(image_skia, dest_offset.x(), dest_offset.y());
   } else {

@@ -155,7 +155,7 @@ bool SearchTable(const CursorData* table,
                  int* resource_id,
                  gfx::Point* point) {
   bool resource_2x_available =
-      ResourceBundle::GetSharedInstance().max_scale_factor() ==
+      ResourceBundle::GetSharedInstance().GetMaxScaleFactor() ==
       SCALE_FACTOR_200P;
   for (size_t i = 0; i < table_length; ++i) {
     if (table[i].id == id) {

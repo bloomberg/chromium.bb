@@ -104,16 +104,14 @@ TEST_F(WallpaperResizerTest, BasicResize) {
 
   for (int i = 0; i < length; i++) {
     WallpaperLayout layout = layouts[i];
-    gfx::ImageSkia small_image(gfx::ImageSkiaRep(gfx::Size(10, 20),
-                                                 ui::SCALE_FACTOR_100P));
+    gfx::ImageSkia small_image(gfx::ImageSkiaRep(gfx::Size(10, 20), 1.0f));
 
     gfx::ImageSkia resized_small = Resize(small_image, gfx::Size(800, 600),
                                           layout);
     EXPECT_EQ(10, resized_small.width());
     EXPECT_EQ(20, resized_small.height());
 
-    gfx::ImageSkia large_image(gfx::ImageSkiaRep(gfx::Size(1000, 1000),
-                                                 ui::SCALE_FACTOR_100P));
+    gfx::ImageSkia large_image(gfx::ImageSkiaRep(gfx::Size(1000, 1000), 1.0f));
     gfx::ImageSkia resized_large = Resize(large_image, gfx::Size(800, 600),
                                           layout);
     EXPECT_EQ(800, resized_large.width());

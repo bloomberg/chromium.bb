@@ -108,7 +108,8 @@ bool HasAlpha(gfx::ImageSkia& image, views::Widget* widget) {
   }
 
   // Extract that bitmap's alpha and look for a non-opaque pixel there.
-  SkBitmap bitmap = image.GetRepresentation(factor).sk_bitmap();
+  SkBitmap bitmap =
+      image.GetRepresentation(ui::GetImageScale(factor)).sk_bitmap();
   if (!bitmap.isNull()) {
     SkBitmap alpha;
     alpha.setConfig(SkBitmap::kA1_Config, bitmap.width(), bitmap.height(), 0);
