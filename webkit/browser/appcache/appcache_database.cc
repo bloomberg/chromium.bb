@@ -21,8 +21,13 @@ namespace appcache {
 // Schema -------------------------------------------------------------------
 namespace {
 
+#if defined(APPCACHE_USE_SIMPLE_CACHE)
+const int kCurrentVersion = 6;
+const int kCompatibleVersion = 6;
+#else
 const int kCurrentVersion = 5;
 const int kCompatibleVersion = 5;
+#endif
 
 // A mechanism to run experiments that may affect in data being persisted
 // in different ways such that when the experiment is toggled on/off via
@@ -1094,6 +1099,9 @@ bool AppCacheDatabase::CreateSchema() {
 }
 
 bool AppCacheDatabase::UpgradeSchema() {
+#if defined(APPCACHE_USE_SIMPLE_CACHE)
+  return DeleteExistingAndCreateNewDatabase();
+#else
   if (meta_table_->GetVersionNumber() == 3) {
     // version 3 was pre 12/17/2011
     DCHECK_EQ(strcmp(kNamespacesTable, kTables[3].table_name), 0);
@@ -1170,6 +1178,7 @@ bool AppCacheDatabase::UpgradeSchema() {
   // If there is no upgrade path for the version on disk to the current
   // version, nuke everything and start over.
   return DeleteExistingAndCreateNewDatabase();
+#endif
 }
 
 void AppCacheDatabase::ResetConnectionAndTables() {

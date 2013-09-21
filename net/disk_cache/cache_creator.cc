@@ -79,10 +79,10 @@ CacheCreator::~CacheCreator() {
 }
 
 int CacheCreator::Run() {
-  // TODO(gavinp,pasko): While simple backend development proceeds, we're only
-  // testing it against net::DISK_CACHE. Turn it on for more cache types as
+  // TODO(gavinp,pasko): Turn Simple Cache on for more cache types as
   // appropriate.
-  if (backend_type_ == net::CACHE_BACKEND_SIMPLE && type_ == net::DISK_CACHE) {
+  if (backend_type_ == net::CACHE_BACKEND_SIMPLE &&
+      (type_ == net::DISK_CACHE || type_ == net::APP_CACHE)) {
     disk_cache::SimpleBackendImpl* simple_cache =
         new disk_cache::SimpleBackendImpl(path_, max_bytes_, type_,
                                           thread_.get(), net_log_);

@@ -668,6 +668,9 @@ TEST(AppCacheDatabaseTest, OriginUsage) {
   EXPECT_EQ(5000, usage_map[kOtherOrigin]);
 }
 
+#if defined(APPCACHE_USE_SIMPLE_CACHE)
+// There is no such upgrade path in this case.
+#else
 TEST(AppCacheDatabaseTest, UpgradeSchema3to5) {
   // Real file on disk for this test.
   base::ScopedTempDir temp_dir;
@@ -886,7 +889,11 @@ TEST(AppCacheDatabaseTest, UpgradeSchema3to5) {
     EXPECT_FALSE(fallbacks[i].namespace_.is_pattern);
   }
 }
+#endif  // !APPCACHE_USE_SIMPLE_CACHE
 
+#if defined(APPCACHE_USE_SIMPLE_CACHE)
+// There is no such upgrade path in this case.
+#else
 TEST(AppCacheDatabaseTest, UpgradeSchema4to5) {
   // Real file on disk for this test.
   base::ScopedTempDir temp_dir;
@@ -1124,5 +1131,6 @@ TEST(AppCacheDatabaseTest, UpgradeSchema4to5) {
     EXPECT_FALSE(whitelists[i].is_pattern);
   }
 }
+#endif  // !APPCACHE_USE_SIMPLE_CACHE
 
 }  // namespace appcache

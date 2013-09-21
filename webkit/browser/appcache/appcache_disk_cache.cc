@@ -270,8 +270,13 @@ int AppCacheDiskCache::Init(net::CacheType cache_type,
   is_disabled_ = false;
   create_backend_callback_ = new CreateBackendCallbackShim(this);
 
+#if defined(APPCACHE_USE_SIMPLE_CACHE)
+  const net::BackendType backend_type = net::CACHE_BACKEND_SIMPLE;
+#else
+  const net::BackendType backend_type = net::CACHE_BACKEND_DEFAULT;
+#endif
   int rv = disk_cache::CreateCacheBackend(
-      cache_type, net::CACHE_BACKEND_DEFAULT, cache_directory, cache_size,
+      cache_type, backend_type, cache_directory, cache_size,
       force, cache_thread, NULL, &(create_backend_callback_->backend_ptr_),
       base::Bind(&CreateBackendCallbackShim::Callback,
                  create_backend_callback_));

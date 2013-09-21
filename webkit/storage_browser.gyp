@@ -201,6 +201,12 @@
             '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
           ],
         }],
+        ['OS=="android"', {
+          'defines': ['APPCACHE_USE_SIMPLE_CACHE'],
+          'direct_dependent_settings': {
+            'defines': ['APPCACHE_USE_SIMPLE_CACHE'],
+          },
+        }],
       ],
     },
     {
