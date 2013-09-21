@@ -55,14 +55,16 @@ class RemoveOperation {
  private:
   // Part of Remove(). Called after CheckLocalState() completion.
   void RemoveAfterCheckLocalState(const FileOperationCallback& callback,
+                                  const std::string* parent_resource_id,
                                   const std::string* local_id,
                                   const ResourceEntry* entry,
                                   FileError error);
 
   // Part of Remove(). Called after server-side removal is done.
-  void RemoveAfterDeleteResource(const FileOperationCallback& callback,
-                                 const std::string& local_id,
-                                 google_apis::GDataErrorCode status);
+  void RemoveAfterUpdateRemoteState(
+      const FileOperationCallback& callback,
+      const base::Callback<FileError(base::FilePath*)>& local_update_task,
+      google_apis::GDataErrorCode status);
 
   // Part of Remove(). Called after UpdateLocalState() completion.
   void RemoveAfterUpdateLocalState(const FileOperationCallback& callback,

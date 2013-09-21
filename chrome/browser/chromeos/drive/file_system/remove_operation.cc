@@ -20,9 +20,14 @@ namespace file_system {
 namespace {
 
 // Checks local metadata state before requesting remote delete.
+// |parent_resource_id| is set to the resource ID of the parent directory of
+// |path|. If it is a special folder like drive/other, empty string is set.
+// |local_id| is set to the local ID of the entry located at |path|.
+// |entry| is the resource entry for the |path|.
 FileError CheckLocalState(internal::ResourceMetadata* metadata,
                           const base::FilePath& path,
                           bool is_recursive,
+                          std::string* parent_resource_id,
                           std::string* local_id,
                           ResourceEntry* entry) {
   FileError error = metadata->GetIdByPath(path, local_id);
@@ -43,14 +48,27 @@ FileError CheckLocalState(internal::ResourceMetadata* metadata,
       return FILE_ERROR_NOT_EMPTY;
   }
 
+  // Get the resource_id of the parent folder. If it is a special folder that
+  // does not have the server side ID, returns an empty string (not an error).
+  if (util::IsSpecialResourceId(entry->parent_local_id())) {
+    *parent_resource_id = "";
+  } else {
+    ResourceEntry parent_entry;
+    error = metadata->GetResourceEntryById(entry->parent_local_id(),
+                                           &parent_entry);
+    if (error != FILE_ERROR_OK)
+        return error;
+    *parent_resource_id = parent_entry.resource_id();
+  }
+
   return FILE_ERROR_OK;
 }
 
 // Updates local metadata and cache state after remote delete.
-FileError UpdateLocalState(internal::ResourceMetadata* metadata,
-                           internal::FileCache* cache,
-                           const std::string& local_id,
-                           base::FilePath* changed_directory_path) {
+FileError UpdateLocalStateAfterDelete(internal::ResourceMetadata* metadata,
+                                      internal::FileCache* cache,
+                                      const std::string& local_id,
+                                      base::FilePath* changed_directory_path) {
   *changed_directory_path = metadata->GetFilePath(local_id).DirName();
   FileError error = metadata->RemoveEntry(local_id);
   if (error != FILE_ERROR_OK)
@@ -60,6 +78,21 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
   DLOG_IF(ERROR, error != FILE_ERROR_OK) << "Failed to remove: " << local_id;
 
   return FILE_ERROR_OK;
+}
+
+// Updates local metadata and after remote unparenting.
+FileError UpdateLocalStateAfterUnparent(
+    internal::ResourceMetadata* metadata,
+    const std::string& local_id,
+    base::FilePath* changed_directory_path) {
+  *changed_directory_path = metadata->GetFilePath(local_id).DirName();
+
+  ResourceEntry entry;
+  FileError error = metadata->GetResourceEntryById(local_id, &entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+  entry.set_parent_local_id(util::kDriveOtherDirSpecialResourceId);
+  return metadata->RefreshEntry(local_id, entry);
 }
 
 }  // namespace
@@ -89,6 +122,7 @@ void RemoveOperation::Remove(const base::FilePath& path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  std::string* parent_resource_id = new std::string;
   std::string* local_id = new std::string;
   ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
@@ -98,17 +132,20 @@ void RemoveOperation::Remove(const base::FilePath& path,
                  metadata_,
                  path,
                  is_recursive,
+                 parent_resource_id,
                  local_id,
                  entry),
       base::Bind(&RemoveOperation::RemoveAfterCheckLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
+                 base::Owned(parent_resource_id),
                  base::Owned(local_id),
                  base::Owned(entry)));
 }
 
 void RemoveOperation::RemoveAfterCheckLocalState(
     const FileOperationCallback& callback,
+    const std::string* parent_resource_id,
     const std::string* local_id,
     const ResourceEntry* entry,
     FileError error) {
@@ -120,17 +157,40 @@ void RemoveOperation::RemoveAfterCheckLocalState(
     return;
   }
 
-  scheduler_->DeleteResource(
-      entry->resource_id(),
-      base::Bind(&RemoveOperation::RemoveAfterDeleteResource,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback,
-                 *local_id));
+  // To match with the behavior of drive.google.com:
+  // Removal of shared entries under MyDrive is just removing from the parent.
+  // The entry will stay in shared-with-me (in other words, in "drive/other".)
+  //
+  // TODO(kinaba): to be more precise, we might be better to branch by whether
+  // or not the current account is an owner of the file. The code below is
+  // written under the assumption that |shared_with_me| coincides with that.
+  if (entry->shared_with_me() && !parent_resource_id->empty()) {
+    scheduler_->RemoveResourceFromDirectory(
+        *parent_resource_id,
+        entry->resource_id(),
+        base::Bind(&RemoveOperation::RemoveAfterUpdateRemoteState,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback,
+                   base::Bind(&UpdateLocalStateAfterUnparent,
+                              metadata_,
+                              *local_id)));
+  } else {
+    // Otherwise try sending the entry to trash.
+    scheduler_->DeleteResource(
+        entry->resource_id(),
+        base::Bind(&RemoveOperation::RemoveAfterUpdateRemoteState,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback,
+                   base::Bind(&UpdateLocalStateAfterDelete,
+                              metadata_,
+                              cache_,
+                              *local_id)));
+  }
 }
 
-void RemoveOperation::RemoveAfterDeleteResource(
+void RemoveOperation::RemoveAfterUpdateRemoteState(
     const FileOperationCallback& callback,
-    const std::string& local_id,
+    const base::Callback<FileError(base::FilePath*)>& local_update_task,
     google_apis::GDataErrorCode status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -145,11 +205,7 @@ void RemoveOperation::RemoveAfterDeleteResource(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&UpdateLocalState,
-                 metadata_,
-                 cache_,
-                 local_id,
-                 changed_directory_path),
+      base::Bind(local_update_task, changed_directory_path),
       base::Bind(&RemoveOperation::RemoveAfterUpdateLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,

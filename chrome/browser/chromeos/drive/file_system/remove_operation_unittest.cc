@@ -40,6 +40,8 @@ TEST_F(RemoveOperationTest, RemoveFile) {
   // Remove a file in subdirectory.
   error = FILE_ERROR_FAILED;
   ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_subdir, &entry));
+  const std::string resource_id = entry.resource_id();
+
   operation.Remove(file_in_subdir,
                    false,  // is_recursive
                    google_apis::test_util::CreateCopyResultCallback(&error));
@@ -47,6 +49,17 @@ TEST_F(RemoveOperationTest, RemoveFile) {
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(FILE_ERROR_NOT_FOUND,
             GetLocalResourceEntry(file_in_subdir, &entry));
+
+  // Verify the file is indeed removed in the server.
+  google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> gdata_entry;
+  fake_service()->GetResourceEntry(
+      resource_id,
+      google_apis::test_util::CreateCopyResultCallback(&gdata_error,
+                                                       &gdata_entry));
+  test_util::RunBlockingPoolTask();
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, gdata_error);
+  EXPECT_TRUE(gdata_entry->deleted());
 
   // Try removing non-existing file.
   error = FILE_ERROR_FAILED;
@@ -111,6 +124,55 @@ TEST_F(RemoveOperationTest, RemoveDirectory) {
             GetLocalResourceEntry(non_empty_dir, &entry));
   EXPECT_EQ(FILE_ERROR_NOT_FOUND,
             GetLocalResourceEntry(file_in_non_empty_dir, &entry));
+}
+
+TEST_F(RemoveOperationTest, RemoveShared) {
+  RemoveOperation operation(blocking_task_runner(), observer(), scheduler(),
+                            metadata(), cache());
+
+  const base::FilePath kPathInMyDrive(FILE_PATH_LITERAL(
+      "drive/root/shared.txt"));
+  const base::FilePath kPathInOther(FILE_PATH_LITERAL(
+      "drive/other/shared.txt"));
+
+  // Prepare a shared file to the root folder.
+  google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> gdata_entry;
+  fake_service()->AddNewFile(
+      "text/plain",
+      "dummy content",
+      fake_service()->GetRootResourceId(),
+      kPathInMyDrive.BaseName().AsUTF8Unsafe(),
+      true,  // shared_with_me,
+      google_apis::test_util::CreateCopyResultCallback(&gdata_error,
+                                                       &gdata_entry));
+  test_util::RunBlockingPoolTask();
+  ASSERT_EQ(google_apis::HTTP_CREATED, gdata_error);
+  CheckForUpdates();
+
+  // Remove it. Locally, the file should be moved to drive/other.
+  FileError error = FILE_ERROR_FAILED;
+  ResourceEntry entry;
+  operation.Remove(kPathInMyDrive,
+                   false,  // is_recursive
+                   google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
+            GetLocalResourceEntry(kPathInMyDrive, &entry));
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kPathInOther, &entry));
+
+  // Remotely, the entry should have lost its parent.
+  gdata_error = google_apis::GDATA_OTHER_ERROR;
+  const std::string resource_id = gdata_entry->resource_id();
+  fake_service()->GetResourceEntry(
+      resource_id,
+      google_apis::test_util::CreateCopyResultCallback(&gdata_error,
+                                                       &gdata_entry));
+  test_util::RunBlockingPoolTask();
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, gdata_error);
+  EXPECT_FALSE(gdata_entry->deleted());  // It's not deleted.
+  EXPECT_FALSE(gdata_entry->GetLinkByType(google_apis::Link::LINK_PARENT));
 }
 
 }  // namespace file_system
