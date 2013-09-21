@@ -145,9 +145,9 @@ static bool hasPrefix(const char* string, unsigned length, const char* prefix)
     return false;
 }
 
-static PassRefPtr<CSSPrimitiveValue> createPrimitiveValuePair(PassRefPtr<CSSPrimitiveValue> first, PassRefPtr<CSSPrimitiveValue> second)
+static PassRefPtr<CSSPrimitiveValue> createPrimitiveValuePair(PassRefPtr<CSSPrimitiveValue> first, PassRefPtr<CSSPrimitiveValue> second, Pair::IdenticalValuesPolicy identicalValuesPolicy = Pair::DropIdenticalValues)
 {
-    return cssValuePool().createValue(Pair::create(first, second));
+    return cssValuePool().createValue(Pair::create(first, second, identicalValuesPolicy));
 }
 
 class AnimationParseContext {
@@ -2005,6 +2005,8 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         m_implicitShorthand = false;
         return result;
     }
+    case CSSPropertyObjectPosition:
+        return RuntimeEnabledFeatures::objectFitPositionEnabled() && parseObjectPosition(important);
     case CSSPropertyListStyleImage:     // <uri> | none | inherit
     case CSSPropertyBorderImageSource:
     case CSSPropertyWebkitMaskBoxImageSource:
@@ -6628,6 +6630,20 @@ bool CSSParser::parseFlex(CSSParserValueList* args, bool important)
     addProperty(CSSPropertyFlexGrow, cssValuePool().createValue(clampToFloat(flexGrow), CSSPrimitiveValue::CSS_NUMBER), important);
     addProperty(CSSPropertyFlexShrink, cssValuePool().createValue(clampToFloat(flexShrink), CSSPrimitiveValue::CSS_NUMBER), important);
     addProperty(CSSPropertyFlexBasis, flexBasis, important);
+    return true;
+}
+
+bool CSSParser::parseObjectPosition(bool important)
+{
+    RefPtr<CSSValue> xValue;
+    RefPtr<CSSValue> yValue;
+    parseFillPosition(m_valueList.get(), xValue, yValue);
+    if (!xValue || !yValue)
+        return false;
+    addProperty(
+        CSSPropertyObjectPosition,
+        createPrimitiveValuePair(toCSSPrimitiveValue(xValue.get()), toCSSPrimitiveValue(yValue.get()), Pair::KeepIdenticalValues),
+        important);
     return true;
 }
 

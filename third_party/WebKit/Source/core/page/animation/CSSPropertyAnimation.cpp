@@ -85,6 +85,11 @@ static inline LengthSize blendFunc(const AnimationBase* anim, const LengthSize& 
                       blendFunc(anim, from.height(), to.height(), progress));
 }
 
+static inline LengthPoint blendFunc(const AnimationBase* anim, const LengthPoint& from, const LengthPoint& to, double progress)
+{
+    return LengthPoint(blendFunc(anim, from.x(), to.x(), progress), blendFunc(anim, from.y(), to.y(), progress));
+}
+
 static inline IntSize blendFunc(const AnimationBase* anim, const IntSize& from, const IntSize& to, double progress)
 {
     return IntSize(blendFunc(anim, from.width(), to.width(), progress),
@@ -1109,6 +1114,8 @@ void CSSPropertyAnimation::ensurePropertyMap()
     gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyWebkitMaskPositionX, &RenderStyle::maskLayers, &RenderStyle::accessMaskLayers));
     gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyWebkitMaskPositionY, &RenderStyle::maskLayers, &RenderStyle::accessMaskLayers));
     gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyWebkitMaskSize, &RenderStyle::maskLayers, &RenderStyle::accessMaskLayers));
+
+    gPropertyWrappers->append(new PropertyWrapper<LengthPoint>(CSSPropertyObjectPosition, &RenderStyle::objectPosition, &RenderStyle::setObjectPosition));
 
     gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyFontSize,
         // Must pass a specified size to setFontSize if Text Autosizing is enabled, but a computed size

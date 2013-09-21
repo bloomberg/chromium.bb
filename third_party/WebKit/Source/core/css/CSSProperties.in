@@ -83,6 +83,7 @@ min-height type_name=Length, initial=initialMinSize, converter=convertLengthSizi
 min-width type_name=Length, initial=initialMinSize, converter=convertLengthSizing
 mix-blend-mode type_name=BlendMode, name_for_methods=BlendMode
 object-fit type_name=ObjectFit
+object-position type_name=LengthPoint, initial=initialObjectPosition, converter=convertLengthPoint
 opacity type_name=float
 order type_name=int
 orphans type_name=short, custom_all
