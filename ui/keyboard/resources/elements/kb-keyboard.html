@@ -423,8 +423,16 @@
         if (enterUpperOnSpace) {
           enterUpperOnSpace = false;
           if (char == ' ') {
+            // If shift key defined in layout.
             if(this.shift) {
-              this.keyset = this.shift.onSpaceAfterPunctuation();
+              var shiftDetail = this.shift.onSpaceAfterPunctuation();
+              var toKeyset = shiftDetail.toKeyset;
+              // Check if transition defined.
+              if(toKeyset) {
+                this.keyset = toKeyset;
+                this.querySelector('#' + this.layout + '-' +
+                    this.keyset).nextKeyset = shiftDetail.nextKeyset;
+              }
             } else {
               console.error('Capitalization on space after punctuation \
                             enabled, but cannot find target keyset.');

@@ -129,11 +129,14 @@
 
         /**
          * Callback function for when a space is pressed after punctuation.
-         * @return {string} The keyset the keyboard should transition to.
+         * @return {Object} The keyset transitions the keyboard should make.
          */
         onSpaceAfterPunctuation: function() {
+           var detail = {};
+           detail.toKeyset = this.upperCaseKeysetId;
+           detail.nextKeyset = this.lowerCaseKeysetId;
            state = KEY_STATES.TAPPED;
-           return this.upperCaseKeysetId;
+           return detail;
         },
 
         populateDetails: function() {
