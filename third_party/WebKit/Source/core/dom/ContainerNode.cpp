@@ -553,11 +553,17 @@ void ContainerNode::removeChildren()
     // and remove... e.g. stop loading frames, fire unload events.
     willRemoveChildren(protect.get());
 
-    // Exclude this node when looking for removed focusedElement since only
-    // children will be removed.
-    // This must be later than willRemvoeChildren, which might change focus
-    // state of a child.
-    document().removeFocusedElementOfSubtree(this, true);
+    {
+        // Removing focus can cause frames to load, either via events (focusout, blur)
+        // or widget updates (e.g., for <embed>).
+        SubframeLoadingDisabler disabler(this);
+
+        // Exclude this node when looking for removed focusedElement since only
+        // children will be removed.
+        // This must be later than willRemoveChildren, which might change focus
+        // state of a child.
+        document().removeFocusedElementOfSubtree(this, true);
+    }
 
     NodeVector removedChildren;
     {
