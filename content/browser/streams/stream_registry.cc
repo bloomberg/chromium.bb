@@ -55,9 +55,14 @@ void StreamRegistry::UnregisterStream(const GURL& url) {
   if (iter == streams_.end())
     return;
 
-  size_t buffered_bytes = iter->second->last_total_buffered_bytes();
-  DCHECK_LE(buffered_bytes, total_memory_usage_);
-  total_memory_usage_ -= buffered_bytes;
+  // Only update |total_memory_usage_| if |url| is NOT a Stream clone because
+  // cloned streams do not update |total_memory_usage_|.
+  if (iter->second->url() == url) {
+    size_t buffered_bytes = iter->second->last_total_buffered_bytes();
+    DCHECK_LE(buffered_bytes, total_memory_usage_);
+    total_memory_usage_ -= buffered_bytes;
+  }
+
   streams_.erase(url);
 }
 
