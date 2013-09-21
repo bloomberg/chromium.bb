@@ -499,6 +499,47 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleRootWindows) {
   EXPECT_TRUE(tooltip_reparented);
   widget2->Close();
 }
+
+// This test validates whether the tooltip after becoming visible stays at the
+// top of the ZOrder in its root window after activation changes.
+TEST_F(TooltipControllerTest, TooltipAtTopOfZOrderAfterActivation) {
+  view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
+  EXPECT_EQ(string16(), helper_->GetTooltipText());
+  EXPECT_EQ(NULL, helper_->GetTooltipWindow());
+  generator_->MoveMouseToCenterOf(GetWindow());
+
+  EXPECT_EQ(GetWindow(), GetRootWindow()->GetEventHandlerForPoint(
+      generator_->current_location()));
+  string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
+  EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(GetWindow()));
+  EXPECT_EQ(string16(), helper_->GetTooltipText());
+  EXPECT_EQ(GetWindow(), helper_->GetTooltipWindow());
+
+  // Fire tooltip timer so tooltip becomes visible.
+  helper_->FireTooltipTimer();
+
+  EXPECT_TRUE(helper_->IsTooltipVisible());
+  generator_->MoveMouseBy(1, 0);
+
+  EXPECT_TRUE(helper_->IsTooltipVisible());
+  EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(GetWindow()));
+  EXPECT_EQ(expected_tooltip, helper_->GetTooltipText());
+  EXPECT_EQ(GetWindow(), helper_->GetTooltipWindow());
+
+  // Fake activation loss and gain in the native widget. This should cause a
+  // ZOrder change which should not affect the position of the tooltip.
+  DesktopNativeWidgetAura* native_widget =
+      static_cast<DesktopNativeWidgetAura*>(widget_->native_widget());
+  EXPECT_TRUE(native_widget != NULL);
+
+  native_widget->HandleActivationChanged(false);
+  native_widget->HandleActivationChanged(true);
+
+  EXPECT_EQ(
+      widget_->GetNativeWindow()->GetRootWindow()->children().back()->type(),
+      aura::client::WINDOW_TYPE_TOOLTIP);
+}
+
 #endif
 
 }  // namespace test

@@ -242,6 +242,11 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // from under us.
   aura::Window* window_;
 
+  // Contains the content window defined above. Ensures that ZOrder changes
+  // occurring in the content window hierarchy don't affect the other children
+  // of the root window.
+  aura::Window* content_window_container_;
+
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
   scoped_ptr<aura::client::StackingClient> stacking_client_;

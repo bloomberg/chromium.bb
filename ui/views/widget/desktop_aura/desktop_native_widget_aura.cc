@@ -177,6 +177,7 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
       can_activate_(true),
       desktop_root_window_host_(NULL),
       window_(new aura::Window(this)),
+      content_window_container_(NULL),
       native_widget_delegate_(delegate),
       last_drop_operation_(ui::DragDropTypes::DRAG_NONE),
       restore_focus_on_activate_(false),
@@ -295,6 +296,14 @@ void DesktopNativeWidgetAura::InitNativeWidget(
                                     this, params.bounds);
   root_window_.reset(
       desktop_root_window_host_->Init(window_, params));
+
+  content_window_container_ = new aura::Window(NULL);
+  content_window_container_->Init(ui::LAYER_NOT_DRAWN);
+  content_window_container_->Show();
+  content_window_container_->AddChild(window_);
+  content_window_container_->SetBounds(root_window_->bounds());
+  root_window_->AddChild(content_window_container_);
+
   root_window_->AddRootWindowObserver(this);
 
   stacking_client_.reset(
@@ -495,6 +504,8 @@ void DesktopNativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
       gfx::ToCeiledPoint(gfx::ScalePoint(bounds.origin(), scale)),
       gfx::ToFlooredSize(gfx::ScaleSize(bounds.size(), scale)));
   desktop_root_window_host_->AsRootWindowHost()->SetBounds(bounds_in_pixels);
+  content_window_container_->SetBounds(
+      content_window_container_->GetRootWindow()->bounds());
 }
 
 void DesktopNativeWidgetAura::SetSize(const gfx::Size& size) {
