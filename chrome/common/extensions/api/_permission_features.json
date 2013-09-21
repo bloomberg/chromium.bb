@@ -415,7 +415,8 @@
           "lphgohfeebnhcpiohjndkgbhhkoapkjc",  // Apps Developer tool.
           "gonnpeheodhmhdjiimoiheniambmdcco",  // Apps Editor old.
           "cbelnpbjogfbjamhpbofhlnklecjpido",  // Apps Editor published.
-          "abjoigjokfeibfhiahiijggogladbmfm"   // Activity Log (Watchdog).
+          "abjoigjokfeibfhiahiijggogladbmfm",  // Watchdog (Activity Log)
+          "hhcnncjlpehbepkbgccanfpkneoejnpb"  // Watchdog Test Version
       ]
     }
   ],
