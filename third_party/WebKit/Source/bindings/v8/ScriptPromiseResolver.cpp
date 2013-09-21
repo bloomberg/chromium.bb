@@ -44,12 +44,12 @@ namespace WebCore {
 
 ScriptPromiseResolver::ScriptPromiseResolver(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
     : m_isolate(isolate)
+    , m_promiseForExposeDetached(false)
+    , m_promiseForResolveDetached(false)
 {
     ASSERT(RuntimeEnabledFeatures::promiseEnabled());
-    v8::Local<v8::Object> promise, resolver;
-    V8PromiseCustom::createPromise(creationContext, &promise, &resolver, isolate);
+    v8::Local<v8::Object> promise = V8PromiseCustom::createPromise(creationContext, isolate);
     m_promise = ScriptPromise(promise, isolate);
-    m_resolver.set(isolate, resolver);
 }
 
 ScriptPromiseResolver::~ScriptPromiseResolver()
@@ -57,8 +57,27 @@ ScriptPromiseResolver::~ScriptPromiseResolver()
     // We don't call "detach" here because it requires a caller
     // to be in a v8 context.
 
-    detachPromise();
-    m_resolver.clear();
+    detachPromiseForExpose();
+    detachPromiseForResolve();
+}
+
+void ScriptPromiseResolver::detachPromise()
+{
+    detachPromiseForExpose();
+}
+
+void ScriptPromiseResolver::detachPromiseForExpose()
+{
+    m_promiseForExposeDetached = true;
+    if (m_promiseForResolveDetached)
+        m_promise.clear();
+}
+
+void ScriptPromiseResolver::detachPromiseForResolve()
+{
+    m_promiseForResolveDetached = true;
+    if (m_promiseForExposeDetached)
+        m_promise.clear();
 }
 
 PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(ScriptExecutionContext* context)
@@ -78,48 +97,49 @@ PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create()
 bool ScriptPromiseResolver::isPending() const
 {
     ASSERT(v8::Context::InContext());
-    return isPendingInternal();
+    if (m_promiseForResolveDetached)
+        return false;
+    ASSERT(!m_promise.hasNoValue());
+    v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
+    v8::Local<v8::Object> internal = V8PromiseCustom::getInternal(promise);
+    V8PromiseCustom::PromiseState state = V8PromiseCustom::getState(internal);
+    return state == V8PromiseCustom::Pending;
 }
 
 void ScriptPromiseResolver::detach()
 {
     ASSERT(v8::Context::InContext());
-    detachPromise();
+    detachPromiseForExpose();
     reject(v8::Undefined(m_isolate));
-    m_resolver.clear();
+    detachPromiseForResolve();
 }
 
 void ScriptPromiseResolver::fulfill(v8::Handle<v8::Value> value)
 {
-    ASSERT(v8::Context::InContext());
-    if (!isPendingInternal())
-        return;
-    V8PromiseCustom::fulfillResolver(m_resolver.newLocal(m_isolate), value, V8PromiseCustom::Asynchronous, m_isolate);
-    m_resolver.clear();
+    resolve(value);
 }
 
 void ScriptPromiseResolver::resolve(v8::Handle<v8::Value> value)
 {
     ASSERT(v8::Context::InContext());
-    if (!isPendingInternal())
+    if (!isPending())
         return;
-    V8PromiseCustom::resolveResolver(m_resolver.newLocal(m_isolate), value, V8PromiseCustom::Asynchronous, m_isolate);
-    m_resolver.clear();
+    V8PromiseCustom::resolve(m_promise.v8Value().As<v8::Object>(), value, V8PromiseCustom::Asynchronous, m_isolate);
+    detachPromiseForResolve();
 }
 
 void ScriptPromiseResolver::reject(v8::Handle<v8::Value> value)
 {
     ASSERT(v8::Context::InContext());
-    if (!isPendingInternal())
+    if (!isPending())
         return;
-    V8PromiseCustom::rejectResolver(m_resolver.newLocal(m_isolate), value, V8PromiseCustom::Asynchronous, m_isolate);
-    m_resolver.clear();
+    V8PromiseCustom::reject(m_promise.v8Value().As<v8::Object>(), value, V8PromiseCustom::Asynchronous, m_isolate);
+    detachPromiseForResolve();
 }
 
 void ScriptPromiseResolver::fulfill(ScriptValue value)
 {
-    ASSERT(v8::Context::InContext());
-    fulfill(value.v8Value());
+    resolve(value);
 }
 
 void ScriptPromiseResolver::resolve(ScriptValue value)
@@ -132,19 +152,6 @@ void ScriptPromiseResolver::reject(ScriptValue value)
 {
     ASSERT(v8::Context::InContext());
     reject(value.v8Value());
-}
-
-bool ScriptPromiseResolver::isPendingInternal() const
-{
-    ASSERT(v8::Context::InContext());
-    if (m_resolver.isEmpty())
-        return false;
-    v8::Local<v8::Object> resolver = m_resolver.newLocal(m_isolate);
-    if (V8PromiseCustom::isInternalDetached(resolver))
-        return false;
-    v8::Local<v8::Object> internal = V8PromiseCustom::getInternal(resolver);
-    V8PromiseCustom::PromiseState state = V8PromiseCustom::getState(internal);
-    return state == V8PromiseCustom::Pending;
 }
 
 } // namespace WebCore

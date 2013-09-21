@@ -43,13 +43,12 @@ public:
 
     enum WrapperCallbackEnvironmentFieldIndex {
         WrapperCallbackEnvironmentPromiseIndex,
-        WrapperCallbackEnvironmentPromiseResolverIndex,
         WrapperCallbackEnvironmentCallbackIndex,
         WrapperCallbackEnvironmentFieldCount, // This entry must always be at the bottom.
     };
 
     enum PromiseEveryEnvironmentFieldIndex {
-        PromiseEveryEnvironmentPromiseResolverIndex,
+        PromiseEveryEnvironmentPromiseIndex,
         PromiseEveryEnvironmentCountdownIndex,
         PromiseEveryEnvironmentIndexIndex,
         PromiseEveryEnvironmentResultsIndex,
@@ -61,16 +60,11 @@ public:
         PrimitiveWrapperFieldCount, // This entry must always be at the bottom.
     };
 
-    enum ResolverFieldIndex {
-        ResolverInternalIndex = v8DOMWrapperObjectIndex,
-        ResolverFieldCount, // This entry must always be at the bottom.
-    };
-
     enum PromiseState {
         Pending,
         Fulfilled,
         Rejected,
-        PendingWithResolvedFlagSet,
+        Following,
     };
 
     enum SynchronousMode {
@@ -78,40 +72,30 @@ public:
         Asynchronous,
     };
 
-    // Create Promise and PromiseResolver instances and set them to |promise| and |resolver| respectively.
-    static void createPromise(v8::Handle<v8::Object> creationContext, v8::Local<v8::Object>* promise, v8::Local<v8::Object>* resolver, v8::Isolate*);
+    static v8::Local<v8::Object> createPromise(v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
-    // |resolver| must be a PromiseResolver instance.
-    static void fulfillResolver(v8::Handle<v8::Object> resolver, v8::Handle<v8::Value> result, SynchronousMode, v8::Isolate*);
-    // |resolver| must be a PromiseResolver instance.
-    static void resolveResolver(v8::Handle<v8::Object> resolver, v8::Handle<v8::Value> result, SynchronousMode, v8::Isolate*);
-    // |resolver| must be a PromiseResolver instance.
-    static void rejectResolver(v8::Handle<v8::Object> resolver, v8::Handle<v8::Value> result, SynchronousMode, v8::Isolate*);
+    // |promise| must be a Promise instance.
+    static void fulfill(v8::Handle<v8::Object> promise, v8::Handle<v8::Value> result, SynchronousMode, v8::Isolate*);
+    // |promise| must be a Promise instance.
+    static void resolve(v8::Handle<v8::Object> promise, v8::Handle<v8::Value> result, SynchronousMode, v8::Isolate*);
+    // |promise| must be a Promise instance.
+    static void reject(v8::Handle<v8::Object> promise, v8::Handle<v8::Value> result, SynchronousMode, v8::Isolate*);
 
     // |promise| must be a Promise instance.
     // |fulfillCallback| and |rejectCallback| can be an empty function respectively.
     static void append(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> fulfillCallback, v8::Handle<v8::Function> rejectCallback, v8::Isolate*);
 
-    // This function can take either Promise or PromiseResolver objects.
-    // This function cannot be called when the internal object is detached from |promiseOrResolver|.
-    // Note that internal object can be detached only from PromiseResolver.
-    static v8::Local<v8::Object> getInternal(v8::Handle<v8::Object> promiseOrResolver);
+    // |promise| must be a Promise instance.
+    static v8::Local<v8::Object> getInternal(v8::Handle<v8::Object> promise);
 
-    // Return true if the internal object is detached from |resolver|.
-    // |resolver| must be a PromiseResolver instance.
-    static bool isInternalDetached(v8::Handle<v8::Object> resolver);
-
-    // Detach the internal object from |resolver|.
-    // |resolver| must be a PromiseResolver instance.
-    static void detachInternal(v8::Handle<v8::Object> resolver, v8::Isolate*);
-
-    // Clear the Promise / PromiseResolver internal object with the given state and result.
+    // |internal| must be a Promise internal object.
+    // Clear the Promise internal object with the given state and result.
     // This function clears callbacks in the object.
     static void clearInternal(v8::Handle<v8::Object> internal, PromiseState, v8::Handle<v8::Value> result, v8::Isolate*);
 
-    // |internal| must be an Promise / PromiseResolver internal object.
+    // |internal| must be a Promise internal object.
     static PromiseState getState(v8::Handle<v8::Object> internal);
-    // |internal| must be an Promise / PromiseResolver internal object.
+    // |internal| must be a Promise internal object.
     static void setState(v8::Handle<v8::Object> internal, PromiseState, v8::Isolate*);
 
     // Call |function| synchronously or asynchronously, depending on |mode|.

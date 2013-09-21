@@ -44,8 +44,8 @@ namespace WebCore {
 
 class ScriptExecutionContext;
 
-// ScriptPromiseResolver is a class for accessing PromiseResolver methods
-// (fulfill / resolve / reject) from C++ world.
+// ScriptPromiseResolver is a class for performing operations on Promise
+// (resolve / reject) from C++ world.
 // ScriptPromiseResolver holds a Promise and a PromiseResolver.
 // All methods of this class must be called from the main thread.
 // Here is a typical usage:
@@ -53,7 +53,7 @@ class ScriptExecutionContext;
 //  2. Pass the promise object of the holder to a JavaScript program
 //     (such as XMLHttpRequest return value).
 //  3. Detach the promise object if you no longer need it.
-//  4. Call fulfill or reject when the operation completes or
+//  4. Call resolve or reject when the operation completes or
 //     the operation fails respectively.
 //
 // Most methods including constructors must be called within a v8 context.
@@ -61,12 +61,19 @@ class ScriptExecutionContext;
 // enter a v8 context, for example by using ScriptScope and ScriptState.
 //
 // If you hold ScriptPromiseResolver as a member variable in a DOM object,
-// it causes memory leaks unless you detach the promise and resolver object
-// manually.
+// it causes memory leaks unless you detach the promise object manually.
+// Logically ScriptPromiseResolver has 2 references to the promise object.
+// One is for exposing the promise object, another is for resolving it.
+// To prevent memory leaks, you should release these 2 references manually.
+// Following operations release references to the promise object.
+//  1. detachPromise releases the reference for exposing.
+//  2. resolve / reject operations release the reference for resolving.
+//  3. detach releases both references.
+//  4. Destroying ScriptPromiseResolver releases both references.
+//
 // So if you no longer need the promise object, you should call detachPromise.
-// And if the operation completes or fails, you should call fulfill / resolve /
-// reject. Destroying ScriptPromiseResolver will also detach the promise and
-// resolver object.
+// And if the operation completes or fails, you should call resolve / reject.
+// Destroying ScriptPromiseResolver will also detach the promise object.
 //
 class ScriptPromiseResolver : public RefCounted<ScriptPromiseResolver> {
     WTF_MAKE_NONCOPYABLE(ScriptPromiseResolver);
@@ -74,22 +81,19 @@ public:
     static PassRefPtr<ScriptPromiseResolver> create(ScriptExecutionContext*);
     static PassRefPtr<ScriptPromiseResolver> create();
 
-    // A ScriptPromiseResolver should be fulfilled / resolved / rejected before
+    // A ScriptPromiseResolver should be resolved / rejected before
     // its destruction.
     // A ScriptPromiseResolver can be destructed safely without
     // entering a v8 context.
     ~ScriptPromiseResolver();
 
-    // Detach the promise object and reject the resolver object with undefined.
+    // Reject the promise with undefined and detach it.
     void detach();
 
     // Detach the promise object.
-    void detachPromise() { m_promise.clear(); }
+    void detachPromise();
 
-    // Return true if the following conditions are met:
-    //  - The resolver object is not detached.
-    //  - The resolver's promise object is in pending state.
-    //  - The resolver's resolved flag is not set.
+    // Return true if the promise object is in pending state.
     bool isPending() const;
 
     ScriptPromise promise()
@@ -99,6 +103,7 @@ public:
     }
 
     // Fulfill with a C++ object which can be converted to a v8 object by toV8.
+    // This method "fulfill" is the deprecated alias to resolve.
     template<typename T>
     inline void fulfill(PassRefPtr<T>);
     // Resolve with a C++ object which can be converted to a v8 object by toV8.
@@ -108,6 +113,7 @@ public:
     template<typename T>
     inline void reject(PassRefPtr<T>);
 
+    // This method "fulfill" is the deprecated alias to resolve.
     void fulfill(ScriptValue);
     void resolve(ScriptValue);
     void reject(ScriptValue);
@@ -120,8 +126,11 @@ private:
 
     v8::Isolate* m_isolate;
     ScriptPromise m_promise;
-    ScopedPersistent<v8::Object> m_resolver;
-    bool isPendingInternal() const;
+    bool m_promiseForExposeDetached : 1;
+    bool m_promiseForResolveDetached : 1;
+
+    void detachPromiseForExpose();
+    void detachPromiseForResolve();
 };
 
 template<typename T>
