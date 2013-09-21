@@ -12,9 +12,15 @@
 #include "ui/events/event_handler.h"
 
 namespace aura {
+
 class Window;
 class RootWindow;
+
+namespace client {
+class CursorClient;
 }
+
+}  // namespace aura
 
 namespace ui {
 class LocatedEvent;
@@ -94,6 +100,9 @@ class WindowOverview : public ui::EventHandler {
 
   // The time when overview was started.
   base::Time overview_start_time_;
+
+  // The cursor client used to lock the current cursor during overview.
+  aura::client::CursorClient* cursor_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowOverview);
 };

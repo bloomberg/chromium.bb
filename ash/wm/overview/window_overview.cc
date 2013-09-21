@@ -14,6 +14,7 @@
 #include "ash/wm/overview/window_selector_item.h"
 #include "base/metrics/histogram.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -54,14 +55,28 @@ WindowOverview::WindowOverview(WindowSelector* window_selector,
     : window_selector_(window_selector),
       windows_(windows),
       single_root_window_(single_root_window),
-      overview_start_time_(base::Time::Now()) {
+      overview_start_time_(base::Time::Now()),
+      cursor_client_(NULL) {
   PositionWindows();
+  DCHECK(!windows_->empty());
+  cursor_client_ = aura::client::GetCursorClient(
+      windows_->front()->GetRootWindow());
+  if (cursor_client_) {
+    cursor_client_->SetCursor(ui::kCursorPointer);
+    // TODO(flackr): Only prevent cursor changes for windows in the overview.
+    // This will be easier to do without exposing the overview mode code if the
+    // cursor changes are moved to ToplevelWindowEventHandler::HandleMouseMoved
+    // as suggested there.
+    cursor_client_->LockCursor();
+  }
   ash::Shell::GetInstance()->AddPreTargetHandler(this);
   Shell* shell = Shell::GetInstance();
   shell->delegate()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
 }
 
 WindowOverview::~WindowOverview() {
+  if (cursor_client_)
+    cursor_client_->UnlockCursor();
   ash::Shell::GetInstance()->RemovePreTargetHandler(this);
   UMA_HISTOGRAM_MEDIUM_TIMES(
       "Ash.WindowSelector.TimeInOverview",
