@@ -17,9 +17,11 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/texture_mailbox.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/aura/compositor_resize_lock.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/backing_store_aura.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
@@ -3040,8 +3042,17 @@ void RenderWidgetHostViewAura::OnUpdateVSyncParameters(
     ui::Compositor* compositor,
     base::TimeTicks timebase,
     base::TimeDelta interval) {
-  if (IsShowing() && !last_draw_ended_.is_null())
-    host_->UpdateVSyncParameters(last_draw_ended_, interval);
+  if (IsShowing()) {
+    if (IsDeadlineSchedulingEnabled()) {
+      // The deadline scheduler has logic to stagger the draws of the
+      // Renderer and Browser built-in, so send it an accurate timebase.
+      host_->UpdateVSyncParameters(timebase, interval);
+    } else if (!last_draw_ended_.is_null()) {
+      // For the non-deadline scheduler, we send the Renderer an offset
+      // vsync timebase to avoid its draws racing the Browser's draws.
+      host_->UpdateVSyncParameters(last_draw_ended_, interval);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

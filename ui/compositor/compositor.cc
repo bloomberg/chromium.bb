@@ -386,6 +386,8 @@ Compositor::Compositor(CompositorDelegate* delegate,
       ContextFactory::GetInstance()->DoesCreateTestContexts()
       ? kTestRefreshRate
       : kDefaultRefreshRate;
+  settings.deadline_scheduling_enabled =
+      switches::IsUIDeadlineSchedulingEnabled();
   settings.partial_swap_enabled =
       !command_line->HasSwitch(cc::switches::kUIDisablePartialSwap);
   settings.per_tile_painting_enabled =

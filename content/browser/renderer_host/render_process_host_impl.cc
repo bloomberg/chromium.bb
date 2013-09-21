@@ -830,6 +830,9 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
   if (content::IsDelegatedRendererEnabled())
     command_line->AppendSwitch(switches::kEnableDelegatedRenderer);
 
+  if (content::IsDeadlineSchedulingEnabled())
+    command_line->AppendSwitch(switches::kEnableDeadlineScheduling);
+
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       command_line, GetID());
 
@@ -858,6 +861,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableAudio,
     switches::kDisableBreakpad,
     switches::kDisableDatabases,
+    switches::kDisableDeadlineScheduling,
     switches::kDisableDelegatedRenderer,
     switches::kDisableDesktopNotifications,
     switches::kDisableDeviceOrientation,
@@ -898,6 +902,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableBrowserInputController,
     switches::kEnableBrowserPluginForAllViewTypes,
     switches::kEnableDCHECK,
+    switches::kEnableDeadlineScheduling,
     switches::kEnableDelegatedRenderer,
     switches::kEnableEncryptedMedia,
     switches::kDisableLegacyEncryptedMedia,

@@ -127,4 +127,17 @@ bool IsDelegatedRendererEnabled() {
   return enabled;
 }
 
+bool IsDeadlineSchedulingEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  // Default to disabled.
+  bool enabled = false;
+
+  // Flags override.
+  enabled |= command_line.HasSwitch(switches::kEnableDeadlineScheduling);
+  enabled &= !command_line.HasSwitch(switches::kDisableDeadlineScheduling);
+
+  return enabled;
+}
+
 }  // namespace content

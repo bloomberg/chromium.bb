@@ -18,6 +18,9 @@ CONTENT_EXPORT bool IsForceCompositingModeEnabled();
 // Returns true if delegated-renderer is on (via flags, or platform default).
 CONTENT_EXPORT bool IsDelegatedRendererEnabled();
 
+// Returns true if deadline scheduling is on (via flags, or platform default).
+CONTENT_EXPORT bool IsDeadlineSchedulingEnabled();
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_GPU_COMPOSITOR_UTIL_H_
