@@ -5,7 +5,6 @@
 #include "chrome/browser/local_discovery/privet_traffic_detector.h"
 
 #include "base/sys_byteorder.h"
-#include "chrome/browser/local_discovery/privet_constants.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
@@ -16,7 +15,7 @@
 #include "net/udp/udp_server_socket.h"
 
 namespace {
-const char kPrivetDefaultDev2iceType[] = "\x07_privet\x04_tcp\x05local";
+const char kPrivetDeviceTypeDnsString[] = "\x07_privet\x04_tcp\x05local";
 }
 
 namespace local_discovery {
@@ -101,9 +100,9 @@ int PrivetTrafficDetector::DoLoop(int rv) {
           reinterpret_cast<const net::dns_protocol::Header*>(buffer_begin);
       // Check if it's response packet.
       if (header->flags & base::HostToNet16(net::dns_protocol::kFlagResponse)) {
-        const char* substring_begin = kPrivetDefaultDev2iceType;
+        const char* substring_begin = kPrivetDeviceTypeDnsString;
         const char* substring_end = substring_begin +
-                                    arraysize(kPrivetDefaultDev2iceType);
+                                    arraysize(kPrivetDeviceTypeDnsString);
         // Check for expected substring, any Privet device must include this.
         if (std::search(buffer_begin, buffer_end,
                         substring_begin, substring_end) != buffer_end) {
