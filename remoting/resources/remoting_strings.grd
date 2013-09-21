@@ -554,7 +554,7 @@
       <message desc="Error message displayed to the user if they enter different PINs in the boxes marked 'PIN' and 'retype PIN'." name="IDR_PINS_NOT_EQUAL">
         Please enter the same PIN in both boxes.
       </message>
-      <message desc="Web-app description. Displayed in Chrome's extensions page." name="IDR_PRODUCT_DESCRIPTION">
+      <message desc="Web-app description. Displayed in Chrome's extensions page. KEEP THIS TO 132 CHARACTERS OR LESS, as this is a hard limit imposed by Chrome Web Store." name="IDR_PRODUCT_DESCRIPTION">
         Access other computers or allow another user to access your computer securely over the Internet.
       </message>
       <message desc="Label for button to reconnect to the previous Me2Me host. This button appears on the 'session-finished' page." name="IDR_RECONNECT">
