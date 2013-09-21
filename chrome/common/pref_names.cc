@@ -1233,6 +1233,11 @@ const char kExtensionsLastChromeVersion[] = "extensions.last_chrome_version";
 // platforms.
 extern const char kFullscreenAllowed[] = "fullscreen.allowed";
 
+// Enable notifications for new devices on the local network that can be
+// registered to the user's account, e.g. Google Cloud Print printers.
+const char kLocalDiscoveryNotificationsEnabled[] =
+    "local_discovery.notifications_enabled";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

@@ -118,6 +118,10 @@
 #include "chrome/browser/ui/cocoa/extensions/browser_actions_controller_prefs.h"
 #endif
 
+#if defined(ENABLE_MDNS)
+#include "chrome/browser/ui/webui/local_discovery/local_discovery_ui.h"
+#endif
+
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/browser_view_prefs.h"
 #include "chrome/browser/ui/tabs/tab_strip_layout_type_prefs.h"
@@ -430,6 +434,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       kSyncPromoErrorMessage,
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#endif
+
+#if defined(ENABLE_MDNS)
+ LocalDiscoveryUI::RegisterProfilePrefs(registry);
 #endif
 }
 

@@ -411,6 +411,8 @@ extern const char kExtensionsLastChromeVersion[];
 
 extern const char kFullscreenAllowed[];
 
+extern const char kLocalDiscoveryNotificationsEnabled[];
+
 // Local state prefs. Please add Profile prefs above instead.
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kCertRevocationCheckingRequiredLocalAnchors[];

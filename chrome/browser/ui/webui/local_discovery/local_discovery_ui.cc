@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -110,4 +111,12 @@ LocalDiscoveryUI::LocalDiscoveryUI(content::WebUI* web_ui)
   // page. For example
   web_ui->AddMessageHandler(local_discovery::LocalDiscoveryUIHandler::Create());
   web_ui->AddMessageHandler(new MetricsHandler());
+}
+
+void LocalDiscoveryUI::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kLocalDiscoveryNotificationsEnabled,
+      true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
