@@ -678,8 +678,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_TRUE(IsWindowPositionManaged(
       new_browser->window()->GetNativeWindow()));
 
-  // The new window should not be maximized.
-  EXPECT_FALSE(new_browser->window()->IsMaximized());
+  // The new window should be maximized.
+  EXPECT_TRUE(new_browser->window()->IsMaximized());
 }
 
 // Deletes a tab being dragged before the user moved enough to start a drag.
@@ -1243,10 +1243,10 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_TRUE(GetTrackedByWorkspace(browser()));
   EXPECT_TRUE(GetTrackedByWorkspace(new_browser));
 
-  // The source window should be maximized, but the new window should now
-  // be restored.
+  // The source window should be maximized.
   EXPECT_TRUE(browser()->window()->IsMaximized());
-  EXPECT_FALSE(new_browser->window()->IsMaximized());
+  // The new window should be maximized.
+  EXPECT_TRUE(new_browser->window()->IsMaximized());
 }
 
 // Subclass of DetachToBrowserInSeparateDisplayTabDragControllerTest that

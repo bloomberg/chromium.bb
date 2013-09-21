@@ -51,6 +51,7 @@
 
 #if defined(USE_ASH)
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/env.h"
@@ -373,6 +374,9 @@ TabDragController::TabDragController()
       move_behavior_(REORDER),
       mouse_move_direction_(0),
       is_dragging_window_(false),
+      is_dragging_new_browser_(false),
+      was_source_maximized_(false),
+      was_source_fullscreen_(false),
       end_run_loop_behavior_(END_RUN_LOOP_STOP_DRAGGING),
       waiting_for_run_loop_to_exit_(false),
       tab_strip_to_attach_to_after_exit_(NULL),
@@ -424,6 +428,8 @@ void TabDragController::Init(
   DCHECK(!tabs.empty());
   DCHECK(std::find(tabs.begin(), tabs.end(), source_tab) != tabs.end());
   source_tabstrip_ = source_tabstrip;
+  was_source_maximized_ = source_tabstrip->GetWidget()->IsMaximized();
+  was_source_fullscreen_ = source_tabstrip->GetWidget()->IsFullscreen();
   screen_ = gfx::Screen::GetScreenFor(
       source_tabstrip->GetWidget()->GetNativeView());
   host_desktop_type_ = chrome::GetHostDesktopTypeForNativeView(
@@ -812,6 +818,7 @@ void TabDragController::ContinueDragging(const gfx::Point& point_in_screen) {
   last_point_in_screen_ = point_in_screen;
 
   if (tab_strip_changed) {
+    is_dragging_new_browser_ = false;
     if (detach_into_browser_ &&
         DragBrowserToNewTabStrip(target_tabstrip, point_in_screen) ==
         DRAG_BROWSER_RESULT_STOP) {
@@ -1831,6 +1838,19 @@ void TabDragController::CompleteDrag() {
         initial_tab_positions_,
         move_behavior_ == MOVE_VISIBILE_TABS,
         true);
+    if (is_dragging_new_browser_) {
+      // If source window was maximized - maximize the new window as well.
+      if (was_source_maximized_)
+        attached_tabstrip_->GetWidget()->Maximize();
+#if defined(USE_ASH)
+      if (was_source_fullscreen_ &&
+          host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH) {
+        // In fullscreen mode it is only possible to get here if the source
+        // was in "immersive fullscreen" mode, so toggle it back on.
+        ash::Shell::GetInstance()->delegate()->ToggleFullscreen();
+      }
+#endif
+    }
   } else {
     if (dock_info_.type() != DockInfo::NONE) {
       switch (dock_info_.type()) {
@@ -2151,6 +2171,7 @@ Browser* TabDragController::CreateBrowserForDrag(
                                       host_desktop_type_);
   create_params.initial_bounds = new_bounds;
   Browser* browser = new Browser(create_params);
+  is_dragging_new_browser_ = true;
   SetTrackedByWorkspace(browser->window()->GetNativeWindow(), false);
   SetWindowPositionManaged(browser->window()->GetNativeWindow(), false);
   // If the window is created maximized then the bounds we supplied are ignored.

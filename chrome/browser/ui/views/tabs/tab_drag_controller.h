@@ -606,6 +606,16 @@ class TabDragController : public content::WebContentsDelegate,
   // See description above getter.
   bool is_dragging_window_;
 
+  // True if |attached_tabstrip_| is in a browser specifically created for
+  // the drag.
+  bool is_dragging_new_browser_;
+
+  // True if |source_tabstrip_| was maximized before the drag.
+  bool was_source_maximized_;
+
+  // True if |source_tabstrip_| was in immersive fullscreen before the drag.
+  bool was_source_fullscreen_;
+
   EndRunLoopBehavior end_run_loop_behavior_;
 
   // If true, we're waiting for a move loop to complete.
