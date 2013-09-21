@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "config.h"
-#include "modules/navigationcontroller/NavigatorNavigationController.h"
+#include "modules/serviceworkers/NavigatorServiceWorker.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8NavigationController.h"
+#include "V8ServiceWorker.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "core/dom/Document.h"
 #include "core/loader/DocumentLoader.h"
@@ -39,76 +39,76 @@
 #include "core/page/Frame.h"
 #include "core/page/Navigator.h"
 #include "core/workers/SharedWorker.h"
-#include "modules/navigationcontroller/CallbackPromiseAdapter.h"
-#include "modules/navigationcontroller/NavigationController.h"
-#include "public/platform/WebNavigationControllerRegistry.h"
+#include "modules/serviceworkers/CallbackPromiseAdapter.h"
+#include "modules/serviceworkers/ServiceWorker.h"
+#include "public/platform/WebServiceWorkerRegistry.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
 namespace WebCore {
 
-NavigatorNavigationController::NavigatorNavigationController(Navigator* navigator)
+NavigatorServiceWorker::NavigatorServiceWorker(Navigator* navigator)
     : m_navigator(navigator)
 {
 }
 
-NavigatorNavigationController::~NavigatorNavigationController()
+NavigatorServiceWorker::~NavigatorServiceWorker()
 {
 }
 
-const char* NavigatorNavigationController::supplementName()
+const char* NavigatorServiceWorker::supplementName()
 {
-    return "NavigatorNavigationController";
+    return "NavigatorServiceWorker";
 }
 
-NavigatorNavigationController* NavigatorNavigationController::from(Navigator* navigator)
+NavigatorServiceWorker* NavigatorServiceWorker::from(Navigator* navigator)
 {
-    NavigatorNavigationController* supplement = static_cast<NavigatorNavigationController*>(Supplement<Navigator>::from(navigator, supplementName()));
+    NavigatorServiceWorker* supplement = toNavigatorServiceWorker(navigator);
     if (!supplement) {
-        supplement = new NavigatorNavigationController(navigator);
+        supplement = new NavigatorServiceWorker(navigator);
         provideTo(navigator, supplementName(), adoptPtr(supplement));
     }
     return supplement;
 }
 
-ScriptPromise NavigatorNavigationController::registerController(ScriptExecutionContext* context, Navigator* navigator, const String& pattern, const String& url, ExceptionState& es)
+ScriptPromise NavigatorServiceWorker::registerServiceWorker(ScriptExecutionContext* context, Navigator* navigator, const String& pattern, const String& url, ExceptionState& es)
 {
-    return from(navigator)->registerController(context, pattern, url, es);
+    return from(navigator)->registerServiceWorker(context, pattern, url, es);
 }
 
 
-ScriptPromise NavigatorNavigationController::registerController(ScriptExecutionContext* scriptExecutionContext, const String& pattern, const String& scriptSrc, ExceptionState& es)
+ScriptPromise NavigatorServiceWorker::registerServiceWorker(ScriptExecutionContext* scriptExecutionContext, const String& pattern, const String& scriptSrc, ExceptionState& es)
 {
-    ASSERT(RuntimeEnabledFeatures::navigationControllerEnabled());
+    ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
     FrameLoaderClient* client = m_navigator->frame()->loader()->client();
     // WTF? Surely there's a better way to resolve a url?
     KURL scriptUrl = m_navigator->frame()->document()->completeURL(scriptSrc);
-    WebKit::WebNavigationControllerRegistry* peer = client->navigationControllerRegistry();
+    WebKit::WebServiceWorkerRegistry* peer = client->serviceWorkerRegistry();
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptExecutionContext);
 
     if (peer)
-        peer->registerController(pattern, scriptUrl, new CallbackPromiseAdapter(resolver));
+        peer->registerServiceWorker(pattern, scriptUrl, new CallbackPromiseAdapter(resolver));
     else
-        resolver->reject(PassRefPtr<NavigationController>(0));
+        resolver->reject(PassRefPtr<ServiceWorker>(0));
     // call here?
     return resolver->promise();
 }
 
-ScriptPromise NavigatorNavigationController::unregisterController(ScriptExecutionContext* context, Navigator* navigator, const String& pattern, ExceptionState& es)
+ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ScriptExecutionContext* context, Navigator* navigator, const String& pattern, ExceptionState& es)
 {
-    return from(navigator)->unregisterController(context, pattern, es);
+    return from(navigator)->unregisterServiceWorker(context, pattern, es);
 }
 
-ScriptPromise NavigatorNavigationController::unregisterController(ScriptExecutionContext* scriptExecutionContext, const String& pattern, ExceptionState& es)
+ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ScriptExecutionContext* scriptExecutionContext, const String& pattern, ExceptionState& es)
 {
-    ASSERT(RuntimeEnabledFeatures::navigationControllerEnabled());
+    ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
     FrameLoaderClient* client = m_navigator->frame()->loader()->client();
-    WebKit::WebNavigationControllerRegistry* peer = client->navigationControllerRegistry();
+    WebKit::WebServiceWorkerRegistry* peer = client->serviceWorkerRegistry();
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptExecutionContext);
     if (peer)
-        peer->unregisterController(pattern, new CallbackPromiseAdapter(resolver));
+        peer->unregisterServiceWorker(pattern, new CallbackPromiseAdapter(resolver));
     else
-        resolver->reject(PassRefPtr<NavigationController>(0));
+        resolver->reject(PassRefPtr<ServiceWorker>(0));
     return resolver->promise();
 }
 

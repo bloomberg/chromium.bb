@@ -28,37 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NavigatorNavigationController_h
-#define NavigatorNavigationController_h
+#ifndef CallbackPromiseAdapter_h
+#define CallbackPromiseAdapter_h
 
-#include "bindings/v8/ScriptPromise.h"
-#include "core/page/Navigator.h"
-#include "core/platform/Supplementable.h"
+#include "public/platform/WebCallbacks.h"
 
 namespace WebCore {
 
-class ExceptionState;
-class Navigator;
-
-class NavigatorNavigationController : public Supplement<Navigator> {
+// FIXME: this class can be generalized
+class CallbackPromiseAdapter : public WebKit::WebCallbacks<WebKit::WebServiceWorker, WebKit::WebServiceWorker> {
 public:
-    virtual ~NavigatorNavigationController();
-    static NavigatorNavigationController* from(Navigator*);
+    explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver)
+    {
+    }
 
-    static ScriptPromise registerController(ScriptExecutionContext*, Navigator*, const String& pattern, const String& src, ExceptionState&);
-    static ScriptPromise unregisterController(ScriptExecutionContext*, Navigator*, const String& pattern, ExceptionState&);
-
+    virtual void onSuccess(WebKit::WebServiceWorker* worker) OVERRIDE
+    {
+        // FIXME: When the same worker is "registered" twice, we should return the same object.
+        m_resolver->resolve(ServiceWorker::create(adoptPtr(worker)));
+    }
+    void onError(WebKit::WebServiceWorker* worker) OVERRIDE
+    {
+        // FIXME: need to propagate some kind of reason for failure.
+        m_resolver->reject(ServiceWorker::create(adoptPtr(worker)));
+    }
 private:
-    ScriptPromise registerController(ScriptExecutionContext*, const String& pattern, const String& src, ExceptionState&);
-    ScriptPromise unregisterController(ScriptExecutionContext*, const String& pattern, ExceptionState&);
-
-    explicit NavigatorNavigationController(Navigator*);
-
-    static const char* supplementName();
-
-    Navigator* m_navigator;
+    RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
 } // namespace WebCore
 
-#endif // NavigatorNavigationController_h
+#endif

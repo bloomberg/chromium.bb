@@ -28,15 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebNavigationController_h
-#define WebNavigationController_h
+#include "config.h"
+#include "ServiceWorker.h"
 
-namespace WebKit {
+#include "wtf/PassOwnPtr.h"
 
-class WebNavigationController {
+namespace WebCore {
 
-};
-
+ServiceWorker::ServiceWorker(PassOwnPtr<WebKit::WebServiceWorker> worker)
+    : m_outerWorker(worker)
+{
 }
 
-#endif // WebNavigationController_h
+} // namespace WebCore

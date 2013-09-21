@@ -64,7 +64,6 @@ LocalStorage status=stable
 Media status=stable
 MediaSource status=stable
 MediaStream status=stable
-NavigationController status=experimental
 Notifications status=stable
 ObjectFitPosition status=experimental
 PagePopup status=stable
@@ -79,6 +78,7 @@ RequestAutocomplete status=test
 RowSpanLogicalHeightSpreading status=test
 ScriptedSpeech status=stable
 SeamlessIFrames status=experimental
+ServiceWorker status=experimental
 SessionStorage status=stable
 ShadowDOM status=experimental
 SharedWorker custom

@@ -27,9 +27,39 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-[
-    EnabledAtRuntime=NavigationController
-] partial interface Navigator {
-  [CallWith=ScriptExecutionContext, RaisesException] Promise registerController(DOMString pattern, DOMString src);
-  [CallWith=ScriptExecutionContext, RaisesException] Promise unregisterController(DOMString pattern);
+
+#ifndef NavigatorServiceWorker_h
+#define NavigatorServiceWorker_h
+
+#include "bindings/v8/ScriptPromise.h"
+#include "core/page/Navigator.h"
+#include "core/platform/Supplementable.h"
+
+namespace WebCore {
+
+class ExceptionState;
+class Navigator;
+
+class NavigatorServiceWorker : public Supplement<Navigator> {
+public:
+    virtual ~NavigatorServiceWorker();
+    static NavigatorServiceWorker* from(Navigator*);
+    static NavigatorServiceWorker* toNavigatorServiceWorker(Navigator* navigator) { return static_cast<NavigatorServiceWorker*>(Supplement<Navigator>::from(navigator, supplementName())); }
+
+    static ScriptPromise registerServiceWorker(ScriptExecutionContext*, Navigator*, const String& pattern, const String& src, ExceptionState&);
+    static ScriptPromise unregisterServiceWorker(ScriptExecutionContext*, Navigator*, const String& pattern, ExceptionState&);
+
+private:
+    ScriptPromise registerServiceWorker(ScriptExecutionContext*, const String& pattern, const String& src, ExceptionState&);
+    ScriptPromise unregisterServiceWorker(ScriptExecutionContext*, const String& pattern, ExceptionState&);
+
+    explicit NavigatorServiceWorker(Navigator*);
+
+    static const char* supplementName();
+
+    Navigator* m_navigator;
 };
+
+} // namespace WebCore
+
+#endif // NavigatorServiceWorker_h

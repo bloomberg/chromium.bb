@@ -753,11 +753,11 @@ void FrameLoaderClientImpl::dispatchWillInsertBody()
         m_webFrame->client()->willInsertBody(m_webFrame);
 }
 
-WebNavigationControllerRegistry* FrameLoaderClientImpl::navigationControllerRegistry()
+WebServiceWorkerRegistry* FrameLoaderClientImpl::serviceWorkerRegistry()
 {
     if (!m_webFrame->client())
         return 0;
-    return m_webFrame->client()->navigationControllerRegistry(m_webFrame);
+    return m_webFrame->client()->serviceWorkerRegistry(m_webFrame);
 }
 
 } // namespace WebKit

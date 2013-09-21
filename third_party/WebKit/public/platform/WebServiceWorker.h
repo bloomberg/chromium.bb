@@ -28,35 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CallbackPromiseAdapter_h
-#define CallbackPromiseAdapter_h
+#ifndef WebServiceWorker_h
+#define WebServiceWorker_h
 
-#include "public/platform/WebCallbacks.h"
+namespace WebKit {
 
-namespace WebCore {
+class WebServiceWorker {
 
-// FIXME: this class can be generalized
-class CallbackPromiseAdapter : public WebKit::WebCallbacks<WebKit::WebNavigationController, WebKit::WebNavigationController> {
-public:
-    explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
-        : m_resolver(resolver)
-    {
-    }
-
-    virtual void onSuccess(WebKit::WebNavigationController* controller) OVERRIDE
-    {
-        // FIXME: When the same controller is "registered" twice, we should return the same object.
-        m_resolver->resolve(NavigationController::create(adoptPtr(controller)));
-    }
-    void onError(WebKit::WebNavigationController* controller) OVERRIDE
-    {
-        // FIXME: need to propagate some kind of reason for failure.
-        m_resolver->reject(NavigationController::create(adoptPtr(controller)));
-    }
-private:
-    RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
-} // namespace WebCore
+}
 
-#endif
+#endif // WebServiceWorker_h

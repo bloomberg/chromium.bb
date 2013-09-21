@@ -28,7 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 [
-    EnabledAtRuntime=NavigationController,
-    NoInterfaceObject
-] interface NavigationController {
+    EnabledAtRuntime=ServiceWorker
+] partial interface Navigator {
+  [CallWith=ScriptExecutionContext, RaisesException] Promise registerServiceWorker(DOMString pattern, DOMString src);
+  [CallWith=ScriptExecutionContext, RaisesException] Promise unregisterServiceWorker(DOMString pattern);
 };

@@ -150,7 +150,7 @@ public:
 
     virtual void dispatchWillInsertBody() OVERRIDE;
 
-    virtual WebNavigationControllerRegistry* navigationControllerRegistry() OVERRIDE;
+    virtual WebServiceWorkerRegistry* serviceWorkerRegistry() OVERRIDE;
 
 private:
     PassOwnPtr<WebPluginLoadObserver> pluginLoadObserver();

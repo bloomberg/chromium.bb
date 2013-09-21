@@ -58,7 +58,7 @@ class WebFormElement;
 class WebFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
-class WebNavigationControllerRegistry;
+class WebServiceWorkerRegistry;
 class WebNode;
 class WebPlugin;
 class WebRTCPeerConnectionHandler;
@@ -92,7 +92,7 @@ public:
     // May return null.
     virtual WebApplicationCacheHost* createApplicationCacheHost(WebFrame*, WebApplicationCacheHostClient*) { return 0; }
 
-    virtual WebNavigationControllerRegistry* navigationControllerRegistry(WebFrame*) { return 0; }
+    virtual WebServiceWorkerRegistry* serviceWorkerRegistry(WebFrame*) { return 0; }
 
 
     // Services ------------------------------------------------------------

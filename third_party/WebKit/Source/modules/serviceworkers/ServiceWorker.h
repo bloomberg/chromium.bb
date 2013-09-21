@@ -28,22 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebNavigationControllerRegistry_h
-#define WebNavigationControllerRegistry_h
+#ifndef ServiceWorker_h
+#define ServiceWorker_h
+
+#include "public/platform/WebServiceWorker.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebKit {
+class WebServiceWorker;
+}
 
-class WebString;
-class WebURL;
+namespace WebCore {
 
-class WebNavigationControllerRegistry {
+class ServiceWorker : public RefCounted<ServiceWorker> {
 public:
-    typedef WebCallbacks<WebNavigationController, WebNavigationController> WebNavigationControllerCallbacks;
-    virtual void registerController(const WebString& pattern, const WebURL& scriptUrl, WebNavigationControllerCallbacks*) { }
+    static PassRefPtr<ServiceWorker> create(PassOwnPtr<WebKit::WebServiceWorker> worker)
+    {
+        return adoptRef(new ServiceWorker(worker));
+    }
 
-    virtual void unregisterController(const WebString& pattern, WebNavigationControllerCallbacks*) { }
+    ~ServiceWorker() { }
+
+private:
+    explicit ServiceWorker(PassOwnPtr<WebKit::WebServiceWorker>);
+
+    OwnPtr<WebKit::WebServiceWorker> m_outerWorker;
 };
 
-} // namespace WebKit
+} // namespace WebCore
 
-#endif
+#endif // ServiceWorker_h
