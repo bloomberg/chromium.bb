@@ -12,6 +12,10 @@
 
 namespace gfx {
 
+// This class typically, but does not always, correspond to a physical display
+// connected to the system. A fake Display may exist on a headless system, or a
+// Display may correspond to a remote, virtual display.
+//
 // Note: The screen and display currently uses pixel coordinate
 // system. For platforms that support DIP (density independent pixel),
 // |bounds()| and |work_area| will return values in DIP coordinate

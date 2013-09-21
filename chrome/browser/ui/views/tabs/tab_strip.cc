@@ -39,6 +39,7 @@
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/path.h"
@@ -2304,14 +2305,9 @@ gfx::Rect TabStrip::GetDropBounds(int drop_index,
                         drop_indicator_height);
 
   // If the rect doesn't fit on the monitor, push the arrow to the bottom.
-#if defined(OS_WIN) && !defined(USE_AURA)
-  gfx::Rect monitor_bounds = views::GetMonitorBoundsForRect(drop_bounds);
-  *is_beneath = (monitor_bounds.IsEmpty() ||
-                 !monitor_bounds.Contains(drop_bounds));
-#else
-  *is_beneath = false;
-  NOTIMPLEMENTED();
-#endif
+  gfx::Screen* screen = gfx::Screen::GetScreenFor(GetWidget()->GetNativeView());
+  gfx::Display display = screen->GetDisplayMatching(drop_bounds);
+  *is_beneath = !display.bounds().Contains(drop_bounds);
   if (*is_beneath)
     drop_bounds.Offset(0, drop_bounds.height() + height());
 

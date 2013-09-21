@@ -20,6 +20,11 @@ class Rect;
 
 // A utility class for getting various info about screen size, displays,
 // cursor position, etc.
+//
+// Note that this class does not represent an individual display connected to a
+// computer -- see the Display class for that. A single Screen object exists on
+// most operating systems regardless of the number of connected displays. On
+// Windows 8, two Screens exist: one for Metro UI and another for the desktop.
 class UI_EXPORT Screen {
  public:
   // Retrieves the Screen that the specified NativeView belongs to. A value of
