@@ -7,8 +7,11 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/local_discovery/cloud_print_account_manager.h"
 #include "chrome/browser/local_discovery/privet_confirm_api_flow.h"
@@ -17,6 +20,8 @@
 #include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
@@ -27,12 +32,22 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/page_transition_types.h"
+#include "grit/generated_resources.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_util.h"
 #include "net/http/http_status_code.h"
+#include "ui/base/l10n/l10n_util.h"
+
+#if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS) && \
+  !defined(OS_MACOSX)
+#define CLOUD_PRINT_CONNECTOR_UI_AVAILABLE
+#endif
 
 namespace local_discovery {
 
@@ -46,6 +61,20 @@ int g_num_visible = 0;
 }  // namespace
 
 LocalDiscoveryUIHandler::LocalDiscoveryUIHandler() : is_visible_(false) {
+#if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
+#if !defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+  // On Windows, we need the PDF plugin which is only guaranteed to exist on
+  // Google Chrome builds. Use a command-line switch for Windows non-Google
+  //  Chrome builds.
+  cloud_print_connector_ui_enabled_ =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCloudPrintProxy);
+#elif !defined(OS_CHROMEOS)
+  // Always enabled for Linux and Google Chrome Windows builds.
+  // Never enabled for Chrome OS, we don't even need to indicate it.
+  cloud_print_connector_ui_enabled_ = true;
+#endif
+#endif  // !defined(OS_MACOSX)
 }
 
 LocalDiscoveryUIHandler::LocalDiscoveryUIHandler(
@@ -96,6 +125,21 @@ void LocalDiscoveryUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("showSyncUI", base::Bind(
       &LocalDiscoveryUIHandler::HandleShowSyncUI,
       base::Unretained(this)));
+
+  // Cloud print connector related messages
+#if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
+  if (cloud_print_connector_ui_enabled_) {
+    web_ui()->RegisterMessageCallback(
+        "showCloudPrintSetupDialog",
+        base::Bind(&LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog,
+                   base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "disableCloudPrintConnector",
+        base::Bind(&LocalDiscoveryUIHandler::HandleDisableCloudPrintConnector,
+                   base::Unretained(this)));
+  }
+#endif  // defined(ENABLE_FULL_PRINTING)
+
 }
 
 void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
@@ -114,6 +158,10 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
 
   privet_lister_->Start();
   privet_lister_->DiscoverNewDevices(false);
+
+#if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
+  StartCloudPrintConnector();
+#endif
 
   CheckUserLoggedIn();
 }
@@ -440,5 +488,108 @@ void LocalDiscoveryUIHandler::CheckUserLoggedIn() {
   web_ui()->CallJavascriptFunction("local_discovery.setUserLoggedIn",
                                    logged_in_value);
 }
+
+#if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
+void LocalDiscoveryUIHandler::StartCloudPrintConnector() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+
+  base::Closure cloud_print_callback = base::Bind(
+      &LocalDiscoveryUIHandler::OnCloudPrintPrefsChanged,
+          base::Unretained(this));
+
+  if (cloud_print_connector_email_.GetPrefName().empty()) {
+    cloud_print_connector_email_.Init(
+        prefs::kCloudPrintEmail, profile->GetPrefs(), cloud_print_callback);
+  }
+
+  if (cloud_print_connector_enabled_.GetPrefName().empty()) {
+    cloud_print_connector_enabled_.Init(
+        prefs::kCloudPrintProxyEnabled, profile->GetPrefs(),
+        cloud_print_callback);
+  }
+
+  if (cloud_print_connector_ui_enabled_) {
+    SetupCloudPrintConnectorSection();
+    RefreshCloudPrintStatusFromService();
+  } else {
+    RemoveCloudPrintConnectorSection();
+  }
+}
+
+void LocalDiscoveryUIHandler::OnCloudPrintPrefsChanged() {
+  if (cloud_print_connector_ui_enabled_)
+    SetupCloudPrintConnectorSection();
+}
+
+void LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog(const ListValue* args) {
+  content::RecordAction(
+      content::UserMetricsAction("Options_EnableCloudPrintProxy"));
+  // Open the connector enable page in the current tab.
+  Profile* profile = Profile::FromWebUI(web_ui());
+  content::OpenURLParams params(
+      CloudPrintURL(profile).GetCloudPrintServiceEnableURL(
+          CloudPrintProxyServiceFactory::GetForProfile(profile)->proxy_id()),
+      content::Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
+  web_ui()->GetWebContents()->OpenURL(params);
+}
+
+void LocalDiscoveryUIHandler::HandleDisableCloudPrintConnector(
+    const ListValue* args) {
+  content::RecordAction(
+      content::UserMetricsAction("Options_DisableCloudPrintProxy"));
+  CloudPrintProxyServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()))->
+      DisableForUser();
+}
+
+void LocalDiscoveryUIHandler::SetupCloudPrintConnectorSection() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+
+  if (!CloudPrintProxyServiceFactory::GetForProfile(profile)) {
+    cloud_print_connector_ui_enabled_ = false;
+    RemoveCloudPrintConnectorSection();
+    return;
+  }
+
+  bool cloud_print_connector_allowed =
+      !cloud_print_connector_enabled_.IsManaged() ||
+      cloud_print_connector_enabled_.GetValue();
+  base::FundamentalValue allowed(cloud_print_connector_allowed);
+
+  std::string email;
+  if (profile->GetPrefs()->HasPrefPath(prefs::kCloudPrintEmail) &&
+      cloud_print_connector_allowed) {
+    email = profile->GetPrefs()->GetString(prefs::kCloudPrintEmail);
+  }
+  base::FundamentalValue disabled(email.empty());
+
+  string16 label_str;
+  if (email.empty()) {
+    label_str = l10n_util::GetStringFUTF16(
+        IDS_LOCAL_DISCOVERY_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL,
+        l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT));
+  } else {
+    label_str = l10n_util::GetStringFUTF16(
+        IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_LABEL,
+        l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT),
+        UTF8ToUTF16(email));
+  }
+  StringValue label(label_str);
+
+  web_ui()->CallJavascriptFunction(
+      "local_discovery.setupCloudPrintConnectorSection", disabled, label,
+      allowed);
+}
+
+void LocalDiscoveryUIHandler::RemoveCloudPrintConnectorSection() {
+  web_ui()->CallJavascriptFunction(
+      "local_discovery.removeCloudPrintConnectorSection");
+}
+
+void LocalDiscoveryUIHandler::RefreshCloudPrintStatusFromService() {
+  if (cloud_print_connector_ui_enabled_)
+    CloudPrintProxyServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()))->
+        RefreshStatusFromService();
+}
+#endif // cloud print connector option stuff
 
 }  // namespace local_discovery

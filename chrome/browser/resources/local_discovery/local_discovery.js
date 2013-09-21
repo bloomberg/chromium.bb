@@ -469,6 +469,48 @@ cr.define('local_discovery', function() {
     openSignInPage();
   }
 
+  /**
+   * Set the Cloud Print proxy UI to enabled, disabled, or processing.
+   * @private
+   */
+  function setupCloudPrintConnectorSection(disabled, label, allowed) {
+    if (!cr.isChromeOS && !cr.isMac) {
+      $('cloudPrintConnectorLabel').textContent = label;
+      if (disabled || !allowed) {
+        $('cloudPrintConnectorSetupButton').textContent =
+          loadTimeData.getString('cloudPrintConnectorDisabledButton');
+      } else {
+        $('cloudPrintConnectorSetupButton').textContent =
+          loadTimeData.getString('cloudPrintConnectorEnabledButton');
+      }
+      $('cloudPrintConnectorSetupButton').disabled = !allowed;
+
+      if (disabled) {
+        $('cloudPrintConnectorSetupButton').onclick = function(event) {
+          // Disable the button, set its text to the intermediate state.
+          $('cloudPrintConnectorSetupButton').textContent =
+            loadTimeData.getString('cloudPrintConnectorEnablingButton');
+          $('cloudPrintConnectorSetupButton').disabled = true;
+          chrome.send('showCloudPrintSetupDialog');
+        };
+      } else {
+        $('cloudPrintConnectorSetupButton').onclick = function(event) {
+          chrome.send('disableCloudPrintConnector');
+          requestPrinterList();
+        };
+      }
+    }
+  }
+
+  function removeCloudPrintConnectorSection() {
+    if (!cr.isChromeOS && !cr.isMac) {
+       var connectorSectionElm = $('cloud-print-connector-section');
+       if (connectorSectionElm)
+          connectorSectionElm.parentNode.removeChild(connectorSectionElm);
+     }
+  }
+
+
   document.addEventListener('DOMContentLoaded', function() {
     cr.ui.overlay.setupOverlay($('overlay'));
     cr.ui.overlay.globalInitialization();
@@ -514,6 +556,8 @@ cr.define('local_discovery', function() {
     onCloudDeviceListAvailable: onCloudDeviceListAvailable,
     onCloudDeviceListUnavailable: onCloudDeviceListUnavailable,
     onDeviceCacheFlushed: onDeviceCacheFlushed,
-    setUserLoggedIn: setUserLoggedIn
+    setUserLoggedIn: setUserLoggedIn,
+    setupCloudPrintConnectorSection: setupCloudPrintConnectorSection,
+    removeCloudPrintConnectorSection: removeCloudPrintConnectorSection
   };
 });

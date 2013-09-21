@@ -76,6 +76,21 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
   source->AddLocalizedString("myDevicesTitle",
                              IDS_LOCAL_DISCOVERY_MY_DEVICES);
 
+
+  // Cloud print connector-related strings.
+#if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
+  source->AddLocalizedString("cloudPrintConnectorEnablingButton",
+                             IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLING_BUTTON);
+  source->AddLocalizedString("cloudPrintConnectorDisabledButton",
+                             IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON);
+  source->AddLocalizedString("cloudPrintConnectorEnabledButton",
+                             IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_BUTTON);
+  source->AddLocalizedString("cloudPrintName",
+                             IDS_GOOGLE_CLOUD_PRINT);
+  source->AddLocalizedString("titleConnector",
+                             IDS_LOCAL_DISCOVERY_CONNECTOR_SECTION);
+#endif
+
   source->SetJsonPath("strings.js");
 
   source->DisableDenyXFrameOptions();

@@ -89,10 +89,14 @@ html[dir='rtl'] .controls {
 }
 
 .inline-spinner {
-    position: relative;
-    top: 3px;
+  position: relative;
+  top: 3px;
 }
 
 .cloud-print-message {
-    margin: 23px 0;
+  margin: 23px 0;
+}
+
+section {
+  margin-bottom: 23px;
 }

@@ -83,6 +83,19 @@
       </div>
 
       <div class="devices" id="register-device-list"></div>
+
+      <if expr="not pp_ifdef('chromeos') and not is_macosx">
+        <section id="cloud-print-connector-section">
+          <h2 i18n-content="titleConnector"></h2>
+          <div>
+            <p id="cloudPrintConnectorLabel" class="settings-row"></p>
+
+          <div class="settings-row">
+            <button id="cloudPrintConnectorSetupButton"></button>
+          </div>
+        </div>
+        </section>
+      </if>
     </div>
 
     <h2 i18n-content="myDevicesTitle"></h2>
