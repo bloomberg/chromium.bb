@@ -79,8 +79,10 @@ class FullscreenObserver : public WebContentsObserver {
 - (void)ensureContentsSizeDoesNotChange {
   NSView* contentsContainer = [self view];
   NSArray* subviews = [contentsContainer subviews];
-  if ([subviews count] > 0)
-    [[subviews objectAtIndex:0] setAutoresizingMask:NSViewNotSizable];
+  if ([subviews count] > 0) {
+    NSView* currentSubview = [subviews objectAtIndex:0];
+    [currentSubview setAutoresizingMask:NSViewNotSizable];
+  }
 }
 
 // Call when the tab view is properly sized and the render widget host view
