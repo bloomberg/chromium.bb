@@ -301,7 +301,7 @@ void RenderWidget::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
         paintInfo.context->fillRect(pixelSnappedIntRect(selectionRect()), selectionBackgroundColor());
     }
 
-    if (hasLayer() && layer()->canResize())
+    if (canResize())
         layer()->paintResizer(paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.rect);
 }
 

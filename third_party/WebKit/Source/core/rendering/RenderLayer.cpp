@@ -2487,20 +2487,10 @@ void RenderLayer::autoscroll(const IntPoint& position)
     scrollRectToVisible(LayoutRect(currentDocumentPosition, LayoutSize(1, 1)), ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
 }
 
-bool RenderLayer::canResize() const
-{
-    if (!renderer())
-        return false;
-    // We need a special case for <iframe> because they never have
-    // hasOverflowClip(). However, they do "implicitly" clip their contents, so
-    // we want to allow resizing them also.
-    return (renderer()->hasOverflowClip() || renderer()->isRenderIFrame()) && renderer()->style()->resize() != RESIZE_NONE;
-}
-
 void RenderLayer::resize(const PlatformEvent& evt, const LayoutSize& oldOffset)
 {
     // FIXME: This should be possible on generated content but is not right now.
-    if (!inResizeMode() || !canResize() || !renderer()->node())
+    if (!inResizeMode() || !renderer()->canResize() || !renderer()->node())
         return;
 
     ASSERT(renderer()->node()->isElementNode());
@@ -2755,7 +2745,7 @@ bool RenderLayer::hasOverflowControls() const
 
 void RenderLayer::positionOverflowControls(const IntSize& offsetFromRoot)
 {
-    if (!m_scrollableArea->hasScrollbar() && !canResize())
+    if (!m_scrollableArea->hasScrollbar() && !renderer()->canResize())
         return;
 
     RenderBox* box = renderBox();
@@ -2914,7 +2904,7 @@ void RenderLayer::paintResizer(GraphicsContext* context, const IntPoint& paintOf
 bool RenderLayer::isPointInResizeControl(const IntPoint& absolutePoint,
                                          ResizerHitTestType resizerHitTestType) const
 {
-    if (!canResize())
+    if (!renderer()->canResize())
         return false;
 
     RenderBox* box = renderBox();
@@ -2927,7 +2917,7 @@ bool RenderLayer::isPointInResizeControl(const IntPoint& absolutePoint,
 
 bool RenderLayer::hitTestOverflowControls(HitTestResult& result, const IntPoint& localPoint)
 {
-    if (!m_scrollableArea->hasScrollbar() && !canResize())
+    if (!m_scrollableArea->hasScrollbar() && !renderer()->canResize())
         return false;
 
     RenderBox* box = renderBox();
@@ -4032,7 +4022,7 @@ RenderLayer* RenderLayer::hitTestLayer(RenderLayer* rootLayer, RenderLayer* cont
     LayerFragments layerFragments;
     collectFragments(layerFragments, rootLayer, hitTestLocation.region(), hitTestRect, RootRelativeClipRects, IncludeOverlayScrollbarSize);
 
-    if (canResize() && hitTestResizerInFragments(layerFragments, hitTestLocation)) {
+    if (renderer()->canResize() && hitTestResizerInFragments(layerFragments, hitTestLocation)) {
         renderer()->updateHitTestResult(result, hitTestLocation.point());
         return this;
     }
@@ -5640,7 +5630,7 @@ void RenderLayer::updateResizerAreaSet() {
     FrameView* frameView = frame->view();
     if (!frameView)
         return;
-    if (canResize())
+    if (renderer()->canResize())
         frameView->addResizerArea(this);
     else
         frameView->removeResizerArea(this);

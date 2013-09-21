@@ -699,6 +699,11 @@ public:
 
     bool isComposited() const;
 
+    // FIXME: This should be moved to RenderBox once the scrolling code
+    // has been completely separated from RenderLayer and made to assume
+    // it talks to a RenderBox, not just a RenderObject.
+    bool canResize() const;
+
     bool hitTest(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestFilter = HitTestAll);
     virtual void updateHitTestResult(HitTestResult&, const LayoutPoint&);
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);

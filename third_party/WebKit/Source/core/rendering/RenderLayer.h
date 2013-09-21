@@ -179,7 +179,6 @@ public:
     bool scroll(ScrollDirection, ScrollGranularity, float multiplier = 1);
     void autoscroll(const IntPoint&);
 
-    bool canResize() const;
     void resize(const PlatformEvent&, const LayoutSize&);
     bool inResizeMode() const { return m_inResizeMode; }
     void setInResizeMode(bool b) { m_inResizeMode = b; }
@@ -789,7 +788,7 @@ private:
 
     void updateCompositingLayersAfterScroll();
 
-    bool requiresScrollableArea() const { return renderer()->style()->overflowX() != OVISIBLE || canResize() || usesCompositedScrolling(); }
+    bool requiresScrollableArea() const { return renderer()->style()->overflowX() != OVISIBLE || renderer()->canResize() || usesCompositedScrolling(); }
     void updateResizerAreaSet();
     void updateScrollableAreaSet(bool hasOverflow);
 

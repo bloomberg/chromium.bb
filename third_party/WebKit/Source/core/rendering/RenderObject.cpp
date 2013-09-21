@@ -2723,6 +2723,15 @@ bool RenderObject::isComposited() const
     return hasLayer() && toRenderLayerModelObject(this)->layer()->isComposited();
 }
 
+bool RenderObject::canResize() const
+{
+    // We need a special case for <iframe> because they never have
+    // hasOverflowClip(). However, they do "implicitly" clip their contents, so
+    // we want to allow resizing them also.
+    return (hasOverflowClip() || isRenderIFrame()) && style()->resize() != RESIZE_NONE;
+}
+
+
 bool RenderObject::hitTest(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestFilter hitTestFilter)
 {
     bool inside = false;
