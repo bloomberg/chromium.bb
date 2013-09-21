@@ -11,16 +11,12 @@ namespace views {
 
 class DesktopFocusRules : public corewm::BaseFocusRules {
  public:
-  explicit DesktopFocusRules(aura::Window* content_window);
+  DesktopFocusRules();
   virtual ~DesktopFocusRules();
 
  private:
   // Overridden from corewm::BaseFocusRules:
   virtual bool SupportsChildActivation(aura::Window* window) const OVERRIDE;
-
-  // The content window. This is an activatable window even though it is a
-  // child.
-  aura::Window* content_window_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopFocusRules);
 };

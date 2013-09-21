@@ -126,7 +126,7 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
   desktop_native_widget_aura_->CreateCaptureClient(root_window_);
 
   corewm::FocusController* focus_controller =
-      new corewm::FocusController(new DesktopFocusRules(content_window));
+      new corewm::FocusController(new DesktopFocusRules);
   focus_client_.reset(focus_controller);
   aura::client::SetFocusClient(root_window_, focus_controller);
   aura::client::SetActivationClient(root_window_, focus_controller);
