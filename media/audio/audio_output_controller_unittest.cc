@@ -132,8 +132,10 @@ class AudioOutputControllerTest : public testing::Test {
     // OnPowerMeasured() calls.
     EXPECT_CALL(mock_event_handler_, OnPlaying())
         .WillOnce(SignalEvent(&play_event_));
+#if defined(AUDIO_POWER_MONITORING)
     EXPECT_CALL(mock_event_handler_, OnPowerMeasured(_, false))
         .Times(AtLeast(1));
+#endif
 
     // During playback, the mock pretends to provide audio data rendered and
     // sent from the render process.

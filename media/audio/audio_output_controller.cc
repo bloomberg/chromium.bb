@@ -20,13 +20,15 @@ using base::TimeDelta;
 
 namespace media {
 
+#if defined(AUDIO_POWER_MONITORING)
 // Time constant for AudioPowerMonitor.  See AudioPowerMonitor ctor comments for
 // semantics.  This value was arbitrarily chosen, but seems to work well.
 static const int kPowerMeasurementTimeConstantMillis = 10;
 
 // Desired frequency of calls to EventHandler::OnPowerMeasured() for reporting
 // power levels in the audio signal.
-static const int kPowerMeasurementsPerSecond = 30;
+static const int kPowerMeasurementsPerSecond = 4;
+#endif
 
 // Polling-related constants.
 const int AudioOutputController::kPollNumAttempts = 3;
@@ -51,10 +53,12 @@ AudioOutputController::AudioOutputController(
       num_allowed_io_(0),
       sync_reader_(sync_reader),
       message_loop_(audio_manager->GetMessageLoop()),
-      number_polling_attempts_left_(0),
+#if defined(AUDIO_POWER_MONITORING)
       power_monitor_(
           params.sample_rate(),
-          TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMillis)) {
+          TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMillis)),
+#endif
+      number_polling_attempts_left_(0) {
   DCHECK(audio_manager);
   DCHECK(handler_);
   DCHECK(sync_reader_);
@@ -165,6 +169,7 @@ void AudioOutputController::DoPlay() {
 
   state_ = kPlaying;
 
+#if defined(AUDIO_POWER_MONITORING)
   power_monitor_.Reset();
   power_poll_callback_.Reset(
       base::Bind(&AudioOutputController::ReportPowerMeasurementPeriodically,
@@ -172,6 +177,7 @@ void AudioOutputController::DoPlay() {
   // Run the callback to send an initial notification that we're starting in
   // silence, and to schedule periodic callbacks.
   power_poll_callback_.callback().Run();
+#endif
 
   // We start the AudioOutputStream lazily.
   AllowEntryToOnMoreIOData();
@@ -180,6 +186,7 @@ void AudioOutputController::DoPlay() {
   handler_->OnPlaying();
 }
 
+#if defined(AUDIO_POWER_MONITORING)
 void AudioOutputController::ReportPowerMeasurementPeriodically() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   const std::pair<float, bool>& reading =
@@ -189,6 +196,7 @@ void AudioOutputController::ReportPowerMeasurementPeriodically() {
       FROM_HERE, power_poll_callback_.callback(),
       TimeDelta::FromSeconds(1) / kPowerMeasurementsPerSecond);
 }
+#endif
 
 void AudioOutputController::StopStream() {
   DCHECK(message_loop_->BelongsToCurrentThread());
@@ -197,7 +205,9 @@ void AudioOutputController::StopStream() {
     stream_->Stop();
     DisallowEntryToOnMoreIOData();
 
+#if defined(AUDIO_POWER_MONITORING)
     power_poll_callback_.Cancel();
+#endif
 
     state_ = kPaused;
   }
@@ -215,8 +225,10 @@ void AudioOutputController::DoPause() {
   // Send a special pause mark to the low-latency audio thread.
   sync_reader_->UpdatePendingBytes(kPauseMark);
 
+#if defined(AUDIO_POWER_MONITORING)
   // Paused means silence follows.
   handler_->OnPowerMeasured(AudioPowerMonitor::zero_power(), false);
+#endif
 
   handler_->OnPaused();
 }
@@ -290,7 +302,9 @@ int AudioOutputController::OnMoreIOData(AudioBus* source,
   sync_reader_->UpdatePendingBytes(
       buffers_state.total_bytes() + frames * params_.GetBytesPerFrame());
 
+#if defined(AUDIO_POWER_MONITORING)
   power_monitor_.Scan(*dest, frames);
+#endif
 
   AllowEntryToOnMoreIOData();
   return frames;

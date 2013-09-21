@@ -52,6 +52,11 @@
 
 namespace media {
 
+// Only do power monitoring for non-mobile platforms that need it for the UI.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#define AUDIO_POWER_MONITORING
+#endif
+
 class MEDIA_EXPORT AudioOutputController
     : public base::RefCountedThreadSafe<AudioOutputController>,
       public AudioOutputStream::AudioSourceCallback,
@@ -236,15 +241,17 @@ class MEDIA_EXPORT AudioOutputController
   // The message loop of audio manager thread that this object runs on.
   const scoped_refptr<base::MessageLoopProxy> message_loop_;
 
-  // When starting stream we wait for data to become available.
-  // Number of times left.
-  int number_polling_attempts_left_;
-
+#if defined(AUDIO_POWER_MONITORING)
   // Scans audio samples from OnMoreIOData() as input to compute power levels.
   AudioPowerMonitor power_monitor_;
 
   // Periodic callback to report power levels during playback.
   base::CancelableClosure power_poll_callback_;
+#endif
+
+  // When starting stream we wait for data to become available.
+  // Number of times left.
+  int number_polling_attempts_left_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputController);
 };
