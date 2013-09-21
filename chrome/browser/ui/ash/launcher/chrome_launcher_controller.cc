@@ -436,11 +436,24 @@ void ChromeLauncherController::Unpin(ash::LauncherID id) {
   DCHECK(HasItemController(id));
 
   LauncherItemController* controller = id_to_item_controller_map_[id];
-  if (controller->type() == LauncherItemController::TYPE_APP ||
-      controller->locked()) {
-    UnpinRunningAppInternal(model_->ItemIndexByID(id));
+  if (controller->type() == LauncherItemController::TYPE_APP) {
+    int index = model_->ItemIndexByID(id);
+    DCHECK_GE(index, 0);
+    ash::LauncherItem item = model_->items()[index];
+    item.type = ash::TYPE_PLATFORM_APP;
+    model_->Set(index, item);
   } else {
-    LauncherItemClosed(id);
+    // Prevent the removal of items upon unpin if it is locked by a running
+    // windowed V1 app.
+    if (!controller->locked()) {
+      LauncherItemClosed(id);
+    } else {
+      int index = model_->ItemIndexByID(id);
+      DCHECK_GE(index, 0);
+      ash::LauncherItem item = model_->items()[index];
+      item.type = ash::TYPE_WINDOWED_APP;
+      model_->Set(index, item);
+    }
   }
   if (CanPin())
     PersistPinnedState();
@@ -727,12 +740,6 @@ void ChromeLauncherController::PersistPinnedState() {
     return;
   }
 
-  // With the alternate shelf layout, the app list is locked in position #0.
-  // Since the app list does not have any impact on the rest of the order,
-  // we need to keep track of its appearance so that the chrome icon position
-  // is at the proper location (backwards compatible).
-  size_t app_list_index_offset = 0;
-
   // Mutating kPinnedLauncherApps is going to notify us and trigger us to
   // process the change. We don't want that to happen so remove ourselves as a
   // listener.
@@ -750,12 +757,7 @@ void ChromeLauncherController::PersistPinnedState() {
             updater->Append(app_value);
         }
       } else if (model_->items()[i].type == ash::TYPE_BROWSER_SHORTCUT) {
-        PersistChromeItemIndex(i - app_list_index_offset);
-      } else if (model_->items()[i].type == ash::TYPE_APP_LIST &&
-                 ash::switches::UseAlternateShelfLayout()) {
-        // With the new alternate shelf layout the app list can be pinned to the
-        // position 0 and should not be taken into account.
-        app_list_index_offset = 1;
+        PersistChromeItemIndex(i);
       }
     }
   }
@@ -1307,58 +1309,43 @@ void ChromeLauncherController::DoUnpinAppWithID(const std::string& app_id) {
     Unpin(launcher_id);
 }
 
-int ChromeLauncherController::PinRunningAppInternal(
-    int index,
-    ash::LauncherID launcher_id) {
-  int running_index = model_->ItemIndexByID(launcher_id);
-  ash::LauncherItem item = model_->items()[running_index];
-  DCHECK(item.type == ash::TYPE_WINDOWED_APP ||
-         item.type == ash::TYPE_PLATFORM_APP);
-  item.type = ash::TYPE_APP_SHORTCUT;
-  model_->Set(running_index, item);
-  // The |LauncherModel|'s weight system might reposition the item to a
-  // new index, so we get the index again.
-  running_index = model_->ItemIndexByID(launcher_id);
-  if (running_index < index)
-    --index;
-  if (running_index != index)
-    model_->Move(running_index, index);
-  return index;
-}
-
-void ChromeLauncherController::UnpinRunningAppInternal(int index) {
-  DCHECK_GE(index, 0);
-  ash::LauncherItem item = model_->items()[index];
-  DCHECK_EQ(item.type, ash::TYPE_APP_SHORTCUT);
-  item.type = ash::TYPE_WINDOWED_APP;
-  // A platform app and a windowed app are sharing TYPE_APP_SHORTCUT. As such
-  // we have to check here what this was before it got a shortcut.
-  if (HasItemController(item.id) &&
-      id_to_item_controller_map_[item.id]->type() ==
-          LauncherItemController::TYPE_APP)
-    item.type = ash::TYPE_PLATFORM_APP;
-  model_->Set(index, item);
-}
-
 void ChromeLauncherController::UpdateAppLaunchersFromPref() {
-  // There are various functions which will trigger a |PersistPinnedState| call
-  // like a direct call to |DoPinAppWithID|, or an indirect call to the menu
-  // model which will use weights to re-arrange the icons to new positions.
-  // Since this function is meant to synchronize the "is state" with the
-  // "sync state", it makes no sense to store any changes by this function back
-  // into the pref state. Therefore we tell |persistPinnedState| to ignore any
-  // invocations while we are running.
-  base::AutoReset<bool> auto_reset(&ignore_persist_pinned_state_change_, true);
-  std::vector<std::string> pinned_apps = GetListOfPinnedAppsAndBrowser();
-
+  // Construct a vector representation of to-be-pinned apps from the pref.
+  std::vector<std::string> pinned_apps;
+  int chrome_icon_index = GetChromeIconIndexFromPref();
   int index = 0;
   int max_index = model_->item_count();
-
-  // Using the alternate shelf layout the app list Icon should be the first item
-  // in the list thus start adding items at slot 1 (instead of slot 0).
+  // Using the alternate shelf layout the App Icon should be the first item in
+  // the list thus start adding items at slot 1 (instead of slot 0).
   if (ash::switches::UseAlternateShelfLayout()) {
     ++index;
     ++max_index;
+    // The alternate shelf layout's icon position will always include the
+    // AppLauncher which needs to be subtracted here.
+    if (chrome_icon_index > 0)
+      --chrome_icon_index;
+  }
+  const base::ListValue* pinned_apps_pref =
+      profile_->GetPrefs()->GetList(prefs::kPinnedLauncherApps);
+  for (base::ListValue::const_iterator it(pinned_apps_pref->begin());
+       it != pinned_apps_pref->end(); ++it) {
+    // To preserve the Chrome icon position, we insert a dummy slot for it - if
+    // the model has a Chrome item. While initializing we can come here with no
+    // item in which case the count would be 1 or below.
+    if (it - pinned_apps_pref->begin() == chrome_icon_index &&
+        model_->item_count() > 1) {
+      pinned_apps.push_back(extension_misc::kChromeAppId);
+    }
+
+    DictionaryValue* app = NULL;
+    std::string app_id;
+    if ((*it)->GetAsDictionary(&app) &&
+        app->GetString(ash::kPinnedAppsPrefAppIDPath, &app_id) &&
+        std::find(pinned_apps.begin(), pinned_apps.end(), app_id) ==
+            pinned_apps.end() &&
+        app_tab_helper_->IsValidID(app_id)) {
+      pinned_apps.push_back(app_id);
+    }
   }
 
   // Walk the model and |pinned_apps| from the pref lockstep, adding and
@@ -1389,21 +1376,10 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
             // We cannot delete the browser shortcut. As such we move it up by
             // one. To avoid any side effects from our pinned state observer, we
             // do not call the model directly.
-            model_->Move(index, index + 1);
+            MoveItemWithoutPinnedStateChangeNotification(index, index + 1);
           } else {
-            // Check if this is a platform or a windowed app.
-            if (item.type == ash::TYPE_APP_SHORTCUT &&
-                (id_to_item_controller_map_[item.id]->locked() ||
-                 id_to_item_controller_map_[item.id]->type() ==
-                     LauncherItemController::TYPE_APP)) {
-              // Note: This will not change the amount of items (|max_index|).
-              // Even changes to the actual |index| due to item weighting
-              // changes should be fine.
-              UnpinRunningAppInternal(index);
-            } else {
-              LauncherItemClosed(item.id);
-              --max_index;
-            }
+            LauncherItemClosed(item.id);
+            --max_index;
           }
           --index;
         }
@@ -1412,57 +1388,29 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
       // is out of sync.
       DCHECK(index <= max_index);
     } else {
-      // Check if the item was already running but not yet pinned.
-      ash::LauncherID launcher_id = GetLauncherIDForAppID(*pref_app_id);
-      if (launcher_id) {
-        // This app is running but not yet pinned. So pin and move it.
-        index = PinRunningAppInternal(index, launcher_id);
-      } else {
-        // This app wasn't pinned before, insert a new entry.
-        launcher_id = CreateAppShortcutLauncherItem(*pref_app_id, index);
-        index = model_->ItemIndexByID(launcher_id);
-      }
+      // This app wasn't pinned before, insert a new entry.
+      ash::LauncherID id = CreateAppShortcutLauncherItem(*pref_app_id, index);
+      index = model_->ItemIndexByID(id);
       ++pref_app_id;
     }
   }
 
-  // Since we are removing the currently existing shortcuts, but the chrome item
-  // might be in the middle of that area, we need to keep track of it, so that
-  // it can be shifted to the correct location afterwards.
-  // Note: This might still produce location shifts with windowed V1
-  // applications since they will be grouped at the moment between shortcuts.
-  // To address that problem we could either group them separately again - or
-  // we will have to remember all shelf item locations.
-  int chrome_index = -1;
-
   // Remove any trailing existing items.
   while (index < model_->item_count()) {
     const ash::LauncherItem& item(model_->items()[index]);
-    if (item.type == ash::TYPE_APP_SHORTCUT) {
-      if (id_to_item_controller_map_[item.id]->locked() ||
-          id_to_item_controller_map_[item.id]->type() ==
-              LauncherItemController::TYPE_APP)
-        UnpinRunningAppInternal(index);
-      else
-        LauncherItemClosed(item.id);
-    } else {
-      if (item.type == ash::TYPE_BROWSER_SHORTCUT)
-        chrome_index = index;
+    if (item.type == ash::TYPE_APP_SHORTCUT)
+      LauncherItemClosed(item.id);
+    else
       ++index;
-    }
   }
 
   // Append unprocessed items from the pref to the end of the model.
   for (; pref_app_id != pinned_apps.end(); ++pref_app_id) {
-    // All items but the chrome shortcut needs to be added.
-    if (*pref_app_id != extension_misc::kChromeAppId) {
+    // Ignore the chrome icon.
+    if (*pref_app_id != extension_misc::kChromeAppId)
       DoPinAppWithID(*pref_app_id);
-    } else if (chrome_index != -1) {
-      // The chrome item was in the middle of the to be removed items and needs
-      // now to be moved to the last possible location.
-      model_->Move(chrome_index, model_->item_count() - 1);
-    }
   }
+
 }
 
 void ChromeLauncherController::SetShelfAutoHideBehaviorPrefs(
@@ -1614,7 +1562,7 @@ ash::LauncherID ChromeLauncherController::CreateBrowserShortcutLauncherItem() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   browser_shortcut.image = *rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_32);
   ash::LauncherID id = model_->next_id();
-  size_t index = GetChromeIconIndexForCreation();
+  size_t index = GetChromeIconIndexFromPref();
   model_->AddAt(index, browser_shortcut);
   browser_item_controller_.reset(
       new BrowserShortcutLauncherItemController(this, profile_));
@@ -1631,73 +1579,15 @@ int ChromeLauncherController::GetChromeIconIndexFromPref() const {
   size_t index = profile_->GetPrefs()->GetInteger(prefs::kShelfChromeIconIndex);
   const base::ListValue* pinned_apps_pref =
       profile_->GetPrefs()->GetList(prefs::kPinnedLauncherApps);
+  if (ash::switches::UseAlternateShelfLayout())
+    return std::max(static_cast<size_t>(1),
+                    std::min(pinned_apps_pref->GetSize() + 1, index));
   return std::max(static_cast<size_t>(0),
                   std::min(pinned_apps_pref->GetSize(), index));
 }
 
-int ChromeLauncherController::GetChromeIconIndexForCreation() {
-  // We get the list of pinned apps as they currently would get pinned.
-  // Within this list the chrome icon will be the correct location.
-  std::vector<std::string> pinned_apps = GetListOfPinnedAppsAndBrowser();
-
-  std::vector<std::string>::iterator it =
-      std::find(pinned_apps.begin(),
-                pinned_apps.end(),
-                std::string(extension_misc::kChromeAppId));
-  DCHECK(it != pinned_apps.end());
-  int index = it - pinned_apps.begin();
-
-  // Since this function returns the index of the item within the shelf, the
-  // app list item must be taken into account and for now the app list is always
-  // the left most item in the list.
-  if (ash::switches::UseAlternateShelfLayout())
-    ++index;
-
-  // We should do here a comparison between the is state and the "want to be"
-  // state since some apps might be able to pin but are not yet. Instead - for
-  // the time being we clamp against the amount of known items and wait for the
-  // next |UpdateAppLaunchersFromPref()| call to correct it - it will come since
-  // the pinning will be done then.
-  return std::min(model_->item_count(), index);
-}
-
-std::vector<std::string>
-ChromeLauncherController::GetListOfPinnedAppsAndBrowser() {
-  std::vector<std::string> pinned_apps;
-  const base::ListValue* pinned_apps_pref =
-      profile_->GetPrefs()->GetList(prefs::kPinnedLauncherApps);
-
-  // Keep track of the addition of the chrome icon.
-  bool chrome_icon_added = false;
-  size_t chrome_icon_index = GetChromeIconIndexFromPref();
-  // Note: We do not need special handling for the app List here since it is
-  // either always at the start or the end of the list and it is not part of
-  // the pinned 'dynamic' items.
-  for (size_t index = 0; index < pinned_apps_pref->GetSize(); ++index) {
-    // We need to position the chrome icon relative to it's place in the pinned
-    // preference list - even if an item of that list isn't shown yet.
-    if (index == chrome_icon_index && model_->item_count() > 1) {
-      pinned_apps.push_back(extension_misc::kChromeAppId);
-      chrome_icon_added = true;
-    }
-
-    const DictionaryValue* app = NULL;
-    std::string app_id;
-    if (pinned_apps_pref->GetDictionary(index, &app) &&
-        app->GetString(ash::kPinnedAppsPrefAppIDPath, &app_id) &&
-        (std::find(pinned_apps.begin(), pinned_apps.end(), app_id) ==
-             pinned_apps.end()) && app_tab_helper_->IsValidID(app_id))
-      pinned_apps.push_back(app_id);
-  }
-
-  // If not added yet, the chrome item will be the final item in the list.
-  if (!chrome_icon_added)
-    pinned_apps.push_back(extension_misc::kChromeAppId);
-  return pinned_apps;
-}
-
 bool ChromeLauncherController::IsIncognito(
-    const content::WebContents* web_contents) const {
+    content::WebContents* web_contents) const {
   const Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   return profile->IsOffTheRecord() && !profile->IsGuestSession();
@@ -1727,6 +1617,13 @@ void ChromeLauncherController::CloseWindowedAppsFromRemovedExtension(
     tab_strip->CloseWebContentsAt(0, TabStripModel::CLOSE_NONE);
     browser_to_close.pop_back();
   }
+}
+
+void
+ChromeLauncherController::MoveItemWithoutPinnedStateChangeNotification(
+    int source_index, int target_index) {
+  base::AutoReset<bool> auto_reset(&ignore_persist_pinned_state_change_, true);
+  model_->Move(source_index, target_index);
 }
 
 void ChromeLauncherController::RegisterLauncherItemDelegate() {
