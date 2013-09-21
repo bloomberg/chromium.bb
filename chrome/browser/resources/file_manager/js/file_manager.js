@@ -773,6 +773,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.initDialogType_();
 
+    // Create the root view of FileManager.
+    this.ui_ = new FileManagerUI(this.dialogDom_);
+
     // Show the window as soon as the UI pre-initialization is done.
     if (this.dialogType == DialogType.FULL_PAGE &&
         !util.platform.runningInBrowser()) {
@@ -788,20 +791,19 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initDialogs_ = function() {
-    var d = cr.ui.dialogs;
-    d.BaseDialog.OK_LABEL = str('OK_LABEL');
-    d.BaseDialog.CANCEL_LABEL = str('CANCEL_LABEL');
-    this.error = new ErrorDialog(this.dialogDom_);
-    this.alert = new d.AlertDialog(this.dialogDom_);
-    this.confirm = new d.ConfirmDialog(this.dialogDom_);
-    this.prompt = new d.PromptDialog(this.dialogDom_);
-
+    // Initialize the dialog.
+    this.ui_.initDialogs();
     FileManagerDialogBase.setFileManager(this);
-    this.shareDialog_ = new ShareDialog(this.dialogDom_);
-    this.defaultTaskPicker =
-        new cr.filebrowser.DefaultActionDialog(this.dialogDom_);
-    this.suggestAppsDialog =
-        new SuggestAppsDialog(this.dialogDom_);
+
+    // Obtains the dialog instances from FileManagerUI.
+    // TODO(hirono): Remove the properties from the FileManager class.
+    this.error = this.ui_.errorDialog;
+    this.alert = this.ui_.alertDialog;
+    this.confirm = this.ui_.confirmDialog;
+    this.prompt = this.ui_.promptDialog;
+    this.shareDialog_ = this.ui_.shareDialog;
+    this.defaultTaskPicker = this.ui_.defaultTaskPicker;
+    this.suggestAppsDialog = this.ui_.suggestAppsDialog;
   };
 
   /**

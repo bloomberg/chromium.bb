@@ -104,6 +104,7 @@
 //<include src="text_measure.js"/>
 //<include src="tree.css.js"/>
 //<include src="ui/breadcrumbs_controller.js"/>
+//<include src="ui/file_manager_ui.js"/>
 //<include src="ui/preview_panel.js"/>
 //<include src="ui/progress_center_panel.js"/>
 //<include src="url_constants.js"/>
