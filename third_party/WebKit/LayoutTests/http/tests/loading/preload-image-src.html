@@ -1,0 +1,17 @@
+<html>
+<head>
+<script src="../resources/js-test-pre.js"></script>
+<script src="http://127.0.0.1:8000/resources/slow-script.pl?delay=1000"></script>
+</head>
+<body>
+<script>
+    shouldBeTrue("internals.isPreloaded('resources/base-image1.png');");
+    shouldBeTrue("internals.isPreloaded('resources/base-image2.png');");
+    shouldBeFalse("internals.isPreloaded('resources/base-image3.png');");
+</script>
+<div>This test passes if the image (defined in the src attribute) is preloaded.</div>
+<img src="resources/base-image1.png">
+<img src="resources/base-image2.png" src="resources/base-image3.png">
+</body>
+</html>
+

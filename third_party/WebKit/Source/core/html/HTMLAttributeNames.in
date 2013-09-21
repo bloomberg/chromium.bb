@@ -316,6 +316,7 @@ x-webkit-speech
 x-webkit-grammar
 spellcheck
 src
+srcset
 srcdoc
 srclang
 standby

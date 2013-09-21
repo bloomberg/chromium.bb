@@ -25,6 +25,7 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/EventNames.h"
@@ -32,6 +33,7 @@
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/rendering/RenderImage.h"
 
 using namespace std;
@@ -107,13 +109,21 @@ void HTMLImageElement::collectStyleForPresentationAttribute(const QualifiedName&
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
 }
 
+const AtomicString HTMLImageElement::imageSourceURL() const
+{
+    return m_bestFitImageURL.isNull() ? fastGetAttribute(srcAttr) : m_bestFitImageURL;
+}
+
 void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == altAttr) {
         if (renderer() && renderer()->isImage())
             toRenderImage(renderer())->updateAltText();
-    } else if (name == srcAttr)
+    } else if (name == srcAttr || name == srcsetAttr) {
+        if (RuntimeEnabledFeatures::srcsetEnabled())
+            m_bestFitImageURL = bestFitSourceForImageAttributes(document().devicePixelRatio(), fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr));
         m_imageLoader.updateFromElementIgnoringPreviousError();
+    }
     else if (name == usemapAttr)
         setIsLink(!value.isNull());
     else if (name == onbeforeloadAttr)

@@ -28,81 +28,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_StringView_h
-#define WTF_StringView_h
+#ifndef HTMLSrcsetParser_h
+#define HTMLSrcsetParser_h
 
-#include "wtf/text/StringImpl.h"
+#include "wtf/text/WTFString.h"
 
-namespace WTF {
+namespace WebCore {
 
-class WTF_EXPORT StringView {
+class ImageCandidate {
 public:
-    StringView()
-        : m_offset(0)
-        , m_length(0)
+    ImageCandidate()
+        : m_scaleFactor(1.0)
     {
     }
 
-    explicit StringView(PassRefPtr<StringImpl> impl)
-        : m_impl(impl)
-        , m_offset(0)
-        , m_length(m_impl->length())
+    ImageCandidate(const String& source, unsigned start, unsigned length, float scaleFactor)
+        : m_string(source.createView(start, length))
+        , m_scaleFactor(scaleFactor)
     {
     }
 
-    StringView(PassRefPtr<StringImpl> impl, unsigned offset, unsigned length)
-        : m_impl(impl)
-        , m_offset(offset)
-        , m_length(length)
+    String toString() const
     {
-        ASSERT_WITH_SECURITY_IMPLICATION(offset + length <= m_impl->length());
+        return m_string.toString();
     }
 
-    void narrow(unsigned offset, unsigned length)
+    inline float scaleFactor() const
     {
-        ASSERT_WITH_SECURITY_IMPLICATION(offset + length <= m_length);
-        m_offset += offset;
-        m_length = length;
+        return m_scaleFactor;
     }
 
-    bool isEmpty() const { return !m_length; }
-    unsigned length() const { return m_length; }
-
-    bool is8Bit() const { return m_impl->is8Bit(); }
-
-    const LChar* characters8() const
+    inline bool isEmpty() const
     {
-        if (!m_impl)
-            return 0;
-        ASSERT(is8Bit());
-        return m_impl->characters8() + m_offset;
-    }
-
-    const UChar* characters16() const
-    {
-        if (!m_impl)
-            return 0;
-        ASSERT(!is8Bit());
-        return m_impl->characters16() + m_offset;
-    }
-
-    PassRefPtr<StringImpl> toString() const
-    {
-        if (!m_impl)
-            return m_impl;
-        if (m_impl->is8Bit())
-            return StringImpl::create(characters8(), m_length);
-        return StringImpl::create(characters16(), m_length);
+        return m_string.isEmpty();
     }
 
 private:
-    RefPtr<StringImpl> m_impl;
-    unsigned m_offset;
-    unsigned m_length;
+    StringView m_string;
+    float m_scaleFactor;
 };
 
-}
+ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor, const String& srcsetAttribute);
 
-using WTF::StringView;
+String bestFitSourceForImageAttributes(float deviceScaleFactor, const String& srcAttribute, const String& srcsetAttribute);
+
+String bestFitSourceForImageAttributes(float deviceScaleFactor, const String& srcAttribute, ImageCandidate& srcsetImageCandidate);
+
+}
 
 #endif

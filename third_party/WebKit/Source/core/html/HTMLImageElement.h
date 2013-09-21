@@ -79,6 +79,8 @@ public:
     void addClient(ImageLoaderClient* client) { m_imageLoader.addClient(client); }
     void removeClient(ImageLoaderClient* client) { m_imageLoader.removeClient(client); }
 
+    virtual const AtomicString imageSourceURL() const OVERRIDE;
+
 protected:
     HTMLImageElement(const QualifiedName&, Document&, HTMLFormElement* = 0);
 
@@ -112,6 +114,7 @@ private:
     HTMLImageLoader m_imageLoader;
     HTMLFormElement* m_form;
     CompositeOperator m_compositeOperator;
+    AtomicString m_bestFitImageURL;
 };
 
 inline HTMLImageElement* toHTMLImageElement(Node* node)

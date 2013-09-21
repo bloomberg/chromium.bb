@@ -461,10 +461,12 @@ public:
     Vector<String> formElementsState() const;
     void setStateForNewFormElements(const Vector<String>&);
 
-    FrameView* view() const; // can be NULL
-    Frame* frame() const { return m_frame; } // can be NULL
-    Page* page() const; // can be NULL
-    Settings* settings() const; // can be NULL
+    FrameView* view() const; // can be null
+    Frame* frame() const { return m_frame; } // can be null
+    Page* page() const; // can be null
+    Settings* settings() const; // can be null
+
+    float devicePixelRatio() const;
 
     PassRefPtr<Range> createRange();
 
