@@ -98,6 +98,7 @@
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/Text.h"
+#include "core/dom/WheelController.h"
 #include "core/dom/WheelEvent.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -1518,6 +1519,8 @@ void  WebViewImpl::popupOpened(WebCore::PopupContainer* popupContainer)
     if (popupContainer->popupType() == WebCore::PopupContainer::Select) {
         ASSERT(!m_selectPopup);
         m_selectPopup = popupContainer;
+        Document* document = mainFrameImpl()->frame()->document();
+        WheelController::from(document)->didAddWheelEventHandler(document);
     }
 }
 
@@ -1526,6 +1529,8 @@ void  WebViewImpl::popupClosed(WebCore::PopupContainer* popupContainer)
     if (popupContainer->popupType() == WebCore::PopupContainer::Select) {
         ASSERT(m_selectPopup);
         m_selectPopup = 0;
+        Document* document = mainFrameImpl()->frame()->document();
+        WheelController::from(document)->didRemoveWheelEventHandler(document);
     }
 }
 
