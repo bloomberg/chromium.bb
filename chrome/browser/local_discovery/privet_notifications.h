@@ -36,12 +36,10 @@ class PrivetNotificationsListener : public PrivetInfoOperation::Delegate {
     virtual ~Delegate() {}
 
     // Notify user of the existence of device |device_name|.
-    virtual void PrivetNotify(const std::string& device_name,
-                              const std::string& human_readable_name,
-                              const std::string& description) = 0;
+    virtual void PrivetNotify(bool multiple, bool added) = 0;
 
     // Remove the noitification for |device_name| if it still exists.
-    virtual void PrivetRemoveNotification(const std::string& device_name) = 0;
+    virtual void PrivetRemoveNotification() = 0;
   };
 
   PrivetNotificationsListener(
@@ -71,8 +69,6 @@ class PrivetNotificationsListener : public PrivetInfoOperation::Delegate {
 
     bool notification_may_be_active;
     bool registered;
-    std::string human_readable_name;
-    std::string description;
     scoped_ptr<PrivetInfoOperation> info_operation;
     scoped_ptr<PrivetHTTPResolution> privet_http_resolution;
     scoped_ptr<PrivetHTTPClient> privet_http;
@@ -82,10 +78,13 @@ class PrivetNotificationsListener : public PrivetInfoOperation::Delegate {
 
   void CreateInfoOperation(scoped_ptr<PrivetHTTPClient> http_client);
 
+  void NotifyDeviceRemoved();
+
   Delegate* delegate_;
   scoped_ptr<PrivetDeviceLister> device_lister_;
   scoped_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory_;
   DeviceContextMap devices_seen_;
+  int devices_active_;
 };
 
 class PrivetNotificationService
@@ -103,12 +102,9 @@ class PrivetNotificationService
   virtual void DeviceRemoved(const std::string& name) OVERRIDE;
 
   // PrivetNotificationListener::Delegate implementation:
-  virtual void PrivetNotify(const std::string& device_name,
-                            const std::string& human_readable_name,
-                            const std::string& description) OVERRIDE;
+  virtual void PrivetNotify(bool has_multiple, bool added) OVERRIDE;
 
-  virtual void PrivetRemoveNotification(
-      const std::string& device_name) OVERRIDE;
+  virtual void PrivetRemoveNotification() OVERRIDE;
   virtual void DeviceCacheFlushed() OVERRIDE;
 
  private:
@@ -125,8 +121,7 @@ class PrivetNotificationService
 
 class PrivetNotificationDelegate : public NotificationDelegate {
  public:
-  explicit PrivetNotificationDelegate(const std::string& device_id,
-                                      content::BrowserContext* profile);
+  explicit PrivetNotificationDelegate(content::BrowserContext* profile);
 
   // NotificationDelegate implementation.
   virtual std::string id() const OVERRIDE;
@@ -142,7 +137,6 @@ class PrivetNotificationDelegate : public NotificationDelegate {
 
   virtual ~PrivetNotificationDelegate();
 
-  std::string device_id_;
   content::BrowserContext* profile_;
 };
 

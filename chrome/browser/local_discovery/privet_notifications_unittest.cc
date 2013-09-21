@@ -25,10 +25,8 @@ const char kExampleDeviceID[] = "__test__id";
 class MockPrivetNotificationsListenerDeleagate
     : public PrivetNotificationsListener::Delegate {
  public:
-  MOCK_METHOD3(PrivetNotify, void(const std::string& device_name,
-                                  const std::string& human_readable_name,
-                                  const std::string& description));
-  MOCK_METHOD1(PrivetRemoveNotification, void(const std::string& device_name));
+  MOCK_METHOD2(PrivetNotify, void(bool multiple, bool added));
+  MOCK_METHOD0(PrivetRemoveNotification, void());
 };
 
 class MockPrivetInfoOperation : public PrivetInfoOperation {
@@ -178,9 +176,8 @@ TEST_F(PrivetNotificationsListenerTest, DisappearReappearTest) {
   ExpectInfoOperation();
 
   EXPECT_CALL(mock_delegate_, PrivetNotify(
-      kExampleDeviceName,
-      kExampleDeviceHumanName,
-      kExampleDeviceDescription));
+      false,
+      true));
 
   notification_listener_->DeviceChanged(
       true,
@@ -194,8 +191,7 @@ TEST_F(PrivetNotificationsListenerTest, DisappearReappearTest) {
   info_operation_->delegate()->OnPrivetInfoDone(info_operation_,
                                                 200, &value);
 
-  EXPECT_CALL(mock_delegate_, PrivetRemoveNotification(
-      kExampleDeviceName));
+  EXPECT_CALL(mock_delegate_, PrivetRemoveNotification());
 
   notification_listener_->DeviceRemoved(
       kExampleDeviceName);
@@ -217,9 +213,8 @@ TEST_F(PrivetNotificationsListenerTest, RegisterTest) {
   ExpectInfoOperation();
 
   EXPECT_CALL(mock_delegate_, PrivetNotify(
-      kExampleDeviceName,
-      kExampleDeviceHumanName,
-      kExampleDeviceDescription));
+      false,
+      true));
 
   notification_listener_->DeviceChanged(
       true,
@@ -233,8 +228,7 @@ TEST_F(PrivetNotificationsListenerTest, RegisterTest) {
   info_operation_->delegate()->OnPrivetInfoDone(info_operation_,
                                                 200, &value);
 
-  EXPECT_CALL(mock_delegate_, PrivetRemoveNotification(
-      kExampleDeviceName));
+  EXPECT_CALL(mock_delegate_, PrivetRemoveNotification());
 
   description_.id = kExampleDeviceID;
 

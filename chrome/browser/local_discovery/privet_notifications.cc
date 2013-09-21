@@ -38,7 +38,7 @@ namespace {
 
 const int kTenMinutesInSeconds = 600;
 const char kPrivetInfoKeyUptime[] = "uptime";
-const char kPrivetNotificationIDPrefix[] = "privet_notification:";
+const char kPrivetNotificationID[] = "privet_notification";
 const char kPrivetNotificationOriginUrl[] = "chrome://devices";
 const int kStartDelaySeconds = 5;
 
@@ -62,7 +62,7 @@ void ReportPrivetUmaEvent(PrivetNotificationsEvent privet_event) {
 
 PrivetNotificationsListener::PrivetNotificationsListener(
     scoped_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory,
-    Delegate* delegate) : delegate_(delegate) {
+    Delegate* delegate) : delegate_(delegate), devices_active_(0) {
   privet_http_factory_.swap(privet_http_factory);
 }
 
@@ -79,7 +79,7 @@ void PrivetNotificationsListener::DeviceChanged(
     if (!description.id.empty() &&  // Device is registered
         found->second->notification_may_be_active) {
       found->second->notification_may_be_active = false;
-      delegate_->PrivetRemoveNotification(name);
+      NotifyDeviceRemoved();
     }
     return;  // Already saw this device.
   }
@@ -88,8 +88,6 @@ void PrivetNotificationsListener::DeviceChanged(
 
   device_context->notification_may_be_active = false;
   device_context->registered = !description.id.empty();
-  device_context->human_readable_name = description.name;
-  device_context->description = description.description;
 
   devices_seen_.insert(make_pair(name, device_context));
 
@@ -137,8 +135,8 @@ void PrivetNotificationsListener::OnPrivetInfoDone(
 
   DCHECK(!device->notification_may_be_active);
   device->notification_may_be_active = true;
-  delegate_->PrivetNotify(name, device->human_readable_name,
-                          device->description);
+  devices_active_++;
+  delegate_->PrivetNotify(devices_active_ > 1, true);
 }
 
 void PrivetNotificationsListener::DeviceRemoved(const std::string& name) {
@@ -150,7 +148,7 @@ void PrivetNotificationsListener::DeviceRemoved(const std::string& name) {
   device->info_operation.reset();
   device->privet_http_resolution.reset();
   device->notification_may_be_active = false;
-  delegate_->PrivetRemoveNotification(name);
+  NotifyDeviceRemoved();
 }
 
 void PrivetNotificationsListener::DeviceCacheFlushed() {
@@ -162,8 +160,19 @@ void PrivetNotificationsListener::DeviceCacheFlushed() {
     device->privet_http_resolution.reset();
     if (device->notification_may_be_active) {
       device->notification_may_be_active = false;
-      delegate_->PrivetRemoveNotification(i->first);
     }
+  }
+
+  devices_active_ = 0;
+  delegate_->PrivetRemoveNotification();
+}
+
+void PrivetNotificationsListener::NotifyDeviceRemoved() {
+  devices_active_--;
+  if (devices_active_ == 0) {
+    delegate_->PrivetRemoveNotification();
+  } else {
+    delegate_->PrivetNotify(devices_active_ > 1, true);
   }
 }
 
@@ -201,12 +210,22 @@ void PrivetNotificationService::DeviceCacheFlushed() {
   privet_notifications_listener_->DeviceCacheFlushed();
 }
 
-void PrivetNotificationService::PrivetNotify(
-    const std::string& device_name,
-    const std::string& human_readable_name,
-    const std::string& description) {
-  if (!LocalDiscoveryUIHandler::GetHasVisible()) {
-    ReportPrivetUmaEvent(PRIVET_NOTIFICATION_SHOWN);
+void PrivetNotificationService::PrivetNotify(bool has_multiple,
+                                             bool added) {
+    string16 product_name = l10n_util::GetStringUTF16(
+        IDS_LOCAL_DISOCVERY_PRODUCT_NAME_PRINTER);
+
+    int title_resource = has_multiple ?
+        IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER_MULTIPLE :
+        IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER;
+
+    int body_resource = has_multiple ?
+        IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER_MULTIPLE :
+        IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER;
+
+    string16 title = l10n_util::GetStringUTF16(title_resource);
+    string16 body = l10n_util::GetStringFUTF16(body_resource, product_name);
+
     Profile* profile_object = Profile::FromBrowserContext(profile_);
     message_center::RichNotificationData rich_notification_data;
 
@@ -217,33 +236,31 @@ void PrivetNotificationService::PrivetNotify(
     Notification notification(
         message_center::NOTIFICATION_TYPE_SIMPLE,
         GURL(kPrivetNotificationOriginUrl),
-        l10n_util::GetStringUTF16(
-            IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER),
-        l10n_util::GetStringFUTF16(
-            IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER,
-            UTF8ToUTF16(human_readable_name)),
+        title,
+        body,
         ui::ResourceBundle::GetSharedInstance().GetImageNamed(
             IDR_LOCAL_DISCOVERY_CLOUDPRINT_ICON),
         WebKit::WebTextDirectionDefault,
         message_center::NotifierId(
             message_center::NotifierId::SYSTEM_COMPONENT),
-        l10n_util::GetStringUTF16(
-            IDS_LOCAL_DISOCVERY_NOTIFICATION_DISPLAY_SOURCE_PRINTER),
-        UTF8ToUTF16(kPrivetNotificationIDPrefix +
-                    device_name),
+        product_name,
+        UTF8ToUTF16(kPrivetNotificationID),
         rich_notification_data,
-        new PrivetNotificationDelegate(device_name, profile_));
+        new PrivetNotificationDelegate(profile_));
 
-    g_browser_process->notification_ui_manager()->Add(notification,
-                                                      profile_object);
-  }
+    bool updated = g_browser_process->notification_ui_manager()->Update(
+        notification, profile_object);
+    if (!updated && added && !LocalDiscoveryUIHandler::GetHasVisible()) {
+      ReportPrivetUmaEvent(PRIVET_NOTIFICATION_SHOWN);
+      g_browser_process->notification_ui_manager()->Add(notification,
+                                                        profile_object);
+    }
 }
 
-void PrivetNotificationService::PrivetRemoveNotification(
-    const std::string& device_name) {
+void PrivetNotificationService::PrivetRemoveNotification() {
   ReportPrivetUmaEvent(PRIVET_NOTIFICATION_CANCELED);
   g_browser_process->notification_ui_manager()->CancelById(
-      kPrivetNotificationIDPrefix + device_name);
+      kPrivetNotificationID);
 }
 
 void PrivetNotificationService::Start() {
@@ -280,15 +297,15 @@ void PrivetNotificationService::StartLister() {
 }
 
 PrivetNotificationDelegate::PrivetNotificationDelegate(
-    const std::string& device_id, content::BrowserContext* profile)
-    : device_id_(device_id), profile_(profile) {
+    content::BrowserContext* profile)
+    :  profile_(profile) {
 }
 
 PrivetNotificationDelegate::~PrivetNotificationDelegate() {
 }
 
 std::string PrivetNotificationDelegate::id() const {
-  return kPrivetNotificationIDPrefix + device_id_;
+  return kPrivetNotificationID;
 }
 
 content::RenderViewHost* PrivetNotificationDelegate::GetRenderViewHost() const {
@@ -299,7 +316,7 @@ void PrivetNotificationDelegate::Display() {
 }
 
 void PrivetNotificationDelegate::Error() {
-  LOG(ERROR) << "Error displaying privet notification " << device_id_;
+  LOG(ERROR) << "Error displaying privet notification";
 }
 
 void PrivetNotificationDelegate::Close(bool by_user) {
@@ -311,7 +328,6 @@ void PrivetNotificationDelegate::Click() {
 void PrivetNotificationDelegate::ButtonClick(int button_index) {
   if (button_index == 0) {
     ReportPrivetUmaEvent(PRIVET_NOTIFICATION_CLICKED);
-    // TODO(noamsml): Direct-to-register URL
     OpenTab(GURL(kPrivetNotificationOriginUrl));
   }
 }

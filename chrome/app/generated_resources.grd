@@ -15118,9 +15118,15 @@ Do you accept?
       New printer on your network
     </message>
     <message name="IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER" desc="Contents of notification for a new printer showing up on your network">
-      Add <ph name="PRINTER_NAME">$1</ph> to Cloud Print so you can print from anywhere.
+      Add the printer to <ph name="PRODUCT_NAME">$1<ex>Google Cloud Print</ex></ph> so you can print from anywhere.
     </message>
-    <message name="IDS_LOCAL_DISOCVERY_NOTIFICATION_DISPLAY_SOURCE_PRINTER" desc="Display name for notification for a new printer showing up on your network">
+    <message name="IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER_MULTIPLE" desc="Title of notification for a new printer showing up on your network">
+      New printers on your network
+    </message>
+    <message name="IDS_LOCAL_DISOCVERY_NOTIFICATION_CONTENTS_PRINTER_MULTIPLE" desc="Contents of notification for a new printer showing up on your network">
+      Add the printers to <ph name="PRODUCT_NAME">$1<ex>Google Cloud Print</ex></ph> so you can print from anywhere.
+    </message>
+    <message name="IDS_LOCAL_DISOCVERY_PRODUCT_NAME_PRINTER" desc="Display name for notification for a new printer showing up on your network">
       Google Cloud Print
     </message>
     <message name="IDS_LOCAL_DISOCVERY_NOTIFICATION_BUTTON_PRINTER" desc="Message on registration button for printer">
