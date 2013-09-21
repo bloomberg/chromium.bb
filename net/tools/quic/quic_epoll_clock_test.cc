@@ -37,7 +37,7 @@ TEST(QuicEpollClockTest, NowInUsec) {
             clock.Now().Subtract(QuicTime::Zero()).ToMicroseconds());
 }
 
-TEST(QuicClockTest, WallNow) {
+TEST(QuicEpollClockTest, WallNow) {
   MockEpollServer epoll_server;
   QuicEpollClock clock(&epoll_server);
 
