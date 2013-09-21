@@ -337,6 +337,8 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
     user->set_username_hash(username_hash);
     logged_in_users_.push_back(user);
     lru_logged_in_users_.push_back(user);
+    // Reset the new user flag if the user already exists.
+    is_current_user_new_ = false;
     // Set active user wallpaper back.
     WallpaperManager::Get()->SetUserWallpaper(active_user_->email());
     return;
