@@ -77,7 +77,7 @@ CGContextRef VectorPlatformDeviceSkia::GetBitmapContext() {
   SkASSERT(false);
   return NULL;
 }
-#elif defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_OPENBSD)
+#elif defined(OS_POSIX)
 void VectorPlatformDeviceSkia::DrawToNativeContext(
     PlatformSurface surface, int x, int y, const PlatformRect* src_rect) {
   // Should never be called on Linux.

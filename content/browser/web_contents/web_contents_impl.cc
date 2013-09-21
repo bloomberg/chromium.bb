@@ -3767,7 +3767,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
     return false;
   }
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // Force a ViewMsg_Resize to be sent, needed to make plugins show up on
   // linux. See crbug.com/83941.
   if (rwh_view) {

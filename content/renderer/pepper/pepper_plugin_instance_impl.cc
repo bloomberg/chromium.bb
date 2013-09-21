@@ -1741,7 +1741,7 @@ bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
 #endif  // defined(OS_WIN)
 
   bool ret = false;
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
   // On Linux we just set the final bits in the native metafile
   // (NativeMetafile and PreviewMetafile must have compatible formats,
   // i.e. both PDF for this to work).

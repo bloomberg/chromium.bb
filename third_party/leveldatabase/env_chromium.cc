@@ -48,8 +48,7 @@ namespace leveldb_env {
 
 namespace {
 
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID) || \
-    defined(OS_OPENBSD)
+#if (defined(OS_POSIX) && !defined(OS_LINUX)) || defined(OS_WIN)
 // The following are glibc-specific
 
 size_t fread_wrapper(void *ptr, size_t size, size_t n, FILE *file) {

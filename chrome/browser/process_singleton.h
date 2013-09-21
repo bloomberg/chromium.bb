@@ -24,9 +24,9 @@
 #include "base/threading/non_thread_safe.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #include "base/files/scoped_temp_dir.h"
-#endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
+#endif
 
 #if defined(OS_WIN)
 #include "base/win/message_window.h"
@@ -88,9 +88,9 @@ class ProcessSingleton : public base::NonThreadSafe {
   // Clear any lock state during shutdown.
   void Cleanup();
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   static void DisablePromptForTesting();
-#endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
+#endif
 
  protected:
   // Notify another process, if available.
@@ -99,7 +99,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   // On Windows, Create() has to be called before this.
   NotifyResult NotifyOtherProcess();
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // Exposed for testing.  We use a timeout on Linux, and in tests we want
   // this timeout to be short.
   NotifyResult NotifyOtherProcessWithTimeout(const CommandLine& command_line,
@@ -111,7 +111,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   void OverrideCurrentPidForTesting(base::ProcessId pid);
   void OverrideKillCallbackForTesting(
       const base::Callback<void(int)>& callback);
-#endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
+#endif
 
  private:
 #if !defined(OS_MACOSX)
@@ -130,7 +130,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   bool is_virtualized_;  // Stuck inside Microsoft Softricity VM environment.
   HANDLE lock_file_;
   base::FilePath user_data_dir_;
-#elif defined(OS_LINUX) || defined(OS_OPENBSD)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // Return true if the given pid is one of our child processes.
   // Assumes that the current pid is the root of all pids of the current
   // instance.

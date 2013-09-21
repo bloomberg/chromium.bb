@@ -35,7 +35,7 @@
 #include "ui/base/l10n/l10n_util_android.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #include <glib.h>
 #endif
 
@@ -452,7 +452,7 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
   // On Android, query java.util.Locale for the default locale.
   candidates.push_back(GetDefaultLocale());
 
-#elif defined(OS_LINUX)
+#elif defined(OS_POSIX)
   // If we're on a different Linux system, we have glib.
 
   // GLib implements correct environment variable parsing with

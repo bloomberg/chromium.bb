@@ -44,7 +44,7 @@ using content::RenderThread;
 
 namespace {
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 class PrivateFontFile : public ppapi::Resource {
  public:
   PrivateFontFile(PP_Instance instance, int fd)
@@ -192,7 +192,7 @@ PP_Resource GetFontFileWithFallback(
     PP_Instance instance_id,
     const PP_BrowserFont_Trusted_Description* description,
     PP_PrivateFontCharset charset) {
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // Validate the instance before using it below.
   if (!content::PepperPluginInstance::Get(instance_id))
     return 0;
@@ -224,7 +224,7 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
                                     uint32_t table,
                                     void* output,
                                     uint32_t* output_length) {
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   ppapi::Resource* resource =
       PpapiGlobals::Get()->GetResourceTracker()->GetResource(font_file);
   if (!resource)

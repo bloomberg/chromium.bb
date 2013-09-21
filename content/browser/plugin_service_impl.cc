@@ -788,7 +788,8 @@ void PluginServiceImpl::GetInternalPlugins(
 }
 
 bool PluginServiceImpl::NPAPIPluginsSupported() {
-#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(USE_AURA))
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_BSD) || \
+    (defined(OS_LINUX) && !defined(USE_AURA))
   return true;
 #else
   return false;
