@@ -46,6 +46,7 @@
 #include "content/common/power_monitor_messages.h"
 #include "content/common/quota_messages.h"
 #include "content/common/resource_messages.h"
+#include "content/common/service_worker_messages.h"
 #include "content/common/socket_stream_messages.h"
 #include "content/common/speech_recognition_messages.h"
 #include "content/common/text_input_client_messages.h"

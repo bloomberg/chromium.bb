@@ -110,7 +110,7 @@ TEST_F(StoragePartitionShaderClearTest, ClearShaderCache) {
 
   TestClosureCallback clear_cb;
   StoragePartitionImpl sp(
-      cache_path(), NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+      cache_path(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&ClearData, &sp, clear_cb.callback()));
   clear_cb.WaitForResult();

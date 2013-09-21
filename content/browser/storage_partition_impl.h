@@ -12,6 +12,7 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/media/webrtc_identity_store.h"
+#include "content/browser/service_worker/service_worker_context.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -46,6 +47,8 @@ class StoragePartitionImpl : public StoragePartition {
                                  const base::Time& end,
                                  const base::Closure& callback) OVERRIDE;
 
+  ServiceWorkerContext* GetServiceWorkerContext();
+
   WebRTCIdentityStore* GetWebRTCIdentityStore();
 
   struct DataDeletionHelper;
@@ -77,6 +80,7 @@ class StoragePartitionImpl : public StoragePartition {
       webkit_database::DatabaseTracker* database_tracker,
       DOMStorageContextWrapper* dom_storage_context,
       IndexedDBContextImpl* indexed_db_context,
+      ServiceWorkerContext* service_worker_context,
       WebRTCIdentityStore* webrtc_identity_store);
 
   void ClearDataImpl(uint32 remove_mask,
@@ -112,6 +116,7 @@ class StoragePartitionImpl : public StoragePartition {
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
+  scoped_refptr<ServiceWorkerContext> service_worker_context_;
   scoped_refptr<WebRTCIdentityStore> webrtc_identity_store_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionImpl);

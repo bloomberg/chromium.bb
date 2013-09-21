@@ -284,6 +284,7 @@ StoragePartitionImpl::StoragePartitionImpl(
     webkit_database::DatabaseTracker* database_tracker,
     DOMStorageContextWrapper* dom_storage_context,
     IndexedDBContextImpl* indexed_db_context,
+    ServiceWorkerContext* service_worker_context,
     WebRTCIdentityStore* webrtc_identity_store)
     : partition_path_(partition_path),
       quota_manager_(quota_manager),
@@ -292,6 +293,7 @@ StoragePartitionImpl::StoragePartitionImpl(
       database_tracker_(database_tracker),
       dom_storage_context_(dom_storage_context),
       indexed_db_context_(indexed_db_context),
+      service_worker_context_(service_worker_context),
       webrtc_identity_store_(webrtc_identity_store) {}
 
 StoragePartitionImpl::~StoragePartitionImpl() {
@@ -367,6 +369,9 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
                                quota_manager->proxy(),
                                idb_task_runner);
 
+  scoped_refptr<ServiceWorkerContext> service_worker_context =
+      new ServiceWorkerContext(path, quota_manager->proxy());
+
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService(quota_manager->proxy());
 
@@ -380,6 +385,7 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
                                   database_tracker.get(),
                                   dom_storage_context.get(),
                                   indexed_db_context.get(),
+                                  service_worker_context.get(),
                                   webrtc_identity_store.get());
 }
 
@@ -418,6 +424,10 @@ DOMStorageContextWrapper* StoragePartitionImpl::GetDOMStorageContext() {
 
 IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContext() {
   return indexed_db_context_.get();
+}
+
+ServiceWorkerContext* StoragePartitionImpl::GetServiceWorkerContext() {
+  return service_worker_context_.get();
 }
 
 void StoragePartitionImpl::ClearDataImpl(

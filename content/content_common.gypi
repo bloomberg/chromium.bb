@@ -295,6 +295,7 @@
     'common/message_router.cc',
     'common/message_router.h',
     'common/mime_registry_messages.h',
+    'common/service_worker_messages.h',
     'common/navigation_gesture.h',
     'common/net/url_fetcher.cc',
     'common/net/url_request_user_data.cc',

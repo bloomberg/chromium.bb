@@ -92,6 +92,8 @@
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
 #include "content/browser/resolve_proxy_msg_helper.h"
+#include "content/browser/service_worker/service_worker_context.h"
+#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/speech/input_tag_speech_dispatcher_host.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/storage_partition_impl.h"
@@ -602,6 +604,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new IndexedDBDispatcherHost(
       GetID(),
       storage_partition_impl_->GetIndexedDBContext()));
+  channel_->AddFilter(new ServiceWorkerDispatcherHost(
+      storage_partition_impl_->GetServiceWorkerContext()));
   if (IsGuest()) {
     if (!g_browser_plugin_geolocation_context.Get().get()) {
       g_browser_plugin_geolocation_context.Get() =
