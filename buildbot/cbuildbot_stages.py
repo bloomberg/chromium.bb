@@ -1311,6 +1311,11 @@ class PreCQLauncherStage(SyncStage):
   # again from scratch in the next run.
   LAUNCH_DELAY = 30
 
+  # The maximum number of patches we will allow in a given trybot run. This is
+  # needed because our trybot infrastructure can only handle so many patches at
+  # once.
+  MAX_PATCHES_PER_TRYBOT_RUN = 50
+
   def __init__(self, options, build_config):
     super(PreCQLauncherStage, self).__init__(options, build_config)
     self.skip_sync = True
@@ -1422,7 +1427,8 @@ class PreCQLauncherStage(SyncStage):
 
     # Create a list of disjoint transactions to test.
     manifest = git.ManifestCheckout.Cached(self._build_root)
-    plans = pool.CreateDisjointTransactions(manifest)
+    plans = pool.CreateDisjointTransactions(
+        manifest, max_txn_length=self.MAX_PATCHES_PER_TRYBOT_RUN)
     for plan in plans:
       # If any of the CLs in the plan are currently "busy" being tested,
       # wait until they're done before launching our trybot run. This helps

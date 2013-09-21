@@ -1120,38 +1120,83 @@ class MockCreateDisjointTransactions(Base):
 class TestCreateDisjointTransactions(MockCreateDisjointTransactions):
   """Test the CreateDisjointTransactions function."""
 
-  def testPlans(self):
+  def verifyTransactions(self, txns, max_txn_length=None, circular=False):
+    """Verify the specified list of transactions are processed correctly.
+
+    Arguments:
+      txns: List of transactions to process.
+      max_txn_length: Maximum length of any given transaction. This is passed
+        to the CreateDisjointTransactions function.
+      circular: Whether the transactions contain circular dependencies.
+    """
+    remove = self.PatchObject(gerrit.GerritOnBorgHelper, 'RemoveCommitReady')
+    patches = list(itertools.chain.from_iterable(txns))
+    expected_plans = txns
+    if max_txn_length is not None:
+      # When max_txn_length is specified, transactions should be truncated to
+      # the specified length, ignoring any remaining patches.
+      expected_plans = [txn[:max_txn_length] for txn in txns]
+    pool = MakePool(changes=patches)
+    plans = pool.CreateDisjointTransactions(
+        None, max_txn_length=max_txn_length)
+
+    # If the dependencies are circular, the order of the patches is not
+    # guaranteed, so compare them in sorted order.
+    if circular:
+      plans = [sorted(plan) for plan in plans]
+      expected_plans = [sorted(plan) for plan in expected_plans]
+
+    # Verify the plans match, and that no changes were rejected.
+    self.assertEqual(set(map(str, plans)), set(map(str, expected_plans)))
+    self.assertEqual(0, remove.call_count)
+
+  def testPlans(self, max_txn_length=None):
     """Verify that independent sets are distinguished."""
     for num in range(0, 5):
-      expected_plans = [self.GetPatches(num) for _ in range(num)]
-      patches = list(itertools.chain.from_iterable(expected_plans))
-      pool = MakePool(changes=patches)
-      plans = pool.CreateDisjointTransactions(None)
-      self.assertEqual(set(map(str, plans)), set(map(str, expected_plans)))
+      txns = [self.GetPatches(num) for _ in range(0, num)]
+      self.verifyTransactions(txns, max_txn_length=max_txn_length)
 
-  def runUnresolvedPlan(self, **kwargs):
+  def runUnresolvedPlan(self, changes, max_txn_length=None):
     """Helper for testing unresolved plans."""
     notify = self.PatchObject(validation_pool.ValidationPool,
                               'SendNotification')
     remove = self.PatchObject(gerrit.GerritOnBorgHelper, 'RemoveCommitReady')
-    changes = self.GetPatches(5, **kwargs)[1:]
     pool = MakePool(changes=changes)
-    plans = pool.CreateDisjointTransactions(None)
+    plans = pool.CreateDisjointTransactions(None, max_txn_length=max_txn_length)
     self.assertEqual(plans, [])
     self.assertEqual(remove.call_count, notify.call_count)
     return remove.call_count
 
   def testUnresolvedPlan(self):
     """Test plan with old approval_timestamp."""
+    changes = self.GetPatches(5)[1:]
     with cros_test_lib.LoggingCapturer():
-      call_count = self.runUnresolvedPlan()
+      call_count = self.runUnresolvedPlan(changes)
     self.assertEqual(4, call_count)
 
   def testRecentUnresolvedPlan(self):
     """Test plan with recent approval_timestamp."""
+    changes = self.GetPatches(5, approval_timestamp=time.time())[1:]
     with cros_test_lib.LoggingCapturer():
-      call_count = self.runUnresolvedPlan(approval_timestamp=time.time())
+      call_count = self.runUnresolvedPlan(changes)
     self.assertEqual(0, call_count)
+
+  def testTruncatedPlan(self):
+    """Test that plans can be truncated correctly."""
+    # Long lists of patches should be truncated, and we should not see any
+    # errors when this happens.
+    self.testPlans(max_txn_length=3)
+
+  def testCircularPlans(self):
+    """Verify that circular plans are handled correctly."""
+    # It is not possible to truncate a circular plan. Verify that an error
+    # is reported in this case.
+    patches = self.GetPatches(5)
+    self.deps[patches[0]].append(patches[-1])
+    self.verifyTransactions([patches], circular=True)
+    with cros_test_lib.LoggingCapturer():
+      call_count = self.runUnresolvedPlan(patches, max_txn_length=3)
+    self.assertEqual(5, call_count)
 
 
 class SubmitPoolTest(MockCreateDisjointTransactions,

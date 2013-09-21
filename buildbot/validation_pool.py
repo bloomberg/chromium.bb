@@ -84,6 +84,19 @@ class DependencyNotReadyForCommit(cros_patch.PatchException):
     return "%s isn't committed, or marked as Commit-Ready." % (self.patch,)
 
 
+class PatchSeriesTooLong(cros_patch.PatchException):
+  """Exception thrown when a required dep isn't satisfied."""
+
+  def __init__(self, patch, max_length):
+    cros_patch.PatchException.__init__(self, patch)
+    self.max_length = max_length
+
+  def __str__(self):
+    return ("The Pre-CQ cannot handle a patch series longer than %s patches. "
+            "Please wait for some patches to be submitted before marking more "
+            "patches as ready. "  % (self.max_length,))
+
+
 def _RunCommand(cmd, dryrun):
   """Runs the specified shell cmd if dryrun=False.
 
@@ -441,12 +454,14 @@ class PatchSeries(object):
       else:
         yield (change, plan, None)
 
-  def CreateDisjointTransactions(self, changes):
+  def CreateDisjointTransactions(self, changes, max_txn_length=None):
     """Create a list of disjoint transactions from a list of changes.
 
     Args:
       changes: A list of cros_patch.GitRepoPatch instances to generate
         transactions for.
+      max_txn_length: The maximum length of any given transaction. Optional.
+        By default, do not limit the length of transactions.
 
     Returns:
       A list of disjoint transactions and a list of exceptions. Each transaction
@@ -477,11 +492,25 @@ class PatchSeries(object):
       ordered_plan, seen = [], set()
       for change in unordered_plan:
         # Iterate over the required CLs, adding them to our plan in order.
-        for change_dep in deps[change]:
-          if change_dep not in seen:
-            ordered_plan.append(change_dep)
-            seen.add(change_dep)
-      ordered_plans.append(ordered_plan)
+        new_changes = list(dep_change for dep_change in deps[change]
+                           if dep_change not in seen)
+        new_plan_size = len(ordered_plan) + len(new_changes)
+        if not max_txn_length or new_plan_size <= max_txn_length:
+          seen.update(new_changes)
+          ordered_plan.extend(new_changes)
+
+      if ordered_plan:
+        # We found a transaction that is <= max_txn_length. Process the
+        # transaction. Ignore the remaining patches for now; they will be
+        # processed later (once the current transaction has been pushed).
+        ordered_plans.append(ordered_plan)
+      else:
+        # We couldn't find any transactions that were <= max_txn_length.
+        # This should only happen if circular dependencies prevent us from
+        # truncating a long list of patches. Reject the whole set of patches
+        # and complain.
+        for change in unordered_plan:
+          failed.append(PatchSeriesTooLong(change, max_txn_length))
 
     return ordered_plans, failed
 
@@ -1866,11 +1895,13 @@ class ValidationPool(object):
     url = '%s/%s' % (cls.GetCLStatusURL(bot, change), status)
     return gs.GSContext().Counter(url).Get()
 
-  def CreateDisjointTransactions(self, manifest):
+  def CreateDisjointTransactions(self, manifest, max_txn_length=None):
     """Create a list of disjoint transactions from the changes in the pool.
 
     Args:
       manifest: Manifest to use.
+      max_txn_length: The maximum length of any given transaction. Optional.
+        By default, do not limit the length of transactions.
 
     Returns:
       A list of disjoint transactions. Each transaction can be tried
@@ -1879,7 +1910,8 @@ class ValidationPool(object):
       unless the patch does not apply for some reason.
     """
     patches = PatchSeries(self.build_root, forced_manifest=manifest)
-    plans, failed = patches.CreateDisjointTransactions(self.changes)
+    plans, failed = patches.CreateDisjointTransactions(
+        self.changes, max_txn_length=max_txn_length)
     failed = self._FilterDependencyErrors(failed)
     if failed:
       self._HandleApplyFailure(failed)
