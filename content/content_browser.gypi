@@ -1308,6 +1308,8 @@
         'browser/renderer_host/p2p/socket_host_tcp.h',
         'browser/renderer_host/p2p/socket_host_tcp_server.cc',
         'browser/renderer_host/p2p/socket_host_tcp_server.h',
+        'browser/renderer_host/p2p/socket_host_throttler.cc',
+        'browser/renderer_host/p2p/socket_host_throttler.h',
         'browser/renderer_host/p2p/socket_host_udp.cc',
         'browser/renderer_host/p2p/socket_host_udp.h',
         'browser/renderer_host/p2p/socket_dispatcher_host.cc',

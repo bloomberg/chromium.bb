@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "content/browser/renderer_host/p2p/socket_host_throttler.h"
 #include "content/common/p2p_sockets.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -84,6 +85,7 @@ class P2PSocketDispatcherHost
   bool monitoring_networks_;
 
   std::set<DnsRequest*> dns_requests_;
+  P2PMessageThrottler throttler_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcherHost);
 };

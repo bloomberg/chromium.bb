@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "content/browser/renderer_host/p2p/socket_host_throttler.h"
 #include "content/common/p2p_messages.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/io_buffer.h"
@@ -61,11 +62,14 @@ P2PSocketHostUdp::PendingPacket::PendingPacket(
 P2PSocketHostUdp::PendingPacket::~PendingPacket() {
 }
 
-P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender, int id)
+P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender,
+                                   int id,
+                                   P2PMessageThrottler* throttler)
     : P2PSocketHost(message_sender, id),
       socket_(new net::UDPServerSocket(NULL, net::NetLog::Source())),
       send_pending_(false),
-      send_packet_count_(0) {
+      send_packet_count_(0),
+      throttler_(throttler) {
 }
 
 P2PSocketHostUdp::~P2PSocketHostUdp() {
@@ -178,6 +182,12 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
       LOG(ERROR) << "Page tried to send a data packet to " << to.ToString()
                  << " before STUN binding is finished.";
       OnError();
+      return;
+    }
+
+    if (throttler_->DropNextPacket(data.size())) {
+      LOG(INFO) << "STUN message is dropped due to high volume.";
+      // Do not reset socket.
       return;
     }
   }

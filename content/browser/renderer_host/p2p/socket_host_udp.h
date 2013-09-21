@@ -21,9 +21,12 @@
 
 namespace content {
 
+class P2PMessageThrottler;
+
 class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
  public:
-  P2PSocketHostUdp(IPC::Sender* message_sender, int id);
+  P2PSocketHostUdp(IPC::Sender* message_sender, int id,
+                   P2PMessageThrottler* throttler);
   virtual ~P2PSocketHostUdp();
 
   // P2PSocketHost overrides.
@@ -71,6 +74,7 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
   // Set of peer for which we have received STUN binding request or
   // response or relay allocation request or response.
   ConnectedPeerSet connected_peers_;
+  P2PMessageThrottler* throttler_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHostUdp);
 };
