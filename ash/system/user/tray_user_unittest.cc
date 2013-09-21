@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
@@ -13,6 +14,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
+#include "base/command_line.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/gfx/animation/animation_container_element.h"
 #include "ui/views/view.h"
@@ -63,6 +65,10 @@ TrayUserTest::TrayUserTest()
 }
 
 void TrayUserTest::SetUp() {
+#if defined(OS_CHROMEOS)
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      ash::switches::kAshEnableMultiProfileShelfMenu);
+#endif
   ash::test::AshTestBase::SetUp();
   shelf_ = Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
   tray_ = Shell::GetPrimaryRootWindowController()->GetSystemTray();
@@ -143,6 +149,7 @@ TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
   tray()->CloseSystemBubble();
 }
 
+#if defined(OS_CHROMEOS)
 // Make sure that in multi user mode the user panel can be activated and there
 // will be one panel for each user plus a separator.
 // Note: the mouse watcher (for automatic closing upon leave) cannot be tested
@@ -228,6 +235,7 @@ TEST_F(TrayUserTest, MutiUserModeButtonClicks) {
   EXPECT_EQ(delegate()->get_activated_user(), delegate()->GetUserEmail(1));
   tray()->CloseSystemBubble();
 }
+#endif
 
 }  // namespace internal
 }  // namespace ash

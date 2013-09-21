@@ -6161,6 +6161,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_MEMORY_MONITOR_DESCRIPTION" desc="Title for the flag to enable advanced gestures.">
         Enables visual memory monitor in status area.
       </message>
+      <message name="IDS_FLAGS_ENABLE_MULTI_PROFILE_SHELF_NAME" desc="Title for the multi profile shelf functionality flag.">
+        Enable multi profile shelf functionality
+      </message>
+      <message name="IDS_FLAGS_ENABLE_MULTI_PROFILE_SHELF_DESCRIPTION" desc="Title for the multi profile shelf functionality flag.">
+        Enable multi profile shelf functionality
+      </message>
       <message name="IDS_FLAGS_ASH_AUDIO_DEVICE_MENU_NAME" desc="Title for a flag for audio switching.">
         Audio input/output menu
       </message>

@@ -280,6 +280,9 @@ class UserView : public views::View,
   // cannot actively click on the item.
   void ToggleAddUserMenuOption();
 
+  // Returns true when multi profile is supported.
+  bool SupportsMultiProfile();
+
   MultiProfileIndex multiprofile_index_;
   // The view of the user card.
   views::View* user_card_view_;
@@ -704,7 +707,7 @@ void UserView::Layout() {
     // Give the remaining space to the user card.
     gfx::Rect user_card_area = contents_area;
     int remaining_width = contents_area.width() - logout_area.width();
-    if (ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {
+    if (SupportsMultiProfile()) {
       // In multiprofile case |user_card_view_| and |logout_button_| have to
       // have the same height.
       int y = std::min(user_card_area.y(), logout_area.y());
@@ -741,8 +744,7 @@ void UserView::Layout() {
 void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == logout_button_) {
     ash::Shell::GetInstance()->system_tray_delegate()->SignOut();
-  } else if (sender == user_card_view_ &&
-             ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {
+  } else if (sender == user_card_view_ && SupportsMultiProfile()) {
     if (!multiprofile_index_) {
       ToggleAddUserMenuOption();
     } else {
@@ -792,8 +794,7 @@ void UserView::AddUserCard(SystemTrayItem* owner,
       kUserCardVerticalPadding, kTrayPopupPaddingHorizontal,
       kUserCardVerticalPadding, kTrayPopupPaddingHorizontal));
 
-  if (ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled() &&
-      login != ash::user::LOGGED_IN_RETAIL_MODE) {
+  if (SupportsMultiProfile() && login != ash::user::LOGGED_IN_RETAIL_MODE) {
     user_card_view_ = new UserCard(this, multiprofile_index_ == 0);
     is_user_card_ = true;
   } else {
@@ -824,8 +825,7 @@ void UserView::AddUserCard(SystemTrayItem* owner,
 
   // To allow the border to start before the icon, reduce the size before and
   // add an inset to the icon to get the spacing.
-  if (multiprofile_index_ == 0 &&
-      ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {
+  if (multiprofile_index_ == 0 && SupportsMultiProfile()) {
     icon->set_border(views::Border::CreateEmptyBorder(
         0, kTrayUserTileHoverBorderInset, 0, 0));
     set_border(views::Border::CreateEmptyBorder(
@@ -983,6 +983,13 @@ void UserView::ToggleAddUserMenuOption() {
       new UserViewMouseWatcherHost(area),
       this));
   mouse_watcher_->Start();
+}
+
+bool UserView::SupportsMultiProfile() {
+  // Until the final UX team verdict has been given we disable this
+  // functionality.
+  return ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled() &&
+         ash::switches::ShowMultiProfileShelfMenu();
 }
 
 AddUserView::AddUserView(UserCard* owner, views::ButtonListener* listener)

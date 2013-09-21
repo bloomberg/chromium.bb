@@ -1231,6 +1231,14 @@ const Experiment kExperiments[] = {
       SINGLE_VALUE_TYPE(ash::switches::kAshEnableMemoryMonitor),
   },
 #endif
+#if defined(OS_CHROMEOS)
+  { "ash-enable-multi-profile-shelf",
+      IDS_FLAGS_ENABLE_MULTI_PROFILE_SHELF_NAME,
+      IDS_FLAGS_ENABLE_MULTI_PROFILE_SHELF_DESCRIPTION,
+      kOsCrOS,
+      SINGLE_VALUE_TYPE(ash::switches::kAshEnableMultiProfileShelfMenu),
+  },
+#endif
 #endif
 #if defined(OS_CHROMEOS)
   {
