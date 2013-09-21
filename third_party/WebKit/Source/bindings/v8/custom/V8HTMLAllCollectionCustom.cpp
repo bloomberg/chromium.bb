@@ -36,6 +36,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/NamedNodesCollection.h"
 #include "core/html/HTMLAllCollection.h"
+#include "core/page/UseCounter.h"
 
 namespace WebCore {
 
@@ -101,6 +102,10 @@ void V8HTMLAllCollection::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Va
         return;
 
     HTMLAllCollection* imp = V8HTMLAllCollection::toNative(args.Holder());
+    Node* ownerNode = imp->ownerNode();
+    ASSERT(ownerNode);
+
+    UseCounter::count(&ownerNode->document(), UseCounter::DocumentAllLegacyCall);
 
     if (args.Length() == 1) {
         v8SetReturnValue(args, getItem(imp, args[0], args));
