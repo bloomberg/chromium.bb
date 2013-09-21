@@ -106,7 +106,8 @@ void CopyInitialValues(const DetailInputs& inputs, DetailOutputMap* outputs) {
 }
 
 scoped_ptr<wallet::WalletItems> CompleteAndValidWalletItems() {
-  scoped_ptr<wallet::WalletItems> items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   items->AddInstrument(wallet::GetTestMaskedInstrument());
   items->AddAddress(wallet::GetTestShippingAddress());
   return items.Pass();
@@ -803,7 +804,8 @@ TEST_F(AutofillDialogControllerTest, BillingNameValidation) {
   SwitchToWallet();
 
   // Setup some wallet state.
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   controller()->OnDidGetWalletItems(wallet_items.Pass());
 
   DetailOutputMap wallet_outputs;
@@ -871,22 +873,34 @@ TEST_F(AutofillDialogControllerTest, CreditCardNumberValidation) {
   ValidateCCNumber(SECTION_CC, kTestCCNumberMaster, true);
   ValidateCCNumber(SECTION_CC, kTestCCNumberDiscover, true);
   ValidateCCNumber(SECTION_CC, kTestCCNumberAmex, true);
-
   ValidateCCNumber(SECTION_CC, kTestCCNumberIncomplete, false);
   ValidateCCNumber(SECTION_CC, kTestCCNumberInvalid, false);
 
   // Switch to Wallet which will not accept AMEX.
   SwitchToWallet();
 
-  // Setup some wallet state.
-  controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
+  // Setup some wallet state on a merchant for which Wallet doesn't
+  // support AMEX.
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
 
   // Should accept Visa, Master and Discover, but not AMEX.
   ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberVisa, true);
   ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberMaster, true);
   ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberDiscover, true);
-
   ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberAmex, false);
+  ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberIncomplete, false);
+  ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberInvalid, false);
+
+  // Setup some wallet state on a merchant for which Wallet supports AMEX.
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItems(wallet::AMEX_ALLOWED));
+
+  // Should accept Visa, Master, Discover, and AMEX.
+  ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberVisa, true);
+  ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberMaster, true);
+  ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberDiscover, true);
+  ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberAmex, true);
   ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberIncomplete, false);
   ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberInvalid, false);
 }
@@ -1260,7 +1274,8 @@ TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
 
 // Makes sure the default object IDs are respected.
 TEST_F(AutofillDialogControllerTest, WalletDefaultItems) {
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
   wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
@@ -1289,7 +1304,8 @@ TEST_F(AutofillDialogControllerTest, WalletDefaultItems) {
 
 // Tests that invalid and AMEX default instruments are ignored.
 TEST_F(AutofillDialogControllerTest, SelectInstrument) {
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   // Tests if default instrument is invalid, then, the first valid instrument is
   // selected instead of the default instrument.
   wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
@@ -1304,12 +1320,14 @@ TEST_F(AutofillDialogControllerTest, SelectInstrument) {
   EXPECT_TRUE(controller()->MenuModelForSection(SECTION_CC_BILLING)->
       IsItemCheckedAt(0));
 
-  // Tests if default instrument is AMEX, then, the first valid instrument is
+  // Tests if default instrument is AMEX but Wallet doesn't support
+  // AMEX on this merchant, then the first valid instrument is
   // selected instead of the default instrument.
-  wallet_items = wallet::GetTestWalletItems();
+  wallet_items = wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
   wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentAmex());
+  wallet_items->AddInstrument(
+      wallet::GetTestMaskedInstrumentAmex(wallet::AMEX_DISALLOWED));
   wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
 
   controller()->OnDidGetWalletItems(wallet_items.Pass());
@@ -1319,10 +1337,27 @@ TEST_F(AutofillDialogControllerTest, SelectInstrument) {
   EXPECT_TRUE(controller()->MenuModelForSection(SECTION_CC_BILLING)->
       IsItemCheckedAt(0));
 
+  // Tests if default instrument is AMEX and it is allowed on this merchant,
+  // then it is selected.
+  wallet_items = wallet::GetTestWalletItems(wallet::AMEX_ALLOWED);
+  wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
+  wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
+  wallet_items->AddInstrument(
+      wallet::GetTestMaskedInstrumentAmex(wallet::AMEX_ALLOWED));
+  wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
+
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  // 4 suggestions and "add", "manage".
+  EXPECT_EQ(6,
+      controller()->MenuModelForSection(SECTION_CC_BILLING)->GetItemCount());
+  EXPECT_TRUE(controller()->MenuModelForSection(SECTION_CC_BILLING)->
+      IsItemCheckedAt(2));
+
   // Tests if only have AMEX and invalid instrument, then "add" is selected.
-  wallet_items = wallet::GetTestWalletItems();
+  wallet_items = wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentInvalid());
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentAmex());
+  wallet_items->AddInstrument(
+      wallet::GetTestMaskedInstrumentAmex(wallet::AMEX_DISALLOWED));
 
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   // 2 suggestions and "add", "manage".
@@ -1340,7 +1375,8 @@ TEST_F(AutofillDialogControllerTest, SaveAddress) {
                                testing::NotNull(),
                                _)).Times(1);
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   // If there is no shipping address in wallet, it will default to
@@ -1359,7 +1395,8 @@ TEST_F(AutofillDialogControllerTest, SaveInstrument) {
                                testing::IsNull(),
                                _)).Times(1);
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
   SubmitWithWalletItems(wallet_items.Pass());
 }
@@ -1371,7 +1408,8 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentWithInvalidInstruments) {
                                testing::IsNull(),
                                _)).Times(1);
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentInvalid());
   SubmitWithWalletItems(wallet_items.Pass());
@@ -1383,7 +1421,8 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentAndAddress) {
                                testing::NotNull(),
                                _)).Times(1);
 
-  controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
   AcceptAndLoadFakeFingerprint();
 }
 
@@ -1416,7 +1455,8 @@ TEST_F(AutofillDialogControllerTest, BillingForShippingHasMatch) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               SaveToWalletMock(_, _, _)).Times(0);
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   scoped_ptr<wallet::WalletItems::MaskedInstrument> instrument =
       wallet::GetTestMaskedInstrument();
   // Copy billing address as shipping address, and assign an id to it.
@@ -1437,7 +1477,8 @@ TEST_F(AutofillDialogControllerTest, BillingForShippingHasMatch) {
 // Test that the local view contents is used when saving a new instrument and
 // the user has selected "Same as billing".
 TEST_F(AutofillDialogControllerTest, SaveInstrumentSameAsBilling) {
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
 
@@ -1478,7 +1519,8 @@ TEST_F(AutofillDialogControllerTest, CancelNoSave) {
 
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
 
-  controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
   controller()->OnCancel();
 }
 
@@ -1497,7 +1539,8 @@ TEST_F(AutofillDialogControllerTest, ManageItem) {
   EXPECT_EQ("chrome", autofill_manage_url.scheme());
 
   SwitchToWallet();
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
 
@@ -1658,7 +1701,8 @@ TEST_F(AutofillDialogControllerTest, ChangeAccountDuringVerifyCvv) {
 // |WalletClientDelegate::OnDid{Save,Update}*()| call. This can happen if Online
 // Wallet's server validation differs from Chrome's local validation.
 TEST_F(AutofillDialogControllerTest, WalletServerSideValidation) {
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
@@ -1680,7 +1724,8 @@ TEST_F(AutofillDialogControllerTest, WalletServerSideValidation) {
 
 // Simulates receiving unrecoverable Wallet server validation errors.
 TEST_F(AutofillDialogControllerTest, WalletServerSideValidationUnrecoverable) {
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
@@ -1728,7 +1773,8 @@ TEST_F(AutofillDialogControllerTest, WalletBanners) {
 
   // Start over and sign in a user with an incomplete account.
   SetUpControllerWithFormData(DefaultFormData());
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
 
@@ -1835,7 +1881,8 @@ TEST_F(AutofillDialogControllerTest, ViewSubmitSetsPref) {
   SetUpControllerWithFormData(DefaultFormData());
 
   SwitchToWallet();
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
@@ -1936,7 +1983,8 @@ TEST_F(AutofillDialogControllerTest, UpgradeMinimalAddress) {
   // view. Called once for each incomplete suggestion.
   EXPECT_CALL(*controller()->GetView(), UpdateForErrors()).Times(1);
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentWithIdAndAddress(
       "id", wallet::GetTestMinimalAddress()));
   scoped_ptr<wallet::Address> address(wallet::GetTestShippingAddress());
@@ -1954,7 +2002,8 @@ TEST_F(AutofillDialogControllerTest, UpgradeMinimalAddress) {
 TEST_F(AutofillDialogControllerTest, RiskNeverLoadsWithPendingLegalDocuments) {
   EXPECT_CALL(*controller(), LoadRiskFingerprintData()).Times(0);
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
@@ -1963,7 +2012,8 @@ TEST_F(AutofillDialogControllerTest, RiskNeverLoadsWithPendingLegalDocuments) {
 TEST_F(AutofillDialogControllerTest, RiskLoadsAfterAcceptingLegalDocuments) {
   EXPECT_CALL(*controller(), LoadRiskFingerprintData()).Times(0);
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
 
@@ -1980,7 +2030,8 @@ TEST_F(AutofillDialogControllerTest, RiskLoadsAfterAcceptingLegalDocuments) {
 
 TEST_F(AutofillDialogControllerTest, NoManageMenuItemForNewWalletUsers) {
   // Make sure the menu model item is created for a returning Wallet user.
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
@@ -2050,7 +2101,8 @@ TEST_F(AutofillDialogControllerTest, ShippingSectionCanBeHiddenForWallet) {
 
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               GetFullWallet(_)).Times(1);
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   SubmitWithWalletItems(wallet_items.Pass());
   controller()->OnDidGetFullWallet(wallet::GetTestFullWalletInstrumentOnly());
@@ -2060,7 +2112,8 @@ TEST_F(AutofillDialogControllerTest, ShippingSectionCanBeHiddenForWallet) {
 
 TEST_F(AutofillDialogControllerTest, NotProdNotification) {
   // To make IsPayingWithWallet() true.
-  controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   ASSERT_FALSE(command_line->HasSwitch(switches::kWalletServiceUseProd));
@@ -2074,7 +2127,8 @@ TEST_F(AutofillDialogControllerTest, NotProdNotification) {
 
 // Ensure Wallet instruments marked expired by the server are shown as invalid.
 TEST_F(AutofillDialogControllerTest, WalletExpiredCard) {
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentExpired());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
 
@@ -2159,7 +2213,8 @@ TEST_F(AutofillDialogControllerTest, ReloadWalletItemsOnActivation) {
   // Switch into Wallet mode and initialize some Wallet data.
   SwitchToWallet();
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
   wallet_items->AddAddress(wallet::GetTestNonDefaultShippingAddress());
@@ -2194,7 +2249,7 @@ TEST_F(AutofillDialogControllerTest, ReloadWalletItemsOnActivation) {
   controller()->TabActivated();
 
   // Simulate a response that includes different items.
-  wallet_items = wallet::GetTestWalletItems();
+  wallet_items = wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentExpired());
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
@@ -2217,7 +2272,8 @@ TEST_F(AutofillDialogControllerTest,
   // Switch into Wallet mode and initialize some Wallet data.
   SwitchToWallet();
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
   wallet_items->AddAddress(wallet::GetTestNonDefaultShippingAddress());
@@ -2244,7 +2300,8 @@ TEST_F(AutofillDialogControllerTest,
   // Simulate a response that includes different default values.
   wallet_items =
       wallet::GetTestWalletItemsWithDefaultIds("new_default_instrument_id",
-                                               "new_default_address_id");
+                                               "new_default_address_id",
+                                               wallet::AMEX_DISALLOWED);
   scoped_ptr<wallet::Address> other_address = wallet::GetTestShippingAddress();
   other_address->set_object_id("other_address_id");
   scoped_ptr<wallet::Address> new_default_address =
@@ -2278,7 +2335,8 @@ TEST_F(AutofillDialogControllerTest, ReloadWithEmptyWalletItems) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_));
   controller()->TabActivated();
 
-  controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
 
   EXPECT_FALSE(controller()->MenuModelForSection(SECTION_CC_BILLING));
   EXPECT_EQ(

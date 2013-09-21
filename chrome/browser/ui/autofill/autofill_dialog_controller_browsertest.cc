@@ -567,7 +567,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, WalletCreditCardDisabled) {
   controller()->OnUserNameFetchSuccess("user@example.com");
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
   // An expired card will be forced into edit mode.
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentWithDetails(
       "instrument_id",
@@ -732,7 +733,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
 
   // Set up some Wallet state.
   controller()->OnUserNameFetchSuccess("user@example.com");
-  controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
 
   ui::MenuModel* account_chooser = controller()->MenuModelForAccountChooser();
   ASSERT_TRUE(account_chooser->IsItemCheckedAt(0));

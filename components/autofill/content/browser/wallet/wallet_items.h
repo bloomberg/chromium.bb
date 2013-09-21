@@ -38,6 +38,11 @@ namespace wallet {
 
 class WalletItemsTest;
 
+enum AmexPermission {
+  AMEX_ALLOWED,
+  AMEX_DISALLOWED,
+};
+
 // WalletItems is a collection of cards and addresses that a user picks from to
 // construct a full wallet. However, it also provides a transaction ID which
 // must be used throughout all API calls being made using this data.
@@ -252,11 +257,12 @@ class WalletItems {
   const std::vector<LegalDocument*>& legal_documents() const {
     return legal_documents_.get();
   }
+  bool is_amex_allowed() const { return amex_permission_ == AMEX_ALLOWED; }
 
  private:
   friend class WalletItemsTest;
   friend scoped_ptr<WalletItems> GetTestWalletItemsWithDefaultIds(
-      const std::string&, const std::string&);
+      const std::string&, const std::string&, AmexPermission);
   FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateWalletItems);
   FRIEND_TEST_ALL_PREFIXES(WalletItemsTest,
                            CreateWalletItemsWithRequiredActions);
@@ -265,7 +271,8 @@ class WalletItems {
               const std::string& google_transaction_id,
               const std::string& default_instrument_id,
               const std::string& default_address_id,
-              const std::string& obfuscated_gaia_id);
+              const std::string& obfuscated_gaia_id,
+              AmexPermission amex_permission);
 
   // Actions that must be completed by the user before a FullWallet can be
   // issued to them by the Online Wallet service.
@@ -291,6 +298,9 @@ class WalletItems {
 
   // Legal documents the user must accept before using Online Wallet.
   ScopedVector<LegalDocument> legal_documents_;
+
+  // Whether Google Wallet allows American Express card for this merchant.
+  AmexPermission amex_permission_;
 
   DISALLOW_COPY_AND_ASSIGN(WalletItems);
 };

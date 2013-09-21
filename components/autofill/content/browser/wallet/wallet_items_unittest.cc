@@ -63,7 +63,8 @@ const char kMaskedInstrumentMissingStatus[] =
     "    \"phone_number\":\"phone_number\","
     "    \"country_code\":\"country_code\""
     "  },"
-    "  \"object_id\":\"object_id\""
+    "  \"object_id\":\"object_id\","
+    "  \"amex_disallowed\":true"
     "}";
 
 const char kMaskedInstrumentMissingType[] =
@@ -278,6 +279,7 @@ const char kWalletItemsMissingGoogleTransactionId[] =
     "  ],"
     "  \"default_address_id\":\"default_address_id\","
     "  \"obfuscated_gaia_id\":\"obfuscated_gaia_id\","
+    "  \"amex_disallowed\":true,"
     "  \"required_legal_document\":"
     "  ["
     "    {"
@@ -343,7 +345,8 @@ const char kWalletItems[] =
     "    }"
     "  ],"
     "  \"default_address_id\":\"default_address_id\","
-    "  \"obfuscated_gaia_id\":\"obfuscated_gaia_id\"";
+    "  \"obfuscated_gaia_id\":\"obfuscated_gaia_id\","
+    "  \"amex_disallowed\":true";
 
 const char kRequiredLegalDocument[] =
     "  ,"
@@ -484,7 +487,8 @@ TEST_F(WalletItemsTest, CreateWalletItemsWithRequiredActions) {
                        std::string(),
                        std::string(),
                        std::string(),
-                       std::string());
+                       std::string(),
+                       AMEX_DISALLOWED);
   EXPECT_EQ(expected, *WalletItems::CreateWalletItems(*dict));
 
   ASSERT_FALSE(required_actions.empty());
@@ -493,7 +497,8 @@ TEST_F(WalletItemsTest, CreateWalletItemsWithRequiredActions) {
                                          std::string(),
                                          std::string(),
                                          std::string(),
-                                         std::string());
+                                         std::string(),
+                                         AMEX_DISALLOWED);
   EXPECT_NE(expected, different_required_actions);
 }
 
@@ -507,6 +512,12 @@ TEST_F(WalletItemsTest, CreateWalletItemsMissingGoogleTransactionId) {
   EXPECT_EQ(NULL, WalletItems::CreateWalletItems(*dict).get());
 }
 
+TEST_F(WalletItemsTest, CreateWalletItemsMissingAmexDisallowed) {
+  SetUpDictionary(std::string(kWalletItems) + std::string(kCloseJson));
+  EXPECT_TRUE(dict->Remove("amex_disallowed", NULL));
+  EXPECT_FALSE(WalletItems::CreateWalletItems(*dict)->is_amex_allowed());
+}
+
 TEST_F(WalletItemsTest, CreateWalletItems) {
   SetUpDictionary(std::string(kWalletItems) + std::string(kCloseJson));
   std::vector<RequiredAction> required_actions;
@@ -514,7 +525,8 @@ TEST_F(WalletItemsTest, CreateWalletItems) {
                        "google_transaction_id",
                        "default_instrument_id",
                        "default_address_id",
-                       "obfuscated_gaia_id");
+                       "obfuscated_gaia_id",
+                       AMEX_DISALLOWED);
 
   scoped_ptr<Address> billing_address(new Address("country_code",
                                                   ASCIIToUTF16("name"),

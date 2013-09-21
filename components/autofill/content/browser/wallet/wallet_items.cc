@@ -392,12 +392,14 @@ WalletItems::WalletItems(const std::vector<RequiredAction>& required_actions,
                          const std::string& google_transaction_id,
                          const std::string& default_instrument_id,
                          const std::string& default_address_id,
-                         const std::string& obfuscated_gaia_id)
+                         const std::string& obfuscated_gaia_id,
+                         AmexPermission amex_permission)
     : required_actions_(required_actions),
       google_transaction_id_(google_transaction_id),
       default_instrument_id_(default_instrument_id),
       default_address_id_(default_address_id),
-      obfuscated_gaia_id_(obfuscated_gaia_id) {}
+      obfuscated_gaia_id_(obfuscated_gaia_id),
+      amex_permission_(amex_permission) {}
 
 WalletItems::~WalletItems() {}
 
@@ -441,11 +443,18 @@ scoped_ptr<WalletItems>
   if (!dictionary.GetString("obfuscated_gaia_id", &obfuscated_gaia_id))
     DVLOG(1) << "Response from Google wallet missing obfuscated gaia id";
 
+  bool amex_disallowed = true;
+  if (!dictionary.GetBoolean("amex_disallowed", &amex_disallowed))
+    DVLOG(1) << "Response from Google wallet missing the amex_disallowed field";
+  AmexPermission amex_permission =
+      amex_disallowed ? AMEX_DISALLOWED : AMEX_ALLOWED;
+
   scoped_ptr<WalletItems> wallet_items(new WalletItems(required_action,
                                                        google_transaction_id,
                                                        default_instrument_id,
                                                        default_address_id,
-                                                       obfuscated_gaia_id));
+                                                       obfuscated_gaia_id,
+                                                       amex_permission));
 
   const ListValue* legal_docs;
   if (dictionary.GetList("required_legal_document", &legal_docs)) {
