@@ -12,20 +12,27 @@
 
 class CommandLine;
 
-namespace installer {
+namespace base {
+class FilePath;
+}  // namespace base
 
+namespace installer {
 class InstallationState;
 class InstallerState;
 class MasterPreferences;
 
 // Helper function that performs the installation of a set of products.
-installer::InstallStatus InstallProductsHelper(
-    const installer::InstallationState& original_state,
-    const CommandLine& cmd_line,
-    const installer::MasterPreferences& prefs,
-    const installer::InstallerState& installer_state,
-    installer::ArchiveType* archive_type,
-    bool* delegated_to_existing);
+// |installer_directory|, if non-NULL, is populated with the path to the
+// directory containing the newly installed setup.exe. |archive_type| is
+// populated with the type of archive found. |delegated_to_existing| is set to
+// |true| if installation was delegated to a pre-existing higher version.
+InstallStatus InstallProductsHelper(const InstallationState& original_state,
+                                    const CommandLine& cmd_line,
+                                    const MasterPreferences& prefs,
+                                    const InstallerState& installer_state,
+                                    base::FilePath* installer_directory,
+                                    ArchiveType* archive_type,
+                                    bool* delegated_to_existing);
 
 }  // namespace installer
 

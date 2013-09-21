@@ -270,6 +270,8 @@
             'installer/mini_installer/chrome.release',
             'installer/setup/archive_patch_helper.cc',
             'installer/setup/archive_patch_helper.h',
+            'installer/setup/cf_migration.cc',
+            'installer/setup/cf_migration.h',
             'installer/setup/chrome_frame_quick_enable.cc',
             'installer/setup/chrome_frame_quick_enable.h',
             'installer/setup/chrome_frame_ready_mode.cc',

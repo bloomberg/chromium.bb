@@ -22,6 +22,7 @@ const wchar_t kModMultiInstall[] = L"-multi";
 const wchar_t kModReadyMode[] = L"-readymode";
 const wchar_t kModStage[] = L"-stage:";
 const wchar_t kSfxFull[] = L"-full";
+const wchar_t kSfxMigrating[] = L"-migrating";
 const wchar_t kSfxMultiFail[] = L"-multifail";
 
 const wchar_t* const kChannels[] = {
@@ -38,7 +39,8 @@ const wchar_t* const kModifiers[] = {
   kModAppLauncher,
   kModReadyMode,
   kSfxMultiFail,
-  kSfxFull
+  kSfxMigrating,
+  kSfxFull,
 };
 
 enum ModifierIndex {
@@ -50,6 +52,7 @@ enum ModifierIndex {
   MOD_APP_LAUNCHER,
   MOD_READY_MODE,
   SFX_MULTI_FAIL,
+  SFX_MIGRATING,
   SFX_FULL,
   NUM_MODIFIERS
 };
@@ -279,6 +282,14 @@ bool ChannelInfo::HasMultiFailSuffix() const {
 
 bool ChannelInfo::SetMultiFailSuffix(bool value) {
   return SetModifier(SFX_MULTI_FAIL, value, &value_);
+}
+
+bool ChannelInfo::SetMigratingSuffix(bool value) {
+  return SetModifier(SFX_MIGRATING, value, &value_);
+}
+
+bool ChannelInfo::HasMigratingSuffix() const {
+  return HasModifier(SFX_MIGRATING, value_);
 }
 
 bool ChannelInfo::RemoveAllModifiersAndSuffixes() {

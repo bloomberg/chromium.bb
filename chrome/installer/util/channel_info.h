@@ -101,6 +101,13 @@ class ChannelInfo {
   // modified.
   bool SetMultiFailSuffix(bool value);
 
+  // Adds or removes the -migrating suffix, returning true if the value is
+  // modified.
+  bool SetMigratingSuffix(bool value);
+
+  // Returns true if the -migrating suffix is present in the value.
+  bool HasMigratingSuffix() const;
+
   // Removes all modifiers and suffixes. For example, 2.0-dev-multi-chrome-full
   // becomes 2.0-dev. Returns true if the value is modified.
   bool RemoveAllModifiersAndSuffixes();
