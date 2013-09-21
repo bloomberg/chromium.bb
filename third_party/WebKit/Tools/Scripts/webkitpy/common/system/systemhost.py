@@ -43,3 +43,12 @@ class SystemHost(object):
 
     def copy_current_environment(self):
         return environment.Environment(os.environ.copy())
+
+    def print_(self, *args, **kwargs):
+        sep = kwargs.get('sep', ' ')
+        end = kwargs.get('end', '\n')
+        file = kwargs.get('file', None)
+        stderr = kwargs.get('stderr', False)
+
+        file = file or (sys.stderr if stderr else sys.stdout)
+        file.write(sep.join([str(arg) for arg in args]) + end)
