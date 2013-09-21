@@ -33,6 +33,7 @@ class PickleIterator;
 
 namespace disk_cache {
 
+class SimpleIndexDelegate;
 class SimpleIndexFile;
 struct SimpleIndexLoadResult;
 
@@ -77,8 +78,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
   typedef std::vector<uint64> HashList;
 
   SimpleIndex(base::SingleThreadTaskRunner* io_thread,
+              SimpleIndexDelegate* delegate,
               net::CacheType cache_type,
-              const base::FilePath& cache_directory,
               scoped_ptr<SimpleIndexFile> simple_index_file);
 
   virtual ~SimpleIndex();
@@ -114,12 +115,12 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // Executes the |callback| when the index is ready. Allows multiple callbacks.
   int ExecuteWhenReady(const net::CompletionCallback& callback);
 
-  // Takes out entries from the index that have last accessed time matching the
+  // Returns entries from the index that have last accessed time matching the
   // range between |initial_time| and |end_time| where open intervals are
   // possible according to the definition given in |DoomEntriesBetween()| in the
-  // disk cache backend interface. Returns the set of hashes taken out.
-  scoped_ptr<HashList> RemoveEntriesBetween(const base::Time initial_time,
-                                            const base::Time end_time);
+  // disk cache backend interface.
+  scoped_ptr<HashList> GetEntriesBetween(const base::Time initial_time,
+                                         const base::Time end_time);
 
   // Returns the list of all entries key hash.
   scoped_ptr<HashList> GetAllHashes();
@@ -153,9 +154,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
   scoped_ptr<base::android::ActivityStatus::Listener> activity_status_listener_;
 #endif
 
-  scoped_ptr<HashList> ExtractEntriesBetween(const base::Time initial_time,
-                                             const base::Time end_time,
-                                             bool delete_entries);
+  // The owner of |this| must ensure the |delegate_| outlives |this|.
+  SimpleIndexDelegate* delegate_;
 
   EntrySet entries_set_;
 
@@ -172,7 +172,6 @@ class NET_EXPORT_PRIVATE SimpleIndex
   base::hash_set<uint64> removed_entries_;
   bool initialized_;
 
-  const base::FilePath& cache_directory_;
   scoped_ptr<SimpleIndexFile> index_file_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_;

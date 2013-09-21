@@ -3216,7 +3216,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheDoomAll) {
   BackendDoomAll();
 }
 
-TEST_F(DiskCacheBackendTest, FLAKY_SimpleCacheAppCacheOnlyDoomAll) {
+TEST_F(DiskCacheBackendTest, SimpleCacheAppCacheOnlyDoomAll) {
   SetCacheType(net::APP_CACHE);
   SetSimpleCacheMode();
   BackendDoomAll();

@@ -933,7 +933,7 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
 void SimpleEntryImpl::DoomEntryInternal(const CompletionCallback& callback) {
   PostTaskAndReplyWithResult(
       worker_pool_, FROM_HERE,
-      base::Bind(&SimpleSynchronousEntry::DoomEntry, path_, key_, entry_hash_),
+      base::Bind(&SimpleSynchronousEntry::DoomEntry, path_, entry_hash_),
       base::Bind(&SimpleEntryImpl::DoomOperationComplete, this, callback,
                  state_));
   state_ = STATE_IO_PENDING;

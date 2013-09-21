@@ -4,7 +4,9 @@
 
 #include "net/disk_cache/simple/simple_index.h"
 
+#include <algorithm>
 #include <limits>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -23,6 +25,7 @@
 #include "net/base/net_errors.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_histogram_macros.h"
+#include "net/disk_cache/simple/simple_index_delegate.h"
 #include "net/disk_cache/simple/simple_index_file.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
 #include "net/disk_cache/simple/simple_util.h"
@@ -133,17 +136,17 @@ bool EntryMetadata::Deserialize(PickleIterator* it) {
 }
 
 SimpleIndex::SimpleIndex(base::SingleThreadTaskRunner* io_thread,
+                         SimpleIndexDelegate* delegate,
                          net::CacheType cache_type,
-                         const base::FilePath& cache_directory,
                          scoped_ptr<SimpleIndexFile> index_file)
-    : cache_type_(cache_type),
+    : delegate_(delegate),
+      cache_type_(cache_type),
       cache_size_(0),
       max_size_(0),
       high_watermark_(0),
       low_watermark_(0),
       eviction_in_progress_(false),
       initialized_(false),
-      cache_directory_(cache_directory),
       index_file_(index_file.Pass()),
       io_thread_(io_thread),
       // Creating the callback once so it is reused every time
@@ -221,14 +224,32 @@ int SimpleIndex::ExecuteWhenReady(const net::CompletionCallback& task) {
   return net::ERR_IO_PENDING;
 }
 
-scoped_ptr<SimpleIndex::HashList> SimpleIndex::RemoveEntriesBetween(
-    const base::Time initial_time, const base::Time end_time) {
-  return ExtractEntriesBetween(initial_time, end_time, true);
+scoped_ptr<SimpleIndex::HashList> SimpleIndex::GetEntriesBetween(
+    base::Time initial_time, base::Time end_time) {
+  DCHECK_EQ(true, initialized_);
+
+  if (!initial_time.is_null())
+    initial_time -= EntryMetadata::GetLowerEpsilonForTimeComparisons();
+  if (end_time.is_null())
+    end_time = base::Time::Max();
+  else
+    end_time += EntryMetadata::GetUpperEpsilonForTimeComparisons();
+  const base::Time extended_end_time =
+      end_time.is_null() ? base::Time::Max() : end_time;
+  DCHECK(extended_end_time >= initial_time);
+  scoped_ptr<HashList> ret_hashes(new HashList());
+  for (EntrySet::iterator it = entries_set_.begin(), end = entries_set_.end();
+       it != end; ++it) {
+    EntryMetadata& metadata = it->second;
+    base::Time entry_time = metadata.GetLastUsedTime();
+    if (initial_time <= entry_time && entry_time < extended_end_time)
+      ret_hashes->push_back(it->first);
+  }
+  return ret_hashes.Pass();
 }
 
 scoped_ptr<SimpleIndex::HashList> SimpleIndex::GetAllHashes() {
-  const base::Time null_time = base::Time();
-  return ExtractEntriesBetween(null_time, null_time, false);
+  return GetEntriesBetween(base::Time(), base::Time());
 }
 
 int32 SimpleIndex::GetEntryCount() const {
@@ -284,7 +305,6 @@ void SimpleIndex::StartEvictionIfNeeded() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   if (eviction_in_progress_ || cache_size_ <= high_watermark_)
     return;
-
   // Take all live key hashes from the index and sort them by time.
   eviction_in_progress_ = true;
   eviction_start_time_ = base::TimeTicks::Now();
@@ -294,32 +314,31 @@ void SimpleIndex::StartEvictionIfNeeded() {
   SIMPLE_CACHE_UMA(MEMORY_KB,
                    "Eviction.MaxCacheSizeOnStart2", cache_type_,
                    max_size_ / kBytesInKb);
-  scoped_ptr<std::vector<uint64> > entry_hashes(new std::vector<uint64>());
+  std::vector<uint64> entry_hashes;
+  entry_hashes.reserve(entries_set_.size());
   for (EntrySet::const_iterator it = entries_set_.begin(),
        end = entries_set_.end(); it != end; ++it) {
-    entry_hashes->push_back(it->first);
+    entry_hashes.push_back(it->first);
   }
-  std::sort(entry_hashes->begin(), entry_hashes->end(),
+  std::sort(entry_hashes.begin(), entry_hashes.end(),
             CompareHashesForTimestamp(entries_set_));
 
   // Remove as many entries from the index to get below |low_watermark_|.
-  std::vector<uint64>::iterator it = entry_hashes->begin();
+  std::vector<uint64>::iterator it = entry_hashes.begin();
   uint64 evicted_so_far_size = 0;
   while (evicted_so_far_size < cache_size_ - low_watermark_) {
-    DCHECK(it != entry_hashes->end());
+    DCHECK(it != entry_hashes.end());
     EntrySet::iterator found_meta = entries_set_.find(*it);
     DCHECK(found_meta != entries_set_.end());
     uint64 to_evict_size = found_meta->second.GetEntrySize();
     evicted_so_far_size += to_evict_size;
-    entries_set_.erase(found_meta);
     ++it;
   }
-  cache_size_ -= evicted_so_far_size;
 
   // Take out the rest of hashes from the eviction list.
-  entry_hashes->erase(it, entry_hashes->end());
+  entry_hashes.erase(it, entry_hashes.end());
   SIMPLE_CACHE_UMA(COUNTS,
-                   "Eviction.EntryCount", cache_type_, entry_hashes->size());
+                   "Eviction.EntryCount", cache_type_, entry_hashes.size());
   SIMPLE_CACHE_UMA(TIMES,
                    "Eviction.TimeToSelectEntries", cache_type_,
                    base::TimeTicks::Now() - eviction_start_time_);
@@ -327,9 +346,8 @@ void SimpleIndex::StartEvictionIfNeeded() {
                    "Eviction.SizeOfEvicted2", cache_type_,
                    evicted_so_far_size / kBytesInKb);
 
-  index_file_->DoomEntrySet(
-      entry_hashes.Pass(),
-      base::Bind(&SimpleIndex::EvictionDone, AsWeakPtr()));
+  delegate_->DoomEntries(&entry_hashes, base::Bind(&SimpleIndex::EvictionDone,
+                                                   AsWeakPtr()));
 }
 
 bool SimpleIndex::UpdateEntrySize(uint64 entry_hash, int entry_size) {
@@ -475,39 +493,6 @@ void SimpleIndex::WriteToDisk() {
 
   index_file_->WriteToDisk(entries_set_, cache_size_,
                            start, app_on_background_);
-}
-
-scoped_ptr<SimpleIndex::HashList> SimpleIndex::ExtractEntriesBetween(
-    base::Time initial_time,
-    base::Time end_time,
-    bool delete_entries) {
-  DCHECK_EQ(true, initialized_);
-
-  if (!initial_time.is_null())
-    initial_time -= EntryMetadata::GetLowerEpsilonForTimeComparisons();
-  if (end_time.is_null())
-    end_time = base::Time::Max();
-  else
-    end_time += EntryMetadata::GetUpperEpsilonForTimeComparisons();
-  const base::Time extended_end_time =
-      end_time.is_null() ? base::Time::Max() : end_time;
-  DCHECK(extended_end_time >= initial_time);
-  scoped_ptr<HashList> ret_hashes(new HashList());
-  for (EntrySet::iterator it = entries_set_.begin(), end = entries_set_.end();
-       it != end;) {
-    EntryMetadata& metadata = it->second;
-    base::Time entry_time = metadata.GetLastUsedTime();
-    if (initial_time <= entry_time && entry_time < extended_end_time) {
-      ret_hashes->push_back(it->first);
-      if (delete_entries) {
-        cache_size_ -= metadata.GetEntrySize();
-        entries_set_.erase(it++);
-        continue;
-      }
-    }
-    ++it;
-  }
-  return ret_hashes.Pass();
 }
 
 }  // namespace disk_cache

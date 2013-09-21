@@ -21,6 +21,7 @@
 #include "net/base/cache_type.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/simple/simple_entry_impl.h"
+#include "net/disk_cache/simple/simple_index_delegate.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -40,6 +41,7 @@ class SimpleEntryImpl;
 class SimpleIndex;
 
 class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
+    public SimpleIndexDelegate,
     public base::SupportsWeakPtr<SimpleBackendImpl> {
  public:
   SimpleBackendImpl(const base::FilePath& path, int max_bytes,
@@ -49,6 +51,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   virtual ~SimpleBackendImpl();
 
+  net::CacheType cache_type() const { return cache_type_; }
   SimpleIndex* index() { return index_.get(); }
 
   base::TaskRunner* worker_pool() { return worker_pool_.get(); }
@@ -76,6 +79,10 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // operations on this entry, and we can run any operations enqueued while the
   // doom completed.
   void OnDoomComplete(uint64 entry_hash);
+
+  // SimpleIndexDelegate:
+  virtual void DoomEntries(std::vector<uint64>* entry_hashes,
+                           const CompletionCallback& callback) OVERRIDE;
 
   // Backend:
   virtual net::CacheType GetCacheType() const OVERRIDE;
@@ -138,9 +145,14 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // corresponding to |hash| in the map of active entries, opens it. Otherwise,
   // a new empty Entry will be created, opened and filled with information from
   // the disk.
-  int OpenEntryFromHash(uint64 hash,
+  int OpenEntryFromHash(uint64 entry_hash,
                         Entry** entry,
                         const CompletionCallback& callback);
+
+  // Doom the entry corresponding to |entry_hash|, if it's active or currently
+  // pending doom. This function does not block if there is an active entry,
+  // which is very important to prevent races in DoomEntries() above.
+  int DoomEntryFromHash(uint64 entry_hash, const CompletionCallback & callback);
 
   // Called when the index is initilized to find the next entry in the iterator
   // |iter|. If there are no more hashes in the iterator list, net::ERR_FAILED
@@ -175,6 +187,12 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                                  Entry** entry,
                                  const CompletionCallback& callback,
                                  int error_code);
+
+  // A callback thunk used by DoomEntries to clear the |entries_pending_doom_|
+  // after a mass doom.
+  void DoomEntriesComplete(scoped_ptr<std::vector<uint64> > entry_hashes,
+                           const CompletionCallback& callback,
+                           int result);
 
   const base::FilePath path_;
   const net::CacheType cache_type_;

@@ -91,11 +91,6 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
                            const base::TimeTicks& start,
                            bool app_on_background);
 
-  // Doom the entries specified in |entry_hashes|, calling |reply_callback|
-  // with the result on the current thread when done.
-  virtual void DoomEntrySet(scoped_ptr<std::vector<uint64> > entry_hashes,
-                            const base::Callback<void(int)>& reply_callback);
-
  private:
   friend class WrappedSimpleIndexFile;
 

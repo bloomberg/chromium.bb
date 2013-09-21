@@ -401,6 +401,7 @@
         'disk_cache/simple/simple_histogram_macros.h' ,
         'disk_cache/simple/simple_index.cc',
         'disk_cache/simple/simple_index.h',
+        'disk_cache/simple/simple_index_delegate.h',
         'disk_cache/simple/simple_index_file.cc',
         'disk_cache/simple/simple_index_file.h',
         'disk_cache/simple/simple_index_file_posix.cc',

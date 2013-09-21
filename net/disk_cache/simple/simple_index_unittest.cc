@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+#include <functional>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/hash.h"
 #include "base/logging.h"
@@ -14,6 +17,7 @@
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
 #include "net/disk_cache/simple/simple_index.h"
+#include "net/disk_cache/simple/simple_index_delegate.h"
 #include "net/disk_cache/simple/simple_index_file.h"
 #include "net/disk_cache/simple/simple_test_util.h"
 #include "net/disk_cache/simple/simple_util.h"
@@ -51,7 +55,6 @@ class MockSimpleIndexFile : public SimpleIndexFile,
       : SimpleIndexFile(NULL, NULL, net::DISK_CACHE, base::FilePath()),
         load_result_(NULL),
         load_index_entries_calls_(0),
-        doom_entry_set_calls_(0),
         disk_writes_(0) {}
 
   virtual void LoadIndexEntries(
@@ -71,14 +74,6 @@ class MockSimpleIndexFile : public SimpleIndexFile,
     disk_write_entry_set_ = entry_set;
   }
 
-  virtual void DoomEntrySet(
-      scoped_ptr<std::vector<uint64> > entry_hashes,
-      const base::Callback<void(int)>& reply_callback) OVERRIDE {
-    last_doom_entry_hashes_ = *entry_hashes.get();
-    last_doom_reply_callback_ = reply_callback;
-    ++doom_entry_set_calls_;
-  }
-
   void GetAndResetDiskWriteEntrySet(SimpleIndex::EntrySet* entry_set) {
     entry_set->swap(disk_write_entry_set_);
   }
@@ -87,25 +82,20 @@ class MockSimpleIndexFile : public SimpleIndexFile,
   SimpleIndexLoadResult* load_result() const { return load_result_; }
   int load_index_entries_calls() const { return load_index_entries_calls_; }
   int disk_writes() const { return disk_writes_; }
-  const std::vector<uint64>& last_doom_entry_hashes() const {
-    return last_doom_entry_hashes_;
-  }
-  int doom_entry_set_calls() const { return doom_entry_set_calls_; }
 
  private:
   base::Closure load_callback_;
   SimpleIndexLoadResult* load_result_;
   int load_index_entries_calls_;
-  std::vector<uint64> last_doom_entry_hashes_;
-  int doom_entry_set_calls_;
-  base::Callback<void(int)> last_doom_reply_callback_;
   int disk_writes_;
   SimpleIndex::EntrySet disk_write_entry_set_;
 };
 
-class SimpleIndexTest  : public testing::Test {
+class SimpleIndexTest  : public testing::Test, public SimpleIndexDelegate {
  protected:
-  SimpleIndexTest() : hashes_(base::Bind(&HashesInitializer)) {}
+  SimpleIndexTest()
+      : hashes_(base::Bind(&HashesInitializer)),
+        doom_entries_calls_(0) {}
 
   static uint64 HashesInitializer(size_t hash_index) {
     return disk_cache::simple_util::GetEntryHashKey(
@@ -115,7 +105,7 @@ class SimpleIndexTest  : public testing::Test {
   virtual void SetUp() OVERRIDE {
     scoped_ptr<MockSimpleIndexFile> index_file(new MockSimpleIndexFile());
     index_file_ = index_file->AsWeakPtr();
-    index_.reset(new SimpleIndex(NULL, net::DISK_CACHE, base::FilePath(),
+    index_.reset(new SimpleIndex(NULL, this, net::DISK_CACHE,
                                  index_file.PassAs<SimpleIndexFile>()));
 
     index_->Initialize(base::Time());
@@ -127,6 +117,16 @@ class SimpleIndexTest  : public testing::Test {
       base::PlatformThread::YieldCurrentThread();
     } while (base::Time::Now() -
              initial_time < base::TimeDelta::FromSeconds(1));
+  }
+
+  // From SimpleIndexDelegate:
+  virtual void DoomEntries(std::vector<uint64>* entry_hashes,
+                           const net::CompletionCallback& callback) OVERRIDE {
+    std::for_each(entry_hashes->begin(), entry_hashes->end(),
+                  std::bind1st(std::mem_fun(&SimpleIndex::Remove),
+                               index_.get()));
+    last_doom_entry_hashes_ = *entry_hashes;
+    ++doom_entries_calls_;
   }
 
   // Redirect to allow single "friend" declaration in base class.
@@ -154,9 +154,18 @@ class SimpleIndexTest  : public testing::Test {
   SimpleIndex* index() { return index_.get(); }
   const MockSimpleIndexFile* index_file() const { return index_file_.get(); }
 
+  const std::vector<uint64>& last_doom_entry_hashes() const {
+    return last_doom_entry_hashes_;
+  }
+  int doom_entries_calls() const { return doom_entries_calls_; }
+
+
   const simple_util::ImmutableArray<uint64, 16> hashes_;
   scoped_ptr<SimpleIndex> index_;
   base::WeakPtr<MockSimpleIndexFile> index_file_;
+
+  std::vector<uint64> last_doom_entry_hashes_;
+  int doom_entries_calls_;
 };
 
 TEST_F(EntryMetadataTest, Basics) {
@@ -522,7 +531,7 @@ TEST_F(SimpleIndexTest, BasicEviction) {
   index()->Insert(hashes_.at<3>());
   // Confirm index is as expected: No eviction, everything there.
   EXPECT_EQ(3, index()->GetEntryCount());
-  EXPECT_EQ(0, index_file()->doom_entry_set_calls());
+  EXPECT_EQ(0, doom_entries_calls());
   EXPECT_TRUE(index()->Has(hashes_.at<1>()));
   EXPECT_TRUE(index()->Has(hashes_.at<2>()));
   EXPECT_TRUE(index()->Has(hashes_.at<3>()));
@@ -532,12 +541,12 @@ TEST_F(SimpleIndexTest, BasicEviction) {
   // as to at exactly what point we trigger eviction.  Not sure how to fix
   // that.
   index()->UpdateEntrySize(hashes_.at<3>(), 475);
-  EXPECT_EQ(1, index_file()->doom_entry_set_calls());
+  EXPECT_EQ(1, doom_entries_calls());
   EXPECT_EQ(1, index()->GetEntryCount());
   EXPECT_FALSE(index()->Has(hashes_.at<1>()));
   EXPECT_FALSE(index()->Has(hashes_.at<2>()));
   EXPECT_TRUE(index()->Has(hashes_.at<3>()));
-  ASSERT_EQ(2u, index_file_->last_doom_entry_hashes().size());
+  ASSERT_EQ(2u, last_doom_entry_hashes().size());
 }
 
 // Confirm all the operations queue a disk write at some point in the

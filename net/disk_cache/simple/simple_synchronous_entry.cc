@@ -292,16 +292,14 @@ bool SimpleSynchronousEntry::DeleteFilesForEntryHash(
 // static
 int SimpleSynchronousEntry::DoomEntry(
     const FilePath& path,
-    const std::string& key,
     uint64 entry_hash) {
-  DCHECK_EQ(entry_hash, GetEntryHashKey(key));
   const bool deleted_well = DeleteFilesForEntryHash(path, entry_hash);
   return deleted_well ? net::OK : net::ERR_FAILED;
 }
 
 // static
 int SimpleSynchronousEntry::DoomEntrySet(
-    scoped_ptr<std::vector<uint64> > key_hashes,
+    const std::vector<uint64>* key_hashes,
     const FilePath& path) {
   const size_t did_delete_count = std::count_if(
       key_hashes->begin(), key_hashes->end(), std::bind1st(

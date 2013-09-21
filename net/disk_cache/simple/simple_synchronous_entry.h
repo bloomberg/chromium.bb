@@ -117,13 +117,12 @@ class SimpleSynchronousEntry {
   // corresponding instance, if any (allowing operations to continue to be
   // executed through that instance). Returns a net error code.
   static int DoomEntry(const base::FilePath& path,
-                       const std::string& key,
                        uint64 entry_hash);
 
   // Like |DoomEntry()| above. Deletes all entries corresponding to the
   // |key_hashes|. Succeeds only when all entries are deleted. Returns a net
   // error code.
-  static int DoomEntrySet(scoped_ptr<std::vector<uint64> > key_hashes,
+  static int DoomEntrySet(const std::vector<uint64>* key_hashes,
                           const base::FilePath& path);
 
   // N.B. ReadData(), WriteData(), CheckEOFRecord() and Close() may block on IO.
