@@ -87,14 +87,14 @@ function test()
 
         setBreakpointByURL: function(url, lineNumber, columnNumber, condition, callback)
         {
+            InspectorTest.addResult("    debuggerModel.setBreakpoint(" + [url, lineNumber, condition].join(":") + ")");
+
             var breakpointId = url + ":" + lineNumber;
             if (this._breakpoints[breakpointId]) {
                 this._scheduleSetBeakpointCallback(callback, null);
                 return;
             }
-
             this._breakpoints[breakpointId] = true;
-            InspectorTest.addResult("    debuggerModel.setBreakpoint(" + [url, lineNumber, condition].join(":") + ")");
 
             var locations = [];
             var script = this._scriptForURL(url);
@@ -108,14 +108,14 @@ function test()
 
         setBreakpointByScriptLocation: function(location, condition, callback)
         {
+            InspectorTest.addResult("    debuggerModel.setBreakpoint(" + [location.scriptId, location.lineNumber, condition].join(":") + ")");
+
             var breakpointId = location.scriptId + ":" + location.lineNumber;
             if (this._breakpoints[breakpointId]) {
                 this._scheduleSetBeakpointCallback(callback, null);
                 return;
             }
-
             this._breakpoints[breakpointId] = true;
-            InspectorTest.addResult("    debuggerModel.setBreakpoint(" + [location.scriptId, location.lineNumber, condition].join(":") + ")");
 
             if (location.lineNumber >= 2000) {
                 this._scheduleSetBeakpointCallback(callback, breakpointId, []);
@@ -452,7 +452,7 @@ function test()
                 breakpointManager._debuggerModel.reset();
                 resetWorkspace(breakpointManager);
                 InspectorTest.addResult("  Resolving provisional breakpoint.");
-                addTemporaryUISourceCode(breakpointManager, "a.js")            
+                addTemporaryUISourceCode(breakpointManager, "a.js");
                 var eventData = { breakpointId: "a.js:10", location: { scriptId: "a.js", lineNumber: 11, columnNumber: 5 }};
                 breakpointManager._debuggerModel.dispatchEventToListeners(WebInspector.DebuggerModel.Events.BreakpointResolved, eventData);
                 addUISourceCode(breakpointManager, "a.js");
