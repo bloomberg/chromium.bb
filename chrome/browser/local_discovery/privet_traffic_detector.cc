@@ -29,10 +29,16 @@ PrivetTrafficDetector::PrivetTrafficDetector(
       address_family_(address_family),
       recv_addr_(new net::IPEndPoint),
       io_buffer_(
-          new net::IOBufferWithSize(net::dns_protocol::kMaxMulticastSize)) {
-  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                   base::Bind(&PrivetTrafficDetector::Start,
-                                              this));
+          new net::IOBufferWithSize(net::dns_protocol::kMaxMulticastSize)),
+      weak_ptr_factory_(this) {
+}
+
+void PrivetTrafficDetector::Start() {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&PrivetTrafficDetector::StartOnIOThread,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 PrivetTrafficDetector::~PrivetTrafficDetector() {
@@ -40,7 +46,7 @@ PrivetTrafficDetector::~PrivetTrafficDetector() {
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
-void PrivetTrafficDetector::Start() {
+void PrivetTrafficDetector::StartOnIOThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   ScheduleRestart();
@@ -56,11 +62,11 @@ void PrivetTrafficDetector::OnNetworkChanged(
 void PrivetTrafficDetector::ScheduleRestart() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   socket_.reset();
-  restart_callback_.Reset(
-      base::Bind(&PrivetTrafficDetector::Restart, base::Unretained(this)));
+  weak_ptr_factory_.InvalidateWeakPtrs();
   base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        restart_callback_.callback(),
+        base::Bind(&PrivetTrafficDetector::Restart,
+                   weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(1));
 }
 

@@ -31,6 +31,8 @@ class PrivetTrafficDetector
   PrivetTrafficDetector(net::AddressFamily address_family,
                         const base::Closure& on_traffic_detected);
 
+  void Start();
+
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::IO>;
@@ -41,7 +43,7 @@ class PrivetTrafficDetector
   virtual void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
-  void Start();
+  void StartOnIOThread();
   void ScheduleRestart();
   void Restart();
   int Bind();
@@ -53,7 +55,8 @@ class PrivetTrafficDetector
   scoped_ptr<net::IPEndPoint> recv_addr_;
   scoped_ptr<net::DatagramServerSocket> socket_;
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
-  base::CancelableClosure restart_callback_;
+
+  base::WeakPtrFactory<PrivetTrafficDetector> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrivetTrafficDetector);
 };

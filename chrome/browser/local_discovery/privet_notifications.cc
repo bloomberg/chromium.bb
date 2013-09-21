@@ -256,6 +256,8 @@ void PrivetNotificationService::Start() {
       new PrivetTrafficDetector(
           net::ADDRESS_FAMILY_IPV6,
           base::Bind(&PrivetNotificationService::StartLister, AsWeakPtr()));
+  traffic_detector_v4_->Start();
+  traffic_detector_v6_->Start();
 }
 
 void PrivetNotificationService::StartLister() {
