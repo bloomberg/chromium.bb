@@ -13,6 +13,8 @@
 #include <ppapi/c/ppb_net_address.h>
 
 #include "nacl_io/mount.h"
+#include "nacl_io/mount_node.h"
+#include "nacl_io/mount_node_stream.h"
 #include "nacl_io/pepper_interface.h"
 
 namespace nacl_io {
@@ -21,9 +23,9 @@ namespace nacl_io {
  * should be looping on Send/Recv size. */
 static const size_t MAX_SOCK_TRANSFER = 65536;
 
-class MountSocket;
+class MountStream;
 
-class MountNodeSocket : public MountNode {
+class MountNodeSocket : public MountNodeStream {
  public:
   explicit MountNodeSocket(Mount* mount);
 
@@ -32,8 +34,6 @@ class MountNodeSocket : public MountNode {
   virtual Error Init(int flags) = 0;
 
  public:
-  virtual uint32_t GetEventStatus();
-
   // Normal read/write operations on a file (recv/send).
   virtual Error Read(size_t offs, void* buf, size_t count, int* out_bytes);
   virtual Error Write(size_t offs,
@@ -57,7 +57,7 @@ class MountNodeSocket : public MountNode {
                      size_t offset,
                      void** out_addr);
 
-  // Normal Functions.
+  // Socket Functions.
   virtual Error Bind(const struct sockaddr* addr, socklen_t len);
   virtual Error Connect(const struct sockaddr* addr, socklen_t len);
   virtual Error Recv(void* buf, size_t len, int flags, int* out_len);
@@ -79,8 +79,44 @@ class MountNodeSocket : public MountNode {
   virtual Error GetPeerName(struct sockaddr* addr, socklen_t* len);
   virtual Error GetSockName(struct sockaddr* addr, socklen_t* len);
 
+  PP_Resource socket_resource() { return socket_resource_; }
+
+  // Updates socket's state, recording last error.
+  void SetError_Locked(int pp_error_num);
+
  protected:
-  NetAddressInterface* NetAddress();
+
+  // Wraps common error checks, timeouts, work pump for send.
+  Error SendHelper(const void* buf,
+                   size_t len,
+                   int flags,
+                   PP_Resource addr,
+                   int* out_len);
+
+  // Wraps common error checks, timeouts, work pump for recv.
+  Error RecvHelper(void* buf,
+                   size_t len,
+                   int flags,
+                   PP_Resource* addr,
+                   int* out_len);
+
+
+  // Per socket type send and recv
+  virtual Error Recv_Locked(void* buffer,
+                            size_t len,
+                            PP_Resource* out_addr,
+                            int* out_len) = 0;
+
+  virtual Error Send_Locked(const void* buffer,
+                            size_t len,
+                            PP_Resource addr,
+                            int* out_len) = 0;
+
+
+  NetAddressInterface* NetInterface();
+  TCPSocketInterface* TCPInterface();
+  UDPSocketInterface* UDPInterface();
+
   PP_Resource SockAddrToResource(const struct sockaddr* addr, socklen_t len);
   socklen_t ResourceToSockAddr(PP_Resource addr,
                                socklen_t len,
@@ -92,9 +128,11 @@ class MountNodeSocket : public MountNode {
   PP_Resource socket_resource_;
   PP_Resource local_addr_;
   PP_Resource remote_addr_;
+  uint32_t socket_flags_;
+  int last_errno_;
 
   friend class KernelProxy;
-  friend class MountSocket;
+  friend class MountStream;
 };
 
 

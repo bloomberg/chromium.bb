@@ -252,6 +252,13 @@ TEST_F(KernelWrapTest, open) {
   open("open", 3456);
 }
 
+TEST_F(KernelWrapTest, pipe) {
+  int fds[2] = { 1, 2 };
+
+  EXPECT_CALL(mock, pipe(fds)).Times(1);
+  pipe(fds);
+}
+
 TEST_F(KernelWrapTest, read) {
   EXPECT_CALL(mock, read(4567, NULL, 5678)).Times(1);
   read(4567, NULL, 5678);

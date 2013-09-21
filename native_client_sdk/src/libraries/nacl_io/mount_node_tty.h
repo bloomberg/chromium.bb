@@ -20,7 +20,8 @@ namespace nacl_io {
 class MountNodeTty : public MountNodeCharDevice {
  public:
   explicit MountNodeTty(Mount* mount);
-  ~MountNodeTty();
+
+  virtual EventEmitter* GetEventEmitter();
 
   virtual Error Ioctl(int request,
                       char* arg);
@@ -39,21 +40,14 @@ class MountNodeTty : public MountNodeCharDevice {
   virtual Error Tcsetattr(int optional_actions,
                           const struct termios *termios_p);
 
-  virtual uint32_t GetEventStatus() {
-    uint32_t status = POLLOUT;
-    if (is_readable_)
-      status |= POLLIN;
-    return status;
-  }
-
  private:
+  ScopedEventEmitter emitter_;
+
   Error ProcessInput(struct tioc_nacl_input_string* message);
   Error Echo(const char* string, int count);
   void InitTermios();
 
   std::deque<char> input_buffer_;
-  bool is_readable_;
-  pthread_cond_t is_readable_cond_;
   struct termios termios_;
 
   /// Current height of terminal in rows.  Set via ioctl(2).

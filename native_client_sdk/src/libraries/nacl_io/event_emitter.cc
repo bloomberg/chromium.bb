@@ -3,57 +3,57 @@
  * found in the LICENSE file.
  */
 #include <assert.h>
+#include <poll.h>
 
 #include "nacl_io/event_emitter.h"
 #include "nacl_io/event_listener.h"
+#include "nacl_io/fifo_interface.h"
 
 #include "sdk_util/auto_lock.h"
 
 namespace nacl_io {
 
-bool operator<(const ScopedEventInfo& src_a, const ScopedEventInfo& src_b) {
+bool operator<(const ScopedEventEmitter& src_a,
+               const ScopedEventEmitter& src_b) {
   return src_a.get() < src_b.get();
 }
 
-void EventEmitter::Destroy() {
-  // We can not grab the EmitterLock prior to grabbing the EventListener lock,
-  // however the ref count proves this is the only thread which has a
-  // reference to the emitter at this point so accessing events_ is safe.
-  EventInfoSet_t::iterator it;
-  for (it = events_.begin(); it != events_.end(); it++) {
-    ScopedEventInfo info = *it;
-    info->listener->AbandonedEventInfo(info);
+EventEmitter::EventEmitter() : event_status_(0) {}
+
+void EventEmitter::RegisterListener(EventListener* listener, uint32_t events) {
+  AUTO_LOCK(emitter_lock_);
+  RegisterListener_Locked(listener, events);
+}
+
+void EventEmitter::UnregisterListener(EventListener* listener) {
+  AUTO_LOCK(emitter_lock_);
+  UnregisterListener_Locked(listener);
+}
+
+void EventEmitter::RegisterListener_Locked(EventListener* listener,
+                                           uint32_t events) {
+  assert(listeners_.count(listener) == 0);
+  listeners_[listener] = events;
+}
+
+void EventEmitter::UnregisterListener_Locked(EventListener* listener) {
+  assert(listeners_.count(listener) == 1);
+  listeners_.erase(listener);
+}
+
+void EventEmitter::ClearEvents_Locked(uint32_t event_bits) {
+  event_status_ &= ~event_bits;
+}
+
+void EventEmitter::RaiseEvents_Locked(uint32_t event_bits) {
+  event_status_ |= event_bits;
+
+  EventListenerMap_t::iterator it;
+  for (it = listeners_.begin(); it != listeners_.end(); it++) {
+    uint32_t bits = it->second & event_bits;
+    if (0 != bits)
+      it->first->ReceiveEvents(this, bits);
   }
 }
-
-void EventEmitter::RegisterEventInfo(const ScopedEventInfo& info) {
-  AUTO_LOCK(emitter_lock_);
-
-  events_.insert(info);
-  ChainRegisterEventInfo(info);
-}
-
-void EventEmitter::UnregisterEventInfo(const ScopedEventInfo& info) {
-  AUTO_LOCK(emitter_lock_);
-
-  ChainUnregisterEventInfo(info);
-  events_.erase(info);
-}
-void EventEmitter::RaiseEvent(uint32_t event_bits) {
-  AUTO_LOCK(emitter_lock_);
-
-  EventInfoSet_t::iterator it;
-  for (it = events_.begin(); it != events_.end(); it++) {
-    // If this event is allowed by the filter, signal it
-    ScopedEventInfo info = *it;
-    if (info->filter & event_bits) {
-      info->events |= event_bits & info->filter;
-      info->listener->Signal(info);
-    }
-  }
-}
-
-void EventEmitter::ChainRegisterEventInfo(const ScopedEventInfo& info) {}
-void EventEmitter::ChainUnregisterEventInfo(const ScopedEventInfo& info) {}
 
 }  // namespace nacl_io

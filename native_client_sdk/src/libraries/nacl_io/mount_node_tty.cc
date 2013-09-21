@@ -32,13 +32,16 @@
 
 namespace nacl_io {
 
-MountNodeTty::MountNodeTty(Mount* mount) : MountNodeCharDevice(mount),
-                                           is_readable_(false),
-                                           rows_(DEFAULT_TTY_ROWS),
-                                           cols_(DEFAULT_TTY_COLS) {
+MountNodeTty::MountNodeTty(Mount* mount)
+    : MountNodeCharDevice(mount),
+      emitter_(new EventEmitter),
+      rows_(DEFAULT_TTY_ROWS),
+      cols_(DEFAULT_TTY_COLS) {
   output_handler_.handler = NULL;
-  pthread_cond_init(&is_readable_cond_, NULL);
   InitTermios();
+
+  // Output will never block
+  emitter_->RaiseEvents_Locked(POLLOUT);
 }
 
 void MountNodeTty::InitTermios() {
@@ -69,14 +72,15 @@ void MountNodeTty::InitTermios() {
   termios_.c_cc[VEOL2] = 0;
 }
 
-MountNodeTty::~MountNodeTty() {
-  pthread_cond_destroy(&is_readable_cond_);
+EventEmitter* MountNodeTty::GetEventEmitter() {
+  return emitter_.get();
 }
 
 Error MountNodeTty::Write(size_t offs,
                      const void* buf,
                      size_t count,
                      int* out_bytes) {
+
   AUTO_LOCK(output_lock_);
   *out_bytes = 0;
 
@@ -97,14 +101,17 @@ Error MountNodeTty::Write(size_t offs,
   return 0;
 }
 
+
 Error MountNodeTty::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
-  AUTO_LOCK(node_lock_);
-  while (!is_readable_) {
-    pthread_cond_wait(&is_readable_cond_, node_lock_.mutex());
-  }
+  EventListenerLock wait(GetEventEmitter());
+  *out_bytes = 0;
+
+  // If interrupted, return
+  Error err = wait.WaitOnEvent(POLLIN, -1);
+  if (err != 0)
+    return err;
 
   size_t bytes_to_copy = std::min(count, input_buffer_.size());
-
   if (IS_ICANON) {
     // Only read up to (and including) the first newline
     std::deque<char>::iterator nl = std::find(input_buffer_.begin(),
@@ -129,12 +136,15 @@ Error MountNodeTty::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
   // mark input as no longer readable if we consumed
   // the entire buffer or, in the case of buffered input,
   // we consumed the final \n char.
+  bool avail;
   if (IS_ICANON)
-    is_readable_ =
-        std::find(input_buffer_.begin(),
-                  input_buffer_.end(), '\n') != input_buffer_.end();
+    avail = std::find(input_buffer_.begin(),
+                      input_buffer_.end(), '\n') != input_buffer_.end();
   else
-    is_readable_ = input_buffer_.size() > 0;
+    avail = input_buffer_.size() > 0;
+
+  if (!avail)
+    emitter_->ClearEvents_Locked(POLLIN);
 
   return 0;
 }
@@ -152,7 +162,7 @@ Error MountNodeTty::Echo(const char* string, int count) {
 }
 
 Error MountNodeTty::ProcessInput(struct tioc_nacl_input_string* message) {
-  AUTO_LOCK(node_lock_);
+  AUTO_LOCK(emitter_->GetLock())
 
   const char* buffer = message->buffer;
   size_t num_bytes = message->length;
@@ -212,12 +222,7 @@ Error MountNodeTty::ProcessInput(struct tioc_nacl_input_string* message) {
       input_buffer_.push_back(c);
 
     if (c == '\n' || c == termios_.c_cc[VEOF] || !IS_ICANON)
-      is_readable_ = true;
-  }
-
-  if (is_readable_) {
-    RaiseEvent(POLLIN);
-    pthread_cond_broadcast(&is_readable_cond_);
+      emitter_->RaiseEvents_Locked(POLLIN);
   }
 
   return 0;
@@ -251,6 +256,13 @@ Error MountNodeTty::Ioctl(int request, char* arg) {
         cols_ = size->ws_col;
       }
       kill(getpid(), SIGWINCH);
+      {
+        // Wake up any thread waiting on Read with POLLERR then immediate
+        // clear it to signal EINTR.
+        AUTO_LOCK(emitter_->GetLock())
+        emitter_->RaiseEvents_Locked(POLLERR);
+        emitter_->ClearEvents_Locked(POLLERR);
+      }
       return 0;
     }
     case TIOCGWINSZ: {

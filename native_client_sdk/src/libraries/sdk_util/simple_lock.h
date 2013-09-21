@@ -26,6 +26,9 @@ class SimpleLock {
     pthread_mutex_destroy(&lock_);
   }
 
+  void Lock() const   { pthread_mutex_lock(&lock_); }
+  void Unlock() const { pthread_mutex_unlock(&lock_); }
+
   pthread_mutex_t* mutex() const { return &lock_; }
 
  private:

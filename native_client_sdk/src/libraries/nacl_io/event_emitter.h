@@ -12,42 +12,22 @@
 
 #include "nacl_io/error.h"
 
+#include "sdk_util/macros.h"
 #include "sdk_util/ref_object.h"
 #include "sdk_util/scoped_ref.h"
 #include "sdk_util/simple_lock.h"
-
 
 namespace nacl_io {
 
 class EventEmitter;
 class EventListener;
 
-// A ref counted object (non POD derived from RefObject) for storing the
-// state of a single signal request.  Requests are unique to any
-// FD/EventListener pair.
-struct EventInfo : public sdk_util::RefObject {
-  // User provied data to be returned on EventListener::Wait
-  uint64_t user_data;
 
-  // Bitfield of POLL events currently signaled.
-  uint32_t events;
+typedef sdk_util::ScopedRef<EventEmitter> ScopedEventEmitter;
+typedef std::map<EventListener*, uint32_t> EventListenerMap_t;
 
-  // Bitfield of POLL events of interest.
-  uint32_t filter;
-
-  // We do not use a ScopedRef to prevent circular references.
-  EventEmitter* emitter;
-  EventListener* listener;
-  uint32_t id;
-};
-
-typedef sdk_util::ScopedRef<EventInfo> ScopedEventInfo;
-
-// Provide comparison for std::map and std::set
-bool operator<(const ScopedEventInfo& src_a, const ScopedEventInfo& src_b);
-
-typedef std::map<int, ScopedEventInfo> EventInfoMap_t;
-typedef std::set<ScopedEventInfo> EventInfoSet_t;
+bool operator<(const ScopedEventEmitter& src_a,
+               const ScopedEventEmitter& src_b);
 
 // EventEmitter
 //
@@ -56,46 +36,39 @@ typedef std::set<ScopedEventInfo> EventInfoSet_t;
 // whenever thier state is changed.
 //
 // See "Kernel Events" in event_listener.h for additional information.
-class EventEmitter : public sdk_util::RefObject {
- protected:
-  // Called automatically prior to delete to inform the EventListeners that
-  // this EventEmitter is abandoning an associated EventInfo.
-  virtual void Destroy();
 
- private:
+class EventEmitter : public sdk_util::RefObject {
+ public:
+  EventEmitter();
+
+  // This returns a snapshot, to ensure the status doesn't change from
+  // fetch to use, hold the lock.
+  uint32_t GetEventStatus() { return event_status_; }
+
+  sdk_util::SimpleLock& GetLock() { return emitter_lock_; }
+
+  // Updates the specified bits in the event status, and signals any
+  // listeners waiting on those bits.
+  void RaiseEvents_Locked(uint32_t events);
+
+  // Clears the specified bits in the event status.
+  void ClearEvents_Locked(uint32_t events);
+
   // Register or unregister an EventInfo.  The lock of the EventListener
   // associated with this EventInfo must be held prior to calling these
   // functions.  These functions are private to ensure they are called by the
   // EventListener.
-  void RegisterEventInfo(const ScopedEventInfo& info);
-  void UnregisterEventInfo(const ScopedEventInfo& info);
+  void RegisterListener(EventListener* listener, uint32_t events);
+  void UnregisterListener(EventListener* listener);
+  void RegisterListener_Locked(EventListener* listener, uint32_t events);
+  void UnregisterListener_Locked(EventListener* listener);
 
- public:
-  // Returns the current state of the emitter as POLL events bitfield.
-  virtual uint32_t GetEventStatus() = 0;
-
-  // Returns the type of the emitter (compatible with st_mode in stat)
-  virtual int GetType() = 0;
-
- protected:
-  // Called by the thread causing the Event.
-  void RaiseEvent(uint32_t events);
-
-  // Provided to allow one EventEmitter to register the same EventInfo with
-  // a child EventEmitter so that they can both signal the EventListener.
-  // Called after registering locally, but while lock is still held.
-  virtual void ChainRegisterEventInfo(const ScopedEventInfo& event);
-
-  // Called before unregistering locally, but while lock is still held.
-  virtual void ChainUnregisterEventInfo(const ScopedEventInfo& event);
-
-private:
+ private:
+  uint32_t event_status_;
   sdk_util::SimpleLock emitter_lock_;
-  EventInfoSet_t events_;
-  friend class EventListener;
+  EventListenerMap_t listeners_;
+  DISALLOW_COPY_AND_ASSIGN(EventEmitter);
 };
-
-typedef sdk_util::ScopedRef<EventEmitter> ScopedEventEmitter;
 
 }  // namespace nacl_io
 

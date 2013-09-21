@@ -126,6 +126,14 @@ TEST_F(TtyTest, TtyOutput) {
   EXPECT_EQ(0, strncmp(user_data.output_buf, message, message_len));
 }
 
+static int TtyWrite(int fd, const char* string) {
+  struct tioc_nacl_input_string input;
+  input.buffer =string;
+  input.length = strlen(input.buffer);
+  char* ioctl_arg = reinterpret_cast<char*>(&input);
+  return ki_ioctl(fd, TIOCNACLINPUT, ioctl_arg);
+}
+
 // Returns:
 //   0 -> Not readable
 //   1 -> Readable
@@ -144,9 +152,9 @@ static int IsReadable(int fd) {
   if (rtn != 1)
     return -1; // error
   if (FD_ISSET(fd, &errorfds))
-    return -1; // error
+    return -2; // error
   if (!FD_ISSET(fd, &readfds))
-    return -1; // error
+    return -3; // error
   return 1; // readable
 }
 
@@ -186,23 +194,43 @@ TEST_F(TtyTest, TtySelect) {
   ASSERT_FALSE(FD_ISSET(tty_fd, &errorfds));
 
   // Send 4 bytes to TTY input
-  struct tioc_nacl_input_string input;
-  input.buffer = "input:test";
-  input.length = strlen(input.buffer);
-  char* ioctl_arg = reinterpret_cast<char*>(&input);
-  ASSERT_EQ(0, ki_ioctl(tty_fd, TIOCNACLINPUT, ioctl_arg));
+  ASSERT_EQ(0, TtyWrite(tty_fd, "input:test"));
 
   // TTY should not be readable until newline in written
   ASSERT_EQ(IsReadable(tty_fd), 0);
-
-  input.buffer = "input:\n";
-  input.length = strlen(input.buffer);
-  ASSERT_EQ(0, ki_ioctl(tty_fd, TIOCNACLINPUT, ioctl_arg));
+  ASSERT_EQ(0, TtyWrite(tty_fd, "input:\n"));
 
   // TTY should now be readable
   ASSERT_EQ(IsReadable(tty_fd), 1);
 
   ki_close(tty_fd);
+}
+
+TEST_F(TtyTest, TtyICANON) {
+  int tty_fd = ki_open("/dev/tty", O_RDONLY);
+
+  ASSERT_EQ(IsReadable(tty_fd), 0);
+
+  struct termios tattr;
+  tcgetattr(tty_fd, &tattr);
+  tattr.c_lflag &= ~(ICANON|ECHO); /* Clear ICANON and ECHO. */
+  tcsetattr(tty_fd, TCSAFLUSH, &tattr);
+
+  ASSERT_EQ(IsReadable(tty_fd), 0);
+
+  // Set some bytes to the TTY, not including newline
+  ASSERT_EQ(0, TtyWrite(tty_fd, "a"));
+
+  // Since we are not in canonical mode the bytes should be
+  // immediately readable.
+  ASSERT_EQ(IsReadable(tty_fd), 1);
+
+  // Read byte from tty.
+  char c;
+  ASSERT_EQ(1, read(tty_fd, &c, 1));
+  ASSERT_EQ('a', c);
+
+  ASSERT_EQ(IsReadable(tty_fd), 0);
 }
 
 int g_recieved_signal = 0;
@@ -244,6 +272,88 @@ TEST_F(TtyTest, WindowSize) {
   // Restore original windows size.
   EXPECT_EQ(0, dev_tty_->Ioctl(TIOCSWINSZ,
                                reinterpret_cast<char*>(&old_winsize)));
+}
+
+/*
+ * Sleep for 50ms then send a resize event to /dev/tty.
+ */
+static void* resize_thread_main(void* arg) {
+  usleep(50 * 1000);
+
+  int* tty_fd = static_cast<int*>(arg);
+  struct winsize winsize;
+  winsize.ws_col = 100;
+  winsize.ws_row = 200;
+  ki_ioctl(*tty_fd, TIOCSWINSZ, reinterpret_cast<char*>(&winsize));
+  return NULL;
+}
+
+TEST_F(TtyTest, ResizeDuringSelect) {
+  // Test that a window resize during a call
+  // to select(3) will cause it to fail with EINTR.
+  int tty_fd = ki_open("/dev/tty", O_RDONLY);
+
+  fd_set readfds;
+  fd_set errorfds;
+  FD_ZERO(&readfds);
+  FD_ZERO(&errorfds);
+  FD_SET(tty_fd, &readfds);
+  FD_SET(tty_fd, &errorfds);
+
+  pthread_t resize_thread;
+  pthread_create(&resize_thread, NULL, resize_thread_main,
+                 &tty_fd);
+
+  struct timeval timeout;
+  timeout.tv_sec = 20;
+  timeout.tv_usec = 0;
+
+  // TTY should not be readable either before or after the
+  // call to select(3).
+  ASSERT_EQ(IsReadable(tty_fd), 0);
+
+  int rtn = ki_select(tty_fd + 1, &readfds, NULL, &errorfds, &timeout);
+  pthread_join(resize_thread, NULL);
+  ASSERT_EQ(-1, rtn);
+  ASSERT_EQ(EINTR, errno);
+  ASSERT_EQ(IsReadable(tty_fd), 0);
+}
+
+/*
+ * Sleep for 50ms then send some input to the /dev/tty.
+ */
+static void* input_thread_main(void* arg) {
+  usleep(50 * 1000);
+
+  int fd = ki_open("/dev/tty", O_RDONLY);
+  TtyWrite(fd, "test\n");
+  return NULL;
+}
+
+TEST_F(TtyTest, InputDuringSelect) {
+  // Test that input which occurs while in select causes
+  // select to return.
+  int tty_fd = ki_open("/dev/tty", O_RDONLY);
+
+  fd_set readfds;
+  fd_set errorfds;
+  FD_ZERO(&readfds);
+  FD_ZERO(&errorfds);
+  FD_SET(tty_fd, &readfds);
+  FD_SET(tty_fd, &errorfds);
+
+  pthread_t resize_thread;
+  pthread_create(&resize_thread, NULL, input_thread_main,
+                 &dev_tty_);
+
+  struct timeval timeout;
+  timeout.tv_sec = 20;
+  timeout.tv_usec = 0;
+
+  int rtn = ki_select(tty_fd + 1, &readfds, NULL, &errorfds, &timeout);
+  pthread_join(resize_thread, NULL);
+
+  ASSERT_EQ(1, rtn);
 }
 
 }

@@ -8,10 +8,11 @@
 #include <map>
 #include <string>
 
+#include "nacl_io/event_emitter.h"
 #include "nacl_io/host_resolver.h"
 #include "nacl_io/kernel_object.h"
 #include "nacl_io/mount_factory.h"
-#include "nacl_io/mount_socket.h"
+#include "nacl_io/mount_stream.h"
 #include "nacl_io/ossignal.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/ostypes.h"
@@ -22,9 +23,7 @@ struct timeval;
 namespace nacl_io {
 
 class PepperInterface;
-class SignalEmitter;
 
-typedef sdk_util::ScopedRef<SignalEmitter> ScopedSignalEmitter;
 
 // KernelProxy provide one-to-one mapping for libc kernel calls.  Calls to the
 // proxy will result in IO access to the provided Mount and MountNode objects.
@@ -49,6 +48,8 @@ class KernelProxy : protected KernelObject {
   // Takes ownership of |ppapi|.
   // |ppapi| may be NULL. If so, no mount that uses pepper calls can be mounted.
   virtual Error Init(PepperInterface* ppapi);
+
+  virtual int pipe(int pipefds[2]);
 
   // NaCl-only function to read resources specified in the NMF file.
   virtual int open_resource(const char* file);
@@ -182,7 +183,7 @@ class KernelProxy : protected KernelObject {
 
  protected:
   MountFactoryMap_t factories_;
-  sdk_util::ScopedRef<MountSocket> socket_mount_;
+  sdk_util::ScopedRef<MountStream> stream_mount_;
   int dev_;
   PepperInterface* ppapi_;
   static KernelProxy *s_instance_;
@@ -195,7 +196,7 @@ class KernelProxy : protected KernelObject {
   virtual int AcquireSocketHandle(int fd, ScopedKernelHandle* handle);
 #endif
 
-  ScopedSignalEmitter signal_emitter_;
+  ScopedEventEmitter signal_emitter_;
   DISALLOW_COPY_AND_ASSIGN(KernelProxy);
 };
 

@@ -16,6 +16,7 @@
         'fake_resource_manager.h',
         'fake_var_interface.cc',
         'fake_var_interface.h',
+        'fifo_test.cc',
         'kernel_object_test.cc',
         'kernel_proxy_mock.cc',
         'kernel_proxy_mock.h',

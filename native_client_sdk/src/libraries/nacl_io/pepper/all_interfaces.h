@@ -65,6 +65,18 @@ BEGIN_INTERFACE(FileSystemInterface, PPB_FileSystem,
           PP_CompletionCallback)
 END_INTERFACE(FileSystemInterface, PPB_FileSystem)
 
+BEGIN_INTERFACE(MessageLoopInterface, PPB_MessageLoop,
+                PPB_MESSAGELOOP_INTERFACE_1_0)
+  METHOD1(MessageLoopInterface, PP_Resource, Create, PP_Instance)
+  METHOD1(MessageLoopInterface, int32_t, AttachToCurrentThread, PP_Resource)
+  METHOD1(MessageLoopInterface, int32_t, Run, PP_Resource)
+  METHOD3(MessageLoopInterface, int32_t, PostWork, PP_Resource,
+          struct PP_CompletionCallback, int64_t)
+  METHOD2(MessageLoopInterface, int32_t, PostQuit, PP_Resource, PP_Bool)
+  METHOD0(MessageLoopInterface, PP_Resource, GetCurrent)
+  METHOD0(MessageLoopInterface, PP_Resource, GetForMainThread)
+END_INTERFACE(MessageLoopInterface, PPB_MessageLoop)
+
 BEGIN_INTERFACE(MessagingInterface, PPB_Messaging, PPB_MESSAGING_INTERFACE_1_0)
   METHOD2(MessagingInterface, void, PostMessage, PP_Instance, PP_Var)
 END_INTERFACE(MessagingInterface, PPB_Messaging)

@@ -15,6 +15,8 @@
 #include "nacl_io/error.h"
 #include "nacl_io/event_emitter.h"
 
+#include "sdk_util/auto_lock.h"
+#include "sdk_util/macros.h"
 #include "sdk_util/scoped_ref.h"
 
 // Kernel Events
@@ -24,43 +26,43 @@
 // down.  EventListener provides a mechanism for a thread to wait on
 // specific events from these objects which are derived from EventEmitters.
 //
-// EventEmitter and EventListener together provide support for an "epoll"
-// like interface.  See:
-//     http://man7.org/linux/man-pages/man7/epoll.7.html
+// Calling RegisterListener_Locked on an event emitter, will cause all
+// Listeners matching the event mask are signaled so they may try to make
+// progress.  In the case of "select" or "poll", multiple threads could be
+// notified that one or more emitters are signaled and allowed to make
+// progress.  In the case of "read" or "write", only one thread at a time
+// should make progress, to ensure that if one thread consumes the signal,
+// the other can correctly timeout.
 //
-// Such that we map the arguments at behavior of
-//     epoll_wait maps to Wait, and
-//     epoll_ctl maps to Track, Update, Free.
+// Events Listeners requirements:
+//   1- Must reference counting Emitters to ensure they are not destroyed
+//      while waiting for a signal.
+//   2- Must unregister themselves from all emitters prior to being destoryed.
+//   3- Must never be shared between threads since interals may not be locked
+//      to prevent dead-locks with emitter signals.
+//   4- Must never lock themselves before locking an emitter to prevent
+//      dead-locks
 //
-//  Behavior of EventListeners
-//    FDs are automatically removed when closed.
-//    KE_SHUTDOWN can not be masked.
-//    KE_SHUTDOWN is only seen if the hangup happens after Wait starts.
-//    Dup'd FDs get their own event info which must also get signaled.
-//    Adding a non streaming FD will fail.
-//    EventEmitters can also be waited on.
-//    It is illegal for an a EventListener to add itself.
+// There are two types of listeners, EventListenerSingle and EventListenerGroup
+// For Single listeners, all listeners are unblocked by the Emitter, but
+// they individually take the emitters lock and test against the current
+// status to ensure another listener didn't consume the signal.
 //
 //  Locking:
-//    EventListener::{Track/Update/Free}
-//      AUTO_LOCK(EventListener::info_lock_)
-//       EventEmitter::RegisterEventInfo
-//         AUTO_LOCK(EventEmitter::emitter_lock_)
+//    EventEmitter::<Backgroun IO>
+//      *LOCK* EventEmitter::emitter_lock_
+//        EventEmitter::RaiseEvent_Locked
+//          EventListenerSingle::ReceiveEvents
+//            <no locking, using emitter's lock>
+//        EventListenerGroup::ReceiveEvents
+//          *LOCK*  EventListenerGroup::signal_lock_
 //
-//    EventEmitter::Destroy
-//      EventListener::AbandonedEventInfo
-//        AUTO_LOCK(EventListener::info_lock_)
+//    EventListenerSingle::WaitOnLock
+//      *LOCK* EventEmitter::emitter_lock_
 //
-//    EventListener::RaiseEvent
-//      AUTO_LOCK(EventEmitter::emitter_lock_)
-//        EventListener::Signal
-//          AUTO_LOCK(EventListener::signal_lock_)
+//    EventListenerGroup::WaitOnAny
+//      *LOCK* EventListenerGroup::signal_lock_
 //
-//    EventListener::Wait
-//      AUTO_LOCK(EventListener::info_lock_)
-//        ...
-//      AUTO_LOCK(EventListener::signal_lock_)
-//        ...
 
 namespace nacl_io {
 
@@ -70,73 +72,94 @@ struct EventData {
   uint64_t user_data;
 };
 
+struct EventRequest {
+  ScopedEventEmitter emitter;
+  uint32_t filter;
+  uint32_t events;
+};
+
+
+class EventListener;
+class EventListenerGroup;
+class EventListenerSingle;
+
+typedef std::map<EventEmitter*, EventRequest*> EmitterRequestMap_t;
 
 // EventListener
 //
 // The EventListener class provides an object to wait on for specific events
 // from EventEmitter objects.  The EventListener becomes signalled for
 // read when events are waiting, making it is also an Emitter.
-class EventListener : public EventEmitter {
+class EventListener {
  public:
-   EventListener();
-   ~EventListener();
+  EventListener();
+  ~EventListener();
+
+  // Called by EventEmitter to signal the Listener that a new event is
+  // available.
+  virtual void ReceiveEvents(EventEmitter* emitter, uint32_t events) = 0;
 
  protected:
-  // Called prior to free to unregister all EventInfos from the EventEmitters.
-  void Destroy();
-
- public:
-   // Declared in EventEmitter
-   virtual uint32_t GetEventStatus();
-   virtual int GetType();
-
-   // Called by EventEmitter to signal the Listener that a new event is
-   // available.
-   void Signal(const ScopedEventInfo& info);
-
-   // Wait for one or more previously Tracked events to take place
-   // or until ms_timeout expires, and fills |events| up to |max| limit.
-   // The number of events recored is returned in |count|.
-   Error Wait(EventData* events, int max, int ms_timeout, int* out_count);
-
-   // Tracks a new set of POLL events for a given unique |id|.  The
-   // |user_data| will be returned in the Wait when an event of type |filter|
-   // is received with that |id|.
-   Error Track(int id,
-               const ScopedEventEmitter& emitter,
-               uint32_t filter,
-               uint64_t user_data);
-
-   // Updates the tracking of events for |id|, replacing the |user_data|
-   // that's returned, as well as which events will signal.
-   Error Update(int id, uint32_t filter, uint64_t user_data);
-
-   // Unregisters the existing |id|.
-   Error Free(int id);
-
-   // Notification by EventEmitter that it is abandoning the event.  Do not
-   // access the emitter after this.
-   void AbandonedEventInfo(const ScopedEventInfo& event);
-
- private:
-  // Protects the data in the EventInfo map.
-  sdk_util::SimpleLock info_lock_;
-
-  // Map from ID to live a event info.
-  EventInfoMap_t event_info_map_;
-
-  // Protects waiting_, signaled_ and used with the signal_cond_.
-  sdk_util::SimpleLock signal_lock_;
   pthread_cond_t signal_cond_;
-
-  // The number of threads currently waiting on this Listener.
-  uint32_t waiting_;
-
-  // Set of event infos signaled during a wait.
-  EventInfoSet_t signaled_;
+  DISALLOW_COPY_AND_ASSIGN(EventListener);
 };
 
-typedef sdk_util::ScopedRef<EventListener> ScopedEventListener;
+
+// EventListenerLock
+//
+// On construction, references and locks the emitter.  WaitOnEvent will
+// temporarily unlock waiting for any event in |events| to become signaled.
+// The functione exits with the lock taken.  The destructor will automatically
+// unlock the emitter.
+class EventListenerLock : public EventListener {
+ public:
+  explicit EventListenerLock(EventEmitter* emitter);
+  ~EventListenerLock();
+
+  // Called by EventEmitter to signal the Listener that a new event is
+  // available.
+  virtual void ReceiveEvents(EventEmitter* emitter, uint32_t events);
+
+  // Called with the emitters lock held (which happens in the constructor).
+  // Waits in a condvar until one of the events in |events| is raised or
+  // or the timeout expired.  Returns with the emitter lock held, which
+  // will be release when the destructor is called.
+  //
+  // On Error:
+  //   ETIMEOUT if the timeout is exceeded.
+  //   EINTR if the wait was interrupted.
+  Error WaitOnEvent(uint32_t events, int ms_max);
+
+private:
+  EventEmitter* emitter_;
+  sdk_util::AutoLock* lock_;
+  uint32_t events_;
+  DISALLOW_COPY_AND_ASSIGN(EventListenerLock);
+};
+
+
+class EventListenerPoll : public EventListener {
+ public:
+  EventListenerPoll() : EventListener(), signaled_(0) {}
+
+  // Called by EventEmitter to signal the Listener that a new event is
+  // available.
+  virtual void ReceiveEvents(EventEmitter* emitter, uint32_t events);
+
+  // Wait for the any requested emitter/filter pairs to emit one of the
+  // events in the matching filter.  Returns 0 on success.
+  //
+  // On Error:
+  //   ETIMEOUT if the timeout is exceeded.
+  //   EINTR if the wait was interrupted.
+  Error WaitOnAny(EventRequest* requests, size_t cnt, int ms_max);
+
+ private:
+  sdk_util::SimpleLock signal_lock_;
+  EmitterRequestMap_t emitters_;
+  size_t signaled_;
+  DISALLOW_COPY_AND_ASSIGN(EventListenerPoll);
+};
 
 }  // namespace nacl_io
 

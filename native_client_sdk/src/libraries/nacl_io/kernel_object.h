@@ -17,6 +17,7 @@
 #include "nacl_io/mount_node.h"
 #include "nacl_io/path.h"
 
+#include "sdk_util/macros.h"
 #include "sdk_util/simple_lock.h"
 
 namespace nacl_io {

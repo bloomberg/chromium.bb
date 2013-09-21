@@ -7,6 +7,7 @@
 
 #include <errno.h>
 #include <string.h>
+#include <sys/fcntl.h>
 
 #include "nacl_io/mount.h"
 #include "nacl_io/mount_node_socket.h"
@@ -18,10 +19,12 @@
 namespace nacl_io {
 
 MountNodeSocket::MountNodeSocket(Mount* mount)
-    : MountNode(mount),
+    : MountNodeStream(mount),
       socket_resource_(0),
       local_addr_(0),
-      remote_addr_(0) {
+      remote_addr_(0),
+      socket_flags_(0),
+      last_errno_(0) {
   stat_.st_mode |= S_IFSOCK;
 }
 
@@ -32,11 +35,10 @@ void MountNodeSocket::Destroy() {
     mount_->ppapi()->ReleaseResource(local_addr_);
   if (remote_addr_)
     mount_->ppapi()->ReleaseResource(remote_addr_);
-}
 
-// Default to always signaled, until socket select support is added.
-uint32_t MountNodeSocket::GetEventStatus() {
-  return POLLIN | POLLOUT;
+  socket_resource_ = 0;
+  local_addr_ = 0;
+  remote_addr_ = 0;
 }
 
 // Assume that |addr| and |out_addr| are non-NULL.
@@ -49,7 +51,8 @@ Error MountNodeSocket::MMap(void* addr,
   return EACCES;
 }
 
-// Normal read/write operations on a file
+// Normal read/write operations on a Socket are equivalent to
+// send/recv with a flag value of 0.
 Error MountNodeSocket::Read(size_t offs,
                             void* buf,
                             size_t count,
@@ -61,18 +64,36 @@ Error MountNodeSocket::Write(size_t offs,
                       const void* buf,
                       size_t count,
                       int* out_bytes) {
-  if (0 == remote_addr_)
-    return EDESTADDRREQ;
-
   return Send(buf, count, 0, out_bytes);
 }
 
-NetAddressInterface* MountNodeSocket::NetAddress() {
+
+NetAddressInterface* MountNodeSocket::NetInterface() {
+  if (mount_->ppapi() == NULL)
+    return NULL;
+
   return mount_->ppapi()->GetNetAddressInterface();
+}
+
+TCPSocketInterface* MountNodeSocket::TCPInterface() {
+  if (mount_->ppapi() == NULL)
+    return NULL;
+
+  return mount_->ppapi()->GetTCPSocketInterface();
+}
+
+UDPSocketInterface* MountNodeSocket::UDPInterface() {
+  if (mount_->ppapi() == NULL)
+    return NULL;
+
+  return mount_->ppapi()->GetUDPSocketInterface();
 }
 
 PP_Resource MountNodeSocket::SockAddrToResource(const struct sockaddr* addr,
                                                 socklen_t len) {
+  if (NULL == addr)
+    return 0;
+
   if (AF_INET == addr->sa_family) {
     PP_NetAddress_IPv4 addr4;
     const sockaddr_in* sin = reinterpret_cast<const sockaddr_in*>(addr);
@@ -115,7 +136,7 @@ socklen_t MountNodeSocket::ResourceToSockAddr(PP_Resource addr,
   PP_NetAddress_IPv4 ipv4;
   PP_NetAddress_IPv6 ipv6;
 
-  if (PP_TRUE == NetAddress()->DescribeAsIPv4Address(addr, &ipv4)) {
+  if (PP_TRUE == NetInterface()->DescribeAsIPv4Address(addr, &ipv4)) {
     sockaddr_in addr4;
     addr4.sin_family = AF_INET;
     addr4.sin_port = ipv4.port;
@@ -126,7 +147,7 @@ socklen_t MountNodeSocket::ResourceToSockAddr(PP_Resource addr,
     return sizeof(sockaddr_in);
   }
 
-  if (PP_TRUE == NetAddress()->DescribeAsIPv6Address(addr, &ipv6)) {
+  if (PP_TRUE == NetInterface()->DescribeAsIPv6Address(addr, &ipv6)) {
     sockaddr_in6 addr6;
     addr6.sin6_family = AF_INET6;
     addr6.sin6_port = ipv6.port;
@@ -197,8 +218,9 @@ Error MountNodeSocket::Bind(const struct sockaddr* addr, socklen_t len) {
   return EINVAL;
 }
 
+
 Error MountNodeSocket::Recv(void* buf, size_t len, int flags, int* out_len) {
-  return EINVAL;
+  return RecvFrom(buf, len, flags, NULL, 0, out_len);
 }
 
 Error MountNodeSocket::RecvFrom(void* buf,
@@ -207,14 +229,56 @@ Error MountNodeSocket::RecvFrom(void* buf,
                                 struct sockaddr* src_addr,
                                 socklen_t* addrlen,
                                 int* out_len) {
-  return EOPNOTSUPP;
+  PP_Resource addr;
+  Error err = RecvHelper(buf, len, flags, &addr, out_len);
+  if (0 != addr) {
+    if (src_addr)
+      *addrlen = ResourceToSockAddr(addr, *addrlen, src_addr);
+
+    mount_->ppapi()->ReleaseResource(addr);
+  }
+
+  return err;
 }
 
+Error MountNodeSocket::RecvHelper(void* buf,
+                                  size_t len,
+                                  int flags,
+                                  PP_Resource* addr,
+                                  int* out_len) {
+  if (0 == socket_resource_)
+    return EBADF;
+
+  int ms = read_timeout_;
+  if ((flags & MSG_DONTWAIT) || (GetMode() & O_NONBLOCK))
+    ms = 0;
+
+  //TODO(noelallen) BUG=295177
+  //For UDP we should support filtering packets when using connect
+  EventListenerLock wait(GetEventEmitter());
+  Error err = wait.WaitOnEvent(POLLIN, ms);
+
+  // Timeout is treated as a would block for sockets.
+  if (ETIMEDOUT == err)
+    return EWOULDBLOCK;
+
+  if (err)
+    return err;
+
+  err = Recv_Locked(buf, len, addr, out_len);
+
+  // We must have read from then inputbuffer, so Q up some receive work.
+  if ((err == 0) && *out_len)
+    QueueInput();
+  return err;
+}
+
+
 Error MountNodeSocket::Send(const void* buf,
-                            size_t len,
-                            int flags,
-                            int* out_len) {
-  return EOPNOTSUPP;
+                              size_t len,
+                              int flags,
+                              int* out_len) {
+  return SendHelper(buf, len, flags, remote_addr_, out_len);
 }
 
 Error MountNodeSocket::SendTo(const void* buf,
@@ -223,7 +287,56 @@ Error MountNodeSocket::SendTo(const void* buf,
                               const struct sockaddr* dest_addr,
                               socklen_t addrlen,
                               int* out_len) {
-  return EOPNOTSUPP;
+  if ((NULL == dest_addr) && (0 == remote_addr_))
+    return EDESTADDRREQ;
+
+  PP_Resource addr = SockAddrToResource(dest_addr, addrlen);
+  if (addr) {
+    Error err = SendHelper(buf, len, flags, addr, out_len);
+    mount_->ppapi()->ReleaseResource(addr);
+    return err;
+  }
+
+  return EINVAL;
+}
+
+Error MountNodeSocket::SendHelper(const void* buf,
+                                  size_t len,
+                                  int flags,
+                                  PP_Resource addr,
+                                  int* out_len) {
+  if (0 == socket_resource_)
+    return EBADF;
+
+  if (0 == addr)
+    return ENOTCONN;
+
+  int ms = write_timeout_;
+  if ((flags & MSG_DONTWAIT) || (GetMode() & O_NONBLOCK))
+    ms = 0;
+
+  EventListenerLock wait(GetEventEmitter());
+  Error err = wait.WaitOnEvent(POLLOUT, ms);
+
+  // Timeout is treated as a would block for sockets.
+  if (ETIMEDOUT == err)
+    return EWOULDBLOCK;
+
+  if (err)
+    return err;
+
+  err = Send_Locked(buf, len, addr, out_len);
+
+  // We must have added to the output buffer, so Q up some transmit work.
+  if ((err == 0) && *out_len)
+    QueueOutput();
+  return err;
+}
+
+void MountNodeSocket::SetError_Locked(int pp_error_num) {
+  SetStreamFlags(SSF_ERROR | SSF_CLOSED);
+  ClearStreamFlags(SSF_CAN_SEND | SSF_CAN_RECV);
+  last_errno_ = PPErrorToErrno(pp_error_num);
 }
 
 Error MountNodeSocket::Shutdown(int how) {
@@ -256,7 +369,6 @@ Error MountNodeSocket::GetSockName(struct sockaddr* addr, socklen_t* len) {
 
   return ENOTCONN;
 }
-
 
 }  // namespace nacl_io
 

@@ -49,13 +49,14 @@ void MountNode::Destroy() {
   }
 }
 
-// Declared in EventEmitter, default to regular files which always return
-// a ready of TRUE for read, write, or error.
-uint32_t MountNode::GetEventStatus() {
-  uint32_t val = POLLIN | POLLOUT | POLLERR;
-  return val;
-}
+EventEmitter* MountNode::GetEventEmitter() { return NULL; }
 
+uint32_t MountNode::GetEventStatus() {
+  if (GetEventEmitter())
+    return GetEventEmitter()->GetEventStatus();
+
+  return POLLIN | POLLOUT;
+}
 
 Error MountNode::FSync() { return 0; }
 

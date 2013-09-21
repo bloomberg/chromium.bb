@@ -174,8 +174,47 @@ TEST_F(SocketTestUDP, SendRcv) {
   EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
 }
 
-#if 0
-TEST_F(SocketTestTCP, Connect) {
+const size_t queue_size = 65536 * 8;
+TEST_F(SocketTestUDP, FullFifo) {
+  char outbuf[16 * 1024];
+
+  EXPECT_EQ(Bind(sock1, LOCAL_HOST, PORT1), ENONE);
+  EXPECT_EQ(Bind(sock2, LOCAL_HOST, PORT2), ENONE);
+
+  sockaddr_in addr;
+  socklen_t addrlen = sizeof(addr);
+  IP4ToSockAddr(LOCAL_HOST, PORT2, &addr);
+
+  size_t total = 0;
+  while (total < queue_size * 8) {
+     int len = sendto(sock1, outbuf, sizeof(outbuf), MSG_DONTWAIT,
+                      (sockaddr *) &addr, addrlen);
+
+     if (len <= 0) {
+       EXPECT_EQ(-1, len);
+       EXPECT_EQ(errno, EWOULDBLOCK);
+       break;
+     }
+
+     if (len >= 0) {
+       EXPECT_EQ(sizeof(outbuf), len);
+       total += len;
+     }
+
+  }
+  EXPECT_GT(total, queue_size -1);
+  EXPECT_LT(total, queue_size * 8);
+}
+
+// TODO(noelallen) BUG=294412
+// Re-enable testing on bots when server sockets are available.
+TEST_F(SocketTestTCP, DISABLED_Connect) {
+  char outbuf[256];
+  char inbuf[512];
+
+  memset(outbuf, 1, sizeof(outbuf));
+  memset(inbuf, 0, sizeof(inbuf));
+
   int sock = socket(AF_INET, SOCK_STREAM, 0);
   EXPECT_NE(-1, sock);
 
@@ -184,8 +223,14 @@ TEST_F(SocketTestTCP, Connect) {
 
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
   int err = connect(sock, (sockaddr*) &addr, addrlen);
-  EXPECT_EQ(ENONE, err) << "Failed with errno: " << errno << "\n";
-}
-#endif
 
-#endif  // PROVIDES_SOCKETPAIR_API
+  EXPECT_EQ(ENONE, err) << "Failed with errno: " << errno << "\n";
+
+  EXPECT_EQ(sizeof(outbuf), write(sock, outbuf, sizeof(outbuf)));
+  EXPECT_EQ(sizeof(outbuf), read(sock, inbuf, sizeof(inbuf)));
+
+  // Now they should be the same
+  EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
+}
+
+#endif  // PROVIDES_SOCKET_API
