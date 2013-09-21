@@ -70,7 +70,7 @@ namespace autofill {
 namespace {
 
 // The width for the section container.
-const int kSectionContainerWidth = 420;
+const int kSectionContainerWidth = 440;
 
 // The minimum useful height of the contents area of the dialog.
 const int kMinimumContentsHeight = 100;
