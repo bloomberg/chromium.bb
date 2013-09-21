@@ -985,7 +985,14 @@ void MobileActivator::ChangeState(const NetworkState* network,
 }
 
 void MobileActivator::ReEnableCertRevocationChecking() {
+  // Check that both the browser process and prefs exist before trying to
+  // use them, since this method can be called by the destructor while Chrome
+  // is shutting down, during which either could be NULL.
+  if (!g_browser_process)
+    return;
   PrefService* prefs = g_browser_process->local_state();
+  if (!prefs)
+    return;
   if (reenable_cert_check_) {
     prefs->SetBoolean(prefs::kCertRevocationCheckingEnabled,
                       true);
