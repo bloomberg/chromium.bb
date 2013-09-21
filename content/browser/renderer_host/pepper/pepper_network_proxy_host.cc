@@ -84,7 +84,7 @@ PepperNetworkProxyHost::GetUIThreadDataOnUIThread(int render_process_id,
     result.is_allowed = pepper_socket_utils::CanUseSocketAPIs(
         is_external_plugin,
         false /* is_private_api */,
-        request,
+        &request,
         render_view_host);
   }
   return result;

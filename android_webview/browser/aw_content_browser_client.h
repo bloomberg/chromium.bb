@@ -149,7 +149,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       const GURL& url,
       bool private_api,
-      const content::SocketPermissionRequest& params) OVERRIDE;
+      const content::SocketPermissionRequest* params) OVERRIDE;
 
  private:
   // Android WebView currently has a single global (non-off-the-record) browser

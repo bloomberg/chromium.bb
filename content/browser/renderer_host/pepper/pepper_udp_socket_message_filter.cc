@@ -173,7 +173,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgBind(
       pepper_socket_utils::CreateSocketPermissionRequest(
           SocketPermissionRequest::UDP_BIND, addr);
   if (!pepper_socket_utils::CanUseSocketAPIs(external_plugin_, private_api_,
-                                             request, render_process_id_,
+                                             &request, render_process_id_,
                                              render_view_id_)) {
     return PP_ERROR_NOACCESS;
   }
@@ -236,7 +236,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgSendTo(
       pepper_socket_utils::CreateSocketPermissionRequest(
           SocketPermissionRequest::UDP_SEND_TO, addr);
   if (!pepper_socket_utils::CanUseSocketAPIs(external_plugin_, private_api_,
-                                             request, render_process_id_,
+                                             &request, render_process_id_,
                                              render_view_id_)) {
     return PP_ERROR_NOACCESS;
   }

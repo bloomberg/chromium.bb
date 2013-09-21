@@ -28,16 +28,19 @@ SocketPermissionRequest CreateSocketPermissionRequest(
     SocketPermissionRequest::OperationType type,
     const PP_NetAddress_Private& net_addr);
 
+// Returns true if the socket operation specified by |params| is allowed.
+// If |params| is NULL, this method checks the basic "socket" permission, which
+// is for those operations that don't require a specific socket permission rule.
 bool CanUseSocketAPIs(bool external_plugin,
                       bool private_api,
-                      const SocketPermissionRequest& params,
+                      const SocketPermissionRequest* params,
                       int render_process_id,
                       int render_view_id);
 
 // TODO (ygorshenin@): remove this method.
 bool CanUseSocketAPIs(bool external_plugin,
                       bool private_api,
-                      const SocketPermissionRequest& params,
+                      const SocketPermissionRequest* params,
                       RenderViewHost* render_view_host);
 
 // Extracts the certificate field data from a net::X509Certificate into

@@ -179,6 +179,12 @@ int32_t PepperTCPSocketMessageFilter::OnMsgBind(
     return PP_ERROR_NOACCESS;
   }
 
+  if (!pepper_socket_utils::CanUseSocketAPIs(
+          external_plugin_, false /* private_api */, NULL, render_process_id_,
+          render_view_id_)) {
+    return PP_ERROR_NOACCESS;
+  }
+
   bind_input_addr_ = net_addr;
 
   BrowserThread::PostTask(
@@ -204,8 +210,8 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnect(
                                   host,
                                   port);
   if (!pepper_socket_utils::CanUseSocketAPIs(
-          external_plugin_, true /* private_api */, request, render_process_id_,
-          render_view_id_)) {
+          external_plugin_, true /* private_api */, &request,
+          render_process_id_, render_view_id_)) {
     return PP_ERROR_NOACCESS;
   }
 
@@ -234,7 +240,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnectWithNetAddress(
       pepper_socket_utils::CreateSocketPermissionRequest(
           content::SocketPermissionRequest::TCP_CONNECT, net_addr);
   if (!pepper_socket_utils::CanUseSocketAPIs(external_plugin_, IsPrivateAPI(),
-                                             request, render_process_id_,
+                                             &request, render_process_id_,
                                              render_view_id_)) {
     return PP_ERROR_NOACCESS;
   }
@@ -374,7 +380,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgListen(
       pepper_socket_utils::CreateSocketPermissionRequest(
           content::SocketPermissionRequest::TCP_LISTEN, bind_input_addr_);
   if (!pepper_socket_utils::CanUseSocketAPIs(
-          external_plugin_, false /* private_api */, request,
+          external_plugin_, false /* private_api */, &request,
           render_process_id_, render_view_id_)) {
     return PP_ERROR_NOACCESS;
   }

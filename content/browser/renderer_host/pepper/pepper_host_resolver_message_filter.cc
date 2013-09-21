@@ -132,7 +132,7 @@ int32_t PepperHostResolverMessageFilter::OnMsgResolve(
   if (!render_view_host ||
       !pepper_socket_utils::CanUseSocketAPIs(external_plugin_,
                                              private_api_,
-                                             request,
+                                             &request,
                                              render_view_host)) {
     return PP_ERROR_NOACCESS;
   }

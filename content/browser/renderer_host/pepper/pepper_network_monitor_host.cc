@@ -25,7 +25,7 @@ bool CanUseNetworkMonitor(bool external_plugin,
   SocketPermissionRequest request = SocketPermissionRequest(
       SocketPermissionRequest::NETWORK_STATE, std::string(), 0);
   return pepper_socket_utils::CanUseSocketAPIs(
-      external_plugin, true /* private_api */, request, render_process_id,
+      external_plugin, true /* private_api */, &request, render_process_id,
       render_view_id);
 }
 

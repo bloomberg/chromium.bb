@@ -37,7 +37,7 @@ SocketPermissionRequest CreateSocketPermissionRequest(
 
 bool CanUseSocketAPIs(bool external_plugin,
                       bool private_api,
-                      const SocketPermissionRequest& params,
+                      const SocketPermissionRequest* params,
                       int render_process_id,
                       int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -51,7 +51,7 @@ bool CanUseSocketAPIs(bool external_plugin,
 
 bool CanUseSocketAPIs(bool external_plugin,
                       bool private_api,
-                      const SocketPermissionRequest& params,
+                      const SocketPermissionRequest* params,
                       RenderViewHost* render_view_host) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

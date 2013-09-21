@@ -240,7 +240,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       const GURL& url,
       bool private_api,
-      const content::SocketPermissionRequest& params) OVERRIDE;
+      const content::SocketPermissionRequest* params) OVERRIDE;
   virtual ui::SelectFilePolicy* CreateSelectFilePolicy(
       content::WebContents* web_contents) OVERRIDE;
   virtual void GetAdditionalAllowedSchemesForFileSystem(

@@ -108,7 +108,7 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgListen(
           content::SocketPermissionRequest::TCP_LISTEN, addr);
   if (!pepper_socket_utils::CanUseSocketAPIs(external_plugin_,
                                              private_api_,
-                                             request,
+                                             &request,
                                              render_process_id_,
                                              render_view_id_)) {
     return PP_ERROR_NOACCESS;

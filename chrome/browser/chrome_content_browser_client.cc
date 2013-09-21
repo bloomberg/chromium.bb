@@ -2351,7 +2351,7 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
     content::BrowserContext* browser_context,
     const GURL& url,
     bool private_api,
-    const content::SocketPermissionRequest& params) {
+    const content::SocketPermissionRequest* params) {
 #if defined(ENABLE_PLUGINS)
   Profile* profile = Profile::FromBrowserContext(browser_context);
   const ExtensionSet* extension_set = NULL;
@@ -2372,11 +2372,19 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
         extension_set) {
       const Extension* extension = extension_set->GetByID(url.host());
       if (extension) {
-        extensions::SocketPermission::CheckParam check_params(
-            params.type, params.host, params.port);
-        if (extensions::PermissionsData::CheckAPIPermissionWithParam(
-                extension, extensions::APIPermission::kSocket, &check_params)) {
-          return true;
+        if (params) {
+          extensions::SocketPermission::CheckParam check_params(
+              params->type, params->host, params->port);
+          if (extensions::PermissionsData::CheckAPIPermissionWithParam(
+                  extension, extensions::APIPermission::kSocket,
+                  &check_params)) {
+            return true;
+          }
+        } else {
+          if (extensions::PermissionsData::HasAPIPermission(
+                  extension, extensions::APIPermission::kSocket)) {
+            return true;
+          }
         }
       }
     }
