@@ -415,6 +415,14 @@ cr.define('options', function() {
         chrome.send('showCloudPrintManagePage');
       };
 
+      if (loadTimeData.getBoolean('cloudPrintShowMDnsOptions')) {
+        $('cloudprint-options-mdns').hidden = false;
+        $('cloudprint-options-nomdns').hidden = true;
+        $('cloudPrintDevicesPageButton').onclick = function() {
+          chrome.send('showCloudPrintDevicesPage');
+        };
+      }
+
       // Accessibility section (CrOS only).
       if (cr.isChromeOS) {
         $('accessibility-spoken-feedback-check').onchange = function(event) {

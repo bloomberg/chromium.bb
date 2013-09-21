@@ -548,45 +548,56 @@
         <div class="checkbox">
           <label>
             <input id="sslCheckRevocation" pref="ssl.rev_checking.enabled"
-                type="checkbox">
+                   type="checkbox">
             <span i18n-content="sslCheckRevocation"></span>
           </label>
         </div>
       </div>
-    </section>
-<if expr="not pp_ifdef('chromeos')">
-    <section id="cloud-print-connector-section">
-      <h3 i18n-content="advancedSectionTitleCloudPrint"></h3>
-      <div>
-        <p id="cloudPrintConnectorLabel" class="settings-row"
-             i18n-content="cloudPrintConnectorDisabledLabel"></p>
-        <div class="settings-row">
-          <button id="cloudPrintConnectorSetupButton"
-              i18n-content="cloudPrintConnectorDisabledButton"></button>
-          <button id="cloudPrintManageButton"
-              i18n-content="cloudPrintConnectorEnabledManageButton"></button>
-        </div>
-      </div>
-    </section>
-</if>
-<if expr="pp_ifdef('chromeos')">
+  </section>
   <section id="cloud-print-connector-section">
     <h3 i18n-content="advancedSectionTitleCloudPrint"></h3>
-    <div>
-      <div>
-        <span i18n-content="cloudPrintChromeosOptionLabel"></span>
-        <a target="_blank" i18n-content="learnMore"
-            i18n-values="href:cloudPrintLearnMoreURL"></a>
-      </div>
+<if expr="pp_ifdef('enable_mdns')">
+    <div id="cloudprint-options-mdns" hidden>
       <div class="settings-row">
+        <span i18n-content="cloudPrintOptionLabel"></span>
+        <a target="_blank" i18n-content="learnMore"
+           i18n-values="href:cloudPrintLearnMoreURL"></a>
+      </div>
+      <button id="cloudPrintDevicesPageButton"
+              i18n-content="cloudPrintDevicesPageButton">
+      </button>
+    </div>
+</if>
+
+    <div id="cloudprint-options-nomdns">
+<if expr="pp_ifdef('chromeos')">
+      <div>
+        <span i18n-content="cloudPrintOptionLabel"></span>
+        <a target="_blank" i18n-content="learnMore"
+           i18n-values="href:cloudPrintLearnMoreURL"></a>
+      </div>
+</if>
+
+<if expr="not pp_ifdef('chromeos')">
+      <p id="cloudPrintConnectorLabel" class="settings-row"
+         i18n-content="cloudPrintConnectorDisabledLabel"></p>
+</if>
+
+      <div class="settings-row">
+<if expr="not pp_ifdef('chromeos')">
+        <button id="cloudPrintConnectorSetupButton"
+                i18n-content="cloudPrintConnectorDisabledButton"></button>
+</if>
+
         <button id="cloudPrintManageButton"
-            i18n-content="cloudPrintChromeosOptionButton"></button>
+                i18n-content="cloudPrintManageButton">
+        </button>
       </div>
     </div>
   </section>
+
 <if expr="pp_ifdef('chromeos')">
   <include src="startup_section.html">
-</if>
   <section>
     <h3 i18n-content="accessibilityTitle"></h3>
     <div class="option-control-table">

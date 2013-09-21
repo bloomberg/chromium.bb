@@ -10223,7 +10223,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </if>
       <if expr="not is_android">
         <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL" desc="The label of the cloud print setup button when it hasn't been set up yet.">
-          <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> lets you access this computer's printers from anywhere. Click to enable.
+          <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> lets you access this computer's printers from anywhere.
         </message>
       </if>
       <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON" desc="The label of the cloud connector configure button when it hasn't been set up yet.">
@@ -15182,6 +15182,9 @@ Do you accept?
     </message>
     <message name="IDS_LOCAL_DISCOVERY_CLOUD_DEVICES_LOGIN" desc="Text on login button for local discovery page">
       sign in
+    </message>
+    <message name="IDS_LOCAL_DISCOVERY_DEVICES_PAGE_BUTTON" desc="Text on button to take user to devices page">
+      Manage
     </message>
     <message name="IDS_LOCAL_DISCOVERY_AVAILABLE_DEVICES" desc="Title for 'available devices' section in devices page">
       Available Devices

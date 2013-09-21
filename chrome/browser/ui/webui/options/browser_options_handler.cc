@@ -398,7 +398,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "timezone", IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION },
     { "use24HourClock", IDS_OPTIONS_SETTINGS_USE_24HOUR_CLOCK_DESCRIPTION },
 #else
-    { "cloudPrintConnectorEnabledManageButton",
+    { "cloudPrintManageButton",
       IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_MANAGE_BUTTON},
     { "cloudPrintConnectorEnablingButton",
       IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLING_BUTTON },
@@ -436,6 +436,9 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 #endif
     { "languageSectionLabel", IDS_OPTIONS_ADVANCED_LANGUAGE_LABEL,
       IDS_SHORT_PRODUCT_NAME },
+#if defined(ENABLE_MDNS)
+    { "cloudPrintDevicesPageButton", IDS_LOCAL_DISCOVERY_DEVICES_PAGE_BUTTON },
+#endif
   };
 
 #if defined(ENABLE_SETTINGS_APP)
@@ -482,8 +485,6 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
   values->SetString("doNotTrackLearnMoreURL", chrome::kDoNotTrackLearnMoreURL);
 
 #if defined(OS_CHROMEOS)
-  values->SetString("cloudPrintLearnMoreURL", chrome::kCloudPrintLearnMoreURL);
-
   // TODO(pastarmovj): replace this with a call to the CrosSettings list
   // handling functionality to come.
   values->Set("timezoneList", GetTimezoneList().release());
@@ -531,20 +532,37 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       "gpuEnabledAtStart",
       g_browser_process->gpu_mode_manager()->initial_gpu_mode_pref());
 #endif
+
+#if defined(ENABLE_MDNS)
+bool cloud_print_mdns_options_shown =
+    !CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableDeviceDiscovery);
+#else
+bool cloud_print_mdns_options_shown = false;
+#endif
+
+values->SetBoolean("cloudPrintShowMDnsOptions",
+                   cloud_print_mdns_options_shown);
+
+values->SetString("cloudPrintLearnMoreURL", chrome::kCloudPrintLearnMoreURL);
+
 }
 
 #if defined(ENABLE_FULL_PRINTING)
 void BrowserOptionsHandler::RegisterCloudPrintValues(DictionaryValue* values) {
+  values->SetString("cloudPrintOptionLabel",
+                    l10n_util::GetStringFUTF16(
+                        IDS_CLOUD_PRINT_CHROMEOS_OPTION_LABEL,
+                        l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
+
 #if defined(OS_CHROMEOS)
-  values->SetString("cloudPrintChromeosOptionLabel",
-      l10n_util::GetStringFUTF16(
-      IDS_CLOUD_PRINT_CHROMEOS_OPTION_LABEL,
-      l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
-  values->SetString("cloudPrintChromeosOptionButton",
+  values->SetString("cloudPrintManageButton",
       l10n_util::GetStringFUTF16(
       IDS_CLOUD_PRINT_CHROMEOS_OPTION_BUTTON,
       l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
 #else
+  // TODO(noamsml): Remove all cloud print connector related code from the
+  // settings page as soon as the devices page is supported on all platforms.
   values->SetString("cloudPrintConnectorDisabledLabel",
       l10n_util::GetStringFUTF16(
       IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL,
@@ -657,6 +675,16 @@ void BrowserOptionsHandler::RegisterMessages() {
       base::Bind(&BrowserOptionsHandler::ShowNetworkProxySettings,
                  base::Unretained(this)));
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(ENABLE_MDNS)
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableDeviceDiscovery)) {
+    web_ui()->RegisterMessageCallback(
+        "showCloudPrintDevicesPage",
+        base::Bind(&BrowserOptionsHandler::ShowCloudPrintDevicesPage,
+                   base::Unretained(this)));
+  }
+#endif
 }
 
 void BrowserOptionsHandler::OnStateChanged() {
@@ -1624,6 +1652,19 @@ void BrowserOptionsHandler::ShowManageSSLCertificates(const ListValue* args) {
   AdvancedOptionsUtilities::ShowManageSSLCertificates(
       web_ui()->GetWebContents());
 }
+#endif
+
+#if defined(ENABLE_MDNS)
+
+void BrowserOptionsHandler::ShowCloudPrintDevicesPage(const ListValue* args) {
+  content::RecordAction(UserMetricsAction("Options_CloudPrintDevicesPage"));
+  // Navigate in current tab to devices page.
+  OpenURLParams params(
+      GURL(chrome::kChromeUIDevicesURL), Referrer(),
+      CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
+  web_ui()->GetWebContents()->OpenURL(params);
+}
+
 #endif
 
 #if defined(ENABLE_FULL_PRINTING)

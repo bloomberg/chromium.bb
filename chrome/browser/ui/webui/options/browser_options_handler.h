@@ -297,6 +297,10 @@ class BrowserOptionsHandler
   void ShowManageSSLCertificates(const ListValue* args);
 #endif
 
+#if defined(ENABLE_MDNS)
+  void ShowCloudPrintDevicesPage(const ListValue* args);
+#endif
+
 #if defined(ENABLE_FULL_PRINTING)
   // Callback for the Cloud Print manage button. This will open a new
   // tab pointed at the management URL.
