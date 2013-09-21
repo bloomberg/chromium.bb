@@ -10,7 +10,7 @@ namespace extensions {
 namespace image_writer {
 
 WriteFromFileOperation::WriteFromFileOperation(
-    OperationManager* manager,
+    base::WeakPtr<OperationManager> manager,
     const ExtensionId& extension_id,
     const base::FilePath& path,
     const std::string& storage_unit_id)
@@ -25,5 +25,5 @@ void WriteFromFileOperation::Start() {
   Error(error::kUnsupportedOperation);
 }
 
-} // namespace image_writer
-} // namespace extensions
+}  // namespace image_writer
+}  // namespace extensions

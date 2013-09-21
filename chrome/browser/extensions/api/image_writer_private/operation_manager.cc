@@ -27,7 +27,8 @@ namespace image_writer {
 using content::BrowserThread;
 
 OperationManager::OperationManager(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      weak_factory_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -71,8 +72,12 @@ void OperationManager::StartWriteFromUrl(
   }
 
   scoped_refptr<Operation> operation(
-      new WriteFromUrlOperation(this, extension_id, rvh, url,
-                                hash, saveImageAsDownload,
+      new WriteFromUrlOperation(weak_factory_.GetWeakPtr(),
+                                extension_id,
+                                rvh,
+                                url,
+                                hash,
+                                saveImageAsDownload,
                                 storage_unit_id));
 
   operations_[extension_id] = operation;
@@ -101,6 +106,9 @@ void OperationManager::CancelWrite(
   if (existing_operation == NULL) {
     callback.Run(false, error::kNoOperationInProgress);
   } else {
+    BrowserThread::PostTask(BrowserThread::FILE,
+                            FROM_HERE,
+                            base::Bind(&Operation::Cancel, existing_operation));
     DeleteOperation(extension_id);
     callback.Run(true, "");
   }
@@ -148,7 +156,6 @@ void OperationManager::OnError(const ExtensionId& extension_id,
   DLOG(ERROR) << "ImageWriter error: " << error_message;
 
   // TODO(haven): Set up error messages. http://crbug.com/284880
-
   info.stage = stage;
   info.percent_complete = progress;
 
@@ -174,10 +181,6 @@ Operation* OperationManager::GetOperation(const ExtensionId& extension_id) {
 void OperationManager::DeleteOperation(const ExtensionId& extension_id) {
   OperationMap::iterator existing_operation = operations_.find(extension_id);
   if (existing_operation != operations_.end()) {
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
-                            base::Bind(&Operation::Cancel,
-                                       existing_operation->second));
     operations_.erase(existing_operation);
   }
 }
@@ -229,5 +232,5 @@ ProfileKeyedAPIFactory<OperationManager>*
 }
 
 
-} // namespace image_writer
-} // namespace extensions
+}  // namespace image_writer
+}  // namespace extensions

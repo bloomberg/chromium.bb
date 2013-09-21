@@ -32,9 +32,7 @@ void Operation::WriteStart() {
   DVLOG(1) << "Starting write of " << image_path_.value()
            << " to " << storage_unit_id_;
 
-  stage_ = image_writer_api::STAGE_WRITE;
-  progress_ = 0;
-  SendProgress();
+  SetStage(image_writer_api::STAGE_WRITE);
 
   // TODO (haven): Unmount partitions before writing. http://crbug.com/284834
 
@@ -70,7 +68,7 @@ void Operation::WriteChunk(
     scoped_ptr<image_writer_utils::ImageWriter> writer,
     int64 bytes_written) {
   if (IsCancelled()) {
-    WriteCleanup(reader.Pass(), writer.Pass());
+    WriteCleanUp(reader.Pass(), writer.Pass());
     return;
   }
 
@@ -80,12 +78,11 @@ void Operation::WriteChunk(
 
   if (len > 0) {
     if (writer->Write(buffer, len) == len) {
-      int percent_prev = bytes_written * 100 / image_size;
-      int percent_curr = (bytes_written + len) * 100 / image_size;
-      progress_ = (bytes_written + len) * 100 / image_size;
+      int percent_prev = kProgressComplete * bytes_written / image_size;
+      int percent_curr = kProgressComplete * (bytes_written + len) / image_size;
 
       if (percent_curr > percent_prev) {
-        SendProgress();
+        SetProgress(percent_curr);
       }
 
       BrowserThread::PostTask(
@@ -97,12 +94,12 @@ void Operation::WriteChunk(
                    base::Passed(&writer),
                    bytes_written + len));
     } else {
-      WriteCleanup(reader.Pass(), writer.Pass());
+      WriteCleanUp(reader.Pass(), writer.Pass());
       Error(error::kWriteImage);
     }
   } else if (len == 0) {
     if (bytes_written == image_size) {
-      if (WriteCleanup(reader.Pass(), writer.Pass())) {
+      if (WriteCleanUp(reader.Pass(), writer.Pass())) {
         BrowserThread::PostTask(
           BrowserThread::FILE,
           FROM_HERE,
@@ -110,16 +107,16 @@ void Operation::WriteChunk(
                      this));
       }
     } else {
-      WriteCleanup(reader.Pass(), writer.Pass());
+      WriteCleanUp(reader.Pass(), writer.Pass());
       Error(error::kPrematureEndOfFile);
     }
   } else { // len < 0
-    WriteCleanup(reader.Pass(), writer.Pass());
+    WriteCleanUp(reader.Pass(), writer.Pass());
     Error(error::kReadImage);
   }
 }
 
-bool Operation::WriteCleanup(
+bool Operation::WriteCleanUp(
     scoped_ptr<image_writer_utils::ImageReader> reader,
     scoped_ptr<image_writer_utils::ImageWriter> writer) {
 
@@ -139,8 +136,7 @@ bool Operation::WriteCleanup(
 void Operation::WriteComplete() {
 
   DVLOG(2) << "Completed write of " << image_path_.value();
-  progress_ = 100;
-  SendProgress();
+  SetProgress(kProgressComplete);
 
   BrowserThread::PostTask(
     BrowserThread::FILE,
@@ -157,9 +153,7 @@ void Operation::VerifyWriteStart() {
 
   DVLOG(1) << "Starting verification stage.";
 
-  stage_ = image_writer_api::STAGE_VERIFYWRITE;
-  progress_ = 0;
-  SendProgress();
+  SetStage(image_writer_api::STAGE_VERIFYWRITE);
 
   scoped_ptr<base::FilePath> image_path(new base::FilePath(image_path_));
 
@@ -206,10 +200,10 @@ void Operation::VerifyWriteCompare(
 
   DVLOG(2) << "Completed write verification of " << image_path_.value();
 
-  progress_ = 100;
-  SendProgress();
+  SetProgress(kProgressComplete);
+
   Finish();
 }
 
-} // namespace image_writer
-} // namespace extensions
+}  // namespace image_writer
+}  // namespace extensions

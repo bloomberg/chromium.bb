@@ -30,10 +30,16 @@ bool ImageWriterPrivateWriteFromUrlFunction::RunImpl() {
     return false;
   }
 
+#if defined(OS_CHROMEOS)
+  // The Chrome OS temporary partition is too small for Chrome OS images, thus
+  // we must always use the downloads folder.
+  bool save_image_as_download = true;
+#else
   bool save_image_as_download = false;
   if (params->options.get() && params->options->save_as_download.get()) {
     save_image_as_download = true;
   }
+#endif
 
   std::string hash;
   if (params->options.get() && params->options->image_hash.get()) {

@@ -20,6 +20,7 @@ extern const char kDownloadInterrupted[];
 extern const char kDownloadMD5[];
 extern const char kEmptyUnzip[];
 extern const char kFileOperationsNotImplemented[];
+extern const char kImageBurnerError[];
 extern const char kImageMD5[];
 extern const char kImageNotFound[];
 extern const char kImageSize[];

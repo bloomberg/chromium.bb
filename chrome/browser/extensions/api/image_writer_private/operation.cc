@@ -16,10 +16,17 @@ namespace image_writer {
 
 using content::BrowserThread;
 
-const int kBurningBlockSize = 8 * 1024;  // 8 KiB
+namespace {
+
 const int kMD5BufferSize = 1024;
 
-Operation::Operation(OperationManager* manager,
+void RemoveTempDirectory(const base::FilePath path) {
+  base::DeleteFile(path, true);
+}
+
+}  // namespace
+
+Operation::Operation(base::WeakPtr<OperationManager> manager,
                      const ExtensionId& extension_id,
                      const std::string& storage_unit_id)
     : manager_(manager),
@@ -36,53 +43,127 @@ void Operation::Cancel() {
   DVLOG(1) << "Cancelling image writing operation for ext: " << extension_id_;
 
   stage_ = image_writer_api::STAGE_NONE;
+
+  CleanUp();
 }
 
 void Operation::Abort() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Error(error::kAborted);
 }
 
 void Operation::Error(const std::string& error_message) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+    BrowserThread::PostTask(BrowserThread::FILE,
+                            FROM_HERE,
+                            base::Bind(&Operation::Error, this, error_message));
+    return;
+  }
+
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&OperationManager::OnError,
-                 manager_->AsWeakPtr(),
+                 manager_,
                  extension_id_,
                  stage_,
                  progress_,
                  error_message));
+
+  CleanUp();
 }
 
-void Operation::SendProgress() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+void Operation::SetProgress(int progress) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&Operation::SetProgress,
+                   this,
+                   progress));
+    return;
+  }
+
+  if (IsCancelled()) {
+    return;
+  }
+
+  progress_ = progress;
+
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&OperationManager::OnProgress,
-                 manager_->AsWeakPtr(),
+                 manager_,
+                 extension_id_,
+                 stage_,
+                 progress_));
+}
+
+void Operation::SetStage(image_writer_api::Stage stage) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&Operation::SetStage,
+                   this,
+                   stage));
+    return;
+  }
+
+  if (IsCancelled()) {
+    return;
+  }
+
+  stage_ = stage;
+  progress_ = 0;
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&OperationManager::OnProgress,
+                 manager_,
                  extension_id_,
                  stage_,
                  progress_));
 }
 
 void Operation::Finish() {
+  if (BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+    BrowserThread::PostTask(BrowserThread::FILE,
+                            FROM_HERE,
+                            base::Bind(&Operation::Finish, this));
+  }
   DVLOG(1) << "Write operation complete.";
 
-  stage_ = image_writer_api::STAGE_NONE;
-  progress_ = 0;
+  CleanUp();
 
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&OperationManager::OnComplete,
-                 manager_->AsWeakPtr(),
+                 manager_,
                  extension_id_));
 }
 
 bool Operation::IsCancelled() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
   return stage_ == image_writer_api::STAGE_NONE;
+}
+
+void Operation::AddCleanUpFunction(base::Closure callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  cleanup_functions_.push_back(callback);
+}
+
+void Operation::CleanUp() {
+  for (std::vector<base::Closure>::iterator it = cleanup_functions_.begin();
+       it != cleanup_functions_.end();
+       ++it) {
+    it->Run();
+  }
+  cleanup_functions_.clear();
 }
 
 void Operation::UnzipStart(scoped_ptr<base::FilePath> zip_file) {
@@ -93,16 +174,17 @@ void Operation::UnzipStart(scoped_ptr<base::FilePath> zip_file) {
 
   DVLOG(1) << "Starting unzip stage for " << zip_file->value();
 
-  stage_ = image_writer_api::STAGE_UNZIP;
-  progress_ = 0;
-
-  SendProgress();
+  SetStage(image_writer_api::STAGE_UNZIP);
 
   base::FilePath tmp_dir;
-  if (!file_util::CreateNewTempDirectory(FILE_PATH_LITERAL(""), &tmp_dir)) {
+  if (!file_util::CreateTemporaryDirInDir(zip_file->DirName(),
+                                          FILE_PATH_LITERAL("image_writer"),
+                                          &tmp_dir)) {
     Error(error::kTempDir);
     return;
   }
+
+  AddCleanUpFunction(base::Bind(&RemoveTempDirectory, tmp_dir));
 
   if (!zip::Unzip(*zip_file, tmp_dir)) {
     Error(error::kUnzip);
@@ -128,8 +210,7 @@ void Operation::UnzipStart(scoped_ptr<base::FilePath> zip_file) {
 
   DVLOG(1) << "Successfully unzipped as " << unzipped_file->value();
 
-  progress_ = 100;
-  SendProgress();
+  SetProgress(kProgressComplete);
 
   image_path_ = *unzipped_file;
 
@@ -197,14 +278,13 @@ void Operation::MD5Chunk(
 
   if (len > 0) {
     base::MD5Update(&md5_context_, base::StringPiece(buffer, len));
-    int percent_prev = (bytes_processed * progress_scale + progress_offset)
-                       / (bytes_total);
-    int percent_curr = ((bytes_processed + len) * progress_scale
-                        + progress_offset) / (bytes_total);
-    progress_ = percent_curr;
-
+    int percent_prev = (bytes_processed * progress_scale + progress_offset) /
+                       (bytes_total);
+    int percent_curr = ((bytes_processed + len) * progress_scale +
+                        progress_offset) /
+                       (bytes_total);
     if (percent_curr > percent_prev) {
-      SendProgress();
+      SetProgress(progress_);
     }
 
     BrowserThread::PostTask(BrowserThread::FILE,
@@ -234,5 +314,5 @@ void Operation::MD5Chunk(
   }
 }
 
-} // namespace image_writer
-} // namespace extensions
+}  // namespace image_writer
+}  // namespace extensions

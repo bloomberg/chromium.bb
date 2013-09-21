@@ -19,6 +19,7 @@ const char kDownloadInterrupted[] = "Download interrupted.";
 const char kDownloadMD5[] = "Failed to calculate MD5 sum for download.";
 const char kEmptyUnzip[] = "Unzipped image contained no files.";
 const char kFileOperationsNotImplemented[] = "Write-from file not implemented.";
+const char kImageBurnerError[] = "Error contacting Image Burner process.";
 const char kImageMD5[] = "Failed to calculate MD5 sum for unzipped image.";
 const char kImageNotFound[] = "Unpacked image not found.";
 const char kImageSize[] = "Could not determine image size.";

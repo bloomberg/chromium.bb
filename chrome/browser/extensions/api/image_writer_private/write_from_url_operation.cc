@@ -21,7 +21,7 @@ namespace image_writer {
 using content::BrowserThread;
 
 WriteFromUrlOperation::WriteFromUrlOperation(
-    OperationManager* manager,
+    base::WeakPtr<OperationManager> manager,
     const ExtensionId& extension_id,
     content::RenderViewHost* rvh,
     GURL url,
@@ -33,20 +33,17 @@ WriteFromUrlOperation::WriteFromUrlOperation(
       url_(url),
       hash_(hash),
       saveImageAsDownload_(saveImageAsDownload),
-      download_(NULL){
+      download_stopped_(false),
+      download_(NULL) {
 }
 
 WriteFromUrlOperation::~WriteFromUrlOperation() {
-  if (stage_ == image_writer_api::STAGE_DOWNLOAD && download_) {
-    download_->RemoveObserver(this);
-    download_->Cancel(false);
-  }
 }
+
 void WriteFromUrlOperation::Start() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  stage_ = image_writer_api::STAGE_DOWNLOAD;
-  progress_ = 0;
+  SetStage(image_writer_api::STAGE_DOWNLOAD);
 
   if (saveImageAsDownload_){
     BrowserThread::PostTask(
@@ -59,16 +56,8 @@ void WriteFromUrlOperation::Start() {
         FROM_HERE,
         base::Bind(&WriteFromUrlOperation::CreateTempFile, this));
   }
-}
 
-void WriteFromUrlOperation::Cancel() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (stage_ == image_writer_api::STAGE_DOWNLOAD && download_) {
-    download_->RemoveObserver(this);
-    download_->Cancel(true);
-  }
-
-  Operation::Cancel();
+  AddCleanUpFunction(base::Bind(&WriteFromUrlOperation::DownloadCleanUp, this));
 }
 
 void WriteFromUrlOperation::CreateTempFile() {
@@ -91,14 +80,12 @@ void WriteFromUrlOperation::CreateTempFile() {
 // The downloader runs on the UI thread.
 void WriteFromUrlOperation::DownloadStart() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DVLOG(1) << "Starting download of URL: " << url_;
 
-  if (IsCancelled()) {
+  if (download_stopped_) {
     return;
   }
 
-  stage_ = image_writer_api::STAGE_DOWNLOAD;
-  progress_ = 0;
+  DVLOG(1) << "Starting download of URL: " << url_;
 
   Profile* current_profile = manager_->profile();
 
@@ -124,6 +111,14 @@ void WriteFromUrlOperation::DownloadStart() {
 void WriteFromUrlOperation::OnDownloadStarted(content::DownloadItem* item,
                                               net::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (download_stopped_) {
+    // At this point DownloadCleanUp was called but the |download_| wasn't
+    // stored yet and still hasn't been cancelled.
+    item->Cancel(true);
+    return;
+  }
+
   if (item) {
     DCHECK_EQ(net::OK, error);
 
@@ -142,20 +137,14 @@ void WriteFromUrlOperation::OnDownloadStarted(content::DownloadItem* item,
 }
 
 // Always called from the UI thread.
-void WriteFromUrlOperation::OnDownloadUpdated(
-  content::DownloadItem* download) {
+void WriteFromUrlOperation::OnDownloadUpdated(content::DownloadItem* download) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (IsCancelled()) {
-    download->Cancel(false);
+  if (download_stopped_) {
     return;
   }
 
-  progress_ = download->PercentComplete();
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&WriteFromUrlOperation::SendProgress, this));
+  SetProgress(download->PercentComplete());
 
   if (download->GetState() == content::DownloadItem::COMPLETE) {
     download_path_ = download_->GetTargetFilePath();
@@ -176,15 +165,35 @@ void WriteFromUrlOperation::OnDownloadUpdated(
 }
 
 void WriteFromUrlOperation::DownloadComplete() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DVLOG(1) << "Download complete.";
 
-  progress_ = 100;
-  SendProgress();
+  SetProgress(kProgressComplete);
 
   VerifyDownloadStart();
 }
 
+void WriteFromUrlOperation::DownloadCleanUp() {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&WriteFromUrlOperation::DownloadCleanUp, this));
+    return;
+  }
+
+  download_stopped_ = true;
+
+  if (download_) {
+    download_->RemoveObserver(this);
+    download_->Cancel(true);
+    download_ = NULL;
+  }
+}
+
 void WriteFromUrlOperation::VerifyDownloadStart() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
   if (IsCancelled()) {
     return;
   }
@@ -199,10 +208,7 @@ void WriteFromUrlOperation::VerifyDownloadStart() {
 
   DVLOG(1) << "Download verification started.";
 
-  stage_ = image_writer_api::STAGE_VERIFYDOWNLOAD;
-  progress_ = 0;
-
-  SendProgress();
+  SetStage(image_writer_api::STAGE_VERIFYDOWNLOAD);
 
   BrowserThread::PostTask(
       BrowserThread::FILE,
@@ -211,17 +217,19 @@ void WriteFromUrlOperation::VerifyDownloadStart() {
 }
 
 void WriteFromUrlOperation::VerifyDownloadRun() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   scoped_ptr<base::FilePath> download_path(new base::FilePath(download_path_));
   GetMD5SumOfFile(
       download_path.Pass(),
       0,
       0,
-      100,
+      kProgressComplete,
       base::Bind(&WriteFromUrlOperation::VerifyDownloadCompare, this));
 }
 
 void WriteFromUrlOperation::VerifyDownloadCompare(
     scoped_ptr<std::string> download_hash) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (*download_hash != hash_) {
     Error(error::kDownloadHash);
     return;
@@ -234,14 +242,14 @@ void WriteFromUrlOperation::VerifyDownloadCompare(
 }
 
 void WriteFromUrlOperation::VerifyDownloadComplete() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (IsCancelled()) {
     return;
   }
 
   DVLOG(1) << "Download verification complete.";
 
-  progress_ = 100;
-  SendProgress();
+  SetProgress(kProgressComplete);
 
   scoped_ptr<base::FilePath> download_path(new base::FilePath(download_path_));
   UnzipStart(download_path.Pass());

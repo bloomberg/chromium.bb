@@ -573,12 +573,11 @@
     "extension_types": ["extension", "platform_app"]
   },
   "imageWriterPrivate": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"],
     "whitelist": [
-      "nmedaodmkamdcnmfceajookiaicfnkhd", // ImageWriter API Dev App
-      "jdnamgpmgjhphalijaakigbpccepfllk", // Chrome OS Recovery Tool local
-      "jobolcahaebjkjhdedcfcnfkgpjcmkcg" // Chrome OS Recovery Tool CWS
+      "jobolcahaebjkjhdedcfcnfkgpjcmkcg", // Dev version
+      "D7986543275120831B39EF28D1327552FC343960"  // Release version
     ]
   },
   "rtcPrivate": {

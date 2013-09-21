@@ -13,7 +13,7 @@ namespace image_writer {
 // Encapsulates a write of an image from a local file.
 class WriteFromFileOperation : public Operation {
  public:
-  WriteFromFileOperation(OperationManager* manager,
+  WriteFromFileOperation(base::WeakPtr<OperationManager> manager,
                          const ExtensionId& extension_id,
                          const base::FilePath& path,
                          const std::string& storage_unit_id);
@@ -24,7 +24,7 @@ class WriteFromFileOperation : public Operation {
   const base::FilePath path_;
 };
 
-} // namespace image_writer
-} // namespace extensions
+}  // namespace image_writer
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_WRITE_FROM_FILE_OPERATION_H_

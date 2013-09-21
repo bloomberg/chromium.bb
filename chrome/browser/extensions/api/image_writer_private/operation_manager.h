@@ -102,10 +102,12 @@ class OperationManager
   OperationMap operations_;
   content::NotificationRegistrar registrar_;
 
+  base::WeakPtrFactory<OperationManager> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(OperationManager);
 };
 
-} // namespace image_writer
-} // namespace extensions
+}  // namespace image_writer
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_OPERATION_MANAGER_H_

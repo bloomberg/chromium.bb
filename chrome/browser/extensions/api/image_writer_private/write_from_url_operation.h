@@ -26,14 +26,13 @@ class OperationManager;
 class WriteFromUrlOperation : public Operation,
                               public content::DownloadItem::Observer {
  public:
-  WriteFromUrlOperation(OperationManager* manager,
+  WriteFromUrlOperation(base::WeakPtr<OperationManager> manager,
                         const ExtensionId& extension_id,
                         content::RenderViewHost* rvh,
                         GURL url,
                         const std::string& hash,
                         bool saveImageAsDownload,
                         const std::string& storage_unit_id);
-  virtual void Cancel() OVERRIDE;
   virtual void Start() OVERRIDE;
  private:
   virtual ~WriteFromUrlOperation();
@@ -43,19 +42,23 @@ class WriteFromUrlOperation : public Operation,
   void OnDownloadStarted(content::DownloadItem*, net::Error);
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
   void DownloadComplete();
+  void DownloadCleanUp();
 
   void VerifyDownloadStart();
   void VerifyDownloadRun();
   void VerifyDownloadCompare(scoped_ptr<std::string> download_hash);
   void VerifyDownloadComplete();
 
+  // Arguments
   content::RenderViewHost* rvh_;
   GURL url_;
   const std::string hash_;
   const bool saveImageAsDownload_;
-  scoped_ptr<base::FilePath> tmp_file_;
-  content::DownloadItem* download_;
 
+  // Local state
+  scoped_ptr<base::FilePath> tmp_file_;
+  bool download_stopped_;
+  content::DownloadItem* download_;
   base::FilePath download_path_;
 };
 
