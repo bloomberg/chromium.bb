@@ -296,6 +296,8 @@ WebKit::WebFileError PlatformFileErrorToWebFileError(
       return WebKit::WebFileErrorSecurity;
     case base::PLATFORM_FILE_ERROR_NO_SPACE:
       return WebKit::WebFileErrorQuotaExceeded;
+    case base::PLATFORM_FILE_ERROR_INVALID_URL:
+      return WebKit::WebFileErrorEncoding;
     default:
       return WebKit::WebFileErrorInvalidModification;
   }

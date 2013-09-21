@@ -9,6 +9,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "url/gurl.h"
 #include "webkit/common/fileapi/directory_entry.h"
+#include "webkit/common/fileapi/file_system_info.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/quota/quota_types.h"
 
@@ -19,6 +20,12 @@
 IPC_STRUCT_TRAITS_BEGIN(fileapi::DirectoryEntry)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(is_directory)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(fileapi::FileSystemInfo)
+  IPC_STRUCT_TRAITS_MEMBER(name)
+  IPC_STRUCT_TRAITS_MEMBER(root_url)
+  IPC_STRUCT_TRAITS_MEMBER(mount_type)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(fileapi::FileSystemType)
@@ -33,6 +40,11 @@ IPC_MESSAGE_CONTROL3(FileSystemMsg_DidOpenFileSystem,
                      GURL /* root_url */)
 
 // WebFileSystem response messages.
+IPC_MESSAGE_CONTROL4(FileSystemMsg_DidResolveURL,
+                     int /* request_id */,
+                     fileapi::FileSystemInfo /* filesystem_info */,
+                     base::FilePath /* file_path */,
+                     bool /* is_directory */)
 IPC_MESSAGE_CONTROL1(FileSystemMsg_DidSucceed,
                      int /* request_id */)
 IPC_MESSAGE_CONTROL2(FileSystemMsg_DidReadMetadata,
@@ -68,6 +80,11 @@ IPC_MESSAGE_CONTROL5(FileSystemHostMsg_Open,
                      fileapi::FileSystemType /* type */,
                      int64 /* requested_size */,
                      bool /* create */)
+
+// WevFrameClient::resolveURL() message.
+IPC_MESSAGE_CONTROL2(FileSystemHostMsg_ResolveURL,
+                     int /* request_id */,
+                     GURL /* filesystem_url */)
 
 // WebFrameClient::deleteFileSystem() message.
 IPC_MESSAGE_CONTROL3(FileSystemHostMsg_DeleteFileSystem,

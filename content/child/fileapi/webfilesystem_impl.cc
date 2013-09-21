@@ -154,6 +154,21 @@ void OpenFileSystemCallbackAdapter(
       MakeTuple(UTF8ToUTF16(name), root));
 }
 
+void ResolveURLCallbackAdapter(
+    int thread_id, int callbacks_id,
+    WaitableCallbackResults* waitable_results,
+    const fileapi::FileSystemInfo& info,
+    const base::FilePath& file_path, bool is_directory) {
+  base::FilePath normalized_path(
+      fileapi::VirtualPath::GetNormalizedFilePath(file_path));
+  CallbackFileSystemCallbacks(
+      thread_id, callbacks_id, waitable_results,
+      &WebFileSystemCallbacks::didResolveURL,
+      MakeTuple(UTF8ToUTF16(info.name), info.root_url,
+                static_cast<WebKit::WebFileSystemType>(info.mount_type),
+                normalized_path.AsUTF16Unsafe(), is_directory));
+}
+
 void StatusCallbackAdapter(int thread_id, int callbacks_id,
                            WaitableCallbackResults* waitable_results,
                            base::PlatformFileError error) {
@@ -332,6 +347,25 @@ void WebFileSystemImpl::openFileSystem(
       make_scoped_ptr(waitable_results));
 }
 
+void WebFileSystemImpl::resolveURL(
+    const WebKit::WebURL& filesystem_url,
+    WebFileSystemCallbacks callbacks) {
+  int callbacks_id = RegisterCallbacks(callbacks);
+  WaitableCallbackResults* waitable_results =
+      WaitableCallbackResults::MaybeCreate(callbacks);
+  CallDispatcherOnMainThread(
+      main_thread_loop_.get(),
+      &FileSystemDispatcher::ResolveURL,
+      MakeTuple(GURL(filesystem_url),
+                base::Bind(&ResolveURLCallbackAdapter,
+                           CurrentWorkerId(), callbacks_id,
+                           base::Unretained(waitable_results)),
+                base::Bind(&StatusCallbackAdapter,
+                           CurrentWorkerId(), callbacks_id,
+                           base::Unretained(waitable_results))),
+      make_scoped_ptr(waitable_results));
+}
+
 void WebFileSystemImpl::deleteFileSystem(
     const WebKit::WebURL& storage_partition,
     WebKit::WebFileSystemType type,
@@ -481,7 +515,7 @@ void WebFileSystemImpl::fileExists(
       MakeTuple(GURL(path), false /* directory */,
                 base::Bind(&StatusCallbackAdapter,
                            CurrentWorkerId(), callbacks_id,
-base::Unretained(waitable_results))),
+                           base::Unretained(waitable_results))),
       make_scoped_ptr(waitable_results));
 }
 
