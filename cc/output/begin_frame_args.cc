@@ -48,10 +48,14 @@ BeginFrameArgs BeginFrameArgs::CreateExpiredForTesting() {
                         DefaultInterval());
 }
 
+// This is a hard-coded deadline adjustment that assumes 60Hz, to be used in
+// cases where a good estimated draw time is not known. Using 1/3 of the vsync
+// as the default adjustment gives the Browser the last 1/3 of a frame to
+// produce output, the Renderer Impl thread the middle 1/3 of a frame to produce
+// ouput, and the Renderer Main thread the first 1/3 of a frame to produce
+// output.
 base::TimeDelta BeginFrameArgs::DefaultDeadlineAdjustment() {
-  // Using a large deadline adjustment will effectively revert BeginFrame
-  // scheduling to the hard vsync scheduling we used to have.
-  return base::TimeDelta::FromSeconds(-1);
+  return base::TimeDelta::FromMicroseconds(-16666 / 3);
 }
 
 base::TimeDelta BeginFrameArgs::DefaultInterval() {
@@ -61,6 +65,5 @@ base::TimeDelta BeginFrameArgs::DefaultInterval() {
 base::TimeDelta BeginFrameArgs::DefaultRetroactiveBeginFramePeriod() {
   return base::TimeDelta::FromMicroseconds(4444);
 }
-
 
 }  // namespace cc

@@ -22,15 +22,21 @@ namespace {
 class TestOutputSurface : public OutputSurface {
  public:
   explicit TestOutputSurface(scoped_refptr<ContextProvider> context_provider)
-      : OutputSurface(context_provider) {}
+      : OutputSurface(context_provider),
+        retroactive_begin_frame_deadline_enabled_(false),
+        override_retroactive_period_(false) {}
 
   explicit TestOutputSurface(
       scoped_ptr<cc::SoftwareOutputDevice> software_device)
-      : OutputSurface(software_device.Pass()) {}
+      : OutputSurface(software_device.Pass()),
+        retroactive_begin_frame_deadline_enabled_(false),
+        override_retroactive_period_(false) {}
 
   TestOutputSurface(scoped_refptr<ContextProvider> context_provider,
                     scoped_ptr<cc::SoftwareOutputDevice> software_device)
-      : OutputSurface(context_provider, software_device.Pass()) {}
+      : OutputSurface(context_provider, software_device.Pass()),
+        retroactive_begin_frame_deadline_enabled_(false),
+        override_retroactive_period_(false) {}
 
   bool InitializeNewContext3d(
       scoped_refptr<ContextProvider> new_context_provider) {
@@ -61,8 +67,12 @@ class TestOutputSurface : public OutputSurface {
     OnSwapBuffersComplete();
   }
 
-  void SetAlternateRetroactiveBeginFramePeriod(base::TimeDelta period) {
-    alternate_retroactive_begin_frame_period_ = period;
+  void EnableRetroactiveBeginFrameDeadline(bool enable,
+                                           bool override_retroactive_period,
+                                           base::TimeDelta period_override) {
+    retroactive_begin_frame_deadline_enabled_ = enable;
+    override_retroactive_period_ = override_retroactive_period;
+    retroactive_period_override_ = period_override;
   }
 
  protected:
@@ -71,11 +81,21 @@ class TestOutputSurface : public OutputSurface {
     CheckForRetroactiveBeginFrame();
   }
 
-  virtual base::TimeDelta AlternateRetroactiveBeginFramePeriod() OVERRIDE {
-    return alternate_retroactive_begin_frame_period_;
+  virtual base::TimeTicks RetroactiveBeginFrameDeadline() OVERRIDE {
+    if (retroactive_begin_frame_deadline_enabled_) {
+      if (override_retroactive_period_) {
+        return skipped_begin_frame_args_.frame_time +
+               retroactive_period_override_;
+      } else {
+        return OutputSurface::RetroactiveBeginFrameDeadline();
+      }
+    }
+    return base::TimeTicks();
   }
 
-  base::TimeDelta alternate_retroactive_begin_frame_period_;
+  bool retroactive_begin_frame_deadline_enabled_;
+  bool override_retroactive_period_;
+  base::TimeDelta retroactive_period_override_;
 };
 
 class TestSoftwareOutputDevice : public SoftwareOutputDevice {
@@ -220,8 +240,8 @@ TEST(OutputSurfaceTest, BeginFrameEmulation) {
       display_refresh_interval);
 
   output_surface.SetMaxFramesPending(2);
-  output_surface.SetAlternateRetroactiveBeginFramePeriod(
-      base::TimeDelta::FromSeconds(-1));
+  output_surface.EnableRetroactiveBeginFrameDeadline(
+      false, false, base::TimeDelta());
 
   // We should start off with 0 BeginFrames
   EXPECT_EQ(client.begin_frame_count(), 0);
@@ -294,10 +314,8 @@ TEST(OutputSurfaceTest, OptimisticAndRetroactiveBeginFrames) {
   EXPECT_FALSE(client.deferred_initialize_called());
 
   output_surface.SetMaxFramesPending(2);
-
-  // Enable retroactive BeginFrames.
-  output_surface.SetAlternateRetroactiveBeginFramePeriod(
-    base::TimeDelta::FromSeconds(100000));
+  output_surface.EnableRetroactiveBeginFrameDeadline(
+      true, false, base::TimeDelta());
 
   // Optimistically injected BeginFrames should be throttled if
   // SetNeedsBeginFrame is false...
@@ -348,7 +366,7 @@ TEST(OutputSurfaceTest, RetroactiveBeginFrameDoesNotDoubleTickWhenEmulating) {
   EXPECT_TRUE(output_surface.HasClient());
   EXPECT_FALSE(client.deferred_initialize_called());
 
-  base::TimeDelta big_interval = base::TimeDelta::FromSeconds(1000);
+  base::TimeDelta big_interval = base::TimeDelta::FromSeconds(10);
 
   // Initialize BeginFrame emulation
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
@@ -364,18 +382,17 @@ TEST(OutputSurfaceTest, RetroactiveBeginFrameDoesNotDoubleTickWhenEmulating) {
   // We need to subtract an epsilon from Now() because some platforms have
   // a slow clock.
   output_surface.OnVSyncParametersChangedForTesting(
-      base::TimeTicks::Now() - base::TimeDelta::FromMilliseconds(1),
-      display_refresh_interval);
+      base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1), big_interval);
 
   output_surface.SetMaxFramesPending(2);
-  output_surface.SetAlternateRetroactiveBeginFramePeriod(
-      base::TimeDelta::FromSeconds(-1));
+  output_surface.EnableRetroactiveBeginFrameDeadline(true, true, big_interval);
 
   // We should start off with 0 BeginFrames
   EXPECT_EQ(client.begin_frame_count(), 0);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 0);
 
   // The first SetNeedsBeginFrame(true) should start a retroactive BeginFrame.
+  EXPECT_FALSE(task_runner->HasPendingTask());
   output_surface.SetNeedsBeginFrame(true);
   EXPECT_TRUE(task_runner->HasPendingTask());
   EXPECT_GT(task_runner->NextPendingTaskDelay(), big_interval / 2);

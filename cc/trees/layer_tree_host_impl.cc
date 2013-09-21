@@ -1054,11 +1054,11 @@ bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
                "SourceFrameNumber",
                active_tree_->source_frame_number());
 
-  if (need_to_update_visible_tiles_before_draw_) {
-    DCHECK(tile_manager_);
-    if (tile_manager_->UpdateVisibleTiles())
-      DidInitializeVisibleTile();
+  if (need_to_update_visible_tiles_before_draw_ &&
+      tile_manager_ && tile_manager_->UpdateVisibleTiles()) {
+    DidInitializeVisibleTile();
   }
+  need_to_update_visible_tiles_before_draw_ = true;
 
   active_tree_->UpdateDrawProperties();
 
@@ -1094,6 +1094,10 @@ void LayerTreeHostImpl::EvictTexturesForTesting() {
 
 void LayerTreeHostImpl::BlockNotifyReadyToActivateForTesting(bool block) {
   NOTREACHED();
+}
+
+void LayerTreeHostImpl::DidInitializeVisibleTileForTesting() {
+  DidInitializeVisibleTile();
 }
 
 void LayerTreeHostImpl::EnforceManagedMemoryPolicy(
@@ -1154,7 +1158,7 @@ void LayerTreeHostImpl::DidInitializeVisibleTile() {
   // TODO(reveman): Determine tiles that changed and only damage
   // what's necessary.
   SetFullRootLayerDamage();
-  if (client_)
+  if (client_ && !client_->IsInsideDraw())
     client_->DidInitializeVisibleTileOnImplThread();
 }
 
@@ -1502,12 +1506,8 @@ void LayerTreeHostImpl::CreatePendingTree() {
 }
 
 void LayerTreeHostImpl::UpdateVisibleTiles() {
-  DCHECK(!client_->IsInsideDraw()) <<
-      "Updating visible tiles within a draw may trigger "
-      "spurious redraws.";
   if (tile_manager_ && tile_manager_->UpdateVisibleTiles())
     DidInitializeVisibleTile();
-
   need_to_update_visible_tiles_before_draw_ = false;
 }
 

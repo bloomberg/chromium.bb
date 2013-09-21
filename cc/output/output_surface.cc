@@ -4,6 +4,7 @@
 
 #include "cc/output/output_surface.h"
 
+#include <algorithm>
 #include <set>
 #include <string>
 #include <vector>
@@ -161,8 +162,13 @@ void OutputSurface::BeginFrame(const BeginFrameArgs& args) {
   }
 }
 
-base::TimeDelta OutputSurface::AlternateRetroactiveBeginFramePeriod() {
-  return BeginFrameArgs::DefaultRetroactiveBeginFramePeriod();
+base::TimeTicks OutputSurface::RetroactiveBeginFrameDeadline() {
+  // TODO(brianderson): Remove the alternative deadline once we have better
+  // deadline estimations.
+  base::TimeTicks alternative_deadline =
+      skipped_begin_frame_args_.frame_time +
+      BeginFrameArgs::DefaultRetroactiveBeginFramePeriod();
+  return std::max(skipped_begin_frame_args_.deadline, alternative_deadline);
 }
 
 void OutputSurface::PostCheckForRetroactiveBeginFrame() {
@@ -180,16 +186,8 @@ void OutputSurface::PostCheckForRetroactiveBeginFrame() {
 void OutputSurface::CheckForRetroactiveBeginFrame() {
   TRACE_EVENT0("cc", "OutputSurface::CheckForRetroactiveBeginFrame");
   check_for_retroactive_begin_frame_pending_ = false;
-  base::TimeTicks now = base::TimeTicks::Now();
-  // TODO(brianderson): Remove the alternative deadline once we have better
-  // deadline estimations.
-  base::TimeTicks alternative_deadline =
-      skipped_begin_frame_args_.frame_time +
-      AlternateRetroactiveBeginFramePeriod();
-  if (now < skipped_begin_frame_args_.deadline ||
-      now < alternative_deadline) {
+  if (base::TimeTicks::Now() < RetroactiveBeginFrameDeadline())
     BeginFrame(skipped_begin_frame_args_);
-  }
 }
 
 void OutputSurface::DidSwapBuffers() {
@@ -219,6 +217,9 @@ void OutputSurface::DidLoseOutputSurface() {
   TRACE_EVENT0("cc", "OutputSurface::DidLoseOutputSurface");
   client_ready_for_begin_frame_ = true;
   pending_swap_buffers_ = 0;
+  skipped_begin_frame_args_ = BeginFrameArgs();
+  if (frame_rate_controller_)
+    frame_rate_controller_->SetActive(false);
   client_->DidLoseOutputSurface();
 }
 

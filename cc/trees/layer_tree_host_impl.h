@@ -185,6 +185,9 @@ class CC_EXPORT LayerTreeHostImpl
   // immediately if any notifications had been blocked while blocking.
   virtual void BlockNotifyReadyToActivateForTesting(bool block);
 
+  // This allows us to inject DidInitializeVisibleTile events for testing.
+  void DidInitializeVisibleTileForTesting();
+
   bool device_viewport_valid_for_tile_management() const {
     return device_viewport_valid_for_tile_management_;
   }
@@ -409,8 +412,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   virtual ResourceProvider::ResourceId ResourceIdForUIResource(
       UIResourceId uid) const;
-
-  void DidInitializeVisibleTileForTesting() { DidInitializeVisibleTile(); }
 
  protected:
   LayerTreeHostImpl(

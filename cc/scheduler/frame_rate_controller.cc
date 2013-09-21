@@ -76,9 +76,8 @@ BeginFrameArgs FrameRateController::SetActive(bool active) {
     base::TimeTicks missed_tick_time = time_source_->SetActive(active);
     if (!missed_tick_time.is_null()) {
       base::TimeTicks deadline = NextTickTime();
-      return BeginFrameArgs::Create(missed_tick_time,
-                                    deadline,
-                                    interval_);
+      return  BeginFrameArgs::Create(
+          missed_tick_time, deadline + deadline_adjustment_, interval_);
     }
   } else {
     if (active)
@@ -118,10 +117,10 @@ void FrameRateController::OnTimerTick() {
   if (client_) {
     // TODO(brianderson): Use an adaptive parent compositor deadline.
     base::TimeTicks frame_time = LastTickTime();
-    base::TimeTicks deadline = NextTickTime() + deadline_adjustment_;
-    client_->FrameRateControllerTick(
-        throttled,
-        BeginFrameArgs::Create(frame_time, deadline, interval_));
+    base::TimeTicks deadline = NextTickTime();
+    BeginFrameArgs args = BeginFrameArgs::Create(
+        frame_time, deadline + deadline_adjustment_, interval_);
+    client_->FrameRateControllerTick(throttled, args);
   }
 
   if (!is_time_source_throttling_ && !throttled)

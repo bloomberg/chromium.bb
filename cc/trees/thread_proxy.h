@@ -70,6 +70,7 @@ class ThreadProxy : public Proxy,
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE;
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE;
   virtual void BeginFrameOnImplThread(const BeginFrameArgs& args) OVERRIDE;
+  virtual void DidBeginFrameDeadlineOnImplThread() OVERRIDE;
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE;
   virtual void NotifyReadyToActivate() OVERRIDE;
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
@@ -108,6 +109,8 @@ class ThreadProxy : public Proxy,
   virtual base::TimeDelta DrawDurationEstimate() OVERRIDE;
   virtual base::TimeDelta BeginFrameToCommitDurationEstimate() OVERRIDE;
   virtual base::TimeDelta CommitToActivateDurationEstimate() OVERRIDE;
+  virtual void PostBeginFrameDeadline(const base::Closure& closure,
+                                      base::TimeTicks deadline) OVERRIDE;
 
   // ResourceUpdateControllerClient implementation
   virtual void ReadyToFinalizeTextureUpdates() OVERRIDE;

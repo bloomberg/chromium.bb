@@ -22,6 +22,7 @@ class CC_EXPORT LayerTreeSettings {
   bool allow_antialiasing;
   bool throttle_frame_production;
   bool begin_frame_scheduling_enabled;
+  bool deadline_scheduling_enabled;
   bool using_synchronous_renderer_compositor;
   bool per_tile_painting_enabled;
   bool partial_swap_enabled;

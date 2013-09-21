@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/cancelable_callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
@@ -47,6 +48,9 @@ class SchedulerClient {
   virtual base::TimeDelta DrawDurationEstimate() = 0;
   virtual base::TimeDelta BeginFrameToCommitDurationEstimate() = 0;
   virtual base::TimeDelta CommitToActivateDurationEstimate() = 0;
+  virtual void PostBeginFrameDeadline(const base::Closure& closure,
+                                      base::TimeTicks deadline) = 0;
+  virtual void DidBeginFrameDeadlineOnImplThread() = 0;
 
  protected:
   virtual ~SchedulerClient() {}
@@ -104,6 +108,7 @@ class CC_EXPORT Scheduler {
   base::TimeTicks LastBeginFrameOnImplThreadTime();
 
   void BeginFrame(const BeginFrameArgs& args);
+  void OnBeginFrameDeadline();
   void PollForAnticipatedDrawTriggers();
 
   scoped_ptr<base::Value> StateAsValue() {
@@ -118,7 +123,9 @@ class CC_EXPORT Scheduler {
   Scheduler(SchedulerClient* client,
             const SchedulerSettings& scheduler_settings);
 
+  void PostBeginFrameDeadline(base::TimeTicks deadline);
   void SetupNextBeginFrameIfNeeded();
+  void ActivatePendingTree();
   void DrawAndSwapIfPossible();
   void DrawAndSwapForced();
   void DrawAndReadback();
@@ -130,6 +137,7 @@ class CC_EXPORT Scheduler {
   base::WeakPtrFactory<Scheduler> weak_factory_;
   bool last_set_needs_begin_frame_;
   BeginFrameArgs last_begin_frame_args_;
+  base::CancelableClosure begin_frame_deadline_closure_;
   base::CancelableClosure poll_for_draw_triggers_closure_;
 
   SchedulerStateMachine state_machine_;

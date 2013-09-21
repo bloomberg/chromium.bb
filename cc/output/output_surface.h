@@ -165,6 +165,10 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   bool needs_begin_frame_;
   bool client_ready_for_begin_frame_;
 
+  // This stores a BeginFrame that we couldn't process immediately, but might
+  // process retroactively in the near future.
+  BeginFrameArgs skipped_begin_frame_args_;
+
   // Forwarded to OutputSurfaceClient but threaded through OutputSurface
   // first so OutputSurface has a chance to update the FrameRateController
   void SetNeedsRedrawRect(gfx::Rect damage_rect);
@@ -180,7 +184,7 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
                                   bool valid_for_tile_management);
 
   // virtual for testing.
-  virtual base::TimeDelta AlternateRetroactiveBeginFramePeriod();
+  virtual base::TimeTicks RetroactiveBeginFrameDeadline();
   virtual void PostCheckForRetroactiveBeginFrame();
   void CheckForRetroactiveBeginFrame();
 
@@ -192,10 +196,6 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   void ResetContext3d();
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy,
                        bool discard_backbuffer_when_not_visible);
-
-  // This stores a BeginFrame that we couldn't process immediately, but might
-  // process retroactively in the near future.
-  BeginFrameArgs skipped_begin_frame_args_;
 
   // check_for_retroactive_begin_frame_pending_ is used to avoid posting
   // redundant checks for a retroactive BeginFrame.

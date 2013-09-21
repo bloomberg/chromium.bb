@@ -37,9 +37,7 @@ struct CC_EXPORT BeginFrameArgs {
   // retroactively.
   static base::TimeDelta DefaultRetroactiveBeginFramePeriod();
 
-  bool IsValid() const {
-    return interval >= base::TimeDelta();
-  }
+  bool IsValid() const { return interval >= base::TimeDelta(); }
 
   base::TimeTicks frame_time;
   base::TimeTicks deadline;

@@ -45,6 +45,18 @@ class CC_EXPORT SchedulerStateMachine {
   };
   static const char* OutputSurfaceStateToString(OutputSurfaceState state);
 
+  // Note: BeginFrameState will always cycle through all the states in order.
+  // Whether or not it actually waits or draws, it will at least try to wait in
+  // BEGIN_FRAME_STATE_INSIDE_BEGIN_FRAME and try to draw in
+  // BEGIN_FRAME_STATE_INSIDE_DEADLINE
+  enum BeginFrameState {
+    BEGIN_FRAME_STATE_IDLE,
+    BEGIN_FRAME_STATE_BEGIN_FRAME_STARTING,
+    BEGIN_FRAME_STATE_INSIDE_BEGIN_FRAME,
+    BEGIN_FRAME_STATE_INSIDE_DEADLINE,
+  };
+  static const char* BeginFrameStateToString(BeginFrameState state);
+
   enum CommitState {
     COMMIT_STATE_IDLE,
     COMMIT_STATE_FRAME_IN_PROGRESS,
@@ -109,19 +121,30 @@ class CC_EXPORT SchedulerStateMachine {
 
   Action NextAction() const;
   void UpdateState(Action action);
+
   void CheckInvariants();
 
   // Indicates whether the main thread needs a begin frame callback in order to
   // make progress.
-  bool BeginFrameNeededToDrawByImplThread() const;
-  bool ProactiveBeginFrameWantedByImplThread() const;
+  bool BeginFrameNeededByImplThread() const;
+
+  // Idicates that we need to independently poll for new state and actions
+  // because we can't expect a BeginFrame. This is mostly used to avoid
+  // drawing repeat frames with the synchronous compositor without dropping
+  // necessary actions on the floor.
+  bool ShouldPollForAnticipatedDrawTriggers() const;
 
   // Indicates that the system has entered and left a BeginFrame callback.
   // The scheduler will not draw more than once in a given BeginFrame
   // callback nor send more than one BeginFrame message.
-  void DidEnterBeginFrame(const BeginFrameArgs& args);
-  void DidLeaveBeginFrame();
-  bool inside_begin_frame() const { return inside_begin_frame_; }
+  void OnBeginFrame(const BeginFrameArgs& args);
+  void OnBeginFrameDeadlinePending();
+  void OnBeginFrameDeadline();
+  void OnBeginFrameIdle();
+  bool ShouldTriggerBeginFrameDeadlineEarly() const;
+  BeginFrameState begin_frame_state() const {
+    return begin_frame_state_;
+  }
 
   // PollForAnticipatedDrawTriggers is used by the synchronous compositor to
   // avoid requesting BeginImplFrames when we won't actually draw but still
@@ -138,6 +161,7 @@ class CC_EXPORT SchedulerStateMachine {
   // Indicates that a redraw is required, either due to the impl tree changing
   // or the screen being damaged and simply needing redisplay.
   void SetNeedsRedraw();
+  bool needs_redraw() const { return needs_redraw_; }
 
   // Indicates that manage-tiles is required. This guarantees another
   // ManageTiles will occur shortly (even if no redraw is required).
@@ -147,8 +171,7 @@ class CC_EXPORT SchedulerStateMachine {
   // with a low resolution or checkerboarded tile.
   void SetSwapUsedIncompleteTile(bool used_incomplete_tile);
 
-  // Indicates whether ACTION_DRAW_AND_SWAP_IF_POSSIBLE drew to the screen or
-  // not.
+  // Indicates whether ACTION_DRAW_AND_SWAP_IF_POSSIBLE drew to the screen.
   void DidDrawIfPossibleCompleted(bool success);
 
   // Indicates that a new commit flow needs to be performed, either to pull
@@ -201,6 +224,9 @@ class CC_EXPORT SchedulerStateMachine {
   bool PendingDrawsShouldBeAborted() const;
 
  protected:
+  bool BeginFrameNeededToDrawByImplThread() const;
+  bool ProactiveBeginFrameWantedByImplThread() const;
+
   // True if we need to force activations to make forward progress.
   bool PendingActivationsShouldBeForced() const;
 
@@ -214,11 +240,10 @@ class CC_EXPORT SchedulerStateMachine {
   bool ShouldCommit() const;
   bool ShouldManageTiles() const;
 
-  bool HasDrawnAndSwappedThisFrame() const;
-  bool HasActivatedPendingTreeThisFrame() const;
-  bool HasUpdatedVisibleTilesThisFrame() const;
   bool HasSentBeginFrameToMainThreadThisFrame() const;
   bool HasScheduledManageTilesThisFrame() const;
+  bool HasUpdatedVisibleTilesThisFrame() const;
+  bool HasSwappedThisFrame() const;
 
   void UpdateStateOnCommit(bool commit_was_aborted);
   void UpdateStateOnActivation();
@@ -228,26 +253,27 @@ class CC_EXPORT SchedulerStateMachine {
   const SchedulerSettings settings_;
 
   OutputSurfaceState output_surface_state_;
+  BeginFrameState begin_frame_state_;
   CommitState commit_state_;
   TextureState texture_state_;
   ForcedRedrawOnTimeoutState forced_redraw_state_;
   SynchronousReadbackState readback_state_;
 
+  BeginFrameArgs last_begin_frame_args_;
+
   int commit_count_;
   int current_frame_number_;
-  int last_frame_number_where_begin_frame_sent_to_main_thread_;
   int last_frame_number_swap_performed_;
-  int last_frame_number_where_update_visible_tiles_was_called_;
+  int last_frame_number_begin_frame_sent_to_main_thread_;
+  int last_frame_number_update_visible_tiles_was_called_;
+
   int consecutive_failed_draws_;
   bool needs_redraw_;
   bool needs_manage_tiles_;
   bool swap_used_incomplete_tile_;
   bool needs_commit_;
   bool main_thread_needs_layer_textures_;
-  bool inside_begin_frame_;
   bool inside_poll_for_anticipated_draw_triggers_;
-
-  BeginFrameArgs last_begin_frame_args_;
   bool visible_;
   bool can_start_;
   bool can_draw_;
