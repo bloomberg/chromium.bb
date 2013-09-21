@@ -248,6 +248,8 @@ void EnsureMethodsLoaded() {
 
   void* dbusmenu_lib = dlopen("libdbusmenu-glib.so", RTLD_LAZY);
   if (!dbusmenu_lib)
+    dbusmenu_lib = dlopen("libdbusmenu-glib.so.4", RTLD_LAZY);
+  if (!dbusmenu_lib)
     return;
 
   // DbusmenuMenuItem methods.
