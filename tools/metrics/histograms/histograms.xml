@@ -1381,6 +1381,10 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Cookie.ParsedCookieStatus" enum="ParsedCookieStatus">
+  <obsolete>
+    Deprecated as of 9/2013. Experiment to measure control characters in cookies
+    is finished.
+  </obsolete>
   <summary>
     When parsing a cookie, indicates if control characters were present in any
     of the cookie values and if any of the cookie values were invalid.
@@ -1400,6 +1404,10 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Cookie.SetAttributePairCharsValidity" enum="BooleanValid">
+  <obsolete>
+    Deprecated as of 9/2013. Experiment to measure control characters in cookies
+    is finished.
+  </obsolete>
   <summary>
     Indicates whether a cookie attribute pair was set with both a valid key and
     a valid attribute value or not. For the key, this implies that it was a
@@ -1412,6 +1420,10 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Cookie.SetNameValidity" enum="BooleanValid">
+  <obsolete>
+    Deprecated as of 9/2013. Experiment to measure control characters in cookies
+    is finished.
+  </obsolete>
   <summary>
     Indicates whether a cookie name was set with a valid token. A valid token is
     defined in Section 2.2 of RFC2616 which specifies a token must have no
@@ -1422,6 +1434,10 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Cookie.SetValueCookieValueValidity" enum="BooleanValid">
+  <obsolete>
+    Deprecated as of 9/2013. Experiment to measure control characters in cookies
+    is finished.
+  </obsolete>
   <summary>
     Indicates whether a cookie value was valid or invalid when there was an
     attempt to set it, where a valid value is defined in RFC 6265 as ASCII
@@ -23967,6 +23983,10 @@ other types of suffix sets.
 </enum>
 
 <enum name="ParsedCookieStatus" type="int">
+  <obsolete>
+    Deprecated as of 9/2013. Experiment to measure control characters in cookies
+    is finished.
+  </obsolete>
   <int value="0" label="All cookie values valid and without control chars"/>
   <int value="1" label="Cookie contains control chars"/>
   <int value="2" label="Cookie is invalid"/>
