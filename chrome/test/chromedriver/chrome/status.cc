@@ -57,6 +57,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "disconnected";
     case kForbidden:
       return "forbidden";
+    case kTabCrashed:
+      return "tab crashed";
     default:
       return "<unknown>";
   }

@@ -76,6 +76,7 @@ class DevToolsClientImpl : public DevToolsClient {
 
   // Overridden from DevToolsClient:
   virtual const std::string& GetId() OVERRIDE;
+  virtual bool WasCrashed() OVERRIDE;
   virtual Status ConnectIfNecessary() OVERRIDE;
   virtual Status SendCommand(const std::string& method,
                              const base::DictionaryValue& params) OVERRIDE;
@@ -125,6 +126,7 @@ class DevToolsClientImpl : public DevToolsClient {
 
   scoped_ptr<SyncWebSocket> socket_;
   GURL url_;
+  bool crashed_;
   const std::string id_;
   FrontendCloserFunc frontend_closer_func_;
   ParserFunc parser_func_;

@@ -19,6 +19,7 @@ class StubWebView : public WebView {
 
   // Overridden from WebView:
   virtual std::string GetId() OVERRIDE;
+  virtual bool WasCrashed() OVERRIDE;
   virtual Status ConnectIfNecessary() OVERRIDE;
   virtual Status HandleReceivedEvents() OVERRIDE;
   virtual Status Load(const std::string& url) OVERRIDE;

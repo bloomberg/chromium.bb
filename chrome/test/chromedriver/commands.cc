@@ -151,8 +151,20 @@ void ExecuteSessionCommandOnSessionThread(
   }
   scoped_ptr<base::Value> value;
   Status status = command.Run(session, *params, &value);
-  if (status.IsError() && session->chrome)
+
+  if (status.IsError() && session->chrome) {
+    if (!session->quit && session->chrome->HasCrashedWebView()) {
+      session->quit = true;
+      std::string message("session deleted because of page crash");
+      if (!session->detach) {
+        Status quit_status = session->chrome->Quit();
+        if (quit_status.IsError())
+          message += ", but failed to kill browser:" + quit_status.message();
+      }
+      status = Status(kUnknownError, message, status);
+    }
     status.AddDetails("Session info: chrome=" + session->chrome->GetVersion());
+  }
 
   if (IsVLogOn(0)) {
     std::string result;

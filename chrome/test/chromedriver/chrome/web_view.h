@@ -34,6 +34,9 @@ class WebView {
   // Return the id for this WebView.
   virtual std::string GetId() = 0;
 
+  // Return true if the web view was crashed.
+  virtual bool WasCrashed() = 0;
+
   // Make DevToolsCient connect to DevTools if it is disconnected.
   virtual Status ConnectIfNecessary() = 0;
 

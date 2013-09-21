@@ -130,6 +130,10 @@ std::string WebViewImpl::GetId() {
   return id_;
 }
 
+bool WebViewImpl::WasCrashed() {
+  return client_->WasCrashed();
+}
+
 Status WebViewImpl::ConnectIfNecessary() {
   return client_->ConnectIfNecessary();
 }

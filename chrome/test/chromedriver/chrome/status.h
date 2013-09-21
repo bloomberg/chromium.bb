@@ -33,6 +33,7 @@ enum StatusCode {
   kNoSuchExecutionContext,
   kDisconnected,
   kForbidden = 103,
+  kTabCrashed,
 };
 
 // Represents a WebDriver status, which may be an error or ok.

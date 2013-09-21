@@ -158,12 +158,11 @@ Status ExecuteQuit(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  if (allow_detach && session->detach) {
+  session->quit = true;
+  if (allow_detach && session->detach)
     return Status(kOk);
-  } else {
-    session->quit = true;
+  else
     return session->chrome->Quit();
-  }
 }
 
 Status ExecuteGetSessionCapabilities(

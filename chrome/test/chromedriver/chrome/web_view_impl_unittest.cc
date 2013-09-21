@@ -32,6 +32,9 @@ class FakeDevToolsClient : public DevToolsClient {
   virtual const std::string& GetId() OVERRIDE {
     return id_;
   }
+  virtual bool WasCrashed() OVERRIDE {
+    return false;
+  }
   virtual Status ConnectIfNecessary() OVERRIDE {
     return Status(kOk);
   }

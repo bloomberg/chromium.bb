@@ -17,6 +17,10 @@ const std::string& StubDevToolsClient::GetId() {
   return id_;
 }
 
+bool StubDevToolsClient::WasCrashed() {
+  return false;
+}
+
 Status StubDevToolsClient::ConnectIfNecessary() {
   return Status(kOk);
 }

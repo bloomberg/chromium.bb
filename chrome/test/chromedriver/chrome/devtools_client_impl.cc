@@ -74,6 +74,7 @@ DevToolsClientImpl::DevToolsClientImpl(
     const FrontendCloserFunc& frontend_closer_func)
     : socket_(factory.Run().Pass()),
       url_(url),
+      crashed_(false),
       id_(id),
       frontend_closer_func_(frontend_closer_func),
       parser_func_(base::Bind(&internal::ParseInspectorMessage)),
@@ -89,6 +90,7 @@ DevToolsClientImpl::DevToolsClientImpl(
     const ParserFunc& parser_func)
     : socket_(factory.Run().Pass()),
       url_(url),
+      crashed_(false),
       id_(id),
       frontend_closer_func_(frontend_closer_func),
       parser_func_(parser_func),
@@ -105,6 +107,10 @@ void DevToolsClientImpl::SetParserFuncForTesting(
 
 const std::string& DevToolsClientImpl::GetId() {
   return id_;
+}
+
+bool DevToolsClientImpl::WasCrashed() {
+  return crashed_;
 }
 
 Status DevToolsClientImpl::ConnectIfNecessary() {
@@ -256,6 +262,9 @@ Status DevToolsClientImpl::ProcessNextMessage(
   if (expected_id != -1 && response_info_map_[expected_id]->state != kWaiting)
     return Status(kOk);
 
+  if (crashed_)
+    return Status(kTabCrashed);
+
   std::string message;
   switch (socket_->ReceiveNextMessage(&message, timeout)) {
     case SyncWebSocket::kOk:
@@ -304,8 +313,10 @@ Status DevToolsClientImpl::ProcessEvent(const internal::InspectorEvent& event) {
     return status;
   if (event.method == "Inspector.detached")
     return Status(kDisconnected, "received Inspector.detached event");
-  if (event.method == "Inspector.targetCrashed")
-    return Status(kDisconnected, "page crashed");
+  if (event.method == "Inspector.targetCrashed") {
+    crashed_ = true;
+    return Status(kTabCrashed);
+  }
   if (event.method == "Page.javascriptDialogOpening") {
     // A command may have opened the dialog, which will block the response.
     // To find out which one (if any), do a round trip with a simple command

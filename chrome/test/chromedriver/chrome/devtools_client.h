@@ -27,6 +27,8 @@ class DevToolsClient {
 
   virtual const std::string& GetId() = 0;
 
+  virtual bool WasCrashed() = 0;
+
   // Connect to DevTools if the DevToolsClient is disconnected.
   virtual Status ConnectIfNecessary() = 0;
 

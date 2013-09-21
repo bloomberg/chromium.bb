@@ -20,6 +20,15 @@ int ChromeImpl::GetBuildNo() {
   return devtools_http_client_->build_no();
 }
 
+bool ChromeImpl::HasCrashedWebView() {
+  for (WebViewList::iterator it = web_views_.begin();
+       it != web_views_.end(); ++it) {
+    if ((*it)->WasCrashed())
+      return true;
+  }
+  return false;
+}
+
 Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
   WebViewsInfo views_info;
   Status status = devtools_http_client_->GetWebViewsInfo(&views_info);

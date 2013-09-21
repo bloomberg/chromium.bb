@@ -26,6 +26,7 @@ class StubDevToolsClient : public DevToolsClient {
 
   // Overridden from DevToolsClient:
   virtual const std::string& GetId() OVERRIDE;
+  virtual bool WasCrashed() OVERRIDE;
   virtual Status ConnectIfNecessary() OVERRIDE;
   virtual Status SendCommand(const std::string& method,
                              const base::DictionaryValue& params) OVERRIDE;

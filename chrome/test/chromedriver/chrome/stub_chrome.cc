@@ -22,6 +22,10 @@ int StubChrome::GetBuildNo() {
   return 9999;
 }
 
+bool StubChrome::HasCrashedWebView() {
+  return false;
+}
+
 Status StubChrome::GetWebViewIds(std::list<std::string>* web_view_ids) {
   return Status(kOk);
 }
