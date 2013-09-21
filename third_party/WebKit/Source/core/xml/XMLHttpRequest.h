@@ -178,7 +178,8 @@ private:
     void callReadyStateChangeListener();
     void dropProtectionSoon();
     void dropProtection(Timer<XMLHttpRequest>* = 0);
-    void internalAbort(DropProtection = DropProtectionSync);
+    // Returns false iff reentry happened and a new load is started.
+    bool internalAbort(DropProtection = DropProtectionSync);
     void clearResponse();
     void clearResponseBuffers();
     void clearRequest();
