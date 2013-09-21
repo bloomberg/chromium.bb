@@ -55,8 +55,23 @@ class RemoteTryJob(object):
   TRYJOB_FORMAT_VERSION = 4
   TRYJOB_FORMAT_FILE = '.tryjob_minimal_format_version'
 
-  NAME_LENGTH_LIMIT = 256
-  PROPERTY_LENGTH_LIMIT = 1024
+  # Constants for controlling the length of JSON fields sent to buildbot.
+  # - The trybot description is shown when the run starts, and helps users
+  #   distinguish between their various runs. If no trybot description is
+  #   specified, the list of patches is used as the description. The buildbot
+  #   database limits this field to MAX_DESCRIPTION_LENGTH characters.
+  # - When checking the trybot description length, we also add some PADDING
+  #   to give buildbot room to add extra formatting around the fields used in
+  #   the description.
+  # - We limit the number of patches listed in the description to
+  #   MAX_PATCHES_IN_DESCRIPTION. This is for readability only.
+  # - Every individual field that is stored in a buildset is limited to
+  #   MAX_PROPERTY_LENGTH. We use this to ensure that our serialized list of
+  #   arguments fits within that limit.
+  MAX_DESCRIPTION_LENGTH = 256
+  MAX_PATCHES_IN_DESCRIPTION = 10
+  MAX_PROPERTY_LENGTH = 1023
+  PADDING = 50
 
   def __init__(self, options, bots, local_patches):
     """Construct the object.
@@ -79,7 +94,12 @@ class RemoteTryJob(object):
       self.name = ''
       if options.branch != 'master':
         self.name = '[%s] ' % options.branch
-      self.name += ','.join(patch_list)
+
+      self.name += ','.join(patch_list[:self.MAX_PATCHES_IN_DESCRIPTION])
+      if len(patch_list) > self.MAX_PATCHES_IN_DESCRIPTION:
+        remaining_patches = len(patch_list) - self.MAX_PATCHES_IN_DESCRIPTION
+        self.name += '... (%d more CLs)' % (remaining_patches,)
+
     self.bots = bots[:]
     self.slaves_request = options.slaves
     self.description = ('name: %s\n patches: %s\nbots: %s' %
@@ -114,19 +134,19 @@ class RemoteTryJob(object):
 
   def _VerifyForBuildbot(self):
     """Early validation, to ensure the job can be processed by buildbot."""
-    val = self.values
-    # Validate the name of the buildset that buildbot will try to queue.
-    full_name = '%s:%s' % (val['user'], val['name'])
-    if len(full_name) > self.NAME_LENGTH_LIMIT:
-      raise ValidationError(
-          'The tryjob description is longer than %s characters.  '
-          'Use --remote-description to specify a custom description.'
-          % self.NAME_LENGTH_LIMIT)
+
+    # Buildbot stores the trybot description in a property with a 256
+    # character limit. Validate that our description is well under the limit.
+    if (len(self.user) + len(self.name) + self.PADDING >
+        self.MAX_DESCRIPTION_LENGTH):
+      cros_build_lib.Warning(
+          'remote tryjob description is too long, truncating it')
+      self.name = self.name[:self.MAX_DESCRIPTION_LENGTH - self.PADDING] + '...'
 
     # Buildbot will set extra_args as a buildset 'property'.  It will store
     # the property in its database in JSON form.  The limit of the database
     # field is 1023 characters.
-    if len(json.dumps(val['extra_args'])) > self.PROPERTY_LENGTH_LIMIT:
+    if len(json.dumps(self.extra_args)) > self.MAX_PROPERTY_LENGTH:
       raise ValidationError(
           'The number of extra arguments passed to cbuildbot has exceeded the '
           'limit.  If you have a lot of local patches, upload them and use the '
