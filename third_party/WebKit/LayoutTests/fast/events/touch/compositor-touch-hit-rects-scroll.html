@@ -16,6 +16,11 @@
 #transformed {
   -webkit-transform: translate3d(10px, 10px, 0);
 }
+.relative {
+  position: relative;
+  /* ensure it doesn't interfere with subsequent layer promotions */
+  z-index: -1;
+}
 </style>
 </head>
 <body>
@@ -33,8 +38,15 @@ overflow scroll elements.
   <div id="scroll5" class="scroll">
     <div>
       <div style='height: 13px;'></div>
-      <div class="testcase" id="scrollContent2">Scroll content 2</div>
+      <div class="testcase" id="scrollContent5">Scroll content 5</div>
       <div id="scroll5spacer" style='height: 50px;'></div>
+    </div>
+  </div>
+  <div id="scroll6" class="scroll">
+    <div>
+      <div style='height: 13px;'></div>
+      <div class="testcase relative" id="scrollContent6">Scroll content 6</div>
+      <div id="scroll6spacer" style='height: 50px;'></div>
     </div>
   </div>
   <div id="scroll2" class="scroll">
@@ -82,10 +94,16 @@ preRunHandlerForTest['scrollContent'] = function(e) {
     document.getElementById('scroll1').scrollTop = 15;
 };
 
-preRunHandlerForTest['scrollContent2'] = function(e) {
+preRunHandlerForTest['scrollContent5'] = function(e) {
     document.getElementById('scroll5').scrollTop = 5;
     // force layout after scroll position changed
     document.getElementById('scroll5spacer').style.height="60px";
+};
+
+preRunHandlerForTest['scrollContent6'] = function(e) {
+    document.getElementById('scroll6').scrollTop = 5;
+    // force layout after scroll position changed
+    document.getElementById('scroll6spacer').style.height="60px";
 };
 
 preRunHandlerForTest['nestedContent'] = function(e) {

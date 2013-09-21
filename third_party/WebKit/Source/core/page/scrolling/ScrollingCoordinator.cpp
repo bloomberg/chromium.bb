@@ -391,6 +391,10 @@ static void convertLayerRectsToEnclosingCompositedLayerRecursive(
             if (compositedLayer != curLayer) {
                 FloatQuad compositorQuad = geometryMap.mapToContainer(rect, compositedLayer->renderer());
                 rect = LayoutRect(compositorQuad.boundingBox());
+                // If the enclosing composited layer itself is scrolled, we have to undo the subtraction
+                // of its scroll offset since we want the offset relative to the scrolling content, not
+                // the element itself.
+                rect.move(compositedLayer->scrolledContentOffset());
             }
             compIter->value.append(rect);
         }
