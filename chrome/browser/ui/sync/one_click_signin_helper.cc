@@ -385,8 +385,23 @@ void StartExplicitSync(const StartSyncArgs& args,
     StartSync(args, start_mode);
     RedirectToNtpOrAppsPageIfNecessary(contents, args.source);
   } else {
-    if (signin::IsContinueUrlForWebBasedSigninFlow(contents->GetVisibleURL()))
+    // Perform a redirection to the NTP/Apps page to hide the blank page when
+    // the action is CLOSE or CREATE_NEW_USER. The redirection is useful when
+    // the action is CREATE_NEW_USER because the "Create new user" page might
+    // be opened in a different tab that is already showing settings.
+    //
+    // Don't redirect when this callback is called while there is a navigation
+    // in progress. Otherwise, there would be 2 nested navigations and a crash
+    // would occur (crbug.com/293261).
+    //
+    // Also, don't redirect when the visible URL is not a blank page: if the
+    // source is SOURCE_WEBSTORE_INSTALL, |contents| might be showing an app
+    // page that shouldn't be hidden.
+    if (!contents->IsLoading() &&
+        signin::IsContinueUrlForWebBasedSigninFlow(
+            contents->GetVisibleURL())) {
       RedirectToNtpOrAppsPage(contents, args.source);
+    }
     if (action == ConfirmEmailDialogDelegate::CREATE_NEW_USER) {
       chrome::ShowSettingsSubPage(args.browser,
                                   std::string(chrome::kSearchUsersSubPage));
