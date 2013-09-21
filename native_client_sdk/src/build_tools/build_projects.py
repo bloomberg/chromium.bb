@@ -235,7 +235,11 @@ def main(argv):
   pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
 
   if not options.toolchain:
-    options.toolchain = ['newlib', 'glibc', 'pnacl', 'host']
+    # Order matters here: the default toolchain for an example's Makefile will
+    # be the first toolchain in this list that is available in the example.
+    # e.g. If an example supports newlib and glibc, then the default will be
+    # newlib.
+    options.toolchain = ['pnacl', 'newlib', 'glibc', 'host']
 
   if 'host' in options.toolchain:
     options.toolchain.remove('host')

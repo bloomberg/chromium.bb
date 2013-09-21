@@ -10,11 +10,11 @@
 #
 # Toolchain
 #
-# By default the VALID_TOOLCHAINS list contains newlib and glibc.  If your
-# project only builds in one or the other then this should be overridden
+# By default the VALID_TOOLCHAINS list contains pnacl, newlib and glibc.  If
+# your project only builds in one or the other then this should be overridden
 # accordingly.
 #
-VALID_TOOLCHAINS ?= newlib glibc
+VALID_TOOLCHAINS ?= pnacl newlib glibc
 TOOLCHAIN ?= $(word 1,$(VALID_TOOLCHAINS))
 
 
@@ -58,7 +58,7 @@ endef
 #
 # The target for all versions
 #
-USABLE_TOOLCHAINS=$(filter $(OSNAME) newlib glibc pnacl,$(VALID_TOOLCHAINS))
+USABLE_TOOLCHAINS=$(filter $(OSNAME) pnacl newlib glibc,$(VALID_TOOLCHAINS))
 
 ifeq ($(NO_HOST_BUILDS),1)
 USABLE_TOOLCHAINS:=$(filter-out $(OSNAME),$(USABLE_TOOLCHAINS))
@@ -101,9 +101,9 @@ else  # TOOLCHAIN is valid...
 #
 # The SDK provides two sets of libraries, Debug and Release.  Debug libraries
 # are compiled without optimizations to make debugging easier.  By default
-# this will build a Debug configuration.
+# this will build a Release configuration.
 #
-CONFIG ?= Debug
+CONFIG ?= Release
 
 
 #
