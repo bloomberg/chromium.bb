@@ -83,16 +83,14 @@ PrefMetricsService::PrefMetricsService(Profile* profile)
 
   // The following code might cause callbacks into this instance before we exit
   // the constructor. This instance should be initialized at this point.
-
-  // Android has no GetDeviceId.
-#if !defined(OS_ANDROID)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   // We need the machine id to compute pref value hashes. Fetch that, and then
   // call CheckTrackedPreferences in the callback.
   extensions::api::DeviceId::GetDeviceId(
       "PrefMetricsService",  // non-empty string to obfuscate the device id.
       Bind(&PrefMetricsService::GetDeviceIdCallback,
            weak_factory_.GetWeakPtr()));
-#endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
 
 // For unit testing only.
