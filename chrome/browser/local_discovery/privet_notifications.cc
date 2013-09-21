@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -34,12 +35,30 @@
 namespace local_discovery {
 
 namespace {
+
 const int kTenMinutesInSeconds = 600;
 const char kPrivetInfoKeyUptime[] = "uptime";
 const char kPrivetNotificationIDPrefix[] = "privet_notification:";
 const char kPrivetNotificationOriginUrl[] = "chrome://devices";
 const int kStartDelaySeconds = 5;
+
+enum PrivetNotificationsEvent {
+  PRIVET_SERVICE_STARTED,
+  PRIVET_LISTER_STARTED,
+  PRIVET_DEVICE_CHANGED,
+  PRIVET_INFO_DONE,
+  PRIVET_NOTIFICATION_SHOWN,
+  PRIVET_NOTIFICATION_CANCELED,
+  PRIVET_NOTIFICATION_CLICKED,
+  PRIVET_EVENT_MAX,
+};
+
+void ReportPrivetUmaEvent(PrivetNotificationsEvent privet_event) {
+  UMA_HISTOGRAM_ENUMERATION("LocalDiscovery.PrivetNotificationsEvent",
+                            privet_event, PRIVET_EVENT_MAX);
 }
+
+}  // namespace
 
 PrivetNotificationsListener::PrivetNotificationsListener(
     scoped_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory,
@@ -54,6 +73,7 @@ void PrivetNotificationsListener::DeviceChanged(
     bool added,
     const std::string& name,
     const DeviceDescription& description) {
+  ReportPrivetUmaEvent(PRIVET_DEVICE_CHANGED);
   DeviceContextMap::iterator found = devices_seen_.find(name);
   if (found != devices_seen_.end()) {
     if (!description.id.empty() &&  // Device is registered
@@ -101,6 +121,7 @@ void PrivetNotificationsListener::OnPrivetInfoDone(
       PrivetInfoOperation* operation,
       int http_code,
       const base::DictionaryValue* json_value) {
+  ReportPrivetUmaEvent(PRIVET_INFO_DONE);
   std::string name = operation->GetHTTPClient()->GetName();
   DeviceContextMap::iterator device_iter = devices_seen_.find(name);
   DCHECK(device_iter != devices_seen_.end());
@@ -185,6 +206,7 @@ void PrivetNotificationService::PrivetNotify(
     const std::string& human_readable_name,
     const std::string& description) {
   if (!LocalDiscoveryUIHandler::GetHasVisible()) {
+    ReportPrivetUmaEvent(PRIVET_NOTIFICATION_SHOWN);
     Profile* profile_object = Profile::FromBrowserContext(profile_);
     message_center::RichNotificationData rich_notification_data;
 
@@ -219,11 +241,13 @@ void PrivetNotificationService::PrivetNotify(
 
 void PrivetNotificationService::PrivetRemoveNotification(
     const std::string& device_name) {
+  ReportPrivetUmaEvent(PRIVET_NOTIFICATION_CANCELED);
   g_browser_process->notification_ui_manager()->CancelById(
       kPrivetNotificationIDPrefix + device_name);
 }
 
 void PrivetNotificationService::Start() {
+  ReportPrivetUmaEvent(PRIVET_SERVICE_STARTED);
   traffic_detector_v4_ =
       new PrivetTrafficDetector(
           net::ADDRESS_FAMILY_IPV4,
@@ -235,6 +259,7 @@ void PrivetNotificationService::Start() {
 }
 
 void PrivetNotificationService::StartLister() {
+  ReportPrivetUmaEvent(PRIVET_LISTER_STARTED);
   traffic_detector_v4_ = NULL;
   traffic_detector_v6_ = NULL;
   DCHECK(!service_discovery_client_);
@@ -283,6 +308,7 @@ void PrivetNotificationDelegate::Click() {
 
 void PrivetNotificationDelegate::ButtonClick(int button_index) {
   if (button_index == 0) {
+    ReportPrivetUmaEvent(PRIVET_NOTIFICATION_CLICKED);
     // TODO(noamsml): Direct-to-register URL
     OpenTab(GURL(kPrivetNotificationOriginUrl));
   }
