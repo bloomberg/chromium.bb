@@ -13,6 +13,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 
+
 namespace content {
 
 namespace {
@@ -25,7 +26,7 @@ bool CanUseNetworkMonitor(bool external_plugin,
   SocketPermissionRequest request = SocketPermissionRequest(
       SocketPermissionRequest::NETWORK_STATE, std::string(), 0);
   return pepper_socket_utils::CanUseSocketAPIs(
-      external_plugin, false /* private_api */, request, render_process_id,
+      external_plugin, false /* private_api */, &request, render_process_id,
       render_view_id);
 }
 
