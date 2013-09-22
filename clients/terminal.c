@@ -44,9 +44,9 @@
 #include "window.h"
 
 static int option_fullscreen;
-static char *option_font = "mono";
-static int option_font_size = 14;
-static char *option_term = "xterm";
+static char *option_font;
+static int option_font_size;
+static char *option_term;
 static char *option_shell;
 
 static struct wl_list terminal_list;
@@ -2781,17 +2781,6 @@ terminal_run(struct terminal *terminal, const char *path)
 	return 0;
 }
 
-static const struct config_key terminal_config_keys[] = {
-	{ "font", CONFIG_KEY_STRING, &option_font },
-	{ "font-size", CONFIG_KEY_INTEGER, &option_font_size },
-	{ "term", CONFIG_KEY_STRING, &option_term },
-};
-
-static const struct config_section config_sections[] = {
-	{ "terminal",
-	  terminal_config_keys, ARRAY_LENGTH(terminal_config_keys) },
-};
-
 static const struct weston_option terminal_options[] = {
 	{ WESTON_OPTION_BOOLEAN, "fullscreen", 'f', &option_fullscreen },
 	{ WESTON_OPTION_STRING, "font", 0, &option_font },
@@ -2802,6 +2791,8 @@ int main(int argc, char *argv[])
 {
 	struct display *d;
 	struct terminal *terminal;
+	struct weston_config *config;
+	struct weston_config_section *s;
 	int config_fd;
 
 	/* as wcwidth is locale-dependent,
@@ -2813,13 +2804,14 @@ int main(int argc, char *argv[])
 		option_shell = "/bin/bash";
 
 	config_fd = open_config_file("weston.ini");
-	parse_config_file(config_fd,
-			  config_sections, ARRAY_LENGTH(config_sections),
-			  NULL);
+	config = weston_config_parse(config_fd);
 	close(config_fd);
 
-	parse_options(terminal_options,
-		      ARRAY_LENGTH(terminal_options), &argc, argv);
+	s = weston_config_get_section(config, "terminal", NULL, NULL);
+	weston_config_section_get_string(s, "font", &option_font, "mono");
+	weston_config_section_get_int(s, "font-size", &option_font_size, 14);
+	weston_config_section_get_string(s, "term", &option_term, "xterm");
+	weston_config_destroy(config);
 
 	d = display_create(&argc, argv);
 	if (d == NULL) {
