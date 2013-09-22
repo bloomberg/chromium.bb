@@ -1091,10 +1091,8 @@ weston_surface_destroy(struct weston_surface *surface)
 	assert(wl_list_empty(&surface->subsurface_list_pending));
 	assert(wl_list_empty(&surface->subsurface_list));
 
-	if (weston_surface_is_mapped(surface)) {
+	if (weston_surface_is_mapped(surface))
 		weston_surface_unmap(surface);
-		weston_compositor_build_surface_list(compositor);
-	}
 
 	wl_list_for_each_safe(cb, next,
 			      &surface->pending.frame_callback_list, link)
