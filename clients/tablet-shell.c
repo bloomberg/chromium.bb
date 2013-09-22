@@ -412,7 +412,6 @@ int main(int argc, char *argv[])
 {
 	struct tablet tablet = { 0 };
 	struct display *display;
-	int config_fd;
 	struct output *output;
 	struct weston_config *config;
 	struct weston_config_section *s;
@@ -438,10 +437,7 @@ int main(int argc, char *argv[])
 
 	wl_list_init(&tablet.homescreen->launcher_list);
 
-	config_fd = open_config_file("weston.ini");
-	config = weston_config_parse(config_fd);
-	close(config_fd);
-
+	config = weston_config_parse("weston.ini");
 	s = weston_config_get_section(config, "shell", NULL, NULL);
 	weston_config_section_get_string(s, "lockscreen-icon",
 					 &key_lockscreen_icon, NULL);

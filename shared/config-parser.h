@@ -47,9 +47,6 @@ struct config_section {
 	void (*done)(void *data);
 };
 
-int
-open_config_file(const char *name);
-
 enum weston_option_type {
 	WESTON_OPTION_INTEGER,
 	WESTON_OPTION_UNSIGNED_INTEGER,
@@ -96,7 +93,7 @@ weston_config_section_get_bool(struct weston_config_section *section,
 			       const char *key,
 			       int *value, int default_value);
 struct weston_config *
-weston_config_parse(int fd);
+weston_config_parse(const char *name);
 
 void
 weston_config_destroy(struct weston_config *config);

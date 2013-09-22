@@ -41,7 +41,7 @@
 	const __typeof__( ((type *)0)->member ) *__mptr = (ptr);	\
 	(type *)( (char *)__mptr - offsetof(type,member) );})
 
-int
+static int
 open_config_file(const char *name)
 {
 	const char *config_dir  = getenv("XDG_CONFIG_HOME");
@@ -50,6 +50,9 @@ open_config_file(const char *name)
 	char path[PATH_MAX];
 	const char *p, *next;
 	int fd;
+
+	if (name[0] == '/')
+		return open(name, O_RDONLY | O_CLOEXEC);
 
 	/* Precedence is given to config files in the home directory,
 	 * and then to directories listed in XDG_CONFIG_DIRS and
@@ -312,13 +315,13 @@ section_add_entry(struct weston_config_section *section,
 }
 
 struct weston_config *
-weston_config_parse(int fd)
+weston_config_parse(const char *name)
 {
 	FILE *fp;
 	char line[512], *p;
 	struct weston_config *config;
 	struct weston_config_section *section = NULL;
-	int i;
+	int i, fd;
 
 	config = malloc(sizeof *config);
 	if (config == NULL)
@@ -326,13 +329,17 @@ weston_config_parse(int fd)
 
 	wl_list_init(&config->section_list);
 
-	fp = fdopen(dup(fd), "r");
-	if (fp == NULL) {
+	fd = open_config_file(name);
+	if (fd == -1) {
 		free(config);
 		return NULL;
 	}
 
-	rewind(fp);
+	fp = fdopen(fd, "r");
+	if (fp == NULL) {
+		free(config);
+		return NULL;
+	}
 
 	while (fgets(line, sizeof line, fp)) {
 		switch (line[0]) {

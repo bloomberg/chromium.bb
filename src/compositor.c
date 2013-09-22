@@ -3418,7 +3418,7 @@ int main(int argc, char *argv[])
 		*(*backend_init)(struct wl_display *display,
 				 int *argc, char *argv[],
 				 struct weston_config *config);
-	int i, config_fd;
+	int i;
 	char *backend = NULL;
 	char *shell = NULL;
 	char *modules, *option_modules = NULL;
@@ -3486,10 +3486,7 @@ int main(int argc, char *argv[])
 			backend = WESTON_NATIVE_BACKEND;
 	}
 
-	config_fd = open_config_file("weston.ini");
-	config = weston_config_parse(config_fd);
-	close(config_fd);
-
+	config = weston_config_parse("weston.ini");
 	section = weston_config_get_section(config, "core", NULL, NULL);
 	weston_config_section_get_string(section, "modules", &modules, "");
 

@@ -40,7 +40,7 @@ run_test(const char *text)
 	len = write(fd, text, strlen(text));
 	assert(len == (int) strlen(text));
 
-	config = weston_config_parse(fd);
+	config = weston_config_parse(file);
 	close(fd);
 	unlink(file);
 

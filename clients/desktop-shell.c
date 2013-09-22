@@ -1280,17 +1280,13 @@ panel_add_launchers(struct panel *panel, struct desktop *desktop)
 int main(int argc, char *argv[])
 {
 	struct desktop desktop = { 0 };
-	int config_fd;
 	struct output *output;
 	struct weston_config_section *s;
 
 	desktop.unlock_task.run = unlock_dialog_finish;
 	wl_list_init(&desktop.outputs);
 
-	config_fd = open_config_file("weston.ini");
-	desktop.config = weston_config_parse(config_fd);
-	close(config_fd);
-
+	desktop.config = weston_config_parse("weston.ini");
 	s = weston_config_get_section(desktop.config, "shell", NULL, NULL);
 	weston_config_section_get_bool(s, "locking", &desktop.locking, 1);
 
