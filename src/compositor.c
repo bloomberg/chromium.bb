@@ -3487,6 +3487,8 @@ int main(int argc, char *argv[])
 	}
 
 	config = weston_config_parse("weston.ini");
+	weston_log("Using config file '%s'\n",
+		   weston_config_get_full_path(config));
 	section = weston_config_get_section(config, "core", NULL, NULL);
 	weston_config_section_get_string(section, "modules", &modules, "");
 

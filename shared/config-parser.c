@@ -41,69 +41,6 @@
 	const __typeof__( ((type *)0)->member ) *__mptr = (ptr);	\
 	(type *)( (char *)__mptr - offsetof(type,member) );})
 
-static int
-open_config_file(const char *name)
-{
-	const char *config_dir  = getenv("XDG_CONFIG_HOME");
-	const char *home_dir	= getenv("HOME");
-	const char *config_dirs = getenv("XDG_CONFIG_DIRS");
-	char path[PATH_MAX];
-	const char *p, *next;
-	int fd;
-
-	if (name[0] == '/')
-		return open(name, O_RDONLY | O_CLOEXEC);
-
-	/* Precedence is given to config files in the home directory,
-	 * and then to directories listed in XDG_CONFIG_DIRS and
-	 * finally to the current working directory. */
-
-	/* $XDG_CONFIG_HOME */
-	if (config_dir) {
-		snprintf(path, sizeof path, "%s/%s", config_dir, name);
-		fd = open(path, O_RDONLY | O_CLOEXEC);
-		if (fd >= 0)
-			return fd;
-	}
-
-	/* $HOME/.config */
-	if (home_dir) {
-		snprintf(path, sizeof path, "%s/.config/%s", home_dir, name);
-		fd = open(path, O_RDONLY | O_CLOEXEC);
-		if (fd >= 0)
-			return fd;
-	}
-
-	/* For each $XDG_CONFIG_DIRS: weston/<config_file> */
-	if (!config_dirs)
-		config_dirs = "/etc/xdg";  /* See XDG base dir spec. */
-
-	for (p = config_dirs; *p != '\0'; p = next) {
-		next = strchrnul(p, ':');
-		snprintf(path, sizeof path,
-			 "%.*s/weston/%s", (int)(next - p), p, name);
-		fd = open(path, O_RDONLY | O_CLOEXEC);
-		if (fd >= 0)
-			return fd;
-
-		if (*next == ':')
-			next++;
-	}
-
-	/* Current working directory. */
-	snprintf(path, sizeof path, "./%s", name);
-	fd = open(path, O_RDONLY | O_CLOEXEC);
-
-	if (fd >= 0)
-		fprintf(stderr,
-			"using config in current working directory: %s\n",
-			path);
-	else
-		fprintf(stderr, "config file \"%s\" not found.\n", name);
-
-	return fd;
-}
-
 struct weston_config_entry {
 	char *key;
 	char *value;
@@ -118,7 +55,65 @@ struct weston_config_section {
 
 struct weston_config {
 	struct wl_list section_list;
+	char path[PATH_MAX];
 };
+
+static int
+open_config_file(struct weston_config *c, const char *name)
+{
+	const char *config_dir  = getenv("XDG_CONFIG_HOME");
+	const char *home_dir	= getenv("HOME");
+	const char *config_dirs = getenv("XDG_CONFIG_DIRS");
+	const char *p, *next;
+	int fd;
+
+	if (name[0] == '/') {
+		snprintf(c->path, sizeof c->path, "%s", name);
+		return open(name, O_RDONLY | O_CLOEXEC);
+	}
+
+	/* Precedence is given to config files in the home directory,
+	 * and then to directories listed in XDG_CONFIG_DIRS and
+	 * finally to the current working directory. */
+
+	/* $XDG_CONFIG_HOME */
+	if (config_dir) {
+		snprintf(c->path, sizeof c->path, "%s/%s", config_dir, name);
+		fd = open(c->path, O_RDONLY | O_CLOEXEC);
+		if (fd >= 0)
+			return fd;
+	}
+
+	/* $HOME/.config */
+	if (home_dir) {
+		snprintf(c->path, sizeof c->path,
+			 "%s/.config/%s", home_dir, name);
+		fd = open(c->path, O_RDONLY | O_CLOEXEC);
+		if (fd >= 0)
+			return fd;
+	}
+
+	/* For each $XDG_CONFIG_DIRS: weston/<config_file> */
+	if (!config_dirs)
+		config_dirs = "/etc/xdg";  /* See XDG base dir spec. */
+
+	for (p = config_dirs; *p != '\0'; p = next) {
+		next = strchrnul(p, ':');
+		snprintf(c->path, sizeof c->path,
+			 "%.*s/weston/%s", (int)(next - p), p, name);
+		fd = open(c->path, O_RDONLY | O_CLOEXEC);
+		if (fd >= 0)
+			return fd;
+
+		if (*next == ':')
+			next++;
+	}
+
+	/* Current working directory. */
+	snprintf(c->path, sizeof c->path, "./%s", name);
+
+	return open(c->path, O_RDONLY | O_CLOEXEC);
+}
 
 static struct weston_config_entry *
 config_section_get_entry(struct weston_config_section *section,
@@ -329,7 +324,7 @@ weston_config_parse(const char *name)
 
 	wl_list_init(&config->section_list);
 
-	fd = open_config_file(name);
+	fd = open_config_file(config, name);
 	if (fd == -1) {
 		free(config);
 		return NULL;
@@ -385,6 +380,12 @@ weston_config_parse(const char *name)
 	fclose(fp);
 
 	return config;
+}
+
+const char *
+weston_config_get_full_path(struct weston_config *config)
+{
+	return config->path;
 }
 
 int

@@ -95,6 +95,9 @@ weston_config_section_get_bool(struct weston_config_section *section,
 struct weston_config *
 weston_config_parse(const char *name);
 
+const char *
+weston_config_get_full_path(struct weston_config *config);
+
 void
 weston_config_destroy(struct weston_config *config);
 
