@@ -66,28 +66,6 @@ struct launcher {
 static char *key_lockscreen_icon;
 static char *key_lockscreen_background;
 static char *key_homescreen_background;
-static char *key_launcher_icon;
-static char *key_launcher_path;
-static void launcher_section_done(void *data);
-
-static const struct config_key shell_config_keys[] = {
-	{ "lockscreen-icon", CONFIG_KEY_STRING, &key_lockscreen_icon },
-	{ "lockscreen", CONFIG_KEY_STRING, &key_lockscreen_background },
-	{ "homescreen", CONFIG_KEY_STRING, &key_homescreen_background },
-};
-
-static const struct config_key launcher_config_keys[] = {
-	{ "icon", CONFIG_KEY_STRING, &key_launcher_icon },
-	{ "path", CONFIG_KEY_STRING, &key_launcher_path },
-};
-
-static const struct config_section config_sections[] = {
-	{ "shell",
-	  shell_config_keys, ARRAY_LENGTH(shell_config_keys) },
-	{ "launcher",
-	  launcher_config_keys, ARRAY_LENGTH(launcher_config_keys),
-	  launcher_section_done }
-};
 
 static void
 sigchild_handler(int s)
@@ -416,24 +394,6 @@ tablet_shell_add_launcher(struct tablet *tablet,
 }
 
 static void
-launcher_section_done(void *data)
-{
-	struct tablet *tablet = data;
-
-	if (key_launcher_icon == NULL || key_launcher_path == NULL) {
-		fprintf(stderr, "invalid launcher section\n");
-		return;
-	}
-
-	tablet_shell_add_launcher(tablet, key_launcher_icon, key_launcher_path);
-
-	free(key_launcher_icon);
-	key_launcher_icon = NULL;
-	free(key_launcher_path);
-	key_launcher_path = NULL;
-}
-
-static void
 global_handler(struct display *display, uint32_t name,
 		const char *interface, uint32_t version, void *data)
 {
@@ -454,6 +414,10 @@ int main(int argc, char *argv[])
 	struct display *display;
 	int config_fd;
 	struct output *output;
+	struct weston_config *config;
+	struct weston_config_section *s;
+	char *icon, *path;
+	const char *name;
 
 	display = display_create(&argc, argv);
 	if (display == NULL) {
@@ -475,10 +439,36 @@ int main(int argc, char *argv[])
 	wl_list_init(&tablet.homescreen->launcher_list);
 
 	config_fd = open_config_file("weston.ini");
-	parse_config_file(config_fd,
-			  config_sections, ARRAY_LENGTH(config_sections),
-			  &tablet);
+	config = weston_config_parse(config_fd);
 	close(config_fd);
+
+	s = weston_config_get_section(config, "shell", NULL, NULL);
+	weston_config_section_get_string(s, "lockscreen-icon",
+					 &key_lockscreen_icon, NULL);
+	weston_config_section_get_string(s, "lockscreen",
+					 &key_lockscreen_background, NULL);
+	weston_config_section_get_string(s, "homescreen",
+					 &key_homescreen_background, NULL);
+
+	s = NULL;
+	while (weston_config_next_section(config, &s, &name)) {
+		if (strcmp(name, "launcher") != 0)
+			continue;
+
+		weston_config_section_get_string(s, "icon", &icon, NULL);
+		weston_config_section_get_string(s, "path", &path, NULL);
+
+		if (icon == NULL || path == NULL) {
+			fprintf(stderr, "invalid launcher section\n");
+			continue;
+		}
+
+		tablet_shell_add_launcher(&tablet, icon, path);
+		free(icon);
+		free(path);
+	}
+
+	weston_config_destroy(config);
 
 	signal(SIGCHLD, sigchild_handler);
 
