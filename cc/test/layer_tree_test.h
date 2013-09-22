@@ -152,6 +152,9 @@ class LayerTreeTest : public testing::Test, public TestHooks {
     return proxy()->ImplThreadTaskRunner() ? proxy()->ImplThreadTaskRunner()
                                            : main_task_runner_.get();
   }
+  base::SingleThreadTaskRunner* MainThreadTaskRunner() {
+    return main_task_runner_.get();
+  }
   Proxy* proxy() const {
     return layer_tree_host_ ? layer_tree_host_->proxy() : NULL;
   }

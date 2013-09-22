@@ -125,7 +125,7 @@ void SingleThreadProxy::CreateAndInitializeOutputSurface() {
   }
 
   {
-    DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+    DebugScopedSetMainThreadBlocked main_thread_blocked(this);
     DebugScopedSetImplThread impl(this);
     layer_tree_host_->DeleteContentsTexturesOnImplThread(
         layer_tree_host_impl_->resource_provider());
@@ -182,7 +182,7 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
   DCHECK(Proxy::IsMainThread());
   // Commit immediately.
   {
-    DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+    DebugScopedSetMainThreadBlocked main_thread_blocked(this);
     DebugScopedSetImplThread impl(this);
 
     // This CapturePostTasks should be destroyed before CommitComplete() is
@@ -263,7 +263,7 @@ void SingleThreadProxy::Stop() {
   TRACE_EVENT0("cc", "SingleThreadProxy::stop");
   DCHECK(Proxy::IsMainThread());
   {
-    DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+    DebugScopedSetMainThreadBlocked main_thread_blocked(this);
     DebugScopedSetImplThread impl(this);
 
     layer_tree_host_->DeleteContentsTexturesOnImplThread(
@@ -365,7 +365,21 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
                          device_viewport_damage_rect,
                          false,  // for_readback
                          &frame)) {
-    layer_tree_host_impl_->SwapBuffers(frame);
+    {
+      DebugScopedSetMainThreadBlocked main_thread_blocked(this);
+      DebugScopedSetImplThread impl(this);
+
+      // This CapturePostTasks should be destroyed before
+      // DidCommitAndDrawFrame() is called since that goes out to the embedder,
+      // and we want the embedder to receive its callbacks before that.
+      // NOTE: This maintains consistent ordering with the ThreadProxy since
+      // the DidCommitAndDrawFrame() must be post-tasked from the impl thread
+      // there as the main thread is not blocked, so any posted tasks inside
+      // the swap buffers will execute first.
+      BlockingTaskRunner::CapturePostTasks blocked;
+
+      layer_tree_host_impl_->SwapBuffers(frame);
+    }
     DidSwapFrame();
   }
 }

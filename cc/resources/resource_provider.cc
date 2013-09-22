@@ -86,7 +86,8 @@ class ScopedSetActiveTexture {
 }  // namespace
 
 ResourceProvider::Resource::Resource()
-    : gl_id(0),
+    : child_id(0),
+      gl_id(0),
       gl_pixel_buffer_id(0),
       gl_upload_query_id(0),
       pixels(NULL),
@@ -115,15 +116,15 @@ ResourceProvider::Resource::Resource()
 
 ResourceProvider::Resource::~Resource() {}
 
-ResourceProvider::Resource::Resource(
-    unsigned texture_id,
-    gfx::Size size,
-    GLenum filter,
-    GLenum texture_pool,
-    GLint wrap_mode,
-    TextureUsageHint hint,
-    ResourceFormat format)
-    : gl_id(texture_id),
+ResourceProvider::Resource::Resource(unsigned texture_id,
+                                     gfx::Size size,
+                                     GLenum filter,
+                                     GLenum texture_pool,
+                                     GLint wrap_mode,
+                                     TextureUsageHint hint,
+                                     ResourceFormat format)
+    : child_id(0),
+      gl_id(texture_id),
       gl_pixel_buffer_id(0),
       gl_upload_query_id(0),
       pixels(NULL),
@@ -152,12 +153,12 @@ ResourceProvider::Resource::Resource(
   DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
 }
 
-ResourceProvider::Resource::Resource(
-    uint8_t* pixels,
-    gfx::Size size,
-    GLenum filter,
-    GLint wrap_mode)
-    : gl_id(0),
+ResourceProvider::Resource::Resource(uint8_t* pixels,
+                                     gfx::Size size,
+                                     GLenum filter,
+                                     GLint wrap_mode)
+    : child_id(0),
+      gl_id(0),
       gl_pixel_buffer_id(0),
       gl_upload_query_id(0),
       pixels(pixels),
@@ -215,6 +216,8 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
 }
 
 ResourceProvider::~ResourceProvider() {
+  while (!children_.empty())
+    DestroyChild(children_.begin()->first);
   while (!resources_.empty())
     DeleteResourceInternal(resources_.begin(), ForShutdown);
 
@@ -810,9 +813,12 @@ void ResourceProvider::CleanUpGLIfNeeded() {
   Finish();
 }
 
-int ResourceProvider::CreateChild() {
+int ResourceProvider::CreateChild(const ReturnCallback& return_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   Child child_info;
+  child_info.return_callback = return_callback;
+
   int child = next_child_++;
   children_[child] = child_info;
   return child;
@@ -820,20 +826,26 @@ int ResourceProvider::CreateChild() {
 
 void ResourceProvider::DestroyChild(int child_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   ChildMap::iterator it = children_.find(child_id);
   DCHECK(it != children_.end());
   Child& child = it->second;
+
+  ResourceIdArray resources_for_child;
+
   for (ResourceIdMap::iterator child_it = child.child_to_parent_map.begin();
        child_it != child.child_to_parent_map.end();
        ++child_it) {
     ResourceId id = child_it->second;
-    // We're abandoning this resource, it will not get recycled.
-    // crbug.com/224062
-    ResourceMap::iterator resource_it = resources_.find(id);
-    CHECK(resource_it != resources_.end());
-    resource_it->second.imported_count = 0;
-    DeleteResource(id);
+    resources_for_child.push_back(id);
   }
+
+  // If the child is going away, don't consider any resources in use.
+  child.in_use_resources.clear();
+
+  DeleteAndReturnUnusedResourcesToChild(
+      &child, ForShutdown, resources_for_child);
+
   children_.erase(it);
 }
 
@@ -875,62 +887,6 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resources,
   }
 }
 
-void ResourceProvider::PrepareSendReturnsToChild(
-    int child,
-    const ResourceIdArray& resources,
-    ReturnedResourceArray* list) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  WebGraphicsContext3D* context3d = Context3d();
-  if (!context3d || !context3d->makeContextCurrent()) {
-    // TODO(skaslev): Implement this path for software compositing.
-    return;
-  }
-  Child& child_info = children_.find(child)->second;
-  bool need_sync_point = false;
-  for (ResourceIdArray::const_iterator it = resources.begin();
-       it != resources.end(); ++it) {
-    Resource* resource = GetResource(*it);
-    DCHECK(!resource->locked_for_write);
-    DCHECK(!resource->lock_for_read_count);
-    DCHECK(child_info.parent_to_child_map.find(*it) !=
-           child_info.parent_to_child_map.end());
-
-    if (resource->filter != resource->original_filter) {
-      DCHECK(resource->target);
-      DCHECK(resource->gl_id);
-
-      GLC(context3d, context3d->bindTexture(resource->target, resource->gl_id));
-      GLC(context3d, context3d->texParameteri(resource->target,
-                                              GL_TEXTURE_MIN_FILTER,
-                                              resource->original_filter));
-      GLC(context3d, context3d->texParameteri(resource->target,
-                                              GL_TEXTURE_MAG_FILTER,
-                                              resource->original_filter));
-    }
-
-    ReturnedResource returned;
-    returned.id = child_info.parent_to_child_map[*it];
-    returned.sync_point = resource->mailbox.sync_point();
-    if (!returned.sync_point)
-      need_sync_point = true;
-    returned.count = resource->imported_count;
-    list->push_back(returned);
-
-    child_info.parent_to_child_map.erase(*it);
-    child_info.child_to_parent_map.erase(returned.id);
-    resources_[*it].imported_count = 0;
-    DeleteResource(*it);
-  }
-  if (need_sync_point) {
-    unsigned int sync_point = context3d->insertSyncPoint();
-    for (ReturnedResourceArray::iterator it = list->begin();
-         it != list->end(); ++it) {
-      if (!it->sync_point)
-        it->sync_point = sync_point;
-    }
-  }
-}
-
 void ResourceProvider::ReceiveFromChild(
     int child, const TransferableResourceArray& resources) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -962,24 +918,63 @@ void ResourceProvider::ReceiveFromChild(
     GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, texture_id));
     GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D,
                                                      it->mailbox.name));
-
-    ResourceId id = next_id_++;
-    Resource resource(
-        texture_id,
-        it->size,
-        it->filter,
-        0,
-        GL_CLAMP_TO_EDGE,
-        TextureUsageAny,
-        it->format);
+    ResourceId local_id = next_id_++;
+    Resource resource(texture_id,
+                      it->size,
+                      it->filter,
+                      0,
+                      GL_CLAMP_TO_EDGE,
+                      TextureUsageAny,
+                      it->format);
     resource.mailbox.SetName(it->mailbox);
+    resource.child_id = child;
     // Don't allocate a texture for a child.
     resource.allocated = true;
     resource.imported_count = 1;
-    resources_[id] = resource;
-    child_info.parent_to_child_map[id] = it->id;
-    child_info.child_to_parent_map[it->id] = id;
+    resources_[local_id] = resource;
+    child_info.parent_to_child_map[local_id] = it->id;
+    child_info.child_to_parent_map[it->id] = local_id;
   }
+}
+
+void ResourceProvider::DeclareUsedResourcesFromChild(
+    int child,
+    const ResourceIdArray& resources_from_child) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  Child& child_info = children_.find(child)->second;
+  child_info.in_use_resources.clear();
+
+  for (size_t i = 0; i < resources_from_child.size(); ++i) {
+    ResourceIdMap::iterator it =
+        child_info.child_to_parent_map.find(resources_from_child[i]);
+    DCHECK(it != child_info.child_to_parent_map.end());
+
+    ResourceId local_id = it->second;
+    child_info.in_use_resources.insert(local_id);
+  }
+
+  ResourceIdArray unused;
+  for (ResourceIdMap::iterator it = child_info.child_to_parent_map.begin();
+       it != child_info.child_to_parent_map.end();
+       ++it) {
+    ResourceId local_id = it->second;
+    bool resource_is_in_use = child_info.in_use_resources.count(local_id) > 0;
+    if (!resource_is_in_use)
+      unused.push_back(local_id);
+  }
+  DeleteAndReturnUnusedResourcesToChild(&child_info, Normal, unused);
+}
+
+// static
+bool ResourceProvider::CompareResourceMapIteratorsByChildId(
+    const std::pair<ReturnedResource, ResourceMap::iterator>& a,
+    const std::pair<ReturnedResource, ResourceMap::iterator>& b) {
+  const ResourceMap::iterator& a_it = a.second;
+  const ResourceMap::iterator& b_it = b.second;
+  const Resource& a_resource = a_it->second;
+  const Resource& b_resource = b_it->second;
+  return a_resource.child_id < b_resource.child_id;
 }
 
 void ResourceProvider::ReceiveReturnsFromParent(
@@ -990,25 +985,83 @@ void ResourceProvider::ReceiveReturnsFromParent(
     // TODO(skaslev): Implement this path for software compositing.
     return;
   }
+
+  int child_id = 0;
+  Child* child_info = NULL;
+  ResourceIdArray resources_for_child;
+
+  std::vector<std::pair<ReturnedResource, ResourceMap::iterator> >
+      sorted_resources;
+
   for (ReturnedResourceArray::const_iterator it = resources.begin();
        it != resources.end();
        ++it) {
-    ResourceMap::iterator map_iterator = resources_.find(it->id);
-    DCHECK(map_iterator != resources_.end());
+    ResourceId local_id = it->id;
+    ResourceMap::iterator map_iterator = resources_.find(local_id);
+
+    // Resource was already lost (e.g. it belonged to a child that was
+    // destroyed).
+    if (map_iterator == resources_.end())
+      continue;
+
+    sorted_resources.push_back(
+        std::pair<ReturnedResource, ResourceMap::iterator>(*it, map_iterator));
+  }
+
+  std::sort(sorted_resources.begin(),
+            sorted_resources.end(),
+            CompareResourceMapIteratorsByChildId);
+
+  for (size_t i = 0; i < sorted_resources.size(); ++i) {
+    ReturnedResource& returned = sorted_resources[i].first;
+    ResourceMap::iterator& map_iterator = sorted_resources[i].second;
+    ResourceId local_id = map_iterator->first;
     Resource* resource = &map_iterator->second;
-    CHECK_GE(resource->exported_count, it->count);
-    resource->exported_count -= it->count;
+
+    CHECK_GE(resource->exported_count, returned.count);
+    resource->exported_count -= returned.count;
     if (resource->exported_count)
       continue;
+
     if (resource->gl_id) {
-      if (it->sync_point)
-        GLC(context3d, context3d->waitSyncPoint(it->sync_point));
+      if (returned.sync_point)
+        GLC(context3d, context3d->waitSyncPoint(returned.sync_point));
     } else {
       resource->mailbox =
-          TextureMailbox(resource->mailbox.name(), it->sync_point);
+          TextureMailbox(resource->mailbox.name(), returned.sync_point);
     }
-    if (resource->marked_for_deletion)
+
+    if (!resource->marked_for_deletion)
+      continue;
+
+    if (!resource->child_id) {
+      // The resource belongs to this ResourceProvider, so it can be destroyed.
       DeleteResourceInternal(map_iterator, Normal);
+      continue;
+    }
+
+    // Delete the resource and return it to the child it came from one.
+    if (resource->child_id != child_id) {
+      ChildMap::iterator child_it = children_.find(resource->child_id);
+      DCHECK(child_it != children_.end());
+
+      if (child_id) {
+        DCHECK_NE(resources_for_child.size(), 0u);
+        DeleteAndReturnUnusedResourcesToChild(
+            child_info, Normal, resources_for_child);
+        resources_for_child.clear();
+      }
+
+      child_info = &child_it->second;
+      child_id = resource->child_id;
+    }
+    resources_for_child.push_back(local_id);
+  }
+
+  if (child_id) {
+    DCHECK_NE(resources_for_child.size(), 0u);
+    DeleteAndReturnUnusedResourcesToChild(
+        child_info, Normal, resources_for_child);
   }
 }
 
@@ -1044,6 +1097,93 @@ void ResourceProvider::TransferResource(WebGraphicsContext3D* context,
     resource->sync_point = source->mailbox.sync_point();
     source->mailbox.ResetSyncPoint();
   }
+}
+
+void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
+    Child* child_info,
+    DeleteStyle style,
+    const ResourceIdArray& unused) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(child_info);
+
+  if (unused.empty())
+    return;
+
+  WebGraphicsContext3D* context3d = Context3d();
+  if (!context3d || !context3d->makeContextCurrent()) {
+    // TODO(skaslev): Implement this path for software compositing.
+    return;
+  }
+
+  ReturnedResourceArray to_return;
+
+  bool need_sync_point = false;
+  for (size_t i = 0; i < unused.size(); ++i) {
+    ResourceId local_id = unused[i];
+
+    ResourceMap::iterator it = resources_.find(local_id);
+    CHECK(it != resources_.end());
+    Resource& resource = it->second;
+
+    DCHECK(!resource.locked_for_write);
+    DCHECK(!resource.lock_for_read_count);
+    DCHECK_EQ(0u, child_info->in_use_resources.count(local_id));
+    DCHECK(child_info->parent_to_child_map.count(local_id));
+
+    ResourceId child_id = child_info->parent_to_child_map[local_id];
+    DCHECK(child_info->child_to_parent_map.count(child_id));
+
+    // TODO(danakj): bool is_lost = false;
+    if (resource.exported_count > 0) {
+      if (style != ForShutdown) {
+        // Defer this until we receive the resource back from the parent.
+        resource.marked_for_deletion = true;
+        continue;
+      }
+
+      // We still have an exported_count, so we'll have to lose it.
+      // TODO(danakj): is_lost = true;
+    }
+
+    if (resource.filter != resource.original_filter) {
+      DCHECK(resource.target);
+      DCHECK(resource.gl_id);
+
+      GLC(context3d, context3d->bindTexture(resource.target, resource.gl_id));
+      GLC(context3d,
+          context3d->texParameteri(resource.target,
+                                   GL_TEXTURE_MIN_FILTER,
+                                   resource.original_filter));
+      GLC(context3d,
+          context3d->texParameteri(resource.target,
+                                   GL_TEXTURE_MAG_FILTER,
+                                   resource.original_filter));
+    }
+
+    ReturnedResource returned;
+    returned.id = child_id;
+    returned.sync_point = resource.mailbox.sync_point();
+    if (!returned.sync_point)
+      need_sync_point = true;
+    returned.count = resource.imported_count;
+    // TODO(danakj): Save the |is_lost| bit.
+    to_return.push_back(returned);
+
+    child_info->parent_to_child_map.erase(local_id);
+    child_info->child_to_parent_map.erase(child_id);
+    resource.imported_count = 0;
+    DeleteResourceInternal(it, style);
+  }
+  if (need_sync_point) {
+    unsigned int sync_point = context3d->insertSyncPoint();
+    for (size_t i = 0; i < to_return.size(); ++i) {
+      if (!to_return[i].sync_point)
+        to_return[i].sync_point = sync_point;
+    }
+  }
+
+  if (!to_return.empty())
+    child_info->return_callback.Run(to_return);
 }
 
 void ResourceProvider::AcquirePixelBuffer(ResourceId id) {

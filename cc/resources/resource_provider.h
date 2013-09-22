@@ -8,6 +8,7 @@
 #include <deque>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -20,6 +21,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/resources/release_callback.h"
 #include "cc/resources/resource_format.h"
+#include "cc/resources/return_callback.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
 #include "cc/resources/transferable_resource.h"
@@ -144,7 +146,7 @@ class CC_EXPORT ResourceProvider {
   bool ShallowFlushIfSupported();
 
   // Creates accounting for a child. Returns a child ID.
-  int CreateChild();
+  int CreateChild(const ReturnCallback& return_callback);
 
   // Destroys accounting for the child, deleting all accounted resources.
   void DestroyChild(int child);
@@ -159,22 +161,24 @@ class CC_EXPORT ResourceProvider {
   void PrepareSendToParent(const ResourceIdArray& resources,
                            TransferableResourceArray* transferable_resources);
 
-  // Prepares resources to be transfered back to the child, moving them to
-  // mailboxes and serializing meta-data into TransferableResources.
-  // Resources are removed from the ResourceProvider. Note: the resource IDs
-  // passed are in the parent namespace and will be translated to the child
-  // namespace when returned.
-  void PrepareSendReturnsToChild(int child,
-                                 const ResourceIdArray& resources,
-                                 ReturnedResourceArray* returned_resources);
-
   // Receives resources from a child, moving them from mailboxes. Resource IDs
   // passed are in the child namespace, and will be translated to the parent
   // namespace, added to the child->parent map.
+  // This adds the resources to the working set in the ResourceProvider without
+  // declaring which resources are in use. Use DeclareUsedResourcesFromChild
+  // after calling this method to do that. All calls to ReceiveFromChild should
+  // be followed by a DeclareUsedResourcesFromChild.
   // NOTE: if the sync_point is set on any TransferableResource, this will
   // wait on it.
   void ReceiveFromChild(
       int child, const TransferableResourceArray& transferable_resources);
+
+  // Once a set of resources have been received, they may or may not be used.
+  // This declares what set of resources are currently in use from the child,
+  // releasing any other resources back to the child.
+  void DeclareUsedResourcesFromChild(
+      int child,
+      const ResourceIdArray& resources_from_child);
 
   // Receives resources from the parent, moving them from mailboxes. Resource
   // IDs passed are in the child namespace.
@@ -359,6 +363,7 @@ class CC_EXPORT ResourceProvider {
              GLenum filter,
              GLint wrap_mode);
 
+    int child_id;
     unsigned gl_id;
     // Pixel buffer used for set pixels without unnecessary copying.
     unsigned gl_pixel_buffer_id;
@@ -392,12 +397,19 @@ class CC_EXPORT ResourceProvider {
     ResourceFormat format;
   };
   typedef base::hash_map<ResourceId, Resource> ResourceMap;
+
+  static bool CompareResourceMapIteratorsByChildId(
+      const std::pair<ReturnedResource, ResourceMap::iterator>& a,
+      const std::pair<ReturnedResource, ResourceMap::iterator>& b);
+
   struct Child {
     Child();
     ~Child();
 
     ResourceIdMap child_to_parent_map;
     ResourceIdMap parent_to_child_map;
+    ReturnCallback return_callback;
+    ResourceIdSet in_use_resources;
   };
   typedef base::hash_map<int, Child> ChildMap;
 
@@ -428,6 +440,9 @@ class CC_EXPORT ResourceProvider {
     ForShutdown,
   };
   void DeleteResourceInternal(ResourceMap::iterator it, DeleteStyle style);
+  void DeleteAndReturnUnusedResourcesToChild(Child* child_info,
+                                             DeleteStyle style,
+                                             const ResourceIdArray& unused);
   void LazyCreate(Resource* resource);
   void LazyAllocate(Resource* resource);
 

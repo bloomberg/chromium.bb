@@ -24,9 +24,7 @@ class FakeDelegatedRendererLayerImpl : public DelegatedRendererLayerImpl {
   const ScopedPtrVector<RenderPass>& RenderPassesInDrawOrder() const {
     return RenderPassesInDrawOrderForTesting();
   }
-  const ResourceProvider::ResourceIdSet& Resources() const {
-    return ResourcesForTesting();
-  }
+  ResourceProvider::ResourceIdSet Resources() const;
 
   void SetFrameDataForRenderPasses(ScopedPtrVector<RenderPass>* pass_list);
 

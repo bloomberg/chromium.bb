@@ -32,6 +32,18 @@ static ResourceProvider::ResourceId AddResourceToFrame(
   return resource_id;
 }
 
+ResourceProvider::ResourceIdSet FakeDelegatedRendererLayerImpl::Resources()
+    const {
+  ResourceProvider::ResourceIdSet set;
+  ResourceProvider::ResourceIdArray array;
+  array = ResourcesForTesting();
+  for (size_t i = 0; i < array.size(); ++i)
+    set.insert(array[i]);
+  return set;
+}
+
+void NoopReturnCallback(const ReturnedResourceArray& returned) {}
+
 void FakeDelegatedRendererLayerImpl::SetFrameDataForRenderPasses(
     ScopedPtrVector<RenderPass>* pass_list) {
   scoped_ptr<DelegatedFrameData> delegated_frame(new DelegatedFrameData);
@@ -46,9 +58,8 @@ void FakeDelegatedRendererLayerImpl::SetFrameDataForRenderPasses(
       pass->quad_list[j]->IterateResources(add_resource_to_frame_callback);
   }
 
-  ReturnedResourceArray resources_for_ack;
+  CreateChildIdIfNeeded(base::Bind(&NoopReturnCallback));
   SetFrameData(delegated_frame.Pass(), gfx::RectF());
-  CollectUnusedResources(&resources_for_ack);
 }
 
 }  // namespace cc

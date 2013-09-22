@@ -8,6 +8,7 @@
 #include "cc/layers/delegated_renderer_layer_impl.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/render_pass_draw_quad.h"
+#include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {
@@ -22,7 +23,9 @@ DelegatedRendererLayer::DelegatedRendererLayer(
     DelegatedRendererLayerClient* client)
     : Layer(),
       client_(client),
-      needs_filter_context_(false) {}
+      needs_filter_context_(false),
+      main_thread_runner_(BlockingTaskRunner::current()),
+      weak_ptrs_(this) {}
 
 DelegatedRendererLayer::~DelegatedRendererLayer() {}
 
@@ -64,19 +67,23 @@ void DelegatedRendererLayer::PushPropertiesTo(LayerImpl* impl) {
 
   delegated_impl->SetDisplaySize(display_size_);
 
+  delegated_impl->CreateChildIdIfNeeded(
+      base::Bind(&DelegatedRendererLayer::ReceiveUnusedResourcesOnImplThread,
+                 main_thread_runner_,
+                 weak_ptrs_.GetWeakPtr()));
+
   if (frame_data_)
     delegated_impl->SetFrameData(frame_data_.Pass(), damage_in_frame_);
   frame_data_.reset();
   damage_in_frame_ = gfx::RectF();
 
-  delegated_impl->CollectUnusedResources(
-      &unused_resources_for_child_compositor_);
-
+  // The ResourceProvider will have the new frame as soon as we push it to the
+  // pending tree. So unused resources will be returned as well.
   if (client_)
     client_->DidCommitFrameData();
 
-  // TODO(danakj): TakeUnusedResourcesForChildCompositor requires a push
-  // properties to happen in order to collect unused resources returned
+  // TODO(danakj): The DidCommitFrameData() notification requires a push
+  // properties to happen in order to notify about unused resources returned
   // from the parent compositor. crbug.com/259090
   needs_push_properties_ = true;
 }
@@ -90,6 +97,8 @@ void DelegatedRendererLayer::SetDisplaySize(gfx::Size size) {
 
 void DelegatedRendererLayer::SetFrameData(
     scoped_ptr<DelegatedFrameData> new_frame_data) {
+  DCHECK(new_frame_data);
+
   if (frame_data_) {
     // Copy the resources from the last provided frame into the unused resources
     // list, as the new frame will provide its own resources.
@@ -137,6 +146,25 @@ void DelegatedRendererLayer::TakeUnusedResourcesForChildCompositor(
   array->clear();
 
   array->swap(unused_resources_for_child_compositor_);
+}
+
+void DelegatedRendererLayer::ReceiveUnusedResources(
+    const ReturnedResourceArray& unused) {
+  unused_resources_for_child_compositor_.insert(
+      unused_resources_for_child_compositor_.end(),
+      unused.begin(),
+      unused.end());
+}
+
+// static
+void DelegatedRendererLayer::ReceiveUnusedResourcesOnImplThread(
+    scoped_refptr<BlockingTaskRunner> task_runner,
+    base::WeakPtr<DelegatedRendererLayer> self,
+    const ReturnedResourceArray& unused) {
+  task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &DelegatedRendererLayer::ReceiveUnusedResources, self, unused));
 }
 
 }  // namespace cc

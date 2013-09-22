@@ -5,12 +5,15 @@
 #ifndef CC_LAYERS_DELEGATED_RENDERER_LAYER_H_
 #define CC_LAYERS_DELEGATED_RENDERER_LAYER_H_
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
 #include "cc/resources/returned_resource.h"
 
 namespace cc {
-
+class BlockingTaskRunner;
 class DelegatedFrameData;
 class DelegatedRendererLayerClient;
 
@@ -42,17 +45,27 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
   virtual ~DelegatedRendererLayer();
 
  private:
+  void ReceiveUnusedResources(const ReturnedResourceArray& unused);
+  static void ReceiveUnusedResourcesOnImplThread(
+      scoped_refptr<BlockingTaskRunner> task_runner,
+      base::WeakPtr<DelegatedRendererLayer> self,
+      const ReturnedResourceArray& unused);
+
   scoped_ptr<DelegatedFrameData> frame_data_;
   gfx::RectF damage_in_frame_;
   gfx::Size frame_size_;
   gfx::Size display_size_;
-  ReturnedResourceArray unused_resources_for_child_compositor_;
 
   DelegatedRendererLayerClient* client_;
   bool needs_filter_context_;
+
+  ReturnedResourceArray unused_resources_for_child_compositor_;
+  scoped_refptr<BlockingTaskRunner> main_thread_runner_;
+  base::WeakPtrFactory<DelegatedRendererLayer> weak_ptrs_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatedRendererLayer);
 };
 
 }  // namespace cc
+
 #endif  // CC_LAYERS_DELEGATED_RENDERER_LAYER_H_
