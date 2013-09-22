@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui_handler.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -264,17 +265,34 @@ void PrivetNotificationService::PrivetRemoveNotification() {
 }
 
 void PrivetNotificationService::Start() {
-  ReportPrivetUmaEvent(PRIVET_SERVICE_STARTED);
-  traffic_detector_v4_ =
-      new PrivetTrafficDetector(
-          net::ADDRESS_FAMILY_IPV4,
-          base::Bind(&PrivetNotificationService::StartLister, AsWeakPtr()));
-  traffic_detector_v6_ =
-      new PrivetTrafficDetector(
-          net::ADDRESS_FAMILY_IPV6,
-          base::Bind(&PrivetNotificationService::StartLister, AsWeakPtr()));
-  traffic_detector_v4_->Start();
-  traffic_detector_v6_->Start();
+  enable_privet_notification_member_.Init(
+      prefs::kLocalDiscoveryNotificationsEnabled,
+      Profile::FromBrowserContext(profile_)->GetPrefs(),
+      base::Bind(&PrivetNotificationService::OnNotificationsEnabledChanged,
+                 base::Unretained(this)));
+  OnNotificationsEnabledChanged();
+}
+
+void PrivetNotificationService::OnNotificationsEnabledChanged() {
+  if (*enable_privet_notification_member_) {
+    ReportPrivetUmaEvent(PRIVET_SERVICE_STARTED);
+    traffic_detector_v4_ =
+        new PrivetTrafficDetector(
+            net::ADDRESS_FAMILY_IPV4,
+            base::Bind(&PrivetNotificationService::StartLister, AsWeakPtr()));
+    traffic_detector_v6_ =
+        new PrivetTrafficDetector(
+            net::ADDRESS_FAMILY_IPV6,
+            base::Bind(&PrivetNotificationService::StartLister, AsWeakPtr()));
+    traffic_detector_v4_->Start();
+    traffic_detector_v6_->Start();
+  } else {
+    traffic_detector_v4_ = NULL;
+    traffic_detector_v6_ = NULL;
+    device_lister_.reset();
+    service_discovery_client_ = NULL;
+    privet_notifications_listener_.reset();
+  }
 }
 
 void PrivetNotificationService::StartLister() {

@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/prefs/pref_member.h"
 #include "chrome/browser/local_discovery/privet_device_lister.h"
 #include "chrome/browser/local_discovery/privet_http.h"
 #include "chrome/browser/notifications/notification_delegate.h"
@@ -109,6 +110,7 @@ class PrivetNotificationService
 
  private:
   void Start();
+  void OnNotificationsEnabledChanged();
   void StartLister();
 
   content::BrowserContext* profile_;
@@ -117,6 +119,7 @@ class PrivetNotificationService
   scoped_refptr<PrivetTrafficDetector> traffic_detector_v4_;
   scoped_refptr<PrivetTrafficDetector> traffic_detector_v6_;
   scoped_ptr<PrivetNotificationsListener> privet_notifications_listener_;
+  BooleanPrefMember enable_privet_notification_member_;
 };
 
 class PrivetNotificationDelegate : public NotificationDelegate {
