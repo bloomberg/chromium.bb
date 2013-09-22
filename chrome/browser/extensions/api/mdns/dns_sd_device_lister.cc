@@ -9,13 +9,12 @@
 #include "base/bind.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/common/extensions/api/mdns.h"
-#include "chrome/common/local_discovery/service_discovery_client.h"
 #include "net/base/net_util.h"
 
 using local_discovery::ServiceDescription;
+using local_discovery::ServiceDiscoverySharedClient;
 using local_discovery::ServiceResolver;
 using local_discovery::ServiceWatcher;
-using local_discovery::ServiceDiscoverySharedClient;
 
 namespace extensions {
 
@@ -25,7 +24,10 @@ void FillServiceInfo(const ServiceDescription& service_description,
                      DnsSdService* service) {
   service->service_name = service_description.service_name;
   service->service_host_port = service_description.address.ToString();
-  service->ip_address = net::IPAddressToString(service_description.ip_address);
+  if (!service_description.ip_address.empty()) {
+    service->ip_address = net::IPAddressToString(
+        service_description.ip_address);
+  }
   service->service_data = service_description.metadata;
 
   DVLOG(1) << "Found " << service->service_name << ", "
@@ -102,6 +104,7 @@ void DnsSdDeviceLister::OnResolveComplete(
   DnsSdService service;
   FillServiceInfo(service_description, &service);
 
+  resolvers_.erase(service_description.service_name);
   delegate_->ServiceChanged(service_type_, added, service);
 }
 

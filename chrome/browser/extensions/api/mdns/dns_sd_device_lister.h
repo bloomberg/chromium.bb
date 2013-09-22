@@ -12,7 +12,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/mdns/dns_sd_delegate.h"
-#include "chrome/browser/local_discovery/service_discovery_shared_client.h"
+#include "chrome/common/local_discovery/service_discovery_client.h"
 
 namespace local_discovery {
 class ServiceDiscoverySharedClient;

@@ -17,6 +17,7 @@
 
 namespace local_discovery {
 class ServiceDiscoverySharedClient;
+class ServiceDiscoveryClient;
 }
 
 namespace extensions {

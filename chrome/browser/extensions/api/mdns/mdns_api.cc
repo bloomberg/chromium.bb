@@ -19,10 +19,12 @@ namespace {
 
 // Whitelisted mDNS service types.
 const char kCastServiceType[] = "_googlecast._tcp.local";
+const char kPrivetServiceType[] = "_privet._tcp.local";
 const char kTestServiceType[] = "_testing._tcp.local";
 
 bool IsServiceTypeWhitelisted(const std::string& service_type) {
   return service_type == kCastServiceType ||
+         service_type == kPrivetServiceType ||
          service_type == kTestServiceType;
 }
 
@@ -125,8 +127,6 @@ void MDnsAPI::UpdateMDnsListeners(const EventListenerInfo& details) {
 void MDnsAPI::OnDnsSdEvent(const std::string& service_type,
                            const DnsSdRegistry::DnsSdServiceList& services) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (services.size() == 0)
-    return;
 
   std::vector<linked_ptr<mdns::MDnsService> > args;
   for (DnsSdRegistry::DnsSdServiceList::const_iterator it = services.begin();

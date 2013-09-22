@@ -31,7 +31,7 @@ scoped_ptr<ServiceWatcher> ServiceDiscoveryClientImpl::CreateServiceWatcher(
     const std::string& service_type,
     const ServiceWatcher::UpdatedCallback& callback) {
   return scoped_ptr<ServiceWatcher>(new ServiceWatcherImpl(
-      service_type,  callback, mdns_client_));
+      service_type, callback, mdns_client_));
 }
 
 scoped_ptr<ServiceResolver> ServiceDiscoveryClientImpl::CreateServiceResolver(

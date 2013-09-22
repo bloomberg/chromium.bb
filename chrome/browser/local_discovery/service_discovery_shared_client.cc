@@ -6,6 +6,10 @@
 
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/local_discovery/service_discovery_client_mac_factory.h"
+#endif
+
 #if defined(ENABLE_MDNS)
 #include "chrome/browser/local_discovery/service_discovery_client_mdns.h"
 #endif  // ENABLE_MDNS
@@ -28,7 +32,7 @@ ServiceDiscoverySharedClient::~ServiceDiscoverySharedClient() {
   g_service_discovery_client = NULL;
 }
 
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_MDNS) || defined(OS_MACOSX)
 
 scoped_refptr<ServiceDiscoverySharedClient>
     ServiceDiscoverySharedClient::GetInstance() {
@@ -37,10 +41,14 @@ scoped_refptr<ServiceDiscoverySharedClient>
   if (g_service_discovery_client)
     return g_service_discovery_client;
 
+#if defined(OS_MACOSX)
+  return ServiceDiscoveryClientMacFactory::CreateInstance();
+#else
   return new ServiceDiscoveryClientMdns();
+#endif
 }
 
-#else  // ENABLE_MDNS
+#else
 
 scoped_refptr<ServiceDiscoverySharedClient>
     ServiceDiscoverySharedClient::GetInstance() {

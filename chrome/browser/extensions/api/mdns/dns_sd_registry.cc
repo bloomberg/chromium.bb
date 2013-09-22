@@ -6,8 +6,9 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/api/mdns/dns_sd_device_lister.h"
-#include "chrome/browser/local_discovery/service_discovery_host_client.h"
+#include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 
+using local_discovery::ServiceDiscoveryClient;
 using local_discovery::ServiceDiscoverySharedClient;
 
 namespace extensions {
@@ -24,9 +25,7 @@ class IsSameServiceName {
  private:
   const DnsSdService& service_;
 };
-
 }  // namespace
-
 
 DnsSdRegistry::ServiceTypeData::ServiceTypeData(
     scoped_ptr<DnsSdDeviceLister> lister)
@@ -80,7 +79,7 @@ DnsSdRegistry::ServiceTypeData::GetServiceList() {
 }
 
 DnsSdRegistry::DnsSdRegistry() {
-#if defined(ENABLE_MDNS)
+#if defined(ENABLE_MDNS) || defined(OS_MACOSX)
   service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
 #endif
 }
@@ -89,8 +88,7 @@ DnsSdRegistry::DnsSdRegistry(ServiceDiscoverySharedClient* client) {
   service_discovery_client_ = client;
 }
 
-DnsSdRegistry::~DnsSdRegistry() {
-}
+DnsSdRegistry::~DnsSdRegistry() {}
 
 void DnsSdRegistry::AddObserver(DnsSdObserver* observer) {
   observers_.AddObserver(observer);
@@ -112,7 +110,7 @@ void DnsSdRegistry::RegisterDnsSdListener(std::string service_type) {
     return;
 
   if (service_data_map_.find(service_type) != service_data_map_.end()) {
-    service_data_map_[service_type].get()->ListenerAdded();
+    service_data_map_[service_type]->ListenerAdded();
     DispatchApiEvent(service_type);
     return;
   }
@@ -132,7 +130,7 @@ void DnsSdRegistry::UnregisterDnsSdListener(std::string service_type) {
   if (it == service_data_map_.end())
     return;
 
-  if (service_data_map_[service_type].get()->ListenerRemoved())
+  if (service_data_map_[service_type]->ListenerRemoved())
     service_data_map_.erase(it);
 }
 
@@ -142,7 +140,7 @@ void DnsSdRegistry::ServiceChanged(const std::string& service_type,
   if (service_data_map_.find(service_type) == service_data_map_.end())
     return;
 
-  if (service_data_map_[service_type].get()->UpdateService(added, service)) {
+  if (service_data_map_[service_type]->UpdateService(added, service)) {
     DispatchApiEvent(service_type);
   } else {
     DVLOG(1) << "Failed to find existing service to update: "
@@ -155,7 +153,7 @@ void DnsSdRegistry::ServiceRemoved(const std::string& service_type,
   if (service_data_map_.find(service_type) == service_data_map_.end())
     return;
 
-  if (service_data_map_[service_type].get()->RemoveService(service_name)) {
+  if (service_data_map_[service_type]->RemoveService(service_name)) {
     DispatchApiEvent(service_type);
   } else {
     DVLOG(1) << "Failed to remove service: " << service_name;
@@ -164,7 +162,7 @@ void DnsSdRegistry::ServiceRemoved(const std::string& service_type,
 
 void DnsSdRegistry::DispatchApiEvent(const std::string& service_type) {
   FOR_EACH_OBSERVER(DnsSdObserver, observers_, OnDnsSdEvent(
-      service_type, service_data_map_[service_type].get()->GetServiceList()));
+      service_type, service_data_map_[service_type]->GetServiceList()));
 }
 
 }  // namespace extensions
