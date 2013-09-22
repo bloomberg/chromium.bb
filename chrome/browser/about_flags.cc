@@ -1556,11 +1556,12 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableDeviceDiscovery)
   },
   {
-    "disable-device-discovery-notifications",
-    IDS_FLAGS_DISABLE_DEVICE_DISCOVERY_NOTIFICATIONS_NAME,
-    IDS_FLAGS_DISABLE_DEVICE_DISCOVERY_NOTIFICATIONS_DESCRIPTION,
+    "device-discovery-notifications",
+    IDS_FLAGS_DEVICE_DISCOVERY_NOTIFICATIONS_NAME,
+    IDS_FLAGS_DEVICE_DISCOVERY_NOTIFICATIONS_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kDisableDeviceDiscoveryNotifications)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableDeviceDiscoveryNotifications,
+                              switches::kDisableDeviceDiscoveryNotifications)
   },
 #endif  // ENABLE_MDNS
 #if defined(OS_MACOSX)

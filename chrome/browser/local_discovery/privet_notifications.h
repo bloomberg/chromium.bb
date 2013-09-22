@@ -108,6 +108,9 @@ class PrivetNotificationService
   virtual void PrivetRemoveNotification() OVERRIDE;
   virtual void DeviceCacheFlushed() OVERRIDE;
 
+  static bool IsEnabled();
+  static bool IsForced();
+
  private:
   void Start();
   void OnNotificationsEnabledChanged();

@@ -4,10 +4,8 @@
 
 #include "chrome/browser/local_discovery/privet_notifications_factory.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/local_discovery/privet_notifications.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 namespace local_discovery {
@@ -34,11 +32,7 @@ PrivetNotificationServiceFactory::BuildServiceInstanceFor(
 
 bool
 PrivetNotificationServiceFactory::ServiceIsCreatedWithBrowserContext() const {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  using switches::kDisableDeviceDiscovery;
-  using switches::kDisableDeviceDiscoveryNotifications;
-  return !command_line->HasSwitch(kDisableDeviceDiscovery) &&
-         !command_line->HasSwitch(kDisableDeviceDiscoveryNotifications);
+  return PrivetNotificationService::IsEnabled();
 }
 
 bool PrivetNotificationServiceFactory::ServiceIsNULLWhileTesting() const {

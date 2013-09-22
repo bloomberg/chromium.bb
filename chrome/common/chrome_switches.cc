@@ -577,6 +577,10 @@ const char kEnableContacts[]                = "enable-contacts";
 // If true devtools experimental settings are enabled.
 const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
 
+// Enable device discovery notifications.
+const char kEnableDeviceDiscoveryNotifications[] =
+    "enable-device-discovery-notifications";
+
 // Force-enables DNS probes on main frame DNS errors.  (The user must still
 // opt in to "Use web service to resolve navigation errors".)
 const char kEnableDnsProbes[]               = "enable-dns-probes";

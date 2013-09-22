@@ -5,6 +5,7 @@
 #include "chrome/browser/local_discovery/privet_notifications.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui_handler.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
@@ -211,6 +213,19 @@ void PrivetNotificationService::DeviceCacheFlushed() {
   privet_notifications_listener_->DeviceCacheFlushed();
 }
 
+// static
+bool PrivetNotificationService::IsEnabled() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return !command_line->HasSwitch(switches::kDisableDeviceDiscovery) &&
+      !command_line->HasSwitch(switches::kDisableDeviceDiscoveryNotifications);
+}
+
+// static
+bool PrivetNotificationService::IsForced() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switches::kEnableDeviceDiscoveryNotifications);
+}
+
 void PrivetNotificationService::PrivetNotify(bool has_multiple,
                                              bool added) {
     string16 product_name = l10n_util::GetStringUTF16(
@@ -274,7 +289,9 @@ void PrivetNotificationService::Start() {
 }
 
 void PrivetNotificationService::OnNotificationsEnabledChanged() {
-  if (*enable_privet_notification_member_) {
+  if (IsForced()) {
+    StartLister();
+  } else if (*enable_privet_notification_member_) {
     ReportPrivetUmaEvent(PRIVET_SERVICE_STARTED);
     traffic_detector_ =
         new PrivetTrafficDetector(
