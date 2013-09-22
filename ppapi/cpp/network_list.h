@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_CPP_PRIVATE_NETWORK_LIST_PRIVATE_H_
-#define PPAPI_CPP_PRIVATE_NETWORK_LIST_PRIVATE_H_
+#ifndef PPAPI_CPP_NETWORK_LIST_H_
+#define PPAPI_CPP_NETWORK_LIST_H_
 
 #include <string>
 #include <vector>
 
-#include "ppapi/c/private/ppb_network_list_private.h"
+#include "ppapi/c/ppb_network_list.h"
 #include "ppapi/cpp/pass_ref.h"
 #include "ppapi/cpp/resource.h"
 
@@ -16,10 +16,10 @@ namespace pp {
 
 class NetAddress;
 
-class NetworkListPrivate : public Resource {
+class NetworkList : public Resource {
  public:
-  NetworkListPrivate();
-  NetworkListPrivate(PassRef, PP_Resource resource);
+  NetworkList();
+  NetworkList(PassRef, PP_Resource resource);
 
   /// Returns true if the required interface is available.
   static bool IsAvailable();
@@ -34,11 +34,11 @@ class NetworkListPrivate : public Resource {
 
   /// @return Returns the type of the network interface with the
   /// specified <code>index</code>.
-  PP_NetworkListType_Private GetType(uint32_t index) const;
+  PP_NetworkList_Type GetType(uint32_t index) const;
 
   /// @return Returns the current state of the network interface with
   /// the specified <code>index</code>.
-  PP_NetworkListState_Private GetState(uint32_t index) const;
+  PP_NetworkList_State GetState(uint32_t index) const;
 
   /// Gets the list of IP addresses for the network interface with the
   /// specified <code>index</code> and stores them in
@@ -57,4 +57,4 @@ class NetworkListPrivate : public Resource {
 
 }  // namespace pp
 
-#endif  // PPAPI_CPP_PRIVATE_NETWORK_LIST_PRIVATE_H_
+#endif  // PPAPI_CPP_NETWORK_LIST_H_

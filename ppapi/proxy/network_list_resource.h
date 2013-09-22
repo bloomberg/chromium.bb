@@ -33,8 +33,8 @@ class NetworkListResource
   // PPB_NetworkList_API implementation.
   virtual uint32_t GetCount() OVERRIDE;
   virtual PP_Var GetName(uint32_t index) OVERRIDE;
-  virtual PP_NetworkListType_Private GetType(uint32_t index) OVERRIDE;
-  virtual PP_NetworkListState_Private GetState(uint32_t index) OVERRIDE;
+  virtual PP_NetworkList_Type GetType(uint32_t index) OVERRIDE;
+  virtual PP_NetworkList_State GetState(uint32_t index) OVERRIDE;
   virtual int32_t GetIpAddresses(uint32_t index,
                                  const PP_ArrayOutput& output) OVERRIDE;
   virtual PP_Var GetDisplayName(uint32_t index) OVERRIDE;

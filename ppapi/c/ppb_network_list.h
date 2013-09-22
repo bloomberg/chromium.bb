@@ -3,66 +3,83 @@
  * found in the LICENSE file.
  */
 
+/* From ppb_network_list.idl modified Mon Sep  9 11:16:26 2013. */
+
+#ifndef PPAPI_C_PPB_NETWORK_LIST_H_
+#define PPAPI_C_PPB_NETWORK_LIST_H_
+
+#include "ppapi/c/pp_array_output.h"
+#include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_macros.h"
+#include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_var.h"
+
+#define PPB_NETWORKLIST_INTERFACE_1_0 "PPB_NetworkList;1.0"
+#define PPB_NETWORKLIST_INTERFACE PPB_NETWORKLIST_INTERFACE_1_0
+
 /**
- * This file defines the <code>PPB_NetworkList_Private</code> interface.
+ * @file
+ * This file defines the <code>PPB_NetworkList</code> interface.
  */
 
-[generate_thunk]
 
-label Chrome {
-  M31 = 0.3
-};
-
+/**
+ * @addtogroup Enums
+ * @{
+ */
 /**
  * Type of a network interface.
  */
-[assert_size(4)]
-enum PP_NetworkListType_Private {
+typedef enum {
   /**
    * Type of the network interface is not known.
    */
-  PP_NETWORKLIST_UNKNOWN = 0,
-
+  PP_NETWORKLIST_TYPE_UNKNOWN = 0,
   /**
    * Wired Ethernet network.
    */
-  PP_NETWORKLIST_ETHERNET = 1,
-
+  PP_NETWORKLIST_TYPE_ETHERNET = 1,
   /**
    * Wireless Wi-Fi network.
    */
-  PP_NETWORKLIST_WIFI = 2,
-
+  PP_NETWORKLIST_TYPE_WIFI = 2,
   /**
    * Cellular network (e.g. LTE).
    */
-  PP_NETWORKLIST_CELLULAR = 3
-};
+  PP_NETWORKLIST_TYPE_CELLULAR = 3
+} PP_NetworkList_Type;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_NetworkList_Type, 4);
 
 /**
  * State of a network interface.
  */
-[assert_size(4)]
-enum PP_NetworkListState_Private  {
+typedef enum {
   /**
    * Network interface is down.
    */
-  PP_NETWORKLIST_DOWN = 0,
-
+  PP_NETWORKLIST_STATE_DOWN = 0,
   /**
    * Network interface is up.
    */
-  PP_NETWORKLIST_UP = 1
-};
+  PP_NETWORKLIST_STATE_UP = 1
+} PP_NetworkList_State;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_NetworkList_State, 4);
+/**
+ * @}
+ */
 
 /**
- * The <code>PPB_NetworkList_Private</code> is used to represent a
- * list of network interfaces and their configuration. The content of
- * the list is immutable. The current networks configuration can be
- * received using the <code>PPB_NetworkMonitor_Private</code>
- * interface.
+ * @addtogroup Interfaces
+ * @{
  */
-interface PPB_NetworkList_Private {
+/**
+ * The <code>PPB_NetworkList</code> is used to represent a list of
+ * network interfaces and their configuration. The content of the list
+ * is immutable.  The current networks configuration can be received
+ * using the <code>PPB_NetworkMonitor</code> interface.
+ */
+struct PPB_NetworkList_1_0 {
   /**
    * Determines if the specified <code>resource</code> is a
    * <code>NetworkList</code> object.
@@ -70,11 +87,10 @@ interface PPB_NetworkList_Private {
    * @param[in] resource A <code>PP_Resource</code> resource.
    *
    * @return Returns <code>PP_TRUE</code> if <code>resource</code> is
-   * a <code>PPB_NetworkList_Private</code>, <code>PP_FALSE</code>
+   * a <code>PPB_NetworkList</code>, <code>PP_FALSE</code>
    * otherwise.
    */
-  PP_Bool IsNetworkList([in] PP_Resource resource);
-
+  PP_Bool (*IsNetworkList)(PP_Resource resource);
   /**
    * Gets number of interfaces in the list.
    *
@@ -84,8 +100,7 @@ interface PPB_NetworkList_Private {
    * @return Returns number of available network interfaces or 0 if
    * the list has never been updated.
    */
-  uint32_t GetCount([in] PP_Resource resource);
-
+  uint32_t (*GetCount)(PP_Resource resource);
   /**
    * Gets name of a network interface.
    *
@@ -96,9 +111,7 @@ interface PPB_NetworkList_Private {
    * @return Returns name for the network interface with the specified
    * <code>index</code>.
    */
-  PP_Var GetName([in] PP_Resource resource,
-                 [in] uint32_t index);
-
+  struct PP_Var (*GetName)(PP_Resource resource, uint32_t index);
   /**
    * Gets type of a network interface.
    *
@@ -109,10 +122,7 @@ interface PPB_NetworkList_Private {
    * @return Returns type of the network interface with the specified
    * <code>index</code>.
    */
-  [on_failure=PP_NETWORKLIST_UNKNOWN]
-  PP_NetworkListType_Private GetType([in] PP_Resource resource,
-                                     [in] uint32_t index);
-
+  PP_NetworkList_Type (*GetType)(PP_Resource resource, uint32_t index);
   /**
    * Gets state of a network interface.
    *
@@ -123,10 +133,7 @@ interface PPB_NetworkList_Private {
    * @return Returns current state of the network interface with the
    * specified <code>index</code>.
    */
-  [on_failure=PP_NETWORKLIST_DOWN]
-  PP_NetworkListState_Private GetState([in] PP_Resource resource,
-                                       [in] uint32_t index);
-
+  PP_NetworkList_State (*GetState)(PP_Resource resource, uint32_t index);
   /**
    * Gets list of IP addresses for a network interface.
    *
@@ -140,10 +147,9 @@ interface PPB_NetworkList_Private {
    *
    * @return An error code from <code>pp_errors.h</code>.
    */
-  int32_t GetIpAddresses([in] PP_Resource resource,
-                         [in] uint32_t index,
-                         [in] PP_ArrayOutput output);
-
+  int32_t (*GetIpAddresses)(PP_Resource resource,
+                            uint32_t index,
+                            struct PP_ArrayOutput output);
   /**
    * Gets display name of a network interface.
    *
@@ -154,9 +160,7 @@ interface PPB_NetworkList_Private {
    * @return Returns display name for the network interface with the
    * specified <code>index</code>.
    */
-  PP_Var GetDisplayName([in] PP_Resource resource,
-                        [in] uint32_t index);
-
+  struct PP_Var (*GetDisplayName)(PP_Resource resource, uint32_t index);
   /**
    * Gets MTU (Maximum Transmission Unit) of a network interface.
    *
@@ -167,7 +171,13 @@ interface PPB_NetworkList_Private {
    * @return Returns MTU for the network interface with the specified
    * <code>index</code> or 0 if MTU is unknown.
    */
-  uint32_t GetMTU([in] PP_Resource resource,
-                  [in] uint32_t index);
-
+  uint32_t (*GetMTU)(PP_Resource resource, uint32_t index);
 };
+
+typedef struct PPB_NetworkList_1_0 PPB_NetworkList;
+/**
+ * @}
+ */
+
+#endif  /* PPAPI_C_PPB_NETWORK_LIST_H_ */
+

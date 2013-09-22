@@ -10,7 +10,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/net_address.h"
-#include "ppapi/cpp/private/network_list_private.h"
+#include "ppapi/cpp/network_list.h"
 #include "remoting/client/plugin/pepper_util.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
 
@@ -22,7 +22,7 @@ PepperNetworkManager::PepperNetworkManager(const pp::InstanceHandle& instance)
       network_list_received_(false),
       callback_factory_(this),
       weak_factory_(this) {
-  pp::CompletionCallbackWithOutput<pp::NetworkListPrivate> callback =
+  pp::CompletionCallbackWithOutput<pp::NetworkList> callback =
       callback_factory_.NewCallbackWithOutput(
           &PepperNetworkManager::OnNetworkList);
   monitor_.UpdateNetworkList(callback);
@@ -47,9 +47,8 @@ void PepperNetworkManager::StopUpdating() {
   --start_count_;
 }
 
-
 void PepperNetworkManager::OnNetworkList(int32_t result,
-                                         const pp::NetworkListPrivate& list) {
+                                         const pp::NetworkList& list) {
   if (result != PP_OK) {
     SignalError();
     return;
@@ -59,7 +58,7 @@ void PepperNetworkManager::OnNetworkList(int32_t result,
   network_list_received_ = true;
 
   // Request for the next update.
-  pp::CompletionCallbackWithOutput<pp::NetworkListPrivate> callback =
+  pp::CompletionCallbackWithOutput<pp::NetworkList> callback =
       callback_factory_.NewCallbackWithOutput(
           &PepperNetworkManager::OnNetworkList);
   monitor_.UpdateNetworkList(callback);

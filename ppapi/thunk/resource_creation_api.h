@@ -5,7 +5,9 @@
 #ifndef PPAPI_THUNK_RESOURCE_CREATION_API_H_
 #define PPAPI_THUNK_RESOURCE_CREATION_API_H_
 
+#include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
+#include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
@@ -15,11 +17,9 @@
 #include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_input_event.h"
+#include "ppapi/c/ppb_network_monitor.h"
 #include "ppapi/c/ppb_websocket.h"
-#include "ppapi/c/dev/pp_video_dev.h"
-#include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/private/pp_private_font_charset.h"
-#include "ppapi/c/private/ppb_network_monitor_private.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/ppb_image_data_shared.h"
 
@@ -145,7 +145,7 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateNetAddressFromNetAddressPrivate(
       PP_Instance instance,
       const PP_NetAddress_Private& private_addr) = 0;
-  virtual PP_Resource CreateNetworkMonitorPrivate(PP_Instance instance) = 0;
+  virtual PP_Resource CreateNetworkMonitor(PP_Instance instance) = 0;
   virtual PP_Resource CreatePrinting(PP_Instance instance) = 0;
   virtual PP_Resource CreateTCPServerSocketPrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreateTCPSocket1_0(PP_Instance instace) = 0;

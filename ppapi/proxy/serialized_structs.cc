@@ -81,8 +81,8 @@ void SerializedFontDescription::SetToPPBrowserFontDescription(
 }
 
 SerializedNetworkInfo::SerializedNetworkInfo()
-    : type(PP_NETWORKLIST_UNKNOWN),
-      state(PP_NETWORKLIST_DOWN),
+    : type(PP_NETWORKLIST_TYPE_UNKNOWN),
+      state(PP_NETWORKLIST_STATE_DOWN),
       mtu(0) {
 }
 

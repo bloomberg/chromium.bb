@@ -37,15 +37,15 @@ PP_Var NetworkListResource::GetName(uint32_t index) {
   return StringVar::StringToPPVar(list_.at(index).name);
 }
 
-PP_NetworkListType_Private NetworkListResource::GetType(uint32_t index) {
+PP_NetworkList_Type NetworkListResource::GetType(uint32_t index) {
   if (index >= list_.size())
-    return PP_NETWORKLIST_UNKNOWN;
+    return PP_NETWORKLIST_TYPE_UNKNOWN;
   return list_.at(index).type;
 }
 
-PP_NetworkListState_Private NetworkListResource::GetState(uint32_t index) {
+PP_NetworkList_State NetworkListResource::GetState(uint32_t index) {
   if (index >= list_.size())
-    return PP_NETWORKLIST_DOWN;
+    return PP_NETWORKLIST_STATE_DOWN;
   return list_.at(index).state;
 }
 

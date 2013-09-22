@@ -102,8 +102,7 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
       PP_InputEvent_Type type,
       PP_TimeTicks time_stamp,
       uint32_t modifiers) OVERRIDE;
-  virtual PP_Resource CreateNetworkMonitorPrivate(
-      PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateNetworkMonitor(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreatePlatformVerificationPrivate(
       PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateResourceArray(PP_Instance instance,

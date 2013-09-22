@@ -5,7 +5,7 @@
 #ifndef PPAPI_THUNK_PPB_NETWORK_MONITOR_API_H_
 #define PPAPI_THUNK_PPB_NETWORK_MONITOR_API_H_
 
-#include "ppapi/c/private/ppb_network_monitor_private.h"
+#include "ppapi/c/ppb_network_monitor.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {

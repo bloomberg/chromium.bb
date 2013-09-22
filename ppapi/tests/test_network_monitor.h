@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PAPPI_TESTS_TEST_NETWORK_MONITOR_PRIVATE_H_
-#define PAPPI_TESTS_TEST_NETWORK_MONITOR_PRIVATE_H_
+#ifndef PAPPI_TESTS_TEST_NETWORK_MONITOR_H_
+#define PAPPI_TESTS_TEST_NETWORK_MONITOR_H_
 
 #include <string>
 
@@ -11,12 +11,12 @@
 #include "ppapi/tests/test_case.h"
 
 namespace pp {
-class NetworkListPrivate;
+class NetworkList;
 }  // namespace pp
 
-class TestNetworkMonitorPrivate : public TestCase {
+class TestNetworkMonitor : public TestCase {
  public:
-  explicit TestNetworkMonitorPrivate(TestingInstance* instance);
+  explicit TestNetworkMonitor(TestingInstance* instance);
 
   // TestCase implementation.
   virtual bool Init();
@@ -28,8 +28,8 @@ class TestNetworkMonitorPrivate : public TestCase {
   std::string TestDeleteInCallback();
 
   std::string VerifyNetworkListResource(PP_Resource network_resource);
-  std::string VerifyNetworkList(const pp::NetworkListPrivate& network_list);
+  std::string VerifyNetworkList(const pp::NetworkList& network_list);
 
 };
 
-#endif  // PAPPI_TESTS_TEST_NETWORK_MONITOR_PRIVATE_H_
+#endif  // PAPPI_TESTS_TEST_NETWORK_MONITOR_H_

@@ -16,8 +16,8 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_rect.h"
+#include "ppapi/c/ppb_network_list.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
-#include "ppapi/c/private/ppb_network_list_private.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/host_resource.h"
 
@@ -64,8 +64,8 @@ struct PPAPI_PROXY_EXPORT SerializedNetworkInfo {
   ~SerializedNetworkInfo();
 
   std::string name;
-  PP_NetworkListType_Private type;
-  PP_NetworkListState_Private state;
+  PP_NetworkList_Type type;
+  PP_NetworkList_State state;
   std::vector<PP_NetAddress_Private> addresses;
   std::string display_name;
   int mtu;

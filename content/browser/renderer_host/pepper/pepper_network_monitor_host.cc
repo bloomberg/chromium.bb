@@ -25,7 +25,7 @@ bool CanUseNetworkMonitor(bool external_plugin,
   SocketPermissionRequest request = SocketPermissionRequest(
       SocketPermissionRequest::NETWORK_STATE, std::string(), 0);
   return pepper_socket_utils::CanUseSocketAPIs(
-      external_plugin, true /* private_api */, &request, render_process_id,
+      external_plugin, false /* private_api */, request, render_process_id,
       render_view_id);
 }
 
@@ -108,8 +108,8 @@ void PepperNetworkMonitorHost::SendNetworkList(
     // TODO(sergeyu): Currently net::NetworkInterfaceList provides
     // only name and one IP address. Add all other fields and copy
     // them here.
-    network_copy.type = PP_NETWORKLIST_UNKNOWN;
-    network_copy.state = PP_NETWORKLIST_UP;
+    network_copy.type = PP_NETWORKLIST_TYPE_UNKNOWN;
+    network_copy.state = PP_NETWORKLIST_STATE_UP;
     network_copy.display_name = network.name;
     network_copy.mtu = 0;
   }

@@ -1075,30 +1075,30 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, NetAddressPrivate) {
 // NetworkMonitor tests.
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, NetworkMonitor) {
   RunTestViaHTTP(
-      LIST_TEST(NetworkMonitorPrivate_Basic)
-      LIST_TEST(NetworkMonitorPrivate_2Monitors)
-      LIST_TEST(NetworkMonitorPrivate_DeleteInCallback)
+      LIST_TEST(NetworkMonitor_Basic)
+      LIST_TEST(NetworkMonitor_2Monitors)
+      LIST_TEST(NetworkMonitor_DeleteInCallback)
   );
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NetworkMonitor) {
   RunTestViaHTTP(
-      LIST_TEST(NetworkMonitorPrivate_Basic)
-      LIST_TEST(NetworkMonitorPrivate_2Monitors)
-      LIST_TEST(NetworkMonitorPrivate_DeleteInCallback)
+      LIST_TEST(NetworkMonitor_Basic)
+      LIST_TEST(NetworkMonitor_2Monitors)
+      LIST_TEST(NetworkMonitor_DeleteInCallback)
   );
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(NetworkMonitor)) {
   RunTestViaHTTP(
-      LIST_TEST(NetworkMonitorPrivate_Basic)
-      LIST_TEST(NetworkMonitorPrivate_2Monitors)
-      LIST_TEST(NetworkMonitorPrivate_DeleteInCallback)
+      LIST_TEST(NetworkMonitor_Basic)
+      LIST_TEST(NetworkMonitor_2Monitors)
+      LIST_TEST(NetworkMonitor_DeleteInCallback)
   );
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, NetworkMonitor) {
   RunTestViaHTTP(
-      LIST_TEST(NetworkMonitorPrivate_Basic)
-      LIST_TEST(NetworkMonitorPrivate_2Monitors)
-      LIST_TEST(NetworkMonitorPrivate_DeleteInCallback)
+      LIST_TEST(NetworkMonitor_Basic)
+      LIST_TEST(NetworkMonitor_2Monitors)
+      LIST_TEST(NetworkMonitor_DeleteInCallback)
   );
 }
 

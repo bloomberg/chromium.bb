@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_network_list_private.idl,
-//   modified Fri Aug 30 12:04:19 2013.
+// From ppb_network_list.idl modified Mon Sep  9 11:18:02 2013.
 
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/private/ppb_network_list_private.h"
+#include "ppapi/c/ppb_network_list.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_instance_api.h"
@@ -20,13 +19,13 @@ namespace thunk {
 namespace {
 
 PP_Bool IsNetworkList(PP_Resource resource) {
-  VLOG(4) << "PPB_NetworkList_Private::IsNetworkList()";
+  VLOG(4) << "PPB_NetworkList::IsNetworkList()";
   EnterResource<PPB_NetworkList_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
 
 uint32_t GetCount(PP_Resource resource) {
-  VLOG(4) << "PPB_NetworkList_Private::GetCount()";
+  VLOG(4) << "PPB_NetworkList::GetCount()";
   EnterResource<PPB_NetworkList_API> enter(resource, true);
   if (enter.failed())
     return 0;
@@ -34,33 +33,33 @@ uint32_t GetCount(PP_Resource resource) {
 }
 
 struct PP_Var GetName(PP_Resource resource, uint32_t index) {
-  VLOG(4) << "PPB_NetworkList_Private::GetName()";
+  VLOG(4) << "PPB_NetworkList::GetName()";
   EnterResource<PPB_NetworkList_API> enter(resource, true);
   if (enter.failed())
     return PP_MakeUndefined();
   return enter.object()->GetName(index);
 }
 
-PP_NetworkListType_Private GetType(PP_Resource resource, uint32_t index) {
-  VLOG(4) << "PPB_NetworkList_Private::GetType()";
+PP_NetworkList_Type GetType(PP_Resource resource, uint32_t index) {
+  VLOG(4) << "PPB_NetworkList::GetType()";
   EnterResource<PPB_NetworkList_API> enter(resource, true);
   if (enter.failed())
-    return PP_NETWORKLIST_UNKNOWN;
+    return PP_NETWORKLIST_TYPE_UNKNOWN;
   return enter.object()->GetType(index);
 }
 
-PP_NetworkListState_Private GetState(PP_Resource resource, uint32_t index) {
-  VLOG(4) << "PPB_NetworkList_Private::GetState()";
+PP_NetworkList_State GetState(PP_Resource resource, uint32_t index) {
+  VLOG(4) << "PPB_NetworkList::GetState()";
   EnterResource<PPB_NetworkList_API> enter(resource, true);
   if (enter.failed())
-    return PP_NETWORKLIST_DOWN;
+    return PP_NETWORKLIST_STATE_DOWN;
   return enter.object()->GetState(index);
 }
 
 int32_t GetIpAddresses(PP_Resource resource,
                        uint32_t index,
                        struct PP_ArrayOutput output) {
-  VLOG(4) << "PPB_NetworkList_Private::GetIpAddresses()";
+  VLOG(4) << "PPB_NetworkList::GetIpAddresses()";
   EnterResource<PPB_NetworkList_API> enter(resource, true);
   if (enter.failed())
     return enter.retval();
@@ -68,7 +67,7 @@ int32_t GetIpAddresses(PP_Resource resource,
 }
 
 struct PP_Var GetDisplayName(PP_Resource resource, uint32_t index) {
-  VLOG(4) << "PPB_NetworkList_Private::GetDisplayName()";
+  VLOG(4) << "PPB_NetworkList::GetDisplayName()";
   EnterResource<PPB_NetworkList_API> enter(resource, true);
   if (enter.failed())
     return PP_MakeUndefined();
@@ -76,14 +75,14 @@ struct PP_Var GetDisplayName(PP_Resource resource, uint32_t index) {
 }
 
 uint32_t GetMTU(PP_Resource resource, uint32_t index) {
-  VLOG(4) << "PPB_NetworkList_Private::GetMTU()";
+  VLOG(4) << "PPB_NetworkList::GetMTU()";
   EnterResource<PPB_NetworkList_API> enter(resource, true);
   if (enter.failed())
     return 0;
   return enter.object()->GetMTU(index);
 }
 
-const PPB_NetworkList_Private_0_3 g_ppb_networklist_private_thunk_0_3 = {
+const PPB_NetworkList_1_0 g_ppb_networklist_thunk_1_0 = {
   &IsNetworkList,
   &GetCount,
   &GetName,
@@ -96,8 +95,8 @@ const PPB_NetworkList_Private_0_3 g_ppb_networklist_private_thunk_0_3 = {
 
 }  // namespace
 
-const PPB_NetworkList_Private_0_3* GetPPB_NetworkList_Private_0_3_Thunk() {
-  return &g_ppb_networklist_private_thunk_0_3;
+const PPB_NetworkList_1_0* GetPPB_NetworkList_1_0_Thunk() {
+  return &g_ppb_networklist_thunk_1_0;
 }
 
 }  // namespace thunk

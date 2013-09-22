@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_network_monitor_private.idl,
-//   modified Wed Sep  4 14:16:07 2013.
+// From ppb_network_monitor.idl modified Thu Sep  5 12:10:00 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/private/ppb_network_monitor_private.h"
+#include "ppapi/c/ppb_network_monitor.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_instance_api.h"
@@ -21,17 +20,17 @@ namespace thunk {
 namespace {
 
 PP_Resource Create(PP_Instance instance) {
-  VLOG(4) << "PPB_NetworkMonitor_Private::Create()";
+  VLOG(4) << "PPB_NetworkMonitor::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateNetworkMonitorPrivate(instance);
+  return enter.functions()->CreateNetworkMonitor(instance);
 }
 
 int32_t UpdateNetworkList(PP_Resource network_monitor,
                           PP_Resource* network_list,
                           struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_NetworkMonitor_Private::UpdateNetworkList()";
+  VLOG(4) << "PPB_NetworkMonitor::UpdateNetworkList()";
   EnterResource<PPB_NetworkMonitor_API> enter(network_monitor, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -40,12 +39,12 @@ int32_t UpdateNetworkList(PP_Resource network_monitor,
 }
 
 PP_Bool IsNetworkMonitor(PP_Resource resource) {
-  VLOG(4) << "PPB_NetworkMonitor_Private::IsNetworkMonitor()";
+  VLOG(4) << "PPB_NetworkMonitor::IsNetworkMonitor()";
   EnterResource<PPB_NetworkMonitor_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
 
-const PPB_NetworkMonitor_Private_0_3 g_ppb_networkmonitor_private_thunk_0_3 = {
+const PPB_NetworkMonitor_1_0 g_ppb_networkmonitor_thunk_1_0 = {
   &Create,
   &UpdateNetworkList,
   &IsNetworkMonitor
@@ -53,9 +52,8 @@ const PPB_NetworkMonitor_Private_0_3 g_ppb_networkmonitor_private_thunk_0_3 = {
 
 }  // namespace
 
-const PPB_NetworkMonitor_Private_0_3*
-    GetPPB_NetworkMonitor_Private_0_3_Thunk() {
-  return &g_ppb_networkmonitor_private_thunk_0_3;
+const PPB_NetworkMonitor_1_0* GetPPB_NetworkMonitor_1_0_Thunk() {
+  return &g_ppb_networkmonitor_thunk_1_0;
 }
 
 }  // namespace thunk
