@@ -22,7 +22,6 @@
 
 namespace content {
 
-class RendererDemuxerAndroid;
 class RendererMediaPlayerManager;
 class WebMediaPlayerAndroid;
 
@@ -42,10 +41,11 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // Initializes a MediaPlayerAndroid object in browser process.
-  void Initialize(int player_id,
+  void Initialize(MediaPlayerHostMsg_Initialize_Type type,
+                  int player_id,
                   const GURL& url,
-                  MediaPlayerHostMsg_Initialize_Type type,
-                  const GURL& first_party_for_cookies);
+                  const GURL& first_party_for_cookies,
+                  int demuxer_client_id);
 
   // Starts the player.
   void Start(int player_id);
@@ -94,10 +94,6 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
               const std::string& session_id);
   void CancelKeyRequest(int media_keys_id, const std::string& session_id);
 
-  RendererDemuxerAndroid* renderer_demuxer_android() {
-    return renderer_demuxer_android_;
-  }
-
  private:
   WebMediaPlayerAndroid* GetWebMediaPlayer(int player_id);
 
@@ -127,9 +123,6 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
                     const std::string& session_id,
                     const std::vector<uint8>& message,
                     const std::string& destination_url);
-
-  // Owned by RenderView.
-  RendererDemuxerAndroid* renderer_demuxer_android_;
 
   RendererMediaPlayerManager* manager_;
 

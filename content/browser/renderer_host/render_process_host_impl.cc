@@ -61,6 +61,7 @@
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_scheduler_filter.h"
+#include "content/browser/media/android/browser_demuxer_android.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/plugin_service_impl.h"
@@ -653,6 +654,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new TextInputClientMessageFilter(GetID()));
 #elif defined(OS_WIN)
   channel_->AddFilter(new FontCacheDispatcher());
+#elif defined(OS_ANDROID)
+  browser_demuxer_android_ = new BrowserDemuxerAndroid();
+  channel_->AddFilter(browser_demuxer_android_);
 #endif
 
   SocketStreamDispatcherHost::GetRequestContextCallback

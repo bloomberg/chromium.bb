@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_DEMUXER_ANDROID_H_
 
 #include "base/id_map.h"
-#include "content/public/browser/render_view_host_observer.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "media/base/android/demuxer_android.h"
 
 namespace content {
@@ -16,14 +16,16 @@ namespace content {
 //
 // Refer to RendererDemuxerAndroid for the renderer process half.
 class CONTENT_EXPORT BrowserDemuxerAndroid
-    : public RenderViewHostObserver,
+    : public BrowserMessageFilter,
       public media::DemuxerAndroid {
  public:
-  explicit BrowserDemuxerAndroid(RenderViewHost* rvh);
-  virtual ~BrowserDemuxerAndroid();
+  BrowserDemuxerAndroid();
 
-  // RenderViewHostObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  // BrowserMessageFilter overrides.
+  virtual void OverrideThreadForMessage(const IPC::Message& message,
+                                        BrowserThread::ID* thread) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message,
+                                 bool* message_was_ok) OVERRIDE;
 
   // media::DemuxerAndroid implementation.
   virtual void AddDemuxerClient(int demuxer_client_id,
@@ -35,6 +37,10 @@ class CONTENT_EXPORT BrowserDemuxerAndroid
   virtual void RequestDemuxerSeek(int demuxer_client_id,
                                   base::TimeDelta time_to_seek,
                                   unsigned seek_request_id) OVERRIDE;
+
+ protected:
+  friend class base::RefCountedThreadSafe<BrowserDemuxerAndroid>;
+  virtual ~BrowserDemuxerAndroid();
 
  private:
   void OnDemuxerReady(int demuxer_client_id,

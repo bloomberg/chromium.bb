@@ -29,7 +29,6 @@ class MediaDrmBridge;
 
 namespace content {
 
-class BrowserDemuxerAndroid;
 class WebContents;
 
 // This class manages all the MediaPlayerAndroid objects. It receives
@@ -109,10 +108,11 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnEnterFullscreen(int player_id);
   virtual void OnExitFullscreen(int player_id);
   virtual void OnInitialize(
+      MediaPlayerHostMsg_Initialize_Type type,
       int player_id,
       const GURL& url,
-      MediaPlayerHostMsg_Initialize_Type type,
-      const GURL& first_party_for_cookies);
+      const GURL& first_party_for_cookies,
+      int demuxer_client_id);
   virtual void OnStart(int player_id);
   virtual void OnSeek(int player_id, base::TimeDelta time);
   virtual void OnPause(int player_id, bool is_media_related_action);
@@ -163,16 +163,14 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // manager to track decoding resources across the process and free them as
   // needed.
   static media::MediaPlayerAndroid* CreateMediaPlayer(
+      MediaPlayerHostMsg_Initialize_Type type,
       int player_id,
       const GURL& url,
-      MediaPlayerHostMsg_Initialize_Type type,
       const GURL& first_party_for_cookies,
+      int demuxer_client_id,
       bool hide_url_log,
       media::MediaPlayerManager* manager,
       media::DemuxerAndroid* demuxer);
-
-  // Owned by RenderViewHost.
-  BrowserDemuxerAndroid* browser_demuxer_;
 
   // An array of managed players.
   ScopedVector<media::MediaPlayerAndroid> players_;

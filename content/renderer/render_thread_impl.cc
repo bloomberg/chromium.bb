@@ -128,6 +128,7 @@
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
 #include "content/renderer/android/synchronous_compositor_factory.h"
+#include "content/renderer/media/android/renderer_demuxer_android.h"
 #endif
 
 #if defined(ENABLE_PLUGINS)
@@ -1281,6 +1282,11 @@ RenderThreadImpl::GetMediaThreadMessageLoopProxy() {
     media_thread_->StartWithOptions(options);
 #else
     media_thread_->Start();
+#endif
+
+#if defined(OS_ANDROID)
+    renderer_demuxer_ = new RendererDemuxerAndroid();
+    AddFilter(renderer_demuxer_.get());
 #endif
   }
   return media_thread_->message_loop_proxy();

@@ -87,6 +87,7 @@ class MediaStreamDependencyFactory;
 class MIDIMessageFilter;
 class P2PSocketDispatcher;
 class PeerConnectionTracker;
+class RendererDemuxerAndroid;
 class RendererWebKitPlatformSupportImpl;
 class RenderProcessObserver;
 class VideoCaptureImplManager;
@@ -216,6 +217,12 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   MIDIMessageFilter* midi_message_filter() {
     return midi_message_filter_.get();
   }
+
+#if defined(OS_ANDROID)
+  RendererDemuxerAndroid* renderer_demuxer() {
+    return renderer_demuxer_.get();
+  }
+#endif
 
   // Creates the embedder implementation of WebMediaStreamCenter.
   // The resulting object is owned by WebKit and deleted by WebKit at tear-down.
@@ -391,6 +398,9 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_refptr<AudioInputMessageFilter> audio_input_message_filter_;
   scoped_refptr<AudioMessageFilter> audio_message_filter_;
   scoped_refptr<MIDIMessageFilter> midi_message_filter_;
+#if defined(OS_ANDROID)
+  scoped_refptr<RendererDemuxerAndroid> renderer_demuxer_;
+#endif
   scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
 
   scoped_ptr<MediaStreamDependencyFactory> media_stream_factory_;

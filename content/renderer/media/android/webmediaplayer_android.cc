@@ -14,11 +14,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "cc/layers/video_layer.h"
 #include "content/renderer/media/android/proxy_media_keys.h"
+#include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/webmediaplayer_proxy_android.h"
 #include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/media/webmediaplayer_delegate.h"
 #include "content/renderer/media/webmediaplayer_util.h"
+#include "content/renderer/render_thread_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/bind_to_loop.h"
@@ -196,7 +198,6 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
 void WebMediaPlayerAndroid::load(LoadType load_type,
                                  const WebKit::WebURL& url,
                                  CORSMode cors_mode) {
-
   switch (load_type) {
     case LoadTypeURL:
       player_type_ = MEDIA_PLAYER_TYPE_URL;
@@ -226,13 +227,16 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
                                         base::Unretained(decryptor_.get()));
   }
 
+  int demuxer_client_id = 0;
   if (player_type_ != MEDIA_PLAYER_TYPE_URL) {
     has_media_info_ = true;
-    media_source_delegate_.reset(
-        new MediaSourceDelegate(proxy_->renderer_demuxer_android(),
-                                player_id_,
-                                media_loop_,
-                                media_log_));
+
+    RendererDemuxerAndroid* demuxer =
+        RenderThreadImpl::current()->renderer_demuxer();
+    demuxer_client_id = demuxer->GetNextDemuxerClientID();
+
+    media_source_delegate_.reset(new MediaSourceDelegate(
+        demuxer, demuxer_client_id, media_loop_, media_log_));
 
     // |media_source_delegate_| is owned, so Unretained() is safe here.
     if (player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE) {
@@ -271,13 +275,11 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
     info_loader_->Start(frame_);
   }
 
-  InitializeMediaPlayer(url);
-}
-
-void WebMediaPlayerAndroid::InitializeMediaPlayer(const WebURL& url) {
   url_ = url;
   GURL first_party_url = frame_->document().firstPartyForCookies();
-  proxy_->Initialize(player_id_, url, player_type_, first_party_url);
+  proxy_->Initialize(
+      player_type_, player_id_, url, first_party_url, demuxer_client_id);
+
   if (manager_->IsInFullscreen(frame_))
     proxy_->EnterFullscreen(player_id_);
 

@@ -246,8 +246,6 @@ class WebMediaPlayerAndroid
   // Requesting whether the surface texture peer needs to be reestablished.
   void SetNeedsEstablishPeer(bool needs_establish_peer);
 
-  void InitializeMediaPlayer(const WebKit::WebURL& url);
-
 #if defined(GOOGLE_TV)
   // Request external surface for out-of-band composition.
   void RequestExternalSurface();

@@ -50,10 +50,11 @@ BrowserMediaPlayerManager* BrowserMediaPlayerManager::Create(
 #if !defined(GOOGLE_TV)
 // static
 MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
+    MediaPlayerHostMsg_Initialize_Type type,
     int player_id,
     const GURL& url,
-    MediaPlayerHostMsg_Initialize_Type type,
     const GURL& first_party_for_cookies,
+    int demuxer_client_id,
     bool hide_url_log,
     MediaPlayerManager* manager,
     media::DemuxerAndroid* demuxer) {
@@ -66,9 +67,8 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
     }
 
     case MEDIA_PLAYER_TYPE_MEDIA_SOURCE: {
-      // TODO(scherkus): Use a real ID for |demuxer_client_id| after splitting
-      // demuxer IPC messages into their own group. For now use |player_id|.
-      return new MediaSourcePlayer(player_id, manager, player_id, demuxer);
+      return new MediaSourcePlayer(
+          player_id, manager, demuxer_client_id, demuxer);
     }
   }
 
@@ -80,7 +80,6 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
 BrowserMediaPlayerManager::BrowserMediaPlayerManager(
     RenderViewHost* render_view_host)
     : RenderViewHostObserver(render_view_host),
-      browser_demuxer_(new BrowserDemuxerAndroid(render_view_host)),
       fullscreen_player_id_(-1),
       web_contents_(WebContents::FromRenderViewHost(render_view_host)) {
 }
@@ -387,16 +386,23 @@ void BrowserMediaPlayerManager::OnExitFullscreen(int player_id) {
 }
 
 void BrowserMediaPlayerManager::OnInitialize(
+    MediaPlayerHostMsg_Initialize_Type type,
     int player_id,
     const GURL& url,
-    MediaPlayerHostMsg_Initialize_Type type,
-    const GURL& first_party_for_cookies) {
+    const GURL& first_party_for_cookies,
+    int demuxer_client_id) {
+  DCHECK(type != MEDIA_PLAYER_TYPE_MEDIA_SOURCE || demuxer_client_id > 0)
+      << "Media source players must have positive demuxer client IDs: "
+      << demuxer_client_id;
+
   RemovePlayer(player_id);
 
-  RenderProcessHost* host = render_view_host()->GetProcess();
+  RenderProcessHostImpl* host =
+      static_cast<RenderProcessHostImpl*>(render_view_host()->GetProcess());
   AddPlayer(CreateMediaPlayer(
-      player_id, url, type, first_party_for_cookies,
-      host->GetBrowserContext()->IsOffTheRecord(), this, browser_demuxer_));
+      type, player_id, url, first_party_for_cookies, demuxer_client_id,
+      host->GetBrowserContext()->IsOffTheRecord(), this,
+      host->browser_demuxer_android()));
 }
 
 void BrowserMediaPlayerManager::OnStart(int player_id) {

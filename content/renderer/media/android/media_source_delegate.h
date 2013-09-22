@@ -138,23 +138,16 @@ class MediaSourceDelegate : public media::DemuxerHost {
   void ResetVideoDecryptingDemuxerStream();
   void FinishResettingDecryptingDemuxerStreams();
 
-  // Completes seeking operation by notifying the browser.
-  //
-  // Runs on the main thread.
-  void SendSeekRequestAck();
-
   void OnDemuxerStopDone();
   void OnDemuxerOpened();
   void OnNeedKey(const std::string& type,
                  const std::vector<uint8>& init_data);
   void NotifyDemuxerReady();
   bool CanNotifyDemuxerReady();
-  void SendDemuxerReady(scoped_ptr<media::DemuxerConfigs> configs);
 
   void StopDemuxer();
   void InitializeDemuxer();
   void SeekInternal(const base::TimeDelta& time, unsigned seek_request_id);
-  void OnReadFromDemuxerInternal(media::DemuxerStream::Type type);
   // Reads an access unit from the demuxer stream |stream| and stores it in
   // the |index|th access unit in |params|.
   void ReadFromDemuxerStream(media::DemuxerStream::Type type,
@@ -165,8 +158,6 @@ class MediaSourceDelegate : public media::DemuxerHost {
                      size_t index,
                      media::DemuxerStream::Status status,
                      const scoped_refptr<media::DecoderBuffer>& buffer);
-
-  void SendReadFromDemuxerAck(scoped_ptr<media::DemuxerData> data);
 
   // Helper function for calculating duration.
   int GetDurationMs();
