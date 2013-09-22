@@ -278,13 +278,8 @@ void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
         if (tooltip_window_)
           tooltip_window_->RemoveObserver(this);
         tooltip_window_ = target;
-        if (tooltip_window_) {
+        if (tooltip_window_)
           tooltip_window_->AddObserver(this);
-        } else {
-          // If the tooltip_window_ is reparented then we need to recreate the
-          // tooltip to ensure that it shows up correctly.
-          tooltip_.reset(NULL);
-        }
       }
       curr_mouse_loc_ = event->location();
       if (tooltip_timer_.IsRunning())

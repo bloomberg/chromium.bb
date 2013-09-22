@@ -9,12 +9,16 @@
 
 namespace views {
 
-DesktopFocusRules::DesktopFocusRules() {}
+DesktopFocusRules::DesktopFocusRules(aura::Window* content_window)
+    : content_window_(content_window) {}
+
 DesktopFocusRules::~DesktopFocusRules() {}
 
 bool DesktopFocusRules::SupportsChildActivation(aura::Window* window) const {
-  // In Desktop-Aura, only children of the RootWindow are activatable.
-  return window->GetRootWindow() == window;
+  // In Desktop-Aura, only the content_window or children of the RootWindow are
+  // activatable.
+  return window == content_window_->parent() ||
+         window->GetRootWindow() == window;
 }
 
 }  // namespace views

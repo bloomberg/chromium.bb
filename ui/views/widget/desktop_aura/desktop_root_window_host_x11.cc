@@ -933,7 +933,7 @@ aura::RootWindow* DesktopRootWindowHostX11::InitRootWindow(
   X11DesktopHandler::get();
 
   corewm::FocusController* focus_controller =
-      new corewm::FocusController(new DesktopFocusRules);
+      new corewm::FocusController(new DesktopFocusRules(content_window_));
   focus_client_.reset(focus_controller);
   aura::client::SetFocusClient(root_window_, focus_controller);
   aura::client::SetActivationClient(root_window_, focus_controller);
