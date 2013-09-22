@@ -353,6 +353,37 @@ function testEventName() {
   document.body.appendChild(webview);
 }
 
+function testOnEventProperties() {
+  var sequence = ['first', 'second', 'third', 'fourth'];
+  var webview = document.createElement('webview');
+  function createHandler(id) {
+    return function(e) {
+      embedder.test.assertEq(id, sequence.shift());
+    };
+  }
+
+  webview.addEventListener('loadstart', createHandler('first'));
+  webview.addEventListener('loadstart', createHandler('second'));
+  webview.onloadstart = createHandler('third');
+  webview.addEventListener('loadstart', createHandler('fourth'));
+  webview.addEventListener('loadstop', function(evt) {
+    embedder.test.assertEq(0, sequence.length);
+
+    // Test that setting another 'onloadstart' handler replaces the previous
+    // handler.
+    sequence = ['first', 'second', 'fourth'];
+    webview.onloadstart = function() {
+      embedder.test.assertEq(0, sequence.length);
+      embedder.test.succeed();
+    };
+
+    webview.setAttribute('src', 'data:text/html,next navigation');
+  });
+
+  webview.setAttribute('src', 'data:text/html,trigger navigation');
+  document.body.appendChild(webview);
+}
+
 // Tests that the 'loadprogress' event is triggered correctly.
 function testLoadProgressEvent() {
   var webview = document.createElement('webview');
@@ -1026,6 +1057,7 @@ embedder.test.testList = {
   'testAPIMethodExistence': testAPIMethodExistence,
   'testWebRequestAPIExistence': testWebRequestAPIExistence,
   'testEventName': testEventName,
+  'testOnEventProperties': testOnEventProperties,
   'testLoadProgressEvent': testLoadProgressEvent,
   'testDestroyOnEventListener': testDestroyOnEventListener,
   'testCannotMutateEventName': testCannotMutateEventName,

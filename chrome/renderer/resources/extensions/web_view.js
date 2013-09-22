@@ -568,6 +568,12 @@ WebViewInternal.prototype.setupWebviewNodeEvents_ = function() {
   this.browserPluginNode_.addEventListener('-internal-instanceid-allocated',
                                            onInstanceIdAllocated);
   this.setupWebRequestEvents_();
+
+  this.on_ = {};
+  var events = self.getEvents_();
+  for (var eventName in events) {
+    this.setupEventProperty_(eventName);
+  }
 };
 
 /**
@@ -592,6 +598,30 @@ WebViewInternal.prototype.setupEvent_ = function(eventName, eventInfo) {
     }
     webviewNode.dispatchEvent(webViewEvent);
   }, {instanceId: self.instanceId_});
+};
+
+/**
+ * Adds an 'on<event>' property on the webview, which can be used to set/unset
+ * an event handler.
+ * @private
+ */
+WebViewInternal.prototype.setupEventProperty_ = function(eventName) {
+  var propertyName = 'on' + eventName.toLowerCase();
+  var self = this;
+  var webviewNode = this.webviewNode_;
+  Object.defineProperty(webviewNode, propertyName, {
+    get: function() {
+      return self.on_[propertyName];
+    },
+    set: function(value) {
+      if (self.on_[propertyName])
+        webviewNode.removeEventListener(eventName, self.on_[propertyName]);
+      self.on_[propertyName] = value;
+      if (value)
+        webviewNode.addEventListener(eventName, value);
+    },
+    enumerable: true
+  });
 };
 
 /**

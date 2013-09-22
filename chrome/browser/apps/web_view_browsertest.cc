@@ -652,6 +652,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestEventName) {
              "web_view/shim");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestOnEventProperty) {
+  TestHelper("testOnEventProperties",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadProgressEvent) {
   TestHelper("testLoadProgressEvent",
              "DoneShimTest.PASSED",
