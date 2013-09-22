@@ -305,6 +305,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   // Creates a running V2 app (not pinned) of type |app_id|.
   virtual void CreateRunningV2App(const std::string& app_id) {
+    DCHECK(!test_controller_.get());
     ash::LauncherID id =
         launcher_controller_->CreateAppShortcutLauncherItemWithType(
             app_id,
@@ -312,9 +313,9 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
             ash::TYPE_PLATFORM_APP);
     DCHECK(id);
     // Change the created launcher controller into a V2 app controller.
-    launcher_controller_->SetItemController(id,
-        new TestV2AppLauncherItemController(app_id,
-                                            launcher_controller_.get()));
+    test_controller_.reset(new TestV2AppLauncherItemController(app_id,
+        launcher_controller_.get()));
+    launcher_controller_->SetItemController(id, test_controller_.get());
   }
 
   // Sets the stage for a multi user test.
@@ -362,6 +363,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     model_.reset();
 
     BrowserWithTestWindowTest::TearDown();
+    test_controller_.reset();
   }
 
   void AddAppListLauncherItem() {
@@ -531,6 +533,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   scoped_ptr<ChromeLauncherController> launcher_controller_;
   scoped_ptr<TestLauncherModelObserver> model_observer_;
   scoped_ptr<ash::LauncherModel> model_;
+  scoped_ptr<TestV2AppLauncherItemController> test_controller_;
 
   ExtensionService* extension_service_;
 
