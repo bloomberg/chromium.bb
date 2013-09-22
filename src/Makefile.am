@@ -155,7 +155,7 @@ drm_backend_la_SOURCES =			\
 	libbacklight.h
 
 if ENABLE_VAAPI_RECORDER
-drm_backend_la_SOURCES += vaapi-recorder.c
+drm_backend_la_SOURCES += vaapi-recorder.c vaapi-recorder.h
 drm_backend_la_LIBADD += $(LIBVA_LIBS)
 drm_backend_la_CFLAGS += $(LIBVA_CFLAGS)
 endif
