@@ -276,19 +276,13 @@ void PrivetNotificationService::Start() {
 void PrivetNotificationService::OnNotificationsEnabledChanged() {
   if (*enable_privet_notification_member_) {
     ReportPrivetUmaEvent(PRIVET_SERVICE_STARTED);
-    traffic_detector_v4_ =
+    traffic_detector_ =
         new PrivetTrafficDetector(
             net::ADDRESS_FAMILY_IPV4,
             base::Bind(&PrivetNotificationService::StartLister, AsWeakPtr()));
-    traffic_detector_v6_ =
-        new PrivetTrafficDetector(
-            net::ADDRESS_FAMILY_IPV6,
-            base::Bind(&PrivetNotificationService::StartLister, AsWeakPtr()));
-    traffic_detector_v4_->Start();
-    traffic_detector_v6_->Start();
+    traffic_detector_->Start();
   } else {
-    traffic_detector_v4_ = NULL;
-    traffic_detector_v6_ = NULL;
+    traffic_detector_ = NULL;
     device_lister_.reset();
     service_discovery_client_ = NULL;
     privet_notifications_listener_.reset();
@@ -297,8 +291,7 @@ void PrivetNotificationService::OnNotificationsEnabledChanged() {
 
 void PrivetNotificationService::StartLister() {
   ReportPrivetUmaEvent(PRIVET_LISTER_STARTED);
-  traffic_detector_v4_ = NULL;
-  traffic_detector_v6_ = NULL;
+  traffic_detector_ = NULL;
   DCHECK(!service_discovery_client_);
   service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
   device_lister_.reset(new PrivetDeviceListerImpl(service_discovery_client_,

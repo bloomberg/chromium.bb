@@ -116,8 +116,7 @@ class PrivetNotificationService
   content::BrowserContext* profile_;
   scoped_ptr<PrivetDeviceLister> device_lister_;
   scoped_refptr<ServiceDiscoverySharedClient> service_discovery_client_;
-  scoped_refptr<PrivetTrafficDetector> traffic_detector_v4_;
-  scoped_refptr<PrivetTrafficDetector> traffic_detector_v6_;
+  scoped_refptr<PrivetTrafficDetector> traffic_detector_;
   scoped_ptr<PrivetNotificationsListener> privet_notifications_listener_;
   BooleanPrefMember enable_privet_notification_member_;
 };

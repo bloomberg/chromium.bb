@@ -9,12 +9,12 @@
 #include "base/cancelable_callback.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/address_family.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/network_change_notifier.h"
 
 namespace net {
 class DatagramServerSocket;
 class IOBufferWithSize;
-class IPEndPoint;
 }
 
 namespace local_discovery {
@@ -45,14 +45,17 @@ class PrivetTrafficDetector
 
   void StartOnIOThread();
   void ScheduleRestart();
-  void Restart();
+  void Restart(const net::NetworkInterfaceList& networks);
   int Bind();
+  bool IsSourceAcceptable() const;
+  bool IsPrivetPacket(int rv) const;
   int DoLoop(int rv);
 
   base::Closure on_traffic_detected_;
   scoped_refptr<base::TaskRunner> callback_runner_;
+  net::NetworkInterfaceList networks_;
   net::AddressFamily address_family_;
-  scoped_ptr<net::IPEndPoint> recv_addr_;
+  net::IPEndPoint recv_addr_;
   scoped_ptr<net::DatagramServerSocket> socket_;
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
 
