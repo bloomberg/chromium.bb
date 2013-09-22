@@ -12,6 +12,7 @@ import logging
 import math
 import os
 import random
+import re
 import socket
 import ssl
 import threading
@@ -58,6 +59,9 @@ CONTENT_ENCODERS = {
 
 # File to use to store all auth cookies.
 COOKIE_FILE = os.path.join(os.path.expanduser('~'), '.isolated_cookies')
+
+# Google Storage URL regular expression.
+GS_STORAGE_HOST_URL_RE = re.compile(r'https://.*\.storage\.googleapis\.com')
 
 
 # Global (for now) map: server URL (http://example.com) -> HttpService instance.
@@ -174,15 +178,38 @@ def get_http_service(urlhost):
   with _http_services_lock:
     service = _http_services.get(urlhost)
     if not service:
-      cookie_jar = get_cookie_jar()
-      if USE_REQUESTS_LIB:
-        engine = RequestsLibEngine(cookie_jar, get_cacerts_bundle())
+      if GS_STORAGE_HOST_URL_RE.match(urlhost):
+        # For Google Storage URL create a dumber HttpService that doesn't modify
+        # requests with COUNT_KEY (since it breaks a signature) and doesn't try
+        # to 'login' into Google Storage (since it's impossible).
+        service = HttpService(
+            urlhost,
+            engine=create_request_engine(None),
+            authenticator=None,
+            use_count_key=False)
       else:
-        engine = Urllib2Engine(cookie_jar)
-      service = HttpService(urlhost, engine=engine,
-          authenticator=AppEngineAuthenticator(urlhost, cookie_jar))
+        # For other URLs (presumably App Engine), create a fancier HttpService
+        # with cookies, authentication and COUNT_KEY query parameter in retries.
+        cookie_jar = get_cookie_jar()
+        service = HttpService(
+            urlhost,
+            engine=create_request_engine(cookie_jar),
+            authenticator=AppEngineAuthenticator(urlhost, cookie_jar),
+            use_count_key=True)
       _http_services[urlhost] = service
     return service
+
+
+def create_request_engine(cookie_jar):
+  """Returns a new instance of RequestEngine subclass.
+
+  |cookie_jar| is an instance of ThreadSafeCookieJar class that holds all
+  cookies. It is optional and may be None (in that case cookies are not saved
+  on disk).
+  """
+  if USE_REQUESTS_LIB:
+    return RequestsLibEngine(cookie_jar, get_cacerts_bundle())
+  return Urllib2Engine(cookie_jar)
 
 
 def get_cookie_jar():
@@ -214,10 +241,26 @@ class HttpService(object):
     - Supports persistent cookies.
     - Thread safe.
   """
-  def __init__(self, urlhost, engine, authenticator=None):
+  def __init__(self, urlhost, engine, authenticator=None, use_count_key=True):
     self.urlhost = urlhost
     self.engine = engine
     self.authenticator = authenticator
+    self.use_count_key = use_count_key
+
+  @staticmethod
+  def is_transient_http_error(code, retry_404, retry_50x):
+    """Returns True if given HTTP response code is a transient error."""
+    # Google Storage can return this and it should be retried.
+    if code == 408:
+      return True
+    # Retry 404 only if allowed by the caller.
+    if code == 404:
+      return retry_404
+    # All other 4** errors are fatal.
+    if code < 500:
+      return False
+    # Retry >= 500 error only if allowed by the caller.
+    return retry_50x
 
   @staticmethod
   def encode_request_body(body, content_type):
@@ -241,7 +284,8 @@ class HttpService(object):
       retry_50x=True,
       timeout=URL_OPEN_TIMEOUT,
       read_timeout=None,
-      stream=True):
+      stream=True,
+      method=None):
     """Attempts to open the given url multiple times.
 
     |urlpath| is relative to the server root, i.e. '/some/request?param=1'.
@@ -260,6 +304,10 @@ class HttpService(object):
     - If both |max_attempts| and |timeout| are None or 0, this functions retries
       indefinitely.
 
+    If |method| is given it can be 'GET', 'POST' or 'PUT' and it will be used
+    when performing the request. By default it's GET if |data| is None and POST
+    if |data| is not None.
+
     If |read_timeout| is not None will configure underlying socket to
     raise TimeoutError exception whenever there's no response from the server
     for more than |read_timeout| seconds. It can happen during any read
@@ -274,11 +322,13 @@ class HttpService(object):
     assert urlpath and urlpath[0] == '/'
 
     if data is not None:
-      method = 'POST'
+      assert method in (None, 'POST', 'PUT')
+      method = method or 'POST'
       content_type = content_type or DEFAULT_CONTENT_TYPE
       body = self.encode_request_body(data, content_type)
     else:
-      method = 'GET'
+      assert method in (None, 'GET')
+      method = method or 'GET'
       body = None
       assert not content_type, 'Can\'t use content_type on GET'
 
@@ -343,8 +393,7 @@ class HttpService(object):
           return None
 
         # Hit a error that can not be retried -> stop retry loop.
-        if ((e.code < 500 and not (retry_404 and e.code == 404)) or
-            (e.code >= 500 and not retry_50x)):
+        if not self.is_transient_http_error(e.code, retry_404, retry_50x):
           # This HttpError means we reached the server and there was a problem
           # with the request, so don't retry.
           logging.error(
@@ -366,7 +415,7 @@ class HttpService(object):
   def prepare_request(self, request, attempt):  # pylint: disable=R0201
     """Modify HttpRequest before sending it by adding COUNT_KEY parameter."""
     # Add COUNT_KEY only on retries.
-    if attempt:
+    if self.use_count_key and attempt:
       request.params += [(COUNT_KEY, attempt)]
 
 
@@ -511,7 +560,8 @@ class RequestsLibEngine(RequestEngine):
     self.session = requests.Session()
     # Configure session.
     self.session.trust_env = False
-    self.session.cookies = cookie_jar
+    if cookie_jar:
+      self.session.cookies = cookie_jar
     self.session.verify = ca_certs
     # Configure connection pools.
     for protocol in ('https://', 'http://'):
