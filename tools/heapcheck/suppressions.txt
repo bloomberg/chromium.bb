@@ -779,14 +779,6 @@
    fun:chromeos::NetworkCertMigratorTest::CleanupTestCert
 }
 {
-   bug_270312
-   Heapcheck:Leak
-   ...
-   fun:MessageCenterButtonBar
-   fun:MessageCenterView
-   fun:message_center::MessageCenterViewTest::SetUp
-}
-{
    bug_272596
    Heapcheck:Leak
    fun:*
