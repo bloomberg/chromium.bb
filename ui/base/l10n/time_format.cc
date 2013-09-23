@@ -21,6 +21,7 @@
 #include "third_party/icu/source/i18n/unicode/plurrule.h"
 #include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_plurals.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -240,49 +241,20 @@ static base::LazyInstance<TimeFormatter> g_time_formatter =
 
 void TimeFormatter::BuildFormats(
     FormatType format_type, ScopedVector<icu::PluralFormat>* time_formats) {
-  const icu::UnicodeString kKeywords[] = {
-    UNICODE_STRING_SIMPLE("other"), UNICODE_STRING_SIMPLE("one"),
-    UNICODE_STRING_SIMPLE("zero"), UNICODE_STRING_SIMPLE("two"),
-    UNICODE_STRING_SIMPLE("few"), UNICODE_STRING_SIMPLE("many")
-  };
-  UErrorCode err = U_ZERO_ERROR;
-  scoped_ptr<icu::PluralRules> rules(
-      icu::PluralRules::forLocale(icu::Locale::getDefault(), err));
-  if (U_FAILURE(err)) {
-    err = U_ZERO_ERROR;
-    icu::UnicodeString fallback_rules("one: n is 1", -1, US_INV);
-    rules.reset(icu::PluralRules::createRules(fallback_rules, err));
-    DCHECK(U_SUCCESS(err));
-  }
-
   const MessageIDs& message_ids = GetMessageIDs(format_type);
 
   for (int i = 0; i < 4; ++i) {
     icu::UnicodeString pattern;
-    for (size_t j = 0; j < arraysize(kKeywords); ++j) {
-      int msg_id = message_ids.ids[i][j];
-      std::string sub_pattern = l10n_util::GetStringUTF8(msg_id);
-      // NA means this keyword is not used in the current locale.
-      // Even if a translator translated for this keyword, we do not
-      // use it unless it's 'other' (j=0) or it's defined in the rules
-      // for the current locale. Special-casing of 'other' will be removed
-      // once ICU's isKeyword is fixed to return true for isKeyword('other').
-      if (sub_pattern.compare("NA") != 0 &&
-          (j == 0 || rules->isKeyword(kKeywords[j]))) {
-          pattern += kKeywords[j];
-          pattern += UNICODE_STRING_SIMPLE("{");
-          pattern += icu::UnicodeString(sub_pattern.c_str(), "UTF-8");
-          pattern += UNICODE_STRING_SIMPLE("}");
-      }
+    std::vector<int> ids;
+    for (size_t j = 0; j < arraysize(message_ids.ids[i]); ++j) {
+      ids.push_back(message_ids.ids[i][j]);
     }
-    icu::PluralFormat* format = new icu::PluralFormat(*rules, pattern, err);
-    if (U_SUCCESS(err)) {
-      time_formats->push_back(format);
+    scoped_ptr<icu::PluralFormat> format = l10n_util::BuildPluralFormat(ids);
+    if (format) {
+      time_formats->push_back(format.release());
     } else {
-      delete format;
+      scoped_ptr<icu::PluralRules> rules(l10n_util::BuildPluralRules());
       time_formats->push_back(createFallbackFormat(*rules, i, format_type));
-      // Reset it so that next ICU call can proceed.
-      err = U_ZERO_ERROR;
     }
   }
 }

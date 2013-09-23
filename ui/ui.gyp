@@ -214,6 +214,8 @@
         'base/l10n/l10n_util_collator.h',
         'base/l10n/l10n_util_mac.h',
         'base/l10n/l10n_util_mac.mm',
+        'base/l10n/l10n_util_plurals.cc',
+        'base/l10n/l10n_util_plurals.h',
         'base/l10n/l10n_util_posix.cc',
         'base/l10n/l10n_util_win.cc',
         'base/l10n/l10n_util_win.h',

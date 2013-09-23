@@ -28,6 +28,7 @@
 #include "third_party/icu/source/common/unicode/rbbi.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "ui/base/l10n/l10n_util_collator.h"
+#include "ui/base/l10n/l10n_util_plurals.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -830,6 +831,27 @@ bool StringComparator<string16>::operator()(const string16& lhs,
   return base::i18n::CompareString16WithCollator(collator_, lhs, rhs) ==
       UCOL_LESS;
 };
+
+string16 GetPluralStringFUTF16(const std::vector<int>& message_ids,
+                               int number) {
+  scoped_ptr<icu::PluralFormat> format = BuildPluralFormat(message_ids);
+  DCHECK(format);
+
+  UErrorCode err = U_ZERO_ERROR;
+  icu::UnicodeString result_files_string = format->format(number, err);
+  int capacity = result_files_string.length() + 1;
+  DCHECK_GT(capacity, 1);
+  string16 result;
+  result_files_string.extract(
+      static_cast<UChar*>(WriteInto(&result, capacity)), capacity, err);
+  DCHECK(U_SUCCESS(err));
+  return result;
+}
+
+std::string GetPluralStringFUTF8(const std::vector<int>& message_ids,
+                                 int number) {
+  return base::UTF16ToUTF8(GetPluralStringFUTF16(message_ids, number));
+}
 
 void SortStrings16(const std::string& locale,
                    std::vector<string16>* strings) {

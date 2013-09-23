@@ -45,17 +45,27 @@ PermissionMessage PermissionMessage::CreateFromHostList(
     default:
       message_id = kHosts4OrMore;
 
-    message = l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_PROMPT_WARNING_HOSTS,
-        base::IntToString16(host_list.size()));
+      const int kRetainedFilesMessageIDs[6] = {
+          IDS_EXTENSION_PROMPT_WARNING_HOSTS_DEFAULT,
+          IDS_EXTENSION_PROMPT_WARNING_HOST_SINGULAR,
+          IDS_EXTENSION_PROMPT_WARNING_HOSTS_ZERO,
+          IDS_EXTENSION_PROMPT_WARNING_HOSTS_TWO,
+          IDS_EXTENSION_PROMPT_WARNING_HOSTS_FEW,
+          IDS_EXTENSION_PROMPT_WARNING_HOSTS_MANY,
+      };
+      std::vector<int> message_ids;
+      for (size_t i = 0; i < arraysize(kRetainedFilesMessageIDs); i++) {
+        message_ids.push_back(kRetainedFilesMessageIDs[i]);
+      }
+      message = l10n_util::GetPluralStringFUTF16(message_ids, host_list.size());
 
-    for (size_t i = 0; i < host_list.size(); ++i) {
-      if (i > 0)
-        details += ASCIIToUTF16("\n");
-      details += l10n_util::GetStringFUTF16(
-          IDS_EXTENSION_PROMPT_WARNING_HOST_LIST_ENTRY,
-          UTF8ToUTF16(host_list[i]));
-    }
+      for (size_t i = 0; i < host_list.size(); ++i) {
+        if (i > 0)
+          details += ASCIIToUTF16("\n");
+        details += l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_PROMPT_WARNING_HOST_LIST_ENTRY,
+            UTF8ToUTF16(host_list[i]));
+      }
   }
 
   return PermissionMessage(message_id, message, details);

@@ -347,9 +347,19 @@ string16 ExtensionInstallPrompt::Prompt::GetOAuthHeading() const {
 }
 
 string16 ExtensionInstallPrompt::Prompt::GetRetainedFilesHeading() const {
-  return l10n_util::GetStringFUTF16(
-      IDS_EXTENSION_PROMPT_RETAINED_FILES,
-      base::IntToString16(GetRetainedFileCount()));
+  const int kRetainedFilesMessageIDs[6] = {
+      IDS_EXTENSION_PROMPT_RETAINED_FILES_DEFAULT,
+      IDS_EXTENSION_PROMPT_RETAINED_FILE_SINGULAR,
+      IDS_EXTENSION_PROMPT_RETAINED_FILES_ZERO,
+      IDS_EXTENSION_PROMPT_RETAINED_FILES_TWO,
+      IDS_EXTENSION_PROMPT_RETAINED_FILES_FEW,
+      IDS_EXTENSION_PROMPT_RETAINED_FILES_MANY,
+  };
+  std::vector<int> message_ids;
+  for (size_t i = 0; i < arraysize(kRetainedFilesMessageIDs); i++) {
+    message_ids.push_back(kRetainedFilesMessageIDs[i]);
+  }
+  return l10n_util::GetPluralStringFUTF16(message_ids, GetRetainedFileCount());
 }
 
 bool ExtensionInstallPrompt::Prompt::ShouldShowPermissions() const {

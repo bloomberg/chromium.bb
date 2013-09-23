@@ -139,6 +139,14 @@ UI_EXPORT string16 GetStringFUTF16(int message_id,
 UI_EXPORT string16 GetStringFUTF16Int(int message_id, int a);
 string16 GetStringFUTF16Int(int message_id, int64 a);
 
+// Get a resource string using |number| to decide which of |message_ids| should
+// be used. |message_ids| must be size 6 and in order: default, singular, zero,
+// two, few, many.
+UI_EXPORT string16 GetPluralStringFUTF16(const std::vector<int>& message_ids,
+                                         int number);
+UI_EXPORT std::string GetPluralStringFUTF8(const std::vector<int>& message_ids,
+                                           int number);
+
 // In place sorting of string16 strings using collation rules for |locale|.
 UI_EXPORT void SortStrings16(const std::string& locale,
                              std::vector<string16>* strings);
