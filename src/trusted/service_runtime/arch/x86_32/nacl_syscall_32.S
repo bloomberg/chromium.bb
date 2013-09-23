@@ -160,6 +160,5 @@ ENDMACRO
          * symbol is defined in the same file.
          */
         .data
-        .globl IDENTIFIER(NaClSwitch)
-IDENTIFIER(NaClSwitch):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
         .long 0

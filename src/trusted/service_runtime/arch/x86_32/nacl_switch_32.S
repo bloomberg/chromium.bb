@@ -115,6 +115,15 @@ __x86.get_pc_thunk.ax:
         .cfi_endproc
 #else
         .globl __x86.get_pc_thunk.ax
+#if NACL_OSX
+        /*
+         * This is what the HIDDEN macro does, but that prepends an
+         * underscore under NACL_OSX and that's not right for this case.
+         * HIDDEN is empty for NACL_WINDOWS, and the NACL_LINUX case is
+         * dealt with above.
+         */
+        .private_extern __x86.get_pc_thunk.ax
+#endif
 __x86.get_pc_thunk.ax:
         movl (%esp), %eax
         ret
