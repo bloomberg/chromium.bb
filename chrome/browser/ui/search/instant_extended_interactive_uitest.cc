@@ -1130,3 +1130,31 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ShowURL) {
   // the search terms is sufficient.
   EXPECT_NE(ASCIIToUTF16("foo"), omnibox()->GetText());
 }
+
+// Check that clicking on a result sends the correct referrer.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, Referrer) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL result_url =
+      test_server()->GetURL("files/referrer_policy/referrer-policy-log.html");
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // Type a query and press enter to get results.
+  SetOmniboxText("query");
+  PressEnterAndWaitForNavigation();
+
+  // Simulate going to a result.
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  std::ostringstream stream;
+  stream << "var link = document.createElement('a');";
+  stream << "link.href = \"" << result_url.spec() << "\";";
+  stream << "document.body.appendChild(link);";
+  stream << "link.click();";
+  EXPECT_TRUE(content::ExecuteScript(contents, stream.str()));
+
+  content::WaitForLoadStop(contents);
+  std::string expected_title =
+      "Referrer is " + instant_url().GetWithEmptyPath().spec();
+  EXPECT_EQ(ASCIIToUTF16(expected_title), contents->GetTitle());
+}

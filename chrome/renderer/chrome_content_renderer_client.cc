@@ -945,8 +945,10 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
   // If this is the Instant process, fork all navigations originating from the
   // renderer.  The destination page will then be bucketed back to this Instant
   // process if it is an Instant url, or to another process if not.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInstantProcess))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInstantProcess)) {
+    *send_referrer = true;
     return true;
+  }
 
   // For now, we skip the rest for POST submissions.  This is because
   // http://crbug.com/101395 is more likely to cause compatibility issues
@@ -970,8 +972,11 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
   // to swap in the prerendered page on the browser process. If the prerendered
   // page no longer exists by the time the OpenURL IPC is handled, a normal
   // navigation is attempted.
-  if (prerender_dispatcher_.get() && prerender_dispatcher_->IsPrerenderURL(url))
+  if (prerender_dispatcher_.get() &&
+      prerender_dispatcher_->IsPrerenderURL(url)) {
+    *send_referrer = true;
     return true;
+  }
 
   const ExtensionSet* extensions = extension_dispatcher_->extensions();
 

@@ -2,6 +2,8 @@
 <head>
 <title>Preloader</title>
 
+<script src="prerender_events_common.js"></script>
+
 <script>
   function Click() {
     var eventObject = document.createEvent('MouseEvents');
@@ -16,12 +18,9 @@
 </head>
 <body>
 <script>
-  function loader() {
-     document.write(
-         '<link rel="prerender" href="REPLACE_WITH_PRERENDER_URL"/>');
-  }
-
-  window.onload = loader;
+  document.write('<link id="theprerender" rel="prerender" href="REPLACE_WITH_PRERENDER_URL"/>');
+  prerender = document.getElementById('theprerender');
+  AddEventHandlersToLinkElement(prerender, 0);
 </script>
 <a id="toClick" href="REPLACE_WITH_DESTINATION_URL">Link to click</a>
 </body>

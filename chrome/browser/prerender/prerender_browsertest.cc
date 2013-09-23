@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
@@ -50,6 +51,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -360,6 +362,10 @@ class TestPrerenderContents : public PrerenderContents {
     return quit_message_loop_on_destruction_;
   }
 
+  void set_quit_message_loop_on_destruction(bool quit) {
+    quit_message_loop_on_destruction_ = quit;
+  }
+
  private:
   virtual void OnRenderViewHostCreated(
       RenderViewHost* new_render_view_host) OVERRIDE {
@@ -622,6 +628,26 @@ void CreateNeverStartProtocolHandlerOnIO(const GURL& url) {
   net::URLRequestFilter::GetInstance()->AddUrlProtocolHandler(
       url, never_respond_handler.Pass());
 }
+
+// A ContentBrowserClient that cancels all prerenderers on OpenURL.
+class TestContentBrowserClient : public chrome::ChromeContentBrowserClient {
+ public:
+  TestContentBrowserClient() {}
+  virtual ~TestContentBrowserClient() {}
+
+  // chrome::ChromeContentBrowserClient implementation.
+  virtual bool ShouldAllowOpenURL(content::SiteInstance* site_instance,
+                                  const GURL& url) OVERRIDE {
+    PrerenderManagerFactory::GetForProfile(
+        Profile::FromBrowserContext(site_instance->GetBrowserContext()))
+        ->CancelAllPrerenders();
+    return chrome::ChromeContentBrowserClient::ShouldAllowOpenURL(site_instance,
+                                                                  url);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestContentBrowserClient);
+};
 
 }  // namespace
 
@@ -1804,6 +1830,31 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToDestURL();
 }
 
+// Checks that the referrer is set when prerendering is cancelled.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelReferrer) {
+  scoped_ptr<TestContentBrowserClient> test_content_browser_client(
+      new TestContentBrowserClient);
+  content::ContentBrowserClient* original_browser_client =
+      content::SetBrowserClientForTesting(test_content_browser_client.get());
+
+  PrerenderTestURL("files/prerender/prerender_referrer.html",
+                   FINAL_STATUS_CANCELLED,
+                   1);
+  GetPrerenderContents()->set_quit_message_loop_on_destruction(false);
+  OpenDestURLViaClick();
+
+  bool display_test_result = false;
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents,
+      "window.domAutomationController.send(DidDisplayPass())",
+      &display_test_result));
+  EXPECT_TRUE(display_test_result);
+
+  content::SetBrowserClientForTesting(original_browser_client);
+}
+
 // Checks that popups on a prerendered page cause cancellation.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPopup) {
   PrerenderTestURL("files/prerender/prerender_popup.html",
@@ -2781,6 +2832,32 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                    FINAL_STATUS_USED,
                    1);
   NavigateToDestURL();
+}
+
+// Checks that the referrer policy is used when prerendering is cancelled.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelReferrerPolicy) {
+  scoped_ptr<TestContentBrowserClient> test_content_browser_client(
+      new TestContentBrowserClient);
+  content::ContentBrowserClient* original_browser_client =
+      content::SetBrowserClientForTesting(test_content_browser_client.get());
+
+  set_loader_path("files/prerender/prerender_loader_with_referrer_policy.html");
+  PrerenderTestURL("files/prerender/prerender_referrer_policy.html",
+                   FINAL_STATUS_CANCELLED,
+                   1);
+  GetPrerenderContents()->set_quit_message_loop_on_destruction(false);
+  OpenDestURLViaClick();
+
+  bool display_test_result = false;
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents,
+      "window.domAutomationController.send(DidDisplayPass())",
+      &display_test_result));
+  EXPECT_TRUE(display_test_result);
+
+  content::SetBrowserClientForTesting(original_browser_client);
 }
 
 // Test interaction of the webNavigation and tabs API with prerender.
