@@ -58,8 +58,3 @@ leak:StatusIconGtk::UpdatePlatformContextMenu
 leak:GlobalMenuBar::GlobalMenuBar
 leak:BookmarkBubbleGtk::InitFolderComboModel
 leak:TranslateInfoBarBase::CreateLanguageCombobox
-
-# Leak in BlacklistTest.* http://crbug.com/296828
-leak:BlacklistTest_ClearsPreferencesBlacklistTest::TestBody
-leak:BlacklistTest_OnlyIncludesRequestedIDsTest::TestBody
-leak:BlacklistTest_SafeBrowsing::TestBody

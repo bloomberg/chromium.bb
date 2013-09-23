@@ -141,26 +141,22 @@ Blacklist::ScopedDatabaseManagerForTest::~ScopedDatabaseManagerForTest() {
   SetDatabaseManager(original_);
 }
 
-Blacklist::Blacklist(ExtensionPrefs* prefs) {
+Blacklist::Blacklist(ExtensionPrefs* prefs) : prefs_(prefs) {
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager =
       g_database_manager.Get().get();
-  if (database_manager) {
+  if (database_manager.get()) {
     registrar_.Add(
         this,
         chrome::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
         content::Source<SafeBrowsingDatabaseManager>(database_manager.get()));
   }
 
-  // Clear out the old prefs-backed blacklist, stored as empty extension entries
-  // with just a "blacklisted" property.
+  // TODO(kalman): Delete anything from the pref blacklist that is in the
+  // safebrowsing blacklist (of course, only entries for which the extension
+  // hasn't been installed).
   //
-  // TODO(kalman): Delete this block of code, see http://crbug.com/295882.
-  std::set<std::string> blacklisted = prefs->GetBlacklistedExtensions();
-  for (std::set<std::string>::iterator it = blacklisted.begin();
-       it != blacklisted.end(); ++it) {
-    if (!prefs->GetInstalledExtensionInfo(*it))
-      prefs->DeleteExtensionPrefs(*it);
-  }
+  // Or maybe just wait until we're able to delete the pref blacklist
+  // altogether (when we're sure it's a strict subset of the safebrowsing one).
 }
 
 Blacklist::~Blacklist() {
@@ -170,15 +166,35 @@ void Blacklist::GetBlacklistedIDs(const std::set<std::string>& ids,
                                   const GetBlacklistedIDsCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (ids.empty() || !g_database_manager.Get().get().get()) {
+  if (ids.empty()) {
     base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(callback, std::set<std::string>()));
+        FROM_HERE,
+        base::Bind(callback, std::set<std::string>()));
+    return;
+  }
+
+  // The blacklisted IDs are the union of those blacklisted in prefs and
+  // those blacklisted from safe browsing.
+  std::set<std::string> pref_blacklisted_ids;
+  for (std::set<std::string>::const_iterator it = ids.begin();
+       it != ids.end(); ++it) {
+    if (prefs_->IsExtensionBlacklisted(*it))
+      pref_blacklisted_ids.insert(*it);
+  }
+
+  if (!g_database_manager.Get().get().get()) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(callback, pref_blacklisted_ids));
     return;
   }
 
   // Constructing the SafeBrowsingClientImpl begins the process of asking
   // safebrowsing for the blacklisted extensions.
-  new SafeBrowsingClientImpl(ids, callback);
+  new SafeBrowsingClientImpl(
+      ids,
+      base::Bind(&Blacklist::OnSafeBrowsingResponse, AsWeakPtr(),
+                 pref_blacklisted_ids,
+                 callback));
 }
 
 void Blacklist::IsBlacklisted(const std::string& extension_id,
@@ -186,6 +202,43 @@ void Blacklist::IsBlacklisted(const std::string& extension_id,
   std::set<std::string> check;
   check.insert(extension_id);
   GetBlacklistedIDs(check, base::Bind(&IsNotEmpty, callback));
+}
+
+void Blacklist::SetFromUpdater(const std::vector<std::string>& ids,
+                               const std::string& version) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  std::set<std::string> ids_as_set;
+  for (std::vector<std::string>::const_iterator it = ids.begin();
+       it != ids.end(); ++it) {
+    if (Extension::IdIsValid(*it))
+      ids_as_set.insert(*it);
+    else
+      LOG(WARNING) << "Got invalid extension ID \"" << *it << "\"";
+  }
+
+  std::set<std::string> from_prefs = prefs_->GetBlacklistedExtensions();
+
+  std::set<std::string> no_longer_blacklisted =
+      base::STLSetDifference<std::set<std::string> >(from_prefs,
+                                                     ids_as_set);
+  std::set<std::string> not_yet_blacklisted =
+      base::STLSetDifference<std::set<std::string> >(ids_as_set,
+                                                     from_prefs);
+
+  for (std::set<std::string>::iterator it = no_longer_blacklisted.begin();
+       it != no_longer_blacklisted.end(); ++it) {
+    prefs_->SetExtensionBlacklisted(*it, false);
+  }
+  for (std::set<std::string>::iterator it = not_yet_blacklisted.begin();
+       it != not_yet_blacklisted.end(); ++it) {
+    prefs_->SetExtensionBlacklisted(*it, true);
+  }
+
+  prefs_->pref_service()->SetString(prefs::kExtensionBlacklistUpdateVersion,
+                                    version);
+
+  FOR_EACH_OBSERVER(Observer, observers_, OnBlacklistUpdated());
 }
 
 void Blacklist::AddObserver(Observer* observer) {
@@ -207,6 +260,19 @@ void Blacklist::SetDatabaseManager(
 // static
 scoped_refptr<SafeBrowsingDatabaseManager> Blacklist::GetDatabaseManager() {
   return g_database_manager.Get().get();
+}
+
+void Blacklist::OnSafeBrowsingResponse(
+    const std::set<std::string>& pref_blacklisted_ids,
+    const GetBlacklistedIDsCallback& callback,
+    const std::set<std::string>& safebrowsing_blacklisted_ids) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  std::set<std::string> blacklist = pref_blacklisted_ids;
+  blacklist.insert(safebrowsing_blacklisted_ids.begin(),
+                   safebrowsing_blacklisted_ids.end());
+
+  callback.Run(blacklist);
 }
 
 void Blacklist::Observe(int type,

@@ -49,8 +49,6 @@ class ExtensionServiceTestBase : public testing::Test {
       const base::FilePath& prefs_file,
       const base::FilePath& source_install_dir);
 
-  void InitializeGoodInstalledExtensionService();
-
   void InitializeEmptyExtensionService();
 
   void InitializeExtensionProcessManager();

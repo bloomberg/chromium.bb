@@ -18,7 +18,7 @@ namespace extensions {
 // call set_enabled to enable it.
 class FakeSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
  public:
-  explicit FakeSafeBrowsingDatabaseManager(bool enabled);
+  FakeSafeBrowsingDatabaseManager();
 
   // Returns true if synchronously safe, false if not in which case the unsafe
   // IDs taken from |unsafe_ids_| are passed to to |client| on the current
@@ -26,18 +26,11 @@ class FakeSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
   virtual bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
                                  Client* client) OVERRIDE;
 
-  // Return |this| to chain together SetUnsafe(...).NotifyUpdate() conveniently.
-  FakeSafeBrowsingDatabaseManager& Enable();
-  FakeSafeBrowsingDatabaseManager& ClearUnsafe();
-  FakeSafeBrowsingDatabaseManager& SetUnsafe(const std::string& a);
-  FakeSafeBrowsingDatabaseManager& SetUnsafe(const std::string& a,
-                                             const std::string& b);
-  FakeSafeBrowsingDatabaseManager& SetUnsafe(const std::string& a,
-                                             const std::string& b,
-                                             const std::string& c);
+  void set_enabled(bool enabled) { enabled_ = enabled; }
 
-  // Send the update notification.
-  void NotifyUpdate();
+  void set_unsafe_ids(const std::set<std::string>& unsafe_ids) {
+    unsafe_ids_ = unsafe_ids;
+  }
 
  private:
   virtual ~FakeSafeBrowsingDatabaseManager();

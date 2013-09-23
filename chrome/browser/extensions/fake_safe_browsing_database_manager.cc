@@ -16,49 +16,13 @@
 
 namespace extensions {
 
-FakeSafeBrowsingDatabaseManager::FakeSafeBrowsingDatabaseManager(bool enabled)
+FakeSafeBrowsingDatabaseManager::FakeSafeBrowsingDatabaseManager()
     : SafeBrowsingDatabaseManager(
           make_scoped_refptr(SafeBrowsingService::CreateSafeBrowsingService())),
-      enabled_(enabled) {
+      enabled_(false) {
 }
 
 FakeSafeBrowsingDatabaseManager::~FakeSafeBrowsingDatabaseManager() {
-}
-
-FakeSafeBrowsingDatabaseManager& FakeSafeBrowsingDatabaseManager::Enable() {
-  enabled_ = true;
-  return *this;
-}
-
-FakeSafeBrowsingDatabaseManager&
-FakeSafeBrowsingDatabaseManager::ClearUnsafe() {
-  unsafe_ids_.clear();
-  return *this;
-}
-
-FakeSafeBrowsingDatabaseManager& FakeSafeBrowsingDatabaseManager::SetUnsafe(
-    const std::string& a) {
-  ClearUnsafe();
-  unsafe_ids_.insert(a);
-  return *this;
-}
-
-FakeSafeBrowsingDatabaseManager& FakeSafeBrowsingDatabaseManager::SetUnsafe(
-    const std::string& a, const std::string& b) {
-  SetUnsafe(a);
-  unsafe_ids_.insert(b);
-  return *this;
-}
-
-FakeSafeBrowsingDatabaseManager& FakeSafeBrowsingDatabaseManager::SetUnsafe(
-    const std::string& a, const std::string& b, const std::string& c) {
-  SetUnsafe(a, b);
-  unsafe_ids_.insert(c);
-  return *this;
-}
-
-void FakeSafeBrowsingDatabaseManager::NotifyUpdate() {
-  SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished(true);
 }
 
 bool FakeSafeBrowsingDatabaseManager::CheckExtensionIDs(

@@ -414,6 +414,7 @@ ExtensionService::ExtensionService(Profile* profile,
                                                     extension_prefs,
                                                     profile->GetPrefs(),
                                                     profile,
+                                                    blacklist,
                                                     update_frequency));
   }
 
@@ -3094,29 +3095,32 @@ void ExtensionService::OnNeedsToGarbageCollectIsolatedStorage() {
 void ExtensionService::OnBlacklistUpdated() {
   blacklist_->GetBlacklistedIDs(
       GenerateInstalledExtensionsSet()->GetIDs(),
-      base::Bind(&ExtensionService::ManageBlacklist, AsWeakPtr()));
+      base::Bind(&ExtensionService::ManageBlacklist,
+                 AsWeakPtr(),
+                 blacklisted_extensions_.GetIDs()));
 }
 
-void ExtensionService::ManageBlacklist(const std::set<std::string>& updated) {
+void ExtensionService::ManageBlacklist(
+    const std::set<std::string>& old_blacklisted_ids,
+    const std::set<std::string>& new_blacklisted_ids) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  std::set<std::string> before = blacklisted_extensions_.GetIDs();
   std::set<std::string> no_longer_blacklisted =
-      base::STLSetDifference<std::set<std::string> >(before, updated);
+      base::STLSetDifference<std::set<std::string> >(old_blacklisted_ids,
+                                                     new_blacklisted_ids);
   std::set<std::string> not_yet_blacklisted =
-      base::STLSetDifference<std::set<std::string> >(updated, before);
+      base::STLSetDifference<std::set<std::string> >(new_blacklisted_ids,
+                                                     old_blacklisted_ids);
 
   for (std::set<std::string>::iterator it = no_longer_blacklisted.begin();
        it != no_longer_blacklisted.end(); ++it) {
     scoped_refptr<const Extension> extension =
         blacklisted_extensions_.GetByID(*it);
-    if (!extension.get()) {
-      NOTREACHED() << "Extension " << *it << " no longer blacklisted, "
-                   << "but it was never blacklisted.";
+    DCHECK(extension.get()) << "Extension " << *it << " no longer blacklisted, "
+                            << "but it was never blacklisted.";
+    if (!extension.get())
       continue;
-    }
     blacklisted_extensions_.Remove(*it);
-    extension_prefs_->SetExtensionBlacklisted(extension->id(), false);
     AddExtension(extension.get());
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.UnblacklistInstalled",
                               extension->location(),
@@ -3126,13 +3130,11 @@ void ExtensionService::ManageBlacklist(const std::set<std::string>& updated) {
   for (std::set<std::string>::iterator it = not_yet_blacklisted.begin();
        it != not_yet_blacklisted.end(); ++it) {
     scoped_refptr<const Extension> extension = GetInstalledExtension(*it);
-    if (!extension.get()) {
-      NOTREACHED() << "Extension " << *it << " needs to be "
-                   << "blacklisted, but it's not installed.";
+    DCHECK(extension.get()) << "Extension " << *it << " needs to be "
+                            << "blacklisted, but it's not installed.";
+    if (!extension.get())
       continue;
-    }
     blacklisted_extensions_.Insert(extension);
-    extension_prefs_->SetExtensionBlacklisted(extension->id(), true);
     UnloadExtension(*it, extension_misc::UNLOAD_REASON_BLACKLIST);
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.BlacklistInstalled",
                               extension->location(), Manifest::NUM_LOCATIONS);
