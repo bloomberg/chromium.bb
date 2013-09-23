@@ -25,43 +25,41 @@ window.onload = function()
     // void postMessage(in DOMString message);
 
     // - Tests for the Window object - 
-    // undefined value indicates failure
     shouldThrow("window.setTimeout.call(targetWindow, 'void(0);', 0)", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
     shouldThrow("window.setInterval.call(targetWindow, 'void(0);', 0)", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
     shouldThrow("window.showModalDialog.call(targetWindow);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
     shouldThrow("window.open.call(targetWindow, '')", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
-    shouldBeUndefined("window.getSelection.call(targetWindow)");
-    shouldBeUndefined("window.find.call(targetWindow, 'string', false, false, false, false, false, false)");
-    shouldBeUndefined("window.confirm.call(targetWindow, 'message')");
-    shouldBeUndefined("window.prompt.call(targetWindow, 'message', 'defaultValue')");
-    shouldBeUndefined("window.getComputedStyle.call(targetWindow, document.body, '')");
-    shouldBeUndefined("window.getMatchedCSSRules.call(targetWindow, document.body, '')");
-    shouldBeUndefined("window.openDatabase.call(targetWindow, 'name', '1.0', 'description', 0)");
-    shouldBeUndefined("window.atob.call(targetWindow, 'string')");
-    shouldBeUndefined("window.btoa.call(targetWindow, 'string')");
+    shouldThrow("window.getSelection.call(targetWindow)", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.find.call(targetWindow, 'string', false, false, false, false, false, false)", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.confirm.call(targetWindow, 'message')", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.prompt.call(targetWindow, 'message', 'defaultValue')", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.getComputedStyle.call(targetWindow, document.body, '')", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.getMatchedCSSRules.call(targetWindow, document.body, '')", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.openDatabase.call(targetWindow, 'name', '1.0', 'description', 0)", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.atob.call(targetWindow, 'string')", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.btoa.call(targetWindow, 'string')", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.clearTimeout.call(targetWindow, 0);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.clearInterval.call(targetWindow, 0);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.print.call(targetWindow);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.stop.call(targetWindow);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.alert.call(targetWindow, 'message');", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.scrollBy.call(targetWindow, 0, 0);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.scrollTo.call(targetWindow, 0, 0);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.scroll.call(targetWindow, 0, 0);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.moveBy.call(targetWindow, 0, 0);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.moveTo.call(targetWindow, 0, 0);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.resizeBy.call(targetWindow, 0, 0);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.resizeTo.call(targetWindow, 0, 0);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
 
     // These always return undefined so we use the error console to detect failure
     shouldBeUndefined("window.addEventListener.call(targetWindow, 'load', null, false);");
     shouldBeUndefined("window.removeEventListener.call(targetWindow, 'load', null, false);");
-    shouldBeUndefined("window.clearTimeout.call(targetWindow, 0);");
-    shouldBeUndefined("window.clearInterval.call(targetWindow, 0);");
-    shouldBeUndefined("window.print.call(targetWindow);");
-    shouldBeUndefined("window.stop.call(targetWindow);");
-    shouldBeUndefined("window.alert.call(targetWindow, 'message');");
-    shouldBeUndefined("window.scrollBy.call(targetWindow, 0, 0);");
-    shouldBeUndefined("window.scrollTo.call(targetWindow, 0, 0);");
-    shouldBeUndefined("window.scroll.call(targetWindow, 0, 0);");
-    shouldBeUndefined("window.moveBy.call(targetWindow, 0, 0);");
-    shouldBeUndefined("window.moveTo.call(targetWindow, 0, 0);");
-    shouldBeUndefined("window.resizeBy.call(targetWindow, 0, 0);");
-    shouldBeUndefined("window.resizeTo.call(targetWindow, 0, 0);");
 
     // Throws an EvalError and logs to the error console
     shouldBe("window.eval.call(targetWindow, '1+2');", '3');
 
     // - Tests for the Location object -
-    // undefined value indicates failure
-    shouldBeUndefined("window.location.toString.call(targetWindow.location)");
+    shouldThrow("window.location.toString.call(targetWindow.location)", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
 
     // Work around DRT bug that causes subsequent tests to fail.
     window.stop();

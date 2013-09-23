@@ -96,8 +96,11 @@ static void excitingFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& ar
         return;
     }
     TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(args.Holder());
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
+    ExceptionState es(args.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), es)) {
+        es.throwIfNeeded();
         return;
+    }
     V8TRYCATCH_VOID(Node*, nextChild, V8Node::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
     imp->excitingFunction(nextChild);
 

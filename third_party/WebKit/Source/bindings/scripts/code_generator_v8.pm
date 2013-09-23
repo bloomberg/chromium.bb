@@ -2244,21 +2244,23 @@ END
 
     $code .= GenerateCustomElementInvocationScopeIfNeeded($funcExt);
 
+    my $raisesExceptions = $function->extendedAttributes->{"RaisesException"} || ($interface->extendedAttributes->{"CheckSecurity"} && !$function->extendedAttributes->{"DoNotCheckSecurity"});
+    if ($raisesExceptions) {
+        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
+        AddToImplIncludes("bindings/v8/ExceptionState.h");
+        $code .= "    ExceptionState es(args.GetIsolate());\n";
+    }
+
     # Check domain security if needed
     if ($interface->extendedAttributes->{"CheckSecurity"} && !$function->extendedAttributes->{"DoNotCheckSecurity"}) {
         # We have not find real use cases yet.
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
         $code .= <<END;
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), es)) {
+        es.throwIfNeeded();
         return;
-END
     }
-
-    my $raisesExceptions = $function->extendedAttributes->{"RaisesException"};
-    if ($raisesExceptions) {
-        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
-        AddToImplIncludes("bindings/v8/ExceptionState.h");
-        $code .= "    ExceptionState es(args.GetIsolate());\n";
+END
     }
 
     if ($function->extendedAttributes->{"CheckSecurityForNode"}) {
