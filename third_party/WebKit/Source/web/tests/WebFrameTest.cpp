@@ -1477,7 +1477,7 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest)
 
     // Test double-tap zooming into wide div.
     wideBlockBounds = webViewImpl()->computeBlockBounds(doubleTapPointWide, false);
-    webViewImpl()->computeScaleAndScrollForBlockRect(wideBlockBounds, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
+    webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointWide.x, doubleTapPointWide.y), wideBlockBounds, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
     // The div should horizontally fill the screen (modulo margins), and
     // vertically centered (modulo integer rounding).
     EXPECT_NEAR(viewportWidth / (float) wideDiv.width, scale, 0.1);
@@ -1488,14 +1488,14 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest)
 
     // Test zoom out back to minimum scale.
     wideBlockBounds = webViewImpl()->computeBlockBounds(doubleTapPointWide, false);
-    webViewImpl()->computeScaleAndScrollForBlockRect(wideBlockBounds, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
+    webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointWide.x, doubleTapPointWide.y), wideBlockBounds, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
 
     scale = webViewImpl()->minimumPageScaleFactor();
     setScaleAndScrollAndLayout(webViewImpl(), WebPoint(0, 0), scale);
 
     // Test double-tap zooming into tall div.
     tallBlockBounds = webViewImpl()->computeBlockBounds(doubleTapPointTall, false);
-    webViewImpl()->computeScaleAndScrollForBlockRect(tallBlockBounds, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
+    webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointTall.x, doubleTapPointTall.y), tallBlockBounds, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
     // The div should start at the top left of the viewport.
     EXPECT_NEAR(viewportWidth / (float) tallDiv.width, scale, 0.1);
     EXPECT_NEAR(tallDiv.x, scroll.x, 20);
@@ -1503,7 +1503,7 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest)
 
     // Test for Non-doubletap scaling
     // Test zooming into div.
-    webViewImpl()->computeScaleAndScrollForBlockRect(webViewImpl()->computeBlockBounds(WebRect(250, 250, 10, 10), true), 0, doubleTapZoomAlreadyLegibleScale, scale, scroll);
+    webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(250, 250), webViewImpl()->computeBlockBounds(WebRect(250, 250, 10, 10), true), 0, doubleTapZoomAlreadyLegibleScale, scale, scroll);
     EXPECT_NEAR(viewportWidth / (float) wideDiv.width, scale, 0.1);
 }
 
@@ -1557,6 +1557,35 @@ TEST_F(WebFrameTest, DivAutoZoomWideDivTest)
     EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
     simulateDoubleTap(webViewImpl(), point, scale);
     EXPECT_FLOAT_EQ(webViewImpl()->minimumPageScaleFactor(), scale);
+}
+
+TEST_F(WebFrameTest, DivAutoZoomVeryTallTest)
+{
+    // When a block is taller than the viewport and a zoom targets a lower part
+    // of it, then we should keep the target point onscreen instead of snapping
+    // back up the top of the block.
+    registerMockedHttpURLLoad("very_tall_div.html");
+
+    const float deviceScaleFactor = 2.0f;
+    int viewportWidth = 640 / deviceScaleFactor;
+    int viewportHeight = 1280 / deviceScaleFactor;
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "very_tall_div.html");
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+    m_webView->setPageScaleFactorLimits(1.0f, 4);
+    m_webView->setDeviceScaleFactor(deviceScaleFactor);
+    m_webView->setPageScaleFactor(1.0f, WebPoint(0, 0));
+    m_webView->layout();
+
+    WebRect div(200, 300, 400, 5000);
+    WebPoint point(div.x + 50, div.y + 3000);
+    float scale;
+    WebPoint scroll;
+
+    WebRect blockBounds = webViewImpl()->computeBlockBounds(WebRect(point.x, point.y, 0, 0), true);
+    webViewImpl()->computeScaleAndScrollForBlockRect(point, blockBounds, 0, 1.0f, scale, scroll);
+    EXPECT_EQ(scale, 1.0f);
+    EXPECT_EQ(scroll.y, 2660);
 }
 
 TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest)

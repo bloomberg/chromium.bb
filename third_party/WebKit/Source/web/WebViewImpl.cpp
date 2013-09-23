@@ -1145,7 +1145,7 @@ float WebViewImpl::legibleScale() const
     return legibleScale;
 }
 
-void WebViewImpl::computeScaleAndScrollForBlockRect(const WebRect& blockRect, float padding, float defaultScaleWhenAlreadyLegible, float& scale, WebPoint& scroll)
+void WebViewImpl::computeScaleAndScrollForBlockRect(const WebPoint& hitPoint, const WebRect& blockRect, float padding, float defaultScaleWhenAlreadyLegible, float& scale, WebPoint& scroll)
 {
     scale = pageScaleFactor();
     scroll.x = scroll.y = 0;
@@ -1189,14 +1189,14 @@ void WebViewImpl::computeScaleAndScrollForBlockRect(const WebRect& blockRect, fl
     } else {
         // Ensure position we're zooming to (+ padding) isn't off the bottom of
         // the screen.
-        rect.y = max<float>(rect.y, blockRect.y + padding - screenHeight);
+        rect.y = max<float>(rect.y, hitPoint.y + padding - screenHeight);
     } // Otherwise top align the block.
 
     // Do the same thing for horizontal alignment.
     if (rect.width < screenWidth)
         rect.x -= 0.5 * (screenWidth - rect.width);
     else
-        rect.x = max<float>(rect.x, blockRect.x + padding - screenWidth);
+        rect.x = max<float>(rect.x, hitPoint.x + padding - screenWidth);
     scroll.x = rect.x;
     scroll.y = rect.y;
 
@@ -1285,7 +1285,7 @@ void WebViewImpl::animateDoubleTapZoom(const IntPoint& point)
     float scale;
     WebPoint scroll;
 
-    computeScaleAndScrollForBlockRect(blockBounds, touchPointPadding, minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio, scale, scroll);
+    computeScaleAndScrollForBlockRect(point, blockBounds, touchPointPadding, minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio, scale, scroll);
 
     bool stillAtPreviousDoubleTapScale = (pageScaleFactor() == m_doubleTapZoomPageScaleFactor
         && m_doubleTapZoomPageScaleFactor != minimumPageScaleFactor())
@@ -1325,7 +1325,7 @@ void WebViewImpl::zoomToFindInPageRect(const WebRect& rect)
     float scale;
     WebPoint scroll;
 
-    computeScaleAndScrollForBlockRect(blockBounds, nonUserInitiatedPointPadding, minimumPageScaleFactor(), scale, scroll);
+    computeScaleAndScrollForBlockRect(WebPoint(rect.x, rect.y), blockBounds, nonUserInitiatedPointPadding, minimumPageScaleFactor(), scale, scroll);
 
     startPageScaleAnimation(scroll, false, scale, findInPageAnimationDurationInSeconds);
 }
@@ -1338,7 +1338,7 @@ bool WebViewImpl::zoomToMultipleTargetsRect(const WebRect& rect)
     float scale;
     WebPoint scroll;
 
-    computeScaleAndScrollForBlockRect(rect, nonUserInitiatedPointPadding, minimumPageScaleFactor(), scale, scroll);
+    computeScaleAndScrollForBlockRect(WebPoint(rect.x, rect.y), rect, nonUserInitiatedPointPadding, minimumPageScaleFactor(), scale, scroll);
 
     if (scale <= pageScaleFactor())
         return false;
