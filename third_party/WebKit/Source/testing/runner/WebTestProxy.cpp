@@ -409,8 +409,6 @@ string dumpHistoryItem(const WebHistoryItem& item, int indent, bool isCurrent)
         result.append(item.target().utf8());
         result.append("\")");
     }
-    if (item.isTargetItem())
-        result.append("  **nav target**");
     result.append("\n");
 
     const WebVector<WebHistoryItem>& children = item.children();

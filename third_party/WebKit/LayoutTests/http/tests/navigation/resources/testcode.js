@@ -63,6 +63,7 @@ function jumpToAnchor() {
 // proving the anchor was visited.
 function runBasicTest(testCase, extraStep) {
     if (window.testRunner) {
+        testRunner.dumpAsText();
         testRunner.dumpBackForwardList();
         testRunner.queueLoad(testCase);
         if (extraStep == "post") {
@@ -89,6 +90,7 @@ function runBasicTest(testCase, extraStep) {
 // and going back 2 pages to the original form.
 function runBackTest(testCase, howFarBack, extraStep) {
     if (window.testRunner) {
+        testRunner.dumpAsText();
         testRunner.dumpBackForwardList();
         testRunner.queueLoad(testCase);
         testRunner.queueNonLoadingScript("fillTestForm()");
@@ -109,6 +111,7 @@ function runBackTest(testCase, howFarBack, extraStep) {
 // load a single child frame, after the load of the whole frameset.
 function runLoadChildFrameTest(testCase) {
     if (window.testRunner) {
+        testRunner.dumpAsText();
         testRunner.dumpBackForwardList();
         testRunner.queueLoad("resources/frameset.pl?frameURL=otherpage.html");
         testRunner.queueLoad(testCase, "main");
