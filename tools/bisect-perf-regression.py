@@ -419,9 +419,8 @@ class AndroidBuilder(Builder):
     Returns:
         True if build was successful.
     """
-    targets = ['chromium_testshell', 'forwarder2', 'md5sum']
-    if '--profile-dir' in opts.command:
-      targets.append('clear_system_cache')
+    targets = [
+        'chromium_testshell', 'clear_system_cache', 'forwarder2', 'md5sum']
 
     threads = None
     if opts.use_goma:
