@@ -86,9 +86,6 @@ int GdkStateToWebEventModifiers(guint state) {
     modifiers |= WebInputEvent::CapsLockOn;
   if (state & GDK_MOD2_MASK)
     modifiers |= WebInputEvent::NumLockOn;
-  // Handle the AltGr (ISO Level3 Shift) key as Control + Alt.
-  if (state & GDK_MOD5_MASK)
-    modifiers |= WebInputEvent::ControlKey | WebInputEvent::AltKey;
   return modifiers;
 }
 
