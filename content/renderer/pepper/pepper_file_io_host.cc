@@ -16,10 +16,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
-#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/quota_file_io.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -138,7 +135,6 @@ PepperFileIOHost::PepperFileIOHost(RendererPpapiHost* host,
                                    PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
-      plugin_instance_(HostGlobals::Get()->GetInstance(instance)),
       file_(base::kInvalidPlatformFileValue),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       quota_policy_(quota::kQuotaLimitTypeUnknown),
@@ -146,7 +142,7 @@ PepperFileIOHost::PepperFileIOHost(RendererPpapiHost* host,
       open_flags_(0),
       routing_id_(RenderThreadImpl::current()->GenerateRoutingID()),
       weak_factory_(this) {
-      ChildThread::current()->AddRoute(routing_id_, this);
+  ChildThread::current()->AddRoute(routing_id_, this);
 }
 
 PepperFileIOHost::~PepperFileIOHost() {
