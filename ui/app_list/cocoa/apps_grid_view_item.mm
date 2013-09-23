@@ -259,6 +259,18 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
       [[NSAttributedString alloc] initWithString:buttonTitle
                                       attributes:titleAttributes]);
   [[self button] setAttributedTitle:attributedTitle];
+
+  // If the app does not specify a distinct short name manifest property, check
+  // whether the title would be truncted in the NSButton. If it would be
+  // truncated, add a tooltip showing the full name.
+  NSRect titleRect =
+      [[[self button] cell] titleRectForBounds:[[self button] bounds]];
+  if ([self model]->title() == [self model]->full_name() &&
+      [attributedTitle size].width < NSWidth(titleRect)) {
+    [[self view] removeAllToolTips];
+  } else {
+    [[self view] setToolTip:base::SysUTF8ToNSString([self model]->full_name())];
+  }
 }
 
 - (void)updateButtonImage {
