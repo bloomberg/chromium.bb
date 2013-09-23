@@ -58,13 +58,14 @@
   "name": "Quickoffice (Beta)",
   "offline_enabled": true,
   "permissions": [
+    "clipboardRead",
+    "clipboardWrite",
     "fileBrowserHandler",
     "fileSystem",
     "fileSystem.write",
     "metricsPrivate",
     "streamsPrivate",
-    "unlimitedStorage",
-    "clipboardRead"
+    "unlimitedStorage"
   ],
   "platforms": [
     {
