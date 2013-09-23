@@ -185,16 +185,22 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
                        "ADD COLUMN possible_usernames BLOB")) {
         return false;
       }
+      meta_table_.SetVersionNumber(2);
       // Fall through.
     case 2:
       if (!db_.Execute("ALTER TABLE logins ADD COLUMN times_used INTEGER")) {
         return false;
       }
+      meta_table_.SetVersionNumber(3);
       // Fall through.
     case 3:
-      if (!db_.Execute("ALTER TABLE logins ADD COLUMN form_data BLOB")) {
+      // We need to check if the column exists because of
+      // https://crbug.com/295851
+      if (!db_.DoesColumnExist("logins", "form_data") &&
+          !db_.Execute("ALTER TABLE logins ADD COLUMN form_data BLOB")) {
         return false;
       }
+      meta_table_.SetVersionNumber(4);
       // Fall through.
     case kCurrentVersionNumber:
       // Already up to date
@@ -203,8 +209,6 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
       NOTREACHED();
       return false;
   }
-  meta_table_.SetVersionNumber(kCurrentVersionNumber);
-  return true;
 }
 
 bool LoginDatabase::InitLoginsTable() {
