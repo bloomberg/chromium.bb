@@ -4,6 +4,8 @@
 
 #include "tools/gn/filesystem_utils.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -507,3 +509,40 @@ std::string PathToSystem(const std::string& path) {
   return ret;
 }
 
+std::string RebaseSourceAbsolutePath(const std::string& input,
+                                     const SourceDir& dest_dir) {
+  CHECK(input.size() >= 2 && input[0] == '/' && input[1] == '/')
+      << "Input to rebase isn't source-absolute: " << input;
+  CHECK(dest_dir.is_source_absolute())
+      << "Dir to rebase to isn't source-absolute: " << dest_dir.value();
+
+  const std::string& dest = dest_dir.value();
+
+  // Skip the common prefixes of the source and dest as long as they end in
+  // a [back]slash.
+  size_t common_prefix_len = 2;  // The beginning two "//" are always the same.
+  size_t max_common_length = std::min(input.size(), dest.size());
+  for (size_t i = common_prefix_len; i < max_common_length; i++) {
+    if ((input[i] == '/' || input[i] == '\\') &&
+        (dest[i] == '/' || dest[i] == '\\'))
+      common_prefix_len = i + 1;
+    else if (input[i] != dest[i])
+      break;
+  }
+
+  // Invert the dest dir starting from the end of the common prefix.
+  std::string ret;
+  for (size_t i = common_prefix_len; i < dest.size(); i++) {
+    if (dest[i] == '/' || dest[i] == '\\')
+      ret.append("../");
+  }
+
+  // Append any remaining unique input.
+  ret.append(&input[common_prefix_len], input.size() - common_prefix_len);
+
+  // If the result is still empty, the paths are the same.
+  if (ret.empty())
+    ret.push_back('.');
+
+  return ret;
+}

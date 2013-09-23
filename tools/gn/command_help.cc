@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 
+#include "base/strings/string_split.h"
 #include "tools/gn/args.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/err.h"
@@ -49,6 +50,44 @@ void PrintShortHelp(const std::string& line) {
   OutputString(line.substr(first_normal) + "\n");
 }
 
+// Rules:
+// - Lines beginning with non-whitespace are highlighted up to the first
+//   colon (or the whole line if not).
+// - Lines whose first non-whitespace character is a # are dimmed.
+void PrintLongHelp(const std::string& text) {
+  std::vector<std::string> lines;
+  base::SplitStringDontTrim(text, '\n', &lines);
+
+  for (size_t i = 0; i < lines.size(); i++) {
+    const std::string& line = lines[i];
+
+    // Check for a heading line.
+    if (!line.empty() && line[0] != ' ') {
+      // Highlight up to the colon (if any).
+      size_t chars_to_highlight = line.find(':');
+      if (chars_to_highlight == std::string::npos)
+        chars_to_highlight = line.size();
+      OutputString(line.substr(0, chars_to_highlight), DECORATION_YELLOW);
+      OutputString(line.substr(chars_to_highlight) + "\n");
+      continue;
+    }
+
+    // Check for a comment.
+    TextDecoration dec = DECORATION_NONE;
+    for (size_t char_i = 0; char_i < line.size(); char_i++) {
+      if (line[char_i] == '#') {
+        // Got a comment, draw dimmed.
+        dec = DECORATION_DIM;
+        break;
+      } else if (line[char_i] != ' ') {
+        break;
+      }
+    }
+
+    OutputString(line + "\n", dec);
+  }
+}
+
 void PrintToplevelHelp() {
   OutputString("Commands (type \"gn help <command>\" for more details):\n");
 
@@ -64,6 +103,8 @@ void PrintToplevelHelp() {
       "Common switches:\n");
   PrintShortHelp(
       "--args: Specifies build args overrides. See \"gn help buildargs\".");
+  PrintShortHelp(
+      "--no-exec: Skips exec_script calls (for performance testing).");
   PrintShortHelp(
       "-q: Quiet mode, don't print anything on success.");
   PrintShortHelp(
@@ -135,7 +176,7 @@ int RunHelp(const std::vector<std::string>& args) {
   commands::CommandInfoMap::const_iterator found_command =
       command_map.find(args[0]);
   if (found_command != command_map.end()) {
-    OutputString(found_command->second.help);
+    PrintLongHelp(found_command->second.help);
     return 0;
   }
 
@@ -144,7 +185,7 @@ int RunHelp(const std::vector<std::string>& args) {
   functions::FunctionInfoMap::const_iterator found_function =
       function_map.find(args[0]);
   if (found_function != function_map.end()) {
-    OutputString(found_function->second.help);
+    PrintLongHelp(found_function->second.help);
     return 0;
   }
 
@@ -154,7 +195,7 @@ int RunHelp(const std::vector<std::string>& args) {
   variables::VariableInfoMap::const_iterator found_builtin_var =
       builtin_vars.find(args[0]);
   if (found_builtin_var != builtin_vars.end()) {
-    OutputString(found_builtin_var->second.help);
+    PrintLongHelp(found_builtin_var->second.help);
     return 0;
   }
 
@@ -164,29 +205,29 @@ int RunHelp(const std::vector<std::string>& args) {
   variables::VariableInfoMap::const_iterator found_target_var =
       target_vars.find(args[0]);
   if (found_target_var != target_vars.end()) {
-    OutputString(found_target_var->second.help);
+    PrintLongHelp(found_target_var->second.help);
     return 0;
   }
 
   // Random other topics.
   if (args[0] == "buildargs") {
-    OutputString(kBuildArgs_Help);
+    PrintLongHelp(kBuildArgs_Help);
     return 0;
   }
   if (args[0] == "dotfile") {
-    OutputString(kDotfile_Help);
+    PrintLongHelp(kDotfile_Help);
     return 0;
   }
   if (args[0] == "input_conversion") {
-    OutputString(kInputConversion_Help);
+    PrintLongHelp(kInputConversion_Help);
     return 0;
   }
   if (args[0] == "patterns") {
-    OutputString(kPattern_Help);
+    PrintLongHelp(kPattern_Help);
     return 0;
   }
   if (args[0] == "source_expansion") {
-    OutputString(kSourceExpansion_Help);
+    PrintLongHelp(kSourceExpansion_Help);
     return 0;
   }
 

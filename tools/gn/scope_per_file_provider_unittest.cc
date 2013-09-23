@@ -20,23 +20,40 @@ TEST(ScopePerFileProvider, Expected) {
 
   build_settings.SetBuildDir(SourceDir("//out/Debug/"));
 
-  Toolchain toolchain(Label(SourceDir("//toolchain/"), "tc", SourceDir(), ""));
-  Settings settings(&build_settings, &toolchain, std::string());
-  Scope scope(&settings);
-  scope.set_source_dir(SourceDir("//source/"));
+// Prevent horrible wrapping of calls below.
+#define GPV(val) provider.GetProgrammaticValue(val)->string_value()
 
-  ScopePerFileProvider provider(&scope);
+  // Test the default toolchain.
+  {
+    Toolchain toolchain(Label(SourceDir("//toolchain/"), "tc"));
+    Settings settings(&build_settings, &toolchain, std::string());
 
-  EXPECT_EQ("//toolchain:tc", provider.GetProgrammaticValue(
-      variables::kCurrentToolchain)->string_value());
-  EXPECT_EQ("//toolchain:default", provider.GetProgrammaticValue(
-      variables::kDefaultToolchain)->string_value());
-  EXPECT_EQ("//out/Debug/gen",provider.GetProgrammaticValue(
-      variables::kRootGenDir)->string_value());
-  EXPECT_EQ("//out/Debug",provider.GetProgrammaticValue(
-      variables::kRootOutDir)->string_value());
-  EXPECT_EQ("//out/Debug/gen/source",provider.GetProgrammaticValue(
-      variables::kTargetGenDir)->string_value());
-  EXPECT_EQ("//out/Debug/obj/source",provider.GetProgrammaticValue(
-      variables::kTargetOutDir)->string_value());
+    Scope scope(&settings);
+    scope.set_source_dir(SourceDir("//source/"));
+    ScopePerFileProvider provider(&scope);
+
+    EXPECT_EQ("//toolchain:tc",         GPV(variables::kCurrentToolchain));
+    EXPECT_EQ("//toolchain:default",    GPV(variables::kDefaultToolchain));
+    EXPECT_EQ("//out/Debug",            GPV(variables::kRootBuildDir));
+    EXPECT_EQ("//out/Debug/gen",        GPV(variables::kRootGenDir));
+    EXPECT_EQ("//out/Debug",            GPV(variables::kRootOutDir));
+    EXPECT_EQ("//out/Debug/gen/source", GPV(variables::kTargetGenDir));
+    EXPECT_EQ("//out/Debug/obj/source", GPV(variables::kTargetOutDir));
+  }
+
+  // Test some with an alternate toolchain.
+  {
+    Toolchain toolchain(Label(SourceDir("//toolchain/"), "tc"));
+    Settings settings(&build_settings, &toolchain, "tc");
+
+    Scope scope(&settings);
+    scope.set_source_dir(SourceDir("//source/"));
+    ScopePerFileProvider provider(&scope);
+
+    EXPECT_EQ("//out/Debug",               GPV(variables::kRootBuildDir));
+    EXPECT_EQ("//out/Debug/tc/gen",        GPV(variables::kRootGenDir));
+    EXPECT_EQ("//out/Debug/tc",            GPV(variables::kRootOutDir));
+    EXPECT_EQ("//out/Debug/tc/gen/source", GPV(variables::kTargetGenDir));
+    EXPECT_EQ("//out/Debug/tc/obj/source", GPV(variables::kTargetOutDir));
+  }
 }

@@ -969,8 +969,8 @@ static_library("test_support_base") {
 
   if (!is_posix) {
     sources -= [
-      "scoped_locale.cc",
-      "scoped_locale.h",
+      "test/scoped_locale.cc",
+      "test/scoped_locale.h",
     ]
   }
   if (is_ios) {

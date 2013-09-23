@@ -28,7 +28,8 @@ extern const char kDotfile_Help[] =
     "  same as a buildfile, but with very limited build setup-specific\n"
     "  meaning.\n"
     "\n"
-    "Variables:\n"
+    "Variables\n"
+    "\n"
     "  buildconfig [required]\n"
     "      Label of the build config file. This file will be used to setup\n"
     "      the build file execution environment for each toolchain.\n"
@@ -45,7 +46,7 @@ extern const char kDotfile_Help[] =
     "\n"
     "      The secondary source root must be inside the main source tree.\n"
     "\n"
-    "Example .gn file contents:\n"
+    "Example .gn file contents\n"
     "\n"
     "  buildconfig = \"//build/config/BUILDCONFIG.gn\"\n"
     "\n"
@@ -110,8 +111,8 @@ bool Setup::DoSetup() {
 
   // FIXME(brettw) get python path!
 #if defined(OS_WIN)
-  build_settings_.set_python_path(
-      base::FilePath(FILE_PATH_LITERAL("cmd.exe /c python")));
+  build_settings_.set_python_path(base::FilePath(
+      FILE_PATH_LITERAL("python.exe")));
 #else
   build_settings_.set_python_path(base::FilePath(FILE_PATH_LITERAL("python")));
 #endif

@@ -27,6 +27,8 @@ const Value* ScopePerFileProvider::GetProgrammaticValue(
   if (ident == variables::kPythonPath)
     return GetPythonPath();
 
+  if (ident == variables::kRootBuildDir)
+    return GetRootBuildDir();
   if (ident == variables::kRootGenDir)
     return GetRootGenDir();
   if (ident == variables::kRootOutDir)
@@ -65,10 +67,18 @@ const Value* ScopePerFileProvider::GetPythonPath() {
   return python_path_.get();
 }
 
+const Value* ScopePerFileProvider::GetRootBuildDir() {
+  if (!root_build_dir_) {
+    root_build_dir_.reset(new Value(NULL,
+        "/" + GetRootOutputDirWithNoLastSlash(scope_->settings())));
+  }
+  return root_build_dir_.get();
+}
+
 const Value* ScopePerFileProvider::GetRootGenDir() {
   if (!root_gen_dir_) {
     root_gen_dir_.reset(new Value(NULL,
-        "/" + GetRootGenDirWithNoLastSlash(scope_->settings())));
+        "/" + GetToolchainGenDirWithNoLastSlash(scope_->settings())));
   }
   return root_gen_dir_.get();
 }
@@ -76,7 +86,7 @@ const Value* ScopePerFileProvider::GetRootGenDir() {
 const Value* ScopePerFileProvider::GetRootOutDir() {
   if (!root_out_dir_) {
     root_out_dir_.reset(new Value(NULL,
-        "/" + GetRootOutputDirWithNoLastSlash(scope_->settings())));
+        "/" + GetToolchainOutputDirWithNoLastSlash(scope_->settings())));
   }
   return root_out_dir_.get();
 }
@@ -85,7 +95,7 @@ const Value* ScopePerFileProvider::GetTargetGenDir() {
   if (!target_gen_dir_) {
     target_gen_dir_.reset(new Value(NULL,
         "/" +
-        GetRootGenDirWithNoLastSlash(scope_->settings()) +
+        GetToolchainGenDirWithNoLastSlash(scope_->settings()) +
         GetFileDirWithNoLastSlash()));
   }
   return target_gen_dir_.get();
@@ -95,7 +105,7 @@ const Value* ScopePerFileProvider::GetTargetOutDir() {
   if (!target_out_dir_) {
     target_out_dir_.reset(new Value(NULL,
         "/" +
-        GetRootOutputDirWithNoLastSlash(scope_->settings()) + "/obj" +
+        GetToolchainOutputDirWithNoLastSlash(scope_->settings()) + "/obj" +
         GetFileDirWithNoLastSlash()));
   }
   return target_out_dir_.get();
@@ -117,9 +127,28 @@ std::string ScopePerFileProvider::GetRootOutputDirWithNoLastSlash(
 }
 
 // static
-std::string ScopePerFileProvider::GetRootGenDirWithNoLastSlash(
+std::string ScopePerFileProvider::GetToolchainOutputDirWithNoLastSlash(
     const Settings* settings) {
-  return GetRootOutputDirWithNoLastSlash(settings) + "/gen";
+  const OutputFile& toolchain_subdir = settings->toolchain_output_subdir();
+
+  std::string result;
+  if (toolchain_subdir.value().empty()) {
+    result = GetRootOutputDirWithNoLastSlash(settings);
+  } else {
+    // The toolchain subdir ends in a slash, trim it.
+    result = GetRootOutputDirWithNoLastSlash(settings) + "/" +
+        toolchain_subdir.value();
+    DCHECK(toolchain_subdir.value()[toolchain_subdir.value().size() - 1] ==
+           '/');
+    result.resize(result.size() - 1);
+  }
+  return result;
+}
+
+// static
+std::string ScopePerFileProvider::GetToolchainGenDirWithNoLastSlash(
+    const Settings* settings) {
+  return GetToolchainOutputDirWithNoLastSlash(settings) + "/gen";
 }
 
 std::string ScopePerFileProvider::GetFileDirWithNoLastSlash() const {

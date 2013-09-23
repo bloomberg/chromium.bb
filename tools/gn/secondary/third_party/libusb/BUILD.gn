@@ -50,7 +50,6 @@ static_library("libusb") {
 
   configs -= "//build/config/compiler:chromium_code"
   configs += "//build/config/compiler:no_chromium_code"
-  configs += "//build/config/linux:udev"
 
   direct_dependent_configs = [ ":libusb_config" ]
 
@@ -63,13 +62,6 @@ static_library("libusb") {
       "LIBUSB_DESCRIBE=\"1.0.16\"",
       "POLL_NFDS_TYPE=nfds_t",
       "THREADS_POSIX=1",
-    ]
-  } else {
-    sources -= [
-      "src/libusb/os/poll_posix.c",
-      "src/libusb/os/poll_posix.h",
-      "src/libusb/os/threads_posix.c",
-      "src/libusb/os/threads_posix.h",
     ]
   }
 
@@ -89,6 +81,7 @@ static_library("libusb") {
       "USE_UDEV=1",
       "_GNU_SOURCE=1",
     ]
+    configs += "//build/config/linux:udev"
   } else {
     sources -= [
       "src/libusb/os/linux_udev.c",

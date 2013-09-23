@@ -404,7 +404,7 @@ if (is_win) {
   copy("icudata") {
     external = true
     sources = [ "windows/icudt.dll" ]
-    outputs = [ "$root_output_dir/icudt.dll" ]
+    outputs = [ "$root_out_dir/icudt.dll" ]
   }
 } else {
   static_library("icudata") {

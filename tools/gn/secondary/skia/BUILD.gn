@@ -635,6 +635,7 @@ static_library("skia_library") {
   #     ["exclude", "opts_check_SSE2\\.cpp$"],
   #   ],
 
+  includes = []
   if (is_win) {
     includes += [
       "//third_party/skia/include/utils/win",

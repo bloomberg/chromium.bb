@@ -19,25 +19,32 @@ template("grit") {
          "Neither \"sources\" nor \"outputs\" can be defined for the grit " +
          "template $target_name")
 
-  resource_ids = to_build_path("//tools/gritsettings/resource_ids")
-  output_dir = to_build_path(target_gen_dir)
-  grit_info_script = to_build_path("//tools/grit/grit_info.py")
-  source_path = to_build_path(source)
+  grit_info_script = "//tools/grit/grit_info.py"
+
+  # These are all passed as arguments to the script so have to be relative to
+  # the build directory.
+  resource_ids =
+    rebase_path("//tools/gritsettings/resource_ids", ".", root_build_dir)
+  output_dir = rebase_path(target_gen_dir, ".", root_build_dir)
+  source_path = rebase_path(source, ".", root_build_dir)
 
   if (!defined(grit_flags)) {
     grit_flags = []  # These are optional so default to empty list.
   }
 
-  # TODO(brettw) these are wrong because grit outputs the file names relative
-  # to its current directory (the build output) and we want them relative
-  # to the current input directory. We need a way to rebase the paths we get
-  # back.
-  grit_inputs = exec_script(grit_info_script,
+  grit_inputs_build_rel = exec_script(grit_info_script,
     [ "--inputs", source_path, "-f", resource_ids] + grit_flags, "list lines")
-  grit_outputs = exec_script(grit_info_script,
+  # The inputs are relative to the current (build) directory, rebase to
+  # the current one.
+  grit_inputs = rebase_path(grit_inputs_build_rel, root_build_dir, ".")
+
+  grit_outputs_build_rel = exec_script(grit_info_script,
     [ "--outputs", "$output_dir", source_path, "-f", resource_ids ] +
     grit_flags,
     "list lines")
+  # The inputs are relative to the current (build) directory, rebase to
+  # the current one.
+  grit_outputs = rebase_path(grit_outputs_build_rel, root_build_dir, ".")
 
   # The current grit setup makes an file in $target_gen_dir/grit/foo.h that
   # the source code expects to include via "grit/foo.h". It would be nice to
@@ -70,7 +77,6 @@ template("grit") {
     # Since we generate a file, we need to be run before the targets that
     # depend on us.
     hard_dep = true
-
     sources = grit_outputs
 
     # Deps set on the template invocation will go on the grit script running

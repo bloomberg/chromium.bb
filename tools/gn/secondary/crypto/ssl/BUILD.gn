@@ -9,8 +9,16 @@ config("ssl_preprocessor_flags") {
     defines = [ "USE_OPENSSL" ]
   } else if (use_nss) {
     defines = [ "USE_NSS" ]
-  } else {
-    assert(false)  # Either OpenSSL or NSS should be defined.
+  }
+}
+
+# Config for system SSL on Linux.
+if (is_linux && use_system_ssl) {
+  pkg_script = "//build/config/linux/pkg-config.py"
+  config("system_ssl_config") {
+    defines = [ "USE_SYSTEM_SSL" ]
+    cflags = exec_script(pkg_script, [ "--cflags", "nss" ], "list lines")
+    ldflags = exec_script(pkg_script, [ "--libs", "nss" ], "list lines")
   }
 }
 
@@ -18,10 +26,16 @@ config("ssl_preprocessor_flags") {
 group("metassl") {
   direct_dependent_configs = [ ":ssl_preprocessor_flags" ]
 
-  deps = []
-  if (is_linux) {
-    # TODO(brettw) figure this out.
-    deps += [ "//net/third_party/nss/ssl" ]
+  if (use_openssl) {
+    assert(is_linux)
+    deps = "//third_party/openssl"
+    use_openssl = false
+  } else if (use_system_ssl) {
+    assert(is_linux)
+    direct_dependent_configs = ":system_ssl_config"
+  } else {
+    deps = [ "//net/third_party/nss/ssl" ]
   }
+
   forward_dependent_configs_from = deps
 }

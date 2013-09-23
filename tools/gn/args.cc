@@ -7,12 +7,12 @@
 #include "tools/gn/variables.h"
 
 const char kBuildArgs_Help[] =
-    "Build Arguments Overview.\n"
+    "Build Arguments Overview\n"
     "\n"
     "  Build arguments are variables passed in from outside of the build\n"
     "  that build files can query to determine how the build works.\n"
     "\n"
-    "How build arguments are set:\n"
+    "How build arguments are set\n"
     "\n"
     "  First, system default arguments are set based on the current system.\n"
     "  The built-in arguments are:\n"
@@ -36,7 +36,7 @@ const char kBuildArgs_Help[] =
     "  It is an error to specify an override for a build argument that never\n"
     "  appears in a \"declare_args\" call.\n"
     "\n"
-    "How build arguments are used:\n"
+    "How build arguments are used\n"
     "\n"
     "  If you want to use an argument, you use declare_args() and specify\n"
     "  default values. These default values will apply if none of the steps\n"

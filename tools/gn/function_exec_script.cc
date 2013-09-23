@@ -38,6 +38,8 @@ namespace functions {
 
 namespace {
 
+const char kNoExecSwitch[] = "no-exec";
+
 #if defined(OS_WIN)
 bool ExecProcess(const CommandLine& cmdline,
                  const base::FilePath& startup_dir,
@@ -350,11 +352,13 @@ Value RunExecScript(Scope* scope,
   std::string output;
   std::string stderr_output;  // TODO(brettw) not hooked up, see above.
   int exit_code = 0;
-  if (!ExecProcess(cmdline, startup_dir,
-                   &output, &stderr_output, &exit_code)) {
-    *err = Err(function->function(), "Could not execute python.",
-        "I was trying to execute \"" + FilePathToUTF8(python_path) + "\".");
-    return Value();
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(kNoExecSwitch)) {
+    if (!ExecProcess(cmdline, startup_dir,
+                     &output, &stderr_output, &exit_code)) {
+      *err = Err(function->function(), "Could not execute python.",
+          "I was trying to execute \"" + FilePathToUTF8(python_path) + "\".");
+      return Value();
+    }
   }
   if (g_scheduler->verbose_logging()) {
     g_scheduler->Log("Pythoning", script_source.value() + " took " +

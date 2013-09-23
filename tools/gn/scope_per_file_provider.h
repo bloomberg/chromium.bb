@@ -25,13 +25,17 @@ class ScopePerFileProvider : public Scope::ProgrammaticProvider {
   const Value* GetCurrentToolchain();
   const Value* GetDefaultToolchain();
   const Value* GetPythonPath();
+  const Value* GetRootBuildDir();
   const Value* GetRootGenDir();
   const Value* GetRootOutDir();
   const Value* GetTargetGenDir();
   const Value* GetTargetOutDir();
 
   static std::string GetRootOutputDirWithNoLastSlash(const Settings* settings);
-  static std::string GetRootGenDirWithNoLastSlash(const Settings* settings);
+  static std::string GetToolchainOutputDirWithNoLastSlash(
+      const Settings* settings);
+  static std::string GetToolchainGenDirWithNoLastSlash(
+      const Settings* settings);
 
   std::string GetFileDirWithNoLastSlash() const;
 
@@ -39,6 +43,7 @@ class ScopePerFileProvider : public Scope::ProgrammaticProvider {
   scoped_ptr<Value> current_toolchain_;
   scoped_ptr<Value> default_toolchain_;
   scoped_ptr<Value> python_path_;
+  scoped_ptr<Value> root_build_dir_;
   scoped_ptr<Value> root_gen_dir_;
   scoped_ptr<Value> root_out_dir_;
   scoped_ptr<Value> target_gen_dir_;

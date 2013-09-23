@@ -97,6 +97,18 @@ const char kPythonPath_Help[] =
     "  requires Python. You will normally not need this when invoking scripts\n"
     "  since GN automatically finds it for you.\n";
 
+const char kRootBuildDir[] = "root_build_dir";
+const char kRootBuildDir_HelpShort[] =
+  "root_build_dir: [string] Directory where build commands are run.";
+const char kRootBuildDir_Help[] =
+  "root_build_dir: [string] Directory where build commands are run.\n"
+  "\n"
+  "  This is the root build output directory which will be the current\n"
+  "  directory when executing all compilers and scripts.\n"
+  "\n"
+  "  Most often this is used with rebase_path (see \"gn help rebase_path\")\n"
+  "  to convert arguments to be relative to a script's current directory.\n";
+
 const char kRootGenDir[] = "root_gen_dir";
 const char kRootGenDir_HelpShort[] =
     "root_gen_dir: [string] Directory for the toolchain's generated files.";
@@ -647,6 +659,7 @@ const VariableInfoMap& GetBuiltinVariables() {
     INSERT_VARIABLE(IsPosix)
     INSERT_VARIABLE(IsWin)
     INSERT_VARIABLE(PythonPath)
+    INSERT_VARIABLE(RootBuildDir)
     INSERT_VARIABLE(RootGenDir)
     INSERT_VARIABLE(RootOutDir)
     INSERT_VARIABLE(TargetGenDir)

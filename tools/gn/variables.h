@@ -45,6 +45,10 @@ extern const char kPythonPath[];
 extern const char kPythonPath_HelpShort[];
 extern const char kPythonPath_Help[];
 
+extern const char kRootBuildDir[];
+extern const char kRootBuildDir_HelpShort[];
+extern const char kRootBuildDir_Help[];
+
 extern const char kRootGenDir[];
 extern const char kRootGenDir_HelpShort[];
 extern const char kRootGenDir_Help[];

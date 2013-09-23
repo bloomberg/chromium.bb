@@ -32,7 +32,6 @@ Settings::Settings(const BuildSettings* build_settings,
   if (!toolchain_output_dir_.is_null())
     toolchain_gen_dir_ = SourceDir(toolchain_output_dir_.value() + "gen/");
 
-
 #if defined(OS_WIN)
   target_os_ = WIN;
 #elif defined(OS_MACOSX)

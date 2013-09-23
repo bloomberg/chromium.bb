@@ -183,7 +183,8 @@ static_library("utility") {
 # Credits ----------------------------------------------------------------------
 
 about_credits_file = "$root_gen_dir/about_credits.html"
-build_relative_about_credits_file = to_build_path(about_credits_file)
+build_relative_about_credits_file =
+  rebase_path(about_credits_file, ".", root_build_dir)
 
 custom("about_credits") {
   script = "//tools/licenses.py"
@@ -194,7 +195,7 @@ custom("about_credits") {
   # is added or removed, it will change the result, but there is no way to
   # express this as a build dependency. We approximate this by depending on
   # the last change file to force an update whenever the code is updated.
-  source_deps = [ "//build/utils/LASTCHANGE" ]
+  source_prereqs = [ "//build/utils/LASTCHANGE" ]
 
   hard_dep = true
 

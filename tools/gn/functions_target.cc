@@ -133,7 +133,8 @@ const char kCopy_Help[] =
     "  expansion (see \"gn help source_expansion\"). The placeholders will\n"
     "  will look like \"{{source_name_part}}\", for example.\n"
     "\n"
-    "Examples:\n"
+    "Examples\n"
+    "\n"
     "  # Write a rule that copies a checked-in DLL to the output directory.\n"
     "  copy(\"mydll\") {\n"
     "    sources = [ \"mydll.dll\" ]\n"
@@ -207,12 +208,12 @@ const char kCustom_Help[] =
     "  will look like \"{{source}}\", for example, and can appear in\n"
     "  either the outputs or the args lists.\n"
     "\n"
-    "Variables:\n"
+    "Variables\n"
     "\n"
     "  args, deps, outputs, script*, source_prereqs, sources\n"
     "  * = required\n"
     "\n"
-    "Examples:\n"
+    "Examples\n"
     "\n"
     "  # Runs the script over each IDL file. The IDL script will generate\n"
     "  # both a .cc and a .h file for each input.\n"
@@ -254,7 +255,8 @@ const char kExecutable[] = "executable";
 const char kExecutable_Help[] =
     "executable: Declare an executable target.\n"
     "\n"
-    "Variables:\n"
+    "Variables\n"
+    "\n"
     CONFIG_VALUES_VARS_HELP
     DEPS_VARS
     DEPENDENT_CONFIG_VARS
@@ -284,12 +286,14 @@ const char kGroup_Help[] =
     "  through the group so you shouldn't need to use\n"
     "  \"forward_dependent_configs_from.\n"
     "\n"
-    "Variables:\n"
+    "Variables\n"
+    "\n"
     DEPS_VARS
     DEPENDENT_CONFIG_VARS
     "  Other variables: external\n"
     "\n"
-    "Example:\n"
+    "Example\n"
+    "\n"
     "  group(\"all\") {\n"
     "    deps = [\n"
     "      \"//project:runner\",\n"
@@ -317,7 +321,8 @@ const char kSharedLibrary_Help[] =
     "  (say you dynamically load the library at runtime), then you should\n"
     "  depend on the shared library via \"datadeps\" instead.\n"
     "\n"
-    "Variables:\n"
+    "Variables\n"
+    "\n"
     CONFIG_VALUES_VARS_HELP
     DEPS_VARS
     DEPENDENT_CONFIG_VARS
@@ -338,7 +343,8 @@ const char kStaticLibrary[] = "static_library";
 const char kStaticLibrary_Help[] =
     "static_library: Declare a static library target.\n"
     "\n"
-    "Variables:\n"
+    "Variables\n"
+    "\n"
     CONFIG_VALUES_VARS_HELP
     DEPS_VARS
     DEPENDENT_CONFIG_VARS

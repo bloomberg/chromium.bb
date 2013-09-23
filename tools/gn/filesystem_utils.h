@@ -133,4 +133,9 @@ void NormalizePath(std::string* path);
 void ConvertPathToSystem(std::string* path);
 std::string PathToSystem(const std::string& path);
 
+// Takes a source-absolute path (must begin with "//") and makes it relative
+// to the given directory, which also must be source-absolute.
+std::string RebaseSourceAbsolutePath(const std::string& input,
+                                     const SourceDir& dest_dir);
+
 #endif  // TOOLS_GN_FILESYSTEM_UTILS_H_

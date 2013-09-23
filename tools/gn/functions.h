@@ -157,6 +157,13 @@ Value RunReadFile(Scope* scope,
                   const std::vector<Value>& args,
                   Err* err);
 
+extern const char kRebasePath[];
+extern const char kRebasePath_Help[];
+Value RunRebasePath(Scope* scope,
+                    const FunctionCallNode* function,
+                    const std::vector<Value>& args,
+                    Err* err);
+
 extern const char kSetDefaults[];
 extern const char kSetDefaults_Help[];
 Value RunSetDefaults(Scope* scope,
@@ -210,13 +217,6 @@ Value RunTest(Scope* scope,
               const std::vector<Value>& args,
               BlockNode* block,
               Err* err);
-
-extern const char kToBuildPath[];
-extern const char kToBuildPath_Help[];
-Value RunToBuildPath(Scope* scope,
-                     const FunctionCallNode* function,
-                     const std::vector<Value>& args,
-                     Err* err);
 
 extern const char kTool[];
 extern const char kTool_Help[];
