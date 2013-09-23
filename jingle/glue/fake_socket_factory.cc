@@ -33,13 +33,15 @@ talk_base::SocketAddress FakeUDPPacketSocket::GetRemoteAddress() const {
   return remote_address_;
 }
 
-int FakeUDPPacketSocket::Send(const void *data, size_t data_size) {
+int FakeUDPPacketSocket::Send(const void *data, size_t data_size,
+                              talk_base::DiffServCodePoint dscp) {
   DCHECK(CalledOnValidThread());
-  return SendTo(data, data_size, remote_address_);
+  return SendTo(data, data_size, remote_address_, dscp);
 }
 
 int FakeUDPPacketSocket::SendTo(const void *data, size_t data_size,
-                                const talk_base::SocketAddress& address) {
+                                const talk_base::SocketAddress& address,
+                                talk_base::DiffServCodePoint dscp) {
   DCHECK(CalledOnValidThread());
 
   if (state_ == IS_CLOSED) {

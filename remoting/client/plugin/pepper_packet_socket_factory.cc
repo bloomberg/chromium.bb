@@ -40,10 +40,12 @@ class UdpPacketSocket : public talk_base::AsyncPacketSocket {
   // talk_base::AsyncPacketSocket interface.
   virtual talk_base::SocketAddress GetLocalAddress() const OVERRIDE;
   virtual talk_base::SocketAddress GetRemoteAddress() const OVERRIDE;
-  virtual int Send(const void* data, size_t data_size) OVERRIDE;
+  virtual int Send(const void* data, size_t data_size,
+                   talk_base::DiffServCodePoint dscp) OVERRIDE;
   virtual int SendTo(const void* data,
                      size_t data_size,
-                     const talk_base::SocketAddress& address) OVERRIDE;
+                     const talk_base::SocketAddress& address,
+                     talk_base::DiffServCodePoint dscp) OVERRIDE;
   virtual int Close() OVERRIDE;
   virtual State GetState() const OVERRIDE;
   virtual int GetOption(talk_base::Socket::Option opt, int* value) OVERRIDE;
@@ -190,7 +192,8 @@ talk_base::SocketAddress UdpPacketSocket::GetRemoteAddress() const {
   return talk_base::SocketAddress();
 }
 
-int UdpPacketSocket::Send(const void* data, size_t data_size) {
+int UdpPacketSocket::Send(const void* data, size_t data_size,
+                          talk_base::DiffServCodePoint dscp) {
   // UDP sockets are not connected - this method should never be called.
   NOTREACHED();
   return EWOULDBLOCK;
@@ -198,7 +201,8 @@ int UdpPacketSocket::Send(const void* data, size_t data_size) {
 
 int UdpPacketSocket::SendTo(const void* data,
                             size_t data_size,
-                            const talk_base::SocketAddress& address) {
+                            const talk_base::SocketAddress& address,
+                            talk_base::DiffServCodePoint dscp) {
   if (state_ != STATE_BOUND) {
     // TODO(sergeyu): StunPort may try to send stun request before we
     // are bound. Fix that problem and change this to DCHECK.

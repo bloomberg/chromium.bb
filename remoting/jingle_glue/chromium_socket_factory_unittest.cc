@@ -66,7 +66,8 @@ TEST_F(ChromiumSocketFactoryTest, SendAndReceive) {
   int attempts = 0;
   while (last_packet_.empty() && attempts++ < kMaxAttempts) {
     sending_socket->SendTo(test_packet.data(), test_packet.size(),
-                           socket_->GetLocalAddress());
+                           socket_->GetLocalAddress(),
+                           talk_base::DSCP_NO_CHANGE);
     message_loop_.PostDelayedTask(FROM_HERE, run_loop_.QuitClosure(),
                                   kAttemptPeriod);
     run_loop_.Run();

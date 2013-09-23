@@ -282,6 +282,7 @@
         '<(libjingle_source)/talk/base/cryptstring.h',
         '<(libjingle_source)/talk/base/diskcache.cc',
         '<(libjingle_source)/talk/base/diskcache.h',
+        '<(libjingle_source)/talk/base/dscp.h',
         '<(libjingle_source)/talk/base/event.cc',
         '<(libjingle_source)/talk/base/event.h',
         '<(libjingle_source)/talk/base/fileutils.cc',
