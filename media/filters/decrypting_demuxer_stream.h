@@ -35,6 +35,10 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
 
   void Initialize(DemuxerStream* stream,
                   const PipelineStatusCB& status_cb);
+
+  // Cancels all pending operations and fires all pending callbacks.  Sets
+  // |this| to kUninitialized state if |this| hasn't been initialized, or to
+  // kIdle state otherwise.
   void Reset(const base::Closure& closure);
 
   // DemuxerStream implementation.

@@ -77,11 +77,18 @@ void DecryptingDemuxerStream::Read(const ReadCB& read_cb) {
 void DecryptingDemuxerStream::Reset(const base::Closure& closure) {
   DVLOG(2) << __FUNCTION__ << " - state: " << state_;
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(state_ != kUninitialized && state_ != kDecryptorRequested) << state_;
-  DCHECK(init_cb_.is_null());  // No Reset() during pending initialization.
+  DCHECK(state_ != kUninitialized) << state_;
   DCHECK(reset_cb_.is_null());
 
   reset_cb_ = BindToCurrentLoop(closure);
+
+  if (state_ == kDecryptorRequested) {
+    DCHECK(!init_cb_.is_null());
+    set_decryptor_ready_cb_.Run(DecryptorReadyCB());
+    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_ABORT);
+    DoReset();
+    return;
+  }
 
   decryptor_->CancelDecrypt(GetDecryptorStreamType());
 
@@ -126,9 +133,7 @@ void DecryptingDemuxerStream::EnableBitstreamConverter() {
 }
 
 DecryptingDemuxerStream::~DecryptingDemuxerStream() {
-  DVLOG(2) << __FUNCTION__;
-  if (!set_decryptor_ready_cb_.is_null())
-    base::ResetAndReturn(&set_decryptor_ready_cb_).Run(DecryptorReadyCB());
+  DVLOG(2) << __FUNCTION__ << " : state_ = " << state_;
 }
 
 void DecryptingDemuxerStream::SetDecryptor(Decryptor* decryptor) {
@@ -275,9 +280,15 @@ void DecryptingDemuxerStream::OnKeyAdded() {
 }
 
 void DecryptingDemuxerStream::DoReset() {
+  DCHECK(state_ != kUninitialized);
   DCHECK(init_cb_.is_null());
   DCHECK(read_cb_.is_null());
-  state_ = kIdle;
+
+  if (state_ == kDecryptorRequested)
+    state_ = kUninitialized;
+  else
+    state_ = kIdle;
+
   base::ResetAndReturn(&reset_cb_).Run();
 }
 

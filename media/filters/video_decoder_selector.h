@@ -57,12 +57,16 @@ class MEDIA_EXPORT VideoDecoderSelector {
   void SelectVideoDecoder(DemuxerStream* stream,
                           const SelectDecoderCB& select_decoder_cb);
 
+  // Aborts pending VideoDecoder selection and fires |select_decoder_cb| with
+  // NULL and NULL immediately if it's pending.
+  void Abort();
+
  private:
   void DecryptingVideoDecoderInitDone(PipelineStatus status);
   void DecryptingDemuxerStreamInitDone(PipelineStatus status);
-  void InitializeDecoder(ScopedVector<VideoDecoder>::iterator iter);
-  void DecoderInitDone(ScopedVector<VideoDecoder>::iterator iter,
-                       PipelineStatus status);
+  void InitializeDecoder();
+  void DecoderInitDone(PipelineStatus status);
+  void ReturnNullDecoder();
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   ScopedVector<VideoDecoder> decoders_;

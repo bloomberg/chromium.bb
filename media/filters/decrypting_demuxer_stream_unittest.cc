@@ -326,6 +326,19 @@ TEST_F(DecryptingDemuxerStreamTest, KeyAdded_DruingPendingDecrypt) {
   message_loop_.RunUntilIdle();
 }
 
+// Test resetting when the DecryptingDemuxerStream is in kDecryptorRequested
+// state.
+TEST_F(DecryptingDemuxerStreamTest, Reset_DuringDecryptorRequested) {
+  // One for decryptor request, one for canceling request during Reset().
+  EXPECT_CALL(*this, RequestDecryptorNotification(_))
+      .Times(2);
+  AudioDecoderConfig input_config(
+      kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
+      NULL, 0, true);
+  InitializeAudioAndExpectStatus(input_config, PIPELINE_ERROR_ABORT);
+  Reset();
+}
+
 // Test resetting when the DecryptingDemuxerStream is in kIdle state but has
 // not returned any buffer.
 TEST_F(DecryptingDemuxerStreamTest, Reset_DuringIdleAfterInitialization) {

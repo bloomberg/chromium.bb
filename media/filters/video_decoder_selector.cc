@@ -28,12 +28,15 @@ VideoDecoderSelector::VideoDecoderSelector(
       weak_ptr_factory_(this) {
 }
 
-VideoDecoderSelector::~VideoDecoderSelector() {}
+VideoDecoderSelector::~VideoDecoderSelector() {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(select_decoder_cb_.is_null());
+}
 
 void VideoDecoderSelector::SelectVideoDecoder(
     DemuxerStream* stream,
     const SelectDecoderCB& select_decoder_cb) {
-  DVLOG(2) << "SelectVideoDecoder()";
+  DVLOG(2) << __FUNCTION__;
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(stream);
 
@@ -43,22 +46,20 @@ void VideoDecoderSelector::SelectVideoDecoder(
   const VideoDecoderConfig& config = stream->video_decoder_config();
   if (!config.IsValidConfig()) {
     DLOG(ERROR) << "Invalid video stream config.";
-    base::ResetAndReturn(&select_decoder_cb_).Run(
-        scoped_ptr<VideoDecoder>(), scoped_ptr<DecryptingDemuxerStream>());
+    ReturnNullDecoder();
     return;
   }
 
   input_stream_ = stream;
 
   if (!config.is_encrypted()) {
-    InitializeDecoder(decoders_.begin());
+    InitializeDecoder();
     return;
   }
 
   // This could happen if Encrypted Media Extension (EME) is not enabled.
   if (set_decryptor_ready_cb_.is_null()) {
-    base::ResetAndReturn(&select_decoder_cb_).Run(
-        scoped_ptr<VideoDecoder>(), scoped_ptr<DecryptingDemuxerStream>());
+    ReturnNullDecoder();
     return;
   }
 
@@ -67,13 +68,46 @@ void VideoDecoderSelector::SelectVideoDecoder(
 
   video_decoder_->Initialize(
       input_stream_->video_decoder_config(),
-      BindToCurrentLoop(base::Bind(
-          &VideoDecoderSelector::DecryptingVideoDecoderInitDone,
-          weak_ptr_factory_.GetWeakPtr())));
+      base::Bind(&VideoDecoderSelector::DecryptingVideoDecoderInitDone,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void VideoDecoderSelector::Abort() {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(message_loop_->BelongsToCurrentThread());
+
+  // This could happen when SelectVideoDecoder() was not called or when
+  // |select_decoder_cb_| was already posted but not fired (e.g. in the
+  // message loop queue).
+  if (select_decoder_cb_.is_null())
+    return;
+
+  // We must be trying to initialize the |video_decoder_| or the
+  // |decrypted_stream_|. Invalid all weak pointers so that all initialization
+  // callbacks won't fire.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
+  if (video_decoder_) {
+    // |decrypted_stream_| is either NULL or already initialized. We don't
+    // need to Reset() |decrypted_stream_| in either case.
+    video_decoder_->Stop(base::Bind(&VideoDecoderSelector::ReturnNullDecoder,
+                                    weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  if (decrypted_stream_) {
+    decrypted_stream_->Reset(
+        base::Bind(&VideoDecoderSelector::ReturnNullDecoder,
+                   weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  NOTREACHED();
 }
 
 void VideoDecoderSelector::DecryptingVideoDecoderInitDone(
     PipelineStatus status) {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (status == PIPELINE_OK) {
@@ -82,63 +116,69 @@ void VideoDecoderSelector::DecryptingVideoDecoderInitDone(
     return;
   }
 
+  video_decoder_.reset();
+
   decrypted_stream_.reset(new DecryptingDemuxerStream(
       message_loop_, set_decryptor_ready_cb_));
 
   decrypted_stream_->Initialize(
       input_stream_,
-      BindToCurrentLoop(base::Bind(
-          &VideoDecoderSelector::DecryptingDemuxerStreamInitDone,
-          weak_ptr_factory_.GetWeakPtr())));
+      base::Bind(&VideoDecoderSelector::DecryptingDemuxerStreamInitDone,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VideoDecoderSelector::DecryptingDemuxerStreamInitDone(
     PipelineStatus status) {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (status != PIPELINE_OK) {
-    decrypted_stream_.reset();
-    base::ResetAndReturn(&select_decoder_cb_).Run(
-        scoped_ptr<VideoDecoder>(), scoped_ptr<DecryptingDemuxerStream>());
+    ReturnNullDecoder();
     return;
   }
 
   DCHECK(!decrypted_stream_->video_decoder_config().is_encrypted());
   input_stream_ = decrypted_stream_.get();
-  InitializeDecoder(decoders_.begin());
+  InitializeDecoder();
 }
 
-void VideoDecoderSelector::InitializeDecoder(
-    ScopedVector<VideoDecoder>::iterator iter) {
+void VideoDecoderSelector::InitializeDecoder() {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(!video_decoder_);
 
-  if (iter == decoders_.end()) {
-    base::ResetAndReturn(&select_decoder_cb_).Run(
-        scoped_ptr<VideoDecoder>(), scoped_ptr<DecryptingDemuxerStream>());
+  if (decoders_.empty()) {
+    ReturnNullDecoder();
     return;
   }
 
-  (*iter)->Initialize(
-      input_stream_->video_decoder_config(),
-      BindToCurrentLoop(base::Bind(&VideoDecoderSelector::DecoderInitDone,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   iter)));
+  video_decoder_.reset(decoders_.front());
+  decoders_.weak_erase(decoders_.begin());
+
+  video_decoder_->Initialize(input_stream_->video_decoder_config(),
+                             base::Bind(&VideoDecoderSelector::DecoderInitDone,
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
-void VideoDecoderSelector::DecoderInitDone(
-    ScopedVector<VideoDecoder>::iterator iter, PipelineStatus status) {
+void VideoDecoderSelector::DecoderInitDone(PipelineStatus status) {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (status != PIPELINE_OK) {
-    InitializeDecoder(++iter);
+    video_decoder_.reset();
+    InitializeDecoder();
     return;
   }
 
-  scoped_ptr<VideoDecoder> video_decoder(*iter);
-  decoders_.weak_erase(iter);
-
-  base::ResetAndReturn(&select_decoder_cb_).Run(video_decoder.Pass(),
+  base::ResetAndReturn(&select_decoder_cb_).Run(video_decoder_.Pass(),
                                                 decrypted_stream_.Pass());
+}
+
+void VideoDecoderSelector::ReturnNullDecoder() {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  base::ResetAndReturn(&select_decoder_cb_).Run(
+        scoped_ptr<VideoDecoder>(), scoped_ptr<DecryptingDemuxerStream>());
 }
 
 }  // namespace media
