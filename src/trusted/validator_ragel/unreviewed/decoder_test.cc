@@ -83,7 +83,6 @@ void ReadImage(const char *filename, uint8_t **result, size_t *result_size) {
 struct DecodeState {
   std::ostream *out_stream;
   uint8_t width;
-  const uint8_t *fwait; /* Set to true if fwait is detetected. */
   const uint8_t *offset;
   int ia32_mode;
 };
@@ -194,108 +193,61 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   int i, operand_format;
 
   /*
-   * "fwait" is nasty: few of them will be included in other X87 instructions
-   * ("fclex", "finit", "fstcw", "fstsw", "fsave" have two names, other
-   * instructions are unchanged) - but if after them we see regular instruction
-   * then we must print them all.  This convoluted logic is not needed when we
-   * don't print anything so decoder does not include it.
+   * objdump's logic WRT fwait is extremely convoluted.
+   *
+   * At first it looks like fwait is "eaten up" by the next instruction:
+   *    0:9b 9b df 28             fildll (%rax)
+   * but only if next instruction is x87 instruction:
+   *    0:9b                      fwait
+   *    1:9b                      fwait
+   *    2:48 8b 00                mov    (%rax),%rax
+   * and only if there are up to two fwait prefixes:
+   *    0:9b                      fwait
+   *    1:9b 9b df 28             fildll (%rax)
+   * but if rex prefix is used it's separated:
+   *    0:40                      rex
+   *    1:9b df 28                fildll (%rax)
+   * and then fwait prefix without rex is named "rex" (sic!):
+   *    0:9b                      rex
+   *    1:40                      rex
+   *    2:9b df 28                fildll (%rax)
+   * but not if there are two fwait prefixes before rex:
+   *    0:9b                      fwait
+   *    1:9b                      rex
+   *    2:40                      rex
+   *    3:9b df 28                fildll (%rax)
+   *
+   * It looks too much work to try to reproduce all that (especially since some
+   * of these outputs are clearly incorrect) and instead we just do the minimal
+   * change required to handle one case which is actually used in our tests.
    */
-  if (((end == begin + 1) && (begin[0] == 0x9b)) ||
-      ((end == begin + 2) &&
-                           ((begin[0] & 0xf0) == 0x40) && (begin[1] == 0x9b))) {
-    if (!(((struct DecodeState *)userdata)->fwait)) {
-      ((struct DecodeState *)userdata)->fwait = begin;
-    }
+  if ((end == begin + 2) && ((begin[0] & 0xf0) == 0x40) && (begin[1] == 0x9b)) {
+    printf("%*lx:\t%*x\trex%s%s%s%s%s\n",
+           ((struct DecodeState *)userdata)->width,
+           (long)(begin - (((struct DecodeState *)userdata)->offset)),
+           INSN_WIDTH * -3,
+           begin[0],
+           begin[0] == 0x40 ? "" : ".",
+           begin[0] & 0x08 ? "W" : "",
+           begin[0] & 0x04 ? "R" : "",
+           begin[0] & 0x02 ? "X" : "",
+           begin[0] & 0x01 ? "B" : "");
+    printf("%*lx:\t%*x\tfwait\n",
+           ((struct DecodeState *)userdata)->width,
+           (long)(begin + 1 - (((struct DecodeState *)userdata)->offset)),
+           INSN_WIDTH * -3,
+           begin[1]);
     return;
-  } else if (((struct DecodeState *)userdata)->fwait) {
-    /* If it's x87 instruction then we can fold some fwait's in the instruction
-       itself.  */
-    if ((begin[0] >= 0xd8 && begin[0] <= 0xdf) ||
-        (((begin[0] & 0xf0) == 0x40 || (begin[0] == 0x66)) &&
-         begin[1] >= 0xd8 &&
-         begin[1] <= 0xdf) ||
-        (begin[0] == 0x66 &&
-         (begin[1] & 0xf0) == 0x40 &&
-         begin[2] >= 0xd8 &&
-         begin[2] <= 0xdf)) {
-      /* fwait "prefix" can only include two 0x9b bytes or one rex byte - and
-       * then only if the instruction itself have no rex prefix.  */
-      int fwait_count = !!data16_prefix;
-      int rex_count = (!!rex_prefix) | (!!data16_prefix);
-      for (;;) {
-        if (begin == ((struct DecodeState *)userdata)->fwait)
-          break;
-        if ((begin[-1]) == 0x9b) {
-          if (fwait_count < 2) {
-            --begin;
-            ++fwait_count;
-            if ((begin[1] & 0xf0) == 0x40)
-              break;
-          } else {
-            break;
-          }
-        } else if ((begin[-1] & 0xf0) == 0x40) {
-          if (rex_count >= 1)
-            break;
-          --begin;
-          ++rex_count;
-          if (!rex_prefix) {
-            rex_prefix = *begin;
-            /* Bug-to-bug compatibility, fun... */
-            if ((rex_prefix & 0x01) && (rm_base <= REG_RDI)) {
-              if (operands_count == 1 &&
-                  instruction->operands[0].name == REG_RM)
-                rm_base = static_cast<OperandName>(rm_base | REG_R8);
-              else
-                spurious_rex_prefix = TRUE;
-            }
-            if (rex_prefix & 0x02) {
-              if (operands_count == 1 &&
-                  instruction->operands[0].name == REG_RM) {
-                if (rm_index <= REG_RDI)
-                  rm_index = static_cast<OperandName>(rm_index | REG_R8);
-                else if (rm_index == REG_RIZ)
-                  rm_index = REG_R12;
-                else if (rm_index == NO_REG)
-                  spurious_rex_prefix = TRUE;
-              } else {
-                spurious_rex_prefix = TRUE;
-              }
-            }
-            if (rex_prefix & 0x0c)
-              spurious_rex_prefix = TRUE;
-          }
-        }
-      }
-      if (begin != ((struct DecodeState *)userdata)->fwait) {
-        while ((((struct DecodeState *)userdata)->fwait) < begin) {
-          printf("%*lx:\t%02x                   \tfwait\n",
-            ((struct DecodeState *)userdata)->width,
-            (long)((((struct DecodeState *)userdata)->fwait) -
-                                    (((struct DecodeState *)userdata)->offset)),
-            *((struct DecodeState *)userdata)->fwait);
-            ++(((struct DecodeState *)userdata)->fwait);
-        }
-      }
-    } else {
-      while ((((struct DecodeState *)userdata)->fwait) < begin) {
-        printf("%*lx:\t%02x                   \tfwait\n",
-          ((struct DecodeState *)userdata)->width,
-          (long)((((struct DecodeState *)userdata)->fwait) -
-                                    (((struct DecodeState *)userdata)->offset)),
-          *((struct DecodeState *)userdata)->fwait);
-        ++(((struct DecodeState *)userdata)->fwait);
-      }
-    }
-    ((struct DecodeState *)userdata)->fwait = NULL;
   }
 
   if ((data16_prefix) && (begin[0] == 0x66) && (!(rex_prefix & 0x08)) &&
       (IsNameInList(instruction_name,
                     "fbld", "fbstp", "fild", "fistp", "fld", "fstp", NULL))) {
-    printf("%*lx:\t66                   \tdata16\n",
+    printf("%*lx:\t%*x\tdata16\n",
            ((struct DecodeState *)userdata)->width,
-           (long)(begin - (((struct DecodeState *)userdata)->offset)));
+           (long)(begin - (((struct DecodeState *)userdata)->offset)),
+           INSN_WIDTH * -3,
+           begin[0]);
     data16_prefix = FALSE;
     ++begin;
   }
@@ -762,7 +714,6 @@ int DecodeFile(const char *filename, int repeat_count) {
 
           state.out_stream = &result_stream;
           state.ia32_mode = TRUE;
-          state.fwait = NULL;
           state.offset = data + section->sh_offset - section->sh_addr;
           if (section->sh_size <= 0xfff) {
             state.width = 4;
@@ -774,18 +725,10 @@ int DecodeFile(const char *filename, int repeat_count) {
           CheckBounds(data, data_size,
                       data + section->sh_offset, section->sh_size);
           res = DecodeChunkIA32(data + section->sh_offset, section->sh_size,
-                                      ProcessInstruction, ProcessError, &state);
+                                ProcessInstruction, ProcessError, &state);
           printf("%s", result_stream.str().c_str());
           if (!res) {
             return FALSE;
-          } else if (state.fwait) {
-            while (state.fwait < data + section->sh_offset + section->sh_size) {
-              printf("%*lx:\t%02x                   \tfwait\n",
-                             state.width,
-                             (long)(state.fwait - state.offset),
-                             *state.fwait);
-              state.fwait++;
-            }
           }
           return TRUE;
         }
@@ -813,7 +756,6 @@ int DecodeFile(const char *filename, int repeat_count) {
 
           state.out_stream = &result_stream;
           state.ia32_mode = FALSE;
-          state.fwait = NULL;
           state.offset = data + section->sh_offset - section->sh_addr;
           if (section->sh_size <= 0xfff) {
             state.width = 4;
@@ -832,14 +774,6 @@ int DecodeFile(const char *filename, int repeat_count) {
           printf("%s", result_stream.str().c_str());
           if (!res) {
             return FALSE;
-          } else if (state.fwait) {
-            while (state.fwait < data + section->sh_offset + section->sh_size) {
-              printf("%*lx:\t%02x                   \tfwait\n",
-                             state.width,
-                             (long)(state.fwait - state.offset),
-                             *state.fwait);
-              state.fwait++;
-            }
           }
           return TRUE;
         }
@@ -857,33 +791,19 @@ DLLEXPORT
 char *DisassembleChunk(const uint8_t *data, size_t size, int bitness) {
   static char buf[10000];
   struct DecodeState state;
-  int res;
 
   std::ostringstream result_stream;
 
   state.out_stream = &result_stream;
   state.ia32_mode = (bitness == 32);
-  state.fwait = NULL;
   state.offset = data;
 
   if (bitness == 32)
-    res = DecodeChunkIA32(
-        data, size, ProcessInstruction, ProcessError, &state);
+    DecodeChunkIA32(data, size, ProcessInstruction, ProcessError, &state);
   else if (bitness == 64)
-    res = DecodeChunkAMD64(
-        data, size, ProcessInstruction, ProcessError, &state);
+    DecodeChunkAMD64(data, size, ProcessInstruction, ProcessError, &state);
   else
     CHECK(false);
-
-  if (res && state.fwait) {
-    while (state.fwait < data + size) {
-      stream_printf(
-          result_stream,
-          "%*lx:\t%02x                   \tfwait\n",
-          state.width, (long)(state.fwait - state.offset), *state.fwait);
-      state.fwait++;
-    }
-  }
 
   CHECK(result_stream.str().length() < sizeof buf);
   strcpy(buf, result_stream.str().c_str());

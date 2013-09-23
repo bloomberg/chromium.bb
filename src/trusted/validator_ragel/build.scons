@@ -245,10 +245,8 @@ if ragel_involved:
       'rdfa_decoder_dll',
       [decoder_test_obj, decoder32_obj, decoder64_obj])
 
-  objdump, gas = env.Command(
-      target=['objdump', 'gas'],
-      source=['obtain_binutils.py'],
-      action='${PYTHON} ${SOURCES[0]} ${TARGETS[0]} ${TARGETS[1]}')
+  gas = env.MakeUntrustedNativeEnv()['AS']
+  objdump = env.MakeUntrustedNativeEnv()['OBJDUMP']
 
   check_decoders = []
 
@@ -435,7 +433,7 @@ for bits in ['32', '64']:
         'run_dis_section_test_%s.out' % bits,
         ['${PYTHON}',
          env.File('check_dis_section.py'),
-         '--objdump', env.MakeUntrustedNativeEnv()['OBJDUMP'],
+         '--objdump', objdump,
          '--bits', bits,
          tests_mask] + update_option)
 
