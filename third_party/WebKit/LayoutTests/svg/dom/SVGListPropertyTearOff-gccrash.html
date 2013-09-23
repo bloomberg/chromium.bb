@@ -4,16 +4,18 @@
 <script src="../../fast/js/resources/js-test-pre.js"></script>
 <script>
     gc();
+
+    var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+
     var initialNumberOfNodes;
     if (internals)
         initialNumberOfNodes = internals.numberOfLiveNodes();
 
-    var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
     var rotate = text.rotate;
     text = null;
 
     gc();
-    // Assert that the <text> svg element is deleted.
+    // Assert that the <text> svg element is alive while a tear-off is alive.
     if (internals)
         shouldBe('internals.numberOfLiveNodes()', 'initialNumberOfNodes');
 
