@@ -5,12 +5,9 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_RENDER_VIEW_HOST_OBSERVER_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_RENDER_VIEW_HOST_OBSERVER_H_
 
-#include <vector>
-
 #include "content/public/browser/render_view_host_observer.h"
 
 namespace content {
-struct FaviconURL;
 class RenderViewHost;
 }
 
@@ -31,7 +28,6 @@ class PrerenderRenderViewHostObserver : public content::RenderViewHostObserver {
   virtual void RenderViewHostDestroyed(content::RenderViewHost* rvh) OVERRIDE;
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual bool Send(IPC::Message* message) OVERRIDE;
 
   void set_prerender_contents(PrerenderContents* prerender_contents) {
     prerender_contents_ = prerender_contents;
@@ -39,8 +35,6 @@ class PrerenderRenderViewHostObserver : public content::RenderViewHostObserver {
 
  private:
   // Message handlers.
-
-  void OnMaybeCancelPrerenderForHTML5Media();
   void OnCancelPrerenderForPrinting();
 
   // The associated prerender contents.

@@ -33,8 +33,6 @@ bool PrerenderRenderViewHostObserver::OnMessageReceived(
   bool handled = true;
   // The following messages we do want to consume.
   IPC_BEGIN_MESSAGE_MAP(PrerenderRenderViewHostObserver, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_MaybeCancelPrerenderForHTML5Media,
-                        OnMaybeCancelPrerenderForHTML5Media)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CancelPrerenderForPrinting,
                         OnCancelPrerenderForPrinting)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -47,18 +45,8 @@ bool PrerenderRenderViewHostObserver::OnMessageReceived(
   return handled;
 }
 
-// The base class declares this as protected so this is just here to make it
-// public so it is visible to the caller.
-bool PrerenderRenderViewHostObserver::Send(IPC::Message* message) {
-  return content::RenderViewHostObserver::Send(message);
-}
-
-void PrerenderRenderViewHostObserver::OnMaybeCancelPrerenderForHTML5Media() {
-  prerender_contents_->Destroy(FINAL_STATUS_HTML5_MEDIA);
-}
-
 void PrerenderRenderViewHostObserver::OnCancelPrerenderForPrinting() {
   prerender_contents_->Destroy(FINAL_STATUS_WINDOW_PRINT);
 }
 
-}
+}  // namespace prerender

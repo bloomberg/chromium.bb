@@ -616,8 +616,7 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
     active_prerenders_.weak_erase(it);
   }
 
-  // Destroy the old WebContents relatively promptly to reduce resource usage,
-  // and in the case of HTML5 media, reduce the chance of playing any sound.
+  // Destroy the old WebContents relatively promptly to reduce resource usage.
   PostCleanupTask();
 }
 

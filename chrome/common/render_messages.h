@@ -628,11 +628,6 @@ IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_PageTranslated,
                     std::string           /* the translated language */,
                     TranslateErrors::Type /* the error type if available */)
 
-// Message sent from the renderer to the browser to notify it of events which
-// may lead to the cancellation of a prerender. The message is sent only when
-// the renderer is prerendering.
-IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_MaybeCancelPrerenderForHTML5Media)
-
 // Message sent from the renderer to the browser to notify it of a
 // window.print() call which should cancel the prerender. The message is sent
 // only when the renderer is prerendering.
