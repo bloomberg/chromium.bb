@@ -420,6 +420,36 @@ static bool compareRowSpanCellsInHeightDistributionOrder(const RenderTableCell* 
     return false;
 }
 
+bool RenderTableSection::isHeightNeededForRowHavingOnlySpanningCells(unsigned row)
+{
+    unsigned totalCols = m_grid[row].row.size();
+
+    if (!totalCols)
+        return false;
+
+    for (unsigned col = 0; col < totalCols; col++) {
+        const CellStruct& rowSpanCell = cellAt(row, col);
+
+        if (rowSpanCell.cells.size()) {
+            RenderTableCell* cell = rowSpanCell.cells[0];
+            const unsigned rowIndex = cell->rowIndex();
+            const unsigned rowSpan = cell->rowSpan();
+            int totalRowSpanCellHeight = 0;
+
+            for (unsigned row = 0; row < rowSpan; row++) {
+                unsigned actualRow = row + rowIndex;
+                totalRowSpanCellHeight += m_rowPos[actualRow + 1] - m_rowPos[actualRow];
+            }
+            totalRowSpanCellHeight -= borderSpacingForRow(rowIndex + rowSpan - 1);
+
+            if (totalRowSpanCellHeight < cell->logicalHeightForRowSizing())
+                return true;
+        }
+    }
+
+    return false;
+}
+
 unsigned RenderTableSection::calcRowHeightHavingOnlySpanningCells(unsigned row)
 {
     ASSERT(rowHasOnlySpanningCells(row));
@@ -452,7 +482,7 @@ void RenderTableSection::updateRowsHeightHavingOnlySpanningCells(RenderTableCell
 
     for (unsigned row = 0; row < spanningRowsHeight.rowHeight.size(); row++) {
         unsigned actualRow = row + rowIndex;
-        if (!spanningRowsHeight.rowHeight[row] && rowHasOnlySpanningCells(actualRow)) {
+        if (!spanningRowsHeight.rowHeight[row] && rowHasOnlySpanningCells(actualRow) && isHeightNeededForRowHavingOnlySpanningCells(actualRow)) {
             spanningRowsHeight.rowHeight[row] = calcRowHeightHavingOnlySpanningCells(actualRow);
             accumulatedPositionIncrease += spanningRowsHeight.rowHeight[row];
         }

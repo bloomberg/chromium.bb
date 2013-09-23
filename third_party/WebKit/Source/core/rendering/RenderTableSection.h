@@ -246,6 +246,7 @@ private:
     bool rowHasOnlySpanningCells(unsigned);
     unsigned calcRowHeightHavingOnlySpanningCells(unsigned);
     void updateRowsHeightHavingOnlySpanningCells(RenderTableCell*, struct SpanningRowsHeight&);
+    bool isHeightNeededForRowHavingOnlySpanningCells(unsigned);
 
     void populateSpanningRowsHeightFromCell(RenderTableCell*, struct SpanningRowsHeight&);
     void distributeExtraRowSpanHeightToPercentRows(RenderTableCell*, int, int&, Vector<int>&);

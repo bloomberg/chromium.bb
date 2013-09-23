@@ -1388,3 +1388,10 @@ crbug.com/246077 virtual/android/fullscreen/full-screen-render-inline.html [ Ima
 
 # Transient. Removes as https://codereview.chromium.org/23597036/ lands.
 crbug.com/254989 virtual/android/fullscreen/full-screen-stacking-context.html [ ImageOnlyFailure ]
+
+#Below test case need to rebaseline after crbug.com/295500
+crbug.com/295500 fast/table/007.html [ NeedsRebaseline ]
+crbug.com/295500 fast/table/colspanMinWidth-vertical.html [ NeedsRebaseline ]
+crbug.com/295500 fast/table/colspanMinWidth.html [ NeedsRebaseline ]
+crbug.com/295500 fast/table/spanOverlapRepaint.html [ NeedsRebaseline ]
+crbug.com/295500 tables/mozilla/bugs/bug6304.html [ NeedsRebaseline ]
