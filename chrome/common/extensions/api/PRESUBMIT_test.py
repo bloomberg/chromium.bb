@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import glob
 import json
 import os
 import subprocess
@@ -22,40 +23,59 @@ class MockInputApi(object):
   def PresubmitLocalPath(self):
     return os.path.dirname(__file__)
 
+  def ReadFile(self, filename, mode='rU'):
+    with open(filename, mode=mode) as f:
+      return f.read()
+
 
 class JSONParsingTest(unittest.TestCase):
   def testSuccess(self):
     input_api = MockInputApi()
-    input_json = '''
-// This is a comment.
-{
-  "key1": ["value1", "value2"],
-  "key2": 3  // This is an inline comment.
-}
-'''
+    filename = 'test_presubmit/valid_json.json'
     self.assertEqual(None,
-                     PRESUBMIT._GetJSONParseError(input_api, input_json))
+                     PRESUBMIT._GetJSONParseError(input_api, filename))
 
   def testFailure(self):
     input_api = MockInputApi()
-    input_json = '{ x }'
-    self.assertEqual('Expecting property name: line 1 column 2 (char 2)',
-                     str(PRESUBMIT._GetJSONParseError(input_api, input_json)))
+    expected_errors = [
+      'Expecting property name: line 8 column 3 (char 9)',
+      'Invalid control character at: line 8 column 19 (char 25)',
+      'Expecting property name: line 8 column 23 (char 29)',
+      'Expecting , delimiter: line 8 column 12 (char 18)',
+    ]
+    actual_errors = [
+      str(PRESUBMIT._GetJSONParseError(input_api, filename))
+      for filename in sorted(glob.glob('test_presubmit/invalid_*.json'))
+    ]
+    self.assertEqual(expected_errors, actual_errors)
 
-    input_json = '{ "hello": "world }'
-    self.assertEqual(
-        'Unterminated string starting at: line 1 column 11 (char 11)',
-        str(PRESUBMIT._GetJSONParseError(input_api, input_json)))
 
-    input_json = '{ "a": "b", "c": "d", }'
-    self.assertEqual(
-        'Expecting property name: line 1 column 22 (char 22)',
-        str(PRESUBMIT._GetJSONParseError(input_api, input_json)))
+class IDLParsingTest(unittest.TestCase):
+  def testSuccess(self):
+    input_api = MockInputApi()
+    filename = 'test_presubmit/valid_idl_basics.idl'
+    self.assertEqual(None,
+                     PRESUBMIT._GetIDLParseError(input_api, filename))
 
-    input_json = '{ "a": "b" "c": "d" }'
-    self.assertEqual(
-        'Expecting , delimiter: line 1 column 11 (char 11)',
-        str(PRESUBMIT._GetJSONParseError(input_api, input_json)))
+  def testFailure(self):
+    input_api = MockInputApi()
+    expected_errors = [
+      'Unexpected "{" after keyword "dictionary".',
+      'Unexpected symbol DOMString after symbol a.',
+      'Unexpected symbol name2 after symbol name1.',
+      'Trailing comma in block.',
+      'Unexpected ";" after "(".',
+      'Unexpected ")" after symbol long.',
+      'Unexpected symbol Events after symbol interace.',
+      'Did not process Interface Interface(NotEvent)',
+      'Interface missing name.',
+    ]
+    actual_errors = [
+      PRESUBMIT._GetIDLParseError(input_api, filename)
+      for filename in sorted(glob.glob('test_presubmit/invalid_*.idl'))
+    ]
+    for (expected_error, actual_error) in zip(expected_errors, actual_errors):
+      self.assertTrue(expected_error in actual_error)
 
 
 if __name__ == "__main__":

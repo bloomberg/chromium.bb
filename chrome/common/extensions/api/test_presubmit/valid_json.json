@@ -1,0 +1,11 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Tests a valid IDL file.
+
+// This is a comment.
+{
+  "key1": ["value1", "value2"],
+  "key2": 3  // This is an inline comment.
+}

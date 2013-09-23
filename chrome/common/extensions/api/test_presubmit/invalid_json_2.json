@@ -1,0 +1,8 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Tests an invalid JSON file.
+
+// Invalid control character at: line 8 column 19 (char 25).
+{ "hello": "world }
