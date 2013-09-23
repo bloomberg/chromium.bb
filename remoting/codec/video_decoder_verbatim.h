@@ -21,10 +21,8 @@ class VideoDecoderVerbatim : public VideoDecoder {
   VideoDecoderVerbatim();
 
   // VideoDecoder implementation.
-  virtual bool IsReadyForData() OVERRIDE;
   virtual void Initialize(const SkISize& screen_size) OVERRIDE;
-  virtual DecodeResult DecodePacket(const VideoPacket* packet) OVERRIDE;
-  virtual VideoPacketFormat::Encoding Encoding() OVERRIDE;
+  virtual bool DecodePacket(const VideoPacket& packet) OVERRIDE;
   virtual void Invalidate(const SkISize& view_size,
                           const SkRegion& region) OVERRIDE;
   virtual void RenderFrame(const SkISize& view_size,

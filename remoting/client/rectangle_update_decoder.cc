@@ -92,14 +92,11 @@ void RectangleUpdateDecoder::DecodePacket(scoped_ptr<VideoPacket> packet,
   if (notify_size_or_dpi_change)
     consumer_->SetSourceSize(source_size_, source_dpi_);
 
-  if (!decoder_->IsReadyForData()) {
-    // TODO(ajwong): This whole thing should move into an invalid state.
-    LOG(ERROR) << "Decoder is unable to process data. Dropping packet.";
-    return;
-  }
-
-  if (decoder_->DecodePacket(packet.get()) == VideoDecoder::DECODE_DONE)
+  if (decoder_->DecodePacket(*packet.get())) {
     SchedulePaint();
+  } else {
+    LOG(ERROR) << "DecodePacket() failed.";
+  }
 }
 
 void RectangleUpdateDecoder::SchedulePaint() {

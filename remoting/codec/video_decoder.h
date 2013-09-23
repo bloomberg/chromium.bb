@@ -17,14 +17,7 @@ namespace remoting {
 // outputs frames of data.
 class VideoDecoder {
  public:
-  // DecodeResult is returned from DecodePacket() and indicates current state
-  // of the decoder. DECODE_DONE means that last packet for the frame was
-  // processed, and the frame can be displayed now. DECODE_ERROR is returned if
-  // there was an error in the stream.
-  enum DecodeResult {
-    DECODE_ERROR,
-    DECODE_DONE,
-  };
+  static const int kBytesPerPixel = 4;
 
   VideoDecoder() {}
   virtual ~VideoDecoder() {}
@@ -33,13 +26,9 @@ class VideoDecoder {
   // |screen size| must not be empty.
   virtual void Initialize(const SkISize& screen_size) = 0;
 
-  // Feeds more data into the decoder.
-  virtual DecodeResult DecodePacket(const VideoPacket* packet) = 0;
-
-  // Returns true if decoder is ready to accept data via DecodePacket.
-  virtual bool IsReadyForData() = 0;
-
-  virtual VideoPacketFormat::Encoding Encoding() = 0;
+  // Feeds more data into the decoder. Returns true if |packet| was processed
+  // and the frame can be displayed now.
+  virtual bool DecodePacket(const VideoPacket& packet) = 0;
 
   // Marks the specified |region| of the view for update the next time
   // RenderFrame() is called.  |region| is expressed in |view_size| coordinates.

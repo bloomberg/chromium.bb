@@ -9,19 +9,10 @@
 
 namespace remoting {
 
-namespace {
-// Both input and output data are assumed to be RGBA32.
-const int kBytesPerPixel = 4;
-}  // namespace
-
 VideoDecoderVerbatim::VideoDecoderVerbatim()
     : screen_size_(SkISize::Make(0, 0)) {}
 
 VideoDecoderVerbatim::~VideoDecoderVerbatim() {}
-
-bool VideoDecoderVerbatim::IsReadyForData() {
-  return true;
-}
 
 void VideoDecoderVerbatim::Initialize(const SkISize& screen_size) {
   updated_region_.setEmpty();
@@ -31,19 +22,18 @@ void VideoDecoderVerbatim::Initialize(const SkISize& screen_size) {
   // Allocate the screen buffer, if necessary.
   if (!screen_size_.isEmpty()) {
     screen_buffer_.reset(
-        new uint8
-            [screen_size_.width() * screen_size_.height() * kBytesPerPixel]);
+        new uint8[screen_size_.width() * screen_size_.height() *
+                  kBytesPerPixel]);
   }
 }
 
-VideoDecoder::DecodeResult VideoDecoderVerbatim::DecodePacket(
-    const VideoPacket* packet) {
+bool VideoDecoderVerbatim::DecodePacket(const VideoPacket& packet) {
   SkRegion region;
 
-  const char* in = packet->data().data();
+  const char* in = packet.data().data();
   int stride = kBytesPerPixel * screen_size_.width();
-  for (int i = 0; i < packet->dirty_rects_size(); ++i) {
-    Rect proto_rect = packet->dirty_rects(i);
+  for (int i = 0; i < packet.dirty_rects_size(); ++i) {
+    Rect proto_rect = packet.dirty_rects(i);
     SkIRect rect = SkIRect::MakeXYWH(proto_rect.x(),
                                      proto_rect.y(),
                                      proto_rect.width(),
@@ -52,16 +42,16 @@ VideoDecoder::DecodeResult VideoDecoderVerbatim::DecodePacket(
 
     if (!SkIRect::MakeSize(screen_size_).contains(rect)) {
       LOG(ERROR) << "Invalid packet received";
-      return DECODE_ERROR;
+      return false;
     }
 
     int rect_row_size = kBytesPerPixel * rect.width();
     uint8_t* out = screen_buffer_.get() + rect.y() * stride +
                    rect.x() * kBytesPerPixel;
     for (int y = rect.y(); y < rect.y() + rect.height(); ++y) {
-      if (in + rect_row_size > packet->data().data() + packet->data().size()) {
+      if (in + rect_row_size > packet.data().data() + packet.data().size()) {
         LOG(ERROR) << "Invalid packet received";
-        return DECODE_ERROR;
+        return false;
       }
       memcpy(out, in, rect_row_size);
       in += rect_row_size;
@@ -69,18 +59,14 @@ VideoDecoder::DecodeResult VideoDecoderVerbatim::DecodePacket(
     }
   }
 
-  if (in != packet->data().data() + packet->data().size()) {
+  if (in != packet.data().data() + packet.data().size()) {
     LOG(ERROR) << "Invalid packet received";
-    return DECODE_ERROR;
+    return false;
   }
 
   updated_region_.op(region, SkRegion::kUnion_Op);
 
-  return DECODE_DONE;
-}
-
-VideoPacketFormat::Encoding VideoDecoderVerbatim::Encoding() {
-  return VideoPacketFormat::ENCODING_VERBATIM;
+  return true;
 }
 
 void VideoDecoderVerbatim::Invalidate(const SkISize& view_size,

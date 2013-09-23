@@ -78,13 +78,9 @@ class VideoDecoderTester {
   }
 
   void ReceivedPacket(VideoPacket* packet) {
-    VideoDecoder::DecodeResult result = decoder_->DecodePacket(packet);
+    ASSERT_TRUE(decoder_->DecodePacket(*packet));
 
-    ASSERT_NE(VideoDecoder::DECODE_ERROR, result);
-
-    if (result == VideoDecoder::DECODE_DONE) {
-      RenderFrame();
-    }
+    RenderFrame();
   }
 
   void RenderFrame() {
