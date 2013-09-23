@@ -45,7 +45,7 @@ class EncodedProgram {
   CheckBool AddRel32(int label_index) WARN_UNUSED_RESULT;
   CheckBool AddRel32ARM(uint16 op, int label_index) WARN_UNUSED_RESULT;
   CheckBool AddAbs32(int label_index) WARN_UNUSED_RESULT;
-  CheckBool AddPeMakeRelocs() WARN_UNUSED_RESULT;
+  CheckBool AddPeMakeRelocs(ExecutableType kind) WARN_UNUSED_RESULT;
   CheckBool AddElfMakeRelocs() WARN_UNUSED_RESULT;
   CheckBool AddElfARMMakeRelocs() WARN_UNUSED_RESULT;
 
@@ -75,6 +75,7 @@ class EncodedProgram {
     MAKE_PE_RELOCATION_TABLE = 5,  // Emit PE base relocation table blocks.
     MAKE_ELF_RELOCATION_TABLE = 6, // Emit Elf relocation table for X86
     MAKE_ELF_ARM_RELOCATION_TABLE = 7, // Emit Elf relocation table for ARM
+    MAKE_PE64_RELOCATION_TABLE = 8, // Emit PE64 base relocation table blocks.
     // ARM reserves 0x1000-LAST_ARM, bits 13-16 define the opcode
     // subset, and 1-12 are the compressed ARM op.
     REL32ARM8   = 0x1000,
@@ -91,7 +92,8 @@ class EncodedProgram {
   typedef NoThrowBuffer<OP> OPVector;
 
   void DebuggingSummary();
-  CheckBool GeneratePeRelocations(SinkStream *buffer) WARN_UNUSED_RESULT;
+  CheckBool GeneratePeRelocations(SinkStream *buffer,
+                                  uint8 type) WARN_UNUSED_RESULT;
   CheckBool GenerateElfRelocations(Elf32_Word pending_elf_relocation_table,
                                    SinkStream *buffer) WARN_UNUSED_RESULT;
   CheckBool DefineLabelCommon(RvaVector*, int, RVA) WARN_UNUSED_RESULT;

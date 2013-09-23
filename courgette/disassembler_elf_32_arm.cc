@@ -106,8 +106,8 @@ CheckBool DisassemblerElf32ARM::Compress(ARM_RVA type, uint32 arm_op, RVA rva,
     }
     case ARM_OFF21: {
       uint32 temp = 0;
-      temp |= (arm_op & 0x000007FF) << 1; // imm11
-      temp |= (arm_op & 0x003F0000) >> 4; // imm6
+      temp |= (arm_op & 0x000007FF) << 1;  // imm11
+      temp |= (arm_op & 0x003F0000) >> 4;  // imm6
 
       uint32 S   = (arm_op & (1 << 26)) >> 26;
       uint32 j2  = (arm_op & (1 << 11)) >> 11;
@@ -115,7 +115,7 @@ CheckBool DisassemblerElf32ARM::Compress(ARM_RVA type, uint32 arm_op, RVA rva,
 
       temp |= (S << 20) | (j1 << 19) | (j2 << 18);
 
-      if (temp & 0x00100000) // sign extension
+      if (temp & 0x00100000)  // sign extension
         temp |= 0xFFE00000;
       temp += 4;
       (*addr) = temp;

@@ -50,6 +50,8 @@ void VersioningTest::TestApplyingOldPatch(const char* src_file,
 
 TEST_F(VersioningTest, All) {
   TestApplyingOldPatch("setup1.exe", "setup1-setup2.v1.patch", "setup2.exe");
+  TestApplyingOldPatch("chrome64_1.exe", "chrome64-1-2.v1.patch",
+                       "chrome64_2.exe");
 
   // We also need a way to test that newly generated patches are appropriately
   // applicable by older clients... not sure of the best way to do that.

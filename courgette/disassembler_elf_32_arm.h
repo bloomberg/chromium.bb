@@ -70,6 +70,10 @@ class DisassemblerElf32ARM : public DisassemblerElf32 {
   virtual CheckBool ParseRel32RelocsFromSection(
       const Elf32_Shdr* section) WARN_UNUSED_RESULT;
 
+#if COURGETTE_HISTOGRAM_TARGETS
+  std::map<RVA, int> rel32_target_rvas_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(DisassemblerElf32ARM);
 };
 

@@ -9,6 +9,10 @@
 
 #include "courgette/courgette.h"
 
+// COURGETTE_HISTOGRAM_TARGETS prints out a histogram of how frequently
+// different target addresses are referenced.  Purely for debugging.
+#define COURGETTE_HISTOGRAM_TARGETS 0
+
 namespace courgette {
 
 class AssemblyProgram;

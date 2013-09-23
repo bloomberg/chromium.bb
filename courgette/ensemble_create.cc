@@ -94,6 +94,15 @@ TransformationPatchGenerator* MakeGenerator(Element* old_element,
               EXE_ELF_32_ARM);
       return generator;
     }
+    case EXE_WIN_32_X64: {
+      TransformationPatchGenerator* generator =
+          new PatchGeneratorX86_32(
+              old_element,
+              new_element,
+              new PatcherX86_32(old_element->region()),
+              EXE_WIN_32_X64);
+      return generator;
+    }
   }
 
   LOG(WARNING) << "Unexpected Element::Kind " << old_element->kind();
