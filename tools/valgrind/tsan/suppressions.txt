@@ -1124,4 +1124,17 @@
   fun:content::::FakeAudioThread::ThreadMain
   fun:base::::ThreadFunc
 }
-
+{
+  bug_297194
+  ThreadSanitizer:Race
+  fun:scoped_refptr::operator=
+  fun:browser_sync::PasswordChangeProcessor::Disconnect
+  fun:browser_sync::PasswordDataTypeController::DisconnectProcessor
+  fun:browser_sync::NonFrontendDataTypeController::BackendComponentsContainer::Disconnect
+  fun:browser_sync::NonFrontendDataTypeController::Stop
+  fun:browser_sync::ModelAssociationManager::Stop
+  fun:browser_sync::DataTypeManagerImpl::StopImpl
+  fun:browser_sync::DataTypeManagerImpl::Stop
+  fun:ProfileSyncService::ShutdownImpl
+  fun:ProfileSyncService::Shutdown
+}
