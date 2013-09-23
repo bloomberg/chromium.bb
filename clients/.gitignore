@@ -8,6 +8,8 @@ weston-flower
 weston-fullscreen
 weston-gears
 weston-image
+weston-nested
+weston-nested-client
 weston-resizor
 weston-simple-egl
 weston-simple-shm
