@@ -1211,6 +1211,14 @@ internal_paladin.add_config('bayleybay-paladin',
   important=False,
 )
 
+internal_paladin.add_config('beltino-paladin',
+  boards=['beltino'],
+  paladin_builder_name='beltino paladin',
+  important=False,
+  hw_tests=[],
+  vm_tests=None,
+)
+
 # x86 full compile
 internal_paladin.add_config('butterfly-paladin',
   full_paladin,
@@ -1488,6 +1496,12 @@ _release.add_config('bayleybay-release',
   vm_tests=None,
 )
 
+_release.add_config('beltino-release',
+  boards=['beltino'],
+  hw_tests=[],
+  vm_tests=None,
+)
+
 _release.add_config('butterfly-release',
   boards=['butterfly'],
 )
@@ -1634,6 +1648,7 @@ _depthcharge_full_internal = full.derive(
 
 _x86_firmware_boards = (
   'bayleybay',
+  'beltino',
   'butterfly',
   'falco',
   'leon',
