@@ -37,8 +37,8 @@
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "core/dom/Document.h"
-#include "core/dom/ErrorEvent.h"
-#include "core/dom/EventNames.h"
+#include "core/events/ErrorEvent.h"
+#include "core/events/EventNames.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/page/Frame.h"
 

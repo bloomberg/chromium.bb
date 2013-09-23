@@ -27,7 +27,7 @@
 #define Dictionary_h
 
 #include "bindings/v8/ScriptValue.h"
-#include "core/dom/EventListener.h"
+#include "core/events/EventListener.h"
 #include "core/dom/MessagePort.h"
 #include <v8.h>
 #include "wtf/HashMap.h"

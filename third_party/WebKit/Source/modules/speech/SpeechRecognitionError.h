@@ -26,7 +26,7 @@
 #ifndef SpeechRecognitionError_h
 #define SpeechRecognitionError_h
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 

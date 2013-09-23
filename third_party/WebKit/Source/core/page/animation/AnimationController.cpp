@@ -29,10 +29,10 @@
 #include "config.h"
 #include "core/page/animation/AnimationController.h"
 
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 #include "core/dom/PseudoElement.h"
-#include "core/dom/TransitionEvent.h"
-#include "core/dom/WebKitAnimationEvent.h"
+#include "core/events/TransitionEvent.h"
+#include "core/events/WebKitAnimationEvent.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"

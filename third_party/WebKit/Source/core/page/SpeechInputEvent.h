@@ -28,7 +28,7 @@
 
 #if ENABLE(INPUT_SPEECH)
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/page/SpeechInputResultList.h"
 
 #include "wtf/PassRefPtr.h"

@@ -29,7 +29,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DOMError.h"
-#include "core/dom/EventQueue.h"
+#include "core/events/EventQueue.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "modules/indexeddb/IDBDatabase.h"

@@ -27,7 +27,7 @@
 #ifndef MediaControls_h
 #define MediaControls_h
 
-#include "core/dom/MouseEvent.h"
+#include "core/events/MouseEvent.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/shadow/MediaControlElements.h"
 #include "core/page/Page.h"

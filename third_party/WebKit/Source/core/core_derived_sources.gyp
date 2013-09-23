@@ -375,7 +375,7 @@
             'scripts/make_event_factory.py',
             'scripts/name_utilities.py',
             '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
-            'dom/EventAliases.in',
+            'events/EventAliases.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/blink/Event.cpp',
@@ -386,7 +386,7 @@
             'python',
             'scripts/make_event_factory.py',
             '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
-            'dom/EventAliases.in',
+            'events/EventAliases.in',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
@@ -397,7 +397,7 @@
             '<@(scripts_for_in_files)',
             'scripts/make_event_factory.py',
             'scripts/name_utilities.py',
-            'dom/EventTargetFactory.in',
+            'events/EventTargetFactory.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetHeaders.h',
@@ -406,7 +406,7 @@
           'action': [
             'python',
             'scripts/make_event_factory.py',
-            'dom/EventTargetFactory.in',
+            'events/EventTargetFactory.in',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],

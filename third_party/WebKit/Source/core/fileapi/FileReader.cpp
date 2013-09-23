@@ -34,7 +34,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ProgressEvent.h"
+#include "core/events/ProgressEvent.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "core/platform/Logging.h"

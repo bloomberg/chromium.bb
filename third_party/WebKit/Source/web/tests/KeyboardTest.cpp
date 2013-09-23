@@ -35,8 +35,8 @@
 #include "EditorClientImpl.h"
 #include "WebInputEvent.h"
 #include "WebInputEventConversion.h"
-#include "core/dom/EventTarget.h"
-#include "core/dom/KeyboardEvent.h"
+#include "core/events/EventTarget.h"
+#include "core/events/KeyboardEvent.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 
 using namespace WebCore;

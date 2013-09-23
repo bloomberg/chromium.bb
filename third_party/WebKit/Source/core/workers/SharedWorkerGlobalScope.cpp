@@ -32,8 +32,8 @@
 
 #include "core/workers/SharedWorkerGlobalScope.h"
 
-#include "core/dom/EventNames.h"
-#include "core/dom/MessageEvent.h"
+#include "core/events/EventNames.h"
+#include "core/events/MessageEvent.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/DOMWindow.h"
 #include "core/workers/SharedWorkerThread.h"

@@ -34,10 +34,10 @@
 
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/BeforeTextInsertedEvent.h"
-#include "core/dom/KeyboardEvent.h"
+#include "core/events/BeforeTextInsertedEvent.h"
+#include "core/events/KeyboardEvent.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/dom/TextEvent.h"
+#include "core/events/TextEvent.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"

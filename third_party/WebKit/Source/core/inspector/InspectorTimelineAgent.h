@@ -34,7 +34,7 @@
 
 #include "InspectorFrontend.h"
 #include "bindings/v8/ScriptGCEvent.h"
-#include "core/dom/EventContext.h"
+#include "core/events/EventContext.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/ScriptGCEventListener.h"
 #include "core/platform/JSONValues.h"

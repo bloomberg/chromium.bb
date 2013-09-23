@@ -27,7 +27,7 @@
 #ifndef DeviceMotionController_h
 #define DeviceMotionController_h
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/page/DOMWindowLifecycleObserver.h"
 #include "core/page/PageLifecycleObserver.h"
 #include "core/platform/Supplementable.h"

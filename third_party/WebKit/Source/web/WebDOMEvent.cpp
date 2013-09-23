@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebDOMEvent.h"
 
-#include "core/dom/Event.h"
-#include "core/dom/EventNames.h"
+#include "core/events/Event.h"
+#include "core/events/EventNames.h"
 #include "core/dom/Node.h"
 #include "wtf/PassRefPtr.h"
 

@@ -46,7 +46,7 @@
 #include "WorkerFileSystemClient.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
-#include "core/dom/MessageEvent.h"
+#include "core/events/MessageEvent.h"
 #include "core/dom/MessagePortChannel.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/dom/default/chromium/PlatformMessagePortChannelChromium.h"

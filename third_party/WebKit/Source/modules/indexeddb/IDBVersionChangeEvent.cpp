@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/indexeddb/IDBVersionChangeEvent.h"
 
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 #include "modules/indexeddb/IDBAny.h"
 
 namespace WebCore {

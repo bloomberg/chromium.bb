@@ -27,7 +27,7 @@
 #ifndef NewDeviceOrientationController_h
 #define NewDeviceOrientationController_h
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/page/DOMWindowLifecycleObserver.h"
 #include "core/platform/Supplementable.h"
 #include "modules/device_orientation/DeviceSensorEventController.h"

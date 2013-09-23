@@ -51,7 +51,7 @@
 #include "bindings/v8/V8EventListener.h"
 #include "core/dom/CustomElementCallbackDispatcher.h"
 #include "core/dom/Document.h"
-#include "core/dom/EventListener.h"
+#include "core/events/EventListener.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "wtf/RefPtr.h"
 

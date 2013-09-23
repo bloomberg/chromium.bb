@@ -27,7 +27,7 @@
 #include "modules/encryptedmedia/MediaKeys.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/platform/UUID.h"
 #include "core/platform/graphics/ContentDecryptionModule.h"

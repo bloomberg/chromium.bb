@@ -33,7 +33,7 @@
 
 #include "WebSerializedScriptValue.h"
 #include "bindings/v8/SerializedScriptValue.h"
-#include "core/dom/CustomEvent.h"
+#include "core/events/CustomEvent.h"
 #include "public/platform/WebString.h"
 
 using namespace WebCore;

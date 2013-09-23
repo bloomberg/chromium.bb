@@ -29,8 +29,8 @@
 #include "core/dom/ScriptExecutionContext.h"
 
 #include "core/dom/ContextLifecycleNotifier.h"
-#include "core/dom/ErrorEvent.h"
-#include "core/dom/EventTarget.h"
+#include "core/events/ErrorEvent.h"
+#include "core/events/EventTarget.h"
 #include "core/dom/MessagePort.h"
 #include "core/html/PublicURLManager.h"
 #include "core/inspector/InspectorInstrumentation.h"

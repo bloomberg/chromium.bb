@@ -31,7 +31,7 @@
 #ifndef MIDIMessageEvent_h
 #define MIDIMessageEvent_h
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "wtf/Uint8Array.h"
 
 namespace WebCore {

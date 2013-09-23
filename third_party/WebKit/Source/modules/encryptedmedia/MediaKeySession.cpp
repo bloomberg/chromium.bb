@@ -27,9 +27,9 @@
 #include "modules/encryptedmedia/MediaKeySession.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/GenericEventQueue.h"
+#include "core/events/GenericEventQueue.h"
 #include "core/html/MediaKeyError.h"
 #include "core/platform/graphics/ContentDecryptionModule.h"
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"

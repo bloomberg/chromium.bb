@@ -25,7 +25,7 @@
 #ifndef RTCDataChannelEvent_h
 #define RTCDataChannelEvent_h
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "modules/mediastream/RTCDataChannel.h"
 #include "wtf/text/AtomicString.h"
 

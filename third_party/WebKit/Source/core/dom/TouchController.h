@@ -27,7 +27,7 @@
 #define TouchController_h
 
 #include "core/dom/DocumentLifecycleObserver.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/dom/Node.h"
 #include "core/page/DOMWindowLifecycleObserver.h"
 #include "core/platform/Supplementable.h"

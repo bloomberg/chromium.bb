@@ -31,7 +31,7 @@
 #ifndef MIDIInput_h
 #define MIDIInput_h
 
-#include "core/dom/EventTarget.h"
+#include "core/events/EventTarget.h"
 #include "modules/webmidi/MIDIPort.h"
 
 namespace WebCore {

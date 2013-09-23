@@ -22,7 +22,7 @@
 #ifndef SVGZoomEvent_h
 #define SVGZoomEvent_h
 
-#include "core/dom/UIEvent.h"
+#include "core/events/UIEvent.h"
 #include "core/svg/SVGPoint.h"
 #include "core/svg/SVGRect.h"
 

@@ -33,8 +33,8 @@
 
 #include "core/css/FontFace.h"
 #include "core/dom/DOMError.h"
-#include "core/dom/Event.h"
-#include "core/dom/EventNames.h"
+#include "core/events/Event.h"
+#include "core/events/EventNames.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 

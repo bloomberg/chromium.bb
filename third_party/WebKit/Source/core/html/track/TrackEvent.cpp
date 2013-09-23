@@ -27,7 +27,7 @@
 
 #include "core/html/track/TrackEvent.h"
 
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 
 namespace WebCore {
 

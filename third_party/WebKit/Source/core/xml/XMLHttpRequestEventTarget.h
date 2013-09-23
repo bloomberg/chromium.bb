@@ -31,7 +31,7 @@
 #ifndef XMLHttpRequestEventTarget_h
 #define XMLHttpRequestEventTarget_h
 
-#include "core/dom/EventTarget.h"
+#include "core/events/EventTarget.h"
 
 namespace WebCore {
 

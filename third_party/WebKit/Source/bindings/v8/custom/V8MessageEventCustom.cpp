@@ -38,7 +38,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
-#include "core/dom/MessageEvent.h"
+#include "core/events/MessageEvent.h"
 
 namespace WebCore {
 

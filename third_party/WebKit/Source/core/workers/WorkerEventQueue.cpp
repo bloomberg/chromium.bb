@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/workers/WorkerEventQueue.h"
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/dom/ScriptExecutionContext.h"
 
 namespace WebCore {

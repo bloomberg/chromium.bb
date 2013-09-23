@@ -32,7 +32,7 @@
 
 #include "modules/filesystem/FileWriterBase.h"
 
-#include "core/dom/ProgressEvent.h"
+#include "core/events/ProgressEvent.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
 #include "public/platform/WebFileWriter.h"

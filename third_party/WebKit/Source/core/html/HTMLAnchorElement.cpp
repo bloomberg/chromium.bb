@@ -26,9 +26,9 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Attribute.h"
-#include "core/dom/EventNames.h"
-#include "core/dom/KeyboardEvent.h"
-#include "core/dom/MouseEvent.h"
+#include "core/events/EventNames.h"
+#include "core/events/KeyboardEvent.h"
+#include "core/events/MouseEvent.h"
 #include "core/editing/FrameSelection.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageElement.h"

@@ -28,7 +28,7 @@
 
 #include "bindings/v8/ScriptSourceCode.h"
 #include "core/dom/Element.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
 #include "core/dom/Microtask.h"
 #include "core/dom/ScriptLoader.h"

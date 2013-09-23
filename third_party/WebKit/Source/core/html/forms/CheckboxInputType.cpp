@@ -32,7 +32,7 @@
 #include "config.h"
 #include "core/html/forms/CheckboxInputType.h"
 
-#include "core/dom/KeyboardEvent.h"
+#include "core/events/KeyboardEvent.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/InputTypeNames.h"
 #include "core/platform/LocalizedStrings.h"

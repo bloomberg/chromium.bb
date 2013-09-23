@@ -27,8 +27,8 @@
 #include "core/dom/WheelController.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/EventNames.h"
-#include "core/dom/WheelEvent.h"
+#include "core/events/EventNames.h"
+#include "core/events/WheelEvent.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"

@@ -28,7 +28,7 @@
 
 #include "modules/webaudio/AudioScheduledSourceNode.h"
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/platform/audio/AudioUtilities.h"
 #include "modules/webaudio/AudioContext.h"
 #include <algorithm>

@@ -32,7 +32,7 @@
 #include "core/workers/AbstractWorker.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/page/ContentSecurityPolicy.h"

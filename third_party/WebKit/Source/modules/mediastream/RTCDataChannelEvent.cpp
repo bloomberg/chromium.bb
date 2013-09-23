@@ -25,7 +25,7 @@
 #include "config.h"
 #include "modules/mediastream/RTCDataChannelEvent.h"
 
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 #include "modules/mediastream/RTCDataChannel.h"
 
 namespace WebCore {

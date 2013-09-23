@@ -27,7 +27,7 @@
 #ifndef DeviceController_h
 #define DeviceController_h
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/page/DOMWindow.h"
 #include "core/platform/Supplementable.h"
 #include "core/platform/Timer.h"

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebDOMResourceProgressEvent.h"
 
-#include "core/dom/ResourceProgressEvent.h"
+#include "core/events/ResourceProgressEvent.h"
 #include "public/platform/WebString.h"
 
 using namespace WebCore;

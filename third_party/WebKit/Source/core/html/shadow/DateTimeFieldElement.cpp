@@ -28,7 +28,7 @@
 #include "core/html/shadow/DateTimeFieldElement.h"
 
 #include "HTMLNames.h"
-#include "core/dom/KeyboardEvent.h"
+#include "core/events/KeyboardEvent.h"
 #include "core/dom/Text.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"

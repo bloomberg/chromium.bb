@@ -27,7 +27,7 @@
 #define HTMLMediaElement_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/GenericEventQueue.h"
+#include "core/events/GenericEventQueue.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/MediaControllerInterface.h"
 #include "core/html/track/TextTrack.h"

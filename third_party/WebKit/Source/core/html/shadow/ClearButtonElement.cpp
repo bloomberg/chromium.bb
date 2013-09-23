@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/shadow/ClearButtonElement.h"
 
-#include "core/dom/MouseEvent.h"
+#include "core/events/MouseEvent.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"

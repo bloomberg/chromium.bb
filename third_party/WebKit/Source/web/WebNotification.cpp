@@ -32,7 +32,7 @@
 #include "WebNotification.h"
 
 #include "WebTextDirection.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
 #include "modules/notifications/Notification.h"

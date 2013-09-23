@@ -27,7 +27,7 @@
 #define Geoposition_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "modules/geolocation/Coordinates.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"

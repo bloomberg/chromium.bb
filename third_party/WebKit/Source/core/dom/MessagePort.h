@@ -28,8 +28,8 @@
 #define MessagePort_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/EventListener.h"
-#include "core/dom/EventTarget.h"
+#include "core/events/EventListener.h"
+#include "core/events/EventTarget.h"
 #include "core/dom/MessagePortChannel.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"

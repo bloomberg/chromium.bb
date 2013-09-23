@@ -33,7 +33,7 @@
 
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
-#include "core/dom/ErrorEvent.h"
+#include "core/events/ErrorEvent.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/TextPosition.h"

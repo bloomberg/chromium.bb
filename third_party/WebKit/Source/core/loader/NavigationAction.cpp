@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/loader/NavigationAction.h"
 
-#include "core/dom/MouseEvent.h"
+#include "core/events/MouseEvent.h"
 #include "core/loader/FrameLoader.h"
 
 namespace WebCore {

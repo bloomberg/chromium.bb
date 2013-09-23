@@ -25,8 +25,8 @@
 #include "core/rendering/RenderFrameSet.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/EventNames.h"
-#include "core/dom/MouseEvent.h"
+#include "core/events/EventNames.h"
+#include "core/events/MouseEvent.h"
 #include "core/html/HTMLDimension.h"
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/page/EventHandler.h"

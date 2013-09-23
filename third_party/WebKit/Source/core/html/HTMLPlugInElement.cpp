@@ -28,7 +28,7 @@
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/npruntime_impl.h"
 #include "core/dom/Document.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/platform/Widget.h"

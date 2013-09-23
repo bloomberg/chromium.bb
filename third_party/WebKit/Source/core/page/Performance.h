@@ -33,7 +33,7 @@
 #define Performance_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/EventTarget.h"
+#include "core/events/EventTarget.h"
 #include "core/page/DOMWindowProperty.h"
 #include "core/page/MemoryInfo.h"
 #include "core/page/PerformanceEntry.h"

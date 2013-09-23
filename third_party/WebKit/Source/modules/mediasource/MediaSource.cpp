@@ -34,7 +34,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/GenericEventQueue.h"
+#include "core/events/GenericEventQueue.h"
 #include "core/html/TimeRanges.h"
 #include "core/platform/ContentType.h"
 #include "core/platform/Logging.h"

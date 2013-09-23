@@ -26,7 +26,7 @@
 #ifndef SpeechSynthesisEvent_h
 #define SpeechSynthesisEvent_h
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

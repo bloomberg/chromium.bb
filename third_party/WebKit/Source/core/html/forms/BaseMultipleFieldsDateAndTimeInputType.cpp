@@ -34,7 +34,7 @@
 
 #include "CSSValueKeywords.h"
 #include "RuntimeEnabledFeatures.h"
-#include "core/dom/KeyboardEvent.h"
+#include "core/events/KeyboardEvent.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLInputElement.h"

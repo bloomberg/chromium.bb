@@ -32,9 +32,9 @@
 #include "modules/mediasource/SourceBuffer.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/GenericEventQueue.h"
+#include "core/events/GenericEventQueue.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/Stream.h"

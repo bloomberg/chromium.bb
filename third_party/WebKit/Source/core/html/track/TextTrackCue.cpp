@@ -37,7 +37,7 @@
 #include "CSSValueKeywords.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DocumentFragment.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/track/TextTrack.h"

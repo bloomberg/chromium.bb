@@ -35,8 +35,8 @@
 #include "WebSerializedScriptValue.h"
 
 #if WEBKIT_IMPLEMENTATION
-#include "core/dom/Event.h"
-#include "core/dom/MessageEvent.h"
+#include "core/events/Event.h"
+#include "core/events/MessageEvent.h"
 #endif
 
 namespace WebKit {

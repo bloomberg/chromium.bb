@@ -33,8 +33,8 @@
 #include "config.h"
 #include "core/html/shadow/SliderThumbElement.h"
 
-#include "core/dom/Event.h"
-#include "core/dom/MouseEvent.h"
+#include "core/events/Event.h"
+#include "core/events/MouseEvent.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/StepRange.h"

@@ -27,9 +27,9 @@
 
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/EventListener.h"
-#include "core/dom/EventNames.h"
-#include "core/dom/MouseEvent.h"
+#include "core/events/EventListener.h"
+#include "core/events/EventNames.h"
+#include "core/events/MouseEvent.h"
 #include "core/dom/RawDataDocumentParser.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/HTMLBodyElement.h"

@@ -25,7 +25,7 @@
 #include "config.h"
 #include "modules/mediastream/MediaStreamEvent.h"
 
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 #include "modules/mediastream/MediaStream.h"
 
 namespace WebCore {

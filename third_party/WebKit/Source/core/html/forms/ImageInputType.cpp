@@ -24,7 +24,7 @@
 #include "core/html/forms/ImageInputType.h"
 
 #include "HTMLNames.h"
-#include "core/dom/MouseEvent.h"
+#include "core/events/MouseEvent.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLFormElement.h"

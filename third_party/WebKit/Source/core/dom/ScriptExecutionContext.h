@@ -29,7 +29,7 @@
 #define ScriptExecutionContext_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/ErrorEvent.h"
+#include "core/events/ErrorEvent.h"
 #include "core/dom/SecurityContext.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/page/ConsoleTypes.h"

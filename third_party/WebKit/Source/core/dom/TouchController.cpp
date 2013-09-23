@@ -27,8 +27,8 @@
 #include "core/dom/TouchController.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/EventNames.h"
-#include "core/dom/TouchEvent.h"
+#include "core/events/EventNames.h"
+#include "core/events/TouchEvent.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Frame.h"

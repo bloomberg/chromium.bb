@@ -39,7 +39,7 @@ import license
 
 IMPLEMENTATION_TEMPLATE = """%(license)s
 #include "config.h"
-#include "%(class_name)sFactory.h"
+#include "core/events/%(class_name)sFactory.h"
 
 #include "%(class_name)sHeaders.h"
 #include "RuntimeEnabledFeatures.h"

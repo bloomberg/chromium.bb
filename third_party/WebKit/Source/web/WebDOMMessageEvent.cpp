@@ -36,7 +36,7 @@
 #include "WebSerializedScriptValue.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
-#include "core/dom/MessageEvent.h"
+#include "core/events/MessageEvent.h"
 #include "core/dom/MessagePort.h"
 #include "core/dom/default/chromium/PlatformMessagePortChannelChromium.h"
 #include "core/page/DOMWindow.h"

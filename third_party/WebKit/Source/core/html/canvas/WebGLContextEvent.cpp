@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/canvas/WebGLContextEvent.h"
 
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 
 namespace WebCore {
 

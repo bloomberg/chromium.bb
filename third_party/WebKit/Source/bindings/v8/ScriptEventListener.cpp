@@ -38,7 +38,7 @@
 #include "bindings/v8/V8WindowShell.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
-#include "core/dom/EventListener.h"
+#include "core/events/EventListener.h"
 #include "core/page/Frame.h"
 
 namespace WebCore {

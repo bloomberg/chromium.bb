@@ -29,7 +29,7 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "core/dom/KeyboardEvent.h"
+#include "core/events/KeyboardEvent.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/text/PlatformLocale.h"
 #include "wtf/text/StringBuilder.h"

@@ -32,7 +32,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/EventPathWalker.h"
+#include "core/events/EventPathWalker.h"
 #include "core/dom/IdTargetObserverRegistry.h"
 #include "core/dom/TreeScopeAdopter.h"
 #include "core/dom/shadow/ElementShadow.h"

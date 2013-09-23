@@ -26,7 +26,7 @@
 
 #include "modules/mediastream/RTCIceCandidateEvent.h"
 
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 #include "modules/mediastream/RTCIceCandidate.h"
 
 namespace WebCore {

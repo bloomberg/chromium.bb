@@ -34,7 +34,7 @@
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/EventTarget.h"
+#include "core/events/EventTarget.h"
 #include "core/platform/Timer.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandler.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"

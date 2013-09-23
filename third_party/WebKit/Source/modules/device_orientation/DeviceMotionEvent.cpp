@@ -29,7 +29,7 @@
 #include "modules/device_orientation/DeviceAcceleration.h"
 #include "modules/device_orientation/DeviceMotionData.h"
 #include "modules/device_orientation/DeviceRotationRate.h"
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 
 namespace WebCore {
 

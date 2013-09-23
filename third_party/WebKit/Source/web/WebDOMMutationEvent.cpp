@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebDOMMutationEvent.h"
 
-#include "core/dom/MutationEvent.h"
+#include "core/events/MutationEvent.h"
 
 using namespace WebCore;
 

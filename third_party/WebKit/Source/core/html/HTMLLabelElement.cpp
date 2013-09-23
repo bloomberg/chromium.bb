@@ -27,8 +27,8 @@
 
 #include "HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/Event.h"
-#include "core/dom/EventNames.h"
+#include "core/events/Event.h"
+#include "core/events/EventNames.h"
 #include "core/html/FormAssociatedElement.h"
 
 namespace WebCore {

@@ -34,7 +34,7 @@
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/Player.h"
 #include "core/dom/Element.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"

@@ -28,9 +28,9 @@
 #include "core/html/shadow/SpinButtonElement.h"
 
 #include "HTMLNames.h"
-#include "core/dom/EventNames.h"
-#include "core/dom/MouseEvent.h"
-#include "core/dom/WheelEvent.h"
+#include "core/events/EventNames.h"
+#include "core/events/MouseEvent.h"
+#include "core/events/WheelEvent.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"

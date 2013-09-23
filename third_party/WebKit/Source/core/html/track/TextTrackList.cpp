@@ -27,7 +27,7 @@
 #include "core/html/track/TextTrackList.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/InbandTextTrack.h"
 #include "core/html/track/LoadableTextTrack.h"

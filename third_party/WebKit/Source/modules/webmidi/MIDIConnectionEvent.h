@@ -31,7 +31,7 @@
 #ifndef MIDIConnectionEvent_h
 #define MIDIConnectionEvent_h
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "modules/webmidi/MIDIPort.h"
 
 namespace WebCore {

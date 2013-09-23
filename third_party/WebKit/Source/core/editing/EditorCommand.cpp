@@ -36,7 +36,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/DocumentFragment.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/dom/UserTypingGestureIndicator.h"
 #include "core/editing/CreateLinkCommand.h"
 #include "core/editing/FormatBlockCommand.h"

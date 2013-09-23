@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/platform/ThreadGlobalData.h"
 
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 #include "core/inspector/InspectorCounters.h"
 #include "core/platform/ThreadTimers.h"
 #include "wtf/MainThread.h"

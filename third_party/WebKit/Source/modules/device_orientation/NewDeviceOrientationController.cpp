@@ -29,7 +29,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/device_orientation/DeviceOrientationDispatcher.h"
 #include "modules/device_orientation/DeviceOrientationEvent.h"

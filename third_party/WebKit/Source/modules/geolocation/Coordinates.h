@@ -27,7 +27,7 @@
 #define Coordinates_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {

@@ -32,7 +32,7 @@
 #include "core/inspector/InspectorTimelineAgent.h"
 
 #include "InspectorFrontend.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorCounters.h"
 #include "core/inspector/InspectorDOMAgent.h"

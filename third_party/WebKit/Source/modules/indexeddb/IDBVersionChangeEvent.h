@@ -26,7 +26,7 @@
 #ifndef IDBVersionChangeEvent_h
 #define IDBVersionChangeEvent_h
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "public/platform/WebIDBCallbacks.h"
 #include "wtf/PassRefPtr.h"

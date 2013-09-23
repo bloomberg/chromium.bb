@@ -26,7 +26,7 @@
 #ifndef RTCDTMFToneChangeEvent_h
 #define RTCDTMFToneChangeEvent_h
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {

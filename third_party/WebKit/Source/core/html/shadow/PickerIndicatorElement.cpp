@@ -32,7 +32,7 @@
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/shadow/PickerIndicatorElement.h"
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"

@@ -33,7 +33,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/EventTarget.h"
+#include "core/events/EventTarget.h"
 #include "core/platform/midi/MIDIAccessor.h"
 #include "core/platform/midi/MIDIAccessorClient.h"
 #include "modules/webmidi/MIDIInput.h"

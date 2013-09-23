@@ -35,7 +35,7 @@
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/StylePropertySet.h"
-#include "core/dom/MouseEvent.h"
+#include "core/events/MouseEvent.h"
 
 namespace WebCore {
 

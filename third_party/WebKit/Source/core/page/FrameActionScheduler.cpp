@@ -27,7 +27,7 @@
 #include "core/page/FrameActionScheduler.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/dom/Node.h"
 #include "wtf/Vector.h"
 

@@ -25,7 +25,7 @@
 #ifndef OfflineAudioCompletionEvent_h
 #define OfflineAudioCompletionEvent_h
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

@@ -25,7 +25,7 @@
 #ifndef MediaStreamTrackEvent_h
 #define MediaStreamTrackEvent_h
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {

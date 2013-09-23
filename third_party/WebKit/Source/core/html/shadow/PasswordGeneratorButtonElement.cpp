@@ -33,7 +33,7 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"

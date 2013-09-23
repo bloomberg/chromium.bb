@@ -27,7 +27,7 @@
 #ifndef WorkerEventQueue_h
 #define WorkerEventQueue_h
 
-#include "core/dom/EventQueue.h"
+#include "core/events/EventQueue.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"

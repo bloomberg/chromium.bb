@@ -32,7 +32,7 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/CustomElement.h"
 #include "core/dom/DOMTimeStamp.h"
-#include "core/dom/DocumentEventQueue.h"
+#include "core/events/DocumentEventQueue.h"
 #include "core/dom/DocumentInit.h"
 #include "core/dom/DocumentTiming.h"
 #include "core/dom/IconURL.h"

@@ -33,7 +33,7 @@
 #include "core/loader/NavigationScheduler.h"
 
 #include "bindings/v8/ScriptController.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/history/BackForwardController.h"
 #include "core/html/HTMLFormElement.h"

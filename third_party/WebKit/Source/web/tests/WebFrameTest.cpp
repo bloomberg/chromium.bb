@@ -58,7 +58,7 @@
 #include "WebViewImpl.h"
 #include "core/dom/Clipboard.h"
 #include "core/dom/DocumentMarkerController.h"
-#include "core/dom/MouseEvent.h"
+#include "core/events/MouseEvent.h"
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"

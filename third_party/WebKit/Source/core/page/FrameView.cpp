@@ -34,7 +34,7 @@
 #include "core/css/FontFaceSet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentMarkerController.h"
-#include "core/dom/OverflowEvent.h"
+#include "core/events/OverflowEvent.h"
 #include "core/editing/FrameSelection.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/TextResourceDecoder.h"

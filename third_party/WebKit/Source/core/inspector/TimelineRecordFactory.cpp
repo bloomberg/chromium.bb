@@ -32,7 +32,7 @@
 #include "core/inspector/TimelineRecordFactory.h"
 
 #include "bindings/v8/ScriptCallStackFactory.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/platform/JSONValues.h"
 #include "core/platform/graphics/FloatQuad.h"

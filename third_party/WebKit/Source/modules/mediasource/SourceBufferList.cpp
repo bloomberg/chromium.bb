@@ -31,8 +31,8 @@
 #include "config.h"
 #include "modules/mediasource/SourceBufferList.h"
 
-#include "core/dom/Event.h"
-#include "core/dom/GenericEventQueue.h"
+#include "core/events/Event.h"
+#include "core/events/GenericEventQueue.h"
 #include "modules/mediasource/SourceBuffer.h"
 
 namespace WebCore {

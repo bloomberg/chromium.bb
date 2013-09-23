@@ -22,8 +22,8 @@
 
 #include "core/dom/ClientRectList.h"
 #include "core/dom/DocumentMarkerController.h"
-#include "core/dom/Event.h"
-#include "core/dom/EventNames.h"
+#include "core/events/Event.h"
+#include "core/events/EventNames.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/VisitedLinkState.h"
 #include "core/editing/Caret.h"

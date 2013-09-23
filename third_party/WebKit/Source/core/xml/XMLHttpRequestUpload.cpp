@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/xml/XMLHttpRequestUpload.h"
 
-#include "core/dom/Event.h"
-#include "core/dom/EventNames.h"
+#include "core/events/Event.h"
+#include "core/events/EventNames.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "core/xml/XMLHttpRequestProgressEvent.h"
 #include "wtf/Assertions.h"

@@ -36,7 +36,7 @@
 #include "core/css/CSSFontSelector.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentEventQueue.h"
+#include "core/events/DocumentEventQueue.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/editing/FrameSelection.h"
 #include "core/html/HTMLOptGroupElement.h"

@@ -34,7 +34,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/EventTarget.h"
+#include "core/events/EventTarget.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/platform/Timer.h"
 #include "weborigin/KURL.h"

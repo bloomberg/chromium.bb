@@ -35,7 +35,7 @@
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/Element.h"
-#include "core/dom/EventContext.h"
+#include "core/events/EventContext.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/page/Frame.h"

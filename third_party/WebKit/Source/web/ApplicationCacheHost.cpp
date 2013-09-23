@@ -38,7 +38,7 @@
 #include "ApplicationCacheHostInternal.h"
 #include "WebFrameImpl.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/ProgressEvent.h"
+#include "core/events/ProgressEvent.h"
 #include "core/inspector/InspectorApplicationCacheAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"

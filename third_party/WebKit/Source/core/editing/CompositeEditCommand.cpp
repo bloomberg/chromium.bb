@@ -33,7 +33,7 @@
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Range.h"
-#include "core/dom/ScopedEventQueue.h"
+#include "core/events/ScopedEventQueue.h"
 #include "core/dom/Text.h"
 #include "core/editing/AppendNodeCommand.h"
 #include "core/editing/ApplyStyleCommand.h"

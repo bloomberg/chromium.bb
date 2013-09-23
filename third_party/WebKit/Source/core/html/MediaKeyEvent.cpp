@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/MediaKeyEvent.h"
 
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 #include "wtf/Uint8Array.h"
 
 namespace WebCore {

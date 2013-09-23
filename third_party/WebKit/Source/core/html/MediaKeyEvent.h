@@ -26,7 +26,7 @@
 #ifndef MediaKeyEvent_h
 #define MediaKeyEvent_h
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/html/MediaKeyError.h"
 
 namespace WebCore {

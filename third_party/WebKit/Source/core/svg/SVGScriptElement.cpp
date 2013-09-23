@@ -27,7 +27,7 @@
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 #include "core/dom/ScriptLoader.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/properties/SVGAnimatedStaticPropertyTearOff.h"

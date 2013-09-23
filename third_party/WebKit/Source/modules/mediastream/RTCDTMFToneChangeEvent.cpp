@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/mediastream/RTCDTMFToneChangeEvent.h"
 
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 
 namespace WebCore {
 

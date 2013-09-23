@@ -26,7 +26,7 @@
 #ifndef FrameLoadRequest_h
 #define FrameLoadRequest_h
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/SubstituteData.h"

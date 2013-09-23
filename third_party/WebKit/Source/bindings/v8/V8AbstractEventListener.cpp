@@ -37,9 +37,9 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8EventListenerList.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
-#include "core/dom/BeforeUnloadEvent.h"
-#include "core/dom/Event.h"
-#include "core/dom/EventNames.h"
+#include "core/events/BeforeUnloadEvent.h"
+#include "core/events/Event.h"
+#include "core/events/EventNames.h"
 #include "core/inspector/InspectorCounters.h"
 #include "core/workers/WorkerGlobalScope.h"
 

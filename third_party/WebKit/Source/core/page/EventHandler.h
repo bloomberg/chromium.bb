@@ -26,7 +26,7 @@
 #ifndef EventHandler_h
 #define EventHandler_h
 
-#include "core/dom/TextEventInputType.h"
+#include "core/events/TextEventInputType.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/editing/TextGranularity.h"
 #include "core/page/DragActions.h"

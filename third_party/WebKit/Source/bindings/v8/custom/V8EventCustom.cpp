@@ -36,9 +36,9 @@
 #include "V8Clipboard.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/Clipboard.h"
-#include "core/dom/ClipboardEvent.h"
-#include "core/dom/Event.h"
-#include "core/dom/EventNames.h"
+#include "core/events/ClipboardEvent.h"
+#include "core/events/Event.h"
+#include "core/events/EventNames.h"
 
 namespace WebCore {
 

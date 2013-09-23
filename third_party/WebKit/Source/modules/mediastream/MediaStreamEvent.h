@@ -25,7 +25,7 @@
 #ifndef MediaStreamEvent_h
 #define MediaStreamEvent_h
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "modules/mediastream/MediaStream.h"
 #include "wtf/text/AtomicString.h"
 

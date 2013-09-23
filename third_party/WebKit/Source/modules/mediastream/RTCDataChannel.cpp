@@ -26,9 +26,9 @@
 #include "modules/mediastream/RTCDataChannel.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/MessageEvent.h"
+#include "core/events/MessageEvent.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/platform/mediastream/RTCDataChannelHandler.h"

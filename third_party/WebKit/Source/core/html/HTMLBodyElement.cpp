@@ -31,7 +31,7 @@
 #include "core/css/CSSParser.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Attribute.h"
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/Frame.h"

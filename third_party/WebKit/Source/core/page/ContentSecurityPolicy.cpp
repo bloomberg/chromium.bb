@@ -32,7 +32,7 @@
 #include "bindings/v8/ScriptState.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
-#include "core/dom/SecurityPolicyViolationEvent.h"
+#include "core/events/SecurityPolicyViolationEvent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"

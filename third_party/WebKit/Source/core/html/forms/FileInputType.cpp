@@ -26,7 +26,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptController.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"

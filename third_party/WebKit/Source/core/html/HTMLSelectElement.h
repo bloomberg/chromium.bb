@@ -26,7 +26,7 @@
 #ifndef HTMLSelectElement_h
 #define HTMLSelectElement_h
 
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/html/HTMLFormControlElementWithState.h"
 #include "core/html/HTMLOptionsCollection.h"
 #include "core/html/forms/TypeAhead.h"

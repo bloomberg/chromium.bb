@@ -29,9 +29,9 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "bindings/v8/WorkerScriptController.h"
-#include "core/dom/EventListener.h"
-#include "core/dom/EventNames.h"
-#include "core/dom/EventTarget.h"
+#include "core/events/EventListener.h"
+#include "core/events/EventNames.h"
+#include "core/events/EventTarget.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/workers/WorkerConsole.h"

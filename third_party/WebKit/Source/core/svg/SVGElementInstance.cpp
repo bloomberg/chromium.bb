@@ -24,9 +24,9 @@
 #include "core/svg/SVGElementInstance.h"
 
 #include "core/dom/ContainerNodeAlgorithms.h"
-#include "core/dom/Event.h"
-#include "core/dom/EventListener.h"
-#include "core/dom/EventNames.h"
+#include "core/events/Event.h"
+#include "core/events/EventListener.h"
+#include "core/events/EventNames.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGElementInstanceList.h"
 #include "core/svg/SVGUseElement.h"

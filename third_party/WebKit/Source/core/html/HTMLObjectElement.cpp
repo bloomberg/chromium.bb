@@ -28,7 +28,7 @@
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/EventNames.h"
+#include "core/events/EventNames.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/Text.h"
 #include "core/fetch/ImageResource.h"

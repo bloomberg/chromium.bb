@@ -27,8 +27,8 @@
 #define MediaController_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/Event.h"
-#include "core/dom/EventTarget.h"
+#include "core/events/Event.h"
+#include "core/events/EventTarget.h"
 #include "core/html/MediaControllerInterface.h"
 #include "core/platform/Timer.h"
 #include "wtf/PassRefPtr.h"

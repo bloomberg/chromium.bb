@@ -33,7 +33,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/EventTarget.h"
+#include "core/events/EventTarget.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"

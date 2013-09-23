@@ -28,7 +28,7 @@
 
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/Event.h"
+#include "core/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "RuntimeEnabledFeatures.h"

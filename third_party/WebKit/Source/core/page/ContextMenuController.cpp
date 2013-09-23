@@ -28,8 +28,8 @@
 #include "core/page/ContextMenuController.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/Event.h"
-#include "core/dom/MouseEvent.h"
+#include "core/events/Event.h"
+#include "core/events/MouseEvent.h"
 #include "core/dom/Node.h"
 #include "core/page/ContextMenuClient.h"
 #include "core/page/ContextMenuProvider.h"
