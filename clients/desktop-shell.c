@@ -1160,6 +1160,13 @@ output_handle_mode(void *data,
 		   int height,
 		   int refresh)
 {
+	struct output *output = (struct output *)data;
+
+	if (flags & WL_OUTPUT_MODE_CURRENT) {
+		window_schedule_resize(output->panel->window, width, 32);
+		window_schedule_resize(output->background->window,
+				       width, height);
+	}
 }
 
 static void
