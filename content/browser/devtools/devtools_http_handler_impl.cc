@@ -816,7 +816,7 @@ base::DictionaryValue* DevToolsHttpHandlerImpl::SerializePageInfo(
         std::string(kThumbUrlPrefix) + id);
 
     NavigationController& controller = web_contents->GetController();
-    NavigationEntry* entry = controller.GetVisibleEntry();
+    NavigationEntry* entry = controller.GetActiveEntry();
     if (entry != NULL && entry->GetURL().is_valid()) {
       dictionary->SetString(kTargetFaviconUrlField,
           entry->GetFavicon().url.spec());
