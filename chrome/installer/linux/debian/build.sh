@@ -94,9 +94,13 @@ do_package() {
   echo "Packaging ${ARCHITECTURE}..."
   PREDEPENDS="$COMMON_PREDEPS"
   DEPENDS="${COMMON_DEPS}"
-  REPLACES=""
-  CONFLICTS=""
-  PROVIDES="www-browser"
+  # Trunk is a special package, mostly for development testing, so don't make
+  # it replace any installed release packages.
+  if [ "$CHANNEL" != "trunk" ] && [ "$CHANNEL" != "asan" ]; then
+    REPLACES="${PACKAGE}"
+    CONFLICTS="${PACKAGE}"
+    PROVIDES="${PACKAGE}, www-browser"
+  fi
   gen_changelog
   process_template "${SCRIPTDIR}/control.template" "${DEB_CONTROL}"
   export DEB_HOST_ARCH="${ARCHITECTURE}"
