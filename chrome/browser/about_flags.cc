@@ -29,6 +29,7 @@
 #include "media/base/media_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/compositor/compositor_switches.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -203,6 +204,22 @@ const Experiment::Choice kImplSidePaintingChoices[] = {
     cc::switches::kEnableImplSidePainting, ""},
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     cc::switches::kDisableImplSidePainting, ""}
+};
+
+const Experiment::Choice kDeadlineSchedulingChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kEnableDeadlineScheduling, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisableDeadlineScheduling, ""}
+};
+
+const Experiment::Choice kUIDeadlineSchedulingChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kUIEnableDeadlineScheduling, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kUIDisableDeadlineScheduling, ""}
 };
 
 const Experiment::Choice kLCDTextChoices[] = {
@@ -1429,6 +1446,23 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_IMPL_SIDE_PAINTING_DESCRIPTION,
     kOsAndroid | kOsLinux | kOsCrOS,
     MULTI_VALUE_TYPE(kImplSidePaintingChoices)
+  },
+  {
+    "deadline-scheduling",
+    IDS_FLAGS_DEADLINE_SCHEDULING_NAME,
+    IDS_FLAGS_DEADLINE_SCHEDULING_DESCRIPTION,
+    kOsMac | kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
+    MULTI_VALUE_TYPE(kDeadlineSchedulingChoices)
+  },
+  {
+    "ui-deadline-scheduling",
+    IDS_FLAGS_UI_DEADLINE_SCHEDULING_NAME,
+    IDS_FLAGS_UI_DEADLINE_SCHEDULING_DESCRIPTION,
+#ifdef USE_AURA
+    kOsWin | kOsLinux |
+#endif
+    kOsCrOS,
+    MULTI_VALUE_TYPE(kUIDeadlineSchedulingChoices)
   },
   {
     "lcd-text-aa",
