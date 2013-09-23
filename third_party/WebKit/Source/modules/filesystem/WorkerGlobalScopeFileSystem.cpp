@@ -95,12 +95,14 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalSc
         return;
     }
 
-    if (!completedURL.isValid()) {
+    FileSystemType type;
+    String filePath;
+    if (!completedURL.isValid() || !DOMFileSystemBase::crackFileSystemURL(completedURL, type, filePath)) {
         DOMFileSystem::scheduleCallback(worker, errorCallback, FileError::create(FileError::ENCODING_ERR));
         return;
     }
 
-    WorkerLocalFileSystem::from(worker)->resolveURL(worker, completedURL, ResolveURICallbacks::create(successCallback, errorCallback, worker));
+    WorkerLocalFileSystem::from(worker)->readFileSystem(worker, type, ResolveURICallbacks::create(successCallback, errorCallback, worker, type, filePath));
 }
 
 PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope* worker, const String& url, ExceptionState& es)
@@ -112,20 +114,28 @@ PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemS
         return 0;
     }
 
-    if (!completedURL.isValid()) {
+    FileSystemType type;
+    String filePath;
+    if (!completedURL.isValid() || !DOMFileSystemBase::crackFileSystemURL(completedURL, type, filePath)) {
         es.throwDOMException(EncodingError, ExceptionMessages::failedToExecute("webkitResolveLocalFileSystemSyncURL", "WorkerGlobalScopeFileSystem", "the URL '" + url + "' is invalid."));
         return 0;
     }
 
-    EntrySyncCallbackHelper resolveURLHelper;
-    OwnPtr<AsyncFileSystemCallbacks> callbacks = ResolveURICallbacks::create(resolveURLHelper.successCallback(), resolveURLHelper.errorCallback(), worker);
+    FileSystemSyncCallbackHelper readFileSystemHelper;
+    OwnPtr<AsyncFileSystemCallbacks> callbacks = FileSystemCallbacks::create(readFileSystemHelper.successCallback(), readFileSystemHelper.errorCallback(), worker, type);
     callbacks->setShouldBlockUntilCompletion(true);
 
-    WorkerLocalFileSystem::from(worker)->resolveURL(worker, completedURL, callbacks.release());
-
-    RefPtr<EntrySync> entry = resolveURLHelper.getResult(es);
-    if (!entry)
+    WorkerLocalFileSystem::from(worker)->readFileSystem(worker, type, callbacks.release());
+    RefPtr<DOMFileSystemSync> fileSystem = readFileSystemHelper.getResult(es);
+    if (!fileSystem)
         return 0;
+
+    RefPtr<EntrySync> entry = fileSystem->root()->getDirectory(filePath, Dictionary(), es);
+    if (es.code() == TypeMismatchError) {
+        es.clearException();
+        return fileSystem->root()->getFile(filePath, Dictionary(), es);
+    }
+
     return entry.release();
 }
 

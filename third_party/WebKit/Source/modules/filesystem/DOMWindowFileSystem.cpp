@@ -87,12 +87,14 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(DOMWindow* window, con
         return;
     }
 
-    if (!completedURL.isValid()) {
+    FileSystemType type;
+    String filePath;
+    if (!completedURL.isValid() || !DOMFileSystemBase::crackFileSystemURL(completedURL, type, filePath)) {
         DOMFileSystem::scheduleCallback(document, errorCallback, FileError::create(FileError::ENCODING_ERR));
         return;
     }
 
-    LocalFileSystem::from(document)->resolveURL(document, completedURL, ResolveURICallbacks::create(successCallback, errorCallback, document));
+    LocalFileSystem::from(document)->readFileSystem(document, type, ResolveURICallbacks::create(successCallback, errorCallback, document, type, filePath));
 }
 
 COMPILE_ASSERT(static_cast<int>(DOMWindowFileSystem::TEMPORARY) == static_cast<int>(FileSystemTypeTemporary), enum_mismatch);

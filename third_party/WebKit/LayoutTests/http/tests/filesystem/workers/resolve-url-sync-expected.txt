@@ -21,13 +21,13 @@ PASS [Worker] error.name is 'SecurityError'
 [Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'WorkerGlobalScopeFileSystem': It was determined that certain files are unsafe for access within a Web application, or that too many calls are being made on file resources.
 [Worker] * Resolving a completely bogus URL.
 PASS [Worker] error.name is 'EncodingError'
-[Worker] A URI supplied to the API was malformed, or the resulting Data URL has exceeded the URL length limitations for Data URLs.
+[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'WorkerGlobalScopeFileSystem': the URL 'foo' is invalid.
 [Worker] * Resolving a URL with the wrong protocol
 PASS [Worker] error.name is 'EncodingError'
-[Worker] A URI supplied to the API was malformed, or the resulting Data URL has exceeded the URL length limitations for Data URLs.
+[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'WorkerGlobalScopeFileSystem': the URL 'http://127.0.0.1:8000/foo/bar/baz' is invalid.
 [Worker] * Resolving a URL with no slash between type and file
 PASS [Worker] error.name is 'EncodingError'
-[Worker] A URI supplied to the API was malformed, or the resulting Data URL has exceeded the URL length limitations for Data URLs.
+[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'WorkerGlobalScopeFileSystem': the URL 'filesystem:http://127.0.0.1:8000/temporarytestFile' is invalid.
 [Worker] * Resolving a URL with no slash between protocol and type (bogus port)
 PASS [Worker] error.name is 'SecurityError'
 [Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'WorkerGlobalScopeFileSystem': It was determined that certain files are unsafe for access within a Web application, or that too many calls are being made on file resources.

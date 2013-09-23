@@ -110,13 +110,16 @@ private:
 
 class ResolveURICallbacks : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, ScriptExecutionContext*);
-    virtual void didResolveURL(const String& name, const KURL& rootURL, FileSystemType, const String& filePath, bool isDirectry);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, ScriptExecutionContext*, FileSystemType, const String& filePath);
+    virtual void didOpenFileSystem(const String& name, const KURL& rootURL);
+    virtual void didResolveURL(const String& name, const KURL& rootURL, FileSystemType, const String& filePath, bool isDirectory);
 
 private:
-    ResolveURICallbacks(PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, ScriptExecutionContext*);
+    ResolveURICallbacks(PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, ScriptExecutionContext*, FileSystemType, const String& filePath);
     RefPtr<EntryCallback> m_successCallback;
     RefPtr<ScriptExecutionContext> m_scriptExecutionContext;
+    FileSystemType m_type;
+    String m_filePath;
 };
 
 class MetadataCallbacks : public FileSystemCallbacksBase {
