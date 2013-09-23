@@ -12,6 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/devtools/ipc_devtools_agent_host.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -23,7 +25,8 @@ class RenderViewHost;
 
 class CONTENT_EXPORT RenderViewDevToolsAgentHost
     : public IPCDevToolsAgentHost,
-      private WebContentsObserver {
+      private WebContentsObserver,
+      public NotificationObserver {
  public:
   static void OnCancelPendingNavigation(RenderViewHost* pending,
                                         RenderViewHost* current);
@@ -54,7 +57,13 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual void DidAttachInterstitialPage() OVERRIDE;
 
+  // NotificationObserver overrides:
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
   void SetRenderViewHost(RenderViewHost* rvh);
+  void ClearRenderViewHost();
 
   void RenderViewHostDestroyed(RenderViewHost* rvh);
   void RenderViewCrashed();
@@ -73,6 +82,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   scoped_ptr<RendererOverridesHandler> overrides_handler_;
   scoped_ptr<DevToolsTracingHandler> tracing_handler_;
   std::string state_;
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewDevToolsAgentHost);
 };

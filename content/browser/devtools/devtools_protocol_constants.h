@@ -129,6 +129,10 @@ namespace Page {
     extern const char kName[];
   }  // screencastFrame
 
+  namespace screencastVisibilityChanged {
+    extern const char kName[];
+    extern const char kParamVisible[];
+  }  // screencastVisibilityChanged
 }  // Page
 
 namespace Tracing {

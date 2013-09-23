@@ -34,6 +34,7 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
 
   void OnClientDetached();
   void OnSwapCompositorFrame(const IPC::Message& message);
+  void OnVisibilityChanged(bool visible);
 
  private:
   void InnerSwapCompositorFrame();
@@ -73,6 +74,8 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
       const cc::CompositorFrameMetadata& metadata,
       bool success,
       const SkBitmap& bitmap);
+
+  void NotifyScreencastVisibility(bool visible);
 
   // Input domain.
   scoped_refptr<DevToolsProtocol::Response> InputDispatchMouseEvent(

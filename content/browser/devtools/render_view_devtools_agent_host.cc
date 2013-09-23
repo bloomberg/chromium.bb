@@ -136,7 +136,8 @@ void RenderViewDevToolsAgentHost::OnCancelPendingNavigation(
 
 RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(
     RenderViewHost* rvh)
-    : overrides_handler_(new RendererOverridesHandler(this)),
+    : render_view_host_(NULL),
+      overrides_handler_(new RendererOverridesHandler(this)),
       tracing_handler_(new DevToolsTracingHandler())
  {
   SetRenderViewHost(rvh);
@@ -148,7 +149,7 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(
   g_instances.Get().push_back(this);
   RenderViewHostDelegate* delegate = render_view_host_->GetDelegate();
   if (delegate && delegate->GetAsWebContents())
-    Observe(delegate->GetAsWebContents());
+    WebContentsObserver::Observe(delegate->GetAsWebContents());
   AddRef();  // Balanced in RenderViewHostDestroyed.
 }
 
@@ -274,9 +275,33 @@ void RenderViewDevToolsAgentHost::DidAttachInterstitialPage() {
   ConnectRenderViewHost(web_contents->GetRenderViewHost());
 }
 
+void RenderViewDevToolsAgentHost::Observe(int type,
+                                          const NotificationSource& source,
+                                          const NotificationDetails& details) {
+  if (type == content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED) {
+    bool visible = *Details<bool>(details).ptr();
+    overrides_handler_->OnVisibilityChanged(visible);
+  }
+}
+
 void RenderViewDevToolsAgentHost::SetRenderViewHost(RenderViewHost* rvh) {
+  DCHECK(!render_view_host_);
   render_view_host_ = rvh;
   rvh_observer_.reset(new DevToolsAgentHostRvhObserver(rvh, this));
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+      content::Source<RenderWidgetHost>(render_view_host_));
+}
+
+void RenderViewDevToolsAgentHost::ClearRenderViewHost() {
+  DCHECK(render_view_host_);
+  registrar_.Remove(
+      this,
+      content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+      content::Source<RenderWidgetHost>(render_view_host_));
+  rvh_observer_.reset(NULL);
+  render_view_host_ = NULL;
 }
 
 void RenderViewDevToolsAgentHost::ConnectRenderViewHost(RenderViewHost* rvh) {
@@ -287,8 +312,7 @@ void RenderViewDevToolsAgentHost::ConnectRenderViewHost(RenderViewHost* rvh) {
 
 void RenderViewDevToolsAgentHost::DisconnectRenderViewHost() {
   ClientDetachedFromRenderer();
-  rvh_observer_.reset();
-  render_view_host_ = NULL;
+  ClearRenderViewHost();
 }
 
 void RenderViewDevToolsAgentHost::RenderViewHostDestroyed(
@@ -296,7 +320,7 @@ void RenderViewDevToolsAgentHost::RenderViewHostDestroyed(
   DCHECK(render_view_host_);
   scoped_refptr<RenderViewDevToolsAgentHost> protect(this);
   NotifyCloseListener();
-  render_view_host_ = NULL;
+  ClearRenderViewHost();
   Release();
 }
 

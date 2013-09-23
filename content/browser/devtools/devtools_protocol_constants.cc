@@ -120,6 +120,11 @@ namespace screencastFrame {
   const char kName[] = "Page.screencastFrame";
 }  // screencastFrame
 
+namespace screencastVisibilityChanged {
+  const char kName[] = "Page.screencastVisibilityChanged";
+  const char kParamVisible[] = "visible";
+}  // screencastVisibilityChanged
+
 }  // Page
 
 namespace Worker {

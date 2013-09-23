@@ -155,6 +155,12 @@ void RendererOverridesHandler::OnSwapCompositorFrame(
     InnerSwapCompositorFrame();
 }
 
+void RendererOverridesHandler::OnVisibilityChanged(bool visible) {
+  if (!screencast_command_)
+    return;
+  NotifyScreencastVisibility(visible);
+}
+
 void RendererOverridesHandler::InnerSwapCompositorFrame() {
   if ((base::TimeTicks::Now() - last_frame_time_).InMilliseconds() <
           kFrameRateThresholdMs) {
@@ -445,7 +451,12 @@ scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageStartScreencast(
     scoped_refptr<DevToolsProtocol::Command> command) {
   screencast_command_ = command;
-  InnerSwapCompositorFrame();
+  RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
+      agent_->GetRenderViewHost());
+  bool visible = !host->is_hidden();
+  NotifyScreencastVisibility(visible);
+  if (visible)
+    InnerSwapCompositorFrame();
   return command->SuccessResponse(NULL);
 }
 
@@ -548,6 +559,13 @@ void RendererOverridesHandler::ScreenshotCaptured(
   }
 }
 
+void RendererOverridesHandler::NotifyScreencastVisibility(bool visible) {
+  base::DictionaryValue* params = new base::DictionaryValue();
+  params->SetBoolean(
+      devtools::Page::screencastVisibilityChanged::kParamVisible, visible);
+  SendNotification(
+      devtools::Page::screencastVisibilityChanged::kName, params);
+}
 
 // Input agent handlers  ------------------------------------------------------
 
