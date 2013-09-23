@@ -599,22 +599,22 @@ struct FakeDeviceData {
 };
 
 static const FakeDeviceData kFakeDevices[] = {
-  { "/device/ethernet", flimflam::kTypeEthernet, "ethernet",
+  { "/device/ethernet", shill::kTypeEthernet, "ethernet",
     "112233445566", "", "",
     em::NetworkInterface::TYPE_ETHERNET },
-  { "/device/cellular1", flimflam::kTypeCellular, "cellular1",
+  { "/device/cellular1", shill::kTypeCellular, "cellular1",
     "abcdefabcdef", "A10000009296F2", "",
     em::NetworkInterface::TYPE_CELLULAR },
-  { "/device/cellular2", flimflam::kTypeCellular, "cellular2",
+  { "/device/cellular2", shill::kTypeCellular, "cellular2",
     "abcdefabcdef", "", "352099001761481",
     em::NetworkInterface::TYPE_CELLULAR },
-  { "/device/wifi", flimflam::kTypeWifi, "wifi",
+  { "/device/wifi", shill::kTypeWifi, "wifi",
     "aabbccddeeff", "", "",
     em::NetworkInterface::TYPE_WIFI },
-  { "/device/bluetooth", flimflam::kTypeBluetooth, "bluetooth",
+  { "/device/bluetooth", shill::kTypeBluetooth, "bluetooth",
     "", "", "",
     em::NetworkInterface::TYPE_BLUETOOTH },
-  { "/device/vpn", flimflam::kTypeVPN, "vpn",
+  { "/device/vpn", shill::kTypeVPN, "vpn",
     "", "", "",
     -1 },
 };
@@ -635,17 +635,17 @@ class DeviceStatusCollectorNetworkInterfacesTest
                                     dev.object_path);
       if (*dev.mac_address) {
         test_device_client->SetDeviceProperty(
-            dev.device_path, flimflam::kAddressProperty,
+            dev.device_path, shill::kAddressProperty,
             base::StringValue(dev.mac_address));
       }
       if (*dev.meid) {
         test_device_client->SetDeviceProperty(
-            dev.device_path, flimflam::kMeidProperty,
+            dev.device_path, shill::kMeidProperty,
             base::StringValue(dev.meid));
       }
       if (*dev.imei) {
         test_device_client->SetDeviceProperty(
-            dev.device_path, flimflam::kImeiProperty,
+            dev.device_path, shill::kImeiProperty,
             base::StringValue(dev.imei));
       }
     }

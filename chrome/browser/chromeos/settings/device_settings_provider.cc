@@ -824,7 +824,7 @@ void DeviceSettingsProvider::ApplyRoamingSetting(bool new_value) {
   }
   bool current_value;
   if (!cellular->properties().GetBooleanWithoutPathExpansion(
-          flimflam::kCellularAllowRoamingProperty, &current_value)) {
+          shill::kCellularAllowRoamingProperty, &current_value)) {
     NET_LOG_ERROR("Could not get \"allow roaming\" property from cellular "
                   "device.", cellular->path());
     return;
@@ -838,7 +838,7 @@ void DeviceSettingsProvider::ApplyRoamingSetting(bool new_value) {
 
   NetworkHandler::Get()->network_device_handler()->SetDeviceProperty(
       cellular->path(),
-      flimflam::kCellularAllowRoamingProperty,
+      shill::kCellularAllowRoamingProperty,
       base::FundamentalValue(new_value),
       base::Bind(&base::DoNothing),
       base::Bind(&LogShillError));

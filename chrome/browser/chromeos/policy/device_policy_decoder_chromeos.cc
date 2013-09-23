@@ -44,11 +44,11 @@ Value* DecodeIntegerValue(google::protobuf::int64 value) {
 
 Value* DecodeConnectionType(int value) {
   static const char* const kConnectionTypes[] = {
-    flimflam::kTypeEthernet,
-    flimflam::kTypeWifi,
-    flimflam::kTypeWimax,
-    flimflam::kTypeBluetooth,
-    flimflam::kTypeCellular,
+    shill::kTypeEthernet,
+    shill::kTypeWifi,
+    shill::kTypeWimax,
+    shill::kTypeBluetooth,
+    shill::kTypeCellular,
   };
 
   if (value < 0 || value >= static_cast<int>(arraysize(kConnectionTypes)))

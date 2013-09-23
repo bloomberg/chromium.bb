@@ -412,11 +412,11 @@ void DeviceStatusCollector::GetNetworkInterfaces(
     const char* type_string;
     em::NetworkInterface::NetworkDeviceType type_constant;
   } kDeviceTypeMap[] = {
-    { flimflam::kTypeEthernet,  em::NetworkInterface::TYPE_ETHERNET,  },
-    { flimflam::kTypeWifi,      em::NetworkInterface::TYPE_WIFI,      },
-    { flimflam::kTypeWimax,     em::NetworkInterface::TYPE_WIMAX,     },
-    { flimflam::kTypeBluetooth, em::NetworkInterface::TYPE_BLUETOOTH, },
-    { flimflam::kTypeCellular,  em::NetworkInterface::TYPE_CELLULAR,  },
+    { shill::kTypeEthernet,  em::NetworkInterface::TYPE_ETHERNET,  },
+    { shill::kTypeWifi,      em::NetworkInterface::TYPE_WIFI,      },
+    { shill::kTypeWimax,     em::NetworkInterface::TYPE_WIMAX,     },
+    { shill::kTypeBluetooth, em::NetworkInterface::TYPE_BLUETOOTH, },
+    { shill::kTypeCellular,  em::NetworkInterface::TYPE_CELLULAR,  },
   };
 
   chromeos::NetworkStateHandler::DeviceStateList device_list;
