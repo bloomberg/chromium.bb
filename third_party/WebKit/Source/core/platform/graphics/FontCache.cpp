@@ -134,6 +134,40 @@ typedef HashMap<FontPlatformDataCacheKey, FontPlatformData*, FontPlatformDataCac
 
 static FontPlatformDataCache* gFontPlatformDataCache = 0;
 
+// We currently do not support bitmap fonts on windows (with GDI_FONTS_ON_WINDOWS enabled).
+// Instead of trying to construct a bitmap font and then going down the fallback path map
+// certain common bitmap fonts to their truetype equivalent up front. This also allows the
+// GDI_FONTS_ON_WINDOWS disabled code path to match our current behavior.
+static const AtomicString& alternateFamilyNameAvoidingBitmapFonts(const AtomicString& familyName)
+{
+#if OS(WIN)
+    // On Windows, 'Courier New' (truetype font) is always present and
+    // 'Courier' is a bitmap font. On Mac on the other hand 'Courier' is
+    // a truetype font. Thus pages asking for Courier are better of
+    // using 'Courier New' on windows.
+    DEFINE_STATIC_LOCAL(AtomicString, courier, ("Courier", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, courierNew, ("Courier New", AtomicString::ConstructFromLiteral));
+    if (equalIgnoringCase(familyName, courier))
+        return courierNew;
+
+    // Alias 'MS Sans Serif' (bitmap font) -> 'Microsoft Sans Serif'
+    // (truetype font).
+    DEFINE_STATIC_LOCAL(AtomicString, msSans, ("MS Sans Serif", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, microsoftSans, ("Microsoft Sans Serif", AtomicString::ConstructFromLiteral));
+    if (equalIgnoringCase(familyName, msSans))
+        return microsoftSans;
+
+    // Alias 'MS Serif' (bitmap) -> 'Times New Roman' (truetype font).
+    // There's no 'Microsoft Sans Serif-equivalent' for Serif.
+    DEFINE_STATIC_LOCAL(AtomicString, msSerif, ("MS Serif", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, timesNewRoman, ("Times New Roman", AtomicString::ConstructFromLiteral));
+    if (equalIgnoringCase(familyName, msSerif))
+        return timesNewRoman;
+#endif
+
+    return emptyAtom;
+}
+
 static const AtomicString& alternateFamilyName(const AtomicString& familyName)
 {
     // Alias Courier <-> Courier New
@@ -164,21 +198,6 @@ static const AtomicString& alternateFamilyName(const AtomicString& familyName)
         return helvetica;
     if (equalIgnoringCase(familyName, helvetica))
         return arial;
-
-#if OS(WIN)
-    // On Windows, bitmap fonts are blocked altogether so that we have to
-    // alias MS Sans Serif (bitmap font) -> Microsoft Sans Serif (truetype font)
-    DEFINE_STATIC_LOCAL(AtomicString, msSans, ("MS Sans Serif", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, microsoftSans, ("Microsoft Sans Serif", AtomicString::ConstructFromLiteral));
-    if (equalIgnoringCase(familyName, msSans))
-        return microsoftSans;
-
-    // Alias MS Serif (bitmap) -> Times New Roman (truetype font). There's no
-    // 'Microsoft Sans Serif-equivalent' for Serif.
-    DEFINE_STATIC_LOCAL(AtomicString, msSerif, ("MS Serif", AtomicString::ConstructFromLiteral));
-    if (equalIgnoringCase(familyName, msSerif))
-        return timesNewRoman;
-#endif
 
     return emptyAtom;
 }
@@ -306,7 +325,14 @@ static ListHashSet<RefPtr<SimpleFontData> >* gInactiveFontData = 0;
 
 PassRefPtr<SimpleFontData> FontCache::getFontResourceData(const FontDescription& fontDescription, const AtomicString& family, bool checkingAlternateName, ShouldRetain shouldRetain)
 {
-    FontPlatformData* platformData = getFontResourcePlatformData(fontDescription, family, checkingAlternateName);
+    FontPlatformData* platformData;
+
+    const AtomicString& preferedAlternateName = alternateFamilyNameAvoidingBitmapFonts(family);
+    if (!preferedAlternateName.isEmpty())
+        platformData = getFontResourcePlatformData(fontDescription, preferedAlternateName, checkingAlternateName);
+    else
+        platformData = getFontResourcePlatformData(fontDescription, family, checkingAlternateName);
+
     if (!platformData)
         return 0;
 
