@@ -432,12 +432,15 @@ bool SingleThreadProxy::CommitAndComposite(
   if (layer_tree_host_->contents_texture_manager()) {
     layer_tree_host_->contents_texture_manager()
         ->UnlinkAndClearEvictedBackings();
+    layer_tree_host_->contents_texture_manager()->SetMaxMemoryLimitBytes(
+        layer_tree_host_impl_->memory_allocation_limit_bytes());
+    layer_tree_host_->contents_texture_manager()->SetExternalPriorityCutoff(
+        layer_tree_host_impl_->memory_allocation_priority_cutoff());
   }
 
   scoped_ptr<ResourceUpdateQueue> queue =
       make_scoped_ptr(new ResourceUpdateQueue);
-  layer_tree_host_->UpdateLayers(
-      queue.get(), layer_tree_host_impl_->memory_allocation_limit_bytes());
+  layer_tree_host_->UpdateLayers(queue.get());
 
   layer_tree_host_->WillCommit();
   DoCommit(queue.Pass());

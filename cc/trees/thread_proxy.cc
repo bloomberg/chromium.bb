@@ -709,6 +709,8 @@ void ThreadProxy::ScheduledActionSendBeginFrameToMainThread() {
   }
   begin_frame_state->memory_allocation_limit_bytes =
       layer_tree_host_impl_->memory_allocation_limit_bytes();
+  begin_frame_state->memory_allocation_priority_cutoff =
+      layer_tree_host_impl_->memory_allocation_priority_cutoff();
   begin_frame_state->evicted_ui_resources =
       layer_tree_host_impl_->EvictedUIResourcesExist();
   Proxy::MainThreadTaskRunner()->PostTask(
@@ -783,6 +785,13 @@ void ThreadProxy::BeginFrameOnMainThread(
   if (layer_tree_host_->contents_texture_manager()) {
     layer_tree_host_->contents_texture_manager()->
         UnlinkAndClearEvictedBackings();
+
+    if (begin_frame_state) {
+      layer_tree_host_->contents_texture_manager()->SetMaxMemoryLimitBytes(
+          begin_frame_state->memory_allocation_limit_bytes);
+      layer_tree_host_->contents_texture_manager()->SetExternalPriorityCutoff(
+          begin_frame_state->memory_allocation_priority_cutoff);
+    }
   }
 
   // Recreate all UI resources if there were evicted UI resources when the impl
@@ -807,10 +816,8 @@ void ThreadProxy::BeginFrameOnMainThread(
 
   scoped_ptr<ResourceUpdateQueue> queue =
       make_scoped_ptr(new ResourceUpdateQueue);
-  bool updated = layer_tree_host_->UpdateLayers(
-      queue.get(),
-      begin_frame_state ? begin_frame_state->memory_allocation_limit_bytes
-                        : 0u);
+
+  bool updated = layer_tree_host_->UpdateLayers(queue.get());
 
   // Once single buffered layers are committed, they cannot be modified until
   // they are drawn by the impl thread.
@@ -1409,7 +1416,9 @@ size_t ThreadProxy::MaxPartialTextureUpdates() const {
 }
 
 ThreadProxy::BeginFrameAndCommitState::BeginFrameAndCommitState()
-    : memory_allocation_limit_bytes(0), evicted_ui_resources(false) {}
+    : memory_allocation_limit_bytes(0),
+      memory_allocation_priority_cutoff(0),
+      evicted_ui_resources(false) {}
 
 ThreadProxy::BeginFrameAndCommitState::~BeginFrameAndCommitState() {}
 

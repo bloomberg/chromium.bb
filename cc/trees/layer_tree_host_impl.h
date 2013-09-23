@@ -286,6 +286,7 @@ class CC_EXPORT LayerTreeHostImpl
   ManagedMemoryPolicy ActualManagedMemoryPolicy() const;
 
   size_t memory_allocation_limit_bytes() const;
+  int memory_allocation_priority_cutoff() const;
 
   void SetViewportSize(gfx::Size device_viewport_size);
 

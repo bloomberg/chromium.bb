@@ -733,19 +733,13 @@ bool LayerTreeHost::InitializeOutputSurfaceIfNeeded() {
   return !output_surface_lost_;
 }
 
-bool LayerTreeHost::UpdateLayers(ResourceUpdateQueue* queue,
-                                 size_t memory_allocation_limit_bytes) {
+bool LayerTreeHost::UpdateLayers(ResourceUpdateQueue* queue) {
   DCHECK(!output_surface_lost_);
 
   if (!root_layer())
     return false;
 
   DCHECK(!root_layer()->parent());
-
-  if (contents_texture_manager_ && memory_allocation_limit_bytes) {
-    contents_texture_manager_->SetMaxMemoryLimitBytes(
-        memory_allocation_limit_bytes);
-  }
 
   return UpdateLayers(root_layer(), queue);
 }

@@ -77,6 +77,9 @@ class CC_EXPORT PrioritizedResourceManager {
   void SetExternalPriorityCutoff(int priority_cutoff) {
     external_priority_cutoff_ = priority_cutoff;
   }
+  int ExternalPriorityCutoff() const {
+    return external_priority_cutoff_;
+  }
 
   // Return the amount of texture memory required at particular cutoffs.
   size_t MemoryVisibleBytes() const;

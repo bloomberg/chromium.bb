@@ -164,8 +164,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   virtual void AcquireLayerTextures();
   // Returns false if we should abort this frame due to initialization failure.
   bool InitializeOutputSurfaceIfNeeded();
-  bool UpdateLayers(ResourceUpdateQueue* queue,
-                    size_t contents_memory_limit_bytes);
+  bool UpdateLayers(ResourceUpdateQueue* queue);
 
   LayerTreeHostClient* client() { return client_; }
   const base::WeakPtr<InputHandler>& GetInputHandler() {

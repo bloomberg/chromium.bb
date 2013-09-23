@@ -1613,6 +1613,11 @@ size_t LayerTreeHostImpl::memory_allocation_limit_bytes() const {
   return ActualManagedMemoryPolicy().bytes_limit_when_visible;
 }
 
+int LayerTreeHostImpl::memory_allocation_priority_cutoff() const {
+  return ManagedMemoryPolicy::PriorityCutoffToValue(
+      ActualManagedMemoryPolicy().priority_cutoff_when_visible);
+}
+
 void LayerTreeHostImpl::ReleaseTreeResources() {
   if (active_tree_->root_layer())
     SendReleaseResourcesRecursive(active_tree_->root_layer());

@@ -4685,6 +4685,100 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
 // Impl-side painting is a multi-threaded compositor feature.
 MULTI_THREAD_TEST_F(LayerTreeHostTestMaxTransferBufferUsageBytes);
 
+// Test ensuring that memory limits are sent to the prioritized resource
+// manager.
+class LayerTreeHostTestMemoryLimits : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestMemoryLimits() : num_commits_(0) {}
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  virtual void DidCommit() OVERRIDE {
+    int frame = num_commits_;
+    switch (frame) {
+      case 0:
+        // Verify default values.
+        EXPECT_EQ(
+            PrioritizedResourceManager::DefaultMemoryAllocationLimit(),
+            layer_tree_host()->contents_texture_manager()->
+                MaxMemoryLimitBytes());
+        EXPECT_EQ(
+            PriorityCalculator::AllowEverythingCutoff(),
+            layer_tree_host()->contents_texture_manager()->
+                ExternalPriorityCutoff());
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 1:
+        // The values should remain the same until the commit after the policy
+        // is changed.
+        EXPECT_EQ(
+            PrioritizedResourceManager::DefaultMemoryAllocationLimit(),
+            layer_tree_host()->contents_texture_manager()->
+                MaxMemoryLimitBytes());
+        EXPECT_EQ(
+            PriorityCalculator::AllowEverythingCutoff(),
+            layer_tree_host()->contents_texture_manager()->
+                ExternalPriorityCutoff());
+        break;
+      case 2:
+        // Verify values were correctly passed.
+        EXPECT_EQ(
+            16u*1024u*1024u,
+            layer_tree_host()->contents_texture_manager()->
+                MaxMemoryLimitBytes());
+        EXPECT_EQ(
+            PriorityCalculator::AllowVisibleAndNearbyCutoff(),
+            layer_tree_host()->contents_texture_manager()->
+                ExternalPriorityCutoff());
+        EndTest();
+        break;
+      case 3:
+        // Make sure no extra commits happen.
+        NOTREACHED();
+        break;
+    }
+
+    ++num_commits_;
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    int frame = num_commits_;
+    switch (frame) {
+      case 0:
+        break;
+      case 1:
+        // This will trigger a commit because the priority cutoff has changed.
+        impl->SetMemoryPolicy(ManagedMemoryPolicy(
+            16u*1024u*1024u,
+            ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE,
+            0,
+            ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING,
+            1000));
+        break;
+      case 2:
+        // This will not trigger a commit because the priority cutoff has not
+        // changed, and there is already enough memory for all allocations.
+        impl->SetMemoryPolicy(ManagedMemoryPolicy(
+            32u*1024u*1024u,
+            ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE,
+            0,
+            ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING,
+            1000));
+        break;
+      case 3:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  int num_commits_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestMemoryLimits);
+
 }  // namespace
 
 }  // namespace cc
