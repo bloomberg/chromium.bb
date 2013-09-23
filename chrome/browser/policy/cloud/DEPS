@@ -88,18 +88,11 @@ specific_include_rules = {
   ],
 
   r"device_management_service\.cc": [
-    "+chrome/browser/browser_process.h",
     "+chrome/browser/net/basic_http_user_agent_settings.h",
     "+chrome/browser/net/chrome_net_log.h",
     "+chrome/common/chrome_version_info.h",
-    "+content/public/browser/browser_thread.h",
     "+content/public/common/content_client.h",
     "+chrome/browser/chromeos/system/statistics_provider.h",
-  ],
-
-  r"device_management_service_unittest\.cc": [
-    "+chrome/test/base/testing_browser_process.h",
-    "+content/public/test/test_browser_thread_bundle.h",
   ],
 
   r"test_request_interceptor\.cc": [

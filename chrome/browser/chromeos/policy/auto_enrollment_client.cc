@@ -21,7 +21,11 @@
 #include "chrome/browser/policy/cloud/device_management_service.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
+#include "net/url_request/url_request_context_getter.h"
+
+using content::BrowserThread;
 
 namespace em = enterprise_management;
 
@@ -129,7 +133,10 @@ AutoEnrollmentClient* AutoEnrollmentClient::Create(
   } else {
     std::string url = BrowserPolicyConnector::GetDeviceManagementUrl();
     if (!url.empty()) {
-      service = new DeviceManagementService(url);
+      service = new DeviceManagementService(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          g_browser_process->system_request_context(),
+          url);
       service->ScheduleInitialization(0);
     }
   }

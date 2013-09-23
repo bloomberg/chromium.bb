@@ -19,6 +19,10 @@
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -99,7 +103,10 @@ class DeviceManagementRequestJob {
 // requests.
 class DeviceManagementService : public net::URLFetcherDelegate {
  public:
-  explicit DeviceManagementService(const std::string& server_url);
+  DeviceManagementService(
+      scoped_refptr<base::SingleThreadTaskRunner> net_task_runner,
+      scoped_refptr<net::URLRequestContextGetter> system_request_context,
+      const std::string& server_url);
   virtual ~DeviceManagementService();
 
   // The ID of URLFetchers created by the DeviceManagementService. This can be
@@ -144,10 +151,16 @@ class DeviceManagementService : public net::URLFetcherDelegate {
   // callback.
   void RemoveJob(DeviceManagementRequestJobImpl* job);
 
+  // Task runner for the network operations.
+  scoped_refptr<base::SingleThreadTaskRunner> net_task_runner_;
+
+  // The system request context is wrapped by the |request_context_getter_|.
+  scoped_refptr<net::URLRequestContextGetter> system_request_context_;
+
   // Server at which to contact the service.
   const std::string server_url_;
 
-  // The request context we use.
+  // The request context we use. This is a wrapper of |system_request_context_|.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // The jobs we currently have in flight.
