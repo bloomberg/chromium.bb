@@ -17,6 +17,8 @@ int LauncherItemTypeToWeight(LauncherItemType type) {
   if (ash::switches::UseAlternateShelfLayout()) {
     switch (type) {
       case TYPE_APP_LIST:
+        // TODO(skuhne): If the app list item becomes movable again, this need
+        // to be a fallthrough.
         return 0;
       case TYPE_BROWSER_SHORTCUT:
       case TYPE_APP_SHORTCUT:

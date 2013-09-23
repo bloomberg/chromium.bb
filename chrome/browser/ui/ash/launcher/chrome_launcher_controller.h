@@ -475,6 +475,21 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Get browser shortcut's index from pref.
   int GetChromeIconIndexFromPref() const;
 
+  // Depending on the provided flags, move either the chrome icon, the app icon
+  // or none to the given |target_index|. The provided |chrome_index| and
+  // |app_list_index| locations will get adjusted within this call to finalize
+  // the action and to make sure that the other item can still be moved
+  // afterwards (index adjustments).
+  void MoveChromeOrApplistToFinalPosition(
+      bool is_chrome,
+      bool is_app_list,
+      int target_index,
+      int* chrome_index,
+      int* app_list_index);
+
+  // Finds the index of where to insert the next item.
+  int FindInsertionPoint(bool is_app_list);
+
   // Get the browser shortcut's index in the shelf using the current's systems
   // configuration of pinned and known (but not running) apps.
   int GetChromeIconIndexForCreation();
