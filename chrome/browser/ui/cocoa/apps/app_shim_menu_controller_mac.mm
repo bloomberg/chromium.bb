@@ -145,7 +145,7 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
 - (void)addMenuItems:(const extensions::Extension*)app;
 // If the window belongs to the currently focused app, remove the menu items and
 // unhide Chrome menu items.
-- (void)removeMenuItems:(NSString*)appId;
+- (void)removeMenuItems;
 // If the currently focused window belongs to a platform app, quit the app.
 - (void)quitCurrentPlatformApp;
 // If the currently focused window belongs to a platform app, hide the app.
@@ -266,34 +266,31 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
   [[NSNotificationCenter defaultCenter]
       addObserver:self
          selector:@selector(windowMainStatusChanged:)
-             name:NSWindowDidResignMainNotification
-           object:nil];
-
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(windowMainStatusChanged:)
              name:NSWindowWillCloseNotification
            object:nil];
 }
 
 - (void)windowMainStatusChanged:(NSNotification*)notification {
   id window = [notification object];
-  id windowController = [window windowController];
-  if (![windowController isKindOfClass:[NativeAppWindowController class]])
-    return;
-
-  apps::ShellWindow* shellWindow =
-      apps::ShellWindowRegistry::GetShellWindowForNativeWindowAnyProfile(
-          window);
-  if (!shellWindow)
-    return;
-
   NSString* name = [notification name];
   if ([name isEqualToString:NSWindowDidBecomeMainNotification]) {
-    [self addMenuItems:shellWindow->extension()];
-  } else if ([name isEqualToString:NSWindowDidResignMainNotification] ||
-             [name isEqualToString:NSWindowWillCloseNotification]) {
-    [self removeMenuItems:base::SysUTF8ToNSString(shellWindow->extension_id())];
+    apps::ShellWindow* shellWindow =
+        apps::ShellWindowRegistry::GetShellWindowForNativeWindowAnyProfile(
+            window);
+    if (shellWindow)
+      [self addMenuItems:shellWindow->extension()];
+    else
+      [self removeMenuItems];
+  } else if ([name isEqualToString:NSWindowWillCloseNotification]) {
+    // If there are any other windows that can become main, leave the menu. It
+    // will be changed when another window becomes main. Otherwise, restore the
+    // Chrome menu.
+    for (NSWindow* w : [NSApp windows]) {
+      if ([w canBecomeMainWindow] && ![w isEqual:window])
+        return;
+    }
+
+    [self removeMenuItems];
   } else {
     NOTREACHED();
   }
@@ -306,7 +303,7 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
   if ([appId_ isEqualToString:appId])
     return;
 
-  [self removeMenuItems:appId_];
+  [self removeMenuItems];
   appId_.reset([appId copy]);
 
   // Hide Chrome menu items.
@@ -329,8 +326,8 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
   [mainMenu addItem:windowMenuItem_];
 }
 
-- (void)removeMenuItems:(NSString*)appId {
-  if (![appId_ isEqualToString:appId])
+- (void)removeMenuItems {
+  if (!appId_)
     return;
 
   appId_.reset();

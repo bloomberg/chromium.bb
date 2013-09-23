@@ -228,6 +228,19 @@ void AppShimController::SetUpMenu() {
                      action:@selector(terminate:)
               keyEquivalent:@"q"];
 
+  // Add File, Edit, and Window menus. These are just here to make the
+  // transition smoother, i.e. from another application to the shim then to
+  // Chrome.
+  [main_menu addItemWithTitle:l10n_util::GetNSString(IDS_FILE_MENU_MAC)
+                       action:nil
+                keyEquivalent:@""];
+  [main_menu addItemWithTitle:l10n_util::GetNSString(IDS_EDIT_MENU_MAC)
+                       action:nil
+                keyEquivalent:@""];
+  [main_menu addItemWithTitle:l10n_util::GetNSString(IDS_WINDOW_MENU_MAC)
+                       action:nil
+                keyEquivalent:@""];
+
   [NSApp setMainMenu:main_menu];
 }
 

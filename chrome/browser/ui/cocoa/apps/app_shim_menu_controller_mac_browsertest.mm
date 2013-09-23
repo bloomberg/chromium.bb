@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "apps/native_app_window.h"
 #include "apps/shell_window_registry.h"
 #include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
@@ -14,6 +15,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 
@@ -104,18 +107,18 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
                     object:app_2_shell_window->GetNativeWindow()];
   CheckHasAppMenus(app_2_);
 
-  // When the app window loses focus, the menu items for the app should be
+  // When a browser window is focused, the menu items for the app should be
   // removed.
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:NSWindowDidResignMainNotification
-                    object:app_2_shell_window->GetNativeWindow()];
-  CheckNoAppMenus();
-
-  // When an app window is closed, the menu items for the app should be removed.
+  BrowserWindow* chrome_window = chrome::BrowserIterator()->window();
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidBecomeMainNotification
-                    object:app_2_shell_window->GetNativeWindow()];
-  CheckHasAppMenus(app_2_);
+                    object:chrome_window->GetNativeWindow()];
+  CheckNoAppMenus();
+
+  // When an app window is closed and there are no other app windows, the menu
+  // items for the app should be removed.
+  app_1_shell_window->GetBaseWindow()->Close();
+  chrome_window->Close();
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowWillCloseNotification
                     object:app_2_shell_window->GetNativeWindow()];
@@ -125,6 +128,17 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
                        ExtensionUninstallUpdatesMenuBar) {
   SetUpApps();
+
+  // This essentially tests that a NSWindowWillCloseNotification gets fired when
+  // an app is uninstalled. We need to close the other windows first since the
+  // menu only changes on a NSWindowWillCloseNotification if there are no other
+  // windows.
+  apps::ShellWindow* app_2_shell_window =
+      apps::ShellWindowRegistry::Get(profile())->
+          GetShellWindowsForApp(app_2_->id()).front();
+  app_2_shell_window->GetBaseWindow()->Close();
+
+  chrome::BrowserIterator()->window()->Close();
 
   apps::ShellWindow* app_1_shell_window =
       apps::ShellWindowRegistry::Get(profile())->
