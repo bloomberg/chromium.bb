@@ -276,7 +276,7 @@ void CSSGradientValue::addStops(Gradient* gradient, RenderObject* renderer, Rend
                 }
 
                 if (maxLengthForRepeat > gradientLength)
-                    maxExtent = maxLengthForRepeat / gradientLength;
+                    maxExtent = gradientLength > 0 ? maxLengthForRepeat / gradientLength : 0;
             }
 
             size_t originalNumStops = numStops;
