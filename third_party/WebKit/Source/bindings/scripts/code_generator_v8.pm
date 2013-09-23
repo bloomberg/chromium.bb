@@ -4819,10 +4819,7 @@ END
     if (IsTypedArrayType($interface->name)) {
       AddToImplIncludes("bindings/v8/custom/V8ArrayBufferCustom.h");
       $code .= <<END;
-    if (!impl->buffer()->hasDeallocationObserver()) {
-        v8::V8::AdjustAmountOfExternalAllocatedMemory(impl->buffer()->byteLength());
-        impl->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
-    }
+    impl->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
 END
     }
 
@@ -4831,10 +4828,7 @@ END
       $code .= <<END;
     for (unsigned i = 0, n = impl->numberOfChannels(); i < n; i++) {
         Float32Array* channelData = impl->getChannelData(i);
-        if (!channelData->buffer()->hasDeallocationObserver()) {
-            v8::V8::AdjustAmountOfExternalAllocatedMemory(channelData->buffer()->byteLength());
-            channelData->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
-        }
+        channelData->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
     }
 END
     }

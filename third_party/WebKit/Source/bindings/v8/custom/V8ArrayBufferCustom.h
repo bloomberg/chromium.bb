@@ -36,11 +36,17 @@ namespace WebCore {
 
 class V8ArrayBufferDeallocationObserver: public WTF::ArrayBufferDeallocationObserver {
 public:
-    virtual void ArrayBufferDeallocated(unsigned sizeInBytes)
+    virtual void arrayBufferDeallocated(unsigned sizeInBytes)
     {
         v8::V8::AdjustAmountOfExternalAllocatedMemory(-static_cast<int>(sizeInBytes));
     }
     static V8ArrayBufferDeallocationObserver* instance();
+
+protected:
+    virtual void blinkAllocatedMemory(unsigned sizeInBytes) OVERRIDE
+    {
+        v8::V8::AdjustAmountOfExternalAllocatedMemory(static_cast<int>(sizeInBytes));
+    }
 };
 
 class V8ArrayBuffer {

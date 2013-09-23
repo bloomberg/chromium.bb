@@ -146,9 +146,8 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(v8::Local<v8::String> name,
     case XMLHttpRequest::ResponseTypeArrayBuffer:
         {
             ArrayBuffer* arrayBuffer = xmlHttpRequest->responseArrayBuffer();
-            if (arrayBuffer && !arrayBuffer->hasDeallocationObserver()) {
+            if (arrayBuffer) {
                 arrayBuffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
-                v8::V8::AdjustAmountOfExternalAllocatedMemory(arrayBuffer->byteLength());
             }
             v8SetReturnValueFast(info, arrayBuffer, xmlHttpRequest);
             return;

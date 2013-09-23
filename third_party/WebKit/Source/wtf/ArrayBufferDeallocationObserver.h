@@ -29,11 +29,20 @@
 
 namespace WTF {
 
+class ArrayBufferContents;
+
 // The current implementation assumes that the instance of this class is a
 // singleton living for the entire process's lifetime.
 class ArrayBufferDeallocationObserver {
 public:
-    virtual void ArrayBufferDeallocated(unsigned sizeInBytes) = 0;
+    virtual void arrayBufferDeallocated(unsigned sizeInBytes) = 0;
+
+protected:
+    // Called when Blink-allocated ArrayBuffer becomes available to JavaScript.
+    // Not called for JavaScript-allocated ArrayBuffers.
+    virtual void blinkAllocatedMemory(unsigned sizeInBytes) = 0;
+
+    friend class ArrayBufferContents;
 };
 
 } // namespace WTF

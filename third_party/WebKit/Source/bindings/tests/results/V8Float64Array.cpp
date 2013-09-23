@@ -216,10 +216,7 @@ v8::Handle<v8::Object> V8Float64Array::createWrapper(PassRefPtr<Float64Array> im
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
-    if (!impl->buffer()->hasDeallocationObserver()) {
-        v8::V8::AdjustAmountOfExternalAllocatedMemory(impl->buffer()->byteLength());
-        impl->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
-    }
+    impl->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
     installPerContextProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8Float64Array>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;

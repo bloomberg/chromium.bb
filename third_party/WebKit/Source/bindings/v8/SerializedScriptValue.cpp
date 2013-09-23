@@ -1746,7 +1746,6 @@ private:
         const void* bufferStart = m_buffer + m_position;
         RefPtr<ArrayBuffer> arrayBuffer = ArrayBuffer::create(bufferStart, byteLength);
         arrayBuffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
-        v8::V8::AdjustAmountOfExternalAllocatedMemory(arrayBuffer->byteLength());
         m_position += byteLength;
         return arrayBuffer.release();
     }

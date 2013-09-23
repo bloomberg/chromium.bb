@@ -71,7 +71,6 @@ v8::Handle<v8::Object> V8ArrayBuffer::createWrapper(PassRefPtr<ArrayBuffer> impl
     ASSERT(!DOMDataStore::containsWrapper<V8ArrayBuffer>(impl.get(), isolate));
 
     v8::Handle<v8::Object> wrapper = v8::ArrayBuffer::New(impl->data(), impl->byteLength());
-    v8::V8::AdjustAmountOfExternalAllocatedMemory(impl->byteLength());
     impl->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
 
     V8DOMWrapper::associateObjectWithWrapper<V8ArrayBuffer>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
@@ -89,10 +88,9 @@ ArrayBuffer* V8ArrayBuffer::toNative(v8::Handle<v8::Object> object)
     ASSERT(!v8buffer->IsExternal());
 
     v8::ArrayBuffer::Contents v8Contents = v8buffer->Externalize();
-    ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength());
+    ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(),
+        V8ArrayBufferDeallocationObserver::instance());
     RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(contents);
-    // V8 accounts for external memory even after externalizing the buffer.
-    buffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
     V8DOMWrapper::associateObjectWithWrapper<V8ArrayBuffer>(buffer.release(), &info, object, v8::Isolate::GetCurrent(), WrapperConfiguration::Dependent);
 
     arraybufferPtr = object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex);

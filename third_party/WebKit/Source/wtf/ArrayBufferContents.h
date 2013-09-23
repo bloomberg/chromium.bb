@@ -48,7 +48,9 @@ public:
     // Use with care. data must be allocated with allocateMemory.
     // ArrayBufferContents will take ownership of the data and free it (using freeMemorY)
     // upon destruction.
-    ArrayBufferContents(void* data, unsigned sizeInBytes);
+    // This constructor will not call observer->StartObserving(), so it is a responsibility
+    // of the caller to make sure JS knows about external memory.
+    ArrayBufferContents(void* data, unsigned sizeInBytes, ArrayBufferDeallocationObserver*);
 
     ~ArrayBufferContents();
 
@@ -57,8 +59,13 @@ public:
     void* data() const { return m_data; }
     unsigned sizeInBytes() const { return m_sizeInBytes; }
 
-    bool hasDeallocationObserver() const { return !!m_deallocationObserver; }
-    void setDeallocationObserver(ArrayBufferDeallocationObserver* observer) { m_deallocationObserver = observer; }
+    void setDeallocationObserver(ArrayBufferDeallocationObserver* observer)
+    {
+        if (!m_deallocationObserver) {
+            m_deallocationObserver = observer;
+            m_deallocationObserver->blinkAllocatedMemory(m_sizeInBytes);
+        }
+    }
 
     void transfer(ArrayBufferContents& other);
     void copyTo(ArrayBufferContents& other);
