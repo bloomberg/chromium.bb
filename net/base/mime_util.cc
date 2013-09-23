@@ -10,6 +10,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -222,10 +223,9 @@ bool MimeUtil::GetMimeTypeFromExtensionHelper(
 
   base::FilePath path_ext(ext);
   const string ext_narrow_str = path_ext.AsUTF8Unsafe();
-  const char* mime_type;
-
-  mime_type = FindMimeType(primary_mappings, arraysize(primary_mappings),
-                           ext_narrow_str.c_str());
+  const char* mime_type = FindMimeType(primary_mappings,
+                                       arraysize(primary_mappings),
+                                       ext_narrow_str.c_str());
   if (mime_type) {
     *result = mime_type;
     return true;
@@ -542,11 +542,9 @@ bool MatchesMimeTypeParameters(const std::string& mime_type_pattern,
 
     sort(pattern_parameters.begin(), pattern_parameters.end());
     sort(test_parameters.begin(), test_parameters.end());
-    std::vector<std::string> difference;
-    std::set_difference(pattern_parameters.begin(), pattern_parameters.end(),
-                        test_parameters.begin(), test_parameters.end(),
-                        std::inserter(difference, difference.begin()));
-
+    std::vector<std::string> difference =
+      base::STLSetDifference<std::vector<std::string> >(pattern_parameters,
+                                                        test_parameters);
     return difference.size() == 0;
   }
   return true;
