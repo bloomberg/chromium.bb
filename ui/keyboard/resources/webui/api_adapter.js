@@ -34,7 +34,7 @@ function hideKeyboard() {
    *     "text" are supported.
    */
   function OnTextInputBoxFocused(inputContext) {
-    // TODO(bshe): Making keyboard aware of inputContext.
+    keyboard.inputType = inputContext.type;
   }
 
   /**

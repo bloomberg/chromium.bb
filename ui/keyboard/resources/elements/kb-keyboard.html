@@ -7,7 +7,8 @@
 <polymer-element name="kb-keyboard" on-key-over="keyOver" on-key-up="keyUp"
     on-key-down="keyDown" on-key-longpress="keyLongpress" on-pointerup="up"
     on-pointerdown="down" on-enable-sel="enableSel"
-    on-enable-dbl="enableDbl" attributes="keyset layout rows">
+    on-enable-dbl="enableDbl"
+    attributes="keyset layout rows inputType inputTypeToLayoutMap">
   <template>
     <style>
       @host {
@@ -194,10 +195,35 @@
       dblTimer_: null,
       swipeHandler: null,
       shift: null,
+      inputType: null,
+
+      /**
+       * The default input type to keyboard layout map. The key must be one of
+       * the input box type values.
+       * @type {object}
+       */
+      inputTypeToLayoutMap: {
+        number: "numeric",
+        text: "qwerty"
+      },
 
       ready: function() {
         this.voiceInput_ = new VoiceInput(this);
         this.swipeHandler = this.onSwipeUpdate.bind(this);
+      },
+
+      /**
+       * Called when the type of focused input box changes. If a keyboard layout
+       * is defined for the current input type, that layout will be loaded.
+       * Otherwise, the keyboard layout for 'text' type will be loaded.
+       */
+      inputTypeChanged: function() {
+        // TODO(bshe): Toggle visibility of some keys in a keyboard layout
+        // according to the input type.
+        var layout = this.inputTypeToLayoutMap[this.inputType];
+        if (!layout)
+          layout = this.inputTypeToLayoutMap.text;
+        this.layout = layout;
       },
 
       /**
@@ -563,4 +589,3 @@
     });
   </script>
 </polymer-element>
-

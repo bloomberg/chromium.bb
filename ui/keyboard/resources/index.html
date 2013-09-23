@@ -32,13 +32,13 @@
     <link rel="import" href="elements/kb-shift-key.html">
     <link rel="import" href="elements/kb-key-sequence.html">
     <link rel="import" href="elements/kb-key-import.html">
-    <!--TODO(stevet): Import 'Open Sans' font. -->
     <!-- New layouts are dynamically loaded on demand. The link elements are
       -- inserted here.
       -->
   </head>
   <body>
-    <kb-keyboard id="keyboard" touch-action="none" layout="qwerty">
+    <!-- TODO(bshe): initial input type should not be hard coded to text. -->
+    <kb-keyboard id="keyboard" touch-action="none" inputType="text">
     </kb-keyboard>
   </body>
 </html>
