@@ -25,6 +25,7 @@ struct SyncedSession {
   typedef std::map<SessionID::id_type, SessionWindow*> SyncedWindowMap;
 
   // The type of device.
+  // Please keep in sync with ForeignSessionHelper.java
   enum DeviceType {
     TYPE_UNSET = 0,
     TYPE_WIN = 1,

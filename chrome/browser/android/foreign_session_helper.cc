@@ -43,47 +43,84 @@ SessionModelAssociator* GetSessionModelAssociator(Profile* profile) {
   return service->GetSessionModelAssociator();
 }
 
+bool ShouldSkipTab(const SessionTab& tab) {
+    if (tab.navigations.empty())
+      return true;
+
+    int selected_index = tab.current_navigation_index;
+    if (selected_index < 0 ||
+        selected_index >= static_cast<int>(tab.navigations.size()))
+      return true;
+
+    return false;
+}
+
+bool ShouldSkipWindow(const SessionWindow& window) {
+  for (std::vector<SessionTab*>::const_iterator tab_it = window.tabs.begin();
+      tab_it != window.tabs.end(); ++tab_it) {
+    const SessionTab &tab = **tab_it;
+    if (!ShouldSkipTab(tab))
+      return false;
+  }
+  return true;
+}
+
+bool ShouldSkipSession(const browser_sync::SyncedSession& session) {
+  for (SyncedSession::SyncedWindowMap::const_iterator it =
+      session.windows.begin(); it != session.windows.end(); ++it) {
+    const SessionWindow  &window = *(it->second);
+    if (!ShouldSkipWindow(window))
+      return false;
+  }
+  return true;
+}
+
 void CopyTabsToJava(
     JNIEnv* env,
-    const SessionWindow* window,
+    const SessionWindow& window,
     ScopedJavaLocalRef<jobject>& j_window) {
-  for (std::vector<SessionTab*>::const_iterator tab_it = window->tabs.begin();
-      tab_it != window->tabs.end(); ++tab_it) {
+  for (std::vector<SessionTab*>::const_iterator tab_it = window.tabs.begin();
+      tab_it != window.tabs.end(); ++tab_it) {
     const SessionTab &tab = **tab_it;
 
-    if (tab.navigations.empty())
+    if (ShouldSkipTab(tab))
       continue;
+
+    int selected_index = tab.current_navigation_index;
+    DCHECK(selected_index >= 0);
+    DCHECK(selected_index < static_cast<int>(tab.navigations.size()));
 
     const ::sessions::SerializedNavigationEntry& current_navigation =
-        tab.navigations.at(tab.current_navigation_index);
+        tab.navigations.at(selected_index);
 
     GURL tab_url = current_navigation.virtual_url();
-    if (tab_url.SchemeIs(chrome::kChromeNativeScheme) ||
-        (tab_url.SchemeIs(chrome::kChromeUIScheme) &&
-            tab_url.host() == chrome::kChromeUINewTabHost))
-      continue;
 
     Java_ForeignSessionHelper_pushTab(
         env, j_window.obj(),
         ConvertUTF8ToJavaString(env, tab_url.spec()).Release(),
         ConvertUTF16ToJavaString(env, current_navigation.title()).Release(),
-        tab.timestamp.ToInternalValue(), tab.tab_id.id());
+        tab.timestamp.ToJavaTime(),
+        tab.tab_id.id());
   }
 }
 
 void CopyWindowsToJava(
     JNIEnv* env,
-    const SyncedSession* session,
+    const SyncedSession& session,
     ScopedJavaLocalRef<jobject>& j_session) {
   for (SyncedSession::SyncedWindowMap::const_iterator it =
-      session->windows.begin(); it != session->windows.end(); ++it) {
-    const SessionWindow* window = it->second;
+      session.windows.begin(); it != session.windows.end(); ++it) {
+    const SessionWindow &window = *(it->second);
+
+    if (ShouldSkipWindow(window))
+      continue;
 
     ScopedJavaLocalRef<jobject> last_pushed_window;
     last_pushed_window.Reset(
         Java_ForeignSessionHelper_pushWindow(
-            env, j_session.obj(), window->timestamp.ToInternalValue(),
-            window->window_id.id()));
+            env, j_session.obj(),
+            window.timestamp.ToJavaTime(),
+            window.window_id.id()));
 
     CopyTabsToJava(env, window, last_pushed_window);
   }
@@ -101,7 +138,6 @@ ForeignSessionHelper::ForeignSessionHelper(Profile* profile)
     : profile_(profile) {
   ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
       GetForProfile(profile);
-
   registrar_.Add(this, chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
                  content::Source<ProfileSyncService>(service));
   registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
@@ -178,22 +214,23 @@ jboolean ForeignSessionHelper::GetForeignSessions(JNIEnv* env,
 
   // Note: we don't own the SyncedSessions themselves.
   for (size_t i = 0; i < sessions.size(); ++i) {
-    const browser_sync::SyncedSession* session = sessions[i];
+    const browser_sync::SyncedSession &session = *(sessions[i]);
+    if (ShouldSkipSession(session))
+      continue;
 
-    const bool is_collapsed = collapsed_sessions->HasKey(session->session_tag);
+    const bool is_collapsed = collapsed_sessions->HasKey(session.session_tag);
 
     if (is_collapsed)
-      pref_collapsed_sessions->SetBoolean(session->session_tag, true);
+      pref_collapsed_sessions->SetBoolean(session.session_tag, true);
 
     last_pushed_session.Reset(
         Java_ForeignSessionHelper_pushSession(
             env,
             result,
-            ConvertUTF8ToJavaString(env, session->session_tag).Release(),
-            ConvertUTF8ToJavaString(env, session->session_name).Release(),
-            ConvertUTF8ToJavaString(env,
-                                    session->DeviceTypeAsString()).Release(),
-            session->modified_time.ToInternalValue()));
+            ConvertUTF8ToJavaString(env, session.session_tag).Release(),
+            ConvertUTF8ToJavaString(env, session.session_name).Release(),
+            session.device_type,
+            session.modified_time.ToJavaTime()));
 
     CopyWindowsToJava(env, session, last_pushed_session);
   }
@@ -255,6 +292,14 @@ void ForeignSessionHelper::SetForeignSessionCollapsed(JNIEnv* env, jobject obj,
     update.Get()->SetBoolean(ConvertJavaStringToUTF8(env, session_tag), true);
   else
     update.Get()->Remove(ConvertJavaStringToUTF8(env, session_tag), NULL);
+}
+
+jboolean ForeignSessionHelper::GetForeignSessionCollapsed(JNIEnv* env,
+                                                          jobject obj,
+                                                          jstring session_tag) {
+  const DictionaryValue* dict = profile_->GetPrefs()->GetDictionary(
+      prefs::kNtpCollapsedForeignSessions);
+  return dict && dict->HasKey(ConvertJavaStringToUTF8(env, session_tag));
 }
 
 void ForeignSessionHelper::DeleteForeignSession(JNIEnv* env, jobject obj,

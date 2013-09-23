@@ -36,6 +36,9 @@ class ForeignSessionHelper : public content::NotificationObserver {
                                   jobject obj,
                                   jstring session_tag,
                                   jboolean is_collapsed);
+  jboolean GetForeignSessionCollapsed(JNIEnv* env,
+                                      jobject obj,
+                                      jstring session_tag);
   void DeleteForeignSession(JNIEnv* env, jobject obj, jstring session_tag);
 
   // NotificationObserver implemenation

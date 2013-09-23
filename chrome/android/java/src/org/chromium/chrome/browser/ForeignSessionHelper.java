@@ -37,13 +37,23 @@ public class ForeignSessionHelper {
      * Represents synced foreign session.
      */
     public static class ForeignSession {
+        // Please keep in sync with synced_session.h
+        public static final int DEVICE_TYPE_UNSET = 0;
+        public static final int DEVICE_TYPE_WIN = 1;
+        public static final int DEVICE_TYPE_MACOSX = 2;
+        public static final int DEVICE_TYPE_LINUX = 3;
+        public static final int DEVICE_TYPE_CHROMEOS = 4;
+        public static final int DEVICE_TYPE_OTHER = 5;
+        public static final int DEVICE_TYPE_PHONE = 6;
+        public static final int DEVICE_TYPE_TABLET = 7;
+
         public final String tag;
         public final String name;
-        public final String deviceType;
+        public final int deviceType;
         public final long modifiedTime;
         public final List<ForeignSessionWindow> windows = new ArrayList<ForeignSessionWindow>();
 
-        private ForeignSession(String tag, String name, String deviceType, long modifiedTime) {
+        private ForeignSession(String tag, String name, int deviceType, long modifiedTime) {
             this.tag = tag;
             this.name = name;
             this.deviceType = deviceType;
@@ -85,7 +95,7 @@ public class ForeignSessionHelper {
 
     @CalledByNative
     private static ForeignSession pushSession(
-            List<ForeignSession> sessions, String tag, String name, String deviceType,
+            List<ForeignSession> sessions, String tag, String name, int deviceType,
             long modifiedTime) {
         ForeignSession session = new ForeignSession(tag, name, deviceType, modifiedTime);
         sessions.add(session);
@@ -186,6 +196,15 @@ public class ForeignSessionHelper {
     }
 
     /**
+     * Get the given session collapsed or uncollapsed state in preferences.
+     * @param  session Session to fetch collapsed state.
+     * @return         {@code True} if the session is collapsed, false if expanded.
+     */
+    public boolean getForeignSessionCollapsed(ForeignSession session) {
+        return nativeGetForeignSessionCollapsed(mNativeForeignSessionHelper, session.tag);
+    }
+
+    /**
      * Remove Foreign session to display. Note that it will be reappear on the next sync.
      *
      * This is mainly for when user wants to delete very old session that won't be used or syned in
@@ -207,6 +226,8 @@ public class ForeignSessionHelper {
             int nativeForeignSessionHelper, String sessionTag, int tabId);
     private static native void nativeSetForeignSessionCollapsed(
             int nativeForeignSessionHelper, String sessionTag, boolean isCollapsed);
+    private static native boolean nativeGetForeignSessionCollapsed(
+            int nativeForeignSessionHelper, String sessionTag);
     private static native void nativeDeleteForeignSession(
             int nativeForeignSessionHelper, String sessionTag);
 }
