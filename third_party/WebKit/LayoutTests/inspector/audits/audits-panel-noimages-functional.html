@@ -6,6 +6,9 @@
     color: green;
 }
 </style>
+<link rel="stylesheet" href="resources/audits-style1.css" type="text/css">
+<script>function foo() { }</script>
+<link rel="stylesheet" href="resources/audits-style1.css" type="text/css">
 <script>
 JSON = {};
 </script>
@@ -14,7 +17,6 @@ JSON = {};
 
 <!-- These scripts are needed to result in a violation of the max JS resource count from the same domain -->
 <script src="resources/audits-script1.js"></script>
-<link rel="stylesheet" href="resources/audits-style1.css" type="text/css">
 <script src="resources/audits-script2.js"></script>
 <script>
 var test = function()
