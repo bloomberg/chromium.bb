@@ -78,6 +78,7 @@ class CC_EXPORT ResourceProvider {
   // Checks whether a resource is in use by a consumer.
   bool InUseByConsumer(ResourceId id);
 
+  bool IsLost(ResourceId id);
 
   // Producer interface.
 
@@ -392,6 +393,7 @@ class CC_EXPORT ResourceProvider {
     unsigned image_id;
     GLenum texture_pool;
     GLint wrap_mode;
+    bool lost;
     TextureUsageHint hint;
     ResourceType type;
     ResourceFormat format;

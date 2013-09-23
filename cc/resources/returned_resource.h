@@ -13,10 +13,11 @@
 namespace cc {
 
 struct CC_EXPORT ReturnedResource {
-  ReturnedResource() : id(0), sync_point(0), count(0) {}
+  ReturnedResource() : id(0), sync_point(0), count(0), lost(false) {}
   unsigned id;
   unsigned sync_point;
   int count;
+  bool lost;
 };
 
 typedef std::vector<ReturnedResource> ReturnedResourceArray;

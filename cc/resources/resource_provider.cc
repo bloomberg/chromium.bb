@@ -110,6 +110,7 @@ ResourceProvider::Resource::Resource()
       image_id(0),
       texture_pool(0),
       wrap_mode(0),
+      lost(false),
       hint(TextureUsageAny),
       type(static_cast<ResourceType>(0)),
       format(RGBA_8888) {}
@@ -147,6 +148,7 @@ ResourceProvider::Resource::Resource(unsigned texture_id,
       image_id(0),
       texture_pool(texture_pool),
       wrap_mode(wrap_mode),
+      lost(false),
       hint(hint),
       type(GLTexture),
       format(format) {
@@ -181,6 +183,7 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
       image_id(0),
       texture_pool(0),
       wrap_mode(wrap_mode),
+      lost(false),
       hint(TextureUsageAny),
       type(Bitmap),
       format(RGBA_8888) {
@@ -226,7 +229,13 @@ ResourceProvider::~ResourceProvider() {
 
 bool ResourceProvider::InUseByConsumer(ResourceId id) {
   Resource* resource = GetResource(id);
-  return resource->lock_for_read_count > 0 || resource->exported_count > 0;
+  return resource->lock_for_read_count > 0 || resource->exported_count > 0 ||
+         resource->lost;
+}
+
+bool ResourceProvider::IsLost(ResourceId id) {
+  Resource* resource = GetResource(id);
+  return resource->lost;
 }
 
 ResourceProvider::ResourceId ResourceProvider::CreateResource(
@@ -392,7 +401,7 @@ void ResourceProvider::DeleteResource(ResourceId id) {
 void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
                                               DeleteStyle style) {
   Resource* resource = &it->second;
-  bool lost_resource = lost_output_surface_;
+  bool lost_resource = lost_output_surface_ || resource->lost;
 
   DCHECK(resource->exported_count == 0 || style != Normal);
   if (style == ForShutdown && resource->exported_count > 0)
@@ -624,6 +633,7 @@ const ResourceProvider::Resource* ResourceProvider::LockForWrite(
   DCHECK(!resource->lock_for_read_count);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->external);
+  DCHECK(!resource->lost);
   DCHECK(ReadLockFenceHasPassed(resource));
   LazyAllocate(resource);
 
@@ -633,11 +643,9 @@ const ResourceProvider::Resource* ResourceProvider::LockForWrite(
 
 bool ResourceProvider::CanLockForWrite(ResourceId id) {
   Resource* resource = GetResource(id);
-  return !resource->locked_for_write &&
-      !resource->lock_for_read_count &&
-      !resource->exported_count &&
-      !resource->external &&
-      ReadLockFenceHasPassed(resource);
+  return !resource->locked_for_write && !resource->lock_for_read_count &&
+         !resource->exported_count && !resource->external && !resource->lost &&
+         ReadLockFenceHasPassed(resource);
 }
 
 void ResourceProvider::UnlockForWrite(ResourceId id) {
@@ -1020,6 +1028,7 @@ void ResourceProvider::ReceiveReturnsFromParent(
 
     CHECK_GE(resource->exported_count, returned.count);
     resource->exported_count -= returned.count;
+    resource->lost |= returned.lost;
     if (resource->exported_count)
       continue;
 
@@ -1133,7 +1142,7 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     ResourceId child_id = child_info->parent_to_child_map[local_id];
     DCHECK(child_info->child_to_parent_map.count(child_id));
 
-    // TODO(danakj): bool is_lost = false;
+    bool is_lost = resource.lost || lost_output_surface_;
     if (resource.exported_count > 0) {
       if (style != ForShutdown) {
         // Defer this until we receive the resource back from the parent.
@@ -1142,7 +1151,7 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
       }
 
       // We still have an exported_count, so we'll have to lose it.
-      // TODO(danakj): is_lost = true;
+      is_lost = true;
     }
 
     if (resource.filter != resource.original_filter) {
@@ -1166,7 +1175,7 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     if (!returned.sync_point)
       need_sync_point = true;
     returned.count = resource.imported_count;
-    // TODO(danakj): Save the |is_lost| bit.
+    returned.lost = is_lost;
     to_return.push_back(returned);
 
     child_info->parent_to_child_map.erase(local_id);
