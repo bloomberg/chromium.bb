@@ -61,7 +61,7 @@ private:
 
 class WebCryptoAesCbcParams : public WebCryptoAlgorithmParams {
 public:
-    WebCryptoAesCbcParams(unsigned char* iv, unsigned ivSize)
+    WebCryptoAesCbcParams(const unsigned char* iv, unsigned ivSize)
         : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeAesCbcParams)
         , m_iv(iv, ivSize)
     {
