@@ -123,7 +123,7 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
     // Android doesn't have a sync promo/username on NTP.
     web_ui->AddMessageHandler(new NewTabPageSyncHandler());
 
-    if (ShouldShowApps()) {
+    if (MightShowApps()) {
       ExtensionService* service = GetProfile()->GetExtensionService();
       // We might not have an ExtensionService (on ChromeOS when not logged in
       // for example).
@@ -273,6 +273,16 @@ void NewTabUI::RegisterProfilePrefs(
 #endif
   MostVisitedHandler::RegisterProfilePrefs(registry);
   browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
+}
+
+// static
+bool NewTabUI::MightShowApps() {
+// Android does not have apps.
+#if defined(OS_ANDROID)
+  return false;
+#else
+  return true;
+#endif
 }
 
 // static

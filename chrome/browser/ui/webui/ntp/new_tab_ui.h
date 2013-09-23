@@ -37,6 +37,14 @@ class NewTabUI : public content::WebUIController,
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Returns whether or not this browser process might ever need to show apps
+  // on the NTP.  With Win8 running in immersive mode, for example, apps are
+  // displayed on a ChromeOS-style apps bar and not on the NTP.  In desktop,
+  // however, apps are displayed on the NTP.  Since they both share the same
+  // browser process instance, a different decision is necessary for whether
+  // or not to register app message handlers versus whether to show it on NTP.
+  static bool MightShowApps();
+
   // Returns whether or not to show apps pages.
   static bool ShouldShowApps();
 
