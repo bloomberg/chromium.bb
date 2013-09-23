@@ -37,9 +37,9 @@ class ProfileOAuth2TokenServiceRequest : public OAuth2TokenService::Request,
   friend class Core;
 
   ProfileOAuth2TokenServiceRequest(Profile* profile,
-                            const std::string& account_id,
-                            const OAuth2TokenService::ScopeSet& scopes,
-                            OAuth2TokenService::Consumer* consumer);
+                                   const std::string& account_id,
+                                   const OAuth2TokenService::ScopeSet& scopes,
+                                   OAuth2TokenService::Consumer* consumer);
   OAuth2TokenService::Consumer* const consumer_;
   scoped_refptr<Core> core_;
 
