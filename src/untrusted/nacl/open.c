@@ -12,10 +12,12 @@
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
 int open(char const *pathname, int flags, ...) {
-  int error;
-  int fd;
-  mode_t mode = 0;
+  if (!__libnacl_irt_init_fn(&__libnacl_irt_dev_filename.open,
+                             __libnacl_irt_dev_filename_init)) {
+    return -1;
+  }
 
+  mode_t mode = 0;
   if (flags & O_CREAT) {
     va_list ap;
     va_start(ap, flags);
@@ -23,15 +25,8 @@ int open(char const *pathname, int flags, ...) {
     va_end(ap);
   }
 
-  if (__libnacl_irt_dev_filename.open == NULL) {
-    __libnacl_irt_filename_init();
-    if (__libnacl_irt_dev_filename.open == NULL) {
-      errno = ENOSYS;
-      return -1;
-    }
-  }
-
-  error = __libnacl_irt_dev_filename.open(pathname, flags, mode, &fd);
+  int fd;
+  int error = __libnacl_irt_dev_filename.open(pathname, flags, mode, &fd);
   if (error) {
     errno = error;
     return -1;

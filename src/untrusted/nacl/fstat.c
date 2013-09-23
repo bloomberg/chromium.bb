@@ -15,5 +15,6 @@ int fstat(int fd, struct stat *st) {
     errno = error;
     return -1;
   }
+
   return 0;
 }

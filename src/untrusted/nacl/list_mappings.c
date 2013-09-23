@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "native_client/src/untrusted/irt/irt.h"
+#include "native_client/src/untrusted/irt/irt_dev.h"
 
 /*
  * ABI table for underyling NaCl list_mappings interface.

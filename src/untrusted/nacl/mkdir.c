@@ -5,18 +5,15 @@
  */
 
 #include <errno.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
 int mkdir(const char *path, mode_t mode) {
-  if (__libnacl_irt_dev_filename.mkdir == NULL) {
-    __libnacl_irt_filename_init();
-    if (__libnacl_irt_dev_filename.mkdir == NULL) {
-      errno = ENOSYS;
-      return -1;
-    }
+  if (!__libnacl_irt_init_fn(&__libnacl_irt_dev_filename.mkdir,
+                             __libnacl_irt_dev_filename_init)) {
+    return -1;
   }
 
   int error = __libnacl_irt_dev_filename.mkdir(path, mode);

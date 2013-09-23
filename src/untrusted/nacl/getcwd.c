@@ -10,12 +10,9 @@
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
 char *getcwd(char *buf, size_t size) {
-  if (__libnacl_irt_dev_filename.getcwd == NULL) {
-    __libnacl_irt_filename_init();
-    if (__libnacl_irt_dev_filename.getcwd == NULL) {
-      errno = ENOSYS;
-      return NULL;
-    }
+  if (!__libnacl_irt_init_fn(&__libnacl_irt_dev_filename.getcwd,
+                             __libnacl_irt_dev_filename_init)) {
+    return NULL;
   }
 
   int error = __libnacl_irt_dev_filename.getcwd(buf, size);

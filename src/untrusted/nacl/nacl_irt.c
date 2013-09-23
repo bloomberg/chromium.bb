@@ -50,7 +50,9 @@ struct nacl_irt_memory __libnacl_irt_memory;
 struct nacl_irt_tls __libnacl_irt_tls;
 struct nacl_irt_clock __libnacl_irt_clock;
 struct nacl_irt_dev_getpid __libnacl_irt_dev_getpid;
+
 struct nacl_irt_dev_filename __libnacl_irt_dev_filename;
+struct nacl_irt_dev_fdio __libnacl_irt_dev_fdio;
 
 struct nacl_irt_fdio __libnacl_irt_fdio = {
   stub_close,
@@ -186,4 +188,18 @@ void __libnacl_irt_init(Elf32_auxv_t *auxv) {
   }
 
   DO_QUERY(NACL_IRT_TLS_v0_1, tls);
+}
+
+/*
+ * Used to lazily initialize an IRT interface function.
+ */
+int __libnacl_irt_init_fn(void *interface_field, void (*init)(void)) {
+  if (*((void **) interface_field) == NULL) {
+    init();
+    if (*((void **) interface_field) == NULL) {
+      errno = ENOSYS;
+      return 0;
+    }
+  }
+  return 1;
 }

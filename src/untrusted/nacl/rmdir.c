@@ -10,12 +10,9 @@
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
 int rmdir(const char *pathname) {
-  if (__libnacl_irt_dev_filename.rmdir == NULL) {
-    __libnacl_irt_filename_init();
-    if (__libnacl_irt_dev_filename.rmdir == NULL) {
-      errno = ENOSYS;
-      return -1;
-    }
+  if (!__libnacl_irt_init_fn(&__libnacl_irt_dev_filename.rmdir,
+                             __libnacl_irt_dev_filename_init)) {
+    return -1;
   }
 
   int error = __libnacl_irt_dev_filename.rmdir(pathname);

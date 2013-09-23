@@ -11,11 +11,13 @@
 
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/untrusted/irt/irt.h"
+#include "native_client/src/untrusted/irt/irt_dev.h"
 
 extern TYPE_nacl_irt_query __nacl_irt_query;
 
 extern struct nacl_irt_basic __libnacl_irt_basic;
 extern struct nacl_irt_fdio __libnacl_irt_fdio;
+extern struct nacl_irt_dev_fdio __libnacl_irt_dev_fdio;
 extern struct nacl_irt_dev_filename __libnacl_irt_dev_filename;
 extern struct nacl_irt_memory __libnacl_irt_memory;
 extern struct nacl_irt_tls __libnacl_irt_tls;
@@ -27,7 +29,11 @@ extern int __libnacl_irt_query(const char *interface,
 extern void __libnacl_mandatory_irt_query(const char *interface_ident,
                                           void *table, size_t table_size);
 extern void __libnacl_irt_init(Elf32_auxv_t *auxv);
-extern void __libnacl_irt_filename_init(void);
+
+extern void __libnacl_irt_dev_fdio_init(void);
+extern void __libnacl_irt_dev_filename_init(void);
+
+extern int __libnacl_irt_init_fn(void *interface_field, void (*init)(void));
 
 /*
  * NACL_OPTIONAL_FN is used to create libc wrapper functions.

@@ -5,6 +5,7 @@
  */
 
 #include "native_client/src/untrusted/irt/irt.h"
+#include "native_client/src/untrusted/irt/irt_dev.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 static int nacl_irt_list_mappings(struct NaClMemMappingInfo *regions,

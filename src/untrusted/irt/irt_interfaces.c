@@ -10,6 +10,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
 #include "native_client/src/untrusted/irt/irt.h"
+#include "native_client/src/untrusted/irt/irt_dev.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 

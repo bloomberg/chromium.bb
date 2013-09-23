@@ -5,6 +5,7 @@
  */
 
 #include "native_client/src/untrusted/irt/irt.h"
+#include "native_client/src/untrusted/irt/irt_dev.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 static int nacl_irt_open(const char *pathname, int oflag, mode_t cmode,
@@ -45,7 +46,7 @@ const struct nacl_irt_filename nacl_irt_filename = {
   nacl_irt_stat,
 };
 
-const struct nacl_irt_dev_filename nacl_irt_dev_filename = {
+const struct nacl_irt_dev_filename_v0_2 nacl_irt_dev_filename = {
   nacl_irt_open,
   nacl_irt_stat,
   nacl_irt_mkdir,

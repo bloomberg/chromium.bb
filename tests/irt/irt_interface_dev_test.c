@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #include "native_client/src/untrusted/irt/irt.h"
+#include "native_client/src/untrusted/irt/irt_dev.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 /*
@@ -25,7 +26,7 @@
  * non debug mode.
  */
 void test_dev_interfaces(void) {
-  struct nacl_irt_dev_filename filename;
+  struct nacl_irt_dev_filename_v0_2 filename;
   struct nacl_irt_dev_list_mappings list_mappings;
   int nacl_file_access_enabled;
   int nacl_list_mappings_enabled;

@@ -131,23 +131,6 @@ struct nacl_irt_filename {
 };
 
 /*
- * The "irt-dev-filename" is similiar to "irt-filename" but provides
- * additional functions, including those that do directory manipulation.
- * Inside Chromium, requests for this interface may fail, or may return
- * functions which always return errors.
- */
-#define NACL_IRT_DEV_FILENAME_v0_2      "nacl-irt-dev-filename-0.2"
-struct nacl_irt_dev_filename {
-  int (*open)(const char *pathname, int oflag, mode_t cmode, int *newfd);
-  int (*stat)(const char *pathname, struct stat *);
-  int (*mkdir)(const char *pathname, mode_t mode);
-  int (*rmdir)(const char *pathname);
-  int (*chdir)(const char *pathname);
-  int (*getcwd)(char *pathname, size_t len);
-  int (*unlink)(const char *pathname);
-};
-
-/*
  * This old version of irt-memory is disabled under PNaCl because it
  * contains sysbrk() (see
  * https://code.google.com/p/nativeclient/issues/detail?id=3542).
@@ -395,13 +378,6 @@ struct nacl_irt_exception_handling {
                            NaClExceptionHandler *old_handler);
   int (*exception_stack)(void *stack, size_t size);
   int (*exception_clear_flag)(void);
-};
-
-#define NACL_IRT_DEV_LIST_MAPPINGS_v0_1 \
-  "nacl-irt-dev-list-mappings-0.1"
-struct nacl_irt_dev_list_mappings {
-  int (*list_mappings)(struct NaClMemMappingInfo *regions,
-                       size_t count, size_t *result_count);
 };
 
 #if defined(__cplusplus)
