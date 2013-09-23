@@ -216,7 +216,7 @@ void InspectorProfilerAgent::clearFrontend()
 void InspectorProfilerAgent::restore()
 {
     resetFrontendProfiles();
-    if (long interval = m_state->getLong(ProfilerAgentState::samplingInterval, interval))
+    if (long interval = m_state->getLong(ProfilerAgentState::samplingInterval, 0))
         ScriptProfiler::setSamplingInterval(interval);
     if (m_state->getBoolean(ProfilerAgentState::userInitiatedProfiling))
         start();
