@@ -14,11 +14,13 @@ namespace internal {
 const char kCategory[] = "cc,devtools";
 const char kLayerId[] = "layerId";
 const char kLayerTreeId[] = "layerTreeId";
+const char kPixelRefId[] = "pixelRefId";
+
+const char kImageDecodeTask[] = "ImageDecodeTask";
 }
 
 const char kPaintLayer[] = "PaintLayer";
 const char kRasterTask[] = "RasterTask";
-const char kImageDecodeTask[] = "ImageDecodeTask";
 const char kPaintSetup[] = "PaintSetup";
 const char kUpdateLayer[] = "UpdateLayer";
 
@@ -36,6 +38,19 @@ class ScopedLayerTask {
   const char* event_name_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedLayerTask);
+};
+
+class ScopedImageDecodeTask {
+ public:
+  explicit ScopedImageDecodeTask(void* pixelRef) {
+    TRACE_EVENT_BEGIN1(internal::kCategory, internal::kImageDecodeTask,
+        internal::kPixelRefId, reinterpret_cast<uint64>(pixelRef));
+  }
+  ~ScopedImageDecodeTask() {
+    TRACE_EVENT_END0(internal::kCategory, internal::kImageDecodeTask);
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedImageDecodeTask);
 };
 
 class ScopedLayerTreeTask {

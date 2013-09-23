@@ -268,8 +268,8 @@ class ImageDecodeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   // Overridden from internal::WorkerPoolTask:
   virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
     TRACE_EVENT0("cc", "ImageDecodeWorkerPoolTaskImpl::RunOnWorkerThread");
-    devtools_instrumentation::ScopedLayerTask image_decode_task(
-        devtools_instrumentation::kImageDecodeTask, layer_id_);
+    devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
+        pixel_ref_);
     base::TimeTicks start_time = rendering_stats_->StartRecording();
     pixel_ref_->Decode();
     base::TimeDelta duration = rendering_stats_->EndRecording(start_time);
