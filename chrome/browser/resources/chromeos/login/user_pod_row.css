@@ -46,8 +46,10 @@ podrow.images-loading {
   display: inline-block;
   margin: 0 20px;
   padding: 10px 10px 3px;
+  position: relative;
   vertical-align: middle;
   width: 160px;
+  z-index: 0;
 }
 
 .pod .main-pane {
@@ -65,6 +67,7 @@ podrow[ncolumns='6'] .pod {
   /* Focused pod has the same size no matter how many pods. */
   -webkit-transform: scale(1.0) !important;
   cursor: default;
+  z-index: 1;
 }
 
 .pod .user-image {
