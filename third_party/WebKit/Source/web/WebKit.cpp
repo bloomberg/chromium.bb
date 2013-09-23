@@ -101,8 +101,6 @@ void initialize(Platform* platform)
 
     v8::V8::SetEntropySource(&generateEntropy);
     v8::V8::SetArrayBufferAllocator(WebCore::v8ArrayBufferAllocator());
-    static const char* kTypedArraysFlag = "--harmony_array_buffer --harmony_typed_arrays";
-    v8::V8::SetFlagsFromString(kTypedArraysFlag, strlen(kTypedArraysFlag));
     v8::V8::Initialize();
     WebCore::V8PerIsolateData::ensureInitialized(v8::Isolate::GetCurrent());
 
