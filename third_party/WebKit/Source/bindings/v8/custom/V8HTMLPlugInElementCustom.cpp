@@ -36,6 +36,7 @@
 #include "bindings/v8/ScriptInstance.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8NPObject.h"
+#include "core/page/UseCounter.h"
 
 namespace WebCore {
 
@@ -104,16 +105,22 @@ void V8HTMLObjectElement::namedPropertySetterCustom(v8::Local<v8::String> name, 
 
 void V8HTMLAppletElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    HTMLPlugInElement* imp = V8HTMLAppletElement::toNative(args.Holder());
+    UseCounter::count(&imp->document(), UseCounter::HTMLAppletElementLegacyCall);
     npObjectInvokeDefaultHandler(args);
 }
 
 void V8HTMLEmbedElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    HTMLPlugInElement* imp = V8HTMLEmbedElement::toNative(args.Holder());
+    UseCounter::count(&imp->document(), UseCounter::HTMLEmbedElementLegacyCall);
     npObjectInvokeDefaultHandler(args);
 }
 
 void V8HTMLObjectElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    HTMLPlugInElement* imp = V8HTMLObjectElement::toNative(args.Holder());
+    UseCounter::count(&imp->document(), UseCounter::HTMLObjectElementLegacyCall);
     npObjectInvokeDefaultHandler(args);
 }
 
