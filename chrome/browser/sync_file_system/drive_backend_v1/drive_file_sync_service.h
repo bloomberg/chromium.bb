@@ -95,6 +95,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
   virtual void DisableOrigin(const GURL& origin,
                              const SyncStatusCallback& callback) OVERRIDE;
   virtual void UninstallOrigin(const GURL& origin,
+                               UninstallFlag flag,
                                const SyncStatusCallback& callback) OVERRIDE;
   virtual void ProcessRemoteChange(const SyncFileCallback& callback) OVERRIDE;
   virtual void SetRemoteChangeProcessor(
@@ -196,6 +197,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
       const SyncStatusCallback& callback);
   void DoUninstallOrigin(
       const GURL& origin,
+      UninstallFlag flag,
       const SyncStatusCallback& callback);
   void DoProcessRemoteChange(
       const SyncFileCallback& sync_callback,

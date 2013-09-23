@@ -89,11 +89,12 @@ void SyncEngine::DisableOrigin(
 
 void SyncEngine::UninstallOrigin(
     const GURL& origin,
+    UninstallFlag flag,
     const SyncStatusCallback& callback) {
   task_manager_.ScheduleTask(
       base::Bind(&SyncEngine::DoUninstallApp,
                  weak_ptr_factory_.GetWeakPtr(),
-                 origin.host()),
+                 origin.host(), flag),
       callback);
 }
 
@@ -212,6 +213,7 @@ void SyncEngine::DoEnableApp(const std::string& app_id,
 }
 
 void SyncEngine::DoUninstallApp(const std::string& app_id,
+                                UninstallFlag flag,
                                 const SyncStatusCallback& callback) {
   NOTIMPLEMENTED();
 }

@@ -172,10 +172,12 @@ void DriveFileSyncService::DisableOrigin(
 
 void DriveFileSyncService::UninstallOrigin(
     const GURL& origin,
+    UninstallFlag flag,
     const SyncStatusCallback& callback) {
   pending_origin_operations_.Push(origin, OriginOperation::UNINSTALLING);
   task_manager_->ScheduleTaskAtPriority(
-      base::Bind(&DriveFileSyncService::DoUninstallOrigin, AsWeakPtr(), origin),
+      base::Bind(&DriveFileSyncService::DoUninstallOrigin, AsWeakPtr(),
+                 origin, flag),
       SyncTaskManager::PRIORITY_HIGH,
       callback);
 }
@@ -559,6 +561,7 @@ void DriveFileSyncService::DoDisableOrigin(
 
 void DriveFileSyncService::DoUninstallOrigin(
     const GURL& origin,
+    UninstallFlag flag,
     const SyncStatusCallback& callback) {
   OriginOperation op = pending_origin_operations_.Pop();
   DCHECK_EQ(origin, op.origin);
@@ -582,6 +585,11 @@ void DriveFileSyncService::DoUninstallOrigin(
   // 2) origin or sync root folder is deleted on Drive.
   if (resource_id.empty()) {
     callback.Run(SYNC_STATUS_UNKNOWN_ORIGIN);
+    return;
+  }
+
+  if (flag == UNINSTALL_AND_KEEP_REMOTE) {
+    DidUninstallOrigin(origin, callback, google_apis::HTTP_SUCCESS);
     return;
   }
 
@@ -754,7 +762,11 @@ void DriveFileSyncService::UpdateRegisteredOrigins() {
 
     if (!extension_service->GetInstalledExtension(extension_id)) {
       // Extension has been uninstalled.
-      UninstallOrigin(origin, base::Bind(&EmptyStatusCallback));
+      // (At this stage we can't know if it was unpacked extension or not,
+      // so just purge the remote folder.)
+      UninstallOrigin(origin,
+                      RemoteFileSyncService::UNINSTALL_AND_PURGE_REMOTE,
+                      base::Bind(&EmptyStatusCallback));
     } else if (metadata_store_->IsIncrementalSyncOrigin(origin) &&
                !extension_service->IsExtensionEnabled(extension_id)) {
       // Incremental Extension has been disabled.

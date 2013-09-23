@@ -62,6 +62,7 @@ class SyncEngine : public RemoteFileSyncService,
       const SyncStatusCallback& callback) OVERRIDE;
   virtual void UninstallOrigin(
       const GURL& origin,
+      UninstallFlag flag,
       const SyncStatusCallback& callback) OVERRIDE;
   virtual void ProcessRemoteChange(const SyncFileCallback& callback) OVERRIDE;
   virtual void SetRemoteChangeProcessor(
@@ -107,6 +108,7 @@ class SyncEngine : public RemoteFileSyncService,
   void DoEnableApp(const std::string& app_id,
                    const SyncStatusCallback& callback);
   void DoUninstallApp(const std::string& app_id,
+                      UninstallFlag flag,
                       const SyncStatusCallback& callback);
 
   void DidInitialize(SyncEngineInitializer* initializer,

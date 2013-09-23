@@ -91,6 +91,11 @@ class RemoteFileSyncService {
     SyncFileMetadata metadata;
   };
 
+  enum UninstallFlag {
+    UNINSTALL_AND_PURGE_REMOTE,
+    UNINSTALL_AND_KEEP_REMOTE,
+  };
+
   // For GetOriginStatusMap.
   typedef std::map<GURL, std::string> OriginStatusMap;
 
@@ -132,6 +137,7 @@ class RemoteFileSyncService {
   // the origin from the metadata store.
   virtual void UninstallOrigin(
       const GURL& origin,
+      UninstallFlag flag,
       const SyncStatusCallback& callback) = 0;
 
   // Called by the sync engine to process one remote change.

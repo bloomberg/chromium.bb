@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
+#include "extensions/common/manifest_constants.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 
@@ -694,12 +695,24 @@ void SyncFileSystemService::HandleExtensionUnloaded(
 void SyncFileSystemService::HandleExtensionUninstalled(
     int type,
     const content::NotificationDetails& details) {
-  std::string extension_id = content::Details<const Extension>(details)->id();
-  GURL app_origin = Extension::GetBaseURLFromExtensionId(extension_id);
+  const Extension* extension = content::Details<const Extension>(details).ptr();
+  DCHECK(extension);
+
+  RemoteFileSyncService::UninstallFlag flag =
+      RemoteFileSyncService::UNINSTALL_AND_PURGE_REMOTE;
+  // If it's loaded from an unpacked package and with key: field,
+  // the uninstall will not be sync'ed and the user might be using the
+  // same app key in other installs, so avoid purging the remote folder.
+  if (extensions::Manifest::IsUnpackedLocation(extension->location()) &&
+      extension->manifest()->HasKey(extensions::manifest_keys::kKey)) {
+    flag = RemoteFileSyncService::UNINSTALL_AND_KEEP_REMOTE;
+  }
+
+  GURL app_origin = Extension::GetBaseURLFromExtensionId(extension->id());
   DVLOG(1) << "Handle extension notification for UNINSTALLED: "
            << app_origin;
   remote_file_service_->UninstallOrigin(
-      app_origin,
+      app_origin, flag,
       base::Bind(&DidHandleOriginForExtensionUnloadedEvent,
                  type, app_origin));
   local_file_service_->SetOriginEnabled(app_origin, false);

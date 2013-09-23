@@ -561,6 +561,7 @@ void DriveFileSyncServiceFakeTest::TestUninstallOrigin() {
   bool done = false;
   sync_service()->UninstallOrigin(
       ExtensionNameToGURL(kExtensionName1),
+      RemoteFileSyncService::UNINSTALL_AND_PURGE_REMOTE,
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(done);

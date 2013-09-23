@@ -171,12 +171,43 @@ TEST_F(DriveFileSyncServiceTest, UninstallOrigin) {
   bool done = false;
   sync_service()->UninstallOrigin(
       origin_gurl,
+      RemoteFileSyncService::UNINSTALL_AND_PURGE_REMOTE,
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(done);
 
   // Assert the App's origin folder was marked as deleted.
   EXPECT_TRUE(fake_api_util()->remote_resources().find(
+      origin_dir_resource_id)->second.deleted);
+}
+
+TEST_F(DriveFileSyncServiceTest, UninstallUnpackedOrigin) {
+  // Add fake app origin directory using fake drive_sync_client.
+  std::string origin_dir_resource_id = "uninstalledappresourceid";
+  fake_api_util()->PushRemoteChange("parent_id",
+                                    "parent_title",
+                                    "uninstall_me_folder",
+                                    origin_dir_resource_id,
+                                    "resource_md5",
+                                    SYNC_FILE_TYPE_FILE,
+                                    false);
+
+  // Add meta_data entry so GURL->resourse_id mapping is there.
+  const GURL origin_gurl("chrome-extension://uninstallme");
+  metadata_store()->AddIncrementalSyncOrigin(origin_gurl,
+                                             origin_dir_resource_id);
+
+  // Uninstall the origin.
+  bool done = false;
+  sync_service()->UninstallOrigin(
+      origin_gurl,
+      RemoteFileSyncService::UNINSTALL_AND_KEEP_REMOTE,
+      base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(done);
+
+  // Assert the App's origin folder has not been deleted.
+  EXPECT_FALSE(fake_api_util()->remote_resources().find(
       origin_dir_resource_id)->second.deleted);
 }
 
@@ -193,6 +224,7 @@ TEST_F(DriveFileSyncServiceTest, UninstallOriginWithoutOriginDirectory) {
   bool done = false;
   sync_service()->UninstallOrigin(
       origin_gurl,
+      RemoteFileSyncService::UNINSTALL_AND_PURGE_REMOTE,
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(done);

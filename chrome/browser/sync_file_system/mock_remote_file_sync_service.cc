@@ -28,7 +28,7 @@ MockRemoteFileSyncService::MockRemoteFileSyncService()
       .WillByDefault(Invoke(this, &self::AddFileStatusObserverStub));
   ON_CALL(*this, RegisterOrigin(_, _))
       .WillByDefault(Invoke(this, &self::RegisterOriginStub));
-  ON_CALL(*this, UninstallOrigin(_, _))
+  ON_CALL(*this, UninstallOrigin(_, _, _))
       .WillByDefault(
           Invoke(this, &self::DeleteOriginDirectoryStub));
   ON_CALL(*this, ProcessRemoteChange(_))
@@ -99,6 +99,7 @@ void MockRemoteFileSyncService::RegisterOriginStub(
 
 void MockRemoteFileSyncService::DeleteOriginDirectoryStub(
     const GURL& origin,
+    UninstallFlag flag,
     const SyncStatusCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,

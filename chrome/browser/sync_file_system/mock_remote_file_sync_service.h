@@ -38,8 +38,10 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
                void(const GURL& origin, const SyncStatusCallback& callback));
   MOCK_METHOD2(DisableOrigin,
                void(const GURL& origin, const SyncStatusCallback& callback));
-  MOCK_METHOD2(UninstallOrigin,
-               void(const GURL& origin, const SyncStatusCallback& callback));
+  MOCK_METHOD3(UninstallOrigin,
+               void(const GURL& origin,
+                    UninstallFlag flag,
+                    const SyncStatusCallback& callback));
   MOCK_METHOD1(ProcessRemoteChange,
                void(const SyncFileCallback& callback));
   MOCK_METHOD1(SetRemoteChangeProcessor,
@@ -85,7 +87,8 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   void RegisterOriginStub(
       const GURL& origin, const SyncStatusCallback& callback);
   void DeleteOriginDirectoryStub(
-      const GURL& origin, const SyncStatusCallback& callback);
+      const GURL& origin, UninstallFlag flag,
+      const SyncStatusCallback& callback);
   void ProcessRemoteChangeStub(const SyncFileCallback& callback);
   SyncStatusCode SetConflictResolutionPolicyStub(
       ConflictResolutionPolicy policy);
