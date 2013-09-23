@@ -1038,8 +1038,6 @@ void HWNDMessageHandler::ClientAreaSizeChanged() {
       // GetClientAreaInsets for more details.
       if (remove_standard_frame_ && !IsMaximized())
         r.bottom += kClientAreaBottomInsetHack;
-      else if (!fullscreen_handler_->fullscreen())
-        r.bottom += kClientAreaBottomInsetHack;
     } else {
       GetWindowRect(hwnd(), &r);
     }
@@ -1096,6 +1094,11 @@ bool HWNDMessageHandler::GetClientAreaInsets(gfx::Insets* insets) const {
     return true;
   }
 
+#if defined(USE_AURA)
+  // The -1 hack below breaks rendering in Aura.
+  // See http://crbug.com/172099 http://crbug.com/267131
+  *insets = gfx::Insets();
+#else
   // This is weird, but highly essential. If we don't offset the bottom edge
   // of the client rect, the window client area and window area will match,
   // and when returning to glass rendering mode from non-glass, the client
@@ -1107,11 +1110,8 @@ bool HWNDMessageHandler::GetClientAreaInsets(gfx::Insets* insets) const {
   // rect when using the opaque frame.
   // Note: this is only required for non-fullscreen windows. Note that
   // fullscreen windows are in restored state, not maximized.
-  // Note that previously we used to inset by 1 instead of outset, but that
-  // doesn't work with Aura: http://crbug.com/172099 http://crbug.com/277228
-  *insets = gfx::Insets(
-      0, 0,
-      fullscreen_handler_->fullscreen() ? 0 : kClientAreaBottomInsetHack, 0);
+  *insets = gfx::Insets(0, 0, fullscreen_handler_->fullscreen() ? 0 : 1, 0);
+#endif
   return true;
 }
 
