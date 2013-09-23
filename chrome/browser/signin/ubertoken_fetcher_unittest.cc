@@ -5,7 +5,7 @@
 #include "chrome/browser/signin/ubertoken_fetcher.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/token_service_unittest.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -40,25 +40,6 @@ class MockUbertokenConsumer : public UbertokenConsumer {
   int nb_error_;
 };
 
-class MockOAuth2TokenService : public ProfileOAuth2TokenService {
-  // OAuth2TokenService overrides:
-  virtual scoped_ptr<OAuth2TokenService::Request>
-      StartRequest(const std::string& account_id,
-                   const OAuth2TokenService::ScopeSet& scopes,
-                   OAuth2TokenService::Consumer* consumer) OVERRIDE {
-    // Don't actually make a request.
-    scoped_ptr<OAuth2TokenService::Request> request;
-    return request.Pass();
-  }
-};
-
-
-BrowserContextKeyedService* Build(content::BrowserContext* profile) {
-  MockOAuth2TokenService* token_service = new MockOAuth2TokenService();
-  token_service->Initialize(static_cast<Profile*>(profile));
-  return token_service;
-}
-
 }  // namespace
 
 class UbertokenFetcherTest : public TokenServiceTestHarness {
@@ -72,7 +53,7 @@ class UbertokenFetcherTest : public TokenServiceTestHarness {
   virtual scoped_ptr<TestingProfile> CreateProfile() OVERRIDE {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              Build);
+                              &FakeProfileOAuth2TokenService::Build);
     return builder.Build().Pass();
   }
 
