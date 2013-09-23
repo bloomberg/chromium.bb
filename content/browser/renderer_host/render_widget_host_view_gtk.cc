@@ -683,17 +683,18 @@ RenderWidgetHost* RenderWidgetHostViewGtk::GetRenderWidgetHost() const {
 }
 
 void RenderWidgetHostViewGtk::WasShown() {
-  if (!is_hidden_)
+  if (!host_ || !is_hidden_)
     return;
 
   if (web_contents_switch_paint_time_.is_null())
     web_contents_switch_paint_time_ = base::TimeTicks::Now();
   is_hidden_ = false;
+
   host_->WasShown();
 }
 
 void RenderWidgetHostViewGtk::WasHidden() {
-  if (is_hidden_)
+  if (!host_ || is_hidden_)
     return;
 
   // If we receive any more paint messages while we are hidden, we want to
@@ -792,10 +793,12 @@ bool RenderWidgetHostViewGtk::IsSurfaceAvailableForCopy() const {
 
 void RenderWidgetHostViewGtk::Show() {
   gtk_widget_show(view_.get());
+  WasShown();
 }
 
 void RenderWidgetHostViewGtk::Hide() {
   gtk_widget_hide(view_.get());
+  WasHidden();
 }
 
 bool RenderWidgetHostViewGtk::IsShowing() {

@@ -692,20 +692,26 @@ RenderWidgetHost* RenderWidgetHostViewAura::GetRenderWidgetHost() const {
 }
 
 void RenderWidgetHostViewAura::WasShown() {
+  DCHECK(host_);
   if (!host_->is_hidden())
     return;
   host_->WasShown();
   if (framebuffer_holder_)
     FrameMemoryManager::GetInstance()->SetFrameVisibility(this, true);
 
-  aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(window_->GetRootWindow());
-  if (cursor_client)
-    NotifyRendererOfCursorVisibilityState(cursor_client->IsCursorVisible());
+  aura::RootWindow* root = window_->GetRootWindow();
+  if (root) {
+    aura::client::CursorClient* cursor_client =
+        aura::client::GetCursorClient(root);
+    if (cursor_client)
+      NotifyRendererOfCursorVisibilityState(cursor_client->IsCursorVisible());
+  }
 
   if (!current_surface_.get() && host_->is_accelerated_compositing_active() &&
       !released_front_lock_.get()) {
-    released_front_lock_ = GetCompositor()->GetCompositorLock();
+    ui::Compositor* compositor = GetCompositor();
+    if (compositor)
+      released_front_lock_ = compositor->GetCompositorLock();
   }
 
 #if defined(OS_WIN)
@@ -716,7 +722,7 @@ void RenderWidgetHostViewAura::WasShown() {
 }
 
 void RenderWidgetHostViewAura::WasHidden() {
-  if (host_->is_hidden())
+  if (!host_ || host_->is_hidden())
     return;
   host_->WasHidden();
   if (framebuffer_holder_)
@@ -963,10 +969,12 @@ bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
 
 void RenderWidgetHostViewAura::Show() {
   window_->Show();
+  WasShown();
 }
 
 void RenderWidgetHostViewAura::Hide() {
   window_->Hide();
+  WasHidden();
 }
 
 bool RenderWidgetHostViewAura::IsShowing() {

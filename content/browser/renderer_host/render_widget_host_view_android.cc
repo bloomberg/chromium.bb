@@ -199,7 +199,7 @@ RenderWidgetHostViewAndroid::GetRenderWidgetHost() const {
 }
 
 void RenderWidgetHostViewAndroid::WasShown() {
-  if (!host_->is_hidden())
+  if (!host_ || !host_->is_hidden())
     return;
 
   host_->WasShown();
@@ -208,7 +208,7 @@ void RenderWidgetHostViewAndroid::WasShown() {
 void RenderWidgetHostViewAndroid::WasHidden() {
   RunAckCallbacks();
 
-  if (host_->is_hidden())
+  if (!host_ || host_->is_hidden())
     return;
 
   // Inform the renderer that we are being hidden so it can reduce its resource
@@ -356,6 +356,8 @@ void RenderWidgetHostViewAndroid::Show() {
 
   are_layers_attached_ = true;
   AttachLayers();
+
+  WasShown();
 }
 
 void RenderWidgetHostViewAndroid::Hide() {
@@ -364,6 +366,8 @@ void RenderWidgetHostViewAndroid::Hide() {
 
   are_layers_attached_ = false;
   RemoveLayers();
+
+  WasHidden();
 }
 
 bool RenderWidgetHostViewAndroid::IsShowing() {
