@@ -108,12 +108,12 @@ def GeneralizedMean(values, exponent):
 def Median(values):
   if not values:
     return 0.0
-  values.sort()
+  sorted_values = sorted(values)
   n = len(values)
   if n % 2:
-    median = values[n/2]
+    median = sorted_values[n/2]
   else:
-    median = 0.5 * (values[n/2] + values[n/2 - 1])
+    median = 0.5 * (sorted_values[n/2] + sorted_values[n/2 - 1])
   return median
 
 def CalcFirstPaintTimeResults(results, tab):
@@ -141,9 +141,10 @@ def CalcResults(benchmark_stats, results):
   frame_times = []
   for i in xrange(1, len(s.screen_frame_timestamps)):
     frame_times.append(
-        s.screen_frame_timestamps[i] - s.screen_frame_timestamps[i-1])
+        round(s.screen_frame_timestamps[i] - s.screen_frame_timestamps[i-1], 2))
 
   # Scroll Results
+  results.Add('frame_times', 'ms', frame_times)
   results.Add('mean_frame_time', 'ms',
               Average(s.total_time, s.screen_frame_count, 1000, 3))
   # Absolute discrepancy of frame time stamps (experimental)
