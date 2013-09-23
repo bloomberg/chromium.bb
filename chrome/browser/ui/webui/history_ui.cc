@@ -624,6 +624,7 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const ListValue* args) {
                    base::Unretained(this)));
   }
 
+#if defined(ENABLE_EXTENSIONS)
   // If the profile has activity logging enabled also clean up any URLs from
   // the extension activity log. The extension activity log contains URLS
   // which websites an extension has activity on so it will indirectly
@@ -634,6 +635,7 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const ListValue* args) {
        expire_list.begin(); it != expire_list.end(); ++it) {
     activity_log->RemoveURLs(it->urls);
   }
+#endif
 }
 
 void BrowsingHistoryHandler::HandleClearBrowsingData(const ListValue* args) {

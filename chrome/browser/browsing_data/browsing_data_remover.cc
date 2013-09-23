@@ -272,10 +272,12 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
                      base::Unretained(this)),
           &history_task_tracker_);
 
+#if defined(ENABLE_EXTENSIONS)
       // The extension activity contains details of which websites extensions
       // were active on. It therefore indirectly stores details of websites a
       // user has visited so best clean from here as well.
       extensions::ActivityLog::GetInstance(profile_)->RemoveURLs(restrict_urls);
+#endif
     }
 
     // Need to clear the host cache and accumulated speculative data, as it also

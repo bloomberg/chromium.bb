@@ -50,6 +50,7 @@ namespace {
 void AddActionToExtensionActivityLog(
     Profile* profile,
     scoped_refptr<extensions::Action> action) {
+#if defined(ENABLE_EXTENSIONS)
   // The ActivityLog can only be accessed from the main (UI) thread.  If we're
   // running on the wrong thread, re-dispatch from the main thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -66,6 +67,7 @@ void AddActionToExtensionActivityLog(
         extensions::ActivityLog::GetInstance(profile);
     activity_log->LogAction(action);
   }
+#endif
 }
 
 } // namespace

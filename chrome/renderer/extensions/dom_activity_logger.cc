@@ -60,12 +60,14 @@ void DOMActivityLogger::AttachToWorld(int world_id,
                                       const std::string& extension_id,
                                       const GURL& url,
                                       const string16& title) {
+#if defined(ENABLE_EXTENSIONS)
   // If there is no logger registered for world_id, construct a new logger
   // and register it with world_id.
   if (!WebKit::hasDOMActivityLogger(world_id)) {
     DOMActivityLogger* logger = new DOMActivityLogger(extension_id, url, title);
     WebKit::setDOMActivityLogger(world_id, logger);
   }
+#endif
 }
 
 }  // namespace extensions
