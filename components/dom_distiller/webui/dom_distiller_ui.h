@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOM_DISTILLER_WEBUI_DOM_DISTILLER_UI_H_
-#define COMPONENTS_DOM_DISTILLER_WEBUI_DOM_DISTILLER_UI_H_
+#ifndef COMPONENTS_DOM_DISTILLER_WEBUI_DOM_DISTILLER_H_
+#define COMPONENTS_DOM_DISTILLER_WEBUI_DOM_DISTILLER_H_
 
 #include "content/public/browser/web_ui_controller.h"
 

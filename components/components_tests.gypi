@@ -15,6 +15,7 @@
             'auto_login_parser/auto_login_parser_unittest.cc',
             'browser_context_keyed_service/browser_context_dependency_manager_unittest.cc',
             'browser_context_keyed_service/dependency_graph_unittest.cc',
+            'dom_distiller/core/dom_distiller_database_unittest.cc',
             'json_schema/json_schema_validator_unittest.cc',
             'json_schema/json_schema_validator_unittest_base.cc',
             'json_schema/json_schema_validator_unittest_base.h',
@@ -47,6 +48,10 @@
 
             # Dependencies of browser_context_keyed_service
             'browser_context_keyed_service',
+
+            # Dependencies of dom_distiller
+            'dom_distiller_core',
+            'dom_distiller_core_proto',
 
             # Dependencies of encryptor
             'encryptor',
