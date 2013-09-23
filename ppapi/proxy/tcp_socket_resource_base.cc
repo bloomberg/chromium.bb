@@ -351,17 +351,6 @@ int32_t TCPSocketResourceBase::SetOptionImpl(
       option_data.SetInt32(value.value.as_int);
       break;
     }
-    case PP_TCPSOCKET_OPTION_ADDRESS_REUSE: {
-      if (version_ != TCP_SOCKET_VERSION_1_1_OR_ABOVE)
-        return PP_ERROR_NOTSUPPORTED;
-      if (state_.state() != TCPSocketState::INITIAL)
-        return PP_ERROR_FAILED;
-
-      if (value.type != PP_VARTYPE_BOOL)
-        return PP_ERROR_BADARGUMENT;
-      option_data.SetBool(PP_ToBool(value.value.as_bool));
-      break;
-    }
     default: {
       NOTREACHED();
       return PP_ERROR_BADARGUMENT;

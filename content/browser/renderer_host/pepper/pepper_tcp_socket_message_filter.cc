@@ -65,8 +65,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       bind_input_addr_(NetAddressPrivateImpl::kInvalidNetAddress),
       socket_(new net::TCPSocket(NULL, net::NetLog::Source())),
       ssl_context_helper_(host->ssl_context_helper()),
-      pending_accept_(false),
-      allow_address_reuse_(false) {
+      pending_accept_(false) {
   DCHECK(host);
   ++g_num_instances;
   if (!host->GetRenderViewIDsForInstance(instance,
@@ -93,8 +92,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       bind_input_addr_(NetAddressPrivateImpl::kInvalidNetAddress),
       socket_(socket.Pass()),
       ssl_context_helper_(host->ssl_context_helper()),
-      pending_accept_(false),
-      allow_address_reuse_(false) {
+      pending_accept_(false) {
   DCHECK(host);
   DCHECK_NE(version, ppapi::TCP_SOCKET_VERSION_1_0);
 
@@ -467,18 +465,6 @@ int32_t PepperTCPSocketMessageFilter::OnMsgSetOption(
       }
       return result ? PP_OK : PP_ERROR_FAILED;
     }
-    case PP_TCPSOCKET_OPTION_ADDRESS_REUSE: {
-      if (version_ != ppapi::TCP_SOCKET_VERSION_1_1_OR_ABOVE)
-        return PP_ERROR_NOTSUPPORTED;
-      if (state_.state() != TCPSocketState::INITIAL)
-        return PP_ERROR_FAILED;
-
-      bool boolean_value = false;
-      if (!value.GetBool(&boolean_value))
-        return PP_ERROR_BADARGUMENT;
-      allow_address_reuse_ = boolean_value;
-      return PP_OK;
-    }
     default: {
       NOTREACHED();
       return PP_ERROR_BADARGUMENT;
@@ -512,7 +498,11 @@ void PepperTCPSocketMessageFilter::DoBind(
     net::IPEndPoint bind_addr(address, port);
 
     DCHECK(!socket_->IsValid());
-    pp_result = NetErrorToPepperError(OpenSocket(bind_addr.GetFamily()));
+    pp_result = NetErrorToPepperError(socket_->Open(bind_addr.GetFamily()));
+    if (pp_result != PP_OK)
+      break;
+
+    pp_result = NetErrorToPepperError(socket_->SetDefaultOptionsForServer());
     if (pp_result != PP_OK)
       break;
 
@@ -674,7 +664,7 @@ void PepperTCPSocketMessageFilter::StartConnect(
 
   int net_result = net::OK;
   if (!socket_->IsValid())
-    net_result = OpenSocket(address_list_[0].GetFamily());
+    net_result = socket_->Open(address_list_[0].GetFamily());
 
   if (net_result == net::OK) {
     net_result = socket_->Connect(
@@ -968,22 +958,6 @@ void PepperTCPSocketMessageFilter::SendAcceptError(
   SendAcceptReply(context, pp_error, 0,
                   NetAddressPrivateImpl::kInvalidNetAddress,
                   NetAddressPrivateImpl::kInvalidNetAddress);
-}
-
-int PepperTCPSocketMessageFilter::OpenSocket(net::AddressFamily family) {
-  int net_error = socket_->Open(family);
-  if (net_error != net::OK)
-    return net_error;
-
-  // TODO(yzshen): Handle it for Windows.
-#if defined(POSIX)
-  if (allow_address_reuse_) {
-    net_error = socket_->SetAddressReuse(true);
-    LOG_IF(WARNING, net_error != net::OK) << "SetAddressReuse() failed.";
-  }
-#endif
-
-  return net::OK;
 }
 
 }  // namespace content

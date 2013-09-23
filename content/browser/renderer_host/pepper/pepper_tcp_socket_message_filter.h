@@ -158,8 +158,6 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   void SendAcceptError(const ppapi::host::ReplyMessageContext& context,
                        int32_t pp_error);
 
-  int32_t OpenSocket(net::AddressFamily family);
-
   bool IsPrivateAPI() const {
     return version_ == ppapi::TCP_SOCKET_VERSION_PRIVATE;
   }
@@ -209,8 +207,6 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   bool pending_accept_;
   scoped_ptr<net::TCPSocket> accepted_socket_;
   net::IPEndPoint accepted_address_;
-
-  bool allow_address_reuse_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperTCPSocketMessageFilter);
 };

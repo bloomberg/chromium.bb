@@ -131,7 +131,6 @@ std::string TestTCPSocket::TestSetOption() {
   TestCompletionCallback cb_1(instance_->pp_instance(), callback_type());
   TestCompletionCallback cb_2(instance_->pp_instance(), callback_type());
   TestCompletionCallback cb_3(instance_->pp_instance(), callback_type());
-  TestCompletionCallback cb_4(instance_->pp_instance(), callback_type());
 
   // These options cannot be set before the socket is connected.
   int32_t result_1 = socket.SetOption(PP_TCPSOCKET_OPTION_NO_DELAY,
@@ -140,10 +139,6 @@ std::string TestTCPSocket::TestSetOption() {
                                       256, cb_2.GetCallback());
   int32_t result_3 = socket.SetOption(PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE,
                                       512, cb_3.GetCallback());
-
-  // This option can only be set before the socket is bound.
-  int32_t result_4 = socket.SetOption(PP_TCPSOCKET_OPTION_ADDRESS_REUSE,
-                                      true, cb_4.GetCallback());
 
   cb_1.WaitForResult(result_1);
   CHECK_CALLBACK_BEHAVIOR(cb_1);
@@ -157,10 +152,6 @@ std::string TestTCPSocket::TestSetOption() {
   CHECK_CALLBACK_BEHAVIOR(cb_3);
   ASSERT_EQ(PP_ERROR_FAILED, cb_3.result());
 
-  cb_4.WaitForResult(result_4);
-  CHECK_CALLBACK_BEHAVIOR(cb_4);
-  ASSERT_EQ(PP_OK, cb_4.result());
-
   cb_1.WaitForResult(socket.Connect(addr_, cb_1.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(cb_1);
   ASSERT_EQ(PP_OK, cb_1.result());
@@ -171,8 +162,6 @@ std::string TestTCPSocket::TestSetOption() {
                               512, cb_2.GetCallback());
   result_3 = socket.SetOption(PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE,
                               1024, cb_3.GetCallback());
-  result_4 = socket.SetOption(PP_TCPSOCKET_OPTION_ADDRESS_REUSE,
-                              false, cb_4.GetCallback());
 
   cb_1.WaitForResult(result_1);
   CHECK_CALLBACK_BEHAVIOR(cb_1);
@@ -185,10 +174,6 @@ std::string TestTCPSocket::TestSetOption() {
   cb_3.WaitForResult(result_3);
   CHECK_CALLBACK_BEHAVIOR(cb_3);
   ASSERT_EQ(PP_OK, cb_3.result());
-
-  cb_4.WaitForResult(result_4);
-  CHECK_CALLBACK_BEHAVIOR(cb_4);
-  ASSERT_EQ(PP_ERROR_FAILED, cb_4.result());
 
   PASS();
 }

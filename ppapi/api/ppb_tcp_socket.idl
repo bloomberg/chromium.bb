@@ -44,15 +44,7 @@ enum PP_TCPSocket_Option {
    * size. Even if <code>SetOption()</code> succeeds, the browser doesn't
    * guarantee it will conform to the size.
    */
-  PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE = 2,
-
-  /**
-   * Allows the socket to share the local address to which it will be bound.
-   * Value's type should be <code>PP_VARTYPE_BOOL</code>.
-   * This option can only be set before calling <code>Bind()</code>.
-   * Supported since version 1.1.
-   */
-  PP_TCPSOCKET_OPTION_ADDRESS_REUSE = 3
+  PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE = 2
 };
 
 /**
@@ -127,10 +119,10 @@ interface PPB_TCPSocket {
    * - <code>PP_ERROR_CONNECTION_TIMEDOUT</code>: the connection attempt timed
    *   out.
    *
-   * If the socket is listening/connected or has a pending listen/connect
-   * request, <code>Connect()</code> will fail without starting a connection
-   * attempt. Otherwise, any failure during the connection attempt will cause
-   * the socket to be closed.
+   * Since version 1.1, if the socket is listening/connected or has a pending
+   * listen/connect request, <code>Connect()</code> will fail without starting a
+   * connection attempt; otherwise, any failure during the connection attempt
+   * will cause the socket to be closed.
    */
   int32_t Connect([in] PP_Resource tcp_socket,
                   [in] PP_Resource addr,

@@ -94,10 +94,10 @@ class TCPSocket : public Resource {
   /// - <code>PP_ERROR_CONNECTION_TIMEDOUT</code>: the connection attempt timed
   ///   out.
   ///
-  /// If the socket is listening/connected or has a pending listen/connect
-  /// request, <code>Connect()</code> will fail without starting a connection
-  /// attempt. Otherwise, any failure during the connection attempt will cause
-  /// the socket to be closed.
+  /// Since version 1.1, if the socket is listening/connected or has a pending
+  /// listen/connect request, <code>Connect()</code> will fail without starting
+  /// a connection attempt. Otherwise, any failure during the connection attempt
+  /// will cause the socket to be closed.
   int32_t Connect(const NetAddress& addr, const CompletionCallback& callback);
 
   /// Gets the local address of the socket, if it is bound.

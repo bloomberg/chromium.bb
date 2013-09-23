@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_tcp_socket.idl modified Thu Sep 19 14:01:43 2013. */
+/* From ppb_tcp_socket.idl modified Fri Sep 20 09:58:19 2013. */
 
 #ifndef PPAPI_C_PPB_TCP_SOCKET_H_
 #define PPAPI_C_PPB_TCP_SOCKET_H_
@@ -59,14 +59,7 @@ typedef enum {
    * size. Even if <code>SetOption()</code> succeeds, the browser doesn't
    * guarantee it will conform to the size.
    */
-  PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE = 2,
-  /**
-   * Allows the socket to share the local address to which it will be bound.
-   * Value's type should be <code>PP_VARTYPE_BOOL</code>.
-   * This option can only be set before calling <code>Bind()</code>.
-   * Supported since version 1.1.
-   */
-  PP_TCPSOCKET_OPTION_ADDRESS_REUSE = 3
+  PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE = 2
 } PP_TCPSocket_Option;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TCPSocket_Option, 4);
 /**
@@ -145,10 +138,10 @@ struct PPB_TCPSocket_1_1 {
    * - <code>PP_ERROR_CONNECTION_TIMEDOUT</code>: the connection attempt timed
    *   out.
    *
-   * If the socket is listening/connected or has a pending listen/connect
-   * request, <code>Connect()</code> will fail without starting a connection
-   * attempt. Otherwise, any failure during the connection attempt will cause
-   * the socket to be closed.
+   * Since version 1.1, if the socket is listening/connected or has a pending
+   * listen/connect request, <code>Connect()</code> will fail without starting a
+   * connection attempt; otherwise, any failure during the connection attempt
+   * will cause the socket to be closed.
    */
   int32_t (*Connect)(PP_Resource tcp_socket,
                      PP_Resource addr,
