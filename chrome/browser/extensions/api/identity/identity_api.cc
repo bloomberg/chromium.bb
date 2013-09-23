@@ -625,6 +625,10 @@ IdentityTokenCacheValue::IdentityTokenCacheValue(
     const std::string& token, base::TimeDelta time_to_live)
     : status_(CACHE_STATUS_TOKEN),
       token_(token) {
+  // Remove 20 minutes from the ttl so cached tokens will have some time
+  // to live any time they are returned.
+  time_to_live -= base::TimeDelta::FromMinutes(20);
+
   base::TimeDelta zero_delta;
   if (time_to_live < zero_delta)
     time_to_live = zero_delta;
