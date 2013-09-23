@@ -57,18 +57,6 @@ Replay
 # Requires manual intervention.
 Bindings/event-target-wrapper.html
 
-# Redundant with chromium's dom_perf benchmark.
-DOM/Accessors.html
-DOM/CloneNodes.html
-DOM/CreateNodes.html
-DOM/DOMDivWalk.html
-DOM/DOMTable.html
-DOM/DOMWalk.html
-DOM/Events.html
-DOM/GetElement.html
-DOM/GridSort.html
-DOM/Template.html
-
 # Crashy, crbug.com/245702
 Parser/query-selector-deep.html
 Parser/query-selector-id-deep.html
