@@ -97,7 +97,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
     trackingArea_.reset([[CrTrackingArea alloc]
         initWithRect:NSZeroRect
              options:NSTrackingMouseEnteredAndExited |
-                     NSTrackingActiveInKeyWindow |
+                     NSTrackingActiveAlways |
                      NSTrackingInVisibleRect
                owner:self
             userInfo:nil]);

@@ -70,8 +70,10 @@ void ZoomDecoration::ShowBubble(BOOL auto_close) {
         // If the page is at default zoom then hiding the zoom decoration was
         // suppressed while the bubble was open. Now that the bubble is closed
         // the decoration can be hidden.
-        if (IsAtDefaultZoom())
+        if (IsAtDefaultZoom() && IsVisible()) {
           SetVisible(false);
+          owner_->OnDecorationsChanged();
+        }
     };
     bubble_ =
         [[ZoomBubbleController alloc] initWithParentWindow:[field window]
