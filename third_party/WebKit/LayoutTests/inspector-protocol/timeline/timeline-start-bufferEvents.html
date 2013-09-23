@@ -1,0 +1,38 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/resources/protocol-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.eventHandler["Timeline.eventRecorded"] = eventRecorded;
+    InspectorTest.sendCommand("Timeline.start", { "bufferEvents": true }, onStart);
+
+    function onStart(response)
+    {
+        InspectorTest.sendCommand("Runtime.evaluate", { "expression": "0" }, onEvaluate);
+    }
+
+    function onEvaluate(response)
+    {
+        InspectorTest.sendCommand("Timeline.stop", {}, onStop);
+    }
+
+    function onStop(response)
+    {
+        var events = response.result.events;
+        for (var i = 0; i < events.length; ++i)
+            InspectorTest.log("Recording stopped: " + events[i].type);
+        InspectorTest.completeTest();
+    }
+
+    function eventRecorded(message)
+    {
+        InspectorTest.log("Event recorded: " + message);
+    }
+}
+</script>
+</head>
+<body onLoad="runTest();">
+</body>
+</html>

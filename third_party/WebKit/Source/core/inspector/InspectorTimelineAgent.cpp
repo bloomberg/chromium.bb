@@ -67,6 +67,7 @@ static const char startedFromProtocol[] = "startedFromProtocol";
 static const char timelineMaxCallStackDepth[] = "timelineMaxCallStackDepth";
 static const char includeDomCounters[] = "includeDomCounters";
 static const char includeNativeMemoryStatistics[] = "includeNativeMemoryStatistics";
+static const char bufferEvents[] = "bufferEvents";
 }
 
 // Must be kept in sync with WebInspector.TimelineModel.RecordType in TimelineModel.js
@@ -191,7 +192,8 @@ void InspectorTimelineAgent::setFrontend(InspectorFrontend* frontend)
 void InspectorTimelineAgent::clearFrontend()
 {
     ErrorString error;
-    stop(&error);
+    RefPtr<TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent> > events;
+    stop(&error, events);
     disable(&error);
     releaseNodeIds();
     m_frontend = 0;
@@ -200,6 +202,8 @@ void InspectorTimelineAgent::clearFrontend()
 void InspectorTimelineAgent::restore()
 {
     if (m_state->getBoolean(TimelineAgentState::startedFromProtocol)) {
+        if (m_state->getBoolean(TimelineAgentState::bufferEvents))
+            m_bufferedEvents = TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent>::create();
         innerStart();
     } else if (isStarted()) {
         // Timeline was started from console.timeline, it is not restored.
@@ -220,7 +224,7 @@ void InspectorTimelineAgent::disable(ErrorString*)
     m_state->setBoolean(TimelineAgentState::enabled, false);
 }
 
-void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallStackDepth, const bool* includeDomCounters, const bool* includeNativeMemoryStatistics)
+void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallStackDepth, const bool* bufferEvents, const bool* includeDomCounters, const bool* includeNativeMemoryStatistics)
 {
     if (!m_frontend)
         return;
@@ -236,9 +240,14 @@ void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallS
         m_maxCallStackDepth = *maxCallStackDepth;
     else
         m_maxCallStackDepth = 5;
+
+    if (bufferEvents && *bufferEvents)
+        m_bufferedEvents = TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent>::create();
+
     m_state->setLong(TimelineAgentState::timelineMaxCallStackDepth, m_maxCallStackDepth);
     m_state->setBoolean(TimelineAgentState::includeDomCounters, includeDomCounters && *includeDomCounters);
     m_state->setBoolean(TimelineAgentState::includeNativeMemoryStatistics, includeNativeMemoryStatistics && *includeNativeMemoryStatistics);
+    m_state->setBoolean(TimelineAgentState::bufferEvents, bufferEvents && *bufferEvents);
 
     innerStart();
     bool fromConsole = false;
@@ -260,14 +269,18 @@ void InspectorTimelineAgent::innerStart()
         m_traceEventProcessor = adoptRef(new TimelineTraceEventProcessor(m_weakFactory.createWeakPtr(), m_client));
 }
 
-void InspectorTimelineAgent::stop(ErrorString* errorString)
+void InspectorTimelineAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent> >& events)
 {
     m_state->setBoolean(TimelineAgentState::startedFromProtocol, false);
+    m_state->setBoolean(TimelineAgentState::bufferEvents, false);
+
     if (!isStarted()) {
         *errorString = "Timeline was not started";
         return;
     }
     innerStop(false);
+    if (m_bufferedEvents)
+        events = m_bufferedEvents.release();
 }
 
 void InspectorTimelineAgent::innerStop(bool fromConsole)
@@ -851,6 +864,10 @@ void InspectorTimelineAgent::sendEvent(PassRefPtr<JSONObject> event)
 {
     // FIXME: runtimeCast is a hack. We do it because we can't build TimelineEvent directly now.
     RefPtr<TypeBuilder::Timeline::TimelineEvent> recordChecked = TypeBuilder::Timeline::TimelineEvent::runtimeCast(event);
+    if (m_bufferedEvents) {
+        m_bufferedEvents->addItem(recordChecked.release());
+        return;
+    }
     m_frontend->eventRecorded(recordChecked.release());
 }
 
