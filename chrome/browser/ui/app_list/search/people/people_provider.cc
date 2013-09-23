@@ -31,6 +31,8 @@ const char kKeyItems[] = "items";
 const char kKeyId[] = "person.id";
 const char kKeyNames[] = "person.names";
 const char kKeyDisplayName[] = "displayName";
+const char kKeyEmails[] = "person.emails";
+const char kKeyEmailValue[] = "value";
 const char kKeySortKeys[] = "person.sortKeys";
 const char kKeyInteractionRank[] = "interactionRank";
 const char kKeyImages[] = "person.images";
@@ -204,6 +206,13 @@ scoped_ptr<ChromeSearchResult> PeopleProvider::CreateResult(
   std::string display_name;
   display_name = GetFirstValue(*names, kKeyDisplayName);
 
+  // Get the email.
+  const base::ListValue* emails;
+  if (!dict.GetList(kKeyEmails, &emails))
+    return result.Pass();
+  std::string email;
+  email = GetFirstValue(*emails, kKeyEmailValue);
+
   // Get the interaction rank.
   const base::DictionaryValue* sort_keys;
   if (!dict.GetDictionary(kKeySortKeys, &sort_keys))
@@ -230,6 +239,7 @@ scoped_ptr<ChromeSearchResult> PeopleProvider::CreateResult(
 
   if (id.empty() ||
       display_name.empty() ||
+      email.empty() ||
       interaction_rank_string.empty() ||
       image_url_string.empty()) {
     return result.Pass();
@@ -240,7 +250,7 @@ scoped_ptr<ChromeSearchResult> PeopleProvider::CreateResult(
     return result.Pass();
 
   result.reset(new PeopleResult(
-      profile_, id, display_name, interaction_rank, image_url));
+      profile_, id, display_name, email, interaction_rank, image_url));
   return result.Pass();
 }
 

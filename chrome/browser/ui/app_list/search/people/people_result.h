@@ -21,6 +21,7 @@ class PeopleResult : public ChromeSearchResult {
   PeopleResult(Profile* profile,
                const std::string& id,
                const std::string& display_name,
+               const std::string& email,
                double interaction_rank,
                const GURL& image_url);
   virtual ~PeopleResult();
@@ -32,12 +33,14 @@ class PeopleResult : public ChromeSearchResult {
   virtual ChromeSearchResultType GetType() OVERRIDE;
 
  private:
-  void SetDefaultDetails();
   void OnIconLoaded();
+  void SetDefaultActions();
+  void SendEmail();
 
   Profile* profile_;
   const std::string id_;
   const std::string display_name_;
+  const std::string email_;
   const double interaction_rank_;
   const GURL image_url_;
 
