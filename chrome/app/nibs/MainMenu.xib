@@ -68,6 +68,7 @@
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="353210768"/>
 									<reference key="NSMixedImage" ref="549394948"/>
+									<int key="NSTag">40018</int>
 								</object>
 								<object class="NSMenuItem" id="304266470">
 									<reference key="NSMenu" ref="110575045"/>
@@ -529,6 +530,7 @@
 									<reference key="NSOnImage" ref="353210768"/>
 									<reference key="NSMixedImage" ref="549394948"/>
 									<string key="NSAction">submenuAction:</string>
+									<int key="NSTag">37100</int>
 									<object class="NSMenu" key="NSSubmenu" id="963351320">
 										<string key="NSTitle">^IDS_EDIT_FIND_SUBMENU_MAC</string>
 										<object class="NSMutableArray" key="NSMenuItems">
@@ -612,6 +614,7 @@
 									<reference key="NSOnImage" ref="353210768"/>
 									<reference key="NSMixedImage" ref="549394948"/>
 									<string key="NSAction">submenuAction:</string>
+									<int key="NSTag">41005</int>
 									<object class="NSMenu" key="NSSubmenu" id="769623530">
 										<string key="NSTitle">^IDS_EDIT_SPELLING_GRAMMAR_MAC</string>
 										<object class="NSMutableArray" key="NSMenuItems">
@@ -661,6 +664,7 @@
 									<reference key="NSOnImage" ref="353210768"/>
 									<reference key="NSMixedImage" ref="549394948"/>
 									<string key="NSAction">submenuAction:</string>
+									<int key="NSTag">50158</int>
 									<object class="NSMenu" key="NSSubmenu" id="84147574">
 										<string key="NSTitle">^IDS_SPEECH_MAC</string>
 										<object class="NSMutableArray" key="NSMenuItems">

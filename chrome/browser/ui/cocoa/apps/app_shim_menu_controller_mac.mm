@@ -170,6 +170,13 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
 }
 
 - (void)buildAppMenuItems {
+  aboutDoppelganger_.reset([[DoppelgangerMenuItem alloc]
+      initWithController:self
+                 menuTag:IDC_CHROME_MENU
+                 itemTag:IDC_ABOUT
+              resourceId:IDS_ABOUT_MAC
+                  action:nil
+           keyEquivalent:@""]);
   hideDoppelganger_.reset([[DoppelgangerMenuItem alloc]
       initWithController:self
                  menuTag:IDC_CHROME_MENU
@@ -184,6 +191,23 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
               resourceId:IDS_EXIT_MAC
                   action:@selector(quitCurrentPlatformApp)
            keyEquivalent:@"q"]);
+  newDoppelganger_.reset([[DoppelgangerMenuItem alloc]
+      initWithController:self
+                 menuTag:IDC_FILE_MENU
+                 itemTag:IDC_NEW_WINDOW
+              resourceId:0
+                  action:nil
+           keyEquivalent:@"n"]);
+  // For apps, the "Window" part of "New Window" is dropped to match the default
+  // menu set given to Cocoa Apps.
+  [[newDoppelganger_ menuItem] setTitle:l10n_util::GetNSString(IDS_NEW_MAC)];
+  openDoppelganger_.reset([[DoppelgangerMenuItem alloc]
+      initWithController:self
+                 menuTag:IDC_FILE_MENU
+                 itemTag:IDC_OPEN_FILE
+              resourceId:0
+                  action:nil
+           keyEquivalent:@"o"]);
   allToFrontDoppelganger_.reset([[DoppelgangerMenuItem alloc]
       initWithController:self
                  menuTag:IDC_WINDOW_MENU
@@ -200,16 +224,29 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
   [appMenuItem_ setSubmenu:appMenu];
   [appMenu setAutoenablesItems:NO];
 
+  [appMenu addItem:[aboutDoppelganger_ menuItem]];
+  [[aboutDoppelganger_ menuItem] setEnabled:NO];  // Not implemented yet.
+  [appMenu addItem:[NSMenuItem separatorItem]];
   [appMenu addItem:[hideDoppelganger_ menuItem]];
   [appMenu addItem:[NSMenuItem separatorItem]];
   [appMenu addItem:[quitDoppelganger_ menuItem]];
 
   // File menu.
   fileMenuItem_.reset([NewTopLevelItemFrom(IDC_FILE_MENU) retain]);
+  [[fileMenuItem_ submenu] addItem:[newDoppelganger_ menuItem]];
+  [[fileMenuItem_ submenu] addItem:[openDoppelganger_ menuItem]];
+  [[fileMenuItem_ submenu] addItem:[NSMenuItem separatorItem]];
   AddDuplicateItem(fileMenuItem_, IDC_FILE_MENU, IDC_CLOSE_WINDOW);
 
-  // Edit menu. This is copied entirely.
+  // Edit menu. This copies the menu entirely and removes
+  // "Paste and Match Style" and "Find". This is because the last two items,
+  // "Start Dictation" and "Special Characters" are added by OSX, so we can't
+  // copy them explicitly.
   editMenuItem_.reset([[[NSApp mainMenu] itemWithTag:IDC_EDIT_MENU] copy]);
+  NSMenu* editMenu = [editMenuItem_ submenu];
+  [editMenu removeItem:[editMenu
+      itemWithTag:IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE]];
+  [editMenu removeItem:[editMenu itemWithTag:IDC_FIND_MENU]];
 
   // Window menu.
   windowMenuItem_.reset([NewTopLevelItemFrom(IDC_WINDOW_MENU) retain]);
@@ -277,8 +314,11 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
   for (NSMenuItem* item in [mainMenu itemArray])
     [item setHidden:YES];
 
+  [aboutDoppelganger_ enableForApp:app];
   [hideDoppelganger_ enableForApp:app];
   [quitDoppelganger_ enableForApp:app];
+  [newDoppelganger_ enableForApp:app];
+  [openDoppelganger_ enableForApp:app];
 
   [appMenuItem_ setTitle:appId];
   [[appMenuItem_ submenu] setTitle:title];
@@ -305,8 +345,11 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
   for (NSMenuItem* item in [mainMenu itemArray])
     [item setHidden:NO];
 
+  [aboutDoppelganger_ disable];
   [hideDoppelganger_ disable];
   [quitDoppelganger_ disable];
+  [newDoppelganger_ disable];
+  [openDoppelganger_ disable];
 }
 
 - (void)quitCurrentPlatformApp {

@@ -13411,6 +13411,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Quit <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
         </message>
         <!-- File menu -->
+        <message name="IDS_NEW_MAC" desc="The Mac menu item for creating a new file in the file menu.">
+          New
+        </message>
         <message name="IDS_NEW_TAB_MAC" desc="The Mac menu item for opening a new tab in the file menu.">
           New Tab
         </message>

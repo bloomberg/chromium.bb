@@ -138,6 +138,7 @@
 #define IDC_FIND                        37000
 #define IDC_FIND_NEXT                   37001
 #define IDC_FIND_PREVIOUS               37002
+#define IDC_FIND_MENU                   37100
 
 // Zoom
 #define IDC_ZOOM_MENU                   38000
