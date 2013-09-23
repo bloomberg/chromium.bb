@@ -67,7 +67,7 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   virtual void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) = 0;
 
-  // Sets a callback to be called when the context is lost. This should be
+  // Sets a callback to be called when swap buffers completes. This should be
   // called from the same thread that the context is bound to.
   typedef base::Closure SwapBuffersCompleteCallback;
   virtual void SetSwapBuffersCompleteCallback(
