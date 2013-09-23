@@ -1077,10 +1077,8 @@ static void PreCalculateMetaInformation(
 }
 
 static void RoundTranslationComponents(gfx::Transform* transform) {
-  transform->matrix().
-      setDouble(0, 3, MathUtil::Round(transform->matrix().getDouble(0, 3)));
-  transform->matrix().
-      setDouble(1, 3, MathUtil::Round(transform->matrix().getDouble(1, 3)));
+  transform->matrix().set(0, 3, MathUtil::Round(transform->matrix().get(0, 3)));
+  transform->matrix().set(1, 3, MathUtil::Round(transform->matrix().get(1, 3)));
 }
 
 template <typename LayerType>

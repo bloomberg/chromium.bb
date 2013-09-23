@@ -28,14 +28,14 @@ static gfx::Transform OrthoProjectionMatrix(float left,
   gfx::Transform proj;
   if (!delta_x || !delta_y)
     return proj;
-  proj.matrix().setDouble(0, 0, 2.0f / delta_x);
-  proj.matrix().setDouble(0, 3, -(right + left) / delta_x);
-  proj.matrix().setDouble(1, 1, 2.0f / delta_y);
-  proj.matrix().setDouble(1, 3, -(top + bottom) / delta_y);
+  proj.matrix().set(0, 0, 2.0f / delta_x);
+  proj.matrix().set(0, 3, -(right + left) / delta_x);
+  proj.matrix().set(1, 1, 2.0f / delta_y);
+  proj.matrix().set(1, 3, -(top + bottom) / delta_y);
 
   // Z component of vertices is always set to zero as we don't use the depth
   // buffer while drawing.
-  proj.matrix().setDouble(2, 2, 0);
+  proj.matrix().set(2, 2, 0);
 
   return proj;
 }

@@ -177,7 +177,7 @@ TEST(LayerSorterTest, LayersUnderPathologicalPerspectiveTransform) {
   // layer_a. When it is not clipped, its bounds will actually incorrectly
   // appear much smaller and the correct sorting dependency will not be found.
   gfx::Transform transform_b;
-  transform_b.Translate3d(0.0, 0.0, 0.7);
+  transform_b.Translate3d(0.f, 0.f, 0.7f);
   transform_b.RotateAboutYAxis(45.0);
   transform_b.Translate(-5.0, -5.0);
   LayerShape layer_b(10.f, 10.f, perspective_matrix * transform_b);
@@ -287,7 +287,7 @@ TEST(LayerSorterTest, VerifyConcidentLayerPrecisionLossResultsInDocumentOrder) {
   // in calculated order.
 
   gfx::Transform BehindMatrix;
-  BehindMatrix.Translate3d(0.0, 0.0, 0.999999);
+  BehindMatrix.Translate3d(0.f, 0.f, 0.999999f);
   BehindMatrix.RotateAboutXAxis(38.5);
   BehindMatrix.RotateAboutYAxis(77.0);
   gfx::Transform FrontMatrix;

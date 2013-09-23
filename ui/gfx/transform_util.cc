@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/strings/stringprintf.h"
 #include "ui/gfx/point.h"
 
 namespace gfx {
@@ -14,7 +15,10 @@ namespace gfx {
 namespace {
 
 SkMScalar Length3(SkMScalar v[3]) {
-  return std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+  double vd[3] = {SkMScalarToDouble(v[0]), SkMScalarToDouble(v[1]),
+                  SkMScalarToDouble(v[2])};
+  return SkDoubleToMScalar(
+      std::sqrt(vd[0] * vd[0] + vd[1] * vd[1] + vd[2] * vd[2]));
 }
 
 void Scale3(SkMScalar v[3], SkMScalar scale) {
@@ -24,20 +28,20 @@ void Scale3(SkMScalar v[3], SkMScalar scale) {
 
 template <int n>
 SkMScalar Dot(const SkMScalar* a, const SkMScalar* b) {
-  SkMScalar toReturn = 0;
+  double total = 0.0;
   for (int i = 0; i < n; ++i)
-    toReturn += a[i] * b[i];
-  return toReturn;
+    total += a[i] * b[i];
+  return SkDoubleToMScalar(total);
 }
 
 template <int n>
 void Combine(SkMScalar* out,
              const SkMScalar* a,
              const SkMScalar* b,
-             SkMScalar scale_a,
-             SkMScalar scale_b) {
+             double scale_a,
+             double scale_b) {
   for (int i = 0; i < n; ++i)
-    out[i] = a[i] * scale_a + b[i] * scale_b;
+    out[i] = SkDoubleToMScalar(a[i] * scale_a + b[i] * scale_b);
 }
 
 void Cross3(SkMScalar out[3], SkMScalar a[3], SkMScalar b[3]) {
@@ -53,11 +57,11 @@ void Cross3(SkMScalar out[3], SkMScalar a[3], SkMScalar b[3]) {
 bool Slerp(SkMScalar out[4],
            const SkMScalar q1[4],
            const SkMScalar q2[4],
-           SkMScalar progress) {
-  SkMScalar product = Dot<4>(q1, q2);
+           double progress) {
+  double product = Dot<4>(q1, q2);
 
   // Clamp product to -1.0 <= product <= 1.0.
-  product = std::min(std::max(product, -SK_MScalar1), SK_MScalar1);
+  product = std::min(std::max(product, -1.0), 1.0);
 
   // Interpolate angles along the shortest path. For example, to interpolate
   // between a 175 degree angle and a 185 degree angle, interpolate along the
@@ -66,25 +70,25 @@ bool Slerp(SkMScalar out[4],
   // the current W3C spec. Fixing the spec to match this approach is discussed
   // at:
   // http://lists.w3.org/Archives/Public/www-style/2013May/0131.html
-  SkMScalar scale1 = SK_MScalar1;
+  double scale1 = 1.0;
   if (product < 0) {
     product = -product;
-    scale1 = -SK_MScalar1;
+    scale1 = -1.0;
   }
 
-  const SkMScalar epsilon = 1e-5;
-  if (std::abs(product - SK_MScalar1) < epsilon) {
+  const double epsilon = 1e-5;
+  if (std::abs(product - 1.0) < epsilon) {
     for (int i = 0; i < 4; ++i)
       out[i] = q1[i];
     return true;
   }
 
-  SkMScalar denom = std::sqrt(1 - product * product);
-  SkMScalar theta = std::acos(product);
-  SkMScalar w = std::sin(progress * theta) * (1 / denom);
+  double denom = std::sqrt(1.0 - product * product);
+  double theta = std::acos(product);
+  double w = std::sin(progress * theta) * (1.0 / denom);
 
   scale1 *= std::cos(progress * theta) - product * w;
-  SkMScalar scale2 = w;
+  double scale2 = w;
   Combine<4>(out, q1, q2, scale1, scale2);
 
   return true;
@@ -126,9 +130,9 @@ DecomposedTransform::DecomposedTransform() {
 bool BlendDecomposedTransforms(DecomposedTransform* out,
                                const DecomposedTransform& to,
                                const DecomposedTransform& from,
-                               SkMScalar progress) {
-  SkMScalar scalea = progress;
-  SkMScalar scaleb = SK_MScalar1 - progress;
+                               double progress) {
+  double scalea = progress;
+  double scaleb = 1.0 - progress;
   Combine<3>(out->translate, to.translate, from.translate, scalea, scaleb);
   Combine<3>(out->scale, to.scale, from.scale, scalea, scaleb);
   Combine<3>(out->skew, to.skew, from.skew, scalea, scaleb);
@@ -314,6 +318,32 @@ Transform ComposeTransform(const DecomposedTransform& decomp) {
   Transform to_return;
   to_return.matrix() = matrix;
   return to_return;
+}
+
+std::string DecomposedTransform::ToString() const {
+  return base::StringPrintf(
+      "translate: %+0.4f %+0.4f %+0.4f\n"
+      "scale: %+0.4f %+0.4f %+0.4f\n"
+      "skew: %+0.4f %+0.4f %+0.4f\n"
+      "perspective: %+0.4f %+0.4f %+0.4f %+0.4f\n"
+      "quaternion: %+0.4f %+0.4f %+0.4f %+0.4f\n",
+      translate[0],
+      translate[1],
+      translate[2],
+      scale[0],
+      scale[1],
+      scale[2],
+      skew[0],
+      skew[1],
+      skew[2],
+      perspective[0],
+      perspective[1],
+      perspective[2],
+      perspective[3],
+      quaternion[0],
+      quaternion[1],
+      quaternion[2],
+      quaternion[3]);
 }
 
 }  // namespace ui

@@ -184,7 +184,7 @@ TEST(WebLayerImplFixedBoundsTest, CompareToWebLayerImplComplex) {
 
   gfx::Transform sublayer_transform;
   // These are arbitrary values that should not affect the results.
-  sublayer_transform.Scale3d(1.1, 2.2, 3.3);
+  sublayer_transform.Scale3d(1.1f, 2.2f, 3.3f);
   sublayer_transform.Translate3d(11, 22, 33);
   sublayer_transform.RotateAbout(gfx::Vector3dF(10, 30, 20), 88);
 

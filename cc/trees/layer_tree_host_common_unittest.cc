@@ -343,7 +343,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
   // Case 4: A change in actual position affects both the draw transform and
   // screen space transform.
   gfx::Transform position_transform;
-  position_transform.Translate(0.0, 1.2);
+  position_transform.Translate(0.f, 1.2f);
   SetLayerPropertiesForTesting(layer.get(),
                                identity_matrix,
                                identity_matrix,
@@ -551,7 +551,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
 
   // Case 2: parent's position affects child and grand_child.
   gfx::Transform parent_position_transform;
-  parent_position_transform.Translate(0.0, 1.2);
+  parent_position_transform.Translate(0.f, 1.2f);
   SetLayerPropertiesForTesting(parent.get(),
                                identity_matrix,
                                identity_matrix,
@@ -629,7 +629,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
   // does not preserve3D. When it gives its hierarchy to the grand_child, it
   // should be flattened to 2D.
   gfx::Transform parent_sublayer_matrix;
-  parent_sublayer_matrix.Scale3d(10.0, 10.0, 3.3);
+  parent_sublayer_matrix.Scale3d(10.f, 10.f, 3.3f);
   // Sublayer matrix is applied to the anchor point of the parent layer.
   parent_composite_transform =
       parent_translation_to_anchor * parent_layer_transform *
@@ -730,11 +730,11 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {
   child->SetForceRenderSurface(true);
 
   gfx::Transform parent_layer_transform;
-  parent_layer_transform.Scale3d(1.0, 0.9, 1.0);
+  parent_layer_transform.Scale3d(1.f, 0.9f, 1.f);
   gfx::Transform parent_translation_to_anchor;
   parent_translation_to_anchor.Translate(25.0, 30.0);
   gfx::Transform parent_sublayer_matrix;
-  parent_sublayer_matrix.Scale3d(0.9, 1.0, 3.3);
+  parent_sublayer_matrix.Scale3d(0.9f, 1.f, 3.3f);
 
   gfx::Transform parent_composite_transform =
       parent_translation_to_anchor * parent_layer_transform *
@@ -876,8 +876,8 @@ TEST_F(LayerTreeHostCommonTest, SeparateRenderTargetRequirementWithClipping) {
   EXPECT_FALSE(grand_child->render_surface());
 
   // One-time setup of root layer
-  parent_layer_transform.Scale3d(1.0, 0.9, 1.0);
-  parent_sublayer_matrix.Scale3d(0.9, 1.0, 3.3);
+  parent_layer_transform.Scale3d(1.f, 0.9f, 1.f);
+  parent_sublayer_matrix.Scale3d(0.9f, 1.f, 3.3f);
   child_layer_matrix.Rotate(20.0);
 
   SetLayerPropertiesForTesting(root.get(),
@@ -948,8 +948,8 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_FALSE(grand_child->render_surface());
 
   // One-time setup of root layer
-  parent_layer_transform.Scale3d(1.0, 0.9, 1.0);
-  parent_sublayer_matrix.Scale3d(0.9, 1.0, 3.3);
+  parent_layer_transform.Scale3d(1.f, 0.9f, 1.f);
+  parent_sublayer_matrix.Scale3d(0.9f, 1.f, 3.3f);
   child_layer_matrix.Rotate(20.0);
 
   SetLayerPropertiesForTesting(root.get(),
@@ -1024,7 +1024,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForReplica) {
   gfx::Transform parent_translation_to_anchor;
   parent_translation_to_anchor.Translate(2.5, 3.0);
   gfx::Transform parent_sublayer_matrix;
-  parent_sublayer_matrix.Scale3d(10.0, 10.0, 3.3);
+  parent_sublayer_matrix.Scale3d(10.f, 10.f, 3.3f);
   gfx::Transform parent_composite_transform =
       parent_translation_to_anchor * parent_layer_transform *
       Inverse(parent_translation_to_anchor) * parent_translation_to_anchor *
@@ -6245,7 +6245,7 @@ TEST_F(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
   perspective_matrix.ApplyPerspectiveDepth(2.0);
 
   gfx::Transform scale_small_matrix;
-  scale_small_matrix.Scale(1.0 / 10.0, 1.0 / 12.0);
+  scale_small_matrix.Scale(SK_MScalar1 / 10.f, SK_MScalar1 / 12.f);
 
   scoped_refptr<Layer> root = Layer::Create();
 

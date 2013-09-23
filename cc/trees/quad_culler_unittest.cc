@@ -126,6 +126,7 @@ class QuadCullerTest : public testing::Test {
   FakeLayerTreeHostImpl host_impl_;
   int layer_id_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(QuadCullerTest);
 };
 
@@ -368,8 +369,8 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileNonIntegralSize1) {
   // Make the root layer's quad have extent (99.1, 99.1) -> (200.9, 200.9) to
   // make sure it doesn't get culled due to transform rounding.
   gfx::Transform root_transform;
-  root_transform.Translate(99.1, 99.1);
-  root_transform.Scale(1.018, 1.018);
+  root_transform.Translate(99.1f, 99.1f);
+  root_transform.Scale(1.018f, 1.018f);
 
   root_rect = child_rect = gfx::Rect(0, 0, 100, 100);
 
@@ -416,8 +417,8 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileNonIntegralSize2) {
   // Make the child's quad slightly smaller than, and centred over, the root
   // layer tile.  Verify the child does not cause the quad below to be culled
   // due to rounding.
-  child_transform.Translate(100.1, 100.1);
-  child_transform.Scale(0.982, 0.982);
+  child_transform.Translate(100.1f, 100.1f);
+  child_transform.Scale(0.982f, 0.982f);
 
   gfx::Transform root_transform;
   root_transform.Translate(100, 100);

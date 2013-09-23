@@ -99,7 +99,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
       gfx::RectF(arbitrary_point_f, gfx::SizeF(1.234f, 5.678f));
   SkColor arbitrary_color = SkColorSetRGB(10, 20, 30);
   gfx::Transform arbitrary_transform;
-  arbitrary_transform.Scale3d(0.1, 0.2, 0.3);
+  arbitrary_transform.Scale3d(0.1f, 0.2f, 0.3f);
   FilterOperations arbitrary_filters;
   arbitrary_filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
   skia::RefPtr<SkImageFilter> arbitrary_filter =
@@ -213,7 +213,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
       gfx::RectF(arbitrary_point_f, gfx::SizeF(1.234f, 5.678f));
   SkColor arbitrary_color = SkColorSetRGB(10, 20, 30);
   gfx::Transform arbitrary_transform;
-  arbitrary_transform.Scale3d(0.1, 0.2, 0.3);
+  arbitrary_transform.Scale3d(0.1f, 0.2f, 0.3f);
   FilterOperations arbitrary_filters;
   arbitrary_filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
   skia::RefPtr<SkImageFilter> arbitrary_filter =

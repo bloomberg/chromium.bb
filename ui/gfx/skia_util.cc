@@ -50,15 +50,15 @@ RectF SkRectToRectF(const SkRect& rect) {
 void TransformToFlattenedSkMatrix(const gfx::Transform& transform,
                                   SkMatrix* flattened) {
   // Convert from 4x4 to 3x3 by dropping the third row and column.
-  flattened->set(0, SkDoubleToScalar(transform.matrix().getDouble(0, 0)));
-  flattened->set(1, SkDoubleToScalar(transform.matrix().getDouble(0, 1)));
-  flattened->set(2, SkDoubleToScalar(transform.matrix().getDouble(0, 3)));
-  flattened->set(3, SkDoubleToScalar(transform.matrix().getDouble(1, 0)));
-  flattened->set(4, SkDoubleToScalar(transform.matrix().getDouble(1, 1)));
-  flattened->set(5, SkDoubleToScalar(transform.matrix().getDouble(1, 3)));
-  flattened->set(6, SkDoubleToScalar(transform.matrix().getDouble(3, 0)));
-  flattened->set(7, SkDoubleToScalar(transform.matrix().getDouble(3, 1)));
-  flattened->set(8, SkDoubleToScalar(transform.matrix().getDouble(3, 3)));
+  flattened->set(0, SkMScalarToScalar(transform.matrix().get(0, 0)));
+  flattened->set(1, SkMScalarToScalar(transform.matrix().get(0, 1)));
+  flattened->set(2, SkMScalarToScalar(transform.matrix().get(0, 3)));
+  flattened->set(3, SkMScalarToScalar(transform.matrix().get(1, 0)));
+  flattened->set(4, SkMScalarToScalar(transform.matrix().get(1, 1)));
+  flattened->set(5, SkMScalarToScalar(transform.matrix().get(1, 3)));
+  flattened->set(6, SkMScalarToScalar(transform.matrix().get(3, 0)));
+  flattened->set(7, SkMScalarToScalar(transform.matrix().get(3, 1)));
+  flattened->set(8, SkMScalarToScalar(transform.matrix().get(3, 3)));
 }
 
 skia::RefPtr<SkShader> CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,

@@ -12,7 +12,7 @@
 #include "ui/gfx/vector3d_f.h"
 
 namespace {
-const SkMScalar kAngleEpsilon = 1e-4;
+const SkMScalar kAngleEpsilon = SkDoubleToMScalar(1e-4);
 }
 
 namespace cc {
