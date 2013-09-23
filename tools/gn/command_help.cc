@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <iostream>
 
-#include "base/strings/string_split.h"
 #include "tools/gn/args.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/err.h"
@@ -20,73 +19,6 @@
 namespace commands {
 
 namespace {
-
-// Prints a line for a command, assuming there is a colon. Everything before
-// the colon is the command (and is highlighted). After the colon if there is
-// a square bracket, the contents of the bracket is dimmed.
-void PrintShortHelp(const std::string& line) {
-  size_t colon_offset = line.find(':');
-  size_t first_normal = 0;
-  if (colon_offset != std::string::npos) {
-    OutputString("  " + line.substr(0, colon_offset), DECORATION_YELLOW);
-    first_normal = colon_offset;
-  }
-
-  // See if the colon is followed by a " [" and if so, dim the contents of [ ].
-  if (first_normal > 0 &&
-      line.size() > first_normal + 2 &&
-      line[first_normal + 1] == ' ' && line[first_normal + 2] == '[') {
-    size_t begin_bracket = first_normal + 2;
-    OutputString(": ");
-    first_normal = line.find(']', begin_bracket);
-    if (first_normal == std::string::npos)
-      first_normal = line.size();
-    else
-      first_normal++;
-    OutputString(line.substr(begin_bracket, first_normal - begin_bracket),
-                 DECORATION_DIM);
-  }
-
-  OutputString(line.substr(first_normal) + "\n");
-}
-
-// Rules:
-// - Lines beginning with non-whitespace are highlighted up to the first
-//   colon (or the whole line if not).
-// - Lines whose first non-whitespace character is a # are dimmed.
-void PrintLongHelp(const std::string& text) {
-  std::vector<std::string> lines;
-  base::SplitStringDontTrim(text, '\n', &lines);
-
-  for (size_t i = 0; i < lines.size(); i++) {
-    const std::string& line = lines[i];
-
-    // Check for a heading line.
-    if (!line.empty() && line[0] != ' ') {
-      // Highlight up to the colon (if any).
-      size_t chars_to_highlight = line.find(':');
-      if (chars_to_highlight == std::string::npos)
-        chars_to_highlight = line.size();
-      OutputString(line.substr(0, chars_to_highlight), DECORATION_YELLOW);
-      OutputString(line.substr(chars_to_highlight) + "\n");
-      continue;
-    }
-
-    // Check for a comment.
-    TextDecoration dec = DECORATION_NONE;
-    for (size_t char_i = 0; char_i < line.size(); char_i++) {
-      if (line[char_i] == '#') {
-        // Got a comment, draw dimmed.
-        dec = DECORATION_DIM;
-        break;
-      } else if (line[char_i] != ' ') {
-        break;
-      }
-    }
-
-    OutputString(line + "\n", dec);
-  }
-}
 
 void PrintToplevelHelp() {
   OutputString("Commands (type \"gn help <command>\" for more details):\n");
@@ -113,6 +45,10 @@ void PrintToplevelHelp() {
       "--root: Specifies source root (overrides .gn file).");
   PrintShortHelp(
       "--secondary: Specifies secondary source root (overrides .gn file).");
+  PrintShortHelp(
+      "--time: Outputs a summary of how long everything took.");
+  PrintShortHelp(
+      "--tracelog: Writes a Chrome-compatible trace log to the given file.");
   PrintShortHelp(
       "-v: Verbose mode, print lots of logging.");
 

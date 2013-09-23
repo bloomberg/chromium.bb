@@ -13,6 +13,7 @@
 #include "tools/gn/settings.h"
 #include "tools/gn/target.h"
 #include "tools/gn/toolchain.h"
+#include "tools/gn/trace.h"
 
 NinjaToolchainWriter::NinjaToolchainWriter(
     const Settings* settings,
@@ -45,6 +46,8 @@ bool NinjaToolchainWriter::RunAndWriteFile(
   base::FilePath ninja_file(settings->build_settings()->GetFullPath(
       helper.GetNinjaFileForToolchain(settings).GetSourceFile(
           settings->build_settings())));
+  ScopedTrace trace(TraceItem::TRACE_FILE_WRITE, FilePathToUTF8(ninja_file));
+
   file_util::CreateDirectory(ninja_file.DirName());
 
   std::ofstream file;

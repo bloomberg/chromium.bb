@@ -16,6 +16,7 @@
 #include "tools/gn/scheduler.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/scope_per_file_provider.h"
+#include "tools/gn/trace.h"
 
 // How toolchain loading works
 // ---------------------------
@@ -492,9 +493,15 @@ void ToolchainManager::BackgroundLoadBuildConfig(Info* info,
     if (is_default)
       base_config->SetProcessingDefaultBuildConfig();
 
+    ScopedTrace trace(TraceItem::TRACE_FILE_EXECUTE,
+        info->settings.build_settings()->build_config_file().value());
+    trace.SetToolchain(info->settings.toolchain()->label());
+
     const BlockNode* root_block = root->AsBlock();
     Err err;
     root_block->ExecuteBlockInScope(base_config, &err);
+
+    trace.Done();
 
     base_config->ClearProcessingBuildConfig();
     if (is_default)
@@ -540,10 +547,15 @@ void ToolchainManager::BackgroundInvoke(const Info* info,
     ScopePerFileProvider per_file_provider(&our_scope);
     our_scope.set_source_dir(file_name.GetDir());
 
+    ScopedTrace trace(TraceItem::TRACE_FILE_EXECUTE, file_name.value());
+    trace.SetToolchain(info->settings.toolchain()->label());
+
     Err err;
     root->Execute(&our_scope, &err);
     if (err.has_error())
       g_scheduler->FailWithError(err);
+
+    trace.Done();
 
     {
       // Check to see if any build config invocations depend on this file and

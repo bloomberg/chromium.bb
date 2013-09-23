@@ -17,6 +17,7 @@
 #include "tools/gn/scheduler.h"
 #include "tools/gn/string_utils.h"
 #include "tools/gn/target.h"
+#include "tools/gn/trace.h"
 
 NinjaTargetWriter::NinjaTargetWriter(const Target* target, std::ostream& out)
     : settings_(target->settings()),
@@ -41,6 +42,10 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
 
   const Settings* settings = target->settings();
   NinjaHelper helper(settings->build_settings());
+
+  ScopedTrace trace(TraceItem::TRACE_FILE_WRITE,
+                    target->label().GetUserVisibleName(false));
+  trace.SetToolchain(settings->toolchain()->label());
 
   base::FilePath ninja_file(settings->build_settings()->GetFullPath(
       helper.GetNinjaFileForTarget(target).GetSourceFile(

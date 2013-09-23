@@ -19,4 +19,17 @@ enum TextDecoration {
 void OutputString(const std::string& output,
                   TextDecoration dec = DECORATION_NONE);
 
+// Prints a line for a command, assuming there is a colon. Everything before
+// the colon is the command (and is highlighted). After the colon if there is
+// a square bracket, the contents of the bracket is dimmed.
+//
+// The line is indented 2 spaces.
+void PrintShortHelp(const std::string& line);
+
+// Rules:
+// - Lines beginning with non-whitespace are highlighted up to the first
+//   colon (or the whole line if not).
+// - Lines whose first non-whitespace character is a # are dimmed.
+void PrintLongHelp(const std::string& text);
+
 #endif  // TOOLS_GN_STANDARD_OUT_H_

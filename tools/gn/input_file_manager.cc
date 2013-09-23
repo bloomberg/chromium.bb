@@ -11,6 +11,7 @@
 #include "tools/gn/scheduler.h"
 #include "tools/gn/scope_per_file_provider.h"
 #include "tools/gn/tokenizer.h"
+#include "tools/gn/trace.h"
 
 namespace {
 
@@ -203,6 +204,7 @@ bool InputFileManager::LoadFile(const LocationRange& origin,
 
   // Read.
   base::FilePath primary_path = build_settings->GetFullPath(name);
+  ScopedTrace load_trace(TraceItem::TRACE_FILE_LOAD, name.value());
   if (!file->Load(primary_path)) {
     if (!build_settings->secondary_source_path().empty()) {
       // Fall back to secondary source tree.
@@ -221,6 +223,9 @@ bool InputFileManager::LoadFile(const LocationRange& origin,
       return false;
     }
   }
+  load_trace.Done();
+
+  ScopedTrace exec_trace(TraceItem::TRACE_FILE_PARSE, name.value());
 
   // Tokenize.
   std::vector<Token> tokens = Tokenizer::Tokenize(file, err);
@@ -232,6 +237,8 @@ bool InputFileManager::LoadFile(const LocationRange& origin,
   if (err->has_error())
     return false;
   ParseNode* unowned_root = root.get();
+
+  exec_trace.Done();
 
   std::vector<FileLoadCallback> callbacks;
   {

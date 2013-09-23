@@ -13,7 +13,9 @@
 #include "tools/gn/parser.h"
 #include "tools/gn/source_dir.h"
 #include "tools/gn/source_file.h"
+#include "tools/gn/standard_out.h"
 #include "tools/gn/tokenizer.h"
+#include "tools/gn/trace.h"
 #include "tools/gn/value.h"
 
 extern const char kDotfile_Help[] =
@@ -63,6 +65,11 @@ const char kSwitchArgs[] = "args";
 // Set root dir.
 const char kSwitchRoot[] = "root";
 
+// Enable timing.
+const char kTimeSwitch[] = "time";
+
+const char kTracelogSwitch[] = "tracelog";
+
 // Set build output directory.
 const char kSwitchBuildOutput[] = "output";
 
@@ -99,6 +106,9 @@ bool Setup::DoSetup() {
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
 
   scheduler_.set_verbose_logging(cmdline->HasSwitch(kSwitchVerbose));
+  if (cmdline->HasSwitch(kTimeSwitch) ||
+      cmdline->HasSwitch(kTracelogSwitch))
+    EnableTracing();
 
   if (!FillArguments(*cmdline))
     return false;
@@ -153,6 +163,14 @@ bool Setup::Run() {
     err.PrintToStdout();
     return false;
   }
+
+  // Write out tracing and timing if requested.
+  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(kTimeSwitch))
+    PrintLongHelp(SummarizeTraces());
+  if (cmdline->HasSwitch(kTracelogSwitch))
+    SaveTraces(cmdline->GetSwitchValuePath(kTracelogSwitch));
+
   return true;
 }
 

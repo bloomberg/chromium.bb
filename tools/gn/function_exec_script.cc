@@ -18,6 +18,7 @@
 #include "tools/gn/input_file.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scheduler.h"
+#include "tools/gn/trace.h"
 #include "tools/gn/value.h"
 
 #if defined(OS_WIN)
@@ -302,6 +303,9 @@ Value RunExecScript(Scope* scope,
     script_path = build_settings->GetFullPathSecondary(script_source);
   }
 
+  ScopedTrace trace(TraceItem::TRACE_SCRIPT_EXECUTE, script_source.value());
+  trace.SetToolchain(settings->toolchain()->label());
+
   // Add all dependencies of this script, including the script itself, to the
   // build deps.
   g_scheduler->AddGenDependency(script_path);
@@ -334,6 +338,7 @@ Value RunExecScript(Scope* scope,
   }
 
   // Log command line for debugging help.
+  trace.SetCommandLine(cmdline);
   base::TimeTicks begin_exec;
   if (g_scheduler->verbose_logging()) {
 #if defined(OS_WIN)

@@ -17,6 +17,7 @@
 #include "tools/gn/input_file_manager.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/target.h"
+#include "tools/gn/trace.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -87,6 +88,8 @@ bool NinjaBuildWriter::RunAndWriteFile(
     const BuildSettings* build_settings,
     const std::vector<const Settings*>& all_settings,
     const std::vector<const Target*>& default_toolchain_targets) {
+  ScopedTrace trace(TraceItem::TRACE_FILE_WRITE, "build.ninja");
+
   base::FilePath ninja_file(build_settings->GetFullPath(
       SourceFile(build_settings->build_dir().value() + "build.ninja")));
   file_util::CreateDirectory(ninja_file.DirName());

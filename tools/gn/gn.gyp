@@ -139,6 +139,8 @@
         'toolchain.h',
         'toolchain_manager.cc',
         'toolchain_manager.h',
+        'trace.cc',
+        'trace.h',
         'value.cc',
         'value.h',
         'value_extractors.cc',
