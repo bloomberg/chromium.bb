@@ -438,6 +438,8 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       IDS_SHORT_PRODUCT_NAME },
 #if defined(ENABLE_MDNS)
     { "cloudPrintDevicesPageButton", IDS_LOCAL_DISCOVERY_DEVICES_PAGE_BUTTON },
+    { "cloudPrintEnableNotificationsLabel",
+      IDS_LOCAL_DISCOVERY_NOTIFICATIONS_ENABLE_CHECKBOX_LABEL },
 #endif
   };
 

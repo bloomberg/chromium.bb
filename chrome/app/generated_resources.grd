@@ -15226,6 +15226,9 @@ Do you accept?
     <message name="IDS_LOCAL_DISCOVERY_CONNECTOR_SECTION" desc="In local discovery page: Title of cloud print connector section.">
       Classic printers
     </message>
+    <message name="IDS_LOCAL_DISCOVERY_NOTIFICATIONS_ENABLE_CHECKBOX_LABEL" desc="Label for notificatiosn-enable checkbox">
+      Show notifications when new printers is detected on the network
+    </message>
   </messages>
 
   <structures fallback_to_english="true">

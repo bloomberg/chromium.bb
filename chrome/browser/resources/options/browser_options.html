@@ -566,6 +566,22 @@
       <button id="cloudPrintDevicesPageButton"
               i18n-content="cloudPrintDevicesPageButton">
       </button>
+
+      <div class="checkbox">
+        <span class="controlled-setting-with-label">
+          <input id="local-discovery-notifications-enabled"
+                 pref="local_discovery.notifications_enabled"
+                 type="checkbox"
+                 metric="LocalDiscoveryNotificationsDisabled_Settings" />
+          <span>
+            <label for="local-discovery-notifications-enabled"
+                   i18n-content="cloudPrintEnableNotificationsLabel">
+            </label>
+            <span class="controlled-setting-indicator"
+                  pref="local_discovery.notifications_enabled">
+            </span>
+          </span>
+      </div>
     </div>
 </if>
 
@@ -617,7 +633,7 @@
               </label>
               <span class="controlled-setting-indicator"
                   pref="settings.a11y.enable_menu">
-            </span>
+              </span>
           </span>
         </div>
       </div>
