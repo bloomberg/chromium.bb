@@ -163,8 +163,7 @@ def CheckFinalRestrictedRegister(
     sandboxing,
     instruction,
     disassembly,
-    old_validator,
-    validator_inst):
+    old_validator):
   bundle = sandboxing + instruction
   assert len(bundle) <= validator.BUNDLE_SIZE
   bundle += [NOP] * (validator.BUNDLE_SIZE - len(bundle))
@@ -213,8 +212,7 @@ def CheckFinalRestrictedRegister(
 def ValidateInstruction(
     instruction,
     disassembly,
-    old_validator,
-    validator_inst):
+    old_validator):
   assert len(instruction) <= validator.BUNDLE_SIZE
   bundle = instruction + [NOP] * (validator.BUNDLE_SIZE - len(instruction))
 
