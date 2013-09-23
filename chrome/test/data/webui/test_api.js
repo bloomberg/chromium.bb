@@ -142,12 +142,18 @@ var testing = {};
       if (!this.accessibilityAuditConfig_) {
         this.accessibilityAuditConfig_ = new axs.AuditConfiguration();
 
-        // The "elements with meaningful background image" accessibility
-        // audit (AX_IMAGE_01) does not apply, since Chrome doesn't
-        // disable background images in high-contrast mode like some
-        // browsers do.
-        this.accessibilityAuditConfig_.ignoreSelectors(
-            "elementsWithMeaningfulBackgroundImage", "*");
+        this.accessibilityAuditConfig_.auditRulesToIgnore = [
+            // The "elements with meaningful background image" accessibility
+            // audit (AX_IMAGE_01) does not apply, since Chrome doesn't
+            // disable background images in high-contrast mode like some
+            // browsers do.
+            "elementsWithMeaningfulBackgroundImage",
+
+            // Most WebUI pages are inside an IFrame, so the "web page should
+            // have a title that describes topic or purpose" test (AX_TITLE_01)
+            // generally does not apply.
+            "pageWithoutTitle"
+        ];
       }
       return this.accessibilityAuditConfig_;
     },

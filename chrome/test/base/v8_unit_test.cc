@@ -144,8 +144,7 @@ void V8UnitTest::InitPathsAndLibraries() {
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &accessibilityAuditPath));
   accessibilityAuditPath = accessibilityAuditPath.AppendASCII("third_party");
   accessibilityAuditPath =
-      accessibilityAuditPath.AppendASCII("accessibility-developer-tools");
-  accessibilityAuditPath = accessibilityAuditPath.AppendASCII("gen");
+      accessibilityAuditPath.AppendASCII("accessibility-audit");
   accessibilityAuditPath = accessibilityAuditPath.AppendASCII("axs_testing.js");
   AddLibrary(accessibilityAuditPath);
 

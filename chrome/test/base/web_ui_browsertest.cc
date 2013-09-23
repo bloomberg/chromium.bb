@@ -54,7 +54,7 @@ using content::WebUIMessageHandler;
 namespace {
 
 const base::FilePath::CharType kA11yAuditLibraryJSPath[] = FILE_PATH_LITERAL(
-    "third_party/accessibility-developer-tools/gen/axs_testing.js");
+    "third_party/accessibility-audit/axs_testing.js");
 const base::FilePath::CharType kMockJSPath[] =
     FILE_PATH_LITERAL("chrome/third_party/mock4js/mock4js.js");
 const base::FilePath::CharType kWebUILibraryJS[] =
