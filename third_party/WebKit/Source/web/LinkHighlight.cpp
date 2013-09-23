@@ -109,7 +109,6 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
     if (!m_node || !m_node->renderer())
         return 0;
 
-    // FIXME: There's no need for renderer to be cast to a RLMO.
     // Find the nearest enclosing composited layer and attach to it. We may need to cross frame boundaries
     // to find a suitable layer.
     RenderLayerModelObject* renderer = toRenderLayerModelObject(m_node->renderer());

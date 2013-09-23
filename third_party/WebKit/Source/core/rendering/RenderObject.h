@@ -767,8 +767,6 @@ public:
     IntRect absoluteBoundingBoxRect(bool useTransform = true) const;
     IntRect absoluteBoundingBoxRectIgnoringTransforms() const { return absoluteBoundingBoxRect(false); }
 
-    bool isContainedInParentBoundingBox() const;
-
     // Build an array of quads in absolute coords for line boxes
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* /*wasFixed*/ = 0) const { }
 

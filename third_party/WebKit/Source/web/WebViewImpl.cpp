@@ -1229,30 +1229,13 @@ Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
     HitTestResult result = m_page->mainFrame()->eventHandler()->hitTestResultAtPoint(hitTestPoint, HitTestRequest::TouchEvent | HitTestRequest::DisallowShadowContent);
     bestTouchNode = result.targetNode();
 
-    Node* originalTouchNode = bestTouchNode;
-
-    // Check if we're in the subtree of a node with a hand cursor, our heuristic to choose the appropriate target.
+    // Make sure our highlight candidate uses a hand cursor as a heuristic to
+    // choose appropriate targets.
     while (bestTouchNode && !invokesHandCursor(bestTouchNode, false, m_page->mainFrame()))
         bestTouchNode = bestTouchNode->parentNode();
 
-    if (!bestTouchNode)
-        return 0;
-
-    // FIXME: http://crbug.com/289764 - Instead of stopping early on isContainedInParentBoundingBox, LinkHighlight
-    // FIXME: Remove check for isLayerModelObject once LinkHighlight is fixed to use RenderObject
-    // should calculate the appropriate rects (currently it just uses the linebox)
-
-    // We now walk up the tree as before except we stop early if the node isn't contained in its parent's rect.
-    bestTouchNode = originalTouchNode;
-
-    // FIXME: Refactor this to use renderer rather than node. All these loops can probably be merged into something cleaner
-    while (bestTouchNode && !invokesHandCursor(bestTouchNode, false, m_page->mainFrame())
-        && bestTouchNode->renderer() && (!bestTouchNode->renderer()->isLayerModelObject() || bestTouchNode->renderer()->isContainedInParentBoundingBox()))
-        bestTouchNode = bestTouchNode->parentNode();
-
     // We should pick the largest enclosing node with hand cursor set.
-    while (bestTouchNode && bestTouchNode->parentNode() && invokesHandCursor(bestTouchNode->parentNode(), false, m_page->mainFrame())
-        && bestTouchNode->parentNode()->renderer() && bestTouchNode->parentNode()->renderer()->isLayerModelObject() && bestTouchNode->renderer()->isContainedInParentBoundingBox())
+    while (bestTouchNode && bestTouchNode->parentNode() && invokesHandCursor(bestTouchNode->parentNode(), false, m_page->mainFrame()))
         bestTouchNode = bestTouchNode->parentNode();
 
     return bestTouchNode;
