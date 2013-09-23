@@ -144,7 +144,12 @@ def _CheckChange(input_api, output_api):
                                     cwd=input_api.PresubmitLocalPath())
   except input_api.subprocess.CalledProcessError:
     results.append(output_api.PresubmitError('IntegrationTest failed!'))
-  _CheckLinks(input_api, output_api, results)
+
+  # TODO(kalman): Re-enable this check, or decide to delete it forever. Now
+  # that we have multiple directories it no longer works.
+  # See http://crbug.com/297178.
+  #_CheckLinks(input_api, output_api, results)
+
   return results
 
 def CheckChangeOnUpload(input_api, output_api):
