@@ -640,6 +640,26 @@ class Port(object):
     def is_test_file(filesystem, dirname, filename):
         return Port._has_supported_extension(filesystem, filename) and not Port.is_reference_html_file(filesystem, dirname, filename)
 
+    ALL_TEST_TYPES = ['audio', 'harness', 'pixel', 'ref', 'text', 'unknown']
+
+    def test_type(self, test_name):
+        fs = self._filesystem
+        if fs.exists(self.expected_filename(test_name, '.png')):
+            return 'pixel'
+        if fs.exists(self.expected_filename(test_name, '.wav')):
+            return 'audio'
+        if self.reference_files(test_name):
+            return 'ref'
+        txt = self.expected_text(test_name)
+        if txt:
+            if 'layer at (0,0) size 800x600' in txt:
+                return 'pixel'
+            for line in txt.splitlines():
+                if line.startswith('FAIL') or line.startswith('TIMEOUT') or line.startswith('PASS'):
+                    return 'harness'
+            return 'text'
+        return 'unknown'
+
     def test_key(self, test_name):
         """Turns a test name into a list with two sublists, the natural key of the
         dirname, and the natural key of the basename.
