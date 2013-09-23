@@ -193,8 +193,18 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
                                                kAudioOnlyCallConstraints);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
-                       DenyingMicStillSucceedsWithCameraForAudioVideoCalls) {
+
+// Times out on windows, http://crbug.com/295723 .
+#if defined(OS_WIN)
+#define MAYBE_DenyingMicStillSucceedsWithCameraForAudioVideoCalls \
+        DISABLED_DenyingMicStillSucceedsWithCameraForAudioVideoCalls
+#else
+#define MAYBE_DenyingMicStillSucceedsWithCameraForAudioVideoCalls \
+        DenyingMicStillSucceedsWithCameraForAudioVideoCalls
+#endif
+IN_PROC_BROWSER_TEST_F(
+    MediaStreamInfoBarTest,
+    MAYBE_DenyingMicStillSucceedsWithCameraForAudioVideoCalls) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   // If microphone blocking also blocked a AV call, the second call here
