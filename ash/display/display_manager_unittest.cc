@@ -145,7 +145,7 @@ TEST_F(DisplayManagerTest, UpdateDisplayTest) {
   // Secondary display is on right.
   EXPECT_EQ("500,0 400x400", added()[0].bounds().ToString());
   EXPECT_EQ("0,501 400x400",
-            GetDisplayInfo(added()[0]).bounds_in_pixel().ToString());
+            GetDisplayInfo(added()[0]).bounds_in_native().ToString());
   reset();
 
   // Delete secondary.
@@ -168,7 +168,7 @@ TEST_F(DisplayManagerTest, UpdateDisplayTest) {
   // Secondary display is on right.
   EXPECT_EQ("1000,0 600x400", added()[0].bounds().ToString());
   EXPECT_EQ("1002,0 600x400",
-            GetDisplayInfo(added()[0]).bounds_in_pixel().ToString());
+            GetDisplayInfo(added()[0]).bounds_in_native().ToString());
   reset();
 
   // Secondary removed, primary changed.
@@ -197,7 +197,7 @@ TEST_F(DisplayManagerTest, UpdateDisplayTest) {
   EXPECT_FALSE(root_window_destroyed());
   EXPECT_EQ("0,0 500x400", changed()[0].bounds().ToString());
   EXPECT_EQ("100,100 500x400",
-            GetDisplayInfo(changed()[0]).bounds_in_pixel().ToString());
+            GetDisplayInfo(changed()[0]).bounds_in_native().ToString());
   reset();
 
   // Go back to zero and wake up with multiple displays.
@@ -215,7 +215,7 @@ TEST_F(DisplayManagerTest, UpdateDisplayTest) {
   EXPECT_EQ("1000,0 600x400",
             display_manager()->GetDisplayAt(1).bounds().ToString());
   EXPECT_EQ("1000,1000 600x400",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+            GetDisplayInfoAt(1).bounds_in_native().ToString());
   reset();
 
   // Changing primary will update secondary as well.
@@ -268,10 +268,10 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
   EXPECT_EQ(1u, changed_displays.size());
   EXPECT_EQ(display_info2.id(), changed_displays[0].id());
   EXPECT_EQ("0,0 500x500",
-            GetDisplayInfoAt(0).bounds_in_pixel().ToString());
+            GetDisplayInfoAt(0).bounds_in_native().ToString());
   DisplayInfo updated_display_info2 = GetDisplayInfoAt(1);
   EXPECT_EQ("0,501 400x400",
-            updated_display_info2.bounds_in_pixel().ToString());
+            updated_display_info2.bounds_in_native().ToString());
   EXPECT_EQ("378x376",
             updated_display_info2.size_in_pixel().ToString());
   EXPECT_EQ("13,12,11,10",
@@ -284,10 +284,10 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
   display_manager()->SetOverscanInsets(
       display_info2.id(), gfx::Insets(13, 12, 11, 10));
   EXPECT_EQ("0,0 500x500",
-            GetDisplayInfoAt(0).bounds_in_pixel().ToString());
+            GetDisplayInfoAt(0).bounds_in_native().ToString());
   updated_display_info2 = GetDisplayInfoAt(1);
   EXPECT_EQ("0,501 400x400",
-            updated_display_info2.bounds_in_pixel().ToString());
+            updated_display_info2.bounds_in_native().ToString());
   EXPECT_EQ("378x376",
             updated_display_info2.size_in_pixel().ToString());
   EXPECT_EQ("13,12,11,10",
@@ -296,7 +296,7 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
   display_manager()->SetOverscanInsets(
       display_info2.id(), gfx::Insets(10, 11, 12, 13));
   EXPECT_EQ("0,0 500x500",
-            GetDisplayInfoAt(0).bounds_in_pixel().ToString());
+            GetDisplayInfoAt(0).bounds_in_native().ToString());
   EXPECT_EQ("376x378",
             GetDisplayInfoAt(1).size_in_pixel().ToString());
   EXPECT_EQ("10,11,12,13",
@@ -307,9 +307,9 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
   UpdateDisplay("0+0-500x500");
   UpdateDisplay("0+0-500x500,0+501-400x400");
   EXPECT_EQ("0,0 500x500",
-            GetDisplayInfoAt(0).bounds_in_pixel().ToString());
+            GetDisplayInfoAt(0).bounds_in_native().ToString());
   EXPECT_EQ("0,501 400x400",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+            GetDisplayInfoAt(1).bounds_in_native().ToString());
 
   // Recreate the displays with the same ID.  It should apply the overscan
   // inset.
@@ -319,7 +319,7 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
   display_info_list.push_back(display_info2);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ("1,1 500x500",
-            GetDisplayInfoAt(0).bounds_in_pixel().ToString());
+            GetDisplayInfoAt(0).bounds_in_native().ToString());
   updated_display_info2 = GetDisplayInfoAt(1);
   EXPECT_EQ("376x378",
             updated_display_info2.size_in_pixel().ToString());
@@ -331,10 +331,10 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
   display_manager()->SetOverscanInsets(
       display_manager()->GetDisplayAt(1).id(), gfx::Insets(4, 5, 6, 7));
   EXPECT_EQ("0,0 500x500",
-            GetDisplayInfoAt(0).bounds_in_pixel().ToString());
+            GetDisplayInfoAt(0).bounds_in_native().ToString());
   updated_display_info2 = GetDisplayInfoAt(1);
   EXPECT_EQ("0,501 400x400",
-            updated_display_info2.bounds_in_pixel().ToString());
+            updated_display_info2.bounds_in_native().ToString());
   EXPECT_EQ("376x380",
             updated_display_info2.size_in_pixel().ToString());
   EXPECT_EQ("4,5,6,7",
@@ -349,10 +349,10 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("0,0 500x500",
             GetDisplayInfo(ScreenAsh::GetSecondaryDisplay()).
-            bounds_in_pixel().ToString());
+            bounds_in_native().ToString());
   EXPECT_EQ("0,501 400x400",
             GetDisplayInfo(Shell::GetScreen()->GetPrimaryDisplay()).
-            bounds_in_pixel().ToString());
+            bounds_in_native().ToString());
   EXPECT_EQ("0,0 188x190",
             Shell::GetScreen()->GetPrimaryDisplay().bounds().ToString());
 }
@@ -441,7 +441,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
 
   EXPECT_EQ(invalid_id, GetDisplayForId(internal_display_id).id());
   EXPECT_EQ("1,1 100x100",
-            GetDisplayInfoForId(external_id).bounds_in_pixel().ToString());
+            GetDisplayInfoForId(external_id).bounds_in_native().ToString());
   EXPECT_EQ(1U, display_manager()->num_connected_displays());
   EXPECT_FALSE(display_manager()->mirrored_display().is_valid());
   EXPECT_EQ(external_id, Shell::GetScreen()->GetPrimaryDisplay().id());
@@ -460,7 +460,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ("0,0 500x500",
             GetDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("1,1 100x100",
-            GetDisplayInfoForId(10).bounds_in_pixel().ToString());
+            GetDisplayInfoForId(10).bounds_in_native().ToString());
   EXPECT_EQ(2U, display_manager()->num_connected_displays());
   EXPECT_FALSE(display_manager()->mirrored_display().is_valid());
   EXPECT_EQ(ToDisplayName(internal_display_id),
@@ -473,7 +473,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ("0,0 500x500",
             GetDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("1,1 100x100",
-            GetDisplayInfoForId(10).bounds_in_pixel().ToString());
+            GetDisplayInfoForId(10).bounds_in_native().ToString());
   EXPECT_EQ(2U, display_manager()->num_connected_displays());
   EXPECT_FALSE(display_manager()->mirrored_display().is_valid());
   EXPECT_EQ(ToDisplayName(internal_display_id),
@@ -552,7 +552,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ(invalid_id, GetDisplayForId(internal_display_id).id());
   EXPECT_EQ("1,1 100x100",
-            GetDisplayInfoForId(external_id).bounds_in_pixel().ToString());
+            GetDisplayInfoForId(external_id).bounds_in_native().ToString());
   EXPECT_EQ(1U, display_manager()->num_connected_displays());
   EXPECT_FALSE(display_manager()->mirrored_display().is_valid());
 
@@ -563,7 +563,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ(
       "0,0 500x500",
-      GetDisplayInfoForId(internal_display_id).bounds_in_pixel().ToString());
+      GetDisplayInfoForId(internal_display_id).bounds_in_native().ToString());
   EXPECT_EQ(1U, display_manager()->num_connected_displays());
   EXPECT_FALSE(display_manager()->mirrored_display().is_valid());
 }
@@ -593,7 +593,7 @@ TEST_F(DisplayManagerTest, MAYBE_TestNativeDisplaysChangedNoInternal) {
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("1,1 100x100",
-            GetDisplayInfoForId(10).bounds_in_pixel().ToString());
+            GetDisplayInfoForId(10).bounds_in_native().ToString());
   EXPECT_EQ("100x100",
             ash::Shell::GetPrimaryRootWindow()->GetHostSize().ToString());
 }
@@ -759,12 +759,12 @@ TEST_F(DisplayManagerTest, Rotate) {
 
   UpdateDisplay("100x200/r,300x400/l");
   EXPECT_EQ("1,1 100x200",
-            GetDisplayInfoAt(0).bounds_in_pixel().ToString());
+            GetDisplayInfoAt(0).bounds_in_native().ToString());
   EXPECT_EQ("200x100",
             GetDisplayInfoAt(0).size_in_pixel().ToString());
 
   EXPECT_EQ("1,201 300x400",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+            GetDisplayInfoAt(1).bounds_in_native().ToString());
   EXPECT_EQ("400x300",
             GetDisplayInfoAt(1).size_in_pixel().ToString());
   reset();
@@ -773,12 +773,12 @@ TEST_F(DisplayManagerTest, Rotate) {
   reset();
 
   EXPECT_EQ("1,1 100x200",
-            GetDisplayInfoAt(0).bounds_in_pixel().ToString());
+            GetDisplayInfoAt(0).bounds_in_native().ToString());
   EXPECT_EQ("100x200",
             GetDisplayInfoAt(0).size_in_pixel().ToString());
 
   EXPECT_EQ("1,201 300x400",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+            GetDisplayInfoAt(1).bounds_in_native().ToString());
   EXPECT_EQ("300x400",
             GetDisplayInfoAt(1).size_in_pixel().ToString());
 

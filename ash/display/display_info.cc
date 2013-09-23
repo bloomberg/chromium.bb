@@ -45,10 +45,10 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
   static int64 synthesized_display_id = 2200000000LL;
 
 #if defined(OS_WIN)
-  gfx::Rect bounds_in_pixel(aura::RootWindowHost::GetNativeScreenSize());
+  gfx::Rect bounds_in_native(aura::RootWindowHost::GetNativeScreenSize());
 #else
-  gfx::Rect bounds_in_pixel(kDefaultHostWindowX, kDefaultHostWindowY,
-                            kDefaultHostWindowWidth, kDefaultHostWindowHeight);
+  gfx::Rect bounds_in_native(kDefaultHostWindowX, kDefaultHostWindowY,
+                             kDefaultHostWindowWidth, kDefaultHostWindowHeight);
 #endif
   std::string main_spec = spec;
 
@@ -94,7 +94,7 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
              &width, &height, &device_scale_factor) >= 2 ||
       sscanf(main_spec.c_str(), "%d+%d-%dx%d*%f", &x, &y, &width, &height,
              &device_scale_factor) >= 4) {
-    bounds_in_pixel.SetRect(x, y, width, height);
+    bounds_in_native.SetRect(x, y, width, height);
   }
 
   std::vector<Resolution> resolutions;
@@ -117,13 +117,13 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
   display_info.set_device_scale_factor(device_scale_factor);
   display_info.set_rotation(rotation);
   display_info.set_ui_scale(ui_scale);
-  display_info.SetBounds(bounds_in_pixel);
+  display_info.SetBounds(bounds_in_native);
   display_info.set_resolutions(resolutions);
 
   // To test the overscan, it creates the default 5% overscan.
   if (has_overscan) {
-    int width = bounds_in_pixel.width() / device_scale_factor / 40;
-    int height = bounds_in_pixel.height() / device_scale_factor / 40;
+    int width = bounds_in_native.width() / device_scale_factor / 40;
+    int height = bounds_in_native.height() / device_scale_factor / 40;
     display_info.SetOverscanInsets(gfx::Insets(height, width, height, width));
     display_info.UpdateDisplaySize();
   }
@@ -164,8 +164,8 @@ void DisplayInfo::Copy(const DisplayInfo& native_info) {
   name_ = native_info.name_;
   has_overscan_ = native_info.has_overscan_;
 
-  DCHECK(!native_info.bounds_in_pixel_.IsEmpty());
-  bounds_in_pixel_ = native_info.bounds_in_pixel_;
+  DCHECK(!native_info.bounds_in_native_.IsEmpty());
+  bounds_in_native_ = native_info.bounds_in_native_;
   size_in_pixel_ = native_info.size_in_pixel_;
   device_scale_factor_ = native_info.device_scale_factor_;
   resolutions_ = native_info.resolutions_;
@@ -189,14 +189,14 @@ void DisplayInfo::Copy(const DisplayInfo& native_info) {
   // |CreateFromSpec|.
 }
 
-void DisplayInfo::SetBounds(const gfx::Rect& new_bounds_in_pixel) {
-  bounds_in_pixel_ = new_bounds_in_pixel;
-  size_in_pixel_ = new_bounds_in_pixel.size();
+void DisplayInfo::SetBounds(const gfx::Rect& new_bounds_in_native) {
+  bounds_in_native_ = new_bounds_in_native;
+  size_in_pixel_ = new_bounds_in_native.size();
   UpdateDisplaySize();
 }
 
 void DisplayInfo::UpdateDisplaySize() {
-  size_in_pixel_ = bounds_in_pixel_.size();
+  size_in_pixel_ = bounds_in_native_.size();
   if (!overscan_insets_in_dip_.empty()) {
     gfx::Insets insets_in_pixel =
         overscan_insets_in_dip_.Scale(device_scale_factor_);
@@ -227,7 +227,7 @@ std::string DisplayInfo::ToString() const {
       "DisplayInfo[%lld] native bounds=%s, size=%s, scale=%f, "
       "overscan=%s, rotation=%d, ui-scale=%f",
       static_cast<long long int>(id_),
-      bounds_in_pixel_.ToString().c_str(),
+      bounds_in_native_.ToString().c_str(),
       size_in_pixel_.ToString().c_str(),
       device_scale_factor_,
       overscan_insets_in_dip_.ToString().c_str(),

@@ -192,7 +192,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
     std::vector<float> ui_scales;
     if (display.IsInternal()) {
       ui_scales = DisplayManager::GetScalesForDisplay(display_info);
-      gfx::SizeF base_size = display_info.bounds_in_pixel().size();
+      gfx::SizeF base_size = display_info.bounds_in_native().size();
       base_size.Scale(1.0f / display.device_scale_factor());
       if (display_info.rotation() == gfx::Display::ROTATE_90 ||
           display_info.rotation() == gfx::Display::ROTATE_270) {
@@ -213,7 +213,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
     std::sort(resolutions.begin(), resolutions.end(), CompareResolution);
 
     base::ListValue* js_resolutions = new base::ListValue();
-    gfx::Size current_size = display_info.bounds_in_pixel().size();
+    gfx::Size current_size = display_info.bounds_in_native().size();
     gfx::Insets current_overscan = display_info.GetOverscanInsetsInPixel();
     for (size_t i = 0; i < resolutions.size(); ++i) {
       base::DictionaryValue* resolution_info = new base::DictionaryValue();
@@ -350,7 +350,7 @@ void DisplayOptionsHandler::HandleSetResolution(const base::ListValue* args) {
   gfx::Insets current_overscan = display_info.GetOverscanInsetsInPixel();
   gfx::Size new_resolution = gfx::ToFlooredSize(gfx::SizeF(width, height));
   new_resolution.Enlarge(current_overscan.width(), current_overscan.height());
-  gfx::Size old_resolution = display_info.bounds_in_pixel().size();
+  gfx::Size old_resolution = display_info.bounds_in_native().size();
   bool has_new_resolution = false;
   bool has_old_resolution = false;
   for (size_t i = 0; i < display_info.resolutions().size(); ++i) {

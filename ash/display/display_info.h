@@ -93,10 +93,10 @@ class ASH_EXPORT DisplayInfo {
   float device_scale_factor() const { return device_scale_factor_; }
   void set_device_scale_factor(float scale) { device_scale_factor_ = scale; }
 
-  // The bounds_in_pixel for the display. The size of this can be different from
-  // the |size_in_pixel| in case of overscan insets.
-  const gfx::Rect bounds_in_pixel() const {
-    return bounds_in_pixel_;
+  // The native bounds for the display. The size of this can be different from
+  // the |size_in_pixel| when overscan insets are set and/or |ui_scale_| is set.
+  const gfx::Rect bounds_in_native() const {
+    return bounds_in_native_;
   }
 
   // The size for the display in pixels.
@@ -115,11 +115,11 @@ class ASH_EXPORT DisplayInfo {
   // when the |another_info| isn't native one.
   void Copy(const DisplayInfo& another_info);
 
-  // Update the |bounds_in_pixel_| and |size_in_pixel_| using
-  // given |bounds_in_pixel|.
-  void SetBounds(const gfx::Rect& bounds_in_pixel);
+  // Update the |bounds_in_native_| and |size_in_pixel_| using
+  // given |bounds_in_native|.
+  void SetBounds(const gfx::Rect& bounds_in_native);
 
-  // Update the |bounds_in_pixel| according to the current overscan
+  // Update the |bounds_in_native| according to the current overscan
   // and rotation settings.
   void UpdateDisplaySize();
 
@@ -150,14 +150,25 @@ class ASH_EXPORT DisplayInfo {
   std::string name_;
   bool has_overscan_;
   gfx::Display::Rotation rotation_;
+
+  // This specifies the device's pixel density. (For example, a
+  // display whose DPI is higher than the threshold is considered to have
+  // device_scale_factor = 2.0 on Chrome OS).  This is used by the
+  // grapics layer to choose and draw appropriate images and scale
+  // layers properly.
   float device_scale_factor_;
-  gfx::Rect bounds_in_pixel_;
+  gfx::Rect bounds_in_native_;
+
   // The size of the display in use. The size can be different from the size
-  // of |bounds_in_pixel_| if the display has overscan insets and/or rotation.
+  // of |bounds_in_native_| if the display has overscan insets and/or rotation.
   gfx::Size size_in_pixel_;
   gfx::Insets overscan_insets_in_dip_;
 
-  // UI scale of the display.
+  // The pixel scale of the display. This is used to simply expand (or
+  // shrink) the desktop over the native display resolution (useful in
+  // HighDPI display).  Note that this should not be confused with the
+  // device scale factor, which specifies the pixel density of the
+  // display.
   float ui_scale_;
 
   // True if this comes from native platform (DisplayChangeObserver).

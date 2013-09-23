@@ -164,7 +164,7 @@ std::vector<float> DisplayManager::GetScalesForDisplay(
     ret.assign(kUIScalesFor2x, kUIScalesFor2x + arraysize(kUIScalesFor2x));
     return ret;
   }
-  switch (info.bounds_in_pixel().width()) {
+  switch (info.bounds_in_native().width()) {
     case 1280:
       ret.assign(kUIScalesFor1280,
                  kUIScalesFor1280 + arraysize(kUIScalesFor1280));
@@ -482,7 +482,7 @@ void DisplayManager::OnNativeDisplaysChanged(
     if (!internal_display_connected)
       internal_display_connected = IsInternalDisplayId(iter->id());
     // Mirrored monitors have the same origins.
-    gfx::Point origin = iter->bounds_in_pixel().origin();
+    gfx::Point origin = iter->bounds_in_native().origin();
     if (origins.find(origin) != origins.end()) {
       InsertAndUpdateDisplayInfo(*iter);
       mirrored_display_ = CreateDisplayFromDisplayInfoById(iter->id());
@@ -587,8 +587,8 @@ void DisplayManager::UpdateDisplays(
       const DisplayInfo& new_display_info = GetDisplayInfo(new_display.id());
 
       bool host_window_bounds_changed =
-          current_display_info.bounds_in_pixel() !=
-          new_display_info.bounds_in_pixel();
+          current_display_info.bounds_in_native() !=
+          new_display_info.bounds_in_native();
 
       if (force_bounds_changed_ ||
           host_window_bounds_changed ||
@@ -768,7 +768,7 @@ void DisplayManager::AddRemoveDisplay() {
   // Add if there is only one display connected.
   if (num_connected_displays() == 1) {
     // Layout the 2nd display below the primary as with the real device.
-    gfx::Rect host_bounds = first_display.bounds_in_pixel();
+    gfx::Rect host_bounds = first_display.bounds_in_native();
     new_display_info_list.push_back(DisplayInfo::CreateFromSpec(
         base::StringPrintf(
             "%d+%d-500x400", host_bounds.x(), host_bounds.bottom())));
@@ -849,13 +849,13 @@ gfx::Display DisplayManager::CreateDisplayFromDisplayInfoById(int64 id) {
   const DisplayInfo& display_info = display_info_[id];
 
   gfx::Display new_display(display_info.id());
-  gfx::Rect bounds_in_pixel(display_info.size_in_pixel());
+  gfx::Rect bounds_in_native(display_info.size_in_pixel());
 
   // Simply set the origin to (0,0).  The primary display's origin is
   // always (0,0) and the secondary display's bounds will be updated
   // in |UpdateSecondaryDisplayBoundsForLayout| called in |UpdateDisplay|.
   new_display.SetScaleAndBounds(
-      display_info.device_scale_factor(), gfx::Rect(bounds_in_pixel.size()));
+      display_info.device_scale_factor(), gfx::Rect(bounds_in_native.size()));
   new_display.set_rotation(display_info.rotation());
   return new_display;
 }

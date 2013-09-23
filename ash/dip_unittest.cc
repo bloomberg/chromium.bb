@@ -53,7 +53,7 @@ TEST_F(DIPTest, WorkArea) {
 
   // The |bounds_in_pixel()| should report bounds in pixel coordinate.
   EXPECT_EQ("1,1 2000x1800",
-            display_info_2x.bounds_in_pixel().ToString());
+            display_info_2x.bounds_in_native().ToString());
 
   // Aura and views coordinates are in DIP, so they their bounds do not change.
   EXPECT_EQ("0,0 1000x900", display_2x.bounds().ToString());
@@ -90,9 +90,9 @@ TEST_F(DIPTest, WorkAreaForLegacyShelfLayout) {
   const internal::DisplayInfo display_info_2x =
       Shell::GetInstance()->display_manager()->GetDisplayInfo(display_2x.id());
 
-  // The |bounds_in_pixel()| should report bounds in pixel coordinate.
+  // The |bounds_in_native()| should report bounds in pixel coordinate.
   EXPECT_EQ("1,1 2000x1800",
-            display_info_2x.bounds_in_pixel().ToString());
+            display_info_2x.bounds_in_native().ToString());
 
   // Aura and views coordinates are in DIP, so they their bounds do not change.
   EXPECT_EQ("0,0 1000x900", display_2x.bounds().ToString());

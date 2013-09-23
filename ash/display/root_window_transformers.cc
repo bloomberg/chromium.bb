@@ -195,10 +195,8 @@ class AshRootWindowTransformer : public aura::RootWindowTransformer {
   // the size of root window.
   gfx::Transform root_window_bounds_transform_;
 
-  // The scale of the root window. This is used to expand the
-  // area of the root window (useful in HighDPI display).
-  // Note that this should not be confused with the device scale
-  // factor, which specfies the pixel density of the display.
+  // The scale of the root window. See |display_info::ui_scale_|
+  // for more info.
   float root_window_ui_scale_;
 
   gfx::Insets host_insets_;
@@ -214,9 +212,9 @@ class MirrorRootWindowTransformer : public aura::RootWindowTransformer {
  public:
   MirrorRootWindowTransformer(const DisplayInfo& source_display_info,
                               const DisplayInfo& mirror_display_info) {
-    root_bounds_ = gfx::Rect(source_display_info.bounds_in_pixel().size());
+    root_bounds_ = gfx::Rect(source_display_info.bounds_in_native().size());
     gfx::Rect mirror_display_rect =
-        gfx::Rect(mirror_display_info.bounds_in_pixel().size());
+        gfx::Rect(mirror_display_info.bounds_in_native().size());
 
     bool letterbox = root_bounds_.width() * mirror_display_rect.height() >
         root_bounds_.height() * mirror_display_rect.width();

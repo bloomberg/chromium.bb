@@ -161,10 +161,10 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
   static int mirror_root_window_count = 0;
 
   if (!root_window_.get()) {
-    const gfx::Rect& bounds_in_pixel = display_info.bounds_in_pixel();
-    aura::RootWindow::CreateParams params(bounds_in_pixel);
+    const gfx::Rect& bounds_in_native = display_info.bounds_in_native();
+    aura::RootWindow::CreateParams params(bounds_in_native);
     params.host = Shell::GetInstance()->root_window_host_factory()->
-        CreateRootWindowHost(bounds_in_pixel);
+        CreateRootWindowHost(bounds_in_native);
     root_window_.reset(new aura::RootWindow(params));
     root_window_->SetName(
         base::StringPrintf("MirrorRootWindow-%d", mirror_root_window_count++));
@@ -201,7 +201,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
     cursor_window_->Show();
   } else {
     GetRootWindowSettings(root_window_.get())->display_id = display_info.id();
-    root_window_->SetHostBounds(display_info.bounds_in_pixel());
+    root_window_->SetHostBounds(display_info.bounds_in_native());
   }
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();

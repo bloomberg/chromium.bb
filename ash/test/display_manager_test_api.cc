@@ -55,7 +55,7 @@ void DisplayManagerTestApi::UpdateDisplay(
   bool is_host_origin_set = false;
   for (size_t i = 0; i < display_info_list.size(); ++i) {
     const DisplayInfo& display_info = display_info_list[i];
-    if (display_info.bounds_in_pixel().origin() != gfx::Point(0, 0)) {
+    if (display_info.bounds_in_native().origin() != gfx::Point(0, 0)) {
       is_host_origin_set = true;
       break;
     }
@@ -71,7 +71,7 @@ void DisplayManagerTestApi::UpdateDisplay(
     int next_y = 1;
     for (std::vector<DisplayInfo>::iterator iter = display_info_list.begin();
          iter != display_info_list.end(); ++iter) {
-      gfx::Rect bounds(iter->bounds_in_pixel().size());
+      gfx::Rect bounds(iter->bounds_in_native().size());
       bounds.set_x(1);
       bounds.set_y(next_y);
       next_y += bounds.height();

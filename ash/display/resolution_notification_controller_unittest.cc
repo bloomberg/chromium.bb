@@ -48,7 +48,7 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
       int64 id = display_manager->GetDisplayAt(i).id();
       DisplayInfo info = display_manager->GetDisplayInfo(id);
       if (display.id() == id) {
-        gfx::Rect bounds = info.bounds_in_pixel();
+        gfx::Rect bounds = info.bounds_in_native();
         bounds.set_size(new_resolution);
         info.SetBounds(bounds);
       }
