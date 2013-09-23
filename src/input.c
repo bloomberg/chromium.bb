@@ -503,7 +503,7 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 		pointer->focus_serial = serial;
 	}
 
-	if (kbd && surface && kbd->focus != pointer->focus) {
+	if (kbd && surface && surface->resource && kbd->focus != pointer->focus) {
 		struct wl_client *surface_client =
 			wl_resource_get_client(surface->resource);
 		send_modifiers_to_client_in_list(surface_client,
