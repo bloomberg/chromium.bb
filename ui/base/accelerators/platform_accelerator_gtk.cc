@@ -4,10 +4,35 @@
 
 #include "ui/base/accelerators/platform_accelerator_gtk.h"
 
-#include "ui/events/event_conversion_gtk.h"
 #include "ui/events/keycodes/keyboard_code_conversion_gtk.h"
 
 namespace ui {
+
+namespace {
+
+int GdkModifierToEventFlag(GdkModifierType gdk_modifier) {
+  int event_flags = 0;
+  if (gdk_modifier & GDK_SHIFT_MASK)
+    event_flags |= EF_SHIFT_DOWN;
+  if (gdk_modifier & GDK_CONTROL_MASK)
+    event_flags |= EF_CONTROL_DOWN;
+  if (gdk_modifier & GDK_MOD1_MASK)
+    event_flags |= EF_ALT_DOWN;
+  return event_flags;
+}
+
+GdkModifierType EventFlagToGdkModifier(int event_flag) {
+  int modifier = 0;
+  if (event_flag & EF_SHIFT_DOWN)
+    modifier |= GDK_SHIFT_MASK;
+  if (event_flag & EF_CONTROL_DOWN)
+    modifier |= GDK_CONTROL_MASK;
+  if (event_flag & EF_ALT_DOWN)
+    modifier |= GDK_MOD1_MASK;
+  return static_cast<GdkModifierType>(modifier);
+}
+
+}  // namespace
 
 PlatformAcceleratorGtk::PlatformAcceleratorGtk()
     : gdk_key_code_(0),

@@ -355,8 +355,6 @@
         'events/event.cc',
         'events/event.h',
         'events/event_constants.h',
-        'events/event_conversion_gtk.cc',
-        'events/event_conversion_gtk.h',
         'events/event_dispatcher.cc',
         'events/event_dispatcher.h',
         'events/event_handler.cc',
