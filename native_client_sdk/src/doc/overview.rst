@@ -85,9 +85,9 @@ Typical use cases for Native Client include the following:
   directly into the browser. At the same time, your application takes advantage
   of things the browser does well: handling user interaction and processing
   events, based on the latest developments in HTML5.
-* **Enterprise applications that require heavy computation:** Native Client
-  handles the number crunching required by large-scale enterprise applications.
-  To ensure protection of user data, Native Client enables you to build complex
+* **Heavy computation in enterprise applications:** Native Client handles the
+  number crunching required by large-scale enterprise applications. To ensure
+  protection of user data, Native Client enables you to build complex
   cryptographic algorithms directly into the browser so that unencrypted data
   never goes out over the network.
 * **Multimedia applications:** Codecs for processing sounds, images, and movies
@@ -163,6 +163,8 @@ since a **nexe** contains architecture-specific machine code, distributing
 **nexe** modules on the open web is not allowed. **nexe** modules can only be
 used as part of applications that are installed from the Chrome Web Store and in
 browser extensions.
+
+For more details, see :doc:`NaCl and PNaCl <nacl-and-pnacl>`.
 
 Toolchains
 ----------
