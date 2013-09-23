@@ -13,6 +13,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 #endif
 
 namespace extensions {
@@ -93,6 +95,15 @@ bool AutotestPrivateLoginStatusFunction::RunImpl() {
 #endif
 
   SetResult(result);
+  return true;
+}
+
+bool AutotestPrivateLockScreenFunction::RunImpl() {
+  DVLOG(1) << "AutotestPrivateLockScreenFunction";
+#if defined(OS_CHROMEOS)
+  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+      RequestLockScreen();
+#endif
   return true;
 }
 

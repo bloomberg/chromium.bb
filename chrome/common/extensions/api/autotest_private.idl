@@ -42,6 +42,9 @@
     // Get login status.
     static void loginStatus(LoginStatusCallback callback);
 
+    // Locks the screen.
+    static void lockScreen();
+
     // Simulates a memory access bug for asan testing.
     static void simulateAsanMemoryBug();
   };
