@@ -379,6 +379,19 @@ ErrorParsingResult ParseMethodAndError(const char* string,
   return NONE;
 }
 
+bool IndicatesDiskFull(leveldb::Status status) {
+  if (status.ok())
+    return false;
+  leveldb_env::MethodID method;
+  int error = -1;
+  leveldb_env::ErrorParsingResult result = leveldb_env::ParseMethodAndError(
+      status.ToString().c_str(), &method, &error);
+  return (result == leveldb_env::METHOD_AND_PFE &&
+          static_cast<base::PlatformFileError>(error) ==
+              base::PLATFORM_FILE_ERROR_NO_SPACE) ||
+         (result == leveldb_env::METHOD_AND_ERRNO && error == ENOSPC);
+}
+
 std::string FilePathToString(const base::FilePath& file_path) {
 #if defined(OS_WIN)
   return UTF16ToUTF8(file_path.value());

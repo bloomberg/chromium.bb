@@ -69,11 +69,13 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
   MockLevelDBFactory mock_leveldb_factory;
   WebKit::WebIDBCallbacks::DataLoss data_loss =
       WebKit::WebIDBCallbacks::DataLossNone;
+  bool disk_full = false;
   scoped_refptr<IndexedDBBackingStore> backing_store =
       IndexedDBBackingStore::Open(origin_identifier,
                                   path,
                                   dummy_file_identifier,
                                   &data_loss,
+                                  &disk_full,
                                   &mock_leveldb_factory);
 }
 
@@ -115,6 +117,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
   std::string dummy_file_identifier;
   WebKit::WebIDBCallbacks::DataLoss data_loss =
       WebKit::WebIDBCallbacks::DataLossNone;
+  bool disk_full = false;
 
   MockErrorLevelDBFactory<int> mock_leveldb_factory(ENOSPC, false);
   scoped_refptr<IndexedDBBackingStore> backing_store =
@@ -122,6 +125,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   path,
                                   dummy_file_identifier,
                                   &data_loss,
+                                  &disk_full,
                                   &mock_leveldb_factory);
 
   MockErrorLevelDBFactory<base::PlatformFileError> mock_leveldb_factory2(
@@ -131,6 +135,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   path,
                                   dummy_file_identifier,
                                   &data_loss,
+                                  &disk_full,
                                   &mock_leveldb_factory2);
 
   MockErrorLevelDBFactory<int> mock_leveldb_factory3(EIO, true);
@@ -139,6 +144,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   path,
                                   dummy_file_identifier,
                                   &data_loss,
+                                  &disk_full,
                                   &mock_leveldb_factory3);
 
   MockErrorLevelDBFactory<base::PlatformFileError> mock_leveldb_factory4(
@@ -148,6 +154,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                   path,
                                   dummy_file_identifier,
                                   &data_loss,
+                                  &disk_full,
                                   &mock_leveldb_factory4);
 }
 

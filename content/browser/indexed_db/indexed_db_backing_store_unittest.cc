@@ -13,6 +13,7 @@
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
 #include "third_party/WebKit/public/platform/WebIDBTypes.h"
 #include "url/gurl.h"
 #include "webkit/common/database/database_identifier.h"
@@ -335,10 +336,12 @@ class MockIDBFactory : public IndexedDBFactory {
       const base::FilePath& data_directory) {
     WebKit::WebIDBCallbacks::DataLoss data_loss =
         WebKit::WebIDBCallbacks::DataLossNone;
+    bool disk_full;
     scoped_refptr<IndexedDBBackingStore> backing_store =
         OpenBackingStore(webkit_database::GetIdentifierFromOrigin(origin),
                          data_directory,
-                         &data_loss);
+                         &data_loss,
+                         &disk_full);
     EXPECT_EQ(WebKit::WebIDBCallbacks::DataLossNone, data_loss);
     return backing_store;
   }
@@ -464,6 +467,50 @@ TEST_F(IndexedDBFactoryTest, RejectLongOrigins) {
   scoped_refptr<IndexedDBBackingStore> diskStore2 =
       factory->TestOpenBackingStore(ok_origin, base_path);
   EXPECT_TRUE(diskStore2);
+}
+
+class DiskFullFactory : public IndexedDBFactory {
+ private:
+  virtual ~DiskFullFactory() {}
+  virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
+      const std::string& origin_identifier,
+      const base::FilePath& data_directory,
+      WebKit::WebIDBCallbacks::DataLoss* data_loss,
+      bool* disk_full) OVERRIDE {
+    *disk_full = true;
+    return scoped_refptr<IndexedDBBackingStore>();
+  }
+};
+
+class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
+ public:
+  LookingForQuotaErrorMockCallbacks()
+      : IndexedDBCallbacks(NULL, 0, 0), error_called_(false) {}
+  virtual void OnError(const IndexedDBDatabaseError& error) OVERRIDE {
+    error_called_ = true;
+    EXPECT_EQ(WebKit::WebIDBDatabaseExceptionQuotaError, error.code());
+  }
+ private:
+  virtual ~LookingForQuotaErrorMockCallbacks() {
+    EXPECT_TRUE(error_called_);
+  }
+  bool error_called_;
+};
+
+TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
+  scoped_refptr<DiskFullFactory> factory = new DiskFullFactory;
+  scoped_refptr<LookingForQuotaErrorMockCallbacks> callbacks =
+      new LookingForQuotaErrorMockCallbacks;
+  scoped_refptr<IndexedDBDatabaseCallbacks> dummy_database_callbacks =
+      new IndexedDBDatabaseCallbacks(NULL, 0, 0);
+  const string16 name(ASCIIToUTF16("name"));
+  factory->Open(name,
+                1, /* version */
+                2, /* transaction_id */
+                callbacks,
+                dummy_database_callbacks,
+                "origin",
+                base::FilePath(FILE_PATH_LITERAL("/dummy")));
 }
 
 }  // namespace

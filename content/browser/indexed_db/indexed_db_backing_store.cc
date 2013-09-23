@@ -402,6 +402,7 @@ enum IndexedDBLevelDBBackingStoreOpenResult {
   INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
 };
 
+// TODO(dgrogan): Move to leveldb_env.
 bool RecoveryCouldBeFruitful(leveldb::Status status) {
   leveldb_env::MethodID method;
   int error = -1;
@@ -441,13 +442,15 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const std::string& origin_identifier,
     const base::FilePath& path_base,
     const std::string& file_identifier,
-    WebKit::WebIDBCallbacks::DataLoss* data_loss) {
+    WebKit::WebIDBCallbacks::DataLoss* data_loss,
+    bool* disk_full) {
   *data_loss = WebKit::WebIDBCallbacks::DataLossNone;
   DefaultLevelDBFactory leveldb_factory;
   return IndexedDBBackingStore::Open(origin_identifier,
                                      path_base,
                                      file_identifier,
                                      data_loss,
+                                     disk_full,
                                      &leveldb_factory);
 }
 
@@ -456,10 +459,12 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const base::FilePath& path_base,
     const std::string& file_identifier,
     WebKit::WebIDBCallbacks::DataLoss* data_loss,
+    bool* is_disk_full,
     LevelDBFactory* leveldb_factory) {
   IDB_TRACE("IndexedDBBackingStore::Open");
   DCHECK(!path_base.empty());
   *data_loss = WebKit::WebIDBCallbacks::DataLossNone;
+  *is_disk_full = false;
 
   scoped_ptr<LevelDBComparator> comparator(new Comparator());
 
@@ -525,10 +530,14 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
 
   base::FilePath file_path = path_base.Append(identifier_path);
 
-  bool is_disk_full = false;
   scoped_ptr<LevelDBDatabase> db;
   leveldb::Status status = leveldb_factory->OpenLevelDB(
-      file_path, comparator.get(), &db, &is_disk_full);
+      file_path, comparator.get(), &db, is_disk_full);
+
+  if (!status.ok() && leveldb_env::IndicatesDiskFull(status)) {
+    DCHECK(!db);
+    *is_disk_full = true;
+  }
 
   if (db) {
     bool known = false;
@@ -565,15 +574,6 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
                                 INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
                                 base::HistogramBase::kUmaTargetedHistogramFlag)
         ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_SUCCESS);
-  } else if (is_disk_full) {
-    LOG(ERROR) << "Unable to open backing store - disk is full.";
-    base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
-                                1,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
-                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
-                                base::HistogramBase::kUmaTargetedHistogramFlag)
-        ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_DISK_FULL);
-    return scoped_refptr<IndexedDBBackingStore>();
   } else if (!RecoveryCouldBeFruitful(status)) {
     LOG(ERROR) << "Unable to open backing store, not trying to recover - "
                << status.ToString();
@@ -583,6 +583,15 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
                                 INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
                                 base::HistogramBase::kUmaTargetedHistogramFlag)
         ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_NO_RECOVERY);
+    return scoped_refptr<IndexedDBBackingStore>();
+  } else if (*is_disk_full) {
+    LOG(ERROR) << "Unable to open backing store - disk is full.";
+    base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
+                                1,
+                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
+                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
+                                base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_DISK_FULL);
     return scoped_refptr<IndexedDBBackingStore>();
   } else {
     LOG(ERROR) << "IndexedDB backing store open failed, attempting cleanup";

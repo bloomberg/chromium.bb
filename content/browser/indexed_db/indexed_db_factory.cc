@@ -87,8 +87,9 @@ void IndexedDBFactory::GetDatabaseNames(
   IDB_TRACE("IndexedDBFactory::GetDatabaseNames");
   // TODO(dgrogan): Plumb data_loss back to script eventually?
   WebKit::WebIDBCallbacks::DataLoss data_loss;
-  scoped_refptr<IndexedDBBackingStore> backing_store =
-      OpenBackingStore(origin_identifier, data_directory, &data_loss);
+  bool disk_full;
+  scoped_refptr<IndexedDBBackingStore> backing_store = OpenBackingStore(
+      origin_identifier, data_directory, &data_loss, &disk_full);
   if (!backing_store) {
     callbacks->OnError(
         IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
@@ -117,8 +118,9 @@ void IndexedDBFactory::DeleteDatabase(
 
   // TODO(dgrogan): Plumb data_loss back to script eventually?
   WebKit::WebIDBCallbacks::DataLoss data_loss;
-  scoped_refptr<IndexedDBBackingStore> backing_store =
-      OpenBackingStore(origin_identifier, data_directory, &data_loss);
+  bool disk_full = false;
+  scoped_refptr<IndexedDBBackingStore> backing_store = OpenBackingStore(
+      origin_identifier, data_directory, &data_loss, &disk_full);
   if (!backing_store) {
     callbacks->OnError(
         IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
@@ -147,7 +149,8 @@ void IndexedDBFactory::DeleteDatabase(
 scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
     const std::string& origin_identifier,
     const base::FilePath& data_directory,
-    WebKit::WebIDBCallbacks::DataLoss* data_loss) {
+    WebKit::WebIDBCallbacks::DataLoss* data_loss,
+    bool* disk_full) {
   const std::string file_identifier = ComputeFileIdentifier(origin_identifier);
   const bool open_in_memory = data_directory.empty();
 
@@ -162,8 +165,11 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
   if (open_in_memory) {
     backing_store = IndexedDBBackingStore::OpenInMemory(file_identifier);
   } else {
-    backing_store = IndexedDBBackingStore::Open(
-        origin_identifier, data_directory, file_identifier, data_loss);
+    backing_store = IndexedDBBackingStore::Open(origin_identifier,
+                                                data_directory,
+                                                file_identifier,
+                                                data_loss,
+                                                disk_full);
   }
 
   if (backing_store.get()) {
@@ -196,10 +202,19 @@ void IndexedDBFactory::Open(
   IndexedDBDatabaseMap::iterator it = database_map_.find(unique_identifier);
   WebKit::WebIDBCallbacks::DataLoss data_loss =
       WebKit::WebIDBCallbacks::DataLossNone;
+  bool disk_full = false;
   if (it == database_map_.end()) {
-    scoped_refptr<IndexedDBBackingStore> backing_store =
-        OpenBackingStore(origin_identifier, data_directory, &data_loss);
+    scoped_refptr<IndexedDBBackingStore> backing_store = OpenBackingStore(
+        origin_identifier, data_directory, &data_loss, &disk_full);
     if (!backing_store) {
+      if (disk_full) {
+        callbacks->OnError(
+            IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionQuotaError,
+                                   ASCIIToUTF16(
+                                       "Encountered full disk while opening "
+                                       "backing store for indexedDB.open.")));
+        return;
+      }
       callbacks->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionUnknownError,
           ASCIIToUTF16(

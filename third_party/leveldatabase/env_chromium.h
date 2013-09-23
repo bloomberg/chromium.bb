@@ -65,6 +65,7 @@ enum ErrorParsingResult {
 ErrorParsingResult ParseMethodAndError(const char* string,
                                        MethodID* method,
                                        int* error);
+bool IndicatesDiskFull(leveldb::Status status);
 std::string FilePathToString(const base::FilePath& file_path);
 
 class UMALogger {
