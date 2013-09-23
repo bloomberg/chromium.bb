@@ -23378,6 +23378,7 @@ other types of suffix sets.
 <enum name="MediaKeyError" type="int">
   <int value="1" label="kUnknownError"/>
   <int value="2" label="kClientError"/>
+  <int value="4" label="kOutputError"/>
 </enum>
 
 <enum name="MediaKeyException" type="int">
