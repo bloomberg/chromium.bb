@@ -5,7 +5,7 @@
 #ifndef CONTENT_PORT_BROWSER_EVENT_WITH_LATENCY_INFO_H_
 #define CONTENT_PORT_BROWSER_EVENT_WITH_LATENCY_INFO_H_
 
-#include "ui/base/latency_info.h"
+#include "ui/events/latency_info.h"
 
 namespace WebKit {
 class WebGestureEvent;

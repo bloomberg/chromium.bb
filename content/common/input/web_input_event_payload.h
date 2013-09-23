@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event.h"
-#include "ui/base/latency_info.h"
+#include "ui/events/latency_info.h"
 
 namespace WebKit {
 class WebInputEvent;

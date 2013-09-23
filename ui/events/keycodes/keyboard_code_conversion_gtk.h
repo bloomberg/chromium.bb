@@ -36,20 +36,20 @@
 #ifndef UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_GTK_H_
 #define UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_GTK_H_
 
-#include "ui/base/ui_export.h"
+#include "ui/events/events_export.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
 typedef struct _GdkEventKey GdkEventKey;
 
 namespace ui {
 
-UI_EXPORT KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode);
+EVENTS_EXPORT KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode);
 
-UI_EXPORT int GdkKeyCodeForWindowsKeyCode(KeyboardCode keycode, bool shift);
+EVENTS_EXPORT int GdkKeyCodeForWindowsKeyCode(KeyboardCode keycode, bool shift);
 
 // For WebKit DRT testing: simulate the native keycode for the given
 // input |keycode|.  Return the native keycode.
-UI_EXPORT int GdkNativeKeyCodeForWindowsKeyCode(KeyboardCode keycode,
+EVENTS_EXPORT int GdkNativeKeyCodeForWindowsKeyCode(KeyboardCode keycode,
                                                 bool shift);
 
 } // namespace ui

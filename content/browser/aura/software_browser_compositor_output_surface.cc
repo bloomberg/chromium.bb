@@ -8,7 +8,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/software_output_device.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "ui/base/latency_info.h"
+#include "ui/events/latency_info.h"
 
 namespace content {
 

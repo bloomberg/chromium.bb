@@ -8,7 +8,7 @@
 #include "cc/input/input_handler.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/latency_info.h"
+#include "ui/events/latency_info.h"
 
 using WebKit::WebInputEvent;
 

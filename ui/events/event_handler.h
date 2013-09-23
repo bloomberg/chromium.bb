@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "ui/base/ui_export.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/events_export.h"
 
 namespace ui {
 
@@ -26,7 +26,7 @@ class TouchEvent;
 
 // Dispatches events to appropriate targets.  The default implementations of
 // all of the specific handlers (e.g. OnKeyEvent, OnMouseEvent) do nothing.
-class UI_EXPORT EventHandler {
+class EVENTS_EXPORT EventHandler {
  public:
   EventHandler();
   virtual ~EventHandler();

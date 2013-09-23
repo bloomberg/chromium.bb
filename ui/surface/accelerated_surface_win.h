@@ -14,7 +14,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "base/win/scoped_comptr.h"
-#include "ui/base/latency_info.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/surface/surface_export.h"

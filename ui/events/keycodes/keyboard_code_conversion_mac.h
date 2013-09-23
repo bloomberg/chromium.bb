@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
-#include "ui/base/ui_export.h"
+#include "ui/events/events_export.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
 namespace ui {
@@ -25,7 +25,7 @@ namespace ui {
 // -1 will be returned if the keycode can't be converted.
 // This function is mainly for simulating keyboard events in unit tests.
 // See |KeyboardCodeFromNSEvent| for reverse conversion.
-UI_EXPORT int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
+EVENTS_EXPORT int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
                                           NSUInteger flags,
                                           unichar* character,
                                           unichar* characterIgnoringModifiers);
@@ -34,7 +34,7 @@ UI_EXPORT int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
 //   third_party/WebKit/Source/web/mac/WebInputEventFactory.mm
 // Converts |event| into a |KeyboardCode|.  The mapping is not direct as the Mac
 // has a different notion of key codes.
-UI_EXPORT KeyboardCode KeyboardCodeFromNSEvent(NSEvent* event);
+EVENTS_EXPORT KeyboardCode KeyboardCodeFromNSEvent(NSEvent* event);
 
 } // namespace ui
 

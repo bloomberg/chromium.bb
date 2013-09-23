@@ -14,7 +14,7 @@
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/base/latency_info.h"
+#include "ui/events/latency_info.h"
 
 using WebKit::WebActiveWheelFlingParameters;
 using WebKit::WebFloatPoint;
