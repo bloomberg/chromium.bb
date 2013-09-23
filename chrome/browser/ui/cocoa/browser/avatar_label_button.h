@@ -8,13 +8,12 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/nine_part_button_cell.h"
 
 @interface AvatarLabelButton : NSButton
 @end
 
 // Draws the button cell for the avatar label.
-@interface AvatarLabelButtonCell : NinePartButtonCell
+@interface AvatarLabelButtonCell : NSButtonCell
 
 // Returns the size of the label text (including boundaries).
 - (NSSize)labelTextSize;

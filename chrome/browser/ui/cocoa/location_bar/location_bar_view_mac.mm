@@ -123,6 +123,9 @@ LocationBarViewMac::LocationBarViewMac(
                  base::Unretained(this)));
 
   browser_->search_model()->AddObserver(this);
+
+  [[field_ cell] setIsPopupMode:
+      !browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)];
 }
 
 LocationBarViewMac::~LocationBarViewMac() {

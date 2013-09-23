@@ -26,7 +26,12 @@ class LocationBarDecoration;
   // If YES then the text field will not draw a focus ring or show the insertion
   // pointer.
   BOOL hideFocusState_;
+
+  // YES if this field is shown in a popup window.
+  BOOL isPopupMode_;
 }
+
+@property(assign, nonatomic) BOOL isPopupMode;
 
 // Line height used for text in this cell.
 - (CGFloat)lineHeight;

@@ -823,8 +823,6 @@
         'browser/ui/cocoa/multi_key_equivalent_button.mm',
         'browser/ui/cocoa/new_tab_button.h',
         'browser/ui/cocoa/new_tab_button.mm',
-        'browser/ui/cocoa/nine_part_button_cell.h',
-        'browser/ui/cocoa/nine_part_button_cell.mm',
         'browser/ui/cocoa/notifications/balloon_collection_cocoa.mm',
         'browser/ui/cocoa/notifications/balloon_controller.h',
         'browser/ui/cocoa/notifications/balloon_controller.mm',

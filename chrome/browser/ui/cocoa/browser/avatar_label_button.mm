@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -35,6 +36,9 @@ const CGFloat kLabelTextBottomSpacing = 4;
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
+    [self setBezelStyle:NSSmallSquareBezelStyle];
+    [self setTitle:l10n_util::GetNSString(IDS_MANAGED_USER_AVATAR_LABEL)];
+    [self setFont:[NSFont labelFontOfSize:12.0]];
     // Increase the frame by the size of the label to be displayed.
     NSSize textSize = [[self cell] labelTextSize];
     frameRect.size = NSMakeSize(frameRect.size.width + textSize.width,
@@ -52,29 +56,26 @@ const CGFloat kLabelTextBottomSpacing = 4;
 
 @implementation AvatarLabelButtonCell
 
-- (id)init {
-  const int resourceIds[9] = {
-    IDR_MANAGED_USER_LABEL_TOP_LEFT, IDR_MANAGED_USER_LABEL_TOP,
-    IDR_MANAGED_USER_LABEL_TOP_RIGHT, IDR_MANAGED_USER_LABEL_LEFT,
-    IDR_MANAGED_USER_LABEL_CENTER, IDR_MANAGED_USER_LABEL_RIGHT,
-    IDR_MANAGED_USER_LABEL_BOTTOM_LEFT, IDR_MANAGED_USER_LABEL_BOTTOM,
-    IDR_MANAGED_USER_LABEL_BOTTOM_RIGHT
-  };
-  if ((self = [super initWithResourceIds:resourceIds])) {
-    NSString* title = l10n_util::GetNSString(IDS_MANAGED_USER_AVATAR_LABEL);
-    [self accessibilitySetOverrideValue:title
-                           forAttribute:NSAccessibilityTitleAttribute];
-    [self setTitle:title];
-    [self setFont:[NSFont labelFontOfSize:12.0]];
-  }
-  return self;
-}
-
 - (NSSize)labelTextSize {
   NSSize size = [[self attributedTitle] size];
   size.width += kLabelTextLeftSpacing + kLabelTextRightSpacing;
   size.height += kLabelTextTopSpacing + kLabelTextBottomSpacing;
   return size;
+}
+
+- (void)drawBezelWithFrame:(NSRect)frame inView:(NSView*)controlView {
+  ui::NinePartImageIds imageIds = {
+    IDR_MANAGED_USER_LABEL_TOP_LEFT,
+    IDR_MANAGED_USER_LABEL_TOP,
+    IDR_MANAGED_USER_LABEL_TOP_RIGHT,
+    IDR_MANAGED_USER_LABEL_LEFT,
+    IDR_MANAGED_USER_LABEL_CENTER,
+    IDR_MANAGED_USER_LABEL_RIGHT,
+    IDR_MANAGED_USER_LABEL_BOTTOM_LEFT,
+    IDR_MANAGED_USER_LABEL_BOTTOM,
+    IDR_MANAGED_USER_LABEL_BOTTOM_RIGHT
+  };
+  ui::DrawNinePartImage(frame, imageIds, NSCompositeSourceOver, 1.0, true);
 }
 
 - (NSRect)titleRectForBounds:(NSRect)theRect {

@@ -85,6 +85,8 @@
         'base/clipboard/scoped_clipboard_writer.cc',
         'base/clipboard/scoped_clipboard_writer.h',
         'base/cocoa/animation_utils.h',
+        'base/cocoa/appkit_utils.h',
+        'base/cocoa/appkit_utils.mm',
         'base/cocoa/base_view.h',
         'base/cocoa/base_view.mm',
         'base/cocoa/cocoa_event_utils.h',
