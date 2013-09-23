@@ -117,6 +117,11 @@ void GpuDataManagerImpl::DisableHardwareAcceleration() {
   private_->DisableHardwareAcceleration();
 }
 
+bool GpuDataManagerImpl::CanUseGpuBrowserCompositor() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->CanUseGpuBrowserCompositor();
+}
+
 void GpuDataManagerImpl::Initialize() {
   base::AutoLock auto_lock(lock_);
   private_->Initialize();
@@ -212,11 +217,6 @@ bool GpuDataManagerImpl::IsUsingAcceleratedSurface() const {
   return private_->IsUsingAcceleratedSurface();
 }
 #endif
-
-bool GpuDataManagerImpl::CanUseGpuBrowserCompositor() const {
-  base::AutoLock auto_lock(lock_);
-  return private_->CanUseGpuBrowserCompositor();
-}
 
 void GpuDataManagerImpl::BlockDomainFrom3DAPIs(
     const GURL& url, DomainGuilt guilt) {

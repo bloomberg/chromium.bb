@@ -80,6 +80,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
                             std::string* gl_renderer,
                             std::string* gl_version) OVERRIDE;
   virtual void DisableHardwareAcceleration() OVERRIDE;
+  virtual bool CanUseGpuBrowserCompositor() const OVERRIDE;
 
   // This collects preliminary GPU info, load GpuBlacklist, and compute the
   // preliminary blacklisted features; it should only be called at browser
@@ -140,8 +141,6 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // presenting by itself.
   bool IsUsingAcceleratedSurface() const;
 #endif
-
-  bool CanUseGpuBrowserCompositor() const;
 
   // Maintenance of domains requiring explicit user permission before
   // using client-facing 3D APIs (WebGL, Pepper 3D), either because

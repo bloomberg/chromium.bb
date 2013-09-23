@@ -97,6 +97,9 @@ class GpuDataManager {
   // Turn off all hardware acceleration.
   virtual void DisableHardwareAcceleration() = 0;
 
+  // Whether the browser compositor can be used.
+  virtual bool CanUseGpuBrowserCompositor() const = 0;
+
  protected:
   virtual ~GpuDataManager() {}
 };

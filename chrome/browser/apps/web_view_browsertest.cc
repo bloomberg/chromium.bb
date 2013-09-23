@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/notification_service.h"
@@ -594,6 +595,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoSizeSW) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeAfterNavigation) {
+#if defined(USE_AURA)
+  // TODO(gab): Fix this test in software compositing mode:
+  // http://crbug.com/295801.
+  if (!content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor())
+    return;
+#endif
   TestHelper("testAutosizeAfterNavigation",
              "DoneShimTest.PASSED",
              "DoneShimTest.FAILED",
@@ -601,12 +608,24 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeAfterNavigation) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeBeforeNavigation) {
+#if defined(USE_AURA)
+  // TODO(gab): Fix this test in software compositing mode:
+  // http://crbug.com/295801.
+  if (!content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor())
+    return;
+#endif
   TestHelper("testAutosizeBeforeNavigation",
              "DoneShimTest.PASSED",
              "DoneShimTest.FAILED",
              "web_view/shim");
 }
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeRemoveAttributes) {
+#if defined(USE_AURA)
+  // TODO(gab): Fix this test in software compositing mode:
+  // http://crbug.com/295801.
+  if (!content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor())
+    return;
+#endif
   TestHelper("testAutosizeRemoveAttributes",
              "DoneShimTest.PASSED",
              "DoneShimTest.FAILED",
@@ -623,6 +642,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeRemoveAttributes) {
 #endif
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        MAYBE_Shim_TestAutosizeWithPartialAttributes) {
+#if defined(USE_AURA)
+  // TODO(gab): Fix this test in software compositing mode:
+  // http://crbug.com/295801.
+  if (!content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor())
+    return;
+#endif
   TestHelper("testAutosizeWithPartialAttributes",
              "DoneShimTest.PASSED",
              "DoneShimTest.FAILED",
@@ -945,6 +970,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNavigationToExternalProtocol) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestResizeWebviewResizesContent) {
+#if defined(USE_AURA)
+  // TODO(gab): Fix this test in software compositing mode:
+  // http://crbug.com/295801.
+  if (!content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor())
+    return;
+#endif
   TestHelper("testResizeWebviewResizesContent",
              "DoneShimTest.PASSED",
              "DoneShimTest.FAILED",
