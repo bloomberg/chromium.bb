@@ -695,6 +695,11 @@ class CONTENT_EXPORT RenderWidget
   // compositor.
   bool is_accelerated_compositing_active_;
 
+  // Set to true if compositing has ever been active for this widget. Once a
+  // widget has used compositing, it will act as though force compositing mode
+  // is on for the remainder of the widget's lifetime.
+  bool was_accelerated_compositing_ever_active_;
+
   base::OneShotTimer<RenderWidget> animation_timer_;
   base::Time animation_floor_time_;
   bool animation_update_pending_;
