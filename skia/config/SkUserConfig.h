@@ -123,12 +123,6 @@
 #define SK_SFNTLY_SUBSETTER \
     "third_party/sfntly/cpp/src/sample/chromium/font_subsetter.h"
 
-/*  Define this to remove dimension checks on bitmaps. Not all blits will be
-    correct yet, so this is mostly for debugging the implementation.
- */
-//#define SK_ALLOW_OVER_32K_BITMAPS
-
-
 /*  To write debug messages to a console, skia will call SkDebugf(...) following
     printf conventions (e.g. const char* format, ...). If you want to redirect
     this to something other than printf, define yours here

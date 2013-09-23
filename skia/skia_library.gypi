@@ -40,6 +40,7 @@
       'SK_ENABLE_INST_COUNT=0',
       'SK_SUPPORT_GPU=<(skia_support_gpu)',
       'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
+      'SK_ENABLE_LEGACY_API_ALIASING=1',
     ],
 
     'default_font_cache_limit': '(20*1024*1024)',
@@ -316,7 +317,6 @@
     [ 'OS == "ios"', {
       'defines': [
         'SK_BUILD_FOR_IOS',
-        'SK_USE_MAC_CORE_TEXT',
       ],
       'include_dirs': [
         '../third_party/skia/include/utils/ios',
@@ -352,7 +352,6 @@
     [ 'OS == "mac"', {
       'defines': [
         'SK_BUILD_FOR_MAC',
-        'SK_USE_MAC_CORE_TEXT',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -424,9 +423,6 @@
 
   'defines': [
     '<@(skia_export_defines)',
-
-    # this flag can be removed entirely once this has baked for a while
-    'SK_ALLOW_OVER_32K_BITMAPS',
 
     # skia uses static initializers to initialize the serialization logic
     # of its "pictures" library. This is currently not used in chrome; if
