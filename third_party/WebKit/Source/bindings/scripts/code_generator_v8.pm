@@ -819,7 +819,7 @@ public:
 };
 END
 
-    my $customWrap = $interface->extendedAttributes->{"CustomToV8"} || SVGTypeNeedsToHoldContextElement($interface->name);
+    my $customWrap = $interface->extendedAttributes->{"CustomToV8"} || $svgNativeType;
     if ($noToV8) {
         die "Can't suppress toV8 for subclass\n" if $interface->parent;
     } elsif ($noWrap) {
@@ -4026,11 +4026,12 @@ END
     }
 
     # Add strong reference from TearOff to SVGElement, so that SVGElement would never get GC-ed while the TearOff is alive. We do this in V8-side to avoid circular reference on Blink side.
-    if (SVGTypeNeedsToHoldContextElement($interface->name)) {
+    my $svgNativeType = GetSVGTypeNeedingTearOff($interface->name);
+    if ($svgNativeType) {
         # below include needed for SVGPathSegListPropertyTearOff
         AddToImplIncludes("V8SVGPathElement.h");
         $implementation{nameSpaceWebCore}->add(<<END);
-v8::Handle<v8::Object> wrap($nativeType* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Object> wrap($svgNativeType* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<${v8ClassName}>(impl, isolate));
@@ -5796,13 +5797,6 @@ sub IsSVGAnimatedType
     my $type = shift;
 
     return $type =~ /^SVGAnimated/;
-}
-
-sub SVGTypeNeedsToHoldContextElement
-{
-    my $type = shift;
-
-    return IsSVGTypeNeedingTearOff($type) || IsSVGAnimatedType($type);
 }
 
 sub GetSequenceType
