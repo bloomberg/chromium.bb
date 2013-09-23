@@ -44,10 +44,6 @@ class CHROMEOS_EXPORT ShillServiceClient : public DBusClient {
   // GetTestInterface(), only implemented in the stub implementation.
   class TestInterface {
    public:
-    // Adds a set of default services. Must be called after all Shill
-    // clients have been created.
-    virtual void AddDefaultServices() = 0;
-
     // Adds a Service to the Manager and Service stubs.
     virtual void AddService(const std::string& service_path,
                             const std::string& name,
@@ -77,6 +73,9 @@ class CHROMEOS_EXPORT ShillServiceClient : public DBusClient {
 
     // Clears all Services from the Manager and Service stubs.
     virtual void ClearServices() = 0;
+
+    virtual void SetConnectBehavior(const std::string& service_path,
+                                    const base::Closure& behavior) = 0;
 
    protected:
     virtual ~TestInterface() {}

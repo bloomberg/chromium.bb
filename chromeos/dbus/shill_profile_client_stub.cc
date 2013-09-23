@@ -36,9 +36,6 @@ void PassDictionary(
 
 }  // namespace
 
-// static
-const char ShillProfileClientStub::kSharedProfilePath[] = "/profile/default";
-
 ShillProfileClientStub::ShillProfileClientStub() {
 }
 
@@ -47,7 +44,6 @@ ShillProfileClientStub::~ShillProfileClientStub() {
 }
 
 void ShillProfileClientStub::Init(dbus::Bus* bus) {
-  AddProfile(kSharedProfilePath, std::string());
 }
 
 void ShillProfileClientStub::AddPropertyChangedObserver(

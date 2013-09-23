@@ -24,11 +24,6 @@ class ShillServiceClientStub : public ShillServiceClient,
   ShillServiceClientStub();
   virtual ~ShillServiceClientStub();
 
-  // Returns true when stub portalled wifi is enabled and it's service
-  // path equals to |path|.
-  CHROMEOS_EXPORT static bool IsStubPortalledWifiEnabled(
-      const std::string& path);
-
   // ShillServiceClient overrides
   virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void AddPropertyChangedObserver(
@@ -80,7 +75,6 @@ class ShillServiceClientStub : public ShillServiceClient,
   virtual ShillServiceClient::TestInterface* GetTestInterface() OVERRIDE;
 
   // ShillServiceClient::TestInterface overrides.
-  virtual void AddDefaultServices() OVERRIDE;
   virtual void AddService(const std::string& service_path,
                           const std::string& name,
                           const std::string& type,
@@ -101,6 +95,8 @@ class ShillServiceClientStub : public ShillServiceClient,
   virtual const base::DictionaryValue* GetServiceProperties(
       const std::string& service_path) const OVERRIDE;
   virtual void ClearServices() OVERRIDE;
+  virtual void SetConnectBehavior(const std::string& service_path,
+                                  const base::Closure& behavior) OVERRIDE;
 
  private:
   typedef ObserverList<ShillPropertyChangedObserver> PropertyObserverList;
@@ -108,13 +104,21 @@ class ShillServiceClientStub : public ShillServiceClient,
   void NotifyObserversPropertyChanged(const dbus::ObjectPath& service_path,
                                       const std::string& property);
   base::DictionaryValue* GetModifiableServiceProperties(
-      const std::string& service_path);
+      const std::string& service_path,
+      bool create_if_missing);
   PropertyObserverList& GetObserverList(const dbus::ObjectPath& device_path);
   void SetOtherServicesOffline(const std::string& service_path);
   void SetCellularActivated(const dbus::ObjectPath& service_path,
                             const ErrorCallback& error_callback);
+  void ContinueConnect(const std::string& service_path);
 
   base::DictionaryValue stub_services_;
+
+  // Per network service, stores a closure that is executed on each connection
+  // attempt. The callback can for example modify the services properties in
+  // order to simulate a connection failure.
+  std::map<std::string, base::Closure> connect_behavior_;
+
   // Observer list for each service.
   std::map<dbus::ObjectPath, PropertyObserverList*> observer_list_;
 

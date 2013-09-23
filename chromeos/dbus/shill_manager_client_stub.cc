@@ -17,7 +17,6 @@
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
-#include "dbus/object_proxy.h"
 #include "dbus/values_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -84,9 +83,7 @@ ShillManagerClientStub::~ShillManagerClientStub() {}
 
 // ShillManagerClient overrides.
 
-void ShillManagerClientStub::Init(dbus::Bus* bus) {
-  SetDefaultProperties();
-}
+void ShillManagerClientStub::Init(dbus::Bus* bus) {}
 
 void ShillManagerClientStub::AddPropertyChangedObserver(
     ShillPropertyChangedObserver* observer) {
@@ -489,17 +486,6 @@ void ShillManagerClientStub::AddServiceToWatchList(
       0, base::Value::CreateStringValue(service_path));
   CallNotifyObserversPropertyChanged(
       flimflam::kServiceWatchListProperty, 0);
-}
-
-void ShillManagerClientStub::SetDefaultProperties() {
-  // Stub Technologies.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableStubEthernet)) {
-    AddTechnology(flimflam::kTypeEthernet, true);
-  }
-  AddTechnology(flimflam::kTypeWifi, true);
-  AddTechnology(flimflam::kTypeCellular, true);
-  AddTechnology(flimflam::kTypeWimax, true);
 }
 
 void ShillManagerClientStub::PassStubProperties(

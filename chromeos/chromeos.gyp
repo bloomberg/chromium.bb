@@ -137,6 +137,8 @@
         'dbus/shill_service_client.h',
         'dbus/shill_service_client_stub.cc',
         'dbus/shill_service_client_stub.h',
+        'dbus/shill_stub_helper.cc',
+        'dbus/shill_stub_helper.h',
         'dbus/ibus/ibus_client.cc',
         'dbus/ibus/ibus_client.h',
         'dbus/ibus/ibus_component.cc',

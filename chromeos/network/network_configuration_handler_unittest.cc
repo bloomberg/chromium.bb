@@ -12,7 +12,7 @@
 #include "chromeos/dbus/mock_shill_manager_client.h"
 #include "chromeos/dbus/mock_shill_profile_client.h"
 #include "chromeos/dbus/mock_shill_service_client.h"
-#include "chromeos/dbus/shill_profile_client_stub.h"
+#include "chromeos/dbus/shill_stub_helper.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -592,7 +592,7 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubCreateConfiguration) {
   properties.SetStringWithoutPathExpansion(
       flimflam::kStateProperty, flimflam::kStateIdle);
   properties.SetStringWithoutPathExpansion(
-      flimflam::kProfileProperty, ShillProfileClientStub::kSharedProfilePath);
+      flimflam::kProfileProperty, shill_stub_helper::kSharedProfilePath);
 
   network_configuration_handler_->CreateConfiguration(
       properties,
@@ -612,7 +612,7 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubCreateConfiguration) {
 
   EXPECT_TRUE(GetServiceStringProperty(
       create_service_path_, flimflam::kProfileProperty, &actual_profile));
-  EXPECT_EQ(ShillProfileClientStub::kSharedProfilePath, actual_profile);
+  EXPECT_EQ(shill_stub_helper::kSharedProfilePath, actual_profile);
 }
 
 }  // namespace chromeos

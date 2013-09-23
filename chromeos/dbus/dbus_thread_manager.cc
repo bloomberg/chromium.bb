@@ -23,12 +23,6 @@
 #include "chromeos/dbus/dbus_thread_manager_observer.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
-#include "chromeos/dbus/shill_device_client.h"
-#include "chromeos/dbus/shill_ipconfig_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
-#include "chromeos/dbus/shill_profile_client.h"
-#include "chromeos/dbus/shill_service_client.h"
-#include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/dbus/ibus/ibus_client.h"
 #include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
 #include "chromeos/dbus/ibus/ibus_engine_service.h"
@@ -40,7 +34,14 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/shill_device_client.h"
+#include "chromeos/dbus/shill_ipconfig_client.h"
+#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill_profile_client.h"
+#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill_stub_helper.h"
 #include "chromeos/dbus/sms_client.h"
+#include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "dbus/bus.h"
 #include "dbus/dbus_statistics.h"
@@ -92,23 +93,12 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     InitClient(cros_disks_client_.get());
     InitClient(cryptohome_client_.get());
     InitClient(debug_daemon_client_.get());
-
-    // Initialization order of the Stub implementations of the Shill clients
-    // matters; stub clients may only have initialization dependencies on
-    // clients previously initialized.
     InitClient(shill_manager_client_.get());
     InitClient(shill_device_client_.get());
     InitClient(shill_ipconfig_client_.get());
     InitClient(shill_service_client_.get());
     InitClient(shill_profile_client_.get());
     InitClient(gsm_sms_client_.get());
-
-    // If the Service client has a TestInterface, add the default services.
-    ShillServiceClient::TestInterface* service_client_test =
-        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
-    if (service_client_test)
-      service_client_test->AddDefaultServices();
-
     InitClient(image_burner_client_.get());
     InitClient(introspectable_client_.get());
     InitClient(modem_messaging_client_.get());
@@ -123,6 +113,8 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     // initialize it after the main list of clients.
     power_policy_controller_.reset(
         new PowerPolicyController(this, power_manager_client_.get()));
+
+    shill_stub_helper::SetupDefaultEnvironment();
 
     // This must be called after the list of clients so they've each had a
     // chance to register with their object managers.
