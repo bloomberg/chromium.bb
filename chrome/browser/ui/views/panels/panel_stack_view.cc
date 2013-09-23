@@ -156,6 +156,14 @@ void PanelStackView::AddPanel(Panel* panel) {
 }
 
 void PanelStackView::RemovePanel(Panel* panel) {
+  if (IsAnimatingPanelBounds()) {
+    // This panel is gone.
+    bounds_updates_.erase(panel);
+
+    // Abort the ongoing animation.
+    bounds_animator_->Stop();
+  }
+
   panels_.remove(panel);
 
   MakeStackWindowOwnPanelWindow(panel, NULL);
@@ -360,6 +368,14 @@ void PanelStackView::AnimationEnded(const gfx::Animation* animation) {
   bounds_updates_.clear();
 
   NotifyBoundsUpdateCompleted();
+}
+
+void PanelStackView::AnimationCanceled(const gfx::Animation* animation) {
+  // When the animation is aborted due to something like one of panels is gone,
+  // update panels to their taget bounds immediately.
+  UpdatePanelsBounds();
+
+  AnimationEnded(animation);
 }
 
 void PanelStackView::AnimationProgressed(const gfx::Animation* animation) {

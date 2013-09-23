@@ -72,6 +72,7 @@ class PanelStackView : public NativePanelStackWindow,
   // Overridden from AnimationDelegate:
   virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE;
 
   // Updates the bounds of panels as specified in batch update data.
   void UpdatePanelsBounds();
