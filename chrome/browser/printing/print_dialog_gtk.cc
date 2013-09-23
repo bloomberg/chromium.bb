@@ -4,10 +4,7 @@
 
 #include "chrome/browser/printing/print_dialog_gtk.h"
 
-#include <fcntl.h>
 #include <gtk/gtkunixprint.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 #include <string>
 #include <vector>
@@ -87,13 +84,13 @@ class GtkPrinterList {
   // Can return NULL if the printer cannot be found due to:
   // - Printer list out of sync with printer dialog UI.
   // - Querying for non-existant printers like 'Print to PDF'.
-  GtkPrinter* GetPrinterWithName(const char* name) {
-    if (!name || !*name)
+  GtkPrinter* GetPrinterWithName(const std::string& name) {
+    if (name.empty())
       return NULL;
 
     for (std::vector<GtkPrinter*>::iterator it = printers_.begin();
          it < printers_.end(); ++it) {
-      if (strcmp(name, gtk_printer_get_name(*it)) == 0) {
+      if (gtk_printer_get_name(*it) == name) {
         return *it;
       }
     }
@@ -201,7 +198,7 @@ bool PrintDialogGtk::UpdateSettings(const base::DictionaryValue& job_settings,
 
   if (!print_to_pdf && !is_cloud_print) {
     scoped_ptr<GtkPrinterList> printer_list(new GtkPrinterList);
-    printer_ = printer_list->GetPrinterWithName(device_name.c_str());
+    printer_ = printer_list->GetPrinterWithName(device_name);
     if (printer_) {
       g_object_ref(printer_);
       gtk_print_settings_set_printer(gtk_settings_,
