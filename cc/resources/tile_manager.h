@@ -90,7 +90,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
                                      gfx::Size(1, 1),
                                      resource_provider->best_texture_format()));
 
-      bytes_releasable_ += tiles[i]->bytes_consumed_if_allocated();
+      bytes_releasable_ += BytesConsumedIfAllocated(tiles[i]);
       ++resources_releasable_;
     }
   }
@@ -140,6 +140,11 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
       RasterMode raster_mode,
       const PicturePileImpl::Analysis& analysis,
       bool was_canceled);
+
+  inline size_t BytesConsumedIfAllocated(const Tile* tile) const {
+    return Resource::MemorySizeBytes(tile->size(),
+                                     raster_worker_pool_->GetResourceFormat());
+  }
 
   RasterMode DetermineRasterMode(const Tile* tile) const;
   void FreeResourceForTile(Tile* tile, RasterMode mode);

@@ -113,6 +113,8 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
     return managed_state_.tile_versions[mode];
   }
 
+  gfx::Size size() const { return tile_size_.size(); }
+
  private:
   // Methods called by by tile manager.
   friend class TileManager;
@@ -121,10 +123,6 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   friend class BinComparator;
   ManagedTileState& managed_state() { return managed_state_; }
   const ManagedTileState& managed_state() const { return managed_state_; }
-
-  inline size_t bytes_consumed_if_allocated() const {
-    return 4 * tile_size_.width() * tile_size_.height();
-  }
 
   // Normal private methods.
   friend class base::RefCounted<Tile>;

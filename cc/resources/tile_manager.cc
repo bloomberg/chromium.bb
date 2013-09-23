@@ -362,9 +362,9 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
     if (!tile_is_ready_to_draw || tile_version.requires_resource()) {
       if ((gpu_memmgr_stats_bin == NOW_BIN) ||
           (gpu_memmgr_stats_bin == NOW_AND_READY_TO_DRAW_BIN))
-        memory_required_bytes_ += tile->bytes_consumed_if_allocated();
+        memory_required_bytes_ += BytesConsumedIfAllocated(tile);
       if (gpu_memmgr_stats_bin != NEVER_BIN)
-        memory_nice_to_have_bytes_ += tile->bytes_consumed_if_allocated();
+        memory_nice_to_have_bytes_ += BytesConsumedIfAllocated(tile);
     }
 
     // Bump up the priority if we determined it's NEVER_BIN on one tree,
@@ -577,7 +577,7 @@ void TileManager::AssignGpuMemoryToTiles(
     // It costs to maintain a resource.
     for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
       if (mts.tile_versions[mode].resource_) {
-        tile_bytes += tile->bytes_consumed_if_allocated();
+        tile_bytes += BytesConsumedIfAllocated(tile);
         tile_resources++;
       }
     }
@@ -589,7 +589,7 @@ void TileManager::AssignGpuMemoryToTiles(
       // If we don't have the required version, and it's not in flight
       // then we'll have to pay to create a new task.
       if (!tile_version.resource_ && tile_version.raster_task_.is_null()) {
-        tile_bytes += tile->bytes_consumed_if_allocated();
+        tile_bytes += BytesConsumedIfAllocated(tile);
         tile_resources++;
       }
     }
@@ -657,10 +657,10 @@ void TileManager::FreeResourceForTile(Tile* tile, RasterMode mode) {
     resource_pool_->ReleaseResource(
         mts.tile_versions[mode].resource_.Pass());
 
-    DCHECK_GE(bytes_releasable_, tile->bytes_consumed_if_allocated());
+    DCHECK_GE(bytes_releasable_, BytesConsumedIfAllocated(tile));
     DCHECK_GE(resources_releasable_, 1u);
 
-    bytes_releasable_ -= tile->bytes_consumed_if_allocated();
+    bytes_releasable_ -= BytesConsumedIfAllocated(tile);
     --resources_releasable_;
   }
 }
@@ -851,7 +851,7 @@ void TileManager::OnRasterTaskCompleted(
     tile_version.set_use_resource();
     tile_version.resource_ = resource.Pass();
 
-    bytes_releasable_ += tile->bytes_consumed_if_allocated();
+    bytes_releasable_ += BytesConsumedIfAllocated(tile);
     ++resources_releasable_;
   }
 
