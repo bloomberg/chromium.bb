@@ -51,6 +51,17 @@ enum MediaStreamRequestType {
   MEDIA_OPEN_DEVICE
 };
 
+// Facing mode for video capture.
+enum VideoFacingMode {
+  MEDIA_VIDEO_FACING_NONE = 0,
+  MEDIA_VIDEO_FACING_USER,
+  MEDIA_VIDEO_FACING_ENVIRONMENT,
+  MEDIA_VIDEO_FACING_LEFT,
+  MEDIA_VIDEO_FACING_RIGHT,
+
+  NUM_MEDIA_VIDEO_FACING_MODE
+};
+
 // Convenience predicates to determine whether the given type represents some
 // audio or some video device.
 CONTENT_EXPORT bool IsAudioMediaType(MediaStreamType type);
@@ -81,6 +92,9 @@ struct CONTENT_EXPORT MediaStreamDevice {
 
   // The device's unique ID.
   std::string id;
+
+  // The facing mode for video capture device.
+  VideoFacingMode video_facing;
 
   // The device id of a matched output device if any (otherwise empty).
   // Only applicable to audio devices.

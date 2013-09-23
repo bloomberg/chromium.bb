@@ -150,17 +150,28 @@ void MediaStreamCenter::OnGetSourcesComplete(
 
   WebKit::WebVector<WebKit::WebSourceInfo> sourceInfos(devices.size());
   for (size_t i = 0; i < devices.size(); ++i) {
-    DCHECK(devices[i].device.type == MEDIA_DEVICE_AUDIO_CAPTURE ||
-           devices[i].device.type == MEDIA_DEVICE_VIDEO_CAPTURE);
-    // TODO(vrk): Hook this up to the device policy so that |device.name| is
-    // only populated when appropriate.
+    const MediaStreamDevice& device = devices[i].device;
+    DCHECK(device.type == MEDIA_DEVICE_AUDIO_CAPTURE ||
+           device.type == MEDIA_DEVICE_VIDEO_CAPTURE);
+    WebKit::WebSourceInfo::VideoFacingMode video_facing;
+    switch (device.video_facing) {
+      case MEDIA_VIDEO_FACING_USER:
+        video_facing = WebKit::WebSourceInfo::VideoFacingModeUser;
+        break;
+      case MEDIA_VIDEO_FACING_ENVIRONMENT:
+        video_facing = WebKit::WebSourceInfo::VideoFacingModeEnvironment;
+        break;
+      default:
+        video_facing = WebKit::WebSourceInfo::VideoFacingModeNone;
+    }
+
     sourceInfos[i]
-        .initialize(WebKit::WebString::fromUTF8(devices[i].device.id),
-                    devices[i].device.type == MEDIA_DEVICE_AUDIO_CAPTURE
+        .initialize(WebKit::WebString::fromUTF8(device.id),
+                    device.type == MEDIA_DEVICE_AUDIO_CAPTURE
                         ? WebKit::WebSourceInfo::SourceKindAudio
                         : WebKit::WebSourceInfo::SourceKindVideo,
-                    WebKit::WebString::fromUTF8(devices[i].device.name),
-                    WebKit::WebSourceInfo::VideoFacingModeNone);
+                    WebKit::WebString::fromUTF8(device.name),
+                    video_facing);
   }
   request_it->second.requestSucceeded(sourceInfos);
 }

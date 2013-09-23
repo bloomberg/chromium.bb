@@ -19,6 +19,9 @@
 IPC_ENUM_TRAITS_MAX_VALUE(content::MediaStreamType,
                           content::NUM_MEDIA_TYPES - 1)
 
+IPC_ENUM_TRAITS_MAX_VALUE(content::VideoFacingMode,
+                          content::NUM_MEDIA_VIDEO_FACING_MODE - 1)
+
 IPC_STRUCT_TRAITS_BEGIN(content::StreamOptions)
   IPC_STRUCT_TRAITS_MEMBER(audio_type)
   IPC_STRUCT_TRAITS_MEMBER(audio_device_id)
@@ -30,6 +33,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::StreamDeviceInfo)
   IPC_STRUCT_TRAITS_MEMBER(device.type)
   IPC_STRUCT_TRAITS_MEMBER(device.name)
   IPC_STRUCT_TRAITS_MEMBER(device.id)
+  IPC_STRUCT_TRAITS_MEMBER(device.video_facing)
   IPC_STRUCT_TRAITS_MEMBER(device.matched_output_device_id)
   IPC_STRUCT_TRAITS_MEMBER(device.input.sample_rate)
   IPC_STRUCT_TRAITS_MEMBER(device.input.channel_layout)
