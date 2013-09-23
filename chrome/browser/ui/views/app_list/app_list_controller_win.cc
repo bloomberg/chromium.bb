@@ -1132,13 +1132,6 @@ void AppListController::ScheduleWarmup() {
       base::Bind(&AppListController::LoadProfileForWarmup,
                  weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kInitWindowDelay));
-
-  // Send app list usage stats after a delay.
-  const int kSendUsageStatsDelay = 5;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&AppListController::SendAppListStats),
-      base::TimeDelta::FromSeconds(kSendUsageStatsDelay));
 }
 
 bool AppListController::IsWarmupNeeded() {

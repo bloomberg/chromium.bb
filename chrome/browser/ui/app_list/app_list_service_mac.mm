@@ -243,6 +243,7 @@ void AppListControllerDelegateCocoa::ActivateApp(
 
 void AppListControllerDelegateCocoa::LaunchApp(
     Profile* profile, const extensions::Extension* extension, int event_flags) {
+  AppListServiceImpl::RecordAppListAppLaunch();
   chrome::OpenApplication(chrome::AppLaunchParams(
       profile, extension, NEW_FOREGROUND_TAB));
 }
@@ -535,6 +536,7 @@ void AppListServiceMac::ShowWindowNearDock() {
                                closing:NO];
   [window makeKeyAndOrderFront:nil];
   [NSApp activateIgnoringOtherApps:YES];
+  RecordAppListLaunch();
 }
 
 // static

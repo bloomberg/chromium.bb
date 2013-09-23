@@ -203,4 +203,11 @@ void AppListServiceImpl::HandleCommandLineFlags(Profile* initial_profile) {
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableAppList))
     SetAppListEnabledPreference(false);
+
+  // Send app list usage stats after a delay.
+  const int kSendUsageStatsDelay = 5;
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&AppListServiceImpl::SendAppListStats),
+      base::TimeDelta::FromSeconds(kSendUsageStatsDelay));
 }

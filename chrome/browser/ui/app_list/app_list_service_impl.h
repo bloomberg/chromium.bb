@@ -26,7 +26,6 @@ class AppListServiceImpl : public AppListService,
  public:
   static void RecordAppListLaunch();
   static void RecordAppListAppLaunch();
-  static void SendAppListStats();
 
  protected:
   AppListServiceImpl();
@@ -59,6 +58,8 @@ class AppListServiceImpl : public AppListService,
   virtual void EnableAppList(Profile* initial_profile) OVERRIDE;
 
  private:
+  static void SendAppListStats();
+
   // Loads a profile asynchronously and calls OnProfileLoaded() when done.
   void LoadProfileAsync(const base::FilePath& profile_file_path);
 
