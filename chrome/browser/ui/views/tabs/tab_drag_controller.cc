@@ -2142,6 +2142,17 @@ Browser* TabDragController::CreateBrowserForDrag(
   gfx::Point center(0, source->height() / 2);
   views::View::ConvertPointToWidget(source, &center);
   gfx::Rect new_bounds(source->GetWidget()->GetRestoredBounds());
+  if (source->GetWidget()->IsMaximized()) {
+    // If the restore bounds is really small, we don't want to honor it
+    // (dragging a really small window looks wrong), instead make sure the new
+    // window is at least 50% the size of the old.
+    const gfx::Size max_size(
+        source->GetWidget()->GetWindowBoundsInScreen().size());
+    new_bounds.set_width(
+        std::max(max_size.width() / 2, new_bounds.width()));
+    new_bounds.set_height(
+        std::max(max_size.height() / 2, new_bounds.width()));
+  }
   new_bounds.set_y(point_in_screen.y() - center.y());
   switch (GetDetachPosition(point_in_screen)) {
     case DETACH_BEFORE:
