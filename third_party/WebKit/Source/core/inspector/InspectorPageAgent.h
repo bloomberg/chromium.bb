@@ -78,7 +78,6 @@ public:
 
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
     static bool sharedBufferContent(PassRefPtr<SharedBuffer>, const String& textEncodingName, bool withBase64Encode, String* result);
-    static void resourceContent(ErrorString*, Frame*, const KURL&, String* result, bool* base64Encoded);
 
     static PassRefPtr<SharedBuffer> resourceData(Frame*, const KURL&, String* textEncodingName);
     static Resource* cachedResource(Frame*, const KURL&);
@@ -178,6 +177,8 @@ public:
     static DocumentLoader* assertDocumentLoader(ErrorString*, Frame*);
 
 private:
+    static void resourceContent(ErrorString*, Frame*, const KURL&, String* result, bool* base64Encoded);
+
     InspectorPageAgent(InstrumentingAgents*, Page*, InspectorCompositeState*, InjectedScriptManager*, InspectorClient*, InspectorOverlay*);
     bool deviceMetricsChanged(int width, int height, double fontScaleFactor, bool fitWindow);
     void updateViewMetrics(int, int, double, bool);

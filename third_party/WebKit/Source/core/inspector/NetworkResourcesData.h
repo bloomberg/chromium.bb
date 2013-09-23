@@ -85,8 +85,8 @@ public:
         String frameId() const { return m_frameId; }
         void setFrameId(const String& frameId) { m_frameId = frameId; }
 
-        String url() const { return m_url; }
-        void setUrl(const String& url) { m_url = url; }
+        KURL url() const { return m_url; }
+        void setUrl(const KURL& url) { m_url = url; }
 
         bool hasContent() const { return !m_content.isNull(); }
         String content() const { return m_content; }
@@ -128,7 +128,7 @@ public:
         String m_requestId;
         String m_loaderId;
         String m_frameId;
-        String m_url;
+        KURL m_url;
         String m_content;
         RefPtr<XHRReplayData> m_xhrReplayData;
         bool m_base64Encoded;
@@ -165,6 +165,7 @@ public:
     void setXHRReplayData(const String& requestId, XHRReplayData*);
     void reuseXHRReplayData(const String& requestId, const String& reusedRequestId);
     XHRReplayData* xhrReplayData(const String& requestId);
+    Vector<ResourceData*> resources();
 
 private:
     ResourceData* resourceDataForRequestId(const String& requestId);

@@ -40,6 +40,7 @@
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/Resource.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorClient.h"
@@ -286,6 +287,8 @@ InspectorResourceAgent::~InspectorResourceAgent()
 
 void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
 {
+    if (initiatorInfo.name == FetchInitiatorTypeNames::inspector)
+        return;
     String requestId = IdentifiersFactory::requestId(identifier);
     m_resourcesData->resourceCreated(requestId, m_pageAgent->loaderId(loader));
 
@@ -762,6 +765,27 @@ void InspectorResourceAgent::frameClearedScheduledNavigation(Frame* frame)
     m_frameNavigationInitiatorMap.remove(m_pageAgent->frameId(frame));
 }
 
+bool InspectorResourceAgent::fetchResourceContent(Frame* frame, const KURL& url, String* content, bool* base64Encoded)
+{
+    // First try to fetch content from the cached resource.
+    Resource* cachedResource = frame->document()->fetcher()->cachedResource(url);
+    if (!cachedResource)
+        cachedResource = memoryCache()->resourceForURL(url);
+    if (cachedResource && InspectorPageAgent::cachedResourceContent(cachedResource, content, base64Encoded))
+        return true;
+
+    // Then fall back to resource data.
+    Vector<NetworkResourcesData::ResourceData*> resources = m_resourcesData->resources();
+    for (Vector<NetworkResourcesData::ResourceData*>::iterator it = resources.begin(); it != resources.end(); ++it) {
+        if ((*it)->url() == url) {
+            *content = (*it)->content();
+            *base64Encoded = (*it)->base64Encoded();
+            return true;
+        }
+    }
+    return false;
+}
+
 InspectorResourceAgent::InspectorResourceAgent(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorClient* client, InspectorCompositeState* state, InspectorOverlay* overlay)
     : InspectorBaseAgent<InspectorResourceAgent>("Network", instrumentingAgents, state)
     , m_pageAgent(pageAgent)
@@ -774,4 +798,3 @@ InspectorResourceAgent::InspectorResourceAgent(InstrumentingAgents* instrumentin
 }
 
 } // namespace WebCore
-

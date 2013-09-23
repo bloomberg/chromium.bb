@@ -50,6 +50,7 @@
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InspectorResourceAgent.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 #include "core/platform/JSONValues.h"
@@ -943,9 +944,9 @@ Document* InspectorStyle::ownerDocument() const
     return m_parentStyleSheet->pageStyleSheet() ? m_parentStyleSheet->pageStyleSheet()->ownerDocument() : 0;
 }
 
-PassRefPtr<InspectorStyleSheet> InspectorStyleSheet::create(InspectorPageAgent* pageAgent, const String& id, PassRefPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, Listener* listener)
+PassRefPtr<InspectorStyleSheet> InspectorStyleSheet::create(InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, const String& id, PassRefPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, Listener* listener)
 {
-    return adoptRef(new InspectorStyleSheet(pageAgent, id, pageStyleSheet, origin, documentURL, listener));
+    return adoptRef(new InspectorStyleSheet(pageAgent, resourceAgent, id, pageStyleSheet, origin, documentURL, listener));
 }
 
 // static
@@ -983,8 +984,9 @@ void InspectorStyleSheet::collectFlatRules(PassRefPtr<CSSRuleList> ruleList, CSS
     }
 }
 
-InspectorStyleSheet::InspectorStyleSheet(InspectorPageAgent* pageAgent, const String& id, PassRefPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, Listener* listener)
+InspectorStyleSheet::InspectorStyleSheet(InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, const String& id, PassRefPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, Listener* listener)
     : m_pageAgent(pageAgent)
+    , m_resourceAgent(resourceAgent)
     , m_id(id)
     , m_pageStyleSheet(pageStyleSheet)
     , m_origin(origin)
@@ -1679,10 +1681,9 @@ bool InspectorStyleSheet::resourceStyleSheetText(String* result) const
     if (!m_pageStyleSheet || !ownerDocument() || !ownerDocument()->frame())
         return false;
 
-    String error;
     bool base64Encoded;
-    InspectorPageAgent::resourceContent(&error, ownerDocument()->frame(), KURL(ParsedURLString, m_pageStyleSheet->href()), result, &base64Encoded);
-    return error.isEmpty() && !base64Encoded;
+    bool success = m_resourceAgent->fetchResourceContent(ownerDocument()->frame(), KURL(ParsedURLString, m_pageStyleSheet->href()), result, &base64Encoded) && !base64Encoded;
+    return success;
 }
 
 bool InspectorStyleSheet::inlineStyleSheetText(String* result) const
@@ -1701,13 +1702,13 @@ bool InspectorStyleSheet::inlineStyleSheetText(String* result) const
     return true;
 }
 
-PassRefPtr<InspectorStyleSheetForInlineStyle> InspectorStyleSheetForInlineStyle::create(InspectorPageAgent* pageAgent, const String& id, PassRefPtr<Element> element, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, Listener* listener)
+PassRefPtr<InspectorStyleSheetForInlineStyle> InspectorStyleSheetForInlineStyle::create(InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, const String& id, PassRefPtr<Element> element, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, Listener* listener)
 {
-    return adoptRef(new InspectorStyleSheetForInlineStyle(pageAgent, id, element, origin, listener));
+    return adoptRef(new InspectorStyleSheetForInlineStyle(pageAgent, resourceAgent, id, element, origin, listener));
 }
 
-InspectorStyleSheetForInlineStyle::InspectorStyleSheetForInlineStyle(InspectorPageAgent* pageAgent, const String& id, PassRefPtr<Element> element, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, Listener* listener)
-    : InspectorStyleSheet(pageAgent, id, 0, origin, "", listener)
+InspectorStyleSheetForInlineStyle::InspectorStyleSheetForInlineStyle(InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, const String& id, PassRefPtr<Element> element, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, Listener* listener)
+    : InspectorStyleSheet(pageAgent, resourceAgent, id, 0, origin, "", listener)
     , m_element(element)
     , m_ruleSourceData(0)
     , m_isStyleTextValid(false)

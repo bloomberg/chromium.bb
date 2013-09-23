@@ -88,6 +88,7 @@ public:
 
     ~InspectorResourceAgent();
 
+    // Called from instrumentation.
     void willSendRequest(unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
     void markResourceAsCached(unsigned long identifier);
     void didReceiveResourceResponse(unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
@@ -109,7 +110,7 @@ public:
 
     void applyUserAgentOverride(String* userAgent);
 
-    // FIXME: InspectorResourceAgent should now be aware of style recalculation.
+    // FIXME: InspectorResourceAgent should not be aware of style recalculation.
     void willRecalculateStyle(Document*);
     void didRecalculateStyle();
     void didScheduleStyleRecalculation(Document*);
@@ -146,6 +147,9 @@ public:
     virtual void setCacheDisabled(ErrorString*, bool cacheDisabled);
 
     virtual void loadResourceForFrontend(ErrorString*, const String& frameId, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtr<LoadResourceForFrontendCallback>);
+
+    // Called from other agents.
+    bool fetchResourceContent(Frame*, const KURL&, String* content, bool* base64Encoded);
 
 private:
     InspectorResourceAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorClient*, InspectorCompositeState*, InspectorOverlay*);
