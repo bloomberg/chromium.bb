@@ -219,6 +219,8 @@ class ResultsPrinter {
   void PrintTestsByStatus(TestResult::Status status,
                           const std::string& description);
 
+  ThreadChecker thread_checker_;
+
   // Test results grouped by test case name.
   typedef std::map<std::string, std::vector<TestResult> > ResultsMap;
   ResultsMap results_;
@@ -236,8 +238,6 @@ class ResultsPrinter {
   FILE* out_;
 
   RunTestsCallback callback_;
-
-  ThreadChecker thread_checker_;
 
   WeakPtrFactory<ResultsPrinter> weak_ptr_;
 

@@ -285,14 +285,14 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     return called_any_callback;
   }
 
+  ThreadChecker thread_checker_;
+
   ParallelTestLauncher parallel_launcher_;
 
   // Maximum number of tests to run in a single batch.
   size_t batch_limit_;
 
   std::vector<TestLaunchInfo> tests_;
-
-  ThreadChecker thread_checker_;
 };
 
 bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {

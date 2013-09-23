@@ -80,6 +80,13 @@ class ParallelTestLauncher {
   // Called by the delay timer when no output was made for a while.
   void OnOutputTimeout();
 
+  // Make sure we don't accidentally call the wrong methods e.g. on the worker
+  // pool thread. With lots of callbacks used this is non-trivial.
+  // Should be the first member so that it's destroyed last: when destroying
+  // other members, especially the worker pool, we may check the code is running
+  // on the correct thread.
+  ThreadChecker thread_checker_;
+
   // Watchdog timer to make sure we do not go without output for too long.
   DelayTimer<ParallelTestLauncher> timer_;
 
@@ -93,10 +100,6 @@ class ParallelTestLauncher {
 
   // Worker pool used to launch processes in parallel.
   scoped_ptr<SequencedWorkerPoolOwner> worker_pool_owner_;
-
-  // Make sure we don't accidentally call the wrong methods e.g. on the worker
-  // pool thread. With lots of callbacks used this is non-trivial.
-  ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(ParallelTestLauncher);
 };
