@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/root_window_host.h"
-#include "ui/base/ozone/event_factory_ozone.h"
+#include "ui/events/ozone/event_factory_ozone.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {

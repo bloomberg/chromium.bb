@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ozone/event_factory_ozone.h"
+#include "ui/events/ozone/event_factory_ozone.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -13,9 +13,9 @@
 #include "base/message_loop/message_pump_ozone.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "ui/base/ozone/evdev/key_event_converter_ozone.h"
-#include "ui/base/ozone/evdev/touch_event_converter_ozone.h"
-#include "ui/base/ozone/event_factory_delegate_ozone.h"
+#include "ui/events/ozone/evdev/key_event_converter_ozone.h"
+#include "ui/events/ozone/evdev/touch_event_converter_ozone.h"
+#include "ui/events/ozone/event_factory_delegate_ozone.h"
 
 namespace ui {
 

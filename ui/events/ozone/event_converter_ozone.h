@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_OZONE_EVENT_CONVERTER_OZONE_H_
-#define UI_BASE_OZONE_EVENT_CONVERTER_OZONE_H_
+#ifndef UI_EVENTS_OZONE_EVENT_CONVERTER_OZONE_H_
+#define UI_EVENTS_OZONE_EVENT_CONVERTER_OZONE_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_libevent.h"
@@ -35,4 +35,4 @@ class EventConverterOzone : public base::MessagePumpLibevent::Watcher {
 
 }  // namespace ui
 
-#endif  // UI_BASE_OZONE_EVENT_CONVERTER_OZONE_H_
+#endif  // UI_EVENTS_OZONE_EVENT_CONVERTER_OZONE_H_

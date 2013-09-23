@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_OZONE_EVENT_FACTORY_DELEGATE_OZONE_H_
-#define UI_BASE_OZONE_EVENT_FACTORY_DELEGATE_OZONE_H_
+#ifndef UI_EVENTS_OZONE_EVENT_FACTORY_DELEGATE_OZONE_H_
+#define UI_EVENTS_OZONE_EVENT_FACTORY_DELEGATE_OZONE_H_
 
 namespace ui {
 class Event;
@@ -26,4 +26,4 @@ class UI_EXPORT EventFactoryDelegateOzone {
 
 }  // namespace ui
 
-#endif  // UI_BASE_OZONE_EVENT_FACTORY_DELEGATE_OZONE_H_
+#endif  // UI_EVENTS_OZONE_EVENT_FACTORY_DELEGATE_OZONE_H_

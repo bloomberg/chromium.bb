@@ -16,8 +16,8 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ozone/evdev/touch_event_converter_ozone.h"
 #include "ui/events/event.h"
+#include "ui/events/ozone/evdev/touch_event_converter_ozone.h"
 
 namespace {
 
