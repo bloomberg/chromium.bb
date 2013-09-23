@@ -63,7 +63,8 @@
     "fileSystem.write",
     "metricsPrivate",
     "streamsPrivate",
-    "unlimitedStorage"
+    "unlimitedStorage",
+    "clipboardRead"
   ],
   "platforms": [
     {
@@ -79,7 +80,7 @@
       "sub_package_path": "_platform_specific/arm/"
     }
   ],
-  "version": "31.89.1353",
+  "version": "31.90.1387.1",
   "web_accessible_resources": [
     "views/qowt.html"
   ]
