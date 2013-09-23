@@ -856,7 +856,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.previewPanel_.breadcrumbs.addEventListener(
          'pathclick', this.onBreadcrumbClick_.bind(this));
-    this.previewPanel_.breadcrumbs.setHideLast(false);
 
     this.progressCenterPanel_ = new ProgressCenterPanel(
         dom.querySelector('#progress-center'));
