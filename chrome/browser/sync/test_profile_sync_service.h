@@ -198,15 +198,18 @@ class TestProfileSyncService : public ProfileSyncService {
 
 class FakeOAuth2TokenService : public ProfileOAuth2TokenService {
  public:
-  virtual scoped_ptr<OAuth2TokenService::Request> StartRequest(
-      const std::string& account_id,
-      const OAuth2TokenService::ScopeSet& scopes,
-      OAuth2TokenService::Consumer* consumer) OVERRIDE;
-
   static BrowserContextKeyedService* BuildTokenService(
       content::BrowserContext* context);
 
  protected:
+  virtual void FetchOAuth2Token(
+      OAuth2TokenService::RequestImpl* request,
+      const std::string& account_id,
+      net::URLRequestContextGetter* getter,
+      const std::string& client_id,
+      const std::string& client_secret,
+      const OAuth2TokenService::ScopeSet& scopes) OVERRIDE;
+
   virtual void PersistCredentials(const std::string& account_id,
                                   const std::string& refresh_token) OVERRIDE;
 

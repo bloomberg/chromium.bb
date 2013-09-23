@@ -321,18 +321,20 @@ void TestProfileSyncService::CreateBackend() {
       storage_option_));
 }
 
-scoped_ptr<OAuth2TokenService::Request> FakeOAuth2TokenService::StartRequest(
+void FakeOAuth2TokenService::FetchOAuth2Token(
+    OAuth2TokenService::RequestImpl* request,
     const std::string& account_id,
-    const OAuth2TokenService::ScopeSet& scopes,
-    OAuth2TokenService::Consumer* consumer) {
-  // Ensure token in question is cached and never expires. Request will succeed
-  // without network IO.
-  RegisterCacheEntry("test_client_id",
-                     account_id,
-                     scopes,
-                     "access_token",
-                     base::Time::Max());
-  return ProfileOAuth2TokenService::StartRequest(account_id, scopes, consumer);
+    net::URLRequestContextGetter* getter,
+    const std::string& client_id,
+    const std::string& client_secret,
+    const OAuth2TokenService::ScopeSet& scopes) {
+  // Request will succeed without network IO.
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+      &RequestImpl::InformConsumer,
+      request->AsWeakPtr(),
+      GoogleServiceAuthError(GoogleServiceAuthError::NONE),
+      "access_token",
+      base::Time::Max()));
 }
 
 BrowserContextKeyedService* FakeOAuth2TokenService::BuildTokenService(
