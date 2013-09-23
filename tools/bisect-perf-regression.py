@@ -379,8 +379,6 @@ class DesktopBuilder(Builder):
     if opts.build_preference == 'make':
       build_success = BuildWithMake(threads, targets)
     elif opts.build_preference == 'ninja':
-      if IsWindows():
-        targets = [t + '.exe' for t in targets]
       build_success = BuildWithNinja(threads, targets)
     elif opts.build_preference == 'msvs':
       assert IsWindows(), 'msvs is only supported on Windows.'
@@ -419,8 +417,7 @@ class AndroidBuilder(Builder):
     Returns:
         True if build was successful.
     """
-    targets = [
-        'chromium_testshell', 'clear_system_cache', 'forwarder2', 'md5sum']
+    targets = ['chromium_testshell', 'forwarder2', 'md5sum']
 
     threads = None
     if opts.use_goma:
