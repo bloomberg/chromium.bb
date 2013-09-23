@@ -15,8 +15,6 @@ Watch expressions expanded.
       __proto__: Object
     __proto__: Object
   windowAlias: Window
-error: Execution context with given id not found.
-error: Execution context with given id not found.
 Page reloaded.
 Watch expressions after page reload:
   globalObject: Object
