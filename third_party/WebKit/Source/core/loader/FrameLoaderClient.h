@@ -217,6 +217,8 @@ class FetchRequest;
         virtual void dispatchDidChangeResourcePriority(unsigned long /*identifier*/, ResourceLoadPriority) { }
 
         virtual WebKit::WebServiceWorkerRegistry* serviceWorkerRegistry() = 0;
+
+        virtual void didStopAllLoaders() { }
     };
 
 } // namespace WebCore

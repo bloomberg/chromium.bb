@@ -760,4 +760,10 @@ WebServiceWorkerRegistry* FrameLoaderClientImpl::serviceWorkerRegistry()
     return m_webFrame->client()->serviceWorkerRegistry(m_webFrame);
 }
 
+void FrameLoaderClientImpl::didStopAllLoaders()
+{
+    if (m_webFrame->client())
+        m_webFrame->client()->didAbortLoading(m_webFrame);
+}
+
 } // namespace WebKit

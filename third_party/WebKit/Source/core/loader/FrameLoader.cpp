@@ -834,6 +834,8 @@ void FrameLoader::stopAllLoaders(ClearProvisionalItemPolicy clearProvisionalItem
     m_checkTimer.stop();
 
     m_inStopAllLoaders = false;
+
+    m_client->didStopAllLoaders();
 }
 
 DocumentLoader* FrameLoader::activeDocumentLoader() const

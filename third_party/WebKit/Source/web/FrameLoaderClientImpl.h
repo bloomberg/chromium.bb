@@ -152,6 +152,8 @@ public:
 
     virtual WebServiceWorkerRegistry* serviceWorkerRegistry() OVERRIDE;
 
+    virtual void didStopAllLoaders() OVERRIDE;
+
 private:
     PassOwnPtr<WebPluginLoadObserver> pluginLoadObserver();
 
