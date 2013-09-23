@@ -140,9 +140,13 @@ void ExtensionAppShimHandler::Delegate::LaunchApp(
     const std::vector<base::FilePath>& files) {
   CoreAppLauncherHandler::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_CMD_LINE_APP, extension->GetType());
-  for (std::vector<base::FilePath>::const_iterator it = files.begin();
-       it != files.end(); ++it) {
-    apps::LaunchPlatformAppWithPath(profile, extension, *it);
+  if (files.empty()) {
+    apps::LaunchPlatformApp(profile, extension);
+  } else {
+    for (std::vector<base::FilePath>::const_iterator it = files.begin();
+         it != files.end(); ++it) {
+      apps::LaunchPlatformAppWithPath(profile, extension, *it);
+    }
   }
 }
 
