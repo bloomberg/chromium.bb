@@ -151,6 +151,12 @@ TEST_F(KernelWrapTest, fchown) {
   fchown(DUMMY_FD, uid, gid);
 }
 
+TEST_F(KernelWrapTest, fcntl) {
+  char buffer[] = "fcntl";
+  EXPECT_CALL(mock, fcntl(012, 345, StrEq("fcntl"))).Times(1);
+  fcntl(012, 345, buffer);
+}
+
 TEST_F(KernelWrapTest, fstat) {
   struct stat in_statbuf;
   MakeDummyStatbuf(&in_statbuf);

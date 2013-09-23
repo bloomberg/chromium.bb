@@ -221,6 +221,11 @@ int ki_open_resource(const char* file) {
   ON_NOSYS_RETURN(-1);  return s_kp->open_resource(file);
 }
 
+int ki_fcntl(int d, int request, char* argp) {
+  ON_NOSYS_RETURN(-1);
+  return s_kp->fcntl(d, request, argp);
+}
+
 int ki_ioctl(int d, int request, char* argp) {
   ON_NOSYS_RETURN(-1);
   return s_kp->ioctl(d, request, argp);

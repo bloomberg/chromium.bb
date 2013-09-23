@@ -16,7 +16,8 @@ EXTERN_C_BEGIN
 
 /* Node state flags */
 #define POLLIN   0x0001   /* Will not block READ select/poll. */
-#define POLLOUT  0x0002   /* Will not block WRITE select/poll. */
+#define POLLPRI  0x0002   /* There is urgent data to read. */
+#define POLLOUT  0x0004   /* Will not block WRITE select/poll. */
 #define POLLERR  0x0008   /* Will not block EXECPT select/poll. */
 #define POLLHUP  0x0010   /* Connection closed on far side. */
 #define POLLNVAL 0x0020   /* Invalid FD. */

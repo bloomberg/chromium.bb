@@ -27,6 +27,7 @@ class KernelProxyMock : public nacl_io::KernelProxy {
   MOCK_METHOD1(dup, int(int));
   MOCK_METHOD2(dup2, int(int, int));
   MOCK_METHOD3(fchown, int(int, uid_t, gid_t));
+  MOCK_METHOD3(fcntl, int(int, int, char*));
   MOCK_METHOD2(ftruncate, int(int, off_t));
   MOCK_METHOD2(fstat, int(int, struct stat*));
   MOCK_METHOD1(fsync, int(int));

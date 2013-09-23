@@ -66,6 +66,7 @@
         "syscalls/chown.c",
         "syscalls/connect.c",
         "syscalls/fchown.c",
+        "syscalls/fcntl.c",
         "syscalls/fsync.c",
         "syscalls/ftruncate.c",
         "syscalls/getcwd.c",

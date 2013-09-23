@@ -624,6 +624,19 @@ int KernelProxy::fchmod(int fd, int mode) {
   return 0;
 }
 
+int KernelProxy::fcntl(int fd, int request, char *argp) {
+  ScopedKernelHandle handle;
+  Error error = AcquireHandle(fd, &handle);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  // TODO(sbc): Needs implementation.
+  errno = ENOSYS;
+  return -1;
+}
+
 int KernelProxy::access(const char* path, int amode) {
   ScopedMount mnt;
   Path rel;
