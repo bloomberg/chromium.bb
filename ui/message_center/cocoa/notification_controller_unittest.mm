@@ -276,6 +276,10 @@ TEST_F(NotificationControllerTest, List) {
       UTF8ToUTF16("Second title"),
       UTF8ToUTF16("second slightly longer message"));
   optional.items.push_back(item2);
+  message_center::NotificationItem item3(
+      UTF8ToUTF16(""),    // Test for empty string.
+      UTF8ToUTF16(" "));  // Test for string containing only spaces.
+  optional.items.push_back(item3);
   optional.context_message = UTF8ToUTF16("Context Message");
 
   scoped_ptr<message_center::Notification> notification(
@@ -300,7 +304,7 @@ TEST_F(NotificationControllerTest, List) {
   EXPECT_TRUE([[controller messageView] isHidden]);
   EXPECT_FALSE([[controller contextMessageView] isHidden]);
 
-  EXPECT_EQ(2u, [[[controller listView] subviews] count]);
+  EXPECT_EQ(3u, [[[controller listView] subviews] count]);
   EXPECT_LT(NSMaxY([[controller listView] frame]),
             NSMinY([[controller titleView] frame]));
 }

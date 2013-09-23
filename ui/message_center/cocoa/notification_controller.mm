@@ -689,6 +689,10 @@
   gfx::ElideRectangleText(text, font, width, height,
                           gfx::WRAP_LONG_WORDS, &wrapped);
 
+  // This could be possible when the input text contains only spaces.
+  if (wrapped.empty())
+    return string16();
+
   if (wrapped.size() > lines) {
     // Add an ellipsis to the last line. If this ellipsis makes the last line
     // too wide, that line will be further elided by the gfx::ElideText below.
