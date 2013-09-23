@@ -90,7 +90,7 @@ config("compiler") {
         "-pthread",
         "-pipe",  # Use pipes for communicating between sub-processes. Faster.
       ]
-      gold_path = to_build_path("//third_party/gold")
+      gold_path = rebase_path("//third_party/gold", ".", root_build_dir)
       ldflags += [
         # Use Gold for linking: it is checked out in the source tree.
         "-B$gold_path",

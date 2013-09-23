@@ -10,7 +10,7 @@
 
 namespace {
 
-std::string RebaseOne(Scope scope,
+std::string RebaseOne(Scope* scope,
                       const char* input,
                       const char* from_dir,
                       const char* to_dir,
@@ -24,7 +24,7 @@ std::string RebaseOne(Scope scope,
 
   Err err;
   FunctionCallNode function;
-  Value result = functions::RunRebasePath(&scope, &function, args, &err);
+  Value result = functions::RunRebasePath(scope, &function, args, &err);
   bool is_string = result.type() == Value::STRING;
   EXPECT_TRUE(is_string);
 
@@ -72,10 +72,6 @@ TEST(RebasePath, Strings) {
   EXPECT_EQ("foo/bar", RebaseOne(scope, "foo/bar", ".", ".", "none"));
   EXPECT_EQ("foo/bar", RebaseOne(scope, "foo/bar", ".", ".", "to_system"));
   EXPECT_EQ("foo/bar", RebaseOne(scope, "foo/bar", ".", ".", "from_system"));
-
-  EXPECT_EQ("foo\\bar", RebaseOne(scope, "foo\\bar", ".", ".", "none"));
-  EXPECT_EQ("foo\\bar", RebaseOne(scope, "foo\\bar", ".", ".", "to_system"));
-  EXPECT_EQ("foo\\bar", RebaseOne(scope, "foo\\bar", ".", ".", "from_system"));
 #endif
 
   // Test system path output.
