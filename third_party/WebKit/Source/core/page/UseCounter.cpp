@@ -678,10 +678,16 @@ String UseCounter::deprecationMessage(Feature feature)
     }
 }
 
-void UseCounter::count(CSSPropertyID feature)
+void UseCounter::count(CSSParserContext context, CSSPropertyID feature)
 {
     ASSERT(feature >= firstCSSProperty);
     ASSERT(feature <= lastCSSProperty);
+    ASSERT(!isInternalProperty(feature));
+
+    // We don't count the UA style sheet in our statistics.
+    if (context.mode == UASheetMode)
+        return;
+
     m_CSSFeatureBits.quickSet(feature);
 }
 

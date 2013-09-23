@@ -1214,9 +1214,8 @@ bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID p
 {
     // FIXME: Check RuntimeCSSEnabled::isPropertyEnabled or isValueEnabledForProperty.
 
-    // We don't count the UA style sheet in our statistics.
-    if (m_context.mode != UASheetMode && m_useCounter)
-        m_useCounter->count(propertyID);
+    if (m_useCounter)
+        m_useCounter->count(m_context, propertyID);
 
     setStyleSheet(contextStyleSheet);
 
@@ -1699,8 +1698,8 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         return false;
 
     // We don't count the UA style sheet in our statistics.
-    if (m_context.mode != UASheetMode && m_useCounter)
-        m_useCounter->count(propId);
+    if (m_useCounter)
+        m_useCounter->count(m_context, propId);
 
     if (!m_valueList)
         return false;

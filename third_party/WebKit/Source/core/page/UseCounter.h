@@ -221,7 +221,7 @@ public:
     // "count" sets the bit for this feature to 1. Repeated calls are ignored.
     static void count(Document*, Feature);
     static void count(DOMWindow*, Feature);
-    void count(CSSPropertyID);
+    void count(CSSParserContext, CSSPropertyID);
     void count(Feature);
 
     // "countDeprecation" sets the bit for this feature to 1, and sends a deprecation
