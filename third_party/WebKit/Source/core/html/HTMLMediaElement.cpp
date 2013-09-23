@@ -66,7 +66,9 @@
 #include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "core/platform/graphics/MediaPlayer.h"
+#include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderVideo.h"
+#include "core/rendering/RenderView.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "public/platform/Platform.h"
 #include "weborigin/SecurityOrigin.h"
@@ -3570,12 +3572,16 @@ void HTMLMediaElement::didBecomeFullscreenElement()
 {
     if (hasMediaControls())
         mediaControls()->enteredFullscreen();
+    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isVideo())
+        document().renderView()->compositor()->setCompositingLayersNeedRebuild(true);
 }
 
 void HTMLMediaElement::willStopBeingFullscreenElement()
 {
     if (hasMediaControls())
         mediaControls()->exitedFullscreen();
+    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isVideo())
+        document().renderView()->compositor()->setCompositingLayersNeedRebuild(true);
 }
 
 WebKit::WebLayer* HTMLMediaElement::platformLayer() const

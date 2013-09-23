@@ -159,11 +159,9 @@ public:
     enum Preload { None, MetaData, Auto };
     virtual void setPreload(Preload) = 0;
 
-#if USE(NATIVE_FULLSCREEN_VIDEO)
-    virtual void enterFullscreen() = 0;
-    virtual void exitFullscreen() = 0;
-    virtual bool canEnterFullscreen() const = 0;
-#endif
+    virtual void showFullscreenOverlay() = 0;
+    virtual void hideFullscreenOverlay() = 0;
+    virtual bool canShowFullscreenOverlay() const = 0;
 
     // whether accelerated rendering is supported by the media engine for the current media.
     virtual bool supportsAcceleratedRendering() const = 0;

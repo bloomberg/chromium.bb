@@ -206,5 +206,10 @@ void RenderLayerModelObject::addLayerHitTestRects(LayerHitTestRects& rects, cons
     }
 }
 
+RenderLayerBacking* RenderLayerModelObject::backing() const
+{
+    return m_layer ? m_layer->backing() : 0;
+}
+
 } // namespace WebCore
 

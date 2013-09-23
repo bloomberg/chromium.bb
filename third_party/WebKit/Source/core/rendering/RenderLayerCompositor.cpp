@@ -29,9 +29,12 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
+#include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NodeList.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Chrome.h"
@@ -350,6 +353,23 @@ void RenderLayerCompositor::updateCompositingRequirementsState()
     }
 }
 
+static RenderVideo* findFullscreenVideoRenderer(Document* document)
+{
+    Element* fullscreenElement = FullscreenElementStack::currentFullScreenElementFrom(document);
+    while (fullscreenElement && fullscreenElement->isFrameOwnerElement()) {
+        document = toHTMLFrameOwnerElement(fullscreenElement)->contentDocument();
+        if (!document)
+            return 0;
+        fullscreenElement = FullscreenElementStack::currentFullScreenElementFrom(document);
+    }
+    if (!fullscreenElement || !isHTMLVideoElement(fullscreenElement))
+        return 0;
+    RenderObject* renderer = fullscreenElement->renderer();
+    if (!renderer)
+        return 0;
+    return toRenderVideo(renderer);
+}
+
 void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType updateType, RenderLayer* updateRoot)
 {
     // Avoid updating the layers with old values. Compositing layers will be updated after the layout is finished.
@@ -446,6 +466,16 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
 
         // Host the document layer in the RenderView's root layer.
         if (isFullUpdate) {
+            if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isMainFrame()) {
+                RenderVideo* video = findFullscreenVideoRenderer(&m_renderView->document());
+                if (video) {
+                    RenderLayerBacking* backing = video->backing();
+                    if (backing) {
+                        childList.clear();
+                        childList.append(backing->graphicsLayer());
+                    }
+                }
+            }
             // Even when childList is empty, don't drop out of compositing mode if there are
             // composited layers that we didn't hit in our traversal (e.g. because of visibility:hidden).
             if (childList.isEmpty() && !hasAnyAdditionalCompositedLayers(updateRoot))
@@ -1853,6 +1883,11 @@ bool RenderLayerCompositor::requiresCompositingForTransform(RenderObject* render
 
 bool RenderLayerCompositor::requiresCompositingForVideo(RenderObject* renderer) const
 {
+    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && renderer->isVideo()) {
+        HTMLMediaElement* media = toHTMLMediaElement(renderer->node());
+        return media->isFullscreen();
+    }
+
     if (!(m_compositingTriggers & ChromeClient::VideoTrigger))
         return false;
 

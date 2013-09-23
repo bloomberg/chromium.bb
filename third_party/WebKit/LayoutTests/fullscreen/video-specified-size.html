@@ -1,5 +1,9 @@
 <body>
     <video id="video" width="300" controls></video>
+    <script>
+        if (window.internals)
+            runPixelTests = internals.runtimeFlags.overlayFullscreenVideoEnabled;
+    </script>
     <script src="full-screen-test.js"></script>
     <script src=../media/media-file.js></script>
     <script>

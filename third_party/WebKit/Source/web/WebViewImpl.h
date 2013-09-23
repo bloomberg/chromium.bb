@@ -562,6 +562,8 @@ public:
     // Exposed for tests.
     WebVector<WebCompositionUnderline> compositionUnderlines() const;
 
+    WebLayerTreeView* layerTreeView() const { return m_layerTreeView; };
+
 private:
     float legibleScale() const;
     void refreshPageScaleFactorAfterLayout();

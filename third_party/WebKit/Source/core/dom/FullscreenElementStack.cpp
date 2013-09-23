@@ -367,11 +367,6 @@ void FullscreenElementStack::webkitWillEnterFullScreenForElement(Element* elemen
 
     m_fullScreenElement = element;
 
-#if USE(NATIVE_FULLSCREEN_VIDEO)
-    if (element && element->isMediaElement())
-        return;
-#endif
-
     // Create a placeholder block for a the full-screen element, to keep the page from reflowing
     // when the element is removed from the normal flow. Only do this for a RenderBox, as only
     // a box will have a frameRect. The placeholder will be created in setFullScreenRenderer()

@@ -362,6 +362,14 @@ class ChromiumPort(Port):
             VirtualTestSuite('virtual/stable/media',
                              'media/stable',
                              ['--stable-release-mode']),
+            VirtualTestSuite('virtual/android/fullscreen',
+                             'fullscreen',
+                             ['--force-compositing-mode', '--allow-webui-compositing', '--enable-threaded-compositing',
+                              '--enable-fixed-position-compositing', '--enable-accelerated-overflow-scroll', '--enable-accelerated-scrollable-frames',
+                              '--enable-composited-scrolling-for-frames', '--enable-gesture-tap-highlight', '--enable-pinch',
+                              '--enable-overlay-fullscreen-video', '--enable-overlay-scrollbars', '--enable-overscroll-notifications',
+                              '--enable-fixed-layout', '--enable-viewport', '--disable-canvas-aa',
+                              '--disable-composited-antialiasing']),
         ]
 
     #

@@ -245,6 +245,7 @@ public:
         for (const RenderObject* renderer = this; renderer; renderer = renderer->nextInPreOrder())
             renderer->assertRendererLaidOut();
     }
+
 #endif
 
     // Obtains the nearest enclosing block (including this block) that contributes a first-line style to our inline

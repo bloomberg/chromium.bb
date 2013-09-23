@@ -310,24 +310,22 @@ void WebMediaPlayerClientImpl::pause()
         m_webMediaPlayer->pause();
 }
 
-#if USE(NATIVE_FULLSCREEN_VIDEO)
-void WebMediaPlayerClientImpl::enterFullscreen()
+void WebMediaPlayerClientImpl::showFullscreenOverlay()
 {
     if (m_webMediaPlayer)
         m_webMediaPlayer->enterFullscreen();
 }
 
-void WebMediaPlayerClientImpl::exitFullscreen()
+void WebMediaPlayerClientImpl::hideFullscreenOverlay()
 {
     if (m_webMediaPlayer)
         m_webMediaPlayer->exitFullscreen();
 }
 
-bool WebMediaPlayerClientImpl::canEnterFullscreen() const
+bool WebMediaPlayerClientImpl::canShowFullscreenOverlay() const
 {
     return m_webMediaPlayer && m_webMediaPlayer->canEnterFullscreen();
 }
-#endif
 
 MediaPlayer::MediaKeyException WebMediaPlayerClientImpl::generateKeyRequest(const String& keySystem, const unsigned char* initData, unsigned initDataLength)
 {

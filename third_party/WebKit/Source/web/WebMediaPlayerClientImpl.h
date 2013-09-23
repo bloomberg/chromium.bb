@@ -131,11 +131,9 @@ public:
     virtual unsigned droppedFrameCount() const OVERRIDE;
     virtual unsigned audioDecodedByteCount() const OVERRIDE;
     virtual unsigned videoDecodedByteCount() const OVERRIDE;
-#if USE(NATIVE_FULLSCREEN_VIDEO)
-    virtual void enterFullscreen() OVERRIDE;
-    virtual void exitFullscreen() OVERRIDE;
-    virtual bool canEnterFullscreen() const OVERRIDE;
-#endif
+    virtual void showFullscreenOverlay() OVERRIDE;
+    virtual void hideFullscreenOverlay() OVERRIDE;
+    virtual bool canShowFullscreenOverlay() const OVERRIDE;
 
 #if ENABLE(WEB_AUDIO)
     virtual WebCore::AudioSourceProvider* audioSourceProvider() OVERRIDE;

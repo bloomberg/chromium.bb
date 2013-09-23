@@ -38,6 +38,7 @@ public:
     virtual void setMediaController(MediaControllerInterface*) OVERRIDE;
     virtual void playbackStarted() OVERRIDE;
     virtual void playbackStopped() OVERRIDE;
+    virtual bool shouldHideControls() OVERRIDE { return true; }
 
     void insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement>) OVERRIDE;
 

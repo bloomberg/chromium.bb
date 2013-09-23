@@ -99,3 +99,6 @@ virtual/softwarecompositing/gestures [ WontFix ]
 
 # Tests in media/stable are only supposed to be run as virtual test (see virtual/stable/media).
 media/stable [ WontFix ]
+
+# Only run fake-Android tests on Linux
+[ Mac Win ] virtual/android [ WontFix ]

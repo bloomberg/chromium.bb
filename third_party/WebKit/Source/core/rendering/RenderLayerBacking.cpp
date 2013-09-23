@@ -513,7 +513,13 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
     // m_graphicsLayer is the corresponding GraphicsLayer for this RenderLayer and its non-compositing
     // descendants. So, the visibility flag for m_graphicsLayer should be true if there are any
     // non-compositing visible layers.
-    m_graphicsLayer->setContentsVisible(m_owningLayer->hasVisibleContent() || hasVisibleNonCompositingDescendantLayers());
+    bool contentsVisible = m_owningLayer->hasVisibleContent() || hasVisibleNonCompositingDescendantLayers();
+    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && renderer()->isVideo()) {
+        HTMLMediaElement* mediaElement = toHTMLMediaElement(renderer()->node());
+        if (mediaElement->isFullscreen())
+            contentsVisible = false;
+    }
+    m_graphicsLayer->setContentsVisible(contentsVisible);
 
     RenderStyle* style = renderer()->style();
     // FIXME: reflections should force transform-style to be flat in the style: https://bugs.webkit.org/show_bug.cgi?id=106959

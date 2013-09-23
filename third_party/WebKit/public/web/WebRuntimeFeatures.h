@@ -146,6 +146,8 @@ public:
 
     WEBKIT_EXPORT static void enableInputModeAttribute(bool);
 
+    WEBKIT_EXPORT static void enableOverlayFullscreenVideo(bool);
+
 private:
     WebRuntimeFeatures();
 };

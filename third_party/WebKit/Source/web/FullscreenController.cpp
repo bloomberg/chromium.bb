@@ -31,6 +31,7 @@
 #include "config.h"
 #include "FullscreenController.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "WebFrame.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
@@ -38,6 +39,7 @@
 #include "core/dom/FullscreenElementStack.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/page/Frame.h"
+#include "core/platform/LayoutTestSupport.h"
 
 using namespace WebCore;
 
@@ -83,6 +85,12 @@ void FullscreenController::didEnterFullScreen()
             }
 
             FullscreenElementStack::from(doc)->webkitDidEnterFullScreenForElement(0);
+            if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()) {
+                Element* element = FullscreenElementStack::currentFullScreenElementFrom(doc);
+                ASSERT(element);
+                if (element->isMediaElement() && m_webViewImpl->layerTreeView())
+                    m_webViewImpl->layerTreeView()->setHasTransparentBackground(true);
+            }
         }
     }
 }
@@ -103,6 +111,8 @@ void FullscreenController::willExitFullScreen()
             fullscreen->webkitCancelFullScreen();
             m_isCancelingFullScreen = false;
             fullscreen->webkitWillExitFullScreenForElement(0);
+            if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && m_webViewImpl->layerTreeView())
+                m_webViewImpl->layerTreeView()->setHasTransparentBackground(m_webViewImpl->isTransparent());
         }
     }
 }
@@ -146,16 +156,17 @@ void FullscreenController::enterFullScreenForElement(WebCore::Element* element)
         return;
     }
 
-#if USE(NATIVE_FULLSCREEN_VIDEO)
-    if (element && element->isMediaElement()) {
+    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()
+        && element && element->isMediaElement()
+        // FIXME: There is no embedder-side handling in layout test mode.
+        && !isRunningLayoutTest()) {
         HTMLMediaElement* mediaElement = toHTMLMediaElement(element);
-        if (mediaElement->player() && mediaElement->player()->canEnterFullscreen()) {
-            mediaElement->player()->enterFullscreen();
+        if (mediaElement->player() && mediaElement->player()->canShowFullscreenOverlay()) {
+            mediaElement->player()->showFullscreenOverlay();
             m_provisionalFullScreenElement = element;
+            return;
         }
-        return;
     }
-#endif
 
     // We need to transition to fullscreen mode.
     if (WebViewClient* client = m_webViewImpl->client()) {
@@ -169,14 +180,15 @@ void FullscreenController::exitFullScreenForElement(WebCore::Element* element)
     // The client is exiting full screen, so don't send a notification.
     if (m_isCancelingFullScreen)
         return;
-#if USE(NATIVE_FULLSCREEN_VIDEO)
-    if (element && element->isMediaElement()) {
+    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()
+        && element && element->isMediaElement()
+        // FIXME: There is no embedder-side handling in layout test mode.
+        && !isRunningLayoutTest()) {
         HTMLMediaElement* mediaElement = toHTMLMediaElement(element);
         if (mediaElement->player())
-            mediaElement->player()->exitFullscreen();
+            mediaElement->player()->hideFullscreenOverlay();
         return;
     }
-#endif
     if (WebViewClient* client = m_webViewImpl->client())
         client->exitFullScreen();
 }

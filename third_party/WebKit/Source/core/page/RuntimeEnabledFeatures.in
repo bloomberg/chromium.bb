@@ -66,6 +66,8 @@ MediaSource status=stable
 MediaStream status=stable
 Notifications status=stable
 ObjectFitPosition status=experimental
+// Only enabled on Android, and for certain layout tests on Linux.
+OverlayFullscreenVideo
 PagePopup status=stable
 PartialLayout status=experimental
 PathOpsSVGClipping
