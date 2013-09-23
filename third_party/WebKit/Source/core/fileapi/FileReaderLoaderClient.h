@@ -40,7 +40,10 @@ public:
     virtual ~FileReaderLoaderClient() {}
 
     virtual void didStartLoading() = 0;
-    virtual void didReceiveData() = 0;
+    // Clients must implement this method if they are using any ReadType except ReadByClient.
+    virtual void didReceiveData() { ASSERT_NOT_REACHED(); }
+    // Clients must implement this method if they are using the ReadByClient ReadType.
+    virtual void didReceiveDataForClient(const char* data, unsigned dataLength) { ASSERT_NOT_REACHED(); }
     virtual void didFinishLoading() = 0;
     virtual void didFail(FileError::ErrorCode) = 0;
 };

@@ -54,7 +54,8 @@ public:
         ReadAsBinaryString,
         ReadAsBlob,
         ReadAsText,
-        ReadAsDataURL
+        ReadAsDataURL,
+        ReadByClient
     };
 
     // If client is given, do the loading asynchronously. Otherwise, load synchronously.
@@ -62,7 +63,7 @@ public:
     ~FileReaderLoader();
 
     void start(ScriptExecutionContext*, const Blob&);
-    void start(ScriptExecutionContext*, const Stream&);
+    void start(ScriptExecutionContext*, const Stream&, unsigned readSize);
     void cancel();
 
     // ThreadableLoaderClient
@@ -101,6 +102,7 @@ private:
     String m_dataType;
 
     KURL m_urlForReading;
+    bool m_urlForReadingIsStream;
     RefPtr<ThreadableLoader> m_loader;
 
     RefPtr<ArrayBuffer> m_rawData;

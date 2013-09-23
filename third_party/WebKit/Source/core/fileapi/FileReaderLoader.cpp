@@ -58,6 +58,7 @@ const int defaultBufferLength = 32768;
 FileReaderLoader::FileReaderLoader(ReadType readType, FileReaderLoaderClient* client)
     : m_readType(readType)
     , m_client(client)
+    , m_urlForReadingIsStream(false)
     , m_isRawDataConverted(false)
     , m_stringResult("")
     , m_variableLength(false)
@@ -73,8 +74,12 @@ FileReaderLoader::FileReaderLoader(ReadType readType, FileReaderLoaderClient* cl
 FileReaderLoader::~FileReaderLoader()
 {
     terminate();
-    if (!m_urlForReading.isEmpty())
-        BlobRegistry::unregisterBlobURL(m_urlForReading);
+    if (!m_urlForReading.isEmpty()) {
+        if (m_urlForReadingIsStream)
+            BlobRegistry::unregisterStreamURL(m_urlForReading);
+        else
+            BlobRegistry::unregisterBlobURL(m_urlForReading);
+    }
 }
 
 void FileReaderLoader::startForURL(ScriptExecutionContext* scriptExecutionContext, const KURL& url)
@@ -85,7 +90,11 @@ void FileReaderLoader::startForURL(ScriptExecutionContext* scriptExecutionContex
         failed(FileError::SECURITY_ERR);
         return;
     }
-    BlobRegistry::registerBlobURL(scriptExecutionContext->securityOrigin(), m_urlForReading, url);
+
+    if (m_urlForReadingIsStream)
+        BlobRegistry::registerStreamURL(scriptExecutionContext->securityOrigin(), m_urlForReading, url);
+    else
+        BlobRegistry::registerBlobURL(scriptExecutionContext->securityOrigin(), m_urlForReading, url);
 
     // Construct and load the request.
     ResourceRequest request(m_urlForReading);
@@ -110,11 +119,19 @@ void FileReaderLoader::startForURL(ScriptExecutionContext* scriptExecutionContex
 
 void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, const Blob& blob)
 {
+    m_urlForReadingIsStream = false;
     startForURL(scriptExecutionContext, blob.url());
 }
 
-void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, const Stream& stream)
+void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, const Stream& stream, unsigned readSize)
 {
+    if (readSize > 0) {
+        m_hasRange = true;
+        m_rangeStart = 0;
+        m_rangeEnd = readSize - 1; // End is inclusive so (0,0) is a 1-byte read.
+    }
+
+    m_urlForReadingIsStream = true;
     startForURL(scriptExecutionContext, stream.url());
 }
 
@@ -194,6 +211,14 @@ void FileReaderLoader::didReceiveData(const char* data, int dataLength)
     if (m_errorCode)
         return;
 
+    if (m_readType == ReadByClient) {
+        m_bytesLoaded += dataLength;
+
+        if (m_client)
+            m_client->didReceiveDataForClient(data, dataLength);
+        return;
+    }
+
     int length = dataLength;
     unsigned remainingBufferSpace = m_totalBytes - m_bytesLoaded;
     if (length > static_cast<long long>(remainingBufferSpace)) {
@@ -230,7 +255,7 @@ void FileReaderLoader::didReceiveData(const char* data, int dataLength)
 
 void FileReaderLoader::didFinishLoading(unsigned long, double)
 {
-    if (m_variableLength && m_totalBytes > m_bytesLoaded) {
+    if (m_readType != ReadByClient && m_variableLength && m_totalBytes > m_bytesLoaded) {
         RefPtr<ArrayBuffer> newData = m_rawData->slice(0, m_bytesLoaded);
 
         m_rawData = newData;
@@ -290,7 +315,7 @@ PassRefPtr<ArrayBuffer> FileReaderLoader::arrayBufferResult() const
 
 String FileReaderLoader::stringResult()
 {
-    ASSERT(m_readType != ReadAsArrayBuffer && m_readType != ReadAsBlob);
+    ASSERT(m_readType != ReadAsArrayBuffer && m_readType != ReadAsBlob && m_readType != ReadByClient);
 
     // If the loading is not started or an error occurs, return an empty result.
     if (!m_rawData || m_errorCode)

@@ -34,20 +34,27 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
+#include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/platform/Timer.h"
+#include "core/platform/graphics/SourceBufferPrivate.h"
+#include "weborigin/KURL.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class ExceptionState;
+class FileReaderLoader;
 class GenericEventQueue;
 class MediaSource;
-class SourceBufferPrivate;
+class Stream;
 class TimeRanges;
 
-class SourceBuffer : public RefCounted<SourceBuffer>, public ActiveDOMObject, public EventTarget, public ScriptWrappable {
+class SourceBuffer : public RefCounted<SourceBuffer>, public ActiveDOMObject, public EventTarget, public ScriptWrappable, public FileReaderLoaderClient {
 public:
     static PassRefPtr<SourceBuffer> create(PassOwnPtr<SourceBufferPrivate>, MediaSource*, GenericEventQueue*);
 
@@ -60,6 +67,8 @@ public:
     void setTimestampOffset(double, ExceptionState&);
     void appendBuffer(PassRefPtr<ArrayBuffer> data, ExceptionState&);
     void appendBuffer(PassRefPtr<ArrayBufferView> data, ExceptionState&);
+    void appendStream(PassRefPtr<Stream>, ExceptionState&);
+    void appendStream(PassRefPtr<Stream>, unsigned long long maxSize, ExceptionState&);
     void abort(ExceptionState&);
     void remove(double start, double end, ExceptionState&);
     double appendWindowStart() const;
@@ -94,10 +103,21 @@ private:
     bool isRemoved() const;
     void scheduleEvent(const AtomicString& eventName);
 
-    void appendBufferInternal(unsigned char*, unsigned, ExceptionState&);
+    void appendBufferInternal(const unsigned char*, unsigned, ExceptionState&);
     void appendBufferTimerFired(Timer<SourceBuffer>*);
 
     void removeTimerFired(Timer<SourceBuffer>*);
+
+    void appendStreamInternal(PassRefPtr<Stream>, ExceptionState&);
+    void appendStreamTimerFired(Timer<SourceBuffer>*);
+    void appendStreamDone(bool success);
+    void clearAppendStreamState();
+
+    // FileReaderLoaderClient interface
+    virtual void didStartLoading() OVERRIDE;
+    virtual void didReceiveDataForClient(const char* data, unsigned dataLength) OVERRIDE;
+    virtual void didFinishLoading() OVERRIDE;
+    virtual void didFail(FileError::ErrorCode) OVERRIDE;
 
     OwnPtr<SourceBufferPrivate> m_private;
     MediaSource* m_source;
@@ -115,6 +135,12 @@ private:
     double m_pendingRemoveStart;
     double m_pendingRemoveEnd;
     Timer<SourceBuffer> m_removeTimer;
+
+    bool m_streamMaxSizeValid;
+    unsigned long long m_streamMaxSize;
+    Timer<SourceBuffer> m_appendStreamTimer;
+    RefPtr<Stream> m_stream;
+    OwnPtr<FileReaderLoader> m_loader;
 };
 
 } // namespace WebCore
