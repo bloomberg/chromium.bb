@@ -2,21 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_OZONE_SURFACE_LNUX_FACTORY_OZONE_H_
-#define UI_BASE_OZONE_SURFACE_LNUX_FACTORY_OZONE_H_
+#ifndef UI_GFX_OZONE_SURFACE_LNUX_FACTORY_OZONE_H_
+#define UI_GFX_OZONE_SURFACE_LNUX_FACTORY_OZONE_H_
 
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
 namespace gfx {
 class Screen;
 class VSyncProvider;
-}  // namespace gfx
 
-namespace ui {
-
-class UI_EXPORT SurfaceFactoryOzone {
+class GFX_EXPORT SurfaceFactoryOzone {
  public:
   // Describes the state of the hardware after initialization.
   enum HardwareState {
@@ -92,6 +89,6 @@ class UI_EXPORT SurfaceFactoryOzone {
   static SurfaceFactoryOzone* impl_; // not owned
 };
 
-}  // namespace ui
+}  // namespace gfx
 
-#endif  // UI_BASE_OZONE_SURFACE_LNUX_FACTORY_OZONE_H_
+#endif  // UI_GFX_OZONE_SURFACE_LNUX_FACTORY_OZONE_H_

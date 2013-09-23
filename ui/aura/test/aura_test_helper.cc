@@ -27,7 +27,7 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "ui/base/ozone/surface_factory_ozone.h"
+#include "ui/gfx/ozone/surface_factory_ozone.h"
 #endif
 
 namespace aura {
@@ -46,8 +46,8 @@ AuraTestHelper::AuraTestHelper(base::MessageLoopForUI* message_loop)
   test::SetUseOverrideRedirectWindowByDefault(true);
 #endif
 #if defined(USE_OZONE)
-  surface_factory_.reset(ui::SurfaceFactoryOzone::CreateTestHelper());
-  ui::SurfaceFactoryOzone::SetInstance(surface_factory_.get());
+  surface_factory_.reset(gfx::SurfaceFactoryOzone::CreateTestHelper());
+  gfx::SurfaceFactoryOzone::SetInstance(surface_factory_.get());
 #endif
 }
 

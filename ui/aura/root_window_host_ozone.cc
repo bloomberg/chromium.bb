@@ -5,7 +5,7 @@
 #include "ui/aura/root_window_host_ozone.h"
 
 #include "ui/aura/root_window.h"
-#include "ui/base/ozone/surface_factory_ozone.h"
+#include "ui/gfx/ozone/surface_factory_ozone.h"
 
 namespace aura {
 
@@ -15,8 +15,8 @@ RootWindowHostOzone::RootWindowHostOzone(const gfx::Rect& bounds)
       bounds_(bounds),
       factory_(new ui::EventFactoryOzone()) {
   factory_->CreateStartupEventConverters();
-  ui::SurfaceFactoryOzone* surface_factory =
-      ui::SurfaceFactoryOzone::GetInstance();
+  gfx::SurfaceFactoryOzone* surface_factory =
+      gfx::SurfaceFactoryOzone::GetInstance();
   widget_ = surface_factory->GetAcceleratedWidget();
 
   surface_factory->AttemptToResizeAcceleratedWidget(widget_, bounds_);

@@ -32,7 +32,7 @@ extern "C" {
 #endif
 
 #if defined (USE_OZONE)
-#include "ui/base/ozone/surface_factory_ozone.h"
+#include "ui/gfx/ozone/surface_factory_ozone.h"
 #endif
 
 // From ANGLE's egl/eglext.h.
@@ -109,10 +109,10 @@ bool GLSurfaceEGL::InitializeOneOff() {
     g_native_display = EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE;
   }
 #elif defined(USE_OZONE)
-  ui::SurfaceFactoryOzone* surface_factory =
-      ui::SurfaceFactoryOzone::GetInstance();
+  gfx::SurfaceFactoryOzone* surface_factory =
+      gfx::SurfaceFactoryOzone::GetInstance();
   if (surface_factory->InitializeHardware() !=
-      ui::SurfaceFactoryOzone::INITIALIZED) {
+      gfx::SurfaceFactoryOzone::INITIALIZED) {
     LOG(ERROR) << "OZONE failed to initialize hardware";
     return false;
   }
@@ -645,10 +645,10 @@ GLSurface::CreateViewGLSurface(gfx::AcceleratedWidget window) {
     scoped_refptr<NativeViewGLSurfaceEGL> surface;
     VSyncProvider* sync_provider = NULL;
 #if defined(USE_OZONE)
-    window = ui::SurfaceFactoryOzone::GetInstance()->RealizeAcceleratedWidget(
+    window = gfx::SurfaceFactoryOzone::GetInstance()->RealizeAcceleratedWidget(
         window);
     sync_provider =
-        ui::SurfaceFactoryOzone::GetInstance()->GetVSyncProvider(window);
+        gfx::SurfaceFactoryOzone::GetInstance()->GetVSyncProvider(window);
 #endif
     surface = new NativeViewGLSurfaceEGL(window);
     if(surface->Initialize(sync_provider))

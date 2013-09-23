@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ozone/surface_factory_ozone.h"
+#include "ui/gfx/ozone/surface_factory_ozone.h"
 
 #include <stdlib.h>
 
-namespace ui {
+namespace gfx {
 
 // static
 SurfaceFactoryOzone* SurfaceFactoryOzone::impl_ = NULL;
@@ -74,4 +74,4 @@ SurfaceFactoryOzone* SurfaceFactoryOzone::CreateTestHelper() {
   return new SurfaceFactoryOzoneStub;
 }
 
-}  // namespace ui
+}  // namespace gfx

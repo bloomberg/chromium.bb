@@ -18,9 +18,9 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_ozone.h"
-#include "ui/base/ozone/surface_factory_ozone.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/gfx/ozone/surface_factory_ozone.h"
 
 namespace {
 
@@ -78,9 +78,9 @@ void TouchEventConverterOzone::Init() {
   } else {
     LOG(WARNING) << "failed ioctl EVIOCGABS ABS_Y event" << id_;
   }
-  if (x_max && y_max && SurfaceFactoryOzone::GetInstance()) {
+  if (x_max && y_max && gfx::SurfaceFactoryOzone::GetInstance()) {
     const char* display =
-        SurfaceFactoryOzone::GetInstance()->DefaultDisplaySpec();
+        gfx::SurfaceFactoryOzone::GetInstance()->DefaultDisplaySpec();
     int screen_width, screen_height;
     int sc = sscanf(display, "%dx%d", &screen_width, &screen_height);
     if (sc == 2) {
