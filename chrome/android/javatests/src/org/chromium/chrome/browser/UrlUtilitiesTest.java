@@ -89,20 +89,34 @@ public class UrlUtilitiesTest extends InstrumentationTestCase {
     @Feature({"Webapps"})
     public void testGetOriginForDisplay() {
         URI uri;
+
         uri = URI.create("http://chopped.com/is/awesome");
-        assertEquals("http://chopped.com", UrlUtilities.getOriginForDisplay(uri));
+        assertEquals("http://chopped.com", UrlUtilities.getOriginForDisplay(uri, true));
+        assertEquals("chopped.com", UrlUtilities.getOriginForDisplay(uri, false));
+
         uri = URI.create("http://lopped.com");
-        assertEquals("http://lopped.com", UrlUtilities.getOriginForDisplay(uri));
+        assertEquals("http://lopped.com", UrlUtilities.getOriginForDisplay(uri, true));
+        assertEquals("lopped.com", UrlUtilities.getOriginForDisplay(uri, false));
+
         uri = URI.create("http://dropped.com?things");
-        assertEquals("http://dropped.com", UrlUtilities.getOriginForDisplay(uri));
+        assertEquals("http://dropped.com", UrlUtilities.getOriginForDisplay(uri, true));
+        assertEquals("dropped.com", UrlUtilities.getOriginForDisplay(uri, false));
+
         uri = URI.create("http://dfalcant@stopped.com:1234");
-        assertEquals("http://stopped.com:1234", UrlUtilities.getOriginForDisplay(uri));
+        assertEquals("http://stopped.com:1234", UrlUtilities.getOriginForDisplay(uri, true));
+        assertEquals("stopped.com:1234", UrlUtilities.getOriginForDisplay(uri, false));
+
         uri = URI.create("http://dfalcant:secret@stopped.com:9999");
-        assertEquals("http://stopped.com:9999", UrlUtilities.getOriginForDisplay(uri));
+        assertEquals("http://stopped.com:9999", UrlUtilities.getOriginForDisplay(uri, true));
+        assertEquals("stopped.com:9999", UrlUtilities.getOriginForDisplay(uri, false));
+
         uri = URI.create("chrome://settings:443");
-        assertEquals("chrome://settings:443", UrlUtilities.getOriginForDisplay(uri));
+        assertEquals("chrome://settings:443", UrlUtilities.getOriginForDisplay(uri, true));
+        assertEquals("settings:443", UrlUtilities.getOriginForDisplay(uri, false));
+
         uri = URI.create("about:blank");
-        assertEquals(null, UrlUtilities.getOriginForDisplay(uri));
+        assertEquals("about:blank", UrlUtilities.getOriginForDisplay(uri, true));
+        assertEquals("about:blank", UrlUtilities.getOriginForDisplay(uri, false));
     }
 
 }

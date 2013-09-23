@@ -112,21 +112,35 @@ public class UrlUtilities {
     /**
      * Builds a String that strips down the URL to the its scheme, host, and port.
      * @param uri URI to break down.
-     * @return Stripped-down String containing the essential bits of the URL, or null if we fail
-     *         to strip it down.
+     * @param showScheme Whether or not to show the scheme.  If the URL can't be parsed, this value
+     *                   is ignored.
+     * @return Stripped-down String containing the essential bits of the URL, or the original URL if
+     *         it fails to parse it.
      */
-    public static String getOriginForDisplay(URI uri) {
+    public static String getOriginForDisplay(URI uri, boolean showScheme) {
         String scheme = uri.getScheme();
         String host = uri.getHost();
         int port = uri.getPort();
-        if (TextUtils.isEmpty(scheme) || TextUtils.isEmpty(host)) return null;
 
-        if (port == -1 || (port == 80 && "http".equals(scheme))
-                || (port == 443 && "https".equals(scheme))) {
-            return scheme + "://" + host;
+        String displayUrl;
+        if (TextUtils.isEmpty(scheme) || TextUtils.isEmpty(host)) {
+            displayUrl = uri.toString();
         } else {
-            return scheme + "://" + host + ":" + port;
+            if (showScheme) {
+                scheme += "://";
+            } else {
+                scheme = "";
+            }
+
+            if (port == -1 || (port == 80 && "http".equals(scheme))
+                    || (port == 443 && "https".equals(scheme))) {
+                displayUrl = scheme + host;
+            } else {
+                displayUrl = scheme + host + ":" + port;
+            }
         }
+
+        return displayUrl;
     }
 
     /**
