@@ -687,6 +687,12 @@ bool HWNDMessageHandler::IsMaximized() const {
 bool HWNDMessageHandler::RunMoveLoop(const gfx::Vector2d& drag_offset) {
   ReleaseCapture();
   MoveLoopMouseWatcher watcher(this);
+#if defined(USE_AURA)
+  // In Aura, we handle touch events asynchronously. So we need to allow nested
+  // tasks while in windows move loop.
+  base::MessageLoop::ScopedNestableTaskAllower allow_nested(
+      base::MessageLoop::current());
+#endif
   SendMessage(hwnd(), WM_SYSCOMMAND, SC_MOVE | 0x0002, GetMessagePos());
   // Windows doesn't appear to offer a way to determine whether the user
   // canceled the move or not. We assume if the user released the mouse it was
