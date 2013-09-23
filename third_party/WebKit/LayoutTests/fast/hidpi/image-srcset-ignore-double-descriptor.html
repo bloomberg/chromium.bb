@@ -1,0 +1,20 @@
+<html>
+<head>
+<script>
+    window.targetScaleFactor = 1;
+</script>
+<script src="resources/srcset-helper.js"></script>
+<script src="../js/resources/js-test-pre.js"></script>
+<script>
+    addEventListener("load", function() {
+        shouldBeFalse('document.getElementById("foo").clientWidth==400');
+        shouldBeTrue('document.getElementById("foo").clientWidth==800');
+    }, false);
+</script>
+</head>
+
+<body id="body">
+    <div>This test passes if the image below says 2x with a greenish background even when the deviceScaleFactor is 1.</div>
+    <img id="foo" src="" srcset="resources/image-set-1x.png 1x 1x, resources/deleteButton.png 3x, resources/image-set-2x.png 2x">
+</body>
+</html>

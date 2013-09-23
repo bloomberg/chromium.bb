@@ -41,6 +41,41 @@ static bool compareByScaleFactor(const ImageCandidate& first, const ImageCandida
     return first.scaleFactor() < second.scaleFactor();
 }
 
+template<typename CharType>
+inline bool isComma(CharType character)
+{
+    return character == ',';
+}
+
+template<typename CharType>
+static bool parseDescriptors(const CharType* descriptorsStart, const CharType* descriptorsEnd, float& imgScaleFactor)
+{
+    const CharType* position = descriptorsStart;
+    bool isValid = true;
+    bool isScaleFactorFound = false;
+    while (position < descriptorsEnd) {
+        // 13.1. Let descriptor list be the result of splitting unparsed descriptors on spaces.
+        skipWhile<CharType, isHTMLSpace<CharType> >(position, descriptorsEnd);
+        const CharType* currentDescriptorStart = position;
+        skipWhile<CharType, isNotHTMLSpace<CharType> >(position, descriptorsEnd);
+        const CharType* currentDescriptorEnd = position;
+
+        ++position;
+        ASSERT(currentDescriptorEnd > currentDescriptorStart);
+        --currentDescriptorEnd;
+        unsigned descriptorLength = currentDescriptorEnd - currentDescriptorStart;
+        if (*currentDescriptorEnd == 'x') {
+            if (isScaleFactorFound)
+                return false;
+            imgScaleFactor = charactersToFloat(currentDescriptorStart, descriptorLength, &isValid);
+            isScaleFactorFound = true;
+        } else {
+            continue;
+        }
+    }
+    return isValid;
+}
+
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/embedded-content-1.html#processing-the-image-candidates
 template<typename CharType>
 static void parseImageCandidatesFromSrcsetAttribute(const String& attribute, const CharType* attributeStart, unsigned length, Vector<ImageCandidate>& imageCandidates)
@@ -50,6 +85,7 @@ static void parseImageCandidatesFromSrcsetAttribute(const String& attribute, con
 
     while (position < attributeEnd) {
         float imgScaleFactor = 1.0;
+
         // 4. Splitting loop: Skip whitespace.
         skipWhile<CharType, isHTMLSpace<CharType> >(position, attributeEnd);
         if (position == attributeEnd)
@@ -61,8 +97,8 @@ static void parseImageCandidatesFromSrcsetAttribute(const String& attribute, con
             ++position;
             continue;
         }
+
         // 5. Collect a sequence of characters that are not space characters, and let that be url.
-        ++position;
         skipUntil<CharType, isHTMLSpace<CharType> >(position, attributeEnd);
         const CharType* imageURLEnd = position;
 
@@ -71,32 +107,11 @@ static void parseImageCandidatesFromSrcsetAttribute(const String& attribute, con
         } else {
             // 7. Collect a sequence of characters that are not "," (U+002C) characters, and let that be descriptors.
             skipWhile<CharType, isHTMLSpace<CharType> >(position, attributeEnd);
-            const CharType* qualifierStart = position;
-            if (position != attributeEnd && *position != ',') {
-                // This part differs from the spec as the current implementation only supports pixel density descriptors for now.
-                skipUntil<CharType, isHTMLSpaceOrComma<CharType> >(position, attributeEnd);
-                const CharType* qualifierEnd = position;
-                ASSERT(qualifierEnd > qualifierStart);
-                // Make sure there are no other descriptors
-                skipWhile<CharType, isHTMLSpace<CharType> >(position, attributeEnd);
-                // If the first non-html-space character after the scale modifier is not a comma,
-                // the current candidate is an invalid input.
-                if (position != attributeEnd && *position != ',') {
-                    skipUntil<CharType>(position, attributeEnd, ',');
-                    ++position;
-                    continue;
-                }
-                // If the current qualifier is not an 'x', the resource is ignored
-                if (*(qualifierEnd - 1) != 'x')
-                    continue;
-
-                bool validScaleFactor = false;
-                unsigned scaleFactorLengthWithoutUnit = qualifierEnd - qualifierStart - 1;
-                imgScaleFactor = charactersToFloat(qualifierStart, scaleFactorLengthWithoutUnit, &validScaleFactor);
-
-                if (!validScaleFactor)
-                    continue;
-            }
+            const CharType* descriptorsStart = position;
+            skipUntil<CharType, isComma<CharType> >(position, attributeEnd);
+            const CharType* descriptorsEnd = position;
+            if (!parseDescriptors(descriptorsStart, descriptorsEnd, imgScaleFactor))
+                continue;
         }
 
         imageCandidates.append(ImageCandidate(attribute, imageURLStart - attributeStart, imageURLEnd - imageURLStart, imgScaleFactor));
