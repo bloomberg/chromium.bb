@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 // This is the transformation for Windows X86 executables.
-// The same patcher can be used for Windows X64 executables.
 
 #ifndef COURGETTE_WIN32_X86_PATCHER_H_
 #define COURGETTE_WIN32_X86_PATCHER_H_
@@ -13,7 +12,7 @@
 namespace courgette {
 
 // Courgette32X86Patcher is a TransformationPatcher for Windows 32-bit
-// and 64-bit executables.  We can use the same patcher for both.
+// executables.
 //
 class PatcherX86_32 : public TransformationPatcher {
  public:

@@ -450,7 +450,7 @@ EncodedProgram* AssemblyProgram::Encode() const {
         break;
       }
       case MAKEPERELOCS: {
-        if (!encoded->AddPeMakeRelocs(kind_))
+        if (!encoded->AddPeMakeRelocs())
           return NULL;
         break;
       }
