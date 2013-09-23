@@ -8,6 +8,7 @@
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/media/android/browser_demuxer_android.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "content/public/browser/browser_context.h"
@@ -15,6 +16,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_source_player.h"
@@ -81,7 +83,8 @@ BrowserMediaPlayerManager::BrowserMediaPlayerManager(
     RenderViewHost* render_view_host)
     : RenderViewHostObserver(render_view_host),
       fullscreen_player_id_(-1),
-      web_contents_(WebContents::FromRenderViewHost(render_view_host)) {
+      web_contents_(WebContents::FromRenderViewHost(render_view_host)),
+      weak_ptr_factory_(this) {
 }
 
 BrowserMediaPlayerManager::~BrowserMediaPlayerManager() {}
@@ -455,8 +458,9 @@ void BrowserMediaPlayerManager::OnDestroyPlayer(int player_id) {
 
 void BrowserMediaPlayerManager::OnInitializeCDM(
     int media_keys_id,
-    const std::vector<uint8>& uuid) {
-  AddDrmBridge(media_keys_id, uuid);
+    const std::vector<uint8>& uuid,
+    const GURL& frame_url) {
+  AddDrmBridge(media_keys_id, uuid, frame_url);
   // In EME v0.1b MediaKeys lives in the media element. So the |media_keys_id|
   // is the same as the |player_id|.
   OnSetMediaKeys(media_keys_id, media_keys_id);
@@ -466,9 +470,16 @@ void BrowserMediaPlayerManager::OnGenerateKeyRequest(
     int media_keys_id,
     const std::string& type,
     const std::vector<uint8>& init_data) {
-  MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
-  if (drm_bridge)
-    drm_bridge->GenerateKeyRequest(type, &init_data[0], init_data.size());
+  WebContents* web_contents =
+      WebContents::FromRenderViewHost(render_view_host());
+  web_contents->GetDelegate()->RequestProtectedMediaIdentifierPermission(
+      web_contents,
+      GetDrmBridge(media_keys_id)->frame_url(),
+      base::Bind(&BrowserMediaPlayerManager::GenerateKeyIfAllowed,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 media_keys_id,
+                 type,
+                 init_data));
 }
 
 void BrowserMediaPlayerManager::OnAddKey(int media_keys_id,
@@ -528,7 +539,8 @@ scoped_ptr<media::MediaPlayerAndroid> BrowserMediaPlayerManager::SwapPlayer(
 }
 
 void BrowserMediaPlayerManager::AddDrmBridge(int media_keys_id,
-                                             const std::vector<uint8>& uuid) {
+                                             const std::vector<uint8>& uuid,
+                                             const GURL& frame_url) {
   DCHECK(!GetDrmBridge(media_keys_id));
   // TODO(xhwang/ddorwin): Pass the security level from key system.
   std::string security_level = "L3";
@@ -537,8 +549,8 @@ void BrowserMediaPlayerManager::AddDrmBridge(int media_keys_id,
     security_level = "L1";
   }
 
-  scoped_ptr<MediaDrmBridge> drm_bridge(
-      MediaDrmBridge::Create(media_keys_id, uuid, security_level, this));
+  scoped_ptr<MediaDrmBridge> drm_bridge(MediaDrmBridge::Create(
+      media_keys_id, uuid, frame_url, security_level, this));
   if (!drm_bridge) {
     DVLOG(1) << "failed to create drm bridge.";
     OnKeyError(media_keys_id, "", media::MediaKeys::kUnknownError, 0);
@@ -569,6 +581,19 @@ void BrowserMediaPlayerManager::OnSetMediaKeys(int player_id,
   // TODO(qinmin): add the logic to decide whether we should create the
   // fullscreen surface for EME lv1.
   player->SetDrmBridge(drm_bridge);
+}
+
+void BrowserMediaPlayerManager::GenerateKeyIfAllowed(
+    int media_keys_id,
+    const std::string& type,
+    const std::vector<uint8>& init_data,
+    bool allowed) {
+  if (!allowed)
+    return;
+
+  MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
+  if (drm_bridge)
+    drm_bridge->GenerateKeyRequest(type, &init_data[0], init_data.size());
 }
 
 }  // namespace content

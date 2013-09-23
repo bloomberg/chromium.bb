@@ -75,13 +75,14 @@ void ProxyDecryptor::SetDecryptorReadyCB(
   decryptor_ready_cb_ = decryptor_ready_cb;
 }
 
-bool ProxyDecryptor::InitializeCDM(const std::string& key_system) {
+bool ProxyDecryptor::InitializeCDM(const std::string& key_system,
+                                   const GURL& frame_url) {
   DVLOG(1) << "InitializeCDM: key_system = " << key_system;
 
   base::AutoLock auto_lock(lock_);
 
   DCHECK(!media_keys_);
-  media_keys_ = CreateMediaKeys(key_system);
+  media_keys_ = CreateMediaKeys(key_system, frame_url);
 
   return media_keys_ != NULL;
 }
@@ -119,7 +120,8 @@ void ProxyDecryptor::CancelKeyRequest(const std::string& session_id) {
 }
 
 scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
-    const std::string& key_system) {
+    const std::string& key_system,
+    const GURL& frame_url) {
   return ContentDecryptionModuleFactory::Create(
       key_system,
 #if defined(ENABLE_PEPPER_CDMS)
@@ -130,6 +132,7 @@ scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
 #elif defined(OS_ANDROID)
       proxy_,
       media_keys_id_,
+      frame_url,
 #endif  // defined(ENABLE_PEPPER_CDMS)
       base::Bind(&ProxyDecryptor::KeyAdded, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyDecryptor::KeyError, weak_ptr_factory_.GetWeakPtr()),

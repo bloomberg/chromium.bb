@@ -1017,7 +1017,7 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
 
   // We do not support run-time switching between key systems for now.
   if (current_key_system_.isEmpty()) {
-    if (!decryptor_->InitializeCDM(key_system.utf8()))
+    if (!decryptor_->InitializeCDM(key_system.utf8(), frame_->document().url()))
       return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
     current_key_system_ = key_system;
   } else if (key_system != current_key_system_) {

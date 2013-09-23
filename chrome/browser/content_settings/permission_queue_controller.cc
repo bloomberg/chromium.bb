@@ -21,6 +21,9 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/media/protected_media_identifier_infobar_delegate.h"
+#endif
 
 namespace {
 
@@ -110,6 +113,13 @@ void PermissionQueueController::PendingInfoBarRequest::CreateInfoBar(
           GetInfoBarService(id_), controller, id_, requesting_frame_,
           display_languages);
       break;
+#if defined(OS_ANDROID)
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+      infobar_ = ProtectedMediaIdentifierInfoBarDelegate::Create(
+          GetInfoBarService(id_), controller, id_, requesting_frame_,
+          display_languages);
+      break;
+#endif
     default:
       NOTREACHED();
       break;

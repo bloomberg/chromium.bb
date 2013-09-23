@@ -19,13 +19,14 @@ ProxyMediaKeys::ProxyMediaKeys(WebMediaPlayerProxyAndroid* proxy,
   DCHECK(proxy_);
 }
 
-void ProxyMediaKeys::InitializeCDM(const std::string& key_system) {
+void ProxyMediaKeys::InitializeCDM(const std::string& key_system,
+                                   const GURL& frame_url) {
 #if defined(ENABLE_PEPPER_CDMS)
   NOTIMPLEMENTED();
 #elif defined(OS_ANDROID)
   std::vector<uint8> uuid = GetUUID(key_system);
   DCHECK(!uuid.empty());
-  proxy_->InitializeCDM(media_keys_id_, uuid);
+  proxy_->InitializeCDM(media_keys_id_, uuid, frame_url);
 #endif
 }
 

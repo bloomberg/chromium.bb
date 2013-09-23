@@ -41,10 +41,12 @@ const char* kTypeNames[] = {
   "ppapi-broker",
   "multiple-automatic-downloads",
   "midi-sysex",
+  "save-password",
 #if defined(OS_WIN)
   "metro-switch-to-desktop",
+#elif defined(OS_ANDROID)
+  "protected-media-identifier",
 #endif
-  "save-password",
 };
 COMPILE_ASSERT(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
                type_names_incorrect_size);

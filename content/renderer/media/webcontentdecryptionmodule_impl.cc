@@ -16,6 +16,7 @@
 #include "content/renderer/media/crypto/content_decryption_module_factory.h"
 #include "content/renderer/media/webcontentdecryptionmodulesession_impl.h"
 #include "media/base/media_keys.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -87,6 +88,8 @@ bool SessionIdAdapter::Initialize(const std::string& key_system,
           // TODO(xhwang): Support Android.
           NULL,
           0,
+          // TODO(ddorwin): Get the URL for the frame containing the MediaKeys.
+          GURL(),
 #endif  // defined(ENABLE_PEPPER_CDMS)
           base::Bind(&SessionIdAdapter::KeyAdded, weak_this),
           base::Bind(&SessionIdAdapter::KeyError, weak_this),

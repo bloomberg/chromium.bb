@@ -8,6 +8,8 @@
 #include "base/basictypes.h"
 #include "media/base/media_keys.h"
 
+class GURL;
+
 namespace content {
 
 class WebMediaPlayerProxyAndroid;
@@ -20,7 +22,7 @@ class ProxyMediaKeys : public media::MediaKeys {
  public:
   ProxyMediaKeys(WebMediaPlayerProxyAndroid* proxy, int media_keys_id);
 
-  void InitializeCDM(const std::string& key_system);
+  void InitializeCDM(const std::string& key_system, const GURL& frame_url);
 
   // MediaKeys implementation.
   virtual bool GenerateKeyRequest(const std::string& type,

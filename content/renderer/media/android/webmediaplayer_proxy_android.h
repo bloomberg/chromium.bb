@@ -84,7 +84,9 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
 #endif
 
   // Encrypted media related methods.
-  void InitializeCDM(int media_keys_id, const std::vector<uint8>& uuid);
+  void InitializeCDM(int media_keys_id,
+                     const std::vector<uint8>& uuid,
+                     const GURL& frame_url);
   void GenerateKeyRequest(int media_keys_id,
                           const std::string& type,
                           const std::vector<uint8>& init_data);

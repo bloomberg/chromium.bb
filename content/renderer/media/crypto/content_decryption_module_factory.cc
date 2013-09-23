@@ -96,6 +96,7 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
 #elif defined(OS_ANDROID)
     WebMediaPlayerProxyAndroid* proxy,
     int media_keys_id,
+    const GURL& frame_url,
 #endif  // defined(ENABLE_PEPPER_CDMS)
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
@@ -117,7 +118,7 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
 #elif defined(OS_ANDROID)
   scoped_ptr<ProxyMediaKeys> proxy_media_keys(
       new ProxyMediaKeys(proxy, media_keys_id));
-  proxy_media_keys->InitializeCDM(key_system);
+  proxy_media_keys->InitializeCDM(key_system, frame_url);
   return proxy_media_keys.PassAs<media::MediaKeys>();
 #else
   return scoped_ptr<media::MediaKeys>();

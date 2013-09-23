@@ -200,8 +200,10 @@ void WebMediaPlayerProxyAndroid::DidCommitCompositorFrame() {
 #endif
 
 void WebMediaPlayerProxyAndroid::InitializeCDM(int media_keys_id,
-                                               const std::vector<uint8>& uuid) {
-  Send(new MediaKeysHostMsg_InitializeCDM(routing_id(), media_keys_id, uuid));
+                                               const std::vector<uint8>& uuid,
+                                               const GURL& frame_url) {
+  Send(new MediaKeysHostMsg_InitializeCDM(
+      routing_id(), media_keys_id, uuid, frame_url));
 }
 
 void WebMediaPlayerProxyAndroid::GenerateKeyRequest(

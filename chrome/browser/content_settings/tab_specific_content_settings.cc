@@ -278,11 +278,18 @@ void TabSpecificContentSettings::OnContentBlocked(
   // Media is different from other content setting types since it allows new
   // setting to kick in without reloading the page, and the UI for media is
   // always reflecting the newest permission setting.
-  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
-    content_allowed_[type] = false;
-  else
-    content_allowed_[type] = true;
+  switch (type) {
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+#if defined(OS_ANDROID)
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+#endif
+      content_allowed_[type] = false;
+      break;
+    default:
+      content_allowed_[type] = true;
+      break;
+  }
 
   // Unless UI for resource content settings is enabled, ignore the resource
   // identifier.
@@ -296,7 +303,7 @@ void TabSpecificContentSettings::OnContentBlocked(
   if (!identifier.empty())
     AddBlockedResource(type, identifier);
 
-#if defined (OS_ANDROID)
+#if defined(OS_ANDROID)
   if (type == CONTENT_SETTINGS_TYPE_POPUPS) {
     // For Android we do not have a persistent button that will always be
     // visible for blocked popups.  Instead we have info bars which could be
@@ -321,14 +328,21 @@ void TabSpecificContentSettings::OnContentAllowed(ContentSettingsType type) {
   DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
       << "Geolocation settings handled by OnGeolocationPermissionSet";
   bool access_changed = false;
-  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
-    // The setting for media is overwritten here because media does not need to
-    // reload the page to have the new setting kick in. See issue/175993.
-    if (content_blocked_[type]) {
-      content_blocked_[type] = false;
-      access_changed = true;
-    }
+  switch (type) {
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+#if defined(OS_ANDROID)
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+#endif
+      // The setting for media is overwritten here because media does not need
+      // to reload the page to have the new setting kick in. See issue/175993.
+      if (content_blocked_[type]) {
+        content_blocked_[type] = false;
+        access_changed = true;
+      }
+      break;
+    default:
+      break;
   }
 
   if (!content_allowed_[type]) {
@@ -461,6 +475,19 @@ void TabSpecificContentSettings::OnGeolocationPermissionSet(
       content::Source<WebContents>(web_contents()),
       content::NotificationService::NoDetails());
 }
+
+#if defined(OS_ANDROID)
+void TabSpecificContentSettings::OnProtectedMediaIdentifierPermissionSet(
+    const GURL& requesting_origin,
+    bool allowed) {
+  if (allowed) {
+    OnContentAllowed(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
+  } else {
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
+                     std::string());
+  }
+}
+#endif
 
 void TabSpecificContentSettings::OnPasswordSubmitted(
     PasswordFormManager* form_manager) {

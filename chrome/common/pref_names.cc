@@ -2057,6 +2057,12 @@ const char kVideoCaptureAllowed[] = "hardware.video_capture_enabled";
 // TODO(tommi): Update comment when this is supported for all modes.
 const char kVideoCaptureAllowedUrls[] = "hardware.video_capture_allowed_urls";
 
+#if defined(OS_ANDROID)
+// Boolean that controls the global enabled-state of protected media identifier.
+const char kProtectedMediaIdentifierEnabled[] =
+    "protected_media_identifier.enabled";
+#endif
+
 #if defined(OS_CHROMEOS)
 // Dictionary for transient storage of settings that should go into device
 // settings storage before owner has been assigned.

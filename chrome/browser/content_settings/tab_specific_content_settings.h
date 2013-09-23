@@ -337,6 +337,10 @@ class TabSpecificContentSettings
                              bool blocked_by_policy);
   void OnGeolocationPermissionSet(const GURL& requesting_frame,
                                   bool allowed);
+#if defined(OS_ANDROID)
+  void OnProtectedMediaIdentifierPermissionSet(const GURL& requesting_frame,
+                                               bool allowed);
+#endif
 
   // This method is called to update the status about the microphone and
   // camera stream access. |request_permissions| contains a list of requested

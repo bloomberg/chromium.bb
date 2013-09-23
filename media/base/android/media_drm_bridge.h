@@ -14,6 +14,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/base/media_keys.h"
+#include "url/gurl.h"
+
+class GURL;
 
 namespace media {
 
@@ -38,6 +41,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   static scoped_ptr<MediaDrmBridge> Create(
       int media_keys_id,
       const std::vector<uint8>& scheme_uuid,
+      const GURL& frame_url,
       const std::string& security_level,
       MediaPlayerManager* manager);
 
@@ -96,6 +100,8 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
 
   int media_keys_id() const { return media_keys_id_; }
 
+  GURL frame_url() const { return frame_url_; }
+
   static void set_can_use_media_drm(bool can_use_media_drm) {
     can_use_media_drm_ = can_use_media_drm;
   }
@@ -107,6 +113,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
 
   MediaDrmBridge(int media_keys_id,
                  const std::vector<uint8>& scheme_uuid,
+                 const GURL& frame_url,
                  const std::string& security_level,
                  MediaPlayerManager* manager);
 
@@ -118,6 +125,9 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
 
   // UUID of the key system.
   std::vector<uint8> scheme_uuid_;
+
+  // media stream's frame URL.
+  const GURL frame_url_;
 
   // Java MediaDrm instance.
   base::android::ScopedJavaGlobalRef<jobject> j_media_drm_;

@@ -119,7 +119,9 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnSetVolume(int player_id, double volume);
   virtual void OnReleaseResources(int player_id);
   virtual void OnDestroyPlayer(int player_id);
-  void OnInitializeCDM(int media_keys_id, const std::vector<uint8>& uuid);
+  void OnInitializeCDM(int media_keys_id,
+                       const std::vector<uint8>& uuid,
+                       const GURL& frame_url);
   void OnGenerateKeyRequest(int media_keys_id,
                             const std::string& type,
                             const std::vector<uint8>& init_data);
@@ -148,13 +150,21 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
       int player_id,
       media::MediaPlayerAndroid* player);
 
-  // Add a new MediaDrmBridge for the given |uuid| and |media_keys_id|.
-  void AddDrmBridge(int media_keys_id, const std::vector<uint8>& uuid);
+  // Add a new MediaDrmBridge for the given |uuid|, |media_keys_id|, and
+  // |frame_url|.
+  void AddDrmBridge(int media_keys_id,
+                    const std::vector<uint8>& uuid,
+                    const GURL& frame_url);
 
   // Removes the DRM bridge with the specified id.
   void RemoveDrmBridge(int media_keys_id);
 
  private:
+  void GenerateKeyIfAllowed(int media_keys_id,
+                            const std::string& type,
+                            const std::vector<uint8>& init_data,
+                            bool allowed);
+
   // Constructs a MediaPlayerAndroid object. Declared static to permit embedders
   // to override functionality.
   //
@@ -189,6 +199,8 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   // Object for retrieving resources media players.
   scoped_ptr<media::MediaResourceGetter> media_resource_getter_;
+
+  base::WeakPtrFactory<BrowserMediaPlayerManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMediaPlayerManager);
 };

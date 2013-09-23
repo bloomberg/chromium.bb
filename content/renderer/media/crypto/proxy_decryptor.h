@@ -15,6 +15,8 @@
 #include "media/base/decryptor.h"
 #include "media/base/media_keys.h"
 
+class GURL;
+
 namespace WebKit {
 #if defined(ENABLE_PEPPER_CDMS)
 class WebFrame;
@@ -48,7 +50,7 @@ class ProxyDecryptor : public media::MediaKeys {
   virtual ~ProxyDecryptor();
 
   // Only call this once.
-  bool InitializeCDM(const std::string& key_system);
+  bool InitializeCDM(const std::string& key_system, const GURL& frame_url);
 
   // Requests the ProxyDecryptor to notify the decryptor when it's ready through
   // the |decryptor_ready_cb| provided.
@@ -68,7 +70,8 @@ class ProxyDecryptor : public media::MediaKeys {
 
  private:
   // Helper function to create MediaKeys to handle the given |key_system|.
-  scoped_ptr<media::MediaKeys> CreateMediaKeys(const std::string& key_system);
+  scoped_ptr<media::MediaKeys> CreateMediaKeys(const std::string& key_system,
+                                               const GURL& frame_url);
 
   // Callbacks for firing key events.
   void KeyAdded(const std::string& session_id);

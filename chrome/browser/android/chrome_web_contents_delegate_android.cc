@@ -10,6 +10,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/protected_media_identifier_permission_context.h"
+#include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
@@ -20,6 +22,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/file_chooser_params.h"
@@ -299,6 +302,21 @@ void ChromeWebContentsDelegateAndroid::AddNewContents(
 
   if (!handled)
     delete new_contents;
+}
+
+void
+ChromeWebContentsDelegateAndroid::RequestProtectedMediaIdentifierPermission(
+    const WebContents* web_contents,
+    const GURL& frame_url,
+    const base::Callback<void(bool)>& callback) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(profile)->
+      RequestProtectedMediaIdentifierPermission(
+            web_contents->GetRenderProcessHost()->GetID(),
+            web_contents->GetRenderViewHost()->GetRoutingID(),
+            frame_url,
+            callback);
 }
 
 }  // namespace android

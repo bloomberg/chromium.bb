@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "media/base/android/media_drm_bridge.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -50,7 +51,7 @@ bool MediaDrmCredentialManager::ResetCredentialsInternal(
     const std::string& security_level) {
   std::vector<uint8> uuid(kWidevineUuid, kWidevineUuid + 16);
   media_drm_bridge_ = media::MediaDrmBridge::Create(
-      0, uuid, security_level, NULL);
+      0, uuid, GURL(), security_level, NULL);
   if (!media_drm_bridge_)
     return false;
   media_drm_bridge_->ResetDeviceCredentials(

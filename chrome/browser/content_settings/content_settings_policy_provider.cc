@@ -44,10 +44,12 @@ const char* kPrefToManageType[] = {
   NULL,  // No policy for default value of PPAPI broker
   NULL,  // No policy for default value of multiple automatic downloads
   NULL,  // No policy for default value of MIDI system exclusive requests
+  NULL,  // No policy for default value of save password
 #if defined(OS_WIN)
   NULL,  // No policy for default value of "switch to desktop"
+#elif defined(OS_ANDROID)
+  NULL,  // No policy for default value of protected media identifier
 #endif
-  NULL,  // No policy for default value of save password
 };
 COMPILE_ASSERT(arraysize(kPrefToManageType) == CONTENT_SETTINGS_NUM_TYPES,
                managed_content_settings_pref_names_array_size_incorrect);

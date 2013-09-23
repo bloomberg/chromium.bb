@@ -14,6 +14,8 @@
 DEFINE_RESOURCE_ID(0, 0)
 
 // InfoBar resources.
+DEFINE_RESOURCE_ID(IDR_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_ICON,
+                   R.drawable.infobar_protected_media_identifier)
 DEFINE_RESOURCE_ID(IDR_GEOLOCATION_INFOBAR_ICON, R.drawable.infobar_geolocation)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_ALT_NAV_URL, R.drawable.infobar_didyoumean)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_AUTOFILL, R.drawable.infobar_autofill)

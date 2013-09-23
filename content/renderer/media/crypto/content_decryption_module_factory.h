@@ -10,6 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_keys.h"
 
+class GURL;
+
 #if defined(ENABLE_PEPPER_CDMS)
 namespace WebKit {
 class WebFrame;
@@ -33,6 +35,7 @@ class ContentDecryptionModuleFactory {
 #elif defined(OS_ANDROID)
       WebMediaPlayerProxyAndroid* proxy,
       int media_keys_id,
+      const GURL& frame_url,
 #endif  // defined(ENABLE_PEPPER_CDMS)
       const media::KeyAddedCB& key_added_cb,
       const media::KeyErrorCB& key_error_cb,

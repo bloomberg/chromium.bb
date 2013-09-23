@@ -229,9 +229,10 @@ IPC_MESSAGE_ROUTED3(MediaPlayerHostMsg_NotifyExternalSurface,
 // Messages for encrypted media extensions API ------------------------------
 // TODO(xhwang): Move the following messages to a separate file.
 
-IPC_MESSAGE_ROUTED2(MediaKeysHostMsg_InitializeCDM,
+IPC_MESSAGE_ROUTED3(MediaKeysHostMsg_InitializeCDM,
                     int /* media_keys_id */,
-                    std::vector<uint8> /* uuid */)
+                    std::vector<uint8> /* uuid */,
+                    GURL /* frame url */)
 
 IPC_MESSAGE_ROUTED3(MediaKeysHostMsg_GenerateKeyRequest,
                     int /* media_keys_id */,

@@ -393,6 +393,13 @@ class CONTENT_EXPORT WebContentsDelegate {
                                    int version,
                                    const std::vector<gfx::RectF>& rects,
                                    const gfx::RectF& active_rect) {}
+
+  // Request permission to access protected media identifier. The callback will
+  // tell whether it's allowed.
+  virtual void RequestProtectedMediaIdentifierPermission(
+      const WebContents* web_contents,
+      const GURL& frame_url,
+      const base::Callback<void(bool)>& callback) {}
 #endif
 
   // Invoked when the preferred size of the contents has been changed.

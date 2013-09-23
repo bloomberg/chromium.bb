@@ -3111,6 +3111,12 @@
             'browser/ssl/ssl_add_certificate_android.cc',
             'browser/web_resource/notification_promo_mobile_ntp.cc',
             'browser/web_resource/notification_promo_mobile_ntp.h',
+            'browser/media/protected_media_identifier_infobar_delegate.cc',
+            'browser/media/protected_media_identifier_infobar_delegate.h',
+            'browser/media/protected_media_identifier_permission_context.cc',
+            'browser/media/protected_media_identifier_permission_context.h',
+            'browser/media/protected_media_identifier_permission_context_factory.cc',
+            'browser/media/protected_media_identifier_permission_context_factory.h',
           ],
           'sources!': [
             # Bookmark export/import are handled via the BookmarkColumns

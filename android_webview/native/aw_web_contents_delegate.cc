@@ -176,6 +176,13 @@ void AwWebContentsDelegate::ActivateContents(WebContents* contents) {
   }
 }
 
+void AwWebContentsDelegate::RequestProtectedMediaIdentifierPermission(
+    const content::WebContents* web_contents,
+    const GURL& frame_url,
+    const base::Callback<void(bool)>& callback) {
+  NOTIMPLEMENTED();
+}
+
 static void FilesSelectedInChooser(
     JNIEnv* env, jclass clazz,
     jint process_id, jint render_id, jint mode_flags,
