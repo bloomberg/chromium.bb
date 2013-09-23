@@ -22,6 +22,7 @@ def main():
       '-d', '--dump-mode', action='store_true',
       help='Dump the environment to sys.stdout and exit immediately.')
 
+  parser.disable_interspersed_args()
   options, args = parser.parse_args()
   if options.dump_mode:
     if args or options.output_json:
