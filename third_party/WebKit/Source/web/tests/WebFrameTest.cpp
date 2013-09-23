@@ -954,6 +954,35 @@ TEST_F(WebFrameTest, IgnoreOverflowHiddenQuirk)
     EXPECT_TRUE(view->userInputScrollable(WebCore::VerticalScrollbar));
 }
 
+TEST_F(WebFrameTest, NonZeroValuesNoQuirk)
+{
+    registerMockedHttpURLLoad("viewport-nonzero-values.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+    float expectedPageScaleFactor = 0.5f;
+
+    m_webView = FrameTestHelpers::createWebView(true, 0, &client);
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setViewportEnabled(true);
+    m_webView->settings()->setViewportMetaZeroValuesQuirk(true);
+    m_webView->settings()->setWideViewportQuirkEnabled(true);
+    FrameTestHelpers::loadFrame(m_webView->mainFrame(), m_baseURL + "viewport-nonzero-values.html");
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+
+    WebViewImpl* webViewImpl = toWebViewImpl(m_webView);
+    EXPECT_EQ(viewportWidth / expectedPageScaleFactor, webViewImpl->mainFrameImpl()->frameView()->fixedLayoutSize().width());
+    EXPECT_EQ(expectedPageScaleFactor, m_webView->pageScaleFactor());
+
+    m_webView->settings()->setUseWideViewport(true);
+    m_webView->layout();
+    EXPECT_EQ(viewportWidth / expectedPageScaleFactor, webViewImpl->mainFrameImpl()->frameView()->fixedLayoutSize().width());
+    EXPECT_EQ(expectedPageScaleFactor, m_webView->pageScaleFactor());
+}
+
 TEST_F(WebFrameTest, ScaleFactorShouldNotOscillate)
 {
     registerMockedHttpURLLoad("scale_oscillate.html");

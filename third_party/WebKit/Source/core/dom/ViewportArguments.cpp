@@ -235,7 +235,7 @@ static Length findSizeValue(const String& keyString, const String& valueString, 
     if (value < 0)
         return Length(); // auto
 
-    if (!static_cast<int>(value) && document->page() && document->page()->settings().viewportMetaZeroValuesQuirk()) {
+    if (!value && document->page() && document->page()->settings().viewportMetaZeroValuesQuirk()) {
         if (keyString == "width")
             return Length(100, ViewportPercentageWidth);
         if (keyString == "height")
@@ -270,7 +270,7 @@ static float findScaleValue(const String& keyString, const String& valueString, 
     if (value > 10.0)
         reportViewportWarning(document, MaximumScaleTooLargeError, String(), String());
 
-    if (!static_cast<int>(value) && document->page() && document->page()->settings().viewportMetaZeroValuesQuirk() && (keyString == "minimum-scale" || keyString == "maximum-scale"))
+    if (!value && document->page() && document->page()->settings().viewportMetaZeroValuesQuirk() && (keyString == "minimum-scale" || keyString == "maximum-scale"))
         return ViewportArguments::ValueAuto;
 
     return clampScaleValue(value);
