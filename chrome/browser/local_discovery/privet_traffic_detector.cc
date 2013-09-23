@@ -4,6 +4,7 @@
 
 #include "chrome/browser/local_discovery/privet_traffic_detector.h"
 
+#include "base/metrics/histogram.h"
 #include "base/sys_byteorder.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
@@ -16,9 +17,8 @@
 
 namespace {
 
+const int kMaxRestartAttempts = 10;
 const char kPrivetDeviceTypeDnsString[] = "\x07_privet\x04_tcp\x05local";
-
-
 
 void GetNetworkListOnFileThread(
     const base::Callback<void(const net::NetworkInterfaceList&)> callback) {
@@ -57,6 +57,7 @@ PrivetTrafficDetector::PrivetTrafficDetector(
       address_family_(address_family),
       io_buffer_(
           new net::IOBufferWithSize(net::dns_protocol::kMaxMulticastSize)),
+      restart_attempts_(kMaxRestartAttempts),
       weak_ptr_factory_(this) {
 }
 
@@ -82,6 +83,7 @@ void PrivetTrafficDetector::StartOnIOThread() {
 void PrivetTrafficDetector::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  restart_attempts_ = kMaxRestartAttempts;
   if (type != net::NetworkChangeNotifier::CONNECTION_NONE)
     ScheduleRestart();
 }
@@ -103,11 +105,20 @@ void PrivetTrafficDetector::Restart(const net::NetworkInterfaceList& networks) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   networks_ = networks;
   if (Bind() < net::OK || DoLoop(0) < net::OK) {
-    ScheduleRestart();
+    if ((restart_attempts_--) > 0)
+      ScheduleRestart();
+  } else {
+    // Reset on success.
+    restart_attempts_ = kMaxRestartAttempts;
   }
 }
 
 int PrivetTrafficDetector::Bind() {
+  if (!start_time_.is_null()) {
+    base::TimeDelta time_delta = base::Time::Now() - start_time_;
+    UMA_HISTOGRAM_LONG_TIMES("LocaDiscovery.DetectorRestartTime", time_delta);
+  }
+  start_time_ = base::Time::Now();
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   socket_.reset(new net::UDPServerSocket(NULL, net::NetLog::Source()));
   net::IPEndPoint multicast_addr = net::GetMDnsIPEndPoint(address_family_);
@@ -156,6 +167,8 @@ int PrivetTrafficDetector::DoLoop(int rv) {
     if (IsPrivetPacket(rv)) {
       socket_.reset();
       callback_runner_->PostTask(FROM_HERE, on_traffic_detected_);
+      base::TimeDelta time_delta = base::Time::Now() - start_time_;
+      UMA_HISTOGRAM_LONG_TIMES("LocaDiscovery.DetectorTriggerTime", time_delta);
       return net::OK;
     }
 

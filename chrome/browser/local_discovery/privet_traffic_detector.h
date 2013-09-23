@@ -58,6 +58,8 @@ class PrivetTrafficDetector
   net::IPEndPoint recv_addr_;
   scoped_ptr<net::DatagramServerSocket> socket_;
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
+  base::Time start_time_;
+  int restart_attempts_;
 
   base::WeakPtrFactory<PrivetTrafficDetector> weak_ptr_factory_;
 
