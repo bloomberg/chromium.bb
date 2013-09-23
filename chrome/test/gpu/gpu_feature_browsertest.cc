@@ -189,8 +189,8 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_AcceleratedCompositingAllowed) {
 
 class AcceleratedCompositingBlockedTest : public GpuFeatureTest {
  public:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    GpuFeatureTest::SetUpInProcessBrowserTestFixture();
+  virtual void SetUpOnMainThread() OVERRIDE {
+    GpuFeatureTest::SetUpOnMainThread();
     const std::string json_blacklist =
       "{\n"
       "  \"name\": \"gpu blacklist\",\n"
@@ -216,7 +216,7 @@ class AcceleratedCompositingBlockedTest : public GpuFeatureTest {
 #endif
 
 IN_PROC_BROWSER_TEST_F(AcceleratedCompositingBlockedTest,
-    MAYBE_AcceleratedCompositingBlocked) {
+                       MAYBE_AcceleratedCompositingBlocked) {
   EXPECT_TRUE(GpuDataManager::GetInstance()->IsFeatureBlacklisted(
       gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING));
 
@@ -366,11 +366,18 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
   if (gpu::GPUTestBotConfig::CurrentConfigMatches("XP"))
     return;
 
-  EXPECT_FALSE(GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-      gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
+  bool is_blacklisted = false;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Blacklist rule #24 disables accelerated_2d_canvas on Linux.
+  is_blacklisted = true;
+#endif
+
+  EXPECT_EQ(is_blacklisted,
+            GpuDataManager::GetInstance()->IsFeatureBlacklisted(
+                gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
 
   const base::FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
-  RunEventTest(url, kAcceleratedCanvasCreationEvent, true);
+  RunEventTest(url, kAcceleratedCanvasCreationEvent, !is_blacklisted);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {
