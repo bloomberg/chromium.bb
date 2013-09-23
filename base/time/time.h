@@ -300,6 +300,10 @@ class BASE_EXPORT Time {
   static Time FromJsTime(double ms_since_epoch);
   double ToJsTime() const;
 
+  // Converts to Java convention for times, a number of
+  // milliseconds since the epoch.
+  int64 ToJavaTime() const;
+
 #if defined(OS_POSIX)
   static Time FromTimeVal(struct timeval t);
   struct timeval ToTimeVal() const;

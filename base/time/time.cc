@@ -138,6 +138,19 @@ double Time::ToJsTime() const {
           kMicrosecondsPerMillisecond);
 }
 
+int64 Time::ToJavaTime() const {
+  if (is_null()) {
+    // Preserve 0 so the invalid result doesn't depend on the platform.
+    return 0;
+  }
+  if (is_max()) {
+    // Preserve max without offset to prevent overflow.
+    return std::numeric_limits<int64>::max();
+  }
+  return ((us_ - kTimeTToMicrosecondsOffset) /
+          kMicrosecondsPerMillisecond);
+}
+
 // static
 Time Time::UnixEpoch() {
   Time time;
