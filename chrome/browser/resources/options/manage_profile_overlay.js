@@ -337,7 +337,7 @@ cr.define('options', function() {
       var isManaged = $('create-profile-managed').checked;
       var existingManagedUserId = '';
 
-      // 'createProfile' is handled by the BrowserOptionsHandler.
+      // 'createProfile' is handled by the CreateProfileHandler.
       chrome.send('createProfile',
                   [name, iconUrl, createShortcut,
                    isManaged, existingManagedUserId]);

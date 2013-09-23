@@ -58,7 +58,7 @@ cr.define('options', function() {
         OptionsPage.closeOverlay();
         self.updateImportInProgress_(false);
 
-        // 'cancelCreateProfile' is handled by BrowserOptionsHandler.
+        // 'cancelCreateProfile' is handled by CreateProfileHandler.
         chrome.send('cancelCreateProfile');
       };
 
@@ -116,7 +116,7 @@ cr.define('options', function() {
 
       this.updateImportInProgress_(true);
 
-      // 'createProfile' is handled by BrowserOptionsHandler.
+      // 'createProfile' is handled by CreateProfileHandler.
       chrome.send('createProfile', [managedUser.name, avatarUrl,
                                     false, true, managedUser.id]);
     },
