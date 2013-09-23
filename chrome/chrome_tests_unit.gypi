@@ -775,6 +775,7 @@
         'browser/extensions/activity_log/counting_policy_unittest.cc',
         'browser/extensions/activity_log/database_string_table_unittest.cc',
         'browser/extensions/activity_log/fullstream_ui_policy_unittest.cc',
+        'browser/extensions/activity_log/uma_policy_unittest.cc',
         'browser/extensions/admin_policy_unittest.cc',
         'browser/extensions/api/activity_log_private/activity_log_private_api_unittest.cc',
         'browser/extensions/api/alarms/alarms_api_unittest.cc',

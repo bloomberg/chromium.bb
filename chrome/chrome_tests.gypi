@@ -1007,6 +1007,7 @@
         'browser/errorpage_browsertest.cc',
         'browser/extensions/active_tab_apitest.cc',
         'browser/extensions/activity_log/activity_log_browsertest.cc',
+        'browser/extensions/activity_log/uma_policy_browsertest.cc',
         'browser/extensions/alert_apitest.cc',
         'browser/extensions/all_urls_apitest.cc',
         'browser/extensions/api/activity_log_private/activity_log_private_apitest.cc',

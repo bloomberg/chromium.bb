@@ -76,9 +76,9 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
   void SetPolicy(bool log_arguments) {
     ActivityLog* activity_log = ActivityLog::GetInstance(profile());
     if (log_arguments)
-      activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_FULLSTREAM);
+      activity_log->SetDatabasePolicy(ActivityLogPolicy::POLICY_FULLSTREAM);
     else
-      activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_COUNTS);
+      activity_log->SetDatabasePolicy(ActivityLogPolicy::POLICY_COUNTS);
   }
 
   bool GetDatabaseEnabled() {

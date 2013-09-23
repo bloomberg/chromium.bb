@@ -150,21 +150,26 @@ class ActivityLog : public BrowserContextKeyedService,
   // These methods are used to choose and set the most appropriate policy.
   // Changing policies at runtime is not recommended, and likely only should be
   // done for unit tests.
-  void ChooseDefaultPolicy();
-  void SetDefaultPolicy(ActivityLogPolicy::PolicyType policy_type);
+  void ChooseDatabasePolicy();
+  void SetDatabasePolicy(ActivityLogPolicy::PolicyType policy_type);
 
   typedef ObserverListThreadSafe<Observer> ObserverList;
   scoped_refptr<ObserverList> observers_;
 
-  // The policy object takes care of data summarization, compression, and
-  // logging.  The policy object is owned by the ActivityLog, but this cannot
-  // be a scoped_ptr since some cleanup work must happen on the database
-  // thread.  Calling policy_->Close() will free the object; see the comments
-  // on the ActivityDatabase class for full details.
-  ActivityLogPolicy* policy_;
+  // Policy objects are owned by the ActivityLog, but cannot be scoped_ptrs
+  // since they may need to do some cleanup work on the database thread.
+  // Calling policy->Close() will free the object; see the comments on the
+  // ActivityDatabase class for full details.
 
-  // TODO(dbabic,felt) change this into a list of policy types later.
-  ActivityLogPolicy::PolicyType policy_type_;
+  // The database policy object takes care of recording & looking up data:
+  // data summarization, compression, and logging. There should only be a
+  // database_policy_ if the Watchdog app is installed or flag is set.
+  ActivityLogDatabasePolicy* database_policy_;
+  ActivityLogPolicy::PolicyType database_policy_type_;
+
+  // The UMA policy is used for recording statistics about extension behavior.
+  // This policy is always in use, except for Incognito profiles.
+  ActivityLogPolicy* uma_policy_;
 
   Profile* profile_;
   bool db_enabled_;  // Whether logging to disk is currently enabled.

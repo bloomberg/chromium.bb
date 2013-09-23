@@ -91,6 +91,8 @@
         'browser/extensions/activity_log/database_string_table.h',
         'browser/extensions/activity_log/fullstream_ui_policy.cc',
         'browser/extensions/activity_log/fullstream_ui_policy.h',
+        'browser/extensions/activity_log/uma_policy.cc',
+        'browser/extensions/activity_log/uma_policy.h',
         'browser/extensions/activity_log/web_request_constants.cc',
         'browser/extensions/activity_log/web_request_constants.h',
         'browser/extensions/admin_policy.cc',
@@ -1046,6 +1048,7 @@
           'sources!': [
             'browser/apps/shortcut_manager.cc',
             'browser/apps/shortcut_manager_factory.cc',
+            'browser/extensions/activity_log/uma_policy.cc',
             'browser/extensions/api/declarative/rules_registry_with_cache.cc',
             'browser/extensions/api/processes/processes_api_constants.cc',
             'browser/extensions/api/web_navigation/frame_navigation_state.cc',

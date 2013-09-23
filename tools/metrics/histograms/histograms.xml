@@ -3667,6 +3667,183 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="ExtensionActivity.ContentScript">
+  <summary>
+    For each pageload, the number of extensions that inject a content script.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.CreatedDiv">
+  <summary>
+    For each pageload, the number of extensions that create divs to add to the
+    page.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.CreatedEmbed">
+  <summary>
+    For each pageload, the number of extensions that create 'embed' elements to
+    add to the page.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.CreatedIframe">
+  <summary>
+    For each pageload, the number of extensions that create iframes to add to
+    the page.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.CreatedInput">
+  <summary>
+    For each pageload, the number of extensions that create inputs to add to the
+    page.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.CreatedLink">
+  <summary>
+    For each pageload, the number of extensions that create links to add to the
+    page.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.CreatedObject">
+  <summary>
+    For each pageload, the number of extensions that create 'object' elements to
+    add to the page.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.CreatedScript">
+  <summary>
+    For each pageload, the number of extensions that create script tags to add
+    to the page.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.DocumentWrite">
+  <summary>
+    For each pageload, the number of extensions that use document.write.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.Google.ContentScript">
+  <summary>
+    For each www.google.com pageload, the number of extensions that inject a
+    content script.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.Google.CreatedDiv">
+  <summary>
+    For each www.google.com pageload, the number of extensions that create divs
+    to add to the page.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.Google.CreatedEmbed">
+  <summary>
+    For each www.google.com pageload, the number of extensions that create
+    'embed' elements to add to the page.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.Google.CreatedIframe">
+  <summary>
+    For each www.google.com pageload, the number of extensions that create
+    iframes to add to the page.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.Google.CreatedInput">
+  <summary>
+    For each www.google.com pageload, the number of extensions that create
+    inputs to add to the page.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.Google.CreatedLink">
+  <summary>
+    For each www.google.com pageload, the number of extensions that create links
+    to add to the page.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.Google.CreatedObject">
+  <summary>
+    For each www.google.com pageload, the number of extensions that create
+    'object' elements to add to the page.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.Google.CreatedScript">
+  <summary>
+    For each www.google.com pageload, the number of extensions that create
+    script tags to add to the page.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.Google.DocumentWrite">
+  <summary>
+    For each www.google.com pageload, the number of extensions that use
+    document.write.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.Google.InnerHtml">
+  <summary>
+    For each www.google.com pageload, the number of extensions that set
+    innerHTML.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.Google.InvokedDomMethod">
+  <summary>
+    For each www.google.com pageload, the number of extensions that invoke DOM
+    methods.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.Google.ModifiedDom">
+  <summary>
+    For each www.google.com pageload, the number of extensions that set the
+    value of DOM properties via assignments.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.Google.ReadDom">
+  <summary>
+    For each www.google.com pageload, the number of extensions that read from
+    the DOM.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.InnerHtml">
+  <summary>
+    For each pageload, the number of extensions that set innerHTML.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.InvokedDomMethod">
+  <summary>
+    For each pageload, the number of extensions that invoke DOM methods.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.ModifiedDom">
+  <summary>
+    For each pageload, the number of extensions that set the value of DOM
+    properties via assignments.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.ReadDom">
+  <summary>
+    For each pageload, the number of extensions that read from the DOM.
+  </summary>
+</histogram>
+
 <histogram name="ExtensionBlacklist.BlacklistInstalled"
     enum="ExtensionLocation">
   <summary>

@@ -36,6 +36,10 @@
 #include "third_party/re2/re2/re2.h"
 #include "url/gurl.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/extensions/activity_log/uma_policy.h"
+#endif
+
 namespace constants = activity_log_constants;
 
 namespace {
@@ -329,8 +333,9 @@ ActivityLogFactory::~ActivityLogFactory() {
 
 // Use GetInstance instead of directly creating an ActivityLog.
 ActivityLog::ActivityLog(Profile* profile)
-    : policy_(NULL),
-      policy_type_(ActivityLogPolicy::POLICY_INVALID),
+    : database_policy_(NULL),
+      database_policy_type_(ActivityLogPolicy::POLICY_INVALID),
+      uma_policy_(NULL),
       profile_(profile),
       db_enabled_(false),
       testing_mode_(false),
@@ -363,11 +368,21 @@ ActivityLog::ActivityLog(Profile* profile)
   ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE,
       base::Bind(&ActivityLog::InitInstallTracker, base::Unretained(this)));
-  ChooseDefaultPolicy();
+
+// None of this should run on Android since the AL is behind ENABLE_EXTENSION
+// checks. However, UmaPolicy can't even compile on Android because it uses
+// BrowserList and related classes that aren't compiled for Android.
+#if !defined(OS_ANDROID)
+  if (!profile->IsOffTheRecord())
+    uma_policy_ = new UmaPolicy(profile_);
+#endif
+
+  ChooseDatabasePolicy();
 }
 
-void ActivityLog::SetDefaultPolicy(ActivityLogPolicy::PolicyType policy_type) {
-  if (policy_type == policy_type_)
+void ActivityLog::SetDatabasePolicy(
+    ActivityLogPolicy::PolicyType policy_type) {
+  if (database_policy_type_ == policy_type)
     return;
   if (!IsDatabaseEnabled() && !IsWatchdogAppActive())
     return;
@@ -380,20 +395,20 @@ void ActivityLog::SetDefaultPolicy(ActivityLogPolicy::PolicyType policy_type) {
   //
   // However, changing policies at runtime is still not recommended, and
   // likely only should be done for unit tests.
-  if (policy_)
-    policy_->Close();
+  if (database_policy_)
+    database_policy_->Close();
 
   switch (policy_type) {
     case ActivityLogPolicy::POLICY_FULLSTREAM:
-      policy_ = new FullStreamUIPolicy(profile_);
+      database_policy_ = new FullStreamUIPolicy(profile_);
       break;
     case ActivityLogPolicy::POLICY_COUNTS:
-      policy_ = new CountingPolicy(profile_);
+      database_policy_ = new CountingPolicy(profile_);
       break;
     default:
       NOTREACHED();
   }
-  policy_type_ = policy_type;
+  database_policy_type_ = policy_type;
 }
 
 // SHUT DOWN. ------------------------------------------------------------------
@@ -403,8 +418,10 @@ void ActivityLog::Shutdown() {
 }
 
 ActivityLog::~ActivityLog() {
-  if (policy_)
-    policy_->Close();
+  if (uma_policy_)
+    uma_policy_->Close();
+  if (database_policy_)
+    database_policy_->Close();
 }
 
 // MAINTAIN STATUS. ------------------------------------------------------------
@@ -414,13 +431,13 @@ void ActivityLog::InitInstallTracker() {
   tracker_->AddObserver(this);
 }
 
-void ActivityLog::ChooseDefaultPolicy() {
+void ActivityLog::ChooseDatabasePolicy() {
   if (!(IsDatabaseEnabled() || IsWatchdogAppActive()))
     return;
   if (testing_mode_)
-    SetDefaultPolicy(ActivityLogPolicy::POLICY_FULLSTREAM);
+    SetDatabasePolicy(ActivityLogPolicy::POLICY_FULLSTREAM);
   else
-    SetDefaultPolicy(ActivityLogPolicy::POLICY_COUNTS);
+    SetDatabasePolicy(ActivityLogPolicy::POLICY_COUNTS);
 }
 
 bool ActivityLog::IsDatabaseEnabled() {
@@ -445,7 +462,7 @@ void ActivityLog::OnExtensionLoaded(const Extension* extension) {
     watchdog_app_active_ = true;
     profile_->GetPrefs()->SetBoolean(prefs::kWatchdogExtensionActive, true);
   }
-  ChooseDefaultPolicy();
+  ChooseDatabasePolicy();
 }
 
 void ActivityLog::OnExtensionUnloaded(const Extension* extension) {
@@ -462,7 +479,7 @@ void ActivityLog::OnExtensionUnloaded(const Extension* extension) {
 }
 
 void ActivityLog::OnExtensionUninstalled(const Extension* extension) {
-  if (!policy_)
+  if (!database_policy_)
     return;
   // If the extension has been uninstalled but not disabled, we delete the
   // database.
@@ -472,7 +489,7 @@ void ActivityLog::OnExtensionUninstalled(const Extension* extension) {
       DeleteDatabase();
     }
   } else {
-    policy_->RemoveExtensionData(extension->id());
+    database_policy_->RemoveExtensionData(extension->id());
   }
 }
 
@@ -503,8 +520,10 @@ void ActivityLog::LogAction(scoped_refptr<Action> action) {
   // mask out incognito URLs if appropriate.
   ExtractUrls(action, profile_);
 
-  if (IsDatabaseEnabled() && policy_)
-    policy_->ProcessAction(action);
+  if (uma_policy_)
+    uma_policy_->ProcessAction(action);
+  if (IsDatabaseEnabled() && database_policy_)
+    database_policy_->ProcessAction(action);
   if (IsWatchdogAppActive())
     observers_->Notify(&Observer::OnExtensionActivity, action);
   if (testing_mode_)
@@ -568,8 +587,8 @@ void ActivityLog::GetFilteredActions(
     const int daysAgo,
     const base::Callback
         <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback) {
-  if (policy_) {
-    policy_->ReadFilteredData(
+  if (database_policy_) {
+    database_policy_->ReadFilteredData(
         extension_id, type, api_name, page_url, arg_url, daysAgo, callback);
   }
 }
@@ -577,13 +596,13 @@ void ActivityLog::GetFilteredActions(
 // DELETE ACTIONS. -------------------------------------------------------------
 
 void ActivityLog::RemoveURLs(const std::vector<GURL>& restrict_urls) {
-  if (!policy_)
+  if (!database_policy_)
     return;
-  policy_->RemoveURLs(restrict_urls);
+  database_policy_->RemoveURLs(restrict_urls);
 }
 
 void ActivityLog::RemoveURLs(const std::set<GURL>& restrict_urls) {
-  if (!policy_)
+  if (!database_policy_)
     return;
 
   std::vector<GURL> urls;
@@ -591,7 +610,7 @@ void ActivityLog::RemoveURLs(const std::set<GURL>& restrict_urls) {
        it != restrict_urls.end(); ++it) {
     urls.push_back(*it);
   }
-  policy_->RemoveURLs(urls);
+  database_policy_->RemoveURLs(urls);
 }
 
 void ActivityLog::RemoveURL(const GURL& url) {
@@ -603,9 +622,9 @@ void ActivityLog::RemoveURL(const GURL& url) {
 }
 
 void ActivityLog::DeleteDatabase() {
-  if (!policy_)
+  if (!database_policy_)
     return;
-  policy_->DeleteDatabase();
+  database_policy_->DeleteDatabase();
 }
 
 }  // namespace extensions
