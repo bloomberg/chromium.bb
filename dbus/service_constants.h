@@ -830,10 +830,6 @@ const char kGeoAgeProperty[] = "age";
 const char kGeoSignalStrengthProperty[] = "signalStrength";
 }  // namespace shill
 
-// TODO(benchan): Remove this namespace alias once we finish replacing flimflam
-// namespace with shill namespace in shill and Chrome code.
-namespace flimflam = shill;
-
 namespace modemmanager {
 // ModemManager D-Bus service identifiers
 const char kModemManagerSMSInterface[] =
