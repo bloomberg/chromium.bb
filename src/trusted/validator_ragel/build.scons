@@ -141,6 +141,9 @@ ragel_targets = set([
     'dfagen', 'dfacheckdecoder', 'dfacheckvalidator'])
 ragel_involved = ragel_targets.intersection(COMMAND_LINE_TARGETS)
 
+gas = env.MakeUntrustedNativeEnv()['AS']
+objdump = env.MakeUntrustedNativeEnv()['OBJDUMP']
+
 if ragel_involved:
   if not env.Bit('host_linux'):
     raise UserError('Right now DFA generation is only supported on Linux')
@@ -244,9 +247,6 @@ if ragel_involved:
   decoder_dll = dll_env.ComponentLibrary(
       'rdfa_decoder_dll',
       [decoder_test_obj, decoder32_obj, decoder64_obj])
-
-  gas = env.MakeUntrustedNativeEnv()['AS']
-  objdump = env.MakeUntrustedNativeEnv()['OBJDUMP']
 
   check_decoders = []
 
