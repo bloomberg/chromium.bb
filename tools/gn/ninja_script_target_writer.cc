@@ -15,7 +15,7 @@ NinjaScriptTargetWriter::NinjaScriptTargetWriter(const Target* target,
     : NinjaTargetWriter(target, out),
       path_output_no_escaping_(
           target->settings()->build_settings()->build_dir(),
-          ESCAPE_NONE, true) {
+          ESCAPE_NONE, false) {
 }
 
 NinjaScriptTargetWriter::~NinjaScriptTargetWriter() {

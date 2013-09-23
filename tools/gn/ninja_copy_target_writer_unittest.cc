@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <sstream>
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,11 +31,15 @@ TEST(NinjaCopyTargetWriter, Run) {
     writer.Run();
 
     const char expected_linux[] =
-        "build input1.out: copy ../../foo/input1.txt\n"
-        "build input2.out: copy ../../foo/input2.txt\n"
+        "build input1.out: tc_copy ../../foo/input1.txt\n"
+        "build input2.out: tc_copy ../../foo/input2.txt\n"
         "\n"
         "build obj/foo/bar.stamp: tc_stamp input1.out input2.out\n";
-    EXPECT_EQ(expected_linux, out.str());
+    std::string out_str = out.str();
+#if defined(OS_WIN)
+    std::replace(out_str.begin(), out_str.end(), '\\', '/');
+#endif
+    EXPECT_EQ(expected_linux, out_str);
   }
 
   // Windows.
@@ -48,10 +53,14 @@ TEST(NinjaCopyTargetWriter, Run) {
     // TODO(brettw) I think we'll need to worry about backslashes here
     // depending if we're on actual Windows or Linux pretending to be Windows.
     const char expected_win[] =
-        "build input1.out: copy ../../foo/input1.txt\n"
-        "build input2.out: copy ../../foo/input2.txt\n"
+        "build input1.out: tc_copy ../../foo/input1.txt\n"
+        "build input2.out: tc_copy ../../foo/input2.txt\n"
         "\n"
         "build obj/foo/bar.stamp: tc_stamp input1.out input2.out\n";
-    EXPECT_EQ(expected_win, out.str());
+    std::string out_str = out.str();
+#if defined(OS_WIN)
+    std::replace(out_str.begin(), out_str.end(), '\\', '/');
+#endif
+    EXPECT_EQ(expected_win, out_str);
   }
 }

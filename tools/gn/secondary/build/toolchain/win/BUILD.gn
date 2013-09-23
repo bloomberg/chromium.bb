@@ -40,11 +40,10 @@ toolchain("32") {
   #      \$proxy \$in \$idlflags
   #  description = IDL \$in
   #}
-  #tool("rc") {
-  #  command = $python_path gyp-win-tool rc-wrapper \$arch rc.exe \$defines \$includes \$rcflags \$
-  #      /fo\$out \$in
-  #  description = RC \$in
-  #}
+  tool("rc") {
+    command = "$python_path gyp-win-tool rc-wrapper \$arch rc.exe \$defines \$includes \$rcflags /fo\$out \$in"
+    description = "RC \$in"
+  }
   #tool("asm") {
   #  command = $python_path gyp-win-tool asm-wrapper \$arch ml.exe \$defines \$includes /c /Fo \$
   #      \$out \$in

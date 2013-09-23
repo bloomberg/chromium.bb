@@ -4,9 +4,14 @@
 
 #include "tools/gn/setup.h"
 
+#include <stdlib.h>
+
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/input_file.h"
 #include "tools/gn/parse_tree.h"
@@ -17,6 +22,10 @@
 #include "tools/gn/tokenizer.h"
 #include "tools/gn/trace.h"
 #include "tools/gn/value.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 extern const char kDotfile_Help[] =
     ".gn file\n"
@@ -90,6 +99,58 @@ base::FilePath FindDotFile(const base::FilePath& current_dir) {
   return FindDotFile(up_one_dir);
 }
 
+// Searches the list of strings, and returns the FilePat corresponding to the
+// one ending in the given substring, or the empty path if none match.
+base::FilePath GetPathEndingIn(
+    const std::vector<base::FilePath::StringType>& list,
+    const base::FilePath::StringType ending_in) {
+  for (size_t i = 0; i < list.size(); i++) {
+    if (EndsWith(list[i], ending_in, true))
+      return base::FilePath(list[i]);
+  }
+  return base::FilePath();
+}
+
+// Fins the depot tools directory in the path environment variable and returns
+// its value. Returns an empty file path if not found.
+//
+// We detect the depot_tools path by looking for a directory with depot_tools
+// at the end (optionally followed by a separator).
+base::FilePath ExtractDepotToolsFromPath() {
+#if defined(OS_WIN)
+  static const wchar_t kPathVarName[] = L"Path";
+  DWORD env_buf_size = GetEnvironmentVariable(kPathVarName, NULL, 0);
+  if (env_buf_size == 0)
+    return base::FilePath();
+  base::string16 path;
+  path.resize(env_buf_size);
+  GetEnvironmentVariable(kPathVarName, &path[0],
+                         static_cast<DWORD>(path.size()));
+  path.resize(path.size() - 1);  // Trim off null.
+
+  std::vector<base::string16> components;
+  base::SplitString(path, ';', &components);
+
+  base::string16 ending_in1 = L"depot_tools\\";
+#else
+  static const char kPathVarName[] = "PATH";
+  const char* path = getenv(kPathVarName);
+  if (!path)
+    return base::FilePath();
+
+  std::vector<std::string> components;
+  base::SplitString(path, ':', &components);
+
+  std::string ending_in1 = "depot_tools/";
+#endif
+  base::FilePath::StringType ending_in2 = FILE_PATH_LITERAL("depot_tools");
+
+  base::FilePath found = GetPathEndingIn(components, ending_in1);
+  if (!found.empty())
+    return found;
+  return GetPathEndingIn(components, ending_in2);
+}
+
 }  // namespace
 
 Setup::Setup()
@@ -118,14 +179,7 @@ bool Setup::DoSetup() {
     return false;
   if (!FillOtherConfig(*cmdline))
     return false;
-
-  // FIXME(brettw) get python path!
-#if defined(OS_WIN)
-  build_settings_.set_python_path(base::FilePath(
-      FILE_PATH_LITERAL("python.exe")));
-#else
-  build_settings_.set_python_path(base::FilePath(FILE_PATH_LITERAL("python")));
-#endif
+  FillPythonPath();
 
   base::FilePath build_path = cmdline->GetSwitchValuePath(kSwitchBuildOutput);
   if (!build_path.empty()) {
@@ -238,6 +292,33 @@ bool Setup::FillSourceDir(const CommandLine& cmdline) {
   build_settings_.SetRootPath(root_path);
 
   return true;
+}
+
+void Setup::FillPythonPath() {
+#if defined(OS_WIN)
+  // We use python from the depot tools which should be on the path. If we
+  // converted the python_path to a python_command_line then we could
+  // potentially use "cmd.exe /c python.exe" and remove this.
+  static const wchar_t kPythonName[] = L"python.exe";
+  base::FilePath depot_tools = ExtractDepotToolsFromPath();
+  if (!depot_tools.empty()) {
+    base::FilePath python =
+        depot_tools.Append(L"python_bin").Append(kPythonName);
+    if (scheduler_.verbose_logging())
+      scheduler_.Log("Using python", FilePathToUTF8(python));
+    build_settings_.set_python_path(python);
+    return;
+  }
+
+  if (scheduler_.verbose_logging()) {
+    scheduler_.Log("WARNING", "Could not find depot_tools on path, using "
+        "just " + FilePathToUTF8(kPythonName));
+  }
+#else
+  static const char kPythonName[] = "python";
+#endif
+
+  build_settings_.set_python_path(base::FilePath(kPythonName));
 }
 
 bool Setup::RunConfigFile() {

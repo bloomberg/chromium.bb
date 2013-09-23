@@ -104,6 +104,8 @@ linux_sources_filters = [
   "*_linux_unittest.h",
   "*_linux_unittest.cc",
   "*\blinux/*",
+  "*_x11.cc",
+  "*_x11.h",
 ]
 android_sources_filters = [
   "*_android.h",

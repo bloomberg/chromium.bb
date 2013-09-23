@@ -22,6 +22,9 @@ void NinjaCopyTargetWriter::Run() {
 
   std::vector<OutputFile> output_files;
 
+  std::string rule_prefix =
+      helper_.GetRulePrefix(target_->settings()->toolchain());
+
   for (size_t i = 0; i < target_->sources().size(); i++) {
     const SourceFile& input_file = target_->sources()[i];
 
@@ -35,7 +38,7 @@ void NinjaCopyTargetWriter::Run() {
 
     out_ << "build ";
     path_output_.WriteFile(out_, output_file);
-    out_ << ": copy ";
+    out_ << ": " << rule_prefix << "copy ";
     path_output_.WriteFile(out_, input_file);
     out_ << std::endl;
   }
@@ -43,9 +46,7 @@ void NinjaCopyTargetWriter::Run() {
   // Write out the rule for the target to copy all of them.
   out_ << std::endl << "build ";
   path_output_.WriteFile(out_, helper_.GetTargetOutputFile(target_));
-  out_ << ": "
-       << helper_.GetRulePrefix(target_->settings()->toolchain())
-       << "stamp";
+  out_ << ": " << rule_prefix << "stamp";
   for (size_t i = 0; i < output_files.size(); i++) {
     out_ << " ";
     path_output_.WriteFile(out_, output_files[i]);

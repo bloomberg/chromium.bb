@@ -52,6 +52,10 @@ class Setup {
   // Fills the root directory into the settings. Returns true on success.
   bool FillSourceDir(const CommandLine& cmdline);
 
+  // Fills the python path portion of the command line. On failure, sets
+  // it to just "python".
+  void FillPythonPath();
+
   // Run config file.
   bool RunConfigFile();
 

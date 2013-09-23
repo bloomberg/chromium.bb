@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <sstream>
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,7 +29,11 @@ TEST(NinjaScriptTargetWriter, WriteOutputFilesForBuildLine) {
   std::vector<OutputFile> output_files;
   writer.WriteOutputFilesForBuildLine(output_template, source, &output_files);
 
-  EXPECT_EQ(" gen/a$ bbar.h gen/bar.cc", out.str());
+  std::string out_str = out.str();
+#if defined(OS_WIN)
+  std::replace(out_str.begin(), out_str.end(), '\\', '/');
+#endif
+  EXPECT_EQ(" gen/a$ bbar.h gen/bar.cc", out_str);
 }
 
 TEST(NinjaScriptTargetWriter, WriteArgsSubstitutions) {
@@ -47,8 +52,12 @@ TEST(NinjaScriptTargetWriter, WriteArgsSubstitutions) {
 
   writer.WriteArgsSubstitutions(SourceFile("//foo/b ar.in"), args_template);
 
+  std::string out_str = out.str();
+#if defined(OS_WIN)
+  std::replace(out_str.begin(), out_str.end(), '\\', '/');
+#endif
   EXPECT_EQ("  source = ../../foo/b$ ar.in\n  source_name_part = b$ ar\n",
-            out.str());
+            out_str);
 }
 
 // Tests the "run script over multiple source files" mode.
@@ -95,7 +104,11 @@ TEST(NinjaScriptTargetWriter, InvokeOverSources) {
         "\n"
         "build obj/foo/bar.stamp: tc_stamp input1.out input2.out\n";
 
-    EXPECT_EQ(expected_linux, out.str());
+    std::string out_str = out.str();
+#if defined(OS_WIN)
+    std::replace(out_str.begin(), out_str.end(), '\\', '/');
+#endif
+    EXPECT_EQ(expected_linux, out_str);
   }
 
   // Windows.
@@ -127,6 +140,10 @@ TEST(NinjaScriptTargetWriter, InvokeOverSources) {
         "  source_name_part = input2\n"
         "\n"
         "build obj/foo/bar.stamp: tc_stamp input1.out input2.out\n";
-    EXPECT_EQ(expected_win, out.str());
+    std::string out_str = out.str();
+#if defined(OS_WIN)
+    std::replace(out_str.begin(), out_str.end(), '\\', '/');
+#endif
+    EXPECT_EQ(expected_win, out_str);
   }
 }

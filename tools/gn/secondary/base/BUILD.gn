@@ -635,8 +635,6 @@ component("base") {
     "win/registry.h",
     "win/resource_util.cc",
     "win/resource_util.h",
-    "win/sampling_profiler.cc",
-    "win/sampling_profiler.h",
     "win/scoped_bstr.cc",
     "win/scoped_bstr.h",
     "win/scoped_co_mem.h",
@@ -741,6 +739,7 @@ component("base") {
   # Windows.
   if (is_win) {
     sources -= [
+      "message_loop/message_pump_libevent.cc",
       "strings/string16.cc",
       # Not using sha1_win.cc because it may have caused a
       # regression to page cycler moz.
@@ -791,17 +790,10 @@ component("base") {
       "message_loop/message_pump_glib.h",
       "message_loop/message_pump_gtk.cc",
       "message_loop/message_pump_gtk.h",
-    ]
-  }
-
-  # Non-Mac Unix stuff.
-  if (is_mac) { #!is_posix || is_mac) {
-    sources -= [
       "nix/mime_util_xdg.cc",
       "nix/mime_util_xdg.h",
       "nix/xdg_util.cc",
       "nix/xdg_util.h",
-      "third_party/xdg_mime/xdgmime.h",
     ]
   }
 }
