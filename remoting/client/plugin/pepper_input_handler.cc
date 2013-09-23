@@ -95,6 +95,14 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
         mouse_event.set_button_down(is_down);
         mouse_event.set_x(pp_mouse_event.GetPosition().x());
         mouse_event.set_y(pp_mouse_event.GetPosition().y());
+
+        // Add relative movement if the mouse is locked.
+        if (mouse_lock_state_ == MouseLockOn) {
+          pp::Point delta = pp_mouse_event.GetMovement();
+          mouse_event.set_delta_x(delta.x());
+          mouse_event.set_delta_y(delta.y());
+        }
+
         input_stub_->InjectMouseEvent(mouse_event);
       }
       return true;
