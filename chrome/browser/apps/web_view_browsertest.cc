@@ -953,7 +953,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestResizeWebviewResizesContent) {
 
 // This test makes sure we do not crash if app is closed while interstitial
 // page is being shown in guest.
-IN_PROC_BROWSER_TEST_F(WebViewTest, InterstitialTeardown) {
+// Test flaky on windows; http://crbug.com/297014 .
+#if defined(OS_WIN)
+#define MAYBE_InterstitialTeardown DISABLED_InterstitialTeardown
+#else
+#define MAYBE_InterstitialTeardown InterstitialTeardown
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_InterstitialTeardown) {
   // Start a HTTPS server so we can load an interstitial page inside guest.
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.server_certificate =
