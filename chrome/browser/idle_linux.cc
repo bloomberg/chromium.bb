@@ -26,6 +26,8 @@ bool CheckIdleStateIsLocked() {
   // check if the workstation is locked.
 #if defined(OS_CHROMEOS)
   return false;
+#elif defined(USE_OZONE)
+  return false;
 #else
   return ScreensaverWindowFinder::ScreensaverWindowExists();
 #endif
