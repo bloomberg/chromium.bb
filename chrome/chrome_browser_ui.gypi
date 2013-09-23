@@ -113,6 +113,8 @@
         'browser/ui/android/website_settings_popup_android.h',
         'browser/ui/android/window_android_helper.cc',
         'browser/ui/android/window_android_helper.h',
+        'browser/ui/app_list/fast_show_pickler.cc',
+        'browser/ui/app_list/fast_show_pickler.h',
         'browser/ui/app_list/app_context_menu.cc',
         'browser/ui/app_list/app_context_menu.h',
         'browser/ui/app_list/app_context_menu_delegate.h',

@@ -2677,6 +2677,11 @@
             '../third_party/cld/cld.gyp:cld',
           ],
         }],
+        ['enable_app_list==1', {
+          'sources': [
+            'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
+          ],
+        }],
       ],
       'target_conditions': [
         ['OS == "ios"', {
@@ -2799,6 +2804,26 @@
               'ProgramDataBaseFileName': '<(PRODUCT_DIR)/unit_tests.exe.pdb',
             },
           },
+        },
+      ],
+    }],
+    ['enable_app_list==1', {
+      'targets': [
+        {
+          # Unit tests for chrome app list, not run on any bots, this is for faster
+          # compile/link/test cycles during development.
+          'target_name': 'chrome_app_list_unittests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            '../base/base.gyp:run_all_unittests',
+            '../skia/skia.gyp:skia',
+            '../testing/gtest.gyp:gtest',
+            'apps',
+            'browser_ui',
+          ],
+          'sources': [
+            'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
+          ],
         },
       ],
     }],
