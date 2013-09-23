@@ -170,6 +170,6 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     [ImplementedAs=imageSmoothingEnabled] attribute boolean webkitImageSmoothingEnabled;
     attribute boolean imageSmoothingEnabled;
 
-    [EnabledAtRuntime=ExperimentalCanvasFeatures] Canvas2DContextAttributes getContextAttributes();
+    Canvas2DContextAttributes getContextAttributes();
 };
 

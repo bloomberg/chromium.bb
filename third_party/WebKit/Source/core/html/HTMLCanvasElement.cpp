@@ -170,7 +170,7 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
             return 0;
         if (!m_context) {
             HistogramSupport::histogramEnumeration("Canvas.ContextType", Context2d, ContextTypeCount);
-            m_context = CanvasRenderingContext2D::create(this, RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ? static_cast<Canvas2DContextAttributes*>(attrs) : 0, document().inQuirksMode());
+            m_context = CanvasRenderingContext2D::create(this, static_cast<Canvas2DContextAttributes*>(attrs), document().inQuirksMode());
             if (m_context)
                 scheduleLayerUpdate();
         }
