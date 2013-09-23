@@ -14,6 +14,9 @@
 #include "media/webm/webm_stream_parser.h"
 
 #if defined(USE_PROPRIETARY_CODECS)
+#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+#include "media/mp2t/mp2t_stream_parser.h"
+#endif
 #include "media/mp4/es_descriptor.h"
 #include "media/mp4/mp4_stream_parser.h"
 #endif
@@ -203,6 +206,19 @@ static StreamParser* BuildMP3Parser(
   return new MP3StreamParser();
 }
 
+#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+static const CodecInfo* kVideoMP2TCodecs[] = {
+  &kH264CodecInfo,
+  &kMPEG4AACCodecInfo,
+  &kMPEG2AACLCCodecInfo,
+  NULL
+};
+
+static StreamParser* BuildMP2TParser(
+    const std::vector<std::string>& codecs, const media::LogCB& log_cb) {
+  return new media::mp2t::Mp2tStreamParser();
+}
+#endif
 #endif
 
 
@@ -213,6 +229,9 @@ static const SupportedTypeInfo kSupportedTypeInfo[] = {
   { "audio/mpeg", &BuildMP3Parser, kAudioMP3Codecs },
   { "video/mp4", &BuildMP4Parser, kVideoMP4Codecs },
   { "audio/mp4", &BuildMP4Parser, kAudioMP4Codecs },
+#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+  { "video/mp2t", &BuildMP2TParser, kVideoMP2TCodecs },
+#endif
 #endif
 };
 
