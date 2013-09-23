@@ -12,6 +12,11 @@ var FEEDBACK_WIDTH = 500;
  * @const
  */
 var FEEDBACK_HEIGHT = 610;
+/**
+ * @type {number}
+ * @const
+ */
+var TRACING_CHECKBOX_HEIGHT = 29;
 
 var initialFeedbackInfo = null;
 
@@ -46,12 +51,16 @@ function requestFeedbackHandler(request, sender, sendResponse) {
  * @param {Object} feedbackInfo Object containing any initial feedback info.
  */
 function startFeedbackUI(feedbackInfo) {
+  var windowHeight = FEEDBACK_HEIGHT;
+  if (feedbackInfo.traceId) {
+    windowHeight += TRACING_CHECKBOX_HEIGHT;
+  }
   initialFeedbackInfo = feedbackInfo;
   chrome.app.window.create('html/default.html', {
       frame: 'none',
       id: 'default_window',
       width: FEEDBACK_WIDTH,
-      height: FEEDBACK_HEIGHT,
+      height: windowHeight,
       hidden: true,
       singleton: true },
       function(appWindow) {});

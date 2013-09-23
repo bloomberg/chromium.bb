@@ -15,6 +15,7 @@
 
 namespace base {
 class FilePath;
+class RefCountedString;
 }
 class Profile;
 
@@ -60,6 +61,7 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   const GURL attached_file_url() const { return attached_file_url_; }
   std::string* attached_filedata() const { return attached_filedata_.get(); }
   const GURL screenshot_url() const { return screenshot_url_; }
+  int trace_id() const { return trace_id_; }
   SystemLogsMap* sys_info() const { return sys_info_.get(); }
   std::string* compressed_logs() const { return compressed_logs_.get(); }
 
@@ -84,11 +86,14 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   }
   void set_attached_file_url(const GURL& url) { attached_file_url_ = url; }
   void set_screenshot_url(const GURL& url) { screenshot_url_ = url; }
+  void set_trace_id(int trace_id) { trace_id_ = trace_id; }
 
  private:
   friend class base::RefCountedThreadSafe<FeedbackData>;
 
   virtual ~FeedbackData();
+
+  void OnGetTraceData(scoped_refptr<base::RefCountedString> trace_data);
 
   Profile* profile_;
 
@@ -102,6 +107,8 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
 
   GURL attached_file_url_;
   GURL screenshot_url_;
+
+  int trace_id_;
 
   scoped_ptr<SystemLogsMap> sys_info_;
   scoped_ptr<std::string> compressed_logs_;

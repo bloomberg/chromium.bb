@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/feedback/tracing_manager.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/web_ui_util.h"
@@ -58,6 +59,10 @@ void FeedbackPrivateAPI::RequestFeedback(
     info.category_tag = make_scoped_ptr(new std::string(category_tag));
     info.page_url = make_scoped_ptr(new std::string(page_url.spec()));
     info.system_information.reset(new SystemInformationList);
+    // The manager is only available if tracing is enabled.
+    if (TracingManager* manager = TracingManager::Get()) {
+      info.trace_id.reset(new int(manager->RequestTrace()));
+    }
 
     FeedbackService::PopulateSystemInfo(
         info.system_information.get(), FeedbackData::kScreensizeHeightKey,
@@ -95,6 +100,8 @@ bool FeedbackPrivateGetStringsFunction::RunImpl() {
   SET_STRING("cancel", IDS_CANCEL);
   SET_STRING("no-description", IDS_FEEDBACK_NO_DESCRIPTION);
   SET_STRING("privacy-note", IDS_FEEDBACK_PRIVACY_NOTE);
+  SET_STRING("performance-trace",
+             IDS_FEEDBACK_INCLUDE_PERFORMANCE_TRACE_CHECKBOX);
 #undef SET_STRING
 
   webui::SetFontAndTextDirection(dict);
@@ -164,6 +171,10 @@ bool FeedbackPrivateSendFeedbackFunction::RunImpl() {
 
   if (!screenshot_url.empty())
     feedback_data->set_screenshot_url(GURL(screenshot_url));
+
+  if (feedback_info.trace_id.get()) {
+    feedback_data->set_trace_id(*feedback_info.trace_id.get());
+  }
 
   scoped_ptr<FeedbackData::SystemLogsMap> sys_logs(
       new FeedbackData::SystemLogsMap);

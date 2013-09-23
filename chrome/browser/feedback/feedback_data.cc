@@ -98,6 +98,7 @@ bool FeedbackData::BelowCompressionThreshold(const std::string& content) {
 }
 
 FeedbackData::FeedbackData() : profile_(NULL),
+                               trace_id_(0),
                                feedback_page_data_complete_(false),
                                syslogs_compression_complete_(false),
                                report_sent_(false) {
@@ -115,6 +116,16 @@ void FeedbackData::SetAndCompressSystemInfo(
     scoped_ptr<FeedbackData::SystemLogsMap> sys_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  if (trace_id_ != 0) {
+    TracingManager* manager = TracingManager::Get();
+    if (!manager ||
+        !manager->GetTraceData(
+            trace_id_,
+            base::Bind(&FeedbackData::OnGetTraceData, this))) {
+      trace_id_ = 0;
+    }
+  }
+
   sys_info_ = sys_info.Pass();
   if (sys_info_.get()) {
     std::string* compressed_logs_ptr = new std::string;
@@ -130,6 +141,19 @@ void FeedbackData::SetAndCompressSystemInfo(
   }
 }
 
+void FeedbackData::OnGetTraceData(
+    scoped_refptr<base::RefCountedString> trace_data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<std::string> data(new std::string(trace_data->data()));
+
+  set_attached_filename(kTraceFilename);
+  set_attached_filedata(data.Pass());
+  trace_id_ = 0;
+
+  SendReport();
+}
+
 void FeedbackData::OnCompressLogsComplete(
     scoped_ptr<std::string> compressed_logs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -142,6 +166,7 @@ void FeedbackData::OnCompressLogsComplete(
 
 bool FeedbackData::IsDataComplete() {
   return (syslogs_compression_complete_ || !sys_info_.get()) &&
+      !trace_id_ &&
       feedback_page_data_complete_;
 }
 

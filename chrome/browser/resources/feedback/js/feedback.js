@@ -104,6 +104,10 @@ function sendReport() {
       systemInfo != null) {
     useSystemInfo = true;
   }
+  if ($('performance-info-checkbox') == null ||
+      !($('performance-info-checkbox').checked)) {
+    feedbackInfo.traceId = null;
+  }
 </if>
 
 // On NonChromeOS, we don't have any system information gathered except the
@@ -161,6 +165,28 @@ function dataUrlToBlob(url) {
   return new Blob([new Uint8Array(dataArray)], {type: mimeString});
 }
 
+<if expr="pp_ifdef('chromeos')">
+/**
+ * Update the page when performance feedback state is changed.
+ */
+function performanceFeedbackChanged() {
+  if ($('performance-info-checkbox').checked) {
+    $('attach-file').disabled = true;
+    $('attach-file').checked = false;
+
+    $('screenshot-checkbox').disabled = true;
+    $('screenshot-checkbox').checked = false;
+
+    $('sys-info-checkbox').disabled = true;
+    $('sys-info-checkbox').checked = false;
+  } else {
+    $('attach-file').disabled = false;
+    $('screenshot-checkbox').disabled = false;
+    $('sys-info-checkbox').disabled = false;
+  }
+}
+</if>
+
 /**
  * Initializes our page.
  * Flow:
@@ -204,6 +230,14 @@ function initialize() {
         $('attach-file').hidden = true;
       }
 
+<if expr="pp_ifdef('chromeos')">
+      if (feedbackInfo.traceId && ($('performance-info-area'))) {
+        $('performance-info-area').hidden = false;
+        $('performance-info-checkbox').checked = true;
+        performanceFeedbackChanged();
+      }
+</if>
+
       chrome.feedbackPrivate.getStrings(function(strings) {
         loadTimeData.data = strings;
         i18nTemplate.process(document, loadTimeData);
@@ -220,6 +254,10 @@ function initialize() {
     $('send-report-button').onclick = sendReport;
     $('cancel-button').onclick = cancel;
     $('remove-attached-file').onclick = clearAttachedFile;
+<if expr="pp_ifdef('chromeos')">
+    $('performance-info-checkbox').addEventListener(
+        'change', performanceFeedbackChanged);
+</if>
 
     chrome.windows.onRemoved.addListener(function(windowId, removeInfo) {
       if (windowId == systemInfoWindowId)
