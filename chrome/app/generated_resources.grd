@@ -7757,7 +7757,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
 
       <!-- Managed User Avatar Menu -->
       <message name="IDS_MANAGED_USER_INFO" desc="Text which explains that a supervised user is managed by a custodian.">
-        This user is supervised by <ph name="CUSTODIAN_EMAIL">$1<ex>Jane.Doe@gmail.com</ex></ph>. Usage and history from this user can be reviewed by the manager on chrome.com.
+        Usage and history of this user can be reviewed by the manager (<ph name="CUSTODIAN_EMAIL">$1<ex>Jane.Doe@gmail.com</ex></ph>) on chrome.com.
       </message>
       <message name="IDS_MANAGED_USER_AVATAR_LABEL" desc="A label for the supervised user which is used in the avatar menu and as a label in the titlebar.">
         Supervised user
@@ -14468,7 +14468,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
     </if>
     <message name="IDS_PROFILES_DELETE_MANAGED_ADDENDUM" desc="Additional message shown in the same dialog following the IDS_PROFILES_DELETE_MESSAGE, explaining to the user what will happen if they delete the profile of a supervised user.">
-      Visited websites and settings for this supervised user may still be visible by the manager at <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://www.chrome.com/manage"&gt;</ph>www.chrome.com/manage<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
+      Settings and browsing history for this supervised user may still be visible by the manager at <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://www.chrome.com/manage"&gt;</ph>www.chrome.com/manage<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
     </message>
     <message name="IDS_PROFILES_LIST_ITEM_CURRENT" desc="Text to display in the multi-profiles list when this profile is the current profile">
       <ph name="PROFILE_NAME">$1<ex>New User</ex></ph> (current)
