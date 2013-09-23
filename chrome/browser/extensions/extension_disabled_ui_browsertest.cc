@@ -205,7 +205,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
       scoped_temp_dir_.path().AppendASCII("permissions2.crx"));
 
   extensions::ExtensionUpdater::CheckParams params;
-  params.check_blacklist = false;
   service_->updater()->set_default_check_params(params);
 
   // Sync is replacing an older version, so it pends.

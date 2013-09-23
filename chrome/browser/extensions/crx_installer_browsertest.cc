@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/fake_safe_browsing_database_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -447,13 +448,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Blacklist) {
-  extensions::Blacklist* blacklist =
-      ExtensionSystem::Get(profile())->blacklist();
+  scoped_refptr<FakeSafeBrowsingDatabaseManager> blacklist_db(
+      new FakeSafeBrowsingDatabaseManager(true));
+  Blacklist::ScopedDatabaseManagerForTest scoped_blacklist_db(blacklist_db);
 
-  // Fake the blacklisting of the extension we're about to install by
-  // pretending that we get a blacklist update which includes it.
-  const std::string kId = "gllekhaobjnhgeagipipnkpmmmpchacm";
-  blacklist->SetFromUpdater(std::vector<std::string>(1, kId), "some-version");
+  blacklist_db->SetUnsafe("gllekhaobjnhgeagipipnkpmmmpchacm");
 
   base::FilePath crx_path = test_data_dir_.AppendASCII("theme_hidpi_crx")
                                           .AppendASCII("theme_hidpi.crx");

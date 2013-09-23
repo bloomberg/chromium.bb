@@ -210,6 +210,9 @@ class SafeBrowsingDatabaseManager
  protected:
   virtual ~SafeBrowsingDatabaseManager();
 
+  // protected for tests.
+  void NotifyDatabaseUpdateFinished(bool update_succeeded);
+
  private:
   friend class base::RefCountedThreadSafe<SafeBrowsingDatabaseManager>;
   friend class SafeBrowsingServerTest;
@@ -294,8 +297,6 @@ class SafeBrowsingDatabaseManager
   void NotifyClientBlockingComplete(Client* client, bool proceed);
 
   void DatabaseUpdateFinished(bool update_succeeded);
-
-  void NotifyDatabaseUpdateFinished(bool update_succeeded);
 
   // Called on the db thread to close the database.  See CloseDatabase().
   void OnCloseDatabase();

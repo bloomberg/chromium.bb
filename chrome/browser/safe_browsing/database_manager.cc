@@ -521,6 +521,14 @@ void SafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
   }
 }
 
+void SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished(
+    bool update_succeeded) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
+      content::Source<SafeBrowsingDatabaseManager>(this),
+      content::Details<bool>(&update_succeeded));
+}
+
 SafeBrowsingDatabaseManager::QueuedCheck::QueuedCheck(
     const safe_browsing_util::ListType check_type,
     Client* client,
@@ -857,14 +865,6 @@ void SafeBrowsingDatabaseManager::DatabaseUpdateFinished(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished,
                  this, update_succeeded));
-}
-
-void SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished(
-    bool update_succeeded) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
-      content::Source<SafeBrowsingDatabaseManager>(this),
-      content::Details<bool>(&update_succeeded));
 }
 
 void SafeBrowsingDatabaseManager::OnCloseDatabase() {

@@ -273,9 +273,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf", extension->id());
   ASSERT_EQ("1.0", extension->VersionString());
 
-  // We don't want autoupdate blacklist checks.
   extensions::ExtensionUpdater::CheckParams params;
-  params.check_blacklist = false;
   params.callback =
       base::Bind(&NotificationListener::OnFinished,
                  base::Unretained(&notification_listener));
@@ -361,9 +359,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf", extension->id());
   ASSERT_EQ("1.0", extension->VersionString());
 
-  // We don't want autoupdate blacklist checks.
   extensions::ExtensionUpdater::CheckParams params;
-  params.check_blacklist = false;
   params.callback =
       base::Bind(&NotificationListener::OnFinished,
                  base::Unretained(&notification_listener));
@@ -405,9 +401,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_ExternalUrlUpdate) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
   const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
-  // We don't want autoupdate blacklist checks.
   extensions::ExtensionUpdater::CheckParams params;
-  params.check_blacklist = false;
 
   base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
 
@@ -491,9 +485,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
   const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
-  // We don't want autoupdate blacklist checks.
-  extensions::ExtensionUpdater::CheckParams params;
-  params.check_blacklist = false;
 
   base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
 
@@ -566,7 +557,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
       browser()->profile())->extension_service();
   const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
   extensions::ExtensionUpdater::CheckParams params;
-  params.check_blacklist = false;
   service->updater()->set_default_check_params(params);
   const size_t size_before = service->extensions()->size();
   base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");

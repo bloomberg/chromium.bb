@@ -92,13 +92,6 @@ class ExternalCache : public content::NotificationObserver,
       const PingResult& ping_result,
       const std::set<int>& request_ids) OVERRIDE;
 
-  virtual void OnBlacklistDownloadFinished(
-      const std::string& data,
-      const std::string& package_hash,
-      const std::string& version,
-      const PingResult& ping_result,
-      const std::set<int>& request_ids) OVERRIDE;
-
   virtual bool IsExtensionPending(const std::string& id) OVERRIDE;
 
   virtual bool GetExtensionExistingVersion(const std::string& id,
