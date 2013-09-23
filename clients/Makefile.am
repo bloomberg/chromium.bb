@@ -51,7 +51,7 @@ weston_multi_resource_SOURCES = multi-resource.c	\
 	../shared/os-compatibility.c			\
 	../shared/os-compatibility.h
 weston_multi_resource_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
-weston_multi_resource_LDADD = $(SIMPLE_CLIENT_LIBS)
+weston_multi_resource_LDADD = $(SIMPLE_CLIENT_LIBS) -lm
 endif
 
 if BUILD_SIMPLE_EGL_CLIENTS

@@ -35,6 +35,7 @@
 #include <time.h>
 #include <sys/poll.h>
 #include <float.h>
+#include <math.h>
 
 #include <wayland-client.h>
 #include "../shared/os-compatibility.h"
