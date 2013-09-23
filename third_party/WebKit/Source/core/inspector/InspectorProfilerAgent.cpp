@@ -47,6 +47,7 @@
 namespace WebCore {
 
 namespace ProfilerAgentState {
+static const char samplingInterval[] = "samplingInterval";
 static const char userInitiatedProfiling[] = "userInitiatedProfiling";
 static const char profilerEnabled[] = "profilerEnabled";
 static const char profileHeadersRequested[] = "profileHeadersRequested";
@@ -127,6 +128,16 @@ bool InspectorProfilerAgent::enabled()
     return m_state->getBoolean(ProfilerAgentState::profilerEnabled);
 }
 
+void InspectorProfilerAgent::setSamplingInterval(ErrorString* error, int interval)
+{
+    if (m_recordingCPUProfile) {
+        *error = "Cannot change sampling interval when profiling.";
+        return;
+    }
+    m_state->setLong(ProfilerAgentState::samplingInterval, interval);
+    ScriptProfiler::setSamplingInterval(interval);
+}
+
 String InspectorProfilerAgent::getCurrentUserInitiatedProfileName(bool incrementProfileNumber)
 {
     if (incrementProfileNumber)
@@ -205,6 +216,8 @@ void InspectorProfilerAgent::clearFrontend()
 void InspectorProfilerAgent::restore()
 {
     resetFrontendProfiles();
+    if (long interval = m_state->getLong(ProfilerAgentState::samplingInterval, interval))
+        ScriptProfiler::setSamplingInterval(interval);
     if (m_state->getBoolean(ProfilerAgentState::userInitiatedProfiling))
         start();
 }
