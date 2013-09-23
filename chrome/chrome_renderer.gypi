@@ -432,6 +432,13 @@
           'defines': [
             'ENABLE_MOBILE_YOUTUBE_PLUGIN',
           ],
+          'conditions' : [
+            ['google_tv==1', {
+              'sources!' : [
+                'renderer/media/chrome_key_systems.cc',
+              ]
+            }],
+          ],
         }],
         ['OS=="win"', {
           'include_dirs': [
