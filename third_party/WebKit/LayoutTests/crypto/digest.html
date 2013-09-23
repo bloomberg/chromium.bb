@@ -23,7 +23,7 @@ function printAcceptedResult(result)
     debug("    = " + byteArrayToHexString(new Uint8Array(result)));
 }
 
-Promise.fulfill(null).then(function() {
+Promise.resolve(null).then(function() {
     debug("SHA1 of []");
     return crypto.subtle.digest({name: 'sha-1'}, new Uint8Array([]));
 }).then(function(result) {

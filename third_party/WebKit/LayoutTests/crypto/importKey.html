@@ -15,7 +15,7 @@ jsTestIsAsync = true;
 
 aesCbc = {name: 'aes-cbc'};
 
-Promise.fulfill(null).then(function() {
+Promise.resolve(null).then(function() {
     keyFormat = "raw";
     data = asciiToArrayBuffer("private");
     algorithm = { name: 'hmac', hash: { name: 'sha-256' } };

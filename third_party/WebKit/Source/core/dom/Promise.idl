@@ -38,11 +38,9 @@ callback AnyCallback = any (optional any value);
    [Custom] Promise then(optional AnyCallback fulfillCallback, optional AnyCallback rejectCallback);
    [Custom] Promise catch(optional AnyCallback rejectCallback);
 
-   [Custom] static Promise fulfill(any value);
    [Custom] static Promise resolve(any value);
    [Custom] static Promise reject(any value);
 
    [Custom] static Promise _any(any... values);
    [Custom] static Promise every(any... values);
-   [Custom] static Promise some(any... values);
 };
