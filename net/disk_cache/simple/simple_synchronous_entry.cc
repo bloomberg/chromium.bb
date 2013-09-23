@@ -31,6 +31,7 @@ using base::PlatformFileError;
 using base::PlatformFileInfo;
 using base::PLATFORM_FILE_CREATE;
 using base::PLATFORM_FILE_ERROR_EXISTS;
+using base::PLATFORM_FILE_ERROR_NOT_FOUND;
 using base::PLATFORM_FILE_OK;
 using base::PLATFORM_FILE_OPEN;
 using base::PLATFORM_FILE_READ;
@@ -56,20 +57,14 @@ enum OpenEntryResult {
 };
 
 // Used in histograms, please only add entries at the end.
-enum CreateEntryResult {
-  CREATE_ENTRY_SUCCESS = 0,
-  CREATE_ENTRY_PLATFORM_FILE_ERROR = 1,
-  CREATE_ENTRY_CANT_WRITE_HEADER = 2,
-  CREATE_ENTRY_CANT_WRITE_KEY = 3,
-  CREATE_ENTRY_MAX = 4,
-};
-
-// Used in histograms, please only add entries at the end.
 enum WriteResult {
   WRITE_RESULT_SUCCESS = 0,
   WRITE_RESULT_PRETRUNCATE_FAILURE,
   WRITE_RESULT_WRITE_FAILURE,
   WRITE_RESULT_TRUNCATE_FAILURE,
+  WRITE_RESULT_LAZY_STREAM_ENTRY_DOOMED,
+  WRITE_RESULT_LAZY_CREATE_FAILURE,
+  WRITE_RESULT_LAZY_INITIALIZE_FAILURE,
   WRITE_RESULT_MAX,
 };
 
@@ -105,23 +100,6 @@ void RecordSyncOpenResult(net::CacheType cache_type,
   }
 }
 
-void RecordSyncCreateResult(net::CacheType cache_type,
-                            CreateEntryResult result,
-                            bool had_index) {
-  DCHECK_GT(CREATE_ENTRY_MAX, result);
-  SIMPLE_CACHE_UMA(ENUMERATION,
-                   "SyncCreateResult", cache_type, result, CREATE_ENTRY_MAX);
-  if (had_index) {
-    SIMPLE_CACHE_UMA(ENUMERATION,
-                     "SyncCreateResult_WithIndex", cache_type,
-                     result, CREATE_ENTRY_MAX);
-  } else {
-    SIMPLE_CACHE_UMA(ENUMERATION,
-                     "SyncCreateResult_WithoutIndex", cache_type,
-                     result, CREATE_ENTRY_MAX);
-  }
-}
-
 void RecordWriteResult(net::CacheType cache_type, WriteResult result) {
   SIMPLE_CACHE_UMA(ENUMERATION,
                    "SyncWriteResult", cache_type, result, WRITE_RESULT_MAX);
@@ -136,6 +114,12 @@ void RecordCheckEOFResult(net::CacheType cache_type, CheckEOFResult result) {
 void RecordCloseResult(net::CacheType cache_type, CloseResult result) {
   SIMPLE_CACHE_UMA(ENUMERATION,
                    "SyncCloseResult", cache_type, result, WRITE_RESULT_MAX);
+}
+
+bool CanOmitEmptyFile(int file_index) {
+  DCHECK_LE(0, file_index);
+  DCHECK_GT(disk_cache::kSimpleEntryFileCount, file_index);
+  return file_index == disk_cache::simple_util::GetFileIndexFromStreamIndex(2);
 }
 
 }  // namespace
@@ -219,11 +203,13 @@ SimpleSynchronousEntry::EntryOperationData::EntryOperationData(int index_p,
 SimpleSynchronousEntry::EntryOperationData::EntryOperationData(int index_p,
                                                                int offset_p,
                                                                int buf_len_p,
-                                                               bool truncate_p)
+                                                               bool truncate_p,
+                                                               bool doomed_p)
     : index(index_p),
       offset(offset_p),
       buf_len(buf_len_p),
-      truncate(truncate_p) {}
+      truncate(truncate_p),
+      doomed(doomed_p) {}
 
 // static
 void SimpleSynchronousEntry::OpenEntry(
@@ -272,23 +258,6 @@ void SimpleSynchronousEntry::CreateEntry(
   out_results->sync_entry = sync_entry;
 }
 
-// TODO(gavinp): Move this function to its correct location in this .cc file.
-// static
-bool SimpleSynchronousEntry::DeleteFilesForEntryHash(
-    const FilePath& path,
-    const uint64 entry_hash) {
-  bool result = true;
-  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    FilePath to_delete =
-        path.AppendASCII(GetFilenameFromEntryHashAndFileIndex(entry_hash, i));
-    if (!base::DeleteFile(to_delete, false)) {
-      result = false;
-      DLOG(ERROR) << "Could not delete " << to_delete.MaybeAsASCII();
-    }
-  }
-  return result;
-}
-
 // static
 int SimpleSynchronousEntry::DoomEntry(
     const FilePath& path,
@@ -317,6 +286,10 @@ void SimpleSynchronousEntry::ReadData(const EntryOperationData& in_entry_op,
   const int64 file_offset =
       entry_stat->GetOffsetInFile(key_, in_entry_op.offset, in_entry_op.index);
   int file_index = GetFileIndexFromStreamIndex(in_entry_op.index);
+  // Zero-length reads and reads to the empty streams of omitted files should
+  // be handled in the SimpleEntryImpl.
+  DCHECK_LT(0, in_entry_op.buf_len);
+  DCHECK(!empty_file_omitted_[file_index]);
   int bytes_read = ReadPlatformFile(
       files_[file_index], file_offset, out_buf->data(), in_entry_op.buf_len);
   if (bytes_read > 0) {
@@ -336,17 +309,46 @@ void SimpleSynchronousEntry::ReadData(const EntryOperationData& in_entry_op,
 void SimpleSynchronousEntry::WriteData(const EntryOperationData& in_entry_op,
                                        net::IOBuffer* in_buf,
                                        SimpleEntryStat* out_entry_stat,
-                                       int* out_result) const {
+                                       int* out_result) {
   DCHECK(initialized_);
   DCHECK_NE(0, in_entry_op.index);
   int index = in_entry_op.index;
   int file_index = GetFileIndexFromStreamIndex(index);
   int offset = in_entry_op.offset;
   int buf_len = in_entry_op.buf_len;
-  int truncate = in_entry_op.truncate;
+  bool truncate = in_entry_op.truncate;
+  bool doomed = in_entry_op.doomed;
   const int64 file_offset = out_entry_stat->GetOffsetInFile(
       key_, in_entry_op.offset, in_entry_op.index);
   bool extending_by_write = offset + buf_len > out_entry_stat->data_size(index);
+
+  if (empty_file_omitted_[file_index]) {
+    // Don't create a new file if the entry has been doomed, to avoid it being
+    // mixed up with a newly-created entry with the same key.
+    if (doomed) {
+      DLOG(WARNING) << "Rejecting write to lazily omitted stream "
+                    << in_entry_op.index << " of doomed cache entry.";
+      RecordWriteResult(cache_type_, WRITE_RESULT_LAZY_STREAM_ENTRY_DOOMED);
+      *out_result = net::ERR_CACHE_WRITE_FAILURE;
+      return;
+    }
+    PlatformFileError error;
+    if (!MaybeCreateFile(file_index, FILE_REQUIRED, &error)) {
+      RecordWriteResult(cache_type_, WRITE_RESULT_LAZY_CREATE_FAILURE);
+      Doom();
+      *out_result = net::ERR_CACHE_WRITE_FAILURE;
+      return;
+    }
+    CreateEntryResult result;
+    if (!InitializeCreatedFile(file_index, &result)) {
+      RecordWriteResult(cache_type_, WRITE_RESULT_LAZY_INITIALIZE_FAILURE);
+      Doom();
+      *out_result = net::ERR_CACHE_WRITE_FAILURE;
+      return;
+    }
+  }
+  DCHECK(!empty_file_omitted_[file_index]);
+
   if (extending_by_write) {
     // The EOF record and the eventual stream afterward need to be zeroed out.
     const int64 file_eof_offset =
@@ -431,20 +433,24 @@ void SimpleSynchronousEntry::Close(
 
   for (std::vector<CRCRecord>::const_iterator it = crc32s_to_write->begin();
        it != crc32s_to_write->end(); ++it) {
+    const int stream_index = it->index;
+    const int file_index = GetFileIndexFromStreamIndex(stream_index);
+    if (empty_file_omitted_[file_index])
+      continue;
+
     SimpleFileEOF eof_record;
-    int index = it->index;
-    eof_record.stream_size = entry_stat.data_size(index);
+    eof_record.stream_size = entry_stat.data_size(stream_index);
     eof_record.final_magic_number = kSimpleFinalMagicNumber;
     eof_record.flags = 0;
     if (it->has_crc32)
       eof_record.flags |= SimpleFileEOF::FLAG_HAS_CRC32;
     eof_record.data_crc32 = it->data_crc32;
-    int file_index = GetFileIndexFromStreamIndex(index);
-    int eof_offset = entry_stat.GetEOFOffsetInFile(key_, index);
+    int eof_offset = entry_stat.GetEOFOffsetInFile(key_, stream_index);
     // If stream 0 changed size, the file needs to be resized, otherwise the
     // next open will yield wrong stream sizes. On stream 1 and stream 2 proper
     // resizing of the file is handled in SimpleSynchronousEntry::WriteData().
-    if (index == 0 && !TruncatePlatformFile(files_[file_index], eof_offset)) {
+    if (stream_index == 0 &&
+        !TruncatePlatformFile(files_[file_index], eof_offset)) {
       RecordCloseResult(cache_type_, CLOSE_RESULT_WRITE_FAILURE);
       DLOG(INFO) << "Could not truncate stream 0 file.";
       Doom();
@@ -461,6 +467,9 @@ void SimpleSynchronousEntry::Close(
     }
   }
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    if (empty_file_omitted_[i])
+      continue;
+
     bool did_close_file = ClosePlatformFile(files_[i]);
     DCHECK(did_close_file);
     const int64 file_size = entry_stat.GetFileSize(key_, i);
@@ -472,6 +481,7 @@ void SimpleSynchronousEntry::Close(
                      "LastClusterLossPercent", cache_type_,
                      cluster_loss * 100 / (cluster_loss + file_size));
   }
+
   RecordCloseResult(cache_type_, CLOSE_RESULT_SUCCESS);
   have_open_files_ = false;
   delete this;
@@ -489,6 +499,7 @@ SimpleSynchronousEntry::SimpleSynchronousEntry(net::CacheType cache_type,
       initialized_(false) {
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     files_[i] = kInvalidPlatformFileValue;
+    empty_file_omitted_[i] = false;
   }
 }
 
@@ -498,122 +509,175 @@ SimpleSynchronousEntry::~SimpleSynchronousEntry() {
     CloseFiles();
 }
 
-bool SimpleSynchronousEntry::OpenOrCreateFiles(
-    bool create,
+bool SimpleSynchronousEntry::MaybeOpenFile(
+    int file_index,
+    PlatformFileError* out_error) {
+  DCHECK(out_error);
+
+  FilePath filename = GetFilenameFromFileIndex(file_index);
+  int flags = PLATFORM_FILE_OPEN | PLATFORM_FILE_READ | PLATFORM_FILE_WRITE;
+  files_[file_index] = CreatePlatformFile(filename, flags, NULL, out_error);
+
+  if (CanOmitEmptyFile(file_index) &&
+      *out_error == PLATFORM_FILE_ERROR_NOT_FOUND) {
+    empty_file_omitted_[file_index] = true;
+    return true;
+  }
+
+  return *out_error == PLATFORM_FILE_OK;
+}
+
+bool SimpleSynchronousEntry::MaybeCreateFile(
+    int file_index,
+    FileRequired file_required,
+    PlatformFileError* out_error) {
+  DCHECK(out_error);
+
+  if (CanOmitEmptyFile(file_index) && file_required == FILE_NOT_REQUIRED) {
+    empty_file_omitted_[file_index] = true;
+    return true;
+  }
+
+  FilePath filename = GetFilenameFromFileIndex(file_index);
+  int flags = PLATFORM_FILE_CREATE | PLATFORM_FILE_READ | PLATFORM_FILE_WRITE;
+  files_[file_index] = CreatePlatformFile(filename, flags, NULL, out_error);
+
+  empty_file_omitted_[file_index] = false;
+
+  return *out_error == PLATFORM_FILE_OK;
+}
+
+bool SimpleSynchronousEntry::OpenFiles(
     bool had_index,
     SimpleEntryStat* out_entry_stat) {
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    FilePath filename =
-        path_.AppendASCII(GetFilenameFromEntryHashAndFileIndex(entry_hash_, i));
-    int flags = PLATFORM_FILE_READ | PLATFORM_FILE_WRITE;
-    if (create)
-      flags |= PLATFORM_FILE_CREATE;
-    else
-      flags |= PLATFORM_FILE_OPEN;
     PlatformFileError error;
-    files_[i] = CreatePlatformFile(filename, flags, NULL, &error);
-    if (error != PLATFORM_FILE_OK) {
+    if (!MaybeOpenFile(i, &error)) {
       // TODO(ttuttle,gavinp): Remove one each of these triplets of histograms.
       // We can calculate the third as the sum or difference of the other two.
-      if (create) {
-        RecordSyncCreateResult(
-            cache_type_, CREATE_ENTRY_PLATFORM_FILE_ERROR, had_index);
+      RecordSyncOpenResult(
+          cache_type_, OPEN_ENTRY_PLATFORM_FILE_ERROR, had_index);
+      SIMPLE_CACHE_UMA(ENUMERATION,
+                       "SyncOpenPlatformFileError", cache_type_,
+                       -error, -base::PLATFORM_FILE_ERROR_MAX);
+      if (had_index) {
         SIMPLE_CACHE_UMA(ENUMERATION,
-                         "SyncCreatePlatformFileError", cache_type_,
+                         "SyncOpenPlatformFileError_WithIndex", cache_type_,
                          -error, -base::PLATFORM_FILE_ERROR_MAX);
-        if (had_index) {
-          SIMPLE_CACHE_UMA(ENUMERATION,
-                           "SyncCreatePlatformFileError_WithIndex", cache_type_,
-                           -error, -base::PLATFORM_FILE_ERROR_MAX);
-        } else {
-          SIMPLE_CACHE_UMA(ENUMERATION,
-                           "SyncCreatePlatformFileError_WithoutIndex",
-                           cache_type_,
-                           -error, -base::PLATFORM_FILE_ERROR_MAX);
-        }
       } else {
-        RecordSyncOpenResult(
-            cache_type_, OPEN_ENTRY_PLATFORM_FILE_ERROR, had_index);
         SIMPLE_CACHE_UMA(ENUMERATION,
-                         "SyncOpenPlatformFileError", cache_type_,
+                         "SyncOpenPlatformFileError_WithoutIndex",
+                         cache_type_,
                          -error, -base::PLATFORM_FILE_ERROR_MAX);
-        if (had_index) {
-          SIMPLE_CACHE_UMA(ENUMERATION,
-                           "SyncOpenPlatformFileError_WithIndex", cache_type_,
-                           -error, -base::PLATFORM_FILE_ERROR_MAX);
-        } else {
-          SIMPLE_CACHE_UMA(ENUMERATION,
-                           "SyncOpenPlatformFileError_WithoutIndex",
-                           cache_type_,
-                           -error, -base::PLATFORM_FILE_ERROR_MAX);
-        }
       }
-      while (--i >= 0) {
-        bool ALLOW_UNUSED did_close = ClosePlatformFile(files_[i]);
-        DLOG_IF(INFO, !did_close) << "Could not close file "
-                                  << filename.MaybeAsASCII();
-      }
+      while (--i >= 0)
+        CloseFile(i);
       return false;
     }
   }
 
   have_open_files_ = true;
-  if (create) {
-    base::Time creation_time = Time::Now();
-    out_entry_stat->set_last_modified(creation_time);
-    out_entry_stat->set_last_used(creation_time);
-    for (int i = 0; i < kSimpleEntryStreamCount; ++i)
-      out_entry_stat->set_data_size(i, 0);
-  } else {
-    base::TimeDelta entry_age = base::Time::Now() - base::Time::UnixEpoch();
-    for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-      PlatformFileInfo file_info;
-      bool success = GetPlatformFileInfo(files_[i], &file_info);
-      base::Time file_last_modified;
-      if (!success) {
-        DLOG(WARNING) << "Could not get platform file info.";
-        continue;
-      }
-      out_entry_stat->set_last_used(file_info.last_accessed);
-      if (simple_util::GetMTime(path_, &file_last_modified))
-        out_entry_stat->set_last_modified(file_last_modified);
-      else
-        out_entry_stat->set_last_modified(file_info.last_modified);
 
-      base::TimeDelta stream_age =
-          base::Time::Now() - out_entry_stat->last_modified();
-      if (stream_age < entry_age)
-        entry_age = stream_age;
-
-      // Two things prevent from knowing the right values for |data_size|:
-      // 1) The key is not known, hence its length is unknown.
-      // 2) Stream 0 and stream 1 are in the same file, and the exact size for
-      // each will only be known when reading the EOF record for stream 0.
-      //
-      // The size for file 0 and 1 is temporarily kept in
-      // |data_size(1)| and |data_size(2)| respectively. Reading the key in
-      // InitializeForOpen yields the data size for each file. In the case of
-      // file hash_1, this is the total size of stream 2, and is assigned to
-      // data_size(2). In the case of file 0, it is the combined size of stream
-      // 0, stream 1 and one EOF record. The exact distribution of sizes between
-      // stream 1 and stream 0 is only determined after reading the EOF record
-      // for stream 0 in ReadAndValidateStream0.
-      out_entry_stat->set_data_size(i + 1, file_info.size);
+  base::TimeDelta entry_age = base::Time::Now() - base::Time::UnixEpoch();
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    if (empty_file_omitted_[i]) {
+      out_entry_stat->set_data_size(i + 1, 0);
+      continue;
     }
-    SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
-                     "SyncOpenEntryAge", cache_type_,
-                     entry_age.InHours(), 1, 1000, 50);
+
+    PlatformFileInfo file_info;
+    bool success = GetPlatformFileInfo(files_[i], &file_info);
+    base::Time file_last_modified;
+    if (!success) {
+      DLOG(WARNING) << "Could not get platform file info.";
+      continue;
+    }
+    out_entry_stat->set_last_used(file_info.last_accessed);
+    if (simple_util::GetMTime(path_, &file_last_modified))
+      out_entry_stat->set_last_modified(file_last_modified);
+    else
+      out_entry_stat->set_last_modified(file_info.last_modified);
+
+    base::TimeDelta stream_age =
+        base::Time::Now() - out_entry_stat->last_modified();
+    if (stream_age < entry_age)
+      entry_age = stream_age;
+
+    // Two things prevent from knowing the right values for |data_size|:
+    // 1) The key is not known, hence its length is unknown.
+    // 2) Stream 0 and stream 1 are in the same file, and the exact size for
+    // each will only be known when reading the EOF record for stream 0.
+    //
+    // The size for file 0 and 1 is temporarily kept in
+    // |data_size(1)| and |data_size(2)| respectively. Reading the key in
+    // InitializeForOpen yields the data size for each file. In the case of
+    // file hash_1, this is the total size of stream 2, and is assigned to
+    // data_size(2). In the case of file 0, it is the combined size of stream
+    // 0, stream 1 and one EOF record. The exact distribution of sizes between
+    // stream 1 and stream 0 is only determined after reading the EOF record
+    // for stream 0 in ReadAndValidateStream0.
+    out_entry_stat->set_data_size(i + 1, file_info.size);
   }
+  SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
+                   "SyncOpenEntryAge", cache_type_,
+                   entry_age.InHours(), 1, 1000, 50);
 
   return true;
 }
 
-void SimpleSynchronousEntry::CloseFiles() {
+bool SimpleSynchronousEntry::CreateFiles(
+    bool had_index,
+    SimpleEntryStat* out_entry_stat) {
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    DCHECK_NE(kInvalidPlatformFileValue, files_[i]);
-    bool did_close = ClosePlatformFile(files_[i]);
-    DCHECK(did_close);
+    PlatformFileError error;
+    if (!MaybeCreateFile(i, FILE_NOT_REQUIRED, &error)) {
+      // TODO(ttuttle,gavinp): Remove one each of these triplets of histograms.
+      // We can calculate the third as the sum or difference of the other two.
+      RecordSyncCreateResult(CREATE_ENTRY_PLATFORM_FILE_ERROR, had_index);
+      SIMPLE_CACHE_UMA(ENUMERATION,
+                       "SyncCreatePlatformFileError", cache_type_,
+                       -error, -base::PLATFORM_FILE_ERROR_MAX);
+      if (had_index) {
+        SIMPLE_CACHE_UMA(ENUMERATION,
+                         "SyncCreatePlatformFileError_WithIndex", cache_type_,
+                         -error, -base::PLATFORM_FILE_ERROR_MAX);
+      } else {
+        SIMPLE_CACHE_UMA(ENUMERATION,
+                         "SyncCreatePlatformFileError_WithoutIndex",
+                         cache_type_,
+                         -error, -base::PLATFORM_FILE_ERROR_MAX);
+      }
+      while (--i >= 0)
+        CloseFile(i);
+      return false;
+    }
   }
+
+  have_open_files_ = true;
+
+  base::Time creation_time = Time::Now();
+  out_entry_stat->set_last_modified(creation_time);
+  out_entry_stat->set_last_used(creation_time);
+  for (int i = 0; i < kSimpleEntryStreamCount; ++i)
+      out_entry_stat->set_data_size(i, 0);
+
+  return true;
+}
+
+void SimpleSynchronousEntry::CloseFile(int index) {
+  if (empty_file_omitted_[index]) {
+    empty_file_omitted_[index] = false;
+  } else {
+    DCHECK_NE(kInvalidPlatformFileValue, files_[index]);
+    bool did_close = ClosePlatformFile(files_[index]);
+    DCHECK(did_close);
+    files_[index] = kInvalidPlatformFileValue;
+  }
+}
+
+void SimpleSynchronousEntry::CloseFiles() {
+  for (int i = 0; i < kSimpleEntryFileCount; ++i)
+    CloseFile(i);
 }
 
 int SimpleSynchronousEntry::InitializeForOpen(
@@ -622,9 +686,14 @@ int SimpleSynchronousEntry::InitializeForOpen(
     scoped_refptr<net::GrowableIOBuffer>* stream_0_data,
     uint32* out_stream_0_crc32) {
   DCHECK(!initialized_);
-  if (!OpenOrCreateFiles(false, had_index, out_entry_stat))
+  if (!OpenFiles(had_index, out_entry_stat)) {
+    DLOG(WARNING) << "Could not open platform files for entry.";
     return net::ERR_FAILED;
+  }
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    if (empty_file_omitted_[i])
+      continue;
+
     SimpleFileHeader header;
     int header_read_result =
         ReadPlatformFile(files_[i], 0, reinterpret_cast<char*>(&header),
@@ -671,8 +740,10 @@ int SimpleSynchronousEntry::InitializeForOpen(
     } else {
       out_entry_stat->set_data_size(
           2, GetDataSizeFromKeyAndFileSize(key_, out_entry_stat->data_size(2)));
-      if (out_entry_stat->data_size(2) < 0)
+      if (out_entry_stat->data_size(2) < 0) {
+        DLOG(WARNING) << "Stream 2 file is too small.";
         return net::ERR_FAILED;
+      }
     }
 
     if (base::Hash(key.get(), header.key_length) != header.key_hash) {
@@ -682,46 +753,68 @@ int SimpleSynchronousEntry::InitializeForOpen(
       return net::ERR_FAILED;
     }
   }
+
+  const int third_stream_file_index = GetFileIndexFromStreamIndex(2);
+  DCHECK(CanOmitEmptyFile(third_stream_file_index));
+  if (!empty_file_omitted_[third_stream_file_index] &&
+      out_entry_stat->data_size(2) == 0) {
+    DLOG(INFO) << "Removing empty third stream file.";
+    CloseFile(third_stream_file_index);
+    DeleteFileForEntryHash(path_, entry_hash_, third_stream_file_index);
+    empty_file_omitted_[third_stream_file_index] = true;
+  }
+
   RecordSyncOpenResult(cache_type_, OPEN_ENTRY_SUCCESS, had_index);
   initialized_ = true;
   return net::OK;
+}
+
+bool SimpleSynchronousEntry::InitializeCreatedFile(
+    int file_index,
+    CreateEntryResult* out_result) {
+  SimpleFileHeader header;
+  header.initial_magic_number = kSimpleInitialMagicNumber;
+  header.version = kSimpleEntryVersionOnDisk;
+
+  header.key_length = key_.size();
+  header.key_hash = base::Hash(key_);
+
+  int bytes_written = WritePlatformFile(
+      files_[file_index], 0, reinterpret_cast<char*>(&header), sizeof(header));
+  if (bytes_written != sizeof(header)) {
+    *out_result = CREATE_ENTRY_CANT_WRITE_HEADER;
+    return false;
+  }
+
+  bytes_written = WritePlatformFile(
+      files_[file_index], sizeof(header), key_.data(), key_.size());
+  if (bytes_written != implicit_cast<int>(key_.size())) {
+    *out_result = CREATE_ENTRY_CANT_WRITE_KEY;
+    return false;
+  }
+
+  return true;
 }
 
 int SimpleSynchronousEntry::InitializeForCreate(
     bool had_index,
     SimpleEntryStat* out_entry_stat) {
   DCHECK(!initialized_);
-  if (!OpenOrCreateFiles(true, had_index, out_entry_stat)) {
+  if (!CreateFiles(had_index, out_entry_stat)) {
     DLOG(WARNING) << "Could not create platform files.";
     return net::ERR_FILE_EXISTS;
   }
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    SimpleFileHeader header;
-    header.initial_magic_number = kSimpleInitialMagicNumber;
-    header.version = kSimpleEntryVersionOnDisk;
+    if (empty_file_omitted_[i])
+      continue;
 
-    header.key_length = key_.size();
-    header.key_hash = base::Hash(key_);
-
-    if (WritePlatformFile(
-            files_[i], 0, reinterpret_cast<char*>(&header), sizeof(header)) !=
-        sizeof(header)) {
-      DLOG(WARNING) << "Could not write cache file header to cache entry.";
-      RecordSyncCreateResult(
-          cache_type_, CREATE_ENTRY_CANT_WRITE_HEADER, had_index);
-      return net::ERR_FAILED;
-    }
-
-    if (WritePlatformFile(
-            files_[i], sizeof(SimpleFileHeader), key_.data(), key_.size()) !=
-        implicit_cast<int>(key_.size())) {
-      DLOG(WARNING) << "Could not write keys to new cache entry.";
-      RecordSyncCreateResult(
-          cache_type_, CREATE_ENTRY_CANT_WRITE_KEY, had_index);
+    CreateEntryResult result;
+    if (!InitializeCreatedFile(i, &result)) {
+      RecordSyncCreateResult(result, had_index);
       return net::ERR_FAILED;
     }
   }
-  RecordSyncCreateResult(cache_type_, CREATE_ENTRY_SUCCESS, had_index);
+  RecordSyncCreateResult(CREATE_ENTRY_SUCCESS, had_index);
   initialized_ = true;
   return net::OK;
 }
@@ -809,8 +902,48 @@ int SimpleSynchronousEntry::GetEOFRecordData(int index,
 }
 
 void SimpleSynchronousEntry::Doom() const {
-  // TODO(gavinp): Consider if we should guard against redundant Doom() calls.
   DeleteFilesForEntryHash(path_, entry_hash_);
+}
+
+bool SimpleSynchronousEntry::DeleteFileForEntryHash(
+    const FilePath& path,
+    const uint64 entry_hash,
+    const int file_index) {
+  FilePath to_delete = path.AppendASCII(
+      GetFilenameFromEntryHashAndFileIndex(entry_hash, file_index));
+  return base::DeleteFile(to_delete, false);
+}
+
+bool SimpleSynchronousEntry::DeleteFilesForEntryHash(
+    const FilePath& path,
+    const uint64 entry_hash) {
+  bool result = true;
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    if (!DeleteFileForEntryHash(path, entry_hash, i) && !CanOmitEmptyFile(i))
+      result = false;
+  }
+  return result;
+}
+
+void SimpleSynchronousEntry::RecordSyncCreateResult(CreateEntryResult result,
+                                                    bool had_index) {
+  DCHECK_GT(CREATE_ENTRY_MAX, result);
+  SIMPLE_CACHE_UMA(ENUMERATION,
+                   "SyncCreateResult", cache_type_, result, CREATE_ENTRY_MAX);
+  if (had_index) {
+    SIMPLE_CACHE_UMA(ENUMERATION,
+                     "SyncCreateResult_WithIndex", cache_type_,
+                     result, CREATE_ENTRY_MAX);
+  } else {
+    SIMPLE_CACHE_UMA(ENUMERATION,
+                     "SyncCreateResult_WithoutIndex", cache_type_,
+                     result, CREATE_ENTRY_MAX);
+  }
+}
+
+FilePath SimpleSynchronousEntry::GetFilenameFromFileIndex(int file_index) {
+  return path_.AppendASCII(
+      GetFilenameFromEntryHashAndFileIndex(entry_hash_, file_index));
 }
 
 }  // namespace disk_cache

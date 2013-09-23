@@ -15170,6 +15170,14 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.App.WriteResult" enum="SimpleCacheWriteResult">
+  <obsolete>
+    Replaced 2013/09/03 by WriteResult2, which adds &quot;fast empty
+    return&quot;, which previously showed up as &quot;success&quot;.
+  </obsolete>
+  <summary>The outcome of Entry::WriteData in the simple cache.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.WriteResult2" enum="SimpleCacheWriteResult">
   <summary>The outcome of Entry::WriteData in the simple cache.</summary>
 </histogram>
 
@@ -15861,6 +15869,14 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SimpleCache.Http.WriteResult" enum="SimpleCacheWriteResult">
+  <obsolete>
+    Replaced 2013/09/03 by WriteResult2, which adds &quot;fast empty
+    return&quot;, which previously showed up as &quot;success&quot;.
+  </obsolete>
+  <summary>The outcome of Entry::WriteData in the simple cache.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.WriteResult2" enum="SimpleCacheWriteResult">
   <summary>The outcome of Entry::WriteData in the simple cache.</summary>
 </histogram>
 
@@ -25105,6 +25121,7 @@ other types of suffix sets.
   <int value="2" label="Over Max Size"/>
   <int value="3" label="Bad State"/>
   <int value="4" label="Synchronous Write Failure"/>
+  <int value="5" label="Fast Empty Return (Success)"/>
 </enum>
 
 <enum name="SimpleIndexState" type="int">

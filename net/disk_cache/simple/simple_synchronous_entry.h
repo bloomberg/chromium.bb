@@ -92,12 +92,14 @@ class SimpleSynchronousEntry {
     EntryOperationData(int index_p,
                        int offset_p,
                        int buf_len_p,
-                       bool truncate_p);
+                       bool truncate_p,
+                       bool doomed_p);
 
     int index;
     int offset;
     int buf_len;
     bool truncate;
+    bool doomed;
   };
 
   static void OpenEntry(net::CacheType cache_type,
@@ -134,7 +136,7 @@ class SimpleSynchronousEntry {
   void WriteData(const EntryOperationData& in_entry_op,
                  net::IOBuffer* in_buf,
                  SimpleEntryStat* out_entry_stat,
-                 int* out_result) const;
+                 int* out_result);
   void CheckEOFRecord(int index,
                       const SimpleEntryStat& entry_stat,
                       uint32 expected_crc32,
@@ -150,6 +152,19 @@ class SimpleSynchronousEntry {
   std::string key() const { return key_; }
 
  private:
+  enum CreateEntryResult {
+    CREATE_ENTRY_SUCCESS = 0,
+    CREATE_ENTRY_PLATFORM_FILE_ERROR = 1,
+    CREATE_ENTRY_CANT_WRITE_HEADER = 2,
+    CREATE_ENTRY_CANT_WRITE_KEY = 3,
+    CREATE_ENTRY_MAX = 4,
+  };
+
+  enum FileRequired {
+    FILE_NOT_REQUIRED,
+    FILE_REQUIRED
+  };
+
   SimpleSynchronousEntry(
       net::CacheType cache_type,
       const base::FilePath& path,
@@ -160,9 +175,22 @@ class SimpleSynchronousEntry {
   // called.
   ~SimpleSynchronousEntry();
 
-  bool OpenOrCreateFiles(bool create,
-                         bool had_index,
-                         SimpleEntryStat* out_entry_stat);
+  // Tries to open one of the cache entry files.  Succeeds if the open succeeds
+  // or if the file was not found and is allowed to be omitted if the
+  // corresponding stream is empty.
+  bool MaybeOpenFile(int file_index,
+                     base::PlatformFileError* out_error);
+  // Creates one of the cache entry files if necessary.  If the file is allowed
+  // to be omitted if the corresponding stream is empty, and if |file_required|
+  // is FILE_NOT_REQUIRED, then the file is not created; otherwise, it is.
+  bool MaybeCreateFile(int file_index,
+                       FileRequired file_required,
+                       base::PlatformFileError* out_error);
+  bool OpenFiles(bool had_index,
+                 SimpleEntryStat* out_entry_stat);
+  bool CreateFiles(bool had_index,
+                   SimpleEntryStat* out_entry_stat);
+  void CloseFile(int index);
   void CloseFiles();
 
   // Returns a net error, i.e. net::OK on success.  |had_index| is passed
@@ -172,6 +200,11 @@ class SimpleSynchronousEntry {
                         SimpleEntryStat* out_entry_stat,
                         scoped_refptr<net::GrowableIOBuffer>* stream_0_data,
                         uint32* out_stream_0_crc32);
+
+  // Writes the header and key to a newly-created stream file.  |index| is the
+  // index of the stream.  Returns true on success; returns false and sets
+  // |*out_result| on failure.
+  bool InitializeCreatedFile(int index, CreateEntryResult* out_result);
 
   // Returns a net error, including net::OK on success and net::FILE_EXISTS
   // when the entry already exists.  |had_index| is passed from the main entry
@@ -194,8 +227,15 @@ class SimpleSynchronousEntry {
                        int* out_data_size) const;
   void Doom() const;
 
+  static bool DeleteFileForEntryHash(const base::FilePath& path,
+                                     uint64 entry_hash,
+                                     int file_index);
   static bool DeleteFilesForEntryHash(const base::FilePath& path,
                                       uint64 entry_hash);
+
+  void RecordSyncCreateResult(CreateEntryResult result, bool had_index);
+
+  base::FilePath GetFilenameFromFileIndex(int file_index);
 
   const net::CacheType cache_type_;
   const base::FilePath path_;
@@ -206,6 +246,10 @@ class SimpleSynchronousEntry {
   bool initialized_;
 
   base::PlatformFile files_[kSimpleEntryFileCount];
+
+  // True if the corresponding stream is empty and therefore no on-disk file
+  // was created to store it.
+  bool empty_file_omitted_[kSimpleEntryFileCount];
 };
 
 }  // namespace disk_cache
