@@ -10,10 +10,13 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/proxy/plugin_array_buffer_var.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_resource_var.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/proxy_object_var.h"
 #include "ppapi/shared_impl/api_id.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
+#include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -149,6 +152,14 @@ void PluginVarTracker::ReleaseHostObject(PluginDispatcher* dispatcher,
 
   // Now just release the object given the plugin var ID.
   ReleaseVar(found->second);
+}
+
+ResourceVar* PluginVarTracker::MakeResourceVar(PP_Resource pp_resource) {
+  ResourceTracker* resource_tracker = PpapiGlobals::Get()->GetResourceTracker();
+  ppapi::Resource* resource = resource_tracker->GetResource(pp_resource);
+  if (!resource)
+    return NULL;
+  return new PluginResourceVar(resource);
 }
 
 void PluginVarTracker::DidDeleteInstance(PP_Instance instance) {

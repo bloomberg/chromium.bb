@@ -8,6 +8,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "ipc/ipc_message.h"
 #include "ppapi/shared_impl/array_var.h"
 #include "ppapi/shared_impl/dictionary_var.h"
 #include "ppapi/shared_impl/resource_var.h"
@@ -156,17 +157,19 @@ bool Equals(const PP_Var& expected,
       ResourceVar* expected_var = ResourceVar::FromPPVar(expected);
       ResourceVar* actual_var = ResourceVar::FromPPVar(actual);
       DCHECK(expected_var && actual_var);
-      if (expected_var->pp_resource() != actual_var->pp_resource()) {
-        LOG(ERROR) << "expected: " << expected_var->pp_resource() << " actual: "
-                   << actual_var->pp_resource();
+      if (expected_var->GetPPResource() != actual_var->GetPPResource()) {
+        LOG(ERROR) << "expected: " << expected_var->GetPPResource()
+                   << " actual: " << actual_var->GetPPResource();
         return false;
       }
-      IPC::Message actual_message(actual_var->creation_message());
-      const IPC::Message& expected_message = expected_var->creation_message();
-      if (expected_message.size() != actual_message.size()) {
+
+      const IPC::Message* actual_message = actual_var->GetCreationMessage();
+      const IPC::Message* expected_message =
+          expected_var->GetCreationMessage();
+      if (expected_message->size() != actual_message->size()) {
         LOG(ERROR) << "expected creation message size: "
-                   << expected_message.size() << " actual: "
-                   << actual_message.size();
+                   << expected_message->size() << " actual: "
+                   << actual_message->size();
         return false;
       }
 
@@ -174,12 +177,13 @@ bool Equals(const PP_Var& expected,
       // expected. This is an unpredictable reference number that changes
       // between serialization/deserialization, and we do not want it to cause
       // the comparison to fail.
-      actual_message.SetHeaderValues(actual_message.routing_id(),
-                                     actual_message.type(),
-                                     (expected_message.flags() & 0xffffff00) |
-                                      (actual_message.flags() & 0xff));
-      if (memcmp(expected_message.data(), actual_message.data(),
-                 expected_message.size()) != 0) {
+      IPC::Message local_actual_message(*actual_message);
+      local_actual_message.SetHeaderValues(
+          actual_message->routing_id(), actual_message->type(),
+          (expected_message->flags() & 0xffffff00) |
+           (actual_message->flags() & 0xff));
+      if (memcmp(expected_message->data(), local_actual_message.data(),
+                 expected_message->size()) != 0) {
         LOG(ERROR) << "expected creation message does not match actual.";
         return false;
       }

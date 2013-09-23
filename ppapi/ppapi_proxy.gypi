@@ -105,6 +105,8 @@
           'proxy/plugin_resource.h',
           'proxy/plugin_resource_tracker.cc',
           'proxy/plugin_resource_tracker.h',
+          'proxy/plugin_resource_var.cc',
+          'proxy/plugin_resource_var.h',
           'proxy/plugin_var_serialization_rules.cc',
           'proxy/plugin_var_serialization_rules.h',
           'proxy/plugin_var_tracker.cc',

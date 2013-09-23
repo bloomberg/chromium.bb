@@ -55,6 +55,7 @@ class HostVarTracker : public ppapi::VarTracker {
       PP_Instance instance) const;
 
   // VarTracker public implementation.
+  virtual ppapi::ResourceVar* MakeResourceVar(PP_Resource pp_resource) OVERRIDE;
   virtual void DidDeleteInstance(PP_Instance instance) OVERRIDE;
 
   virtual int TrackSharedMemoryHandle(PP_Instance instance,

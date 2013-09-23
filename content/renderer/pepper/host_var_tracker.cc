@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/renderer/pepper/host_array_buffer_var.h"
+#include "content/renderer/pepper/host_resource_var.h"
 #include "content/renderer/pepper/npobject_var.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "ppapi/c/pp_var.h"
@@ -100,6 +101,10 @@ int HostVarTracker::GetLiveNPObjectVarsForInstance(PP_Instance instance) const {
   if (found == instance_map_.end())
     return 0;
   return static_cast<int>(found->second->size());
+}
+
+ppapi::ResourceVar* HostVarTracker::MakeResourceVar(PP_Resource pp_resource) {
+  return new HostResourceVar(pp_resource);
 }
 
 void HostVarTracker::DidDeleteInstance(PP_Instance instance) {

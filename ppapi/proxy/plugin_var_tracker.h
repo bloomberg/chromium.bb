@@ -59,6 +59,7 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
                          const PP_Var& host_object);
 
   // VarTracker public overrides.
+  virtual ResourceVar* MakeResourceVar(PP_Resource pp_resource) OVERRIDE;
   virtual void DidDeleteInstance(PP_Instance instance) OVERRIDE;
   virtual int TrackSharedMemoryHandle(PP_Instance instance,
                                       base::SharedMemoryHandle file,

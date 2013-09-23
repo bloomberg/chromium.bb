@@ -71,8 +71,8 @@ std::string Var::PPVarToLogString(PP_Var var) {
 
       if (resource->IsPending()) {
         return base::StringPrintf("[Pending resource]");
-      } else if (resource->pp_resource()) {
-        return base::StringPrintf("[Resource %d]", resource->pp_resource());
+      } else if (resource->GetPPResource()) {
+        return base::StringPrintf("[Resource %d]", resource->GetPPResource());
       } else {
         return "[Null resource]";
       }

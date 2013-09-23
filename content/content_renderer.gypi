@@ -287,6 +287,8 @@
     'renderer/pepper/host_dispatcher_wrapper.h',
     'renderer/pepper/host_globals.cc',
     'renderer/pepper/host_globals.h',
+    'renderer/pepper/host_resource_var.cc',
+    'renderer/pepper/host_resource_var.h',
     'renderer/pepper/host_var_tracker.cc',
     'renderer/pepper/host_var_tracker.h',
     'renderer/pepper/message_channel.cc',

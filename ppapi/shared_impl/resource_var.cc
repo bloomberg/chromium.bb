@@ -9,18 +9,8 @@
 
 namespace ppapi {
 
-ResourceVar::ResourceVar() : pp_resource_(0) {}
-
-ResourceVar::ResourceVar(PP_Resource pp_resource) : pp_resource_(pp_resource) {}
-
-ResourceVar::ResourceVar(const IPC::Message& creation_message)
-    : pp_resource_(0),
-      creation_message_(creation_message) {}
-
-ResourceVar::~ResourceVar() {}
-
-bool ResourceVar::IsPending() const {
-  return pp_resource_ == 0 && creation_message_.type() != 0;
+const IPC::Message* ResourceVar::GetCreationMessage() const {
+  return NULL;
 }
 
 ResourceVar* ResourceVar::AsResourceVar() {
@@ -41,5 +31,9 @@ ResourceVar* ResourceVar::FromPPVar(PP_Var var) {
     return NULL;
   return var_object->AsResourceVar();
 }
+
+ResourceVar::ResourceVar() {}
+
+ResourceVar::~ResourceVar() {}
 
 }  // namespace ppapi

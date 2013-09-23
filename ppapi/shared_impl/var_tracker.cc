@@ -13,6 +13,7 @@
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/id_assignment.h"
 #include "ppapi/shared_impl/proxy_lock.h"
+#include "ppapi/shared_impl/resource_var.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -232,6 +233,13 @@ PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes,
   if (!array_buffer.get())
     return PP_MakeNull();
   return array_buffer->GetPPVar();
+}
+
+PP_Var VarTracker::MakeResourcePPVar(PP_Resource pp_resource) {
+  CheckThreadingPreconditions();
+
+  ResourceVar* resource_var = MakeResourceVar(pp_resource);
+  return resource_var ? resource_var->GetPPVar() : PP_MakeNull();
 }
 
 std::vector<PP_Var> VarTracker::GetLiveVars() {

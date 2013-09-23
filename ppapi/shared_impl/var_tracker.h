@@ -85,6 +85,15 @@ class PPAPI_SHARED_EXPORT VarTracker {
   // usually immediately put this in a scoped_refptr).
   ArrayBufferVar* MakeArrayBufferVar(uint32 size_in_bytes, const void* data);
 
+  // Creates a new resource var that points to a given resource ID. Returns a
+  // PP_Var that references it and has an initial reference count of 1.
+  PP_Var MakeResourcePPVar(PP_Resource pp_resource);
+
+  // Creates a new resource var that points to a given resource ID. This is
+  // implemented by the host and plugin tracker separately, because the plugin
+  // keeps a reference to the resource, and the host does not.
+  virtual ResourceVar* MakeResourceVar(PP_Resource pp_resource) = 0;
+
   // Return a vector containing all PP_Vars that are in the tracker. This is
   // to help implement PPB_Testing_Dev.GetLiveVars and should generally not be
   // used in production code. The PP_Vars are returned in no particular order,

@@ -18,6 +18,9 @@ class TestVarTracker : public VarTracker {
  public:
   TestVarTracker() : VarTracker(THREAD_SAFE) {}
   virtual ~TestVarTracker() {}
+  virtual ResourceVar* MakeResourceVar(PP_Resource pp_resource) OVERRIDE {
+    return NULL;
+  }
   virtual ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) OVERRIDE {
     return NULL;
   }
