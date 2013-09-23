@@ -18,18 +18,37 @@
 
 namespace {
 
-// Converts ui::TextInputType to string. The returned string should consistent
-// with the type enum of chrome.input.ime.InputContext.
+// Converts ui::TextInputType to string.
 std::string TextInputTypeToString(ui::TextInputType type) {
   switch (type) {
-    // TODO(bshe): Supports more input types.
+    case ui::TEXT_INPUT_TYPE_NONE:
+      return "none";
     case ui::TEXT_INPUT_TYPE_PASSWORD:
       return "password";
+    case ui::TEXT_INPUT_TYPE_EMAIL:
+      return "email";
     case ui::TEXT_INPUT_TYPE_NUMBER:
       return "number";
-    default:
+    case ui::TEXT_INPUT_TYPE_TELEPHONE:
+      return "tel";
+    case ui::TEXT_INPUT_TYPE_URL:
+      return "url";
+    case ui::TEXT_INPUT_TYPE_DATE:
+      return "date";
+    case ui::TEXT_INPUT_TYPE_TEXT:
+    case ui::TEXT_INPUT_TYPE_SEARCH:
+    case ui::TEXT_INPUT_TYPE_DATE_TIME:
+    case ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL:
+    case ui::TEXT_INPUT_TYPE_MONTH:
+    case ui::TEXT_INPUT_TYPE_TIME:
+    case ui::TEXT_INPUT_TYPE_WEEK:
+    case ui::TEXT_INPUT_TYPE_TEXT_AREA:
+    case ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE:
+    case ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD:
       return "text";
   }
+  NOTREACHED();
+  return "";
 }
 
 // The WebContentsDelegate for the keyboard.

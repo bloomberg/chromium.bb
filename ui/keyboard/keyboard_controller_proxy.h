@@ -57,10 +57,10 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   // necesasry animation, or delay the visibility change as it desires.
   virtual void HideKeyboardContainer(aura::Window* container);
 
-  // Calls OnTextInputBoxFocused javascript function through webui to update
-  // TextInputType on javascript side. This is for web ui keyboard. Extension
-  // keyboard can use chrome.input.ime.onFocus to get the same information.
-  void SetUpdateInputType(ui::TextInputType type);
+  // Updates the type of the focused text input box. The default implementation
+  // calls OnTextInputBoxFocused javascript function through webui to update the
+  // type the of focused input box.
+  virtual void SetUpdateInputType(ui::TextInputType type);
 
  protected:
   // Gets the BrowserContext to use for creating the WebContents hosting the
