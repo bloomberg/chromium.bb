@@ -30,6 +30,7 @@ using ppapi::StringVar;
 using ppapi::Var;
 using WebKit::WebArrayBuffer;
 using WebKit::WebBindings;
+using WebKit::WebFrame;
 using WebKit::WebPluginContainer;
 
 namespace content {
@@ -178,9 +179,12 @@ PP_Var NPObjectToPPVar(PepperPluginInstanceImpl* instance, NPObject* object) {
   // the DOM (but the PluginInstance is not destroyed yet).
   if (!container)
     return PP_MakeUndefined();
+  WebFrame* frame = container->element().document().frame();
+  if (!frame)
+    return PP_MakeUndefined();
+
   v8::HandleScope scope(instance->GetIsolate());
-  v8::Local<v8::Context> context =
-      container->element().document().frame()->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   return NPObjectToPPVarImpl(instance, object, context);
 }
 
