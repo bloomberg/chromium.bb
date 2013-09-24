@@ -249,11 +249,38 @@ def _CheckForPrintfDebugging(input_api, output_api):
     return []
 
 
+def _CheckForFailInFile(input_api, f):
+    pattern = input_api.re.compile('^FAIL')
+    errors = []
+    for line_num, line in f.ChangedContents():
+        if pattern.match(line):
+            errors.append('    %s:%d %s' % (f.LocalPath(), line_num, line))
+    return errors
+
+
+def _CheckForFailingTestResults(input_api, output_api):
+    """Generally speaking, we'd prefer not to accidentally land patches
+    that contain "FAIL" in test results."""
+    errors = []
+    for f in input_api.AffectedFiles():
+        if (f.LocalPath().startswith("LayoutTests") and f.LocalPath().endswith(".txt")):
+            errors.extend(_CheckForFailInFile(input_api, f))
+
+    results = []
+    if errors:
+        results.append(output_api.PresubmitPromptOrNotify(
+            'Some test expectations you updated contain "FAIL". Ideally, that '
+            'wouldn\'t be the case. Please verify that these are in fact '
+            'intentionally failing results, and not simply oversight.', errors))
+    return results
+
+
 def CheckChangeOnUpload(input_api, output_api):
     results = []
     results.extend(_CommonChecks(input_api, output_api))
     results.extend(_CheckStyle(input_api, output_api))
     results.extend(_CheckForPrintfDebugging(input_api, output_api))
+    results.extend(_CheckForFailingTestResults(input_api, output_api))
     results.extend(_CompileDevtoolsFrontend(input_api, output_api))
     return results
 
