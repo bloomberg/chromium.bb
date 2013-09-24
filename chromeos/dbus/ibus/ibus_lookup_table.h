@@ -11,11 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 
-namespace dbus {
-class MessageWriter;
-class MessageReader;
-}  // namespace dbus
-
 namespace chromeos {
 
 // The IBusLookupTable is one of IBusObjects. IBusLookupTable contains IBusTexts
@@ -65,15 +60,6 @@ namespace chromeos {
 //   ]
 //  }
 //  TODO(nona): Clean up the structure.(crbug.com/129403)
-class IBusLookupTable;
-
-// Pops a IBusLookupTable from |reader|.
-// Returns false if an error occurs.
-bool CHROMEOS_EXPORT PopIBusLookupTable(dbus::MessageReader* reader,
-                                        IBusLookupTable* table);
-// Appends a IBusLookupTable to |writer| except mozc_candidates_ in |table|.
-void CHROMEOS_EXPORT AppendIBusLookupTable(const IBusLookupTable& table,
-                                           dbus::MessageWriter* writer);
 
 // An representation of IBusLookupTable object which is used in dbus
 // communication with ibus-daemon.
