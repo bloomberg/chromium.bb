@@ -1,0 +1,25 @@
+<html>
+    <body onload="init();" style="position: fixed; background: #000; overflow: auto; width: 100%; height: 100%;">
+        <div class="fixed" style="min-height: 30px; position: relative; overflow: hidden; ">
+            <div class="numberentry" style="display: -webkit-flex; 	position: relative;box-sizing: border-box; margin: 0px;	padding: 0px;border-width: 0px;" >
+                <input id="first" type="text" style="-webkit-flex: 0; display: block;position: relative; min-width: 150px"/>
+            </div>
+        </div>
+        <button onclick="zero()">Click Here First</button>
+        <button onclick="restore()">Click Here Next</button>
+    </body>
+    <script>
+        function zero()
+        {
+            document.getElementById("first").style.height="0px";
+        }
+        function restore()
+        {
+            document.getElementById("first").style.height="20px";
+        }
+        function init()
+        {
+            document.getElementById("first").value = "hello";
+        }
+    </script>
+</html>
