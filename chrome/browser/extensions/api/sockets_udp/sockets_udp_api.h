@@ -15,6 +15,8 @@ class ResumableUDPSocket;
 namespace extensions {
 namespace api {
 
+class UDPSocketEventDispatcher;
+
 class UDPSocketAsyncApiFunction : public SocketAsyncApiFunction {
  protected:
   virtual ~UDPSocketAsyncApiFunction();
@@ -86,6 +88,7 @@ class SocketsUdpBindFunction : public UDPSocketAsyncApiFunction {
 
  private:
   scoped_ptr<sockets_udp::Bind::Params> params_;
+  UDPSocketEventDispatcher* socket_event_dispatcher_;
 };
 
 class SocketsUdpSendFunction : public UDPSocketExtensionWithDnsLookupFunction {

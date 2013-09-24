@@ -131,14 +131,22 @@ void SocketsUdpUpdateFunction::Work() {
   results_ = sockets_udp::Update::Results::Create();
 }
 
-SocketsUdpBindFunction::SocketsUdpBindFunction() {}
+SocketsUdpBindFunction::SocketsUdpBindFunction()
+    : socket_event_dispatcher_(NULL) {
+}
 
 SocketsUdpBindFunction::~SocketsUdpBindFunction() {}
 
 bool SocketsUdpBindFunction::Prepare() {
   params_ = sockets_udp::Bind::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
-  return true;
+
+  socket_event_dispatcher_ = UDPSocketEventDispatcher::Get(profile());
+  DCHECK(socket_event_dispatcher_) << "There is no socket event dispatcher. "
+    "If this assertion is failing during a test, then it is likely that "
+    "TestExtensionSystem is failing to provide an instance of "
+    "UDPSocketEventDispatcher.";
+  return socket_event_dispatcher_ != NULL;
 }
 
 void SocketsUdpBindFunction::Work() {
@@ -160,8 +168,8 @@ void SocketsUdpBindFunction::Work() {
 
   int net_result = socket->Bind(params_->address, params_->port);
   if (net_result == net::OK) {
-    UDPSocketEventDispatcher::Get(profile())->OnSocketBind(extension_->id(),
-                                                           params_->socket_id);
+    socket_event_dispatcher_->OnSocketBind(extension_->id(),
+                                           params_->socket_id);
   }
 
   if (net_result != net::OK)
