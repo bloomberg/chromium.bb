@@ -116,7 +116,7 @@ const unsigned char kSharedCharTypeTable[0x100] = {
     CHAR_QUERY | CHAR_USERINFO,  // 0x24  $
     CHAR_QUERY | CHAR_USERINFO,  // 0x25  %
     CHAR_QUERY | CHAR_USERINFO,  // 0x26  &
-    CHAR_QUERY | CHAR_USERINFO | CHAR_COMPONENT,  // 0x27  '
+    0,                           // 0x27  '  (Try to prevent XSS.)
     CHAR_QUERY | CHAR_USERINFO | CHAR_COMPONENT,  // 0x28  (
     CHAR_QUERY | CHAR_USERINFO | CHAR_COMPONENT,  // 0x29  )
     CHAR_QUERY | CHAR_USERINFO | CHAR_COMPONENT,  // 0x2a  *
