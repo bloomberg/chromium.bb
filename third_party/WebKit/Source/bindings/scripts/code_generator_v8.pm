@@ -2960,13 +2960,10 @@ sub GenerateAttributeConfigurationArray
     return $code;
 }
 
-sub GenerateAttributeConfiguration
+sub GenerateAttributeConfigurationParameters
 {
     my $interface = shift;
     my $attribute = shift;
-    my $delimiter = shift;
-    my $indent = shift;
-    my $code = "";
     my $attrName = $attribute->name;
     my $attrExt = $attribute->extendedAttributes;
     my $implClassName = GetImplName($interface);
@@ -3058,7 +3055,43 @@ sub GenerateAttributeConfiguration
       $setterForMainWorld = "0";
     }
 
-    $code .= $indent . "    {\"$attrName\", $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, static_cast<v8::PropertyAttribute>($propAttribute), $on_proto}" . $delimiter . "\n";
+    return ($attrName, $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, "static_cast<v8::PropertyAttribute>($propAttribute)", $on_proto);
+}
+
+sub GenerateAttributeConfiguration
+{
+    my $interface = shift;
+    my $attribute = shift;
+    my $delimiter = shift;
+    my $indent = shift;
+    my $code = "";
+
+    my ($attrName, $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, $propAttribute, $on_proto) = GenerateAttributeConfigurationParameters($interface, $attribute);
+
+    $code .= $indent . "    {\"$attrName\", $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, $propAttribute, $on_proto}" . $delimiter . "\n";
+    return $code;
+}
+
+sub GenerateStaticAttribute
+{
+    my $interface = shift;
+    my $attribute = shift;
+    my $attrExt = $attribute->extendedAttributes;
+    my $code = "";
+
+    my ($attrName, $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, $propAttribute, $on_proto) = GenerateAttributeConfigurationParameters($interface, $attribute);
+
+    die "Static attributes do not support optimized getters or setters for the main world" if $getterForMainWorld || $setterForMainWorld;
+
+    my $conditionalString = GenerateConditionalString($attribute);
+
+    my $commentInfo = "Attribute '$attrName' (Extended Attributes: '" . join(' ', keys(%{$attrExt})) . "')";
+
+    $code .= "#if ${conditionalString}\n" if $conditionalString;
+    $code .= "    // $commentInfo\n";
+    $code .= "    desc->SetNativeDataProperty(v8::String::NewSymbol(\"$attrName\"), $getter, $setter, v8::External::New($data), $propAttribute, v8::Handle<v8::AccessorSignature>(), $accessControl);\n";
+    $code .= "#endif // ${conditionalString}\n" if $conditionalString;
+
     return $code;
 }
 
@@ -4100,9 +4133,12 @@ END
     my @enabledAtRuntimeAttributes;
     my @enabledPerContextAttributes;
     my @normalAttributes;
+    my @staticAttributes;
     foreach my $attribute (@$attributes) {
 
-        if ($interfaceName eq "Window" && $attribute->extendedAttributes->{"Unforgeable"}) {
+        if ($attribute->isStatic) {
+            push(@staticAttributes, $attribute);
+        } elsif ($interfaceName eq "Window" && $attribute->extendedAttributes->{"Unforgeable"}) {
             push(@disallowsShadowing, $attribute);
         } elsif ($attribute->extendedAttributes->{"EnabledAtRuntime"} || $attribute->extendedAttributes->{"EnabledPerContext"}) {
             if ($attribute->extendedAttributes->{"EnabledPerContext"}) {
@@ -4116,7 +4152,6 @@ END
         }
     }
     AddToImplIncludes("bindings/v8/V8DOMConfiguration.h");
-    $attributes = \@normalAttributes;
     # Put the attributes that disallow shadowing on the shadow object.
     if (@disallowsShadowing) {
         my $code = "";
@@ -4127,11 +4162,11 @@ END
     }
 
     my $has_attributes = 0;
-    if (@$attributes) {
+    if (@normalAttributes) {
         $has_attributes = 1;
         my $code = "";
         $code .= "static const V8DOMConfiguration::AttributeConfiguration ${v8ClassName}Attributes[] = {\n";
-        $code .= GenerateAttributeConfigurationArray($interface, $attributes);
+        $code .= GenerateAttributeConfigurationArray($interface, \@normalAttributes);
         $code .= "};\n\n";
         $implementation{nameSpaceWebCore}->add($code);
     }
@@ -4347,6 +4382,11 @@ END
     }
 
     die "Wrong number of callbacks generated for $interfaceName ($num_callbacks, should be $total_functions)" if $num_callbacks != $total_functions;
+
+    # Define static attributes.
+    foreach my $attribute (@staticAttributes) {
+        $code .= GenerateStaticAttribute($interface, $attribute);
+    }
 
     # Special cases
     if ($interfaceName eq "Window") {

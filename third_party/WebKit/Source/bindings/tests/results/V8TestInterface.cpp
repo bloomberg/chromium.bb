@@ -1023,12 +1023,6 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttributes[] = {
 #if ENABLE(Condition22) || ENABLE(Condition23)
-    {"implementsStaticReadOnlyAttr", TestInterfaceV8Internal::implementsStaticReadOnlyAttrAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-#endif // ENABLE(Condition22) || ENABLE(Condition23)
-#if ENABLE(Condition22) || ENABLE(Condition23)
-    {"implementsStaticAttr", TestInterfaceV8Internal::implementsStaticAttrAttributeGetterCallback, TestInterfaceV8Internal::implementsStaticAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-#endif // ENABLE(Condition22) || ENABLE(Condition23)
-#if ENABLE(Condition22) || ENABLE(Condition23)
     {"implementsStr1", TestInterfaceV8Internal::implementsStr1AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
 #if ENABLE(Condition22) || ENABLE(Condition23)
@@ -1040,12 +1034,6 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttribute
 #if ENABLE(Condition22) || ENABLE(Condition23)
     {"implementsNode", TestInterfaceV8Internal::implementsNodeAttributeGetterCallback, TestInterfaceV8Internal::implementsNodeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
-#if ENABLE(Condition11) || ENABLE(Condition12)
-    {"supplementalStaticReadOnlyAttr", TestInterfaceV8Internal::supplementalStaticReadOnlyAttrAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-#if ENABLE(Condition11) || ENABLE(Condition12)
-    {"supplementalStaticAttr", TestInterfaceV8Internal::supplementalStaticAttrAttributeGetterCallback, TestInterfaceV8Internal::supplementalStaticAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
     {"supplementalStr1", TestInterfaceV8Internal::supplementalStr1AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -1157,6 +1145,22 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
     desc->Set(v8::String::NewSymbol("supplementalMethod4"), v8::FunctionTemplate::New(TestInterfaceV8Internal::supplementalMethod4MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
+#endif // ENABLE(Condition11) || ENABLE(Condition12)
+#if ENABLE(Condition22) || ENABLE(Condition23)
+    // Attribute 'implementsStaticReadOnlyAttr' (Extended Attributes: 'Conditional ImplementedBy')
+    desc->SetNativeDataProperty(v8::String::NewSymbol("implementsStaticReadOnlyAttr"), TestInterfaceV8Internal::implementsStaticReadOnlyAttrAttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+#endif // ENABLE(Condition22) || ENABLE(Condition23)
+#if ENABLE(Condition22) || ENABLE(Condition23)
+    // Attribute 'implementsStaticAttr' (Extended Attributes: 'Conditional ImplementedBy')
+    desc->SetNativeDataProperty(v8::String::NewSymbol("implementsStaticAttr"), TestInterfaceV8Internal::implementsStaticAttrAttributeGetterCallback, TestInterfaceV8Internal::implementsStaticAttrAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+#endif // ENABLE(Condition22) || ENABLE(Condition23)
+#if ENABLE(Condition11) || ENABLE(Condition12)
+    // Attribute 'supplementalStaticReadOnlyAttr' (Extended Attributes: 'Conditional ImplementedBy')
+    desc->SetNativeDataProperty(v8::String::NewSymbol("supplementalStaticReadOnlyAttr"), TestInterfaceV8Internal::supplementalStaticReadOnlyAttrAttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+#endif // ENABLE(Condition11) || ENABLE(Condition12)
+#if ENABLE(Condition11) || ENABLE(Condition12)
+    // Attribute 'supplementalStaticAttr' (Extended Attributes: 'Conditional ImplementedBy')
+    desc->SetNativeDataProperty(v8::String::NewSymbol("supplementalStaticAttr"), TestInterfaceV8Internal::supplementalStaticAttrAttributeGetterCallback, TestInterfaceV8Internal::supplementalStaticAttrAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
     // Custom toString template
