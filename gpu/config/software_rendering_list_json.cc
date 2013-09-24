@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.11",
+  "version": "6.10",
   "entries": [
     {
       "id": 1,
@@ -1123,21 +1123,6 @@ LONG_STRING_CONST(
       "features": [
         "accelerated_video_decode"
       ]
-    },
-    {
-      "id": 79,
-      "description": "Disable force compositing mode on all Windows versions prior to Vista.",
-      "cr_bugs": [273920],
-      "os": {
-        "type": "win",
-        "version": {
-          "op": "<",
-          "value": "6.0"
-        }
-      },
-      "features": [
-        "force_compositing_mode"
-      ]
     }
   ]
 }
@@ -1145,3 +1130,4 @@ LONG_STRING_CONST(
 );  // LONG_STRING_CONST macro
 
 }  // namespace gpu
+
