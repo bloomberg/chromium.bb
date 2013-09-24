@@ -73,13 +73,12 @@ def generate_attribute_and_includes(attribute):
         includes.add('bindings/v8/V8HiddenPropertyName.h')
     else:
         cpp_value = 'imp->%s()' % uncapitalize(attribute.name)
-        return_v8_value_statement = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='info')
-        includes = []
+        return_v8_value_statement, includes = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='info', isolate='info.GetIsolate()', extended_attributes=attribute.extended_attributes)
     contents = {
         'name': attribute.name,
         'conditional_string': generate_conditional_string(attribute),
         'cpp_method_name': cpp_method_name(attribute),
-        'cpp_type': v8_types.cpp_type(idl_type, pointer_type='RefPtr'),
+        'cpp_type': v8_types.cpp_type(idl_type),
         'should_keep_attribute_alive': should_keep_attribute_alive,
         'return_v8_value_statement': return_v8_value_statement,
         'v8_type': v8_types.v8_type(idl_type),

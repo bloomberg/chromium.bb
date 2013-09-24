@@ -53,7 +53,8 @@ CPP_TO_V8_CONVERSION = 'v8::Handle<v8::Value> {name}Handle = {cpp_value_to_v8_va
 
 
 def cpp_to_v8_conversion(idl_type, name):
-    this_cpp_value_to_v8_value = cpp_value_to_v8_value(idl_type, name, 'isolate', creation_context='v8::Handle<v8::Object>()')
+    # Includes handled in includes_for_operation
+    this_cpp_value_to_v8_value, _ = cpp_value_to_v8_value(idl_type, name, 'isolate', creation_context='v8::Handle<v8::Object>()')
     return CPP_TO_V8_CONVERSION.format(name=name, cpp_value_to_v8_value=this_cpp_value_to_v8_value)
 
 
