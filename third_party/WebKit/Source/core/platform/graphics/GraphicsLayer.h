@@ -127,6 +127,9 @@ public:
     GraphicsLayer* maskLayer() const { return m_maskLayer; }
     void setMaskLayer(GraphicsLayer*);
 
+    GraphicsLayer* contentsClippingMaskLayer() const { return m_contentsClippingMaskLayer; }
+    void setContentsClippingMaskLayer(GraphicsLayer*);
+
     // The given layer will replicate this layer and its children; the replica renders behind this layer.
     void setReplicatedByLayer(GraphicsLayer*);
     // Whether this layer is being replicated by another layer.
@@ -384,6 +387,7 @@ private:
     GraphicsLayer* m_parent;
 
     GraphicsLayer* m_maskLayer; // Reference to mask layer. We don't own this.
+    GraphicsLayer* m_contentsClippingMaskLayer; // Reference to clipping mask layer. We don't own this.
 
     GraphicsLayer* m_replicaLayer; // A layer that replicates this layer. We only allow one, for now.
                                    // The replica is not parented; this is the primary reference to it.

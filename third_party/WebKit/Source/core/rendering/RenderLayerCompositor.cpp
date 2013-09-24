@@ -2261,6 +2261,9 @@ static void resetTrackedRepaintRectsRecursive(GraphicsLayer* graphicsLayer)
 
     if (GraphicsLayer* maskLayer = graphicsLayer->maskLayer())
         resetTrackedRepaintRectsRecursive(maskLayer);
+
+    if (GraphicsLayer* clippingMaskLayer = graphicsLayer->contentsClippingMaskLayer())
+        resetTrackedRepaintRectsRecursive(clippingMaskLayer);
 }
 
 void RenderLayerCompositor::resetTrackedRepaintRects()

@@ -98,6 +98,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_contentsOrientation(CompositingCoordinatesTopDown)
     , m_parent(0)
     , m_maskLayer(0)
+    , m_contentsClippingMaskLayer(0)
     , m_replicaLayer(0)
     , m_replicatedLayer(0)
     , m_paintCount(0)
@@ -431,6 +432,15 @@ void GraphicsLayer::updateContentsRect()
 
     contentsLayer->setPosition(FloatPoint(m_contentsRect.x(), m_contentsRect.y()));
     contentsLayer->setBounds(IntSize(m_contentsRect.width(), m_contentsRect.height()));
+
+    if (m_contentsClippingMaskLayer) {
+        if (m_contentsClippingMaskLayer->size() != m_contentsRect.size()) {
+            m_contentsClippingMaskLayer->setSize(m_contentsRect.size());
+            m_contentsClippingMaskLayer->setNeedsDisplay();
+        }
+        m_contentsClippingMaskLayer->setPosition(FloatPoint());
+        m_contentsClippingMaskLayer->setOffsetFromRenderer(offsetFromRenderer() + IntSize(m_contentsRect.location().x(), m_contentsRect.location().y()));
+    }
 }
 
 static HashSet<int>* s_registeredLayerSet;
@@ -496,6 +506,8 @@ void GraphicsLayer::setupContentsLayer(WebLayer* contentsLayer)
         // Insert the content layer first. Video elements require this, because they have
         // shadow content that must display in front of the video.
         m_layer->layer()->insertChild(m_contentsLayer, 0);
+        WebLayer* borderWebLayer = m_contentsClippingMaskLayer ? m_contentsClippingMaskLayer->platformLayer() : 0;
+        m_contentsLayer->setMaskLayer(borderWebLayer);
     }
 }
 
@@ -704,6 +716,10 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
             writeIndent(ts, indent + 2);
             ts << "GraphicsLayerPaintMask\n";
         }
+        if (paintingPhase() & GraphicsLayerPaintChildClippingMask) {
+            writeIndent(ts, indent + 2);
+            ts << "GraphicsLayerPaintChildClippingMask\n";
+        }
         if (paintingPhase() & GraphicsLayerPaintOverflowContents) {
             writeIndent(ts, indent + 2);
             ts << "GraphicsLayerPaintOverflowContents\n";
@@ -874,6 +890,18 @@ void GraphicsLayer::setMaskLayer(GraphicsLayer* maskLayer)
     m_maskLayer = maskLayer;
     WebLayer* maskWebLayer = m_maskLayer ? m_maskLayer->platformLayer() : 0;
     m_layer->layer()->setMaskLayer(maskWebLayer);
+}
+
+void GraphicsLayer::setContentsClippingMaskLayer(GraphicsLayer* contentsClippingMaskLayer)
+{
+    if (contentsClippingMaskLayer == m_contentsClippingMaskLayer)
+        return;
+
+    m_contentsClippingMaskLayer = contentsClippingMaskLayer;
+    WebLayer* contentsClippingMaskWebLayer = m_contentsClippingMaskLayer ? m_contentsClippingMaskLayer->platformLayer() : 0;
+    if (hasContentsLayer())
+        contentsLayer()->setMaskLayer(contentsClippingMaskWebLayer);
+    updateContentsRect();
 }
 
 void GraphicsLayer::setBackfaceVisibility(bool visible)

@@ -347,6 +347,7 @@ public:
         PaintLayerPaintingOverflowContents = 1 << 9,
         PaintLayerPaintingRootBackgroundOnly = 1 << 10,
         PaintLayerPaintingSkipRootBackground = 1 << 11,
+        PaintLayerPaintingChildClippingMaskPhase = 1 << 12,
         PaintLayerPaintingCompositingAllPhases = (PaintLayerPaintingCompositingBackgroundPhase | PaintLayerPaintingCompositingForegroundPhase | PaintLayerPaintingCompositingMaskPhase)
     };
 
@@ -475,6 +476,7 @@ public:
 
     bool isComposited() const { return m_backing != 0; }
     bool hasCompositedMask() const;
+    bool hasCompositedClippingMask() const;
     RenderLayerBacking* backing() const { return m_backing.get(); }
     RenderLayerBacking* ensureBacking();
     void clearBacking(bool layerBeingDestroyed = false);
@@ -696,6 +698,7 @@ private:
     void paintOutlineForFragments(const LayerFragments&, GraphicsContext*, const LayerPaintingInfo&, PaintBehavior, RenderObject* paintingRootForRenderer);
     void paintOverflowControlsForFragments(const LayerFragments&, GraphicsContext*, const LayerPaintingInfo&);
     void paintMaskForFragments(const LayerFragments&, GraphicsContext*, const LayerPaintingInfo&, RenderObject* paintingRootForRenderer);
+    void paintChildClippingMaskForFragments(const LayerFragments&, GraphicsContext*, const LayerPaintingInfo&, RenderObject* paintingRootForRenderer);
     void paintTransformedLayerIntoFragments(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
 
     RenderLayer* hitTestLayer(RenderLayer* rootLayer, RenderLayer* containerLayer, const HitTestRequest& request, HitTestResult& result,

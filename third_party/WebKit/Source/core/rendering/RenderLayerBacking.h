@@ -108,6 +108,7 @@ public:
     GraphicsLayer* scrollingContentsLayer() const { return m_scrollingContentsLayer.get(); }
 
     bool hasMaskLayer() const { return m_maskLayer != 0; }
+    bool hasChildClippingMaskLayer() const { return m_childClippingMaskLayer; }
 
     GraphicsLayer* parentForSublayers() const;
     GraphicsLayer* childForSuperlayers() const;
@@ -194,6 +195,7 @@ private:
     bool updateForegroundLayer(bool needsForegroundLayer);
     bool updateBackgroundLayer(bool needsBackgroundLayer);
     bool updateMaskLayer(bool needsMaskLayer);
+    bool updateClippingMaskLayers(bool needsChildClippingMaskLayer);
     bool requiresHorizontalScrollbarLayer() const { return m_owningLayer->horizontalScrollbar(); }
     bool requiresVerticalScrollbarLayer() const { return m_owningLayer->verticalScrollbar(); }
     bool requiresScrollCornerLayer() const { return !m_owningLayer->scrollCornerAndResizerRect().isEmpty(); }
@@ -286,6 +288,7 @@ private:
     // the layers above. It's added to m_graphicsLayer as its mask layer (naturally) if
     // we have a mask, and isn't part of the typical hierarchy (it has no children).
     OwnPtr<GraphicsLayer> m_maskLayer; // Only used if we have a mask.
+    OwnPtr<GraphicsLayer> m_childClippingMaskLayer; // Only used if we have to clip child layers or accelerated contents with border radius or clip-path.
 
     // There are two other (optional) layers whose painting is managed by the RenderLayerBacking,
     // but whose position in the hierarchy is maintained by the RenderLayerCompositor. These

@@ -49,6 +49,7 @@ void ContinuousPainter::setNeedsDisplayRecursive(GraphicsLayer* layer, PageOverl
     layer->setNeedsDisplay();
 
     setNeedsDisplayRecursive(layer->maskLayer(), pageOverlays);
+    setNeedsDisplayRecursive(layer->contentsClippingMaskLayer(), pageOverlays);
     setNeedsDisplayRecursive(layer->replicaLayer(), pageOverlays);
 
     const Vector<GraphicsLayer*>& children = layer->children();

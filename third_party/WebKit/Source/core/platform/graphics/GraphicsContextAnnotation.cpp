@@ -72,6 +72,8 @@ static const char* paintPhaseName(WebCore::PaintPhase phase)
         return "TextClip";
     case WebCore::PaintPhaseMask:
         return "Mask";
+    case WebCore::PaintPhaseClippingMask:
+        return "ClippingMask";
     default:
         ASSERT_NOT_REACHED();
         return "<unknown>";

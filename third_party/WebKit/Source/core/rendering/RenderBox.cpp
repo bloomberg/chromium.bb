@@ -1317,6 +1317,18 @@ void RenderBox::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     paintMaskImages(paintInfo, paintRect);
 }
 
+void RenderBox::paintClippingMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+{
+    if (!paintInfo.shouldPaintWithinRoot(this) || style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseClippingMask || paintInfo.context->paintingDisabled())
+        return;
+
+    if (!layer() || !layer()->isComposited())
+        return;
+
+    LayoutRect paintRect = LayoutRect(paintOffset, size());
+    paintInfo.context->fillRect(pixelSnappedIntRect(paintRect), Color::black);
+}
+
 void RenderBox::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& paintRect)
 {
     // Figure out if we need to push a transparency layer to render our mask.

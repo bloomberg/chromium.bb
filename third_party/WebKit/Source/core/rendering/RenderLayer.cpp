@@ -3280,6 +3280,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     bool shouldPaintNormalFlowAndPosZOrderLists = isPaintingCompositedForeground;
     bool shouldPaintOverlayScrollbars = isPaintingOverlayScrollbars;
     bool shouldPaintMask = (paintFlags & PaintLayerPaintingCompositingMaskPhase) && shouldPaintContent && renderer()->hasMask() && !selectionOnly;
+    bool shouldPaintClippingMask = (paintFlags & PaintLayerPaintingChildClippingMaskPhase) && renderer()->style()->hasBorderRadius() && shouldPaintContent && !selectionOnly;
 
     PaintBehavior paintBehavior = PaintBehaviorNormal;
     if (paintFlags & PaintLayerPaintingSkipRootBackground)
@@ -3334,6 +3335,11 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
 
     if (shouldPaintMask)
         paintMaskForFragments(layerFragments, context, localPaintingInfo, paintingRootForRenderer);
+
+    if (shouldPaintClippingMask) {
+        // Paint the border radius mask for the fragments.
+        paintChildClippingMaskForFragments(layerFragments, context, localPaintingInfo, paintingRootForRenderer);
+    }
 
     // End our transparency layer
     if (haveTransparency && m_usedTransparency && !m_paintingInsideReflection) {
@@ -3634,6 +3640,26 @@ void RenderLayer::paintMaskForFragments(const LayerFragments& layerFragments, Gr
 
         if (localPaintingInfo.clipToDirtyRect)
             restoreClip(context, localPaintingInfo.paintDirtyRect, fragment.backgroundRect);
+    }
+}
+
+void RenderLayer::paintChildClippingMaskForFragments(const LayerFragments& layerFragments, GraphicsContext* context, const LayerPaintingInfo& localPaintingInfo,
+    RenderObject* paintingRootForRenderer)
+{
+    for (size_t i = 0; i < layerFragments.size(); ++i) {
+        const LayerFragment& fragment = layerFragments.at(i);
+        if (!fragment.shouldPaintContent)
+            continue;
+
+        if (localPaintingInfo.clipToDirtyRect)
+            clipToRect(localPaintingInfo.rootLayer, context, localPaintingInfo.paintDirtyRect, fragment.foregroundRect, IncludeSelfForBorderRadius); // Child clipping mask painting will handle clipping to self.
+
+        // Paint the the clipped mask.
+        PaintInfo paintInfo(context, pixelSnappedIntRect(fragment.backgroundRect.rect()), PaintPhaseClippingMask, PaintBehaviorNormal, paintingRootForRenderer, localPaintingInfo.region, 0, 0, localPaintingInfo.rootLayer->renderer());
+        renderer()->paint(paintInfo, toPoint(fragment.layerBounds.location() - renderBoxLocation() + localPaintingInfo.subPixelAccumulation));
+
+        if (localPaintingInfo.clipToDirtyRect)
+            restoreClip(context, localPaintingInfo.paintDirtyRect, fragment.foregroundRect);
     }
 }
 
@@ -4954,6 +4980,11 @@ void RenderLayer::clearBacking(bool layerBeingDestroyed)
 bool RenderLayer::hasCompositedMask() const
 {
     return m_backing && m_backing->hasMaskLayer();
+}
+
+bool RenderLayer::hasCompositedClippingMask() const
+{
+    return m_backing && m_backing->hasChildClippingMaskLayer();
 }
 
 GraphicsLayer* RenderLayer::layerForScrolling() const
