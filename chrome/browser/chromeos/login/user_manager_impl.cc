@@ -882,6 +882,9 @@ class UserHashMatcher {
 
 // Returns NULL if user is not created
 User* UserManagerImpl::GetUserByProfile(Profile* profile) const {
+  if (ProfileHelper::IsSigninProfile(profile))
+    return NULL;
+
   if (IsMultipleProfilesAllowed()) {
     const std::string username_hash =
         ProfileHelper::GetUserIdHashFromProfile(profile);
