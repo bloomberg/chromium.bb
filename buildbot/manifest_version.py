@@ -319,7 +319,7 @@ class BuilderStatus(object):
   STATUS_FAILED = 'fail'
   STATUS_PASSED = 'pass'
   STATUS_INFLIGHT = 'inflight'
-  STATUS_COMPLETED = [STATUS_PASSED, STATUS_FAILED]
+  COMPLETED_STATUSES = (STATUS_PASSED, STATUS_FAILED)
 
   def __init__(self, status, message):
     self.status = status
@@ -341,7 +341,7 @@ class BuilderStatus(object):
 
   def Completed(self):
     """Returns True if the Builder has completed."""
-    return self.status in BuilderStatus.STATUS_COMPLETED
+    return self.status in BuilderStatus.COMPLETED_STATUSES
 
   @classmethod
   def GetCompletedStatus(cls, success):
@@ -558,6 +558,7 @@ class BuildSpecsManager(object):
       output = ctx.Cat(url).output
     except gs.GSNoSuchKey:
       return None
+
     return BuilderStatus(**cPickle.loads(output))
 
   def GetLatestPassingSpec(self):
