@@ -208,6 +208,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
           ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING,
           ManagedMemoryPolicy::kDefaultNumResourcesLimit),
       pinch_gesture_active_(false),
+      pinch_gesture_end_should_clear_scrolling_layer_(false),
       fps_counter_(FrameRateCounter::Create(proxy_->HasImplThread())),
       paint_time_counter_(PaintTimeCounter::Create()),
       memory_history_(MemoryHistory::Create()),
@@ -2288,6 +2289,7 @@ void LayerTreeHostImpl::PinchGestureBegin() {
   pinch_gesture_active_ = true;
   previous_pinch_anchor_ = gfx::Point();
   client_->RenewTreePriority();
+  pinch_gesture_end_should_clear_scrolling_layer_ = !CurrentlyScrollingLayer();
   active_tree_->SetCurrentlyScrollingLayer(RootScrollLayer());
 }
 
@@ -2322,6 +2324,10 @@ void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
 
 void LayerTreeHostImpl::PinchGestureEnd() {
   pinch_gesture_active_ = false;
+  if (pinch_gesture_end_should_clear_scrolling_layer_) {
+    pinch_gesture_end_should_clear_scrolling_layer_ = false;
+    ClearCurrentlyScrollingLayer();
+  }
   client_->SetNeedsCommitOnImplThread();
 }
 

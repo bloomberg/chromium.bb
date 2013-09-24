@@ -536,6 +536,7 @@ class CC_EXPORT LayerTreeHostImpl
   gfx::Vector2dF current_fling_velocity_;
 
   bool pinch_gesture_active_;
+  bool pinch_gesture_end_should_clear_scrolling_layer_;
   gfx::Point previous_pinch_anchor_;
 
   // This is set by AnimateLayers() and used by UpdateAnimationState()
