@@ -1982,6 +1982,22 @@ void InspectorDOMAgent::pushNodeByBackendIdToFrontend(ErrorString* errorString, 
     }
 }
 
+void InspectorDOMAgent::getRelayoutBoundary(ErrorString* errorString, int nodeId, int* relayoutBoundaryNodeId)
+{
+    Node* node = assertNode(errorString, nodeId);
+    if (!node)
+        return;
+    RenderObject* renderer = node->renderer();
+    if (!renderer) {
+        *errorString = "No renderer for node, perhaps orphan or hidden node";
+        return;
+    }
+    while (renderer && !renderer->isRoot() && !renderer->isRelayoutBoundaryForInspector())
+        renderer = renderer->container();
+    Node* resultNode = renderer ? renderer->generatingNode() : node->ownerDocument();
+    *relayoutBoundaryNodeId = pushNodePathToFrontend(resultNode);
+}
+
 PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)
 {
     Document* document = node->isDocumentNode() ? &node->document() : node->ownerDocument();

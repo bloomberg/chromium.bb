@@ -995,6 +995,8 @@ public:
 
     RespectImageOrientationEnum shouldRespectImageOrientation() const;
 
+    bool isRelayoutBoundaryForInspector() const;
+
 protected:
     inline bool layerCreationAllowedForSubtree() const;
 

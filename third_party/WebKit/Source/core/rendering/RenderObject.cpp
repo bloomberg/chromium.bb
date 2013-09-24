@@ -3317,6 +3317,11 @@ bool RenderObject::isContainedInParentBoundingBox() const
     return parentRect.contains(absoluteBoundingBoxRect());
 }
 
+bool RenderObject::isRelayoutBoundaryForInspector() const
+{
+    return objectIsRelayoutBoundary(this);
+}
+
 } // namespace WebCore
 
 #ifndef NDEBUG
