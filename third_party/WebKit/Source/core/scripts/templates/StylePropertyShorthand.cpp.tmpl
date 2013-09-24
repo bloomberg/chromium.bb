@@ -63,23 +63,28 @@ const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID)
     }
 }
 
-typedef HashMap<CSSPropertyID, Vector<StylePropertyShorthand> > longhandsMap;
 const Vector<StylePropertyShorthand> matchingShorthandsForLonghand(CSSPropertyID propertyID)
 {
-    DEFINE_STATIC_LOCAL(longhandsMap, map, ());
-    if (map.isEmpty()) {
+    switch (propertyID) {
 {%- for longhand_id, shorthands in longhands_dictionary.items() %}
-
-        Vector<StylePropertyShorthand, {{ shorthands|length }}> {{ longhand_id }}Shorthands;
+    case {{ longhand_id }}: {
+{%- if shorthands|length == 1 %}
+    {% for shorthand in shorthands -%}
+       return Vector<StylePropertyShorthand>(1, {{ shorthand.camel_case_name }}Shorthand());
+    {%- endfor %}
+{%- else %}
+        Vector<StylePropertyShorthand> vectorShorthands;
+        vectorShorthands.reserveInitialCapacity({{ shorthands|length }});
         {% for shorthand in shorthands -%}
-            {{ longhand_id }}Shorthands.uncheckedAppend({{ shorthand.camel_case_name }}Shorthand());
+        vectorShorthands.uncheckedAppend({{ shorthand.camel_case_name }}Shorthand());
         {% endfor -%}
-        // FIXME: the explicit Vector conversion copies into a temporary and is
-        // wasteful.
-        map.set({{ longhand_id }}, Vector<StylePropertyShorthand>({{ longhand_id }}Shorthands));
-{%- endfor %}
+        return vectorShorthands;
+{% endif %}
     }
-    return map.get(propertyID);
+{%- endfor %}
+    default:
+        return Vector<StylePropertyShorthand>();
+    }
 }
 
 } // namespace WebCore
