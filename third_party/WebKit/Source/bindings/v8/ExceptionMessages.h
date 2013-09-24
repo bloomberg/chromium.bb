@@ -41,6 +41,7 @@ public:
     static String failedToExecute(const String& method, const String& type, const String& detail = String());
     static String failedToGet(const String& property, const String& type, const String& detail);
     static String failedToSet(const String& property, const String& type, const String& detail);
+    static String failedToDelete(const String& property, const String& type, const String& detail);
 
     static String notEnoughArguments(unsigned expected, unsigned providedleastNumMandatoryParams);
 };

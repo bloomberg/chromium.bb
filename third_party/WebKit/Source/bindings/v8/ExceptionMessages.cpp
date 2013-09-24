@@ -53,6 +53,11 @@ String ExceptionMessages::failedToSet(const String& property, const String& type
     return "Failed to set the '" + property + "' property on '" + type + "': " + detail;
 }
 
+String ExceptionMessages::failedToDelete(const String& property, const String& type, const String& detail)
+{
+    return "Failed to delete the '" + property + "' property from '" + type + "': " + detail;
+}
+
 String ExceptionMessages::notEnoughArguments(unsigned expected, unsigned provided)
 {
     return String::number(expected) + " argument" + (expected > 1 ? "s" : "") + " required, but only " + String::number(provided) + " present.";
