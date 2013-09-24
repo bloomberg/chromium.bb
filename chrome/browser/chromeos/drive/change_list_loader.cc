@@ -940,7 +940,8 @@ void ChangeListLoader::UpdateFromChangeList(
   util::Log(logging::LOG_INFO,
             "Apply change lists (is delta: %d)",
             is_delta_update);
-  blocking_task_runner_->PostTaskAndReply(
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
       FROM_HERE,
       base::Bind(&ChangeListProcessor::Apply,
                  base::Unretained(change_list_processor),
@@ -959,7 +960,8 @@ void ChangeListLoader::UpdateFromChangeListAfterApply(
     ChangeListProcessor* change_list_processor,
     bool should_notify_changed_directories,
     base::Time start_time,
-    const base::Closure& callback) {
+    const base::Closure& callback,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(change_list_processor);
   DCHECK(!callback.is_null());

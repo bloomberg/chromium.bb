@@ -262,7 +262,8 @@ class ChangeListLoader {
       ChangeListProcessor* change_list_processor,
       bool should_notify,
       base::Time start_time,
-      const base::Closure& callback);
+      const base::Closure& callback,
+      FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ResourceMetadata* resource_metadata_;  // Not owned.

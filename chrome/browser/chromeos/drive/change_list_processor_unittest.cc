@@ -65,26 +65,28 @@ class ChangeListProcessorTest : public testing::Test {
 
   // Applies the |changes| to |metadata_| as a full resource list of changestamp
   // |kBaseResourceListChangestamp|.
-  void ApplyFullResourceList(ScopedVector<ChangeList> changes) {
+  FileError ApplyFullResourceList(ScopedVector<ChangeList> changes) {
     scoped_ptr<google_apis::AboutResource> about_resource(
         new google_apis::AboutResource);
     about_resource->set_largest_change_id(kBaseResourceListChangestamp);
     about_resource->set_root_folder_id(kRootId);
 
     ChangeListProcessor processor(metadata_.get());
-    processor.Apply(about_resource.Pass(),
-                    changes.Pass(),
-                    false /* is_delta_update */);
+    return processor.Apply(about_resource.Pass(),
+                           changes.Pass(),
+                           false /* is_delta_update */);
   }
 
   // Applies the |changes| to |metadata_| as a delta update. Delta changelists
   // should contain their changestamp in themselves.
-  std::set<base::FilePath> ApplyChangeList(ScopedVector<ChangeList> changes) {
+  FileError ApplyChangeList(ScopedVector<ChangeList> changes,
+                            std::set<base::FilePath>* changed_dirs) {
     ChangeListProcessor processor(metadata_.get());
-    processor.Apply(scoped_ptr<google_apis::AboutResource>(),
-                    changes.Pass(),
-                    true /* is_delta_update */);
-    return processor.changed_dirs();
+    FileError error = processor.Apply(scoped_ptr<google_apis::AboutResource>(),
+                                      changes.Pass(),
+                                      true /* is_delta_update */);
+    *changed_dirs = processor.changed_dirs();
+    return error;
   }
 
   // Gets the resource entry for the path from |metadata_| synchronously.
@@ -108,7 +110,8 @@ class ChangeListProcessorTest : public testing::Test {
 }  // namespace
 
 TEST_F(ChangeListProcessorTest, ApplyFullResourceList) {
-  ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyFullResourceList(ParseChangeList(kBaseResourceListFile)));
 
   const EntryExpectation kExpected[] = {
       // Root files
@@ -183,9 +186,11 @@ TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectory) {
   EXPECT_EQ("File in new dir", entry_map[kNewFileId].title());
 
   // Apply the changelist and check the effect.
-  ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
-  std::set<base::FilePath> changed_dirs =
-      ApplyChangeList(ParseChangeList(kTestJson));
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyFullResourceList(ParseChangeList(kBaseResourceListFile)));
+  std::set<base::FilePath> changed_dirs;
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyChangeList(ParseChangeList(kTestJson), &changed_dirs));
 
   // The value is written in kTestJson.
   EXPECT_EQ(16730, metadata_->GetLargestChangestamp());
@@ -218,9 +223,11 @@ TEST_F(ChangeListProcessorTest, DeltaDirMovedFromRootToDirectory) {
   EXPECT_EQ(kDestId, entry_map[kMovedId].parent_local_id());
 
   // Apply the changelist and check the effect.
-  ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
-  std::set<base::FilePath> changed_dirs =
-      ApplyChangeList(ParseChangeList(kTestJson));
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyFullResourceList(ParseChangeList(kBaseResourceListFile)));
+  std::set<base::FilePath> changed_dirs;
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyChangeList(ParseChangeList(kTestJson), &changed_dirs));
 
   // The value is written in kTestJson.
   EXPECT_EQ(16809, metadata_->GetLargestChangestamp());
@@ -259,9 +266,11 @@ TEST_F(ChangeListProcessorTest, DeltaFileMovedFromDirectoryToRoot) {
   EXPECT_EQ(kRootId, entry_map[kMovedId].parent_local_id());
 
   // Apply the changelist and check the effect.
-  ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
-  std::set<base::FilePath> changed_dirs =
-      ApplyChangeList(ParseChangeList(kTestJson));
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyFullResourceList(ParseChangeList(kBaseResourceListFile)));
+  std::set<base::FilePath> changed_dirs;
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyChangeList(ParseChangeList(kTestJson), &changed_dirs));
 
   // The value is written in kTestJson.
   EXPECT_EQ(16815, metadata_->GetLargestChangestamp());
@@ -295,9 +304,11 @@ TEST_F(ChangeListProcessorTest, DeltaFileRenamedInDirectory) {
   EXPECT_EQ("New SubDirectory File 1.txt", entry_map[kRenamedId].title());
 
   // Apply the changelist and check the effect.
-  ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
-  std::set<base::FilePath> changed_dirs =
-      ApplyChangeList(ParseChangeList(kTestJson));
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyFullResourceList(ParseChangeList(kBaseResourceListFile)));
+  std::set<base::FilePath> changed_dirs;
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyChangeList(ParseChangeList(kTestJson), &changed_dirs));
 
   // The value is written in kTestJson.
   EXPECT_EQ(16767, metadata_->GetLargestChangestamp());
@@ -334,9 +345,11 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
   EXPECT_FALSE(entry_map[kFileId].deleted());
 
   // Apply.
-  ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
-  std::set<base::FilePath> changed_dirs =
-      ApplyChangeList(ParseChangeList(kTestJsonAdd));
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyFullResourceList(ParseChangeList(kBaseResourceListFile)));
+  std::set<base::FilePath> changed_dirs;
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyChangeList(ParseChangeList(kTestJsonAdd), &changed_dirs));
   EXPECT_EQ(16683, metadata_->GetLargestChangestamp());
   EXPECT_TRUE(GetResourceEntry("drive/root/Added file.gdoc"));
   EXPECT_EQ(1U, changed_dirs.size());
@@ -354,7 +367,8 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
   EXPECT_TRUE(entry_map[kFileId].deleted());
 
   // Apply.
-  changed_dirs = ApplyChangeList(ParseChangeList(kTestJsonDelete));
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyChangeList(ParseChangeList(kTestJsonDelete), &changed_dirs));
   EXPECT_EQ(16687, metadata_->GetLargestChangestamp());
   EXPECT_FALSE(GetResourceEntry("drive/root/Added file.gdoc"));
   EXPECT_EQ(1U, changed_dirs.size());
@@ -385,9 +399,11 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
   EXPECT_FALSE(entry_map[kFileId].deleted());
 
   // Apply.
-  ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
-  std::set<base::FilePath> changed_dirs =
-      ApplyChangeList(ParseChangeList(kTestJsonAdd));
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyFullResourceList(ParseChangeList(kBaseResourceListFile)));
+  std::set<base::FilePath> changed_dirs;
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyChangeList(ParseChangeList(kTestJsonAdd), &changed_dirs));
   EXPECT_EQ(16730, metadata_->GetLargestChangestamp());
   EXPECT_TRUE(GetResourceEntry("drive/root/Directory 1/Added file.gdoc"));
 
@@ -408,7 +424,8 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
   EXPECT_TRUE(entry_map[kFileId].deleted());
 
   // Apply.
-  changed_dirs = ApplyChangeList(ParseChangeList(kTestJsonDelete));
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyChangeList(ParseChangeList(kTestJsonDelete), &changed_dirs));
   EXPECT_EQ(16770, metadata_->GetLargestChangestamp());
   EXPECT_FALSE(GetResourceEntry("drive/root/Directory 1/Added file.gdoc"));
 
@@ -440,9 +457,11 @@ TEST_F(ChangeListProcessorTest, DeltaAddFileToNewButDeletedDirectory) {
   EXPECT_TRUE(entry_map[kDirId].deleted());
 
   // Apply the changelist and check the effect.
-  ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
-  std::set<base::FilePath> changed_dirs =
-      ApplyChangeList(ParseChangeList(kTestJson));
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyFullResourceList(ParseChangeList(kBaseResourceListFile)));
+  std::set<base::FilePath> changed_dirs;
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyChangeList(ParseChangeList(kTestJson), &changed_dirs));
 
   // The value is written in kTestJson.
   EXPECT_EQ(16730, metadata_->GetLargestChangestamp());
@@ -453,7 +472,8 @@ TEST_F(ChangeListProcessorTest, DeltaAddFileToNewButDeletedDirectory) {
 
 TEST_F(ChangeListProcessorTest, RefreshDirectory) {
   // Prepare metadata.
-  ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyFullResourceList(ParseChangeList(kBaseResourceListFile)));
 
   // Create a map.
   ChangeListProcessor::ResourceEntryMap entry_map;
@@ -499,7 +519,8 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory) {
 
 TEST_F(ChangeListProcessorTest, RefreshDirectory_WrongParentId) {
   // Prepare metadata.
-  ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyFullResourceList(ParseChangeList(kBaseResourceListFile)));
 
   // Create a map and add a new file to it.
   ChangeListProcessor::ResourceEntryMap entry_map;
