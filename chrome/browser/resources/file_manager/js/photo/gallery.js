@@ -227,10 +227,6 @@ Gallery.prototype.initDom_ = function() {
     cr.dispatchSimpleEvent(this, 'image-saved');
   }.bind(this));
 
-  this.printButton_ = this.createToolbarButton_('print', 'GALLERY_PRINT');
-  this.printButton_.setAttribute('disabled', '');
-  this.printButton_.addEventListener('click', this.print_.bind(this));
-
   var deleteButton = this.createToolbarButton_('delete', 'GALLERY_DELETE');
   deleteButton.addEventListener('click', this.delete_.bind(this));
 
@@ -404,21 +400,9 @@ Gallery.prototype.setCurrentMode_ = function(mode) {
     console.error('Invalid Gallery mode');
 
   this.currentMode_ = mode;
-  if (this.modeButton_) {
-    var oppositeMode =
-        mode == this.slideMode_ ? this.mosaicMode_ : this.slideMode_;
-    this.modeButton_.title =
-        this.displayStringFunction_(oppositeMode.getTitle());
-  }
-
-  // Printing is available only in the slide view.
-  if (mode == this.slideMode_)
-    this.printButton_.removeAttribute('disabled');
-  else
-    this.printButton_.setAttribute('disabled', '');
-
   this.container_.setAttribute('mode', this.currentMode_.getName());
   this.updateSelectionAndState_();
+  this.updateButtons_();
 };
 
 /**
@@ -534,15 +518,6 @@ Gallery.prototype.delete_ = function() {
 };
 
 /**
- * Prints the current item.
- * @private
- */
-Gallery.prototype.print_ = function() {
-  this.onUserAction_();
-  window.print();
-};
-
-/**
  * @return {Array.<Gallery.Item>} Current selection.
  */
 Gallery.prototype.getSelectedItems = function() {
@@ -629,11 +604,6 @@ Gallery.prototype.onKeyDown_ = function(event) {
 
     case 'U+0056':  // 'v'
       this.slideMode_.startSlideshow(SlideMode.SLIDESHOW_INTERVAL_FIRST, event);
-      break;
-
-    case 'Ctrl-U+0050':  // Ctrl+'p' prints the current image.
-      if (this.currentMode_ == this.slideMode_)
-        this.print_();
       break;
 
     case 'U+007F':  // Delete
@@ -816,7 +786,7 @@ Gallery.prototype.toggleShare_ = function() {
 };
 
 /**
- * Update available actions list based on the currently selected urls.
+ * Updates available actions list based on the currently selected urls.
  * @private.
  */
 Gallery.prototype.updateShareMenu_ = function() {
@@ -865,7 +835,7 @@ Gallery.prototype.updateShareMenu_ = function() {
 };
 
 /**
- * Update thumbnails.
+ * Updates thumbnails.
  * @private
  */
 Gallery.prototype.updateThumbnails_ = function() {
@@ -878,3 +848,18 @@ Gallery.prototype.updateThumbnails_ = function() {
       mosaic.reload();
   }
 };
+
+/**
+ * Updates buttons.
+ * @private
+ */
+Gallery.prototype.updateButtons_ = function() {
+  if (this.modeButton_) {
+    var oppositeMode =
+        this.currentMode_ == this.slideMode_ ? this.mosaicMode_ :
+                                               this.slideMode_;
+    this.modeButton_.title =
+        this.displayStringFunction_(oppositeMode.getTitle());
+  }
+};
+

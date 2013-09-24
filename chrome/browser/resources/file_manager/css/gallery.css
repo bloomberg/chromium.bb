@@ -813,12 +813,6 @@ body {
     url('../images/gallery/2x/icon_share_selected.png') 2x);
 }
 
-.gallery[error] > .toolbar button.edit,
-.gallery[error] > .toolbar button.share {
-  opacity: 0.7;
-  pointer-events: none;
-}
-
 .gallery > .toolbar > button.share[disabled] {
   display: none;
 }

@@ -196,7 +196,13 @@ SlideMode.prototype.initDom_ = function() {
 
   this.editButton_ = util.createChild(this.toolbar_, 'button edit', 'button');
   this.editButton_.title = this.displayStringFunction_('GALLERY_EDIT');
+  this.editButton_.setAttribute('disabled', '');  // Disabled by default.
   this.editButton_.addEventListener('click', this.toggleEditor.bind(this));
+
+  this.printButton_ = util.createChild(this.toolbar_, 'button print', 'button');
+  this.printButton_.title = this.displayStringFunction_('GALLERY_PRINT');
+  this.printButton_.setAttribute('disabled', '');  // Disabled by default.
+  this.printButton_.addEventListener('click', this.print_.bind(this));
 
   this.editBarSpacer_ = util.createChild(this.toolbar_, 'edit-bar-spacer');
   this.editBarMain_ = util.createChild(this.editBarSpacer_, 'edit-main');
@@ -323,6 +329,10 @@ SlideMode.prototype.leave = function(zoomToRect, callback) {
   } else {
     this.commitItem_(commitDone);
   }
+
+  // Disable the slide-mode only buttons when leaving.
+  this.editButton_.setAttribute('disabled', '');
+  this.printButton_.setAttribute('disabled', '');
 };
 
 
@@ -660,7 +670,8 @@ SlideMode.prototype.loadItem_ = function(
       // The editor toolbar does not make sense for video, hide it.
       this.stopEditing_();
       this.mediaControls_.attachMedia(this.imageView_.getVideo());
-      //TODO(kaznacheev): Add metrics for video playback.
+
+      // TODO(kaznacheev): Add metrics for video playback.
     } else {
       ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('View'));
 
@@ -680,6 +691,15 @@ SlideMode.prototype.loadItem_ = function(
       if (ext == 'jpeg') ext = 'jpg';
       ImageUtil.metrics.recordEnum(
           ImageUtil.getMetricName('FileType'), ext, ImageUtil.FILE_TYPES);
+    }
+
+    // Enable or disable buttons for editing and printing.
+    if (video || error) {
+      this.editButton_.setAttribute('disabled', '');
+      this.printButton_.setAttribute('disabled', '');
+    } else {
+      this.editButton_.removeAttribute('disabled');
+      this.printButton_.removeAttribute('disabled');
     }
 
     // For once edited image, disallow the 'overwrite' setting change.
@@ -838,13 +858,18 @@ SlideMode.prototype.onKeyDown = function(event) {
 
   switch (keyID) {
     case 'U+0020':  // Space toggles the video playback.
-      if (this.isShowingVideo_()) {
+      if (this.isShowingVideo_())
         this.mediaControls_.togglePlayStateWithFeedback();
-      }
+      break;
+
+    case 'Ctrl-U+0050':  // Ctrl+'p' prints the current image.
+      if (!this.printButton_.hasAttribute('disabled'))
+        this.print_();
       break;
 
     case 'U+0045':  // 'e' toggles the editor.
-      this.toggleEditor(event);
+      if (!this.editButton_.hasAttribute('disabled'))
+        this.toggleEditor(event);
       break;
 
     case 'U+001B':  // Escape
@@ -1216,6 +1241,15 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
     this.editor_.getPrompt().hide();
     this.editor_.leaveModeGently();
   }
+};
+
+/**
+ * Prints the current item.
+ * @private
+ */
+SlideMode.prototype.print_ = function() {
+  cr.dispatchSimpleEvent(this, 'useraction');
+  window.print();
 };
 
 /**
