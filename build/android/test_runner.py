@@ -36,9 +36,6 @@ from pylib.utils import report_results
 from pylib.utils import run_tests_helper
 
 
-_SDK_OUT_DIR = os.path.join(constants.DIR_SOURCE_ROOT, 'out')
-
-
 def AddCommonOptions(option_parser):
   """Adds all common options to |option_parser|."""
 
@@ -223,8 +220,7 @@ def AddInstrumentationTestOptions(option_parser):
   option_parser.add_option(
       '--test-apk', dest='test_apk',
       help=('The name of the apk containing the tests '
-            '(without the .apk extension; e.g. "ContentShellTest"). '
-            'Alternatively, this can be a full path to the apk.'))
+            '(without the .apk extension; e.g. "ContentShellTest").'))
   option_parser.add_option('--coverage-dir',
                            help=('Directory in which to place all generated '
                                  'EMMA coverage files.'))
@@ -260,19 +256,14 @@ def ProcessInstrumentationOptions(options, error_func):
   if not options.test_apk:
     error_func('--test-apk must be specified.')
 
-  if os.path.exists(options.test_apk):
-    # The APK is fully qualified, assume the JAR lives along side.
-    options.test_apk_path = options.test_apk
-    options.test_apk_jar_path = (os.path.splitext(options.test_apk_path)[0] +
-                                 '.jar')
-  else:
-    options.test_apk_path = os.path.join(_SDK_OUT_DIR,
-                                         options.build_type,
-                                         constants.SDK_BUILD_APKS_DIR,
-                                         '%s.apk' % options.test_apk)
-    options.test_apk_jar_path = os.path.join(
-        _SDK_OUT_DIR, options.build_type, constants.SDK_BUILD_TEST_JAVALIB_DIR,
-        '%s.jar' %  options.test_apk)
+
+  options.test_apk_path = os.path.join(constants.GetOutDirectory(),
+                                       constants.SDK_BUILD_APKS_DIR,
+                                       '%s.apk' % options.test_apk)
+  options.test_apk_jar_path = os.path.join(
+      constants.GetOutDirectory(),
+      constants.SDK_BUILD_TEST_JAVALIB_DIR,
+      '%s.jar' %  options.test_apk)
 
   return instrumentation_test_options.InstrumentationOptions(
       options.tool,
@@ -337,7 +328,8 @@ def ProcessUIAutomatorOptions(options, error_func):
     options.uiautomator_jar = options.test_jar
   else:
     options.uiautomator_jar = os.path.join(
-        _SDK_OUT_DIR, options.build_type, constants.SDK_BUILD_JAVALIB_DIR,
+        constants.GetOutDirectory(),
+        constants.SDK_BUILD_JAVALIB_DIR,
         '%s.dex.jar' % options.test_jar)
   options.uiautomator_info_jar = (
       options.uiautomator_jar[:options.uiautomator_jar.find('.dex.jar')] +
