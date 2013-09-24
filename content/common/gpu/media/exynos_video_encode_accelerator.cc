@@ -1364,7 +1364,7 @@ bool ExynosVideoEncodeAccelerator::SetMfcFormats() {
 }
 
 bool ExynosVideoEncodeAccelerator::InitMfcControls() {
-  struct v4l2_ext_control ctrls[7];
+  struct v4l2_ext_control ctrls[8];
   struct v4l2_ext_controls control;
   memset(&ctrls, 0, sizeof(ctrls));
   memset(&control, 0, sizeof(control));
@@ -1391,6 +1391,9 @@ bool ExynosVideoEncodeAccelerator::InitMfcControls() {
   // Enable macroblock-level bitrate control.
   ctrls[6].id    = V4L2_CID_MPEG_VIDEO_MB_RC_ENABLE;
   ctrls[6].value = 1;
+  // Use H.264 level 4.0 to match the supported max resolution.
+  ctrls[7].id    = V4L2_CID_MPEG_VIDEO_H264_LEVEL;
+  ctrls[7].value = V4L2_MPEG_VIDEO_H264_LEVEL_4_0;
   control.ctrl_class = V4L2_CTRL_CLASS_MPEG;
   control.count = arraysize(ctrls);
   control.controls = ctrls;
