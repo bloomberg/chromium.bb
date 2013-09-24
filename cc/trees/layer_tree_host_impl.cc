@@ -364,7 +364,7 @@ void LayerTreeHostImpl::ManageTiles() {
     return;
 
   tile_priorities_dirty_ = false;
-  tile_manager_->ManageTiles();
+  tile_manager_->ManageTiles(global_tile_state_);
 
   size_t memory_required_bytes;
   size_t memory_nice_to_have_bytes;
@@ -1128,23 +1128,22 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
   if (!tile_manager_)
     return;
 
-  GlobalStateThatImpactsTilePriority new_state(tile_manager_->GlobalState());
-  new_state.memory_limit_in_bytes = visible_ ?
-                                    policy.bytes_limit_when_visible :
-                                    policy.bytes_limit_when_not_visible;
   // TODO(reveman): We should avoid keeping around unused resources if
   // possible. crbug.com/224475
-  new_state.unused_memory_limit_in_bytes = static_cast<size_t>(
-      (static_cast<int64>(new_state.memory_limit_in_bytes) *
+  global_tile_state_.memory_limit_in_bytes =
+      visible_ ?
+      policy.bytes_limit_when_visible :
+      policy.bytes_limit_when_not_visible;
+  global_tile_state_.unused_memory_limit_in_bytes = static_cast<size_t>(
+      (static_cast<int64>(global_tile_state_.memory_limit_in_bytes) *
        settings_.max_unused_resource_memory_percentage) / 100);
-  new_state.memory_limit_policy =
+  global_tile_state_.memory_limit_policy =
       ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(
           visible_ ?
           policy.priority_cutoff_when_visible :
           policy.priority_cutoff_when_not_visible);
-  new_state.num_resources_limit = policy.num_resources_limit;
+  global_tile_state_.num_resources_limit = policy.num_resources_limit;
 
-  tile_manager_->SetGlobalState(new_state);
   DidModifyTilePriorities();
 }
 
@@ -2567,12 +2566,9 @@ void LayerTreeHostImpl::SetTreePriority(TreePriority priority) {
   if (!tile_manager_)
     return;
 
-  GlobalStateThatImpactsTilePriority new_state(tile_manager_->GlobalState());
-  if (new_state.tree_priority == priority)
+  if (global_tile_state_.tree_priority == priority)
     return;
-
-  new_state.tree_priority = priority;
-  tile_manager_->SetGlobalState(new_state);
+  global_tile_state_.tree_priority = priority;
   DidModifyTilePriorities();
 }
 

@@ -43,7 +43,10 @@ class TileManagerPerfTest : public testing::Test {
         ResourceProvider::Create(output_surface_.get(), 0, false);
     tile_manager_ = make_scoped_ptr(
         new FakeTileManager(&tile_manager_client_, resource_provider_.get()));
+    picture_pile_ = FakePicturePileImpl::CreatePile();
+  }
 
+  GlobalStateThatImpactsTilePriority GlobalStateForTest() {
     GlobalStateThatImpactsTilePriority state;
     gfx::Size tile_size = settings_.default_tile_size;
     state.memory_limit_in_bytes =
@@ -52,9 +55,7 @@ class TileManagerPerfTest : public testing::Test {
     state.num_resources_limit = 10000;
     state.memory_limit_policy = ALLOW_ANYTHING;
     state.tree_priority = SMOOTHNESS_TAKES_PRIORITY;
-
-    tile_manager_->SetGlobalState(state);
-    picture_pile_ = FakePicturePileImpl::CreatePile();
+    return state;
   }
 
   virtual void TearDown() OVERRIDE {
@@ -151,7 +152,7 @@ class TileManagerPerfTest : public testing::Test {
         }
       }
 
-      tile_manager_->ManageTiles();
+      tile_manager_->ManageTiles(GlobalStateForTest());
       tile_manager_->CheckForCompletedTasks();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());

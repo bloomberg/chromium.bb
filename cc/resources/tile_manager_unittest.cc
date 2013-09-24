@@ -49,7 +49,8 @@ class TileManagerTest : public testing::TestWithParam<bool> {
     state.memory_limit_policy = memory_limit_policy;
     state.tree_priority = tree_priority;
 
-    tile_manager_->SetGlobalState(state);
+    global_state_ = state;
+    tile_manager_->ManageTiles(state);
     picture_pile_ = FakePicturePileImpl::CreatePile();
   }
 
@@ -62,7 +63,7 @@ class TileManagerTest : public testing::TestWithParam<bool> {
     state.memory_limit_policy = memory_limit_policy_;
     state.num_resources_limit = 100;
     state.tree_priority = tree_priority;
-    tile_manager_->SetGlobalState(state);
+    global_state_ = state;
   }
 
   virtual void TearDown() OVERRIDE {
@@ -130,6 +131,9 @@ class TileManagerTest : public testing::TestWithParam<bool> {
     return has_lcd_count;
   }
 
+ protected:
+  GlobalStateThatImpactsTilePriority global_state_;
+
  private:
   FakeTileManagerClient tile_manager_client_;
   LayerTreeSettings settings_;
@@ -154,7 +158,7 @@ TEST_P(TileManagerTest, EnoughMemoryAllowAnything) {
       3, TilePriorityForSoonBin(), TilePriorityForSoonBin());
   TileVector never_bin = CreateTiles(1, TilePriority(), TilePriority());
 
-  tile_manager()->AssignMemoryToTiles();
+  tile_manager()->AssignMemoryToTiles(global_state_);
 
   EXPECT_EQ(3, AssignedMemoryCount(active_now));
   EXPECT_EQ(3, AssignedMemoryCount(pending_now));
@@ -175,7 +179,7 @@ TEST_P(TileManagerTest, EnoughMemoryAllowPrepaintOnly) {
       3, TilePriorityForSoonBin(), TilePriorityForSoonBin());
   TileVector never_bin = CreateTiles(1, TilePriority(), TilePriority());
 
-  tile_manager()->AssignMemoryToTiles();
+  tile_manager()->AssignMemoryToTiles(global_state_);
 
   EXPECT_EQ(3, AssignedMemoryCount(active_now));
   EXPECT_EQ(3, AssignedMemoryCount(pending_now));
@@ -196,7 +200,7 @@ TEST_P(TileManagerTest, EnoughMemoryAllowAbsoluteMinimum) {
       3, TilePriorityForSoonBin(), TilePriorityForSoonBin());
   TileVector never_bin = CreateTiles(1, TilePriority(), TilePriority());
 
-  tile_manager()->AssignMemoryToTiles();
+  tile_manager()->AssignMemoryToTiles(global_state_);
 
   EXPECT_EQ(3, AssignedMemoryCount(active_now));
   EXPECT_EQ(3, AssignedMemoryCount(pending_now));
@@ -217,7 +221,7 @@ TEST_P(TileManagerTest, EnoughMemoryAllowNothing) {
       3, TilePriorityForSoonBin(), TilePriorityForSoonBin());
   TileVector never_bin = CreateTiles(1, TilePriority(), TilePriority());
 
-  tile_manager()->AssignMemoryToTiles();
+  tile_manager()->AssignMemoryToTiles(global_state_);
 
   EXPECT_EQ(0, AssignedMemoryCount(active_now));
   EXPECT_EQ(0, AssignedMemoryCount(pending_now));
@@ -237,13 +241,13 @@ TEST_P(TileManagerTest, PartialOOMMemoryToPending) {
   TileVector pending_tree_tiles =
       CreateTiles(5, TilePriority(), TilePriorityRequiredForActivation());
 
-  tile_manager()->AssignMemoryToTiles();
+  tile_manager()->AssignMemoryToTiles(global_state_);
 
   EXPECT_EQ(5, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(3, AssignedMemoryCount(pending_tree_tiles));
 
   SetTreePriority(SAME_PRIORITY_FOR_BOTH_TREES);
-  tile_manager()->AssignMemoryToTiles();
+  tile_manager()->AssignMemoryToTiles(global_state_);
 
   EXPECT_EQ(3, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(5, AssignedMemoryCount(pending_tree_tiles));
@@ -260,7 +264,7 @@ TEST_P(TileManagerTest, PartialOOMMemoryToActive) {
   TileVector pending_tree_tiles =
       CreateTiles(5, TilePriority(), TilePriorityForNowBin());
 
-  tile_manager()->AssignMemoryToTiles();
+  tile_manager()->AssignMemoryToTiles(global_state_);
 
   EXPECT_EQ(5, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(3, AssignedMemoryCount(pending_tree_tiles));
@@ -278,13 +282,13 @@ TEST_P(TileManagerTest, TotalOOMMemoryToPending) {
   TileVector pending_tree_tiles =
       CreateTiles(5, TilePriority(), TilePriorityRequiredForActivation());
 
-  tile_manager()->AssignMemoryToTiles();
+  tile_manager()->AssignMemoryToTiles(global_state_);
 
   EXPECT_EQ(4, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(0, AssignedMemoryCount(pending_tree_tiles));
 
   SetTreePriority(SAME_PRIORITY_FOR_BOTH_TREES);
-  tile_manager()->AssignMemoryToTiles();
+  tile_manager()->AssignMemoryToTiles(global_state_);
 
   EXPECT_EQ(0, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(4, AssignedMemoryCount(pending_tree_tiles));
@@ -302,13 +306,13 @@ TEST_P(TileManagerTest, TotalOOMActiveSoonMemoryToPending) {
   TileVector pending_tree_tiles =
       CreateTiles(5, TilePriority(), TilePriorityRequiredForActivation());
 
-  tile_manager()->AssignMemoryToTiles();
+  tile_manager()->AssignMemoryToTiles(global_state_);
 
   EXPECT_EQ(4, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(0, AssignedMemoryCount(pending_tree_tiles));
 
   SetTreePriority(SAME_PRIORITY_FOR_BOTH_TREES);
-  tile_manager()->AssignMemoryToTiles();
+  tile_manager()->AssignMemoryToTiles(global_state_);
 
   EXPECT_EQ(0, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(4, AssignedMemoryCount(pending_tree_tiles));
@@ -325,7 +329,7 @@ TEST_P(TileManagerTest, TotalOOMMemoryToActive) {
   TileVector pending_tree_tiles =
       CreateTiles(5, TilePriority(), TilePriorityForNowBin());
 
-  tile_manager()->AssignMemoryToTiles();
+  tile_manager()->AssignMemoryToTiles(global_state_);
 
   EXPECT_EQ(4, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(0, AssignedMemoryCount(pending_tree_tiles));
@@ -340,7 +344,7 @@ TEST_P(TileManagerTest, RasterAsLCD) {
   TileVector pending_tree_tiles =
       CreateTiles(5, TilePriority(), TilePriorityForNowBin());
 
-  tile_manager()->ManageTiles();
+  tile_manager()->ManageTiles(global_state_);
 
   EXPECT_EQ(5, TilesWithLCDCount(active_tree_tiles));
   EXPECT_EQ(5, TilesWithLCDCount(pending_tree_tiles));
@@ -364,7 +368,7 @@ TEST_P(TileManagerTest, RasterAsNoLCD) {
     (*it)->set_can_use_lcd_text(false);
   }
 
-  tile_manager()->ManageTiles();
+  tile_manager()->ManageTiles(global_state_);
 
   EXPECT_EQ(0, TilesWithLCDCount(active_tree_tiles));
   EXPECT_EQ(0, TilesWithLCDCount(pending_tree_tiles));
@@ -377,7 +381,7 @@ TEST_P(TileManagerTest, ReRasterAsNoLCD) {
   TileVector pending_tree_tiles =
       CreateTiles(5, TilePriority(), TilePriorityForNowBin());
 
-  tile_manager()->ManageTiles();
+  tile_manager()->ManageTiles(global_state_);
 
   EXPECT_EQ(5, TilesWithLCDCount(active_tree_tiles));
   EXPECT_EQ(5, TilesWithLCDCount(pending_tree_tiles));
@@ -393,7 +397,7 @@ TEST_P(TileManagerTest, ReRasterAsNoLCD) {
     (*it)->set_can_use_lcd_text(false);
   }
 
-  tile_manager()->ManageTiles();
+  tile_manager()->ManageTiles(global_state_);
 
   EXPECT_EQ(0, TilesWithLCDCount(active_tree_tiles));
   EXPECT_EQ(0, TilesWithLCDCount(pending_tree_tiles));
@@ -406,7 +410,7 @@ TEST_P(TileManagerTest, NoTextDontReRasterAsNoLCD) {
   TileVector pending_tree_tiles =
       CreateTiles(5, TilePriority(), TilePriorityForNowBin());
 
-  tile_manager()->ManageTiles();
+  tile_manager()->ManageTiles(global_state_);
 
   EXPECT_EQ(5, TilesWithLCDCount(active_tree_tiles));
   EXPECT_EQ(5, TilesWithLCDCount(pending_tree_tiles));
@@ -430,7 +434,7 @@ TEST_P(TileManagerTest, NoTextDontReRasterAsNoLCD) {
     EXPECT_TRUE((*it)->IsReadyToDraw());
   }
 
-  tile_manager()->ManageTiles();
+  tile_manager()->ManageTiles(global_state_);
 
   EXPECT_EQ(5, TilesWithLCDCount(active_tree_tiles));
   EXPECT_EQ(5, TilesWithLCDCount(pending_tree_tiles));
@@ -443,7 +447,7 @@ TEST_P(TileManagerTest, TextReRasterAsNoLCD) {
   TileVector pending_tree_tiles =
       CreateTiles(5, TilePriority(), TilePriorityForNowBin());
 
-  tile_manager()->ManageTiles();
+  tile_manager()->ManageTiles(global_state_);
 
   EXPECT_EQ(5, TilesWithLCDCount(active_tree_tiles));
   EXPECT_EQ(5, TilesWithLCDCount(pending_tree_tiles));
@@ -472,7 +476,7 @@ TEST_P(TileManagerTest, TextReRasterAsNoLCD) {
     EXPECT_TRUE((*it)->IsReadyToDraw());
   }
 
-  tile_manager()->ManageTiles();
+  tile_manager()->ManageTiles(global_state_);
 
   EXPECT_EQ(0, TilesWithLCDCount(active_tree_tiles));
   EXPECT_EQ(0, TilesWithLCDCount(pending_tree_tiles));
@@ -488,14 +492,13 @@ TEST_P(TileManagerTest, RespectMemoryLimit) {
   size_t memory_allocated_bytes;
   size_t memory_used_bytes;
 
-  tile_manager()->ManageTiles();
+  tile_manager()->ManageTiles(global_state_);
   tile_manager()->GetMemoryStats(&memory_required_bytes,
                                  &memory_nice_to_have_bytes,
                                  &memory_allocated_bytes,
                                  &memory_used_bytes);
   // Allocated bytes should never be more than the memory limit.
-  EXPECT_LE(memory_allocated_bytes,
-            tile_manager()->GlobalState().memory_limit_in_bytes);
+  EXPECT_LE(memory_allocated_bytes, global_state_.memory_limit_in_bytes);
 
   // Finish raster of large tiles.
   tile_manager()->UpdateVisibleTiles();
@@ -510,14 +513,13 @@ TEST_P(TileManagerTest, RespectMemoryLimit) {
   TileVector small_tiles = CreateTilesWithSize(
       5, TilePriorityForNowBin(), TilePriority(), gfx::Size(128, 128));
 
-  tile_manager()->ManageTiles();
+  tile_manager()->ManageTiles(global_state_);
   tile_manager()->GetMemoryStats(&memory_required_bytes,
                                  &memory_nice_to_have_bytes,
                                  &memory_allocated_bytes,
                                  &memory_used_bytes);
   // Allocated bytes should never be more than the memory limit.
-  EXPECT_LE(memory_allocated_bytes,
-            tile_manager()->GlobalState().memory_limit_in_bytes);
+  EXPECT_LE(memory_allocated_bytes, global_state_.memory_limit_in_bytes);
 }
 
 // If true, the max tile limit should be applied as bytes; if false,

@@ -56,12 +56,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
       size_t max_transfer_buffer_usage_bytes);
   virtual ~TileManager();
 
-  const GlobalStateThatImpactsTilePriority& GlobalState() const {
-      return global_state_;
-  }
-  void SetGlobalState(const GlobalStateThatImpactsTilePriority& state);
-
-  void ManageTiles();
+  void ManageTiles(const GlobalStateThatImpactsTilePriority& state);
 
   // Returns true when visible tiles have been initialized.
   bool UpdateVisibleTiles();

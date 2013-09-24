@@ -62,10 +62,12 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
 
 FakeTileManager::~FakeTileManager() {}
 
-void FakeTileManager::AssignMemoryToTiles() {
+void FakeTileManager::AssignMemoryToTiles(
+    const GlobalStateThatImpactsTilePriority& state) {
   tiles_for_raster.clear();
   all_tiles.Clear();
 
+  ManageTiles(state);
   GetTilesWithAssignedBins(&all_tiles);
   AssignGpuMemoryToTiles(&all_tiles, &tiles_for_raster);
 }

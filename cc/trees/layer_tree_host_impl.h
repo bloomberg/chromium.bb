@@ -507,6 +507,8 @@ class CC_EXPORT LayerTreeHostImpl
   scoped_ptr<TileManager> tile_manager_;
   scoped_ptr<Renderer> renderer_;
 
+  GlobalStateThatImpactsTilePriority global_tile_state_;
+
   // Tree currently being drawn.
   scoped_ptr<LayerTreeImpl> active_tree_;
 

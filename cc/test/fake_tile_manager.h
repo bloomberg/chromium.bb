@@ -19,7 +19,8 @@ class FakeTileManager : public TileManager {
                   ResourceProvider* resource_provider);
 
   bool HasBeenAssignedMemory(Tile* tile);
-  void AssignMemoryToTiles();
+  void AssignMemoryToTiles(
+      const GlobalStateThatImpactsTilePriority& state);
 
   void CheckForCompletedTasks();
 

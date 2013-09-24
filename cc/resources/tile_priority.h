@@ -172,6 +172,17 @@ class GlobalStateThatImpactsTilePriority {
 
   TreePriority tree_priority;
 
+  bool operator==(const GlobalStateThatImpactsTilePriority& other) const {
+    return memory_limit_policy == other.memory_limit_policy
+        && memory_limit_in_bytes == other.memory_limit_in_bytes
+        && unused_memory_limit_in_bytes == other.unused_memory_limit_in_bytes
+        && num_resources_limit == other.num_resources_limit
+        && tree_priority == other.tree_priority;
+  }
+  bool operator!=(const GlobalStateThatImpactsTilePriority& other) const {
+    return !(*this == other);
+  }
+
   scoped_ptr<base::Value> AsValue() const;
 };
 

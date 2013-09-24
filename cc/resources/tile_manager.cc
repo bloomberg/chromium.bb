@@ -182,15 +182,6 @@ TileManager::~TileManager() {
   DCHECK_EQ(0u, resources_releasable_);
 }
 
-void TileManager::SetGlobalState(
-    const GlobalStateThatImpactsTilePriority& global_state) {
-  global_state_ = global_state;
-  resource_pool_->SetResourceUsageLimits(
-      global_state_.memory_limit_in_bytes,
-      global_state_.unused_memory_limit_in_bytes,
-      global_state_.num_resources_limit);
-}
-
 void TileManager::RegisterTile(Tile* tile) {
   DCHECK(!tile->required_for_activation());
   DCHECK(tiles_.find(tile->id()) == tiles_.end());
@@ -221,7 +212,7 @@ void TileManager::DidChangeTilePriority(Tile* tile) {
 }
 
 bool TileManager::ShouldForceTasksRequiredForActivationToComplete() const {
-  return GlobalState().tree_priority != SMOOTHNESS_TAKES_PRIORITY;
+  return global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY;
 }
 
 PrioritizedTileSet* TileManager::GetPrioritizedTileSet() {
@@ -406,8 +397,18 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
   }
 }
 
-void TileManager::ManageTiles() {
+void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
   TRACE_EVENT0("cc", "TileManager::ManageTiles");
+
+  // Update internal state.
+  if (state != global_state_) {
+    prioritized_tiles_dirty_ = true;
+    resource_pool_->SetResourceUsageLimits(
+        global_state_.memory_limit_in_bytes,
+        global_state_.unused_memory_limit_in_bytes,
+        global_state_.num_resources_limit);
+  }
+  global_state_ = state;
 
   // We need to call CheckForCompletedTasks() once in-between each call
   // to ScheduleTasks() to prevent canceled tasks from being scheduled.
