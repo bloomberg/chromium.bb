@@ -183,22 +183,18 @@ bool PopIBusLookupTable(dbus::MessageReader* reader, IBusLookupTable* table) {
 ///////////////////////////////////////////////////////////////////////////////
 // IBusLookupTable
 IBusLookupTable::IBusLookupTable()
-    : page_size_(kDefaultPageSize),
-      cursor_position_(0),
-      is_cursor_visible_(true),
-      orientation_(HORIZONTAL),
-      show_window_at_composition_(false) {
+    : property_(new CandidateWindowProperty) {
 }
 
 IBusLookupTable::~IBusLookupTable() {
 }
 
 bool IBusLookupTable::IsEqual(const IBusLookupTable& table) const {
-  if (page_size_ != table.page_size_ ||
-      cursor_position_ != table.cursor_position_ ||
-      is_cursor_visible_ != table.is_cursor_visible_ ||
-      orientation_ != table.orientation_ ||
-      show_window_at_composition_ != table.show_window_at_composition_ ||
+  if (page_size() != table.page_size() ||
+      cursor_position() != table.cursor_position() ||
+      is_cursor_visible() != table.is_cursor_visible() ||
+      orientation() != table.orientation() ||
+      show_window_at_composition() != table.show_window_at_composition() ||
       candidates_.size() != table.candidates_.size())
     return false;
 
@@ -216,13 +212,20 @@ bool IBusLookupTable::IsEqual(const IBusLookupTable& table) const {
 }
 
 void IBusLookupTable::CopyFrom(const IBusLookupTable& table) {
-  page_size_ = table.page_size_;
-  cursor_position_ = table.cursor_position_;
-  is_cursor_visible_ = table.is_cursor_visible_;
-  orientation_ = table.orientation_;
-  show_window_at_composition_ = table.show_window_at_composition_;
+  SetProperty(table.GetProperty());
   candidates_.clear();
   candidates_ = table.candidates_;
+}
+
+IBusLookupTable::CandidateWindowProperty::CandidateWindowProperty()
+    : page_size(kDefaultPageSize),
+      cursor_position(0),
+      is_cursor_visible(true),
+      is_vertical(false),
+      show_window_at_composition(false) {
+}
+
+IBusLookupTable::CandidateWindowProperty::~CandidateWindowProperty() {
 }
 
 IBusLookupTable::Entry::Entry() {
