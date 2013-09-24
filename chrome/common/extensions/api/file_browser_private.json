@@ -904,12 +904,10 @@
             "properties": {
               "query": {
                 "type": "string",
-                "optional": true,
                 "description": "Search query."
               },
               "nextFeed": {
                 "type": "string",
-                "optional": true,
                 "description": "ID of the search feed that should be fetched next. Value passed here should be gotten from previous searchDrive call. It can be empty for the initial search request."
               }
             }
@@ -948,18 +946,15 @@
             "properties": {
               "query": {
                 "type": "string",
-                "optional": true,
                 "description": "Search query. It can be empty. Any filename matches to an empty query."
               },
               "types": {
                 "type": "string",
                 "enum": ["EXCLUDE_DIRECTORIES", "SHARED_WITH_ME", "OFFLINE", "ALL"],
-                "optional": true,
                 "description": "The type of entry that is needed. Default to ALL."
               },
               "maxResults": {
                 "type": "integer",
-                "optional": true,
                 "description": "Maximum number of results."
               }
             }

@@ -19,6 +19,11 @@ struct SearchResultInfo;
 }
 
 namespace extensions {
+namespace api {
+namespace file_browser_private{
+struct DriveEntryProperties;
+}
+}
 
 // Retrieves property information for an entry and returns it as a dictionary.
 // On error, returns a dictionary with the key "error" set to the error number
@@ -47,7 +52,8 @@ class FileBrowserPrivateGetDriveEntryPropertiesFunction
   void CompleteGetFileProperties(drive::FileError error);
 
   base::FilePath file_path_;
-  scoped_ptr<base::DictionaryValue> properties_;
+  scoped_ptr<extensions::api::file_browser_private::
+             DriveEntryProperties> properties_;
 };
 
 // Implements the chrome.fileBrowserPrivate.pinDriveFile method.
@@ -57,10 +63,8 @@ class FileBrowserPrivatePinDriveFileFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.pinDriveFile",
                              FILEBROWSERPRIVATE_PINDRIVEFILE)
 
-  FileBrowserPrivatePinDriveFileFunction();
-
  protected:
-  virtual ~FileBrowserPrivatePinDriveFileFunction();
+  virtual ~FileBrowserPrivatePinDriveFileFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -104,7 +108,7 @@ class FileBrowserPrivateGetDriveFilesFunction
                    scoped_ptr<drive::ResourceEntry> entry);
 
   std::queue<base::FilePath> remaining_drive_paths_;
-  ListValue* local_paths_;
+  std::vector<std::string> local_paths_;
 };
 
 // Implements the chrome.fileBrowserPrivate.cancelFileTransfers method.
@@ -114,10 +118,8 @@ class FileBrowserPrivateCancelFileTransfersFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.cancelFileTransfers",
                              FILEBROWSERPRIVATE_CANCELFILETRANSFERS)
 
-  FileBrowserPrivateCancelFileTransfersFunction();
-
  protected:
-  virtual ~FileBrowserPrivateCancelFileTransfersFunction();
+  virtual ~FileBrowserPrivateCancelFileTransfersFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -129,10 +131,8 @@ class FileBrowserPrivateSearchDriveFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.searchDrive",
                              FILEBROWSERPRIVATE_SEARCHDRIVE)
 
-  FileBrowserPrivateSearchDriveFunction();
-
  protected:
-  virtual ~FileBrowserPrivateSearchDriveFunction();
+  virtual ~FileBrowserPrivateSearchDriveFunction() {}
 
   virtual bool RunImpl() OVERRIDE;
 
@@ -151,10 +151,8 @@ class FileBrowserPrivateSearchDriveMetadataFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.searchDriveMetadata",
                              FILEBROWSERPRIVATE_SEARCHDRIVEMETADATA)
 
-  FileBrowserPrivateSearchDriveMetadataFunction();
-
  protected:
-  virtual ~FileBrowserPrivateSearchDriveMetadataFunction();
+  virtual ~FileBrowserPrivateSearchDriveMetadataFunction() {}
 
   virtual bool RunImpl() OVERRIDE;
 
@@ -170,10 +168,8 @@ class FileBrowserPrivateClearDriveCacheFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.clearDriveCache",
                              FILEBROWSERPRIVATE_CLEARDRIVECACHE)
 
-  FileBrowserPrivateClearDriveCacheFunction();
-
  protected:
-  virtual ~FileBrowserPrivateClearDriveCacheFunction();
+  virtual ~FileBrowserPrivateClearDriveCacheFunction() {}
 
   virtual bool RunImpl() OVERRIDE;
 };
@@ -186,10 +182,8 @@ class FileBrowserPrivateGetDriveConnectionStateFunction
       "fileBrowserPrivate.getDriveConnectionState",
       FILEBROWSERPRIVATE_GETDRIVECONNECTIONSTATE);
 
-  FileBrowserPrivateGetDriveConnectionStateFunction();
-
  protected:
-  virtual ~FileBrowserPrivateGetDriveConnectionStateFunction();
+  virtual ~FileBrowserPrivateGetDriveConnectionStateFunction() {}
 
   virtual bool RunImpl() OVERRIDE;
 };
@@ -201,10 +195,8 @@ class FileBrowserPrivateRequestAccessTokenFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.requestAccessToken",
                              FILEBROWSERPRIVATE_REQUESTACCESSTOKEN)
 
-  FileBrowserPrivateRequestAccessTokenFunction();
-
  protected:
-  virtual ~FileBrowserPrivateRequestAccessTokenFunction();
+  virtual ~FileBrowserPrivateRequestAccessTokenFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -221,10 +213,8 @@ class FileBrowserPrivateGetShareUrlFunction
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getShareUrl",
                              FILEBROWSERPRIVATE_GETSHAREURL)
 
-  FileBrowserPrivateGetShareUrlFunction();
-
  protected:
-  virtual ~FileBrowserPrivateGetShareUrlFunction();
+  virtual ~FileBrowserPrivateGetShareUrlFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
