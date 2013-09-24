@@ -77,18 +77,12 @@ ResettableSettingsSnapshot::~ResettableSettingsSnapshot() {}
 
 void ResettableSettingsSnapshot::Subtract(
     const ResettableSettingsSnapshot& snapshot) {
-  std::vector<GURL> urls;
-  std::set_difference(startup_.urls.begin(), startup_.urls.end(),
-                      snapshot.startup_.urls.begin(),
-                      snapshot.startup_.urls.end(),
-                      std::back_inserter(urls));
+  std::vector<GURL> urls = base::STLSetDifference<std::vector<GURL> >(
+      startup_.urls, snapshot.startup_.urls);
   startup_.urls.swap(urls);
 
-  ExtensionList extensions;
-  std::set_difference(enabled_extensions_.begin(), enabled_extensions_.end(),
-                      snapshot.enabled_extensions_.begin(),
-                      snapshot.enabled_extensions_.end(),
-                      std::back_inserter(extensions));
+  ExtensionList extensions = base::STLSetDifference<ExtensionList>(
+      enabled_extensions_, snapshot.enabled_extensions_);
   enabled_extensions_.swap(extensions);
 }
 

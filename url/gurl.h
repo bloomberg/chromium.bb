@@ -120,6 +120,9 @@ class URL_EXPORT GURL {
   bool operator<(const GURL& other) const {
     return spec_ < other.spec_;
   }
+  bool operator>(const GURL& other) const {
+    return spec_ > other.spec_;
+  }
 
   // Resolves a URL that's possibly relative to this object's URL, and returns
   // it. Absolute URLs are also handled according to the rules of URLs on web
