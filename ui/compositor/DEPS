@@ -4,5 +4,7 @@
 include_rules = [
   "+cc",
   "+third_party/WebKit/public/platform/WebGraphicsContext3D.h",
+  "+ui/gfx",
+  "+ui/gl",
   "+webkit/common/gpu",
 ]

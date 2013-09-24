@@ -1,3 +1,7 @@
 include_rules = [
   "+media/base",
+  "+ui/base",
+  "+ui/events/latency_info.h",
+  "+ui/gfx",
+  "+ui/gl",
 ]

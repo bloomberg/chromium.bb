@@ -1,0 +1,5 @@
+include_rules = [
+  "+ui/base",
+  "+ui/gfx",
+  "+ui/views",  # TODO(beng): BAD, circular dependency
+]
