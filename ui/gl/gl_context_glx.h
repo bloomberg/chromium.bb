@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_export.h"
 
@@ -21,7 +21,7 @@ class GL_EXPORT GLContextGLX : public GLContextReal {
  public:
   explicit GLContextGLX(GLShareGroup* share_group);
 
-  Display* display();
+  XDisplay* display();
 
   // Implement GLContext.
   virtual bool Initialize(
@@ -41,7 +41,7 @@ class GL_EXPORT GLContextGLX : public GLContextReal {
 
  private:
   void* context_;
-  Display* display_;
+  XDisplay* display_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContextGLX);
 };

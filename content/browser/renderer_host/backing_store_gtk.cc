@@ -272,7 +272,7 @@ BackingStoreGtk::BackingStoreGtk(RenderWidgetHost* widget,
     pixmap_bpp_ = 0;
   } else {
     picture_ = 0;
-    pixmap_bpp_ = ui::BitsPerPixelForPixmapDepth(display_, depth);
+    pixmap_bpp_ = gfx::BitsPerPixelForPixmapDepth(display_, depth);
   }
 
   pixmap_gc_ = XCreateGC(display_, pixmap_, 0, NULL);
@@ -320,9 +320,9 @@ void BackingStoreGtk::PaintRectWithoutXrender(
                                 visual_depth_);
 
   // Draw ARGB transport DIB onto our pixmap.
-  ui::PutARGBImage(display_, visual_, visual_depth_, pixmap,
-                   pixmap_gc_, static_cast<uint8*>(bitmap->memory()),
-                   width, height);
+  gfx::PutARGBImage(display_, visual_, visual_depth_, pixmap,
+                    pixmap_gc_, static_cast<uint8*>(bitmap->memory()),
+                    width, height);
 
   for (size_t i = 0; i < copy_rects.size(); i++) {
     const gfx::Rect& copy_rect = copy_rects[i];

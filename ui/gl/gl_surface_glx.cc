@@ -21,7 +21,7 @@ extern "C" {
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "third_party/mesa/src/include/GL/osmesa.h"
-#include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/vsync_provider.h"

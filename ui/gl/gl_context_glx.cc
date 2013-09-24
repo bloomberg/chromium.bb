@@ -39,13 +39,13 @@ GLContextGLX::GLContextGLX(GLShareGroup* share_group)
     display_(NULL) {
 }
 
-Display* GLContextGLX::display() {
+XDisplay* GLContextGLX::display() {
   return display_;
 }
 
 bool GLContextGLX::Initialize(
     GLSurface* compatible_surface, GpuPreference gpu_preference) {
-  display_ = static_cast<Display*>(compatible_surface->GetDisplay());
+  display_ = static_cast<XDisplay*>(compatible_surface->GetDisplay());
 
   GLXContext share_handle = static_cast<GLXContext>(
       share_group() ? share_group()->GetHandle() : NULL);

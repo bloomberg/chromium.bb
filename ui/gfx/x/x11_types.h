@@ -5,6 +5,7 @@
 #ifndef UI_GFX_X_X11_UTIL_H_
 #define UI_GFX_X_X11_UTIL_H_
 
+#include "base/basictypes.h"
 #include "ui/gfx/gfx_export.h"
 
 typedef unsigned long XID;
@@ -18,6 +19,32 @@ namespace gfx {
 // undef multiple displays/monitor environment. Remove this and change the
 // chrome codebase to get the display from window.
 GFX_EXPORT XDisplay* GetXDisplay();
+
+// Return the number of bits-per-pixel for a pixmap of the given depth
+GFX_EXPORT int BitsPerPixelForPixmapDepth(XDisplay* display, int depth);
+
+// Draws ARGB data on the given pixmap using the given GC, converting to the
+// server side visual depth as needed.  Destination is assumed to be the same
+// dimensions as |data| or larger.  |data| is also assumed to be in row order
+// with each line being exactly |width| * 4 bytes long.
+GFX_EXPORT void PutARGBImage(XDisplay* display,
+                             void* visual, int depth,
+                             XID pixmap, void* pixmap_gc,
+                             const uint8* data,
+                             int width, int height);
+
+// Same as above only more general:
+// - |data_width| and |data_height| refer to the data image
+// - |src_x|, |src_y|, |copy_width| and |copy_height| define source region
+// - |dst_x|, |dst_y|, |copy_width| and |copy_height| define destination region
+GFX_EXPORT void PutARGBImage(XDisplay* display,
+                             void* visual, int depth,
+                             XID pixmap, void* pixmap_gc,
+                             const uint8* data,
+                             int data_width, int data_height,
+                             int src_x, int src_y,
+                             int dst_x, int dst_y,
+                             int copy_width, int copy_height);
 
 }  // namespace gfx
 

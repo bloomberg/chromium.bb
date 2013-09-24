@@ -194,14 +194,14 @@ bool NativeViewGLSurfaceOSMesa::SwapBuffers() {
   }
 
   // Copy the frame into the pixmap.
-  ui::PutARGBImage(g_osmesa_display,
-                   attributes.visual,
-                   attributes.depth,
-                   pixmap_,
-                   pixmap_graphics_context_,
-                   static_cast<const uint8*>(GetHandle()),
-                   size.width(),
-                   size.height());
+  gfx::PutARGBImage(g_osmesa_display,
+                    attributes.visual,
+                    attributes.depth,
+                    pixmap_,
+                    pixmap_graphics_context_,
+                    static_cast<const uint8*>(GetHandle()),
+                    size.width(),
+                    size.height());
 
   // Copy the pixmap to the window.
   XCopyArea(g_osmesa_display,
@@ -236,18 +236,18 @@ bool NativeViewGLSurfaceOSMesa::PostSubBuffer(
   }
 
   // Copy the frame into the pixmap.
-  ui::PutARGBImage(g_osmesa_display,
-                   attributes.visual,
-                   attributes.depth,
-                   pixmap_,
-                   pixmap_graphics_context_,
-                   static_cast<const uint8*>(GetHandle()),
-                   size.width(),
-                   size.height(),
-                   x, y,
-                   x, y,
-                   width,
-                   height);
+  gfx::PutARGBImage(g_osmesa_display,
+                    attributes.visual,
+                    attributes.depth,
+                    pixmap_,
+                    pixmap_graphics_context_,
+                    static_cast<const uint8*>(GetHandle()),
+                    size.width(),
+                    size.height(),
+                    x, y,
+                    x, y,
+                    width,
+                    height);
 
   // Copy the pixmap to the window.
   XCopyArea(g_osmesa_display,

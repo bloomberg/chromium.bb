@@ -144,9 +144,6 @@ UI_EXPORT void SetHideTitlebarWhenMaximizedProperty(
 // Clears all regions of X11's default root window by filling black pixels.
 UI_EXPORT void ClearX11DefaultRootWindow();
 
-// Return the number of bits-per-pixel for a pixmap of the given depth
-UI_EXPORT int BitsPerPixelForPixmapDepth(XDisplay* display, int depth);
-
 // Returns true if |window| is visible.
 UI_EXPORT bool IsWindowVisible(XID window);
 
@@ -272,29 +269,6 @@ UI_EXPORT bool CopyAreaToCanvas(XID drawable,
 // Return a handle to an XRender picture where |pixmap| is a handle to a
 // pixmap containing Skia ARGB data.
 UI_EXPORT XID CreatePictureFromSkiaPixmap(XDisplay* display, XID pixmap);
-
-// Draws ARGB data on the given pixmap using the given GC, converting to the
-// server side visual depth as needed.  Destination is assumed to be the same
-// dimensions as |data| or larger.  |data| is also assumed to be in row order
-// with each line being exactly |width| * 4 bytes long.
-UI_EXPORT void PutARGBImage(XDisplay* display,
-                            void* visual, int depth,
-                            XID pixmap, void* pixmap_gc,
-                            const uint8* data,
-                            int width, int height);
-
-// Same as above only more general:
-// - |data_width| and |data_height| refer to the data image
-// - |src_x|, |src_y|, |copy_width| and |copy_height| define source region
-// - |dst_x|, |dst_y|, |copy_width| and |copy_height| define destination region
-UI_EXPORT void PutARGBImage(XDisplay* display,
-                            void* visual, int depth,
-                            XID pixmap, void* pixmap_gc,
-                            const uint8* data,
-                            int data_width, int data_height,
-                            int src_x, int src_y,
-                            int dst_x, int dst_y,
-                            int copy_width, int copy_height);
 
 void FreePicture(XDisplay* display, XID picture);
 void FreePixmap(XDisplay* display, XID pixmap);

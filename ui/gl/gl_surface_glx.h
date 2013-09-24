@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/vsync_provider.h"
