@@ -120,11 +120,11 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMicAndCamera) {
       TabSpecificContentSettings::FromWebContents(web_contents());
   std::string request_host = "google.com";
   GURL security_origin("http://" + request_host);
-  MediaStreamDevicesController::MediaStreamTypePermissionMap
+  MediaStreamDevicesController::MediaStreamTypeSettingsMap
       request_permissions;
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_ALLOWED;
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_ALLOWED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
                                                request_permissions);
@@ -181,11 +181,11 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  MediaStreamDevicesController::MediaStreamTypePermissionMap
+  MediaStreamDevicesController::MediaStreamTypeSettingsMap
       request_permissions;
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
   content_settings->OnMediaStreamPermissionSet(url, request_permissions);
   {
@@ -254,9 +254,9 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
       TabSpecificContentSettings::FromWebContents(web_contents());
   std::string request_host = "google.com";
   GURL security_origin("http://" + request_host);
-  MediaStreamDevicesController::MediaStreamTypePermissionMap
+  MediaStreamDevicesController::MediaStreamTypeSettingsMap
       request_permissions;
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_ALLOWED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
                                                request_permissions);
@@ -286,7 +286,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
             bubble_content.media_menus.begin()->first);
 
   // Change the microphone access.
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
   content_settings->OnMediaStreamPermissionSet(security_origin,
                                                request_permissions);
@@ -324,9 +324,9 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
       TabSpecificContentSettings::FromWebContents(web_contents());
   std::string request_host = "google.com";
   GURL security_origin("http://" + request_host);
-  MediaStreamDevicesController::MediaStreamTypePermissionMap
+  MediaStreamDevicesController::MediaStreamTypeSettingsMap
       request_permissions;
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_ALLOWED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
                                                request_permissions);
@@ -356,7 +356,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
             bubble_content.media_menus.begin()->first);
 
   // Change the camera access.
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
   content_settings->OnMediaStreamPermissionSet(security_origin,
                                                request_permissions);
@@ -396,9 +396,9 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
   GURL security_origin("http://" + request_host);
 
   // Firstly, add microphone access.
-  MediaStreamDevicesController::MediaStreamTypePermissionMap
+  MediaStreamDevicesController::MediaStreamTypeSettingsMap
       request_permissions;
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_ALLOWED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
                                                request_permissions);
@@ -425,7 +425,7 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
             bubble_content.media_menus.begin()->first);
 
   // Then add camera access.
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_ALLOWED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
                                                request_permissions);

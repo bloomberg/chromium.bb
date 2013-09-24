@@ -64,9 +64,13 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   };
 
   struct MediaMenu {
+    MediaMenu();
+    ~MediaMenu();
+
     std::string label;
     content::MediaStreamDevice default_device;
     content::MediaStreamDevice selected_device;
+    bool disabled;
   };
   typedef std::map<content::MediaStreamType, MediaMenu> MediaMenuMap;
 

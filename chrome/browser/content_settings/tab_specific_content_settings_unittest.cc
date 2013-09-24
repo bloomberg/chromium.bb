@@ -206,9 +206,9 @@ TEST_F(TabSpecificContentSettingsTest, AllowedBlockedMediaContent) {
 
   // Request and allow microphone access.
   GURL security_origin("http://google.com");
-  MediaStreamDevicesController::MediaStreamTypePermissionMap
+  MediaStreamDevicesController::MediaStreamTypeSettingsMap
       request_permissions;
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_ALLOWED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
                                                request_permissions);
@@ -221,7 +221,7 @@ TEST_F(TabSpecificContentSettingsTest, AllowedBlockedMediaContent) {
 
   // Request and allow camera access.
   request_permissions.clear();
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_ALLOWED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
                                                request_permissions);
@@ -234,7 +234,7 @@ TEST_F(TabSpecificContentSettingsTest, AllowedBlockedMediaContent) {
 
   // Request and block microphone access.
   request_permissions.clear();
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
   content_settings->OnMediaStreamPermissionSet(security_origin,
                                                request_permissions);
@@ -247,7 +247,7 @@ TEST_F(TabSpecificContentSettingsTest, AllowedBlockedMediaContent) {
 
   // Request and block camera access.
   request_permissions.clear();
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
   content_settings->OnMediaStreamPermissionSet(security_origin,
                                                request_permissions);
@@ -259,9 +259,9 @@ TEST_F(TabSpecificContentSettingsTest, AllowedBlockedMediaContent) {
             content_settings->GetMicrophoneCameraState());
 
   // Request and allow microphone and camera access.
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_ALLOWED;
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_ALLOWED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
                                                request_permissions);
@@ -277,9 +277,9 @@ TEST_F(TabSpecificContentSettingsTest, AllowedBlockedMediaContent) {
             content_settings->GetMicrophoneCameraState());
 
   // Request and block microphone and camera access.
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
   content_settings->OnMediaStreamPermissionSet(security_origin,
                                                request_permissions);
@@ -295,7 +295,7 @@ TEST_F(TabSpecificContentSettingsTest, AllowedBlockedMediaContent) {
             content_settings->GetMicrophoneCameraState());
 
   // Request microphone and camera access. Allow microphone, block camera.
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_ALLOWED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
                                                request_permissions);
@@ -311,9 +311,9 @@ TEST_F(TabSpecificContentSettingsTest, AllowedBlockedMediaContent) {
             content_settings->GetMicrophoneCameraState());
 
   // Request microphone and camera access. Block microphone, allow camera.
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
       MediaStreamDevicesController::MEDIA_ALLOWED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
                                                request_permissions);

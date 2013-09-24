@@ -324,12 +324,17 @@ void ContentSettingBubbleContents::Init() {
       media_menus_[menu_button] = menu_view;
 
       if (!menu_view->menu_model->GetItemCount()) {
-        // Show a "None available" title and grey out the menu when there is no
-        // available device.
+        // Show a "None available" title and grey out the menu when there are
+        // no available devices.
         menu_button->SetText(
             l10n_util::GetStringUTF16(IDS_MEDIA_MENU_NO_DEVICE_TITLE));
         menu_button->SetEnabled(false);
       }
+
+      // Disable the device selection when the website is managing the devices
+      // itself.
+      if (i->second.disabled)
+        menu_button->SetEnabled(false);
 
       // Use the longest width of the menus as the width of the menu buttons.
       menu_width = std::max(menu_width,

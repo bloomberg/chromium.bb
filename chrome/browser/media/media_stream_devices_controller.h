@@ -24,15 +24,26 @@ class PrefRegistrySyncable;
 class MediaStreamDevicesController {
  public:
   // Permissions for media stream types.
-  enum MediaStreamTypePermission {
+  enum Permission {
+    MEDIA_NONE,
     MEDIA_ALLOWED,
     MEDIA_BLOCKED_BY_POLICY,
     MEDIA_BLOCKED_BY_USER_SETTING,
     MEDIA_BLOCKED_BY_USER,
   };
 
-  typedef std::map<content::MediaStreamType, MediaStreamTypePermission>
-      MediaStreamTypePermissionMap;
+  struct MediaStreamTypeSettings {
+    MediaStreamTypeSettings(Permission permission,
+                            const std::string& requested_device_id);
+    MediaStreamTypeSettings();
+    ~MediaStreamTypeSettings();
+
+    Permission permission;
+    std::string requested_device_id;
+  };
+
+  typedef std::map<content::MediaStreamType, MediaStreamTypeSettings>
+      MediaStreamTypeSettingsMap;
 
   MediaStreamDevicesController(content::WebContents* web_contents,
                                const content::MediaStreamRequest& request,
@@ -138,7 +149,7 @@ class MediaStreamDevicesController {
   // resolved. Currently only used by MEDIA_DEVICE_AUDIO_CAPTURE and
   // MEDIA_DEVICE_VIDEO_CAPTURE since those are the only types that require
   // updates in the settings.
-  MediaStreamTypePermissionMap request_permissions_;
+  MediaStreamTypeSettingsMap request_permissions_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDevicesController);
 };

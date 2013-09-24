@@ -195,11 +195,9 @@ void ContentSettingBubbleGtk::BuildBubble() {
        radio_group.radio_items.begin();
        i != radio_group.radio_items.end(); ++i) {
     std::string elided = BuildElidedText(*i);
-    GtkWidget* radio =
-        radio_group_gtk_.empty() ?
-            gtk_radio_button_new(NULL) :
-            gtk_radio_button_new_from_widget(
-                GTK_RADIO_BUTTON(radio_group_gtk_[0]));
+    GtkWidget* radio = radio_group_gtk_.empty() ?
+        gtk_radio_button_new(NULL) :
+        gtk_radio_button_new_from_widget(GTK_RADIO_BUTTON(radio_group_gtk_[0]));
     GtkWidget* label =
         theme_provider->BuildLabel(elided.c_str(), ui::kGdkBlack);
     gtk_container_add(GTK_CONTAINER(radio), label);
@@ -221,12 +219,12 @@ void ContentSettingBubbleGtk::BuildBubble() {
 
   // Layout code for the media device menus.
   if (content_setting_bubble_model_->content_type() ==
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
     GtkWidget* table = gtk_table_new(content.media_menus.size(), 2, FALSE);
     int menu_width = 0;
     int row = 0;
-    for (ContentSettingBubbleModel::MediaMenuMap::const_iterator
-             i(content.media_menus.begin());
+    for (ContentSettingBubbleModel::MediaMenuMap::const_iterator i(
+             content.media_menus.begin());
          i != content.media_menus.end();
          ++i, ++row) {
       GtkWidget* label = theme_provider->BuildLabel(
@@ -259,21 +257,26 @@ void ContentSettingBubbleGtk::BuildBubble() {
       media_menus_[button] = gtk_menu;
 
       if (!gtk_menu->menu_model->GetItemCount()) {
-        // Show a "None available" title and grey out the menu when there is no
-        // available device.
+        // Show a "None available" title and grey out the menu when there is
+        // no available device.
         UpdateMenuLabel(
             gtk_menu->type,
             l10n_util::GetStringUTF8(IDS_MEDIA_MENU_NO_DEVICE_TITLE));
         gtk_widget_set_sensitive(button, FALSE);
       }
 
+      // Disable the device selection when the website is managing the devices
+      // itself.
+      if (i->second.disabled)
+        gtk_widget_set_sensitive(button, FALSE);
+
       // Use the longest width of the menus as the width of the menu buttons.
       GtkRequisition menu_req;
       gtk_widget_size_request(gtk_menu->menu->widget(), &menu_req);
       menu_width = std::max(menu_width, menu_req.width);
 
-      g_signal_connect(button, "clicked", G_CALLBACK(OnMenuButtonClickedThunk),
-                       this);
+      g_signal_connect(button, "clicked",
+                       G_CALLBACK(OnMenuButtonClickedThunk), this);
       gtk_table_attach(GTK_TABLE(table), button, 1, 2, row, row + 1,
                        GTK_FILL, GTK_FILL, ui::kControlSpacing * 2,
                        ui::kControlSpacing / 2);

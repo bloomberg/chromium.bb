@@ -529,14 +529,18 @@ TabSpecificContentSettings::GetMicrophoneCameraState() const {
 
 void TabSpecificContentSettings::OnMediaStreamPermissionSet(
     const GURL& request_origin,
-    const MediaStreamDevicesController::MediaStreamTypePermissionMap&
+    const MediaStreamDevicesController::MediaStreamTypeSettingsMap&
         request_permissions) {
   media_stream_access_origin_ = request_origin;
 
-  MediaStreamDevicesController::MediaStreamTypePermissionMap::const_iterator
-      it = request_permissions.find(content::MEDIA_DEVICE_AUDIO_CAPTURE);
+  MediaStreamDevicesController::MediaStreamTypeSettingsMap::const_iterator it =
+      request_permissions.find(content::MEDIA_DEVICE_AUDIO_CAPTURE);
   if (it != request_permissions.end()) {
-    switch (it->second) {
+    media_stream_requested_audio_device_ = it->second.requested_device_id;
+    switch (it->second.permission) {
+      case MediaStreamDevicesController::MEDIA_NONE:
+        NOTREACHED();
+        break;
       case MediaStreamDevicesController::MEDIA_ALLOWED:
         OnContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
         break;
@@ -552,7 +556,11 @@ void TabSpecificContentSettings::OnMediaStreamPermissionSet(
 
   it = request_permissions.find(content::MEDIA_DEVICE_VIDEO_CAPTURE);
   if (it != request_permissions.end()) {
-    switch (it->second) {
+    media_stream_requested_video_device_ = it->second.requested_device_id;
+    switch (it->second.permission) {
+      case MediaStreamDevicesController::MEDIA_NONE:
+        NOTREACHED();
+        break;
       case MediaStreamDevicesController::MEDIA_ALLOWED:
         OnContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
         break;

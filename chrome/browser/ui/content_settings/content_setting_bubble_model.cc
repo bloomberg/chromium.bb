@@ -868,6 +868,13 @@ void ContentSettingMediaStreamBubbleModel::UpdateDefaultDeviceForType(
 }
 
 void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  const std::string& requested_microphone =
+       content_settings->media_stream_requested_audio_device();
+   const std::string& requested_camera =
+       content_settings->media_stream_requested_video_device();
+
   // Add microphone menu.
   PrefService* prefs = profile()->GetPrefs();
   MediaCaptureDevicesDispatcher* dispatcher =
@@ -891,8 +898,18 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
     MediaMenu mic_menu;
     mic_menu.label = l10n_util::GetStringUTF8(IDS_MEDIA_SELECTED_MIC_LABEL);
     if (!microphones.empty()) {
-      std::string preferred_mic =
-          prefs->GetString(prefs::kDefaultAudioCaptureDevice);
+      std::string preferred_mic;
+      if (requested_microphone.empty()) {
+        preferred_mic = prefs->GetString(prefs::kDefaultAudioCaptureDevice);
+        mic_menu.disabled = false;
+      } else {
+        // Set the |disabled| to true in order to disable the device selection
+        // menu on the media settings bubble. This must be done if the website
+        // manages the microphone devices itself.
+        preferred_mic = requested_microphone;
+        mic_menu.disabled = true;
+      }
+
       mic_menu.default_device = GetMediaDeviceById(preferred_mic, microphones);
       mic_menu.selected_device = mic_menu.default_device;
     }
@@ -906,8 +923,17 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
     camera_menu.label =
         l10n_util::GetStringUTF8(IDS_MEDIA_SELECTED_CAMERA_LABEL);
     if (!cameras.empty()) {
-      std::string preferred_camera =
-          prefs->GetString(prefs::kDefaultVideoCaptureDevice);
+      std::string preferred_camera;
+      if (requested_camera.empty()) {
+        preferred_camera = prefs->GetString(prefs::kDefaultAudioCaptureDevice);
+        camera_menu.disabled = false;
+      } else {
+        // Disable the menu since the website is managing the camera devices
+        // itself.
+        preferred_camera = requested_camera;
+        camera_menu.disabled = true;
+      }
+
       camera_menu.default_device =
           GetMediaDeviceById(preferred_camera, cameras);
       camera_menu.selected_device = camera_menu.default_device;
@@ -1345,6 +1371,10 @@ ContentSettingBubbleModel::RadioGroup::~RadioGroup() {}
 ContentSettingBubbleModel::DomainList::DomainList() {}
 
 ContentSettingBubbleModel::DomainList::~DomainList() {}
+
+ContentSettingBubbleModel::MediaMenu::MediaMenu() : disabled(false) {}
+
+ContentSettingBubbleModel::MediaMenu::~MediaMenu() {}
 
 ContentSettingBubbleModel::BubbleContent::BubbleContent()
     : radio_group_enabled(false),
