@@ -49,8 +49,8 @@ TEST_F(QuicCongestionControlTest, FixedRateSenderAPI) {
                                                   clock_.Now());
   EXPECT_TRUE(manager_->TimeUntilSend(clock_.Now(),
       NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
-  manager_->SentPacket(1, clock_.Now(), kMaxPacketSize, NOT_RETRANSMISSION,
-                       HAS_RETRANSMITTABLE_DATA);
+  manager_->OnPacketSent(1, clock_.Now(), kMaxPacketSize, NOT_RETRANSMISSION,
+                         HAS_RETRANSMITTABLE_DATA);
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(40),
             manager_->TimeUntilSend(clock_.Now(),
                 NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE));
@@ -79,8 +79,8 @@ TEST_F(QuicCongestionControlTest, FixedRatePacing) {
   for (QuicPacketSequenceNumber i = 1; i <= 100; ++i) {
     EXPECT_TRUE(manager_->TimeUntilSend(clock_.Now(),
         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
-    manager_->SentPacket(i, clock_.Now(), kMaxPacketSize, NOT_RETRANSMISSION,
-                         HAS_RETRANSMITTABLE_DATA);
+    manager_->OnPacketSent(i, clock_.Now(), kMaxPacketSize, NOT_RETRANSMISSION,
+                           HAS_RETRANSMITTABLE_DATA);
     QuicTime::Delta advance_time = manager_->TimeUntilSend(clock_.Now(),
         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     clock_.AdvanceTime(advance_time);
@@ -110,12 +110,12 @@ TEST_F(QuicCongestionControlTest, Pacing) {
   for (QuicPacketSequenceNumber i = 1; i <= 100;) {
     EXPECT_TRUE(manager_->TimeUntilSend(clock_.Now(),
         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
-    manager_->SentPacket(i++, clock_.Now(), kMaxPacketSize, NOT_RETRANSMISSION,
-                         HAS_RETRANSMITTABLE_DATA);
+    manager_->OnPacketSent(i++, clock_.Now(), kMaxPacketSize,
+                           NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
     EXPECT_TRUE(manager_->TimeUntilSend(clock_.Now(),
         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
-    manager_->SentPacket(i++, clock_.Now(), kMaxPacketSize, NOT_RETRANSMISSION,
-                         HAS_RETRANSMITTABLE_DATA);
+    manager_->OnPacketSent(i++, clock_.Now(), kMaxPacketSize,
+                           NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
     QuicTime::Delta advance_time = manager_->TimeUntilSend(clock_.Now(),
         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     clock_.AdvanceTime(advance_time);

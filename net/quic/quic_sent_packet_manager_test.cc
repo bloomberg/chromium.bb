@@ -45,7 +45,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     if (num_packets == 0) {
       EXPECT_FALSE(manager_.HasUnackedPackets());
       EXPECT_EQ(0u, manager_.GetNumUnackedPackets());
-      EXPECT_TRUE(manager_.GetRetransmittablePackets().empty());
+      EXPECT_TRUE(manager_.GetUnackedPackets().empty());
       return;
     }
 
@@ -58,10 +58,31 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
 
   void VerifyRetransmittablePackets(QuicPacketSequenceNumber* packets,
                                     size_t num_packets) {
-    SequenceNumberSet unacked = manager_.GetRetransmittablePackets();
-    EXPECT_EQ(num_packets, unacked.size());
+    SequenceNumberSet unacked = manager_.GetUnackedPackets();
     for (size_t i = 0; i < num_packets; ++i) {
       EXPECT_TRUE(ContainsKey(unacked, packets[i])) << packets[i];
+    }
+    size_t num_retransmittable = 0;
+    for (SequenceNumberSet::const_iterator it = unacked.begin();
+         it != unacked.end(); ++it) {
+      if (manager_.HasRetransmittableFrames(*it)) {
+        ++num_retransmittable;
+      }
+    }
+    EXPECT_EQ(num_packets, num_retransmittable);
+  }
+
+  void VerifyAckedPackets(QuicPacketSequenceNumber* expected,
+                          size_t num_expected,
+                          const SequenceNumberSet& actual) {
+    if (num_expected == 0) {
+      EXPECT_TRUE(actual.empty());
+      return;
+    }
+
+    EXPECT_EQ(num_expected, actual.size());
+    for (size_t i = 0; i < num_expected; ++i) {
+      EXPECT_TRUE(ContainsKey(actual, expected[i])) << expected[i];
     }
   }
 
@@ -145,6 +166,8 @@ TEST_P(QuicSentPacketManagerTest, RetransmitThenAck) {
   // No unacked packets remain.
   VerifyUnackedPackets(NULL, 0);
   VerifyRetransmittablePackets(NULL, 0);
+  QuicPacketSequenceNumber expected_acked[] = { 2 };
+  VerifyAckedPackets(expected_acked, arraysize(expected_acked), acked);
 }
 
 TEST_P(QuicSentPacketManagerTest, RetransmitThenAckPrevious) {
@@ -169,6 +192,8 @@ TEST_P(QuicSentPacketManagerTest, RetransmitThenAckPrevious) {
   QuicPacketSequenceNumber unacked[] = { 2 };
   VerifyUnackedPackets(unacked, arraysize(unacked));
   VerifyRetransmittablePackets(NULL, 0);
+  QuicPacketSequenceNumber expected_acked[] = { 2 };
+  VerifyAckedPackets(expected_acked, arraysize(expected_acked), acked);
 }
 
 TEST_P(QuicSentPacketManagerTest, TruncatedAck) {

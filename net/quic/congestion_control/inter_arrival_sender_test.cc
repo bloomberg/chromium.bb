@@ -40,8 +40,8 @@ class InterArrivalSenderTest : public ::testing::Test {
           new class SendAlgorithmInterface::SentPacket(
               bytes_in_packet, send_clock_.Now());
 
-      sender_.SentPacket(send_clock_.Now(), sequence_number_, bytes_in_packet,
-                         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+      sender_.OnPacketSent(send_clock_.Now(), sequence_number_, bytes_in_packet,
+                           NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
       sequence_number_++;
     }
     EXPECT_FALSE(sender_.TimeUntilSend(send_clock_.Now(),

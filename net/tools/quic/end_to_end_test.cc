@@ -126,6 +126,8 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
     net::IPAddressNumber ip;
     CHECK(net::ParseIPLiteralToNumber("127.0.0.1", &ip));
     server_address_ = IPEndPoint(ip, 0);
+    QuicConnection::g_acks_do_not_instigate_acks = true;
+    FLAGS_track_retransmission_history = true;
     client_config_.SetDefaults();
     server_config_.SetDefaults();
 

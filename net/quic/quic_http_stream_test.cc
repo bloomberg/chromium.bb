@@ -188,7 +188,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     receive_algorithm_ = new TestReceiveAlgorithm(NULL);
     EXPECT_CALL(*receive_algorithm_, RecordIncomingPacket(_, _, _, _)).
         Times(AnyNumber());
-    EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _, _)).Times(AnyNumber());
+    EXPECT_CALL(*send_algorithm_,
+                OnPacketSent(_, _, _, _, _)).Times(AnyNumber());
     EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
         Return(QuicTime::Delta::Zero()));
     EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _, _)).

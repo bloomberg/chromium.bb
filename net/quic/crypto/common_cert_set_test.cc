@@ -90,7 +90,7 @@ TEST(CommonCertSets, FindGIA) {
   StringPiece gia_copy = sets->GetCert(hash, index);
   EXPECT_FALSE(gia_copy.empty());
   ASSERT_EQ(gia.size(), gia_copy.size());
-  EXPECT_TRUE(0 == memcmp(gia.data(), gia_copy.data(), gia.size()));
+  EXPECT_EQ(0, memcmp(gia.data(), gia_copy.data(), gia.size()));
 }
 
 TEST(CommonCertSets, NonMatch) {

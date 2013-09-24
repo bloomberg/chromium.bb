@@ -94,11 +94,11 @@ void TcpCubicSender::OnIncomingLoss(QuicTime /*ack_receive_time*/) {
   DLOG(INFO) << "Incoming loss; congestion window:" << congestion_window_;
 }
 
-bool TcpCubicSender::SentPacket(QuicTime /*sent_time*/,
-                                QuicPacketSequenceNumber sequence_number,
-                                QuicByteCount bytes,
-                                TransmissionType transmission_type,
-                                HasRetransmittableData is_retransmittable) {
+bool TcpCubicSender::OnPacketSent(QuicTime /*sent_time*/,
+                                  QuicPacketSequenceNumber sequence_number,
+                                  QuicByteCount bytes,
+                                  TransmissionType transmission_type,
+                                  HasRetransmittableData is_retransmittable) {
   // Only update bytes_in_flight_ for data packets.
   if (is_retransmittable != HAS_RETRANSMITTABLE_DATA) {
     return false;
@@ -115,7 +115,7 @@ bool TcpCubicSender::SentPacket(QuicTime /*sent_time*/,
   return true;
 }
 
-void TcpCubicSender::AbandoningPacket(QuicPacketSequenceNumber sequence_number,
+void TcpCubicSender::OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,
                                       QuicByteCount abandoned_bytes) {
   DCHECK_GE(bytes_in_flight_, abandoned_bytes);
   bytes_in_flight_ -= abandoned_bytes;

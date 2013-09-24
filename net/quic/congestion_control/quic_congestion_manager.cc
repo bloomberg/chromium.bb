@@ -48,7 +48,7 @@ QuicCongestionManager::~QuicCongestionManager() {
   STLDeleteValues(&packet_history_map_);
 }
 
-void QuicCongestionManager::SentPacket(
+void QuicCongestionManager::OnPacketSent(
     QuicPacketSequenceNumber sequence_number,
     QuicTime sent_time,
     QuicByteCount bytes,
@@ -56,9 +56,9 @@ void QuicCongestionManager::SentPacket(
     HasRetransmittableData has_retransmittable_data) {
   DCHECK(!ContainsKey(pending_packets_, sequence_number));
 
-  if (send_algorithm_->SentPacket(sent_time, sequence_number, bytes,
-                                  transmission_type,
-                                  has_retransmittable_data)) {
+  if (send_algorithm_->OnPacketSent(sent_time, sequence_number, bytes,
+                                    transmission_type,
+                                    has_retransmittable_data)) {
     packet_history_map_[sequence_number] =
         new class SendAlgorithmInterface::SentPacket(bytes, sent_time);
     pending_packets_[sequence_number] = bytes;
@@ -67,12 +67,12 @@ void QuicCongestionManager::SentPacket(
 }
 
 // Called when a packet is timed out.
-void QuicCongestionManager::AbandoningPacket(
+void QuicCongestionManager::OnPacketAbandoned(
     QuicPacketSequenceNumber sequence_number) {
   PendingPacketsMap::iterator it = pending_packets_.find(sequence_number);
   if (it != pending_packets_.end()) {
     // Shouldn't this report loss as well? (decrease cgst window).
-    send_algorithm_->AbandoningPacket(sequence_number, it->second);
+    send_algorithm_->OnPacketAbandoned(sequence_number, it->second);
     pending_packets_.erase(it);
   }
 }

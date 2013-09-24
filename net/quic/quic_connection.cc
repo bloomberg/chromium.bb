@@ -1063,7 +1063,7 @@ bool QuicConnection::WriteQueuedPackets() {
 void QuicConnection::RetransmitUnackedPackets(
     RetransmissionType retransmission_type) {
   SequenceNumberSet unacked_packets =
-      sent_packet_manager_.GetRetransmittablePackets();
+      sent_packet_manager_.GetUnackedPackets();
   if (unacked_packets.empty()) {
     return;
   }
@@ -1089,7 +1089,7 @@ void QuicConnection::RetransmitPacket(
 
   // TODO(pwestin): Need to fix potential issue with FEC and a 1 packet
   // congestion window see b/8331807 for details.
-  congestion_manager_.AbandoningPacket(sequence_number);
+  congestion_manager_.OnPacketAbandoned(sequence_number);
 
   // If we have received an ACK for an old version of this packet, then
   // we should not retransmit the data.
@@ -1337,8 +1337,8 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
       congestion_manager_.BandwidthEstimate().ToBytesPerPeriod(
           congestion_manager_.SmoothedRtt()));
 
-  congestion_manager_.SentPacket(sequence_number, now, packet->length(),
-                                 transmission_type, retransmittable);
+  congestion_manager_.OnPacketSent(sequence_number, now, packet->length(),
+                                   transmission_type, retransmittable);
 
   stats_.bytes_sent += encrypted->length();
   ++stats_.packets_sent;
@@ -1468,10 +1468,30 @@ void QuicConnection::OnRetransmissionTimeout() {
   // congestion manager decide how many to send immediately and the remaining
   // packets will be queued for future sending.
   SequenceNumberSet unacked_packets =
-      sent_packet_manager_.GetRetransmittablePackets();
+      sent_packet_manager_.GetUnackedPackets();
+
+  // Abandon all unacked packets to ensure the congestion window
+  // opens up before we attempt to retransmit the packet.
   for (SequenceNumberSet::const_iterator it = unacked_packets.begin();
        it != unacked_packets.end(); ++it) {
-    RetransmitPacket(*it, RTO_RETRANSMISSION);
+    congestion_manager_.OnPacketAbandoned(*it);
+  }
+
+  // Retransmit any packet with retransmittable frames.
+  for (SequenceNumberSet::const_iterator it = unacked_packets.begin();
+       it != unacked_packets.end(); ++it) {
+    if (sent_packet_manager_.IsUnacked(*it) &&
+        sent_packet_manager_.HasRetransmittableFrames(*it)) {
+      RetransmitPacket(*it, RTO_RETRANSMISSION);
+    }
+  }
+
+  // If the data from all unacked packets had been acked, then no packets will
+  // have been retransmitted.  If we had been congestion blocked then we might
+  // have data ready to send, so we should attempt to send it now.  If we don't
+  // send now, and we never receive an ack from the peer, we may hang.
+  if (!retransmission_alarm_->IsSet()) {
+    WriteIfNotBlocked();
   }
 }
 
@@ -1492,7 +1512,7 @@ QuicTime QuicConnection::OnAbandonFecTimeout() {
       return fec_sent_time.Add(retransmission_delay);
     }
     sent_packet_manager_.DiscardFecPacket(oldest_unacked_fec);
-    congestion_manager_.AbandoningPacket(oldest_unacked_fec);
+    congestion_manager_.OnPacketAbandoned(oldest_unacked_fec);
   }
   return QuicTime::Zero();
 }

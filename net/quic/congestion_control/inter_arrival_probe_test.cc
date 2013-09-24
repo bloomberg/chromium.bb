@@ -22,13 +22,13 @@ class InterArrivalProbeTest : public ::testing::Test {
 
 TEST_F(InterArrivalProbeTest, CongestionWindow) {
   for (size_t i = 0; i < 10; i++) {
-    probe_.OnSentPacket(kMaxPacketSize);
+    probe_.OnPacketSent(kMaxPacketSize);
     EXPECT_EQ((9 - i) * kMaxPacketSize, probe_.GetAvailableCongestionWindow());
   }
   probe_.OnAcknowledgedPacket(kMaxPacketSize);
   EXPECT_EQ(kMaxPacketSize, probe_.GetAvailableCongestionWindow());
 
-  probe_.OnSentPacket(kMaxPacketSize);
+  probe_.OnPacketSent(kMaxPacketSize);
   EXPECT_EQ(0u, probe_.GetAvailableCongestionWindow());
 }
 

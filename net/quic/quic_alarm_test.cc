@@ -22,9 +22,7 @@ class MockDelegate : public QuicAlarm::Delegate {
 
 class TestAlarm : public QuicAlarm {
  public:
-  TestAlarm(QuicAlarm::Delegate* delegate)
-      : QuicAlarm(delegate) {
-  }
+  explicit TestAlarm(QuicAlarm::Delegate* delegate) : QuicAlarm(delegate) {}
 
   bool scheduled() const { return scheduled_; }
 

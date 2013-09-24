@@ -147,9 +147,12 @@ void QuicSentPacketManager::HandleAckForSentPackets(
     if (!IsAwaitingPacket(received_info, sequence_number)) {
       // Packet was acked, so remove it from our unacked packet list.
       DVLOG(1) << ENDPOINT <<"Got an ack for packet " << sequence_number;
-      // Only count this packet as acked if it has not been retransmitted.
-      if (!IsPreviousTransmission(sequence_number)) {
-        acked_packets->insert(sequence_number);
+      // If data is associated with the most recent transmission of this
+      // packet, then inform the caller.
+      QuicPacketSequenceNumber most_recent_transmission =
+          GetMostRecentTransmission(sequence_number);
+      if (HasRetransmittableFrames(most_recent_transmission)) {
+        acked_packets->insert(most_recent_transmission);
       }
       it = MarkPacketReceivedByPeer(sequence_number);
       continue;
@@ -230,6 +233,22 @@ bool QuicSentPacketManager::IsPreviousTransmission(
   SequenceNumberSet* previous_transmissions = it->second;
   DCHECK(!previous_transmissions->empty());
   return *previous_transmissions->rbegin() != sequence_number;
+}
+
+QuicPacketSequenceNumber QuicSentPacketManager::GetMostRecentTransmission(
+    QuicPacketSequenceNumber sequence_number) const {
+  DCHECK(ContainsKey(unacked_packets_, sequence_number));
+
+  PreviousTransmissionMap::const_iterator it =
+      previous_transmissions_map_.find(sequence_number);
+  if (it == previous_transmissions_map_.end()) {
+    return sequence_number;
+  }
+
+  SequenceNumberSet* previous_transmissions =
+      previous_transmissions_map_.find(sequence_number)->second;
+  DCHECK(!previous_transmissions->empty());
+  return *previous_transmissions->rbegin();
 }
 
 QuicSentPacketManager::UnackedPacketMap::iterator
@@ -426,15 +445,13 @@ QuicSentPacketManager::GetLeastUnackedFecPacket() const {
   return unacked_fec_packets_.begin()->first;
 }
 
-SequenceNumberSet QuicSentPacketManager::GetRetransmittablePackets() const {
-  SequenceNumberSet retransmittable_packets;
+SequenceNumberSet QuicSentPacketManager::GetUnackedPackets() const {
+  SequenceNumberSet unacked_packets;
   for (UnackedPacketMap::const_iterator it = unacked_packets_.begin();
        it != unacked_packets_.end(); ++it) {
-    if (HasRetransmittableFrames(it->first)) {
-      retransmittable_packets.insert(it->first);
-    }
+    unacked_packets.insert(it->first);
   }
-  return retransmittable_packets;
+  return unacked_packets;
 }
 
 }  // namespace net

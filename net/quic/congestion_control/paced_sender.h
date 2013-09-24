@@ -23,7 +23,7 @@ class NET_EXPORT_PRIVATE PacedSender {
   void UpdateBandwidthEstimate(QuicTime now, QuicBandwidth bandwidth_estimate);
 
   // A packet of size bytes was sent.
-  void SentPacket(QuicTime now, QuicByteCount bytes);
+  void OnPacketSent(QuicTime now, QuicByteCount bytes);
 
   // Return time until we can send based on the pacing.
   QuicTime::Delta TimeUntilSend(QuicTime now, QuicTime::Delta time_until_send);

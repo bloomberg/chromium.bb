@@ -43,14 +43,14 @@ class NET_EXPORT_PRIVATE QuicCongestionManager {
 
   // Called when we have sent bytes to the peer.  This informs the manager both
   // the number of bytes sent and if they were retransmitted.
-  virtual void SentPacket(QuicPacketSequenceNumber sequence_number,
-                          QuicTime sent_time,
-                          QuicByteCount bytes,
-                          TransmissionType transmission_type,
-                          HasRetransmittableData has_retransmittable_data);
+  virtual void OnPacketSent(QuicPacketSequenceNumber sequence_number,
+                            QuicTime sent_time,
+                            QuicByteCount bytes,
+                            TransmissionType transmission_type,
+                            HasRetransmittableData has_retransmittable_data);
 
   // Called when a packet is timed out.
-  virtual void AbandoningPacket(QuicPacketSequenceNumber sequence_number);
+  virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number);
 
   // Calculate the time until we can send the next packet to the wire.
   // Note 1: When kUnknownWaitTime is returned, there is no need to poll

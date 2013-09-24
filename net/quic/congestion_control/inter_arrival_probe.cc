@@ -33,7 +33,7 @@ bool InterArrivalProbe::GetEstimate(QuicBandwidth* available_channel_estimate) {
   return true;
 }
 
-void InterArrivalProbe::OnSentPacket(QuicByteCount bytes) {
+void InterArrivalProbe::OnPacketSent(QuicByteCount bytes) {
   if (!estimate_available_) {
     unacked_data_ += bytes;
   }

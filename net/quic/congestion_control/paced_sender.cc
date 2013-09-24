@@ -25,7 +25,7 @@ void PacedSender::UpdateBandwidthEstimate(QuicTime now,
   pace_ = estimate;
 }
 
-void PacedSender::SentPacket(QuicTime now, QuicByteCount bytes) {
+void PacedSender::OnPacketSent(QuicTime now, QuicByteCount bytes) {
   leaky_bucket_.Add(now, bytes);
 }
 

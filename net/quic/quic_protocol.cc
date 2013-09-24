@@ -287,13 +287,13 @@ ostream& operator<<(ostream& os,
       break;
     }
   }
- return os;
+  return os;
 }
 
 ostream& operator<<(ostream& os, const QuicAckFrame& ack_frame) {
   os << "sent info { " << ack_frame.sent_info << " } "
      << "received info { " << ack_frame.received_info << " }\n";
- return os;
+  return os;
 }
 
 CongestionFeedbackMessageFixRate::CongestionFeedbackMessageFixRate()

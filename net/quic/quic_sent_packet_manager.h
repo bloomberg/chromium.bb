@@ -123,11 +123,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // sequence number of the next packet that will be sent.
   QuicPacketSequenceNumber GetLeastUnackedFecPacket() const;
 
-  // Returns the set of sequence numbers of all unacked packets with data
-  // that might need to be retransmitted.  This excludes all packets which are
-  // previous transmissions of other packets, and all packets whose previous
-  // transmissions have been acked.
-  SequenceNumberSet GetRetransmittablePackets() const;
+  // Returns the set of sequence numbers of all unacked packets.
+  SequenceNumberSet GetUnackedPackets() const;
 
   // Returns true if |sequence_number| is a previous transmission of packet.
   bool IsPreviousTransmission(QuicPacketSequenceNumber sequence_number) const;
@@ -177,6 +174,11 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Simply removes the entries, if any, from the unacked packet map
   // and the retransmission map.
   void DiscardPacket(QuicPacketSequenceNumber sequence_number);
+
+  // Returns the sequence number of the packet that |sequence_number| was
+  // most recently transmitted as.
+  QuicPacketSequenceNumber GetMostRecentTransmission(
+      QuicPacketSequenceNumber sequence_number) const;
 
   // When new packets are created which may be retransmitted, they are added
   // to this map, which contains owning pointers to the contained frames.  If

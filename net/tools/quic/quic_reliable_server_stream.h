@@ -48,6 +48,7 @@ class QuicReliableServerStream : public ReliableQuicStream {
   const BalsaHeaders& headers() { return headers_; }
 
   const string& body() { return body_; }
+
  protected:
   BalsaHeaders* mutable_headers() { return &headers_; }
   string* mutable_body() { return &body_; }
