@@ -1,10 +1,10 @@
 This test makes sure that navigator.registerProtocolHandler throws the proper exceptions and has no-op default implementation.
 
 Pass: window.navigator.registerProtocolHandler is defined.
-Pass: Invalid protocol "http" threw SecurityError exception: "Failed to verify 'http' scheme. 'http' doesn't belong to the protocol whitelist.".
-Pass: Invalid protocol "https" threw SecurityError exception: "Failed to verify 'https' scheme. 'https' doesn't belong to the protocol whitelist.".
-Pass: Invalid protocol "file" threw SecurityError exception: "Failed to verify 'file' scheme. 'file' doesn't belong to the protocol whitelist.".
-Pass: Invalid protocol "web+" threw SecurityError exception: "Failed to verify 'web+' scheme. 'web+' is not valid protocol or length isn't at least five characters.".
+Pass: Invalid protocol "http" threw SecurityError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'http' doesn't belong to the protocol whitelist. Please prefix non-whitelisted schemes with the string 'web+'.".
+Pass: Invalid protocol "https" threw SecurityError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'https' doesn't belong to the protocol whitelist. Please prefix non-whitelisted schemes with the string 'web+'.".
+Pass: Invalid protocol "file" threw SecurityError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'file' doesn't belong to the protocol whitelist. Please prefix non-whitelisted schemes with the string 'web+'.".
+Pass: Invalid protocol "web+" threw SecurityError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'web+' is less than five characters long.".
 Pass: Valid protocol "bitcoin" allowed.
 Pass: Valid protocol "geo" allowed.
 Pass: Valid protocol "im" allowed.

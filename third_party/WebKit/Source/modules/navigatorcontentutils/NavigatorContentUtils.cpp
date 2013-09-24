@@ -29,6 +29,7 @@
 
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -103,19 +104,22 @@ static bool isProtocolWhitelisted(const String& scheme)
     return protocolWhitelist->contains(scheme);
 }
 
-static bool verifyProtocolHandlerScheme(const String& scheme, ExceptionState& es)
+static bool verifyProtocolHandlerScheme(const String& scheme, const String& method, ExceptionState& es)
 {
     if (scheme.startsWith("web+")) {
         // The specification requires that the length of scheme is at least five characteres (including 'web+' prefix).
         if (scheme.length() >= 5 && isValidProtocol(scheme))
             return true;
-        es.throwSecurityError("Failed to verify '" + scheme + "' scheme. '" + scheme + "' is not valid protocol or length isn't at least five characters.");
+        if (!isValidProtocol(scheme))
+            es.throwSecurityError(ExceptionMessages::failedToExecute(method, "Navigator", "The scheme '" + scheme + "' is not a valid protocol."));
+        else
+            es.throwSecurityError(ExceptionMessages::failedToExecute(method, "Navigator", "The scheme '" + scheme + "' is less than five characters long."));
         return false;
     }
 
     if (isProtocolWhitelisted(scheme))
         return true;
-    es.throwSecurityError("Failed to verify '" + scheme + "' scheme. '" + scheme + "' doesn't belong to the protocol whitelist.");
+    es.throwSecurityError(ExceptionMessages::failedToExecute(method, "Navigator", "The scheme '" + scheme + "' doesn't belong to the protocol whitelist. Please prefix non-whitelisted schemes with the string 'web+'."));
     return false;
 }
 
@@ -147,7 +151,7 @@ void NavigatorContentUtils::registerProtocolHandler(Navigator* navigator, const 
     if (!verifyCustomHandlerURL(baseURL, url, es))
         return;
 
-    if (!verifyProtocolHandlerScheme(scheme, es))
+    if (!verifyProtocolHandlerScheme(scheme, "registerProtocolHandler", es))
         return;
 
     NavigatorContentUtils::from(navigator->frame()->page())->client()->registerProtocolHandler(scheme, baseURL, url, navigator->frame()->displayStringModifiedByEncoding(title));
@@ -186,7 +190,7 @@ String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator* navigator, 
     if (!verifyCustomHandlerURL(baseURL, url, es))
         return declined;
 
-    if (!verifyProtocolHandlerScheme(scheme, es))
+    if (!verifyProtocolHandlerScheme(scheme, "isProtocolHandlerRegistered", es))
         return declined;
 
     return customHandlersStateString(NavigatorContentUtils::from(navigator->frame()->page())->client()->isProtocolHandlerRegistered(scheme, baseURL, url));
@@ -203,7 +207,7 @@ void NavigatorContentUtils::unregisterProtocolHandler(Navigator* navigator, cons
     if (!verifyCustomHandlerURL(baseURL, url, es))
         return;
 
-    if (!verifyProtocolHandlerScheme(scheme, es))
+    if (!verifyProtocolHandlerScheme(scheme, "unregisterProtocolHandler", es))
         return;
 
     NavigatorContentUtils::from(navigator->frame()->page())->client()->unregisterProtocolHandler(scheme, baseURL, url);
