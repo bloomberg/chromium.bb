@@ -93,6 +93,10 @@ class BrowserWindowGtk
   virtual void UpdateDevTools() OVERRIDE;
   virtual void UpdateLoadingAnimations(bool should_animate) OVERRIDE;
   virtual void SetStarredState(bool is_starred) OVERRIDE;
+  virtual void OnActiveTabChanged(content::WebContents* old_contents,
+                                  content::WebContents* new_contents,
+                                  int index,
+                                  int reason) OVERRIDE;
   virtual void ZoomChangedForActiveTab(bool can_show_bubble) OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
   virtual ui::WindowShowState GetRestoredState() const OVERRIDE;
@@ -186,10 +190,6 @@ class BrowserWindowGtk
   // Overridden from TabStripModelObserver:
   virtual void TabDetachedAt(content::WebContents* contents,
                              int index) OVERRIDE;
-  virtual void ActiveTabChanged(content::WebContents* old_contents,
-                                content::WebContents* new_contents,
-                                int index,
-                                int reason) OVERRIDE;
 
   // Overridden from ActiveWindowWatcherXObserver.
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;

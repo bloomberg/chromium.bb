@@ -790,6 +790,35 @@ void BrowserWindowGtk::SetStarredState(bool is_starred) {
   toolbar_->GetLocationBarView()->SetStarred(is_starred);
 }
 
+void BrowserWindowGtk::OnActiveTabChanged(WebContents* old_contents,
+                                          WebContents* new_contents,
+                                          int index,
+                                          int reason) {
+  TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::ActiveTabChanged");
+  if (old_contents && !old_contents->IsBeingDestroyed())
+    old_contents->GetView()->StoreFocus();
+
+  // Update various elements that are interested in knowing the current
+  // WebContents.
+  UpdateDevToolsForContents(new_contents);
+  infobar_container_->ChangeInfoBarService(
+      InfoBarService::FromWebContents(new_contents));
+  contents_container_->SetTab(new_contents);
+
+  // TODO(estade): after we manage browser activation, add a check to make sure
+  // we are the active browser before calling RestoreFocus().
+  if (!browser_->tab_strip_model()->closing_all()) {
+    new_contents->GetView()->RestoreFocus();
+    FindTabHelper* find_tab_helper =
+        FindTabHelper::FromWebContents(new_contents);
+    if (find_tab_helper->find_ui_active())
+      browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();
+  }
+
+  // Update all the UI bits.
+  UpdateTitleBar();
+  MaybeShowBookmarkBar(false);
+}
 void BrowserWindowGtk::ZoomChangedForActiveTab(bool can_show_bubble) {
   toolbar_->GetLocationBarView()->ZoomChangedForActiveTab(
       can_show_bubble && !toolbar_->IsWrenchMenuShowing());
@@ -1214,36 +1243,6 @@ void BrowserWindowGtk::TabDetachedAt(WebContents* contents, int index) {
     UpdateDevToolsForContents(NULL);
   }
   contents_container_->DetachTab(contents);
-}
-
-void BrowserWindowGtk::ActiveTabChanged(WebContents* old_contents,
-                                        WebContents* new_contents,
-                                        int index,
-                                        int reason) {
-  TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::ActiveTabChanged");
-  if (old_contents && !old_contents->IsBeingDestroyed())
-    old_contents->GetView()->StoreFocus();
-
-  // Update various elements that are interested in knowing the current
-  // WebContents.
-  UpdateDevToolsForContents(new_contents);
-  infobar_container_->ChangeInfoBarService(
-      InfoBarService::FromWebContents(new_contents));
-  contents_container_->SetTab(new_contents);
-
-  // TODO(estade): after we manage browser activation, add a check to make sure
-  // we are the active browser before calling RestoreFocus().
-  if (!browser_->tab_strip_model()->closing_all()) {
-    new_contents->GetView()->RestoreFocus();
-    FindTabHelper* find_tab_helper =
-        FindTabHelper::FromWebContents(new_contents);
-    if (find_tab_helper->find_ui_active())
-      browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();
-  }
-
-  // Update all the UI bits.
-  UpdateTitleBar();
-  MaybeShowBookmarkBar(false);
 }
 
 void BrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {

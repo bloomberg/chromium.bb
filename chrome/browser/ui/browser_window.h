@@ -111,6 +111,14 @@ class BrowserWindow : public ui::BaseWindow {
   // Sets the starred state for the current tab.
   virtual void SetStarredState(bool is_starred) = 0;
 
+  // Called when the active tab changes.  Subclasses which implement
+  // TabStripModelObserver should implement this instead of ActiveTabChanged();
+  // the Browser will call this method while processing that one.
+  virtual void OnActiveTabChanged(content::WebContents* old_contents,
+                                  content::WebContents* new_contents,
+                                  int index,
+                                  int reason) = 0;
+
   // Called to force the zoom state to for the active tab to be recalculated.
   // |can_show_bubble| is true when a user presses the zoom up or down keyboard
   // shortcuts and will be false in other cases (e.g. switching tabs, "clicking"

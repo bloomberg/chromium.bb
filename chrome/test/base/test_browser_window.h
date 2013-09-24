@@ -45,6 +45,10 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void UpdateDevTools() OVERRIDE {}
   virtual void UpdateLoadingAnimations(bool should_animate) OVERRIDE {}
   virtual void SetStarredState(bool is_starred) OVERRIDE {}
+  virtual void OnActiveTabChanged(content::WebContents* old_contents,
+                                  content::WebContents* new_contents,
+                                  int index,
+                                  int reason) OVERRIDE {}
   virtual void ZoomChangedForActiveTab(bool can_show_bubble) OVERRIDE {}
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
   virtual ui::WindowShowState GetRestoredState() const OVERRIDE;

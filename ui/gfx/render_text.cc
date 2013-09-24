@@ -871,7 +871,7 @@ void RenderText::ApplyCompositionAndSelectionStyles() {
     styles_[UNDERLINE].ApplyValue(true, composition_range_);
 
   // Apply the selected text color to the [un-reversed] selection range.
-  if (!selection().is_empty()) {
+  if (!selection().is_empty() && focused()) {
     const Range range(selection().GetMin(), selection().GetMax());
     colors_.ApplyValue(selection_color_, range);
   }

@@ -775,6 +775,54 @@ void BrowserView::SetStarredState(bool is_starred) {
   GetLocationBarView()->SetStarToggled(is_starred);
 }
 
+void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
+                                     content::WebContents* new_contents,
+                                     int index,
+                                     int reason) {
+  DCHECK(new_contents);
+
+  // If |contents_container_| already has the correct WebContents, we can save
+  // some work.  This also prevents extra events from being reported by the
+  // Visibility API under Windows, as ChangeWebContents will briefly hide
+  // the WebContents window.
+  bool change_tab_contents =
+      contents_web_view_->web_contents() != new_contents;
+
+  // Update various elements that are interested in knowing the current
+  // WebContents.
+
+  // When we toggle the NTP floating bookmarks bar and/or the info bar,
+  // we don't want any WebContents to be attached, so that we
+  // avoid an unnecessary resize and re-layout of a WebContents.
+  if (change_tab_contents)
+    contents_web_view_->SetWebContents(NULL);
+  infobar_container_->ChangeInfoBarService(
+      InfoBarService::FromWebContents(new_contents));
+  if (bookmark_bar_view_.get()) {
+    bookmark_bar_view_->SetBookmarkBarState(
+        browser_->bookmark_bar_state(),
+        BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+  }
+  UpdateUIForContents(new_contents);
+
+  // Layout for DevTools _before_ setting the main WebContents to avoid
+  // toggling the size of the main WebContents.
+  UpdateDevToolsForContents(new_contents);
+
+  if (change_tab_contents)
+    contents_web_view_->SetWebContents(new_contents);
+
+  if (!browser_->tab_strip_model()->closing_all() && GetWidget()->IsActive() &&
+      GetWidget()->IsVisible()) {
+    // We only restore focus if our window is visible, to avoid invoking blur
+    // handlers when we are eventually shown.
+    new_contents->GetView()->RestoreFocus();
+  }
+
+  // Update all the UI bits.
+  UpdateTitleBar();
+}
+
 void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
   GetLocationBarView()->ZoomChangedForActiveTab(
       can_show_bubble && !toolbar_->IsWrenchMenuShowing());
@@ -1395,57 +1443,6 @@ void BrowserView::TabDeactivated(WebContents* contents) {
   // be garbage at that point, it is not clear why.
   if (!contents->IsBeingDestroyed())
     contents->GetView()->StoreFocus();
-}
-
-void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
-                                   content::WebContents* new_contents,
-                                   int index,
-                                   int reason) {
-  DCHECK(new_contents);
-
-  // If |contents_container_| already has the correct WebContents, we can save
-  // some work.  This also prevents extra events from being reported by the
-  // Visibility API under Windows, as ChangeWebContents will briefly hide
-  // the WebContents window.
-  bool change_tab_contents =
-      contents_web_view_->web_contents() != new_contents;
-
-  // Update various elements that are interested in knowing the current
-  // WebContents.
-
-  // When we toggle the NTP floating bookmarks bar and/or the info bar,
-  // we don't want any WebContents to be attached, so that we
-  // avoid an unnecessary resize and re-layout of a WebContents.
-  if (change_tab_contents)
-    contents_web_view_->SetWebContents(NULL);
-  infobar_container_->ChangeInfoBarService(
-      InfoBarService::FromWebContents(new_contents));
-  if (bookmark_bar_view_.get()) {
-    bookmark_bar_view_->SetBookmarkBarState(
-        browser_->bookmark_bar_state(),
-        BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
-  }
-  UpdateUIForContents(new_contents);
-
-  // Layout for DevTools _before_ setting the main WebContents to avoid
-  // toggling the size of the main WebContents.
-  UpdateDevToolsForContents(new_contents);
-
-  if (change_tab_contents)
-    contents_web_view_->SetWebContents(new_contents);
-
-  if (!browser_->tab_strip_model()->closing_all() && GetWidget()->IsActive() &&
-      GetWidget()->IsVisible()) {
-    // We only restore focus if our window is visible, to avoid invoking blur
-    // handlers when we are eventually shown.
-    new_contents->GetView()->RestoreFocus();
-  }
-
-  // Update all the UI bits.
-  UpdateTitleBar();
-
-  // No need to update Toolbar because it's already updated in
-  // browser.cc.
 }
 
 void BrowserView::TabStripEmpty() {

@@ -75,6 +75,9 @@ class OmniboxViewViews
   virtual void OnTabChanged(const content::WebContents* web_contents) OVERRIDE;
   virtual void Update() OVERRIDE;
   virtual string16 GetText() const OVERRIDE;
+  virtual void SetUserText(const string16& text,
+                           const string16& display_text,
+                           bool update_popup) OVERRIDE;
   virtual void SetWindowTextAndCaretPos(const string16& text,
                                         size_t caret_pos,
                                         bool update_popup,
@@ -85,6 +88,7 @@ class OmniboxViewViews
   virtual void GetSelectionBounds(string16::size_type* start,
                                   string16::size_type* end) const OVERRIDE;
   virtual void SelectAll(bool reversed) OVERRIDE;
+  virtual void RevertAll() OVERRIDE;
   virtual void UpdatePopup() OVERRIDE;
   virtual void SetFocus() OVERRIDE;
   virtual void ApplyCaretVisibility() OVERRIDE;
@@ -169,6 +173,10 @@ class OmniboxViewViews
 
   // Selection persisted across temporary text changes, like popup suggestions.
   gfx::Range saved_temporary_selection_;
+
+  // Holds the user's selection across focus changes.  There is only a saved
+  // selection if this range IsValid().
+  gfx::Range saved_selection_for_focus_change_;
 
   // Tracking state before and after a possible change.
   string16 text_before_change_;

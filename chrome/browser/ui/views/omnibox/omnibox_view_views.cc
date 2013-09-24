@@ -68,20 +68,29 @@ struct OmniboxState : public base::SupportsUserData::Data {
   static const char kKey[];
 
   OmniboxState(const OmniboxEditModel::State& model_state,
-               const gfx::SelectionModel& selection_model);
+               const gfx::Range& selection,
+               const gfx::Range& saved_selection_for_focus_change);
   virtual ~OmniboxState();
 
   const OmniboxEditModel::State model_state;
-  const gfx::SelectionModel selection_model;
+
+  // We store both the actual selection and any saved selection (for when the
+  // omnibox is not focused).  This allows us to properly handle cases like
+  // selecting text, tabbing out of the omnibox, switching tabs away and back,
+  // and tabbing back into the omnibox.
+  const gfx::Range selection;
+  const gfx::Range saved_selection_for_focus_change;
 };
 
 // static
 const char OmniboxState::kKey[] = "OmniboxState";
 
 OmniboxState::OmniboxState(const OmniboxEditModel::State& model_state,
-                           const gfx::SelectionModel& selection_model)
+                           const gfx::Range& selection,
+                           const gfx::Range& saved_selection_for_focus_change)
     : model_state(model_state),
-      selection_model(selection_model) {
+      selection(selection),
+      saved_selection_for_focus_change(saved_selection_for_focus_change) {
 }
 
 OmniboxState::~OmniboxState() {}
@@ -129,6 +138,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
     : OmniboxView(profile, controller, command_updater),
       popup_window_mode_(popup_window_mode),
       security_level_(ToolbarModel::NONE),
+      saved_selection_for_focus_change_(gfx::Range::InvalidRange()),
       ime_composing_before_change_(false),
       delete_at_end_pressed_(false),
       location_bar_view_(location_bar),
@@ -186,6 +196,10 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
   views::Textfield::OnGestureEvent(event);
   if (!HasFocus() && event->type() == ui::ET_GESTURE_TAP_DOWN) {
     select_all_on_gesture_tap_ = true;
+
+    // If we're trying to select all on tap, invalidate any saved selection lest
+    // restoring it fights with the "select all" action.
+    saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
     return;
   }
   if (select_all_on_gesture_tap_ && event->type() == ui::ET_GESTURE_TAP)
@@ -202,12 +216,20 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
   select_all_on_mouse_release_ =
       (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
       (!HasFocus() || (model()->focus_state() == OMNIBOX_FOCUS_INVISIBLE));
-  // Restore caret visibility whenever the user clicks in the omnibox in a way
-  // that would give it focus.  We must handle this case separately here because
-  // if the omnibox currently has invisible focus, the mouse event won't trigger
-  // either SetFocus() or OmniboxEditModel::OnSetFocus().
-  if (select_all_on_mouse_release_)
+  if (select_all_on_mouse_release_) {
+    // Restore caret visibility whenever the user clicks in the omnibox in a way
+    // that would give it focus.  We must handle this case separately here
+    // because if the omnibox currently has invisible focus, the mouse event
+    // won't trigger either SetFocus() or OmniboxEditModel::OnSetFocus().
     model()->SetCaretVisibility(true);
+
+    // When we're going to select all on mouse release, invalidate any saved
+    // selection lest restoring it fights with the "select all" action.  It's
+    // possible to later set select_all_on_mouse_release_ back to false, but
+    // that happens for things like dragging, which are cases where having
+    // invalidated this saved selection is still OK.
+    saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
+  }
   return views::Textfield::OnMousePressed(event);
 }
 
@@ -329,19 +351,16 @@ void OmniboxViewViews::OnFocus() {
   model()->OnSetFocus(false);
   // Don't call controller()->OnSetFocus, this view has already acquired focus.
 
-  // Restore a valid saved selection on tab-to-focus.
-  if (location_bar_view_->GetWebContents() && !select_all_on_mouse_release_) {
-    const OmniboxState* state = static_cast<OmniboxState*>(
-        location_bar_view_->GetWebContents()->GetUserData(&OmniboxState::kKey));
-    if (state)
-      SelectSelectionModel(state->selection_model);
+  // Restore the selection we saved in OnBlur() if it's still valid.
+  if (saved_selection_for_focus_change_.IsValid()) {
+    SelectRange(saved_selection_for_focus_change_);
+    saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
   }
 }
 
 void OmniboxViewViews::OnBlur() {
-  // Save the selection to restore on tab-to-focus.
-  if (location_bar_view_->GetWebContents())
-    SaveStateToTab(location_bar_view_->GetWebContents());
+  // Save the user's existing selection to restore it later.
+  saved_selection_for_focus_change_ = GetSelectedRange();
 
   views::Textfield::OnBlur();
   gfx::NativeView native_view = NULL;
@@ -357,6 +376,7 @@ void OmniboxViewViews::OnBlur() {
   model()->OnWillKillFocus(native_view);
   // Close the popup.
   CloseOmniboxPopup();
+
   // Tell the model to reset itself.
   model()->OnKillFocus();
   controller()->OnKillFocus();
@@ -379,10 +399,11 @@ void OmniboxViewViews::SaveStateToTab(content::WebContents* tab) {
     GetInputMethod()->CancelComposition(this);
   }
 
-  // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
+  // NOTE: GetStateForTabSwitch() may affect GetSelectedRange(), so order is
+  // important.
   OmniboxEditModel::State state = model()->GetStateForTabSwitch();
-  const gfx::SelectionModel selection = GetSelectionModel();
-  tab->SetUserData(OmniboxState::kKey, new OmniboxState(state, selection));
+  tab->SetUserData(OmniboxState::kKey, new OmniboxState(
+      state, GetSelectedRange(), saved_selection_for_focus_change_));
 }
 
 void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
@@ -391,8 +412,14 @@ void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
   const OmniboxState* state = static_cast<OmniboxState*>(
       web_contents->GetUserData(&OmniboxState::kKey));
   model()->RestoreState(state ? &state->model_state : NULL);
-  if (state)
-    SelectSelectionModel(state->selection_model);
+  if (state) {
+    // This assumes that the omnibox has already been focused or blurred as
+    // appropriate; otherwise, a subsequent OnFocus() or OnBlur() call could
+    // goof up the selection.  See comments at the end of
+    // BrowserView::ActiveTabChanged().
+    SelectRange(state->selection);
+    saved_selection_for_focus_change_ = state->saved_selection_for_focus_change;
+  }
 
   // TODO(msw|oshima): Consider saving/restoring edit history.
   ClearEditHistory();
@@ -436,6 +463,13 @@ string16 OmniboxViewViews::GetText() const {
   return text();
 }
 
+void OmniboxViewViews::SetUserText(const string16& text,
+                                   const string16& display_text,
+                                   bool update_popup) {
+  saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
+  OmniboxView::SetUserText(text, display_text, update_popup);
+}
+
 void OmniboxViewViews::SetWindowTextAndCaretPos(const string16& text,
                                                 size_t caret_pos,
                                                 bool update_popup,
@@ -454,7 +488,7 @@ void OmniboxViewViews::SetForcedQuery() {
   const string16 current_text(text());
   const size_t start = current_text.find_first_not_of(kWhitespaceUTF16);
   if (start == string16::npos || (current_text[start] != '?'))
-    SetUserText(ASCIIToUTF16("?"));
+    OmniboxView::SetUserText(ASCIIToUTF16("?"));
   else
     SelectRange(gfx::Range(current_text.size(), start + 1));
 }
@@ -477,6 +511,11 @@ void OmniboxViewViews::GetSelectionBounds(string16::size_type* start,
 
 void OmniboxViewViews::SelectAll(bool reversed) {
   views::Textfield::SelectAll(reversed);
+}
+
+void OmniboxViewViews::RevertAll() {
+  saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
+  OmniboxView::RevertAll();
 }
 
 void OmniboxViewViews::UpdatePopup() {

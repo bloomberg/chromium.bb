@@ -305,6 +305,17 @@ void BrowserWindowCocoa::SetStarredState(bool is_starred) {
   [controller_ setStarredState:is_starred ? YES : NO];
 }
 
+void BrowserWindowCocoa::OnActiveTabChanged(content::WebContents* old_contents,
+                                            content::WebContents* new_contents,
+                                            int index,
+                                            int reason) {
+  // TODO(pkasting): Perhaps the code in
+  // TabStripController::activateTabWithContents should move here?  Or this
+  // should call that (instead of TabStripModelObserverBridge doing so)?  It's
+  // not obvious to me why Mac doesn't handle tab changes in BrowserWindow the
+  // way views and GTK do.
+}
+
 void BrowserWindowCocoa::ZoomChangedForActiveTab(bool can_show_bubble) {
   [controller_ zoomChangedForActiveTab:can_show_bubble ? YES : NO];
 }
