@@ -6,6 +6,7 @@
 
 #include "native_client/tests/toolchain/eh_helper.h"
 
+#include <assert.h>
 #include <math.h>
 
 // Test that EH stack unwinding works when callee-saved floating point
@@ -113,11 +114,13 @@ void middle(int never_55) {
     // Floating point register restore is currently broken.
     // https://code.google.com/p/nativeclient/issues/detail?id=3672
     // Remove these assignments of 1.0 to test it.
+#if !defined(__pnacl__)
     if (never_55 != 55) {
       should_be_one1 = 1.0;
       should_be_one2 = 1.0;
       v_should_be_ones1.elems[0] = 1.0;
     }
+#endif
     next_step(4);
     if (should_be_one1 > should_be_one2) {
       throw B(should_be_one1);
@@ -131,11 +134,32 @@ void middle(int never_55) {
 }
 
 int main(int argc, char* argv[]) {
+  double should_be_e = kE;
+  double should_be_pi_2 = kPiOver2;
+  double should_be_63 = sqrt(kOne) * cos(kZero) * 63;
+  double should_be_127 = sin(kPiOver2) * log(kE) * 127;
   next_step(1);
   try {
     next_step(2);
     middle(argc);
   } catch(...) {
+    fprintf(stderr, "should_be_e=%f, should_be_pi_2=%f, "
+            "should_be_63=%f, shouldbe_127=%f\n",
+            should_be_e, should_be_pi_2, should_be_63, should_be_127);
+    // Floating point register restore is currently broken.
+    // https://code.google.com/p/nativeclient/issues/detail?id=3672
+#if !defined(__pnacl__)
+    if (argc != 55) {
+      should_be_e = kE;
+      should_be_pi_2 = kPiOver2;
+      should_be_63 = 63.0;
+      should_be_127 = 127.0;
+    }
+#endif
+    assert(should_be_e == kE);
+    assert(should_be_pi_2 == kPiOver2);
+    assert(should_be_63 == 63.0);
+    assert(should_be_127 == 127.0);
     next_step(6);
   }
   next_step(8);
