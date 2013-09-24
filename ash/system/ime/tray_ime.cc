@@ -287,6 +287,7 @@ void TrayIME::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 
 void TrayIME::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   SetTrayLabelItemBorder(tray_label_, alignment);
+  tray_label_->Layout();
 }
 
 void TrayIME::OnIMERefresh(bool show_message) {
