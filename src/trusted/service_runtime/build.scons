@@ -439,7 +439,7 @@ if (env.Bit('linux') and not env.Bit('android')
     reserve_top = '0x40002000'
   elif env.Bit('target_mips32'):
     ld_emul = 'elf32ltsmip'
-    reserve_top = '0x40002000'
+    reserve_top = '0x40008000'
 
   bootstrap_obj = bootstrap_env.ComponentObject('linux/nacl_bootstrap.c')
   bootstrap_raw = bootstrap_env.Command(
