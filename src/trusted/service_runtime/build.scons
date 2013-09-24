@@ -797,17 +797,23 @@ node = env.CommandSelLdrTestNacl(
     exit_status='1')
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_sel_ldr_exe_not_found_test')
 
+# Check that "-F" makes sel_ldr stop after loading the nexe but before running
+# it.
+if not env.Bit('bitcode') or env.Bit('target_mips32'):
+  untrusted_env = env.MakeUntrustedNativeEnv()
+  nullptr_src = env.File('${MAIN_DIR}/tests/nullptr/nullptr.c')
+  nullptr_obj = untrusted_env.ComponentObject('nullptr', nullptr_src)
+  nullptr_nexe = untrusted_env.ComponentProgram('nullptr', nullptr_obj)
+
+  node = env.CommandSelLdrTestNacl(
+      'fuzz_nullptr_test.out',
+      nullptr_nexe,
+      sel_ldr_flags=['-F'])
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_fuzz_nullptr_test')
+
 # ----------------------------------------------------------
 # Small tests with canned binaries
 # ----------------------------------------------------------
-
-# Do not run when building tools to run on x86-32 but to analyze the
-# arm instruction set
-node = env.CommandSelLdrTestNacl(
-    'fuzz_nullptr_test.out',
-    env.File(arch_testdata_dir + '/nullptr.nexe'),
-    sel_ldr_flags=['-F'])
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_fuzz_nullptr_test')
 
 if env.Bit('target_x86_64'):
   node = env.CommandSelLdrTestNacl(
@@ -979,13 +985,6 @@ def AddDeathTest(test, skip):
 
 
 if env.Bit('target_x86'):
-  # built in tests/nullptr/
-  node = env.CommandSelLdrTestNacl(
-      'nullptr.out',
-      env.File(arch_testdata_dir + '/nullptr.nexe'),
-      exit_status='untrusted_segfault')
-  env.AddNodeToTestSuite(node, ['medium_tests'], 'run_nullptr_test')
-
   if env.Bit('build_x86_32'):
     skip = NOT_AVAIL_X86_32
   else:

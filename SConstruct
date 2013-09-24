@@ -579,9 +579,6 @@ bad_build_lists = {
 # This is a list of tests that do not yet pass when using nacl-glibc.
 # TODO(mseaborn): Enable more of these tests!
 nacl_glibc_skiplist = set([
-    # This uses a canned binary that is compiled w/ newlib.  A
-    # glibc version might be useful.
-    'run_fuzz_nullptr_test',
     # Struct layouts differ.
     'run_abi_test',
     # Syscall wrappers not implemented yet.
