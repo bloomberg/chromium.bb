@@ -345,8 +345,8 @@
             'scripts/Hasher.pm',
             'scripts/StaticString.pm',
             'scripts/make_names.pl',
-            'svg/svgtags.in',
-            'svg/svgattrs.in',
+            'svg/SVGTagNames.in',
+            'svg/SVGAttributeNames.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/blink/SVGNames.cpp',
@@ -417,8 +417,8 @@
             'scripts/Hasher.pm',
             'scripts/StaticString.pm',
             'scripts/make_names.pl',
-            'mathml/mathtags.in',
-            'mathml/mathattrs.in',
+            'html/parser/MathMLTagNames.in',
+            'html/parser/MathMLAttributeNames.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/blink/MathMLNames.cpp',

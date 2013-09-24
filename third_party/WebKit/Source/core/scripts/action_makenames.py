@@ -120,7 +120,7 @@ def main(args):
         if inputBasename in ('make_names.pl', 'make_event_factory.pl', 'make_dom_exceptions.pl', 'make_settings.pl'):
             assert makeNamesInput == None
             makeNamesInput = inputAbs
-        elif inputBasename.endswith('TagNames.in') or inputBasename.endswith('tags.in'):
+        elif inputBasename.endswith('TagNames.in'):
             assert tagInput == None
             tagInput = inputAbsPosix
         elif inputBasename.endswith('AttributeNames.in') or inputBasename.endswith('attrs.in'):

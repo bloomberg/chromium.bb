@@ -6,10 +6,7 @@ mi
 mn
 mo
 mtext
-
-#if 0 // Curently only for MathMLNames used by HTMLTreeBuilder.
 ms
 mglyph
 malignmark
 annotation-xml
-#endif
