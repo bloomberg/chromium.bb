@@ -2,25 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
-#include "base/message_loop.h"
-#include "chrome/browser/extensions/api/audio/audio_api.h"
+#include "base/message_loop/message_loop.h"
+#include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/common/chrome_switches.h"
 
 namespace extensions {
 
-class AudioApiTest: public ExtensionApiTest {
+class FeedbackApiTest: public ExtensionApiTest {
  public:
-  AudioApiTest() {}
-  virtual ~AudioApiTest() {}
+  FeedbackApiTest() {}
+  virtual ~FeedbackApiTest() {}
 };
 
-#if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(AudioApiTest, Audio) {
-  EXPECT_TRUE(RunExtensionTest("audio")) << message_;
+IN_PROC_BROWSER_TEST_F(FeedbackApiTest, Basic) {
+  EXPECT_TRUE(RunExtensionTest("feedback_private/basic")) << message_;
 }
-#endif
 
 } // namespace extensions

@@ -1040,6 +1040,7 @@
         'browser/extensions/api/extension_action/page_action_apitest.cc',
         'browser/extensions/api/extension_action/page_as_browser_action_apitest.cc',
         'browser/extensions/api/extension_action/script_badge_apitest.cc',
+        'browser/extensions/api/feedback_private/feedback_private_apitest.cc',
         'browser/extensions/api/file_system/file_system_apitest.cc',
         'browser/extensions/api/font_settings/font_settings_apitest.cc',
         'browser/extensions/api/history/history_apitest.cc',

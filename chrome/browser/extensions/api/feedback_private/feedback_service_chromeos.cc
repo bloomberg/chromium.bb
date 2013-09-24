@@ -49,7 +49,8 @@ std::string FeedbackServiceImpl::GetUserEmail() {
   if (!manager)
     return std::string();
   else
-    return manager->GetLoggedInUser()->display_email();}
+    return manager->GetLoggedInUser()->display_email();
+}
 
 void FeedbackServiceImpl::GetSystemInformation(
     const GetSystemInformationCallback& callback) {
