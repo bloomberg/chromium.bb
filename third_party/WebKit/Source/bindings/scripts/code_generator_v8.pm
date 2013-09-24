@@ -2177,13 +2177,17 @@ sub GenerateFunction
         my $hiddenDependencyAction = ($name eq "addEventListener") ? "create" : "remove";
 
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
+        AddToImplIncludes("bindings/v8/ExceptionState.h");
         AddToImplIncludes("bindings/v8/V8EventListenerList.h");
         AddToImplIncludes("core/page/DOMWindow.h");
         $code .= <<END;
     EventTarget* impl = ${v8ClassName}::toNative(args.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame()))
+        ExceptionState es(args.GetIsolate());
+        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), es)) {
+            es.throwIfNeeded();
             return;
+        }
 
         if (!window->document())
             return;

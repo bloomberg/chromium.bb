@@ -3235,8 +3235,11 @@ static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& ar
 {
     EventTarget* impl = V8TestObject::toNative(args.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame()))
+        ExceptionState es(args.GetIsolate());
+        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), es)) {
+            es.throwIfNeeded();
             return;
+        }
 
         if (!window->document())
             return;
@@ -3262,8 +3265,11 @@ static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>&
 {
     EventTarget* impl = V8TestObject::toNative(args.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame()))
+        ExceptionState es(args.GetIsolate());
+        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), es)) {
+            es.throwIfNeeded();
             return;
+        }
 
         if (!window->document())
             return;

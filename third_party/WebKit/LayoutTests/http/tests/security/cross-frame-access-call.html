@@ -50,10 +50,8 @@ window.onload = function()
     shouldThrow("window.moveTo.call(targetWindow, 0, 0);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
     shouldThrow("window.resizeBy.call(targetWindow, 0, 0);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
     shouldThrow("window.resizeTo.call(targetWindow, 0, 0);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
-
-    // These always return undefined so we use the error console to detect failure
-    shouldBeUndefined("window.addEventListener.call(targetWindow, 'load', null, false);");
-    shouldBeUndefined("window.removeEventListener.call(targetWindow, 'load', null, false);");
+    shouldThrow("window.addEventListener.call(targetWindow, 'load', null, false);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+    shouldThrow("window.removeEventListener.call(targetWindow, 'load', null, false);", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
 
     // Throws an EvalError and logs to the error console
     shouldBe("window.eval.call(targetWindow, '1+2');", '3');
