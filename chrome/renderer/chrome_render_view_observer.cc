@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -402,8 +403,6 @@ void ChromeRenderViewObserver::OnUpdateTopControlsState(
 
 void ChromeRenderViewObserver::OnRetrieveWebappInformation(
     const GURL& expected_url) {
-  bool webapp_capable = false;
-
   WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
   WebDocument document =
       main_frame ? main_frame->document() : WebDocument();
@@ -413,6 +412,9 @@ void ChromeRenderViewObserver::OnRetrieveWebappInformation(
 
   // Make sure we're checking the right page.
   bool success = document_url == expected_url;
+
+  bool is_mobile_webapp_capable = false;
+  bool is_apple_mobile_webapp_capable = false;
 
   // Search the DOM for the webapp <meta> tags.
   if (!head.isNull()) {
@@ -426,9 +428,12 @@ void ChromeRenderViewObserver::OnRetrieveWebappInformation(
       if (elem.hasTagName("meta") && elem.hasAttribute("name")) {
         std::string name = elem.getAttribute("name").utf8();
         WebString content = elem.getAttribute("content");
-        if (content == "yes" && (name == "mobile-web-app-capable"
-            || name == "apple-mobile-web-app-capable")) {
-          webapp_capable = true;
+        if (LowerCaseEqualsASCII(content, "yes")) {
+          if (name == "mobile-web-app-capable") {
+            is_mobile_webapp_capable = true;
+          } else if (name == "apple-mobile-web-app-capable") {
+            is_apple_mobile_webapp_capable = true;
+          }
         }
       }
     }
@@ -436,6 +441,19 @@ void ChromeRenderViewObserver::OnRetrieveWebappInformation(
     success = false;
   }
 
+  if (main_frame && is_apple_mobile_webapp_capable &&
+      !is_mobile_webapp_capable) {
+    WebKit::WebConsoleMessage message(
+        WebKit::WebConsoleMessage::LevelWarning,
+        "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is "
+        "deprecated. Please include <meta name=\"mobile-web-app-capable\" "
+        "content=\"yes\"> - "
+        "http://developers.google.com/chrome/mobile/docs/installtohomescreen");
+    main_frame->addMessageToConsole(message);
+  }
+
+  bool webapp_capable =
+      is_mobile_webapp_capable || is_apple_mobile_webapp_capable;
   Send(new ChromeViewHostMsg_DidRetrieveWebappInformation(routing_id(),
                                                           success,
                                                           webapp_capable,
