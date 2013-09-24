@@ -1,6 +1,8 @@
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import logging
+
 from metrics import loading
 from metrics import smoothness
 from metrics.gpu_rendering_stats import GpuRenderingStats
@@ -84,8 +86,15 @@ class Smoothness(page_measurement.PageMeasurement):
     timeline = self._trace_result.AsTimelineModel()
     smoothness_marker = self.FindTimelineMarker(timeline,
         smoothness.TIMELINE_MARKER)
-    gesture_marker = self.FindTimelineMarker(timeline,
-        smoothness.SYNTHETIC_GESTURE_MARKER)
+    # TODO(dominikg): remove try..except once CL 23532057 has been rolled to the
+    # reference builds?
+    try:
+      gesture_marker = self.FindTimelineMarker(timeline,
+          smoothness.SYNTHETIC_GESTURE_MARKER)
+    except MissingTimelineMarker:
+      logging.warning(
+        'No gesture marker found in timeline; using smoothness marker instead.')
+      gesture_marker = smoothness_marker
     benchmark_stats = GpuRenderingStats(smoothness_marker,
                                         gesture_marker,
                                         rendering_stats_deltas,
