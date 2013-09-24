@@ -23,7 +23,6 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "ui/gfx/image/image_skia.h"
@@ -53,7 +52,8 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
       weak_factory_(this),
 #endif
       settings_provider_(settings_provider.Pass()),
-      system_observer_(this) {
+      system_observer_(this),
+      stats_collector_(message_center) {
 #if defined(OS_WIN)
   first_run_pref_.Init(prefs::kMessageCenterShowedFirstRunBalloon, local_state);
 #endif
@@ -232,21 +232,10 @@ void MessageCenterNotificationManager::OnNotificationRemoved(
 
 void MessageCenterNotificationManager::OnCenterVisibilityChanged(
     message_center::Visibility visibility) {
-  switch (visibility) {
-    case message_center::VISIBILITY_TRANSIENT:
 #if defined(OS_WIN)
-      CheckFirstRunTimer();
+  if (visibility == message_center::VISIBILITY_TRANSIENT)
+    CheckFirstRunTimer();
 #endif
-      break;
-    case message_center::VISIBILITY_MESSAGE_CENTER:
-      content::RecordAction(
-          content::UserMetricsAction("Notifications.ShowMessageCenter"));
-      break;
-    case message_center::VISIBILITY_SETTINGS:
-      content::RecordAction(
-          content::UserMetricsAction("Notifications.ShowSettings"));
-      break;
-  }
 }
 
 void MessageCenterNotificationManager::OnNotificationUpdated(

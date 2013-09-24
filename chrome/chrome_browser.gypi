@@ -1271,6 +1271,8 @@
         'browser/notifications/message_center_notification_manager_win.cc',
         'browser/notifications/message_center_settings_controller.cc',
         'browser/notifications/message_center_settings_controller.h',
+        'browser/notifications/message_center_stats_collector.cc',
+        'browser/notifications/message_center_stats_collector.h',
         'browser/notifications/notification.cc',
         'browser/notifications/notification.h',
         'browser/notifications/screen_lock_notification_blocker.cc',

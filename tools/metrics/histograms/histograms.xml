@@ -10420,6 +10420,23 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Notifications.Actions" enum="NotificationActionType">
+  <summary>
+    The actions taken on notifications, recorded every time they happen.  This
+    histogram will record every single event that happens separately.
+  </summary>
+</histogram>
+
+<histogram name="Notifications.PerNotificationActions"
+    enum="NotificationActionType">
+  <summary>
+    The actions taken on notifications, recorded once per notification, when it
+    is closed.  This differs from the Notifications.Actions histogram in that
+    multiple events of the same type on a single notification will only record a
+    single UMA event.
+  </summary>
+</histogram>
+
 <histogram name="ntp.searchurls.total">
   <summary>TBD</summary>
 </histogram>
@@ -23884,6 +23901,17 @@ other types of suffix sets.
   <int value="2" label="Shown from sync promo page"/>
   <int value="3" label="User pressed 'Try Chrome'"/>
   <int value="4" label="User dismissed the promo"/>
+</enum>
+
+<enum name="NotificationActionType" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Notification added"/>
+  <int value="2" label="Notificaiton updated"/>
+  <int value="3" label="Notification clicked"/>
+  <int value="4" label="Notification button clicked"/>
+  <int value="5" label="Notification displayed"/>
+  <int value="6" label="Notification closed by user"/>
+  <int value="7" label="Notification closed by system"/>
 </enum>
 
 <enum name="NtpFollowAction" type="int">
