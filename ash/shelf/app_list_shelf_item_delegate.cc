@@ -4,7 +4,6 @@
 
 #include "ash/shelf/app_list_shelf_item_delegate.h"
 
-#include "ash/ash_switches.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
@@ -57,7 +56,7 @@ LauncherMenuModel* AppListShelfItemDelegate::CreateApplicationMenu(
 }
 
 bool AppListShelfItemDelegate::IsDraggable(const LauncherItem& item) {
-  return ash::switches::UseAlternateShelfLayout();
+  return false;
 }
 
 bool AppListShelfItemDelegate::ShouldShowTooltip(const LauncherItem& item) {

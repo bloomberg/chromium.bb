@@ -470,14 +470,14 @@ TEST_F(LauncherViewTest, EnforceDragType) {
                                       TYPE_BROWSER_SHORTCUT));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP_SHORTCUT,
                                        TYPE_WINDOWED_APP));
-  EXPECT_TRUE(test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_APP_LIST));
+  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_APP_LIST));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_APP_PANEL));
 
   EXPECT_TRUE(test_api_->SameDragType(TYPE_BROWSER_SHORTCUT,
                                       TYPE_BROWSER_SHORTCUT));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_BROWSER_SHORTCUT,
                                        TYPE_WINDOWED_APP));
-  EXPECT_TRUE(test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_APP_LIST));
+  EXPECT_FALSE(test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_APP_LIST));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_APP_PANEL));
 
   EXPECT_TRUE(test_api_->SameDragType(TYPE_WINDOWED_APP, TYPE_WINDOWED_APP));

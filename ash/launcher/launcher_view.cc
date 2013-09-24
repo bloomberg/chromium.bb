@@ -1193,11 +1193,10 @@ LauncherView::RemovableState LauncherView::RemovableByRipOff(int index) {
 bool LauncherView::SameDragType(LauncherItemType typea,
                                 LauncherItemType typeb) const {
   switch (typea) {
-    case TYPE_APP_LIST:
     case TYPE_APP_SHORTCUT:
     case TYPE_BROWSER_SHORTCUT:
-      return (typeb == TYPE_APP_SHORTCUT || typeb == TYPE_BROWSER_SHORTCUT ||
-              typeb == TYPE_APP_LIST);
+      return (typeb == TYPE_APP_SHORTCUT || typeb == TYPE_BROWSER_SHORTCUT);
+    case TYPE_APP_LIST:
     case TYPE_PLATFORM_APP:
     case TYPE_WINDOWED_APP:
     case TYPE_APP_PANEL:
