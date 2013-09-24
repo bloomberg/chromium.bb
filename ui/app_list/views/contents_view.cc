@@ -76,6 +76,11 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view,
 ContentsView::~ContentsView() {
 }
 
+void ContentsView::CancelDrag() {
+  if (apps_grid_view_ && apps_grid_view_->has_dragged_view())
+    apps_grid_view_->EndDrag(true);
+}
+
 void ContentsView::SetDragAndDropHostOfCurrentAppList(
     ApplicationDragAndDropHost* drag_and_drop_host) {
   apps_grid_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);

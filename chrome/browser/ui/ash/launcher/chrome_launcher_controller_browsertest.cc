@@ -1591,7 +1591,21 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragAndDrop) {
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
   EXPECT_EQ(3, model_->item_count());  // And it remains that way.
-}
+
+  // Test #4: Check that by pressing ESC the operation gets cancelled.
+  generator.MoveMouseTo(bounds_grid_1.CenterPoint().x(),
+                        bounds_grid_1.CenterPoint().y());
+  generator.PressLeftButton();
+  generator.MoveMouseTo(bounds_launcher_1.CenterPoint().x(),
+                        bounds_launcher_1.CenterPoint().y());
+  base::MessageLoop::current()->RunUntilIdle();
+  // Issue an ESC and see that the operation gets cancelled.
+  generator.PressKey(ui::VKEY_ESCAPE, 0);
+  generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
+  EXPECT_FALSE(grid_view->dragging());
+  EXPECT_FALSE(grid_view->has_dragged_view());
+  generator.ReleaseLeftButton();
+  }
 
 // Do tests for removal of items from the shelf by dragging.
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {

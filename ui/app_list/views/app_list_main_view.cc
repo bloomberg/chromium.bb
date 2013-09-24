@@ -130,6 +130,7 @@ void AppListMainView::ShowAppListWhenReady() {
 
 void AppListMainView::Close() {
   icon_loading_wait_timer_.Stop();
+  contents_view_->CancelDrag();
 }
 
 void AppListMainView::Prerender() {

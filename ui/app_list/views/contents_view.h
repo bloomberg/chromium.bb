@@ -34,6 +34,9 @@ class ContentsView : public views::View {
                AppListModel* model);
   virtual ~ContentsView();
 
+  // The app list gets closed and drag and drop operations need to be cancelled.
+  void CancelDrag();
+
   // If |drag_and_drop| is not NULL it will be called upon drag and drop
   // operations outside the application list.
   void SetDragAndDropHostOfCurrentAppList(

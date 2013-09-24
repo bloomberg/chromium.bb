@@ -254,6 +254,13 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
 }
 
 AppsGridView::~AppsGridView() {
+  // Coming here |drag_view_| should already be canceled since otherwise the
+  // drag would disappear after the app list got animated away and closed,
+  // which would look odd.
+  DCHECK(!drag_view_);
+  if (drag_view_)
+    EndDrag(true);
+
   if (model_) {
     model_->RemoveObserver(this);
     model_->apps()->RemoveObserver(this);
