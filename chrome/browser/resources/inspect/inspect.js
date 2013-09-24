@@ -372,13 +372,15 @@ function addWebViewDetails(row, data) {
 }
 
 function addWebViewDescription(row, webview) {
-  var viewStatus = { visibility: 'empty', position: '', size: '' };
+  var viewStatus = { visibility: '', position: '', size: '' };
   if (!webview.empty) {
-    if (webview.attached)
-      viewStatus.visibility = webview.visible ? 'visible' : 'hidden';
-    else
+    if (webview.attached && !webview.visible)
+      viewStatus.visibility = 'hidden';
+    else if (!webview.attached)
       viewStatus.visibility = 'detached';
     viewStatus.size = 'size ' + webview.width + ' \u00d7 ' + webview.height;
+  } else {
+    viewStatus.visibility = 'empty';
   }
   if (webview.attached) {
       viewStatus.position =
