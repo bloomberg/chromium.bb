@@ -94,6 +94,8 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
                      int audio_delay_milliseconds) OVERRIDE;
   virtual void OnRenderError() OVERRIDE;
 
+  void StartSink();
+
   // The audio track which provides data to render. Given that this class
   // implements local loopback, the audio track is getting data from a capture
   // instance like a selected microphone and forwards the recorded data to its
@@ -139,6 +141,12 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   // The preferred device id of the output device or empty for the default
   // output device.
   const std::string output_device_id_;
+
+  // Cache value for the volume.
+  float volume_;
+
+  // Flag to start the sink only once. Used to log correctly in UMA.
+  bool sink_started_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLocalAudioRenderer);
 };

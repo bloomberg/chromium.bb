@@ -7,6 +7,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
@@ -16,17 +17,26 @@
 
 namespace content {
 
+namespace {
+
+enum LocalRendererSinkStates {
+  kSinkStarted = 0,
+  kSinkNeverStarted,
+  kSinkStatesMax  // Must always be last!
+};
+
+}  // namespace
+
 // media::AudioRendererSink::RenderCallback implementation
 int WebRtcLocalAudioRenderer::Render(
     media::AudioBus* audio_bus, int audio_delay_milliseconds) {
+  TRACE_EVENT0("audio", "WebRtcLocalAudioRenderer::Render");
   base::AutoLock auto_lock(thread_lock_);
 
-  if (!playing_) {
+  if (!playing_ || !volume_) {
     audio_bus->Zero();
     return 0;
   }
-
-  TRACE_EVENT0("audio", "WebRtcLocalAudioRenderer::Render");
 
   DCHECK(loopback_fifo_.get() != NULL);
 
@@ -60,8 +70,7 @@ int WebRtcLocalAudioRenderer::CaptureData(const std::vector<int>& channels,
                                           bool key_pressed) {
   TRACE_EVENT0("audio", "WebRtcLocalAudioRenderer::CaptureData");
   base::AutoLock auto_lock(thread_lock_);
-
-  if (!playing_)
+  if (!playing_ || !volume_)
     return 0;
 
   // Push captured audio to FIFO so it can be read by a local sink.
@@ -103,7 +112,9 @@ WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer(
       session_id_(session_id),
       playing_(false),
       sample_rate_(sample_rate),
-      frames_per_buffer_(frames_per_buffer) {
+      frames_per_buffer_(frames_per_buffer),
+      volume_(0.0),
+      sink_started_(false) {
   DCHECK(audio_track);
   DVLOG(1) << "WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer()";
 }
@@ -159,10 +170,6 @@ void WebRtcLocalAudioRenderer::Start() {
   // It would then be possible to avoid using the WebRtcAudioCapturer.
   sink_->InitializeUnifiedStream(sink_params, this, session_id_);
 
-  // Start the capturer and local rendering. Note that, the capturer is owned
-  // by the WebRTC ADM and might already bee running.
-  sink_->Start();
-
   last_render_time_ = base::Time::Now();
   playing_ = false;
 }
@@ -185,8 +192,15 @@ void WebRtcLocalAudioRenderer::Stop() {
   }
 
   // Stop the output audio stream, i.e, stop asking for data to render.
+  // It is safer to call Stop() on the |sink_| to clean up the resources even
+  // when the |sink_| is never started.
   sink_->Stop();
   sink_ = NULL;
+
+  if (!sink_started_) {
+    UMA_HISTOGRAM_ENUMERATION("Media.LocalRendererSinkStates",
+                              kSinkNeverStarted, kSinkStatesMax);
+  }
 
   // Ensure that the capturer stops feeding us with captured audio.
   // Note that, we do not stop the capturer here since it may still be used by
@@ -202,6 +216,11 @@ void WebRtcLocalAudioRenderer::Play() {
 
   if (!sink_.get())
     return;
+
+  // Lazily start the sink when the first Play() is called and the volume is
+  // unmuted.
+  if (volume_)
+    StartSink();
 
   // Resumes rendering by ensuring that WebRtcLocalAudioRenderer::Render()
   // now reads data from the local FIFO.
@@ -230,6 +249,15 @@ void WebRtcLocalAudioRenderer::SetVolume(float volume) {
   DVLOG(1) << "WebRtcLocalAudioRenderer::SetVolume(" << volume << ")";
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(thread_lock_);
+
+  // Lazily start the |sink_| when the local renderer is unmuted during
+  // playing.
+  if (!volume_ && volume && playing_)
+    StartSink();
+
+  // Cache the volume.
+  volume_ = volume;
+
   if (sink_.get())
     sink_->SetVolume(volume);
 }
@@ -244,6 +272,19 @@ base::TimeDelta WebRtcLocalAudioRenderer::GetCurrentRenderTime() const {
 
 bool WebRtcLocalAudioRenderer::IsLocalRenderer() const {
   return true;
+}
+
+void WebRtcLocalAudioRenderer::StartSink() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sink_.get());
+  if (sink_started_)
+    return;
+
+  sink_->Start();
+  sink_started_ = true;
+
+  UMA_HISTOGRAM_ENUMERATION("Media.LocalRendererSinkStates",
+                            kSinkStarted, kSinkStatesMax);
 }
 
 }  // namespace content

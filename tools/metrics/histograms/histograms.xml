@@ -5871,6 +5871,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Media.LocalRendererSinkStates" enum="LocalRendererSinkStates">
+  <summary>
+    State of the WebRtc local renderer, sampled once during the lifetime of a
+    local renderer.
+  </summary>
+</histogram>
+
 <histogram name="Media.MSE.AudioCodec" enum="MSECodec">
   <summary>
     Audio codec used in Media Source Extensions playback. Set when AddId() is
@@ -22962,6 +22969,11 @@ other types of suffix sets.
     Allow stale data (avoid doing a re-post)
   </int>
   <int value="9" label="PRERENDER_LOAD">Speculative prerendering of a page</int>
+</enum>
+
+<enum name="LocalRendererSinkStates" type="int">
+  <int value="0" label="SinkStarted"/>
+  <int value="1" label="SinkNeverStarted"/>
 </enum>
 
 <enum name="LoginFailureReason" type="int">
