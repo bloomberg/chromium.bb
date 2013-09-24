@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/android/sys_utils.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/common/chrome_switches.h"
@@ -42,6 +43,8 @@ void SetChromeSpecificCommandLineFlags() {
   SetCommandLineSwitchASCII(
       switches::kPrerenderFromOmnibox,
       switches::kPrerenderFromOmniboxSwitchValueEnabled);
+  if (base::android::SysUtils::IsLowEndDevice())
+    SetCommandLineSwitch(switches::kDisableSyncFavicons);
 #if defined(GOOGLE_TV)
   SetCommandLineSwitch(switches::kPpapiInProcess);
 #endif
