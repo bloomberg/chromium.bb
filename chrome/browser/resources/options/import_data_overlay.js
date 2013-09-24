@@ -99,6 +99,7 @@ cr.define('options', function() {
       for (var i = 0; i < checkboxes.length; i++)
         this.setUpCheckboxState_(checkboxes[i], enabled);
       $('import-data-commit').disabled = !enabled;
+      $('import-choose-file').hidden = !enabled;
       $('mac-password-keychain').hidden = !enabled;
     },
 
@@ -225,17 +226,17 @@ cr.define('options', function() {
 
   /**
    * Update the UI to reflect whether an import operation is in progress.
-   * @param {boolean} state True if an import operation is in progress.
+   * @param {boolean} importing True if an import operation is in progress.
    */
-  ImportDataOverlay.setImportingState = function(state) {
+  ImportDataOverlay.setImportingState = function(importing) {
     var checkboxes =
         document.querySelectorAll('#import-checkboxes input[type=checkbox]');
     for (var i = 0; i < checkboxes.length; i++)
         checkboxes[i].setDisabled('Importing', state);
-    if (!state)
+    if (!importing)
       ImportDataOverlay.getInstance().updateCheckboxes_();
-    $('import-browsers').disabled = state;
-    $('import-throbber').style.visibility = state ? 'visible' : 'hidden';
+    $('import-browsers').disabled = importing;
+    $('import-throbber').style.visibility = importing ? 'visible' : 'hidden';
     ImportDataOverlay.getInstance().validateCommitButton_();
   };
 
