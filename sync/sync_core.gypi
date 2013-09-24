@@ -128,6 +128,8 @@
     'syncable/invalid_directory_backing_store.cc',
     'syncable/invalid_directory_backing_store.h',
     'syncable/metahandle_set.h',
+    'syncable/model_neutral_mutable_entry.cc',
+    'syncable/model_neutral_mutable_entry.h',
     'syncable/model_type.cc',
     'syncable/mutable_entry.cc',
     'syncable/mutable_entry.h',

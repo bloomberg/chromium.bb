@@ -48,6 +48,7 @@ enum InvariantCheckLevel {
 class SYNC_EXPORT Directory {
   friend class BaseTransaction;
   friend class Entry;
+  friend class ModelNeutralMutableEntry;
   friend class MutableEntry;
   friend class ReadTransaction;
   friend class ScopedKernelLock;
