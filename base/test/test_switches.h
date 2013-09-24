@@ -13,6 +13,7 @@ extern const char kTestLargeTimeout[];
 extern const char kTestLauncherBatchLimit[];
 extern const char kTestLauncherJobs[];
 extern const char kTestLauncherOutput[];
+extern const char kTestLauncherTimeout[];
 extern const char kTestTinyTimeout[];
 extern const char kUiTestActionTimeout[];
 extern const char kUiTestActionMaxTimeout[];

@@ -18,6 +18,7 @@ const char switches::kTestLauncherJobs[] = "test-launcher-jobs";
 const char switches::kTestLauncherOutput[] = "test-launcher-output";
 
 // Time (in milliseconds) that the tests should wait before timing out.
+const char switches::kTestLauncherTimeout[] = "test-launcher-timeout";
 // TODO(phajdan.jr): Clean up the switch names.
 const char switches::kTestTinyTimeout[] = "test-tiny-timeout";
 const char switches::kUiTestActionTimeout[] = "ui-test-action-timeout";

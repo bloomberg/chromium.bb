@@ -159,7 +159,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     // Note: do NOT parse child's stdout to do that, it's known to be
     // unreliable (e.g. buffering issues can mix up the output).
     base::TimeDelta timeout =
-        test_names.size() * TestTimeouts::action_timeout();
+        test_names.size() * TestTimeouts::test_launcher_timeout();
 
     parallel_launcher_.LaunchChildGTestProcess(
         cmd_line,
@@ -232,6 +232,17 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
               // Fix up the test status: we forcibly kill the child process
               // after the timeout, so from XML results it looks just like
               // a crash.
+              test_result.status = TestResult::TEST_TIMEOUT;
+            }
+          } else if (test_result.status == TestResult::TEST_SUCCESS ||
+                     test_result.status == TestResult::TEST_FAILURE) {
+            // We run multiple tests in a batch with a timeout applied
+            // to the entire batch. It is possible that with other tests
+            // running quickly some tests take longer than the per-test timeout.
+            // For consistent handling of tests independent of order and other
+            // factors, mark them as timing out.
+            if (test_result.elapsed_time >
+                TestTimeouts::test_launcher_timeout()) {
               test_result.status = TestResult::TEST_TIMEOUT;
             }
           }

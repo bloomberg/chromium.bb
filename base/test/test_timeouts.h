@@ -44,6 +44,13 @@ class TestTimeouts {
     return base::TimeDelta::FromMilliseconds(large_test_timeout_ms_);
   }
 
+  // Timeout for a single test launched used built-in test launcher.
+  // Do not use outside of the test launcher.
+  static base::TimeDelta test_launcher_timeout() {
+    DCHECK(initialized_);
+    return base::TimeDelta::FromMilliseconds(test_launcher_timeout_ms_);
+  }
+
  private:
   static bool initialized_;
 
@@ -51,6 +58,7 @@ class TestTimeouts {
   static int action_timeout_ms_;
   static int action_max_timeout_ms_;
   static int large_test_timeout_ms_;
+  static int test_launcher_timeout_ms_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(TestTimeouts);
 };
