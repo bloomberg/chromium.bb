@@ -203,14 +203,15 @@ class ObserverList : public ObserverListBase<ObserverType> {
   }
 };
 
-#define FOR_EACH_OBSERVER(ObserverType, observer_list, func)         \
-  do {                                                               \
-    if ((observer_list).might_have_observers()) {                    \
-      ObserverListBase<ObserverType>::Iterator it(observer_list);    \
-      ObserverType* obs;                                             \
-      while ((obs = it.GetNext()) != NULL)                           \
-        obs->func;                                                   \
-    }                                                                \
+#define FOR_EACH_OBSERVER(ObserverType, observer_list, func)               \
+  do {                                                                     \
+    if ((observer_list).might_have_observers()) {                          \
+      ObserverListBase<ObserverType>::Iterator                             \
+          it_inside_observer_macro(observer_list);                         \
+      ObserverType* obs;                                                   \
+      while ((obs = it_inside_observer_macro.GetNext()) != NULL)           \
+        obs->func;                                                         \
+    }                                                                      \
   } while (0)
 
 #endif  // BASE_OBSERVER_LIST_H__
