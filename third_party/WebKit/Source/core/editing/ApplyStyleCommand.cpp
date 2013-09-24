@@ -759,10 +759,12 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRef
                 break;
             // Add to this element's inline style and skip over its contents.
             HTMLElement* element = toHTMLElement(node.get());
+            next = NodeTraversal::nextSkippingChildren(node.get());
+            if (!style->style())
+                continue;
             RefPtr<MutableStylePropertySet> inlineStyle = copyStyleOrCreateEmpty(element->inlineStyle());
             inlineStyle->mergeAndOverrideOnConflict(style->style());
             setNodeAttribute(element, styleAttr, inlineStyle->asText());
-            next = NodeTraversal::nextSkippingChildren(node.get());
             continue;
         }
 
