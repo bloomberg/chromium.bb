@@ -789,7 +789,7 @@ const Experiment kExperiments[] = {
                               switches::kDisableAsyncDns)
   },
   {
-    "disable-media-source",
+    "disable-webkit-media-source",
     IDS_FLAGS_DISABLE_WEBKIT_MEDIA_SOURCE_NAME,
     IDS_FLAGS_DISABLE_WEBKIT_MEDIA_SOURCE_DESCRIPTION,
     kOsAll,
