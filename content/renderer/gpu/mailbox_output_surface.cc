@@ -8,12 +8,14 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/gl_frame_data.h"
+#include "cc/resources/resource_provider.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 using cc::CompositorFrame;
 using cc::GLFrameData;
+using cc::ResourceProvider;
 using gpu::Mailbox;
 
 namespace content {
@@ -22,14 +24,16 @@ MailboxOutputSurface::MailboxOutputSurface(
     int32 routing_id,
     uint32 output_surface_id,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
-    scoped_ptr<cc::SoftwareOutputDevice> software_device)
+    scoped_ptr<cc::SoftwareOutputDevice> software_device,
+    cc::ResourceFormat format)
     : CompositorOutputSurface(routing_id,
                               output_surface_id,
                               context_provider,
                               software_device.Pass(),
                               true),
       fbo_(0),
-      is_backbuffer_discarded_(false) {
+      is_backbuffer_discarded_(false),
+      format_(format) {
   pending_textures_.push_back(TransferableFrame());
   capabilities_.max_frames_pending = 1;
   capabilities_.uses_default_gl_framebuffer = false;
@@ -80,9 +84,15 @@ void MailboxOutputSurface::EnsureBackbuffer() {
       context3d->texParameteri(
           GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
       context3d->texImage2D(
-          GL_TEXTURE_2D, 0, GL_RGBA,
-          surface_size_.width(), surface_size_.height(), 0,
-          GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+          GL_TEXTURE_2D,
+          0,
+          ResourceProvider::GetGLInternalFormat(format_),
+          surface_size_.width(),
+          surface_size_.height(),
+          0,
+          ResourceProvider::GetGLDataFormat(format_),
+          ResourceProvider::GetGLDataType(format_),
+          NULL);
       context3d->genMailboxCHROMIUM(current_backing_.mailbox.name);
       context3d->produceTextureCHROMIUM(
           GL_TEXTURE_2D, current_backing_.mailbox.name);

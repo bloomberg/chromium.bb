@@ -146,6 +146,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         bitmap.setPixels(buffer);
         break;
       case LUMINANCE_8:
+      case RGB_565:
         NOTREACHED();
         break;
     }

@@ -713,12 +713,18 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   }
   if (command_line.HasSwitch(cc::switches::kCompositeToMailbox)) {
     DCHECK(is_threaded_compositing_enabled_);
+    cc::ResourceFormat format = cc::RGBA_8888;
+#if defined(OS_ANDROID)
+    if (base::android::SysUtils::IsLowEndDevice())
+      format = cc::RGB_565;
+#endif
     return scoped_ptr<cc::OutputSurface>(
         new MailboxOutputSurface(
             routing_id(),
             output_surface_id,
             context_provider,
-            scoped_ptr<cc::SoftwareOutputDevice>()));
+            scoped_ptr<cc::SoftwareOutputDevice>(),
+            format));
   }
   bool use_swap_compositor_frame_message = false;
   return scoped_ptr<cc::OutputSurface>(

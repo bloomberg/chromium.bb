@@ -7,6 +7,7 @@
 
 #include <queue>
 
+#include "cc/resources/resource_format.h"
 #include "cc/resources/transferable_resource.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
 #include "ui/gfx/size.h"
@@ -27,7 +28,8 @@ class MailboxOutputSurface : public CompositorOutputSurface {
       int32 routing_id,
       uint32 output_surface_id,
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
-      scoped_ptr<cc::SoftwareOutputDevice> software_device);
+      scoped_ptr<cc::SoftwareOutputDevice> software_device,
+      cc::ResourceFormat format);
   virtual ~MailboxOutputSurface();
 
   // cc::OutputSurface implementation.
@@ -64,6 +66,7 @@ class MailboxOutputSurface : public CompositorOutputSurface {
 
   uint32 fbo_;
   bool is_backbuffer_discarded_;
+  cc::ResourceFormat format_;
 };
 
 }  // namespace content

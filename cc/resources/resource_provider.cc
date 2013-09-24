@@ -39,11 +39,14 @@ GLenum TextureToStorageFormat(ResourceFormat format) {
   GLenum storage_format = GL_RGBA8_OES;
   switch (format) {
     case RGBA_8888:
-    case RGBA_4444:
-    case LUMINANCE_8:
       break;
     case BGRA_8888:
       storage_format = GL_BGRA8_EXT;
+      break;
+    case RGBA_4444:
+    case LUMINANCE_8:
+    case RGB_565:
+      NOTREACHED();
       break;
   }
 
@@ -57,6 +60,7 @@ bool IsFormatSupportedForStorage(ResourceFormat format) {
       return true;
     case RGBA_4444:
     case LUMINANCE_8:
+    case RGB_565:
       return false;
   }
   return false;
@@ -1647,30 +1651,18 @@ WebKit::WebGraphicsContext3D* ResourceProvider::Context3d() const {
 }
 
 size_t ResourceProvider::BytesPerPixel(ResourceFormat format) {
-  size_t components_per_pixel = 0;
-  switch (format) {
-    case RGBA_8888:
-    case RGBA_4444:
-    case BGRA_8888:
-      components_per_pixel = 4;
-      break;
-    case LUMINANCE_8:
-      components_per_pixel = 1;
-      break;
-  }
-  size_t bits_per_component = 0;
   switch (format) {
     case RGBA_8888:
     case BGRA_8888:
-    case LUMINANCE_8:
-      bits_per_component = 8;
-      break;
+      return 4;
     case RGBA_4444:
-      bits_per_component = 4;
-      break;
+    case RGB_565:
+      return 2;
+    case LUMINANCE_8:
+      return 1;
   }
-  const size_t kBitsPerByte = 8;
-  return (components_per_pixel * bits_per_component) / kBitsPerByte;
+  NOTREACHED();
+  return 4;
 }
 
 GLenum ResourceProvider::GetGLDataType(ResourceFormat format) {
@@ -1681,6 +1673,8 @@ GLenum ResourceProvider::GetGLDataType(ResourceFormat format) {
     case BGRA_8888:
     case LUMINANCE_8:
       return GL_UNSIGNED_BYTE;
+    case RGB_565:
+      return GL_UNSIGNED_SHORT_5_6_5;
   }
   NOTREACHED();
   return GL_UNSIGNED_BYTE;
@@ -1695,6 +1689,8 @@ GLenum ResourceProvider::GetGLDataFormat(ResourceFormat format) {
       return GL_BGRA_EXT;
     case LUMINANCE_8:
       return GL_LUMINANCE;
+    case RGB_565:
+      return GL_RGB;
   }
   NOTREACHED();
   return GL_RGBA;
