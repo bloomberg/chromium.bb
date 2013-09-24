@@ -411,7 +411,7 @@ class TabRendererGtk : public gfx::AnimationDelegate,
   scoped_ptr<gfx::ThrobAnimation> mini_title_animation_;
 
   // Animation used when the favicon has an overlay (e.g. for recording).
-  scoped_ptr<gfx::ThrobAnimation> favicon_overlay_animation_;
+  scoped_ptr<gfx::Animation> favicon_overlay_animation_;
 
   // Contains the loading animation state.
   LoadingAnimation loading_animation_;

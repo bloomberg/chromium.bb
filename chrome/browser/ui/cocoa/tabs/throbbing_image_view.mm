@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/tabs/throbbing_image_view.h"
 
+#include "chrome/browser/ui/tabs/tab_utils.h"
+#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/animation/animation_delegate.h"
 
 class ThrobbingImageViewAnimationDelegate : public gfx::AnimationDelegate {
@@ -21,7 +23,6 @@ class ThrobbingImageViewAnimationDelegate : public gfx::AnimationDelegate {
 - (id)initWithFrame:(NSRect)rect
        backgroundImage:(NSImage*)backgroundImage
             throbImage:(NSImage*)throbImage
-            durationMS:(int)durationMS
          throbPosition:(ThrobPosition)throbPosition
     animationContainer:(gfx::AnimationContainer*)animationContainer {
   if ((self = [super initWithFrame:rect])) {
@@ -29,10 +30,11 @@ class ThrobbingImageViewAnimationDelegate : public gfx::AnimationDelegate {
     throbImage_.reset([throbImage retain]);
 
     delegate_.reset(new ThrobbingImageViewAnimationDelegate(self));
-    throbAnimation_.reset(new gfx::ThrobAnimation(delegate_.get()));
+
+    throbAnimation_ = chrome::CreateTabRecordingIndicatorAnimation();
+    throbAnimation_->set_delegate(delegate_.get());
     throbAnimation_->SetContainer(animationContainer);
-    throbAnimation_->SetThrobDuration(durationMS);
-    throbAnimation_->StartThrobbing(-1);
+    throbAnimation_->Start();
 
     throbPosition_ = throbPosition;
   }

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_resources.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/theme_image_mapper.h"
@@ -31,7 +32,6 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/multi_animation.h"
-#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
@@ -163,9 +163,6 @@ int tab_icon_size() {
 
 // How long the pulse throb takes.
 const int kPulseDurationMs = 200;
-
-// How long the recording button takes to fade in/out.
-const int kRecordingDurationMs = 1000;
 
 // Width of touch tabs.
 static const int kTouchWidth = 120;
@@ -1487,8 +1484,8 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
 void Tab::PaintCaptureState(gfx::Canvas* canvas, gfx::Rect bounds) {
   SkPaint paint;
   paint.setAntiAlias(true);
-  U8CPU alpha = icon_animation_->GetCurrentValue() * 0xff;
-  paint.setAlpha(alpha);
+  DCHECK(capture_icon_animation_.get());
+  paint.setAlpha(capture_icon_animation_->GetCurrentValue() * SK_AlphaOPAQUE);
   ui::ThemeProvider* tp = GetThemeProvider();
 
   if (data().capture_state == TabRendererData::CAPTURE_STATE_PROJECTING) {
@@ -1750,27 +1747,25 @@ void Tab::ResetCrashedFavicon() {
 }
 
 void Tab::StopIconAnimation() {
-  if (!icon_animation_.get())
-    return;
-  icon_animation_->Stop();
-  icon_animation_.reset();
+  crash_icon_animation_.reset();
+  capture_icon_animation_.reset();
 }
 
 void Tab::StartCrashAnimation() {
-  icon_animation_.reset(new FaviconCrashAnimation(this));
-  icon_animation_->Start();
+  capture_icon_animation_.reset();
+  crash_icon_animation_.reset(new FaviconCrashAnimation(this));
+  crash_icon_animation_->Start();
 }
 
 void Tab::StartRecordingAnimation() {
-  gfx::ThrobAnimation* animation = new gfx::ThrobAnimation(this);
-  animation->SetTweenType(gfx::Tween::EASE_IN_OUT);
-  animation->SetThrobDuration(kRecordingDurationMs);
-  animation->StartThrobbing(-1);
-  icon_animation_.reset(animation);
+  crash_icon_animation_.reset();
+  capture_icon_animation_ = chrome::CreateTabRecordingIndicatorAnimation();
+  capture_icon_animation_->set_delegate(this);
+  capture_icon_animation_->Start();
 }
 
 bool Tab::IsPerformingCrashAnimation() const {
-  return icon_animation_.get() && data_.IsCrashed();
+  return crash_icon_animation_.get() && data_.IsCrashed();
 }
 
 void Tab::ScheduleIconPaint() {

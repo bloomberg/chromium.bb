@@ -4,18 +4,18 @@
 
 #import "chrome/browser/ui/cocoa/tabs/tab_projecting_image_view.h"
 
+#include "ui/gfx/animation/animation.h"
+
 @implementation TabProjectingImageView
 
 - (id)initWithFrame:(NSRect)rect
     backgroundImage:(NSImage*)backgroundImage
      projectorImage:(NSImage*)projectorImage
          throbImage:(NSImage*)throbImage
-         durationMS:(int)durationMS
     animationContainer:(gfx::AnimationContainer*)animationContainer {
   if ((self = [super initWithFrame:rect
                    backgroundImage:backgroundImage
                         throbImage:throbImage
-                        durationMS:durationMS
                      throbPosition:kThrobPositionOverlay
                 animationContainer:animationContainer])) {
     projectorImage_.reset([projectorImage retain]);

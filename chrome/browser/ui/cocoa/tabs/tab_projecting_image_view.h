@@ -23,7 +23,6 @@
        backgroundImage:(NSImage*)backgroundImage
         projectorImage:(NSImage*)projectorImage
             throbImage:(NSImage*)throbImage
-            durationMS:(int)durationMS
     animationContainer:(gfx::AnimationContainer*)animationContainer;
 
 @end

@@ -320,8 +320,8 @@ class Tab : public gfx::AnimationDelegate,
   // recording, projecting, etc. Note that the icon animation related to network
   // state does not have an animation associated with it.
   scoped_ptr<gfx::Animation> tab_animation_;
-  scoped_ptr<gfx::LinearAnimation> icon_animation_;
-
+  scoped_ptr<gfx::LinearAnimation> crash_icon_animation_;
+  scoped_ptr<gfx::Animation> capture_icon_animation_;
   scoped_refptr<gfx::AnimationContainer> animation_container_;
 
   views::ImageButton* close_button_;

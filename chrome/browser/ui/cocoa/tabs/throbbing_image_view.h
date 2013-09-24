@@ -9,9 +9,13 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/animation/throb_animation.h"
 
 class ThrobbingImageViewAnimationDelegate;
+
+namespace gfx {
+class Animation;
+class AnimationContainer;
+}  // namespace gfx
 
 // Where to position the throb image. For the overlay position, the throb image
 // will be drawn with the same size as the background image. For the bottom
@@ -25,7 +29,7 @@ enum ThrobPosition {
  @protected
   base::scoped_nsobject<NSImage> backgroundImage_;
   base::scoped_nsobject<NSImage> throbImage_;
-  scoped_ptr<gfx::ThrobAnimation> throbAnimation_;
+  scoped_ptr<gfx::Animation> throbAnimation_;
 
  @private
   scoped_ptr<ThrobbingImageViewAnimationDelegate> delegate_;
@@ -35,7 +39,6 @@ enum ThrobPosition {
 - (id)initWithFrame:(NSRect)rect
        backgroundImage:(NSImage*)backgroundImage
             throbImage:(NSImage*)throbImage
-            durationMS:(int)durationMS
          throbPosition:(ThrobPosition)throbPosition
     animationContainer:(gfx::AnimationContainer*)animationContainer;
 

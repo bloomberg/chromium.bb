@@ -5,9 +5,15 @@
 #ifndef CHROME_BROWSER_UI_TABS_TAB_UTILS_H_
 #define CHROME_BROWSER_UI_TABS_TAB_UTILS_H_
 
-namespace content{
+#include "base/memory/scoped_ptr.h"
+
+namespace content {
 class WebContents;
 }  // namespace content
+
+namespace gfx {
+class Animation;
+}  // namespace gfx
 
 namespace chrome {
 
@@ -26,6 +32,11 @@ bool IsCapturingVideo(content::WebContents* contents);
 
 // Returns whether the given |contents| is capturing video.
 bool IsCapturingAudio(content::WebContents* contents);
+
+// Returns an Animation that throbs a few times, and ends in the fully-on
+// state. This is meant to be used for the tab recording/capture favicon
+// overlay.
+scoped_ptr<gfx::Animation> CreateTabRecordingIndicatorAnimation();
 
 }  // namespace chrome
 

@@ -89,8 +89,6 @@ const double kMiniTitleChangeThrobOpacity = 0.75;
 // Duration for when the title of an inactive mini-tab changes.
 const int kMiniTitleChangeThrobDuration = 1000;
 
-const int kRecordingDurationMs = 1000;
-
 // The horizontal offset used to position the close button in the tab.
 const int kCloseButtonHorzFuzz = 4;
 
@@ -711,15 +709,16 @@ void TabRendererGtk::UpdateFaviconOverlay(WebContents* contents) {
     g_object_unref(pixbuf);
 
     if (!favicon_overlay_animation_.get()) {
-      favicon_overlay_animation_.reset(new gfx::ThrobAnimation(this));
-      favicon_overlay_animation_->SetThrobDuration(kRecordingDurationMs);
+      favicon_overlay_animation_ =
+          chrome::CreateTabRecordingIndicatorAnimation();
+      favicon_overlay_animation_->set_delegate(this);
     }
     if (!favicon_overlay_animation_->is_animating())
-      favicon_overlay_animation_->StartThrobbing(-1);
+      favicon_overlay_animation_->Start();
   } else {
     data_.cairo_overlay.Reset();
     if (favicon_overlay_animation_.get())
-      favicon_overlay_animation_->Stop();
+      favicon_overlay_animation_.reset();
   }
 }
 
@@ -946,8 +945,7 @@ void TabRendererGtk::PaintIcon(GtkWidget* widget, cairo_t* cr) {
     cairo_paint(cr);
   }
 
-  if (data_.cairo_overlay.valid() && favicon_overlay_animation_.get() &&
-      favicon_overlay_animation_->is_animating()) {
+  if (data_.cairo_overlay.valid() && favicon_overlay_animation_.get()) {
     if (data_.capture_state == PROJECTING) {
       theme_service_->GetImageNamed(IDR_TAB_CAPTURE).ToCairo()->
           SetSource(cr,

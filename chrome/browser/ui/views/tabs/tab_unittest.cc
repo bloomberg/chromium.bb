@@ -74,7 +74,7 @@ class TabTest : public views::ViewsTestBase {
   virtual ~TabTest() {}
 
   static bool IconAnimationInvariant(const Tab& tab) {
-    return tab.data().CaptureActive() == (tab.icon_animation_.get() != NULL);
+    return tab.data().CaptureActive() == !!tab.capture_icon_animation_.get();
   }
 
   static void CheckForExpectedLayoutAndVisibilityOfElements(const Tab& tab) {
