@@ -67,6 +67,9 @@ class PasswordChangeProcessor : public ChangeProcessor,
   void StartObserving();
   void StopObserving();
 
+  // Registers to observe password change for the first time.
+  void InitObserving();
+
   // The two models should be associated according to this ModelAssociator.
   PasswordModelAssociator* model_associator_;
 

@@ -259,12 +259,20 @@ void PasswordChangeProcessor::Disconnect() {
 void PasswordChangeProcessor::StartImpl(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   password_store_->ScheduleTask(
-      base::Bind(&PasswordChangeProcessor::StartObserving,
+      base::Bind(&PasswordChangeProcessor::InitObserving,
                  base::Unretained(this)));
+}
+
+void PasswordChangeProcessor::InitObserving() {
+  base::AutoLock lock(disconnect_lock_);
+  if (disconnected_)
+    return;
+  StartObserving();
 }
 
 void PasswordChangeProcessor::StartObserving() {
   DCHECK(expected_loop_ == base::MessageLoop::current());
+  disconnect_lock_.AssertAcquired();
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGINS_CHANGED,
                               content::Source<PasswordStore>(password_store_));
@@ -272,6 +280,7 @@ void PasswordChangeProcessor::StartObserving() {
 
 void PasswordChangeProcessor::StopObserving() {
   DCHECK(expected_loop_ == base::MessageLoop::current());
+  disconnect_lock_.AssertAcquired();
   notification_registrar_.Remove(
       this,
       chrome::NOTIFICATION_LOGINS_CHANGED,
