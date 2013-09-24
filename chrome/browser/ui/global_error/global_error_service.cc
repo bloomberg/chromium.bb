@@ -21,6 +21,9 @@ GlobalErrorService::~GlobalErrorService() {
 }
 
 void GlobalErrorService::AddGlobalError(GlobalError* error) {
+  // Verify that we're not adding NULL errors. TODO(sail) Make this a DCHECK
+  // once crbug.com/278543 is fixed.
+  CHECK(error);
   errors_.push_back(error);
   NotifyErrorsChanged(error);
 }
