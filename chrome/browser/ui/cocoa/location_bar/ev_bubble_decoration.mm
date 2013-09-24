@@ -7,6 +7,7 @@
 #import "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
+#include "grit/theme_resources.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/font.h"
 
@@ -49,10 +50,7 @@ NSColor* ColorWithRGBBytes(int rr, int gg, int bb) {
 EVBubbleDecoration::EVBubbleDecoration(LocationIconDecoration* location_icon)
     : location_icon_(location_icon) {
   // Color tuples stolen from location_bar_view_gtk.cc.
-  NSColor* border_color = ColorWithRGBBytes(0x90, 0xc3, 0x90);
-  NSColor* background_color = ColorWithRGBBytes(0xef, 0xfc, 0xef);
-  NSColor* text_color = ColorWithRGBBytes(0x07, 0x95, 0x00);
-  SetColors(border_color, background_color, text_color);
+  SetTextColor(ColorWithRGBBytes(0x07, 0x95, 0x00));
 }
 
 EVBubbleDecoration::~EVBubbleDecoration() {}
@@ -119,4 +117,18 @@ bool EVBubbleDecoration::OnMousePressed(NSRect frame) {
 
 bool EVBubbleDecoration::AcceptsMousePress() {
   return true;
+}
+
+ui::NinePartImageIds EVBubbleDecoration::GetBubbleImageIds() {
+  return {
+    IDR_OMNIBOX_EV_BUBBLE_TOP_LEFT,
+    IDR_OMNIBOX_EV_BUBBLE_TOP,
+    IDR_OMNIBOX_EV_BUBBLE_TOP_RIGHT,
+    IDR_OMNIBOX_EV_BUBBLE_LEFT,
+    IDR_OMNIBOX_EV_BUBBLE_CENTER,
+    IDR_OMNIBOX_EV_BUBBLE_RIGHT,
+    IDR_OMNIBOX_EV_BUBBLE_BOTTOM_LEFT,
+    IDR_OMNIBOX_EV_BUBBLE_BOTTOM,
+    IDR_OMNIBOX_EV_BUBBLE_BOTTOM_RIGHT
+  };
 }

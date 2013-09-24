@@ -68,7 +68,6 @@ class ContentSettingDecoration : public ImageDecoration {
   base::scoped_nsobject<ContentSettingAnimationState> animation_;
   CGFloat text_width_;
   base::scoped_nsobject<NSAttributedString> animated_text_;
-  base::scoped_nsobject<NSGradient> gradient_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingDecoration);
 };

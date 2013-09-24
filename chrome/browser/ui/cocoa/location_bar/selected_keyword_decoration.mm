@@ -14,14 +14,7 @@
 SelectedKeywordDecoration::SelectedKeywordDecoration() {
   search_image_.reset([OmniboxViewMac::ImageForResource(
       IDR_KEYWORD_SEARCH_MAGNIFIER) retain]);
-
-  // Matches the color of the highlighted line in the popup.
-  NSColor* background_color = [NSColor selectedControlColor];
-
-  // Match focus ring's inner color.
-  NSColor* border_color =
-      [[NSColor keyboardFocusIndicatorColor] colorWithAlphaComponent:0.5];
-  SetColors(border_color, background_color, [NSColor blackColor]);
+  SetTextColor([NSColor blackColor]);
 }
 
 SelectedKeywordDecoration::~SelectedKeywordDecoration() {}
@@ -44,6 +37,20 @@ CGFloat SelectedKeywordDecoration::GetWidthForSpace(CGFloat width) {
 
   SetLabel(partial_string_);
   return GetWidthForImageAndLabel(nil, partial_string_);
+}
+
+ui::NinePartImageIds SelectedKeywordDecoration::GetBubbleImageIds() {
+  return {
+    IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE_TOP_LEFT,
+    IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE_TOP,
+    IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE_TOP_RIGHT,
+    IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE_LEFT,
+    IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE_CENTER,
+    IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE_RIGHT,
+    IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE_BOTTOM_LEFT,
+    IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE_BOTTOM,
+    IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE_BOTTOM_RIGHT
+  };
 }
 
 void SelectedKeywordDecoration::SetKeyword(const string16& short_name,

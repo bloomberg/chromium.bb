@@ -26,6 +26,9 @@ class SelectedKeywordDecoration : public BubbleDecoration {
   // return the resulting width.
   virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
 
+  // Implements |BubbleDecoration|.
+  virtual ui::NinePartImageIds GetBubbleImageIds() OVERRIDE;
+
   void SetImage(NSImage* image);
 
  private:

@@ -42,6 +42,9 @@ class EVBubbleDecoration : public BubbleDecoration {
   virtual bool OnMousePressed(NSRect frame) OVERRIDE;
   virtual bool AcceptsMousePress() OVERRIDE;
 
+  // Implement |BubbleDecoration|.
+  virtual ui::NinePartImageIds GetBubbleImageIds() OVERRIDE;
+
  private:
   // The real label.  BubbleDecoration's label may be elided.
   base::scoped_nsobject<NSString> full_label_;
