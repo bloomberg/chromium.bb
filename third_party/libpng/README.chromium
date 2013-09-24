@@ -1,6 +1,6 @@
 Name: libpng
 URL: http://libpng.org/
-Version: 1.6.3
+Version: 1.2.45
 Security Critical: yes
 License: libpng license
 License Android Compatible: yes
@@ -9,9 +9,6 @@ Description:
 Our custom configuration options are defined in pngusr.h. This was previously
 called mozpngconf.h, which was copied from Mozilla and modified by Apple (hence
 the wk_* names).
-
-Updated to 1.6.3, no changes to the source files but all unneeded files
-stripped.
 
 Updated to 1.2.45, no changes to the source files but all unneeded files
 stripped.
