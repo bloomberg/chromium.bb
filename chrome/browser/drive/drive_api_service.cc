@@ -578,6 +578,7 @@ CancelCallback DriveAPIService::CopyResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
     const std::string& new_title,
+    const base::Time& last_modified,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -588,6 +589,7 @@ CancelCallback DriveAPIService::CopyResource(
   request->set_file_id(resource_id);
   request->add_parent(parent_resource_id);
   request->set_title(new_title);
+  request->set_modified_date(last_modified);
   request->set_fields(kFileResourceFields);
   return sender_->StartRequestWithRetry(request);
 }
@@ -612,6 +614,7 @@ CancelCallback DriveAPIService::MoveResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
     const std::string& new_title,
+    const base::Time& last_modified,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -623,6 +626,10 @@ CancelCallback DriveAPIService::MoveResource(
   request->set_title(new_title);
   if (!parent_resource_id.empty())
     request->add_parent(parent_resource_id);
+  if (!last_modified.is_null()) {
+    request->set_set_modified_date(true);
+    request->set_modified_date(last_modified);
+  }
   request->set_fields(kFileResourceFields);
   return sender_->StartRequestWithRetry(request);
 }

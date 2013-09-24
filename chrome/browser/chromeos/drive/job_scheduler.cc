@@ -416,6 +416,7 @@ void JobScheduler::CopyResource(
       resource_id,
       parent_resource_id,
       new_title,
+      base::Time(),  // TODO(hidehiko): Support last modified.
       base::Bind(&JobScheduler::OnGetResourceEntryJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,
@@ -460,6 +461,7 @@ void JobScheduler::MoveResource(
       resource_id,
       parent_resource_id,
       new_title,
+      base::Time(),  // TODO(hidehiko): Support last modified.
       base::Bind(&JobScheduler::OnGetResourceEntryJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,

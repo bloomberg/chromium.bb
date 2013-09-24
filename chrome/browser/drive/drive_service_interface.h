@@ -201,6 +201,8 @@ class DriveServiceInterface {
   // Makes a copy of a resource with |resource_id|.
   // The new resource will be put under a directory with |parent_resource_id|,
   // and it'll be named |new_title|.
+  // If |last_modified| is not null, the modified date of the resource on the
+  // server will be set to the date.
   // This request is supported only on DriveAPIService, because GData WAPI
   // doesn't support the function unfortunately.
   // Upon completion, invokes |callback| with results on the calling thread.
@@ -209,6 +211,7 @@ class DriveServiceInterface {
       const std::string& resource_id,
       const std::string& parent_resource_id,
       const std::string& new_title,
+      const base::Time& last_modified,
       const google_apis::GetResourceEntryCallback& callback) = 0;
 
   // Makes a copy of a hosted document identified by its |resource_id|.
@@ -226,6 +229,8 @@ class DriveServiceInterface {
 
   // Moves a resource with |resource_id| to the directory of
   // |parent_resource_id| with renaming to |new_title|.
+  // If |last_modified| is not null, the modified date of the resource on the
+  // server will be set to the date.
   // This request is supported only on DriveAPIService, because GData WAPI
   // doesn't support the function unfortunately.
   // Upon completion, invokes |callback| with results on the calling thread.
@@ -234,6 +239,7 @@ class DriveServiceInterface {
       const std::string& resource_id,
       const std::string& parent_resource_id,
       const std::string& new_title,
+      const base::Time& last_modified,
       const google_apis::GetResourceEntryCallback& callback) = 0;
 
   // Renames a document or collection identified by its |resource_id|

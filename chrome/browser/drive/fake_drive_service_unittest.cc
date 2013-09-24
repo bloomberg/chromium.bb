@@ -959,6 +959,8 @@ TEST_F(FakeDriveServiceTest, DownloadFile_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, CopyResource) {
+  const base::Time::Exploded kModifiedDate = {2012, 7, 0, 19, 15, 59, 13, 123};
+
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
   ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
@@ -974,6 +976,7 @@ TEST_F(FakeDriveServiceTest, CopyResource) {
       kResourceId,
       kParentResourceId,
       "new title",
+      base::Time::FromUTCExploded(kModifiedDate),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
 
@@ -982,6 +985,8 @@ TEST_F(FakeDriveServiceTest, CopyResource) {
   // The copied entry should have the new resource ID and the title.
   EXPECT_EQ(kResourceId + "_copied", resource_entry->resource_id());
   EXPECT_EQ("new title", resource_entry->title());
+  EXPECT_EQ(base::Time::FromUTCExploded(kModifiedDate),
+            resource_entry->updated_time());
   EXPECT_TRUE(HasParent(resource_entry->resource_id(), kParentResourceId));
   // Should be incremented as a new hosted document was created.
   EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
@@ -999,6 +1004,7 @@ TEST_F(FakeDriveServiceTest, CopyResource_NonExisting) {
       kResourceId,
       "folder:1_folder_resource_id",
       "new title",
+      base::Time(),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1020,6 +1026,7 @@ TEST_F(FakeDriveServiceTest, CopyResource_EmptyParentResourceId) {
       kResourceId,
       std::string(),
       "new title",
+      base::Time(),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1046,6 +1053,7 @@ TEST_F(FakeDriveServiceTest, CopyResource_Offline) {
       kResourceId,
       "folder:1_folder_resource_id",
       "new title",
+      base::Time(),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1115,6 +1123,8 @@ TEST_F(FakeDriveServiceTest, CopyHostedDocument_Offline) {
 }
 
 TEST_F(FakeDriveServiceTest, MoveResource) {
+  const base::Time::Exploded kModifiedDate = {2012, 7, 0, 19, 15, 59, 13, 123};
+
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
   ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
@@ -1130,6 +1140,7 @@ TEST_F(FakeDriveServiceTest, MoveResource) {
       kResourceId,
       kParentResourceId,
       "new title",
+      base::Time::FromUTCExploded(kModifiedDate),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1138,6 +1149,8 @@ TEST_F(FakeDriveServiceTest, MoveResource) {
   // The copied entry should have the new resource ID and the title.
   EXPECT_EQ(kResourceId, resource_entry->resource_id());
   EXPECT_EQ("new title", resource_entry->title());
+  EXPECT_EQ(base::Time::FromUTCExploded(kModifiedDate),
+            resource_entry->updated_time());
   EXPECT_TRUE(HasParent(kResourceId, kParentResourceId));
   // Should be incremented as a new hosted document was created.
   EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
@@ -1155,6 +1168,7 @@ TEST_F(FakeDriveServiceTest, MoveResource_NonExisting) {
       kResourceId,
       "folder:1_folder_resource_id",
       "new title",
+      base::Time(),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1180,6 +1194,7 @@ TEST_F(FakeDriveServiceTest, MoveResource_EmptyParentResourceId) {
       kResourceId,
       std::string(),
       "new title",
+      base::Time(),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1206,6 +1221,7 @@ TEST_F(FakeDriveServiceTest, MoveResource_Offline) {
       kResourceId,
       "folder:1_folder_resource_id",
       "new title",
+      base::Time(),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
 

@@ -691,6 +691,7 @@ CancelCallback FakeDriveService::CopyResource(
     const std::string& resource_id,
     const std::string& in_parent_resource_id,
     const std::string& new_title,
+    const base::Time& last_modified,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -737,6 +738,12 @@ CancelCallback FakeDriveService::CopyResource(
         link->SetString("href", GetFakeLinkUrl(parent_resource_id).spec());
         links->Append(link);
 
+        if (!last_modified.is_null()) {
+          copied_entry->SetString(
+              "updated.$t",
+              google_apis::util::FormatTimeAsString(last_modified));
+        }
+
         AddNewChangestampAndETag(copied_entry.get());
 
         // Parse the new entry.
@@ -769,13 +776,15 @@ CancelCallback FakeDriveService::CopyHostedDocument(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return CopyResource(resource_id, std::string(), new_title, callback);
+  return CopyResource(
+      resource_id, std::string(), new_title, base::Time(), callback);
 }
 
 CancelCallback FakeDriveService::MoveResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
     const std::string& new_title,
+    const base::Time& last_modified,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -821,6 +830,12 @@ CancelCallback FakeDriveService::MoveResource(
       links->Append(link);
     }
 
+    if (!last_modified.is_null()) {
+      entry->SetString(
+          "updated.$t",
+          google_apis::util::FormatTimeAsString(last_modified));
+    }
+
     AddNewChangestampAndETag(entry);
 
     // Parse the new entry.
@@ -847,7 +862,7 @@ CancelCallback FakeDriveService::RenameResource(
   DCHECK(!callback.is_null());
 
   return MoveResource(
-      resource_id, std::string(), new_title,
+      resource_id, std::string(), new_title, base::Time(),
       base::Bind(&EntryActionCallbackAdapter, callback));
 }
 

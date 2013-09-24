@@ -406,6 +406,7 @@ CancelCallback GDataWapiService::CopyResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
     const std::string& new_title,
+    const base::Time& last_modified,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -437,6 +438,7 @@ CancelCallback GDataWapiService::MoveResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
     const std::string& new_title,
+    const base::Time& last_modified,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

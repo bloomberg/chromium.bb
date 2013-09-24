@@ -121,6 +121,7 @@ CancelCallback DummyDriveService::CopyResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
     const std::string& new_title,
+    const base::Time& last_modified,
     const GetResourceEntryCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::CopyHostedDocument(
@@ -132,6 +133,7 @@ CancelCallback DummyDriveService::MoveResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
     const std::string& new_title,
+    const base::Time& last_modified,
     const google_apis::GetResourceEntryCallback& callback) {
   return CancelCallback();
 }

@@ -120,6 +120,7 @@ class DriveAPIService : public DriveServiceInterface,
       const std::string& resource_id,
       const std::string& parent_resource_id,
       const std::string& new_title,
+      const base::Time& last_modified,
       const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback CopyHostedDocument(
       const std::string& resource_id,
@@ -129,6 +130,7 @@ class DriveAPIService : public DriveServiceInterface,
       const std::string& resource_id,
       const std::string& parent_resource_id,
       const std::string& new_title,
+      const base::Time& last_modified,
       const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback RenameResource(
       const std::string& resource_id,
