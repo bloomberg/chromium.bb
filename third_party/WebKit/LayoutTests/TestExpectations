@@ -923,7 +923,6 @@ crbug.com/248938 [ Mac Debug ] virtual/threaded/transitions/interrupted-all-tran
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/hang-with-bad-transition-list.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/transitions/extra-transition.html [ Pass Failure ]
-crbug.com/248938 [ Mac ] virtual/threaded/transitions/svg-text-shadow-transition.html [ NeedsRebaseline ]
 crbug.com/248938 virtual/threaded/transitions/interrupt-transform-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/suspend-transform-transition.html [ Pass ImageOnlyFailure ]
 crbug.com/248938 virtual/threaded/transitions/start-transform-transition.html [ Pass Failure ]
