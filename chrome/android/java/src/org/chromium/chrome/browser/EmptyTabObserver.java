@@ -23,7 +23,4 @@ public class EmptyTabObserver implements TabObserver {
 
     @Override
     public void onFaviconUpdated(TabBase tab) { }
-
-    @Override
-    public void onToggleFullscreenMode(TabBase tab, boolean enable) { }
 }
