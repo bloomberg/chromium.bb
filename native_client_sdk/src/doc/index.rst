@@ -30,6 +30,7 @@ Contents:
    devguide/coding/message-system.rst
    devguide/coding/progress-events.rst
    devguide/coding/url-loading.rst
+   devguide/coding/view-focus-input-events.rst
    devguide/distributing.rst
    community/application-gallery.rst
    community/middleware.rst

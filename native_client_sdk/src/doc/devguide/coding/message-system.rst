@@ -1,4 +1,4 @@
-.. _messaging_system:
+.. _message-system:
 
 ################
 Messaging System
