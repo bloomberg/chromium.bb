@@ -7084,6 +7084,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_ABOUT_SYS_TABLE_TITLE" desc="Title of a table that contains system details">
           Details
         </message>
+        <message name="IDS_ABOUT_SYS_LOG_FILE_TABLE_TITLE" desc="Title of a table that contains details from an uploaded log">
+          Details: <ph name="FILE_NAME">$1<ex>Log.txt</ex></ph>
+        </message>
         <message name="IDS_ABOUT_SYS_EXPAND_ALL" desc="name of a button that shows (expands) all system details">
           Expand all...
         </message>
@@ -7095,6 +7098,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_ABOUT_SYS_COLLAPSE" desc="name of a button that hides (collapses) specific system details">
           Collapse...
+        </message>
+        <message name="IDS_ABOUT_SYS_PARSE_ERROR" desc="error message displayed if parsing of custom uploaded log fails">
+          Unable to parse file: <ph name="FILE_NAME">$1<ex>Log.txt</ex></ph>
         </message>
 
         <!-- chrome://mobilesetup strings -->
