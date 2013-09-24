@@ -733,6 +733,7 @@
         'browser/chromeos/prerender_condition_network.h',
         'browser/chromeos/profiles/avatar_menu_actions_chromeos.cc',
         'browser/chromeos/profiles/avatar_menu_actions_chromeos.h',
+        'browser/chromeos/profiles/avatar_menu_chromeos.cc',
         'browser/chromeos/profiles/profile_helper.cc',
         'browser/chromeos/profiles/profile_helper.h',
         'browser/chromeos/profiles/profile_list_chromeos.cc',

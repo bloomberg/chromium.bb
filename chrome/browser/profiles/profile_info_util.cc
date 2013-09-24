@@ -15,9 +15,9 @@ const int kAvatarIconHeight = 31;
 const int kAvatarIconBorder = 2;
 
 gfx::Image GetSizedAvatarIconWithBorder(const gfx::Image& image,
-                                        bool is_gaia_picture,
+                                        bool is_rectangle,
                                         int width, int height) {
-  if (!is_gaia_picture)
+  if (!is_rectangle)
     return image;
 
   int length = std::min(width, height) - kAvatarIconBorder;
@@ -38,14 +38,14 @@ gfx::Image GetSizedAvatarIconWithBorder(const gfx::Image& image,
 }
 
 gfx::Image GetAvatarIconForMenu(const gfx::Image& image,
-                                bool is_gaia_picture) {
+                                bool is_rectangle) {
   return GetSizedAvatarIconWithBorder(
-      image, is_gaia_picture, kAvatarIconWidth, kAvatarIconHeight);
+      image, is_rectangle, kAvatarIconWidth, kAvatarIconHeight);
 }
 
 gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
-                                 bool is_gaia_picture) {
-  if (!is_gaia_picture)
+                                 bool is_rectangle) {
+  if (!is_rectangle)
     return image;
 
   int length =
@@ -64,10 +64,10 @@ gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
 }
 
 gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
-                                    bool is_gaia_picture,
+                                    bool is_rectangle,
                                     int dst_width,
                                     int dst_height) {
-  if (!is_gaia_picture)
+  if (!is_rectangle)
     return image;
 
   int length = std::min(std::min(kAvatarIconWidth, kAvatarIconHeight),
@@ -102,4 +102,4 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
   return gfx::Image(gfx::ImageSkia(canvas.ExtractImageRep()));
 }
 
-} // namespace
+}  // namespace profiles

@@ -29,7 +29,7 @@ AvatarMenuButton::AvatarMenuButton(Browser* browser, bool disabled)
     : MenuButton(NULL, string16(), this, false),
       browser_(browser),
       disabled_(disabled),
-      is_gaia_picture_(false),
+      is_rectangle_(false),
       old_height_(0) {
   // In RTL mode, the avatar icon should be looking the opposite direction.
   EnableCanvasFlippingForRTLUI(true);
@@ -45,7 +45,7 @@ void AvatarMenuButton::OnPaint(gfx::Canvas* canvas) {
   if (old_height_ != height() || button_icon_.isNull()) {
     old_height_ = height();
     button_icon_ = *profiles::GetAvatarIconForTitleBar(
-        *icon_, is_gaia_picture_, width(), height()).ToImageSkia();
+        *icon_, is_rectangle_, width(), height()).ToImageSkia();
   }
 
   // Scale the image to fit the width of the button.
@@ -76,10 +76,10 @@ bool AvatarMenuButton::HitTestRect(const gfx::Rect& rect) const {
 }
 
 void AvatarMenuButton::SetAvatarIcon(const gfx::Image& icon,
-                                     bool is_gaia_picture) {
+                                     bool is_rectangle) {
   icon_.reset(new gfx::Image(icon));
   button_icon_ = gfx::ImageSkia();
-  is_gaia_picture_ = is_gaia_picture;
+  is_rectangle_ = is_rectangle;
   SchedulePaint();
 }
 

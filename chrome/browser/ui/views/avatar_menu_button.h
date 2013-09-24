@@ -36,7 +36,9 @@ class AvatarMenuButton : public views::MenuButton,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
 
-  virtual void SetAvatarIcon(const gfx::Image& icon, bool is_gaia_picture);
+  // Sets the image for the avatar button. Rectangular images, as opposed
+  // to Chrome avatar icons, will be resized and modified for the title bar.
+  virtual void SetAvatarIcon(const gfx::Image& icon, bool is_rectangle);
 
   void ShowAvatarBubble();
 
@@ -52,7 +54,7 @@ class AvatarMenuButton : public views::MenuButton,
   // Use a scoped ptr because gfx::Image doesn't have a default constructor.
   scoped_ptr<gfx::Image> icon_;
   gfx::ImageSkia button_icon_;
-  bool is_gaia_picture_;
+  bool is_rectangle_;
   int old_height_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarMenuButton);

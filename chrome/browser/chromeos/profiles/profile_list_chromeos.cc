@@ -50,15 +50,11 @@ void ProfileListChromeOS::RebuildMenu() {
     size_t i = profile_info_->GetIndexOfProfileWithPath(
         ProfileHelper::GetProfilePathByUserIdHash((*it)->username_hash()));
 
-    bool is_gaia_picture =
-        profile_info_->IsUsingGAIAPictureOfProfileAtIndex(i) &&
-        profile_info_->GetGAIAPictureOfProfileAtIndex(i);
-
-    gfx::Image icon = profile_info_->GetAvatarIconOfProfileAtIndex(i);
+    gfx::Image icon = gfx::Image((*it)->image());
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kNewProfileManagement)) {
       // old avatar menu uses resized-small images
-      icon = profiles::GetAvatarIconForMenu(icon, is_gaia_picture);
+      icon = profiles::GetAvatarIconForMenu(icon, true);
     }
 
     AvatarMenu::Item* item = new AvatarMenu::Item(i, i, icon);

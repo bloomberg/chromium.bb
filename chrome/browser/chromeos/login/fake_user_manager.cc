@@ -25,6 +25,7 @@ FakeUserManager::~FakeUserManager() {
 void FakeUserManager::AddUser(const std::string& email) {
   User* user = User::CreateRegularUser(email);
   user->set_username_hash(email + kUserIdHashSuffix);
+  user->SetStubImage(User::kProfileImageIndex, false);
   user_list_.push_back(user);
 }
 

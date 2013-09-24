@@ -78,6 +78,12 @@ class AvatarMenu : public content::NotificationObserver {
   // True if avatar menu should be displayed.
   static bool ShouldShowAvatarMenu();
 
+  // Sets |image| to the image corresponding to the given profile, and
+  // sets |is_rectangle| to true unless |image| is a built-in profile avatar.
+  static void GetImageForMenuButton(Profile* profile,
+                                    gfx::Image* image,
+                                    bool* is_rectangle);
+
   // Compare items by name.
   static bool CompareItems(const Item* item1, const Item* item2);
 

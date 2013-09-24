@@ -81,7 +81,7 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::Image avatar;
   string16 text;
-  bool is_gaia_picture = false;
+  bool is_rectangle = false;
   if (browser_view_->IsGuestSession()) {
     avatar = rb.GetImageNamed(browser_view_->GetGuestIconResourceID());
   } else if (browser_view_->IsOffTheRecord()) {
@@ -93,14 +93,14 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
     size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
     if (index == std::string::npos)
       return;
-    is_gaia_picture =
-        cache.IsUsingGAIAPictureOfProfileAtIndex(index) &&
-        cache.GetGAIAPictureOfProfileAtIndex(index);
-    avatar = cache.GetAvatarIconOfProfileAtIndex(index);
     text = cache.GetNameOfProfileAtIndex(index);
+
+    AvatarMenu::GetImageForMenuButton(browser_view_->browser()->profile(),
+                                      &avatar,
+                                      &is_rectangle);
   }
   if (avatar_button_) {
-    avatar_button_->SetAvatarIcon(avatar, is_gaia_picture);
+    avatar_button_->SetAvatarIcon(avatar, is_rectangle);
     if (!text.empty())
       avatar_button_->SetText(text);
   }

@@ -17,24 +17,24 @@ extern const int kAvatarIconBorder;
 // Note that no checks are done on the width/height so make sure they're
 // reasonable values; in the range of 16-256 is probably best.
 gfx::Image GetSizedAvatarIconWithBorder(const gfx::Image& image,
-                                        bool is_gaia_picture,
+                                        bool is_rectangle,
                                         int width, int height);
 
 // Returns a version of |image| suitable for use in menus.
 gfx::Image GetAvatarIconForMenu(const gfx::Image& image,
-                                bool is_gaia_picture);
+                                bool is_rectangle);
 
 // Returns a version of |image| suitable for use in WebUI.
 gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
-                                 bool is_gaia_picture);
+                                 bool is_rectangle);
 
 // Returns a version of |image| suitable for use in title bars. The returned
 // image is scaled to fit |dst_width| and |dst_height|.
 gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
-                                    bool is_gaia_picture,
+                                    bool is_rectangle,
                                     int dst_width,
                                     int dst_height);
 
-}
+}  // namespace profiles
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_INFO_UTIL_H_

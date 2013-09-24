@@ -21,12 +21,12 @@ TEST(ProfileInfoUtilTest, SizedMenuIcon) {
   EXPECT_FALSE(gfx::test::IsEmpty(result));
   EXPECT_TRUE(gfx::test::IsEqual(profile_image, result));
 
-  // Test that a GAIA picture is changed.
-  gfx::Image gaia_picture(gfx::test::CreateImage());
+  // Test that a rectangular picture (e.g., GAIA image) is changed.
+  gfx::Image rect_picture(gfx::test::CreateImage());
   gfx::Image result2 =
-      profiles::GetSizedAvatarIconWithBorder(gaia_picture, true, 50, 50);
+      profiles::GetSizedAvatarIconWithBorder(rect_picture, true, 50, 50);
   EXPECT_FALSE(gfx::test::IsEmpty(result2));
-  EXPECT_FALSE(gfx::test::IsEqual(gaia_picture, result2));
+  EXPECT_FALSE(gfx::test::IsEqual(rect_picture, result2));
 }
 
 TEST(ProfileInfoUtilTest, MenuIcon) {
@@ -37,11 +37,11 @@ TEST(ProfileInfoUtilTest, MenuIcon) {
   EXPECT_FALSE(gfx::test::IsEmpty(result));
   EXPECT_TRUE(gfx::test::IsEqual(profile_image, result));
 
-  // Test that a GAIA picture is changed.
-  gfx::Image gaia_picture(gfx::test::CreateImage());
-  gfx::Image result2 = profiles::GetAvatarIconForMenu(gaia_picture, true);
+  // Test that a rectangular picture is changed.
+  gfx::Image rect_picture(gfx::test::CreateImage());
+  gfx::Image result2 = profiles::GetAvatarIconForMenu(rect_picture, true);
   EXPECT_FALSE(gfx::test::IsEmpty(result2));
-  EXPECT_FALSE(gfx::test::IsEqual(gaia_picture, result2));
+  EXPECT_FALSE(gfx::test::IsEqual(rect_picture, result2));
 }
 
 TEST(ProfileInfoUtilTest, WebUIIcon) {
@@ -52,11 +52,11 @@ TEST(ProfileInfoUtilTest, WebUIIcon) {
   EXPECT_FALSE(gfx::test::IsEmpty(result));
   EXPECT_TRUE(gfx::test::IsEqual(profile_image, result));
 
-  // Test that a GAIA picture is changed.
-  gfx::Image gaia_picture(gfx::test::CreateImage());
-  gfx::Image result2 = profiles::GetAvatarIconForWebUI(gaia_picture, true);
+  // Test that a rectangular picture is changed.
+  gfx::Image rect_picture(gfx::test::CreateImage());
+  gfx::Image result2 = profiles::GetAvatarIconForWebUI(rect_picture, true);
   EXPECT_FALSE(gfx::test::IsEmpty(result2));
-  EXPECT_FALSE(gfx::test::IsEqual(gaia_picture, result2));
+  EXPECT_FALSE(gfx::test::IsEqual(rect_picture, result2));
 }
 
 TEST(ProfileInfoUtilTest, TitleBarIcon) {
@@ -68,12 +68,12 @@ TEST(ProfileInfoUtilTest, TitleBarIcon) {
   EXPECT_FALSE(gfx::test::IsEmpty(result));
   EXPECT_TRUE(gfx::test::IsEqual(profile_image, result));
 
-  // Test that a GAIA picture is changed.
-  gfx::Image gaia_picture(gfx::test::CreateImage());
+  // Test that a rectangular picture is changed.
+  gfx::Image rect_picture(gfx::test::CreateImage());
   gfx::Image result2 = profiles::GetAvatarIconForTitleBar(
-      gaia_picture, true, 100, 40);
+      rect_picture, true, 100, 40);
   EXPECT_FALSE(gfx::test::IsEmpty(result2));
-  EXPECT_FALSE(gfx::test::IsEqual(gaia_picture, result2));
+  EXPECT_FALSE(gfx::test::IsEqual(rect_picture, result2));
 }
 
 }  // namespace
