@@ -17,7 +17,7 @@
             '../net/net.gyp:net',
             '../skia/skia.gyp:skia',
             '../ui/ui.gyp:ui',
-            '../webkit/support/webkit_support.gyp:glue',
+            '../webkit/glue/webkit_glue.gyp:glue',
             'web_contents_delegate_android_jni_headers',
           ],
           'include_dirs': [

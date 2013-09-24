@@ -51,10 +51,10 @@
         '../ui/ui.gyp:ui',
         '../url/url.gyp:url_lib',
         '../v8/tools/gyp/v8.gyp:v8',
-        '../webkit/common/webkit_common.gyp:webkit_common',
-        '../webkit/webkit_resources.gyp:webkit_resources',
         '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
-        '../webkit/support/webkit_support.gyp:glue',
+        '../webkit/common/webkit_common.gyp:webkit_common',
+        '../webkit/glue/webkit_glue.gyp:glue',
+        '../webkit/webkit_resources.gyp:webkit_resources',
       ],
       'include_dirs': [
         '..',

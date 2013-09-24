@@ -313,7 +313,7 @@
             '../media/media.gyp:media_test_support',
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-            '../webkit/support/webkit_support.gyp:glue_child',
+            '../webkit/glue/webkit_glue.gyp:glue_child',
           ],
           'export_dependent_settings': [
             'renderer',

@@ -219,12 +219,12 @@
             '../ui/surface/surface.gyp:surface',
             '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
             '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
+            '../webkit/glue/webkit_glue.gyp:glue',
+            '../webkit/glue/webkit_glue.gyp:glue_child',
             '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
             '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
-            '../webkit/support/webkit_support.gyp:glue',
-            '../webkit/support/webkit_support.gyp:glue_child',
           ],
         }],
         ['OS == "win" or toolkit_uses_gtk == 1', {
@@ -637,11 +637,11 @@
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/common/webkit_common.gyp:webkit_common',
+            '../webkit/glue/webkit_glue.gyp:glue',
+            '../webkit/glue/webkit_glue.gyp:glue_child',
             '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
-            '../webkit/support/webkit_support.gyp:glue',
-            '../webkit/support/webkit_support.gyp:glue_child',
           ],
         }],
         ['enable_plugins==0', {
@@ -826,9 +826,9 @@
             '../ui/ui.gyp:shell_dialogs',
             '../ui/ui.gyp:ui',
             '../ui/ui.gyp:ui_resources',
+            '../webkit/glue/webkit_glue.gyp:glue',
+            '../webkit/glue/webkit_glue.gyp:glue_child',
             '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
-            '../webkit/support/webkit_support.gyp:glue',
-            '../webkit/support/webkit_support.gyp:glue_child',
           ],
           'include_dirs': [
             '..',
@@ -1058,8 +1058,8 @@
             '../third_party/WebKit/public/blink.gyp:blink',
             # The following two dependencies provide the missing
             # symbol HeapProfilerStart in Linux component builds.
-            '../webkit/support/webkit_support.gyp:glue',
-            '../webkit/support/webkit_support.gyp:glue_child',
+            '../webkit/glue/webkit_glue.gyp:glue',
+            '../webkit/glue/webkit_glue.gyp:glue_child',
           ],
           'include_dirs': [
             '..',
@@ -1090,8 +1090,8 @@
             '../third_party/WebKit/public/blink.gyp:blink',
             # The following two dependencies provide the missing
             # symbol HeapProfilerStart in Linux component builds.
-            '../webkit/support/webkit_support.gyp:glue',
-            '../webkit/support/webkit_support.gyp:glue_child',
+            '../webkit/glue/webkit_glue.gyp:glue',
+            '../webkit/glue/webkit_glue.gyp:glue_child',
           ],
           'include_dirs': [
             '..',

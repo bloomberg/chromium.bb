@@ -7,9 +7,9 @@
     ['enable_plugins==1', {
       'dependencies': [
         '../skia/skia.gyp:skia',
-        '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/WebKit/public/blink.gyp:blink',
-        '../webkit/support/webkit_support.gyp:glue',
+        '../third_party/npapi/npapi.gyp:npapi',
+        '../webkit/glue/webkit_glue.gyp:glue',
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',

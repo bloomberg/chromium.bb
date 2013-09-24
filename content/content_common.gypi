@@ -421,7 +421,7 @@
     }],
     ['OS!="ios" and chrome_multiple_dll!=1', {
       'dependencies': [
-        '../webkit/support/webkit_support.gyp:glue',
+        '../webkit/glue/webkit_glue.gyp:glue',
       ],
     }],
     ['OS=="mac"', {

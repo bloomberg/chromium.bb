@@ -166,7 +166,7 @@
         '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/npapi/npapi.gyp:npapi',
         '../webkit/common/webkit_common.gyp:webkit_common',
-        '../webkit/support/webkit_support.gyp:glue_child',
+        '../webkit/glue/webkit_glue.gyp:glue_child',
       ],
     }],
     ['use_aura==1', {
