@@ -847,7 +847,7 @@ def CMDupload(change_info, args):
         'See http://goo.gl/JGg0Z for details.\n')
 
   upload_arg = ["upload.py", "-y"]
-  upload_arg.append("--server=%s" % change_info.rietveld)
+  upload_arg.append("--server=%s" % change_info.rietveld.encode('utf-8'))
 
   reviewers = change_info.get_reviewers() or output.reviewers
   if (reviewers and
