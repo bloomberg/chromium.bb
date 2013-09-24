@@ -139,6 +139,7 @@ class PrivetNotificationDelegate : public NotificationDelegate {
 
  private:
   void OpenTab(const GURL& url);
+  void DisableNotifications();
 
   virtual ~PrivetNotificationDelegate();
 

@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -54,6 +55,7 @@ enum PrivetNotificationsEvent {
   PRIVET_NOTIFICATION_SHOWN,
   PRIVET_NOTIFICATION_CANCELED,
   PRIVET_NOTIFICATION_CLICKED,
+  PRIVET_DISABLE_NOTIFICATIONS_CLICKED,
   PRIVET_EVENT_MAX,
 };
 
@@ -252,6 +254,10 @@ void PrivetNotificationService::PrivetNotify(bool has_multiple,
         message_center::ButtonInfo(l10n_util::GetStringUTF16(
             IDS_LOCAL_DISOCVERY_NOTIFICATION_BUTTON_PRINTER)));
 
+    rich_notification_data.buttons.push_back(
+        message_center::ButtonInfo(l10n_util::GetStringUTF16(
+            IDS_LOCAL_DISCOVERY_NOTIFICATIONS_DISABLE_BUTTON_LABEL)));
+
     Notification notification(
         message_center::NOTIFICATION_TYPE_SIMPLE,
         GURL(kPrivetNotificationOriginUrl),
@@ -360,6 +366,9 @@ void PrivetNotificationDelegate::ButtonClick(int button_index) {
   if (button_index == 0) {
     ReportPrivetUmaEvent(PRIVET_NOTIFICATION_CLICKED);
     OpenTab(GURL(kPrivetNotificationOriginUrl));
+  } else if (button_index == 1) {
+    ReportPrivetUmaEvent(PRIVET_DISABLE_NOTIFICATIONS_CLICKED);
+    DisableNotifications();
   }
 }
 
@@ -380,5 +389,12 @@ void PrivetNotificationDelegate::OpenTab(const GURL& url) {
   browser->tab_strip_model()->AppendWebContents(contents.release(), true);
 }
 
+void PrivetNotificationDelegate::DisableNotifications() {
+  Profile* profile_obj = Profile::FromBrowserContext(profile_);
+
+  profile_obj->GetPrefs()->SetBoolean(
+      prefs::kLocalDiscoveryNotificationsEnabled,
+      false);
+}
 
 }  // namespace local_discovery

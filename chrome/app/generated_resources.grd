@@ -15393,6 +15393,9 @@ Do you accept?
     <message name="IDS_LOCAL_DISCOVERY_NOTIFICATIONS_ENABLE_CHECKBOX_LABEL" desc="Label for notificatiosn-enable checkbox">
       Show notifications when new printers is detected on the network
     </message>
+    <message name="IDS_LOCAL_DISCOVERY_NOTIFICATIONS_DISABLE_BUTTON_LABEL" desc="Label for button disabling local device notifications">
+      Don't show this again
+    </message>
     <!-- People search strings -->
     <message name="IDS_PEOPLE_SEARCH_ACTION_EMAIL_TOOLTIP" desc="Tooltip text for sending an email to the person in the result">
       E-mail this person
