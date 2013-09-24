@@ -616,6 +616,11 @@ void RTCVideoEncoder::ReturnEncodedImage(scoped_ptr<webrtc::EncodedImage> image,
   webrtc::CodecSpecificInfo info;
   memset(&info, 0, sizeof(info));
   info.codecType = video_codec_type_;
+  if (video_codec_type_ == webrtc::kVideoCodecVP8) {
+    info.codecSpecific.VP8.pictureId = -1;
+    info.codecSpecific.VP8.tl0PicIdx = -1;
+    info.codecSpecific.VP8.keyIdx = -1;
+  }
 
   // Generate a header describing a single fragment.
   webrtc::RTPFragmentationHeader header;

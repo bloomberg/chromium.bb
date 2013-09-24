@@ -898,6 +898,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableSCTPDataChannels,
     switches::kDisableWebRtcHWDecoding,
     switches::kDisableWebRtcHWEncoding,
+    switches::kEnableWebRtcHWVp8Encoding,
 #endif
     switches::kEnableWebAnimationsCSS,
     switches::kEnableWebAnimationsSVG,

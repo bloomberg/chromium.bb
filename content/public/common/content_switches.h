@@ -259,6 +259,7 @@ CONTENT_EXPORT extern const char kDisableWebRtcHWDecoding[];
 extern const char kDisableWebRtcHWEncoding[];
 extern const char kEnableWebRtcAecRecordings[];
 extern const char kEnableWebRtcTcpServerSocket[];
+extern const char kEnableWebRtcHWVp8Encoding[];
 #endif
 
 #if defined(OS_ANDROID)

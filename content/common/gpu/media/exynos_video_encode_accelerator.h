@@ -176,6 +176,7 @@ class ExynosVideoEncodeAccelerator : public media::VideoEncodeAccelerator {
   bool CreateGscInputBuffers();
   bool CreateGscOutputBuffers();
   bool SetMfcFormats();
+  bool InitMfcControls();
   bool CreateMfcInputBuffers();
   bool CreateMfcOutputBuffers();
 
