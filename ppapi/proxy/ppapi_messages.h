@@ -490,12 +490,6 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPBAudio_NotifyAudioStreamCreated,
                     ppapi::proxy::SerializedHandle /* socket_handle */,
                     ppapi::proxy::SerializedHandle /* handle */)
 
-// PPB_FileSystem.
-IPC_MESSAGE_ROUTED2(
-    PpapiMsg_PPBFileSystem_OpenComplete,
-    ppapi::HostResource /* filesystem */,
-    int32_t /* result */)
-
 // PPB_Graphics3D.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics3D_SwapBuffersACK,
                     ppapi::HostResource /* graphics_3d */,
