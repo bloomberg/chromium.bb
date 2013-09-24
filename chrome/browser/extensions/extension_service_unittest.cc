@@ -165,6 +165,7 @@ const char* const zero_n_one = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab";
 const char* const good0 = "behllobkkfkfnphdnhnkndlbkcpglgmj";
 const char* const good1 = "hpiknbiabeeppbpihjehijgoemciehgk";
 const char* const good2 = "bjafgdebaacbbbecmhlhpofkepfkgcpa";
+const char* const good2048 = "nmgjhmhbleinmjpbdhgajfjkbijcmgbh";
 const char* const good_crx = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char* const hosted_app = "kbmnembihfiondgfjekmnmcbddelicoi";
 const char* const page_action = "obcimlgaoabeegjmmpldobjndiealpln";
@@ -1628,6 +1629,13 @@ TEST_F(ExtensionServiceTest, InstallExtension) {
   path = data_dir_.AppendASCII("bad_underscore.crx");
   InstallCRX(path, INSTALL_NEW);
   ValidatePrefKeyCount(++pref_count);
+
+  // A test for an extension with a 2048-bit public key.
+  path = data_dir_.AppendASCII("good2048.crx");
+  InstallCRX(path, INSTALL_NEW);
+  ValidatePrefKeyCount(++pref_count);
+  ValidateIntegerPref(good2048, "state", Extension::ENABLED);
+  ValidateIntegerPref(good2048, "location", Manifest::INTERNAL);
 
   // TODO(erikkay): add more tests for many of the failure cases.
   // TODO(erikkay): add tests for upgrade cases.
