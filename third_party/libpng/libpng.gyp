@@ -6,6 +6,7 @@
   'targets': [
     {
       'target_name': 'libpng',
+      'toolsets': ['target', 'host'],
       'dependencies': [
         '../zlib/zlib.gyp:zlib',
       ],
@@ -67,10 +68,18 @@
             'defines': [
               'PNG_USE_DLL',
             ],
-          },          
+          },
         }],
-        ['OS=="android"', {
-          'toolsets': ['target', 'host'],
+        ['OS=="android" and _toolset=="target"', {
+          'includes': [
+            "../../build/android/cpufeatures.gypi",
+          ],
+        }],
+        ['target_arch=="arm"', {
+          'sources': [
+            'arm/arm_init.c',
+            'arm/filter_neon.S',
+          ],
         }],
       ],
     },

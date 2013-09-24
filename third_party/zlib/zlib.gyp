@@ -6,6 +6,7 @@
   'targets': [
     {
       'target_name': 'zlib',
+      'toolsets': ['target', 'host'],
       'type': 'static_library',
       'sources': [
         'adler32.c',
@@ -47,8 +48,6 @@
       'conditions': [
         ['OS!="win"', {
           'product_name': 'chrome_zlib',
-        }], ['OS=="android"', {
-          'toolsets': ['target', 'host'],
         }],
       ],
     },
