@@ -34,6 +34,7 @@ const int kIconSize = 32;
 const int kHopSpacing = 2;
 const int kIconPad = 8;
 const int kAlternateIconPad = 5;
+const int kAlternateIconPadVertical = 6;
 const int kHopUpMS = 0;
 const int kHopDownMS = 200;
 const int kAttentionThrobDurationMS = 800;
@@ -400,8 +401,12 @@ void LauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
 
 void LauncherButton::Layout() {
   const gfx::Rect button_bounds(GetContentsBounds());
-  int icon_pad = ash::switches::UseAlternateShelfLayout() ?
-      kAlternateIconPad : kIconPad;
+  int icon_pad = kIconPad;
+  if (ash::switches::UseAlternateShelfLayout()) {
+      icon_pad =
+          shelf_layout_manager_->GetAlignment() != SHELF_ALIGNMENT_BOTTOM ?
+          kAlternateIconPadVertical : kAlternateIconPad;
+  }
   int x_offset = shelf_layout_manager_->PrimaryAxisValue(0, icon_pad);
   int y_offset = shelf_layout_manager_->PrimaryAxisValue(icon_pad, 0);
 
