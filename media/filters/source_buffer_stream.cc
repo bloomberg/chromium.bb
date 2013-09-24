@@ -88,6 +88,15 @@ class SourceBufferRange {
   int DeleteGOPFromFront(BufferQueue* deleted_buffers);
   int DeleteGOPFromBack(BufferQueue* deleted_buffers);
 
+  // Gets the range of GOP to secure at least |bytes_to_free| from
+  // [|start_timestamp|, |end_timestamp|).
+  // Returns the size of the buffers to secure if the buffers of
+  // [|start_timestamp|, |end_removal_timestamp|) is removed.
+  // Will not update |end_removal_timestamp| if the returned size is 0.
+  int GetRemovalGOP(
+      base::TimeDelta start_timestamp, base::TimeDelta end_timestamp,
+      int bytes_to_free, base::TimeDelta* end_removal_timestamp);
+
   // Indicates whether the GOP at the beginning or end of the range contains the
   // next buffer position.
   bool FirstGOPContainsNextBufferPosition() const;
@@ -653,12 +662,71 @@ void SourceBufferStream::GarbageCollectIfNeeded() {
 
   int bytes_to_free = ranges_size - memory_limit_;
 
+  // Begin deleting after the last appended buffer.
+  int bytes_freed = FreeBuffersAfterLastAppended(bytes_to_free);
+
   // Begin deleting from the front.
-  int bytes_freed = FreeBuffers(bytes_to_free, false);
+  if (bytes_to_free - bytes_freed > 0)
+    bytes_freed += FreeBuffers(bytes_to_free - bytes_freed, false);
 
   // Begin deleting from the back.
   if (bytes_to_free - bytes_freed > 0)
     FreeBuffers(bytes_to_free - bytes_freed, true);
+}
+
+int SourceBufferStream::FreeBuffersAfterLastAppended(int total_bytes_to_free) {
+  base::TimeDelta next_buffer_timestamp = GetNextBufferTimestamp();
+  if (last_appended_buffer_timestamp_ == kNoTimestamp() ||
+      next_buffer_timestamp == kNoTimestamp() ||
+      last_appended_buffer_timestamp_ >= next_buffer_timestamp) {
+    return 0;
+  }
+
+  base::TimeDelta remove_range_start = last_appended_buffer_timestamp_;
+  if (last_appended_buffer_is_keyframe_)
+    remove_range_start += GetMaxInterbufferDistance();
+
+  base::TimeDelta remove_range_start_keyframe = FindKeyframeAfterTimestamp(
+      remove_range_start);
+  if (remove_range_start_keyframe != kNoTimestamp())
+    remove_range_start = remove_range_start_keyframe;
+  if (remove_range_start >= next_buffer_timestamp)
+    return 0;
+
+  base::TimeDelta remove_range_end;
+  int bytes_freed = GetRemovalRange(
+      remove_range_start, next_buffer_timestamp, total_bytes_to_free,
+      &remove_range_end);
+  if (bytes_freed > 0)
+    Remove(remove_range_start, remove_range_end, next_buffer_timestamp);
+  return bytes_freed;
+}
+
+int SourceBufferStream::GetRemovalRange(
+    base::TimeDelta start_timestamp, base::TimeDelta end_timestamp,
+    int total_bytes_to_free, base::TimeDelta* removal_end_timestamp) {
+  DCHECK(start_timestamp >= base::TimeDelta()) << start_timestamp.InSecondsF();
+  DCHECK(start_timestamp < end_timestamp)
+      << "start " << start_timestamp.InSecondsF()
+      << ", end " << end_timestamp.InSecondsF();
+
+  int bytes_to_free = total_bytes_to_free;
+  int bytes_freed = 0;
+
+  for (RangeList::iterator itr = ranges_.begin();
+       itr != ranges_.end() && bytes_to_free > 0; ++itr) {
+    SourceBufferRange* range = *itr;
+    if (range->GetStartTimestamp() >= end_timestamp)
+      break;
+    if (range->GetEndTimestamp() < start_timestamp)
+      continue;
+
+    int bytes_removed = range->GetRemovalGOP(
+        start_timestamp, end_timestamp, bytes_to_free, removal_end_timestamp);
+    bytes_to_free -= bytes_removed;
+    bytes_freed += bytes_removed;
+  }
+  return bytes_freed;
 }
 
 int SourceBufferStream::FreeBuffers(int total_bytes_to_free,
@@ -1625,6 +1693,45 @@ int SourceBufferRange::DeleteGOPFromBack(BufferQueue* deleted_buffers) {
   }
 
   return total_bytes_deleted;
+}
+
+int SourceBufferRange::GetRemovalGOP(
+    base::TimeDelta start_timestamp, base::TimeDelta end_timestamp,
+    int total_bytes_to_free, base::TimeDelta* removal_end_timestamp) {
+  int bytes_to_free = total_bytes_to_free;
+  int bytes_removed = 0;
+
+  KeyframeMap::iterator gop_itr = GetFirstKeyframeAt(start_timestamp, false);
+  int keyframe_index = gop_itr->second - keyframe_map_index_base_;
+  BufferQueue::iterator buffer_itr = buffers_.begin() + keyframe_index;
+  KeyframeMap::iterator gop_end = keyframe_map_.end();
+  if (end_timestamp < GetBufferedEndTimestamp())
+    gop_end = GetFirstKeyframeBefore(end_timestamp);
+
+  // Check if the removal range is within a GOP and skip the loop if so.
+  // [keyframe]...[start_timestamp]...[end_timestamp]...[keyframe]
+  KeyframeMap::iterator gop_itr_prev = gop_itr;
+  if (gop_itr_prev != keyframe_map_.begin() && --gop_itr_prev == gop_end)
+    gop_end = gop_itr;
+
+  while (gop_itr != gop_end && bytes_to_free > 0) {
+    ++gop_itr;
+
+    int gop_size = 0;
+    int next_gop_index = gop_itr == keyframe_map_.end() ?
+        buffers_.size() : gop_itr->second - keyframe_map_index_base_;
+    BufferQueue::iterator next_gop_start = buffers_.begin() + next_gop_index;
+    for (; buffer_itr != next_gop_start; ++buffer_itr)
+      gop_size += (*buffer_itr)->data_size();
+
+    bytes_removed += gop_size;
+    bytes_to_free -= gop_size;
+  }
+  if (bytes_removed > 0) {
+    *removal_end_timestamp = gop_itr == keyframe_map_.end() ?
+        GetBufferedEndTimestamp() : gop_itr->first;
+  }
+  return bytes_removed;
 }
 
 bool SourceBufferRange::FirstGOPContainsNextBufferPosition() const {

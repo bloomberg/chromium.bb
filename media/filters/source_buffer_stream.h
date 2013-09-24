@@ -126,6 +126,8 @@ class MEDIA_EXPORT SourceBufferStream {
   }
 
  private:
+  friend class SourceBufferStreamTest;
+
   typedef std::list<SourceBufferRange*> RangeList;
 
   // Frees up space if the SourceBufferStream is taking up too much memory.
@@ -136,6 +138,20 @@ class MEDIA_EXPORT SourceBufferStream {
   // through the buffers. Deletes starting from the back if |reverse_direction|
   // is true. Returns the number of bytes freed.
   int FreeBuffers(int total_bytes_to_free, bool reverse_direction);
+
+  // Attempts to delete approximately |total_bytes_to_free| amount of data from
+  // |ranges_|, starting after the last appended buffer before the current
+  // playback position.
+  int FreeBuffersAfterLastAppended(int total_bytes_to_free);
+
+  // Gets the removal range to secure |byte_to_free| from
+  // [|start_timestamp|, |end_timestamp|).
+  // Returns the size of buffers to secure if future
+  // Remove(|start_timestamp|, |removal_end_timestamp|, duration) is called.
+  // Will not update |removal_end_timestamp| if the returned size is 0.
+  int GetRemovalRange(base::TimeDelta start_timestamp,
+      base::TimeDelta end_timestamp, int byte_to_free,
+      base::TimeDelta* removal_end_timestamp);
 
   // Appends |new_buffers| into |range_for_new_buffers_itr|, handling start and
   // end overlaps if necessary.

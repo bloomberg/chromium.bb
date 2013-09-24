@@ -119,6 +119,18 @@ class SourceBufferStreamTest : public testing::Test {
     stream_->Remove(start, end, duration);
   }
 
+  int GetRemovalRangeInMs(int start, int end, int bytes_to_free,
+                          int* removal_end) {
+    base::TimeDelta removal_end_timestamp =
+        base::TimeDelta::FromMilliseconds(*removal_end);
+    int bytes_removed = stream_->GetRemovalRange(
+        base::TimeDelta::FromMilliseconds(start),
+        base::TimeDelta::FromMilliseconds(end), bytes_to_free,
+        &removal_end_timestamp);
+    *removal_end = removal_end_timestamp.InMilliseconds();
+    return bytes_removed;
+  }
+
   void CheckExpectedRanges(const std::string& expected) {
     Ranges<base::TimeDelta> r = stream_->GetBufferedTime();
 
@@ -2136,6 +2148,47 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteSeveralRanges) {
   CheckNoNextBuffer();
 }
 
+TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteAfterLastAppend) {
+  // Set memory limit to 10 buffers.
+  SetMemoryLimit(10);
+
+  // Append 1 GOP starting at 310ms, 30ms apart.
+  NewSegmentAppend("310K 340 370");
+
+  // Append 2 GOPs starting at 490ms, 30ms apart.
+  NewSegmentAppend("490K 520 550 580K 610 640");
+
+  CheckExpectedRangesByTimestamp("{ [310,400) [490,670) }");
+
+  // Seek to the GOP at 580ms.
+  SeekToTimestamp(base::TimeDelta::FromMilliseconds(580));
+
+  // Append 2 GOPs before the existing ranges.
+  // So the ranges before GC are "{ [100,280) [310,400) [490,670) }".
+  NewSegmentAppend("100K 130 160 190K 220 250K");
+
+  // Should save the newly appended GOPs.
+  CheckExpectedRangesByTimestamp("{ [100,280) [580,670) }");
+}
+
+TEST_F(SourceBufferStreamTest, GarbageCollection_DeleteAfterLastAppendMerged) {
+  // Set memory limit to 10 buffers.
+  SetMemoryLimit(10);
+
+  // Append 3 GOPs starting at 400ms, 30ms apart.
+  NewSegmentAppend("400K 430 460 490K 520 550 580K 610 640");
+
+  // Seek to the GOP at 580ms.
+  SeekToTimestamp(base::TimeDelta::FromMilliseconds(580));
+
+  // Append 2 GOPs starting at 220ms, and they will be merged with the existing
+  // range.  So the range before GC is "{ [220,670) }".
+  NewSegmentAppend("220K 250 280 310K 340 370");
+
+  // Should save the newly appended GOPs.
+  CheckExpectedRangesByTimestamp("{ [220,400) [580,670) }");
+}
+
 TEST_F(SourceBufferStreamTest, GarbageCollection_NoSeek) {
   // Set memory limit to 20 buffers.
   SetMemoryLimit(20);
@@ -2477,6 +2530,134 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_Performance) {
     AppendBuffers(buffers_appended, kBuffersToAppend);
     buffers_appended += kBuffersToAppend;
   }
+}
+
+TEST_F(SourceBufferStreamTest, GetRemovalRange_BytesToFree) {
+  // Append 2 GOPs starting at 300ms, 30ms apart.
+  NewSegmentAppend("300K 330 360 390K 420 450");
+
+  // Append 2 GOPs starting at 600ms, 30ms apart.
+  NewSegmentAppend("600K 630 660 690K 720 750");
+
+  // Append 2 GOPs starting at 900ms, 30ms apart.
+  NewSegmentAppend("900K 930 960 990K 1020 1050");
+
+  CheckExpectedRangesByTimestamp("{ [300,480) [600,780) [900,1080) }");
+
+  int remove_range_end = -1;
+  int bytes_removed = -1;
+
+  // Size 0.
+  bytes_removed = GetRemovalRangeInMs(300, 1080, 0, &remove_range_end);
+  EXPECT_EQ(-1, remove_range_end);
+  EXPECT_EQ(0, bytes_removed);
+
+  // Smaller than the size of GOP.
+  bytes_removed = GetRemovalRangeInMs(300, 1080, 1, &remove_range_end);
+  EXPECT_EQ(390, remove_range_end);
+  // Remove as the size of GOP.
+  EXPECT_EQ(3, bytes_removed);
+
+  // The same size with a GOP.
+  bytes_removed = GetRemovalRangeInMs(300, 1080, 3, &remove_range_end);
+  EXPECT_EQ(390, remove_range_end);
+  EXPECT_EQ(3, bytes_removed);
+
+  // The same size with a range.
+  bytes_removed = GetRemovalRangeInMs(300, 1080, 6, &remove_range_end);
+  EXPECT_EQ(480, remove_range_end);
+  EXPECT_EQ(6, bytes_removed);
+
+  // A frame larger than a range.
+  bytes_removed = GetRemovalRangeInMs(300, 1080, 7, &remove_range_end);
+  EXPECT_EQ(690, remove_range_end);
+  EXPECT_EQ(9, bytes_removed);
+
+  // The same size with two ranges.
+  bytes_removed = GetRemovalRangeInMs(300, 1080, 12, &remove_range_end);
+  EXPECT_EQ(780, remove_range_end);
+  EXPECT_EQ(12, bytes_removed);
+
+  // Larger than two ranges.
+  bytes_removed = GetRemovalRangeInMs(300, 1080, 14, &remove_range_end);
+  EXPECT_EQ(990, remove_range_end);
+  EXPECT_EQ(15, bytes_removed);
+
+  // The same size with the whole ranges.
+  bytes_removed = GetRemovalRangeInMs(300, 1080, 18, &remove_range_end);
+  EXPECT_EQ(1080, remove_range_end);
+  EXPECT_EQ(18, bytes_removed);
+
+  // Larger than the whole ranges.
+  bytes_removed = GetRemovalRangeInMs(300, 1080, 20, &remove_range_end);
+  EXPECT_EQ(1080, remove_range_end);
+  EXPECT_EQ(18, bytes_removed);
+}
+
+TEST_F(SourceBufferStreamTest, GetRemovalRange_Range) {
+  // Append 2 GOPs starting at 300ms, 30ms apart.
+  NewSegmentAppend("300K 330 360 390K 420 450");
+
+  // Append 2 GOPs starting at 600ms, 30ms apart.
+  NewSegmentAppend("600K 630 660 690K 720 750");
+
+  // Append 2 GOPs starting at 900ms, 30ms apart.
+  NewSegmentAppend("900K 930 960 990K 1020 1050");
+
+  CheckExpectedRangesByTimestamp("{ [300,480) [600,780) [900,1080) }");
+
+  int remove_range_end = -1;
+  int bytes_removed = -1;
+
+  // Within a GOP and no keyframe.
+  bytes_removed = GetRemovalRangeInMs(630, 660, 20, &remove_range_end);
+  EXPECT_EQ(-1, remove_range_end);
+  EXPECT_EQ(0, bytes_removed);
+
+  // Across a GOP and no keyframe.
+  bytes_removed = GetRemovalRangeInMs(630, 750, 20, &remove_range_end);
+  EXPECT_EQ(-1, remove_range_end);
+  EXPECT_EQ(0, bytes_removed);
+
+  // The same size with a range.
+  bytes_removed = GetRemovalRangeInMs(600, 780, 20, &remove_range_end);
+  EXPECT_EQ(780, remove_range_end);
+  EXPECT_EQ(6, bytes_removed);
+
+  // One frame larger than a range.
+  bytes_removed = GetRemovalRangeInMs(570, 810, 20, &remove_range_end);
+  EXPECT_EQ(780, remove_range_end);
+  EXPECT_EQ(6, bytes_removed);
+
+  // Facing the other ranges.
+  bytes_removed = GetRemovalRangeInMs(480, 900, 20, &remove_range_end);
+  EXPECT_EQ(780, remove_range_end);
+  EXPECT_EQ(6, bytes_removed);
+
+  // In the midle of the other ranges, but not including any GOP.
+  bytes_removed = GetRemovalRangeInMs(420, 960, 20, &remove_range_end);
+  EXPECT_EQ(780, remove_range_end);
+  EXPECT_EQ(6, bytes_removed);
+
+  // In the middle of the other ranges.
+  bytes_removed = GetRemovalRangeInMs(390, 990, 20, &remove_range_end);
+  EXPECT_EQ(990, remove_range_end);
+  EXPECT_EQ(12, bytes_removed);
+
+  // A frame smaller than the whole ranges.
+  bytes_removed = GetRemovalRangeInMs(330, 1050, 20, &remove_range_end);
+  EXPECT_EQ(990, remove_range_end);
+  EXPECT_EQ(12, bytes_removed);
+
+  // The same with the whole ranges.
+  bytes_removed = GetRemovalRangeInMs(300, 1080, 20, &remove_range_end);
+  EXPECT_EQ(1080, remove_range_end);
+  EXPECT_EQ(18, bytes_removed);
+
+  // Larger than the whole ranges.
+  bytes_removed = GetRemovalRangeInMs(270, 1110, 20, &remove_range_end);
+  EXPECT_EQ(1080, remove_range_end);
+  EXPECT_EQ(18, bytes_removed);
 }
 
 TEST_F(SourceBufferStreamTest, ConfigChange_Basic) {
