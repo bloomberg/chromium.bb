@@ -190,7 +190,8 @@ class CHROMEOS_EXPORT OutputConfigurator
 
     // Returns information about the current outputs. This method may block for
     // 60 milliseconds or more. The returned outputs are not fully initialized;
-    // the rest of the work happens in OutputConfigurator::GetOutputs().
+    // the rest of the work happens in
+    // OutputConfigurator::UpdateCachedOutputs().
     virtual std::vector<OutputSnapshot> GetOutputs() = 0;
 
     // Adds |mode| to |output|.
@@ -231,6 +232,10 @@ class CHROMEOS_EXPORT OutputConfigurator
         : configurator_(configurator),
           xrandr_event_base_(xrandr_event_base) {}
     ~TestApi() {}
+
+    const std::vector<OutputSnapshot>& cached_outputs() const {
+      return configurator_->cached_outputs_;
+    }
 
     // Dispatches an RRScreenChangeNotify event to |configurator_|.
     void SendScreenChangeEvent();
@@ -335,8 +340,7 @@ class CHROMEOS_EXPORT OutputConfigurator
   // Overridden from base::MessagePumpObserver:
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -359,15 +363,15 @@ class CHROMEOS_EXPORT OutputConfigurator
   void ScheduleConfigureOutputs();
 
  private:
-  // Returns currently-connected outputs. This method is a wrapper around
-  // |delegate_->GetOutputs()| that does additional work, like finding the
-  // mirror mode and setting user-preferred modes. Note that the server must
-  // be grabbed via |delegate_->GrabServer()| first.
-  std::vector<OutputSnapshot> GetOutputs();
+  // Updates |cached_outputs_| to contain currently-connected outputs. Calls
+  // |delegate_->GetOutputs()| and then does additional work, like finding the
+  // mirror mode and setting user-preferred modes. Note that the server must be
+  // grabbed via |delegate_->GrabServer()| first.
+  void UpdateCachedOutputs();
 
-  // Helper method for GetOutputs() that initializes the passed-in outputs'
-  // |mirror_mode| fields by looking for a mode in |internal_output| and
-  // |external_output| having the same resolution. Returns false if a shared
+  // Helper method for UpdateCachedOutputs() that initializes the passed-in
+  // outputs' |mirror_mode| fields by looking for a mode in |internal_output|
+  // and |external_output| having the same resolution. Returns false if a shared
   // mode wasn't found or created.
   //
   // |try_panel_fitting| allows creating a panel-fitting mode for
@@ -395,20 +399,16 @@ class CHROMEOS_EXPORT OutputConfigurator
   // and returns true.
   bool EnterStateOrFallBackToSoftwareMirroring(
       OutputState output_state,
-      DisplayPowerState power_state,
-      const std::vector<OutputSnapshot>& outputs);
+      DisplayPowerState power_state);
 
   // Switches to the state specified in |output_state| and |power_state|.
   // On success, updates |output_state_|, |power_state_|, and
   // |cached_outputs_| and returns true.
-  bool EnterState(OutputState output_state,
-                  DisplayPowerState power_state,
-                  const std::vector<OutputSnapshot>& outputs);
+  bool EnterState(OutputState output_state, DisplayPowerState power_state);
 
-  // Returns the output state that should be used with |outputs| connected
-  // while in |power_state|.
-  OutputState GetOutputState(const std::vector<OutputSnapshot>& outputs,
-                             DisplayPowerState power_state) const;
+  // Returns the output state that should be used with |cached_outputs_| while
+  // in |power_state|.
+  OutputState ChooseOutputState(DisplayPowerState power_state) const;
 
   // Computes the relevant transformation for mirror mode.
   // |output| is the output on which mirror mode is being applied.

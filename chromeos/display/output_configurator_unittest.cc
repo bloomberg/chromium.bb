@@ -1014,6 +1014,23 @@ TEST_F(OutputConfiguratorTest, AvoidUnnecessaryProbes) {
             delegate_->GetActionsAndClear());
 }
 
+TEST_F(OutputConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
+  InitWithSingleOutput();
+  const std::vector<OutputConfigurator::OutputSnapshot>* cached =
+      &test_api_.cached_outputs();
+  ASSERT_EQ(static_cast<size_t>(1), cached->size());
+  EXPECT_EQ(outputs_[0].current_mode, (*cached)[0].current_mode);
+
+  // After connecting a second output, check that it shows up in
+  // |cached_outputs_| even if an invalid state is requested.
+  state_controller_.set_state(STATE_SINGLE);
+  UpdateOutputs(2, true);
+  cached = &test_api_.cached_outputs();
+  ASSERT_EQ(static_cast<size_t>(2), cached->size());
+  EXPECT_EQ(outputs_[0].current_mode, (*cached)[0].current_mode);
+  EXPECT_EQ(outputs_[1].current_mode, (*cached)[1].current_mode);
+}
+
 TEST_F(OutputConfiguratorTest, PanelFitting) {
   // Configure the internal display to support only the big mode and the
   // external display to support only the small mode.
