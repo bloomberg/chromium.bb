@@ -17,6 +17,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_pump_x11.h"
+#include "base/x11/edid_parser_x11.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/display/output_util.h"
@@ -263,7 +264,7 @@ RealOutputConfiguratorDelegate::InitOutputSnapshot(
   output.output = id;
   output.width_mm = info->mm_width;
   output.height_mm = info->mm_height;
-  output.has_display_id = GetDisplayId(id, index, &output.display_id);
+  output.has_display_id = base::GetDisplayId(id, index, &output.display_id);
   output.is_internal = IsInternalOutput(info);
   output.index = index;
 

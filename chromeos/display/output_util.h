@@ -23,19 +23,6 @@ typedef _XRROutputInfo XRROutputInfo;
 
 namespace chromeos {
 
-// Gets the EDID data from |output| and generates the display id through
-// |GetDisplayIdFromEDID|.
-CHROMEOS_EXPORT bool GetDisplayId(XID output, size_t index,
-                                  int64* display_id_out);
-
-// Generates the display id for the pair of |prop| with |nitems| length and
-// |index|, and store in |display_id_out|. Returns true if the display id is
-// successfully generated, or false otherwise.
-CHROMEOS_EXPORT bool GetDisplayIdFromEDID(const unsigned char* prop,
-                                          unsigned long nitems,
-                                          size_t index,
-                                          int64* display_id_out);
-
 // Generates the human readable string from EDID obtained for |output|.
 CHROMEOS_EXPORT std::string GetDisplayName(XID output);
 
@@ -45,15 +32,6 @@ CHROMEOS_EXPORT std::string GetDisplayName(XID output);
 // still produce overscan even though it returns true and |flag| is set to
 // false.
 CHROMEOS_EXPORT bool GetOutputOverscanFlag(XID output, bool* flag);
-
-// Parses |prop| as EDID data and stores extracted data into |manufacturer_id|
-// and |human_readable_name| and returns true. NULL can be passed for unwanted
-// output parameters. Some devices (especially internal displays) may not have
-// the field for |human_readable_name|, and it will return true in that case.
-CHROMEOS_EXPORT bool ParseOutputDeviceData(const unsigned char* prop,
-                                           unsigned long nitems,
-                                           uint16* manufacturer_id,
-                                           std::string* human_readable_name);
 
 // Parses |prop| as EDID data and stores the overscan flag to |flag|. Returns
 // true if the flag is found. This is exported for x11_util_unittest.cc.
