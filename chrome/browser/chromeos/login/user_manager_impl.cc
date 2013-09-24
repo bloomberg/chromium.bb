@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/remove_user_delegate.h"
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -38,6 +39,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -250,6 +252,8 @@ UserManagerImpl::UserManagerImpl()
       kAccountsPrefSupervisedUsersEnabled,
       base::Bind(&UserManagerImpl::RetrieveTrustedDevicePolicies,
                  base::Unretained(this)));
+  multi_profile_user_controller_.reset(new MultiProfileUserController(
+      this, g_browser_process->local_state()));
   UpdateLoginState();
 }
 
@@ -279,6 +283,7 @@ void UserManagerImpl::Shutdown() {
     device_local_account_policy_service_->RemoveObserver(this);
 
   user_image_manager_->Shutdown();
+  multi_profile_user_controller_.reset();
 }
 
 UserImageManager* UserManagerImpl::GetUserImageManager() {
@@ -297,8 +302,12 @@ UserList UserManagerImpl::GetUsersAdmittedForMultiProfile() const {
   UserList result;
   const UserList& users = GetUsers();
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-    if ((*it)->GetType() == User::USER_TYPE_REGULAR && !(*it)->is_logged_in())
+    if ((*it)->GetType() == User::USER_TYPE_REGULAR &&
+        !(*it)->is_logged_in() &&
+        multi_profile_user_controller_->IsUserAllowedInSession(
+            (*it)->email())) {
       result.push_back(*it);
+    }
   }
   return result;
 }
@@ -911,6 +920,7 @@ void UserManagerImpl::Observe(int type,
           AuthSyncObserver* sync_observer =
               AuthSyncObserverFactory::GetInstance()->GetForProfile(profile);
           sync_observer->StartObserving();
+          multi_profile_user_controller_->StartObserving(profile);
         }
       }
       break;
@@ -1473,6 +1483,8 @@ void UserManagerImpl::RemoveNonCryptohomeData(const std::string& email) {
   DictionaryPrefUpdate manager_emails_update(prefs,
                                              kManagedUserManagerDisplayEmails);
   manager_emails_update->RemoveWithoutPathExpansion(email, NULL);
+
+  multi_profile_user_controller_->RemoveCachedValue(email);
 }
 
 User* UserManagerImpl::RemoveRegularOrLocallyManagedUserFromList(
@@ -1954,6 +1966,12 @@ void UserManagerImpl::SendRegularUserLoginMetrics(const std::string& email) {
           time_to_login.InSeconds(), 0, kLogoutToLoginDelayMaxSec, 50);
     }
   }
+}
+
+void UserManagerImpl::OnUserNotAllowed() {
+  LOG(ERROR) << "Shutdown session because a user is not allowed to be in the "
+                "current session";
+  chrome::AttemptUserExit();
 }
 
 }  // namespace chromeos

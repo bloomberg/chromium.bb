@@ -466,6 +466,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAttestationEnabledForUser,
     prefs::kAttestationEnabled,
     Value::TYPE_BOOLEAN },
+  { key::kChromeOsMultiProfileUserBehavior,
+    prefs::kMultiProfileUserBehavior,
+    Value::TYPE_STRING },
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

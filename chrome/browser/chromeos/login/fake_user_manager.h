@@ -24,6 +24,9 @@ class FakeUserManager : public UserManager {
   // Create and add a new user.
   void AddUser(const std::string& email);
 
+  // Calculates the user name hash and calls UserLoggedIn to login a user.
+  void LoginUser(const std::string& email);
+
   // UserManager overrides.
   virtual const UserList& GetUsers() const OVERRIDE;
   virtual UserList GetUsersAdmittedForMultiProfile() const OVERRIDE;
@@ -126,10 +129,15 @@ class FakeUserManager : public UserManager {
   virtual base::FilePath GetUserProfileDir(const std::string& email) const
       OVERRIDE;
 
+  void set_owner_email(const std::string& owner_email) {
+    owner_email_ = owner_email;
+  }
+
  private:
   UserList user_list_;
   UserList logged_in_users_;
   std::string owner_email_;
+  User* primary_user_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeUserManager);
 };

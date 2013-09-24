@@ -844,6 +844,11 @@ const char kRAConsentDomains[] = "settings.privacy.ra_consent_domains";
 // A boolean pref that tracks whether the user indicated they wish to be asked
 // for consent for every site that uses remote attestation.
 const char kRAConsentAlways[] = "settings.privacy.ra_consent_always";
+
+// A string pref that holds string enum values of how the user should behave
+// in a multiprofile session. See ChromeOsMultiProfileUserBehavior policy
+// for more details of the valid values.
+const char kMultiProfileUserBehavior[] = "settings.multiprofile_user_behavior";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.
@@ -2155,6 +2160,10 @@ extern const char kUsersLRUInputMethod[] = "UsersLRUInputMethod";
 // A dictionary pref of the echo offer check flag. It sets offer info when
 // an offer is checked.
 extern const char kEchoCheckedOffers[] = "EchoCheckedOffers";
+
+// Key name of a dictionary in local state to store cached multiprofle user
+// behavior policy value.
+const char kCachedMultiProfileUserBehavior[] = "CachedMultiProfileUserBehavior";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.

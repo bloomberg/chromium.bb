@@ -15,6 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/multi_profile_user_controller_delegate.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -35,6 +36,7 @@ struct DeviceLocalAccount;
 
 namespace chromeos {
 
+class MultiProfileUserController;
 class RemoveUserDelegate;
 class SessionLengthLimiter;
 
@@ -43,7 +45,8 @@ class UserManagerImpl
     : public UserManager,
       public LoginUtils::Delegate,
       public content::NotificationObserver,
-      public policy::DeviceLocalAccountPolicyService::Observer {
+      public policy::DeviceLocalAccountPolicyService::Observer,
+      public MultiProfileUserControllerDelegate {
  public:
   virtual ~UserManagerImpl();
 
@@ -318,6 +321,9 @@ class UserManagerImpl
 
   Profile* GetProfileByUser(const User* user) const;
 
+  // MultiProfileUserControllerDelegate implementation:
+  virtual void OnUserNotAllowed() OVERRIDE;
+
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;
 
@@ -424,6 +430,8 @@ class UserManagerImpl
       local_accounts_subscription_;
   scoped_ptr<CrosSettings::ObserverSubscription>
       supervised_users_subscription_;
+
+  scoped_ptr<MultiProfileUserController> multi_profile_user_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerImpl);
 };

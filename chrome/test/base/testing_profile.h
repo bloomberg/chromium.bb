@@ -311,6 +311,10 @@ class TestingProfile : public Profile {
 
   virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
 
+  void set_profile_name(const std::string& profile_name) {
+    profile_name_ = profile_name;
+  }
+
  protected:
   base::Time start_time_;
   scoped_ptr<PrefServiceSyncable> prefs_;
@@ -380,6 +384,8 @@ class TestingProfile : public Profile {
 
   // Weak pointer to a delegate for indicating that a profile was created.
   Delegate* delegate_;
+
+  std::string profile_name_;
 };
 
 #endif  // CHROME_TEST_BASE_TESTING_PROFILE_H_

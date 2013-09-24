@@ -493,6 +493,9 @@
         'browser/chromeos/login/merge_session_throttle.h',
         'browser/chromeos/login/mount_manager.cc',
         'browser/chromeos/login/mount_manager.h',
+        'browser/chromeos/login/multi_profile_user_controller.cc',
+        'browser/chromeos/login/multi_profile_user_controller.h',
+        'browser/chromeos/login/multi_profile_user_controller_delegate.h',
         'browser/chromeos/login/oauth2_login_manager.cc',
         'browser/chromeos/login/oauth2_login_manager.h',
         'browser/chromeos/login/oauth2_login_manager_factory.cc',
@@ -902,7 +905,7 @@
         ['use_cras==1', {
           'defines': [
             'USE_CRAS',
-          ],          
+          ],
         }],
         ['use_ash==1', {
           'dependencies': [

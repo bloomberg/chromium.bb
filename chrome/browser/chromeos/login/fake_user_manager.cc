@@ -13,7 +13,8 @@ static const char kUserIdHashSuffix[] = "-hash";
 
 namespace chromeos {
 
-FakeUserManager::FakeUserManager() {}
+FakeUserManager::FakeUserManager() : primary_user_(NULL) {}
+
 FakeUserManager::~FakeUserManager() {
   // Can't use STLDeleteElements because of the private destructor of User.
   for (UserList::iterator it = user_list_.begin(); it != user_list_.end();
@@ -27,6 +28,10 @@ void FakeUserManager::AddUser(const std::string& email) {
   user->set_username_hash(email + kUserIdHashSuffix);
   user->SetStubImage(User::kProfileImageIndex, false);
   user_list_.push_back(user);
+}
+
+void FakeUserManager::LoginUser(const std::string& email) {
+  UserLoggedIn(email, email + kUserIdHashSuffix, false);
 }
 
 const UserList& FakeUserManager::GetUsers() const {
@@ -57,6 +62,9 @@ void FakeUserManager::UserLoggedIn(const std::string& email,
     if ((*it)->username_hash() == username_hash) {
       (*it)->set_is_logged_in(true);
       logged_in_users_.push_back(*it);
+
+      if (!primary_user_)
+        primary_user_ = *it;
       break;
     }
   }
@@ -140,7 +148,7 @@ User* FakeUserManager::GetLoggedInUser() {
 }
 
 const User* FakeUserManager::GetPrimaryUser() const {
-  return NULL;
+  return primary_user_;
 }
 
 string16 FakeUserManager::GetUserDisplayName(

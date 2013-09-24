@@ -1925,6 +1925,14 @@
     ]
   },
 
+  "ChromeOsMultiProfileUserBehavior": {
+    "os": ["chromeos"],
+    "test_policy": { "ChromeOsMultiProfileUserBehavior": "unrestricted" },
+    "pref_mappings": [
+      { "pref": "settings.multiprofile_user_behavior" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {
@@ -2112,7 +2120,7 @@
 
   "SuppressChromeFrameTurndownPrompt": {
   },
- 
+
   "SkipMetadataCheck": {
   }
 }

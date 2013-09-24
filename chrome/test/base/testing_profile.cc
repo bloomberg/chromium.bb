@@ -344,6 +344,8 @@ void TestingProfile::Init() {
   settings_service->Init(store);
   store->SetInitializationCompleted();
 #endif
+
+  profile_name_ = "testing_profile";
 }
 
 void TestingProfile::FinishInit() {
@@ -550,7 +552,7 @@ TestingProfile* TestingProfile::AsTestingProfile() {
 }
 
 std::string TestingProfile::GetProfileName() {
-  return std::string("testing_profile");
+  return profile_name_;
 }
 
 bool TestingProfile::IsOffTheRecord() const {

@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,20 +42,15 @@ class UserManagerTest : public testing::Test {
     SetDeviceSettings(false, "", false);
 
     // Register an in-memory local settings instance.
-    local_state_.reset(new TestingPrefServiceSimple);
-    TestingBrowserProcess::GetGlobal()->SetLocalState(local_state_.get());
-    UserManager::RegisterPrefs(local_state_->registry());
-    // Wallpaper manager and user image managers prefs will be accessed by the
-    // unit-test as well.
-    UserImageManager::RegisterPrefs(local_state_->registry());
-    WallpaperManager::RegisterPrefs(local_state_->registry());
+    local_state_.reset(
+        new ScopedTestingLocalState(TestingBrowserProcess::GetGlobal()));
 
     ResetUserManager();
   }
 
   virtual void TearDown() OVERRIDE {
     // Unregister the in-memory local settings instance.
-    TestingBrowserProcess::GetGlobal()->SetLocalState(0);
+    local_state_.reset();
 
     // Restore the real DeviceSettingsProvider.
     EXPECT_TRUE(
@@ -119,7 +114,7 @@ class UserManagerTest : public testing::Test {
   CrosSettings* cros_settings_;
   CrosSettingsProvider* device_settings_provider_;
   StubCrosSettingsProvider stub_settings_provider_;
-  scoped_ptr<TestingPrefServiceSimple> local_state_;
+  scoped_ptr<ScopedTestingLocalState> local_state_;
 
   ScopedTestDeviceSettingsService test_device_settings_service_;
   ScopedTestCrosSettings test_cros_settings_;
