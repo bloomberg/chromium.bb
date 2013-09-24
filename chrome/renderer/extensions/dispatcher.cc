@@ -1241,13 +1241,8 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
 
   if (is_webkit_initialized_) {
     InitOriginPermissions(extension);
-    // DOMActivity logger for a main world controlled by an extension (as in
-    // the case of an extension background page, options page, popup etc.)
-    // gets an empty title.
     DOMActivityLogger::AttachToWorld(DOMActivityLogger::kMainWorldId,
-                                     extension_id,
-                                     extension->url(),
-                                     string16());
+                                     extension_id);
   }
 }
 

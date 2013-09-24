@@ -334,11 +334,7 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
       int isolated_world_id = GetIsolatedWorldIdForExtension(extension, frame);
 
       PerfTimer exec_timer;
-      DOMActivityLogger::AttachToWorld(
-          isolated_world_id,
-          extension->id(),
-          UserScriptSlave::GetDataSourceURLForFrame(frame),
-          frame->document().title());
+      DOMActivityLogger::AttachToWorld(isolated_world_id, extension->id());
       frame->executeScriptInIsolatedWorld(
           isolated_world_id, &sources.front(), sources.size(),
           EXTENSION_GROUP_CONTENT_SCRIPTS);

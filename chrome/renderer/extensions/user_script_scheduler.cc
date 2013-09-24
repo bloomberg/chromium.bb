@@ -207,11 +207,8 @@ void UserScriptScheduler::ExecuteCodeImpl(
       v8::Local<v8::Value> script_value;
 
       if (params.in_main_world) {
-        DOMActivityLogger::AttachToWorld(
-            DOMActivityLogger::kMainWorldId,
-            extension->id(),
-            UserScriptSlave::GetDataSourceURLForFrame(child_frame),
-            child_frame->document().title());
+        DOMActivityLogger::AttachToWorld(DOMActivityLogger::kMainWorldId,
+                                         extension->id());
         script_value = child_frame->executeScriptAndReturnValue(source);
       } else {
         WebKit::WebVector<v8::Local<v8::Value> > results;
@@ -220,11 +217,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
         int isolated_world_id =
             dispatcher_->user_script_slave()->GetIsolatedWorldIdForExtension(
                 extension, child_frame);
-        DOMActivityLogger::AttachToWorld(
-            isolated_world_id,
-            extension->id(),
-            UserScriptSlave::GetDataSourceURLForFrame(child_frame),
-            child_frame->document().title());
+        DOMActivityLogger::AttachToWorld(isolated_world_id, extension->id());
         child_frame->executeScriptInIsolatedWorld(
             isolated_world_id, &sources.front(),
             sources.size(), EXTENSION_GROUP_CONTENT_SCRIPTS, &results);
