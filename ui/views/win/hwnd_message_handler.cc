@@ -1044,8 +1044,6 @@ void HWNDMessageHandler::ClientAreaSizeChanged() {
           r.bottom += kClientAreaBottomInsetHack;
         }
       }
-      if (remove_standard_frame_ && !IsMaximized())
-        r.bottom += kClientAreaBottomInsetHack;
     } else {
       GetWindowRect(hwnd(), &r);
     }
