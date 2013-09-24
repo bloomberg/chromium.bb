@@ -199,7 +199,7 @@ NSAttributedString* GetButtonAttributedString(NSString* title,
   {
     gfx::ScopedNSGraphicsContextSaveGState scopedGState;
     [GetButtonShadow(buttonState) set];
-    [[NSColor blackColor] set];
+    [[[controlView window] backgroundColor] set];
     [path fill];
   }
   [GetButtonGradient(buttonState) drawInBezierPath:path angle:90.0];
