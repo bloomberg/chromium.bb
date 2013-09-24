@@ -15,6 +15,7 @@ namespace net {
 
 // Handles the compression of request/response headers blocks.  The
 // serialized format is:
+// uint32 - Priority
 // uint32 - Header ID
 // uint32 - Compressed header length
 // ... - Compressed data

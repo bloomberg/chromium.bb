@@ -71,8 +71,6 @@ class TestConnection : public QuicConnection {
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm) {
     QuicConnectionPeer::SetSendAlgorithm(this, send_algorithm);
   }
-
-  using QuicConnection::SendOrQueuePacket;
 };
 
 class QuicEpollConnectionHelperTest : public ::testing::Test {
@@ -126,7 +124,7 @@ class QuicEpollConnectionHelperTest : public ::testing::Test {
   QuicStreamFrame frame1_;
 };
 
-TEST_F(QuicEpollConnectionHelperTest, DISABLED_TestRetransmission) {
+TEST_F(QuicEpollConnectionHelperTest, DISABLED_TestRTORetransmission) {
   //FLAGS_fake_packet_loss_percentage = 100;
   EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
       Return(QuicTime::Delta::Zero()));
@@ -147,7 +145,7 @@ TEST_F(QuicEpollConnectionHelperTest, DISABLED_TestRetransmission) {
   connection_.SendvStreamData(1, &iov, 1, 0, false);
   EXPECT_EQ(1u, helper_->header()->packet_sequence_number);
   EXPECT_CALL(*send_algorithm_,
-              SentPacket(_, 2, packet_size, IS_RETRANSMISSION, _));
+              SentPacket(_, 2, packet_size, RTO_RETRANSMISSION, _));
   epoll_server_.AdvanceByAndCallCallbacks(kDefaultRetransmissionTimeMs * 1000);
 
   EXPECT_EQ(2u, helper_->header()->packet_sequence_number);
@@ -201,13 +199,14 @@ TEST_F(QuicEpollConnectionHelperTest, SendSchedulerDelayThenSend) {
   // Test that if we send a packet with a delay, it ends up queued.
   EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
       Return(QuicTime::Delta::Zero()));
-  QuicPacket* packet = ConstructDataPacket(1, 0);
   EXPECT_CALL(
       *send_algorithm_, TimeUntilSend(_, NOT_RETRANSMISSION, _, _)).WillOnce(
           Return(QuicTime::Delta::FromMicroseconds(1)));
-  connection_.SendOrQueuePacket(ENCRYPTION_NONE, 1, packet, 0,
-                                HAS_RETRANSMITTABLE_DATA,
-                                QuicConnection::NO_FORCE);
+  connection_.OnSerializedPacket(
+      SerializedPacket(1, PACKET_6BYTE_SEQUENCE_NUMBER,
+                       ConstructDataPacket(1, 0), 0,
+                       new RetransmittableFrames));
+
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, NOT_RETRANSMISSION,
                                            _));
   EXPECT_EQ(1u, connection_.NumQueuedPackets());

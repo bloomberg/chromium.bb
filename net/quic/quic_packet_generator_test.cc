@@ -33,7 +33,7 @@ class MockDelegate : public QuicPacketGenerator::DelegateInterface {
   MockDelegate() {}
   virtual ~MockDelegate() {}
 
-  MOCK_METHOD3(CanWrite, bool(Retransmission retransmission,
+  MOCK_METHOD3(CanWrite, bool(TransmissionType transmission_type,
                               HasRetransmittableData retransmittable,
                               IsHandshake handshake));
 

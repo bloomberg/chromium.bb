@@ -28,7 +28,7 @@ TcpCubicSender::TcpCubicSender(
       cubic_(clock),
       reno_(reno),
       congestion_window_count_(0),
-      receiver_congestion_window_(kDefaultReceiveWindow),
+      receive_window_(kDefaultReceiveWindow),
       last_received_accumulated_number_of_lost_packets_(0),
       bytes_in_flight_(0),
       update_end_sequence_number_(true),
@@ -59,7 +59,7 @@ void TcpCubicSender::OnIncomingQuicCongestionFeedbackFrame(
       OnIncomingLoss(feedback_receive_time);
     }
   }
-  receiver_congestion_window_ = feedback.tcp.receive_window;
+  receive_window_ = feedback.tcp.receive_window;
 }
 
 void TcpCubicSender::OnIncomingAck(
@@ -97,7 +97,7 @@ void TcpCubicSender::OnIncomingLoss(QuicTime /*ack_receive_time*/) {
 bool TcpCubicSender::SentPacket(QuicTime /*sent_time*/,
                                 QuicPacketSequenceNumber sequence_number,
                                 QuicByteCount bytes,
-                                Retransmission is_retransmission,
+                                TransmissionType transmission_type,
                                 HasRetransmittableData is_retransmittable) {
   // Only update bytes_in_flight_ for data packets.
   if (is_retransmittable != HAS_RETRANSMITTABLE_DATA) {
@@ -105,9 +105,9 @@ bool TcpCubicSender::SentPacket(QuicTime /*sent_time*/,
   }
 
   bytes_in_flight_ += bytes;
-  if (is_retransmission == NOT_RETRANSMISSION && update_end_sequence_number_) {
+  if (transmission_type == NOT_RETRANSMISSION && update_end_sequence_number_) {
     end_sequence_number_ = sequence_number;
-    if (AvailableCongestionWindow() == 0) {
+    if (AvailableSendWindow() == 0) {
       update_end_sequence_number_ = false;
       DLOG(INFO) << "Stop update end sequence number @" << sequence_number;
     }
@@ -122,35 +122,35 @@ void TcpCubicSender::AbandoningPacket(QuicPacketSequenceNumber sequence_number,
 }
 
 QuicTime::Delta TcpCubicSender::TimeUntilSend(
-    QuicTime now,
-    Retransmission is_retransmission,
+    QuicTime /* now */,
+    TransmissionType transmission_type,
     HasRetransmittableData has_retransmittable_data,
     IsHandshake handshake) {
-  if (is_retransmission == IS_RETRANSMISSION ||
+  if (transmission_type == NACK_RETRANSMISSION ||
       has_retransmittable_data == NO_RETRANSMITTABLE_DATA ||
       handshake == IS_HANDSHAKE) {
-    // For TCP we can always send a retransmission,  or an ACK immediately.
+    // For TCP we can always send an ACK immediately.
     // We also immediately send any handshake packet (CHLO, etc.).  We provide
-    // this  special dispensation for handshake messages in QUIC, although the
+    // this special dispensation for handshake messages in QUIC, although the
     // concept is not present in TCP.
     return QuicTime::Delta::Zero();
   }
-  if (AvailableCongestionWindow() == 0) {
+  if (AvailableSendWindow() == 0) {
     return QuicTime::Delta::Infinite();
   }
   return QuicTime::Delta::Zero();
 }
 
-QuicByteCount TcpCubicSender::AvailableCongestionWindow() {
-  if (bytes_in_flight_ > CongestionWindow()) {
+QuicByteCount TcpCubicSender::AvailableSendWindow() {
+  if (bytes_in_flight_ > SendWindow()) {
     return 0;
   }
-  return CongestionWindow() - bytes_in_flight_;
+  return SendWindow() - bytes_in_flight_;
 }
 
-QuicByteCount TcpCubicSender::CongestionWindow() {
-  // What's the current congestion window in bytes.
-  return std::min(receiver_congestion_window_,
+QuicByteCount TcpCubicSender::SendWindow() {
+  // What's the current send window in bytes.
+  return std::min(receive_window_,
                   congestion_window_ * kMaxSegmentSize);
 }
 

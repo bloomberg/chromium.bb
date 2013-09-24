@@ -47,7 +47,7 @@ class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
       QuicTime sent_time,
       QuicPacketSequenceNumber sequence_number,
       QuicByteCount bytes,
-      Retransmission is_retransmit,
+      TransmissionType transmission_type,
       HasRetransmittableData has_retransmittable_data) OVERRIDE;
 
   virtual void AbandoningPacket(QuicPacketSequenceNumber sequence_number,
@@ -55,7 +55,7 @@ class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
 
   virtual QuicTime::Delta TimeUntilSend(
       QuicTime now,
-      Retransmission is_retransmission,
+      TransmissionType transmission_type,
       HasRetransmittableData has_retransmittable_data,
       IsHandshake handshake) OVERRIDE;
 

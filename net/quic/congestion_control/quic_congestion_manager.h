@@ -46,7 +46,7 @@ class NET_EXPORT_PRIVATE QuicCongestionManager {
   virtual void SentPacket(QuicPacketSequenceNumber sequence_number,
                           QuicTime sent_time,
                           QuicByteCount bytes,
-                          Retransmission retransmission,
+                          TransmissionType transmission_type,
                           HasRetransmittableData has_retransmittable_data);
 
   // Called when a packet is timed out.
@@ -58,7 +58,7 @@ class NET_EXPORT_PRIVATE QuicCongestionManager {
   // Note 2: Send algorithms may or may not use |retransmit| in their
   // calculations.
   virtual QuicTime::Delta TimeUntilSend(QuicTime now,
-                                        Retransmission retransmission,
+                                        TransmissionType transmission_type,
                                         HasRetransmittableData retransmittable,
                                         IsHandshake handshake);
 

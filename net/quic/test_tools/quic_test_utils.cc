@@ -244,6 +244,7 @@ bool PacketSavingConnection::SendOrQueuePacket(
     QuicPacketSequenceNumber sequence_number,
     QuicPacket* packet,
     QuicPacketEntropyHash /* entropy_hash */,
+    TransmissionType /* transmission_type */,
     HasRetransmittableData /* retransmittable */,
     Force /* forced */) {
   packets_.push_back(packet);

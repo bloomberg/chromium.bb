@@ -62,7 +62,7 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   virtual bool SentPacket(QuicTime sent_time,
                           QuicPacketSequenceNumber sequence_number,
                           QuicByteCount bytes,
-                          Retransmission is_retransmission,
+                          TransmissionType transmission_type,
                           HasRetransmittableData is_retransmittable) = 0;
 
   // Called when a packet is timed out.
@@ -72,7 +72,7 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // Calculate the time until we can send the next packet.
   virtual QuicTime::Delta TimeUntilSend(
       QuicTime now,
-      Retransmission is_retransmission,
+      TransmissionType transmission_type,
       HasRetransmittableData has_retransmittable_data,
       IsHandshake handshake) = 0;
 

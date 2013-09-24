@@ -223,7 +223,6 @@ TEST(ProofTest, VerifyRSAKnownAnswerTest) {
 
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
-  string error_details;
   CertVerifyResult cert_verify_result;
 
   vector<string> certs(2);
@@ -312,7 +311,6 @@ TEST(ProofTest, VerifyECDSAKnownAnswerTest) {
 
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
-  string error_details;
   CertVerifyResult cert_verify_result;
 
   vector<string> certs(2);

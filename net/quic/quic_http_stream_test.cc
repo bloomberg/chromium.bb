@@ -242,7 +242,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
                                    bool write_priority,
                                    RequestPriority priority) {
     QuicSpdyCompressor compressor;
-    if (framer_.version() >= QUIC_VERSION_9 && write_priority) {
+    if (write_priority) {
       return compressor.CompressHeadersWithPriority(
           ConvertRequestPriorityToQuicPriority(priority), headers);
     }

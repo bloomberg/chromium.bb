@@ -45,13 +45,13 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
       QuicTime sent_time,
       QuicPacketSequenceNumber sequence_number,
       QuicByteCount bytes,
-      Retransmission is_retransmission,
+      TransmissionType transmission_type,
       HasRetransmittableData is_retransmittable) OVERRIDE;
   virtual void AbandoningPacket(QuicPacketSequenceNumber sequence_number,
                                 QuicByteCount abandoned_bytes) OVERRIDE;
   virtual QuicTime::Delta TimeUntilSend(
       QuicTime now,
-      Retransmission is_retransmission,
+      TransmissionType transmission_type,
       HasRetransmittableData has_retransmittable_data,
       IsHandshake handshake) OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() OVERRIDE;
@@ -62,8 +62,8 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
  private:
   friend class test::TcpCubicSenderPeer;
 
-  QuicByteCount AvailableCongestionWindow();
-  QuicByteCount CongestionWindow();
+  QuicByteCount AvailableSendWindow();
+  QuicByteCount SendWindow();
   void Reset();
   void AckAccounting(QuicTime::Delta rtt);
   void CongestionAvoidance(QuicPacketSequenceNumber ack);
@@ -80,7 +80,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   int64 congestion_window_count_;
 
   // Receiver side advertised window.
-  QuicByteCount receiver_congestion_window_;
+  QuicByteCount receive_window_;
 
   // Receiver side advertised packet loss.
   int last_received_accumulated_number_of_lost_packets_;

@@ -83,9 +83,10 @@ const int64 kDefaultInitialTimeoutSecs = 120;  // 2 mins.
 const int64 kDefaultTimeoutSecs = 60 * 10;  // 10 minutes.
 const int64 kDefaultMaxTimeForCryptoHandshakeSecs = 5;  // 5 secs.
 
-enum Retransmission {
+enum TransmissionType {
   NOT_RETRANSMISSION,
-  IS_RETRANSMISSION,
+  NACK_RETRANSMISSION,
+  RTO_RETRANSMISSION,
 };
 
 enum HasRetransmittableData {
@@ -189,7 +190,6 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_8 = 8,
   QUIC_VERSION_9 = 9,
   QUIC_VERSION_10 = 10,  // Current version.
 };
@@ -220,7 +220,7 @@ NET_EXPORT_PRIVATE QuicTag QuicVersionToQuicTag(const QuicVersion version);
 NET_EXPORT_PRIVATE QuicVersion QuicTagToQuicVersion(const QuicTag version_tag);
 
 // Returns the appropriate QuicTag for a properly formed version string
-// (e.g. Q008).
+// (e.g. Q010).
 NET_EXPORT_PRIVATE QuicTag StringToQuicTag(std::string version);
 
 // Helper function which translates from a QuicVersion to a string.

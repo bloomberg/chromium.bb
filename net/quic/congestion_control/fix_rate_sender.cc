@@ -64,11 +64,11 @@ bool FixRateSender::SentPacket(
     QuicTime sent_time,
     QuicPacketSequenceNumber /*sequence_number*/,
     QuicByteCount bytes,
-    Retransmission is_retransmission,
+    TransmissionType transmission_type,
     HasRetransmittableData /*has_retransmittable_data*/) {
   fix_rate_leaky_bucket_.Add(sent_time, bytes);
   paced_sender_.SentPacket(sent_time, bytes);
-  if (is_retransmission == NOT_RETRANSMISSION) {
+  if (transmission_type == NOT_RETRANSMISSION) {
     data_in_flight_ += bytes;
   }
   return true;
@@ -81,7 +81,7 @@ void FixRateSender::AbandoningPacket(
 
 QuicTime::Delta FixRateSender::TimeUntilSend(
     QuicTime now,
-    Retransmission /*is_retransmission*/,
+    TransmissionType /* transmission_type */,
     HasRetransmittableData /*has_retransmittable_data*/,
     IsHandshake /*handshake*/) {
   if (CongestionWindow() > fix_rate_leaky_bucket_.BytesPending(now)) {

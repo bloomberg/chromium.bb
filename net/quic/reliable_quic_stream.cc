@@ -483,9 +483,7 @@ uint32 ReliableQuicStream::StripPriorityAndHeaderId(
     const char* data, uint32 data_len) {
   uint32 total_bytes_parsed = 0;
 
-  if (!priority_parsed_ &&
-      session_->connection()->version() >= QUIC_VERSION_9 &&
-      session_->connection()->is_server()) {
+  if (!priority_parsed_ && session_->connection()->is_server()) {
     QuicPriority temporary_priority = priority_;
     total_bytes_parsed = StripUint32(
         data, data_len, &headers_id_and_priority_buffer_, &temporary_priority);

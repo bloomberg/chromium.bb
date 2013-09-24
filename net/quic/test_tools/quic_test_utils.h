@@ -262,6 +262,7 @@ class PacketSavingConnection : public MockConnection {
       QuicPacketSequenceNumber sequence_number,
       QuicPacket* packet,
       QuicPacketEntropyHash entropy_hash,
+      TransmissionType transmission_type,
       HasRetransmittableData has_retransmittable_data,
       Force forced) OVERRIDE;
 
@@ -331,10 +332,10 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_METHOD1(OnIncomingLoss, void(QuicTime));
   MOCK_METHOD5(SentPacket,
                bool(QuicTime sent_time, QuicPacketSequenceNumber, QuicByteCount,
-                    Retransmission, HasRetransmittableData));
+                    TransmissionType, HasRetransmittableData));
   MOCK_METHOD2(AbandoningPacket, void(QuicPacketSequenceNumber sequence_number,
                                       QuicByteCount abandoned_bytes));
-  MOCK_METHOD4(TimeUntilSend, QuicTime::Delta(QuicTime now, Retransmission,
+  MOCK_METHOD4(TimeUntilSend, QuicTime::Delta(QuicTime now, TransmissionType,
                                               HasRetransmittableData,
                                               IsHandshake));
   MOCK_METHOD0(BandwidthEstimate, QuicBandwidth(void));

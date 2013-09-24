@@ -58,8 +58,6 @@ class TestConnection : public QuicConnection {
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm) {
     QuicConnectionPeer::SetSendAlgorithm(this, send_algorithm);
   }
-
-  using QuicConnection::SendOrQueuePacket;
 };
 
 class QuicConnectionHelperTest : public ::testing::Test {
@@ -309,7 +307,7 @@ TEST_F(QuicConnectionHelperTest, CreateAlarmAndReset) {
   EXPECT_TRUE(delegate->fired());
 }
 
-TEST_F(QuicConnectionHelperTest, TestRetransmission) {
+TEST_F(QuicConnectionHelperTest, TestRTORetransmission) {
   AddWrite(SYNCHRONOUS, ConstructDataPacket(1));
   AddWrite(SYNCHRONOUS, ConstructDataPacket(2));
   Initialize();
@@ -328,7 +326,7 @@ TEST_F(QuicConnectionHelperTest, TestRetransmission) {
   struct iovec iov = {const_cast<char*>(kData),
                       static_cast<size_t>(strlen(kData))};
   connection_->SendvStreamData(1, &iov, 1, 0, false);
-  EXPECT_CALL(*send_algorithm_, SentPacket(_, 2, _, IS_RETRANSMISSION, _));
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, 2, _, RTO_RETRANSMISSION, _));
   // Since no ack was received, the retransmission alarm will fire and
   // retransmit it.
   runner_->RunNextTask();
@@ -338,7 +336,7 @@ TEST_F(QuicConnectionHelperTest, TestRetransmission) {
   EXPECT_TRUE(AtEof());
 }
 
-TEST_F(QuicConnectionHelperTest, TestMultipleRetransmission) {
+TEST_F(QuicConnectionHelperTest, TestMultipleRTORetransmission) {
   AddWrite(SYNCHRONOUS, ConstructDataPacket(1));
   AddWrite(SYNCHRONOUS, ConstructDataPacket(2));
   AddWrite(SYNCHRONOUS, ConstructDataPacket(3));
@@ -358,7 +356,7 @@ TEST_F(QuicConnectionHelperTest, TestMultipleRetransmission) {
   struct iovec iov = {const_cast<char*>(kData),
                       static_cast<size_t>(strlen(kData))};
   connection_->SendvStreamData(1, &iov, 1, 0, false);
-  EXPECT_CALL(*send_algorithm_, SentPacket(_, 2, _, IS_RETRANSMISSION, _));
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, 2, _, RTO_RETRANSMISSION, _));
   // Since no ack was received, the retransmission alarm will fire and
   // retransmit it.
   runner_->RunNextTask();
@@ -368,7 +366,7 @@ TEST_F(QuicConnectionHelperTest, TestMultipleRetransmission) {
 
   // Since no ack was received, the retransmission alarm will fire and
   // retransmit it.
-  EXPECT_CALL(*send_algorithm_, SentPacket(_, 3, _, IS_RETRANSMISSION, _));
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, 3, _, RTO_RETRANSMISSION, _));
   EXPECT_CALL(*send_algorithm_, AbandoningPacket(2, _));
   runner_->RunNextTask();
 
@@ -476,11 +474,11 @@ TEST_F(QuicConnectionHelperTest, SendSchedulerDelayThenSend) {
   EXPECT_CALL(
       *send_algorithm_, TimeUntilSend(_, NOT_RETRANSMISSION, _, _)).WillOnce(
           Return(QuicTime::Delta::FromMicroseconds(1)));
+  connection_->OnSerializedPacket(
+      SerializedPacket(1, PACKET_6BYTE_SEQUENCE_NUMBER,
+                       ConstructRawDataPacket(1), 0,
+                       new RetransmittableFrames));
 
-  QuicPacket* packet = ConstructRawDataPacket(1);
-  connection_->SendOrQueuePacket(ENCRYPTION_NONE, 1, packet, 0,
-                                 HAS_RETRANSMITTABLE_DATA,
-                                 QuicConnection::NO_FORCE);
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, NOT_RETRANSMISSION,
                                            _));
   EXPECT_EQ(1u, connection_->NumQueuedPackets());

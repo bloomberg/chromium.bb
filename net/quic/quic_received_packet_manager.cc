@@ -185,4 +185,8 @@ void QuicReceivedPacketManager::UpdatePacketInformationSentByPeer(
              peer_least_packet_awaiting_ack_);
 }
 
+size_t QuicReceivedPacketManager::GetNumMissingPackets() {
+  return received_info_.missing_packets.size();
+}
+
 }  // namespace net

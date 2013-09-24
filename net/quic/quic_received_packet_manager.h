@@ -50,6 +50,9 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
   // Updates internal state based on |incoming_ack.sent_info|.
   void UpdatePacketInformationSentByPeer(const QuicAckFrame& incoming_ack);
 
+  // Returns the number of packets which are missing from the peer.
+  size_t GetNumMissingPackets();
+
   QuicPacketSequenceNumber peer_largest_observed_packet() {
     return peer_largest_observed_packet_;
   }

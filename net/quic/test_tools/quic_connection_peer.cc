@@ -50,14 +50,14 @@ QuicPacketCreator* QuicConnectionPeer::GetPacketCreator(
   return &connection->packet_creator_;
 }
 
-bool QuicConnectionPeer::GetReceivedTruncatedAck(QuicConnection* connection) {
-    return connection->received_truncated_ack_;
+// static
+QuicCongestionManager* QuicConnectionPeer::GetCongestionManager(
+    QuicConnection* connection) {
+  return &connection->congestion_manager_;
 }
 
-// static
-size_t QuicConnectionPeer::GetNumRetransmissionTimeouts(
-    QuicConnection* connection) {
-  return connection->retransmission_timeouts_.size();
+bool QuicConnectionPeer::GetReceivedTruncatedAck(QuicConnection* connection) {
+    return connection->received_truncated_ack_;
 }
 
 // static
@@ -70,7 +70,9 @@ QuicTime::Delta QuicConnectionPeer::GetNetworkTimeout(
 bool QuicConnectionPeer::IsSavedForRetransmission(
     QuicConnection* connection,
     QuicPacketSequenceNumber sequence_number) {
-  return connection->sent_packet_manager_.IsUnacked(sequence_number);
+  return connection->sent_packet_manager_.IsUnacked(sequence_number) &&
+      connection->sent_packet_manager_.HasRetransmittableFrames(
+          sequence_number);
 }
 
 // static
@@ -134,13 +136,6 @@ void QuicConnectionPeer::SetPeerAddress(QuicConnection* connection,
 void QuicConnectionPeer::SwapCrypters(QuicConnection* connection,
                                       QuicFramer* framer) {
   framer->SwapCryptersForTest(&connection->framer_);
-}
-
-// static
-void QuicConnectionPeer:: SetMaxPacketsPerRetransmissionAlarm(
-    QuicConnection* connection,
-    int max_packets) {
-  connection->max_packets_per_retransmission_alarm_ = max_packets;
 }
 
 // static

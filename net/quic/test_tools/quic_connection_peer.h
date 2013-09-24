@@ -15,6 +15,7 @@ namespace net {
 struct QuicAckFrame;
 struct QuicPacketHeader;
 class QuicAlarm;
+class QuicCongestionManager;
 class QuicConnection;
 class QuicConnectionHelperInterface;
 class QuicConnectionVisitorInterface;
@@ -44,9 +45,10 @@ class QuicConnectionPeer {
 
   static QuicPacketCreator* GetPacketCreator(QuicConnection* connection);
 
-  static bool GetReceivedTruncatedAck(QuicConnection* connection);
+  static QuicCongestionManager* GetCongestionManager(
+      QuicConnection* connection);
 
-  static size_t GetNumRetransmissionTimeouts(QuicConnection* connection);
+  static bool GetReceivedTruncatedAck(QuicConnection* connection);
 
   static QuicTime::Delta GetNetworkTimeout(QuicConnection* connection);
 
@@ -82,9 +84,6 @@ class QuicConnectionPeer {
                              const IPEndPoint& peer_address);
 
   static void SwapCrypters(QuicConnection* connection, QuicFramer* framer);
-
-  static void SetMaxPacketsPerRetransmissionAlarm(QuicConnection* connection,
-                                                  int max_packets);
 
   static QuicConnectionHelperInterface* GetHelper(QuicConnection* connection);
 

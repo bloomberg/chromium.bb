@@ -28,7 +28,8 @@ string QuicSpdyCompressor::CompressHeadersWithPriority(
 
 string QuicSpdyCompressor::CompressHeaders(
     const SpdyHeaderBlock& headers) {
-  return CompressHeadersInternal(0, headers, false);
+  // CompressHeadersInternal ignores priority when write_priority is false.
+  return CompressHeadersInternal(0 /* ignored */, headers, false);
 }
 
 string QuicSpdyCompressor::CompressHeadersInternal(

@@ -239,7 +239,7 @@ bool InterArrivalSender::SentPacket(
     QuicTime sent_time,
     QuicPacketSequenceNumber sequence_number,
     QuicByteCount bytes,
-    Retransmission /*is_retransmit*/,
+    TransmissionType /*transmission_type*/,
     HasRetransmittableData /*has_retransmittable_data*/) {
   if (probing_) {
     probe_->OnSentPacket(bytes);
@@ -259,7 +259,7 @@ void InterArrivalSender::AbandoningPacket(
 
 QuicTime::Delta InterArrivalSender::TimeUntilSend(
     QuicTime now,
-    Retransmission /*retransmit*/,
+    TransmissionType /*transmission_type*/,
     HasRetransmittableData has_retransmittable_data,
     IsHandshake /*handshake*/) {
   // TODO(pwestin): implement outer_congestion_window_ logic.

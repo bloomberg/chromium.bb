@@ -64,7 +64,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   class NET_EXPORT_PRIVATE DelegateInterface {
    public:
     virtual ~DelegateInterface() {}
-    virtual bool CanWrite(Retransmission retransmission,
+    virtual bool CanWrite(TransmissionType transmission_type,
                           HasRetransmittableData retransmittable,
                           IsHandshake handshake) = 0;
     virtual QuicAckFrame* CreateAckFrame() = 0;
