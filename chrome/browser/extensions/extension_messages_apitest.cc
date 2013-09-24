@@ -376,8 +376,9 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   EXPECT_FALSE(AreAnyNonWebApisDefined());
 }
 
+// See http://crbug.com/297866
 IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
-                       BackgroundPageClosesOnMessageReceipt) {
+                       DISABLED_BackgroundPageClosesOnMessageReceipt) {
   InitializeTestServer();
 
   // Install the web connectable extension.
