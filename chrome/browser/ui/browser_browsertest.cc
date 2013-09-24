@@ -31,6 +31,7 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/browser/ui/browser.h"
@@ -1685,6 +1686,53 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SAVE_PAGE));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_ENCODING_MENU));
 }
+
+// Ensure that creating an interstitial page closes any JavaScript dialogs
+// that were present on the previous page.  See http://crbug.com/295695.
+IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialClosesDialogs) {
+  ASSERT_TRUE(test_server()->Start());
+  host_resolver()->AddRule("www.example.com", "127.0.0.1");
+  GURL url(test_server()->GetURL("empty.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  contents->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
+      string16(),
+      ASCIIToUTF16("alert('Dialog showing!');"));
+  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  EXPECT_TRUE(alert->IsValid());
+  AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
+  EXPECT_TRUE(dialog_queue->HasActiveDialog());
+
+  TestInterstitialPage* interstitial = NULL;
+  {
+    scoped_refptr<content::MessageLoopRunner> loop_runner(
+        new content::MessageLoopRunner);
+
+    InterstitialObserver observer(contents,
+                                  loop_runner->QuitClosure(),
+                                  base::Closure());
+    interstitial = new TestInterstitialPage(contents, false, GURL());
+    loop_runner->Run();
+  }
+
+  // The interstitial should have closed the dialog.
+  EXPECT_TRUE(contents->ShowingInterstitialPage());
+  EXPECT_FALSE(dialog_queue->HasActiveDialog());
+
+  {
+    scoped_refptr<content::MessageLoopRunner> loop_runner(
+        new content::MessageLoopRunner);
+
+    InterstitialObserver observer(contents,
+                                  base::Closure(),
+                                  loop_runner->QuitClosure());
+    interstitial->Proceed();
+    loop_runner->Run();
+    // interstitial is deleted now.
+  }
+}
+
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCloseTab) {
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
