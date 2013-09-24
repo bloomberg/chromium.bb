@@ -72,13 +72,13 @@ namespace WTF {
         typedef T* (PassRefPtr::*UnspecifiedBoolType);
         operator UnspecifiedBoolType() const { return m_ptr ? &PassRefPtr::m_ptr : 0; }
 
-        PassRefPtr& operator=(const PassRefPtr&) { COMPILE_ASSERT(!sizeof(T*), PassRefPtr_should_never_be_assigned_to); return *this; }
-
         friend PassRefPtr adoptRef<T>(T*);
 
     private:
         // adopting constructor
         PassRefPtr(T* ptr, bool) : m_ptr(ptr) { }
+
+        PassRefPtr& operator=(const PassRefPtr&) { COMPILE_ASSERT(!sizeof(T*), PassRefPtr_should_never_be_assigned_to); ASSERT_NOT_REACHED(); return *this; }
 
         mutable T* m_ptr;
     };
