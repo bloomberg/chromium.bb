@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
+#include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -97,6 +98,16 @@ bool CompositorOutputSurface::BindToClient(
       routing_id_,
       base::Bind(&CompositorOutputSurfaceProxy::OnMessageReceived,
                  output_surface_proxy_));
+
+  if (!context_provider()) {
+    // Without a GPU context, the memory policy otherwise wouldn't be set.
+    client->SetMemoryPolicy(cc::ManagedMemoryPolicy(
+        64 * 1024 * 1024,
+        cc::ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE,
+        0,
+        cc::ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING,
+        cc::ManagedMemoryPolicy::kDefaultNumResourcesLimit));
+  }
 
   return true;
 }
