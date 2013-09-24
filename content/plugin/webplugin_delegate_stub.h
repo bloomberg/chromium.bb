@@ -48,6 +48,7 @@ class WebPluginDelegateStub : public IPC::Listener,
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   int instance_id() { return instance_id_; }
+  WebPluginDelegateImpl* delegate() { return delegate_; }
   WebPluginProxy* webplugin() { return webplugin_; }
 
  private:
