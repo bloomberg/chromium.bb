@@ -110,25 +110,6 @@ function SuggestAppsDialog(parentNode) {
   this.widgetUrl_ = CWS_WIDGET_URL;
   this.widgetOrigin_ = CWS_WIDGET_ORIGIN;
 
-  // For development, we provide the feature to override the URL of the widget.
-  // TODO(yoshiki): Remove this before ShareDialog launches or M31 branch cut.
-  this.urlOverrided_ = false;
-  chrome.storage.local.get(
-      ['widgetUrlOverride'],
-      function(items) {
-        if (items['widgetUrlOverride']) {
-          this.widgetUrl_ = items['widgetUrlOverride'];
-          var match = REGEXP_EXTRACT_HOST.exec(this.widgetUrl_);
-          // Overriding URL must be on either localhost or .google.com.
-          if (!match ||
-              (!REGEXP_GOOGLE_MATCH.test(match[0]) &&
-               !REGEXP_LOCALHOST_MATCH.test(match[0])))
-            throw new Error('The widget URL is invalid.');
-          this.widgetOrigin_ = match[0];
-          this.urlOverrided_ = true;
-        }
-      }.bind(this));
-
   this.extension_ = null;
   this.mime_ = null;
   this.installingItemId_ = null;
@@ -246,10 +227,6 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
     }
 
     var title = str('SUGGEST_DIALOG_TITLE');
-
-    // TODO(yoshiki): Remove this before ShareDialog launches.
-    if (this.urlOverrided_)
-      title += ' [OVERRIDED]';
 
     var show =
         FileManagerDialogBase.prototype.showTitleOnlyDialog.call(this, title);
