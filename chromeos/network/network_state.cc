@@ -29,24 +29,24 @@ bool ConvertListValueToStringVector(const base::ListValue& string_list,
 
 bool IsCaCertNssSet(const base::DictionaryValue& properties) {
   std::string ca_cert_nss;
-  if (properties.GetStringWithoutPathExpansion(flimflam::kEapCaCertNssProperty,
+  if (properties.GetStringWithoutPathExpansion(shill::kEapCaCertNssProperty,
                                                &ca_cert_nss) &&
       !ca_cert_nss.empty()) {
     return true;
   }
 
   const base::DictionaryValue* provider = NULL;
-  properties.GetDictionaryWithoutPathExpansion(flimflam::kProviderProperty,
+  properties.GetDictionaryWithoutPathExpansion(shill::kProviderProperty,
                                                &provider);
   if (!provider)
     return false;
   if (provider->GetStringWithoutPathExpansion(
-          flimflam::kL2tpIpsecCaCertNssProperty, &ca_cert_nss) &&
+          shill::kL2tpIpsecCaCertNssProperty, &ca_cert_nss) &&
       !ca_cert_nss.empty()) {
     return true;
   }
   if (provider->GetStringWithoutPathExpansion(
-          flimflam::kOpenVPNCaCertNSSProperty, &ca_cert_nss) &&
+          shill::kOpenVPNCaCertNSSProperty, &ca_cert_nss) &&
       !ca_cert_nss.empty()) {
     return true;
   }
@@ -76,31 +76,31 @@ bool NetworkState::PropertyChanged(const std::string& key,
   // Keep care that these properties are the same as in |GetProperties|.
   if (ManagedStatePropertyChanged(key, value))
     return true;
-  if (key == flimflam::kSignalStrengthProperty) {
+  if (key == shill::kSignalStrengthProperty) {
     return GetIntegerValue(key, value, &signal_strength_);
-  } else if (key == flimflam::kStateProperty) {
+  } else if (key == shill::kStateProperty) {
     return GetStringValue(key, value, &connection_state_);
-  } else if (key == flimflam::kConnectableProperty) {
+  } else if (key == shill::kConnectableProperty) {
     return GetBooleanValue(key, value, &connectable_);
-  } else if (key == flimflam::kErrorProperty) {
+  } else if (key == shill::kErrorProperty) {
     if (!GetStringValue(key, value, &error_))
       return false;
     // Shill uses "Unknown" to indicate an unset error state.
     if (error_ == kErrorUnknown)
       error_.clear();
     return true;
-  } else if (key == IPConfigProperty(flimflam::kAddressProperty)) {
+  } else if (key == IPConfigProperty(shill::kAddressProperty)) {
     return GetStringValue(key, value, &ip_address_);
-  } else if (key == IPConfigProperty(flimflam::kGatewayProperty)) {
+  } else if (key == IPConfigProperty(shill::kGatewayProperty)) {
     return GetStringValue(key, value, &gateway_);
-  } else if (key == IPConfigProperty(flimflam::kNameServersProperty)) {
+  } else if (key == IPConfigProperty(shill::kNameServersProperty)) {
     const base::ListValue* dns_servers;
     if (!value.GetAsList(&dns_servers))
       return false;
     dns_servers_.clear();
     ConvertListValueToStringVector(*dns_servers, &dns_servers_);
     return true;
-  } else if (key == IPConfigProperty(flimflam::kPrefixlenProperty)) {
+  } else if (key == IPConfigProperty(shill::kPrefixlenProperty)) {
     return GetIntegerValue(key, value, &prefix_length_);
   } else if (key == IPConfigProperty(
       shill::kWebProxyAutoDiscoveryUrlProperty)) {
@@ -120,13 +120,13 @@ bool NetworkState::PropertyChanged(const std::string& key,
       }
     }
     return true;
-  } else if (key == flimflam::kActivationStateProperty) {
+  } else if (key == shill::kActivationStateProperty) {
     return GetStringValue(key, value, &activation_state_);
-  } else if (key == flimflam::kRoamingStateProperty) {
+  } else if (key == shill::kRoamingStateProperty) {
     return GetStringValue(key, value, &roaming_);
-  } else if (key == flimflam::kSecurityProperty) {
+  } else if (key == shill::kSecurityProperty) {
     return GetStringValue(key, value, &security_);
-  } else if (key == flimflam::kProxyConfigProperty) {
+  } else if (key == shill::kProxyConfigProperty) {
     std::string proxy_config_str;
     if (!value.GetAsString(&proxy_config_str)) {
       NET_LOG_ERROR("Failed to parse " + key, path());
@@ -149,7 +149,7 @@ bool NetworkState::PropertyChanged(const std::string& key,
       NET_LOG_ERROR("Failed to parse " + key, path());
     }
     return true;
-  } else if (key == flimflam::kUIDataProperty) {
+  } else if (key == shill::kUIDataProperty) {
     scoped_ptr<NetworkUIData> new_ui_data =
         shill_property_util::GetUIDataFromValue(value);
     if (!new_ui_data) {
@@ -158,13 +158,13 @@ bool NetworkState::PropertyChanged(const std::string& key,
     }
     ui_data_ = *new_ui_data;
     return true;
-  } else if (key == flimflam::kNetworkTechnologyProperty) {
+  } else if (key == shill::kNetworkTechnologyProperty) {
     return GetStringValue(key, value, &network_technology_);
-  } else if (key == flimflam::kDeviceProperty) {
+  } else if (key == shill::kDeviceProperty) {
     return GetStringValue(key, value, &device_path_);
-  } else if (key == flimflam::kGuidProperty) {
+  } else if (key == shill::kGuidProperty) {
     return GetStringValue(key, value, &guid_);
-  } else if (key == flimflam::kProfileProperty) {
+  } else if (key == shill::kProfileProperty) {
     return GetStringValue(key, value, &profile_path_);
   } else if (key == shill::kActivateOverNonCellularNetworkProperty) {
     return GetBooleanValue(key, value, &activate_over_non_cellular_networks_);
@@ -186,27 +186,26 @@ bool NetworkState::InitialPropertiesReceived(
 
 void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
   // Keep care that these properties are the same as in |PropertyChanged|.
-  dictionary->SetStringWithoutPathExpansion(flimflam::kNameProperty, name());
-  dictionary->SetStringWithoutPathExpansion(flimflam::kTypeProperty, type());
-  dictionary->SetIntegerWithoutPathExpansion(flimflam::kSignalStrengthProperty,
+  dictionary->SetStringWithoutPathExpansion(shill::kNameProperty, name());
+  dictionary->SetStringWithoutPathExpansion(shill::kTypeProperty, type());
+  dictionary->SetIntegerWithoutPathExpansion(shill::kSignalStrengthProperty,
                                              signal_strength_);
-  dictionary->SetStringWithoutPathExpansion(flimflam::kStateProperty,
+  dictionary->SetStringWithoutPathExpansion(shill::kStateProperty,
                                             connection_state_);
-  dictionary->SetBooleanWithoutPathExpansion(flimflam::kConnectableProperty,
+  dictionary->SetBooleanWithoutPathExpansion(shill::kConnectableProperty,
                                              connectable_);
 
-  dictionary->SetStringWithoutPathExpansion(flimflam::kErrorProperty,
-                                            error_);
+  dictionary->SetStringWithoutPathExpansion(shill::kErrorProperty, error_);
 
   // IPConfig properties
   base::DictionaryValue* ipconfig_properties = new base::DictionaryValue;
-  ipconfig_properties->SetStringWithoutPathExpansion(flimflam::kAddressProperty,
+  ipconfig_properties->SetStringWithoutPathExpansion(shill::kAddressProperty,
                                                      ip_address_);
-  ipconfig_properties->SetStringWithoutPathExpansion(flimflam::kGatewayProperty,
+  ipconfig_properties->SetStringWithoutPathExpansion(shill::kGatewayProperty,
                                                      gateway_);
   base::ListValue* name_servers = new base::ListValue;
   name_servers->AppendStrings(dns_servers_);
-  ipconfig_properties->SetWithoutPathExpansion(flimflam::kNameServersProperty,
+  ipconfig_properties->SetWithoutPathExpansion(shill::kNameServersProperty,
                                                name_servers);
   ipconfig_properties->SetStringWithoutPathExpansion(
       shill::kWebProxyAutoDiscoveryUrlProperty,
@@ -214,11 +213,11 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
   dictionary->SetWithoutPathExpansion(shill::kIPConfigProperty,
                                       ipconfig_properties);
 
-  dictionary->SetStringWithoutPathExpansion(flimflam::kActivationStateProperty,
+  dictionary->SetStringWithoutPathExpansion(shill::kActivationStateProperty,
                                             activation_state_);
-  dictionary->SetStringWithoutPathExpansion(flimflam::kRoamingStateProperty,
+  dictionary->SetStringWithoutPathExpansion(shill::kRoamingStateProperty,
                                             roaming_);
-  dictionary->SetStringWithoutPathExpansion(flimflam::kSecurityProperty,
+  dictionary->SetStringWithoutPathExpansion(shill::kSecurityProperty,
                                             security_);
   // Proxy config and ONC source are intentionally omitted: These properties are
   // placed in NetworkState to transition ProxyConfigServiceImpl from
@@ -226,12 +225,12 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
   // shouldn't depend on this member. Once ManagedNetworkConfigurationHandler
   // is used instead of NetworkLibrary, we can remove them again.
   dictionary->SetStringWithoutPathExpansion(
-      flimflam::kNetworkTechnologyProperty,
+      shill::kNetworkTechnologyProperty,
       network_technology_);
-  dictionary->SetStringWithoutPathExpansion(flimflam::kDeviceProperty,
+  dictionary->SetStringWithoutPathExpansion(shill::kDeviceProperty,
                                             device_path_);
-  dictionary->SetStringWithoutPathExpansion(flimflam::kGuidProperty, guid_);
-  dictionary->SetStringWithoutPathExpansion(flimflam::kProfileProperty,
+  dictionary->SetStringWithoutPathExpansion(shill::kGuidProperty, guid_);
+  dictionary->SetStringWithoutPathExpansion(shill::kProfileProperty,
                                             profile_path_);
   dictionary->SetBooleanWithoutPathExpansion(
       shill::kActivateOverNonCellularNetworkProperty,
@@ -241,9 +240,9 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
 }
 
 bool NetworkState::RequiresActivation() const {
-  return (type() == flimflam::kTypeCellular &&
-      activation_state() != flimflam::kActivationStateActivated &&
-      activation_state() != flimflam::kActivationStateUnknown);
+  return (type() == shill::kTypeCellular &&
+          activation_state() != shill::kActivationStateActivated &&
+          activation_state() != shill::kActivationStateUnknown);
 }
 
 bool NetworkState::IsConnectedState() const {
@@ -290,16 +289,16 @@ bool NetworkState::UpdateName(const base::DictionaryValue& properties) {
 
 // static
 bool NetworkState::StateIsConnected(const std::string& connection_state) {
-  return (connection_state == flimflam::kStateReady ||
-          connection_state == flimflam::kStateOnline ||
-          connection_state == flimflam::kStatePortal);
+  return (connection_state == shill::kStateReady ||
+          connection_state == shill::kStateOnline ||
+          connection_state == shill::kStatePortal);
 }
 
 // static
 bool NetworkState::StateIsConnecting(const std::string& connection_state) {
-  return (connection_state == flimflam::kStateAssociation ||
-          connection_state == flimflam::kStateConfiguration ||
-          connection_state == flimflam::kStateCarrier);
+  return (connection_state == shill::kStateAssociation ||
+          connection_state == shill::kStateConfiguration ||
+          connection_state == shill::kStateCarrier);
 }
 
 // static

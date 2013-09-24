@@ -42,14 +42,14 @@ class NetworkTypePatternTest : public testing::Test {
 }  // namespace
 
 TEST_F(NetworkTypePatternTest, MatchesType) {
-  EXPECT_TRUE(mobile_.MatchesType(flimflam::kTypeCellular));
-  EXPECT_TRUE(mobile_.MatchesType(flimflam::kTypeWimax));
-  EXPECT_FALSE(mobile_.MatchesType(flimflam::kTypeWifi));
+  EXPECT_TRUE(mobile_.MatchesType(shill::kTypeCellular));
+  EXPECT_TRUE(mobile_.MatchesType(shill::kTypeWimax));
+  EXPECT_FALSE(mobile_.MatchesType(shill::kTypeWifi));
 
-  EXPECT_TRUE(wireless_.MatchesType(flimflam::kTypeWifi));
-  EXPECT_TRUE(wireless_.MatchesType(flimflam::kTypeCellular));
-  EXPECT_TRUE(wireless_.MatchesType(flimflam::kTypeWimax));
-  EXPECT_FALSE(wireless_.MatchesType(flimflam::kTypeEthernet));
+  EXPECT_TRUE(wireless_.MatchesType(shill::kTypeWifi));
+  EXPECT_TRUE(wireless_.MatchesType(shill::kTypeCellular));
+  EXPECT_TRUE(wireless_.MatchesType(shill::kTypeWimax));
+  EXPECT_FALSE(wireless_.MatchesType(shill::kTypeEthernet));
 }
 
 TEST_F(NetworkTypePatternTest, MatchesPattern) {
@@ -83,12 +83,12 @@ TEST_F(NetworkTypePatternTest, Equals) {
 
 TEST_F(NetworkTypePatternTest, Primitive) {
   const NetworkTypePattern primitive_cellular =
-      NetworkTypePattern::Primitive(flimflam::kTypeCellular);
+      NetworkTypePattern::Primitive(shill::kTypeCellular);
   EXPECT_TRUE(cellular_.Equals(primitive_cellular));
   EXPECT_TRUE(primitive_cellular.Equals(cellular_));
 
   const NetworkTypePattern primitive_wimax =
-      NetworkTypePattern::Primitive(flimflam::kTypeWimax);
+      NetworkTypePattern::Primitive(shill::kTypeWimax);
   EXPECT_TRUE(wimax_.Equals(primitive_wimax));
   EXPECT_TRUE(primitive_wimax.Equals(wimax_));
 }

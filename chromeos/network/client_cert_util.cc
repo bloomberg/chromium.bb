@@ -208,33 +208,33 @@ void SetShillProperties(const client_cert::ConfigType cert_config_type,
       return;
     }
     case CONFIG_TYPE_OPENVPN: {
-      tpm_pin_property = flimflam::kOpenVPNPinProperty;
+      tpm_pin_property = shill::kOpenVPNPinProperty;
       if (pkcs11_id) {
         properties->SetStringWithoutPathExpansion(
-            flimflam::kOpenVPNClientCertIdProperty, *pkcs11_id);
+            shill::kOpenVPNClientCertIdProperty, *pkcs11_id);
       }
       break;
     }
     case CONFIG_TYPE_IPSEC: {
-      tpm_pin_property = flimflam::kL2tpIpsecPinProperty;
+      tpm_pin_property = shill::kL2tpIpsecPinProperty;
       if (!tpm_slot.empty()) {
         properties->SetStringWithoutPathExpansion(
-            flimflam::kL2tpIpsecClientCertSlotProperty, tpm_slot);
+            shill::kL2tpIpsecClientCertSlotProperty, tpm_slot);
       }
       if (pkcs11_id) {
         properties->SetStringWithoutPathExpansion(
-            flimflam::kL2tpIpsecClientCertIdProperty, *pkcs11_id);
+            shill::kL2tpIpsecClientCertIdProperty, *pkcs11_id);
       }
       break;
     }
     case CONFIG_TYPE_EAP: {
-      tpm_pin_property = flimflam::kEapPinProperty;
+      tpm_pin_property = shill::kEapPinProperty;
       if (pkcs11_id) {
         // Shill requires both CertID and KeyID for TLS connections, despite the
         // fact that by convention they are the same ID.
-        properties->SetStringWithoutPathExpansion(flimflam::kEapCertIdProperty,
+        properties->SetStringWithoutPathExpansion(shill::kEapCertIdProperty,
                                                   *pkcs11_id);
-        properties->SetStringWithoutPathExpansion(flimflam::kEapKeyIdProperty,
+        properties->SetStringWithoutPathExpansion(shill::kEapKeyIdProperty,
                                                   *pkcs11_id);
       }
       break;
@@ -250,7 +250,7 @@ bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,
   // VPN certificate properties are read from the Provider dictionary.
   const base::DictionaryValue* provider_properties = NULL;
   service_properties.GetDictionaryWithoutPathExpansion(
-      flimflam::kProviderProperty, &provider_properties);
+      shill::kProviderProperty, &provider_properties);
   switch (cert_config_type) {
     case CONFIG_TYPE_NONE:
       return true;
@@ -263,11 +263,11 @@ bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,
       return false;
     case CONFIG_TYPE_EAP: {
       std::string cert_id = GetStringFromDictionary(
-          service_properties, flimflam::kEapCertIdProperty);
+          service_properties, shill::kEapCertIdProperty);
       std::string key_id = GetStringFromDictionary(
-          service_properties, flimflam::kEapKeyIdProperty);
+          service_properties, shill::kEapKeyIdProperty);
       std::string identity = GetStringFromDictionary(
-          service_properties, flimflam::kEapIdentityProperty);
+          service_properties, shill::kEapIdentityProperty);
       return !cert_id.empty() && !key_id.empty() && !identity.empty();
     }
   }

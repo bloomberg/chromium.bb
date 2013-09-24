@@ -51,7 +51,7 @@ class NetworkTypePattern;
 //
 // Most *ByType or *ForType methods will accept any of the following for |type|.
 // See individual methods for specific notes.
-// * Any type defined in service_constants.h (e.g. flimflam::kTypeWifi)
+// * Any type defined in service_constants.h (e.g. shill::kTypeWifi)
 // * kMatchTypeDefault returns the default (active) network
 // * kMatchTypeNonVirtual returns the primary non virtual network
 // * kMatchTypeWired returns the primary wired network

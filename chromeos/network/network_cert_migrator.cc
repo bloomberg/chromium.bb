@@ -131,11 +131,11 @@ class NetworkCertMigrator::MigrationTask
       const char* pem_key;
       UMANetworkType uma_type;
     } const kNssPemMap[] = {
-        { NULL, flimflam::kEapCaCertNssProperty, shill::kEapCaCertPemProperty,
+        { NULL, shill::kEapCaCertNssProperty, shill::kEapCaCertPemProperty,
          UMA_NETWORK_TYPE_EAP },
-        { flimflam::kProviderProperty, flimflam::kL2tpIpsecCaCertNssProperty,
+        { shill::kProviderProperty, shill::kL2tpIpsecCaCertNssProperty,
          shill::kL2tpIpsecCaCertPemProperty, UMA_NETWORK_TYPE_IPSEC },
-        { flimflam::kProviderProperty, flimflam::kOpenVPNCaCertNSSProperty,
+        { shill::kProviderProperty, shill::kOpenVPNCaCertNSSProperty,
          shill::kOpenVPNCaCertPemProperty, UMA_NETWORK_TYPE_OPENVPN },
     };
 

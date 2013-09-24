@@ -75,7 +75,7 @@ class CHROMEOS_EXPORT NetworkTypePattern {
 
   // Matches only networks of exactly the type |shill_network_type|, which must
   // be one of the types defined in service_constants.h (e.g.
-  // flimflam::kTypeWifi).
+  // shill::kTypeWifi).
   // Note: Shill distinguishes Ethernet without EAP from Ethernet with EAP. If
   // unsure, better use one of the matchers above.
   static NetworkTypePattern Primitive(const std::string& shill_network_type);

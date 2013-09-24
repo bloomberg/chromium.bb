@@ -73,10 +73,10 @@ void PolicyApplicator::GetProfilePropertiesCallback(
   VLOG(2) << "Received properties for profile " << profile_.ToDebugString();
   const base::ListValue* entries = NULL;
   if (!profile_properties.GetListWithoutPathExpansion(
-           flimflam::kEntriesProperty, &entries)) {
+           shill::kEntriesProperty, &entries)) {
     LOG(ERROR) << "Profile " << profile_.ToDebugString()
                << " doesn't contain the property "
-               << flimflam::kEntriesProperty;
+               << shill::kEntriesProperty;
     return;
   }
 

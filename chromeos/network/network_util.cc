@@ -104,16 +104,16 @@ bool ParseCellularScanResults(
     const DictionaryValue* dict = static_cast<const DictionaryValue*>(*it);
     // If the network id property is not present then this network cannot be
     // connected to so don't include it in the results.
-    if (!dict->GetStringWithoutPathExpansion(flimflam::kNetworkIdProperty,
+    if (!dict->GetStringWithoutPathExpansion(shill::kNetworkIdProperty,
                                              &scan_result.network_id))
       continue;
-    dict->GetStringWithoutPathExpansion(flimflam::kStatusProperty,
+    dict->GetStringWithoutPathExpansion(shill::kStatusProperty,
                                         &scan_result.status);
-    dict->GetStringWithoutPathExpansion(flimflam::kLongNameProperty,
+    dict->GetStringWithoutPathExpansion(shill::kLongNameProperty,
                                         &scan_result.long_name);
-    dict->GetStringWithoutPathExpansion(flimflam::kShortNameProperty,
+    dict->GetStringWithoutPathExpansion(shill::kShortNameProperty,
                                         &scan_result.short_name);
-    dict->GetStringWithoutPathExpansion(flimflam::kTechnologyProperty,
+    dict->GetStringWithoutPathExpansion(shill::kTechnologyProperty,
                                         &scan_result.technology);
     scan_results->push_back(scan_result);
   }

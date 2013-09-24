@@ -79,7 +79,7 @@ class ShillProfileTestClient {
     ASSERT_TRUE(entries);
 
     base::DictionaryValue* new_entry = entry.DeepCopy();
-    new_entry->SetStringWithoutPathExpansion(flimflam::kProfileProperty,
+    new_entry->SetStringWithoutPathExpansion(shill::kProfileProperty,
                                              profile_path);
     entries->SetWithoutPathExpansion(entry_path, new_entry);
   }
@@ -94,8 +94,7 @@ class ShillProfileTestClient {
 
     scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
     base::ListValue* entry_paths = new base::ListValue;
-    result->SetWithoutPathExpansion(flimflam::kEntriesProperty,
-                                    entry_paths);
+    result->SetWithoutPathExpansion(shill::kEntriesProperty, entry_paths);
     for (base::DictionaryValue::Iterator it(*entries); !it.IsAtEnd();
          it.Advance()) {
       entry_paths->AppendString(it.key());
@@ -412,7 +411,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedNewGUID) {
   // The passphrase isn't sent again, because it's configured by the user and
   // Shill doesn't sent it on GetProperties calls.
   expected_shill_properties->RemoveWithoutPathExpansion(
-      flimflam::kPassphraseProperty, NULL);
+      shill::kPassphraseProperty, NULL);
 
   EXPECT_CALL(mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
@@ -448,7 +447,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
   // The passphrase isn't sent again, because it's configured by the user and
   // Shill doesn't sent it on GetProperties calls.
   expected_shill_properties->RemoveWithoutPathExpansion(
-      flimflam::kPassphraseProperty, NULL);
+      shill::kPassphraseProperty, NULL);
 
   EXPECT_CALL(mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));

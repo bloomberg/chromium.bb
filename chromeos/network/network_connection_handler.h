@@ -91,8 +91,8 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // ConnectToNetwork() will start an asynchronous connection attempt.
   // On success, |success_callback| will be called.
   // On failure, |error_callback| will be called with |error_name| one of the
-  //   constants defined above, or flimflam::kErrorConnectFailed or
-  //   flimflam::kErrorBadPassphrase if the Shill Error property (from a
+  //   constants defined above, or shill::kErrorConnectFailed or
+  //   shill::kErrorBadPassphrase if the Shill Error property (from a
   //   previous connect attempt) was set to one of those.
   // |error_message| will contain an additional error string for debugging.
   // If |check_error_state| is true, the current state of the network is

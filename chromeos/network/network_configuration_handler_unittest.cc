@@ -1,4 +1,4 @@
-  // Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -336,9 +336,9 @@ TEST_F(NetworkConfigurationHandlerTest, CreateConfiguration) {
   scoped_ptr<base::StringValue> networkNameValue(
       base::Value::CreateStringValue(networkName));
   base::DictionaryValue value;
-  value.SetWithoutPathExpansion(flimflam::kSSIDProperty,
+  value.SetWithoutPathExpansion(shill::kSSIDProperty,
                                 base::Value::CreateStringValue(networkName));
-  value.SetWithoutPathExpansion(flimflam::kProfileProperty,
+  value.SetWithoutPathExpansion(shill::kProfileProperty,
                                 base::Value::CreateStringValue(profile));
 
   EXPECT_CALL(*mock_manager_client_,
@@ -499,9 +499,9 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubSetAndClearProperties) {
   // Set Properties
   base::DictionaryValue properties_to_set;
   properties_to_set.SetStringWithoutPathExpansion(
-      flimflam::kIdentityProperty, test_identity);
+      shill::kIdentityProperty, test_identity);
   properties_to_set.SetStringWithoutPathExpansion(
-      flimflam::kPassphraseProperty, test_passphrase);
+      shill::kPassphraseProperty, test_passphrase);
   network_configuration_handler_->SetProperties(
       service_path,
       properties_to_set,
@@ -514,17 +514,17 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubSetAndClearProperties) {
   EXPECT_EQ("SetProperties", success_callback_name_);
   std::string identity, passphrase;
   EXPECT_TRUE(GetServiceStringProperty(
-      service_path, flimflam::kIdentityProperty, &identity));
+      service_path, shill::kIdentityProperty, &identity));
   EXPECT_TRUE(GetServiceStringProperty(
-      service_path, flimflam::kPassphraseProperty, &passphrase));
+      service_path, shill::kPassphraseProperty, &passphrase));
   EXPECT_EQ(test_identity, identity);
   EXPECT_EQ(test_passphrase, passphrase);
   EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(service_path));
 
   // Clear Properties
   std::vector<std::string> properties_to_clear;
-  properties_to_clear.push_back(flimflam::kIdentityProperty);
-  properties_to_clear.push_back(flimflam::kPassphraseProperty);
+  properties_to_clear.push_back(shill::kIdentityProperty);
+  properties_to_clear.push_back(shill::kPassphraseProperty);
   network_configuration_handler_->ClearProperties(
       service_path,
       properties_to_clear,
@@ -536,9 +536,9 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubSetAndClearProperties) {
 
   EXPECT_EQ("ClearProperties", success_callback_name_);
   EXPECT_FALSE(GetServiceStringProperty(
-      service_path, flimflam::kIdentityProperty, &identity));
+      service_path, shill::kIdentityProperty, &identity));
   EXPECT_FALSE(GetServiceStringProperty(
-      service_path, flimflam::kIdentityProperty, &passphrase));
+      service_path, shill::kIdentityProperty, &passphrase));
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(service_path));
 }
 
@@ -551,7 +551,7 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubGetNameFromWifiHex) {
   // Set Properties
   base::DictionaryValue properties_to_set;
   properties_to_set.SetStringWithoutPathExpansion(
-      flimflam::kWifiHexSsid, wifi_hex);
+      shill::kWifiHexSsid, wifi_hex);
   network_configuration_handler_->SetProperties(
       service_path,
       properties_to_set,
@@ -560,7 +560,7 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubGetNameFromWifiHex) {
   message_loop_.RunUntilIdle();
   std::string wifi_hex_result;
   EXPECT_TRUE(GetServiceStringProperty(
-      service_path, flimflam::kWifiHexSsid, &wifi_hex_result));
+      service_path, shill::kWifiHexSsid, &wifi_hex_result));
   EXPECT_EQ(wifi_hex, wifi_hex_result);
 
   // Get Properties
@@ -574,25 +574,22 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubGetNameFromWifiHex) {
   EXPECT_EQ(service_path, get_properties_path_);
   std::string name_result;
   EXPECT_TRUE(GetReceivedStringProperty(
-      service_path, flimflam::kNameProperty, &name_result));
+      service_path, shill::kNameProperty, &name_result));
   EXPECT_EQ(expected_name, name_result);
 }
 
 TEST_F(NetworkConfigurationHandlerStubTest, StubCreateConfiguration) {
   const std::string service_path("test_wifi");
   base::DictionaryValue properties;
+  properties.SetStringWithoutPathExpansion(shill::kSSIDProperty, service_path);
+  properties.SetStringWithoutPathExpansion(shill::kNameProperty, service_path);
+  properties.SetStringWithoutPathExpansion(shill::kGuidProperty, service_path);
   properties.SetStringWithoutPathExpansion(
-      flimflam::kSSIDProperty, service_path);
+      shill::kTypeProperty, shill::kTypeWifi);
   properties.SetStringWithoutPathExpansion(
-      flimflam::kNameProperty, service_path);
+      shill::kStateProperty, shill::kStateIdle);
   properties.SetStringWithoutPathExpansion(
-      flimflam::kGuidProperty, service_path);
-  properties.SetStringWithoutPathExpansion(
-      flimflam::kTypeProperty, flimflam::kTypeWifi);
-  properties.SetStringWithoutPathExpansion(
-      flimflam::kStateProperty, flimflam::kStateIdle);
-  properties.SetStringWithoutPathExpansion(
-      flimflam::kProfileProperty, shill_stub_helper::kSharedProfilePath);
+      shill::kProfileProperty, shill_stub_helper::kSharedProfilePath);
 
   network_configuration_handler_->CreateConfiguration(
       properties,
@@ -606,12 +603,12 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubCreateConfiguration) {
 
   std::string ssid;
   EXPECT_TRUE(GetServiceStringProperty(
-      create_service_path_, flimflam::kSSIDProperty, &ssid));
+      create_service_path_, shill::kSSIDProperty, &ssid));
   std::string actual_profile;
   EXPECT_EQ(service_path, ssid);
 
   EXPECT_TRUE(GetServiceStringProperty(
-      create_service_path_, flimflam::kProfileProperty, &actual_profile));
+      create_service_path_, shill::kProfileProperty, &actual_profile));
   EXPECT_EQ(shill_stub_helper::kSharedProfilePath, actual_profile);
 }
 

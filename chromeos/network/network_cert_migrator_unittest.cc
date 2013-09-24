@@ -104,12 +104,12 @@ class NetworkCertMigratorTest : public testing::Test {
     const bool add_to_watchlist = true;
     service_test_->AddService(kWifiStub,
                               kWifiStub,
-                              flimflam::kTypeWifi,
-                              flimflam::kStateOnline,
+                              shill::kTypeWifi,
+                              shill::kStateOnline,
                               add_to_visible,
                               add_to_watchlist);
     service_test_->SetServiceProperty(kWifiStub,
-                                      flimflam::kEapCaCertNssProperty,
+                                      shill::kEapCaCertNssProperty,
                                       base::StringValue(kNSSNickname));
   }
 
@@ -118,7 +118,7 @@ class NetworkCertMigratorTest : public testing::Test {
     ca_pem->clear();
     const base::DictionaryValue* properties =
         service_test_->GetServiceProperties(kWifiStub);
-    properties->GetStringWithoutPathExpansion(flimflam::kEapCaCertNssProperty,
+    properties->GetStringWithoutPathExpansion(shill::kEapCaCertNssProperty,
                                               nss_nickname);
     const base::ListValue* ca_pems = NULL;
     properties->GetListWithoutPathExpansion(shill::kEapCaCertPemProperty,
@@ -132,16 +132,16 @@ class NetworkCertMigratorTest : public testing::Test {
     const bool add_to_watchlist = true;
     service_test_->AddService(kVPNStub,
                               kVPNStub,
-                              flimflam::kTypeVPN,
-                              flimflam::kStateIdle,
+                              shill::kTypeVPN,
+                              shill::kStateIdle,
                               add_to_visible,
                               add_to_watchlist);
     base::DictionaryValue provider;
-    const char* nss_property = open_vpn ? flimflam::kOpenVPNCaCertNSSProperty
-                                        : flimflam::kL2tpIpsecCaCertNssProperty;
+    const char* nss_property = open_vpn ? shill::kOpenVPNCaCertNSSProperty
+                                        : shill::kL2tpIpsecCaCertNssProperty;
     provider.SetStringWithoutPathExpansion(nss_property, kNSSNickname);
     service_test_->SetServiceProperty(
-        kVPNStub, flimflam::kProviderProperty, provider);
+        kVPNStub, shill::kProviderProperty, provider);
   }
 
   void GetVpnCACertProperties(bool open_vpn,
@@ -152,12 +152,12 @@ class NetworkCertMigratorTest : public testing::Test {
     const base::DictionaryValue* properties =
         service_test_->GetServiceProperties(kVPNStub);
     const base::DictionaryValue* provider = NULL;
-    properties->GetDictionaryWithoutPathExpansion(flimflam::kProviderProperty,
+    properties->GetDictionaryWithoutPathExpansion(shill::kProviderProperty,
                                                   &provider);
     if (!provider)
       return;
-    const char* nss_property = open_vpn ? flimflam::kOpenVPNCaCertNSSProperty
-                                        : flimflam::kL2tpIpsecCaCertNssProperty;
+    const char* nss_property = open_vpn ? shill::kOpenVPNCaCertNSSProperty
+                                        : shill::kL2tpIpsecCaCertNssProperty;
     provider->GetStringWithoutPathExpansion(nss_property, nss_nickname);
     const base::ListValue* ca_pems = NULL;
     const char* pem_property = open_vpn ? shill::kOpenVPNCaCertPemProperty

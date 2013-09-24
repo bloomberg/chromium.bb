@@ -154,7 +154,7 @@ scoped_ptr<base::DictionaryValue> CreateShillConfiguration(
       onc::TranslateONCObjectToShill(&onc::kNetworkConfigurationSignature,
                                      *effective));
 
-  shill_dictionary->SetStringWithoutPathExpansion(flimflam::kProfileProperty,
+  shill_dictionary->SetStringWithoutPathExpansion(shill::kProfileProperty,
                                                   profile.path);
 
   scoped_ptr<NetworkUIData> ui_data;

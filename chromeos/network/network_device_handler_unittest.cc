@@ -44,20 +44,19 @@ class NetworkDeviceHandlerTest : public testing::Test {
         DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
     device_test->ClearDevices();
     device_test->AddDevice(
-        kDefaultCellularDevicePath, flimflam::kTypeCellular, "cellular1");
-    device_test->AddDevice(
-        kDefaultWifiDevicePath, flimflam::kTypeWifi, "wifi1");
+        kDefaultCellularDevicePath, shill::kTypeCellular, "cellular1");
+    device_test->AddDevice(kDefaultWifiDevicePath, shill::kTypeWifi, "wifi1");
 
     base::FundamentalValue allow_roaming(false);
     device_test->SetDeviceProperty(
         kDefaultCellularDevicePath,
-        flimflam::kCellularAllowRoamingProperty,
+        shill::kCellularAllowRoamingProperty,
         allow_roaming);
 
     base::ListValue test_ip_configs;
     test_ip_configs.AppendString("ip_config1");
     device_test->SetDeviceProperty(
-        kDefaultWifiDevicePath, flimflam::kIPConfigsProperty, test_ip_configs);
+        kDefaultWifiDevicePath, shill::kIPConfigsProperty, test_ip_configs);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -170,8 +169,8 @@ TEST_F(NetworkDeviceHandlerTest, GetDeviceProperties) {
   message_loop_.RunUntilIdle();
   EXPECT_EQ(kResultSuccess, result_);
   std::string type;
-  properties_->GetString(flimflam::kTypeProperty, &type);
-  EXPECT_EQ(flimflam::kTypeWifi, type);
+  properties_->GetString(shill::kTypeProperty, &type);
+  EXPECT_EQ(shill::kTypeWifi, type);
 }
 
 TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
@@ -184,15 +183,15 @@ TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
   EXPECT_EQ(kResultSuccess, result_);
   bool allow_roaming;
   EXPECT_TRUE(properties_->GetBooleanWithoutPathExpansion(
-      flimflam::kCellularAllowRoamingProperty, &allow_roaming));
+      shill::kCellularAllowRoamingProperty, &allow_roaming));
   EXPECT_FALSE(allow_roaming);
 
-  // Set the flimflam::kCellularAllowRoamingProperty to true. The call
+  // Set the shill::kCellularAllowRoamingProperty to true. The call
   // should succeed and the value should be set.
   base::FundamentalValue allow_roaming_value(true);
   network_device_handler_->SetDeviceProperty(
       kDefaultCellularDevicePath,
-      flimflam::kCellularAllowRoamingProperty,
+      shill::kCellularAllowRoamingProperty,
       allow_roaming_value,
       success_callback_,
       error_callback_);
@@ -207,13 +206,13 @@ TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
   message_loop_.RunUntilIdle();
   EXPECT_EQ(kResultSuccess, result_);
   EXPECT_TRUE(properties_->GetBooleanWithoutPathExpansion(
-      flimflam::kCellularAllowRoamingProperty, &allow_roaming));
+      shill::kCellularAllowRoamingProperty, &allow_roaming));
   EXPECT_TRUE(allow_roaming);
 
   // Set property on an invalid path.
   network_device_handler_->SetDeviceProperty(
       "/device/invalid_path",
-      flimflam::kCellularAllowRoamingProperty,
+      shill::kCellularAllowRoamingProperty,
       allow_roaming_value,
       success_callback_,
       error_callback_);

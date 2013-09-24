@@ -199,23 +199,23 @@ NetworkChangeNotifierChromeos::ConnectionTypeFromShill(
     const std::string& type, const std::string& technology) {
   if (NetworkTypePattern::Ethernet().MatchesType(type))
     return CONNECTION_ETHERNET;
-  else if (type == flimflam::kTypeWifi)
+  else if (type == shill::kTypeWifi)
     return CONNECTION_WIFI;
-  else if (type == flimflam::kTypeWimax)
+  else if (type == shill::kTypeWimax)
     return CONNECTION_4G;
 
-  if (type != flimflam::kTypeCellular)
+  if (type != shill::kTypeCellular)
     return CONNECTION_UNKNOWN;
 
   // For cellular types, mapping depends on the technology.
-  if (technology == flimflam::kNetworkTechnologyEvdo ||
-      technology == flimflam::kNetworkTechnologyGsm ||
-      technology == flimflam::kNetworkTechnologyUmts ||
-      technology == flimflam::kNetworkTechnologyHspa) {
+  if (technology == shill::kNetworkTechnologyEvdo ||
+      technology == shill::kNetworkTechnologyGsm ||
+      technology == shill::kNetworkTechnologyUmts ||
+      technology == shill::kNetworkTechnologyHspa) {
     return CONNECTION_3G;
-  } else if (technology == flimflam::kNetworkTechnologyHspaPlus ||
-             technology == flimflam::kNetworkTechnologyLte ||
-             technology == flimflam::kNetworkTechnologyLteAdvanced) {
+  } else if (technology == shill::kNetworkTechnologyHspaPlus ||
+             technology == shill::kNetworkTechnologyLte ||
+             technology == shill::kNetworkTechnologyLteAdvanced) {
     return CONNECTION_4G;
   } else {
     return CONNECTION_2G;  // Default cellular type is 2G.

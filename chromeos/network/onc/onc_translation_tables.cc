@@ -24,150 +24,150 @@ namespace onc {
 namespace {
 
 const FieldTranslationEntry eap_fields[] = {
-  { eap::kAnonymousIdentity, flimflam::kEapAnonymousIdentityProperty },
-  { eap::kIdentity, flimflam::kEapIdentityProperty },
+  { eap::kAnonymousIdentity, shill::kEapAnonymousIdentityProperty },
+  { eap::kIdentity, shill::kEapIdentityProperty },
   // This field is converted during translation, see onc_translator_*.
-  // { eap::kInner, flimflam::kEapPhase2AuthProperty },
+  // { eap::kInner, shill::kEapPhase2AuthProperty },
 
   // This field is converted during translation, see onc_translator_*.
-  // { eap::kOuter, flimflam::kEapMethodProperty },
-  { eap::kPassword, flimflam::kEapPasswordProperty },
-  { eap::kSaveCredentials, flimflam::kSaveCredentialsProperty },
+  // { eap::kOuter, shill::kEapMethodProperty },
+  { eap::kPassword, shill::kEapPasswordProperty },
+  { eap::kSaveCredentials, shill::kSaveCredentialsProperty },
   { eap::kServerCAPEMs, shill::kEapCaCertPemProperty },
-  { eap::kUseSystemCAs, flimflam::kEapUseSystemCasProperty },
+  { eap::kUseSystemCAs, shill::kEapUseSystemCasProperty },
   { NULL }
 };
 
 const FieldTranslationEntry ipsec_fields[] = {
   // Ignored by Shill, not necessary to synchronize.
-  // { ipsec::kAuthenticationType, flimflam::kL2tpIpsecAuthenticationType },
+  // { ipsec::kAuthenticationType, shill::kL2tpIpsecAuthenticationType },
   { ipsec::kGroup, shill::kL2tpIpsecTunnelGroupProperty },
   // Ignored by Shill, not necessary to synchronize.
-  // { ipsec::kIKEVersion, flimflam::kL2tpIpsecIkeVersion },
-  { ipsec::kPSK, flimflam::kL2tpIpsecPskProperty },
-  { vpn::kSaveCredentials, flimflam::kSaveCredentialsProperty },
+  // { ipsec::kIKEVersion, shill::kL2tpIpsecIkeVersion },
+  { ipsec::kPSK, shill::kL2tpIpsecPskProperty },
+  { vpn::kSaveCredentials, shill::kSaveCredentialsProperty },
   { ipsec::kServerCAPEMs, shill::kL2tpIpsecCaCertPemProperty },
   { NULL }
 };
 
 const FieldTranslationEntry l2tp_fields[] = {
-  { vpn::kPassword, flimflam::kL2tpIpsecPasswordProperty },
+  { vpn::kPassword, shill::kL2tpIpsecPasswordProperty },
   // We don't synchronize l2tp's SaveCredentials field for now, as Shill doesn't
   // support separate settings for ipsec and l2tp.
   // { vpn::kSaveCredentials, &kBoolSignature },
-  { vpn::kUsername, flimflam::kL2tpIpsecUserProperty },
+  { vpn::kUsername, shill::kL2tpIpsecUserProperty },
   { NULL }
 };
 
 const FieldTranslationEntry openvpn_fields[] = {
-  { openvpn::kAuth, flimflam::kOpenVPNAuthProperty },
-  { openvpn::kAuthNoCache, flimflam::kOpenVPNAuthNoCacheProperty },
-  { openvpn::kAuthRetry, flimflam::kOpenVPNAuthRetryProperty },
-  { openvpn::kCipher, flimflam::kOpenVPNCipherProperty },
-  { openvpn::kCompLZO, flimflam::kOpenVPNCompLZOProperty },
-  { openvpn::kCompNoAdapt, flimflam::kOpenVPNCompNoAdaptProperty },
-  { openvpn::kKeyDirection, flimflam::kOpenVPNKeyDirectionProperty },
-  { openvpn::kNsCertType, flimflam::kOpenVPNNsCertTypeProperty },
-  { vpn::kPassword, flimflam::kOpenVPNPasswordProperty },
-  { openvpn::kPort, flimflam::kOpenVPNPortProperty },
-  { openvpn::kProto, flimflam::kOpenVPNProtoProperty },
-  { openvpn::kPushPeerInfo, flimflam::kOpenVPNPushPeerInfoProperty },
-  { openvpn::kRemoteCertEKU, flimflam::kOpenVPNRemoteCertEKUProperty },
+  { openvpn::kAuth, shill::kOpenVPNAuthProperty },
+  { openvpn::kAuthNoCache, shill::kOpenVPNAuthNoCacheProperty },
+  { openvpn::kAuthRetry, shill::kOpenVPNAuthRetryProperty },
+  { openvpn::kCipher, shill::kOpenVPNCipherProperty },
+  { openvpn::kCompLZO, shill::kOpenVPNCompLZOProperty },
+  { openvpn::kCompNoAdapt, shill::kOpenVPNCompNoAdaptProperty },
+  { openvpn::kKeyDirection, shill::kOpenVPNKeyDirectionProperty },
+  { openvpn::kNsCertType, shill::kOpenVPNNsCertTypeProperty },
+  { vpn::kPassword, shill::kOpenVPNPasswordProperty },
+  { openvpn::kPort, shill::kOpenVPNPortProperty },
+  { openvpn::kProto, shill::kOpenVPNProtoProperty },
+  { openvpn::kPushPeerInfo, shill::kOpenVPNPushPeerInfoProperty },
+  { openvpn::kRemoteCertEKU, shill::kOpenVPNRemoteCertEKUProperty },
   // This field is converted during translation, see onc_translator_*.
-  // { openvpn::kRemoteCertKU, flimflam::kOpenVPNRemoteCertKUProperty },
-  { openvpn::kRemoteCertTLS, flimflam::kOpenVPNRemoteCertTLSProperty },
-  { openvpn::kRenegSec, flimflam::kOpenVPNRenegSecProperty },
-  { vpn::kSaveCredentials, flimflam::kSaveCredentialsProperty },
+  // { openvpn::kRemoteCertKU, shill::kOpenVPNRemoteCertKUProperty },
+  { openvpn::kRemoteCertTLS, shill::kOpenVPNRemoteCertTLSProperty },
+  { openvpn::kRenegSec, shill::kOpenVPNRenegSecProperty },
+  { vpn::kSaveCredentials, shill::kSaveCredentialsProperty },
   { openvpn::kServerCAPEMs, shill::kOpenVPNCaCertPemProperty },
-  { openvpn::kServerPollTimeout, flimflam::kOpenVPNServerPollTimeoutProperty },
-  { openvpn::kShaper, flimflam::kOpenVPNShaperProperty },
-  { openvpn::kStaticChallenge, flimflam::kOpenVPNStaticChallengeProperty },
-  { openvpn::kTLSAuthContents, flimflam::kOpenVPNTLSAuthContentsProperty },
-  { openvpn::kTLSRemote, flimflam::kOpenVPNTLSRemoteProperty },
-  { vpn::kUsername, flimflam::kOpenVPNUserProperty },
+  { openvpn::kServerPollTimeout, shill::kOpenVPNServerPollTimeoutProperty },
+  { openvpn::kShaper, shill::kOpenVPNShaperProperty },
+  { openvpn::kStaticChallenge, shill::kOpenVPNStaticChallengeProperty },
+  { openvpn::kTLSAuthContents, shill::kOpenVPNTLSAuthContentsProperty },
+  { openvpn::kTLSRemote, shill::kOpenVPNTLSRemoteProperty },
+  { vpn::kUsername, shill::kOpenVPNUserProperty },
   { NULL }
 };
 
 const FieldTranslationEntry vpn_fields[] = {
-  { vpn::kAutoConnect, flimflam::kAutoConnectProperty },
-  { vpn::kHost, flimflam::kProviderHostProperty },
+  { vpn::kAutoConnect, shill::kAutoConnectProperty },
+  { vpn::kHost, shill::kProviderHostProperty },
   // This field is converted during translation, see onc_translator_*.
-  // { vpn::kType, flimflam::kProviderTypeProperty },
+  // { vpn::kType, shill::kProviderTypeProperty },
   { NULL }
 };
 
 const FieldTranslationEntry wifi_fields[] = {
-  { wifi::kAutoConnect, flimflam::kAutoConnectProperty },
-  { wifi::kBSSID, flimflam::kWifiBSsid },
-  { wifi::kFrequency, flimflam::kWifiFrequency },
+  { wifi::kAutoConnect, shill::kAutoConnectProperty },
+  { wifi::kBSSID, shill::kWifiBSsid },
+  { wifi::kFrequency, shill::kWifiFrequency },
   { wifi::kFrequencyList, shill::kWifiFrequencyListProperty },
-  { wifi::kHiddenSSID, flimflam::kWifiHiddenSsid },
-  { wifi::kPassphrase, flimflam::kPassphraseProperty },
-  { wifi::kSSID, flimflam::kSSIDProperty },
+  { wifi::kHiddenSSID, shill::kWifiHiddenSsid },
+  { wifi::kPassphrase, shill::kPassphraseProperty },
+  { wifi::kSSID, shill::kSSIDProperty },
   // This field is converted during translation, see onc_translator_*.
-  // { wifi::kSecurity, flimflam::kSecurityProperty },
-  { wifi::kSignalStrength, flimflam::kSignalStrengthProperty },
+  // { wifi::kSecurity, shill::kSecurityProperty },
+  { wifi::kSignalStrength, shill::kSignalStrengthProperty },
   { NULL }
 };
 
 const FieldTranslationEntry cellular_apn_fields[] = {
-  { cellular_apn::kName, flimflam::kApnProperty },
-  { cellular_apn::kUsername, flimflam::kApnUsernameProperty },
-  { cellular_apn::kPassword, flimflam::kApnPasswordProperty },
+  { cellular_apn::kName, shill::kApnProperty },
+  { cellular_apn::kUsername, shill::kApnUsernameProperty },
+  { cellular_apn::kPassword, shill::kApnPasswordProperty },
   { NULL }
 };
 
 const FieldTranslationEntry cellular_provider_fields[] = {
-  { cellular_provider::kCode, flimflam::kOperatorCodeKey },
-  { cellular_provider::kCountry, flimflam::kOperatorCountryKey },
-  { cellular_provider::kName, flimflam::kOperatorNameKey },
+  { cellular_provider::kCode, shill::kOperatorCodeKey },
+  { cellular_provider::kCountry, shill::kOperatorCountryKey },
+  { cellular_provider::kName, shill::kOperatorNameKey },
   { NULL }
 };
 
 const FieldTranslationEntry cellular_fields[] = {
   { cellular::kActivateOverNonCellularNetwork,
     shill::kActivateOverNonCellularNetworkProperty },
-  { cellular::kActivationState, flimflam::kActivationStateProperty },
-  { cellular::kAllowRoaming, flimflam::kCellularAllowRoamingProperty },
-  { cellular::kCarrier, flimflam::kCarrierProperty },
-  { cellular::kESN, flimflam::kEsnProperty },
-  { cellular::kFamily, flimflam::kTechnologyFamilyProperty },
-  { cellular::kFirmwareRevision, flimflam::kFirmwareRevisionProperty },
-  { cellular::kFoundNetworks, flimflam::kFoundNetworksProperty },
-  { cellular::kHardwareRevision, flimflam::kHardwareRevisionProperty },
-  { cellular::kICCID, flimflam::kIccidProperty },
-  { cellular::kIMEI, flimflam::kImeiProperty },
-  { cellular::kIMSI, flimflam::kImsiProperty },
-  { cellular::kManufacturer, flimflam::kManufacturerProperty },
-  { cellular::kMDN, flimflam::kMdnProperty },
-  { cellular::kMEID, flimflam::kMeidProperty },
-  { cellular::kMIN, flimflam::kMinProperty },
-  { cellular::kModelID, flimflam::kModelIDProperty },
-  { cellular::kNetworkTechnology, flimflam::kNetworkTechnologyProperty },
-  { cellular::kPRLVersion, flimflam::kPRLVersionProperty },
+  { cellular::kActivationState, shill::kActivationStateProperty },
+  { cellular::kAllowRoaming, shill::kCellularAllowRoamingProperty },
+  { cellular::kCarrier, shill::kCarrierProperty },
+  { cellular::kESN, shill::kEsnProperty },
+  { cellular::kFamily, shill::kTechnologyFamilyProperty },
+  { cellular::kFirmwareRevision, shill::kFirmwareRevisionProperty },
+  { cellular::kFoundNetworks, shill::kFoundNetworksProperty },
+  { cellular::kHardwareRevision, shill::kHardwareRevisionProperty },
+  { cellular::kICCID, shill::kIccidProperty },
+  { cellular::kIMEI, shill::kImeiProperty },
+  { cellular::kIMSI, shill::kImsiProperty },
+  { cellular::kManufacturer, shill::kManufacturerProperty },
+  { cellular::kMDN, shill::kMdnProperty },
+  { cellular::kMEID, shill::kMeidProperty },
+  { cellular::kMIN, shill::kMinProperty },
+  { cellular::kModelID, shill::kModelIDProperty },
+  { cellular::kNetworkTechnology, shill::kNetworkTechnologyProperty },
+  { cellular::kPRLVersion, shill::kPRLVersionProperty },
   { cellular::kProviderRequiresRoaming,
     shill::kProviderRequiresRoamingProperty },
-  { cellular::kRoamingState, flimflam::kRoamingStateProperty },
-  { cellular::kSelectedNetwork, flimflam::kSelectedNetworkProperty },
-  { cellular::kSIMLockStatus, flimflam::kSIMLockStatusProperty },
+  { cellular::kRoamingState, shill::kRoamingStateProperty },
+  { cellular::kSelectedNetwork, shill::kSelectedNetworkProperty },
+  { cellular::kSIMLockStatus, shill::kSIMLockStatusProperty },
   { cellular::kSIMPresent, shill::kSIMPresentProperty },
   { cellular::kSupportedCarriers, shill::kSupportedCarriersProperty },
-  { cellular::kSupportNetworkScan, flimflam::kSupportNetworkScanProperty },
+  { cellular::kSupportNetworkScan, shill::kSupportNetworkScanProperty },
   { NULL }
 };
 
 const FieldTranslationEntry network_fields[] = {
   // Shill doesn't allow setting the name for non-VPN networks.
   // This field is conditionally translated, see onc_translator_*.
-  // { network_config::kName, flimflam::kNameProperty },
-  { network_config::kGUID, flimflam::kGuidProperty },
+  // { network_config::kName, shill::kNameProperty },
+  { network_config::kGUID, shill::kGuidProperty },
   // This field is converted during translation, see onc_translator_*.
-  // { network_config::kType, flimflam::kTypeProperty },
+  // { network_config::kType, shill::kTypeProperty },
 
   // This field is converted during translation, see
   // onc_translator_shill_to_onc.cc. It is only converted when going from
   // Shill->ONC, and ignored otherwise.
-  // { network_config::kConnectionState, flimflam::kStateProperty },
+  // { network_config::kConnectionState, shill::kStateProperty },
   { NULL }
 };
 
@@ -200,7 +200,7 @@ struct NestedShillDictionaryEntry {
 };
 
 const char* cellular_apn_property_path_entries[] = {
-  flimflam::kCellularApnProperty,
+  shill::kCellularApnProperty,
   NULL
 };
 
@@ -213,51 +213,51 @@ const NestedShillDictionaryEntry nested_shill_dictionaries[] = {
 
 const StringTranslationEntry kNetworkTypeTable[] = {
   // This mapping is ensured in the translation code.
-  //  { network_type::kEthernet, flimflam::kTypeEthernet },
+  //  { network_type::kEthernet, shill::kTypeEthernet },
   //  { network_type::kEthernet, shill::kTypeEthernetEap },
-  { network_type::kWiFi, flimflam::kTypeWifi },
-  { network_type::kCellular, flimflam::kTypeCellular },
-  { network_type::kVPN, flimflam::kTypeVPN },
+  { network_type::kWiFi, shill::kTypeWifi },
+  { network_type::kCellular, shill::kTypeCellular },
+  { network_type::kVPN, shill::kTypeVPN },
   { NULL }
 };
 
 const StringTranslationEntry kVPNTypeTable[] = {
-  { vpn::kTypeL2TP_IPsec, flimflam::kProviderL2tpIpsec },
-  { vpn::kOpenVPN, flimflam::kProviderOpenVpn },
+  { vpn::kTypeL2TP_IPsec, shill::kProviderL2tpIpsec },
+  { vpn::kOpenVPN, shill::kProviderOpenVpn },
   { NULL }
 };
 
 // The first matching line is chosen.
 const StringTranslationEntry kWiFiSecurityTable[] = {
-  { wifi::kNone, flimflam::kSecurityNone },
-  { wifi::kWEP_PSK, flimflam::kSecurityWep },
-  { wifi::kWPA_PSK, flimflam::kSecurityPsk },
-  { wifi::kWPA_EAP, flimflam::kSecurity8021x },
-  { wifi::kWPA_PSK, flimflam::kSecurityRsn },
-  { wifi::kWPA_PSK, flimflam::kSecurityWpa },
+  { wifi::kNone, shill::kSecurityNone },
+  { wifi::kWEP_PSK, shill::kSecurityWep },
+  { wifi::kWPA_PSK, shill::kSecurityPsk },
+  { wifi::kWPA_EAP, shill::kSecurity8021x },
+  { wifi::kWPA_PSK, shill::kSecurityRsn },
+  { wifi::kWPA_PSK, shill::kSecurityWpa },
   { NULL }
 };
 
 const StringTranslationEntry kEAPOuterTable[] = {
-  { eap::kPEAP, flimflam::kEapMethodPEAP },
-  { eap::kEAP_TLS, flimflam::kEapMethodTLS },
-  { eap::kEAP_TTLS, flimflam::kEapMethodTTLS },
-  { eap::kLEAP, flimflam::kEapMethodLEAP },
+  { eap::kPEAP, shill::kEapMethodPEAP },
+  { eap::kEAP_TLS, shill::kEapMethodTLS },
+  { eap::kEAP_TTLS, shill::kEapMethodTTLS },
+  { eap::kLEAP, shill::kEapMethodLEAP },
   { NULL }
 };
 
 // Translation of the EAP.Inner field in case of EAP.Outer == PEAP
 const StringTranslationEntry kEAP_PEAP_InnerTable[] = {
-  { eap::kMD5, flimflam::kEapPhase2AuthPEAPMD5 },
-  { eap::kMSCHAPv2, flimflam::kEapPhase2AuthPEAPMSCHAPV2 },
+  { eap::kMD5, shill::kEapPhase2AuthPEAPMD5 },
+  { eap::kMSCHAPv2, shill::kEapPhase2AuthPEAPMSCHAPV2 },
   { NULL }
 };
 
 // Translation of the EAP.Inner field in case of EAP.Outer == TTLS
 const StringTranslationEntry kEAP_TTLS_InnerTable[] = {
-  { eap::kMD5, flimflam::kEapPhase2AuthTTLSMD5 },
-  { eap::kMSCHAPv2, flimflam::kEapPhase2AuthTTLSMSCHAPV2 },
-  { eap::kPAP, flimflam::kEapPhase2AuthTTLSPAP },
+  { eap::kMD5, shill::kEapPhase2AuthTTLSMD5 },
+  { eap::kMSCHAPv2, shill::kEapPhase2AuthTTLSMSCHAPV2 },
+  { eap::kPAP, shill::kEapPhase2AuthTTLSPAP },
   { NULL }
 };
 

@@ -60,8 +60,7 @@ void GetPropertiesCallback(
   std::string name =
       shill_property_util::GetNameFromProperties(service_path, properties);
   if (!name.empty()) {
-    properties_copy->SetStringWithoutPathExpansion(
-        flimflam::kNameProperty, name);
+    properties_copy->SetStringWithoutPathExpansion(shill::kNameProperty, name);
   }
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
     // Because network services are added and removed frequently, we will see
@@ -92,15 +91,15 @@ void SetNetworkProfileErrorCallback(
 }
 
 bool IsPassphrase(const std::string& key) {
-  return key == flimflam::kEapPrivateKeyPasswordProperty ||
-      key == flimflam::kEapPasswordProperty ||
-      key == flimflam::kL2tpIpsecPasswordProperty ||
-      key == flimflam::kOpenVPNPasswordProperty ||
-      key == flimflam::kPassphraseProperty ||
-      key == flimflam::kOpenVPNOTPProperty ||
-      key == flimflam::kEapPrivateKeyProperty ||
-      key == flimflam::kEapPinProperty ||
-      key == flimflam::kApnPasswordProperty;
+  return key == shill::kEapPrivateKeyPasswordProperty ||
+      key == shill::kEapPasswordProperty ||
+      key == shill::kL2tpIpsecPasswordProperty ||
+      key == shill::kOpenVPNPasswordProperty ||
+      key == shill::kPassphraseProperty ||
+      key == shill::kOpenVPNOTPProperty ||
+      key == shill::kEapPrivateKeyProperty ||
+      key == shill::kEapPinProperty ||
+      key == shill::kApnPasswordProperty;
 }
 
 void LogConfigProperties(const std::string& desc,
@@ -285,13 +284,13 @@ void NetworkConfigurationHandler::CreateConfiguration(
   ShillManagerClient* manager =
       DBusThreadManager::Get()->GetShillManagerClient();
   std::string type;
-  properties.GetStringWithoutPathExpansion(flimflam::kTypeProperty, &type);
+  properties.GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
 
   NET_LOG_USER("CreateConfiguration", type);
   LogConfigProperties("Configure", type, properties);
 
   std::string profile;
-  properties.GetStringWithoutPathExpansion(flimflam::kProfileProperty,
+  properties.GetStringWithoutPathExpansion(shill::kProfileProperty,
                                            &profile);
   DCHECK(!profile.empty());
   manager->ConfigureServiceForProfile(
@@ -333,7 +332,7 @@ void NetworkConfigurationHandler::SetNetworkProfile(
   base::StringValue profile_path_value(profile_path);
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(service_path),
-      flimflam::kProfileProperty,
+      shill::kProfileProperty,
       profile_path_value,
       callback,
       base::Bind(&SetNetworkProfileErrorCallback,

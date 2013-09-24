@@ -164,9 +164,9 @@ class NetworkStateHandlerTest : public testing::Test {
         DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
     device_test->ClearDevices();
     device_test->AddDevice("/device/stub_wifi_device1",
-                           flimflam::kTypeWifi, "stub_wifi_device1");
+                           shill::kTypeWifi, "stub_wifi_device1");
     device_test->AddDevice("/device/stub_cellular_device1",
-                           flimflam::kTypeCellular, "stub_cellular_device1");
+                           shill::kTypeCellular, "stub_cellular_device1");
 
     ShillServiceClient::TestInterface* service_test =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
@@ -175,19 +175,19 @@ class NetworkStateHandlerTest : public testing::Test {
     const bool add_to_watchlist = true;
     service_test->AddService(kShillManagerClientStubDefaultService,
                              kShillManagerClientStubDefaultService,
-                             flimflam::kTypeEthernet, flimflam::kStateOnline,
+                             shill::kTypeEthernet, shill::kStateOnline,
                              add_to_visible, add_to_watchlist);
     service_test->AddService(kShillManagerClientStubDefaultWireless,
                              kShillManagerClientStubDefaultWireless,
-                             flimflam::kTypeWifi, flimflam::kStateOnline,
+                             shill::kTypeWifi, shill::kStateOnline,
                              add_to_visible, add_to_watchlist);
     service_test->AddService(kShillManagerClientStubWireless2,
                              kShillManagerClientStubWireless2,
-                             flimflam::kTypeWifi, flimflam::kStateIdle,
+                             shill::kTypeWifi, shill::kStateIdle,
                              add_to_visible, add_to_watchlist);
     service_test->AddService(kShillManagerClientStubCellular,
                              kShillManagerClientStubCellular,
-                             flimflam::kTypeCellular, flimflam::kStateIdle,
+                             shill::kTypeCellular, shill::kStateIdle,
                              add_to_visible, add_to_watchlist);
   }
 
@@ -223,7 +223,7 @@ TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStub) {
       kShillManagerClientStubCellular,
       network_state_handler_->FirstNetworkByType(NetworkTypePattern::Cellular())
           ->path());
-  EXPECT_EQ(flimflam::kStateOnline,
+  EXPECT_EQ(shill::kStateOnline,
             test_observer_->default_network_connection_state());
 }
 
@@ -261,25 +261,25 @@ TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
 TEST_F(NetworkStateHandlerTest, TechnologyState) {
   ShillManagerClient::TestInterface* manager_test =
       DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface();
-  manager_test->RemoveTechnology(flimflam::kTypeWimax);
+  manager_test->RemoveTechnology(shill::kTypeWimax);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_UNAVAILABLE,
       network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
 
-  manager_test->AddTechnology(flimflam::kTypeWimax, false);
+  manager_test->AddTechnology(shill::kTypeWimax, false);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_AVAILABLE,
       network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
 
-  manager_test->SetTechnologyInitializing(flimflam::kTypeWimax, true);
+  manager_test->SetTechnologyInitializing(shill::kTypeWimax, true);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_UNINITIALIZED,
       network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
 
-  manager_test->SetTechnologyInitializing(flimflam::kTypeWimax, false);
+  manager_test->SetTechnologyInitializing(shill::kTypeWimax, false);
   network_state_handler_->SetTechnologyEnabled(
       NetworkTypePattern::Wimax(), true, network_handler::ErrorCallback());
   message_loop_.RunUntilIdle();
@@ -287,7 +287,7 @@ TEST_F(NetworkStateHandlerTest, TechnologyState) {
       NetworkStateHandler::TECHNOLOGY_ENABLED,
       network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
 
-  manager_test->RemoveTechnology(flimflam::kTypeWimax);
+  manager_test->RemoveTechnology(shill::kTypeWimax);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_UNAVAILABLE,
@@ -302,7 +302,7 @@ TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
   base::StringValue security_value("TestSecurity");
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(eth1),
-      flimflam::kSecurityProperty, security_value,
+      shill::kSecurityProperty, security_value,
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   EXPECT_EQ("TestSecurity",
@@ -312,7 +312,7 @@ TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
   // Changing a service to the existing value should not trigger an update.
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(eth1),
-      flimflam::kSecurityProperty, security_value,
+      shill::kSecurityProperty, security_value,
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(eth1));
@@ -335,16 +335,16 @@ TEST_F(NetworkStateHandlerTest, NetworkConnectionStateChanged) {
   ShillServiceClient::TestInterface* service_test =
       DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
   const std::string eth1 = kShillManagerClientStubDefaultService;
-  base::StringValue connection_state_idle_value(flimflam::kStateIdle);
-  service_test->SetServiceProperty(eth1, flimflam::kStateProperty,
+  base::StringValue connection_state_idle_value(shill::kStateIdle);
+  service_test->SetServiceProperty(eth1, shill::kStateProperty,
                                    connection_state_idle_value);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(flimflam::kStateIdle,
+  EXPECT_EQ(shill::kStateIdle,
             test_observer_->NetworkConnectionStateForService(eth1));
   EXPECT_EQ(2, test_observer_->ConnectionStateChangesForService(eth1));
   // Confirm that changing the connection state to the same value does *not*
   // signal the observer.
-  service_test->SetServiceProperty(eth1, flimflam::kStateProperty,
+  service_test->SetServiceProperty(eth1, shill::kStateProperty,
                                    connection_state_idle_value);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(2, test_observer_->ConnectionStateChangesForService(eth1));
@@ -362,12 +362,12 @@ TEST_F(NetworkStateHandlerTest, DefaultServiceChanged) {
   // should re-sort Manager.Services.
   const std::string eth1 = kShillManagerClientStubDefaultService;
   const std::string wifi1 = kShillManagerClientStubDefaultWireless;
-  base::StringValue connection_state_idle_value(flimflam::kStateIdle);
-  service_test->SetServiceProperty(eth1, flimflam::kStateProperty,
+  base::StringValue connection_state_idle_value(shill::kStateIdle);
+  service_test->SetServiceProperty(eth1, shill::kStateProperty,
                                    connection_state_idle_value);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(wifi1, test_observer_->default_network());
-  EXPECT_EQ(flimflam::kStateOnline,
+  EXPECT_EQ(shill::kStateOnline,
             test_observer_->default_network_connection_state());
   // We should have seen 2 default network updates - for the default
   // service change, and for the state change.
@@ -377,7 +377,7 @@ TEST_F(NetworkStateHandlerTest, DefaultServiceChanged) {
   // a default network change.
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(wifi1),
-      flimflam::kSecurityProperty, base::StringValue("TestSecurity"),
+      shill::kSecurityProperty, base::StringValue("TestSecurity"),
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   EXPECT_EQ(3u, test_observer_->default_network_change_count());
@@ -385,7 +385,7 @@ TEST_F(NetworkStateHandlerTest, DefaultServiceChanged) {
   // No default network updates for signal strength changes.
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(wifi1),
-      flimflam::kSignalStrengthProperty, base::FundamentalValue(32),
+      shill::kSignalStrengthProperty, base::FundamentalValue(32),
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   EXPECT_EQ(3u, test_observer_->default_network_change_count());

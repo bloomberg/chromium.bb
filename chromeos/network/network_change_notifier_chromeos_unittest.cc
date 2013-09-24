@@ -63,32 +63,32 @@ TEST(NetworkChangeNotifierChromeosTest, ConnectionTypeFromShill) {
     NetworkChangeNotifier::ConnectionType connection_type;
   };
   TypeMapping type_mappings[] = {
-    { flimflam::kTypeEthernet, "", NetworkChangeNotifier::CONNECTION_ETHERNET },
-    { flimflam::kTypeWifi, "", NetworkChangeNotifier::CONNECTION_WIFI },
-    { flimflam::kTypeWimax, "", NetworkChangeNotifier::CONNECTION_4G },
+    { shill::kTypeEthernet, "", NetworkChangeNotifier::CONNECTION_ETHERNET },
+    { shill::kTypeWifi, "", NetworkChangeNotifier::CONNECTION_WIFI },
+    { shill::kTypeWimax, "", NetworkChangeNotifier::CONNECTION_4G },
     { "unknown type", "unknown technology",
       NetworkChangeNotifier::CONNECTION_UNKNOWN },
-    { flimflam::kTypeCellular, flimflam::kNetworkTechnology1Xrtt,
+    { shill::kTypeCellular, shill::kNetworkTechnology1Xrtt,
       NetworkChangeNotifier::CONNECTION_2G },
-    { flimflam::kTypeCellular, flimflam::kNetworkTechnologyGprs,
+    { shill::kTypeCellular, shill::kNetworkTechnologyGprs,
       NetworkChangeNotifier::CONNECTION_2G },
-    { flimflam::kTypeCellular, flimflam::kNetworkTechnologyEdge,
+    { shill::kTypeCellular, shill::kNetworkTechnologyEdge,
       NetworkChangeNotifier::CONNECTION_2G },
-    { flimflam::kTypeCellular, flimflam::kNetworkTechnologyEvdo,
+    { shill::kTypeCellular, shill::kNetworkTechnologyEvdo,
       NetworkChangeNotifier::CONNECTION_3G },
-    { flimflam::kTypeCellular, flimflam::kNetworkTechnologyGsm,
+    { shill::kTypeCellular, shill::kNetworkTechnologyGsm,
       NetworkChangeNotifier::CONNECTION_3G },
-    { flimflam::kTypeCellular, flimflam::kNetworkTechnologyUmts,
+    { shill::kTypeCellular, shill::kNetworkTechnologyUmts,
       NetworkChangeNotifier::CONNECTION_3G },
-    { flimflam::kTypeCellular, flimflam::kNetworkTechnologyHspa,
+    { shill::kTypeCellular, shill::kNetworkTechnologyHspa,
       NetworkChangeNotifier::CONNECTION_3G },
-    { flimflam::kTypeCellular,  flimflam::kNetworkTechnologyHspaPlus,
+    { shill::kTypeCellular, shill::kNetworkTechnologyHspaPlus,
       NetworkChangeNotifier::CONNECTION_4G },
-    { flimflam::kTypeCellular, flimflam::kNetworkTechnologyLte,
+    { shill::kTypeCellular, shill::kNetworkTechnologyLte,
       NetworkChangeNotifier::CONNECTION_4G },
-    { flimflam::kTypeCellular, flimflam::kNetworkTechnologyLteAdvanced,
+    { shill::kTypeCellular, shill::kNetworkTechnologyLteAdvanced,
       NetworkChangeNotifier::CONNECTION_4G },
-    { flimflam::kTypeCellular, "unknown technology",
+    { shill::kTypeCellular, "unknown technology",
       NetworkChangeNotifier::CONNECTION_2G }
   };
 
@@ -128,9 +128,9 @@ class NetworkChangeNotifierChromeosUpdateTest : public testing::Test {
   void SetDefaultNetworkState(
       const DefaultNetworkState& default_network_state) {
     if (default_network_state.is_connected)
-      default_network_.connection_state_ = flimflam::kStateOnline;
+      default_network_.connection_state_ = shill::kStateOnline;
     else
-      default_network_.connection_state_ = flimflam::kStateConfiguration;
+      default_network_.connection_state_ = shill::kStateConfiguration;
     default_network_.type_ = default_network_state.type;
     default_network_.network_technology_ =
         default_network_state.network_technology;
@@ -158,20 +158,20 @@ NotifierUpdateTestCase test_cases[] = {
   { "Online -> Offline",
     { NetworkChangeNotifier::CONNECTION_ETHERNET, kService1, kIpAddress1,
       kDnsServers1 },
-    { false, flimflam::kTypeEthernet, "", kService1, "", "" },
+    { false, shill::kTypeEthernet, "", kService1, "", "" },
     { NetworkChangeNotifier::CONNECTION_NONE, "", "", "" },
     true, true, true
   },
   { "Offline -> Offline",
     { NetworkChangeNotifier::CONNECTION_NONE, "", "", "" },
-    { false, flimflam::kTypeEthernet, "", kService1, kIpAddress1,
+    { false, shill::kTypeEthernet, "", kService1, kIpAddress1,
       kDnsServers1 },
     { NetworkChangeNotifier::CONNECTION_NONE, "", "", "" },
     false, false, false
   },
   { "Offline -> Online",
     { NetworkChangeNotifier::CONNECTION_NONE, "", "", "" },
-    { true, flimflam::kTypeEthernet, "", kService1, kIpAddress1, kDnsServers1 },
+    { true, shill::kTypeEthernet, "", kService1, kIpAddress1, kDnsServers1 },
     { NetworkChangeNotifier::CONNECTION_ETHERNET, kService1, kIpAddress1,
       kDnsServers1 },
     true, true, true
@@ -179,7 +179,7 @@ NotifierUpdateTestCase test_cases[] = {
   { "Online -> Online (new default service, different connection type)",
     { NetworkChangeNotifier::CONNECTION_ETHERNET, kService1, kIpAddress1,
       kDnsServers1 },
-    { true, flimflam::kTypeWifi, "", kService2, kIpAddress1, kDnsServers1 },
+    { true, shill::kTypeWifi, "", kService2, kIpAddress1, kDnsServers1 },
     { NetworkChangeNotifier::CONNECTION_WIFI, kService2, kIpAddress1,
       kDnsServers1 },
     true, true, true
@@ -187,14 +187,14 @@ NotifierUpdateTestCase test_cases[] = {
   { "Online -> Online (new default service, same connection type)",
     { NetworkChangeNotifier::CONNECTION_WIFI, kService2, kIpAddress1,
       kDnsServers1 },
-    { true, flimflam::kTypeWifi, "", kService3, kIpAddress1, kDnsServers1 },
+    { true, shill::kTypeWifi, "", kService3, kIpAddress1, kDnsServers1 },
     { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress1,
       kDnsServers1 },
     false, true, true
   },
   { "Online -> Online (same default service, first IP address update)",
     { NetworkChangeNotifier::CONNECTION_WIFI, kService3, "", kDnsServers1 },
-    { true, flimflam::kTypeWifi, "", kService3, kIpAddress2, kDnsServers1 },
+    { true, shill::kTypeWifi, "", kService3, kIpAddress2, kDnsServers1 },
     { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress2,
       kDnsServers1 },
     false, false, false
@@ -202,7 +202,7 @@ NotifierUpdateTestCase test_cases[] = {
   { "Online -> Online (same default service, new IP address, same DNS)",
     { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress1,
       kDnsServers1 },
-    { true, flimflam::kTypeWifi, "", kService3, kIpAddress2, kDnsServers1 },
+    { true, shill::kTypeWifi, "", kService3, kIpAddress2, kDnsServers1 },
     { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress2,
       kDnsServers1 },
     false, true, false
@@ -210,7 +210,7 @@ NotifierUpdateTestCase test_cases[] = {
   { "Online -> Online (same default service, same IP address, new DNS)",
     { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress2,
       kDnsServers1 },
-    { true, flimflam::kTypeWifi, "", kService3, kIpAddress2, kDnsServers2 },
+    { true, shill::kTypeWifi, "", kService3, kIpAddress2, kDnsServers2 },
     { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress2,
       kDnsServers2 },
     false, false, true

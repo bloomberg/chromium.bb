@@ -144,7 +144,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetManagedPropertiesCallback(
     const std::string& service_path,
     const base::DictionaryValue& shill_properties) {
   std::string profile_path;
-  shill_properties.GetStringWithoutPathExpansion(flimflam::kProfileProperty,
+  shill_properties.GetStringWithoutPathExpansion(shill::kProfileProperty,
                                                  &profile_path);
   const NetworkProfile* profile =
       network_profile_handler_->GetProfileForPath(profile_path);

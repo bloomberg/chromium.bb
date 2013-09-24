@@ -80,14 +80,14 @@ class NetworkStateTest : public testing::Test {
 TEST_F(NetworkStateTest, SsidAscii) {
   std::string wifi_setname = "SSID TEST";
   std::string wifi_setname_result = "SSID TEST";
-  EXPECT_TRUE(SetStringProperty(flimflam::kNameProperty, wifi_setname));
+  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, wifi_setname));
   EXPECT_EQ(network_state_.name(), wifi_setname_result);
 }
 
 TEST_F(NetworkStateTest, SsidAsciiWithNull) {
   std::string wifi_setname = "SSID TEST\x00xxx";
   std::string wifi_setname_result = "SSID TEST";
-  EXPECT_TRUE(SetStringProperty(flimflam::kNameProperty, wifi_setname));
+  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, wifi_setname));
   EXPECT_EQ(network_state_.name(), wifi_setname_result);
 }
 
@@ -95,7 +95,7 @@ TEST_F(NetworkStateTest, SsidAsciiWithNull) {
 TEST_F(NetworkStateTest, SsidUtf8) {
   std::string wifi_utf8 = "UTF-8 \u3042\u3044\u3046";
   std::string wifi_utf8_result = "UTF-8 \xE3\x81\x82\xE3\x81\x84\xE3\x81\x86";
-  EXPECT_TRUE(SetStringProperty(flimflam::kNameProperty, wifi_utf8));
+  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, wifi_utf8));
   EXPECT_EQ(network_state_.name(), wifi_utf8_result);
 }
 
@@ -103,7 +103,7 @@ TEST_F(NetworkStateTest, SsidUtf8) {
 TEST_F(NetworkStateTest, SsidTruncateInvalid) {
   std::string wifi_setname2 = "SSID TEST \x01\xff!";
   std::string wifi_setname2_result = "SSID TEST \xEF\xBF\xBD\xEF\xBF\xBD!";
-  EXPECT_TRUE(SetStringProperty(flimflam::kNameProperty, wifi_setname2));
+  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, wifi_setname2));
   EXPECT_TRUE(SignalInitialPropertiesReceived());
   EXPECT_EQ(network_state_.name(), wifi_setname2_result);
 }
@@ -114,7 +114,7 @@ TEST_F(NetworkStateTest, SsidLatin) {
   std::string wifi_latin1_hex =
       base::HexEncode(wifi_latin1.c_str(), wifi_latin1.length());
   std::string wifi_latin1_result = "latin-1 \u00c0\u00cb\u00cc\u00d6\u00fb";
-  EXPECT_FALSE(SetStringProperty(flimflam::kWifiHexSsid, wifi_latin1_hex));
+  EXPECT_FALSE(SetStringProperty(shill::kWifiHexSsid, wifi_latin1_hex));
   EXPECT_TRUE(SignalInitialPropertiesReceived());
   EXPECT_EQ(network_state_.name(), wifi_latin1_result);
 }
@@ -123,7 +123,7 @@ TEST_F(NetworkStateTest, SsidLatin) {
 TEST_F(NetworkStateTest, SsidHex) {
   std::string wifi_hex = "5468697320697320484558205353494421";
   std::string wifi_hex_result = "This is HEX SSID!";
-  EXPECT_FALSE(SetStringProperty(flimflam::kWifiHexSsid, wifi_hex));
+  EXPECT_FALSE(SetStringProperty(shill::kWifiHexSsid, wifi_hex));
   EXPECT_TRUE(SignalInitialPropertiesReceived());
   EXPECT_EQ(network_state_.name(), wifi_hex_result);
 }

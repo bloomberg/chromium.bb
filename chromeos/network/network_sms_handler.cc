@@ -378,7 +378,7 @@ void NetworkSmsHandler::RemoveObserver(Observer* observer) {
 
 void NetworkSmsHandler::OnPropertyChanged(const std::string& name,
                                           const base::Value& value) {
-  if (name != flimflam::kDevicesProperty)
+  if (name != shill::kDevicesProperty)
     return;
   const base::ListValue* devices = NULL;
   if (!value.GetAsList(&devices) || !devices)
@@ -414,10 +414,10 @@ void NetworkSmsHandler::ManagerPropertiesCallback(
     return;
   }
   const base::Value* value;
-  if (!properties.GetWithoutPathExpansion(flimflam::kDevicesProperty, &value) ||
+  if (!properties.GetWithoutPathExpansion(shill::kDevicesProperty, &value) ||
       value->GetType() != base::Value::TYPE_LIST) {
     LOG(ERROR) << "NetworkSmsHandler: No list value for: "
-               << flimflam::kDevicesProperty;
+               << shill::kDevicesProperty;
     return;
   }
   const base::ListValue* devices = static_cast<const base::ListValue*>(value);
@@ -453,23 +453,23 @@ void NetworkSmsHandler::DevicePropertiesCallback(
 
   std::string device_type;
   if (!properties.GetStringWithoutPathExpansion(
-          flimflam::kTypeProperty, &device_type)) {
+          shill::kTypeProperty, &device_type)) {
     LOG(ERROR) << "NetworkSmsHandler: No type for: " << device_path;
     return;
   }
-  if (device_type != flimflam::kTypeCellular)
+  if (device_type != shill::kTypeCellular)
     return;
 
   std::string dbus_connection;
   if (!properties.GetStringWithoutPathExpansion(
-          flimflam::kDBusConnectionProperty, &dbus_connection)) {
+          shill::kDBusConnectionProperty, &dbus_connection)) {
     LOG(ERROR) << "Device has no DBusConnection Property: " << device_path;
     return;
   }
 
   std::string object_path_string;
   if (!properties.GetStringWithoutPathExpansion(
-          flimflam::kDBusObjectProperty, &object_path_string)) {
+          shill::kDBusObjectProperty, &object_path_string)) {
     LOG(ERROR) << "Device has no DBusObject Property: " << device_path;
     return;
   }

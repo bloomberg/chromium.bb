@@ -29,7 +29,7 @@ namespace {
 bool ConnectionStateChanged(NetworkState* network,
                             const std::string& prev_connection_state) {
   return (network->connection_state() != prev_connection_state) &&
-         (network->connection_state() != flimflam::kStateIdle ||
+         (network->connection_state() != shill::kStateIdle ||
           !prev_connection_state.empty());
 }
 
@@ -330,7 +330,7 @@ void NetworkStateHandler::WaitForScan(const std::string& type,
 
 void NetworkStateHandler::ConnectToBestWifiNetwork() {
   NET_LOG_USER("ConnectToBestWifiNetwork", "");
-  WaitForScan(flimflam::kTypeWifi,
+  WaitForScan(shill::kTypeWifi,
               base::Bind(&internal::ShillPropertyHandler::ConnectToBestServices,
                          shill_property_handler_->AsWeakPtr()));
 }
@@ -507,7 +507,7 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
   if (!network->PropertyChanged(key, value))
     return;
 
-  if (key == flimflam::kStateProperty) {
+  if (key == shill::kStateProperty) {
     if (ConnectionStateChanged(network, prev_connection_state)) {
       OnNetworkConnectionStateChanged(network);
       // If the connection state changes, other properties such as IPConfig
@@ -516,7 +516,7 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
     }
   } else {
     bool noisy_property =
-        key == flimflam::kSignalStrengthProperty ||
+        key == shill::kSignalStrengthProperty ||
         key == shill::kWifiFrequencyListProperty;
     if (network->path() == default_network_path_ && !noisy_property) {
       // Wifi SignalStrength and WifiFrequencyList updates are too noisy, so
@@ -532,8 +532,7 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
       std::string detail = network->name() + "." + key;
       detail += " = " + network_event_log::ValueAsString(value);
       network_event_log::LogLevel log_level;
-      if (key == flimflam::kErrorProperty ||
-          key == shill::kErrorDetailsProperty) {
+      if (key == shill::kErrorProperty || key == shill::kErrorDetailsProperty) {
         log_level = network_event_log::LOG_LEVEL_ERROR;
       } else {
         log_level = network_event_log::LOG_LEVEL_EVENT;
@@ -559,7 +558,7 @@ void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
 
   NotifyDeviceListChanged();
 
-  if (key == flimflam::kScanningProperty && device->scanning() == false)
+  if (key == shill::kScanningProperty && device->scanning() == false)
     ScanCompleted(device->type());
 }
 
@@ -720,23 +719,23 @@ void NetworkStateHandler::ScanCompleted(const std::string& type) {
 
 std::string NetworkStateHandler::GetTechnologyForType(
     const NetworkTypePattern& type) const {
-  if (type.MatchesType(flimflam::kTypeEthernet))
-    return flimflam::kTypeEthernet;
+  if (type.MatchesType(shill::kTypeEthernet))
+    return shill::kTypeEthernet;
 
-  if (type.MatchesType(flimflam::kTypeWifi))
-    return flimflam::kTypeWifi;
+  if (type.MatchesType(shill::kTypeWifi))
+    return shill::kTypeWifi;
 
   if (type.Equals(NetworkTypePattern::Wimax()))
-      return flimflam::kTypeWimax;
+    return shill::kTypeWimax;
 
   // Prefer Wimax over Cellular only if it's available.
-  if (type.MatchesType(flimflam::kTypeWimax) &&
-      shill_property_handler_->IsTechnologyAvailable(flimflam::kTypeWimax)) {
-      return flimflam::kTypeWimax;
+  if (type.MatchesType(shill::kTypeWimax) &&
+      shill_property_handler_->IsTechnologyAvailable(shill::kTypeWimax)) {
+    return shill::kTypeWimax;
   }
 
-  if (type.MatchesType(flimflam::kTypeCellular))
-      return flimflam::kTypeCellular;
+  if (type.MatchesType(shill::kTypeCellular))
+    return shill::kTypeCellular;
 
   NOTREACHED();
   return std::string();

@@ -61,8 +61,8 @@ bool CopyStringFromDictionary(const base::DictionaryValue& source,
 std::string GetNameFromProperties(const std::string& service_path,
                                   const base::DictionaryValue& properties) {
   std::string name, hex_ssid;
-  properties.GetStringWithoutPathExpansion(flimflam::kNameProperty, &name);
-  properties.GetStringWithoutPathExpansion(flimflam::kWifiHexSsid, &hex_ssid);
+  properties.GetStringWithoutPathExpansion(shill::kNameProperty, &name);
+  properties.GetStringWithoutPathExpansion(shill::kWifiHexSsid, &hex_ssid);
 
   if (hex_ssid.empty()) {
     if (name.empty())
@@ -106,7 +106,7 @@ std::string GetNameFromProperties(const std::string& service_path,
 
   // Detect encoding and convert to UTF-8.
   std::string country_code;
-  properties.GetStringWithoutPathExpansion(flimflam::kCountryProperty,
+  properties.GetStringWithoutPathExpansion(shill::kCountryProperty,
                                            &country_code);
   std::string encoding;
   if (!base::DetectEncoding(ssid, &encoding)) {
@@ -156,7 +156,7 @@ scoped_ptr<NetworkUIData> GetUIDataFromValue(const base::Value& ui_data_value) {
 scoped_ptr<NetworkUIData> GetUIDataFromProperties(
     const base::DictionaryValue& shill_dictionary) {
   const base::Value* ui_data_value = NULL;
-  shill_dictionary.GetWithoutPathExpansion(flimflam::kUIDataProperty,
+  shill_dictionary.GetWithoutPathExpansion(shill::kUIDataProperty,
                                            &ui_data_value);
   if (!ui_data_value) {
     VLOG(2) << "Dictionary has no UIData entry.";
@@ -174,7 +174,7 @@ void SetUIData(const NetworkUIData& ui_data,
   ui_data.FillDictionary(&ui_data_dict);
   std::string ui_data_blob;
   base::JSONWriter::Write(&ui_data_dict, &ui_data_blob);
-  shill_dictionary->SetStringWithoutPathExpansion(flimflam::kUIDataProperty,
+  shill_dictionary->SetStringWithoutPathExpansion(shill::kUIDataProperty,
                                                   ui_data_blob);
 }
 
@@ -183,46 +183,44 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
   bool success = true;
 
   // GUID is optional.
-  CopyStringFromDictionary(service_properties, flimflam::kGuidProperty, dest);
+  CopyStringFromDictionary(service_properties, shill::kGuidProperty, dest);
 
   std::string type;
-  service_properties.GetStringWithoutPathExpansion(flimflam::kTypeProperty,
-                                                   &type);
+  service_properties.GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
   success &= !type.empty();
-  dest->SetStringWithoutPathExpansion(flimflam::kTypeProperty, type);
-  if (type == flimflam::kTypeWifi) {
+  dest->SetStringWithoutPathExpansion(shill::kTypeProperty, type);
+  if (type == shill::kTypeWifi) {
     success &= CopyStringFromDictionary(
-        service_properties, flimflam::kSecurityProperty, dest);
+        service_properties, shill::kSecurityProperty, dest);
     success &= CopyStringFromDictionary(
-        service_properties, flimflam::kSSIDProperty, dest);
+        service_properties, shill::kSSIDProperty, dest);
     success &= CopyStringFromDictionary(
-        service_properties, flimflam::kModeProperty, dest);
-  } else if (type == flimflam::kTypeVPN) {
+        service_properties, shill::kModeProperty, dest);
+  } else if (type == shill::kTypeVPN) {
     success &= CopyStringFromDictionary(
-        service_properties, flimflam::kNameProperty, dest);
+        service_properties, shill::kNameProperty, dest);
     // VPN Provider values are read from the "Provider" dictionary, but written
     // with the keys "Provider.Type" and "Provider.Host".
     const base::DictionaryValue* provider_properties = NULL;
     if (!service_properties.GetDictionaryWithoutPathExpansion(
-             flimflam::kProviderProperty, &provider_properties)) {
+             shill::kProviderProperty, &provider_properties)) {
       NET_LOG_ERROR("CopyIdentifyingProperties", "Missing VPN provider dict");
       return false;
     }
     std::string vpn_provider_type;
-    provider_properties->GetStringWithoutPathExpansion(flimflam::kTypeProperty,
+    provider_properties->GetStringWithoutPathExpansion(shill::kTypeProperty,
                                                        &vpn_provider_type);
     success &= !vpn_provider_type.empty();
-    dest->SetStringWithoutPathExpansion(flimflam::kProviderTypeProperty,
+    dest->SetStringWithoutPathExpansion(shill::kProviderTypeProperty,
                                         vpn_provider_type);
 
     std::string vpn_provider_host;
-    provider_properties->GetStringWithoutPathExpansion(flimflam::kHostProperty,
+    provider_properties->GetStringWithoutPathExpansion(shill::kHostProperty,
                                                        &vpn_provider_host);
     success &= !vpn_provider_host.empty();
-    dest->SetStringWithoutPathExpansion(flimflam::kProviderHostProperty,
+    dest->SetStringWithoutPathExpansion(shill::kProviderHostProperty,
                                         vpn_provider_host);
-  } else if (type == flimflam::kTypeEthernet ||
-             type == shill::kTypeEthernetEap) {
+  } else if (type == shill::kTypeEthernet || type == shill::kTypeEthernetEap) {
     // Ethernet and EthernetEAP don't have any additional identifying
     // properties.
   } else {
@@ -258,12 +256,12 @@ struct ShillToBitFlagEntry {
   const char* shill_network_type;
   NetworkTypeBitFlag bit_flag;
 } shill_type_to_flag[] = {
-  { flimflam::kTypeEthernet, kNetworkTypeEthernet },
+  { shill::kTypeEthernet, kNetworkTypeEthernet },
   { shill::kTypeEthernetEap, kNetworkTypeEthernetEap },
-  { flimflam::kTypeWifi, kNetworkTypeWifi },
-  { flimflam::kTypeWimax, kNetworkTypeWimax },
-  { flimflam::kTypeCellular, kNetworkTypeCellular },
-  { flimflam::kTypeVPN, kNetworkTypeVPN }
+  { shill::kTypeWifi, kNetworkTypeWifi },
+  { shill::kTypeWimax, kNetworkTypeWimax },
+  { shill::kTypeCellular, kNetworkTypeCellular },
+  { shill::kTypeVPN, kNetworkTypeVPN }
 };
 
 NetworkTypeBitFlag ShillNetworkTypeToFlag(const std::string& shill_type) {

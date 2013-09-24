@@ -75,18 +75,18 @@ void NetworkProfileHandler::GetManagerPropertiesCallback(
   }
 
   const base::Value* profiles = NULL;
-  properties.GetWithoutPathExpansion(flimflam::kProfilesProperty, &profiles);
+  properties.GetWithoutPathExpansion(shill::kProfilesProperty, &profiles);
   if (!profiles) {
     LOG(ERROR) << "Manager properties returned from Shill don't contain "
-               << "the field " << flimflam::kProfilesProperty;
+               << "the field " << shill::kProfilesProperty;
     return;
   }
-  OnPropertyChanged(flimflam::kProfilesProperty, *profiles);
+  OnPropertyChanged(shill::kProfilesProperty, *profiles);
 }
 
 void NetworkProfileHandler::OnPropertyChanged(const std::string& name,
                                               const base::Value& value) {
-  if (name != flimflam::kProfilesProperty)
+  if (name != shill::kProfilesProperty)
     return;
 
   const base::ListValue* profiles_value = NULL;
@@ -141,8 +141,7 @@ void NetworkProfileHandler::GetProfilePropertiesCallback(
     const std::string& profile_path,
     const base::DictionaryValue& properties) {
   std::string userhash;
-  properties.GetStringWithoutPathExpansion(shill::kUserHashProperty,
-                                           &userhash);
+  properties.GetStringWithoutPathExpansion(shill::kUserHashProperty, &userhash);
 
   AddProfile(NetworkProfile(profile_path, userhash));
 }

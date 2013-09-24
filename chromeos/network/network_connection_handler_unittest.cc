@@ -160,8 +160,8 @@ TEST_F(NetworkConnectionHandlerTest, NetworkConnectionHandlerConnectSuccess) {
   EXPECT_TRUE(Configure(kConfigConnectable));
   Connect("wifi0");
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
-  EXPECT_EQ(flimflam::kStateOnline,
-            GetServiceStringProperty("wifi0", flimflam::kStateProperty));
+  EXPECT_EQ(shill::kStateOnline,
+            GetServiceStringProperty("wifi0", shill::kStateProperty));
 }
 
 // Handles basic failure cases.

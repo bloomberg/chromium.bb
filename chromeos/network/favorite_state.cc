@@ -26,9 +26,9 @@ bool FavoriteState::PropertyChanged(const std::string& key,
                                     const base::Value& value) {
   if (ManagedStatePropertyChanged(key, value))
     return true;
-  if (key == flimflam::kProfileProperty) {
+  if (key == shill::kProfileProperty) {
     return GetStringValue(key, value, &profile_path_);
-  } else if (key == flimflam::kUIDataProperty) {
+  } else if (key == shill::kUIDataProperty) {
     scoped_ptr<NetworkUIData> new_ui_data =
         shill_property_util::GetUIDataFromValue(value);
     if (!new_ui_data) {
@@ -37,7 +37,7 @@ bool FavoriteState::PropertyChanged(const std::string& key,
     }
     ui_data_ = *new_ui_data;
     return true;
-  } else if (key == flimflam::kGuidProperty) {
+  } else if (key == shill::kGuidProperty) {
     return GetStringValue(key, value, &guid_);
   }
   return false;

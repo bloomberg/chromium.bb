@@ -173,7 +173,7 @@ void ShillPropertyHandler::SetCheckPortalList(
     const std::string& check_portal_list) {
   base::StringValue value(check_portal_list);
   shill_manager_->SetProperty(
-      flimflam::kCheckPortalListProperty,
+      shill::kCheckPortalListProperty,
       value,
       base::Bind(&base::DoNothing),
       base::Bind(&network_handler::ShillErrorCallbackFunction,
@@ -245,7 +245,7 @@ void ShillPropertyHandler::ManagerPropertiesCallback(
   for (base::DictionaryValue::Iterator iter(properties);
        !iter.IsAtEnd(); iter.Advance()) {
     // Defer updating Services until all other properties have been updated.
-    if (iter.key() == flimflam::kServicesProperty)
+    if (iter.key() == shill::kServicesProperty)
       update_service_value = &iter.value();
     else if (iter.key() == shill::kServiceCompleteListProperty)
       update_service_complete_value = &iter.value();
@@ -254,7 +254,7 @@ void ShillPropertyHandler::ManagerPropertiesCallback(
   }
   // Update Services which can safely assume other properties have been set.
   if (update_service_value)
-    ManagerPropertyChanged(flimflam::kServicesProperty, *update_service_value);
+    ManagerPropertyChanged(shill::kServicesProperty, *update_service_value);
   // Update ServiceCompleteList which skips entries that have already been
   // requested for Services.
   if (update_service_complete_value) {
@@ -268,7 +268,7 @@ void ShillPropertyHandler::ManagerPropertiesCallback(
 void ShillPropertyHandler::CheckPendingStateListUpdates(
     const std::string& key) {
   // Once there are no pending updates, signal the state list changed callbacks.
-  if ((key.empty() || key == flimflam::kServicesProperty) &&
+  if ((key.empty() || key == shill::kServicesProperty) &&
       pending_updates_[ManagedState::MANAGED_TYPE_NETWORK].size() == 0) {
     listener_->ManagedStateListChanged(ManagedState::MANAGED_TYPE_NETWORK);
   }
@@ -279,7 +279,7 @@ void ShillPropertyHandler::CheckPendingStateListUpdates(
       pending_updates_[ManagedState::MANAGED_TYPE_FAVORITE].size() == 0) {
     listener_->ManagedStateListChanged(ManagedState::MANAGED_TYPE_FAVORITE);
   }
-  if ((key.empty() || key == flimflam::kDevicesProperty) &&
+  if ((key.empty() || key == shill::kDevicesProperty) &&
       pending_updates_[ManagedState::MANAGED_TYPE_DEVICE].size() == 0) {
     listener_->ManagedStateListChanged(ManagedState::MANAGED_TYPE_DEVICE);
   }
@@ -287,7 +287,7 @@ void ShillPropertyHandler::CheckPendingStateListUpdates(
 
 void ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
                                                   const base::Value& value) {
-  if (key == flimflam::kServicesProperty) {
+  if (key == shill::kServicesProperty) {
     const base::ListValue* vlist = GetListValue(key, value);
     if (vlist) {
       listener_->UpdateManagedList(ManagedState::MANAGED_TYPE_NETWORK, *vlist);
@@ -304,18 +304,18 @@ void ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
       listener_->UpdateManagedList(ManagedState::MANAGED_TYPE_FAVORITE, *vlist);
       UpdateProperties(ManagedState::MANAGED_TYPE_FAVORITE, *vlist);
     }
-  } else if (key == flimflam::kDevicesProperty) {
+  } else if (key == shill::kDevicesProperty) {
     const base::ListValue* vlist = GetListValue(key, value);
     if (vlist) {
       listener_->UpdateManagedList(ManagedState::MANAGED_TYPE_DEVICE, *vlist);
       UpdateProperties(ManagedState::MANAGED_TYPE_DEVICE, *vlist);
       UpdateObserved(ManagedState::MANAGED_TYPE_DEVICE, *vlist);
     }
-  } else if (key == flimflam::kAvailableTechnologiesProperty) {
+  } else if (key == shill::kAvailableTechnologiesProperty) {
     const base::ListValue* vlist = GetListValue(key, value);
     if (vlist)
       UpdateAvailableTechnologies(*vlist);
-  } else if (key == flimflam::kEnabledTechnologiesProperty) {
+  } else if (key == shill::kEnabledTechnologiesProperty) {
     const base::ListValue* vlist = GetListValue(key, value);
     if (vlist)
       UpdateEnabledTechnologies(*vlist);
@@ -323,9 +323,9 @@ void ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
     const base::ListValue* vlist = GetListValue(key, value);
     if (vlist)
       UpdateUninitializedTechnologies(*vlist);
-  } else if (key == flimflam::kProfilesProperty) {
+  } else if (key == shill::kProfilesProperty) {
     listener_->ProfileListChanged();
-  } else if (key == flimflam::kCheckPortalListProperty) {
+  } else if (key == shill::kCheckPortalListProperty) {
     std::string check_portal_list;
     if (value.GetAsString(&check_portal_list))
       listener_->CheckPortalListChanged(check_portal_list);
@@ -471,7 +471,7 @@ void ShillPropertyHandler::GetPropertiesCallback(
     // Only networks with a ProfilePath set are Favorites.
     std::string profile_path;
     properties.GetStringWithoutPathExpansion(
-        flimflam::kProfileProperty, &profile_path);
+        shill::kProfileProperty, &profile_path);
     if (!profile_path.empty()) {
       listener_->UpdateManagedStateProperties(
           ManagedState::MANAGED_TYPE_FAVORITE, path, properties);
@@ -543,14 +543,10 @@ void ShillPropertyHandler::GetIPConfigCallback(
                                      service_path.c_str(), call_status));
     return;
   }
-  UpdateIPConfigProperty(service_path, properties,
-                         flimflam::kAddressProperty);
-  UpdateIPConfigProperty(service_path, properties,
-                         flimflam::kNameServersProperty);
-  UpdateIPConfigProperty(service_path, properties,
-                         flimflam::kPrefixlenProperty);
-  UpdateIPConfigProperty(service_path, properties,
-                         flimflam::kGatewayProperty);
+  UpdateIPConfigProperty(service_path, properties, shill::kAddressProperty);
+  UpdateIPConfigProperty(service_path, properties, shill::kNameServersProperty);
+  UpdateIPConfigProperty(service_path, properties, shill::kPrefixlenProperty);
+  UpdateIPConfigProperty(service_path, properties, shill::kGatewayProperty);
   UpdateIPConfigProperty(service_path, properties,
                          shill::kWebProxyAutoDiscoveryUrlProperty);
 }

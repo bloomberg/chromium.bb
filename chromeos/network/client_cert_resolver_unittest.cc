@@ -145,12 +145,12 @@ class ClientCertResolverTest : public testing::Test {
     const bool add_to_watchlist = true;
     service_test_->AddService(kWifiStub,
                               kWifiSSID,
-                              flimflam::kTypeWifi,
-                              flimflam::kStateOnline,
+                              shill::kTypeWifi,
+                              shill::kStateOnline,
                               add_to_visible,
                               add_to_watchlist);
     service_test_->SetServiceProperty(
-        kWifiStub, flimflam::kGuidProperty, base::StringValue(kWifiStub));
+        kWifiStub, shill::kGuidProperty, base::StringValue(kWifiStub));
 
     profile_test_->AddService(kUserProfilePath, kWifiStub);
   }
@@ -196,7 +196,7 @@ class ClientCertResolverTest : public testing::Test {
         service_test_->GetServiceProperties(kWifiStub);
     if (!properties)
       return;
-    properties->GetStringWithoutPathExpansion(flimflam::kEapCertIdProperty,
+    properties->GetStringWithoutPathExpansion(shill::kEapCertIdProperty,
                                               pkcs11_id);
   }
 

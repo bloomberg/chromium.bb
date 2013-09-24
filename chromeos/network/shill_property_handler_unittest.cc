@@ -59,14 +59,14 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
       const std::string& service_path,
       const std::string& key,
       const base::Value& value) OVERRIDE {
-    AddPropertyUpdate(flimflam::kServicesProperty, service_path);
+    AddPropertyUpdate(shill::kServicesProperty, service_path);
   }
 
   virtual void UpdateDeviceProperty(
       const std::string& device_path,
       const std::string& key,
       const base::Value& value) OVERRIDE {
-    AddPropertyUpdate(flimflam::kDevicesProperty, device_path);
+    AddPropertyUpdate(shill::kDevicesProperty, device_path);
   }
 
   virtual void TechnologyListChanged() OVERRIDE {
@@ -99,11 +99,11 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
  private:
   std::string GetTypeString(ManagedState::ManagedType type) {
     if (type == ManagedState::MANAGED_TYPE_NETWORK) {
-      return flimflam::kServicesProperty;
+      return shill::kServicesProperty;
     } else if (type == ManagedState::MANAGED_TYPE_FAVORITE) {
       return shill::kServiceCompleteListProperty;
     } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
-      return flimflam::kDevicesProperty;
+      return shill::kDevicesProperty;
     }
     LOG(ERROR) << "UpdateManagedList called with unrecognized type: " << type;
     ++errors_;
@@ -225,7 +225,7 @@ class ShillPropertyHandlerTest : public testing::Test {
   void AddServiceToProfile(const std::string& type,
                            const std::string& id,
                            bool visible) {
-    service_test_->AddService(id, id, type, flimflam::kStateIdle,
+    service_test_->AddService(id, id, type, shill::kStateIdle,
                               visible, false /* watch */);
     std::vector<std::string> profiles;
     profile_test_->GetProfilePaths(&profiles);
@@ -248,31 +248,31 @@ class ShillPropertyHandlerTest : public testing::Test {
   }
 
   bool IsValidType(const std::string& type) {
-    return (type == flimflam::kTypeEthernet ||
+    return (type == shill::kTypeEthernet ||
             type == shill::kTypeEthernetEap ||
-            type == flimflam::kTypeWifi ||
-            type == flimflam::kTypeWimax ||
-            type == flimflam::kTypeBluetooth ||
-            type == flimflam::kTypeCellular ||
-            type == flimflam::kTypeVPN);
+            type == shill::kTypeWifi ||
+            type == shill::kTypeWimax ||
+            type == shill::kTypeBluetooth ||
+            type == shill::kTypeCellular ||
+            type == shill::kTypeVPN);
   }
 
  protected:
   void SetupDefaultShillState() {
     message_loop_.RunUntilIdle();  // Process any pending updates
     device_test_->ClearDevices();
-    AddDevice(flimflam::kTypeWifi, "stub_wifi_device1");
-    AddDevice(flimflam::kTypeCellular, "stub_cellular_device1");
+    AddDevice(shill::kTypeWifi, "stub_wifi_device1");
+    AddDevice(shill::kTypeCellular, "stub_cellular_device1");
     service_test_->ClearServices();
     const bool add_to_watchlist = true;
-    AddService(flimflam::kTypeEthernet, "stub_ethernet",
-               flimflam::kStateOnline, add_to_watchlist);
-    AddService(flimflam::kTypeWifi, "stub_wifi1",
-               flimflam::kStateOnline, add_to_watchlist);
-    AddService(flimflam::kTypeWifi, "stub_wifi2",
-               flimflam::kStateIdle, add_to_watchlist);
-    AddService(flimflam::kTypeCellular, "stub_cellular1",
-               flimflam::kStateIdle, add_to_watchlist);
+    AddService(shill::kTypeEthernet, "stub_ethernet",
+               shill::kStateOnline, add_to_watchlist);
+    AddService(shill::kTypeWifi, "stub_wifi1",
+               shill::kStateOnline, add_to_watchlist);
+    AddService(shill::kTypeWifi, "stub_wifi2",
+               shill::kStateIdle, add_to_watchlist);
+    AddService(shill::kTypeCellular, "stub_cellular1",
+               shill::kStateIdle, add_to_watchlist);
   }
 
   base::MessageLoopForUI message_loop_;
@@ -288,16 +288,14 @@ class ShillPropertyHandlerTest : public testing::Test {
 };
 
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerStub) {
-  EXPECT_TRUE(shill_property_handler_->IsTechnologyAvailable(
-      flimflam::kTypeWifi));
-  EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabled(
-      flimflam::kTypeWifi));
+  EXPECT_TRUE(shill_property_handler_->IsTechnologyAvailable(shill::kTypeWifi));
+  EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabled(shill::kTypeWifi));
   const size_t kNumShillManagerClientStubImplDevices = 2;
   EXPECT_EQ(kNumShillManagerClientStubImplDevices,
-            listener_->entries(flimflam::kDevicesProperty).size());
+            listener_->entries(shill::kDevicesProperty).size());
   const size_t kNumShillManagerClientStubImplServices = 4;
   EXPECT_EQ(kNumShillManagerClientStubImplServices,
-            listener_->entries(flimflam::kServicesProperty).size());
+            listener_->entries(shill::kServicesProperty).size());
 
   EXPECT_EQ(0, listener_->errors());
 }
@@ -307,114 +305,110 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerTechnologyChanged) {
   EXPECT_EQ(initial_technology_updates, listener_->technology_list_updates());
 
   // Remove a technology. Updates both the Available and Enabled lists.
-  manager_test_->RemoveTechnology(flimflam::kTypeWimax);
+  manager_test_->RemoveTechnology(shill::kTypeWimax);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(initial_technology_updates + 2,
             listener_->technology_list_updates());
 
   // Add a disabled technology.
-  manager_test_->AddTechnology(flimflam::kTypeWimax, false);
+  manager_test_->AddTechnology(shill::kTypeWimax, false);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(initial_technology_updates + 3,
             listener_->technology_list_updates());
   EXPECT_TRUE(shill_property_handler_->IsTechnologyAvailable(
-      flimflam::kTypeWimax));
-  EXPECT_FALSE(shill_property_handler_->IsTechnologyEnabled(
-      flimflam::kTypeWimax));
+      shill::kTypeWimax));
+  EXPECT_FALSE(shill_property_handler_->IsTechnologyEnabled(shill::kTypeWimax));
 
   // Enable the technology.
   DBusThreadManager::Get()->GetShillManagerClient()->EnableTechnology(
-      flimflam::kTypeWimax,
+      shill::kTypeWimax,
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   EXPECT_EQ(initial_technology_updates + 4,
             listener_->technology_list_updates());
-  EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabled(
-      flimflam::kTypeWimax));
+  EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabled(shill::kTypeWimax));
 
   EXPECT_EQ(0, listener_->errors());
 }
 
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerDevicePropertyChanged) {
-  EXPECT_EQ(1, listener_->list_updates(flimflam::kDevicesProperty));
+  EXPECT_EQ(1, listener_->list_updates(shill::kDevicesProperty));
   const size_t kNumShillManagerClientStubImplDevices = 2;
   EXPECT_EQ(kNumShillManagerClientStubImplDevices,
-            listener_->entries(flimflam::kDevicesProperty).size());
+            listener_->entries(shill::kDevicesProperty).size());
   // Add a device.
   const std::string kTestDevicePath("test_wifi_device1");
-  AddDevice(flimflam::kTypeWifi, kTestDevicePath);
+  AddDevice(shill::kTypeWifi, kTestDevicePath);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(2, listener_->list_updates(flimflam::kDevicesProperty));
+  EXPECT_EQ(2, listener_->list_updates(shill::kDevicesProperty));
   EXPECT_EQ(kNumShillManagerClientStubImplDevices + 1,
-            listener_->entries(flimflam::kDevicesProperty).size());
+            listener_->entries(shill::kDevicesProperty).size());
   // Device changes are not observed.
   // Remove a device
   RemoveDevice(kTestDevicePath);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(3, listener_->list_updates(flimflam::kDevicesProperty));
+  EXPECT_EQ(3, listener_->list_updates(shill::kDevicesProperty));
   EXPECT_EQ(kNumShillManagerClientStubImplDevices,
-            listener_->entries(flimflam::kDevicesProperty).size());
+            listener_->entries(shill::kDevicesProperty).size());
 
   EXPECT_EQ(0, listener_->errors());
 }
 
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
-  EXPECT_EQ(1, listener_->list_updates(flimflam::kServicesProperty));
+  EXPECT_EQ(1, listener_->list_updates(shill::kServicesProperty));
   const size_t kNumShillManagerClientStubImplServices = 4;
   EXPECT_EQ(kNumShillManagerClientStubImplServices,
-            listener_->entries(flimflam::kServicesProperty).size());
+            listener_->entries(shill::kServicesProperty).size());
 
   // Add an unwatched service.
   const std::string kTestServicePath("test_wifi_service1");
-  AddService(flimflam::kTypeWifi, kTestServicePath,
-             flimflam::kStateIdle, false);
+  AddService(shill::kTypeWifi, kTestServicePath, shill::kStateIdle, false);
   message_loop_.RunUntilIdle();
   // Watched and unwatched services trigger a service list update.
-  EXPECT_EQ(2, listener_->list_updates(flimflam::kServicesProperty));
+  EXPECT_EQ(2, listener_->list_updates(shill::kServicesProperty));
   EXPECT_EQ(kNumShillManagerClientStubImplServices + 1,
-            listener_->entries(flimflam::kServicesProperty).size());
+            listener_->entries(shill::kServicesProperty).size());
   // Service receives an initial property update.
   EXPECT_EQ(1, listener_->initial_property_updates(
-      flimflam::kServicesProperty)[kTestServicePath]);
+      shill::kServicesProperty)[kTestServicePath]);
   // Change a property.
   base::FundamentalValue scan_interval(3);
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(kTestServicePath),
-      flimflam::kScanIntervalProperty,
+      shill::kScanIntervalProperty,
       scan_interval,
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   // Property change triggers an update.
   EXPECT_EQ(1, listener_->property_updates(
-      flimflam::kServicesProperty)[kTestServicePath]);
+      shill::kServicesProperty)[kTestServicePath]);
 
   // Add the existing service to the watch list.
-  AddService(flimflam::kTypeWifi, kTestServicePath,
-             flimflam::kStateIdle, true);
+  AddService(shill::kTypeWifi, kTestServicePath, shill::kStateIdle, true);
   message_loop_.RunUntilIdle();
   // Service list update should be received when watch list changes.
-  EXPECT_EQ(2, listener_->list_updates(flimflam::kServicesProperty));
+  EXPECT_EQ(2, listener_->list_updates(shill::kServicesProperty));
   // Number of services shouldn't change.
   EXPECT_EQ(kNumShillManagerClientStubImplServices + 1,
-            listener_->entries(flimflam::kServicesProperty).size());
+            listener_->entries(shill::kServicesProperty).size());
 
   // Change a property.
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(kTestServicePath),
-      flimflam::kScanIntervalProperty,
+      shill::kScanIntervalProperty,
       scan_interval,
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   // Property change should trigger another update.
   EXPECT_EQ(2, listener_->property_updates(
-      flimflam::kServicesProperty)[kTestServicePath]);
+      shill::kServicesProperty)[kTestServicePath]);
 
   // Remove a service
   RemoveService(kTestServicePath);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(3, listener_->list_updates(flimflam::kServicesProperty));
+  EXPECT_EQ(3, listener_->list_updates(shill::kServicesProperty));
   EXPECT_EQ(kNumShillManagerClientStubImplServices,
-            listener_->entries(flimflam::kServicesProperty).size());
+            listener_->entries(shill::kServicesProperty).size());
 
   EXPECT_EQ(0, listener_->errors());
 }
@@ -426,36 +420,35 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerIPConfigPropertyChanged) {
   base::StringValue ip_address("192.168.1.1");
   DBusThreadManager::Get()->GetShillIPConfigClient()->SetProperty(
       dbus::ObjectPath(kTestIPConfigPath),
-      flimflam::kAddressProperty, ip_address,
+      shill::kAddressProperty, ip_address,
       base::Bind(&DoNothingWithCallStatus));
   base::ListValue dns_servers;
   dns_servers.Append(base::Value::CreateStringValue("192.168.1.100"));
   dns_servers.Append(base::Value::CreateStringValue("192.168.1.101"));
   DBusThreadManager::Get()->GetShillIPConfigClient()->SetProperty(
       dbus::ObjectPath(kTestIPConfigPath),
-      flimflam::kNameServersProperty, dns_servers,
+      shill::kNameServersProperty, dns_servers,
       base::Bind(&DoNothingWithCallStatus));
   base::FundamentalValue prefixlen(8);
   DBusThreadManager::Get()->GetShillIPConfigClient()->SetProperty(
       dbus::ObjectPath(kTestIPConfigPath),
-      flimflam::kPrefixlenProperty, prefixlen,
+      shill::kPrefixlenProperty, prefixlen,
       base::Bind(&DoNothingWithCallStatus));
   base::StringValue gateway("192.0.0.1");
   DBusThreadManager::Get()->GetShillIPConfigClient()->SetProperty(
       dbus::ObjectPath(kTestIPConfigPath),
-      flimflam::kGatewayProperty, gateway,
+      shill::kGatewayProperty, gateway,
       base::Bind(&DoNothingWithCallStatus));
   message_loop_.RunUntilIdle();
 
   // Add a service with an empty ipconfig and then update
   // its ipconfig property.
   const std::string kTestServicePath1("test_wifi_service1");
-  AddService(flimflam::kTypeWifi, kTestServicePath1,
-             flimflam::kStateIdle, true);
+  AddService(shill::kTypeWifi, kTestServicePath1, shill::kStateIdle, true);
   message_loop_.RunUntilIdle();
   // This is the initial property update.
   EXPECT_EQ(1, listener_->initial_property_updates(
-      flimflam::kServicesProperty)[kTestServicePath1]);
+      shill::kServicesProperty)[kTestServicePath1]);
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(kTestServicePath1),
       shill::kIPConfigProperty,
@@ -465,39 +458,39 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerIPConfigPropertyChanged) {
   // IPConfig property change on the service should trigger property updates for
   // IP Address, DNS, prefixlen, and gateway.
   EXPECT_EQ(4, listener_->property_updates(
-      flimflam::kServicesProperty)[kTestServicePath1]);
+      shill::kServicesProperty)[kTestServicePath1]);
 
   // Now, Add a new watched service with the IPConfig already set.
   const std::string kTestServicePath2("test_wifi_service2");
-  AddServiceWithIPConfig(flimflam::kTypeWifi, kTestServicePath2,
-                         flimflam::kStateIdle, kTestIPConfigPath, true);
+  AddServiceWithIPConfig(shill::kTypeWifi, kTestServicePath2,
+                         shill::kStateIdle, kTestIPConfigPath, true);
   message_loop_.RunUntilIdle();
   // A watched service with the IPConfig property already set must trigger
   // property updates for IP Address, DNS, prefixlen, and gateway when added.
   EXPECT_EQ(4, listener_->property_updates(
-      flimflam::kServicesProperty)[kTestServicePath2]);
+      shill::kServicesProperty)[kTestServicePath2]);
 }
 
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServiceCompleteList) {
   // Initial list updates.
-  EXPECT_EQ(1, listener_->list_updates(flimflam::kServicesProperty));
+  EXPECT_EQ(1, listener_->list_updates(shill::kServicesProperty));
   EXPECT_EQ(1, listener_->list_updates(shill::kServiceCompleteListProperty));
 
   // Add a new entry to the profile only; should trigger a single list update
   // for both Services and ServiceCompleteList, and a single property update
   // for ServiceCompleteList.
   const std::string kTestServicePath1("stub_wifi_profile_only1");
-  AddServiceToProfile(flimflam::kTypeWifi, kTestServicePath1, false);
+  AddServiceToProfile(shill::kTypeWifi, kTestServicePath1, false);
   shill_property_handler_->UpdateManagerProperties();
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(2, listener_->list_updates(flimflam::kServicesProperty));
+  EXPECT_EQ(2, listener_->list_updates(shill::kServicesProperty));
   EXPECT_EQ(2, listener_->list_updates(shill::kServiceCompleteListProperty));
   EXPECT_EQ(0, listener_->initial_property_updates(
-      flimflam::kServicesProperty)[kTestServicePath1]);
+      shill::kServicesProperty)[kTestServicePath1]);
   EXPECT_EQ(1, listener_->initial_property_updates(
       shill::kServiceCompleteListProperty)[kTestServicePath1]);
   EXPECT_EQ(0, listener_->property_updates(
-      flimflam::kServicesProperty)[kTestServicePath1]);
+      shill::kServicesProperty)[kTestServicePath1]);
   EXPECT_EQ(0, listener_->property_updates(
       shill::kServiceCompleteListProperty)[kTestServicePath1]);
 
@@ -507,18 +500,18 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServiceCompleteList) {
   // changes, and one for the Request) and one ServiceCompleteList change for
   // the Request.
   const std::string kTestServicePath2("stub_wifi_profile_only2");
-  AddServiceToProfile(flimflam::kTypeWifi, kTestServicePath2, true);
+  AddServiceToProfile(shill::kTypeWifi, kTestServicePath2, true);
   shill_property_handler_->UpdateManagerProperties();
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(3, listener_->list_updates(flimflam::kServicesProperty));
+  EXPECT_EQ(3, listener_->list_updates(shill::kServicesProperty));
   EXPECT_EQ(3, listener_->list_updates(shill::kServiceCompleteListProperty));
   EXPECT_EQ(1, listener_->initial_property_updates(
-      flimflam::kServicesProperty)[kTestServicePath2]);
+      shill::kServicesProperty)[kTestServicePath2]);
   EXPECT_EQ(1, listener_->initial_property_updates(
       shill::kServiceCompleteListProperty)[kTestServicePath2]);
   // Expect one property update for the Profile property of the Network.
   EXPECT_EQ(1, listener_->property_updates(
-      flimflam::kServicesProperty)[kTestServicePath2]);
+      shill::kServicesProperty)[kTestServicePath2]);
   EXPECT_EQ(0, listener_->property_updates(
       shill::kServiceCompleteListProperty)[kTestServicePath2]);
 
@@ -526,14 +519,14 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServiceCompleteList) {
   base::FundamentalValue scan_interval(3);
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(kTestServicePath2),
-      flimflam::kScanIntervalProperty,
+      shill::kScanIntervalProperty,
       scan_interval,
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   // Property change should trigger an update for the Network only; no
   // property updates pushed by Shill affect Favorites.
   EXPECT_EQ(2, listener_->property_updates(
-      flimflam::kServicesProperty)[kTestServicePath2]);
+      shill::kServicesProperty)[kTestServicePath2]);
   EXPECT_EQ(0, listener_->property_updates(
       shill::kServiceCompleteListProperty)[kTestServicePath2]);
 }

@@ -106,10 +106,10 @@ void LocalTranslator::TranslateEthernet() {
   onc_object_->GetStringWithoutPathExpansion(ethernet::kAuthentication,
                                              &authentication);
 
-  const char* shill_type = flimflam::kTypeEthernet;
+  const char* shill_type = shill::kTypeEthernet;
   if (authentication == ethernet::k8021X)
     shill_type = shill::kTypeEthernetEap;
-  shill_dictionary_->SetStringWithoutPathExpansion(flimflam::kTypeProperty,
+  shill_dictionary_->SetStringWithoutPathExpansion(shill::kTypeProperty,
                                                    shill_type);
 
   CopyFieldsAccordingToSignature();
@@ -124,7 +124,7 @@ void LocalTranslator::TranslateOpenVPN() {
                                                &certKUs) &&
       certKUs->GetString(0, &certKU)) {
     shill_dictionary_->SetStringWithoutPathExpansion(
-        flimflam::kOpenVPNRemoteCertKUProperty, certKU);
+        shill::kOpenVPNRemoteCertKUProperty, certKU);
   }
 
   for (base::DictionaryValue::Iterator it(*onc_object_); !it.IsAtEnd();
@@ -145,8 +145,7 @@ void LocalTranslator::TranslateOpenVPN() {
 void LocalTranslator::TranslateVPN() {
   std::string type;
   onc_object_->GetStringWithoutPathExpansion(vpn::kType, &type);
-  TranslateWithTableAndSet(type, kVPNTypeTable,
-                           flimflam::kProviderTypeProperty);
+  TranslateWithTableAndSet(type, kVPNTypeTable, shill::kProviderTypeProperty);
 
   CopyFieldsAccordingToSignature();
 }
@@ -155,18 +154,18 @@ void LocalTranslator::TranslateWiFi() {
   std::string security;
   onc_object_->GetStringWithoutPathExpansion(wifi::kSecurity, &security);
   TranslateWithTableAndSet(security, kWiFiSecurityTable,
-                           flimflam::kSecurityProperty);
+                           shill::kSecurityProperty);
 
   // We currently only support managed and no adhoc networks.
-  shill_dictionary_->SetStringWithoutPathExpansion(flimflam::kModeProperty,
-                                                   flimflam::kModeManaged);
+  shill_dictionary_->SetStringWithoutPathExpansion(shill::kModeProperty,
+                                                   shill::kModeManaged);
   CopyFieldsAccordingToSignature();
 }
 
 void LocalTranslator::TranslateEAP() {
   std::string outer;
   onc_object_->GetStringWithoutPathExpansion(eap::kOuter, &outer);
-  TranslateWithTableAndSet(outer, kEAPOuterTable, flimflam::kEapMethodProperty);
+  TranslateWithTableAndSet(outer, kEAPOuterTable, shill::kEapMethodProperty);
 
   // Translate the inner protocol only for outer tunneling protocols.
   if (outer == eap::kPEAP || outer == eap::kEAP_TTLS) {
@@ -178,7 +177,7 @@ void LocalTranslator::TranslateEAP() {
     if (inner != eap::kAutomatic) {
       const StringTranslationEntry* table =
           outer == eap::kPEAP ? kEAP_PEAP_InnerTable : kEAP_TTLS_InnerTable;
-      TranslateWithTableAndSet(inner, table, flimflam::kEapPhase2AuthProperty);
+      TranslateWithTableAndSet(inner, table, shill::kEapPhase2AuthProperty);
     }
   }
 
@@ -191,13 +190,13 @@ void LocalTranslator::TranslateNetworkConfiguration() {
 
   // Set the type except for Ethernet which is set in TranslateEthernet.
   if (type != network_type::kEthernet)
-    TranslateWithTableAndSet(type, kNetworkTypeTable, flimflam::kTypeProperty);
+    TranslateWithTableAndSet(type, kNetworkTypeTable, shill::kTypeProperty);
 
   // Shill doesn't allow setting the name for non-VPN networks.
   if (type == network_type::kVPN) {
     std::string name;
     onc_object_->GetStringWithoutPathExpansion(network_config::kName, &name);
-    shill_dictionary_->SetStringWithoutPathExpansion(flimflam::kNameProperty,
+    shill_dictionary_->SetStringWithoutPathExpansion(shill::kNameProperty,
                                                      name);
   }
 

@@ -110,8 +110,8 @@ class CHROMEOS_EXPORT ManagedState {
   std::string path_;
 
   // Common properties shared by all managed state objects.
-  std::string name_;  // flimflam::kNameProperty
-  std::string type_;  // flimflam::kTypeProperty
+  std::string name_;  // shill::kNameProperty
+  std::string type_;  // shill::kTypeProperty
 
   // Set to true when the an update has been received.
   bool update_received_;

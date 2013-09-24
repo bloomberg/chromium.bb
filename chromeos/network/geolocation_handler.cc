@@ -64,13 +64,13 @@ void GeolocationHandler::ManagerPropertiesCallback(
     DBusMethodCallStatus call_status,
     const base::DictionaryValue& properties) {
   const base::Value* value = NULL;
-  if (properties.Get(flimflam::kEnabledTechnologiesProperty, &value) && value)
-    HandlePropertyChanged(flimflam::kEnabledTechnologiesProperty, *value);
+  if (properties.Get(shill::kEnabledTechnologiesProperty, &value) && value)
+    HandlePropertyChanged(shill::kEnabledTechnologiesProperty, *value);
 }
 
 void GeolocationHandler::HandlePropertyChanged(const std::string& key,
                                                const base::Value& value) {
-  if (key != flimflam::kEnabledTechnologiesProperty)
+  if (key != shill::kEnabledTechnologiesProperty)
     return;
   const base::ListValue* technologies = NULL;
   if (!value.GetAsList(&technologies) || !technologies)
@@ -81,7 +81,7 @@ void GeolocationHandler::HandlePropertyChanged(const std::string& key,
        iter != technologies->end(); ++iter) {
     std::string technology;
     (*iter)->GetAsString(&technology);
-    if (technology == flimflam::kTypeWifi) {
+    if (technology == shill::kTypeWifi) {
       wifi_enabled_ = true;
       break;
     }

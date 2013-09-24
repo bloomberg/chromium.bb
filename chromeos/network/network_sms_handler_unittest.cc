@@ -69,7 +69,7 @@ class NetworkSmsHandlerTest : public testing::Test {
     ShillDeviceClient::TestInterface* device_test =
         DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
     ASSERT_TRUE(device_test);
-    device_test->AddDevice("stub_cellular_device2", flimflam::kTypeCellular,
+    device_test->AddDevice("stub_cellular_device2", shill::kTypeCellular,
                            "/org/freedesktop/ModemManager1/stub/0");
 
     // This relies on the stub dbus implementations for ShillManagerClient,

@@ -66,9 +66,9 @@ bool ManagedState::InitialPropertiesReceived(
 
 bool ManagedState::ManagedStatePropertyChanged(const std::string& key,
                                                const base::Value& value) {
-  if (key == flimflam::kNameProperty) {
+  if (key == shill::kNameProperty) {
     return GetStringValue(key, value, &name_);
-  } else if (key == flimflam::kTypeProperty) {
+  } else if (key == shill::kTypeProperty) {
     return GetStringValue(key, value, &type_);
   }
   return false;
