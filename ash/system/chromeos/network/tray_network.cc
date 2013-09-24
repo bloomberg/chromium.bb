@@ -89,6 +89,14 @@ class NetworkTrayView : public TrayItemView,
       UpdateConnectionStatus(base::string16(), false);
   }
 
+  void UpdateAlignment(ShelfAlignment alignment) {
+    SetLayoutManager(new views::BoxLayout(
+        alignment == SHELF_ALIGNMENT_BOTTOM ?
+            views::BoxLayout::kHorizontal : views::BoxLayout::kVertical,
+            0, 0, 0));
+    Layout();
+  }
+
   // views::View override.
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
     state->name = connection_status_string_;
@@ -310,8 +318,10 @@ void TrayNetwork::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
 void TrayNetwork::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
-  if (tray_)
+  if (tray_) {
     SetTrayImageItemBorder(tray_, alignment);
+    tray_->UpdateAlignment(alignment);
+  }
 }
 
 void TrayNetwork::RequestToggleWifi() {
