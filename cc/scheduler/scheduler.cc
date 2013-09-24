@@ -177,10 +177,15 @@ void Scheduler::BeginFrame(const BeginFrameArgs& args) {
   TRACE_EVENT0("cc", "Scheduler::BeginFrame");
   DCHECK(state_machine_.begin_frame_state() ==
          SchedulerStateMachine::BEGIN_FRAME_STATE_IDLE);
+  DCHECK(state_machine_.HasInitializedOutputSurface());
   last_begin_frame_args_ = args;
   last_begin_frame_args_.deadline -= client_->DrawDurationEstimate();
   state_machine_.OnBeginFrame(last_begin_frame_args_);
   ProcessScheduledActions();
+
+  if (!state_machine_.HasInitializedOutputSurface())
+    return;
+
   state_machine_.OnBeginFrameDeadlinePending();
 
   if (settings_.using_synchronous_renderer_compositor) {
@@ -223,15 +228,20 @@ void Scheduler::PostBeginFrameDeadline(base::TimeTicks deadline) {
 
 void Scheduler::OnBeginFrameDeadline() {
   TRACE_EVENT0("cc", "Scheduler::OnBeginFrameDeadline");
+  DCHECK(state_machine_.HasInitializedOutputSurface());
   begin_frame_deadline_closure_.Cancel();
   state_machine_.OnBeginFrameDeadline();
   ProcessScheduledActions();
-  // We only transition out of BEGIN_FRAME_STATE_INSIDE_DEADLINE when all
-  // actions that occur back-to-back in response to entering
-  // BEGIN_FRAME_STATE_INSIDE_DEADLINE have completed. This is important
-  // because sending the BeginFrame to the main thread will not occur if
-  // we transition to BEGIN_FRAME_STATE_IDLE too early.
-  state_machine_.OnBeginFrameIdle();
+
+  if (state_machine_.HasInitializedOutputSurface()) {
+    // We only transition out of BEGIN_FRAME_STATE_INSIDE_DEADLINE when all
+    // actions that occur back-to-back in response to entering
+    // BEGIN_FRAME_STATE_INSIDE_DEADLINE have completed. This is important
+    // because sending the BeginFrame to the main thread will not occur if
+    // we transition to BEGIN_FRAME_STATE_IDLE too early.
+    state_machine_.OnBeginFrameIdle();
+  }
+
   client_->DidBeginFrameDeadlineOnImplThread();
 }
 

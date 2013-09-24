@@ -848,8 +848,7 @@ bool SchedulerStateMachine::ProactiveBeginFrameWantedByImplThread() const {
 void SchedulerStateMachine::OnBeginFrame(const BeginFrameArgs& args) {
   current_frame_number_++;
   last_begin_frame_args_ = args;
-  DCHECK_EQ(begin_frame_state_, BEGIN_FRAME_STATE_IDLE)
-    << *AsValue();
+  DCHECK_EQ(begin_frame_state_, BEGIN_FRAME_STATE_IDLE) << *AsValue();
   begin_frame_state_ = BEGIN_FRAME_STATE_BEGIN_FRAME_STARTING;
 }
 
@@ -861,15 +860,13 @@ void SchedulerStateMachine::OnBeginFrameDeadlinePending() {
 
 void SchedulerStateMachine::OnBeginFrameDeadline() {
   DCHECK_EQ(begin_frame_state_, BEGIN_FRAME_STATE_INSIDE_BEGIN_FRAME)
-    << *AsValue();
+      << *AsValue();
   begin_frame_state_ = BEGIN_FRAME_STATE_INSIDE_DEADLINE;
 }
 
 void SchedulerStateMachine::OnBeginFrameIdle() {
-  if (HasInitializedOutputSurface()) {
-    DCHECK_EQ(begin_frame_state_, BEGIN_FRAME_STATE_INSIDE_DEADLINE)
-        << *AsValue();
-  }
+  DCHECK_EQ(begin_frame_state_, BEGIN_FRAME_STATE_INSIDE_DEADLINE)
+      << *AsValue();
   begin_frame_state_ = BEGIN_FRAME_STATE_IDLE;
 }
 
