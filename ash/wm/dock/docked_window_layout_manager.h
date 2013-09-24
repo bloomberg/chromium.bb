@@ -132,6 +132,8 @@ class ASH_EXPORT DockedWindowLayoutManager
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void OnWindowVisibilityChanging(aura::Window* window,
+                                          bool visible) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // aura::client::ActivationChangeObserver:
@@ -157,6 +159,9 @@ class ASH_EXPORT DockedWindowLayoutManager
   FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest, TwoWindowsWidthNew);
   FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest,
                            TwoWindowsWidthNonResizableSecond);
+  FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest, ThreeWindowsDragging);
+  FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest,
+                           ThreeWindowsDraggingSecondScreen);
   friend class DockedWindowLayoutManagerTest;
   friend class DockedWindowResizerTest;
 
@@ -168,6 +173,10 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Ideal (starting) width of the dock.
   static const int kIdealWidth;
+
+  // Keep at most kMaxVisibleWindows visible in the dock and minimize the rest
+  // (except for |child|).
+  void MaybeMinimizeChildrenExcept(aura::Window* child);
 
   // Minimize / restore window and relayout.
   void MinimizeDockedWindow(aura::Window* window);
@@ -230,6 +239,10 @@ class ASH_EXPORT DockedWindowLayoutManager
   bool shelf_hidden_;
   // Current width of the dock.
   int docked_width_;
+
+  // How many docked windows are allowed to be shown.
+  // TODO(varkha): Make this dynamic based on windows heights.
+  int max_visible_windows_;
 
   // Last bounds that were sent to observers.
   gfx::Rect docked_bounds_;

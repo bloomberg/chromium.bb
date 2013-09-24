@@ -463,6 +463,9 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDragging) {
 
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
+  DockedWindowLayoutManager* manager = static_cast<DockedWindowLayoutManager*>(
+      w1->parent()->layout_manager());
+  manager->max_visible_windows_ = 3;
   scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 202)));
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w2.get(), 200);
   scoped_ptr<aura::Window> w3(CreateTestWindow(gfx::Rect(0, 0, 220, 204)));
@@ -530,6 +533,9 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDraggingSecondScreen) {
 
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 600, 201, 201)));
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 600 + 20);
+  DockedWindowLayoutManager* manager = static_cast<DockedWindowLayoutManager*>(
+      w1->parent()->layout_manager());
+  manager->max_visible_windows_ = 3;
   scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 600, 210, 202)));
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w2.get(), 600 + 200);
   scoped_ptr<aura::Window> w3(CreateTestWindow(gfx::Rect(0, 600, 220, 204)));
@@ -680,6 +686,31 @@ TEST_P(DockedWindowLayoutManagerTest, WidthMoreThanMax) {
   EXPECT_NE(window->GetRootWindow()->bounds().right(),
             window->GetBoundsInScreen().right());
   EXPECT_NE(internal::kShellWindowId_DockedContainer, window->parent()->id());
+}
+
+// Docks three windows and tests that the very first window gets minimized.
+TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsMinimize) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
+  scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 202)));
+  DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w2.get(), 200);
+  scoped_ptr<aura::Window> w3(CreateTestWindow(gfx::Rect(0, 0, 220, 204)));
+  DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w3.get(), 300);
+
+  // The last two windows should be attached and snapped to the right edge.
+  EXPECT_EQ(w2->GetRootWindow()->bounds().right(),
+            w2->GetBoundsInScreen().right());
+  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
+  EXPECT_EQ(w3->GetRootWindow()->bounds().right(),
+            w3->GetBoundsInScreen().right());
+  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w3->parent()->id());
+
+  // The first window should get minimized but parented by the dock container.
+  EXPECT_TRUE(wm::GetWindowState(w1.get())->IsMinimized());
+  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
 }
 
 // Tests run twice - on both panels and normal windows

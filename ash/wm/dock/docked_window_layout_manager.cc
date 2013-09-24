@@ -26,6 +26,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/rect.h"
 
 namespace ash {
@@ -40,6 +41,10 @@ const int DockedWindowLayoutManager::kMinDockWidth = 200;
 const int DockedWindowLayoutManager::kMinDockGap = 2;
 //static
 const int DockedWindowLayoutManager::kIdealWidth = 250;
+//static
+const int kMaxVisibleWindows = 2;
+const int kSlideDurationMs = 120;
+const int kFadeDurationMs = 720;
 
 namespace {
 
@@ -102,9 +107,13 @@ struct CompareWindowPos {
       : dragged_window_(dragged_window),
         delta_(delta / 2) {}
 
-  bool operator()(const aura::Window* win1, const aura::Window* win2) {
-    const gfx::Rect win1_bounds = win1->GetBoundsInScreen();
-    const gfx::Rect win2_bounds = win2->GetBoundsInScreen();
+  bool operator()(aura::Window* win1, aura::Window* win2) {
+    // Use target coordinates since animations may be active when windows are
+    // reordered.
+    const gfx::Rect win1_bounds = ScreenAsh::ConvertRectToScreen(
+        win1->parent(), win1->GetTargetBounds());
+    const gfx::Rect win2_bounds = ScreenAsh::ConvertRectToScreen(
+        win2->parent(), win2->GetTargetBounds());
     // If one of the windows is the |dragged_window_| attempt to make an
     // earlier swap between the windows than just based on their centers.
     // This is possible if the dragged window is at least as tall as the other
@@ -160,6 +169,7 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(
       shelf_layout_manager_(NULL),
       shelf_hidden_(false),
       docked_width_(0),
+      max_visible_windows_(kMaxVisibleWindows),
       alignment_(DOCKED_ALIGNMENT_NONE),
       last_active_window_(NULL),
       background_widget_(new DockedBackgroundWidget(dock_container_)) {
@@ -230,6 +240,12 @@ void DockedWindowLayoutManager::FinishDragging() {
     dragged_window_->RemoveObserver(this);
     if (last_active_window_ == dragged_window_)
       last_active_window_ = NULL;
+  } else {
+    // A window is no longer dragged and is a child.
+    // When a window becomes a child at drag start this is
+    // the only opportunity we will have to enforce a window
+    // count limit so do it here.
+    MaybeMinimizeChildrenExcept(dragged_window_);
   }
   dragged_window_ = NULL;
   dragged_bounds_ = gfx::Rect();
@@ -341,6 +357,7 @@ void DockedWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
     alignment_ = GetAlignmentOfWindow(child);
     DCHECK(alignment_ != DOCKED_ALIGNMENT_NONE);
   }
+  MaybeMinimizeChildrenExcept(child);
   child->AddObserver(this);
   Relayout();
   UpdateDockBounds();
@@ -438,6 +455,17 @@ void DockedWindowLayoutManager::OnWindowBoundsChanged(
     Relayout();
 }
 
+void DockedWindowLayoutManager::OnWindowVisibilityChanging(
+    aura::Window* window, bool visible) {
+  int animation_type = WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE;
+  if (visible) {
+    animation_type = views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT;
+    views::corewm::SetWindowVisibilityAnimationDuration(
+        window, base::TimeDelta::FromMilliseconds(kFadeDurationMs));
+  }
+  views::corewm::SetWindowVisibilityAnimationType(window, animation_type);
+}
+
 void DockedWindowLayoutManager::OnWindowDestroying(aura::Window* window) {
   if (dragged_window_ == window) {
     FinishDragging();
@@ -505,10 +533,23 @@ void DockedWindowLayoutManager::WillChangeVisibilityState(
 ////////////////////////////////////////////////////////////////////////////////
 // DockLayoutManager private implementation:
 
+void DockedWindowLayoutManager::MaybeMinimizeChildrenExcept(
+    aura::Window* child) {
+  // Account for the |child| by initializing to 1.
+  int child_index = 1;
+  aura::Window::Windows children(dock_container_->children());
+  aura::Window::Windows::const_reverse_iterator iter = children.rbegin();
+  while (iter != children.rend()) {
+    aura::Window* window(*iter++);
+    if (window == child || !IsUsedByLayout(window))
+      continue;
+    if (++child_index > max_visible_windows_)
+      wm::GetWindowState(window)->Minimize();
+  }
+}
+
 void DockedWindowLayoutManager::MinimizeDockedWindow(aura::Window* window) {
   DCHECK_NE(window->type(), aura::client::WINDOW_TYPE_POPUP);
-  views::corewm::SetWindowVisibilityAnimationType(
-      window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
   window->Hide();
   wm::WindowState* window_state = wm::GetWindowState(window);
   if (window_state->IsActive())
@@ -517,7 +558,17 @@ void DockedWindowLayoutManager::MinimizeDockedWindow(aura::Window* window) {
 
 void DockedWindowLayoutManager::RestoreDockedWindow(aura::Window* window) {
   DCHECK_NE(window->type(), aura::client::WINDOW_TYPE_POPUP);
+  // Always place restored window at the top shuffling the other windows down.
+  // TODO(varkha): add a separate container for docked windows to keep track
+  // of ordering.
+  gfx::Display display = Shell::GetScreen()->GetDisplayNearestWindow(
+      dock_container_);
+  const gfx::Rect work_area = display.work_area();
+  gfx::Rect bounds(window->bounds());
+  bounds.set_y(work_area.y() - bounds.height());
+  window->SetBounds(bounds);
   window->Show();
+  MaybeMinimizeChildrenExcept(window);
 }
 
 void DockedWindowLayoutManager::OnWindowDocked(aura::Window* window) {
@@ -657,8 +708,8 @@ void DockedWindowLayoutManager::Relayout() {
   for (aura::Window::Windows::const_iterator iter = visible_windows.begin();
       iter != visible_windows.end(); ++iter) {
     aura::Window* window = *iter;
-    gfx::Rect bounds = window->GetBoundsInScreen();
-
+    gfx::Rect bounds = ScreenAsh::ConvertRectToScreen(
+        window->parent(), window->GetTargetBounds());
     // A window is extended or shrunk to be as close as possible to the docked
     // area width. Windows other than the dragged window are kept at their
     // existing size when the dragged window is just being reordered.
@@ -704,7 +755,15 @@ void DockedWindowLayoutManager::Relayout() {
     // have been removed when dock was closed.
     DCHECK_NE(alignment_, DOCKED_ALIGNMENT_NONE);
     bounds = ScreenAsh::ConvertRectFromScreen(dock_container_, bounds);
-    SetChildBoundsDirect(window, bounds);
+    if (bounds != window->GetTargetBounds()) {
+      ui::Layer* layer = window->layer();
+      ui::ScopedLayerAnimationSettings slide_settings(layer->GetAnimator());
+      slide_settings.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      slide_settings.SetTransitionDuration(
+          base::TimeDelta::FromMilliseconds(kSlideDurationMs));
+      SetChildBoundsDirect(window, bounds);
+    }
   }
   is_dragged_from_dock_ = true;
   UpdateStacking(active_window);
