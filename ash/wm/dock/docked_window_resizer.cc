@@ -187,11 +187,6 @@ bool DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
       GetTarget()->parent(),
       dock_layout_->dock_container()->GetBoundsInScreen());
 
-  // Distance in pixels that the cursor must move past an edge for a window
-  // to move beyond that edge. Same constant as in WorkspaceWindowResizer
-  // is used for consistency.
-  const int kStickyDistance = WorkspaceWindowResizer::kStickyDistancePixels;
-
   // Short-range magnetism when retaining docked state. Same constant as in
   // MagnetismMatcher is used for consistency.
   const int kSnapToDockDistance = MagnetismMatcher::kMagneticDistance;
@@ -199,7 +194,7 @@ bool DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
   if (dock_alignment == DOCKED_ALIGNMENT_LEFT ||
       dock_alignment == DOCKED_ALIGNMENT_NONE) {
     const int distance = bounds.x() - dock_bounds.x();
-    if (distance < kSnapToDockDistance && distance > -kStickyDistance) {
+    if (distance < kSnapToDockDistance && distance > 0) {
       offset->set_x(-distance);
       return true;
     }
@@ -207,7 +202,7 @@ bool DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
   if (dock_alignment == DOCKED_ALIGNMENT_RIGHT ||
       dock_alignment == DOCKED_ALIGNMENT_NONE) {
     const int distance = dock_bounds.right() - bounds.right();
-    if (distance < kSnapToDockDistance && distance > -kStickyDistance) {
+    if (distance < kSnapToDockDistance && distance > 0) {
       offset->set_x(distance);
       return true;
     }
@@ -249,6 +244,16 @@ void DockedWindowResizer::FinishedDragging() {
       window_state->panel_attached();
   const bool is_resized =
       (details_.bounds_change & WindowResizer::kBoundsChange_Resizes) != 0;
+
+  // When drag is completed the dragged docked window is resized to the bounds
+  // calculated by the layout manager that conform to other docked windows.
+  if (!attached_panel && is_docked_ && !is_resized) {
+    gfx::Rect bounds = ScreenAsh::ConvertRectFromScreen(
+        window->parent(), dock_layout_->dragged_bounds());
+    if (!bounds.IsEmpty() && bounds.width() != window->bounds().width()) {
+      window->SetBounds(bounds);
+    }
+  }
   // No longer restore to pre-docked bounds if a window has been resized.
   if (is_resized && is_docked_)
     window_state->ClearRestoreBounds();

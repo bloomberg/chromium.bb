@@ -143,15 +143,20 @@ class ASH_EXPORT DockedWindowLayoutManager
       ShelfVisibilityState new_state) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DockedWindowResizerTest, AttachTryDetach);
   FRIEND_TEST_ALL_PREFIXES(DockedWindowResizerTest, AttachTwoWindowsDetachOne);
   FRIEND_TEST_ALL_PREFIXES(DockedWindowResizerTest, AttachWindowMaximizeOther);
   FRIEND_TEST_ALL_PREFIXES(DockedWindowResizerTest, AttachOneTestSticky);
   FRIEND_TEST_ALL_PREFIXES(DockedWindowResizerTest, ResizeTwoWindows);
   FRIEND_TEST_ALL_PREFIXES(DockedWindowResizerTest, DragToShelf);
+  FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest, AddOneWindow);
   FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest, AutoPlacingLeft);
   FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest, AutoPlacingRight);
   FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest,
                            AutoPlacingRightSecondScreen);
+  FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest, TwoWindowsWidthNew);
+  FRIEND_TEST_ALL_PREFIXES(DockedWindowLayoutManagerTest,
+                           TwoWindowsWidthNonResizableSecond);
   friend class DockedWindowLayoutManagerTest;
   friend class DockedWindowResizerTest;
 
@@ -160,6 +165,9 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Width of the gap between the docked windows and a workspace.
   static const int kMinDockGap;
+
+  // Ideal (starting) width of the dock.
+  static const int kIdealWidth;
 
   // Minimize / restore window and relayout.
   void MinimizeDockedWindow(aura::Window* window);
@@ -173,6 +181,11 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Returns true if there are any windows currently docked.
   bool IsAnyWindowDocked();
+
+  // Returns width that is as close as possible to |target_width| while being
+  // consistent with docked min and max restrictions and respects the |window|'s
+  // minimum and maximum size.
+  static int GetWindowWidthCloseTo(aura::Window* window, int target_width);
 
   // Called whenever the window layout might change.
   void Relayout();

@@ -367,17 +367,22 @@ TEST_P(DockedWindowResizerTest, AttachTryDetach) {
   if (!SupportsHostWindowResize())
     return;
 
-  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  scoped_ptr<aura::Window> window(CreateTestWindow(
+      gfx::Rect(0, 0, DockedWindowLayoutManager::kIdealWidth + 10, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
-  // The window should be attached and snapped to the right edge.
+  // The window should be attached and docked at the right edge.
+  // Its width should shrink to ideal width.
   EXPECT_EQ(window->GetRootWindow()->bounds().right(),
             window->GetBoundsInScreen().right());
+  EXPECT_EQ(DockedWindowLayoutManager::kIdealWidth,
+            window->GetBoundsInScreen().width());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
 
   // Try to detach by dragging left less than kSnapToDockDistance.
   // The window should stay docked.
-  ASSERT_NO_FATAL_FAILURE(DragStart(window.get()));
+  ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromwindowOrigin(
+      window.get(), 10, 0));
   DragMove(-4, -10);
   // Release the mouse and the window should be still attached to the dock.
   DragEnd();
@@ -389,14 +394,14 @@ TEST_P(DockedWindowResizerTest, AttachTryDetach) {
 
   // Try to detach by dragging left by kSnapToDockDistance or more.
   // The window should get undocked.
+  const int left_edge = window->bounds().x();
   ASSERT_NO_FATAL_FAILURE(DragStart(window.get()));
   DragMove(-32, -10);
   // Release the mouse and the window should be no longer attached to the dock.
   DragEnd();
 
-  // The window should be floating on the desktop again.
-  EXPECT_EQ(window->GetRootWindow()->bounds().right() - 32,
-            window->GetBoundsInScreen().right());
+  // The window should be floating on the desktop again and moved to the left.
+  EXPECT_EQ(left_edge - 32, window->GetBoundsInScreen().x());
   EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
 }
@@ -445,6 +450,7 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindows)
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
 
   // Detach by dragging left (should get undocked).
+  const int left_edge = w2->bounds().x();
   ASSERT_NO_FATAL_FAILURE(DragStart(w2.get()));
   // Drag up as well to avoid attaching panels to launcher shelf.
   DragMove(-32, -100);
@@ -456,9 +462,8 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindows)
             w1->GetBoundsInScreen().right());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
 
-  // The second window should be floating on the desktop again.
-  EXPECT_EQ(w2->GetRootWindow()->bounds().right() - 32,
-            w2->GetBoundsInScreen().right());
+  // The window should be floating on the desktop again and moved to the left.
+  EXPECT_EQ(left_edge - 32, w2->GetBoundsInScreen().x());
   EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             w2->parent()->id());
 }
@@ -631,19 +636,19 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindowsDetachOne)
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
 
   // Detach by dragging left more (should get undocked).
+  const int left_edge = w2->bounds().x();
   ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromwindowOrigin(
       w2.get(),
       w2->bounds().width()/2 + 10,
       0));
   // Drag up as well to avoid attaching panels to launcher shelf.
-  DragMove(-(w2->bounds().width()/2 + 20), -100);
+  const int drag_x = -(w2->bounds().width()/2 + 20);
+  DragMove(drag_x, -100);
   // Release the mouse and the window should be no longer attached to the edge.
   DragEnd();
 
   // The second window should be floating on the desktop again.
-  EXPECT_EQ(w2->GetRootWindow()->bounds().right() -
-            (w2->bounds().width()/2 + 20),
-            w2->GetBoundsInScreen().right());
+  EXPECT_EQ(left_edge + drag_x, w2->bounds().x());
   EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
   // Dock width should be set to remaining single docked window.
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());

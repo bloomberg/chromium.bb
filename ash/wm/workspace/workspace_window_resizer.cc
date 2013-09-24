@@ -418,7 +418,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
     snap_type_ = SNAP_NONE;
     snap_phantom_window_controller_.reset();
     snap_sizer_.reset();
-    UpdateDockedState(false);
+    SetDraggedWindowDocked(false);
   }
 }
 
@@ -894,9 +894,10 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   if (snap_type_ == SNAP_NONE || snap_type_ != last_type) {
     snap_phantom_window_controller_.reset();
     snap_sizer_.reset();
-    UpdateDockedState(false);
-    if (snap_type_ == SNAP_NONE)
+    if (snap_type_ == SNAP_NONE) {
+      SetDraggedWindowDocked(false);
       return;
+    }
   }
   SnapSizer::Edge edge = (snap_type_ == SNAP_LEFT) ?
       SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
@@ -911,20 +912,25 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   }
 
   const bool can_dock = dock_layout_->CanDockWindow(window(), snap_type_);
-  if (!window_state()->CanSnap() && !can_dock)
+  const bool can_snap = window_state()->CanSnap();
+  if (!can_snap && !can_dock)
     return;
 
   // Update phantom window with snapped or docked guide bounds.
   // Windows that cannot be snapped or are less wide than kMaxDockWidth can get
   // docked without going through a snapping sequence.
   gfx::Rect phantom_bounds;
-  if (!can_dock ||
-      window()->bounds().width() > DockedWindowLayoutManager::kMaxDockWidth)
+  if (can_snap &&
+      (!can_dock ||
+       window()->bounds().width() > DockedWindowLayoutManager::kMaxDockWidth))
     phantom_bounds = snap_sizer_->target_bounds();
-  const bool is_docked = can_dock &&
-      (phantom_bounds.IsEmpty() || snap_sizer_->end_of_sequence());
-  UpdateDockedState(is_docked);
-  if (is_docked) {
+  const bool should_dock = can_dock &&
+      (phantom_bounds.IsEmpty() ||
+       snap_sizer_->end_of_sequence() ||
+       dock_layout_->is_dragged_window_docked());
+  SetDraggedWindowDocked(should_dock);
+  snap_type_ = GetSnapType(location);
+  if (dock_layout_->is_dragged_window_docked()) {
     phantom_bounds = ScreenAsh::ConvertRectFromScreen(
         window()->parent(), dock_layout_->dragged_bounds());
   }
@@ -985,8 +991,8 @@ SnapType WorkspaceWindowResizer::GetSnapType(
   return SNAP_NONE;
 }
 
-void WorkspaceWindowResizer::UpdateDockedState(bool is_docked) {
-  if (is_docked &&
+void WorkspaceWindowResizer::SetDraggedWindowDocked(bool should_dock) {
+  if (should_dock &&
       dock_layout_->GetAlignmentOfWindow(window()) != DOCKED_ALIGNMENT_NONE) {
     if (!dock_layout_->is_dragged_window_docked())
       dock_layout_->DockDraggedWindow(window());

@@ -161,9 +161,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // snapping should be used.
   SnapType GetSnapType(const gfx::Point& location) const;
 
-  // Dock when a window is at its last step in snapping sequence, undock
-  // otherwise.
-  void UpdateDockedState(bool is_docked);
+  // Docks the dragged window if |should_dock| and the window can be docked.
+  // Undocks the window if |should_dock| is false.
+  void SetDraggedWindowDocked(bool should_dock);
 
   aura::Window* window() const { return details_.window; }
 
