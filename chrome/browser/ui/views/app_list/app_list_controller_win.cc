@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1020,7 +1021,10 @@ void AppListController::OnLoadProfileForWarmup(Profile* initial_profile) {
   if (!IsWarmupNeeded())
     return;
 
+  base::Time before_warmup(base::Time::Now());
   shower_->WarmupForProfile(initial_profile);
+  UMA_HISTOGRAM_TIMES("Apps.AppListWarmupDuration",
+                      base::Time::Now() - before_warmup);
 }
 
 void AppListController::SetAppListNextPaintCallback(
@@ -1126,7 +1130,7 @@ void AppListController::CreateShortcut() {
 void AppListController::ScheduleWarmup() {
   // Post a task to create the app list. This is posted to not impact startup
   // time.
-  const int kInitWindowDelay = 5;
+  const int kInitWindowDelay = 30;
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&AppListController::LoadProfileForWarmup,
