@@ -204,11 +204,13 @@ Error MountNodeHttp::GetStat(struct stat* stat) {
     stat_.st_atime = 0;  // TODO(binji): Use "Last-Modified".
     stat_.st_mtime = 0;
     stat_.st_ctime = 0;
+
+    stat_.st_mode |= S_IFREG;
   }
 
   // Fill the stat structure if provided
   if (stat)
-    memcpy(stat, &stat_, sizeof(stat_));
+    *stat = stat_;
 
   return 0;
 }
