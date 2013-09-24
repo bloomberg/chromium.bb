@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 12: Uncaught InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.
+CONSOLE MESSAGE: line 12: Uncaught InvalidStateError: Failed to execute 'setStart' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?
 Detaching a Range while deleteContents() is running should not cause a crash.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

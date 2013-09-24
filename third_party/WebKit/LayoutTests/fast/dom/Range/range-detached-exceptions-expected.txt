@@ -1,0 +1,33 @@
+A variety of Range methods should throw if called on a detached range.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS range.cloneContents() threw exception InvalidStateError: Failed to execute 'cloneContents' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.cloneRange() threw exception InvalidStateError: Failed to execute 'cloneRange' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.collapsed() threw exception InvalidStateError: Failed to execute 'collapsed' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.commonAncestorContainer() threw exception InvalidStateError: Failed to execute 'commonAncestorContainer' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.compareBoundaryPoints(Range.START_TO_END, range) threw exception InvalidStateError: Failed to execute 'compareBoundaryPoints' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.comparePoint(document.getElementById('b1'), 1) threw exception InvalidStateError: Failed to execute 'comparePoint' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.createContextualFragment('p') threw exception InvalidStateError: Failed to execute 'createContextualFragment' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.deleteContents() threw exception InvalidStateError: Failed to execute 'deleteContents' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.detach() threw exception InvalidStateError: Failed to execute 'detach' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.endContainer() threw exception InvalidStateError: Failed to execute 'endContainer' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.endOffset() threw exception InvalidStateError: Failed to execute 'endOffset' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.extractContents() threw exception InvalidStateError: Failed to execute 'extractContents' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.insertNode(document.getElementById('b1')) threw exception InvalidStateError: Failed to execute 'insertNode' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.intersectsNode(document.getElementById('b1')) threw exception InvalidStateError: Failed to execute 'intersectsNode' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.isPointInRange(document.getElementById('b1')) threw exception InvalidStateError: Failed to execute 'isPointInRange' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.selectNode(document.getElementById('b1')) threw exception InvalidStateError: Failed to execute 'selectNode' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.selectNodeContents(document.getElementById('b1')) threw exception InvalidStateError: Failed to execute 'selectNodeContents' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.setEnd(document.getElementById('b1')) threw exception InvalidStateError: Failed to execute 'setEnd' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.setStart(document.getElementById('b1')) threw exception InvalidStateError: Failed to execute 'setStart' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.startContainer() threw exception InvalidStateError: Failed to execute 'startContainer' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.startContainer() threw exception InvalidStateError: Failed to execute 'startContainer' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.startOffset() threw exception InvalidStateError: Failed to execute 'startOffset' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.surroundContents(document.getElementById('b1')) threw exception InvalidStateError: Failed to execute 'surroundContents' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS range.toString() threw exception InvalidStateError: Failed to execute 'toString' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

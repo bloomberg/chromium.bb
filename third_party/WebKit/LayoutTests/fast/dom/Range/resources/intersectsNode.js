@@ -95,7 +95,7 @@ debug("");
 debug("2.1 Detached Range, attached node");
 var detachedRange = document.createRange();
 detachedRange.detach();
-shouldThrow("detachedRange.intersectsNode(document.getElementById('a1'))", '"InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable."');
+shouldThrow("detachedRange.intersectsNode(document.getElementById('a1'))", '"InvalidStateError: Failed to execute \'intersectsNode\' on \'Range\': The range has no container. Perhaps \'detatch()\' has been invoked on this object?"');
 debug("");
 
 debug("2.2 attached range, detached node");

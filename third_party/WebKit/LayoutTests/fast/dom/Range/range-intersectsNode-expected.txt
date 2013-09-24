@@ -44,7 +44,7 @@ PASS intersects is true
 PASS intersects is true
 
 2.1 Detached Range, attached node
-PASS detachedRange.intersectsNode(document.getElementById('a1')) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS detachedRange.intersectsNode(document.getElementById('a1')) threw exception InvalidStateError: Failed to execute 'intersectsNode' on 'Range': The range has no container. Perhaps 'detatch()' has been invoked on this object?.
 
 2.2 attached range, detached node
 PASS intersects is false
