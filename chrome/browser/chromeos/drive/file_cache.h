@@ -32,11 +32,6 @@ class FileCacheEntry;
 typedef base::Callback<void(bool success, const FileCacheEntry& cache_entry)>
     GetCacheEntryCallback;
 
-// Callback for Iterate().
-typedef base::Callback<void(const std::string& id,
-                            const FileCacheEntry& cache_entry)>
-    CacheIterateCallback;
-
 namespace internal {
 
 // Callback for GetFileFromCache.
@@ -97,12 +92,6 @@ class FileCache {
   // Gets the cache entry by the given ID.
   // See also GetCacheEntryOnUIThread().
   bool GetCacheEntry(const std::string& id, FileCacheEntry* entry);
-
-  // Runs Iterate() with |iteration_callback| on |blocking_task_runner_| and
-  // runs |completion_callback| upon completion.
-  // Must be called on UI thread.
-  void IterateOnUIThread(const CacheIterateCallback& iteration_callback,
-                         const base::Closure& completion_callback);
 
   // Returns an object to iterate over entries.
   scoped_ptr<Iterator> GetIterator();

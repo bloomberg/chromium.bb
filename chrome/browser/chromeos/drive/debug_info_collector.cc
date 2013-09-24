@@ -6,16 +6,33 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "chrome/browser/google_apis/task_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
 
 namespace drive {
 
-DebugInfoCollector::DebugInfoCollector(FileSystemInterface* file_system,
-                                       internal::FileCache* file_cache)
+namespace {
+
+void IterateFileCacheInternal(
+    internal::FileCache* file_cache,
+    const DebugInfoCollector::IterateFileCacheCallback& iteration_callback) {
+  scoped_ptr<internal::FileCache::Iterator> it = file_cache->GetIterator();
+  for (; !it->IsAtEnd(); it->Advance())
+    iteration_callback.Run(it->GetID(), it->GetValue());
+  DCHECK(!it->HasError());
+}
+
+}  // namespace
+
+DebugInfoCollector::DebugInfoCollector(
+    FileSystemInterface* file_system,
+    internal::FileCache* file_cache,
+    base::SequencedTaskRunner* blocking_task_runner)
     : file_system_(file_system),
-      file_cache_(file_cache) {
+      file_cache_(file_cache),
+      blocking_task_runner_(blocking_task_runner) {
   DCHECK(file_system_);
   DCHECK(file_cache_);
 }
@@ -24,13 +41,18 @@ DebugInfoCollector::~DebugInfoCollector() {
 }
 
 void DebugInfoCollector::IterateFileCache(
-    const CacheIterateCallback& iteration_callback,
+    const IterateFileCacheCallback& iteration_callback,
     const base::Closure& completion_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!iteration_callback.is_null());
   DCHECK(!completion_callback.is_null());
 
-  file_cache_->IterateOnUIThread(iteration_callback, completion_callback);
+  blocking_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&IterateFileCacheInternal,
+                 file_cache_,
+                 google_apis::CreateRelayCallback(iteration_callback)),
+      completion_callback);
 }
 
 void DebugInfoCollector::GetMetadata(

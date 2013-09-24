@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/google_apis/task_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -41,21 +42,68 @@ const int kDelaySeconds = 5;
 // The delay constant is used to delay retrying a sync task on server errors.
 const int kLongDelaySeconds = 600;
 
-// Appends |local_id| to |to_fetch| if the file is pinned but not fetched
-// (not present locally), or to |to_upload| if the file is dirty but not
-// uploaded.
-void CollectBacklog(std::vector<std::string>* to_fetch,
-                    std::vector<std::string>* to_upload,
-                    const std::string& local_id,
-                    const FileCacheEntry& cache_entry) {
+// Iterates cache entries and appends IDs to |to_fetch| if the file is pinned
+// but not fetched (not present locally), or to |to_upload| if the file is dirty
+// but not uploaded.
+void CollectBacklog(FileCache* cache,
+                    std::vector<std::string>* to_fetch,
+                    std::vector<std::string>* to_upload) {
   DCHECK(to_fetch);
   DCHECK(to_upload);
 
-  if (cache_entry.is_pinned() && !cache_entry.is_present())
-    to_fetch->push_back(local_id);
+  scoped_ptr<FileCache::Iterator> it = cache->GetIterator();
+  for (; !it->IsAtEnd(); it->Advance()) {
+    const FileCacheEntry& cache_entry = it->GetValue();
+    const std::string& local_id = it->GetID();
+    if (cache_entry.is_pinned() && !cache_entry.is_present())
+      to_fetch->push_back(local_id);
 
-  if (cache_entry.is_dirty())
-    to_upload->push_back(local_id);
+    if (cache_entry.is_dirty())
+      to_upload->push_back(local_id);
+  }
+  DCHECK(!it->HasError());
+}
+
+// Iterates cache entries and collects IDs of ones with obsolete cache files.
+void CheckExistingPinnedFiles(ResourceMetadata* metadata,
+                              FileCache* cache,
+                              std::vector<std::string>* local_ids) {
+  scoped_ptr<FileCache::Iterator> it = cache->GetIterator();
+  for (; !it->IsAtEnd(); it->Advance()) {
+    const FileCacheEntry& cache_entry = it->GetValue();
+    const std::string& local_id = it->GetID();
+    if (!cache_entry.is_pinned() || !cache_entry.is_present())
+      continue;
+
+    ResourceEntry entry;
+    FileError error = metadata->GetResourceEntryById(local_id, &entry);
+    if (error != FILE_ERROR_OK) {
+      LOG(WARNING) << "Entry not found: " << local_id;
+      continue;
+    }
+
+    // If MD5s don't match, it indicates the local cache file is stale, unless
+    // the file is dirty (the MD5 is "local"). We should never re-fetch the
+    // file when we have a locally modified version.
+    if (entry.file_specific_info().md5() == cache_entry.md5() ||
+        cache_entry.is_dirty())
+      continue;
+
+    error = cache->Remove(local_id);
+    if (error != FILE_ERROR_OK) {
+      LOG(WARNING) << "Failed to remove cache entry: " << local_id;
+      continue;
+    }
+
+    error = cache->Pin(local_id);
+    if (error != FILE_ERROR_OK) {
+      LOG(WARNING) << "Failed to pin cache entry: " << local_id;
+      continue;
+    }
+
+    local_ids->push_back(local_id);
+  }
+  DCHECK(!it->HasError());
 }
 
 }  // namespace
@@ -66,7 +114,8 @@ SyncClient::SyncClient(base::SequencedTaskRunner* blocking_task_runner,
                        ResourceMetadata* metadata,
                        FileCache* cache,
                        const base::FilePath& temporary_file_directory)
-    : metadata_(metadata),
+    : blocking_task_runner_(blocking_task_runner),
+      metadata_(metadata),
       cache_(cache),
       download_operation_(new file_system::DownloadOperation(
           blocking_task_runner,
@@ -95,20 +144,28 @@ void SyncClient::StartProcessingBacklog() {
 
   std::vector<std::string>* to_fetch = new std::vector<std::string>;
   std::vector<std::string>* to_upload = new std::vector<std::string>;
-  cache_->IterateOnUIThread(base::Bind(&CollectBacklog, to_fetch, to_upload),
-                            base::Bind(&SyncClient::OnGetLocalIdsOfBacklog,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       base::Owned(to_fetch),
-                                       base::Owned(to_upload)));
+  blocking_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&CollectBacklog, cache_, to_fetch, to_upload),
+      base::Bind(&SyncClient::OnGetLocalIdsOfBacklog,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Owned(to_fetch),
+                 base::Owned(to_upload)));
 }
 
 void SyncClient::StartCheckingExistingPinnedFiles() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  cache_->IterateOnUIThread(
-      base::Bind(&SyncClient::OnGetLocalIdOfExistingPinnedFile,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&base::DoNothing));
+  std::vector<std::string>* local_ids = new std::vector<std::string>;
+  blocking_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&CheckExistingPinnedFiles,
+                 metadata_,
+                 cache_,
+                 local_ids),
+      base::Bind(&SyncClient::AddFetchTasks,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Owned(local_ids)));
 }
 
 void SyncClient::AddFetchTask(const std::string& local_id) {
@@ -220,73 +277,11 @@ void SyncClient::OnGetLocalIdsOfBacklog(
   }
 }
 
-void SyncClient::OnGetLocalIdOfExistingPinnedFile(
-    const std::string& local_id,
-    const FileCacheEntry& cache_entry) {
+void SyncClient::AddFetchTasks(const std::vector<std::string>* local_ids) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (cache_entry.is_pinned() && cache_entry.is_present()) {
-    metadata_->GetResourceEntryByIdOnUIThread(
-        local_id,
-        base::Bind(&SyncClient::OnGetResourceEntryById,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   local_id,
-                   cache_entry));
-  }
-}
-
-void SyncClient::OnGetResourceEntryById(const std::string& local_id,
-                                        const FileCacheEntry& cache_entry,
-                                        FileError error,
-                                        scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (entry.get() && !entry->has_file_specific_info())
-    error = FILE_ERROR_NOT_FOUND;
-
-  if (error != FILE_ERROR_OK) {
-    LOG(WARNING) << "Entry not found: " << local_id;
-    return;
-  }
-
-  // If MD5s don't match, it indicates the local cache file is stale, unless
-  // the file is dirty (the MD5 is "local"). We should never re-fetch the
-  // file when we have a locally modified version.
-  if (entry->file_specific_info().md5() != cache_entry.md5() &&
-      !cache_entry.is_dirty()) {
-    cache_->RemoveOnUIThread(local_id,
-                             base::Bind(&SyncClient::OnRemove,
-                                        weak_ptr_factory_.GetWeakPtr(),
-                                        local_id));
-  }
-}
-
-void SyncClient::OnRemove(const std::string& local_id, FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (error != FILE_ERROR_OK) {
-    LOG(WARNING) << "Failed to remove cache entry: " << local_id;
-    return;
-  }
-
-  // Before fetching, we should pin this file again, so that the fetched file
-  // is downloaded properly to the persistent directory and marked pinned.
-  cache_->PinOnUIThread(local_id,
-                        base::Bind(&SyncClient::OnPinned,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   local_id));
-}
-
-void SyncClient::OnPinned(const std::string& local_id, FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (error != FILE_ERROR_OK) {
-    LOG(WARNING) << "Failed to pin cache entry: " << local_id;
-    return;
-  }
-
-  // Finally, adding to the queue.
-  AddTaskToQueue(FETCH, local_id, delay_);
+  for (size_t i = 0; i < local_ids->size(); ++i)
+    AddFetchTask((*local_ids)[i]);
 }
 
 void SyncClient::OnFetchFileComplete(const std::string& local_id,

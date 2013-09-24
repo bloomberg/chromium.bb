@@ -38,20 +38,6 @@ enum TestFileCacheState {
   TEST_CACHE_STATE_DIRTY      = 1 << 2,
 };
 
-// Copies results from Iterate().
-void OnIterate(std::vector<std::string>* out_ids,
-               std::vector<FileCacheEntry>* out_cache_entries,
-               const std::string& id,
-               const FileCacheEntry& cache_entry) {
-  out_ids->push_back(id);
-  out_cache_entries->push_back(cache_entry);
-}
-
-// Called upon completion of Iterate().
-void OnIterateCompleted(bool* out_is_called) {
-  *out_is_called = true;
-}
-
 }  // namespace
 
 // Tests FileCache methods from UI thread. It internally uses a real blocking
@@ -714,34 +700,6 @@ TEST_F(FileCacheTestOnUIThread, MountUnmount) {
   TestRemoveFromCache(id, FILE_ERROR_OK);
 }
 
-TEST_F(FileCacheTestOnUIThread, Iterate) {
-  const std::vector<test_util::TestCacheResource> cache_resources(
-      test_util::GetDefaultTestCacheResources());
-  ASSERT_TRUE(test_util::PrepareTestCacheResources(cache_.get(),
-                                                   cache_resources));
-
-  std::vector<std::string> ids;
-  std::vector<FileCacheEntry> cache_entries;
-  bool completed = false;
-  cache_->IterateOnUIThread(
-      base::Bind(&OnIterate, &ids, &cache_entries),
-      base::Bind(&OnIterateCompleted, &completed));
-  test_util::RunBlockingPoolTask();
-
-  ASSERT_TRUE(completed);
-
-  sort(ids.begin(), ids.end());
-  ASSERT_EQ(6U, ids.size());
-  EXPECT_EQ("dirty:existing", ids[0]);
-  EXPECT_EQ("dirty_and_pinned:existing", ids[1]);
-  EXPECT_EQ("pinned:existing", ids[2]);
-  EXPECT_EQ("pinned:non-existent", ids[3]);
-  EXPECT_EQ("tmp:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?", ids[4]);
-  EXPECT_EQ("tmp:resource_id", ids[5]);
-
-  ASSERT_EQ(6U, cache_entries.size());
-}
-
 TEST_F(FileCacheTestOnUIThread, StoreToCacheNoSpace) {
   fake_free_disk_space_getter_->set_default_value(0);
 
@@ -843,6 +801,31 @@ TEST_F(FileCacheTest, ScanCacheFile) {
   EXPECT_TRUE(cache_->GetCacheEntry("id_foo", &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
   EXPECT_EQ(base::MD5String("foo"), cache_entry.md5());
+}
+
+TEST_F(FileCacheTest, Iterator) {
+  base::FilePath src_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
+
+  // Prepare entries.
+  std::map<std::string, std::string> md5s;
+  md5s["id1"] = "md5-1";
+  md5s["id2"] = "md5-2";
+  md5s["id3"] = "md5-3";
+  md5s["id4"] = "md5-4";
+  for (std::map<std::string, std::string>::iterator it = md5s.begin();
+       it != md5s.end(); ++it) {
+    EXPECT_EQ(FILE_ERROR_OK, cache_->Store(
+        it->first, it->second, src_file, FileCache::FILE_OPERATION_COPY));
+  }
+
+  // Iterate.
+  std::map<std::string, std::string> result;
+  scoped_ptr<FileCache::Iterator> it = cache_->GetIterator();
+  for (; !it->IsAtEnd(); it->Advance())
+    result[it->GetID()] = it->GetValue().md5();
+  EXPECT_EQ(md5s, result);
+  EXPECT_FALSE(it->HasError());
 }
 
 TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {

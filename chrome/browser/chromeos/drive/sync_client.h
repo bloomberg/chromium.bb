@@ -100,29 +100,10 @@ class SyncClient {
 
   // Called when the local IDs of files in the backlog are obtained.
   void OnGetLocalIdsOfBacklog(const std::vector<std::string>* to_fetch,
-                                 const std::vector<std::string>* to_upload);
+                              const std::vector<std::string>* to_upload);
 
-  // Called when the local ID of a pinned file is obtained.
-  void OnGetLocalIdOfExistingPinnedFile(const std::string& local_id,
-                                        const FileCacheEntry& cache_entry);
-
-  // Called when a file entry is obtained.
-  void OnGetResourceEntryById(const std::string& local_id,
-                              const FileCacheEntry& cache_entry,
-                              FileError error,
-                              scoped_ptr<ResourceEntry> entry);
-
-  // Called when a cache entry is obtained.
-  void OnGetCacheEntry(const std::string& local_id,
-                       const std::string& latest_md5,
-                       bool success,
-                       const FileCacheEntry& cache_entry);
-
-  // Called when an existing cache entry and the local files are removed.
-  void OnRemove(const std::string& local_id, FileError error);
-
-  // Called when a file is pinned.
-  void OnPinned(const std::string& local_id, FileError error);
+  // Adds fetch tasks.
+  void AddFetchTasks(const std::vector<std::string>* local_ids);
 
   // Called when the file for |local_id| is fetched.
   // Calls DoSyncLoop() to go back to the sync loop.
@@ -135,6 +116,7 @@ class SyncClient {
   // Calls DoSyncLoop() to go back to the sync loop.
   void OnUploadFileComplete(const std::string& local_id, FileError error);
 
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ResourceMetadata* metadata_;
   FileCache* cache_;
 

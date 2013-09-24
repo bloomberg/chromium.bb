@@ -17,14 +17,20 @@ namespace drive {
 // All the method should be called on UI thread.
 class DebugInfoCollector {
  public:
+  // Callback for IterateFileCache().
+  typedef base::Callback<void(const std::string& id,
+                              const FileCacheEntry& cache_entry)>
+      IterateFileCacheCallback;
+
   DebugInfoCollector(FileSystemInterface* file_system,
-                     internal::FileCache* file_cache);
+                     internal::FileCache* file_cache,
+                     base::SequencedTaskRunner* blocking_task_runner);
   ~DebugInfoCollector();
 
   // Iterates all files in the file cache and calls |iteration_callback| for
   // each file. |completion_callback| is run upon completion.
   // |iteration_callback| and |completion_callback| must not be null.
-  void IterateFileCache(const CacheIterateCallback& iteration_callback,
+  void IterateFileCache(const IterateFileCacheCallback& iteration_callback,
                         const base::Closure& completion_callback);
 
   // Returns miscellaneous metadata of the file system like the largest
@@ -34,6 +40,7 @@ class DebugInfoCollector {
  private:
   FileSystemInterface* file_system_;  // Not owned.
   internal::FileCache* file_cache_;  // Not owned.
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugInfoCollector);
 };
