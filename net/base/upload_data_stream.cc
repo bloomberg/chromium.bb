@@ -13,9 +13,10 @@
 namespace net {
 
 UploadDataStream::UploadDataStream(
-    ScopedVector<UploadElementReader>* element_readers,
+    ScopedVector<UploadElementReader> element_readers,
     int64 identifier)
-    : element_index_(0),
+    : element_readers_(element_readers.Pass()),
+      element_index_(0),
       total_size_(0),
       current_position_(0),
       identifier_(identifier),
@@ -24,7 +25,6 @@ UploadDataStream::UploadDataStream(
       read_failed_(false),
       initialized_successfully_(false),
       weak_ptr_factory_(this) {
-  element_readers_.swap(*element_readers);
 }
 
 UploadDataStream::UploadDataStream(Chunked /*chunked*/, int64 identifier)
@@ -47,7 +47,7 @@ UploadDataStream* UploadDataStream::CreateWithReader(
     int64 identifier) {
   ScopedVector<UploadElementReader> readers;
   readers.push_back(reader.release());
-  return new UploadDataStream(&readers, identifier);
+  return new UploadDataStream(readers.Pass(), identifier);
 }
 
 int UploadDataStream::Init(const CompletionCallback& callback) {

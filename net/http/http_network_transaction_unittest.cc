@@ -1008,7 +1008,7 @@ TEST_P(HttpNetworkTransactionTest, ReuseConnection) {
 TEST_P(HttpNetworkTransactionTest, Ignores100) {
   ScopedVector<UploadElementReader> element_readers;
   element_readers.push_back(new UploadBytesElementReader("foo", 3));
-  UploadDataStream upload_data_stream(&element_readers, 0);
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -4560,7 +4560,7 @@ TEST_P(HttpNetworkTransactionTest, RecycleSocketAfterZeroContentLength) {
 TEST_P(HttpNetworkTransactionTest, ResendRequestOnWriteBodyError) {
   ScopedVector<UploadElementReader> element_readers;
   element_readers.push_back(new UploadBytesElementReader("foo", 3));
-  UploadDataStream upload_data_stream(&element_readers, 0);
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   HttpRequestInfo request[2];
   // Transaction 1: a GET request that succeeds.  The socket is recycled
@@ -7578,7 +7578,7 @@ TEST_P(HttpNetworkTransactionTest, UploadFileSmallerThanLength) {
                                   0,
                                   kuint64max,
                                   base::Time()));
-  UploadDataStream upload_data_stream(&element_readers, 0);
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -7635,7 +7635,7 @@ TEST_P(HttpNetworkTransactionTest, UploadUnreadableFile) {
                                   0,
                                   kuint64max,
                                   base::Time()));
-  UploadDataStream upload_data_stream(&element_readers, 0);
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -7695,7 +7695,7 @@ TEST_P(HttpNetworkTransactionTest, UnreadableUploadFileAfterAuthRestart) {
                                   0,
                                   kuint64max,
                                   base::Time()));
-  UploadDataStream upload_data_stream(&element_readers, 0);
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   HttpRequestInfo request;
   request.method = "POST";

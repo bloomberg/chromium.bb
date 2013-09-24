@@ -144,7 +144,7 @@ scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
   }
 
   return make_scoped_ptr(
-      new net::UploadDataStream(&element_readers, body->identifier()));
+      new net::UploadDataStream(element_readers.Pass(), body->identifier()));
 }
 
 }  // namespace content

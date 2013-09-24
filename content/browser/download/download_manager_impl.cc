@@ -74,7 +74,7 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
     DCHECK(params->method() == "POST");
     ScopedVector<net::UploadElementReader> element_readers;
     request->set_upload(make_scoped_ptr(
-        new net::UploadDataStream(&element_readers, params->post_id())));
+        new net::UploadDataStream(element_readers.Pass(), params->post_id())));
   }
 
   // If we're not at the beginning of the file, retrieve only the remaining

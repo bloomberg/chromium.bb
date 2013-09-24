@@ -423,7 +423,8 @@ class SpdyNetworkTransactionTest
       ScopedVector<UploadElementReader> element_readers;
       element_readers.push_back(
           new UploadBytesElementReader(kUploadData, kUploadDataSize));
-      upload_data_stream_.reset(new UploadDataStream(&element_readers, 0));
+      upload_data_stream_.reset(
+          new UploadDataStream(element_readers.Pass(), 0));
 
       google_post_request_.method = "POST";
       google_post_request_.url = GURL(kDefaultURL);
@@ -447,7 +448,8 @@ class SpdyNetworkTransactionTest
                                       0,
                                       kUploadDataSize,
                                       base::Time()));
-      upload_data_stream_.reset(new UploadDataStream(&element_readers, 0));
+      upload_data_stream_.reset(
+          new UploadDataStream(element_readers.Pass(), 0));
 
       google_post_request_.method = "POST";
       google_post_request_.url = GURL(kDefaultURL);
@@ -480,7 +482,8 @@ class SpdyNetworkTransactionTest
       element_readers.push_back(new UploadBytesElementReader(
           kUploadData + kFileRangeOffset + kFileRangeLength,
           kUploadDataSize - (kFileRangeOffset + kFileRangeLength)));
-      upload_data_stream_.reset(new UploadDataStream(&element_readers, 0));
+      upload_data_stream_.reset(
+          new UploadDataStream(element_readers.Pass(), 0));
 
       google_post_request_.method = "POST";
       google_post_request_.url = GURL(kDefaultURL);
@@ -1947,7 +1950,7 @@ TEST_P(SpdyNetworkTransactionTest, NullPost) {
 TEST_P(SpdyNetworkTransactionTest, EmptyPost) {
   // Create an empty UploadDataStream.
   ScopedVector<UploadElementReader> element_readers;
-  UploadDataStream stream(&element_readers, 0);
+  UploadDataStream stream(element_readers.Pass(), 0);
 
   // Setup the request
   HttpRequestInfo request;
@@ -1990,7 +1993,7 @@ TEST_P(SpdyNetworkTransactionTest, PostWithEarlySynReply) {
   ScopedVector<UploadElementReader> element_readers;
   element_readers.push_back(
       new UploadBytesElementReader(upload, sizeof(upload)));
-  UploadDataStream stream(&element_readers, 0);
+  UploadDataStream stream(element_readers.Pass(), 0);
 
   // Setup the request
   HttpRequestInfo request;
@@ -5836,7 +5839,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
     element_readers.push_back(
         new UploadBytesElementReader(content->c_str(), content->size()));
   }
-  UploadDataStream upload_data_stream(&element_readers, 0);
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   // Setup the request
   HttpRequestInfo request;
@@ -6009,7 +6012,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
     element_readers.push_back(
         new UploadBytesElementReader(content->c_str(), content->size()));
   }
-  UploadDataStream upload_data_stream(&element_readers, 0);
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   // Setup the request
   HttpRequestInfo request;
@@ -6125,7 +6128,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
   upload_data_string.append(kUploadData, kUploadDataSize);
   element_readers.push_back(new UploadBytesElementReader(
       upload_data_string.c_str(), upload_data_string.size()));
-  UploadDataStream upload_data_stream(&element_readers, 0);
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -6239,7 +6242,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
   upload_data_string.append(kUploadData, kUploadDataSize);
   element_readers.push_back(new UploadBytesElementReader(
       upload_data_string.c_str(), upload_data_string.size()));
-  UploadDataStream upload_data_stream(&element_readers, 0);
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -6363,7 +6366,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
   upload_data_string.append(kUploadData, kUploadDataSize);
   element_readers.push_back(new UploadBytesElementReader(
       upload_data_string.c_str(), upload_data_string.size()));
-  UploadDataStream upload_data_stream(&element_readers, 0);
+  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
 
   HttpRequestInfo request;
   request.method = "POST";

@@ -98,7 +98,8 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_NoBody) {
 
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_EmptyBody) {
   ScopedVector<UploadElementReader> element_readers;
-  scoped_ptr<UploadDataStream> body(new UploadDataStream(&element_readers, 0));
+  scoped_ptr<UploadDataStream> body(
+      new UploadDataStream(element_readers.Pass(), 0));
   ASSERT_EQ(OK, body->Init(CompletionCallback()));
   // Shouldn't be merged if upload data is empty.
   ASSERT_FALSE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
@@ -135,7 +136,7 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_FileBody) {
                                     base::Time()));
 
     scoped_ptr<UploadDataStream> body(
-        new UploadDataStream(&element_readers, 0));
+        new UploadDataStream(element_readers.Pass(), 0));
     TestCompletionCallback callback;
     ASSERT_EQ(ERR_IO_PENDING, body->Init(callback.callback()));
     ASSERT_EQ(OK, callback.WaitForResult());
@@ -153,7 +154,8 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_SmallBodyInMemory) {
   element_readers.push_back(new UploadBytesElementReader(
       payload.data(), payload.size()));
 
-  scoped_ptr<UploadDataStream> body(new UploadDataStream(&element_readers, 0));
+  scoped_ptr<UploadDataStream> body(
+      new UploadDataStream(element_readers.Pass(), 0));
   ASSERT_EQ(OK, body->Init(CompletionCallback()));
   // Yes, should be merged if the in-memory body is small here.
   ASSERT_TRUE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
@@ -166,7 +168,8 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_LargeBodyInMemory) {
   element_readers.push_back(new UploadBytesElementReader(
       payload.data(), payload.size()));
 
-  scoped_ptr<UploadDataStream> body(new UploadDataStream(&element_readers, 0));
+  scoped_ptr<UploadDataStream> body(
+      new UploadDataStream(element_readers.Pass(), 0));
   ASSERT_EQ(OK, body->Init(CompletionCallback()));
   // Shouldn't be merged if the in-memory body is large here.
   ASSERT_FALSE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(

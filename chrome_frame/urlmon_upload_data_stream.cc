@@ -51,7 +51,7 @@ net::UploadDataStream* CreateUploadDataStream(net::UploadData* upload_data) {
       DCHECK(reader);
       element_readers.push_back(reader);
     }
-    upload_data_stream = new net::UploadDataStream(&element_readers,
+    upload_data_stream = new net::UploadDataStream(element_readers.Pass(),
                                                    upload_data->identifier());
   }
   return upload_data_stream;

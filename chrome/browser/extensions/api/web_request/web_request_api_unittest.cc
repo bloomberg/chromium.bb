@@ -515,7 +515,7 @@ void ExtensionWebRequestTest::FireURLRequestWithData(
   element_readers.push_back(
       new net::UploadBytesElementReader(&(bytes_2[0]), bytes_2.size()));
   request.set_upload(make_scoped_ptr(
-      new net::UploadDataStream(&element_readers, 0)));
+      new net::UploadDataStream(element_readers.Pass(), 0)));
   ipc_sender_.PushTask(base::Bind(&base::DoNothing));
   request.Start();
 }

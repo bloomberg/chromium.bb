@@ -25,8 +25,7 @@ class NET_EXPORT UploadDataStream {
   enum Chunked { CHUNKED };
 
   // Constructs a non-chunked data stream.
-  // |element_readers| is cleared by this ctor.
-  UploadDataStream(ScopedVector<UploadElementReader>* element_readers,
+  UploadDataStream(ScopedVector<UploadElementReader> element_readers,
                    int64 identifier);
 
   // Constructs a chunked data stream.

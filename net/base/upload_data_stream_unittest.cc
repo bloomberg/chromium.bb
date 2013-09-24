@@ -142,7 +142,7 @@ class UploadDataStreamTest : public PlatformTest {
 };
 
 TEST_F(UploadDataStreamTest, EmptyUploadData) {
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
   ASSERT_EQ(OK, stream.Init(CompletionCallback()));
   EXPECT_TRUE(stream.IsInMemory());
   EXPECT_EQ(0U, stream.size());
@@ -153,7 +153,7 @@ TEST_F(UploadDataStreamTest, EmptyUploadData) {
 TEST_F(UploadDataStreamTest, ConsumeAllBytes) {
   element_readers_.push_back(new UploadBytesElementReader(
       kTestData, kTestDataSize));
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
   ASSERT_EQ(OK, stream.Init(CompletionCallback()));
   EXPECT_TRUE(stream.IsInMemory());
   EXPECT_EQ(kTestDataSize, stream.size());
@@ -184,7 +184,7 @@ TEST_F(UploadDataStreamTest, File) {
                                   base::Time()));
 
   TestCompletionCallback init_callback;
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
   ASSERT_EQ(ERR_IO_PENDING, stream.Init(init_callback.callback()));
   ASSERT_EQ(OK, init_callback.WaitForResult());
   EXPECT_FALSE(stream.IsInMemory());
@@ -222,7 +222,7 @@ TEST_F(UploadDataStreamTest, FileSmallerThanLength) {
                                   base::Time()));
 
   TestCompletionCallback init_callback;
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
   ASSERT_EQ(ERR_IO_PENDING, stream.Init(init_callback.callback()));
   ASSERT_EQ(OK, init_callback.WaitForResult());
   EXPECT_FALSE(stream.IsInMemory());
@@ -259,7 +259,7 @@ TEST_F(UploadDataStreamTest, ReadErrorSync) {
   element_readers_.push_back(new UploadBytesElementReader(
       kTestData, kTestDataSize));
 
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
 
   // Run Init().
   ASSERT_EQ(OK, stream.Init(CompletionCallback()));
@@ -294,7 +294,7 @@ TEST_F(UploadDataStreamTest, ReadErrorAsync) {
   element_readers_.push_back(new UploadBytesElementReader(
       kTestData, kTestDataSize));
 
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
 
   // Run Init().
   TestCompletionCallback init_callback;
@@ -342,7 +342,7 @@ TEST_F(UploadDataStreamTest, FileAndBytes) {
 
   const uint64 kStreamSize = kTestDataSize + kFileRangeLength;
   TestCompletionCallback init_callback;
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
   ASSERT_EQ(ERR_IO_PENDING, stream.Init(init_callback.callback()));
   ASSERT_EQ(OK, init_callback.WaitForResult());
   EXPECT_FALSE(stream.IsInMemory());
@@ -408,7 +408,7 @@ TEST_F(UploadDataStreamTest, InitAsync) {
   EXPECT_CALL(*reader, Init(_)).WillOnce(Return(OK));
   element_readers_.push_back(reader);
 
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
 
   // Run Init().
   TestCompletionCallback callback;
@@ -425,7 +425,7 @@ TEST_F(UploadDataStreamTest, InitAsyncFailureAsync) {
   reader->SetAsyncInitExpectation(ERR_FAILED);
   element_readers_.push_back(reader);
 
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
 
   // Run Init().
   TestCompletionCallback callback;
@@ -446,7 +446,7 @@ TEST_F(UploadDataStreamTest, InitAsyncFailureSync) {
   EXPECT_CALL(*reader, Init(_)).WillOnce(Return(ERR_FAILED));
   element_readers_.push_back(reader);
 
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
 
   // Run Init().
   TestCompletionCallback callback;
@@ -458,7 +458,7 @@ TEST_F(UploadDataStreamTest, InitAsyncFailureSync) {
 TEST_F(UploadDataStreamTest, ReadAsyncWithExactSizeBuffer) {
   element_readers_.push_back(new UploadBytesElementReader(
       kTestData, kTestDataSize));
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
 
   ASSERT_EQ(OK, stream.Init(CompletionCallback()));
   EXPECT_TRUE(stream.IsInMemory());
@@ -497,7 +497,7 @@ TEST_F(UploadDataStreamTest, ReadAsync) {
   reader->SetReadExpectation(kTestDataSize);
   element_readers_.push_back(reader);
 
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
 
   // Run Init().
   TestCompletionCallback init_callback;
@@ -538,7 +538,7 @@ void UploadDataStreamTest::FileChangedHelper(const base::FilePath& file_path,
       base::MessageLoopProxy::current().get(), file_path, 1, 2, time));
 
   TestCompletionCallback init_callback;
-  UploadDataStream stream(&element_readers, 0);
+  UploadDataStream stream(element_readers.Pass(), 0);
   ASSERT_EQ(ERR_IO_PENDING, stream.Init(init_callback.callback()));
   int error_code = init_callback.WaitForResult();
   if (error_expected)
@@ -582,7 +582,7 @@ TEST_F(UploadDataStreamTest, MultipleInit) {
                                   0,
                                   kuint64max,
                                   base::Time()));
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
 
   std::string expected_data(kTestData, kTestData + kTestDataSize);
   expected_data += expected_data;
@@ -627,7 +627,7 @@ TEST_F(UploadDataStreamTest, MultipleInitAsync) {
                                   0,
                                   kuint64max,
                                   base::Time()));
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
 
   std::string expected_data(kTestData, kTestData + kTestDataSize);
   expected_data += expected_data;
@@ -669,7 +669,7 @@ TEST_F(UploadDataStreamTest, InitToReset) {
                                   0,
                                   kuint64max,
                                   base::Time()));
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
 
   std::vector<char> expected_data(kTestData, kTestData + kTestDataSize);
   expected_data.insert(expected_data.end(), expected_data.begin(),
@@ -726,7 +726,7 @@ TEST_F(UploadDataStreamTest, InitDuringAsyncInit) {
                                   0,
                                   kuint64max,
                                   base::Time()));
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
 
   std::vector<char> expected_data(kTestData, kTestData + kTestDataSize);
   expected_data.insert(expected_data.end(), expected_data.begin(),
@@ -774,7 +774,7 @@ TEST_F(UploadDataStreamTest, InitDuringAsyncRead) {
                                   0,
                                   kuint64max,
                                   base::Time()));
-  UploadDataStream stream(&element_readers_, 0);
+  UploadDataStream stream(element_readers_.Pass(), 0);
 
   std::vector<char> expected_data(kTestData, kTestData + kTestDataSize);
   expected_data.insert(expected_data.end(), expected_data.begin(),

@@ -3805,7 +3805,8 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
         0,
         kuint64max,
         base::Time()));
-    r.set_upload(make_scoped_ptr(new UploadDataStream(&element_readers, 0)));
+    r.set_upload(make_scoped_ptr(
+        new UploadDataStream(element_readers.Pass(), 0)));
 
     r.Start();
     EXPECT_TRUE(r.is_pending());
