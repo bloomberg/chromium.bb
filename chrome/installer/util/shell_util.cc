@@ -1696,6 +1696,8 @@ string16 ShellUtil::BuildAppModelId(
 }
 
 ShellUtil::DefaultState ShellUtil::GetChromeDefaultState() {
+  if (!BrowserDistribution::GetDistribution()->CanSetAsDefault())
+    return NOT_DEFAULT;
   // When we check for default browser we don't necessarily want to count file
   // type handlers and icons as having changed the default browser status,
   // since the user may have changed their shell settings to cause HTML files
@@ -1711,6 +1713,8 @@ ShellUtil::DefaultState ShellUtil::GetChromeDefaultState() {
 
 ShellUtil::DefaultState ShellUtil::GetChromeDefaultProtocolClientState(
     const string16& protocol) {
+  if (!BrowserDistribution::GetDistribution()->CanSetAsDefault())
+    return NOT_DEFAULT;
   if (protocol.empty())
     return UNKNOWN_DEFAULT;
 
