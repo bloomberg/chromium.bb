@@ -1033,9 +1033,17 @@ void HWNDMessageHandler::ClientAreaSizeChanged() {
   if (!IsMinimized()) {
     if (delegate_->WidgetSizeIsClientSize()) {
       GetClientRect(hwnd(), &r);
-      // This is needed due to a hack that works around a "feature" in
-      // Windows's handling of WM_NCCALCSIZE. See the comment near the end of
-      // GetClientAreaInsets for more details.
+      gfx::Insets insets;
+      bool got_insets = GetClientAreaInsets(&insets);
+      if (got_insets) {
+        // This is needed due to a hack that works around a "feature" in
+        // Windows's handling of WM_NCCALCSIZE. See the comment near the end of
+        // GetClientAreaInsets for more details.
+        if ((remove_standard_frame_ && !IsMaximized()) ||
+            !fullscreen_handler_->fullscreen()) {
+          r.bottom += kClientAreaBottomInsetHack;
+        }
+      }
       if (remove_standard_frame_ && !IsMaximized())
         r.bottom += kClientAreaBottomInsetHack;
     } else {
@@ -1092,11 +1100,6 @@ bool HWNDMessageHandler::GetClientAreaInsets(gfx::Insets* insets) const {
     return true;
   }
 
-#if defined(USE_AURA)
-  // The -1 hack below breaks rendering in Aura.
-  // See http://crbug.com/172099 http://crbug.com/267131
-  *insets = gfx::Insets();
-#else
   // This is weird, but highly essential. If we don't offset the bottom edge
   // of the client rect, the window client area and window area will match,
   // and when returning to glass rendering mode from non-glass, the client
@@ -1108,8 +1111,11 @@ bool HWNDMessageHandler::GetClientAreaInsets(gfx::Insets* insets) const {
   // rect when using the opaque frame.
   // Note: this is only required for non-fullscreen windows. Note that
   // fullscreen windows are in restored state, not maximized.
-  *insets = gfx::Insets(0, 0, fullscreen_handler_->fullscreen() ? 0 : 1, 0);
-#endif
+  // Note that previously we used to inset by 1 instead of outset, but that
+  // doesn't work with Aura: http://crbug.com/172099 http://crbug.com/277228
+  *insets = gfx::Insets(
+      0, 0,
+      fullscreen_handler_->fullscreen() ? 0 : kClientAreaBottomInsetHack, 0);
   return true;
 }
 
