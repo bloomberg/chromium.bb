@@ -98,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_ShowsGoogleNTP) {
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(browser()->profile());
   ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
-  instant_service->ntp_prerenderer()->ReloadStaleNTP();
+  instant_service->ntp_prerenderer()->ReloadInstantNTP();
 
   FocusOmniboxAndWaitForInstantNTPSupport();
   content::WindowedNotificationObserver observer(
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_SearchesFromFakebox) {
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(browser()->profile());
   ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
-  instant_service->ntp_prerenderer()->ReloadStaleNTP();
+  instant_service->ntp_prerenderer()->ReloadInstantNTP();
 
   FocusOmniboxAndWaitForInstantNTPSupport();
   // Open a new tab page.

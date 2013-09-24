@@ -17,6 +17,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/prefs/pref_change_registrar.h"
+#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/ui/search/instant_ntp_prerenderer.h"
 #include "chrome/common/instant_types.h"
@@ -25,10 +27,8 @@
 #include "content/public/browser/notification_registrar.h"
 
 class GURL;
-class InstantExtendedTest;
 class InstantIOContext;
 class InstantServiceObserver;
-class InstantTestBase;
 class Profile;
 class ThemeService;
 
@@ -104,7 +104,9 @@ class InstantService : public BrowserContextKeyedService,
 
  private:
   friend class InstantExtendedTest;
+  friend class InstantServiceTest;
   friend class InstantTestBase;
+  friend class InstantUnitTestBase;
 
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedNetworkTest,
                            NTPReactsToNetworkChanges);
@@ -133,6 +135,11 @@ class InstantService : public BrowserContextKeyedService,
   // Theme changed notification handler.
   void OnThemeChanged(ThemeService* theme_service);
 
+  void OnGoogleURLUpdated(Profile* profile,
+                          GoogleURLTracker::UpdatedDetails* details);
+
+  void OnDefaultSearchProviderChanged(const std::string& pref_name);
+
   // Used by tests.
   InstantNTPPrerenderer* ntp_prerenderer();
 
@@ -150,6 +157,8 @@ class InstantService : public BrowserContextKeyedService,
   ObserverList<InstantServiceObserver> observers_;
 
   content::NotificationRegistrar registrar_;
+
+  PrefChangeRegistrar profile_pref_registrar_;
 
   scoped_refptr<InstantIOContext> instant_io_context_;
 

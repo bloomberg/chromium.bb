@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/prefs/pref_change_registrar.h"
+#include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/browser/ui/search/instant_unload_handler.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
@@ -27,7 +27,8 @@ namespace gfx {
 class Rect;
 }
 
-class BrowserInstantController : public SearchModelObserver {
+class BrowserInstantController : public SearchModelObserver,
+                                 public InstantServiceObserver {
  public:
   explicit BrowserInstantController(Browser* browser);
   virtual ~BrowserInstantController();
@@ -91,11 +92,13 @@ class BrowserInstantController : public SearchModelObserver {
   virtual void ModelChanged(const SearchModel::State& old_state,
                             const SearchModel::State& new_state) OVERRIDE;
 
-  // Called when the default search provider changes. Revokes the searchbox API
-  // privileges for any existing WebContents (that belong to the erstwhile
-  // default search provider) by simply reloading all such WebContents. This
-  // ensures that they are reloaded in a non-privileged renderer process.
-  void OnDefaultSearchProviderChanged(const std::string& pref_name);
+  // Overridden from InstantServiceObserver:
+  virtual void DefaultSearchProviderChanged() OVERRIDE;
+  virtual void GoogleURLUpdated() OVERRIDE;
+
+  // Reloads the tabs in instant process to ensure that their privileged status
+  // is still valid.
+  void ReloadTabsInInstantProcess();
 
   // Replaces the contents at tab |index| with |new_contents| and deletes the
   // existing contents.
@@ -106,8 +109,6 @@ class BrowserInstantController : public SearchModelObserver {
 
   InstantController instant_;
   InstantUnloadHandler instant_unload_handler_;
-
-  PrefChangeRegistrar profile_pref_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserInstantController);
 };

@@ -1874,6 +1874,7 @@
         'browser/search/instant_service.h',
         'browser/search/instant_service_factory.cc',
         'browser/search/instant_service_factory.h',
+        'browser/search/instant_service_observer.cc',
         'browser/search/instant_service_observer.h',
         'browser/search/local_ntp_source.cc',
         'browser/search/local_ntp_source.h',

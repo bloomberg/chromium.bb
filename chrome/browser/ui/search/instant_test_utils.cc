@@ -61,7 +61,7 @@ void InstantTestBase::SetupInstant(Browser* browser) {
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(browser_->profile());
   ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
-  instant_service->ntp_prerenderer()->ReloadStaleNTP();
+  instant_service->ntp_prerenderer()->ReloadInstantNTP();
 }
 
 void InstantTestBase::SetInstantURL(const std::string& url) {

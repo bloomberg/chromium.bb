@@ -11,14 +11,14 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/ui/search/instant_page.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/network_change_notifier.h"
 
-class InstantExtendedTest;
 class InstantNTP;
 class InstantService;
-class InstantTestBase;
+class PrefService;
 class Profile;
 
 // InstantNTPPrerenderer maintains a prerendered instance of InstantNTP.
@@ -31,13 +31,15 @@ class Profile;
 // InstantNTPPrerenderer is owned by InstantService.
 class InstantNTPPrerenderer
     : public InstantPage::Delegate,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+      public net::NetworkChangeNotifier::NetworkChangeObserver,
+      public InstantServiceObserver {
  public:
-  InstantNTPPrerenderer(Profile* profile, PrefService* prefs);
+  InstantNTPPrerenderer(Profile* profile, InstantService* instant_service,
+      PrefService* prefs);
   virtual ~InstantNTPPrerenderer();
 
   // Preloads |ntp_| with a new InstantNTP.
-  void PreloadInstantNTP();
+  void ReloadInstantNTP();
 
   // Releases and returns the InstantNTP WebContents. May be NULL. Loads a new
   // WebContents for the InstantNTP.
@@ -137,15 +139,12 @@ class InstantNTPPrerenderer
   virtual void UndoAllMostVisitedDeletions() OVERRIDE;
   virtual void InstantPageLoadFailed(content::WebContents* contents) OVERRIDE;
 
-  // Called when the default search provider changes. Resets InstantNTP.
-  void OnDefaultSearchProviderChanged(const std::string& pref_name);
+  // Overridden from InstantServiceObserver:
+  virtual void DefaultSearchProviderChanged() OVERRIDE;
+  virtual void GoogleURLUpdated() OVERRIDE;
 
   // Recreates |ntp_| using |instant_url|.
   void ResetNTP(const std::string& instant_url);
-
-  // Resets |ntp_| with a new InstantNTP. Called when |ntp_| is stale or when a
-  // pref is changed.
-  void ReloadStaleNTP();
 
   // Returns true if |ntp_| has an up-to-date Instant URL and supports Instant.
   // Note that local URLs will not pass this check.

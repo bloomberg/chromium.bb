@@ -5,16 +5,12 @@
 #include "chrome/browser/ui/browser_instant_controller.h"
 
 #include "base/bind.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -25,9 +21,7 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -42,16 +36,12 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
     : browser_(browser),
       instant_(this),
       instant_unload_handler_(browser) {
-  profile_pref_registrar_.Init(profile()->GetPrefs());
-  profile_pref_registrar_.Add(
-      prefs::kDefaultSearchProviderID,
-      base::Bind(&BrowserInstantController::OnDefaultSearchProviderChanged,
-                 base::Unretained(this)));
   browser_->search_model()->AddObserver(this);
 
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile());
   instant_service->OnBrowserInstantControllerCreated();
+  instant_service->AddObserver(this);
 }
 
 BrowserInstantController::~BrowserInstantController() {
@@ -59,6 +49,7 @@ BrowserInstantController::~BrowserInstantController() {
 
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile());
+  instant_service->RemoveObserver(this);
   instant_service->OnBrowserInstantControllerDestroyed();
 }
 
@@ -273,25 +264,20 @@ void BrowserInstantController::ModelChanged(
     instant_.InstantSupportChanged(new_state.instant_support);
 }
 
-void BrowserInstantController::OnDefaultSearchProviderChanged(
-    const std::string& pref_name) {
-  DCHECK_EQ(pref_name, std::string(prefs::kDefaultSearchProviderID));
+////////////////////////////////////////////////////////////////////////////////
+// BrowserInstantController, InstantServiceObserver implementation:
 
-  Profile* browser_profile = profile();
-  const TemplateURL* template_url =
-      TemplateURLServiceFactory::GetForProfile(browser_profile)->
-          GetDefaultSearchProvider();
-  if (!template_url) {
-    // A NULL |template_url| could mean either this notification is sent during
-    // the browser start up operation or the user now has no default search
-    // provider. There is no way for the user to reach this state using the
-    // Chrome settings. Only explicitly poking at the DB or bugs in the Sync
-    // could cause that, neither of which we support.
-    return;
-  }
+void BrowserInstantController::DefaultSearchProviderChanged() {
+  ReloadTabsInInstantProcess();
+}
 
+void BrowserInstantController::GoogleURLUpdated() {
+  ReloadTabsInInstantProcess();
+}
+
+void BrowserInstantController::ReloadTabsInInstantProcess() {
   InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(browser_profile);
+      InstantServiceFactory::GetForProfile(profile());
   if (!instant_service)
     return;
 

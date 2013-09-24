@@ -14,11 +14,19 @@ struct ThemeBackgroundInfo;
 class InstantServiceObserver {
  public:
   // Indicates that the user's custom theme has changed in some way.
-  virtual void ThemeInfoChanged(const ThemeBackgroundInfo&) = 0;
+  virtual void ThemeInfoChanged(const ThemeBackgroundInfo&);
 
   // Indicates that the most visited items has changed.
   virtual void MostVisitedItemsChanged(
-      const std::vector<InstantMostVisitedItem>&) = 0;
+      const std::vector<InstantMostVisitedItem>&);
+
+  // Indicates that the default search provider changed.
+  virtual void DefaultSearchProviderChanged();
+
+  // Indicates that the Google URL has changed as a result of searchdomaincheck.
+  // Note that the search domain change triggers a yellow infobar at the top of
+  // the page, and the actual change is triggered after the user accepts.
+  virtual void GoogleURLUpdated();
 
  protected:
   virtual ~InstantServiceObserver() {}

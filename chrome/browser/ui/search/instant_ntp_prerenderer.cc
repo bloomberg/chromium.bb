@@ -45,6 +45,7 @@ void DeleteNTPSoon(scoped_ptr<InstantNTP> ntp) {
 
 
 InstantNTPPrerenderer::InstantNTPPrerenderer(Profile* profile,
+                                             InstantService* instant_service,
                                              PrefService* prefs)
     : profile_(profile) {
   DCHECK(profile);
@@ -54,23 +55,26 @@ InstantNTPPrerenderer::InstantNTPPrerenderer(Profile* profile,
     profile_pref_registrar_.Init(prefs);
     profile_pref_registrar_.Add(
         prefs::kSearchSuggestEnabled,
-        base::Bind(&InstantNTPPrerenderer::ReloadStaleNTP,
-                   base::Unretained(this)));
-    profile_pref_registrar_.Add(
-        prefs::kDefaultSearchProviderID,
-        base::Bind(&InstantNTPPrerenderer::OnDefaultSearchProviderChanged,
+        base::Bind(&InstantNTPPrerenderer::ReloadInstantNTP,
                    base::Unretained(this)));
   }
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+
+  // Allow instant_service to be null for unit tets.
+  if (instant_service)
+    instant_service->AddObserver(this);
 }
 
 InstantNTPPrerenderer::~InstantNTPPrerenderer() {
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile_);
+  if (instant_service)
+    instant_service->RemoveObserver(this);
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
-void InstantNTPPrerenderer::PreloadInstantNTP() {
-  DCHECK(!ntp());
-  ReloadStaleNTP();
+void InstantNTPPrerenderer::ReloadInstantNTP() {
+  ResetNTP(GetInstantURL());
 }
 
 scoped_ptr<content::WebContents> InstantNTPPrerenderer::ReleaseNTPContents() {
@@ -84,7 +88,7 @@ scoped_ptr<content::WebContents> InstantNTPPrerenderer::ReleaseNTPContents() {
   scoped_ptr<content::WebContents> ntp_contents = ntp_->ReleaseContents();
 
   // Preload a new InstantNTP.
-  ResetNTP(GetInstantURL());
+  ReloadInstantNTP();
   return ntp_contents.Pass();
 }
 
@@ -175,7 +179,7 @@ void InstantNTPPrerenderer::OnNetworkChanged(
     return;
 
   if (!ntp() || ntp()->IsLocal())
-    ResetNTP(GetInstantURL());
+    ReloadInstantNTP();
 }
 
 void InstantNTPPrerenderer::InstantSupportDetermined(
@@ -245,26 +249,13 @@ void InstantNTPPrerenderer::InstantPageLoadFailed(
     ResetNTP(GetLocalInstantURL());
 }
 
-void InstantNTPPrerenderer::OnDefaultSearchProviderChanged(
-    const std::string& pref_name) {
-  DCHECK_EQ(pref_name, std::string(prefs::kDefaultSearchProviderID));
-  if (!ntp())
-    return;
-
-  ResetNTP(GetInstantURL());
-}
-
 void InstantNTPPrerenderer::ResetNTP(const std::string& instant_url) {
   // Instant NTP is only used in extended mode so we should always have a
   // non-empty URL to use.
   DCHECK(!instant_url.empty());
   ntp_.reset(new InstantNTP(this, instant_url, profile_));
-  ntp_->InitContents(base::Bind(&InstantNTPPrerenderer::ReloadStaleNTP,
+  ntp_->InitContents(base::Bind(&InstantNTPPrerenderer::ReloadInstantNTP,
                                 base::Unretained(this)));
-}
-
-void InstantNTPPrerenderer::ReloadStaleNTP() {
-  ResetNTP(GetInstantURL());
 }
 
 bool InstantNTPPrerenderer::PageIsCurrent() const {
@@ -297,4 +288,12 @@ bool InstantNTPPrerenderer::ShouldSwitchToLocalNTP() const {
   // always fall back to the local NTP. If we are in startup, use the local NTP
   // (unless the finch flag to use the remote NTP is set).
   return !(InStartup() && chrome::ShouldPreferRemoteNTPOnStartup());
+}
+
+void InstantNTPPrerenderer::DefaultSearchProviderChanged() {
+  ReloadInstantNTP();
+}
+
+void InstantNTPPrerenderer::GoogleURLUpdated() {
+  ReloadInstantNTP();
 }

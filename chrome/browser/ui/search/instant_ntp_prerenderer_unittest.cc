@@ -3,11 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram.h"
-#include "base/metrics/histogram_samples.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/search/instant_ntp.h"
 #include "chrome/browser/ui/search/instant_ntp_prerenderer.h"
@@ -16,10 +14,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using base::HistogramBase;
-using base::HistogramSamples;
-using base::StatisticsRecorder;
 
 class TestableInstantNTP : public InstantNTP {
  public:
@@ -62,13 +56,15 @@ class TestableInstantNTP : public InstantNTP {
 
 class TestableInstantNTPPrerenderer : public InstantNTPPrerenderer {
  public:
-  explicit TestableInstantNTPPrerenderer(TestingProfile* profile)
-      : InstantNTPPrerenderer(profile, NULL),
+  explicit TestableInstantNTPPrerenderer(TestingProfile* profile,
+      InstantService* instant_service)
+      : InstantNTPPrerenderer(profile, instant_service, NULL),
         test_instant_url_("http://test_url"),
         override_javascript_enabled_(true),
         test_javascript_enabled_(true),
         test_in_startup_(false),
-        test_ntp_(NULL) {}
+        test_ntp_(NULL) {
+  }
 
   // Overrides from InstantNTPPrerenderer
   virtual std::string GetInstantURL() const OVERRIDE {
@@ -125,10 +121,15 @@ private:
 
 class InstantNTPPrerendererTest : public testing::Test {
  public:
-  InstantNTPPrerendererTest()
-      : instant_ntp_prerenderer_(new TestableInstantNTPPrerenderer(&profile_)) {
-    base::StatisticsRecorder::Initialize();
+  virtual void SetUp() OVERRIDE {
     chrome::EnableInstantExtendedAPIForTesting();
+    instant_service_ = InstantServiceFactory::GetForProfile(&profile_);
+    instant_ntp_prerenderer_.reset(
+        new TestableInstantNTPPrerenderer(&profile_, instant_service_));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    instant_ntp_prerenderer_.reset();
   }
 
   TestableInstantNTPPrerenderer* instant_ntp_prerenderer() {
@@ -142,6 +143,7 @@ class InstantNTPPrerendererTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestableInstantNTPPrerenderer> instant_ntp_prerenderer_;
+  InstantService* instant_service_;
   mutable TestingProfile profile_;
 };
 

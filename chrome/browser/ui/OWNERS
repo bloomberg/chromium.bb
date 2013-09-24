@@ -9,6 +9,6 @@ sky@chromium.org
 per-file browser_tab_contents.*=avi@chromium.org
 
 # Instant/Search files.
-per-file browser_instant_controller.*=brettw@chromium.org
-per-file browser_instant_controller.*=jered@chromium.org
-per-file browser_instant_controller.*=samarth@chromium.org
+per-file browser_instant_controller*=brettw@chromium.org
+per-file browser_instant_controller*=jered@chromium.org
+per-file browser_instant_controller*=samarth@chromium.org
