@@ -5,6 +5,9 @@
 #include <errno.h>
 #include <fcntl.h>
 
+#include <set>
+#include <string>
+
 #include "gtest/gtest.h"
 
 #include "nacl_io/error.h"
@@ -153,7 +156,8 @@ TEST(MountNodeTest, Directory) {
 
   // Test properties
   EXPECT_EQ(0, root.GetLinks());
-  EXPECT_EQ(S_IREAD | S_IWRITE, root.GetMode());
+  // Directories are always executable.
+  EXPECT_EQ(S_IREAD | S_IWRITE | S_IEXEC, root.GetMode());
   EXPECT_EQ(S_IFDIR, root.GetType());
   EXPECT_TRUE(root.IsaDir());
   EXPECT_FALSE(root.IsaFile());
@@ -179,14 +183,30 @@ TEST(MountNodeTest, Directory) {
   EXPECT_EQ(2, file->RefCount());
 
   // Test that the directory is there
-  struct dirent d;
-  EXPECT_EQ(0, root.GetDents(0, &d, sizeof(d), &result_bytes));
-  EXPECT_EQ(sizeof(d), result_bytes);
-  EXPECT_LT(0, d.d_ino);  // 0 is an invalid inode number.
-  EXPECT_EQ(sizeof(d), d.d_off);
-  EXPECT_EQ(sizeof(d), d.d_reclen);
-  EXPECT_EQ(0, strcmp("F1", d.d_name));
-  EXPECT_EQ(0, root.GetDents(sizeof(d), &d, sizeof(d), &result_bytes));
+  const size_t kMaxDirents = 4;
+  struct dirent d[kMaxDirents];
+  EXPECT_EQ(0, root.GetDents(0, &d[0], sizeof(d), &result_bytes));
+
+  {
+    size_t num_dirents = result_bytes / sizeof(dirent);
+    EXPECT_EQ(3, num_dirents);
+    EXPECT_EQ(sizeof(dirent) * num_dirents, result_bytes);
+
+    std::multiset<std::string> dirnames;
+    for (int i = 0; i < num_dirents; ++i) {
+      EXPECT_LT(0, d[i].d_ino);  // 0 is an invalid inode number.
+      EXPECT_EQ(sizeof(dirent), d[i].d_off);
+      EXPECT_EQ(sizeof(dirent), d[i].d_reclen);
+      dirnames.insert(d[i].d_name);
+    }
+
+    EXPECT_EQ(1, dirnames.count("F1"));
+    EXPECT_EQ(1, dirnames.count("."));
+    EXPECT_EQ(1, dirnames.count(".."));
+  }
+
+  // There should only be 3 entries. Reading past that will return 0 bytes read.
+  EXPECT_EQ(0, root.GetDents(sizeof(d), &d[0], sizeof(d), &result_bytes));
   EXPECT_EQ(0, result_bytes);
 
   EXPECT_EQ(0, root.AddChild("F2", file));

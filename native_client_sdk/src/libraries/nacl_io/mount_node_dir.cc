@@ -14,15 +14,24 @@
 
 namespace nacl_io {
 
-MountNodeDir::MountNodeDir(Mount* mount) : MountNode(mount), cache_(NULL) {
-  stat_.st_mode |= S_IFDIR;
+namespace {
+
+// TODO(binji): For now, just use a dummy value for the parent ino.
+const ino_t kParentDirIno = -1;
+
+}
+
+MountNodeDir::MountNodeDir(Mount* mount)
+    : MountNode(mount),
+      cache_(stat_.st_ino, kParentDirIno),
+      cache_built_(false) {
+  stat_.st_mode |= (S_IFDIR | S_IREAD | S_IWRITE | S_IEXEC);
 }
 
 MountNodeDir::~MountNodeDir() {
   for (MountNodeMap_t::iterator it = map_.begin(); it != map_.end(); ++it) {
     it->second->Unlink();
   }
-  free(cache_);
 }
 
 Error MountNodeDir::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
@@ -41,38 +50,12 @@ Error MountNodeDir::Write(size_t offs,
 }
 
 Error MountNodeDir::GetDents(size_t offs,
-                             struct dirent* pdir,
+                             dirent* pdir,
                              size_t size,
                              int* out_bytes) {
-  *out_bytes = 0;
-
   AUTO_LOCK(node_lock_);
-
-  // If the buffer pointer is invalid, fail
-  if (NULL == pdir)
-    return EINVAL;
-
-  // If the buffer is too small, fail
-  if (size < sizeof(struct dirent))
-    return EINVAL;
-
-  // Force size to a multiple of dirent
-  size -= size % sizeof(struct dirent);
-  size_t max = map_.size() * sizeof(struct dirent);
-  if (cache_ == NULL)
-    BuildCache();
-
-  if (offs >= max) {
-    // OK, trying to read past the end.
-    return 0;
-  }
-
-  if (offs + size >= max)
-    size = max - offs;
-
-  memcpy(pdir, ((char*)cache_) + offs, size);
-  *out_bytes = size;
-  return 0;
+  BuildCache_Locked();
+  return cache_.GetDents(offs, pdir, size, out_bytes);
 }
 
 Error MountNodeDir::AddChild(const std::string& name,
@@ -82,7 +65,7 @@ Error MountNodeDir::AddChild(const std::string& name,
   if (name.empty())
     return ENOENT;
 
-  if (name.length() >= MEMBER_SIZE(struct dirent, d_name))
+  if (name.length() >= MEMBER_SIZE(dirent, d_name))
     return ENAMETOOLONG;
 
   MountNodeMap_t::iterator it = map_.find(name);
@@ -91,7 +74,7 @@ Error MountNodeDir::AddChild(const std::string& name,
 
   node->Link();
   map_[name] = node;
-  ClearCache();
+  ClearCache_Locked();
   return 0;
 }
 
@@ -101,7 +84,7 @@ Error MountNodeDir::RemoveChild(const std::string& name) {
   if (it != map_.end()) {
     it->second->Unlink();
     map_.erase(it);
-    ClearCache();
+    ClearCache_Locked();
     return 0;
   }
   return ENOENT;
@@ -125,25 +108,23 @@ int MountNodeDir::ChildCount() {
   return map_.size();
 }
 
-void MountNodeDir::ClearCache() {
-  free(cache_);
-  cache_ = NULL;
+void MountNodeDir::BuildCache_Locked() {
+  if (cache_built_)
+    return;
+
+  for (MountNodeMap_t::iterator it = map_.begin(), end = map_.end();
+       it != end; ++it) {
+    const std::string& name = it->first;
+    ino_t ino = it->second->stat_.st_ino;
+    cache_.AddDirent(ino, name.c_str(), name.length());
+  }
+
+  cache_built_ = true;
 }
 
-void MountNodeDir::BuildCache() {
-  if (map_.size()) {
-    cache_ = (struct dirent*)malloc(sizeof(struct dirent) * map_.size());
-    MountNodeMap_t::iterator it = map_.begin();
-    for (size_t index = 0; it != map_.end(); it++, index++) {
-      size_t len = it->first.length();
-      cache_[index].d_ino = it->second->stat_.st_ino;
-      cache_[index].d_off = sizeof(struct dirent);
-      cache_[index].d_reclen = sizeof(struct dirent);
-      cache_[index].d_name[len] = 0;
-      strncpy(cache_[index].d_name, &it->first[0], len);
-    }
-  }
+void MountNodeDir::ClearCache_Locked() {
+  cache_built_ = false;
+  cache_.Reset();
 }
 
 }  // namespace nacl_io
-

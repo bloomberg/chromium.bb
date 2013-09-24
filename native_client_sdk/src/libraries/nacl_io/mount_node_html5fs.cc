@@ -13,6 +13,7 @@
 #include <ppapi/c/ppb_file_io.h>
 #include <string.h>
 #include <vector>
+#include "nacl_io/getdents_helper.h"
 #include "nacl_io/mount.h"
 #include "nacl_io/osdirent.h"
 #include "nacl_io/pepper_interface.h"
@@ -86,17 +87,14 @@ Error MountNodeHtml5Fs::GetDents(size_t offs,
                                  int* out_bytes) {
   *out_bytes = 0;
 
-  // If the buffer pointer is invalid, fail
-  if (NULL == pdir)
-    return EINVAL;
-
-  // If the buffer is too small, fail
-  if (size < sizeof(struct dirent))
-    return EINVAL;
-
   // If this is not a directory, fail
   if (!IsaDir())
     return ENOTDIR;
+
+  // TODO(binji): Better handling of ino numbers.
+  const ino_t kCurDirIno = -1;
+  const ino_t kParentDirIno = -2;
+  GetDentsHelper helper(kCurDirIno, kParentDirIno);
 
   OutputBuffer output_buf = {NULL, 0};
   PP_ArrayOutput output = {&GetOutputBuffer, &output_buf};
@@ -105,7 +103,6 @@ Error MountNodeHtml5Fs::GetDents(size_t offs,
   if (result != PP_OK)
     return PPErrorToErrno(result);
 
-  std::vector<struct dirent> dirents;
   PP_DirectoryEntry* entries = static_cast<PP_DirectoryEntry*>(output_buf.data);
 
   for (int i = 0; i < output_buf.element_count; ++i) {
@@ -125,15 +122,10 @@ Error MountNodeHtml5Fs::GetDents(size_t offs,
     if (file_name) {
       file_name_length = std::min(
           static_cast<size_t>(file_name_length),
-          sizeof(static_cast<struct dirent*>(0)->d_name) - 1);  // -1 for NULL.
+          MEMBER_SIZE(dirent, d_name) - 1);  // -1 for NULL.
 
-      dirents.push_back(dirent());
-      struct dirent& direntry = dirents.back();
-      direntry.d_ino = 1;  // Must be > 0.
-      direntry.d_off = sizeof(struct dirent);
-      direntry.d_reclen = sizeof(struct dirent);
-      strncpy(direntry.d_name, file_name, file_name_length);
-      direntry.d_name[file_name_length] = 0;
+      // TODO(binji): Better handling of ino numbers.
+      helper.AddDirent(1, file_name, file_name_length);
     }
 
     mount_->ppapi()->GetVarInterface()->Release(file_name_var);
@@ -142,19 +134,7 @@ Error MountNodeHtml5Fs::GetDents(size_t offs,
   // Release the output buffer.
   free(output_buf.data);
 
-  // Force size to a multiple of dirent
-  size -= size % sizeof(struct dirent);
-  size_t max = dirents.size() * sizeof(struct dirent);
-
-  if (offs >= max)
-    return 0;
-
-  if (offs + size >= max)
-    size = max - offs;
-
-  memcpy(pdir, reinterpret_cast<char*>(dirents.data()) + offs, size);
-  *out_bytes = size;
-  return 0;
+  return helper.GetDents(offs, pdir, size, out_bytes);
 }
 
 Error MountNodeHtml5Fs::GetStat(struct stat* stat) {

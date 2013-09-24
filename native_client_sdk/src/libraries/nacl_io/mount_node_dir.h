@@ -7,7 +7,9 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
+#include "nacl_io/getdents_helper.h"
 #include "nacl_io/mount_node.h"
 
 namespace nacl_io {
@@ -45,12 +47,13 @@ class MountNodeDir : public MountNode {
 
 
 protected:
-   void ClearCache();
-   void BuildCache();
+   void BuildCache_Locked();
+   void ClearCache_Locked();
 
 private:
-  struct dirent* cache_;
+  GetDentsHelper cache_;
   MountNodeMap_t map_;
+  bool cache_built_;
 
   friend class MountDev;
   friend class MountMem;

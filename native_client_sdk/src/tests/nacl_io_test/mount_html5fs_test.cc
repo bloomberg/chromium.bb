@@ -4,6 +4,10 @@
 
 #include <errno.h>
 #include <fcntl.h>
+
+#include <set>
+#include <string>
+
 #include <gmock/gmock.h>
 #include <ppapi/c/ppb_file_io.h>
 #include <ppapi/c/pp_directory_entry.h>
@@ -412,7 +416,8 @@ TEST_F(MountHtml5FsTest, GetDents) {
   ASSERT_EQ(0, mnt->Open(Path("/file"), O_RDWR, &node));
 
   // Should fail for regular files.
-  struct dirent dirents[3];
+  const size_t kMaxDirents = 5;
+  dirent dirents[kMaxDirents];
   int bytes_read = 1;  // Set to a non-zero value.
 
   memset(&dirents[0], 0, sizeof(dirents));
@@ -424,11 +429,25 @@ TEST_F(MountHtml5FsTest, GetDents) {
   // +2 to test a size that is not a multiple of sizeof(dirent).
   // Expect it to round down.
   memset(&dirents[0], 0, sizeof(dirents));
-  EXPECT_EQ(0, root->GetDents(0, &dirents[0], sizeof(dirent) + 2, &bytes_read));
-  EXPECT_EQ(sizeof(dirent), bytes_read);
-  EXPECT_EQ(sizeof(dirent), dirents[0].d_off);
-  EXPECT_EQ(sizeof(dirent), dirents[0].d_reclen);
-  EXPECT_STREQ("file", dirents[0].d_name);
+  EXPECT_EQ(
+      0, root->GetDents(0, &dirents[0], sizeof(dirent) * 3 + 2, &bytes_read));
+
+  {
+    size_t num_dirents = bytes_read / sizeof(dirent);
+    EXPECT_EQ(3, num_dirents);
+    EXPECT_EQ(sizeof(dirent) * num_dirents, bytes_read);
+
+    std::multiset<std::string> dirnames;
+    for (int i = 0; i < num_dirents; ++i) {
+      EXPECT_EQ(sizeof(dirent), dirents[i].d_off);
+      EXPECT_EQ(sizeof(dirent), dirents[i].d_reclen);
+      dirnames.insert(dirents[i].d_name);
+    }
+
+    EXPECT_EQ(1, dirnames.count("file"));
+    EXPECT_EQ(1, dirnames.count("."));
+    EXPECT_EQ(1, dirnames.count(".."));
+  }
 
   // Add another file...
   ASSERT_EQ(0, mnt->Open(Path("/file2"), O_CREAT, &node));
@@ -436,13 +455,22 @@ TEST_F(MountHtml5FsTest, GetDents) {
   // Read the root directory again.
   memset(&dirents[0], 0, sizeof(dirents));
   EXPECT_EQ(0, root->GetDents(0, &dirents[0], sizeof(dirents), &bytes_read));
-  EXPECT_EQ(sizeof(dirent) * 2, bytes_read);
 
-  for (int i = 0; i < 2; ++i) {
-    EXPECT_LT(0, dirents[i].d_ino);  // 0 is an invalid ino.
-    EXPECT_EQ(sizeof(dirent), dirents[i].d_off);
-    EXPECT_EQ(sizeof(dirent), dirents[i].d_reclen);
-    // Could be "file" or "file2".
-    EXPECT_TRUE(strncmp("file", dirents[i].d_name, 4) == 0);
+  {
+    size_t num_dirents = bytes_read / sizeof(dirent);
+    EXPECT_EQ(4, num_dirents);
+    EXPECT_EQ(sizeof(dirent) * num_dirents, bytes_read);
+
+    std::multiset<std::string> dirnames;
+    for (int i = 0; i < num_dirents; ++i) {
+      EXPECT_EQ(sizeof(dirent), dirents[i].d_off);
+      EXPECT_EQ(sizeof(dirent), dirents[i].d_reclen);
+      dirnames.insert(dirents[i].d_name);
+    }
+
+    EXPECT_EQ(1, dirnames.count("file"));
+    EXPECT_EQ(1, dirnames.count("file2"));
+    EXPECT_EQ(1, dirnames.count("."));
+    EXPECT_EQ(1, dirnames.count(".."));
   }
 }

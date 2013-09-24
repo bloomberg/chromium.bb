@@ -65,9 +65,8 @@ TEST(MountTest, Sanity) {
   EXPECT_EQ(0, mnt.Access(Path("/foo"), R_OK | W_OK));
   EXPECT_EQ(EACCES, mnt.Access(Path("/foo"), X_OK));
 
-  // Write access should be allowed on the root directory.
-  EXPECT_EQ(0, mnt.Access(Path("/"), R_OK | W_OK));
-  EXPECT_EQ(EACCES, mnt.Access(Path("/"), X_OK));
+  // All access should be allowed on the root directory.
+  EXPECT_EQ(0, mnt.Access(Path("/"), R_OK | W_OK | X_OK));
   // Open the root directory for write should fail.
   EXPECT_EQ(EISDIR, mnt.Open(Path("/"), O_RDWR, &root));
   EXPECT_EQ(2, mnt.num_nodes());
@@ -77,10 +76,11 @@ TEST(MountTest, Sanity) {
   EXPECT_EQ(2, mnt.num_nodes());
   EXPECT_NE(NULL_NODE, root.get());
   if (NULL != root) {
-    struct dirent dirs[2];
+    struct dirent dirs[4];
     int len;
     EXPECT_EQ(0, root->GetDents(0, dirs, sizeof(dirs), &len));
-    EXPECT_EQ(sizeof(struct dirent), len);
+    // 3 == "foo", ".", ".."
+    EXPECT_EQ(3 * sizeof(struct dirent), len);
   }
 
   // Fail to re-create the same file

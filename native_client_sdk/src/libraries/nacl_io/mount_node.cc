@@ -177,4 +177,3 @@ void MountNode::Link() { stat_.st_nlink++; }
 void MountNode::Unlink() { stat_.st_nlink--; }
 
 }  // namespace nacl_io
-
