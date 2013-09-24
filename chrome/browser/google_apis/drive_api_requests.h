@@ -232,6 +232,11 @@ class FilesCopyRequest : public DriveApiDataRequest {
   const std::vector<std::string>& parents() const { return parents_; }
   void add_parent(const std::string& parent) { parents_.push_back(parent); }
 
+  const base::Time& modified_date() const { return modified_date_; }
+  void set_modified_date(const base::Time& modified_date) {
+    modified_date_ = modified_date;
+  }
+
   const std::string& title() const { return title_; }
   void set_title(const std::string& title) { title_ = title; }
 
@@ -248,6 +253,7 @@ class FilesCopyRequest : public DriveApiDataRequest {
   const DriveApiUrlGenerator url_generator_;
 
   std::string file_id_;
+  base::Time modified_date_;
   std::vector<std::string> parents_;
   std::string title_;
 

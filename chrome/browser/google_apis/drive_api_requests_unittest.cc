@@ -625,6 +625,8 @@ TEST_F(DriveApiRequestsTest, ChangesListNextPageRequest) {
 }
 
 TEST_F(DriveApiRequestsTest, FilesCopyRequest) {
+  const base::Time::Exploded kModifiedDate = {2012, 7, 0, 19, 15, 59, 13, 123};
+
   // Set an expected data file containing the dummy file entry data.
   // It'd be returned if we copy a file.
   expected_data_file_path_ =
@@ -643,6 +645,7 @@ TEST_F(DriveApiRequestsTest, FilesCopyRequest) {
             &run_loop,
             test_util::CreateCopyResultCallback(&error, &file_resource)));
     request->set_file_id("resource_id");
+    request->set_modified_date(base::Time::FromUTCExploded(kModifiedDate));
     request->add_parent("parent_resource_id");
     request->set_title("new title");
     request_sender_->StartRequestWithRetry(request);
@@ -656,7 +659,8 @@ TEST_F(DriveApiRequestsTest, FilesCopyRequest) {
 
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ(
-      "{\"parents\":[{\"id\":\"parent_resource_id\"}],\"title\":\"new title\"}",
+      "{\"modifiedDate\":\"2012-07-19T15:59:13.123Z\","
+      "\"parents\":[{\"id\":\"parent_resource_id\"}],\"title\":\"new title\"}",
       http_request_.content);
   EXPECT_TRUE(file_resource);
 }

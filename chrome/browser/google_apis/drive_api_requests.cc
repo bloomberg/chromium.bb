@@ -307,6 +307,9 @@ bool FilesCopyRequest::GetContentData(std::string* upload_content_type,
 
   base::DictionaryValue root;
 
+  if (!modified_date_.is_null())
+    root.SetString("modifiedDate", util::FormatTimeAsString(modified_date_));
+
   if (!parents_.empty()) {
     base::ListValue* parents_value = new base::ListValue;
     for (size_t i = 0; i < parents_.size(); ++i) {
