@@ -16,6 +16,8 @@ description('Test if WebKit does not spellcheck text when pasting text to an ele
 
 jsTestIsAsync = true;
 
+internals.settings.setAsynchronousSpellCheckingEnabled(true);
+
 // Insert a misspelled word to initialize a spellchecker.
 var srcNode = document.getElementById('src');
 srcNode.focus();
@@ -27,33 +29,15 @@ document.execCommand("InsertText", false, 'p');
 document.execCommand("InsertText", false, 'p');
 document.execCommand("InsertText", false, 'l');
 document.execCommand("InsertText", false, 'e');
-shouldBeTrue('internals.hasSpellingMarker(document, 0, 2)');
+shouldBecomeEqual('internals.hasSpellingMarker(document, 0, 2)', 'true', function(){});
 window.getSelection().selectAllChildren(srcNode);
 document.execCommand('Copy');
-
-internals.settings.setAsynchronousSpellCheckingEnabled(true);
 
 var dstNode = document.getElementById('dst');
 dstNode.focus();
 document.execCommand('Paste');
+shouldBecomeDifferent('internals.hasSpellingMarker(document, 0, 2)', 'true', finishJSTest);
 
-var retryCount = 10;
-var sleepPeriod = 1;
-function verifyMarker() {
-    dstNode.focus();
-    var hasMarker = internals.hasSpellingMarker(document, 0, 2);
-    if (!hasMarker && --retryCount > 0) {
-        sleepPeriod *= 2;
-        window.setTimeout(verifyMarker, sleepPeriod);
-        return;
-    }
-    if (hasMarker)
-        testFailed('The destination node should not have a marker.');
-    else
-        testPassed('The destination node does not have any markers.');
-    finishJSTest();
-}
-window.setTimeout(verifyMarker, sleepPeriod);
 </script>
 <script src="../../fast/js/resources/js-test-post.js"></script>
 </body>

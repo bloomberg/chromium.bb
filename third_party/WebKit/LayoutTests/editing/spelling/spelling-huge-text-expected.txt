@@ -3,7 +3,7 @@ Text to check is divided into chunks to make sure checking some huge text does n
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS internals.markerCountForNode(testEditable.childNodes[0], "spelling") is 6
+PASS internals.markerCountForNode(testEditable.childNodes[0], "spelling") became 6
 PASS successfullyParsed is true
 
 TEST COMPLETE

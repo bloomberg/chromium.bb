@@ -28,17 +28,7 @@ testRunner.execCommand("DeleteBackward");
 testRunner.execCommand("DeleteBackward");
 document.execCommand("InsertText", false, ' ');
 
-var retryCount = 10;
-function verifyMarker() {
-    var hasMarker = internals.hasSpellingMarker(document, 0, 1);
-    if (hasMarker && --retryCount > 0) {
-        window.setTimeout(verifyMarker, 1);
-        return;
-    }
-    shouldBeFalse('internals.hasSpellingMarker(document, 0, 1)');
-    finishJSTest();
-}
-window.setTimeout(verifyMarker, 1);
+shouldBecomeEqual('internals.hasSpellingMarker(document, 0, 1)', 'false', finishJSTest);
 </script>
 <script src="../../fast/js/resources/js-test-post.js"></script>
 </body>

@@ -41,17 +41,6 @@ function test()
     internals.settings.setUnifiedTextCheckerEnabled(true);
     internals.settings.setAsynchronousSpellCheckingEnabled(true);
 
-    function waitForMarkersToAppear(node, nretry)
-    {
-        if (nretry > 0 && internals.markerCountForNode(node, "spelling") < 6) {
-            window.setTimeout(function() { waitForMarkersToAppear(node, nretry - 1); }, 1);
-        } else {
-            shouldBe('internals.markerCountForNode(testEditable.childNodes[0], "spelling")', '6');
-            testEditable.removeChild(testEditable.childNodes[0]);
-            finishJSTest();
-        }
-    }
-
     if (window.testRunner) {
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
@@ -60,7 +49,10 @@ function test()
     internals.setContinuousSpellCheckingEnabled(false);
     testEditable.focus();
     internals.setContinuousSpellCheckingEnabled(true);
-    waitForMarkersToAppear(testEditable.childNodes[0], 10);
+    shouldBecomeEqual('internals.markerCountForNode(testEditable.childNodes[0], "spelling")', '6', function() {
+        testEditable.removeChild(testEditable.childNodes[0]);
+        finishJSTest();
+    });
 }
 </script>
 <script src="../../fast/js/resources/js-test-post.js"></script>
