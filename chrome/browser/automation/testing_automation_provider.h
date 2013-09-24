@@ -934,30 +934,11 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: { "ids": [213, 1] }
   void GetTabIds(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  // Gets info about all open views. Each view ID is unique per session.
-  // Example:
-  //   input: none
-  //   output: { "views": [
-  //               {
-  //                 "auto_id": { "type": 0, "id": "awoein" },
-  //                 "extension_id": "askjeoias3"  // optional
-  //               }
-  //             ]
-  //           }
-  void GetViews(base::DictionaryValue* args, IPC::Message* reply_message);
-
   // Checks if the given tab ID refers to an open tab.
   // Example:
   //   input: { "id": 41 }
   //   output: { "is_valid": false }
   void IsTabIdValid(base::DictionaryValue* args, IPC::Message* reply_message);
-
-  // Checks if the given automation ID refers to an actual object.
-  // Example:
-  //   input: { "auto_id": { "type": 0, "id": "awoein" } }
-  //   output: { "does_exist": false }
-  void DoesAutomationObjectExist(
-      base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Closes the specified tab.
   // The pair |windex| and |tab_index| or the single |auto_id| must be given
@@ -1181,13 +1162,6 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: none
   void BringBrowserToFrontJSON(base::DictionaryValue* args,
                                IPC::Message* message);
-
-  // Gets the version of ChromeDriver automation supported by this server.
-  // Example:
-  //   input: none
-  //   output: { "version": 1 }
-  void GetChromeDriverAutomationVersion(base::DictionaryValue* args,
-                                        IPC::Message* message);
 
   // Determines whether the extension page action is visible in the given tab.
   // Example:

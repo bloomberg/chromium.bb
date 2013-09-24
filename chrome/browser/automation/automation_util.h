@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 
-class AutomationId;
 class AutomationProvider;
 class Browser;
 class GURL;
@@ -93,32 +92,6 @@ void SetCookieJSON(AutomationProvider* provider,
 // an error reply was sent.
 bool SendErrorIfModalDialogActive(AutomationProvider* provider,
                                   IPC::Message* message);
-
-// Returns a valid automation ID for the given tab.
-AutomationId GetIdForTab(const content::WebContents* tab);
-
-// Returns a valid automation ID for the extension view.
-AutomationId GetIdForExtensionView(
-    const content::RenderViewHost* render_view_host);
-
-// Returns a valid automation ID for the extension.
-AutomationId GetIdForExtension(const extensions::Extension* extension);
-
-// Gets the tab for the given ID. Returns true on success.
-bool GetTabForId(const AutomationId& id, content::WebContents** tab);
-
-// Gets the render view for the given ID. Returns true on success.
-bool GetRenderViewForId(const AutomationId& id,
-                        Profile* profile,
-                        content::RenderViewHost** rvh);
-
-// Gets the extension for the given ID. Returns true on success.
-bool GetExtensionForId(const AutomationId& id,
-                       Profile* profile,
-                       const extensions::Extension** extension);
-
-// Returns whether the given ID refers to an actual automation entity.
-bool DoesObjectWithIdExist(const AutomationId& id, Profile* profile);
 
 }  // namespace automation_util
 

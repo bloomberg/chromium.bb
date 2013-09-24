@@ -580,7 +580,6 @@ class DomOperationObserver : public content::NotificationObserver {
                        const content::NotificationDetails& details) OVERRIDE;
 
   virtual void OnDomOperationCompleted(const std::string& json) = 0;
-  virtual void OnModalDialogShown() = 0;
   virtual void OnJavascriptBlocked() = 0;
 
  private:
@@ -600,7 +599,6 @@ class DomOperationMessageSender : public DomOperationObserver {
   virtual ~DomOperationMessageSender();
 
   virtual void OnDomOperationCompleted(const std::string& json) OVERRIDE;
-  virtual void OnModalDialogShown() OVERRIDE;
   virtual void OnJavascriptBlocked() OVERRIDE;
 
  private:

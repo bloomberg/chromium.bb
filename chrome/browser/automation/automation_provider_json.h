@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/common/automation_constants.h"
 
-class AutomationId;
 class AutomationProvider;
 class Browser;
 class Profile;
@@ -53,13 +52,6 @@ class AutomationJSONReply {
   // Send an error reply along with error message |error_message|.
   void SendError(const std::string& error_message);
 
-  // Send an error reply along with the specified error code and its
-  // associated error message.
-  void SendErrorCode(automation::ErrorCode code);
-
-  // Send an automation error.
-  void SendError(const automation::Error& error);
-
  private:
   AutomationProvider* provider_;
   IPC::Message* message_;
@@ -89,14 +81,6 @@ bool GetBrowserAndTabFromJSONArgs(base::DictionaryValue* args,
                                   Browser** browser,
                                   content::WebContents** tab,
                                   std::string* error) WARN_UNUSED_RESULT;
-
-// Gets an automation ID from the given value in the given dicitionary |args|.
-// Returns true on success and sets |id|. Otherwise, |error| will be set.
-bool GetAutomationIdFromJSONArgs(
-    base::DictionaryValue* args,
-    const std::string& key,
-    AutomationId* id,
-    std::string* error) WARN_UNUSED_RESULT;
 
 // Gets the render view specified by the given dictionary |args|. |args|
 // should contain a key 'view_id' which refers to an automation ID for the

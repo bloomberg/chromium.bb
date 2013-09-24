@@ -64,57 +64,6 @@ enum MouseButton {
   kNoButton,
 };
 
-// The current version of ChromeDriver automation supported by Chrome.
-// This needs to be incremented for each change to ChromeDriver automation that
-// is not backwards compatible. Some examples of this would be:
-// - SendJSONRequest or Hello IPC messages change
-// - The interface for an individual ChromeDriver automation call changes in an
-//   incompatible way
-// TODO(kkania): Investigate a better backwards compatible automation solution.
-extern const int kChromeDriverAutomationVersion;
-
-// Automation error codes. These provide the client a simple way
-// to detect certain types of errors it may be interested in handling.
-// The error code values must stay consistent across compatible versions.
-enum ErrorCode {
-  // An unknown error occurred.
-  kUnknownError = 0,
-  // Trying to operate on a JavaScript modal dialog when none is open.
-  kNoJavaScriptModalDialogOpen = 1,
-  // An open modal dialog blocked the operation. The operation may have
-  // partially completed.
-  kBlockedByModalDialog = 2,
-  // An ID was supplied that is invalid or does not refer to an existing object.
-  kInvalidId = 3,
-};
-
-// Represents an automation error. Each error has a code and an error message.
-class Error {
- public:
-  // Creates an invalid error.
-  Error();
-
-  // Creates an error for the given code. A default message for the given code
-  // will be used as the error message.
-  explicit Error(ErrorCode code);
-
-  // Creates an error for the given message. The |kUnknownError| type will
-  // be used.
-  explicit Error(const std::string& error_msg);
-
-  // Creates an error for the given code and message.
-  Error(ErrorCode code, const std::string& error_msg);
-
-  virtual ~Error();
-
-  ErrorCode code() const;
-  const std::string& message() const;
-
- private:
-  ErrorCode code_;
-  std::string message_;
-};
-
 }  // namespace automation
 
 // Used by AutomationProxy, declared here so that other headers don't need

@@ -15,7 +15,6 @@
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
@@ -443,7 +442,8 @@ bool AutomationProxy::SendJSONRequest(const std::string& request,
                                       int timeout_ms,
                                       std::string* response) {
   bool result = false;
-  if (!SendAutomationJSONRequest(this, request, timeout_ms, response, &result))
+  if (!Send(new AutomationMsg_SendJSONRequest(-1, request, response, &result),
+            timeout_ms))
     return false;
   return result;
 }

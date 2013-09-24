@@ -1123,7 +1123,7 @@ void DomOperationObserver::Observe(
     if (dom_op_details->automation_id == automation_id_)
       OnDomOperationCompleted(dom_op_details->json);
   } else if (type == chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN) {
-    OnModalDialogShown();
+    OnJavascriptBlocked();
   } else {
     DCHECK_EQ(chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED, type);
     WebContents* web_contents = content::Source<WebContents>(source).ptr();
@@ -1164,14 +1164,6 @@ void DomOperationMessageSender::OnDomOperationCompleted(
     }
   }
   delete this;
-}
-
-void DomOperationMessageSender::OnModalDialogShown() {
-  if (automation_.get() && use_json_interface_) {
-    AutomationJSONReply(automation_.get(), reply_message_.release())
-        .SendErrorCode(automation::kBlockedByModalDialog);
-    delete this;
-  }
 }
 
 void DomOperationMessageSender::OnJavascriptBlocked() {

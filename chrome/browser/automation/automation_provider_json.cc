@@ -13,13 +13,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/automation_id.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/web_contents.h"
 
-using automation::Error;
-using automation::ErrorCode;
 using content::WebContents;
 
 AutomationJSONReply::AutomationJSONReply(AutomationProvider* provider,
@@ -44,19 +41,10 @@ void AutomationJSONReply::SendSuccess(const Value* value) {
 }
 
 void AutomationJSONReply::SendError(const std::string& error_message) {
-  SendError(Error(error_message));
-}
-
-void AutomationJSONReply::SendErrorCode(ErrorCode code) {
-  SendError(Error(code));
-}
-
-void AutomationJSONReply::SendError(const Error& error) {
   DCHECK(message_) << "Resending reply for JSON automation request";
 
   base::DictionaryValue dict;
-  dict.SetString("error", error.message());
-  dict.SetInteger("code", error.code());
+  dict.SetString("error", error_message);
   std::string json;
   base::JSONWriter::Write(&dict, &json);
 
@@ -69,32 +57,15 @@ bool GetBrowserFromJSONArgs(
     DictionaryValue* args,
     Browser** browser,
     std::string* error) {
-  if (args->HasKey("auto_id")) {
-    AutomationId id;
-    if (!GetAutomationIdFromJSONArgs(args, "auto_id", &id, error))
-      return false;
-    WebContents* tab;
-    if (!automation_util::GetTabForId(id, &tab)) {
-      *error = "'auto_id' does not refer to an open tab";
-      return false;
-    }
-    Browser* container = automation_util::GetBrowserForTab(tab);
-    if (!container) {
-      *error = "tab does not belong to an open browser";
-      return false;
-    }
-    *browser = container;
-  } else {
-    int browser_index;
-    if (!args->GetInteger("windex", &browser_index)) {
-      *error = "'windex' missing or invalid";
-      return false;
-    }
-    *browser = automation_util::GetBrowserAt(browser_index);
-    if (!*browser) {
-      *error = "Cannot locate browser from given index";
-      return false;
-    }
+  int browser_index;
+  if (!args->GetInteger("windex", &browser_index)) {
+    *error = "'windex' missing or invalid";
+    return false;
+  }
+  *browser = automation_util::GetBrowserAt(browser_index);
+  if (!*browser) {
+    *error = "Cannot locate browser from given index";
+    return false;
   }
   return true;
 }
@@ -103,29 +74,19 @@ bool GetTabFromJSONArgs(
     DictionaryValue* args,
     WebContents** tab,
     std::string* error) {
-  if (args->HasKey("auto_id")) {
-    AutomationId id;
-    if (!GetAutomationIdFromJSONArgs(args, "auto_id", &id, error))
-      return false;
-    if (!automation_util::GetTabForId(id, tab)) {
-      *error = "'auto_id' does not refer to an open tab";
-      return false;
-    }
-  } else {
-    int browser_index, tab_index;
-    if (!args->GetInteger("windex", &browser_index)) {
-      *error = "'windex' missing or invalid";
-      return false;
-    }
-    if (!args->GetInteger("tab_index", &tab_index)) {
-      *error = "'tab_index' missing or invalid";
-      return false;
-    }
-    *tab = automation_util::GetWebContentsAt(browser_index, tab_index);
-    if (!*tab) {
-      *error = "Cannot locate tab from given indices";
-      return false;
-    }
+  int browser_index, tab_index;
+  if (!args->GetInteger("windex", &browser_index)) {
+    *error = "'windex' missing or invalid";
+    return false;
+  }
+  if (!args->GetInteger("tab_index", &tab_index)) {
+    *error = "'tab_index' missing or invalid";
+    return false;
+  }
+  *tab = automation_util::GetWebContentsAt(browser_index, tab_index);
+  if (!*tab) {
+    *error = "Cannot locate tab from given indices";
+    return false;
   }
   return true;
 }
@@ -139,40 +100,15 @@ bool GetBrowserAndTabFromJSONArgs(
          GetTabFromJSONArgs(args, tab, error);
 }
 
-bool GetAutomationIdFromJSONArgs(
-    DictionaryValue* args,
-    const std::string& key,
-    AutomationId* id,
-    std::string* error) {
-  Value* id_value;
-  if (!args->Get(key, &id_value)) {
-    *error = base::StringPrintf("Missing parameter '%s'", key.c_str());
-    return false;
-  }
-  return AutomationId::FromValue(id_value, id, error);
-}
-
 bool GetRenderViewFromJSONArgs(
     DictionaryValue* args,
     Profile* profile,
     content::RenderViewHost** rvh,
     std::string* error) {
-  Value* id_value;
-  if (args->Get("auto_id", &id_value)) {
-    AutomationId id;
-    if (!AutomationId::FromValue(id_value, &id, error))
-      return false;
-    if (!automation_util::GetRenderViewForId(id, profile, rvh)) {
-      *error = "ID does not correspond to an open view";
-      return false;
-    }
-  } else {
-    // If the render view id is not specified, check for browser/tab indices.
-    WebContents* tab = NULL;
-    if (!GetTabFromJSONArgs(args, &tab, error))
-      return false;
-    *rvh = tab->GetRenderViewHost();
-  }
+  WebContents* tab = NULL;
+  if (!GetTabFromJSONArgs(args, &tab, error))
+    return false;
+  *rvh = tab->GetRenderViewHost();
   return true;
 }
 

@@ -108,7 +108,6 @@
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/startup/startup_types.h"
 #include "chrome/common/automation_constants.h"
-#include "chrome/common/automation_id.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -165,12 +164,6 @@
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
 
-#if defined(ENABLE_FULL_PRINTING)
-#include "chrome/browser/printing/print_preview_dialog_controller.h"
-#endif
-
-using automation::Error;
-using automation::ErrorCode;
 using automation_util::SendErrorIfModalDialogActive;
 using content::BrowserChildProcessHostIterator;
 using content::BrowserContext;
@@ -1647,12 +1640,8 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
 
   handler_map_["GetTabIds"] =
       &TestingAutomationProvider::GetTabIds;
-  handler_map_["GetViews"] =
-      &TestingAutomationProvider::GetViews;
   handler_map_["IsTabIdValid"] =
       &TestingAutomationProvider::IsTabIdValid;
-  handler_map_["DoesAutomationObjectExist"] =
-      &TestingAutomationProvider::DoesAutomationObjectExist;
   handler_map_["CloseTab"] =
       &TestingAutomationProvider::CloseTabJSON;
   handler_map_["SetViewBounds"] =
@@ -1685,8 +1674,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::ActionOnSSLBlockingPage;
   handler_map_["GetSecurityState"] =
       &TestingAutomationProvider::GetSecurityState;
-  handler_map_["GetChromeDriverAutomationVersion"] =
-      &TestingAutomationProvider::GetChromeDriverAutomationVersion;
   handler_map_["IsPageActionVisible"] =
       &TestingAutomationProvider::IsPageActionVisible;
   handler_map_["CreateNewAutomationProvider"] =
@@ -4198,11 +4185,11 @@ namespace {
 
 // Gets the active JavaScript modal dialog, or NULL if none.
 JavaScriptAppModalDialog* GetActiveJavaScriptModalDialog(
-    ErrorCode* error_code) {
+    std::string* error_msg) {
   AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
   if (!dialog_queue->HasActiveDialog() ||
       !dialog_queue->active_dialog()->IsJavaScriptModalDialog()) {
-    *error_code = automation::kNoJavaScriptModalDialogOpen;
+    *error_msg = "No JavaScriptModalDialog open";
     return NULL;
   }
   return static_cast<JavaScriptAppModalDialog*>(dialog_queue->active_dialog());
@@ -4213,10 +4200,10 @@ JavaScriptAppModalDialog* GetActiveJavaScriptModalDialog(
 void TestingAutomationProvider::GetAppModalDialogMessage(
     DictionaryValue* args, IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
-  ErrorCode code;
-  JavaScriptAppModalDialog* dialog = GetActiveJavaScriptModalDialog(&code);
+  std::string error_msg;
+  JavaScriptAppModalDialog* dialog = GetActiveJavaScriptModalDialog(&error_msg);
   if (!dialog) {
-    reply.SendErrorCode(code);
+    reply.SendError(error_msg);
     return;
   }
   DictionaryValue result_dict;
@@ -4233,10 +4220,10 @@ void TestingAutomationProvider::AcceptOrDismissAppModalDialog(
     return;
   }
 
-  ErrorCode code;
-  JavaScriptAppModalDialog* dialog = GetActiveJavaScriptModalDialog(&code);
+  std::string error_msg;
+  JavaScriptAppModalDialog* dialog = GetActiveJavaScriptModalDialog(&error_msg);
   if (!dialog) {
-    reply.SendErrorCode(code);
+    reply.SendError(error_msg);
     return;
   }
   if (accept) {
@@ -4740,8 +4727,7 @@ void TestingAutomationProvider::ExecuteJavascriptJSON(
   std::string error;
   RenderViewHost* render_view;
   if (!GetRenderViewFromJSONArgs(args, profile(), &render_view, &error)) {
-    AutomationJSONReply(this, reply_message).SendError(
-        Error(automation::kInvalidId, error));
+    AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
   if (!args->GetString("frame_xpath", &frame_xpath)) {
@@ -5223,58 +5209,6 @@ void TestingAutomationProvider::GetTabIds(
   AutomationJSONReply(this, reply_message).SendSuccess(&dict);
 }
 
-void TestingAutomationProvider::GetViews(
-    DictionaryValue* args, IPC::Message* reply_message) {
-  ListValue* view_list = new ListValue();
-#if defined(ENABLE_FULL_PRINTING)
-  printing::PrintPreviewDialogController* preview_controller =
-      printing::PrintPreviewDialogController::GetInstance();
-#endif
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    Browser* browser = *it;
-    for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
-      WebContents* contents = browser->tab_strip_model()->GetWebContentsAt(i);
-      DictionaryValue* dict = new DictionaryValue();
-      AutomationId id = automation_util::GetIdForTab(contents);
-      dict->Set("auto_id", id.ToValue());
-      view_list->Append(dict);
-#if defined(ENABLE_FULL_PRINTING)
-      if (preview_controller) {
-        WebContents* preview_dialog =
-            preview_controller->GetPrintPreviewForContents(contents);
-        if (preview_dialog) {
-          DictionaryValue* dict = new DictionaryValue();
-          AutomationId id = automation_util::GetIdForTab(preview_dialog);
-          dict->Set("auto_id", id.ToValue());
-          view_list->Append(dict);
-        }
-      }
-#endif
-    }
-  }
-
-  ExtensionProcessManager* extension_mgr =
-      extensions::ExtensionSystem::Get(profile())->process_manager();
-  const ExtensionProcessManager::ViewSet all_views =
-      extension_mgr->GetAllViews();
-  ExtensionProcessManager::ViewSet::const_iterator iter;
-  for (iter = all_views.begin(); iter != all_views.end(); ++iter) {
-    content::RenderViewHost* host = (*iter);
-    AutomationId id = automation_util::GetIdForExtensionView(host);
-    if (!id.is_valid())
-      continue;
-    const Extension* extension =
-        extension_mgr->GetExtensionForRenderViewHost(host);
-    DictionaryValue* dict = new DictionaryValue();
-    dict->Set("auto_id", id.ToValue());
-    dict->SetString("extension_id", extension->id());
-    view_list->Append(dict);
-  }
-  DictionaryValue dict;
-  dict.Set("views", view_list);
-  AutomationJSONReply(this, reply_message).SendSuccess(&dict);
-}
-
 void TestingAutomationProvider::IsTabIdValid(
     DictionaryValue* args, IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
@@ -5298,22 +5232,6 @@ void TestingAutomationProvider::IsTabIdValid(
   }
   DictionaryValue dict;
   dict.SetBoolean("is_valid", is_valid);
-  reply.SendSuccess(&dict);
-}
-
-void TestingAutomationProvider::DoesAutomationObjectExist(
-    DictionaryValue* args, IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-  AutomationId id;
-  std::string error_msg;
-  if (!GetAutomationIdFromJSONArgs(args, "auto_id", &id, &error_msg)) {
-    reply.SendError(error_msg);
-    return;
-  }
-  DictionaryValue dict;
-  dict.SetBoolean(
-      "does_exist",
-      automation_util::DoesObjectWithIdExist(id, profile()));
   reply.SendSuccess(&dict);
 }
 
@@ -5360,7 +5278,7 @@ void TestingAutomationProvider::SetViewBounds(
   Browser* browser;
   std::string error;
   if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
-    reply.SendError(Error(automation::kInvalidId, error));
+    reply.SendError(error);
     return;
   }
   BrowserWindow* browser_window = browser->window();
@@ -5377,8 +5295,7 @@ void TestingAutomationProvider::MaximizeView(
   Browser* browser;
   std::string error;
   if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
-    AutomationJSONReply(this, reply_message)
-        .SendError(Error(automation::kInvalidId, error));
+    AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
 
@@ -5461,14 +5378,6 @@ void TestingAutomationProvider::IsPageActionVisible(
   DictionaryValue dict;
   dict.SetBoolean("is_visible", is_visible);
   reply.SendSuccess(&dict);
-}
-
-void TestingAutomationProvider::GetChromeDriverAutomationVersion(
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-  DictionaryValue reply_dict;
-  reply_dict.SetInteger("version", automation::kChromeDriverAutomationVersion);
-  AutomationJSONReply(this, reply_message).SendSuccess(&reply_dict);
 }
 
 void TestingAutomationProvider::CreateNewAutomationProvider(
