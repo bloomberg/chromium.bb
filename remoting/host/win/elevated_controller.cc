@@ -52,10 +52,11 @@ const char kUnprivilegedConfigFileSecurityDescriptor[] =
 // Configuration keys.
 const char kHostId[] = "host_id";
 const char kXmppLogin[] = "xmpp_login";
+const char kHostOwner[] = "host_owner";
 const char kHostSecretHash[] = "host_secret_hash";
 
 // The configuration keys that cannot be specified in UpdateConfig().
-const char* const kReadonlyKeys[] = { kHostId, kXmppLogin };
+const char* const kReadonlyKeys[] = { kHostId, kHostOwner, kXmppLogin };
 
 // The configuration keys whose values may be read by GetConfig().
 const char* const kUnprivilegedConfigKeys[] = { kHostId, kXmppLogin };
@@ -222,9 +223,14 @@ HRESULT WriteConfig(const char* content, size_t length, HWND owner_window) {
   if (!config_value->GetAsDictionary(&config_dict)) {
     return E_FAIL;
   }
-  std::string email, host_id, host_secret_hash;
-  if (!config_dict->GetString(kXmppLogin, &email) ||
-      !config_dict->GetString(kHostId, &host_id) ||
+  std::string email;
+  if (!config_dict->GetString(kHostOwner, &email)) {
+    if (!config_dict->GetString(kXmppLogin, &email)) {
+      return E_FAIL;
+    }
+  }
+  std::string host_id, host_secret_hash;
+  if (!config_dict->GetString(kHostId, &host_id) ||
       !config_dict->GetString(kHostSecretHash, &host_secret_hash)) {
     return E_FAIL;
   }
