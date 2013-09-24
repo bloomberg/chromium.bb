@@ -223,6 +223,8 @@ public:
 
     bool isEndOfParagraph(const Iterator& end) { return m_current == end || m_current.atEnd(); }
 
+    TextDirection determineParagraphDirectionality(bool* hasStrongDirectionality = 0);
+
 protected:
     void increment() { m_current.increment(); }
     // FIXME: Instead of InlineBidiResolvers subclassing this method, we should
@@ -522,6 +524,36 @@ inline void BidiResolver<Iterator, Run>::reorderRunsFromLevels()
         }
         levelHigh--;
     }
+}
+
+template <class Iterator, class Run>
+TextDirection BidiResolver<Iterator, Run>::determineParagraphDirectionality(bool* hasStrongDirectionality)
+{
+    while (!m_current.atEnd()) {
+        if (inIsolate()) {
+            increment();
+            continue;
+        }
+        if (m_current.atParagraphSeparator())
+            break;
+        if (UChar current = m_current.current()) {
+            WTF::Unicode::Direction charDirection = WTF::Unicode::direction(current);
+            if (charDirection == WTF::Unicode::LeftToRight) {
+                if (hasStrongDirectionality)
+                    *hasStrongDirectionality = true;
+                return LTR;
+            }
+            if (charDirection == WTF::Unicode::RightToLeft || charDirection == WTF::Unicode::RightToLeftArabic) {
+                if (hasStrongDirectionality)
+                    *hasStrongDirectionality = true;
+                return RTL;
+            }
+        }
+        increment();
+    }
+    if (hasStrongDirectionality)
+        *hasStrongDirectionality = false;
+    return LTR;
 }
 
 template <class Iterator, class Run>

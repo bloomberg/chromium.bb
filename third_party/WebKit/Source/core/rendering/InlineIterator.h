@@ -78,13 +78,13 @@ public:
     void increment(InlineBidiResolver* = 0, IncrementRule = FastIncrementInTextNode);
     bool atEnd() const;
 
-    inline bool atTextParagraphSeparator()
+    inline bool atTextParagraphSeparator() const
     {
         return m_obj && m_obj->preservesNewline() && m_obj->isText() && toRenderText(m_obj)->textLength()
             && !toRenderText(m_obj)->isWordBreak() && toRenderText(m_obj)->characterAt(m_pos) == '\n';
     }
 
-    inline bool atParagraphSeparator()
+    inline bool atParagraphSeparator() const
     {
         return (m_obj && m_obj->isBR()) || atTextParagraphSeparator();
     }

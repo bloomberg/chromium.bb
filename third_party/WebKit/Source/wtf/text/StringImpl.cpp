@@ -1965,26 +1965,6 @@ bool equalIgnoringNullity(StringImpl* a, StringImpl* b)
     return equal(a, b);
 }
 
-WTF::Unicode::Direction StringImpl::defaultWritingDirection(bool* hasStrongDirectionality)
-{
-    for (unsigned i = 0; i < m_length; ++i) {
-        WTF::Unicode::Direction charDirection = WTF::Unicode::direction(is8Bit() ? characters8()[i] : characters16()[i]);
-        if (charDirection == WTF::Unicode::LeftToRight) {
-            if (hasStrongDirectionality)
-                *hasStrongDirectionality = true;
-            return WTF::Unicode::LeftToRight;
-        }
-        if (charDirection == WTF::Unicode::RightToLeft || charDirection == WTF::Unicode::RightToLeftArabic) {
-            if (hasStrongDirectionality)
-                *hasStrongDirectionality = true;
-            return WTF::Unicode::RightToLeft;
-        }
-    }
-    if (hasStrongDirectionality)
-        *hasStrongDirectionality = false;
-    return WTF::Unicode::LeftToRight;
-}
-
 size_t StringImpl::sizeInBytes() const
 {
     size_t size = length();

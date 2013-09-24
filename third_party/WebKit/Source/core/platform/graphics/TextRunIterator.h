@@ -58,6 +58,7 @@ public:
     bool atEnd() const { return !m_textRun || m_offset >= m_textRun->length(); }
     UChar current() const { return (*m_textRun)[m_offset]; }
     WTF::Unicode::Direction direction() const { return atEnd() ? WTF::Unicode::OtherNeutral : WTF::Unicode::direction(current()); }
+    bool atParagraphSeparator() const { return current() == '\n'; }
 
     bool operator==(const TextRunIterator& other)
     {

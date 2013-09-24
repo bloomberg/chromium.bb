@@ -52,6 +52,8 @@
 #include "core/loader/FrameLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/Settings.h"
+#include "core/platform/graphics/TextRunIterator.h"
+#include "core/platform/text/BidiResolver.h"
 #include "core/rendering/RenderWordBreak.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
@@ -848,15 +850,24 @@ TextDirection HTMLElement::directionalityIfhasDirAutoAttribute(bool& isAuto) con
     return directionality();
 }
 
+static TextDirection determineDirectionality(const String& value, bool& hasStrongDirectionality)
+{
+    TextRun run(value);
+    BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
+    bidiResolver.setStatus(BidiStatus(run.direction(), run.directionalOverride()));
+    bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&run, 0));
+    return bidiResolver.determineParagraphDirectionality(&hasStrongDirectionality);
+}
+
 TextDirection HTMLElement::directionality(Node** strongDirectionalityTextNode) const
 {
     if (hasTagName(inputTag)) {
         HTMLInputElement* inputElement = toHTMLInputElement(const_cast<HTMLElement*>(this));
         bool hasStrongDirectionality;
-        Unicode::Direction textDirection = inputElement->value().defaultWritingDirection(&hasStrongDirectionality);
+        TextDirection textDirection = determineDirectionality(inputElement->value(), hasStrongDirectionality);
         if (strongDirectionalityTextNode)
             *strongDirectionalityTextNode = hasStrongDirectionality ? inputElement : 0;
-        return (textDirection == Unicode::LeftToRight) ? LTR : RTL;
+        return textDirection;
     }
 
     Node* node = firstChild();
@@ -879,11 +890,11 @@ TextDirection HTMLElement::directionality(Node** strongDirectionalityTextNode) c
 
         if (node->isTextNode()) {
             bool hasStrongDirectionality;
-            WTF::Unicode::Direction textDirection = node->textContent(true).defaultWritingDirection(&hasStrongDirectionality);
+            TextDirection textDirection = determineDirectionality(node->textContent(true), hasStrongDirectionality);
             if (hasStrongDirectionality) {
                 if (strongDirectionalityTextNode)
                     *strongDirectionalityTextNode = node;
-                return (textDirection == WTF::Unicode::LeftToRight) ? LTR : RTL;
+                return textDirection;
             }
         }
         node = NodeTraversal::next(node, this);
