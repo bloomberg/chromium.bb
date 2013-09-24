@@ -46,6 +46,8 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble) {
   return bubble_widget;
 }
 
+}  // namespace
+
 #if defined(OS_WIN) && !defined(USE_AURA)
 // Windows uses two widgets and some extra complexity to host partially
 // transparent native controls and use per-pixel HWND alpha on the border.
@@ -60,8 +62,7 @@ class BubbleBorderDelegate : public WidgetDelegate,
   }
 
   virtual ~BubbleBorderDelegate() {
-    if (bubble_ && bubble_->GetWidget())
-      bubble_->GetWidget()->RemoveObserver(this);
+    DetachFromBubble();
   }
 
   // WidgetDelegate overrides:
@@ -82,16 +83,29 @@ class BubbleBorderDelegate : public WidgetDelegate,
 
   // WidgetObserver overrides:
   virtual void OnWidgetDestroying(Widget* widget) OVERRIDE {
-    bubble_ = NULL;
+    DetachFromBubble();
     widget_->Close();
   }
 
  private:
+  // Removes state installed on |bubble_|, including references |bubble_| has to
+  // us.
+  void DetachFromBubble() {
+    if (!bubble_)
+      return;
+    if (bubble_->GetWidget())
+      bubble_->GetWidget()->RemoveObserver(this);
+    bubble_->border_widget_ = NULL;
+    bubble_ = NULL;
+  }
+
   BubbleDelegateView* bubble_;
   Widget* widget_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleBorderDelegate);
 };
+
+namespace {
 
 // Create a widget to host the bubble's border.
 Widget* CreateBorderWidget(BubbleDelegateView* bubble) {
@@ -106,9 +120,10 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble) {
   border_widget->set_focus_on_creation(false);
   return border_widget;
 }
-#endif
 
 }  // namespace
+
+#endif
 
 BubbleDelegateView::BubbleDelegateView()
     : close_on_esc_(true),

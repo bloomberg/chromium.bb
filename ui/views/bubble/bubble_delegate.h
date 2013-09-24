@@ -18,6 +18,7 @@ class SlideAnimation;
 
 namespace views {
 
+class BubbleBorderDelegate;
 class BubbleFrameView;
 
 // BubbleDelegateView creates frame and client views for bubble Widgets.
@@ -150,6 +151,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   BubbleFrameView* GetBubbleFrameView() const;
 
  private:
+  friend class BubbleBorderDelegate;
+
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CreateDelegate);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, NonClientHitTest);
 
