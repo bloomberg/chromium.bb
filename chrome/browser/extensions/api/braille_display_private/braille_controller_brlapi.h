@@ -52,7 +52,9 @@ class BrailleControllerImpl : public BrailleController {
   // Tries to connect and starts watching for new brlapi servers.
   // No-op if already called.
   void StartConnecting();
-  void OnSocketDirChanged(const base::FilePath& path, bool error);
+  void StartWatchingSocketDirOnFileThread();
+  void OnSocketDirChangedOnFileThread(const base::FilePath& path, bool error);
+  void OnSocketDirChangedOnIOThread();
   void TryToConnect();
   void ResetRetryConnectHorizon();
   void ScheduleTryToConnect();
@@ -63,18 +65,20 @@ class BrailleControllerImpl : public BrailleController {
   void DispatchKeyEvent(scoped_ptr<KeyEvent> event);
   void DispatchOnDisplayStateChanged(scoped_ptr<DisplayState> new_state);
 
-  LibBrlapiLoader libbrlapi_loader_;
   CreateBrlapiConnectionFunction create_brlapi_connection_function_;
 
   // Manipulated on the IO thread.
+  LibBrlapiLoader libbrlapi_loader_;
   scoped_ptr<BrlapiConnection> connection_;
-  base::FilePathWatcher file_path_watcher_;
   bool started_connecting_;
   bool connect_scheduled_;
   base::Time retry_connect_horizon_;
 
   // Manipulated on the UI thread.
   ObserverList<BrailleObserver> observers_;
+
+  // Manipulated on the FILE thread.
+  base::FilePathWatcher file_path_watcher_;
 
   friend struct DefaultSingletonTraits<BrailleControllerImpl>;
 
