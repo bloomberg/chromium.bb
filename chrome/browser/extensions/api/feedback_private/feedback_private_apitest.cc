@@ -14,13 +14,8 @@ class FeedbackApiTest: public ExtensionApiTest {
   virtual ~FeedbackApiTest() {}
 };
 
-// Falis on Linux. crbug.com/297414
-#if defined(OS_LINUX)
-#define MAYBE_Basic DISABLED_Basic
-#else
-#define MAYBE_Basic Basic
-#endif
-IN_PROC_BROWSER_TEST_F(FeedbackApiTest, MAYBE_Basic) {
+// Falis on buildbots. crbug.com/297414
+IN_PROC_BROWSER_TEST_F(FeedbackApiTest, DISABLED_Basic) {
   EXPECT_TRUE(RunExtensionTest("feedback_private/basic")) << message_;
 }
 
