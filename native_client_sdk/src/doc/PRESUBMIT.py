@@ -8,12 +8,16 @@ def _CheckSphinxBuild(input_api, output_api):
   """Check that the docs are buildable without any warnings.
 
   This check runs sphinx-build with -W so that warning are errors.
+
+  However, since the trybots don't have sphinx installed, we'll treat a sphinx
+  failure as a warning. (Let's trust that the docs editors are testing locally.)
   """
 
   try:
-    subprocess.check_output(['make', 'SPHINXOPTS=-Wa'])
+    subprocess.check_output(['make', 'SPHINXOPTS=-Wa'],
+                            stderr=subprocess.STDOUT)
   except subprocess.CalledProcessError as e:
-    return [output_api.PresubmitPromptError('sphinx_build failed:\n' +
+    return [output_api.PresubmitNotifyResult('sphinx_build failed:\n' +
             e.output)]
 
   return []
