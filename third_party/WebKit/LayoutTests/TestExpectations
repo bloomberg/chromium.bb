@@ -338,12 +338,6 @@ webkit.org/b/111141 fast/regions/seamless-iframe-flowed-into-regions.html [ Imag
 
 crbug.com/9798 [ Win Release ] http/tests/navigation/no-referrer-reset.html [ Pass Timeout ]
 
-crbug.com/137818 fast/borders/border-radius-mask-canvas-border.html [ NeedsRebaseline ]
-crbug.com/137818 fast/borders/border-radius-mask-canvas.html [ NeedsRebaseline ]
-crbug.com/137818 fast/borders/border-radius-mask-video.html [ NeedsRebaseline ]
-crbug.com/137818 fast/borders/border-radius-mask-video-ratio.html [ NeedsRebaseline ]
-crbug.com/137818 fast/borders/border-radius-mask-video-shadow.html [ NeedsRebaseline ]
-
 # Unexpected gray
 crbug.com/23476 [ Mac ] fast/frames/inline-object-inside-frameset.html [ Failure ImageOnlyFailure ]
 
