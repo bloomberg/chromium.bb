@@ -1161,7 +1161,6 @@ crbug.com/282092 [ Mac ] svg/dom/SVGLength-px-with-context.html [ Failure Pass ]
 crbug.com/282093 [ Mac ] svg/hixie/text/001.xml [ Crash Failure Pass ]
 crbug.com/282094 fast/repaint/video-mute-repaint.html [ Pass Timeout ]
 crbug.com/282095 storage/websql/read-transactions-running-concurrently.html [ Failure Pass ]
-crbug.com/293438 [ Win ] svg/custom/font-face-simple.svg [ NeedsRebaseline ]
 
 crbug.com/282496 [ Debug ] css3/filters/custom/composited/custom-filter-blend-modes.html [ ImageOnlyFailure Pass ]
 crbug.com/282496 [ Linux Release ] css3/filters/custom/composited/custom-filter-blend-modes.html [ ImageOnlyFailure Pass ]
