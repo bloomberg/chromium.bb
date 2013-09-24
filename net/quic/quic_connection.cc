@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
@@ -23,6 +24,8 @@ using std::numeric_limits;
 using std::vector;
 using std::set;
 using std::string;
+
+int FLAGS_fake_packet_loss_percentage = 0;
 
 namespace net {
 namespace {
@@ -211,13 +214,11 @@ QuicConnection::QuicConnection(QuicGuid guid,
   framer_.set_visitor(this);
   framer_.set_received_entropy_calculator(&received_packet_manager_);
 
-  /*
   if (FLAGS_fake_packet_loss_percentage > 0) {
-    int32 seed = RandomBase::WeakSeed32();
+    int64 seed = base::RandUint64();
     LOG(INFO) << ENDPOINT << "Seeding packet loss with " << seed;
-    random_.reset(new MTRandom(seed));
+    srand(seed);
   }
-  */
 }
 
 QuicConnection::~QuicConnection() {
@@ -1421,12 +1422,8 @@ bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
 }
 
 bool QuicConnection::ShouldSimulateLostPacket() {
-  // TODO(rch): enable this
-  return false;
-  /*
   return FLAGS_fake_packet_loss_percentage > 0 &&
-      random_->Rand32() % 100 < FLAGS_fake_packet_loss_percentage;
-  */
+      rand() % 100 < FLAGS_fake_packet_loss_percentage;
 }
 
 void QuicConnection::UpdateSentPacketInfo(SentPacketInfo* sent_info) {

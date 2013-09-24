@@ -40,6 +40,8 @@
 #include "net/quic/quic_sent_entropy_manager.h"
 #include "net/quic/quic_sent_packet_manager.h"
 
+NET_EXPORT_PRIVATE extern int FLAGS_fake_packet_loss_percentage;
+
 namespace net {
 
 class QuicClock;

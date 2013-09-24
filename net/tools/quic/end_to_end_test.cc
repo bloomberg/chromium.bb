@@ -668,7 +668,7 @@ TEST_P(EndToEndTest, ResetConnection) {
 }
 
 TEST_P(EndToEndTest, MaxStreamsUberTest) {
-  //  FLAGS_fake_packet_loss_percentage = 1;
+  // FLAGS_fake_packet_loss_percentage = 1;
   ASSERT_TRUE(Initialize());
   string large_body;
   GenerateBody(&large_body, 10240);
