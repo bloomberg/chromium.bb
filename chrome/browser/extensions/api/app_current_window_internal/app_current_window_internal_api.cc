@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/api/app_current_window_internal.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/features/feature_channel.h"
+#include "chrome/common/extensions/features/simple_feature.h"
 #include "extensions/common/switches.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
@@ -151,7 +152,16 @@ bool AppCurrentWindowInternalSetIconFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalSetInputRegionFunction::RunWithWindow(
     ShellWindow* window) {
-  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
+
+  const char* whitelist[] = {
+    "2775E568AC98F9578791F1EAB65A1BF5F8CEF414",
+    "4AA3C5D69A4AECBD236CAD7884502209F0F5C169"
+  };
+  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV &&
+      !SimpleFeature::IsIdInWhitelist(
+          GetExtension()->id(),
+          std::set<std::string>(whitelist,
+                                whitelist + arraysize(whitelist)))) {
     error_ = kDevChannelOnly;
     return false;
   }
