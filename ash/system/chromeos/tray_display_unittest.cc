@@ -148,7 +148,7 @@ base::string16 TrayDisplayTest::GetDisplayNotificationAdditionalText() const {
 const message_center::Notification* TrayDisplayTest::GetDisplayNotification()
     const {
   const message_center::NotificationList::Notifications notifications =
-      message_center::MessageCenter::Get()->GetNotifications();
+      message_center::MessageCenter::Get()->GetVisibleNotifications();
   for (message_center::NotificationList::Notifications::const_iterator iter =
            notifications.begin(); iter != notifications.end(); ++iter) {
     if ((*iter)->id() == TrayDisplay::kNotificationId)

@@ -58,9 +58,14 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   virtual bool IsQuietMode() const = 0;
   virtual bool HasClickedListener(const std::string& id) = 0;
 
-  // Getters of the current notifications.
-  virtual const NotificationList::Notifications& GetNotifications() = 0;
-  // Gets all notifications being shown as popups.
+  // Gets all notifications to be shown to the user in the message center.  Note
+  // that queued changes due to the message center being open are not reflected
+  // in this list.
+  virtual const NotificationList::Notifications& GetVisibleNotifications() = 0;
+
+  // Gets all notifications being shown as popups.  This should not be affected
+  // by the change queue since notifications are not held up while the state is
+  // VISIBILITY_TRANSIENT or VISIBILITY_SETTINGS.
   virtual NotificationList::PopupNotifications GetPopupNotifications() = 0;
 
   // Management of NotificaitonBlockers.

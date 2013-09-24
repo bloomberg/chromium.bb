@@ -25,6 +25,11 @@ bool DoesFullscreenModeBlockNotifications() {
   if (ash::Shell::HasInstance()) {
     ash::internal::RootWindowController* controller =
         ash::internal::RootWindowController::ForTargetRootWindow();
+
+    // During shutdown |controller| can be NULL.
+    if (!controller)
+      return false;
+
     const aura::Window* fullscreen_window =
         controller->GetTopmostFullscreenWindow();
 

@@ -95,7 +95,7 @@ void ToastContentsView::SetContents(MessageView* view) {
   // won't be read for this view which returns ROLE_WINDOW.
   if (already_has_contents) {
     const NotificationList::Notifications& notifications =
-        message_center_->GetNotifications();
+        message_center_->GetVisibleNotifications();
     for (NotificationList::Notifications::const_iterator iter =
              notifications.begin(); iter != notifications.end(); ++iter) {
       if ((*iter)->id() != id_)

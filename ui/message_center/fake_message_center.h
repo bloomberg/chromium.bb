@@ -29,7 +29,8 @@ class FakeMessageCenter : public MessageCenter {
   virtual bool HasNotification(const std::string& id) OVERRIDE;
   virtual bool IsQuietMode() const OVERRIDE;
   virtual bool HasClickedListener(const std::string& id) OVERRIDE;
-  virtual const NotificationList::Notifications& GetNotifications() OVERRIDE;
+  virtual const NotificationList::Notifications& GetVisibleNotifications()
+      OVERRIDE;
   virtual NotificationList::PopupNotifications GetPopupNotifications() OVERRIDE;
   virtual void AddNotification(scoped_ptr<Notification> notification) OVERRIDE;
   virtual void UpdateNotification(const std::string& old_id,

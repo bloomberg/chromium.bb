@@ -113,6 +113,9 @@ void NotificationList::UpdateNotificationMessage(
   Notification* old = *iter;
   notifications_.erase(iter);
   delete old;
+
+  // We really don't want duplicate IDs.
+  DCHECK(GetNotification(new_notification->id()) == notifications_.end());
   notifications_.insert(new_notification.release());
 }
 

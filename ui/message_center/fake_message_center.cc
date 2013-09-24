@@ -50,7 +50,8 @@ bool FakeMessageCenter::HasClickedListener(const std::string& id) {
   return false;
 }
 
-const NotificationList::Notifications& FakeMessageCenter::GetNotifications() {
+const NotificationList::Notifications&
+FakeMessageCenter::GetVisibleNotifications() {
   return empty_notifications_;
 }
 

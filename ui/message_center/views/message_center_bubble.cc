@@ -115,7 +115,7 @@ void MessageCenterBubble::UpdateBubbleView() {
   if (!bubble_view())
     return;  // Could get called after view is closed
   const NotificationList::Notifications& notifications =
-      message_center()->GetNotifications();
+      message_center()->GetVisibleNotifications();
   message_center_view_->SetNotifications(notifications);
   bubble_view()->GetWidget()->Show();
   bubble_view()->UpdateBubble();

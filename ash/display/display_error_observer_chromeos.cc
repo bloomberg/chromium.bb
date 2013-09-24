@@ -57,7 +57,7 @@ void DisplayErrorObserver::OnDisplayModeChangeFailed(
 
 string16 DisplayErrorObserver::GetTitleOfDisplayErrorNotificationForTest() {
   message_center::NotificationList::Notifications notifications =
-      message_center::MessageCenter::Get()->GetNotifications();
+      message_center::MessageCenter::Get()->GetVisibleNotifications();
   for (message_center::NotificationList::Notifications::const_iterator iter =
            notifications.begin(); iter != notifications.end(); ++iter) {
     if ((*iter)->id() == kDisplayErrorNotificationId)

@@ -188,7 +188,7 @@ const CGFloat kTrayBottomMargin = 75;
   // origin is in the lower-left. Remove from |notificationsMap_| all the
   // ones still in the updated model, so that those that should be removed
   // will remain in the map.
-  const auto& modelNotifications = messageCenter_->GetNotifications();
+  const auto& modelNotifications = messageCenter_->GetVisibleNotifications();
   for (auto it = modelNotifications.rbegin();
        it != modelNotifications.rend();
        ++it) {

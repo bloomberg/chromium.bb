@@ -861,7 +861,7 @@ void MessageCenterView::OnMouseExited(const ui::MouseEvent& event) {
 void MessageCenterView::OnNotificationAdded(const std::string& id) {
   int index = 0;
   const NotificationList::Notifications& notifications =
-      message_center_->GetNotifications();
+      message_center_->GetVisibleNotifications();
   for (NotificationList::Notifications::const_iterator iter =
            notifications.begin(); iter != notifications.end();
        ++iter, ++index) {
@@ -908,7 +908,7 @@ void MessageCenterView::OnNotificationRemoved(const std::string& id,
 
 void MessageCenterView::OnNotificationUpdated(const std::string& id) {
   const NotificationList::Notifications& notifications =
-      message_center_->GetNotifications();
+      message_center_->GetVisibleNotifications();
   size_t index = 0;
   for (NotificationList::Notifications::const_iterator iter =
            notifications.begin();

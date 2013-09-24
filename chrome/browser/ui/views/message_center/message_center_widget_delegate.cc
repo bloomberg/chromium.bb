@@ -150,7 +150,7 @@ void MessageCenterWidgetDelegate::InitWidget() {
   widget->SetAlwaysOnTop(true);
 
   const NotificationList::Notifications& notifications =
-      tray_->message_center()->GetNotifications();
+      tray_->message_center()->GetVisibleNotifications();
   SetNotifications(notifications);
 
   widget->SetBounds(GetMessageCenterBounds());

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -22,7 +23,7 @@ class NotificationDelegate;
 class MessageCenterImpl;
 
 namespace internal {
-struct NotificationQueueItem;
+class ChangeQueue;
 class PopupTimersController;
 
 // A class that manages timeout behavior for notification popups.  One instance
@@ -152,7 +153,8 @@ class MessageCenterImpl : public MessageCenter,
   virtual bool HasNotification(const std::string& id) OVERRIDE;
   virtual bool IsQuietMode() const OVERRIDE;
   virtual bool HasClickedListener(const std::string& id) OVERRIDE;
-  virtual const NotificationList::Notifications& GetNotifications() OVERRIDE;
+  virtual const NotificationList::Notifications& GetVisibleNotifications()
+      OVERRIDE;
   virtual NotificationList::PopupNotifications GetPopupNotifications() OVERRIDE;
   virtual void AddNotification(scoped_ptr<Notification> notification) OVERRIDE;
   virtual void UpdateNotification(const std::string& old_id,
@@ -199,9 +201,9 @@ class MessageCenterImpl : public MessageCenter,
   NotifierSettingsProvider* settings_provider_;
   std::vector<NotificationBlocker*> blockers_;
 
-  // queue for the notifications to delay the addition/updates when the message
+  // Queue for the notifications to delay the addition/updates when the message
   // center is visible.
-  std::list<internal::NotificationQueueItem> notification_queue_;
+  scoped_ptr<internal::ChangeQueue> notification_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterImpl);
 };

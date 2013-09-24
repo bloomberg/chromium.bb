@@ -156,6 +156,7 @@ bool MessageCenterNotificationManager::CancelById(const std::string& id) {
   if (iter == profile_notifications_.end())
     return false;
 
+  RemoveProfileNotification(iter->second);
   message_center_->RemoveNotification(id, /* by_user */ false);
   return true;
 }
@@ -186,7 +187,9 @@ bool MessageCenterNotificationManager::CancelAllBySourceOrigin(
        loopiter != profile_notifications_.end(); ) {
     NotificationMap::iterator curiter = loopiter++;
     if ((*curiter).second->notification().origin_url() == source) {
-      message_center_->RemoveNotification(curiter->first, /* by_user */ false);
+      const std::string id = curiter->first;
+      RemoveProfileNotification(curiter->second);
+      message_center_->RemoveNotification(id, /* by_user */ false);
       removed = true;
     }
   }
@@ -201,7 +204,9 @@ bool MessageCenterNotificationManager::CancelAllByProfile(Profile* profile) {
        loopiter != profile_notifications_.end(); ) {
     NotificationMap::iterator curiter = loopiter++;
     if (profile == (*curiter).second->profile()) {
-      message_center_->RemoveNotification(curiter->first, /* by_user */ false);
+      const std::string id = curiter->first;
+      RemoveProfileNotification(curiter->second);
+      message_center_->RemoveNotification(id, /* by_user */ false);
       removed = true;
     }
   }
@@ -217,9 +222,6 @@ void MessageCenterNotificationManager::CancelAll() {
 void MessageCenterNotificationManager::OnNotificationRemoved(
     const std::string& notification_id,
     bool by_user) {
-  // Do not call FindProfileNotification(). Some tests create notifications
-  // directly to MessageCenter, but this method will be called for the removals
-  // of such notifications.
   NotificationMap::const_iterator iter =
       profile_notifications_.find(notification_id);
   if (iter != profile_notifications_.end())

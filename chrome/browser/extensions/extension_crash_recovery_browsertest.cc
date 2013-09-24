@@ -124,7 +124,7 @@ class MAYBE_ExtensionCrashRecoveryTest
           message_center::MessageCenter::Get();
       ASSERT_GT(message_center->NotificationCount(), index);
       message_center::NotificationList::Notifications::reverse_iterator it =
-          message_center->GetNotifications().rbegin();
+          message_center->GetVisibleNotifications().rbegin();
       for (size_t i=0; i < index; ++i)
         it++;
       std::string id = (*it)->id();
@@ -143,7 +143,7 @@ class MAYBE_ExtensionCrashRecoveryTest
           message_center::MessageCenter::Get();
       ASSERT_GT(message_center->NotificationCount(), index);
       message_center::NotificationList::Notifications::reverse_iterator it =
-          message_center->GetNotifications().rbegin();
+          message_center->GetVisibleNotifications().rbegin();
       for (size_t i=0; i < index; i++) { it++; }
       ASSERT_TRUE(g_browser_process->notification_ui_manager()->
           CancelById((*it)->id()));
