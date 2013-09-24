@@ -7518,6 +7518,12 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         <message name="IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' infobar's 'Never remember for this site' option">
           Never for this site
         </message>
+        <message name="IDS_PASSWORD_MANAGER_BLACKLIST_DROP_DOWN" desc="Text for the 'Save Password' bubble's 'Never remember passwords for this site' option">
+          Never remember passwords for this site
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_CANCEL_DROP_DOWN" desc="Text for the 'Save Password' bubble's 'Nope' option">
+          Nope
+        </message>
       </if>
       <if expr="is_android">
         <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Mobile: Button text for the 'Save Password' infobar's 'Remember password' option">

@@ -198,6 +198,7 @@ class SavePasswordBubbleModel : public ContentSettingTitleAndLinkModel {
                           Profile* profile);
   virtual ~SavePasswordBubbleModel();
   virtual void OnCancelClicked() OVERRIDE;
+  virtual void OnDoneClicked() OVERRIDE;
   virtual void OnSaveClicked() OVERRIDE;
 
  private:

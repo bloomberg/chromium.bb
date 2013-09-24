@@ -604,6 +604,12 @@ void SavePasswordBubbleModel::OnCancelClicked() {
   content_settings->set_password_action(PasswordFormManager::BLACKLIST);
 }
 
+void SavePasswordBubbleModel::OnDoneClicked() {
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  content_settings->set_password_action(PasswordFormManager::DO_NOTHING);
+}
+
 void SavePasswordBubbleModel::OnSaveClicked() {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
