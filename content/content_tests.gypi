@@ -385,6 +385,7 @@
         'browser/renderer_host/input/mock_input_ack_handler.h',
         'browser/renderer_host/input/mock_input_router_client.cc',
         'browser/renderer_host/input/mock_input_router_client.h',
+        'browser/renderer_host/input/tap_suppression_controller_unittest.cc',
         'browser/renderer_host/media/audio_input_device_manager_unittest.cc',
         'browser/renderer_host/media/audio_mirroring_manager_unittest.cc',
         'browser/renderer_host/media/audio_renderer_host_unittest.cc',
@@ -745,7 +746,6 @@
           ],
           'sources!': [
             'browser/accessibility/browser_accessibility_win_unittest.cc',
-            'browser/renderer_host/input/tap_suppression_controller_unittest.cc',
           ],
         }],
         ['branding=="Chrome"', {
@@ -764,6 +764,7 @@
             'browser/geolocation/wifi_data_provider_chromeos_unittest.cc',
             'browser/geolocation/wifi_data_provider_common_unittest.cc',
             'browser/geolocation/wifi_data_provider_linux_unittest.cc',
+            'browser/renderer_host/input/tap_suppression_controller_unittest.cc',
           ],
         }],
         ['OS != "android" and OS != "ios"', {
@@ -774,6 +775,11 @@
         ['OS == "android" and gtest_target_type == "shared_library"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
+        ['use_aura!=1 and OS!="win"', {
+          'sources!': [
+            'browser/renderer_host/input/tap_suppression_controller_unittest.cc',
           ],
         }],
         ['enable_webrtc==1 and google_tv==1', {

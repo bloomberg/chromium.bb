@@ -4,8 +4,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/renderer_host/tap_suppression_controller.h"
-#include "content/browser/renderer_host/tap_suppression_controller_client.h"
+#include "content/browser/renderer_host/input/tap_suppression_controller.h"
+#include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
