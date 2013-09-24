@@ -132,11 +132,12 @@ bool ScrollElasticityController::handleWheelEvent(const PlatformWheelEvent& whee
     }
 
     if (wheelEvent.phase() == PlatformWheelEventPhaseEnded) {
-        if (isRubberBandInProgress()) {
-            snapRubberBand();
-            return true;
-        }
-        return false;
+        bool wasRubberBandInProgress = isRubberBandInProgress();
+        // Call snapRubberBand() even if isRubberBandInProgress() is false. For example,
+        // m_inScrollGesture may be true (and needs to be reset on a phase end) even if
+        // isRubberBandInProgress() is not (e.g. the overhang area is empty).
+        snapRubberBand();
+        return wasRubberBandInProgress;
     }
 
     bool isMomentumScrollEvent = (wheelEvent.momentumPhase() != PlatformWheelEventPhaseNone);
@@ -319,7 +320,6 @@ void ScrollElasticityController::snapRubberBandTimerFired()
 
                 m_stretchScrollForce = FloatSize();
                 m_startTime = 0;
-                m_startStretch = FloatSize();
                 m_origOrigin = FloatPoint();
                 m_origVelocity = FloatSize();
                 return;
@@ -392,11 +392,18 @@ void ScrollElasticityController::snapRubberBand()
     if (m_snapRubberbandTimerIsActive)
         return;
 
-    m_startTime = [NSDate timeIntervalSinceReferenceDate];
     m_startStretch = FloatSize();
     m_origOrigin = FloatPoint();
     m_origVelocity = FloatSize();
 
+    // If there's no momentum scroll or stretch amount, no need to start the timer.
+    if (!m_momentumScrollInProgress && m_client->stretchAmount() == FloatSize()) {
+        m_startTime = 0;
+        m_stretchScrollForce = FloatSize();
+        return;
+    }
+
+    m_startTime = [NSDate timeIntervalSinceReferenceDate];
     m_client->startSnapRubberbandTimer();
     m_snapRubberbandTimerIsActive = true;
 }

@@ -90,6 +90,7 @@ public:
     void setPageScaleFactor(const CppArgumentList&, CppVariant*);
 
     void mouseDragBegin(const CppArgumentList&, CppVariant*);
+    void mouseDragEnd(const CppArgumentList&, CppVariant*);
     void mouseScrollBy(const CppArgumentList&, CppVariant*);
     void continuousMouseScrollBy(const CppArgumentList&, CppVariant*);
     void scheduleAsynchronousClick(const CppArgumentList&, CppVariant*);
