@@ -113,7 +113,7 @@ const char kAutofillDialogOrigin[] = "Chrome Autofill dialog";
 const color_utils::HSL kGrayImageShift = {-1, 0, 0.8};
 
 // Limit Wallet items refresh rate to at most once per minute.
-const int kWalletItemsRefreshRateSeconds = 60;
+const int64 kWalletItemsRefreshRateSeconds = 60;
 
 // The number of milliseconds to delay enabling the submit button after showing
 // the dialog. This delay prevents users from accidentally clicking the submit
@@ -720,7 +720,7 @@ void AutofillDialogControllerImpl::Hide() {
 void AutofillDialogControllerImpl::TabActivated() {
   // If the user switched away from this tab and then switched back, reload the
   // Wallet items, in case they've changed.
-  int seconds_elapsed_since_last_refresh =
+  int64 seconds_elapsed_since_last_refresh =
       (base::TimeTicks::Now() - last_wallet_items_fetch_timestamp_).InSeconds();
   if (IsPayingWithWallet() && wallet_items_ &&
       seconds_elapsed_since_last_refresh >= kWalletItemsRefreshRateSeconds) {
