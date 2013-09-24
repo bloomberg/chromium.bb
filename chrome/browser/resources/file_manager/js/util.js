@@ -114,89 +114,6 @@ util.htmlUnescape = function(str) {
 };
 
 /**
- * Given a list of Entries, recurse any DirectoryEntries if |recurse| is true,
- * and call back with a list of all file and directory entries encountered
- * (including the original set).
- * @param {Array.<Entry>} entries List of entries.
- * @param {boolean} recurse Whether to recurse.
- * @param {function(Object)} successCallback Object has the fields dirEntries,
- *     fileEntries and fileBytes.
- */
-util.recurseAndResolveEntries = function(entries, recurse, successCallback) {
-  var pendingSubdirectories = 0;
-  var pendingFiles = 0;
-
-  var dirEntries = [];
-  var fileEntries = [];
-  var fileBytes = 0;
-
-  var steps = {
-    // Start operations.
-    start: function() {
-      for (var i = 0; i < entries.length; i++) {
-        var parentPath = PathUtil.getParentDirectory(entries[i].fullPath);
-        steps.tallyEntry(entries[i], parentPath);
-      }
-      steps.areWeThereYet();
-    },
-
-    // Process one entry.
-    tallyEntry: function(entry, originalSourcePath) {
-      entry.originalSourcePath = originalSourcePath;
-      if (entry.isDirectory) {
-        dirEntries.push(entry);
-        if (!recurse)
-          return;
-        pendingSubdirectories++;
-        util.forEachDirEntry(
-            entry,
-            function(inEntry, callback) {
-              steps.tallyEntry(inEntry, originalSourcePath);
-              callback();
-            },
-            function() {
-              pendingSubdirectories--;
-              steps.areWeThereYet();
-            },
-            function(err) {
-              console.error('Failed to read dir entries at ' + entry.fullPath);
-            });
-      } else {
-        fileEntries.push(entry);
-        pendingFiles++;
-        entry.getMetadata(function(metadata) {
-          fileBytes += metadata.size;
-          pendingFiles--;
-          steps.areWeThereYet();
-        });
-      }
-    },
-
-    // We invoke this after each async callback to see if we've received all
-    // the expected callbacks.  If so, we're done.
-    areWeThereYet: function() {
-      if (!successCallback || pendingSubdirectories != 0 || pendingFiles != 0)
-        return;
-      var pathCompare = function(a, b) {
-        if (a.fullPath > b.fullPath)
-          return 1;
-        if (a.fullPath < b.fullPath)
-          return -1;
-        return 0;
-      };
-      var result = {
-        dirEntries: dirEntries.sort(pathCompare),
-        fileEntries: fileEntries.sort(pathCompare),
-        fileBytes: fileBytes
-      };
-      successCallback(result);
-    }
-  };
-
-  steps.start();
-};
-
-/**
  * Iterates the entries contained by dirEntry, and invokes callback once for
  * each entry. On completion, successCallback will be invoked.
  *
@@ -1123,6 +1040,16 @@ util.toggleFullScreen = function(appWindow, enabled) {
 
   console.error(
       'App window not passed. Unable to toggle the full screen mode.');
+};
+
+/**
+ * The type of a file operation.
+ * @enum {string}
+ */
+util.FileOperationType = {
+  COPY: 'COPY',
+  MOVE: 'MOVE',
+  ZIP: 'ZIP',
 };
 
 /**

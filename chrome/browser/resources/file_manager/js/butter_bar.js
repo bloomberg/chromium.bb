@@ -223,27 +223,15 @@ ButterBar.prototype.clearHideTimeout_ = function() {
 };
 
 /**
- * @return {string?} The type of operation.
+ * @return {string} The type of operation.
  * @private
  */
 ButterBar.prototype.transferType_ = function() {
   var progress = this.progress_;
-  if (!progress)
-    return 'TRANSFER';
+  if (progress && progress.operationType)
+    return progress.operationType;
 
-  var pendingTransferTypesCount =
-      (progress.pendingMoves === 0 ? 0 : 1) +
-      (progress.pendingCopies === 0 ? 0 : 1) +
-      (progress.pendingZips === 0 ? 0 : 1);
-
-  if (pendingTransferTypesCount != 1)
-    return 'TRANSFER';
-  else if (progress.pendingMoves > 0)
-    return 'MOVE';
-  else if (progress.pendingCopies > 0)
-    return 'COPY';
-  else
-    return 'ZIP';
+  return 'TRANSFER';
 };
 
 /**
@@ -256,15 +244,15 @@ ButterBar.prototype.transferType_ = function() {
 ButterBar.prototype.showProgress_ = function(progress) {
   this.progress_ = progress;
   var options = {
-    progress: progress.completedBytes / progress.totalBytes,
+    progress: progress.processedBytes / progress.totalBytes,
     actions: {},
     timeout: false
   };
 
-  var pendingItems = progress.totalItems - progress.completedItems;
+  var pendingItems = progress.numRemainingItems;
   var type = this.transferType_();
   var progressString = (pendingItems === 1) ?
-          strf(type + '_FILE_NAME', progress.filename) :
+          strf(type + '_FILE_NAME', progress.processingEntry.name) :
           strf(type + '_ITEMS_REMAINING', pendingItems);
 
   if (this.currentMode_ == ButterBar.Mode.COPY) {
