@@ -256,20 +256,20 @@ void HandleUnconfiguredNetwork(const std::string& service_path,
     return;
   }
 
-  if (network->type() == flimflam::kTypeWifi) {
+  if (network->type() == shill::kTypeWifi) {
     // Only show the config view for secure networks, otherwise do nothing.
-    if (network->security() != flimflam::kSecurityNone)
+    if (network->security() != shill::kSecurityNone)
       NetworkConfigView::Show(service_path, parent_window);
     return;
   }
 
-  if (network->type() == flimflam::kTypeWimax ||
-      network->type() == flimflam::kTypeVPN) {
+  if (network->type() == shill::kTypeWimax ||
+      network->type() == shill::kTypeVPN) {
     NetworkConfigView::Show(service_path, parent_window);
     return;
   }
 
-  if (network->type() == flimflam::kTypeCellular) {
+  if (network->type() == shill::kTypeCellular) {
     if (network->RequiresActivation()) {
       ash::network_connect::ActivateCellular(service_path);
       return;
@@ -872,11 +872,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowOtherWifi() OVERRIDE {
-    NetworkConfigView::ShowForType(flimflam::kTypeWifi, GetNativeWindow());
+    NetworkConfigView::ShowForType(shill::kTypeWifi, GetNativeWindow());
   }
 
   virtual void ShowOtherVPN() OVERRIDE {
-    NetworkConfigView::ShowForType(flimflam::kTypeVPN, GetNativeWindow());
+    NetworkConfigView::ShowForType(shill::kTypeVPN, GetNativeWindow());
   }
 
   virtual void ShowOtherCellular() OVERRIDE {

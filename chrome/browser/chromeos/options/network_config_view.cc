@@ -87,25 +87,25 @@ NetworkConfigView::NetworkConfigView()
 void NetworkConfigView::InitWithNetworkState(const NetworkState* network) {
   DCHECK(network);
   std::string service_path = network->path();
-  if (network->type() == flimflam::kTypeWifi)
+  if (network->type() == shill::kTypeWifi)
     child_config_view_ = new WifiConfigView(this, service_path, false);
-  else if (network->type() == flimflam::kTypeWimax)
+  else if (network->type() == shill::kTypeWimax)
     child_config_view_ = new WimaxConfigView(this, service_path);
-  else if (network->type() == flimflam::kTypeVPN)
+  else if (network->type() == shill::kTypeVPN)
     child_config_view_ = new VPNConfigView(this, service_path);
   else
     NOTREACHED();
 }
 
 void NetworkConfigView::InitWithType(const std::string& type) {
-  if (type == flimflam::kTypeWifi) {
+  if (type == shill::kTypeWifi) {
     child_config_view_ = new WifiConfigView(this,
                                             "" /* service_path */,
                                             false /* show_8021x */);
     advanced_button_ = new views::LabelButton(this, l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADVANCED_BUTTON));
     advanced_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  } else if (type == flimflam::kTypeVPN) {
+  } else if (type == shill::kTypeVPN) {
     child_config_view_ = new VPNConfigView(this,
                                            "" /* service_path */);
   } else {

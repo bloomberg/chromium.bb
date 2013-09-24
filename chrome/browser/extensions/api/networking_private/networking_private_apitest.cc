@@ -120,45 +120,45 @@ class ExtensionNetworkingPrivateApiTest :
     profile_test->AddProfile(kUser1ProfilePath, userhash_);
 
     device_test->AddDevice("/device/stub_wifi_device1",
-                           flimflam::kTypeWifi, "stub_wifi_device1");
+                           shill::kTypeWifi, "stub_wifi_device1");
     device_test->AddDevice("/device/stub_cellular_device1",
-                           flimflam::kTypeCellular, "stub_cellular_device1");
+                           shill::kTypeCellular, "stub_cellular_device1");
 
     const bool add_to_watchlist = true;
     const bool add_to_visible = true;
     service_test->AddService("stub_ethernet", "eth0",
-                             flimflam::kTypeEthernet, flimflam::kStateOnline,
+                             shill::kTypeEthernet, shill::kStateOnline,
                              add_to_visible, add_to_watchlist);
 
     service_test->AddService("stub_wifi1", "wifi1",
-                             flimflam::kTypeWifi, flimflam::kStateOnline,
+                             shill::kTypeWifi, shill::kStateOnline,
                              add_to_visible, add_to_watchlist);
     service_test->SetServiceProperty("stub_wifi1",
-                                     flimflam::kSecurityProperty,
-                                     base::StringValue(flimflam::kSecurityWep));
+                                     shill::kSecurityProperty,
+                                     base::StringValue(shill::kSecurityWep));
     base::ListValue frequencies1;
     frequencies1.AppendInteger(2400);
     service_test->SetServiceProperty("stub_wifi1",
                                      shill::kWifiFrequencyListProperty,
                                      frequencies1);
     service_test->SetServiceProperty("stub_wifi1",
-                                     flimflam::kWifiFrequency,
+                                     shill::kWifiFrequency,
                                      base::FundamentalValue(2400));
 
     service_test->AddService("stub_wifi2", "wifi2_PSK",
-                             flimflam::kTypeWifi, flimflam::kStateIdle,
+                             shill::kTypeWifi, shill::kStateIdle,
                              add_to_visible, add_to_watchlist);
     service_test->SetServiceProperty("stub_wifi2",
-                                     flimflam::kGuidProperty,
+                                     shill::kGuidProperty,
                                      base::StringValue("stub_wifi2"));
     service_test->SetServiceProperty("stub_wifi2",
-                                     flimflam::kSecurityProperty,
-                                     base::StringValue(flimflam::kSecurityPsk));
+                                     shill::kSecurityProperty,
+                                     base::StringValue(shill::kSecurityPsk));
     service_test->SetServiceProperty("stub_wifi2",
-                                     flimflam::kSignalStrengthProperty,
+                                     shill::kSignalStrengthProperty,
                                      base::FundamentalValue(80));
     service_test->SetServiceProperty("stub_wifi2",
-                                     flimflam::kConnectableProperty,
+                                     shill::kConnectableProperty,
                                      base::FundamentalValue(true));
 
     base::ListValue frequencies2;
@@ -168,32 +168,32 @@ class ExtensionNetworkingPrivateApiTest :
                                      shill::kWifiFrequencyListProperty,
                                      frequencies2);
     service_test->SetServiceProperty("stub_wifi2",
-                                     flimflam::kWifiFrequency,
+                                     shill::kWifiFrequency,
                                      base::FundamentalValue(5000));
     service_test->SetServiceProperty("stub_wifi2",
-                                     flimflam::kProfileProperty,
+                                     shill::kProfileProperty,
                                      base::StringValue(kUser1ProfilePath));
     profile_test->AddService(kUser1ProfilePath, "stub_wifi2");
 
     service_test->AddService("stub_cellular1", "cellular1",
-                             flimflam::kTypeCellular, flimflam::kStateIdle,
+                             shill::kTypeCellular, shill::kStateIdle,
                              add_to_visible, add_to_watchlist);
     service_test->SetServiceProperty(
         "stub_cellular1",
-        flimflam::kNetworkTechnologyProperty,
-        base::StringValue(flimflam::kNetworkTechnologyGsm));
+        shill::kNetworkTechnologyProperty,
+        base::StringValue(shill::kNetworkTechnologyGsm));
     service_test->SetServiceProperty(
         "stub_cellular1",
-        flimflam::kActivationStateProperty,
-        base::StringValue(flimflam::kActivationStateNotActivated));
+        shill::kActivationStateProperty,
+        base::StringValue(shill::kActivationStateNotActivated));
     service_test->SetServiceProperty(
         "stub_cellular1",
-        flimflam::kRoamingStateProperty,
-        base::StringValue(flimflam::kRoamingStateHome));
+        shill::kRoamingStateProperty,
+        base::StringValue(shill::kRoamingStateHome));
 
     service_test->AddService("stub_vpn1", "vpn1",
-                             flimflam::kTypeVPN,
-                             flimflam::kStateOnline,
+                             shill::kTypeVPN,
+                             shill::kStateOnline,
                              add_to_visible, add_to_watchlist);
 
     manager_test->SortManagerServices();
@@ -294,10 +294,10 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
       "    }"
       "}";
   service_test->SetServiceProperty("stub_wifi2",
-                                   flimflam::kUIDataProperty,
+                                   shill::kUIDataProperty,
                                    base::StringValue(uidata_blob));
   service_test->SetServiceProperty("stub_wifi2",
-                                   flimflam::kAutoConnectProperty,
+                                   shill::kAutoConnectProperty,
                                    base::FundamentalValue(false));
 
   ShillProfileClient::TestInterface* profile_test =

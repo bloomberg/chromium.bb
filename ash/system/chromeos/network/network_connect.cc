@@ -78,7 +78,7 @@ void OnConnectFailed(const std::string& service_path,
   if (error_name == NetworkConnectionHandler::kErrorConnectCanceled)
     return;
 
-  if (error_name == flimflam::kErrorBadPassphrase ||
+  if (error_name == shill::kErrorBadPassphrase ||
       error_name == NetworkConnectionHandler::kErrorPassphraseRequired ||
       error_name == NetworkConnectionHandler::kErrorConfigurationRequired ||
       error_name == NetworkConnectionHandler::kErrorAuthenticationRequired) {
@@ -111,7 +111,7 @@ void OnConnectFailed(const std::string& service_path,
   ShowErrorNotification(error_name, shill_error, service_path);
 
   // Show a configure dialog for ConnectFailed errors.
-  if (error_name != flimflam::kErrorConnectFailed)
+  if (error_name != shill::kErrorConnectFailed)
     return;
 
   // If Shill reports an InProgress error, don't try to configure the network.
@@ -318,7 +318,7 @@ void SetTechnologyEnabled(const NetworkTypePattern& technology,
       return;
     }
     // The following only applies to cellular.
-    if (mobile->type() == flimflam::kTypeCellular) {
+    if (mobile->type() == shill::kTypeCellular) {
       if (mobile->IsSimAbsent()) {
         // If this is true, then we have a cellular device with no SIM inserted.
         // TODO(armansito): Chrome should display a notification here, prompting
@@ -345,7 +345,7 @@ void ActivateCellular(const std::string& service_path) {
   const NetworkState* cellular =
       NetworkHandler::Get()->network_state_handler()->
       GetNetworkState(service_path);
-  if (!cellular || cellular->type() != flimflam::kTypeCellular) {
+  if (!cellular || cellular->type() != shill::kTypeCellular) {
     NET_LOG_ERROR("ActivateCellular with no Service", service_path);
     return;
   }
@@ -362,7 +362,7 @@ void ActivateCellular(const std::string& service_path) {
     ShowMobileSetup(service_path);
     return;
   }
-  if (cellular->activation_state() == flimflam::kActivationStateActivated) {
+  if (cellular->activation_state() == shill::kActivationStateActivated) {
     NET_LOG_ERROR("ActivateCellular for activated service", service_path);
     return;
   }
@@ -377,11 +377,11 @@ void ActivateCellular(const std::string& service_path) {
 void ShowMobileSetup(const std::string& service_path) {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   const NetworkState* cellular = handler->GetNetworkState(service_path);
-  if (!cellular || cellular->type() != flimflam::kTypeCellular) {
+  if (!cellular || cellular->type() != shill::kTypeCellular) {
     NET_LOG_ERROR("ShowMobileSetup without Cellular network", service_path);
     return;
   }
-  if (cellular->activation_state() != flimflam::kActivationStateActivated &&
+  if (cellular->activation_state() != shill::kActivationStateActivated &&
       cellular->activate_over_non_cellular_networks() &&
       !handler->DefaultNetwork()) {
     message_center::MessageCenter::Get()->AddNotification(
@@ -432,7 +432,7 @@ void CreateConfigurationAndConnect(base::DictionaryValue* properties,
     return;
   }
   properties->SetStringWithoutPathExpansion(
-      flimflam::kProfileProperty, profile_path);
+      shill::kProfileProperty, profile_path);
   NetworkHandler::Get()->network_configuration_handler()->CreateConfiguration(
       *properties,
       base::Bind(&OnConfigureSucceeded),
@@ -442,47 +442,47 @@ void CreateConfigurationAndConnect(base::DictionaryValue* properties,
 string16 ErrorString(const std::string& error) {
   if (error.empty())
     return string16();
-  if (error == flimflam::kErrorOutOfRange)
+  if (error == shill::kErrorOutOfRange)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_OUT_OF_RANGE);
-  if (error == flimflam::kErrorPinMissing)
+  if (error == shill::kErrorPinMissing)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_PIN_MISSING);
-  if (error == flimflam::kErrorDhcpFailed)
+  if (error == shill::kErrorDhcpFailed)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_DHCP_FAILED);
-  if (error == flimflam::kErrorConnectFailed)
+  if (error == shill::kErrorConnectFailed)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_CONNECT_FAILED);
-  if (error == flimflam::kErrorBadPassphrase)
+  if (error == shill::kErrorBadPassphrase)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_BAD_PASSPHRASE);
-  if (error == flimflam::kErrorBadWEPKey)
+  if (error == shill::kErrorBadWEPKey)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_BAD_WEPKEY);
-  if (error == flimflam::kErrorActivationFailed) {
+  if (error == shill::kErrorActivationFailed) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_ACTIVATION_FAILED);
   }
-  if (error == flimflam::kErrorNeedEvdo)
+  if (error == shill::kErrorNeedEvdo)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_NEED_EVDO);
-  if (error == flimflam::kErrorNeedHomeNetwork) {
+  if (error == shill::kErrorNeedHomeNetwork) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_NEED_HOME_NETWORK);
   }
-  if (error == flimflam::kErrorOtaspFailed)
+  if (error == shill::kErrorOtaspFailed)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_OTASP_FAILED);
-  if (error == flimflam::kErrorAaaFailed)
+  if (error == shill::kErrorAaaFailed)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_AAA_FAILED);
-  if (error == flimflam::kErrorInternal)
+  if (error == shill::kErrorInternal)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_INTERNAL);
-  if (error == flimflam::kErrorDNSLookupFailed) {
+  if (error == shill::kErrorDNSLookupFailed) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_DNS_LOOKUP_FAILED);
   }
-  if (error == flimflam::kErrorHTTPGetFailed) {
+  if (error == shill::kErrorHTTPGetFailed) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_HTTP_GET_FAILED);
   }
-  if (error == flimflam::kErrorIpsecPskAuthFailed) {
+  if (error == shill::kErrorIpsecPskAuthFailed) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_IPSEC_PSK_AUTH_FAILED);
   }
-  if (error == flimflam::kErrorIpsecCertAuthFailed ||
+  if (error == shill::kErrorIpsecCertAuthFailed ||
       error == shill::kErrorEapAuthenticationFailed) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_CERT_AUTH_FAILED);
@@ -495,13 +495,13 @@ string16 ErrorString(const std::string& error) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_EAP_REMOTE_TLS_FAILED);
   }
-  if (error == flimflam::kErrorPppAuthFailed) {
+  if (error == shill::kErrorPppAuthFailed) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_PPP_AUTH_FAILED);
   }
 
   if (StringToLowerASCII(error) ==
-      StringToLowerASCII(std::string(flimflam::kUnknownString))) {
+      StringToLowerASCII(std::string(shill::kUnknownString))) {
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
   }
   return l10n_util::GetStringFUTF16(IDS_NETWORK_UNRECOGNIZED_ERROR,

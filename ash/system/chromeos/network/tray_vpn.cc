@@ -78,9 +78,9 @@ class VpnDefaultView : public TrayItemMore,
         NetworkHandler::Get()->network_state_handler();
     const NetworkState* vpn =
         handler->FirstNetworkByType(NetworkTypePattern::VPN());
-    if (!vpn || (vpn->connection_state() == flimflam::kStateIdle)) {
+    if (!vpn || (vpn->connection_state() == shill::kStateIdle)) {
       *image = network_icon::GetImageForDisconnectedNetwork(
-          network_icon::ICON_TYPE_DEFAULT_VIEW, flimflam::kTypeVPN);
+          network_icon::ICON_TYPE_DEFAULT_VIEW, shill::kTypeVPN);
       if (label) {
         *label = l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED);

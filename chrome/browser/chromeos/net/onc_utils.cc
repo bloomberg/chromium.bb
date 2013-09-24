@@ -218,10 +218,10 @@ void ImportNetworksForUser(const chromeos::User* user,
     ui_data->FillDictionary(&ui_data_dict);
     std::string ui_data_json;
     base::JSONWriter::Write(&ui_data_dict, &ui_data_json);
-    shill_dict->SetStringWithoutPathExpansion(flimflam::kUIDataProperty,
+    shill_dict->SetStringWithoutPathExpansion(shill::kUIDataProperty,
                                               ui_data_json);
 
-    shill_dict->SetStringWithoutPathExpansion(flimflam::kProfileProperty,
+    shill_dict->SetStringWithoutPathExpansion(shill::kProfileProperty,
                                               profile->path);
 
     NetworkHandler::Get()->network_configuration_handler()->CreateConfiguration(

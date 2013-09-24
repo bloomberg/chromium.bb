@@ -317,9 +317,9 @@ void NetworkMenuModel::ActivatedAt(int index) {
     owner_->delegate()->OnConnectToNetworkRequested(
         menu_items_[index].service_path);
   } else if (flags & FLAG_ADD_WIFI) {
-    ShowOther(flimflam::kTypeWifi);
+    ShowOther(shill::kTypeWifi);
   } else if (flags & FLAG_ADD_CELLULAR) {
-    ShowOther(flimflam::kTypeCellular);
+    ShowOther(shill::kTypeCellular);
   }
 }
 
@@ -335,10 +335,10 @@ ui::MenuModelDelegate* NetworkMenuModel::GetMenuModelDelegate() const {
 
 void NetworkMenuModel::ShowOther(const std::string& type) const {
   gfx::NativeWindow native_window = owner_->delegate()->GetNativeWindow();
-  if (type == flimflam::kTypeCellular)
+  if (type == shill::kTypeCellular)
     ChooseMobileNetworkDialog::ShowDialog(native_window);
   else
-    NetworkConfigView::ShowForType(flimflam::kTypeWifi, native_window);
+    NetworkConfigView::ShowForType(shill::kTypeWifi, native_window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -421,13 +421,13 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
     for (NetworkStateHandler::NetworkStateList::const_iterator iter =
              network_list.begin(); iter != network_list.end(); ++iter) {
       const NetworkState* network = *iter;
-      if (network->type() != flimflam::kTypeCellular)
+      if (network->type() != shill::kTypeCellular)
         continue;
       std::string activation_state = network->activation_state();
 
       // This is only used in the login screen; do not show unactivated
       // networks.
-      if (activation_state != flimflam::kActivationStateActivated)
+      if (activation_state != shill::kActivationStateActivated)
         continue;
 
       // Ampersand is a valid character in a network name, but menu2 uses it
@@ -459,7 +459,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
     if (cellular_device && cellular_device->support_network_scan()) {
       const gfx::ImageSkia icon =
           ash::network_icon::GetImageForDisconnectedNetwork(
-              ash::network_icon::ICON_TYPE_LIST, flimflam::kTypeCellular);
+              ash::network_icon::ICON_TYPE_LIST, shill::kTypeCellular);
       menu_items_.push_back(MenuItem(
           ui::MenuModel::TYPE_COMMAND,
           l10n_util::GetStringUTF16(
@@ -481,7 +481,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
     for (NetworkStateHandler::NetworkStateList::const_iterator iter =
              network_list.begin(); iter != network_list.end(); ++iter) {
       const NetworkState* network = *iter;
-      if (network->type() != flimflam::kTypeWimax)
+      if (network->type() != shill::kTypeWimax)
         continue;
       AddWirelessNetworkMenuItem(network, FLAG_WIMAX);
     }
@@ -496,7 +496,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
     for (NetworkStateHandler::NetworkStateList::const_iterator iter =
              network_list.begin(); iter != network_list.end(); ++iter) {
       const NetworkState* network = *iter;
-      if (network->type() != flimflam::kTypeWifi)
+      if (network->type() != shill::kTypeWifi)
         continue;
       // Add 'Searching for Wi-Fi networks...' after connected networks.
       if (scanning_msg && !network->IsConnectedState()) {
@@ -509,7 +509,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
       AddMessageItem(l10n_util::GetStringUTF16(scanning_msg));
     const gfx::ImageSkia icon =
         ash::network_icon::GetImageForConnectedNetwork(
-            ash::network_icon::ICON_TYPE_LIST, flimflam::kTypeWifi);
+            ash::network_icon::ICON_TYPE_LIST, shill::kTypeWifi);
     menu_items_.push_back(MenuItem(
         ui::MenuModel::TYPE_COMMAND,
         l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS),

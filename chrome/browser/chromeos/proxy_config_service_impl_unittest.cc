@@ -248,10 +248,10 @@ class ProxyConfigServiceImplTest : public testing::Test {
     profile_test->AddProfile(kUserProfilePath, "user_hash");
 
     service_test->AddService("stub_wifi2", "wifi2_PSK",
-                             flimflam::kTypeWifi, flimflam::kStateOnline,
+                             shill::kTypeWifi, shill::kStateOnline,
                              true /* visible */, true /* watch */);
     service_test->SetServiceProperty("stub_wifi2",
-                                     flimflam::kGuidProperty,
+                                     shill::kGuidProperty,
                                      base::StringValue("stub_wifi2"));
     profile_test->AddService(kUserProfilePath, "stub_wifi2");
 
@@ -303,7 +303,7 @@ class ProxyConfigServiceImplTest : public testing::Test {
     ASSERT_TRUE(network);
     DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface()->
         SetServiceProperty(network->path(),
-                           flimflam::kProxyConfigProperty,
+                           shill::kProxyConfigProperty,
                            StringValue(proxy_config));
   }
 

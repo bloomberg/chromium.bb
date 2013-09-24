@@ -377,7 +377,7 @@ void NetworkPortalDetectorImpl::OnPortalDetectionCompleted(
         if (state.response_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
           state.status = CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED;
         } else if (default_network && (default_network->connection_state() ==
-                                       flimflam::kStatePortal)) {
+                                       shill::kStatePortal)) {
           // Take into account shill's detection results.
           state.status = CAPTIVE_PORTAL_STATUS_PORTAL;
           LOG(WARNING) << "Network " << default_network->guid() << " "

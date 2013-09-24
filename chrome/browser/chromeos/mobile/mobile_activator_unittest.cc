@@ -116,24 +116,24 @@ TEST_F(MobileActivatorTest, BasicFlowForNewDevices) {
   // activated.
   std::string error_description;
   set_activator_state(MobileActivator::PLAN_ACTIVATION_START);
-  set_connection_state(flimflam::kStateIdle);
-  set_network_activation_state(flimflam::kActivationStateNotActivated);
+  set_connection_state(shill::kStateIdle);
+  set_network_activation_state(shill::kActivationStateNotActivated);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_INITIATING_ACTIVATION,
             mobile_activator_.PickNextState(&cellular_network_,
                                             &error_description));
   // Now behave as if ChangeState() has initiated an activation.
   set_activator_state(MobileActivator::PLAN_ACTIVATION_INITIATING_ACTIVATION);
-  set_network_activation_state(flimflam::kActivationStateActivating);
+  set_network_activation_state(shill::kActivationStateActivating);
   // We'll sit in this state while we wait for the OTASP to finish.
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_INITIATING_ACTIVATION,
             mobile_activator_.PickNextState(&cellular_network_,
                                             &error_description));
-  set_network_activation_state(flimflam::kActivationStatePartiallyActivated);
+  set_network_activation_state(shill::kActivationStatePartiallyActivated);
   // We'll sit in this state until we go online as well.
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_INITIATING_ACTIVATION,
             mobile_activator_.PickNextState(&cellular_network_,
                                             &error_description));
-  set_connection_state(flimflam::kStatePortal);
+  set_connection_state(shill::kStatePortal);
   // After we go online, we go back to START, which acts as a jumping off
   // point for the two types of initial OTASP.
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_START,
@@ -145,12 +145,12 @@ TEST_F(MobileActivatorTest, BasicFlowForNewDevices) {
                                             &error_description));
   // Very similar things happen while we're trying OTASP.
   set_activator_state(MobileActivator::PLAN_ACTIVATION_TRYING_OTASP);
-  set_network_activation_state(flimflam::kActivationStateActivating);
+  set_network_activation_state(shill::kActivationStateActivating);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_TRYING_OTASP,
             mobile_activator_.PickNextState(&cellular_network_,
                                             &error_description));
-  set_network_activation_state(flimflam::kActivationStatePartiallyActivated);
-  set_connection_state(flimflam::kStatePortal);
+  set_network_activation_state(shill::kActivationStatePartiallyActivated);
+  set_connection_state(shill::kStatePortal);
   // And when we come back online again and aren't activating, load the portal.
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING,
             mobile_activator_.PickNextState(&cellular_network_,
@@ -176,11 +176,11 @@ TEST_F(MobileActivatorTest, BasicFlowForNewDevices) {
                                             &error_description));
   // Similarly to TRYING_OTASP and INITIATING_OTASP above...
   set_activator_state(MobileActivator::PLAN_ACTIVATION_OTASP);
-  set_network_activation_state(flimflam::kActivationStateActivating);
+  set_network_activation_state(shill::kActivationStateActivating);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_OTASP,
             mobile_activator_.PickNextState(&cellular_network_,
                                             &error_description));
-  set_network_activation_state(flimflam::kActivationStateActivated);
+  set_network_activation_state(shill::kActivationStateActivated);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_DONE,
             mobile_activator_.PickNextState(&cellular_network_,
                                             &error_description));
@@ -249,8 +249,8 @@ TEST_F(MobileActivatorTest, ReconnectOnDisconnectFromPaymentPortal) {
   // like when we're displaying the portal care quite a bit about going
   // offline.  Lets test for those cases.
   std::string error_description;
-  set_connection_state(flimflam::kStateFailure);
-  set_network_activation_state(flimflam::kActivationStatePartiallyActivated);
+  set_connection_state(shill::kStateFailure);
+  set_network_activation_state(shill::kActivationStatePartiallyActivated);
   set_activator_state(MobileActivator::PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_RECONNECTING,
             mobile_activator_.PickNextState(&cellular_network_,

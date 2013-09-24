@@ -206,7 +206,7 @@ void MobileActivator::NetworkPropertiesUpdated(const NetworkState* network) {
   if (state_ == PLAN_ACTIVATION_PAGE_LOADING)
     return;
 
-  if (!network || network->type() != flimflam::kTypeCellular)
+  if (!network || network->type() != shill::kTypeCellular)
     return;
 
   const DeviceState* device = NetworkHandler::Get()->network_state_handler()->
@@ -289,11 +289,11 @@ void MobileActivator::GetPropertiesAndContinueActivation(
   const DictionaryValue* payment_dict;
   std::string usage_url, payment_url;
   if (!properties.GetStringWithoutPathExpansion(
-          flimflam::kUsageURLProperty, &usage_url) ||
+          shill::kUsageURLProperty, &usage_url) ||
       !properties.GetDictionaryWithoutPathExpansion(
-          flimflam::kPaymentPortalProperty, &payment_dict) ||
+          shill::kPaymentPortalProperty, &payment_dict) ||
       !payment_dict->GetStringWithoutPathExpansion(
-          flimflam::kPaymentPortalURL, &payment_url)) {
+          shill::kPaymentPortalURL, &payment_url)) {
     NET_LOG_ERROR("MobileActivator missing properties", service_path_);
     return;
   }
@@ -305,7 +305,7 @@ void MobileActivator::GetPropertiesAndContinueActivation(
 
   // We want shill to connect us after activations, so enable autoconnect.
   DictionaryValue auto_connect_property;
-  auto_connect_property.SetBoolean(flimflam::kAutoConnectProperty, true);
+  auto_connect_property.SetBoolean(shill::kAutoConnectProperty, true);
   NetworkHandler::Get()->network_configuration_handler()->SetProperties(
       service_path_,
       auto_connect_property,
@@ -425,7 +425,7 @@ void MobileActivator::StartActivation() {
     // over a non-cellular network.
     ChangeState(
         network,
-        (network->activation_state() == flimflam::kActivationStateActivated) ?
+        (network->activation_state() == shill::kActivationStateActivated) ?
         PLAN_ACTIVATION_DONE :
         PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING,
         "");
@@ -437,7 +437,7 @@ void MobileActivator::StartActivation() {
 
   if (HasRecentCellularPlanPayment() &&
       (network->activation_state() ==
-       flimflam::kActivationStatePartiallyActivated)) {
+       shill::kActivationStatePartiallyActivated)) {
     // Try to start with OTASP immediately if we have received payment recently.
     state_ = PLAN_ACTIVATION_START_OTASP;
   } else {
@@ -537,8 +537,8 @@ void MobileActivator::ReconnectTimedOut() {
 void MobileActivator::ContinueConnecting() {
   const NetworkState* network = GetNetworkState(service_path_);
   if (network && network->IsConnectedState()) {
-    if (network->connection_state() == flimflam::kStatePortal &&
-        network->error() == flimflam::kErrorDNSLookupFailed) {
+    if (network->connection_state() == shill::kStatePortal &&
+        network->error() == shill::kErrorDNSLookupFailed) {
       // It isn't an error to be in a restricted pool, but if DNS doesn't work,
       // then we're not getting traffic through at all.  Just disconnect and
       // try again.
@@ -573,7 +573,7 @@ void MobileActivator::RefreshCellularNetworks() {
   if (network && network->activate_over_non_cellular_networks()) {
     bool waiting = (state_ == PLAN_ACTIVATION_WAITING_FOR_CONNECTION);
     bool is_online = nsh->DefaultNetwork() &&
-        nsh->DefaultNetwork()->connection_state() == flimflam::kStateOnline;
+        nsh->DefaultNetwork()->connection_state() == shill::kStateOnline;
     if (waiting && is_online) {
       ChangeState(network, post_reconnect_state_, "");
     } else if (!waiting && !is_online) {
@@ -633,11 +633,11 @@ MobileActivator::PlanActivationState MobileActivator::PickNextState(
     // activated device. If that attempt failed, try to disconnect to clear the
     // state and reconnect again.
     const std::string& activation = network->activation_state();
-    if ((activation == flimflam::kActivationStatePartiallyActivated ||
-         activation == flimflam::kActivationStateActivating) &&
+    if ((activation == shill::kActivationStatePartiallyActivated ||
+         activation == shill::kActivationStateActivating) &&
         (network->error().empty() ||
-         network->error() == flimflam::kErrorOtaspFailed) &&
-        network->connection_state() == flimflam::kStateActivationFailure) {
+         network->error() == shill::kErrorOtaspFailed) &&
+        network->connection_state() == shill::kStateActivationFailure) {
       NET_LOG_EVENT("Activation failure detected ", network->path());
       switch (state_) {
         case PLAN_ACTIVATION_OTASP:
@@ -681,12 +681,12 @@ MobileActivator::PlanActivationState MobileActivator::PickNextOfflineState(
         new_state = PLAN_ACTIVATION_RECONNECTING;
       break;
     case PLAN_ACTIVATION_START:
-      if (activation == flimflam::kActivationStateActivated) {
-        if (network->connection_state() == flimflam::kStatePortal)
+      if (activation == shill::kActivationStateActivated) {
+        if (network->connection_state() == shill::kStatePortal)
           new_state = PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
         else
           new_state = PLAN_ACTIVATION_DONE;
-      } else if (activation == flimflam::kActivationStatePartiallyActivated) {
+      } else if (activation == shill::kActivationStatePartiallyActivated) {
         new_state = PLAN_ACTIVATION_TRYING_OTASP;
       } else {
         new_state = PLAN_ACTIVATION_INITIATING_ACTIVATION;
@@ -705,21 +705,21 @@ MobileActivator::PlanActivationState MobileActivator::PickNextOnlineState(
   const std::string& activation = network->activation_state();
   switch (state_) {
     case PLAN_ACTIVATION_START:
-      if (activation == flimflam::kActivationStateActivated) {
-        if (network->connection_state() == flimflam::kStatePortal)
+      if (activation == shill::kActivationStateActivated) {
+        if (network->connection_state() == shill::kStatePortal)
           new_state = PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
         else
           new_state = PLAN_ACTIVATION_DONE;
-      } else if (activation == flimflam::kActivationStatePartiallyActivated) {
+      } else if (activation == shill::kActivationStatePartiallyActivated) {
         new_state = PLAN_ACTIVATION_TRYING_OTASP;
       } else {
         new_state = PLAN_ACTIVATION_INITIATING_ACTIVATION;
       }
       break;
     case PLAN_ACTIVATION_START_OTASP: {
-      if (activation == flimflam::kActivationStatePartiallyActivated) {
+      if (activation == shill::kActivationStatePartiallyActivated) {
           new_state = PLAN_ACTIVATION_OTASP;
-      } else if (activation == flimflam::kActivationStateActivated) {
+      } else if (activation == shill::kActivationStateActivated) {
         new_state = PLAN_ACTIVATION_RECONNECTING;
       } else {
         LOG(WARNING) << "Unexpected activation state for device "
@@ -733,11 +733,11 @@ MobileActivator::PlanActivationState MobileActivator::PickNextOnlineState(
     case PLAN_ACTIVATION_INITIATING_ACTIVATION: {
       if (pending_activation_request_) {
         LOG(INFO) << "Waiting for pending activation attempt to finish";
-      } else if (activation == flimflam::kActivationStateActivated ||
-                  activation == flimflam::kActivationStatePartiallyActivated) {
+      } else if (activation == shill::kActivationStateActivated ||
+                 activation == shill::kActivationStatePartiallyActivated) {
         new_state = PLAN_ACTIVATION_START;
-      } else if (activation == flimflam::kActivationStateNotActivated ||
-                 activation == flimflam::kActivationStateActivating) {
+      } else if (activation == shill::kActivationStateNotActivated ||
+                 activation == shill::kActivationStateActivating) {
         // Wait in this state until activation state changes.
       } else {
         LOG(WARNING) << "Unknown transition";
@@ -748,19 +748,19 @@ MobileActivator::PlanActivationState MobileActivator::PickNextOnlineState(
     case PLAN_ACTIVATION_TRYING_OTASP:
       if (pending_activation_request_) {
         LOG(INFO) << "Waiting for pending activation attempt to finish";
-      } else if (activation == flimflam::kActivationStateNotActivated ||
-                 activation == flimflam::kActivationStateActivating) {
+      } else if (activation == shill::kActivationStateNotActivated ||
+                 activation == shill::kActivationStateActivating) {
         LOG(INFO) << "Waiting for the OTASP to finish and the service to "
                   << "come back online";
-      } else if (activation == flimflam::kActivationStateActivated) {
+      } else if (activation == shill::kActivationStateActivated) {
         new_state = PLAN_ACTIVATION_DONE;
       } else {
         new_state = PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
       }
       break;
     case PLAN_ACTIVATION_RECONNECTING_PAYMENT:
-      if (network->connection_state() != flimflam::kStatePortal &&
-          activation == flimflam::kActivationStateActivated)
+      if (network->connection_state() != shill::kStatePortal &&
+          activation == shill::kActivationStateActivated)
         // We're not portalled, and we're already activated, so we're online!
         new_state = PLAN_ACTIVATION_DONE;
       else
@@ -1021,25 +1021,25 @@ bool MobileActivator::GotActivationError(
   const std::string& activation = network->activation_state();
 
   // This is the magic for detection of errors in during activation process.
-  if (network->connection_state() == flimflam::kStateFailure &&
-      network->error() == flimflam::kErrorAaaFailed) {
-    if (activation == flimflam::kActivationStatePartiallyActivated) {
+  if (network->connection_state() == shill::kStateFailure &&
+      network->error() == shill::kErrorAaaFailed) {
+    if (activation == shill::kActivationStatePartiallyActivated) {
       error_code = kErrorBadConnectionPartial;
-    } else if (activation == flimflam::kActivationStateActivated) {
-      if (network->roaming() == flimflam::kRoamingStateHome)
+    } else if (activation == shill::kActivationStateActivated) {
+      if (network->roaming() == shill::kRoamingStateHome)
         error_code = kErrorBadConnectionActivated;
-      else if (network->roaming() == flimflam::kRoamingStateRoaming)
+      else if (network->roaming() == shill::kRoamingStateRoaming)
         error_code = kErrorRoamingOnConnection;
     }
     got_error = true;
-  } else if (network->connection_state() == flimflam::kStateActivationFailure) {
-    if (network->error() == flimflam::kErrorNeedEvdo) {
-      if (activation == flimflam::kActivationStatePartiallyActivated)
+  } else if (network->connection_state() == shill::kStateActivationFailure) {
+    if (network->error() == shill::kErrorNeedEvdo) {
+      if (activation == shill::kActivationStatePartiallyActivated)
         error_code = kErrorNoEVDO;
-    } else if (network->error() == flimflam::kErrorNeedHomeNetwork) {
-      if (activation == flimflam::kActivationStateNotActivated) {
+    } else if (network->error() == shill::kErrorNeedHomeNetwork) {
+      if (activation == shill::kActivationStateNotActivated) {
         error_code = kErrorRoamingActivation;
-      } else if (activation == flimflam::kActivationStatePartiallyActivated) {
+      } else if (activation == shill::kActivationStatePartiallyActivated) {
         error_code = kErrorRoamingPartiallyActivated;
       }
     }

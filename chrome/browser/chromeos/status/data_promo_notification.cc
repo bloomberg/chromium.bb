@@ -165,7 +165,7 @@ void DataPromoNotification::RegisterPrefs(PrefRegistrySimple* registry) {
 
 void DataPromoNotification::NetworkPropertiesUpdated(
     const NetworkState* network) {
-  if (!network || network->type() != flimflam::kTypeCellular)
+  if (!network || network->type() != shill::kTypeCellular)
     return;
   ShowOptionalMobileDataPromoNotification();
 }
@@ -184,7 +184,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
     return;
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  if (!default_network || default_network->type() != flimflam::kTypeCellular)
+  if (!default_network || default_network->type() != shill::kTypeCellular)
     return;
   // When requesting a network connection, do not show the notification.
   if (NetworkHandler::Get()->network_connection_handler()->
@@ -214,7 +214,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
   }
 
   int icon_id;
-  if (default_network->network_technology() == flimflam::kNetworkTechnologyLte)
+  if (default_network->network_technology() == shill::kNetworkTechnologyLte)
     icon_id = IDR_AURA_UBER_TRAY_NOTIFICATION_LTE;
   else
     icon_id = IDR_AURA_UBER_TRAY_NOTIFICATION_3G;

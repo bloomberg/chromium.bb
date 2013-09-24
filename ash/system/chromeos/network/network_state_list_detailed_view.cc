@@ -471,9 +471,9 @@ void NetworkStateListDetailedView::UpdateNetworks(
            networks.begin(); iter != networks.end(); ++iter) {
     const NetworkState* network = *iter;
     if ((list_type_ == LIST_TYPE_NETWORK &&
-        network->type() != flimflam::kTypeVPN) ||
+         network->type() != shill::kTypeVPN) ||
         (list_type_ == LIST_TYPE_VPN &&
-         network->type() == flimflam::kTypeVPN)) {
+         network->type() == shill::kTypeVPN)) {
       NetworkInfo* info = new NetworkInfo(network->path());
       network_list_.push_back(info);
     }
@@ -509,7 +509,7 @@ void NetworkStateListDetailedView::UpdateNetworkList() {
       info->highlight =
           network->IsConnectedState() || network->IsConnectingState();
       info->disable =
-          network->activation_state() == flimflam::kActivationStateActivating;
+          network->activation_state() == shill::kActivationStateActivating;
       if (!animating && network->IsConnectingState())
         animating = true;
     } else if (list_type_ == LIST_TYPE_DEBUG_PREFERRED) {

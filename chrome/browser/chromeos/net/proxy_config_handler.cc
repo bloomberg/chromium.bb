@@ -186,7 +186,7 @@ void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
     // TODO(pneubeck): Consider removing this legacy code.
     shill_service_client->ClearProperty(
         dbus::ObjectPath(network.path()),
-        flimflam::kProxyConfigProperty,
+        shill::kProxyConfigProperty,
         base::Bind(&NotifyNetworkStateHandler, network.path()),
         base::Bind(&network_handler::ShillErrorCallbackFunction,
                    "SetProxyConfig.ClearProperty Failed",
@@ -197,7 +197,7 @@ void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
     base::JSONWriter::Write(&proxy_config.GetDictionary(), &proxy_config_str);
     shill_service_client->SetProperty(
         dbus::ObjectPath(network.path()),
-        flimflam::kProxyConfigProperty,
+        shill::kProxyConfigProperty,
         base::StringValue(proxy_config_str),
         base::Bind(&NotifyNetworkStateHandler, network.path()),
         base::Bind(&network_handler::ShillErrorCallbackFunction,

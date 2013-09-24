@@ -56,7 +56,7 @@ void ShowErrorNotification(const std::string& notification_id,
                            const base::string16& title,
                            const base::string16& message,
                            const base::Closure& callback) {
-  int icon_id = (network_type == flimflam::kTypeCellular) ?
+  int icon_id = (network_type == shill::kTypeCellular) ?
       IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED :
       IDR_AURA_UBER_TRAY_NETWORK_FAILED;
   const gfx::Image& icon =
@@ -109,7 +109,7 @@ void NetworkStateNotifier::DefaultNetworkChanged(const NetworkState* network) {
 
 void NetworkStateNotifier::NetworkPropertiesUpdated(
     const NetworkState* network) {
-  if (network->type() != flimflam::kTypeCellular)
+  if (network->type() != shill::kTypeCellular)
     return;
   UpdateCellularOutOfCredits(network);
   UpdateCellularActivating(network);
@@ -164,19 +164,19 @@ void NetworkStateNotifier::UpdateCellularActivating(
     const NetworkState* cellular) {
   // Keep track of any activating cellular network.
   std::string activation_state = cellular->activation_state();
-  if (activation_state == flimflam::kActivationStateActivating) {
+  if (activation_state == shill::kActivationStateActivating) {
     cellular_activating_.insert(cellular->path());
     return;
   }
   // Only display a notification if this network was activating and is now
   // activated.
   if (!cellular_activating_.count(cellular->path()) ||
-      activation_state != flimflam::kActivationStateActivated)
+      activation_state != shill::kActivationStateActivated)
     return;
 
   cellular_activating_.erase(cellular->path());
   int icon_id;
-  if (cellular->network_technology() == flimflam::kNetworkTechnologyLte)
+  if (cellular->network_technology() == shill::kNetworkTechnologyLte)
     icon_id = IDR_AURA_UBER_TRAY_NOTIFICATION_LTE;
   else
     icon_id = IDR_AURA_UBER_TRAY_NOTIFICATION_3G;
@@ -246,7 +246,7 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
     std::string network_error = shill_error;
     if (network_error.empty()) {
       shill_properties.GetStringWithoutPathExpansion(
-          flimflam::kErrorProperty, &network_error);
+          shill::kErrorProperty, &network_error);
     }
     error = network_connect::ErrorString(network_error);
     if (error.empty())
@@ -280,7 +280,7 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
 
   std::string network_type;
   shill_properties.GetStringWithoutPathExpansion(
-      flimflam::kTypeProperty, &network_type);
+      shill::kTypeProperty, &network_type);
 
   ShowErrorNotification(
       network_connect::kNetworkConnectNotificationId,

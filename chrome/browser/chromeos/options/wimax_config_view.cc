@@ -99,7 +99,7 @@ void WimaxConfigView::UpdateErrorLabel() {
   if (!service_path_.empty()) {
     const NetworkState* wimax = NetworkHandler::Get()->network_state_handler()->
         GetNetworkState(service_path_);
-    if (wimax && wimax->connection_state() == flimflam::kStateFailure)
+    if (wimax && wimax->connection_state() == shill::kStateFailure)
       error_msg = ash::network_connect::ErrorString(wimax->error());
   }
   if (!error_msg.empty()) {
@@ -148,11 +148,11 @@ bool WimaxConfigView::Login() {
   }
   base::DictionaryValue properties;
   properties.SetStringWithoutPathExpansion(
-      flimflam::kEapIdentityProperty, GetEapIdentity());
+      shill::kEapIdentityProperty, GetEapIdentity());
   properties.SetStringWithoutPathExpansion(
-      flimflam::kEapPasswordProperty, GetEapPassphrase());
+      shill::kEapPasswordProperty, GetEapPassphrase());
   properties.SetBooleanWithoutPathExpansion(
-      flimflam::kSaveCredentialsProperty, GetSaveCredentials());
+      shill::kSaveCredentialsProperty, GetSaveCredentials());
 
   const bool share_default = true;
   bool share_network = GetShareNetwork(share_default);
@@ -187,7 +187,7 @@ void WimaxConfigView::Cancel() {
 void WimaxConfigView::Init() {
   const NetworkState* wimax = NetworkHandler::Get()->network_state_handler()->
       GetNetworkState(service_path_);
-  DCHECK(wimax && wimax->type() == flimflam::kTypeWimax);
+  DCHECK(wimax && wimax->type() == shill::kTypeWimax);
 
   WifiConfigView::ParseWiFiEAPUIProperty(
       &save_credentials_ui_data_, wimax, onc::eap::kSaveCredentials);
@@ -348,14 +348,14 @@ void WimaxConfigView::InitFromProperties(
   // EapIdentity
   std::string eap_identity;
   properties.GetStringWithoutPathExpansion(
-      flimflam::kEapIdentityProperty, &eap_identity);
+      shill::kEapIdentityProperty, &eap_identity);
   identity_textfield_->SetText(UTF8ToUTF16(eap_identity));
 
   // Save credentials
   if (save_credentials_checkbox_) {
     bool save_credentials = false;
     properties.GetBooleanWithoutPathExpansion(
-        flimflam::kSaveCredentialsProperty, &save_credentials);
+        shill::kSaveCredentialsProperty, &save_credentials);
     save_credentials_checkbox_->SetChecked(save_credentials);
   }
 }
