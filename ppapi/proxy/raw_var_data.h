@@ -255,6 +255,41 @@ class DictionaryRawVarData : public RawVarData {
   std::vector<std::pair<std::string, size_t> > children_;
 };
 
+// A RawVarData class for resource PP_Vars.
+// This class does not hold a reference on the PP_Resource that is being
+// serialized. If sending a resource from the plugin to the host, the plugin
+// should not release the ResourceVar before sending the serialized message to
+// the host, and the host should immediately consume the ResourceVar before
+// processing further messages.
+class ResourceRawVarData : public RawVarData {
+ public:
+  ResourceRawVarData();
+  virtual ~ResourceRawVarData();
+
+  // RawVarData implementation.
+  virtual PP_VarType Type() OVERRIDE;
+  virtual bool Init(const PP_Var& var, PP_Instance instance) OVERRIDE;
+  virtual PP_Var CreatePPVar(PP_Instance instance) OVERRIDE;
+  virtual void PopulatePPVar(const PP_Var& var,
+                             const std::vector<PP_Var>& graph) OVERRIDE;
+  virtual void Write(IPC::Message* m,
+                     const HandleWriter& handle_writer) OVERRIDE;
+  virtual bool Read(PP_VarType type,
+                    const IPC::Message* m,
+                    PickleIterator* iter) OVERRIDE;
+
+ private:
+  // Resource ID in the plugin. If one has not yet been created, this is 0.
+  // This is a borrowed reference; the resource's refcount is not incremented.
+  PP_Resource pp_resource_;
+
+  // A message containing information about how to create a plugin-side
+  // resource. The message type will vary based on the resource type, and will
+  // usually contain a pending resource host ID, and other required information.
+  // If the resource was created directly, this is NULL.
+  scoped_ptr<IPC::Message> creation_message_;
+};
+
 }  // namespace proxy
 }  // namespace ppapi
 
