@@ -641,8 +641,7 @@ class WebGraphicsContext3DCommandBufferImpl
       WGC3Denum type, WGC3Dintptr offset, WGC3Dsizei primcount);
   virtual void vertexAttribDivisorANGLE(WGC3Duint index, WGC3Duint divisor);
 
- protected:
-  virtual GrGLInterface* onCreateGrGLInterface();
+  virtual GrGLInterface* createGrGLInterface();
 
  private:
   // These are the same error codes as used by EGL.

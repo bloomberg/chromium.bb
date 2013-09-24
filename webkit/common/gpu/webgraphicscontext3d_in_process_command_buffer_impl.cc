@@ -1152,7 +1152,7 @@ WGC3Dboolean WebGraphicsContext3DInProcessCommandBufferImpl::
 }
 
 GrGLInterface* WebGraphicsContext3DInProcessCommandBufferImpl::
-    onCreateGrGLInterface() {
+    createGrGLInterface() {
   return CreateCommandBufferSkiaGLBinding();
 }
 

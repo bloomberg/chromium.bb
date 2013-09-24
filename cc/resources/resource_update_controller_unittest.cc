@@ -51,7 +51,7 @@ class WebGraphicsContext3DForUploadTest : public TestWebGraphicsContext3D {
       WGC3Denum format,
       WGC3Denum type,
       const void* pixels) OVERRIDE;
-  virtual GrGLInterface* onCreateGrGLInterface() OVERRIDE { return NULL; }
+  virtual GrGLInterface* createGrGLInterface() OVERRIDE { return NULL; }
 
   virtual void getQueryObjectuivEXT(
       WebGLId id,

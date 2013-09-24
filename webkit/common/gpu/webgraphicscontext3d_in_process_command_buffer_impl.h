@@ -550,8 +550,7 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
 
   virtual void loseContextCHROMIUM(WGC3Denum current, WGC3Denum other);
 
- protected:
-  virtual GrGLInterface* onCreateGrGLInterface();
+  virtual GrGLInterface* createGrGLInterface();
 
  private:
   WebGraphicsContext3DInProcessCommandBufferImpl(

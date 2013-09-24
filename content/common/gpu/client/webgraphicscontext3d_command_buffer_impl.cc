@@ -1567,7 +1567,7 @@ void WebGraphicsContext3DCommandBufferImpl::drawElementsInstancedANGLE(
 DELEGATE_TO_GL_2(vertexAttribDivisorANGLE, VertexAttribDivisorANGLE, WGC3Duint,
                  WGC3Duint)
 
-GrGLInterface* WebGraphicsContext3DCommandBufferImpl::onCreateGrGLInterface() {
+GrGLInterface* WebGraphicsContext3DCommandBufferImpl::createGrGLInterface() {
   return webkit::gpu::CreateCommandBufferSkiaGLBinding();
 }
 
