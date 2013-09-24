@@ -240,3 +240,11 @@ html[dir=rtl] #flip-photo {
 .camera.live:not(.online) .user-image-stream-area .spinner {
   display: block;
 }
+
+#user-images-loading {
+  -webkit-align-items: center;
+  -webkit-justify-content: center;
+  color: #9c9c9c;
+  display: -webkit-flex;
+}
+

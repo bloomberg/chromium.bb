@@ -8,25 +8,6 @@
   padding: 70px 17px 69px;    /* Screen has no controls. */
 }
 
-.throbber {
-  -webkit-animation: throbber-animation 1s steps(36) infinite;
-  -webkit-margin-before: 2px;
-  -webkit-margin-end: 4px;
-  background-image: url(chrome://theme/IDR_CROS_DEFAULT_THROBBER);
-  display: inline-block;
-  height: 16px;
-  width: 16px;
-}
-
-@-webkit-keyframes throbber-animation {
-  from {
-    background-position: 0;
-  }
-  to {
-    background-position: -576px;
-  }
-}
-
 #update #update-screen-curtain {
   -webkit-box-align: start;
   -webkit-box-pack: center;

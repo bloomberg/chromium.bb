@@ -93,6 +93,7 @@ void UserImageScreenHandler::DeclareLocalizedValues(
                IDS_OPTIONS_PHOTO_CAPTURE_ACCESSIBLE_TEXT);
   builder->Add("photoDiscardAccessibleText",
                IDS_OPTIONS_PHOTO_DISCARD_ACCESSIBLE_TEXT);
+  builder->Add("syncingPreferences", IDS_IMAGE_SCREEN_SYNCING_PREFERENCES);
 }
 
 void UserImageScreenHandler::RegisterMessages() {
