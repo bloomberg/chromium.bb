@@ -1089,6 +1089,10 @@ static bool shouldUseAccessiblityObjectInnerText(AccessibilityObject* obj)
     // quite long. As a heuristic, skip links, controls, and elements that are usually
     // containers with lots of children.
 
+    // Skip hidden children
+    if (equalIgnoringCase(obj->getAttribute(aria_hiddenAttr), "true"))
+        return false;
+
     // Skip focusable children, so we don't include the text of links and controls.
     if (obj->canSetFocusAttribute())
         return false;
