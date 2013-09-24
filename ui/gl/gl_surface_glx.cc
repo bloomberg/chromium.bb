@@ -390,10 +390,6 @@ bool GLSurfaceGLX::InitializeOneOff() {
       base::MessageLoop::current() &&
       base::MessageLoop::current()->type() == base::MessageLoop::TYPE_GPU;
 
-  // Disable this path because it is causing window contents to disappear.
-  // http://crbug.com/292655
-  g_create_child_windows = false;
-
   if (g_create_child_windows)
     g_display = base::MessagePumpX11::GetDefaultXDisplay();
   else
