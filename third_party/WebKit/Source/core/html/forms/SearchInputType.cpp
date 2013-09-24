@@ -90,7 +90,7 @@ bool SearchInputType::needsContainer() const
 void SearchInputType::createShadowSubtree()
 {
     TextFieldInputType::createShadowSubtree();
-    HTMLElement* container = containerElement();
+    Element* container = containerElement();
     Element* viewPort = element()->userAgentShadowRoot()->getElementById(ShadowElementNames::editingViewPort());
     ASSERT(container);
     ASSERT(viewPort);

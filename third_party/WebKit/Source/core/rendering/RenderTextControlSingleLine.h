@@ -42,7 +42,7 @@ public:
 protected:
     virtual void centerContainerIfNeeded(RenderBox*) const { }
     virtual LayoutUnit computeLogicalHeightLimit() const;
-    HTMLElement* containerElement() const;
+    Element* containerElement() const;
     Element* editingViewPortElement() const;
     HTMLInputElement* inputElement() const;
     virtual void updateFromElement() OVERRIDE;
@@ -83,11 +83,6 @@ private:
     bool m_shouldDrawCapsLockIndicator;
     LayoutUnit m_desiredInnerTextLogicalHeight;
 };
-
-inline HTMLElement* RenderTextControlSingleLine::containerElement() const
-{
-    return inputElement()->containerElement();
-}
 
 inline RenderTextControlSingleLine* toRenderTextControlSingleLine(RenderObject* object)
 {

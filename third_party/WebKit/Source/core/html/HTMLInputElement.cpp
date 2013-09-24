@@ -177,11 +177,6 @@ Vector<FileChooserFileInfo> HTMLInputElement::filesFromFileInputFormControlState
     return FileInputType::filesFromFormControlState(state);
 }
 
-HTMLElement* HTMLInputElement::containerElement() const
-{
-    return m_inputType->containerElement();
-}
-
 HTMLElement* HTMLInputElement::innerTextElement() const
 {
     return m_inputType->innerTextElement();

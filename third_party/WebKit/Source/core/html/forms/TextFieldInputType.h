@@ -48,7 +48,6 @@ protected:
     virtual void handleKeydownEvent(KeyboardEvent*) OVERRIDE;
     void handleKeydownEventForSpinButton(KeyboardEvent*);
 
-    virtual HTMLElement* containerElement() const OVERRIDE;
     virtual HTMLElement* innerTextElement() const OVERRIDE;
 
 protected:
@@ -71,6 +70,8 @@ protected:
         ValueChangeStateChanged
     };
     virtual void didSetValueByUserEdit(ValueChangeState);
+
+    Element* containerElement() const;
 
 private:
     virtual bool shouldShowFocusRingOnMouseFocus() const OVERRIDE;
@@ -96,7 +97,6 @@ private:
 
     SpinButtonElement* spinButtonElement() const;
 
-    RefPtr<HTMLElement> m_container;
     RefPtr<HTMLElement> m_innerText;
 };
 

@@ -252,26 +252,26 @@ void TextFieldInputType::createShadowSubtree()
         return;
     }
 
-    m_container = TextControlInnerContainer::create(document);
-    m_container->setPart(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
-    shadowRoot->appendChild(m_container);
+    RefPtr<TextControlInnerContainer> container = TextControlInnerContainer::create(document);
+    container->setPart(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
+    shadowRoot->appendChild(container);
 
     RefPtr<EditingViewPortElement> editingViewPort = EditingViewPortElement::create(document);
     editingViewPort->appendChild(m_innerText);
-    m_container->appendChild(editingViewPort.release());
+    container->appendChild(editingViewPort.release());
 
 #if ENABLE(INPUT_SPEECH)
     if (element()->isSpeechEnabled())
-        m_container->appendChild(InputFieldSpeechButtonElement::create(document));
+        container->appendChild(InputFieldSpeechButtonElement::create(document));
 #endif
 
     if (shouldHaveSpinButton)
-        m_container->appendChild(SpinButtonElement::create(document, *this));
+        container->appendChild(SpinButtonElement::create(document, *this));
 }
 
-HTMLElement* TextFieldInputType::containerElement() const
+Element* TextFieldInputType::containerElement() const
 {
-    return m_container.get();
+    return element()->userAgentShadowRoot()->getElementById(ShadowElementNames::textFieldContainer());
 }
 
 HTMLElement* TextFieldInputType::innerTextElement() const
@@ -286,7 +286,6 @@ void TextFieldInputType::destroyShadowSubtree()
     m_innerText.clear();
     if (SpinButtonElement* spinButton = spinButtonElement())
         spinButton->removeSpinButtonOwner();
-    m_container.clear();
 }
 
 void TextFieldInputType::attributeChanged()
@@ -403,7 +402,8 @@ void TextFieldInputType::updatePlaceholderText()
         placeholder = newElement.get();
         placeholder->setPart(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
-        element()->userAgentShadowRoot()->insertBefore(placeholder, m_container ? m_container->nextSibling() : innerTextElement()->nextSibling());
+        Element* container = containerElement();
+        element()->userAgentShadowRoot()->insertBefore(placeholder, container ? container->nextSibling() : innerTextElement()->nextSibling());
     }
     placeholder->setTextContent(placeholderText, ASSERT_NO_EXCEPTION);
 }

@@ -95,6 +95,12 @@ const AtomicString& speechButton()
     return name;
 }
 
+const AtomicString& textFieldContainer()
+{
+    DEFINE_STATIC_LOCAL(AtomicString, name, ("text-field-container", AtomicString::ConstructFromLiteral));
+    return name;
+}
+
 }
 
 }

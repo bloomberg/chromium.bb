@@ -119,7 +119,6 @@ public:
     bool isSpeechEnabled() const;
 #endif
 
-    HTMLElement* containerElement() const;
     virtual HTMLElement* innerTextElement() const;
     HTMLElement* passwordGeneratorButtonElement() const;
 

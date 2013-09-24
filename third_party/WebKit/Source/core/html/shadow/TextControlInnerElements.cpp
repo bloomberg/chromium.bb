@@ -55,7 +55,9 @@ TextControlInnerContainer::TextControlInnerContainer(Document& document)
 
 PassRefPtr<TextControlInnerContainer> TextControlInnerContainer::create(Document& document)
 {
-    return adoptRef(new TextControlInnerContainer(document));
+    RefPtr<TextControlInnerContainer> element = adoptRef(new TextControlInnerContainer(document));
+    element->setAttribute(idAttr, ShadowElementNames::textFieldContainer());
+    return element.release();
 }
 
 RenderObject* TextControlInnerContainer::createRenderer(RenderStyle*)
