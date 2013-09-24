@@ -1,0 +1,26 @@
+Tests "step over within specified frame" functionality in debugger.
+
+Debugger was enabled.
+Set timer for test function.
+Script execution paused.
+Call stack:
+    0) frame3 (debugger-step-over-with-frame.html:12)
+    1) frame2 (debugger-step-over-with-frame.html:18)
+    2) frame1 (debugger-step-over-with-frame.html:24)
+    3) testFunction (debugger-step-over-with-frame.html:30)
+Selecting frame: 2) frame1
+Stepping over...
+Script execution resumed.
+Script execution paused.
+Call stack:
+    0) frame1 (debugger-step-over-with-frame.html:25)
+    1) testFunction (debugger-step-over-with-frame.html:30)
+Selecting frame: 1) testFunction
+Stepping over...
+Script execution resumed.
+Script execution paused.
+Call stack:
+    0) testFunction (debugger-step-over-with-frame.html:31)
+Script execution resumed.
+Debugger was disabled.
+

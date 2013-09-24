@@ -217,9 +217,10 @@ DebuggerScript.stepIntoStatement = function(execState)
     execState.prepareStep(Debug.StepAction.StepIn, 1);
 }
 
-DebuggerScript.stepOverStatement = function(execState)
+DebuggerScript.stepOverStatement = function(execState, callFrame)
 {
-    execState.prepareStep(Debug.StepAction.StepNext, 1);
+    var frameMirror = callFrame ? callFrame.frameMirror : undefined;
+    execState.prepareStep(Debug.StepAction.StepNext, 1, frameMirror);
 }
 
 DebuggerScript.stepOutOfFunction = function(execState)
@@ -387,7 +388,8 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
         "caller": callerFrame,
         "restart": restart,
         "setVariableValue": setVariableValue,
-        "stepInPositions": stepInPositions
+        "stepInPositions": stepInPositions,
+        "frameMirror": frameMirror
     };
 }
 

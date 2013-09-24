@@ -91,6 +91,7 @@ public:
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapTable(const ScriptValue& table, const ScriptValue& columns) const;
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapNode(Node*, const String& groupName);
     ScriptValue findObjectById(const String& objectId) const;
+    ScriptValue findCallframeById(ErrorString*, const ScriptValue& topCallFrame, const String& callFrameId);
 
     void inspectNode(Node*);
     void releaseObjectGroup(const String&);

@@ -222,12 +222,24 @@ void ScriptDebugServer::stepIntoStatement()
     continueProgram();
 }
 
-void ScriptDebugServer::stepOverStatement()
+void ScriptDebugServer::stepOverStatement(const ScriptValue& frame)
 {
     ASSERT(isPaused());
     v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Value> argv[] = { m_executionState.newLocal(m_isolate) };
-    callDebuggerMethod("stepOverStatement", 1, argv);
+    v8::Handle<v8::Value> callFrame;
+    if (frame.hasNoValue()) {
+        callFrame = v8::Undefined(m_isolate);
+    } else {
+        JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(v8::Handle<v8::Object>::Cast(frame.v8Value()));
+        callFrame = impl->innerCallFrame();
+    }
+
+    v8::Handle<v8::Value> argv[] = {
+        m_executionState.newLocal(m_isolate),
+        callFrame
+    };
+
+    callDebuggerMethod("stepOverStatement", 2, argv);
     continueProgram();
 }
 

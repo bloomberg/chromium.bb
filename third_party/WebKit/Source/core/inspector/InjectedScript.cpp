@@ -296,6 +296,21 @@ ScriptValue InjectedScript::findObjectById(const String& objectId) const
     return resultValue;
 }
 
+ScriptValue InjectedScript::findCallframeById(ErrorString* errorString, const ScriptValue& topCallFrame, const String& callFrameId)
+{
+    ScriptFunctionCall function(injectedScriptObject(), "callFrameForId");
+    function.appendArgument(topCallFrame);
+    function.appendArgument(callFrameId);
+    bool hadException = false;
+    ScriptValue resultValue = callFunctionWithEvalEnabled(function, hadException);
+    ASSERT(!hadException);
+    if (hadException || resultValue.hasNoValue() || !resultValue.isObject()) {
+        *errorString = "Internal error";
+        return ScriptValue();
+    }
+    return resultValue;
+}
+
 void InjectedScript::inspectNode(Node* node)
 {
     ASSERT(!hasNoValue());

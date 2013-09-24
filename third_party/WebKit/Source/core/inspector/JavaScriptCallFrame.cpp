@@ -145,6 +145,11 @@ v8::Handle<v8::Value> JavaScriptCallFrame::restart()
     return result;
 }
 
+v8::Handle<v8::Object> JavaScriptCallFrame::innerCallFrame()
+{
+    return m_callFrame.newLocal(m_isolate);
+}
+
 v8::Handle<v8::Value> JavaScriptCallFrame::setVariableValue(int scopeNumber, const String& variableName, v8::Handle<v8::Value> newValue)
 {
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);

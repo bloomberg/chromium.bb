@@ -1,0 +1,75 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+var count = 0;
+function frame3()
+{
+    if (count === 0) {
+        ++count;
+        debugger;
+    }
+}
+
+function frame2()
+{
+    frame3();
+    frame3();
+}
+
+function frame1()
+{
+    frame2();
+    frame2();
+}
+
+function testFunction()
+{
+    frame1();
+    var a = {};
+    var b = [];
+    var c = a + b;
+}
+
+function test()
+{
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    var stepCount = 0;
+    var framesToSelect = [2, 1];
+    function step2(callFrames)
+    {
+        InspectorTest.captureStackTrace(callFrames);
+        if (stepCount < framesToSelect.length) {
+            var frameIndex = framesToSelect[stepCount];
+            InspectorTest.addResult("Selecting frame: " + frameIndex + ") " + WebInspector.debuggerModel.callFrames[frameIndex].functionName);
+            WebInspector.debuggerModel.setSelectedCallFrame(WebInspector.debuggerModel.callFrames[frameIndex]);
+            InspectorTest.addResult("Stepping over...");
+            WebInspector.panels.sources._stepOverButton.element.click();
+            InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, step2));
+        } else {
+            InspectorTest.completeDebuggerTest();
+            var topFunctionName = callFrames[0].functionName;
+            InspectorTest.assertEquals("testFunction", topFunctionName, "Top function name");
+        }
+        ++stepCount;
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests "step over within specified frame" functionality in debugger.
+</p>
+
+</body>
+</html>

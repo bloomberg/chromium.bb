@@ -106,7 +106,7 @@ public:
     virtual void getFunctionDetails(ErrorString*, const String& functionId, RefPtr<TypeBuilder::Debugger::FunctionDetails>&);
     virtual void pause(ErrorString*);
     virtual void resume(ErrorString*);
-    virtual void stepOver(ErrorString*);
+    virtual void stepOver(ErrorString*, const String* callFrameId);
     virtual void stepInto(ErrorString*);
     virtual void stepOut(ErrorString*);
     virtual void setPauseOnExceptions(ErrorString*, const String& pauseState);

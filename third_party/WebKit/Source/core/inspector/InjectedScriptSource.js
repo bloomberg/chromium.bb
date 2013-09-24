@@ -618,7 +618,7 @@ InjectedScript.prototype = {
      */
     evaluateOnCallFrame: function(topCallFrame, callFrameId, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview)
     {
-        var callFrame = this._callFrameForId(topCallFrame, callFrameId);
+        var callFrame = this.callFrameForId(topCallFrame, callFrameId);
         if (!callFrame)
             return "Could not find call frame with given id";
         return this._evaluateAndWrap(callFrame.evaluate, callFrame, expression, objectGroup, true, injectCommandLineAPI, returnByValue, generatePreview);
@@ -631,7 +631,7 @@ InjectedScript.prototype = {
      */
     restartFrame: function(topCallFrame, callFrameId)
     {
-        var callFrame = this._callFrameForId(topCallFrame, callFrameId);
+        var callFrame = this.callFrameForId(topCallFrame, callFrameId);
         if (!callFrame)
             return "Could not find call frame with given id";
         var result = callFrame.restart();
@@ -647,7 +647,7 @@ InjectedScript.prototype = {
      */
     getStepInPositions: function(topCallFrame, callFrameId)
     {
-        var callFrame = this._callFrameForId(topCallFrame, callFrameId);
+        var callFrame = this.callFrameForId(topCallFrame, callFrameId);
         if (!callFrame)
             return "Could not find call frame with given id";
         var stepInPositionsUnpacked = JSON.parse(callFrame.stepInPositions);
@@ -670,7 +670,7 @@ InjectedScript.prototype = {
     {   
         var setter;
         if (typeof callFrameId === "string") {
-            var callFrame = this._callFrameForId(topCallFrame, callFrameId);
+            var callFrame = this.callFrameForId(topCallFrame, callFrameId);
             if (!callFrame)
                 return "Could not find call frame with given id";
             setter = callFrame.setVariableValue.bind(callFrame);    
@@ -706,7 +706,7 @@ InjectedScript.prototype = {
      * @param {string} callFrameId
      * @return {Object}
      */
-    _callFrameForId: function(topCallFrame, callFrameId)
+    callFrameForId: function(topCallFrame, callFrameId)
     {
         var parsedCallFrameId = InjectedScriptHost.evaluate("(" + callFrameId + ")");
         var ordinal = parsedCallFrameId["ordinal"];

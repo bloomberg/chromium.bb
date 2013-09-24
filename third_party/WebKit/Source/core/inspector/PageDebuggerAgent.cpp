@@ -109,7 +109,7 @@ void PageDebuggerAgent::overlayResumed()
 void PageDebuggerAgent::overlaySteppedOver()
 {
     ErrorString error;
-    stepOver(&error);
+    stepOver(&error, 0);
 }
 
 InjectedScript PageDebuggerAgent::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)

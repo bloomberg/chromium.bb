@@ -675,12 +675,27 @@ void InspectorDebuggerAgent::resume(ErrorString* errorString)
     scriptDebugServer().continueProgram();
 }
 
-void InspectorDebuggerAgent::stepOver(ErrorString* errorString)
+void InspectorDebuggerAgent::stepOver(ErrorString* errorString, const String* callFrameId)
 {
     if (!assertPaused(errorString))
         return;
+    ScriptValue frame;
+    if (callFrameId) {
+        if (m_currentCallStack.isNull()) {
+            *errorString = "Attempt to access callframe when debugger is not on pause";
+            return;
+        }
+        InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(*callFrameId);
+        if (injectedScript.hasNoValue()) {
+            *errorString = "Inspected frame has gone";
+            return;
+        }
+        frame = injectedScript.findCallframeById(errorString, m_currentCallStack, *callFrameId);
+        if (!errorString->isEmpty())
+            return;
+    }
     m_injectedScriptManager->releaseObjectGroup(InspectorDebuggerAgent::backtraceObjectGroup);
-    scriptDebugServer().stepOverStatement();
+    scriptDebugServer().stepOverStatement(frame);
 }
 
 void InspectorDebuggerAgent::stepInto(ErrorString* errorString)
