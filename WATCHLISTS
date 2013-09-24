@@ -364,6 +364,9 @@
                   '|content/public/browser/user_metrics.h'\
                   '|tools/metrics/'
     },
+    'mojo': {
+      'filepath': 'mojo',
+    },
     'mouse_lock': {
       'filepath': 'mouse_lock',
     },
@@ -728,6 +731,7 @@
     'metrics': ['jar@chromium.org',
                 'isherman@chromium.org',
                 'asvitkine+watch@chromium.org'],
+    'mojo': ['aa@chromium.org'],
     'mouse_lock': ['scheib+watch@chromium.org'],
     'nacl': ['native-client-reviews@googlegroups.com'],
     'native_client_sdk': ['sbc@chromium.org', 'binji@chromium.org'],
