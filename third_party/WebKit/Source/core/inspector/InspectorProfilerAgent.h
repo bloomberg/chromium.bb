@@ -85,6 +85,8 @@ public:
 private:
     InspectorProfilerAgent(InstrumentingAgents*, InspectorConsoleAgent*, InspectorCompositeState*, InjectedScriptManager*);
 
+    void doEnable();
+
     void addProfile(PassRefPtr<ScriptProfile> prpProfile, unsigned lineNumber, const String& sourceURL);
 
     void resetFrontendProfiles();

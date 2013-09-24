@@ -112,6 +112,11 @@ PassRefPtr<TypeBuilder::Profiler::ProfileHeader> InspectorProfilerAgent::createP
 void InspectorProfilerAgent::enable(ErrorString*)
 {
     m_state->setBoolean(ProfilerAgentState::profilerEnabled, true);
+    doEnable();
+}
+
+void InspectorProfilerAgent::doEnable()
+{
     m_instrumentingAgents->setInspectorProfilerAgent(this);
 }
 
@@ -214,6 +219,8 @@ void InspectorProfilerAgent::clearFrontend()
 
 void InspectorProfilerAgent::restore()
 {
+    if (m_state->getBoolean(ProfilerAgentState::profilerEnabled))
+        doEnable();
     resetFrontendProfiles();
     if (long interval = m_state->getLong(ProfilerAgentState::samplingInterval, 0))
         ScriptProfiler::setSamplingInterval(interval);
