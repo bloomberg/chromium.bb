@@ -42,6 +42,7 @@ class QuotaMessageFilter;
 class ResourceDispatcher;
 class SocketStreamDispatcher;
 class ThreadSafeSender;
+class WebSocketDispatcher;
 
 // The main thread of a child process derives from this class.
 class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
@@ -89,6 +90,10 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   SocketStreamDispatcher* socket_stream_dispatcher() const {
     return socket_stream_dispatcher_.get();
+  }
+
+  WebSocketDispatcher* websocket_dispatcher() const {
+    return websocket_dispatcher_.get();
   }
 
   FileSystemDispatcher* file_system_dispatcher() const {
@@ -179,6 +184,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   // Handles SocketStream for this process.
   scoped_ptr<SocketStreamDispatcher> socket_stream_dispatcher_;
+
+  scoped_ptr<WebSocketDispatcher> websocket_dispatcher_;
 
   // The OnChannelError() callback was invoked - the channel is dead, don't
   // attempt to communicate.

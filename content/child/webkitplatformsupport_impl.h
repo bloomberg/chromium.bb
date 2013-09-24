@@ -29,9 +29,10 @@ class CONTENT_EXPORT WebKitPlatformSupportImpl
   virtual webkit_glue::ResourceLoaderBridge* CreateResourceLoader(
       const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info)
       OVERRIDE;
-  virtual webkit_glue::WebSocketStreamHandleBridge* CreateWebSocketBridge(
+  virtual webkit_glue::WebSocketStreamHandleBridge* CreateWebSocketStreamBridge(
       WebKit::WebSocketStreamHandle* handle,
       webkit_glue::WebSocketStreamHandleDelegate* delegate) OVERRIDE;
+  virtual WebKit::WebSocketHandle* createWebSocketHandle() OVERRIDE;
 };
 
 }  // namespace content

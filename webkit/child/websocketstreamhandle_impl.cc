@@ -86,7 +86,7 @@ void WebSocketStreamHandleImpl::Context::Connect(
     WebKitPlatformSupportImpl* platform) {
   VLOG(1) << "Connect url=" << url;
   DCHECK(!bridge_.get());
-  bridge_ = platform->CreateWebSocketBridge(handle_, this);
+  bridge_ = platform->CreateWebSocketStreamBridge(handle_, this);
   AddRef();  // Will be released by DidClose().
   bridge_->Connect(url);
 }

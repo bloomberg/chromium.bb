@@ -235,7 +235,7 @@ TestWebKitPlatformSupport::CreateResourceLoader(
 }
 
 webkit_glue::WebSocketStreamHandleBridge*
-TestWebKitPlatformSupport::CreateWebSocketBridge(
+TestWebKitPlatformSupport::CreateWebSocketStreamBridge(
     WebKit::WebSocketStreamHandle* handle,
     webkit_glue::WebSocketStreamHandleDelegate* delegate) {
   NOTREACHED();
