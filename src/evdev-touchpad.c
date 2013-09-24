@@ -490,10 +490,9 @@ touchpad_update_state(struct touchpad_dispatch *touchpad, uint32_t time)
 		filter_motion(touchpad, &dx, &dy, time);
 
 		if (touchpad->finger_state == TOUCHPAD_FINGERS_ONE) {
-			touchpad->device->rel.dx = wl_fixed_from_double(dx);
-			touchpad->device->rel.dy = wl_fixed_from_double(dy);
-			touchpad->device->pending_events |=
-				EVDEV_RELATIVE_MOTION | EVDEV_SYN_OR_SLOT;
+			notify_motion(touchpad->device->seat, time,
+				      wl_fixed_from_double(dx),
+				      wl_fixed_from_double(dy));
 		} else if (touchpad->finger_state == TOUCHPAD_FINGERS_TWO) {
 			if (dx != 0.0)
 				notify_axis(touchpad->device->seat,
