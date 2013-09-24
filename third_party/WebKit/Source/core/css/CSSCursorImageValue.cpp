@@ -122,7 +122,7 @@ bool CSSCursorImageValue::updateIfSVGCursorIsUsed(Element* element)
 StyleImage* CSSCursorImageValue::cachedImage(ResourceFetcher* loader, float deviceScaleFactor)
 {
     if (m_imageValue->isImageSetValue())
-        return static_cast<CSSImageSetValue*>(m_imageValue.get())->cachedImageSet(loader, deviceScaleFactor);
+        return toCSSImageSetValue(m_imageValue.get())->cachedImageSet(loader, deviceScaleFactor);
 
     if (!m_accessedImage) {
         m_accessedImage = true;
@@ -155,7 +155,7 @@ StyleImage* CSSCursorImageValue::cachedOrPendingImage(float deviceScaleFactor)
 {
     // Need to delegate completely so that changes in device scale factor can be handled appropriately.
     if (m_imageValue->isImageSetValue())
-        return static_cast<CSSImageSetValue*>(m_imageValue.get())->cachedOrPendingImageSet(deviceScaleFactor);
+        return toCSSImageSetValue(m_imageValue.get())->cachedOrPendingImageSet(deviceScaleFactor);
 
     if (!m_image)
         m_image = StylePendingImage::create(this);

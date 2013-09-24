@@ -50,7 +50,7 @@ PassRefPtr<StyleImage> ElementStyleResources::styleImage(const TextLinkColors& t
     }
 
     if (value->isImageSetValue())
-        return setOrPendingFromValue(property, static_cast<CSSImageSetValue*>(value));
+        return setOrPendingFromValue(property, toCSSImageSetValue(value));
 
     if (value->isCursorImageValue())
         return cursorOrPendingFromValue(property, static_cast<CSSCursorImageValue*>(value));
