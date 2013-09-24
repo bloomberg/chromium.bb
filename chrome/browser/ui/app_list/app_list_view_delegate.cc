@@ -274,6 +274,11 @@ void AppListViewDelegate::OnProfileAdded(const base::FilePath& profile_path) {
   OnProfileChanged();
 }
 
+void AppListViewDelegate::OnProfileWasRemoved(
+    const base::FilePath& profile_path, const base::string16& profile_name) {
+  OnProfileChanged();
+}
+
 void AppListViewDelegate::OnProfileNameChanged(
     const base::FilePath& profile_path,
     const base::string16& old_profile_name) {
