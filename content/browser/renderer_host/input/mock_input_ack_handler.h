@@ -35,6 +35,10 @@ class MockInputAckHandler : public InputAckHandler {
   }
 
   void set_followup_touch_event(scoped_ptr<GestureEventWithLatencyInfo> event) {
+    gesture_followup_event_ = event.Pass();
+  }
+
+  void set_followup_touch_event(scoped_ptr<TouchEventWithLatencyInfo> event) {
     touch_followup_event_ = event.Pass();
   }
 
@@ -69,7 +73,8 @@ class MockInputAckHandler : public InputAckHandler {
   TouchEventWithLatencyInfo acked_touch_event_;
   WebKit::WebGestureEvent acked_gesture_event_;
 
-  scoped_ptr<GestureEventWithLatencyInfo> touch_followup_event_;
+  scoped_ptr<GestureEventWithLatencyInfo> gesture_followup_event_;
+  scoped_ptr<TouchEventWithLatencyInfo> touch_followup_event_;
 };
 
 }  // namespace content

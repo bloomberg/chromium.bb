@@ -108,11 +108,7 @@ void TouchEventQueue::QueueEvent(const TouchEventWithLatencyInfo& event) {
     // There is no touch event in the queue. Forward it to the renderer
     // immediately.
     touch_queue_.push_back(new CoalescedWebTouchEvent(event));
-    if (ShouldForwardToRenderer(event.event))
-      client_->SendTouchEventImmediately(event);
-    else
-      PopTouchEventToClient(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
-                            ui::LatencyInfo());
+    TryForwardNextEventToRenderer();
     return;
   }
 
@@ -153,7 +149,10 @@ void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result,
   }
 
   PopTouchEventToClient(ack_result, latency_info);
+  TryForwardNextEventToRenderer();
+}
 
+void TouchEventQueue::TryForwardNextEventToRenderer() {
   // If there are queued touch events, then try to forward them to the renderer
   // immediately, or ACK the events back to the client if appropriate.
   while (!touch_queue_.empty()) {

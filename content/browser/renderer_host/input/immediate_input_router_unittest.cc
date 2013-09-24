@@ -1649,6 +1649,91 @@ TEST_F(ImmediateInputRouterTest, TouchEventQueueConsumerIgnoreMultiFinger) {
   EXPECT_EQ(0U, TouchEventQueueSize());
 }
 
+// Tests that touch-event's enqueued via a touch ack are properly handled.
+TEST_F(ImmediateInputRouterTest, TouchEventAckWithFollowupEvents) {
+  // First, install a touch-event handler.
+  input_router_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  ASSERT_EQ(0U, process_->sink().message_count());
+  ASSERT_EQ(0U, TouchEventQueueSize());
+  ASSERT_TRUE(input_router_->ShouldForwardTouchEvent());
+
+  // Queue a touch down.
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, TouchEventQueueSize());
+  process_->sink().ClearMessages();
+
+  // Create a touch event that will be queued synchronously by a touch ack.
+  // Note, this will be triggered by all subsequent touch acks.
+  WebTouchEvent followup_event;
+  followup_event.type = WebInputEvent::TouchStart;
+  followup_event.touchesLength = 1;
+  followup_event.touches[0].id = 1;
+  followup_event.touches[0].state = WebTouchPoint::StatePressed;
+  ack_handler_->set_followup_touch_event(make_scoped_ptr(
+      new TouchEventWithLatencyInfo(followup_event, ui::LatencyInfo())));
+
+  // Receive an ACK for the press. This should cause the followup touch-move to
+  // be sent to the renderer.
+  SendInputEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, TouchEventQueueSize());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, ack_handler_->ack_state());
+  process_->sink().ClearMessages();
+
+  // Queue another event.
+  PressTouchPoint(1, 1);
+  MoveTouchPoint(0, 2, 2);
+  SendTouchEvent();
+
+  // Receive an ACK for the touch-move followup event. This should cause the
+  // subsequent touch move event be sent to the renderer, and another followup
+  // to be queued.
+  SendInputEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(2U, TouchEventQueueSize());
+  process_->sink().ClearMessages();
+}
+
+// Tests that followup events triggered by an immediae ack from
+// TouchEventQueue::QueueEvent() are properly handled.
+TEST_F(ImmediateInputRouterTest, TouchEventImmediateAckWithFollowupEvents) {
+  // First, install a touch-event handler.
+  input_router_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  ASSERT_EQ(0U, process_->sink().message_count());
+  ASSERT_EQ(0U, TouchEventQueueSize());
+  ASSERT_TRUE(input_router_->ShouldForwardTouchEvent());
+
+  // Create a touch event that will be queued synchronously by a touch ack.
+  // Note, this will be triggered by all subsequent touch acks.
+  WebTouchEvent followup_event;
+  followup_event.type = WebInputEvent::TouchStart;
+  followup_event.touchesLength = 1;
+  followup_event.touches[0].id = 1;
+  followup_event.touches[0].state = WebTouchPoint::StatePressed;
+  ack_handler_->set_followup_touch_event(make_scoped_ptr(
+      new TouchEventWithLatencyInfo(followup_event, ui::LatencyInfo())));
+
+  // Now, enqueue a stationary touch that will not be forwarded.  This should be
+  // immediately ack'ed with "NO_CONSUMER_EXISTS".  The followup event should
+  // then be enqueued and immediately sent to the renderer.
+  WebTouchEvent stationary_event;
+  stationary_event.touchesLength = 1;
+  stationary_event.type = WebInputEvent::TouchMove;
+  stationary_event.touches[0].id = 1;
+  stationary_event.touches[0].state = WebTouchPoint::StateStationary;
+  input_router_->SendTouchEvent(
+      TouchEventWithLatencyInfo(stationary_event, ui::LatencyInfo()));
+
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, TouchEventQueueSize());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
+            ack_handler_->ack_state());
+  EXPECT_EQ(WebInputEvent::TouchMove,
+            ack_handler_->acked_touch_event().event.type);
+}
+
 #if defined(OS_WIN) || defined(USE_AURA)
 // Tests that the acked events have correct state. (ui::Events are used only on
 // windows and aura)

@@ -48,7 +48,9 @@ void MockInputAckHandler::OnTouchEventAck(
   acked_touch_event_ = event;
   RecordAckCalled(ack_result);
   if (touch_followup_event_)
-    input_router_->SendGestureEvent(*touch_followup_event_);
+    input_router_->SendTouchEvent(*touch_followup_event_);
+  if (gesture_followup_event_)
+    input_router_->SendGestureEvent(*gesture_followup_event_);
 }
 
 void MockInputAckHandler::OnGestureEventAck(

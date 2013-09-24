@@ -72,6 +72,11 @@ class TouchEventQueue {
   CONTENT_EXPORT size_t GetQueueSize() const;
   CONTENT_EXPORT const TouchEventWithLatencyInfo& GetLatestEvent() const;
 
+  // Walks the queue, checking each event for |ShouldForwardToRenderer()|.
+  // If true, forwards the touch event and stops processing further events.
+  // If false, acks the event with |INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS|.
+  void TryForwardNextEventToRenderer();
+
   // Pops the touch-event from the top of the queue and sends it to the
   // TouchEventQueueClient. This reduces the size of the queue by one.
   void PopTouchEventToClient(InputEventAckState ack_result,
