@@ -84,6 +84,11 @@ void FakeUserManager::SaveUserDisplayName(
   }
 }
 
+void FakeUserManager::UpdateUserAccountData(const std::string&, const string16&,
+                           const std::string&) {
+  // Not implemented
+}
+
 UserImageManager* FakeUserManager::GetUserImageManager() {
   return NULL;
 }

@@ -11,16 +11,30 @@ namespace {
 
 std::string GetJSonData(const std::string& full_name,
                         const std::string& given_name,
-                        const std::string& url) {
+                        const std::string& url,
+                        const std::string& locale) {
   std::stringstream stream;
+  bool started = false;
+
   stream << "{ ";
-  if (!full_name.empty())
-    stream << "\"name\": \"" << full_name << "\", ";
-  if (!given_name.empty())
-    stream << "\"given_name\": \"" << given_name << "\", ";
-  if (!url.empty())
-    stream << "\"picture\": \"" << url << "\", ";
-  stream << "\"locale\": \"en-US\" }";
+  if (!full_name.empty()) {
+    stream << "\"name\": \"" << full_name << "\"";
+    started = true;
+  }
+  if (!given_name.empty()) {
+    stream << (started ? ", " : "") << "\"given_name\": \"" << given_name
+           << "\"";
+    started = true;
+  }
+  if (!url.empty()) {
+    stream << (started ? ", " : "") << "\"picture\": \"" << url << "\"";
+    started = true;
+  }
+
+  if (!locale.empty())
+    stream << (started ? ", " : "") << "\"locale\": \"" << locale << "\"";
+
+  stream << " }";
   return stream.str();
 }
 
@@ -34,20 +48,23 @@ class ProfileDownloaderTest : public testing::Test {
   virtual ~ProfileDownloaderTest() {
   }
 
-  void VerifyWithNameAndURL(const std::string& full_name,
-                            const std::string& given_name,
-                            const std::string& url,
-                            const std::string& expected_url,
-                            bool is_valid) {
+  void VerifyWithAccountData(const std::string& full_name,
+                             const std::string& given_name,
+                             const std::string& url,
+                             const std::string& expected_url,
+                             const std::string& locale,
+                             bool is_valid) {
     string16 parsed_full_name;
     string16 parsed_given_name;
     std::string parsed_url;
-    bool result = ProfileDownloader::GetProfileNameAndImageURL(
-        GetJSonData(full_name, given_name, url),
+    std::string parsed_locale;
+    bool result = ProfileDownloader::ParseProfileJSON(
+        GetJSonData(full_name, given_name, url, locale),
         &parsed_full_name,
         &parsed_given_name,
         &parsed_url,
-        32);
+        32,
+        &parsed_locale);
     EXPECT_EQ(is_valid, result);
     std::string parsed_full_name_utf8 = UTF16ToUTF8(parsed_full_name);
     std::string parsed_given_name_utf8 = UTF16ToUTF8(parsed_given_name);
@@ -55,52 +72,86 @@ class ProfileDownloaderTest : public testing::Test {
     EXPECT_EQ(full_name, parsed_full_name_utf8);
     EXPECT_EQ(given_name, parsed_given_name_utf8);
     EXPECT_EQ(expected_url, parsed_url);
+    EXPECT_EQ(locale, parsed_locale);
   }
 };
 
 TEST_F(ProfileDownloaderTest, ParseData) {
   // URL without size specified.
-  VerifyWithNameAndURL(
+  VerifyWithAccountData(
       "Pat Smith",
       "Pat",
       "https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/photo.jpg",
       "https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s32-c/photo.jpg",
+      "en-US",
       true);
 
   // URL with size specified.
-  VerifyWithNameAndURL(
+  VerifyWithAccountData(
       "Pat Smith",
       "Pat",
       "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/abc12/s64-c/1234567890.jpg",
       "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/abc12/s32-c/1234567890.jpg",
+      "en-US",
       true);
 
   // URL with unknown format.
-  VerifyWithNameAndURL(
+  VerifyWithAccountData("Pat Smith",
+                        "Pat",
+                        "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/",
+                        "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/",
+                        "en-US",
+                        true);
+
+  // Try different locales. URL with size specified.
+  VerifyWithAccountData(
       "Pat Smith",
       "Pat",
-      "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/",
-      "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/",
+      "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/abc12/s64-c/1234567890.jpg",
+      "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/abc12/s32-c/1234567890.jpg",
+      "jp",
       true);
 
+  // URL with unknown format.
+  VerifyWithAccountData("Pat Smith",
+                        "Pat",
+                        "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/",
+                        "http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/",
+                        "fr",
+                        true);
+
   // Data with only name.
-  VerifyWithNameAndURL("Pat Smith", "Pat", std::string(), std::string(), true);
+  VerifyWithAccountData(
+      "Pat Smith", "Pat", std::string(), std::string(), std::string(), true);
 
   // Data with only URL.
-  VerifyWithNameAndURL(
+  VerifyWithAccountData(
       std::string(),
       std::string(),
       "https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/photo.jpg",
       "https://example.com/--Abc/AAAAAAAAAAI/AAAAAAAAACQ/Efg/s32-c/photo.jpg",
+      std::string(),
       true);
 
-  // Data without name or URL.
-  VerifyWithNameAndURL(
-      std::string(), std::string(), std::string(), std::string(), false);
+  // Data with only locale.
+  VerifyWithAccountData(
+      std::string(), std::string(), std::string(), std::string(), "fr", false);
+
+  // Data without name or URL or locale.
+  VerifyWithAccountData(std::string(),
+                        std::string(),
+                        std::string(),
+                        std::string(),
+                        std::string(),
+                        false);
 
   // Data with an invalid URL.
-  VerifyWithNameAndURL(
-      std::string(), std::string(), "invalid url", std::string(), false);
+  VerifyWithAccountData(std::string(),
+                        std::string(),
+                        "invalid url",
+                        std::string(),
+                        std::string(),
+                        false);
 }
 
 TEST_F(ProfileDownloaderTest, DefaultURL) {

@@ -659,10 +659,9 @@ void UserImageManagerImpl::OnProfileDownloadSuccess(
   UserManager* user_manager = UserManager::Get();
   const User* user = user_manager->GetLoggedInUser();
 
-  if (!downloader->GetProfileFullName().empty()) {
-    user_manager->SaveUserDisplayName(
-        user->email(), downloader->GetProfileFullName());
-  }
+  user_manager->UpdateUserAccountData(user->email(),
+                                      downloader->GetProfileFullName(),
+                                      downloader->GetProfileLocale());
 
   bool requested_image = downloading_profile_image_;
   downloading_profile_image_ = false;
@@ -742,6 +741,12 @@ void UserImageManagerImpl::OnProfileDownloadFailure(
   base::TimeDelta delta = base::Time::Now() - profile_image_load_start_time_;
   AddProfileImageTimeHistogram(kDownloadFailure, profile_image_download_reason_,
                                delta);
+
+  UserManager* user_manager = UserManager::Get();
+  const User* user = user_manager->GetLoggedInUser();
+
+  // Need note that at least one attempt finished.
+  user_manager->UpdateUserAccountData(user->email(), string16(), "");
 
   // Retry download after some time if a network error has occured.
   if (reason == ProfileDownloaderDelegate::NETWORK_ERROR) {

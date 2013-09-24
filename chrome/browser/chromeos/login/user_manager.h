@@ -214,6 +214,11 @@ class UserManager {
   virtual void SaveUserDisplayName(const std::string& username,
                                    const string16& display_name) = 0;
 
+  // Updates data upon User Account download.
+  virtual void UpdateUserAccountData(const std::string& username,
+                                     const string16& display_name,
+                                     const std::string& locale) = 0;
+
   // Returns the display name for user |username| if it is known (was
   // previously set by a |SaveUserDisplayName| call).
   // Otherwise, returns an empty string.

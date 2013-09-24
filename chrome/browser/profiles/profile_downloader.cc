@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "content/public/browser/browser_thread.h"
@@ -50,6 +51,9 @@ const char kPhotoThumbnailURLPath[] = "picture";
 const char kFullNamePath[] = "name";
 
 const char kGivenNamePath[] = "given_name";
+
+// Path in JSON dictionary to user's preferred locale.
+const char kLocalePath[] = "locale";
 
 // Path format for specifying thumbnail's size.
 const char kThumbnailSizeFormat[] = "s%d-c";
@@ -124,18 +128,24 @@ bool GetImageURLWithSize(const GURL& old_url, int size, GURL* new_url) {
 
 }  // namespace
 
-// static
-bool ProfileDownloader::GetProfileNameAndImageURL(const std::string& data,
-                                                  string16* full_name,
-                                                  string16* given_name,
-                                                  std::string* url,
-                                                  int image_size) {
+// Parses the entry response and gets the name and profile image URL.
+// |data| should be the JSON formatted data return by the response.
+// Returns false to indicate a parsing error.
+bool ProfileDownloader::ParseProfileJSON(const std::string& data,
+                                         string16* full_name,
+                                         string16* given_name,
+                                         std::string* url,
+                                         int image_size,
+                                         std::string* profile_locale) {
   DCHECK(full_name);
   DCHECK(given_name);
   DCHECK(url);
+  DCHECK(profile_locale);
+
   *full_name = string16();
   *given_name = string16();
   *url = std::string();
+  *profile_locale = std::string();
 
   int error_code = -1;
   std::string error_message;
@@ -156,6 +166,7 @@ bool ProfileDownloader::GetProfileNameAndImageURL(const std::string& data,
 
   root_dictionary->GetString(kFullNamePath, full_name);
   root_dictionary->GetString(kGivenNamePath, given_name);
+  root_dictionary->GetString(kLocalePath, profile_locale);
 
   std::string url_string;
   if (root_dictionary->GetString(kPhotoThumbnailURLPath, &url_string)) {
@@ -233,6 +244,10 @@ string16 ProfileDownloader::GetProfileGivenName() const {
   return profile_given_name_;
 }
 
+std::string ProfileDownloader::GetProfileLocale() const {
+  return profile_locale_;
+}
+
 SkBitmap ProfileDownloader::GetProfilePicture() const {
   return profile_picture_;
 }
@@ -293,11 +308,12 @@ void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
 
   if (source == user_entry_fetcher_.get()) {
     std::string image_url;
-    if (!GetProfileNameAndImageURL(data,
-                                   &profile_full_name_,
-                                   &profile_given_name_,
-                                   &image_url,
-                                   delegate_->GetDesiredImageSideLength())) {
+    if (!ParseProfileJSON(data,
+                          &profile_full_name_,
+                          &profile_given_name_,
+                          &image_url,
+                          delegate_->GetDesiredImageSideLength(),
+                          &profile_locale_)) {
       delegate_->OnProfileDownloadFailure(
           this, ProfileDownloaderDelegate::SERVICE_ERROR);
       return;

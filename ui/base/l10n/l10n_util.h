@@ -20,6 +20,10 @@
 #endif  // OS_MACOSX
 
 namespace l10n_util {
+// This method translates a generic locale name to one of the locally defined
+// ones. This method returns true if it succeeds.
+UI_EXPORT bool CheckAndResolveLocale(const std::string& locale,
+                                     std::string* resolved_locale);
 
 // This method is responsible for determining the locale as defined below. In
 // nearly all cases you shouldn't call this, rather use GetApplicationLocale

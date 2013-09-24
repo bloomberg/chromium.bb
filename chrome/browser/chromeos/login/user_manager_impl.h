@@ -79,6 +79,9 @@ class UserManagerImpl
       User::OAuthTokenStatus oauth_token_status) OVERRIDE;
   virtual void SaveUserDisplayName(const std::string& username,
                                    const string16& display_name) OVERRIDE;
+  virtual void UpdateUserAccountData(const std::string& username,
+                                     const string16& display_name,
+                                     const std::string& locale) OVERRIDE;
   virtual string16 GetUserDisplayName(
       const std::string& username) const OVERRIDE;
   virtual void SaveUserDisplayEmail(const std::string& username,
@@ -151,6 +154,9 @@ class UserManagerImpl
   // policy::DeviceLocalAccountPolicyService::Observer implementation.
   virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
   virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
+
+  // Wait untill we have sufficient information on user locale and apply it.
+  void RespectLocalePreference(Profile* profile, const User* user) const;
 
  private:
   friend class UserManager;
@@ -301,6 +307,16 @@ class UserManagerImpl
 
   // Sends metrics in response to a regular user logging in.
   void SendRegularUserLoginMetrics(const std::string& email);
+
+  // UpdateUserAccountData() + SaveUserDisplayName() .
+  void UpdateUserAccountDataImpl(const std::string& username,
+                                 const string16& display_name,
+                                 const std::string* locale);
+
+  // Returns NULL if User is not created.
+  User* GetUserByProfile(Profile* profile) const;
+
+  Profile* GetProfileByUser(const User* user) const;
 
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;

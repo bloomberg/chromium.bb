@@ -180,7 +180,17 @@ class User {
   explicit User(const std::string& email);
   virtual ~User();
 
+  bool is_profile_created() const {
+    return profile_is_created_;
+  }
+
+  const std::string* GetAccountLocale() const {
+    return account_locale_.get();
+  }
+
   // Setters are private so only UserManager can call them.
+  void SetAccountLocale(const std::string& raw_account_locale);
+
   void SetImage(const UserImage& user_image, int image_index);
 
   void SetImageURL(const GURL& image_url);
@@ -216,6 +226,13 @@ class User {
     is_active_ = is_active;
   }
 
+  void set_profile_is_created() {
+    profile_is_created_ = true;
+  }
+
+  // True if user has google account (not a guest or managed user).
+  bool has_gaia_account() const;
+
  private:
   std::string email_;
   string16 display_name_;
@@ -223,6 +240,12 @@ class User {
   std::string display_email_;
   UserImage user_image_;
   OAuthTokenStatus oauth_token_status_;
+
+  // This is set to chromeos locale if account data has been downloaded.
+  // (Or failed to download, but at least one download attempt finished).
+  // An empty string indicates error in data load, or in
+  // translation of Account locale to chromeos locale.
+  scoped_ptr<std::string> account_locale_;
 
   // Used to identify homedir mount point.
   std::string username_hash_;
@@ -242,6 +265,9 @@ class User {
 
   // True if user is currently logged in and active in current session.
   bool is_active_;
+
+  // True if user Profile is created
+  bool profile_is_created_;
 
   DISALLOW_COPY_AND_ASSIGN(User);
 };

@@ -35,7 +35,6 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
-#include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/oauth2_login_manager_factory.h"
@@ -146,9 +145,6 @@ class LoginUtilsImpl
  private:
   // Restarts OAuth session authentication check.
   void KickStartAuthentication(Profile* profile);
-
-  // Check user's profile for kApplicationLocale setting.
-  void RespectLocalePreference(Profile* pref);
 
   // Callback for Profile::CREATE_STATUS_CREATED profile state.
   // Initializes basic preferences for newly created profile. Any other
@@ -378,10 +374,6 @@ void LoginUtilsImpl::InitProfilePreferences(Profile* user_profile,
     const User* user = UserManager::Get()->FindUser(email);
     google_services_username.SetValue(user ? user->display_email() : email);
   }
-
-  // For multi-profile case don't apply profile local because it is not safe.
-  if (UserManager::Get()->GetLoggedInUsers().size() == 1)
-    RespectLocalePreference(user_profile);
 }
 
 void LoginUtilsImpl::InitSessionRestoreStrategy() {
@@ -431,11 +423,11 @@ void LoginUtilsImpl::OnProfileCreated(
   CHECK(user_profile);
 
   switch (status) {
-    case Profile::CREATE_STATUS_INITIALIZED:
-      UserProfileInitialized(user_profile);
-      break;
     case Profile::CREATE_STATUS_CREATED:
       InitProfilePreferences(user_profile, email);
+      break;
+    case Profile::CREATE_STATUS_INITIALIZED:
+      UserProfileInitialized(user_profile);
       break;
     case Profile::CREATE_STATUS_LOCAL_FAIL:
     case Profile::CREATE_STATUS_REMOTE_FAIL:
@@ -610,29 +602,6 @@ void LoginUtilsImpl::StartSignedInServices(Profile* user_profile) {
   }
   user_context_.password.clear();
   user_context_.auth_code.clear();
-}
-
-void LoginUtilsImpl::RespectLocalePreference(Profile* profile) {
-  DCHECK(profile != NULL);
-  PrefService* prefs = profile->GetPrefs();
-  DCHECK(prefs != NULL);
-  if (g_browser_process == NULL)
-    return;
-
-  std::string pref_locale = prefs->GetString(prefs::kApplicationLocale);
-  if (pref_locale.empty())
-    pref_locale = prefs->GetString(prefs::kApplicationLocaleBackup);
-  if (pref_locale.empty())
-    pref_locale = g_browser_process->GetApplicationLocale();
-  DCHECK(!pref_locale.empty());
-  profile->ChangeAppLocale(pref_locale, Profile::APP_LOCALE_CHANGED_VIA_LOGIN);
-  // Here we don't enable keyboard layouts. Input methods are set up when
-  // the user first logs in. Then the user may customize the input methods.
-  // Hence changing input methods here, just because the user's UI language
-  // is different from the login screen UI language, is not desirable. Note
-  // that input method preferences are synced, so users can use their
-  // farovite input methods as soon as the preferences are synced.
-  LanguageSwitchMenu::SwitchLanguage(pref_locale);
 }
 
 void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {

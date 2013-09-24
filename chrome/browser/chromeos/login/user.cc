@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
@@ -207,10 +208,17 @@ User::User(const std::string& email)
       image_is_stub_(false),
       image_is_loading_(false),
       is_logged_in_(false),
-      is_active_(false) {
+      is_active_(false),
+      profile_is_created_(false) {
 }
 
 User::~User() {}
+
+void User::SetAccountLocale(const std::string& raw_account_locale) {
+  account_locale_.reset(new std::string);
+  // Ignore result
+  l10n_util::CheckAndResolveLocale(raw_account_locale, account_locale_.get());
+}
 
 void User::SetImage(const UserImage& user_image, int image_index) {
   user_image_ = user_image;
@@ -307,6 +315,23 @@ PublicAccountUser::~PublicAccountUser() {}
 
 User::UserType PublicAccountUser::GetType() const {
   return USER_TYPE_PUBLIC_ACCOUNT;
+}
+
+bool User::has_gaia_account() const {
+  COMPILE_ASSERT(NUM_USER_TYPES == 6, num_user_types_unexpected);
+  switch (GetType()) {
+    case USER_TYPE_REGULAR:
+      return true;
+    case USER_TYPE_GUEST:
+    case USER_TYPE_RETAIL_MODE:
+    case USER_TYPE_PUBLIC_ACCOUNT:
+    case USER_TYPE_LOCALLY_MANAGED:
+    case USER_TYPE_KIOSK_APP:
+      return false;
+    default:
+      NOTREACHED();
+  }
+  return false;
 }
 
 }  // namespace chromeos

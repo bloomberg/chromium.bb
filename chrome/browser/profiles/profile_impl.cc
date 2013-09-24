@@ -1068,7 +1068,9 @@ void ProfileImpl::ChangeAppLocale(
         // (2) on next login we assume that synchronization is already completed
         //     and we may finalize initialization.
         GetPrefs()->SetString(prefs::kApplicationLocaleBackup, cur_locale);
-        if (!backup_locale.empty())
+        if (!new_locale.empty())
+          GetPrefs()->SetString(prefs::kApplicationLocale, new_locale);
+        else if (!backup_locale.empty())
           GetPrefs()->SetString(prefs::kApplicationLocale, backup_locale);
         do_update_pref = false;
       }
