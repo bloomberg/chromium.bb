@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/feedback_private/blob_reader.h"
 
+#include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_fetcher.h"
@@ -11,12 +12,20 @@
 #include "net/url_request/url_request_context_getter.h"
 
 BlobReader::BlobReader(Profile* profile,
-                       const GURL& blob_url,
+                       const std::string& blob_uuid,
                        BlobReadCallback callback)
     : callback_(callback) {
-  fetcher_ = net::URLFetcher::Create(
+  GURL blob_url;
+  if (StartsWithASCII(blob_uuid, "blob:blobinternal", true)) {
+    // TODO(michaeln): remove support for deprecated blob urls
+    blob_url = GURL(blob_uuid);
+  } else {
+    blob_url = GURL(std::string("blob:uuid/") + blob_uuid);
+  }
+  DCHECK(blob_url.is_valid());
+  fetcher_.reset(net::URLFetcher::Create(
       blob_url, net::URLFetcher::GET,
-      this);
+      this));
   fetcher_->SetRequestContext(profile->GetRequestContext());
 }
 

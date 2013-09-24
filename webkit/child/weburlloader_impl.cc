@@ -423,17 +423,21 @@ void WebURLLoaderImpl::Context::Start(
           }
           break;
         case WebHTTPBody::Element::TypeFileSystemURL: {
-          GURL url = GURL(element.url);
-          DCHECK(url.SchemeIsFileSystem());
+          GURL file_system_url = element.fileSystemURL;
+          DCHECK(file_system_url.SchemeIsFileSystem());
           request_body->AppendFileSystemFileRange(
-              url,
+              file_system_url,
               static_cast<uint64>(element.fileStart),
               static_cast<uint64>(element.fileLength),
               base::Time::FromDoubleT(element.modificationTime));
           break;
         }
         case WebHTTPBody::Element::TypeBlob:
+#ifdef USE_BLOB_UUIDS
+          request_body->AppendBlob(element.blobUUID.utf8());
+#else
           request_body->AppendBlobDeprecated(GURL(element.blobURL));
+#endif
           break;
         default:
           NOTREACHED();

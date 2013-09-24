@@ -12,18 +12,18 @@ binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
   apiFunctions.setUpdateArgumentsPostValidate(
       "sendFeedback", function(feedbackInfo, callback) {
-    var attachedFileBlobUrl = '';
-    var screenshotBlobUrl = '';
+    var attachedFileBlobUuid = '';
+    var screenshotBlobUuid = '';
 
     if (feedbackInfo.attachedFile)
-      attachedFileBlobUrl =
-          feedbackPrivateNatives.GetBlobUrl(feedbackInfo.attachedFile.data);
+      attachedFileBlobUuid =
+          feedbackPrivateNatives.GetBlobUuid(feedbackInfo.attachedFile.data);
     if (feedbackInfo.screenshot)
-      screenshotBlobUrl =
-          feedbackPrivateNatives.GetBlobUrl(feedbackInfo.screenshot);
+      screenshotBlobUuid =
+          feedbackPrivateNatives.GetBlobUuid(feedbackInfo.screenshot);
 
-    feedbackInfo.attachedFileBlobUrl = attachedFileBlobUrl;
-    feedbackInfo.screenshotBlobUrl = screenshotBlobUrl;
+    feedbackInfo.attachedFileBlobUuid = attachedFileBlobUuid;
+    feedbackInfo.screenshotBlobUuid = screenshotBlobUuid;
 
     return [feedbackInfo, callback];
   });

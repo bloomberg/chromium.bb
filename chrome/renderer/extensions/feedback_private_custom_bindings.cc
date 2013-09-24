@@ -11,10 +11,14 @@
 
 namespace {
 
-void GetBlobUrl(const v8::FunctionCallbackInfo<v8::Value> &args) {
+void GetBlobUuid(const v8::FunctionCallbackInfo<v8::Value> &args) {
   DCHECK(args.Length() == 1);
   WebKit::WebBlob blob = WebKit::WebBlob::fromV8Value(args[0]);
+#ifdef USE_BLOB_UUIDS
+  args.GetReturnValue().Set(v8::String::New(blob.uuid().utf8().data()));
+#else
   args.GetReturnValue().Set(v8::String::New(blob.url().spec().data()));
+#endif
 }
 
 }  // namespace
@@ -24,7 +28,7 @@ namespace extensions {
 FeedbackPrivateCustomBindings::FeedbackPrivateCustomBindings(
     Dispatcher* dispatcher,
     ChromeV8Context* context) : ChromeV8Extension(dispatcher, context) {
-  RouteFunction("GetBlobUrl", base::Bind(&GetBlobUrl));
+  RouteFunction("GetBlobUuid", base::Bind(&GetBlobUuid));
 }
 
 }  // namespace extensions

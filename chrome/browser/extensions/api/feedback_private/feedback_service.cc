@@ -42,19 +42,19 @@ void FeedbackService::SendFeedback(
   send_feedback_callback_ = callback;
   feedback_data_ = feedback_data;
 
-  if (feedback_data_->attached_file_url().is_valid()) {
+  if (!feedback_data_->attached_file_uuid().empty()) {
     // Self-deleting object.
     BlobReader* attached_file_reader = new BlobReader(
-        profile, feedback_data_->attached_file_url(),
+        profile, feedback_data_->attached_file_uuid(),
         base::Bind(&FeedbackService::AttachedFileCallback,
                    GetWeakPtr()));
     attached_file_reader->Start();
   }
 
-  if (feedback_data_->screenshot_url().is_valid()) {
+  if (!feedback_data_->screenshot_uuid().empty()) {
     // Self-deleting object.
     BlobReader* screenshot_reader = new BlobReader(
-        profile, feedback_data_->screenshot_url(),
+        profile, feedback_data_->screenshot_uuid(),
         base::Bind(&FeedbackService::ScreenshotCallback,
                    GetWeakPtr()));
     screenshot_reader->Start();
@@ -65,7 +65,7 @@ void FeedbackService::SendFeedback(
 
 void FeedbackService::AttachedFileCallback(scoped_ptr<std::string> data) {
   if (!data.get())
-    feedback_data_->set_attached_file_url(GURL());
+    feedback_data_->set_attached_file_uuid(std::string());
   else
     feedback_data_->set_attached_filedata(data.Pass());
 
@@ -74,7 +74,7 @@ void FeedbackService::AttachedFileCallback(scoped_ptr<std::string> data) {
 
 void FeedbackService::ScreenshotCallback(scoped_ptr<std::string> data) {
   if (!data.get())
-    feedback_data_->set_screenshot_url(GURL());
+    feedback_data_->set_screenshot_uuid(std::string());
   else
     feedback_data_->set_image(data.Pass());
 
@@ -90,10 +90,10 @@ void FeedbackService::CompleteSendFeedback() {
   //     and the read callback has updated the associated data on the feedback
   //     object.
   bool attached_file_completed =
-      !feedback_data_->attached_file_url().is_valid() ||
+      feedback_data_->attached_file_uuid().empty() ||
       feedback_data_->attached_filedata();
   bool screenshot_completed =
-      !feedback_data_->screenshot_url().is_valid() ||
+      !feedback_data_->screenshot_uuid().empty() ||
       feedback_data_->image();
 
   if (screenshot_completed && attached_file_completed) {

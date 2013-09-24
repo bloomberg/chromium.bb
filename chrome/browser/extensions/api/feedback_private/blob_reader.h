@@ -25,7 +25,7 @@ class BlobReader : public net::URLFetcherDelegate {
       BlobReadCallback;
 
   BlobReader(Profile* profile,
-             const GURL& blob_url,
+             const std::string& blob_uuid,
              BlobReadCallback callback);
   virtual ~BlobReader();
 
@@ -36,7 +36,7 @@ class BlobReader : public net::URLFetcherDelegate {
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   BlobReadCallback callback_;
-  net::URLFetcher* fetcher_;
+  scoped_ptr<net::URLFetcher> fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobReader);
 };

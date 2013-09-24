@@ -69,21 +69,28 @@ void WebBlobRegistryImpl::registerBlobData(
       case WebBlobData::Item::TypeBlob:
         if (data_item.length) {
           webkit_blob::BlobData::Item item;
+#ifdef USE_BLOB_UUIDS
+          item.SetToBlobRange(
+              data_item.blobUUID.utf8(),
+              static_cast<uint64>(data_item.offset),
+              static_cast<uint64>(data_item.length));
+#else
           item.SetToBlobUrlRange(
               data_item.blobURL,
               static_cast<uint64>(data_item.offset),
               static_cast<uint64>(data_item.length));
+#endif
           sender_->Send(
               new BlobHostMsg_AppendBlobDataItem(uuid_str, item));
         }
         break;
-      case WebBlobData::Item::TypeURL:
+      case WebBlobData::Item::TypeFileSystemURL:
         if (data_item.length) {
           // We only support filesystem URL as of now.
-          DCHECK(GURL(data_item.url).SchemeIsFileSystem());
+          DCHECK(GURL(data_item.fileSystemURL).SchemeIsFileSystem());
           webkit_blob::BlobData::Item item;
           item.SetToFileSystemUrlRange(
-              data_item.url,
+              data_item.fileSystemURL,
               static_cast<uint64>(data_item.offset),
               static_cast<uint64>(data_item.length),
               base::Time::FromDoubleT(data_item.expectedModificationTime));

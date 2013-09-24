@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/strings/string_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "webkit/browser/blob/blob_data_handle.h"
@@ -77,6 +78,17 @@ BlobProtocolHandler::LookupBlobData(net::URLRequest* request) const {
   // The FeedbackExtensionAPI relies on this.
   scoped_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(
       context_->LookupUuidFromDeprecatedURL(request->url()));
+  if (handle)
+    return handle->data();
+
+  // Support looking up based on uuid, the FeedbackExtensionAPI relies on this.
+  // TODO(michaeln): Replace this use case and others like it with a BlobReader
+  // impl that does not depend on urlfetching to perform this function.
+  const std::string kPrefix("blob:uuid/");
+  if (!StartsWithASCII(request->url().spec(), kPrefix, true))
+    return NULL;
+  std::string uuid = request->url().spec().substr(kPrefix.length());
+  handle = context_->GetBlobDataFromUUID(uuid);
   return handle.get() ? handle->data() : NULL;
 }
 

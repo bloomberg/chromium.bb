@@ -48,9 +48,9 @@ namespace feedbackPrivate {
     SystemInformation[]? systemInformation;
 
     // TODO(rkc): Remove these once we have bindings to send blobs to Chrome.
-    // Used internally to store the blob Url after parameter customization.
-    DOMString? attachedFileBlobUrl;
-    DOMString? screenshotBlobUrl;
+    // Used internally to store the blob uuid after parameter customization.
+    DOMString? attachedFileBlobUuid;
+    DOMString? screenshotBlobUuid;
   };
 
   // Status of the sending of a feedback report.

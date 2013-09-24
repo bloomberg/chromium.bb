@@ -142,14 +142,15 @@ bool FeedbackPrivateSendFeedbackFunction::RunImpl() {
 
   const FeedbackInfo &feedback_info = params->feedback;
 
-  std::string attached_file_url, screenshot_url;
-  if (feedback_info.attached_file_blob_url.get() &&
-      !feedback_info.attached_file_blob_url->empty())
-    attached_file_url = *feedback_info.attached_file_blob_url;
+  std::string attached_file_uuid;
+  if (feedback_info.attached_file_blob_uuid.get() &&
+      !feedback_info.attached_file_blob_uuid->empty())
+    attached_file_uuid = *feedback_info.attached_file_blob_uuid;
 
-  if (feedback_info.screenshot_blob_url.get() &&
-      !feedback_info.screenshot_blob_url->empty())
-    screenshot_url = *feedback_info.screenshot_blob_url;
+  std::string screenshot_uuid;
+  if (feedback_info.screenshot_blob_uuid.get() &&
+      !feedback_info.screenshot_blob_uuid->empty())
+    screenshot_uuid = *feedback_info.screenshot_blob_uuid;
 
   // Populate feedback data.
   scoped_refptr<FeedbackData> feedback_data(new FeedbackData());
@@ -163,14 +164,14 @@ bool FeedbackPrivateSendFeedbackFunction::RunImpl() {
   if (feedback_info.email.get())
     feedback_data->set_user_email(*feedback_info.email.get());
 
-  if (!attached_file_url.empty()) {
+  if (!attached_file_uuid.empty()) {
     feedback_data->set_attached_filename(
         (*feedback_info.attached_file.get()).name);
-    feedback_data->set_attached_file_url(GURL(attached_file_url));
+    feedback_data->set_attached_file_uuid(attached_file_uuid);
   }
 
-  if (!screenshot_url.empty())
-    feedback_data->set_screenshot_url(GURL(screenshot_url));
+  if (!screenshot_uuid.empty())
+    feedback_data->set_screenshot_uuid(screenshot_uuid);
 
   if (feedback_info.trace_id.get()) {
     feedback_data->set_trace_id(*feedback_info.trace_id.get());
