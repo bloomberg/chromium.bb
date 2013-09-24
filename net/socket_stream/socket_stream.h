@@ -189,6 +189,8 @@ class NET_EXPORT SocketStream
  private:
   FRIEND_TEST_ALL_PREFIXES(SocketStreamTest, IOPending);
   FRIEND_TEST_ALL_PREFIXES(SocketStreamTest, SwitchAfterPending);
+  FRIEND_TEST_ALL_PREFIXES(SocketStreamTest,
+                           NullContextSocketStreamShouldNotCrash);
 
   friend class WebSocketThrottleTest;
 

@@ -451,12 +451,12 @@ void SocketStream::OnWriteCompleted(int result) {
 }
 
 void SocketStream::DoLoop(int result) {
+  if (next_state_ == STATE_NONE)
+    return;
+
   // If context was not set, close immediately.
   if (!context_)
     next_state_ = STATE_CLOSE;
-
-  if (next_state_ == STATE_NONE)
-    return;
 
   do {
     State state = next_state_;

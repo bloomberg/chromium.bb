@@ -309,6 +309,22 @@ class SocketStreamTest : public PlatformTest {
     event->socket->Close();
   }
 
+  virtual void DoCloseFlushPendingWriteTestWithSetContextNull(
+      SocketStream* socket_stream, SocketStreamEvent* event) {
+    socket_stream->set_context(NULL);
+    // handshake response received.
+    for (size_t i = 0; i < messages_.size(); i++) {
+      std::vector<char> frame;
+      frame.push_back('\0');
+      frame.insert(frame.end(), messages_[i].begin(), messages_[i].end());
+      frame.push_back('\xff');
+      EXPECT_TRUE(event->socket->SendData(&frame[0], frame.size()));
+    }
+    // Actual StreamSocket close must happen after all frames queued by
+    // SendData above are sent out.
+    event->socket->Close();
+  }
+
   virtual void DoFailByTooBigDataAndClose(SocketStreamEvent* event) {
     std::string frame(event->number + 1, 0x00);
     VLOG(1) << event->number;
@@ -959,6 +975,52 @@ TEST_F(SocketStreamTest, OnErrorDetachDelegate) {
 
   socket_stream->Connect();
 
+  EXPECT_EQ(OK, test_callback.WaitForResult());
+}
+
+TEST_F(SocketStreamTest, NullContextSocketStreamShouldNotCrash) {
+  TestCompletionCallback test_callback;
+
+  scoped_ptr<SocketStreamEventRecorder> delegate(
+      new SocketStreamEventRecorder(test_callback.callback()));
+  TestURLRequestContext context;
+  scoped_refptr<SocketStream> socket_stream(
+      new SocketStream(GURL("ws://example.com/demo"), delegate.get()));
+  delegate->SetOnConnected(base::Bind(
+      &SocketStreamTest::DoSendWebSocketHandshake, base::Unretained(this)));
+  delegate->SetOnReceivedData(base::Bind(
+      &SocketStreamTest::DoCloseFlushPendingWriteTestWithSetContextNull,
+      base::Unretained(this),
+      base::Unretained(socket_stream.get())));
+  delegate->SetOnStartOpenConnection(base::Bind(
+      &SocketStreamTest::DoIOPending, base::Unretained(this)));
+
+  socket_stream->set_context(&context);
+
+  MockWrite data_writes[] = {
+    MockWrite(SocketStreamTest::kWebSocketHandshakeRequest),
+    MockWrite(ASYNC, ERR_ABORTED),
+    MockWrite(ASYNC, ERR_ABORTED),
+  };
+  MockRead data_reads[] = {
+    MockRead(SocketStreamTest::kWebSocketHandshakeResponse),
+    // Server doesn't close the connection after handshake.
+    MockRead(ASYNC, ERR_ABORTED),
+  };
+  AddWebSocketMessage("message1");
+  AddWebSocketMessage("message2");
+
+  DelayedSocketData data_provider(
+      1, data_reads, arraysize(data_reads),
+      data_writes, arraysize(data_writes));
+
+  MockClientSocketFactory* mock_socket_factory = GetMockClientSocketFactory();
+  mock_socket_factory->AddSocketDataProvider(&data_provider);
+  socket_stream->SetClientSocketFactory(mock_socket_factory);
+
+  socket_stream->Connect();
+  io_test_callback_.WaitForResult();
+  delegate->CompleteConnection(OK);
   EXPECT_EQ(OK, test_callback.WaitForResult());
 }
 
