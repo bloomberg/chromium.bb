@@ -136,6 +136,26 @@ QuicClientSession::~QuicClientSession() {
   }
 }
 
+bool QuicClientSession::OnStreamFrames(
+    const std::vector<QuicStreamFrame>& frames) {
+  // Record total number of stream frames.
+  UMA_HISTOGRAM_COUNTS("Net.QuicNumStreamFramesInPacket", frames.size());
+
+  // Record number of frames per stream in packet.
+  typedef std::map<QuicStreamId, size_t> FrameCounter;
+  FrameCounter frames_per_stream;
+  for (size_t i = 0; i < frames.size(); ++i) {
+    frames_per_stream[frames[i].stream_id]++;
+  }
+  for (FrameCounter::const_iterator it = frames_per_stream.begin();
+       it != frames_per_stream.end(); ++it) {
+    UMA_HISTOGRAM_COUNTS("Net.QuicNumStreamFramesPerStreamInPacket",
+                         it->second);
+  }
+
+  return QuicSession::OnStreamFrames(frames);
+}
+
 int QuicClientSession::TryCreateStream(StreamRequest* request,
                                        QuicReliableClientStream** stream) {
   if (!crypto_stream_->encryption_established()) {

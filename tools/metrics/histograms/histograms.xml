@@ -8158,6 +8158,18 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicNumStreamFramesInPacket">
+  <summary>
+    The number of stream frames bundled within a received packet.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicNumStreamFramesPerStreamInPacket">
+  <summary>
+    The number of stream frames per stream ID within a received packet.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.CloseSessionOnError" enum="NetErrorCodes">
   <summary>
     The network error code which resulted in the session being closed.
