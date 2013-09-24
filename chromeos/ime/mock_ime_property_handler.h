@@ -10,14 +10,13 @@
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT MockIMEPropertyHandler :
-    public IBusPanelPropertyHandlerInterface {
+class CHROMEOS_EXPORT MockIMEPropertyHandler
+  : public IBusPanelPropertyHandlerInterface {
  public:
   MockIMEPropertyHandler();
   virtual ~MockIMEPropertyHandler();
 
   virtual void RegisterProperties(const IBusPropertyList& properties) OVERRIDE;
-  virtual void UpdateProperty(const IBusProperty& property) OVERRIDE;
 
   int register_properties_call_count() {
     return register_properties_call_count_;

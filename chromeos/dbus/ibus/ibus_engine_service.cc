@@ -54,14 +54,6 @@ class IBusEngineServiceDaemonlessImpl : public IBusEngineService {
   }
 
   // IBusEngineService override.
-  virtual void UpdateProperty(const IBusProperty& property) OVERRIDE {
-    IBusPanelPropertyHandlerInterface* property_handler =
-        IBusBridge::Get()->GetPropertyHandler();
-    if (property_handler)
-      property_handler->UpdateProperty(property);
-  }
-
-  // IBusEngineService override.
   virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode,
                                uint32 state) OVERRIDE {
     IBusInputContextHandlerInterface* input_context =

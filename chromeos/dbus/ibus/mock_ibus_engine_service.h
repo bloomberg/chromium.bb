@@ -48,7 +48,6 @@ class MockIBusEngineService : public IBusEngineService {
                              IBusEnginePreeditFocusOutMode mode) OVERRIDE;
   virtual void UpdateAuxiliaryText(const IBusText& ibus_text,
                                    bool is_visible) OVERRIDE;
-  virtual void UpdateProperty(const IBusProperty& property) OVERRIDE;
   virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode,
                                uint32 state) OVERRIDE;
   virtual void RequireSurroundingText() OVERRIDE;

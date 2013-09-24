@@ -52,8 +52,6 @@ class CHROMEOS_EXPORT IBusEngineService {
   // Emits UpdateAuxiliaryText signal.
   virtual void UpdateAuxiliaryText(const IBusText& ibus_text,
                                    bool is_visible) = 0;
-  // Emits UpdateProperty signal.
-  virtual void UpdateProperty(const IBusProperty& property) = 0;
   // Emits ForwardKeyEvent signal.
   virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode, uint32 state) = 0;
   // Emits RequireSurroundingText signal.

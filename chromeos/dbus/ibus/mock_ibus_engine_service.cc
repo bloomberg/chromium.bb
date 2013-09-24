@@ -52,11 +52,6 @@ void MockIBusEngineService::UpdateAuxiliaryText(const IBusText& ibus_text,
   last_update_aux_text_arg_->is_visible = is_visible;
 }
 
-void MockIBusEngineService::UpdateProperty(const IBusProperty& property) {
-  ++update_property_call_count_;
-  last_updated_property_->CopyFrom(property);
-}
-
 void MockIBusEngineService::ForwardKeyEvent(uint32 keyval,
                                             uint32 keycode,
                                             uint32 state) {

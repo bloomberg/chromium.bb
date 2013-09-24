@@ -33,25 +33,6 @@
 #include "ui/aura/root_window.h"
 #include "ui/base/ime/input_method_ibus.h"
 
-namespace {
-
-// Finds a property which has |new_prop.key| from |prop_list|, and replaces the
-// property with |new_prop|. Returns true if such a property is found.
-bool FindAndUpdateProperty(
-    const chromeos::input_method::InputMethodProperty& new_prop,
-    chromeos::input_method::InputMethodPropertyList* prop_list) {
-  for (size_t i = 0; i < prop_list->size(); ++i) {
-    chromeos::input_method::InputMethodProperty& prop = prop_list->at(i);
-    if (prop.key == new_prop.key) {
-      prop = new_prop;
-      return true;
-    }
-  }
-  return false;
-}
-
-}  // namespace
-
 namespace chromeos {
 namespace input_method {
 
@@ -235,30 +216,6 @@ void IBusControllerImpl::RegisterProperties(
   if (!FlattenPropertyList(ibus_prop_list, &current_property_list_))
     current_property_list_.clear(); // Clear properties on errors.
   FOR_EACH_OBSERVER(IBusController::Observer, observers_, PropertyChanged());
-}
-
-void IBusControllerImpl::UpdateProperty(const IBusProperty& ibus_prop) {
-  InputMethodPropertyList prop_list;  // our representation.
-  if (!FlattenProperty(ibus_prop, &prop_list)) {
-    // Don't update the UI on errors.
-    DVLOG(1) << "Malformed properties are detected";
-    return;
-  }
-
-  // Notify the change.
-  if (!prop_list.empty()) {
-    for (size_t i = 0; i < prop_list.size(); ++i) {
-      FindAndUpdateProperty(prop_list[i], &current_property_list_);
-    }
-    FOR_EACH_OBSERVER(IBusController::Observer, observers_, PropertyChanged());
-  }
-}
-
-// static
-bool IBusControllerImpl::FindAndUpdatePropertyForTesting(
-    const chromeos::input_method::InputMethodProperty& new_prop,
-    chromeos::input_method::InputMethodPropertyList* prop_list) {
-  return FindAndUpdateProperty(new_prop, prop_list);
 }
 
 }  // namespace input_method

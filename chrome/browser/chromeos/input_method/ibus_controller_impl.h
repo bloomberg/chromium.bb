@@ -36,12 +36,6 @@ class IBusControllerImpl : public IBusController,
   virtual const InputMethodPropertyList& GetCurrentProperties() const OVERRIDE;
   virtual void ClearProperties() OVERRIDE;
 
-  // Calls <anonymous_namespace>::FindAndUpdateProperty. This method is just for
-  // unit testing.
-  static bool FindAndUpdatePropertyForTesting(
-      const InputMethodProperty& new_prop,
-      InputMethodPropertyList* prop_list);
-
  protected:
   ObserverList<Observer> observers_;
 
@@ -53,7 +47,6 @@ class IBusControllerImpl : public IBusController,
   // IBusPanelPropertyHandlerInterface overrides:
   virtual void RegisterProperties(
       const IBusPropertyList& properties) OVERRIDE;
-  virtual void UpdateProperty(const IBusProperty& property) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(IBusControllerImpl);
 };

@@ -158,9 +158,6 @@ class CHROMEOS_EXPORT IBusPanelPropertyHandlerInterface {
   // Called when a new property is registered.
   virtual void RegisterProperties(const IBusPropertyList& properties) = 0;
 
-  // Called when current property is updated.
-  virtual void UpdateProperty(const IBusProperty& property) = 0;
-
  protected:
   IBusPanelPropertyHandlerInterface() {}
 };

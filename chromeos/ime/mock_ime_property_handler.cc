@@ -24,9 +24,6 @@ void MockIMEPropertyHandler::RegisterProperties(
   }
 }
 
-void MockIMEPropertyHandler::UpdateProperty(const IBusProperty& property) {
-}
-
 void MockIMEPropertyHandler::Reset() {
   register_properties_call_count_ = 0;
 }
