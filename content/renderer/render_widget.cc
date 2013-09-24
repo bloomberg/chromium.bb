@@ -2176,8 +2176,16 @@ void RenderWidget::FinishHandlingImeEvent() {
 }
 
 void RenderWidget::UpdateTextInputType() {
+  // On Windows, not only an IME but also an on-screen keyboard relies on the
+  // latest TextInputType to optimize its layout and functionality. Thus
+  // |input_method_is_active_| is no longer an appropriate condition to suppress
+  // TextInputTypeChanged IPC on Windows.
+  // TODO(yukawa, yoichio): Consider to stop checking |input_method_is_active_|
+  // on other platforms as well as Windows if the overhead is acceptable.
+#if !defined(OS_WIN)
   if (!input_method_is_active_)
     return;
+#endif
 
   ui::TextInputType new_type = GetTextInputType();
   if (IsDateTimeInput(new_type))
