@@ -52,9 +52,8 @@ void ExpectStringArgumentsFollowedByObjectPath(
 class ShillManagerClientTest : public ShillClientUnittestBase {
  public:
   ShillManagerClientTest()
-      : ShillClientUnittestBase(
-          flimflam::kFlimflamManagerInterface,
-          dbus::ObjectPath(flimflam::kFlimflamServicePath)) {
+      : ShillClientUnittestBase(shill::kFlimflamManagerInterface,
+                                dbus::ObjectPath(shill::kFlimflamServicePath)) {
   }
 
   virtual void SetUp() {
@@ -77,16 +76,16 @@ class ShillManagerClientTest : public ShillClientUnittestBase {
 TEST_F(ShillManagerClientTest, PropertyChanged) {
   // Create a signal.
   base::FundamentalValue kOfflineMode(true);
-  dbus::Signal signal(flimflam::kFlimflamManagerInterface,
-                      flimflam::kMonitorPropertyChanged);
+  dbus::Signal signal(shill::kFlimflamManagerInterface,
+                      shill::kMonitorPropertyChanged);
   dbus::MessageWriter writer(&signal);
-  writer.AppendString(flimflam::kOfflineModeProperty);
+  writer.AppendString(shill::kOfflineModeProperty);
   dbus::AppendBasicTypeValueData(&writer, kOfflineMode);
 
   // Set expectations.
   MockPropertyChangeObserver observer;
   EXPECT_CALL(observer,
-              OnPropertyChanged(flimflam::kOfflineModeProperty,
+              OnPropertyChanged(shill::kOfflineModeProperty,
                                 ValueEq(ByRef(kOfflineMode)))).Times(1);
 
   // Add the observer
@@ -113,22 +112,21 @@ TEST_F(ShillManagerClientTest, GetProperties) {
   writer.OpenArray("{sv}", &array_writer);
   dbus::MessageWriter entry_writer(NULL);
   array_writer.OpenDictEntry(&entry_writer);
-  entry_writer.AppendString(flimflam::kOfflineModeProperty);
+  entry_writer.AppendString(shill::kOfflineModeProperty);
   entry_writer.AppendVariantOfBool(true);
   array_writer.CloseContainer(&entry_writer);
   writer.CloseContainer(&array_writer);
 
   // Create the expected value.
   base::DictionaryValue value;
-  value.SetWithoutPathExpansion(flimflam::kOfflineModeProperty,
+  value.SetWithoutPathExpansion(shill::kOfflineModeProperty,
                                 base::Value::CreateBooleanValue(true));
   // Set expectations.
-  PrepareForMethodCall(flimflam::kGetPropertiesFunction,
+  PrepareForMethodCall(shill::kGetPropertiesFunction,
                        base::Bind(&ExpectNoArgument),
                        response.get());
   // Call method.
-  client_->GetProperties(base::Bind(&ExpectDictionaryValueResult,
-                                    &value));
+  client_->GetProperties(base::Bind(&ExpectDictionaryValueResult, &value));
   // Run the message loop.
   message_loop_.RunUntilIdle();
 }
@@ -142,7 +140,7 @@ TEST_F(ShillManagerClientTest, GetNetworksForGeolocation) {
   writer.OpenArray("{sv}", &type_dict_writer);
   dbus::MessageWriter type_entry_writer(NULL);
   type_dict_writer.OpenDictEntry(&type_entry_writer);
-  type_entry_writer.AppendString(flimflam::kTypeWifi);
+  type_entry_writer.AppendString(shill::kTypeWifi);
   dbus::MessageWriter variant_writer(NULL);
   type_entry_writer.OpenVariant("aa{ss}", &variant_writer);
   dbus::MessageWriter wap_list_writer(NULL);
@@ -188,15 +186,15 @@ TEST_F(ShillManagerClientTest, SetProperty) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   // Set expectations.
   base::StringValue value("portal list");
-  PrepareForMethodCall(flimflam::kSetPropertyFunction,
+  PrepareForMethodCall(shill::kSetPropertyFunction,
                        base::Bind(ExpectStringAndValueArguments,
-                                  flimflam::kCheckPortalListProperty,
+                                  shill::kCheckPortalListProperty,
                                   &value),
                        response.get());
   // Call method.
   MockClosure mock_closure;
   MockErrorCallback mock_error_callback;
-  client_->SetProperty(flimflam::kCheckPortalListProperty,
+  client_->SetProperty(shill::kCheckPortalListProperty,
                        value,
                        mock_closure.GetCallback(),
                        mock_error_callback.GetCallback());
@@ -211,13 +209,13 @@ TEST_F(ShillManagerClientTest, RequestScan) {
   // Create response.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   // Set expectations.
-  PrepareForMethodCall(flimflam::kRequestScanFunction,
-                       base::Bind(&ExpectStringArgument, flimflam::kTypeWifi),
+  PrepareForMethodCall(shill::kRequestScanFunction,
+                       base::Bind(&ExpectStringArgument, shill::kTypeWifi),
                        response.get());
   // Call method.
   MockClosure mock_closure;
   MockErrorCallback mock_error_callback;
-  client_->RequestScan(flimflam::kTypeWifi,
+  client_->RequestScan(shill::kTypeWifi,
                        mock_closure.GetCallback(),
                        mock_error_callback.GetCallback());
   EXPECT_CALL(mock_closure, Run()).Times(1);
@@ -231,13 +229,13 @@ TEST_F(ShillManagerClientTest, EnableTechnology) {
   // Create response.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   // Set expectations.
-  PrepareForMethodCall(flimflam::kEnableTechnologyFunction,
-                       base::Bind(&ExpectStringArgument, flimflam::kTypeWifi),
+  PrepareForMethodCall(shill::kEnableTechnologyFunction,
+                       base::Bind(&ExpectStringArgument, shill::kTypeWifi),
                        response.get());
   // Call method.
   MockClosure mock_closure;
   MockErrorCallback mock_error_callback;
-  client_->EnableTechnology(flimflam::kTypeWifi,
+  client_->EnableTechnology(shill::kTypeWifi,
                             mock_closure.GetCallback(),
                             mock_error_callback.GetCallback());
   EXPECT_CALL(mock_closure, Run()).Times(1);
@@ -251,13 +249,13 @@ TEST_F(ShillManagerClientTest, DisableTechnology) {
   // Create response.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   // Set expectations.
-  PrepareForMethodCall(flimflam::kDisableTechnologyFunction,
-                       base::Bind(&ExpectStringArgument, flimflam::kTypeWifi),
+  PrepareForMethodCall(shill::kDisableTechnologyFunction,
+                       base::Bind(&ExpectStringArgument, shill::kTypeWifi),
                        response.get());
   // Call method.
   MockClosure mock_closure;
   MockErrorCallback mock_error_callback;
-  client_->DisableTechnology(flimflam::kTypeWifi,
+  client_->DisableTechnology(shill::kTypeWifi,
                              mock_closure.GetCallback(),
                              mock_error_callback.GetCallback());
   EXPECT_CALL(mock_closure, Run()).Times(1);
@@ -276,7 +274,7 @@ TEST_F(ShillManagerClientTest, ConfigureService) {
   // Create the argument dictionary.
   scoped_ptr<base::DictionaryValue> arg(CreateExampleServiceProperties());
   // Set expectations.
-  PrepareForMethodCall(flimflam::kConfigureServiceFunction,
+  PrepareForMethodCall(shill::kConfigureServiceFunction,
                        base::Bind(&ExpectDictionaryValueArgument, arg.get()),
                        response.get());
   // Call method.
@@ -300,7 +298,7 @@ TEST_F(ShillManagerClientTest, GetService) {
   // Create the argument dictionary.
   scoped_ptr<base::DictionaryValue> arg(CreateExampleServiceProperties());
   // Set expectations.
-  PrepareForMethodCall(flimflam::kGetServiceFunction,
+  PrepareForMethodCall(shill::kGetServiceFunction,
                        base::Bind(&ExpectDictionaryValueArgument, arg.get()),
                        response.get());
   // Call method.

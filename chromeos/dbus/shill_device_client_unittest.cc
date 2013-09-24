@@ -52,7 +52,7 @@ void ExpectTwoStringArguments(const std::string& expected_string1,
 class ShillDeviceClientTest : public ShillClientUnittestBase {
  public:
   ShillDeviceClientTest()
-      : ShillClientUnittestBase(flimflam::kFlimflamDeviceInterface,
+      : ShillClientUnittestBase(shill::kFlimflamDeviceInterface,
                                    dbus::ObjectPath(kExampleDevicePath)) {
   }
 
@@ -76,19 +76,18 @@ class ShillDeviceClientTest : public ShillClientUnittestBase {
 TEST_F(ShillDeviceClientTest, PropertyChanged) {
   const bool kValue = true;
   // Create a signal.
-  dbus::Signal signal(flimflam::kFlimflamDeviceInterface,
-                      flimflam::kMonitorPropertyChanged);
+  dbus::Signal signal(shill::kFlimflamDeviceInterface,
+                      shill::kMonitorPropertyChanged);
   dbus::MessageWriter writer(&signal);
-  writer.AppendString(flimflam::kCellularAllowRoamingProperty);
+  writer.AppendString(shill::kCellularAllowRoamingProperty);
   writer.AppendVariantOfBool(kValue);
 
   // Set expectations.
   const base::FundamentalValue value(kValue);
   MockPropertyChangeObserver observer;
   EXPECT_CALL(observer,
-              OnPropertyChanged(
-                  flimflam::kCellularAllowRoamingProperty,
-                  ValueEq(ByRef(value)))).Times(1);
+              OnPropertyChanged(shill::kCellularAllowRoamingProperty,
+                                ValueEq(ByRef(value)))).Times(1);
 
   // Add the observer
   client_->AddPropertyChangedObserver(
@@ -104,9 +103,8 @@ TEST_F(ShillDeviceClientTest, PropertyChanged) {
       &observer);
 
   EXPECT_CALL(observer,
-              OnPropertyChanged(
-                  flimflam::kCellularAllowRoamingProperty,
-                  ValueEq(ByRef(value)))).Times(0);
+              OnPropertyChanged(shill::kCellularAllowRoamingProperty,
+                                ValueEq(ByRef(value)))).Times(0);
 
   // Run the signal callback again and make sure the observer isn't called.
   SendPropertyChangedSignal(&signal);
@@ -121,16 +119,16 @@ TEST_F(ShillDeviceClientTest, GetProperties) {
   writer.OpenArray("{sv}", &array_writer);
   dbus::MessageWriter entry_writer(NULL);
   array_writer.OpenDictEntry(&entry_writer);
-  entry_writer.AppendString(flimflam::kCellularAllowRoamingProperty);
+  entry_writer.AppendString(shill::kCellularAllowRoamingProperty);
   entry_writer.AppendVariantOfBool(kValue);
   array_writer.CloseContainer(&entry_writer);
   writer.CloseContainer(&array_writer);
 
   // Set expectations.
   base::DictionaryValue value;
-  value.SetWithoutPathExpansion(flimflam::kCellularAllowRoamingProperty,
+  value.SetWithoutPathExpansion(shill::kCellularAllowRoamingProperty,
                                 base::Value::CreateBooleanValue(kValue));
-  PrepareForMethodCall(flimflam::kGetPropertiesFunction,
+  PrepareForMethodCall(shill::kGetPropertiesFunction,
                        base::Bind(&ExpectNoArgument),
                        response.get());
   // Call method.
@@ -145,7 +143,7 @@ TEST_F(ShillDeviceClientTest, ProposeScan) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
-  PrepareForMethodCall(flimflam::kProposeScanFunction,
+  PrepareForMethodCall(shill::kProposeScanFunction,
                        base::Bind(&ExpectNoArgument),
                        response.get());
   // Call method.
@@ -162,16 +160,16 @@ TEST_F(ShillDeviceClientTest, SetProperty) {
 
   // Set expectations.
   const base::FundamentalValue value(kValue);
-  PrepareForMethodCall(flimflam::kSetPropertyFunction,
+  PrepareForMethodCall(shill::kSetPropertyFunction,
                        base::Bind(&ExpectStringAndValueArguments,
-                                  flimflam::kCellularAllowRoamingProperty,
+                                  shill::kCellularAllowRoamingProperty,
                                   &value),
                        response.get());
   // Call method.
   MockClosure mock_closure;
   MockErrorCallback mock_error_callback;
   client_->SetProperty(dbus::ObjectPath(kExampleDevicePath),
-                       flimflam::kCellularAllowRoamingProperty,
+                       shill::kCellularAllowRoamingProperty,
                        value,
                        mock_closure.GetCallback(),
                        mock_error_callback.GetCallback());
@@ -187,13 +185,13 @@ TEST_F(ShillDeviceClientTest, ClearProperty) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
-  PrepareForMethodCall(flimflam::kClearPropertyFunction,
+  PrepareForMethodCall(shill::kClearPropertyFunction,
                        base::Bind(&ExpectStringArgument,
-                                  flimflam::kCellularAllowRoamingProperty),
+                                  shill::kCellularAllowRoamingProperty),
                        response.get());
   // Call method.
   client_->ClearProperty(dbus::ObjectPath(kExampleDevicePath),
-                         flimflam::kCellularAllowRoamingProperty,
+                         shill::kCellularAllowRoamingProperty,
                          base::Bind(&ExpectNoResultValue));
   // Run the message loop.
   message_loop_.RunUntilIdle();
@@ -207,12 +205,12 @@ TEST_F(ShillDeviceClientTest, AddIPConfig) {
   writer.AppendObjectPath(expected_result);
 
   // Set expectations.
-  PrepareForMethodCall(flimflam::kAddIPConfigFunction,
-                       base::Bind(&ExpectStringArgument, flimflam::kTypeDHCP),
+  PrepareForMethodCall(shill::kAddIPConfigFunction,
+                       base::Bind(&ExpectStringArgument, shill::kTypeDHCP),
                        response.get());
   // Call method.
   client_->AddIPConfig(dbus::ObjectPath(kExampleDevicePath),
-                       flimflam::kTypeDHCP,
+                       shill::kTypeDHCP,
                        base::Bind(&ExpectObjectPathResult, expected_result));
   // Run the message loop.
   message_loop_.RunUntilIdle();
@@ -227,7 +225,7 @@ TEST_F(ShillDeviceClientTest, RequirePin) {
   // Set expectations.
   MockClosure mock_closure;
   MockErrorCallback mock_error_callback;
-  PrepareForMethodCall(flimflam::kRequirePinFunction,
+  PrepareForMethodCall(shill::kRequirePinFunction,
                        base::Bind(&ExpectStringAndBoolArguments,
                                   kPin,
                                   kRequired),
@@ -252,7 +250,7 @@ TEST_F(ShillDeviceClientTest, EnterPin) {
   // Set expectations.
   MockClosure mock_closure;
   MockErrorCallback mock_error_callback;
-  PrepareForMethodCall(flimflam::kEnterPinFunction,
+  PrepareForMethodCall(shill::kEnterPinFunction,
                        base::Bind(&ExpectStringArgument,
                                   kPin),
                        response.get());
@@ -277,7 +275,7 @@ TEST_F(ShillDeviceClientTest, UnblockPin) {
   // Set expectations.
   MockClosure mock_closure;
   MockErrorCallback mock_error_callback;
-  PrepareForMethodCall(flimflam::kUnblockPinFunction,
+  PrepareForMethodCall(shill::kUnblockPinFunction,
                        base::Bind(&ExpectTwoStringArguments, kPuk, kPin),
                        response.get());
   EXPECT_CALL(mock_closure, Run()).Times(1);
@@ -302,7 +300,7 @@ TEST_F(ShillDeviceClientTest, ChangePin) {
   // Set expectations.
   MockClosure mock_closure;
   MockErrorCallback mock_error_callback;
-  PrepareForMethodCall(flimflam::kChangePinFunction,
+  PrepareForMethodCall(shill::kChangePinFunction,
                        base::Bind(&ExpectTwoStringArguments,
                                   kOldPin,
                                   kNewPin),
@@ -328,7 +326,7 @@ TEST_F(ShillDeviceClientTest, Register) {
   // Set expectations.
   MockClosure mock_closure;
   MockErrorCallback mock_error_callback;
-  PrepareForMethodCall(flimflam::kRegisterFunction,
+  PrepareForMethodCall(shill::kRegisterFunction,
                        base::Bind(&ExpectStringArgument, kNetworkId),
                        response.get());
   EXPECT_CALL(mock_closure, Run()).Times(1);

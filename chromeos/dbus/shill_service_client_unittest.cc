@@ -26,7 +26,7 @@ const char kExampleServicePath[] = "/foo/bar";
 class ShillServiceClientTest : public ShillClientUnittestBase {
  public:
   ShillServiceClientTest()
-      : ShillClientUnittestBase(flimflam::kFlimflamServiceInterface,
+      : ShillClientUnittestBase(shill::kFlimflamServiceInterface,
                                    dbus::ObjectPath(kExampleServicePath)) {
   }
 
@@ -50,10 +50,10 @@ class ShillServiceClientTest : public ShillClientUnittestBase {
 TEST_F(ShillServiceClientTest, PropertyChanged) {
   const int kValue = 42;
   // Create a signal.
-  dbus::Signal signal(flimflam::kFlimflamServiceInterface,
-                      flimflam::kMonitorPropertyChanged);
+  dbus::Signal signal(shill::kFlimflamServiceInterface,
+                      shill::kMonitorPropertyChanged);
   dbus::MessageWriter writer(&signal);
-  writer.AppendString(flimflam::kSignalStrengthProperty);
+  writer.AppendString(shill::kSignalStrengthProperty);
   writer.AppendVariantOfByte(kValue);
 
   // Set expectations.
@@ -61,7 +61,7 @@ TEST_F(ShillServiceClientTest, PropertyChanged) {
   MockPropertyChangeObserver observer;
   EXPECT_CALL(observer,
               OnPropertyChanged(
-                  flimflam::kSignalStrengthProperty,
+                  shill::kSignalStrengthProperty,
                   ValueEq(ByRef(value)))).Times(1);
 
   // Add the observer
@@ -92,16 +92,16 @@ TEST_F(ShillServiceClientTest, GetProperties) {
   writer.OpenArray("{sv}", &array_writer);
   dbus::MessageWriter entry_writer(NULL);
   array_writer.OpenDictEntry(&entry_writer);
-  entry_writer.AppendString(flimflam::kSignalStrengthProperty);
+  entry_writer.AppendString(shill::kSignalStrengthProperty);
   entry_writer.AppendVariantOfByte(kValue);
   array_writer.CloseContainer(&entry_writer);
   writer.CloseContainer(&array_writer);
 
   // Set expectations.
   base::DictionaryValue value;
-  value.SetWithoutPathExpansion(flimflam::kSignalStrengthProperty,
+  value.SetWithoutPathExpansion(shill::kSignalStrengthProperty,
                                 base::Value::CreateIntegerValue(kValue));
-  PrepareForMethodCall(flimflam::kGetPropertiesFunction,
+  PrepareForMethodCall(shill::kGetPropertiesFunction,
                        base::Bind(&ExpectNoArgument),
                        response.get());
   // Call method.
@@ -118,16 +118,16 @@ TEST_F(ShillServiceClientTest, SetProperty) {
 
   // Set expectations.
   const base::StringValue value(kValue);
-  PrepareForMethodCall(flimflam::kSetPropertyFunction,
+  PrepareForMethodCall(shill::kSetPropertyFunction,
                        base::Bind(&ExpectStringAndValueArguments,
-                                  flimflam::kPassphraseProperty,
+                                  shill::kPassphraseProperty,
                                   &value),
                        response.get());
   // Call method.
   MockClosure mock_closure;
   MockErrorCallback mock_error_callback;
   client_->SetProperty(dbus::ObjectPath(kExampleServicePath),
-                       flimflam::kPassphraseProperty,
+                       shill::kPassphraseProperty,
                        value,
                        mock_closure.GetCallback(),
                        mock_error_callback.GetCallback());
@@ -167,15 +167,15 @@ TEST_F(ShillServiceClientTest, ClearProperty) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
-  PrepareForMethodCall(flimflam::kClearPropertyFunction,
+  PrepareForMethodCall(shill::kClearPropertyFunction,
                        base::Bind(&ExpectStringArgument,
-                                  flimflam::kPassphraseProperty),
+                                  shill::kPassphraseProperty),
                        response.get());
   // Call method.
   MockClosure mock_closure;
   MockErrorCallback mock_error_callback;
   client_->ClearProperty(dbus::ObjectPath(kExampleServicePath),
-                         flimflam::kPassphraseProperty,
+                         shill::kPassphraseProperty,
                          mock_closure.GetCallback(),
                          mock_error_callback.GetCallback());
   EXPECT_CALL(mock_closure, Run()).Times(1);
@@ -197,8 +197,8 @@ TEST_F(ShillServiceClientTest, ClearProperties) {
 
   // Set expectations.
   std::vector<std::string> keys;
-  keys.push_back(flimflam::kPassphraseProperty);
-  keys.push_back(flimflam::kSignalStrengthProperty);
+  keys.push_back(shill::kPassphraseProperty);
+  keys.push_back(shill::kSignalStrengthProperty);
   PrepareForMethodCall(shill::kClearPropertiesFunction,
                        base::Bind(&ExpectArrayOfStringsArgument, keys),
                        response.get());
@@ -223,7 +223,7 @@ TEST_F(ShillServiceClientTest, Connect) {
   // Set expectations.
   MockClosure mock_closure;
   MockErrorCallback mock_error_callback;
-  PrepareForMethodCall(flimflam::kConnectFunction,
+  PrepareForMethodCall(shill::kConnectFunction,
                        base::Bind(&ExpectNoArgument),
                        response.get());
   EXPECT_CALL(mock_closure, Run()).Times(1);
@@ -241,7 +241,7 @@ TEST_F(ShillServiceClientTest, Disconnect) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
-  PrepareForMethodCall(flimflam::kDisconnectFunction,
+  PrepareForMethodCall(shill::kDisconnectFunction,
                        base::Bind(&ExpectNoArgument),
                        response.get());
   // Call method.
@@ -262,7 +262,7 @@ TEST_F(ShillServiceClientTest, Remove) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
-  PrepareForMethodCall(flimflam::kRemoveServiceFunction,
+  PrepareForMethodCall(shill::kRemoveServiceFunction,
                        base::Bind(&ExpectNoArgument),
                        response.get());
   // Call method.
@@ -284,7 +284,7 @@ TEST_F(ShillServiceClientTest, ActivateCellularModem) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
-  PrepareForMethodCall(flimflam::kActivateCellularModemFunction,
+  PrepareForMethodCall(shill::kActivateCellularModemFunction,
                        base::Bind(&ExpectStringArgument, kCarrier),
                        response.get());
   // Call method.

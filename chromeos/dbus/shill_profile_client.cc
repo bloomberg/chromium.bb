@@ -85,9 +85,9 @@ ShillClientHelper* ShillProfileClientImpl::GetHelper(
 
   // There is no helper for the profile, create it.
   dbus::ObjectProxy* object_proxy =
-      bus_->GetObjectProxy(flimflam::kFlimflamServiceName, profile_path);
+      bus_->GetObjectProxy(shill::kFlimflamServiceName, profile_path);
   ShillClientHelper* helper = new ShillClientHelper(bus_, object_proxy);
-  helper->MonitorPropertyChanged(flimflam::kFlimflamProfileInterface);
+  helper->MonitorPropertyChanged(shill::kFlimflamProfileInterface);
   helpers_.insert(HelperMap::value_type(profile_path.value(), helper));
   return helper;
 }
@@ -96,8 +96,8 @@ void ShillProfileClientImpl::GetProperties(
     const dbus::ObjectPath& profile_path,
     const DictionaryValueCallbackWithoutStatus& callback,
     const ErrorCallback& error_callback) {
-  dbus::MethodCall method_call(flimflam::kFlimflamProfileInterface,
-                               flimflam::kGetPropertiesFunction);
+  dbus::MethodCall method_call(shill::kFlimflamProfileInterface,
+                               shill::kGetPropertiesFunction);
   GetHelper(profile_path)->CallDictionaryValueMethodWithErrorCallback(
       &method_call, callback, error_callback);
 }
@@ -107,8 +107,8 @@ void ShillProfileClientImpl::GetEntry(
     const std::string& entry_path,
     const DictionaryValueCallbackWithoutStatus& callback,
     const ErrorCallback& error_callback) {
-  dbus::MethodCall method_call(flimflam::kFlimflamProfileInterface,
-                               flimflam::kGetEntryFunction);
+  dbus::MethodCall method_call(shill::kFlimflamProfileInterface,
+                               shill::kGetEntryFunction);
   dbus::MessageWriter writer(&method_call);
   writer.AppendString(entry_path);
   GetHelper(profile_path)->CallDictionaryValueMethodWithErrorCallback(
@@ -120,8 +120,8 @@ void ShillProfileClientImpl::DeleteEntry(
     const std::string& entry_path,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  dbus::MethodCall method_call(flimflam::kFlimflamProfileInterface,
-                               flimflam::kDeleteEntryFunction);
+  dbus::MethodCall method_call(shill::kFlimflamProfileInterface,
+                               shill::kDeleteEntryFunction);
   dbus::MessageWriter writer(&method_call);
   writer.AppendString(entry_path);
   GetHelper(profile_path)->CallVoidMethodWithErrorCallback(

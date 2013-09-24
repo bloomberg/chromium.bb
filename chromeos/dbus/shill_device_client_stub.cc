@@ -181,13 +181,13 @@ void ShillDeviceClientStub::AddDevice(const std::string& device_path,
 
   base::DictionaryValue* properties = GetDeviceProperties(device_path);
   properties->SetWithoutPathExpansion(
-      flimflam::kTypeProperty,
+      shill::kTypeProperty,
       base::Value::CreateStringValue(type));
   properties->SetWithoutPathExpansion(
-      flimflam::kDBusObjectProperty,
+      shill::kDBusObjectProperty,
       base::Value::CreateStringValue(object_path));
   properties->SetWithoutPathExpansion(
-      flimflam::kDBusConnectionProperty,
+      shill::kDBusConnectionProperty,
       base::Value::CreateStringValue("/stub"));
 }
 
@@ -224,7 +224,7 @@ std::string ShillDeviceClientStub::GetDevicePathForType(
       continue;
     std::string prop_type;
     if (!properties->GetStringWithoutPathExpansion(
-            flimflam::kTypeProperty, &prop_type) ||
+            shill::kTypeProperty, &prop_type) ||
         prop_type != type)
       continue;
     return iter.key();

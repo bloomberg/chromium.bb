@@ -69,9 +69,9 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
 
     // There is no helper for the profile, create it.
     dbus::ObjectProxy* object_proxy =
-        bus_->GetObjectProxy(flimflam::kFlimflamServiceName, ipconfig_path);
+        bus_->GetObjectProxy(shill::kFlimflamServiceName, ipconfig_path);
     ShillClientHelper* helper = new ShillClientHelper(bus_, object_proxy);
-    helper->MonitorPropertyChanged(flimflam::kFlimflamIPConfigInterface);
+    helper->MonitorPropertyChanged(shill::kFlimflamIPConfigInterface);
     helpers_.insert(HelperMap::value_type(ipconfig_path.value(), helper));
     return helper;
   }
@@ -91,15 +91,15 @@ ShillIPConfigClientImpl::ShillIPConfigClientImpl()
 void ShillIPConfigClientImpl::GetProperties(
     const dbus::ObjectPath& ipconfig_path,
     const DictionaryValueCallback& callback) {
-  dbus::MethodCall method_call(flimflam::kFlimflamIPConfigInterface,
-                               flimflam::kGetPropertiesFunction);
+  dbus::MethodCall method_call(shill::kFlimflamIPConfigInterface,
+                               shill::kGetPropertiesFunction);
   GetHelper(ipconfig_path)->CallDictionaryValueMethod(&method_call, callback);
 }
 
 void ShillIPConfigClientImpl::Refresh(
     const dbus::ObjectPath& ipconfig_path,
     const VoidDBusMethodCallback& callback) {
-  dbus::MethodCall method_call(flimflam::kFlimflamIPConfigInterface,
+  dbus::MethodCall method_call(shill::kFlimflamIPConfigInterface,
                                shill::kRefreshFunction);
   GetHelper(ipconfig_path)->CallVoidMethod(&method_call, callback);
 }
@@ -109,8 +109,8 @@ void ShillIPConfigClientImpl::SetProperty(
     const std::string& name,
     const base::Value& value,
     const VoidDBusMethodCallback& callback) {
-  dbus::MethodCall method_call(flimflam::kFlimflamIPConfigInterface,
-                               flimflam::kSetPropertyFunction);
+  dbus::MethodCall method_call(shill::kFlimflamIPConfigInterface,
+                               shill::kSetPropertyFunction);
   dbus::MessageWriter writer(&method_call);
   writer.AppendString(name);
   // IPConfig supports writing basic type and string array properties.
@@ -150,8 +150,8 @@ void ShillIPConfigClientImpl::ClearProperty(
     const dbus::ObjectPath& ipconfig_path,
     const std::string& name,
     const VoidDBusMethodCallback& callback) {
-  dbus::MethodCall method_call(flimflam::kFlimflamIPConfigInterface,
-                               flimflam::kClearPropertyFunction);
+  dbus::MethodCall method_call(shill::kFlimflamIPConfigInterface,
+                               shill::kClearPropertyFunction);
   dbus::MessageWriter writer(&method_call);
   writer.AppendString(name);
   GetHelper(ipconfig_path)->CallVoidMethod(&method_call, callback);
@@ -160,8 +160,8 @@ void ShillIPConfigClientImpl::ClearProperty(
 void ShillIPConfigClientImpl::Remove(
     const dbus::ObjectPath& ipconfig_path,
     const VoidDBusMethodCallback& callback) {
-  dbus::MethodCall method_call(flimflam::kFlimflamIPConfigInterface,
-                               flimflam::kRemoveConfigFunction);
+  dbus::MethodCall method_call(shill::kFlimflamIPConfigInterface,
+                               shill::kRemoveConfigFunction);
   GetHelper(ipconfig_path)->CallVoidMethod(&method_call, callback);
 }
 

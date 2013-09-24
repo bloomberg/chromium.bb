@@ -214,7 +214,7 @@ void ShillClientHelper::MonitorPropertyChangedInternal(
   // We are not using dbus::PropertySet to monitor PropertyChanged signal
   // because the interface is not "org.freedesktop.DBus.Properties".
   proxy_->ConnectToSignal(interface_name,
-                          flimflam::kMonitorPropertyChanged,
+                          shill::kMonitorPropertyChanged,
                           base::Bind(&ShillClientHelper::OnPropertyChanged,
                                      weak_ptr_factory_.GetWeakPtr()),
                           base::Bind(&ShillClientHelper::OnSignalConnected,

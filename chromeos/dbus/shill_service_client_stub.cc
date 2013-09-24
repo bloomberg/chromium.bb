@@ -80,7 +80,7 @@ void ShillServiceClientStub::GetProperties(
   if (nested_dict) {
     result_properties.reset(nested_dict->DeepCopy());
     // Remove credentials that Shill wouldn't send.
-    result_properties->RemoveWithoutPathExpansion(flimflam::kPassphraseProperty,
+    result_properties->RemoveWithoutPathExpansion(shill::kPassphraseProperty,
                                                   NULL);
     call_status = DBUS_METHOD_CALL_SUCCESS;
   } else {
@@ -184,9 +184,9 @@ void ShillServiceClientStub::Connect(const dbus::ObjectPath& service_path,
   SetOtherServicesOffline(service_path.value());
 
   // Set Associating.
-  base::StringValue associating_value(flimflam::kStateAssociation);
+  base::StringValue associating_value(shill::kStateAssociation);
   SetServiceProperty(service_path.value(),
-                     flimflam::kStateProperty,
+                     shill::kStateProperty,
                      associating_value);
 
   // Stay Associating until the state is changed again after a delay.
@@ -221,13 +221,13 @@ void ShillServiceClientStub::Disconnect(const dbus::ObjectPath& service_path,
     delay = base::TimeDelta::FromSeconds(kConnectDelaySeconds);
   }
   // Set Idle after a delay
-  base::StringValue idle_value(flimflam::kStateIdle);
+  base::StringValue idle_value(shill::kStateIdle);
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ShillServiceClientStub::SetProperty,
                  weak_ptr_factory_.GetWeakPtr(),
                  service_path,
-                 flimflam::kStateProperty,
+                 shill::kStateProperty,
                  idle_value,
                  base::Bind(&base::DoNothing),
                  error_callback),
@@ -253,8 +253,8 @@ void ShillServiceClientStub::ActivateCellularModem(
     error_callback.Run("Error.InvalidService", "Invalid Service");
   }
   SetServiceProperty(service_path.value(),
-                     flimflam::kActivationStateProperty,
-                     base::StringValue(flimflam::kActivationStateActivating));
+                     shill::kActivationStateProperty,
+                     base::StringValue(shill::kActivationStateActivating));
   base::TimeDelta delay;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableStubInteractive)) {
@@ -292,7 +292,7 @@ void ShillServiceClientStub::GetLoadableProfileEntries(
   if (service_properties) {
     std::string profile_path;
     if (service_properties->GetStringWithoutPathExpansion(
-            flimflam::kProfileProperty, &profile_path)) {
+            shill::kProfileProperty, &profile_path)) {
       result_properties->SetStringWithoutPathExpansion(
           profile_path, service_path.value());
     }
@@ -324,7 +324,7 @@ void ShillServiceClientStub::AddService(const std::string& service_path,
   std::string nstate = state;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDefaultStubNetworkStateIdle)) {
-    nstate = flimflam::kStateIdle;
+    nstate = shill::kStateIdle;
   }
   AddServiceWithIPConfig(service_path, name, type, nstate, "",
                          add_to_visible_list, add_to_watch_list);
@@ -345,16 +345,16 @@ void ShillServiceClientStub::AddServiceWithIPConfig(
       GetModifiableServiceProperties(service_path, true);
   connect_behavior_.erase(service_path);
   properties->SetWithoutPathExpansion(
-      flimflam::kSSIDProperty,
+      shill::kSSIDProperty,
       base::Value::CreateStringValue(service_path));
   properties->SetWithoutPathExpansion(
-      flimflam::kNameProperty,
+      shill::kNameProperty,
       base::Value::CreateStringValue(name));
   properties->SetWithoutPathExpansion(
-      flimflam::kTypeProperty,
+      shill::kTypeProperty,
       base::Value::CreateStringValue(type));
   properties->SetWithoutPathExpansion(
-      flimflam::kStateProperty,
+      shill::kStateProperty,
       base::Value::CreateStringValue(state));
   if (!ipconfig_path.empty())
     properties->SetWithoutPathExpansion(
@@ -390,9 +390,8 @@ bool ShillServiceClientStub::SetServiceProperty(const std::string& service_path,
     // from Shill.
     base::DictionaryValue* provider = new base::DictionaryValue;
     provider->SetWithoutPathExpansion(property, value.DeepCopy());
-    new_properties.SetWithoutPathExpansion(flimflam::kProviderProperty,
-                                           provider);
-    changed_property = flimflam::kProviderProperty;
+    new_properties.SetWithoutPathExpansion(shill::kProviderProperty, provider);
+    changed_property = shill::kProviderProperty;
   } else {
     new_properties.SetWithoutPathExpansion(property, value.DeepCopy());
     changed_property = property;
@@ -400,7 +399,7 @@ bool ShillServiceClientStub::SetServiceProperty(const std::string& service_path,
 
   dict->MergeDictionary(&new_properties);
 
-  if (property == flimflam::kStateProperty) {
+  if (property == shill::kStateProperty) {
     // When State changes the sort order of Services may change.
     DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
         SortManagerServices();
@@ -486,7 +485,7 @@ void ShillServiceClientStub::SetOtherServicesOffline(
     return;
   }
   std::string service_type;
-  service_properties->GetString(flimflam::kTypeProperty, &service_type);
+  service_properties->GetString(shill::kTypeProperty, &service_type);
   // Set all other services of the same type to offline (Idle).
   for (base::DictionaryValue::Iterator iter(stub_services_);
        !iter.IsAtEnd(); iter.Advance()) {
@@ -498,12 +497,12 @@ void ShillServiceClientStub::SetOtherServicesOffline(
       NOTREACHED();
 
     std::string type;
-    properties->GetString(flimflam::kTypeProperty, &type);
+    properties->GetString(shill::kTypeProperty, &type);
     if (type != service_type)
       continue;
     properties->SetWithoutPathExpansion(
-        flimflam::kStateProperty,
-        base::Value::CreateStringValue(flimflam::kStateIdle));
+        shill::kStateProperty,
+        base::Value::CreateStringValue(shill::kStateIdle));
   }
 }
 
@@ -511,12 +510,12 @@ void ShillServiceClientStub::SetCellularActivated(
     const dbus::ObjectPath& service_path,
     const ErrorCallback& error_callback) {
   SetProperty(service_path,
-              flimflam::kActivationStateProperty,
-              base::StringValue(flimflam::kActivationStateActivated),
+              shill::kActivationStateProperty,
+              base::StringValue(shill::kActivationStateActivated),
               base::Bind(&base::DoNothing),
               error_callback);
   SetProperty(service_path,
-              flimflam::kConnectableProperty,
+              shill::kConnectableProperty,
               base::FundamentalValue(true),
               base::Bind(&base::DoNothing),
               error_callback);
@@ -541,25 +540,25 @@ void ShillServiceClientStub::ContinueConnect(
   // No custom connect behavior set, continue with the default connect behavior.
   std::string passphrase;
   service_properties->GetStringWithoutPathExpansion(
-      flimflam::kPassphraseProperty, &passphrase);
+      shill::kPassphraseProperty, &passphrase);
   if (passphrase == "failure") {
     // Simulate a password failure.
     SetServiceProperty(service_path,
-                       flimflam::kStateProperty,
-                       base::StringValue(flimflam::kStateFailure));
+                       shill::kStateProperty,
+                       base::StringValue(shill::kStateFailure));
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(
             base::IgnoreResult(&ShillServiceClientStub::SetServiceProperty),
             weak_ptr_factory_.GetWeakPtr(),
             service_path,
-            flimflam::kErrorProperty,
-            base::StringValue(flimflam::kErrorBadPassphrase)));
+            shill::kErrorProperty,
+            base::StringValue(shill::kErrorBadPassphrase)));
   } else {
     // Set Online.
     SetServiceProperty(service_path,
-                       flimflam::kStateProperty,
-                       base::StringValue(flimflam::kStateOnline));
+                       shill::kStateProperty,
+                       base::StringValue(shill::kStateOnline));
   }
 }
 

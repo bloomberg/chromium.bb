@@ -34,7 +34,7 @@ void AppendVariantOfArrayOfStrings(dbus::MessageWriter* writer,
 class ShillProfileClientTest : public ShillClientUnittestBase {
  public:
   ShillProfileClientTest()
-      : ShillClientUnittestBase(flimflam::kFlimflamProfileInterface,
+      : ShillClientUnittestBase(shill::kFlimflamProfileInterface,
                                    dbus::ObjectPath(kDefaultProfilePath)) {
   }
 
@@ -57,10 +57,10 @@ class ShillProfileClientTest : public ShillClientUnittestBase {
 
 TEST_F(ShillProfileClientTest, PropertyChanged) {
   // Create a signal.
-  dbus::Signal signal(flimflam::kFlimflamProfileInterface,
-                      flimflam::kMonitorPropertyChanged);
+  dbus::Signal signal(shill::kFlimflamProfileInterface,
+                      shill::kMonitorPropertyChanged);
   dbus::MessageWriter writer(&signal);
-  writer.AppendString(flimflam::kEntriesProperty);
+  writer.AppendString(shill::kEntriesProperty);
   AppendVariantOfArrayOfStrings(&writer,
                                 std::vector<std::string>(1, kExampleEntryPath));
 
@@ -70,7 +70,7 @@ TEST_F(ShillProfileClientTest, PropertyChanged) {
   MockPropertyChangeObserver observer;
   EXPECT_CALL(observer,
               OnPropertyChanged(
-                  flimflam::kEntriesProperty,
+                  shill::kEntriesProperty,
                   ValueEq(value))).Times(1);
 
   // Add the observer
@@ -100,7 +100,7 @@ TEST_F(ShillProfileClientTest, GetProperties) {
   writer.OpenArray("{sv}", &array_writer);
   dbus::MessageWriter entry_writer(NULL);
   array_writer.OpenDictEntry(&entry_writer);
-  entry_writer.AppendString(flimflam::kEntriesProperty);
+  entry_writer.AppendString(shill::kEntriesProperty);
   AppendVariantOfArrayOfStrings(&entry_writer,
                                 std::vector<std::string>(1, kExampleEntryPath));
   array_writer.CloseContainer(&entry_writer);
@@ -110,9 +110,9 @@ TEST_F(ShillProfileClientTest, GetProperties) {
   base::ListValue* entries = new base::ListValue;
   entries->Append(base::Value::CreateStringValue(kExampleEntryPath));
   base::DictionaryValue value;
-  value.SetWithoutPathExpansion(flimflam::kEntriesProperty, entries);
+  value.SetWithoutPathExpansion(shill::kEntriesProperty, entries);
   // Set expectations.
-  PrepareForMethodCall(flimflam::kGetPropertiesFunction,
+  PrepareForMethodCall(shill::kGetPropertiesFunction,
                        base::Bind(&ExpectNoArgument),
                        response.get());
   // Call method.
@@ -135,18 +135,18 @@ TEST_F(ShillProfileClientTest, GetEntry) {
   writer.OpenArray("{sv}", &array_writer);
   dbus::MessageWriter entry_writer(NULL);
   array_writer.OpenDictEntry(&entry_writer);
-  entry_writer.AppendString(flimflam::kTypeProperty);
-  entry_writer.AppendVariantOfString(flimflam::kTypeWifi);
+  entry_writer.AppendString(shill::kTypeProperty);
+  entry_writer.AppendVariantOfString(shill::kTypeWifi);
   array_writer.CloseContainer(&entry_writer);
   writer.CloseContainer(&array_writer);
 
   // Create the expected value.
   base::DictionaryValue value;
   value.SetWithoutPathExpansion(
-      flimflam::kTypeProperty,
-      base::Value::CreateStringValue(flimflam::kTypeWifi));
+      shill::kTypeProperty,
+      base::Value::CreateStringValue(shill::kTypeWifi));
   // Set expectations.
-  PrepareForMethodCall(flimflam::kGetEntryFunction,
+  PrepareForMethodCall(shill::kGetEntryFunction,
                        base::Bind(&ExpectStringArgument, kExampleEntryPath),
                        response.get());
   // Call method.
@@ -167,10 +167,10 @@ TEST_F(ShillProfileClientTest, DeleteEntry) {
 
   // Create the expected value.
   base::DictionaryValue value;
-  value.SetWithoutPathExpansion(flimflam::kOfflineModeProperty,
+  value.SetWithoutPathExpansion(shill::kOfflineModeProperty,
                                 base::Value::CreateBooleanValue(true));
   // Set expectations.
-  PrepareForMethodCall(flimflam::kDeleteEntryFunction,
+  PrepareForMethodCall(shill::kDeleteEntryFunction,
                        base::Bind(&ExpectStringArgument, kExampleEntryPath),
                        response.get());
   // Call method.
