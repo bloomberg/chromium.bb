@@ -572,14 +572,14 @@ void ProfileSyncService::StartUp(StartUpDeferredOption deferred_option) {
     }
 #endif
 
-    if (!sync_global_error_) {
 #if !defined(OS_ANDROID)
+    if (!sync_global_error_) {
       sync_global_error_.reset(new SyncGlobalError(this, signin()));
-#endif
       GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
           sync_global_error_.get());
       AddObserver(sync_global_error_.get());
     }
+#endif
   } else {
     // We don't care to prevent multiple calls to StartUp in deferred mode
     // because it's fast and has no side effects.
