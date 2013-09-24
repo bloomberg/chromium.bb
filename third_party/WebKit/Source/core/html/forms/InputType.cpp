@@ -344,6 +344,18 @@ String InputType::badInputText() const
     return validationMessageTypeMismatchText();
 }
 
+String InputType::rangeOverflowText(const Decimal&) const
+{
+    ASSERT_NOT_REACHED();
+    return String();
+}
+
+String InputType::rangeUnderflowText(const Decimal&) const
+{
+    ASSERT_NOT_REACHED();
+    return String();
+}
+
 String InputType::typeMismatchText() const
 {
     return validationMessageTypeMismatchText();
@@ -385,10 +397,10 @@ String InputType::validationMessage() const
     StepRange stepRange(createStepRange(RejectAny));
 
     if (numericValue < stepRange.minimum())
-        return locale().queryString(WebLocalizedString::ValidationRangeUnderflow, localizeValue(serialize(stepRange.minimum())));
+        return rangeUnderflowText(stepRange.minimum());
 
     if (numericValue > stepRange.maximum())
-        return locale().queryString(WebLocalizedString::ValidationRangeOverflow, localizeValue(serialize(stepRange.maximum())));
+        return rangeOverflowText(stepRange.maximum());
 
     if (stepRange.stepMismatch(numericValue)) {
         ASSERT(stepRange.hasStep());

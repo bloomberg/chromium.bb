@@ -48,6 +48,7 @@
 
 namespace WebCore {
 
+using WebKit::WebLocalizedString;
 using namespace HTMLNames;
 using namespace std;
 
@@ -270,6 +271,16 @@ bool NumberInputType::hasBadInput() const
 String NumberInputType::badInputText() const
 {
     return validationMessageBadInputForNumberText();
+}
+
+String NumberInputType::rangeOverflowText(const Decimal& maximum) const
+{
+    return locale().queryString(WebLocalizedString::ValidationRangeOverflow, localizeValue(serialize(maximum)));
+}
+
+String NumberInputType::rangeUnderflowText(const Decimal& minimum) const
+{
+    return locale().queryString(WebLocalizedString::ValidationRangeUnderflow, localizeValue(serialize(minimum)));
 }
 
 bool NumberInputType::shouldRespectSpeechAttribute()

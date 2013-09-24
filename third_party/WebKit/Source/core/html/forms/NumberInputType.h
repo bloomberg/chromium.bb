@@ -63,6 +63,8 @@ private:
     virtual String sanitizeValue(const String&) const OVERRIDE;
     virtual bool hasBadInput() const OVERRIDE;
     virtual String badInputText() const OVERRIDE;
+    virtual String rangeOverflowText(const Decimal& maxmum) const OVERRIDE;
+    virtual String rangeUnderflowText(const Decimal& minimum) const OVERRIDE;
     virtual bool shouldRespectSpeechAttribute() OVERRIDE;
     virtual bool supportsPlaceholder() const OVERRIDE;
     virtual bool isNumberField() const OVERRIDE;

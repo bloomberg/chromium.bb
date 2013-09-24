@@ -41,6 +41,7 @@
 
 namespace WebCore {
 
+using WebKit::WebLocalizedString;
 using namespace HTMLNames;
 using namespace std;
 
@@ -76,6 +77,16 @@ bool BaseDateAndTimeInputType::typeMismatchFor(const String& value) const
 bool BaseDateAndTimeInputType::typeMismatch() const
 {
     return typeMismatchFor(element()->value());
+}
+
+String BaseDateAndTimeInputType::rangeOverflowText(const Decimal& maximum) const
+{
+    return locale().queryString(WebLocalizedString::ValidationRangeOverflowDateTime, localizeValue(serialize(maximum)));
+}
+
+String BaseDateAndTimeInputType::rangeUnderflowText(const Decimal& minimum) const
+{
+    return locale().queryString(WebLocalizedString::ValidationRangeUnderflowDateTime, localizeValue(serialize(minimum)));
 }
 
 Decimal BaseDateAndTimeInputType::defaultValueForStepUp() const

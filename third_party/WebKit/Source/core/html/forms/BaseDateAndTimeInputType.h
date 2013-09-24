@@ -60,6 +60,8 @@ private:
     virtual bool typeMismatchFor(const String&) const OVERRIDE;
     virtual bool typeMismatch() const OVERRIDE;
     virtual bool valueMissing(const String&) const OVERRIDE;
+    virtual String rangeOverflowText(const Decimal& maximum) const OVERRIDE;
+    virtual String rangeUnderflowText(const Decimal& minimum) const OVERRIDE;
     virtual Decimal defaultValueForStepUp() const OVERRIDE;
     virtual bool isSteppable() const OVERRIDE;
     virtual String serializeWithMilliseconds(double) const;

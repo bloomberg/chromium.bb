@@ -32,10 +32,10 @@ debug('Type mismatch');
 shouldBeEqualToString('testIt("foo", "", "")', '');
 
 debug('Range overflow')
-shouldBeEqualToString('testIt("1982-11-02", "", "1970-12-31")', 'Value must be less than or equal to 12/31/1970.');
+shouldBeEqualToString('testIt("1982-11-02", "", "1970-12-31")', 'Value must be 12/31/1970 or earlier.');
 
 debug('Range underflow')
-shouldBeEqualToString('testIt("1982-11-02", "1990-05-25", "1990-12-24")', 'Value must be greater than or equal to 05/25/1990.');
+shouldBeEqualToString('testIt("1982-11-02", "1990-05-25", "1990-12-24")', 'Value must be 05/25/1990 or later.');
 
 debug('Step mismatch')
 shouldBeEqualToString('testIt("1982-11-02", "", "", "123")', 'Please enter a valid value. The two nearest valid values are 07/07/1982 and 11/07/1982.');

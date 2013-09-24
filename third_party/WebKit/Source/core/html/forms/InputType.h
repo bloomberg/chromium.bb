@@ -145,6 +145,8 @@ public:
     virtual void stepUp(int, ExceptionState&);
     virtual void stepUpFromRenderer(int);
     virtual String badInputText() const;
+    virtual String rangeOverflowText(const Decimal& maximum) const;
+    virtual String rangeUnderflowText(const Decimal& minimum) const;
     virtual String typeMismatchText() const;
     virtual String valueMissingText() const;
     virtual bool canSetStringValue() const;
