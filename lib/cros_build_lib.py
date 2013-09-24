@@ -1132,18 +1132,18 @@ class ContextManagerStack(object):
     finally:
       if obj is not None:
         obj.__enter__()
-      self._stack.append(obj)
+        self._stack.append(obj)
 
   def __enter__(self):
-    # Nothing to do in this case, since we've already done
-    # our entrances.
+    # Nothing to do in this case.  The individual __enter__'s are done
+    # when the context managers are added, which will likely be after
+    # the __enter__ method of this stack is called.
     return self
 
   def __exit__(self, exc_type, exc, traceback):
-    # Run it in reverse order, tracking the results
-    # so we know whether or not to suppress the exception raised
-    # (or to switch that exception to a new one triggered by a handlers
-    # __exit__).
+    # Exit each context manager in stack in reverse order, tracking the results
+    # to know whether or not to suppress the exception raised (or to switch that
+    # exception to a new one triggered by an individual handler's __exit__).
     for handler in reversed(self._stack):
       # pylint: disable=W0702
       try:
@@ -1151,11 +1151,17 @@ class ContextManagerStack(object):
           exc_type = exc = traceback = None
       except:
         exc_type, exc, traceback = sys.exc_info()
-    if all(x is None for x in (exc_type, exc, traceback)):
-      return True
 
     self._stack = []
 
+    # Return True if any exception was handled.
+    if all(x is None for x in (exc_type, exc, traceback)):
+      return True
+
+    # Raise any exception that is left over from exiting all context managers.
+    # Normally a single context manager would return False to allow caller to
+    # re-raise the exception itself, but here the exception might have been
+    # raised during the exiting of one of the individual context managers.
     raise exc_type, exc, traceback
 
 
