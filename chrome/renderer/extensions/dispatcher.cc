@@ -479,8 +479,7 @@ void Dispatcher::WebKitInitialized() {
     InitOriginPermissions(extension);
   }
 
-  if (IsWithinPlatformApp())
-    EnableCustomElementWhiteList();
+  EnableCustomElementWhiteList();
 
   is_webkit_initialized_ = true;
 }
@@ -1114,11 +1113,7 @@ void Dispatcher::DidCreateScriptContext(
     module_system->Require("windowControls");
   }
 
-  // Only platform apps support the <webview> tag, because the "webView" and
-  // "denyWebView" modules will affect the performance of DOM modifications
-  // (http://crbug.com/196453).
-  if (context_type == Feature::BLESSED_EXTENSION_CONTEXT &&
-      is_within_platform_app) {
+  if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
     // Note: setting up the WebView class here, not the chrome.webview API.
     // The API will be automatically set up when first used.
     if (extension->HasAPIPermission(APIPermission::kWebView)) {
@@ -1140,7 +1135,9 @@ void Dispatcher::DidCreateScriptContext(
       }
       if (includeExperimental)
         module_system->Require("webViewExperimental");
-    } else {
+    } else if (is_within_platform_app) {
+      // Only inject the "denyWebView" module for platform apps, since it will
+      // affect the performance of DOM modifications (http://crbug.com/196453).
       module_system->Require("denyWebView");
     }
   }
@@ -1251,9 +1248,6 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
                                      extension_id,
                                      extension->url(),
                                      string16());
-
-    if (IsWithinPlatformApp())
-      EnableCustomElementWhiteList();
   }
 }
 

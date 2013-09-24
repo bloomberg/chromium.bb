@@ -770,8 +770,18 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
-  "webview": {
+  "webview": [{
     "channel": "stable",
     "extension_types": ["platform_app"]
-  }
+  }, {
+    // General support for webview in component extensions still in progress.
+    // Only allowed for whitelisted extensions until all the caveats are
+    // addressed. Tracked in crbug/285151.
+    "channel": "stable",
+    "extension_types": ["extension"],
+    "location": "component",
+    "whitelist": [
+      "mfffpogegjflfpflabcdkioaeobkgjik"  // GAIA Component Extension
+    ]
+  }]
 }
