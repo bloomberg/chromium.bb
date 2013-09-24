@@ -557,22 +557,6 @@ def AddHistoryPageActions(actions):
   actions.add('HistoryPage_ConfirmRemoveSelected')
   actions.add('HistoryPage_CancelRemoveSelected')
 
-def AddDevicesPageActions(actions):
-  """Add actions that are used in Devices page.
-
-  Arguments
-    actions: set of actions to add to.
-  """
-  actions.add('DevicesPage_AddPrintersClicked')
-  actions.add('DevicesPage_LogInStartedFromDeviceListPromo')
-  actions.add('DevicesPage_LogInStartedFromRegisterPromo')
-  actions.add('DevicesPage_ManageClicked')
-  actions.add('DevicesPage_Opened')
-  actions.add('DevicesPage_RegisterCancel')
-  actions.add('DevicesPage_RegisterClicked')
-  actions.add('DevicesPage_RegisterFailure')
-  actions.add('DevicesPage_RegisterSuccess')
-
 def main(argv):
   if '--hash' in argv:
     hash_output = True
@@ -611,7 +595,6 @@ def main(argv):
   AddBookmarkManagerActions(actions)
   AddChromeOSActions(actions)
   AddClosedSourceActions(actions)
-  AddDevicesPageActions(actions)
   AddExtensionActions(actions)
   AddHistoryPageActions(actions)
 
