@@ -248,6 +248,8 @@ class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
     : public LayerTreeHostDelegatedTest,
       public DelegatedRendererLayerClient {
  public:
+  LayerTreeHostDelegatedTestCaseSingleDelegatedLayer() : available_(false) {}
+
   virtual void SetupTree() OVERRIDE {
     root_ = Layer::Create();
     root_->SetAnchorPoint(gfx::PointF());
@@ -269,11 +271,20 @@ class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
 
   virtual void AfterTest() OVERRIDE {}
 
+  // DelegatedRendererLayerClient implementation.
   virtual void DidCommitFrameData() OVERRIDE {}
+  virtual void UnusedResourcesAreAvailable() OVERRIDE { available_ = true; }
+
+  bool TestAndResetAvailable() {
+    bool available = available_;
+    available_ = false;
+    return available;
+  }
 
  protected:
   scoped_refptr<Layer> root_;
   scoped_refptr<DelegatedRendererLayer> delegated_;
+  bool available_;
 };
 
 class LayerTreeHostDelegatedTestClientDidCommitCallback
@@ -746,6 +757,7 @@ class LayerTreeHostDelegatedTestMergeResources
     {
       unsigned expected[] = {999};
       EXPECT_RESOURCES(expected, returned_resources);
+      EXPECT_TRUE(TestAndResetAvailable());
     }
 
     PostSetNeedsCommitToMainThread();
@@ -854,6 +866,7 @@ class LayerTreeHostDelegatedTestReturnUnusedResources
         // All of the resources are in use.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(0u, resources.size());
+        EXPECT_FALSE(TestAndResetAvailable());
 
         // Keep using 999 but stop using 555.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
@@ -869,6 +882,7 @@ class LayerTreeHostDelegatedTestReturnUnusedResources
         {
           unsigned expected[] = {555};
           EXPECT_RESOURCES(expected, resources);
+          EXPECT_TRUE(TestAndResetAvailable());
         }
 
         // Stop using any resources.
@@ -887,15 +901,17 @@ class LayerTreeHostDelegatedTestReturnUnusedResources
         {
           unsigned expected[] = {444, 999, 999};
           EXPECT_RESOURCES(expected, resources);
+          EXPECT_TRUE(TestAndResetAvailable());
         }
         EndTest();
         break;
     }
 
-    // Resource are never immediately released.
+    // Resources are never immediately released.
     ReturnedResourceArray empty_resources;
     delegated_->TakeUnusedResourcesForChildCompositor(&empty_resources);
-    EXPECT_TRUE(empty_resources.empty());
+    EXPECT_EQ(0u, empty_resources.size());
+    EXPECT_FALSE(TestAndResetAvailable());
   }
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
@@ -937,6 +953,7 @@ class LayerTreeHostDelegatedTestReusedResources
         // All of the resources are in use.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(0u, resources.size());
+        EXPECT_FALSE(TestAndResetAvailable());
 
         // Keep using 999 but stop using 555 and 444.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
@@ -947,6 +964,7 @@ class LayerTreeHostDelegatedTestReusedResources
         // Resource are not immediately released.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(0u, resources.size());
+        EXPECT_FALSE(TestAndResetAvailable());
 
         // Now using 555 and 444 again, but not 999.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
@@ -963,6 +981,7 @@ class LayerTreeHostDelegatedTestReusedResources
         {
           unsigned expected[] = {999, 999};
           EXPECT_RESOURCES(expected, resources);
+          EXPECT_TRUE(TestAndResetAvailable());
         }
         EndTest();
         break;
@@ -1007,6 +1026,7 @@ class LayerTreeHostDelegatedTestFrameBeforeAck
         // All of the resources are in use.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(0u, resources.size());
+        EXPECT_FALSE(TestAndResetAvailable());
 
         // Keep using 999 but stop using 555 and 444.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
@@ -1017,6 +1037,7 @@ class LayerTreeHostDelegatedTestFrameBeforeAck
         // Resource are not immediately released.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(0u, resources.size());
+        EXPECT_FALSE(TestAndResetAvailable());
 
         // The parent compositor (this one) does a commit.
         break;
@@ -1025,6 +1046,7 @@ class LayerTreeHostDelegatedTestFrameBeforeAck
         {
           unsigned expected[] = {444, 555};
           EXPECT_RESOURCES(expected, resources);
+          EXPECT_TRUE(TestAndResetAvailable());
         }
 
         // The child compositor sends a frame referring to resources not in the
@@ -1106,6 +1128,7 @@ class LayerTreeHostDelegatedTestFrameBeforeTakeResources
         // All of the resources are in use.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(0u, resources.size());
+        EXPECT_FALSE(TestAndResetAvailable());
 
         // Keep using 999 but stop using 555 and 444.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
@@ -1116,6 +1139,7 @@ class LayerTreeHostDelegatedTestFrameBeforeTakeResources
         // Resource are not immediately released.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(0u, resources.size());
+        EXPECT_FALSE(TestAndResetAvailable());
 
         // The parent compositor (this one) does a commit.
         break;
@@ -1138,11 +1162,13 @@ class LayerTreeHostDelegatedTestFrameBeforeTakeResources
         {
           unsigned expected[] = {444, 555};
           EXPECT_RESOURCES(expected, resources);
+          EXPECT_TRUE(TestAndResetAvailable());
         }
         break;
       case 4:
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(0u, resources.size());
+        EXPECT_FALSE(TestAndResetAvailable());
         EndTest();
         break;
     }
@@ -1222,6 +1248,7 @@ class LayerTreeHostDelegatedTestBadFrame
         // All of the resources are in use.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(0u, resources.size());
+        EXPECT_FALSE(TestAndResetAvailable());
 
         // Generate a bad frame with a resource the layer doesn't have. The
         // 885 and 775 resources are unknown, while ownership of the legit 444
@@ -1243,6 +1270,7 @@ class LayerTreeHostDelegatedTestBadFrame
         {
           unsigned expected[] = {444};
           EXPECT_RESOURCES(expected, resources);
+          EXPECT_TRUE(TestAndResetAvailable());
         }
 
         // Now send a good frame with 999 again.
@@ -1256,6 +1284,7 @@ class LayerTreeHostDelegatedTestBadFrame
         {
           unsigned expected[] = {555};
           EXPECT_RESOURCES(expected, resources);
+          EXPECT_TRUE(TestAndResetAvailable());
         }
 
         EndTest();
@@ -1372,6 +1401,7 @@ class LayerTreeHostDelegatedTestUnnamedResource
         {
           unsigned expected[] = {999};
           EXPECT_RESOURCES(expected, resources);
+          EXPECT_TRUE(TestAndResetAvailable());
         }
 
         EndTest();
@@ -1439,6 +1469,7 @@ class LayerTreeHostDelegatedTestDontLeakResource
         {
           unsigned expected[] = {555, 999};
           EXPECT_RESOURCES(expected, resources);
+          EXPECT_TRUE(TestAndResetAvailable());
         }
         // Send a frame with no resources in it.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
@@ -1451,6 +1482,7 @@ class LayerTreeHostDelegatedTestDontLeakResource
         {
           unsigned expected[] = {555};
           EXPECT_RESOURCES(expected, resources);
+          EXPECT_TRUE(TestAndResetAvailable());
         }
         EndTest();
         break;
@@ -1508,6 +1540,7 @@ class LayerTreeHostDelegatedTestResourceSentToParent
       case 2:
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(0u, resources.size());
+        EXPECT_FALSE(TestAndResetAvailable());
 
         // 999 is in use in the grandparent compositor, generate a frame without
         // it present.
@@ -1520,6 +1553,7 @@ class LayerTreeHostDelegatedTestResourceSentToParent
         // Since 999 is in the grandparent it is not returned.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(0u, resources.size());
+        EXPECT_FALSE(TestAndResetAvailable());
 
         // The impl side will get back the resource at some point.
         ImplThreadTaskRunner()->PostTask(FROM_HERE,
@@ -1542,16 +1576,11 @@ class LayerTreeHostDelegatedTestResourceSentToParent
     output_surface()->ReturnResource(map.find(999)->second, &ack);
     host_impl->ReclaimResources(&ack);
     host_impl->OnSwapBuffersComplete();
-
-    // And then it should be released by the DelegatedRendererLayer.
-    MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&LayerTreeHostDelegatedTestResourceSentToParent::
-                        DidReceiveResourceOnMainThread,
-                   base::Unretained(this)));
   }
 
-  void DidReceiveResourceOnMainThread() {
+  virtual void UnusedResourcesAreAvailable() OVERRIDE {
+    EXPECT_EQ(3, layer_tree_host()->source_frame_number());
+
     ReturnedResourceArray resources;
 
     // 999 was returned from the grandparent and could be released.
@@ -1652,6 +1681,7 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
       case 2:
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(0u, resources.size());
+        EXPECT_FALSE(TestAndResetAvailable());
 
         // Stop using 999 and 444 in this frame and commit.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
@@ -1677,6 +1707,7 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
         {
           unsigned expected[] = {444, 999};
           EXPECT_RESOURCES(expected, resources);
+          EXPECT_TRUE(TestAndResetAvailable());
         }
 
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
@@ -1689,6 +1720,7 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
         {
           unsigned expected[] = {555, 555, 555, 999};
           EXPECT_RESOURCES(expected, resources);
+          EXPECT_TRUE(TestAndResetAvailable());
         }
 
         EndTest();

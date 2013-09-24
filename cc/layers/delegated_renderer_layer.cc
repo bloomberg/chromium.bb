@@ -105,6 +105,8 @@ void DelegatedRendererLayer::SetFrameData(
     TransferableResource::ReturnResources(
         frame_data_->resource_list,
         &unused_resources_for_child_compositor_);
+    if (client_)
+      client_->UnusedResourcesAreAvailable();
   }
   frame_data_ = new_frame_data.Pass();
   if (!frame_data_->render_pass_list.empty()) {
@@ -154,6 +156,8 @@ void DelegatedRendererLayer::ReceiveUnusedResources(
       unused_resources_for_child_compositor_.end(),
       unused.begin(),
       unused.end());
+  if (client_)
+    client_->UnusedResourcesAreAvailable();
 }
 
 // static

@@ -15,6 +15,10 @@ class CC_EXPORT DelegatedRendererLayerClient {
   // to the DelegatedRendererLayerImpl.
   virtual void DidCommitFrameData() = 0;
 
+  // Called to inform the owner of the layer that unused resources can be
+  // grabbed off the DelegatedRendererLayer.
+  virtual void UnusedResourcesAreAvailable() = 0;
+
  protected:
   virtual ~DelegatedRendererLayerClient() {}
 };

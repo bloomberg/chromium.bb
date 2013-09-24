@@ -195,6 +195,7 @@ class RenderWidgetHostViewAndroid
 
   // cc::DelegatedRendererLayerClient implementation.
   virtual void DidCommitFrameData() OVERRIDE;
+  virtual void UnusedResourcesAreAvailable() OVERRIDE {}
 
   // ImageTransportFactoryAndroidObserver implementation.
   virtual void OnLostResources() OVERRIDE;
