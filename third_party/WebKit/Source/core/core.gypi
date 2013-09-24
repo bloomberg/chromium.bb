@@ -884,7 +884,6 @@
             'editing/VisibleUnits.cpp',
             'editing/WrapContentsInDummySpanCommand.cpp',
             'editing/WrapContentsInDummySpanCommand.h',
-            'editing/chromium/EditorChromium.cpp',
             'editing/htmlediting.cpp',
             'editing/markup.cpp',
             'fetch/CachedMetadata.cpp',
