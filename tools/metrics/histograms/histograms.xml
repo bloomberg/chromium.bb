@@ -6933,7 +6933,82 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.DailyContentLength" units="KB">
+  <summary>
+    The total content size in KB of all HTTP/HTTPS response bodies in the
+    previous calendar day. The metric is reported when the first response in the
+    current day is received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyContentLength_DataReductionProxyEnabled" units="KB">
+  <summary>
+    The total content size in KB of all HTTP/HTTPS response bodies in the
+    previous calendar day while the data reduction proxy setting was enabled.
+    The metric is reported when the first response in the current day is
+    received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyContentLength_ViaDataReductionProxy" units="KB">
+  <summary>
+    The total content size in KB of all HTTP/HTTPS response bodies in the
+    previous calendar day via the data reduction proxy. The metric is reported
+    when the first response in the current day is received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyContentPercent_DataReductionProxyEnabled"
+    units="Percent">
+  <summary>
+    The percentage of total HTTP/HTTPS response body size while the data
+    reduction proxy is enabled to total HTTP/HTTPS response body size in the
+    previous calendar day. The metric is reported when the first response in the
+    current day is received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyContentPercent_ViaDataReductionProxy" units="Percent">
+  <summary>
+    The percentage of total HTTP/HTTPS response body size via the data reduction
+    proxy to total HTTP/HTTPS response body size in the previous calendar day.
+    The metric is reported when the first response in the current day is
+    received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyContentSavingPercent" units="Percent">
+  <summary>
+    The percentage of data saving in the previous calendar day. A negative
+    saving will be shown as zero. The metric is reported when the first response
+    in the current day is received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyContentSavingPercent_DataReductionProxyEnabled"
+    units="Percent">
+  <summary>
+    The percentage of data saving in the previous calendar day while the data
+    reduction proxy was enabled. A negative saving will be shown as zero. This
+    only counts responses while the data reduction proxy is enabled. The metric
+    is reported when the first response in the current day is received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyContentSavingPercent_ViaDataReductionProxy"
+    units="Percent">
+  <summary>
+    The percentage of data saving in the previous calendar day via the data
+    reduction proxy. A negative saving will be shown as zero. This only counts
+    responses via the data reduction proxy. The metric is reported when the
+    first response in the current day is received.
+  </summary>
+</histogram>
+
 <histogram name="Net.DailyHttpContentLengthViaDataReductionProxy" units="KB">
+  <obsolete>
+    Deprecated- see Net.DailyContentLength_ViaDataReductionProxy.
+  </obsolete>
   <summary>
     Total size in KB of all response bodies in the previous calendar day that
     were received through the data reduction proxy.
@@ -6942,6 +7017,9 @@ other types of suffix sets.
 
 <histogram name="Net.DailyHttpContentLengthWithDataReductionProxyEnabled"
     units="KB">
+  <obsolete>
+    Deprecated- see Net.DailyContentLength_DataReductionProxyEnabled
+  </obsolete>
   <summary>
     Total size in KB of all response bodies in the previous calendar day that
     were received when the data reduction proxy was enabled.
@@ -6949,6 +7027,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.DailyHttpContentSavings" units="Percent">
+  <obsolete>
+    Deprecated- see Net.DailyContentSavingPercent.
+  </obsolete>
   <summary>
     The percentage of data saving in the previous calendar day. A negative
     saving will be shown as zero.
@@ -6957,6 +7038,9 @@ other types of suffix sets.
 
 <histogram name="Net.DailyHttpContentSavings_DataReductionProxy"
     units="Percent">
+  <obsolete>
+    Deprecated- see Net.DailyContentSavingPercent_DataReductionProxyEnabled.
+  </obsolete>
   <summary>
     The percentage of data saving in the previous calendar day when the data
     reduction proxy was enabled for at least some responses during the day. A
@@ -6965,6 +7049,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.DailyHttpOriginalContentLength" units="KB">
+  <obsolete>
+    Deprecated- see Net.DailyOriginalContentLength.
+  </obsolete>
   <summary>
     Total size in KB specified in the X-Original-Content-Length headers of all
     responses in the previous calendar day. If the header is not present in a
@@ -6973,12 +7060,49 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.DailyHttpReceivedContentLength" units="KB">
+  <obsolete>
+    Deprecated- see Net.DailyContentLength.
+  </obsolete>
   <summary>
     Total size in KB of all response bodies in the previous calendar day.
   </summary>
 </histogram>
 
+<histogram name="Net.DailyOriginalContentLength" units="KB">
+  <summary>
+    The total size in KB specified in the X-Original-Content-Length headers of
+    all HTTP/HTTPS response bodies in the previous calendar day. If the header
+    is not present in a response, the size of the response body is used. The
+    metric is reported when the first response in the current day is received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyOriginalContentLength_DataReductionProxyEnabled"
+    units="KB">
+  <summary>
+    The total size in KB specified in the X-Original-Content-Length headers of
+    all HTTP/HTTPS response bodies in the previous calendar day while the data
+    reduction proxy is enabled. If the header is not present in a response, the
+    size of the response body is used. The metric is reported when the first
+    response in the current day is received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyOriginalContentLength_ViaDataReductionProxy"
+    units="KB">
+  <summary>
+    The total size in KB specified in the X-Original-Content-Length headers of
+    all HTTP/HTTPS response bodies in the previous calendar day via the data
+    reduction proxy. If the header is not present in a response, the size of the
+    response body is used. The metric is reported when the first response in the
+    current day is received.
+  </summary>
+</histogram>
+
 <histogram name="Net.DailyReceivedContentViaDataReductionProxy" units="Percent">
+  <obsolete>
+    Deprecated- see Net.DailyContentPercent_ViaDataReductionProxy.
+  </obsolete>
   <summary>
     The percentage of Net.DailyHttpContentLengthViaDataReductionProxy in
     Net.DailyHttpReceivedContentLength.
@@ -6987,6 +7111,9 @@ other types of suffix sets.
 
 <histogram name="Net.DailyReceivedContentWithDataReductionProxyEnabled"
     units="Percent">
+  <obsolete>
+    Deprecated- see Net.DailyContentPercent_DataReductionProxyEnabled.
+  </obsolete>
   <summary>
     The percentage of Net.DailyHttpContentLengthWithDataReductionProxyEnabled in
     Net.DailyHttpReceivedContentLength.

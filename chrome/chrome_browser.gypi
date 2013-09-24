@@ -1174,6 +1174,8 @@
         'browser/net/chrome_http_user_agent_settings.h',
         'browser/net/chrome_net_log.cc',
         'browser/net/chrome_net_log.h',
+        'browser/net/chrome_network_data_saving_metrics.cc',
+        'browser/net/chrome_network_data_saving_metrics.h',
         'browser/net/chrome_network_delegate.cc',
         'browser/net/chrome_network_delegate.h',
         'browser/net/chrome_url_request_context.cc',

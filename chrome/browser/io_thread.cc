@@ -822,9 +822,13 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kDailyHttpOriginalContentLength);
   registry->RegisterListPref(prefs::kDailyHttpReceivedContentLength);
   registry->RegisterListPref(
-      prefs::kDailyHttpReceivedContentLengthViaDataReductionProxy);
+      prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabled);
   registry->RegisterListPref(
-      prefs::kDailyHttpReceivedContentLengthWithDataReductionProxyEnabled);
+      prefs::kDailyContentLengthWithDataReductionProxyEnabled);
+  registry->RegisterListPref(
+      prefs::kDailyOriginalContentLengthViaDataReductionProxy);
+  registry->RegisterListPref(
+      prefs::kDailyContentLengthViaDataReductionProxy);
   registry->RegisterInt64Pref(prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
 #endif
   registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, true);

@@ -1002,6 +1002,7 @@
         'browser/nacl_host/pnacl_translation_cache_unittest.cc',
         'browser/nacl_host/pnacl_host_unittest.cc',
         'browser/net/chrome_fraudulent_certificate_reporter_unittest.cc',
+        'browser/net/chrome_network_data_saving_metrics_unittest.cc',
         'browser/net/chrome_network_delegate_unittest.cc',
         'browser/net/connection_tester_unittest.cc',
         'browser/net/dns_probe_runner_unittest.cc',

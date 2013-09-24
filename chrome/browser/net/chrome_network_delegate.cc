@@ -29,10 +29,10 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/net/chrome_network_data_saving_metrics.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
-#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/pref_names.h"
@@ -214,96 +214,9 @@ void ForwardRequestStatus(
   }
 }
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
-// Increments an int64, stored as a string, in a ListPref at the specified
-// index.  The value must already exist and be a string representation of a
-// number.
-void AddInt64ToListPref(size_t index, int64 length,
-                        base::ListValue* list_update) {
-  int64 value = 0;
-  std::string old_string_value;
-  bool rv = list_update->GetString(index, &old_string_value);
-  DCHECK(rv);
-  if (rv) {
-    rv = base::StringToInt64(old_string_value, &value);
-    DCHECK(rv);
-  }
-  value += length;
-  list_update->Set(index, Value::CreateStringValue(base::Int64ToString(value)));
-}
-
-int64 ListPrefInt64Value(const base::ListValue& list_update, size_t index) {
-  std::string string_value;
-  if (!list_update.GetString(index, &string_value))
-    return 0;
-
-  int64 value = 0;
-  bool rv = base::StringToInt64(string_value, &value);
-  DCHECK(rv);
-  return value;
-}
-
-// Ensure list has exactly n elements.
-void MaintainContentLengthPrefsWindow(base::ListValue* list, size_t n) {
-  // Remove data for old days from the front.
-  while (list->GetSize() > n)
-    list->Remove(0, NULL);
-  // Newly added lists are empty. Add entries to back to fill the window,
-  // each initialized to zero.
-  while (list->GetSize() < n)
-    list->AppendString(base::Int64ToString(0));
-  DCHECK_EQ(n, list->GetSize());
-}
-
-void RecordDailyContentLengthHistograms(
-    int64 original_length,
-    int64 received_length,
-    int64 length_with_data_reduction_enabled,
-    int64 length_via_data_reduction_proxy) {
-  // Record metrics in KB.
-  UMA_HISTOGRAM_COUNTS(
-      "Net.DailyHttpOriginalContentLength", original_length >> 10);
-  UMA_HISTOGRAM_COUNTS(
-      "Net.DailyHttpReceivedContentLength", received_length >> 10);
-  UMA_HISTOGRAM_COUNTS(
-      "Net.DailyHttpContentLengthWithDataReductionProxyEnabled",
-      length_with_data_reduction_enabled >> 10);
-  UMA_HISTOGRAM_COUNTS(
-      "Net.DailyHttpContentLengthViaDataReductionProxy",
-      length_via_data_reduction_proxy >> 10);
-
-  if (original_length > 0 && received_length > 0) {
-    int percent = (100 * (original_length - received_length)) / original_length;
-    // UMA percentage cannot be negative.
-    if (percent < 0)
-      percent = 0;
-    UMA_HISTOGRAM_PERCENTAGE("Net.DailyHttpContentSavings", percent);
-    // If the data reduction proxy is enabled for some responses.
-    if (length_with_data_reduction_enabled > 0) {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "Net.DailyHttpContentSavings_DataReductionProxy", percent);
-    }
-  }
-  if (received_length > 0 && length_with_data_reduction_enabled >= 0) {
-    DCHECK_GE(received_length, length_with_data_reduction_enabled);
-    UMA_HISTOGRAM_PERCENTAGE(
-        "Net.DailyReceivedContentWithDataReductionProxyEnabled",
-        (100 * length_with_data_reduction_enabled) / received_length);
-  }
-  if (received_length > 0 &&
-      length_via_data_reduction_proxy >= 0) {
-    DCHECK_GE(received_length, length_via_data_reduction_proxy);
-    UMA_HISTOGRAM_PERCENTAGE(
-        "Net.DailyReceivedContentViaDataReductionProxy",
-        (100 * length_via_data_reduction_proxy) / received_length);
-  }
-}
-
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
-
 void UpdateContentLengthPrefs(int received_content_length,
                               int original_content_length,
-                              bool data_reduction_proxy_was_used) {
+                              bool via_data_reduction_proxy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GE(received_content_length, 0);
   DCHECK_GE(original_content_length, 0);
@@ -316,140 +229,19 @@ void UpdateContentLengthPrefs(int received_content_length,
   if (!prefs)
     return;
 
-  int64 total_received = prefs->GetInt64(prefs::kHttpReceivedContentLength);
-  int64 total_original = prefs->GetInt64(prefs::kHttpOriginalContentLength);
-  total_received += received_content_length;
-  total_original += original_content_length;
-  prefs->SetInt64(prefs::kHttpReceivedContentLength, total_received);
-  prefs->SetInt64(prefs::kHttpOriginalContentLength, total_original);
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  // TODO(bengr): Remove this check once the underlying cause of
-  // http://crbug.com/287821 is fixed. For now, only continue if the current
-  // year is reported as being between 1972 and 2970.
-  base::TimeDelta time_since_unix_epoch =
-      base::Time::Now() - base::Time::UnixEpoch();
-  const int kMinDaysSinceUnixEpoch = 365 * 2;  //   2 years.
-  const int kMaxDaysSinceUnixEpoch = 365 * 1000; // 1000 years.
-  if (time_since_unix_epoch.InDays() < kMinDaysSinceUnixEpoch ||
-      time_since_unix_epoch.InDays() > kMaxDaysSinceUnixEpoch)
-    return;
-
-  base::Time now = base::Time::Now().LocalMidnight();
-  const size_t kNumDaysInHistory = 60;
-
-  // Each day, we calculate the total number of bytes received and the total
-  // size of all corresponding resources before any data-reducing recompression
-  // is applied. These values are used to compute the data savings realized
-  // by applying our compression techniques. Totals for the last
-  // |kNumDaysInHistory| days are maintained.
-  ListPrefUpdate original_update(prefs, prefs::kDailyHttpOriginalContentLength);
-  ListPrefUpdate received_update(prefs, prefs::kDailyHttpReceivedContentLength);
-  ListPrefUpdate data_reduction_enabled_update(
-      prefs,
-      prefs::kDailyHttpReceivedContentLengthWithDataReductionProxyEnabled);
-  ListPrefUpdate via_data_reduction_update(
-      prefs, prefs::kDailyHttpReceivedContentLengthViaDataReductionProxy);
-
-  // New empty lists may have been created. Maintain the invariant that
-  // there should be exactly |kNumDaysInHistory| days in the histories.
-  MaintainContentLengthPrefsWindow(original_update.Get(), kNumDaysInHistory);
-  MaintainContentLengthPrefsWindow(received_update.Get(), kNumDaysInHistory);
-  MaintainContentLengthPrefsWindow(
-      data_reduction_enabled_update.Get(), kNumDaysInHistory);
-  MaintainContentLengthPrefsWindow(
-      via_data_reduction_update.Get(), kNumDaysInHistory);
-
-  // Determine how many days it has been since the last update.
-  int64 then_internal = prefs->GetInt64(
-      prefs::kDailyHttpContentLengthLastUpdateDate);
-  base::Time then = base::Time::FromInternalValue(then_internal);
-  int days_since_last_update = (now - then).InDays();
-
-  if (days_since_last_update) {
-    // Record the last update time.
-    prefs->SetInt64(prefs::kDailyHttpContentLengthLastUpdateDate,
-                    now.ToInternalValue());
-
-    if (days_since_last_update == -1) {
-      // The system may go backwards in time by up to a day for legitimate
-      // reasons, such as with changes to the time zone. In such cases the
-      // history is likely still valid. Shift backwards one day and retain all
-      // values.
-      original_update->Remove(kNumDaysInHistory - 1, NULL);
-      received_update->Remove(kNumDaysInHistory - 1, NULL);
-      data_reduction_enabled_update->Remove(kNumDaysInHistory - 1, NULL);
-      via_data_reduction_update->Remove(kNumDaysInHistory - 1, NULL);
-      original_update->Insert(0, new StringValue(base::Int64ToString(0)));
-      received_update->Insert(0, new StringValue(base::Int64ToString(0)));
-      data_reduction_enabled_update->Insert(
-          0, new StringValue(base::Int64ToString(0)));
-      via_data_reduction_update->Insert(
-          0, new StringValue(base::Int64ToString(0)));
-      days_since_last_update = 0;
-
-    } else if (days_since_last_update < -1) {
-      // Erase all entries if the system went backwards in time by more than
-      // a day.
-      original_update->Clear();
-      received_update->Clear();
-      data_reduction_enabled_update->Clear();
-      via_data_reduction_update->Clear();
-      days_since_last_update = kNumDaysInHistory;
-    }
-
-    // A new day. Report the previous day's data if exists. We'll lose usage
-    // data if Chrome isn't run for a day. Here, we prefer collecting less data
-    // but the collected data are associated with an accurate date.
-    if (days_since_last_update == 1) {
-      RecordDailyContentLengthHistograms(
-          ListPrefInt64Value(*original_update, original_update->GetSize() - 1),
-          ListPrefInt64Value(*received_update, received_update->GetSize() - 1),
-          ListPrefInt64Value(*data_reduction_enabled_update,
-                             data_reduction_enabled_update->GetSize() - 1),
-          ListPrefInt64Value(*via_data_reduction_update,
-                             via_data_reduction_update->GetSize() - 1));
-    }
-    // Add entries for days since last update event. This will make the
-    // lists longer than kNumDaysInHistory. The additional items will be cut off
-    // from the head of the lists by MaintainContentLengthPrefsWindow, below.
-    for (int i = 0;
-         i < days_since_last_update && i < static_cast<int>(kNumDaysInHistory);
-         ++i) {
-      original_update->AppendString(base::Int64ToString(0));
-      received_update->AppendString(base::Int64ToString(0));
-      data_reduction_enabled_update->AppendString(base::Int64ToString(0));
-      via_data_reduction_update->AppendString(base::Int64ToString(0));
-    }
-
-    // Entries for new days may have been appended. Maintain the invariant that
-    // there should be exactly |kNumDaysInHistory| days in the histories.
-    MaintainContentLengthPrefsWindow(original_update.Get(), kNumDaysInHistory);
-    MaintainContentLengthPrefsWindow(received_update.Get(), kNumDaysInHistory);
-    MaintainContentLengthPrefsWindow(
-        data_reduction_enabled_update.Get(), kNumDaysInHistory);
-    MaintainContentLengthPrefsWindow(
-        via_data_reduction_update.Get(), kNumDaysInHistory);
-  }
-
-  // Update the counts for the current day.
-  AddInt64ToListPref(kNumDaysInHistory - 1,
-                     original_content_length, original_update.Get());
-  AddInt64ToListPref(kNumDaysInHistory - 1,
-                     received_content_length, received_update.Get());
-
-  if (g_browser_process->profile_manager()->GetDefaultProfile()->
-          GetPrefs()->GetBoolean(prefs::kSpdyProxyAuthEnabled)) {
-    AddInt64ToListPref(kNumDaysInHistory - 1,
-                       received_content_length,
-                       data_reduction_enabled_update.Get());
-  }
-  if (data_reduction_proxy_was_used) {
-    AddInt64ToListPref(kNumDaysInHistory - 1,
-                       received_content_length,
-                       via_data_reduction_update.Get());
-  }
+#if defined(OS_ANDROID)
+  bool with_data_reduction_proxy_enabled =
+      g_browser_process->profile_manager()->GetDefaultProfile()->
+      GetPrefs()->GetBoolean(prefs::kSpdyProxyAuthEnabled);
+#else
+  bool with_data_reduction_proxy_enabled = false;
 #endif
+
+  chrome_browser_net::UpdateContentLengthPrefs(
+      received_content_length,
+      original_content_length,
+      with_data_reduction_proxy_enabled,
+      via_data_reduction_proxy, prefs);
 }
 
 void StoreAccumulatedContentLength(int received_content_length,
@@ -465,7 +257,7 @@ void RecordContentLengthHistograms(
     int64 received_content_length,
     int64 original_content_length,
     const base::TimeDelta& freshness_lifetime) {
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   // Add the current resource to these histograms only when a valid
   // X-Original-Content-Length header is present.
   if (original_content_length >= 0) {
@@ -503,7 +295,7 @@ void RecordContentLengthHistograms(
     return;
   UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthCacheable24Hours",
                        received_content_length);
-#endif
+#endif  // defined(OS_ANDROID)
 }
 
 }  // namespace
@@ -721,7 +513,7 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
       int64 original_content_length =
           request->response_info().headers->GetInt64HeaderValue(
               "x-original-content-length");
-      bool data_reduction_proxy_was_used =
+      bool via_data_reduction_proxy =
           request->response_info().headers->HasHeaderValue(
               "via", "1.1 Chrome Compression Proxy");
 
@@ -735,7 +527,7 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
               request->response_info().response_time);
       AccumulateContentLength(received_content_length,
                               adjusted_original_content_length,
-                              data_reduction_proxy_was_used);
+                              via_data_reduction_proxy);
       RecordContentLengthHistograms(received_content_length,
                                     original_content_length,
                                     freshness_lifetime);
@@ -944,12 +736,12 @@ void ChromeNetworkDelegate::OnRequestWaitStateChange(
 
 void ChromeNetworkDelegate::AccumulateContentLength(
     int64 received_content_length, int64 original_content_length,
-    bool data_reduction_proxy_was_used) {
+    bool via_data_reduction_proxy) {
   DCHECK_GE(received_content_length, 0);
   DCHECK_GE(original_content_length, 0);
   StoreAccumulatedContentLength(received_content_length,
                                 original_content_length,
-                                data_reduction_proxy_was_used);
+                                via_data_reduction_proxy);
   received_content_length_ += received_content_length;
   original_content_length_ += original_content_length;
 }

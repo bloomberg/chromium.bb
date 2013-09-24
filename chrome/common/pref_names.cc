@@ -2004,29 +2004,35 @@ const char kHttpReceivedContentLength[] = "http_received_content_length";
 const char kHttpOriginalContentLength[] = "http_original_content_length";
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-// A List pref that contains daily totals of the original size of all HTTP
-// that was received over the network.
+// A List pref that contains daily totals of the original size of all HTTP/HTTPS
+// that was received from the network.
 const char kDailyHttpOriginalContentLength[] =
     "data_reduction.daily_original_length";
 
-// A List pref that contains daily totals of the size of all HTTP content that
-// has been received from the network.
+// A List pref that contains daily totals of the size of all HTTP/HTTPS content
+// that was received from the network.
 const char kDailyHttpReceivedContentLength[] =
     "data_reduction.daily_received_length";
 
-// A List pref that contains daily totals of the size of all HTTP content that
-// has been received via the data reduction proxy.
-const char kDailyHttpReceivedContentLengthViaDataReductionProxy[] =
-    "data_reduction.daily_received_length_via_data_reduction_proxy";
+// A List pref that contains daily totals of the original size of all HTTP/HTTPS
+// that was received while the data reduction proxy is enabled.
+const char kDailyOriginalContentLengthWithDataReductionProxyEnabled[] =
+    "data_reduction.daily_original_length_with_data_reduction_proxy_enabled";
 
-// A List pref that contains daily totals of the size of all HTTP content that
-// has been received when the data reduction proxy is enabled.
-// Note: this is different from
-// kDailyHttpReceivedContentLengthViaDataReductionProxy because content
-// doesn't necessarily go through the data reduction proxy when it is enabled.
-// E.g., the proxy doesn't handle HTTPS traffic.
-const char kDailyHttpReceivedContentLengthWithDataReductionProxyEnabled[] =
+// A List pref that contains daily totals of the size of all HTTP/HTTPS
+// that was received while the data reduction proxy is enabled.
+const char kDailyContentLengthWithDataReductionProxyEnabled[] =
     "data_reduction.daily_received_length_with_data_reduction_proxy_enabled";
+
+// A List pref that contains daily totals of the original size of all HTTP/HTTPS
+// that was received via the data reduction proxy.
+const char kDailyOriginalContentLengthViaDataReductionProxy[] =
+    "data_reduction.daily_original_length_via_data_reduction_proxy";
+
+// A List pref that contains daily totals of the size of all HTTP/HTTPS
+// that was received via the data reduction proxy.
+const char kDailyContentLengthViaDataReductionProxy[] =
+    "data_reduction.daily_received_length_via_data_reduction_proxy";
 
 // An int64 pref that contains an internal representation of midnight on the
 // date of the last update to |kDailyHttp{Original,Received}ContentLength|.
