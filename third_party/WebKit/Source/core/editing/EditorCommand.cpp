@@ -972,17 +972,6 @@ static bool executePasteAndMatchStyle(Frame& frame, Event*, EditorCommandSource 
     return true;
 }
 
-static bool executePasteAsPlainText(Frame& frame, Event*, EditorCommandSource source, const String&)
-{
-    if (source == CommandFromMenuOrKeyBinding) {
-        UserTypingGestureIndicator typingGestureIndicator(&frame);
-        frame.editor().pasteAsPlainText();
-    } else {
-        frame.editor().pasteAsPlainText();
-    }
-    return true;
-}
-
 static bool executePrint(Frame& frame, Event*, EditorCommandSource, const String&)
 {
     Page* page = frame.page();
@@ -1575,7 +1564,6 @@ static const CommandMap& createCommandMap()
         { "OverWrite", { executeToggleOverwrite, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
         { "Paste", { executePaste, supportedPaste, enabledPaste, stateNone, valueNull, notTextInsertion, allowExecutionWhenDisabled } },
         { "PasteAndMatchStyle", { executePasteAndMatchStyle, supportedPaste, enabledPaste, stateNone, valueNull, notTextInsertion, allowExecutionWhenDisabled } },
-        { "PasteAsPlainText", { executePasteAsPlainText, supportedPaste, enabledPaste, stateNone, valueNull, notTextInsertion, allowExecutionWhenDisabled } },
         { "PasteGlobalSelection", { executePasteGlobalSelection, supportedFromMenuOrKeyBinding, enabledPaste, stateNone, valueNull, notTextInsertion, allowExecutionWhenDisabled } },
         { "Print", { executePrint, supported, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
         { "Redo", { executeRedo, supported, enabledRedo, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },

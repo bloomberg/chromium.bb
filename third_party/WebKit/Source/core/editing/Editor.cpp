@@ -368,11 +368,6 @@ void Editor::pasteAsFragment(PassRefPtr<DocumentFragment> pastingFragment, bool 
     target->dispatchEvent(TextEvent::createForFragmentPaste(m_frame->domWindow(), pastingFragment, smartReplace, matchStyle), IGNORE_EXCEPTION);
 }
 
-void Editor::pasteAsPlainTextBypassingDHTML()
-{
-    pasteAsPlainTextWithPasteboard(Pasteboard::generalPasteboard());
-}
-
 void Editor::pasteAsPlainTextWithPasteboard(Pasteboard* pasteboard)
 {
     String text = pasteboard->plainText();
