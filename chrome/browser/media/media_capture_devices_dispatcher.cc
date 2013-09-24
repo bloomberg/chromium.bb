@@ -249,12 +249,19 @@ void MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest(
       content::MEDIA_DESKTOP_VIDEO_CAPTURE, media_id.ToString(),
       std::string()));
 
+  bool loopback_audio_supported = false;
+#if defined(USE_CRAS) || defined(OS_WIN)
+  // Currently loopback audio capture is supported only on Windows and ChromeOS.
+  loopback_audio_supported = true;
+#endif
+
   // Audio is only supported for screen capture streams.
   if (media_id.type == content::DesktopMediaID::TYPE_SCREEN &&
-      request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE) {
+      request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE &&
+      loopback_audio_supported) {
     devices.push_back(content::MediaStreamDevice(
-        content::MEDIA_SYSTEM_AUDIO_CAPTURE, media_id.ToString(),
-        "System Audio"));
+        content::MEDIA_SYSTEM_AUDIO_CAPTURE,
+        media::AudioManagerBase::kLoopbackInputDeviceId, "System Audio"));
   }
 
   ui = ScreenCaptureNotificationUI::Create(l10n_util::GetStringFUTF16(
@@ -291,21 +298,11 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     return;
   }
 
-  const bool system_audio_capture_requested =
-      request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE;
-
+  bool loopback_audio_supported = false;
 #if defined(USE_CRAS) || defined(OS_WIN)
-  const bool system_audio_capture_supported = true;
-#else
-  const bool system_audio_capture_supported = false;
+  // Currently loopback audio capture is supported only on Windows and ChromeOS.
+  loopback_audio_supported = true;
 #endif
-
-  // Reject request when audio capture was requested but is not supported on
-  // this system.
-  if (system_audio_capture_requested && !system_audio_capture_supported) {
-    callback.Run(devices, ui.Pass());
-    return;
-  }
 
   const bool component_extension =
       extension && extension->location() == extensions::Manifest::COMPONENT;
@@ -348,14 +345,12 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     if (user_approved || component_extension) {
       devices.push_back(content::MediaStreamDevice(
           content::MEDIA_DESKTOP_VIDEO_CAPTURE, media_id.ToString(), "Screen"));
-      if (system_audio_capture_requested) {
-#if defined(USE_CRAS) || defined(OS_WIN)
+      if (request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE &&
+          loopback_audio_supported) {
         // Use the special loopback device ID for system audio capture.
         devices.push_back(content::MediaStreamDevice(
             content::MEDIA_SYSTEM_AUDIO_CAPTURE,
-            media::AudioManagerBase::kLoopbackInputDeviceId,
-            "System Audio"));
-#endif
+            media::AudioManagerBase::kLoopbackInputDeviceId, "System Audio"));
       }
     }
   }
