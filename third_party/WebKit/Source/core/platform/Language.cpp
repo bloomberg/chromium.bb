@@ -26,9 +26,20 @@
 #include "config.h"
 #include "core/platform/Language.h"
 
+#include "public/platform/Platform.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
+
+static String platformLanguage()
+{
+    DEFINE_STATIC_LOCAL(String, computedDefaultLanguage, ());
+    if (computedDefaultLanguage.isEmpty()) {
+        computedDefaultLanguage.append(WebKit::Platform::current()->defaultLocale());
+        ASSERT(!computedDefaultLanguage.isEmpty());
+    }
+    return computedDefaultLanguage;
+}
 
 String defaultLanguage()
 {
@@ -61,7 +72,10 @@ Vector<String> userPreferredLanguages()
     if (!override.isEmpty())
         return override;
 
-    return platformUserPreferredLanguages();
+    Vector<String> languages;
+    languages.reserveInitialCapacity(1);
+    languages.append(platformLanguage());
+    return languages;
 }
 
 static String canonicalLanguageIdentifier(const String& languageCode)

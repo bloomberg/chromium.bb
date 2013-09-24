@@ -37,8 +37,6 @@ Vector<String> userPreferredLanguagesOverride();
 void overrideUserPreferredLanguages(const Vector<String>&);
 size_t indexOfBestMatchingLanguageInList(const String& language, const Vector<String>& languageList);
 
-Vector<String> platformUserPreferredLanguages();
-
 }
 
 #endif
