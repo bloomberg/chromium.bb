@@ -10,7 +10,6 @@
 #include "base/event_types.h"
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/gestures/gesture_types.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -597,26 +596,6 @@ class EVENTS_EXPORT TranslatedKeyEvent : public KeyEvent {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TranslatedKeyEvent);
-};
-
-class EVENTS_EXPORT DropTargetEvent : public LocatedEvent {
- public:
-  DropTargetEvent(const OSExchangeData& data,
-                  const gfx::Point& location,
-                  const gfx::Point& root_location,
-                  int source_operations);
-
-  const OSExchangeData& data() const { return data_; }
-  int source_operations() const { return source_operations_; }
-
- private:
-  // Data associated with the drag/drop session.
-  const OSExchangeData& data_;
-
-  // Bitmask of supported DragDropTypes::DragOperation by the source.
-  int source_operations_;
-
-  DISALLOW_COPY_AND_ASSIGN(DropTargetEvent);
 };
 
 class EVENTS_EXPORT ScrollEvent : public MouseEvent {

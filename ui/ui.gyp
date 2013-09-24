@@ -153,6 +153,8 @@
         'base/dragdrop/drag_utils.h',
         'base/dragdrop/drag_utils_aura.cc',
         'base/dragdrop/drag_utils_win.cc',
+        'base/dragdrop/drop_target_event.cc',
+        'base/dragdrop/drop_target_event.h',
         'base/dragdrop/drop_target_win.cc',
         'base/dragdrop/drop_target_win.h',
         'base/dragdrop/gtk_dnd_util.cc',
@@ -889,6 +891,8 @@
         ['toolkit_views==0', {
           'sources!': [
             'base/x/events_x.cc',
+            'base/dragdrop/drop_target_event.cc',
+            'base/dragdrop/drop_target_event.h',
             'events/event.cc',
             'events/event.h',
             'events/event_dispatcher.cc',

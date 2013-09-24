@@ -678,22 +678,6 @@ void TranslatedKeyEvent::ConvertToKeyEvent() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DropTargetEvent
-
-DropTargetEvent::DropTargetEvent(const OSExchangeData& data,
-                                 const gfx::Point& location,
-                                 const gfx::Point& root_location,
-                                 int source_operations)
-    : LocatedEvent(ET_DROP_TARGET_EVENT,
-                   location,
-                   root_location,
-                   EventTimeForNow(),
-                   0),
-      data_(data),
-      source_operations_(source_operations) {
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // ScrollEvent
 
 ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
