@@ -196,24 +196,16 @@ private:
 
 } // namespace
 
-PassOwnPtr<AsyncFileSystemCallbacks> ResolveURICallbacks::create(PassRefPtr<EntryCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback, ScriptExecutionContext* scriptExecutionContext, FileSystemType type, const String& filePath)
+PassOwnPtr<AsyncFileSystemCallbacks> ResolveURICallbacks::create(PassRefPtr<EntryCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback, ScriptExecutionContext* scriptExecutionContext)
 {
-    return adoptPtr(static_cast<AsyncFileSystemCallbacks*>(new ResolveURICallbacks(successCallback, errorCallback, scriptExecutionContext, type, filePath)));
+    return adoptPtr(static_cast<AsyncFileSystemCallbacks*>(new ResolveURICallbacks(successCallback, errorCallback, scriptExecutionContext)));
 }
 
-ResolveURICallbacks::ResolveURICallbacks(PassRefPtr<EntryCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback, ScriptExecutionContext* context, FileSystemType type, const String& filePath)
+ResolveURICallbacks::ResolveURICallbacks(PassRefPtr<EntryCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback, ScriptExecutionContext* context)
     : FileSystemCallbacksBase(errorCallback, 0)
     , m_successCallback(successCallback)
     , m_scriptExecutionContext(context)
-    , m_type(type)
-    , m_filePath(filePath)
 {
-}
-
-void ResolveURICallbacks::didOpenFileSystem(const String& name, const KURL& rootURL)
-{
-    RefPtr<DirectoryEntry> root = DOMFileSystem::create(m_scriptExecutionContext.get(), name, m_type, rootURL)->root();
-    root->getDirectory(m_filePath, Dictionary(), m_successCallback, ErrorCallbackWrapper::create(m_successCallback, m_errorCallback, root, m_filePath));
 }
 
 void ResolveURICallbacks::didResolveURL(const String& name, const KURL& rootURL, FileSystemType type, const String& filePath, bool isDirectory)
