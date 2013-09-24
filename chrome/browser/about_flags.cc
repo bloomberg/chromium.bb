@@ -725,7 +725,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_OVERLAY_SCROLLBARS_DESCRIPTION,
     // Uses the system preference on Mac (a different implementation).
     // On Android, this is always enabled.
-    kOsWin | kOsLinux | kOsCrOS,
+    kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableOverlayScrollbars)
   },
   {
