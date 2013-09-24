@@ -34,27 +34,6 @@ following documentation:
 * `pp::Module class <https://developers.google.com/native-client/peppercpp/classpp_1_1_module>`_
 * `pp::Var class <https://developers.google.com/native-client/peppercpp/classpp_1_1_var>`_
 
-
-Glossary
-========
-
-asynchronous programming
-  In the asynchronous programming model, function calls are executed and
-  return immediately without waiting for a response. Using this model,
-  functions are nonblocking; the web browser continues processing JavaScript
-  and C/C++ functions.
-Var
-  An object in a Native Client module that corresponds to a JavaScript
-  variable.
-web workers
-  `Web workers <http://en.wikipedia.org/wiki/Web_Workers>`_ provide a
-  mechanism for running heavy-weight JavaScript code on background threads
-  so that the main web page can continue to respond to user interaction.
-  Web pages interact with web workers by using ``postMessage()`` to send
-  messages. The way a web page interacts with a Native Client module
-  is analogous to the way it interacts with web workers.
-
-
 Introduction to the messaging system
 ====================================
 

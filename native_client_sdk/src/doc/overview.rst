@@ -105,6 +105,8 @@ Typical use cases for Native Client include the following:
   complete applications to small optimized routines that accelerate vital parts
   of traditional web applications.
 
+.. _link_how_nacl_works:
+
 How Native Client works
 =======================
 
