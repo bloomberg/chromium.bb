@@ -160,20 +160,7 @@ function FileSelectionHandler(fileManager) {
   this.okButton_ = fileManager.okButton_;
   this.filenameInput_ = fileManager.filenameInput_;
   this.previewPanel_ = fileManager.previewPanel_;
-  this.previewPanelElement_ =
-      fileManager.dialogDom_.querySelector('.preview-panel');
-  this.previewThumbnails_ = this.previewPanelElement_.
-      querySelector('.preview-thumbnails');
-  this.previewSummary_ =
-      this.previewPanelElement_.querySelector('.preview-summary');
-  this.previewText_ = this.previewSummary_.querySelector('.preview-text');
-  this.calculatingSize_ = this.previewSummary_.
-      querySelector('.calculating-size');
-  this.calculatingSize_.textContent = str('CALCULATING_SIZE');
-
   this.taskItems_ = fileManager.taskItems_;
-
-  this.animationTimeout_ = null;
 }
 
 /**
