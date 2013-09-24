@@ -5,6 +5,7 @@
 #include "chrome/common/icon_with_badge_image_source.h"
 
 #include "chrome/common/badge_util.h"
+//#include "ui/base/layout.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 

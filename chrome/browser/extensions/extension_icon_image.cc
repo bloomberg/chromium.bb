@@ -86,8 +86,7 @@ class IconImage::Source : public gfx::ImageSkiaSource {
 
  private:
   // gfx::ImageSkiaSource overrides:
-  virtual gfx::ImageSkiaRep GetImageForScale(
-      ui::ScaleFactor scale_factor) OVERRIDE;
+  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE;
 
   // Used to load images, possibly asynchronously. NULLed out when the IconImage
   // is destroyed.
@@ -112,16 +111,17 @@ void IconImage::Source::ResetHost() {
   host_ = NULL;
 }
 
-gfx::ImageSkiaRep IconImage::Source::GetImageForScale(
-    ui::ScaleFactor scale_factor) {
+gfx::ImageSkiaRep IconImage::Source::GetImageForScale(float scale) {
   gfx::ImageSkiaRep representation;
-  if (host_)
-    representation = host_->LoadImageForScaleFactor(scale_factor);
+  if (host_) {
+    representation =
+        host_->LoadImageForScaleFactor(ui::GetSupportedScaleFactor(scale));
+  }
 
   if (!representation.is_null())
     return representation;
 
-  return blank_image_.GetRepresentation(scale_factor);
+  return blank_image_.GetRepresentation(scale);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -163,7 +163,7 @@ gfx::ImageSkiaRep IconImage::LoadImageForScaleFactor(
   if (!extension_)
     return gfx::ImageSkiaRep();
 
-  const float scale = ui::GetScaleFactorScale(scale_factor);
+  const float scale = ui::GetImageScale(scale_factor);
   const int resource_size_in_pixel =
       static_cast<int>(resource_size_in_dip_ * scale);
 
@@ -184,7 +184,7 @@ gfx::ImageSkiaRep IconImage::LoadImageForScaleFactor(
 
   // If there is no resource found, return default icon.
   if (resource.empty())
-    return default_icon_.GetRepresentation(scale_factor);
+    return default_icon_.GetRepresentation(scale);
 
   std::vector<ImageLoader::ImageRepresentation> info_list;
   info_list.push_back(ImageLoader::ImageRepresentation(
@@ -198,13 +198,12 @@ gfx::ImageSkiaRep IconImage::LoadImageForScaleFactor(
   loader->LoadImagesAsync(extension_, info_list,
                           base::Bind(&IconImage::OnImageLoaded,
                                      weak_ptr_factory_.GetWeakPtr(),
-                                     scale_factor));
+                                     scale));
 
   return gfx::ImageSkiaRep();
 }
 
-void IconImage::OnImageLoaded(ui::ScaleFactor scale_factor,
-                              const gfx::Image& image_in) {
+void IconImage::OnImageLoaded(float scale, const gfx::Image& image_in) {
   const gfx::ImageSkia* image =
       image_in.IsEmpty() ? &default_icon_ : image_in.ToImageSkia();
 
@@ -212,12 +211,12 @@ void IconImage::OnImageLoaded(ui::ScaleFactor scale_factor,
   if (image->isNull())
     return;
 
-  gfx::ImageSkiaRep rep = image->GetRepresentation(scale_factor);
+  gfx::ImageSkiaRep rep = image->GetRepresentation(scale);
   DCHECK(!rep.is_null());
-  DCHECK_EQ(scale_factor, rep.scale_factor());
+  DCHECK_EQ(scale, rep.scale());
 
   // Remove old representation if there is one.
-  image_skia_.RemoveRepresentation(rep.scale_factor());
+  image_skia_.RemoveRepresentation(scale);
   image_skia_.AddRepresentation(rep);
 
   if (observer_)

@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/test_render_view_host.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/renderer_host/test_backing_store.h"
@@ -394,6 +395,10 @@ void TestRenderViewHost::set_simulate_history_list_was_cleared(bool cleared) {
 }
 
 RenderViewHostImplTestHarness::RenderViewHostImplTestHarness() {
+  std::vector<ui::ScaleFactor> scale_factors;
+  scale_factors.push_back(ui::SCALE_FACTOR_100P);
+  scoped_set_supported_scale_factors_.reset(
+      new ui::test::ScopedSetSupportedScaleFactors(scale_factors));
 }
 
 RenderViewHostImplTestHarness::~RenderViewHostImplTestHarness() {

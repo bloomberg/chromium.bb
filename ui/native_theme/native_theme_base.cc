@@ -1004,10 +1004,9 @@ void NativeThemeBase::DrawImageInt(
   // TODO(pkotwicz): Do something better and don't infer device
   // scale factor from canvas scale.
   SkMatrix m = sk_canvas->getTotalMatrix();
-  ui::ScaleFactor device_scale_factor = ui::GetScaleFactorFromScale(
-      SkScalarAbs(m.getScaleX()));
+  float device_scale = static_cast<float>(SkScalarAbs(m.getScaleX()));
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(
-      sk_canvas, device_scale_factor));
+      sk_canvas, device_scale));
   canvas->DrawImageInt(image, src_x, src_y, src_w, src_h,
       dest_x, dest_y, dest_w, dest_h, true);
 }
@@ -1019,10 +1018,9 @@ void NativeThemeBase::DrawTiledImage(SkCanvas* sk_canvas,
   // TODO(pkotwicz): Do something better and don't infer device
   // scale factor from canvas scale.
   SkMatrix m = sk_canvas->getTotalMatrix();
-  ui::ScaleFactor device_scale_factor = ui::GetScaleFactorFromScale(
-      SkScalarAbs(m.getScaleX()));
+  float device_scale = static_cast<float>(SkScalarAbs(m.getScaleX()));
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(
-      sk_canvas, device_scale_factor));
+      sk_canvas, device_scale));
   canvas->TileImageInt(image, src_x, src_y, tile_scale_x,
       tile_scale_y, dest_x, dest_y, w, h);
 }

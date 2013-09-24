@@ -48,7 +48,7 @@ UIImage* CreateErrorUIImage(float scale) {
 
 // Converts from ImagePNGRep to UIImage.
 UIImage* CreateUIImageFromImagePNGRep(const gfx::ImagePNGRep& image_png_rep) {
-  float scale = ui::GetScaleFactorScale(image_png_rep.scale_factor);
+  float scale = image_png_rep.scale;
   scoped_refptr<base::RefCountedMemory> png = image_png_rep.raw_data;
   CHECK(png.get());
   NSData* data = [NSData dataWithBytes:png->front() length:png->size()];
@@ -74,17 +74,16 @@ scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromUIImage(
 
 UIImage* CreateUIImageFromPNG(
     const std::vector<gfx::ImagePNGRep>& image_png_reps) {
-  ui::ScaleFactor ideal_scale_factor = ui::GetMaxScaleFactor();
-  float ideal_scale = ui::GetScaleFactorScale(ideal_scale_factor);
+  float ideal_scale = ImageSkia::GetMaxSupportedScale();
 
   if (image_png_reps.empty())
     return CreateErrorUIImage(ideal_scale);
 
-  // Find best match for |ideal_scale_factor|.
+  // Find best match for |ideal_scale|.
   float smallest_diff = std::numeric_limits<float>::max();
   size_t closest_index = 0u;
   for (size_t i = 0; i < image_png_reps.size(); ++i) {
-    float scale = ui::GetScaleFactorScale(image_png_reps[i].scale_factor);
+    float scale = image_png_reps[i].scale;
     float diff = std::abs(ideal_scale - scale);
     if (diff < smallest_diff) {
       smallest_diff = diff;
@@ -102,9 +101,8 @@ scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromImageSkia(
   // TODO(rohitrao): Rewrite the callers of this function to save the UIImage
   // representation in the gfx::Image.  If we're generating it, we might as well
   // hold on to it.
-  const gfx::ImageSkiaRep& image_skia_rep = skia->GetRepresentation(
-      ui::SCALE_FACTOR_100P);
-  if (image_skia_rep.scale_factor() != ui::SCALE_FACTOR_100P)
+  const gfx::ImageSkiaRep& image_skia_rep = skia->GetRepresentation(1.0f);
+  if (image_skia_rep.scale() != 1.0f)
     return NULL;
 
   UIImage* image = UIImageFromImageSkiaRep(image_skia_rep);
@@ -119,8 +117,8 @@ ImageSkia* ImageSkiaFromPNG(
   for (size_t i = 0; i < image_png_reps.size(); ++i) {
     base::scoped_nsobject<UIImage> uiimage(
         CreateUIImageFromImagePNGRep(image_png_reps[i]));
-    gfx::ImageSkiaRep image_skia_rep = ImageSkiaRepOfScaleFactorFromUIImage(
-        uiimage, image_png_reps[i].scale_factor);
+    gfx::ImageSkiaRep image_skia_rep = ImageSkiaRepOfScaleFromUIImage(
+        uiimage, image_png_reps[i].scale);
     if (!image_skia_rep.is_null())
       image_skia->AddRepresentation(image_skia_rep);
   }

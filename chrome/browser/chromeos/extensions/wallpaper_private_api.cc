@@ -370,7 +370,7 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
       sequence_token_));
   std::string file_name = GURL(url_).ExtractFileName();
   if (SaveData(chrome::DIR_CHROMEOS_WALLPAPERS, file_name, image_data_)) {
-    wallpaper_.EnsureRepsForSupportedScaleFactors();
+    wallpaper_.EnsureRepsForSupportedScales();
     scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper_.DeepCopy());
     // ImageSkia is not RefCountedThreadSafe. Use a deep copied ImageSkia if
     // post to another thread.
@@ -502,7 +502,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
   unsafe_wallpaper_decoder_ = NULL;
 
   if (generate_thumbnail_) {
-    wallpaper.EnsureRepsForSupportedScaleFactors();
+    wallpaper.EnsureRepsForSupportedScales();
     scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.DeepCopy());
     // Generates thumbnail before call api function callback. We can then
     // request thumbnail in the javascript callback.

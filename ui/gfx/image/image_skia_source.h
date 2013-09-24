@@ -5,7 +5,8 @@
 #ifndef UI_GFX_IMAGE_IMAGE_SKIA_SOURCE_H_
 #define UI_GFX_IMAGE_IMAGE_SKIA_SOURCE_H_
 
-#include "ui/base/layout.h"
+#include <vector>
+
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
@@ -16,11 +17,11 @@ class UI_EXPORT ImageSkiaSource {
  public:
   virtual ~ImageSkiaSource() {}
 
-  // Returns the ImageSkiaRep for the given |scale_factor|. ImageSkia
-  // caches the returned ImageSkiaRep and calls this method only if it
-  // doesn't have ImageSkaiRep for given |scale_factor|. There is
-  // no need for the implementation to cache the image.
-  virtual gfx::ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) = 0;
+  // Returns the ImageSkiaRep for the given |scale|. ImageSkia caches the
+  // returned ImageSkiaRep and calls this method only if it doesn't have
+  // ImageSkiaRep for given |scale|. There is no need for the implementation to
+  // cache the image.
+  virtual gfx::ImageSkiaRep GetImageForScale(float scale) = 0;
 };
 
 }  // namespace gfx

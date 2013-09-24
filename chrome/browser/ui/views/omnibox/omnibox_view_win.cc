@@ -2514,7 +2514,7 @@ void OmniboxViewWin::DrawSlashForInsecureScheme(HDC hdc,
   // it to fully transparent so any antialiasing will look nice when painted
   // atop the edit.
   gfx::Canvas canvas(gfx::Size(scheme_rect.Width(), scheme_rect.Height()),
-                     ui::SCALE_FACTOR_100P, false);
+                     1.0f, false);
   SkCanvas* sk_canvas = canvas.sk_canvas();
   sk_canvas->getDevice()->accessBitmap(true).eraseARGB(0, 0, 0, 0);
 

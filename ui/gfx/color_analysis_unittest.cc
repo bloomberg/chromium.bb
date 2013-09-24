@@ -295,7 +295,7 @@ TEST_F(ColorAnalysisTest, ComputeColorCovarianceTrivial) {
 }
 
 TEST_F(ColorAnalysisTest, ComputeColorCovarianceWithCanvas) {
-  gfx::Canvas canvas(gfx::Size(250, 200), ui::SCALE_FACTOR_100P, true);
+  gfx::Canvas canvas(gfx::Size(250, 200), 1.0f, true);
   // The image consists of vertical stripes, with color bands set to 100
   // in overlapping stripes 150 pixels wide.
   canvas.FillRect(gfx::Rect(0, 0, 50, 200), SkColorSetRGB(100, 0, 0));
@@ -364,7 +364,7 @@ TEST_F(ColorAnalysisTest, ApplyColorReductionSingleColor) {
 TEST_F(ColorAnalysisTest, ApplyColorReductionBlackAndWhite) {
   // Check with images with multiple colors. This is really different only when
   // the result is scaled.
-  gfx::Canvas canvas(gfx::Size(300, 200), ui::SCALE_FACTOR_100P, true);
+  gfx::Canvas canvas(gfx::Size(300, 200), 1.0f, true);
 
   // The image consists of vertical non-overlapping stripes 150 pixels wide.
   canvas.FillRect(gfx::Rect(0, 0, 150, 200), SkColorSetRGB(0, 0, 0));
@@ -404,7 +404,7 @@ TEST_F(ColorAnalysisTest, ApplyColorReductionBlackAndWhite) {
 TEST_F(ColorAnalysisTest, ApplyColorReductionMultiColor) {
   // Check with images with multiple colors. This is really different only when
   // the result is scaled.
-  gfx::Canvas canvas(gfx::Size(300, 200), ui::SCALE_FACTOR_100P, true);
+  gfx::Canvas canvas(gfx::Size(300, 200), 1.0f, true);
 
   // The image consists of vertical non-overlapping stripes 100 pixels wide.
   canvas.FillRect(gfx::Rect(0, 0, 100, 200), SkColorSetRGB(100, 0, 0));
@@ -452,7 +452,7 @@ TEST_F(ColorAnalysisTest, ComputePrincipalComponentImageNotComputable) {
 }
 
 TEST_F(ColorAnalysisTest, ComputePrincipalComponentImage) {
-  gfx::Canvas canvas(gfx::Size(300, 200), ui::SCALE_FACTOR_100P, true);
+  gfx::Canvas canvas(gfx::Size(300, 200), 1.0f, true);
 
   // The image consists of vertical non-overlapping stripes 100 pixels wide.
   canvas.FillRect(gfx::Rect(0, 0, 100, 200), SkColorSetRGB(10, 10, 10));

@@ -88,7 +88,7 @@ bool PickleImage(Pickle* pickle, const gfx::ImageSkia& image) {
   pickle->WriteInt(static_cast<int>(reps.size()));
   for (std::vector<gfx::ImageSkiaRep>::const_iterator it = reps.begin();
        it != reps.end(); ++it) {
-    pickle->WriteInt(static_cast<int>(it->scale_factor()));
+    pickle->WriteInt(static_cast<int>(ui::GetSupportedScaleFactor(it->scale())));
     pickle->WriteInt(it->pixel_width());
     pickle->WriteInt(it->pixel_height());
     ImageFormat format = NONE;
@@ -147,8 +147,8 @@ bool UnpickleImage(PickleIterator* it, gfx::ImageSkia* out) {
       SkAutoLockPixels lock(bitmap);
       memcpy(bitmap.getPixels(), pixels, bitmap.getSize());
     }
-    result.AddRepresentation(
-        gfx::ImageSkiaRep(bitmap, static_cast<ui::ScaleFactor>(scale_factor)));
+    float scale = ui::GetImageScale(static_cast<ui::ScaleFactor>(scale_factor));
+    result.AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
   }
 
   *out = result;

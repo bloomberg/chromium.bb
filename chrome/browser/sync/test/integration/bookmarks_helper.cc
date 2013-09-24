@@ -292,9 +292,9 @@ bool FaviconsMatch(BookmarkModel* model_a,
 
   // Compare only the 1x bitmaps as only those are synced.
   SkBitmap bitmap_a = image_a.AsImageSkia().GetRepresentation(
-      ui::SCALE_FACTOR_100P).sk_bitmap();
+      1.0f).sk_bitmap();
   SkBitmap bitmap_b = image_b.AsImageSkia().GetRepresentation(
-      ui::SCALE_FACTOR_100P).sk_bitmap();
+      1.0f).sk_bitmap();
   return FaviconBitmapsMatch(bitmap_a, bitmap_b);
 }
 
@@ -714,14 +714,16 @@ gfx::Image CreateFavicon(SkColor color) {
       FaviconUtil::GetFaviconScaleFactors();
   gfx::ImageSkia favicon;
   for (size_t i = 0; i < favicon_scale_factors.size(); ++i) {
-    float scale = ui::GetScaleFactorScale(favicon_scale_factors[i]);
+    float scale = ui::GetImageScale(favicon_scale_factors[i]);
     int pixel_width = dip_width * scale;
     int pixel_height = dip_height * scale;
     SkBitmap bmp;
     bmp.setConfig(SkBitmap::kARGB_8888_Config, pixel_width, pixel_height);
     bmp.allocPixels();
     bmp.eraseColor(color);
-    favicon.AddRepresentation(gfx::ImageSkiaRep(bmp, favicon_scale_factors[i]));
+    favicon.AddRepresentation(
+        gfx::ImageSkiaRep(bmp,
+                          ui::GetImageScale(favicon_scale_factors[i])));
   }
   return gfx::Image(favicon);
 }

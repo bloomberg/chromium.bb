@@ -31,7 +31,7 @@ namespace {
 
 SkBitmap CreateBlankBitmapForScale(int size_dip, ui::ScaleFactor scale_factor) {
   SkBitmap bitmap;
-  const float scale = ui::GetScaleFactorScale(scale_factor);
+  const float scale = ui::GetImageScale(scale_factor);
   bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                    static_cast<int>(size_dip * scale),
                    static_cast<int>(size_dip * scale));
@@ -59,9 +59,8 @@ class MockImageSkiaSource : public gfx::ImageSkiaSource {
   }
   virtual ~MockImageSkiaSource() {}
 
-  virtual gfx::ImageSkiaRep GetImageForScale(
-      ui::ScaleFactor scale_factor) OVERRIDE {
-    return image_.GetRepresentation(scale_factor);
+  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+    return image_.GetRepresentation(scale);
   }
 
  private:
@@ -210,6 +209,10 @@ class ExtensionIconImageTest : public testing::Test,
 }  // namespace
 
 TEST_F(ExtensionIconImageTest, Basic) {
+  std::vector<ui::ScaleFactor> supported_factors;
+  supported_factors.push_back(ui::SCALE_FACTOR_100P);
+  supported_factors.push_back(ui::SCALE_FACTOR_200P);
+  ui::test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
   scoped_ptr<Profile> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
@@ -240,8 +243,7 @@ TEST_F(ExtensionIconImageTest, Basic) {
   ASSERT_EQ(0u, image_reps.size());
 
   // Gets representation for a scale factor.
-  gfx::ImageSkiaRep representation =
-      image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
+  gfx::ImageSkiaRep representation = image.image_skia().GetRepresentation(1.0f);
 
   // Before the image representation is loaded, image should contain blank
   // image representation.
@@ -253,14 +255,14 @@ TEST_F(ExtensionIconImageTest, Basic) {
   EXPECT_EQ(1, ImageLoadedCount());
   ASSERT_EQ(1u, image.image_skia().image_reps().size());
 
-  representation = image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
+  representation = image.image_skia().GetRepresentation(1.0f);
 
   // We should get the right representation now.
   EXPECT_TRUE(gfx::BitmapsAreEqual(representation.sk_bitmap(), bitmap_16));
   EXPECT_EQ(16, representation.pixel_width());
 
   // Gets representation for an additional scale factor.
-  representation = image.image_skia().GetRepresentation(ui::SCALE_FACTOR_200P);
+  representation = image.image_skia().GetRepresentation(2.0f);
 
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       representation.sk_bitmap(),
@@ -270,7 +272,7 @@ TEST_F(ExtensionIconImageTest, Basic) {
   EXPECT_EQ(1, ImageLoadedCount());
   ASSERT_EQ(2u, image.image_skia().image_reps().size());
 
-  representation = image.image_skia().GetRepresentation(ui::SCALE_FACTOR_200P);
+  representation = image.image_skia().GetRepresentation(2.0f);
 
   // Image should have been resized.
   EXPECT_EQ(32, representation.pixel_width());
@@ -281,6 +283,10 @@ TEST_F(ExtensionIconImageTest, Basic) {
 // There is no resource with either exact or bigger size, but there is a smaller
 // resource.
 TEST_F(ExtensionIconImageTest, FallbackToSmallerWhenNoBigger) {
+  std::vector<ui::ScaleFactor> supported_factors;
+  supported_factors.push_back(ui::SCALE_FACTOR_100P);
+  supported_factors.push_back(ui::SCALE_FACTOR_200P);
+  ui::test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
   scoped_ptr<Profile> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
@@ -300,18 +306,17 @@ TEST_F(ExtensionIconImageTest, FallbackToSmallerWhenNoBigger) {
                   default_icon,
                   this);
 
-  gfx::ImageSkiaRep representation =
-      image.image_skia().GetRepresentation(ui::SCALE_FACTOR_200P);
+  gfx::ImageSkiaRep representation = image.image_skia().GetRepresentation(2.0f);
 
   WaitForImageLoad();
   EXPECT_EQ(1, ImageLoadedCount());
   ASSERT_EQ(1u, image.image_skia().image_reps().size());
 
-  representation = image.image_skia().GetRepresentation(ui::SCALE_FACTOR_200P);
+  representation = image.image_skia().GetRepresentation(2.0f);
 
   // We should have loaded the biggest smaller resource resized to the actual
   // size.
-  EXPECT_EQ(ui::SCALE_FACTOR_200P, representation.scale_factor());
+  EXPECT_EQ(2.0f, representation.scale());
   EXPECT_EQ(64, representation.pixel_width());
   EXPECT_TRUE(gfx::BitmapsAreEqual(representation.sk_bitmap(),
                                    EnsureBitmapSize(bitmap_48, 64)));
@@ -340,17 +345,16 @@ TEST_F(ExtensionIconImageTest, FallbackToSmaller) {
                   default_icon,
                   this);
 
-  gfx::ImageSkiaRep representation =
-      image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
+  gfx::ImageSkiaRep representation = image.image_skia().GetRepresentation(1.0f);
 
   WaitForImageLoad();
   EXPECT_EQ(1, ImageLoadedCount());
   ASSERT_EQ(1u, image.image_skia().image_reps().size());
 
-  representation = image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
+  representation = image.image_skia().GetRepresentation(1.0f);
 
   // We should have loaded smaller (resized) resource.
-  EXPECT_EQ(ui::SCALE_FACTOR_100P, representation.scale_factor());
+  EXPECT_EQ(1.0f, representation.scale());
   EXPECT_EQ(17, representation.pixel_width());
   EXPECT_TRUE(gfx::BitmapsAreEqual(representation.sk_bitmap(),
                                    EnsureBitmapSize(bitmap_16, 17)));
@@ -375,23 +379,22 @@ TEST_F(ExtensionIconImageTest, NoResources) {
                   default_icon,
                   this);
 
-  gfx::ImageSkiaRep representation =
-      image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
+  gfx::ImageSkiaRep representation = image.image_skia().GetRepresentation(1.0f);
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       representation.sk_bitmap(),
       EnsureBitmapSize(
-          default_icon.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap(),
+          default_icon.GetRepresentation(1.0f).sk_bitmap(),
           kRequestedSize)));
 
   EXPECT_EQ(0, ImageLoadedCount());
   // We should have a default icon representation.
   ASSERT_EQ(1u, image.image_skia().image_reps().size());
 
-  representation = image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
+  representation = image.image_skia().GetRepresentation(1.0f);
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       representation.sk_bitmap(),
       EnsureBitmapSize(
-          default_icon.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap(),
+          default_icon.GetRepresentation(1.0f).sk_bitmap(),
           kRequestedSize)));
 }
 
@@ -417,8 +420,7 @@ TEST_F(ExtensionIconImageTest, InvalidResource) {
                   default_icon,
                   this);
 
-  gfx::ImageSkiaRep representation =
-      image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
+  gfx::ImageSkiaRep representation = image.image_skia().GetRepresentation(1.0f);
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       representation.sk_bitmap(),
       CreateBlankBitmapForScale(kInvalidIconSize, ui::SCALE_FACTOR_100P)));
@@ -428,11 +430,11 @@ TEST_F(ExtensionIconImageTest, InvalidResource) {
   // We should have default icon representation now.
   ASSERT_EQ(1u, image.image_skia().image_reps().size());
 
-  representation = image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
+  representation = image.image_skia().GetRepresentation(1.0f);
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       representation.sk_bitmap(),
       EnsureBitmapSize(
-          default_icon.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap(),
+          default_icon.GetRepresentation(1.0f).sk_bitmap(),
           kInvalidIconSize)));
 }
 
@@ -458,17 +460,16 @@ TEST_F(ExtensionIconImageTest, LazyDefaultIcon) {
                   lazy_default_icon,
                   this);
 
-  ASSERT_FALSE(lazy_default_icon.HasRepresentation(ui::SCALE_FACTOR_100P));
+  ASSERT_FALSE(lazy_default_icon.HasRepresentation(1.0f));
 
-  gfx::ImageSkiaRep representation =
-      image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
+  gfx::ImageSkiaRep representation = image.image_skia().GetRepresentation(1.0f);
 
   // The resouce set is empty, so we should get the result right away.
-  EXPECT_TRUE(lazy_default_icon.HasRepresentation(ui::SCALE_FACTOR_100P));
+  EXPECT_TRUE(lazy_default_icon.HasRepresentation(1.0f));
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       representation.sk_bitmap(),
       EnsureBitmapSize(
-          default_icon.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap(),
+          default_icon.GetRepresentation(1.0f).sk_bitmap(),
           kRequestedSize)));
 
   // We should have a default icon representation.
@@ -498,23 +499,22 @@ TEST_F(ExtensionIconImageTest, LazyDefaultIcon_AsyncIconImage) {
                   lazy_default_icon,
                   this);
 
-  ASSERT_FALSE(lazy_default_icon.HasRepresentation(ui::SCALE_FACTOR_100P));
+  ASSERT_FALSE(lazy_default_icon.HasRepresentation(1.0f));
 
-  gfx::ImageSkiaRep representation =
-      image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
+  gfx::ImageSkiaRep representation = image.image_skia().GetRepresentation(1.0f);
 
   WaitForImageLoad();
   EXPECT_EQ(1, ImageLoadedCount());
   // We should have default icon representation now.
   ASSERT_EQ(1u, image.image_skia().image_reps().size());
 
-  EXPECT_TRUE(lazy_default_icon.HasRepresentation(ui::SCALE_FACTOR_100P));
+  EXPECT_TRUE(lazy_default_icon.HasRepresentation(1.0f));
 
-  representation = image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
+  representation = image.image_skia().GetRepresentation(1.0f);
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       representation.sk_bitmap(),
       EnsureBitmapSize(
-          default_icon.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap(),
+          default_icon.GetRepresentation(1.0f).sk_bitmap(),
           kInvalidIconSize)));
 }
 
@@ -545,7 +545,7 @@ TEST_F(ExtensionIconImageTest, IconImageDestruction) {
 
   // Load an image representation.
   gfx::ImageSkiaRep representation =
-      image->image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
+      image->image_skia().GetRepresentation(1.0f);
 
   WaitForImageLoad();
   EXPECT_EQ(1, ImageLoadedCount());
@@ -557,14 +557,14 @@ TEST_F(ExtensionIconImageTest, IconImageDestruction) {
   extension = NULL;
 
   // Image skia should still be able to get previously loaded representation.
-  representation = image_skia.GetRepresentation(ui::SCALE_FACTOR_100P);
+  representation = image_skia.GetRepresentation(1.0f);
 
-  EXPECT_EQ(ui::SCALE_FACTOR_100P, representation.scale_factor());
+  EXPECT_EQ(1.0f, representation.scale());
   EXPECT_EQ(16, representation.pixel_width());
   EXPECT_TRUE(gfx::BitmapsAreEqual(representation.sk_bitmap(), bitmap_16));
 
   // When requesting another representation, we should get blank image.
-  representation = image_skia.GetRepresentation(ui::SCALE_FACTOR_200P);
+  representation = image_skia.GetRepresentation(2.0f);
 
   EXPECT_TRUE(gfx::BitmapsAreEqual(
       representation.sk_bitmap(),

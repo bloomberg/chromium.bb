@@ -46,36 +46,37 @@ enum ScaleFactor {
   NUM_SCALE_FACTORS  // This always appears last.
 };
 
-// Returns the float scale value for |scale_factor|.
-UI_EXPORT float GetScaleFactorScale(ScaleFactor scale_factor);
-
-// Returns the supported ScaleFactor which most closely matches |scale|.
-// Converting from float to ScaleFactor is inefficient and should be done as
-// little as possible.
-// TODO(oshima): Make ScaleFactor a class and remove this.
-UI_EXPORT ScaleFactor GetScaleFactorFromScale(float scale);
-
-// Returns the ScaleFactor used by |view|.
-UI_EXPORT ScaleFactor GetScaleFactorForNativeView(gfx::NativeView view);
-
-// Returns the maximum device scale factor supported by this platform.
-UI_EXPORT ScaleFactor GetMaxScaleFactor();
-
-// Returns a vector with the scale factors which are supported by this
-// platform, in ascending order.
-UI_EXPORT std::vector<ScaleFactor> GetSupportedScaleFactors();
-
-// Returns true if |scale_factor| is supported by this platform.
-UI_EXPORT bool IsScaleFactorSupported(ScaleFactor scale_factor);
-
-namespace test {
-
 // Changes the value of GetSupportedScaleFactors() to |scale_factors|.
 // Use ScopedSetSupportedScaleFactors for unit tests as not to affect the
 // state of other tests.
 UI_EXPORT void SetSupportedScaleFactors(
     const std::vector<ScaleFactor>& scale_factors);
 
+// Returns a vector with the scale factors which are supported by this
+// platform, in ascending order.
+UI_EXPORT const std::vector<ScaleFactor>& GetSupportedScaleFactors();
+
+// Returns the float scale value for |scale_factor|.
+UI_EXPORT float GetImageScale(ScaleFactor scale_factor);
+
+// Returns the supported ScaleFactor which most closely matches |scale|.
+// Converting from float to ScaleFactor is inefficient and should be done as
+// little as possible.
+// TODO(oshima): Make ScaleFactor a class and remove this.
+UI_EXPORT ScaleFactor GetSupportedScaleFactor(float image_scale);
+
+// Returns the ScaleFactor used by |view|.
+UI_EXPORT ScaleFactor GetScaleFactorForNativeView(gfx::NativeView view);
+
+// Returns true if |scale_factor| is supported by this platform.
+UI_EXPORT bool IsScaleFactorSupported(ScaleFactor scale_factor);
+
+// Returns the scale factor closest to |scale| from the full list of factors.
+// Note that it does NOT rely on the list of supported scale factors.
+// Finding the closest match is inefficient and shouldn't be done frequently.
+UI_EXPORT ScaleFactor FindClosestScaleFactorUnsafe(float scale);
+
+namespace test {
 // Class which changes the value of GetSupportedScaleFactors() to
 // |new_scale_factors| for the duration of its lifetime.
 class UI_EXPORT ScopedSetSupportedScaleFactors {
@@ -85,7 +86,7 @@ class UI_EXPORT ScopedSetSupportedScaleFactors {
   ~ScopedSetSupportedScaleFactors();
 
  private:
-  const std::vector<ui::ScaleFactor> original_scale_factors_;
+  std::vector<ui::ScaleFactor>* original_scale_factors_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSetSupportedScaleFactors);
 };

@@ -67,7 +67,7 @@ int GetMaximalIconSize(chrome::IconType icon_type) {
       base_size = 0;
       break;
   }
-  return ui::GetScaleFactorScale(ui::GetMaxScaleFactor()) * base_size;
+  return gfx::ImageSkia::GetMaxSupportedScale() * base_size;
 }
 
 bool DoUrlAndIconMatch(const FaviconURL& favicon_url,
@@ -148,7 +148,7 @@ bool HasExpiredOrIncompleteResult(
       FaviconUtil::GetFaviconScaleFactors();
   for (size_t i = 0; i < scale_factors.size(); ++i) {
     int edge_size_in_pixel = floor(
-        desired_size_in_dip * ui::GetScaleFactorScale(scale_factors[i]));
+        desired_size_in_dip * ui::GetImageScale(scale_factors[i]));
     std::vector<gfx::Size>::iterator it = std::find(favicon_sizes.begin(),
         favicon_sizes.end(), gfx::Size(edge_size_in_pixel, edge_size_in_pixel));
     if (it == favicon_sizes.end())

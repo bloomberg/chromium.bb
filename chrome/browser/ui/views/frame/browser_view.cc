@@ -209,7 +209,7 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
   // Calculate thickness of bottom border as per current scale factor to
   // determine where to draw the 1-px thick border.
   float thickness = views::NonClientFrameView::kClientEdgeThickness /
-                    ui::GetScaleFactorScale(canvas->scale_factor());
+                    canvas->image_scale();
   SkScalar y = SkIntToScalar(view->height()) - SkFloatToScalar(thickness);
   canvas->sk_canvas()->drawLine(SkIntToScalar(0), y,
                                 SkIntToScalar(view->width()), y, paint);

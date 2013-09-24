@@ -43,7 +43,7 @@ const ImageSkia ImageSkiaFromGdkPixbuf(GdkPixbuf* pixbuf) {
   CHECK(pixbuf);
   gfx::Canvas canvas(gfx::Size(gdk_pixbuf_get_width(pixbuf),
                                gdk_pixbuf_get_height(pixbuf)),
-                     ui::SCALE_FACTOR_100P,
+                     1.0f,
                      false);
   skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
   cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
@@ -65,7 +65,7 @@ GdkPixbuf* GdkPixbufFromPNG(
     const std::vector<gfx::ImagePNGRep>& image_png_reps) {
   scoped_refptr<base::RefCountedMemory> png_bytes(NULL);
   for (size_t i = 0; i < image_png_reps.size(); ++i) {
-    if (image_png_reps[i].scale_factor == ui::SCALE_FACTOR_100P)
+    if (image_png_reps[i].scale == 1.0f)
       png_bytes = image_png_reps[i].raw_data;
   }
 
@@ -142,7 +142,7 @@ ImageSkia* GetErrorImageSkia() {
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
   bitmap.allocPixels();
   bitmap.eraseRGB(0xff, 0, 0);
-  return new gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, ui::SCALE_FACTOR_100P));
+  return new gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, 1.0f));
 }
 
 ImageSkia* ImageSkiaFromPNG(
@@ -159,23 +159,22 @@ ImageSkia* ImageSkiaFromPNG(
     if (!gfx::PNGCodec::Decode(raw_data->front(), raw_data->size(),
                                &bitmap)) {
       LOG(ERROR) << "Unable to decode PNG for "
-                 << ui::GetScaleFactorScale(image_png_reps[i].scale_factor)
+                 << image_png_reps[i].scale
                  << ".";
       return GetErrorImageSkia();
     }
     image_skia->AddRepresentation(gfx::ImageSkiaRep(
-        bitmap, image_png_reps[i].scale_factor));
+        bitmap, image_png_reps[i].scale));
   }
   return image_skia.release();
 }
 
 scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromImageSkia(
     const ImageSkia* image_skia) {
-  ImageSkiaRep image_skia_rep = image_skia->GetRepresentation(
-      ui::SCALE_FACTOR_100P);
+  ImageSkiaRep image_skia_rep = image_skia->GetRepresentation(1.0f);
 
   scoped_refptr<base::RefCountedBytes> png_bytes(new base::RefCountedBytes());
-  if (image_skia_rep.scale_factor() != ui::SCALE_FACTOR_100P ||
+  if (image_skia_rep.scale() != 1.0f ||
       !gfx::PNGCodec::EncodeBGRASkBitmap(image_skia_rep.sk_bitmap(), false,
           &png_bytes->data())) {
     return NULL;
@@ -274,7 +273,7 @@ class ImageRepPNG : public ImageRep {
     if (!size_cache_) {
       for (std::vector<ImagePNGRep>::const_iterator it = image_reps().begin();
            it != image_reps().end(); ++it) {
-        if (it->scale_factor == ui::SCALE_FACTOR_100P) {
+        if (it->scale == 1.0f) {
           size_cache_.reset(new gfx::Size(it->Size()));
           return *size_cache_;
         }
@@ -604,7 +603,7 @@ Image Image::CreateFrom1xPNGBytes(const unsigned char* input,
   scoped_refptr<base::RefCountedBytes> raw_data(new base::RefCountedBytes());
   raw_data->data().assign(input, input + input_size);
   std::vector<gfx::ImagePNGRep> image_reps;
-  image_reps.push_back(ImagePNGRep(raw_data, ui::SCALE_FACTOR_100P));
+  image_reps.push_back(ImagePNGRep(raw_data, 1.0f));
   return gfx::Image(image_reps);
 }
 
@@ -772,7 +771,7 @@ scoped_refptr<base::RefCountedMemory> Image::As1xPNGBytes() const {
     const std::vector<gfx::ImagePNGRep>& image_png_reps =
         rep->AsImageRepPNG()->image_reps();
     for (size_t i = 0; i < image_png_reps.size(); ++i) {
-      if (image_png_reps[i].scale_factor == ui::SCALE_FACTOR_100P)
+      if (image_png_reps[i].scale == 1.0f)
         return image_png_reps[i].raw_data;
     }
     return new base::RefCountedBytes();
@@ -827,8 +826,7 @@ scoped_refptr<base::RefCountedMemory> Image::As1xPNGBytes() const {
   //   final type eg (converting from ImageRepSkia to ImageRepPNG to get an
   //   ImageRepCocoa).
   std::vector<ImagePNGRep> image_png_reps;
-  image_png_reps.push_back(gfx::ImagePNGRep(png_bytes,
-                                            ui::SCALE_FACTOR_100P));
+  image_png_reps.push_back(gfx::ImagePNGRep(png_bytes, 1.0f));
   rep = new internal::ImageRepPNG(image_png_reps);
   AddRepresentation(rep);
   return png_bytes;

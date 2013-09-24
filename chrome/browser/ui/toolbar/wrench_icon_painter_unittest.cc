@@ -37,7 +37,7 @@ class WrenchIconPainterTest : public testing::Test,
 // leaks or crashes.
 TEST_F(WrenchIconPainterTest, Paint) {
   gfx::Rect rect(0, 0, 29, 29);
-  gfx::Canvas canvas(rect.size(), ui::SCALE_FACTOR_100P, true);
+  gfx::Canvas canvas(rect.size(), 1.0f, true);
 
   painter_.Paint(&canvas, theme_provider_, rect, WrenchIconPainter::BEZEL_NONE);
   painter_.Paint(

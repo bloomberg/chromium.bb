@@ -2672,11 +2672,9 @@ base::FilePath PepperPluginInstanceImpl::GetModulePath() {
 
 PP_Resource PepperPluginInstanceImpl::CreateImage(gfx::ImageSkia* source_image,
                                                   float scale) {
-  ui::ScaleFactor scale_factor = ui::GetScaleFactorFromScale(scale);
-  gfx::ImageSkiaRep image_skia_rep = source_image->GetRepresentation(
-      scale_factor);
+  gfx::ImageSkiaRep image_skia_rep = source_image->GetRepresentation(scale);
 
-  if (image_skia_rep.is_null() || image_skia_rep.scale_factor() != scale_factor)
+  if (image_skia_rep.is_null() || image_skia_rep.scale() != scale)
     return 0;
 
   scoped_refptr<PPB_ImageData_Impl> image_data(new PPB_ImageData_Impl(

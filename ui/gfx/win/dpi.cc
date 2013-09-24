@@ -40,7 +40,7 @@ float GetDeviceScaleFactorImpl() {
     float scale = gfx::Display::HasForceDeviceScaleFactor() ?
         gfx::Display::GetForcedDeviceScaleFactor() : gfx::GetDPIScale();
     // Quantize to nearest supported scale factor.
-    scale = ui::GetScaleFactorScale(ui::GetScaleFactorFromScale(scale));
+    scale = ui::GetImageScale(ui::GetSupportedScaleFactor(scale));
     return scale;
   }
   return 1.0f;

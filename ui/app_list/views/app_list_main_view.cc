@@ -43,13 +43,13 @@ class AppListMainView::IconLoader : public AppListItemModelObserver {
  public:
   IconLoader(AppListMainView* owner,
              AppListItemModel* item,
-             ui::ScaleFactor scale_factor)
+             float scale)
       : owner_(owner),
         item_(item) {
     item_->AddObserver(this);
 
     // Triggers icon loading for given |scale_factor|.
-    item_->icon().GetRepresentation(scale_factor);
+    item_->icon().GetRepresentation(scale);
   }
 
   virtual ~IconLoader() {
@@ -147,6 +147,7 @@ void AppListMainView::PreloadIcons(PaginationModel* pagination_model,
   if (parent)
     scale_factor = ui::GetScaleFactorForNativeView(parent);
 
+  float scale = ui::GetImageScale(scale_factor);
   // |pagination_model| could have -1 as the initial selected page and
   // assumes first page (i.e. index 0) will be used in this case.
   const int selected_page = std::max(0, pagination_model->selected_page());
@@ -160,10 +161,10 @@ void AppListMainView::PreloadIcons(PaginationModel* pagination_model,
   pending_icon_loaders_.clear();
   for (int i = start_model_index; i < end_model_index; ++i) {
     AppListItemModel* item = model_->apps()->GetItemAt(i);
-    if (item->icon().HasRepresentation(scale_factor))
+    if (item->icon().HasRepresentation(scale))
       continue;
 
-    pending_icon_loaders_.push_back(new IconLoader(this, item, scale_factor));
+    pending_icon_loaders_.push_back(new IconLoader(this, item, scale));
   }
 }
 

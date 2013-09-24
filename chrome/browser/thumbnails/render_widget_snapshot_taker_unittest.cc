@@ -75,7 +75,8 @@ TEST_F(RenderWidgetSnapshotTakerTest,
       size);
   EXPECT_EQ(1U, snapshot_taker.callback_map_.size());
   const int sequence_num = 1;
-  const gfx::Size size2(200, 200);
+  // Ensure this is bigger than the max scale factor X the size.
+  const gfx::Size size2(300, 300);
   snapshot_taker.WidgetDidReceivePaintAtSizeAck(
       content::RenderViewHostTestHarness::rvh(),
       sequence_num,

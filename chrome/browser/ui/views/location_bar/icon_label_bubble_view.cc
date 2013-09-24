@@ -54,8 +54,7 @@ IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
   // sit atop.
   const SkBitmap& bitmap(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          background_images[4])->GetRepresentation(
-          ui::SCALE_FACTOR_100P).sk_bitmap());
+          background_images[4])->GetRepresentation(1.0f).sk_bitmap());
   SkAutoLockPixels pixel_lock(bitmap);
   SkColor background_image_color =
       bitmap.getColor(bitmap.width() / 2, bitmap.height() / 2);

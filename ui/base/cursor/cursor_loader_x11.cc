@@ -159,7 +159,7 @@ void CursorLoaderX11::LoadImageCursor(int id,
   const gfx::ImageSkia* image =
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(
-      GetScaleFactorFromScale(display().device_scale_factor()));
+      display().device_scale_factor());
   SkBitmap bitmap = image_rep.sk_bitmap();
   gfx::Point hotpoint = hot;
   ScaleAndRotateCursorBitmapAndHotpoint(
@@ -177,7 +177,7 @@ void CursorLoaderX11::LoadAnimatedCursor(int id,
   const gfx::ImageSkia* image =
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(
-      GetScaleFactorFromScale(display().device_scale_factor()));
+      display().device_scale_factor());
   SkBitmap bitmap = image_rep.sk_bitmap();
   int frame_width = bitmap.height();
   int frame_height = frame_width;

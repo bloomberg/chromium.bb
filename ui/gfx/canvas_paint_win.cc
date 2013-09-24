@@ -56,7 +56,7 @@ void CanvasSkiaPaint::Init(bool opaque) {
   const int height = ps_.rcPaint.bottom - ps_.rcPaint.top;
 
   RecreateBackingCanvas(gfx::Size(width, height),
-      ui::GetScaleFactorFromScale(gfx::win::GetDeviceScaleFactor()),
+      gfx::win::GetDeviceScaleFactor(),
       opaque);
   skia::PlatformCanvas* canvas = platform_canvas();
 

@@ -122,9 +122,7 @@ const int kIconSize = 69;
 // Returns pixel size under maximal scale factor for the icon whose device
 // independent size is |size_in_dip|
 int GetSizeForMaxScaleFactor(int size_in_dip) {
-  float max_scale_factor_scale =
-      ui::GetScaleFactorScale(ui::GetMaxScaleFactor());
-  return static_cast<int>(size_in_dip * max_scale_factor_scale);
+  return static_cast<int>(size_in_dip * gfx::ImageSkia::GetMaxSupportedScale());
 }
 
 // Returns bitmap for the default icon with size equal to the default icon's
@@ -133,7 +131,8 @@ SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
   const gfx::ImageSkia& image = is_app ?
       extensions::IconsInfo::GetDefaultAppIcon() :
       extensions::IconsInfo::GetDefaultExtensionIcon();
-  return image.GetRepresentation(ui::GetMaxScaleFactor()).sk_bitmap();
+  return image.GetRepresentation(
+      gfx::ImageSkia::GetMaxSupportedScale()).sk_bitmap();
 }
 
 // If auto confirm is enabled then posts a task to proceed with or cancel the

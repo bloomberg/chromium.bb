@@ -43,7 +43,8 @@ SkBitmap MakeBitmap(SkColor color, int w, int h) {
 
 SkColor GetColor(const gfx::ImageSkia& image, ui::ScaleFactor factor,
                  int x = -1, int y = -1) {
-  const SkBitmap& bitmap = image.GetRepresentation(factor).sk_bitmap();
+  const SkBitmap& bitmap =
+      image.GetRepresentation(ui::GetImageScale(factor)).sk_bitmap();
   if (x == -1)
     x = bitmap.width() / 2;
   if (y == -1)
@@ -71,7 +72,7 @@ TEST(SelectFaviconFramesTest, ZeroSizePicksLargest) {
   gfx::ImageSkia image = SelectFaviconFrames(bitmaps,
       SizesFromBitmaps(bitmaps), Scale1x(), 0, NULL);
   EXPECT_EQ(1u, image.image_reps().size());
-  ASSERT_TRUE(image.HasRepresentation(ui::SCALE_FACTOR_100P));
+  ASSERT_TRUE(image.HasRepresentation(1.0f));
   EXPECT_EQ(48, image.width());
   EXPECT_EQ(48, image.height());
 
@@ -87,7 +88,7 @@ TEST(SelectFaviconFramesTest, _16From16) {
   gfx::ImageSkia image = SelectFaviconFrames(bitmaps,
       SizesFromBitmaps(bitmaps), Scale1x(), 16, NULL);
   EXPECT_EQ(1u, image.image_reps().size());
-  ASSERT_TRUE(image.HasRepresentation(ui::SCALE_FACTOR_100P));
+  ASSERT_TRUE(image.HasRepresentation(1.0f));
   EXPECT_EQ(16, image.width());
   EXPECT_EQ(16, image.height());
   EXPECT_EQ(SK_ColorGREEN, GetColor1x(image));
@@ -102,7 +103,7 @@ TEST(SelectFaviconFramesTest, _16From17) {
   gfx::ImageSkia image = SelectFaviconFrames(bitmaps,
       SizesFromBitmaps(bitmaps), Scale1x(), 16, NULL);
   EXPECT_EQ(1u, image.image_reps().size());
-  ASSERT_TRUE(image.HasRepresentation(ui::SCALE_FACTOR_100P));
+  ASSERT_TRUE(image.HasRepresentation(1.0f));
   EXPECT_EQ(16, image.width());
   EXPECT_EQ(16, image.height());
   EXPECT_EQ(SK_ColorGREEN, GetColor1x(image));
@@ -118,7 +119,7 @@ TEST(SelectFaviconFramesTest, _16From15) {
   gfx::ImageSkia image = SelectFaviconFrames(bitmaps,
       SizesFromBitmaps(bitmaps), Scale1x(), 16, NULL);
   EXPECT_EQ(1u, image.image_reps().size());
-  ASSERT_TRUE(image.HasRepresentation(ui::SCALE_FACTOR_100P));
+  ASSERT_TRUE(image.HasRepresentation(1.0f));
   EXPECT_EQ(16, image.width());
   EXPECT_EQ(16, image.height());
   EXPECT_EQ(SK_ColorGREEN, GetColor1x(image));
@@ -131,8 +132,8 @@ TEST(SelectFaviconFramesTest, _16From16_Scale2x_32_From_16) {
   gfx::ImageSkia image = SelectFaviconFrames(bitmaps,
       SizesFromBitmaps(bitmaps), Scale1x2x(), 16, NULL);
   EXPECT_EQ(2u, image.image_reps().size());
-  ASSERT_TRUE(image.HasRepresentation(ui::SCALE_FACTOR_100P));
-  ASSERT_TRUE(image.HasRepresentation(ui::SCALE_FACTOR_200P));
+  ASSERT_TRUE(image.HasRepresentation(1.0f));
+  ASSERT_TRUE(image.HasRepresentation(2.0f));
   EXPECT_EQ(16, image.width());
   EXPECT_EQ(16, image.height());
   EXPECT_EQ(SK_ColorGREEN, GetColor1x(image));
@@ -147,8 +148,8 @@ TEST(SelectFaviconFramesTest, _16From16_Scale2x_32_From_32) {
   gfx::ImageSkia image = SelectFaviconFrames(bitmaps,
       SizesFromBitmaps(bitmaps), Scale1x2x(), 16, NULL);
   EXPECT_EQ(2u, image.image_reps().size());
-  ASSERT_TRUE(image.HasRepresentation(ui::SCALE_FACTOR_100P));
-  ASSERT_TRUE(image.HasRepresentation(ui::SCALE_FACTOR_200P));
+  ASSERT_TRUE(image.HasRepresentation(1.0f));
+  ASSERT_TRUE(image.HasRepresentation(2.0f));
   EXPECT_EQ(16, image.width());
   EXPECT_EQ(16, image.height());
   EXPECT_EQ(SK_ColorGREEN, GetColor1x(image));

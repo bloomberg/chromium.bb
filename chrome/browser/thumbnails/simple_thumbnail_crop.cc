@@ -8,6 +8,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/gfx/size_conversions.h"
@@ -121,7 +122,7 @@ gfx::Size SimpleThumbnailCrop::GetCopySizeForThumbnail(
   switch (scale_factor) {
     case ui::SCALE_FACTOR_100P:
       copy_size = gfx::ToFlooredSize(gfx::ScaleSize(
-          copy_size, ui::GetScaleFactorScale(ui::SCALE_FACTOR_200P)));
+          copy_size, ui::GetImageScale(ui::SCALE_FACTOR_200P)));
       break;
     case ui::SCALE_FACTOR_200P:
       // Use the size as-is.
@@ -130,7 +131,7 @@ gfx::Size SimpleThumbnailCrop::GetCopySizeForThumbnail(
       DLOG(WARNING) << "Unsupported scale factor. Use the same copy size as "
                     << "ui::SCALE_FACTOR_100P";
       copy_size = gfx::ToFlooredSize(gfx::ScaleSize(
-          copy_size, ui::GetMaxScaleFactor()));
+          copy_size, gfx::ImageSkia::GetMaxSupportedScale()));
       break;
   }
   return copy_size;
@@ -183,8 +184,7 @@ gfx::Size SimpleThumbnailCrop::ComputeTargetSizeAtMaximumScale(
     const gfx::Size& given_size) {
   // TODO(mazda|oshima): Update thumbnail when the max scale factor changes.
   // crbug.com/159157.
-  float max_scale_factor =
-      ui::GetScaleFactorScale(ui::GetMaxScaleFactor());
+  float max_scale_factor = gfx::ImageSkia::GetMaxSupportedScale();
   return gfx::ToFlooredSize(gfx::ScaleSize(given_size, max_scale_factor));
 }
 

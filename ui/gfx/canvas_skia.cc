@@ -350,7 +350,7 @@ void Canvas::DrawStringRectWithHalo(const base::string16& text,
   // Create a temporary buffer filled with the halo color. It must leave room
   // for the 1-pixel border around the text.
   Size size(display_rect.width() + 2, display_rect.height() + 2);
-  Canvas text_canvas(size, scale_factor(), true);
+  Canvas text_canvas(size, image_scale(), true);
   SkPaint bkgnd_paint;
   bkgnd_paint.setColor(halo_color);
   text_canvas.DrawRect(Rect(size), bkgnd_paint);
@@ -381,7 +381,7 @@ void Canvas::DrawStringRectWithHalo(const base::string16& text,
 
   // Draw the halo bitmap with blur.
   ImageSkia text_image = ImageSkia(ImageSkiaRep(text_bitmap,
-      text_canvas.scale_factor()));
+      text_canvas.image_scale()));
   DrawImageInt(text_image, display_rect.x() - 1, display_rect.y() - 1);
 }
 

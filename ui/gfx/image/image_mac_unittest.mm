@@ -16,26 +16,26 @@
 namespace {
 
 // Returns true if the structure of |ns_image| matches the structure
-// described by |width|, |height|, and |scale_factors|.
+// described by |width|, |height|, and |scales|.
 // The structure matches if:
 // - |ns_image| is not nil.
-// - |ns_image| has NSImageReps of |scale_factors|.
+// - |ns_image| has NSImageReps of |scales|.
 // - Each of the NSImageReps has a pixel size of [|ns_image| size] *
-//   scale_factor.
+//   scale.
 bool NSImageStructureMatches(
     NSImage* ns_image,
     int width,
     int height,
-    const std::vector<ui::ScaleFactor>& scale_factors) {
+    const std::vector<float>& scales) {
   if (!ns_image ||
       [ns_image size].width != width ||
       [ns_image size].height != height ||
-      [ns_image representations].count != scale_factors.size()) {
+      [ns_image representations].count != scales.size()) {
     return false;
   }
 
-  for (size_t i = 0; i < scale_factors.size(); ++i) {
-    float scale = ui::GetScaleFactorScale(scale_factors[i]);
+  for (size_t i = 0; i < scales.size(); ++i) {
+    float scale = scales[i];
     bool found_match = false;
     for (size_t j = 0; j < [ns_image representations].count; ++j) {
       NSImageRep* ns_image_rep = [[ns_image representations] objectAtIndex:j];
@@ -74,16 +74,14 @@ void BitmapImageRep(int width, int height,
 
 class ImageMacTest : public testing::Test {
  public:
-  ImageMacTest()
-      : supported_scale_factors_(gfx::test::Get1xAnd2xScaleFactors()) {
+  ImageMacTest() {
+    gfx::ImageSkia::SetSupportedScales(gfx::test::Get1xAnd2xScales());
   }
 
   virtual ~ImageMacTest() {
   }
 
  private:
-  ui::test::ScopedSetSupportedScaleFactors supported_scale_factors_;
-
   DISALLOW_COPY_AND_ASSIGN(ImageMacTest);
 };
 
@@ -110,11 +108,11 @@ TEST_F(ImageMacTest, MultiResolutionNSImageToImageSkia) {
 
   const gfx::ImageSkia* image_skia = image.ToImageSkia();
 
-  std::vector<ui::ScaleFactor> scale_factors;
-  scale_factors.push_back(ui::SCALE_FACTOR_100P);
-  scale_factors.push_back(ui::SCALE_FACTOR_200P);
+  std::vector<float> scales;
+  scales.push_back(1.0f);
+  scales.push_back(2.0f);
   EXPECT_TRUE(gt::ImageSkiaStructureMatches(*image_skia, kWidth1x, kHeight1x,
-                                            scale_factors));
+                                            scales));
 
   // ToImageSkia should create a second representation.
   EXPECT_EQ(2u, image.RepresentationCount());
@@ -141,11 +139,11 @@ TEST_F(ImageMacTest, UnalignedMultiResolutionNSImageToImageSkia) {
 
   const gfx::ImageSkia* image_skia = image.ToImageSkia();
 
-  std::vector<ui::ScaleFactor> scale_factors;
-  scale_factors.push_back(ui::SCALE_FACTOR_100P);
-  scale_factors.push_back(ui::SCALE_FACTOR_200P);
+  std::vector<float> scales;
+  scales.push_back(1.0f);
+  scales.push_back(2.0f);
   EXPECT_TRUE(gt::ImageSkiaStructureMatches(*image_skia, kWidth1x, kHeight1x,
-                                            scale_factors));
+                                            scales));
 
   // ToImageSkia should create a second representation.
   EXPECT_EQ(2u, image.RepresentationCount());
@@ -159,9 +157,9 @@ TEST_F(ImageMacTest, MultiResolutionImageSkiaToNSImage) {
 
   gfx::ImageSkia image_skia;
   image_skia.AddRepresentation(gfx::ImageSkiaRep(
-      gt::CreateBitmap(kWidth1x, kHeight1x), ui::SCALE_FACTOR_100P));
+      gt::CreateBitmap(kWidth1x, kHeight1x), 1.0f));
   image_skia.AddRepresentation(gfx::ImageSkiaRep(
-      gt::CreateBitmap(kWidth2x, kHeight2x), ui::SCALE_FACTOR_200P));
+      gt::CreateBitmap(kWidth2x, kHeight2x), 2.0f));
 
   gfx::Image image(image_skia);
 
@@ -170,11 +168,10 @@ TEST_F(ImageMacTest, MultiResolutionImageSkiaToNSImage) {
 
   NSImage* ns_image = image.ToNSImage();
 
-  std::vector<ui::ScaleFactor> scale_factors;
-  scale_factors.push_back(ui::SCALE_FACTOR_100P);
-  scale_factors.push_back(ui::SCALE_FACTOR_200P);
-  EXPECT_TRUE(NSImageStructureMatches(ns_image, kWidth1x, kHeight1x,
-                                      scale_factors));
+  std::vector<float> scales;
+  scales.push_back(1.0f);
+  scales.push_back(2.0f);
+  EXPECT_TRUE(NSImageStructureMatches(ns_image, kWidth1x, kHeight1x, scales));
 
   // Request for NSImage* should create a second representation.
   EXPECT_EQ(2u, image.RepresentationCount());
@@ -187,17 +184,16 @@ TEST_F(ImageMacTest, MultiResolutionPNGToNSImage) {
   scoped_refptr<base::RefCountedMemory> bytes1x = gt::CreatePNGBytes(kSize1x);
   scoped_refptr<base::RefCountedMemory> bytes2x = gt::CreatePNGBytes(kSize2x);
   std::vector<gfx::ImagePNGRep> image_png_reps;
-  image_png_reps.push_back(gfx::ImagePNGRep(bytes1x, ui::SCALE_FACTOR_100P));
-  image_png_reps.push_back(gfx::ImagePNGRep(bytes2x, ui::SCALE_FACTOR_200P));
+  image_png_reps.push_back(gfx::ImagePNGRep(bytes1x, 1.0f));
+  image_png_reps.push_back(gfx::ImagePNGRep(bytes2x, 2.0f));
 
   gfx::Image image(image_png_reps);
 
   NSImage* ns_image = image.ToNSImage();
-  std::vector<ui::ScaleFactor> scale_factors;
-  scale_factors.push_back(ui::SCALE_FACTOR_100P);
-  scale_factors.push_back(ui::SCALE_FACTOR_200P);
-  EXPECT_TRUE(NSImageStructureMatches(ns_image, kSize1x, kSize1x,
-                                      scale_factors));
+  std::vector<float> scales;
+  scales.push_back(1.0f);
+  scales.push_back(2.0f);
+  EXPECT_TRUE(NSImageStructureMatches(ns_image, kSize1x, kSize1x, scales));
 
   // Converting from PNG to NSImage should not go through ImageSkia.
   EXPECT_FALSE(image.HasRepresentation(gfx::Image::kImageRepSkia));
@@ -205,9 +201,9 @@ TEST_F(ImageMacTest, MultiResolutionPNGToNSImage) {
   // Convert to ImageSkia to check pixel contents of NSImageReps.
   gfx::ImageSkia image_skia = gfx::ImageSkiaFromNSImage(ns_image);
   EXPECT_TRUE(gt::IsEqual(bytes1x,
-      image_skia.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap()));
+      image_skia.GetRepresentation(1.0f).sk_bitmap()));
   EXPECT_TRUE(gt::IsEqual(bytes2x,
-      image_skia.GetRepresentation(ui::SCALE_FACTOR_200P).sk_bitmap()));
+      image_skia.GetRepresentation(2.0f).sk_bitmap()));
 }
 
 } // namespace

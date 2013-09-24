@@ -39,7 +39,7 @@ class AppListModelPicklerUnitTest : public testing::Test {
     for (size_t i = 0; i < reps1.size(); ++i) {
       ASSERT_TRUE(
           gfx::BitmapsAreEqual(reps1[i].sk_bitmap(), reps2[i].sk_bitmap()));
-      ASSERT_EQ(reps1[i].scale_factor(), reps2[i].scale_factor());
+      ASSERT_EQ(reps1[i].scale(), reps2[i].scale());
     }
   }
 

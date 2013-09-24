@@ -201,8 +201,7 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
   // of the profile icon.
   if (item_.active) {
     const SkBitmap* avatar_image = item_.icon.ToSkBitmap();
-    gfx::ImageSkiaRep avatar_image_rep =
-        gfx::ImageSkiaRep(*avatar_image, ui::SCALE_FACTOR_100P);
+    gfx::ImageSkiaRep avatar_image_rep = gfx::ImageSkiaRep(*avatar_image, 1.0f);
     gfx::Canvas canvas(avatar_image_rep, /* is_opaque */ true);
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

@@ -96,7 +96,7 @@ bool ParseScaleFactor(const base::StringPiece& identifier,
     return false;
   }
 
-  *scale_factor = ui::GetScaleFactorFromScale(static_cast<float>(scale));
+  *scale_factor = ui::GetSupportedScaleFactor(static_cast<float>(scale));
   return true;
 }
 

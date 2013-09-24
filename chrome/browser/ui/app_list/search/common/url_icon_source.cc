@@ -47,17 +47,15 @@ void UrlIconSource::StartIconFetch() {
   icon_fetcher_->Start();
 }
 
-gfx::ImageSkiaRep UrlIconSource::GetImageForScale(
-    ui::ScaleFactor scale_factor) {
+gfx::ImageSkiaRep UrlIconSource::GetImageForScale(float scale) {
   if (!icon_fetch_attempted_)
     StartIconFetch();
 
   if (!icon_.isNull())
-    return icon_.GetRepresentation(scale_factor);
+    return icon_.GetRepresentation(scale);
 
   return ui::ResourceBundle::GetSharedInstance()
-      .GetImageSkiaNamed(default_icon_resource_id_)->GetRepresentation(
-          scale_factor);
+      .GetImageSkiaNamed(default_icon_resource_id_)->GetRepresentation(scale);
 }
 
 void UrlIconSource::OnURLFetchComplete(

@@ -67,7 +67,7 @@ void AppIconLoaderImpl::FetchImage(const std::string& id) {
   // Triggers image loading now instead of depending on paint message. This
   // makes the temp blank image be shown for shorter time and improves user
   // experience. See http://crbug.com/146114.
-  image->image_skia().EnsureRepsForSupportedScaleFactors();
+  image->image_skia().EnsureRepsForSupportedScales();
 }
 
 void AppIconLoaderImpl::ClearImage(const std::string& id) {

@@ -109,7 +109,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
     // Load the raw data from the resource pack at the current supported scale
     // factor.  This code assumes that only one of the possible scale factors is
     // supported at runtime, based on the device resolution.
-    ui::ScaleFactor scale_factor = ui::GetMaxScaleFactor();
+    ui::ScaleFactor scale_factor = GetMaxScaleFactor();
 
     scoped_refptr<base::RefCountedStaticMemory> data(
         LoadDataResourceBytesForScale(resource_id, scale_factor));
@@ -125,7 +125,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
 
     bool is_fallback = PNGContainsFallbackMarker(data->front(), data->size());
     // Create the image from the data.
-    CGFloat target_scale = ui::GetScaleFactorScale(scale_factor);
+    CGFloat target_scale = ui::GetImageScale(scale_factor);
     CGFloat source_scale = is_fallback ? 1.0 : target_scale;
     base::scoped_nsobject<UIImage> ui_image(
         [[UIImage alloc] initWithData:ns_data scale:source_scale]);

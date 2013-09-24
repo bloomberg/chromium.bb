@@ -261,7 +261,7 @@ class NativeMenuWin::MenuHostWindow {
         const gfx::ImageSkia* skia_icon = icon.ToImageSkia();
         DCHECK(type != ui::MenuModel::TYPE_CHECK);
         gfx::Canvas canvas(
-            skia_icon->GetRepresentation(ui::SCALE_FACTOR_100P),
+            skia_icon->GetRepresentation(1.0f),
             false);
         skia::DrawToNativeContext(
             canvas.sk_canvas(), dc,
@@ -287,7 +287,7 @@ class NativeMenuWin::MenuHostWindow {
             (height - kItemTopMargin - kItemBottomMargin -
              config.check_height) / 2;
         gfx::Canvas canvas(gfx::Size(config.check_width, config.check_height),
-                           ui::SCALE_FACTOR_100P,
+                           1.0f,
                            false);
         NativeTheme::ExtraParams extra;
         extra.menu_check.is_radio = false;

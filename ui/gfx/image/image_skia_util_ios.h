@@ -5,7 +5,6 @@
 #ifndef UI_GFX_IMAGE_IMAGE_SKIA_UTIL_IOS_H_
 #define UI_GFX_IMAGE_IMAGE_SKIA_UTIL_IOS_H_
 
-#include "ui/base/layout.h"
 #include "ui/gfx/gfx_export.h"
 
 #ifdef __OBJC__
@@ -22,13 +21,11 @@ class ImageSkiaRep;
 UI_EXPORT gfx::ImageSkia ImageSkiaFromUIImage(UIImage* image);
 
 // Converts to an ImageSkiaRep of |scale_factor| from UIImage.
-// |scale_factor| is passed explicitly in order to allow this method to be used
-// with a |scale_factor| which is not supported by the platform.
-// (ui::GetScaleFactorFromScale() is restricted to the platform's supported
-// scale factors.)
-UI_EXPORT gfx::ImageSkiaRep ImageSkiaRepOfScaleFactorFromUIImage(
+// |scale| is passed explicitly in order to allow this method to be used
+// with a |scale| which is not supported by the platform.
+UI_EXPORT gfx::ImageSkiaRep ImageSkiaRepOfScaleFromUIImage(
     UIImage* image,
-    ui::ScaleFactor scale_factor);
+    float scale);
 
 // Converts to UIImage from ImageSkia. The returned UIImage will be at the scale
 // of the ImageSkiaRep in |image_skia| which most closely matches the device's

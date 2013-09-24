@@ -184,7 +184,7 @@ void AppListItemView::CancelContextMenu() {
 }
 
 gfx::ImageSkia AppListItemView::GetDragImage() {
-  gfx::Canvas canvas(size(), ui::SCALE_FACTOR_100P, false /* is_opaque */);
+  gfx::Canvas canvas(size(), 1.0f, false /* is_opaque */);
   gfx::Rect bounds(size());
   canvas.DrawColor(SK_ColorTRANSPARENT);
   PaintChildren(&canvas);

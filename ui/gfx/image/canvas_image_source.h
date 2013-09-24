@@ -30,8 +30,7 @@ class UI_EXPORT CanvasImageSource : public gfx::ImageSkiaSource {
   const gfx::Size& size() const { return size_; };
 
   // Overridden from gfx::ImageSkiaSource.
-  virtual gfx::ImageSkiaRep GetImageForScale(
-      ui::ScaleFactor scale_factor) OVERRIDE;
+  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE;
 
  protected:
   virtual ~CanvasImageSource() {}

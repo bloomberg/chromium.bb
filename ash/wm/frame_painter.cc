@@ -136,7 +136,7 @@ void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
           top_left_corner_radius, top_right_corner_radius, 0);
     }
   } else {
-    gfx::Canvas temporary_canvas(bounds.size(), canvas->scale_factor(), false);
+    gfx::Canvas temporary_canvas(bounds.size(), canvas->image_scale(), false);
     temporary_canvas.TileImageInt(*frame_image,
                                   image_inset_x, 0,
                                   0, 0,
