@@ -190,6 +190,7 @@ class GitFilter(object):
 
 class GitWrapper(SCMWrapper):
   """Wrapper for Git"""
+  name = 'git'
 
   cache_dir = None
   # If a given cache is used in a solution more than once, prevent multiple
@@ -363,13 +364,13 @@ class GitWrapper(SCMWrapper):
         # Make the output a little prettier. It's nice to have some whitespace
         # between projects when cloning.
         print('')
-      return
+      return self._Capture(['rev-parse', '--verify', 'HEAD'])
 
     if not managed:
       self._UpdateBranchHeads(options, fetch=False)
       self.UpdateSubmoduleConfig()
       print ('________ unmanaged solution; skipping %s' % self.relpath)
-      return
+      return self._Capture(['rev-parse', '--verify', 'HEAD'])
 
     if not os.path.exists(os.path.join(self.checkout_path, '.git')):
       raise gclient_utils.Error('\n____ %s%s\n'
@@ -406,7 +407,7 @@ class GitWrapper(SCMWrapper):
     self._PossiblySwitchCache(url, options)
 
     if return_early:
-      return
+      return self._Capture(['rev-parse', '--verify', 'HEAD'])
 
     cur_branch = self._GetCurrentBranch()
 
@@ -594,6 +595,8 @@ class GitWrapper(SCMWrapper):
         if not os.path.islink(full_path):
           print('\n_____ removing unversioned directory %s' % path)
           gclient_utils.rmtree(full_path)
+
+    return self._Capture(['rev-parse', '--verify', 'HEAD'])
 
 
   def revert(self, options, _args, file_list):
@@ -1088,6 +1091,7 @@ class GitWrapper(SCMWrapper):
 
 class SVNWrapper(SCMWrapper):
   """ Wrapper for SVN """
+  name = 'svn'
 
   @staticmethod
   def BinaryExists():
@@ -1202,11 +1206,11 @@ class SVNWrapper(SCMWrapper):
       command = ['checkout', url, self.checkout_path]
       command = self._AddAdditionalUpdateFlags(command, options, revision)
       self._RunAndGetFileList(command, options, file_list, self._root_dir)
-      return
+      return self.Svnversion()
 
     if not managed:
       print ('________ unmanaged solution; skipping %s' % self.relpath)
-      return
+      return self.Svnversion()
 
     if 'URL' not in from_info:
       raise gclient_utils.Error(
@@ -1294,7 +1298,7 @@ class SVNWrapper(SCMWrapper):
         command = ['checkout', url, self.checkout_path]
         command = self._AddAdditionalUpdateFlags(command, options, revision)
         self._RunAndGetFileList(command, options, file_list, self._root_dir)
-        return
+        return self.Svnversion()
 
     # If the provided url has a revision number that matches the revision
     # number of the existing directory, then we don't need to bother updating.
@@ -1316,6 +1320,7 @@ class SVNWrapper(SCMWrapper):
             and not os.path.islink(full_path)):
           print('\n_____ removing unversioned directory %s' % status[1])
           gclient_utils.rmtree(full_path)
+    return self.Svnversion()
 
   def updatesingle(self, options, args, file_list):
     filename = args.pop()
@@ -1441,6 +1446,11 @@ class SVNWrapper(SCMWrapper):
     kwargs.setdefault('nag_max', self.nag_max)
     gclient_utils.CheckCallAndFilterAndHeader(['svn'] + args,
         always=options.verbose, **kwargs)
+
+  def Svnversion(self):
+    """Runs the lowest checked out revision in the current project."""
+    info = scm.SVN.CaptureLocalInfo([], os.path.join(self.checkout_path, '.'))
+    return info['Revision']
 
   def _RunAndGetFileList(self, args, options, file_list, cwd=None):
     """Runs a commands that goes to stdout and grabs the file listed."""

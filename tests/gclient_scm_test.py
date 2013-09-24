@@ -104,9 +104,11 @@ class SVNWrapperTestCase(BaseTestCase):
         'GetCheckoutRoot',
         'GetRevisionDate',
         'GetUsableRev',
+        'Svnversion',
         'RunCommand',
         'cleanup',
         'diff',
+        'name',
         'nag_max',
         'nag_timer',
         'pack',
@@ -198,6 +200,9 @@ class SVNWrapperTestCase(BaseTestCase):
         cwd=self.root_dir,
         file_list=files_list)
 
+    gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.'
+        ).AndReturn({'Revision': 100})
+
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
@@ -228,6 +233,8 @@ class SVNWrapperTestCase(BaseTestCase):
         cwd=self.root_dir,
         file_list=files_list)
     gclient_scm.gclient_utils.rmtree(self.base_path)
+    gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.'
+        ).AndReturn({'Revision': 100})
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
@@ -352,6 +359,8 @@ class SVNWrapperTestCase(BaseTestCase):
         ['checkout', self.url, self.base_path, '--force', '--ignore-externals'],
         cwd=self.root_dir,
         file_list=files_list)
+    gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.'
+        ).AndReturn({'Revision': 100})
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
@@ -385,6 +394,9 @@ class SVNWrapperTestCase(BaseTestCase):
     # _AddAdditionalUpdateFlags()
     gclient_scm.scm.SVN.Capture(['--version', '--quiet'], None
         ).AndReturn('1.5.1')
+
+    gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.'
+        ).AndReturn({'Revision': 100})
 
     additional_args = []
     if options.manually_grab_svn_rev:
@@ -424,6 +436,9 @@ class SVNWrapperTestCase(BaseTestCase):
 
     gclient_scm.scm.SVN._CaptureInfo([file_info['URL']], None
         ).AndReturn(file_info)
+
+    gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.'
+        ).AndReturn({'Revision': 100})
 
     self.mox.ReplayAll()
     files_list = []
@@ -465,6 +480,9 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.isdir(join(self.base_path, 'file')).AndReturn(False)
     gclient_scm.os.path.islink(join(self.base_path, 'dir')).AndReturn(False)
     gclient_scm.gclient_utils.rmtree(join(self.base_path, 'dir'))
+
+    gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.'
+        ).AndReturn({'Revision': 100})
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -514,6 +532,9 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.scm.SVN._CaptureInfo([], dotted_path).AndReturn(file_info)
     gclient_scm.scm.SVN._CaptureInfo([file_info['URL']], None
         ).AndReturn(file_info)
+
+    gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.'
+        ).AndReturn({'Revision': 100})
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -585,6 +606,9 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.scm.SVN._CaptureInfo([file_info['URL']], None
         ).AndReturn(file_info)
 
+    gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.'
+        ).AndReturn({'Revision': 100})
+
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
@@ -617,6 +641,9 @@ class SVNWrapperTestCase(BaseTestCase):
         [], join(self.base_path, '.')).AndReturn(file_info)
     gclient_scm.scm.SVN._CaptureInfo([file_info['URL']], None
         ).AndReturn(file_info)
+
+    gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.'
+        ).AndReturn({'Revision': 100})
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -799,6 +826,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
         'cache_locks',
         'cleanup',
         'diff',
+        'name',
         'nag_max',
         'nag_timer',
         'pack',

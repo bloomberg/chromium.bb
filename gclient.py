@@ -73,6 +73,7 @@
 __version__ = '0.7'
 
 import copy
+import json
 import logging
 import optparse
 import os
@@ -301,6 +302,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # This is the scm used to checkout self.url. It may be used by dependencies
     # to get the datetime of the revision we checked out.
     self._used_scm = None
+    # The actual revision we ended up getting, or None if that information is
+    # unavailable
+    self._got_revision = None
 
     if not self.name and self.parent:
       raise gclient_utils.Error('Dependency without name')
@@ -624,7 +628,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
             command, options, parsed_url, self.parent.name, revision_overrides)
         self._used_scm = gclient_scm.CreateSCM(
             parsed_url, self.root.root_dir, self.name)
-        self._used_scm.RunCommand(command, options, args, file_list)
+        self._got_revision = self._used_scm.RunCommand(command, options, args,
+                                                       file_list)
         if file_list:
           file_list = [os.path.join(self.name, f.strip()) for f in file_list]
 
@@ -853,6 +858,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   def used_scm(self):
     """SCMWrapper instance for this dependency or None if not processed yet."""
     return self._used_scm
+
+  @property
+  @gclient_utils.lockedmethod
+  def got_revision(self):
+    return self._got_revision
 
   @property
   def file_list_and_children(self):
@@ -1523,6 +1533,21 @@ def CMDstatus(parser, args):
       all modules (useful for recovering files deleted from local copy)
   gclient sync --revision src@31000
       update src directory to r31000
+
+JSON output format:
+If the --output-json option is specified, the following document structure will
+be emitted to the provided file. 'null' entries may occur for subprojects which
+are present in the gclient solution, but were not processed (due to custom_deps,
+os_deps, etc.)
+
+{
+  "solutions" : {
+    "<name>": {  # <name> is the posix-normalized path to the solution.
+      "revision": [<svn rev int>|<git id hex string>|null],
+      "scm": ["svn"|"git"|null],
+    }
+  }
+}
 """)
 def CMDsync(parser, args):
   """Checkout/update all modules."""
@@ -1573,6 +1598,9 @@ def CMDsync(parser, args):
                          'actual HEAD revision from the repository')
   parser.add_option('--upstream', action='store_true',
                     help='Make repo state match upstream branch.')
+  parser.add_option('--output-json',
+                    help='Output a json document to this path containing '
+                         'summary information about the sync.')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
 
@@ -1587,7 +1615,18 @@ def CMDsync(parser, args):
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
     print(client.config_content)
-  return client.RunOnDeps('update', args)
+  ret = client.RunOnDeps('update', args)
+  if options.output_json:
+    slns = {}
+    for d in client.subtree(True):
+      normed = d.name.replace('\\', '/').rstrip('/') + '/'
+      slns[normed] = {
+          'revision': d.got_revision,
+          'scm': d.used_scm.name if d.used_scm else None,
+      }
+    with open(options.output_json, 'wb') as f:
+      json.dump({'solutions': slns}, f)
+  return ret
 
 
 CMDupdate = CMDsync
