@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../fast/js/resources/js-test-pre.js"></script>
+</head>
+<body onload="runTest();" style="overflow: hidden">
+  <div style="-webkit-transform: translatez(0) translatey(100px) translatex(300px);">
+    <a href="" style="-webkit-tap-highlight-color: rgb(0, 255, 0)">
+      <img width="320" height="240" id="targetLink" src="resources/dice.png">
+    </a>
+</div>
+<script>
+function runTest() {
+    var clientRect = document.getElementById('targetLink').getBoundingClientRect();
+    x = (clientRect.left + clientRect.right) / 2;
+    y = (clientRect.top + clientRect.bottom) / 2;
+
+    if (window.testRunner) {
+        testRunner.dumpAsText(true);
+        testRunner.waitUntilDone();
+    }
+
+    if (window.eventSender) {
+        eventSender.gestureTapDown(x, y);
+        window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
+    } else {
+        debug("This test requires DumpRenderTree.");
+        debug("This test is successful if the image below is covered in a green rectangle.");
+    }
+}
+</script>
+</script>
+</body>
+</html>
