@@ -50,7 +50,7 @@ void UMABrowsingActivityObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    const content::LoadCommittedDetails& load =
+    const content::LoadCommittedDetails load =
         *content::Details<content::LoadCommittedDetails>(details).ptr();
 
     content::NavigationController* controller =
@@ -58,6 +58,11 @@ void UMABrowsingActivityObserver::Observe(
     // Track whether the page loaded is a search results page (SRP). Track
     // the non-SRP navigations as well so there is a control.
     content::RecordAction(content::UserMetricsAction("NavEntryCommitted"));
+    // Attempting to determine the cause of a crash originating from
+    // IsSearchResultsPageFromDefaultSearchProvider but manifesting in
+    // TemplateURLRef::ExtractSearchTermsFromURL(...).
+    // See http://crbug.com/291348.
+    CHECK(load.entry);
     if (TemplateURLServiceFactory::GetForProfile(
             Profile::FromBrowserContext(controller->GetBrowserContext()))->
             IsSearchResultsPageFromDefaultSearchProvider(
