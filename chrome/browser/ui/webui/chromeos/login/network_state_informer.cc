@@ -146,7 +146,7 @@ NetworkStateInformer::State NetworkStateInformer::GetNetworkState(
     if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE ||
         (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
          !IsProxyConfigured(network) &&
-         network->connection_state() == flimflam::kStateOnline)) {
+         network->connection_state() == shill::kStateOnline)) {
       return ONLINE;
     }
     if (status ==
@@ -156,14 +156,14 @@ NetworkStateInformer::State NetworkStateInformer::GetNetworkState(
     }
     if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL ||
         (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
-         network->connection_state() == flimflam::kStatePortal))
+         network->connection_state() == shill::kStatePortal))
       return CAPTIVE_PORTAL;
   } else {
     if (NetworkState::StateIsConnecting(network->connection_state()))
       return CONNECTING;
-    if (network->connection_state() == flimflam::kStateOnline)
+    if (network->connection_state() == shill::kStateOnline)
       return ONLINE;
-    if (network->connection_state() == flimflam::kStatePortal)
+    if (network->connection_state() == shill::kStatePortal)
       return CAPTIVE_PORTAL;
   }
   return OFFLINE;

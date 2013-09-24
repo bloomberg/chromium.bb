@@ -88,8 +88,7 @@ void DataRequestFailed(
 // Converts the network properties into a JS object.
 void GetDeviceInfo(const DictionaryValue& properties, DictionaryValue* value) {
   std::string name;
-  properties.GetStringWithoutPathExpansion(
-      flimflam::kNameProperty, &name);
+  properties.GetStringWithoutPathExpansion(shill::kNameProperty, &name);
   bool activate_over_non_cellular_networks = false;
   properties.GetBooleanWithoutPathExpansion(
       shill::kActivateOverNonCellularNetworkProperty,
@@ -97,13 +96,13 @@ void GetDeviceInfo(const DictionaryValue& properties, DictionaryValue* value) {
   const DictionaryValue* payment_dict;
   std::string payment_url, post_method, post_data;
   if (properties.GetDictionaryWithoutPathExpansion(
-          flimflam::kPaymentPortalProperty, &payment_dict)) {
+          shill::kPaymentPortalProperty, &payment_dict)) {
     payment_dict->GetStringWithoutPathExpansion(
-        flimflam::kPaymentPortalURL, &payment_url);
+        shill::kPaymentPortalURL, &payment_url);
     payment_dict->GetStringWithoutPathExpansion(
-        flimflam::kPaymentPortalMethod, &post_method);
+        shill::kPaymentPortalMethod, &post_method);
     payment_dict->GetStringWithoutPathExpansion(
-        flimflam::kPaymentPortalPostData, &post_data);
+        shill::kPaymentPortalPostData, &post_data);
   }
 
   value->SetBoolean("activate_over_non_cellular_network",
@@ -116,7 +115,7 @@ void GetDeviceInfo(const DictionaryValue& properties, DictionaryValue* value) {
   // Use the cached DeviceState properties.
   std::string device_path;
   if (!properties.GetStringWithoutPathExpansion(
-          flimflam::kDeviceProperty, &device_path) ||
+          shill::kDeviceProperty, &device_path) ||
       device_path.empty()) {
     return;
   }
@@ -329,21 +328,21 @@ void MobileSetupUIHTMLSource::GetPropertiesAndStartDataRequest(
   const DictionaryValue* payment_dict;
   std::string name, usage_url, activation_state, payment_url;
   if (!properties.GetStringWithoutPathExpansion(
-          flimflam::kNameProperty, &name) ||
+          shill::kNameProperty, &name) ||
       !properties.GetStringWithoutPathExpansion(
-          flimflam::kUsageURLProperty, &usage_url) ||
+          shill::kUsageURLProperty, &usage_url) ||
       !properties.GetStringWithoutPathExpansion(
-          flimflam::kActivationStateProperty, &activation_state) ||
+          shill::kActivationStateProperty, &activation_state) ||
       !properties.GetDictionaryWithoutPathExpansion(
-          flimflam::kPaymentPortalProperty, &payment_dict) ||
+          shill::kPaymentPortalProperty, &payment_dict) ||
       !payment_dict->GetStringWithoutPathExpansion(
-          flimflam::kPaymentPortalURL, &payment_url)) {
+          shill::kPaymentPortalURL, &payment_url)) {
     DataRequestFailed(service_path, callback);
     return;
   }
 
   if (payment_url.empty() && usage_url.empty() &&
-      activation_state != flimflam::kActivationStateActivated) {
+      activation_state != shill::kActivationStateActivated) {
     DataRequestFailed(service_path, callback);
     return;
   }
@@ -381,7 +380,7 @@ void MobileSetupUIHTMLSource::GetPropertiesAndStartDataRequest(
   // network is activated, the webui goes straight to portal. Otherwise the
   // webui is used for activation flow.
   std::string full_html;
-  if (activation_state == flimflam::kActivationStateActivated) {
+  if (activation_state == shill::kActivationStateActivated) {
     static const base::StringPiece html_for_activated(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_MOBILE_SETUP_PORTAL_PAGE_HTML));
@@ -547,9 +546,8 @@ void MobileSetupHandler::HandleGetDeviceInfo(const ListValue* args) {
   // network changes, but only for LTE networks. The other networks should
   // ignore network status.
   if (type_ == TYPE_UNDETERMINED) {
-    if (network->network_technology() == flimflam::kNetworkTechnologyLte ||
-        network->network_technology() ==
-            flimflam::kNetworkTechnologyLteAdvanced) {
+    if (network->network_technology() == shill::kNetworkTechnologyLte ||
+        network->network_technology() == shill::kNetworkTechnologyLteAdvanced) {
       type_ = TYPE_PORTAL_LTE;
       nsh->AddObserver(this, FROM_HERE);
       // Update the network status and notify the webui. This is the initial
@@ -639,7 +637,7 @@ void MobileSetupHandler::UpdatePortalReachability(
   bool portal_reachable =
       (network->IsConnectedState() ||
        (nsh->DefaultNetwork() &&
-        nsh->DefaultNetwork()->connection_state() == flimflam::kStateOnline));
+        nsh->DefaultNetwork()->connection_state() == shill::kStateOnline));
 
   if (force_notification || portal_reachable != lte_portal_reachable_) {
     web_ui()->CallJavascriptFunction(kJsConnectivityChangedCallback,

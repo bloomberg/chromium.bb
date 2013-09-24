@@ -56,7 +56,7 @@ void OAuth2LoginVerifier::VerifyProfileTokens(Profile* profile) {
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   if (!default_network ||
-      default_network->connection_state() == flimflam::kStatePortal) {
+      default_network->connection_state() == shill::kStatePortal) {
     // If network is offline, defer the token fetching until online.
     VLOG(1) << "Network is offline.  Deferring OAuth2 access token fetch.";
     BrowserThread::PostDelayedTask(

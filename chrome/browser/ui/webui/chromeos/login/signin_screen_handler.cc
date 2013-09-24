@@ -252,12 +252,12 @@ NetworkPortalDetector::CaptivePortalState GetCaptivePortalState(
 void RecordDiscrepancyWithShill(
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalStatus status) {
-  if (network->connection_state() == flimflam::kStateOnline) {
+  if (network->connection_state() == shill::kStateOnline) {
     UMA_HISTOGRAM_ENUMERATION(
         "CaptivePortal.OOBE.DiscrepancyWithShill_Online",
         status,
         NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-  } else if (network->connection_state() == flimflam::kStatePortal) {
+  } else if (network->connection_state() == shill::kStatePortal) {
     UMA_HISTOGRAM_ENUMERATION(
         "CaptivePortal.OOBE.DiscrepancyWithShill_RestrictedPool",
         status,
@@ -292,20 +292,20 @@ void RecordNetworkPortalDetectorStats(const std::string& service_path) {
       NOTREACHED();
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE:
-      if (network->connection_state() == flimflam::kStateOnline ||
-          network->connection_state() == flimflam::kStatePortal)
+      if (network->connection_state() == shill::kStateOnline ||
+          network->connection_state() == shill::kStatePortal)
         RecordDiscrepancyWithShill(network, state.status);
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE:
-      if (network->connection_state() != flimflam::kStateOnline)
+      if (network->connection_state() != shill::kStateOnline)
         RecordDiscrepancyWithShill(network, state.status);
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
-      if (network->connection_state() != flimflam::kStatePortal)
+      if (network->connection_state() != shill::kStatePortal)
         RecordDiscrepancyWithShill(network, state.status);
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
-      if (network->connection_state() != flimflam::kStateOnline)
+      if (network->connection_state() != shill::kStateOnline)
         RecordDiscrepancyWithShill(network, state.status);
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT:

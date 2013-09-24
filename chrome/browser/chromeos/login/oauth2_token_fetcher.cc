@@ -47,7 +47,7 @@ void OAuth2TokenFetcher::StartExchangeFromCookies() {
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   if (!default_network ||
-      default_network->connection_state() == flimflam::kStatePortal) {
+      default_network->connection_state() == shill::kStatePortal) {
     // If network is offline, defer the token fetching until online.
     VLOG(1) << "Network is offline.  Deferring OAuth2 token fetch.";
     BrowserThread::PostDelayedTask(
@@ -69,7 +69,7 @@ void OAuth2TokenFetcher::StartExchangeFromAuthCode(
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   if (!default_network ||
-      default_network->connection_state() == flimflam::kStatePortal) {
+      default_network->connection_state() == shill::kStatePortal) {
     // If network is offline, defer the token fetching until online.
     VLOG(1) << "Network is offline.  Deferring OAuth2 token fetch.";
     BrowserThread::PostDelayedTask(
