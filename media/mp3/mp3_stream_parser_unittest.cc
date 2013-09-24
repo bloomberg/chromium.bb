@@ -165,6 +165,8 @@ TEST_F(MP3StreamParserTest, UnalignedAppend512) {
       "NewSegment"
       "{ 0K }"
       "{ 26K 52K 78K 104K }"
+      "EndOfSegment"
+      "NewSegment"
       "{ 130K 156K 182K }"
       "{ 208K 235K 261K 287K }"
       "{ 313K }"

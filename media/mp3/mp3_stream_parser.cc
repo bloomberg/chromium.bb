@@ -164,7 +164,7 @@ bool MP3StreamParser::Parse(const uint8* buf, int size) {
     int data_size;
     queue_.Peek(&data, &data_size);
 
-    if (size < 4)
+    if (data_size < 4)
       break;
 
     uint32 start_code = data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3];
