@@ -60,7 +60,7 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName)
 
 PassOwnPtr<WEBPImageDecoder> createDecoder()
 {
-    return adoptPtr(new WEBPImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied, IntSize()));
+    return adoptPtr(new WEBPImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied, ImageDecoder::noDecodedImageByteLimit));
 }
 
 unsigned hashSkBitmap(const SkBitmap& bitmap)

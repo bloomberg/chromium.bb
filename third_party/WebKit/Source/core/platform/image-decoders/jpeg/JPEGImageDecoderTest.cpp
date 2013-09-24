@@ -57,19 +57,19 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName)
     return Platform::current()->unitTestSupport()->readFromFile(filePath);
 }
 
-PassOwnPtr<JPEGImageDecoder> createDecoder(const IntSize& maxDecodedSize)
+PassOwnPtr<JPEGImageDecoder> createDecoder(size_t maxDecodedBytes)
 {
-    return adoptPtr(new JPEGImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied, maxDecodedSize));
+    return adoptPtr(new JPEGImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied, maxDecodedBytes));
 }
 
 } // namespace
 
-void downsample(unsigned width, unsigned height, unsigned* outputWidth, unsigned* outputHeight)
+void downsample(size_t maxDecodedBytes, unsigned* outputWidth, unsigned* outputHeight)
 {
     RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/lenna.jpg");
     ASSERT_TRUE(data.get());
 
-    OwnPtr<JPEGImageDecoder> decoder = createDecoder(IntSize(width, height));
+    OwnPtr<JPEGImageDecoder> decoder = createDecoder(maxDecodedBytes);
     decoder->setData(data.get(), true);
 
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
@@ -79,13 +79,12 @@ void downsample(unsigned width, unsigned height, unsigned* outputWidth, unsigned
     EXPECT_EQ(IntSize(*outputWidth, *outputHeight), decoder->decodedSize());
 }
 
-// Tests that a small size doesn't result in an empty image.
-TEST(JPEGImageDecoderTest, downsample0)
+// Tests failure on a too big image.
+TEST(JPEGImageDecoderTest, tooBig)
 {
-    unsigned outputWidth, outputHeight;
-    downsample(1, 1, &outputWidth, &outputHeight);
-    EXPECT_EQ(32u, outputWidth);
-    EXPECT_EQ(32u, outputHeight);
+    OwnPtr<JPEGImageDecoder> decoder = createDecoder(100);
+    EXPECT_FALSE(decoder->setSize(10000, 10000));
+    EXPECT_TRUE(decoder->failed());
 }
 
 // Tests that JPEG decoder can downsample from 1/8 to 7/8.
@@ -94,55 +93,46 @@ TEST(JPEGImageDecoderTest, downsample1Over8To7Over8)
     unsigned outputWidth, outputHeight;
 
     // 1/8 downsample.
-    downsample(40, 40, &outputWidth, &outputHeight);
+    downsample(40 * 40 * 4, &outputWidth, &outputHeight);
     EXPECT_EQ(32u, outputWidth);
     EXPECT_EQ(32u, outputHeight);
 
     // 2/8 downsample.
-    downsample(70, 70, &outputWidth, &outputHeight);
+    downsample(70 * 70 * 4, &outputWidth, &outputHeight);
     EXPECT_EQ(64u, outputWidth);
     EXPECT_EQ(64u, outputHeight);
 
     // 3/8 downsample.
-    downsample(100, 100, &outputWidth, &outputHeight);
+    downsample(100 * 100 * 4, &outputWidth, &outputHeight);
     EXPECT_EQ(96u, outputWidth);
     EXPECT_EQ(96u, outputHeight);
 
     // 4/8 downsample.
-    downsample(130, 130, &outputWidth, &outputHeight);
+    downsample(130 * 130 * 4, &outputWidth, &outputHeight);
     EXPECT_EQ(128u, outputWidth);
     EXPECT_EQ(128u, outputHeight);
 
     // 5/8 downsample.
-    downsample(170, 170, &outputWidth, &outputHeight);
+    downsample(170 * 170 * 4, &outputWidth, &outputHeight);
     EXPECT_EQ(160u, outputWidth);
     EXPECT_EQ(160u, outputHeight);
 
     // 6/8 downsample.
-    downsample(200, 200, &outputWidth, &outputHeight);
+    downsample(200 * 200 * 4, &outputWidth, &outputHeight);
     EXPECT_EQ(192u, outputWidth);
     EXPECT_EQ(192u, outputHeight);
 
     // 7/8 downsample.
-    downsample(230, 230, &outputWidth, &outputHeight);
+    downsample(230 * 230 * 4, &outputWidth, &outputHeight);
     EXPECT_EQ(224u, outputWidth);
     EXPECT_EQ(224u, outputHeight);
-}
-
-// Tests that output image fits in a rectangular size.
-TEST(JPEGImageDecoderTest, downsampleRectangle)
-{
-    unsigned outputWidth, outputHeight;
-    downsample(130, 256, &outputWidth, &outputHeight);
-    EXPECT_EQ(128u, outputWidth);
-    EXPECT_EQ(128u, outputHeight);
 }
 
 // Tests that upsampling is not allowed.
 TEST(JPEGImageDecoderTest, upsample)
 {
     unsigned outputWidth, outputHeight;
-    downsample(1000, 1000, &outputWidth, &outputHeight);
+    downsample(1000 * 1000, &outputWidth, &outputHeight);
     EXPECT_EQ(256u, outputWidth);
     EXPECT_EQ(256u, outputHeight);
 }

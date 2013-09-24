@@ -49,8 +49,8 @@ namespace WebCore {
 
 WEBPImageDecoder::WEBPImageDecoder(ImageSource::AlphaOption alphaOption,
     ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption,
-    const IntSize& maxDecodedSize)
-    : ImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedSize)
+    size_t maxDecodedBytes)
+    : ImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes)
     , m_decoder(0)
     , m_formatFlags(0)
     , m_frameBackgroundHasAlpha(false)

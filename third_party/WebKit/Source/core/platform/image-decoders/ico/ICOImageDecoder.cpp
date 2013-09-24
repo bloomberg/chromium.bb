@@ -48,8 +48,8 @@ static const size_t sizeOfDirEntry = 16;
 
 ICOImageDecoder::ICOImageDecoder(ImageSource::AlphaOption alphaOption,
     ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption,
-    const IntSize& maxDecodedSize)
-    : ImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedSize)
+    size_t maxDecodedBytes)
+    : ImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes)
     , m_decodedOffset(0)
 {
 }
@@ -230,7 +230,7 @@ bool ICOImageDecoder::decodeAtIndex(size_t index)
     if (!m_pngDecoders[index]) {
         m_pngDecoders[index] = adoptPtr(
             new PNGImageDecoder(m_premultiplyAlpha ? ImageSource::AlphaPremultiplied : ImageSource::AlphaNotPremultiplied,
-                m_ignoreGammaAndColorProfile ? ImageSource::GammaAndColorProfileIgnored : ImageSource::GammaAndColorProfileApplied, m_maxDecodedSize));
+                m_ignoreGammaAndColorProfile ? ImageSource::GammaAndColorProfileIgnored : ImageSource::GammaAndColorProfileApplied, m_maxDecodedBytes));
         setDataForPNGDecoderAtIndex(index);
     }
     // Fail if the size the PNGImageDecoder calculated does not match the size

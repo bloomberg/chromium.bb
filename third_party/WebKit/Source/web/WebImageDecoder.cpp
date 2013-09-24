@@ -34,12 +34,13 @@
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/image-decoders/bmp/BMPImageDecoder.h"
 #include "core/platform/image-decoders/ico/ICOImageDecoder.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebImage.h"
 #include "public/platform/WebSize.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 
 using namespace WebCore;
 
@@ -52,12 +53,14 @@ void WebImageDecoder::reset()
 
 void WebImageDecoder::init(Type type)
 {
+    size_t maxDecodedBytes = WebKit::Platform::current()->maxDecodedImageBytes();
+
     switch (type) {
     case TypeBMP:
-        m_private = new BMPImageDecoder(ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied, IntSize());
+        m_private = new BMPImageDecoder(ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied, maxDecodedBytes);
         break;
     case TypeICO:
-        m_private = new ICOImageDecoder(ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied, IntSize());
+        m_private = new ICOImageDecoder(ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied, maxDecodedBytes);
         break;
     }
 }

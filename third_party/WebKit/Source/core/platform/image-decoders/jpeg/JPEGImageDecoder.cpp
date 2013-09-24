@@ -43,6 +43,7 @@
 #include "core/platform/PlatformInstrumentation.h"
 #include "wtf/CPU.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/dtoa/utils.h"
 
 extern "C" {
 #include <stdio.h> // jpeglib.h needs stdio FILE.
@@ -598,8 +599,8 @@ void term_source(j_decompress_ptr jd)
 
 JPEGImageDecoder::JPEGImageDecoder(ImageSource::AlphaOption alphaOption,
     ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption,
-    const IntSize& maxDecodedSize)
-    : ImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedSize)
+    size_t maxDecodedBytes)
+    : ImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes)
 {
 }
 
@@ -620,18 +621,23 @@ bool JPEGImageDecoder::setSize(unsigned width, unsigned height)
     if (!ImageDecoder::setSize(width, height))
         return false;
 
-    if (m_maxDecodedSize.isEmpty()) {
+    size_t originalBytes = width * height * 4;
+    if (originalBytes <= m_maxDecodedBytes) {
         m_decodedSize = IntSize(width, height);
         return true;
     }
 
-    // Enable downsampling according to the maximum decoded size.
-    unsigned scaleNumerator = std::min(scaleDenominator * m_maxDecodedSize.width() / width,
-        scaleDenominator * m_maxDecodedSize.height() / height);
-
-    // Don't upsample, and don't downsample to zero size.
-    scaleNumerator = std::min(scaleDenominator, std::max(scaleNumerator, 1u));
+    // Downsample according to the maximum decoded size.
+    unsigned scaleNumerator = static_cast<unsigned>(floor(sqrt(
+        // MSVC needs explicit parameter type for sqrt().
+        static_cast<float>(m_maxDecodedBytes * scaleDenominator * scaleDenominator / originalBytes))));
     m_decodedSize = IntSize(scaleNumerator * width / scaleDenominator, scaleNumerator * height / scaleDenominator);
+
+    // The image is too big to be downsampled by libjpeg.
+    // FIXME: Post-process to downsample the image.
+    if (m_decodedSize.isEmpty())
+        return setFailed();
+
     return true;
 }
 

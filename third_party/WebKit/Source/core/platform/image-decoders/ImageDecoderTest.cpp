@@ -42,7 +42,7 @@ using namespace WebCore;
 class TestImageDecoder : public ImageDecoder {
 public:
     TestImageDecoder()
-        : ImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied, IntSize())
+        : ImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied, noDecodedImageByteLimit)
     {
     }
 
@@ -68,6 +68,17 @@ public:
             m_frameBufferCache[i].setOriginalFrameRect(IntRect(0, 0, width, height));
     }
 };
+
+TEST(ImageDecoderTest, sizeCalculationMayOverflow)
+{
+    OwnPtr<TestImageDecoder> decoder(adoptPtr(new TestImageDecoder()));
+    EXPECT_FALSE(decoder->setSize(1 << 29, 1));
+    EXPECT_FALSE(decoder->setSize(1, 1 << 29));
+    EXPECT_FALSE(decoder->setSize(1 << 15, 1 << 15));
+    EXPECT_TRUE(decoder->setSize(1 << 28, 1));
+    EXPECT_TRUE(decoder->setSize(1, 1 << 28));
+    EXPECT_TRUE(decoder->setSize(1 << 14, 1 << 14));
+}
 
 TEST(ImageDecoderTest, requiredPreviousFrameIndex)
 {

@@ -28,6 +28,7 @@
 #include "core/platform/image-decoders/jpeg/JPEGImageDecoder.h"
 #include "core/platform/image-decoders/png/PNGImageDecoder.h"
 #include "core/platform/image-decoders/webp/WEBPImageDecoder.h"
+#include "public/platform/Platform.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
@@ -87,27 +88,29 @@ PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, ImageSou
     static const unsigned longestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
     ASSERT(longestSignatureLength == 14);
 
+    size_t maxDecodedBytes = WebKit::Platform::current()->maxDecodedImageBytes();
+
     char contents[longestSignatureLength];
     if (copyFromSharedBuffer(contents, longestSignatureLength, data, 0) < longestSignatureLength)
         return nullptr;
 
     if (matchesJPEGSignature(contents))
-        return adoptPtr(new JPEGImageDecoder(alphaOption, gammaAndColorProfileOption, IntSize()));
+        return adoptPtr(new JPEGImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
 
     if (matchesPNGSignature(contents))
-        return adoptPtr(new PNGImageDecoder(alphaOption, gammaAndColorProfileOption, IntSize()));
+        return adoptPtr(new PNGImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
 
     if (matchesGIFSignature(contents))
-        return adoptPtr(new GIFImageDecoder(alphaOption, gammaAndColorProfileOption, IntSize()));
+        return adoptPtr(new GIFImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
 
     if (matchesICOSignature(contents) || matchesCURSignature(contents))
-        return adoptPtr(new ICOImageDecoder(alphaOption, gammaAndColorProfileOption, IntSize()));
+        return adoptPtr(new ICOImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
 
     if (matchesWebPSignature(contents))
-        return adoptPtr(new WEBPImageDecoder(alphaOption, gammaAndColorProfileOption, IntSize()));
+        return adoptPtr(new WEBPImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
 
     if (matchesBMPSignature(contents))
-        return adoptPtr(new BMPImageDecoder(alphaOption, gammaAndColorProfileOption, IntSize()));
+        return adoptPtr(new BMPImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
 
     return nullptr;
 }

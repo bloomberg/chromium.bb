@@ -284,6 +284,12 @@ public:
     // A wrapper for tcmalloc's GetHeapProfile()
     virtual WebString getHeapProfile() { return WebString(); }
 
+    static const size_t noDecodedImageByteLimit = static_cast<size_t>(-1);
+
+    // Returns the maximum amount of memory a decoded image should be allowed.
+    // See comments on ImageDecoder::m_maxDecodedBytes.
+    virtual size_t maxDecodedImageBytes() { return noDecodedImageByteLimit; }
+
 
     // Message Ports -------------------------------------------------------
 
