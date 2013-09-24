@@ -269,11 +269,11 @@ possibility that the Native Client module has a bug; :doc:`debugging
 
 There's more information about troubleshooting in the documentation:
 
-* `FAQ <https://developers.google.com/native-client/faq.html#HangOnLoad>`_.
+* :ref:`FAQ Troubleshooting <faq_troubleshooting>`.
 * The :doc:`Progress Events <coding/progress-events>` document contains some
   useful information about handling error events.
 
-.. TODO: fix FAQ link and others to :ref:/:doc: once ReST-ified.
+.. TODO: fix links to :ref:/:doc: once ReST-ified.
 
 Next steps
 ==========
