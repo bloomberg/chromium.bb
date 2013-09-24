@@ -60,6 +60,10 @@ void PopulateUsers(const ProfileInfoCache& profile_info,
                    app_list::AppListModel::Users* users) {
   const size_t count = profile_info.GetNumberOfProfiles();
   for (size_t i = 0; i < count; ++i) {
+    // Don't display managed users.
+    if (profile_info.ProfileIsManagedAtIndex(i))
+      continue;
+
     app_list::AppListModel::User user;
     user.name = profile_info.GetNameOfProfileAtIndex(i);
     user.email = profile_info.GetUserNameOfProfileAtIndex(i);
