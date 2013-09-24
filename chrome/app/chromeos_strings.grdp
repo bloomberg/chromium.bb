@@ -1167,6 +1167,9 @@ Press any key to continue exploring.
   <message name="IDS_IMAGE_SCREEN_PROFILE_LOADING_PHOTO" desc="The title of the loading stub for Google profile image on image selection screen. Please keep in sync with IDS_OPTIONS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO.">
     * Google Profile photo (loading)
   </message>
+  <message name="IDS_IMAGE_SCREEN_SYNCING_PREFERENCES" desc="The message displayed on the image screen while user preferences are syncing.">
+    Syncing your preferences
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIFI" desc="In settings Internet options, the title for the wifi tab.">
     Wi-Fi
   </message>
