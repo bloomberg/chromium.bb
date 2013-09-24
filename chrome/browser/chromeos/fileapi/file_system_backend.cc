@@ -109,10 +109,13 @@ void FileSystemBackend::OpenFileSystem(
     fileapi::FileSystemType type,
     fileapi::OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback) {
-  DCHECK(fileapi::IsolatedContext::IsIsolatedType(type));
+  DCHECK(CanHandleType(type));
+  // TODO(nhiroki): Avoid this hard-coded mount type to support multiple
+  // filesystems (http://crbug.com/297412).
+  fileapi::FileSystemType mount_type = fileapi::kFileSystemTypeExternal;
   // Nothing to validate for external filesystem.
-  callback.Run(GetFileSystemRootURI(origin_url, type),
-               GetFileSystemName(origin_url, type),
+  callback.Run(GetFileSystemRootURI(origin_url, mount_type),
+               GetFileSystemName(origin_url, mount_type),
                base::PLATFORM_FILE_OK);
 }
 
