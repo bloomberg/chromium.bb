@@ -150,6 +150,14 @@
   [controller_ notificationClicked];
 }
 
+- (NSView*)hitTest:(NSPoint)point {
+  // Route the mouse click events on NSTextView to the container view.
+  NSView* hitView = [super hitTest:point];
+  if (hitView)
+    return [hitView isKindOfClass:[NSTextView class]] ? self : hitView;
+  return nil;
+}
+
 - (BOOL)accessibilityIsIgnored {
   return NO;
 }
