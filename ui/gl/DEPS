@@ -1,7 +1,4 @@
 include_rules = [
   "+third_party/khronos",
   "+third_party/mesa/src/include",
-  "+ui/gfx",
-
-  "+ui/base/x/x11_util.h",  # TODO(beng): remove after landing 24273005
 ]

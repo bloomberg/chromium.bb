@@ -1,7 +1,0 @@
-include_rules = [
-  "+ui/events",
-  "+ui/gfx",
-  "+ui/aura/root_window.h",  # TODO(beng): resolve crazy layering violation
-  "+ui/aura/window.h",  # TODO(beng): resolve crazy layering violation
-  "+ui/views/view.h",  # TODO(beng): resolve crazy layering violation
-]

@@ -1,9 +1,7 @@
 include_rules = [
   "+skia",
-  "+ui/android",
   "+ui/aura",
   "+ui/base",
   "+ui/compositor",
   "+ui/gfx",
-  "+ui/gl",
 ]

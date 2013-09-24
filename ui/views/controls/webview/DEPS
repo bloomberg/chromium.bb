@@ -1,5 +1,4 @@
 include_rules = [
   "+content/public",
   "+ui/views",
-  "+ui/web_dialogs",
 ]

@@ -1,6 +1,0 @@
-include_rules = [
-  "+ui/android",
-  "+ui/aura",
-  "+ui/base",
-  "+ui/gfx",
-]
