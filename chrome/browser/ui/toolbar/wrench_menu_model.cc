@@ -675,24 +675,18 @@ void WrenchMenuModel::AddGlobalErrorMenuItems() {
   // it won't show in the existing wrench menu. To fix this we need to some
   // how update the menu if new errors are added.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  // GetSignedInServiceErrors() can modify the global error list, so call it
-  // before iterating through that list below.
-  std::vector<GlobalError*> signin_errors =
-      signin_ui_util::GetSignedInServiceErrors(
-          browser_->profile()->GetOriginalProfile());
   const GlobalErrorService::GlobalErrorList& errors =
       GlobalErrorServiceFactory::GetForProfile(browser_->profile())->errors();
   for (GlobalErrorService::GlobalErrorList::const_iterator
        it = errors.begin(); it != errors.end(); ++it) {
     GlobalError* error = *it;
-    // Verify that we're not getting NULL errors. TODO(sail) Make this a DCHECK
-    // once crbug.com/278543 is fixed.
-    CHECK(error);
     if (error->HasMenuItem()) {
-#if !defined(OS_CHROMEOS)
       // Don't add a signin error if it's already being displayed elsewhere.
-      if (std::find(signin_errors.begin(), signin_errors.end(), error) !=
-          signin_errors.end()) {
+#if !defined(OS_CHROMEOS)
+      std::vector<GlobalError*> errors =
+          signin_ui_util::GetSignedInServiceErrors(
+              browser_->profile()->GetOriginalProfile());
+      if (std::find(errors.begin(), errors.end(), error) != errors.end()) {
         MenuModel* model = this;
         int index = 0;
         if (MenuModel::GetModelAndIndexForCommandId(
