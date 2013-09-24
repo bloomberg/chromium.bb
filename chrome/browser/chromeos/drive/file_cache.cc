@@ -180,23 +180,6 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   return HasEnoughSpaceFor(num_bytes, cache_file_directory_);
 }
 
-void FileCache::GetFileOnUIThread(const std::string& id,
-                                  const GetFileFromCacheCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  base::FilePath* cache_file_path = new base::FilePath;
-  base::PostTaskAndReplyWithResult(blocking_task_runner_.get(),
-                                   FROM_HERE,
-                                   base::Bind(&FileCache::GetFile,
-                                              base::Unretained(this),
-                                              id,
-                                              cache_file_path),
-                                   base::Bind(&RunGetFileFromCacheCallback,
-                                              callback,
-                                              base::Owned(cache_file_path)));
-}
-
 FileError FileCache::GetFile(const std::string& id,
                              base::FilePath* cache_file_path) {
   AssertOnSequencedWorkerPool();

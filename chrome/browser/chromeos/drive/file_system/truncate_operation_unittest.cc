@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
@@ -47,9 +48,13 @@ TEST_F(TruncateOperationTest, Truncate) {
 
   base::FilePath local_path;
   error = FILE_ERROR_FAILED;
-  cache()->GetFileOnUIThread(
-      GetLocalId(file_in_root),
-      google_apis::test_util::CreateCopyResultCallback(&error, &local_path));
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::FileCache::GetFile,
+                 base::Unretained(cache()),
+                 GetLocalId(file_in_root), &local_path),
+      google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   ASSERT_EQ(FILE_ERROR_OK, error);
 
@@ -106,9 +111,13 @@ TEST_F(TruncateOperationTest, Extend) {
 
   base::FilePath local_path;
   error = FILE_ERROR_FAILED;
-  cache()->GetFileOnUIThread(
-      GetLocalId(file_in_root),
-      google_apis::test_util::CreateCopyResultCallback(&error, &local_path));
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::FileCache::GetFile,
+                 base::Unretained(cache()),
+                 GetLocalId(file_in_root), &local_path),
+      google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   ASSERT_EQ(FILE_ERROR_OK, error);
 

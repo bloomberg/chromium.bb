@@ -102,13 +102,6 @@ class FileCache {
   // false.
   bool FreeDiskSpaceIfNeededFor(int64 num_bytes);
 
-  // Runs GetFile() on |blocking_task_runner_|, and calls |callback| with
-  // the result asynchronously.
-  // |callback| must not be null.
-  // Must be called on the UI thread.
-  void GetFileOnUIThread(const std::string& id,
-                         const GetFileFromCacheCallback& callback);
-
   // Checks if file corresponding to |id| exists in cache, and returns
   // FILE_ERROR_OK with |cache_file_path| storing the path to the file.
   // |cache_file_path| must not be null.
