@@ -219,7 +219,7 @@ private:
         DecoderCacheEntry(const ImageFrameGenerator* generator, int count, PassOwnPtr<ImageDecoder> decoder, bool isDiscardable)
             : CacheEntry(generator, count, isDiscardable)
             , m_cachedDecoder(decoder)
-            , m_size(SkISize::Make(m_cachedDecoder->size().width(), m_cachedDecoder->size().height()))
+            , m_size(SkISize::Make(m_cachedDecoder->decodedSize().width(), m_cachedDecoder->decodedSize().height()))
         {
         }
 
@@ -232,7 +232,7 @@ private:
         }
         static DecoderCacheKey makeCacheKey(const ImageFrameGenerator* generator, const ImageDecoder* decoder)
         {
-            return std::make_pair(generator, SkISize::Make(decoder->size().width(), decoder->size().height()));
+            return std::make_pair(generator, SkISize::Make(decoder->decodedSize().width(), decoder->decodedSize().height()));
         }
         DecoderCacheKey cacheKey() const { return makeCacheKey(m_generator, m_size); }
         ImageDecoder* cachedDecoder() const { return m_cachedDecoder.get(); }

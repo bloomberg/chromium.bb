@@ -282,6 +282,10 @@ namespace WebCore {
 
         virtual IntSize size() const { return m_size; }
 
+        // Decoders which downsample images should override this method to
+        // return the actual decoded size.
+        virtual IntSize decodedSize() const { return size(); }
+
         // This will only differ from size() for ICO (where each frame is a
         // different icon) or other formats where different frames are different
         // sizes. This does NOT differ from size() for GIF or WebP, since

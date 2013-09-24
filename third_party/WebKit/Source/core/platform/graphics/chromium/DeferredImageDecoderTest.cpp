@@ -70,7 +70,7 @@ struct Rasterizer {
 
 class DeferredImageDecoderTest : public ::testing::Test, public MockImageDecoderClient {
 public:
-    virtual void SetUp()
+    virtual void SetUp() OVERRIDE
     {
         ImageDecodingStore::initializeOnce();
         DeferredImageDecoder::setEnabled(true);
@@ -85,44 +85,51 @@ public:
         m_repetitionCount = cAnimationNone;
         m_status = ImageFrame::FrameComplete;
         m_frameDuration = 0;
+        m_decodedSize = m_actualDecoder->size();
     }
 
-    virtual void TearDown()
+    virtual void TearDown() OVERRIDE
     {
         ImageDecodingStore::shutdown();
     }
 
-    virtual void decoderBeingDestroyed()
+    virtual void decoderBeingDestroyed() OVERRIDE
     {
         m_actualDecoder = 0;
     }
 
-    virtual void frameBufferRequested()
+    virtual void frameBufferRequested() OVERRIDE
     {
         ++m_frameBufferRequestCount;
     }
 
-    virtual size_t frameCount()
+    virtual size_t frameCount() OVERRIDE
     {
         return m_frameCount;
     }
 
-    virtual int repetitionCount() const
+    virtual int repetitionCount() const OVERRIDE
     {
         return m_repetitionCount;
     }
 
-    virtual ImageFrame::Status status()
+    virtual ImageFrame::Status status() OVERRIDE
     {
         return m_status;
     }
 
-    virtual float frameDuration() const
+    virtual float frameDuration() const OVERRIDE
     {
         return m_frameDuration;
     }
 
+    virtual IntSize decodedSize() const OVERRIDE
+    {
+        return m_decodedSize;
+    }
+
 protected:
+
     // Don't own this but saves the pointer to query states.
     MockImageDecoder* m_actualDecoder;
     OwnPtr<DeferredImageDecoder> m_lazyDecoder;
@@ -134,6 +141,7 @@ protected:
     int m_repetitionCount;
     ImageFrame::Status m_status;
     float m_frameDuration;
+    IntSize m_decodedSize;
 };
 
 TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
@@ -283,6 +291,27 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
     EXPECT_EQ(20.0f, m_lazyDecoder->frameBufferAtIndex(1)->duration());
     EXPECT_EQ(30.0f, m_lazyDecoder->frameBufferAtIndex(2)->duration());
     EXPECT_EQ(10, m_lazyDecoder->repetitionCount());
+}
+
+TEST_F(DeferredImageDecoderTest, decodedSize)
+{
+    m_decodedSize = IntSize(22, 33);
+    m_lazyDecoder->setData(m_data.get(), true);
+    RefPtr<NativeImageSkia> image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
+    EXPECT_EQ(m_decodedSize.width(), image->bitmap().width());
+    EXPECT_EQ(m_decodedSize.height(), image->bitmap().height());
+    EXPECT_FALSE(image->bitmap().isNull());
+    EXPECT_TRUE(image->bitmap().isImmutable());
+
+    m_lazyDecoder->frameGenerator()->setImageDecoderFactoryForTesting(MockImageDecoderFactory::create(this, m_decodedSize));
+
+    // The following code should not fail any assert.
+    SkCanvas* tempCanvas = m_picture.beginRecording(100, 100);
+    tempCanvas->drawBitmap(image->bitmap(), 0, 0);
+    m_picture.endRecording();
+    EXPECT_EQ(0, m_frameBufferRequestCount);
+    m_canvas->drawPicture(m_picture);
+    EXPECT_EQ(1, m_frameBufferRequestCount);
 }
 
 } // namespace

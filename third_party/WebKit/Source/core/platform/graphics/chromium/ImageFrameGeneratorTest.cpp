@@ -44,62 +44,44 @@ SkISize scaledSize() { return SkISize::Make(50, 50); }
 
 class ImageFrameGeneratorTest;
 
-class MockImageDecoderFactory : public ImageDecoderFactory {
-public:
-    static PassOwnPtr<MockImageDecoderFactory> create(ImageFrameGeneratorTest* test)
-    {
-        return adoptPtr(new MockImageDecoderFactory(test));
-    }
-
-    virtual PassOwnPtr<ImageDecoder> create();
-
-private:
-    MockImageDecoderFactory(ImageFrameGeneratorTest* test)
-        : m_test(test)
-    {
-    }
-
-    ImageFrameGeneratorTest* m_test;
-};
-
 class ImageFrameGeneratorTest : public ::testing::Test, public MockImageDecoderClient {
 public:
-    virtual void SetUp()
+    virtual void SetUp() OVERRIDE
     {
         ImageDecodingStore::initializeOnce();
         m_data = SharedBuffer::create();
         m_generator = ImageFrameGenerator::create(fullSize(), m_data, true);
-        m_generator->setImageDecoderFactoryForTesting(MockImageDecoderFactory::create(this));
+        m_generator->setImageDecoderFactoryForTesting(MockImageDecoderFactory::create(this, fullSize()));
         m_decodersDestroyed = 0;
         m_frameBufferRequestCount = 0;
         m_status = ImageFrame::FrameEmpty;
     }
 
-    virtual void TearDown()
+    virtual void TearDown() OVERRIDE
     {
         ImageDecodingStore::shutdown();
     }
 
-    virtual void decoderBeingDestroyed()
+    virtual void decoderBeingDestroyed() OVERRIDE
     {
         ++m_decodersDestroyed;
     }
 
-    virtual void frameBufferRequested()
+    virtual void frameBufferRequested() OVERRIDE
     {
         ++m_frameBufferRequestCount;
     }
 
-    virtual ImageFrame::Status status()
+    virtual ImageFrame::Status status() OVERRIDE
     {
         ImageFrame::Status currentStatus = m_status;
         m_status = m_nextFrameStatus;
         return currentStatus;
     }
 
-    virtual size_t frameCount() { return 1; }
-    virtual int repetitionCount() const { return cAnimationNone; }
-    virtual float frameDuration() const { return 0; }
+    virtual size_t frameCount() OVERRIDE { return 1; }
+    virtual int repetitionCount() const OVERRIDE { return cAnimationNone; }
+    virtual float frameDuration() const OVERRIDE { return 0; }
 
 protected:
     PassOwnPtr<ScaledImageFragment> createCompleteImage(const SkISize& size)
@@ -126,14 +108,6 @@ protected:
     ImageFrame::Status m_status;
     ImageFrame::Status m_nextFrameStatus;
 };
-
-PassOwnPtr<ImageDecoder> MockImageDecoderFactory::create()
-{
-    OwnPtr<MockImageDecoder> decoder = MockImageDecoder::create(m_test);
-    decoder->setSize(fullSize().width(), fullSize().height());
-    decoder->setFrameHasAlpha(false);
-    return decoder.release();
-}
 
 TEST_F(ImageFrameGeneratorTest, cacheHit)
 {
@@ -399,7 +373,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteBitmapCopied)
 TEST_F(ImageFrameGeneratorTest, resumeDecodeEmptyFrameTurnsComplete)
 {
     m_generator = ImageFrameGenerator::create(fullSize(), m_data, false, true);
-    m_generator->setImageDecoderFactoryForTesting(MockImageDecoderFactory::create(this));
+    m_generator->setImageDecoderFactoryForTesting(MockImageDecoderFactory::create(this, fullSize()));
     setFrameStatus(ImageFrame::FrameComplete);
 
     const ScaledImageFragment* tempImage = m_generator->decodeAndScale(fullSize(), 0);

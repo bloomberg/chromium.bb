@@ -25,6 +25,7 @@
 
 #ifndef MockImageDecoder_h
 
+#include "core/platform/graphics/chromium/ImageFrameGenerator.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -38,6 +39,13 @@ public:
     virtual size_t frameCount() = 0;
     virtual int repetitionCount() const = 0;
     virtual float frameDuration() const = 0;
+
+    // Clients can control the behavior of MockImageDecoder::decodedSize() by
+    // overriding this method. The default implementation causes
+    // MockImageDecoder::decodedSize() to return the same thing as
+    // MockImageDecoder::size(). See the precise implementation of
+    // MockImageDecoder::decodedSize() below.
+    virtual IntSize decodedSize() const { return IntSize(); }
 };
 
 class MockImageDecoder : public ImageDecoder {
@@ -54,7 +62,12 @@ public:
         m_client->decoderBeingDestroyed();
     }
 
-    virtual bool setSize(unsigned width, unsigned height)
+    virtual IntSize decodedSize() const OVERRIDE
+    {
+        return m_client->decodedSize().isEmpty() ? size() : m_client->decodedSize();
+    }
+
+    virtual bool setSize(unsigned width, unsigned height) OVERRIDE
     {
         ImageDecoder::setSize(width, height);
         m_frameBufferCache.resize(1);
@@ -62,24 +75,22 @@ public:
         return true;
     }
 
-    virtual void setFrameHasAlpha(bool hasAlpha) { m_frameBufferCache[0].setHasAlpha(hasAlpha); }
-
-    virtual String filenameExtension() const
+    virtual String filenameExtension() const OVERRIDE
     {
         return "mock";
     }
 
-    virtual size_t frameCount()
+    virtual size_t frameCount() OVERRIDE
     {
         return m_client->frameCount();
     }
 
-    virtual int repetitionCount() const
+    virtual int repetitionCount() const OVERRIDE
     {
         return m_client->repetitionCount();
     }
 
-    virtual ImageFrame* frameBufferAtIndex(size_t)
+    virtual ImageFrame* frameBufferAtIndex(size_t) OVERRIDE
     {
         m_client->frameBufferRequested();
 
@@ -87,18 +98,51 @@ public:
         return &m_frameBufferCache[0];
     }
 
-    virtual bool frameIsCompleteAtIndex(size_t) const
+    virtual bool frameIsCompleteAtIndex(size_t) const OVERRIDE
     {
         return m_client->status() == ImageFrame::FrameComplete;
     }
 
-    virtual float frameDurationAtIndex(size_t) const
+    virtual float frameDurationAtIndex(size_t) const OVERRIDE
     {
         return m_client->frameDuration();
     }
 
+    void setFrameHasAlpha(bool hasAlpha) { m_frameBufferCache[0].setHasAlpha(hasAlpha); }
+
 private:
     MockImageDecoderClient* m_client;
+};
+
+class MockImageDecoderFactory : public ImageDecoderFactory {
+public:
+    static PassOwnPtr<MockImageDecoderFactory> create(MockImageDecoderClient* client, const SkISize& decodedSize)
+    {
+        return adoptPtr(new MockImageDecoderFactory(client, IntSize(decodedSize.width(), decodedSize.height())));
+    }
+
+    static PassOwnPtr<MockImageDecoderFactory> create(MockImageDecoderClient* client, const IntSize& decodedSize)
+    {
+        return adoptPtr(new MockImageDecoderFactory(client, decodedSize));
+    }
+
+    virtual PassOwnPtr<ImageDecoder> create() OVERRIDE
+    {
+        OwnPtr<MockImageDecoder> decoder = MockImageDecoder::create(m_client);
+        decoder->setSize(m_decodedSize.width(), m_decodedSize.height());
+        decoder->setFrameHasAlpha(false);
+        return decoder.release();
+    }
+
+private:
+    MockImageDecoderFactory(MockImageDecoderClient* client, const IntSize& decodedSize)
+        : m_client(client)
+        , m_decodedSize(decodedSize)
+    {
+    }
+
+    MockImageDecoderClient* m_client;
+    IntSize m_decodedSize;
 };
 
 } // namespace WebCore

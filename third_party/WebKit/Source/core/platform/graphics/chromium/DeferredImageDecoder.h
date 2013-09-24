@@ -71,6 +71,9 @@ public:
     ImageOrientation orientation() const;
     bool hotSpot(IntPoint&) const;
 
+    // For testing.
+    ImageFrameGenerator* frameGenerator() { return m_frameGenerator.get(); }
+
 private:
     explicit DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder);
     void prepareLazyDecodedFrames();

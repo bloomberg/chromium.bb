@@ -42,13 +42,15 @@ namespace WebCore {
         virtual ~JPEGImageDecoder();
 
         // ImageDecoder
-        virtual String filenameExtension() const { return "jpg"; }
-        virtual bool isSizeAvailable();
-        virtual ImageFrame* frameBufferAtIndex(size_t);
+        virtual String filenameExtension() const OVERRIDE { return "jpg"; }
+        virtual bool isSizeAvailable() OVERRIDE;
+        virtual IntSize decodedSize() const OVERRIDE { return m_decodedSize; }
+        virtual bool setSize(unsigned width, unsigned height) OVERRIDE;
+        virtual ImageFrame* frameBufferAtIndex(size_t) OVERRIDE;
         // CAUTION: setFailed() deletes |m_reader|.  Be careful to avoid
         // accessing deleted memory, especially when calling this from inside
         // JPEGImageReader!
-        virtual bool setFailed();
+        virtual bool setFailed() OVERRIDE;
 
         bool outputScanlines();
         void jpegComplete();
@@ -62,6 +64,7 @@ namespace WebCore {
         void decode(bool onlySize);
 
         OwnPtr<JPEGImageReader> m_reader;
+        IntSize m_decodedSize;
     };
 
 } // namespace WebCore

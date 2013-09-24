@@ -72,6 +72,7 @@ public:
 
     bool isMultiFrame() const { return m_isMultiFrame; }
 
+    // |factory| will overwrite the default ImageDecoder creation logic if |factory->create()| returns non-zero.
     void setImageDecoderFactoryForTesting(PassOwnPtr<ImageDecoderFactory> factory) { m_imageDecoderFactory = factory; }
 
     // FIXME: Return alpha state for each frame.

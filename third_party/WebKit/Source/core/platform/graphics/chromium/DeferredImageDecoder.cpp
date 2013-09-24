@@ -212,7 +212,7 @@ void DeferredImageDecoder::activateLazyDecoding()
     m_orientation = m_actualDecoder->orientation();
     m_filenameExtension = m_actualDecoder->filenameExtension();
     const bool isSingleFrame = m_actualDecoder->repetitionCount() == cAnimationNone || (m_allDataReceived && m_actualDecoder->frameCount() == 1u);
-    m_frameGenerator = ImageFrameGenerator::create(SkISize::Make(m_size.width(), m_size.height()), m_data, m_allDataReceived, !isSingleFrame);
+    m_frameGenerator = ImageFrameGenerator::create(SkISize::Make(m_actualDecoder->decodedSize().width(), m_actualDecoder->decodedSize().height()), m_data, m_allDataReceived, !isSingleFrame);
 }
 
 void DeferredImageDecoder::prepareLazyDecodedFrames()
@@ -249,7 +249,7 @@ void DeferredImageDecoder::prepareLazyDecodedFrames()
 
 SkBitmap DeferredImageDecoder::createLazyDecodingBitmap(size_t index)
 {
-    SkISize fullSize = SkISize::Make(m_actualDecoder->size().width(), m_actualDecoder->size().height());
+    SkISize fullSize = SkISize::Make(m_actualDecoder->decodedSize().width(), m_actualDecoder->decodedSize().height());
     ASSERT(!fullSize.isEmpty());
 
     SkIRect fullRect = SkIRect::MakeSize(fullSize);

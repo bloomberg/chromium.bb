@@ -90,7 +90,14 @@ inline bool doFancyUpsampling() { return false; }
 inline bool doFancyUpsampling() { return true; }
 #endif
 
+namespace {
+
 const int exifMarker = JPEG_APP0 + 1;
+
+// JPEG only supports a denominator of 8.
+const unsigned scaleDenominator = 8;
+
+} // namespace
 
 namespace WebCore {
 
@@ -241,13 +248,12 @@ static void readColorProfile(jpeg_decompress_struct* info, ColorProfile& colorPr
 class JPEGImageReader {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    JPEGImageReader(JPEGImageDecoder* decoder, const IntSize& maxDecodedSize)
+    JPEGImageReader(JPEGImageDecoder* decoder)
         : m_decoder(decoder)
         , m_bufferLength(0)
         , m_bytesToSkip(0)
         , m_state(JPEG_HEADER)
         , m_samples(0)
-        , m_maxDecodedSize(maxDecodedSize)
 #if USE(QCMSLIB)
         , m_transform(0)
 #endif
@@ -321,8 +327,6 @@ public:
 
     bool decode(const SharedBuffer& data, bool onlySize)
     {
-        m_decodingSizeOnly = onlySize;
-
         unsigned newByteCount = data.size() - m_bufferLength;
         unsigned readOffset = m_bufferLength - m_info.src->bytes_in_buffer;
 
@@ -395,7 +399,7 @@ public:
             // image is a sequential JPEG.
             m_info.buffered_image = jpeg_has_multiple_scans(&m_info);
 
-            if (m_decodingSizeOnly) {
+            if (onlySize) {
                 // We can stop here. Reduce our buffer length and available data.
                 m_bufferLength -= m_info.src->bytes_in_buffer;
                 m_info.src->bytes_in_buffer = 0;
@@ -413,15 +417,9 @@ public:
             m_info.enable_2pass_quant = false;
             m_info.do_block_smoothing = true;
 
-            // Enable downsampling if maximum decoded size is specified.
-            if (!m_maxDecodedSize.isEmpty()) {
-                // JPEG only supports a denominator of 8.
-                m_info.scale_denom = 8;
-                unsigned scaleNumerator = std::min(m_info.scale_denom * m_maxDecodedSize.width() / m_info.image_width,
-                    m_info.scale_denom * m_maxDecodedSize.height() / m_info.image_height);
-
-                // Don't upsample, and don't downsample to zero size.
-                m_info.scale_num = std::min(m_info.scale_denom, std::max(scaleNumerator, 1u));
+            if (m_decoder->size() != m_decoder->decodedSize()) {
+                m_info.scale_denom = scaleDenominator;
+                m_info.scale_num = m_decoder->decodedSize().width() * scaleDenominator / m_info.image_width;
             }
 
             // Used to set up image size so arrays can be allocated.
@@ -554,14 +552,12 @@ private:
     JPEGImageDecoder* m_decoder;
     unsigned m_bufferLength;
     int m_bytesToSkip;
-    bool m_decodingSizeOnly;
 
     jpeg_decompress_struct m_info;
     decoder_error_mgr m_err;
     jstate m_state;
 
     JSAMPARRAY m_samples;
-    IntSize m_maxDecodedSize;
 
 #if USE(QCMSLIB)
     qcms_transform* m_transform;
@@ -617,6 +613,26 @@ bool JPEGImageDecoder::isSizeAvailable()
          decode(true);
 
     return ImageDecoder::isSizeAvailable();
+}
+
+bool JPEGImageDecoder::setSize(unsigned width, unsigned height)
+{
+    if (!ImageDecoder::setSize(width, height))
+        return false;
+
+    if (m_maxDecodedSize.isEmpty()) {
+        m_decodedSize = IntSize(width, height);
+        return true;
+    }
+
+    // Enable downsampling according to the maximum decoded size.
+    unsigned scaleNumerator = std::min(scaleDenominator * m_maxDecodedSize.width() / width,
+        scaleDenominator * m_maxDecodedSize.height() / height);
+
+    // Don't upsample, and don't downsample to zero size.
+    scaleNumerator = std::min(scaleDenominator, std::max(scaleNumerator, 1u));
+    m_decodedSize = IntSize(scaleNumerator * width / scaleDenominator, scaleNumerator * height / scaleDenominator);
+    return true;
 }
 
 ImageFrame* JPEGImageDecoder::frameBufferAtIndex(size_t index)
@@ -759,7 +775,7 @@ void JPEGImageDecoder::decode(bool onlySize)
         return;
 
     if (!m_reader) {
-        m_reader = adoptPtr(new JPEGImageReader(this, m_maxDecodedSize));
+        m_reader = adoptPtr(new JPEGImageReader(this));
     }
 
     // If we couldn't decode the image but we've received all the data, decoding

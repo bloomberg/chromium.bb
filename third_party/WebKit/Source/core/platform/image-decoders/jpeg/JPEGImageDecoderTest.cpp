@@ -76,6 +76,7 @@ void downsample(unsigned width, unsigned height, unsigned* outputWidth, unsigned
     ASSERT_TRUE(frame);
     *outputWidth = frame->getSkBitmap().width();
     *outputHeight = frame->getSkBitmap().height();
+    EXPECT_EQ(IntSize(*outputWidth, *outputHeight), decoder->decodedSize());
 }
 
 // Tests that a small size doesn't result in an empty image.
