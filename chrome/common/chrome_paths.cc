@@ -64,6 +64,15 @@ const base::FilePath::CharType kInternalNaClPluginFileName[] =
     FILE_PATH_LITERAL("libppGoogleNaClPluginChrome.so");
 #endif
 
+const base::FilePath::CharType kEffectsPluginFileName[] =
+#if defined(OS_WIN)
+    FILE_PATH_LITERAL("pepper/libppeffects.dll");
+#elif defined(OS_MACOSX)
+    FILE_PATH_LITERAL("pepper/libppeffects.plugin");
+#else  // Linux and Chrome OS
+    FILE_PATH_LITERAL("pepper/libppeffects.so");
+#endif
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 
 const base::FilePath::CharType kO3DPluginFileName[] =
@@ -329,6 +338,11 @@ bool PathProvider(int key, base::FilePath* result) {
       if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;
       cur = cur.Append(kO1DPluginFileName);
+      break;
+    case chrome::FILE_EFFECTS_PLUGIN:
+      if (!PathService::Get(base::DIR_MODULE, &cur))
+        return false;
+      cur = cur.Append(kEffectsPluginFileName);
       break;
     case chrome::FILE_GTALK_PLUGIN:
       if (!PathService::Get(base::DIR_MODULE, &cur))

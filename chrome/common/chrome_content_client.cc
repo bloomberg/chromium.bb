@@ -90,6 +90,13 @@ const char kO1DPluginDescription[] = "Google Talk Plugin Video Renderer";
 const uint32 kO1DPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                      ppapi::PERMISSION_DEV;
 
+const char kEffectsPluginName[] = "Google Talk Effects Plugin";
+const char kEffectsPluginMimeType[] ="application/x-ppapi-hangouts-effects";
+const char kEffectsPluginExtension[] = "";
+const char kEffectsPluginDescription[] = "Google Talk Effects Plugin";
+const uint32 kEffectsPluginPermissions = ppapi::PERMISSION_PRIVATE |
+                                         ppapi::PERMISSION_DEV;
+
 const char kGTalkPluginName[] = "Google Talk Plugin";
 const char kGTalkPluginMimeType[] ="application/googletalk";
 const char kGTalkPluginExtension[] = ".googletalk";
@@ -224,6 +231,27 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       plugins->push_back(o1d);
 
       skip_o1d_file_check = true;
+    }
+  }
+
+  // TODO(vrk): Remove this when NaCl effects plugin replaces the ppapi effects
+  // plugin.
+  static bool skip_effects_file_check = false;
+  if (PathService::Get(chrome::FILE_EFFECTS_PLUGIN, &path)) {
+    if (skip_effects_file_check || base::PathExists(path)) {
+      content::PepperPluginInfo effects;
+      effects.path = path;
+      effects.name = kEffectsPluginName;
+      effects.is_out_of_process = true;
+      effects.is_sandboxed = true;
+      effects.permissions = kEffectsPluginPermissions;
+      content::WebPluginMimeType effects_mime_type(kEffectsPluginMimeType,
+                                                   kEffectsPluginExtension,
+                                                   kEffectsPluginDescription);
+      effects.mime_types.push_back(effects_mime_type);
+      plugins->push_back(effects);
+
+      skip_effects_file_check = true;
     }
   }
 
