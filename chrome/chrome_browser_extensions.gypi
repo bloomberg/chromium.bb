@@ -878,8 +878,6 @@
             'browser/extensions/api/input_ime/input_ime_api.cc',
             'browser/extensions/api/input_ime/input_ime_api.h',
             'browser/extensions/api/log_private/log_private_api_chromeos.cc',
-            'browser/extensions/api/rtc_private/rtc_private_api.cc',
-            'browser/extensions/api/rtc_private/rtc_private_api.h',
             'browser/extensions/api/terminal/terminal_extension_helper.cc',
             'browser/extensions/api/terminal/terminal_extension_helper.h',
             'browser/extensions/api/terminal/terminal_private_api.cc',

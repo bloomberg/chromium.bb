@@ -87,7 +87,6 @@
           'power.idl',
           'push_messaging.idl',
           'image_writer_private.idl',
-          'rtc_private.idl',
           'runtime.json',
           'serial.idl',
           'sessions.json',
@@ -155,7 +154,6 @@
             'music_manager_private.idl',
             'networking_private.json',
             'power.idl',
-            'rtc_private.idl',
             'system_indicator.idl',
             'system_private.json',
             'terminal_private.json',
@@ -168,7 +166,6 @@
           'schema_files!': [
             'file_browser_handler_internal.json',
             'log_private.idl',
-            'rtc_private.idl',
             'virtual_keyboard_private.json',
             'wallpaper.json',
             'wallpaper_private.json',
