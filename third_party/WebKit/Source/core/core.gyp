@@ -240,13 +240,9 @@
         # FIXME: Remove these once the bindings script generates qualified
         # includes for these correctly. (Sequences don't work yet.)
         '<(bindings_dir)/v8/custom',
-        '../modules/mediastream',
-        '../modules/speech',
-        'dom',
         'html',
         'html/shadow',
         'inspector',
-        'page',
         'svg',
       ],
       'sources': [
@@ -1039,13 +1035,6 @@
           'dependencies': [
             'webcore_arm_neon',
           ],
-        }],
-        ['OS=="mac"', {
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '../WebKit/mac/WebCoreSupport',
-            ],
-          },
         }],
         ['OS=="linux" and "WTF_USE_WEBAUDIO_IPP=1" in feature_defines', {
           'link_settings': {

@@ -801,12 +801,12 @@ printConditionalElementIncludes($F);
 
 print F <<END
 
-#include "ContextFeatures.h"
-#include "CustomElement.h"
-#include "CustomElementRegistrationContext.h"
-#include "Document.h"
 #include "RuntimeEnabledFeatures.h"
-#include "Settings.h"
+#include "core/dom/ContextFeatures.h"
+#include "core/dom/CustomElement.h"
+#include "core/dom/CustomElementRegistrationContext.h"
+#include "core/dom/Document.h"
+#include "core/page/Settings.h"
 
 namespace WebCore {
 
@@ -1063,10 +1063,10 @@ sub printWrapperFactoryCppFile
 
     print F <<END
 
-#include "ContextFeatures.h"
-#include "Document.h"
 #include "RuntimeEnabledFeatures.h"
-#include "Settings.h"
+#include "core/dom/ContextFeatures.h"
+#include "core/dom/Document.h"
+#include "core/page/Settings.h"
 
 #include "V8$parameters{namespace}Element.h"
 
