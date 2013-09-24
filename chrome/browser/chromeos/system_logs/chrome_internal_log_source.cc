@@ -12,13 +12,19 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/browser_thread.h"
 
 
+namespace {
+
 const char kSyncDataKey[] = "about_sync_data";
 const char kExtensionsListKey[] = "extensions";
+const char kChromeVersionTag[] = "CHROME VERSION";
+
+}  // namespace
 
 namespace chromeos {
 
@@ -27,6 +33,10 @@ void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(!callback.is_null());
 
   SystemLogsResponse response;
+
+  chrome::VersionInfo version_info;
+  response[kChromeVersionTag] =  version_info.CreateVersionString();
+
   PopulateSyncLogs(&response);
   PopulateExtensionInfoLogs(&response);
 
