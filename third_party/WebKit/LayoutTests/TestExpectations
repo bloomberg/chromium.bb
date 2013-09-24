@@ -388,8 +388,6 @@ webkit.org/b/111031 fast/history/visited-link-background-color.html [ ImageOnlyF
 # Chromium does not support cancel for notifications permissions.
 webkit.org/b/42798 fast/notifications/notifications-cancel-request-permission.html [ Pass Timeout ]
 
-webkit.org/b/42598 http/tests/xmlhttprequest/failed-auth.html [ Failure Timeout ]
-
 # Test introduced in r64817
 crbug.com/51571 [ Win ] http/tests/misc/bad-charset-alias.html [ Pass Timeout ]
 
@@ -769,8 +767,6 @@ webkit.org/b/110247 [ Debug ] fast/workers/storage/interrupt-database.html [ Cra
 
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
-crbug.com/225184 [ Linux ] fast/text/descent-clip-in-scaled-page.html [ ImageOnlyFailure ]
-crbug.com/225184 [ Win ] fast/text/descent-clip-in-scaled-page.html [ ImageOnlyFailure Pass ]
 
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
 crbug.com/227473 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Failure Pass ]
@@ -946,8 +942,8 @@ crbug.com/248938 virtual/threaded/transitions/transition-end-event-window.html [
 
 crbug.com/255726 [ Debug ] compositing/contents-opaque/visibility-hidden.html [ Pass Failure ]
 
-crbug.com/260660 fast/canvas/webgl/array-large-array-tests.html [ Crash ]
-crbug.com/260660 virtual/gpu/fast/canvas/webgl/array-large-array-tests.html [ Crash ]
+crbug.com/260660 [ Linux ] fast/canvas/webgl/array-large-array-tests.html [ Crash ]
+crbug.com/260660 [ Linux ] virtual/gpu/fast/canvas/webgl/array-large-array-tests.html [ Crash ]
 
 # Switching to content shell failures
 crbug.com/178745 [ Debug ] plugins/open-and-close-window-with-plugin.html [ Crash ]
