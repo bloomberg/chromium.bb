@@ -868,8 +868,8 @@ function registerBrowserPluginElement() {
                                                          prototype: proto});
 
   delete proto.createdCallback;
-  delete proto.enteredDocumentCallback;
-  delete proto.leftDocumentCallback;
+  delete proto.enteredViewCallback;
+  delete proto.leftViewCallback;
   delete proto.attributeChangedCallback;
 }
 
@@ -939,8 +939,8 @@ function registerWebViewElement() {
   // Delete the callbacks so developers cannot call them and produce unexpected
   // behavior.
   delete proto.createdCallback;
-  delete proto.enteredDocumentCallback;
-  delete proto.leftDocumentCallback;
+  delete proto.enteredViewCallback;
+  delete proto.leftViewCallback;
   delete proto.attributeChangedCallback;
 }
 
