@@ -1808,8 +1808,6 @@
             'dom/DecodedDataDocumentParser.h',
             'dom/default/chromium/PlatformMessagePortChannelChromium.cpp',
             'dom/default/chromium/PlatformMessagePortChannelChromium.h',
-            'dom/default/PlatformMessagePortChannel.cpp',
-            'dom/default/PlatformMessagePortChannel.h',
             'dom/DeviceOrientationController.cpp',
             'dom/DeviceOrientationController.h',
             'dom/Document.cpp',

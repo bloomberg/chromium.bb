@@ -556,10 +556,6 @@
       'sources': [
         '<@(webcore_dom_files)',
       ],
-      'sources!': [
-        'dom/default/PlatformMessagePortChannel.cpp',
-        'dom/default/PlatformMessagePortChannel.h',
-      ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
     },
