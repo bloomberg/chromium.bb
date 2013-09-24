@@ -3,6 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Lambda may not be necessary.
+# pylint: disable=W0108
+
 import functools
 import logging
 import os
@@ -399,6 +402,30 @@ class AutoRetryThreadPoolTest(unittest.TestCase):
     # Retries are properly interleaved:
     self.assertEqual(['A', 'B', 'A', 'B', 'A', 'B'], ran)
 
+  def test_add_task_with_channel_success(self):
+    with threading_utils.AutoRetryThreadPool([OSError], 2, 1, 1, 0) as pool:
+      channel = threading_utils.TaskChannel()
+      pool.add_task_with_channel(channel, 0, lambda: 0)
+      self.assertEqual(0, channel.pull())
+
+  def test_add_task_with_channel_fatal_error(self):
+    with threading_utils.AutoRetryThreadPool([OSError], 2, 1, 1, 0) as pool:
+      channel = threading_utils.TaskChannel()
+      def throw(exc):
+        raise exc
+      pool.add_task_with_channel(channel, 0, throw, ValueError())
+      with self.assertRaises(ValueError):
+        channel.pull()
+
+  def test_add_task_with_channel_retryable_error(self):
+    with threading_utils.AutoRetryThreadPool([OSError], 2, 1, 1, 0) as pool:
+      channel = threading_utils.TaskChannel()
+      def throw(exc):
+        raise exc
+      pool.add_task_with_channel(channel, 0, throw, OSError())
+      with self.assertRaises(OSError):
+        channel.pull()
+
 
 class FakeProgress(object):
   @staticmethod
@@ -431,6 +458,52 @@ class WorkerPoolTest(unittest.TestCase):
         self.fail()
     except FearsomeException:
       self.assertEqual(True, task_added)
+
+
+class TaskChannelTest(unittest.TestCase):
+  def test_passes_simple_value(self):
+    with threading_utils.ThreadPool(1, 1, 0) as tp:
+      channel = threading_utils.TaskChannel()
+      tp.add_task(0, lambda: channel.send_result(0))
+      self.assertEqual(0, channel.pull())
+
+  def test_passes_exception_value(self):
+    with threading_utils.ThreadPool(1, 1, 0) as tp:
+      channel = threading_utils.TaskChannel()
+      tp.add_task(0, lambda: channel.send_result(Exception()))
+      self.assertTrue(isinstance(channel.pull(), Exception))
+
+  def test_wrap_task_passes_simple_value(self):
+    with threading_utils.ThreadPool(1, 1, 0) as tp:
+      channel = threading_utils.TaskChannel()
+      tp.add_task(0, channel.wrap_task(lambda: 0))
+      self.assertEqual(0, channel.pull())
+
+  def test_wrap_task_passes_exception_value(self):
+    with threading_utils.ThreadPool(1, 1, 0) as tp:
+      channel = threading_utils.TaskChannel()
+      tp.add_task(0, channel.wrap_task(lambda: Exception()))
+      self.assertTrue(isinstance(channel.pull(), Exception))
+
+  def test_send_exception_raises_exception(self):
+    class CustomError(Exception):
+      pass
+    with threading_utils.ThreadPool(1, 1, 0) as tp:
+      channel = threading_utils.TaskChannel()
+      tp.add_task(0, lambda: channel.send_exception(CustomError()))
+      with self.assertRaises(CustomError):
+        channel.pull()
+
+  def test_wrap_task_raises_exception(self):
+    class CustomError(Exception):
+      pass
+    with threading_utils.ThreadPool(1, 1, 0) as tp:
+      channel = threading_utils.TaskChannel()
+      def task_func():
+        raise CustomError()
+      tp.add_task(0, channel.wrap_task(task_func))
+      with self.assertRaises(CustomError):
+        channel.pull()
 
 
 if __name__ == '__main__':

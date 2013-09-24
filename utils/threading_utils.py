@@ -4,6 +4,7 @@
 
 """Classes and functions related to threading."""
 
+import functools
 import inspect
 import logging
 import os
@@ -300,14 +301,32 @@ class AutoRetryThreadPool(ThreadPool):
         priority,
         self._task_executer,
         priority,
+        None,
         func,
         *args,
         **kwargs)
 
-  def _task_executer(self, priority, func, *args, **kwargs):
+  def add_task_with_channel(self, channel, priority, func, *args, **kwargs):
+    """Tasks added must not use the lower priority bits since they are reserved
+    for retries.
+    """
+    assert (priority & self.INTERNAL_PRIORITY_BITS) == 0
+    return super(AutoRetryThreadPool, self).add_task(
+        priority,
+        self._task_executer,
+        priority,
+        channel,
+        func,
+        *args,
+        **kwargs)
+
+  def _task_executer(self, priority, channel, func, *args, **kwargs):
     """Wraps the function and automatically retry on exceptions."""
     try:
-      return func(*args, **kwargs)
+      result = func(*args, **kwargs)
+      if channel is None:
+        return result
+      channel.send_result(result)
     except self._swallowed_exceptions as e:
       # Retry a few times, lowering the priority.
       actual_retries = priority & self.INTERNAL_PRIORITY_BITS
@@ -320,11 +339,18 @@ class AutoRetryThreadPool(ThreadPool):
             priority,
             self._task_executer,
             priority,
+            channel,
             func,
             *args,
             **kwargs)
         return
-      raise
+      if channel is None:
+        raise
+      channel.send_exception(e)
+    except Exception as e:
+      if channel is None:
+        raise
+      channel.send_exception(e)
 
 
 class Progress(object):
@@ -561,7 +587,7 @@ class DeadlockDetector(object):
     # pylint: disable=W0212
     for thread_id, frame in sys._current_frames().iteritems():
       # Don't dump deadlock detector's own thread, it's boring.
-      if thread_id == current_thread_id and not skip_current_thread:
+      if thread_id == current_thread_id and skip_current_thread:
         continue
 
       # Try to get more informative symbolic thread name.
@@ -602,6 +628,44 @@ class Bit(object):
   def set(self):
     with self._lock:
       self._value = True
+
+
+class TaskChannel(object):
+  """Queue of results of async task execution."""
+
+  _ITEM_RESULT = 0
+  _ITEM_EXCEPTION = 1
+
+  def __init__(self):
+    self._queue = Queue.Queue()
+
+  def send_result(self, result):
+    """Enqueues a result of task execution."""
+    self._queue.put((self._ITEM_RESULT, result))
+
+  def send_exception(self, exc):
+    """Enqueue an exception raised by a task."""
+    assert isinstance(exc, Exception)
+    self._queue.put((self._ITEM_EXCEPTION, exc))
+
+  def pull(self):
+    """Dequeues available result or exception."""
+    item_type, value = self._queue.get()
+    if item_type == self._ITEM_RESULT:
+      return value
+    if item_type == self._ITEM_EXCEPTION:
+      raise value
+    assert False, 'Impossible queue item type: %r' % item_type
+
+  def wrap_task(self, task):
+    """Decorator that makes a function push results into this channel."""
+    @functools.wraps(task)
+    def wrapped(*args, **kwargs):
+      try:
+        self.send_result(task(*args, **kwargs))
+      except Exception as exc:
+        self.send_exception(exc)
+    return wrapped
 
 
 def num_processors():
