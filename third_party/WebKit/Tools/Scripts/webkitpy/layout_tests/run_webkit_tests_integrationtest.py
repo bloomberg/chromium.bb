@@ -962,15 +962,6 @@ class PortTest(unittest.TestCase):
     def disabled_test_mac_lion(self):
         self.assert_mock_port_works('mac-lion')
 
-    def disabled_test_mac_lion_in_test_shell_mode(self):
-        self.assert_mock_port_works('mac-lion', args=['--additional-drt-flag=--test-shell'])
-
-    def disabled_test_qt_linux(self):
-        self.assert_mock_port_works('qt-linux')
-
-    def disabled_test_mac_lion(self):
-        self.assert_mock_port_works('mac-lion')
-
 
 class MainTest(unittest.TestCase):
     def test_exception_handling(self):
