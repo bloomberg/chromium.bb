@@ -249,7 +249,6 @@ void CreateProfileHandler::CreateShortcutAndShowSuccess(
   DCHECK_EQ(profile_path_being_created_.value(), profile->GetPath().value());
   profile_path_being_created_.clear();
   DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
-  profile_creation_type_ = NO_CREATION_IN_PROGRESS;
   DictionaryValue dict;
   dict.SetString("name",
                  profile->GetPrefs()->GetString(prefs::kProfileName));
@@ -262,18 +261,18 @@ void CreateProfileHandler::CreateShortcutAndShowSuccess(
       GetJavascriptMethodName(PROFILE_CREATION_SUCCESS), dict);
 
   // If the new profile is a supervised user, instead of opening a new window
-  // right away, a confirmation overlay will be shown from the creation
-  // dialog. However, if we are importing an existing supervised profile or
-  // we are creating a new non-supervised user profile we
-  // open the new window directly.
-  if (profile_creation_type_ == SUPERVISED_PROFILE_CREATION)
-    return;
-
-  // Opening the new window must be the last action, after all callbacks
-  // have been run, to give them a chance to initialize the profile.
-  helper::OpenNewWindowForProfile(desktop_type,
-                                  profile,
-                                  Profile::CREATE_STATUS_INITIALIZED);
+  // right away, a confirmation overlay will be shown by JS from the creation
+  // dialog. If we are importing an existing supervised profile or creating a
+  // new non-supervised user profile we don't show any confirmation, so open
+  // the new window now.
+  if (profile_creation_type_ != SUPERVISED_PROFILE_CREATION) {
+    // Opening the new window must be the last action, after all callbacks
+    // have been run, to give them a chance to initialize the profile.
+    helper::OpenNewWindowForProfile(desktop_type,
+                                    profile,
+                                    Profile::CREATE_STATUS_INITIALIZED);
+  }
+  profile_creation_type_ = NO_CREATION_IN_PROGRESS;
 }
 
 void CreateProfileHandler::ShowProfileCreationError(Profile* profile,
