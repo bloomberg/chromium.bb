@@ -124,13 +124,13 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       motion_buffer_ = static_cast<DeviceMotionHardwareBuffer*>(buffer);
       if (!sudden_motion_sensor_)
         sudden_motion_sensor_.reset(SuddenMotionSensor::Create());
-      return true;
+      return sudden_motion_sensor_.get() != NULL;
     case CONSUMER_TYPE_ORIENTATION:
       orientation_buffer_ =
           static_cast<DeviceOrientationHardwareBuffer*>(buffer);
       if (!sudden_motion_sensor_)
         sudden_motion_sensor_.reset(SuddenMotionSensor::Create());
-      return true;
+      return sudden_motion_sensor_.get() != NULL;
     default:
       NOTREACHED();
   }
