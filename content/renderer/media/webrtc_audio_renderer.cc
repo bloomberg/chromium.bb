@@ -36,7 +36,6 @@ const int kValidOutputRates[] = {48000, 44100};
 // low latency, currently 16000 is used to work around audio problem on some
 // Android devices.
 const int kValidOutputRates[] = {48000, 44100, 16000};
-const int kDefaultOutputBufferSize = 2048;
 #else
 const int kValidOutputRates[] = {44100};
 #endif
@@ -194,12 +193,8 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   DCHECK(!sink_.get());
   DCHECK(!source_);
 
-  // Use stereo output on all platforms exept Android.
+  // Use stereo output on all platforms.
   media::ChannelLayout channel_layout = media::CHANNEL_LAYOUT_STEREO;
-#if defined(OS_ANDROID)
-  DVLOG(1) << "Using mono audio output for Android";
-  channel_layout = media::CHANNEL_LAYOUT_MONO;
-#endif
 
   // TODO(tommi,henrika): Maybe we should just change |sample_rate_| to be
   // immutable and change its value instead of using a temporary?
@@ -255,11 +250,23 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 
   media::AudioParameters sink_params;
 
-#if defined(OS_ANDROID)
-  buffer_size = kDefaultOutputBufferSize;
-#else
+  // Use native output siz as default.
   buffer_size = frames_per_buffer_;
+#if defined(OS_ANDROID)
+  // TODO(henrika): Keep tuning this scheme and espcicially for low-latency
+  // cases. Might not be possible to come up with the perfect solution using
+  // the render side only.
+  const int frames_per_10ms = (sample_rate / 100);
+  if (buffer_size < 2 * frames_per_10ms) {
+    // Examples of low-latency frame sizes and the resulting |buffer_size|:
+    //  Nexus 7     : 240 audio frames => 2*480 = 960
+    //  Nexus 10    : 256              => 2*441 = 882
+    //  Galaxy Nexus: 144              => 2*441 = 882
+    buffer_size = 2 * frames_per_10ms;
+    DVLOG(1) << "Low-latency output detected on Android";
+  }
 #endif
+  DVLOG(1) << "Using sink output buffer size: " << buffer_size;
 
   sink_params.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                     channel_layout, channels, 0, sample_rate, 16, buffer_size);
