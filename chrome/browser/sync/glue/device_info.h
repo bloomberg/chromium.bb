@@ -54,6 +54,12 @@ class DeviceInfo {
   // Device Type.
   sync_pb::SyncEnums::DeviceType device_type() const;
 
+  // Gets the OS in string form.
+  std::string GetOSString() const;
+
+  // Gets the device type in string form.
+  std::string GetDeviceTypeString() const;
+
   // Compares this object's fields with another's.
   bool Equals(const DeviceInfo& other) const;
 

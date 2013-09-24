@@ -5,8 +5,10 @@
 #include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_manager.h"
 
 #include <string>
+#include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
@@ -29,6 +31,19 @@
 
 using browser_sync::DeviceInfo;
 namespace extensions {
+
+namespace {
+void FillDeviceInfo(const DeviceInfo& device_info,
+                    api::signed_in_devices::DeviceInfo* api_device_info) {
+  api_device_info->id = device_info.public_id();
+  api_device_info->name = device_info.client_name();
+  api_device_info->os = api::signed_in_devices::ParseOS(
+      device_info.GetOSString());
+  api_device_info->type = api::signed_in_devices::ParseDeviceType(
+      device_info.GetDeviceTypeString());
+  api_device_info->chrome_version = device_info.chrome_version();
+}
+}  // namespace
 
 SignedInDevicesChangeObserver::SignedInDevicesChangeObserver(
     const std::string& extension_id,
@@ -54,14 +69,19 @@ void SignedInDevicesChangeObserver::OnDeviceInfoChange() {
   ScopedVector<DeviceInfo> devices = GetAllSignedInDevices(extension_id_,
                                                            profile_);
 
-  scoped_ptr<base::ListValue> result(new base::ListValue());
+  std::vector<linked_ptr<api::signed_in_devices::DeviceInfo> > args;
 
   for (ScopedVector<DeviceInfo>::const_iterator it = devices.begin();
        it != devices.end();
        ++it) {
-    result->Append((*it)->ToValue());
+    linked_ptr<api::signed_in_devices::DeviceInfo> api_device =
+        make_linked_ptr(new api::signed_in_devices::DeviceInfo);
+    FillDeviceInfo(*(*it), api_device.get());
+    args.push_back(api_device);
   }
 
+  scoped_ptr<base::ListValue> result =
+      api::signed_in_devices::OnDeviceInfoChange::Create(args);
   scoped_ptr<Event> event(new Event(
       api::signed_in_devices::OnDeviceInfoChange::kEventName,
       result.Pass()));

@@ -60,6 +60,6 @@ namespace signedInDevices {
     // change or a new device is added or a device removed.
     // |callback|: The callback to be invoked with the array of DeviceInfo
     // objects.
-    static void onDeviceInfoChange(DeviceInfoCallback callback);
+    static void onDeviceInfoChange(DeviceInfo[] devices);
   };
 };
