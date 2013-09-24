@@ -176,6 +176,9 @@ class CONTENT_EXPORT ContentRendererClient {
                                 bool is_redirect);
 
   // Returns true if we should fork a new process for the given navigation.
+  // If |send_referrer| is set to false (which is the default), no referrer
+  // header will be send for the navigation. Otherwise, the referrer header is
+  // set according to the frame's referrer policy.
   virtual bool ShouldFork(WebKit::WebFrame* frame,
                           const GURL& url,
                           const std::string& http_method,
