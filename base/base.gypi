@@ -669,12 +669,6 @@
           'win/wrapped_window_proc.h',
         ],
         'conditions': [
-          ['use_aura==1 and use_x11==1', {
-            'sources': [
-              'x11/edid_parser_x11.cc',
-              'x11/edid_parser_x11.h',
-            ],
-          }],
           ['google_tv==1', {
            'sources': [
              'android/context_types.cc',
