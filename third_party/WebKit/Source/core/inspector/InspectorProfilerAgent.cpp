@@ -53,7 +53,6 @@ static const char profilerEnabled[] = "profilerEnabled";
 static const char profileHeadersRequested[] = "profileHeadersRequested";
 }
 
-static const char* const userInitiatedProfileName = "org.webkit.profiles.user-initiated";
 static const char* const CPUProfileType = "CPU";
 
 PassOwnPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(InstrumentingAgents* instrumentingAgents, InspectorConsoleAgent* consoleAgent, InspectorCompositeState* inspectorState, InjectedScriptManager* injectedScriptManager)
@@ -143,7 +142,7 @@ String InspectorProfilerAgent::getCurrentUserInitiatedProfileName(bool increment
     if (incrementProfileNumber)
         m_currentUserInitiatedProfileNumber = m_nextUserInitiatedProfileNumber++;
 
-    return String(userInitiatedProfileName) + "." + String::number(m_currentUserInitiatedProfileNumber);
+    return "Profile " + String::number(m_currentUserInitiatedProfileNumber);
 }
 
 void InspectorProfilerAgent::getProfileHeaders(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Profiler::ProfileHeader> >& headers)

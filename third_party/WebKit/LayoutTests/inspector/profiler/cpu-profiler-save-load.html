@@ -99,7 +99,8 @@ function test()
                 next();
             }
             var profilesPanel = WebInspector.panels.profiles;
-            InspectorTest.waitUntilProfileViewIsShown(file.name, checkLoadedContent);
+            var profileName = file.name.substr(0, file.name.length - ".cpuprofile".length);
+            InspectorTest.waitUntilProfileViewIsShown(profileName, checkLoadedContent);
             profilesPanel._loadFromFile(file);
             var onTransferFinished = WebInspector.CPUProfileHeader.prototype.onTransferFinished;
             WebInspector.CPUProfileHeader.prototype.onTransferFinished = function()

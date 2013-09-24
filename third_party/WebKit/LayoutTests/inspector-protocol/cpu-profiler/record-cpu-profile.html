@@ -14,14 +14,14 @@ function test()
     {
         if (!InspectorTest.expectedSuccess("startFrontendProfile", messageObject))
             return;
-        InspectorTest.sendCommand("Runtime.evaluate", {expression: "console.profile('org.webkit.profiles.user-initiated.1');"}, didStartConsoleProfile);
+        InspectorTest.sendCommand("Runtime.evaluate", {expression: "console.profile('Profile 1');"}, didStartConsoleProfile);
     }
 
     function didStartConsoleProfile(messageObject)
     {
         if (!InspectorTest.expectedSuccess("startConsoleProfile", messageObject))
             return;
-        InspectorTest.sendCommand("Runtime.evaluate", {expression: "console.profileEnd('org.webkit.profiles.user-initiated.1');"}, didStopConsoleProfile);
+        InspectorTest.sendCommand("Runtime.evaluate", {expression: "console.profileEnd('Profile 1');"}, didStopConsoleProfile);
     }
 
     function didStopConsoleProfile(messageObject)

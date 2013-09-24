@@ -44,8 +44,6 @@ namespace HeapProfilerAgentState {
 static const char profileHeadersRequested[] = "profileHeadersRequested";
 }
 
-static const char* const userInitiatedProfileNameHeap = "org.webkit.profiles.user-initiated";
-
 class InspectorHeapProfilerAgent::HeapStatsUpdateTask {
 public:
     HeapStatsUpdateTask(InspectorHeapProfilerAgent*);
@@ -263,9 +261,7 @@ void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString*, const bool* repo
         int m_totalWork;
     };
 
-    String title = String(userInitiatedProfileNameHeap) + "." + String::number(m_nextUserInitiatedHeapSnapshotNumber);
-    ++m_nextUserInitiatedHeapSnapshotNumber;
-
+    String title = "Snapshot " + String::number(m_nextUserInitiatedHeapSnapshotNumber++);
     HeapSnapshotProgress progress(reportProgress && *reportProgress ? m_frontend : 0);
     RefPtr<ScriptHeapSnapshot> snapshot = ScriptProfiler::takeHeapSnapshot(title, &progress);
     if (snapshot) {
