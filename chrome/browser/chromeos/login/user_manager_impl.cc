@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/multi_profile_first_run_notification.h"
 #include "chrome/browser/chromeos/login/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/remove_user_delegate.h"
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
@@ -233,7 +234,9 @@ UserManagerImpl::UserManagerImpl()
       is_current_user_ephemeral_regular_user_(false),
       ephemeral_users_enabled_(false),
       user_image_manager_(new UserImageManagerImpl),
-      manager_creation_time_(base::TimeTicks::Now()) {
+      manager_creation_time_(base::TimeTicks::Now()),
+      multi_profile_first_run_notification_(
+          new MultiProfileFirstRunNotification) {
   // UserManager instance should be used only on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.Add(this, chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
@@ -921,6 +924,7 @@ void UserManagerImpl::Observe(int type,
               AuthSyncObserverFactory::GetInstance()->GetForProfile(profile);
           sync_observer->StartObserving();
           multi_profile_user_controller_->StartObserving(profile);
+          multi_profile_first_run_notification_->UserProfilePrepared(profile);
         }
       }
       break;

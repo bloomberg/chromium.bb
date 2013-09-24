@@ -493,6 +493,8 @@
         'browser/chromeos/login/merge_session_throttle.h',
         'browser/chromeos/login/mount_manager.cc',
         'browser/chromeos/login/mount_manager.h',
+        'browser/chromeos/login/multi_profile_first_run_notification.cc',
+        'browser/chromeos/login/multi_profile_first_run_notification.h',
         'browser/chromeos/login/multi_profile_user_controller.cc',
         'browser/chromeos/login/multi_profile_user_controller.h',
         'browser/chromeos/login/multi_profile_user_controller_delegate.h',

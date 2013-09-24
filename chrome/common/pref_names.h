@@ -288,6 +288,7 @@ extern const char kOpenNetworkConfiguration[];
 extern const char kRAConsentFirstTime[];
 extern const char kRAConsentDomains[];
 extern const char kRAConsentAlways[];
+extern const char kMultiProfileNotificationDismissed[];
 extern const char kMultiProfileUserBehavior[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kIpcDisabledMessages[];

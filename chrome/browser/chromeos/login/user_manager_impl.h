@@ -36,6 +36,7 @@ struct DeviceLocalAccount;
 
 namespace chromeos {
 
+class MultiProfileFirstRunNotification;
 class MultiProfileUserController;
 class RemoveUserDelegate;
 class SessionLengthLimiter;
@@ -432,6 +433,8 @@ class UserManagerImpl
       supervised_users_subscription_;
 
   scoped_ptr<MultiProfileUserController> multi_profile_user_controller_;
+  scoped_ptr<MultiProfileFirstRunNotification>
+      multi_profile_first_run_notification_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerImpl);
 };

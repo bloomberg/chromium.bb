@@ -845,6 +845,11 @@ const char kRAConsentDomains[] = "settings.privacy.ra_consent_domains";
 // for consent for every site that uses remote attestation.
 const char kRAConsentAlways[] = "settings.privacy.ra_consent_always";
 
+// A boolean pref recording whether user has dismissed the multiprofile
+// notification.
+const char kMultiProfileNotificationDismissed[] =
+    "settings.multi_profile_notification_dismissed";
+
 // A string pref that holds string enum values of how the user should behave
 // in a multiprofile session. See ChromeOsMultiProfileUserBehavior policy
 // for more details of the valid values.
