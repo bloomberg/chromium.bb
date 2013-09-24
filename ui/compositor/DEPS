@@ -3,6 +3,7 @@
 # Compositor out of WebKit.
 include_rules = [
   "+cc",
+  "+third_party/skia",
   "+third_party/WebKit/public/platform/WebGraphicsContext3D.h",
   "+ui/gfx",
   "+ui/gl",

@@ -3,5 +3,8 @@ include_rules = [
   "+grit/ui_resources.h",
   "+grit/ui_strings.h",
   "+skia/ext",
-  "+ui",
+  "+ui/aura",
+  "+ui/base",
+  "+ui/gfx",
+  "+ui/views",
 ]

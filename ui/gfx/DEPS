@@ -1,7 +1,9 @@
 include_rules = [
   "+base",
-  "+skia",
+  "+net",
+  "+skia/ext",
   "+third_party/angle",
+  "+third_party/skia",
   "+ui/base/ui_export.h",  # TODO(beng): remove
   "+ui/base/layout.h",  # TODO(davemoore): remove
   "+ui/test/ui_unittests_resource.h",  # TODO(beng): remove

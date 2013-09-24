@@ -1,5 +1,4 @@
 include_rules = [
   "+jni",
-  "+ui/base",
-  "+ui/gfx",
+  "+third_party/mozilla",
 ]

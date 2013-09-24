@@ -1,9 +1,14 @@
 include_rules = [
+  "+grit/ui_resources.h",
+  "+grit/ui_strings.h",
   "+skia",
   "+third_party/skia",
-  "+ui",
-  "+grit",
-
   # Allow inclusion of third-party code:
   "+third_party/GTM", # Google Toolbox for Mac.
+  "+ui/aura",
+  "+ui/base",
+  "+ui/compositor",
+  "+ui/events",
+  "+ui/gfx",
+  "+ui/views",
 ]
