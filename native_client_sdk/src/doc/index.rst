@@ -35,5 +35,5 @@ Contents:
    community/application-gallery.rst
    community/middleware.rst
    peppercpp/index.rst
+   help.rst
    version.rst
-
