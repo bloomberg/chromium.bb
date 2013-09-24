@@ -68,8 +68,6 @@ namespace views {
 const char NativeTextfieldViews::kViewClassName[] =
     "views/NativeTextfieldViews";
 
-const int NativeTextfieldViews::kCursorBlinkCycleMs = 1000;
-
 NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
     : textfield_(parent),
       model_(new TextfieldViewsModel(this)),
@@ -683,12 +681,15 @@ void NativeTextfieldViews::HandleFocus() {
   SchedulePaint();
   GetInputMethod()->OnFocus();
   OnCaretBoundsChanged();
-  // Start blinking cursor.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&NativeTextfieldViews::UpdateCursor,
-                 cursor_timer_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kCursorBlinkCycleMs / 2));
+
+  const size_t caret_blink_ms = Textfield::GetCaretBlinkMs();
+  if (caret_blink_ms != 0) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&NativeTextfieldViews::UpdateCursor,
+                   cursor_timer_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(caret_blink_ms));
+  }
 }
 
 void NativeTextfieldViews::HandleBlur() {
@@ -1139,13 +1140,16 @@ void NativeTextfieldViews::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
 }
 
 void NativeTextfieldViews::UpdateCursor() {
-  is_cursor_visible_ = !is_cursor_visible_;
+  const size_t caret_blink_ms = Textfield::GetCaretBlinkMs();
+  is_cursor_visible_ = !is_cursor_visible_ || (caret_blink_ms == 0);
   RepaintCursor();
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&NativeTextfieldViews::UpdateCursor,
-                 cursor_timer_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kCursorBlinkCycleMs / 2));
+  if (caret_blink_ms != 0) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&NativeTextfieldViews::UpdateCursor,
+                   cursor_timer_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(caret_blink_ms));
+  }
 }
 
 void NativeTextfieldViews::RepaintCursor() {

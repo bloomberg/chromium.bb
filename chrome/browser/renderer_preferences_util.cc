@@ -19,20 +19,13 @@
 #include "ui/gfx/gtk_util.h"
 #endif
 
-#if defined(USE_AURA)
-#include "ui/views/controls/textfield/native_textfield_views.h"
+#if defined(TOOLKIT_VIEWS)
+#include "ui/views/controls/textfield/textfield.h"
 #endif
 
 namespace renderer_preferences_util {
 
 namespace {
-
-#if defined(TOOLKIT_GTK)
-// Dividing GTK's cursor blink cycle time (in milliseconds) by this value yields
-// an appropriate value for content::RendererPreferences::caret_blink_interval.
-// This matches the logic in the WebKit GTK port.
-const double kGtkCursorBlinkCycleFactor = 2000.0;
-#endif  // defined(TOOLKIT_GTK)
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 content::RendererPreferencesHintingEnum GetRendererPreferencesHintingEnum(
@@ -100,6 +93,10 @@ void UpdateFromSystemSettings(
   prefs->inactive_selection_fg_color =
       theme_service->get_inactive_selection_fg_color();
 
+  // Dividing GTK's cursor blink cycle time (in milliseconds) by this value
+  // yields an appropriate value for RendererPreferences::caret_blink_interval.
+  // This matches the logic in the WebKit GTK port.
+  const double kGtkCursorBlinkCycleFactor = 2000.0;
   const base::TimeDelta cursor_blink_time = gfx::GetCursorBlinkCycle();
   prefs->caret_blink_interval =
       cursor_blink_time.InMilliseconds() ?
@@ -115,11 +112,6 @@ void UpdateFromSystemSettings(
   prefs->inactive_selection_bg_color = SkColorSetRGB(0xEA, 0xEA, 0xEA);
   prefs->inactive_selection_fg_color = SK_ColorBLACK;
 #endif
-  // WebKit accepts a single parameter to control the interval over which the
-  // cursor is shown or hidden, so divide Views's time for the full cycle by two
-  // and then convert to seconds.
-  prefs->caret_blink_interval =
-      views::NativeTextfieldViews::kCursorBlinkCycleMs / 2.0 / 1000;
 
   prefs->touchpad_fling_profile[0] =
       pref_service->GetDouble(prefs::kFlingCurveTouchpadAlpha);
@@ -133,6 +125,10 @@ void UpdateFromSystemSettings(
       pref_service->GetDouble(prefs::kFlingCurveTouchscreenBeta);
   prefs->touchscreen_fling_profile[2] =
       pref_service->GetDouble(prefs::kFlingCurveTouchscreenGamma);
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+  prefs->caret_blink_interval = views::Textfield::GetCaretBlinkMs() / 1000.0;
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
