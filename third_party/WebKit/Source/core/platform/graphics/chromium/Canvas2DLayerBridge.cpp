@@ -70,7 +70,7 @@ static SkSurface* createSurface(GraphicsContext3D* context3D, const IntSize& siz
     info.fWidth = size.width();
     info.fHeight = size.height();
     info.fColorType = SkImage::kPMColor_ColorType;
-    info.fAlphaType = SkImage::kPremul_AlphaType;
+    info.fAlphaType = kPremul_SkAlphaType;
     return SkSurface::NewRenderTarget(gr, info);
 }
 

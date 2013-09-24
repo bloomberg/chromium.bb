@@ -77,13 +77,7 @@ protected:
 
         MockCanvasContext& mainMock = *static_cast<MockCanvasContext*>(mainContext->webContext());
 
-        SkImage::Info info = {
-            300,
-            150,
-            SkImage::kPMColor_ColorType,
-            SkImage::kPremul_AlphaType,
-        };
-        SkAutoTUnref<SkDeferredCanvas> canvas(SkDeferredCanvas::Create(SkSurface::NewRaster(info)));
+        SkAutoTUnref<SkDeferredCanvas> canvas(SkDeferredCanvas::Create(SkSurface::NewRasterPMColor(300, 150)));
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 

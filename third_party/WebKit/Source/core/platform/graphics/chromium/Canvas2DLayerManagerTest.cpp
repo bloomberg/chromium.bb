@@ -91,13 +91,7 @@ public:
 
 static PassOwnPtr<SkDeferredCanvas> createCanvas(GraphicsContext3D* context)
 {
-    SkImage::Info info = {
-        1,
-        1,
-        SkImage::kPMColor_ColorType,
-        SkImage::kPremul_AlphaType,
-    };
-    return adoptPtr(SkDeferredCanvas::Create(SkSurface::NewRaster(info)));
+    return adoptPtr(SkDeferredCanvas::Create(SkSurface::NewRasterPMColor(1, 1)));
 }
 
 FakeCanvas2DLayerBridge* fake(const Canvas2DLayerBridgePtr& layer)
