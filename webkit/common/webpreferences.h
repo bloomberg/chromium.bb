@@ -176,6 +176,7 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool use_wide_viewport;
   bool viewport_meta_layout_size_quirk;
   bool viewport_meta_zero_values_quirk;
+  bool ignore_main_frame_overflow_hidden_quirk;
 #endif
 
   // We try to keep the default values the same as the default values in

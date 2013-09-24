@@ -186,6 +186,7 @@ IPC_STRUCT_TRAITS_BEGIN(WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(use_wide_viewport)
   IPC_STRUCT_TRAITS_MEMBER(viewport_meta_layout_size_quirk)
   IPC_STRUCT_TRAITS_MEMBER(viewport_meta_zero_values_quirk)
+  IPC_STRUCT_TRAITS_MEMBER(ignore_main_frame_overflow_hidden_quirk)
 #endif
 IPC_STRUCT_TRAITS_END()
 

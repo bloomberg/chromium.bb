@@ -206,6 +206,7 @@ void AwSettings::UpdateWebkitPreferencesLocked(JNIEnv* env, jobject obj) {
   prefs.use_legacy_background_size_shorthand_behavior = support_quirks;
   prefs.viewport_meta_layout_size_quirk = support_quirks;
   prefs.viewport_meta_zero_values_quirk = support_quirks;
+  prefs.ignore_main_frame_overflow_hidden_quirk = support_quirks;
 
   prefs.password_echo_enabled =
       Java_AwSettings_getPasswordEchoEnabled(env, obj);

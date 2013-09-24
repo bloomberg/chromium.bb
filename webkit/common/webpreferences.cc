@@ -132,7 +132,8 @@ WebPreferences::WebPreferences()
       wide_viewport_quirk(false),
       use_wide_viewport(true),
       viewport_meta_layout_size_quirk(false),
-      viewport_meta_zero_values_quirk(false)
+      viewport_meta_zero_values_quirk(false),
+      ignore_main_frame_overflow_hidden_quirk(false)
 #endif
 {
   standard_font_family_map[webkit_glue::kCommonScript] =

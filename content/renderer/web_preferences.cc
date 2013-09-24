@@ -345,6 +345,8 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
       prefs.viewport_meta_layout_size_quirk);
   settings->setViewportMetaZeroValuesQuirk(
       prefs.viewport_meta_zero_values_quirk);
+  settings->setIgnoreMainFrameOverflowHiddenQuirk(
+      prefs.ignore_main_frame_overflow_hidden_quirk);
 #endif
 
   WebNetworkStateNotifier::setOnLine(prefs.is_online);
