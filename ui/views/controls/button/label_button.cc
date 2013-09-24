@@ -109,6 +109,10 @@ void LabelButton::SetFont(const gfx::Font& font) {
   label_->SetFont(font);
 }
 
+void LabelButton::SetElideBehavior(Label::ElideBehavior elide_behavior) {
+  label_->SetElideBehavior(elide_behavior);
+}
+
 gfx::HorizontalAlignment LabelButton::GetHorizontalAlignment() const {
   return label_->horizontal_alignment();
 }

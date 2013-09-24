@@ -158,30 +158,33 @@ void MediaGalleriesDialogViews::InitChildViews() {
                        spacing);
   }
 
-  // Separator line.
-  views::Separator* separator = new views::Separator(
-      views::Separator::HORIZONTAL);
-  scroll_container->AddChildView(separator);
-
-  // Unattached locations section.
-  views::Label* unattached_text = new views::Label(
-      controller_->GetUnattachedLocationsHeader());
-  unattached_text->SetMultiLine(true);
-  unattached_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  unattached_text->set_border(views::Border::CreateEmptyBorder(
-      views::kRelatedControlVerticalSpacing,
-      views::kPanelHorizMargin,
-      views::kRelatedControlVerticalSpacing,
-      0));
-  scroll_container->AddChildView(unattached_text);
-
-  // Add unattached galleries checkboxes.
   GalleryPermissionsVector unattached_permissions =
       controller_->UnattachedPermissions();
-  for (GalleryPermissionsVector::const_iterator iter =
-           unattached_permissions.begin();
-       iter != unattached_permissions.end(); ++iter) {
-    AddOrUpdateGallery(iter->pref_info, iter->allowed, scroll_container, 0);
+
+  if (!unattached_permissions.empty()) {
+    // Separator line.
+    views::Separator* separator = new views::Separator(
+        views::Separator::HORIZONTAL);
+    scroll_container->AddChildView(separator);
+
+    // Unattached locations section.
+    views::Label* unattached_text = new views::Label(
+        controller_->GetUnattachedLocationsHeader());
+    unattached_text->SetMultiLine(true);
+    unattached_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    unattached_text->set_border(views::Border::CreateEmptyBorder(
+        views::kRelatedControlVerticalSpacing,
+        views::kPanelHorizMargin,
+        views::kRelatedControlVerticalSpacing,
+        0));
+    scroll_container->AddChildView(unattached_text);
+
+    // Add unattached galleries checkboxes.
+    for (GalleryPermissionsVector::const_iterator iter =
+             unattached_permissions.begin();
+         iter != unattached_permissions.end(); ++iter) {
+      AddOrUpdateGallery(iter->pref_info, iter->allowed, scroll_container, 0);
+    }
   }
 
   confirm_available_ = controller_->HasPermittedGalleries();
@@ -224,6 +227,7 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
     views::Checkbox* checkbox = iter->second;
     checkbox->SetChecked(permitted);
     checkbox->SetText(label);
+    checkbox->SetElideBehavior(views::Label::ELIDE_IN_MIDDLE);
     checkbox->SetTooltipText(tooltip_text);
     // Replace the details string.
     views::View* checkbox_view = checkbox->parent();

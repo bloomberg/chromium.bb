@@ -102,27 +102,29 @@ void MediaGalleriesDialogGtk::InitWidgets() {
                              checkbox_container);
   }
 
-  // Separator line and unattached volumes header text.
-  GtkWidget* separator = gtk_hseparator_new();
-  gtk_box_pack_start(GTK_BOX(checkbox_container), separator, FALSE, FALSE, 0);
-
-  GtkWidget* unattached_hbox = gtk_hbox_new(FALSE, ui::kLabelSpacing);
-  GtkWidget* unattached_text = gtk_label_new(UTF16ToUTF8(
-      controller_->GetUnattachedLocationsHeader()).c_str());
-  gtk_label_set_line_wrap(GTK_LABEL(unattached_text), FALSE);
-  gtk_box_pack_start(GTK_BOX(unattached_hbox), unattached_text,
-                     FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(checkbox_container), unattached_hbox,
-                     FALSE, FALSE, 0);
-
-  // Unattached galleries checkboxes
   const GalleryPermissionsVector unattached_permissions =
       controller_->UnattachedPermissions();
-  for (GalleryPermissionsVector::const_iterator iter =
-           unattached_permissions.begin();
-       iter != unattached_permissions.end(); ++iter) {
-    UpdateGalleryInContainer(iter->pref_info, iter->allowed,
-                             checkbox_container);
+  if (!unattached_permissions.empty()) {
+    // Separator line and unattached volumes header text.
+    GtkWidget* separator = gtk_hseparator_new();
+    gtk_box_pack_start(GTK_BOX(checkbox_container), separator, FALSE, FALSE, 0);
+
+    GtkWidget* unattached_hbox = gtk_hbox_new(FALSE, ui::kLabelSpacing);
+    GtkWidget* unattached_text = gtk_label_new(UTF16ToUTF8(
+        controller_->GetUnattachedLocationsHeader()).c_str());
+    gtk_label_set_line_wrap(GTK_LABEL(unattached_text), FALSE);
+    gtk_box_pack_start(GTK_BOX(unattached_hbox), unattached_text,
+                       FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(checkbox_container), unattached_hbox,
+                       FALSE, FALSE, 0);
+
+    // Unattached galleries checkboxes
+    for (GalleryPermissionsVector::const_iterator iter =
+             unattached_permissions.begin();
+         iter != unattached_permissions.end(); ++iter) {
+      UpdateGalleryInContainer(iter->pref_info, iter->allowed,
+                               checkbox_container);
+    }
   }
 
   GtkWidget* bottom_area = gtk_hbox_new(FALSE, ui::kControlSpacing);
@@ -188,6 +190,7 @@ void MediaGalleriesDialogGtk::UpdateGalleryInContainer(
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), permitted);
   std::string label = UTF16ToUTF8(gallery.GetGalleryDisplayName());
+  // TODO(gbillock): Would be nice to add middle elide behavior here.
   gtk_button_set_label(GTK_BUTTON(widget), label.c_str());
 }
 

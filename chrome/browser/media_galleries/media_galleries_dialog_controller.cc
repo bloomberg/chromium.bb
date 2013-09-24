@@ -87,7 +87,8 @@ MediaGalleriesDialogController::~MediaGalleriesDialogController() {
 }
 
 string16 MediaGalleriesDialogController::GetHeader() const {
-  return l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_HEADER);
+  return l10n_util::GetStringFUTF16(IDS_MEDIA_GALLERIES_DIALOG_HEADER,
+                                    UTF8ToUTF16(extension_->name()));
 }
 
 string16 MediaGalleriesDialogController::GetSubtext() const {

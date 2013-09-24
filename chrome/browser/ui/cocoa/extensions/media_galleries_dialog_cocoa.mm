@@ -136,10 +136,12 @@ void MediaGalleriesDialogCocoa::InitDialogControls() {
 
   y_pos = CreateAttachedCheckboxes(y_pos, controller_->AttachedPermissions());
 
-  y_pos = CreateCheckboxSeparator(y_pos);
+  if (!controller_->UnattachedPermissions().empty()) {
+    y_pos = CreateCheckboxSeparator(y_pos);
 
-  y_pos = CreateUnattachedCheckboxes(
-      y_pos, controller_->UnattachedPermissions());
+    y_pos = CreateUnattachedCheckboxes(
+        y_pos, controller_->UnattachedPermissions());
+  }
 
   [checkbox_container_ setFrame:NSMakeRect(0, 0, kCheckboxMaxWidth, y_pos + 2)];
 
@@ -296,6 +298,7 @@ void MediaGalleriesDialogCocoa::UpdateGalleryCheckbox(
   [checkbox setAction:@selector(onCheckboxToggled:)];
   [checkboxes_ addObject:checkbox];
 
+  // TODO(gbillock): Would be nice to add middle text elide behavior here.
   [checkbox setTitle:base::SysUTF16ToNSString(
       gallery.GetGalleryDisplayName())];
   [checkbox setToolTip:base::SysUTF16ToNSString(gallery.GetGalleryTooltip())];

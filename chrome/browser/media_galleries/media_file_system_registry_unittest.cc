@@ -248,6 +248,8 @@ class ProfileState {
                       const std::vector<string16>& names,
                       const std::vector<MediaFileSystemInfo>& expected,
                       const std::vector<MediaFileSystemInfo>& actual);
+  bool ContainsEntry(const MediaFileSystemInfo& info,
+                     const std::vector<MediaFileSystemInfo>& container);
 
   int GetAndClearComparisonCount();
 
@@ -548,6 +550,20 @@ void ProfileState::AddNameForAllCompare(const string16& name) {
   compare_names_all_.push_back(name);
 }
 
+bool ProfileState::ContainsEntry(
+    const MediaFileSystemInfo& info,
+    const std::vector<MediaFileSystemInfo>& container) {
+  for (size_t i = 0; i < container.size(); ++i) {
+    if (info.path.value() == container[i].path.value()) {
+      EXPECT_FALSE(container[i].fsid.empty());
+      if (!info.fsid.empty())
+        EXPECT_EQ(info.fsid, container[i].fsid);
+      return true;
+    }
+  }
+  return false;
+}
+
 void ProfileState::CompareResults(
     const std::string& test,
     const std::vector<string16>& names,
@@ -566,11 +582,8 @@ void ProfileState::CompareResults(
 
   for (size_t i = 0; i < expect.size() && i < sorted.size(); ++i) {
     if (expect_names.size() > i)
-      EXPECT_EQ(expect_names[i], sorted[i].name);
-    EXPECT_EQ(expect[i].path.value(), sorted[i].path.value()) << test;
-    EXPECT_FALSE(sorted[i].fsid.empty()) << test;
-    if (!expect[i].fsid.empty())
-      EXPECT_EQ(expect[i].fsid, sorted[i].fsid) << test;
+      EXPECT_EQ(expect_names[i], sorted[i].name) << test;
+    EXPECT_TRUE(ContainsEntry(expect[i], sorted)) << test;
   }
 }
 
@@ -1008,20 +1021,40 @@ TEST_F(MediaFileSystemRegistryTest, TestNameConstruction) {
   one_expectation.push_back(added_info);
 
   profile_state->AddNameForReadCompare(
+#if defined(OS_CHROMEOS)
       empty_dir().BaseName().LossyDisplayName());
+#else
+      empty_dir().LossyDisplayName());
+#endif
   profile_state->AddNameForAllCompare(
+#if defined(OS_CHROMEOS)
       empty_dir().BaseName().LossyDisplayName());
+#else
+      empty_dir().LossyDisplayName());
+#endif
 
   // This part of the test is conditional on default directories existing
   // on the test platform. In ChromeOS, these directories do not exist.
   base::FilePath path;
   if (num_auto_galleries() > 0) {
     ASSERT_TRUE(PathService::Get(chrome::DIR_USER_MUSIC, &path));
+#if defined(OS_CHROMEOS)
     profile_state->AddNameForAllCompare(path.BaseName().LossyDisplayName());
+#else
+    profile_state->AddNameForAllCompare(path.LossyDisplayName());
+#endif
     ASSERT_TRUE(PathService::Get(chrome::DIR_USER_PICTURES, &path));
+#if defined(OS_CHROMEOS)
     profile_state->AddNameForAllCompare(path.BaseName().LossyDisplayName());
+#else
+    profile_state->AddNameForAllCompare(path.LossyDisplayName());
+#endif
     ASSERT_TRUE(PathService::Get(chrome::DIR_USER_VIDEOS, &path));
+#if defined(OS_CHROMEOS)
     profile_state->AddNameForAllCompare(path.BaseName().LossyDisplayName());
+#else
+    profile_state->AddNameForAllCompare(path.LossyDisplayName());
+#endif
 
     profile_state->CheckGalleries("names-dir", one_expectation, auto_galleries);
   } else {

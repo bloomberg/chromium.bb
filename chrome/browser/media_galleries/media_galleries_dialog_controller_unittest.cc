@@ -24,17 +24,29 @@ TEST(MediaGalleriesDialogControllerTest, TestNameGeneration) {
   gallery.device_id = StorageInfo::MakeDeviceId(
       StorageInfo::FIXED_MASS_STORAGE, "/path/to/gallery");
   gallery.type = MediaGalleryPrefInfo::kAutoDetected;
-  EXPECT_EQ("gallery", GalleryName(gallery));
+  std::string galleryName("/path/to/gallery");
+#if defined(OS_CHROMEOS)
+  galleryName = "gallery";
+#endif
+  EXPECT_EQ(galleryName, GalleryName(gallery));
 
   gallery.display_name = ASCIIToUTF16("override");
   EXPECT_EQ("override", GalleryName(gallery));
 
   gallery.display_name = string16();
   gallery.volume_label = ASCIIToUTF16("label");
-  EXPECT_EQ("gallery", GalleryName(gallery));
+  EXPECT_EQ(galleryName, GalleryName(gallery));
 
   gallery.path = base::FilePath(FILE_PATH_LITERAL("sub/gallery2"));
-  EXPECT_EQ("gallery2", GalleryName(gallery));
+  galleryName = "/path/to/gallery/sub/gallery2";
+#if defined(OS_CHROMEOS)
+  galleryName = "gallery2";
+#endif
+#if defined(OS_WIN)
+  galleryName = base::FilePath(FILE_PATH_LITERAL("/path/to/gallery"))
+                    .Append(gallery.path).MaybeAsASCII();
+#endif
+  EXPECT_EQ(galleryName, GalleryName(gallery));
 
   gallery.path = base::FilePath();
   gallery.device_id = StorageInfo::MakeDeviceId(

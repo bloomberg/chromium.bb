@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 
+#include "base/base_paths_posix.h"
 #include "base/i18n/time_formatting.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
@@ -272,16 +273,27 @@ base::FilePath MediaGalleryPrefInfo::AbsolutePath() const {
 
 string16 MediaGalleryPrefInfo::GetGalleryDisplayName() const {
   if (!StorageInfo::IsRemovableDevice(device_id)) {
-    // For fixed storage, the name is the directory name, or, in the case
-    // of a root directory, the root directory name.
-    // TODO(gbillock): Using only the BaseName can lead to ambiguity. The
-    // tooltip resolves it. Is that enough?
+    // For fixed storage, the default name is the fully qualified directory
+    // name, or in the case of a root directory, the root directory name.
+    // Exception: ChromeOS -- the full pathname isn't visible there, so only
+    // the directory name is used.
     base::FilePath path = AbsolutePath();
     if (!display_name.empty())
       return display_name;
-    if (path == path.DirName())
-      return path.LossyDisplayName();
+
+#if defined(OS_CHROMEOS)
+    // See chrome/browser/chromeos/fileapi/file_system_backend.cc
+    base::FilePath home_path;
+    if (PathService::Get(base::DIR_HOME, &home_path)) {
+      home_path = home_path.AppendASCII("Downloads");
+      base::FilePath relative;
+      if (home_path.AppendRelativePath(path, &relative))
+        return relative.LossyDisplayName();
+    }
     return path.BaseName().LossyDisplayName();
+#else
+    return path.LossyDisplayName();
+#endif
   }
 
   string16 name = display_name;
