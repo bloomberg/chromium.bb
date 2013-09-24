@@ -66,6 +66,9 @@ public:
     WEBKIT_EXPORT static void enableLegacyEncryptedMedia(bool);
     WEBKIT_EXPORT static bool isLegacyEncryptedMediaEnabled();
 
+    WEBKIT_EXPORT static void enablePrefixedEncryptedMedia(bool);
+    WEBKIT_EXPORT static bool isPrefixedEncryptedMediaEnabled();
+
     WEBKIT_EXPORT static void enableExperimentalCanvasFeatures(bool);
     WEBKIT_EXPORT static bool isExperimentalCanvasFeaturesEnabled();
 

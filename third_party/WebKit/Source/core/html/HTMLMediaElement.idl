@@ -88,14 +88,14 @@ readonly attribute unsigned long webkitAudioDecodedByteCount;
 readonly attribute unsigned long webkitVideoDecodedByteCount;
 
 // FIXME: add DeprecateAs=PrefixedMediaGenerateKeyRequest when MediaKeys is ready.
-[EnabledAtRuntime=LegacyEncryptedMedia, RaisesException] void webkitGenerateKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, optional Uint8Array initData);
-[EnabledAtRuntime=LegacyEncryptedMedia, RaisesException] void webkitAddKey([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, Uint8Array key, optional Uint8Array initData, [Default=NullString] optional DOMString sessionId);
-[EnabledAtRuntime=LegacyEncryptedMedia, RaisesException] void webkitCancelKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, [Default=NullString] optional DOMString sessionId);
+[EnabledAtRuntime=PrefixedEncryptedMedia, RaisesException] void webkitGenerateKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, optional Uint8Array initData);
+[EnabledAtRuntime=PrefixedEncryptedMedia, RaisesException] void webkitAddKey([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, Uint8Array key, optional Uint8Array initData, [Default=NullString] optional DOMString sessionId);
+[EnabledAtRuntime=PrefixedEncryptedMedia, RaisesException] void webkitCancelKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, [Default=NullString] optional DOMString sessionId);
 
-[EnabledAtRuntime=LegacyEncryptedMedia] attribute EventHandler onwebkitkeyadded;
-[EnabledAtRuntime=LegacyEncryptedMedia] attribute EventHandler onwebkitkeyerror;
-[EnabledAtRuntime=LegacyEncryptedMedia] attribute EventHandler onwebkitkeymessage;
-[EnabledAtRuntime=LegacyEncryptedMedia] attribute EventHandler onwebkitneedkey;
+[EnabledAtRuntime=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeyadded;
+[EnabledAtRuntime=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeyerror;
+[EnabledAtRuntime=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeymessage;
+[EnabledAtRuntime=PrefixedEncryptedMedia] attribute EventHandler onwebkitneedkey;
 
 [EnabledAtRuntime=EncryptedMedia, Conditional=ENCRYPTED_MEDIA_V2] attribute MediaKeys mediaKeys;
 

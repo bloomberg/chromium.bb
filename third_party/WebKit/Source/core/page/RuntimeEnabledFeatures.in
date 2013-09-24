@@ -59,7 +59,7 @@ InputModeAttribute status=test
 InputTypeColor status=stable
 InputTypeWeek status=stable
 LangAttributeAwareFormControlUI
-LegacyEncryptedMedia status=stable
+PrefixedEncryptedMedia status=stable
 LocalStorage status=stable
 Media status=stable
 MediaSource status=stable

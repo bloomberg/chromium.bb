@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=LegacyEncryptedMedia,
+    EnabledAtRuntime=PrefixedEncryptedMedia,
     ConstructorTemplate=Event
 ] interface MediaKeyEvent : Event {
     [InitializedByEventConstructor] readonly attribute DOMString keySystem;

@@ -112,7 +112,7 @@ void WebRuntimeFeatures::enableEncryptedMedia(bool enable)
     // FIXME: Hack to allow MediaKeyError to be enabled for either version.
     RuntimeEnabledFeatures::setEncryptedMediaAnyVersionEnabled(
         RuntimeEnabledFeatures::encryptedMediaEnabled()
-        || RuntimeEnabledFeatures::legacyEncryptedMediaEnabled());
+        || RuntimeEnabledFeatures::prefixedEncryptedMediaEnabled());
 }
 
 bool WebRuntimeFeatures::isEncryptedMediaEnabled()
@@ -122,16 +122,30 @@ bool WebRuntimeFeatures::isEncryptedMediaEnabled()
 
 void WebRuntimeFeatures::enableLegacyEncryptedMedia(bool enable)
 {
-    RuntimeEnabledFeatures::setLegacyEncryptedMediaEnabled(enable);
+    RuntimeEnabledFeatures::setPrefixedEncryptedMediaEnabled(enable);
     // FIXME: Hack to allow MediaKeyError to be enabled for either version.
     RuntimeEnabledFeatures::setEncryptedMediaAnyVersionEnabled(
         RuntimeEnabledFeatures::encryptedMediaEnabled()
-        || RuntimeEnabledFeatures::legacyEncryptedMediaEnabled());
+        || RuntimeEnabledFeatures::prefixedEncryptedMediaEnabled());
+}
+
+void WebRuntimeFeatures::enablePrefixedEncryptedMedia(bool enable)
+{
+    RuntimeEnabledFeatures::setPrefixedEncryptedMediaEnabled(enable);
+    // FIXME: Hack to allow MediaKeyError to be enabled for either version.
+    RuntimeEnabledFeatures::setEncryptedMediaAnyVersionEnabled(
+        RuntimeEnabledFeatures::encryptedMediaEnabled()
+        || RuntimeEnabledFeatures::prefixedEncryptedMediaEnabled());
 }
 
 bool WebRuntimeFeatures::isLegacyEncryptedMediaEnabled()
 {
-    return RuntimeEnabledFeatures::legacyEncryptedMediaEnabled();
+    return RuntimeEnabledFeatures::prefixedEncryptedMediaEnabled();
+}
+
+bool WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()
+{
+    return RuntimeEnabledFeatures::prefixedEncryptedMediaEnabled();
 }
 
 void WebRuntimeFeatures::enableExperimentalCanvasFeatures(bool enable)
