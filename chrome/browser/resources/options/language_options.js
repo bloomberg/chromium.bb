@@ -398,10 +398,10 @@ cr.define('options', function() {
       if (cr.isWindows || cr.isChromeOS)
         this.updateUiLanguageButton_(languageCode);
 
-      if (!cr.isMac) {
-        this.updateSelectedLanguageName_(languageCode);
+      this.updateSelectedLanguageName_(languageCode);
+
+      if (!cr.isMac)
         this.updateSpellCheckLanguageButton_(languageCode);
-      }
 
       if (cr.isChromeOS)
         this.updateInputMethodList_(languageCode);
