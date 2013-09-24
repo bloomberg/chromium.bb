@@ -32,7 +32,6 @@ class Profile;
 
 namespace extensions {
 
-class Blacklist;
 class ExtensionDownloader;
 class ExtensionPrefs;
 class ExtensionUpdaterTest;
@@ -53,17 +52,13 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   typedef base::Closure FinishedCallback;
 
   struct CheckParams {
-    // Creates a default CheckParams instance that checks for all extensions and
-    // the extension blacklist.
+    // Creates a default CheckParams instance that checks for all extensions.
     CheckParams();
     ~CheckParams();
 
     // The set of extensions that should be checked for updates. If empty
     // all extensions will be included in the update check.
     std::list<std::string> ids;
-
-    // If true, the extension blacklist will also be updated.
-    bool check_blacklist;
 
     // Normally extension updates get installed only when the extension is idle.
     // Setting this to true causes any updates that are found to be installed
@@ -82,7 +77,6 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
                    ExtensionPrefs* extension_prefs,
                    PrefService* prefs,
                    Profile* profile,
-                   Blacklist* blacklist,
                    int frequency_seconds);
 
   virtual ~ExtensionUpdater();
@@ -187,13 +181,6 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
       const PingResult& ping,
       const std::set<int>& request_id) OVERRIDE;
 
-  virtual void OnBlacklistDownloadFinished(
-      const std::string& data,
-      const std::string& package_hash,
-      const std::string& version,
-      const PingResult& ping,
-      const std::set<int>& request_id) OVERRIDE;
-
   virtual bool GetPingDataForExtension(
       const std::string& id,
       ManifestFetchData::PingData* ping_data) OVERRIDE;
@@ -242,7 +229,6 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   ExtensionPrefs* extension_prefs_;
   PrefService* prefs_;
   Profile* profile_;
-  Blacklist* blacklist_;
 
   std::map<int, InProgressCheck> requests_in_progress_;
   int next_request_id_;

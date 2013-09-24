@@ -21,7 +21,7 @@ namespace extensions {
 class Extension;
 class ExtensionPrefs;
 
-// A blacklist of extensions.
+// The blacklist of extensions backed by safe browsing.
 class Blacklist : public content::NotificationObserver,
                   public base::SupportsWeakPtr<Blacklist> {
  public:
@@ -62,7 +62,6 @@ class Blacklist : public content::NotificationObserver,
 
   typedef base::Callback<void(BlacklistState)> IsBlacklistedCallback;
 
-  // |prefs_| must outlive this.
   explicit Blacklist(ExtensionPrefs* prefs);
 
   virtual ~Blacklist();
@@ -80,10 +79,6 @@ class Blacklist : public content::NotificationObserver,
   void IsBlacklisted(const std::string& extension_id,
                      const IsBlacklistedCallback& callback);
 
-  // Sets the blacklist from the updater to contain the extension IDs in |ids|
-  void SetFromUpdater(const std::vector<std::string>& ids,
-                      const std::string& version);
-
   // Adds/removes an observer to the blacklist.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -94,24 +89,12 @@ class Blacklist : public content::NotificationObserver,
       scoped_refptr<SafeBrowsingDatabaseManager> database_manager);
   static scoped_refptr<SafeBrowsingDatabaseManager> GetDatabaseManager();
 
-  // Handles the |safebrowsing_blacklisted_ids| response from querying the
-  // safebrowsing blacklist, given that we know |pref_blacklisted_ids| are
-  // already blacklisted. Responds to |callback| with the union.
-  void OnSafeBrowsingResponse(
-      const std::set<std::string>& pref_blacklisted_ids,
-      const GetBlacklistedIDsCallback& callback,
-      const std::set<std::string>& safebrowsing_blacklisted_ids);
-
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
   ObserverList<Observer> observers_;
-
-  ExtensionPrefs* const prefs_;
-
-  std::set<std::string> prefs_blacklist_;
 
   content::NotificationRegistrar registrar_;
 

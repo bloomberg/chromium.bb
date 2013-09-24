@@ -10,194 +10,156 @@
 #include "chrome/browser/extensions/fake_safe_browsing_database_manager.h"
 #include "chrome/browser/extensions/test_blacklist.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 namespace {
 
+std::set<std::string> Set(const std::string& a) {
+  std::set<std::string> set;
+  set.insert(a);
+  return set;
+}
+std::set<std::string> Set(const std::string& a, const std::string& b) {
+  std::set<std::string> set = Set(a);
+  set.insert(b);
+  return set;
+}
+std::set<std::string> Set(const std::string& a,
+                          const std::string& b,
+                          const std::string& c) {
+  std::set<std::string> set = Set(a, b);
+  set.insert(c);
+  return set;
+}
+std::set<std::string> Set(const std::string& a,
+                          const std::string& b,
+                          const std::string& d,
+                          const std::string& c) {
+  std::set<std::string> set = Set(a, b, c);
+  set.insert(d);
+  return set;
+}
+
 class BlacklistTest : public testing::Test {
  public:
   BlacklistTest()
-      : prefs_(message_loop_.message_loop_proxy().get()),
-        ui_thread_(content::BrowserThread::UI, &message_loop_),
-        io_thread_(content::BrowserThread::IO, &message_loop_),
-        safe_browsing_database_manager_(new FakeSafeBrowsingDatabaseManager()),
-        scoped_blacklist_database_manager_(safe_browsing_database_manager_),
-        blacklist_(prefs_.prefs()) {}
-
-  bool IsBlacklisted(const Extension* extension) {
-    return TestBlacklist(&blacklist_).IsBlacklisted(extension->id());
-  }
+      : test_prefs_(base::MessageLoopProxy::current()),
+        blacklist_db_(new FakeSafeBrowsingDatabaseManager(false)),
+        scoped_blacklist_db_(blacklist_db_) {}
 
  protected:
-  base::MessageLoop message_loop_;
+  ExtensionPrefs* prefs() {
+    return test_prefs_.prefs();
+  }
 
-  TestExtensionPrefs prefs_;
+  FakeSafeBrowsingDatabaseManager* blacklist_db() {
+    return blacklist_db_.get();
+  }
 
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  std::string AddExtension(const std::string& id) {
+    return test_prefs_.AddExtension(id)->id();
+  }
 
-  scoped_refptr<FakeSafeBrowsingDatabaseManager>
-      safe_browsing_database_manager_;
-  Blacklist::ScopedDatabaseManagerForTest scoped_blacklist_database_manager_;
+ private:
+  content::TestBrowserThreadBundle browser_thread_bundle_;
 
-  Blacklist blacklist_;
+  TestExtensionPrefs test_prefs_;
+
+  scoped_refptr<FakeSafeBrowsingDatabaseManager> blacklist_db_;
+
+  Blacklist::ScopedDatabaseManagerForTest scoped_blacklist_db_;
 };
-
-TEST_F(BlacklistTest, SetFromUpdater) {
-  scoped_refptr<const Extension> extension_a = prefs_.AddExtension("a");
-  scoped_refptr<const Extension> extension_b = prefs_.AddExtension("b");
-  scoped_refptr<const Extension> extension_c = prefs_.AddExtension("c");
-  scoped_refptr<const Extension> extension_d = prefs_.AddExtension("d");
-
-  // c, d, start blacklisted.
-  prefs_.prefs()->SetExtensionBlacklisted(extension_c->id(), true);
-  prefs_.prefs()->SetExtensionBlacklisted(extension_d->id(), true);
-
-  EXPECT_FALSE(IsBlacklisted(extension_a.get()));
-  EXPECT_FALSE(IsBlacklisted(extension_b.get()));
-  EXPECT_TRUE(IsBlacklisted(extension_c.get()));
-  EXPECT_TRUE(IsBlacklisted(extension_d.get()));
-
-  // Mix up the blacklist.
-  {
-    std::vector<std::string> blacklist;
-    blacklist.push_back(extension_b->id());
-    blacklist.push_back(extension_c->id());
-    blacklist_.SetFromUpdater(blacklist, "1");
-  }
-  EXPECT_FALSE(IsBlacklisted(extension_a.get()));
-  EXPECT_TRUE(IsBlacklisted(extension_b.get()));
-  EXPECT_TRUE(IsBlacklisted(extension_c.get()));
-  EXPECT_FALSE(IsBlacklisted(extension_d.get()));
-
-  // No-op, just in case.
-  {
-    std::vector<std::string> blacklist;
-    blacklist.push_back(extension_b->id());
-    blacklist.push_back(extension_c->id());
-    blacklist_.SetFromUpdater(blacklist, "2");
-  }
-  EXPECT_FALSE(IsBlacklisted(extension_a.get()));
-  EXPECT_TRUE(IsBlacklisted(extension_b.get()));
-  EXPECT_TRUE(IsBlacklisted(extension_c.get()));
-  EXPECT_FALSE(IsBlacklisted(extension_d.get()));
-
-  // Strictly increase the blacklist.
-  {
-    std::vector<std::string> blacklist;
-    blacklist.push_back(extension_a->id());
-    blacklist.push_back(extension_b->id());
-    blacklist.push_back(extension_c->id());
-    blacklist.push_back(extension_d->id());
-    blacklist_.SetFromUpdater(blacklist, "3");
-  }
-  EXPECT_TRUE(IsBlacklisted(extension_a.get()));
-  EXPECT_TRUE(IsBlacklisted(extension_b.get()));
-  EXPECT_TRUE(IsBlacklisted(extension_c.get()));
-  EXPECT_TRUE(IsBlacklisted(extension_d.get()));
-
-  // Strictly decrease the blacklist.
-  {
-    std::vector<std::string> blacklist;
-    blacklist.push_back(extension_a->id());
-    blacklist.push_back(extension_b->id());
-    blacklist_.SetFromUpdater(blacklist, "4");
-  }
-  EXPECT_TRUE(IsBlacklisted(extension_a.get()));
-  EXPECT_TRUE(IsBlacklisted(extension_b.get()));
-  EXPECT_FALSE(IsBlacklisted(extension_c.get()));
-  EXPECT_FALSE(IsBlacklisted(extension_d.get()));
-
-  // Clear the blacklist.
-  {
-    std::vector<std::string> blacklist;
-    blacklist_.SetFromUpdater(blacklist, "5");
-  }
-  EXPECT_FALSE(IsBlacklisted(extension_a.get()));
-  EXPECT_FALSE(IsBlacklisted(extension_b.get()));
-  EXPECT_FALSE(IsBlacklisted(extension_c.get()));
-  EXPECT_FALSE(IsBlacklisted(extension_d.get()));
-}
 
 void Assign(std::set<std::string> *to, const std::set<std::string>& from) {
   *to = from;
 }
 
 TEST_F(BlacklistTest, OnlyIncludesRequestedIDs) {
-  scoped_refptr<const Extension> extension_a = prefs_.AddExtension("a");
-  scoped_refptr<const Extension> extension_b = prefs_.AddExtension("b");
-  scoped_refptr<const Extension> extension_c = prefs_.AddExtension("c");
+  std::string a = AddExtension("a");
+  std::string b = AddExtension("b");
+  std::string c = AddExtension("c");
 
-  {
-    std::vector<std::string> blacklist;
-    blacklist.push_back(extension_a->id());
-    blacklist.push_back(extension_b->id());
-    blacklist_.SetFromUpdater(blacklist, "1");
-    base::RunLoop().RunUntilIdle();
-  }
+  Blacklist blacklist(prefs());
+  TestBlacklist tester(&blacklist);
 
-  std::set<std::string> blacklist_actual;
-  {
-    std::set<std::string> blacklist_query;
-    blacklist_query.insert(extension_a->id());
-    blacklist_query.insert(extension_c->id());
-    blacklist_.GetBlacklistedIDs(blacklist_query,
-                                 base::Bind(&Assign, &blacklist_actual));
-    base::RunLoop().RunUntilIdle();
-  }
+  blacklist_db()->Enable();
+  blacklist_db()->SetUnsafe(a, b);
 
-  std::set<std::string> blacklist_expected;
-  blacklist_expected.insert(extension_a->id());
-  EXPECT_EQ(blacklist_expected, blacklist_actual);
+  EXPECT_TRUE(tester.IsBlacklisted(a));
+  EXPECT_TRUE(tester.IsBlacklisted(b));
+  EXPECT_FALSE(tester.IsBlacklisted(c));
+
+  std::set<std::string> blacklisted_ids;
+  blacklist.GetBlacklistedIDs(Set(a, c), base::Bind(&Assign, &blacklisted_ids));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(Set(a), blacklisted_ids);
 }
 
-TEST_F(BlacklistTest, PrefsVsSafeBrowsing) {
-  scoped_refptr<const Extension> extension_a = prefs_.AddExtension("a");
-  scoped_refptr<const Extension> extension_b = prefs_.AddExtension("b");
-  scoped_refptr<const Extension> extension_c = prefs_.AddExtension("c");
+TEST_F(BlacklistTest, SafeBrowsing) {
+  std::string a = AddExtension("a");
 
-  // Prefs have a and b blacklisted, safebrowsing has b and c.
-  prefs_.prefs()->SetExtensionBlacklisted(extension_a->id(), true);
-  prefs_.prefs()->SetExtensionBlacklisted(extension_b->id(), true);
-  {
-    std::set<std::string> bc;
-    bc.insert(extension_b->id());
-    bc.insert(extension_c->id());
-    safe_browsing_database_manager_->set_unsafe_ids(bc);
-  }
+  Blacklist blacklist(prefs());
+  TestBlacklist tester(&blacklist);
 
-  // The manager is still disabled at this point, so c won't be blacklisted.
-  EXPECT_TRUE(IsBlacklisted(extension_a.get()));
-  EXPECT_TRUE(IsBlacklisted(extension_b.get()));
-  EXPECT_FALSE(IsBlacklisted(extension_c.get()));
+  EXPECT_FALSE(tester.IsBlacklisted(a));
 
+  blacklist_db()->SetUnsafe(a);
+  // The manager is still disabled at this point, so it won't be blacklisted.
+  EXPECT_FALSE(tester.IsBlacklisted(a));
+
+  blacklist_db()->Enable().NotifyUpdate();
+  base::RunLoop().RunUntilIdle();
   // Now it should be.
-  safe_browsing_database_manager_->set_enabled(true);
-  EXPECT_TRUE(IsBlacklisted(extension_a.get()));
-  EXPECT_TRUE(IsBlacklisted(extension_b.get()));
-  EXPECT_TRUE(IsBlacklisted(extension_c.get()));
+  EXPECT_TRUE(tester.IsBlacklisted(a));
 
-  // Corner case: nothing in safebrowsing (but still enabled).
-  safe_browsing_database_manager_->set_unsafe_ids(std::set<std::string>());
-  EXPECT_TRUE(IsBlacklisted(extension_a.get()));
-  EXPECT_TRUE(IsBlacklisted(extension_b.get()));
-  EXPECT_FALSE(IsBlacklisted(extension_c.get()));
-
-  // Corner case: nothing in prefs.
-  prefs_.prefs()->SetExtensionBlacklisted(extension_a->id(), false);
-  prefs_.prefs()->SetExtensionBlacklisted(extension_b->id(), false);
-  {
-    std::set<std::string> bc;
-    bc.insert(extension_b->id());
-    bc.insert(extension_c->id());
-    safe_browsing_database_manager_->set_unsafe_ids(bc);
-  }
-  EXPECT_FALSE(IsBlacklisted(extension_a.get()));
-  EXPECT_TRUE(IsBlacklisted(extension_b.get()));
-  EXPECT_TRUE(IsBlacklisted(extension_c.get()));
+  blacklist_db()->ClearUnsafe().NotifyUpdate();
+  // Safe browsing blacklist empty, now enabled.
+  EXPECT_FALSE(tester.IsBlacklisted(a));
 }
 
-}  // namespace extensions
+// Tests that Blacklist clears the old prefs blacklist on startup.
+TEST_F(BlacklistTest, ClearsPreferencesBlacklist) {
+  std::string a = AddExtension("a");
+  std::string b = AddExtension("b");
+
+  // Blacklist an installed extension.
+  prefs()->SetExtensionBlacklisted(a, true);
+
+  // Blacklist some non-installed extensions. This is what the old preferences
+  // blacklist looked like.
+  std::string c = "cccccccccccccccccccccccccccccccc";
+  std::string d = "dddddddddddddddddddddddddddddddd";
+  prefs()->SetExtensionBlacklisted(c, true);
+  prefs()->SetExtensionBlacklisted(d, true);
+
+  EXPECT_EQ(Set(a, c, d), prefs()->GetBlacklistedExtensions());
+
+  Blacklist blacklist(prefs());
+  TestBlacklist tester(&blacklist);
+
+  // Blacklist has been cleared. Only the installed extension "a" left.
+  EXPECT_EQ(Set(a), prefs()->GetBlacklistedExtensions());
+  EXPECT_TRUE(prefs()->GetInstalledExtensionInfo(a).get());
+  EXPECT_TRUE(prefs()->GetInstalledExtensionInfo(b).get());
+
+  // "a" won't actually be *blacklisted* since it doesn't appear in
+  // safebrowsing. Blacklist no longer reads from prefs. This is purely a
+  // concern of somebody else (currently, ExtensionService).
+  std::set<std::string> blacklisted_ids;
+  blacklist.GetBlacklistedIDs(Set(a, b, c, d),
+                              base::Bind(&Assign, &blacklisted_ids));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(std::set<std::string>(), blacklisted_ids);
+
+  // Prefs are still unaffected for installed extensions, though.
+  EXPECT_TRUE(prefs()->IsExtensionBlacklisted(a));
+  EXPECT_FALSE(prefs()->IsExtensionBlacklisted(b));
+  EXPECT_FALSE(prefs()->IsExtensionBlacklisted(c));
+  EXPECT_FALSE(prefs()->IsExtensionBlacklisted(d));
+}
+
 }  // namespace
+}  // namespace extensions

@@ -1121,7 +1121,6 @@
         'browser/extensions/extension_apitest.cc',
         'browser/extensions/extension_apitest.h',
         'browser/extensions/extension_bindings_apitest.cc',
-        'browser/extensions/extension_blacklist_browsertest.cc',
         'browser/extensions/extension_browsertest.cc',
         'browser/extensions/extension_browsertest.h',
         'browser/extensions/extension_context_menu_browsertest.cc',

@@ -89,15 +89,6 @@ class ExtensionDownloaderDelegate {
       const PingResult& ping_result,
       const std::set<int>& request_ids) = 0;
 
-  // Same as OnExtensionDownloadFinished() but only for the kBlacklistAppID
-  // extension, which passes different data to the delegate.
-  virtual void OnBlacklistDownloadFinished(
-      const std::string& data,
-      const std::string& package_hash,
-      const std::string& version,
-      const PingResult& ping_result,
-      const std::set<int>& request_ids) = 0;
-
   // The remaining methods are used by the ExtensionDownloader to retrieve
   // information about extensions from the delegate.
 

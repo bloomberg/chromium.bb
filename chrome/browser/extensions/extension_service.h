@@ -799,8 +799,7 @@ class ExtensionService
 
   // Manages the blacklisted extensions, intended as callback from
   // Blacklist::GetBlacklistedIDs.
-  void ManageBlacklist(const std::set<std::string>& old_blacklisted_ids,
-                       const std::set<std::string>& new_blacklisted_ids);
+  void ManageBlacklist(const std::set<std::string>& blacklisted_ids);
 
   // Controls if installs are delayed. See comment for
   // |installs_delayed_for_gc_|.

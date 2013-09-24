@@ -719,23 +719,13 @@ void ExtensionDownloader::OnCRXFetchComplete(
       (response_code == 200 || url.SchemeIsFile())) {
     RETRY_HISTOGRAM("CrxFetchSuccess",
                     extensions_queue_.active_request_failure_count(), url);
-    if (id == kBlacklistAppID) {
-      std::string data;
-      source->GetResponseAsString(&data);
-      // TODO(asargent): try to get rid of this special case for the blacklist
-      // to simplify the delegate's interface.
-      delegate_->OnBlacklistDownloadFinished(
-          data, extensions_queue_.active_request()->package_hash,
-          extensions_queue_.active_request()->version, ping, request_ids);
-    } else {
-      base::FilePath crx_path;
-      // Take ownership of the file at |crx_path|.
-      CHECK(source->GetResponseAsFilePath(true, &crx_path));
-      RecordCRXWriteHistogram(true, crx_path);
-      delegate_->OnExtensionDownloadFinished(
-          id, crx_path, url, extensions_queue_.active_request()->version,
-          ping, request_ids);
-    }
+    base::FilePath crx_path;
+    // Take ownership of the file at |crx_path|.
+    CHECK(source->GetResponseAsFilePath(true, &crx_path));
+    RecordCRXWriteHistogram(true, crx_path);
+    delegate_->OnExtensionDownloadFinished(
+        id, crx_path, url, extensions_queue_.active_request()->version,
+        ping, request_ids);
   } else {
     VLOG(1) << "Failed to fetch extension '" << url.possibly_invalid_spec()
             << "' response code:" << response_code;

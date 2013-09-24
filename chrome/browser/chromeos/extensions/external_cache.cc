@@ -163,15 +163,6 @@ void ExternalCache::OnExtensionDownloadFinished(
                               std::string(version)));
 }
 
-void ExternalCache::OnBlacklistDownloadFinished(
-    const std::string& data,
-    const std::string& package_hash,
-    const std::string& version,
-    const extensions::ExtensionDownloaderDelegate::PingResult& ping_result,
-    const std::set<int>& request_ids) {
-  NOTREACHED();
-}
-
 bool ExternalCache::IsExtensionPending(const std::string& id) {
   // Pending means that there is no installed version yet.
   return extensions_->HasKey(id) && !cached_extensions_->HasKey(id);
