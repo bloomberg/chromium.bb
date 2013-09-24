@@ -38,6 +38,11 @@ PluginTest.*
 # https://codereview.chromium.org/14304004/. Investigate more.
 DomSerializerTests.*
 
+# http://crbug.com/297230
+DumpAccessibilityTreeTest.AccessibilityCanvas
+RendererAccessibilityTest.DetachAccessibilityObject
+RendererAccessibilityTest.EditableTextModeFocusEvents
+
 # http://crbug.com/187500
 RenderViewImplTest.*
 RendererAccessibilityTest.EditableTextModeFocusNotifications
