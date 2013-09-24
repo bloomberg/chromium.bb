@@ -111,6 +111,7 @@
           'wallpaper_private.json',
           'web_navigation.json',
           'web_request.json',
+          'webrtc_logging_private.idl',
           'webstore_private.json',
           'webview.json',
           'windows.json',
@@ -169,6 +170,11 @@
             'virtual_keyboard_private.json',
             'wallpaper.json',
             'wallpaper_private.json',
+          ],
+        }],
+        ['enable_webrtc==0', {
+          'schema_files!': [
+            'webrtc_logging_private.idl',
           ],
         }],
       ],

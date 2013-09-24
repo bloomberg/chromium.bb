@@ -594,6 +594,8 @@
         'browser/extensions/api/web_request/web_request_permissions.h',
         'browser/extensions/api/web_request/web_request_time_tracker.cc',
         'browser/extensions/api/web_request/web_request_time_tracker.h',
+        'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.cc',
+        'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h',
         'browser/extensions/api/webstore_private/webstore_private_api.cc',
         'browser/extensions/api/webstore_private/webstore_private_api.h',
         'browser/extensions/api/webview/webview_api.cc',
@@ -1088,6 +1090,12 @@
           'sources!': [
             'browser/extensions/api/braille_display_private/braille_controller_brlapi.cc',
             'browser/extensions/api/braille_display_private/brlapi_connection.cc',
+          ],
+        }],
+        ['enable_webrtc==0', {
+          'sources!': [
+            'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.cc',
+            'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h',
           ],
         }],
       ],
