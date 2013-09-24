@@ -1025,9 +1025,7 @@ RenderStyle* SVGElement::computedStyle(PseudoId pseudoElementSpecifier)
 
 bool SVGElement::hasFocusEventListeners() const
 {
-    // FIXME: EventTarget::hasEventListeners should be const.
-    SVGElement* mutableThis = const_cast<SVGElement*>(this);
-    return mutableThis->hasEventListeners(eventNames().focusinEvent) || mutableThis->hasEventListeners(eventNames().focusoutEvent);
+    return hasEventListeners(eventNames().focusinEvent) || hasEventListeners(eventNames().focusoutEvent);
 }
 
 bool SVGElement::isKeyboardFocusable() const

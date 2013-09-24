@@ -119,8 +119,8 @@ namespace WebCore {
         bool setAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, DOMWrapperWorld* isolatedWorld = 0);
         EventListener* getAttributeEventListener(const AtomicString& eventType, DOMWrapperWorld* isolatedWorld = 0);
 
-        bool hasEventListeners();
-        bool hasEventListeners(const AtomicString& eventType);
+        bool hasEventListeners() const;
+        bool hasEventListeners(const AtomicString& eventType) const;
         bool hasCapturingEventListeners(const AtomicString& eventType);
         const EventListenerVector& getEventListeners(const AtomicString& eventType);
 
@@ -184,20 +184,20 @@ namespace WebCore {
         return d->firingEventIterators && !d->firingEventIterators->isEmpty();
     }
 
-    inline bool EventTarget::hasEventListeners()
+    inline bool EventTarget::hasEventListeners() const
     {
-        EventTargetData* d = eventTargetData();
-        if (!d)
-            return false;
-        return !d->eventListenerMap.isEmpty();
+        // FIXME: We should have a const version of eventTargetData.
+        if (const EventTargetData* d = const_cast<EventTarget*>(this)->eventTargetData())
+            return !d->eventListenerMap.isEmpty();
+        return false;
     }
 
-    inline bool EventTarget::hasEventListeners(const AtomicString& eventType)
+    inline bool EventTarget::hasEventListeners(const AtomicString& eventType) const
     {
-        EventTargetData* d = eventTargetData();
-        if (!d)
-            return false;
-        return d->eventListenerMap.contains(eventType);
+        // FIXME: We should have const version of eventTargetData.
+        if (const EventTargetData* d = const_cast<EventTarget*>(this)->eventTargetData())
+            return d->eventListenerMap.contains(eventType);
+        return false;
     }
 
     inline bool EventTarget::hasCapturingEventListeners(const AtomicString& eventType)

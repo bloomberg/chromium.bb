@@ -633,11 +633,10 @@ bool HTMLElement::supportsSpatialNavigationFocus() const
 
     if (!document().settings() || !document().settings()->spatialNavigationEnabled())
         return false;
-    EventTarget* target = const_cast<HTMLElement*>(this);
-    return target->hasEventListeners(eventNames().clickEvent)
-        || target->hasEventListeners(eventNames().keydownEvent)
-        || target->hasEventListeners(eventNames().keypressEvent)
-        || target->hasEventListeners(eventNames().keyupEvent);
+    return hasEventListeners(eventNames().clickEvent)
+        || hasEventListeners(eventNames().keydownEvent)
+        || hasEventListeners(eventNames().keypressEvent)
+        || hasEventListeners(eventNames().keyupEvent);
 }
 
 bool HTMLElement::supportsFocus() const
