@@ -126,6 +126,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/url_utils.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/switches.h"
@@ -790,6 +791,7 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
 void ChromeContentBrowserClient::GuestWebContentsAttached(
     WebContents* guest_web_contents,
     WebContents* embedder_web_contents,
+    const GURL& embedder_frame_url,
     const base::DictionaryValue& extra_params) {
   Profile* profile = Profile::FromBrowserContext(
       embedder_web_contents->GetBrowserContext());
@@ -799,9 +801,16 @@ void ChromeContentBrowserClient::GuestWebContentsAttached(
     NOTREACHED();
     return;
   }
-  const GURL& url = embedder_web_contents->GetSiteInstance()->GetSiteURL();
-  const Extension* extension =
-      service->extensions()->GetExtensionOrAppByURL(url);
+
+  // We usually require BrowserPlugins to be hosted by a storage isolated
+  // extension. We treat WebUI pages as a special case if they host the
+  // BrowserPlugin in a component extension iframe. In that case, we use the
+  // iframe's URL to determine the extension.
+  const GURL& embedder_site_url =
+      embedder_web_contents->GetSiteInstance()->GetSiteURL();
+  const Extension* extension = service->extensions()->GetExtensionOrAppByURL(
+      content::HasWebUIScheme(embedder_site_url) ?
+          embedder_frame_url : embedder_site_url);
   if (!extension) {
     // It's ok to return here, since we could be running a browser plugin
     // outside an extension, and don't need to attach a
@@ -2330,6 +2339,9 @@ bool ChromeContentBrowserClient::SupportsBrowserPlugin(
     content::BrowserContext* browser_context, const GURL& site_url) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserPluginForAllViewTypes))
+    return true;
+
+  if (content::HasWebUIScheme(site_url))
     return true;
 
   Profile* profile = Profile::FromBrowserContext(browser_context);

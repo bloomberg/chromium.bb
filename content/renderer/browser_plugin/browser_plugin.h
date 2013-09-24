@@ -354,6 +354,9 @@ class CONTENT_EXPORT BrowserPlugin :
   // Used to identify the plugin to WebBindings.
   scoped_ptr<struct _NPP> npp_;
 
+  // URL for the embedder frame.
+  GURL embedder_frame_url_;
+
   // Weak factory used in v8 |MakeWeak| callback, since the v8 callback might
   // get called after BrowserPlugin has been destroyed.
   base::WeakPtrFactory<BrowserPlugin> weak_ptr_factory_;

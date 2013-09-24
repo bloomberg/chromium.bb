@@ -7,10 +7,9 @@
 #include <string>
 
 #include "base/bind.h"
-#include "content/public/renderer/render_view.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -26,16 +25,6 @@ DocumentCustomBindings::DocumentCustomBindings(
 // Attach an event name to an object.
 void DocumentCustomBindings::RegisterElement(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) {
-    return;
-  }
-
-  WebKit::WebView* web_view = render_view->GetWebView();
-  if (!web_view) {
-    return;
-  }
-
   if (args.Length() != 2 || !args[0]->IsString() || !args[1]->IsObject()) {
     NOTREACHED();
     return;
@@ -45,7 +34,7 @@ void DocumentCustomBindings::RegisterElement(
   v8::Local<v8::Object> options = args[1]->ToObject();
 
   WebKit::WebExceptionCode ec = 0;
-  WebKit::WebDocument document = web_view->mainFrame()->document();
+  WebKit::WebDocument document = context()->web_frame()->document();
   v8::Handle<v8::Value> constructor =
       document.registerEmbedderCustomElement(
           WebKit::WebString::fromUTF8(element_name), options, ec);

@@ -411,15 +411,12 @@ std::string ChromeContentRendererClient::GetDefaultEncoding() {
   return l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING);
 }
 
-const Extension* ChromeContentRendererClient::GetExtension(
+const Extension* ChromeContentRendererClient::GetExtensionByOrigin(
     const WebSecurityOrigin& origin) const {
   if (!EqualsASCII(origin.protocol(), extensions::kExtensionScheme))
     return NULL;
 
   const std::string extension_id = origin.host().utf8().data();
-  if (!extension_dispatcher_->IsExtensionActive(extension_id))
-    return NULL;
-
   return extension_dispatcher_->extensions()->GetByID(extension_id);
 }
 
@@ -435,7 +432,7 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
       return false;
     WebDocument document = frame->document();
     const Extension* extension =
-        GetExtension(document.securityOrigin());
+        GetExtensionByOrigin(document.securityOrigin());
     if (extension) {
       const extensions::APIPermission::ID perms[] = {
         extensions::APIPermission::kWebView,

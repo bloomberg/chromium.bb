@@ -163,6 +163,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void GuestWebContentsAttached(
       WebContents* guest_web_contents,
       WebContents* embedder_web_contents,
+      const GURL& embedder_frame_url,
       const base::DictionaryValue& extra_params) {}
 
   // Notifies that a RenderProcessHost has been created. This is called before

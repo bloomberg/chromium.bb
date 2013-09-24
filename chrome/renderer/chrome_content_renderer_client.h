@@ -173,7 +173,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentRendererClientTest, NaClRestriction);
 
-  const extensions::Extension* GetExtension(
+  // Gets extension by the given origin, regardless of whether the extension
+  // is active in the current process.
+  const extensions::Extension* GetExtensionByOrigin(
       const WebKit::WebSecurityOrigin& origin) const;
 
   // Returns true if the frame is navigating to an URL either into or out of an

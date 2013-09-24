@@ -26,6 +26,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "url/gurl.h"
 #include "webkit/common/cursors/webcursor.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -69,6 +70,7 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_Attach_Params)
   IPC_STRUCT_MEMBER(bool, visible)
   IPC_STRUCT_MEMBER(std::string, name)
   IPC_STRUCT_MEMBER(std::string, src)
+  IPC_STRUCT_MEMBER(GURL, embedder_frame_url)
   IPC_STRUCT_MEMBER(BrowserPluginHostMsg_AutoSize_Params, auto_size_params)
   IPC_STRUCT_MEMBER(BrowserPluginHostMsg_ResizeGuest_Params,
                     resize_guest_params)

@@ -90,6 +90,7 @@ BrowserPlugin::BrowserPlugin(
       mouse_locked_(false),
       browser_plugin_manager_(render_view->GetBrowserPluginManager()),
       compositing_enabled_(false),
+      embedder_frame_url_(frame->document().url()),
       weak_ptr_factory_(this) {
 }
 
@@ -374,6 +375,7 @@ void BrowserPlugin::Attach(scoped_ptr<base::DictionaryValue> extra_params) {
   attach_params.storage_partition_id = storage_partition_id_;
   attach_params.persist_storage = persist_storage_;
   attach_params.src = GetSrcAttribute();
+  attach_params.embedder_frame_url = embedder_frame_url_;
   GetDamageBufferWithSizeParams(&attach_params.auto_size_params,
                                 &attach_params.resize_guest_params,
                                 false);

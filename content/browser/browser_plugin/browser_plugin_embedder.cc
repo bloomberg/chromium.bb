@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -177,6 +178,10 @@ void BrowserPluginEmbedder::OnAttach(
       GetBrowserPluginGuestManager()->GetGuestByInstanceID(
           instance_id, web_contents()->GetRenderProcessHost()->GetID());
 
+  RenderProcessHost* render_process_host =
+      web_contents()->GetRenderProcessHost();
+  GURL validated_frame_url(params.embedder_frame_url);
+  RenderViewHost::FilterURL(render_process_host, false, &validated_frame_url);
 
   if (guest) {
     // There is an implicit order expectation here:
@@ -187,6 +192,7 @@ void BrowserPluginEmbedder::OnAttach(
     GetContentClient()->browser()->GuestWebContentsAttached(
         guest->GetWebContents(),
         web_contents(),
+        validated_frame_url,
         extra_params);
     guest->Attach(
         static_cast<WebContentsImpl*>(web_contents()), params, extra_params);
@@ -202,6 +208,7 @@ void BrowserPluginEmbedder::OnAttach(
     GetContentClient()->browser()->GuestWebContentsAttached(
         guest->GetWebContents(),
         web_contents(),
+        validated_frame_url,
         extra_params);
     guest->Initialize(static_cast<WebContentsImpl*>(web_contents()), params);
   }
