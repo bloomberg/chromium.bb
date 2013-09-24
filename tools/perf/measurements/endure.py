@@ -35,11 +35,13 @@ _V8_MEMORY_ALLOCATED = [
 class Endure(page_measurement.PageMeasurement):
   def __init__(self):
     super(Endure, self).__init__('endure')
+    # Browser object, saved so that memory stats can be gotten later.
     self._browser = None
-    self._test_start_time = None
 
-    # Timestamp of the last memory retrieval.
-    self._last_mem_dump = 0
+    # Timestamp for the time when the test starts.
+    self._start_time = None
+    # Timestamp of the last statistics sample.
+    self._last_sample_time = 0
 
   def AddCommandLineOptions(self, parser):
     group = optparse.OptionGroup(parser, 'Endure options')
@@ -51,7 +53,7 @@ class Endure(page_measurement.PageMeasurement):
     parser.add_option_group(group)
 
   def DidStartBrowser(self, browser):
-    # Save the browser for memory_stats.
+    # Save the Browser object so that memory_stats can be gotten later.
     self._browser = browser
 
   def CustomizeBrowserOptions(self, options):
@@ -62,76 +64,51 @@ class Endure(page_measurement.PageMeasurement):
 
   def WillRunPageRepeats(self, page, tab):
     """Reset the starting time for each new page."""
-    self._test_start_time = time.time()
+    self._start_time = time.time()
 
-    # Prefix the page name so it can be picked up by endure parser.
+    # Prefix the page name so it can be picked up by the buildbot script that
+    # parses Endure output.
     if page.name and not page.display_name.startswith('endure_'):
       page.name = 'endure_' + page.name
 
   def MeasurePage(self, page, tab, results):
     """Dump perf information if we have gone past our interval time."""
     now = time.time()
-    if int(round(now - self._last_mem_dump)) > self.options.perf_stats_interval:
-      self._last_mem_dump = now
-      self._GetPerformanceStats(tab, results, now)
+    seconds_elapsed = int(round(now - self._last_sample_time))
+    if seconds_elapsed > self.options.perf_stats_interval:
+      self._last_sample_time = now
+      self._SampleStats(tab, results, now)
 
-  def _GetPerformanceStats(self, tab, results, now):
-    """Record all memory information."""
-    elapsed_time = int(round(now - self._test_start_time))
+  def _SampleStats(self, tab, results, now):
+    """Record memory information and add it to the results."""
+    elapsed_time = int(round(now - self._start_time))
 
-    # DOM Nodes
+    def AddPoint(trace_name, units_y, value_y):
+      """Add one data point to the results object."""
+      results.Add(trace_name + '_X', 'seconds', elapsed_time)
+      results.Add(trace_name + '_Y', units_y, value_y)
+
+    # DOM nodes and event listeners
     dom_stats = tab.dom_stats
     dom_node_count = dom_stats['node_count']
-    self._SaveToResults(results, 'TotalDOMNodeCount_X',
-                        'seconds', elapsed_time)
-    self._SaveToResults(results, 'TotalDOMNodeCount_Y',
-                        'nodes', dom_node_count)
-
-    # Event Listeners
     event_listener_count = dom_stats['event_listener_count']
-    self._SaveToResults(results, 'EventListenerCount_X',
-                        'seconds', elapsed_time)
-    self._SaveToResults(results, 'EventListenerCount_Y',
-                        'listeners', event_listener_count)
+    AddPoint('TotalDOMNodeCount', 'nodes', dom_node_count)
+    AddPoint('EventListenerCount', 'events', event_listener_count)
 
-    # Memory stats
+    # Browser and renderer virtual memory stats
     memory_stats = self._browser.memory_stats
-    browser_vm = memory_stats['Browser'].get('VM', 0) / 1024.0
-    self._SaveToResults(results, 'BrowserVirtualMemory_X',
-                        'seconds', elapsed_time)
-    self._SaveToResults(results, 'BrowserVirtualMemory_Y',
-                        'KB', browser_vm)
-    renderer_vm = memory_stats['Renderer'].get('VM', 0) / 1024.0
-    self._SaveToResults(results, 'RendererVirtualMemory_X',
-                        'seconds', elapsed_time)
-    self._SaveToResults(results, 'RendererVirtualMemory_Y',
-                        'KB', renderer_vm)
+    def BrowserVMStats(statistic_name):
+      """Get VM stats from the Browser object in KB."""
+      return memory_stats[statistic_name].get('VM', 0) / 1024.0
+    AddPoint('BrowserVirtualMemory', 'KB', BrowserVMStats('Browser'))
+    AddPoint('RendererVirtualMemory', 'KB', BrowserVMStats('Renderer'))
 
     # V8 stats
-    v8_bytes_committed = v8_object_stats.V8ObjectStatsMetric.GetV8StatsTable(
-                            tab, _V8_BYTES_COMMITTED)
-    v8_bytes_committed = sum(v8_bytes_committed.values()) / 1024.0
-    self._SaveToResults(results, 'V8BytesCommitted_X',
-                        'seconds', elapsed_time)
-    self._SaveToResults(results, 'V8BytesCommitted_Y',
-                        'KB', v8_bytes_committed)
+    def V8StatsSum(counters):
+      """Given a list of V8 counter names, get the sum of the values in KB."""
+      stats = v8_object_stats.V8ObjectStatsMetric.GetV8StatsTable(tab, counters)
+      return sum(stats.values()) / 1024.0
+    AddPoint('V8BytesCommitted', 'KB', V8StatsSum(_V8_BYTES_COMMITTED))
+    AddPoint('V8BytesUsed', 'KB', V8StatsSum(_V8_BYTES_USED))
+    AddPoint('V8MemoryAllocated', 'KB', V8StatsSum(_V8_MEMORY_ALLOCATED))
 
-    v8_bytes_used = v8_object_stats.V8ObjectStatsMetric.GetV8StatsTable(
-                            tab, _V8_BYTES_USED)
-    v8_bytes_used = sum(v8_bytes_used.values()) / 1024.0
-    self._SaveToResults(results, 'V8BytesUsed_X',
-                        'seconds', elapsed_time)
-    self._SaveToResults(results, 'V8BytesUsed_Y',
-                        'KB', v8_bytes_used)
-
-    v8_mem_allocated = v8_object_stats.V8ObjectStatsMetric.GetV8StatsTable(
-                            tab, _V8_MEMORY_ALLOCATED)
-    v8_mem_allocated = sum(v8_mem_allocated.values()) / 1024.0
-    self._SaveToResults(results, 'V8MemoryAllocated_X',
-                        'seconds', elapsed_time)
-    self._SaveToResults(results, 'V8MemoryAllocated_Y',
-                        'KB', v8_mem_allocated)
-
-  def _SaveToResults(self, results, trace_name, units, value,
-                     chart_name=None, data_type='default'):
-    results.Add(trace_name, units, value, chart_name, data_type)
