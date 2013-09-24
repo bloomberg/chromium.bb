@@ -427,19 +427,21 @@
         if (swipeInProgress)
           return;
         this.lastPressedKey.classList.remove('active');
-        if (this.lastPressedKey.char != event.target.char)
-          return;
-        if (repeatKey.key == event.target) {
-          repeatKey.cancel();
-          return;
-        }
+        // Changes keyset if necessary.
         var toKeysetId = detail.toKeyset;
         // Keyset transition key. This is needed to transition from upper
-        // to lower case when we are not in caps mode.
+        // to lower case when we are not in caps mode, as well as when
+        // we're ending chording.
         if (toKeysetId) {
           this.keyset = toKeysetId;
           this.querySelector('#' + this.layout + '-' + this.keyset).nextKeyset =
               detail.nextKeyset;
+        }
+        if (this.lastPressedKey.charValue != event.target.charValue)
+          return;
+        if (repeatKey.key == event.target) {
+          repeatKey.cancel();
+          return;
         }
         var toLayoutId = detail.toLayout;
         // Layout transition key.
