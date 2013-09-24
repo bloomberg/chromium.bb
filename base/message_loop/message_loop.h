@@ -586,10 +586,6 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
     return static_cast<MessageLoopForUI*>(loop);
   }
 
-#if defined(OS_WIN)
-  void DidProcessMessage(const MSG& message);
-#endif  // defined(OS_WIN)
-
 #if defined(OS_IOS)
   // On iOS, the main message loop cannot be Run().  Instead call Attach(),
   // which connects this MessageLoop to the UI thread's CFRunLoop and allows

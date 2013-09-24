@@ -695,12 +695,6 @@ void MessageLoop::ReleaseSoonInternal(
 //------------------------------------------------------------------------------
 // MessageLoopForUI
 
-#if defined(OS_WIN)
-void MessageLoopForUI::DidProcessMessage(const MSG& message) {
-  pump_win()->DidProcessMessage(message);
-}
-#endif  // defined(OS_WIN)
-
 #if defined(OS_ANDROID)
 void MessageLoopForUI::Start() {
   // No Histogram support for UI message loop as it is managed by Java side
