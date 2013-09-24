@@ -121,20 +121,24 @@ evdev_flush_pending_event(struct evdev_device *device, uint32_t time)
 		notify_touch(master, time, slot, 0, 0,
 			     WL_TOUCH_UP);
 		goto handled;
+	case EVDEV_ABSOLUTE_TOUCH_DOWN:
+		transform_absolute(device, &cx, &cy);
+		weston_output_transform_coordinate(device->output,
+						   cx, cy, &x, &y);
+		notify_touch(master, time, 0, x, y, WL_TOUCH_DOWN);
+		goto handled;
 	case EVDEV_ABSOLUTE_MOTION:
 		transform_absolute(device, &cx, &cy);
 		weston_output_transform_coordinate(device->output,
 						   cx, cy, &x, &y);
 
-		if (device->caps & EVDEV_TOUCH) {
-			if (master->num_tp == 0)
-				notify_touch(master, time, 0,
-					     x, y, WL_TOUCH_DOWN);
-			else
-				notify_touch(master, time, 0,
-					     x, y, WL_TOUCH_MOTION);
-		} else
+		if (device->caps & EVDEV_TOUCH)
+			notify_touch(master, time, 0, x, y, WL_TOUCH_MOTION);
+		else
 			notify_motion_absolute(master, time, x, y);
+		goto handled;
+	case EVDEV_ABSOLUTE_TOUCH_UP:
+		notify_touch(master, time, 0, 0, 0, WL_TOUCH_UP);
 		goto handled;
 	}
 
@@ -144,12 +148,30 @@ handled:
 	device->pending_event = EVDEV_NONE;
 }
 
+static void
+evdev_process_touch_button(struct evdev_device *device, int time, int value)
+{
+	if (device->pending_event != EVDEV_NONE &&
+	    device->pending_event != EVDEV_ABSOLUTE_MOTION)
+		evdev_flush_pending_event(device, time);
+
+	device->pending_event = (value ?
+				 EVDEV_ABSOLUTE_TOUCH_DOWN :
+				 EVDEV_ABSOLUTE_TOUCH_UP);
+}
+
 static inline void
 evdev_process_key(struct evdev_device *device, struct input_event *e, int time)
 {
 	/* ignore kernel key repeat */
 	if (e->value == 2)
 		return;
+
+	if (e->code == BTN_TOUCH) {
+		if (!device->is_mt)
+			evdev_process_touch_button(device, time, e->value);
+		return;
+	}
 
 	evdev_flush_pending_event(device, time);
 
@@ -168,11 +190,6 @@ evdev_process_key(struct evdev_device *device, struct input_event *e, int time)
 					 WL_POINTER_BUTTON_STATE_RELEASED);
 		break;
 
-	case BTN_TOUCH:
-		if (e->value == 0 && !device->is_mt)
-			notify_touch(device->seat, time, 0, 0, 0,
-				     WL_TOUCH_UP);
-		break;
 	default:
 		notify_key(device->seat,
 			   time, e->code,
