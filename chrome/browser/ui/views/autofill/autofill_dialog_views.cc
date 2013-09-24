@@ -109,7 +109,7 @@ const int kMenuButtonBottomInset = 6;
 const int kOverlayTextInterlineSpacing = 10;
 
 // Spacing below image and above text messages in overlay view.
-const int kOverlayImageBottomMargin = 50;
+const int kOverlayImageBottomMargin = 100;
 
 // A dimmer text color used in various parts of the dialog. TODO(estade): should
 // this be part of NativeTheme? Currently the value is duplicated in several
