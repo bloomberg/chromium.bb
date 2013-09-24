@@ -705,6 +705,27 @@ void RenderView::setMaximalOutlineSize(int o)
     }
 }
 
+// When exploring the RenderTree looking for the nodes involved in the Selection, sometimes it's
+// required to change the traversing direction because the "start" position is below the "end" one.
+static inline RenderObject* getNextOrPrevRenderObjectBasedOnDirection(const RenderObject* o, const RenderObject* stop, bool& continueExploring, bool& exploringBackwards)
+{
+    RenderObject* next;
+    if (exploringBackwards) {
+        next = o->previousInPreOrder();
+        continueExploring = next && !(next)->isRenderView();
+    } else {
+        next = o->nextInPreOrder();
+        continueExploring = next && next != stop;
+        exploringBackwards = !next && (next != stop);
+        if (exploringBackwards) {
+            next = stop->previousInPreOrder();
+            continueExploring = next && !next->isRenderView();
+        }
+    }
+
+    return next;
+}
+
 void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* end, int endPos, SelectionRepaintMode blockRepaintMode)
 {
     // Make sure both our start and end objects are defined.
@@ -715,9 +736,6 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
     // Just return if the selection hasn't changed.
     if (m_selectionStart == start && m_selectionStartPos == startPos &&
         m_selectionEnd == end && m_selectionEndPos == endPos)
-        return;
-
-    if ((start && end) && (start->flowThreadContainingBlock() != end->flowThreadContainingBlock()))
         return;
 
     // Record the old selected objects.  These will be used later
@@ -739,7 +757,9 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
 
     RenderObject* os = m_selectionStart;
     RenderObject* stop = rendererAfterPosition(m_selectionEnd, m_selectionEndPos);
-    while (os && os != stop) {
+    bool exploringBackwards = false;
+    bool continueExploring = os && (os != stop);
+    while (continueExploring) {
         if ((os->canBeSelectionLeaf() || os == m_selectionStart || os == m_selectionEnd) && os->selectionState() != SelectionNone) {
             // Blocks are responsible for painting line gaps and margin gaps.  They must be examined as well.
             oldSelectedObjects.set(os, adoptPtr(new RenderSelectionInfo(os, true)));
@@ -755,7 +775,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
             }
         }
 
-        os = os->nextInPreOrder();
+        os = getNextOrPrevRenderObjectBasedOnDirection(os, stop, continueExploring, exploringBackwards);
     }
 
     // Now clear the selection.
@@ -794,7 +814,9 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
     // Now that the selection state has been updated for the new objects, walk them again and
     // put them in the new objects list.
     o = start;
-    while (o && o != stop) {
+    exploringBackwards = false;
+    continueExploring = o && (o != stop);
+    while (continueExploring) {
         if ((o->canBeSelectionLeaf() || o == start || o == end) && o->selectionState() != SelectionNone) {
             newSelectedObjects.set(o, adoptPtr(new RenderSelectionInfo(o, true)));
             RenderBlock* cb = o->containingBlock();
@@ -807,7 +829,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
             }
         }
 
-        o = o->nextInPreOrder();
+        o = getNextOrPrevRenderObjectBasedOnDirection(o, stop, continueExploring, exploringBackwards);
     }
 
     if (!m_frameView || blockRepaintMode == RepaintNothing)
