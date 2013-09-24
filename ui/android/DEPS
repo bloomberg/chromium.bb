@@ -1,5 +1,4 @@
 include_rules = [
-  "+grit/webui_resources.h",
   "+ui/base",
   "+ui/gfx",
 ]

@@ -1,3 +1,11 @@
 include_rules = [
   "+third_party/GTM",  # For Mac utility classes.
+  "+ui/aura",
+  "+ui/base",
+  "+ui/compositor",
+  "+ui/events",
+  "+ui/gfx",
+  "+ui/native_theme",
+  "+ui/test",
+  "+ui/views",
 ]
