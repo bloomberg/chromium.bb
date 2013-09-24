@@ -102,10 +102,15 @@ class PredictorBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  virtual void SetUp() OVERRIDE {
-    net::ScopedDefaultHostResolverProc scoped_host_resolver_proc(
-        host_resolution_request_recorder_.get());
-    InProcessBrowserTest::SetUp();
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    scoped_host_resolver_proc_.reset(new net::ScopedDefaultHostResolverProc(
+        host_resolution_request_recorder_.get()));
+    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+    InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
+    scoped_host_resolver_proc_.reset();
   }
 
   void LearnAboutInitialNavigation(const GURL& url) {
@@ -153,6 +158,7 @@ class PredictorBrowserTest : public InProcessBrowserTest {
  private:
   scoped_refptr<HostResolutionRequestRecorder>
       host_resolution_request_recorder_;
+  scoped_ptr<net::ScopedDefaultHostResolverProc> scoped_host_resolver_proc_;
 };
 
 IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, PRE_ShutdownStartupCycle) {

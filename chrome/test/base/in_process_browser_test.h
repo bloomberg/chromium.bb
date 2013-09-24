@@ -36,10 +36,6 @@ namespace content {
 class ContentRendererClient;
 }
 
-namespace net {
-class RuleBasedHostResolverProc;
-}
-
 // Base class for tests wanting to bring up a browser in the unit test process.
 // Writing tests with InProcessBrowserTest is slightly different than that of
 // other tests. This is necessitated by InProcessBrowserTest running a message
@@ -162,12 +158,6 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   CommandLine GetCommandLineForRelaunch();
 #endif
 
-  // Returns the host resolver being used for the tests. Subclasses might want
-  // to configure it inside tests.
-  net::RuleBasedHostResolverProc* host_resolver() {
-    return host_resolver_.get();
-  }
-
 #if defined(OS_MACOSX)
   // Returns the autorelease pool in use inside RunTestOnMainThreadLoop().
   base::mac::ScopedNSAutoreleasePool* AutoreleasePool() const {
@@ -198,9 +188,6 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
   // Browser created from CreateBrowser.
   Browser* browser_;
-
-  // Host resolver to use during the test.
-  scoped_refptr<net::RuleBasedHostResolverProc> host_resolver_;
 
   // Temporary user data directory. Used only when a user data directory is not
   // specified in the command line.

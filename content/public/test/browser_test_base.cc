@@ -13,6 +13,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/test/test_utils.h"
+#include "net/base/net_errors.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_implementation.h"
@@ -64,6 +66,51 @@ void RunTaskOnRendererThread(const base::Closure& task,
   task.Run();
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_task);
 }
+
+// In many cases it may be not obvious that a test makes a real DNS lookup.
+// We generally don't want to rely on external DNS servers for our tests,
+// so this host resolver procedure catches external queries and returns a failed
+// lookup result.
+class LocalHostResolverProc : public net::HostResolverProc {
+ public:
+  LocalHostResolverProc() : HostResolverProc(NULL) {}
+
+  virtual int Resolve(const std::string& host,
+                      net::AddressFamily address_family,
+                      net::HostResolverFlags host_resolver_flags,
+                      net::AddressList* addrlist,
+                      int* os_error) OVERRIDE {
+    const char* kLocalHostNames[] = {"localhost", "127.0.0.1", "::1"};
+    bool local = false;
+
+    if (host == net::GetHostName()) {
+      local = true;
+    } else {
+      for (size_t i = 0; i < arraysize(kLocalHostNames); i++)
+        if (host == kLocalHostNames[i]) {
+          local = true;
+          break;
+        }
+    }
+
+    // To avoid depending on external resources and to reduce (if not preclude)
+    // network interactions from tests, we simulate failure for non-local DNS
+    // queries, rather than perform them.
+    // If you really need to make an external DNS query, use
+    // net::RuleBasedHostResolverProc and its AllowDirectLookup method.
+    if (!local) {
+      DVLOG(1) << "To avoid external dependencies, simulating failure for "
+          "external DNS lookup of " << host;
+      return net::ERR_NOT_IMPLEMENTED;
+    }
+
+    return ResolveUsingPrevious(host, address_family, host_resolver_flags,
+                                addrlist, os_error);
+  }
+
+ private:
+  virtual ~LocalHostResolverProc() {}
+};
 
 }  // namespace
 
@@ -154,6 +201,14 @@ void BrowserTestBase::SetUp() {
     command_line->AppendSwitchASCII(
         switches::kUseGL, gfx::kGLImplementationOSMesaName);
   }
+
+  scoped_refptr<net::HostResolverProc> local_resolver =
+      new LocalHostResolverProc();
+  rule_based_resolver_ =
+      new net::RuleBasedHostResolverProc(local_resolver.get());
+  rule_based_resolver_->AddSimulatedFailure("wpad");
+  net::ScopedDefaultHostResolverProc scoped_local_host_resolver_proc(
+      rule_based_resolver_.get());
 
   SetUpInProcessBrowserTestFixture();
 

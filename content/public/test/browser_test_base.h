@@ -21,7 +21,9 @@ namespace net {
 namespace test_server {
 class EmbeddedTestServer;
 }
-}
+
+class RuleBasedHostResolverProc;
+}  // namespace net
 
 namespace content {
 
@@ -52,6 +54,12 @@ class BrowserTestBase : public testing::Test {
 
   // Override this to add command line flags specific to your test.
   virtual void SetUpCommandLine(CommandLine* command_line) {}
+
+  // Returns the host resolver being used for the tests. Subclasses might want
+  // to configure it inside tests.
+  net::RuleBasedHostResolverProc* host_resolver() {
+    return rule_based_resolver_.get();
+  }
 
  protected:
   // We need these special methods because SetUp is the bottom of the stack
@@ -127,6 +135,9 @@ class BrowserTestBase : public testing::Test {
   // Embedded test server, cheap to create, started on demand.
   base::Thread embedded_test_server_io_thread_;
   scoped_ptr<net::test_server::EmbeddedTestServer> embedded_test_server_;
+
+  // Host resolver used during tests.
+  scoped_refptr<net::RuleBasedHostResolverProc> rule_based_resolver_;
 
   // When false, the ui::Compositor will be forced to use real GL contexts for
   // the test, so that it produces real pixel output.

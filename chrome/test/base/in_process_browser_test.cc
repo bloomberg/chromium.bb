@@ -48,7 +48,6 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
@@ -181,15 +180,6 @@ void InProcessBrowserTest::SetUp() {
   base::FilePath log_dir = logging::GetSessionLogFile(*command_line).DirName();
   file_util::CreateDirectory(log_dir);
 #endif  // defined(OS_CHROMEOS)
-
-  host_resolver_ = new net::RuleBasedHostResolverProc(NULL);
-
-  // See http://en.wikipedia.org/wiki/Web_Proxy_Autodiscovery_Protocol
-  // We don't want the test code to use it.
-  host_resolver_->AddSimulatedFailure("wpad");
-
-  net::ScopedDefaultHostResolverProc scoped_host_resolver_proc(
-      host_resolver_.get());
 
 #if defined(OS_MACOSX)
   // On Mac, without the following autorelease pool, code which is directly
