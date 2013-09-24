@@ -11150,22 +11150,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Add more apps
       </message>
 
-      <!-- Offline page  -->
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_SITE_OFFLINE_LOAD_HEADLINE" desc="Offline Page HTML headline for a site.">
-          This page is not available offline.
-        </message>
-        <message name="IDS_APP_OFFLINE_LOAD_HEADLINE" desc="Offline Page HTML headline for an app.">
-          This app is not available offline.
-        </message>
-        <message name="IDS_OFFLINE_LOAD_DESCRIPTION" desc="Description for the offline page.">
-          Please reconnect to a network.
-        </message>
-        <message name="IDS_OFFLINE_NETWORK_SETTINGS">
-          Network settings
-        </message>
-      </if>
-
       <!-- Multi-profile -->
       <message name="IDS_PROFILES_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
         Users

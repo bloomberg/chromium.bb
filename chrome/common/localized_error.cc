@@ -491,7 +491,9 @@ const char* GetIconClassForError(const std::string& error_domain,
 
 const char LocalizedError::kHttpErrorDomain[] = "http";
 
-void LocalizedError::GetStrings(const WebKit::WebURLError& error,
+void LocalizedError::GetStrings(int error_code,
+                                const std::string& error_domain,
+                                const GURL& failed_url,
                                 bool is_post,
                                 const std::string& locale,
                                 base::DictionaryValue* error_strings) {
@@ -509,14 +511,10 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
     SUGGEST_NONE,
   };
 
-  const std::string error_domain = error.domain.utf8();
-  int error_code = error.reason;
   const LocalizedErrorMap* error_map = LookupErrorMap(error_domain, error_code,
                                                       is_post);
   if (error_map)
     options = *error_map;
-
-  const GURL failed_url = error.unreachableURL;
 
   // If we got "access denied" but the url was a file URL, then we say it was a
   // file instead of just using the "not available" default message. Just adding
@@ -788,7 +786,6 @@ bool LocalizedError::HasStrings(const std::string& error_domain,
 }
 
 void LocalizedError::GetAppErrorStrings(
-    const WebURLError& error,
     const GURL& display_url,
     const extensions::Extension* app,
     base::DictionaryValue* error_strings) {

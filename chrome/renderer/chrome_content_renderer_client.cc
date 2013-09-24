@@ -883,8 +883,7 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
     int resource_id;
     base::DictionaryValue error_strings;
     if (extension && !extension->from_bookmark()) {
-      LocalizedError::GetAppErrorStrings(error, failed_url, extension,
-                                         &error_strings);
+      LocalizedError::GetAppErrorStrings(failed_url, extension, &error_strings);
 
       // TODO(erikkay): Should we use a different template for different
       // error messages?
@@ -895,7 +894,9 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
               frame, error, is_post, locale, &error_strings)) {
         // In most cases, the NetErrorHelper won't provide DNS-probe-specific
         // error pages, so fall back to LocalizedError.
-        LocalizedError::GetStrings(error, is_post, locale, &error_strings);
+        LocalizedError::GetStrings(error.reason, error.domain.utf8(),
+                                   error.unreachableURL, is_post, locale,
+                                   &error_strings);
       }
       resource_id = IDR_NET_ERROR_HTML;
     }

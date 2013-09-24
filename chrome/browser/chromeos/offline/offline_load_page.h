@@ -68,12 +68,6 @@ class OfflineLoadPage
   virtual void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
-  // Retrieves template strings of the offline page for app and
-  // normal site.
-  void GetAppOfflineStrings(const extensions::Extension* app,
-                            base::DictionaryValue* strings) const;
-  void GetNormalOfflineStrings(base::DictionaryValue* strings) const;
-
   CompletionCallback callback_;
 
   // True if the proceed is chosen.

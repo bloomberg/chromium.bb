@@ -182,13 +182,11 @@ bool NetErrorHelper::GetErrorStringsForDnsProbe(
     return false;
 
   // Get the strings for a fake "DNS probe possible" error.
-  WebKit::WebURLError fake_error;
-  fake_error.domain = WebKit::WebString::fromUTF8(
-      chrome_common_net::kDnsProbeErrorDomain);
-  fake_error.reason = chrome_common_net::DNS_PROBE_POSSIBLE;
-  fake_error.unreachableURL = error.unreachableURL;
   LocalizedError::GetStrings(
-      fake_error, is_failed_post, locale, error_strings);
+      chrome_common_net::DNS_PROBE_POSSIBLE,
+      chrome_common_net::kDnsProbeErrorDomain,
+      error.unreachableURL,
+      is_failed_post, locale, error_strings);
   return true;
 }
 
@@ -214,8 +212,11 @@ void NetErrorHelper::OnNetErrorInfo(int status_num) {
 void NetErrorHelper::UpdateErrorPage() {
   DCHECK(forwarding_probe_results_);
 
+  WebKit::WebURLError error = GetUpdatedError();
   base::DictionaryValue error_strings;
-  LocalizedError::GetStrings(GetUpdatedError(),
+  LocalizedError::GetStrings(error.reason,
+                             error.domain.utf8(),
+                             error.unreachableURL,
                              is_failed_post_,
                              RenderThread::Get()->GetLocale(),
                              &error_strings);

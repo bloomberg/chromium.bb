@@ -28,7 +28,9 @@ class LocalizedError {
  public:
   // Fills |error_strings| with values to be used to build an error page used
   // on HTTP errors, like 404 or connection reset.
-  static void GetStrings(const WebKit::WebURLError& error,
+  static void GetStrings(int error_code,
+                         const std::string& error_domain,
+                         const GURL& failed_url,
                          bool is_post,
                          const std::string& locale,
                          base::DictionaryValue* strings);
@@ -44,8 +46,7 @@ class LocalizedError {
   // on HTTP errors, like 404 or connection reset, but using information from
   // the associated |app| in order to make the error page look like it's more
   // part of the app.
-  static void GetAppErrorStrings(const WebKit::WebURLError& error,
-                                 const GURL& display_url,
+  static void GetAppErrorStrings(const GURL& display_url,
                                  const extensions::Extension* app,
                                  base::DictionaryValue* error_strings);
 

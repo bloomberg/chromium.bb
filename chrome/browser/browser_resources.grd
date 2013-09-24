@@ -314,7 +314,8 @@
         <include name="IDR_NETWORK_MENU_JS" file="resources\chromeos\network_menu.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_NOTIFICATION_ICON_LINK_HTML" file="resources\chromeos\notification_icon_link.html" type="BINDATA" />
         <include name="IDR_ECHO_MANIFEST" file="resources\chromeos\echo\manifest.json" type="BINDATA" />
-        <include name="IDR_OFFLINE_LOAD_HTML" file="resources\chromeos\offline_load.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_OFFLINE_APP_LOAD_HTML" file="resources\chromeos\offline_app_load.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_OFFLINE_NET_LOAD_HTML" file="resources\chromeos\offline_net_load.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MERGE_SESSION_LOAD_HTML" file="resources\chromeos\merge_session_load.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_OS_CREDITS_HTML" file="resources\chromeos\about_os_credits.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_PROXY_SETTINGS_HTML" file="resources\chromeos\proxy_settings.html" flattenhtml="true" type="BINDATA" />

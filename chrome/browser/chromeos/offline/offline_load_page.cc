@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -23,6 +24,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
+#include "chrome/common/localized_error.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
@@ -34,6 +36,7 @@
 #include "grit/google_chrome_strings.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
+#include "net/base/net_errors.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
@@ -78,27 +81,9 @@ void OfflineLoadPage::Show() {
 }
 
 std::string OfflineLoadPage::GetHTMLContents() {
-  DictionaryValue strings;
-  int64 time_to_wait = kMaxBlankPeriod;
-  // Set the timeout to show the page.
-  strings.SetInteger("time_to_wait", static_cast<int>(time_to_wait));
-
-  // Button labels
-  SetString(&strings, "msg", IDS_OFFLINE_LOAD_DESCRIPTION);
-  SetString(&strings, "network_settings", IDS_OFFLINE_NETWORK_SETTINGS);
-  SetString(&strings, "product_name", IDS_SHORT_PRODUCT_NAME_LOWER);
-
-  // Get the Chromium/Chrome icon, we can't access the icon via chrome://theme
-  // on the webpage since the interstitial page isn't a webui and doesn't have
-  // access to chrome:// URL's.
-  strings.SetString("icon",
-                    webui::GetBitmapDataUrlFromResource(IDR_PRODUCT_LOGO_32));
-
-  webui::SetFontAndTextDirection(&strings);
-  string16 failed_url(ASCIIToUTF16(url_.spec()));
-  if (base::i18n::IsRTL())
-    base::i18n::WrapStringWithLTRFormatting(&failed_url);
-  strings.SetString("url", failed_url);
+  // Use a local error page.
+  int resource_id;
+  base::DictionaryValue error_strings;
 
   // The offline page for app has icons and slightly different message.
   Profile* profile = Profile::FromBrowserContext(
@@ -107,19 +92,27 @@ std::string OfflineLoadPage::GetHTMLContents() {
   const extensions::Extension* extension = NULL;
   ExtensionService* extensions_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
+
   // Extension service does not exist in test.
   if (extensions_service)
     extension = extensions_service->extensions()->GetHostedAppByURL(url_);
 
-  if (extension)
-    GetAppOfflineStrings(extension, &strings);
-  else
-    GetNormalOfflineStrings(&strings);
+  if (extension && !extension->from_bookmark()) {
+    LocalizedError::GetAppErrorStrings(url_, extension, &error_strings);
+    resource_id = IDR_OFFLINE_APP_LOAD_HTML;
+  } else {
+    const std::string locale = g_browser_process->GetApplicationLocale();
+    LocalizedError::GetStrings(net::ERR_INTERNET_DISCONNECTED,
+                               net::kErrorDomain, url_, false, locale,
+                               &error_strings);
+    resource_id = IDR_OFFLINE_NET_LOAD_HTML;
+  }
 
-  base::StringPiece html(
+  const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_OFFLINE_LOAD_HTML));
-  return webui::GetI18nTemplateHtml(html, &strings);
+          resource_id));
+  // "t" is the id of the templates root node.
+  return webui::GetTemplatesHtml(template_html, &error_strings, "t");
 }
 
  void OfflineLoadPage::OverrideRendererPrefs(
@@ -141,20 +134,6 @@ void OfflineLoadPage::OnDontProceed() {
   if (proceeded_)
     return;
   NotifyBlockingPageComplete(false);
-}
-
-void OfflineLoadPage::GetAppOfflineStrings(
-    const extensions::Extension* app,
-    DictionaryValue* strings) const {
-  strings->SetString("title", app->name());
-  strings->SetString(
-      "heading", l10n_util::GetStringUTF16(IDS_APP_OFFLINE_LOAD_HEADLINE));
-}
-
-void OfflineLoadPage::GetNormalOfflineStrings(DictionaryValue* strings) const {
-  strings->SetString("title", web_contents_->GetTitle());
-  strings->SetString(
-      "heading", l10n_util::GetStringUTF16(IDS_SITE_OFFLINE_LOAD_HEADLINE));
 }
 
 void OfflineLoadPage::CommandReceived(const std::string& cmd) {
