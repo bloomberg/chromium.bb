@@ -230,8 +230,11 @@ void GetCachedFullHashesForBrowse(const std::vector<SBPrefix>& prefix_hits,
 // list ids then |list_ranges| must contain two elements.
 void GetChunkRanges(const std::vector<int>& chunks,
                     std::vector<std::string>* list_ranges) {
-  DCHECK_GT(list_ranges->size(), 0U);
-  DCHECK_LE(list_ranges->size(), 2U);
+  // Since there are 2 possible list ids, there must be exactly two
+  // list ranges.  Even if the chunk data should only contain one
+  // line, this code has to somehow handle corruption.
+  DCHECK_EQ(2U, list_ranges->size());
+
   std::vector<std::vector<int> > decoded_chunks(list_ranges->size());
   for (std::vector<int>::const_iterator iter = chunks.begin();
        iter != chunks.end(); ++iter) {
@@ -257,8 +260,11 @@ void UpdateChunkRanges(SafeBrowsingStore* store,
   store->GetAddChunks(&add_chunks);
   store->GetSubChunks(&sub_chunks);
 
-  std::vector<std::string> adds(listnames.size());
-  std::vector<std::string> subs(listnames.size());
+  // Always decode 2 ranges, even if only the first one is expected.
+  // The loop below will only load as many into |lists| as |listnames|
+  // indicates.
+  std::vector<std::string> adds(2);
+  std::vector<std::string> subs(2);
   GetChunkRanges(add_chunks, &adds);
   GetChunkRanges(sub_chunks, &subs);
 
