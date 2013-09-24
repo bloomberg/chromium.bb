@@ -26,6 +26,7 @@
 #include "content/browser/android/web_contents_observer_android.h"
 #include "content/browser/device_orientation/data_fetcher_impl_android.h"
 #include "content/browser/geolocation/location_api_adapter_android.h"
+#include "content/browser/media/android/media_drm_credential_manager.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
 #include "content/browser/power_save_blocker_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
@@ -54,6 +55,8 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"InterstitialPageDelegateAndroid",
      content::InterstitialPageDelegateAndroid::
          RegisterInterstitialPageDelegateAndroid},
+    {"MediaDrmCredentialManager",
+     content::MediaDrmCredentialManager::RegisterMediaDrmCredentialManager},
     {"MediaResourceGetterImpl",
      content::MediaResourceGetterImpl::RegisterMediaResourceGetter},
     {"LoadUrlParams", content::RegisterLoadUrlParams},

@@ -5,28 +5,38 @@
 #ifndef CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_DRM_CREDENTIAL_MANAGER_H_
 #define CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_DRM_CREDENTIAL_MANAGER_H_
 
+#include <jni.h>
 #include <string>
 
 #include "base/callback.h"
-
-namespace media {
-class MediaDrmBridge;
-}
+#include "base/memory/singleton.h"
+#include "media/base/android/media_drm_bridge.h"
 
 namespace content {
 
 // This class manages the media DRM credentials on Android.
 class MediaDrmCredentialManager {
  public:
-  MediaDrmCredentialManager();
-  ~MediaDrmCredentialManager();
+  static MediaDrmCredentialManager* GetInstance();
 
   typedef base::Callback<void(bool)> ResetCredentialsCB;
+
+  // Called to reset the DRM credentials. (for Java)
+  static void ResetCredentials(JNIEnv* env, jclass clazz, jobject callback);
 
   // Called to reset the DRM credentials.
   void ResetCredentials(const ResetCredentialsCB& callback);
 
+  static bool RegisterMediaDrmCredentialManager(JNIEnv* env);
+
  private:
+  friend struct DefaultSingletonTraits<MediaDrmCredentialManager>;
+  friend class Singleton<MediaDrmCredentialManager>;
+
+  MediaDrmCredentialManager();
+  ~MediaDrmCredentialManager();
+
+
   // Callback function passed to MediaDrmBridge. It is called when reset
   // completed.
   void OnResetCredentialsCompleted(const std::string& security_level,
