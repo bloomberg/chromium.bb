@@ -328,6 +328,8 @@ function VolumeManager() {
 
   /**
    * True, if mount points have been initialized.
+   * TODO(hidehiko): Remove this by returning the VolumeManager instance
+   * after the initialization is done.
    * @type {boolean}
    * @private
    */
@@ -695,6 +697,28 @@ VolumeManager.prototype.unmount = function(mountPath,
   chrome.fileBrowserPrivate.removeMount(util.makeFilesystemUrl(mountPath));
   var requestKey = this.makeRequestKey_('unmount', '', volumeInfo.mountPath);
   this.startRequest_(requestKey, successCallback, errorCallback);
+};
+
+/**
+ * Resolve the path to its entry.
+ * @param {string} path The path to be resolved.
+ * @param {function(Entry)} successCallback Called with the resolved entry on
+ *     success.
+ * @param {function(FileError)} errorCallback Called on error.
+ */
+VolumeManager.prototype.resolvePath = function(
+    path, successCallback, errorCallback) {
+  // Make sure the path is in the mounted volume.
+  var mountPath = PathUtil.isDriveBasedPath(path) ?
+      RootDirectory.DRIVE : PathUtil.getRootPath(path);
+  var volumeInfo = this.getVolumeInfo(mountPath);
+  if (!volumeInfo || !volumeInfo.root) {
+    errorCallback(util.createFileError(FileError.NOT_FOUND_ERR));
+    return;
+  }
+
+  webkitResolveLocalFileSystemURL(
+      util.makeFilesystemUrl(path), successCallback, errorCallback);
 };
 
 /**
