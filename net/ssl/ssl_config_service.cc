@@ -42,7 +42,7 @@ SSLConfig::SSLConfig()
       version_max(g_default_version_max),
       cached_info_enabled(false),
       channel_id_enabled(true),
-      false_start_enabled(true),
+      false_start_enabled(false),
       unrestricted_ssl3_fallback_enabled(false),
       send_client_cert(false),
       verify_ev_cert(false),
