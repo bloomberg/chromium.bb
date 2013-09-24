@@ -51,9 +51,8 @@ void MenuHostRootView::OnMouseMoved(const ui::MouseEvent& event) {
 }
 
 bool MenuHostRootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
-#if defined(OS_LINUX)
-  // ChromeOS uses MenuController to forward events like other
-  // mouse events.
+#if defined(USE_AURA)
+  // Aura uses MenuController to forward events like other mouse events.
   return GetMenuController() &&
       GetMenuController()->OnMouseWheel(submenu_, event);
 #else

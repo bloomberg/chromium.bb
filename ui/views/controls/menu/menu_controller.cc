@@ -575,7 +575,7 @@ void MenuController::OnMouseEntered(SubmenuView* source,
   // do anything here.
 }
 
-#if defined(OS_LINUX)
+#if defined(USE_AURA)
 bool MenuController::OnMouseWheel(SubmenuView* source,
                                   const ui::MouseWheelEvent& event) {
   MenuPart part = GetMenuPart(source, event.location());
