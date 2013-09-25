@@ -886,6 +886,12 @@ static int windows_init(struct libusb_context *ctx)
 		}
 		SetThreadAffinityMask(timer_thread, 0);
 
+		// Wait for timer thread to init before continuing.
+		if (WaitForSingleObject(timer_response, INFINITE) != WAIT_OBJECT_0) {
+			usbi_err(ctx, "Failed to wait for timer thread to become ready - aborting");
+			goto init_exit;
+		}
+
 		// Create a hash table to store session ids. Second parameter is better if prime
 		htab_create(ctx, HTAB_SIZE);
 	}
@@ -1759,7 +1765,7 @@ static int windows_get_config_descriptor(struct libusb_device *dev, uint8_t conf
 	memcpy(buffer, priv->config_descriptor[config_index], size);
 	*host_endian = 0;
 
-	return size;
+	return (int)size;
 }
 
 /*
@@ -2173,6 +2179,11 @@ unsigned __stdcall windows_clock_gettime_threaded(void* param)
 		usbi_dbg("hires timer available (Frequency: %"PRIu64" Hz)", hires_frequency);
 	}
 
+	// Signal windows_init() that we're ready to service requests
+	if (ReleaseSemaphore(timer_response, 1, NULL) == 0) {
+		usbi_dbg("unable to release timer semaphore: %s", windows_error_str(0));
+	}
+
 	// Main loop - wait for requests
 	while (1) {
 		timer_index = WaitForMultipleObjects(2, timer_request, FALSE, INFINITE) - WAIT_OBJECT_0;
@@ -2207,7 +2218,7 @@ unsigned __stdcall windows_clock_gettime_threaded(void* param)
 			nb_responses = InterlockedExchange((LONG*)&request_count[0], 0);
 			if ( (nb_responses)
 			  && (ReleaseSemaphore(timer_response, nb_responses, NULL) == 0) ) {
-				usbi_dbg("unable to release timer semaphore %d: %s", windows_error_str(0));
+				usbi_dbg("unable to release timer semaphore: %s", windows_error_str(0));
 			}
 			continue;
 		case 1: // time to quit

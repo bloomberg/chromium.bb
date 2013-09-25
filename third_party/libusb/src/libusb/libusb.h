@@ -156,7 +156,7 @@ typedef unsigned __int32  uint32_t;
 extern "C" {
 #endif
 
-/** \def libusb_cpu_to_le16
+/** \fn libusb_cpu_to_le16
  * \ingroup misc
  * Convert a 16-bit value from host-endian to little-endian format. On
  * little endian systems, this function does nothing. On big endian systems,
@@ -1434,7 +1434,7 @@ static inline unsigned char *libusb_control_transfer_get_data(
 static inline struct libusb_control_setup *libusb_control_transfer_get_setup(
 	struct libusb_transfer *transfer)
 {
-	return (struct libusb_control_setup *) transfer->buffer;
+	return (struct libusb_control_setup *)(void *) transfer->buffer;
 }
 
 /** \ingroup asyncio
@@ -1443,6 +1443,7 @@ static inline struct libusb_control_setup *libusb_control_transfer_get_setup(
  * be given in host-endian byte order.
  *
  * \param buffer buffer to output the setup packet into
+ * This pointer must be aligned to at least 2 bytes boundary.
  * \param bmRequestType see the
  * \ref libusb_control_setup::bmRequestType "bmRequestType" field of
  * \ref libusb_control_setup
@@ -1463,7 +1464,7 @@ static inline void libusb_fill_control_setup(unsigned char *buffer,
 	uint8_t bmRequestType, uint8_t bRequest, uint16_t wValue, uint16_t wIndex,
 	uint16_t wLength)
 {
-	struct libusb_control_setup *setup = (struct libusb_control_setup *) buffer;
+	struct libusb_control_setup *setup = (struct libusb_control_setup *)(void *) buffer;
 	setup->bmRequestType = bmRequestType;
 	setup->bRequest = bRequest;
 	setup->wValue = libusb_cpu_to_le16(wValue);
@@ -1499,6 +1500,7 @@ void LIBUSB_CALL libusb_free_transfer(struct libusb_transfer *transfer);
  * \param dev_handle handle of the device that will handle the transfer
  * \param buffer data buffer. If provided, this function will interpret the
  * first 8 bytes as a setup packet and infer the transfer length from that.
+ * This pointer must be aligned to at least 2 bytes boundary.
  * \param callback callback function to be invoked on transfer completion
  * \param user_data user data to pass to callback function
  * \param timeout timeout for the transfer in milliseconds
@@ -1508,7 +1510,7 @@ static inline void libusb_fill_control_transfer(
 	unsigned char *buffer, libusb_transfer_cb_fn callback, void *user_data,
 	unsigned int timeout)
 {
-	struct libusb_control_setup *setup = (struct libusb_control_setup *) buffer;
+	struct libusb_control_setup *setup = (struct libusb_control_setup *)(void *) buffer;
 	transfer->dev_handle = dev_handle;
 	transfer->endpoint = 0;
 	transfer->type = LIBUSB_TRANSFER_TYPE_CONTROL;
@@ -1883,7 +1885,7 @@ typedef enum {
  *
  * Since version 1.0.16, \ref LIBUSBX_API_VERSION >= 0x01000102
  *
- * \param libusb_context context of this notification
+ * \param ctx            context of this notification
  * \param device         libusb_device this event occurred on
  * \param event          event that occurred
  * \param user_data      user data provided when this callback was registered
@@ -1902,6 +1904,18 @@ typedef int (LIBUSB_CALL *libusb_hotplug_callback_fn)(libusb_context *ctx,
  * when a matching event occurs on a matching device. The callback is
  * armed until either it is deregistered with libusb_hotplug_deregister_callback()
  * or the supplied callback returns 1 to indicate it is finished processing events.
+ *
+ * If the \ref LIBUSB_HOTPLUG_ENUMERATE is passed the callback will be
+ * called with a \ref LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED for all devices
+ * already plugged into the machine. Note that libusbx modifies its internal
+ * device list from a separate thread, while calling hotplug callbacks from
+ * libusb_handle_events(), so it is possible for a device to already be present
+ * on, or removed from, its internal device list, while the hotplug callbacks
+ * still need to be dispatched. This means that when using \ref
+ * LIBUSB_HOTPLUG_ENUMERATE, your callback may be called twice for the arrival
+ * of the same device, once from libusb_hotplug_register_callback() and once
+ * from libusb_handle_events(); and/or your callback may be called for the
+ * removal of a device for which an arrived call was never made.
  *
  * Since version 1.0.16, \ref LIBUSBX_API_VERSION >= 0x01000102
  *

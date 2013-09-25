@@ -59,7 +59,11 @@
  *
  * A callback function must return an int (0 or 1) indicating whether the callback is
  * expecting additional events. Returning 0 will rearm the callback and 1 will cause
- * the callback to be deregistered.
+ * the callback to be deregistered. Note that when callbacks are called from
+ * libusb_hotplug_register_callback() because of the \ref LIBUSB_HOTPLUG_ENUMERATE
+ * flag, the callback return value is ignored, iow you cannot cause a callback
+ * to be deregistered by returning 1 when it is called from
+ * libusb_hotplug_register_callback().
  *
  * Callbacks for a particular context are automatically deregistered by libusb_exit().
  *
@@ -167,8 +171,7 @@ static int usbi_hotplug_match_cb (struct libusb_context *ctx,
 		return 0;
 	}
 
-	return hotplug_cb->cb (ctx == usbi_default_context ? NULL : ctx,
-			       dev, event, hotplug_cb->user_data);
+	return hotplug_cb->cb (ctx, dev, event, hotplug_cb->user_data);
 }
 
 void usbi_hotplug_match(struct libusb_context *ctx, struct libusb_device *dev,
@@ -192,18 +195,7 @@ void usbi_hotplug_match(struct libusb_context *ctx, struct libusb_device *dev,
 
 	usbi_mutex_unlock(&ctx->hotplug_cbs_lock);
 
-	/* loop through and disconnect all open handles for this device */
-	if (LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT == event) {
-		struct libusb_device_handle *handle;
-
-		usbi_mutex_lock(&ctx->open_devs_lock);
-		list_for_each_entry(handle, &ctx->open_devs, list, struct libusb_device_handle) {
-			if (dev == handle->dev) {
-				usbi_handle_disconnect (handle);
-			}
-		}
-		usbi_mutex_unlock(&ctx->open_devs_lock);
-	}
+	/* the backend is expected to call the callback for each active transfer */
 }
 
 int API_EXPORTED libusb_hotplug_register_callback(libusb_context *ctx,
@@ -253,19 +245,29 @@ int API_EXPORTED libusb_hotplug_register_callback(libusb_context *ctx,
 
 	list_add(&new_callback->list, &ctx->hotplug_cbs);
 
+	usbi_mutex_unlock(&ctx->hotplug_cbs_lock);
+
+
 	if (flags & LIBUSB_HOTPLUG_ENUMERATE) {
-		struct libusb_device *dev;
+		int i, len;
+		struct libusb_device **devs;
 
-		usbi_mutex_lock(&ctx->usb_devs_lock);
-
-		list_for_each_entry(dev, &ctx->usb_devs, list, struct libusb_device) {
-			(void) usbi_hotplug_match_cb (ctx, dev, LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED, new_callback);
+		len = (int) libusb_get_device_list(ctx, &devs);
+		if (len < 0) {
+			libusb_hotplug_deregister_callback(ctx,
+							new_callback->handle);
+			return len;
 		}
 
-		usbi_mutex_unlock(&ctx->usb_devs_lock);
+		for (i = 0; i < len; i++) {
+			usbi_hotplug_match_cb(ctx, devs[i],
+					LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED,
+					new_callback);
+		}
+
+		libusb_free_device_list(devs, 1);
 	}
 
-	usbi_mutex_unlock(&ctx->hotplug_cbs_lock);
 
 	if (handle) {
 		*handle = new_callback->handle;
