@@ -4617,19 +4617,15 @@
           'make_global_settings': [
             ['CC', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} ${CHROME_SRC}/<(make_clang_dir)/bin/clang)'],
             ['CXX', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} ${CHROME_SRC}/<(make_clang_dir)/bin/clang++)'],
-            ['LINK', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} ${CHROME_SRC}/<(make_clang_dir)/bin/clang++)'],
             ['CC.host', '$(CC)'],
             ['CXX.host', '$(CXX)'],
-            ['LINK.host', '$(LINK)'],
           ],
         }, {
           'make_global_settings': [
             ['CC', '<(make_clang_dir)/bin/clang'],
             ['CXX', '<(make_clang_dir)/bin/clang++'],
-            ['LINK', '$(CXX)'],
             ['CC.host', '$(CC)'],
             ['CXX.host', '$(CXX)'],
-            ['LINK.host', '$(LINK)'],
           ],
         }],
       ],
@@ -4640,20 +4636,16 @@
       'make_global_settings': [
         ['CC', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} <(android_toolchain)/*-gcc)'],
         ['CXX', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} <(android_toolchain)/*-g++)'],
-        ['LINK', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} <(android_toolchain)/*-gcc)'],
         ['CC.host', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} <!(which gcc))'],
         ['CXX.host', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} <!(which g++))'],
-        ['LINK.host', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} <!(which g++))'],
       ],
     }],
     ['OS=="linux" and target_arch=="mipsel"', {
       'make_global_settings': [
         ['CC', '<(sysroot)/../bin/mipsel-linux-gnu-gcc'],
         ['CXX', '<(sysroot)/../bin/mipsel-linux-gnu-g++'],
-        ['LINK', '$(CXX)'],
         ['CC.host', '<!(which gcc)'],
         ['CXX.host', '<!(which g++)'],
-        ['LINK.host', '<!(which g++)'],
       ],
     }],
   ],
