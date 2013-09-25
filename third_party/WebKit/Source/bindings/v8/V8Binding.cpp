@@ -586,14 +586,26 @@ v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate* isolate, Sc
     return wrapper.IsEmpty() ? v8::Local<v8::Value>() : wrapper->GetHiddenValue(key);
 }
 
+static v8::Isolate* mainIsolate = 0;
+
+v8::Isolate* mainThreadIsolate()
+{
+    ASSERT(mainIsolate);
+    ASSERT(isMainThread());
+    return mainIsolate;
+}
+
+void setMainThreadIsolate(v8::Isolate* isolate)
+{
+    ASSERT(!mainIsolate);
+    ASSERT(isMainThread());
+    mainIsolate = isolate;
+}
+
 v8::Isolate* toIsolate(ScriptExecutionContext* context)
 {
-    if (context && context->isDocument()) {
-        static v8::Isolate* mainWorldIsolate = 0;
-        if (!mainWorldIsolate)
-            mainWorldIsolate = v8::Isolate::GetCurrent();
-        return mainWorldIsolate;
-    }
+    if (context && context->isDocument())
+        return mainThreadIsolate();
     return v8::Isolate::GetCurrent();
 }
 

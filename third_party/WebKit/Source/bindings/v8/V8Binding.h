@@ -654,9 +654,12 @@ namespace WebCore {
 
     v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate*, ScriptWrappable*, v8::Handle<v8::String> key);
 
+    v8::Isolate* mainThreadIsolate();
     v8::Isolate* toIsolate(ScriptExecutionContext*);
     v8::Isolate* toIsolate(Frame*);
 
+    // Can only be called by WebKit::initialize
+    void setMainThreadIsolate(v8::Isolate*);
 } // namespace WebCore
 
 #endif // V8Binding_h

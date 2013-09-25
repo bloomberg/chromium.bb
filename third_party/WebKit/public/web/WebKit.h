@@ -33,6 +33,10 @@
 
 #include "../platform/Platform.h"
 
+namespace v8 {
+class Isolate;
+}
+
 namespace WebKit {
 
 // Must be called on the thread that will be the main WebKit thread before
@@ -46,6 +50,10 @@ BLINK_EXPORT void initialize(Platform*);
 //
 // This is a special variant of initialize that does not intitialize V8.
 BLINK_EXPORT void initializeWithoutV8(Platform*);
+
+// Get the V8 Isolate for the main thread.
+// initialize must have been called first.
+BLINK_EXPORT v8::Isolate* mainThreadIsolate();
 
 // Once shutdown, the Platform passed to initialize will no longer
 // be accessed. No other WebKit objects should be in use when this function is
