@@ -306,21 +306,13 @@ void RulesRegistryWithCache::RuleStorageOnUI::Init() {
                  chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
 
-  if (profile_->IsOffTheRecord()) {
+  if (profile_->IsOffTheRecord())
     log_storage_init_delay_ = false;
-    ExtensionService* extension_service = system.extension_service();
-    DCHECK(extension_service->is_ready());
-    const ExtensionSet* extensions = extension_service->extensions();
-    for (ExtensionSet::const_iterator i = extensions->begin();
-         i != extensions->end();
-         ++i) {
-      if (((*i)->HasAPIPermission(APIPermission::kDeclarativeContent) ||
-           (*i)->HasAPIPermission(APIPermission::kDeclarativeWebRequest)) &&
-          extension_service->IsIncognitoEnabled((*i)->id()))
-        ReadFromStorage((*i)->id());
-    }
-  }
 
+  system.ready().Post(
+      FROM_HERE,
+      base::Bind(&RuleStorageOnUI::ReadRulesForInstalledExtensions,
+                 GetWeakPtr()));
   system.ready().Post(FROM_HERE,
                       base::Bind(&RuleStorageOnUI::CheckIfReady, GetWeakPtr()));
 }
@@ -380,6 +372,31 @@ void RulesRegistryWithCache::RuleStorageOnUI::CheckIfReady() {
       base::Bind(
           &RulesRegistryWithCache::MarkReady, registry_, storage_init_time_));
   notified_registry_ = true;
+}
+
+void
+RulesRegistryWithCache::RuleStorageOnUI::ReadRulesForInstalledExtensions() {
+  ExtensionSystem& system = *ExtensionSystem::Get(profile_);
+  ExtensionService* extension_service = system.extension_service();
+  DCHECK(extension_service);
+  // In an OTR profile, we start on top of a normal profile already, so the
+  // extension service should be ready.
+  DCHECK(!profile_->IsOffTheRecord() || extension_service->is_ready());
+  if (extension_service->is_ready()) {
+    const ExtensionSet* extensions = extension_service->extensions();
+    for (ExtensionSet::const_iterator i = extensions->begin();
+         i != extensions->end();
+         ++i) {
+      bool needs_apis_storing_rules =
+          (*i)->HasAPIPermission(APIPermission::kDeclarativeContent) ||
+          (*i)->HasAPIPermission(APIPermission::kDeclarativeWebRequest);
+      bool respects_off_the_record =
+          !(profile_->IsOffTheRecord()) ||
+          extension_service->IsIncognitoEnabled((*i)->id());
+      if (needs_apis_storing_rules && respects_off_the_record)
+        ReadFromStorage((*i)->id());
+    }
+  }
 }
 
 void RulesRegistryWithCache::RuleStorageOnUI::ReadFromStorage(

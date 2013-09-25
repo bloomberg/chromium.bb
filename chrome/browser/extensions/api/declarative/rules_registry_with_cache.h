@@ -80,6 +80,10 @@ class RulesRegistryWithCache : public RulesRegistry {
     // exactly once.
     void CheckIfReady();
 
+    // Schedules retrieving rules for already loaded extensions where
+    // appropriate.
+    void ReadRulesForInstalledExtensions();
+
     // Read/write a list of rules serialized to Values.
     void ReadFromStorage(const std::string& extension_id);
     void ReadFromStorageCallback(const std::string& extension_id,
