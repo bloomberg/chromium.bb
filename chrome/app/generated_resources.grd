@@ -6191,6 +6191,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable appropriate responses to canPlayType() for key systems that return the empty string by default.
       </message>
       <if expr="is_android">
+        <message name="IDS_FLAGS_DISABLE_INFOBAR_FOR_PROTECTED_MEDIA_IDENTIFIER_NAME" desc="Title for the flag to disable infobar popup for protected media identifier.">
+          Disable infobar popup for protected media.
+        </message>
+        <message name="IDS_FLAGS_DISABLE_INFOBAR_FOR_PROTECTED_MEDIA_IDENTIFIER_DESCRIPTION" desc="Description for the flag to disable infobar popup for protected media identifier.">
+          Disable infobar popup by default when accessing the protected media identifier.
+        </message>
         <message name="IDS_FLAGS_MEDIADRM_ENABLE_NON_COMPOSITING_NAME" desc="Title for the flag to enable non-conmpositing decoding in MediaDrm for encrypted content.">
           Enable non-compositing decoding.
         </message>

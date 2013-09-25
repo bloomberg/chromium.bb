@@ -470,6 +470,12 @@ void BrowserMediaPlayerManager::OnGenerateKeyRequest(
     int media_keys_id,
     const std::string& type,
     const std::vector<uint8>& init_data) {
+  if (CommandLine::ForCurrentProcess()
+      ->HasSwitch(switches::kDisableInfobarForProtectedMediaIdentifier)) {
+    GenerateKeyIfAllowed(media_keys_id, type, init_data, true);
+    return;
+  }
+
   WebContents* web_contents =
       WebContents::FromRenderViewHost(render_view_host());
   web_contents->GetDelegate()->RequestProtectedMediaIdentifierPermission(
