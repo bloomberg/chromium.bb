@@ -146,8 +146,6 @@ void EnrollmentScreenHandler::ResetAuth(
   if (browsing_data_remover_ || refresh_token_revoker_ || access_token_revoker_)
     return;
 
-  auth_reset_callbacks_.push_back(callback);
-
   if (oauth_fetcher_) {
     if (!oauth_fetcher_->oauth2_access_token().empty()) {
       access_token_revoker_.reset(new TokenRevoker(this));
