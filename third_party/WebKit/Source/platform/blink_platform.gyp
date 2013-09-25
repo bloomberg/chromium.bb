@@ -30,28 +30,21 @@
 {
   'includes': [
     '../build/win/precompile.gypi',
-    'platform.gypi',
+    'blink_platform.gypi',
   ],
   'targets': [{
-    'target_name': 'platform_unittests',
-    'type': 'executable',
+    'target_name': 'blink_platform',
+    'type': '<(component)',
     'dependencies': [
-      'platform.gyp:platform',
-      '../config.gyp:unittest_config',
+      '../config.gyp:config',
+      '../weborigin/weborigin.gyp:weborigin',
       '../wtf/wtf.gyp:wtf',
-      '../wtf/wtf_tests.gyp:run_all_tests',
-      '<(DEPTH)/url/url.gyp:url_lib',
+    ],
+    'defines': [
+      'PLATFORM_IMPLEMENTATION=1',
     ],
     'sources': [
-      '<@(platform_test_files)',
+      '<@(platform_files)',
     ],
-    'conditions': [
-      ['os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and linux_use_tcmalloc==1', {
-        'dependencies': [
-          '<(DEPTH)/base/base.gyp:base',
-          '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-        ]
-      }]
-    ]
   }],
 }

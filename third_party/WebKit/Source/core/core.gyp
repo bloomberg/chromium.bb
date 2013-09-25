@@ -352,7 +352,7 @@
         'core_derived_sources.gyp:make_derived_sources',
         '../wtf/wtf.gyp:wtf',
         '../config.gyp:config',
-        '../platform/platform.gyp:platform',
+        '../platform/blink_platform.gyp:blink_platform',
         '../weborigin/weborigin.gyp:weborigin',
         '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
