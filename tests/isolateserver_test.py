@@ -59,7 +59,7 @@ class TestCase(auto_stub.TestCase):
     self.fail('Unknown request %s' % url)
 
 
-class StorageApiTest(TestCase):
+class StorageTest(TestCase):
   def test_batch_files_for_check(self):
     items = {
       'foo': {'s': 12},
@@ -76,7 +76,7 @@ class StorageApiTest(TestCase):
         ('blow', {'s': 0}),
       ],
     ]
-    batches = list(isolateserver.StorageApi.batch_files_for_check(items))
+    batches = list(isolateserver.Storage.batch_files_for_check(items))
     self.assertEqual(batches, expected)
 
   def test_get_missing_files(self):
@@ -94,12 +94,12 @@ class StorageApiTest(TestCase):
     fake_upload_urls = ('a', 'b')
 
     class MockedStorageApi(isolateserver.StorageApi):  # pylint: disable=W0223
-      def check_missing_files(self, files):
+      def contains(self, files):
         return [f + (fake_upload_urls,) for f in files if f[0] in missing]
-    server = MockedStorageApi()
+    storage = isolateserver.Storage(MockedStorageApi(), False)
 
     # 'get_missing_files' is a generator, materialize its result in a list.
-    result = list(server.get_missing_files(items))
+    result = list(storage.get_missing_files(items))
 
     # Ensure it's a list of triplets.
     self.assertTrue(all(len(x) ==  3 for x in result))
