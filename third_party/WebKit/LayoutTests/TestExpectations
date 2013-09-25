@@ -1325,3 +1325,5 @@ crbug.com/246077 virtual/android/fullscreen/full-screen-render-inline.html [ Ima
 
 # Transient. Removes as https://codereview.chromium.org/23597036/ lands.
 crbug.com/254989 virtual/android/fullscreen/full-screen-stacking-context.html [ ImageOnlyFailure ]
+
+crbug.com/243774 fast/table/border-radius-with-image.html [ NeedsRebaseline ]

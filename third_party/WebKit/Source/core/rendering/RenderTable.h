@@ -276,6 +276,7 @@ private:
     virtual void paint(PaintInfo&, const LayoutPoint&);
     virtual void paintObject(PaintInfo&, const LayoutPoint&);
     virtual void paintBoxDecorations(PaintInfo&, const LayoutPoint&);
+    virtual void paintBackgroundWithBorderAndBoxShadow(PaintInfo&, const LayoutRect&, BackgroundBleedAvoidance) OVERRIDE;
     virtual void paintMask(PaintInfo&, const LayoutPoint&);
     virtual void layout();
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }

@@ -1,0 +1,1 @@
+Test crbug.com/243774: background image from rounded corner element bleeds out. If this test passes, the background image will be clipped according to border-radius.

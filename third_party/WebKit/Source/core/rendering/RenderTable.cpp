@@ -30,6 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/page/FrameView.h"
+#include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/AutoTableLayout.h"
 #include "core/rendering/FixedTableLayout.h"
 #include "core/rendering/HitTestResult.h"
@@ -718,14 +719,15 @@ void RenderTable::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint& p
 
     LayoutRect rect(paintOffset, size());
     subtractCaptionRect(rect);
+    paintBoxDecorationsWithRect(paintInfo, paintOffset, rect);
+}
 
-    BackgroundBleedAvoidance bleedAvoidance = determineBackgroundBleedAvoidance(paintInfo.context);
-    if (!boxShadowShouldBeAppliedToBackground(bleedAvoidance))
-        paintBoxShadow(paintInfo, rect, style(), Normal);
+void RenderTable::paintBackgroundWithBorderAndBoxShadow(PaintInfo& paintInfo, const LayoutRect& rect, BackgroundBleedAvoidance bleedAvoidance)
+{
     paintBackground(paintInfo, rect, bleedAvoidance);
     paintBoxShadow(paintInfo, rect, style(), Inset);
 
-    if (style()->hasBorder() && !collapseBorders())
+    if (bleedAvoidance != BackgroundBleedBackgroundOverBorder && !style()->hasAppearance() && style()->hasBorder() && !collapseBorders())
         paintBorder(paintInfo, rect, style());
 }
 
