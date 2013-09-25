@@ -32,12 +32,13 @@
 // See basic_source_line_resolver.h and basic_source_line_resolver_types.h
 // for documentation.
 
-
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <limits>
 #include <map>
 #include <utility>
 #include <vector>
@@ -308,100 +309,64 @@ CFIFrameInfo *BasicSourceLineResolver::Module::FindCFIFrameInfo(
 }
 
 bool BasicSourceLineResolver::Module::ParseFile(char *file_line) {
-  // FILE <id> <filename>
-  file_line += 5;  // skip prefix
-
-  vector<char*> tokens;
-  if (!Tokenize(file_line, kWhitespace, 2, &tokens)) {
-    return false;
+  long index;
+  char *filename;
+  if (SymbolParseHelper::ParseFile(file_line, &index, &filename)) {
+    files_.insert(make_pair(index, string(filename)));
+    return true;
   }
-
-  int index = atoi(tokens[0]);
-  if (index < 0) {
-    return false;
-  }
-
-  char *filename = tokens[1];
-  if (!filename) {
-    return false;
-  }
-
-  files_.insert(make_pair(index, string(filename)));
-  return true;
+  return false;
 }
 
 BasicSourceLineResolver::Function*
 BasicSourceLineResolver::Module::ParseFunction(char *function_line) {
-  // FUNC <address> <size> <stack_param_size> <name>
-  function_line += 5;  // skip prefix
-
-  vector<char*> tokens;
-  if (!Tokenize(function_line, kWhitespace, 4, &tokens)) {
-    return NULL;
+  uint64_t address;
+  uint64_t size;
+  long stack_param_size;
+  char *name;
+  if (SymbolParseHelper::ParseFunction(function_line, &address, &size,
+                                       &stack_param_size, &name)) {
+    return new Function(name, address, size, stack_param_size);
   }
-
-  uint64_t address     = strtoull(tokens[0], NULL, 16);
-  uint64_t size        = strtoull(tokens[1], NULL, 16);
-  int stack_param_size = strtoull(tokens[2], NULL, 16);
-  char *name           = tokens[3];
-
-  return new Function(name, address, size, stack_param_size);
+  return NULL;
 }
 
 BasicSourceLineResolver::Line* BasicSourceLineResolver::Module::ParseLine(
     char *line_line) {
-  // <address> <size> <line number> <source file id>
-  vector<char*> tokens;
-  if (!Tokenize(line_line, kWhitespace, 4, &tokens)) {
-    return NULL;
+  uint64_t address;
+  uint64_t size;
+  long line_number;
+  long source_file;
+
+  if (SymbolParseHelper::ParseLine(line_line, &address, &size, &line_number,
+                                   &source_file)) {
+    return new Line(address, size, source_file, line_number);
   }
-
-  uint64_t address  = strtoull(tokens[0], NULL, 16);
-  uint64_t size     = strtoull(tokens[1], NULL, 16);
-  int line_number   = atoi(tokens[2]);
-  int source_file   = atoi(tokens[3]);
-
-  // Valid line numbers normally start from 1, however there are functions that
-  // are associated with a source file but not associated with any line number
-  // (block helper function) and for such functions the symbol file contains 0
-  // for the line numbers.  Hence, 0 shoud be treated as a valid line number.
-  // For more information on block helper functions, please, take a look at:
-  // http://clang.llvm.org/docs/Block-ABI-Apple.html
-  if (line_number < 0) {
-    return NULL;
-  }
-
-  return new Line(address, size, source_file, line_number);
+  return NULL;
 }
 
 bool BasicSourceLineResolver::Module::ParsePublicSymbol(char *public_line) {
-  // PUBLIC <address> <stack_param_size> <name>
+  uint64_t address;
+  long stack_param_size;
+  char *name;
 
-  // Skip "PUBLIC " prefix.
-  public_line += 7;
+  if (SymbolParseHelper::ParsePublicSymbol(public_line, &address,
+                                           &stack_param_size, &name)) {
+    // A few public symbols show up with an address of 0.  This has been seen
+    // in the dumped output of ntdll.pdb for symbols such as _CIlog, _CIpow,
+    // RtlDescribeChunkLZNT1, and RtlReserveChunkLZNT1.  They would conflict
+    // with one another if they were allowed into the public_symbols_ map,
+    // but since the address is obviously invalid, gracefully accept them
+    // as input without putting them into the map.
+    if (address == 0) {
+      return true;
+    }
 
-  vector<char*> tokens;
-  if (!Tokenize(public_line, kWhitespace, 3, &tokens)) {
-    return false;
+    linked_ptr<PublicSymbol> symbol(new PublicSymbol(name, address,
+                                                     stack_param_size));
+    return public_symbols_.Store(address, symbol);
   }
-
-  uint64_t address     = strtoull(tokens[0], NULL, 16);
-  int stack_param_size = strtoull(tokens[1], NULL, 16);
-  char *name           = tokens[2];
-
-  // A few public symbols show up with an address of 0.  This has been seen
-  // in the dumped output of ntdll.pdb for symbols such as _CIlog, _CIpow,
-  // RtlDescribeChunkLZNT1, and RtlReserveChunkLZNT1.  They would conflict
-  // with one another if they were allowed into the public_symbols_ map,
-  // but since the address is obviously invalid, gracefully accept them
-  // as input without putting them into the map.
-  if (address == 0) {
-    return true;
-  }
-
-  linked_ptr<PublicSymbol> symbol(new PublicSymbol(name, address,
-                                                   stack_param_size));
-  return public_symbols_.Store(address, symbol);
+  return false;
 }
 
 bool BasicSourceLineResolver::Module::ParseStackInfo(char *stack_info_line) {
@@ -493,6 +458,152 @@ bool BasicSourceLineResolver::Module::ParseCFIFrameInfo(
   MemAddr address = strtoul(address_field, NULL, 16);
   cfi_delta_rules_[address] = delta_rules;
   return true;
+}
+
+// static
+bool SymbolParseHelper::ParseFile(char *file_line, long *index,
+                                  char **filename) {
+  // FILE <id> <filename>
+  assert(strncmp(file_line, "FILE ", 5) == 0);
+  file_line += 5;  // skip prefix
+
+  vector<char*> tokens;
+  if (!Tokenize(file_line, kWhitespace, 2, &tokens)) {
+    return false;
+  }
+
+  char *after_number;
+  *index = strtol(tokens[0], &after_number, 10);
+  if (!IsValidAfterNumber(after_number) || *index < 0 ||
+      *index == std::numeric_limits<long>::max()) {
+    return false;
+  }
+
+  *filename = tokens[1];
+  if (!filename) {
+    return false;
+  }
+
+  return true;
+}
+
+// static
+bool SymbolParseHelper::ParseFunction(char *function_line, uint64_t *address,
+                                      uint64_t *size, long *stack_param_size,
+                                      char **name) {
+  // FUNC <address> <size> <stack_param_size> <name>
+  assert(strncmp(function_line, "FUNC ", 5) == 0);
+  function_line += 5;  // skip prefix
+
+  vector<char*> tokens;
+  if (!Tokenize(function_line, kWhitespace, 4, &tokens)) {
+    return false;
+  }
+
+  char *after_number;
+  *address = strtoull(tokens[0], &after_number, 16);
+  if (!IsValidAfterNumber(after_number) ||
+      *address == std::numeric_limits<unsigned long long>::max()) {
+    return false;
+  }
+  *size = strtoull(tokens[1], &after_number, 16);
+  if (!IsValidAfterNumber(after_number) ||
+      *size == std::numeric_limits<unsigned long long>::max()) {
+    return false;
+  }
+  *stack_param_size = strtol(tokens[2], &after_number, 16);
+  if (!IsValidAfterNumber(after_number) ||
+      *stack_param_size == std::numeric_limits<long>::max() ||
+      *stack_param_size < 0) {
+    return false;
+  }
+  *name = tokens[3];
+
+  return true;
+}
+
+// static
+bool SymbolParseHelper::ParseLine(char *line_line, uint64_t *address,
+                                  uint64_t *size, long *line_number,
+                                  long *source_file) {
+  // <address> <size> <line number> <source file id>
+  vector<char*> tokens;
+  if (!Tokenize(line_line, kWhitespace, 4, &tokens)) {
+    return false;
+  }
+
+  char *after_number;
+  *address  = strtoull(tokens[0], &after_number, 16);
+  if (!IsValidAfterNumber(after_number) ||
+      *address == std::numeric_limits<unsigned long long>::max()) {
+    return false;
+  }
+  *size = strtoull(tokens[1], &after_number, 16);
+  if (!IsValidAfterNumber(after_number) ||
+      *size == std::numeric_limits<unsigned long long>::max()) {
+    return false;
+  }
+  *line_number = strtol(tokens[2], &after_number, 10);
+  if (!IsValidAfterNumber(after_number) ||
+      *line_number == std::numeric_limits<long>::max()) {
+    return false;
+  }
+  *source_file = strtol(tokens[3], &after_number, 10);
+  if (!IsValidAfterNumber(after_number) || *source_file < 0 ||
+      *source_file == std::numeric_limits<long>::max()) {
+    return false;
+  }
+
+  // Valid line numbers normally start from 1, however there are functions that
+  // are associated with a source file but not associated with any line number
+  // (block helper function) and for such functions the symbol file contains 0
+  // for the line numbers.  Hence, 0 should be treated as a valid line number.
+  // For more information on block helper functions, please, take a look at:
+  // http://clang.llvm.org/docs/Block-ABI-Apple.html
+  if (*line_number < 0) {
+    return false;
+  }
+
+  return true;
+}
+
+// static
+bool SymbolParseHelper::ParsePublicSymbol(char *public_line,
+                                          uint64_t *address,
+                                          long *stack_param_size,
+                                          char **name) {
+  // PUBLIC <address> <stack_param_size> <name>
+  assert(strncmp(public_line, "PUBLIC ", 7) == 0);
+  public_line += 7;  // skip prefix
+
+  vector<char*> tokens;
+  if (!Tokenize(public_line, kWhitespace, 3, &tokens)) {
+    return false;
+  }
+
+  char *after_number;
+  *address = strtoull(tokens[0], &after_number, 16);
+  if (!IsValidAfterNumber(after_number) ||
+      *address == std::numeric_limits<unsigned long long>::max()) {
+    return false;
+  }
+  *stack_param_size = strtol(tokens[1], &after_number, 16);
+  if (!IsValidAfterNumber(after_number) ||
+      *stack_param_size == std::numeric_limits<long>::max() ||
+      *stack_param_size < 0) {
+    return false;
+  }
+  *name = tokens[2]; 
+
+  return true;
+}
+
+// static
+bool SymbolParseHelper::IsValidAfterNumber(char *after_number) {
+  if (after_number != NULL && strchr(kWhitespace, *after_number) != NULL) {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace google_breakpad

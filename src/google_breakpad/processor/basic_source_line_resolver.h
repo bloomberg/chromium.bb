@@ -81,6 +81,64 @@ class BasicSourceLineResolver : public SourceLineResolverBase {
   void operator=(const BasicSourceLineResolver&);
 };
 
+// Helper class, containing useful methods for parsing of Breakpad symbol files.
+class SymbolParseHelper {
+ public:
+  // Parses a |file_line| declaration.  Returns true on success.
+  // Format: FILE <id> <filename>.
+  // Notice, that this method modifies the input |file_line| which is why it
+  // can't be const.  On success, <id>, and <filename> are stored in |*index|,
+  // and |*filename|.  No allocation is done, |*filename| simply points inside
+  // |file_line|.
+  static bool ParseFile(char *file_line,   // in
+                        long *index,       // out
+                        char **filename);  // out
+
+  // Parses a |function_line| declaration.  Returns true on success.
+  // Format:  FUNC <address> <size> <stack_param_size> <name>.
+  // Notice, that this method modifies the input |function_line| which is why it
+  // can't be const.  On success, <address>, <size>, <stack_param_size>, and
+  // <name> are stored in |*address|, |*size|, |*stack_param_size|, and |*name|.
+  // No allocation is done, |*name| simply points inside |function_line|.
+  static bool ParseFunction(char *function_line,     // in
+                            uint64_t *address,       // out
+                            uint64_t *size,          // out
+                            long *stack_param_size,  // out
+                            char **name);            // out
+
+  // Parses a |line| declaration.  Returns true on success.
+  // Format:  <address> <size> <line number> <source file id>
+  // Notice, that this method modifies the input |function_line| which is why
+  // it can't be const.  On success, <address>, <size>, <line number>, and
+  // <source file id> are stored in |*address|, |*size|, |*line_number|, and
+  // |*source_file|.
+  static bool ParseLine(char *line_line,     // in
+                        uint64_t *address,   // out
+                        uint64_t *size,      // out
+                        long *line_number,   // out
+                        long *source_file);  // out
+
+  // Parses a |public_line| declaration.  Returns true on success.
+  // Format:  PUBLIC <address> <stack_param_size> <name>
+  // Notice, that this method modifies the input |function_line| which is why
+  // it can't be const.  On success, <address>, <stack_param_size>, <name>
+  // are stored in |*address|, |*stack_param_size|, and |*name|.
+  // No allocation is done, |*name| simply points inside |public_line|.
+  static bool ParsePublicSymbol(char *public_line,       // in
+                                uint64_t *address,       // out
+                                long *stack_param_size,  // out
+                                char **name);            // out
+
+ private:
+  // Used for success checks after strtoull and strtol.
+  static bool IsValidAfterNumber(char *after_number);
+
+  // Only allow static methods.
+  SymbolParseHelper();
+  SymbolParseHelper(const SymbolParseHelper&);
+  void operator=(const SymbolParseHelper&);
+};
+
 }  // namespace google_breakpad
 
 #endif  // GOOGLE_BREAKPAD_PROCESSOR_BASIC_SOURCE_LINE_RESOLVER_H__

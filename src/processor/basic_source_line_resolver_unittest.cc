@@ -53,6 +53,7 @@ using google_breakpad::StackFrame;
 using google_breakpad::WindowsFrameInfo;
 using google_breakpad::linked_ptr;
 using google_breakpad::scoped_ptr;
+using google_breakpad::SymbolParseHelper;
 
 class TestCodeModule : public CodeModule {
  public:
@@ -403,6 +404,268 @@ TEST_F(TestBasicSourceLineResolver, TestUnload)
   ASSERT_FALSE(resolver.HasModule(&module1));
   ASSERT_TRUE(resolver.LoadModule(&module1, testdata_dir + "/module1.out"));
   ASSERT_TRUE(resolver.HasModule(&module1));
+}
+
+// Test parsing of valid FILE lines.  The format is:
+// FILE <id> <filename>
+TEST(SymbolParseHelper, ParseFileValid) {
+  long index;
+  char *filename;
+
+  char kTestLine[] = "FILE 1 file name";
+  ASSERT_TRUE(SymbolParseHelper::ParseFile(kTestLine, &index, &filename));
+  EXPECT_EQ(1, index);
+  EXPECT_EQ("file name", string(filename));
+
+  // 0 is a valid index.
+  char kTestLine1[] = "FILE 0 file name";
+  ASSERT_TRUE(SymbolParseHelper::ParseFile(kTestLine1, &index, &filename));
+  EXPECT_EQ(0, index);
+  EXPECT_EQ("file name", string(filename));
+}
+
+// Test parsing of invalid FILE lines.  The format is:
+// FILE <id> <filename>
+TEST(SymbolParseHelper, ParseFileInvalid) {
+  long index;
+  char *filename;
+
+  // Test missing file name.
+  char kTestLine[] = "FILE 1 ";
+  ASSERT_FALSE(SymbolParseHelper::ParseFile(kTestLine, &index, &filename));
+
+  // Test bad index.
+  char kTestLine1[] = "FILE x1 file name";
+  ASSERT_FALSE(SymbolParseHelper::ParseFile(kTestLine1, &index, &filename));
+
+  // Test large index.
+  char kTestLine2[] = "FILE 123123123123123123123123 file name";
+  ASSERT_FALSE(SymbolParseHelper::ParseFile(kTestLine2, &index, &filename));
+
+  // Test negative index.
+  char kTestLine3[] = "FILE -2 file name";
+  ASSERT_FALSE(SymbolParseHelper::ParseFile(kTestLine3, &index, &filename));
+}
+
+// Test parsing of valid FUNC lines.  The format is:
+// FUNC <address> <size> <stack_param_size> <name>
+TEST(SymbolParseHelper, ParseFunctionValid) {
+  uint64_t address;
+  uint64_t size;
+  long stack_param_size;
+  char *name;
+
+  char kTestLine[] = "FUNC 1 2 3 function name";
+  ASSERT_TRUE(SymbolParseHelper::ParseFunction(kTestLine, &address, &size,
+                                               &stack_param_size, &name));
+  EXPECT_EQ(1ULL, address);
+  EXPECT_EQ(2ULL, size);
+  EXPECT_EQ(3, stack_param_size);
+  EXPECT_EQ("function name", string(name));
+
+  // Test hex address, size, and param size.
+  char kTestLine1[] = "FUNC a1 a2 a3 function name";
+  ASSERT_TRUE(SymbolParseHelper::ParseFunction(kTestLine1, &address, &size,
+                                               &stack_param_size, &name));
+  EXPECT_EQ(0xa1ULL, address);
+  EXPECT_EQ(0xa2ULL, size);
+  EXPECT_EQ(0xa3, stack_param_size);
+  EXPECT_EQ("function name", string(name));
+
+  char kTestLine2[] = "FUNC 0 0 0 function name";
+  ASSERT_TRUE(SymbolParseHelper::ParseFunction(kTestLine2, &address, &size,
+                                               &stack_param_size, &name));
+  EXPECT_EQ(0ULL, address);
+  EXPECT_EQ(0ULL, size);
+  EXPECT_EQ(0, stack_param_size);
+  EXPECT_EQ("function name", string(name));
+}
+
+// Test parsing of invalid FUNC lines.  The format is:
+// FUNC <address> <size> <stack_param_size> <name>
+TEST(SymbolParseHelper, ParseFunctionInvalid) {
+  uint64_t address;
+  uint64_t size;
+  long stack_param_size;
+  char *name;
+
+  // Test missing function name.
+  char kTestLine[] = "FUNC 1 2 3 ";
+  ASSERT_FALSE(SymbolParseHelper::ParseFunction(kTestLine, &address, &size,
+                                                &stack_param_size, &name));
+  // Test bad address.
+  char kTestLine1[] = "FUNC 1z 2 3 function name";
+  ASSERT_FALSE(SymbolParseHelper::ParseFunction(kTestLine1, &address, &size,
+                                                &stack_param_size, &name));
+  // Test large address.
+  char kTestLine2[] = "FUNC 123123123123123123123123123 2 3 function name";
+  ASSERT_FALSE(SymbolParseHelper::ParseFunction(kTestLine2, &address, &size,
+                                                &stack_param_size, &name));
+  // Test bad size.
+  char kTestLine3[] = "FUNC 1 z2 3 function name";
+  ASSERT_FALSE(SymbolParseHelper::ParseFunction(kTestLine3, &address, &size,
+                                                &stack_param_size, &name));
+  // Test large size.
+  char kTestLine4[] = "FUNC 1 231231231231231231231231232 3 function name";
+  ASSERT_FALSE(SymbolParseHelper::ParseFunction(kTestLine4, &address, &size,
+                                                &stack_param_size, &name));
+  // Test bad param size.
+  char kTestLine5[] = "FUNC 1 2 3z function name";
+  ASSERT_FALSE(SymbolParseHelper::ParseFunction(kTestLine5, &address, &size,
+                                                &stack_param_size, &name));
+  // Test large param size.
+  char kTestLine6[] = "FUNC 1 2 312312312312312312312312323 function name";
+  ASSERT_FALSE(SymbolParseHelper::ParseFunction(kTestLine6, &address, &size,
+                                                &stack_param_size, &name));
+  // Negative param size.
+  char kTestLine7[] = "FUNC 1 2 -5 function name";
+  ASSERT_FALSE(SymbolParseHelper::ParseFunction(kTestLine7, &address, &size,
+                                                &stack_param_size, &name));
+}
+
+// Test parsing of valid lines.  The format is:
+// <address> <size> <line number> <source file id>
+TEST(SymbolParseHelper, ParseLineValid) {
+  uint64_t address;
+  uint64_t size;
+  long line_number;
+  long source_file;
+
+  char kTestLine[] = "1 2 3 4";
+  ASSERT_TRUE(SymbolParseHelper::ParseLine(kTestLine, &address, &size,
+                                           &line_number, &source_file));
+  EXPECT_EQ(1ULL, address);
+  EXPECT_EQ(2ULL, size);
+  EXPECT_EQ(3, line_number);
+  EXPECT_EQ(4, source_file);
+
+  // Test hex size and address.
+  char kTestLine1[] = "a1 a2 3 4  // some comment";
+  ASSERT_TRUE(SymbolParseHelper::ParseLine(kTestLine1, &address, &size,
+                                           &line_number, &source_file));
+  EXPECT_EQ(0xa1ULL, address);
+  EXPECT_EQ(0xa2ULL, size);
+  EXPECT_EQ(3, line_number);
+  EXPECT_EQ(4, source_file);
+
+  // 0 is a valid line number.
+  char kTestLine2[] = "a1 a2 0 4  // some comment";
+  ASSERT_TRUE(SymbolParseHelper::ParseLine(kTestLine2, &address, &size,
+                                           &line_number, &source_file));
+  EXPECT_EQ(0xa1ULL, address);
+  EXPECT_EQ(0xa2ULL, size);
+  EXPECT_EQ(0, line_number);
+  EXPECT_EQ(4, source_file);
+}
+
+// Test parsing of invalid lines.  The format is:
+// <address> <size> <line number> <source file id>
+TEST(SymbolParseHelper, ParseLineInvalid) {
+  uint64_t address;
+  uint64_t size;
+  long line_number;
+  long source_file;
+
+  // Test missing source file id.
+  char kTestLine[] = "1 2 3";
+  ASSERT_FALSE(SymbolParseHelper::ParseLine(kTestLine, &address, &size,
+                                            &line_number, &source_file));
+  // Test bad address.
+  char kTestLine1[] = "1z 2 3 4";
+  ASSERT_FALSE(SymbolParseHelper::ParseLine(kTestLine1, &address, &size,
+                                            &line_number, &source_file));
+  // Test large address.
+  char kTestLine2[] = "123123123123123123123123 2 3 4";
+  ASSERT_FALSE(SymbolParseHelper::ParseLine(kTestLine2, &address, &size,
+                                            &line_number, &source_file));
+  // Test bad size.
+  char kTestLine3[] = "1 z2 3 4";
+  ASSERT_FALSE(SymbolParseHelper::ParseLine(kTestLine3, &address, &size,
+                                            &line_number, &source_file));
+  // Test large size.
+  char kTestLine4[] = "1 123123123123123123123123 3 4";
+  ASSERT_FALSE(SymbolParseHelper::ParseLine(kTestLine4, &address, &size,
+                                            &line_number, &source_file));
+  // Test bad line number.
+  char kTestLine5[] = "1 2 z3 4";
+  ASSERT_FALSE(SymbolParseHelper::ParseLine(kTestLine5, &address, &size,
+                                            &line_number, &source_file));
+  // Test negative line number.
+  char kTestLine6[] = "1 2 -1 4";
+  ASSERT_FALSE(SymbolParseHelper::ParseLine(kTestLine6, &address, &size,
+                                            &line_number, &source_file));
+  // Test large line number.
+  char kTestLine7[] = "1 2 123123123123123123123 4";
+  ASSERT_FALSE(SymbolParseHelper::ParseLine(kTestLine7, &address, &size,
+                                            &line_number, &source_file));
+  // Test bad source file id.
+  char kTestLine8[] = "1 2 3 f";
+  ASSERT_FALSE(SymbolParseHelper::ParseLine(kTestLine8, &address, &size,
+                                            &line_number, &source_file));
+}
+
+// Test parsing of valid PUBLIC lines.  The format is:
+// PUBLIC <address> <stack_param_size> <name>
+TEST(SymbolParseHelper, ParsePublicSymbolValid) {
+  uint64_t address;
+  long stack_param_size;
+  char *name;
+
+  char kTestLine[] = "PUBLIC 1 2 3";
+  ASSERT_TRUE(SymbolParseHelper::ParsePublicSymbol(kTestLine, &address,
+                                                   &stack_param_size, &name));
+  EXPECT_EQ(1ULL, address);
+  EXPECT_EQ(2, stack_param_size);
+  EXPECT_EQ("3", string(name));
+
+  // Test hex size and address.
+  char kTestLine1[] = "PUBLIC a1 a2 function name";
+  ASSERT_TRUE(SymbolParseHelper::ParsePublicSymbol(kTestLine1, &address,
+                                                   &stack_param_size, &name));
+  EXPECT_EQ(0xa1ULL, address);
+  EXPECT_EQ(0xa2, stack_param_size);
+  EXPECT_EQ("function name", string(name));
+
+  // Test 0 is a valid address.
+  char kTestLine2[] = "PUBLIC 0 a2 function name";
+  ASSERT_TRUE(SymbolParseHelper::ParsePublicSymbol(kTestLine2, &address,
+                                                   &stack_param_size, &name));
+  EXPECT_EQ(0ULL, address);
+  EXPECT_EQ(0xa2, stack_param_size);
+  EXPECT_EQ("function name", string(name));
+}
+
+// Test parsing of invalid PUBLIC lines.  The format is:
+// PUBLIC <address> <stack_param_size> <name>
+TEST(SymbolParseHelper, ParsePublicSymbolInvalid) {
+  uint64_t address;
+  long stack_param_size;
+  char *name;
+
+  // Test missing source function name.
+  char kTestLine[] = "PUBLIC 1 2 ";
+  ASSERT_FALSE(SymbolParseHelper::ParsePublicSymbol(kTestLine, &address,
+                                                    &stack_param_size, &name));
+  // Test bad address.
+  char kTestLine1[] = "PUBLIC 1z 2 3";
+  ASSERT_FALSE(SymbolParseHelper::ParsePublicSymbol(kTestLine1, &address,
+                                                    &stack_param_size, &name));
+  // Test large address.
+  char kTestLine2[] = "PUBLIC 123123123123123123123123 2 3";
+  ASSERT_FALSE(SymbolParseHelper::ParsePublicSymbol(kTestLine2, &address,
+                                                    &stack_param_size, &name));
+  // Test bad param stack size.
+  char kTestLine3[] = "PUBLIC 1 z2 3";
+  ASSERT_FALSE(SymbolParseHelper::ParsePublicSymbol(kTestLine3, &address,
+                                                    &stack_param_size, &name));
+  // Test large param stack size.
+  char kTestLine4[] = "PUBLIC 1 123123123123123123123123123 3";
+  ASSERT_FALSE(SymbolParseHelper::ParsePublicSymbol(kTestLine4, &address,
+                                                    &stack_param_size, &name));
+  // Test negative param stack size.
+  char kTestLine5[] = "PUBLIC 1 -5 3";
+  ASSERT_FALSE(SymbolParseHelper::ParsePublicSymbol(kTestLine5, &address,
+                                                    &stack_param_size, &name));
 }
 
 }  // namespace
