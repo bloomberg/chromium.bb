@@ -28,6 +28,7 @@
         '../content/content.gyp:content_browser',
         '../crypto/crypto.gyp:crypto',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+        '../extensions/extensions.gyp:extensions_browser',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync',
@@ -54,17 +55,6 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under browser/extensions except for
         # tests and mocks.
-        '../extensions/browser/extension_prefs_scope.h',
-        '../extensions/browser/extension_error.cc',
-        '../extensions/browser/extension_error.h',
-        '../extensions/browser/file_highlighter.cc',
-        '../extensions/browser/file_highlighter.h',
-        '../extensions/browser/file_reader.cc',
-        '../extensions/browser/file_reader.h',
-        '../extensions/browser/pref_names.cc',
-        '../extensions/browser/pref_names.h',
-        '../extensions/browser/view_type_utils.cc',
-        '../extensions/browser/view_type_utils.h',
         'browser/apps/app_url_redirector.cc',
         'browser/apps/app_url_redirector.h',
         'browser/apps/chrome_apps_client.cc',
