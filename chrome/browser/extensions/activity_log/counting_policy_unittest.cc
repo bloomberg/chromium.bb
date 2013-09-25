@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/activity_log/counting_policy.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -106,12 +107,12 @@ class CountingPolicyTest : public testing::Test {
                    checker,
                    base::MessageLoop::current()->QuitClosure()));
 
-    // Set up a timeout that will trigger after 8 seconds; if we haven't
-    // received any results by then assume that the test is broken.
+    // Set up a timeout for receiving results; if we haven't received anything
+    // when the timeout triggers then assume that the test is broken.
     base::CancelableClosure timeout(
         base::Bind(&CountingPolicyTest::TimeoutCallback));
     base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, timeout.callback(), base::TimeDelta::FromSeconds(8));
+        FROM_HERE, timeout.callback(), TestTimeouts::action_timeout());
 
     // Wait for results; either the checker or the timeout callbacks should
     // cause the main loop to exit.
