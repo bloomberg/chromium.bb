@@ -52,7 +52,7 @@ LineWidth::LineWidth(RenderBlock& block, bool isFirstLine, IndentTextOrNot shoul
 void LineWidth::updateAvailableWidth(LayoutUnit replacedHeight)
 {
     LayoutUnit height = m_block.logicalHeight();
-    LayoutUnit logicalHeight = logicalHeightForLine(&m_block, m_isFirstLine, replacedHeight);
+    LayoutUnit logicalHeight = m_block.minLineHeightForReplacedRenderer(m_isFirstLine, replacedHeight);
     m_left = m_block.logicalLeftOffsetForLine(height, shouldIndentText(), logicalHeight);
     m_right = m_block.logicalRightOffsetForLine(height, shouldIndentText(), logicalHeight);
 
@@ -79,19 +79,20 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject* newFloat
     const FloatingObjectSet& floatingObjectSet = m_block.m_floatingObjects->set();
     FloatingObjectSetIterator it = floatingObjectSet.end();
     FloatingObjectSetIterator begin = floatingObjectSet.begin();
+    LayoutUnit lineHeight = m_block.lineHeight(m_isFirstLine, m_block.isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
     for (--it; it != begin; --it) {
         FloatingObject* previousFloat = *it;
         if (previousFloat != newFloat && previousFloat->type() == newFloat->type()) {
             previousShapeOutsideInfo = previousFloat->renderer()->shapeOutsideInfo();
             if (previousShapeOutsideInfo)
-                previousShapeOutsideInfo->computeSegmentsForContainingBlockLine(&m_block, previousFloat, m_block.logicalHeight(), logicalHeightForLine(&m_block, m_isFirstLine));
+                previousShapeOutsideInfo->computeSegmentsForContainingBlockLine(&m_block, previousFloat, m_block.logicalHeight(), lineHeight);
             break;
         }
     }
 
     ShapeOutsideInfo* shapeOutsideInfo = newFloat->renderer()->shapeOutsideInfo();
     if (shapeOutsideInfo)
-        shapeOutsideInfo->computeSegmentsForContainingBlockLine(&m_block, newFloat, m_block.logicalHeight(), logicalHeightForLine(&m_block, m_isFirstLine));
+        shapeOutsideInfo->computeSegmentsForContainingBlockLine(&m_block, newFloat, m_block.logicalHeight(), lineHeight);
 
     if (newFloat->type() == FloatingObject::FloatLeft) {
         float newLeft = newFloat->logicalRight(m_block.isHorizontalWritingMode());
