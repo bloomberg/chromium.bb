@@ -20,7 +20,7 @@ vars = {
   "gtm_revision": "616",
 
   "libphonenumber_revision": "584",
-  "libvpx_revision": "224839",
+  "libvpx_revision": "225010",
   "lss_revision": "24",
 
   # These two FFmpeg variables must be updated together.  One is used for SVN
