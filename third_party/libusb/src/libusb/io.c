@@ -787,7 +787,7 @@ void cb(struct libusb_transfer *transfer)
 
 void myfunc() {
 	struct libusb_transfer *transfer;
-	unsigned char buffer[LIBUSB_CONTROL_SETUP_SIZE];
+	unsigned char buffer[LIBUSB_CONTROL_SETUP_SIZE] __attribute__ ((aligned (2)));
 	int completed = 0;
 
 	transfer = libusb_alloc_transfer(0);
@@ -1459,6 +1459,8 @@ int API_EXPORTED libusb_submit_transfer(struct libusb_transfer *transfer)
 	}
 	usbi_mutex_unlock(&ctx->flying_transfers_lock);
 
+	/* keep a reference to this device */
+	libusb_ref_device(transfer->dev_handle->dev);
 out:
 	updated_fds = (itransfer->flags & USBI_TRANSFER_UPDATED_FDS);
 	usbi_mutex_unlock(&itransfer->lock);
@@ -1522,6 +1524,7 @@ int usbi_handle_transfer_completion(struct usbi_transfer *itransfer,
 	struct libusb_transfer *transfer =
 		USBI_TRANSFER_TO_LIBUSB_TRANSFER(itransfer);
 	struct libusb_context *ctx = TRANSFER_CTX(transfer);
+	struct libusb_device_handle *handle = transfer->dev_handle;
 	uint8_t flags;
 	int r = 0;
 
@@ -1562,6 +1565,7 @@ int usbi_handle_transfer_completion(struct usbi_transfer *itransfer,
 	usbi_mutex_lock(&ctx->event_waiters_lock);
 	usbi_cond_broadcast(&ctx->event_waiters_cond);
 	usbi_mutex_unlock(&ctx->event_waiters_lock);
+	libusb_unref_device(handle->dev);
 	return 0;
 }
 
@@ -1996,8 +2000,8 @@ static int handle_events(struct libusb_context *ctx, struct timeval *tv)
 
 		/* read the message from the hotplug thread */
 		ret = usbi_read(ctx->hotplug_pipe[0], &message, sizeof (message));
-		if (ret < sizeof(message)) {
-			usbi_err(ctx, "hotplug pipe read error %d < %d",
+		if (ret != sizeof(message)) {
+			usbi_err(ctx, "hotplug pipe read error %d != %u",
 				 ret, sizeof(message));
 			r = LIBUSB_ERROR_OTHER;
 			goto handled;
