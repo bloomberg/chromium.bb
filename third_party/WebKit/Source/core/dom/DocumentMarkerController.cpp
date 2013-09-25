@@ -40,6 +40,25 @@
 
 namespace WebCore {
 
+namespace {
+
+DocumentMarker::MarkerTypeIndex MarkerTypeToMarkerIndex(DocumentMarker::MarkerType type)
+{
+    switch (type) {
+    case DocumentMarker::Spelling:
+        return DocumentMarker::SpellingMarkerIndex;
+    case DocumentMarker::Grammar:
+        return DocumentMarker::GramarMarkerIndex;
+    case DocumentMarker::TextMatch:
+        return DocumentMarker::TextMatchMarkerIndex;
+    }
+
+    ASSERT_NOT_REACHED();
+    return DocumentMarker::SpellingMarkerIndex;
+}
+
+} // namespace
+
 inline bool DocumentMarkerController::possiblyHasMarkers(DocumentMarker::MarkerTypes types)
 {
     return m_possiblyExistingMarkerTypes.intersects(types);
@@ -133,6 +152,36 @@ void DocumentMarkerController::removeMarkers(Range* range, DocumentMarker::Marke
     }
 }
 
+static bool startsFurther(const DocumentMarker& lhv, const DocumentMarker& rhv)
+{
+    return lhv.startOffset() < rhv.startOffset();
+}
+
+static bool startsAfter(const DocumentMarker& marker, size_t startOffset)
+{
+    return marker.startOffset() < startOffset;
+}
+
+static bool endsBefore(size_t startOffset, const DocumentMarker& rhv)
+{
+    return startOffset < rhv.endOffset();
+}
+
+static bool compareByStart(const DocumentMarker* lhv, const DocumentMarker* rhv)
+{
+    return startsFurther(*lhv, *rhv);
+}
+
+static bool doesNotOverlap(const DocumentMarker& lhv, const DocumentMarker& rhv)
+{
+    return lhv.endOffset() < rhv.startOffset();
+}
+
+static bool doesNotInclude(const DocumentMarker& marker, size_t startOffset)
+{
+    return marker.endOffset() < startOffset;
+}
+
 // Markers are stored in order sorted by their start offset.
 // Markers of the same type do not overlap each other.
 
@@ -144,54 +193,47 @@ void DocumentMarkerController::addMarker(Node* node, const DocumentMarker& newMa
 
     m_possiblyExistingMarkerTypes.add(newMarker.type());
 
-    OwnPtr<MarkerList>& list = m_markers.add(node, nullptr).iterator->value;
+    OwnPtr<MarkerLists>& markers = m_markers.add(node, nullptr).iterator->value;
+    if (!markers) {
+        markers = adoptPtr(new MarkerLists);
+        markers->grow(DocumentMarker::MarkerTypeIndexesCount);
+    }
 
-    if (!list) {
-        list = adoptPtr(new MarkerList);
+    DocumentMarker::MarkerTypeIndex markerListIndex = MarkerTypeToMarkerIndex(newMarker.type());
+    if (!markers->at(markerListIndex)) {
+        markers->insert(markerListIndex, adoptPtr(new MarkerList));
+    }
+
+    OwnPtr<MarkerList>& list = markers->at(markerListIndex);
+    if (list->isEmpty() || list->last().endOffset() < newMarker.startOffset()) {
         list->append(RenderedDocumentMarker(newMarker));
     } else {
         RenderedDocumentMarker toInsert(newMarker);
-        size_t numMarkers = list->size();
-        size_t i;
-        // Iterate over all markers whose start offset is less than or equal to the new marker's.
-        // If one of them is of the same type as the new marker and touches it or intersects with it
-        // (there is at most one), remove it and adjust the new marker's start offset to encompass it.
-        for (i = 0; i < numMarkers; ++i) {
-            DocumentMarker marker = list->at(i);
-            if (marker.startOffset() > toInsert.startOffset())
-                break;
-            if (marker.type() == toInsert.type() && marker.type() != DocumentMarker::TextMatch && marker.endOffset() >= toInsert.startOffset()) {
-                toInsert.setStartOffset(marker.startOffset());
-                list->remove(i);
-                numMarkers--;
-                break;
-            }
+        if (toInsert.type() != DocumentMarker::TextMatch) {
+            mergeOverlapping(list.get(), toInsert);
+        } else {
+            MarkerList::iterator pos = std::lower_bound(list->begin(), list->end(), toInsert, startsFurther);
+            list->insert(pos - list->begin(), RenderedDocumentMarker(toInsert));
         }
-        size_t j = i;
-        // Iterate over all markers whose end offset is less than or equal to the new marker's,
-        // removing markers of the same type as the new marker which touch it or intersect with it,
-        // adjusting the new marker's end offset to cover them if necessary.
-        while (j < numMarkers) {
-            DocumentMarker marker = list->at(j);
-            if (marker.startOffset() > toInsert.endOffset())
-                break;
-            if (marker.type() == toInsert.type() && marker.type() != DocumentMarker::TextMatch) {
-                list->remove(j);
-                if (toInsert.endOffset() <= marker.endOffset()) {
-                    toInsert.setEndOffset(marker.endOffset());
-                    break;
-                }
-                numMarkers--;
-            } else
-                j++;
-        }
-        // At this point i points to the node before which we want to insert.
-        list->insert(i, RenderedDocumentMarker(toInsert));
     }
 
     // repaint the affected node
     if (node->renderer())
         node->renderer()->repaint();
+}
+
+void DocumentMarkerController::mergeOverlapping(MarkerList* list, DocumentMarker& toInsert)
+{
+    MarkerList::iterator firstOverlapping = std::lower_bound(list->begin(), list->end(), toInsert, doesNotOverlap);
+    size_t index = firstOverlapping - list->begin();
+    list->insert(index, RenderedDocumentMarker(toInsert));
+    MarkerList::iterator inserted = list->begin() + index;
+    firstOverlapping = inserted + 1;
+    for (MarkerList::iterator i = firstOverlapping; i != list->end() && i->startOffset() <= inserted->endOffset(); ) {
+        inserted->setStartOffset(std::min(inserted->startOffset(), i->startOffset()));
+        inserted->setEndOffset(std::max(inserted->endOffset(), i->endOffset()));
+        list->remove(i - list->begin());
+    }
 }
 
 // copies markers from srcNode to dstNode, applying the specified shift delta to the copies.  The shift is
@@ -205,32 +247,35 @@ void DocumentMarkerController::copyMarkers(Node* srcNode, unsigned startOffset, 
         return;
     ASSERT(!m_markers.isEmpty());
 
-    MarkerList* list = m_markers.get(srcNode);
-    if (!list)
+    MarkerLists* markers = m_markers.get(srcNode);
+    if (!markers)
         return;
 
     bool docDirty = false;
-    unsigned endOffset = startOffset + length - 1;
-    for (size_t i = 0; i != list->size(); ++i) {
-        DocumentMarker marker = list->at(i);
-
-        // stop if we are now past the specified range
-        if (marker.startOffset() > endOffset)
-            break;
-
-        // skip marker that is before the specified range or is the wrong type
-        if (marker.endOffset() < startOffset)
+    for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
+        OwnPtr<MarkerList>& list = (*markers)[markerListIndex];
+        if (!list)
             continue;
 
-        // pin the marker to the specified range and apply the shift delta
-        docDirty = true;
-        if (marker.startOffset() < startOffset)
-            marker.setStartOffset(startOffset);
-        if (marker.endOffset() > endOffset)
-            marker.setEndOffset(endOffset);
-        marker.shiftOffsets(delta);
+        unsigned endOffset = startOffset + length - 1;
+        MarkerList::iterator startPos = std::lower_bound(list->begin(), list->end(), startOffset, doesNotInclude);
+        for (MarkerList::iterator i = startPos; i != list->end(); ++i) {
+            DocumentMarker marker = *i;
 
-        addMarker(dstNode, marker);
+            // stop if we are now past the specified range
+            if (marker.startOffset() > endOffset)
+                break;
+
+            // pin the marker to the specified range and apply the shift delta
+            docDirty = true;
+            if (marker.startOffset() < startOffset)
+                marker.setStartOffset(startOffset);
+            if (marker.endOffset() > endOffset)
+                marker.setEndOffset(endOffset);
+            marker.shiftOffsets(delta);
+
+            addMarker(dstNode, marker);
+        }
     }
 
     // repaint the affected node
@@ -247,53 +292,68 @@ void DocumentMarkerController::removeMarkers(Node* node, unsigned startOffset, i
         return;
     ASSERT(!(m_markers.isEmpty()));
 
-    MarkerList* list = m_markers.get(node);
-    if (!list)
+    MarkerLists* markers = m_markers.get(node);
+    if (!markers)
         return;
 
     bool docDirty = false;
-    unsigned endOffset = startOffset + length;
-    for (size_t i = 0; i < list->size();) {
-        DocumentMarker marker = list->at(i);
-
-        // markers are returned in order, so stop if we are now past the specified range
-        if (marker.startOffset() >= endOffset)
-            break;
-
-        // skip marker that is wrong type or before target
-        if (marker.endOffset() <= startOffset || !markerTypes.contains(marker.type())) {
-            i++;
+    size_t emptyListsCount = 0;
+    for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
+        OwnPtr<MarkerList>& list = (*markers)[markerListIndex];
+        if (!list || list->isEmpty()) {
+            if (list.get() && list->isEmpty())
+                list.clear();
+            ++emptyListsCount;
             continue;
         }
-
-        // at this point we know that marker and target intersect in some way
-        docDirty = true;
-
-        // pitch the old marker
-        list->remove(i);
-
-        if (shouldRemovePartiallyOverlappingMarker)
-            // Stop here. Don't add resulting slices back.
+        if (!markerTypes.contains(list->begin()->type()))
             continue;
+        unsigned endOffset = startOffset + length;
+        MarkerList::iterator startPos = std::upper_bound(list->begin(), list->end(), startOffset, endsBefore);
+        for (MarkerList::iterator i = startPos; i != list->end(); ) {
+            DocumentMarker marker = *i;
 
-        // add either of the resulting slices that are left after removing target
-        if (startOffset > marker.startOffset()) {
-            DocumentMarker newLeft = marker;
-            newLeft.setEndOffset(startOffset);
-            list->insert(i, RenderedDocumentMarker(newLeft));
-            // i now points to the newly-inserted node, but we want to skip that one
-            i++;
+            // markers are returned in order, so stop if we are now past the specified range
+            if (marker.startOffset() >= endOffset)
+                break;
+
+            // at this point we know that marker and target intersect in some way
+            docDirty = true;
+
+            // pitch the old marker
+            list->remove(i - list->begin());
+
+            if (shouldRemovePartiallyOverlappingMarker) {
+                // Stop here. Don't add resulting slices back.
+                continue;
+            }
+
+            // add either of the resulting slices that are left after removing target
+            if (startOffset > marker.startOffset()) {
+                DocumentMarker newLeft = marker;
+                newLeft.setEndOffset(startOffset);
+                size_t insertIndex = i - list->begin();
+                list->insert(insertIndex , RenderedDocumentMarker(newLeft));
+                // Move to the marker after the inserted one.
+                i = list->begin() + insertIndex + 1;
+            }
+            if (marker.endOffset() > endOffset) {
+                DocumentMarker newRight = marker;
+                newRight.setStartOffset(endOffset);
+                size_t insertIndex = i - list->begin();
+                list->insert(insertIndex, RenderedDocumentMarker(newRight));
+                // Move to the marker after the inserted one.
+                i = list->begin() + insertIndex + 1;
+            }
         }
-        if (marker.endOffset() > endOffset) {
-            DocumentMarker newRight = marker;
-            newRight.setStartOffset(endOffset);
-            list->insert(i, RenderedDocumentMarker(newRight));
-            // i now points to the newly-inserted node, but we want to skip that one
-            i++;
+
+        if (list->isEmpty()) {
+            list.clear();
+            ++emptyListsCount;
         }
     }
 
-    if (list->isEmpty()) {
+    if (emptyListsCount == DocumentMarker::MarkerTypeIndexesCount) {
         m_markers.remove(node);
         if (m_markers.isEmpty())
             m_possiblyExistingMarkerTypes = 0;
@@ -314,14 +374,11 @@ DocumentMarker* DocumentMarkerController::markerContainingPoint(const LayoutPoin
     MarkerMap::iterator end = m_markers.end();
     for (MarkerMap::iterator nodeIterator = m_markers.begin(); nodeIterator != end; ++nodeIterator) {
         // inner loop; process each marker in this node
-        MarkerList* list = nodeIterator->value.get();
-        unsigned markerCount = list->size();
+        MarkerLists* markers = nodeIterator->value.get();
+        OwnPtr<MarkerList>& list = (*markers)[MarkerTypeToMarkerIndex(markerType)];
+        unsigned markerCount = list.get() ? list->size() : 0;
         for (unsigned markerIndex = 0; markerIndex < markerCount; ++markerIndex) {
             RenderedDocumentMarker& marker = list->at(markerIndex);
-
-            // skip marker that is wrong type
-            if (marker.type() != markerType)
-                continue;
 
             if (marker.contains(point))
                 return &marker;
@@ -334,15 +391,21 @@ DocumentMarker* DocumentMarkerController::markerContainingPoint(const LayoutPoin
 Vector<DocumentMarker*> DocumentMarkerController::markersFor(Node* node, DocumentMarker::MarkerTypes markerTypes)
 {
     Vector<DocumentMarker*> result;
-    MarkerList* list = m_markers.get(node);
-    if (!list)
+
+    MarkerLists* markers = m_markers.get(node);
+    if (!markers)
         return result;
 
-    for (size_t i = 0; i < list->size(); ++i) {
-        if (markerTypes.contains(list->at(i).type()))
+    for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
+        OwnPtr<MarkerList>& list = (*markers)[markerListIndex];
+        if (!list || list->isEmpty() || !markerTypes.contains(list->begin()->type()))
+            continue;
+
+        for (size_t i = 0; i < list->size(); ++i)
             result.append(&(list->at(i)));
     }
 
+    std::sort(result.begin(), result.end(), compareByStart);
     return result;
 }
 
@@ -350,9 +413,14 @@ Vector<DocumentMarker*> DocumentMarkerController::markers()
 {
     Vector<DocumentMarker*> result;
     for (MarkerMap::iterator i = m_markers.begin(); i != m_markers.end(); ++i) {
-        for (size_t j = 0; j < i->value->size(); ++j)
-            result.append(&(i->value->at(j)));
+        MarkerLists* markers = i->value.get();
+        for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
+            OwnPtr<MarkerList>& list = (*markers)[markerListIndex];
+            for (size_t j = 0; list.get() && j < list->size(); ++j)
+                result.append(&(list->at(j)));
+        }
     }
+    std::sort(result.begin(), result.end(), compareByStart);
     return result;
 }
 
@@ -398,19 +466,19 @@ Vector<IntRect> DocumentMarkerController::renderedRectsForMarkers(DocumentMarker
     MarkerMap::iterator end = m_markers.end();
     for (MarkerMap::iterator nodeIterator = m_markers.begin(); nodeIterator != end; ++nodeIterator) {
         // inner loop; process each marker in this node
-        MarkerList* list = nodeIterator->value.get();
-        unsigned markerCount = list->size();
-        for (unsigned markerIndex = 0; markerIndex < markerCount; ++markerIndex) {
-            const RenderedDocumentMarker& marker = list->at(markerIndex);
-
-            // skip marker that is wrong type
-            if (marker.type() != markerType)
+        MarkerLists* markers = nodeIterator->value.get();
+        for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
+            OwnPtr<MarkerList>& list = (*markers)[markerListIndex];
+            if (!list || list->isEmpty() || list->begin()->type() != markerType)
                 continue;
+            for (unsigned markerIndex = 0; markerIndex < list->size(); ++markerIndex) {
+                const RenderedDocumentMarker& marker = list->at(markerIndex);
 
-            if (!marker.isRendered())
-                continue;
+                if (!marker.isRendered())
+                    continue;
 
-            result.append(marker.renderedRect());
+                result.append(marker.renderedRect());
+            }
         }
     }
 
@@ -449,30 +517,32 @@ void DocumentMarkerController::removeMarkers(DocumentMarker::MarkerTypes markerT
 void DocumentMarkerController::removeMarkersFromList(MarkerMap::iterator iterator, DocumentMarker::MarkerTypes markerTypes)
 {
     bool needsRepainting = false;
-    bool listCanBeRemoved;
+    bool nodeCanBeRemoved;
 
+    size_t emptyListsCount = 0;
     if (markerTypes == DocumentMarker::AllMarkers()) {
         needsRepainting = true;
-        listCanBeRemoved = true;
+        nodeCanBeRemoved = true;
     } else {
-        MarkerList* list = iterator->value.get();
+        MarkerLists* markers = iterator->value.get();
 
-        for (size_t i = 0; i != list->size(); ) {
-            DocumentMarker marker = list->at(i);
-
-            // skip nodes that are not of the specified type
-            if (!markerTypes.contains(marker.type())) {
-                ++i;
+        for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
+            OwnPtr<MarkerList>& list = (*markers)[markerListIndex];
+            if (!list || list->isEmpty()) {
+                if (list.get() && list->isEmpty())
+                    list.clear();
+                ++emptyListsCount;
                 continue;
             }
-
-            // pitch the old marker
-            list->remove(i);
-            needsRepainting = true;
-            // i now is the index of the next marker
+            if (markerTypes.contains(list->begin()->type())) {
+                list->clear();
+                list.clear();
+                ++emptyListsCount;
+                needsRepainting = true;
+            }
         }
 
-        listCanBeRemoved = list->isEmpty();
+        nodeCanBeRemoved = emptyListsCount == DocumentMarker::MarkerTypeIndexesCount;
     }
 
     if (needsRepainting) {
@@ -480,7 +550,7 @@ void DocumentMarkerController::removeMarkersFromList(MarkerMap::iterator iterato
             renderer->repaint();
     }
 
-    if (listCanBeRemoved) {
+    if (nodeCanBeRemoved) {
         m_markers.remove(iterator);
         if (m_markers.isEmpty())
             m_possiblyExistingMarkerTypes = 0;
@@ -499,24 +569,18 @@ void DocumentMarkerController::repaintMarkers(DocumentMarker::MarkerTypes marker
         Node* node = i->key.get();
 
         // inner loop: process each marker in the current node
-        MarkerList* list = i->value.get();
-        bool nodeNeedsRepaint = false;
-        for (size_t i = 0; i != list->size(); ++i) {
-            DocumentMarker marker = list->at(i);
+        MarkerLists* markers = i->value.get();
+        for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
+            OwnPtr<MarkerList>& list = (*markers)[markerListIndex];
+            if (!list || list->isEmpty() || !markerTypes.contains(list->begin()->type()))
+                continue;
 
-            // skip nodes that are not of the specified type
-            if (markerTypes.contains(marker.type())) {
-                nodeNeedsRepaint = true;
+            // cause the node to be redrawn
+            if (RenderObject* renderer = node->renderer()) {
+                renderer->repaint();
                 break;
             }
         }
-
-        if (!nodeNeedsRepaint)
-            continue;
-
-        // cause the node to be redrawn
-        if (RenderObject* renderer = node->renderer())
-            renderer->repaint();
     }
 }
 
@@ -527,9 +591,12 @@ void DocumentMarkerController::invalidateRenderedRectsForMarkersInRect(const Lay
     for (MarkerMap::iterator i = m_markers.begin(); i != end; ++i) {
 
         // inner loop: process each rect in the current node
-        MarkerList* list = i->value.get();
-        for (size_t listIndex = 0; listIndex < list->size(); ++listIndex)
-            list->at(listIndex).invalidate(r);
+        MarkerLists* markers = i->value.get();
+        for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
+            OwnPtr<MarkerList>& list = (*markers)[markerListIndex];
+            for (size_t markerIndex = 0; list.get() && markerIndex < list->size(); ++markerIndex)
+                list->at(markerIndex).invalidate(r);
+        }
     }
 }
 
@@ -539,20 +606,23 @@ void DocumentMarkerController::shiftMarkers(Node* node, unsigned startOffset, in
         return;
     ASSERT(!m_markers.isEmpty());
 
-    MarkerList* list = m_markers.get(node);
-    if (!list)
+    MarkerLists* markers = m_markers.get(node);
+    if (!markers)
         return;
 
     bool docDirty = false;
-    for (size_t i = 0; i != list->size(); ++i) {
-        RenderedDocumentMarker& marker = list->at(i);
-        if (marker.startOffset() >= startOffset) {
-            ASSERT((int)marker.startOffset() + delta >= 0);
-            marker.shiftOffsets(delta);
+    for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
+        OwnPtr<MarkerList>& list = (*markers)[markerListIndex];
+        if (!list)
+            continue;
+        MarkerList::iterator startPos = std::lower_bound(list->begin(), list->end(), startOffset, startsAfter);
+        for (MarkerList::iterator marker = startPos; marker != list->end(); ++marker) {
+            ASSERT((int)marker->startOffset() + delta >= 0);
+            marker->shiftOffsets(delta);
             docDirty = true;
 
             // Marker moved, so previously-computed rendered rectangle is now invalid
-            marker.invalidate();
+            marker->invalidate();
         }
     }
 
@@ -581,23 +651,22 @@ void DocumentMarkerController::setMarkersActive(Range* range, bool active)
 
 void DocumentMarkerController::setMarkersActive(Node* node, unsigned startOffset, unsigned endOffset, bool active)
 {
-    MarkerList* list = m_markers.get(node);
-    if (!list)
+    MarkerLists* markers = m_markers.get(node);
+    if (!markers)
         return;
 
     bool docDirty = false;
-    for (size_t i = 0; i != list->size(); ++i) {
-        DocumentMarker& marker = list->at(i);
+    OwnPtr<MarkerList>& list = (*markers)[MarkerTypeToMarkerIndex(DocumentMarker::TextMatch)];
+    if (!list)
+        return;
+    MarkerList::iterator startPos = std::upper_bound(list->begin(), list->end(), startOffset, endsBefore);
+    for (MarkerList::iterator marker = startPos; marker != list->end(); ++marker) {
 
         // Markers are returned in order, so stop if we are now past the specified range.
-        if (marker.startOffset() >= endOffset)
+        if (marker->startOffset() >= endOffset)
             break;
 
-        // Skip marker that is wrong type or before target.
-        if (marker.endOffset() <= startOffset || marker.type() != DocumentMarker::TextMatch)
-            continue;
-
-        marker.setActiveMatch(active);
+        marker->setActiveMatch(active);
         docDirty = true;
     }
 
@@ -643,10 +712,13 @@ void DocumentMarkerController::showMarkers() const
     for (MarkerMap::const_iterator nodeIterator = m_markers.begin(); nodeIterator != end; ++nodeIterator) {
         Node* node = nodeIterator->key.get();
         fprintf(stderr, "%p", node);
-        MarkerList* list = nodeIterator->value.get();
-        for (unsigned markerIndex = 0; markerIndex < list->size(); ++markerIndex) {
-            const DocumentMarker& marker = list->at(markerIndex);
-            fprintf(stderr, " %d:[%d:%d](%d)", marker.type(), marker.startOffset(), marker.endOffset(), marker.activeMatch());
+        MarkerLists* markers = m_markers.get(node);
+        for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
+            OwnPtr<MarkerList>& list = (*markers)[markerListIndex];
+            for (unsigned markerIndex = 0; list.get() && markerIndex < list->size(); ++markerIndex) {
+                const DocumentMarker& marker = list->at(markerIndex);
+                fprintf(stderr, " %d:[%d:%d](%d)", marker.type(), marker.startOffset(), marker.endOffset(), marker.activeMatch());
+            }
         }
 
         fprintf(stderr, "\n");
