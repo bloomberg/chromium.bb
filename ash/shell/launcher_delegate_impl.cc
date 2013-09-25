@@ -5,7 +5,7 @@
 #include "ash/shell/launcher_delegate_impl.h"
 
 #include "ash/launcher/launcher_item_delegate_manager.h"
-#include "ash/launcher/launcher_util.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/shell/window_watcher.h"

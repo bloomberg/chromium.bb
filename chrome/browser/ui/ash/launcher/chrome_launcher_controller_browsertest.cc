@@ -12,8 +12,8 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_model.h"
-#include "ash/launcher/launcher_util.h"
 #include "ash/launcher/launcher_view.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/test/launcher_test_api.h"
 #include "ash/test/launcher_view_test_api.h"
@@ -1121,7 +1121,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, RefocusFilterLaunch) {
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, ActivationStateCheck) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   // Get the browser item index
-  int browser_index = ash::launcher::GetBrowserItemIndex(*controller_->model());
+  int browser_index = ash::GetBrowserItemIndex(*controller_->model());
   EXPECT_TRUE(browser_index >= 0);
 
   // Even though we are just comming up, the browser should be active.
@@ -1749,7 +1749,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, MatchingLauncherIDandActiveTab) {
 
   aura::Window* window = browser()->window()->GetNativeWindow();
 
-  int browser_index = ash::launcher::GetBrowserItemIndex(*model_);
+  int browser_index = ash::GetBrowserItemIndex(*model_);
   ash::LauncherID browser_id = model_->items()[browser_index].id;
   EXPECT_EQ(browser_id, controller_->GetIDByWindow(window));
 
