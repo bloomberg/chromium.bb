@@ -41,6 +41,9 @@ size_t DecodedDataDocumentParser::appendBytes(const char* data, size_t length)
     if (!length)
         return 0;
 
+    if (isStopped())
+        return 0;
+
     String decoded = document()->decoder()->decode(data, length);
     document()->setEncoding(document()->decoder()->encoding());
 
@@ -55,6 +58,9 @@ size_t DecodedDataDocumentParser::appendBytes(const char* data, size_t length)
 
 size_t DecodedDataDocumentParser::flush()
 {
+    if (isStopped())
+        return 0;
+
     // null decoder indicates there is no data received.
     // We have nothing to do in that case.
     TextResourceDecoder* decoder = document()->decoder();
