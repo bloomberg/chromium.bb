@@ -2715,9 +2715,7 @@
         '..',
       ],
       'sources': [
-        'app/breakpad_field_trial_win.cc',
         'app/breakpad_win.cc',
-        'app/breakpad_unittest_win.cc',
         'app/delay_load_hook_win.cc',
         'app/delay_load_hook_win.h',
         'app/delay_load_hook_unittest_win.cc',

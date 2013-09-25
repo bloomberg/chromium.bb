@@ -5,6 +5,7 @@
 #ifndef CHROME_COMMON_METRICS_VARIATIONS_VARIATIONS_UTIL_H_
 #define CHROME_COMMON_METRICS_VARIATIONS_VARIATIONS_UTIL_H_
 
+#include <string>
 #include <vector>
 
 #include "base/metrics/field_trial.h"
@@ -24,12 +25,7 @@ void GetFieldTrialActiveGroupIds(std::vector<ActiveGroupId>* name_group_ids);
 // has a chosen group. The strings are formatted as "<TrialName>-<GroupName>",
 // with the names as hex strings. Field Trials for which a group has not been
 // chosen yet are NOT returned in this list.
-void GetFieldTrialActiveGroupIdsAsStrings(std::vector<string16>* output);
-
-// Generates variation chunks from |variation_strings| that are suitable for
-// crash reporting.
-void GenerateVariationChunks(const std::vector<string16>& variation_strings,
-                             std::vector<string16>* chunks);
+void GetFieldTrialActiveGroupIdsAsStrings(std::vector<std::string>* output);
 
 // Get the current set of chosen FieldTrial groups (aka variations) and send
 // them to the child process logging module so it can save it for crash dumps.

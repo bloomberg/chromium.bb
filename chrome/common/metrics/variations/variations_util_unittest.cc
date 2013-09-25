@@ -104,60 +104,6 @@ TEST_F(VariationsUtilTest, GetFieldTrialActiveGroups) {
   EXPECT_EQ(0U, expected_groups.size());
 }
 
-TEST_F(VariationsUtilTest, GenerateExperimentChunks) {
-  const char* kExperimentStrings[] = {
-      "1d3048f1-9de009d0",
-      "cd73da34-cf196cb",
-      "6214fa18-9e6dc24d",
-      "4dcb0cd6-d31c4ca1",
-      "9d5bce6-30d7d8ac",
-  };
-  const char* kExpectedChunks1[] = {
-      "1d3048f1-9de009d0",
-  };
-  const char* kExpectedChunks2[] = {
-      "1d3048f1-9de009d0,cd73da34-cf196cb",
-  };
-  const char* kExpectedChunks3[] = {
-      "1d3048f1-9de009d0,cd73da34-cf196cb,6214fa18-9e6dc24d",
-  };
-  const char* kExpectedChunks4[] = {
-      "1d3048f1-9de009d0,cd73da34-cf196cb,6214fa18-9e6dc24d",
-      "4dcb0cd6-d31c4ca1",
-  };
-  const char* kExpectedChunks5[] = {
-      "1d3048f1-9de009d0,cd73da34-cf196cb,6214fa18-9e6dc24d",
-      "4dcb0cd6-d31c4ca1,9d5bce6-30d7d8ac",
-  };
-
-  struct {
-    size_t strings_length;
-    size_t expected_chunks_length;
-    const char** expected_chunks;
-  } cases[] = {
-    { 0, 0, NULL },
-    { 1, arraysize(kExpectedChunks1), kExpectedChunks1 },
-    { 2, arraysize(kExpectedChunks2), kExpectedChunks2 },
-    { 3, arraysize(kExpectedChunks3), kExpectedChunks3 },
-    { 4, arraysize(kExpectedChunks4), kExpectedChunks4 },
-    { 5, arraysize(kExpectedChunks5), kExpectedChunks5 },
-  };
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
-    ASSERT_LE(cases[i].strings_length, arraysize(kExperimentStrings));
-
-    std::vector<string16> experiments;
-    for (size_t j = 0; j < cases[i].strings_length; ++j)
-      experiments.push_back(UTF8ToUTF16(kExperimentStrings[j]));
-
-    std::vector<string16> chunks;
-    GenerateVariationChunks(experiments, &chunks);
-    ASSERT_EQ(cases[i].expected_chunks_length, chunks.size());
-    for (size_t j = 0; j < chunks.size(); ++j)
-      EXPECT_EQ(UTF8ToUTF16(cases[i].expected_chunks[j]), chunks[j]);
-  }
-}
-
 TEST_F(VariationsUtilTest, BuildGoogleUpdateExperimentLabel) {
   struct {
     const char* active_group_pairs;

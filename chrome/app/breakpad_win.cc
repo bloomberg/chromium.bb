@@ -31,7 +31,6 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
-#include "chrome/app/breakpad_field_trial_win.h"
 #include "chrome/app/hard_error_handler_win.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
@@ -54,16 +53,12 @@ namespace breakpad_win {
 // is way too too fragile. See
 // https://code.google.com/p/chromium/issues/detail?id=137062.
 std::vector<google_breakpad::CustomInfoEntry>* g_custom_entries = NULL;
-size_t g_num_of_experiments_offset = 0;
-size_t g_experiment_chunks_offset = 0;
 bool g_deferred_crash_uploads = false;
 
 }   // namespace breakpad_win
 
 using breakpad_win::g_custom_entries;
 using breakpad_win::g_deferred_crash_uploads;
-using breakpad_win::g_experiment_chunks_offset;
-using breakpad_win::g_num_of_experiments_offset;
 
 namespace {
 
@@ -425,21 +420,6 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
        breakpad::GetBreakpadClient()->IsRunningUnattended());
   if (use_crash_service)
     SetBreakpadDumpPath();
-
-  g_num_of_experiments_offset = g_custom_entries->size();
-  g_custom_entries->push_back(
-      google_breakpad::CustomInfoEntry(L"num-experiments", L"N/A"));
-
-  g_experiment_chunks_offset = g_custom_entries->size();
-  // We depend on this in UpdateExperiments...
-  DCHECK_NE(0UL, g_experiment_chunks_offset);
-  // And the test code depends on this.
-  DCHECK_EQ(g_num_of_experiments_offset + 1, g_experiment_chunks_offset);
-  // one-based index for the name suffix.
-  for (int i = 1; i <= kMaxReportedVariationChunks; ++i) {
-    g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
-        base::StringPrintf(L"experiment-chunk-%i", i).c_str(), L""));
-  }
 
   // Create space for dynamic ad-hoc keys. The names and values are set using
   // the API defined in base/debug/crash_logging.h.
@@ -924,12 +904,4 @@ void InitCrashReporter() {
 
 void InitDefaultCrashCallback(LPTOP_LEVEL_EXCEPTION_FILTER filter) {
   previous_filter = SetUnhandledExceptionFilter(filter);
-}
-
-void StringVectorToCStringVector(const std::vector<std::wstring>& wstrings,
-                                 std::vector<const wchar_t*>* cstrings) {
-  cstrings->clear();
-  cstrings->reserve(wstrings.size());
-  for (size_t i = 0; i < wstrings.size(); ++i)
-    cstrings->push_back(wstrings[i].c_str());
 }

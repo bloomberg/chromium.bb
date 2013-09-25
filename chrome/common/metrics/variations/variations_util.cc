@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/installer/util/google_update_experiment_util.h"
 
 namespace chrome_variations {
@@ -68,39 +69,20 @@ void GetFieldTrialActiveGroupIds(
 }
 
 void GetFieldTrialActiveGroupIdsAsStrings(
-    std::vector<string16>* output) {
+    std::vector<std::string>* output) {
   DCHECK(output->empty());
   std::vector<ActiveGroupId> name_group_ids;
   GetFieldTrialActiveGroupIds(&name_group_ids);
   for (size_t i = 0; i < name_group_ids.size(); ++i) {
-    output->push_back(UTF8ToUTF16(base::StringPrintf(
-        "%x-%x", name_group_ids[i].name, name_group_ids[i].group)));
+    output->push_back(base::StringPrintf(
+        "%x-%x", name_group_ids[i].name, name_group_ids[i].group));
   }
-}
-
-void GenerateVariationChunks(const std::vector<string16>& experiments,
-                             std::vector<string16>* chunks) {
-  string16 current_chunk;
-  for (size_t i = 0; i < experiments.size(); ++i) {
-    const size_t needed_length =
-        (current_chunk.empty() ? 1 : 0) + experiments[i].length();
-    if (current_chunk.length() + needed_length > kMaxVariationChunkSize) {
-      chunks->push_back(current_chunk);
-      current_chunk = experiments[i];
-    } else {
-      if (!current_chunk.empty())
-        current_chunk.push_back(',');
-      current_chunk += experiments[i];
-    }
-  }
-  if (!current_chunk.empty())
-    chunks->push_back(current_chunk);
 }
 
 void SetChildProcessLoggingVariationList() {
-  std::vector<string16> experiment_strings;
+  std::vector<std::string> experiment_strings;
   GetFieldTrialActiveGroupIdsAsStrings(&experiment_strings);
-  child_process_logging::SetExperimentList(experiment_strings);
+  crash_keys::SetVariationsList(experiment_strings);
 }
 
 string16 BuildGoogleUpdateExperimentLabel(

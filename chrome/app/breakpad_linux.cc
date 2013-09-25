@@ -1264,26 +1264,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
     writer.Flush();
   }
 
-  if (*child_process_logging::g_num_variations) {
-    writer.AddPairString("num-experiments",
-                         child_process_logging::g_num_variations);
-    writer.AddBoundary();
-    writer.Flush();
-  }
-
-  unsigned variation_chunks_len =
-      my_strlen(child_process_logging::g_variation_chunks);
-  if (variation_chunks_len) {
-    static const char variation_msg[] = "experiment-chunk-";
-    static const unsigned kMaxVariationsLen =
-        kMaxReportedVariationChunks * kMaxVariationChunkSize;
-    writer.AddPairDataInChunks(variation_msg, sizeof(variation_msg) - 1,
-        child_process_logging::g_variation_chunks,
-        std::min(variation_chunks_len, kMaxVariationsLen),
-        kMaxVariationChunkSize,
-        true /* Strip whitespace since variation chunks are padded. */);
-  }
-
   if (info.oom_size) {
     char oom_size_str[kUint64StringSize];
     const unsigned oom_size_len = my_uint64_len(info.oom_size);

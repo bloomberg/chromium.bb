@@ -58,6 +58,9 @@ const char kActiveURL[] = "url-chunk";
 const char kSwitch[] = "switch-%" PRIuS;
 const char kNumSwitches[] = "num-switches";
 
+const char kNumVariations[] = "num-experiments";
+const char kVariations[] = "variations";
+
 const char kExtensionID[] = "extension-%" PRIuS;
 const char kNumExtensionsCount[] = "num-extensions";
 
@@ -108,6 +111,8 @@ size_t RegisterChromeCrashKeys() {
     { kChannel, kSmallSize },
     { kActiveURL, kLargeSize },
     { kNumSwitches, kSmallSize },
+    { kNumVariations, kSmallSize },
+    { kVariations, kLargeSize },
     { kNumExtensionsCount, kSmallSize },
     { kNumberOfViews, kSmallSize },
 #if !defined(OS_ANDROID)
@@ -268,6 +273,25 @@ void SetSwitchesFromCommandLine(const CommandLine* command_line) {
   for (; key_i <= kSwitchesMaxCount; ++key_i) {
     base::debug::ClearCrashKey(base::StringPrintf(kSwitch, key_i));
   }
+}
+
+void SetVariationsList(const std::vector<std::string>& variations) {
+  base::debug::SetCrashKeyValue(kNumVariations,
+      base::StringPrintf("%" PRIuS, variations.size()));
+
+  std::string variations_string;
+  variations_string.reserve(kLargeSize);
+
+  for (size_t i = 0; i < variations.size(); ++i) {
+    const std::string& variation = variations[i];
+    // Do not truncate an individual experiment.
+    if (variations_string.size() + variation.size() >= kLargeSize)
+      break;
+    variations_string += variation;
+    variations_string += ",";
+  }
+
+  base::debug::SetCrashKeyValue(kVariations, variations_string);
 }
 
 void SetActiveExtensions(const std::set<std::string>& extensions) {

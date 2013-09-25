@@ -7,6 +7,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/debug/crash_logging.h"
 
@@ -20,6 +21,9 @@ size_t RegisterChromeCrashKeys();
 
 // Sets the kSwitch and kNumSwitches keys based on the given |command_line|.
 void SetSwitchesFromCommandLine(const CommandLine* command_line);
+
+// Sets the list of active experiment/variations info.
+void SetVariationsList(const std::vector<std::string>& variations);
 
 // Sets the list of "active" extensions in this process. We overload "active" to
 // mean different things depending on the process type:
@@ -55,6 +59,12 @@ extern const char kSwitch[];
 // The total number of switches, used to report the total in case more than
 // |kSwitchesMaxCount| are present.
 extern const char kNumSwitches[];
+
+// The total number of experiments the instance has.
+extern const char kNumVariations[];
+// The experiments chunk. Hashed experiment names separated by |,|. This is
+// typically set by SetExperimentList.
+extern const char kVariations[];
 
 // Installed extensions. |kExtensionID| should be formatted with an integer,
 // in the range [0, kExtensionIDMaxCount).

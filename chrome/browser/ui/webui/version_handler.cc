@@ -101,10 +101,7 @@ void VersionHandler::HandleRequestVersionInfo(const ListValue* args) {
   }
 #else
   // In release mode, display the hashes only.
-  std::vector<string16> active_groups;
-  chrome_variations::GetFieldTrialActiveGroupIdsAsStrings(&active_groups);
-  for (size_t i = 0; i < active_groups.size(); ++i)
-    variations.push_back(UTF16ToASCII(active_groups[i]));
+  chrome_variations::GetFieldTrialActiveGroupIdsAsStrings(&variations);
 #endif
 
   ListValue variations_list;
