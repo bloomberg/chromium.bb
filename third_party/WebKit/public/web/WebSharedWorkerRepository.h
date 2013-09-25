@@ -55,7 +55,7 @@ public:
 };
 
 // Initializes shared worker support.
-WEBKIT_EXPORT void setSharedWorkerRepository(WebSharedWorkerRepository*);
+BLINK_EXPORT void setSharedWorkerRepository(WebSharedWorkerRepository*);
 
 } // namespace WebKit
 

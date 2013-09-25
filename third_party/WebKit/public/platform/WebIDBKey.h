@@ -42,12 +42,12 @@ public:
     WebIDBKey() { }
     ~WebIDBKey() { reset(); }
 
-    WEBKIT_EXPORT static WebIDBKey createArray(const WebVector<WebIDBKey>&);
-    WEBKIT_EXPORT static WebIDBKey createString(const WebString&);
-    WEBKIT_EXPORT static WebIDBKey createDate(double);
-    WEBKIT_EXPORT static WebIDBKey createNumber(double);
-    WEBKIT_EXPORT static WebIDBKey createInvalid();
-    WEBKIT_EXPORT static WebIDBKey createNull();
+    BLINK_EXPORT static WebIDBKey createArray(const WebVector<WebIDBKey>&);
+    BLINK_EXPORT static WebIDBKey createString(const WebString&);
+    BLINK_EXPORT static WebIDBKey createDate(double);
+    BLINK_EXPORT static WebIDBKey createNumber(double);
+    BLINK_EXPORT static WebIDBKey createInvalid();
+    BLINK_EXPORT static WebIDBKey createNull();
 
     WebIDBKey(const WebIDBKey& e) { assign(e); }
     WebIDBKey& operator=(const WebIDBKey& e)
@@ -56,23 +56,23 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void assign(const WebIDBKey&);
-    WEBKIT_EXPORT void assignArray(const WebVector<WebIDBKey>&);
-    WEBKIT_EXPORT void assignString(const WebString&);
-    WEBKIT_EXPORT void assignDate(double);
-    WEBKIT_EXPORT void assignNumber(double);
-    WEBKIT_EXPORT void assignInvalid();
-    WEBKIT_EXPORT void assignNull();
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebIDBKey&);
+    BLINK_EXPORT void assignArray(const WebVector<WebIDBKey>&);
+    BLINK_EXPORT void assignString(const WebString&);
+    BLINK_EXPORT void assignDate(double);
+    BLINK_EXPORT void assignNumber(double);
+    BLINK_EXPORT void assignInvalid();
+    BLINK_EXPORT void assignNull();
+    BLINK_EXPORT void reset();
 
-    WEBKIT_EXPORT WebIDBKeyType keyType() const;
-    WEBKIT_EXPORT bool isValid() const;
-    WEBKIT_EXPORT WebVector<WebIDBKey> array() const; // Only valid for ArrayType.
-    WEBKIT_EXPORT WebString string() const; // Only valid for StringType.
-    WEBKIT_EXPORT double date() const; // Only valid for DateType.
-    WEBKIT_EXPORT double number() const; // Only valid for NumberType.
+    BLINK_EXPORT WebIDBKeyType keyType() const;
+    BLINK_EXPORT bool isValid() const;
+    BLINK_EXPORT WebVector<WebIDBKey> array() const; // Only valid for ArrayType.
+    BLINK_EXPORT WebString string() const; // Only valid for StringType.
+    BLINK_EXPORT double date() const; // Only valid for DateType.
+    BLINK_EXPORT double number() const; // Only valid for NumberType.
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebIDBKey(const WTF::PassRefPtr<WebCore::IDBKey>&);
     WebIDBKey& operator=(const WTF::PassRefPtr<WebCore::IDBKey>&);
     operator WTF::PassRefPtr<WebCore::IDBKey>() const;

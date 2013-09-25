@@ -56,11 +56,11 @@ namespace WebKit {
 //            assign(other);
 //            return *this;
 //        }
-//        WEBKIT_EXPORT void assign(const WebFoo&);  // Implemented in the body.
+//        BLINK_EXPORT void assign(const WebFoo&);  // Implemented in the body.
 //
 //        // Methods that are exposed to Chromium and which are specific to
 //        // WebFoo go here.
-//        WEBKIT_EXPORT doWebFooThing();
+//        BLINK_EXPORT doWebFooThing();
 //
 //        // Methods that are used only by other WebKit/chromium API classes
 //        // should only be declared when INSIDE_WEBKIT is set.

@@ -38,7 +38,7 @@ namespace WebKit {
 
 class WebSpeechSynthesisVoice {
 public:
-    WEBKIT_EXPORT WebSpeechSynthesisVoice();
+    BLINK_EXPORT WebSpeechSynthesisVoice();
     WebSpeechSynthesisVoice(const WebSpeechSynthesisVoice& other) { assign(other); }
     ~WebSpeechSynthesisVoice() { reset(); }
 
@@ -48,16 +48,16 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void assign(const WebSpeechSynthesisVoice&);
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebSpeechSynthesisVoice&);
+    BLINK_EXPORT void reset();
 
-    WEBKIT_EXPORT void setVoiceURI(const WebString&);
-    WEBKIT_EXPORT void setName(const WebString&);
-    WEBKIT_EXPORT void setLanguage(const WebString&);
-    WEBKIT_EXPORT void setIsLocalService(bool);
-    WEBKIT_EXPORT void setIsDefault(bool);
+    BLINK_EXPORT void setVoiceURI(const WebString&);
+    BLINK_EXPORT void setName(const WebString&);
+    BLINK_EXPORT void setLanguage(const WebString&);
+    BLINK_EXPORT void setIsLocalService(bool);
+    BLINK_EXPORT void setIsDefault(bool);
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     operator WTF::PassRefPtr<WebCore::PlatformSpeechSynthesisVoice>() const;
 #endif
 

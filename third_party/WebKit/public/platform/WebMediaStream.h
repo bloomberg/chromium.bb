@@ -57,30 +57,30 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void assign(const WebMediaStream&);
+    BLINK_EXPORT void assign(const WebMediaStream&);
 
-    WEBKIT_EXPORT void initialize(const WebVector<WebMediaStreamTrack>& audioTracks, const WebVector<WebMediaStreamTrack>& videoTracks);
-    WEBKIT_EXPORT void initialize(const WebString& label, const WebVector<WebMediaStreamTrack>& audioTracks, const WebVector<WebMediaStreamTrack>& videoTracks);
+    BLINK_EXPORT void initialize(const WebVector<WebMediaStreamTrack>& audioTracks, const WebVector<WebMediaStreamTrack>& videoTracks);
+    BLINK_EXPORT void initialize(const WebString& label, const WebVector<WebMediaStreamTrack>& audioTracks, const WebVector<WebMediaStreamTrack>& videoTracks);
 
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
-    WEBKIT_EXPORT WebString id() const;
+    BLINK_EXPORT WebString id() const;
 
-    WEBKIT_EXPORT void audioTracks(WebVector<WebMediaStreamTrack>&) const;
-    WEBKIT_EXPORT void videoTracks(WebVector<WebMediaStreamTrack>&) const;
+    BLINK_EXPORT void audioTracks(WebVector<WebMediaStreamTrack>&) const;
+    BLINK_EXPORT void videoTracks(WebVector<WebMediaStreamTrack>&) const;
 
-    WEBKIT_EXPORT void addTrack(const WebMediaStreamTrack&);
-    WEBKIT_EXPORT void removeTrack(const WebMediaStreamTrack&);
+    BLINK_EXPORT void addTrack(const WebMediaStreamTrack&);
+    BLINK_EXPORT void removeTrack(const WebMediaStreamTrack&);
 
     // Extra data associated with this WebMediaStream.
     // If non-null, the extra data pointer will be deleted when the object is destroyed.
     // Setting the extra data pointer will cause any existing non-null
     // extra data pointer to be deleted.
-    WEBKIT_EXPORT ExtraData* extraData() const;
-    WEBKIT_EXPORT void setExtraData(ExtraData*);
+    BLINK_EXPORT ExtraData* extraData() const;
+    BLINK_EXPORT void setExtraData(ExtraData*);
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebMediaStream(WebCore::MediaStreamDescriptor*);
     WebMediaStream(const WTF::PassRefPtr<WebCore::MediaStreamDescriptor>&);
     operator WTF::PassRefPtr<WebCore::MediaStreamDescriptor>() const;

@@ -44,11 +44,11 @@ class WebMIDIPermissionRequest;
 
 class WebMIDIClientMock : public WebMIDIClient {
 public:
-    WEBKIT_EXPORT static WebMIDIClientMock* create();
+    BLINK_EXPORT static WebMIDIClientMock* create();
     virtual ~WebMIDIClientMock() { reset(); }
 
-    WEBKIT_EXPORT void setSysExPermission(bool);
-    WEBKIT_EXPORT void resetMock();
+    BLINK_EXPORT void setSysExPermission(bool);
+    BLINK_EXPORT void resetMock();
 
     // WebMIDIClient
     virtual void requestSysExPermission(const WebMIDIPermissionRequest&) OVERRIDE;
@@ -56,7 +56,7 @@ public:
 
 private:
     WebMIDIClientMock();
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void reset();
 
     WebPrivateOwnPtr<WebCore::MIDIClientMock> m_clientMock;
 };

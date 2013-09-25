@@ -43,26 +43,26 @@ class WebString;
 
 class WebDatabase {
 public:
-    WEBKIT_EXPORT WebString name() const;
-    WEBKIT_EXPORT WebString displayName() const;
-    WEBKIT_EXPORT unsigned long estimatedSize() const;
-    WEBKIT_EXPORT WebSecurityOrigin securityOrigin() const;
-    WEBKIT_EXPORT bool isSyncDatabase() const;
+    BLINK_EXPORT WebString name() const;
+    BLINK_EXPORT WebString displayName() const;
+    BLINK_EXPORT unsigned long estimatedSize() const;
+    BLINK_EXPORT WebSecurityOrigin securityOrigin() const;
+    BLINK_EXPORT bool isSyncDatabase() const;
 
-    WEBKIT_EXPORT static void setObserver(WebDatabaseObserver*);
-    WEBKIT_EXPORT static WebDatabaseObserver* observer();
+    BLINK_EXPORT static void setObserver(WebDatabaseObserver*);
+    BLINK_EXPORT static WebDatabaseObserver* observer();
 
-    WEBKIT_EXPORT static void updateDatabaseSize(
+    BLINK_EXPORT static void updateDatabaseSize(
         const WebString& originIdentifier, const WebString& name, long long size);
-    WEBKIT_EXPORT static void updateSpaceAvailable(
+    BLINK_EXPORT static void updateSpaceAvailable(
         const WebString& originIdentifier, long long spaceAvailable);
-    WEBKIT_EXPORT static void resetSpaceAvailable(
+    BLINK_EXPORT static void resetSpaceAvailable(
         const WebString& originIdentifier);
 
-    WEBKIT_EXPORT static void closeDatabaseImmediately(
+    BLINK_EXPORT static void closeDatabaseImmediately(
         const WebString& originIdentifier, const WebString& databaseName);
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebDatabase(const WebCore::DatabaseBackendBase*);
 #endif
 

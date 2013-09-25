@@ -57,18 +57,18 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT static WebBlob createFromFile(const WebString& path, long long size);
-    WEBKIT_EXPORT static WebBlob fromV8Value(v8::Handle<v8::Value>);
+    BLINK_EXPORT static WebBlob createFromFile(const WebString& path, long long size);
+    BLINK_EXPORT static WebBlob fromV8Value(v8::Handle<v8::Value>);
 
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebBlob&);
-    WEBKIT_EXPORT WebURL url();
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebBlob&);
+    BLINK_EXPORT WebURL url();
 
     bool isNull() const { return m_private.isNull(); }
 
-    WEBKIT_EXPORT v8::Handle<v8::Value>  toV8Value();
+    BLINK_EXPORT v8::Handle<v8::Value>  toV8Value();
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebBlob(const WTF::PassRefPtr<WebCore::Blob>&);
     WebBlob& operator=(const WTF::PassRefPtr<WebCore::Blob>&);
     operator WTF::PassRefPtr<WebCore::Blob>() const;

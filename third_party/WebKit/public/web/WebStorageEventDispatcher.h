@@ -42,14 +42,14 @@ class WebURL;
 class WebStorageEventDispatcher {
 public:
     // Dispatch a local storage event to appropiate documents.
-    WEBKIT_EXPORT static void dispatchLocalStorageEvent(
+    BLINK_EXPORT static void dispatchLocalStorageEvent(
             const WebString& key, const WebString& oldValue,
             const WebString& newValue, const WebURL& origin,
             const WebURL& pageUrl, WebStorageArea* sourceAreaInstance,
             bool originatedInProcess);
 
     // Dispatch a session storage event to appropiate documents.
-    WEBKIT_EXPORT static void dispatchSessionStorageEvent(
+    BLINK_EXPORT static void dispatchSessionStorageEvent(
             const WebString& key, const WebString& oldValue,
             const WebString& newValue, const WebURL& origin,
             const WebURL& pageUrl, const WebStorageNamespace&,

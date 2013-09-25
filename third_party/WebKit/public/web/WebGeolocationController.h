@@ -40,10 +40,10 @@ class WebGeolocationError;
 // WebGeolocationClient::geolocationDestroyed() has been received.
 class WebGeolocationController : public WebNonCopyable {
 public:
-    WEBKIT_EXPORT void positionChanged(const WebGeolocationPosition&);
-    WEBKIT_EXPORT void errorOccurred(const WebGeolocationError&);
+    BLINK_EXPORT void positionChanged(const WebGeolocationPosition&);
+    BLINK_EXPORT void errorOccurred(const WebGeolocationError&);
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebGeolocationController(WebCore::GeolocationController* c)
         : m_private(c)
     {

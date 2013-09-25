@@ -41,14 +41,14 @@ class WebFontRendering {
 public:
     // Set global font renderering preferences.
 
-    WEBKIT_EXPORT static void setHinting(SkPaint::Hinting);
-    WEBKIT_EXPORT static void setAutoHint(bool);
-    WEBKIT_EXPORT static void setUseBitmaps(bool);
-    WEBKIT_EXPORT static void setAntiAlias(bool);
-    WEBKIT_EXPORT static void setSubpixelRendering(bool);
-    WEBKIT_EXPORT static void setSubpixelPositioning(bool);
-    WEBKIT_EXPORT static void setLCDOrder(SkFontHost::LCDOrder);
-    WEBKIT_EXPORT static void setLCDOrientation(SkFontHost::LCDOrientation);
+    BLINK_EXPORT static void setHinting(SkPaint::Hinting);
+    BLINK_EXPORT static void setAutoHint(bool);
+    BLINK_EXPORT static void setUseBitmaps(bool);
+    BLINK_EXPORT static void setAntiAlias(bool);
+    BLINK_EXPORT static void setSubpixelRendering(bool);
+    BLINK_EXPORT static void setSubpixelPositioning(bool);
+    BLINK_EXPORT static void setLCDOrder(SkFontHost::LCDOrder);
+    BLINK_EXPORT static void setLCDOrientation(SkFontHost::LCDOrientation);
 };
 
 } // namespace WebKit

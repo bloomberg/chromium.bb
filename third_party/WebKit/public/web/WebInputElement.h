@@ -33,7 +33,7 @@
 
 #include "WebFormControlElement.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore { class HTMLInputElement; }
 #endif
 
@@ -62,67 +62,67 @@ namespace WebKit {
 
         // This returns true for all of textfield-looking types such as text,
         // password, search, email, url, and number.
-        WEBKIT_EXPORT bool isTextField() const;
+        BLINK_EXPORT bool isTextField() const;
         // This returns true only for type=text.
-        WEBKIT_EXPORT bool isText() const;
-        WEBKIT_EXPORT bool isPasswordField() const;
-        WEBKIT_EXPORT bool isImageButton() const;
-        WEBKIT_EXPORT bool isRadioButton() const;
-        WEBKIT_EXPORT bool isCheckbox() const;
-        WEBKIT_EXPORT bool autoComplete() const;
-        WEBKIT_EXPORT int maxLength() const;
-        WEBKIT_EXPORT bool isActivatedSubmit() const;
-        WEBKIT_EXPORT void setActivatedSubmit(bool);
-        WEBKIT_EXPORT int size() const;
-        WEBKIT_EXPORT void setValue(const WebString&, bool sendChangeEvent = false);
-        WEBKIT_EXPORT void setChecked(bool, bool sendChangeEvent = false);
-        WEBKIT_EXPORT WebString value() const;
+        BLINK_EXPORT bool isText() const;
+        BLINK_EXPORT bool isPasswordField() const;
+        BLINK_EXPORT bool isImageButton() const;
+        BLINK_EXPORT bool isRadioButton() const;
+        BLINK_EXPORT bool isCheckbox() const;
+        BLINK_EXPORT bool autoComplete() const;
+        BLINK_EXPORT int maxLength() const;
+        BLINK_EXPORT bool isActivatedSubmit() const;
+        BLINK_EXPORT void setActivatedSubmit(bool);
+        BLINK_EXPORT int size() const;
+        BLINK_EXPORT void setValue(const WebString&, bool sendChangeEvent = false);
+        BLINK_EXPORT void setChecked(bool, bool sendChangeEvent = false);
+        BLINK_EXPORT WebString value() const;
         // This returns the non-sanitized, exact value inside the text field.
-        WEBKIT_EXPORT WebString editingValue() const;
+        BLINK_EXPORT WebString editingValue() const;
         // Sets the value inside the text field without being sanitized.
         // Can't be used if a renderer doesn't exist or on a non text field type.
         // Caret will be moved to the end.
-        WEBKIT_EXPORT void setEditingValue(const WebString&);
-        WEBKIT_EXPORT void setSuggestedValue(const WebString&);
-        WEBKIT_EXPORT WebString suggestedValue() const;
-        WEBKIT_EXPORT void setPlaceholder(const WebString&);
-        WEBKIT_EXPORT WebString placeholder() const;
-        WEBKIT_EXPORT bool isAutofilled() const;
-        WEBKIT_EXPORT void setAutofilled(bool);
-        WEBKIT_EXPORT void setSelectionRange(int, int);
-        WEBKIT_EXPORT int selectionStart() const;
-        WEBKIT_EXPORT int selectionEnd() const;
-        WEBKIT_EXPORT bool isValidValue(const WebString&) const;
-        WEBKIT_EXPORT bool isChecked() const;
-        WEBKIT_EXPORT bool isMultiple() const;
+        BLINK_EXPORT void setEditingValue(const WebString&);
+        BLINK_EXPORT void setSuggestedValue(const WebString&);
+        BLINK_EXPORT WebString suggestedValue() const;
+        BLINK_EXPORT void setPlaceholder(const WebString&);
+        BLINK_EXPORT WebString placeholder() const;
+        BLINK_EXPORT bool isAutofilled() const;
+        BLINK_EXPORT void setAutofilled(bool);
+        BLINK_EXPORT void setSelectionRange(int, int);
+        BLINK_EXPORT int selectionStart() const;
+        BLINK_EXPORT int selectionEnd() const;
+        BLINK_EXPORT bool isValidValue(const WebString&) const;
+        BLINK_EXPORT bool isChecked() const;
+        BLINK_EXPORT bool isMultiple() const;
 
-        WEBKIT_EXPORT WebNodeCollection dataListOptions() const;
+        BLINK_EXPORT WebNodeCollection dataListOptions() const;
 
         // Return the localized value for this input type.
-        WEBKIT_EXPORT WebString localizeValue(const WebString&) const;
+        BLINK_EXPORT WebString localizeValue(const WebString&) const;
 
-        WEBKIT_EXPORT bool isSpeechInputEnabled() const;
-        WEBKIT_EXPORT SpeechInputState getSpeechInputState() const;
-        WEBKIT_EXPORT void startSpeechInput();
-        WEBKIT_EXPORT void stopSpeechInput();
+        BLINK_EXPORT bool isSpeechInputEnabled() const;
+        BLINK_EXPORT SpeechInputState getSpeechInputState() const;
+        BLINK_EXPORT void startSpeechInput();
+        BLINK_EXPORT void stopSpeechInput();
 
         // Exposes the default value of the maxLength attribute.
-        WEBKIT_EXPORT static int defaultMaxLength();
+        BLINK_EXPORT static int defaultMaxLength();
 
         // Returns the direction of the text in this element.
-        WEBKIT_EXPORT WebString directionForFormData() const;
+        BLINK_EXPORT WebString directionForFormData() const;
 
-        WEBKIT_EXPORT WebElement decorationElementFor(void*);
-        WEBKIT_EXPORT WebElement passwordGeneratorButtonElement() const;
+        BLINK_EXPORT WebElement decorationElementFor(void*);
+        BLINK_EXPORT WebElement passwordGeneratorButtonElement() const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
         WebInputElement(const WTF::PassRefPtr<WebCore::HTMLInputElement>&);
         WebInputElement& operator=(const WTF::PassRefPtr<WebCore::HTMLInputElement>&);
         operator WTF::PassRefPtr<WebCore::HTMLInputElement>() const;
 #endif
     };
 
-    WEBKIT_EXPORT WebInputElement* toWebInputElement(WebElement*);
+    BLINK_EXPORT WebInputElement* toWebInputElement(WebElement*);
 
     inline const WebInputElement* toWebInputElement(const WebElement* element)
     {

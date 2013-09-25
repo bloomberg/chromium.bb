@@ -53,35 +53,35 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebPerformance&);
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebPerformance&);
 
     // This only returns one of {Other|Reload|BackForward}.
     // Form submits and link clicks all fall under other.
-    WEBKIT_EXPORT WebNavigationType navigationType() const;
+    BLINK_EXPORT WebNavigationType navigationType() const;
 
-    WEBKIT_EXPORT double navigationStart() const;
-    WEBKIT_EXPORT double unloadEventEnd() const;
-    WEBKIT_EXPORT double redirectStart() const;
-    WEBKIT_EXPORT double redirectEnd() const;
-    WEBKIT_EXPORT unsigned short redirectCount() const;
-    WEBKIT_EXPORT double fetchStart() const;
-    WEBKIT_EXPORT double domainLookupStart() const;
-    WEBKIT_EXPORT double domainLookupEnd() const;
-    WEBKIT_EXPORT double connectStart() const;
-    WEBKIT_EXPORT double connectEnd() const;
-    WEBKIT_EXPORT double requestStart() const;
-    WEBKIT_EXPORT double responseStart() const;
-    WEBKIT_EXPORT double responseEnd() const;
-    WEBKIT_EXPORT double domLoading() const;
-    WEBKIT_EXPORT double domInteractive() const;
-    WEBKIT_EXPORT double domContentLoadedEventStart() const;
-    WEBKIT_EXPORT double domContentLoadedEventEnd() const;
-    WEBKIT_EXPORT double domComplete() const;
-    WEBKIT_EXPORT double loadEventStart() const;
-    WEBKIT_EXPORT double loadEventEnd() const;
+    BLINK_EXPORT double navigationStart() const;
+    BLINK_EXPORT double unloadEventEnd() const;
+    BLINK_EXPORT double redirectStart() const;
+    BLINK_EXPORT double redirectEnd() const;
+    BLINK_EXPORT unsigned short redirectCount() const;
+    BLINK_EXPORT double fetchStart() const;
+    BLINK_EXPORT double domainLookupStart() const;
+    BLINK_EXPORT double domainLookupEnd() const;
+    BLINK_EXPORT double connectStart() const;
+    BLINK_EXPORT double connectEnd() const;
+    BLINK_EXPORT double requestStart() const;
+    BLINK_EXPORT double responseStart() const;
+    BLINK_EXPORT double responseEnd() const;
+    BLINK_EXPORT double domLoading() const;
+    BLINK_EXPORT double domInteractive() const;
+    BLINK_EXPORT double domContentLoadedEventStart() const;
+    BLINK_EXPORT double domContentLoadedEventEnd() const;
+    BLINK_EXPORT double domComplete() const;
+    BLINK_EXPORT double loadEventStart() const;
+    BLINK_EXPORT double loadEventEnd() const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebPerformance(const WTF::PassRefPtr<WebCore::Performance>&);
     WebPerformance& operator=(const WTF::PassRefPtr<WebCore::Performance>&);
     operator WTF::PassRefPtr<WebCore::Performance>() const;

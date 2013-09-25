@@ -37,7 +37,7 @@
 #include "WebNode.h"
 
 namespace WebCore { class Event; }
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
@@ -61,38 +61,38 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebDOMEvent&);
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebDOMEvent&);
 
     bool isNull() const { return m_private.isNull(); }
 
-    WEBKIT_EXPORT WebString type() const;
-    WEBKIT_EXPORT WebNode target() const;
-    WEBKIT_EXPORT WebNode currentTarget() const;
+    BLINK_EXPORT WebString type() const;
+    BLINK_EXPORT WebNode target() const;
+    BLINK_EXPORT WebNode currentTarget() const;
 
-    WEBKIT_EXPORT PhaseType eventPhase() const;
-    WEBKIT_EXPORT bool bubbles() const;
-    WEBKIT_EXPORT bool cancelable() const;
+    BLINK_EXPORT PhaseType eventPhase() const;
+    BLINK_EXPORT bool bubbles() const;
+    BLINK_EXPORT bool cancelable() const;
 
-    WEBKIT_EXPORT bool isUIEvent() const;
-    WEBKIT_EXPORT bool isMouseEvent() const;
-    WEBKIT_EXPORT bool isMutationEvent() const;
-    WEBKIT_EXPORT bool isKeyboardEvent() const;
-    WEBKIT_EXPORT bool isTextEvent() const;
-    WEBKIT_EXPORT bool isCompositionEvent() const;
-    WEBKIT_EXPORT bool isDragEvent() const;
-    WEBKIT_EXPORT bool isClipboardEvent() const;
-    WEBKIT_EXPORT bool isMessageEvent() const;
-    WEBKIT_EXPORT bool isWheelEvent() const;
-    WEBKIT_EXPORT bool isBeforeTextInsertedEvent() const;
-    WEBKIT_EXPORT bool isOverflowEvent() const;
-    WEBKIT_EXPORT bool isPageTransitionEvent() const;
-    WEBKIT_EXPORT bool isPopStateEvent() const;
-    WEBKIT_EXPORT bool isProgressEvent() const;
-    WEBKIT_EXPORT bool isXMLHttpRequestProgressEvent() const;
-    WEBKIT_EXPORT bool isBeforeLoadEvent() const;
+    BLINK_EXPORT bool isUIEvent() const;
+    BLINK_EXPORT bool isMouseEvent() const;
+    BLINK_EXPORT bool isMutationEvent() const;
+    BLINK_EXPORT bool isKeyboardEvent() const;
+    BLINK_EXPORT bool isTextEvent() const;
+    BLINK_EXPORT bool isCompositionEvent() const;
+    BLINK_EXPORT bool isDragEvent() const;
+    BLINK_EXPORT bool isClipboardEvent() const;
+    BLINK_EXPORT bool isMessageEvent() const;
+    BLINK_EXPORT bool isWheelEvent() const;
+    BLINK_EXPORT bool isBeforeTextInsertedEvent() const;
+    BLINK_EXPORT bool isOverflowEvent() const;
+    BLINK_EXPORT bool isPageTransitionEvent() const;
+    BLINK_EXPORT bool isPopStateEvent() const;
+    BLINK_EXPORT bool isProgressEvent() const;
+    BLINK_EXPORT bool isXMLHttpRequestProgressEvent() const;
+    BLINK_EXPORT bool isBeforeLoadEvent() const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebDOMEvent(const WTF::PassRefPtr<WebCore::Event>&);
     operator WTF::PassRefPtr<WebCore::Event>() const;
 #endif
@@ -113,7 +113,7 @@ public:
 
 protected:
     typedef WebCore::Event WebDOMEventPrivate;
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     void assign(const WTF::PassRefPtr<WebDOMEventPrivate>&);
 
     template<typename T> T* unwrap()

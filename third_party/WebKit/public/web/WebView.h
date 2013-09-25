@@ -68,11 +68,11 @@ struct WebWindowFeatures;
 
 class WebView : public WebWidget {
 public:
-    WEBKIT_EXPORT static const double textSizeMultiplierRatio;
-    WEBKIT_EXPORT static const double minTextSizeMultiplier;
-    WEBKIT_EXPORT static const double maxTextSizeMultiplier;
-    WEBKIT_EXPORT static const float minPageScaleFactor;
-    WEBKIT_EXPORT static const float maxPageScaleFactor;
+    BLINK_EXPORT static const double textSizeMultiplierRatio;
+    BLINK_EXPORT static const double minTextSizeMultiplier;
+    BLINK_EXPORT static const double maxTextSizeMultiplier;
+    BLINK_EXPORT static const float minPageScaleFactor;
+    BLINK_EXPORT static const float maxPageScaleFactor;
 
     // Controls which frames user content is injected into.
     enum UserContentInjectIn {
@@ -92,7 +92,7 @@ public:
     // Creates a WebView that is NOT yet initialized.  You will need to
     // call initializeMainFrame to finish the initialization.  It is valid
     // to pass null client pointers.
-    WEBKIT_EXPORT static WebView* create(WebViewClient*);
+    BLINK_EXPORT static WebView* create(WebViewClient*);
 
     // After creating a WebView, you should immediately call this method.
     // You can optionally modify the settings before calling this method.
@@ -239,8 +239,8 @@ public:
 
     // Helper functions to convert between zoom level and zoom factor.  zoom
     // factor is zoom percent / 100, so 300% = 3.0.
-    WEBKIT_EXPORT static double zoomLevelToZoomFactor(double zoomLevel);
-    WEBKIT_EXPORT static double zoomFactorToZoomLevel(double factor);
+    BLINK_EXPORT static double zoomLevelToZoomFactor(double zoomLevel);
+    BLINK_EXPORT static double zoomFactorToZoomLevel(double factor);
 
     // Returns the current text zoom factor, where 1.0 is the normal size, > 1.0
     // is scaled up and < 1.0 is scaled down.
@@ -443,18 +443,18 @@ public:
     // Popup menu ----------------------------------------------------------
 
     // Sets whether select popup menus should be rendered by the browser.
-    WEBKIT_EXPORT static void setUseExternalPopupMenus(bool);
+    BLINK_EXPORT static void setUseExternalPopupMenus(bool);
 
 
     // Visited link state --------------------------------------------------
 
     // Tells all WebView instances to update the visited link state for the
     // specified hash.
-    WEBKIT_EXPORT static void updateVisitedLinkState(unsigned long long hash);
+    BLINK_EXPORT static void updateVisitedLinkState(unsigned long long hash);
 
     // Tells all WebView instances to update the visited state for all
     // their links.
-    WEBKIT_EXPORT static void resetVisitedLinkState();
+    BLINK_EXPORT static void resetVisitedLinkState();
 
 
     // Custom colors -------------------------------------------------------
@@ -469,18 +469,18 @@ public:
                                     unsigned inactiveForegroundColor) = 0;
 
     // User scripts --------------------------------------------------------
-    WEBKIT_EXPORT static void addUserStyleSheet(const WebString& sourceCode,
+    BLINK_EXPORT static void addUserStyleSheet(const WebString& sourceCode,
                                                 const WebVector<WebString>& patterns,
                                                 UserContentInjectIn injectIn,
                                                 UserStyleInjectionTime injectionTime = UserStyleInjectInSubsequentDocuments);
-    WEBKIT_EXPORT static void removeAllUserContent();
+    BLINK_EXPORT static void removeAllUserContent();
 
     // Modal dialog support ------------------------------------------------
 
     // Call these methods before and after running a nested, modal event loop
     // to suspend script callbacks and resource loads.
-    WEBKIT_EXPORT static void willEnterModalLoop();
-    WEBKIT_EXPORT static void didExitModalLoop();
+    BLINK_EXPORT static void willEnterModalLoop();
+    BLINK_EXPORT static void didExitModalLoop();
 
     // Called to inform the WebView that a wheel fling animation was started externally (for instance
     // by the compositor) but must be completed by the WebView.

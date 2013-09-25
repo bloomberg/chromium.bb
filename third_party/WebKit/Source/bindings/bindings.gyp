@@ -60,7 +60,7 @@
         '<(libjpeg_gyp_path):libjpeg',
       ],
       'defines': [
-        'WEBKIT_IMPLEMENTATION=1',
+        'BLINK_IMPLEMENTATION=1',
         'INSIDE_WEBKIT',
       ],
       'xcode_settings': {

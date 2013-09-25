@@ -39,9 +39,9 @@ class WebPrerender;
 
 class WebPrerenderingSupport {
 public:
-    WEBKIT_EXPORT static void initialize(WebPrerenderingSupport*);
-    WEBKIT_EXPORT static void shutdown();
-    WEBKIT_EXPORT static WebPrerenderingSupport* current();
+    BLINK_EXPORT static void initialize(WebPrerenderingSupport*);
+    BLINK_EXPORT static void shutdown();
+    BLINK_EXPORT static WebPrerenderingSupport* current();
 
     // A prerender link element is added when it is inserted into a document.
     virtual void add(const WebPrerender&) = 0;

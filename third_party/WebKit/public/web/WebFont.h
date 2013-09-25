@@ -48,7 +48,7 @@ class WebFont {
 public:
     virtual ~WebFont() { }
 
-    WEBKIT_EXPORT static WebFont* create(const WebFontDescription&);
+    BLINK_EXPORT static WebFont* create(const WebFontDescription&);
 
     virtual WebFontDescription fontDescription() const = 0;
 

@@ -29,7 +29,7 @@
 #include "WebNonCopyable.h"
 #include "WebPrivateOwnPtr.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 #include "wtf/Forward.h"
 #endif
 

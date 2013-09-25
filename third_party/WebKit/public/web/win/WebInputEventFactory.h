@@ -43,9 +43,9 @@ class WebMouseWheelEvent;
 
 class WebInputEventFactory {
 public:
-    WEBKIT_EXPORT static WebKeyboardEvent keyboardEvent(HWND, UINT, WPARAM, LPARAM);
-    WEBKIT_EXPORT static WebMouseEvent mouseEvent(HWND, UINT, WPARAM, LPARAM);
-    WEBKIT_EXPORT static WebMouseWheelEvent mouseWheelEvent(HWND, UINT, WPARAM, LPARAM);
+    BLINK_EXPORT static WebKeyboardEvent keyboardEvent(HWND, UINT, WPARAM, LPARAM);
+    BLINK_EXPORT static WebMouseEvent mouseEvent(HWND, UINT, WPARAM, LPARAM);
+    BLINK_EXPORT static WebMouseWheelEvent mouseWheelEvent(HWND, UINT, WPARAM, LPARAM);
 
     // Windows only provides information on whether a click was a single or
     // double click, while we need to know the click count past two. The
@@ -53,7 +53,7 @@ public:
     // that information. In some cases, like fast-running tests, that
     // information is known to be stale and needs to be reset; that is the
     // function of resetLastClickState().
-    WEBKIT_EXPORT static void resetLastClickState();
+    BLINK_EXPORT static void resetLastClickState();
 };
 
 } // namespace WebKit

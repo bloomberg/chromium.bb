@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 #include "wtf/PassRefPtr.h"
 #endif
 
@@ -50,11 +50,11 @@ public:
     WebSocketStreamError(const WebSocketStreamError& other) { assign(other); }
     ~WebSocketStreamError() { reset(); }
 
-    WEBKIT_EXPORT void assign(int code, const WebString& message);
-    WEBKIT_EXPORT void assign(const WebSocketStreamError&);
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void assign(int code, const WebString& message);
+    BLINK_EXPORT void assign(const WebSocketStreamError&);
+    BLINK_EXPORT void reset();
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebSocketStreamError(WTF::PassRefPtr<WebCore::SocketStreamError>);
     WebSocketStreamError& operator=(WTF::PassRefPtr<WebCore::SocketStreamError>);
     operator WTF::PassRefPtr<WebCore::SocketStreamError>() const;

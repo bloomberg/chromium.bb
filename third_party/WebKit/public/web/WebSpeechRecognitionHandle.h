@@ -53,15 +53,15 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebSpeechRecognitionHandle&);
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebSpeechRecognitionHandle&);
 
     // Comparison functions are provided so that WebSpeechRecognitionHandle objects
     // can be stored in a hash map.
-    WEBKIT_EXPORT bool equals(const WebSpeechRecognitionHandle&) const;
-    WEBKIT_EXPORT bool lessThan(const WebSpeechRecognitionHandle&) const;
+    BLINK_EXPORT bool equals(const WebSpeechRecognitionHandle&) const;
+    BLINK_EXPORT bool lessThan(const WebSpeechRecognitionHandle&) const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebSpeechRecognitionHandle(const WTF::PassRefPtr<WebCore::SpeechRecognition>&);
     WebSpeechRecognitionHandle& operator=(const WTF::PassRefPtr<WebCore::SpeechRecognition>&);
     operator WTF::PassRefPtr<WebCore::SpeechRecognition>() const;

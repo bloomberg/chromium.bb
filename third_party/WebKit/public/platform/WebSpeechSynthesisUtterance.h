@@ -46,22 +46,22 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void assign(const WebSpeechSynthesisUtterance&);
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebSpeechSynthesisUtterance&);
+    BLINK_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
-    WEBKIT_EXPORT WebString text() const;
-    WEBKIT_EXPORT WebString lang() const;
-    WEBKIT_EXPORT WebString voice() const;
+    BLINK_EXPORT WebString text() const;
+    BLINK_EXPORT WebString lang() const;
+    BLINK_EXPORT WebString voice() const;
 
     // As defined in: https://dvcs.w3.org/hg/speech-api/raw-file/tip/speechapi.html
-    WEBKIT_EXPORT float volume() const; // 0...1, 1 is default
-    WEBKIT_EXPORT float rate() const; // 0.1...10, 1 is default
-    WEBKIT_EXPORT float pitch() const; // 0...2, 1 is default
+    BLINK_EXPORT float volume() const; // 0...1, 1 is default
+    BLINK_EXPORT float rate() const; // 0.1...10, 1 is default
+    BLINK_EXPORT float pitch() const; // 0...2, 1 is default
 
-    WEBKIT_EXPORT double startTime() const; // In seconds.
+    BLINK_EXPORT double startTime() const; // In seconds.
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebSpeechSynthesisUtterance(const PassRefPtr<WebCore::PlatformSpeechSynthesisUtterance>&);
     WebSpeechSynthesisUtterance& operator=(WebCore::PlatformSpeechSynthesisUtterance*);
     operator PassRefPtr<WebCore::PlatformSpeechSynthesisUtterance>() const;

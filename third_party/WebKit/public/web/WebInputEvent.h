@@ -302,7 +302,7 @@ public:
 
     // Sets keyIdentifier based on the value of windowsKeyCode.  This is
     // handy for generating synthetic keyboard events.
-    WEBKIT_EXPORT void setKeyIdentifierFromWindowsKeyCode();
+    BLINK_EXPORT void setKeyIdentifierFromWindowsKeyCode();
 
     static int windowsKeyCodeWithoutLocation(int keycode);
     static int locationModifiersFromWindowsKeyCode(int keycode);

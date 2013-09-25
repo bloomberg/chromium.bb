@@ -60,73 +60,73 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void initialize();
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebHistoryItem&);
+    BLINK_EXPORT void initialize();
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebHistoryItem&);
 
     bool isNull() const { return m_private.isNull(); }
 
-    WEBKIT_EXPORT WebString urlString() const;
-    WEBKIT_EXPORT void setURLString(const WebString&);
+    BLINK_EXPORT WebString urlString() const;
+    BLINK_EXPORT void setURLString(const WebString&);
 
-    WEBKIT_EXPORT WebString originalURLString() const;
-    WEBKIT_EXPORT void setOriginalURLString(const WebString&);
+    BLINK_EXPORT WebString originalURLString() const;
+    BLINK_EXPORT void setOriginalURLString(const WebString&);
 
-    WEBKIT_EXPORT WebString referrer() const;
-    WEBKIT_EXPORT void setReferrer(const WebString&);
+    BLINK_EXPORT WebString referrer() const;
+    BLINK_EXPORT void setReferrer(const WebString&);
 
-    WEBKIT_EXPORT WebString target() const;
-    WEBKIT_EXPORT void setTarget(const WebString&);
+    BLINK_EXPORT WebString target() const;
+    BLINK_EXPORT void setTarget(const WebString&);
 
-    WEBKIT_EXPORT WebString parent() const;
-    WEBKIT_EXPORT void setParent(const WebString&);
+    BLINK_EXPORT WebString parent() const;
+    BLINK_EXPORT void setParent(const WebString&);
 
-    WEBKIT_EXPORT WebString title() const;
-    WEBKIT_EXPORT void setTitle(const WebString&);
+    BLINK_EXPORT WebString title() const;
+    BLINK_EXPORT void setTitle(const WebString&);
 
-    WEBKIT_EXPORT WebString alternateTitle() const;
-    WEBKIT_EXPORT void setAlternateTitle(const WebString&);
+    BLINK_EXPORT WebString alternateTitle() const;
+    BLINK_EXPORT void setAlternateTitle(const WebString&);
 
-    WEBKIT_EXPORT double lastVisitedTime() const;
-    WEBKIT_EXPORT void setLastVisitedTime(double);
+    BLINK_EXPORT double lastVisitedTime() const;
+    BLINK_EXPORT void setLastVisitedTime(double);
 
-    WEBKIT_EXPORT WebPoint scrollOffset() const;
-    WEBKIT_EXPORT void setScrollOffset(const WebPoint&);
+    BLINK_EXPORT WebPoint scrollOffset() const;
+    BLINK_EXPORT void setScrollOffset(const WebPoint&);
 
-    WEBKIT_EXPORT float pageScaleFactor() const;
-    WEBKIT_EXPORT void setPageScaleFactor(float);
+    BLINK_EXPORT float pageScaleFactor() const;
+    BLINK_EXPORT void setPageScaleFactor(float);
 
-    WEBKIT_EXPORT bool isTargetItem() const;
-    WEBKIT_EXPORT void setIsTargetItem(bool);
+    BLINK_EXPORT bool isTargetItem() const;
+    BLINK_EXPORT void setIsTargetItem(bool);
 
-    WEBKIT_EXPORT int visitCount() const;
-    WEBKIT_EXPORT void setVisitCount(int);
+    BLINK_EXPORT int visitCount() const;
+    BLINK_EXPORT void setVisitCount(int);
 
-    WEBKIT_EXPORT WebVector<WebString> documentState() const;
-    WEBKIT_EXPORT void setDocumentState(const WebVector<WebString>&);
+    BLINK_EXPORT WebVector<WebString> documentState() const;
+    BLINK_EXPORT void setDocumentState(const WebVector<WebString>&);
 
-    WEBKIT_EXPORT long long itemSequenceNumber() const;
-    WEBKIT_EXPORT void setItemSequenceNumber(long long);
+    BLINK_EXPORT long long itemSequenceNumber() const;
+    BLINK_EXPORT void setItemSequenceNumber(long long);
 
-    WEBKIT_EXPORT long long documentSequenceNumber() const;
-    WEBKIT_EXPORT void setDocumentSequenceNumber(long long);
+    BLINK_EXPORT long long documentSequenceNumber() const;
+    BLINK_EXPORT void setDocumentSequenceNumber(long long);
 
-    WEBKIT_EXPORT WebSerializedScriptValue stateObject() const;
-    WEBKIT_EXPORT void setStateObject(const WebSerializedScriptValue&);
+    BLINK_EXPORT WebSerializedScriptValue stateObject() const;
+    BLINK_EXPORT void setStateObject(const WebSerializedScriptValue&);
 
-    WEBKIT_EXPORT WebString httpContentType() const;
-    WEBKIT_EXPORT void setHTTPContentType(const WebString&);
+    BLINK_EXPORT WebString httpContentType() const;
+    BLINK_EXPORT void setHTTPContentType(const WebString&);
 
-    WEBKIT_EXPORT WebHTTPBody httpBody() const;
-    WEBKIT_EXPORT void setHTTPBody(const WebHTTPBody&);
+    BLINK_EXPORT WebHTTPBody httpBody() const;
+    BLINK_EXPORT void setHTTPBody(const WebHTTPBody&);
 
-    WEBKIT_EXPORT WebVector<WebHistoryItem> children() const;
-    WEBKIT_EXPORT void setChildren(const WebVector<WebHistoryItem>&);
-    WEBKIT_EXPORT void appendToChildren(const WebHistoryItem&);
+    BLINK_EXPORT WebVector<WebHistoryItem> children() const;
+    BLINK_EXPORT void setChildren(const WebVector<WebHistoryItem>&);
+    BLINK_EXPORT void appendToChildren(const WebHistoryItem&);
 
-    WEBKIT_EXPORT WebVector<WebString> getReferencedFilePaths() const;
+    BLINK_EXPORT WebVector<WebString> getReferencedFilePaths() const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebHistoryItem(const WTF::PassRefPtr<WebCore::HistoryItem>&);
     WebHistoryItem& operator=(const WTF::PassRefPtr<WebCore::HistoryItem>&);
     operator WTF::PassRefPtr<WebCore::HistoryItem>() const;

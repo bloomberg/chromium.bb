@@ -34,7 +34,7 @@
 #include "WebImage.h"
 #include "WebPoint.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore { class Cursor; }
 #endif
 
@@ -115,7 +115,7 @@ struct WebCursorInfo {
 #endif
     }
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     explicit WebCursorInfo(const WebCore::Cursor&);
 #endif
 };

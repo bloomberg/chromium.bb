@@ -59,16 +59,16 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void assign(const WebSourceInfo&);
+    BLINK_EXPORT void assign(const WebSourceInfo&);
 
-    WEBKIT_EXPORT void initialize(const WebString& id, SourceKind, const WebString& label, VideoFacingMode);
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void initialize(const WebString& id, SourceKind, const WebString& label, VideoFacingMode);
+    BLINK_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
-    WEBKIT_EXPORT WebString id() const;
-    WEBKIT_EXPORT SourceKind kind() const;
-    WEBKIT_EXPORT WebString label() const;
-    WEBKIT_EXPORT VideoFacingMode facing() const;
+    BLINK_EXPORT WebString id() const;
+    BLINK_EXPORT SourceKind kind() const;
+    BLINK_EXPORT WebString label() const;
+    BLINK_EXPORT VideoFacingMode facing() const;
 
 private:
     WebPrivatePtr<WebSourceInfoPrivate> m_private;

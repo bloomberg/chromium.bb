@@ -43,11 +43,11 @@ public:
     WebSpeechRecognitionResult(const WebSpeechRecognitionResult& result) { assign(result); }
     ~WebSpeechRecognitionResult() { reset(); }
 
-    WEBKIT_EXPORT void assign(const WebVector<WebString>& transcripts, const WebVector<float>& confidences, bool final);
-    WEBKIT_EXPORT void assign(const WebSpeechRecognitionResult&);
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebVector<WebString>& transcripts, const WebVector<float>& confidences, bool final);
+    BLINK_EXPORT void assign(const WebSpeechRecognitionResult&);
+    BLINK_EXPORT void reset();
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     operator WTF::PassRefPtr<WebCore::SpeechRecognitionResult>() const;
 #endif
 

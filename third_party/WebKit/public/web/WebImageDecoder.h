@@ -55,32 +55,32 @@ public:
 
     // Sets data contents for underlying decoder. All the API methods
     // require that setData() is called prior to their use.
-    WEBKIT_EXPORT void setData(const WebData& data, bool allDataReceived);
+    BLINK_EXPORT void setData(const WebData& data, bool allDataReceived);
 
     // Deletes owned decoder.
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void reset();
 
     // Returns true if image decoding failed.
-    WEBKIT_EXPORT bool isFailed() const;
+    BLINK_EXPORT bool isFailed() const;
 
     // Returns true if size information is available for the decoder.
-    WEBKIT_EXPORT bool isSizeAvailable() const;
+    BLINK_EXPORT bool isSizeAvailable() const;
 
     // Returns the size of the image.
-    WEBKIT_EXPORT WebSize size() const;
+    BLINK_EXPORT WebSize size() const;
 
     // Gives frame count for the image. For multiple frames, decoder scans the image data for the count.
-    WEBKIT_EXPORT size_t frameCount() const;
+    BLINK_EXPORT size_t frameCount() const;
 
     // Returns if the frame at given index is completely decoded.
-    WEBKIT_EXPORT bool isFrameCompleteAtIndex(int index) const;
+    BLINK_EXPORT bool isFrameCompleteAtIndex(int index) const;
 
     // Creates and returns WebImage from buffer at the index.
-    WEBKIT_EXPORT WebImage getFrameAtIndex(int index) const;
+    BLINK_EXPORT WebImage getFrameAtIndex(int index) const;
 
 private:
     // Creates type-specific decoder.
-    WEBKIT_EXPORT void init(Type type);
+    BLINK_EXPORT void init(Type type);
 
     WebImageDecoderPrivate* m_private;
 };

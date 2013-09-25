@@ -43,16 +43,16 @@ public:
     WebIDBKeyRange(const WebIDBKeyRange& keyRange) { assign(keyRange); }
     WebIDBKeyRange(const WebIDBKey& lower, const WebIDBKey& upper, bool lowerOpen, bool upperOpen) { assign(lower, upper, lowerOpen, upperOpen); }
 
-    WEBKIT_EXPORT WebIDBKey lower() const;
-    WEBKIT_EXPORT WebIDBKey upper() const;
-    WEBKIT_EXPORT bool lowerOpen() const;
-    WEBKIT_EXPORT bool upperOpen() const;
+    BLINK_EXPORT WebIDBKey lower() const;
+    BLINK_EXPORT WebIDBKey upper() const;
+    BLINK_EXPORT bool lowerOpen() const;
+    BLINK_EXPORT bool upperOpen() const;
 
-    WEBKIT_EXPORT void assign(const WebIDBKeyRange&);
-    WEBKIT_EXPORT void assign(const WebIDBKey& lower, const WebIDBKey& upper, bool lowerOpen, bool upperOpen);
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebIDBKeyRange&);
+    BLINK_EXPORT void assign(const WebIDBKey& lower, const WebIDBKey& upper, bool lowerOpen, bool upperOpen);
+    BLINK_EXPORT void reset();
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebIDBKeyRange(const WTF::PassRefPtr<WebCore::IDBKeyRange>&);
     WebIDBKeyRange& operator=(const WTF::PassRefPtr<WebCore::IDBKeyRange>&);
     operator WTF::PassRefPtr<WebCore::IDBKeyRange>() const;

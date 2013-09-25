@@ -38,7 +38,7 @@
 #include <algorithm>
 #include <cmath>
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 #include "core/platform/graphics/FloatQuad.h"
 #endif
 
@@ -59,9 +59,9 @@ struct WebFloatQuad {
         p[3] = p3;
     }
 
-    WEBKIT_EXPORT WebRect enclosingRect() const;
+    BLINK_EXPORT WebRect enclosingRect() const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebFloatQuad& operator=(const WebCore::FloatQuad& q)
     {
         p[0] = q.p1();

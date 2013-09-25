@@ -38,20 +38,20 @@ namespace WebKit {
 // Must be called on the thread that will be the main WebKit thread before
 // using any other WebKit APIs. The provided Platform; must be
 // non-null and must remain valid until the current thread calls shutdown.
-WEBKIT_EXPORT void initialize(Platform*);
+BLINK_EXPORT void initialize(Platform*);
 
 // Must be called on the thread that will be the main WebKit thread before
 // using any other WebKit APIs. The provided Platform must be
 // non-null and must remain valid until the current thread calls shutdown.
 //
 // This is a special variant of initialize that does not intitialize V8.
-WEBKIT_EXPORT void initializeWithoutV8(Platform*);
+BLINK_EXPORT void initializeWithoutV8(Platform*);
 
 // Once shutdown, the Platform passed to initialize will no longer
 // be accessed. No other WebKit objects should be in use when this function is
 // called. Any background threads created by WebKit are promised to be
 // terminated by the time this function returns.
-WEBKIT_EXPORT void shutdown();
+BLINK_EXPORT void shutdown();
 
 // Once shutdown, the Platform passed to initializeWithoutV8 will no longer
 // be accessed. No other WebKit objects should be in use when this function is
@@ -60,18 +60,18 @@ WEBKIT_EXPORT void shutdown();
 //
 // If initializeWithoutV8() was used to initialize WebKit, shutdownWithoutV8
 // must be called to shut it down again.
-WEBKIT_EXPORT void shutdownWithoutV8();
+BLINK_EXPORT void shutdownWithoutV8();
 
 // Alters the rendering of content to conform to a fixed set of rules.
-WEBKIT_EXPORT void setLayoutTestMode(bool);
-WEBKIT_EXPORT bool layoutTestMode();
+BLINK_EXPORT void setLayoutTestMode(bool);
+BLINK_EXPORT bool layoutTestMode();
 
 // Enables the named log channel. See WebCore/platform/Logging.h for details.
-WEBKIT_EXPORT void enableLogChannel(const char*);
+BLINK_EXPORT void enableLogChannel(const char*);
 
 // Purge the plugin list cache. If |reloadPages| is true, any pages
 // containing plugins will be reloaded after refreshing the plugin list.
-WEBKIT_EXPORT void resetPluginCache(bool reloadPages);
+BLINK_EXPORT void resetPluginCache(bool reloadPages);
 
 } // namespace WebKit
 

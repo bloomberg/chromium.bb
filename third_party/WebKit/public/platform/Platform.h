@@ -106,9 +106,9 @@ public:
     typedef int FileHandle;
 #endif
 
-    WEBKIT_EXPORT static void initialize(Platform*);
-    WEBKIT_EXPORT static void shutdown();
-    WEBKIT_EXPORT static Platform* current();
+    BLINK_EXPORT static void initialize(Platform*);
+    BLINK_EXPORT static void shutdown();
+    BLINK_EXPORT static Platform* current();
 
     // May return null.
     virtual WebCookieJar* cookieJar() { return 0; }

@@ -39,14 +39,14 @@ class WebPluginScrollbar : public WebScrollbar {
 public:
     // Creates a WebPluginScrollbar for use by a plugin. The plugin container and
     // client are guaranteed to outlive this object.
-    WEBKIT_EXPORT static WebPluginScrollbar* createForPlugin(WebScrollbar::Orientation,
+    BLINK_EXPORT static WebPluginScrollbar* createForPlugin(WebScrollbar::Orientation,
                                                              WebPluginContainer*,
                                                              WebPluginScrollbarClient*);
 
     virtual ~WebPluginScrollbar() { }
 
     // Gets the thickness of the scrollbar in pixels.
-    WEBKIT_EXPORT static int defaultThickness();
+    BLINK_EXPORT static int defaultThickness();
 
     // Sets the rectangle of the scrollbar.
     virtual void setLocation(const WebRect&) = 0;

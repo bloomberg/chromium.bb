@@ -35,7 +35,7 @@
 #include "WebThreadSafeData.h"
 #include "WebURL.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore { class BlobData; }
 namespace WTF { template <typename T> class PassOwnPtr; }
 #endif
@@ -68,30 +68,30 @@ public:
 
     WebBlobData() : m_private(0) { }
 
-    WEBKIT_EXPORT void initialize();
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void initialize();
+    BLINK_EXPORT void reset();
 
     bool isNull() const { return !m_private; }
 
     // Returns the number of items.
-    WEBKIT_EXPORT size_t itemCount() const;
+    BLINK_EXPORT size_t itemCount() const;
 
     // Retrieves the values of the item at the given index. Returns false if
     // index is out of bounds.
-    WEBKIT_EXPORT bool itemAt(size_t index, Item& result) const;
+    BLINK_EXPORT bool itemAt(size_t index, Item& result) const;
 
-    WEBKIT_EXPORT WebString contentType() const;
+    BLINK_EXPORT WebString contentType() const;
 
-    WEBKIT_EXPORT WebString contentDisposition() const;
+    BLINK_EXPORT WebString contentDisposition() const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebBlobData(const WTF::PassOwnPtr<WebCore::BlobData>&);
     WebBlobData& operator=(const WTF::PassOwnPtr<WebCore::BlobData>&);
     operator WTF::PassOwnPtr<WebCore::BlobData>();
 #endif
 
 private:
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     void assign(const WTF::PassOwnPtr<WebCore::BlobData>&);
 #endif
     WebBlobDataPrivate* m_private;

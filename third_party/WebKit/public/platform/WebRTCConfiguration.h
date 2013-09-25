@@ -57,16 +57,16 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void assign(const WebRTCICEServer&);
+    BLINK_EXPORT void assign(const WebRTCICEServer&);
 
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
-    WEBKIT_EXPORT WebURL uri() const;
-    WEBKIT_EXPORT WebString username() const;
-    WEBKIT_EXPORT WebString credential() const;
+    BLINK_EXPORT WebURL uri() const;
+    BLINK_EXPORT WebString username() const;
+    BLINK_EXPORT WebString credential() const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebRTCICEServer(const WTF::PassRefPtr<WebCore::RTCIceServer>&);
 #endif
 
@@ -86,15 +86,15 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void assign(const WebRTCConfiguration&);
+    BLINK_EXPORT void assign(const WebRTCConfiguration&);
 
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
-    WEBKIT_EXPORT size_t numberOfServers() const;
-    WEBKIT_EXPORT WebRTCICEServer server(size_t index) const;
+    BLINK_EXPORT size_t numberOfServers() const;
+    BLINK_EXPORT WebRTCICEServer server(size_t index) const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebRTCConfiguration(const WTF::PassRefPtr<WebCore::RTCConfiguration>&);
 #endif
 

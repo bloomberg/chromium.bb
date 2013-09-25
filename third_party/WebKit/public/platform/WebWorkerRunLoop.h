@@ -42,11 +42,11 @@ public:
     };
 
     // Returns true if the task was posted to a non-terminated loop.
-    WEBKIT_EXPORT bool postTask(Task*);
-    WEBKIT_EXPORT bool equals(const WebWorkerRunLoop&) const;
-    WEBKIT_EXPORT bool lessThan(const WebWorkerRunLoop&) const;
+    BLINK_EXPORT bool postTask(Task*);
+    BLINK_EXPORT bool equals(const WebWorkerRunLoop&) const;
+    BLINK_EXPORT bool lessThan(const WebWorkerRunLoop&) const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebWorkerRunLoop(WebCore::WorkerRunLoop*);
 #endif
 

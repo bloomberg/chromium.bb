@@ -45,21 +45,21 @@ public:
     WebSurroundingText() { }
     ~WebSurroundingText() { reset(); }
 
-    WEBKIT_EXPORT bool isNull() const;
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT bool isNull() const;
+    BLINK_EXPORT void reset();
 
     // Initializes the object to get the surrounding text centered in the position relative to a provided node.
     // The maximum length of the contents retrieved is defined by maxLength.
-    WEBKIT_EXPORT void initialize(const WebNode&, const WebPoint&, size_t maxLength);
+    BLINK_EXPORT void initialize(const WebNode&, const WebPoint&, size_t maxLength);
 
     // Surrounding text content retrieved.
-    WEBKIT_EXPORT WebString textContent() const;
+    BLINK_EXPORT WebString textContent() const;
 
     // Offset in the text content of the initial hit position (or provided offset in the node).
-    WEBKIT_EXPORT size_t hitOffsetInTextContent() const;
+    BLINK_EXPORT size_t hitOffsetInTextContent() const;
 
     // Convert start/end positions in the content text string into a WebKit text range.
-    WEBKIT_EXPORT WebRange rangeFromContentOffsets(size_t startOffsetInContent, size_t endOffsetInContent);
+    BLINK_EXPORT WebRange rangeFromContentOffsets(size_t startOffsetInContent, size_t endOffsetInContent);
 
 protected:
     WebPrivateOwnPtr<WebCore::SurroundingText> m_private;

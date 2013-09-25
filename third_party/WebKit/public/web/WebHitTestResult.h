@@ -48,30 +48,30 @@ public:
     WebHitTestResult(const WebHitTestResult& info) { assign(info); }
     ~WebHitTestResult() { reset(); }
 
-    WEBKIT_EXPORT void assign(const WebHitTestResult&);
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT bool isNull() const;
+    BLINK_EXPORT void assign(const WebHitTestResult&);
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT bool isNull() const;
 
     // The node that was hit (only one for point-based tests).
-    WEBKIT_EXPORT WebNode node() const;
+    BLINK_EXPORT WebNode node() const;
 
     // Coordinates of the point that was hit. Relative to the node.
-    WEBKIT_EXPORT WebPoint localPoint() const;
+    BLINK_EXPORT WebPoint localPoint() const;
 
     // If a link (eg. anchor or area tag) is hit, return the element.
     // Return null otheriwse.
-    WEBKIT_EXPORT WebElement urlElement() const;
+    BLINK_EXPORT WebElement urlElement() const;
 
     // If an image is hit, return the image source. Return empty otherwise.
-    WEBKIT_EXPORT WebURL absoluteImageURL() const;
+    BLINK_EXPORT WebURL absoluteImageURL() const;
 
     // If an link is hit, return the link url source. Return empty otherwise.
-    WEBKIT_EXPORT WebURL absoluteLinkURL() const;
+    BLINK_EXPORT WebURL absoluteLinkURL() const;
 
     // Return whether an editable input element was hit.
-    WEBKIT_EXPORT bool isContentEditable() const;
+    BLINK_EXPORT bool isContentEditable() const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebHitTestResult(const WebCore::HitTestResult&);
     WebHitTestResult& operator=(const WebCore::HitTestResult&);
     operator WebCore::HitTestResult() const;

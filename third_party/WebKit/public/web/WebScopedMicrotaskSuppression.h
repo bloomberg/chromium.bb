@@ -60,8 +60,8 @@ public:
     ~WebScopedMicrotaskSuppression() { reset(); }
 
 private:
-    WEBKIT_EXPORT void initialize();
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void initialize();
+    BLINK_EXPORT void reset();
 
 #ifndef NDEBUG
     class Impl;

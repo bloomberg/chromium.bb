@@ -51,16 +51,16 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void assign(const WebIDBDatabaseError&);
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebIDBDatabaseError&);
+    BLINK_EXPORT void reset();
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     operator WTF::PassRefPtr<WebCore::DOMError>() const;
 #endif
 
 private:
-    WEBKIT_EXPORT void assign(unsigned short code);
-    WEBKIT_EXPORT void assign(unsigned short code, const WebString& message);
+    BLINK_EXPORT void assign(unsigned short code);
+    BLINK_EXPORT void assign(unsigned short code, const WebString& message);
 
     WebPrivatePtr<WebCore::DOMError> m_private;
 };

@@ -58,117 +58,117 @@ public:
     // These are all defined in npruntime.h and are well documented.
 
     // NPN_Construct
-    WEBKIT_EXPORT static bool construct(NPP, NPObject*, const NPVariant* args, uint32_t argCount, NPVariant* result);
+    BLINK_EXPORT static bool construct(NPP, NPObject*, const NPVariant* args, uint32_t argCount, NPVariant* result);
 
     // NPN_CreateObject
-    WEBKIT_EXPORT static NPObject* createObject(NPP, NPClass*);
+    BLINK_EXPORT static NPObject* createObject(NPP, NPClass*);
 
     // NPN_Enumerate
-    WEBKIT_EXPORT static bool enumerate(NPP, NPObject*, NPIdentifier**, uint32_t* identifierCount);
+    BLINK_EXPORT static bool enumerate(NPP, NPObject*, NPIdentifier**, uint32_t* identifierCount);
 
     // NPN_Evaluate
-    WEBKIT_EXPORT static bool evaluate(NPP, NPObject*, NPString* script, NPVariant* result);
+    BLINK_EXPORT static bool evaluate(NPP, NPObject*, NPString* script, NPVariant* result);
 
     // NPN_EvaluateHelper
-    WEBKIT_EXPORT static bool evaluateHelper(NPP, bool popupsAllowed, NPObject*, NPString* script, NPVariant* result);
+    BLINK_EXPORT static bool evaluateHelper(NPP, bool popupsAllowed, NPObject*, NPString* script, NPVariant* result);
 
     // NPN_GetIntIdentifier
-    WEBKIT_EXPORT static NPIdentifier getIntIdentifier(int32_t number);
+    BLINK_EXPORT static NPIdentifier getIntIdentifier(int32_t number);
 
     // NPN_GetProperty
-    WEBKIT_EXPORT static bool getProperty(NPP, NPObject*, NPIdentifier property, NPVariant *result);
+    BLINK_EXPORT static bool getProperty(NPP, NPObject*, NPIdentifier property, NPVariant *result);
 
     // NPN_GetStringIdentifier
-    WEBKIT_EXPORT static NPIdentifier getStringIdentifier(const NPUTF8* string);
+    BLINK_EXPORT static NPIdentifier getStringIdentifier(const NPUTF8* string);
 
     // NPN_GetStringIdentifiers
-    WEBKIT_EXPORT static void getStringIdentifiers(const NPUTF8** names, int32_t nameCount, NPIdentifier*);
+    BLINK_EXPORT static void getStringIdentifiers(const NPUTF8** names, int32_t nameCount, NPIdentifier*);
 
     // NPN_HasMethod
-    WEBKIT_EXPORT static bool hasMethod(NPP, NPObject*, NPIdentifier method);
+    BLINK_EXPORT static bool hasMethod(NPP, NPObject*, NPIdentifier method);
 
     // NPN_HasProperty
-    WEBKIT_EXPORT static bool hasProperty(NPP, NPObject*, NPIdentifier property);
+    BLINK_EXPORT static bool hasProperty(NPP, NPObject*, NPIdentifier property);
 
     // NPN_IdentifierIsString
-    WEBKIT_EXPORT static bool identifierIsString(NPIdentifier);
+    BLINK_EXPORT static bool identifierIsString(NPIdentifier);
 
     // NPN_InitializeVariantWithStringCopy (though sometimes prefixed with an underscore)
-    WEBKIT_EXPORT static void initializeVariantWithStringCopy(NPVariant*, const NPString*);
+    BLINK_EXPORT static void initializeVariantWithStringCopy(NPVariant*, const NPString*);
 
     // NPN_IntFromIdentifier
-    WEBKIT_EXPORT static int32_t intFromIdentifier(NPIdentifier);
+    BLINK_EXPORT static int32_t intFromIdentifier(NPIdentifier);
 
     // NPN_Invoke
-    WEBKIT_EXPORT static bool invoke(NPP, NPObject*, NPIdentifier method, const NPVariant* args, uint32_t argCount, NPVariant* result);
+    BLINK_EXPORT static bool invoke(NPP, NPObject*, NPIdentifier method, const NPVariant* args, uint32_t argCount, NPVariant* result);
 
     // NPN_InvokeDefault
-    WEBKIT_EXPORT static bool invokeDefault(NPP, NPObject*, const NPVariant* args, uint32_t argCount, NPVariant* result);
+    BLINK_EXPORT static bool invokeDefault(NPP, NPObject*, const NPVariant* args, uint32_t argCount, NPVariant* result);
 
     // NPN_ReleaseObject
-    WEBKIT_EXPORT static void releaseObject(NPObject*);
+    BLINK_EXPORT static void releaseObject(NPObject*);
 
     // NPN_ReleaseVariantValue
-    WEBKIT_EXPORT static void releaseVariantValue(NPVariant*);
+    BLINK_EXPORT static void releaseVariantValue(NPVariant*);
 
     // NPN_RemoveProperty
-    WEBKIT_EXPORT static bool removeProperty(NPP, NPObject*, NPIdentifier);
+    BLINK_EXPORT static bool removeProperty(NPP, NPObject*, NPIdentifier);
 
     // NPN_RetainObject
-    WEBKIT_EXPORT static NPObject* retainObject(NPObject*);
+    BLINK_EXPORT static NPObject* retainObject(NPObject*);
 
     // NPN_SetException
-    WEBKIT_EXPORT static void setException(NPObject*, const NPUTF8* message);
+    BLINK_EXPORT static void setException(NPObject*, const NPUTF8* message);
 
     // NPN_SetProperty
-    WEBKIT_EXPORT static bool setProperty(NPP, NPObject*, NPIdentifier, const NPVariant*);
+    BLINK_EXPORT static bool setProperty(NPP, NPObject*, NPIdentifier, const NPVariant*);
 
     // _NPN_RegisterObjectOwner
-    WEBKIT_EXPORT static void registerObjectOwner(NPP);
+    BLINK_EXPORT static void registerObjectOwner(NPP);
 
     // _NPN_UnregisterObjectOwner
-    WEBKIT_EXPORT static void unregisterObjectOwner(NPP);
+    BLINK_EXPORT static void unregisterObjectOwner(NPP);
 
     // Temporary dummy implementation of _NPN_GetObjectOwner.
-    WEBKIT_EXPORT static NPP getObjectOwner(NPObject*);
+    BLINK_EXPORT static NPP getObjectOwner(NPObject*);
 
     // _NPN_UnregisterObject
-    WEBKIT_EXPORT static void unregisterObject(NPObject*);
+    BLINK_EXPORT static void unregisterObject(NPObject*);
 
     // NPN_UTF8FromIdentifier
-    WEBKIT_EXPORT static NPUTF8* utf8FromIdentifier(NPIdentifier);
+    BLINK_EXPORT static NPUTF8* utf8FromIdentifier(NPIdentifier);
 
     // Miscellaneous utility functions ----------------------------------------
 
     // Complement to NPN_Get___Identifier functions.  Extracts data from the NPIdentifier data
     // structure.  If isString is true upon return, string will be set but number's value is
     // undefined.  If iString is false, the opposite is true.
-    WEBKIT_EXPORT static void extractIdentifierData(const NPIdentifier&, const NPUTF8*& string, int32_t& number, bool& isString);
+    BLINK_EXPORT static void extractIdentifierData(const NPIdentifier&, const NPUTF8*& string, int32_t& number, bool& isString);
 
     // DumpRenderTree support -------------------------------------------------
 
     // Return true (success) if the given npobj is a range object.
     // If so, return that range as a WebRange object.
-    WEBKIT_EXPORT static bool getRange(NPObject* range, WebRange*);
+    BLINK_EXPORT static bool getRange(NPObject* range, WebRange*);
 
     // Return true (success) if the given npobj is an ArrayBuffer object.
     // If so, return it as a WebArrayBuffer object.
-    WEBKIT_EXPORT static bool getArrayBuffer(NPObject* arrayBuffer, WebArrayBuffer*);
+    BLINK_EXPORT static bool getArrayBuffer(NPObject* arrayBuffer, WebArrayBuffer*);
 
     // Return true (success) if the given npobj is an ArrayBufferView object.
     // If so, return it as a WebArrayBufferView object.
-    WEBKIT_EXPORT static bool getArrayBufferView(NPObject* arrayBufferView, WebArrayBufferView*);
+    BLINK_EXPORT static bool getArrayBufferView(NPObject* arrayBufferView, WebArrayBufferView*);
 
     // Return true (success) if the given npobj is a node.
     // If so, return that node as a WebNode object.
-    WEBKIT_EXPORT static bool getNode(NPObject* element, WebNode*);
+    BLINK_EXPORT static bool getNode(NPObject* element, WebNode*);
 
     // Return true (success) if the given npobj is an element.
     // If so, return that element as a WebElement object.
-    WEBKIT_EXPORT static bool getElement(NPObject* element, WebElement*);
+    BLINK_EXPORT static bool getElement(NPObject* element, WebElement*);
 
-    WEBKIT_EXPORT static NPObject* makeIntArray(const WebVector<int>&);
-    WEBKIT_EXPORT static NPObject* makeStringArray(const WebVector<WebString>&);
+    BLINK_EXPORT static NPObject* makeIntArray(const WebVector<int>&);
+    BLINK_EXPORT static NPObject* makeStringArray(const WebVector<WebString>&);
 
     // Exceptions -------------------------------------------------------------
 
@@ -176,12 +176,12 @@ public:
 
     // The exception handler will be notified of any exceptions thrown while
     // operating on a NPObject.
-    WEBKIT_EXPORT static void pushExceptionHandler(ExceptionHandler, void* data);
-    WEBKIT_EXPORT static void popExceptionHandler();
+    BLINK_EXPORT static void pushExceptionHandler(ExceptionHandler, void* data);
+    BLINK_EXPORT static void popExceptionHandler();
 
     // Conversion utilities to/from V8 native objects and NPVariant wrappers.
-    WEBKIT_EXPORT static void toNPVariant(v8::Local<v8::Value>, NPObject* root, NPVariant* result);
-    WEBKIT_EXPORT static v8::Handle<v8::Value> toV8Value(const NPVariant*);
+    BLINK_EXPORT static void toNPVariant(v8::Local<v8::Value>, NPObject* root, NPVariant* result);
+    BLINK_EXPORT static v8::Handle<v8::Value> toV8Value(const NPVariant*);
 };
 
 } // namespace WebKit

@@ -56,14 +56,14 @@ public:
     // resources (such as images and CSS) and adds them to the passed vector.
     // The first resource in that vector is the top frame contents.
     // Note that this also strips-out any script tag or link to JavaScript.
-    WEBKIT_EXPORT static void serialize(WebView*, WebVector<Resource>*);
+    BLINK_EXPORT static void serialize(WebView*, WebVector<Resource>*);
 
     // Serializes the WebView contents to a MHTML representation.
-    WEBKIT_EXPORT static WebCString serializeToMHTML(WebView*);
+    BLINK_EXPORT static WebCString serializeToMHTML(WebView*);
 
     // Similar to serializeToMHTML but uses binary encoding for the MHTML parts.
     // This results in a smaller MHTML file but it might not be supported by other browsers.
-    WEBKIT_EXPORT static WebCString serializeToMHTMLUsingBinaryEncoding(WebView*);
+    BLINK_EXPORT static WebCString serializeToMHTMLUsingBinaryEncoding(WebView*);
 
     // IMPORTANT:
     // The API below is an older implementation of a pageserialization that
@@ -88,7 +88,7 @@ public:
     // saved links, which matched with vector:links one by one.
     // The parameter localDirectoryName is relative path of directory which
     // contain all saved auxiliary files included all sub frames and resources.
-    WEBKIT_EXPORT static bool serialize(WebFrame*,
+    BLINK_EXPORT static bool serialize(WebFrame*,
                                         bool recursive,
                                         WebPageSerializerClient*,
                                         const WebVector<WebURL>& links,
@@ -98,7 +98,7 @@ public:
     // Retrieve all the resource for the passed view, including the main frame
     // and sub-frames. Returns true if all resources were retrieved
     // successfully.
-    WEBKIT_EXPORT static bool retrieveAllResources(WebView*,
+    BLINK_EXPORT static bool retrieveAllResources(WebView*,
                                                    const WebVector<WebCString>& supportedSchemes,
                                                    WebVector<WebURL>* resources,
                                                    WebVector<WebURL>* frames);
@@ -107,11 +107,11 @@ public:
     // changing the unit tests instead.
 
     // Generate the META for charset declaration.
-    WEBKIT_EXPORT static WebString generateMetaCharsetDeclaration(const WebString& charset);
+    BLINK_EXPORT static WebString generateMetaCharsetDeclaration(const WebString& charset);
     // Generate the MOTW declaration.
-    WEBKIT_EXPORT static WebString generateMarkOfTheWebDeclaration(const WebURL&);
+    BLINK_EXPORT static WebString generateMarkOfTheWebDeclaration(const WebURL&);
     // Generate the default base tag declaration.
-    WEBKIT_EXPORT static WebString generateBaseTagDeclaration(const WebString& baseTarget);
+    BLINK_EXPORT static WebString generateBaseTagDeclaration(const WebString& baseTarget);
 };
 
 } // namespace WebKit

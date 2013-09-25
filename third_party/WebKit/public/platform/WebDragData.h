@@ -36,7 +36,7 @@
 #include "WebString.h"
 #include "WebURL.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore { class ChromiumDataObject; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
@@ -93,20 +93,20 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void initialize();
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebDragData&);
+    BLINK_EXPORT void initialize();
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebDragData&);
 
     bool isNull() const { return !m_private; }
 
-    WEBKIT_EXPORT WebVector<Item> items() const;
-    WEBKIT_EXPORT void setItems(const WebVector<Item>&);
-    WEBKIT_EXPORT void addItem(const Item&);
+    BLINK_EXPORT WebVector<Item> items() const;
+    BLINK_EXPORT void setItems(const WebVector<Item>&);
+    BLINK_EXPORT void addItem(const Item&);
 
-    WEBKIT_EXPORT WebString filesystemId() const;
-    WEBKIT_EXPORT void setFilesystemId(const WebString&);
+    BLINK_EXPORT WebString filesystemId() const;
+    BLINK_EXPORT void setFilesystemId(const WebString&);
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebDragData(const WTF::PassRefPtr<WebCore::ChromiumDataObject>&);
     WebDragData& operator=(const WTF::PassRefPtr<WebCore::ChromiumDataObject>&);
     operator WTF::PassRefPtr<WebCore::ChromiumDataObject>() const;

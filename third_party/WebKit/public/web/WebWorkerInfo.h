@@ -37,7 +37,7 @@ namespace WebKit {
 
 class WebWorkerInfo {
 public:
-    WEBKIT_EXPORT static unsigned dedicatedWorkerCount();
+    BLINK_EXPORT static unsigned dedicatedWorkerCount();
 };
 
 }

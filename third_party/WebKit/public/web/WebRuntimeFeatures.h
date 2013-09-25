@@ -41,115 +41,115 @@ namespace WebKit {
 // features Blink has made API commitments to.
 class WebRuntimeFeatures {
 public:
-    WEBKIT_EXPORT static void enableStableFeatures(bool);
-    WEBKIT_EXPORT static void enableExperimentalFeatures(bool);
-    WEBKIT_EXPORT static void enableTestOnlyFeatures(bool);
+    BLINK_EXPORT static void enableStableFeatures(bool);
+    BLINK_EXPORT static void enableExperimentalFeatures(bool);
+    BLINK_EXPORT static void enableTestOnlyFeatures(bool);
 
-    WEBKIT_EXPORT static void enableApplicationCache(bool);
-    WEBKIT_EXPORT static bool isApplicationCacheEnabled();
+    BLINK_EXPORT static void enableApplicationCache(bool);
+    BLINK_EXPORT static bool isApplicationCacheEnabled();
 
-    WEBKIT_EXPORT static void enableDatabase(bool);
-    WEBKIT_EXPORT static bool isDatabaseEnabled();
+    BLINK_EXPORT static void enableDatabase(bool);
+    BLINK_EXPORT static bool isDatabaseEnabled();
 
-    WEBKIT_EXPORT static void enableDeviceMotion(bool);
-    WEBKIT_EXPORT static bool isDeviceMotionEnabled();
+    BLINK_EXPORT static void enableDeviceMotion(bool);
+    BLINK_EXPORT static bool isDeviceMotionEnabled();
 
-    WEBKIT_EXPORT static void enableDeviceOrientation(bool);
-    WEBKIT_EXPORT static bool isDeviceOrientationEnabled();
+    BLINK_EXPORT static void enableDeviceOrientation(bool);
+    BLINK_EXPORT static bool isDeviceOrientationEnabled();
 
-    WEBKIT_EXPORT static void enableDialogElement(bool);
-    WEBKIT_EXPORT static bool isDialogElementEnabled();
+    BLINK_EXPORT static void enableDialogElement(bool);
+    BLINK_EXPORT static bool isDialogElementEnabled();
 
-    WEBKIT_EXPORT static void enableEncryptedMedia(bool);
-    WEBKIT_EXPORT static bool isEncryptedMediaEnabled();
+    BLINK_EXPORT static void enableEncryptedMedia(bool);
+    BLINK_EXPORT static bool isEncryptedMediaEnabled();
 
-    WEBKIT_EXPORT static void enableLegacyEncryptedMedia(bool);
-    WEBKIT_EXPORT static bool isLegacyEncryptedMediaEnabled();
+    BLINK_EXPORT static void enableLegacyEncryptedMedia(bool);
+    BLINK_EXPORT static bool isLegacyEncryptedMediaEnabled();
 
-    WEBKIT_EXPORT static void enablePrefixedEncryptedMedia(bool);
-    WEBKIT_EXPORT static bool isPrefixedEncryptedMediaEnabled();
+    BLINK_EXPORT static void enablePrefixedEncryptedMedia(bool);
+    BLINK_EXPORT static bool isPrefixedEncryptedMediaEnabled();
 
-    WEBKIT_EXPORT static void enableExperimentalCanvasFeatures(bool);
-    WEBKIT_EXPORT static bool isExperimentalCanvasFeaturesEnabled();
+    BLINK_EXPORT static void enableExperimentalCanvasFeatures(bool);
+    BLINK_EXPORT static bool isExperimentalCanvasFeaturesEnabled();
 
-    WEBKIT_EXPORT static void enableFileSystem(bool);
-    WEBKIT_EXPORT static bool isFileSystemEnabled();
+    BLINK_EXPORT static void enableFileSystem(bool);
+    BLINK_EXPORT static bool isFileSystemEnabled();
 
-    WEBKIT_EXPORT static void enableFullscreen(bool);
-    WEBKIT_EXPORT static bool isFullscreenEnabled();
+    BLINK_EXPORT static void enableFullscreen(bool);
+    BLINK_EXPORT static bool isFullscreenEnabled();
 
-    WEBKIT_EXPORT static void enableGamepad(bool);
-    WEBKIT_EXPORT static bool isGamepadEnabled();
+    BLINK_EXPORT static void enableGamepad(bool);
+    BLINK_EXPORT static bool isGamepadEnabled();
 
-    WEBKIT_EXPORT static void enableGeolocation(bool);
-    WEBKIT_EXPORT static bool isGeolocationEnabled();
+    BLINK_EXPORT static void enableGeolocation(bool);
+    BLINK_EXPORT static bool isGeolocationEnabled();
 
-    WEBKIT_EXPORT static void enableLazyLayout(bool);
+    BLINK_EXPORT static void enableLazyLayout(bool);
 
-    WEBKIT_EXPORT static void enableLocalStorage(bool);
-    WEBKIT_EXPORT static bool isLocalStorageEnabled();
+    BLINK_EXPORT static void enableLocalStorage(bool);
+    BLINK_EXPORT static bool isLocalStorageEnabled();
 
-    WEBKIT_EXPORT static void enableMediaPlayer(bool);
-    WEBKIT_EXPORT static bool isMediaPlayerEnabled();
+    BLINK_EXPORT static void enableMediaPlayer(bool);
+    BLINK_EXPORT static bool isMediaPlayerEnabled();
 
-    WEBKIT_EXPORT static void enableWebKitMediaSource(bool);
-    WEBKIT_EXPORT static bool isWebKitMediaSourceEnabled();
+    BLINK_EXPORT static void enableWebKitMediaSource(bool);
+    BLINK_EXPORT static bool isWebKitMediaSourceEnabled();
 
-    WEBKIT_EXPORT static void enableMediaStream(bool);
-    WEBKIT_EXPORT static bool isMediaStreamEnabled();
+    BLINK_EXPORT static void enableMediaStream(bool);
+    BLINK_EXPORT static bool isMediaStreamEnabled();
 
-    WEBKIT_EXPORT static void enableNotifications(bool);
-    WEBKIT_EXPORT static bool isNotificationsEnabled();
+    BLINK_EXPORT static void enableNotifications(bool);
+    BLINK_EXPORT static bool isNotificationsEnabled();
 
-    WEBKIT_EXPORT static void enablePagePopup(bool);
-    WEBKIT_EXPORT static bool isPagePopupEnabled();
+    BLINK_EXPORT static void enablePagePopup(bool);
+    BLINK_EXPORT static bool isPagePopupEnabled();
 
-    WEBKIT_EXPORT static void enablePeerConnection(bool);
-    WEBKIT_EXPORT static bool isPeerConnectionEnabled();
+    BLINK_EXPORT static void enablePeerConnection(bool);
+    BLINK_EXPORT static bool isPeerConnectionEnabled();
 
-    WEBKIT_EXPORT static void enableRequestAutocomplete(bool);
-    WEBKIT_EXPORT static bool isRequestAutocompleteEnabled();
+    BLINK_EXPORT static void enableRequestAutocomplete(bool);
+    BLINK_EXPORT static bool isRequestAutocompleteEnabled();
 
-    WEBKIT_EXPORT static void enableScriptedSpeech(bool);
-    WEBKIT_EXPORT static bool isScriptedSpeechEnabled();
+    BLINK_EXPORT static void enableScriptedSpeech(bool);
+    BLINK_EXPORT static bool isScriptedSpeechEnabled();
 
-    WEBKIT_EXPORT static void enableSessionStorage(bool);
-    WEBKIT_EXPORT static bool isSessionStorageEnabled();
+    BLINK_EXPORT static void enableSessionStorage(bool);
+    BLINK_EXPORT static bool isSessionStorageEnabled();
 
-    WEBKIT_EXPORT static void enableSpeechInput(bool);
-    WEBKIT_EXPORT static bool isSpeechInputEnabled();
+    BLINK_EXPORT static void enableSpeechInput(bool);
+    BLINK_EXPORT static bool isSpeechInputEnabled();
 
-    WEBKIT_EXPORT static void enableSpeechSynthesis(bool);
-    WEBKIT_EXPORT static bool isSpeechSynthesisEnabled();
+    BLINK_EXPORT static void enableSpeechSynthesis(bool);
+    BLINK_EXPORT static bool isSpeechSynthesisEnabled();
 
-    WEBKIT_EXPORT static void enableTouch(bool);
-    WEBKIT_EXPORT static bool isTouchEnabled();
+    BLINK_EXPORT static void enableTouch(bool);
+    BLINK_EXPORT static bool isTouchEnabled();
 
-    WEBKIT_EXPORT static void enableWebAnimationsCSS();
-    WEBKIT_EXPORT static void enableWebAnimationsSVG();
+    BLINK_EXPORT static void enableWebAnimationsCSS();
+    BLINK_EXPORT static void enableWebAnimationsSVG();
 
-    WEBKIT_EXPORT static void enableWebAudio(bool);
-    WEBKIT_EXPORT static bool isWebAudioEnabled();
+    BLINK_EXPORT static void enableWebAudio(bool);
+    BLINK_EXPORT static bool isWebAudioEnabled();
 
-    WEBKIT_EXPORT static void enableWebGLDraftExtensions(bool);
-    WEBKIT_EXPORT static bool isWebGLDraftExtensionsEnabled();
+    BLINK_EXPORT static void enableWebGLDraftExtensions(bool);
+    BLINK_EXPORT static bool isWebGLDraftExtensionsEnabled();
 
-    WEBKIT_EXPORT static void enableWebMIDI(bool);
-    WEBKIT_EXPORT static bool isWebMIDIEnabled();
+    BLINK_EXPORT static void enableWebMIDI(bool);
+    BLINK_EXPORT static bool isWebMIDIEnabled();
 
-    WEBKIT_EXPORT static void enableDataListElement(bool);
-    WEBKIT_EXPORT static bool isDataListElementEnabled();
+    BLINK_EXPORT static void enableDataListElement(bool);
+    BLINK_EXPORT static bool isDataListElementEnabled();
 
-    WEBKIT_EXPORT static void enableHTMLImports(bool);
-    WEBKIT_EXPORT static bool isHTMLImportsEnabled();
+    BLINK_EXPORT static void enableHTMLImports(bool);
+    BLINK_EXPORT static bool isHTMLImportsEnabled();
 
-    WEBKIT_EXPORT static void enableEmbedderCustomElements(bool);
+    BLINK_EXPORT static void enableEmbedderCustomElements(bool);
 
-    WEBKIT_EXPORT static void enableOverlayScrollbars(bool);
+    BLINK_EXPORT static void enableOverlayScrollbars(bool);
 
-    WEBKIT_EXPORT static void enableInputModeAttribute(bool);
+    BLINK_EXPORT static void enableInputModeAttribute(bool);
 
-    WEBKIT_EXPORT static void enableOverlayFullscreenVideo(bool);
+    BLINK_EXPORT static void enableOverlayFullscreenVideo(bool);
 
 private:
     WebRuntimeFeatures();

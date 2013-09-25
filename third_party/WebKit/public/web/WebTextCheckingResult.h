@@ -60,7 +60,7 @@ struct WebTextCheckingResult {
     {
     }
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     operator WebCore::TextCheckingResult() const;
 #endif
 

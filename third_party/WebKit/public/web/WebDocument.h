@@ -38,7 +38,7 @@
 #include "WebNode.h"
 #include "WebSecurityOrigin.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore {
 class Document;
 class DocumentType;
@@ -80,65 +80,65 @@ public:
     }
     void assign(const WebDocument& e) { WebNode::assign(e); }
 
-    WEBKIT_EXPORT WebURL url() const;
+    BLINK_EXPORT WebURL url() const;
     // Note: Security checks should use the securityOrigin(), not url().
-    WEBKIT_EXPORT WebSecurityOrigin securityOrigin() const;
+    BLINK_EXPORT WebSecurityOrigin securityOrigin() const;
 
-    WEBKIT_EXPORT WebString encoding() const;
-    WEBKIT_EXPORT WebString contentLanguage() const;
+    BLINK_EXPORT WebString encoding() const;
+    BLINK_EXPORT WebString contentLanguage() const;
 
     // The url of the OpenSearch Desription Document (if any).
-    WEBKIT_EXPORT WebURL openSearchDescriptionURL() const;
+    BLINK_EXPORT WebURL openSearchDescriptionURL() const;
 
     // Returns the frame the document belongs to or 0 if the document is frameless.
-    WEBKIT_EXPORT WebFrame* frame() const;
-    WEBKIT_EXPORT bool isHTMLDocument() const;
-    WEBKIT_EXPORT bool isXHTMLDocument() const;
-    WEBKIT_EXPORT bool isPluginDocument() const;
-    WEBKIT_EXPORT WebURL baseURL() const;
+    BLINK_EXPORT WebFrame* frame() const;
+    BLINK_EXPORT bool isHTMLDocument() const;
+    BLINK_EXPORT bool isXHTMLDocument() const;
+    BLINK_EXPORT bool isPluginDocument() const;
+    BLINK_EXPORT WebURL baseURL() const;
 
     // The firstPartyForCookies is used to compute whether this document
     // appears in a "third-party" context for the purpose of third-party
     // cookie blocking.
-    WEBKIT_EXPORT WebURL firstPartyForCookies() const;
+    BLINK_EXPORT WebURL firstPartyForCookies() const;
 
-    WEBKIT_EXPORT WebElement documentElement() const;
-    WEBKIT_EXPORT WebElement body() const;
-    WEBKIT_EXPORT WebElement head();
-    WEBKIT_EXPORT WebString title() const;
-    WEBKIT_EXPORT WebNodeCollection all();
-    WEBKIT_EXPORT void forms(WebVector<WebFormElement>&) const;
-    WEBKIT_EXPORT void images(WebVector<WebElement>&);
-    WEBKIT_EXPORT WebURL completeURL(const WebString&) const;
-    WEBKIT_EXPORT WebElement getElementById(const WebString&) const;
-    WEBKIT_EXPORT WebNode focusedNode() const;
-    WEBKIT_EXPORT WebDocumentType doctype() const;
-    WEBKIT_EXPORT void cancelFullScreen();
-    WEBKIT_EXPORT WebElement fullScreenElement() const;
-    WEBKIT_EXPORT WebDOMEvent createEvent(const WebString& eventType);
-    WEBKIT_EXPORT WebReferrerPolicy referrerPolicy() const;
-    WEBKIT_EXPORT WebElement createElement(const WebString& tagName);
+    BLINK_EXPORT WebElement documentElement() const;
+    BLINK_EXPORT WebElement body() const;
+    BLINK_EXPORT WebElement head();
+    BLINK_EXPORT WebString title() const;
+    BLINK_EXPORT WebNodeCollection all();
+    BLINK_EXPORT void forms(WebVector<WebFormElement>&) const;
+    BLINK_EXPORT void images(WebVector<WebElement>&);
+    BLINK_EXPORT WebURL completeURL(const WebString&) const;
+    BLINK_EXPORT WebElement getElementById(const WebString&) const;
+    BLINK_EXPORT WebNode focusedNode() const;
+    BLINK_EXPORT WebDocumentType doctype() const;
+    BLINK_EXPORT void cancelFullScreen();
+    BLINK_EXPORT WebElement fullScreenElement() const;
+    BLINK_EXPORT WebDOMEvent createEvent(const WebString& eventType);
+    BLINK_EXPORT WebReferrerPolicy referrerPolicy() const;
+    BLINK_EXPORT WebElement createElement(const WebString& tagName);
 
     // Accessibility support. These methods should only be called on the
     // top-level document, because one accessibility cache spans all of
     // the documents on the page.
 
     // Gets the accessibility object for this document.
-    WEBKIT_EXPORT WebAXObject accessibilityObject() const;
+    BLINK_EXPORT WebAXObject accessibilityObject() const;
 
     // Gets the accessibility object for an object on this page by ID.
-    WEBKIT_EXPORT WebAXObject accessibilityObjectFromID(int axID) const;
+    BLINK_EXPORT WebAXObject accessibilityObjectFromID(int axID) const;
     // Inserts the given CSS source code as a user stylesheet in the document.
     // Meant for programatic/one-off injection, as opposed to
     // WebView::addUserStyleSheet which inserts styles for the lifetime of the
     // WebView.
-    WEBKIT_EXPORT void insertUserStyleSheet(const WebString& sourceCode, UserStyleLevel);
+    BLINK_EXPORT void insertUserStyleSheet(const WebString& sourceCode, UserStyleLevel);
 
-    WEBKIT_EXPORT WebVector<WebDraggableRegion> draggableRegions() const;
+    BLINK_EXPORT WebVector<WebDraggableRegion> draggableRegions() const;
 
-    WEBKIT_EXPORT v8::Handle<v8::Value> registerEmbedderCustomElement(const WebString& name, v8::Handle<v8::Value> options, WebExceptionCode&);
+    BLINK_EXPORT v8::Handle<v8::Value> registerEmbedderCustomElement(const WebString& name, v8::Handle<v8::Value> options, WebExceptionCode&);
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebDocument(const WTF::PassRefPtr<WebCore::Document>&);
     WebDocument& operator=(const WTF::PassRefPtr<WebCore::Document>&);
     operator WTF::PassRefPtr<WebCore::Document>() const;

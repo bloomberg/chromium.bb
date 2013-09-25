@@ -34,7 +34,7 @@
 #include "../platform/WebImage.h"
 #include "WebNode.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore { class Element; }
 #endif
 
@@ -50,46 +50,46 @@ struct WebRect;
         WebElement& operator=(const WebElement& e) { WebNode::assign(e); return *this; }
         void assign(const WebElement& e) { WebNode::assign(e); }
 
-        WEBKIT_EXPORT bool isFormControlElement() const;
-        WEBKIT_EXPORT bool isTextFormControlElement() const;
+        BLINK_EXPORT bool isFormControlElement() const;
+        BLINK_EXPORT bool isTextFormControlElement() const;
         // Returns the qualified name, which may contain a prefix and a colon.
-        WEBKIT_EXPORT WebString tagName() const;
+        BLINK_EXPORT WebString tagName() const;
         // Check if this element has the specified qualified name. This function
         // doesn't makes much sense because we have no ways to check namespace
         // URI. Do not use this.
-        WEBKIT_EXPORT bool hasTagName(const WebString&) const;
+        BLINK_EXPORT bool hasTagName(const WebString&) const;
         // Check if this element has the specified local tag name, and the HTML
         // namespace. Tag name matching is case-insensitive.
-        WEBKIT_EXPORT bool hasHTMLTagName(const WebString&) const;
-        WEBKIT_EXPORT bool hasAttribute(const WebString&) const;
-        WEBKIT_EXPORT void removeAttribute(const WebString&);
-        WEBKIT_EXPORT WebString getAttribute(const WebString&) const;
-        WEBKIT_EXPORT bool setAttribute(const WebString& name, const WebString& value);
-        WEBKIT_EXPORT WebString innerText();
-        WEBKIT_EXPORT WebDocument document() const;
-        WEBKIT_EXPORT void requestFullScreen();
-        WEBKIT_EXPORT WebString attributeLocalName(unsigned index) const;
-        WEBKIT_EXPORT WebString attributeValue(unsigned index) const;
-        WEBKIT_EXPORT unsigned attributeCount() const;
-        WEBKIT_EXPORT WebNode shadowRoot() const;
+        BLINK_EXPORT bool hasHTMLTagName(const WebString&) const;
+        BLINK_EXPORT bool hasAttribute(const WebString&) const;
+        BLINK_EXPORT void removeAttribute(const WebString&);
+        BLINK_EXPORT WebString getAttribute(const WebString&) const;
+        BLINK_EXPORT bool setAttribute(const WebString& name, const WebString& value);
+        BLINK_EXPORT WebString innerText();
+        BLINK_EXPORT WebDocument document() const;
+        BLINK_EXPORT void requestFullScreen();
+        BLINK_EXPORT WebString attributeLocalName(unsigned index) const;
+        BLINK_EXPORT WebString attributeValue(unsigned index) const;
+        BLINK_EXPORT unsigned attributeCount() const;
+        BLINK_EXPORT WebNode shadowRoot() const;
 
         // Returns the language code specified for this element.  This attribute
         // is inherited, so the returned value is drawn from the closest parent
         // element that has the lang attribute set, or from the HTTP
         // "Content-Language" header as a fallback.
-        WEBKIT_EXPORT WebString computeInheritedLanguage() const;
+        BLINK_EXPORT WebString computeInheritedLanguage() const;
 
         // Returns the bounds of the element in viewport space. The bounds
         // have been adjusted to include any transformations. This view is
         // also called the Root View in WebKit.
         // This function will update the layout if required.
-        WEBKIT_EXPORT WebRect boundsInViewportSpace();
+        BLINK_EXPORT WebRect boundsInViewportSpace();
 
         // Returns the image contents of this element or a null WebImage
         // if there isn't any.
-        WEBKIT_EXPORT WebImage imageContents();
+        BLINK_EXPORT WebImage imageContents();
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
         WebElement(const WTF::PassRefPtr<WebCore::Element>&);
         WebElement& operator=(const WTF::PassRefPtr<WebCore::Element>&);
         operator WTF::PassRefPtr<WebCore::Element>() const;

@@ -48,16 +48,16 @@ public:
     WebArrayBufferView() { }
     WebArrayBufferView(const WebArrayBufferView& v) { assign(v); }
 
-    WEBKIT_EXPORT void* baseAddress() const;
-    WEBKIT_EXPORT unsigned byteOffset() const;
-    WEBKIT_EXPORT unsigned byteLength() const;
+    BLINK_EXPORT void* baseAddress() const;
+    BLINK_EXPORT unsigned byteOffset() const;
+    BLINK_EXPORT unsigned byteLength() const;
 
-    WEBKIT_EXPORT void assign(const WebArrayBufferView&);
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebArrayBufferView&);
+    BLINK_EXPORT void reset();
 
-    WEBKIT_EXPORT static WebArrayBufferView* createFromV8Value(v8::Handle<v8::Value>);
+    BLINK_EXPORT static WebArrayBufferView* createFromV8Value(v8::Handle<v8::Value>);
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebArrayBufferView(const WTF::PassRefPtr<WTF::ArrayBufferView>&);
     WebArrayBufferView& operator=(const WTF::PassRefPtr<WTF::ArrayBufferView>&);
     operator WTF::PassRefPtr<WTF::ArrayBufferView>() const;

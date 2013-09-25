@@ -59,25 +59,25 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
-    WEBKIT_EXPORT bool equals(const WebUserMediaRequest&) const;
-    WEBKIT_EXPORT void assign(const WebUserMediaRequest&);
+    BLINK_EXPORT bool equals(const WebUserMediaRequest&) const;
+    BLINK_EXPORT void assign(const WebUserMediaRequest&);
 
-    WEBKIT_EXPORT bool audio() const;
-    WEBKIT_EXPORT bool video() const;
-    WEBKIT_EXPORT WebMediaConstraints audioConstraints() const;
-    WEBKIT_EXPORT WebMediaConstraints videoConstraints() const;
+    BLINK_EXPORT bool audio() const;
+    BLINK_EXPORT bool video() const;
+    BLINK_EXPORT WebMediaConstraints audioConstraints() const;
+    BLINK_EXPORT WebMediaConstraints videoConstraints() const;
 
-    WEBKIT_EXPORT WebSecurityOrigin securityOrigin() const;
-    WEBKIT_EXPORT WebDocument ownerDocument() const;
+    BLINK_EXPORT WebSecurityOrigin securityOrigin() const;
+    BLINK_EXPORT WebDocument ownerDocument() const;
 
-    WEBKIT_EXPORT void requestSucceeded(const WebMediaStream&);
+    BLINK_EXPORT void requestSucceeded(const WebMediaStream&);
 
-    WEBKIT_EXPORT void requestFailed(const WebString& description = WebString());
-    WEBKIT_EXPORT void requestFailedConstraint(const WebString& constraintName, const WebString& description = WebString());
+    BLINK_EXPORT void requestFailed(const WebString& description = WebString());
+    BLINK_EXPORT void requestFailedConstraint(const WebString& constraintName, const WebString& description = WebString());
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebUserMediaRequest(const PassRefPtr<WebCore::UserMediaRequest>&);
     WebUserMediaRequest(WebCore::UserMediaRequest*);
     operator WebCore::UserMediaRequest*() const;

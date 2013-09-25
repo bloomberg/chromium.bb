@@ -41,7 +41,7 @@ namespace WebKit {
 struct WebPasswordFormData {
     // If the provided form is suitable for password completion, isValid() will
     // return true;
-    WEBKIT_EXPORT WebPasswordFormData(const WebFormElement&);
+    BLINK_EXPORT WebPasswordFormData(const WebFormElement&);
 
     // If creation failed, return false.
     bool isValid() const { return action.isValid(); }

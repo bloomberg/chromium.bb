@@ -38,9 +38,9 @@ namespace WebKit {
 
 class WebIDBKeyPath {
 public:
-    WEBKIT_EXPORT static WebIDBKeyPath create(const WebString&);
-    WEBKIT_EXPORT static WebIDBKeyPath create(const WebVector<WebString>&);
-    WEBKIT_EXPORT static WebIDBKeyPath createNull();
+    BLINK_EXPORT static WebIDBKeyPath create(const WebString&);
+    BLINK_EXPORT static WebIDBKeyPath create(const WebVector<WebString>&);
+    BLINK_EXPORT static WebIDBKeyPath createNull();
 
     WebIDBKeyPath(const WebIDBKeyPath& keyPath) { assign(keyPath); }
     virtual ~WebIDBKeyPath() { reset(); }
@@ -50,15 +50,15 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebIDBKeyPath&);
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebIDBKeyPath&);
 
-    WEBKIT_EXPORT bool isValid() const;
-    WEBKIT_EXPORT WebIDBKeyPathType keyPathType() const;
-    WEBKIT_EXPORT WebVector<WebString> array() const; // Only valid for ArrayType.
-    WEBKIT_EXPORT WebString string() const; // Only valid for StringType.
+    BLINK_EXPORT bool isValid() const;
+    BLINK_EXPORT WebIDBKeyPathType keyPathType() const;
+    BLINK_EXPORT WebVector<WebString> array() const; // Only valid for ArrayType.
+    BLINK_EXPORT WebString string() const; // Only valid for StringType.
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebIDBKeyPath(const WebCore::IDBKeyPath&);
     WebIDBKeyPath& operator=(const WebCore::IDBKeyPath&);
     operator const WebCore::IDBKeyPath&() const;

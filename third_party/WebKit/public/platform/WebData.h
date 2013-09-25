@@ -33,7 +33,7 @@
 
 #include "WebCommon.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore { class SharedBuffer; }
 namespace WTF { template <typename T> class PassRefPtr; }
 namespace WTF { template <typename T> class RefPtr; }
@@ -72,17 +72,17 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebData&);
-    WEBKIT_EXPORT void assign(const char* data, size_t size);
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebData&);
+    BLINK_EXPORT void assign(const char* data, size_t size);
 
-    WEBKIT_EXPORT size_t size() const;
-    WEBKIT_EXPORT const char* data() const;
+    BLINK_EXPORT size_t size() const;
+    BLINK_EXPORT const char* data() const;
 
     bool isEmpty() const { return !size(); }
     bool isNull() const { return !m_private; }
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebData(const WTF::PassRefPtr<WebCore::SharedBuffer>&);
     WebData& operator=(const WTF::PassRefPtr<WebCore::SharedBuffer>&);
     operator WTF::PassRefPtr<WebCore::SharedBuffer>() const;

@@ -33,7 +33,7 @@
 
 #include "WebNode.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore { class DocumentType; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
@@ -54,9 +54,9 @@ public:
     }
     void assign(const WebDocumentType& e) { WebNode::assign(e); }
 
-    WEBKIT_EXPORT WebString name() const;
+    BLINK_EXPORT WebString name() const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebDocumentType(const WTF::PassRefPtr<WebCore::DocumentType>&);
     WebDocumentType& operator=(const WTF::PassRefPtr<WebCore::DocumentType>&);
     operator WTF::PassRefPtr<WebCore::DocumentType>() const;

@@ -34,7 +34,7 @@
 #include "../platform/WebVector.h"
 #include "WebElement.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore { class HTMLOptionElement; }
 #endif
 
@@ -53,17 +53,17 @@ public:
     }
     void assign(const WebOptionElement& element) { WebElement::assign(element); }
 
-    WEBKIT_EXPORT void setValue(const WebString&);
-    WEBKIT_EXPORT WebString value() const;
+    BLINK_EXPORT void setValue(const WebString&);
+    BLINK_EXPORT WebString value() const;
 
-    WEBKIT_EXPORT int index() const;
-    WEBKIT_EXPORT WebString text() const;
-    WEBKIT_EXPORT bool defaultSelected() const;
-    WEBKIT_EXPORT void setDefaultSelected(bool);
-    WEBKIT_EXPORT WebString label() const;
-    WEBKIT_EXPORT bool isEnabled() const;
+    BLINK_EXPORT int index() const;
+    BLINK_EXPORT WebString text() const;
+    BLINK_EXPORT bool defaultSelected() const;
+    BLINK_EXPORT void setDefaultSelected(bool);
+    BLINK_EXPORT WebString label() const;
+    BLINK_EXPORT bool isEnabled() const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebOptionElement(const WTF::PassRefPtr<WebCore::HTMLOptionElement>&);
     WebOptionElement& operator=(const WTF::PassRefPtr<WebCore::HTMLOptionElement>&);
     operator WTF::PassRefPtr<WebCore::HTMLOptionElement>() const;

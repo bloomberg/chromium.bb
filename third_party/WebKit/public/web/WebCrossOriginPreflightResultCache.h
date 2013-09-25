@@ -39,7 +39,7 @@ namespace WebKit {
 class WebCrossOriginPreflightResultCache {
 public:
     // Clears the cache.
-    WEBKIT_EXPORT static void clear();
+    BLINK_EXPORT static void clear();
 
 private:
     WebCrossOriginPreflightResultCache();  // Not intended to be instanced.

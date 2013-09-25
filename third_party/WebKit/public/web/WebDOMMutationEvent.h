@@ -32,7 +32,7 @@
 
 #include "WebDOMEvent.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore { class Event; }
 #endif
 
@@ -46,11 +46,11 @@ public:
         Removal         = 3
     };
 
-    WEBKIT_EXPORT WebNode relatedNode() const;
-    WEBKIT_EXPORT WebString prevValue() const;
-    WEBKIT_EXPORT WebString newValue() const;
-    WEBKIT_EXPORT WebString attrName() const;
-    WEBKIT_EXPORT AttrChangeType attrChange() const;
+    BLINK_EXPORT WebNode relatedNode() const;
+    BLINK_EXPORT WebString prevValue() const;
+    BLINK_EXPORT WebString newValue() const;
+    BLINK_EXPORT WebString attrName() const;
+    BLINK_EXPORT AttrChangeType attrChange() const;
 };
 
 } // namespace WebKit

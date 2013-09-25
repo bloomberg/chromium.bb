@@ -55,7 +55,7 @@ struct WebTextInputInfo {
     // This string is lower-case.
     WebString inputMode;
 
-    WEBKIT_EXPORT bool equals(const WebTextInputInfo&) const;
+    BLINK_EXPORT bool equals(const WebTextInputInfo&) const;
 
     WebTextInputInfo()
         : type(WebTextInputTypeNone)

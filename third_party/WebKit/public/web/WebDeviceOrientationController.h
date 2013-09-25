@@ -41,9 +41,9 @@ public:
     {
     }
 
-    WEBKIT_EXPORT void didChangeDeviceOrientation(const WebDeviceOrientation&);
+    BLINK_EXPORT void didChangeDeviceOrientation(const WebDeviceOrientation&);
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebCore::DeviceOrientationController* controller() const;
 #endif
 

@@ -50,7 +50,7 @@ class WebURL;
 class WebSharedWorker {
 public:
     // Invoked from the worker thread to instantiate a WebSharedWorker that interacts with the WebKit worker components.
-    WEBKIT_EXPORT static WebSharedWorker* create(WebSharedWorkerClient*);
+    BLINK_EXPORT static WebSharedWorker* create(WebSharedWorkerClient*);
 
     virtual ~WebSharedWorker() {};
 

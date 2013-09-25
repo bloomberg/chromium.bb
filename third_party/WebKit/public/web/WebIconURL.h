@@ -31,7 +31,7 @@
 #ifndef WebIconURL_h
 #define WebIconURL_h
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 #include "core/dom/IconURL.h"
 #endif
 #include "../platform/WebURL.h"
@@ -68,7 +68,7 @@ public:
         return m_iconURL;
     }
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebIconURL(const WebCore::IconURL& iconURL)
         : m_iconType(static_cast<Type>(iconURL.m_iconType))
         , m_iconURL(iconURL.m_iconURL)

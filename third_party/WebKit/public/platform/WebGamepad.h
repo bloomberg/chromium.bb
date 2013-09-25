@@ -26,7 +26,7 @@
 
 #include "WebCommon.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 #include "wtf/Assertions.h"
 #endif
 
@@ -75,7 +75,7 @@ public:
     float buttons[buttonsLengthCap];
 };
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 COMPILE_ASSERT(sizeof(WebGamepad) == 465, WebGamepad_has_wrong_size);
 #endif
 

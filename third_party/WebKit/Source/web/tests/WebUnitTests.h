@@ -43,13 +43,13 @@ namespace WebKit {
 // lifetime.
 
 // Initialize the global testSuite object inside webkit.dll
-WEBKIT_EXPORT void InitTestSuite(int argc, char** argv);
+BLINK_EXPORT void InitTestSuite(int argc, char** argv);
 
 // Runs all tests found inside webkit.dll
-WEBKIT_EXPORT int RunAllUnitTests();
+BLINK_EXPORT int RunAllUnitTests();
 
 // Deletes the global testSuite object inside webkit.dll
-WEBKIT_EXPORT void DeleteTestSuite();
+BLINK_EXPORT void DeleteTestSuite();
 
 } // namespace WebKit
 

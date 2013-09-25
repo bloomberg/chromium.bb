@@ -33,7 +33,7 @@
 
 #include "WebElement.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore { class HTMLLabelElement; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
@@ -54,9 +54,9 @@ public:
 
     void assign(const WebLabelElement& element) { WebElement::assign(element); }
 
-    WEBKIT_EXPORT WebElement correspondingControl();
+    BLINK_EXPORT WebElement correspondingControl();
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebLabelElement(const WTF::PassRefPtr<WebCore::HTMLLabelElement>&);
     WebLabelElement& operator=(const WTF::PassRefPtr<WebCore::HTMLLabelElement>&);
     operator WTF::PassRefPtr<WebCore::HTMLLabelElement>() const;

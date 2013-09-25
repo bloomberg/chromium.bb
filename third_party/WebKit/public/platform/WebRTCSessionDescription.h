@@ -64,18 +64,18 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void assign(const WebRTCSessionDescription&);
+    BLINK_EXPORT void assign(const WebRTCSessionDescription&);
 
-    WEBKIT_EXPORT void initialize(const WebString& type, const WebString& sdp);
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void initialize(const WebString& type, const WebString& sdp);
+    BLINK_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
-    WEBKIT_EXPORT WebString type() const;
-    WEBKIT_EXPORT void setType(const WebString&);
-    WEBKIT_EXPORT WebString sdp() const;
-    WEBKIT_EXPORT void setSDP(const WebString&);
+    BLINK_EXPORT WebString type() const;
+    BLINK_EXPORT void setType(const WebString&);
+    BLINK_EXPORT WebString sdp() const;
+    BLINK_EXPORT void setSDP(const WebString&);
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebRTCSessionDescription(WebString type, WebString sdp)
     {
         this->initialize(type, sdp);

@@ -34,7 +34,7 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebVector.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore { class Range; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
@@ -60,26 +60,26 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebRange&);
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebRange&);
 
     bool isNull() const { return !m_private; }
 
-    WEBKIT_EXPORT int startOffset() const;
-    WEBKIT_EXPORT int endOffset() const;
-    WEBKIT_EXPORT WebNode startContainer(int& exceptionCode) const;
-    WEBKIT_EXPORT WebNode endContainer(int& exceptionCode) const;
+    BLINK_EXPORT int startOffset() const;
+    BLINK_EXPORT int endOffset() const;
+    BLINK_EXPORT WebNode startContainer(int& exceptionCode) const;
+    BLINK_EXPORT WebNode endContainer(int& exceptionCode) const;
 
-    WEBKIT_EXPORT WebString toHTMLText() const;
-    WEBKIT_EXPORT WebString toPlainText() const;
+    BLINK_EXPORT WebString toHTMLText() const;
+    BLINK_EXPORT WebString toPlainText() const;
 
-    WEBKIT_EXPORT WebRange expandedToParagraph() const;
+    BLINK_EXPORT WebRange expandedToParagraph() const;
 
-    WEBKIT_EXPORT static WebRange fromDocumentRange(WebFrame*, int start, int length);
+    BLINK_EXPORT static WebRange fromDocumentRange(WebFrame*, int start, int length);
 
-    WEBKIT_EXPORT WebVector<WebFloatQuad> textQuads() const;
+    BLINK_EXPORT WebVector<WebFloatQuad> textQuads() const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebRange(const WTF::PassRefPtr<WebCore::Range>&);
     WebRange& operator=(const WTF::PassRefPtr<WebCore::Range>&);
     operator WTF::PassRefPtr<WebCore::Range>() const;

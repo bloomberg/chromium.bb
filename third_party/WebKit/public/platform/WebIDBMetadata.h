@@ -80,7 +80,7 @@ struct WebIDBMetadata {
             , multiEntry(false) { }
     };
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebIDBMetadata(const WebCore::IDBDatabaseMetadata&);
     operator WebCore::IDBDatabaseMetadata() const;
 #endif

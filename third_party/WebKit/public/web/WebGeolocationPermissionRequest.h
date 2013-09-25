@@ -43,10 +43,10 @@ class WebSecurityOrigin;
 // WebGeolocationClient::cancelPermissionRequest (request cancelled).
 class WebGeolocationPermissionRequest {
 public:
-    WEBKIT_EXPORT WebSecurityOrigin securityOrigin() const;
-    WEBKIT_EXPORT void setIsAllowed(bool);
+    BLINK_EXPORT WebSecurityOrigin securityOrigin() const;
+    BLINK_EXPORT void setIsAllowed(bool);
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebGeolocationPermissionRequest(WebCore::Geolocation* geolocation)
         : m_private(geolocation)
     {

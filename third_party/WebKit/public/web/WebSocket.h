@@ -70,7 +70,7 @@ public:
         BinaryTypeArrayBuffer = 1
     };
 
-    WEBKIT_EXPORT static WebSocket* create(const WebDocument&, WebSocketClient*);
+    BLINK_EXPORT static WebSocket* create(const WebDocument&, WebSocketClient*);
     virtual ~WebSocket() { }
 
     // These functions come from binaryType attribute of the WebSocket API

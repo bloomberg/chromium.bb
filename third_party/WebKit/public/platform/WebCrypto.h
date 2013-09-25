@@ -37,7 +37,7 @@
 
 namespace WebCore { class CryptoResult; }
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
@@ -63,20 +63,20 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void completeWithError();
-    WEBKIT_EXPORT void completeWithBuffer(const WebArrayBuffer&);
-    WEBKIT_EXPORT void completeWithBuffer(const void*, unsigned);
-    WEBKIT_EXPORT void completeWithBoolean(bool);
-    WEBKIT_EXPORT void completeWithKey(const WebCryptoKey&);
-    WEBKIT_EXPORT void completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey);
+    BLINK_EXPORT void completeWithError();
+    BLINK_EXPORT void completeWithBuffer(const WebArrayBuffer&);
+    BLINK_EXPORT void completeWithBuffer(const void*, unsigned);
+    BLINK_EXPORT void completeWithBoolean(bool);
+    BLINK_EXPORT void completeWithKey(const WebCryptoKey&);
+    BLINK_EXPORT void completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey);
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     explicit WebCryptoResult(const WTF::PassRefPtr<WebCore::CryptoResult>&);
 #endif
 
 private:
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebCryptoResult&);
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebCryptoResult&);
 
     WebPrivatePtr<WebCore::CryptoResult> m_impl;
 };

@@ -36,7 +36,7 @@
 
 #include "third_party/skia/include/core/SkBitmap.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore { class Image; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
@@ -67,19 +67,19 @@ public:
     // Decodes the given image data. If the image has multiple frames,
     // then the frame whose size is desiredSize is returned. Otherwise,
     // the first frame is returned.
-    WEBKIT_EXPORT static WebImage fromData(const WebData&, const WebSize& desiredSize);
+    BLINK_EXPORT static WebImage fromData(const WebData&, const WebSize& desiredSize);
 
     // Returns a list of all frames in the image. Only the first frame at each pixel
     // size will be returned.
-    WEBKIT_EXPORT static WebVector<WebImage> framesFromData(const WebData&);
+    BLINK_EXPORT static WebVector<WebImage> framesFromData(const WebData&);
 
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebImage&);
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebImage&);
 
-    WEBKIT_EXPORT bool isNull() const;
-    WEBKIT_EXPORT WebSize size() const;
+    BLINK_EXPORT bool isNull() const;
+    BLINK_EXPORT WebSize size() const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebImage(const WTF::PassRefPtr<WebCore::Image>&);
     WebImage& operator=(const WTF::PassRefPtr<WebCore::Image>&);
 #endif

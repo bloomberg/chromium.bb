@@ -33,7 +33,7 @@
 
 #include "WebCommon.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 #include "wtf/Assertions.h"
 #endif
 
@@ -43,7 +43,7 @@ namespace WebKit {
 
 class WebDeviceMotionData {
 public:
-    WEBKIT_EXPORT WebDeviceMotionData();
+    BLINK_EXPORT WebDeviceMotionData();
     ~WebDeviceMotionData() { }
 
     double accelerationX;
@@ -75,7 +75,7 @@ public:
     bool allAvailableSensorsAreActive : 1;
 };
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 COMPILE_ASSERT(sizeof(WebDeviceMotionData) == (10 * sizeof(double) + 2 * sizeof(char)), WebDeviceMotionData_has_wrong_size);
 #endif
 

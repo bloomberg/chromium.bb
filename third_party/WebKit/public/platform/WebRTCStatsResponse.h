@@ -47,14 +47,14 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void assign(const WebRTCStatsResponse&);
+    BLINK_EXPORT void assign(const WebRTCStatsResponse&);
 
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void reset();
 
-    WEBKIT_EXPORT size_t addReport(WebString id, WebString type, double timestamp);
-    WEBKIT_EXPORT void addStatistic(size_t report, WebString name, WebString value);
+    BLINK_EXPORT size_t addReport(WebString id, WebString type, double timestamp);
+    BLINK_EXPORT void addStatistic(size_t report, WebString name, WebString value);
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebRTCStatsResponse(const WTF::PassRefPtr<WebCore::RTCStatsResponseBase>&);
 
     operator WTF::PassRefPtr<WebCore::RTCStatsResponseBase>() const;

@@ -33,7 +33,7 @@
 
 #include "../platform/WebCommon.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore { class SecurityOrigin; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
@@ -56,50 +56,50 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT static WebSecurityOrigin createFromDatabaseIdentifier(const WebString& databaseIdentifier);
-    WEBKIT_EXPORT static WebSecurityOrigin createFromString(const WebString&);
-    WEBKIT_EXPORT static WebSecurityOrigin create(const WebURL&);
+    BLINK_EXPORT static WebSecurityOrigin createFromDatabaseIdentifier(const WebString& databaseIdentifier);
+    BLINK_EXPORT static WebSecurityOrigin createFromString(const WebString&);
+    BLINK_EXPORT static WebSecurityOrigin create(const WebURL&);
 
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebSecurityOrigin&);
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebSecurityOrigin&);
 
     bool isNull() const { return !m_private; }
 
-    WEBKIT_EXPORT WebString protocol() const;
-    WEBKIT_EXPORT WebString host() const;
-    WEBKIT_EXPORT unsigned short port() const;
+    BLINK_EXPORT WebString protocol() const;
+    BLINK_EXPORT WebString host() const;
+    BLINK_EXPORT unsigned short port() const;
 
     // A unique WebSecurityOrigin is the least privileged WebSecurityOrigin.
-    WEBKIT_EXPORT bool isUnique() const;
+    BLINK_EXPORT bool isUnique() const;
 
     // Returns true if this WebSecurityOrigin can script objects in the given
     // SecurityOrigin. For example, call this function before allowing
     // script from one security origin to read or write objects from
     // another SecurityOrigin.
-    WEBKIT_EXPORT bool canAccess(const WebSecurityOrigin&) const;
+    BLINK_EXPORT bool canAccess(const WebSecurityOrigin&) const;
 
     // Returns true if this WebSecurityOrigin can read content retrieved from
     // the given URL. For example, call this function before allowing script
     // from a given security origin to receive contents from a given URL.
-    WEBKIT_EXPORT bool canRequest(const WebURL&) const;
+    BLINK_EXPORT bool canRequest(const WebURL&) const;
 
     // Returns a string representation of the WebSecurityOrigin.  The empty
     // WebSecurityOrigin is represented by "null".  The representation of a
     // non-empty WebSecurityOrigin resembles a standard URL.
-    WEBKIT_EXPORT WebString toString() const;
+    BLINK_EXPORT WebString toString() const;
 
     // Returns a string representation of this WebSecurityOrigin that can
     // be used as a file.  Should be used in storage APIs only.
-    WEBKIT_EXPORT WebString databaseIdentifier() const;
+    BLINK_EXPORT WebString databaseIdentifier() const;
 
     // Returns true if this WebSecurityOrigin can access usernames and
     // passwords stored in password manager.
-    WEBKIT_EXPORT bool canAccessPasswordManager() const;
+    BLINK_EXPORT bool canAccessPasswordManager() const;
 
     // Allows this WebSecurityOrigin access to local resources.
-    WEBKIT_EXPORT void grantLoadLocalResources() const;
+    BLINK_EXPORT void grantLoadLocalResources() const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebSecurityOrigin(const WTF::PassRefPtr<WebCore::SecurityOrigin>&);
     WebSecurityOrigin& operator=(const WTF::PassRefPtr<WebCore::SecurityOrigin>&);
     operator WTF::PassRefPtr<WebCore::SecurityOrigin>() const;

@@ -70,7 +70,7 @@ enum WebColorName {
 };
 
 // Sets the values of a set of named colors.
-WEBKIT_EXPORT void setNamedColors(const WebColorName*, const WebColor*, size_t length);
+BLINK_EXPORT void setNamedColors(const WebColorName*, const WebColor*, size_t length);
 
 } // namespace WebKit
 

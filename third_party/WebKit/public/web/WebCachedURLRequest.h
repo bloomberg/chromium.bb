@@ -46,14 +46,14 @@ class WrappedResourceRequest;
 class WebCachedURLRequest {
 public:
     ~WebCachedURLRequest() { reset(); }
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void reset();
 
-    WEBKIT_EXPORT const WebURLRequest& urlRequest() const;
-    WEBKIT_EXPORT WebString charset() const;
-    WEBKIT_EXPORT bool forPreload() const;
-    WEBKIT_EXPORT WebString initiatorName() const;
+    BLINK_EXPORT const WebURLRequest& urlRequest() const;
+    BLINK_EXPORT WebString charset() const;
+    BLINK_EXPORT bool forPreload() const;
+    BLINK_EXPORT WebString initiatorName() const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     explicit WebCachedURLRequest(WebCore::FetchRequest*);
 #endif
 

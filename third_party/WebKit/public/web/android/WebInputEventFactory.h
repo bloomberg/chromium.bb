@@ -53,14 +53,14 @@ public:
         MouseWheelDirectionTypeRight,
     };
 
-    WEBKIT_EXPORT static WebKeyboardEvent keyboardEvent(WebInputEvent::Type,
+    BLINK_EXPORT static WebKeyboardEvent keyboardEvent(WebInputEvent::Type,
                                                         int modifiers,
                                                         double timeStampSeconds,
                                                         int keycode,
                                                         WebUChar unicodeCharacter,
                                                         bool isSystemKey);
 
-    WEBKIT_EXPORT static WebMouseEvent mouseEvent(MouseEventType,
+    BLINK_EXPORT static WebMouseEvent mouseEvent(MouseEventType,
                                                   WebMouseEvent::Button,
                                                   double timeStampSeconds,
                                                   int windowX,
@@ -68,12 +68,12 @@ public:
                                                   int modifiers,
                                                   int clickCount);
 
-    WEBKIT_EXPORT static WebMouseWheelEvent mouseWheelEvent(MouseWheelDirectionType,
+    BLINK_EXPORT static WebMouseWheelEvent mouseWheelEvent(MouseWheelDirectionType,
                                                             double timeStampSeconds,
                                                             int windowX,
                                                             int windowY);
 
-    WEBKIT_EXPORT static WebGestureEvent gestureEvent(WebInputEvent::Type,
+    BLINK_EXPORT static WebGestureEvent gestureEvent(WebInputEvent::Type,
                                                       double timeStampSeconds,
                                                       int x,
                                                       int y,
@@ -81,7 +81,7 @@ public:
                                                       float deltaY,
                                                       int modifiers);
 
-    WEBKIT_EXPORT static WebGestureEvent gestureEvent(WebInputEvent::Type,
+    BLINK_EXPORT static WebGestureEvent gestureEvent(WebInputEvent::Type,
                                                       double timeStampSeconds,
                                                       int x,
                                                       int y,

@@ -26,7 +26,7 @@
 #ifndef WebDeviceOrientation_h
 #define WebDeviceOrientation_h
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WTF { template <typename T> class PassRefPtr; }
 namespace WebCore { class DeviceOrientationData; }
 #endif
@@ -85,7 +85,7 @@ public:
     bool canProvideAbsolute() const {return m_canProvideAbsolute; }
     bool absolute() const { return m_absolute; }
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebDeviceOrientation(const WebCore::DeviceOrientationData*);
     operator WTF::PassRefPtr<WebCore::DeviceOrientationData>() const;
 #endif

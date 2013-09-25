@@ -37,7 +37,7 @@ namespace WebKit {
 
 class WebNetworkStateNotifier {
 public:
-    WEBKIT_EXPORT static void setOnLine(bool);
+    BLINK_EXPORT static void setOnLine(bool);
 
 private:
     WebNetworkStateNotifier();

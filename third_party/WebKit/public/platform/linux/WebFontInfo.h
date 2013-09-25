@@ -45,7 +45,7 @@ public:
     // Set a global preference describing whether renderStyleForStrike() should
     // enable subpixel positioning or not. FontConfig doesn't currently provide
     // a parameter for controlling this.
-    WEBKIT_EXPORT static void setSubpixelPositioning(bool);
+    BLINK_EXPORT static void setSubpixelPositioning(bool);
 
     // Return a font family which provides a glyph for the Unicode code point
     // specified by character.
@@ -55,7 +55,7 @@ public:
     //
     // Returns: the font family or an empty string if the request could not be satisfied.
     // Returns: the font family instance. The instance has an empty font name if the request could not be satisfied.
-    WEBKIT_EXPORT static void familyForChar(const WebUChar32 character, const char* preferredLocale, WebFontFamily*);
+    BLINK_EXPORT static void familyForChar(const WebUChar32 character, const char* preferredLocale, WebFontFamily*);
 
     // Fill out the given WebFontRenderStyle with the user's preferences for
     // rendering the given font at the given size (in pixels).
@@ -68,7 +68,7 @@ public:
     //     +--------------------------------+
     //     I: italic flag
     //     B: bold flag
-    WEBKIT_EXPORT static void renderStyleForStrike(const char* family, int sizeAndStyle, WebFontRenderStyle* result);
+    BLINK_EXPORT static void renderStyleForStrike(const char* family, int sizeAndStyle, WebFontRenderStyle* result);
 };
 
 } // namespace WebKit

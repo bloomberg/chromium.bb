@@ -31,22 +31,22 @@
 #ifndef WebCommon_h
 #define WebCommon_h
 
-#if !defined(WEBKIT_IMPLEMENTATION)
-#define WEBKIT_IMPLEMENTATION 0
+#if !defined(BLINK_IMPLEMENTATION)
+#define BLINK_IMPLEMENTATION 0
 #endif
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
-#if WEBKIT_IMPLEMENTATION
-#define WEBKIT_EXPORT __declspec(dllexport)
-#else // WEBKIT_IMPLEMENTATION
-#define WEBKIT_EXPORT __declspec(dllimport)
+#if BLINK_IMPLEMENTATION
+#define BLINK_EXPORT __declspec(dllexport)
+#else // BLINK_IMPLEMENTATION
+#define BLINK_EXPORT __declspec(dllimport)
 #endif
 #else // defined(WIN32)
-#define WEBKIT_EXPORT __attribute__((visibility("default")))
+#define BLINK_EXPORT __attribute__((visibility("default")))
 #endif
 #else // defined(COMPONENT_BUILD)
-#define WEBKIT_EXPORT
+#define BLINK_EXPORT
 #endif
 
 #if !defined(BLINK_COMMON_IMPLEMENTATION)

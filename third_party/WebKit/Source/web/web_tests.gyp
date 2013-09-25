@@ -75,7 +75,7 @@
                         '../core/core.gyp:webcore',
                     ],
                     'defines': [
-                        'WEBKIT_IMPLEMENTATION=1',
+                        'BLINK_IMPLEMENTATION=1',
                         'INSIDE_WEBKIT',
                     ],
                     'sources': [

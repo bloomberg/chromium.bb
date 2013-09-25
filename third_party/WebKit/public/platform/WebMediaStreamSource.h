@@ -52,9 +52,9 @@ public:
         ExtraData() : m_owner(0) { }
         virtual ~ExtraData() { }
 
-        WEBKIT_EXPORT WebMediaStreamSource owner();
+        BLINK_EXPORT WebMediaStreamSource owner();
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
         void setOwner(WebCore::MediaStreamSource*);
 #endif
 
@@ -83,39 +83,39 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void assign(const WebMediaStreamSource&);
+    BLINK_EXPORT void assign(const WebMediaStreamSource&);
 
-    WEBKIT_EXPORT void initialize(const WebString& id, Type, const WebString& name);
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void initialize(const WebString& id, Type, const WebString& name);
+    BLINK_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
-    WEBKIT_EXPORT WebString id() const;
-    WEBKIT_EXPORT Type type() const;
-    WEBKIT_EXPORT WebString name() const;
+    BLINK_EXPORT WebString id() const;
+    BLINK_EXPORT Type type() const;
+    BLINK_EXPORT WebString name() const;
 
-    WEBKIT_EXPORT void setReadyState(ReadyState);
-    WEBKIT_EXPORT ReadyState readyState() const;
+    BLINK_EXPORT void setReadyState(ReadyState);
+    BLINK_EXPORT ReadyState readyState() const;
 
     // Extra data associated with this object.
     // If non-null, the extra data pointer will be deleted when the object is destroyed.
     // Setting the extra data pointer will cause any existing non-null
     // extra data pointer to be deleted.
-    WEBKIT_EXPORT ExtraData* extraData() const;
-    WEBKIT_EXPORT void setExtraData(ExtraData*);
+    BLINK_EXPORT ExtraData* extraData() const;
+    BLINK_EXPORT void setExtraData(ExtraData*);
 
-    WEBKIT_EXPORT WebMediaConstraints constraints();
+    BLINK_EXPORT WebMediaConstraints constraints();
 
-    WEBKIT_EXPORT WebString deviceId() const;
-    WEBKIT_EXPORT void setDeviceId(const WebString&);
+    BLINK_EXPORT WebString deviceId() const;
+    BLINK_EXPORT void setDeviceId(const WebString&);
 
     // Only used if if this is a WebAudio source.
     // The WebAudioDestinationConsumer is not owned, and has to be disposed of separately
     // after calling removeAudioConsumer.
-    WEBKIT_EXPORT bool requiresAudioConsumer() const;
-    WEBKIT_EXPORT void addAudioConsumer(WebAudioDestinationConsumer*);
-    WEBKIT_EXPORT bool removeAudioConsumer(WebAudioDestinationConsumer*);
+    BLINK_EXPORT bool requiresAudioConsumer() const;
+    BLINK_EXPORT void addAudioConsumer(WebAudioDestinationConsumer*);
+    BLINK_EXPORT bool removeAudioConsumer(WebAudioDestinationConsumer*);
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebMediaStreamSource(const WTF::PassRefPtr<WebCore::MediaStreamSource>&);
     WebMediaStreamSource& operator=(WebCore::MediaStreamSource*);
     operator WTF::PassRefPtr<WebCore::MediaStreamSource>() const;

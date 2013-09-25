@@ -48,10 +48,10 @@ class WebScriptBindings {
 public:
     // Efficiently converts a WebString to a v8::String. The caller must have
     // a HandleScope to guard the result's lifetime.
-    WEBKIT_EXPORT static v8::Local<v8::String> toV8String(const WebString&, v8::Isolate*);
+    BLINK_EXPORT static v8::Local<v8::String> toV8String(const WebString&, v8::Isolate*);
 
     // You can use v8::Value::toString() to get a v8::String, but remember to wrap that in a v8::TryCatch.
-    WEBKIT_EXPORT static WebString toWebString(v8::Handle<v8::String>);
+    BLINK_EXPORT static WebString toWebString(v8::Handle<v8::String>);
 };
 
 } // namespace WebKit

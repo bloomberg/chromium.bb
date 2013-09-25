@@ -29,7 +29,7 @@
 #include "WebRect.h"
 #include "WebSize.h"
 #include "WebVector.h"
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 #include "wtf/PassOwnPtr.h"
 #endif
 

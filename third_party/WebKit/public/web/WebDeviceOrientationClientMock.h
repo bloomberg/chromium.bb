@@ -36,7 +36,7 @@ namespace WebKit {
 
 class WebDeviceOrientationClientMock : public WebDeviceOrientationClient {
 public:
-    WEBKIT_EXPORT static WebDeviceOrientationClientMock* create();
+    BLINK_EXPORT static WebDeviceOrientationClientMock* create();
     ~WebDeviceOrientationClientMock() { reset(); }
 
     virtual void setController(WebDeviceOrientationController*) OVERRIDE;
@@ -44,12 +44,12 @@ public:
     virtual void stopUpdating() OVERRIDE;
     virtual WebDeviceOrientation lastOrientation() const OVERRIDE;
 
-    WEBKIT_EXPORT void setOrientation(WebDeviceOrientation&);
+    BLINK_EXPORT void setOrientation(WebDeviceOrientation&);
 
 private:
     WebDeviceOrientationClientMock() { initialize(); }
-    WEBKIT_EXPORT void initialize();
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void initialize();
+    BLINK_EXPORT void reset();
 
     WebPrivateOwnPtr<WebCore::DeviceOrientationClientMock> m_clientMock;
 };

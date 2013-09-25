@@ -52,10 +52,10 @@ public:
     virtual ~WebDevToolsAgent() {}
 
     // Returns WebKit WebInspector protocol version.
-    WEBKIT_EXPORT static WebString inspectorProtocolVersion();
+    BLINK_EXPORT static WebString inspectorProtocolVersion();
 
     // Returns true if and only if the given protocol version is supported by the WebKit Web Inspector.
-    WEBKIT_EXPORT static bool supportsInspectorProtocolVersion(const WebString& version);
+    BLINK_EXPORT static bool supportsInspectorProtocolVersion(const WebString& version);
 
     virtual void attach() = 0;
     virtual void reattach(const WebString& savedState) = 0;
@@ -84,9 +84,9 @@ public:
         virtual WebString message() = 0;
     };
     // Asynchronously request debugger to pause immediately and run the command.
-    WEBKIT_EXPORT static void interruptAndDispatch(MessageDescriptor*);
-    WEBKIT_EXPORT static bool shouldInterruptForMessage(const WebString&);
-    WEBKIT_EXPORT static void processPendingMessages();
+    BLINK_EXPORT static void interruptAndDispatch(MessageDescriptor*);
+    BLINK_EXPORT static bool shouldInterruptForMessage(const WebString&);
+    BLINK_EXPORT static void processPendingMessages();
 
 };
 

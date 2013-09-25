@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
 
-#if !WEBKIT_IMPLEMENTATION
+#if !BLINK_IMPLEMENTATION
 #include <string>
 #endif
 
@@ -49,15 +49,15 @@ public:
     WebThreadSafeData() { }
     ~WebThreadSafeData() { reset(); }
 
-    WEBKIT_EXPORT void assign(const WebThreadSafeData&);
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebThreadSafeData&);
+    BLINK_EXPORT void reset();
 
-    WEBKIT_EXPORT size_t size() const;
-    WEBKIT_EXPORT const char* data() const;
+    BLINK_EXPORT size_t size() const;
+    BLINK_EXPORT const char* data() const;
 
     bool isEmpty() const { return !size(); }
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebThreadSafeData(const WTF::PassRefPtr<WebCore::RawData>&);
     WebThreadSafeData& operator=(const WTF::PassRefPtr<WebCore::RawData>&);
 #else

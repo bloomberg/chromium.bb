@@ -32,7 +32,7 @@
 
 #include "WebDOMEvent.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore { class Event; }
 #endif
 
@@ -40,19 +40,19 @@ namespace WebKit {
 
 class WebDOMMouseEvent : public WebDOMEvent {
 public:
-    WEBKIT_EXPORT int screenX() const;
-    WEBKIT_EXPORT int screenY() const;
-    WEBKIT_EXPORT int clientX() const;
-    WEBKIT_EXPORT int clientY() const;
-    WEBKIT_EXPORT int offsetX();
-    WEBKIT_EXPORT int offsetY();
-    WEBKIT_EXPORT int pageX() const;
-    WEBKIT_EXPORT int pageY() const;
-    WEBKIT_EXPORT int x() const;
-    WEBKIT_EXPORT int y() const;
+    BLINK_EXPORT int screenX() const;
+    BLINK_EXPORT int screenY() const;
+    BLINK_EXPORT int clientX() const;
+    BLINK_EXPORT int clientY() const;
+    BLINK_EXPORT int offsetX();
+    BLINK_EXPORT int offsetY();
+    BLINK_EXPORT int pageX() const;
+    BLINK_EXPORT int pageY() const;
+    BLINK_EXPORT int x() const;
+    BLINK_EXPORT int y() const;
 
-    WEBKIT_EXPORT int button() const;
-    WEBKIT_EXPORT bool buttonDown() const;
+    BLINK_EXPORT int button() const;
+    BLINK_EXPORT bool buttonDown() const;
 };
 
 } // namespace WebKit

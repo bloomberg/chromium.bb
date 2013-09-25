@@ -40,7 +40,7 @@ class WebWidgetClient;
 
 class WebPagePopup : public WebWidget {
 public:
-    WEBKIT_EXPORT static WebPagePopup* create(WebWidgetClient*);
+    BLINK_EXPORT static WebPagePopup* create(WebWidgetClient*);
 };
 
 } // namespace WebKit

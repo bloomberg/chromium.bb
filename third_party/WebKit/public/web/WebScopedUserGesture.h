@@ -61,9 +61,9 @@ public:
     ~WebScopedUserGesture() { reset(); }
 
 private:
-    WEBKIT_EXPORT void initialize();
-    WEBKIT_EXPORT void initializeWithToken(const WebUserGestureToken&);
-    WEBKIT_EXPORT void reset();
+    BLINK_EXPORT void initialize();
+    BLINK_EXPORT void initializeWithToken(const WebUserGestureToken&);
+    BLINK_EXPORT void reset();
 
     WebPrivateOwnPtr<WebCore::UserGestureIndicator> m_indicator;
 };

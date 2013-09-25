@@ -34,7 +34,7 @@
 #include "WebString.h"
 #include "WebURL.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore { class ResourceError; }
 #endif
 
@@ -64,7 +64,7 @@ struct WebURLError {
 
     WebURLError() : reason(0), isCancellation(false) { }
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebURLError(const WebCore::ResourceError&);
     WebURLError& operator=(const WebCore::ResourceError&);
     operator WebCore::ResourceError() const;

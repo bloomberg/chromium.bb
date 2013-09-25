@@ -57,25 +57,25 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT static WebSerializedScriptValue fromString(const WebString&);
+    BLINK_EXPORT static WebSerializedScriptValue fromString(const WebString&);
 
-    WEBKIT_EXPORT static WebSerializedScriptValue serialize(v8::Handle<v8::Value>);
+    BLINK_EXPORT static WebSerializedScriptValue serialize(v8::Handle<v8::Value>);
 
     // Create a WebSerializedScriptValue that represents a serialization error.
-    WEBKIT_EXPORT static WebSerializedScriptValue createInvalid();
+    BLINK_EXPORT static WebSerializedScriptValue createInvalid();
 
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebSerializedScriptValue&);
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebSerializedScriptValue&);
 
     bool isNull() const { return m_private.isNull(); }
 
     // Returns a string representation of the WebSerializedScriptValue.
-    WEBKIT_EXPORT WebString toString() const;
+    BLINK_EXPORT WebString toString() const;
 
     // Convert the serialized value to a parsed v8 value.
-    WEBKIT_EXPORT v8::Handle<v8::Value> deserialize();
+    BLINK_EXPORT v8::Handle<v8::Value> deserialize();
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebSerializedScriptValue(const WTF::PassRefPtr<WebCore::SerializedScriptValue>&);
     WebSerializedScriptValue& operator=(const WTF::PassRefPtr<WebCore::SerializedScriptValue>&);
     operator WTF::PassRefPtr<WebCore::SerializedScriptValue>() const;

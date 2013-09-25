@@ -65,13 +65,13 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebNode&);
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebNode&);
 
-    WEBKIT_EXPORT bool equals(const WebNode&) const;
+    BLINK_EXPORT bool equals(const WebNode&) const;
     // Required for using WebNodes in std maps.  Note the order used is
     // arbitrary and should not be expected to have any specific meaning.
-    WEBKIT_EXPORT bool lessThan(const WebNode&) const;
+    BLINK_EXPORT bool lessThan(const WebNode&) const;
 
     bool isNull() const { return m_private.isNull(); }
 
@@ -92,40 +92,40 @@ public:
         ShadowRootNode = 14
     };
 
-    WEBKIT_EXPORT NodeType nodeType() const;
-    WEBKIT_EXPORT WebNode parentNode() const;
-    WEBKIT_EXPORT WebString nodeName() const;
-    WEBKIT_EXPORT WebString nodeValue() const;
-    WEBKIT_EXPORT bool setNodeValue(const WebString&);
-    WEBKIT_EXPORT WebDocument document() const;
-    WEBKIT_EXPORT WebNode firstChild() const;
-    WEBKIT_EXPORT WebNode lastChild() const;
-    WEBKIT_EXPORT WebNode previousSibling() const;
-    WEBKIT_EXPORT WebNode nextSibling() const;
-    WEBKIT_EXPORT bool hasChildNodes() const;
-    WEBKIT_EXPORT WebNodeList childNodes();
-    WEBKIT_EXPORT WebString createMarkup() const;
-    WEBKIT_EXPORT bool isLink() const;
-    WEBKIT_EXPORT bool isTextNode() const;
-    WEBKIT_EXPORT bool isFocusable() const;
-    WEBKIT_EXPORT bool isContentEditable() const;
-    WEBKIT_EXPORT bool isElementNode() const;
+    BLINK_EXPORT NodeType nodeType() const;
+    BLINK_EXPORT WebNode parentNode() const;
+    BLINK_EXPORT WebString nodeName() const;
+    BLINK_EXPORT WebString nodeValue() const;
+    BLINK_EXPORT bool setNodeValue(const WebString&);
+    BLINK_EXPORT WebDocument document() const;
+    BLINK_EXPORT WebNode firstChild() const;
+    BLINK_EXPORT WebNode lastChild() const;
+    BLINK_EXPORT WebNode previousSibling() const;
+    BLINK_EXPORT WebNode nextSibling() const;
+    BLINK_EXPORT bool hasChildNodes() const;
+    BLINK_EXPORT WebNodeList childNodes();
+    BLINK_EXPORT WebString createMarkup() const;
+    BLINK_EXPORT bool isLink() const;
+    BLINK_EXPORT bool isTextNode() const;
+    BLINK_EXPORT bool isFocusable() const;
+    BLINK_EXPORT bool isContentEditable() const;
+    BLINK_EXPORT bool isElementNode() const;
     // addEventListener only works with a small set of eventTypes.
-    WEBKIT_EXPORT void addEventListener(const WebString& eventType, WebDOMEventListener* listener, bool useCapture);
-    WEBKIT_EXPORT bool dispatchEvent(const WebDOMEvent&);
-    WEBKIT_EXPORT void simulateClick();
-    WEBKIT_EXPORT WebNodeList getElementsByTagName(const WebString&) const;
-    WEBKIT_EXPORT WebElement querySelector(const WebString&, WebExceptionCode&) const;
-    WEBKIT_EXPORT WebElement rootEditableElement() const;
-    WEBKIT_EXPORT bool focused() const;
-    WEBKIT_EXPORT bool remove();
+    BLINK_EXPORT void addEventListener(const WebString& eventType, WebDOMEventListener* listener, bool useCapture);
+    BLINK_EXPORT bool dispatchEvent(const WebDOMEvent&);
+    BLINK_EXPORT void simulateClick();
+    BLINK_EXPORT WebNodeList getElementsByTagName(const WebString&) const;
+    BLINK_EXPORT WebElement querySelector(const WebString&, WebExceptionCode&) const;
+    BLINK_EXPORT WebElement rootEditableElement() const;
+    BLINK_EXPORT bool focused() const;
+    BLINK_EXPORT bool remove();
 
     // Returns true if the node has a non-empty bounding box in layout.
     // This does not 100% guarantee the user can see it, but is pretty close.
     // Note: This method only works properly after layout has occurred.
-    WEBKIT_EXPORT bool hasNonEmptyBoundingBox() const;
-    WEBKIT_EXPORT WebPluginContainer* pluginContainer() const;
-    WEBKIT_EXPORT WebElement shadowHost() const;
+    BLINK_EXPORT bool hasNonEmptyBoundingBox() const;
+    BLINK_EXPORT WebPluginContainer* pluginContainer() const;
+    BLINK_EXPORT WebElement shadowHost() const;
 
     template<typename T> T to()
     {
@@ -141,13 +141,13 @@ public:
         return res;
     }
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebNode(const WTF::PassRefPtr<WebCore::Node>&);
     WebNode& operator=(const WTF::PassRefPtr<WebCore::Node>&);
     operator WTF::PassRefPtr<WebCore::Node>() const;
 #endif
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     template<typename T> T* unwrap()
     {
         return static_cast<T*>(m_private.get());

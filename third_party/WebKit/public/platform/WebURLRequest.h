@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebHTTPBody.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
 namespace WebCore { class ResourceRequest; }
 #endif
 
@@ -105,81 +105,81 @@ public:
         setURL(url);
     }
 
-    WEBKIT_EXPORT void initialize();
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebURLRequest&);
+    BLINK_EXPORT void initialize();
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebURLRequest&);
 
-    WEBKIT_EXPORT bool isNull() const;
+    BLINK_EXPORT bool isNull() const;
 
-    WEBKIT_EXPORT WebURL url() const;
-    WEBKIT_EXPORT void setURL(const WebURL&);
+    BLINK_EXPORT WebURL url() const;
+    BLINK_EXPORT void setURL(const WebURL&);
 
     // Used to implement third-party cookie blocking.
-    WEBKIT_EXPORT WebURL firstPartyForCookies() const;
-    WEBKIT_EXPORT void setFirstPartyForCookies(const WebURL&);
+    BLINK_EXPORT WebURL firstPartyForCookies() const;
+    BLINK_EXPORT void setFirstPartyForCookies(const WebURL&);
 
-    WEBKIT_EXPORT bool allowCookies() const;
-    WEBKIT_EXPORT void setAllowCookies(bool);
+    BLINK_EXPORT bool allowCookies() const;
+    BLINK_EXPORT void setAllowCookies(bool);
 
     // Controls whether user name, password, and cookies may be sent with the
     // request. (If false, this overrides allowCookies.)
-    WEBKIT_EXPORT bool allowStoredCredentials() const;
-    WEBKIT_EXPORT void setAllowStoredCredentials(bool);
+    BLINK_EXPORT bool allowStoredCredentials() const;
+    BLINK_EXPORT void setAllowStoredCredentials(bool);
 
-    WEBKIT_EXPORT CachePolicy cachePolicy() const;
-    WEBKIT_EXPORT void setCachePolicy(CachePolicy);
+    BLINK_EXPORT CachePolicy cachePolicy() const;
+    BLINK_EXPORT void setCachePolicy(CachePolicy);
 
-    WEBKIT_EXPORT WebString httpMethod() const;
-    WEBKIT_EXPORT void setHTTPMethod(const WebString&);
+    BLINK_EXPORT WebString httpMethod() const;
+    BLINK_EXPORT void setHTTPMethod(const WebString&);
 
-    WEBKIT_EXPORT WebString httpHeaderField(const WebString& name) const;
-    WEBKIT_EXPORT void setHTTPHeaderField(const WebString& name, const WebString& value);
-    WEBKIT_EXPORT void addHTTPHeaderField(const WebString& name, const WebString& value);
-    WEBKIT_EXPORT void clearHTTPHeaderField(const WebString& name);
-    WEBKIT_EXPORT void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
+    BLINK_EXPORT WebString httpHeaderField(const WebString& name) const;
+    BLINK_EXPORT void setHTTPHeaderField(const WebString& name, const WebString& value);
+    BLINK_EXPORT void addHTTPHeaderField(const WebString& name, const WebString& value);
+    BLINK_EXPORT void clearHTTPHeaderField(const WebString& name);
+    BLINK_EXPORT void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
 
-    WEBKIT_EXPORT WebHTTPBody httpBody() const;
-    WEBKIT_EXPORT void setHTTPBody(const WebHTTPBody&);
+    BLINK_EXPORT WebHTTPBody httpBody() const;
+    BLINK_EXPORT void setHTTPBody(const WebHTTPBody&);
 
     // Controls whether upload progress events are generated when a request
     // has a body.
-    WEBKIT_EXPORT bool reportUploadProgress() const;
-    WEBKIT_EXPORT void setReportUploadProgress(bool);
+    BLINK_EXPORT bool reportUploadProgress() const;
+    BLINK_EXPORT void setReportUploadProgress(bool);
 
     // Controls whether load timing info is collected for the request.
-    WEBKIT_EXPORT bool reportLoadTiming() const;
-    WEBKIT_EXPORT void setReportLoadTiming(bool);
+    BLINK_EXPORT bool reportLoadTiming() const;
+    BLINK_EXPORT void setReportLoadTiming(bool);
 
     // Controls whether actual headers sent and received for request are
     // collected and reported.
-    WEBKIT_EXPORT bool reportRawHeaders() const;
-    WEBKIT_EXPORT void setReportRawHeaders(bool);
+    BLINK_EXPORT bool reportRawHeaders() const;
+    BLINK_EXPORT void setReportRawHeaders(bool);
 
-    WEBKIT_EXPORT TargetType targetType() const;
-    WEBKIT_EXPORT void setTargetType(TargetType);
+    BLINK_EXPORT TargetType targetType() const;
+    BLINK_EXPORT void setTargetType(TargetType);
 
     // True if the request was user initiated.
-    WEBKIT_EXPORT bool hasUserGesture() const;
-    WEBKIT_EXPORT void setHasUserGesture(bool);
+    BLINK_EXPORT bool hasUserGesture() const;
+    BLINK_EXPORT void setHasUserGesture(bool);
 
     // A consumer controlled value intended to be used to identify the
     // requestor.
-    WEBKIT_EXPORT int requestorID() const;
-    WEBKIT_EXPORT void setRequestorID(int);
+    BLINK_EXPORT int requestorID() const;
+    BLINK_EXPORT void setRequestorID(int);
 
     // A consumer controlled value intended to be used to identify the
     // process of the requestor.
-    WEBKIT_EXPORT int requestorProcessID() const;
-    WEBKIT_EXPORT void setRequestorProcessID(int);
+    BLINK_EXPORT int requestorProcessID() const;
+    BLINK_EXPORT void setRequestorProcessID(int);
 
     // Allows the request to be matched up with its app cache host.
-    WEBKIT_EXPORT int appCacheHostID() const;
-    WEBKIT_EXPORT void setAppCacheHostID(int);
+    BLINK_EXPORT int appCacheHostID() const;
+    BLINK_EXPORT void setAppCacheHostID(int);
 
     // If true, the response body will be downloaded to a file managed by the
     // WebURLLoader. See WebURLResponse::downloadedFilePath.
-    WEBKIT_EXPORT bool downloadToFile() const;
-    WEBKIT_EXPORT void setDownloadToFile(bool);
+    BLINK_EXPORT bool downloadToFile() const;
+    BLINK_EXPORT void setDownloadToFile(bool);
 
     // Extra data associated with the underlying resource request. Resource
     // requests can be copied. If non-null, each copy of a resource requests
@@ -187,12 +187,12 @@ public:
     // deleted when the last resource request is destroyed. Setting the extra
     // data pointer will cause the underlying resource request to be
     // dissociated from any existing non-null extra data pointer.
-    WEBKIT_EXPORT ExtraData* extraData() const;
-    WEBKIT_EXPORT void setExtraData(ExtraData*);
+    BLINK_EXPORT ExtraData* extraData() const;
+    BLINK_EXPORT void setExtraData(ExtraData*);
 
-    WEBKIT_EXPORT Priority priority() const;
+    BLINK_EXPORT Priority priority() const;
 
-#if WEBKIT_IMPLEMENTATION
+#if BLINK_IMPLEMENTATION
     WebCore::ResourceRequest& toMutableResourceRequest();
     const WebCore::ResourceRequest& toResourceRequest() const;
 #endif

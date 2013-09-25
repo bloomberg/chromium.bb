@@ -393,7 +393,7 @@
       ],
       'direct_dependent_settings': {
         'defines': [
-          'WEBKIT_IMPLEMENTATION=1',
+          'BLINK_IMPLEMENTATION=1',
           'INSIDE_WEBKIT',
         ],
         'include_dirs': [
@@ -1066,7 +1066,7 @@
         'webcore',
       ],
       'defines': [
-        'WEBKIT_IMPLEMENTATION=1',
+        'BLINK_IMPLEMENTATION=1',
         'INSIDE_WEBKIT',
       ],
       'include_dirs': [

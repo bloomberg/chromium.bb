@@ -42,7 +42,7 @@ class WebWidgetClient;
 
 class WebHelperPlugin : public WebWidget {
 public:
-    WEBKIT_EXPORT static WebHelperPlugin* create(WebWidgetClient*);
+    BLINK_EXPORT static WebHelperPlugin* create(WebWidgetClient*);
 
     virtual void initializeFrame(WebFrameClient*) = 0;
 

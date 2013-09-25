@@ -33,13 +33,13 @@ namespace WebKit {
 class WebTransformKeyframe {
 public:
     // Takes ownership of the WebTranformOperations object.
-    WEBKIT_EXPORT WebTransformKeyframe(double time, WebTransformOperations* value);
+    BLINK_EXPORT WebTransformKeyframe(double time, WebTransformOperations* value);
 
-    WEBKIT_EXPORT ~WebTransformKeyframe();
+    BLINK_EXPORT ~WebTransformKeyframe();
 
-    WEBKIT_EXPORT double time() const;
+    BLINK_EXPORT double time() const;
 
-    WEBKIT_EXPORT const WebTransformOperations& value() const;
+    BLINK_EXPORT const WebTransformOperations& value() const;
 
 private:
     double m_time;

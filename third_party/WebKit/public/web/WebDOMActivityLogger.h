@@ -47,11 +47,11 @@ public:
 
 // Checks if a logger already exists for the world identified
 // by worldId (worldId may be 0 identifying the main world).
-WEBKIT_EXPORT bool hasDOMActivityLogger(int worldId);
+BLINK_EXPORT bool hasDOMActivityLogger(int worldId);
 
 // Checks if the provided logger is non-null and if so associates it
 // with the world identified by worldId (worldId may be 0 identifying the main world).
-WEBKIT_EXPORT void setDOMActivityLogger(int worldId, WebDOMActivityLogger*);
+BLINK_EXPORT void setDOMActivityLogger(int worldId, WebDOMActivityLogger*);
 
 } // namespace WebKit
 
