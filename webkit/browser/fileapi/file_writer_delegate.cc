@@ -14,30 +14,11 @@
 #include "net/base/net_errors.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_context.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace fileapi {
 
 static const int kReadBufSize = 32768;
-
-namespace {
-
-base::PlatformFileError NetErrorToPlatformFileError(int error) {
-// TODO(kinuko): Move this static method to more convenient place.
-  switch (error) {
-    case net::OK:
-      return base::PLATFORM_FILE_OK;
-    case net::ERR_FILE_NO_SPACE:
-      return base::PLATFORM_FILE_ERROR_NO_SPACE;
-    case net::ERR_FILE_NOT_FOUND:
-      return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-    case net::ERR_ACCESS_DENIED:
-      return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
-    default:
-      return base::PLATFORM_FILE_ERROR_FAILED;
-  }
-}
-
-}  // namespace
 
 FileWriterDelegate::FileWriterDelegate(
     scoped_ptr<FileStreamWriter> file_stream_writer)

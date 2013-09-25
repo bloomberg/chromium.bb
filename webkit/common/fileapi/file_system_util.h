@@ -158,6 +158,10 @@ WEBKIT_STORAGE_COMMON_EXPORT std::string GetExternalFileSystemRootURIString(
     const GURL& origin_url,
     const std::string& mount_name);
 
+// Translates the net::Error to base::PlatformFileError.
+WEBKIT_STORAGE_COMMON_EXPORT base::PlatformFileError
+NetErrorToPlatformFileError(int error);
+
 }  // namespace fileapi
 
 #endif  // WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_UTIL_H_

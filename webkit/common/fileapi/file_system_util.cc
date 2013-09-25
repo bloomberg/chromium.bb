@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "net/base/net_errors.h"
 #include "url/gurl.h"
 #include "webkit/common/database/database_identifier.h"
 
@@ -394,6 +395,38 @@ std::string GetExternalFileSystemRootURIString(
   root.append(mount_name);
   root.append("/");
   return root;
+}
+
+base::PlatformFileError NetErrorToPlatformFileError(int error) {
+  switch (error) {
+    case net::OK:
+      return base::PLATFORM_FILE_OK;
+    case net::ERR_ADDRESS_IN_USE:
+      return base::PLATFORM_FILE_ERROR_IN_USE;
+    case net::ERR_FILE_EXISTS:
+      return base::PLATFORM_FILE_ERROR_EXISTS;
+    case net::ERR_FILE_NOT_FOUND:
+      return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    case net::ERR_ACCESS_DENIED:
+      return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+    case net::ERR_TOO_MANY_SOCKET_STREAMS:
+      return base::PLATFORM_FILE_ERROR_TOO_MANY_OPENED;
+    case net::ERR_OUT_OF_MEMORY:
+      return base::PLATFORM_FILE_ERROR_NO_MEMORY;
+    case net::ERR_FILE_NO_SPACE:
+      return base::PLATFORM_FILE_ERROR_NO_SPACE;
+    case net::ERR_INVALID_ARGUMENT:
+    case net::ERR_INVALID_HANDLE:
+      return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+    case net::ERR_ABORTED:
+    case net::ERR_CONNECTION_ABORTED:
+      return base::PLATFORM_FILE_ERROR_ABORT;
+    case net::ERR_ADDRESS_INVALID:
+    case net::ERR_INVALID_URL:
+      return base::PLATFORM_FILE_ERROR_INVALID_URL;
+    default:
+      return base::PLATFORM_FILE_ERROR_FAILED;
+  }
 }
 
 }  // namespace fileapi
