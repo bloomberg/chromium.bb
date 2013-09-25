@@ -50,15 +50,15 @@ bool IsUpdateOverCellularAllowed() {
 string16 GetConnectionTypeAsUTF16(const std::string& type) {
   if (chromeos::NetworkTypePattern::Ethernet().MatchesType(type))
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_ETHERNET);
-  if (type == flimflam::kTypeWifi)
+  if (type == shill::kTypeWifi)
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_WIFI);
-  if (type == flimflam::kTypeWimax)
+  if (type == shill::kTypeWimax)
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_WIMAX);
-  if (type == flimflam::kTypeBluetooth)
+  if (type == shill::kTypeBluetooth)
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_BLUETOOTH);
-  if (type == flimflam::kTypeCellular)
+  if (type == shill::kTypeCellular)
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_CELLULAR);
-  if (type == flimflam::kTypeVPN)
+  if (type == shill::kTypeVPN)
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_VPN);
   NOTREACHED();
   return string16();

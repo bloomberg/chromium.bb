@@ -52,9 +52,9 @@ NetworkStatus GetNetworkStatus(const chromeos::NetworkState* network) {
 
   // The connection type checking strategy must be the same as the one
   // used in update engine.
-  if (network->type() == flimflam::kTypeBluetooth)
+  if (network->type() == shill::kTypeBluetooth)
     return NETWORK_STATUS_DISALLOWED;
-  if (network->type() == flimflam::kTypeCellular &&
+  if (network->type() == shill::kTypeCellular &&
       !help_utils_chromeos::IsUpdateOverCellularAllowed()) {
     return NETWORK_STATUS_DISALLOWED;
   }

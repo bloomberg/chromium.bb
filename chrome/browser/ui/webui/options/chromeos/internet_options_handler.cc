@@ -288,13 +288,13 @@ void SetNetworkProperty(const std::string& service_path,
 
 std::string ActivationStateString(const std::string& activation_state) {
   int id;
-  if (activation_state == flimflam::kActivationStateActivated)
+  if (activation_state == shill::kActivationStateActivated)
     id = IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_ACTIVATED;
-  else if (activation_state == flimflam::kActivationStateActivating)
+  else if (activation_state == shill::kActivationStateActivating)
     id = IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_ACTIVATING;
-  else if (activation_state == flimflam::kActivationStateNotActivated)
+  else if (activation_state == shill::kActivationStateNotActivated)
     id = IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_NOT_ACTIVATED;
-  else if (activation_state == flimflam::kActivationStatePartiallyActivated)
+  else if (activation_state == shill::kActivationStatePartiallyActivated)
     id = IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_PARTIALLY_ACTIVATED;
   else
     id = IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_UNKNOWN;
@@ -303,9 +303,9 @@ std::string ActivationStateString(const std::string& activation_state) {
 
 std::string RoamingStateString(const std::string& roaming_state) {
   int id;
-  if (roaming_state == flimflam::kRoamingStateHome)
+  if (roaming_state == shill::kRoamingStateHome)
     id = IDS_CHROMEOS_NETWORK_ROAMING_STATE_HOME;
-  else if (roaming_state == flimflam::kRoamingStateRoaming)
+  else if (roaming_state == shill::kRoamingStateRoaming)
     id = IDS_CHROMEOS_NETWORK_ROAMING_STATE_ROAMING;
   else
     id = IDS_CHROMEOS_NETWORK_ROAMING_STATE_UNKNOWN;
@@ -314,27 +314,27 @@ std::string RoamingStateString(const std::string& roaming_state) {
 
 std::string ConnectionStateString(const std::string& state) {
   int id;
-  if (state == flimflam::kUnknownString)
+  if (state == shill::kUnknownString)
     id = IDS_CHROMEOS_NETWORK_STATE_UNKNOWN;
-  else if (state == flimflam::kStateIdle)
+  else if (state == shill::kStateIdle)
     id = IDS_CHROMEOS_NETWORK_STATE_IDLE;
-  else if (state == flimflam::kStateCarrier)
+  else if (state == shill::kStateCarrier)
     id = IDS_CHROMEOS_NETWORK_STATE_CARRIER;
-  else if (state == flimflam::kStateAssociation)
+  else if (state == shill::kStateAssociation)
     id = IDS_CHROMEOS_NETWORK_STATE_ASSOCIATION;
-  else if (state == flimflam::kStateConfiguration)
+  else if (state == shill::kStateConfiguration)
     id = IDS_CHROMEOS_NETWORK_STATE_CONFIGURATION;
-  else if (state == flimflam::kStateReady)
+  else if (state == shill::kStateReady)
     id = IDS_CHROMEOS_NETWORK_STATE_READY;
-  else if (state == flimflam::kStateDisconnect)
+  else if (state == shill::kStateDisconnect)
     id = IDS_CHROMEOS_NETWORK_STATE_DISCONNECT;
-  else if (state == flimflam::kStateFailure)
+  else if (state == shill::kStateFailure)
     id = IDS_CHROMEOS_NETWORK_STATE_FAILURE;
-  else if (state == flimflam::kStateActivationFailure)
+  else if (state == shill::kStateActivationFailure)
     id = IDS_CHROMEOS_NETWORK_STATE_ACTIVATION_FAILURE;
-  else if (state == flimflam::kStatePortal)
+  else if (state == shill::kStatePortal)
     id = IDS_CHROMEOS_NETWORK_STATE_PORTAL;
-  else if (state == flimflam::kStateOnline)
+  else if (state == shill::kStateOnline)
     id = IDS_CHROMEOS_NETWORK_STATE_ONLINE;
   else
     id = IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED;
@@ -367,25 +367,25 @@ std::string LoggedInUserTypeToString(
 
 std::string EncryptionString(const std::string& security,
                              const std::string& eap_method) {
-  if (security == flimflam::kSecurityNone)
+  if (security == shill::kSecurityNone)
     return "";
-  if (security == flimflam::kSecurityWpa)
+  if (security == shill::kSecurityWpa)
     return "WPA";
-  if (security == flimflam::kSecurityWep)
+  if (security == shill::kSecurityWep)
     return "WEP";
-  if (security == flimflam::kSecurityRsn)
+  if (security == shill::kSecurityRsn)
     return "RSN";
-  if (security == flimflam::kSecurityPsk)
+  if (security == shill::kSecurityPsk)
     return "PSK";
-  if (security == flimflam::kSecurity8021x) {
+  if (security == shill::kSecurity8021x) {
     std::string result = "8021X";
-    if (eap_method == flimflam::kEapMethodPEAP)
+    if (eap_method == shill::kEapMethodPEAP)
       result += "PEAP";
-    else if (eap_method == flimflam::kEapMethodTLS)
+    else if (eap_method == shill::kEapMethodTLS)
       result += "TLS";
-    else if (eap_method == flimflam::kEapMethodTTLS)
+    else if (eap_method == shill::kEapMethodTTLS)
       result += "TTLS";
-    else if (eap_method == flimflam::kEapMethodLEAP)
+    else if (eap_method == shill::kEapMethodLEAP)
       result += "LEAP";
     return result;
   }
@@ -396,15 +396,15 @@ std::string ProviderTypeString(
     const std::string& provider_type,
     const base::DictionaryValue& provider_properties) {
   int id;
-  if (provider_type == flimflam::kProviderL2tpIpsec) {
+  if (provider_type == shill::kProviderL2tpIpsec) {
     std::string client_cert_id;
     provider_properties.GetStringWithoutPathExpansion(
-        flimflam::kL2tpIpsecClientCertIdProperty, &client_cert_id);
+        shill::kL2tpIpsecClientCertIdProperty, &client_cert_id);
     if (client_cert_id.empty())
       id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_PSK;
     else
       id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_USER_CERT;
-  } else if (provider_type == flimflam::kProviderOpenVpn) {
+  } else if (provider_type == shill::kProviderOpenVpn) {
     id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_OPEN_VPN;
   } else {
     id = IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN;
@@ -528,15 +528,15 @@ base::DictionaryValue* BuildIPInfoDictionary(
 }
 
 static bool CanForgetNetworkType(const std::string& type) {
-  return type == flimflam::kTypeWifi ||
-         type == flimflam::kTypeWimax ||
-         type == flimflam::kTypeVPN;
+  return type == shill::kTypeWifi ||
+         type == shill::kTypeWimax ||
+         type == shill::kTypeVPN;
 }
 
 static bool CanAddNetworkType(const std::string& type) {
-  return type == flimflam::kTypeWifi ||
-         type == flimflam::kTypeVPN ||
-         type == flimflam::kTypeCellular;
+  return type == shill::kTypeWifi ||
+         type == shill::kTypeVPN ||
+         type == shill::kTypeCellular;
 }
 
 // Decorate pref value as CoreOptionsHandler::CreateValueForPref() does and
@@ -594,24 +594,24 @@ void PopulateVPNDetails(const NetworkState* vpn,
   // Provider properties are stored in the "Provider" dictionary.
   const base::DictionaryValue* provider_properties = NULL;
   if (!shill_properties.GetDictionaryWithoutPathExpansion(
-          flimflam::kProviderProperty, &provider_properties)) {
+          shill::kProviderProperty, &provider_properties)) {
     LOG(ERROR) << "No provider properties for VPN: " << vpn->path();
     return;
   }
   std::string provider_type;
   provider_properties->GetStringWithoutPathExpansion(
-      flimflam::kTypeProperty, &provider_type);
+      shill::kTypeProperty, &provider_type);
   dictionary->SetString(kTagProviderType,
                         ProviderTypeString(provider_type,
                                            *provider_properties));
 
   std::string username;
-  if (provider_type == flimflam::kProviderOpenVpn) {
+  if (provider_type == shill::kProviderOpenVpn) {
     provider_properties->GetStringWithoutPathExpansion(
-        flimflam::kOpenVPNUserProperty, &username);
+        shill::kOpenVPNUserProperty, &username);
   } else {
     provider_properties->GetStringWithoutPathExpansion(
-        flimflam::kL2tpIpsecUserProperty, &username);
+        shill::kL2tpIpsecUserProperty, &username);
   }
   dictionary->SetString(kTagUsername, username);
 
@@ -626,7 +626,7 @@ void PopulateVPNDetails(const NetworkState* vpn,
       base::StringPrintf("%s.%s", onc::network_config::kVPN, onc::vpn::kHost));
   std::string provider_host;
   provider_properties->GetStringWithoutPathExpansion(
-      flimflam::kHostProperty, &provider_host);
+      shill::kHostProperty, &provider_host);
   SetValueDictionary(dictionary, kTagServerHostname,
                      new base::StringValue(provider_host),
                      hostname_ui_data);
@@ -644,7 +644,7 @@ int FindCurrentCarrierIndex(const base::ListValue* carriers,
                             const DeviceState* device) {
   DCHECK(carriers);
   DCHECK(device);
-  bool gsm = (device->technology_family() == flimflam::kTechnologyFamilyGsm);
+  bool gsm = (device->technology_family() == shill::kTechnologyFamilyGsm);
   int index = 0;
   for (base::ListValue::const_iterator it = carriers->begin();
        it != carriers->end(); ++it, ++index) {
@@ -1115,7 +1115,7 @@ void InternetOptionsHandler::SetApnProperties(
 
   if (apn.empty()) {
     std::vector<std::string> properties_to_clear;
-    properties_to_clear.push_back(flimflam::kCellularApnProperty);
+    properties_to_clear.push_back(shill::kCellularApnProperty);
     NetworkHandler::Get()->network_configuration_handler()->ClearProperties(
       service_path, properties_to_clear,
       base::Bind(&base::DoNothing),
@@ -1126,20 +1126,20 @@ void InternetOptionsHandler::SetApnProperties(
   const base::DictionaryValue* shill_apn_dict = NULL;
   std::string network_id;
   if (shill_properties.GetDictionaryWithoutPathExpansion(
-          flimflam::kCellularApnProperty, &shill_apn_dict)) {
+          shill::kCellularApnProperty, &shill_apn_dict)) {
     shill_apn_dict->GetStringWithoutPathExpansion(
-        flimflam::kApnNetworkIdProperty, &network_id);
+        shill::kApnNetworkIdProperty, &network_id);
   }
   base::DictionaryValue properties;
   base::DictionaryValue* apn_dict = new base::DictionaryValue;
-  apn_dict->SetStringWithoutPathExpansion(flimflam::kApnProperty, apn);
-  apn_dict->SetStringWithoutPathExpansion(flimflam::kApnNetworkIdProperty,
+  apn_dict->SetStringWithoutPathExpansion(shill::kApnProperty, apn);
+  apn_dict->SetStringWithoutPathExpansion(shill::kApnNetworkIdProperty,
                                           network_id);
-  apn_dict->SetStringWithoutPathExpansion(flimflam::kApnUsernameProperty,
+  apn_dict->SetStringWithoutPathExpansion(shill::kApnUsernameProperty,
                                           username);
-  apn_dict->SetStringWithoutPathExpansion(flimflam::kApnPasswordProperty,
+  apn_dict->SetStringWithoutPathExpansion(shill::kApnPasswordProperty,
                                           password);
-  properties.SetWithoutPathExpansion(flimflam::kCellularApnProperty, apn_dict);
+  properties.SetWithoutPathExpansion(shill::kCellularApnProperty, apn_dict);
   NetworkHandler::Get()->network_configuration_handler()->SetProperties(
       service_path, properties,
       base::Bind(&base::DoNothing),
@@ -1326,7 +1326,7 @@ void InternetOptionsHandler::SetServerHostnameCallback(
     NOTREACHED();
     return;
   }
-  SetNetworkProperty(service_path, flimflam::kProviderHostProperty,
+  SetNetworkProperty(service_path, shill::kProviderHostProperty,
                      base::Value::CreateStringValue(server_hostname));
 }
 
@@ -1340,7 +1340,7 @@ void InternetOptionsHandler::SetPreferNetworkCallback(
     return;
   }
   int priority = (prefer_network_str == kTagTrue) ? kPreferredPriority : 0;
-  SetNetworkProperty(service_path, flimflam::kPriorityProperty,
+  SetNetworkProperty(service_path, shill::kPriorityProperty,
                      base::Value::CreateIntegerValue(priority));
 }
 
@@ -1354,7 +1354,7 @@ void InternetOptionsHandler::SetAutoConnectCallback(
     return;
   }
   bool auto_connect = auto_connect_str == kTagTrue;
-  SetNetworkProperty(service_path, flimflam::kAutoConnectProperty,
+  SetNetworkProperty(service_path, shill::kAutoConnectProperty,
                      base::Value::CreateBooleanValue(auto_connect));
 }
 
@@ -1444,7 +1444,7 @@ void InternetOptionsHandler::SetIPConfigProperties(
   }
   std::string device_path;
   shill_properties.GetStringWithoutPathExpansion(
-      flimflam::kDeviceProperty, &device_path);
+      shill::kDeviceProperty, &device_path);
   if (!device_path.empty()) {
     base::Closure callback = base::Bind(&base::DoNothing);
     // If auto config or a static IP property changed, we need to reconnect
@@ -1535,7 +1535,7 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
 
   // Enable static ip config for ethernet. For wifi, enable if flag is set.
   bool staticIPConfig = network->Matches(NetworkTypePattern::Ethernet()) ||
-                        (type == flimflam::kTypeWifi &&
+                        (type == shill::kTypeWifi &&
                          CommandLine::ForCurrentProcess()->HasSwitch(
                              chromeos::switches::kEnableStaticIPConfig));
   dictionary.SetBoolean(kTagShowStaticIPConfig, staticIPConfig);
@@ -1543,7 +1543,7 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   dictionary.SetBoolean(kTagShowPreferred, !network->profile_path().empty());
   int priority = 0;
   shill_properties.GetIntegerWithoutPathExpansion(
-      flimflam::kPriorityProperty, &priority);
+      shill::kPriorityProperty, &priority);
   bool preferred = priority > 0;
   SetValueDictionary(&dictionary, kTagPreferred,
                      new base::FundamentalValue(preferred),
@@ -1551,12 +1551,12 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
 
   NetworkPropertyUIData auto_connect_ui_data(onc_source);
   std::string onc_path_to_auto_connect;
-  if (type == flimflam::kTypeWifi) {
+  if (type == shill::kTypeWifi) {
     onc_path_to_auto_connect = base::StringPrintf(
         "%s.%s",
         onc::network_config::kWiFi,
         onc::wifi::kAutoConnect);
-  } else if (type == flimflam::kTypeVPN) {
+  } else if (type == shill::kTypeVPN) {
     onc_path_to_auto_connect = base::StringPrintf(
         "%s.%s",
         onc::network_config::kVPN,
@@ -1568,7 +1568,7 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   }
   bool auto_connect = false;
   shill_properties.GetBooleanWithoutPathExpansion(
-      flimflam::kAutoConnectProperty, &auto_connect);
+      shill::kAutoConnectProperty, &auto_connect);
   SetValueDictionary(&dictionary, kTagAutoConnect,
                      new base::FundamentalValue(auto_connect),
                      auto_connect_ui_data);
@@ -1605,13 +1605,13 @@ void PopulateConnectionDetails(const NetworkState* network,
 
   dictionary->SetBoolean(kTagDeviceConnected, connected_network != NULL);
 
-  if (type == flimflam::kTypeWifi)
+  if (type == shill::kTypeWifi)
     PopulateWifiDetails(network, shill_properties, dictionary);
-  else if (type == flimflam::kTypeWimax)
+  else if (type == shill::kTypeWimax)
     PopulateWimaxDetails(network, shill_properties, dictionary);
-  else if (type == flimflam::kTypeCellular)
+  else if (type == shill::kTypeCellular)
     PopulateCellularDetails(network, shill_properties, dictionary);
-  else if (type == flimflam::kTypeVPN)
+  else if (type == shill::kTypeVPN)
     PopulateVPNDetails(network, shill_properties, dictionary);
 }
 
@@ -1623,13 +1623,13 @@ void PopulateWifiDetails(const NetworkState* wifi,
 
   std::string security, eap_method;
   shill_properties.GetStringWithoutPathExpansion(
-      flimflam::kSecurityProperty, &security);
+      shill::kSecurityProperty, &security);
   shill_properties.GetStringWithoutPathExpansion(
-      flimflam::kEapMethodProperty, &eap_method);
+      shill::kEapMethodProperty, &eap_method);
   dictionary->SetString(kTagEncryption, EncryptionString(security, eap_method));
-  CopyStringFromDictionary(shill_properties, flimflam::kWifiBSsid,
+  CopyStringFromDictionary(shill_properties, shill::kWifiBSsid,
                            kTagBssid, dictionary);
-  CopyIntegerFromDictionary(shill_properties, flimflam::kWifiFrequency,
+  CopyIntegerFromDictionary(shill_properties, shill::kWifiFrequency,
                             kTagFrequency, false, dictionary);
 }
 
@@ -1637,25 +1637,25 @@ void PopulateWimaxDetails(const NetworkState* wimax,
                           const base::DictionaryValue& shill_properties,
                           base::DictionaryValue* dictionary) {
   dictionary->SetInteger(kTagStrength, wimax->signal_strength());
-  CopyStringFromDictionary(shill_properties, flimflam::kEapIdentityProperty,
+  CopyStringFromDictionary(shill_properties, shill::kEapIdentityProperty,
                            kTagIdentity, dictionary);
 }
 
 void CreateDictionaryFromCellularApn(const base::DictionaryValue* apn,
                                      base::DictionaryValue* dictionary) {
-  CopyStringFromDictionary(*apn, flimflam::kApnProperty,
+  CopyStringFromDictionary(*apn, shill::kApnProperty,
                            kTagApn, dictionary);
-  CopyStringFromDictionary(*apn, flimflam::kApnNetworkIdProperty,
+  CopyStringFromDictionary(*apn, shill::kApnNetworkIdProperty,
                            kTagNetworkId, dictionary);
-  CopyStringFromDictionary(*apn, flimflam::kApnUsernameProperty,
+  CopyStringFromDictionary(*apn, shill::kApnUsernameProperty,
                            kTagUsername, dictionary);
-  CopyStringFromDictionary(*apn, flimflam::kApnPasswordProperty,
+  CopyStringFromDictionary(*apn, shill::kApnPasswordProperty,
                            kTagPassword, dictionary);
-  CopyStringFromDictionary(*apn, flimflam::kApnNameProperty,
+  CopyStringFromDictionary(*apn, shill::kApnNameProperty,
                            kTagName, dictionary);
-  CopyStringFromDictionary(*apn, flimflam::kApnLocalizedNameProperty,
+  CopyStringFromDictionary(*apn, shill::kApnLocalizedNameProperty,
                            kTagLocalizedName, dictionary);
-  CopyStringFromDictionary(*apn, flimflam::kApnLanguageProperty,
+  CopyStringFromDictionary(*apn, shill::kApnLanguageProperty,
                            kTagLanguage, dictionary);
 }
 
@@ -1671,7 +1671,7 @@ void PopulateCellularDetails(const NetworkState* cellular,
                         ActivationStateString(cellular->activation_state()));
   dictionary->SetString(kTagRoamingState,
                         RoamingStateString(cellular->roaming()));
-  bool restricted = cellular->connection_state() == flimflam::kStatePortal;
+  bool restricted = cellular->connection_state() == shill::kStatePortal;
   dictionary->SetString(kTagRestrictedPool,
                         restricted ?
                         l10n_util::GetStringUTF8(
@@ -1681,32 +1681,32 @@ void PopulateCellularDetails(const NetworkState* cellular,
 
   const base::DictionaryValue* serving_operator = NULL;
   if (shill_properties.GetDictionaryWithoutPathExpansion(
-          flimflam::kServingOperatorProperty, &serving_operator)) {
-    CopyStringFromDictionary(*serving_operator, flimflam::kOperatorNameKey,
+          shill::kServingOperatorProperty, &serving_operator)) {
+    CopyStringFromDictionary(*serving_operator, shill::kOperatorNameKey,
                              kTagOperatorName, dictionary);
-    CopyStringFromDictionary(*serving_operator, flimflam::kOperatorCodeKey,
+    CopyStringFromDictionary(*serving_operator, shill::kOperatorCodeKey,
                              kTagOperatorCode, dictionary);
   }
 
   const base::DictionaryValue* olp = NULL;
   if (shill_properties.GetDictionaryWithoutPathExpansion(
-          flimflam::kPaymentPortalProperty, &olp)) {
+          shill::kPaymentPortalProperty, &olp)) {
     std::string url;
-    olp->GetStringWithoutPathExpansion(flimflam::kPaymentPortalURL, &url);
+    olp->GetStringWithoutPathExpansion(shill::kPaymentPortalURL, &url);
     dictionary->SetString(kTagSupportUrl, url);
   }
 
   base::DictionaryValue* apn = new base::DictionaryValue;
   const base::DictionaryValue* source_apn = NULL;
   if (shill_properties.GetDictionaryWithoutPathExpansion(
-          flimflam::kCellularApnProperty, &source_apn)) {
+          shill::kCellularApnProperty, &source_apn)) {
     CreateDictionaryFromCellularApn(source_apn, apn);
   }
   dictionary->Set(kTagApn, apn);
 
   base::DictionaryValue* last_good_apn = new base::DictionaryValue;
   if (shill_properties.GetDictionaryWithoutPathExpansion(
-          flimflam::kCellularLastGoodApnProperty, &source_apn)) {
+          shill::kCellularLastGoodApnProperty, &source_apn)) {
     CreateDictionaryFromCellularApn(source_apn, last_good_apn);
   }
   dictionary->Set(kTagLastGoodApn, last_good_apn);
@@ -1725,36 +1725,36 @@ void PopulateCellularDetails(const NetworkState* cellular,
     const base::DictionaryValue& device_properties = device->properties();
     const NetworkPropertyUIData cellular_property_ui_data(
         cellular->ui_data().onc_source());
-    CopyStringFromDictionary(device_properties, flimflam::kManufacturerProperty,
+    CopyStringFromDictionary(device_properties, shill::kManufacturerProperty,
                             kTagManufacturer, dictionary);
-    CopyStringFromDictionary(device_properties, flimflam::kModelIDProperty,
+    CopyStringFromDictionary(device_properties, shill::kModelIDProperty,
                             kTagModelId, dictionary);
     CopyStringFromDictionary(device_properties,
-                            flimflam::kFirmwareRevisionProperty,
+                            shill::kFirmwareRevisionProperty,
                             kTagFirmwareRevision, dictionary);
     CopyStringFromDictionary(device_properties,
-                            flimflam::kHardwareRevisionProperty,
+                            shill::kHardwareRevisionProperty,
                             kTagHardwareRevision, dictionary);
-    CopyIntegerFromDictionary(device_properties, flimflam::kPRLVersionProperty,
+    CopyIntegerFromDictionary(device_properties, shill::kPRLVersionProperty,
                              kTagPrlVersion, true, dictionary);
-    CopyStringFromDictionary(device_properties, flimflam::kMeidProperty,
+    CopyStringFromDictionary(device_properties, shill::kMeidProperty,
                             kTagMeid, dictionary);
-    CopyStringFromDictionary(device_properties, flimflam::kIccidProperty,
+    CopyStringFromDictionary(device_properties, shill::kIccidProperty,
                             kTagIccid, dictionary);
-    CopyStringFromDictionary(device_properties, flimflam::kImeiProperty,
+    CopyStringFromDictionary(device_properties, shill::kImeiProperty,
                             kTagImei, dictionary);
-    mdn = CopyStringFromDictionary(device_properties, flimflam::kMdnProperty,
+    mdn = CopyStringFromDictionary(device_properties, shill::kMdnProperty,
                                    kTagMdn, dictionary);
-    CopyStringFromDictionary(device_properties, flimflam::kImsiProperty,
+    CopyStringFromDictionary(device_properties, shill::kImsiProperty,
                             kTagImsi, dictionary);
-    CopyStringFromDictionary(device_properties, flimflam::kEsnProperty,
+    CopyStringFromDictionary(device_properties, shill::kEsnProperty,
                             kTagEsn, dictionary);
-    CopyStringFromDictionary(device_properties, flimflam::kMinProperty,
+    CopyStringFromDictionary(device_properties, shill::kMinProperty,
                             kTagMin, dictionary);
     std::string family;
     device_properties.GetStringWithoutPathExpansion(
-        flimflam::kTechnologyFamilyProperty, &family);
-    dictionary->SetBoolean(kTagGsm, family == flimflam::kNetworkTechnologyGsm);
+        shill::kTechnologyFamilyProperty, &family);
+    dictionary->SetBoolean(kTagGsm, family == shill::kNetworkTechnologyGsm);
 
     SetValueDictionary(
         dictionary, kTagSimCardLockEnabled,
@@ -1773,7 +1773,7 @@ void PopulateCellularDetails(const NetworkState* cellular,
     base::ListValue* apn_list_value = new base::ListValue();
     const base::ListValue* apn_list;
     if (device_properties.GetListWithoutPathExpansion(
-            flimflam::kCellularApnListProperty, &apn_list)) {
+            shill::kCellularApnListProperty, &apn_list)) {
       for (base::ListValue::const_iterator iter = apn_list->begin();
            iter != apn_list->end(); ++iter) {
         const base::DictionaryValue* dict;
@@ -1806,21 +1806,21 @@ void PopulateCellularDetails(const NetworkState* cellular,
   // Set Cellular Buttons Visibility
   dictionary->SetBoolean(
       kTagDisableConnectButton,
-      cellular->activation_state() == flimflam::kActivationStateActivating ||
+      cellular->activation_state() == shill::kActivationStateActivating ||
       cellular->IsConnectingState());
 
   // Don't show any account management related buttons if the activation
   // state is unknown or no payment portal URL is available.
   std::string support_url;
-  if (cellular->activation_state() == flimflam::kActivationStateUnknown ||
+  if (cellular->activation_state() == shill::kActivationStateUnknown ||
       !dictionary->GetString(kTagSupportUrl, &support_url) ||
       support_url.empty()) {
     VLOG(2) << "No support URL is available. Don't display buttons.";
     return;
   }
 
-  if (cellular->activation_state() != flimflam::kActivationStateActivating &&
-      cellular->activation_state() != flimflam::kActivationStateActivated) {
+  if (cellular->activation_state() != shill::kActivationStateActivating &&
+      cellular->activation_state() != shill::kActivationStateActivated) {
     dictionary->SetBoolean(kTagShowActivateButton, true);
   } else {
     const MobileConfig::Carrier* carrier =
@@ -1835,8 +1835,8 @@ void PopulateCellularDetails(const NetworkState* cellular,
           NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
       const std::string& technology = cellular->network_technology();
       bool force_show_view_account_button =
-          (technology == flimflam::kNetworkTechnologyLte ||
-           technology == flimflam::kNetworkTechnologyLteAdvanced) &&
+          (technology == shill::kNetworkTechnologyLte ||
+           technology == shill::kNetworkTechnologyLteAdvanced) &&
           default_network &&
           !mdn.empty();
 
@@ -1900,7 +1900,7 @@ void InternetOptionsHandler::NetworkCommandCallback(
         base::Bind(&ShillError, "NetworkCommand: " + command));
   } else if (command == kTagConfigure) {
     NetworkConfigView::Show(service_path, GetNativeWindow());
-  } else if (command == kTagActivate && type == flimflam::kTypeCellular) {
+  } else if (command == kTagActivate && type == shill::kTypeCellular) {
     ash::network_connect::ActivateCellular(service_path);
     // Activation may update network properties (e.g. ActivationState), so
     // request them here in case they change.
@@ -1912,11 +1912,11 @@ void InternetOptionsHandler::NetworkCommandCallback(
 }
 
 void InternetOptionsHandler::AddConnection(const std::string& type) {
-  if (type == flimflam::kTypeWifi)
-    NetworkConfigView::ShowForType(flimflam::kTypeWifi, GetNativeWindow());
-  else if (type == flimflam::kTypeVPN)
-    NetworkConfigView::ShowForType(flimflam::kTypeVPN, GetNativeWindow());
-  else if (type == flimflam::kTypeCellular)
+  if (type == shill::kTypeWifi)
+    NetworkConfigView::ShowForType(shill::kTypeWifi, GetNativeWindow());
+  else if (type == shill::kTypeVPN)
+    NetworkConfigView::ShowForType(shill::kTypeVPN, GetNativeWindow());
+  else if (type == shill::kTypeCellular)
     ChooseMobileNetworkDialog::ShowDialog(GetNativeWindow());
   else
     NOTREACHED();
@@ -1971,8 +1971,8 @@ base::ListValue* InternetOptionsHandler::GetRememberedList() {
   for (NetworkStateHandler::FavoriteStateList::const_iterator iter =
            favorites.begin(); iter != favorites.end(); ++iter) {
     const FavoriteState* favorite = *iter;
-    if (favorite->type() != flimflam::kTypeWifi &&
-        favorite->type() != flimflam::kTypeVPN)
+    if (favorite->type() != shill::kTypeWifi &&
+        favorite->type() != shill::kTypeVPN)
       continue;
     list->Append(
         BuildFavoriteDictionary(favorite, web_ui()->GetDeviceScaleFactor()));

@@ -761,15 +761,15 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
     service_test->ClearServices();
     service_test->AddService("stub_ethernet",
                              "eth0",
-                             flimflam::kTypeEthernet,
-                             flimflam::kStateOnline,
+                             shill::kTypeEthernet,
+                             shill::kStateOnline,
                              true,   // add to visible
                              true);  // add to watchlist
     service_test->SetServiceProperty("stub_ethernet",
-                                     flimflam::kGuidProperty,
+                                     shill::kGuidProperty,
                                      base::StringValue("stub_ethernet"));
     service_test->SetServiceProperty("stub_ethernet",
-                                     flimflam::kProfileProperty,
+                                     shill::kProfileProperty,
                                      base::StringValue(kUserProfilePath));
     profile_test->AddService(kUserProfilePath, "stub_wifi2");
   }
