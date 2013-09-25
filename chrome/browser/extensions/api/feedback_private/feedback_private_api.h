@@ -24,8 +24,7 @@ class FeedbackPrivateAPI : public ProfileKeyedAPI {
   FeedbackService* GetService() const;
   void RequestFeedback(const std::string& description_template,
                        const std::string& category_tag,
-                       const GURL& page_url,
-                       const gfx::Rect& screen_size);
+                       const GURL& page_url);
 
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<FeedbackPrivateAPI>* GetFactoryInstance();

@@ -51,8 +51,7 @@ FeedbackService* FeedbackPrivateAPI::GetService() const {
 void FeedbackPrivateAPI::RequestFeedback(
     const std::string& description_template,
     const std::string& category_tag,
-    const GURL& page_url,
-    const gfx::Rect& screen_size) {
+    const GURL& page_url) {
   if (profile_ && ExtensionSystem::Get(profile_)->event_router()) {
     FeedbackInfo info;
     info.description = description_template;
@@ -63,13 +62,6 @@ void FeedbackPrivateAPI::RequestFeedback(
     if (TracingManager* manager = TracingManager::Get()) {
       info.trace_id.reset(new int(manager->RequestTrace()));
     }
-
-    FeedbackService::PopulateSystemInfo(
-        info.system_information.get(), FeedbackData::kScreensizeHeightKey,
-        base::IntToString(screen_size.height()));
-    FeedbackService::PopulateSystemInfo(
-        info.system_information.get(), FeedbackData::kScreensizeWidthKey,
-        base::IntToString(screen_size.width()));
 
     scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(info.ToValue().release());

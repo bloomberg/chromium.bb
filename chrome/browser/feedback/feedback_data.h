@@ -23,9 +23,6 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
  public:
   typedef std::map<std::string, std::string> SystemLogsMap;
 
-  static const char kScreensizeHeightKey[];
-  static const char kScreensizeWidthKey[];
-
   // Determine if the given feedback value is small enough to not need to
   // be compressed.
   static bool BelowCompressionThreshold(const std::string& content);

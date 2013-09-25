@@ -278,7 +278,7 @@ aura::client::UserActionClient* ChromeShellDelegate::CreateUserActionClient() {
 }
 
 void ChromeShellDelegate::OpenFeedbackPage() {
-  chrome::OpenFeedbackDialog(GetTargetBrowser());
+  chrome::OpenFeedbackDialog(GetTargetBrowserIfAvailable());
 }
 
 void ChromeShellDelegate::RecordUserMetricsAction(
@@ -449,12 +449,16 @@ string16 ChromeShellDelegate::GetProductName() const {
 }
 
 Browser* ChromeShellDelegate::GetTargetBrowser() {
-  Browser* browser = chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
+  Browser* browser = GetTargetBrowserIfAvailable();
   if (browser)
     return browser;
   return chrome::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord(),
       chrome::HOST_DESKTOP_TYPE_ASH);
+}
+
+Browser* ChromeShellDelegate::GetTargetBrowserIfAvailable() {
+  return chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
 }
 
 keyboard::KeyboardControllerProxy*

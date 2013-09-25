@@ -108,6 +108,11 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   // for a browser or create one for default profile and returns it.
   Browser* GetTargetBrowser();
 
+  // This returns the active ash window if any. Unlike the method above, it
+  // does not create a window if one isn't available, instead it returns NULL
+  // in that case.
+  Browser* GetTargetBrowserIfAvailable();
+
   static ChromeShellDelegate* instance_;
 
   content::NotificationRegistrar registrar_;

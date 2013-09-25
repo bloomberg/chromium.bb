@@ -23,6 +23,7 @@
 #include "chrome/browser/feedback/feedback_data.h"
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -61,25 +62,6 @@ const base::FilePath::CharType kLogsFilename[] =
 
 void DispatchFeedback(Profile* profile, std::string* post_body, int64 delay);
 
-// Check the key/value pair to see if it is one of the screensize, keys. If so,
-// populate the screensize structure with the key.
-bool IsScreensizeInfo(const std::string key,
-                      const std::string value,
-                      gfx::Rect* screen_size) {
-  if (key == FeedbackData::kScreensizeHeightKey) {
-    int height = 0;
-    base::StringToInt(value, &height);
-    screen_size->SetRect(0, 0, screen_size->width(), height);
-    return true;
-  } else if (key == FeedbackData::kScreensizeWidthKey) {
-    int width = 0;
-    base::StringToInt(value, &width);
-    screen_size->SetRect(0, 0, width, screen_size->height());
-    return true;
-  }
-  return false;
-}
-
 GURL GetTargetTabUrl(int session_id, int index) {
   Browser* browser = chrome::FindBrowserWithID(session_id);
   // Sanity checks.
@@ -94,18 +76,6 @@ GURL GetTargetTabUrl(int session_id, int index) {
   }
 
   return GURL();
-}
-
-gfx::Rect GetScreenSize(Browser* browser) {
-#if defined(OS_CHROMEOS)
-  // For ChromeOS, don't use the browser window but the root window
-  // instead to grab the screenshot. We want everything on the screen, not
-  // just the current browser.
-  gfx::NativeWindow native_window = ash::Shell::GetPrimaryRootWindow();
-  return gfx::Rect(native_window->bounds());
-#else
-  return gfx::Rect(browser->window()->GetBounds().size());
-#endif
 }
 
 // URL to post bug reports to.
@@ -257,25 +227,32 @@ namespace chrome {
 const char kAppLauncherCategoryTag[] = "AppLauncher";
 
 void ShowFeedbackPage(Browser* browser,
-                    const std::string& description_template,
-                    const std::string& category_tag) {
-  DCHECK(browser);
+                      const std::string& description_template,
+                      const std::string& category_tag) {
+  GURL page_url;
+  if (browser) {
+    page_url = GetTargetTabUrl(browser->session_id().id(),
+                               browser->tab_strip_model()->active_index());
+  }
 
-  // Get the current browser's screensize and send it with the feedback request
-  // event - this browser may have changed or even been closed by the time that
-  // feedback is sent.
-  gfx::Rect screen_size = GetScreenSize(browser);
-  GURL page_url = GetTargetTabUrl(
-      browser->session_id().id(), browser->tab_strip_model()->active_index());
+  Profile* profile = NULL;
+  if (browser) {
+    profile = browser->profile();
+  } else {
+    profile = ProfileManager::GetLastUsedProfileAllowedByPolicy();
+  }
+  if (!profile) {
+    LOG(ERROR) << "Cannot invoke feedback: No profile found!";
+    return;
+  }
 
   extensions::FeedbackPrivateAPI* api =
       extensions::FeedbackPrivateAPI::GetFactoryInstance()->GetForProfile(
-          browser->profile());
+          profile);
 
   api->RequestFeedback(description_template,
                        category_tag,
-                       page_url,
-                       screen_size);
+                       page_url);
 }
 
 }  // namespace chrome
@@ -310,10 +287,8 @@ void SendReport(scoped_refptr<FeedbackData> data) {
   if (data->sys_info()) {
     for (FeedbackData::SystemLogsMap::const_iterator i =
         data->sys_info()->begin(); i != data->sys_info()->end(); ++i) {
-      if (!IsScreensizeInfo(i->first, i->second, &screen_size)) {
-        if (FeedbackData::BelowCompressionThreshold(i->second))
-          AddFeedbackData(&feedback_data, i->first, i->second);
-      }
+      if (FeedbackData::BelowCompressionThreshold(i->second))
+        AddFeedbackData(&feedback_data, i->first, i->second);
     }
 
     if (data->compressed_logs() && data->compressed_logs()->size()) {
@@ -345,10 +320,11 @@ void SendReport(scoped_refptr<FeedbackData> data) {
     userfeedback::PostedScreenshot screenshot;
     screenshot.set_mime_type(kPngMimeType);
 
-    // Set the dimensions of the screenshot
+    // Set that we 'have' dimensions of the screenshot. These dimensions are
+    // ignored by the server but are a 'required' field in the protobuf.
     userfeedback::Dimensions dimensions;
-    dimensions.set_width(static_cast<float>(screen_size.width()));
-    dimensions.set_height(static_cast<float>(screen_size.height()));
+    dimensions.set_width(0.0);
+    dimensions.set_height(0.0);
 
     *(screenshot.mutable_dimensions()) = dimensions;
     screenshot.set_binary_content(*data->image());

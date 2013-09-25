@@ -44,14 +44,7 @@ std::string LogsToString(FeedbackData::SystemLogsMap* sys_info) {
     std::string key = it->first;
     std::string value = it->second;
 
-    // Screensize info is sent with every report to remember the window size
-    // for when feedback was invoked. This is a hack needed to know what
-    // dimensions the user screenshot is since the actual screenshot mechanism
-    // in JS doesn't give us the dimensions of the screenshot taken. These
-    // values shouldn't be sent with the report.
-    if (key == FeedbackData::kScreensizeHeightKey ||
-        key == FeedbackData::kScreensizeWidthKey ||
-        FeedbackData::BelowCompressionThreshold(value))
+    if (FeedbackData::BelowCompressionThreshold(value))
       continue;
 
     TrimString(key, "\n ", &key);
@@ -81,11 +74,6 @@ void ZipLogs(FeedbackData::SystemLogsMap* sys_info,
 }
 
 }  // namespace
-
-// static
-const char FeedbackData::kScreensizeHeightKey[] = "ScreensizeHeight";
-// static
-const char FeedbackData::kScreensizeWidthKey[] = "ScreensizeWidth";
 
 // static
 bool FeedbackData::BelowCompressionThreshold(const std::string& content) {
