@@ -211,8 +211,10 @@ void ServiceDiscoveryHostClient::UnregisterLocalDomainResolverCallback(
   domain_resolver_callbacks_.erase(id);
 }
 
-void ServiceDiscoveryHostClient::Start() {
+void ServiceDiscoveryHostClient::Start(
+    const base::Closure& error_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  error_callback_ = error_callback;
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ServiceDiscoveryHostClient::StartOnIOThread, this));
@@ -258,6 +260,7 @@ void ServiceDiscoveryHostClient::ShutdownOnIOThread() {
     utility_host_->Send(new LocalDiscoveryMsg_ShutdownLocalDiscovery);
     utility_host_->EndBatchMode();
   }
+  error_callback_ = base::Closure();
 }
 
 void ServiceDiscoveryHostClient::Send(IPC::Message* msg) {
@@ -273,10 +276,16 @@ void ServiceDiscoveryHostClient::SendOnIOThread(IPC::Message* msg) {
     utility_host_->Send(msg);
 }
 
+void ServiceDiscoveryHostClient::OnProcessCrashed(int exit_code) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  OnError();
+}
+
 bool ServiceDiscoveryHostClient::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceDiscoveryHostClient, message)
+    IPC_MESSAGE_HANDLER(LocalDiscoveryHostMsg_Error, OnError)
     IPC_MESSAGE_HANDLER(LocalDiscoveryHostMsg_WatcherCallback,
                         OnWatcherCallback)
     IPC_MESSAGE_HANDLER(LocalDiscoveryHostMsg_ResolverCallback,
@@ -300,6 +309,12 @@ void ServiceDiscoveryHostClient::InvalidateWatchers() {
       i->second.Run(ServiceWatcher::UPDATE_INVALIDATED, "");
     }
   }
+}
+
+void ServiceDiscoveryHostClient::OnError() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!error_callback_.is_null())
+    callback_runner_->PostTask(FROM_HERE, error_callback_);
 }
 
 void ServiceDiscoveryHostClient::OnWatcherCallback(

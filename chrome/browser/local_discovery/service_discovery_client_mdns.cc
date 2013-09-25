@@ -12,6 +12,7 @@ namespace local_discovery {
 using content::BrowserThread;
 
 namespace {
+const int kMaxRestartAttempts = 10;
 const int kRestartDelayOnNetworkChangeSeconds = 3;
 }
 
@@ -39,13 +40,16 @@ ServiceDiscoveryClientMdns::CreateLocalDomainResolver(
                                                  callback);
 }
 
-ServiceDiscoveryClientMdns::ServiceDiscoveryClientMdns() {
+ServiceDiscoveryClientMdns::ServiceDiscoveryClientMdns()
+    : restart_attempts_(kMaxRestartAttempts),
+      weak_ptr_factory_(this) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
-  host_client_ = new ServiceDiscoveryHostClient();
-  host_client_->Start();
+  StartNewClient();
 }
 
 ServiceDiscoveryClientMdns::~ServiceDiscoveryClientMdns() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   host_client_->Shutdown();
 }
@@ -53,24 +57,37 @@ ServiceDiscoveryClientMdns::~ServiceDiscoveryClientMdns() {
 void ServiceDiscoveryClientMdns::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Only network changes resets kMaxRestartAttempts.
+  restart_attempts_ = kMaxRestartAttempts;
+  ScheduleStartNewClient();
+}
+
+void ServiceDiscoveryClientMdns::ScheduleStartNewClient() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   host_client_->Shutdown();
-  network_change_callback_.Reset(
-      base::Bind(&ServiceDiscoveryClientMdns::StartNewClient,
-                 base::Unretained(this)));  // Unretained to avoid ref cycle.
+  weak_ptr_factory_.InvalidateWeakPtrs();
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      network_change_callback_.callback(),
+      base::Bind(&ServiceDiscoveryClientMdns::StartNewClient,
+                 weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kRestartDelayOnNetworkChangeSeconds));
 }
 
 void ServiceDiscoveryClientMdns::StartNewClient() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_refptr<ServiceDiscoveryHostClient> old_client = host_client_;
-  host_client_ = new ServiceDiscoveryHostClient();
-  host_client_->Start();
+  if ((restart_attempts_--) > 0) {
+    host_client_ = new ServiceDiscoveryHostClient();
+    host_client_->Start(
+        base::Bind(&ServiceDiscoveryClientMdns::ScheduleStartNewClient,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    host_client_ = NULL;
+  }
   // Run when host_client_ is created. Callbacks created by InvalidateWatchers
   // may create new watchers.
-  old_client->InvalidateWatchers();
+  if (old_client)
+    old_client->InvalidateWatchers();
 }
 
 }  // namespace local_discovery

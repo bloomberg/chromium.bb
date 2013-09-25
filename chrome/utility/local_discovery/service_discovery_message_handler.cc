@@ -110,26 +110,9 @@ void StaticInitializeSocketFactory() {
 
 #endif  // OS_WIN
 
-void SendServiceResolved(uint64 id, ServiceResolver::RequestStatus status,
-                         const ServiceDescription& description) {
-  content::UtilityThread::Get()->Send(
-      new LocalDiscoveryHostMsg_ResolverCallback(id, status, description));
+void SendHostMessageOnUtilityThread(IPC::Message* msg) {
+  content::UtilityThread::Get()->Send(msg);
 }
-
-void SendServiceUpdated(uint64 id, ServiceWatcher::UpdateType update,
-                        const std::string& name) {
-  content::UtilityThread::Get()->Send(
-      new LocalDiscoveryHostMsg_WatcherCallback(id, update, name));
-}
-
-void SendLocalDomainResolved(uint64 id, bool success,
-                             const net::IPAddressNumber& address_ipv4,
-                             const net::IPAddressNumber& address_ipv6) {
-  content::UtilityThread::Get()->Send(
-      new LocalDiscoveryHostMsg_LocalDomainResolverCallback(
-          id, success, address_ipv4, address_ipv6));
-}
-
 
 std::string WatcherUpdateToString(ServiceWatcher::UpdateType update) {
   switch (update) {
@@ -178,8 +161,10 @@ void ServiceDiscoveryMessageHandler::InitializeMdns() {
   {
     // Temporarily redirect network code to use pre-created sockets.
     ScopedSocketFactorySetter socket_factory_setter;
-    if (!mdns_client_->StartListening())
+    if (!mdns_client_->StartListening()) {
+      Send(new LocalDiscoveryHostMsg_Error());
       return;
+    }
   }
 
   service_discovery_client_.reset(
@@ -387,7 +372,6 @@ void ServiceDiscoveryMessageHandler::ShutdownOnIOThread() {
   service_watchers_.clear();
   service_resolvers_.clear();
   local_domain_resolvers_.clear();
-
   service_discovery_client_.reset();
   mdns_client_.reset();
 }
@@ -398,8 +382,8 @@ void ServiceDiscoveryMessageHandler::OnServiceUpdated(
     const std::string& name) {
   VLOG(1) << "OnServiceUpdated with id " << id << WatcherUpdateToString(update);
   DCHECK(service_discovery_client_);
-  utility_task_runner_->PostTask(FROM_HERE,
-      base::Bind(&SendServiceUpdated, id, update, name));
+
+  Send(new LocalDiscoveryHostMsg_WatcherCallback(id, update, name));
 }
 
 void ServiceDiscoveryMessageHandler::OnServiceResolved(
@@ -410,8 +394,7 @@ void ServiceDiscoveryMessageHandler::OnServiceResolved(
           << ResolverStatusToString(status);
 
   DCHECK(service_discovery_client_);
-  utility_task_runner_->PostTask(FROM_HERE,
-      base::Bind(&SendServiceResolved, id, status, description));
+  Send(new LocalDiscoveryHostMsg_ResolverCallback(id, status, description));
 }
 
 void ServiceDiscoveryMessageHandler::OnLocalDomainResolved(
@@ -419,19 +402,19 @@ void ServiceDiscoveryMessageHandler::OnLocalDomainResolved(
     bool success,
     const net::IPAddressNumber& address_ipv4,
     const net::IPAddressNumber& address_ipv6) {
-  VLOG(1) << "OnLocalDomainResolved with id " << id;
-
-  if (!address_ipv4.empty())
-    VLOG(1) << "Local comain callback has valid ipv4 address with id " << id;
-  if (!address_ipv6.empty())
-    VLOG(1) << "Local comain callback has valid ipv6 address with id " << id;
+  VLOG(1) << "OnLocalDomainResolved with id=" << id
+          << ", IPv4=" << net::IPAddressToString(address_ipv4)
+          << ", IPv6=" << net::IPAddressToString(address_ipv6);
 
   DCHECK(service_discovery_client_);
-  utility_task_runner_->PostTask(FROM_HERE, base::Bind(&SendLocalDomainResolved,
-                                                       id, success,
-                                                       address_ipv4,
-                                                       address_ipv6));
+  Send(new LocalDiscoveryHostMsg_LocalDomainResolverCallback(
+          id, success, address_ipv4, address_ipv6));
 }
 
+void ServiceDiscoveryMessageHandler::Send(IPC::Message* msg) {
+  utility_task_runner_->PostTask(FROM_HERE,
+                                 base::Bind(&SendHostMessageOnUtilityThread,
+                                            msg));
+}
 
 }  // namespace local_discovery

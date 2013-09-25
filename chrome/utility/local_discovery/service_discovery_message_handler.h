@@ -93,6 +93,8 @@ class ServiceDiscoveryMessageHandler : public chrome::UtilityMessageHandler {
                              const net::IPAddressNumber& address_ipv4,
                              const net::IPAddressNumber& address_ipv6);
 
+  void Send(IPC::Message* msg);
+
   ServiceWatchers service_watchers_;
   ServiceResolvers service_resolvers_;
   LocalDomainResolvers local_domain_resolvers_;

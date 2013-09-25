@@ -73,6 +73,9 @@ IPC_MESSAGE_CONTROL0(LocalDiscoveryMsg_ShutdownLocalDiscovery)
 // Utility process host messages:
 // These are messages from the utility process to the browser.
 
+// Notifies browser process if process failed.
+IPC_MESSAGE_CONTROL0(LocalDiscoveryHostMsg_Error)
+
 // Notifies browser process about new services.
 IPC_MESSAGE_CONTROL3(LocalDiscoveryHostMsg_WatcherCallback,
                      uint64 /* id */,

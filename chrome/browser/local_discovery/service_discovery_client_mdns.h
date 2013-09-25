@@ -42,10 +42,12 @@ class ServiceDiscoveryClientMdns
   friend class base::RefCounted<ServiceDiscoveryClientMdns>;
 
   virtual ~ServiceDiscoveryClientMdns();
+  void ScheduleStartNewClient();
   void StartNewClient();
 
-  base::CancelableClosure network_change_callback_;
   scoped_refptr<ServiceDiscoveryHostClient> host_client_;
+  int restart_attempts_;
+  base::WeakPtrFactory<ServiceDiscoveryClientMdns> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceDiscoveryClientMdns);
 };

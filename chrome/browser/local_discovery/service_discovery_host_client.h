@@ -30,7 +30,7 @@ class ServiceDiscoveryHostClient
   ServiceDiscoveryHostClient();
 
   // Starts utility process with ServiceDiscoveryClient.
-  void Start();
+  void Start(const base::Closure& error_callback);
 
   // Shutdowns utility process.
   void Shutdown();
@@ -48,6 +48,7 @@ class ServiceDiscoveryHostClient
       const LocalDomainResolver::IPAddressCallback& callback) OVERRIDE;
 
   // UtilityProcessHostClient implementation.
+  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  protected:
@@ -85,6 +86,7 @@ class ServiceDiscoveryHostClient
   void UnregisterLocalDomainResolverCallback(uint64 id);
 
   // IPC Message handlers.
+  void OnError();
   void OnWatcherCallback(uint64 id,
                          ServiceWatcher::UpdateType update,
                          const std::string& service_name);
@@ -116,6 +118,7 @@ class ServiceDiscoveryHostClient
 
   // Incrementing counter to assign ID to watchers and resolvers.
   uint64 current_id_;
+  base::Closure error_callback_;
   WatcherCallbacks service_watcher_callbacks_;
   ResolverCallbacks service_resolver_callbacks_;
   DomainResolverCallbacks domain_resolver_callbacks_;
