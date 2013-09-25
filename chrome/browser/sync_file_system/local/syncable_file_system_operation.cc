@@ -123,6 +123,7 @@ void SyncableFileSystemOperation::CreateDirectory(
 void SyncableFileSystemOperation::Copy(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     const CopyProgressCallback& progress_callback,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -137,7 +138,7 @@ void SyncableFileSystemOperation::Copy(
       weak_factory_.GetWeakPtr(),
       base::Bind(&FileSystemOperation::Copy,
                  base::Unretained(impl_.get()),
-                 src_url, dest_url, progress_callback,
+                 src_url, dest_url, option, progress_callback,
                  base::Bind(&self::DidFinish, weak_factory_.GetWeakPtr()))));
   operation_runner_->PostOperationTask(task.Pass());
 }
@@ -145,6 +146,7 @@ void SyncableFileSystemOperation::Copy(
 void SyncableFileSystemOperation::Move(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
   if (!operation_runner_.get()) {
@@ -159,7 +161,7 @@ void SyncableFileSystemOperation::Move(
       weak_factory_.GetWeakPtr(),
       base::Bind(&FileSystemOperation::Move,
                  base::Unretained(impl_.get()),
-                 src_url, dest_url,
+                 src_url, dest_url, option,
                  base::Bind(&self::DidFinish, weak_factory_.GetWeakPtr()))));
   operation_runner_->PostOperationTask(task.Pass());
 }
@@ -328,18 +330,20 @@ void SyncableFileSystemOperation::RemoveDirectory(
 void SyncableFileSystemOperation::CopyFileLocal(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  impl_->CopyFileLocal(src_url, dest_url, progress_callback, callback);
+  impl_->CopyFileLocal(src_url, dest_url, option, progress_callback, callback);
 }
 
 void SyncableFileSystemOperation::MoveFileLocal(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  impl_->MoveFileLocal(src_url, dest_url, callback);
+  impl_->MoveFileLocal(src_url, dest_url, option, callback);
 }
 
 base::PlatformFileError SyncableFileSystemOperation::SyncGetPlatformPath(

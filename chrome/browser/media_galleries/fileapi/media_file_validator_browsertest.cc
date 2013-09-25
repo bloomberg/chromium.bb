@@ -196,7 +196,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
   void OnTestFilesReady(bool expected_result, bool test_files_ready) {
     ASSERT_TRUE(test_files_ready);
     operation_runner()->Move(
-        move_src_, move_dest_,
+        move_src_, move_dest_, fileapi::FileSystemOperation::OPTION_NONE,
         base::Bind(&MediaFileValidatorTest::OnMoveResult,
                    base::Unretained(this), expected_result));
   }

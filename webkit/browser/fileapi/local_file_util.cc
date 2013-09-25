@@ -197,6 +197,7 @@ PlatformFileError LocalFileUtil::CopyOrMoveFile(
     FileSystemOperationContext* context,
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     bool copy) {
   base::FilePath src_file_path;
   PlatformFileError error = GetLocalFilePath(context, src_url, &src_file_path);
@@ -208,6 +209,7 @@ PlatformFileError LocalFileUtil::CopyOrMoveFile(
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
+  // TODO(hidehiko): Support option.
   return NativeFileUtil::CopyOrMoveFile(src_file_path, dest_file_path, copy);
 }
 

@@ -278,6 +278,7 @@ fileapi::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
       new fileapi::FileSystemOperationRunner::OperationID;
   *operation_id = file_system_context->operation_runner()->Copy(
       source_url, destination_url,
+      fileapi::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
       base::Bind(&OnCopyProgress,
                  profile_id, base::Unretained(operation_id)),
       base::Bind(&OnCopyCompleted,

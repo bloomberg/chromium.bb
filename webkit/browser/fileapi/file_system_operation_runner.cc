@@ -86,6 +86,7 @@ OperationID FileSystemOperationRunner::CreateDirectory(
 OperationID FileSystemOperationRunner::Copy(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     const CopyProgressCallback& progress_callback,
     const StatusCallback& callback) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
@@ -100,7 +101,7 @@ OperationID FileSystemOperationRunner::Copy(
   PrepareForWrite(handle.id, dest_url);
   PrepareForRead(handle.id, src_url);
   operation->Copy(
-      src_url, dest_url,
+      src_url, dest_url, option,
       progress_callback.is_null() ?
           CopyProgressCallback() :
           base::Bind(&FileSystemOperationRunner::OnCopyProgress, AsWeakPtr(),
@@ -113,6 +114,7 @@ OperationID FileSystemOperationRunner::Copy(
 OperationID FileSystemOperationRunner::Move(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     const StatusCallback& callback) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   FileSystemOperation* operation =
@@ -126,7 +128,7 @@ OperationID FileSystemOperationRunner::Move(
   PrepareForWrite(handle.id, dest_url);
   PrepareForWrite(handle.id, src_url);
   operation->Move(
-      src_url, dest_url,
+      src_url, dest_url, option,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
                  handle, callback));
   return handle.id;
@@ -448,6 +450,7 @@ OperationID FileSystemOperationRunner::RemoveDirectory(
 OperationID FileSystemOperationRunner::CopyFileLocal(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
@@ -460,7 +463,7 @@ OperationID FileSystemOperationRunner::CopyFileLocal(
     return handle.id;
   }
   operation->CopyFileLocal(
-      src_url, dest_url, progress_callback,
+      src_url, dest_url, option, progress_callback,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
                  handle, callback));
   return handle.id;
@@ -469,6 +472,7 @@ OperationID FileSystemOperationRunner::CopyFileLocal(
 OperationID FileSystemOperationRunner::MoveFileLocal(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     const StatusCallback& callback) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   FileSystemOperation* operation =
@@ -480,7 +484,7 @@ OperationID FileSystemOperationRunner::MoveFileLocal(
     return handle.id;
   }
   operation->MoveFileLocal(
-      src_url, dest_url,
+      src_url, dest_url, option,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
                  handle, callback));
   return handle.id;

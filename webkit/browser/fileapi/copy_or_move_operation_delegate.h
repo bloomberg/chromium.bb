@@ -25,6 +25,7 @@ class CopyOrMoveOperationDelegate
  public:
   class CopyOrMoveImpl;
   typedef FileSystemOperation::CopyProgressCallback CopyProgressCallback;
+  typedef FileSystemOperation::CopyOrMoveOption CopyOrMoveOption;
 
   enum OperationType {
     OPERATION_COPY,
@@ -36,6 +37,7 @@ class CopyOrMoveOperationDelegate
       const FileSystemURL& src_root,
       const FileSystemURL& dest_root,
       OperationType operation_type,
+      CopyOrMoveOption option,
       const CopyProgressCallback& progress_callback,
       const StatusCallback& callback);
   virtual ~CopyOrMoveOperationDelegate();
@@ -75,6 +77,7 @@ class CopyOrMoveOperationDelegate
   FileSystemURL dest_root_;
   bool same_file_system_;
   OperationType operation_type_;
+  CopyOrMoveOption option_;
   CopyProgressCallback progress_callback_;
   StatusCallback callback_;
 

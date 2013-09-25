@@ -38,22 +38,24 @@ class CopyOrMoveOnSameFileSystemImpl
       CopyOrMoveOperationDelegate::OperationType operation_type,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
+      CopyOrMoveOperationDelegate::CopyOrMoveOption option,
       const FileSystemOperation::CopyFileProgressCallback&
           file_progress_callback)
       : operation_runner_(operation_runner),
         operation_type_(operation_type),
         src_url_(src_url),
         dest_url_(dest_url),
+        option_(option),
         file_progress_callback_(file_progress_callback) {
   }
 
   virtual void Run(
       const CopyOrMoveOperationDelegate::StatusCallback& callback) OVERRIDE {
     if (operation_type_ == CopyOrMoveOperationDelegate::OPERATION_MOVE) {
-      operation_runner_->MoveFileLocal(src_url_, dest_url_, callback);
+      operation_runner_->MoveFileLocal(src_url_, dest_url_, option_, callback);
     } else {
       operation_runner_->CopyFileLocal(
-          src_url_, dest_url_, file_progress_callback_, callback);
+          src_url_, dest_url_, option_, file_progress_callback_, callback);
     }
   }
 
@@ -62,6 +64,7 @@ class CopyOrMoveOnSameFileSystemImpl
   CopyOrMoveOperationDelegate::OperationType operation_type_;
   FileSystemURL src_url_;
   FileSystemURL dest_url_;
+  CopyOrMoveOperationDelegate::CopyOrMoveOption option_;
   FileSystemOperation::CopyFileProgressCallback file_progress_callback_;
   DISALLOW_COPY_AND_ASSIGN(CopyOrMoveOnSameFileSystemImpl);
 };
@@ -78,6 +81,7 @@ class SnapshotCopyOrMoveImpl
       CopyOrMoveOperationDelegate::OperationType operation_type,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
+      CopyOrMoveOperationDelegate::CopyOrMoveOption option,
       CopyOrMoveFileValidatorFactory* validator_factory,
       const FileSystemOperation::CopyFileProgressCallback&
           file_progress_callback)
@@ -85,6 +89,7 @@ class SnapshotCopyOrMoveImpl
         operation_type_(operation_type),
         src_url_(src_url),
         dest_url_(dest_url),
+        option_(option),
         validator_factory_(validator_factory),
         file_progress_callback_(file_progress_callback),
         weak_factory_(this) {
@@ -273,6 +278,9 @@ class SnapshotCopyOrMoveImpl
   CopyOrMoveOperationDelegate::OperationType operation_type_;
   FileSystemURL src_url_;
   FileSystemURL dest_url_;
+
+  // TODO(hidehiko): Implement the option's behavior.
+  CopyOrMoveOperationDelegate::CopyOrMoveOption option_;
   CopyOrMoveFileValidatorFactory* validator_factory_;
   scoped_ptr<CopyOrMoveFileValidator> validator_;
   FileSystemOperation::CopyFileProgressCallback file_progress_callback_;
@@ -289,12 +297,14 @@ CopyOrMoveOperationDelegate::CopyOrMoveOperationDelegate(
     const FileSystemURL& src_root,
     const FileSystemURL& dest_root,
     OperationType operation_type,
+    CopyOrMoveOption option,
     const CopyProgressCallback& progress_callback,
     const StatusCallback& callback)
     : RecursiveOperationDelegate(file_system_context),
       src_root_(src_root),
       dest_root_(dest_root),
       operation_type_(operation_type),
+      option_(option),
       progress_callback_(progress_callback),
       callback_(callback),
       weak_factory_(this) {
@@ -344,7 +354,7 @@ void CopyOrMoveOperationDelegate::ProcessFile(
   CopyOrMoveImpl* impl = NULL;
   if (same_file_system_) {
     impl = new CopyOrMoveOnSameFileSystemImpl(
-        operation_runner(), operation_type_, src_url, dest_url,
+        operation_runner(), operation_type_, src_url, dest_url, option_,
         base::Bind(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
                    weak_factory_.GetWeakPtr(), src_url));
   } else {
@@ -360,7 +370,7 @@ void CopyOrMoveOperationDelegate::ProcessFile(
     }
 
     impl = new SnapshotCopyOrMoveImpl(
-        operation_runner(), operation_type_, src_url, dest_url,
+        operation_runner(), operation_type_, src_url, dest_url, option_,
         validator_factory,
         base::Bind(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
                    weak_factory_.GetWeakPtr(), src_url));

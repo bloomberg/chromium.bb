@@ -10,6 +10,7 @@
 #include "base/files/file_util_proxy.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
+#include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/directory_entry.h"
 
@@ -78,6 +79,8 @@ class AsyncFileUtil {
 
 
   typedef base::Callback<void(int64 size)> CopyFileProgressCallback;
+
+  typedef FileSystemOperation::CopyOrMoveOption CopyOrMoveOption;
 
   // Creates an AsyncFileUtil instance which performs file operations on
   // local native file system. The created instance assumes
@@ -229,6 +232,7 @@ class AsyncFileUtil {
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
+      CopyOrMoveOption option,
       const CopyFileProgressCallback& progress_callback,
       const StatusCallback& callback) = 0;
 
@@ -251,6 +255,7 @@ class AsyncFileUtil {
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
+      CopyOrMoveOption option,
       const StatusCallback& callback) = 0;
 
   // Copies in a single file from a different filesystem.

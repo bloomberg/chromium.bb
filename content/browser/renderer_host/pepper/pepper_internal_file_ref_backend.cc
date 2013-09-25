@@ -151,6 +151,7 @@ int32_t PepperInternalFileRefBackend::Rename(
   GetFileSystemContext()->operation_runner()->Move(
       GetFileSystemURL(),
       new_url,
+      fileapi::FileSystemOperation::OPTION_NONE,
       base::Bind(&PepperInternalFileRefBackend::DidFinish,
                  weak_factory_.GetWeakPtr(),
                  reply_context,

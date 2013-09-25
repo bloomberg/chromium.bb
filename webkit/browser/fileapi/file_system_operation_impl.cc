@@ -69,6 +69,7 @@ void FileSystemOperationImpl::CreateDirectory(const FileSystemURL& url,
 void FileSystemOperationImpl::Copy(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     const CopyProgressCallback& progress_callback,
     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationCopy));
@@ -80,6 +81,7 @@ void FileSystemOperationImpl::Copy(
           file_system_context(),
           src_url, dest_url,
           CopyOrMoveOperationDelegate::OPERATION_COPY,
+          option,
           progress_callback,
           base::Bind(&FileSystemOperationImpl::DidFinishOperation,
                      weak_factory_.GetWeakPtr(), callback)));
@@ -88,6 +90,7 @@ void FileSystemOperationImpl::Copy(
 
 void FileSystemOperationImpl::Move(const FileSystemURL& src_url,
                                    const FileSystemURL& dest_url,
+                                   CopyOrMoveOption option,
                                    const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationMove));
   DCHECK(!recursive_operation_delegate_);
@@ -96,6 +99,7 @@ void FileSystemOperationImpl::Move(const FileSystemURL& src_url,
           file_system_context(),
           src_url, dest_url,
           CopyOrMoveOperationDelegate::OPERATION_MOVE,
+          option,
           FileSystemOperation::CopyProgressCallback(),
           base::Bind(&FileSystemOperationImpl::DidFinishOperation,
                      weak_factory_.GetWeakPtr(), callback)));
@@ -284,6 +288,7 @@ void FileSystemOperationImpl::RemoveDirectory(
 void FileSystemOperationImpl::CopyFileLocal(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationCopy));
@@ -292,7 +297,7 @@ void FileSystemOperationImpl::CopyFileLocal(
   GetUsageAndQuotaThenRunTask(
       dest_url,
       base::Bind(&FileSystemOperationImpl::DoCopyFileLocal,
-                 weak_factory_.GetWeakPtr(), src_url, dest_url,
+                 weak_factory_.GetWeakPtr(), src_url, dest_url, option,
                  progress_callback, callback),
       base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
 }
@@ -300,13 +305,15 @@ void FileSystemOperationImpl::CopyFileLocal(
 void FileSystemOperationImpl::MoveFileLocal(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationMove));
   DCHECK(src_url.IsInSameFileSystem(dest_url));
   GetUsageAndQuotaThenRunTask(
       dest_url,
       base::Bind(&FileSystemOperationImpl::DoMoveFileLocal,
-                 weak_factory_.GetWeakPtr(), src_url, dest_url, callback),
+                 weak_factory_.GetWeakPtr(),
+                 src_url, dest_url, option, callback),
       base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
 }
 
@@ -404,10 +411,11 @@ void FileSystemOperationImpl::DoCreateDirectory(
 void FileSystemOperationImpl::DoCopyFileLocal(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
   async_file_util_->CopyFileLocal(
-      operation_context_.Pass(), src_url, dest_url, progress_callback,
+      operation_context_.Pass(), src_url, dest_url, option, progress_callback,
       base::Bind(&FileSystemOperationImpl::DidFinishOperation,
                  weak_factory_.GetWeakPtr(), callback));
 }
@@ -415,9 +423,10 @@ void FileSystemOperationImpl::DoCopyFileLocal(
 void FileSystemOperationImpl::DoMoveFileLocal(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     const StatusCallback& callback) {
   async_file_util_->MoveFileLocal(
-      operation_context_.Pass(), src_url, dest_url,
+      operation_context_.Pass(), src_url, dest_url, option,
       base::Bind(&FileSystemOperationImpl::DidFinishOperation,
                  weak_factory_.GetWeakPtr(), callback));
 }

@@ -110,6 +110,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
       FileSystemOperationContext* context,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
+      CopyOrMoveOption option,
       bool copy) OVERRIDE;
   virtual base::PlatformFileError CopyInForeignFile(
         FileSystemOperationContext* context,

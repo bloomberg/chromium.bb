@@ -209,6 +209,18 @@ class FileSystemOperation {
   // set to the copied file size.
   typedef base::Callback<void(int64 size)> CopyFileProgressCallback;
 
+  // The option for copy or move operation.
+  enum CopyOrMoveOption {
+    // No additional operation.
+    OPTION_NONE,
+
+    // Preserves last modified time if possible. If the operation to update
+    // last modified time is not supported on the file system for the
+    // destination file, this option would be simply ignored (i.e. Copy would
+    // be successfully done without preserving last modified time).
+    OPTION_PRESERVE_LAST_MODIFIED,
+  };
+
   // Used for Write().
   typedef base::Callback<void(base::PlatformFileError result,
                               int64 bytes,
@@ -233,6 +245,8 @@ class FileSystemOperation {
   // |src_path| is a directory, the contents of |src_path| are copied to
   // |dest_path| recursively. A new file or directory is created at
   // |dest_path| as needed.
+  // |option| specifies the minor behavior of Copy(). See CopyOrMoveOption's
+  // comment for details.
   // |progress_callback| is periodically called to report the progress
   // update. See also the comment of CopyProgressCallback. This callback is
   // optional.
@@ -247,11 +261,14 @@ class FileSystemOperation {
   //
   virtual void Copy(const FileSystemURL& src_path,
                     const FileSystemURL& dest_path,
+                    CopyOrMoveOption option,
                     const CopyProgressCallback& progress_callback,
                     const StatusCallback& callback) = 0;
 
   // Moves a file or directory from |src_path| to |dest_path|. A new file
   // or directory is created at |dest_path| as needed.
+  // |option| specifies the minor behavior of Copy(). See CopyOrMoveOption's
+  // comment for details.
   //
   // For recursive case this internally creates new FileSystemOperations and
   // calls:
@@ -263,6 +280,7 @@ class FileSystemOperation {
   //
   virtual void Move(const FileSystemURL& src_path,
                     const FileSystemURL& dest_path,
+                    CopyOrMoveOption option,
                     const StatusCallback& callback) = 0;
 
   // Checks if a directory is present at |path|.
@@ -393,6 +411,8 @@ class FileSystemOperation {
   // Copies a file from |src_url| to |dest_url|.
   // This must be called for files that belong to the same filesystem
   // (i.e. type() and origin() of the |src_url| and |dest_url| must match).
+  // |option| specifies the minor behavior of Copy(). See CopyOrMoveOption's
+  // comment for details.
   // |progress_callback| is periodically called to report the progress
   // update. See also the comment of CopyFileProgressCallback. This callback is
   // optional.
@@ -408,12 +428,15 @@ class FileSystemOperation {
   //
   virtual void CopyFileLocal(const FileSystemURL& src_url,
                              const FileSystemURL& dest_url,
+                             CopyOrMoveOption option,
                              const CopyFileProgressCallback& progress_callback,
                              const StatusCallback& callback) = 0;
 
   // Moves a local file from |src_url| to |dest_url|.
   // This must be called for files that belong to the same filesystem
   // (i.e. type() and origin() of the |src_url| and |dest_url| must match).
+  // |option| specifies the minor behavior of Copy(). See CopyOrMoveOption's
+  // comment for details.
   //
   // This returns:
   // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_url|
@@ -426,6 +449,7 @@ class FileSystemOperation {
   //
   virtual void MoveFileLocal(const FileSystemURL& src_url,
                              const FileSystemURL& dest_url,
+                             CopyOrMoveOption option,
                              const StatusCallback& callback) = 0;
 
   // Synchronously gets the platform path for the given |url|.

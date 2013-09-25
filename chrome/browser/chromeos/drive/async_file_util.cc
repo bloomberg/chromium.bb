@@ -92,7 +92,6 @@ void RunEnsureFileExistsCallback(
   callback.Run(error, created);
 }
 
-
 // Runs |callback| with the arguments based on the given arguments.
 void RunCreateSnapshotFileCallback(
     const AsyncFileUtil::CreateSnapshotFileCallback& callback,
@@ -278,9 +277,12 @@ void AsyncFileUtil::CopyFileLocal(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& src_url,
     const fileapi::FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // TODO(hidehiko): Support option.
 
   base::FilePath src_path = util::ExtractDrivePathFromFileSystemUrl(src_url);
   base::FilePath dest_path = util::ExtractDrivePathFromFileSystemUrl(dest_url);
@@ -301,8 +303,11 @@ void AsyncFileUtil::MoveFileLocal(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& src_url,
     const fileapi::FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     const StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // TODO(hidehiko): Support option.
 
   base::FilePath src_path = util::ExtractDrivePathFromFileSystemUrl(src_url);
   base::FilePath dest_path = util::ExtractDrivePathFromFileSystemUrl(dest_url);

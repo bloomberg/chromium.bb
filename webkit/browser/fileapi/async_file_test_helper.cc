@@ -105,7 +105,7 @@ base::PlatformFileError AsyncFileTestHelper::CopyWithProgress(
   base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->Copy(
-      src, dest, progress_callback,
+      src, dest, FileSystemOperation::OPTION_NONE, progress_callback,
       AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
   return result;
@@ -118,7 +118,8 @@ base::PlatformFileError AsyncFileTestHelper::Move(
   base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->Move(
-      src, dest, AssignAndQuitCallback(&run_loop, &result));
+      src, dest, FileSystemOperation::OPTION_NONE,
+      AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
   return result;
 }

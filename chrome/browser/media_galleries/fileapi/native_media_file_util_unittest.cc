@@ -304,6 +304,7 @@ TEST_F(NativeMediaFileUtilTest, CopySourceFiltering) {
       }
       operation_runner()->Copy(
           url, dest_url,
+          fileapi::FileSystemOperation::OPTION_NONE,
           fileapi::FileSystemOperationRunner::CopyProgressCallback(),
           base::Bind(&ExpectEqHelper, test_name, expectation));
       base::MessageLoop::current()->RunUntilIdle();
@@ -368,6 +369,7 @@ TEST_F(NativeMediaFileUtilTest, CopyDestFiltering) {
       }
       operation_runner()->Copy(
           src_url, url,
+          fileapi::FileSystemOperation::OPTION_NONE,
           fileapi::FileSystemOperationRunner::CopyProgressCallback(),
           base::Bind(&ExpectEqHelper, test_name, expectation));
       base::MessageLoop::current()->RunUntilIdle();
@@ -406,7 +408,8 @@ TEST_F(NativeMediaFileUtilTest, MoveSourceFiltering) {
         expectation = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
       }
       operation_runner()->Move(
-          url, dest_url, base::Bind(&ExpectEqHelper, test_name, expectation));
+          url, dest_url, fileapi::FileSystemOperation::OPTION_NONE,
+          base::Bind(&ExpectEqHelper, test_name, expectation));
       base::MessageLoop::current()->RunUntilIdle();
     }
   }
@@ -470,7 +473,8 @@ TEST_F(NativeMediaFileUtilTest, MoveDestFiltering) {
         }
       }
       operation_runner()->Move(
-          src_url, url, base::Bind(&ExpectEqHelper, test_name, expectation));
+          src_url, url, fileapi::FileSystemOperation::OPTION_NONE,
+          base::Bind(&ExpectEqHelper, test_name, expectation));
       base::MessageLoop::current()->RunUntilIdle();
     }
   }

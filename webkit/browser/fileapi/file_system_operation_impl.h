@@ -40,10 +40,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
                                const StatusCallback& callback) OVERRIDE;
   virtual void Copy(const FileSystemURL& src_url,
                     const FileSystemURL& dest_url,
+                    CopyOrMoveOption option,
                     const CopyProgressCallback& progress_callback,
                     const StatusCallback& callback) OVERRIDE;
   virtual void Move(const FileSystemURL& src_url,
                     const FileSystemURL& dest_url,
+                    CopyOrMoveOption option,
                     const StatusCallback& callback) OVERRIDE;
   virtual void DirectoryExists(const FileSystemURL& url,
                                const StatusCallback& callback) OVERRIDE;
@@ -82,10 +84,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
                                const StatusCallback& callback) OVERRIDE;
   virtual void CopyFileLocal(const FileSystemURL& src_url,
                              const FileSystemURL& dest_url,
+                             CopyOrMoveOption option,
                              const CopyFileProgressCallback& progress_callback,
                              const StatusCallback& callback) OVERRIDE;
   virtual void MoveFileLocal(const FileSystemURL& src_url,
                              const FileSystemURL& dest_url,
+                             CopyOrMoveOption option,
                              const StatusCallback& callback) OVERRIDE;
   virtual base::PlatformFileError SyncGetPlatformPath(
       const FileSystemURL& url,
@@ -131,10 +135,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
                          bool recursive);
   void DoCopyFileLocal(const FileSystemURL& src,
                        const FileSystemURL& dest,
+                       CopyOrMoveOption option,
                        const CopyFileProgressCallback& progress_callback,
                        const StatusCallback& callback);
   void DoMoveFileLocal(const FileSystemURL& src,
                        const FileSystemURL& dest,
+                       CopyOrMoveOption option,
                        const StatusCallback& callback);
   void DoCopyInForeignFile(const base::FilePath& src_local_disk_file_path,
                            const FileSystemURL& dest,

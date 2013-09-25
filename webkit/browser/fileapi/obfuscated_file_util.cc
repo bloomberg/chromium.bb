@@ -508,6 +508,7 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
     FileSystemOperationContext* context,
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
+    CopyOrMoveOption option,
     bool copy) {
   // Cross-filesystem copies and moves should be handled via CopyInForeignFile.
   DCHECK(src_url.origin() == dest_url.origin());

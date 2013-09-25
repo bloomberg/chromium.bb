@@ -568,6 +568,7 @@ void CannedSyncableFileSystem::DoCopy(
   EXPECT_TRUE(is_filesystem_opened_);
   operation_runner()->Copy(
       src_url, dest_url,
+      fileapi::FileSystemOperation::OPTION_NONE,
       fileapi::FileSystemOperationRunner::CopyProgressCallback(), callback);
 }
 
@@ -576,7 +577,8 @@ void CannedSyncableFileSystem::DoMove(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
-  operation_runner()->Move(src_url, dest_url, callback);
+  operation_runner()->Move(
+      src_url, dest_url, fileapi::FileSystemOperation::OPTION_NONE, callback);
 }
 
 void CannedSyncableFileSystem::DoTruncateFile(

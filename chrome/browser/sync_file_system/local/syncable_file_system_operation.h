@@ -41,10 +41,12 @@ class SyncableFileSystemOperation
                                const StatusCallback& callback) OVERRIDE;
   virtual void Copy(const fileapi::FileSystemURL& src_url,
                     const fileapi::FileSystemURL& dest_url,
+                    CopyOrMoveOption option,
                     const CopyProgressCallback& progress_callback,
                     const StatusCallback& callback) OVERRIDE;
   virtual void Move(const fileapi::FileSystemURL& src_url,
                     const fileapi::FileSystemURL& dest_url,
+                    CopyOrMoveOption option,
                     const StatusCallback& callback) OVERRIDE;
   virtual void DirectoryExists(const fileapi::FileSystemURL& url,
                                const StatusCallback& callback) OVERRIDE;
@@ -83,10 +85,12 @@ class SyncableFileSystemOperation
                                const StatusCallback& callback) OVERRIDE;
   virtual void CopyFileLocal(const fileapi::FileSystemURL& src_url,
                              const fileapi::FileSystemURL& dest_url,
+                             CopyOrMoveOption option,
                              const CopyFileProgressCallback& progress_callback,
                              const StatusCallback& callback) OVERRIDE;
   virtual void MoveFileLocal(const fileapi::FileSystemURL& src_url,
                              const fileapi::FileSystemURL& dest_url,
+                             CopyOrMoveOption option,
                              const StatusCallback& callback) OVERRIDE;
   virtual base::PlatformFileError SyncGetPlatformPath(
       const fileapi::FileSystemURL& url,

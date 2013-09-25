@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
+#include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/blob/scoped_file.h"
 
@@ -27,6 +28,8 @@ class FileSystemURL;
 // See http://crbug.com/128136 if you need it.
 class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemFileUtil {
  public:
+  typedef FileSystemOperation::CopyOrMoveOption CopyOrMoveOption;
+
   // It will be implemented by each subclass such as FileSystemFileEnumerator.
   class WEBKIT_STORAGE_BROWSER_EXPORT AbstractFileEnumerator {
    public:
@@ -129,6 +132,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemFileUtil {
 
   // Copies or moves a single file from |src_url| to |dest_url|.
   // The filesystem type of |src_url| and |dest_url| MUST be same.
+  // For |option|, please see file_system_operation.h
   //
   // This returns:
   // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_url|
@@ -143,6 +147,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemFileUtil {
       FileSystemOperationContext* context,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
+      CopyOrMoveOption option,
       bool copy) = 0;
 
   // Copies in a single file from a different filesystem.

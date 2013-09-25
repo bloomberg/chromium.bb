@@ -297,6 +297,7 @@ void FileAPIMessageFilter::OnMove(
 
   operations_[request_id] = operation_runner()->Move(
       src_url, dest_url,
+      fileapi::FileSystemOperation::OPTION_NONE,
       base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
 }
 
@@ -318,6 +319,7 @@ void FileAPIMessageFilter::OnCopy(
 
   operations_[request_id] = operation_runner()->Copy(
       src_url, dest_url,
+      fileapi::FileSystemOperation::OPTION_NONE,
       fileapi::FileSystemOperationRunner::CopyProgressCallback(),
       base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
 }
