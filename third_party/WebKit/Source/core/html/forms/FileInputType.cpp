@@ -38,6 +38,7 @@
 #include "core/platform/DragData.h"
 #include "core/platform/FileSystem.h"
 #include "core/platform/LocalizedStrings.h"
+#include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderFileUploadControl.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
@@ -45,6 +46,7 @@
 
 namespace WebCore {
 
+using WebKit::WebLocalizedString;
 using namespace HTMLNames;
 
 inline FileInputType::FileInputType(HTMLInputElement* element)
@@ -131,7 +133,7 @@ bool FileInputType::valueMissing(const String& value) const
 
 String FileInputType::valueMissingText() const
 {
-    return element()->multiple() ? validationMessageValueMissingForMultipleFileText() : validationMessageValueMissingForFileText();
+    return locale().queryString(element()->multiple() ? WebLocalizedString::ValidationValueMissingForMultipleFile : WebLocalizedString::ValidationValueMissingForFile);
 }
 
 void FileInputType::handleDOMActivateEvent(Event* event)

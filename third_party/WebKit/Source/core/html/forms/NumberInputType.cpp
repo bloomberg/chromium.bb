@@ -39,7 +39,6 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/InputTypeNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderTextControl.h"
 #include "wtf/MathExtras.h"
@@ -270,7 +269,7 @@ bool NumberInputType::hasBadInput() const
 
 String NumberInputType::badInputText() const
 {
-    return validationMessageBadInputForNumberText();
+    return locale().queryString(WebLocalizedString::ValidationBadInputForNumber);
 }
 
 String NumberInputType::rangeOverflowText(const Decimal& maximum) const

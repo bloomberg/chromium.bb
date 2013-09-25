@@ -341,7 +341,7 @@ bool InputType::stepMismatch(const String& value) const
 String InputType::badInputText() const
 {
     ASSERT_NOT_REACHED();
-    return validationMessageTypeMismatchText();
+    return locale().queryString(WebLocalizedString::ValidationTypeMismatch);
 }
 
 String InputType::rangeOverflowText(const Decimal&) const
@@ -358,12 +358,12 @@ String InputType::rangeUnderflowText(const Decimal&) const
 
 String InputType::typeMismatchText() const
 {
-    return validationMessageTypeMismatchText();
+    return locale().queryString(WebLocalizedString::ValidationTypeMismatch);
 }
 
 String InputType::valueMissingText() const
 {
-    return validationMessageValueMissingText();
+    return locale().queryString(WebLocalizedString::ValidationValueMissing);
 }
 
 String InputType::validationMessage() const
@@ -382,7 +382,7 @@ String InputType::validationMessage() const
         return typeMismatchText();
 
     if (patternMismatch(value))
-        return validationMessagePatternMismatchText();
+        return locale().queryString(WebLocalizedString::ValidationPatternMismatch);
 
     if (element()->tooLong())
         return locale().validationMessageTooLongText(value.length(), element()->maxLength());

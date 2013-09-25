@@ -290,7 +290,7 @@ BaseMultipleFieldsDateAndTimeInputType::~BaseMultipleFieldsDateAndTimeInputType(
 
 String BaseMultipleFieldsDateAndTimeInputType::badInputText() const
 {
-    return validationMessageBadInputForDateTimeText();
+    return locale().queryString(WebKit::WebLocalizedString::ValidationBadInputForDateTime);
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::blur()

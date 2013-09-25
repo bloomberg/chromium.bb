@@ -33,7 +33,7 @@
 
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/InputTypeNames.h"
-#include "core/platform/LocalizedStrings.h"
+#include "core/platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
@@ -65,7 +65,7 @@ bool URLInputType::typeMismatch() const
 
 String URLInputType::typeMismatchText() const
 {
-    return validationMessageTypeMismatchForURLText();
+    return locale().queryString(WebKit::WebLocalizedString::ValidationTypeMismatchForURL);
 }
 
 bool URLInputType::isURLField() const

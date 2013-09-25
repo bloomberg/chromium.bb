@@ -29,7 +29,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/InputTypeNames.h"
 #include "core/page/SpatialNavigation.h"
-#include "core/platform/LocalizedStrings.h"
+#include "core/platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
@@ -53,7 +53,7 @@ bool RadioInputType::valueMissing(const String&) const
 
 String RadioInputType::valueMissingText() const
 {
-    return validationMessageValueMissingForRadioText();
+    return locale().queryString(WebKit::WebLocalizedString::ValidationValueMissingForRadio);
 }
 
 void RadioInputType::handleClickEvent(MouseEvent* event)

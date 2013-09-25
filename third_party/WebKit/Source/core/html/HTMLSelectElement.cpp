@@ -48,8 +48,8 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
-#include "core/platform/LocalizedStrings.h"
 #include "core/platform/PlatformMouseEvent.h"
+#include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderTheme.h"
@@ -154,11 +154,11 @@ String HTMLSelectElement::validationMessage() const
 {
     if (!willValidate())
         return String();
-
     if (customError())
         return customValidationMessage();
-
-    return valueMissing() ? validationMessageValueMissingForSelectText() : String();
+    if (valueMissing())
+        return locale().queryString(WebKit::WebLocalizedString::ValidationValueMissingForSelect);
+    return String();
 }
 
 bool HTMLSelectElement::valueMissing() const

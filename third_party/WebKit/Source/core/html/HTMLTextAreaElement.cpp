@@ -459,7 +459,7 @@ String HTMLTextAreaElement::validationMessage() const
         return customValidationMessage();
 
     if (valueMissing())
-        return validationMessageValueMissingText();
+        return locale().queryString(WebKit::WebLocalizedString::ValidationValueMissing);
 
     if (tooLong())
         return locale().validationMessageTooLongText(computeLengthForSubmission(value()), maxLength());

@@ -35,7 +35,7 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/InputTypeNames.h"
-#include "core/platform/LocalizedStrings.h"
+#include "core/platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
@@ -57,7 +57,7 @@ bool CheckboxInputType::valueMissing(const String&) const
 
 String CheckboxInputType::valueMissingText() const
 {
-    return validationMessageValueMissingForCheckboxText();
+    return locale().queryString(WebKit::WebLocalizedString::ValidationValueMissingForCheckbox);
 }
 
 void CheckboxInputType::handleKeyupEvent(KeyboardEvent* event)
