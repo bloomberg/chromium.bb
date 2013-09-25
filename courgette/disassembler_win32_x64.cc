@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "courgette/disassembler_win32_x86.h"
+#include "courgette/disassembler_win32_x64.h"
 
 #include <algorithm>
 #include <string>
@@ -17,7 +17,7 @@
 
 namespace courgette {
 
-DisassemblerWin32X86::DisassemblerWin32X86(const void* start, size_t length)
+DisassemblerWin32X64::DisassemblerWin32X64(const void* start, size_t length)
   : Disassembler(start, length),
     incomplete_disassembly_(false),
     is_PE32_plus_(false),
@@ -45,7 +45,7 @@ DisassemblerWin32X86::DisassemblerWin32X86(const void* start, size_t length)
 // structures, we extract the information we need into the courgette::PEInfo
 // structure.
 //
-bool DisassemblerWin32X86::ParseHeader() {
+bool DisassemblerWin32X64::ParseHeader() {
   if (length() < kOffsetOfFileAddressOfNewExeHeader + 4 /*size*/)
     return Bad("Too small");
 
@@ -184,8 +184,8 @@ bool DisassemblerWin32X86::ParseHeader() {
   // Pretend our in-memory copy is only as long as our detected length.
   ReduceLength(detected_length);
 
-  if (!is_32bit()) {
-    return Bad("64 bit executables are not supported by this disassembler");
+  if (is_32bit()) {
+    return Bad("32 bit executables are not supported by this disassembler");
   }
 
   if (!has_text_section()) {
@@ -195,7 +195,7 @@ bool DisassemblerWin32X86::ParseHeader() {
   return Good();
 }
 
-bool DisassemblerWin32X86::Disassemble(AssemblyProgram* target) {
+bool DisassemblerWin32X64::Disassemble(AssemblyProgram* target) {
   if (!ok())
     return false;
 
@@ -216,7 +216,7 @@ bool DisassemblerWin32X86::Disassemble(AssemblyProgram* target) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool DisassemblerWin32X86::ParseRelocs(std::vector<RVA> *relocs) {
+bool DisassemblerWin32X64::ParseRelocs(std::vector<RVA> *relocs) {
   relocs->clear();
 
   size_t relocs_size = base_relocation_table_.size_;
@@ -263,12 +263,12 @@ bool DisassemblerWin32X86::ParseRelocs(std::vector<RVA> *relocs) {
       int offset = entry & 0xFFF;
 
       RVA rva = page_rva + offset;
-      if (type == 3) {         // IMAGE_REL_BASED_HIGHLOW
+      if (type == 10) {         // IMAGE_REL_BASED_DIR64
         relocs->push_back(rva);
       } else if (type == 0) {  // IMAGE_REL_BASED_ABSOLUTE
         // Ignore, used as padding.
       } else {
-        // Does not occur in Windows x86 executables.
+        // Does not occur in Windows x64 executables.
         return Bad("unknown type of reloc");
       }
     }
@@ -281,7 +281,7 @@ bool DisassemblerWin32X86::ParseRelocs(std::vector<RVA> *relocs) {
   return true;
 }
 
-const Section* DisassemblerWin32X86::RVAToSection(RVA rva) const {
+const Section* DisassemblerWin32X64::RVAToSection(RVA rva) const {
   for (int i = 0; i < number_of_sections_; i++) {
     const Section* section = &sections_[i];
     uint32 offset = rva - section->virtual_address;
@@ -292,7 +292,7 @@ const Section* DisassemblerWin32X86::RVAToSection(RVA rva) const {
   return NULL;
 }
 
-int DisassemblerWin32X86::RVAToFileOffset(RVA rva) const {
+int DisassemblerWin32X64::RVAToFileOffset(RVA rva) const {
   const Section* section = RVAToSection(rva);
   if (section) {
     uint32 offset = rva - section->virtual_address;
@@ -314,7 +314,7 @@ int DisassemblerWin32X86::RVAToFileOffset(RVA rva) const {
   return kNoOffset;
 }
 
-const uint8* DisassemblerWin32X86::RVAToPointer(RVA rva) const {
+const uint8* DisassemblerWin32X64::RVAToPointer(RVA rva) const {
   int file_offset = RVAToFileOffset(rva);
   if (file_offset == kNoOffset)
     return NULL;
@@ -322,7 +322,7 @@ const uint8* DisassemblerWin32X86::RVAToPointer(RVA rva) const {
     return OffsetToPointer(file_offset);
 }
 
-std::string DisassemblerWin32X86::SectionName(const Section* section) {
+std::string DisassemblerWin32X64::SectionName(const Section* section) {
   if (section == NULL)
     return "<none>";
   char name[9];
@@ -331,7 +331,7 @@ std::string DisassemblerWin32X86::SectionName(const Section* section) {
   return name;
 }
 
-CheckBool DisassemblerWin32X86::ParseFile(AssemblyProgram* program) {
+CheckBool DisassemblerWin32X64::ParseFile(AssemblyProgram* program) {
   // Walk all the bytes in the file, whether or not in a section.
   uint32 file_offset = 0;
   while (file_offset < length()) {
@@ -364,7 +364,7 @@ CheckBool DisassemblerWin32X86::ParseFile(AssemblyProgram* program) {
   return true;
 }
 
-bool DisassemblerWin32X86::ParseAbs32Relocs() {
+bool DisassemblerWin32X64::ParseAbs32Relocs() {
   abs32_locations_.clear();
   if (!ParseRelocs(&abs32_locations_))
     return false;
@@ -382,7 +382,7 @@ bool DisassemblerWin32X86::ParseAbs32Relocs() {
   return true;
 }
 
-void DisassemblerWin32X86::ParseRel32RelocsFromSections() {
+void DisassemblerWin32X64::ParseRel32RelocsFromSections() {
   uint32 file_offset = 0;
   while (file_offset < length()) {
     const Section* section = FindNextSection(file_offset);
@@ -420,7 +420,7 @@ void DisassemblerWin32X86::ParseRel32RelocsFromSections() {
 #endif
 }
 
-void DisassemblerWin32X86::ParseRel32RelocsFromSection(const Section* section) {
+void DisassemblerWin32X64::ParseRel32RelocsFromSection(const Section* section) {
   // TODO(sra): use characteristic.
   bool isCode = strcmp(section->name, ".text") == 0;
   if (!isCode)
@@ -507,7 +507,7 @@ void DisassemblerWin32X86::ParseRel32RelocsFromSection(const Section* section) {
   }
 }
 
-CheckBool DisassemblerWin32X86::ParseNonSectionFileRegion(
+CheckBool DisassemblerWin32X64::ParseNonSectionFileRegion(
     uint32 start_file_offset,
     uint32 end_file_offset,
     AssemblyProgram* program) {
@@ -528,7 +528,7 @@ CheckBool DisassemblerWin32X86::ParseNonSectionFileRegion(
   return true;
 }
 
-CheckBool DisassemblerWin32X86::ParseFileRegion(
+CheckBool DisassemblerWin32X64::ParseFileRegion(
     const Section* section,
     uint32 start_file_offset, uint32 end_file_offset,
     AssemblyProgram* program) {
@@ -615,7 +615,7 @@ CheckBool DisassemblerWin32X86::ParseFileRegion(
 // and is only enabled manually in 'exploration' builds.  I don't want to add
 // command-line configuration for this feature because this code has to be
 // small, which means compiled-out.
-void DisassemblerWin32X86::HistogramTargets(const char* kind,
+void DisassemblerWin32X64::HistogramTargets(const char* kind,
                                             const std::map<RVA, int>& map) {
   int total = 0;
   std::map<int, std::vector<RVA> > h;
@@ -661,7 +661,7 @@ void DisassemblerWin32X86::HistogramTargets(const char* kind,
 // that during development I'm finding I need to call it when compiled in
 // Release mode.  Hence:
 // TODO(sra): make this compile only for debug mode.
-std::string DisassemblerWin32X86::DescribeRVA(RVA rva) const {
+std::string DisassemblerWin32X64::DescribeRVA(RVA rva) const {
   const Section* section = RVAToSection(rva);
   std::ostringstream s;
   s << std::hex << rva;
@@ -674,7 +674,7 @@ std::string DisassemblerWin32X86::DescribeRVA(RVA rva) const {
   return s.str();
 }
 
-const Section* DisassemblerWin32X86::FindNextSection(uint32 fileOffset) const {
+const Section* DisassemblerWin32X64::FindNextSection(uint32 fileOffset) const {
   const Section* best = 0;
   for (int i = 0; i < number_of_sections_; i++) {
     const Section* section = &sections_[i];
@@ -690,7 +690,7 @@ const Section* DisassemblerWin32X86::FindNextSection(uint32 fileOffset) const {
   return best;
 }
 
-RVA DisassemblerWin32X86::FileOffsetToRVA(uint32 file_offset) const {
+RVA DisassemblerWin32X64::FileOffsetToRVA(uint32 file_offset) const {
   for (int i = 0; i < number_of_sections_; i++) {
     const Section* section = &sections_[i];
     uint32 offset = file_offset - section->file_offset_of_raw_data;
@@ -701,7 +701,7 @@ RVA DisassemblerWin32X86::FileOffsetToRVA(uint32 file_offset) const {
   return 0;
 }
 
-bool DisassemblerWin32X86::ReadDataDirectory(
+bool DisassemblerWin32X64::ReadDataDirectory(
     int index,
     ImageDataDirectory* directory) {
 

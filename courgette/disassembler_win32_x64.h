@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COURGETTE_DISASSEMBLER_WIN32_X86_H_
-#define COURGETTE_DISASSEMBLER_WIN32_X86_H_
+#ifndef COURGETTE_DISASSEMBLER_WIN32_X64_H_
+#define COURGETTE_DISASSEMBLER_WIN32_X64_H_
 
 #include "base/basictypes.h"
 #include "courgette/disassembler.h"
@@ -18,11 +18,11 @@ namespace courgette {
 
 class AssemblyProgram;
 
-class DisassemblerWin32X86 : public Disassembler {
+class DisassemblerWin32X64 : public Disassembler {
  public:
-  explicit DisassemblerWin32X86(const void* start, size_t length);
+  explicit DisassemblerWin32X64(const void* start, size_t length);
 
-  virtual ExecutableType kind() { return EXE_WIN_32_X86; }
+  virtual ExecutableType kind() { return EXE_WIN_32_X64; }
 
   // Returns 'true' if the buffer appears to point to a Windows 32 bit
   // executable, 'false' otherwise.  If ParseHeader() succeeds, other member
@@ -76,7 +76,7 @@ class DisassemblerWin32X86 : public Disassembler {
   // Most addresses are represented as 32-bit RVAs.  The one address we can't
   // do this with is the image base address.  'image_base' is valid only for
   // 32-bit executables. 'image_base_64' is valid for 32- and 64-bit executable.
-  uint32 image_base() const { return static_cast<uint32>(image_base_); }
+  uint64 image_base() const { return image_base_; }
 
   const ImageDataDirectory& base_relocation_table() const {
     return base_relocation_table_;
@@ -133,7 +133,7 @@ class DisassemblerWin32X86 : public Disassembler {
   RVA base_of_code_;
   RVA base_of_data_;
 
-  uint64 image_base_;  // range limited to 32 bits for 32 bit executable
+  uint64 image_base_;
   uint32 size_of_image_;
   int number_of_data_directories_;
 
@@ -153,8 +153,8 @@ class DisassemblerWin32X86 : public Disassembler {
 #endif
 
 
-  DISALLOW_COPY_AND_ASSIGN(DisassemblerWin32X86);
+  DISALLOW_COPY_AND_ASSIGN(DisassemblerWin32X64);
 };
 
 }  // namespace courgette
-#endif  // COURGETTE_DISASSEMBLER_WIN32_X86_H_
+#endif  // COURGETTE_DISASSEMBLER_WIN32_X64_H_

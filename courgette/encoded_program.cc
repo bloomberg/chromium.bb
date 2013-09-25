@@ -248,8 +248,10 @@ CheckBool EncodedProgram::AddRel32ARM(uint16 op, int label_index) {
       rel32_ix_.push_back(label_index);
 }
 
-CheckBool EncodedProgram::AddPeMakeRelocs() {
-  return ops_.push_back(MAKE_PE_RELOCATION_TABLE);
+CheckBool EncodedProgram::AddPeMakeRelocs(ExecutableType kind) {
+  if (kind == EXE_WIN_32_X86)
+    return ops_.push_back(MAKE_PE_RELOCATION_TABLE);
+  return ops_.push_back(MAKE_PE64_RELOCATION_TABLE);
 }
 
 CheckBool EncodedProgram::AddElfMakeRelocs() {
@@ -528,6 +530,7 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
   RVA current_rva = 0;
 
   bool pending_pe_relocation_table = false;
+  uint8 pending_pe_relocation_table_type = 0x03;  // IMAGE_REL_BASED_HIGHLOW
   Elf32_Word pending_elf_relocation_table_type = 0;
   SinkStream bytes_following_relocation_table;
 
@@ -613,9 +616,8 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
         // We can see the base relocation anywhere, but we only have the
         // information to generate it at the very end.  So we divert the bytes
         // we are generating to a temporary stream.
-        if (pending_pe_relocation_table)  // Can't have two base relocation
-                                            // tables.
-          return false;
+        if (pending_pe_relocation_table)
+          return false;  // Can't have two base relocation tables.
 
         pending_pe_relocation_table = true;
         output = &bytes_following_relocation_table;
@@ -630,13 +632,22 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
         // emitting an ORIGIN after the MAKE_BASE_RELOCATION_TABLE.
       }
 
+      case MAKE_PE64_RELOCATION_TABLE: {
+        if (pending_pe_relocation_table)
+          return false;  // Can't have two base relocation tables.
+
+        pending_pe_relocation_table = true;
+        pending_pe_relocation_table_type = 0x0A;  // IMAGE_REL_BASED_DIR64
+        output = &bytes_following_relocation_table;
+        break;
+      }
+
       case MAKE_ELF_ARM_RELOCATION_TABLE: {
         // We can see the base relocation anywhere, but we only have the
         // information to generate it at the very end.  So we divert the bytes
         // we are generating to a temporary stream.
-        if (pending_elf_relocation_table_type)  // Can't have two relocation
-                                                // tables.
-          return false;
+        if (pending_elf_relocation_table_type)
+          return false;  // Can't have two base relocation tables.
 
         pending_elf_relocation_table_type = R_ARM_RELATIVE;
         output = &bytes_following_relocation_table;
@@ -647,9 +658,8 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
         // We can see the base relocation anywhere, but we only have the
         // information to generate it at the very end.  So we divert the bytes
         // we are generating to a temporary stream.
-        if (pending_elf_relocation_table_type)  // Can't have two relocation
-                                                // tables.
-          return false;
+        if (pending_elf_relocation_table_type)
+          return false;  // Can't have two base relocation tables.
 
         pending_elf_relocation_table_type = R_386_RELATIVE;
         output = &bytes_following_relocation_table;
@@ -659,7 +669,8 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
   }
 
   if (pending_pe_relocation_table) {
-    if (!GeneratePeRelocations(final_buffer) ||
+    if (!GeneratePeRelocations(final_buffer,
+                               pending_pe_relocation_table_type) ||
         !final_buffer->Append(&bytes_following_relocation_table))
       return false;
   }
@@ -721,7 +732,8 @@ class RelocBlock {
   RelocBlockPOD pod;
 };
 
-CheckBool EncodedProgram::GeneratePeRelocations(SinkStream* buffer) {
+CheckBool EncodedProgram::GeneratePeRelocations(SinkStream* buffer,
+                                                uint8 type) {
   std::sort(abs32_relocs_.begin(), abs32_relocs_.end());
 
   RelocBlock block;
@@ -735,7 +747,7 @@ CheckBool EncodedProgram::GeneratePeRelocations(SinkStream* buffer) {
       block.pod.page_rva = page_rva;
     }
     if (ok)
-      block.Add(0x3000 | (rva & 0xFFF));
+      block.Add(((static_cast<uint16>(type)) << 12 ) | (rva & 0xFFF));
   }
   ok &= block.Flush(buffer);
   return ok;
