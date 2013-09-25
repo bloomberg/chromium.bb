@@ -42,7 +42,7 @@
 
 namespace WebCore {
 
-PassRefPtr<ChromiumDataObject> ChromiumDataObject::createFromPasteboard()
+PassRefPtr<ChromiumDataObject> ChromiumDataObject::createFromPasteboard(PasteMode pasteMode)
 {
     RefPtr<ChromiumDataObject> dataObject = create();
     uint64_t sequenceNumber = WebKit::Platform::current()->clipboard()->sequenceNumber(currentPasteboardBuffer());
@@ -51,8 +51,11 @@ PassRefPtr<ChromiumDataObject> ChromiumDataObject::createFromPasteboard()
     ListHashSet<String> types;
     for (size_t i = 0; i < webTypes.size(); ++i)
         types.add(webTypes[i]);
-    for (ListHashSet<String>::const_iterator it = types.begin(); it != types.end(); ++it)
+    for (ListHashSet<String>::const_iterator it = types.begin(); it != types.end(); ++it) {
+        if (pasteMode == PlainTextOnly && *it != mimeTypeTextPlain)
+            continue;
         dataObject->m_itemList.append(ChromiumDataObjectItem::createFromPasteboard(*it, sequenceNumber));
+    }
     return dataObject.release();
 }
 
