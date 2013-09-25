@@ -1021,7 +1021,7 @@ class GitWrapper(SCMWrapper):
       # Let's just save off the commit so we can proceed.
       name = ('saved-by-gclient-' +
               self._Capture(['rev-parse', '--short', 'HEAD']))
-      self._Capture(['branch', name])
+      self._Capture(['branch', '-f', name])
       print('\n_____ found an unreferenced commit and saved it as \'%s\'' %
           name)
 
