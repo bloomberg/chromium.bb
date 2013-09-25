@@ -16,8 +16,8 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
-#include "ui/base/x/x11_atom_cache.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
 

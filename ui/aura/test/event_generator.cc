@@ -448,13 +448,7 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
   TestKeyEvent keyev(native_event, flags, key_press == WM_CHAR);
 #else
   ui::EventType type = is_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED;
-#if defined(USE_X11)
-  scoped_ptr<XEvent> native_event(new XEvent);
-  ui::InitXKeyEventForTesting(type, key_code, flags, native_event.get());
-  TestKeyEvent keyev(native_event.get(), flags, false);
-#else
   ui::KeyEvent keyev(type, key_code, flags, false);
-#endif  // USE_X11
 #endif  // OS_WIN
   Dispatch(&keyev);
 }

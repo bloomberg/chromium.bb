@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_export.h"
-#include "ui/base/x/x11_atom_cache.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ui {
 class SelectionData;

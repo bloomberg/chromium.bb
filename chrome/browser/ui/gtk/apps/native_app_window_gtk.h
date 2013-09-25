@@ -15,8 +15,8 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/x/active_window_watcher_x_observer.h"
-#include "ui/base/x/x11_atom_cache.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 
 class ExtensionKeybindingRegistryGtk;
 class Profile;

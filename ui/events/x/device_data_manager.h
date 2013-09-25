@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_X_DEVICE_DATA_MANAGER_H_
-#define UI_BASE_X_DEVICE_DATA_MANAGER_H_
+#ifndef UI_EVENTS_X_DEVICE_DATA_MANAGER_H_
+#define UI_EVENTS_X_DEVICE_DATA_MANAGER_H_
 
 #include <X11/extensions/XInput2.h>
 
@@ -13,9 +13,9 @@
 
 #include "base/basictypes.h"
 #include "base/event_types.h"
-#include "ui/base/ui_export.h"
-#include "ui/base/x/x11_atom_cache.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/events_export.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -31,7 +31,7 @@ enum GestureMetricsType {
 
 // A class that extracts and tracks the input events data. It currently handles
 // mouse, touchpad and touchscreen devices.
-class UI_EXPORT DeviceDataManager {
+class EVENTS_EXPORT DeviceDataManager {
  public:
   // Enumerate additional data that one might be interested on an input event,
   // which are usually wrapped in X valuators. If you modify any of this,
@@ -193,6 +193,13 @@ class UI_EXPORT DeviceDataManager {
                       float* data1,
                       float* data2);
 
+  // Returns the mapped button.
+  int GetMappedButton(int button);
+
+  // Updates button mapping. This is usually called when a MappingNotify event
+  // is received.
+  void UpdateButtonMap();
+
   // Extract the start/end timestamps from CMT events. User must first verify
   // the event with HasGestureTimes. Pointers shouldn't be NULL.
   void GetGestureTimes(const base::NativeEvent& native_event,
@@ -285,9 +292,12 @@ class UI_EXPORT DeviceDataManager {
   // X11 atoms cache.
   X11AtomCache atom_cache_;
 
+  unsigned char button_map_[256];
+  int button_map_count_;
+
   DISALLOW_COPY_AND_ASSIGN(DeviceDataManager);
 };
 
 }  // namespace ui
 
-#endif  // UI_BASE_X_DEVICE_DATA_MANAGER_H_
+#endif  // UI_EVENTS_X_DEVICE_DATA_MANAGER_H_

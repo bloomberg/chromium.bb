@@ -13,16 +13,16 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_pump_x11.h"
 #include "ui/base/touch/touch_factory_x11.h"
-#include "ui/base/x/device_data_manager.h"
-#include "ui/base/x/device_list_cache_x.h"
-#include "ui/base/x/x11_atom_cache.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/events/x/device_data_manager.h"
+#include "ui/events/x/device_list_cache_x.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/x11_types.h"
 
 namespace {
 
@@ -173,7 +173,7 @@ int GetButtonMaskForX2Event(XIDeviceEvent* xievent) {
   for (int i = 0; i < 8 * xievent->buttons.mask_len; i++) {
     if (XIMaskIsSet(xievent->buttons.mask, i)) {
       int button = (xievent->sourceid == xievent->deviceid) ?
-                   ui::GetMappedButton(i) : i;
+                   ui::DeviceDataManager::GetInstance()->GetMappedButton(i) : i;
       buttonflags |= GetEventFlagsForButton(button);
     }
   }
@@ -501,7 +501,7 @@ int EventButtonFromNative(const base::NativeEvent& native_event) {
   int button = xievent->detail;
 
   return (xievent->sourceid == xievent->deviceid) ?
-         ui::GetMappedButton(button) : button;
+         DeviceDataManager::GetInstance()->GetMappedButton(button) : button;
 }
 
 KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {

@@ -18,7 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/base/x/device_list_cache_x.h"
+#include "ui/events/x/device_list_cache_x.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {

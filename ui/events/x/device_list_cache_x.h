@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_X_DEVICE_LIST_CACHE_X_H_
-#define UI_BASE_X_DEVICE_LIST_CACHE_X_H_
+#ifndef UI_EVENTS_X_DEVICE_LIST_CACHE_X_H_
+#define UI_EVENTS_X_DEVICE_LIST_CACHE_X_H_
 
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
@@ -11,7 +11,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "ui/base/ui_export.h"
+#include "ui/events/events_export.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -36,7 +36,7 @@ namespace ui {
 // A class to cache the current XInput device list. This minimized the
 // round-trip time to the X server whenever such a device list is needed. The
 // update function will be called on each incoming XI_HierarchyChanged event.
-class UI_EXPORT DeviceListCacheX {
+class EVENTS_EXPORT DeviceListCacheX {
  public:
   static DeviceListCacheX* GetInstance();
 
@@ -59,5 +59,5 @@ class UI_EXPORT DeviceListCacheX {
 
 }  // namespace ui
 
-#endif  // UI_BASE_X_DEVICE_LIST_CACHE_X_H_
+#endif  // UI_EVENTS_X_DEVICE_LIST_CACHE_X_H_
 

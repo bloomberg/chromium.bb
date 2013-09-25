@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/x/device_data_manager.h"
+#include "ui/events/x/device_data_manager.h"
 
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
@@ -11,10 +11,10 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "ui/base/touch/touch_factory_x11.h"
-#include "ui/base/x/device_list_cache_x.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/x/device_list_cache_x.h"
+#include "ui/gfx/x/x11_types.h"
 
 // XIScrollClass was introduced in XI 2.1 so we need to define it here
 // for backward-compatibility with older versions of XInput.
@@ -116,12 +116,14 @@ DeviceDataManager* DeviceDataManager::GetInstance() {
 
 DeviceDataManager::DeviceDataManager()
     : natural_scroll_enabled_(false),
-      atom_cache_(gfx::GetXDisplay(), kCachedAtoms) {
+      atom_cache_(gfx::GetXDisplay(), kCachedAtoms),
+      button_map_count_(0) {
   InitializeXInputInternal();
 
   // Make sure the sizes of enum and kCachedAtoms are aligned.
   CHECK(arraysize(kCachedAtoms) == static_cast<size_t>(DT_LAST_ENTRY) + 1);
   UpdateDeviceList(gfx::GetXDisplay());
+  UpdateButtonMap();
 }
 
 DeviceDataManager::~DeviceDataManager() {
@@ -507,6 +509,17 @@ void DeviceDataManager::GetMetricsData(const base::NativeEvent& native_event,
     *data1 = data[DT_CMT_METRICS_DATA1];
   if (data.find(DT_CMT_METRICS_DATA2) != data.end())
     *data2 = data[DT_CMT_METRICS_DATA2];
+}
+
+int DeviceDataManager::GetMappedButton(int button) {
+  return button > 0 && button <= button_map_count_ ? button_map_[button - 1] :
+                                                     button;
+}
+
+void DeviceDataManager::UpdateButtonMap() {
+  button_map_count_ = XGetPointerMapping(gfx::GetXDisplay(),
+                                         button_map_,
+                                         arraysize(button_map_));
 }
 
 void DeviceDataManager::GetGestureTimes(const base::NativeEvent& native_event,

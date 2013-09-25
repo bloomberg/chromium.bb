@@ -27,7 +27,7 @@
 #include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
 
-#include "ui/base/x/device_data_manager.h"
+#include "ui/events/x/device_data_manager.h"
 #endif
 
 namespace ash {

@@ -35,13 +35,14 @@
 #include "ui/base/touch/touch_factory_x11.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"
-#include "ui/base/x/device_list_cache_x.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/x/device_data_manager.h"
+#include "ui/events/x/device_list_cache_x.h"
 #include "ui/gfx/screen.h"
 
 #if defined(OS_CHROMEOS)
@@ -566,7 +567,7 @@ bool RootWindowHostX11::Dispatch(const base::NativeEvent& event) {
           delegate_->AsRootWindow()->OnKeyboardMappingChanged();
           break;
         case MappingPointer:
-          ui::UpdateButtonMap();
+          ui::DeviceDataManager::GetInstance()->UpdateButtonMap();
           break;
         default:
           NOTIMPLEMENTED() << " Unknown request: " << xev->xmapping.request;

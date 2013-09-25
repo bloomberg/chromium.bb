@@ -11,7 +11,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/env_observer.h"
-#include "ui/base/x/x11_atom_cache.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/views_export.h"
 

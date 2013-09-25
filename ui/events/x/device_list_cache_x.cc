@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/x/device_list_cache_x.h"
+#include "ui/events/x/device_list_cache_x.h"
 
 #include <algorithm>
 
 #include "base/memory/singleton.h"
-#include "ui/base/x/x11_util.h"
 
 namespace ui {
 

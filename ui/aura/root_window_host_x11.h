@@ -17,10 +17,10 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/root_window_host.h"
-#include "ui/base/x/x11_atom_cache.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ui {
 class MouseEvent;

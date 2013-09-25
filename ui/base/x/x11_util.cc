@@ -35,11 +35,11 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPostConfig.h"
 #include "ui/base/touch/touch_factory_x11.h"
-#include "ui/base/x/device_data_manager.h"
 #include "ui/base/x/x11_error_tracker.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/events/x/device_data_manager.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
@@ -133,39 +133,6 @@ bool GetProperty(XID window, const std::string& property_name, long max_length,
                             num_items,
                             &remaining_bytes,
                             property);
-}
-
-// Converts ui::EventType to XKeyEvent state.
-unsigned int XKeyEventState(int flags) {
-  return
-      ((flags & ui::EF_SHIFT_DOWN) ? ShiftMask : 0) |
-      ((flags & ui::EF_CONTROL_DOWN) ? ControlMask : 0) |
-      ((flags & ui::EF_ALT_DOWN) ? Mod1Mask : 0) |
-      ((flags & ui::EF_CAPS_LOCK_DOWN) ? LockMask : 0);
-}
-
-// Converts EventType to XKeyEvent type.
-int XKeyEventType(ui::EventType type) {
-  switch (type) {
-    case ui::ET_KEY_PRESSED:
-      return KeyPress;
-    case ui::ET_KEY_RELEASED:
-      return KeyRelease;
-    default:
-      return 0;
-  }
-}
-
-// Converts KeyboardCode to XKeyEvent keycode.
-unsigned int XKeyEventKeyCode(ui::KeyboardCode key_code,
-                              int flags,
-                              XDisplay* display) {
-  const int keysym = XKeysymForWindowsKeyCode(key_code,
-                                              flags & ui::EF_SHIFT_DOWN);
-  // Tests assume the keycode for XK_less is equal to the one of XK_comma,
-  // but XKeysymToKeycode returns 94 for XK_less while it returns 59 for
-  // XK_comma. Here we convert the value for XK_less to the value for XK_comma.
-  return (keysym == XK_less) ? 59 : XKeysymToKeycode(display, keysym);
 }
 
 // A process wide singleton that manages the usage of X cursors.
@@ -283,36 +250,6 @@ class XCustomCursorCache {
   DISALLOW_COPY_AND_ASSIGN(XCustomCursorCache);
 };
 #endif  // defined(USE_AURA)
-
-// A singleton object that remembers remappings of mouse buttons.
-class XButtonMap {
- public:
-  static XButtonMap* GetInstance() {
-    return Singleton<XButtonMap>::get();
-  }
-
-  void UpdateMapping() {
-    count_ = XGetPointerMapping(gfx::GetXDisplay(), map_, arraysize(map_));
-  }
-
-  int GetMappedButton(int button) {
-    return button > 0 && button <= count_ ? map_[button - 1] : button;
-  }
-
- private:
-  friend struct DefaultSingletonTraits<XButtonMap>;
-
-  XButtonMap() {
-    UpdateMapping();
-  }
-
-  ~XButtonMap() {}
-
-  unsigned char map_[256];
-  int count_;
-
-  DISALLOW_COPY_AND_ASSIGN(XButtonMap);
-};
 
 bool IsShapeAvailable() {
   int dummy;
@@ -1373,48 +1310,6 @@ bool IsX11WindowFullScreen(XID window) {
   int height = HeightOfScreen(screen);
   return window_rect.size() == gfx::Size(width, height);
 #endif
-}
-
-bool IsMotionEvent(XEvent* event) {
-  int type = event->type;
-  if (type == GenericEvent)
-    type = event->xgeneric.evtype;
-  return type == MotionNotify;
-}
-
-int GetMappedButton(int button) {
-  return XButtonMap::GetInstance()->GetMappedButton(button);
-}
-
-void UpdateButtonMap() {
-  XButtonMap::GetInstance()->UpdateMapping();
-}
-
-void InitXKeyEventForTesting(EventType type,
-                             KeyboardCode key_code,
-                             int flags,
-                             XEvent* event) {
-  CHECK(event);
-  XDisplay* display = gfx::GetXDisplay();
-  XKeyEvent key_event;
-  key_event.type = XKeyEventType(type);
-  CHECK_NE(0, key_event.type);
-  key_event.serial = 0;
-  key_event.send_event = 0;
-  key_event.display = display;
-  key_event.time = 0;
-  key_event.window = 0;
-  key_event.root = 0;
-  key_event.subwindow = 0;
-  key_event.x = 0;
-  key_event.y = 0;
-  key_event.x_root = 0;
-  key_event.y_root = 0;
-  key_event.state = XKeyEventState(flags);
-  key_event.keycode = XKeyEventKeyCode(key_code, flags, display);
-  key_event.same_screen = 1;
-  event->type = key_event.type;
-  event->xkey = key_event;
 }
 
 const unsigned char* XRefcountedMemory::front() const {

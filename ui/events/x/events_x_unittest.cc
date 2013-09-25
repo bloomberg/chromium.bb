@@ -13,10 +13,10 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/touch/touch_factory_x11.h"
-#include "ui/base/x/device_data_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/x/device_data_manager.h"
 #include "ui/gfx/point.h"
 
 namespace ui {

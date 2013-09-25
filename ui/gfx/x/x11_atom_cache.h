@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_X_X11_ATOM_CACHE_H_
-#define UI_BASE_X_X11_ATOM_CACHE_H_
+#ifndef UI_GFX_X_X11_ATOM_CACHE_H_
+#define UI_GFX_X_X11_ATOM_CACHE_H_
 
 #include "base/basictypes.h"
-#include "ui/base/ui_export.h"
-
-#include <X11/Xlib.h>
+#include "ui/gfx/gfx_export.h"
 
 #include <map>
 #include <string>
+
+#include <X11/Xlib.h>
 
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
 #undef RootWindow
@@ -22,7 +22,7 @@ namespace ui {
 // server. By default, GetAtom() will CHECK() that atoms accessed through
 // GetAtom() were passed to the constructor, but this behaviour can be changed
 // with allow_uncached_atoms().
-class UI_EXPORT X11AtomCache {
+class GFX_EXPORT X11AtomCache {
  public:
   // Preinterns the NULL terminated list of string |to_cache_ on |xdisplay|.
   X11AtomCache(Display* xdisplay, const char** to_cache);
@@ -47,4 +47,4 @@ class UI_EXPORT X11AtomCache {
 
 }  // namespace ui
 
-#endif  // UI_BASE_X_X11_ATOM_CACHE_H_
+#endif  // UI_GFX_X_X11_ATOM_CACHE_H_

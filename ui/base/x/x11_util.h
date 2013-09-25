@@ -302,23 +302,6 @@ UI_EXPORT void SetDefaultX11ErrorHandlers();
 // Return true if a given window is in full-screen mode.
 UI_EXPORT bool IsX11WindowFullScreen(XID window);
 
-// Return true if event type is MotionNotify.
-UI_EXPORT bool IsMotionEvent(XEvent* event);
-
-// Returns the mapped button.
-int GetMappedButton(int button);
-
-// Updates button mapping. This is usually called when a MappingNotify event is
-// received.
-UI_EXPORT void UpdateButtonMap();
-
-// Initializes a XEvent that holds XKeyEvent for testing. Note that ui::EF_
-// flags should be passed as |flags|, not the native ones in <X11/X.h>.
-UI_EXPORT void InitXKeyEventForTesting(EventType type,
-                                       KeyboardCode key_code,
-                                       int flags,
-                                       XEvent* event);
-
 // Manages a piece of X11 allocated memory as a RefCountedMemory segment. This
 // object takes ownership over the passed in memory and will free it with the
 // X11 allocator when done.

@@ -10,7 +10,7 @@
 
 #include "ash/test/ash_test_base.h"
 #include "base/memory/scoped_vector.h"
-#include "ui/base/x/x11_util.h"
+#include "ui/events/x/events_x_utils.h"
 
 namespace ash {
 

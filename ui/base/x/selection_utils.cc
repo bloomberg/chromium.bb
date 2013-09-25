@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/x/x11_atom_cache.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ui {
 

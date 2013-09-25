@@ -23,6 +23,7 @@
 #include "ui/base/touch/touch_factory_x11.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/x/device_data_manager.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path_x11.h"
 #include "ui/native_theme/native_theme.h"
@@ -1264,7 +1265,7 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
           root_window_->OnKeyboardMappingChanged();
           break;
         case MappingPointer:
-          ui::UpdateButtonMap();
+          ui::DeviceDataManager::GetInstance()->UpdateButtonMap();
           break;
         default:
           NOTIMPLEMENTED() << " Unknown request: " << xev->xmapping.request;

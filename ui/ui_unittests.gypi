@@ -240,7 +240,7 @@
         }],
         ['OS == "linux" and toolkit_views==1', {
           'sources': [
-            'base/x/events_x_unittest.cc',
+            'events/x/events_x_unittest.cc',
           ],
         }],
         ['OS != "mac" and OS != "ios"', {

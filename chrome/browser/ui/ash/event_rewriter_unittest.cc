@@ -25,7 +25,7 @@
 #include "chrome/browser/chromeos/preferences.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/mock_xkeyboard.h"
-#include "ui/base/x/x11_util.h"
+#include "ui/events/x/events_x_utils.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace {
