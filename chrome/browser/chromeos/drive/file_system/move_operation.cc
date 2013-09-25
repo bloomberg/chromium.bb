@@ -41,7 +41,7 @@ FileError RenameLocally(internal::ResourceMetadata* metadata,
     return error;
 
   entry.set_title(new_title);
-  return metadata->RefreshEntry(resource_id, entry);
+  return metadata->RefreshEntry(entry);
 }
 
 // Applies directory-moving to the local metadata.
@@ -55,7 +55,7 @@ FileError MoveDirectoryLocally(internal::ResourceMetadata* metadata,
 
   // TODO(hidehiko,hashimoto): Set local id, instead of resource id.
   entry.set_parent_local_id(parent_resource_id);
-  return metadata->RefreshEntry(resource_id, entry);
+  return metadata->RefreshEntry(entry);
 }
 
 }  // namespace
@@ -192,13 +192,14 @@ void MoveOperation::MoveAfterMoveResource(
   }
 
   // TODO(hashimoto): Resolve local ID before use. crbug.com/260514
+  entry.set_local_id(entry.resource_id());
   entry.set_parent_local_id(parent_resource_id);
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&internal::ResourceMetadata::RefreshEntry,
-                 base::Unretained(metadata_), entry.resource_id(), entry),
+                 base::Unretained(metadata_), entry),
       base::Bind(&MoveOperation::MoveAfterRefreshEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  src_file_path, dest_file_path, callback));

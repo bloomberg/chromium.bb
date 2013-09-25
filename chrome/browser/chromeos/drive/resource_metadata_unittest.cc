@@ -394,7 +394,7 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
   ResourceEntry file_entry(entry);
   file_entry.set_title("file100");
   EXPECT_EQ(FILE_ERROR_OK,
-            resource_metadata_->RefreshEntry(file_id, file_entry));
+            resource_metadata_->RefreshEntry(file_entry));
 
   EXPECT_EQ("drive/root/dir1/dir3/file100",
             resource_metadata_->GetFilePath(file_id).AsUTF8Unsafe());
@@ -410,7 +410,7 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
   file_entry = entry;
   file_entry.mutable_file_specific_info()->set_md5(updated_md5);
   EXPECT_EQ(FILE_ERROR_OK,
-            resource_metadata_->RefreshEntry(file_id, file_entry));
+            resource_metadata_->RefreshEntry(file_entry));
 
   EXPECT_EQ("drive/root/dir1/dir3/file100",
             resource_metadata_->GetFilePath(file_id).AsUTF8Unsafe());
@@ -443,7 +443,7 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
   ResourceEntry dir_entry(entry);
   dir_entry.set_title("dir100");
   dir_entry.set_parent_local_id("id:dir3");
-  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->RefreshEntry(dir_id, dir_entry));
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->RefreshEntry(dir_entry));
 
   EXPECT_EQ("drive/root/dir1/dir3/dir100",
             resource_metadata_->GetFilePath(dir_id).AsUTF8Unsafe());
@@ -468,15 +468,16 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
   // Make sure that directory cannot move under a file.
   dir_entry.set_parent_local_id(file_id);
   EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY,
-            resource_metadata_->RefreshEntry(dir_id, dir_entry));
+            resource_metadata_->RefreshEntry(dir_entry));
 
   // Cannot refresh root.
   dir_entry.Clear();
   dir_entry.set_resource_id(util::kDriveGrandRootSpecialResourceId);
+  dir_entry.set_local_id(util::kDriveGrandRootSpecialResourceId);
   dir_entry.set_title("new-root-name");
   dir_entry.set_parent_local_id("id:dir1");
-  EXPECT_EQ(FILE_ERROR_INVALID_OPERATION, resource_metadata_->RefreshEntry(
-      util::kDriveGrandRootSpecialResourceId, dir_entry));
+  EXPECT_EQ(FILE_ERROR_INVALID_OPERATION,
+            resource_metadata_->RefreshEntry(dir_entry));
 }
 
 TEST_F(ResourceMetadataTest, GetSubDirectoriesRecursively) {

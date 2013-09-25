@@ -264,9 +264,11 @@ FileError ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
       error = resource_metadata_->RemoveEntry(entry.resource_id());
     } else {
       // Entry exists and needs to be refreshed.
-      error = resource_metadata_->RefreshEntry(entry.resource_id(), entry);
+      ResourceEntry new_entry(entry);
+      new_entry.set_local_id(existing_entry.local_id());
+      error = resource_metadata_->RefreshEntry(new_entry);
       if (error == FILE_ERROR_OK)
-        UpdateChangedDirs(entry);
+        UpdateChangedDirs(new_entry);
     }
   } else if (error == FILE_ERROR_NOT_FOUND && !entry.deleted()) {
     // Adding a new entry.
@@ -342,7 +344,14 @@ FileError ChangeListProcessor::RefreshDirectory(
       continue;
     }
 
-    error = resource_metadata->RefreshEntry(it->first, entry);
+    std::string local_id;
+    error = resource_metadata->GetIdByResourceId(it->first, &local_id);
+    if (error == FILE_ERROR_OK) {
+      ResourceEntry new_entry(entry);
+      new_entry.set_local_id(local_id);
+      error = resource_metadata->RefreshEntry(new_entry);
+    }
+
     if (error == FILE_ERROR_NOT_FOUND) {  // If refreshing fails, try adding.
       std::string local_id;
       error = resource_metadata->AddEntry(entry, &local_id);
@@ -354,8 +363,7 @@ FileError ChangeListProcessor::RefreshDirectory(
 
   directory.mutable_directory_specific_info()->set_changestamp(
       directory_fetch_info.changestamp());
-  error = resource_metadata->RefreshEntry(directory_fetch_info.resource_id(),
-                                          directory);
+  error = resource_metadata->RefreshEntry(directory);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -381,7 +389,7 @@ FileError ChangeListProcessor::UpdateRootEntry(int64 largest_changestamp) {
   // The changestamp should always be updated.
   root.mutable_directory_specific_info()->set_changestamp(largest_changestamp);
 
-  error = resource_metadata_->RefreshEntry(root_local_id, root);
+  error = resource_metadata_->RefreshEntry(root);
   if (error != FILE_ERROR_OK) {
     LOG(WARNING) << "Failed to refresh root directory";
     return error;

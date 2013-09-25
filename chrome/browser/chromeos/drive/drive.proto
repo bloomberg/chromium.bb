@@ -75,6 +75,9 @@ message ResourceEntry {
   // Resource ID of the entry. Guaranteed to be unique.
   optional string resource_id = 4;
 
+  // Local ID of the entry.
+  optional string local_id = 15;
+
   // Local ID of the parent entry.
   optional string parent_local_id = 7;
 

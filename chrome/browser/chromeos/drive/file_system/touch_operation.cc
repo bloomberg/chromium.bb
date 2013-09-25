@@ -53,9 +53,10 @@ FileError RefreshEntry(internal::ResourceMetadata* metadata,
   if (error != FILE_ERROR_OK)
     return error;
 
+  entry.set_local_id(local_id);
   entry.set_parent_local_id(parent_local_id);
 
-  error = metadata->RefreshEntry(local_id, entry);
+  error = metadata->RefreshEntry(entry);
   if (error != FILE_ERROR_OK)
     return error;
 

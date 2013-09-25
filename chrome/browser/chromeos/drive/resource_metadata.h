@@ -103,8 +103,8 @@ class ResourceMetadata {
   FileError ReadDirectoryByPath(const base::FilePath& file_path,
                                 ResourceEntryVector* out_entries);
 
-  // Replaces an existing entry whose ID is |id| with |entry|.
-  FileError RefreshEntry(const std::string& id, const ResourceEntry& entry);
+  // Replaces an existing entry with the same local ID as |entry|.
+  FileError RefreshEntry(const ResourceEntry& entry);
 
   // Recursively gets directories under the entry pointed to by |id|.
   void GetSubDirectoriesRecursively(const std::string& id,
@@ -143,9 +143,7 @@ class ResourceMetadata {
   // parent if there is. This method will also do name de-duplication to ensure
   // that the exposed presentation path does not have naming conflicts. Two
   // files with the same name "Foo" will be renamed to "Foo (1)" and "Foo (2)".
-  // |id| is used as the ID of the entry.
-  bool PutEntryUnderDirectory(const std::string& id,
-                              const ResourceEntry& entry);
+  bool PutEntryUnderDirectory(const ResourceEntry& entry);
 
   // Removes the entry and its descendants.
   bool RemoveEntryRecursively(const std::string& id);

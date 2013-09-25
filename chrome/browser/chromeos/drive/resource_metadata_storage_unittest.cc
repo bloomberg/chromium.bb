@@ -76,14 +76,14 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
   const std::string name2 = "ABCD";
   const std::string name3 = "EFGH";
 
-  ResourceEntry entry1;
-
   // key1 not found.
   ResourceEntry result;
   EXPECT_FALSE(storage_->GetEntry(key1, &result));
 
   // Put entry1.
-  EXPECT_TRUE(storage_->PutEntry(key1, entry1));
+  ResourceEntry entry1;
+  entry1.set_local_id(key1);
+  EXPECT_TRUE(storage_->PutEntry(entry1));
 
   // key1 found.
   EXPECT_TRUE(storage_->GetEntry(key1, &result));
@@ -93,9 +93,10 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
 
   // Put entry2 as a child of entry1.
   ResourceEntry entry2;
+  entry2.set_local_id(key2);
   entry2.set_parent_local_id(key1);
   entry2.set_base_name(name2);
-  EXPECT_TRUE(storage_->PutEntry(key2, entry2));
+  EXPECT_TRUE(storage_->PutEntry(entry2));
 
   // key2 found.
   EXPECT_TRUE(storage_->GetEntry(key2, &result));
@@ -103,9 +104,10 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
 
   // Put entry3 as a child of entry2.
   ResourceEntry entry3;
+  entry3.set_local_id(key3);
   entry3.set_parent_local_id(key2);
   entry3.set_base_name(name3);
-  EXPECT_TRUE(storage_->PutEntry(key3, entry3));
+  EXPECT_TRUE(storage_->PutEntry(entry3));
 
   // key3 found.
   EXPECT_TRUE(storage_->GetEntry(key3, &result));
@@ -113,7 +115,7 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
 
   // Change entry3's parent to entry1.
   entry3.set_parent_local_id(key1);
-  EXPECT_TRUE(storage_->PutEntry(key3, entry3));
+  EXPECT_TRUE(storage_->PutEntry(entry3));
 
   // entry3 is a child of entry1 now.
   EXPECT_TRUE(storage_->GetChild(key2, name3).empty());
@@ -137,8 +139,11 @@ TEST_F(ResourceMetadataStorageTest, Iterator) {
   keys.push_back("entry3");
   keys.push_back("entry4");
 
-  for (size_t i = 0; i < keys.size(); ++i)
-    EXPECT_TRUE(storage_->PutEntry(keys[i], ResourceEntry()));
+  for (size_t i = 0; i < keys.size(); ++i) {
+    ResourceEntry entry;
+    entry.set_local_id(keys[i]);
+    EXPECT_TRUE(storage_->PutEntry(entry));
+  }
 
   // Insert some cache entries.
   std::map<std::string, FileCacheEntry> cache_entries;
@@ -221,8 +226,11 @@ TEST_F(ResourceMetadataStorageTest, CacheEntryIterator) {
     EXPECT_TRUE(storage_->PutCacheEntry(it->first, it->second));
 
   // Insert some dummy entries.
-  EXPECT_TRUE(storage_->PutEntry("entry1", ResourceEntry()));
-  EXPECT_TRUE(storage_->PutEntry("entry2", ResourceEntry()));
+  ResourceEntry entry;
+  entry.set_local_id("entry1");
+  EXPECT_TRUE(storage_->PutEntry(entry));
+  entry.set_local_id("entry2");
+  EXPECT_TRUE(storage_->PutEntry(entry));
 
   // Iterate and check the result.
   scoped_ptr<ResourceMetadataStorage::CacheEntryIterator> it =
@@ -259,16 +267,20 @@ TEST_F(ResourceMetadataStorageTest, GetChildren) {
   children_name_id[4].push_back(std::make_pair("iapetus", "saturn_vii"));
 
   // Put parents.
-  for (size_t i = 0; i < arraysize(parents_id); ++i)
-    EXPECT_TRUE(storage_->PutEntry(parents_id[i], ResourceEntry()));
+  for (size_t i = 0; i < arraysize(parents_id); ++i) {
+    ResourceEntry entry;
+    entry.set_local_id(parents_id[i]);
+    EXPECT_TRUE(storage_->PutEntry(entry));
+  }
 
   // Put children.
   for (size_t i = 0; i < children_name_id.size(); ++i) {
     for (size_t j = 0; j < children_name_id[i].size(); ++j) {
       ResourceEntry entry;
+      entry.set_local_id(children_name_id[i][j].second);
       entry.set_parent_local_id(parents_id[i]);
       entry.set_base_name(children_name_id[i][j].first);
-      EXPECT_TRUE(storage_->PutEntry(children_name_id[i][j].second, entry));
+      EXPECT_TRUE(storage_->PutEntry(entry));
     }
   }
 
@@ -297,13 +309,15 @@ TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
   const std::string child_id1 = "qwerty";
 
   ResourceEntry entry1;
+  entry1.set_local_id(parent_id1);
   ResourceEntry entry2;
+  entry2.set_local_id(child_id1);
   entry2.set_parent_local_id(parent_id1);
   entry2.set_base_name(child_name1);
 
   // Put some data.
-  EXPECT_TRUE(storage_->PutEntry(parent_id1, entry1));
-  EXPECT_TRUE(storage_->PutEntry(child_id1, entry2));
+  EXPECT_TRUE(storage_->PutEntry(entry1));
+  EXPECT_TRUE(storage_->PutEntry(entry2));
 
   // Close DB and reopen.
   storage_.reset(new ResourceMetadataStorage(
@@ -328,7 +342,8 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_Old) {
   // Put some data.
   EXPECT_TRUE(storage_->SetLargestChangestamp(kLargestChangestamp));
   ResourceEntry entry;
-  EXPECT_TRUE(storage_->PutEntry(key1, ResourceEntry()));
+  entry.set_local_id(key1);
+  EXPECT_TRUE(storage_->PutEntry(entry));
   EXPECT_TRUE(storage_->GetEntry(key1, &entry));
   FileCacheEntry cache_entry;
   EXPECT_TRUE(storage_->PutCacheEntry(key1, FileCacheEntry()));
@@ -353,7 +368,8 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_Unknown) {
   // Put some data.
   EXPECT_TRUE(storage_->SetLargestChangestamp(kLargestChangestamp));
   ResourceEntry entry;
-  EXPECT_TRUE(storage_->PutEntry(key1, ResourceEntry()));
+  entry.set_local_id(key1);
+  EXPECT_TRUE(storage_->PutEntry(entry));
   EXPECT_TRUE(storage_->GetEntry(key1, &entry));
   FileCacheEntry cache_entry;
   EXPECT_TRUE(storage_->PutCacheEntry(key1, FileCacheEntry()));
@@ -395,14 +411,16 @@ TEST_F(ResourceMetadataStorageTest, CheckValidity) {
 
   // Put entry with key1.
   ResourceEntry entry;
+  entry.set_local_id(key1);
   entry.set_base_name(name1);
-  EXPECT_TRUE(storage_->PutEntry(key1, entry));
+  EXPECT_TRUE(storage_->PutEntry(entry));
   EXPECT_TRUE(CheckValidity());
 
   // Put entry with key2 under key1.
+  entry.set_local_id(key2);
   entry.set_parent_local_id(key1);
   entry.set_base_name(name2);
-  EXPECT_TRUE(storage_->PutEntry(key2, entry));
+  EXPECT_TRUE(storage_->PutEntry(entry));
   EXPECT_TRUE(CheckValidity());
 
   RemoveChild(key1, name2);
@@ -417,9 +435,10 @@ TEST_F(ResourceMetadataStorageTest, CheckValidity) {
   EXPECT_FALSE(CheckValidity());  // key3 is not stored in the storage.
 
   // Put entry with key3 under key2.
+  entry.set_local_id(key3);
   entry.set_parent_local_id(key2);
   entry.set_base_name(name3);
-  EXPECT_TRUE(storage_->PutEntry(key3, entry));
+  EXPECT_TRUE(storage_->PutEntry(entry));
   EXPECT_TRUE(CheckValidity());
 
   // Parent-child relationship with wrong name.

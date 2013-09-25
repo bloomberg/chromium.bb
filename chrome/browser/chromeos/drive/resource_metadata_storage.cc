@@ -405,9 +405,10 @@ int64 ResourceMetadataStorage::GetLargestChangestamp() {
   return header.largest_changestamp();
 }
 
-bool ResourceMetadataStorage::PutEntry(const std::string& id,
-                                       const ResourceEntry& entry) {
+bool ResourceMetadataStorage::PutEntry(const ResourceEntry& entry) {
   base::ThreadRestrictions::AssertIOAllowed();
+
+  const std::string& id = entry.local_id();
   DCHECK(!id.empty());
 
   std::string serialized_entry;

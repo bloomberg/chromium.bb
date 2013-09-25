@@ -36,7 +36,7 @@ class ResourceMetadataStorage {
  public:
   // This should be incremented when incompatibility change is made to DB
   // format.
-  static const int kDBVersion = 8;
+  static const int kDBVersion = 9;
 
   // Object to iterate over entries stored in this storage.
   class Iterator {
@@ -126,7 +126,7 @@ class ResourceMetadataStorage {
   int64 GetLargestChangestamp();
 
   // Puts the entry to this storage.
-  bool PutEntry(const std::string& id, const ResourceEntry& entry);
+  bool PutEntry(const ResourceEntry& entry);
 
   // Gets an entry stored in this storage.
   bool GetEntry(const std::string& id, ResourceEntry* out_entry);
