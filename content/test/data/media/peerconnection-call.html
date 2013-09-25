@@ -13,6 +13,8 @@
   var gLocalStream = null;
   var gSentTones = '';
 
+  var gRemoteStreams = {};
+
   setAllEventsOccuredHandler(function() {
     document.title = 'OK';
   });
@@ -38,6 +40,51 @@
       addStreamToTheFirstConnectionAndNegotiate, printGetUserMediaError);
     // Only the first connection is sending here.
     waitForVideo('remote-view-2');
+  }
+
+  // First makes a call between pc1 and pc2, and then makes a call between pc3
+  // and pc4 where the remote streams from pc1 and pc2 will be used as the local
+  // streams of pc3 and pc4.
+  function callAndForwardRemoteStream(constraints) {
+    createConnections(null);
+    navigator.webkitGetUserMedia(constraints,
+                                 addStreamToBothConnectionsAndNegotiate,
+                                 printGetUserMediaError);
+    var gotRemoteStream1 = false;
+    var gotRemoteStream2 = false;
+
+    var onRemoteStream1 = function() {
+      gotRemoteStream1 = true;
+      maybeCallEstablished();
+    }
+
+    var onRemoteStream2 = function() {
+      gotRemoteStream2 = true;
+      maybeCallEstablished();
+    }
+
+    var maybeCallEstablished = function() {
+      if (gotRemoteStream1 && gotRemoteStream2) {
+        onCallEstablished();
+      }
+    }
+
+    var onCallEstablished = function() {
+      thirdConnection = createConnection(null, 'remote-view-3');
+      thirdConnection.addStream(gRemoteStreams['remote-view-1']);
+
+      fourthConnection = createConnection(null, 'remote-view-4');
+      fourthConnection.addStream(gRemoteStreams['remote-view-2']);
+
+      negotiateBetween(thirdConnection, fourthConnection);
+
+      waitForVideo('remote-view-3');
+      waitForVideo('remote-view-4');
+    }
+
+    // Do the forwarding after we have received video.
+    detectVideoIn('remote-view-1', onRemoteStream1);
+    detectVideoIn('remote-view-2', onRemoteStream2);
   }
 
   // Test that we can setup call with an audio and video track and
@@ -248,18 +295,19 @@
   }
 
   function createConnections(constraints) {
-    gFirstConnection = new webkitRTCPeerConnection(null, constraints);
-    gFirstConnection.onicecandidate = onIceCandidateToFirst;
-    gFirstConnection.onaddstream = function(event) {
-      onRemoteStream(event, 'remote-view-1');
-    }
+    gFirstConnection = createConnection(constraints, 'remote-view-1');
     expectEquals('stable', gFirstConnection.signalingState);
 
-    gSecondConnection = new webkitRTCPeerConnection(null, constraints);
-    gSecondConnection.onicecandidate = onIceCandidateToSecond;
-    gSecondConnection.onaddstream = function(event) {
-      onRemoteStream(event, 'remote-view-2');
+    gSecondConnection = createConnection(constraints, 'remote-view-2');
+    expectEquals('stable', gSecondConnection.signalingState);
+  }
+
+  function createConnection(constraints, remoteView) {
+    var pc = new webkitRTCPeerConnection(null, constraints);
+    pc.onaddstream = function(event) {
+      onRemoteStream(event, remoteView);
     }
+    return pc;
   }
 
   function displayAndRemember(localStream) {
@@ -289,7 +337,7 @@
     negotiate();
   }
 
-  function verifyHasOneAudioAndVideoTrack(stream) {    
+  function verifyHasOneAudioAndVideoTrack(stream) {
     expectEquals(1, stream.getAudioTracks().length);
     expectEquals(1, stream.getVideoTracks().length);
   }
@@ -341,30 +389,37 @@
   }
 
   function negotiate() {
+    negotiateBetween(gFirstConnection, gSecondConnection);
+  }
+
+  function negotiateBetween(caller, callee) {
     // Not stable = negotiation is ongoing. The behavior of re-negotiating while
     // a negotiation is ongoing is more or less undefined, so avoid this.
-    if (gFirstConnection.signalingState != 'stable')
+    if (caller.signalingState != 'stable')
       throw 'You can only negotiate when the connection is stable!';
 
-    gFirstConnection.createOffer(onOfferCreated);
+    connectOnIceCandidate(caller, callee);
+
+    caller.createOffer(
+        function (offer) {
+          caller.setLocalDescription(offer);
+          expectEquals('have-local-offer', caller.signalingState);
+          receiveOffer(offer.sdp, caller, callee);
+        });
   }
 
-  function onOfferCreated(offer) {
-    gFirstConnection.setLocalDescription(offer);
-    expectEquals('have-local-offer', gFirstConnection.signalingState);
-    receiveOffer(offer.sdp);
-  }
-
-  function receiveOffer(offerSdp) {
+  function receiveOffer(offerSdp, caller, callee) {
     if (gTestWithoutMsidAndBundle) {
       offerSdp = removeMsidAndBundle(offerSdp);
     }
 
     var parsedOffer = new RTCSessionDescription({ type: 'offer',
                                                   sdp: offerSdp });
-    gSecondConnection.setRemoteDescription(parsedOffer);
-    gSecondConnection.createAnswer(onAnswerCreated);
-    expectEquals('have-remote-offer', gSecondConnection.signalingState);
+    callee.setRemoteDescription(parsedOffer);
+    callee.createAnswer(function (answer) {
+                          onAnswerCreated(answer, caller, callee);
+                        });
+    expectEquals('have-remote-offer', callee.signalingState);
   }
 
   function removeMsidAndBundle(offerSdp) {
@@ -376,33 +431,31 @@
     return offerSdp;
   }
 
-  function onAnswerCreated(answer) {
-    gSecondConnection.setLocalDescription(answer);
-    expectEquals('stable', gSecondConnection.signalingState);
-    receiveAnswer(answer.sdp);
+  function onAnswerCreated(answer, caller, callee) {
+    callee.setLocalDescription(answer);
+    expectEquals('stable', callee.signalingState);
+    receiveAnswer(answer.sdp, caller);
   }
 
-  function receiveAnswer(answerSdp) {
+  function receiveAnswer(answerSdp, caller) {
     if (gTestWithoutMsidAndBundle) {
       answerSdp = removeMsidAndBundle(answerSdp);
     }
     var parsedAnswer = new RTCSessionDescription({ type: 'answer',
                                                    sdp: answerSdp });
-    gFirstConnection.setRemoteDescription(parsedAnswer);
-    expectEquals('stable', gFirstConnection.signalingState);
+    caller.setRemoteDescription(parsedAnswer);
+    expectEquals('stable', caller.signalingState);
   }
 
-  function onIceCandidateToFirst(event) {
-    if (event.candidate) {
-      var candidate = new RTCIceCandidate(event.candidate);
-      gSecondConnection.addIceCandidate(candidate);
-    }
+  function connectOnIceCandidate(caller, callee) {
+    caller.onicecandidate = function(event) { onIceCandidate(event, callee); }
+    callee.onicecandidate = function(event) { onIceCandidate(event, caller); }
   }
 
-  function onIceCandidateToSecond(event) {
+  function onIceCandidate(event, target) {
     if (event.candidate) {
       var candidate = new RTCIceCandidate(event.candidate);
-      gFirstConnection.addIceCandidate(candidate);
+      target.addIceCandidate(candidate);
     }
   }
 
@@ -412,6 +465,7 @@
           e.stream.id + ' was received.';
       return;
     }
+    gRemoteStreams[target] = e.stream;
     var remoteStreamUrl = webkitURL.createObjectURL(e.stream);
     var remoteVideo = $(target);
     remoteVideo.src = remoteStreamUrl;
@@ -425,6 +479,8 @@
       <td>Local Preview</td>
       <td>Remote Stream for Connection 1</td>
       <td>Remote Stream for Connection 2</td>
+      <td>Remote Stream for Connection 3</td>
+      <td>Remote Stream for Connection 4</td>
     </tr>
     <tr>
       <td><video width="320" height="240" id="local-view"
@@ -433,10 +489,18 @@
           autoplay="autoplay"></video></td>
       <td><video width="320" height="240" id="remote-view-2"
           autoplay="autoplay"></video></td>
+      <td><video width="320" height="240" id="remote-view-3"
+          autoplay="autoplay"></video></td>
+      <td><video width="320" height="240" id="remote-view-4"
+          autoplay="autoplay"></video></td>
       <!-- Canvases are named after their corresponding video elements. -->
       <td><canvas width="320" height="240" id="remote-view-1-canvas"
           style="display:none"></canvas></td>
       <td><canvas width="320" height="240" id="remote-view-2-canvas"
+          style="display:none"></canvas></td>
+      <td><canvas width="320" height="240" id="remote-view-3-canvas"
+          style="display:none"></canvas></td>
+      <td><canvas width="320" height="240" id="remote-view-4-canvas"
           style="display:none"></canvas></td>
     </tr>
   </table>

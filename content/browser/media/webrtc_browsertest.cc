@@ -171,6 +171,33 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   ExpectTitle("OK");
 }
 
+// Below 2 test will make a complete PeerConnection-based call between pc1 and
+// pc2, and then use the remote stream to setup a call between pc3 and pc4, and
+// then verify that video is received on pc3 and pc4.
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CanForwardRemoteStream) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(ExecuteJavascript(
+                  "callAndForwardRemoteStream({video: true, audio: true});"));
+  ExpectTitle("OK");
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CanForwardRemoteStream720p) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  const std::string cmd = GenerateGetUserMediaCall("callAndForwardRemoteStream",
+                                                   1280, 1280,
+                                                   720, 720, 30, 30);
+  EXPECT_TRUE(ExecuteJavascript(cmd));
+  ExpectTitle("OK");
+}
+
 // This test will make a complete PeerConnection-based call but remove the
 // MSID and bundle attribute from the initial offer to verify that
 // video is playing for the call even if the initiating client don't support
