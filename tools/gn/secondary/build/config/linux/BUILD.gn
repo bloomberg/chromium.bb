@@ -13,6 +13,8 @@ config("executable_ldconfig") {
   ]
 }
 
+# This script returns a list consisting of two nested lists: the first is the
+# list of cflags, the second are the linker flags.
 pkg_script = "pkg-config.py"
 
 config("fontconfig") {
@@ -20,38 +22,44 @@ config("fontconfig") {
 }
 
 config("freetype2") {
-  cflags = exec_script(pkg_script, [ "--cflags", "freetype2" ], "list lines")
-  ldflags = exec_script(pkg_script, [ "--libs", "freetype2" ], "list lines")
+  pkgresult = exec_script(pkg_script, [ "freetype2" ], "value")
+  includes = pkgresult[0]
+  cflags = pkgresult[1]
+  ldflags = pkgresult[2]
 }
 
 config("glib") {
-  glib_packages = "glib-2.0 gmodule-2.0 gobject-2.0 gthread-2.0"
-
-  cflags = exec_script(pkg_script, [ "--cflags", glib_packages ], "list lines")
-  ldflags = exec_script(pkg_script, [ "--libs", glib_packages ], "list lines")
+  pkgresult = exec_script(pkg_script,
+    [ "glib-2.0", "gmodule-2.0", "gobject-2.0", "gthread-2.0" ], "value" )
+  includes = pkgresult[0]
+  cflags = pkgresult[1]
+  ldflags = pkgresult[2]
 }
 
 config("gtk") {
   # Gtk requires gmodule, but it does not list it as a dependency in some
   # misconfigured systems.
-  gtk_packages = "gmodule-2.0 gtk+-2.0 gthread-2.0"
+  pkgresult = exec_script(pkg_script,
+    [ "gmodule-2.0", "gtk+-2.0", "gthread-2.0" ], "value" )
+  includes = pkgresult[0]
+  cflags = pkgresult[1]
+  ldflags = pkgresult[2]
 
   defines = [ "TOOLKIT_GTK" ]
-
-  cflags = exec_script(pkg_script, [ "--cflags", gtk_packages ], "list lines")
-  ldflags = exec_script(pkg_script, [ "--libs", gtk_packages ], "list lines")
 }
 
 config("pangocairo") {
-  cflags = exec_script(pkg_script, [ "--cflags", "pangocairo" ], "list lines")
-  ldflags = exec_script(pkg_script, [ "--libs", "pangocairo" ], "list lines")
+  pkgresult = exec_script(pkg_script, [ "pangocairo" ], "value" )
+  includes = pkgresult[0]
+  cflags = pkgresult[1]
+  ldflags = pkgresult[2]
 }
 
 config("udev") {
-  udev_packages = "libudev"
-
-  cflags = exec_script(pkg_script, [ "--cflags", udev_packages ], "list lines")
-  ldflags = exec_script(pkg_script, [ "--libs", udev_packages ], "list lines")
+  pkgresult = exec_script(pkg_script, [ "libudev" ], "value" )
+  includes = pkgresult[0]
+  cflags = pkgresult[1]
+  ldflags = pkgresult[2]
 }
 
 config("x11") {

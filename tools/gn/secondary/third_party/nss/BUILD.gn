@@ -7,7 +7,9 @@ if (is_linux) {
   pkg_script = "//build/config/linux/pkg-config.py"
 
   config("nss_linux_config") {
-    cflags = exec_script(pkg_script, [ "--cflags", "nss" ], "list lines")
-    ldflags = exec_script(pkg_script, [ "--libs", "nss" ], "list lines")
+    pkgresult = exec_script(pkg_script, [ "nss" ], "value")
+    includes = pkgresult[0]
+    cflags = pkgresult[1]
+    ldflags = pkgresult[2]
   }
 }
