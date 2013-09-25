@@ -12,7 +12,7 @@ class EventFactoryOzone;
 // An embedder can install an instance of this interface to take control of
 // what |EventConverterOzone| objects get created on the creation of
 // the |RootWindowHostOzone| object.
-class UI_EXPORT EventFactoryDelegateOzone {
+class EVENTS_EXPORT EventFactoryDelegateOzone {
  public:
   EventFactoryDelegateOzone();
   virtual ~EventFactoryDelegateOzone();

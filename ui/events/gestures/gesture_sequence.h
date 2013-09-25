@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_GESTURES_GESTURE_SEQUENCE_H_
-#define UI_BASE_GESTURES_GESTURE_SEQUENCE_H_
+#ifndef UI_EVENTS_GESTURES_GESTURE_SEQUENCE_H_
+#define UI_EVENTS_GESTURES_GESTURE_SEQUENCE_H_
 
 #include "base/timer/timer.h"
-#include "ui/base/gestures/gesture_point.h"
-#include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/gestures/gesture_point.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {
@@ -32,7 +32,7 @@ enum ScrollType {
 };
 
 // A GestureSequence recognizes gestures from touch sequences.
-class UI_EXPORT GestureSequence {
+class EVENTS_EXPORT GestureSequence {
  public:
   // Maximum number of points in a single gesture.
   static const int kMaxGesturePoints = 12;
@@ -226,4 +226,4 @@ class UI_EXPORT GestureSequence {
 
 }  // namespace ui
 
-#endif  // UI_BASE_GESTURES_GESTURE_SEQUENCE_H_
+#endif  // UI_EVENTS_GESTURES_GESTURE_SEQUENCE_H_

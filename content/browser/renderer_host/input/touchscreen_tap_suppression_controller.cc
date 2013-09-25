@@ -6,7 +6,7 @@
 
 #include "content/browser/renderer_host/input/gesture_event_filter.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller.h"
-#include "ui/base/gestures/gesture_configuration.h"
+#include "ui/events/gestures/gesture_configuration.h"
 
 namespace content {
 

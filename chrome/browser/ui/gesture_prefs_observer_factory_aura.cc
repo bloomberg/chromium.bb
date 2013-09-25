@@ -21,7 +21,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/overscroll_configuration.h"
 #include "content/public/common/renderer_preferences.h"
-#include "ui/base/gestures/gesture_configuration.h"
+#include "ui/events/gestures/gesture_configuration.h"
 
 #if defined(USE_ASH)
 #include "chrome/browser/ui/immersive_fullscreen_configuration.h"
@@ -106,7 +106,7 @@ class GesturePrefsObserver : public BrowserContextKeyedService {
 
 // The list of prefs we want to observe.
 // Note that this collection of settings should correspond to the settings used
-// in ui/base/gestures/gesture_configuration.h
+// in ui/events/gestures/gesture_configuration.h
 const char* kPrefsToObserve[] = {
   prefs::kFlingAccelerationCurveCoefficient0,
   prefs::kFlingAccelerationCurveCoefficient1,

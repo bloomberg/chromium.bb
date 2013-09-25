@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/gestures/gesture_point.h"
+#include "ui/events/gestures/gesture_point.h"
 
 #include <cmath>
 
 #include "base/basictypes.h"
-#include "ui/base/gestures/gesture_configuration.h"
-#include "ui/base/gestures/gesture_types.h"
-#include "ui/base/gestures/gesture_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gestures/gesture_types.h"
+#include "ui/events/gestures/gesture_util.h"
 
 namespace ui {
 

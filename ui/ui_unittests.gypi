@@ -311,7 +311,7 @@
         ['use_aura==1 or toolkit_views==1',  {
           'sources': [
             'base/dragdrop/os_exchange_data_unittest.cc',
-            'base/gestures/velocity_calculator_unittest.cc',
+            'events/gestures/velocity_calculator_unittest.cc',
           ],
         }, {
           'sources!': [

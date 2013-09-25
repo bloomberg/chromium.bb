@@ -16,7 +16,7 @@ namespace ui {
 
 class TouchEvent;
 
-class UI_EXPORT TouchEventConverterOzone : public EventConverterOzone {
+class EVENTS_EXPORT TouchEventConverterOzone : public EventConverterOzone {
  public:
   enum {
     MAX_FINGERS = 11

@@ -21,7 +21,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
-#include "ui/base/gestures/gesture_sequence.h"
+#include "ui/events/gestures/gesture_sequence.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
 #include "win8/metro_driver/file_picker_ash.h"
 #include "win8/metro_driver/metro_driver.h"

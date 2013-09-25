@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/gestures/gesture_recognizer_impl.h"
+#include "ui/events/gestures/gesture_recognizer_impl.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "ui/base/gestures/gesture_configuration.h"
-#include "ui/base/gestures/gesture_sequence.h"
-#include "ui/base/gestures/gesture_types.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gestures/gesture_sequence.h"
+#include "ui/events/gestures/gesture_types.h"
 
 namespace ui {
 

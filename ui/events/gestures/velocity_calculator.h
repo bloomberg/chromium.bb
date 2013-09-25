@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_GESTURES_VELOCITY_CALCULATOR_H_
-#define UI_BASE_GESTURES_VELOCITY_CALCULATOR_H_
+#ifndef UI_EVENTS_GESTURES_VELOCITY_CALCULATOR_H_
+#define UI_EVENTS_GESTURES_VELOCITY_CALCULATOR_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/ui_export.h"
+#include "ui/events/events_export.h"
 
 namespace ui {
 
-class UI_EXPORT VelocityCalculator {
+class EVENTS_EXPORT VelocityCalculator {
  public:
   explicit VelocityCalculator(int bufferSize);
   ~VelocityCalculator();
@@ -47,4 +47,4 @@ class UI_EXPORT VelocityCalculator {
 
 }  // namespace ui
 
-#endif  // UI_BASE_GESTURES_VELOCITY_CALCULATOR_H_
+#endif  // UI_EVENTS_GESTURES_VELOCITY_CALCULATOR_H_

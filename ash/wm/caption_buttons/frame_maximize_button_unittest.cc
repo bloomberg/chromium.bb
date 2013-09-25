@@ -18,8 +18,8 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
-#include "ui/base/gestures/gesture_configuration.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/gestures/gesture_configuration.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 

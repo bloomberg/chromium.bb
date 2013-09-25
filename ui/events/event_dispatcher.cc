@@ -10,8 +10,7 @@ namespace ui {
 
 namespace {
 
-class UI_EXPORT ScopedDispatchHelper : public NON_EXPORTED_BASE(
-    Event::DispatcherApi) {
+class ScopedDispatchHelper : public Event::DispatcherApi {
  public:
   explicit ScopedDispatchHelper(Event* event)
       : Event::DispatcherApi(event) {

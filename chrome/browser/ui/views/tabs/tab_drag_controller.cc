@@ -56,7 +56,7 @@
 #include "ash/wm/window_state.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/gestures/gesture_recognizer.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 #endif
 
 using content::OpenURLParams;

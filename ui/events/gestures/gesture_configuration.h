@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_GESTURES_GESTURE_CONFIGURATION_H_
-#define UI_BASE_GESTURES_GESTURE_CONFIGURATION_H_
+#ifndef UI_EVENTS_GESTURES_GESTURE_CONFIGURATION_H_
+#define UI_EVENTS_GESTURES_GESTURE_CONFIGURATION_H_
 
 #include "base/basictypes.h"
-#include "ui/base/ui_export.h"
+#include "ui/events/events_export.h"
 
 namespace ui {
 
@@ -14,7 +14,7 @@ namespace ui {
 // approaches (windows, chrome, others).  This would turn into an
 // abstract base class.
 
-class UI_EXPORT GestureConfiguration {
+class EVENTS_EXPORT GestureConfiguration {
  public:
   // Number of parameters in the array of parameters for the fling acceleration
   // curve.
@@ -250,4 +250,4 @@ class UI_EXPORT GestureConfiguration {
 
 }  // namespace ui
 
-#endif  // UI_BASE_GESTURES_GESTURE_CONFIGURATION_H_
+#endif  // UI_EVENTS_GESTURES_GESTURE_CONFIGURATION_H_

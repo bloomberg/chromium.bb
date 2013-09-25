@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_GESTURES_GESTURE_RECOGNIZER_IMPL_H_
-#define UI_BASE_GESTURES_GESTURE_RECOGNIZER_IMPL_H_
+#ifndef UI_EVENTS_GESTURES_GESTURE_RECOGNIZER_IMPL_H_
+#define UI_EVENTS_GESTURES_GESTURE_RECOGNIZER_IMPL_H_
 
 #include <map>
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/gestures/gesture_recognizer.h"
-#include "ui/base/ui_export.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/events_export.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/point.h"
 
 namespace ui {
@@ -22,7 +22,7 @@ class GestureEventHelper;
 class GestureSequence;
 class TouchEvent;
 
-class UI_EXPORT GestureRecognizerImpl : public GestureRecognizer {
+class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer {
  public:
   typedef std::map<int, GestureConsumer*> TouchIdToConsumerMap;
 
@@ -74,4 +74,4 @@ class UI_EXPORT GestureRecognizerImpl : public GestureRecognizer {
 
 }  // namespace ui
 
-#endif  // UI_BASE_GESTURES_GESTURE_RECOGNIZER_IMPL_H_
+#endif  // UI_EVENTS_GESTURES_GESTURE_RECOGNIZER_IMPL_H_

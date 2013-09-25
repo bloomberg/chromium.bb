@@ -18,9 +18,9 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/aura/window.h"
-#include "ui/base/gestures/gesture_configuration.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/gestures/gesture_configuration.h"
 #include "ui/views/controls/glow_hover_controller.h"
 
 namespace {

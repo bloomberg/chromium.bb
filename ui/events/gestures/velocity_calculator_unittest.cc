@@ -4,7 +4,7 @@
 
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/gestures/velocity_calculator.h"
+#include "ui/events/gestures/velocity_calculator.h"
 
 namespace ui {
 namespace test {

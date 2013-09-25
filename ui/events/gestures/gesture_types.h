@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_GESTURES_GESTURE_TYPES_H_
-#define UI_BASE_GESTURES_GESTURE_TYPES_H_
+#ifndef UI_EVENTS_GESTURES_GESTURE_TYPES_H_
+#define UI_EVENTS_GESTURES_GESTURE_TYPES_H_
 
 #include "base/logging.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/events_export.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {
@@ -14,7 +15,7 @@ namespace ui {
 class GestureEvent;
 class TouchEvent;
 
-struct UI_EXPORT GestureEventDetails {
+struct EVENTS_EXPORT GestureEventDetails {
  public:
   GestureEventDetails(EventType type, float delta_x, float delta_y);
   GestureEventDetails(EventType type,
@@ -178,7 +179,7 @@ struct UI_EXPORT GestureEventDetails {
 
 // An abstract type for consumers of gesture-events created by the
 // gesture-recognizer.
-class UI_EXPORT GestureConsumer {
+class EVENTS_EXPORT GestureConsumer {
  public:
   GestureConsumer()
       : ignores_events_(false) {
@@ -200,7 +201,7 @@ class UI_EXPORT GestureConsumer {
 
 // GestureEventHelper creates implementation-specific gesture events and
 // can dispatch them.
-class UI_EXPORT GestureEventHelper {
+class EVENTS_EXPORT GestureEventHelper {
  public:
   virtual ~GestureEventHelper() {
   }
@@ -211,4 +212,4 @@ class UI_EXPORT GestureEventHelper {
 
 }  // namespace ui
 
-#endif  // UI_BASE_GESTURES_GESTURE_TYPES_H_
+#endif  // UI_EVENTS_GESTURES_GESTURE_TYPES_H_

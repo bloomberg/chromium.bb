@@ -7,7 +7,7 @@
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
-#include "ui/base/gestures/gesture_configuration.h"
+#include "ui/events/gestures/gesture_configuration.h"
 
 namespace content {
 

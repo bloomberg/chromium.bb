@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/gestures/gesture_sequence.h"
+#include "ui/events/gestures/gesture_sequence.h"
 
-#include <cmath>
 #include <stdlib.h>
+#include <cmath>
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "ui/base/gestures/gesture_configuration.h"
-#include "ui/base/gestures/gesture_util.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gestures/gesture_util.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_GESTURES_GESTURE_POINT_H_
-#define UI_BASE_GESTURES_GESTURE_POINT_H_
+#ifndef UI_EVENTS_GESTURES_GESTURE_POINT_H_
+#define UI_EVENTS_GESTURES_GESTURE_POINT_H_
 
 #include "base/basictypes.h"
-#include "ui/base/gestures/velocity_calculator.h"
+#include "ui/events/gestures/velocity_calculator.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
@@ -136,4 +136,4 @@ class GesturePoint {
 
 }  // namespace ui
 
-#endif  // UI_BASE_GESTURES_GESTURE_POINT_H_
+#endif  // UI_EVENTS_GESTURES_GESTURE_POINT_H_

@@ -21,7 +21,7 @@ class EventFactoryDelegateOzone;
 // Ozone presumes that the set of file desctiprtors can vary at runtime so this
 // class supports dynamically adding and removing |EventConverterOzone|
 // instances as necessary.
-class UI_EXPORT EventFactoryOzone {
+class EVENTS_EXPORT EventFactoryOzone {
  public:
   EventFactoryOzone();
   ~EventFactoryOzone();
