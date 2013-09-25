@@ -65,6 +65,7 @@ void ActivityLog::LogHardwareState(const HardwareState& hwstate) {
     Err("Too many fingers! Max is %zu, but I got %d",
         max_fingers_, hwstate.finger_cnt);
     entry->details.hwstate.fingers = NULL;
+    entry->details.hwstate.finger_cnt = 0;
     return;
   }
   if (!finger_states_.get())
