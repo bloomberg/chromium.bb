@@ -681,6 +681,42 @@
       ],
     },
     {
+      'target_name': 'xrandr',
+      'type': 'none',
+      'toolsets': ['host', 'target'],
+      'conditions': [
+        ['_toolset=="target"', {
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(<(pkg-config) --cflags xrandr)',
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other xrandr)',
+            ],
+            'libraries': [
+              '<!@(<(pkg-config) --libs-only-l xrandr)',
+            ],
+          },
+        }, {
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(pkg-config --cflags xrandr)',
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(pkg-config --libs-only-L --libs-only-other xrandr)',
+            ],
+            'libraries': [
+              '<!@(pkg-config --libs-only-l xrandr)',
+            ],
+          },
+        }],
+      ],
+    },
+    {
       'target_name': 'libgcrypt',
       'type': 'none',
       'conditions': [
