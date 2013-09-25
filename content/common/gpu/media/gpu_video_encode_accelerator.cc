@@ -12,6 +12,7 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "ipc/ipc_message_macros.h"
+#include "media/base/limits.h"
 #include "media/base/video_frame.h"
 
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
@@ -111,9 +112,12 @@ void GpuVideoEncodeAccelerator::OnInitialize(
            << ", initial_bitrate=" << initial_bitrate;
   DCHECK(!encoder_);
 
-  if (input_visible_size.width() > kint32max / input_visible_size.height()) {
+  if (input_visible_size.width() > media::limits::kMaxDimension ||
+      input_visible_size.height() > media::limits::kMaxDimension ||
+      input_visible_size.GetArea() > media::limits::kMaxCanvas) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnInitialize(): "
-                   "input_visible_size too large";
+                   "input_visible_size " << input_visible_size.ToString()
+                << " too large";
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }

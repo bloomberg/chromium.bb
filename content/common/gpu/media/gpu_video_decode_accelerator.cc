@@ -18,6 +18,7 @@
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
+#include "media/base/limits.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
 
@@ -151,9 +152,17 @@ void GpuVideoDecodeAccelerator::ProvidePictureBuffers(
     uint32 requested_num_of_buffers,
     const gfx::Size& dimensions,
     uint32 texture_target) {
+  if (dimensions.width() > media::limits::kMaxDimension ||
+      dimensions.height() > media::limits::kMaxDimension ||
+      dimensions.GetArea() > media::limits::kMaxCanvas) {
+    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+    return;
+  }
   if (!Send(new AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers(
-          host_route_id_, requested_num_of_buffers, dimensions,
-          texture_target))) {
+           host_route_id_,
+           requested_num_of_buffers,
+           dimensions,
+           texture_target))) {
     DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers) "
                 << "failed";
   }

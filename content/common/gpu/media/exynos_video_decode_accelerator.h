@@ -17,6 +17,7 @@
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/video_decode_accelerator_impl.h"
+#include "media/base/limits.h"
 #include "media/base/video_decoder_config.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_bindings.h"
@@ -96,8 +97,10 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
     kMfcInputBufferMaxSize = 1024 * 1024,
     kGscInputBufferCount = 4,
     // Number of output buffers to use for each VDA stage above what's required
-    // by the decoder (e.g. DPB size, in H264).
-    kDpbOutputBufferExtraCount = 3,
+    // by the decoder (e.g. DPB size, in H264).  We need
+    // media::limits::kMaxVideoFrames to fill up the GpuVideoDecode pipeline,
+    // and +1 for a frame in transit.
+    kDpbOutputBufferExtraCount = media::limits::kMaxVideoFrames + 1,
   };
 
   // Internal state of the decoder.

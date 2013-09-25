@@ -1618,8 +1618,8 @@ void ExynosVideoDecodeAccelerator::FlushTask() {
   if (decoder_state_ == kInitialized || decoder_state_ == kAfterReset) {
     // There's nothing in the pipe, so return done immediately.
     DVLOG(3) << "FlushTask(): returning flush";
-    child_message_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-      &Client::NotifyFlushDone, client_));
+    child_message_loop_proxy_->PostTask(
+        FROM_HERE, base::Bind(&Client::NotifyFlushDone, client_));
     return;
   } else if (decoder_state_ == kError) {
     DVLOG(2) << "FlushTask(): early out: kError state";
@@ -1679,8 +1679,8 @@ void ExynosVideoDecodeAccelerator::NotifyFlushDoneIfNeeded() {
   decoder_delay_bitstream_buffer_id_ = -1;
   decoder_flushing_ = false;
   DVLOG(3) << "NotifyFlushDoneIfNeeded(): returning flush";
-  child_message_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-    &Client::NotifyFlushDone, client_));
+  child_message_loop_proxy_->PostTask(
+      FROM_HERE, base::Bind(&Client::NotifyFlushDone, client_));
 
   // While we were flushing, we early-outed DecodeBufferTask()s.
   ScheduleDecodeBufferTaskIfNeeded();
