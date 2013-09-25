@@ -148,8 +148,16 @@ class RenderViewSizeObserver : public WebContentsObserver {
   gfx::Size rwhv_create_size_;
 };
 
+// See: http://crbug.com/298193
+#if defined(OS_WIN)
+#define MAYBE_DidStopLoadingDetails DISABLED_DidStopLoadingDetails
+#else
+#define MAYBE_DidStopLoadingDetails DidStopLoadingDetails
+#endif
+
 // Test that DidStopLoading includes the correct URL in the details.
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DidStopLoadingDetails) {
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       MAYBE_DidStopLoadingDetails) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   LoadStopNotificationObserver load_observer(
@@ -163,10 +171,18 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DidStopLoadingDetails) {
             load_observer.controller_);
 }
 
+// See: http://crbug.com/298193
+#if defined(OS_WIN)
+#define MAYBE_DidStopLoadingDetailsWithPending \
+  DISABLED_DidStopLoadingDetailsWithPending
+#else
+#define MAYBE_DidStopLoadingDetailsWithPending DidStopLoadingDetailsWithPending
+#endif
+
 // Test that DidStopLoading includes the correct URL in the details when a
 // pending entry is present.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       DidStopLoadingDetailsWithPending) {
+                       MAYBE_DidStopLoadingDetailsWithPending) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Listen for the first load to stop.
