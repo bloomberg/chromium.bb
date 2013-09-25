@@ -1,0 +1,3 @@
+PASS - "webkitTransform" property for "animatingBox" element at 0.5s saw something close to: 0.707,0.707,-0.707,0.707,0,0
+PASS - "webkitFilter" property for "animatingBox" element at 0.5s saw something close to: opacity(0.5)
+
