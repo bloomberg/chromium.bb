@@ -64,7 +64,7 @@
 #include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "components/policy/core/common/policy_schema.h"
+#include "components/policy/core/common/schema.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #endif
@@ -579,11 +579,11 @@ void PolicyUIHandler::SendPolicyNames() const {
     if (schema != schema_map.end()) {
       // Get policy names from the extension's policy schema.
       // Store in a map, not an array, for faster lookup on JS side.
-      const policy::PolicySchemaMap* policies = schema->second->GetProperties();
-      policy::PolicySchemaMap::const_iterator it_policies;
-      for (it_policies = policies->begin(); it_policies != policies->end();
-           ++it_policies) {
-        policy_names->SetBoolean(it_policies->first, true);
+      policy::Schema policy_schema = schema->second;
+      for (policy::Schema::Iterator it_policies =
+               policy_schema.GetPropertiesIterator();
+           !it_policies.IsAtEnd(); it_policies.Advance()) {
+        policy_names->SetBoolean(it_policies.key(), true);
       }
     }
     extension_value->Set("policyNames", policy_names);

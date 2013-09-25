@@ -15,7 +15,7 @@
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/mock_policy_service.h"
 #include "chrome/browser/policy/policy_domain_descriptor.h"
-#include "components/policy/core/common/policy_schema.h"
+#include "components/policy/core/common/schema.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -627,9 +627,8 @@ TEST_F(PolicyServiceTest, RegisterPolicyDomain) {
 
   // Register another namespace.
   std::string error;
-  scoped_ptr<PolicySchema> schema = PolicySchema::Parse(
+  scoped_ptr<SchemaOwner> schema = SchemaOwner::Parse(
       "{"
-      "  \"$schema\":\"http://json-schema.org/draft-03/schema#\","
       "  \"type\":\"object\","
       "  \"properties\": {"
       "    \"Boolean\": { \"type\": \"boolean\" },"

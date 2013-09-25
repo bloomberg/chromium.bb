@@ -24,7 +24,7 @@
 #include "chrome/browser/policy/policy_types.h"
 #include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
-#include "components/policy/core/common/policy_schema.h"
+#include "components/policy/core/common/schema.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -61,7 +61,6 @@ const char kTestPolicy[] =
 
 const char kTestSchema[] =
     "{"
-    "  \"$schema\": \"http://json-schema.org/draft-03/schema#\","
     "  \"type\": \"object\","
     "  \"properties\": {"
     "    \"Name\": { \"type\": \"string\" },"
@@ -194,9 +193,9 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
     return builder_.GetBlob();
   }
 
-  scoped_ptr<PolicySchema> CreateTestSchema() {
+  scoped_ptr<SchemaOwner> CreateTestSchema() {
     std::string error;
-    scoped_ptr<PolicySchema> schema = PolicySchema::Parse(kTestSchema, &error);
+    scoped_ptr<SchemaOwner> schema = SchemaOwner::Parse(kTestSchema, &error);
     EXPECT_TRUE(schema) << error;
     return schema.Pass();
   }

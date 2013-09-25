@@ -25,7 +25,7 @@ namespace policy {
 
 class PolicyDomainDescriptor;
 class PolicyMap;
-class PolicySchema;
+class Schema;
 struct PolicyDefinitionList;
 
 // A policy loader that loads policies from the Mac preferences system, and
@@ -63,7 +63,7 @@ class PolicyLoaderMac : public AsyncPolicyLoader {
   // Loads the policies described in |schema| from the bundle identified by
   // |bundle_id_string|, and stores them in |policy|.
   void LoadPolicyForComponent(const std::string& bundle_id_string,
-                              const PolicySchema* schema,
+                              Schema schema,
                               PolicyMap* policy);
 
   // List of recognized policies.

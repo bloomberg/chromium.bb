@@ -13,7 +13,6 @@
 #include "chrome/browser/policy/external_data_manager.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "components/policy/core/common/policy_schema.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -37,9 +36,8 @@ TEST_F(PolicyDomainDescriptorTest, FilterBundle) {
   EXPECT_TRUE(descriptor->components().empty());
 
   std::string error;
-  scoped_ptr<PolicySchema> schema = PolicySchema::Parse(
+  scoped_ptr<SchemaOwner> schema = SchemaOwner::Parse(
       "{"
-      "  \"$schema\":\"http://json-schema.org/draft-03/schema#\","
       "  \"type\":\"object\","
       "  \"properties\": {"
       "    \"Array\": {"
@@ -145,6 +143,76 @@ TEST_F(PolicyDomainDescriptorTest, FilterBundle) {
 
   descriptor->FilterBundle(&bundle);
   EXPECT_TRUE(bundle.Equals(empty_bundle));
+}
+
+TEST_F(PolicyDomainDescriptorTest, LegacyComponents) {
+  scoped_refptr<PolicyDomainDescriptor> descriptor =
+      new PolicyDomainDescriptor(POLICY_DOMAIN_EXTENSIONS);
+  EXPECT_EQ(POLICY_DOMAIN_EXTENSIONS, descriptor->domain());
+  EXPECT_TRUE(descriptor->components().empty());
+
+  std::string error;
+  scoped_ptr<SchemaOwner> schema = SchemaOwner::Parse(
+      "{"
+      "  \"type\":\"object\","
+      "  \"properties\": {"
+      "    \"String\": { \"type\": \"string\" }"
+      "  }"
+      "}", &error);
+  ASSERT_TRUE(schema) << error;
+
+  descriptor->RegisterComponent("with-schema", schema.Pass());
+  descriptor->RegisterComponent("without-schema", scoped_ptr<SchemaOwner>());
+
+  EXPECT_EQ(2u, descriptor->components().size());
+
+  // |bundle| contains policies loaded by a policy provider.
+  PolicyBundle bundle;
+
+  // Known components with schemas are filtered.
+  PolicyNamespace extension_ns(POLICY_DOMAIN_EXTENSIONS, "with-schema");
+  bundle.Get(extension_ns).Set("String",
+                               POLICY_LEVEL_MANDATORY,
+                               POLICY_SCOPE_USER,
+                               base::Value::CreateStringValue("value 1"),
+                               NULL);
+
+  // Known components without a schema are not filtered.
+  PolicyNamespace without_schema_ns(POLICY_DOMAIN_EXTENSIONS, "without-schema");
+  bundle.Get(without_schema_ns).Set("Schemaless",
+                                    POLICY_LEVEL_MANDATORY,
+                                    POLICY_SCOPE_USER,
+                                    base::Value::CreateStringValue("value 2"),
+                                    NULL);
+
+  // Other namespaces aren't filtered.
+  PolicyNamespace chrome_ns(POLICY_DOMAIN_CHROME, "");
+  bundle.Get(chrome_ns).Set("ChromePolicy",
+                            POLICY_LEVEL_MANDATORY,
+                            POLICY_SCOPE_USER,
+                            base::Value::CreateStringValue("value 3"),
+                            NULL);
+
+  PolicyBundle expected_bundle;
+  expected_bundle.MergeFrom(bundle);
+
+  // Unknown policies of known components with a schema are removed.
+  bundle.Get(extension_ns).Set("Surprise",
+                               POLICY_LEVEL_MANDATORY,
+                               POLICY_SCOPE_USER,
+                               base::Value::CreateStringValue("value 4"),
+                               NULL);
+
+  // Unknown components are removed.
+  PolicyNamespace unknown_ns(POLICY_DOMAIN_EXTENSIONS, "unknown");
+  bundle.Get(unknown_ns).Set("Surprise",
+                             POLICY_LEVEL_MANDATORY,
+                             POLICY_SCOPE_USER,
+                             base::Value::CreateStringValue("value 5"),
+                             NULL);
+
+  descriptor->FilterBundle(&bundle);
+  EXPECT_TRUE(bundle.Equals(expected_bundle));
 }
 
 }  // namespace policy

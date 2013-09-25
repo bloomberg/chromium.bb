@@ -27,7 +27,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
-#include "components/policy/core/common/policy_schema.h"
+#include "components/policy/core/common/schema.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -137,10 +137,10 @@ void ManagedValueStoreCache::ExtensionTracker::LoadSchemas(
     std::string schema_file;
     if (!(*it)->manifest()->GetString(
             manifest_keys::kStorageManagedSchema, &schema_file)) {
-      // TODO(joaodasilva): Remove this for M30. http://crbug.com/240704
+      // TODO(joaodasilva): Remove this for M32. http://crbug.com/240704
       if ((*it)->HasAPIPermission(APIPermission::kStorage)) {
         descriptor->RegisterComponent((*it)->id(),
-                                      scoped_ptr<policy::PolicySchema>());
+                                      scoped_ptr<policy::SchemaOwner>());
       } else {
         NOTREACHED();
       }
@@ -149,7 +149,7 @@ void ManagedValueStoreCache::ExtensionTracker::LoadSchemas(
     // The extension should have been validated, so assume the schema exists
     // and is valid.
     std::string error;
-    scoped_ptr<policy::PolicySchema> schema =
+    scoped_ptr<policy::SchemaOwner> schema =
         StorageSchemaManifestHandler::GetSchema(it->get(), &error);
     CHECK(schema) << error;
     descriptor->RegisterComponent((*it)->id(), schema.Pass());

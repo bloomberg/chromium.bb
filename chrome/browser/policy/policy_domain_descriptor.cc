@@ -9,19 +9,18 @@
 #include "base/values.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "components/policy/core/common/policy_schema.h"
 
 namespace policy {
 
 namespace {
 
-bool Matches(const PolicySchema* schema, const base::Value& value) {
-  if (!schema) {
+bool Matches(Schema schema, const base::Value& value) {
+  if (!schema.valid()) {
     // Schema not found, invalid entry.
     return false;
   }
 
-  if (!value.IsType(schema->type()))
+  if (!value.IsType(schema.type()))
     return false;
 
   const base::DictionaryValue* dict = NULL;
@@ -29,13 +28,13 @@ bool Matches(const PolicySchema* schema, const base::Value& value) {
   if (value.GetAsDictionary(&dict)) {
     for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
          it.Advance()) {
-      if (!Matches(schema->GetSchemaForProperty(it.key()), it.value()))
+      if (!Matches(schema.GetProperty(it.key()), it.value()))
         return false;
     }
   } else if (value.GetAsList(&list)) {
     for (base::ListValue::const_iterator it = list->begin();
          it != list->end(); ++it) {
-      if (!*it || !Matches(schema->GetSchemaForItems(), **it))
+      if (!*it || !Matches(schema.GetItems(), **it))
         return false;
     }
   }
@@ -50,10 +49,11 @@ PolicyDomainDescriptor::PolicyDomainDescriptor(PolicyDomain domain)
 
 void PolicyDomainDescriptor::RegisterComponent(
     const std::string& component_id,
-    scoped_ptr<PolicySchema> schema) {
-  const PolicySchema*& entry = schema_map_[component_id];
+    scoped_ptr<SchemaOwner> schema) {
+  SchemaOwner*& entry = schema_owner_map_[component_id];
   delete entry;
   entry = schema.release();
+  schema_map_[component_id] = entry ? entry->schema() : Schema();
 }
 
 void PolicyDomainDescriptor::FilterBundle(PolicyBundle* bundle) const {
@@ -76,18 +76,17 @@ void PolicyDomainDescriptor::FilterBundle(PolicyBundle* bundle) const {
     // TODO(joaodasilva): if a component is registered but doesn't have a schema
     // then its policies aren't filtered. This behavior is enabled for M29 to
     // allow a graceful update of the Legacy Browser Support extension; it'll
-    // be removed for M30. http://crbug.com/240704
-    if (!it_schema->second)
+    // be removed for M32. http://crbug.com/240704
+    Schema schema = it_schema->second;
+    if (!schema.valid())
       continue;
 
-    const PolicySchema* component_schema = it_schema->second;
     PolicyMap* map = it_bundle->second;
     for (PolicyMap::const_iterator it_map = map->begin();
          it_map != map->end();) {
       const std::string& policy_name = it_map->first;
       const base::Value* policy_value = it_map->second.value;
-      const PolicySchema* policy_schema =
-          component_schema->GetSchemaForProperty(policy_name);
+      Schema policy_schema = schema.GetProperty(policy_name);
       ++it_map;
       if (!policy_value || !Matches(policy_schema, *policy_value))
         map->Erase(policy_name);
@@ -96,7 +95,7 @@ void PolicyDomainDescriptor::FilterBundle(PolicyBundle* bundle) const {
 }
 
 PolicyDomainDescriptor::~PolicyDomainDescriptor() {
-  STLDeleteValues(&schema_map_);
+  STLDeleteValues(&schema_owner_map_);
 }
 
 }  // namespace policy

@@ -30,7 +30,14 @@ struct POLICY_EXPORT PropertiesNode;
 // Use the SchemaOwner class to parse a schema and get Schema objects.
 class POLICY_EXPORT Schema {
  public:
+  // Builds an empty, invalid schema.
+  Schema();
+
+  // Builds a schema pointing to the inner structure of |schema|. If |schema|
+  // is NULL then this Schema instance will be invalid.
+  // Does not take ownership of |schema|.
   explicit Schema(const internal::SchemaNode* schema);
+
   Schema(const Schema& schema);
 
   Schema& operator=(const Schema& schema);

@@ -12,18 +12,18 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/policy_service.h"
+#include "components/policy/core/common/schema.h"
 
 namespace policy {
 
 class PolicyBundle;
-class PolicySchema;
 
 // For each policy domain, this class keeps the complete list of valid
-// components for that domain, and the PolicySchema for each component.
+// components for that domain, and the Schema for each component.
 class PolicyDomainDescriptor
     : public base::RefCountedThreadSafe<PolicyDomainDescriptor> {
  public:
-  typedef std::map<std::string, const PolicySchema*> SchemaMap;
+  typedef std::map<std::string, Schema> SchemaMap;
 
   explicit PolicyDomainDescriptor(PolicyDomain domain);
 
@@ -34,17 +34,21 @@ class PolicyDomainDescriptor
   // |schema|. This registration overrides any previously set schema for this
   // component.
   void RegisterComponent(const std::string& component_id,
-                         scoped_ptr<PolicySchema> schema);
+                         scoped_ptr<SchemaOwner> schema);
 
   // Removes all the policies in |bundle| that don't match this descriptor.
   // Policies of domains other than |domain_| are ignored.
   void FilterBundle(PolicyBundle* bundle) const;
 
  private:
+  typedef std::map<std::string, SchemaOwner*> SchemaOwnerMap;
+
   friend class base::RefCountedThreadSafe<PolicyDomainDescriptor>;
+
   ~PolicyDomainDescriptor();
 
   PolicyDomain domain_;
+  SchemaOwnerMap schema_owner_map_;
   SchemaMap schema_map_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyDomainDescriptor);

@@ -74,6 +74,8 @@ Schema Schema::Iterator::schema() const {
   return Schema(it_->schema);
 }
 
+Schema::Schema() : schema_(NULL) {}
+
 Schema::Schema(const internal::SchemaNode* schema) : schema_(schema) {}
 
 Schema::Schema(const Schema& schema) : schema_(schema.schema_) {}
@@ -112,7 +114,7 @@ Schema Schema::GetKnownProperty(const std::string& key) const {
       properties_node->begin, properties_node->end, key, CompareKeys);
   if (it != properties_node->end && it->key == key)
     return Schema(it->schema);
-  return Schema(NULL);
+  return Schema();
 }
 
 Schema Schema::GetAdditionalProperties() const {
