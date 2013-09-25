@@ -17,13 +17,12 @@ namespace content {
 
 namespace {
 
-static const char FAKE_ORIGIN[] = "http://fake.com";
-static const char FAKE_IDENTITY_NAME[] = "fake identity";
-static const char FAKE_COMMON_NAME[] = "fake common name";
-static const char FAKE_CERTIFICATE[] = "fake cert";
-static const char FAKE_PRIVATE_KEY[] = "fake private key";
-static const int FAKE_ERROR = 100;
-static const int FAKE_RENDERER_ID = 10;
+const char FAKE_ORIGIN[] = "http://fake.com";
+const char FAKE_IDENTITY_NAME[] = "fake identity";
+const char FAKE_COMMON_NAME[] = "fake common name";
+const char FAKE_CERTIFICATE[] = "fake cert";
+const char FAKE_PRIVATE_KEY[] = "fake private key";
+const int FAKE_RENDERER_ID = 10;
 
 class MockWebRTCIdentityStore : public WebRTCIdentityStore {
  public:

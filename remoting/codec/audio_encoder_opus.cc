@@ -18,12 +18,6 @@ namespace {
 // Output 160 kb/s bitrate.
 const int kOutputBitrateBps = 160 * 1024;
 
-// Encoded buffer size.
-const int kFrameDefaultBufferSize = 4096;
-
-// Maximum buffer size we'll allocate when encoding before giving up.
-const int kMaxBufferSize = 65536;
-
 // Opus doesn't support 44100 sampling rate so we always resample to 48kHz.
 const AudioPacket::SamplingRate kOpusSamplingRate =
     AudioPacket::SAMPLING_RATE_48000;

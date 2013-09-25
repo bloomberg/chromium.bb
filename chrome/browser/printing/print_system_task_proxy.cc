@@ -24,16 +24,10 @@
 
 using content::BrowserThread;
 
-namespace {
-
 const char kPrinterId[] = "printerId";
 const char kDisableColorOption[] = "disableColorOption";
 const char kSetDuplexAsDefault[] = "setDuplexAsDefault";
-const char kPrinterColorModelForBlack[] = "printerColorModelForBlack";
-const char kPrinterColorModelForColor[] = "printerColorModelForColor";
 const char kPrinterDefaultDuplexValue[] = "printerDefaultDuplexValue";
-
-}  // namespace
 
 PrintSystemTaskProxy::PrintSystemTaskProxy(
     const base::WeakPtr<PrintPreviewHandler>& handler,

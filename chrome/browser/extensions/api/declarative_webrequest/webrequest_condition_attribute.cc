@@ -38,7 +38,6 @@ namespace extensions {
 
 namespace {
 // Error messages.
-const char kUnknownConditionAttribute[] = "Unknown matching condition: '*'";
 const char kInvalidValue[] = "Condition '*' has an invalid value";
 
 struct WebRequestConditionAttributeFactory {

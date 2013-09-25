@@ -22,8 +22,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
-const CGFloat kBorderRadius = 3.0;
-
 @interface BookmarkBarToolbarView (Private)
 - (void)drawAsDetachedBubble;
 @end

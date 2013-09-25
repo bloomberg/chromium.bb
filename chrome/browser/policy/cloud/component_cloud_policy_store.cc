@@ -27,7 +27,6 @@ namespace {
 
 const char kValue[] = "Value";
 const char kLevel[] = "Level";
-const char kMandatory[] = "Mandatory";
 const char kRecommended[] = "Recommended";
 
 const struct DomainConstants {

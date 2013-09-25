@@ -23,7 +23,6 @@ const char kImageBurnerError[] = "Error contacting Image Burner process.";
 const char kImageMD5[] = "Failed to calculate MD5 sum for unzipped image.";
 const char kImageNotFound[] = "Unpacked image not found.";
 const char kImageSize[] = "Could not determine image size.";
-const char kInvalidFileEntry[] = "Invalid file entry.";
 const char kInvalidUrl[] = "Invalid URL provided.";
 const char kMultiFileZip[] = "More than one file in zip."
                              " Unsure how to proceed.";

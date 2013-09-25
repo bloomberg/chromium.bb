@@ -28,7 +28,6 @@ const char kKeyResults[] = "results";
 const char kKeyId[] = "id";
 const char kKeyLocalizedName[] = "localized_name";
 const char kKeyIconUrl[] = "icon_url";
-const size_t kMinimumQueryLength = 3u;
 
 // Returns true if the launcher should send queries to the web store server.
 bool UseWebstoreSearch() {

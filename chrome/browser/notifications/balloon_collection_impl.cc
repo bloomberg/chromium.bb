@@ -21,8 +21,6 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 
-namespace {
-
 // Portion of the screen allotted for notifications. When notification balloons
 // extend over this, no new notifications are shown until some are closed.
 const double kPercentBalloonFillFactor = 0.7;
@@ -30,14 +28,15 @@ const double kPercentBalloonFillFactor = 0.7;
 // Allow at least this number of balloons on the screen.
 const int kMinAllowedBalloonCount = 2;
 
-// Delay from the mouse leaving the balloon collection before
-// there is a relayout, in milliseconds.
-const int kRepositionDelayMs = 300;
-
 // The spacing between the balloon and the panel.
 const int kVerticalSpacingBetweenBalloonAndPanel = 5;
 
-}  // namespace
+#if USE_OFFSETS
+// Delay from the mouse leaving the balloon collection before
+// there is a relayout, in milliseconds.
+const int kRepositionDelayMs = 300;
+#endif  // USE_OFFSETS
+
 
 BalloonCollectionImpl::BalloonCollectionImpl()
 #if USE_OFFSETS

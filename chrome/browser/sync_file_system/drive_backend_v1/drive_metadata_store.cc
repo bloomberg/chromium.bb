@@ -71,7 +71,6 @@ const char kDriveMetadataKeyPrefix[] = "METADATA: ";
 const char kMetadataKeySeparator = ' ';
 const char kDriveIncrementalSyncOriginKeyPrefix[] = "ISYNC_ORIGIN: ";
 const char kDriveDisabledOriginKeyPrefix[] = "DISABLED_ORIGIN: ";
-const size_t kDriveMetadataKeyPrefixLength = arraysize(kDriveMetadataKeyPrefix);
 
 enum OriginSyncType {
   INCREMENTAL_SYNC_ORIGIN,

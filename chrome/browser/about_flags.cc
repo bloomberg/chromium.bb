@@ -280,6 +280,7 @@ const Experiment::Choice kSimpleCacheBackendChoices[] = {
     switches::kUseSimpleCacheBackend, "on"}
 };
 
+#if defined(USE_AURA)
 const Experiment::Choice kTabCaptureUpscaleQualityChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_FAST,
@@ -299,6 +300,7 @@ const Experiment::Choice kTabCaptureDownscaleQualityChoices[] = {
   { IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_BEST,
     switches::kTabCaptureDownscaleQuality, "best" },
 };
+#endif
 
 const Experiment::Choice kMapImageChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },

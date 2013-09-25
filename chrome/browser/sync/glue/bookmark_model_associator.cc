@@ -51,12 +51,9 @@ namespace browser_sync {
 //
 // TODO(ncarter): Pull these tags from an external protocol specification
 // rather than hardcoding them here.
-static const char kBookmarkBarTag[] = "bookmark_bar";
-static const char kMobileBookmarksTag[] = "synced_bookmarks";
-static const char kOtherBookmarksTag[] = "other_bookmarks";
-static const char kServerError[] =
-    "Server did not create top-level nodes.  Possibly we are running against "
-    "an out-of-date server?";
+const char kBookmarkBarTag[] = "bookmark_bar";
+const char kMobileBookmarksTag[] = "synced_bookmarks";
+const char kOtherBookmarksTag[] = "other_bookmarks";
 
 // Bookmark comparer for map of bookmark nodes.
 class BookmarkComparer {

@@ -363,19 +363,17 @@ static base::LazyInstance<RoutingIDViewMap> g_routing_id_view_map =
 // foreground renderer. This means there is a small window of time from which
 // content state is modified and not sent to session restore, but this is
 // better than having to wake up all renderers during shutdown.
-static const int kDelaySecondsForContentStateSyncHidden = 5;
-static const int kDelaySecondsForContentStateSync = 1;
+const int kDelaySecondsForContentStateSyncHidden = 5;
+const int kDelaySecondsForContentStateSync = 1;
 
-static const size_t kExtraCharsBeforeAndAfterSelection = 100;
+const size_t kExtraCharsBeforeAndAfterSelection = 100;
 
-static const float kScalingIncrement = 0.1f;
-
-static const float kScalingIncrementForGesture = 0.01f;
+const float kScalingIncrementForGesture = 0.01f;
 
 #if defined(OS_ANDROID)
 // Delay between tapping in content and launching the associated android intent.
 // Used to allow users see what has been recognized as content.
-static const size_t kContentIntentDelayMilliseconds = 700;
+const size_t kContentIntentDelayMilliseconds = 700;
 #endif
 
 static RenderViewImpl* (*g_create_render_view_impl)(RenderViewImplParams*) =

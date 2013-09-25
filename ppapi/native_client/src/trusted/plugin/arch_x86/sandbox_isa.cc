@@ -5,13 +5,14 @@
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 #include "ppapi/native_client/src/trusted/plugin/nexe_arch.h"
 
-namespace {
 // The list of supported ISA strings for x86.  See issue:
 //   http://code.google.com/p/nativeclient/issues/detail?id=1040 for more
 // information.  Note that these string are to be case-insensitive compared.
-const char* const kNexeArchX86_32 = "x86-32";
-const char* const kNexeArchX86_64 = "x86-64";
-}  // namespace
+const char kNexeArchX86_64[] = "x86-64";
+#if !((NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64) && \
+    (defined(NACL_LINUX) || defined(NACL_OSX)))
+const char kNexeArchX86_32[] = "x86-32";
+#endif
 
 namespace plugin {
 const char* GetSandboxISA() {

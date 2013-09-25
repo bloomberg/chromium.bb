@@ -32,13 +32,6 @@
 
 namespace {
 
-// This preference is used to track whether the KeychainReauthorize operation
-// has occurred at launch. This operation only makes sense while the
-// application continues to be signed by the old certificate.
-NSString* const kKeychainReauthorizeAtLaunchPref =
-    @"KeychainReauthorizeInAppMay2012";
-const int kKeychainReauthorizeAtLaunchMaxTries = 2;
-
 // Some users rarely restart Chrome, so they might never get a chance to run
 // the at-launch KeychainReauthorize. To account for them, there's also an
 // at-update KeychainReauthorize option, which runs from .keystone_install for

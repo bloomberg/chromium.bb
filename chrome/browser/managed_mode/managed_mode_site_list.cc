@@ -18,7 +18,6 @@ const int kSitelistFormatVersion = 1;
 
 const char kCategoriesKey[] = "categories";
 const char kHostnameHashesKey[] = "hostname_hashes";
-const char kIdKey[] = "id";
 const char kNameKey[] = "name";
 const char kSitesKey[] = "sites";
 const char kSitelistFormatVersionKey[] = "version";

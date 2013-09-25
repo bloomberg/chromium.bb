@@ -22,7 +22,9 @@ namespace {
 // http://www.opensource.apple.com/source/IOKitUser/IOKitUser-514.16.31/pwr_mgt.subproj/IOPMLibPrivate.c .
 struct PowerSaveBlockerLazyInstanceTraits {
   static const bool kRegisterOnExit = false;
+#ifndef NDEBUG
   static const bool kAllowedToAccessOnNonjoinableThread = true;
+#endif
 
   static base::Thread* New(void* instance) {
     base::Thread* thread = new (instance) base::Thread("PowerSaveBlocker");

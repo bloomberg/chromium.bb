@@ -127,8 +127,11 @@ const int64 kRetryDelayLimit = 14400000;  // 4 hours
 const char kArbitraryMimeType[] = "application/octet-stream";
 const char kLogsAttachmentName[] = "system_logs.zip";
 
+#if defined(OS_CHROMEOS)
 const int kChromeOSProductId = 208;
+#else
 const int kChromeBrowserProductId = 237;
+#endif
 
 // Simple net::URLFetcherDelegate to clean up URLFetcher on completion.
 class PostCleanup : public net::URLFetcherDelegate {

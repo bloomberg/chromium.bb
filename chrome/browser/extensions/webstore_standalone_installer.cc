@@ -27,7 +27,6 @@ const char kUsersKey[] = "users";
 const char kShowUserCountKey[] = "show_user_count";
 const char kAverageRatingKey[] = "average_rating";
 const char kRatingCountKey[] = "rating_count";
-const char kRedirectUrlKey[] = "redirect_url";
 
 const char kInvalidWebstoreItemId[] = "Invalid Chrome Web Store item ID";
 const char kWebstoreRequestError[] =

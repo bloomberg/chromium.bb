@@ -10,8 +10,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
-namespace {
-
 const CGFloat kCornerRadius = 2;
 
 const CGFloat kButtonFontSizeDelta = -1;
@@ -27,12 +25,9 @@ const SkColor kPressedColor = SkColorSetRGB(0x42, 0x79, 0xd8);
 const SkColor kInnerRingColor = SkColorSetRGB(0x64, 0x9e, 0xff);
 const SkColor kFocusInnerRingColor = SkColorSetRGB(0xad, 0xcc, 0xff);
 const SkColor kPressInnerRingColor = SkColorSetRGB(0x3f, 0x73, 0xcd);
-const SkColor kPressFocusInnerRingColor = SkColorSetRGB(0xa0, 0xb9, 0xe7);
 
 const SkColor kOuterRingColor = SkColorSetRGB(0x2b, 0x67, 0xce);
 const SkColor kPressOuterRingColor = SkColorSetRGB(0x23, 0x52, 0xa2);
-
-}  // namespace
 
 @interface BlueLabelButtonCell : NSButtonCell
 

@@ -22,10 +22,11 @@ using ::base::SharedMemory;
 
 namespace gpu {
 
-namespace {
-const int64 kRescheduleTimeOutDelay = 1000;
 const int64 kUnscheduleFenceTimeOutDelay = 10000;
-}
+
+#if defined(OS_WIN)
+const int64 kRescheduleTimeOutDelay = 1000;
+#endif
 
 GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
                            AsyncAPIInterface* handler,

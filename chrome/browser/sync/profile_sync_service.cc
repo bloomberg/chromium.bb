@@ -108,9 +108,7 @@ const char* ProfileSyncService::kSyncServerUrl =
 const char* ProfileSyncService::kDevServerUrl =
     "https://clients4.google.com/chrome-sync/dev";
 
-static const int kSyncClearDataTimeoutInSeconds = 60;  // 1 minute.
-
-static const char* kSyncUnrecoverableErrorHistogram =
+const char kSyncUnrecoverableErrorHistogram[] =
     "Sync.UnrecoverableErrors";
 
 const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {

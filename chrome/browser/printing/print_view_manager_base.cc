@@ -43,12 +43,10 @@
 using base::TimeDelta;
 using content::BrowserThread;
 
-namespace {
-
+#if defined(OS_WIN)
 // Limits memory usage by raster to 64 MiB.
 const int kMaxRasterSizeInPixels = 16*1024*1024;
-
-}  // namespace
+#endif
 
 namespace printing {
 

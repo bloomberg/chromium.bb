@@ -61,8 +61,6 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
-namespace {
-
 const char kReportLanguageDetectionErrorURL[] =
     "https://translate.google.com/translate_error?client=cr&action=langidc";
 
@@ -73,15 +71,9 @@ const char kSourceLanguageQueryName[] = "sl";
 // Used in kReportLanguageDetectionErrorURL to specify the page URL.
 const char kUrlQueryName[] = "u";
 
-// The delay in ms that we'll wait to check if a page has finished loading
-// before attempting a translation.
-const int kTranslateLoadCheckDelayMs = 150;
-
 // The maximum number of attempts we'll do to see if the page has finshed
 // loading before giving up the translation
 const int kMaxTranslateLoadCheckAttempts = 20;
-
-}  // namespace
 
 TranslateManager::~TranslateManager() {
   weak_method_factory_.InvalidateWeakPtrs();

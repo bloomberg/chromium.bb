@@ -10,8 +10,6 @@
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace {
-
 // The width of the status bar item when it's just the icon.
 const CGFloat kStatusItemLength = 26;
 
@@ -19,20 +17,12 @@ const CGFloat kStatusItemLength = 26;
 // status item.
 const CGFloat kMargin = 5;
 
-// The amount of space between the icon and the unread count number.
-const CGFloat kUnreadCountPadding = 3;
-
-// The lower-left Y coordinate of the unread count number.
-const CGFloat kUnreadCountMinY = 4;
-
-}  // namespace
 
 @interface MCStatusItemView (Private)
 // Whether or not the status item should be drawn highlighted.
 - (BOOL)shouldHighlight;
 
 - (int)getTrayResourceId;
-
 @end
 
 @implementation MCStatusItemView

@@ -30,14 +30,9 @@ using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
 
-namespace {
-
 const int kDownloadChunkSize = 1000;
 const int kDownloadSpeed = 1000;
-const int kDummyDBHandle = 10;
 const base::FilePath::CharType kDummyPath[] = FILE_PATH_LITERAL("/testpath");
-
-} // namespace
 
 namespace content {
 

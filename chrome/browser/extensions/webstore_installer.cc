@@ -62,7 +62,6 @@ namespace {
 const char kApprovalKey[] = "extensions.webstore_installer";
 
 const char kInvalidIdError[] = "Invalid id";
-const char kNoBrowserError[] = "No browser found";
 const char kDownloadDirectoryError[] = "Could not create download directory";
 const char kDownloadCanceledError[] = "Download canceled";
 const char kInstallCanceledError[] = "Install canceled";

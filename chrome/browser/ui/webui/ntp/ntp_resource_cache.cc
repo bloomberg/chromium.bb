@@ -82,14 +82,6 @@ const char kLearnMoreIncognitoUrl[] =
 const char kLearnMoreGuestSessionUrl[] =
     "https://www.google.com/support/chromeos/bin/answer.py?answer=1057090";
 
-// The URL for bookmark sync service help.
-const char kSyncServiceHelpUrl[] =
-    "https://www.google.com/support/chrome/bin/answer.py?answer=165139";
-
-// The URL to be loaded to display Help.
-const char kHelpContentUrl[] =
-    "https://www.google.com/support/chrome/";
-
 string16 GetUrlWithLang(const GURL& url) {
   return ASCIIToUTF16(google_util::AppendGoogleLocaleParam(url).spec());
 }

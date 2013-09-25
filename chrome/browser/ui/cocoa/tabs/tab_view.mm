@@ -25,8 +25,6 @@ const int kFillHeight = 25;  // Height of the "mask on" part of the mask bitmap.
 
 // Constants for inset and control points for tab shape.
 const CGFloat kInsetMultiplier = 2.0/3.0;
-const CGFloat kControlPoint1Multiplier = 1.0/3.0;
-const CGFloat kControlPoint2Multiplier = 3.0/8.0;
 
 // The amount of time in seconds during which each type of glow increases, holds
 // steady, and decreases, respectively.

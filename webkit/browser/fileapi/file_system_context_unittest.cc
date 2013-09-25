@@ -28,7 +28,6 @@ namespace fileapi {
 namespace {
 
 const char kTestOrigin[] = "http://chromium.org/";
-const base::FilePath::CharType kVirtualPathNoRoot[] = FPL("root/file");
 
 GURL CreateRawFileSystemURL(const std::string& type_str,
                             const std::string& fs_id) {

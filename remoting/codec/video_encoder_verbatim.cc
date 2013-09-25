@@ -13,8 +13,6 @@
 
 namespace remoting {
 
-static const int kPacketSize = 1024 * 1024;
-
 VideoEncoderVerbatim::VideoEncoderVerbatim() {}
 VideoEncoderVerbatim::~VideoEncoderVerbatim() {}
 

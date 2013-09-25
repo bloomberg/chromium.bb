@@ -46,13 +46,17 @@ const char kArch[] =
 #endif
 
 const char kChrome[] = "chrome";
-const char kChromeCrx[] = "chromecrx";
-const char kChromiumCrx[] = "chromiumcrx";
 
 const char kStable[] = "stable";
 const char kBeta[] = "beta";
 const char kDev[] = "dev";
 const char kCanary[] = "canary";
+
+#if defined(GOOGLE_CHROME_BUILD)
+const char kChromeCrx[] = "chromecrx";
+#else
+const char kChromiumCrx[] = "chromiumcrx";
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
 }  // namespace
 

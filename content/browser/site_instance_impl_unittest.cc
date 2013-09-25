@@ -32,8 +32,6 @@
 namespace content {
 namespace {
 
-const char kSameAsAnyInstanceURL[] = "about:internets";
-
 const char kPrivilegedScheme[] = "privileged";
 
 class SiteInstanceTestWebUIControllerFactory : public WebUIControllerFactory {

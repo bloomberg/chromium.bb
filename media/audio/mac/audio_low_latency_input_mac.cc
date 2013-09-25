@@ -15,8 +15,6 @@
 
 namespace media {
 
-static const int kMinIntervalBetweenVolumeUpdatesMs = 1000;
-
 static std::ostream& operator<<(std::ostream& os,
                                 const AudioStreamBasicDescription& format) {
   os << "sample rate       : " << format.mSampleRate << std::endl

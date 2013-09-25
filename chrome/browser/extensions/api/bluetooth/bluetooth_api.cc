@@ -51,8 +51,6 @@ const char kFailedToConnect[] = "Connection failed";
 const char kInvalidDevice[] = "Invalid device";
 const char kInvalidUuid[] = "Invalid UUID";
 const char kPermissionDenied[] = "Permission to add profile denied.";
-const char kPlatformNotSupported[] =
-    "This operation is not supported on your platform";
 const char kProfileAlreadyRegistered[] =
     "This profile has already been registered";
 const char kProfileNotFound[] = "Profile not found: invalid uuid";

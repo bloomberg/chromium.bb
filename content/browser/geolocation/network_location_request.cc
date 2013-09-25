@@ -25,15 +25,11 @@
 namespace content {
 namespace {
 
-const size_t kMaxRequestLength = 2048;
-
 const char kAccessTokenString[] = "accessToken";
 const char kLocationString[] = "location";
 const char kLatitudeString[] = "lat";
 const char kLongitudeString[] = "lng";
 const char kAccuracyString[] = "accuracy";
-const char kStatusString[] = "status";
-const char kStatusOKString[] = "OK";
 
 // Local functions
 // Creates the request url to send to the server.

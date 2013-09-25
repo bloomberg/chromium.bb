@@ -41,7 +41,6 @@ namespace {
 const char kCapturingSameTab[] = "Cannot capture a tab with an active stream.";
 const char kFindingTabError[] = "Error finding tab to capture.";
 const char kNoAudioOrVideo[] = "Capture failed. No audio or video requested.";
-const char kPermissionError[] = "Tab Capture API flag is not enabled.";
 const char kGrantError[] =
     "Extension has not been invoked for the current page (see activeTab "
     "permission). Chrome pages cannot be captured.";

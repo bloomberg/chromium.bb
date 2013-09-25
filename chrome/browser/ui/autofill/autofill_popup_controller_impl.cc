@@ -39,9 +39,6 @@ const size_t kRowHeight = 24;
 // The vertical height of a separator in pixels.
 const size_t kSeparatorHeight = 1;
 
-// The maximum amount of characters to display from either the name or subtext.
-const size_t kMaxTextLength = 15;
-
 #if !defined(OS_ANDROID)
 const size_t kNamePadding = AutofillPopupView::kNamePadding;
 const size_t kIconPadding = AutofillPopupView::kIconPadding;

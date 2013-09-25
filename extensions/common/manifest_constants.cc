@@ -11,7 +11,6 @@ namespace manifest_keys {
 const char kAllFrames[] = "all_frames";
 const char kAltKey[] = "altKey";
 const char kApp[] = "app";
-const char kAudio[] = "audio";
 const char kBackgroundAllowJsAccess[] = "background.allow_js_access";
 const char kBackgroundPage[] = "background.page";
 const char kBackgroundPageLegacy[] = "background_page";
@@ -121,7 +120,6 @@ const char kSpellcheckDictionaryPath[] = "dictionary_path";
 const char kStorageManagedSchema[] = "storage.managed_schema";
 const char kSuggestedKey[] = "suggested_key";
 const char kSystemIndicator[] = "system_indicator";
-const char kSystemInfoDisplay[] = "systemInfo.display";
 const char kTheme[] = "theme";
 const char kThemeColors[] = "colors";
 const char kThemeDisplayProperties[] = "properties";
@@ -469,8 +467,6 @@ const char kInvalidOptionsPageExpectUrlInPackage[] =
 const char kInvalidOptionsPageInHostedApp[] =
     "Invalid value for 'options_page'. Hosted apps must specify an "
     "absolute URL.";
-const char kInvalidOptionalPermissions[] =
-    "Invalid value for 'optional_permissions'.";
 const char kInvalidPageAction[] =
     "Invalid value for 'page_action'.";
 const char kInvalidPageActionDefaultTitle[] =

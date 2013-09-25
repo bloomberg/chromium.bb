@@ -30,10 +30,6 @@ const int kStartResourceFetchDelay = 5000;
 const int kCacheUpdateDelay = 6 * 60 * 60 * 1000;
 const int kTestCacheUpdateDelay = 3 * 60 * 1000;
 
-// The version of the service (used to expire the cache when upgrading Chrome
-// to versions with different types of promos).
-const int kPromoServiceVersion = 7;
-
 // The promotion type used for Unpack() and ScheduleNotificationOnInit().
 const NotificationPromo::PromoType kValidPromoTypes[] = {
 #if defined(OS_ANDROID) || defined(OS_IOS)

@@ -36,7 +36,6 @@ namespace notifications = api::notifications;
 
 namespace {
 
-const char kResultKey[] = "result";
 const char kMissingRequiredPropertiesForCreateNotification[] =
     "Some of the required properties are missing: type, iconUrl, title and "
     "message.";

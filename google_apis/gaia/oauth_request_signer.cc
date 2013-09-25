@@ -24,26 +24,24 @@
 
 namespace {
 
-static const int kHexBase = 16;
-static char kHexDigits[] = "0123456789ABCDEF";
-static const size_t kHmacDigestLength = 20;
-static const int kMaxNonceLength = 30;
-static const int kMinNonceLength = 15;
+const int kHexBase = 16;
+char kHexDigits[] = "0123456789ABCDEF";
+const size_t kHmacDigestLength = 20;
+const int kMaxNonceLength = 30;
+const int kMinNonceLength = 15;
 
-static const char kOAuthConsumerKeyLabel[] = "oauth_consumer_key";
-static const char kOAuthConsumerSecretLabel[] = "oauth_consumer_secret";
-static const char kOAuthNonceCharacters[] =
+const char kOAuthConsumerKeyLabel[] = "oauth_consumer_key";
+const char kOAuthNonceCharacters[] =
     "abcdefghijklmnopqrstuvwyz"
     "ABCDEFGHIJKLMNOPQRSTUVWYZ"
     "0123456789_";
-static const char kOAuthNonceLabel[] = "oauth_nonce";
-static const char kOAuthSignatureLabel[] = "oauth_signature";
-static const char kOAuthSignatureMethodLabel[] = "oauth_signature_method";
-static const char kOAuthTimestampLabel[] = "oauth_timestamp";
-static const char kOAuthTokenLabel[] = "oauth_token";
-static const char kOAuthTokenSecretLabel[] = "oauth_token_secret";
-static const char kOAuthVersion[] = "1.0";
-static const char kOAuthVersionLabel[] = "oauth_version";
+const char kOAuthNonceLabel[] = "oauth_nonce";
+const char kOAuthSignatureLabel[] = "oauth_signature";
+const char kOAuthSignatureMethodLabel[] = "oauth_signature_method";
+const char kOAuthTimestampLabel[] = "oauth_timestamp";
+const char kOAuthTokenLabel[] = "oauth_token";
+const char kOAuthVersion[] = "1.0";
+const char kOAuthVersionLabel[] = "oauth_version";
 
 enum ParseQueryState {
   START_STATE,

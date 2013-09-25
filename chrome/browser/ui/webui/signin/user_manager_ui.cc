@@ -15,13 +15,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/web_ui_util.h"
 
-namespace {
-  // JS file names.
-  const char kStringsJSPath[] = "strings.js";
-  const char kUserManagerJSPath[] = "user_manager.js";
-  const char kHeaderBarJSPath[] = "header_bar.js";
-  const char kAccountPickerJSPath[] = "screen_account_picker.js";
-}
+// JS file names.
+const char kStringsJSPath[] = "strings.js";
+const char kUserManagerJSPath[] = "user_manager.js";
 
 UserManagerUI::UserManagerUI(content::WebUI* web_ui)
   : WebUIController(web_ui) {

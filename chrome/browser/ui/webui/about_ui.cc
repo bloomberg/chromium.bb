@@ -95,8 +95,11 @@ const char kMemoryJsPath[] = "memory.js";
 const char kMemoryCssPath[] = "about_memory.css";
 const char kStatsJsPath[] = "stats.js";
 const char kStringsJsPath[] = "strings.js";
+
+#if defined(OS_CHROMEOS)
 // chrome://terms falls back to offline page after kOnlineTermsTimeoutSec.
 const int kOnlineTermsTimeoutSec = 7;
+#endif  // defined(OS_CHROMEOS)
 
 // When you type about:memory, it actually loads this intermediate URL that
 // redirects you to the final page. This avoids the problem where typing

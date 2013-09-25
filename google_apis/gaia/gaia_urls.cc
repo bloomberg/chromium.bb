@@ -40,7 +40,6 @@ const char kClientLoginToOAuth2UrlSuffix[] = "o/oauth2/programmatic_auth";
 const char kOAuth2AuthUrlSuffix[] = "o/oauth2/auth";
 const char kOAuth2RevokeUrlSuffix[] = "o/oauth2/revoke";
 const char kOAuth2TokenUrlSuffix[] = "o/oauth2/token";
-const char kClientOAuthUrlSuffix[] = "ClientOAuth";
 
 // API calls from www.googleapis.com
 const char kOAuth2IssueTokenUrlSuffix[] = "oauth2/v2/IssueToken";

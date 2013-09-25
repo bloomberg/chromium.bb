@@ -8,17 +8,13 @@
 #import "ui/app_list/cocoa/apps_grid_view_item.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
-namespace {
-
 // Scale to transform the grid cell when a drag starts. Note that 1.5 ensures
 // that integers are used for the layer bounds when the grid cell dimensions
 // are even.
 const CGFloat kDraggingIconScale = 1.5;
 
 const NSTimeInterval kAnimationDuration = 0.2;
-NSString* const kGrowAnimationKey = @"growAnimation";
 
-}  // namespace
 
 @interface ItemDragController ()
 

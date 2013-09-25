@@ -24,9 +24,6 @@
 
 namespace notifier {
 
-// Redirect valid for 5 minutes.
-static const int kRedirectTimeoutMinutes = 5;
-
 Login::Delegate::~Delegate() {}
 
 Login::Login(Delegate* delegate,

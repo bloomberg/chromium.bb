@@ -96,7 +96,6 @@ static const int kSampleRateMap[4][4] = {
 };
 
 // Frame header field constants.
-static const int kVersion1 = 3;
 static const int kVersion2 = 2;
 static const int kVersionReserved = 1;
 static const int kVersion2_5 = 0;

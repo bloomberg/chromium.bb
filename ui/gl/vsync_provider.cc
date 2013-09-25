@@ -9,8 +9,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 
-namespace {
-
+#if defined(OS_LINUX)
 // These constants define a reasonable range for a calculated refresh interval.
 // Calculating refreshes out of this range will be considered a fatal error.
 const int64 kMinVsyncIntervalUs = base::Time::kMicrosecondsPerSecond / 400;
@@ -20,8 +19,7 @@ const int64 kMaxVsyncIntervalUs = base::Time::kMicrosecondsPerSecond / 10;
 // we think the latest computed interval is invalid (noisey due to
 // monitor configuration change, moving a window between monitors, etc.).
 const double kRelativeIntervalDifferenceThreshold = 0.05;
-
-}  // namespace
+#endif
 
 namespace gfx {
 

@@ -54,9 +54,11 @@ using content::WebPluginInfo;
 
 namespace {
 
-static const char kAdobeReaderIdentifier[] = "adobe-reader";
-static const char kAdobeReaderUpdateUrl[] =
-    "http://www.adobe.com/go/getreader_chrome";
+const char kAdobeReaderUpdateUrl[] = "http://www.adobe.com/go/getreader_chrome";
+
+#if defined(OS_WIN) && defined(ENABLE_PLUGIN_INSTALLATION)
+const char kAdobeReaderIdentifier[] = "adobe-reader";
+#endif
 
 // The prompt delegate used to ask the user if they want to use Adobe Reader
 // by default.

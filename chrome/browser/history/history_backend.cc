@@ -80,29 +80,25 @@ namespace history {
 // This value needs to be greater or equal to
 // MostVisitedModel::kMostVisitedScope but we don't want to introduce a direct
 // dependency between MostVisitedModel and the history backend.
-static const int kSegmentDataRetention = 90;
+const int kSegmentDataRetention = 90;
 
 // How long we'll wait to do a commit, so that things are batched together.
-static const int kCommitIntervalSeconds = 10;
+const int kCommitIntervalSeconds = 10;
 
 // The amount of time before we re-fetch the favicon.
-static const int kFaviconRefetchDays = 7;
-
-// GetSessionTabs returns all open tabs, or tabs closed kSessionCloseTimeWindow
-// seconds ago.
-static const int kSessionCloseTimeWindowSecs = 10;
+const int kFaviconRefetchDays = 7;
 
 // The maximum number of items we'll allow in the redirect list before
 // deleting some.
-static const int kMaxRedirectCount = 32;
+const int kMaxRedirectCount = 32;
 
 // The number of days old a history entry can be before it is considered "old"
 // and is archived.
-static const int kArchiveDaysThreshold = 90;
+const int kArchiveDaysThreshold = 90;
 
 #if defined(OS_ANDROID)
 // The maximum number of top sites to track when recording top page visit stats.
-static const size_t kPageVisitStatsMaxTopSites = 50;
+const size_t kPageVisitStatsMaxTopSites = 50;
 #endif
 
 // Converts from PageUsageData to MostVisitedURL. |redirects| is a

@@ -20,7 +20,6 @@ namespace google_apis {
 namespace {
 
 const char kContentTypeApplicationJson[] = "application/json";
-const char kDirectoryMimeType[] = "application/vnd.google-apps.folder";
 const char kParentLinkKind[] = "drive#fileLink";
 
 // Parses the JSON value to a resource typed |T| and runs |callback| on the UI

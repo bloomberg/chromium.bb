@@ -42,7 +42,6 @@ namespace {
 
 // Error messages.
 const char kFileError[] = "File error %d.";
-const char kQuotaError[] = "Quota error %d.";
 const char kUnsupportedConflictResolutionPolicy[] =
     "Policy %s is not supported.";
 

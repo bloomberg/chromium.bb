@@ -32,8 +32,6 @@ namespace {
 
 const CGFloat kWindowMinWidth = 500;
 const CGFloat kButtonGap = 6;
-const SkColor kDialogAlertBarBackgroundColor = 0xFFF6F6F6;
-const SkColor kDialogAlertBarBorderColor = 0xFFE1E1E1;
 const CGFloat kDialogAlertBarBorderWidth = 1;
 
 // Shift the origin of |view|'s frame by the given amount in the

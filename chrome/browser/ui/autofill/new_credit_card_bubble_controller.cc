@@ -26,14 +26,6 @@
 
 namespace autofill {
 
-namespace {
-
-static const int kMaxGeneratedCardTimesToShow = 5;
-static const char kWalletGeneratedCardLearnMoreLink[] =
-    "http://support.google.com/wallet/bin/answer.py?hl=en&answer=2740044";
-
-}  // namespace
-
 CreditCardDescription::CreditCardDescription() {}
 CreditCardDescription::~CreditCardDescription() {}
 

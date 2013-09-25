@@ -57,7 +57,6 @@ namespace Search = api::history::Search;
 
 namespace {
 
-const char kInvalidIdError[] = "History item id is invalid.";
 const char kInvalidUrlError[] = "Url is invalid.";
 const char kDeleteProhibitedError[] = "Browsing history is not allowed to be "
                                       "deleted.";

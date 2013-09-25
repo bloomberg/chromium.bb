@@ -53,12 +53,6 @@ const char kHTMLType[] = "text/html";
 // Mime type for as you type suggestions.
 const char kSuggestionType[] = "application/x-suggestions+json";
 
-// Namespace identifier.
-const char kOSDNS[] = "xmlns";
-
-// The namespace for documents we understand.
-const char kNameSpace[] = "http://a9.com/-/spec/opensearch/1.1/";
-
 std::string XMLCharToString(const xmlChar* value) {
   return std::string(reinterpret_cast<const char*>(value));
 }

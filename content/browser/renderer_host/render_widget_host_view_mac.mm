@@ -189,9 +189,6 @@ static float ScaleFactor(NSView* view) {
 - (void)updateTabBackingStoreScaleFactor;
 @end
 
-// NSEvent subtype for scroll gestures events.
-static const short kIOHIDEventTypeScroll = 6;
-
 // A window subclass that allows the fullscreen window to become main and gain
 // keyboard focus. This is only used for pepper flash. Normal fullscreen is
 // handled by the browser.

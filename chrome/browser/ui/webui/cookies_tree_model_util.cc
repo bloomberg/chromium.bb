@@ -54,7 +54,6 @@ const char kKeyTemporary[] = "temporary";
 const char kKeyTotalUsage[] = "totalUsage";
 const char kKeyTemporaryUsage[] = "temporaryUsage";
 const char kKeyPersistentUsage[] = "persistentUsage";
-const char kKeyPersistentQuota[] = "persistentQuota";
 
 const char kKeyCertType[] = "certType";
 

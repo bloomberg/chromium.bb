@@ -30,12 +30,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/platform_font.h"
 
-namespace {
-
 const CGFloat kAccountChooserHeight = 20.0;
-const CGFloat kRelatedControlVerticalSpacing = 8.0;
-
-}  // namespace;
 
 namespace autofill {
 

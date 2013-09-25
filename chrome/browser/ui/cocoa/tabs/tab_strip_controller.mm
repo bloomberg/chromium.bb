@@ -103,10 +103,6 @@ const CGFloat kNewTabButtonOffset = 8.0;
 // Time (in seconds) in which tabs animate to their final position.
 const NSTimeInterval kAnimationDuration = 0.125;
 
-// The amount by which the profile menu button is offset (from tab tabs or new
-// tab button).
-const CGFloat kProfileMenuButtonOffset = 6.0;
-
 // The width and height of the icon + glow for projecting mode.
 const CGFloat kProjectingIconWidthAndHeight = 32.0;
 

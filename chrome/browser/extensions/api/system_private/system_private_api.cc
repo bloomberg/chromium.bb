@@ -39,8 +39,11 @@ const char kVolumeKey[] = "volume";
 
 // System update states.
 const char kNotAvailableState[] = "NotAvailable";
-const char kUpdatingState[] = "Updating";
 const char kNeedRestartState[] = "NeedRestart";
+
+#if defined(OS_CHROMEOS)
+const char kUpdatingState[] = "Updating";
+#endif  // defined(OS_CHROMEOS)
 
 // Dispatches an extension event with |argument|
 void DispatchEvent(const std::string& event_name, base::Value* argument) {

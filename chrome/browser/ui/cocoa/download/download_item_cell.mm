@@ -51,9 +51,6 @@ const CGFloat kPrimaryTextOnlyPosTop = 10;
 // y coordinate of status message, in view coords.
 const CGFloat kSecondaryTextPosTop = 18;
 
-// Grey value of status text.
-const CGFloat kSecondaryTextColor = 0.5;
-
 // Width of dropdown area on the right (includes 1px for the border on each
 // side).
 const CGFloat kDropdownAreaWidth = 14;

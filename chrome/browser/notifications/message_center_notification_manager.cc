@@ -35,11 +35,11 @@
 #include "chrome/browser/notifications/login_state_notification_blocker_chromeos.h"
 #endif
 
-namespace {
+#if defined(OS_WIN)
 // The first-run balloon will be shown |kFirstRunIdleDelaySeconds| after all
 // popups go away and the user has notifications in the message center.
 const int kFirstRunIdleDelaySeconds = 1;
-}  // namespace
+#endif
 
 MessageCenterNotificationManager::MessageCenterNotificationManager(
     message_center::MessageCenter* message_center,

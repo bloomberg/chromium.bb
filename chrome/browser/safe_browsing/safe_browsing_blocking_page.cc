@@ -63,31 +63,23 @@ const char* const kSbDiagnosticUrl =
     "http://safebrowsing.clients.google.com/safebrowsing/diagnostic?site=%s&client=chromium";
 #endif
 
-const char* const kSbReportPhishingErrorUrl =
+const char kSbReportPhishingErrorUrl[] =
     "http://www.google.com/safebrowsing/report_error/";
 
 // URL for the "Learn more" link on the multi threat malware blocking page.
-const char* const kLearnMoreMalwareUrl =
+const char kLearnMoreMalwareUrl[] =
     "https://www.google.com/support/bin/answer.py?answer=45449&topic=360"
     "&sa=X&oi=malwarewarninglink&resnum=1&ct=help";
-const char* const kLearnMoreMalwareUrlV2 =
+const char kLearnMoreMalwareUrlV2[] =
     "https://www.google.com/goodtoknow/online-safety/malware/";
-const char* const kLearnMorePhishingUrlV2 =
+const char kLearnMorePhishingUrlV2[] =
     "https://www.google.com/goodtoknow/online-safety/phishing/";
 
 // URL for the "Learn more" link on the phishing blocking page.
-const char* const kLearnMorePhishingUrl =
+const char kLearnMorePhishingUrl[] =
     "https://www.google.com/support/bin/answer.py?answer=106318";
 
-const char* const kSbDiagnosticHtml =
-    "<a href=\"\" onclick=\"sendCommand('showDiagnostic'); return false;\" "
-    "onmousedown=\"return false;\">%s</a>";
-
-const char* const kPLinkHtml =
-    "<a href=\"\" onclick=\"sendCommand('proceed'); return false;\" "
-    "onmousedown=\"return false;\">%s</a>";
-
-const char* const kPrivacyLinkHtml =
+const char kPrivacyLinkHtml[] =
     "<a id=\"privacy-link\" href=\"\" onclick=\"sendCommand('showPrivacy'); "
     "return false;\" onmousedown=\"return false;\">%s</a>";
 
@@ -98,43 +90,37 @@ const char* const kPrivacyLinkHtml =
 const int64 kMalwareDetailsProceedDelayMilliSeconds = 3000;
 
 // The commands returned by the page when the user performs an action.
-const char* const kShowDiagnosticCommand = "showDiagnostic";
-const char* const kReportErrorCommand = "reportError";
-const char* const kLearnMoreCommand = "learnMore";
-const char* const kLearnMoreCommandV2 = "learnMore2";
-const char* const kShowPrivacyCommand = "showPrivacy";
-const char* const kProceedCommand = "proceed";
-const char* const kTakeMeBackCommand = "takeMeBack";
-const char* const kDoReportCommand = "doReport";
-const char* const kDontReportCommand = "dontReport";
-const char* const kDisplayCheckBox = "displaycheckbox";
-const char* const kBoxChecked = "boxchecked";
-const char* const kExpandedSeeMore = "expandedSeeMore";
+const char kShowDiagnosticCommand[] = "showDiagnostic";
+const char kReportErrorCommand[] = "reportError";
+const char kLearnMoreCommand[] = "learnMore";
+const char kLearnMoreCommandV2[] = "learnMore2";
+const char kShowPrivacyCommand[] = "showPrivacy";
+const char kProceedCommand[] = "proceed";
+const char kTakeMeBackCommand[] = "takeMeBack";
+const char kDoReportCommand[] = "doReport";
+const char kDontReportCommand[] = "dontReport";
+const char kDisplayCheckBox[] = "displaycheckbox";
+const char kBoxChecked[] = "boxchecked";
+const char kExpandedSeeMore[] = "expandedSeeMore";
 // Special command that we use when the user navigated away from the
 // page.  E.g., closed the tab or the window.  This is only used by
 // RecordUserReactionTime.
-const char* const kNavigatedAwayMetaCommand = "closed";
+const char kNavigatedAwayMetaCommand[] = "closed";
 
 base::LazyInstance<SafeBrowsingBlockingPage::UnsafeResourceMap>
     g_unsafe_resource_map = LAZY_INSTANCE_INITIALIZER;
 
 // These are the conditions for the summer 2013 Finch experiment.
-const char* const kMalwareStudyName = "InterstitialMalware310";
-const char* const kPhishingStudyName = "InterstitialPhishing564";
-const char* const kCond1MalwareControl = "cond1MalwareControl";
-const char* const kCond2MalwareNoBrand = "cond2MalwareNoBrand";
-const char* const kCond3PhishingControl = "cond3PhishingControl";
-const char* const kCond4PhishingNoBrand = "cond4PhishingNoBrand";
-const char* const kCond5MalwareOneStep = "cond5MalwareOneStep";
-const char* const kCond6PhishingOneStep = "cond6PhishingOneStep";
-const char* const kCond7MalwareFearMsg = "cond7MalwareFearMsg";
-const char* const kCond8PhishingFearMsg = "cond8PhishingFearMsg";
-const char* const kCond9MalwareCollabMsg = "cond9MalwareCollabMsg";
-const char* const kCond10PhishingCollabMsg = "cond10PhishingCollabMsg";
-const char* const kCond11MalwareQuestion = "cond11MalwareQuestion";
-const char* const kCond12PhishingQuestion = "cond12PhishingQuestion";
-const char* const kCond13MalwareGoBack = "cond13MalwareGoBack";
-const char* const kCond14PhishingGoBack = "cond14PhishingGoBack";
+const char kMalwareStudyName[] = "InterstitialMalware310";
+const char kPhishingStudyName[] = "InterstitialPhishing564";
+const char kCond7MalwareFearMsg[] = "cond7MalwareFearMsg";
+const char kCond8PhishingFearMsg[] = "cond8PhishingFearMsg";
+const char kCond9MalwareCollabMsg[] = "cond9MalwareCollabMsg";
+const char kCond10PhishingCollabMsg[] = "cond10PhishingCollabMsg";
+const char kCond11MalwareQuestion[] = "cond11MalwareQuestion";
+const char kCond12PhishingQuestion[] = "cond12PhishingQuestion";
+const char kCond13MalwareGoBack[] = "cond13MalwareGoBack";
+const char kCond14PhishingGoBack[] = "cond14PhishingGoBack";
 
 }  // namespace
 

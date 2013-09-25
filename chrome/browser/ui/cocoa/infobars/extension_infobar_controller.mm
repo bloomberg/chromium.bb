@@ -28,8 +28,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 
-namespace {
-const CGFloat kAnimationDuration = 0.12;
 const CGFloat kBottomBorderHeightPx = 1.0;
 const CGFloat kButtonHeightPx = 26.0;
 const CGFloat kButtonLeftMarginPx = 2.0;
@@ -37,7 +35,6 @@ const CGFloat kButtonWidthPx = 34.0;
 const CGFloat kDropArrowLeftMarginPx = 3.0;
 const CGFloat kToolbarMinHeightPx = 36.0;
 const CGFloat kToolbarMaxHeightPx = 72.0;
-}  // namespace
 
 @interface ExtensionInfoBarController(Private)
 // Called when the extension's hosted NSView has been resized.

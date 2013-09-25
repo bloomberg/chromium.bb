@@ -28,11 +28,8 @@ namespace {
 // Google Apps MIME types:
 const char kGoogleDocumentMimeType[] = "application/vnd.google-apps.document";
 const char kGoogleDrawingMimeType[] = "application/vnd.google-apps.drawing";
-const char kGoogleFormMimeType[] = "application/vnd.google-apps.form";
 const char kGooglePresentationMimeType[] =
     "application/vnd.google-apps.presentation";
-const char kGoogleScriptMimeType[] = "application/vnd.google-apps.script";
-const char kGoogleSiteMimeType[] = "application/vnd.google-apps.site";
 const char kGoogleSpreadsheetMimeType[] =
     "application/vnd.google-apps.spreadsheet";
 const char kGoogleTableMimeType[] = "application/vnd.google-apps.table";

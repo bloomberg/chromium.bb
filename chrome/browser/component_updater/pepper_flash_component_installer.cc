@@ -45,14 +45,20 @@ using content::PluginService;
 
 namespace {
 
+// File name of the Pepper Flash component manifest on different platforms.
+const char kPepperFlashManifestName[] = "Flapper";
+
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)
 // CRX hash. The extension id is: mimojjlkmoijpicakmndhoigimigcmbb.
 const uint8 kSha2Hash[] = {0xc8, 0xce, 0x99, 0xba, 0xce, 0x89, 0xf8, 0x20,
                            0xac, 0xd3, 0x7e, 0x86, 0x8c, 0x86, 0x2c, 0x11,
                            0xb9, 0x40, 0xc5, 0x55, 0xaf, 0x08, 0x63, 0x70,
                            0x54, 0xf9, 0x56, 0xd3, 0xe7, 0x88, 0xba, 0x8c};
 
-// File name of the Pepper Flash component manifest on different platforms.
-const char kPepperFlashManifestName[] = "Flapper";
+// If we don't have a Pepper Flash component, this is the version we claim.
+const char kNullVersion[] = "0.0.0.0";
+
+#endif  // defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)
 
 // Name of the Pepper Flash OS in the component manifest.
 const char kPepperFlashOperatingSystem[] =
@@ -73,9 +79,6 @@ const char kPepperFlashArch[] =
 #else  // TODO(viettrungluu): Support an ARM check?
     "???";
 #endif
-
-// If we don't have a Pepper Flash component, this is the version we claim.
-const char kNullVersion[] = "0.0.0.0";
 
 // The base directory on Windows looks like:
 // <profile>\AppData\Local\Google\Chrome\User Data\PepperFlash\.

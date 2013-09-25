@@ -101,8 +101,6 @@ namespace {
 
 const int kMinFrameWidth = 2;
 const int kMinFrameHeight = 2;
-const int kMaxFramesInFlight = 2;
-const int kMaxSnapshotsInFlight = 1;
 
 // TODO(nick): Remove this once frame subscription is supported on Aura and
 // Linux.

@@ -136,14 +136,6 @@ const int kExpirationDelaySec = 30;
 // iteration, so we want to wait longer before checking to avoid wasting CPU.
 const int kExpirationEmptyDelayMin = 5;
 
-// The number of minutes that we wait for before scheduling a task to
-// delete old history index files.
-const int kIndexExpirationDelayMin = 2;
-
-// The number of the most recent months for which we do not want to delete
-// the history index files.
-const int kStoreHistoryIndexesForMonths = 3;
-
 }  // namespace
 
 struct ExpireHistoryBackend::DeleteDependencies {

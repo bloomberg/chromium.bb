@@ -58,14 +58,10 @@ using content::WebContents;
 
 namespace extensions {
 
-namespace {
 const char kReceivingEndDoesntExistError[] =
     "Could not establish connection. Receiving end does not exist.";
 const char kMissingPermissionError[] =
     "Access to native messaging requires nativeMessaging permission.";
-const char kNativeMessagingNotSupportedError[] =
-    "Native Messaging is not supported on this platform.";
-}
 
 struct MessageService::MessageChannel {
   scoped_ptr<MessagePort> opener;
@@ -358,6 +354,8 @@ void MessageService::OpenChannelToNativeApp(
 
   AddChannel(channel.release(), receiver_port_id);
 #else  // !(defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX))
+  const char kNativeMessagingNotSupportedError[] =
+      "Native Messaging is not supported on this platform.";
   DispatchOnDisconnect(
       source, receiver_port_id, kNativeMessagingNotSupportedError);
 #endif  // !(defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX))

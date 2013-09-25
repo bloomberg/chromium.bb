@@ -24,9 +24,11 @@ namespace extensions {
 
 namespace {
 
+#if defined(OS_WIN)
 // Name of the command line switch used to pass handle of the native view to
 // the native messaging host.
 const char kParentWindowSwitchName[] = "parent-window";
+#endif  // defined(OS_WIN)
 
 base::FilePath GetHostManifestPathFromCommandLine(
     const std::string& native_host_name) {

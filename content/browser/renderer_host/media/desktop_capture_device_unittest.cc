@@ -35,7 +35,6 @@ const int kTestFrameWidth1 = 100;
 const int kTestFrameHeight1 = 100;
 const int kTestFrameWidth2 = 200;
 const int kTestFrameHeight2 = 150;
-const int kBufferSize = kTestFrameWidth2 * kTestFrameHeight2 * 4;
 
 const int kFrameRate = 30;
 

@@ -52,29 +52,27 @@
 
 namespace content {
 
-const int kBufferSize = 16 * 1024;
-
 namespace {
 
-static const char* kProtocolVersion = "1.0";
+const char kProtocolVersion[] = "1.0";
 
-static const char* kDevToolsHandlerThreadName = "Chrome_DevToolsHandlerThread";
+const char kDevToolsHandlerThreadName[] = "Chrome_DevToolsHandlerThread";
 
-static const char* kThumbUrlPrefix = "/thumb/";
-static const char* kPageUrlPrefix = "/devtools/page/";
+const char kThumbUrlPrefix[] = "/thumb/";
+const char kPageUrlPrefix[] = "/devtools/page/";
 
-static const char* kTargetIdField = "id";
-static const char* kTargetTypeField = "type";
-static const char* kTargetTitleField = "title";
-static const char* kTargetDescriptionField = "description";
-static const char* kTargetUrlField = "url";
-static const char* kTargetThumbnailUrlField = "thumbnailUrl";
-static const char* kTargetFaviconUrlField = "faviconUrl";
-static const char* kTargetWebSocketDebuggerUrlField = "webSocketDebuggerUrl";
-static const char* kTargetDevtoolsFrontendUrlField = "devtoolsFrontendUrl";
+const char kTargetIdField[] = "id";
+const char kTargetTypeField[] = "type";
+const char kTargetTitleField[] = "title";
+const char kTargetDescriptionField[] = "description";
+const char kTargetUrlField[] = "url";
+const char kTargetThumbnailUrlField[] = "thumbnailUrl";
+const char kTargetFaviconUrlField[] = "faviconUrl";
+const char kTargetWebSocketDebuggerUrlField[] = "webSocketDebuggerUrl";
+const char kTargetDevtoolsFrontendUrlField[] = "devtoolsFrontendUrl";
 
-static const char* kTargetTypePage = "page";
-static const char* kTargetTypeOther = "other";
+const char kTargetTypePage[] = "page";
+const char kTargetTypeOther[] = "other";
 
 class DevToolsDefaultBindingHandler
     : public DevToolsHttpHandler::DevToolsAgentHostBinding {

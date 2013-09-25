@@ -223,11 +223,6 @@ using WebKit::WebWindowFeatures;
 
 namespace {
 
-// The URL to be loaded to display the "Report a broken page" form.
-const char kBrokenPageUrl[] =
-    "https://www.google.com/support/chrome/bin/request.py?contact_type="
-    "broken_website&format=inproduct&p.page_title=$1&p.page_url=$2";
-
 // How long we wait before updating the browser chrome while loading a page.
 const int kUIUpdateCoalescingTimeMS = 200;
 

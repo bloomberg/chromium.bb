@@ -24,10 +24,6 @@ const NSInteger kResultsTokenInset = 3;
 // Assumes -setFlipped:YES.
 const NSInteger kResultsYOffset = 4;
 
-// How far the editor insets itself, for purposes of determining if
-// decorations need to be trimmed.
-const CGFloat kEditorHorizontalInset = 3.0;
-
 // Conveniences to centralize width+offset calculations.
 CGFloat WidthForResults(NSAttributedString* resultsString) {
   return kResultsXOffset + ceil([resultsString size].width) +

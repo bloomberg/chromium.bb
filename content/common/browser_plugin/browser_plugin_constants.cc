@@ -42,9 +42,6 @@ const char kAttributeName[] = "name";
 const char kAttributePartition[] = "partition";
 const char kAttributeSrc[] = "src";
 
-// Events.
-const char kEventSizeChanged[] = "sizechanged";
-
 // Parameters/properties on events.
 const char kDefaultPromptText[] = "defaultPromptText";
 const char kId[] = "id";

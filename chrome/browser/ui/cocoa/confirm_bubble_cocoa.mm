@@ -13,8 +13,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/point.h"
 
-namespace {
-
 // The width for the message text. We break lines so the specified message fits
 // into this width.
 const int kMaxMessageWidth = 400;
@@ -36,9 +34,6 @@ const int kRelatedControlHorizontalSpacing = 8;
 // Vertical spacing between controls that are logically related.
 const int kRelatedControlVerticalSpacing = 8;
 
-// Horizontal spacing between controls that are logically unrelated.
-const int kUnrelatedControlHorizontalSpacing = 12;
-
 // Vertical spacing between the edge of the window and the
 // top or bottom of a button.
 const int kButtonVEdgeMargin = 6;
@@ -46,8 +41,6 @@ const int kButtonVEdgeMargin = 6;
 // Horizontal spacing between the edge of the window and the
 // left or right of a button.
 const int kButtonHEdgeMargin = 7;
-
-}  // namespace
 
 namespace chrome {
 

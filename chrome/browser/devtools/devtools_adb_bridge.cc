@@ -41,31 +41,34 @@ using content::BrowserThread;
 
 namespace {
 
-static const char kDevToolsAdbBridgeThreadName[] = "Chrome_DevToolsADBThread";
-static const char kHostDevicesCommand[] = "host:devices";
-static const char kHostTransportCommand[] = "host:transport:%s|%s";
-static const char kLocalAbstractCommand[] = "localabstract:%s";
-static const char kDeviceModelCommand[] = "shell:getprop ro.product.model";
-static const char kLocalChrome[] = "Local Chrome";
-static const char kChrome[] = "Chrome";
-static const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
-static const char kListProcessesCommand[] = "shell:ps";
-static const char kDumpsysCommand[] = "shell:dumpsys window policy";
-static const char kDumpsysScreenSizePrefix[] = "mStable=";
+const char kDevToolsAdbBridgeThreadName[] = "Chrome_DevToolsADBThread";
+const char kHostDevicesCommand[] = "host:devices";
+const char kHostTransportCommand[] = "host:transport:%s|%s";
+const char kLocalAbstractCommand[] = "localabstract:%s";
+const char kDeviceModelCommand[] = "shell:getprop ro.product.model";
+const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
+const char kListProcessesCommand[] = "shell:ps";
+const char kDumpsysCommand[] = "shell:dumpsys window policy";
+const char kDumpsysScreenSizePrefix[] = "mStable=";
 
-static const char kPageListRequest[] = "GET /json HTTP/1.1\r\n\r\n";
-static const char kVersionRequest[] = "GET /json/version HTTP/1.1\r\n\r\n";
-static const char kClosePageRequest[] = "GET /json/close/%s HTTP/1.1\r\n\r\n";
-static const char kNewPageRequest[] = "GET /json/new HTTP/1.1\r\n\r\n";
-static const char kActivatePageRequest[] =
+const char kPageListRequest[] = "GET /json HTTP/1.1\r\n\r\n";
+const char kVersionRequest[] = "GET /json/version HTTP/1.1\r\n\r\n";
+const char kClosePageRequest[] = "GET /json/close/%s HTTP/1.1\r\n\r\n";
+const char kNewPageRequest[] = "GET /json/new HTTP/1.1\r\n\r\n";
+const char kActivatePageRequest[] =
     "GET /json/activate/%s HTTP/1.1\r\n\r\n";
 const int kAdbPort = 5037;
 const int kBufferSize = 16 * 1024;
 const int kAdbPollingIntervalMs = 1000;
 
-static const char kUrlParam[] = "url";
-static const char kPageReloadCommand[] = "Page.reload";
-static const char kPageNavigateCommand[] = "Page.navigate";
+const char kUrlParam[] = "url";
+const char kPageReloadCommand[] = "Page.reload";
+const char kPageNavigateCommand[] = "Page.navigate";
+
+#if defined(DEBUG_DEVTOOLS)
+const char kChrome[] = "Chrome";
+const char kLocalChrome[] = "Local Chrome";
+#endif  // defined(DEBUG_DEVTOOLS)
 
 typedef DevToolsAdbBridge::Callback Callback;
 typedef std::vector<scoped_refptr<DevToolsAdbBridge::AndroidDevice> >

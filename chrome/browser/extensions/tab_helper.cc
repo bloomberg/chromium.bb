@@ -61,12 +61,6 @@ using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::TabHelper);
 
-namespace {
-
-const char kPermissionError[] = "permission_error";
-
-}  // namespace
-
 namespace extensions {
 
 TabHelper::ScriptExecutionObserver::ScriptExecutionObserver(

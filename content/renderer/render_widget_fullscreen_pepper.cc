@@ -48,9 +48,6 @@ namespace content {
 
 namespace {
 
-// See third_party/WebKit/Source/WebCore/dom/WheelEvent.h.
-const float kTickDivisor = 120.0f;
-
 class FullscreenMouseLockDispatcher : public MouseLockDispatcher {
  public:
   explicit FullscreenMouseLockDispatcher(RenderWidgetFullscreenPepper* widget);

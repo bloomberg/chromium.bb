@@ -30,12 +30,6 @@ class ExtensionService;
 
 using content::BrowserThread;
 
-namespace {
-
-const char kUmaPaintTimesLabel[] = "AppLauncherPageUI load";
-
-}  // namespace
-
 ///////////////////////////////////////////////////////////////////////////////
 // AppLauncherPageUI
 

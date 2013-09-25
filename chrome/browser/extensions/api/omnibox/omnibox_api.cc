@@ -36,12 +36,6 @@ namespace SetDefaultSuggestion = omnibox::SetDefaultSuggestion;
 namespace {
 
 const char kSuggestionContent[] = "content";
-const char kSuggestionDescription[] = "description";
-const char kSuggestionDescriptionStyles[] = "descriptionStyles";
-const char kSuggestionDescriptionStylesRaw[] = "descriptionStylesRaw";
-const char kDescriptionStylesType[] = "type";
-const char kDescriptionStylesOffset[] = "offset";
-const char kDescriptionStylesLength[] = "length";
 const char kCurrentTabDisposition[] = "currentTab";
 const char kForegroundTabDisposition[] = "newForegroundTab";
 const char kBackgroundTabDisposition[] = "newBackgroundTab";

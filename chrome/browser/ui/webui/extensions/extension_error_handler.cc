@@ -26,16 +26,9 @@
 
 namespace extensions {
 
-namespace {
-
 // Keys for objects passed to and from extension error UI.
-const char kFileTypeKey[] = "fileType";
-const char kManifestFileType[] = "manifest";
 const char kPathSuffixKey[] = "pathSuffix";
-const char kSourceFileType[] = "source";
 const char kTitleKey[] = "title";
-
-}  // namespace
 
 ExtensionErrorHandler::ExtensionErrorHandler(Profile* profile)
     : profile_(profile) {

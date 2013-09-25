@@ -151,12 +151,6 @@
 namespace content {
 namespace {
 
-// Amount of time we wait between when a key event is received and the renderer
-// is queried for its state and pushed to the NavigationEntry.
-const int kQueryStateDelay = 5000;
-
-const int kSyncWaitDelay = 40;
-
 const char kDotGoogleDotCom[] = ".google.com";
 
 base::LazyInstance<std::vector<WebContents::CreatedCallback> >

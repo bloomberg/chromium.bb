@@ -24,8 +24,6 @@ namespace content {
 
 namespace {
 
-const int kBytesPerPixel = 4;
-
 webrtc::DesktopRect ComputeLetterboxRect(
     const webrtc::DesktopSize& max_size,
     const webrtc::DesktopSize& source_size) {

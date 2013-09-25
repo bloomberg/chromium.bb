@@ -36,8 +36,11 @@ namespace {
 
 // Key names on BrowserContext.
 const char kDownloadManagerKeyName[] = "download_manager";
-const char kMountPointsKey[] = "mount_points";
 const char kStorageParitionMapKeyName[] = "content_storage_partition_map";
+
+#if defined(OS_CHROMEOS)
+const char kMountPointsKey[] = "mount_points";
+#endif  // defined(OS_CHROMEOS)
 
 StoragePartitionImplMap* GetStoragePartitionMap(
     BrowserContext* browser_context) {

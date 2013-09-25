@@ -56,7 +56,6 @@ const uint64 kEmbeddedPageVersionDefault = 2;
 // The staleness timeout can be set (in seconds) via this config.
 const char kStalePageTimeoutFlagName[] = "stale";
 const int kStalePageTimeoutDefault = 3 * 3600;  // 3 hours.
-const int kStalePageTimeoutDisabled = 0;
 
 const char kHideVerbatimFlagName[] = "hide_verbatim";
 const char kUseRemoteNTPOnStartupFlagName[] = "use_remote_ntp_on_startup";

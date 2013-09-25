@@ -15,10 +15,6 @@
 
 namespace browser_sync {
 
-static const char kNoSessionsFolderError[] =
-    "Server did not create the top-level sessions node. We "
-    "might be running against an out-of-date server.";
-
 const size_t TabNodePool2::kFreeNodesLowWatermark = 25;
 const size_t TabNodePool2::kFreeNodesHighWatermark = 100;
 

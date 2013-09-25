@@ -44,9 +44,6 @@ using content::WebContents;
 
 namespace {
 
-const char kStringsJsFile[] = "strings.js";
-const char kSignInPromoJsFile[] = "sync_promo.js";
-
 const char kSignInPromoQueryKeyAutoClose[] = "auto_close";
 const char kSignInPromoQueryKeyContinue[] = "continue";
 const char kSignInPromoQueryKeySource[] = "source";

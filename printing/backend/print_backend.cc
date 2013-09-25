@@ -9,12 +9,7 @@
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/gfx/text_elider.h"
 
-namespace {
-
-const wchar_t kDefaultDocumentTitle[] = L"Untitled Document";
 const int kMaxDocumentTitleLength = 50;
-
-}  // namespace
 
 namespace printing {
 

@@ -22,11 +22,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 
-namespace {
-
-// Measured in seconds.
-const double kContextRecreationTickRate = 0.03;
-
 // Measured in seconds.
 const double kSmoothnessTakesPriorityExpirationDelay = 0.25;
 
@@ -34,8 +29,6 @@ const size_t kDurationHistorySize = 60;
 const double kCommitAndActivationDurationEstimationPercentile = 50.0;
 const double kDrawDurationEstimationPercentile = 100.0;
 const int kDrawDurationEstimatePaddingInMicroseconds = 0;
-
-}  // namespace
 
 namespace cc {
 

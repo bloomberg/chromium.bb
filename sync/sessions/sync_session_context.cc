@@ -10,9 +10,6 @@
 namespace syncer {
 namespace sessions {
 
-const unsigned int kMaxMessagesToRecord = 10;
-const unsigned int kMaxMessageSizeToRecord = 5 * 1024;
-
 SyncSessionContext::SyncSessionContext(
     ServerConnectionManager* connection_manager,
     syncable::Directory* directory,

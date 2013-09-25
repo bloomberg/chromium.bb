@@ -323,10 +323,6 @@ bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {
 
 }  // namespace
 
-// The following is kept for historical reasons (so people that are used to
-// using it don't get surprised).
-const char kChildProcessFlag[]   = "child";
-
 const char kHelpFlag[]   = "help";
 
 const char kLaunchAsBrowser[] = "as-browser";

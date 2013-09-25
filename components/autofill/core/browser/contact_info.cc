@@ -16,15 +16,6 @@
 
 namespace autofill {
 
-static const ServerFieldType kAutofillNameInfoTypes[] = {
-  NAME_FIRST,
-  NAME_MIDDLE,
-  NAME_LAST
-};
-
-static const size_t kAutofillNameInfoLength =
-    arraysize(kAutofillNameInfoTypes);
-
 NameInfo::NameInfo() {}
 
 NameInfo::NameInfo(const NameInfo& info) : FormGroup() {

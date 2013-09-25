@@ -34,8 +34,6 @@
 #include "ui/base/keycodes/keycode_converter.h"
 #include "ui/base/resource/resource_bundle.h"
 
-static const int kDefaultWsPort = 8880;
-
 namespace content {
 namespace {
 

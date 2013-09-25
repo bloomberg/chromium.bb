@@ -45,10 +45,6 @@ const int kGeoLabelHeight = 14;
 // Height of the "Clear" button in the geolocation bubble.
 const int kGeoClearButtonHeight = 17;
 
-// Padding between radio buttons and "Load all plugins" button
-// in the plugin bubble.
-const int kLoadAllPluginsButtonVerticalPadding = 8;
-
 // General padding between elements in the geolocation bubble.
 const int kGeoPadding = 8;
 

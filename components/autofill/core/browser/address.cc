@@ -14,12 +14,6 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 
-namespace {
-
-const char16 kAddressSplitChars[] = {'-', ',', '#', '.', ' ', 0};
-
-}  // namespace
-
 namespace autofill {
 
 Address::Address() {}

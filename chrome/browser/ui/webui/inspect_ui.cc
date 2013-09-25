@@ -65,50 +65,47 @@ using content::WorkerServiceObserver;
 
 namespace {
 
-static const char kDataFile[] = "targets-data.json";
-static const char kAdbPages[] = "adb-pages";
+const char kAppTargetType[] = "app";
+const char kExtensionTargetType[]  = "extension";
+const char kPageTargetType[]  = "page";
+const char kWorkerTargetType[]  = "worker";
+const char kAdbTargetType[]  = "adb_page";
 
-static const char kAppTargetType[] = "app";
-static const char kExtensionTargetType[]  = "extension";
-static const char kPageTargetType[]  = "page";
-static const char kWorkerTargetType[]  = "worker";
-static const char kAdbTargetType[]  = "adb_page";
+const char kInitUICommand[]  = "init-ui";
+const char kInspectCommand[]  = "inspect";
+const char kActivateCommand[]  = "activate";
+const char kTerminateCommand[]  = "terminate";
+const char kReloadCommand[]  = "reload";
+const char kOpenCommand[]  = "open";
 
-static const char kInitUICommand[]  = "init-ui";
-static const char kInspectCommand[]  = "inspect";
-static const char kActivateCommand[]  = "activate";
-static const char kTerminateCommand[]  = "terminate";
-static const char kReloadCommand[]  = "reload";
-static const char kOpenCommand[]  = "open";
-
-static const char kPortForwardingEnabledCommand[] =
+const char kPortForwardingEnabledCommand[] =
     "set-port-forwarding-enabled";
-static const char kPortForwardingConfigCommand[] = "set-port-forwarding-config";
+const char kPortForwardingConfigCommand[] = "set-port-forwarding-config";
 
-static const char kPortForwardingDefaultPort[] = "8080";
-static const char kPortForwardingDefaultLocation[] = "localhost:8080";
+const char kPortForwardingDefaultPort[] = "8080";
+const char kPortForwardingDefaultLocation[] = "localhost:8080";
 
-static const char kTargetTypeField[]  = "type";
-static const char kAttachedField[]  = "attached";
-static const char kProcessIdField[]  = "processId";
-static const char kRouteIdField[]  = "routeId";
-static const char kUrlField[]  = "url";
-static const char kNameField[]  = "name";
-static const char kFaviconUrlField[] = "faviconUrl";
-static const char kDescription[] = "description";
-static const char kPidField[]  = "pid";
-static const char kAdbSerialField[] = "adbSerial";
-static const char kAdbModelField[] = "adbModel";
-static const char kAdbBrowserProductField[] = "adbBrowserProduct";
-static const char kAdbBrowserPackageField[] = "adbBrowserPackage";
-static const char kAdbBrowserVersionField[] = "adbBrowserVersion";
-static const char kAdbGlobalIdField[] = "adbGlobalId";
-static const char kAdbBrowsersField[] = "browsers";
-static const char kAdbPagesField[] = "pages";
-static const char kAdbPortStatus[] = "adbPortStatus";
-static const char kAdbScreenWidthField[] = "adbScreenWidth";
-static const char kAdbScreenHeightField[] = "adbScreenHeight";
-static const char kGuestList[] = "guests";
+const char kTargetTypeField[]  = "type";
+const char kAttachedField[]  = "attached";
+const char kProcessIdField[]  = "processId";
+const char kRouteIdField[]  = "routeId";
+const char kUrlField[]  = "url";
+const char kNameField[]  = "name";
+const char kFaviconUrlField[] = "faviconUrl";
+const char kDescription[] = "description";
+const char kPidField[]  = "pid";
+const char kAdbSerialField[] = "adbSerial";
+const char kAdbModelField[] = "adbModel";
+const char kAdbBrowserProductField[] = "adbBrowserProduct";
+const char kAdbBrowserPackageField[] = "adbBrowserPackage";
+const char kAdbBrowserVersionField[] = "adbBrowserVersion";
+const char kAdbGlobalIdField[] = "adbGlobalId";
+const char kAdbBrowsersField[] = "browsers";
+const char kAdbPagesField[] = "pages";
+const char kAdbPortStatus[] = "adbPortStatus";
+const char kAdbScreenWidthField[] = "adbScreenWidth";
+const char kAdbScreenHeightField[] = "adbScreenHeight";
+const char kGuestList[] = "guests";
 
 DictionaryValue* BuildTargetDescriptor(
     const std::string& target_type,

@@ -21,8 +21,6 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/image/image.h"
 
-const int kButtonPadding = 5;
-
 // 'Glint' is a glowing light animation on the titlebar to attract user's
 // attention. Numbers are arbitrary, based on several tries.
 const double kGlintAnimationDuration = 1.5;

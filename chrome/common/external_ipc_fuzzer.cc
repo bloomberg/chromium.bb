@@ -6,17 +6,16 @@
 
 #if defined(OS_LINUX)
 #include <dlfcn.h>
-#endif
 
 typedef IPC::ChannelProxy::OutgoingMessageFilter *(*GetFuzzerFunction)();
 const char kFuzzLibraryName[] = "libipcfuzz.so";
 const char kFuzzEntryName[] = "GetFilter";
+#endif
 
 IPC::ChannelProxy::OutgoingMessageFilter* LoadExternalIPCFuzzer() {
   IPC::ChannelProxy::OutgoingMessageFilter* result = NULL;
 
 #if defined(OS_LINUX)
-
   // Fuzz is currently linux-only feature
   void *fuzz_library =  dlopen(kFuzzLibraryName, RTLD_NOW);
   if (fuzz_library) {

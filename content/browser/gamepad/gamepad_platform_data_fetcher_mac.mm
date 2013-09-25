@@ -41,7 +41,6 @@ const uint32_t kJoystickUsageNumber = 0x04;
 const uint32_t kGameUsageNumber = 0x05;
 const uint32_t kMultiAxisUsageNumber = 0x08;
 const uint32_t kAxisMinimumUsageNumber = 0x30;
-const uint32_t kAxisMaximumUsageNumber = 0x35;
 
 }  // namespace
 

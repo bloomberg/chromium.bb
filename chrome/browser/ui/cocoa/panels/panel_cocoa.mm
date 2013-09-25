@@ -16,15 +16,6 @@
 using content::NativeWebKeyboardEvent;
 using content::WebContents;
 
-namespace {
-
-// Use this instead of 0 for minimum size of a window when doing opening and
-// closing animations, since OSX window manager does not like 0-sized windows
-// (according to avi@).
-const int kMinimumWindowSize = 1;
-
-}  // namespace
-
 // This creates a shim window class, which in turn creates a Cocoa window
 // controller which in turn creates actual NSWindow by loading a nib.
 // Overall chain of ownership is:

@@ -15,10 +15,11 @@
 
 namespace browser_sync {
 
-static const double kErrorUploadRatio = 0.15;
 void ChromeReportUnrecoverableError() {
   // TODO(lipalani): Add this for other platforms as well.
 #if defined(OS_WIN)
+  const double kErrorUploadRatio = 0.15;
+
   // We only want to upload |kErrorUploadRatio| ratio of errors.
   if (kErrorUploadRatio <= 0.0)
     return; // We are not allowed to upload errors.

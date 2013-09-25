@@ -16,8 +16,6 @@ namespace extensions {
 
 namespace {
 
-const char kNotImplementedError[] =
-    "Desktop Capture API is not yet implemented for this platform.";
 const char kInvalidSourceNameError[] = "Invalid source type specified.";
 const char kEmptySourcesListError[] =
     "At least one source type must be specified.";
@@ -101,6 +99,8 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
         screen_capturer.Pass(), window_capturer.Pass()));
     picker_ = DesktopMediaPicker::Create();
 #else
+    const char kNotImplementedError[] =
+        "Desktop Capture API is not yet implemented for this platform.";
     error_ = kNotImplementedError;
     return false;
 #endif

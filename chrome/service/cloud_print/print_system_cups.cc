@@ -37,10 +37,6 @@
 
 namespace {
 
-// CUPS specific options.
-const char kCUPSPrinterInfoOpt[] = "printer-info";
-const char kCUPSPrinterStateOpt[] = "printer-state";
-
 // Print system config options.
 const char kCUPSPrintServerURLs[] = "print_server_urls";
 const char kCUPSUpdateTimeoutMs[] = "update_timeout_ms";
@@ -51,9 +47,6 @@ const char kCUPSSupportedMimeTipes[] = "supported_mime_types";
 // http://www.cups.org/articles.php?L205+TFAQ+Q
 const char kCUPSDefaultSupportedTypes[] =
     "application/pdf,application/postscript,image/jpeg,image/png,image/gif";
-
-// Default port for IPP print servers.
-const int kDefaultIPPServerPort = 631;
 
 // Time interval to check for printer's updates.
 const int kCheckForPrinterUpdatesMinutes = 5;

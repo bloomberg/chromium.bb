@@ -21,7 +21,6 @@ const char kObjectSrc[] = "object-src";
 const char kSandboxDirectiveName[] = "sandbox";
 const char kAllowSameOriginToken[] = "allow-same-origin";
 const char kAllowTopNavigation[] = "allow-top-navigation";
-const char kAllowPopups[] = "allow-popups";
 
 struct DirectiveStatus {
   explicit DirectiveStatus(const char* name)

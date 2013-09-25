@@ -37,14 +37,11 @@
 
 using content::BrowserThread;
 
-namespace {
 const char kChannelIdSeparator[] = "/";
 const char kUserNotSignedIn[] = "The user is not signed in.";
 const char kUserAccessTokenFailure[] =
     "Cannot obtain access token for the user.";
-const char kTokenServiceNotAvailable[] = "Failed to get token service.";
 const int kObfuscatedGaiaIdTimeoutInDays = 30;
-}
 
 namespace extensions {
 

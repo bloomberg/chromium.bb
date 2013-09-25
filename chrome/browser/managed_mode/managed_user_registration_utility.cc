@@ -29,10 +29,6 @@ using base::DictionaryValue;
 
 namespace {
 
-const char kAcknowledged[] = "acknowledged";
-const char kName[] = "name";
-const char kMasterKey[] = "masterKey";
-
 ManagedUserRegistrationUtility* g_instance_for_tests = NULL;
 
 // Actual implementation of ManagedUserRegistrationUtility.

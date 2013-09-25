@@ -18,17 +18,6 @@
 
 namespace history {
 
-// The maximum score any candidate result can achieve.
-const int kMaxTotalScore = 1425;
-
-// Score ranges used to get a 'base' score for each of the scoring factors
-// (such as recency of last visit, times visited, times the URL was typed,
-// and the quality of the string match). There is a matching value range for
-// each of these scores for each factor. Note that the top score is greater
-// than |kMaxTotalScore|. The score for each candidate will be capped in the
-// final calculation.
-const int kScoreRank[] = { 1450, 1200, 900, 400 };
-
 // Matches within URL and Title Strings ----------------------------------------
 
 string16 CleanUpUrlForMatching(const GURL& gurl,
