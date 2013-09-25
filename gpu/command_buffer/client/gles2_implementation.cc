@@ -149,7 +149,13 @@ bool GLES2Implementation::Initialize(
   }
 
   mapped_memory_.reset(new MappedMemoryManager(helper_, mapped_memory_limit));
-  mapped_memory_->set_chunk_size_multiple(2 * 1024 * 1024);
+
+  unsigned chunk_size = 2 * 1024 * 1024;
+  if (mapped_memory_limit != kNoLimit) {
+    // Use smaller chunks if the client is very memory conscientious.
+    chunk_size = std::min(mapped_memory_limit / 2, chunk_size);
+  }
+  mapped_memory_->set_chunk_size_multiple(chunk_size);
 
   if (!QueryAndCacheStaticState())
     return false;
