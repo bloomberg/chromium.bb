@@ -6,18 +6,6 @@ dialog {
     width: 100px;
     background: green;
 }
-
-/* The default CSS style from the spec gives a background color but no dimensions,
- * so the backdrop has zero size by default.
- * http://www.whatwg.org/specs/web-apps/current-work/multipage/rendering.html#rendering
- */
-dialog::backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
 </style>
 <body>
 Test for the default user agent style of dialog::backdrop. The test passes if

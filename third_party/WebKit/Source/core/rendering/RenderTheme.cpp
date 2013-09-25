@@ -497,7 +497,7 @@ String RenderTheme::extraDefaultStyleSheet()
     if (RuntimeEnabledFeatures::dialogElementEnabled()) {
         runtimeCSS.appendLiteral("dialog:not([open]) { display: none; }");
         runtimeCSS.appendLiteral("dialog { position: absolute; left: 0; right: 0; width: -webkit-fit-content; height: -webkit-fit-content; margin: auto; border: solid; padding: 1em; background: white; color: black;}");
-        runtimeCSS.appendLiteral("dialog::backdrop { background: rgba(0,0,0,0.1); }");
+        runtimeCSS.appendLiteral("dialog::backdrop { position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(0,0,0,0.1); }");
     }
 
     return runtimeCSS.toString();
