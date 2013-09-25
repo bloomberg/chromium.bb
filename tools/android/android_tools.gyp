@@ -22,6 +22,13 @@
       'dependencies': [
         'memdump/memdump.gyp:memdump',
       ],
-    }
+    },
+    {
+      'target_name': 'memconsumer',
+      'type': 'none',
+      'dependencies': [
+        'memconsumer/memconsumer.gyp:memconsumer',
+      ],
+    },
   ],
 }
