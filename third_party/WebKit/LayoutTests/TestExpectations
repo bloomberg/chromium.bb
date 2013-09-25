@@ -1122,8 +1122,6 @@ Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ Pass Failure ]
 crbug.com/276861 [ Win ] fast/filesystem/op-restricted-unicode.html [ Failure Pass ]
 
 crbug.com/278318 [ Win7 Lion Debug Release SnowLeopard Debug Release Linux ] editing/spelling/spellcheck-editable-on-focus.html [ Failure Pass ]
-Bug(grzegorz) [ Linux Mac Win ] editing/spelling/grammar-markers.html [ NeedsRebaseline ]
-Bug(grzegorz) [ Linux Mac Win ] editing/spelling/grammar-markers-hidpi.html [ NeedsRebaseline ]
 
 crbug.com/278497 [ Linux SnowLeopard Debug ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
 
