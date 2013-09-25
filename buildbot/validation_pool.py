@@ -1431,11 +1431,8 @@ class ValidationPool(object):
       self.UpdateCLStatus(self.bot, change, self.STATUS_PASSED,
                           dry_run=self.dryrun)
 
-    # We use the default timeout here as while we want some robustness against
-    # the tree status being red i.e. flakiness, we don't want to wait too long
-    # as validation can become stale.
     if check_tree_open and not self.dryrun and not cros_build_lib.TreeOpen(
-        self.STATUS_URL, self.SLEEP_TIMEOUT):
+        self.STATUS_URL, self.SLEEP_TIMEOUT, max_timeout=self.MAX_TIMEOUT):
       raise TreeIsClosedException()
 
     # Reload all of the changes from the Gerrit server so that we have a fresh
