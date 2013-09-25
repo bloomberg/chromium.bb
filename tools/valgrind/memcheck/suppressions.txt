@@ -7211,3 +7211,9 @@
    fun:_ZN11webkit_glue16WebURLLoaderImpl7Context18OnCompletedRequestEibRKSsRKN4base9TimeTicksE
    fun:_ZN7content18ResourceDispatcher17OnRequestCompleteEiibRKSsRKN4base9TimeTicksE
 }
+{
+   bug_298143
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN7WebCore25TypeConversionsV8Internal*AttributeGetterE*
+}
