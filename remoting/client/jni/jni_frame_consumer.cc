@@ -10,6 +10,7 @@
 #include "remoting/client/frame_producer.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
 namespace {
 
@@ -62,10 +63,10 @@ void JniFrameConsumer::set_frame_producer(FrameProducer* producer) {
   frame_producer_ = producer;
 }
 
-void JniFrameConsumer::ApplyBuffer(const SkISize& view_size,
-                                   const SkIRect& clip_area,
+void JniFrameConsumer::ApplyBuffer(const webrtc::DesktopSize& view_size,
+                                   const webrtc::DesktopRect& clip_area,
                                    webrtc::DesktopFrame* buffer,
-                                   const SkRegion& region) {
+                                   const webrtc::DesktopRegion& region) {
   DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
 
   scoped_ptr<webrtc::DesktopFrame> buffer_scoped(buffer);
@@ -93,14 +94,14 @@ void JniFrameConsumer::ReturnBuffer(webrtc::DesktopFrame* buffer) {
   delete buffer;
 }
 
-void JniFrameConsumer::SetSourceSize(const SkISize& source_size,
-                                     const SkIPoint& dpi) {
+void JniFrameConsumer::SetSourceSize(const webrtc::DesktopSize& source_size,
+                                     const webrtc::DesktopVector& dpi) {
   DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
 
   // We currently render the desktop 1:1 and perform pan/zoom scaling
   // and cropping on the managed canvas.
   view_size_ = source_size;
-  clip_area_ = SkIRect::MakeSize(view_size_);
+  clip_area_ = webrtc::DesktopRect::MakeSize(view_size_);
   frame_producer_->SetOutputSizeAndClip(view_size_, clip_area_);
 
   // Unless being destructed, allocate buffer and start drawing frames onto it.
@@ -123,8 +124,8 @@ void JniFrameConsumer::AllocateBuffer() {
 
     // Update Java's reference to the buffer and record of its dimensions.
     jni_runtime_->UpdateImageBuffer(view_size_.width(),
-                                        view_size_.height(),
-                                        buffer->buffer());
+                                    view_size_.height(),
+                                    buffer->buffer());
 
     frame_producer_->DrawBuffer(buffer);
   }

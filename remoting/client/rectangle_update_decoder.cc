@@ -31,10 +31,6 @@ RectangleUpdateDecoder::RectangleUpdateDecoder(
     : main_task_runner_(main_task_runner),
       decode_task_runner_(decode_task_runner),
       consumer_(consumer),
-      source_size_(SkISize::Make(0, 0)),
-      source_dpi_(SkIPoint::Make(0, 0)),
-      view_size_(SkISize::Make(0, 0)),
-      clip_area_(SkIRect::MakeEmpty()),
       paint_scheduled_(false),
       latest_sequence_number_(0) {
 }
@@ -66,25 +62,25 @@ void RectangleUpdateDecoder::DecodePacket(scoped_ptr<VideoPacket> packet,
   // If the packet includes screen size or DPI information, store them.
   if (packet->format().has_screen_width() &&
       packet->format().has_screen_height()) {
-    SkISize source_size = SkISize::Make(packet->format().screen_width(),
-                                        packet->format().screen_height());
-    if (source_size_ != source_size) {
+    webrtc::DesktopSize source_size(packet->format().screen_width(),
+                                    packet->format().screen_height());
+    if (!source_size_.equals(source_size)) {
       source_size_ = source_size;
       decoder_needs_reset = true;
       notify_size_or_dpi_change = true;
     }
   }
   if (packet->format().has_x_dpi() && packet->format().has_y_dpi()) {
-    SkIPoint source_dpi(SkIPoint::Make(packet->format().x_dpi(),
-                                       packet->format().y_dpi()));
-    if (source_dpi != source_dpi_) {
+    webrtc::DesktopVector source_dpi(packet->format().x_dpi(),
+                                     packet->format().y_dpi());
+    if (!source_dpi.equals(source_dpi_)) {
       source_dpi_ = source_dpi;
       notify_size_or_dpi_change = true;
     }
   }
 
   // If we've never seen a screen size, ignore the packet.
-  if (source_size_.isZero())
+  if (source_size_.is_empty())
     return;
 
   if (decoder_needs_reset)
@@ -112,23 +108,23 @@ void RectangleUpdateDecoder::DoPaint() {
   paint_scheduled_ = false;
 
   // If the view size is empty or we have no output buffers ready, return.
-  if (buffers_.empty() || view_size_.isEmpty())
+  if (buffers_.empty() || view_size_.is_empty())
     return;
 
   // If no Decoder is initialized, or the host dimensions are empty, return.
-  if (!decoder_.get() || source_size_.isEmpty())
+  if (!decoder_.get() || source_size_.is_empty())
     return;
 
   // Draw the invalidated region to the buffer.
   webrtc::DesktopFrame* buffer = buffers_.front();
-  SkRegion output_region;
+  webrtc::DesktopRegion output_region;
   decoder_->RenderFrame(view_size_, clip_area_,
                         buffer->data(),
                         buffer->stride(),
                         &output_region);
 
   // Notify the consumer that painting is done.
-  if (!output_region.isEmpty()) {
+  if (!output_region.is_empty()) {
     buffers_.pop_front();
     consumer_->ApplyBuffer(view_size_, clip_area_, buffer, output_region);
   }
@@ -166,7 +162,8 @@ void RectangleUpdateDecoder::DrawBuffer(webrtc::DesktopFrame* buffer) {
   SchedulePaint();
 }
 
-void RectangleUpdateDecoder::InvalidateRegion(const SkRegion& region) {
+void RectangleUpdateDecoder::InvalidateRegion(
+    const webrtc::DesktopRegion& region) {
   if (!decode_task_runner_->BelongsToCurrentThread()) {
     decode_task_runner_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::InvalidateRegion,
@@ -180,8 +177,9 @@ void RectangleUpdateDecoder::InvalidateRegion(const SkRegion& region) {
   }
 }
 
-void RectangleUpdateDecoder::SetOutputSizeAndClip(const SkISize& view_size,
-                                                  const SkIRect& clip_area) {
+void RectangleUpdateDecoder::SetOutputSizeAndClip(
+    const webrtc::DesktopSize& view_size,
+    const webrtc::DesktopRect& clip_area) {
   if (!decode_task_runner_->BelongsToCurrentThread()) {
     decode_task_runner_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::SetOutputSizeAndClip,
@@ -190,14 +188,14 @@ void RectangleUpdateDecoder::SetOutputSizeAndClip(const SkISize& view_size,
   }
 
   // The whole frame needs to be repainted if the scaling factor has changed.
-  if (view_size_ != view_size && decoder_.get()) {
-    SkRegion region;
-    region.op(SkIRect::MakeSize(view_size), SkRegion::kUnion_Op);
+  if (!view_size_.equals(view_size) && decoder_.get()) {
+    webrtc::DesktopRegion region;
+    region.AddRect(webrtc::DesktopRect::MakeSize(view_size));
     decoder_->Invalidate(view_size, region);
   }
 
-  if (view_size_ != view_size ||
-      clip_area_ != clip_area) {
+  if (!view_size_.equals(view_size) ||
+      !clip_area_.equals(clip_area)) {
     view_size_ = view_size;
     clip_area_ = clip_area;
 
@@ -218,7 +216,7 @@ void RectangleUpdateDecoder::SetOutputSizeAndClip(const SkISize& view_size,
   }
 }
 
-const SkRegion* RectangleUpdateDecoder::GetBufferShape() {
+const webrtc::DesktopRegion* RectangleUpdateDecoder::GetBufferShape() {
   return decoder_->GetImageShape();
 }
 

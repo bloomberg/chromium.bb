@@ -8,6 +8,8 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
 namespace remoting {
 
@@ -16,10 +18,10 @@ FrameConsumerProxy::FrameConsumerProxy(
     : task_runner_(task_runner) {
 }
 
-void FrameConsumerProxy::ApplyBuffer(const SkISize& view_size,
-                                     const SkIRect& clip_area,
+void FrameConsumerProxy::ApplyBuffer(const webrtc::DesktopSize& view_size,
+                                     const webrtc::DesktopRect& clip_area,
                                      webrtc::DesktopFrame* buffer,
-                                     const SkRegion& region) {
+                                     const webrtc::DesktopRegion& region) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(FROM_HERE, base::Bind(
         &FrameConsumerProxy::ApplyBuffer, this,
@@ -42,8 +44,9 @@ void FrameConsumerProxy::ReturnBuffer(webrtc::DesktopFrame* buffer) {
     frame_consumer_->ReturnBuffer(buffer);
 }
 
-void FrameConsumerProxy::SetSourceSize(const SkISize& source_size,
-                                       const SkIPoint& source_dpi) {
+void FrameConsumerProxy::SetSourceSize(
+    const webrtc::DesktopSize& source_size,
+    const webrtc::DesktopVector& source_dpi) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(FROM_HERE, base::Bind(
         &FrameConsumerProxy::SetSourceSize, this, source_size, source_dpi));

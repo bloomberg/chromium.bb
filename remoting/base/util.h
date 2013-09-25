@@ -8,7 +8,7 @@
 #include <string>
 
 #include "media/base/video_frame.h"
-#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
 
@@ -36,18 +36,19 @@ int CalculateUVOffset(int x, int y, int stride);
 //
 // N.B. The top left corner coordinates of YUV buffer should have even X and Y
 // coordinates.
-void ConvertAndScaleYUVToRGB32Rect(const uint8* source_yplane,
-                                   const uint8* source_uplane,
-                                   const uint8* source_vplane,
-                                   int source_ystride,
-                                   int source_uvstride,
-                                   const SkISize& source_size,
-                                   const SkIRect& source_buffer_rect,
-                                   uint8* dest_buffer,
-                                   int dest_stride,
-                                   const SkISize& dest_size,
-                                   const SkIRect& dest_buffer_rect,
-                                   const SkIRect& dest_rect);
+void ConvertAndScaleYUVToRGB32Rect(
+    const uint8* source_yplane,
+    const uint8* source_uplane,
+    const uint8* source_vplane,
+    int source_ystride,
+    int source_uvstride,
+    const webrtc::DesktopSize& source_size,
+    const webrtc::DesktopRect& source_buffer_rect,
+    uint8* dest_buffer,
+    int dest_stride,
+    const webrtc::DesktopSize& dest_size,
+    const webrtc::DesktopRect& dest_buffer_rect,
+    const webrtc::DesktopRect& dest_rect);
 
 // Convert RGB32 to YUV on a specific rectangle.
 void ConvertRGB32ToYUVWithRect(const uint8* rgb_plane,
@@ -65,23 +66,23 @@ void ConvertRGB32ToYUVWithRect(const uint8* rgb_plane,
 int RoundToTwosMultiple(int x);
 
 // Align the sides of the rectangle to multiples of 2 (expanding outwards).
-SkIRect AlignRect(const SkIRect& rect);
+webrtc::DesktopRect AlignRect(const webrtc::DesktopRect& rect);
 
 // Scales the supplied rectangle from |in_size| coordinates to |out_size|.
 // If the result has non-integer coordinates then the smallest integer-
 // coordinate rectangle that wholly encloses it is returned.
-SkIRect ScaleRect(const SkIRect& rect,
-                  const SkISize& in_size,
-                  const SkISize& out_size);
+webrtc::DesktopRect ScaleRect(const webrtc::DesktopRect& rect,
+                              const webrtc::DesktopSize& in_size,
+                              const webrtc::DesktopSize& out_size);
 
 // Copy content of a rectangle in a RGB32 image.
 void CopyRGB32Rect(const uint8* source_buffer,
                    int source_stride,
-                   const SkIRect& source_buffer_rect,
+                   const webrtc::DesktopRect& source_buffer_rect,
                    uint8* dest_buffer,
                    int dest_stride,
-                   const SkIRect& dest_buffer_rect,
-                   const SkIRect& dest_rect);
+                   const webrtc::DesktopRect& dest_buffer_rect,
+                   const webrtc::DesktopRect& dest_rect);
 
 // Replaces every occurrence of "\n" in a string by "\r\n".
 std::string ReplaceLfByCrLf(const std::string& in);
@@ -95,6 +96,9 @@ bool StringIsUtf8(const char* data, size_t length);
 // Returns the username associated with this process, or the empty string on
 // error or if not implemented.
 std::string GetUsername();
+
+bool DoesRectContain(const webrtc::DesktopRect& a,
+                     const webrtc::DesktopRect& b);
 
 }  // namespace remoting
 

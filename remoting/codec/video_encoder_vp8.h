@@ -7,12 +7,12 @@
 
 #include "base/gtest_prod_util.h"
 #include "remoting/codec/video_encoder.h"
-#include "third_party/skia/include/core/SkRegion.h"
 
 typedef struct vpx_codec_ctx vpx_codec_ctx_t;
 typedef struct vpx_image vpx_image_t;
 
 namespace webrtc {
+class DesktopRegion;
 class DesktopSize;
 }  // namespace webrtc
 
@@ -42,11 +42,11 @@ class VideoEncoderVp8 : public VideoEncoder {
   //
   // TODO(sergeyu): Update this code to use webrtc::DesktopRegion.
   void PrepareImage(const webrtc::DesktopFrame& frame,
-                    SkRegion* updated_region);
+                    webrtc::DesktopRegion* updated_region);
 
   // Update the active map according to |updated_region|. Active map is then
   // given to the encoder to speed up encoding.
-  void PrepareActiveMap(const SkRegion& updated_region);
+  void PrepareActiveMap(const webrtc::DesktopRegion& updated_region);
 
   // True if the encoder is initialized.
   bool initialized_;

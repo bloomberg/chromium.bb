@@ -67,14 +67,8 @@ PepperView::PepperView(ChromotingInstance* instance,
     context_(context),
     producer_(producer),
     merge_buffer_(NULL),
-    merge_clip_area_(SkIRect::MakeEmpty()),
-    dips_size_(SkISize::Make(0, 0)),
     dips_to_device_scale_(1.0f),
-    view_size_(SkISize::Make(0, 0)),
     dips_to_view_scale_(1.0f),
-    clip_area_(SkIRect::MakeEmpty()),
-    source_size_(SkISize::Make(0, 0)),
-    source_dpi_(SkIPoint::Make(0, 0)),
     flush_pending_(false),
     is_initialized_(false),
     frame_received_(false),
@@ -101,10 +95,10 @@ void PepperView::SetView(const pp::View& view) {
   bool view_changed = false;
 
   pp::Rect pp_size = view.GetRect();
-  SkISize new_dips_size = SkISize::Make(pp_size.width(), pp_size.height());
+  webrtc::DesktopSize new_dips_size(pp_size.width(), pp_size.height());
   float new_dips_to_device_scale = view.GetDeviceScale();
 
-  if (dips_size_ != new_dips_size ||
+  if (!dips_size_.equals(new_dips_size) ||
       dips_to_device_scale_ != new_dips_to_device_scale) {
     view_changed = true;
     dips_to_device_scale_ = new_dips_to_device_scale;
@@ -120,11 +114,10 @@ void PepperView::SetView(const pp::View& view) {
 
     // If the view's DIP dimensions don't match the source then let the frame
     // producer do the scaling, and render at device resolution.
-    if (dips_size_ != source_size_) {
+    if (!dips_size_.equals(source_size_)) {
       dips_to_view_scale_ = dips_to_device_scale_;
-      view_size_ = SkISize::Make(
-          ceilf(dips_size_.width() * dips_to_view_scale_),
-          ceilf(dips_size_.height() * dips_to_view_scale_));
+      view_size_.set(ceilf(dips_size_.width() * dips_to_view_scale_),
+                     ceilf(dips_size_.height() * dips_to_view_scale_));
     }
 
     // Create a 2D rendering context at the chosen frame dimensions.
@@ -141,18 +134,18 @@ void PepperView::SetView(const pp::View& view) {
   }
 
   pp::Rect pp_clip = view.GetClipRect();
-  SkIRect new_clip = SkIRect::MakeLTRB(
+  webrtc::DesktopRect new_clip = webrtc::DesktopRect::MakeLTRB(
       floorf(pp_clip.x() * dips_to_view_scale_),
       floorf(pp_clip.y() * dips_to_view_scale_),
       ceilf(pp_clip.right() * dips_to_view_scale_),
       ceilf(pp_clip.bottom() * dips_to_view_scale_));
-  if (clip_area_ != new_clip) {
+  if (!clip_area_.equals(new_clip)) {
     view_changed = true;
 
     // YUV to RGB conversion may require even X and Y coordinates for
     // the top left corner of the clipping area.
     clip_area_ = AlignRect(new_clip);
-    clip_area_.intersect(SkIRect::MakeSize(view_size_));
+    clip_area_.IntersectWith(webrtc::DesktopRect::MakeSize(view_size_));
   }
 
   if (view_changed) {
@@ -161,10 +154,10 @@ void PepperView::SetView(const pp::View& view) {
   }
 }
 
-void PepperView::ApplyBuffer(const SkISize& view_size,
-                             const SkIRect& clip_area,
+void PepperView::ApplyBuffer(const webrtc::DesktopSize& view_size,
+                             const webrtc::DesktopRect& clip_area,
                              webrtc::DesktopFrame* buffer,
-                             const SkRegion& region) {
+                             const webrtc::DesktopRegion& region) {
   DCHECK(context_->main_task_runner()->BelongsToCurrentThread());
 
   if (!frame_received_) {
@@ -176,7 +169,7 @@ void PepperView::ApplyBuffer(const SkISize& view_size,
   // TODO(alexeypa): We could rescale and draw it (or even draw it without
   // rescaling) to reduce the perceived lag while we are waiting for
   // the properly scaled data.
-  if (view_size_ != view_size) {
+  if (!view_size_.equals(view_size)) {
     FreeBuffer(buffer);
     InitiateDrawing();
   } else {
@@ -198,11 +191,11 @@ void PepperView::ReturnBuffer(webrtc::DesktopFrame* buffer) {
   }
 }
 
-void PepperView::SetSourceSize(const SkISize& source_size,
-                               const SkIPoint& source_dpi) {
+void PepperView::SetSourceSize(const webrtc::DesktopSize& source_size,
+                               const webrtc::DesktopVector& source_dpi) {
   DCHECK(context_->main_task_runner()->BelongsToCurrentThread());
 
-  if (source_size_ == source_size && source_dpi_ == source_dpi)
+  if (source_size_.equals(source_size) && source_dpi_.equals(source_dpi))
     return;
 
   source_size_ = source_size;
@@ -250,9 +243,9 @@ void PepperView::InitiateDrawing() {
   }
 }
 
-void PepperView::FlushBuffer(const SkIRect& clip_area,
+void PepperView::FlushBuffer(const webrtc::DesktopRect& clip_area,
                              webrtc::DesktopFrame* buffer,
-                             const SkRegion& region) {
+                             const webrtc::DesktopRegion& region) {
   // Defer drawing if the flush is already in progress.
   if (flush_pending_) {
     // |merge_buffer_| is guaranteed to be free here because we allocate only
@@ -269,16 +262,17 @@ void PepperView::FlushBuffer(const SkIRect& clip_area,
   // Notify Pepper API about the updated areas and flush pixels to the screen.
   base::Time start_time = base::Time::Now();
 
-  for (SkRegion::Iterator i(region); !i.done(); i.next()) {
-    SkIRect rect = i.rect();
+  for (webrtc::DesktopRegion::Iterator i(region); !i.IsAtEnd(); i.Advance()) {
+    webrtc::DesktopRect rect = i.rect();
 
     // Re-clip |region| with the current clipping area |clip_area_| because
     // the latter could change from the time the buffer was drawn.
-    if (!rect.intersect(clip_area_))
+    rect.IntersectWith(clip_area_);
+    if (rect.is_empty())
       continue;
 
     // Specify the rectangle coordinates relative to the clipping area.
-    rect.offset(-clip_area.left(), -clip_area.top());
+    rect.Translate(-clip_area.left(), -clip_area.top());
 
     // Pepper Graphics 2D has a strange and badly documented API that the
     // point here is the offset from the source rect. Why?
@@ -290,10 +284,10 @@ void PepperView::FlushBuffer(const SkIRect& clip_area,
 
   // Notify the producer that some parts of the region weren't painted because
   // the clipping area has changed already.
-  if (clip_area != clip_area_) {
-    SkRegion not_painted = region;
-    not_painted.op(clip_area_, SkRegion::kDifference_Op);
-    if (!not_painted.isEmpty()) {
+  if (!clip_area.equals(clip_area_)) {
+    webrtc::DesktopRegion not_painted = region;
+    not_painted.Subtract(clip_area_);
+    if (!not_painted.is_empty()) {
       producer_->InvalidateRegion(not_painted);
     }
   }
@@ -308,7 +302,7 @@ void PepperView::FlushBuffer(const SkIRect& clip_area,
   flush_pending_ = true;
 
   // If the buffer we just rendered has a shape then pass that to JavaScript.
-  const SkRegion* buffer_shape = producer_->GetBufferShape();
+  const webrtc::DesktopRegion* buffer_shape = producer_->GetBufferShape();
   if (buffer_shape)
     instance_->SetDesktopShape(*buffer_shape);
 }

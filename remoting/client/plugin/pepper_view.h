@@ -16,6 +16,8 @@
 #include "ppapi/cpp/point.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #include "remoting/client/frame_consumer.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
 namespace base {
 class Time;
@@ -41,26 +43,26 @@ class PepperView : public FrameConsumer {
   virtual ~PepperView();
 
   // FrameConsumer implementation.
-  virtual void ApplyBuffer(const SkISize& view_size,
-                           const SkIRect& clip_area,
+  virtual void ApplyBuffer(const webrtc::DesktopSize& view_size,
+                           const webrtc::DesktopRect& clip_area,
                            webrtc::DesktopFrame* buffer,
-                           const SkRegion& region) OVERRIDE;
+                           const webrtc::DesktopRegion& region) OVERRIDE;
   virtual void ReturnBuffer(webrtc::DesktopFrame* buffer) OVERRIDE;
-  virtual void SetSourceSize(const SkISize& source_size,
-                             const SkIPoint& dpi) OVERRIDE;
+  virtual void SetSourceSize(const webrtc::DesktopSize& source_size,
+                             const webrtc::DesktopVector& dpi) OVERRIDE;
 
   // Updates the PepperView's size & clipping area, taking into account the
   // DIP-to-device scale factor.
   void SetView(const pp::View& view);
 
   // Returns the dimensions of the most recently displayed frame, in pixels.
-  const SkISize& get_source_size() const {
+  const webrtc::DesktopSize& get_source_size() const {
     return source_size_;
   }
 
   // Return the dimensions of the view in Density Independent Pixels (DIPs).
   // Note that there may be multiple device pixels per DIP.
-  const SkISize& get_view_size_dips() const {
+  const webrtc::DesktopSize& get_view_size_dips() const {
     return dips_size_;
   }
 
@@ -80,9 +82,9 @@ class PepperView : public FrameConsumer {
   // clip area of the view has changed since the buffer was generated then
   // FrameProducer is supplied the missed parts of |region|.  The FrameProducer
   // will be supplied a new buffer when FlushBuffer() completes.
-  void FlushBuffer(const SkIRect& clip_area,
+  void FlushBuffer(const webrtc::DesktopRect& clip_area,
                    webrtc::DesktopFrame* buffer,
-                   const SkRegion& region);
+                   const webrtc::DesktopRegion& region);
 
   // Handles completion of FlushBuffer(), triggering a new buffer to be
   // returned to FrameProducer for rendering.
@@ -107,11 +109,11 @@ class PepperView : public FrameConsumer {
 
   // Queued buffer to paint, with clip area and dirty region in device pixels.
   webrtc::DesktopFrame* merge_buffer_;
-  SkIRect merge_clip_area_;
-  SkRegion merge_region_;
+  webrtc::DesktopRect merge_clip_area_;
+  webrtc::DesktopRegion merge_region_;
 
   // View size in Density Independent Pixels (DIPs).
-  SkISize dips_size_;
+  webrtc::DesktopSize dips_size_;
 
   // Scale factor from DIPs to device pixels.
   float dips_to_device_scale_;
@@ -119,19 +121,19 @@ class PepperView : public FrameConsumer {
   // View size in output pixels. This is the size at which FrameProducer must
   // render frames. It usually matches the DIPs size of the view, but may match
   // the size in device pixels when scaling is in effect, to reduce artefacts.
-  SkISize view_size_;
+  webrtc::DesktopSize view_size_;
 
   // Scale factor from output pixels to device pixels.
   float dips_to_view_scale_;
 
   // Visible area of the view, in output pixels.
-  SkIRect clip_area_;
+  webrtc::DesktopRect clip_area_;
 
   // Size of the most recent source frame in pixels.
-  SkISize source_size_;
+  webrtc::DesktopSize source_size_;
 
   // Resolution of the most recent source frame dots-per-inch.
-  SkIPoint source_dpi_;
+  webrtc::DesktopVector source_dpi_;
 
   // True if there is already a Flush() pending on the Graphics2D context.
   bool flush_pending_;
