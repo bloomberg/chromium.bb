@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -131,6 +132,30 @@ class SimpleRootWindowTransformer : public RootWindowTransformer {
 
 }  // namespace
 
+// Used to verify a Window is destroyed before 'this' is destroyed.
+// TODO(sky): nuke; used for debugging 275760.
+class MouseMovedTracker : public WindowObserver {
+ public:
+  explicit MouseMovedTracker(Window* window)
+      : window_(window) {
+    window_->AddObserver(this);
+  }
+
+  virtual ~MouseMovedTracker() {
+    window_->RemoveObserver(this);
+  }
+
+  virtual void OnWindowDestroyed(Window* window) OVERRIDE {
+    CHECK(false);
+  }
+
+
+ private:
+  Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(MouseMovedTracker);
+};
+
 RootWindow::CreateParams::CreateParams(const gfx::Rect& a_initial_bounds)
     : initial_bounds(a_initial_bounds),
       host(NULL) {
@@ -154,6 +179,7 @@ RootWindow::RootWindow(const CreateParams& params)
       waiting_on_compositing_end_(false),
       draw_on_compositing_end_(false),
       defer_draw_scheduling_(false),
+      mouse_moved_handler_set_reason_(MOUSE_MOVED_HANDLER_SET_REASON_NULL),
       move_hold_count_(0),
       held_event_factory_(this),
       repostable_event_factory_(this) {
@@ -678,14 +704,14 @@ void RootWindow::UpdateCapture(Window* old_capture,
   if (mouse_moved_handler_ && old_capture &&
       old_capture->Contains(mouse_moved_handler_) &&
       old_capture->GetRootWindow() != this) {
-    mouse_moved_handler_ = NULL;
+    SetMouseMovedHandler(NULL, MOUSE_MOVED_HANDLER_SET_REASON_NULL);
   }
 
   if (new_capture) {
     // Make all subsequent mouse events go to the capture window. We shouldn't
     // need to send an event here as OnCaptureLost() should take care of that.
     if (mouse_moved_handler_ || Env::GetInstance()->is_mouse_button_down())
-      mouse_moved_handler_ = new_capture;
+      SetMouseMovedHandler(new_capture, MOUSE_MOVED_HANDLER_SET_REASON_CAPTURE);
   } else {
     // Make sure mouse_moved_handler gets updated.
     SynthesizeMouseMoveEvent();
@@ -708,6 +734,16 @@ bool RootWindow::QueryMouseLocationForTest(gfx::Point* point) const {
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, private:
 
+void RootWindow::SetMouseMovedHandler(Window* window,
+                                      MouseMovedHandlerSetReason reason) {
+  mouse_moved_handler_ = window;
+  mouse_moved_handler_set_reason_ = reason;
+  if (window)
+    mouse_moved_handler_tracker_.reset(new MouseMovedTracker(window));
+  else
+    mouse_moved_handler_tracker_.reset();
+}
+
 void RootWindow::TransformEventForDeviceScaleFactor(ui::LocatedEvent* event) {
   event->UpdateForRootTransform(GetInverseRootTransform());
 }
@@ -727,6 +763,8 @@ void RootWindow::MoveCursorToInternal(const gfx::Point& root_location,
 
 void RootWindow::DispatchMouseEnterOrExit(const ui::MouseEvent& event,
                                           ui::EventType type) {
+  const MouseMovedHandlerSetReason set_reason = mouse_moved_handler_set_reason_;
+  base::debug::Alias(&set_reason);
   if (!mouse_moved_handler_ || !mouse_moved_handler_->delegate())
     return;
 
@@ -809,7 +847,7 @@ void RootWindow::OnWindowHidden(Window* invisible, WindowHiddenReason reason) {
   if (invisible->Contains(mouse_pressed_handler_))
     mouse_pressed_handler_ = NULL;
   if (invisible->Contains(mouse_moved_handler_))
-    mouse_moved_handler_ = NULL;
+    SetMouseMovedHandler(NULL, MOUSE_MOVED_HANDLER_SET_REASON_NULL);
 
   CleanupGestureRecognizerState(invisible);
 }
@@ -957,7 +995,7 @@ void RootWindow::OnHostLostWindowCapture() {
 
 void RootWindow::OnHostLostMouseGrab() {
   mouse_pressed_handler_ = NULL;
-  mouse_moved_handler_ = NULL;
+  SetMouseMovedHandler(NULL, MOUSE_MOVED_HANDLER_SET_REASON_NULL);
 }
 
 void RootWindow::OnHostPaint(const gfx::Rect& damage_rect) {
@@ -1060,7 +1098,7 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
         DispatchMouseEnterOrExit(*event, ui::ET_MOUSE_EXITED);
         if (!destroyed_tracker.Contains(this))
           return false;
-        mouse_moved_handler_ = NULL;
+        SetMouseMovedHandler(NULL, MOUSE_MOVED_HANDLER_SET_REASON_NULL);
       }
       break;
     case ui::ET_MOUSE_MOVED:
@@ -1080,12 +1118,16 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
           return false;
         if (destroyed_tracker.Contains(target)) {
           destroyed_tracker.Remove(target);
-          mouse_moved_handler_ = target;
+          const MouseMovedHandlerSetReason reason =
+              (event->flags() & ui::EF_IS_SYNTHESIZED) == 0 ?
+              MOUSE_MOVED_HANDLER_SET_REASON_MOUSE_MOVED :
+              MOUSE_MOVED_HANDLER_SET_REASON_MOUSE_MOVED_SYNTHESIZED;
+          SetMouseMovedHandler(target, reason);
           DispatchMouseEnterOrExit(*event, ui::ET_MOUSE_ENTERED);
           if (!destroyed_tracker.Contains(this))
             return false;
         } else {
-          mouse_moved_handler_ = NULL;
+          SetMouseMovedHandler(NULL, MOUSE_MOVED_HANDLER_SET_REASON_NULL);
         }
       }
       break;
