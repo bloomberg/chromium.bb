@@ -152,6 +152,10 @@ typedef struct {
 #define NT_FPREGSET 2
 #endif
 
+#if !defined(SHT_MIPS_DWARF)
+#define SHT_MIPS_DWARF 0x7000001e
+#endif
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

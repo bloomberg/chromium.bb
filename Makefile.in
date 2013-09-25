@@ -1585,9 +1585,12 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@src_client_linux_linux_dumper_unittest_helper_SOURCES = \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc
 
-@LINUX_HOST_TRUE@src_client_linux_linux_dumper_unittest_helper_CXXFLAGS = $(PTHREAD_CFLAGS)
 @LINUX_HOST_TRUE@src_client_linux_linux_dumper_unittest_helper_LDFLAGS = $(PTHREAD_CFLAGS)
 @LINUX_HOST_TRUE@src_client_linux_linux_dumper_unittest_helper_CC = $(PTHREAD_CC)
+@ANDROID_HOST_FALSE@@LINUX_HOST_TRUE@src_client_linux_linux_dumper_unittest_helper_CXXFLAGS = $(PTHREAD_CFLAGS)
+# On Android PTHREAD_CFLAGS is empty, and adding src/common/android/include
+# to the include path is necessary to build this program.
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@src_client_linux_linux_dumper_unittest_helper_CXXFLAGS = $(AM_CXXFLAGS)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_shlib_SOURCES = src/client/linux/handler/exception_handler_unittest.cc \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/directory_reader_unittest.cc \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/cpu_set_unittest.cc \
@@ -3292,9 +3295,6 @@ src/testing/src/src_processor_stackwalker_arm_unittest-gmock-all.$(OBJEXT):  \
 src/processor/stackwalker_arm_unittest$(EXEEXT): $(src_processor_stackwalker_arm_unittest_OBJECTS) $(src_processor_stackwalker_arm_unittest_DEPENDENCIES) $(EXTRA_src_processor_stackwalker_arm_unittest_DEPENDENCIES) src/processor/$(am__dirstamp)
 	@rm -f src/processor/stackwalker_arm_unittest$(EXEEXT)
 	$(CXXLINK) $(src_processor_stackwalker_arm_unittest_OBJECTS) $(src_processor_stackwalker_arm_unittest_LDADD) $(LIBS)
-src/processor/stackwalker_selftest.$(OBJEXT):  \
-	src/processor/$(am__dirstamp) \
-	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/common/src_processor_stackwalker_mips_unittest-test_assembler.$(OBJEXT):  \
 	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)

@@ -337,9 +337,15 @@ endif
 if LINUX_HOST
 src_client_linux_linux_dumper_unittest_helper_SOURCES = \
 	src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc
-src_client_linux_linux_dumper_unittest_helper_CXXFLAGS=$(PTHREAD_CFLAGS)
 src_client_linux_linux_dumper_unittest_helper_LDFLAGS=$(PTHREAD_CFLAGS)
 src_client_linux_linux_dumper_unittest_helper_CC=$(PTHREAD_CC)
+if ANDROID_HOST
+# On Android PTHREAD_CFLAGS is empty, and adding src/common/android/include
+# to the include path is necessary to build this program.
+src_client_linux_linux_dumper_unittest_helper_CXXFLAGS=$(AM_CXXFLAGS)
+else
+src_client_linux_linux_dumper_unittest_helper_CXXFLAGS=$(PTHREAD_CFLAGS)
+endif
 
 src_client_linux_linux_client_unittest_shlib_SOURCES = \
 	src/client/linux/handler/exception_handler_unittest.cc \
