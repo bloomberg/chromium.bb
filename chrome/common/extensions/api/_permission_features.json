@@ -764,7 +764,8 @@
     "extension_types": ["extension", "legacy_packaged_app"],
     "whitelist": [
       "ahfgeienlihckogmohjhadlkjgocpleb",  // Web Store
-      "afchcafgojfnemjkcbhfekplkmjaldaa"   // Enterprise Web Store
+      "afchcafgojfnemjkcbhfekplkmjaldaa",  // Enterprise Web Store
+      "dofmkfphhdaddeofjngcjphcegkbbooh"   // Chrome Login Proxy (prototype)
     ]
   },
   "webRequest": {
