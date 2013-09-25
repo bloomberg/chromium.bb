@@ -37,6 +37,13 @@ void Recovery::Unrecoverable(scoped_ptr<Recovery> r) {
   // ~Recovery() will RAZE_AND_POISON.
 }
 
+// static
+void Recovery::Rollback(scoped_ptr<Recovery> r) {
+  // TODO(shess): HISTOGRAM to track?  Or just have people crash out?
+  // Crash and dump?
+  r->Shutdown(POISON);
+}
+
 Recovery::Recovery(Connection* connection)
     : db_(connection),
       recover_db_() {
@@ -68,6 +75,18 @@ bool Recovery::Init(const base::FilePath& db_path) {
   // one database and stored to the other possibly could, but would be
   // more complicated.
   db_->RollbackAllTransactions();
+
+  // Disable exclusive locking mode so that the attached database can
+  // access things.  The locking_mode change is not active until the
+  // next database access, so immediately force an access.  Enabling
+  // writable_schema allows processing through certain kinds of
+  // corruption.
+  // TODO(shess): It would be better to just close the handle, but it
+  // is necessary for the final backup which rewrites things.  It
+  // might be reasonable to close then re-open the handle.
+  ignore_result(db_->Execute("PRAGMA writable_schema=1"));
+  ignore_result(db_->Execute("PRAGMA locking_mode=NORMAL"));
+  ignore_result(db_->Execute("SELECT COUNT(*) FROM sqlite_master"));
 
   if (!recover_db_.OpenTemporary())
     return false;

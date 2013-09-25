@@ -64,7 +64,7 @@ class SQL_EXPORT Recovery {
   // If Recovered() is not called, the destructor will call
   // Unrecoverable().
   //
-  // TODO(shess): At this time, this function an fail while leaving
+  // TODO(shess): At this time, this function can fail while leaving
   // the original database intact.  Figure out which failure cases
   // should go to RazeAndClose() instead.
   static bool Recovered(scoped_ptr<Recovery> r) WARN_UNUSED_RESULT;
@@ -72,6 +72,14 @@ class SQL_EXPORT Recovery {
   // Indicate that the database is unrecoverable.  The original
   // database is razed, and the handle poisoned.
   static void Unrecoverable(scoped_ptr<Recovery> r);
+
+  // When initially developing recovery code, sometimes the possible
+  // database states are not well-understood without further
+  // diagnostics.  Abandon recovery but do not raze the original
+  // database.
+  // NOTE(shess): Only call this when adding recovery support.  In the
+  // steady state, all databases should progress to recovered or razed.
+  static void Rollback(scoped_ptr<Recovery> r);
 
   // Handle to the temporary recovery database.
   sql::Connection* db() { return &recover_db_; }

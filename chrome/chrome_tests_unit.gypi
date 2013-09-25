@@ -307,6 +307,7 @@
             '../ipc/ipc.gyp:test_support_ipc',
             '../media/media.gyp:media_test_support',
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
+            '../sql/sql.gyp:test_support_sql',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../webkit/glue/webkit_glue.gyp:glue_child',
           ],

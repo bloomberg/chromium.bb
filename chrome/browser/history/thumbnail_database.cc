@@ -21,6 +21,7 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/dump_without_crashing.h"
+#include "sql/recovery.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -205,66 +206,411 @@ void ReportError(sql::Connection* db, int error) {
 
 // TODO(shess): If this proves out, perhaps lift the code out to
 // chrome/browser/diagnostics/sqlite_diagnostics.{h,cc}.
-void DatabaseErrorCallback(sql::Connection* db,
-                           size_t startup_kb,
-                           int error,
-                           sql::Statement* stmt) {
-  // TODO(shess): Assert that this is running on a safe thread.
-  // AFAICT, should be the history thread, but at this level I can't
-  // see how to reach that.
+void GenerateDiagnostics(sql::Connection* db,
+                         size_t startup_kb,
+                         int extended_error) {
+  int error = (extended_error & 0xFF);
 
   // Infrequently report information about the error up to the crash
   // server.
   static const uint64 kReportsPerMillion = 50000;
 
+  // Since some/most errors will not resolve themselves, only report
+  // once per Chrome run.
+  static bool reported = false;
+  if (reported)
+    return;
+
+  uint64 rand = base::RandGenerator(1000000);
+  if (error == SQLITE_CORRUPT) {
+    // Once the database is known to be corrupt, it will generate a
+    // stream of errors until someone fixes it, so give one chance.
+    // Set first in case of errors in generating the report.
+    reported = true;
+
+    // Corrupt cases currently dominate, report them very infrequently.
+    static const uint64 kCorruptReportsPerMillion = 10000;
+    if (rand < kCorruptReportsPerMillion)
+      ReportCorrupt(db, startup_kb);
+  } else if (error == SQLITE_READONLY) {
+    // SQLITE_READONLY appears similar to SQLITE_CORRUPT - once it
+    // is seen, it is almost guaranteed to be seen again.
+    reported = true;
+
+    if (rand < kReportsPerMillion)
+      ReportError(db, extended_error);
+  } else {
+    // Only set the flag when making a report.  This should allow
+    // later (potentially different) errors in a stream of errors to
+    // be reported.
+    //
+    // TODO(shess): Would it be worthwile to audit for which cases
+    // want once-only handling?  Sqlite.Error.Thumbnail shows
+    // CORRUPT and READONLY as almost 95% of all reports on these
+    // channels, so probably easier to just harvest from the field.
+    if (rand < kReportsPerMillion) {
+      reported = true;
+      ReportError(db, extended_error);
+    }
+  }
+}
+
+bool InitTables(sql::Connection* db) {
+  const char kIconMappingSql[] =
+      "CREATE TABLE IF NOT EXISTS icon_mapping"
+      "("
+      "id INTEGER PRIMARY KEY,"
+      "page_url LONGVARCHAR NOT NULL,"
+      "icon_id INTEGER"
+      ")";
+  if (!db->Execute(kIconMappingSql))
+    return false;
+
+  const char kFaviconsSql[] =
+      "CREATE TABLE IF NOT EXISTS favicons"
+      "("
+      "id INTEGER PRIMARY KEY,"
+      "url LONGVARCHAR NOT NULL,"
+      // Set the default icon_type as FAVICON to be consistent with
+      // table upgrade in UpgradeToVersion4().
+      "icon_type INTEGER DEFAULT 1"
+      ")";
+  if (!db->Execute(kFaviconsSql))
+    return false;
+
+  const char kFaviconBitmapsSql[] =
+      "CREATE TABLE IF NOT EXISTS favicon_bitmaps"
+      "("
+      "id INTEGER PRIMARY KEY,"
+      "icon_id INTEGER NOT NULL,"
+      "last_updated INTEGER DEFAULT 0,"
+      "image_data BLOB,"
+      "width INTEGER DEFAULT 0,"
+      "height INTEGER DEFAULT 0"
+      ")";
+  if (!db->Execute(kFaviconBitmapsSql))
+    return false;
+
+  return true;
+}
+
+bool InitIndices(sql::Connection* db) {
+  const char kIconMappingUrlIndexSql[] =
+      "CREATE INDEX IF NOT EXISTS icon_mapping_page_url_idx"
+      " ON icon_mapping(page_url)";
+  const char kIconMappingIdIndexSql[] =
+      "CREATE INDEX IF NOT EXISTS icon_mapping_icon_id_idx"
+      " ON icon_mapping(icon_id)";
+  if (!db->Execute(kIconMappingUrlIndexSql) ||
+      !db->Execute(kIconMappingIdIndexSql)) {
+    return false;
+  }
+
+  const char kFaviconsIndexSql[] =
+      "CREATE INDEX IF NOT EXISTS favicons_url ON favicons(url)";
+  if (!db->Execute(kFaviconsIndexSql))
+    return false;
+
+  const char kFaviconBitmapsIndexSql[] =
+      "CREATE INDEX IF NOT EXISTS favicon_bitmaps_icon_id ON "
+      "favicon_bitmaps(icon_id)";
+  if (!db->Execute(kFaviconBitmapsIndexSql))
+    return false;
+
+  return true;
+}
+
+enum RecoveryEventType {
+  RECOVERY_EVENT_RECOVERED = 0,
+  RECOVERY_EVENT_FAILED_SCOPER,
+  RECOVERY_EVENT_FAILED_META_VERSION_ERROR,
+  RECOVERY_EVENT_FAILED_META_VERSION_NONE,
+  RECOVERY_EVENT_FAILED_META_WRONG_VERSION6,
+  RECOVERY_EVENT_FAILED_META_WRONG_VERSION5,
+  RECOVERY_EVENT_FAILED_META_WRONG_VERSION,
+  RECOVERY_EVENT_FAILED_RECOVER_META,
+  RECOVERY_EVENT_FAILED_META_INSERT,
+  RECOVERY_EVENT_FAILED_INIT,
+  RECOVERY_EVENT_FAILED_RECOVER_FAVICONS,
+  RECOVERY_EVENT_FAILED_FAVICONS_INSERT,
+  RECOVERY_EVENT_FAILED_RECOVER_FAVICON_BITMAPS,
+  RECOVERY_EVENT_FAILED_FAVICON_BITMAPS_INSERT,
+  RECOVERY_EVENT_FAILED_RECOVER_ICON_MAPPING,
+  RECOVERY_EVENT_FAILED_ICON_MAPPING_INSERT,
+
+  // Always keep this at the end.
+  RECOVERY_EVENT_MAX,
+};
+
+void RecordRecoveryEvent(RecoveryEventType recovery_event) {
+  UMA_HISTOGRAM_ENUMERATION("History.FaviconsRecovery",
+                            recovery_event, RECOVERY_EVENT_MAX);
+}
+
+// Recover the database to the extent possible, razing it if recovery
+// is not possible.
+// TODO(shess): This is mostly just a safe proof of concept.  In the
+// real world, this database is probably not worthwhile recovering, as
+// opposed to just razing it and starting over whenever corruption is
+// detected.  So this database is a good test subject.
+void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
+  // TODO(shess): Reset back after?
+  db->reset_error_callback();
+
+  scoped_ptr<sql::Recovery> recovery = sql::Recovery::Begin(db, db_path);
+  if (!recovery) {
+    // TODO(shess): Unable to create recovery connection.  This
+    // implies something substantial is wrong.  At this point |db| has
+    // been poisoned so there is nothing really to do.
+    //
+    // Possible responses are unclear.  If the failure relates to a
+    // problem somehow specific to the temporary file used to back the
+    // database, then an in-memory database could possibly be used.
+    // This could potentially allow recovering the main database, and
+    // might be simple to implement w/in Begin().
+    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_SCOPER);
+    return;
+  }
+
+  // Setup the meta recovery table, and check that the version number
+  // is covered by the recovery code.
+  // TODO(shess): sql::Recovery should provide a helper to handle meta.
+  {
+    const char kRecoverySql[] =
+        "CREATE VIRTUAL TABLE temp.recover_meta USING recover"
+        "("
+        "corrupt.meta,"
+        "key TEXT NOT NULL,"
+        "value TEXT"  // Really?  Never int?
+        ")";
+    if (!recovery->db()->Execute(kRecoverySql)) {
+      // TODO(shess): Failure to create the recover_meta table could
+      // mean that the main database is too corrupt to access, or that
+      // the meta table doesn't exist.
+      sql::Recovery::Rollback(recovery.Pass());
+      RecordRecoveryEvent(RECOVERY_EVENT_FAILED_RECOVER_META);
+      return;
+    }
+
+    {
+      const char kRecoveryVersionSql[] =
+          "SELECT value FROM recover_meta WHERE key = 'version'";
+      sql::Statement recovery_version(
+          recovery->db()->GetUniqueStatement(kRecoveryVersionSql));
+      if (!recovery_version.Step()) {
+        if (!recovery_version.Succeeded()) {
+          RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_VERSION_ERROR);
+          // TODO(shess): An error while processing the statement is
+          // probably not recoverable.
+        } else {
+          RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_VERSION_NONE);
+          // TODO(shess): If a positive version lock cannot be achieved,
+          // the database could still be recovered by optimistically
+          // attempting to copy things.  In the limit, the schema found
+          // could be inspected.  Less clear is whether optimistic
+          // recovery really makes sense.
+        }
+        recovery_version.Clear();
+        sql::Recovery::Rollback(recovery.Pass());
+        return;
+      } else if (7 != recovery_version.ColumnInt(0)) {
+        // TODO(shess): Recovery code is generally schema-dependent.
+        // Version 6 should be easy, if the numbers warrant it.
+        // Version 5 is probably not warranted.
+        switch (recovery_version.ColumnInt(0)) {
+          case 6 :
+            RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_WRONG_VERSION6);
+            break;
+          case 5 :
+            RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_WRONG_VERSION5);
+            break;
+          default :
+            RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_WRONG_VERSION);
+            break;
+        }
+        recovery_version.Clear();
+        sql::Recovery::Rollback(recovery.Pass());
+        return;
+      }
+    }
+
+    const char kCopySql[] =
+        "INSERT OR REPLACE INTO meta SELECT key, value FROM recover_meta";
+    if (!recovery->db()->Execute(kCopySql)) {
+      // TODO(shess): Earlier the version was queried, unclear what
+      // this failure could mean.
+      sql::Recovery::Rollback(recovery.Pass());
+      RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_INSERT);
+      return;
+    }
+  }
+
+  // Create a fresh version of the database.  The recovery code uses
+  // conflict-resolution to handle duplicates, so the indices are
+  // necessary.
+  if (!InitTables(recovery->db()) || !InitIndices(recovery->db())) {
+    // TODO(shess): Unable to create the new schema in the new
+    // database.  The new database should be a temporary file, so
+    // being unable to work with it is pretty unclear.
+    //
+    // What are the potential responses, even?  The recovery database
+    // could be opened as in-memory.  If the temp database had a
+    // filesystem problem and the temp filesystem differs from the
+    // main database, then that could fix it.
+    sql::Recovery::Rollback(recovery.Pass());
+    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_INIT);
+    return;
+  }
+
+  // Setup favicons table.
+  {
+    const char kRecoverySql[] =
+        "CREATE VIRTUAL TABLE temp.recover_favicons USING recover"
+        "("
+        "corrupt.favicons,"
+        "id ROWID,"
+        "url TEXT NOT NULL,"
+        "icon_type INTEGER"
+        ")";
+    if (!recovery->db()->Execute(kRecoverySql)) {
+      // TODO(shess): Failure to create the recovery table probably
+      // means unrecoverable.
+      sql::Recovery::Rollback(recovery.Pass());
+      RecordRecoveryEvent(RECOVERY_EVENT_FAILED_RECOVER_FAVICONS);
+      return;
+    }
+
+    // TODO(shess): Check if the DEFAULT 1 will just cover the
+    // COALESCE().  Either way, the new code has a literal 1 rather
+    // than a NULL, right?
+    const char kCopySql[] =
+        "INSERT OR REPLACE INTO favicons "
+        "SELECT id, url, COALESCE(icon_type, 1) FROM recover_favicons";
+    if (!recovery->db()->Execute(kCopySql)) {
+      // TODO(shess): The recover_favicons table should mask problems
+      // with the source file, so this implies failure to write to the
+      // recovery database.
+      sql::Recovery::Rollback(recovery.Pass());
+      RecordRecoveryEvent(RECOVERY_EVENT_FAILED_FAVICONS_INSERT);
+      return;
+    }
+  }
+
+  // Setup favicons_bitmaps table.
+  {
+    const char kRecoverySql[] =
+        "CREATE VIRTUAL TABLE temp.recover_favicons_bitmaps USING recover"
+        "("
+        "corrupt.favicon_bitmaps,"
+        "id ROWID,"
+        "icon_id INTEGER STRICT NOT NULL,"
+        "last_updated INTEGER,"
+        "image_data BLOB,"
+        "width INTEGER,"
+        "height INTEGER"
+        ")";
+    if (!recovery->db()->Execute(kRecoverySql)) {
+      // TODO(shess): Failure to create the recovery table probably
+      // means unrecoverable.
+      sql::Recovery::Rollback(recovery.Pass());
+      RecordRecoveryEvent(RECOVERY_EVENT_FAILED_RECOVER_FAVICON_BITMAPS);
+      return;
+    }
+
+    const char kCopySql[] =
+        "INSERT OR REPLACE INTO favicon_bitmaps "
+        "SELECT id, icon_id, COALESCE(last_updated, 0), image_data, "
+        " COALESCE(width, 0), COALESCE(height, 0) "
+        "FROM recover_favicons_bitmaps";
+    if (!recovery->db()->Execute(kCopySql)) {
+      // TODO(shess): The recover_faviconbitmaps table should mask
+      // problems with the source file, so this implies failure to
+      // write to the recovery database.
+      sql::Recovery::Rollback(recovery.Pass());
+      RecordRecoveryEvent(RECOVERY_EVENT_FAILED_FAVICON_BITMAPS_INSERT);
+      return;
+    }
+  }
+
+  // Setup icon_mapping table.
+  {
+    const char kRecoverySql[] =
+        "CREATE VIRTUAL TABLE temp.recover_icon_mapping USING recover"
+        "("
+        "corrupt.icon_mapping,"
+        "id ROWID,"
+        "page_url TEXT STRICT NOT NULL,"
+        "icon_id INTEGER STRICT"
+        ")";
+    if (!recovery->db()->Execute(kRecoverySql)) {
+      // TODO(shess): Failure to create the recovery table probably
+      // means unrecoverable.
+      sql::Recovery::Rollback(recovery.Pass());
+      RecordRecoveryEvent(RECOVERY_EVENT_FAILED_RECOVER_ICON_MAPPING);
+      return;
+    }
+
+    const char kCopySql[] =
+        "INSERT OR REPLACE INTO icon_mapping "
+        "SELECT id, page_url, icon_id FROM recover_icon_mapping";
+    if (!recovery->db()->Execute(kCopySql)) {
+      // TODO(shess): The recover_icon_mapping table should mask
+      // problems with the source file, so this implies failure to
+      // write to the recovery database.
+      sql::Recovery::Rollback(recovery.Pass());
+      RecordRecoveryEvent(RECOVERY_EVENT_FAILED_ICON_MAPPING_INSERT);
+      return;
+    }
+  }
+
+  // TODO(shess): Is it possible/likely to have broken foreign-key
+  // issues with the tables?
+  // - icon_mapping.icon_id maps to no favicons.id
+  // - favicon_bitmaps.icon_id maps to no favicons.id
+  // - favicons.id is referenced by no icon_mapping.icon_id
+  // - favicons.id is referenced by no favicon_bitmaps.icon_id
+  // This step is possibly not worth the effort necessary to develop
+  // and sequence the statements, as it is basically a form of garbage
+  // collection.
+
+  ignore_result(sql::Recovery::Recovered(recovery.Pass()));
+  RecordRecoveryEvent(RECOVERY_EVENT_RECOVERED);
+}
+
+void DatabaseErrorCallback(sql::Connection* db,
+                           const base::FilePath& db_path,
+                           size_t startup_kb,
+                           int extended_error,
+                           sql::Statement* stmt) {
+  // TODO(shess): Assert that this is running on a safe thread.
+  // AFAICT, should be the history thread, but at this level I can't
+  // see how to reach that.
+
   // TODO(shess): For now, don't report on beta or stable so as not to
   // overwhelm the crash server.  Once the big fish are fried,
   // consider reporting at a reduced rate on the bigger channels.
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-
-  // Since some/most errors will not resolve themselves, only report
-  // once per Chrome run.
-  static bool reported = false;
-
   if (channel != chrome::VersionInfo::CHANNEL_STABLE &&
-      channel != chrome::VersionInfo::CHANNEL_BETA &&
-      !reported) {
-    uint64 rand = base::RandGenerator(1000000);
-    if (error == SQLITE_CORRUPT) {
-      // Once the database is known to be corrupt, it will generate a
-      // stream of errors until someone fixes it, so give one chance.
-      // Set first in case of errors in generating the report.
-      reported = true;
+      channel != chrome::VersionInfo::CHANNEL_BETA) {
+    GenerateDiagnostics(db, startup_kb, extended_error);
+  }
 
-      // Corrupt cases currently dominate, report them very infrequently.
-      static const uint64 kCorruptReportsPerMillion = 10000;
-      if (rand < kCorruptReportsPerMillion)
-        ReportCorrupt(db, startup_kb);
-    } else if (error == SQLITE_READONLY) {
-      // SQLITE_READONLY appears similar to SQLITE_CORRUPT - once it
-      // is seen, it is almost guaranteed to be seen again.
-      reported = true;
-
-      if (rand < kReportsPerMillion)
-        ReportError(db, error);
-    } else {
-      // Only set the flag when making a report.  This should allow
-      // later (potentially different) errors in a stream of errors to
-      // be reported.
-      //
-      // TODO(shess): Would it be worthwile to audit for which cases
-      // want once-only handling?  Sqlite.Error.Thumbnail shows
-      // CORRUPT and READONLY as almost 95% of all reports on these
-      // channels, so probably easier to just harvest from the field.
-      if (rand < kReportsPerMillion) {
-        reported = true;
-        ReportError(db, error);
-      }
+  // Attempt to recover corrupt databases.
+  // TODO(shess): Remove the channel restriction once it becomes clear
+  // that the recovery code fails gracefully.
+  if (channel != chrome::VersionInfo::CHANNEL_STABLE &&
+      channel != chrome::VersionInfo::CHANNEL_BETA) {
+    int error = (extended_error & 0xFF);
+    if (error == SQLITE_CORRUPT ||
+        error == SQLITE_CANTOPEN ||
+        error == SQLITE_NOTADB) {
+      RecoverDatabaseOrRaze(db, db_path);
     }
   }
 
   // The default handling is to assert on debug and to ignore on release.
-  DLOG(FATAL) << db->GetErrorMessage();
+  if (!sql::Connection::ShouldIgnoreSqliteError(extended_error))
+    DLOG(FATAL) << db->GetErrorMessage();
 }
 
 }  // namespace
@@ -337,12 +683,8 @@ sql::InitStatus ThumbnailDatabase::Init(
   // Create the tables.
   if (!meta_table_.Init(&db_, kCurrentVersionNumber,
                         kCompatibleVersionNumber) ||
-      !InitFaviconBitmapsTable(&db_) ||
-      !InitFaviconBitmapsIndex() ||
-      !InitFaviconsTable(&db_) ||
-      !InitFaviconsIndex() ||
-      !InitIconMappingTable(&db_) ||
-      !InitIconMappingIndex()) {
+      !InitTables(&db_) ||
+      !InitIndices(&db_)) {
     db_.Close();
     return sql::INIT_FAILURE;
   }
@@ -435,7 +777,8 @@ sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,
     startup_kb = static_cast<size_t>(size_64 / 1024);
 
   db->set_histogram_tag("Thumbnail");
-  db->set_error_callback(base::Bind(&DatabaseErrorCallback, db, startup_kb));
+  db->set_error_callback(base::Bind(&DatabaseErrorCallback,
+                                    db, db_name, startup_kb));
 
   // Thumbnails db now only stores favicons, so we don't need that big a page
   // size or cache.
@@ -465,45 +808,6 @@ bool ThumbnailDatabase::UpgradeToVersion3() {
   meta_table_.SetVersionNumber(3);
   meta_table_.SetCompatibleVersionNumber(std::min(3, kCompatibleVersionNumber));
   return true;
-}
-
-bool ThumbnailDatabase::InitFaviconsTable(sql::Connection* db) {
-  const char kSql[] =
-      "CREATE TABLE IF NOT EXISTS favicons"
-      "("
-      "id INTEGER PRIMARY KEY,"
-      "url LONGVARCHAR NOT NULL,"
-      // Set the default icon_type as FAVICON to be consistent with
-      // table upgrade in UpgradeToVersion4().
-      "icon_type INTEGER DEFAULT 1"
-      ")";
-  return db->Execute(kSql);
-}
-
-bool ThumbnailDatabase::InitFaviconsIndex() {
-  // Add an index on the url column.
-  return
-      db_.Execute("CREATE INDEX IF NOT EXISTS favicons_url ON favicons(url)");
-}
-
-bool ThumbnailDatabase::InitFaviconBitmapsTable(sql::Connection* db) {
-  const char kSql[] =
-      "CREATE TABLE IF NOT EXISTS favicon_bitmaps"
-      "("
-      "id INTEGER PRIMARY KEY,"
-      "icon_id INTEGER NOT NULL,"
-      "last_updated INTEGER DEFAULT 0,"
-      "image_data BLOB,"
-      "width INTEGER DEFAULT 0,"
-      "height INTEGER DEFAULT 0"
-      ")";
-  return db->Execute(kSql);
-}
-
-bool ThumbnailDatabase::InitFaviconBitmapsIndex() {
-  // Add an index on the icon_id column.
-  return db_.Execute("CREATE INDEX IF NOT EXISTS favicon_bitmaps_icon_id ON "
-                     "favicon_bitmaps(icon_id)");
 }
 
 bool ThumbnailDatabase::IsFaviconDBStructureIncorrect() {
@@ -938,97 +1242,77 @@ bool ThumbnailDatabase::RetainDataForPageUrls(
     }
   }
 
-  {
-    const char kRenameIconMappingTable[] =
-        "ALTER TABLE icon_mapping RENAME TO old_icon_mapping";
-    const char kCopyIconMapping[] =
-        "INSERT INTO icon_mapping (page_url, icon_id) "
-        "SELECT old.page_url, mapping.new_icon_id "
-        "FROM old_icon_mapping AS old "
-        "JOIN temp.icon_id_mapping AS mapping "
-        "ON (old.icon_id = mapping.old_icon_id)";
-    const char kDropOldIconMappingTable[] = "DROP TABLE old_icon_mapping";
-    if (!db_.Execute(kRenameIconMappingTable) ||
-        !InitIconMappingTable(&db_) ||
-        !db_.Execute(kCopyIconMapping) ||
-        !db_.Execute(kDropOldIconMappingTable)) {
-      return false;
-    }
-  }
+  const char kRenameIconMappingTable[] =
+      "ALTER TABLE icon_mapping RENAME TO old_icon_mapping";
+  const char kCopyIconMapping[] =
+      "INSERT INTO icon_mapping (page_url, icon_id) "
+      "SELECT old.page_url, mapping.new_icon_id "
+      "FROM old_icon_mapping AS old "
+      "JOIN temp.icon_id_mapping AS mapping "
+      "ON (old.icon_id = mapping.old_icon_id)";
+  const char kDropOldIconMappingTable[] = "DROP TABLE old_icon_mapping";
 
-  {
-    const char kRenameFaviconsTable[] =
-        "ALTER TABLE favicons RENAME TO old_favicons";
-    const char kCopyFavicons[] =
-        "INSERT INTO favicons (id, url, icon_type) "
-        "SELECT mapping.new_icon_id, old.url, old.icon_type "
-        "FROM old_favicons AS old "
-        "JOIN temp.icon_id_mapping AS mapping "
-        "ON (old.id = mapping.old_icon_id)";
-    const char kDropOldFaviconsTable[] = "DROP TABLE old_favicons";
-    if (!db_.Execute(kRenameFaviconsTable) ||
-        !InitFaviconsTable(&db_) ||
-        !db_.Execute(kCopyFavicons) ||
-        !db_.Execute(kDropOldFaviconsTable)) {
-      return false;
-    }
-  }
+  const char kRenameFaviconsTable[] =
+      "ALTER TABLE favicons RENAME TO old_favicons";
+  const char kCopyFavicons[] =
+      "INSERT INTO favicons (id, url, icon_type) "
+      "SELECT mapping.new_icon_id, old.url, old.icon_type "
+      "FROM old_favicons AS old "
+      "JOIN temp.icon_id_mapping AS mapping "
+      "ON (old.id = mapping.old_icon_id)";
+  const char kDropOldFaviconsTable[] = "DROP TABLE old_favicons";
 
-  {
-    const char kRenameFaviconBitmapsTable[] =
-        "ALTER TABLE favicon_bitmaps RENAME TO old_favicon_bitmaps";
-    const char kCopyFaviconBitmaps[] =
-        "INSERT INTO favicon_bitmaps "
-        "  (icon_id, last_updated, image_data, width, height) "
-        "SELECT mapping.new_icon_id, old.last_updated, "
-        "    old.image_data, old.width, old.height "
-        "FROM old_favicon_bitmaps AS old "
-        "JOIN temp.icon_id_mapping AS mapping "
-        "ON (old.icon_id = mapping.old_icon_id)";
-    const char kDropOldFaviconBitmapsTable[] =
-        "DROP TABLE old_favicon_bitmaps";
-    if (!db_.Execute(kRenameFaviconBitmapsTable) ||
-        !InitFaviconBitmapsTable(&db_) ||
-        !db_.Execute(kCopyFaviconBitmaps) ||
-        !db_.Execute(kDropOldFaviconBitmapsTable)) {
-      return false;
-    }
-  }
+  const char kRenameFaviconBitmapsTable[] =
+      "ALTER TABLE favicon_bitmaps RENAME TO old_favicon_bitmaps";
+  const char kCopyFaviconBitmaps[] =
+      "INSERT INTO favicon_bitmaps "
+      "  (icon_id, last_updated, image_data, width, height) "
+      "SELECT mapping.new_icon_id, old.last_updated, "
+      "    old.image_data, old.width, old.height "
+      "FROM old_favicon_bitmaps AS old "
+      "JOIN temp.icon_id_mapping AS mapping "
+      "ON (old.icon_id = mapping.old_icon_id)";
+  const char kDropOldFaviconBitmapsTable[] =
+      "DROP TABLE old_favicon_bitmaps";
 
-  // Renaming the tables adjusts the indices to reference the new
-  // name, BUT DOES NOT RENAME THE INDICES.  The DROP will drop the
-  // indices, now re-create them against the new tables.
-  if (!InitIconMappingIndex() ||
-      !InitFaviconsIndex() ||
-      !InitFaviconBitmapsIndex()) {
+  // Rename existing tables to new location.
+  if (!db_.Execute(kRenameIconMappingTable) ||
+      !db_.Execute(kRenameFaviconsTable) ||
+      !db_.Execute(kRenameFaviconBitmapsTable)) {
     return false;
   }
+
+  // Initialize the replacement tables.  At this point the old indices
+  // still exist (pointing to the old_* tables), so do not initialize
+  // the indices.
+  if (!InitTables(&db_))
+    return false;
+
+  // Copy all of the data over.
+  if (!db_.Execute(kCopyIconMapping) ||
+      !db_.Execute(kCopyFavicons) ||
+      !db_.Execute(kCopyFaviconBitmaps)) {
+    return false;
+  }
+
+  // Drop the old_* tables, which also drops the indices.
+  if (!db_.Execute(kDropOldIconMappingTable) ||
+      !db_.Execute(kDropOldFaviconsTable) ||
+      !db_.Execute(kDropOldFaviconBitmapsTable)) {
+    return false;
+  }
+
+  // Recreate the indices.
+  // TODO(shess): UNIQUE indices could fail due to duplication.  This
+  // could happen in case of corruption.
+  if (!InitIndices(&db_))
+    return false;
 
   const char kIconMappingDrop[] = "DROP TABLE temp.icon_id_mapping";
   if (!db_.Execute(kIconMappingDrop))
     return false;
 
   return transaction.Commit();
-}
-
-bool ThumbnailDatabase::InitIconMappingTable(sql::Connection* db) {
-  const char kSql[] =
-      "CREATE TABLE IF NOT EXISTS icon_mapping"
-      "("
-      "id INTEGER PRIMARY KEY,"
-      "page_url LONGVARCHAR NOT NULL,"
-      "icon_id INTEGER"
-      ")";
-  return db->Execute(kSql);
-}
-
-bool ThumbnailDatabase::InitIconMappingIndex() {
-  // Add an index on the url column.
-  return
-      db_.Execute("CREATE INDEX IF NOT EXISTS icon_mapping_page_url_idx"
-                  " ON icon_mapping(page_url)") &&
-      db_.Execute("CREATE INDEX IF NOT EXISTS icon_mapping_icon_id_idx"
-                  " ON icon_mapping(icon_id)");
 }
 
 IconMappingID ThumbnailDatabase::AddIconMapping(const GURL& page_url,

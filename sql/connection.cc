@@ -133,7 +133,7 @@ namespace sql {
 Connection::ErrorIgnorerCallback* Connection::current_ignorer_cb_ = NULL;
 
 // static
-bool Connection::ShouldIgnore(int error) {
+bool Connection::ShouldIgnoreSqliteError(int error) {
   if (!current_ignorer_cb_)
     return false;
   return current_ignorer_cb_->Run(error);
@@ -1040,7 +1040,7 @@ int Connection::OnSqliteError(int err, sql::Statement *stmt) {
   }
 
   // The default handling is to assert on debug and to ignore on release.
-  if (!ShouldIgnore(err))
+  if (!ShouldIgnoreSqliteError(err))
     DLOG(FATAL) << GetErrorMessage();
   return err;
 }

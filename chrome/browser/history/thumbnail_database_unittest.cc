@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted_memory.h"
@@ -17,8 +18,10 @@
 #include "chrome/test/base/testing_profile.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "sql/test/scoped_error_ignorer.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/sqlite/sqlite3.h"
 #include "url/gurl.h"
 
 namespace history {
@@ -55,6 +58,49 @@ WARN_UNUSED_RESULT bool CreateDatabaseFromSQL(const base::FilePath &db_path,
     return false;
   sql_path = sql_path.AppendASCII("History").AppendASCII(ascii_path);
   return sql::test::CreateDatabaseFromSQL(db_path, sql_path);
+}
+
+int GetPageSize(sql::Connection* db) {
+  sql::Statement s(db->GetUniqueStatement("PRAGMA page_size"));
+  EXPECT_TRUE(s.Step());
+  return s.ColumnInt(0);
+}
+
+// Get |name|'s root page number in the database.
+int GetRootPage(sql::Connection* db, const char* name) {
+  const char kPageSql[] = "SELECT rootpage FROM sqlite_master WHERE name = ?";
+  sql::Statement s(db->GetUniqueStatement(kPageSql));
+  s.BindString(0, name);
+  EXPECT_TRUE(s.Step());
+  return s.ColumnInt(0);
+}
+
+// Helper to read a SQLite page into a buffer.  |page_no| is 1-based
+// per SQLite usage.
+bool ReadPage(const base::FilePath& path, size_t page_no,
+              char* buf, size_t page_size) {
+  file_util::ScopedFILE file(file_util::OpenFile(path, "rb"));
+  if (!file.get())
+    return false;
+  if (0 != fseek(file.get(), (page_no - 1) * page_size, SEEK_SET))
+    return false;
+  if (1u != fread(buf, page_size, 1, file.get()))
+    return false;
+  return true;
+}
+
+// Helper to write a SQLite page into a buffer.  |page_no| is 1-based
+// per SQLite usage.
+bool WritePage(const base::FilePath& path, size_t page_no,
+               const char* buf, size_t page_size) {
+  file_util::ScopedFILE file(file_util::OpenFile(path, "rb+"));
+  if (!file.get())
+    return false;
+  if (0 != fseek(file.get(), (page_no - 1) * page_size, SEEK_SET))
+    return false;
+  if (1u != fwrite(buf, page_size, 1, file.get()))
+    return false;
+  return true;
 }
 
 // Verify that the up-to-date database has the expected tables and
@@ -790,6 +836,172 @@ TEST_F(ThumbnailDatabaseTest, Version7) {
                                kIconUrl1, kLargeSize, sizeof(kBlob1), kBlob1));
   EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl3, chrome::TOUCH_ICON,
                                kIconUrl3, kLargeSize, sizeof(kBlob2), kBlob2));
+}
+
+TEST_F(ThumbnailDatabaseTest, Recovery) {
+  chrome::FaviconID id1, id2;
+  GURL page_url1("http://www.google.com");
+  GURL page_url2("http://news.google.com");
+  GURL favicon_url("http://www.google.com/favicon.png");
+
+  // Create an example database.
+  // TODO(shess): Merge with the load-dump code when that lands.
+  {
+    ThumbnailDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+    db.BeginTransaction();
+
+    std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
+    scoped_refptr<base::RefCountedBytes> favicon(
+        new base::RefCountedBytes(data));
+
+    id1 = db.AddFavicon(favicon_url, chrome::TOUCH_ICON);
+    base::Time time = base::Time::Now();
+    db.AddFaviconBitmap(id1, favicon, time, kSmallSize);
+    db.AddFaviconBitmap(id1, favicon, time, kLargeSize);
+    EXPECT_LT(0, db.AddIconMapping(page_url1, id1));
+    EXPECT_LT(0, db.AddIconMapping(page_url2, id1));
+
+    id2 = db.AddFavicon(favicon_url, chrome::FAVICON);
+    EXPECT_NE(id1, id2);
+    db.AddFaviconBitmap(id2, favicon, time, kSmallSize);
+    EXPECT_LT(0, db.AddIconMapping(page_url1, id2));
+    db.CommitTransaction();
+  }
+
+  // Test that the contents make sense after clean open.
+  {
+    ThumbnailDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+
+    std::vector<IconMapping> icon_mappings;
+    EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url1, &icon_mappings));
+    ASSERT_EQ(2u, icon_mappings.size());
+    EXPECT_EQ(id1, icon_mappings[0].icon_id);
+    EXPECT_EQ(id2, icon_mappings[1].icon_id);
+  }
+
+  {
+    sql::Connection raw_db;
+    EXPECT_TRUE(raw_db.Open(file_name_));
+    {
+      sql::Statement statement(
+          raw_db.GetUniqueStatement("PRAGMA integrity_check"));
+      EXPECT_TRUE(statement.Step());
+      ASSERT_EQ("ok", statement.ColumnString(0));
+    }
+
+    const char kIndexName[] = "icon_mapping_page_url_idx";
+    const int idx_root_page = GetRootPage(&raw_db, kIndexName);
+    const int page_size = GetPageSize(&raw_db);
+    scoped_ptr<char[]> buf(new char[page_size]);
+    EXPECT_TRUE(ReadPage(file_name_, idx_root_page, buf.get(), page_size));
+
+    {
+      const char kDeleteSql[] = "DELETE FROM icon_mapping WHERE page_url = ?";
+      sql::Statement statement(raw_db.GetUniqueStatement(kDeleteSql));
+      statement.BindString(0, URLDatabase::GURLToDatabaseURL(page_url2));
+      EXPECT_TRUE(statement.Run());
+    }
+    raw_db.Close();
+
+    EXPECT_TRUE(WritePage(file_name_, idx_root_page, buf.get(), page_size));
+  }
+
+  // Database should be corrupt.
+  {
+    sql::Connection raw_db;
+    EXPECT_TRUE(raw_db.Open(file_name_));
+    sql::Statement statement(
+        raw_db.GetUniqueStatement("PRAGMA integrity_check"));
+    EXPECT_TRUE(statement.Step());
+    ASSERT_NE("ok", statement.ColumnString(0));
+  }
+
+  // Open the database and access the corrupt index.
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    ThumbnailDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+
+    // Data for page_url2 was deleted, but the index entry remains,
+    // this will throw SQLITE_CORRUPT.  The corruption handler will
+    // recover the database and poison the handle, so the outer call
+    // fails.
+    std::vector<IconMapping> icon_mappings;
+    EXPECT_FALSE(db.GetIconMappingsForPageURL(page_url2, &icon_mappings));
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+
+  // Check that the database is recovered at a SQLite level.
+  {
+    sql::Connection raw_db;
+    EXPECT_TRUE(raw_db.Open(file_name_));
+    sql::Statement statement(
+        raw_db.GetUniqueStatement("PRAGMA integrity_check"));
+    EXPECT_TRUE(statement.Step());
+    EXPECT_EQ("ok", statement.ColumnString(0));
+  }
+
+  // Database should also be recovered at higher levels.
+  {
+    ThumbnailDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+
+    std::vector<IconMapping> icon_mappings;
+
+    EXPECT_FALSE(db.GetIconMappingsForPageURL(page_url2, &icon_mappings));
+
+    EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url1, &icon_mappings));
+    ASSERT_EQ(2u, icon_mappings.size());
+    EXPECT_EQ(id1, icon_mappings[0].icon_id);
+    EXPECT_EQ(id2, icon_mappings[1].icon_id);
+  }
+
+  // Corrupt the database again by making the actual file shorter than
+  // the header expects.
+  {
+    int64 db_size = 0;
+    EXPECT_TRUE(file_util::GetFileSize(file_name_, &db_size));
+    {
+      sql::Connection raw_db;
+      EXPECT_TRUE(raw_db.Open(file_name_));
+      EXPECT_TRUE(raw_db.Execute("CREATE TABLE t(x)"));
+    }
+    file_util::ScopedFILE file(file_util::OpenFile(file_name_, "rb+"));
+    ASSERT_TRUE(file.get() != NULL);
+    EXPECT_EQ(0, fseek(file.get(), static_cast<long>(db_size), SEEK_SET));
+    EXPECT_TRUE(file_util::TruncateFile(file.get()));
+  }
+
+  // Database is unusable at the SQLite level.
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    sql::Connection raw_db;
+    EXPECT_TRUE(raw_db.Open(file_name_));
+    EXPECT_FALSE(raw_db.IsSQLValid("PRAGMA integrity_check"));
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+
+  // Database should be recovered during open.
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    ThumbnailDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+
+    std::vector<IconMapping> icon_mappings;
+
+    EXPECT_FALSE(db.GetIconMappingsForPageURL(page_url2, &icon_mappings));
+
+    EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url1, &icon_mappings));
+    ASSERT_EQ(2u, icon_mappings.size());
+    EXPECT_EQ(id1, icon_mappings[0].icon_id);
+    EXPECT_EQ(id2, icon_mappings[1].icon_id);
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
 }
 
 }  // namespace history

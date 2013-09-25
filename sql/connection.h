@@ -394,6 +394,12 @@ class SQL_EXPORT Connection {
   //   SELECT type, name, tbl_name, sql FROM sqlite_master ORDER BY 1, 2, 3, 4;
   std::string GetSchema() const;
 
+  // Clients which provide an error_callback don't see the
+  // error-handling at the end of OnSqliteError().  Expose to allow
+  // those clients to work appropriately with ScopedErrorIgnorer in
+  // tests.
+  static bool ShouldIgnoreSqliteError(int error);
+
  private:
   // For recovery module.
   friend class Recovery;
@@ -436,7 +442,6 @@ class SQL_EXPORT Connection {
   // See test/scoped_error_ignorer.h.
   typedef base::Callback<bool(int)> ErrorIgnorerCallback;
   static ErrorIgnorerCallback* current_ignorer_cb_;
-  static bool ShouldIgnore(int error);
   static void SetErrorIgnorer(ErrorIgnorerCallback* ignorer);
   static void ResetErrorIgnorer();
 

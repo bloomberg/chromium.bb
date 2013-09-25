@@ -286,41 +286,6 @@ class ThumbnailDatabase {
   // Return whether the migration succeeds.
   bool MigrateIconMappingData(URLDatabase* url_db);
 
-  // Creates the favicon table, returning true if the table already exists,
-  // or was successfully created.
-  // |db| is the connection to use for initializing the table.
-  // A different connection is used in RenameAndDropThumbnails, when we
-  // need to copy the favicons between two database files.
-  bool InitFaviconsTable(sql::Connection* db);
-
-  // Creates the index over the favicon table. This will be called during
-  // initialization after the table is created. This is a separate function
-  // because it is used by SwapFaviconTables to create an index over the
-  // newly-renamed favicons table (formerly the temporary table with no index).
-  bool InitFaviconsIndex();
-
-  // Creates the favicon_bitmaps table, return true if the table already exists
-  // or was successfully created.
-  bool InitFaviconBitmapsTable(sql::Connection* db);
-
-  // Creates the index over the favicon_bitmaps table. This will be called
-  // during initialization after the table is created. This is a separate
-  // function because it is used by CommitTemporaryTables to create an
-  // index over the newly-renamed favicon_bitmaps table (formerly the temporary
-  // table with no index).
-  bool InitFaviconBitmapsIndex();
-
-  // Creates the icon_map table, return true if the table already exists or was
-  // successfully created.
-  bool InitIconMappingTable(sql::Connection* db);
-
-  // Creates the index over the icon_mapping table, This will be called during
-  // initialization after the table is created. This is a separate function
-  // because it is used by CommitTemporaryIconMappingTable to create an index
-  // over the newly-renamed icon_mapping table (formerly the temporary table
-  // with no index).
-  bool InitIconMappingIndex();
-
   // Returns true if the |favicons| database is missing a column.
   bool IsFaviconDBStructureIncorrect();
 
