@@ -11,11 +11,10 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/accelerators/accelerator_table.h"
+#include "ash/accelerators/debug_commands.h"
 #include "ash/ash_switches.h"
 #include "ash/caps_lock_delegate.h"
 #include "ash/debug.h"
-#include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/focus_cycler.h"
@@ -267,29 +266,6 @@ bool HandleRotateScreen() {
       Shell::GetInstance()->display_manager()->GetDisplayInfo(display.id());
   Shell::GetInstance()->display_manager()->SetDisplayRotation(
       display.id(), GetNextRotation(display_info.rotation()));
-  return true;
-}
-
-bool HandleToggleDesktopBackgroundMode() {
-  static int index = 0;
-  static const SkColor kColorOptions[] = {
-    SK_ColorBLACK, SK_ColorBLUE, SK_ColorRED, SK_ColorGREEN
-  };
-  DesktopBackgroundController* desktop_background_controller =
-      Shell::GetInstance()->desktop_background_controller();
-  SkColor color = kColorOptions[++index % arraysize(kColorOptions)];
-  if (color == SK_ColorBLACK) {
-    ash::Shell::GetInstance()->user_wallpaper_delegate()->
-        InitializeWallpaper();
-  } else {
-    SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10, 0);
-    bitmap.allocPixels();
-    bitmap.eraseColor(color);
-    desktop_background_controller->SetCustomWallpaper(
-        gfx::ImageSkia::CreateFrom1xBitmap(bitmap), WALLPAPER_LAYOUT_STRETCH);
-
-  }
   return true;
 }
 
@@ -882,7 +858,7 @@ bool AcceleratorController::PerformAction(int action,
     case ROTATE_SCREEN:
       return HandleRotateScreen();
     case TOGGLE_DESKTOP_BACKGROUND_MODE:
-      return HandleToggleDesktopBackgroundMode();
+      return debug::CycleDesktopBackgroundMode();
     case TOGGLE_ROOT_WINDOW_FULL_SCREEN:
       return HandleToggleRootWindowFullScreen();
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:

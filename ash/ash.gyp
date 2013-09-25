@@ -57,6 +57,8 @@
         'accelerators/accelerator_filter.h',
         'accelerators/accelerator_table.cc',
         'accelerators/accelerator_table.h',
+        'accelerators/debug_commands.cc',
+        'accelerators/debug_commands.h',
         'accelerators/exit_warning_handler.cc',
         'accelerators/exit_warning_handler.h',
         'accelerators/focus_manager_factory.cc',

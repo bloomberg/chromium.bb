@@ -23,6 +23,8 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/size_conversions.h"
+#include "ui/gfx/transform.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -33,6 +35,41 @@ namespace {
 int RoundPositive(double x) {
   return static_cast<int>(floor(x + 0.5));
 }
+
+// A view that controls the child view's layer so that the layer
+// always has the same size as the display's original, un-scaled size
+// in DIP. The layer then transformed to fit to the virtual screen
+// size when laid-out.
+// This is to avoid scaling the image at painting time, then scaling
+// it back to the screen size in the compositor.
+class LayerControlView : public views::View {
+ public:
+  explicit LayerControlView(views::View* view) {
+    AddChildView(view);
+    view->SetPaintToLayer(true);
+  }
+
+  // Overrides views::View.
+  virtual void Layout() OVERRIDE {
+    gfx::Display display = Shell::GetScreen()->GetDisplayNearestWindow(
+        GetWidget()->GetNativeView());
+    DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+    DisplayInfo info = display_manager->GetDisplayInfo(display.id());
+
+    gfx::SizeF pixel_size = display.size();
+    pixel_size.Scale(1.0f / info.ui_scale());
+    gfx::Size rounded_size = gfx::ToCeiledSize(pixel_size);
+    DCHECK_EQ(1, child_count());
+    views::View* child = child_at(0);
+    child->SetBounds(0, 0, rounded_size.width(), rounded_size.height());
+    gfx::Transform transform;
+    transform.Scale(info.ui_scale(), info.ui_scale());
+    child->SetTransform(transform);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LayerControlView);
+};
 
 }  // namespace
 
@@ -151,7 +188,8 @@ views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent = root_window->GetChildById(container_id);
   desktop_widget->Init(params);
-  desktop_widget->SetContentsView(new DesktopBackgroundView());
+  desktop_widget->SetContentsView(
+      new LayerControlView(new DesktopBackgroundView()));
   int animation_type = wallpaper_delegate->GetAnimationType();
   views::corewm::SetWindowVisibilityAnimationType(
       desktop_widget->GetNativeView(), animation_type);

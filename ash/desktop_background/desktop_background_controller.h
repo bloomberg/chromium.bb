@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -24,9 +25,6 @@ class RootWindow;
 }
 
 namespace ash {
-namespace internal {
-class DesktopBackgroundControllerTest;
-}  // namespace internal
 
 enum WallpaperLayout {
   // Center the wallpaper on the desktop without scaling it. The wallpaper
@@ -131,7 +129,8 @@ class ASH_EXPORT DesktopBackgroundController {
   bool MoveDesktopToUnlockedContainer();
 
  private:
-  friend class internal::DesktopBackgroundControllerTest;
+  friend class DesktopBackgroundControllerTest;
+  FRIEND_TEST_ALL_PREFIXES(DesktopBackgroundControllerTest, GetMaxDisplaySize);
 
   // An operation to asynchronously loads wallpaper.
   class WallpaperLoader;
@@ -170,6 +169,12 @@ class ASH_EXPORT DesktopBackgroundController {
 
   // Send notification that background animation finished.
   void NotifyAnimationFinished();
+
+  // Returns the maximum size of all displays combined in native
+  // resolutions.  Note that this isn't the bounds of the display who
+  // has maximum resolutions. Instead, this returns the size of the
+  // maximum width of all displays, and the maximum height of all displays.
+  static gfx::Size GetMaxDisplaySizeInNative();
 
   // If non-NULL, used in place of the real command line.
   CommandLine* command_line_for_testing_;
