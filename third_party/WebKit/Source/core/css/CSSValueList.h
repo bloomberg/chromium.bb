@@ -81,20 +81,7 @@ private:
     Vector<RefPtr<CSSValue>, 4> m_values;
 };
 
-inline CSSValueList* toCSSValueList(CSSValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->isValueList());
-    return static_cast<CSSValueList*>(value);
-}
-
-inline const CSSValueList* toCSSValueList(const CSSValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->isValueList());
-    return static_cast<const CSSValueList*>(value);
-}
-
-// Catch unneeded cast.
-void toCSSValueList(const CSSValueList*);
+DEFINE_CSS_VALUE_TYPE_CASTS(ValueList);
 
 // Objects of this class are intended to be stack-allocated and scoped to a single function.
 // Please take care not to pass these around as they do hold onto a raw pointer.

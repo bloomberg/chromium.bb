@@ -595,7 +595,7 @@ void CSSToStyleMap::mapNinePieceImageSlice(CSSValue* value, NinePieceImage& imag
         return;
 
     // Retrieve the border image value.
-    CSSBorderImageSliceValue* borderImageSlice = static_cast<CSSBorderImageSliceValue*>(value);
+    CSSBorderImageSliceValue* borderImageSlice = toCSSBorderImageSliceValue(value);
 
     // Set up a length box to represent our image slices.
     LengthBox box;

@@ -629,7 +629,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitAspectRatio(StyleResolver
         state.style()->setHasAspectRatio(false);
         return;
     }
-    CSSAspectRatioValue* aspectRatioValue = static_cast<CSSAspectRatioValue*>(value);
+    CSSAspectRatioValue* aspectRatioValue = toCSSAspectRatioValue(value);
     state.style()->setHasAspectRatio(true);
     state.style()->setAspectRatioDenominator(aspectRatioValue->denominatorValue());
     state.style()->setAspectRatioNumerator(aspectRatioValue->numeratorValue());
