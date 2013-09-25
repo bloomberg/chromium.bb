@@ -508,6 +508,9 @@ NavigationList.prototype = {
     var parentSetter = cr.ui.List.prototype.__lookupSetter__('dataModel');
     parentSetter.call(this, dataModel);
 
+    // Shows the folder shortcut if necessary.
+    this.updateFolderShortcutsStatus_();
+
     // This must be placed after the parent method is called, in order to make
     // it sure that the list was changed.
     dataModel.addEventListener('change', this.onListContentChangedBound_);
@@ -547,6 +550,8 @@ NavigationList.prototype.decorate = function(volumeManager, directoryModel) {
 
   this.directoryModel_.addEventListener('directory-changed',
       this.onCurrentDirectoryChanged_.bind(this));
+  this.volumeManager_.addEventListener('drive-status-changed',
+      this.onDriveStatusChanged_.bind(this));
   this.selectionModel.addEventListener(
       'change', this.onSelectionChange_.bind(this));
   this.selectionModel.addEventListener(
@@ -752,6 +757,27 @@ NavigationList.prototype.onCurrentDirectoryChanged_ = function(event) {
  */
 NavigationList.prototype.onListContentChanged_ = function(event) {
   this.selectBestMatchItem_();
+};
+
+/**
+ * Invoked when the content in the data model is changed.
+ * @param {Event} event The event.
+ * @private
+ */
+NavigationList.prototype.onDriveStatusChanged_ = function(event) {
+  this.updateFolderShortcutsStatus_();
+};
+
+/**
+ * Updates folder shortcut status.
+ * If the drive is mounted, shows the folder shortcut. Otherwise, hide it.
+ *
+ * @private
+ */
+NavigationList.prototype.updateFolderShortcutsStatus_ = function() {
+  var driveVolume = this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE);
+  var isDriveMounted = driveVolume && !driveVolume.error;
+  this.dataModel.showShortcuts(isDriveMounted);
 };
 
 /**

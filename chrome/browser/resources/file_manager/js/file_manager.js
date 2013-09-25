@@ -1912,7 +1912,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
       var isDriveEnabled = self.isDriveEnabled();
       self.volumeManager_.setDriveEnabled(isDriveEnabled);
-      self.navigationList_.dataModel.showShortcuts(isDriveEnabled);
 
       if (prefs.cellularDisabled)
         self.syncButton.setAttribute('checked', '');
