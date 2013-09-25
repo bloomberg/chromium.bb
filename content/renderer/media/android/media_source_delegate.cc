@@ -70,7 +70,6 @@ MediaSourceDelegate::MediaSourceDelegate(
       audio_stream_(NULL),
       video_stream_(NULL),
       seeking_(false),
-      last_seek_request_id_(0),
 #if defined(GOOGLE_TV)
       key_added_(false),
 #endif
@@ -101,7 +100,6 @@ void MediaSourceDelegate::Destroy() {
   }
 
   duration_change_cb_.Reset();
-  time_update_seek_hack_cb_.Reset();
   update_network_state_cb_.Reset();
   media_source_opened_cb_.Reset();
 
@@ -148,8 +146,7 @@ void MediaSourceDelegate::InitializeMediaSource(
     const media::NeedKeyCB& need_key_cb,
     const media::SetDecryptorReadyCB& set_decryptor_ready_cb,
     const UpdateNetworkStateCB& update_network_state_cb,
-    const DurationChangeCB& duration_change_cb,
-    const TimeUpdateSeekHackCB& time_update_seek_hack_cb) {
+    const DurationChangeCB& duration_change_cb) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   DCHECK(!media_source_opened_cb.is_null());
   media_source_opened_cb_ = media_source_opened_cb;
@@ -157,7 +154,6 @@ void MediaSourceDelegate::InitializeMediaSource(
   set_decryptor_ready_cb_ = set_decryptor_ready_cb;
   update_network_state_cb_ = media::BindToCurrentLoop(update_network_state_cb);
   duration_change_cb_ = duration_change_cb;
-  time_update_seek_hack_cb_ = time_update_seek_hack_cb;
   access_unit_size_ = kAccessUnitSizeForMediaSource;
 
   chunk_demuxer_.reset(new media::ChunkDemuxer(
@@ -225,46 +221,47 @@ size_t MediaSourceDelegate::VideoDecodedByteCount() const {
   return statistics_.video_bytes_decoded;
 }
 
-void MediaSourceDelegate::Seek(const base::TimeDelta& time,
-                               unsigned seek_request_id) {
-  DCHECK(media_loop_->BelongsToCurrentThread());
-  DVLOG(1) << __FUNCTION__ << "(" << time.InSecondsF() << ") : "
+void MediaSourceDelegate::CancelPendingSeek(const base::TimeDelta& seek_time) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__ << "(" << seek_time.InSecondsF() << ") : "
            << demuxer_client_id_;
 
-  last_seek_time_ = time;
-  last_seek_request_id_ = seek_request_id;
-
   if (chunk_demuxer_) {
-    if (IsSeeking()) {
-      chunk_demuxer_->CancelPendingSeek(time);
-      return;
-    }
-
-    chunk_demuxer_->StartWaitingForSeek(time);
-  }
-
-  SetSeeking(true);
-  SeekInternal(time, seek_request_id);
-
-  // During fullscreen media source playback Seek() can be called without
-  // WebMediaPlayerAndroid's knowledge. We need to inform it that a seek is
-  // in progress so the correct time can be returned to web applications while
-  // seeking.
-  //
-  // TODO(wolenetz): Remove after landing a uniform seeking codepath.
-  if (!time_update_seek_hack_cb_.is_null()) {
-    main_loop_->PostTask(FROM_HERE,
-                         base::Bind(time_update_seek_hack_cb_, time));
+    // It is possible that we have just completed the seek,
+    // but caller does not know this yet. It is still safe to cancel in this
+    // case because the caller will always call StartWaitingForSeek() when it
+    // is notified of the completed seek.
+    chunk_demuxer_->CancelPendingSeek(seek_time);
   }
 }
 
-void MediaSourceDelegate::SeekInternal(const base::TimeDelta& time,
-                                       unsigned request_id) {
+void MediaSourceDelegate::StartWaitingForSeek(
+    const base::TimeDelta& seek_time) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__ << "(" << seek_time.InSecondsF() << ") : "
+           << demuxer_client_id_;
+  DCHECK(!IsSeeking());
+
+  if (chunk_demuxer_)
+    chunk_demuxer_->StartWaitingForSeek(seek_time);
+}
+
+void MediaSourceDelegate::Seek(const base::TimeDelta& seek_time) {
+  DCHECK(media_loop_->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__ << "(" << seek_time.InSecondsF() << ") : "
+           << demuxer_client_id_;
+
+  DCHECK(!IsSeeking());
+  SetSeeking(true);
+  SeekInternal(seek_time);
+}
+
+void MediaSourceDelegate::SeekInternal(const base::TimeDelta& seek_time) {
   DCHECK(media_loop_->BelongsToCurrentThread());
   DCHECK(IsSeeking());
-  demuxer_->Seek(time, base::Bind(
-      &MediaSourceDelegate::OnDemuxerSeekDone, media_weak_factory_.GetWeakPtr(),
-      request_id));
+  demuxer_->Seek(seek_time, base::Bind(
+      &MediaSourceDelegate::OnDemuxerSeekDone,
+      media_weak_factory_.GetWeakPtr()));
 }
 
 void MediaSourceDelegate::SetTotalBytes(int64 total_bytes) {
@@ -540,22 +537,13 @@ void MediaSourceDelegate::OnVideoDecryptingDemuxerStreamInitDone(
     NotifyDemuxerReady();
 }
 
-void MediaSourceDelegate::OnDemuxerSeekDone(unsigned seek_request_id,
-                                            media::PipelineStatus status) {
+void MediaSourceDelegate::OnDemuxerSeekDone(media::PipelineStatus status) {
   DCHECK(media_loop_->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__ << "(" << status << ") : " << demuxer_client_id_;
   DCHECK(IsSeeking());
 
   if (status != media::PIPELINE_OK) {
     OnDemuxerError(status);
-    return;
-  }
-
-  // Newer seek has been issued. Resume the last seek request.
-  if (seek_request_id != last_seek_request_id_) {
-    if (chunk_demuxer_)
-      chunk_demuxer_->StartWaitingForSeek(last_seek_time_);
-    SeekInternal(last_seek_time_, last_seek_request_id_);
     return;
   }
 
@@ -592,8 +580,7 @@ void MediaSourceDelegate::FinishResettingDecryptingDemuxerStreams() {
   DCHECK(media_loop_->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
   SetSeeking(false);
-  demuxer_client_->SeekRequestAck(demuxer_client_id_, last_seek_request_id_);
-  last_seek_request_id_ = 0;
+  demuxer_client_->DemuxerSeekDone(demuxer_client_id_);
 }
 
 void MediaSourceDelegate::OnDemuxerStopDone() {

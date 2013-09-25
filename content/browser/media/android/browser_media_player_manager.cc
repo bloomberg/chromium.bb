@@ -139,8 +139,10 @@ void BrowserMediaPlayerManager::FullscreenPlayerPause() {
 
 void BrowserMediaPlayerManager::FullscreenPlayerSeek(int msec) {
   MediaPlayerAndroid* player = GetFullscreenPlayer();
-  if (player)
-    player->SeekTo(base::TimeDelta::FromMilliseconds(msec));
+  if (player) {
+    OnSeekRequest(fullscreen_player_id_,
+                  base::TimeDelta::FromMilliseconds(msec));
+  }
 }
 
 void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
@@ -202,10 +204,16 @@ void BrowserMediaPlayerManager::OnBufferingUpdate(
     video_view_->OnBufferingUpdate(percentage);
 }
 
-void BrowserMediaPlayerManager::OnSeekComplete(int player_id,
-                                               base::TimeDelta current_time) {
-  Send(new MediaPlayerMsg_MediaSeekCompleted(
-      routing_id(), player_id, current_time));
+void BrowserMediaPlayerManager::OnSeekRequest(
+    int player_id,
+    const base::TimeDelta& time_to_seek) {
+  Send(new MediaPlayerMsg_SeekRequest(routing_id(), player_id, time_to_seek));
+}
+
+void BrowserMediaPlayerManager::OnSeekComplete(
+    int player_id,
+    const base::TimeDelta& current_time) {
+  Send(new MediaPlayerMsg_SeekCompleted(routing_id(), player_id, current_time));
 }
 
 void BrowserMediaPlayerManager::OnError(int player_id, int error) {
@@ -414,7 +422,9 @@ void BrowserMediaPlayerManager::OnStart(int player_id) {
     player->Start();
 }
 
-void BrowserMediaPlayerManager::OnSeek(int player_id, base::TimeDelta time) {
+void BrowserMediaPlayerManager::OnSeek(
+    int player_id,
+    const base::TimeDelta& time) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->SeekTo(time);

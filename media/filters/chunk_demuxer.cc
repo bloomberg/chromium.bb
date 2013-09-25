@@ -563,7 +563,8 @@ void ChunkDemuxerStream::Seek(TimeDelta time) {
   DVLOG(1) << "ChunkDemuxerStream::Seek(" << time.InSecondsF() << ")";
   base::AutoLock auto_lock(lock_);
   DCHECK(read_cb_.is_null());
-  DCHECK(state_ == UNINITIALIZED || state_ == RETURNING_ABORT_FOR_READS);
+  DCHECK(state_ == UNINITIALIZED || state_ == RETURNING_ABORT_FOR_READS)
+      << state_;
 
   stream_->Seek(time);
 }

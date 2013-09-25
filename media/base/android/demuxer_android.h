@@ -41,8 +41,7 @@ class MEDIA_EXPORT DemuxerAndroid {
 
   // Called to request the demuxer to seek to a particular media time.
   virtual void RequestDemuxerSeek(int demuxer_client_id,
-                                  base::TimeDelta time_to_seek,
-                                  unsigned seek_request_id) = 0;
+                                  const base::TimeDelta& time_to_seek) = 0;
 
  protected:
   virtual ~DemuxerAndroid() {}
@@ -63,7 +62,7 @@ class MEDIA_EXPORT DemuxerAndroidClient {
   virtual void OnDemuxerDataAvailable(const DemuxerData& params) = 0;
 
   // Called in response to RequestDemuxerSeek().
-  virtual void OnDemuxerSeeked(unsigned seek_request_id) = 0;
+  virtual void OnDemuxerSeekDone() = 0;
 
   // Called whenever the demuxer has detected a duration change.
   virtual void OnDemuxerDurationChanged(base::TimeDelta duration) = 0;

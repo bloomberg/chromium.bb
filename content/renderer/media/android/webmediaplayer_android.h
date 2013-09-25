@@ -161,6 +161,7 @@ class WebMediaPlayerAndroid
                               int height, bool success);
   void OnPlaybackComplete();
   void OnBufferingUpdate(int percentage);
+  void OnSeekRequest(const base::TimeDelta& time_to_seek);
   void OnSeekComplete(const base::TimeDelta& current_time);
   void OnMediaError(int error_type);
   void OnVideoSizeChanged(int width, int height);
@@ -311,11 +312,14 @@ class WebMediaPlayerAndroid
   // any subsequent duration value passed to OnMediaMetadataChange().
   bool ignore_metadata_duration_change_;
 
-  // The time android media player is trying to seek.
-  double pending_seek_;
+  // Seek gets pending if another seek is in progress. Only last pending seek
+  // will have effect.
+  bool pending_seek_;
+  base::TimeDelta pending_seek_time_;
 
   // Internal seek state.
   bool seeking_;
+  base::TimeDelta seek_time_;
 
   // Whether loading has progressed since the last call to didLoadingProgress.
   mutable bool did_loading_progress_;

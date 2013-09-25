@@ -43,7 +43,6 @@ class MediaSourceDelegate : public media::DemuxerHost {
   typedef base::Callback<void(WebKit::WebMediaPlayer::NetworkState)>
       UpdateNetworkStateCB;
   typedef base::Callback<void(const base::TimeDelta&)> DurationChangeCB;
-  typedef base::Callback<void(const base::TimeDelta&)> TimeUpdateSeekHackCB;
 
   // Helper class used by scoped_ptr to destroy an instance of
   // MediaSourceDelegate.
@@ -66,8 +65,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
       const media::NeedKeyCB& need_key_cb,
       const media::SetDecryptorReadyCB& set_decryptor_ready_cb,
       const UpdateNetworkStateCB& update_network_state_cb,
-      const DurationChangeCB& duration_change_cb,
-      const TimeUpdateSeekHackCB& time_update_seek_hack_cb);
+      const DurationChangeCB& duration_change_cb);
 
 #if defined(GOOGLE_TV)
   void InitializeMediaStream(
@@ -81,10 +79,16 @@ class MediaSourceDelegate : public media::DemuxerHost {
   size_t AudioDecodedByteCount() const;
   size_t VideoDecodedByteCount() const;
 
-  // Seeks the demuxer and acknowledges the seek request with |seek_request_id|
-  // after the seek has been completed. This method can be called during pending
-  // seeks, in which case only the last seek request will be acknowledged.
-  void Seek(const base::TimeDelta& time, unsigned seek_request_id);
+  // In MSE case, calls ChunkDemuxer::CancelPendingSeek().
+  void CancelPendingSeek(const base::TimeDelta& seek_time);
+
+  // In MSE case, calls ChunkDemuxer::StartWaitingForSeek().
+  void StartWaitingForSeek(const base::TimeDelta& seek_time);
+
+  // Seeks the demuxer and later calls OnDemuxerSeekDone() after the seek has
+  // been completed. There must be no other seek of the demuxer currently in
+  // process when this method is called.
+  void Seek(const base::TimeDelta& seek_time);
 
   void NotifyKeyAdded(const std::string& key_system);
 
@@ -132,8 +136,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // decrypted audio/video streams if present.
   //
   // Runs on the media thread.
-  void OnDemuxerSeekDone(unsigned seek_request_id,
-                         media::PipelineStatus status);
+  void OnDemuxerSeekDone(media::PipelineStatus status);
   void ResetAudioDecryptingDemuxerStream();
   void ResetVideoDecryptingDemuxerStream();
   void FinishResettingDecryptingDemuxerStreams();
@@ -147,7 +150,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
 
   void StopDemuxer();
   void InitializeDemuxer();
-  void SeekInternal(const base::TimeDelta& time, unsigned seek_request_id);
+  void SeekInternal(const base::TimeDelta& seek_time);
   // Reads an access unit from the demuxer stream |stream| and stores it in
   // the |index|th access unit in |params|.
   void ReadFromDemuxerStream(media::DemuxerStream::Type type,
@@ -182,7 +185,6 @@ class MediaSourceDelegate : public media::DemuxerHost {
   scoped_refptr<media::MediaLog> media_log_;
   UpdateNetworkStateCB update_network_state_cb_;
   DurationChangeCB duration_change_cb_;
-  TimeUpdateSeekHackCB time_update_seek_hack_cb_;
 
   scoped_ptr<media::ChunkDemuxer> chunk_demuxer_;
   media::Demuxer* demuxer_;
@@ -215,9 +217,6 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // Lock used to serialize access for |seeking_|.
   mutable base::Lock seeking_lock_;
   bool seeking_;
-
-  base::TimeDelta last_seek_time_;
-  unsigned last_seek_request_id_;
 
 #if defined(GOOGLE_TV)
   bool key_added_;

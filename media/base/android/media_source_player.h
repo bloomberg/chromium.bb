@@ -55,7 +55,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Pause(bool is_media_related_action ALLOW_UNUSED) OVERRIDE;
-  virtual void SeekTo(base::TimeDelta timestamp) OVERRIDE;
+  virtual void SeekTo(const base::TimeDelta& timestamp) OVERRIDE;
   virtual void Release() OVERRIDE;
   virtual void SetVolume(double volume) OVERRIDE;
   virtual int GetVideoWidth() OVERRIDE;
@@ -73,7 +73,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // DemuxerAndroidClient implementation.
   virtual void OnDemuxerConfigsAvailable(const DemuxerConfigs& params) OVERRIDE;
   virtual void OnDemuxerDataAvailable(const DemuxerData& params) OVERRIDE;
-  virtual void OnDemuxerSeeked(unsigned seek_request_id) OVERRIDE;
+  virtual void OnDemuxerSeekDone() OVERRIDE;
   virtual void OnDemuxerDurationChanged(base::TimeDelta duration) OVERRIDE;
 
  private:
@@ -166,9 +166,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // Pending event that the player needs to do.
   unsigned pending_event_;
 
-  // ID to keep track of whether all the seek requests are acked.
-  unsigned seek_request_id_;
-
   // Stats about the media.
   base::TimeDelta duration_;
   int width_;
@@ -203,6 +200,9 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
 
   // The surface object currently owned by the player.
   gfx::ScopedJavaSurface surface_;
+
+  // Tracks whether or not the player has previously ever set |surface_|.
+  bool surface_ever_set_;
 
   // Decoder jobs.
   scoped_ptr<AudioDecoderJob, MediaDecoderJob::Deleter> audio_decoder_job_;

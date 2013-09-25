@@ -62,7 +62,9 @@ class MEDIA_EXPORT MediaPlayerManager {
   virtual void OnBufferingUpdate(int player_id, int percentage) = 0;
 
   // Called when seek completed. Args: player ID, current time.
-  virtual void OnSeekComplete(int player_id, base::TimeDelta current_time) = 0;
+  virtual void OnSeekComplete(
+      int player_id,
+      const base::TimeDelta& current_time) = 0;
 
   // Called when error happens. Args: player ID, error type.
   virtual void OnError(int player_id, int error) = 0;

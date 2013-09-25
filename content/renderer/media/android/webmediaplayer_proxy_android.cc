@@ -31,7 +31,8 @@ bool WebMediaPlayerProxyAndroid::OnMessageReceived(const IPC::Message& msg) {
                         OnMediaPlaybackCompleted)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaBufferingUpdate,
                         OnMediaBufferingUpdate)
-    IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaSeekCompleted, OnMediaSeekCompleted)
+    IPC_MESSAGE_HANDLER(MediaPlayerMsg_SeekRequest, OnSeekRequest)
+    IPC_MESSAGE_HANDLER(MediaPlayerMsg_SeekCompleted, OnSeekCompleted)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaError, OnMediaError)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaVideoSizeChanged,
                         OnVideoSizeChanged)
@@ -72,7 +73,9 @@ void WebMediaPlayerProxyAndroid::Pause(
       routing_id(), player_id, is_media_related_action));
 }
 
-void WebMediaPlayerProxyAndroid::Seek(int player_id, base::TimeDelta time) {
+void WebMediaPlayerProxyAndroid::Seek(
+    int player_id,
+    const base::TimeDelta& time) {
   Send(new MediaPlayerHostMsg_Seek(routing_id(), player_id, time));
 }
 
@@ -112,9 +115,17 @@ void WebMediaPlayerProxyAndroid::OnMediaBufferingUpdate(int player_id,
     player->OnBufferingUpdate(percent);
 }
 
-void WebMediaPlayerProxyAndroid::OnMediaSeekCompleted(
+void WebMediaPlayerProxyAndroid::OnSeekRequest(
     int player_id,
-    base::TimeDelta current_time) {
+    const base::TimeDelta& time_to_seek) {
+  WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
+  if (player)
+    player->OnSeekRequest(time_to_seek);
+}
+
+void WebMediaPlayerProxyAndroid::OnSeekCompleted(
+    int player_id,
+    const base::TimeDelta& current_time) {
   WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
     player->OnSeekComplete(current_time);

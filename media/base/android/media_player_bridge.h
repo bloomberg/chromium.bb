@@ -56,7 +56,7 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Pause(bool is_media_related_action ALLOW_UNUSED) OVERRIDE;
-  virtual void SeekTo(base::TimeDelta time) OVERRIDE;
+  virtual void SeekTo(const base::TimeDelta& timestamp) OVERRIDE;
   virtual void Release() OVERRIDE;
   virtual void SetVolume(double volume) OVERRIDE;
   virtual int GetVideoWidth() OVERRIDE;
@@ -81,7 +81,7 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   virtual void OnPlaybackComplete() OVERRIDE;
   virtual void OnMediaInterrupted() OVERRIDE;
 
-  virtual void PendingSeekInternal(base::TimeDelta time);
+  virtual void PendingSeekInternal(const base::TimeDelta& time);
 
   // Prepare the player for playback, asynchronously. When succeeds,
   // OnMediaPrepared() will be called. Otherwise, OnMediaError() will

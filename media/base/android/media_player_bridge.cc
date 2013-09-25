@@ -219,14 +219,14 @@ int MediaPlayerBridge::GetVideoHeight() {
       env, j_media_player_bridge_.obj());
 }
 
-void MediaPlayerBridge::SeekTo(base::TimeDelta time) {
+void MediaPlayerBridge::SeekTo(const base::TimeDelta& timestamp) {
   // Record the time to seek when OnMediaPrepared() is called.
-  pending_seek_ = time;
+  pending_seek_ = timestamp;
 
   if (j_media_player_bridge_.is_null())
     Prepare();
   else if (prepared_)
-    SeekInternal(time);
+    SeekInternal(timestamp);
 }
 
 base::TimeDelta MediaPlayerBridge::GetCurrentTime() {
@@ -342,7 +342,7 @@ void MediaPlayerBridge::PauseInternal() {
   time_update_timer_.Stop();
 }
 
-void MediaPlayerBridge::PendingSeekInternal(base::TimeDelta time) {
+void MediaPlayerBridge::PendingSeekInternal(const base::TimeDelta& time) {
   SeekInternal(time);
 }
 

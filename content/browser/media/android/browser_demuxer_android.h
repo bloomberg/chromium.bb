@@ -35,8 +35,7 @@ class CONTENT_EXPORT BrowserDemuxerAndroid
   virtual void RequestDemuxerData(int demuxer_client_id,
                                   media::DemuxerStream::Type type) OVERRIDE;
   virtual void RequestDemuxerSeek(int demuxer_client_id,
-                                  base::TimeDelta time_to_seek,
-                                  unsigned seek_request_id) OVERRIDE;
+                                  const base::TimeDelta& time_to_seek) OVERRIDE;
 
  protected:
   friend class base::RefCountedThreadSafe<BrowserDemuxerAndroid>;
@@ -47,7 +46,7 @@ class CONTENT_EXPORT BrowserDemuxerAndroid
                       const media::DemuxerConfigs& configs);
   void OnReadFromDemuxerAck(int demuxer_client_id,
                             const media::DemuxerData& data);
-  void OnMediaSeekRequestAck(int demuxer_client_id, unsigned seek_request_id);
+  void OnDemuxerSeekDone(int demuxer_client_id);
   void OnDurationChanged(int demuxer_client_id,
                          const base::TimeDelta& duration);
 

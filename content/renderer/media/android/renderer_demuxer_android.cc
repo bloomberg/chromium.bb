@@ -40,7 +40,7 @@ void RendererDemuxerAndroid::RemoveDelegate(int demuxer_client_id) {
 
 bool RendererDemuxerAndroid::OnMessageReceived(const IPC::Message& message) {
   switch (message.type()) {
-    case MediaPlayerMsg_MediaSeekRequest::ID:
+    case MediaPlayerMsg_DemuxerSeekRequest::ID:
     case MediaPlayerMsg_ReadFromDemuxer::ID:
     case MediaPlayerMsg_MediaConfigRequest::ID:
       media_message_loop_->PostTask(FROM_HERE, base::Bind(
@@ -64,10 +64,9 @@ void RendererDemuxerAndroid::ReadFromDemuxerAck(
       demuxer_client_id, data));
 }
 
-void RendererDemuxerAndroid::SeekRequestAck(int demuxer_client_id,
-                                            unsigned seek_request_id) {
-  thread_safe_sender_->Send(new MediaPlayerHostMsg_MediaSeekRequestAck(
-      demuxer_client_id, seek_request_id));
+void RendererDemuxerAndroid::DemuxerSeekDone(int demuxer_client_id) {
+  thread_safe_sender_->Send(new MediaPlayerHostMsg_DemuxerSeekDone(
+      demuxer_client_id));
 }
 
 void RendererDemuxerAndroid::DurationChanged(int demuxer_client_id,
@@ -78,7 +77,7 @@ void RendererDemuxerAndroid::DurationChanged(int demuxer_client_id,
 
 void RendererDemuxerAndroid::DispatchMessage(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(RendererDemuxerAndroid, message)
-    IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaSeekRequest, OnMediaSeekRequest)
+    IPC_MESSAGE_HANDLER(MediaPlayerMsg_DemuxerSeekRequest, OnDemuxerSeekRequest)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_ReadFromDemuxer, OnReadFromDemuxer)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaConfigRequest, OnMediaConfigRequest)
   IPC_END_MESSAGE_MAP()
@@ -92,13 +91,12 @@ void RendererDemuxerAndroid::OnReadFromDemuxer(
     delegate->OnReadFromDemuxer(type);
 }
 
-void RendererDemuxerAndroid::OnMediaSeekRequest(
+void RendererDemuxerAndroid::OnDemuxerSeekRequest(
     int demuxer_client_id,
-    const base::TimeDelta& time_to_seek,
-    unsigned seek_request_id) {
+    const base::TimeDelta& time_to_seek) {
   MediaSourceDelegate* delegate = delegates_.Lookup(demuxer_client_id);
   if (delegate)
-    delegate->Seek(time_to_seek, seek_request_id);
+    delegate->Seek(time_to_seek);
 }
 
 void RendererDemuxerAndroid::OnMediaConfigRequest(int demuxer_client_id) {

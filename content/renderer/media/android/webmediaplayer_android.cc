@@ -73,7 +73,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       main_loop_(base::MessageLoopProxy::current()),
       media_loop_(media_loop),
       ignore_metadata_duration_change_(false),
-      pending_seek_(0),
+      pending_seek_(false),
       seeking_(false),
       did_loading_progress_(false),
       manager_(manager),
@@ -248,8 +248,6 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
           base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
                      base::Unretained(this)),
           base::Bind(&WebMediaPlayerAndroid::OnDurationChanged,
-                     base::Unretained(this)),
-          base::Bind(&WebMediaPlayerAndroid::OnTimeUpdate,
                      base::Unretained(this)));
     }
 #if defined(GOOGLE_TV)
@@ -336,11 +334,39 @@ void WebMediaPlayerAndroid::pause(bool is_media_related_action) {
 }
 
 void WebMediaPlayerAndroid::seek(double seconds) {
-  pending_seek_ = seconds;
-  seeking_ = true;
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__ << "(" << seconds << ")";
 
-  base::TimeDelta seek_time = ConvertSecondsToTimestamp(seconds);
-  proxy_->Seek(player_id_, seek_time);
+  base::TimeDelta new_seek_time = ConvertSecondsToTimestamp(seconds);
+
+  if (seeking_) {
+    // Suppress redundant seek to same microsecond as current seek. Also clear
+    // any pending seek in this case. For example, seek(1), seek(2), seek(1)
+    // without any intervening seek completion should result in only a current
+    // seek to (1) without any left-over pending seek.
+    if (new_seek_time == seek_time_) {
+      pending_seek_ = false;
+      return;
+    }
+
+    pending_seek_ = true;
+    pending_seek_time_ = new_seek_time;
+
+    if (media_source_delegate_)
+      media_source_delegate_->CancelPendingSeek(pending_seek_time_);
+
+    // Later, OnSeekComplete will trigger the pending seek.
+    return;
+  }
+
+  seeking_ = true;
+  seek_time_ = new_seek_time;
+
+  if (media_source_delegate_)
+    media_source_delegate_->StartWaitingForSeek(seek_time_);
+
+  // Kick off the asynchronous seek!
+  proxy_->Seek(player_id_, seek_time_);
 }
 
 bool WebMediaPlayerAndroid::supportsFullscreen() const {
@@ -405,9 +431,13 @@ double WebMediaPlayerAndroid::duration() const {
 }
 
 double WebMediaPlayerAndroid::currentTime() const {
-  // If the player is pending for a seek, return the seek time.
-  if (seeking())
-    return pending_seek_;
+  // If the player is processing a seek, return the seek time.
+  // Blink may still query us if updatePlaybackState() occurs while seeking.
+  if (seeking()) {
+    return pending_seek_ ?
+        pending_seek_time_.InSecondsF() : seek_time_.InSecondsF();
+  }
+
   return current_time_;
 }
 
@@ -601,11 +631,11 @@ void WebMediaPlayerAndroid::OnPlaybackComplete() {
 
   // if the loop attribute is set, timeChanged() will update the current time
   // to 0. It will perform a seek to 0. As the requests to the renderer
-  // process are sequential, the OnSeekCompelete() will only occur
+  // process are sequential, the OnSeekComplete() will only occur
   // once OnPlaybackComplete() is done. As the playback can only be executed
   // upon completion of OnSeekComplete(), the request needs to be saved.
   is_playing_ = false;
-  if (seeking_ && pending_seek_ == 0)
+  if (seeking_ && seek_time_ == base::TimeDelta())
     pending_playback_ = true;
 }
 
@@ -614,9 +644,20 @@ void WebMediaPlayerAndroid::OnBufferingUpdate(int percentage) {
   did_loading_progress_ = true;
 }
 
+void WebMediaPlayerAndroid::OnSeekRequest(const base::TimeDelta& time_to_seek) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  client_->requestSeek(time_to_seek.InSecondsF());
+}
+
 void WebMediaPlayerAndroid::OnSeekComplete(
     const base::TimeDelta& current_time) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
   seeking_ = false;
+  if (pending_seek_) {
+    pending_seek_ = false;
+    seek(pending_seek_time_.InSecondsF());
+    return;
+  }
 
   OnTimeUpdate(current_time);
 

@@ -58,7 +58,7 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
   void Pause(int player_id, bool is_media_related_action);
 
   // Performs seek on the player.
-  void Seek(int player_id, base::TimeDelta time);
+  void Seek(int player_id, const base::TimeDelta& time);
 
   // Set the player volume.
   void SetVolume(int player_id, double volume);
@@ -107,7 +107,8 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
                               bool success);
   void OnMediaPlaybackCompleted(int player_id);
   void OnMediaBufferingUpdate(int player_id, int percent);
-  void OnMediaSeekCompleted(int player_id, base::TimeDelta current_time);
+  void OnSeekRequest(int player_id, const base::TimeDelta& time_to_seek);
+  void OnSeekCompleted(int player_id, const base::TimeDelta& current_time);
   void OnMediaError(int player_id, int error);
   void OnVideoSizeChanged(int player_id, int width, int height);
   void OnTimeUpdate(int player_id, base::TimeDelta current_time);

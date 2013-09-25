@@ -65,7 +65,6 @@ MediaSourcePlayer::MediaSourcePlayer(
       demuxer_client_id_(demuxer_client_id),
       demuxer_(demuxer),
       pending_event_(NO_EVENT_PENDING),
-      seek_request_id_(0),
       width_(0),
       height_(0),
       audio_codec_(kUnknownAudioCodec),
@@ -79,6 +78,7 @@ MediaSourcePlayer::MediaSourcePlayer(
       is_video_encrypted_(false),
       volume_(-1.0),
       clock_(&default_tick_clock_),
+      surface_ever_set_(false),
       reconfig_audio_decoder_(false),
       reconfig_video_decoder_(false),
       weak_this_(this),
@@ -102,14 +102,35 @@ void MediaSourcePlayer::SetVideoSurface(gfx::ScopedJavaSurface surface) {
 
   surface_ =  surface.Pass();
   SetPendingEvent(SURFACE_CHANGE_EVENT_PENDING);
+
+  // Setting a new surface will require a new MediaCodec to be created.
+  // Request a seek so that the new decoder will decode an I-frame first.
+  // Or otherwise, the new MediaCodec might crash. See b/8950387.
+
+  if (!surface_ever_set_) {
+    // Don't work-around to reach I-frame if we never previously set
+    // |surface_|. In this case, we never fed data to decoder, and next data
+    // should begin with I-frame.
+    surface_ever_set_ = true;
+
+    // If seek is already pending, process of the pending surface change
+    // event will occur in OnDemuxerSeekDone(). Otherwise, we need to
+    // trigger pending event processing now.
+    if (!IsEventPending(SEEK_EVENT_PENDING))
+      ProcessPendingEvents();
+
+    return;
+  }
+
   if (IsEventPending(SEEK_EVENT_PENDING)) {
     // Waiting for the seek to finish.
     return;
   }
 
-  // Setting a new surface will require a new MediaCodec to be created.
-  // Request a seek so that the new decoder will decode an I-frame first.
-  // Or otherwise, the new MediaCodec might crash. See b/8950387.
+  // TODO(wolenetz): We need to either coordinate seek with renderer or
+  // add functionality to know which data contains I-frames and only begin
+  // feeding a new decoder with such frames. The following will likely cause
+  // ChunkDemuxer to fail in renderer because it is not setup to expect seek.
   ScheduleSeekEventAndStopDecoding();
 }
 
@@ -170,7 +191,7 @@ int MediaSourcePlayer::GetVideoHeight() {
   return height_;
 }
 
-void MediaSourcePlayer::SeekTo(base::TimeDelta timestamp) {
+void MediaSourcePlayer::SeekTo(const base::TimeDelta& timestamp) {
   DVLOG(1) << __FUNCTION__ << "(" << timestamp.InSecondsF() << ")";
 
   clock_.SetTime(timestamp, timestamp);
@@ -346,14 +367,10 @@ void MediaSourcePlayer::SetDrmBridge(MediaDrmBridge* drm_bridge) {
     StartInternal();
 }
 
-void MediaSourcePlayer::OnDemuxerSeeked(unsigned seek_request_id) {
-  DVLOG(1) << __FUNCTION__ << "(" << seek_request_id << ")";
-  // Do nothing until the most recent seek request is processed.
-  if (seek_request_id_ != seek_request_id)
-    return;
+void MediaSourcePlayer::OnDemuxerSeekDone() {
+  DVLOG(1) << __FUNCTION__;
 
   ClearPendingEvent(SEEK_EVENT_PENDING);
-
   OnSeekComplete();
   ProcessPendingEvents();
 }
@@ -391,11 +408,9 @@ void MediaSourcePlayer::ProcessPendingEvents() {
   }
 
   if (IsEventPending(SEEK_EVENT_PENDING)) {
-    int seek_request_id = ++seek_request_id_;
-    DVLOG(1) << __FUNCTION__ << " : Handling SEEK_EVENT: " << seek_request_id;
+    DVLOG(1) << __FUNCTION__ << " : Handling SEEK_EVENT";
     ClearDecodingData();
-    demuxer_->RequestDemuxerSeek(
-        demuxer_client_id_, GetCurrentTime(), seek_request_id);
+    demuxer_->RequestDemuxerSeek(demuxer_client_id_, GetCurrentTime());
     return;
   }
 

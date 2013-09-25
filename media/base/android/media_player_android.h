@@ -43,9 +43,10 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   // Pause the media.
   virtual void Pause(bool is_media_related_action) = 0;
 
-  // Seek to a particular position. When succeeds, OnSeekComplete() will be
-  // called. Otherwise, nothing will happen.
-  virtual void SeekTo(base::TimeDelta time) = 0;
+  // Seek to a particular position, based on renderer signaling actual seek
+  // with MediaPlayerHostMsg_Seek. If eventual success, OnSeekComplete() will be
+  // called.
+  virtual void SeekTo(const base::TimeDelta& timestamp) = 0;
 
   // Release the player resources.
   virtual void Release() = 0;
@@ -80,6 +81,8 @@ class MEDIA_EXPORT MediaPlayerAndroid {
                      MediaPlayerManager* manager);
 
   // Called when player status changes.
+  // TODO(wolenetz): Replace these confusing subclass helper methods with
+  // explicit calls to the manager. See http://crbug.com/295781
   virtual void OnMediaError(int error_type);
   virtual void OnVideoSizeChanged(int width, int height);
   virtual void OnBufferingUpdate(int percent);
