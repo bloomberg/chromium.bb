@@ -1,0 +1,5 @@
+# Generated XCode projects.
+all.xcodeproj
+blink.xcodeproj
+blink_skia_config.xcodeproj
+blink_test_runner.xcodeproj
