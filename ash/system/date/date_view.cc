@@ -8,6 +8,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
+#include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -215,6 +216,13 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
   size_t colon_pos = current_time.find(ASCIIToUTF16(":"));
   base::string16 hour = current_time.substr(0, colon_pos);
   base::string16 minute = current_time.substr(colon_pos + 1);
+
+  // Sometimes pad single-digit hours with a zero for aesthetic reasons.
+  if (hour.length() == 1 &&
+      hour_type_ == base::k24HourClock &&
+      !base::i18n::IsRTL())
+    hour = ASCIIToUTF16("0") + hour;
+
   vertical_label_hours_->SetText(hour);
   vertical_label_minutes_->SetText(minute);
   Layout();
@@ -244,7 +252,7 @@ void TimeView::UpdateClockLayout(TrayDate::ClockLayout clock_layout){
     const int kColumnId = 0;
     views::ColumnSet* columns = layout->AddColumnSet(kColumnId);
     columns->AddPaddingColumn(0, kVerticalClockLeftPadding);
-    columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+    columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                        0, views::GridLayout::USE_PREF, 0, 0);
     layout->AddPaddingRow(0, kTrayLabelItemVerticalPaddingVerticalAlignment);
     layout->StartRow(0, kColumnId);
