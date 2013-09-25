@@ -5,11 +5,14 @@
 #include "chrome/test/chromedriver/chrome/chrome_existing_impl.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/net/port_server.h"
 
 ChromeExistingImpl::ChromeExistingImpl(
     scoped_ptr<DevToolsHttpClient> client,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners)
-    : ChromeImpl(client.Pass(), devtools_event_listeners) {}
+    : ChromeImpl(client.Pass(),
+                 devtools_event_listeners,
+                 scoped_ptr<PortReservation>()) {}
 
 ChromeExistingImpl::~ChromeExistingImpl() {}
 
@@ -21,7 +24,7 @@ std::string ChromeExistingImpl::GetOperatingSystemName() {
  return std::string();
 }
 
-Status ChromeExistingImpl::Quit() {
+Status ChromeExistingImpl::QuitImpl() {
   return Status(kOk);
 }
 

@@ -24,6 +24,7 @@ class FilePath;
 
 class Chrome;
 class DeviceManager;
+class PortServer;
 class Status;
 class URLRequestContextGetter;
 
@@ -31,6 +32,7 @@ Status LaunchChrome(
     URLRequestContextGetter* context_getter,
     const SyncWebSocketFactory& socket_factory,
     DeviceManager* device_manager,
+    PortServer* port_server,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<Chrome>* chrome);

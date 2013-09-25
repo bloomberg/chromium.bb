@@ -38,6 +38,7 @@
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/chrome/zip.h"
 #include "chrome/test/chromedriver/net/net_util.h"
+#include "chrome/test/chromedriver/net/port_server.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "crypto/sha2.h"
 
@@ -197,6 +198,7 @@ Status LaunchExistingChromeSession(
 Status LaunchDesktopChrome(
     URLRequestContextGetter* context_getter,
     int port,
+    scoped_ptr<PortReservation> port_reservation,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
@@ -274,6 +276,7 @@ Status LaunchDesktopChrome(
   scoped_ptr<ChromeDesktopImpl> chrome_desktop(
       new ChromeDesktopImpl(devtools_client.Pass(),
                             devtools_event_listeners,
+                            port_reservation.Pass(),
                             process,
                             &user_data_dir,
                             &extension_dir));
@@ -296,6 +299,7 @@ Status LaunchDesktopChrome(
 Status LaunchAndroidChrome(
     URLRequestContextGetter* context_getter,
     int port,
+    scoped_ptr<PortReservation> port_reservation,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
@@ -334,8 +338,10 @@ Status LaunchAndroidChrome(
   if (status.IsError())
     return status;
 
-  chrome->reset(new ChromeAndroidImpl(
-      devtools_client.Pass(), devtools_event_listeners, device.Pass()));
+  chrome->reset(new ChromeAndroidImpl(devtools_client.Pass(),
+                                      devtools_event_listeners,
+                                      port_reservation.Pass(),
+                                      device.Pass()));
   return Status(kOk);
 }
 
@@ -345,6 +351,7 @@ Status LaunchChrome(
     URLRequestContextGetter* context_getter,
     const SyncWebSocketFactory& socket_factory,
     DeviceManager* device_manager,
+    PortServer* port_server,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<Chrome>* chrome) {
@@ -354,18 +361,36 @@ Status LaunchChrome(
         capabilities, devtools_event_listeners, chrome);
   }
 
-  int port;
-  if (!FindOpenPort(&port))
-    return Status(kUnknownError, "failed to find an open port for Chrome");
+  int port = 0;
+  scoped_ptr<PortReservation> port_reservation;
+  if (port_server) {
+    Status status = port_server->ReservePort(&port, &port_reservation);
+    if (status.IsError()) {
+      return Status(
+          kUnknownError, "failed to reserve port from port server", status);
+    }
+  } else {
+    if (!FindOpenPort(&port))
+      return Status(kUnknownError, "failed to find an open port for Chrome");
+  }
 
   if (capabilities.IsAndroid()) {
-    return LaunchAndroidChrome(
-        context_getter, port, socket_factory, capabilities,
-        devtools_event_listeners, device_manager, chrome);
+    return LaunchAndroidChrome(context_getter,
+                               port,
+                               port_reservation.Pass(),
+                               socket_factory,
+                               capabilities,
+                               devtools_event_listeners,
+                               device_manager,
+                               chrome);
   } else {
-    return LaunchDesktopChrome(
-        context_getter, port, socket_factory, capabilities,
-        devtools_event_listeners, chrome);
+    return LaunchDesktopChrome(context_getter,
+                               port,
+                               port_reservation.Pass(),
+                               socket_factory,
+                               capabilities,
+                               devtools_event_listeners,
+                               chrome);
   }
 }
 

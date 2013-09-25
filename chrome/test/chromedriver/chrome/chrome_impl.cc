@@ -9,8 +9,12 @@
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
+#include "chrome/test/chromedriver/net/port_server.h"
 
-ChromeImpl::~ChromeImpl() {}
+ChromeImpl::~ChromeImpl() {
+  if (!quit_)
+    port_reservation_->Leak();
+}
 
 std::string ChromeImpl::GetVersion() {
   return devtools_http_client_->version();
@@ -115,9 +119,19 @@ Status ChromeImpl::GetAutomationExtension(AutomationExtension** extension) {
   return Status(kUnknownError, "automation extension not supported");
 }
 
+Status ChromeImpl::Quit() {
+  Status status = QuitImpl();
+  if (status.IsOk())
+    quit_ = true;
+  return status;
+}
+
 ChromeImpl::ChromeImpl(
     scoped_ptr<DevToolsHttpClient> client,
-    ScopedVector<DevToolsEventListener>& devtools_event_listeners)
-    : devtools_http_client_(client.Pass()) {
+    ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+    scoped_ptr<PortReservation> port_reservation)
+    : quit_(false),
+      devtools_http_client_(client.Pass()),
+      port_reservation_(port_reservation.Pass()) {
   devtools_event_listeners_.swap(devtools_event_listeners);
 }

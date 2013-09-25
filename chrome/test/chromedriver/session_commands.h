@@ -18,6 +18,7 @@ class Value;
 }
 
 class DeviceManager;
+class PortServer;
 struct Session;
 class Status;
 class URLRequestContextGetter;
@@ -25,12 +26,14 @@ class URLRequestContextGetter;
 struct InitSessionParams {
   InitSessionParams(scoped_refptr<URLRequestContextGetter> context_getter,
                     const SyncWebSocketFactory& socket_factory,
-                    DeviceManager* device_manager);
+                    DeviceManager* device_manager,
+                    PortServer* port_server);
   ~InitSessionParams();
 
   scoped_refptr<URLRequestContextGetter> context_getter;
   SyncWebSocketFactory socket_factory;
   DeviceManager* device_manager;
+  PortServer* port_server;
 };
 
 // Initializes a session.

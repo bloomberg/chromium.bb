@@ -23,6 +23,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
 #include "chrome/test/chromedriver/logging.h"
+#include "chrome/test/chromedriver/net/port_server.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
 #include "chrome/test/chromedriver/version.h"
 #include "net/base/ip_endpoint.h"
@@ -134,7 +135,10 @@ void StartServerOnIOThread(int port,
   lazy_tls_server.Pointer()->Set(temp_server.release());
 }
 
-void RunServer(int port, const std::string& url_base, int adb_port) {
+void RunServer(int port,
+               const std::string& url_base,
+               int adb_port,
+               scoped_ptr<PortServer> port_server) {
   base::Thread io_thread("ChromeDriver IO");
   CHECK(io_thread.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
@@ -144,7 +148,8 @@ void RunServer(int port, const std::string& url_base, int adb_port) {
   HttpHandler handler(cmd_run_loop.QuitClosure(),
                       io_thread.message_loop_proxy(),
                       url_base,
-                      adb_port);
+                      adb_port,
+                      port_server.Pass());
   HttpRequestHandlerFunc handle_request_func =
       base::Bind(&HandleRequestOnCmdThread, &handler);
 
@@ -177,6 +182,7 @@ int main(int argc, char *argv[]) {
   int port = 9515;
   int adb_port = 5037;
   std::string url_base;
+  scoped_ptr<PortServer> port_server;
   if (cmd_line->HasSwitch("h") || cmd_line->HasSwitch("help")) {
     std::string options;
     const char* kOptionAndDescriptions[] = {
@@ -187,6 +193,7 @@ int main(int argc, char *argv[]) {
         "verbose", "log verbosely",
         "silent", "log nothing",
         "url-base", "base URL path prefix for commands, e.g. wd/url",
+        "port-server", "address of server to contact for reserving a port",
     };
     for (size_t i = 0; i < arraysize(kOptionAndDescriptions) - 1; i += 2) {
       options += base::StringPrintf(
@@ -209,6 +216,22 @@ int main(int argc, char *argv[]) {
       return 1;
     }
   }
+  if (cmd_line->HasSwitch("port-server")) {
+#if defined(OS_LINUX)
+    std::string address = cmd_line->GetSwitchValueASCII("port-server");
+    if (address.empty() || address[0] != '@') {
+      printf("Invalid port-server. Exiting...\n");
+      return 1;
+    }
+    std::string path;
+    // First character of path is \0 to use Linux's abstract namespace.
+    path.push_back(0);
+    path += address.substr(1);
+    port_server.reset(new PortServer(path));
+#else
+    printf("Warning: port-server not implemented for this platform.\n");
+#endif
+  }
   if (cmd_line->HasSwitch("url-base"))
     url_base = cmd_line->GetSwitchValueASCII("url-base");
   if (url_base.empty() || url_base[0] != '/')
@@ -225,7 +248,6 @@ int main(int argc, char *argv[]) {
     printf("Unable to initialize logging. Exiting...\n");
     return 1;
   }
-
-  RunServer(port, url_base, adb_port);
+  RunServer(port, url_base, adb_port, port_server.Pass());
   return 0;
 }

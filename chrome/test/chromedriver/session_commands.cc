@@ -55,10 +55,12 @@ bool WindowHandleToWebViewId(const std::string& window_handle,
 InitSessionParams::InitSessionParams(
     scoped_refptr<URLRequestContextGetter> context_getter,
     const SyncWebSocketFactory& socket_factory,
-    DeviceManager* device_manager)
+    DeviceManager* device_manager,
+    PortServer* port_server)
     : context_getter(context_getter),
       socket_factory(socket_factory),
-      device_manager(device_manager) {}
+      device_manager(device_manager),
+      port_server(port_server) {}
 
 InitSessionParams::~InitSessionParams() {}
 
@@ -119,6 +121,7 @@ Status InitSessionHelper(
   status = LaunchChrome(bound_params.context_getter.get(),
                         bound_params.socket_factory,
                         bound_params.device_manager,
+                        bound_params.port_server,
                         capabilities,
                         devtools_event_listeners,
                         &session->chrome);

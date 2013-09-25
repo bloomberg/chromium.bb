@@ -16,6 +16,7 @@
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
+#include "chrome/test/chromedriver/net/port_server.h"
 
 #if defined(OS_POSIX)
 #include <errno.h>
@@ -63,13 +64,14 @@ bool KillProcess(base::ProcessHandle process_id) {
 ChromeDesktopImpl::ChromeDesktopImpl(
     scoped_ptr<DevToolsHttpClient> client,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+    scoped_ptr<PortReservation> port_reservation,
     base::ProcessHandle process,
     base::ScopedTempDir* user_data_dir,
     base::ScopedTempDir* extension_dir)
     : ChromeImpl(client.Pass(),
-                 devtools_event_listeners),
-      process_(process),
-      quit_(false) {
+                 devtools_event_listeners,
+                 port_reservation.Pass()),
+      process_(process) {
   if (user_data_dir->IsValid())
     CHECK(user_data_dir_.Set(user_data_dir->Take()));
   if (extension_dir->IsValid())
@@ -149,8 +151,7 @@ std::string ChromeDesktopImpl::GetOperatingSystemName() {
   return base::SysInfo::OperatingSystemName();
 }
 
-Status ChromeDesktopImpl::Quit() {
-  quit_ = true;
+Status ChromeDesktopImpl::QuitImpl() {
   if (!KillProcess(process_))
     return Status(kUnknownError, "cannot kill Chrome");
   return Status(kOk);

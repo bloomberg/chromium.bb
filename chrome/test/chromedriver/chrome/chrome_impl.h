@@ -18,6 +18,7 @@ class AutomationExtension;
 class DevToolsEventListener;
 class DevToolsHttpClient;
 class JavaScriptDialogManager;
+class PortReservation;
 class Status;
 class WebView;
 class WebViewImpl;
@@ -37,12 +38,17 @@ class ChromeImpl : public Chrome {
   virtual Status ActivateWebView(const std::string& id) OVERRIDE;
   virtual Status GetAutomationExtension(
       AutomationExtension** extension) OVERRIDE;
+  virtual Status Quit() OVERRIDE;
 
  protected:
   ChromeImpl(
       scoped_ptr<DevToolsHttpClient> client,
-      ScopedVector<DevToolsEventListener>& devtools_event_listeners);
+      ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+      scoped_ptr<PortReservation> port_reservation);
 
+  virtual Status QuitImpl() = 0;
+
+  bool quit_;
   scoped_ptr<DevToolsHttpClient> devtools_http_client_;
 
  private:
@@ -51,6 +57,7 @@ class ChromeImpl : public Chrome {
   // Web views in this list are in the same order as they are opened.
   WebViewList web_views_;
   ScopedVector<DevToolsEventListener> devtools_event_listeners_;
+  scoped_ptr<PortReservation> port_reservation_;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_IMPL_H_

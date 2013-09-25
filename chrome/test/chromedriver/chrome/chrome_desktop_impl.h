@@ -27,6 +27,7 @@ class ChromeDesktopImpl : public ChromeImpl {
   ChromeDesktopImpl(
       scoped_ptr<DevToolsHttpClient> client,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+      scoped_ptr<PortReservation> port_reservation,
       base::ProcessHandle process,
       base::ScopedTempDir* user_data_dir,
       base::ScopedTempDir* extension_dir);
@@ -43,11 +44,12 @@ class ChromeDesktopImpl : public ChromeImpl {
   virtual Status GetAutomationExtension(
       AutomationExtension** extension) OVERRIDE;
   virtual std::string GetOperatingSystemName() OVERRIDE;
-  virtual Status Quit() OVERRIDE;
+
+  // Overridden from ChromeImpl:
+  virtual Status QuitImpl() OVERRIDE;
 
  private:
   base::ProcessHandle process_;
-  bool quit_;
   base::ScopedTempDir user_data_dir_;
   base::ScopedTempDir extension_dir_;
 
