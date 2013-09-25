@@ -1450,8 +1450,13 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
       event_source_ == EVENT_SOURCE_MOUSE ?
       views::Widget::MOVE_LOOP_SOURCE_MOUSE :
       views::Widget::MOVE_LOOP_SOURCE_TOUCH;
+  const views::Widget::MoveLoopEscapeBehavior escape_behavior =
+      is_dragging_new_browser_ ?
+          views::Widget::MOVE_LOOP_ESCAPE_BEHAVIOR_HIDE :
+          views::Widget::MOVE_LOOP_ESCAPE_BEHAVIOR_DONT_HIDE;
   views::Widget::MoveLoopResult result =
-      move_loop_widget_->RunMoveLoop(drag_offset, move_loop_source);
+      move_loop_widget_->RunMoveLoop(
+          drag_offset, move_loop_source, escape_behavior);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_DRAG_LOOP_DONE,
       content::NotificationService::AllBrowserContextsAndSources(),

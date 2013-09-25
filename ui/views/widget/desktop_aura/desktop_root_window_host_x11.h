@@ -106,7 +106,8 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
   virtual void ClearNativeFocus() OVERRIDE;
   virtual Widget::MoveLoopResult RunMoveLoop(
       const gfx::Vector2d& drag_offset,
-      Widget::MoveLoopSource source) OVERRIDE;
+      Widget::MoveLoopSource source,
+      Widget::MoveLoopEscapeBehavior escape_behavior) OVERRIDE;
   virtual void EndMoveLoop() OVERRIDE;
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) OVERRIDE;
   virtual bool ShouldUseNativeFrame() OVERRIDE;

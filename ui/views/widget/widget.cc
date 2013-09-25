@@ -530,9 +530,11 @@ void Widget::SetVisibilityChangedAnimationsEnabled(bool value) {
   native_widget_->SetVisibilityChangedAnimationsEnabled(value);
 }
 
-Widget::MoveLoopResult Widget::RunMoveLoop(const gfx::Vector2d& drag_offset,
-                                           MoveLoopSource source) {
-  return native_widget_->RunMoveLoop(drag_offset, source);
+Widget::MoveLoopResult Widget::RunMoveLoop(
+    const gfx::Vector2d& drag_offset,
+    MoveLoopSource source,
+    MoveLoopEscapeBehavior escape_behavior) {
+  return native_widget_->RunMoveLoop(drag_offset, source, escape_behavior);
 }
 
 void Widget::EndMoveLoop() {

@@ -52,7 +52,7 @@ namespace {
 // completed.
 class MoveLoopMouseWatcher {
  public:
-  explicit MoveLoopMouseWatcher(HWNDMessageHandler* host);
+  MoveLoopMouseWatcher(HWNDMessageHandler* host, bool hide_on_escape);
   ~MoveLoopMouseWatcher();
 
   // Returns true if the mouse is up, or if we couldn't install the hook.
@@ -72,6 +72,9 @@ class MoveLoopMouseWatcher {
   // HWNDMessageHandler that created us.
   HWNDMessageHandler* host_;
 
+  // Should the window be hidden when escape is pressed?
+  const bool hide_on_escape_;
+
   // Did we get a mouse up?
   bool got_mouse_up_;
 
@@ -85,8 +88,10 @@ class MoveLoopMouseWatcher {
 // static
 MoveLoopMouseWatcher* MoveLoopMouseWatcher::instance_ = NULL;
 
-MoveLoopMouseWatcher::MoveLoopMouseWatcher(HWNDMessageHandler* host)
+MoveLoopMouseWatcher::MoveLoopMouseWatcher(HWNDMessageHandler* host,
+                                           bool hide_on_escape)
     : host_(host),
+      hide_on_escape_(hide_on_escape),
       got_mouse_up_(false),
       mouse_hook_(NULL),
       key_hook_(NULL) {
@@ -149,11 +154,8 @@ LRESULT CALLBACK MoveLoopMouseWatcher::KeyHook(int n_code,
           &value,
           sizeof(value));
     }
-    // Hide the window on escape, otherwise the window is visibly going to snap
-    // back to the original location before we close it.
-    // This behavior is specific to tab dragging, in that we generally wouldn't
-    // want this functionality if we have other consumers using this API.
-    instance_->host_->Hide();
+    if (instance_->hide_on_escape_)
+      instance_->host_->Hide();
   }
   return CallNextHookEx(instance_->key_hook_, n_code, w_param, l_param);
 }
@@ -684,9 +686,10 @@ bool HWNDMessageHandler::IsMaximized() const {
   return !!::IsZoomed(hwnd());
 }
 
-bool HWNDMessageHandler::RunMoveLoop(const gfx::Vector2d& drag_offset) {
+bool HWNDMessageHandler::RunMoveLoop(const gfx::Vector2d& drag_offset,
+                                     bool hide_on_escape) {
   ReleaseCapture();
-  MoveLoopMouseWatcher watcher(this);
+  MoveLoopMouseWatcher watcher(this, hide_on_escape);
 #if defined(USE_AURA)
   // In Aura, we handle touch events asynchronously. So we need to allow nested
   // tasks while in windows move loop.

@@ -88,7 +88,8 @@ class VIEWS_EXPORT DesktopRootWindowHost {
 
   virtual Widget::MoveLoopResult RunMoveLoop(
       const gfx::Vector2d& drag_offset,
-      Widget::MoveLoopSource source) = 0;
+      Widget::MoveLoopSource source,
+      Widget::MoveLoopEscapeBehavior escape_behavior) = 0;
   virtual void EndMoveLoop() = 0;
 
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) = 0;

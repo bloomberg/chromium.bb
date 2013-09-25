@@ -443,7 +443,8 @@ void DesktopRootWindowHostX11::ClearNativeFocus() {
 
 Widget::MoveLoopResult DesktopRootWindowHostX11::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
-    Widget::MoveLoopSource source) {
+    Widget::MoveLoopSource source,
+    Widget::MoveLoopEscapeBehavior escape_behavior) {
   SetCapture();
 
   aura::client::WindowMoveSource window_move_source =

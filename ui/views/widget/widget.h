@@ -116,6 +116,15 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     MOVE_LOOP_SOURCE_TOUCH,
   };
 
+  // Behavior when escape is pressed during a move loop.
+  enum MoveLoopEscapeBehavior {
+    // Indicates the window should be hidden.
+    MOVE_LOOP_ESCAPE_BEHAVIOR_HIDE,
+
+    // Indicates the window should not be hidden.
+    MOVE_LOOP_ESCAPE_BEHAVIOR_DONT_HIDE,
+  };
+
   struct VIEWS_EXPORT InitParams {
     enum Type {
       TYPE_WINDOW,      // A decorated Window, like a frame window.
@@ -395,7 +404,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // corner of the window to the point where the cursor is dragging, and is used
   // to offset the bounds of the window from the cursor.
   MoveLoopResult RunMoveLoop(const gfx::Vector2d& drag_offset,
-                             MoveLoopSource source);
+                             MoveLoopSource source,
+                             MoveLoopEscapeBehavior escape_behavior);
 
   // Stops a previously started move loop. This is not immediate.
   void EndMoveLoop();

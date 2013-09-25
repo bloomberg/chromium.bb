@@ -695,10 +695,12 @@ void DesktopNativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
 
 Widget::MoveLoopResult DesktopNativeWidgetAura::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
-    Widget::MoveLoopSource source) {
+    Widget::MoveLoopSource source,
+    Widget::MoveLoopEscapeBehavior escape_behavior) {
   if (!window_)
     return Widget::MOVE_LOOP_CANCELED;
-  return desktop_root_window_host_->RunMoveLoop(drag_offset, source);
+  return desktop_root_window_host_->RunMoveLoop(drag_offset, source,
+                                                escape_behavior);
 }
 
 void DesktopNativeWidgetAura::EndMoveLoop() {

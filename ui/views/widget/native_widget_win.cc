@@ -440,8 +440,11 @@ void NativeWidgetWin::SetInactiveRenderingDisabled(bool value) {
 
 Widget::MoveLoopResult NativeWidgetWin::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
-    Widget::MoveLoopSource source) {
-  return message_handler_->RunMoveLoop(drag_offset) ?
+    Widget::MoveLoopSource source,
+    Widget::MoveLoopEscapeBehavior escape_behavior) {
+  const bool hide_on_escape =
+      escape_behavior == Widget::MOVE_LOOP_ESCAPE_BEHAVIOR_HIDE;
+  return message_handler_->RunMoveLoop(drag_offset, hide_on_escape) ?
       Widget::MOVE_LOOP_SUCCESSFUL : Widget::MOVE_LOOP_CANCELED;
 }
 

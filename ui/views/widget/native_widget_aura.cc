@@ -649,7 +649,10 @@ void NativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
 
 Widget::MoveLoopResult NativeWidgetAura::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
-    Widget::MoveLoopSource source) {
+    Widget::MoveLoopSource source,
+    Widget::MoveLoopEscapeBehavior escape_behavior) {
+  // |escape_behavior| is only needed on windows when running the native message
+  // loop.
   if (window_ && window_->parent() &&
       aura::client::GetWindowMoveClient(window_->parent())) {
     SetCapture();
