@@ -32,8 +32,8 @@
 #ifndef PlatformExport_h
 #define PlatformExport_h
 
-#if !defined(WEBORIGIN_IMPLEMENTATION)
-#define WEBORIGIN_IMPLEMENTATION 0
+#if !defined(PLATFORM_IMPLEMENTATION)
+#define PLATFORM_IMPLEMENTATION 0
 #endif
 
 #if defined(COMPONENT_BUILD)
