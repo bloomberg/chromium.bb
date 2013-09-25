@@ -647,9 +647,9 @@ namespace WebCore {
     }
 
     // Attaches |environment| to |function| and returns it.
-    inline v8::Local<v8::Function> createClosure(v8::FunctionCallback function, v8::Handle<v8::Value> environment)
+    inline v8::Local<v8::Function> createClosure(v8::FunctionCallback function, v8::Handle<v8::Value> environment, v8::Isolate* isolate)
     {
-        return v8::FunctionTemplate::New(function, environment)->GetFunction();
+        return v8::Function::New(isolate, function, environment);
     }
 
     v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate*, ScriptWrappable*, v8::Handle<v8::String> key);

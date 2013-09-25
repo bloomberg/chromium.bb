@@ -304,8 +304,8 @@ void V8Promise::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& arg
     v8::Local<v8::Function> init = args[0].As<v8::Function>();
     v8::Local<v8::Object> promise = V8PromiseCustom::createPromise(args.Holder(), isolate);
     v8::Handle<v8::Value> argv[] = {
-        createClosure(promiseResolve, promise),
-        createClosure(promiseReject, promise)
+        createClosure(promiseResolve, promise, isolate),
+        createClosure(promiseReject, promise, isolate)
     };
     v8::TryCatch trycatch;
     if (V8ScriptRunner::callFunction(init, getScriptExecutionContext(), promise, WTF_ARRAY_LENGTH(argv), argv, isolate).IsEmpty()) {
@@ -327,18 +327,18 @@ void V8Promise::thenMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args
             v8SetReturnValue(args, throwTypeError("fulfillCallback must be a function or undefined", isolate));
             return;
         }
-        fulfillWrapper = createClosure(wrapperCallback, wrapperCallbackEnvironment(promise, args[0].As<v8::Function>(), isolate));
+        fulfillWrapper = createClosure(wrapperCallback, wrapperCallbackEnvironment(promise, args[0].As<v8::Function>(), isolate), isolate);
     } else {
-        fulfillWrapper = createClosure(promiseFulfillCallback, promise);
+        fulfillWrapper = createClosure(promiseFulfillCallback, promise, isolate);
     }
     if (args.Length() > 1 && !args[1]->IsUndefined()) {
         if (!args[1]->IsFunction()) {
             v8SetReturnValue(args, throwTypeError("rejectCallback must be a function or undefined", isolate));
             return;
         }
-        rejectWrapper = createClosure(wrapperCallback, wrapperCallbackEnvironment(promise, args[1].As<v8::Function>(), isolate));
+        rejectWrapper = createClosure(wrapperCallback, wrapperCallbackEnvironment(promise, args[1].As<v8::Function>(), isolate), isolate);
     } else {
-        rejectWrapper = createClosure(promiseRejectCallback, promise);
+        rejectWrapper = createClosure(promiseRejectCallback, promise, isolate);
     }
     V8PromiseCustom::append(args.Holder(), fulfillWrapper, rejectWrapper, isolate);
     v8SetReturnValue(args, promise);
@@ -355,11 +355,11 @@ void V8Promise::catchMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& arg
             v8SetReturnValue(args, throwTypeError("rejectCallback must be a function or undefined", isolate));
             return;
         }
-        rejectWrapper = createClosure(wrapperCallback, wrapperCallbackEnvironment(promise, args[0].As<v8::Function>(), isolate));
+        rejectWrapper = createClosure(wrapperCallback, wrapperCallbackEnvironment(promise, args[0].As<v8::Function>(), isolate), isolate);
     } else {
-        rejectWrapper = createClosure(promiseRejectCallback, promise);
+        rejectWrapper = createClosure(promiseRejectCallback, promise, isolate);
     }
-    fulfillWrapper = createClosure(promiseFulfillCallback, promise);
+    fulfillWrapper = createClosure(promiseFulfillCallback, promise, isolate);
     V8PromiseCustom::append(args.Holder(), fulfillWrapper, rejectWrapper, isolate);
     v8SetReturnValue(args, promise);
 }
@@ -399,8 +399,8 @@ void V8Promise::anyMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
         return;
     }
 
-    v8::Local<v8::Function> fulfillCallback = createClosure(promiseResolveCallback, promise);
-    v8::Local<v8::Function> rejectCallback = createClosure(promiseRejectCallback, promise);
+    v8::Local<v8::Function> fulfillCallback = createClosure(promiseResolveCallback, promise, isolate);
+    v8::Local<v8::Function> rejectCallback = createClosure(promiseRejectCallback, promise, isolate);
 
     for (int i = 0; i < args.Length(); ++i) {
         v8::Local<v8::Object> eachPromise = V8PromiseCustom::createPromise(args.Holder(), isolate);
@@ -426,10 +426,10 @@ void V8Promise::everyMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& arg
     countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(args.Length(), isolate));
     v8::Local<v8::Array> results = v8::Array::New();
 
-    v8::Local<v8::Function> rejectCallback = createClosure(promiseRejectCallback, promise);
+    v8::Local<v8::Function> rejectCallback = createClosure(promiseRejectCallback, promise, isolate);
     for (int i = 0; i < args.Length(); ++i) {
         v8::Local<v8::Object> environment = promiseEveryEnvironment(promise, countdownWrapper, i, results, isolate);
-        v8::Local<v8::Function> fulfillCallback = v8::FunctionTemplate::New(promiseEveryFulfillCallback, environment)->GetFunction();
+        v8::Local<v8::Function> fulfillCallback = createClosure(promiseEveryFulfillCallback, environment, isolate);
         v8::Local<v8::Object> eachPromise = V8PromiseCustom::createPromise(args.Holder(), isolate);
         V8PromiseCustom::resolve(eachPromise, args[i], V8PromiseCustom::Asynchronous, isolate);
         V8PromiseCustom::append(eachPromise, fulfillCallback, rejectCallback, isolate);
@@ -484,8 +484,8 @@ void V8PromiseCustom::resolve(v8::Handle<v8::Object> promise, v8::Handle<v8::Val
         ASSERT(result->IsObject());
         v8::TryCatch trycatch;
         v8::Handle<v8::Value> argv[] = {
-            createClosure(promiseResolveCallback, promise),
-            createClosure(promiseRejectCallback, promise),
+            createClosure(promiseResolveCallback, promise, isolate),
+            createClosure(promiseRejectCallback, promise, isolate),
         };
         if (V8ScriptRunner::callFunction(then.As<v8::Function>(), getScriptExecutionContext(), result.As<v8::Object>(), WTF_ARRAY_LENGTH(argv), argv, isolate).IsEmpty())
             reject(promise, trycatch.Exception(), mode, isolate);
