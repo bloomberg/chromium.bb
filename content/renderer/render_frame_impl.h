@@ -133,7 +133,6 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didRunInsecureContent(WebKit::WebFrame* frame,
                                      const WebKit::WebSecurityOrigin& origin,
                                      const WebKit::WebURL& target);
-  virtual void didAbortLoading(WebKit::WebFrame* frame);
   virtual void didExhaustMemoryAvailableForScript(
       WebKit::WebFrame* frame);
   virtual void didCreateScriptContext(WebKit::WebFrame* frame,

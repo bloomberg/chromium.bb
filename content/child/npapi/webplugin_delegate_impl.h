@@ -42,6 +42,7 @@ class CARenderer;
 
 namespace content {
 class PluginInstance;
+class PluginURLFetcher;
 class WebPlugin;
 
 #if defined(OS_MACOSX)

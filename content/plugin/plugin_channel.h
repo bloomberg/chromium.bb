@@ -81,7 +81,6 @@ class PluginChannel : public NPChannelBase {
   void OnClearSiteData(const std::string& site,
                        uint64 flags,
                        uint64 max_age);
-  void OnDidAbortLoading(int render_view_id);
 
   std::vector<scoped_refptr<WebPluginDelegateStub> > plugin_stubs_;
 
