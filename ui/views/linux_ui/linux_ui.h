@@ -51,6 +51,17 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxShellDialog {
   virtual bool GetColor(int id, SkColor* color) const = 0;
   virtual bool HasCustomImage(int id) const = 0;
 
+  // Returns the preferences that we pass to WebKit.
+  virtual SkColor GetFocusRingColor() const = 0;
+  virtual SkColor GetThumbActiveColor() const = 0;
+  virtual SkColor GetThumbInactiveColor() const = 0;
+  virtual SkColor GetTrackColor() const = 0;
+  virtual SkColor GetActiveSelectionBgColor() const = 0;
+  virtual SkColor GetActiveSelectionFgColor() const = 0;
+  virtual SkColor GetInactiveSelectionBgColor() const = 0;
+  virtual SkColor GetInactiveSelectionFgColor() const = 0;
+  virtual double GetCursorBlinkInterval() const = 0;
+
   // Returns a NativeTheme that will provide system colors and draw system
   // style widgets.
   virtual ui::NativeTheme* GetNativeTheme() const = 0;

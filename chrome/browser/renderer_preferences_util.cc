@@ -23,6 +23,12 @@
 #include "ui/views/controls/textfield/textfield.h"
 #endif
 
+#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
+#include "ui/views/linux_ui/linux_ui.h"
+#endif
+
 namespace renderer_preferences_util {
 
 namespace {
@@ -129,6 +135,28 @@ void UpdateFromSystemSettings(
 
 #if defined(TOOLKIT_VIEWS)
   prefs->caret_blink_interval = views::Textfield::GetCaretBlinkMs() / 1000.0;
+#endif
+
+#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  views::LinuxUI* linux_ui = views::LinuxUI::instance();
+  if (linux_ui) {
+    if (ThemeServiceFactory::GetForProfile(profile)->UsingNativeTheme()) {
+      prefs->focus_ring_color = linux_ui->GetFocusRingColor();
+      prefs->thumb_active_color = linux_ui->GetThumbActiveColor();
+      prefs->thumb_inactive_color = linux_ui->GetThumbInactiveColor();
+      prefs->track_color = linux_ui->GetTrackColor();
+      prefs->active_selection_bg_color = linux_ui->GetActiveSelectionBgColor();
+      prefs->active_selection_fg_color = linux_ui->GetActiveSelectionFgColor();
+      prefs->inactive_selection_bg_color =
+        linux_ui->GetInactiveSelectionBgColor();
+      prefs->inactive_selection_fg_color =
+        linux_ui->GetInactiveSelectionFgColor();
+    }
+
+    // If we have a linux_ui object, set the caret blink interval regardless of
+    // whether we're in native theme mode.
+    prefs->caret_blink_interval = linux_ui->GetCursorBlinkInterval();
+  }
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)

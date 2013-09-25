@@ -83,7 +83,6 @@ const GdkColor kDefaultLinkColor = { 0, 0, 0, 0xeeee };
 
 const int kSkiaToGDKMultiplier = 257;
 
-
 // TODO(erg): ThemeService has a whole interface just for reading default
 // constants. Figure out what to do with that more long term; for now, just
 // copy the constants themselves here.
@@ -362,6 +361,58 @@ bool Gtk2UI::GetColor(int id, SkColor* color) const {
 
 bool Gtk2UI::HasCustomImage(int id) const {
   return IsOverridableImage(id);
+}
+
+SkColor Gtk2UI::GetFocusRingColor() const {
+  return focus_ring_color_;
+}
+
+SkColor Gtk2UI::GetThumbActiveColor() const {
+  return thumb_active_color_;
+}
+
+SkColor Gtk2UI::GetThumbInactiveColor() const {
+  return thumb_inactive_color_;
+}
+
+SkColor Gtk2UI::GetTrackColor() const {
+  return track_color_;
+}
+
+SkColor Gtk2UI::GetActiveSelectionBgColor() const {
+  return active_selection_bg_color_;
+}
+
+SkColor Gtk2UI::GetActiveSelectionFgColor() const {
+  return active_selection_fg_color_;
+}
+
+SkColor Gtk2UI::GetInactiveSelectionBgColor() const {
+  return inactive_selection_bg_color_;
+}
+
+SkColor Gtk2UI::GetInactiveSelectionFgColor() const {
+  return inactive_selection_fg_color_;
+}
+
+double Gtk2UI::GetCursorBlinkInterval() const {
+  // From http://library.gnome.org/devel/gtk/unstable/GtkSettings.html, this is
+  // the default value for gtk-cursor-blink-time.
+  static const gint kGtkDefaultCursorBlinkTime = 1200;
+
+  // Dividing GTK's cursor blink cycle time (in milliseconds) by this value
+  // yields an appropriate value for
+  // content::RendererPreferences::caret_blink_interval.  This matches the
+  // logic in the WebKit GTK port.
+  static const double kGtkCursorBlinkCycleFactor = 2000.0;
+
+  gint cursor_blink_time = kGtkDefaultCursorBlinkTime;
+  gboolean cursor_blink = TRUE;
+  g_object_get(gtk_settings_get_default(),
+               "gtk-cursor-blink-time", &cursor_blink_time,
+               "gtk-cursor-blink", &cursor_blink,
+               NULL);
+  return cursor_blink ? (cursor_blink_time / kGtkCursorBlinkCycleFactor) : 0.0;
 }
 
 ui::NativeTheme* Gtk2UI::GetNativeTheme() const {

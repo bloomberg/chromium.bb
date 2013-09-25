@@ -51,6 +51,15 @@ class Gtk2UI : public views::LinuxUI {
   virtual gfx::Image GetThemeImageNamed(int id) const OVERRIDE;
   virtual bool GetColor(int id, SkColor* color) const OVERRIDE;
   virtual bool HasCustomImage(int id) const OVERRIDE;
+  virtual SkColor GetFocusRingColor() const OVERRIDE;
+  virtual SkColor GetThumbActiveColor() const OVERRIDE;
+  virtual SkColor GetThumbInactiveColor() const OVERRIDE;
+  virtual SkColor GetTrackColor() const OVERRIDE;
+  virtual SkColor GetActiveSelectionBgColor() const OVERRIDE;
+  virtual SkColor GetActiveSelectionFgColor() const OVERRIDE;
+  virtual SkColor GetInactiveSelectionBgColor() const OVERRIDE;
+  virtual SkColor GetInactiveSelectionFgColor() const OVERRIDE;
+  virtual double GetCursorBlinkInterval() const OVERRIDE;
   virtual ui::NativeTheme* GetNativeTheme() const OVERRIDE;
   virtual bool GetDefaultUsesSystemTheme() const OVERRIDE;
   virtual void SetDownloadCount(int count) const OVERRIDE;
