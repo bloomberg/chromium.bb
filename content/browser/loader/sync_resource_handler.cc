@@ -8,23 +8,21 @@
 #include "content/browser/devtools/devtools_netlog_observer.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
+#include "content/browser/loader/resource_request_info_impl.h"
 #include "content/common/resource_messages.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/browser/resource_request_info.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
 
 namespace content {
 
 SyncResourceHandler::SyncResourceHandler(
-    ResourceMessageFilter* filter,
-    ResourceContext* resource_context,
     net::URLRequest* request,
     IPC::Message* result_message,
     ResourceDispatcherHostImpl* resource_dispatcher_host)
     : read_buffer_(new net::IOBuffer(kReadBufSize)),
-      filter_(filter),
-      resource_context_(resource_context),
       request_(request),
       result_message_(result_message),
       rdh_(resource_dispatcher_host) {
@@ -34,7 +32,12 @@ SyncResourceHandler::SyncResourceHandler(
 SyncResourceHandler::~SyncResourceHandler() {
   if (result_message_) {
     result_message_->set_reply_error();
-    filter_->Send(result_message_);
+    const ResourceRequestInfoImpl* info =
+        ResourceRequestInfoImpl::ForRequest(request_);
+    // If the filter doesn't exist at this point, the process has died and isn't
+    // waiting for the result message anymore.
+    if (info->filter())
+      info->filter()->Send(result_message_);
   }
 }
 
@@ -50,8 +53,10 @@ bool SyncResourceHandler::OnRequestRedirected(
     ResourceResponse* response,
     bool* defer) {
   if (rdh_->delegate()) {
+    const ResourceRequestInfoImpl* info =
+        ResourceRequestInfoImpl::ForRequest(request_);
     rdh_->delegate()->OnRequestRedirected(
-        new_url, request_, resource_context_, response);
+        new_url, request_, info->GetContext(), response);
   }
 
   DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
@@ -70,9 +75,14 @@ bool SyncResourceHandler::OnResponseStarted(
     int request_id,
     ResourceResponse* response,
     bool* defer) {
+  const ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(request_);
+  if (!info->filter())
+    return false;
+
   if (rdh_->delegate()) {
     rdh_->delegate()->OnResponseStarted(
-        request_, resource_context_, response, filter_.get());
+        request_, info->GetContext(), response, info->filter());
   }
 
   DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
@@ -115,13 +125,18 @@ bool SyncResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info) {
+  const ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(request_);
+  if (!info->filter())
+    return false;
+
   result_.error_code = status.error();
 
   result_.encoded_data_length =
       DevToolsNetLogObserver::GetAndResetEncodedDataLength(request_);
 
   ResourceHostMsg_SyncLoad::WriteReplyParams(result_message_, result_);
-  filter_->Send(result_message_);
+  info->filter()->Send(result_message_);
   result_message_ = NULL;
   return true;
 }

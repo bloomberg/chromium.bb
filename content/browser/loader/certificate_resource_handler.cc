@@ -18,15 +18,11 @@
 namespace content {
 
 CertificateResourceHandler::CertificateResourceHandler(
-    net::URLRequest* request,
-    int render_process_host_id,
-    int render_view_id)
+    net::URLRequest* request)
     : request_(request),
       content_length_(0),
       read_buffer_(NULL),
       resource_buffer_(NULL),
-      render_process_host_id_(render_process_host_id),
-      render_view_id_(render_view_id),
       cert_type_(net::CERTIFICATE_MIME_TYPE_UNKNOWN) {
 }
 
@@ -112,9 +108,10 @@ bool CertificateResourceHandler::OnResponseCompleted(
 
   // Note that it's up to the browser to verify that the certificate
   // data is well-formed.
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   GetContentClient()->browser()->AddCertificate(
       request_, cert_type_, content_bytes, content_length_,
-      render_process_host_id_, render_view_id_);
+      info->GetChildID(), info->GetRouteID());
 
   return true;
 }

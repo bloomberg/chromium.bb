@@ -251,11 +251,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     ResourceType::Type resource_type,
     int child_id,
     int route_id,
-    bool is_continuation_of_transferred_request,
     ScopedVector<content::ResourceThrottle>* throttles) {
-  if (is_continuation_of_transferred_request)
-    ChromeURLRequestUserData::Delete(request);
-
   ChromeURLRequestUserData* user_data =
       ChromeURLRequestUserData::Create(request);
   bool is_prerendering = prerender_tracker_->IsPrerenderingOnIOThread(
@@ -325,6 +321,20 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   if (io_data->resource_prefetch_predictor_observer()) {
     io_data->resource_prefetch_predictor_observer()->OnRequestStarted(
         request, resource_type, child_id, route_id);
+  }
+}
+
+void ChromeResourceDispatcherHostDelegate::WillTransferRequestToNewProcess(
+    int old_child_id,
+    int old_route_id,
+    int old_request_id,
+    int new_child_id,
+    int new_route_id,
+    int new_request_id) {
+  if (prerender_tracker_->IsPrerenderingOnIOThread(old_child_id,
+                                                   old_route_id)) {
+    prerender_tracker_->UpdatePrerenderStateForTransfer(
+        old_child_id, old_route_id, new_child_id, new_route_id);
   }
 }
 

@@ -24,7 +24,8 @@ ResourceMessageFilter::ResourceMessageFilter(
       appcache_service_(appcache_service),
       blob_storage_context_(blob_storage_context),
       file_system_context_(file_system_context),
-      get_contexts_callback_(get_contexts_callback) {
+      get_contexts_callback_(get_contexts_callback),
+      weak_ptr_factory_(this) {
 }
 
 ResourceMessageFilter::~ResourceMessageFilter() {
@@ -49,6 +50,10 @@ void ResourceMessageFilter::GetContexts(
     ResourceContext** resource_context,
     net::URLRequestContext** request_context) {
   return get_contexts_callback_.Run(request, resource_context, request_context);
+}
+
+base::WeakPtr<ResourceMessageFilter> ResourceMessageFilter::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace content

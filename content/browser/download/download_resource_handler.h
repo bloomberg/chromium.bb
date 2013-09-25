@@ -103,8 +103,6 @@ class CONTENT_EXPORT DownloadResourceHandler
   void SetContentDisposition(const std::string& content_disposition);
 
   uint32 download_id_;
-  GlobalRequestID global_id_;
-  int render_view_id_;
   std::string content_disposition_;
   int64 content_length_;
   net::URLRequest* request_;

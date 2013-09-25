@@ -189,6 +189,17 @@ bool PrerenderTracker::IsPrerenderingOnIOThread(int child_id,
   return possibly_prerendering_io_thread_set_.count(child_route_id_pair) > 0;
 }
 
+void PrerenderTracker::UpdatePrerenderStateForTransfer(int old_child_id,
+                                                       int old_route_id,
+                                                       int new_child_id,
+                                                       int new_route_id) {
+  ChildRouteIdPair old_pair(old_child_id, old_route_id);
+  ChildRouteIdPair new_pair(new_child_id, new_route_id);
+
+  RemovePrerenderOnIOThread(old_pair);
+  AddPrerenderOnIOThread(new_pair);
+}
+
 void PrerenderTracker::AddPrerenderOnIOThread(
     const ChildRouteIdPair& child_route_id_pair) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

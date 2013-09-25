@@ -307,9 +307,7 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
   if (net::IsSupportedCertificateMimeType(mime_type)) {
     // Install certificate file.
     scoped_ptr<ResourceHandler> handler(
-        new CertificateResourceHandler(request_,
-                                       info->GetChildID(),
-                                       info->GetRouteID()));
+        new CertificateResourceHandler(request_));
     return UseAlternateNextHandler(handler.Pass());
   }
 

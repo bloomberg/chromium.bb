@@ -28,9 +28,7 @@ class SharedIOBuffer;
 class AsyncResourceHandler : public ResourceHandler,
                              public ResourceMessageDelegate {
  public:
-  AsyncResourceHandler(ResourceMessageFilter* filter,
-                       ResourceContext* resource_context,
-                       net::URLRequest* request,
+  AsyncResourceHandler(net::URLRequest* request,
                        ResourceDispatcherHostImpl* rdh);
   virtual ~AsyncResourceHandler();
 
@@ -75,8 +73,6 @@ class AsyncResourceHandler : public ResourceHandler,
   void ResumeIfDeferred();
 
   scoped_refptr<ResourceBuffer> buffer_;
-  scoped_refptr<ResourceMessageFilter> filter_;
-  ResourceContext* resource_context_;
   net::URLRequest* request_;
   ResourceDispatcherHostImpl* rdh_;
 

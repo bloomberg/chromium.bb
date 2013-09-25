@@ -75,7 +75,6 @@ DownloadResourceHandler::DownloadResourceHandler(
     const DownloadUrlParameters::OnStartedCallback& started_cb,
     scoped_ptr<DownloadSaveInfo> save_info)
     : download_id_(id),
-      render_view_id_(0),               // Actually initialized below.
       content_length_(0),
       request_(request),
       started_cb_(started_cb),
@@ -85,10 +84,6 @@ DownloadResourceHandler::DownloadResourceHandler(
       pause_count_(0),
       was_deferred_(false),
       on_response_started_called_(false) {
-  ResourceRequestInfoImpl* info(ResourceRequestInfoImpl::ForRequest(request));
-  global_id_ = info->GetGlobalRequestID();
-  render_view_id_ = info->GetRouteID();
-
   RecordDownloadCount(UNTHROTTLED_COUNT);
 }
 
@@ -167,8 +162,9 @@ bool DownloadResourceHandler::OnResponseStarted(
   RecordDownloadContentDisposition(info->content_disposition);
 
   info->request_handle =
-      DownloadRequestHandle(AsWeakPtr(), global_id_.child_id,
-                            render_view_id_, global_id_.request_id);
+      DownloadRequestHandle(AsWeakPtr(), request_info->GetChildID(),
+                            request_info->GetRouteID(),
+                            request_info->GetRequestID());
 
   // Get the last modified time and etag.
   const net::HttpResponseHeaders* headers = request_->response_headers();
@@ -451,27 +447,29 @@ void DownloadResourceHandler::ResumeRequest() {
 void DownloadResourceHandler::CancelRequest() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   ResourceDispatcherHostImpl::Get()->CancelRequest(
-      global_id_.child_id,
-      global_id_.request_id,
+      info->GetChildID(),
+      info->GetRequestID(),
       false);
 }
 
 std::string DownloadResourceHandler::DebugString() const {
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   return base::StringPrintf("{"
                             " url_ = " "\"%s\""
-                            " global_id_ = {"
+                            " info = {"
                             " child_id = " "%d"
                             " request_id = " "%d"
+                            " route_id = " "%d"
                             " }"
-                            " render_view_id_ = " "%d"
                             " }",
                             request_ ?
                                 request_->url().spec().c_str() :
                                 "<NULL request>",
-                            global_id_.child_id,
-                            global_id_.request_id,
-                            render_view_id_);
+                            info->GetChildID(),
+                            info->GetRequestID(),
+                            info->GetRouteID());
 }
 
 DownloadResourceHandler::~DownloadResourceHandler() {

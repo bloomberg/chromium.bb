@@ -25,8 +25,16 @@ void ResourceDispatcherHostDelegate::RequestBeginning(
     ResourceType::Type resource_type,
     int child_id,
     int route_id,
-    bool is_continuation_of_transferred_request,
     ScopedVector<ResourceThrottle>* throttles) {
+}
+
+void ResourceDispatcherHostDelegate::WillTransferRequestToNewProcess(
+      int old_child_id,
+      int old_route_id,
+      int old_request_id,
+      int new_child_id,
+      int new_route_id,
+      int new_request_id) {
 }
 
 void ResourceDispatcherHostDelegate::DownloadStarting(

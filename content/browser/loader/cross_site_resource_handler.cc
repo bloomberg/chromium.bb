@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "content/browser/cross_site_request_manager.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -36,16 +37,11 @@ void OnCrossSiteResponseHelper(int render_process_id,
 
 CrossSiteResourceHandler::CrossSiteResourceHandler(
     scoped_ptr<ResourceHandler> next_handler,
-    int render_process_host_id,
-    int render_view_id,
     net::URLRequest* request)
     : LayeredResourceHandler(next_handler.Pass()),
-      render_process_host_id_(render_process_host_id),
-      render_view_id_(render_view_id),
       request_(request),
       has_started_response_(false),
       in_cross_site_transition_(false),
-      request_id_(-1),
       completed_during_transition_(false),
       did_defer_(false),
       completed_status_(),
@@ -81,6 +77,11 @@ bool CrossSiteResourceHandler::OnResponseStarted(
 
   ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request_);
 
+  // A swap may no longer be needed if we transferred back into the original
+  // process due to a redirect.
+  bool swap_needed = CrossSiteRequestManager::GetInstance()->
+      HasPendingCrossSiteRequest(info->GetChildID(), info->GetRouteID());
+
   // If this is a download, just pass the response through without doing a
   // cross-site check.  The renderer will see it is a download and abort the
   // request.
@@ -92,8 +93,9 @@ bool CrossSiteResourceHandler::OnResponseStarted(
   // In both cases, the pending RenderViewHost will stick around until the next
   // cross-site navigation, since we are unable to tell when to destroy it.
   // See RenderViewHostManager::RendererAbortedProvisionalLoad.
-  if (info->is_download() || (response->head.headers.get() &&
-                              response->head.headers->response_code() == 204)) {
+  if (!swap_needed || info->is_download() ||
+      (response->head.headers.get() &&
+       response->head.headers->response_code() == 204)) {
     return next_handler_->OnResponseStarted(request_id, response, defer);
   }
 
@@ -146,15 +148,18 @@ bool CrossSiteResourceHandler::OnResponseCompleted(
 // We can now send the response to the new renderer, which will cause
 // WebContentsImpl to swap in the new renderer and destroy the old one.
 void CrossSiteResourceHandler::ResumeResponse() {
-  DCHECK(request_id_ != -1);
+  DCHECK(request_);
   DCHECK(in_cross_site_transition_);
   in_cross_site_transition_ = false;
+  ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(request_);
 
   if (has_started_response_) {
     // Send OnResponseStarted to the new renderer.
     DCHECK(response_);
     bool defer = false;
-    if (!next_handler_->OnResponseStarted(request_id_, response_, &defer)) {
+    if (!next_handler_->OnResponseStarted(info->GetRequestID(), response_,
+                                          &defer)) {
       controller()->Cancel();
     } else if (!defer) {
       // Unpause the request to resume reading.  Any further reads will be
@@ -164,14 +169,13 @@ void CrossSiteResourceHandler::ResumeResponse() {
   }
 
   // Remove ourselves from the ExtraRequestInfo.
-  ResourceRequestInfoImpl* info =
-      ResourceRequestInfoImpl::ForRequest(request_);
   info->set_cross_site_handler(NULL);
 
   // If the response completed during the transition, notify the next
   // event handler.
   if (completed_during_transition_) {
-    if (next_handler_->OnResponseCompleted(request_id_, completed_status_,
+    if (next_handler_->OnResponseCompleted(info->GetRequestID(),
+                                           completed_status_,
                                            completed_security_info_)) {
       ResumeIfDeferred();
     }
@@ -184,7 +188,6 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
     int request_id,
     ResourceResponse* response) {
   in_cross_site_transition_ = true;
-  request_id_ = request_id;
   response_ = response;
 
   // Store this handler on the ExtraRequestInfo, so that RDH can call our
@@ -201,8 +204,8 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
       FROM_HERE,
       base::Bind(
           &OnCrossSiteResponseHelper,
-          render_process_host_id_,
-          render_view_id_,
+          info->GetChildID(),
+          info->GetRouteID(),
           request_id));
 
   // TODO(creis): If the above call should fail, then we need to notify the IO

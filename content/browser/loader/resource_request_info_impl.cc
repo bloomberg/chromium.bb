@@ -5,6 +5,7 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 
 #include "content/browser/loader/global_routing_id.h"
+#include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/net/url_request_user_data.h"
 #include "content/public/browser/global_request_id.h"
@@ -47,6 +48,7 @@ void ResourceRequestInfo::AllocateForTesting(
           false,                             // has_user_gesture
           WebKit::WebReferrerPolicyDefault,  // referrer_policy
           context,                           // context
+          base::WeakPtr<ResourceMessageFilter>(),  // filter
           false);                            // is_async
   info->AssociateWithRequest(request);
 }
@@ -98,6 +100,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool has_user_gesture,
     WebKit::WebReferrerPolicy referrer_policy,
     ResourceContext* context,
+    base::WeakPtr<ResourceMessageFilter> filter,
     bool is_async)
     : cross_site_handler_(NULL),
       process_type_(process_type),
@@ -119,6 +122,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       memory_cost_(0),
       referrer_policy_(referrer_policy),
       context_(context),
+      filter_(filter),
       is_async_(is_async) {
 }
 
@@ -226,6 +230,22 @@ GlobalRequestID ResourceRequestInfoImpl::GetGlobalRequestID() const {
 
 GlobalRoutingID ResourceRequestInfoImpl::GetGlobalRoutingID() const {
   return GlobalRoutingID(child_id_, route_id_);
+}
+
+void ResourceRequestInfoImpl::UpdateForTransfer(
+    int child_id,
+    int route_id,
+    int origin_pid,
+    int request_id,
+    int64 frame_id,
+    int64 parent_frame_id,
+    base::WeakPtr<ResourceMessageFilter> filter) {
+  child_id_ = child_id;
+  route_id_ = route_id;
+  origin_pid_ = origin_pid;
+  request_id_ = request_id;
+  frame_id_ = frame_id;
+  filter_ = filter;
 }
 
 }  // namespace content

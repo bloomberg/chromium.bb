@@ -9,7 +9,6 @@
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/loader/doomed_resource_handler.h"
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
@@ -163,29 +162,12 @@ void ResourceLoader::MarkAsTransferring(const GURL& target_url) {
   // When transferring a request to another process, the renderer doesn't get
   // a chance to update the cookie policy URL. Do it here instead.
   request()->set_first_party_for_cookies(target_url);
-
-  // When an URLRequest is transferred to a new RenderViewHost, its
-  // ResourceHandler should not receive any notifications because it may depend
-  // on the state of the old RVH. We set a ResourceHandler that only allows
-  // canceling requests, because on shutdown of the RDH all pending requests
-  // are canceled. The RVH of requests that are being transferred may be gone
-  // by that time. In CompleteTransfer, the ResoureHandlers are substituted
-  // again.
-  handler_.reset(new DoomedResourceHandler(handler_.Pass()));
 }
 
-void ResourceLoader::WillCompleteTransfer() {
-  handler_.reset();
-}
-
-void ResourceLoader::CompleteTransfer(scoped_ptr<ResourceHandler> new_handler) {
+void ResourceLoader::CompleteTransfer() {
   DCHECK_EQ(DEFERRED_REDIRECT, deferred_stage_);
-  DCHECK(!handler_.get());
 
-  handler_ = new_handler.Pass();
-  handler_->SetController(this);
   is_transferring_ = false;
-
   Resume();
 }
 

@@ -356,6 +356,15 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void OnSyncLoad(int request_id,
                   const ResourceHostMsg_Request& request_data,
                   IPC::Message* sync_result);
+
+  // Update the ResourceRequestInfo and internal maps when a request is
+  // transferred from one process to another.
+  void UpdateRequestForTransfer(int child_id,
+                                int route_id,
+                                int request_id,
+                                const ResourceHostMsg_Request& request_data,
+                                const linked_ptr<ResourceLoader>& loader);
+
   void BeginRequest(int request_id,
                     const ResourceHostMsg_Request& request_data,
                     IPC::Message* sync_result,  // only valid for sync

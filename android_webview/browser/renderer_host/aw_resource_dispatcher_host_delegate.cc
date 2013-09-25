@@ -209,7 +209,6 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
     ResourceType::Type resource_type,
     int child_id,
     int route_id,
-    bool is_continuation_of_transferred_request,
     ScopedVector<content::ResourceThrottle>* throttles) {
   // If io_client is NULL, then the browser side objects have already been
   // destroyed, so do not do anything to the request. Conversely if the

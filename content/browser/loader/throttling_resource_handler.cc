@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/throttling_resource_handler.h"
 
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_response.h"
 
@@ -11,12 +12,11 @@ namespace content {
 
 ThrottlingResourceHandler::ThrottlingResourceHandler(
     scoped_ptr<ResourceHandler> next_handler,
-    int child_id,
-    int request_id,
+    net::URLRequest* request,
     ScopedVector<ResourceThrottle> throttles)
     : LayeredResourceHandler(next_handler.Pass()),
       deferred_stage_(DEFERRED_NONE),
-      request_id_(request_id),
+      request_(request),
       throttles_(throttles.Pass()),
       index_(0),
       cancelled_by_resource_throttle_(false) {
@@ -31,7 +31,6 @@ bool ThrottlingResourceHandler::OnRequestRedirected(int request_id,
                                                     const GURL& new_url,
                                                     ResourceResponse* response,
                                                     bool* defer) {
-  DCHECK_EQ(request_id_, request_id);
   DCHECK(!cancelled_by_resource_throttle_);
 
   *defer = false;
@@ -57,7 +56,6 @@ bool ThrottlingResourceHandler::OnRequestRedirected(int request_id,
 bool ThrottlingResourceHandler::OnWillStart(int request_id,
                                             const GURL& url,
                                             bool* defer) {
-  DCHECK_EQ(request_id_, request_id);
   DCHECK(!cancelled_by_resource_throttle_);
 
   *defer = false;
@@ -81,7 +79,6 @@ bool ThrottlingResourceHandler::OnWillStart(int request_id,
 bool ThrottlingResourceHandler::OnResponseStarted(int request_id,
                                                   ResourceResponse* response,
                                                   bool* defer) {
-  DCHECK_EQ(request_id_, request_id);
   DCHECK(!cancelled_by_resource_throttle_);
 
   while (index_ < throttles_.size()) {
@@ -144,7 +141,8 @@ void ThrottlingResourceHandler::ResumeStart() {
   deferred_url_ = GURL();
 
   bool defer = false;
-  if (!OnWillStart(request_id_, url, &defer)) {
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
+  if (!OnWillStart(info->GetRequestID(), url, &defer)) {
     controller()->Cancel();
   } else if (!defer) {
     controller()->Resume();
@@ -160,7 +158,9 @@ void ThrottlingResourceHandler::ResumeRedirect() {
   deferred_response_.swap(response);
 
   bool defer = false;
-  if (!OnRequestRedirected(request_id_, new_url, response.get(), &defer)) {
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
+  if (!OnRequestRedirected(info->GetRequestID(), new_url, response.get(),
+                           &defer)) {
     controller()->Cancel();
   } else if (!defer) {
     controller()->Resume();
@@ -174,7 +174,8 @@ void ThrottlingResourceHandler::ResumeResponse() {
   deferred_response_.swap(response);
 
   bool defer = false;
-  if (!OnResponseStarted(request_id_, response.get(), &defer)) {
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
+  if (!OnResponseStarted(info->GetRequestID(), response.get(), &defer)) {
     controller()->Cancel();
   } else if (!defer) {
     controller()->Resume();

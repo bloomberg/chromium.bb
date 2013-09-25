@@ -571,8 +571,7 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     if (!throttles.empty()) {
       handler.reset(
           new ThrottlingResourceHandler(
-              handler.Pass(), request_info->GetChildID(),
-              request_info->GetRequestID(), throttles.Pass()));
+              handler.Pass(), request, throttles.Pass()));
     }
   }
   return handler.Pass();
@@ -878,6 +877,77 @@ void ResourceDispatcherHostImpl::OnSyncLoad(
                sync_result->routing_id());
 }
 
+void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
+    int child_id,
+    int route_id,
+    int request_id,
+    const ResourceHostMsg_Request& request_data,
+    const linked_ptr<ResourceLoader>& loader) {
+  ResourceRequestInfoImpl* info = loader->GetRequestInfo();
+  GlobalRoutingID old_routing_id(
+      request_data.transferred_request_child_id, info->GetRouteID());
+  GlobalRequestID old_request_id(request_data.transferred_request_child_id,
+                                 request_data.transferred_request_request_id);
+  GlobalRoutingID new_routing_id(child_id, route_id);
+  GlobalRequestID new_request_id(child_id, request_id);
+
+  // Clear out data that depends on |info| before updating it.
+  IncrementOutstandingRequestsMemory(-1, *info);
+  OustandingRequestsStats empty_stats = { 0, 0 };
+  OustandingRequestsStats old_stats = GetOutstandingRequestsStats(*info);
+  UpdateOutstandingRequestsStats(*info, empty_stats);
+  pending_loaders_.erase(old_request_id);
+
+  // ResourceHandlers should always get state related to the request from the
+  // ResourceRequestInfo rather than caching it locally.  This lets us update
+  // the info object when a transfer occurs.
+  info->UpdateForTransfer(child_id, route_id, request_data.origin_pid,
+                          request_id, request_data.frame_id,
+                          request_data.parent_frame_id, filter_->GetWeakPtr());
+
+  // Update maps that used the old IDs, if necessary.  Some transfers in tests
+  // do not actually use a different ID, so not all maps need to be updated.
+  pending_loaders_[new_request_id] = loader;
+  UpdateOutstandingRequestsStats(*info, old_stats);
+  IncrementOutstandingRequestsMemory(1, *info);
+  if (old_routing_id != new_routing_id) {
+    if (offline_policy_map_.find(old_routing_id) != offline_policy_map_.end()) {
+      offline_policy_map_[new_routing_id] = offline_policy_map_[old_routing_id];
+      offline_policy_map_.erase(old_routing_id);
+    }
+    if (blocked_loaders_map_.find(old_routing_id) !=
+            blocked_loaders_map_.end()) {
+      blocked_loaders_map_[new_routing_id] =
+          blocked_loaders_map_[old_routing_id];
+      blocked_loaders_map_.erase(old_routing_id);
+    }
+  }
+  if (old_request_id != new_request_id) {
+    DelegateMap::iterator it = delegate_map_.find(old_request_id);
+    if (it != delegate_map_.end()) {
+      // Tell each delegate that the request ID has changed.
+      ObserverList<ResourceMessageDelegate>::Iterator del_it(*it->second);
+      ResourceMessageDelegate* delegate;
+      while ((delegate = del_it.GetNext()) != NULL) {
+        delegate->set_request_id(new_request_id);
+      }
+      // Now store the observer list under the new request ID.
+      delegate_map_[new_request_id] = delegate_map_[old_request_id];
+      delegate_map_.erase(old_request_id);
+    }
+  }
+
+  // Notify the delegate to allow it to update state as well.
+  if (delegate_) {
+    delegate_->WillTransferRequestToNewProcess(old_routing_id.child_id,
+                                               old_routing_id.route_id,
+                                               old_request_id.request_id,
+                                               child_id,
+                                               route_id,
+                                               request_id);
+  }
+}
+
 void ResourceDispatcherHostImpl::BeginRequest(
     int request_id,
     const ResourceHostMsg_Request& request_data,
@@ -908,16 +978,19 @@ void ResourceDispatcherHostImpl::BeginRequest(
         GlobalRequestID(request_data.transferred_request_child_id,
                         request_data.transferred_request_request_id));
     if (it != pending_loaders_.end()) {
+      // If the request is transferring to a new process, we can update our
+      // state and let it resume with its existing ResourceHandlers.
       if (it->second->is_transferring()) {
         deferred_loader = it->second;
-        IncrementOutstandingRequestsMemory(-1,
-                                           *deferred_loader->GetRequestInfo());
-        pending_loaders_.erase(it);
+        UpdateRequestForTransfer(child_id, route_id, request_id,
+                                 request_data, deferred_loader);
+
+        deferred_loader->CompleteTransfer();
       } else {
         RecordAction(UserMetricsAction("BadMessageTerminate_RDH"));
         filter_->BadMessageReceived();
-        return;
       }
+      return;
     }
   }
 
@@ -960,27 +1033,16 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // Construct the request.
   scoped_ptr<net::URLRequest> new_request;
   net::URLRequest* request;
-  if (deferred_loader.get()) {
-    request = deferred_loader->request();
+  new_request.reset(request_context->CreateRequest(request_data.url, NULL));
+  request = new_request.get();
 
-    // Give the ResourceLoader (or any of the ResourceHandlers held by it) a
-    // chance to reset some state before we complete the transfer.
-    deferred_loader->WillCompleteTransfer();
-  } else {
-    new_request.reset(request_context->CreateRequest(request_data.url, NULL));
-    request = new_request.get();
+  request->set_method(request_data.method);
+  request->set_first_party_for_cookies(request_data.first_party_for_cookies);
+  SetReferrerForRequest(request, referrer);
 
-    request->set_method(request_data.method);
-    request->set_first_party_for_cookies(request_data.first_party_for_cookies);
-    SetReferrerForRequest(request, referrer);
-
-    net::HttpRequestHeaders headers;
-    headers.AddHeadersFromString(request_data.headers);
-    request->SetExtraRequestHeaders(headers);
-  }
-
-  // TODO(darin): Do we really need all of these URLRequest setters in the
-  // transferred navigation case?
+  net::HttpRequestHeaders headers;
+  headers.AddHeadersFromString(request_data.headers);
+  request->SetExtraRequestHeaders(headers);
 
   request->set_load_flags(load_flags);
   request->SetPriority(request_data.priority);
@@ -1021,6 +1083,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
           request_data.has_user_gesture,
           request_data.referrer_policy,
           resource_context,
+          filter_->GetWeakPtr(),
           !is_sync_load);
   extra_info->AssociateWithRequest(request);  // Request takes ownership.
 
@@ -1041,17 +1104,15 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // Construct the IPC resource handler.
   scoped_ptr<ResourceHandler> handler;
   if (sync_result) {
-    handler.reset(new SyncResourceHandler(
-        filter_, resource_context, request, sync_result, this));
+    handler.reset(new SyncResourceHandler(request, sync_result, this));
   } else {
-    handler.reset(new AsyncResourceHandler(
-        filter_, resource_context, request, this));
+    handler.reset(new AsyncResourceHandler(request, this));
   }
 
   // The RedirectToFileResourceHandler depends on being next in the chain.
   if (request_data.download_to_file) {
     handler.reset(
-        new RedirectToFileResourceHandler(handler.Pass(), child_id, this));
+        new RedirectToFileResourceHandler(handler.Pass(), request, this));
   }
 
   // Install a CrossSiteResourceHandler if this request is coming from a
@@ -1064,8 +1125,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
           HasPendingCrossSiteRequest(child_id, route_id)) {
     // Wrap the event handler to be sure the current page's onunload handler
     // has a chance to run before we render the new page.
-    handler.reset(new CrossSiteResourceHandler(handler.Pass(), child_id,
-                                               route_id, request));
+    handler.reset(new CrossSiteResourceHandler(handler.Pass(), request));
   }
 
   // Insert a buffered event handler before the actual one.
@@ -1074,16 +1134,12 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   ScopedVector<ResourceThrottle> throttles;
   if (delegate_) {
-    bool is_continuation_of_transferred_request =
-        (deferred_loader.get() != NULL);
-
     delegate_->RequestBeginning(request,
                                 resource_context,
                                 filter_->appcache_service(),
                                 request_data.resource_type,
                                 child_id,
                                 route_id,
-                                is_continuation_of_transferred_request,
                                 &throttles);
   }
 
@@ -1102,16 +1158,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
       scheduler_->ScheduleRequest(child_id, route_id, request).release());
 
   handler.reset(
-      new ThrottlingResourceHandler(handler.Pass(), child_id, request_id,
-                                    throttles.Pass()));
+      new ThrottlingResourceHandler(handler.Pass(), request, throttles.Pass()));
 
-  if (deferred_loader.get()) {
-    pending_loaders_[extra_info->GetGlobalRequestID()] = deferred_loader;
-    IncrementOutstandingRequestsMemory(1, *extra_info);
-    deferred_loader->CompleteTransfer(handler.Pass());
-  } else {
-    BeginRequestInternal(new_request.Pass(), handler.Pass());
-  }
+  BeginRequestInternal(new_request.Pass(), handler.Pass());
 }
 
 void ResourceDispatcherHostImpl::OnReleaseDownloadedFile(int request_id) {
@@ -1192,6 +1241,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       false,     // has_user_gesture
       WebKit::WebReferrerPolicyDefault,
       context,
+      base::WeakPtr<ResourceMessageFilter>(),  // filter
       true);     // is_async
 }
 
@@ -1297,6 +1347,7 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(int child_id,
   // iterators found in the first loop.
 
   // Find the global ID of all matching elements.
+  bool any_requests_transferring = false;
   std::vector<GlobalRequestID> matching_requests;
   for (LoaderMap::const_iterator i = pending_loaders_.begin();
        i != pending_loaders_.end(); ++i) {
@@ -1310,6 +1361,8 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(int child_id,
 
     // Don't cancel navigations that are transferring to another process,
     // since they belong to another process now.
+    if (IsTransferredNavigation(id))
+      any_requests_transferring = true;
     if (!info->is_download() && !info->is_stream() &&
         !IsTransferredNavigation(id) &&
         (route_id == -1 || route_id == info->GetRouteID())) {
@@ -1332,6 +1385,14 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(int child_id,
     if (iter != pending_loaders_.end())
       RemovePendingLoader(iter);
   }
+
+  // Don't clear the blocked loaders or offline policy maps if any of the
+  // requests in route_id are being transferred to a new process, since those
+  // maps will be updated with the new route_id after the transfer.  Otherwise
+  // we will lose track of this info when the old route goes away, before the
+  // new one is created.
+  if (any_requests_transferring)
+    return;
 
   // Now deal with blocked requests if any.
   if (route_id != -1) {

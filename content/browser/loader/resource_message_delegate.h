@@ -32,6 +32,10 @@ class CONTENT_EXPORT ResourceMessageDelegate {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) = 0;
 
+  void set_request_id(const GlobalRequestID& new_request_id) {
+    id_ = new_request_id;
+  }
+
  private:
   GlobalRequestID id_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(ResourceMessageDelegate);

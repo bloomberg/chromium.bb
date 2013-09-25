@@ -15,6 +15,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
+#include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/resource_messages.h"
@@ -22,6 +23,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/resource_response.h"
@@ -489,7 +491,6 @@ class TestResourceDispatcherHostDelegate
       ResourceType::Type resource_type,
       int child_id,
       int route_id,
-      bool is_continuation_of_transferred_request,
       ScopedVector<ResourceThrottle>* throttles) OVERRIDE {
     if (user_data_) {
       const void* key = user_data_.get();
@@ -1758,6 +1759,93 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigation) {
   CheckSuccessfulRequest(msgs[0], kResponseBody);
 }
 
+TEST_F(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
+  EXPECT_EQ(0, host_.pending_requests());
+
+  int render_view_id = 0;
+  int request_id = 1;
+  int first_child_id = -1;
+
+  // Configure initial request.
+  SetResponse("HTTP/1.1 302 Found\n"
+              "Location: http://other.com/blech\n\n");
+
+  SetResourceType(ResourceType::MAIN_FRAME);
+  HandleScheme("http");
+
+  // Temporarily replace ContentBrowserClient with one that will trigger the
+  // transfer navigation code paths.
+  TransfersAllNavigationsContentBrowserClient new_client;
+  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
+
+  // Create a first filter that can be deleted before the second one starts.
+  {
+    scoped_refptr<ForwardingFilter> first_filter = new ForwardingFilter(
+        this, browser_context_->GetResourceContext());
+    first_child_id = first_filter->child_id();
+
+    ResourceHostMsg_Request first_request =
+        CreateResourceRequest("GET", ResourceType::MAIN_FRAME,
+                              GURL("http://example.com/blah"));
+
+    // For cleanup.
+    child_ids_.insert(first_child_id);
+    ResourceHostMsg_RequestResource first_request_msg(
+        render_view_id, request_id, first_request);
+    bool msg_was_ok;
+    host_.OnMessageReceived(
+        first_request_msg, first_filter.get(), &msg_was_ok);
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+  // The first filter is now deleted, as if the child process died.
+
+  // Restore.
+  SetBrowserClientForTesting(old_client);
+
+  // Make sure we don't hold onto the ResourceMessageFilter after it is deleted.
+  GlobalRequestID first_global_request_id(first_child_id, request_id);
+  const ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(
+      host_.GetURLRequest(first_global_request_id));
+  EXPECT_FALSE(info->filter());
+
+  // This second filter is used to emulate a second process.
+  scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(
+      this, browser_context_->GetResourceContext());
+
+  int new_render_view_id = 1;
+  int new_request_id = 2;
+
+  const std::string kResponseBody = "hello world";
+  SetResponse("HTTP/1.1 200 OK\n"
+              "Content-Type: text/plain\n\n",
+              kResponseBody);
+
+  ResourceHostMsg_Request request =
+      CreateResourceRequest("GET", ResourceType::MAIN_FRAME,
+                            GURL("http://other.com/blech"));
+  request.transferred_request_child_id = first_child_id;
+  request.transferred_request_request_id = request_id;
+
+  // For cleanup.
+  child_ids_.insert(second_filter->child_id());
+  ResourceHostMsg_RequestResource transfer_request_msg(
+      new_render_view_id, new_request_id, request);
+  bool msg_was_ok;
+  host_.OnMessageReceived(
+      transfer_request_msg, second_filter.get(), &msg_was_ok);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Flush all the pending requests.
+  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+
+  // Check generated messages.
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+
+  ASSERT_EQ(1U, msgs.size());
+  CheckSuccessfulRequest(msgs[0], kResponseBody);
+}
+
 TEST_F(ResourceDispatcherHostTest, TransferNavigationAndThenRedirect) {
   EXPECT_EQ(0, host_.pending_requests());
 
@@ -1823,6 +1911,15 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationAndThenRedirect) {
 
   // Flush all the pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+
+  // Verify that we update the ResourceRequestInfo.
+  GlobalRequestID global_request_id(second_filter->child_id(), new_request_id);
+  const ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(
+      host_.GetURLRequest(global_request_id));
+  EXPECT_EQ(second_filter->child_id(), info->GetChildID());
+  EXPECT_EQ(new_render_view_id, info->GetRouteID());
+  EXPECT_EQ(new_request_id, info->GetRequestID());
+  EXPECT_EQ(second_filter, info->filter());
 
   // Now, simulate the renderer choosing to follow the redirect.
   ResourceHostMsg_FollowRedirect redirect_msg(

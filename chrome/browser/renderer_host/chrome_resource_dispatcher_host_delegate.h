@@ -50,8 +50,14 @@ class ChromeResourceDispatcherHostDelegate
       ResourceType::Type resource_type,
       int child_id,
       int route_id,
-      bool is_continuation_of_transferred_request,
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
+   virtual void WillTransferRequestToNewProcess(
+      int old_child_id,
+      int old_route_id,
+      int old_request_id,
+      int new_child_id,
+      int new_route_id,
+      int new_request_id) OVERRIDE;
   virtual void DownloadStarting(
       net::URLRequest* request,
       content::ResourceContext* resource_context,

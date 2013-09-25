@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/referrer.h"
@@ -19,6 +20,7 @@
 namespace content {
 class CrossSiteResourceHandler;
 class ResourceContext;
+class ResourceMessageFilter;
 struct GlobalRequestID;
 struct GlobalRoutingID;
 
@@ -53,6 +55,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool has_user_gesture,
       WebKit::WebReferrerPolicy referrer_policy,
       ResourceContext* context,
+      base::WeakPtr<ResourceMessageFilter> filter,
       bool is_async);
   virtual ~ResourceRequestInfoImpl();
 
@@ -80,6 +83,23 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   CONTENT_EXPORT GlobalRequestID GetGlobalRequestID() const;
   GlobalRoutingID GetGlobalRoutingID() const;
+
+  // May be NULL (e.g., if process dies during a transfer).
+  ResourceMessageFilter* filter() const {
+    return filter_.get();
+  }
+
+  // Updates the data associated with this request after it is is transferred
+  // to a new renderer process.  Not all data will change during a transfer.
+  // We do not expect the ResourceContext to change during navigation, so that
+  // does not need to be updated.
+  void UpdateForTransfer(int child_id,
+                         int route_id,
+                         int origin_pid,
+                         int request_id,
+                         int64 frame_id,
+                         int64 parent_frame_id,
+                         base::WeakPtr<ResourceMessageFilter> filter);
 
   // CrossSiteResourceHandler for this request.  May be null.
   CrossSiteResourceHandler* cross_site_handler() {
@@ -135,6 +155,9 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int memory_cost_;
   WebKit::WebReferrerPolicy referrer_policy_;
   ResourceContext* context_;
+  // The filter might be deleted without deleting this object if the process
+  // exits during a transfer.
+  base::WeakPtr<ResourceMessageFilter> filter_;
   bool is_async_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestInfoImpl);

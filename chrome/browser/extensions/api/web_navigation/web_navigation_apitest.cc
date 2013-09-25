@@ -246,7 +246,6 @@ class TestResourceDispatcherHostDelegate
       ResourceType::Type resource_type,
       int child_id,
       int route_id,
-      bool is_continuation_of_transferred_request,
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE {
     ChromeResourceDispatcherHostDelegate::RequestBeginning(
         request,
@@ -255,7 +254,6 @@ class TestResourceDispatcherHostDelegate
         resource_type,
         child_id,
         route_id,
-        is_continuation_of_transferred_request,
         throttles);
     content::ResourceThrottle* throttle =
         test_navigation_listener_->CreateResourceThrottle(request->url(),

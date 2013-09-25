@@ -77,13 +77,9 @@ class DependentIOBuffer : public net::WrappedIOBuffer {
 };
 
 AsyncResourceHandler::AsyncResourceHandler(
-    ResourceMessageFilter* filter,
-    ResourceContext* resource_context,
     net::URLRequest* request,
     ResourceDispatcherHostImpl* rdh)
     : ResourceMessageDelegate(request),
-      filter_(filter),
-      resource_context_(resource_context),
       request_(request),
       rdh_(rdh),
       pending_data_count_(0),
@@ -139,25 +135,34 @@ void AsyncResourceHandler::OnDataReceivedACK(int request_id) {
 bool AsyncResourceHandler::OnUploadProgress(int request_id,
                                             uint64 position,
                                             uint64 size) {
-  return filter_->Send(new ResourceMsg_UploadProgress(request_id, position,
-                                                      size));
+  const ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(request_);
+  if (!info->filter())
+    return false;
+  return info->filter()->Send(
+      new ResourceMsg_UploadProgress(request_id, position, size));
 }
 
 bool AsyncResourceHandler::OnRequestRedirected(int request_id,
                                                const GURL& new_url,
                                                ResourceResponse* response,
                                                bool* defer) {
+  const ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(request_);
+  if (!info->filter())
+    return false;
+
   *defer = did_defer_ = true;
 
   if (rdh_->delegate()) {
     rdh_->delegate()->OnRequestRedirected(
-        new_url, request_, resource_context_, response);
+        new_url, request_, info->GetContext(), response);
   }
 
   DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
   response->head.request_start = request_->creation_time();
   response->head.response_start = TimeTicks::Now();
-  return filter_->Send(new ResourceMsg_ReceivedRedirect(
+  return info->filter()->Send(new ResourceMsg_ReceivedRedirect(
       request_id, new_url, response->head));
 }
 
@@ -170,20 +175,24 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   // request commits, avoiding the possibility of e.g. zooming the old content
   // or of having to layout the new content twice.
 
+  const ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(request_);
+  if (!info->filter())
+    return false;
+
   if (rdh_->delegate()) {
     rdh_->delegate()->OnResponseStarted(
-        request_, resource_context_, response, filter_.get());
+        request_, info->GetContext(), response, info->filter());
   }
 
   DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
 
   HostZoomMap* host_zoom_map =
-      GetHostZoomMapForResourceContext(resource_context_);
+      GetHostZoomMapForResourceContext(info->GetContext());
 
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   if (info->GetResourceType() == ResourceType::MAIN_FRAME && host_zoom_map) {
     const GURL& request_url = request_->url();
-    filter_->Send(new ViewMsg_SetZoomLevelForLoadingURL(
+    info->filter()->Send(new ViewMsg_SetZoomLevelForLoadingURL(
         info->GetRouteID(),
         request_url, host_zoom_map->GetZoomLevelForHostAndScheme(
             request_url.scheme(),
@@ -192,14 +201,16 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
 
   response->head.request_start = request_->creation_time();
   response->head.response_start = TimeTicks::Now();
-  filter_->Send(new ResourceMsg_ReceivedResponse(request_id, response->head));
+  info->filter()->Send(new ResourceMsg_ReceivedResponse(request_id,
+                                                        response->head));
   sent_received_response_msg_ = true;
 
   if (request_->response_info().metadata.get()) {
     std::vector<char> copy(request_->response_info().metadata->data(),
                            request_->response_info().metadata->data() +
                                request_->response_info().metadata->size());
-    filter_->Send(new ResourceMsg_ReceivedCachedMetadata(request_id, copy));
+    info->filter()->Send(new ResourceMsg_ReceivedCachedMetadata(request_id,
+                                                                copy));
   }
 
   return true;
@@ -236,6 +247,11 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int bytes_read,
   if (!bytes_read)
     return true;
 
+  const ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(request_);
+  if (!info->filter())
+    return false;
+
   buffer_->ShrinkLastAllocation(bytes_read);
 
   UMA_HISTOGRAM_CUSTOM_COUNTS(
@@ -248,10 +264,10 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int bytes_read,
   if (!sent_first_data_msg_) {
     base::SharedMemoryHandle handle;
     int size;
-    if (!buffer_->ShareToProcess(filter_->PeerHandle(), &handle, &size))
+    if (!buffer_->ShareToProcess(info->filter()->PeerHandle(), &handle, &size))
       return false;
-    filter_->Send(new ResourceMsg_SetDataBuffer(
-        request_id, handle, size, filter_->peer_pid()));
+    info->filter()->Send(new ResourceMsg_SetDataBuffer(
+        request_id, handle, size, info->filter()->peer_pid()));
     sent_first_data_msg_ = true;
   }
 
@@ -259,7 +275,7 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int bytes_read,
   int encoded_data_length =
       DevToolsNetLogObserver::GetAndResetEncodedDataLength(request_);
 
-  filter_->Send(new ResourceMsg_DataReceived(
+  info->filter()->Send(new ResourceMsg_DataReceived(
       request_id, data_offset, bytes_read, encoded_data_length));
   ++pending_data_count_;
   UMA_HISTOGRAM_CUSTOM_COUNTS(
@@ -281,14 +297,23 @@ void AsyncResourceHandler::OnDataDownloaded(
   int encoded_data_length =
       DevToolsNetLogObserver::GetAndResetEncodedDataLength(request_);
 
-  filter_->Send(new ResourceMsg_DataDownloaded(
-      request_id, bytes_downloaded, encoded_data_length));
+  const ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(request_);
+  if (info->filter()) {
+    info->filter()->Send(new ResourceMsg_DataDownloaded(
+        request_id, bytes_downloaded, encoded_data_length));
+  }
 }
 
 bool AsyncResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info) {
+  const ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(request_);
+  if (!info->filter())
+    return false;
+
   // If we crash here, figure out what URL the renderer was requesting.
   // http://crbug.com/107692
   char url_buf[128];
@@ -325,11 +350,12 @@ bool AsyncResourceHandler::OnResponseCompleted(
     error_code = net::ERR_FAILED;
   }
 
-  filter_->Send(new ResourceMsg_RequestComplete(request_id,
-                                                error_code,
-                                                was_ignored_by_handler,
-                                                security_info,
-                                                completion_time));
+  info->filter()->Send(
+      new ResourceMsg_RequestComplete(request_id,
+                                      error_code,
+                                      was_ignored_by_handler,
+                                      security_info,
+                                      completion_time));
   return true;
 }
 

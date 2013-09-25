@@ -159,6 +159,7 @@ class ResourceSchedulerTest : public testing::Test {
         false,                             // has_user_gesture
         WebKit::WebReferrerPolicyDefault,  // referrer_policy
         NULL,                              // context
+        base::WeakPtr<ResourceMessageFilter>(),  // filter
         true);                             // is_async
     info->AssociateWithRequest(url_request.get());
     return url_request.Pass();

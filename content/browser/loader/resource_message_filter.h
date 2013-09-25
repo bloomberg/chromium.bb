@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "webkit/common/resource_type.h"
@@ -76,6 +77,8 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
   int child_id() const { return child_id_; }
   int process_type() const { return process_type_; }
 
+  base::WeakPtr<ResourceMessageFilter> GetWeakPtr();
+
  protected:
   // Protected destructor so that we can be overriden in tests.
   virtual ~ResourceMessageFilter();
@@ -91,6 +94,9 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 
   GetContextsCallback get_contexts_callback_;
+
+  // This must come last to make sure weak pointers are invalidated first.
+  base::WeakPtrFactory<ResourceMessageFilter> weak_ptr_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ResourceMessageFilter);
 };
