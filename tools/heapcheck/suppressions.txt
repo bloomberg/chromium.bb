@@ -892,3 +892,13 @@
    fun:v8::internal::LChunk::NewChunk
    fun:v8::internal::OptimizingCompiler::OptimizeGraph
 }
+{
+   bug_291236_d
+   Heapcheck:Leak
+   fun:v8::internal::Malloced::New
+   fun:v8::internal::Zone::NewSegment
+   fun:v8::internal::Zone::NewExpand
+   fun:v8::internal::Zone::New
+   fun:v8::internal::ZoneObject::operator new
+   fun:v8::internal::HCompareNumericAndBranch::New
+}
