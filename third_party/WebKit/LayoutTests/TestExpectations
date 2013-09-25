@@ -1280,3 +1280,5 @@ crbug.com/254989 virtual/android/fullscreen/full-screen-stacking-context.html [ 
 
 crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure ]
 crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ Failure ]
+
+crbug.com/298047 [ Linux Debug ] editing/spelling/spelling-huge-text.html [ Failure Pass ]
