@@ -58,8 +58,9 @@ function test()
 
     function processRecord(record)
     {
-        if (record.type === WebInspector.TimelineModel.RecordType.ResizeImage)
+        if (record.type === WebInspector.TimelineModel.RecordType.DecodeImage) {
             showImage();
+        }
         (record.children || []).forEach(processRecord);
     }
 

@@ -360,11 +360,12 @@ void NativeImageSkia::draw(GraphicsContext* context, const SkRect& srcRect, cons
     resampling = limitResamplingMode(context, resampling);
     paint.setFilterBitmap(resampling == LinearResampling);
 
+    bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap());
     // FIXME: Bicubic filtering in Skia is only applied to defer-decoded images
     // as an experiment. Once this filtering code path becomes stable we should
     // turn this on for all cases, including non-defer-decoded images.
-    bool useBicubicFilter = resampling == AwesomeResampling
-        && DeferredImageDecoder::isLazyDecoded(bitmap());
+    bool useBicubicFilter = resampling == AwesomeResampling && isLazyDecoded;
+
     if (useBicubicFilter)
         paint.setFilterLevel(SkPaint::kHigh_FilterLevel);
 
@@ -379,6 +380,8 @@ void NativeImageSkia::draw(GraphicsContext* context, const SkRect& srcRect, cons
         // don't send extra pixels.
         context->drawBitmapRect(bitmap(), &srcRect, destRect, &paint);
     }
+    if (isLazyDecoded)
+        PlatformInstrumentation::didDrawLazyPixelRef(reinterpret_cast<unsigned long long>(bitmap().pixelRef()));
     context->didDrawRect(destRect, paint, &bitmap());
 }
 
@@ -421,9 +424,10 @@ void NativeImageSkia::drawPattern(
     SkMatrix shaderTransform;
     RefPtr<SkShader> shader;
 
+    bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap());
     // Bicubic filter is only applied to defer-decoded images, see
     // NativeImageSkia::draw for details.
-    bool useBicubicFilter = resampling == AwesomeResampling && DeferredImageDecoder::isLazyDecoded(bitmap());
+    bool useBicubicFilter = resampling == AwesomeResampling && isLazyDecoded;
 
     if (resampling == AwesomeResampling && !useBicubicFilter) {
         // Do nice resampling.
@@ -475,6 +479,8 @@ void NativeImageSkia::drawPattern(
     paint.setFilterBitmap(resampling == LinearResampling);
     if (useBicubicFilter)
         paint.setFilterLevel(SkPaint::kHigh_FilterLevel);
+    if (isLazyDecoded)
+        PlatformInstrumentation::didDrawLazyPixelRef(reinterpret_cast<unsigned long long>(bitmap().pixelRef()));
 
     context->drawRect(destRect, paint);
 }

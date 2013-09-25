@@ -31,6 +31,7 @@
 #include "SkRect.h"
 #include "SkSize.h"
 #include "SkTypes.h"
+#include "core/platform/PlatformInstrumentation.h"
 #include "skia/ext/lazy_pixel_ref.h"
 
 #include "wtf/RefPtr.h"
@@ -77,6 +78,7 @@ private:
     SkIRect m_scaledSubset;
 
     const ScaledImageFragment* m_lockedImageResource;
+    PlatformInstrumentation::LazyPixelRefTracker m_objectTracker;
 };
 
 } // namespace WebCore

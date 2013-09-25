@@ -39,6 +39,7 @@ LazyDecodingPixelRef::LazyDecodingPixelRef(PassRefPtr<ImageFrameGenerator> frame
     , m_scaledSize(scaledSize)
     , m_scaledSubset(scaledSubset)
     , m_lockedImageResource(0)
+    , m_objectTracker(this)
 {
 }
 

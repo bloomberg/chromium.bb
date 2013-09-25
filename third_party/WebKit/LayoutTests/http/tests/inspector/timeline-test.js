@@ -26,6 +26,7 @@ InspectorTest.timelinePropertyFormatters = {
     layerRootNode: "formatAsTypeName",
     elementId: "formatAsTypeName",
     networkTime: "formatAsTypeName",
+    thread: "formatAsTypeName"
 };
 
 InspectorTest.startTimeline = function(callback)

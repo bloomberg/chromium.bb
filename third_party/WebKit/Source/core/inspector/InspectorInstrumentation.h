@@ -133,6 +133,7 @@ extern const char LayerId[];
 extern const char LayerTreeId[];
 extern const char NodeId[];
 extern const char PageId[];
+extern const char PixelRefId[];
 };
 
 namespace InspectorInstrumentation {

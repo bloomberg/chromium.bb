@@ -258,6 +258,7 @@ private:
 
     void localToPageQuad(const RenderObject& renderer, const LayoutRect&, FloatQuad*);
     const TimelineTimeConverter& timeConverter() const { return m_timeConverter; }
+    const RenderImage* imageBeingPainted() const { return m_imageBeingPainted; }
     long long idForNode(Node*);
     void releaseNodeIds();
 

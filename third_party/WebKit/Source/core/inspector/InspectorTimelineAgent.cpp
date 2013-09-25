@@ -51,6 +51,7 @@
 #include "core/page/PageConsole.h"
 #include "core/platform/MemoryUsageSupport.h"
 #include "core/platform/chromium/TraceEvent.h"
+#include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
@@ -129,6 +130,7 @@ const char PaintSetup[] = "PaintSetup";
 
 namespace {
 const char BackendNodeIdGroup[] = "timeline";
+const char InternalEventCategory[] = "instrumentation";
 }
 
 static Frame* frameForScriptExecutionContext(ScriptExecutionContext* context)
@@ -309,7 +311,7 @@ void InspectorTimelineAgent::innerStop(bool fromConsole)
 
 void InspectorTimelineAgent::didBeginFrame()
 {
-    TRACE_EVENT_INSTANT0("webkit", InstrumentationEvents::BeginFrame);
+    TRACE_EVENT_INSTANT0(InternalEventCategory, InstrumentationEvents::BeginFrame);
     m_pendingFrameRecord = TimelineRecordFactory::createGenericRecord(timestamp(), 0, TimelineRecordType::BeginFrame);
 }
 
@@ -426,7 +428,7 @@ void InspectorTimelineAgent::didRecalculateStyleForElement()
 void InspectorTimelineAgent::willPaint(RenderObject* renderer)
 {
     Frame* frame = renderer->frame();
-    TRACE_EVENT_INSTANT2("instrumentation", InstrumentationEvents::Paint,
+    TRACE_EVENT_INSTANT2(InternalEventCategory, InstrumentationEvents::Paint,
         InstrumentationEventArguments::PageId, reinterpret_cast<unsigned long long>(frame->page()),
         InstrumentationEventArguments::NodeId, idForNode(renderer->generatingNode()));
 

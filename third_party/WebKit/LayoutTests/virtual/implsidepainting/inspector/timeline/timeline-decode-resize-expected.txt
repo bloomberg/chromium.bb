@@ -1,0 +1,98 @@
+Tests the Timeline API instrumentation of a DecodeImage and ResizeImage events
+
+
+DecodeImage Properties:
+{
+    data : {
+        elementId : <number>
+        url : .../inspector/timeline/resources/test.bmp
+    }
+    endTime : <number>
+    startTime : <number>
+    thread : <string>
+    type : "DecodeImage"
+}
+DecodeImage Properties:
+{
+    data : {
+        elementId : <number>
+        url : .../inspector/timeline/resources/test.gif
+    }
+    endTime : <number>
+    startTime : <number>
+    thread : <string>
+    type : "DecodeImage"
+}
+DecodeImage Properties:
+{
+    children : <object>
+    counters : <object>
+    data : {
+        elementId : <number>
+        imageType : "ICO"
+        url : .../inspector/timeline/resources/test.ico
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "DecodeImage"
+    usedHeapSize : <number>
+}
+ResizeImage Properties:
+{
+    children : <object>
+    counters : <object>
+    data : {
+        cached : true
+        elementId : <number>
+        url : .../inspector/timeline/resources/test.ico
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "ResizeImage"
+    usedHeapSize : <number>
+}
+DecodeImage Properties:
+{
+    data : {
+        elementId : <number>
+        url : .../inspector/timeline/resources/test.jpg
+    }
+    endTime : <number>
+    startTime : <number>
+    thread : <string>
+    type : "DecodeImage"
+}
+DecodeImage Properties:
+{
+    data : {
+        elementId : <number>
+        url : .../inspector/timeline/resources/test.png
+    }
+    endTime : <number>
+    startTime : <number>
+    thread : <string>
+    type : "DecodeImage"
+}
+DecodeImage Properties:
+{
+    data : {
+        elementId : <number>
+        url : .../inspector/timeline/resources/test.webp
+    }
+    endTime : <number>
+    startTime : <number>
+    thread : <string>
+    type : "DecodeImage"
+}
+DecodeImage Properties:
+{
+    data : {
+        elementId : <number>
+        url : .../inspector/timeline/resources/big.png
+    }
+    endTime : <number>
+    startTime : <number>
+    thread : <string>
+    type : "DecodeImage"
+}
+

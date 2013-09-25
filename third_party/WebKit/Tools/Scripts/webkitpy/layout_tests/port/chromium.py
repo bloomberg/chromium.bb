@@ -341,6 +341,9 @@ class ChromiumPort(Port):
             VirtualTestSuite('virtual/deferred/fast/images',
                              'fast/images',
                              ['--enable-deferred-image-decoding', '--enable-per-tile-painting', '--force-compositing-mode']),
+            VirtualTestSuite('virtual/deferred/inspector/timeline',
+                             'inspector/timeline',
+                             ['--enable-deferred-image-decoding', '--enable-per-tile-painting', '--force-compositing-mode']),
             VirtualTestSuite('virtual/gpu/compositedscrolling/overflow',
                              'compositing/overflow',
                              ['--enable-accelerated-overflow-scroll']),
@@ -370,6 +373,9 @@ class ChromiumPort(Port):
                               '--enable-overlay-fullscreen-video', '--enable-overlay-scrollbars', '--enable-overscroll-notifications',
                               '--enable-fixed-layout', '--enable-viewport', '--disable-canvas-aa',
                               '--disable-composited-antialiasing']),
+            VirtualTestSuite('virtual/implsidepainting/inspector/timeline',
+                             'inspector/timeline',
+                             ['--enable-threaded-compositing', '--enable-impl-side-painting', '--force-compositing-mode']),
         ]
 
     #

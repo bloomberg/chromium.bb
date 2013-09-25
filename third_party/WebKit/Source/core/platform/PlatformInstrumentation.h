@@ -50,11 +50,22 @@ public:
 
 class PlatformInstrumentation {
 public:
+    class LazyPixelRefTracker: TraceEvent::TraceScopedTrackableObject<void*> {
+    public:
+        LazyPixelRefTracker(void* instance)
+            : TraceScopedTrackableObject(CategoryName, LazyPixelRef, instance)
+        {
+        }
+    };
+
     static const char ImageDecodeEvent[];
     static const char ImageResizeEvent[];
+    static const char DrawLazyPixelRefEvent[];
 
     static const char ImageTypeArgument[];
     static const char CachedArgument[];
+
+    static const char LazyPixelRef[];
 
     static void setClient(PlatformInstrumentationClient*);
     static bool hasClient() { return m_client; }
@@ -63,6 +74,7 @@ public:
     static void didDecodeImage();
     static void willResizeImage(bool shouldCache);
     static void didResizeImage();
+    static void didDrawLazyPixelRef(unsigned long long lazyPixelRefId);
 
 private:
     static const char CategoryName[];
@@ -98,6 +110,11 @@ inline void PlatformInstrumentation::didResizeImage()
     TRACE_EVENT_END0(CategoryName, ImageResizeEvent);
     FAST_RETURN_IF_NO_CLIENT_OR_NOT_MAIN_THREAD();
     m_client->didResizeImage();
+}
+
+inline void PlatformInstrumentation::didDrawLazyPixelRef(unsigned long long lazyPixelRefId)
+{
+    TRACE_EVENT_INSTANT1(CategoryName, DrawLazyPixelRefEvent, LazyPixelRef, lazyPixelRefId);
 }
 
 } // namespace WebCore

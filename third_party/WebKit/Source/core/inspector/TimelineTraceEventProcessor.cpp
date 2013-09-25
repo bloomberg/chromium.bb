@@ -31,9 +31,11 @@
 #include "config.h"
 #include "core/inspector/TimelineTraceEventProcessor.h"
 
+#include "core/fetch/ImageResource.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/TimelineRecordFactory.h"
+#include "core/rendering/RenderImage.h"
 
 #include "wtf/CurrentTime.h"
 #include "wtf/MainThread.h"
@@ -172,6 +174,8 @@ TimelineTraceEventProcessor::TimelineTraceEventProcessor(WeakPtr<InspectorTimeli
     registerHandler(InstrumentationEvents::Paint, TracePhaseInstant, &TimelineTraceEventProcessor::onPaint);
     registerHandler(PlatformInstrumentation::ImageDecodeEvent, TracePhaseBegin, &TimelineTraceEventProcessor::onImageDecodeBegin);
     registerHandler(PlatformInstrumentation::ImageDecodeEvent, TracePhaseEnd, &TimelineTraceEventProcessor::onImageDecodeEnd);
+    registerHandler(PlatformInstrumentation::DrawLazyPixelRefEvent, TracePhaseInstant, &TimelineTraceEventProcessor::onDrawLazyPixelRef);
+    registerHandler(PlatformInstrumentation::LazyPixelRef, TracePhaseDeleteObject, &TimelineTraceEventProcessor::onLazyPixelRefDeleted);
 
     TraceEventDispatcher::instance()->addProcessor(this, m_inspectorClient);
 }
@@ -260,7 +264,6 @@ void TimelineTraceEventProcessor::onPaintLayerBegin(const TraceEvent& event)
 void TimelineTraceEventProcessor::onPaintLayerEnd(const TraceEvent& event)
 {
     m_layerId = 0;
-    ASSERT(m_paintSetupStart);
 }
 
 void TimelineTraceEventProcessor::onPaintSetupBegin(const TraceEvent& event)
@@ -297,15 +300,6 @@ void TimelineTraceEventProcessor::onRasterTaskEnd(const TraceEvent& event)
     leaveLayerTask(state);
 }
 
-void TimelineTraceEventProcessor::onImageDecodeTaskBegin(const TraceEvent& event)
-{
-    maybeEnterLayerTask(event, threadState(event.threadIdentifier()));
-}
-
-void TimelineTraceEventProcessor::onImageDecodeTaskEnd(const TraceEvent& event)
-{
-    leaveLayerTask(threadState(event.threadIdentifier()));
-}
 
 bool TimelineTraceEventProcessor::maybeEnterLayerTask(const TraceEvent& event, TimelineThreadState& threadState)
 {
@@ -322,18 +316,40 @@ void TimelineTraceEventProcessor::leaveLayerTask(TimelineThreadState& threadStat
     threadState.inKnownLayerTask = false;
 }
 
+void TimelineTraceEventProcessor::onImageDecodeTaskBegin(const TraceEvent& event)
+{
+    TimelineThreadState& state = threadState(event.threadIdentifier());
+    ASSERT(!state.decodedPixelRefId);
+    unsigned long long pixelRefId = event.asUInt(InstrumentationEventArguments::PixelRefId);
+    ASSERT(pixelRefId);
+    if (m_pixelRefToImageInfo.contains(pixelRefId))
+        state.decodedPixelRefId = pixelRefId;
+}
+
+void TimelineTraceEventProcessor::onImageDecodeTaskEnd(const TraceEvent& event)
+{
+    threadState(event.threadIdentifier()).decodedPixelRefId = 0;
+}
+
 void TimelineTraceEventProcessor::onImageDecodeBegin(const TraceEvent& event)
 {
     TimelineThreadState& state = threadState(event.threadIdentifier());
-    if (!state.inKnownLayerTask)
+    if (!state.decodedPixelRefId)
         return;
-    state.recordStack.addScopedRecord(createRecord(event, TimelineRecordType::DecodeImage));
+    PixelRefToImageInfoMap::const_iterator it = m_pixelRefToImageInfo.find(state.decodedPixelRefId);
+    if (it == m_pixelRefToImageInfo.end()) {
+        ASSERT_NOT_REACHED();
+        return;
+    }
+    RefPtr<JSONObject> data = JSONObject::create();
+    TimelineRecordFactory::appendImageDetails(data.get(), it->value.backendNodeId, it->value.url);
+    state.recordStack.addScopedRecord(createRecord(event, TimelineRecordType::DecodeImage, data));
 }
 
 void TimelineTraceEventProcessor::onImageDecodeEnd(const TraceEvent& event)
 {
     TimelineThreadState& state = threadState(event.threadIdentifier());
-    if (!state.inKnownLayerTask)
+    if (!state.decodedPixelRefId)
         return;
     ASSERT(state.recordStack.isOpenRecordOfType(TimelineRecordType::DecodeImage));
     state.recordStack.closeScopedRecord(m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp()));
@@ -366,6 +382,31 @@ void TimelineTraceEventProcessor::onPaint(const TraceEvent& event)
         paintSetupRecord->setObject("data", TimelineRecordFactory::createLayerData(nodeId));
         timelineAgent->addRecordToTimeline(paintSetupRecord);
     }
+}
+
+void TimelineTraceEventProcessor::onDrawLazyPixelRef(const TraceEvent& event)
+{
+    // Only track LazyPixelRefs created while we paint known layers
+    if (!m_layerId || !m_layerToNodeMap.contains(m_layerId))
+        return;
+    unsigned long long pixelRefId = event.asUInt(PlatformInstrumentation::LazyPixelRef);
+    ASSERT(pixelRefId);
+    InspectorTimelineAgent* timelineAgent = m_timelineAgent.get();
+    if (!timelineAgent)
+        return;
+    const RenderImage* renderImage = timelineAgent->imageBeingPainted();
+    if (!renderImage)
+        return;
+    int nodeId = timelineAgent->idForNode(renderImage->generatingNode());
+    String url;
+    if (const ImageResource* resource = renderImage->cachedImage())
+        url = resource->url().string();
+    m_pixelRefToImageInfo.set(pixelRefId, ImageInfo(nodeId, url));
+}
+
+void TimelineTraceEventProcessor::onLazyPixelRefDeleted(const TraceEvent& event)
+{
+    m_pixelRefToImageInfo.remove(event.id());
 }
 
 PassRefPtr<JSONObject> TimelineTraceEventProcessor::createRecord(const TraceEvent& event, const String& recordType, PassRefPtr<JSONObject> data)
