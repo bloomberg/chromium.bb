@@ -1210,8 +1210,10 @@ wl_display_dispatch_queue(struct wl_display *display,
 
 	pfd[0].fd = display->fd;
 	pfd[0].events = POLLIN;
-	if (poll(pfd, 1, -1) == -1)
+	if (poll(pfd, 1, -1) == -1) {
+		wl_display_cancel_read(display);
 		return -1;
+	}
 
 	pthread_mutex_lock(&display->mutex);
 
