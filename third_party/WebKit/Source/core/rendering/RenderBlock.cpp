@@ -3638,7 +3638,7 @@ LayoutUnit RenderBlock::adjustLogicalRightOffsetForLine(LayoutUnit offsetFromFlo
     return right;
 }
 
-LayoutUnit RenderBlock::nextFloatLogicalBottomBelow(LayoutUnit logicalHeight) const
+LayoutUnit RenderBlock::nextFloatLogicalBottomBelow(LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode) const
 {
     if (!m_floatingObjects)
         return logicalHeight;
@@ -3647,8 +3647,13 @@ LayoutUnit RenderBlock::nextFloatLogicalBottomBelow(LayoutUnit logicalHeight) co
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
     FloatingObjectSetIterator end = floatingObjectSet.end();
     for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-        FloatingObject* r = *it;
-        LayoutUnit floatBottom = r->logicalBottom(isHorizontalWritingMode());
+        FloatingObject* floatingObject = *it;
+        LayoutUnit floatBottom;
+        ShapeOutsideInfo* shapeOutside = floatingObject->renderer()->shapeOutsideInfo();
+        if (offsetMode == ShapeOutsideFloatShapeOffset && shapeOutside)
+            floatBottom = floatingObject->logicalTop(isHorizontalWritingMode()) + marginBeforeForChild(floatingObject->renderer()) + shapeOutside->shapeLogicalBottom();
+        else
+            floatBottom = floatingObject->logicalBottom(isHorizontalWritingMode());
         if (floatBottom > logicalHeight)
             bottom = min(floatBottom, bottom);
     }
