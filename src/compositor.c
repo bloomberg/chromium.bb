@@ -247,8 +247,11 @@ child_client_exec(int sockfd, const char *path)
 	sigfillset(&allsigs);
 	sigprocmask(SIG_UNBLOCK, &allsigs, NULL);
 
-	/* Launch clients as the user. */
-	seteuid(getuid());
+	/* Launch clients as the user. Do not lauch clients with wrong euid.*/
+	if (seteuid(getuid()) == -1) {
+		weston_log("compositor: failed seteuid\n");
+		return;
+	}
 
 	/* SOCK_CLOEXEC closes both ends, so we dup the fd to get a
 	 * non-CLOEXEC fd to pass through exec. */
