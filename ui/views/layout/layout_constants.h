@@ -76,6 +76,10 @@ const int kRelatedButtonHSpacing = 6;
 // Indent of checkboxes relative to related text.
 const int kCheckboxIndent = 10;
 
+// Horizontal spacing between the end of an item (i.e. an icon or a checkbox)
+// and the start of its corresponding text.
+const int kItemLabelSpacing = 10;
+
 }  // namespace views
 
 #endif  // UI_VIEWS_LAYOUT_LAYOUT_CONSTANTS_H_

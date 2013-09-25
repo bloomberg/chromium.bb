@@ -86,8 +86,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   virtual void LinkClicked(views::Link* sender, int event_flags) OVERRIDE;
 
   // AvatarMenuObserver:
-  virtual void OnAvatarMenuChanged(
-      AvatarMenu* avatar_menu) OVERRIDE;
+  virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) OVERRIDE;
 
   static ProfileChooserView* profile_bubble_;
   static bool close_on_deactivate_;
@@ -129,6 +128,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // Action buttons.
   views::TextButton* guest_button_;
   views::TextButton* end_guest_button_;
+  views::TextButton* add_user_button_;
   views::TextButton* users_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserView);

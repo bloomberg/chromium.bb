@@ -166,6 +166,13 @@ class ProfileManager : public base::NonThreadSafe,
   // Returns the full path to be used for guest profiles.
   static base::FilePath GetGuestProfilePath();
 
+  // Get the path of the next profile directory and increment the internal
+  // count.
+  // Lack of side effects:
+  // This function doesn't actually create the directory or touch the file
+  // system.
+  base::FilePath GenerateNextProfileDirectoryPath();
+
   // Returns a ProfileInfoCache object which can be used to get information
   // about profiles without having to load them from disk.
   ProfileInfoCache& GetProfileInfoCache();
@@ -279,13 +286,6 @@ class ProfileManager : public base::NonThreadSafe,
 
   // For ChromeOS, determines if profile should be otr.
   bool ShouldGoOffTheRecord(Profile* profile);
-
-  // Get the path of the next profile directory and increment the internal
-  // count.
-  // Lack of side effects:
-  // This function doesn't actually create the directory or touch the file
-  // system.
-  base::FilePath GenerateNextProfileDirectoryPath();
 
   void RunCallbacks(const std::vector<CreateCallback>& callbacks,
                     Profile* profile,

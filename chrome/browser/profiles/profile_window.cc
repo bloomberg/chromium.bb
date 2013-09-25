@@ -87,6 +87,18 @@ void SwitchToProfile(
       std::string());
 }
 
+void CreateAndSwitchToNewProfile(chrome::HostDesktopType desktop_type) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  base::FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
+  profile_manager->CreateProfileAsync(new_path,
+                                      base::Bind(&OpenBrowserWindowForProfile,
+                                                 true,
+                                                 desktop_type),
+                                      string16(),
+                                      string16(),
+                                      std::string());
+}
+
 void CloseGuestProfileWindows() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* profile = profile_manager->GetProfileByPath(

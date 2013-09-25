@@ -34,6 +34,10 @@ void SwitchToProfile(
     chrome::HostDesktopType desktop_type,
     bool always_create);
 
+// Creates a new profile from the next available profile directory, and
+// opens a new browser window for the profile once it is ready.
+void CreateAndSwitchToNewProfile(chrome::HostDesktopType desktop_type);
+
 // Closes all browser windows that belong to the guest profile.
 void CloseGuestProfileWindows();
 

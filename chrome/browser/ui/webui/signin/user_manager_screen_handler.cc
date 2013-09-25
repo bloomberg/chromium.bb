@@ -173,16 +173,10 @@ void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
 }
 
 void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {
-  // TODO(noms): Should display the addUser page here, not do a redirect.
   Browser* browser = chrome::FindOrCreateTabbedBrowser(
       ProfileManager::GetLastUsedProfileAllowedByPolicy(), desktop_type_);
   DCHECK(browser);
-  chrome::NavigateParams params(browser,
-                                GURL("chrome://settings/createProfile"),
-                                content::PAGE_TRANSITION_LINK);
-  params.disposition = NEW_FOREGROUND_TAB;
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  chrome::Navigate(&params);
+  profiles::CreateAndSwitchToNewProfile(desktop_type_);
 }
 
 void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
