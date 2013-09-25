@@ -49,12 +49,7 @@ static void skipSpaces(const String& input, unsigned& startIndex)
         ++startIndex;
 }
 
-static bool isTokenCharacter(char c)
-{
-    return isASCII(c) && c > ' ' && c != '"' && c != '(' && c != ')' && c != ',' && c != '/' && (c < ':' || c > '@') && (c < '[' || c > ']');
-}
-
-static SubstringRange parseToken(const String& input, unsigned& startIndex)
+static SubstringRange parseParameterPart(const String& input, unsigned& startIndex)
 {
     unsigned inputLength = input.length();
     unsigned tokenStart = startIndex;
@@ -63,40 +58,22 @@ static SubstringRange parseToken(const String& input, unsigned& startIndex)
     if (tokenEnd >= inputLength)
         return SubstringRange();
 
+    bool quoted = input[tokenStart] == '\"';
+    bool escape = false;
+
     while (tokenEnd < inputLength) {
-        if (!isTokenCharacter(input[tokenEnd]))
+        UChar c = input[tokenEnd];
+        if (quoted && tokenStart != tokenEnd && c == '\"' && !escape)
+            return SubstringRange(tokenStart + 1, tokenEnd++ - tokenStart - 1);
+        if (!quoted && (c == ';' || c == '='))
             return SubstringRange(tokenStart, tokenEnd - tokenStart);
+        escape = !escape && c == '\\';
         ++tokenEnd;
     }
 
+    if (quoted)
+        return SubstringRange();
     return SubstringRange(tokenStart, tokenEnd - tokenStart);
-}
-
-static SubstringRange parseQuotedString(const String& input, unsigned& startIndex)
-{
-    unsigned inputLength = input.length();
-    unsigned quotedStringStart = startIndex + 1;
-    unsigned& quotedStringEnd = startIndex;
-
-    if (quotedStringEnd >= inputLength)
-        return SubstringRange();
-
-    if (input[quotedStringEnd++] != '"' || quotedStringEnd >= inputLength)
-        return SubstringRange();
-
-    bool lastCharacterWasBackslash = false;
-    char currentCharacter;
-    while ((currentCharacter = input[quotedStringEnd++]) != '"' || lastCharacterWasBackslash) {
-        if (quotedStringEnd >= inputLength)
-            return SubstringRange();
-        if (currentCharacter == '\\' && !lastCharacterWasBackslash) {
-            lastCharacterWasBackslash = true;
-            continue;
-        }
-        if (lastCharacterWasBackslash)
-            lastCharacterWasBackslash = false;
-    }
-    return SubstringRange(quotedStringStart, quotedStringEnd - quotedStringStart - 1);
 }
 
 static String substringForRange(const String& string, const SubstringRange& range)
@@ -172,34 +149,29 @@ bool parseContentType(const String& contentType, ReceiverType& receiver)
     index = semiColonIndex + 1;
     while (true) {
         skipSpaces(contentType, index);
-        SubstringRange keyRange = parseToken(contentType, index);
+        SubstringRange keyRange = parseParameterPart(contentType, index);
         if (!keyRange.second || index >= contentTypeLength) {
-            LOG_ERROR("Invalid Content-Type parameter name.");
+            LOG_ERROR("Invalid Content-Type parameter name. (at %i)", index);
             return false;
         }
 
         // Should we tolerate spaces here?
         if (contentType[index++] != '=' || index >= contentTypeLength) {
-            LOG_ERROR("Invalid Content-Type malformed parameter.");
+            LOG_ERROR("Invalid Content-Type malformed parameter (at %i).", index);
             return false;
         }
 
         // Should we tolerate spaces here?
-        String value;
-        SubstringRange valueRange;
-        if (contentType[index] == '"')
-            valueRange = parseQuotedString(contentType, index);
-        else
-            valueRange = parseToken(contentType, index);
+        SubstringRange valueRange = parseParameterPart(contentType, index);
 
         if (!valueRange.second) {
-            LOG_ERROR("Invalid Content-Type, invalid parameter value.");
+            LOG_ERROR("Invalid Content-Type, invalid parameter value (at %i, for '%s').", index, substringForRange(contentType, keyRange).stripWhiteSpace().ascii().data());
             return false;
         }
 
         // Should we tolerate spaces here?
         if (index < contentTypeLength && contentType[index++] != ';') {
-            LOG_ERROR("Invalid Content-Type, invalid character at the end of key/value parameter.");
+            LOG_ERROR("Invalid Content-Type, invalid character at the end of key/value parameter (at %i).", index);
             return false;
         }
 
