@@ -1279,3 +1279,5 @@ crbug.com/246077 virtual/android/fullscreen/full-screen-render-inline.html [ Ima
 crbug.com/254989 virtual/android/fullscreen/full-screen-stacking-context.html [ ImageOnlyFailure ]
 
 crbug.com/243774 fast/table/border-radius-with-image.html [ NeedsRebaseline ]
+
+crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure ]
