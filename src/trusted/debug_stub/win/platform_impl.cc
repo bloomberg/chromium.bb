@@ -102,7 +102,8 @@ static bool CheckReadRights(void *ptr, uint32_t len) {
               GetLastError());
       return false;
     }
-    if (memory_info.Protect == PAGE_NOACCESS) {
+    if (memory_info.Protect == PAGE_NOACCESS ||
+        memory_info.Protect == 0) {
       return false;
     }
     offset = current_pointer - reinterpret_cast<char*>(memory_info.BaseAddress);

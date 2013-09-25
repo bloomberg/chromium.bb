@@ -356,6 +356,11 @@ class DebugStubTest(unittest.TestCase):
     result = connection.RspRequest('m%x,%x' % (mem_addr, 8))
     self.assertEquals(result, 'E03')
 
+    # Check non-zero address in the first page.
+    mem_addr = 0xffff
+    resut = connection.RspRequest('m%x,%x' % (mem_addr, 1))
+    self.assertEquals(result, 'E03')
+
   # Run tests on debugger_test.c binary.
   def test_debugger_test(self):
     with LaunchDebugStub('test_getting_registers') as connection:
