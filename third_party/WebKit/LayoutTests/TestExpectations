@@ -1279,3 +1279,4 @@ crbug.com/246077 virtual/android/fullscreen/full-screen-render-inline.html [ Ima
 crbug.com/254989 virtual/android/fullscreen/full-screen-stacking-context.html [ ImageOnlyFailure ]
 
 crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure ]
+crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ Failure ]
