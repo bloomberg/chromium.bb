@@ -385,15 +385,13 @@ void FileSystemContext::EnableTemporaryFileSystemInIncognito() {
 #endif
 
 bool FileSystemContext::CanServeURLRequest(const FileSystemURL& url) const {
-  if (!is_incognito_)
-    return true;
 #if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
   if (url.type() == kFileSystemTypeTemporary &&
       sandbox_backend_->enable_temporary_file_system_in_incognito()) {
     return true;
   }
 #endif
-  return false;
+  return !is_incognito_ || !FileSystemContext::IsSandboxFileSystem(url.type());
 }
 
 FileSystemContext::~FileSystemContext() {
