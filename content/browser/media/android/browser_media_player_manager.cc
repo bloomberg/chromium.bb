@@ -486,11 +486,18 @@ void BrowserMediaPlayerManager::OnGenerateKeyRequest(
     return;
   }
 
+  MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
+  if (!drm_bridge) {
+    DLOG(WARNING) << "No MediaDrmBridge for ID: " << media_keys_id << " found";
+    OnKeyError(media_keys_id, "", media::MediaKeys::kUnknownError, 0);
+    return;
+  }
+
   WebContents* web_contents =
       WebContents::FromRenderViewHost(render_view_host());
   web_contents->GetDelegate()->RequestProtectedMediaIdentifierPermission(
       web_contents,
-      GetDrmBridge(media_keys_id)->frame_url(),
+      drm_bridge->frame_url(),
       base::Bind(&BrowserMediaPlayerManager::GenerateKeyIfAllowed,
                  weak_ptr_factory_.GetWeakPtr(),
                  media_keys_id,
@@ -503,8 +510,11 @@ void BrowserMediaPlayerManager::OnAddKey(int media_keys_id,
                                          const std::vector<uint8>& init_data,
                                          const std::string& session_id) {
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
-  if (!drm_bridge)
+  if (!drm_bridge) {
+    DLOG(WARNING) << "No MediaDrmBridge for ID: " << media_keys_id << " found";
+    OnKeyError(media_keys_id, session_id, media::MediaKeys::kUnknownError, 0);
     return;
+  }
 
   drm_bridge->AddKey(&key[0], key.size(), &init_data[0], init_data.size(),
                      session_id);
@@ -520,8 +530,13 @@ void BrowserMediaPlayerManager::OnCancelKeyRequest(
     int media_keys_id,
     const std::string& session_id) {
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
-  if (drm_bridge)
-    drm_bridge->CancelKeyRequest(session_id);
+  if (!drm_bridge) {
+    DLOG(WARNING) << "No MediaDrmBridge for ID: " << media_keys_id << " found";
+    OnKeyError(media_keys_id, session_id, media::MediaKeys::kUnknownError, 0);
+    return;
+  }
+
+  drm_bridge->CancelKeyRequest(session_id);
 }
 
 void BrowserMediaPlayerManager::AddPlayer(MediaPlayerAndroid* player) {
@@ -608,8 +623,13 @@ void BrowserMediaPlayerManager::GenerateKeyIfAllowed(
     return;
 
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
-  if (drm_bridge)
-    drm_bridge->GenerateKeyRequest(type, &init_data[0], init_data.size());
+  if (!drm_bridge) {
+    DLOG(WARNING) << "No MediaDrmBridge for ID: " << media_keys_id << " found";
+    OnKeyError(media_keys_id, "", media::MediaKeys::kUnknownError, 0);
+    return;
+  }
+
+  drm_bridge->GenerateKeyRequest(type, &init_data[0], init_data.size());
 }
 
 }  // namespace content
