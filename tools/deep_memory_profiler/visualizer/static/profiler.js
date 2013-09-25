@@ -6,10 +6,10 @@
  * This class provides data access interface for dump file profiler.
  * @constructor
  */
-var Profiler = function(jsonData) {
+var Profiler = function(jsonData, template) {
   this.jsonData_ = jsonData;
   // Initialize template with templates information.
-  this.template_ = jsonData.templates['l2'];
+  this.template_ = template || jsonData.templates['l2'];
   // Initialize selected category, and nothing selected at first.
   this.selected_ = null;
 

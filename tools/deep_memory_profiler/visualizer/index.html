@@ -17,13 +17,30 @@ found in the LICENSE file.
 <script src="static/graph-view.js"></script>
 <script src="static/dropdown-view.js"></script>
 <script src="static/menu-view.js"></script>
-<script src="static/index.js"></script>
+<script>
+$(function() {
+  {% if json is defined and template is defined %}
+    // Create model.
+    var profiler = new Profiler({{ json|safe }}, {{ template|safe }});
+    // Create views subscribing model events.
+    var graphView = new GraphView(profiler);
+    var dropdownView = new DropdownView(profiler);
+    var menuView = new MenuView(profiler);
+
+    // initialize categories according to roots information.
+    profiler.reparse();
+  {% endif %}
+});
+</script>
 
 <body>
   <h2>Deep Memory Profiler Visulaizer</h2>
-  <form action="/" method="post">
-    <input type="file" action=name="data"/>
-    <input type="submit"/>
+  <form enctype="multipart/form-data" action="{{ upload_url }}" method="post">
+    <input type="file" name="file"/>
+    <input type="submit" value="Upload"/>
+    <p><font color="red">
+      {{ upload_msg }}
+    </font></p>
   </form>
   <div id="graph-div"></div>
   <div id="info-div">

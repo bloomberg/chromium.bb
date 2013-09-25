@@ -1,0 +1,55 @@
+{
+    "default_template": "l2",
+    "roots": [
+        [
+            "vm",
+            "map"
+        ],
+        [
+            "vm",
+            "sharing"
+        ]
+    ],
+    "run_id": "jxu-linux-20191-1376364201",
+    "templates": {
+        "details": [
+            "vm",
+            "map",
+            {
+                "mmap-tcmalloc": [
+                    "malloc",
+                    "component",
+                    {
+                        "skia": [
+                            "malloc",
+                            "skia-details",
+                            {}
+                        ],
+                        "webkit": [
+                            "malloc",
+                            "webkit-details",
+                            {}
+                        ]
+                    }
+                ],
+                "mmap-v8-heap": [
+                    "javascript",
+                    "type",
+                    {}
+                ]
+            }
+        ],
+        "l2": [
+            "vm",
+            "map",
+            {
+                "mmap-tcmalloc": [
+                    "malloc",
+                    "component",
+                    {}
+                ]
+            }
+        ]
+    },
+    "version": 1
+}
