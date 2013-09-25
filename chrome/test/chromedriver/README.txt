@@ -4,12 +4,12 @@ contribute.
 ChromeDriver is an implementation of the WebDriver standard,
 which allows users to automate testing of their website across browsers.
 
-See the user site at http://code.google.com/p/chromedriver.
+See the user site at https://sites.google.com/a/chromium.org/chromedriver/
 
 =====Getting started=====
-Build ChromeDriver by building the 'chromedriver2_server' target. This will
+Build ChromeDriver by building the 'chromedriver' target. This will
 create an executable binary in the build folder named
-'chromedriver2_server[.exe]'.
+'chromedriver[.exe]'.
 
 Once built, ChromeDriver can be used interactively with python.
 
@@ -17,7 +17,7 @@ $ export PYTHONPATH=<THIS_DIR>/server:<THIS_DIR>/client
 $ python
 >>> import server
 >>> import chromedriver
->>> cd_server = server.Server('/path/to/chromedriver2_server/executable')
+>>> cd_server = server.Server('/path/to/chromedriver/executable')
 >>> driver = chromedriver.ChromeDriver(cd_server.GetUrl())
 >>> driver.Load('http://www.google.com')
 >>> driver.Quit()
@@ -28,8 +28,7 @@ ChromeDriver will use the system installed Chrome by default.
 To use ChromeDriver2 with Chrome on Android pass the Android package name in the
 chromeOptions.androidPackage capability when creating the driver. The path to
 adb_commands.py and the adb tool from the Android SDK must be set in PATH. For
-more detailed instructions see the wiki:
-    https://code.google.com/p/chromedriver/wiki/ChromeDriver2forAndroid
+more detailed instructions see the user site.
 
 =====Architecture=====
 ChromeDriver is shipped separately from Chrome. It controls Chrome out of
@@ -84,12 +83,12 @@ See the ChromeDriver waterfall at:
     http://build.chromium.org/p/chromium.chromedriver/waterfall
 There are 4 test suites for verifying ChromeDriver's correctness:
 
-1) chromedriver2_unittests (chrome/chrome_tests.gypi)
+1) chromedriver_unittests (chrome/chrome_tests.gypi)
 This is the unittest target, which runs on the main waterfall on win/mac/linux
 and can close the tree. It is also run on the commit queue and try bots by
 default. Tests should take a few milliseconds and be very stable.
 
-2) chromedriver2_tests (chrome/chrome_tests.gypi)
+2) chromedriver_tests (chrome/chrome_tests.gypi)
 This is a collection of C++ medium sized tests which can be run optionally
 on the trybots.
 

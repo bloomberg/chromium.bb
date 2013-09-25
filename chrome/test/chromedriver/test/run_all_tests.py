@@ -107,7 +107,7 @@ def RunJavaTests(chromedriver, chrome=None, chrome_version=None,
 
 
 def RunCppTests(cpp_tests):
-  util.MarkBuildStepStart('chromedriver2_tests')
+  util.MarkBuildStepStart('chromedriver_tests')
   code = util.RunCommand([cpp_tests])
   if code:
     util.MarkBuildStepError()
@@ -136,8 +136,8 @@ def main():
   exe_postfix = ''
   if util.IsWindows():
     exe_postfix = '.exe'
-  cpp_tests_name = 'chromedriver2_tests' + exe_postfix
-  server_name = 'chromedriver2_server' + exe_postfix
+  cpp_tests_name = 'chromedriver_tests' + exe_postfix
+  server_name = 'chromedriver' + exe_postfix
 
   required_build_outputs = [server_name]
   if not options.android_packages:

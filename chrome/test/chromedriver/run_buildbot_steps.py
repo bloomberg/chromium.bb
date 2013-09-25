@@ -28,7 +28,7 @@ import util
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 GS_ARCHIVE_BUCKET = 'gs://chromedriver-prebuilts'
-GS_ZIP_PREFIX = 'chromedriver2_prebuilts'
+GS_ZIP_PREFIX = 'chromedriver_prebuilts'
 GS_RC_BUCKET = 'gs://chromedriver-rc'
 GS_RELEASE_PATH = GS_RC_BUCKET + '/releases'
 RC_LOG_FORMAT = '%s_log.json'
@@ -50,8 +50,8 @@ from slave import slave_utils
 def ArchivePrebuilts(revision):
   """Uploads the prebuilts to google storage."""
   util.MarkBuildStepStart('archive')
-  prebuilts = ['chromedriver2_server',
-               'chromedriver2_unittests', 'chromedriver2_tests']
+  prebuilts = ['chromedriver',
+               'chromedriver_unittests', 'chromedriver_tests']
   build_dir = chrome_paths.GetBuildDir(prebuilts[0:1])
   zip_name = '%s_r%s.zip' % (GS_ZIP_PREFIX, revision)
   temp_dir = util.MakeTempDir()
@@ -70,7 +70,7 @@ def DownloadPrebuilts():
   util.MarkBuildStepStart('Download chromedriver prebuilts')
 
   temp_dir = util.MakeTempDir()
-  zip_path = os.path.join(temp_dir, 'chromedriver2_prebuilts.zip')
+  zip_path = os.path.join(temp_dir, 'chromedriver_prebuilts.zip')
   if gsutil_download.DownloadLatestFile(GS_ARCHIVE_BUCKET, GS_ZIP_PREFIX,
                                         zip_path):
     util.MarkBuildStepError()
@@ -81,7 +81,7 @@ def DownloadPrebuilts():
   f.extractall(build_dir)
   f.close()
   # Workaround for Python bug: http://bugs.python.org/issue15795
-  os.chmod(os.path.join(build_dir, 'chromedriver2_server'), 0700)
+  os.chmod(os.path.join(build_dir, 'chromedriver'), 0700)
 
 
 def GetDownloads():
@@ -275,13 +275,10 @@ def _ConstructReleaseCandidate(platform, revision):
   """Constructs a release candidate zip from the current build."""
   zip_name = RC_ZIP_FORMAT % (platform, GetVersion(), revision)
   if util.IsWindows():
-    server_orig_name = 'chromedriver2_server.exe'
     server_name = 'chromedriver.exe'
   else:
-    server_orig_name = 'chromedriver2_server'
     server_name = 'chromedriver'
-  server = os.path.join(chrome_paths.GetBuildDir([server_orig_name]),
-                        server_orig_name)
+  server = os.path.join(chrome_paths.GetBuildDir([server_name]), server_name)
 
   print 'Zipping ChromeDriver server', server
   temp_dir = util.MakeTempDir()

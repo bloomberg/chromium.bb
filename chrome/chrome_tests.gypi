@@ -3,6 +3,47 @@
 # found in the LICENSE file.
 {
   'variables' : {
+    'chromedriver_unittest_sources': [
+      'test/chromedriver/capabilities_unittest.cc',
+      'test/chromedriver/chrome/chrome_finder_unittest.cc',
+      'test/chromedriver/chrome/console_logger_unittest.cc',
+      'test/chromedriver/chrome/device_manager_unittest.cc',
+      'test/chromedriver/chrome/devtools_client_impl_unittest.cc',
+      'test/chromedriver/chrome/devtools_http_client_unittest.cc',
+      'test/chromedriver/chrome/dom_tracker_unittest.cc',
+      'test/chromedriver/chrome/frame_tracker_unittest.cc',
+      'test/chromedriver/chrome/geolocation_override_manager_unittest.cc',
+      'test/chromedriver/chrome/heap_snapshot_taker_unittest.cc',
+      'test/chromedriver/chrome/javascript_dialog_manager_unittest.cc',
+      'test/chromedriver/chrome/navigation_tracker_unittest.cc',
+      'test/chromedriver/chrome/performance_logger_unittest.cc',
+      'test/chromedriver/chrome/status_unittest.cc',
+      'test/chromedriver/chrome/stub_chrome.cc',
+      'test/chromedriver/chrome/stub_chrome.h',
+      'test/chromedriver/chrome/stub_devtools_client.cc',
+      'test/chromedriver/chrome/stub_devtools_client.h',
+      'test/chromedriver/chrome/stub_web_view.cc',
+      'test/chromedriver/chrome/stub_web_view.h',
+      'test/chromedriver/chrome/web_view_impl_unittest.cc',
+      'test/chromedriver/chrome_launcher_unittest.cc',
+      'test/chromedriver/commands_unittest.cc',
+      'test/chromedriver/logging_unittest.cc',
+      'test/chromedriver/server/http_handler_unittest.cc',
+      'test/chromedriver/session_commands_unittest.cc',
+      'test/chromedriver/session_unittest.cc',
+      'test/chromedriver/util_unittest.cc',
+    ],
+    'chromedriver_test_sources': [
+      'test/chromedriver/key_converter_unittest.cc',
+      'test/chromedriver/keycode_text_conversion_unittest.cc',
+      'test/chromedriver/net/net_util_unittest.cc',
+      'test/chromedriver/net/sync_websocket_impl_unittest.cc',
+      'test/chromedriver/net/test_http_server.cc',
+      'test/chromedriver/net/test_http_server.h',
+      'test/chromedriver/net/websocket_unittest.cc',
+      'test/chromedriver/test_util.cc',
+      'test/chromedriver/test_util.h',
+    ],
     'pyautolib_sources': [
       'app/chrome_command_ids.h',
       'app/chrome_dll_resource.h',
@@ -438,7 +479,7 @@
       ],  # conditions
     },
     {
-      'target_name': 'chrome_devtools_lib',
+      'target_name': 'automation_client_lib',
       'type': 'static_library',
       'hard_dependency': 1,
       'dependencies': [
@@ -620,13 +661,12 @@
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
     },
-    # This is the new ChromeDriver based on DevTools.
     {
-      'target_name': 'chromedriver2_lib',
+      'target_name': 'chromedriver_lib',
       'type': 'static_library',
       'hard_dependency': 1,
       'dependencies': [
-        'chrome_devtools_lib',
+        'automation_client_lib',
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../crypto/crypto.gyp:crypto',
@@ -707,27 +747,11 @@
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
     },
-    # TODO(kkania): Remove this in favor of 'chromedriver' target right below.
-    {
-      'target_name': 'chromedriver2_server',
-      'type': 'executable',
-      'dependencies': [
-        'chromedriver2_lib',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'test/chromedriver/server/chromedriver_server.cc',
-      ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
-    },
     {
       'target_name': 'chromedriver',
       'type': 'executable',
       'dependencies': [
-        'chromedriver2_lib',
+        'chromedriver_lib',
       ],
       'include_dirs': [
         '..',
@@ -739,10 +763,10 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
-      'target_name': 'chromedriver2_unittests',
+      'target_name': 'chromedriver_unittests',
       'type': 'executable',
       'dependencies': [
-        'chromedriver2_lib',
+        'chromedriver_lib',
         '../base/base.gyp:base',
         '../base/base.gyp:run_all_unittests',
         '../net/net.gyp:http_server',
@@ -750,51 +774,44 @@
         '../testing/gtest.gyp:gtest',
         '../ui/ui.gyp:ui',
       ],
+      'include_dirs': [
+        '..,'
+      ],
       'sources': [
-        'test/chromedriver/capabilities_unittest.cc',
-        'test/chromedriver/chrome/chrome_finder_unittest.cc',
-        'test/chromedriver/chrome/console_logger_unittest.cc',
-        'test/chromedriver/chrome/device_manager_unittest.cc',
-        'test/chromedriver/chrome/devtools_client_impl_unittest.cc',
-        'test/chromedriver/chrome/devtools_http_client_unittest.cc',
-        'test/chromedriver/chrome/dom_tracker_unittest.cc',
-        'test/chromedriver/chrome/frame_tracker_unittest.cc',
-        'test/chromedriver/chrome/geolocation_override_manager_unittest.cc',
-        'test/chromedriver/chrome/heap_snapshot_taker_unittest.cc',
-        'test/chromedriver/chrome/javascript_dialog_manager_unittest.cc',
-        'test/chromedriver/chrome/navigation_tracker_unittest.cc',
-        'test/chromedriver/chrome/performance_logger_unittest.cc',
-        'test/chromedriver/chrome/status_unittest.cc',
-        'test/chromedriver/chrome/stub_chrome.cc',
-        'test/chromedriver/chrome/stub_chrome.h',
-        'test/chromedriver/chrome/stub_devtools_client.cc',
-        'test/chromedriver/chrome/stub_devtools_client.h',
-        'test/chromedriver/chrome/stub_web_view.cc',
-        'test/chromedriver/chrome/stub_web_view.h',
-        'test/chromedriver/chrome/web_view_impl_unittest.cc',
-        'test/chromedriver/chrome_launcher_unittest.cc',
-        'test/chromedriver/commands_unittest.cc',
-        'test/chromedriver/logging_unittest.cc',
-        'test/chromedriver/server/http_handler_unittest.cc',
-        'test/chromedriver/session_commands_unittest.cc',
-        'test/chromedriver/session_unittest.cc',
-        'test/chromedriver/util_unittest.cc',
+        '<@(chromedriver_unittest_sources)',
       ],
-      'conditions': [
-        # See http://crbug.com/162998#c4 for why this is needed.
-        ['OS=="linux" and linux_use_tcmalloc==1', {
-          'dependencies': [
-            '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
+    },
+    # TODO(kkania): Remove when infra no longer references this.
+    {
+      'target_name': 'chromedriver2_unittests',
+      'type': 'executable',
+      'dependencies': [
+        'chromedriver_lib',
+        '../base/base.gyp:base',
+        '../base/base.gyp:run_all_unittests',
+        '../net/net.gyp:http_server',
+        '../net/net.gyp:net',
+        '../testing/gtest.gyp:gtest',
+        '../ui/ui.gyp:ui',
       ],
+      'include_dirs': [
+        '..,'
+      ],
+      'sources': [
+        '<@(chromedriver_unittest_sources)',
+      ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
     # ChromeDriver2 tests that aren't run on the main buildbot. Available
     # as an optional test type on trybots.
     {
-      'target_name': 'chromedriver2_tests',
+      'target_name': 'chromedriver_tests',
       'type': 'executable',
       'dependencies': [
+        'chromedriver_lib',
         '../base/base.gyp:base',
         '../base/base.gyp:run_all_unittests',
         '../net/net.gyp:http_server',
@@ -802,21 +819,35 @@
         '../net/net.gyp:net_test_support',
         '../testing/gtest.gyp:gtest',
         '../url/url.gyp:url_lib',
-        'chromedriver2_lib',
       ],
       'include_dirs': [
         '..,'
       ],
       'sources': [
-        'test/chromedriver/key_converter_unittest.cc',
-        'test/chromedriver/keycode_text_conversion_unittest.cc',
-        'test/chromedriver/net/net_util_unittest.cc',
-        'test/chromedriver/net/sync_websocket_impl_unittest.cc',
-        'test/chromedriver/net/test_http_server.cc',
-        'test/chromedriver/net/test_http_server.h',
-        'test/chromedriver/net/websocket_unittest.cc',
-        'test/chromedriver/test_util.cc',
-        'test/chromedriver/test_util.h',
+        '<@(chromedriver_test_sources)',
+      ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
+    },
+    # TODO(kkania): Remove when infra no longer references this.
+    {
+      'target_name': 'chromedriver2_tests',
+      'type': 'executable',
+      'dependencies': [
+        'chromedriver_lib',
+        '../base/base.gyp:base',
+        '../base/base.gyp:run_all_unittests',
+        '../net/net.gyp:http_server',
+        '../net/net.gyp:net',
+        '../net/net.gyp:net_test_support',
+        '../testing/gtest.gyp:gtest',
+        '../url/url.gyp:url_lib',
+      ],
+      'include_dirs': [
+        '..,'
+      ],
+      'sources': [
+        '<@(chromedriver_test_sources)',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
