@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 
 class AppListControllerDelegateAsh : public AppListControllerDelegate {
  public:
@@ -26,13 +27,17 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   virtual void CreateNewWindow(Profile* profile, bool incognito) OVERRIDE;
   virtual void ActivateApp(Profile* profile,
                            const extensions::Extension* extension,
+                           AppListSource source,
                            int event_flags) OVERRIDE;
   virtual void LaunchApp(Profile* profile,
                          const extensions::Extension* extension,
+                         AppListSource source,
                          int event_flags) OVERRIDE;
   virtual void ShowForProfileByPath(
       const base::FilePath& profile_path) OVERRIDE;
   virtual bool ShouldShowUserIcon() OVERRIDE;
+
+  ash::LaunchSource AppListSourceToLaunchSource(AppListSource source);
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateAsh);
 };

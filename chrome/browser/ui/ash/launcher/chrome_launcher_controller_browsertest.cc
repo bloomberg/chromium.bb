@@ -882,7 +882,9 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchInBackground) {
   LoadAndLaunchExtension("app1", extension_misc::LAUNCH_TAB,
                          NEW_BACKGROUND_TAB);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  ChromeLauncherController::instance()->LaunchApp(last_loaded_extension_id_, 0);
+  ChromeLauncherController::instance()->LaunchApp(last_loaded_extension_id_,
+                                                  ash::LAUNCH_FROM_UNKNOWN,
+                                                  0);
 }
 
 // Confirm that clicking a icon for an app running in one of 2 maxmized windows
@@ -922,9 +924,13 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, ActivateApp) {
   const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("app1"));
 
-  ChromeLauncherController::instance()->ActivateApp(extension->id(), 0);
+  ChromeLauncherController::instance()->ActivateApp(extension->id(),
+                                                    ash::LAUNCH_FROM_UNKNOWN,
+                                                    0);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  ChromeLauncherController::instance()->ActivateApp(extension->id(), 0);
+  ChromeLauncherController::instance()->ActivateApp(extension->id(),
+                                                    ash::LAUNCH_FROM_UNKNOWN,
+                                                    0);
   EXPECT_EQ(tab_count, tab_strip->count());
 }
 
@@ -935,9 +941,13 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchApp) {
   const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("app1"));
 
-  ChromeLauncherController::instance()->LaunchApp(extension->id(), 0);
+  ChromeLauncherController::instance()->LaunchApp(extension->id(),
+                                                  ash::LAUNCH_FROM_UNKNOWN,
+                                                  0);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  ChromeLauncherController::instance()->LaunchApp(extension->id(), 0);
+  ChromeLauncherController::instance()->LaunchApp(extension->id(),
+                                                  ash::LAUNCH_FROM_UNKNOWN,
+                                                  0);
   EXPECT_EQ(++tab_count, tab_strip->count());
 }
 
@@ -1720,7 +1730,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTestNoDefaultBrowser,
   EXPECT_FALSE(item_controller->IsOpen());
 
   // Activate. This creates new browser
-  item_controller->Activate();
+  item_controller->Activate(ash::LAUNCH_FROM_UNKNOWN);
   // New Window is created.
   running_browser = chrome::GetTotalBrowserCount();
   EXPECT_EQ(1u, running_browser);
@@ -1733,7 +1743,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTestNoDefaultBrowser,
 
   // Activate again. This doesn't create new browser.
   // It activates window.
-  item_controller->Activate();
+  item_controller->Activate(ash::LAUNCH_FROM_UNKNOWN);
   running_browser = chrome::GetTotalBrowserCount();
   EXPECT_EQ(1u, running_browser);
   EXPECT_TRUE(item_controller->IsOpen());

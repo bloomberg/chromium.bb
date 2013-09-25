@@ -59,8 +59,8 @@ class ShellWindowLauncherItemController : public LauncherItemController,
   virtual bool IsCurrentlyShownInWindow(aura::Window* window) const OVERRIDE;
   virtual bool IsOpen() const OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
-  virtual void Launch(int event_flags) OVERRIDE;
-  virtual void Activate() OVERRIDE;
+  virtual void Launch(ash::LaunchSource source, int event_flags) OVERRIDE;
+  virtual void Activate(ash::LaunchSource source) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void Clicked(const ui::Event& event) OVERRIDE;
   virtual void OnRemoved() OVERRIDE {}

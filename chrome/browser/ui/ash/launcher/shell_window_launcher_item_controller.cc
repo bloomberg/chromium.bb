@@ -117,12 +117,14 @@ bool ShellWindowLauncherItemController::IsVisible() const {
   return false;
 }
 
-void ShellWindowLauncherItemController::Launch(
-    int event_flags) {
-  launcher_controller()->LaunchApp(app_id(), ui::EF_NONE);
+void ShellWindowLauncherItemController::Launch(ash::LaunchSource source,
+                                               int event_flags) {
+  launcher_controller()->LaunchApp(app_id(),
+                                   source,
+                                   ui::EF_NONE);
 }
 
-void ShellWindowLauncherItemController::Activate() {
+void ShellWindowLauncherItemController::Activate(ash::LaunchSource source) {
   DCHECK(!shell_windows_.empty());
   ShellWindow* window_to_activate = last_active_shell_window_ ?
       last_active_shell_window_ : shell_windows_.back();

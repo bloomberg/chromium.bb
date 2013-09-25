@@ -10,6 +10,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -40,8 +41,13 @@ SearchWebstoreResult::SearchWebstoreResult(Profile* profile,
 SearchWebstoreResult::~SearchWebstoreResult() {}
 
 void SearchWebstoreResult::Open(int event_flags) {
+  const GURL store_url = net::AppendQueryParameter(
+      launch_url_,
+      extension_urls::kWebstoreSourceField,
+      extension_urls::kLaunchSourceAppListSearch);
+
   chrome::NavigateParams params(profile_,
-                                launch_url_,
+                                store_url,
                                 content::PAGE_TRANSITION_LINK);
   params.disposition = ui::DispositionFromEventFlags(event_flags);
   chrome::Navigate(&params);

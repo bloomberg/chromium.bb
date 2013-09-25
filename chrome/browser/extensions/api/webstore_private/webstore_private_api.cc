@@ -553,7 +553,8 @@ bool WebstorePrivateCompleteInstallFunction::RunImpl() {
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       profile(), this,
       &(dispatcher()->delegate()->GetAssociatedWebContents()->GetController()),
-      params->expected_id, approval_.Pass(), WebstoreInstaller::FLAG_NONE);
+      params->expected_id, approval_.Pass(),
+      WebstoreInstaller::INSTALL_SOURCE_OTHER);
   installer->Start();
 
   return true;

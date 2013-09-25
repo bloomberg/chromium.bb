@@ -23,6 +23,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -97,8 +98,11 @@ WebstoreResult::~WebstoreResult() {
 }
 
 void WebstoreResult::Open(int event_flags) {
-  const GURL store_url(extension_urls::GetWebstoreItemDetailURLPrefix() +
-                       app_id_);
+  const GURL store_url = net::AppendQueryParameter(
+      GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + app_id_),
+      extension_urls::kWebstoreSourceField,
+      extension_urls::kLaunchSourceAppListSearch);
+
   chrome::NavigateParams params(profile_,
                                 store_url,
                                 content::PAGE_TRANSITION_LINK);

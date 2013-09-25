@@ -29,7 +29,8 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
                  Profile* profile,
                  const std::string& app_id,
                  AppListControllerDelegate* controller,
-                 bool is_platform_app);
+                 bool is_platform_app,
+                 bool is_search_result_);
   virtual ~AppContextMenu();
 
   // Note this could return NULL if corresponding extension is gone.
@@ -56,6 +57,7 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
   const std::string app_id_;
   AppListControllerDelegate* controller_;
   bool is_platform_app_;
+  bool is_search_result_;
 
   scoped_ptr<ui::SimpleMenuModel> menu_model_;
   scoped_ptr<extensions::ContextMenuMatcher> extension_menu_items_;

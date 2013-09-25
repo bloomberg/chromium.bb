@@ -87,6 +87,11 @@ bool IsBlacklistUpdateUrl(const GURL& url) {
 
 const char kGalleryBrowsePrefix[] = "https://chrome.google.com/webstore";
 
+const char kWebstoreSourceField[] = "utm_source";
+
+const char kLaunchSourceAppList[] = "chrome-app-launcher";
+const char kLaunchSourceAppListSearch[] = "chrome-app-launcher-search";
+
 }  // namespace extension_urls
 
 namespace extension_misc {

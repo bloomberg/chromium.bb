@@ -30,10 +30,12 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "grit/google_chrome_strings.h"
+#include "net/base/url_util.h"
 #import "ui/app_list/cocoa/app_list_view_controller.h"
 #import "ui/app_list/cocoa/app_list_window_controller.h"
 #include "ui/app_list/search_box_model.h"
@@ -93,9 +95,11 @@ class AppListControllerDelegateCocoa : public AppListControllerDelegate {
                                      const std::string& extension_id) OVERRIDE;
   virtual void ActivateApp(Profile* profile,
                            const extensions::Extension* extension,
+                           AppListSource source,
                            int event_flags) OVERRIDE;
   virtual void LaunchApp(Profile* profile,
                          const extensions::Extension* extension,
+                         AppListSource source,
                          int event_flags) OVERRIDE;
   virtual void ShowForProfileByPath(
       const base::FilePath& profile_path) OVERRIDE;
@@ -237,15 +241,34 @@ void AppListControllerDelegateCocoa::CreateNewWindow(
 }
 
 void AppListControllerDelegateCocoa::ActivateApp(
-    Profile* profile, const extensions::Extension* extension, int event_flags) {
-  LaunchApp(profile, extension, event_flags);
+    Profile* profile,
+    const extensions::Extension* extension,
+    AppListSource source,
+    int event_flags) {
+  LaunchApp(profile, extension, source, event_flags);
 }
 
 void AppListControllerDelegateCocoa::LaunchApp(
-    Profile* profile, const extensions::Extension* extension, int event_flags) {
+    Profile* profile,
+    const extensions::Extension* extension,
+    AppListSource source,
+    int event_flags) {
   AppListServiceImpl::RecordAppListAppLaunch();
-  chrome::OpenApplication(chrome::AppLaunchParams(
-      profile, extension, NEW_FOREGROUND_TAB));
+
+  chrome::AppLaunchParams params(
+      profile, extension, NEW_FOREGROUND_TAB);
+
+  if (source != LAUNCH_FROM_UNKNOWN &&
+      extension->id() == extension_misc::kWebStoreAppId) {
+    // Set an override URL to include the source.
+    GURL extension_url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
+    params.override_url = net::AppendQueryParameter(
+        extension_url,
+        extension_urls::kWebstoreSourceField,
+        AppListSourceToString(source));
+  }
+
+  chrome::OpenApplication(params);
 }
 
 void AppListControllerDelegateCocoa::ShowForProfileByPath(

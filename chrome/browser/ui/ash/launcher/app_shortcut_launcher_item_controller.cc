@@ -92,11 +92,12 @@ bool AppShortcutLauncherItemController::IsVisible() const {
   return false;
 }
 
-void AppShortcutLauncherItemController::Launch(int event_flags) {
-  launcher_controller()->LaunchApp(app_id(), event_flags);
+void AppShortcutLauncherItemController::Launch(ash::LaunchSource source,
+                                               int event_flags) {
+  launcher_controller()->LaunchApp(app_id(), source, event_flags);
 }
 
-void AppShortcutLauncherItemController::Activate() {
+void AppShortcutLauncherItemController::Activate(ash::LaunchSource source) {
   content::WebContents* content = GetLRUApplication();
   if (!content) {
     if (IsV2App()) {
@@ -109,7 +110,7 @@ void AppShortcutLauncherItemController::Activate() {
       if (!AllowNextLaunchAttempt())
         return;
     }
-    Launch(ui::EF_NONE);
+    Launch(source, ui::EF_NONE);
     return;
   }
   ActivateContent(content);
@@ -137,7 +138,7 @@ void AppShortcutLauncherItemController::Clicked(const ui::Event& event) {
     if (AdvanceToNextApp())
       return;
   }
-  Activate();
+  Activate(ash::LAUNCH_FROM_UNKNOWN);
 }
 
 void AppShortcutLauncherItemController::OnRemoved() {

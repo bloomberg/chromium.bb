@@ -29,6 +29,7 @@
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "ui/aura/window_observer.h"
@@ -197,12 +198,16 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   // Opens a new instance of the application identified by |app_id|.
   // Used by the app-list, and by pinned-app launcher items.
-  void LaunchApp(const std::string& app_id, int event_flags);
+  void LaunchApp(const std::string& app_id,
+                 ash::LaunchSource source,
+                 int event_flags);
 
   // If |app_id| is running, reactivates the app's most recently active window,
   // otherwise launches and activates the app.
   // Used by the app-list, and by pinned-app launcher items.
-  void ActivateApp(const std::string& app_id, int event_flags);
+  void ActivateApp(const std::string& app_id,
+                   ash::LaunchSource source,
+                   int event_flags);
 
   // Returns the launch type of app for the specified id.
   extensions::ExtensionPrefs::LaunchType GetLaunchType(ash::LauncherID id);

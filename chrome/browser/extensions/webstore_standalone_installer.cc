@@ -44,6 +44,7 @@ WebstoreStandaloneInstaller::WebstoreStandaloneInstaller(
     : id_(webstore_item_id),
       callback_(callback),
       profile_(profile),
+      install_source_(WebstoreInstaller::INSTALL_SOURCE_INLINE),
       show_user_count_(true),
       average_rating_(0.0),
       rating_count_(0) {
@@ -221,7 +222,7 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
       &(GetWebContents()->GetController()),
       id_,
       approval.Pass(),
-      WebstoreInstaller::FLAG_INLINE_INSTALL);
+      install_source_);
   installer->Start();
 }
 

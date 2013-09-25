@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_browser.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_tab_helper.h"
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
@@ -60,6 +61,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -74,6 +76,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
+#include "net/base/url_util.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -196,6 +199,16 @@ void MaybePropagatePrefToLocal(PrefServiceSyncable* pref_service,
     // First time the user is using this machine, propagate from remote to
     // local.
     pref_service->SetString(local_path, pref_service->GetString(synced_path));
+  }
+}
+
+std::string GetSourceFromAppListSource(ash::LaunchSource source) {
+  switch (source) {
+    case ash::LAUNCH_FROM_APP_LIST:
+      return std::string(extension_urls::kLaunchSourceAppList);
+    case ash::LAUNCH_FROM_APP_LIST_SEARCH:
+      return std::string(extension_urls::kLaunchSourceAppListSearch);
+    default: return std::string();
   }
 }
 
@@ -502,10 +515,10 @@ void ChromeLauncherController::UnlockV1AppWithID(
 }
 
 void ChromeLauncherController::Launch(ash::LauncherID id,
-                                            int event_flags) {
+                                      int event_flags) {
   if (!HasItemController(id))
     return;  // In case invoked from menu and item closed while menu up.
-  id_to_item_controller_map_[id]->Launch(event_flags);
+  id_to_item_controller_map_[id]->Launch(ash::LAUNCH_FROM_UNKNOWN, event_flags);
 }
 
 void ChromeLauncherController::Close(ash::LauncherID id) {
@@ -532,7 +545,8 @@ bool ChromeLauncherController::IsPlatformApp(ash::LauncherID id) {
 }
 
 void ChromeLauncherController::LaunchApp(const std::string& app_id,
-                                               int event_flags) {
+                                         ash::LaunchSource source,
+                                         int event_flags) {
   // |extension| could be NULL when it is being unloaded for updating.
   const Extension* extension = GetExtensionForAppID(app_id);
   if (!extension)
@@ -551,18 +565,31 @@ void ChromeLauncherController::LaunchApp(const std::string& app_id,
     return;
   }
 
-  chrome::OpenApplication(chrome::AppLaunchParams(GetProfileForNewWindows(),
-                                                  extension,
-                                                  event_flags));
+  chrome::AppLaunchParams params(GetProfileForNewWindows(),
+                                 extension,
+                                 event_flags);
+  if (source != ash::LAUNCH_FROM_UNKNOWN &&
+      app_id == extension_misc::kWebStoreAppId) {
+    // Get the corresponding source string.
+    std::string source_value = GetSourceFromAppListSource(source);
+
+    // Set an override URL to include the source.
+    GURL extension_url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
+    params.override_url = net::AppendQueryParameter(
+        extension_url, extension_urls::kWebstoreSourceField, source_value);
+  }
+
+  chrome::OpenApplication(params);
 }
 
 void ChromeLauncherController::ActivateApp(const std::string& app_id,
-                                                 int event_flags) {
+                                           ash::LaunchSource source,
+                                           int event_flags) {
   // If there is an existing non-shortcut controller for this app, open it.
   ash::LauncherID id = GetLauncherIDForAppID(app_id);
   if (id) {
     LauncherItemController* controller = id_to_item_controller_map_[id];
-    controller->Activate();
+    controller->Activate(source);
     return;
   }
 
@@ -571,9 +598,9 @@ void ChromeLauncherController::ActivateApp(const std::string& app_id,
   scoped_ptr<AppShortcutLauncherItemController> app_controller(
       new AppShortcutLauncherItemController(app_id, this));
   if (!app_controller->GetRunningApplications().empty())
-    app_controller->Activate();
+    app_controller->Activate(source);
   else
-    LaunchApp(app_id, event_flags);
+    LaunchApp(app_id, source, event_flags);
 }
 
 extensions::ExtensionPrefs::LaunchType
@@ -1134,7 +1161,9 @@ void ChromeLauncherController::OnAppSyncUIStatusChanged() {
 }
 
 void ChromeLauncherController::ExtensionEnableFlowFinished() {
-  LaunchApp(extension_enable_flow_->extension_id(), ui::EF_NONE);
+  LaunchApp(extension_enable_flow_->extension_id(),
+            ash::LAUNCH_FROM_UNKNOWN,
+            ui::EF_NONE);
   extension_enable_flow_.reset();
 }
 

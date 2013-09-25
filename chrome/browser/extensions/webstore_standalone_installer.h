@@ -118,6 +118,12 @@ class WebstoreStandaloneInstaller
   }
   double average_rating() const { return average_rating_; }
   int rating_count() const { return rating_count_; }
+  void set_install_source(WebstoreInstaller::InstallSource source) {
+    install_source_ = source;
+  }
+  WebstoreInstaller::InstallSource install_source() const {
+    return install_source_;
+  }
 
  private:
   friend class base::RefCountedThreadSafe<WebstoreStandaloneInstaller>;
@@ -172,6 +178,7 @@ class WebstoreStandaloneInstaller
   std::string id_;
   Callback callback_;
   Profile* profile_;
+  WebstoreInstaller::InstallSource install_source_;
 
   // Installation dialog and its underlying prompt.
   scoped_ptr<ExtensionInstallPrompt> install_ui_;

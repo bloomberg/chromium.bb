@@ -41,6 +41,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -51,6 +52,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
+#include "net/base/url_util.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_view.h"
@@ -63,10 +65,6 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/widget/widget.h"
 #include "win8/util/win8_util.h"
-
-#if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/installer/util/install_util.h"
-#endif
 
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
@@ -370,9 +368,11 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
   virtual void CreateNewWindow(Profile* profile, bool incognito) OVERRIDE;
   virtual void ActivateApp(Profile* profile,
                            const extensions::Extension* extension,
+                           AppListSource source,
                            int event_flags) OVERRIDE;
   virtual void LaunchApp(Profile* profile,
                          const extensions::Extension* extension,
+                         AppListSource source,
                          int event_flags) OVERRIDE;
   virtual void ShowForProfileByPath(
       const base::FilePath& profile_path) OVERRIDE;
@@ -950,15 +950,34 @@ void AppListControllerDelegateWin::CreateNewWindow(Profile* profile,
 }
 
 void AppListControllerDelegateWin::ActivateApp(
-    Profile* profile, const extensions::Extension* extension, int event_flags) {
-  LaunchApp(profile, extension, event_flags);
+    Profile* profile,
+    const extensions::Extension* extension,
+    AppListSource source,
+    int event_flags) {
+  LaunchApp(profile, extension, source, event_flags);
 }
 
 void AppListControllerDelegateWin::LaunchApp(
-    Profile* profile, const extensions::Extension* extension, int event_flags) {
+    Profile* profile,
+    const extensions::Extension* extension,
+    AppListSource source,
+    int event_flags) {
   AppListServiceImpl::RecordAppListAppLaunch();
-  chrome::OpenApplication(chrome::AppLaunchParams(
-      profile, extension, NEW_FOREGROUND_TAB));
+
+  chrome::AppLaunchParams params(
+      profile, extension, NEW_FOREGROUND_TAB);
+
+  if (source != LAUNCH_FROM_UNKNOWN &&
+      extension->id() == extension_misc::kWebStoreAppId) {
+    // Set an override URL to include the source.
+    GURL extension_url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
+    params.override_url = net::AppendQueryParameter(
+        extension_url,
+        extension_urls::kWebstoreSourceField,
+        AppListSourceToString(source));
+  }
+
+  chrome::OpenApplication(params);
 }
 
 AppListController::AppListController()

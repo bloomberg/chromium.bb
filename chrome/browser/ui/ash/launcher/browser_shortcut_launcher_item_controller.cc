@@ -137,10 +137,11 @@ bool BrowserShortcutLauncherItemController::IsVisible() const {
   return ash::wm::IsActiveWindow(window);
 }
 
-void BrowserShortcutLauncherItemController::Launch(int event_flags) {
+void BrowserShortcutLauncherItemController::Launch(ash::LaunchSource source,
+                                                   int event_flags) {
 }
 
-void BrowserShortcutLauncherItemController::Activate() {
+void BrowserShortcutLauncherItemController::Activate(ash::LaunchSource source) {
   Browser* last_browser = chrome::FindTabbedBrowser(
       profile_,
       true,
@@ -176,7 +177,7 @@ void BrowserShortcutLauncherItemController::Clicked(const ui::Event& event) {
     return;
   }
 
-  Activate();
+  Activate(ash::LAUNCH_FROM_UNKNOWN);
 }
 
 void BrowserShortcutLauncherItemController::OnRemoved() {

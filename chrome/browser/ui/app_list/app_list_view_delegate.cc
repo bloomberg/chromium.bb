@@ -238,7 +238,10 @@ void AppListViewDelegate::OpenSettings() {
   const extensions::Extension* extension = service->GetInstalledExtension(
       extension_misc::kSettingsAppId);
   DCHECK(extension);
-  controller_->ActivateApp(profile_, extension, 0);
+  controller_->ActivateApp(profile_,
+                           extension,
+                           AppListControllerDelegate::LAUNCH_FROM_UNKNOWN,
+                           0);
 }
 
 void AppListViewDelegate::OpenHelp() {

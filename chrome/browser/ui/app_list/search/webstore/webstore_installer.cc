@@ -15,7 +15,10 @@ WebstoreInstaller::WebstoreInstaller(const std::string& webstore_item_id,
                                      const Callback& callback)
     : WebstoreStartupInstaller(webstore_item_id, profile, true, callback),
       profile_(profile),
-      parent_window_(parent_window) {}
+      parent_window_(parent_window) {
+  set_install_source(
+      extensions::WebstoreInstaller::INSTALL_SOURCE_APP_LAUNCHER);
+}
 
 WebstoreInstaller::~WebstoreInstaller() {}
 

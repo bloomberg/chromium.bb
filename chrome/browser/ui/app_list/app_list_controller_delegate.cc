@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "ui/gfx/image/image_skia.h"
 
 AppListControllerDelegate::~AppListControllerDelegate() {}
@@ -36,4 +37,15 @@ void AppListControllerDelegate::CreateNewWindow(Profile* profile,
 
 bool AppListControllerDelegate::ShouldShowUserIcon() {
   return g_browser_process->profile_manager()->GetNumberOfProfiles() > 1;
+}
+
+std::string AppListControllerDelegate::AppListSourceToString(
+    AppListSource source) {
+  switch (source) {
+    case LAUNCH_FROM_APP_LIST:
+      return extension_urls::kLaunchSourceAppList;
+    case LAUNCH_FROM_APP_LIST_SEARCH:
+      return extension_urls::kLaunchSourceAppListSearch;
+    default: return std::string();
+  }
 }

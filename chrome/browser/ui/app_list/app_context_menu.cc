@@ -19,6 +19,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(USE_ASH)
@@ -135,12 +136,14 @@ AppContextMenu::AppContextMenu(AppContextMenuDelegate* delegate,
                                Profile* profile,
                                const std::string& app_id,
                                AppListControllerDelegate* controller,
-                               bool is_platform_app)
+                               bool is_platform_app,
+                               bool is_search_result)
     : delegate_(delegate),
       profile_(profile),
       app_id_(app_id),
       controller_(controller),
-      is_platform_app_(is_platform_app) {
+      is_platform_app_(is_platform_app),
+      is_search_result_(is_search_result) {
 }
 
 AppContextMenu::~AppContextMenu() {}
@@ -256,9 +259,18 @@ void AppContextMenu::ShowExtensionDetails() {
   if (!extension)
     return;
 
+  const GURL url = extensions::ManifestURL::GetDetailsURL(extension);
+  DCHECK_NE(url, GURL::EmptyGURL());
+
+  const std::string source = AppListControllerDelegate::AppListSourceToString(
+      is_search_result_ ?
+          AppListControllerDelegate::LAUNCH_FROM_APP_LIST_SEARCH :
+          AppListControllerDelegate::LAUNCH_FROM_APP_LIST);
   chrome::NavigateParams params(
       profile_,
-      extensions::ManifestURL::GetDetailsURL(extension),
+      net::AppendQueryParameter(url,
+                                extension_urls::kWebstoreSourceField,
+                                source),
       content::PAGE_TRANSITION_LINK);
   chrome::Navigate(&params);
 }

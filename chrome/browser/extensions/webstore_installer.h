@@ -42,12 +42,12 @@ class WebstoreInstaller :public content::NotificationObserver,
                          public base::RefCountedThreadSafe<
   WebstoreInstaller, content::BrowserThread::DeleteOnUIThread> {
  public:
-  enum Flag {
-    FLAG_NONE = 0,
-
+  enum InstallSource {
     // Inline installs trigger slightly different behavior (install source
     // is different, download referrers are the item's page in the gallery).
-    FLAG_INLINE_INSTALL = 1 << 0
+    INSTALL_SOURCE_INLINE,
+    INSTALL_SOURCE_APP_LAUNCHER,
+    INSTALL_SOURCE_OTHER
   };
 
   enum FailureReason {
@@ -146,7 +146,7 @@ class WebstoreInstaller :public content::NotificationObserver,
                     content::NavigationController* controller,
                     const std::string& id,
                     scoped_ptr<Approval> approval,
-                    int flags);
+                    InstallSource source);
 
   // Starts downloading and installing the extension.
   void Start();

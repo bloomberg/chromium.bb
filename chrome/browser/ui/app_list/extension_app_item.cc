@@ -227,7 +227,10 @@ void ExtensionAppItem::Launch(int event_flags) {
   if (RunExtensionEnableFlow())
     return;
 
-  controller_->LaunchApp(profile_, extension, event_flags);
+  controller_->LaunchApp(profile_,
+                         extension,
+                         AppListControllerDelegate::LAUNCH_FROM_APP_LIST,
+                         event_flags);
 }
 
 void ExtensionAppItem::OnExtensionIconImageChanged(
@@ -259,13 +262,16 @@ void ExtensionAppItem::Activate(int event_flags) {
     return;
 
   CoreAppLauncherHandler::RecordAppListMainLaunch(extension);
-  controller_->ActivateApp(profile_, extension, event_flags);
+  controller_->ActivateApp(profile_,
+                           extension,
+                           AppListControllerDelegate::LAUNCH_FROM_APP_LIST,
+                           event_flags);
 }
 
 ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
   if (!context_menu_) {
     context_menu_.reset(new app_list::AppContextMenu(
-        this, profile_, extension_id_, controller_, is_platform_app_));
+        this, profile_, extension_id_, controller_, is_platform_app_, false));
   }
 
   return context_menu_->GetMenuModel();

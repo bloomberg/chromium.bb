@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "ui/events/event.h"
 
 class ChromeLauncherController;
@@ -77,11 +78,11 @@ class LauncherItemController {
   virtual bool IsVisible() const = 0;
 
   // Launches a new instance of the app associated with this item.
-  virtual void Launch(int event_flags) = 0;
+  virtual void Launch(ash::LaunchSource source, int event_flags) = 0;
 
   // Shows and activates the most-recently-active window associated with the
   // item, or launches the item if it is not currently open.
-  virtual void Activate() = 0;
+  virtual void Activate(ash::LaunchSource source) = 0;
 
   // Closes all windows associated with this item.
   virtual void Close() = 0;

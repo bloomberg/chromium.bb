@@ -54,6 +54,13 @@ namespace extension_urls {
   // The greatest common prefixes of the main extensions gallery's browse and
   // download URLs.
   extern const char kGalleryBrowsePrefix[];
+
+  // Field to use with webstore URL for tracking launch source.
+  extern const char kWebstoreSourceField[];
+
+  // Values to use with webstore URL launch source field.
+  extern const char kLaunchSourceAppList[];
+  extern const char kLaunchSourceAppListSearch[];
 }  // namespace extension_urls
 
 namespace extension_misc {

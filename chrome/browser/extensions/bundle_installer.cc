@@ -171,7 +171,7 @@ void BundleInstaller::CompleteInstall(NavigationController* controller,
         controller,
         i->first,
         approval.Pass(),
-        WebstoreInstaller::FLAG_NONE);
+        WebstoreInstaller::INSTALL_SOURCE_OTHER);
     installer->Start();
   }
 }

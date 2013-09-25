@@ -53,16 +53,27 @@ void AppListControllerDelegateAsh::CreateNewWindow(Profile* profile,
 }
 
 void AppListControllerDelegateAsh::ActivateApp(
-    Profile* profile, const extensions::Extension* extension, int event_flags) {
-  ChromeLauncherController::instance()->ActivateApp(extension->id(),
-                                                    event_flags);
+    Profile* profile,
+    const extensions::Extension* extension,
+    AppListSource source,
+    int event_flags) {
+  ChromeLauncherController::instance()->ActivateApp(
+      extension->id(),
+      AppListSourceToLaunchSource(source),
+      event_flags);
+
   DismissView();
 }
 
 void AppListControllerDelegateAsh::LaunchApp(
-    Profile* profile, const extensions::Extension* extension, int event_flags) {
-  ChromeLauncherController::instance()->LaunchApp(extension->id(),
-                                                  event_flags);
+    Profile* profile,
+    const extensions::Extension* extension,
+    AppListSource source,
+    int event_flags) {
+  ChromeLauncherController::instance()->LaunchApp(
+      extension->id(),
+      AppListSourceToLaunchSource(source),
+      event_flags);
   DismissView();
 }
 
@@ -74,4 +85,16 @@ void AppListControllerDelegateAsh::ShowForProfileByPath(
 
 bool AppListControllerDelegateAsh::ShouldShowUserIcon() {
   return false;
+}
+
+ash::LaunchSource AppListControllerDelegateAsh::AppListSourceToLaunchSource(
+    AppListSource source) {
+  switch (source) {
+    case LAUNCH_FROM_APP_LIST:
+      return ash::LAUNCH_FROM_APP_LIST;
+    case LAUNCH_FROM_APP_LIST_SEARCH:
+      return ash::LAUNCH_FROM_APP_LIST_SEARCH;
+    default:
+      return ash::LAUNCH_FROM_UNKNOWN;
+  }
 }

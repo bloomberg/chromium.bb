@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/omaha_query_params/omaha_query_params.h"
 #include "extensions/common/id_util.h"
+#include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPrintf;
@@ -22,14 +23,17 @@ bool Contains(const std::string& source, const std::string& target) {
 
 TEST(WebstoreInstallerTest, PlatformParams) {
   std::string id = extensions::id_util::GenerateId("some random string");
-  GURL url = WebstoreInstaller::GetWebstoreInstallURL(id, "");
+  std::string source = "inline";
+  GURL url = WebstoreInstaller::GetWebstoreInstallURL(id, source);
   std::string query = url.query();
   EXPECT_TRUE(Contains(query,StringPrintf("os=%s", OmahaQueryParams::getOS())));
   EXPECT_TRUE(Contains(query,StringPrintf("arch=%s",
                                           OmahaQueryParams::getArch())));
   EXPECT_TRUE(Contains(query,StringPrintf("nacl_arch=%s",
                                           OmahaQueryParams::getNaclArch())));
-
+  EXPECT_TRUE(Contains(query,net::EscapeQueryParamValue(
+      StringPrintf("installsource=%s", source.c_str()),
+      true)));
 }
 
 }  // namespace extensions

@@ -84,7 +84,11 @@ void AppResult::Open(int event_flags) {
   content::RecordAction(
       content::UserMetricsAction("AppList_ClickOnAppFromSearch"));
 
-  controller_->ActivateApp(profile_, extension, event_flags);
+  controller_->ActivateApp(
+      profile_,
+      extension,
+      AppListControllerDelegate::LAUNCH_FROM_APP_LIST_SEARCH,
+      event_flags);
 }
 
 void AppResult::InvokeAction(int action_index, int event_flags) {}
@@ -105,7 +109,7 @@ ChromeSearchResultType AppResult::GetType() {
 ui::MenuModel* AppResult::GetContextMenuModel() {
   if (!context_menu_) {
     context_menu_.reset(new AppContextMenu(
-        this, profile_, app_id_, controller_, is_platform_app_));
+        this, profile_, app_id_, controller_, is_platform_app_, true));
   }
 
   return context_menu_->GetMenuModel();
