@@ -1122,6 +1122,7 @@
         'browser/process_info_snapshot_mac_unittest.cc',
         'browser/process_singleton_linux_unittest.cc',
         'browser/process_singleton_mac_unittest.cc',
+        'browser/profile_resetter/jtl_interpreter_unittest.cc',
         'browser/profile_resetter/profile_resetter_unittest.cc',
         'browser/profiles/file_path_verifier_win_unittest.cc',
         'browser/profiles/gaia_info_update_service_unittest.cc',
