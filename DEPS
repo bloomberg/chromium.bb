@@ -29,6 +29,7 @@ vars = {
   "ffmpeg_hash": "5879ccd47e649bf2dfaec45f02ec5517bd3621d2",
 
   "sfntly_revision": "134",
+  "lighttpd_revision": "33737",
   "skia_revision": "11429",
   "skia_hash": "6ae638c32047ce3ad550b06b0bc9b1e84a413c2a",
   # Three lines of non-changing comments so that
@@ -279,7 +280,7 @@ deps_os = {
       "/trunk/deps/third_party/perl@147900",
 
     "src/third_party/lighttpd":
-      "/trunk/deps/third_party/lighttpd@33727",
+      "/trunk/deps/third_party/lighttpd@" + Var("lighttpd_revision"),
 
     # Chrome Frame related deps
     "src/third_party/xulrunner-sdk":
@@ -384,7 +385,7 @@ deps_os = {
     "src/third_party/pdfsqueeze":
       (Var("googlecode_url") % "pdfsqueeze") + "/trunk@5",
     "src/third_party/lighttpd":
-      "/trunk/deps/third_party/lighttpd@33737",
+      "/trunk/deps/third_party/lighttpd@" + Var("lighttpd_revision"),
 
     "src/third_party/swig/mac":
       "/trunk/deps/third_party/swig/mac@" + Var("swig_revision"),
