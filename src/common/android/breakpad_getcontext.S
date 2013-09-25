@@ -140,6 +140,85 @@ breakpad_getcontext:
 
   .size breakpad_getcontext, . - breakpad_getcontext
 
+#elif defined(__mips__)
+
+#if _MIPS_SIM != _ABIO32
+#error "Unsupported mips ISA. Only mips o32 is supported."
+#endif
+
+// This implementation is inspired by implementation of getcontext in glibc.
+#include <asm/asm.h>
+#include <asm/regdef.h>
+#include <asm/fpregdef.h>
+#include <asm/unistd.h> // for __NR_rt_sigprocmask
+
+#define _NSIG8 128 / 8
+#define SIG_BLOCK 1
+
+
+  .text
+LOCALS_NUM = 2	// save gp and ra on stack
+FRAME_SIZE = ((LOCALS_NUM * SZREG) + ALSZ) & ALMASK
+RA_FRAME_OFFSET = FRAME_SIZE - (1 * SZREG)
+GP_FRAME_OFFSET = FRAME_SIZE - (2 * SZREG)
+MCONTEXT_REG_SIZE = 8
+
+NESTED (breakpad_getcontext, FRAME_SIZE, ra)
+  .mask	0x00000000, 0
+  .fmask 0x00000000, 0
+
+  .set noreorder
+  .cpload t9
+  .set reorder
+
+  move a2, sp
+#define _SP a2
+
+  addiu sp, -FRAME_SIZE
+  sw ra, RA_FRAME_OFFSET(sp)
+  sw gp, GP_FRAME_OFFSET(sp)
+
+  sw s0, (16 * MCONTEXT_REG_SIZE + MCONTEXT_GREGS_OFFSET)(a0)
+  sw s1, (17 * MCONTEXT_REG_SIZE + MCONTEXT_GREGS_OFFSET)(a0)
+  sw s2, (18 * MCONTEXT_REG_SIZE + MCONTEXT_GREGS_OFFSET)(a0)
+  sw s3, (19 * MCONTEXT_REG_SIZE + MCONTEXT_GREGS_OFFSET)(a0)
+  sw s4, (20 * MCONTEXT_REG_SIZE + MCONTEXT_GREGS_OFFSET)(a0)
+  sw s5, (21 * MCONTEXT_REG_SIZE + MCONTEXT_GREGS_OFFSET)(a0)
+  sw s6, (22 * MCONTEXT_REG_SIZE + MCONTEXT_GREGS_OFFSET)(a0)
+  sw s7, (23 * MCONTEXT_REG_SIZE + MCONTEXT_GREGS_OFFSET)(a0)
+  sw _SP, (29 * MCONTEXT_REG_SIZE + MCONTEXT_GREGS_OFFSET)(a0)
+  sw fp, (30 * MCONTEXT_REG_SIZE + MCONTEXT_GREGS_OFFSET)(a0)
+  sw ra, (31 * MCONTEXT_REG_SIZE + MCONTEXT_GREGS_OFFSET)(a0)
+  sw ra, MCONTEXT_PC_OFFSET(a0)
+
+#ifdef __mips_hard_float
+  s.d fs0, (20 * MCONTEXT_REG_SIZE + MCONTEXT_FPREGS_OFFSET)(a0)
+  s.d fs1, (22 * MCONTEXT_REG_SIZE + MCONTEXT_FPREGS_OFFSET)(a0)
+  s.d fs2, (24 * MCONTEXT_REG_SIZE + MCONTEXT_FPREGS_OFFSET)(a0)
+  s.d fs3, (26 * MCONTEXT_REG_SIZE + MCONTEXT_FPREGS_OFFSET)(a0)
+  s.d fs4, (28 * MCONTEXT_REG_SIZE + MCONTEXT_FPREGS_OFFSET)(a0)
+  s.d fs5, (30 * MCONTEXT_REG_SIZE + MCONTEXT_FPREGS_OFFSET)(a0)
+
+  cfc1 v1, fcr31
+  sw v1, MCONTEXT_FPC_CSR(a0)
+#endif  // __mips_hard_float
+
+  /* rt_sigprocmask (SIG_BLOCK, NULL, &ucp->uc_sigmask, _NSIG8) */
+  li a3, _NSIG8
+  addu a2, a0, UCONTEXT_SIGMASK_OFFSET
+  move a1, zero
+  li a0, SIG_BLOCK
+  li v0, __NR_rt_sigprocmask
+  syscall
+
+  lw ra, RA_FRAME_OFFSET(sp)
+  lw gp, GP_FRAME_OFFSET(sp)
+  addiu sp, FRAME_SIZE
+  jr ra
+
+END (breakpad_getcontext)
+
+
 #else
 #error "This file has not been ported for your CPU!"
 #endif

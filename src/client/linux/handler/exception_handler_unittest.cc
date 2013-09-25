@@ -76,7 +76,12 @@ void FlushInstructionCache(const char* memory, uint32_t memory_size) {
 #   error "Your operating system is not supported yet"
 # endif
 #elif defined(__mips__)
-# if defined(__linux__)
+# if defined(__ANDROID__)
+  // Provided by Android's <unistd.h>
+  long begin = reinterpret_cast<long>(memory);
+  long end = begin + static_cast<long>(memory_size);
+  cacheflush(begin, end, 0);
+# elif defined(__linux__)
   // See http://www.linux-mips.org/wiki/Cacheflush_Syscall.
   cacheflush(const_cast<char*>(memory), memory_size, ICACHE);
 # else

@@ -128,7 +128,6 @@ typedef struct ucontext {
 
 #elif defined(__mips__)
 
-// Not supported by Google Breakpad at this point, but just in case.
 typedef struct {
   uint32_t regmask;
   uint32_t status;

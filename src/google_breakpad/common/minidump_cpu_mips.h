@@ -66,7 +66,7 @@
 #ifndef GOOGLE_BREAKPAD_COMMON_MINIDUMP_CPU_MIPS_H__
 #define GOOGLE_BREAKPAD_COMMON_MINIDUMP_CPU_MIPS_H__
 
-#ifdef __mips__
+#if defined(__mips__) && !defined(__ANDROID__)
 typedef struct {
   uint64_t regs[32];
   uint64_t lo;

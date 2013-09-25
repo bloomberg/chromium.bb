@@ -69,6 +69,19 @@ TEST(AndroidUContext, GRegsOffset) {
 
   ASSERT_EQ(static_cast<size_t>(UCONTEXT_FPREGS_MEM_OFFSET),
             offsetof(ucontext_t,__fpregs_mem));
+#elif defined(__mips__)
+  ASSERT_EQ(static_cast<size_t>(MCONTEXT_GREGS_OFFSET),
+            offsetof(ucontext_t,uc_mcontext.gregs));
+
+  // PC for mips is not part of gregs.
+  ASSERT_EQ(static_cast<size_t>(MCONTEXT_PC_OFFSET),
+            offsetof(ucontext_t,uc_mcontext.pc));
+
+  ASSERT_EQ(static_cast<size_t>(MCONTEXT_FPREGS_OFFSET),
+            offsetof(ucontext_t,uc_mcontext.fpregs));
+
+  ASSERT_EQ(static_cast<size_t>(MCONTEXT_FPC_CSR),
+            offsetof(ucontext_t,uc_mcontext.fpc_csr));
 #else
   ASSERT_EQ(static_cast<size_t>(MCONTEXT_GREGS_OFFSET),
             offsetof(ucontext_t,uc_mcontext.gregs));

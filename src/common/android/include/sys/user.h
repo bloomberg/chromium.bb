@@ -120,8 +120,23 @@ struct user {
 
 #elif defined(__mips__)
 
-// TODO: Provide some useful definitions here, once the rest of Breakpad
-//        requires them.
+#define _ASM_USER_H 1  // Prevent <asm/user.h> conflicts
+
+struct user_regs_struct {
+  unsigned long long regs[32];
+  unsigned long long lo;
+  unsigned long long hi;
+  unsigned long long epc;
+  unsigned long long badvaddr;
+  unsigned long long status;
+  unsigned long long cause;
+};
+
+struct user_fpregs_struct {
+  unsigned long long regs[32];
+  unsigned int fpcsr;
+  unsigned int fir;
+};
 
 #else
 #  error "Unsupported Android CPU ABI"

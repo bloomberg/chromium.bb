@@ -617,7 +617,7 @@ bool LoadSymbols(const string& obj_file,
     // Linux C++ exception handling information can also provide
     // unwinding data.
     const Shdr* eh_frame_section =
-        FindElfSectionByName<ElfClass>(".eh_frame", debug_section_type,
+        FindElfSectionByName<ElfClass>(".eh_frame", SHT_PROGBITS,
                                        sections, names, names_end,
                                        elf_header->e_shnum);
     if (eh_frame_section) {

@@ -75,8 +75,11 @@
 
 #elif defined(__mips__)
 
-#define  MCONTEXT_GREGS_OFFSET     0
-#define  UCONTEXT_SIGMASK_OFFSET   0
+#define  MCONTEXT_PC_OFFSET        32
+#define  MCONTEXT_GREGS_OFFSET     40
+#define  MCONTEXT_FPREGS_OFFSET    296
+#define  MCONTEXT_FPC_CSR          556
+#define  UCONTEXT_SIGMASK_OFFSET   616
 
 #else
 #error "This header has not been ported for your CPU"
