@@ -1095,7 +1095,9 @@
         ['enable_webrtc==0', {
           'sources!': [
             'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.cc',
-            'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h',
+          ],
+          'sources': [
+            'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api_stub.cc',
           ],
         }],
       ],
