@@ -393,13 +393,18 @@ void GestureEventFilter::MergeOrInsertScrollAndPinchEvent(
         PreconcatTransform(GetTransformForEvent(*last_event));
   }
   coalesced_gesture_events_.pop_back();
-  float combined_scale = combined_scroll_pinch_.matrix().getDouble(0, 0);
+  float combined_scale =
+      SkMScalarToFloat(combined_scroll_pinch_.matrix().get(0, 0));
+  float combined_scroll_pinch_x =
+      SkMScalarToFloat(combined_scroll_pinch_.matrix().get(0, 3));
+  float combined_scroll_pinch_y =
+      SkMScalarToFloat(combined_scroll_pinch_.matrix().get(1, 3));
   scroll_event.event.data.scrollUpdate.deltaX =
-      (combined_scroll_pinch_.matrix().getDouble(0, 3) + pinch_event.event.x)
-          / combined_scale - pinch_event.event.x;
+      (combined_scroll_pinch_x + pinch_event.event.x) / combined_scale -
+      pinch_event.event.x;
   scroll_event.event.data.scrollUpdate.deltaY =
-      (combined_scroll_pinch_.matrix().getDouble(1, 3) + pinch_event.event.y)
-          / combined_scale - pinch_event.event.y;
+      (combined_scroll_pinch_y + pinch_event.event.y) / combined_scale -
+      pinch_event.event.y;
   coalesced_gesture_events_.push_back(scroll_event);
   pinch_event.event.data.pinchUpdate.scale = combined_scale;
   coalesced_gesture_events_.push_back(pinch_event);

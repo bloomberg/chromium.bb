@@ -226,22 +226,22 @@ void ParamTraits<skia::RefPtr<SkImageFilter> >::Log(
 
 void ParamTraits<gfx::Transform>::Write(
     Message* m, const param_type& p) {
-  WriteParam(m, p.matrix().getDouble(0, 0));
-  WriteParam(m, p.matrix().getDouble(1, 0));
-  WriteParam(m, p.matrix().getDouble(2, 0));
-  WriteParam(m, p.matrix().getDouble(3, 0));
-  WriteParam(m, p.matrix().getDouble(0, 1));
-  WriteParam(m, p.matrix().getDouble(1, 1));
-  WriteParam(m, p.matrix().getDouble(2, 1));
-  WriteParam(m, p.matrix().getDouble(3, 1));
-  WriteParam(m, p.matrix().getDouble(0, 2));
-  WriteParam(m, p.matrix().getDouble(1, 2));
-  WriteParam(m, p.matrix().getDouble(2, 2));
-  WriteParam(m, p.matrix().getDouble(3, 2));
-  WriteParam(m, p.matrix().getDouble(0, 3));
-  WriteParam(m, p.matrix().getDouble(1, 3));
-  WriteParam(m, p.matrix().getDouble(2, 3));
-  WriteParam(m, p.matrix().getDouble(3, 3));
+  WriteParam(m, p.matrix().get(0, 0));
+  WriteParam(m, p.matrix().get(1, 0));
+  WriteParam(m, p.matrix().get(2, 0));
+  WriteParam(m, p.matrix().get(3, 0));
+  WriteParam(m, p.matrix().get(0, 1));
+  WriteParam(m, p.matrix().get(1, 1));
+  WriteParam(m, p.matrix().get(2, 1));
+  WriteParam(m, p.matrix().get(3, 1));
+  WriteParam(m, p.matrix().get(0, 2));
+  WriteParam(m, p.matrix().get(1, 2));
+  WriteParam(m, p.matrix().get(2, 2));
+  WriteParam(m, p.matrix().get(3, 2));
+  WriteParam(m, p.matrix().get(0, 3));
+  WriteParam(m, p.matrix().get(1, 3));
+  WriteParam(m, p.matrix().get(2, 3));
+  WriteParam(m, p.matrix().get(3, 3));
 }
 
 bool ParamTraits<gfx::Transform>::Read(
@@ -249,8 +249,8 @@ bool ParamTraits<gfx::Transform>::Read(
   // Note: In this function, "m12" means 1st row, 2nd column of the matrix.
   // This is consistent with Skia's row-column notation, but backwards from
   // WebCore's column-row notation.
-  double m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34,
-         m41, m42, m43, m44;
+  SkMScalar m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41,
+      m42, m43, m44;
 
   bool success =
       ReadParam(m, iter, &m11) &&
@@ -271,22 +271,22 @@ bool ParamTraits<gfx::Transform>::Read(
       ReadParam(m, iter, &m44);
 
   if (success) {
-    r->matrix().setDouble(0, 0, m11);
-    r->matrix().setDouble(1, 0, m21);
-    r->matrix().setDouble(2, 0, m31);
-    r->matrix().setDouble(3, 0, m41);
-    r->matrix().setDouble(0, 1, m12);
-    r->matrix().setDouble(1, 1, m22);
-    r->matrix().setDouble(2, 1, m32);
-    r->matrix().setDouble(3, 1, m42);
-    r->matrix().setDouble(0, 2, m13);
-    r->matrix().setDouble(1, 2, m23);
-    r->matrix().setDouble(2, 2, m33);
-    r->matrix().setDouble(3, 2, m43);
-    r->matrix().setDouble(0, 3, m14);
-    r->matrix().setDouble(1, 3, m24);
-    r->matrix().setDouble(2, 3, m34);
-    r->matrix().setDouble(3, 3, m44);
+    r->matrix().set(0, 0, m11);
+    r->matrix().set(1, 0, m21);
+    r->matrix().set(2, 0, m31);
+    r->matrix().set(3, 0, m41);
+    r->matrix().set(0, 1, m12);
+    r->matrix().set(1, 1, m22);
+    r->matrix().set(2, 1, m32);
+    r->matrix().set(3, 1, m42);
+    r->matrix().set(0, 2, m13);
+    r->matrix().set(1, 2, m23);
+    r->matrix().set(2, 2, m33);
+    r->matrix().set(3, 2, m43);
+    r->matrix().set(0, 3, m14);
+    r->matrix().set(1, 3, m24);
+    r->matrix().set(2, 3, m34);
+    r->matrix().set(3, 3, m44);
   }
 
   return success;
@@ -295,37 +295,37 @@ bool ParamTraits<gfx::Transform>::Read(
 void ParamTraits<gfx::Transform>::Log(
     const param_type& p, std::string* l) {
   l->append("(");
-  LogParam(p.matrix().getDouble(0, 0), l);
+  LogParam(p.matrix().get(0, 0), l);
   l->append(", ");
-  LogParam(p.matrix().getDouble(1, 0), l);
+  LogParam(p.matrix().get(1, 0), l);
   l->append(", ");
-  LogParam(p.matrix().getDouble(2, 0), l);
+  LogParam(p.matrix().get(2, 0), l);
   l->append(", ");
-  LogParam(p.matrix().getDouble(3, 0), l);
+  LogParam(p.matrix().get(3, 0), l);
   l->append(", ");
-  LogParam(p.matrix().getDouble(0, 1), l);
+  LogParam(p.matrix().get(0, 1), l);
   l->append(", ");
-  LogParam(p.matrix().getDouble(1, 1), l);
+  LogParam(p.matrix().get(1, 1), l);
   l->append(", ");
-  LogParam(p.matrix().getDouble(2, 1), l);
+  LogParam(p.matrix().get(2, 1), l);
   l->append(", ");
-  LogParam(p.matrix().getDouble(3, 1), l);
+  LogParam(p.matrix().get(3, 1), l);
   l->append(", ");
-  LogParam(p.matrix().getDouble(0, 2), l);
+  LogParam(p.matrix().get(0, 2), l);
   l->append(", ");
-  LogParam(p.matrix().getDouble(1, 2), l);
+  LogParam(p.matrix().get(1, 2), l);
   l->append(", ");
-  LogParam(p.matrix().getDouble(2, 2), l);
+  LogParam(p.matrix().get(2, 2), l);
   l->append(", ");
-  LogParam(p.matrix().getDouble(3, 2), l);
+  LogParam(p.matrix().get(3, 2), l);
   l->append(", ");
-  LogParam(p.matrix().getDouble(0, 3), l);
+  LogParam(p.matrix().get(0, 3), l);
   l->append(", ");
-  LogParam(p.matrix().getDouble(1, 3), l);
+  LogParam(p.matrix().get(1, 3), l);
   l->append(", ");
-  LogParam(p.matrix().getDouble(2, 3), l);
+  LogParam(p.matrix().get(2, 3), l);
   l->append(", ");
-  LogParam(p.matrix().getDouble(3, 3), l);
+  LogParam(p.matrix().get(3, 3), l);
   l->append(") ");
 }
 

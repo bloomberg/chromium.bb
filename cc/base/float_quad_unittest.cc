@@ -15,15 +15,15 @@ namespace {
 TEST(FloatQuadTest, IsRectilinearTest) {
   const int kNumRectilinear = 8;
   gfx::Transform rectilinear_trans[kNumRectilinear];
-  rectilinear_trans[1].Rotate(90.0);
-  rectilinear_trans[2].Rotate(180.0);
-  rectilinear_trans[3].Rotate(270.0);
-  rectilinear_trans[4].SkewX(0.00000000001);
-  rectilinear_trans[5].SkewY(0.00000000001);
-  rectilinear_trans[6].Scale(0.00001, 0.00001);
-  rectilinear_trans[6].Rotate(180.0);
-  rectilinear_trans[7].Scale(100000, 100000);
-  rectilinear_trans[7].Rotate(180.0);
+  rectilinear_trans[1].Rotate(90.f);
+  rectilinear_trans[2].Rotate(180.f);
+  rectilinear_trans[3].Rotate(270.f);
+  rectilinear_trans[4].SkewX(0.00000000001f);
+  rectilinear_trans[5].SkewY(0.00000000001f);
+  rectilinear_trans[6].Scale(0.00001f, 0.00001f);
+  rectilinear_trans[6].Rotate(180.f);
+  rectilinear_trans[7].Scale(100000.f, 100000.f);
+  rectilinear_trans[7].Rotate(180.f);
 
   gfx::QuadF original(
       gfx::RectF(0.01010101f, 0.01010101f, 100.01010101f, 100.01010101f));
@@ -38,16 +38,16 @@ TEST(FloatQuadTest, IsRectilinearTest) {
 
   const int kNumNonRectilinear = 10;
   gfx::Transform non_rectilinear_trans[kNumNonRectilinear];
-  non_rectilinear_trans[0].Rotate(359.999);
-  non_rectilinear_trans[1].Rotate(0.0000001);
-  non_rectilinear_trans[2].Rotate(89.999999);
-  non_rectilinear_trans[3].Rotate(90.0000001);
-  non_rectilinear_trans[4].Rotate(179.999999);
-  non_rectilinear_trans[5].Rotate(180.0000001);
-  non_rectilinear_trans[6].Rotate(269.999999);
-  non_rectilinear_trans[7].Rotate(270.0000001);
-  non_rectilinear_trans[8].SkewX(0.00001);
-  non_rectilinear_trans[9].SkewY(0.00001);
+  non_rectilinear_trans[0].Rotate(359.9999f);
+  non_rectilinear_trans[1].Rotate(0.0000001f);
+  non_rectilinear_trans[2].Rotate(89.9999f);
+  non_rectilinear_trans[3].Rotate(90.00001f);
+  non_rectilinear_trans[4].Rotate(179.9999f);
+  non_rectilinear_trans[5].Rotate(180.00001f);
+  non_rectilinear_trans[6].Rotate(269.9999f);
+  non_rectilinear_trans[7].Rotate(270.0001f);
+  non_rectilinear_trans[8].SkewX(0.00001f);
+  non_rectilinear_trans[9].SkewY(0.00001f);
 
   for (int i = 0; i < kNumNonRectilinear; ++i) {
     bool clipped = false;

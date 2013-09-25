@@ -4748,7 +4748,7 @@ TEST_F(LayerTreeHostImplTest, SurfaceTextureCaching) {
 
   // Change location of the intermediate layer
   gfx::Transform transform = intermediate_layer_ptr->transform();
-  transform.matrix().setDouble(0, 3, 1.0001);
+  transform.matrix().set(0, 3, 1.0001f);
   intermediate_layer_ptr->SetTransform(transform);
   {
     LayerTreeHostImpl::FrameData frame;
@@ -4934,7 +4934,7 @@ TEST_F(LayerTreeHostImplTest, SurfaceTextureCachingNoPartialSwap) {
 
   // Change location of the intermediate layer
   gfx::Transform transform = intermediate_layer_ptr->transform();
-  transform.matrix().setDouble(0, 3, 1.0001);
+  transform.matrix().set(0, 3, 1.0001f);
   intermediate_layer_ptr->SetTransform(transform);
   {
     LayerTreeHostImpl::FrameData frame;

@@ -1329,10 +1329,10 @@ TEST_F(GLRendererPixelTest, AntiAliasingPerspective) {
 
   gfx::Rect red_rect(0, 0, 180, 500);
   gfx::Transform red_content_to_target_transform(
-      1.0,  2.4520,  10.6206, 19.0,
-      0.0,  0.3528,  5.9737,  9.5,
-      0.0, -0.2250, -0.9744,  0.0,
-      0.0,  0.0225,  0.0974,  1.0);
+      1.0f,  2.4520f,  10.6206f, 19.0f,
+      0.0f,  0.3528f,  5.9737f,  9.5f,
+      0.0f, -0.2250f, -0.9744f,  0.0f,
+      0.0f,  0.0225f,  0.0974f,  1.0f);
   scoped_ptr<SharedQuadState> red_shared_state =
       CreateTestSharedQuadState(red_content_to_target_transform, red_rect);
   scoped_ptr<SolidColorDrawQuad> red = SolidColorDrawQuad::Create();

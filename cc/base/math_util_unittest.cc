@@ -22,7 +22,7 @@ TEST(MathUtilTest, ProjectionOfPerpendicularPlane) {
 
   gfx::Transform transform;
   transform.MakeIdentity();
-  transform.matrix().setDouble(2, 2, 0);
+  transform.matrix().set(2, 2, 0);
 
   gfx::RectF rect = gfx::RectF(0, 0, 1, 1);
   gfx::RectF projected_rect = MathUtil::ProjectClippedRect(transform, rect);

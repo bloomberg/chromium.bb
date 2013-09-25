@@ -24,11 +24,11 @@ namespace gfx {
 namespace {
 
 // Taken from SkMatrix44.
-const SkMScalar kEpsilon = 1e-8;
+const SkMScalar kEpsilon = 1e-8f;
 
 SkMScalar TanDegrees(double degrees) {
-  SkMScalar radians = degrees * M_PI / 180;
-  return std::tan(radians);
+  double radians = degrees * M_PI / 180;
+  return SkDoubleToMScalar(std::tan(radians));
 }
 
 }  // namespace
@@ -169,7 +169,7 @@ void Transform::Translate3d(SkMScalar x, SkMScalar y, SkMScalar z) {
   matrix_.preTranslate(x, y, z);
 }
 
-void Transform::SkewX(SkMScalar angle_x) {
+void Transform::SkewX(double angle_x) {
   if (matrix_.isIdentity())
     matrix_.set(0, 1, TanDegrees(angle_x));
   else {
@@ -179,7 +179,7 @@ void Transform::SkewX(SkMScalar angle_x) {
   }
 }
 
-void Transform::SkewY(SkMScalar angle_y) {
+void Transform::SkewY(double angle_y) {
   if (matrix_.isIdentity())
     matrix_.set(1, 0, TanDegrees(angle_y));
   else {
@@ -428,7 +428,7 @@ bool Transform::TransformRectReverse(RectF* rect) const {
   return true;
 }
 
-bool Transform::Blend(const Transform& from, SkMScalar progress) {
+bool Transform::Blend(const Transform& from, double progress) {
   DecomposedTransform to_decomp;
   DecomposedTransform from_decomp;
   if (!DecomposeTransform(&to_decomp, *this) ||

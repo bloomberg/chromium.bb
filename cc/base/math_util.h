@@ -39,24 +39,24 @@ struct HomogeneousCoordinate {
   bool ShouldBeClipped() const { return w() <= 0.0; }
 
   gfx::PointF CartesianPoint2d() const {
-    if (w() == 1.0)
+    if (w() == SK_MScalar1)
       return gfx::PointF(x(), y());
 
     // For now, because this code is used privately only by MathUtil, it should
     // never be called when w == 0, and we do not yet need to handle that case.
     DCHECK(w());
-    SkMScalar inv_w = 1.0 / w();
+    SkMScalar inv_w = SK_MScalar1 / w();
     return gfx::PointF(x() * inv_w, y() * inv_w);
   }
 
   gfx::Point3F CartesianPoint3d() const {
-    if (w() == 1)
+    if (w() == SK_MScalar1)
       return gfx::Point3F(x(), y(), z());
 
     // For now, because this code is used privately only by MathUtil, it should
     // never be called when w == 0, and we do not yet need to handle that case.
     DCHECK(w());
-    SkMScalar inv_w = 1.0 / w();
+    SkMScalar inv_w = SK_MScalar1 / w();
     return gfx::Point3F(x() * inv_w, y() * inv_w, z() * inv_w);
   }
 

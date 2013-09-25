@@ -96,8 +96,8 @@ class UI_EXPORT Transform {
 
   // Applies the current transformation on a skew and assigns the result
   // to |this|.
-  void SkewX(SkMScalar angle_x);
-  void SkewY(SkMScalar angle_y);
+  void SkewX(double angle_x);
+  void SkewY(double angle_y);
 
   // Applies the current transformation on a perspective transform and assigns
   // the result to |this|.
@@ -216,7 +216,7 @@ class UI_EXPORT Transform {
   // you're going to be calling this rapidly (e.g., in an animation) you should
   // decompose once using gfx::DecomposeTransforms and reuse your
   // DecomposedTransform.
-  bool Blend(const Transform& from, SkMScalar progress);
+  bool Blend(const Transform& from, double progress);
 
   // Returns |this| * |other|.
   Transform operator*(const Transform& other) const {

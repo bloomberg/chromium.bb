@@ -28,6 +28,8 @@ struct UI_EXPORT DecomposedTransform {
   SkMScalar perspective[4];
   SkMScalar quaternion[4];
 
+  std::string ToString() const;
+
   // Copy and assign are allowed.
 };
 
@@ -38,7 +40,7 @@ struct UI_EXPORT DecomposedTransform {
 UI_EXPORT bool BlendDecomposedTransforms(DecomposedTransform* out,
                                          const DecomposedTransform& to,
                                          const DecomposedTransform& from,
-                                         SkMScalar progress);
+                                         double progress);
 
 // Decomposes this transform into its translation, scale, skew, perspective,
 // and rotation components following the routines detailed in this spec:
