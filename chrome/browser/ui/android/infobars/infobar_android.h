@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ANDROID_INFOBAR_INFOBAR_ANDROID_H_
-#define CHROME_BROWSER_UI_ANDROID_INFOBAR_INFOBAR_ANDROID_H_
+#ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_INFOBAR_ANDROID_H_
+#define CHROME_BROWSER_UI_ANDROID_INFOBARS_INFOBAR_ANDROID_H_
 
 #include <string>
 
@@ -84,4 +84,4 @@ class InfoBarAndroid : public InfoBar {
 // Register the NativeInfoBar's native methods through jni
 bool RegisterNativeInfoBar(JNIEnv* env);
 
-#endif  // CHROME_BROWSER_UI_ANDROID_INFOBAR_INFOBAR_ANDROID_H_
+#endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_INFOBAR_ANDROID_H_

@@ -1,7 +1,7 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "chrome/browser/ui/android/infobar/infobar_android.h"
+#include "chrome/browser/ui/android/infobars/infobar_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"

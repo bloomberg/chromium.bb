@@ -39,7 +39,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/ui/auto_login_infobar_delegate_android.h"
+#include "chrome/browser/ui/android/infobars/auto_login_infobar_delegate_android.h"
 #endif
 
 using content::NavigationController;

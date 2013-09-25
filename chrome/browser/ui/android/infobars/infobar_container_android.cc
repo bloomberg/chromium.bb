@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/android/infobar/infobar_container_android.h"
+#include "chrome/browser/ui/android/infobars/infobar_container_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/logging.h"
@@ -10,8 +10,8 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ui/android/infobar/infobar_android.h"
-#include "chrome/browser/ui/auto_login_infobar_delegate_android.h"
+#include "chrome/browser/ui/android/infobars/auto_login_infobar_delegate_android.h"
+#include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/InfoBarContainer_jni.h"
 
