@@ -27,17 +27,22 @@ CommandLine* CommandLine::current_process_commandline_ = NULL;
 namespace {
 const CommandLine::CharType kSwitchTerminator[] = FILE_PATH_LITERAL("--");
 const CommandLine::CharType kSwitchValueSeparator[] = FILE_PATH_LITERAL("=");
+
 // Since we use a lazy match, make sure that longer versions (like "--") are
 // listed before shorter versions (like "-") of similar prefixes.
 #if defined(OS_WIN)
+// By putting slash last, we can control whether it is treaded as a switch
+// value by changing the value of switch_prefix_count to be one less than
+// the array size.
 const CommandLine::CharType* const kSwitchPrefixes[] = {L"--", L"-", L"/"};
 #elif defined(OS_POSIX)
 // Unixes don't use slash as a switch.
 const CommandLine::CharType* const kSwitchPrefixes[] = {"--", "-"};
 #endif
+size_t switch_prefix_count = arraysize(kSwitchPrefixes);
 
 size_t GetSwitchPrefixLength(const CommandLine::StringType& string) {
-  for (size_t i = 0; i < arraysize(kSwitchPrefixes); ++i) {
+  for (size_t i = 0; i < switch_prefix_count; ++i) {
     CommandLine::StringType prefix(kSwitchPrefixes[i]);
     if (string.compare(0, prefix.length(), prefix) == 0)
       return prefix.length();
@@ -168,6 +173,15 @@ CommandLine::CommandLine(const StringVector& argv)
 
 CommandLine::~CommandLine() {
 }
+
+#if defined(OS_WIN)
+// static
+void CommandLine::set_slash_is_not_a_switch() {
+  // The last switch prefix should be slash, so adjust the size to skip it.
+  DCHECK(wcscmp(kSwitchPrefixes[arraysize(kSwitchPrefixes) - 1], L"/") == 0);
+  switch_prefix_count = arraysize(kSwitchPrefixes) - 1;
+}
+#endif
 
 // static
 bool CommandLine::Init(int argc, const char* const* argv) {

@@ -212,11 +212,11 @@ template<typename T> void OutputRecursiveTargetConfig(
       if (config) {
         // Source of this value is a config.
         out << "  From " << config->label().GetUserVisibleName(false) << "\n";
+        OutputSourceOfDep(target, config->label(), out);
       } else {
         // Source of this value is the target itself.
         out << "  From " << target->label().GetUserVisibleName(false) << "\n";
       }
-      OutputSourceOfDep(target, config->label(), out);
     }
 
     // Actual values.

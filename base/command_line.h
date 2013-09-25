@@ -53,6 +53,17 @@ class BASE_EXPORT CommandLine {
 
   ~CommandLine();
 
+#if defined(OS_WIN)
+  // By default this class will treat command-line arguments beginning with
+  // slashes as switches on Windows, but not other platforms.
+  //
+  // If this behavior is inappropriate for your application, you can call this
+  // function BEFORE initializing the current process' global command line
+  // object and the behavior will be the same as Posix systems (only hyphens
+  // begin switches, everything else will be an arg).
+  static void set_slash_is_not_a_switch();
+#endif
+
   // Initialize the current process CommandLine singleton. On Windows, ignores
   // its arguments (we instead parse GetCommandLineW() directly) because we
   // don't trust the CRT's parsing of the command line, but it still must be

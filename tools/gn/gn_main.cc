@@ -27,6 +27,9 @@ std::vector<std::string> GetArgs(const CommandLine& cmdline) {
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
+#if defined(OS_WIN)
+  CommandLine::set_slash_is_not_a_switch();
+#endif
   CommandLine::Init(argc, argv);
 
   const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
