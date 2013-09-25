@@ -41,7 +41,6 @@ namespace WebKit {
 class WebDOMActivityLogger {
 public:
     virtual ~WebDOMActivityLogger() { }
-    virtual void log(const WebString& apiName, int argc, const v8::Handle<v8::Value>* argv, const WebString& extraInfo) { }
     virtual void log(const WebString& apiName, int argc, const v8::Handle<v8::Value>* argv, const WebString& extraInfo, const WebURL& url, const WebString& title) { }
 };
 
