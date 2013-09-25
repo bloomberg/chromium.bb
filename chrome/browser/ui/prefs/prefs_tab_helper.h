@@ -58,7 +58,7 @@ class PrefsTabHelper : public content::NotificationObserver,
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
   base::WeakPtrFactory<PrefsTabHelper> weak_ptr_factory_;
-  scoped_ptr<base::CallbackRegistry<void>::Subscription>
+  scoped_ptr<base::CallbackRegistry<void(void)>::Subscription>
       style_sheet_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefsTabHelper);

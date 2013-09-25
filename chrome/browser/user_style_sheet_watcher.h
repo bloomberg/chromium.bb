@@ -32,7 +32,7 @@ class UserStyleSheetWatcher
   GURL user_style_sheet() const;
 
   // Register a callback to be called whenever the stylesheet gets updated.
-  scoped_ptr<base::CallbackRegistry<void>::Subscription>
+  scoped_ptr<base::CallbackRegistry<void(void)>::Subscription>
   RegisterOnStyleSheetUpdatedCallback(const base::Closure& callback);
 
   // content::NotificationObserver interface

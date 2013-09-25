@@ -94,7 +94,7 @@ class CrosSettings : public base::NonThreadSafe {
   bool RemoveSettingsProvider(CrosSettingsProvider* provider);
 
   // Add an observer Callback for changes for the given |path|.
-  typedef base::CallbackRegistry<void>::Subscription ObserverSubscription;
+  typedef base::CallbackRegistry<void(void)>::Subscription ObserverSubscription;
   scoped_ptr<ObserverSubscription> AddSettingsObserver(
       const std::string& path,
       const base::Closure& callback);
@@ -113,7 +113,7 @@ class CrosSettings : public base::NonThreadSafe {
 
   // A map from settings names to a list of observers. Observers get fired in
   // the order they are added.
-  typedef base::hash_map<std::string, base::CallbackRegistry<void>*>
+  typedef base::hash_map<std::string, base::CallbackRegistry<void(void)>*>
       SettingsObserverMap;
   SettingsObserverMap settings_observers_;
 
