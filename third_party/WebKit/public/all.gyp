@@ -37,6 +37,7 @@
             'type': 'none',
             'dependencies': [
                 '../Source/testing/testing.gyp:TestRunner',
+                '../Source/platform/platform_tests.gyp:platform_unittests',
                 '../Source/web/web_tests.gyp:webkit_unit_tests',
                 '../Source/weborigin/weborigin_tests.gyp:weborigin_unittests',
                 '../Source/wtf/wtf_tests.gyp:wtf_unittests',

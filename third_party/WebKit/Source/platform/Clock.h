@@ -26,12 +26,13 @@
 #ifndef Clock_h
 #define Clock_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class Clock : public RefCounted<Clock> {
+class PLATFORM_EXPORT Clock : public RefCounted<Clock> {
 public:
     static PassRefPtr<Clock> create();
 

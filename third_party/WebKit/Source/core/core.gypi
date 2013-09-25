@@ -2589,8 +2589,6 @@
             'platform/AsyncFileSystemCallbacks.h',
             'platform/CalculationValue.cpp',
             'platform/CalculationValue.h',
-            'platform/Clock.cpp',
-            'platform/Clock.h',
             'platform/ContentType.cpp',
             'platform/ContentType.h',
             'platform/ContextMenu.cpp',

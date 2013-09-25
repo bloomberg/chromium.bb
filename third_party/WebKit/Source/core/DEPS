@@ -2,11 +2,12 @@ include_rules = [
     "+bindings",
     "+core",
     "+mozilla",
+    "+platform",
     "+public/platform",
     "+sys",
     "+weborigin",
 
-    "-WebKit",
+    "-web",
     "-modules",
 # core/ should not depend on modules/ at all, but there are a number of pieces
 # of code that do. Please don't add to this list of exceptions.

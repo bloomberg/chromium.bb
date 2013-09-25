@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/Clock.h"
+#include "platform/Clock.h"
 
 #include "wtf/CurrentTime.h"
 
