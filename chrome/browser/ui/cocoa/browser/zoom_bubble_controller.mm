@@ -304,14 +304,26 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
 
 - (void)drawRect:(NSRect)rect {
   NSRect bounds = [self bounds];
+  NSAttributedString* title = [self attributedTitle];
   if ([self hoverState] != kHoverStateNone) {
     ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();
     [gfx::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
         ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor)) set];
     NSRectFillUsingOperation(bounds, NSCompositeSourceOver);
+
+    // Change the title color.
+    base::scoped_nsobject<NSMutableAttributedString> selectedTitle(
+        [[NSMutableAttributedString alloc] initWithAttributedString:title]);
+    NSColor* selectedTitleColor =
+        gfx::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
+            ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor));
+    [selectedTitle addAttribute:NSForegroundColorAttributeName
+                          value:selectedTitleColor
+                          range:NSMakeRange(0, [title length])];
+    title = selectedTitle.autorelease();
   }
 
-  [[self cell] drawTitle:[self attributedTitle]
+  [[self cell] drawTitle:title
                withFrame:bounds
                   inView:self];
 }
