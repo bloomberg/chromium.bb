@@ -812,6 +812,8 @@ void RootWindowController::DisableTouchHudProjection() {
 }
 
 void RootWindowController::OnLoginStateChanged(user::LoginStatus status) {
+  if (status != user::LOGGED_IN_NONE)
+    InitKeyboard();
   shelf_->shelf_layout_manager()->UpdateVisibilityState();
 }
 
