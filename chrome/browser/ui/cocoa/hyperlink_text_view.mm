@@ -76,6 +76,7 @@ const float kTextBaselineShift = -1.0;
   // addAttributes for text that has NSLinkAttributeName. Set to nil to allow
   // custom attributes to take precendence.
   [self setLinkTextAttributes:nil];
+  [self setDisplaysLinkToolTips:NO];
 }
 
 - (void)fixupCursor {
