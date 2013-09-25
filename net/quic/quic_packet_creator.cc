@@ -41,6 +41,7 @@ QuicPacketCreator::~QuicPacketCreator() {
 void QuicPacketCreator::OnBuiltFecProtectedPayload(
     const QuicPacketHeader& header, StringPiece payload) {
   if (fec_group_.get()) {
+    DCHECK_NE(0u, header.fec_group);
     fec_group_->Update(header, payload);
   }
 }
@@ -189,18 +190,26 @@ size_t QuicPacketCreator::CreateStreamFrameWithNotifier(
 SerializedPacket QuicPacketCreator::ReserializeAllFrames(
     const QuicFrames& frames,
     QuicSequenceNumberLength original_length) {
-  // Temporarily set the sequence number length and disable FEC.
   const QuicSequenceNumberLength start_length = sequence_number_length_;
   const QuicSequenceNumberLength start_options_length =
       options_.send_sequence_number_length;
   const QuicFecGroupNumber start_fec_group = fec_group_number_;
+  const size_t start_max_packets_per_fec_group =
+      options_.max_packets_per_fec_group;
+
+  // Temporarily set the sequence number length and disable FEC.
   sequence_number_length_ = original_length;
   options_.send_sequence_number_length = original_length;
   fec_group_number_ = 0;
+  options_.max_packets_per_fec_group = 0;
+
+  // Serialize the packet and restore the fec and sequence number length state.
   SerializedPacket serialized_packet = SerializeAllFrames(frames);
   sequence_number_length_ = start_length;
   options_.send_sequence_number_length = start_options_length;
   fec_group_number_ = start_fec_group;
+  options_.max_packets_per_fec_group = start_max_packets_per_fec_group;
+
   return serialized_packet;
 }
 
@@ -246,7 +255,7 @@ size_t QuicPacketCreator::PacketSize() const {
     packet_size_ = GetPacketHeaderSize(options_.send_guid_length,
                                        send_version_in_packet_,
                                        sequence_number_length_,
-                                       fec_group_number_ == 0 ?
+                                       options_.max_packets_per_fec_group == 0 ?
                                            NOT_IN_FEC_GROUP : IN_FEC_GROUP);
   }
   return packet_size_;
@@ -265,16 +274,6 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
 
   SerializedPacket serialized =
       framer_->BuildDataPacket(header, queued_frames_, packet_size_);
-
-  // Run through all the included frames and if any of them have an AckNotifier
-  // registered, then inform the AckNotifier that it should be interested in
-  // this packet's sequence number.
-  for (QuicFrames::iterator it = queued_frames_.begin();
-       it != queued_frames_.end(); ++it) {
-    if (it->type == STREAM_FRAME && it->stream_frame->notifier != NULL) {
-      it->stream_frame->notifier->AddSequenceNumber(serialized.sequence_number);
-    }
-  }
 
   packet_size_ = 0;
   queued_frames_.clear();
@@ -364,6 +363,7 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
     return false;
   }
   DCHECK_LT(0u, packet_size_);
+  MaybeStartFEC();
   packet_size_ += frame_len;
 
   if (save_retransmittable_frames && ShouldRetransmit(frame)) {

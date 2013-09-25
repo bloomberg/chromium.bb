@@ -4,6 +4,11 @@
 
 #include "net/quic/quic_ack_notifier.h"
 
+#include <set>
+
+#include "base/logging.h"
+#include "base/stl_util.h"
+
 namespace net {
 
 QuicAckNotifier::DelegateInterface::DelegateInterface() {}
@@ -30,18 +35,14 @@ void QuicAckNotifier::AddSequenceNumbers(
   }
 }
 
-bool QuicAckNotifier::OnAck(SequenceNumberSet sequence_numbers) {
-  // If the set of sequence numbers we are tracking is empty then this
-  // QuicAckNotifier should have already been deleted.
-  DCHECK(!sequence_numbers_.empty());
-
-  for (SequenceNumberSet::iterator it = sequence_numbers.begin();
-       it != sequence_numbers.end(); ++it) {
-    sequence_numbers_.erase(*it);
-    if (sequence_numbers_.empty()) {
-      delegate_->OnAckNotification();
-      return true;
-    }
+bool QuicAckNotifier::OnAck(QuicPacketSequenceNumber sequence_number) {
+  DCHECK(ContainsKey(sequence_numbers_, sequence_number));
+  sequence_numbers_.erase(sequence_number);
+  if (IsEmpty()) {
+    // We have seen all the sequence numbers we were waiting for, trigger
+    // callback notification.
+    delegate_->OnAckNotification();
+    return true;
   }
   return false;
 }

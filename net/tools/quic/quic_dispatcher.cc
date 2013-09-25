@@ -172,7 +172,8 @@ void QuicDispatcher::OnConnectionClose(QuicGuid guid, QuicErrorCode error) {
     return;
   }
 
-  DLOG_IF(INFO, error != QUIC_NO_ERROR) << "Closing connection due to error: "
+  DLOG_IF(INFO, error != QUIC_NO_ERROR) << "Closing connection (" << guid
+                                        << ") due to error: "
                                         << QuicUtils::ErrorToString(error);
 
   if (closed_session_list_.empty()) {

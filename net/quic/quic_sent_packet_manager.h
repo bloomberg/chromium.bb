@@ -17,7 +17,7 @@
 #include "net/base/linked_hash_map.h"
 #include "net/quic/quic_protocol.h"
 
-NET_EXPORT extern bool FLAGS_track_retransmission_history;
+NET_EXPORT_PRIVATE extern bool FLAGS_track_retransmission_history;
 
 namespace net {
 
@@ -28,6 +28,24 @@ namespace net {
 // the data will not be retransmitted.
 class NET_EXPORT_PRIVATE QuicSentPacketManager {
  public:
+  // Struct to store the pending retransmission information.
+  struct PendingRetransmission {
+    PendingRetransmission(QuicPacketSequenceNumber sequence_number,
+                          TransmissionType transmission_type,
+                          const RetransmittableFrames& retransmittable_frames,
+                          QuicSequenceNumberLength sequence_number_length)
+            : sequence_number(sequence_number),
+              transmission_type(transmission_type),
+              retransmittable_frames(retransmittable_frames),
+              sequence_number_length(sequence_number_length) {
+        }
+
+        QuicPacketSequenceNumber sequence_number;
+        TransmissionType transmission_type;
+        const RetransmittableFrames& retransmittable_frames;
+        QuicSequenceNumberLength sequence_number_length;
+  };
+
   // Interface which provides callbacks that the manager needs.
   class NET_EXPORT_PRIVATE HelperInterface {
    public:
@@ -95,10 +113,17 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   const RetransmittableFrames& GetRetransmittableFrames(
       QuicPacketSequenceNumber sequence_number) const;
 
-  // Returns the length of the serialized sequence number for
-  // the packet |sequence_number|.
-  QuicSequenceNumberLength GetSequenceNumberLength(
-      QuicPacketSequenceNumber sequence_number) const;
+  // Request that |sequence_number| be retransmitted after the other pending
+  // retransmissions.  Returns false if there are no retransmittable frames for
+  // |sequence_number| and true if it will be retransmitted.
+  bool MarkForRetransmission(QuicPacketSequenceNumber sequence_number,
+                             TransmissionType transmission_type);
+
+  // Returns true if there are pending retransmissions.
+  bool HasPendingRetransmissions() const;
+
+  // Retrieves the next pending retransmission.
+  PendingRetransmission NextPendingRetransmission();
 
   // Returns the time the fec packet was sent.
   QuicTime GetFecSentTime(QuicPacketSequenceNumber sequence_number) const;
@@ -152,6 +177,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
                           RetransmittableFrames*> UnackedPacketMap;
   typedef linked_hash_map<QuicPacketSequenceNumber,
                           QuicTime> UnackedFecPacketMap;
+  typedef linked_hash_map<QuicPacketSequenceNumber,
+                          TransmissionType> PendingRetransmissionMap;
   typedef base::hash_map<QuicPacketSequenceNumber,
                          RetransmissionInfo> RetransmissionMap;
   typedef base::hash_map<QuicPacketSequenceNumber, SequenceNumberSet*>
@@ -175,6 +202,11 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // and the retransmission map.
   void DiscardPacket(QuicPacketSequenceNumber sequence_number);
 
+  // Returns the length of the serialized sequence number for
+  // the packet |sequence_number|.
+  QuicSequenceNumberLength GetSequenceNumberLength(
+      QuicPacketSequenceNumber sequence_number) const;
+
   // Returns the sequence number of the packet that |sequence_number| was
   // most recently transmitted as.
   QuicPacketSequenceNumber GetMostRecentTransmission(
@@ -194,6 +226,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // cleared out of the cgst_window after a timeout since FEC packets are never
   // retransmitted.
   UnackedFecPacketMap unacked_fec_packets_;
+
+  // Pending retransmissions which have not been packetized and sent yet.
+  PendingRetransmissionMap pending_retransmissions_;
 
   // Map from sequence number to the retransmission info for a packet.
   // This includes the retransmission timeout, and the NACK count.  Only

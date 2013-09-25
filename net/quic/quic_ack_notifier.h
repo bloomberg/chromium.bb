@@ -5,7 +5,6 @@
 #ifndef NET_QUIC_QUIC_ACK_NOTIFIER_H_
 #define NET_QUIC_QUIC_ACK_NOTIFIER_H_
 
-#include "base/callback.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
@@ -34,15 +33,17 @@ class NET_EXPORT_PRIVATE QuicAckNotifier {
   // interested in.
   void AddSequenceNumbers(const SequenceNumberSet& sequence_numbers);
 
-  // Called by the QuicConnection on receipt of new ACK frames with a list of
-  // ACKed sequence numbers.
-  // Deletes any matching sequence numbers from the set of sequence numbers
-  // being tracked. If this set is now empty, call the stored delegate's
+  // Called by the QuicConnection on receipt of new ACK frame, with the sequence
+  // number referenced by the ACK frame.
+  // Deletes the matching sequence number from the stored set of sequence
+  // numbers. If this set is now empty, call the stored delegate's
   // OnAckNotification method.
   //
-  // Returns true if the provided sequence_numbers caused the delegate to be
+  // Returns true if the provided sequence_number caused the delegate to be
   // called, false otherwise.
-  bool OnAck(SequenceNumberSet sequence_numbers);
+  bool OnAck(QuicPacketSequenceNumber sequence_number);
+
+  bool IsEmpty() { return sequence_numbers_.empty(); }
 
   // If a packet is retransmitted by the connection it will be sent with a
   // different sequence number. Updates our internal set of sequence_numbers to

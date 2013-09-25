@@ -16,19 +16,20 @@
 #ifndef NET_QUIC_QUIC_CONNECTION_H_
 #define NET_QUIC_QUIC_CONNECTION_H_
 
+#include <stddef.h>
 #include <deque>
 #include <list>
 #include <map>
 #include <queue>
-#include <set>
+#include <string>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
+#include "base/logging.h"
 #include "net/base/iovec.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/linked_hash_map.h"
 #include "net/quic/congestion_control/quic_congestion_manager.h"
 #include "net/quic/quic_ack_notifier.h"
+#include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_alarm.h"
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_connection_stats.h"
@@ -41,11 +42,14 @@
 #include "net/quic/quic_sent_packet_manager.h"
 
 NET_EXPORT_PRIVATE extern int FLAGS_fake_packet_loss_percentage;
+NET_EXPORT_PRIVATE extern bool FLAGS_bundle_ack_with_outgoing_packet;
 
 namespace net {
 
 class QuicClock;
 class QuicConnection;
+class QuicDecrypter;
+class QuicEncrypter;
 class QuicFecGroup;
 class QuicRandom;
 
@@ -305,9 +309,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   virtual void OnPacketComplete() OVERRIDE;
 
   // QuicPacketGenerator::DelegateInterface
-  virtual bool CanWrite(TransmissionType transmission_type,
-                        HasRetransmittableData retransmittable,
-                        IsHandshake handshake) OVERRIDE;
+  virtual bool ShouldGeneratePacket(TransmissionType transmission_type,
+                                    HasRetransmittableData retransmittable,
+                                    IsHandshake handshake) OVERRIDE;
   virtual QuicAckFrame* CreateAckFrame() OVERRIDE;
   virtual QuicCongestionFeedbackFrame* CreateFeedbackFrame() OVERRIDE;
   virtual bool OnSerializedPacket(const SerializedPacket& packet) OVERRIDE;
@@ -469,16 +473,32 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicFramer framer_;
 
  private:
+  // Stores current batch state for connection, puts the connection
+  // into batch mode, and destruction restores the stored batch state.
+  // While the bundler is in scope, any generated frames are bundled
+  // as densely as possible into packets.  In addition, this bundler
+  // can be configured to ensure that an ACK frame is included in the
+  // first packet created, if there's new ack information to be sent.
+  class ScopedPacketBundler {
+   public:
+    // In addition to all outgoing frames being bundled when the
+    // bundler is in scope, setting |include_ack| to true ensures that
+    // an ACK frame is opportunistically bundled with the first
+    // outgoing packet.
+    ScopedPacketBundler(QuicConnection* connection, bool include_ack);
+    ~ScopedPacketBundler();
+
+   private:
+    QuicConnection* connection_;
+    bool already_in_batch_mode_;
+  };
+
+  friend class ScopedPacketBundler;
   friend class test::QuicConnectionPeer;
 
-  // Inner helper function to SendvStreamData and
-  // SendvStreamDataAndNotifyWhenAcked.
-  QuicConsumedData SendvStreamDataInner(QuicStreamId id,
-                                        const struct iovec* iov,
-                                        int iov_count,
-                                        QuicStreamOffset offset,
-                                        bool fin,
-                                        QuicAckNotifier *notifier);
+  bool CanWrite(TransmissionType transmission_type,
+                HasRetransmittableData retransmittable,
+                IsHandshake handshake);
 
   // Packets which have not been written to the wire.
   // Owns the QuicPacket* packet.
@@ -552,7 +572,15 @@ class NET_EXPORT_PRIVATE QuicConnection
                               std::vector<RetransmissionTime>,
                               RetransmissionTimeComparator>
       RetransmissionTimeouts;
-  typedef std::list<QuicAckNotifier*> AckNotifierList;
+
+  // Inner helper function for SendvStreamData and
+  // SendvStreamDataAndNotifyWhenAcked.
+  QuicConsumedData SendvStreamDataInner(QuicStreamId id,
+                                        const struct iovec* iov,
+                                        int iov_count,
+                                        QuicStreamOffset offset,
+                                        bool fin,
+                                        QuicAckNotifier *notifier);
 
   // Sends a version negotiation packet to the peer.
   void SendVersionNegotiationPacket();
@@ -585,6 +613,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Writes as many queued packets as possible.  The connection must not be
   // blocked when this is called.
   bool WriteQueuedPackets();
+
+  // Writes as many pending retransmissions as possible.
+  void WritePendingRetransmissions();
 
   // Queues |packet| in the hopes that it can be decrypted in the
   // future, when a new key is installed.
@@ -729,11 +760,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   // This is checked later on validating a data or version negotiation packet.
   bool address_migrating_;
 
-  // On every ACK frame received by this connection, all the ack_notifiers_ will
-  // be told which sequeunce numbers were ACKed.
-  // Once a given QuicAckNotifier has seen all the sequence numbers it is
-  // interested in, it will be deleted, and removed from this list.
-  AckNotifierList ack_notifiers_;
+  // An AckNotifier can register to be informed when ACKs have been received for
+  // all packets that a given block of data was sent in. The AckNotifierManager
+  // maintains the currently active notifiers.
+  AckNotifierManager ack_notifier_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };

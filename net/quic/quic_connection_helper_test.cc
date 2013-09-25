@@ -321,6 +321,8 @@ TEST_F(QuicConnectionHelperTest, TestRTORetransmission) {
 
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 1, _, NOT_RETRANSMISSION, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _));
+  EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(Return(true));
+  EXPECT_CALL(visitor_, HasPendingHandshake()).Times(AnyNumber());
 
   // Send a packet.
   struct iovec iov = {const_cast<char*>(kData),
@@ -351,6 +353,8 @@ TEST_F(QuicConnectionHelperTest, TestMultipleRTORetransmission) {
 
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 1, _, NOT_RETRANSMISSION, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _));
+  EXPECT_CALL(visitor_, OnCanWrite()).WillRepeatedly(Return(true));
+  EXPECT_CALL(visitor_, HasPendingHandshake()).Times(AnyNumber());
 
   // Send a packet.
   struct iovec iov = {const_cast<char*>(kData),

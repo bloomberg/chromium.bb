@@ -81,7 +81,7 @@ class QuicEpollConnectionHelperTest : public ::testing::Test {
         send_algorithm_(new testing::StrictMock<MockSendAlgorithm>),
         helper_(new TestConnectionHelper(0, &epoll_server_)),
         connection_(guid_, IPEndPoint(), helper_),
-        frame1_(1, false, 0, data1) {
+        frame1_(3, false, 0, data1) {
     connection_.set_visitor(&visitor_);
     connection_.SetSendAlgorithm(send_algorithm_);
     epoll_server_.set_timeout_in_us(-1);
@@ -140,6 +140,8 @@ TEST_F(QuicEpollConnectionHelperTest, DISABLED_TestRTORetransmission) {
   EXPECT_CALL(*send_algorithm_,
               OnPacketSent(_, 1, packet_size, NOT_RETRANSMISSION, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, packet_size));
+  EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(Return(true));
+  EXPECT_CALL(visitor_, HasPendingHandshake()).Times(AnyNumber());
   struct iovec iov = {const_cast<char*>(buffer),
                       static_cast<size_t>(3)};
   connection_.SendvStreamData(1, &iov, 1, 0, false);

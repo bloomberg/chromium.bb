@@ -73,8 +73,11 @@ void QuicSentPacketManager::OnRetransmittedPacket(
     QuicPacketSequenceNumber new_sequence_number) {
   DCHECK(ContainsKey(unacked_packets_, old_sequence_number));
   DCHECK(ContainsKey(retransmission_map_, old_sequence_number));
+  DCHECK(ContainsKey(pending_retransmissions_, old_sequence_number));
   DCHECK(unacked_packets_.empty() ||
          unacked_packets_.rbegin()->first < new_sequence_number);
+
+  pending_retransmissions_.erase(old_sequence_number);
 
   RetransmissionInfo retransmission_info(
       new_sequence_number, GetSequenceNumberLength(old_sequence_number));
@@ -215,9 +218,42 @@ bool QuicSentPacketManager::HasRetransmittableFrames(
     return false;
   }
 
-  DCHECK(ContainsKey(unacked_packets_, sequence_number)) << sequence_number;
-
   return unacked_packets_.find(sequence_number)->second != NULL;
+}
+
+bool QuicSentPacketManager::MarkForRetransmission(
+    QuicPacketSequenceNumber sequence_number,
+    TransmissionType transmission_type) {
+  DCHECK(ContainsKey(unacked_packets_, sequence_number));
+  if (!HasRetransmittableFrames(sequence_number)) {
+    return false;
+  }
+  // If it's already in the retransmission map, don't add it again, just let
+  // the prior retransmission request win out.
+  if (ContainsKey(pending_retransmissions_, sequence_number)) {
+    return true;
+  }
+
+  pending_retransmissions_[sequence_number] = transmission_type;
+  return true;
+}
+
+bool QuicSentPacketManager::HasPendingRetransmissions() const {
+  return !pending_retransmissions_.empty();
+}
+
+QuicSentPacketManager::PendingRetransmission
+    QuicSentPacketManager::NextPendingRetransmission() {
+  DCHECK(!pending_retransmissions_.empty());
+  QuicPacketSequenceNumber sequence_number =
+      pending_retransmissions_.begin()->first;
+  DCHECK(ContainsKey(unacked_packets_, sequence_number));
+  DCHECK(unacked_packets_[sequence_number]);
+
+  return PendingRetransmission(sequence_number,
+                               pending_retransmissions_.begin()->second,
+                               GetRetransmittableFrames(sequence_number),
+                               GetSequenceNumberLength(sequence_number));
 }
 
 bool QuicSentPacketManager::IsPreviousTransmission(
@@ -284,6 +320,7 @@ QuicSentPacketManager::MarkPacketReceivedByPeer(
     // but prevent the data from being retransmitted.
     delete unacked_packets_[new_packet];
     unacked_packets_[new_packet] = NULL;
+    pending_retransmissions_.erase(new_packet);
   }
   previous_transmissions_map_.erase(new_packet);
 
@@ -325,6 +362,7 @@ void QuicSentPacketManager::DiscardPacket(
   delete unacked_it->second;
   unacked_packets_.erase(unacked_it);
   retransmission_map_.erase(sequence_number);
+  pending_retransmissions_.erase(sequence_number);
   return;
 }
 

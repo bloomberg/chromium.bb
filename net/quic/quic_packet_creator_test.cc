@@ -96,7 +96,6 @@ TEST_F(QuicPacketCreatorTest, SerializeFrames) {
 TEST_F(QuicPacketCreatorTest, SerializeWithFEC) {
   creator_.options()->max_packets_per_fec_group = 6;
   ASSERT_FALSE(creator_.ShouldSendFec(false));
-  creator_.MaybeStartFEC();
 
   frames_.push_back(QuicFrame(new QuicStreamFrame(
       0u, false, 0u, StringPiece(""))));
@@ -170,7 +169,6 @@ TEST_F(QuicPacketCreatorTest, SerializeChangingSequenceNumberLength) {
 TEST_F(QuicPacketCreatorTest, SerializeWithFECChangingSequenceNumberLength) {
   creator_.options()->max_packets_per_fec_group = 6;
   ASSERT_FALSE(creator_.ShouldSendFec(false));
-  creator_.MaybeStartFEC();
 
   frames_.push_back(QuicFrame(new QuicAckFrame(0u, QuicTime::Zero(), 0u)));
   creator_.AddSavedFrame(frames_[0]);

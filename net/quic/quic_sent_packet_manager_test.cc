@@ -86,6 +86,18 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     }
   }
 
+  void RetransmitPacket(QuicPacketSequenceNumber old_sequence_number,
+                        QuicPacketSequenceNumber new_sequence_number) {
+    manager_.MarkForRetransmission(old_sequence_number, NACK_RETRANSMISSION);
+    EXPECT_TRUE(manager_.HasPendingRetransmissions());
+    QuicSentPacketManager::PendingRetransmission next_retransmission =
+        manager_.NextPendingRetransmission();
+    EXPECT_EQ(old_sequence_number, next_retransmission.sequence_number);
+    EXPECT_EQ(NACK_RETRANSMISSION, next_retransmission.transmission_type);
+    manager_.OnRetransmittedPacket(old_sequence_number, new_sequence_number);
+    EXPECT_TRUE(manager_.IsRetransmission(new_sequence_number));
+  }
+
   SerializedPacket CreatePacket(QuicPacketSequenceNumber sequence_number) {
     packets_.push_back(QuicPacket::NewDataPacket(
         NULL, 0, false, PACKET_8BYTE_GUID, false,
@@ -132,17 +144,15 @@ TEST_P(QuicSentPacketManagerTest, IsUnAckedRetransmit) {
   SerializedPacket serialized_packet(CreatePacket(1));
 
   manager_.OnSerializedPacket(serialized_packet, QuicTime::Zero());
-  manager_.OnRetransmittedPacket(1, 2);
+  RetransmitPacket(1, 2);
 
-  EXPECT_TRUE(manager_.IsRetransmission(2));
   EXPECT_EQ(1u, manager_.GetRetransmissionCount(2));
   QuicPacketSequenceNumber unacked[] = { 1, 2 };
   VerifyUnackedPackets(unacked, arraysize(unacked));
   QuicPacketSequenceNumber retransmittable[] = { 2 };
   VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
 
-  manager_.OnRetransmittedPacket(2, 3);
-  EXPECT_TRUE(manager_.IsRetransmission(3));
+  RetransmitPacket(2, 3);
   EXPECT_EQ(2u, manager_.GetRetransmissionCount(3));
   QuicPacketSequenceNumber unacked2[] = { 1, 2, 3 };
   VerifyUnackedPackets(unacked2, arraysize(unacked2));
@@ -154,7 +164,7 @@ TEST_P(QuicSentPacketManagerTest, RetransmitThenAck) {
   SerializedPacket serialized_packet(CreatePacket(1));
 
   manager_.OnSerializedPacket(serialized_packet, QuicTime::Zero());
-  manager_.OnRetransmittedPacket(1, 2);
+  RetransmitPacket(1, 2);
 
   // Ack 2 but not 1.
   ReceivedPacketInfo received_info;
@@ -170,6 +180,29 @@ TEST_P(QuicSentPacketManagerTest, RetransmitThenAck) {
   VerifyAckedPackets(expected_acked, arraysize(expected_acked), acked);
 }
 
+TEST_P(QuicSentPacketManagerTest, RetransmitThenAckBeforeSend) {
+  SerializedPacket serialized_packet(CreatePacket(1));
+
+  manager_.OnSerializedPacket(serialized_packet, QuicTime::Zero());
+  manager_.MarkForRetransmission(1, NACK_RETRANSMISSION);
+  EXPECT_TRUE(manager_.HasPendingRetransmissions());
+
+  // Ack 1.
+  ReceivedPacketInfo received_info;
+  received_info.largest_observed = 1;
+  SequenceNumberSet acked;
+  manager_.OnIncomingAck(received_info, false, &acked);
+
+  // There should no longer be a pending retransmission.
+  EXPECT_FALSE(manager_.HasPendingRetransmissions());
+
+  // No unacked packets remain.
+  VerifyUnackedPackets(NULL, 0);
+  VerifyRetransmittablePackets(NULL, 0);
+  QuicPacketSequenceNumber expected_acked[] = { 1 };
+  VerifyAckedPackets(expected_acked, arraysize(expected_acked), acked);
+}
+
 TEST_P(QuicSentPacketManagerTest, RetransmitThenAckPrevious) {
   if (!FLAGS_track_retransmission_history) {
     // This tests restransmission tracking specifically.
@@ -178,7 +211,7 @@ TEST_P(QuicSentPacketManagerTest, RetransmitThenAckPrevious) {
   SerializedPacket serialized_packet(CreatePacket(1));
 
   manager_.OnSerializedPacket(serialized_packet, QuicTime::Zero());
-  manager_.OnRetransmittedPacket(1, 2);
+  RetransmitPacket(1, 2);
 
   // Ack 1 but not 2.
   ReceivedPacketInfo received_info;
@@ -204,9 +237,9 @@ TEST_P(QuicSentPacketManagerTest, TruncatedAck) {
   SerializedPacket serialized_packet(CreatePacket(1));
 
   manager_.OnSerializedPacket(serialized_packet, QuicTime::Zero());
-  manager_.OnRetransmittedPacket(1, 2);
-  manager_.OnRetransmittedPacket(2, 3);
-  manager_.OnRetransmittedPacket(3, 4);
+  RetransmitPacket(1, 2);
+  RetransmitPacket(2, 3);
+  RetransmitPacket(3, 4);
 
   // Truncated ack with 2 NACKs
   ReceivedPacketInfo received_info;
@@ -289,7 +322,7 @@ TEST_P(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
     VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
   }
 
-  manager_.OnRetransmittedPacket(2, 8);
+  RetransmitPacket(2, 8);
   manager_.OnSerializedPacket(CreatePacket(9), QuicTime::Zero());
   manager_.OnSerializedPacket(CreatePacket(10), QuicTime::Zero());
 
@@ -316,7 +349,7 @@ TEST_P(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
   }
 
 
-  manager_.OnRetransmittedPacket(4, 11);
+  RetransmitPacket(4, 11);
   manager_.OnSerializedPacket(CreatePacket(12), QuicTime::Zero());
   manager_.OnSerializedPacket(CreatePacket(13), QuicTime::Zero());
 
@@ -345,7 +378,7 @@ TEST_P(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
     VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
   }
 
-  manager_.OnRetransmittedPacket(6, 14);
+  RetransmitPacket(6, 14);
   manager_.OnSerializedPacket(CreatePacket(15), QuicTime::Zero());
   manager_.OnSerializedPacket(CreatePacket(16), QuicTime::Zero());
 

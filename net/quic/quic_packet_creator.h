@@ -35,11 +35,10 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
           random_reorder(false),
           max_packets_per_fec_group(0),
           send_guid_length(PACKET_8BYTE_GUID),
-          send_sequence_number_length(PACKET_1BYTE_SEQUENCE_NUMBER) {
-    }
+          send_sequence_number_length(PACKET_1BYTE_SEQUENCE_NUMBER) {}
 
     size_t max_packet_length;
-    bool random_reorder;   // Inefficient: rewrite if used at scale.
+    bool random_reorder;  // Inefficient: rewrite if used at scale.
     // 0 indicates fec is disabled.
     size_t max_packets_per_fec_group;
     // Length of guid to send over the wire.
@@ -62,10 +61,6 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // Checks if it's time to send an FEC packet.  |force_close| forces this to
   // return true if an fec group is open.
   bool ShouldSendFec(bool force_close) const;
-
-  // Starts a new FEC group with the next serialized packet, if FEC is enabled
-  // and there is not already an FEC group open.
-  void MaybeStartFEC();
 
   // Makes the framer not serialize the protocol version in sent packets.
   void StopSendingVersion();
@@ -176,6 +171,10 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   friend class test::QuicPacketCreatorPeer;
 
   static bool ShouldRetransmit(const QuicFrame& frame);
+
+  // Starts a new FEC group with the next serialized packet, if FEC is enabled
+  // and there is not already an FEC group open.
+  void MaybeStartFEC();
 
   void FillPacketHeader(QuicFecGroupNumber fec_group,
                         bool fec_flag,

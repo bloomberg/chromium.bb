@@ -794,6 +794,8 @@
         'quic/crypto/source_address_token.h',
         'quic/quic_ack_notifier.cc',
         'quic/quic_ack_notifier.h',
+        'quic/quic_ack_notifier_manager.cc',
+        'quic/quic_ack_notifier_manager.h',
         'quic/quic_alarm.cc',
         'quic/quic_alarm.h',
         'quic/quic_bandwidth.cc',

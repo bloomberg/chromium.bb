@@ -33,34 +33,37 @@ class MockDelegate : public QuicPacketGenerator::DelegateInterface {
   MockDelegate() {}
   virtual ~MockDelegate() {}
 
-  MOCK_METHOD3(CanWrite, bool(TransmissionType transmission_type,
-                              HasRetransmittableData retransmittable,
-                              IsHandshake handshake));
-
+  MOCK_METHOD3(ShouldGeneratePacket,
+               bool(TransmissionType transmission_type,
+                    HasRetransmittableData retransmittable,
+                    IsHandshake handshake));
   MOCK_METHOD0(CreateAckFrame, QuicAckFrame*());
   MOCK_METHOD0(CreateFeedbackFrame, QuicCongestionFeedbackFrame*());
   MOCK_METHOD1(OnSerializedPacket, bool(const SerializedPacket& packet));
   MOCK_METHOD2(CloseConnection, void(QuicErrorCode, bool));
 
   void SetCanWriteAnything() {
-    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, _, _))
+    EXPECT_CALL(*this, ShouldGeneratePacket(NOT_RETRANSMISSION, _, _))
         .WillRepeatedly(Return(true));
-    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA, _))
+    EXPECT_CALL(*this, ShouldGeneratePacket(NOT_RETRANSMISSION,
+                                            NO_RETRANSMITTABLE_DATA, _))
         .WillRepeatedly(Return(true));
   }
 
   void SetCanNotWrite() {
-    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, _, _))
+    EXPECT_CALL(*this, ShouldGeneratePacket(NOT_RETRANSMISSION, _, _))
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA, _))
+    EXPECT_CALL(*this, ShouldGeneratePacket(NOT_RETRANSMISSION,
+                                            NO_RETRANSMITTABLE_DATA, _))
         .WillRepeatedly(Return(false));
   }
 
   // Use this when only ack and feedback frames should be allowed to be written.
   void SetCanWriteOnlyNonRetransmittable() {
-    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, _, _))
+    EXPECT_CALL(*this, ShouldGeneratePacket(NOT_RETRANSMISSION, _, _))
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*this, CanWrite(NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA, _))
+    EXPECT_CALL(*this, ShouldGeneratePacket(NOT_RETRANSMISSION,
+                                            NO_RETRANSMITTABLE_DATA, _))
         .WillRepeatedly(Return(true));
   }
 

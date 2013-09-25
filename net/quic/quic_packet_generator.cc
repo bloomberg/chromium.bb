@@ -84,8 +84,8 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
   if (!packet_creator_->HasRoomForStreamFrame(id, offset)) {
     SerializeAndSendPacket();
   }
-  while (delegate_->CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
-                             handshake)) {
+  while (delegate_->ShouldGeneratePacket(NOT_RETRANSMISSION,
+                                         HAS_RETRANSMITTABLE_DATA, handshake)) {
     QuicFrame frame;
     size_t bytes_consumed;
     if (notifier != NULL) {
@@ -142,12 +142,11 @@ bool QuicPacketGenerator::CanSendWithNextPendingFrameAddition() const {
   if (retransmittable == HAS_RETRANSMITTABLE_DATA) {
       DCHECK(!queued_control_frames_.empty());  // These are retransmittable.
   }
-  return delegate_->CanWrite(NOT_RETRANSMISSION, retransmittable,
-                             NOT_HANDSHAKE);
+  return delegate_->ShouldGeneratePacket(NOT_RETRANSMISSION, retransmittable,
+                                         NOT_HANDSHAKE);
 }
 
 void QuicPacketGenerator::SendQueuedFrames() {
-  packet_creator_->MaybeStartFEC();
   // Only add pending frames if we are SURE we can then send the whole packet.
   while (HasPendingFrames() && CanSendWithNextPendingFrameAddition()) {
     if (!AddNextPendingFrame()) {
@@ -167,7 +166,6 @@ void QuicPacketGenerator::SendQueuedFrames() {
       SerializedPacket serialized_fec = packet_creator_->SerializeFec();
       DCHECK(serialized_fec.packet);
       delegate_->OnSerializedPacket(serialized_fec);
-      packet_creator_->MaybeStartFEC();
     }
   }
 }
@@ -239,7 +237,6 @@ void QuicPacketGenerator::SerializeAndSendPacket() {
     SerializedPacket serialized_fec = packet_creator_->SerializeFec();
     DCHECK(serialized_fec.packet);
     delegate_->OnSerializedPacket(serialized_fec);
-    packet_creator_->MaybeStartFEC();
   }
 }
 

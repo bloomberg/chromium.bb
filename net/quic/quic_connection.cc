@@ -4,13 +4,22 @@
 
 #include "net/quic/quic_connection.h"
 
+#include <string.h>
+#include <sys/types.h>
 #include <algorithm>
+#include <iterator>
+#include <limits>
+#include <memory>
+#include <set>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/quic_ack_notifier_manager.h"
+#include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_utils.h"
 
 using base::hash_map;
@@ -27,7 +36,16 @@ using std::string;
 
 int FLAGS_fake_packet_loss_percentage = 0;
 
+// If true, then QUIC connections will bundle acks with any outgoing packet when
+// an ack is being delayed. This is an optimization to reduce ack latency and
+// packet count of pure ack packets.
+bool FLAGS_bundle_ack_with_outgoing_packet = false;
+
 namespace net {
+
+class QuicDecrypter;
+class QuicEncrypter;
+
 namespace {
 
 // The largest gap in packets we'll accept without closing the connection.
@@ -158,6 +176,18 @@ net::QuicConnection::Force HasForcedFrames(
   return net::QuicConnection::NO_FORCE;
 }
 
+net::IsHandshake HasCryptoHandshake(
+    const RetransmittableFrames& retransmittable_frames) {
+  for (size_t i = 0; i < retransmittable_frames.frames().size(); ++i) {
+    if (retransmittable_frames.frames()[i].type == STREAM_FRAME &&
+        retransmittable_frames.frames()[i].stream_frame->stream_id ==
+            kCryptoStreamId) {
+      return net::IS_HANDSHAKE;
+    }
+  }
+  return net::NOT_HANDSHAKE;
+}
+
 }  // namespace
 
 // TODO(rch): Remove this.
@@ -222,7 +252,6 @@ QuicConnection::QuicConnection(QuicGuid guid,
 }
 
 QuicConnection::~QuicConnection() {
-  STLDeleteElements(&ack_notifiers_);
   STLDeleteElements(&undecryptable_packets_);
   STLDeleteValues(&group_map_);
   for (QueuedPacketList::iterator it = queued_packets_.begin();
@@ -492,22 +521,8 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
   sent_packet_manager_.OnIncomingAck(
       incoming_ack.received_info, received_truncated_ack_, &acked_packets);
   if (acked_packets.size() > 0) {
-    // Inform all the registered AckNotifiers of the new ACKs.
-    // TODO(rjshade): Make this more efficient by maintaining a mapping of
-    //                <sequence number, set<AckNotifierList>> so that OnAck
-    //                is only called on AckNotifiers that care about the
-    //                packets being ACKed.
-    AckNotifierList::iterator it = ack_notifiers_.begin();
-    while (it != ack_notifiers_.end()) {
-      if ((*it)->OnAck(acked_packets)) {
-        // The QuicAckNotifier has seen all the ACKs it was interested in, and
-        // has triggered its callback. No more use for it.
-        delete *it;
-        it = ack_notifiers_.erase(it);
-      } else {
-        ++it;
-      }
-    }
+    // The AckNotifierManager should be informed of every ACKed sequence number.
+    ack_notifier_manager_.OnIncomingAck(acked_packets);
 
     // Reset the RTO timeout for each packet when an ack is received.
     if (retransmission_alarm_->IsSet()) {
@@ -649,7 +664,7 @@ bool QuicConnection::OnConnectionCloseFrame(
   if (debug_visitor_) {
     debug_visitor_->OnConnectionCloseFrame(frame);
   }
-  DLOG(INFO) << ENDPOINT << "Connection closed with error "
+  DLOG(INFO) << ENDPOINT << "Connection " << guid() << "closed with error "
              << QuicUtils::ErrorToString(frame.error_code)
              << " " << frame.error_details;
   CloseConnection(frame.error_code, true);
@@ -772,7 +787,8 @@ bool QuicConnection::ShouldLastPacketInstigateAck() {
 void QuicConnection::MaybeSendInResponseToPacket(
     bool send_ack_immediately,
     bool last_packet_should_instigate_ack) {
-  packet_generator_.StartBatchOperations();
+  // |include_ack| is false since we decide about ack bundling below.
+  ScopedPacketBundler bundler(this, false);
 
   if (send_ack_immediately) {
     send_ack_in_response_to_packet_ = true;
@@ -784,14 +800,17 @@ void QuicConnection::MaybeSendInResponseToPacket(
       !g_acks_do_not_instigate_acks) {
     if (send_ack_in_response_to_packet_) {
       SendAck();
-    } else if (last_packet_should_instigate_ack) {
-      // Set the ack alarm for when any retransmittable frame is received.
-      if (!ack_alarm_->IsSet()) {
+      DCHECK(!send_ack_in_response_to_packet_);
+    } else {
+      send_ack_in_response_to_packet_ = true;
+      DVLOG(1) << "Next received packet will trigger ACK.";
+      if (last_packet_should_instigate_ack && !ack_alarm_->IsSet()) {
+        // Set the ack alarm for when any retransmittable frame is received.
         ack_alarm_->Set(clock_->ApproximateNow().Add(
             congestion_manager_.DelayedAckTime()));
+        DVLOG(1) << "Ack timer set; next packet or timer will trigger ACK.";
       }
     }
-    send_ack_in_response_to_packet_ = !send_ack_in_response_to_packet_;
   }
 
   if (!last_ack_frames_.empty()) {
@@ -808,7 +827,6 @@ void QuicConnection::MaybeSendInResponseToPacket(
       send_alarm_->Set(time_of_last_received_packet_.Add(delay));
     }
   }
-  packet_generator_.FinishBatchOperations();
 }
 
 void QuicConnection::SendVersionNegotiationPacket() {
@@ -833,9 +851,9 @@ QuicConsumedData QuicConnection::SendvStreamDataInner(
     QuicAckNotifier* notifier) {
   // TODO(ianswett): Further improve sending by passing the iovec down
   // instead of batching into multiple stream frames in a single packet.
-  const bool already_in_batch_mode = packet_generator_.InBatchMode();
-  packet_generator_.StartBatchOperations();
 
+  // Opportunistically bundle an ack with this outgoing packet.
+  ScopedPacketBundler ack_bundler(this, true);
   size_t bytes_written = 0;
   bool fin_consumed = false;
 
@@ -871,12 +889,6 @@ QuicConsumedData QuicConnection::SendvStreamDataInner(
     fin_consumed = consumed_data.fin_consumed;
   }
 
-  // Leave the generator in the original batch state.
-  if (!already_in_batch_mode) {
-    packet_generator_.FinishBatchOperations();
-  }
-  DCHECK_EQ(already_in_batch_mode, packet_generator_.InBatchMode());
-
   return QuicConsumedData(bytes_written, fin_consumed);
 }
 
@@ -898,8 +910,9 @@ QuicConsumedData QuicConnection::SendvStreamDataAndNotifyWhenAcked(
   if (!fin && iov_count == 0) {
     LOG(DFATAL) << "Attempt to send empty stream frame";
   }
-  // This notifier will be deleted in ProcessAckFrame once it has seen ACKs for
-  // all the consumed data (or below if no data was consumed).
+
+  // This notifier will be owned by the AckNotifierManager (or deleted below if
+  // no data was consumed).
   QuicAckNotifier* notifier = new QuicAckNotifier(delegate);
   QuicConsumedData consumed_data =
       SendvStreamDataInner(id, iov, iov_count, offset, fin, notifier);
@@ -907,7 +920,8 @@ QuicConsumedData QuicConnection::SendvStreamDataAndNotifyWhenAcked(
   if (consumed_data.bytes_consumed > 0) {
     // If some data was consumed, then the delegate should be registered for
     // notification when the data is ACKed.
-    ack_notifiers_.push_back(notifier);
+    ack_notifier_manager_.AddAckNotifier(notifier);
+    DLOG(INFO) << "Registered AckNotifier.";
   } else {
     // No data was consumed, delete the notifier.
     delete notifier;
@@ -919,6 +933,8 @@ QuicConsumedData QuicConnection::SendvStreamDataAndNotifyWhenAcked(
 void QuicConnection::SendRstStream(QuicStreamId id,
                                    QuicRstStreamErrorCode error) {
   LOG(INFO) << "Sending RST_STREAM: " << id << " code: " << error;
+  // Opportunistically bundle an ack with this outgoing packet.
+  ScopedPacketBundler ack_bundler(this, true);
   packet_generator_.AddControlFrame(
       QuicFrame(new QuicRstStreamFrame(id, error)));
 }
@@ -991,6 +1007,8 @@ bool QuicConnection::DoWrite() {
   DCHECK(!write_blocked_);
   WriteQueuedPackets();
 
+  WritePendingRetransmissions();
+
   IsHandshake pending_handshake = visitor_->HasPendingHandshake() ?
       IS_HANDSHAKE : NOT_HANDSHAKE;
   // Sending queued packets may have caused the socket to become write blocked,
@@ -999,15 +1017,11 @@ bool QuicConnection::DoWrite() {
   // write more.
   if (CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
                pending_handshake)) {
-    const bool already_in_batch_mode = packet_generator_.InBatchMode();
-    if (!already_in_batch_mode) {
-      packet_generator_.StartBatchOperations();
-    }
+    // Set |include_ack| to false in bundler; ack inclusion happens elsewhere.
+    scoped_ptr<ScopedPacketBundler> bundler(
+        new ScopedPacketBundler(this, false));
     bool all_bytes_written = visitor_->OnCanWrite();
-    if (!already_in_batch_mode) {
-      packet_generator_.FinishBatchOperations();
-    }
-
+    bundler.reset();
     // After the visitor writes, it may have caused the socket to become write
     // blocked or the congestion manager to prohibit sending, so check again.
     pending_handshake = visitor_->HasPendingHandshake() ? IS_HANDSHAKE
@@ -1061,6 +1075,55 @@ bool QuicConnection::WriteQueuedPackets() {
   return !write_blocked_;
 }
 
+void QuicConnection::WritePendingRetransmissions() {
+  // Keep writing as long as there's a pending retransmission which can be
+  // written.
+  while (sent_packet_manager_.HasPendingRetransmissions()) {
+    const QuicSentPacketManager::PendingRetransmission pending =
+        sent_packet_manager_.NextPendingRetransmission();
+    if (HasForcedFrames(&pending.retransmittable_frames) == NO_FORCE &&
+        !CanWrite(pending.transmission_type, HAS_RETRANSMITTABLE_DATA,
+                  HasCryptoHandshake(pending.retransmittable_frames))) {
+      break;
+    }
+
+    // Re-packetize the frames with a new sequence number for retransmission.
+    // Retransmitted data packets do not use FEC, even when it's enabled.
+    // Retransmitted packets use the same sequence number length as the
+    // original.
+    // Flush the packet creator before making a new packet.
+    // TODO(ianswett): Implement ReserializeAllFrames as a separate path that
+    // does not require the creator to be flushed.
+    Flush();
+    SerializedPacket serialized_packet = packet_creator_.ReserializeAllFrames(
+        pending.retransmittable_frames.frames(),
+        pending.sequence_number_length);
+
+    // A notifier may be waiting to hear about ACKs for the original sequence
+    // number. Inform them that the sequence number has changed.
+    ack_notifier_manager_.UpdateSequenceNumber(
+        pending.sequence_number, serialized_packet.sequence_number);
+
+    DLOG(INFO) << ENDPOINT << "Retransmitting " << pending.sequence_number
+               << " as " << serialized_packet.sequence_number;
+    if (debug_visitor_) {
+      debug_visitor_->OnPacketRetransmitted(
+          pending.sequence_number, serialized_packet.sequence_number);
+    }
+    sent_packet_manager_.OnRetransmittedPacket(
+        pending.sequence_number, serialized_packet.sequence_number);
+
+    SendOrQueuePacket(pending.retransmittable_frames.encryption_level(),
+                      serialized_packet.sequence_number,
+                      serialized_packet.packet,
+                      serialized_packet.entropy_hash,
+                      pending.transmission_type,
+                      HAS_RETRANSMITTABLE_DATA,
+                      HasForcedFrames(
+                          serialized_packet.retransmittable_frames));
+  }
+}
+
 void QuicConnection::RetransmitUnackedPackets(
     RetransmissionType retransmission_type) {
   SequenceNumberSet unacked_packets =
@@ -1071,6 +1134,9 @@ void QuicConnection::RetransmitUnackedPackets(
 
   for (SequenceNumberSet::const_iterator unacked_it = unacked_packets.begin();
        unacked_it != unacked_packets.end(); ++unacked_it) {
+    if (!sent_packet_manager_.HasRetransmittableFrames(*unacked_it)) {
+      continue;
+    }
     const RetransmittableFrames& frames =
         sent_packet_manager_.GetRetransmittableFrames(*unacked_it);
     if (retransmission_type == ALL_PACKETS ||
@@ -1094,47 +1160,26 @@ void QuicConnection::RetransmitPacket(
 
   // If we have received an ACK for an old version of this packet, then
   // we should not retransmit the data.
-  if (!sent_packet_manager_.HasRetransmittableFrames(sequence_number)) {
+  if (!sent_packet_manager_.MarkForRetransmission(sequence_number,
+                                                  transmission_type)) {
     sent_packet_manager_.DiscardUnackedPacket(sequence_number);
     return;
   }
 
-  const RetransmittableFrames& retransmittable_frames =
-      sent_packet_manager_.GetRetransmittableFrames(sequence_number);
+  WriteIfNotBlocked();
+}
 
-  // Re-packetize the frames with a new sequence number for retransmission.
-  // Retransmitted data packets do not use FEC, even when it's enabled.
-  // Retransmitted packets use the same sequence number length as the original.
-  QuicSequenceNumberLength original_sequence_number_length =
-      sent_packet_manager_.GetSequenceNumberLength(sequence_number);
-  SerializedPacket serialized_packet =
-      packet_creator_.ReserializeAllFrames(retransmittable_frames.frames(),
-                                           original_sequence_number_length);
-
-  // A notifier may be waiting to hear about ACKs for the original sequence
-  // number. Inform them that the sequence number has changed.
-  for (AckNotifierList::iterator notifier_it = ack_notifiers_.begin();
-       notifier_it != ack_notifiers_.end(); ++notifier_it) {
-    (*notifier_it)->UpdateSequenceNumber(sequence_number,
-                                         serialized_packet.sequence_number);
+bool QuicConnection::ShouldGeneratePacket(
+    TransmissionType transmission_type,
+    HasRetransmittableData retransmittable,
+    IsHandshake handshake) {
+  // We should serialize handshake packets immediately to ensure that they
+  // end up sent at the right encryption level.
+  if (handshake == IS_HANDSHAKE) {
+    return true;
   }
 
-  DLOG(INFO) << ENDPOINT << "Retransmitting " << sequence_number << " as "
-             << serialized_packet.sequence_number;
-  if (debug_visitor_) {
-    debug_visitor_->OnPacketRetransmitted(sequence_number,
-                                          serialized_packet.sequence_number);
-  }
-  sent_packet_manager_.OnRetransmittedPacket(sequence_number,
-                                             serialized_packet.sequence_number);
-
-  SendOrQueuePacket(retransmittable_frames.encryption_level(),
-                    serialized_packet.sequence_number,
-                    serialized_packet.packet,
-                    serialized_packet.entropy_hash,
-                    transmission_type,
-                    HAS_RETRANSMITTABLE_DATA,
-                    HasForcedFrames(serialized_packet.retransmittable_frames));
+  return CanWrite(transmission_type, retransmittable, handshake);
 }
 
 bool QuicConnection::CanWrite(TransmissionType transmission_type,
@@ -1370,9 +1415,11 @@ int QuicConnection::WritePacketToWire(QuicPacketSequenceNumber sequence_number,
 
 bool QuicConnection::OnSerializedPacket(
     const SerializedPacket& serialized_packet) {
+  ack_notifier_manager_.OnSerializedPacket(serialized_packet);
+
   if (serialized_packet.retransmittable_frames) {
-    serialized_packet.retransmittable_frames->set_encryption_level(
-        encryption_level_);
+    serialized_packet.retransmittable_frames->
+        set_encryption_level(encryption_level_);
   }
   sent_packet_manager_.OnSerializedPacket(serialized_packet,
                                           clock_->ApproximateNow());
@@ -1434,14 +1481,14 @@ void QuicConnection::UpdateSentPacketInfo(SentPacketInfo* sent_info) {
 
 void QuicConnection::SendAck() {
   ack_alarm_->Cancel();
-
+  send_ack_in_response_to_packet_ = false;
   // TODO(rch): delay this until the CreateFeedbackFrame
   // method is invoked.  This requires changes SetShouldSendAck
   // to be a no-arg method, and re-jiggering its implementation.
   bool send_feedback = false;
   if (congestion_manager_.GenerateCongestionFeedback(
           &outgoing_congestion_feedback_)) {
-    DVLOG(1) << ENDPOINT << "Sending feedback "
+    DVLOG(1) << ENDPOINT << "Sending feedback: "
              << outgoing_congestion_feedback_;
     send_feedback = true;
   }
@@ -1500,6 +1547,7 @@ QuicTime QuicConnection::OnAbandonFecTimeout() {
           sent_packet_manager_.GetNumUnackedPackets(), consecutive_rto_count_);
   QuicTime max_send_time =
       clock_->ApproximateNow().Subtract(retransmission_delay);
+  bool abandoned_packet = false;
   while (sent_packet_manager_.HasUnackedFecPackets()) {
     QuicPacketSequenceNumber oldest_unacked_fec =
         sent_packet_manager_.GetLeastUnackedFecPacket();
@@ -1508,8 +1556,14 @@ QuicTime QuicConnection::OnAbandonFecTimeout() {
     if (fec_sent_time > max_send_time) {
       return fec_sent_time.Add(retransmission_delay);
     }
+    abandoned_packet = true;
     sent_packet_manager_.DiscardFecPacket(oldest_unacked_fec);
     congestion_manager_.OnPacketAbandoned(oldest_unacked_fec);
+  }
+  if (abandoned_packet) {
+    // If a packet was abandoned, then the congestion window may have
+    // opened up, so attempt to write.
+    WriteIfNotBlocked();
   }
   return QuicTime::Zero();
 }
@@ -1644,7 +1698,7 @@ void QuicConnection::SendConnectionCloseWithDetails(QuicErrorCode error,
 
 void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
                                                const string& details) {
-  DLOG(INFO) << ENDPOINT << "Force closing with error "
+  DLOG(INFO) << ENDPOINT << "Force closing " << guid() << " with error "
              << QuicUtils::ErrorToString(error) << " (" << error << ") "
              << details;
   QuicConnectionCloseFrame* frame = new QuicConnectionCloseFrame();
@@ -1669,6 +1723,9 @@ void QuicConnection::SendGoAway(QuicErrorCode error,
   DLOG(INFO) << ENDPOINT << "Going away with error "
              << QuicUtils::ErrorToString(error)
              << " (" << error << ")";
+
+  // Opportunistically bundle an ack with this outgoing packet.
+  ScopedPacketBundler ack_bundler(this, true);
   packet_generator_.AddControlFrame(
       QuicFrame(new QuicGoAwayFrame(error, last_good_stream_id, reason)));
 }
@@ -1770,6 +1827,36 @@ bool QuicConnection::CheckForTimeout() {
   timeout_alarm_->Cancel();
   timeout_alarm_->Set(clock_->ApproximateNow().Add(timeout));
   return false;
+}
+
+QuicConnection::ScopedPacketBundler::ScopedPacketBundler(
+    QuicConnection* connection,
+    bool include_ack)
+    : connection_(connection),
+      already_in_batch_mode_(connection->packet_generator_.InBatchMode()) {
+  // Move generator into batch mode. If caller wants us to include an ack,
+  // check the delayed-ack timer to see if there's ack info to be sent.
+  if (!already_in_batch_mode_) {
+    DVLOG(1) << "Entering Batch Mode.";
+    connection_->packet_generator_.StartBatchOperations();
+  }
+  if (FLAGS_bundle_ack_with_outgoing_packet &&
+      include_ack && connection_->ack_alarm_->IsSet()) {
+    DVLOG(1) << "Bundling ack with outgoing packet.";
+    DCHECK(connection_->send_ack_in_response_to_packet_);
+    connection_->SendAck();
+    DCHECK(!connection_->send_ack_in_response_to_packet_);
+  }
+}
+
+QuicConnection::ScopedPacketBundler::~ScopedPacketBundler() {
+  // If we changed the generator's batch state, restore original batch state.
+  if (!already_in_batch_mode_) {
+    DVLOG(1) << "Leaving Batch Mode.";
+    connection_->packet_generator_.FinishBatchOperations();
+  }
+  DCHECK_EQ(already_in_batch_mode_,
+            connection_->packet_generator_.InBatchMode());
 }
 
 }  // namespace net
