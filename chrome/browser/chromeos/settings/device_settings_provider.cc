@@ -744,9 +744,9 @@ void DeviceSettingsProvider::DecodeGenericPolicies(
 
   new_values_cache->SetBoolean(
       kAttestationForContentProtectionEnabled,
-      !(policy.has_attestation_settings() &&
-        policy.attestation_settings().has_content_protection_enabled() &&
-        policy.attestation_settings().content_protection_enabled()));
+      policy.has_attestation_settings() &&
+      policy.attestation_settings().has_content_protection_enabled() &&
+      policy.attestation_settings().content_protection_enabled());
 }
 
 void DeviceSettingsProvider::UpdateValuesCache(
