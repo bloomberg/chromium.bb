@@ -14,17 +14,14 @@ chrome.app.runtime.onLaunched.addListener(function (launchData) {
         // Redirect the embedded webview to the same URL we've been launched
         // with. This should not create an endless loop of redirecting on
         // ourselves with multiplying windows.
-        var webview = this.document.getElementById('wv');
-        webview.src = launchData.url;
-
+        var webview = win.contentWindow.document.getElementById('wv');
         webview.addEventListener("loadstop", function() {
-          // Give webview plenty of time to navigate to make sure that doesn't
-          // relaunch the handler.
-          setTimeout(function() {
-            chrome.test.sendMessage("Handler launched");
-          }, 500);
+          // The webview has successfully navigated. That means that redirection
+          // didn't happen, as expected.
+          chrome.test.sendMessage("Handler launched");
         });
+        webview.src = launchData.url;
       }
-    }.bind(this)
+    }
   );
 });
