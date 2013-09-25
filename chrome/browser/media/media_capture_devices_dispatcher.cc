@@ -200,7 +200,7 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE ||
-      request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE) {
+      request.audio_type == content::MEDIA_LOOPBACK_AUDIO_CAPTURE) {
     ProcessDesktopCaptureAccessRequest(
         web_contents, request, callback, extension);
   } else if (request.video_type == content::MEDIA_TAB_VIDEO_CAPTURE ||
@@ -257,10 +257,10 @@ void MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest(
 
   // Audio is only supported for screen capture streams.
   if (media_id.type == content::DesktopMediaID::TYPE_SCREEN &&
-      request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE &&
+      request.audio_type == content::MEDIA_LOOPBACK_AUDIO_CAPTURE &&
       loopback_audio_supported) {
     devices.push_back(content::MediaStreamDevice(
-        content::MEDIA_SYSTEM_AUDIO_CAPTURE,
+        content::MEDIA_LOOPBACK_AUDIO_CAPTURE,
         media::AudioManagerBase::kLoopbackInputDeviceId, "System Audio"));
   }
 
@@ -345,11 +345,11 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     if (user_approved || component_extension) {
       devices.push_back(content::MediaStreamDevice(
           content::MEDIA_DESKTOP_VIDEO_CAPTURE, media_id.ToString(), "Screen"));
-      if (request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE &&
+      if (request.audio_type == content::MEDIA_LOOPBACK_AUDIO_CAPTURE &&
           loopback_audio_supported) {
         // Use the special loopback device ID for system audio capture.
         devices.push_back(content::MediaStreamDevice(
-            content::MEDIA_SYSTEM_AUDIO_CAPTURE,
+            content::MEDIA_LOOPBACK_AUDIO_CAPTURE,
             media::AudioManagerBase::kLoopbackInputDeviceId, "System Audio"));
       }
     }

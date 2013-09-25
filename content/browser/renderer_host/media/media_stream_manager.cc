@@ -264,13 +264,13 @@ std::string MediaStreamManager::GenerateStream(
   }
 
   if (options.video_type == MEDIA_DESKTOP_VIDEO_CAPTURE ||
-      options.audio_type == MEDIA_SYSTEM_AUDIO_CAPTURE) {
+      options.audio_type == MEDIA_LOOPBACK_AUDIO_CAPTURE) {
     // For screen capture we only support two valid combinations:
     // (1) screen video capture only, or
-    // (2) screen video capture with system audio capture.
+    // (2) screen video capture with loopback audio capture.
     if (options.video_type != MEDIA_DESKTOP_VIDEO_CAPTURE ||
         (options.audio_type != MEDIA_NO_SERVICE &&
-         options.audio_type != MEDIA_SYSTEM_AUDIO_CAPTURE)) {
+         options.audio_type != MEDIA_LOOPBACK_AUDIO_CAPTURE)) {
       // TODO(sergeyu): Surface error message to the calling JS code.
       LOG(ERROR) << "Invalid screen capture request.";
       return std::string();

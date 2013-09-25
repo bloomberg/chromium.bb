@@ -38,7 +38,7 @@ enum MediaStreamType {
   // Capture system audio (post-mix loopback stream).
   //
   // TODO(sergeyu): Replace with MEDIA_DESKTOP_AUDIO_CAPTURE.
-  MEDIA_SYSTEM_AUDIO_CAPTURE,
+  MEDIA_LOOPBACK_AUDIO_CAPTURE,
 
   NUM_MEDIA_TYPES
 };

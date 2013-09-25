@@ -62,7 +62,7 @@ void UpdateRequestOptions(
           user_media_request.audioConstraints(),
           kMediaStreamSourceId, true);
     } else if (audio_stream_source == kMediaStreamSourceSystem) {
-      options->audio_type = content::MEDIA_SYSTEM_AUDIO_CAPTURE;
+      options->audio_type = content::MEDIA_LOOPBACK_AUDIO_CAPTURE;
     }
   }
 
