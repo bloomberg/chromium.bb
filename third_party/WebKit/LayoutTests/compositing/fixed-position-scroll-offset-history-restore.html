@@ -20,7 +20,7 @@ onload = function() {
         // If the scroll position is restored correctly the red div won't be visible.
         delete window.localStorage.stage;
         if (window.testRunner) {
-            testRunner.dumpAsText(true);
+            testRunner.dumpAsTextWithPixelResults();
             testRunner.notifyDone();
         }
     } else {

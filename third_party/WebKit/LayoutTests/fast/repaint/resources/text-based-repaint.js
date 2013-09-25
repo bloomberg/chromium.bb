@@ -1,7 +1,7 @@
 function runRepaintTest()
 {
     if (window.testRunner && window.internals) {
-        window.testRunner.dumpAsText(false);
+        window.testRunner.dumpAsText();
 
         if (document.body)
             document.body.offsetTop;

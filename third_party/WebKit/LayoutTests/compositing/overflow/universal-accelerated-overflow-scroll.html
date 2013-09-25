@@ -151,7 +151,7 @@ function testConfiguration(configuration, index, description) {
 
 function doTest() {
     if (window.internals)
-        testRunner.dumpAsText(true);
+        testRunner.dumpAsTextWithPixelResults();
 
         // Some configurations are as not meaningful for fixed-pos. For example, we
         // alternate between having the scroll container be a containing block for

@@ -15,7 +15,7 @@
     {
       document.getElementById('iframe').contentDocument.body.offsetWidth; // See wkbug.com/41999
       if (window.testRunner) {
-        testRunner.dumpAsText(false);
+        testRunner.dumpAsText();
         document.getElementById('layertree').innerText = window.internals.layerTreeAsText(document);
       }
     }

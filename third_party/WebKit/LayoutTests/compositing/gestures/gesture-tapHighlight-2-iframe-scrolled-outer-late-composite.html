@@ -17,7 +17,7 @@ function runTest() {
     x = (clientRect.left + clientRect.right) / 2;
     y = (clientRect.top + clientRect.bottom) / 2 + nestingFrame.getBoundingClientRect().top + targetFrame.getBoundingClientRect().top;
     if (window.testRunner) {
-        testRunner.dumpAsText(true);
+        testRunner.dumpAsTextWithPixelResults();
         testRunner.waitUntilDone();
     }
 

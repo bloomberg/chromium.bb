@@ -43,7 +43,7 @@
 
 <script>
     if (window.testRunner) {
-        testRunner.dumpAsText(true);
+        testRunner.dumpAsTextWithPixelResults();
         window.addEventListener('load', function() {
             document.getElementById("layertree").innerText = window.internals.layerTreeAsText(document);
         }, false);

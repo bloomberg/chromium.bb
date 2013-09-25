@@ -229,6 +229,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     // The following modify the state of the TestRunner.
     bindMethod("dumpEditingCallbacks", &TestRunner::dumpEditingCallbacks);
     bindMethod("dumpAsText", &TestRunner::dumpAsText);
+    bindMethod("dumpAsTextWithPixelResults", &TestRunner::dumpAsTextWithPixelResults);
     bindMethod("dumpChildFramesAsText", &TestRunner::dumpChildFramesAsText);
     bindMethod("dumpChildFrameScrollPositions", &TestRunner::dumpChildFrameScrollPositions);
     bindMethod("dumpIconChanges", &TestRunner::dumpIconChanges);
@@ -1948,14 +1949,18 @@ void TestRunner::dumpEditingCallbacks(const CppArgumentList&, CppVariant* result
     result->setNull();
 }
 
-void TestRunner::dumpAsText(const CppArgumentList& arguments, CppVariant* result)
+void TestRunner::dumpAsText(const CppArgumentList&, CppVariant* result)
 {
     m_dumpAsText = true;
     m_generatePixelResults = false;
 
-    // Optional paramater, describing whether it's allowed to dump pixel results in dumpAsText mode.
-    if (arguments.size() > 0 && arguments[0].isBool())
-        m_generatePixelResults = arguments[0].value.boolValue;
+    result->setNull();
+}
+
+void TestRunner::dumpAsTextWithPixelResults(const CppArgumentList&, CppVariant* result)
+{
+    m_dumpAsText = true;
+    m_generatePixelResults = true;
 
     result->setNull();
 }

@@ -7,7 +7,7 @@
    height="200">
 <script><![CDATA[
     if (window.testRunner)
-        testRunner.dumpAsText(true);
+        testRunner.dumpAsTextWithPixelResults();
 ]]></script>
 <defs>
   <linearGradient id="linearGradient0">

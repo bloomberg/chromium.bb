@@ -12,7 +12,7 @@
 	        ctx.fillRect(0,0,ctx.canvas.width,ctx.canvas.height);
 	        
             if (window.testRunner) {
-                window.testRunner.dumpAsText(true);
+                window.testRunner.dumpAsTextWithPixelResults();
                 var console = document.getElementById("layeroutput");
                 console.innerHTML = window.internals.layerTreeAsText(document);
             }

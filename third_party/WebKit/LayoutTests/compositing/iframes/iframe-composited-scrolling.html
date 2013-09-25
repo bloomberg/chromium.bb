@@ -16,7 +16,7 @@
     function doTest()
     {
       if (window.testRunner) {
-        testRunner.dumpAsText(false);
+        testRunner.dumpAsText();
         if (window.internals)
           document.getElementById("result").innerText = window.internals.nonFastScrollableRects(document).length ? "FAIL" : "PASS";
       }

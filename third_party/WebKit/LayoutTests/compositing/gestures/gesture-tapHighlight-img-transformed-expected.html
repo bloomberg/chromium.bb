@@ -15,7 +15,7 @@ function runTest() {
     y = (clientRect.top + clientRect.bottom) / 2;
 
     if (window.testRunner) {
-        testRunner.dumpAsText(true);
+        testRunner.dumpAsTextWithPixelResults();
         testRunner.waitUntilDone();
     }
 

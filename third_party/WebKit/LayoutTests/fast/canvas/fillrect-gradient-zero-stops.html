@@ -4,7 +4,7 @@ The canvas below should show a gradient with zero stops, which according to the 
 <canvas id="c"></canvas>
 <script>
 if (window.testRunner)
-  testRunner.dumpAsText(true);
+  testRunner.dumpAsTextWithPixelResults();
 
 window.onload = function () {
   var ctx = document.getElementById('c').getContext('2d');

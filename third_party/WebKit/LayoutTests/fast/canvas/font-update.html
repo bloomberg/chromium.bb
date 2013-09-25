@@ -14,7 +14,7 @@
     ctx.fillStyle = "green";
     canvas.parentNode.removeChild(canvas);
     if (window.testRunner) {
-        testRunner.dumpAsText(true);
+        testRunner.dumpAsTextWithPixelResults();
         testRunner.waitUntilDone();
 	}
     setTimeout(function()

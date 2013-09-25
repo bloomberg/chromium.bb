@@ -92,6 +92,7 @@ public:
     bool sweepHorizontally() const;
     bool isPrinting() const;
     bool shouldDumpAsText();
+    bool shouldDumpAsTextWithPixelResults();
     bool shouldDumpChildFrameScrollPositions() const;
     bool shouldDumpChildFramesAsText() const;
     void showDevTools();
@@ -318,8 +319,13 @@ private:
 
     // This function sets a flag that tells the test_shell to dump pages as
     // plain text, rather than as a text representation of the renderer's state.
-    // It takes an optional argument, whether to dump pixels results or not.
+    // The pixel results will not be generated for this test.
     void dumpAsText(const CppArgumentList&, CppVariant*);
+
+    // This function sets a flag that tells the test_shell to dump pages as
+    // plain text, rather than as a text representation of the renderer's state.
+    // It will also generate a pixel dump for the test.
+    void dumpAsTextWithPixelResults(const CppArgumentList&, CppVariant*);
 
     // This function sets a flag that tells the test_shell to print out the
     // scroll offsets of the child frames. It ignores all.

@@ -1,6 +1,10 @@
 // svg/dynamic-updates tests set enablePixelTesting=true, as we want to dump text + pixel results
-if (window.testRunner)
-    testRunner.dumpAsText(window.enablePixelTesting);
+if (window.testRunner) {
+    if (window.enablePixelTesting)
+        testRunner.dumpAsTextWithPixelResults();
+    else
+        testRunner.dumpAsText();
+}
 
 function description(msg)
 {

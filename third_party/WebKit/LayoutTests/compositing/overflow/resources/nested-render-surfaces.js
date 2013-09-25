@@ -1,5 +1,5 @@
 if (window.testRunner)
-    testRunner.dumpAsText(true);
+    testRunner.dumpAsTextWithPixelResults();
 
 function runTest(description) {
     var pre = document.createElement("pre");

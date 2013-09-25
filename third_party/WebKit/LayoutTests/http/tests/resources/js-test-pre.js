@@ -1,6 +1,10 @@
 // svg/dynamic-updates tests set enablePixelTesting=true, as we want to dump text + pixel results
-if (self.testRunner)
-    testRunner.dumpAsText(self.enablePixelTesting);
+if (self.testRunner) {
+    if (self.enablePixelTesting)
+        testRunner.dumpAsTextWithPixelResults();
+    else
+        testRunner.dumpAsText();
+}
 
 var description, debug, successfullyParsed, errorMessage;
 

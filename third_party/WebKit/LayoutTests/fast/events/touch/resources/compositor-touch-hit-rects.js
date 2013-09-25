@@ -112,7 +112,10 @@ function checkForRectUpdate(expectUpdate, operation) {
 var visualize = false;
 
 if (window.testRunner) {
-    window.testRunner.dumpAsText(visualize);
+    if (vistualize)
+        window.testRunner.dumpAsTextWithPixelResults();
+    else
+        window.testRunner.dumpAsText();
     document.documentElement.setAttribute('dumpRenderTree', 'true');
 } else {
     // Note, this test can be run interactively in content-shell with

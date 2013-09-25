@@ -3,7 +3,7 @@
 <div id="box" style="width:100px; height:100px; background-color: green; -webkit-transform: translateZ(0); -webkit-transform-style: preserve-3d"></div>
 <script>
 if (window.testRunner)
-    testRunner.dumpAsText(true); // Only pixel results are useful
+    testRunner.dumpAsTextWithPixelResults(); // Only pixel results are useful
 
 function test() {
     document.getElementById("box").style.webkitTransformStyle = "flat";

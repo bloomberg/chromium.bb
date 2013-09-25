@@ -36,7 +36,7 @@
         if (window.testRunner) {
             if (top == self)
                 document.getElementById('layertree').innerText = window.internals.layerTreeAsText(document);
-            testRunner.dumpAsText(true);
+            testRunner.dumpAsTextWithPixelResults();
         }
     }
     window.addEventListener('load', doTest, false);

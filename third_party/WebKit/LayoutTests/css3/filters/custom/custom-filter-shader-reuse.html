@@ -7,7 +7,7 @@
             if (window.testRunner) {
                 window.testRunner.overridePreference("WebKitCSSCustomFilterEnabled", "1");
                 window.testRunner.overridePreference("WebKitWebGLEnabled", "1");
-                window.testRunner.dumpAsText(false);
+                window.testRunner.dumpAsText();
                 // We need to run the tests after the downloading succeeded.
                 window.testRunner.waitUntilDone();
             }

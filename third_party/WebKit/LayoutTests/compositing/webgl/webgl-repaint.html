@@ -38,7 +38,7 @@ function init()
   gl.clear(gl.COLOR_BUFFER_BIT);
   if (window.testRunner) {
       testRunner.display();
-      testRunner.dumpAsText(true);
+      testRunner.dumpAsTextWithPixelResults();
       drawGreen();
   } else
       window.setTimeout(drawGreen, 50);

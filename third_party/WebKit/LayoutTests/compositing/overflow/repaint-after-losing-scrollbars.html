@@ -60,7 +60,7 @@ function finishTest() {
 }
 
 if (window.testRunner) {
-    testRunner.dumpAsText(true);
+    testRunner.dumpAsTextWithPixelResults();
     testRunner.display(); // Paint once with all overflow controls visible.
     finishTest();
 } else

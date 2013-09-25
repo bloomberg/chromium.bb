@@ -718,8 +718,11 @@ def emitBenchRunCodeFile(name, plan, benchDataPath, benchPath)
     preCode = Benchfile.create("bencher-pre") {
       | file |
       doublePuts($stderr,file,"if (window.testRunner) {")
-      doublePuts($stderr,file,"    testRunner.dumpAsText(window.enablePixelTesting);")
-      doublePuts($stderr,file,"    testRunner.waitUntilDone();")
+      doublePuts($stderr,file,"    if (window.enablePixelTesting) {")
+      doublePuts($stderr,file,"        testRunner.dumpAsTextWithPixelResults();")
+      doublePuts($stderr,file,"    } else {")
+      doublePuts($stderr,file,"        testRunner.dumpAsText();")
+      doublePuts($stderr,file,"    }")
       doublePuts($stderr,file,"}")
       doublePuts($stderr,file,"")
       doublePuts($stderr,file,"function debug(msg)")

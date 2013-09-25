@@ -34,7 +34,7 @@ function test() {
     document.getElementById("both").contentDocument.body.classList.add("wide"); // bottom iframe starts with both
     document.getElementById("both").contentDocument.body.classList.add("tall"); // vertical and horizontal scrollbars
     if (window.testRunner) {
-        testRunner.dumpAsText(true);
+        testRunner.dumpAsTextWithPixelResults();
         testRunner.display(); // Paint once with all overflow controls visible.
         finishTest();
     } else

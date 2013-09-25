@@ -39,7 +39,7 @@ function moveCursorOverAllWords(divName, numWords) {
 function startTest() {
     if (!window.testRunner)
         return;
-    testRunner.dumpAsText(true);
+    testRunner.dumpAsTextWithPixelResults();
     testRunner.waitUntilDone();
     testRunner.setBackingScaleFactor(2, function () {
         moveCursorOverAllWords('testLTR');

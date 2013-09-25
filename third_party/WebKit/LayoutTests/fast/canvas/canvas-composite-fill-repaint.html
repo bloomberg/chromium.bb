@@ -7,7 +7,7 @@
   var compositeTypes = ['source-in','copy'];
 
   if (window.testRunner)
-    testRunner.dumpAsText(true);
+    testRunner.dumpAsTextWithPixelResults();
 
   for (i = 0; i < compositeTypes.length; i++) {
     var canvas = document.getElementById('canvas-' + compositeTypes[i]);

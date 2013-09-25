@@ -19,7 +19,7 @@
       iframe.contentDocument.body.setAttribute("style", "overflow:hidden");
       iframe.contentDocument.body.offsetWidth; // See bug 41999
       if (window.testRunner) {
-        testRunner.dumpAsText(false);
+        testRunner.dumpAsText();
         document.getElementById('layertree').innerText = window.internals.layerTreeAsText(document);
       }
     }

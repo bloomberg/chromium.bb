@@ -1,11 +1,10 @@
 var console = null;
 var printFullTestDetails = true; // This is optionaly switched of by test whose tested values can differ. (see disableFullTestDetailsPrinting())
-var runPixelTests;
 
 logConsole();
 
 if (window.testRunner) {
-    testRunner.dumpAsText(runPixelTests);
+    testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
 

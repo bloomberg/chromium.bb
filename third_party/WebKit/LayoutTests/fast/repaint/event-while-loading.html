@@ -5,7 +5,7 @@
     document.documentElement.addEventListener('click', mouseHandler, false);
 
     if (window.testRunner && window.internals) {
-        window.testRunner.dumpAsText(false);
+        window.testRunner.dumpAsText();
 
         window.internals.startTrackingRepaints(document);
         if (window.eventSender) {

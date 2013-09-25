@@ -20,7 +20,7 @@ function runTest() {
     x = 150; // Pick a tap location outside the link area, so we're clicking on the background.
     y = 150;
     if (window.testRunner) {
-        testRunner.dumpAsText(true);
+        testRunner.dumpAsTextWithPixelResults();
         testRunner.waitUntilDone();
     }
 

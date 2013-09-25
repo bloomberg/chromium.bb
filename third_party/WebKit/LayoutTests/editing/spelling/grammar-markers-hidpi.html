@@ -25,7 +25,7 @@ function verifyGrammarMarker(destination, ungrammaticalPhrase)
 }
 
 if (window.testRunner) {
-    testRunner.dumpAsText(true);
+    testRunner.dumpAsTextWithPixelResults();
     testRunner.setBackingScaleFactor(2, function () {
         shouldBecomeEqual('verifyGrammarMarker(target, "has")', 'true', finishJSTest);
     });

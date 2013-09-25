@@ -8,7 +8,7 @@
 <canvas id="canvas" class="output" width="100" height="100"><p class="fallback">FAIL (fallback content)</p></canvas>
 <script>
 if (window.testRunner)
-  testRunner.dumpAsText(true);
+  testRunner.dumpAsTextWithPixelResults();
 
 var ctx = document.getElementById("canvas").getContext("2d");
 ctx.fillStyle = '#0f0';

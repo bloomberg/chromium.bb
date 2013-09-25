@@ -8,5 +8,5 @@ var text = document.querySelector('div').firstChild
 window.getSelection().setBaseAndExtent(text, 11, text, 12);
 // We don't care about the text dump. This is just testing painting of the selection.
 if (window.testRunner)
-    testRunner.dumpAsText(true);
+    testRunner.dumpAsTextWithPixelResults();
 </script>
