@@ -905,10 +905,9 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   }
 
   // Only top level widget should store/restore focus.
-  if (message == WM_ACTIVATE && delegate_->CanSaveFocus() &&
-      reinterpret_cast<HWND>(l_param) == window) {
-    PostProcessActivateMessage(LOWORD(w_param));
-  }
+  if (message == WM_ACTIVATE && delegate_->CanSaveFocus())
+    PostProcessActivateMessage(LOWORD(w_param), !!HIWORD(w_param));
+
   if (message == WM_ENABLE && restore_focus_when_enabled_) {
     // This path should be executed only for top level as
     // restore_focus_when_enabled_ is set in PostProcessActivateMessage.
@@ -959,9 +958,10 @@ void HWNDMessageHandler::SetInitialFocus() {
   }
 }
 
-void HWNDMessageHandler::PostProcessActivateMessage(int activation_state) {
+void HWNDMessageHandler::PostProcessActivateMessage(int activation_state,
+                                                    bool minimized) {
   DCHECK(delegate_->CanSaveFocus());
-  if (WA_INACTIVE == activation_state) {
+  if (WA_INACTIVE == activation_state || minimized) {
     // We might get activated/inactivated without being enabled, so we need to
     // clear restore_focus_when_enabled_.
     restore_focus_when_enabled_ = false;

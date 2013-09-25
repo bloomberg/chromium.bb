@@ -180,7 +180,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // Called after the WM_ACTIVATE message has been processed by the default
   // windows procedure.
-  void PostProcessActivateMessage(int activation_state);
+  void PostProcessActivateMessage(int activation_state, bool minimized);
 
   // Enables disabled owner windows that may have been disabled due to this
   // window's modality.
