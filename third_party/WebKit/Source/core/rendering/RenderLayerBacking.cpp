@@ -1772,15 +1772,32 @@ bool RenderLayerBacking::startAnimation(double timeOffset, const CSSAnimationDat
     if (animations.isEmpty())
         return false;
 
-    bool didAnimate = false;
-    if (animations.m_transformAnimation && m_graphicsLayer->addAnimation(animations.m_transformAnimation.get()))
-        didAnimate = true;
-    if (animations.m_opacityAnimation && m_graphicsLayer->addAnimation(animations.m_opacityAnimation.get()))
-        didAnimate = true;
-    if (animations.m_filterAnimation && m_graphicsLayer->addAnimation(animations.m_filterAnimation.get()))
-        didAnimate = true;
+    bool hasOpacity = keyframes.containsProperty(CSSPropertyOpacity);
+    bool hasFilter = keyframes.containsProperty(CSSPropertyWebkitFilter);
+    int animationId = m_animationProvider->getWebAnimationId(keyframes.animationName());
 
-    return didAnimate;
+    // Animating only some properties of the animation is not supported. So if the
+    // GraphicsLayer rejects any property of the animation, we have to remove the
+    // animation and return false to indicate un-accelerated animation is required.
+    if (hasTransform) {
+        if (!animations.m_transformAnimation || !m_graphicsLayer->addAnimation(animations.m_transformAnimation.get()))
+            return false;
+    }
+    if (hasOpacity) {
+        if (!animations.m_opacityAnimation || !m_graphicsLayer->addAnimation(animations.m_opacityAnimation.get())) {
+            if (hasTransform)
+                m_graphicsLayer->removeAnimation(animationId);
+            return false;
+        }
+    }
+    if (hasFilter) {
+        if (!animations.m_filterAnimation || !m_graphicsLayer->addAnimation(animations.m_filterAnimation.get())) {
+            if (hasTransform || hasOpacity)
+                m_graphicsLayer->removeAnimation(animationId);
+            return false;
+        }
+    }
+    return true;
 }
 
 void RenderLayerBacking::animationPaused(double timeOffset, const String& animationName)

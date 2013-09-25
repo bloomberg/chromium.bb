@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style type="text/css">
+    .box {
+        width: 200px;
+        height: 200px;
+        position: absolute;
+        top: 100px;
+        left: 100px;
+    }
+
+    .composited {
+        -webkit-transform: translateZ(0);
+    }
+
+    .lime {
+        background-color: lime;
+    }
+
+    .black {
+        background-color: black;
+    }
+
+    .animating {
+        -webkit-animation-duration: 1s;
+        -webkit-animation-name: transformWithOpacity;
+        -webkit-animation-timing-function: linear;
+    }
+
+    @-webkit-keyframes transformWithOpacity {
+        0% {
+            -webkit-transform: rotate(10deg);
+            -webkit-filter: opacity(0);
+        }
+        100% {
+            -webkit-transform: rotate(80deg);
+            -webkit-filter: opacity(1);
+        }
+    }
+  </style>
+  <script src="resources/animation-test-helpers.js"></script>
+  <script>
+    const expectedValues = [
+      // [animation-name, time, element-id, property, expected-value, tolerance]
+      ["transformWithOpacity", 0.5, "animatingBox", "webkitTransform", [0.707, 0.707, -0.707, 0.707, 0, 0], 0.05],
+      ["transformWithOpacity",  0.5, "animatingBox", "webkitFilter", 'opacity(0.5)', 0.15],
+    ];
+
+    var doPixelTest = true;
+    runAnimationTest(expectedValues, null, null, null, doPixelTest);
+  </script>
+</head>
+<!--
+    crbug.com/143658
+    When trying to give an animation to the compositor for acceleration, logic was missing to properly handle when
+    one component of the animation is rejected (such as filter) while the other was accepted (such as transform).
+
+    When viewed as a web page, the lime box should be seen animating both transform and
+    opacity, with a stationary black box underneath. If the box doesn't animates both rotation and filter,
+    the test has failed.
+
+    When viewed by DumpRenderTree, there should be one green-ish box, which is the lime box
+    with 50% opacity, rotated by 45 degree on top of the black box.
+-->
+<body>
+  <div class="composited black box"> </div>
+  <div id="animatingBox" class="composited animating lime box"> </div>
+  <div id="result"></div>
+</body>
+</html>

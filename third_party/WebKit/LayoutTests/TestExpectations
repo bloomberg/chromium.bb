@@ -939,6 +939,11 @@ crbug.com/248938 virtual/threaded/transitions/transition-end-event-unprefixed-03
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-unprefixed-04.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-window.html [ Pass Failure ]
 
+crbug.com/143658 animations/two-properties-in-keyframed-animation.html [ NeedsRebaseline ]
+crbug.com/143658 virtual/threaded/animations/two-properties-in-keyframed-animation.html [ NeedsRebaseline ]
+# web-animations-css does not support filter animation yet, and this test uses filter animation.
+crbug.com/143658 virtual/web-animations-css/animations/two-properties-in-keyframed-animation.html [ Crash ]
+
 crbug.com/255726 [ Debug ] compositing/contents-opaque/visibility-hidden.html [ Pass Failure ]
 
 crbug.com/260660 [ Linux ] fast/canvas/webgl/array-large-array-tests.html [ Crash ]
