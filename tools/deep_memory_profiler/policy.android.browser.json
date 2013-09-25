@@ -12,6 +12,7 @@
     "unhooked-ashmem-dalvik-aux-structure",
     "unhooked-ashmem-dalvik-bitmap",
     "unhooked-ashmem-dalvik-other",
+    "unhooked-kgsl",
     "unhooked-pvrsrvkm",
     "unhooked-system-dex",
     "unhooked-chrome-dex",
@@ -119,6 +120,11 @@
     {
       "name": "unhooked-ashmem-dalvik-other",
       "mappedpathname": "/dev/ashmem/dalvik.*",
+      "allocator": "unhooked"
+    },
+    {
+      "name": "unhooked-kgsl",
+      "mappedpathname": "/dev/kgsl-3d0",
       "allocator": "unhooked"
     },
     {
