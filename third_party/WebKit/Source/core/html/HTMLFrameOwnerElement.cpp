@@ -119,7 +119,7 @@ SVGDocument* HTMLFrameOwnerElement::getSVGDocument(ExceptionState& es) const
     if (doc && doc->isSVGDocument())
         return toSVGDocument(doc);
     // Spec: http://www.w3.org/TR/SVG/struct.html#InterfaceGetSVGDocument
-    es.throwDOMException(NotSupportedError);
+    es.throwUninformativeAndGenericDOMException(NotSupportedError);
     return 0;
 }
 

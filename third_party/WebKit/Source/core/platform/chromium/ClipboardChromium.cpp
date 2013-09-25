@@ -106,7 +106,7 @@ PassRefPtr<DataTransferItem> DataTransferItemListPolicyWrapper::item(unsigned lo
 void DataTransferItemListPolicyWrapper::deleteItem(unsigned long index, ExceptionState& es)
 {
     if (!m_clipboard->canWriteData()) {
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     m_dataObject->deleteItem(index);

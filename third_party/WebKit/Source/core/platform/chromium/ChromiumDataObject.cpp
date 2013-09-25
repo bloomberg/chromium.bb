@@ -97,7 +97,7 @@ PassRefPtr<ChromiumDataObjectItem> ChromiumDataObject::add(const String& data, c
 {
     RefPtr<ChromiumDataObjectItem> item = ChromiumDataObjectItem::createFromString(type, data);
     if (!internalAddStringItem(item)) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
     return item;

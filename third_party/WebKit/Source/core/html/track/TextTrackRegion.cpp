@@ -108,7 +108,7 @@ void TextTrackRegion::setWidth(double value, ExceptionState& es)
     }
 
     if (value < 0 || value > 100) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -118,7 +118,7 @@ void TextTrackRegion::setWidth(double value, ExceptionState& es)
 void TextTrackRegion::setHeight(long value, ExceptionState& es)
 {
     if (value < 0) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -133,7 +133,7 @@ void TextTrackRegion::setRegionAnchorX(double value, ExceptionState& es)
     }
 
     if (value < 0 || value > 100) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -148,7 +148,7 @@ void TextTrackRegion::setRegionAnchorY(double value, ExceptionState& es)
     }
 
     if (value < 0 || value > 100) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -163,7 +163,7 @@ void TextTrackRegion::setViewportAnchorX(double value, ExceptionState& es)
     }
 
     if (value < 0 || value > 100) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -178,7 +178,7 @@ void TextTrackRegion::setViewportAnchorY(double value, ExceptionState& es)
     }
 
     if (value < 0 || value > 100) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -200,7 +200,7 @@ void TextTrackRegion::setScroll(const AtomicString& value, ExceptionState& es)
     DEFINE_STATIC_LOCAL(const AtomicString, upScrollValueKeyword, ("up", AtomicString::ConstructFromLiteral));
 
     if (value != emptyString() && value != upScrollValueKeyword) {
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 

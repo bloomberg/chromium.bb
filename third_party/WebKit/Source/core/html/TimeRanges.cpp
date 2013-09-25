@@ -105,7 +105,7 @@ void TimeRanges::unionWith(const TimeRanges* other)
 double TimeRanges::start(unsigned index, ExceptionState& es) const
 {
     if (index >= length()) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return 0;
     }
     return m_ranges[index].m_start;
@@ -114,7 +114,7 @@ double TimeRanges::start(unsigned index, ExceptionState& es) const
 double TimeRanges::end(unsigned index, ExceptionState& es) const
 {
     if (index >= length()) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return 0;
     }
     return m_ranges[index].m_end;

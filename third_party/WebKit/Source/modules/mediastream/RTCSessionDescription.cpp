@@ -49,14 +49,14 @@ PassRefPtr<RTCSessionDescription> RTCSessionDescription::create(const Dictionary
     String type;
     bool ok = dictionary.get("type", type);
     if (!ok || !verifyType(type)) {
-        es.throwDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return 0;
     }
 
     String sdp;
     ok = dictionary.get("sdp", sdp);
     if (!ok || sdp.isEmpty()) {
-        es.throwDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return 0;
     }
 
@@ -88,7 +88,7 @@ void RTCSessionDescription::setType(const String& type, ExceptionState& es)
     if (verifyType(type))
         m_webSessionDescription.setType(type);
     else
-        es.throwDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
 }
 
 String RTCSessionDescription::sdp()

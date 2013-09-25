@@ -158,7 +158,7 @@ void SQLTransactionBackendSync::begin(ExceptionState& es)
         m_database->setLastErrorMessage("unable to begin transaction",
             m_database->sqliteDatabase().lastError(), m_database->sqliteDatabase().lastErrorMsg());
         m_sqliteTransaction.clear();
-        es.throwDOMException(SQLDatabaseError);
+        es.throwUninformativeAndGenericDOMException(SQLDatabaseError);
         return;
     }
 
@@ -171,7 +171,7 @@ void SQLTransactionBackendSync::begin(ExceptionState& es)
         m_database->setLastErrorMessage("unable to read version",
             m_database->sqliteDatabase().lastError(), m_database->sqliteDatabase().lastErrorMsg());
         rollback();
-        es.throwDOMException(SQLDatabaseError);
+        es.throwUninformativeAndGenericDOMException(SQLDatabaseError);
         return;
     }
     m_hasVersionMismatch = !m_database->expectedVersion().isEmpty() && (m_database->expectedVersion() != actualVersion);
@@ -213,7 +213,7 @@ void SQLTransactionBackendSync::commit(ExceptionState& es)
         m_database->reportCommitTransactionResult(2, SQLError::DATABASE_ERR, m_database->sqliteDatabase().lastError());
         m_database->setLastErrorMessage("unable to commit transaction",
             m_database->sqliteDatabase().lastError(), m_database->sqliteDatabase().lastErrorMsg());
-        es.throwDOMException(SQLDatabaseError);
+        es.throwUninformativeAndGenericDOMException(SQLDatabaseError);
         return;
     }
 

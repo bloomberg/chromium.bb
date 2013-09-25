@@ -803,7 +803,7 @@ void XMLHttpRequest::createRequest(ExceptionState& es)
     if (!m_exceptionCode && m_error)
         m_exceptionCode = NetworkError;
     if (m_exceptionCode)
-        es.throwDOMException(m_exceptionCode);
+        es.throwUninformativeAndGenericDOMException(m_exceptionCode);
 }
 
 void XMLHttpRequest::abort()

@@ -461,7 +461,7 @@ void Node::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionStat
     if (isContainerNode())
         toContainerNode(this)->insertBefore(newChild, refChild, es);
     else
-        es.throwDOMException(HierarchyRequestError);
+        es.throwUninformativeAndGenericDOMException(HierarchyRequestError);
 }
 
 void Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& es)
@@ -469,7 +469,7 @@ void Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionStat
     if (isContainerNode())
         toContainerNode(this)->replaceChild(newChild, oldChild, es);
     else
-        es.throwDOMException(HierarchyRequestError);
+        es.throwUninformativeAndGenericDOMException(HierarchyRequestError);
 }
 
 void Node::removeChild(Node* oldChild, ExceptionState& es)
@@ -477,7 +477,7 @@ void Node::removeChild(Node* oldChild, ExceptionState& es)
     if (isContainerNode())
         toContainerNode(this)->removeChild(oldChild, es);
     else
-        es.throwDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
 }
 
 void Node::appendChild(PassRefPtr<Node> newChild, ExceptionState& es)
@@ -485,7 +485,7 @@ void Node::appendChild(PassRefPtr<Node> newChild, ExceptionState& es)
     if (isContainerNode())
         toContainerNode(this)->appendChild(newChild, es);
     else
-        es.throwDOMException(HierarchyRequestError);
+        es.throwUninformativeAndGenericDOMException(HierarchyRequestError);
 }
 
 void Node::remove(ExceptionState& es)
@@ -528,7 +528,7 @@ void Node::setPrefix(const AtomicString& /*prefix*/, ExceptionState& es)
     // The spec says that for nodes other than elements and attributes, prefix is always null.
     // It does not say what to do when the user tries to set the prefix on another type of
     // node, however Mozilla throws a NamespaceError exception.
-    es.throwDOMException(NamespaceError);
+    es.throwUninformativeAndGenericDOMException(NamespaceError);
 }
 
 const AtomicString& Node::localName() const
@@ -861,7 +861,7 @@ void Node::checkSetPrefix(const AtomicString& prefix, ExceptionState& es)
     // Element::setPrefix() and Attr::setPrefix()
 
     if (!prefix.isEmpty() && !Document::isValidName(prefix)) {
-        es.throwDOMException(InvalidCharacterError);
+        es.throwUninformativeAndGenericDOMException(InvalidCharacterError);
         return;
     }
 
@@ -1270,7 +1270,7 @@ PassRefPtr<RadioNodeList> Node::radioNodeList(const AtomicString& name)
 PassRefPtr<Element> Node::querySelector(const AtomicString& selectors, ExceptionState& es)
 {
     if (selectors.isEmpty()) {
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return 0;
     }
 
@@ -1283,7 +1283,7 @@ PassRefPtr<Element> Node::querySelector(const AtomicString& selectors, Exception
 PassRefPtr<NodeList> Node::querySelectorAll(const AtomicString& selectors, ExceptionState& es)
 {
     if (selectors.isEmpty()) {
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return 0;
     }
 

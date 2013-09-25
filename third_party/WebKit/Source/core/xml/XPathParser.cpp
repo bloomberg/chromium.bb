@@ -502,9 +502,9 @@ Expression* Parser::parseStatement(const String& statement, PassRefPtr<XPathNSRe
         m_topExpr = 0;
 
         if (m_gotNamespaceError)
-            es.throwDOMException(NamespaceError);
+            es.throwUninformativeAndGenericDOMException(NamespaceError);
         else
-            es.throwDOMException(SyntaxError);
+            es.throwUninformativeAndGenericDOMException(SyntaxError);
         return 0;
     }
 

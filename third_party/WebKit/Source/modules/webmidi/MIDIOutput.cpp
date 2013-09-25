@@ -80,7 +80,7 @@ void MIDIOutput::send(Vector<unsigned> unsignedData, double timestamp, Exception
 
     for (size_t i = 0; i < unsignedData.size(); ++i) {
         if (unsignedData[i] > 0xff) {
-            es.throwDOMException(InvalidStateError);
+            es.throwUninformativeAndGenericDOMException(InvalidStateError);
             return;
         }
         unsigned char value = unsignedData[i] & 0xff;

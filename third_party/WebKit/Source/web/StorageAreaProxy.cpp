@@ -99,7 +99,7 @@ void StorageAreaProxy::setItem(const String& key, const String& value, Exception
     WebKit::WebStorageArea::Result result = WebKit::WebStorageArea::ResultOK;
     m_storageArea->setItem(key, value, frame->document()->url(), result);
     if (result != WebKit::WebStorageArea::ResultOK)
-        es.throwDOMException(QuotaExceededError);
+        es.throwUninformativeAndGenericDOMException(QuotaExceededError);
 }
 
 void StorageAreaProxy::removeItem(const String& key, ExceptionState& es, Frame* frame)

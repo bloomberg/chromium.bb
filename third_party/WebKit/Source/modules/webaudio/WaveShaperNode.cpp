@@ -71,7 +71,7 @@ void WaveShaperNode::setOversample(const String& type, ExceptionState& es)
     else if (type == "4x")
         waveShaperProcessor()->setOversample(WaveShaperProcessor::OverSample4x);
     else
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
 }
 
 String WaveShaperNode::oversample() const

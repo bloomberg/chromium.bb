@@ -54,7 +54,7 @@ void CanvasPattern::parseRepetitionType(const String& type, bool& repeatX, bool&
         repeatY = true;
         return;
     }
-    es.throwDOMException(SyntaxError);
+    es.throwUninformativeAndGenericDOMException(SyntaxError);
 }
 
 CanvasPattern::CanvasPattern(PassRefPtr<Image> image, bool repeatX, bool repeatY, bool originClean)

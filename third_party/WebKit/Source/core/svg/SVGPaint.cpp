@@ -65,7 +65,7 @@ void SVGPaint::setUri(const String&)
 
 void SVGPaint::setPaint(unsigned short, const String&, const String&, const String&, ExceptionState& es)
 {
-    es.throwDOMException(NoModificationAllowedError);
+    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
 String SVGPaint::customCssText() const

@@ -60,7 +60,7 @@ public:
     PassRefPtr<Notification> createNotification(const String& iconURI, const String& title, const String& body, ExceptionState& es)
     {
         if (!client()) {
-            es.throwDOMException(InvalidStateError);
+            es.throwUninformativeAndGenericDOMException(InvalidStateError);
             return 0;
         }
         return Notification::create(title, body, iconURI, scriptExecutionContext(), es, this);

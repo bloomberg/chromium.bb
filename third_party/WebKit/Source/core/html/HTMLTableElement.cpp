@@ -188,7 +188,7 @@ HTMLTableSectionElement* HTMLTableElement::lastBody() const
 PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& es)
 {
     if (index < -1) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return 0;
     }
 
@@ -203,7 +203,7 @@ PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& e
             row = HTMLTableRowsCollection::rowAfter(this, lastRow.get());
             if (!row) {
                 if (i != index) {
-                    es.throwDOMException(IndexSizeError);
+                    es.throwUninformativeAndGenericDOMException(IndexSizeError);
                     return 0;
                 }
                 break;
@@ -244,7 +244,7 @@ void HTMLTableElement::deleteRow(int index, ExceptionState& es)
         }
     }
     if (!row) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
     row->remove(es);

@@ -48,7 +48,7 @@ PassRefPtr<RTCDataChannel> RTCDataChannel::create(ScriptExecutionContext* contex
 {
     OwnPtr<RTCDataChannelHandler> handler = peerConnectionHandler->createDataChannel(label, init);
     if (!handler) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
     return adoptRef(new RTCDataChannel(context, handler.release()));
@@ -147,29 +147,29 @@ String RTCDataChannel::binaryType() const
 void RTCDataChannel::setBinaryType(const String& binaryType, ExceptionState& es)
 {
     if (binaryType == "blob")
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
     else if (binaryType == "arraybuffer")
         m_binaryType = BinaryTypeArrayBuffer;
     else
-        es.throwDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
 }
 
 void RTCDataChannel::send(const String& data, ExceptionState& es)
 {
     if (m_readyState != ReadyStateOpen) {
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     if (!m_handler->sendStringData(data)) {
         // FIXME: Decide what the right exception here is.
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
     }
 }
 
 void RTCDataChannel::send(PassRefPtr<ArrayBuffer> prpData, ExceptionState& es)
 {
     if (m_readyState != ReadyStateOpen) {
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
@@ -183,7 +183,7 @@ void RTCDataChannel::send(PassRefPtr<ArrayBuffer> prpData, ExceptionState& es)
 
     if (!m_handler->sendRawData(dataPointer, dataLength)) {
         // FIXME: Decide what the right exception here is.
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
     }
 }
 
@@ -196,7 +196,7 @@ void RTCDataChannel::send(PassRefPtr<ArrayBufferView> data, ExceptionState& es)
 void RTCDataChannel::send(PassRefPtr<Blob> data, ExceptionState& es)
 {
     // FIXME: implement
-    es.throwDOMException(NotSupportedError);
+    es.throwUninformativeAndGenericDOMException(NotSupportedError);
 }
 
 void RTCDataChannel::close()

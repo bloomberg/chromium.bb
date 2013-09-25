@@ -57,11 +57,11 @@ void CustomElementException::throwException(Reason reason, const AtomicString& t
         return;
 
     case ContextDestroyedCreatingCallbacks:
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
 
     case ContextDestroyedRegisteringDefinition:
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
 
     case ExtendsIsInvalidName:

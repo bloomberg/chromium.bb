@@ -157,7 +157,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(IDBDatabaseBackendInterface::PutMode 
         return 0;
     }
     if (m_transaction->isReadOnly()) {
-        es.throwDOMException(ReadOnlyError);
+        es.throwUninformativeAndGenericDOMException(ReadOnlyError);
         return 0;
     }
 
@@ -169,7 +169,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(IDBDatabaseBackendInterface::PutMode 
 
     if (serializedValue->blobURLs().size() > 0) {
         // FIXME: Add Blob/File/FileList support
-        es.throwDOMException(DataCloneError);
+        es.throwUninformativeAndGenericDOMException(DataCloneError);
         return 0;
     }
 
@@ -245,7 +245,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::deleteFunction(ScriptExecutionContext* co
         return 0;
     }
     if (m_transaction->isReadOnly()) {
-        es.throwDOMException(ReadOnlyError);
+        es.throwUninformativeAndGenericDOMException(ReadOnlyError);
         return 0;
     }
 
@@ -278,7 +278,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::clear(ScriptExecutionContext* context, Ex
         return 0;
     }
     if (m_transaction->isReadOnly()) {
-        es.throwDOMException(ReadOnlyError);
+        es.throwUninformativeAndGenericDOMException(ReadOnlyError);
         return 0;
     }
 

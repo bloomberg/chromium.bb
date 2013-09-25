@@ -62,11 +62,11 @@ Crypto::Crypto()
 void Crypto::getRandomValues(ArrayBufferView* array, ExceptionState& es)
 {
     if (!array || !isIntegerArray(array)) {
-        es.throwDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
     if (array->byteLength() > 65536) {
-        es.throwDOMException(QuotaExceededError);
+        es.throwUninformativeAndGenericDOMException(QuotaExceededError);
         return;
     }
     cryptographicallyRandomValues(array->baseAddress(), array->byteLength());

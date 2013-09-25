@@ -58,17 +58,17 @@ void SVGColor::setRGBColor(const String&, ExceptionState& es)
 {
     // The whole SVGColor interface is deprecated in SVG 1.1 (2nd edition).
     // The setters are the most problematic part so we remove the support for those first.
-    es.throwDOMException(NoModificationAllowedError);
+    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
 void SVGColor::setRGBColorICCColor(const String&, const String&, ExceptionState& es)
 {
-    es.throwDOMException(NoModificationAllowedError);
+    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
 void SVGColor::setColor(unsigned short, const String&, const String&, ExceptionState& es)
 {
-    es.throwDOMException(NoModificationAllowedError);
+    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
 String SVGColor::customCssText() const

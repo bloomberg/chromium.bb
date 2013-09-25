@@ -86,7 +86,7 @@ void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8:
         bool ok;
         V8TRYCATCH_VOID(int, index, toInt32(args[1], ok));
         if (!ok)
-            es.throwDOMException(TypeMismatchError);
+            es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         else
             imp->add(option, index, es);
     }
@@ -102,7 +102,7 @@ void V8HTMLOptionsCollection::lengthAttributeSetterCustom(v8::Local<v8::String> 
     ExceptionState es(info.GetIsolate());
     if (!std::isnan(v) && !std::isinf(v)) {
         if (v < 0.0)
-            es.throwDOMException(IndexSizeError);
+            es.throwUninformativeAndGenericDOMException(IndexSizeError);
         else if (v > static_cast<double>(UINT_MAX))
             newLength = UINT_MAX;
         else

@@ -106,7 +106,7 @@ const AtomicString& SVGViewSpec::transformIdentifier()
 void SVGViewSpec::setZoomAndPan(unsigned short, ExceptionState& es)
 {
     // SVGViewSpec and all of its content is read-only.
-    es.throwDOMException(NoModificationAllowedError);
+    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
 void SVGViewSpec::setTransformString(const String& transform)

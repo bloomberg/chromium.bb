@@ -84,7 +84,7 @@ bool MutationObserver::validateOptions(MutationObserverOptions options)
 void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, ExceptionState& es)
 {
     if (!node) {
-        es.throwDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return;
     }
 
@@ -111,7 +111,7 @@ void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, 
         options |= AttributeFilter;
 
     if (!validateOptions(options)) {
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 

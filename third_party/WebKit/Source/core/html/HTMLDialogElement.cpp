@@ -60,7 +60,7 @@ PassRefPtr<HTMLDialogElement> HTMLDialogElement::create(const QualifiedName& tag
 void HTMLDialogElement::close(const String& returnValue, ExceptionState& es)
 {
     if (!fastHasAttribute(openAttr)) {
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     closeDialog(returnValue);
@@ -123,7 +123,7 @@ void HTMLDialogElement::show()
 void HTMLDialogElement::showModal(ExceptionState& es)
 {
     if (fastHasAttribute(openAttr) || !inDocument()) {
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     document().addToTopLayer(this);

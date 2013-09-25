@@ -348,7 +348,7 @@ void TextTrackCue::setVertical(const String& value, ExceptionState& es)
     else if (value == verticalGrowingRightKeyword())
         direction = VerticalGrowingRight;
     else
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
 
     if (direction == m_writingDirection)
         return;
@@ -374,7 +374,7 @@ void TextTrackCue::setLine(int position, ExceptionState& es)
     // On setting, if the text track cue snap-to-lines flag is not set, and the new
     // value is negative or greater than 100, then throw an IndexSizeError exception.
     if (!m_snapToLines && (position < 0 || position > 100)) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -394,7 +394,7 @@ void TextTrackCue::setPosition(int position, ExceptionState& es)
     // On setting, if the new value is negative or greater than 100, then throw an IndexSizeError exception.
     // Otherwise, set the text track cue text position to the new value.
     if (position < 0 || position > 100) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -413,7 +413,7 @@ void TextTrackCue::setSize(int size, ExceptionState& es)
     // On setting, if the new value is negative or greater than 100, then throw an IndexSizeError
     // exception. Otherwise, set the text track cue size to the new value.
     if (size < 0 || size > 100) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -457,7 +457,7 @@ void TextTrackCue::setAlign(const String& value, ExceptionState& es)
     else if (value == endKeyword())
         alignment = End;
     else
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
 
     if (alignment == m_cueAlignment)
         return;

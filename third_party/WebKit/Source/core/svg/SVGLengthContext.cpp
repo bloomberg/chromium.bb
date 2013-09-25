@@ -98,7 +98,7 @@ float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode,
 
     switch (fromUnit) {
     case LengthTypeUnknown:
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     case LengthTypeNumber:
         return value;
@@ -130,7 +130,7 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
 {
     switch (toUnit) {
     case LengthTypeUnknown:
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     case LengthTypeNumber:
         return value;
@@ -163,7 +163,7 @@ float SVGLengthContext::convertValueFromUserUnitsToPercentage(float value, SVGLe
     float width = 0;
     float height = 0;
     if (!determineViewport(width, height)) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
@@ -185,7 +185,7 @@ float SVGLengthContext::convertValueFromPercentageToUserUnits(float value, SVGLe
     float width = 0;
     float height = 0;
     if (!determineViewport(width, height)) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
@@ -223,13 +223,13 @@ float SVGLengthContext::convertValueFromUserUnitsToEMS(float value, ExceptionSta
 {
     RenderStyle* style = renderStyleForLengthResolving(m_context);
     if (!style) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
     float fontSize = style->specifiedFontSize();
     if (!fontSize) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
@@ -240,7 +240,7 @@ float SVGLengthContext::convertValueFromEMSToUserUnits(float value, ExceptionSta
 {
     RenderStyle* style = renderStyleForLengthResolving(m_context);
     if (!style) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
@@ -251,7 +251,7 @@ float SVGLengthContext::convertValueFromUserUnitsToEXS(float value, ExceptionSta
 {
     RenderStyle* style = renderStyleForLengthResolving(m_context);
     if (!style) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
@@ -259,7 +259,7 @@ float SVGLengthContext::convertValueFromUserUnitsToEXS(float value, ExceptionSta
     // if this causes problems in real world cases maybe it would be best to remove this
     float xHeight = ceilf(style->fontMetrics().xHeight());
     if (!xHeight) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
@@ -270,7 +270,7 @@ float SVGLengthContext::convertValueFromEXSToUserUnits(float value, ExceptionSta
 {
     RenderStyle* style = renderStyleForLengthResolving(m_context);
     if (!style) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 

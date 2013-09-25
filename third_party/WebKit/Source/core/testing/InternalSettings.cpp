@@ -38,19 +38,19 @@
 
 #define InternalSettingsGuardForSettingsReturn(returnValue) \
     if (!settings()) { \
-        es.throwDOMException(InvalidAccessError); \
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError); \
         return returnValue; \
     }
 
 #define InternalSettingsGuardForSettings()  \
     if (!settings()) { \
-        es.throwDOMException(InvalidAccessError); \
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError); \
         return; \
     }
 
 #define InternalSettingsGuardForPage() \
     if (!page()) { \
-        es.throwDOMException(InvalidAccessError); \
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError); \
         return; \
     }
 
@@ -294,7 +294,7 @@ void InternalSettings::setEditingBehavior(const String& editingBehavior, Excepti
     else if (equalIgnoringCase(editingBehavior, "android"))
         settings()->setEditingBehaviorType(EditingAndroidBehavior);
     else
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
 }
 
 void InternalSettings::setLangAttributeAwareFormControlUIEnabled(bool enabled)

@@ -117,7 +117,7 @@ void MediaKeySession::update(Uint8Array* key, ExceptionState& es)
     // 1. If the first or second argument [sic] is null or an empty array, throw an InvalidAccessError.
     // NOTE: the reference to a "second argument" is a spec bug.
     if (!key || !key->length()) {
-        es.throwDOMException(InvalidAccessError);
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return;
     }
 

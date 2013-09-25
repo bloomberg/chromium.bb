@@ -343,7 +343,7 @@ Vector<RefPtr<FontFace> > FontFaceSet::match(const String& fontString, const Str
 
     Font font;
     if (!resolveFontStyle(fontString, font)) {
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return matchedFonts;
     }
 
@@ -360,7 +360,7 @@ ScriptPromise FontFaceSet::load(const String& fontString, const String&, Excepti
     // FIXME: The second parameter (text) is ignored.
     Font font;
     if (!resolveFontStyle(fontString, font)) {
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return ScriptPromise();
     }
 
@@ -382,7 +382,7 @@ bool FontFaceSet::check(const String& fontString, const String&, ExceptionState&
     // FIXME: The second parameter (text) is ignored.
     Font font;
     if (!resolveFontStyle(fontString, font)) {
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return false;
     }
 

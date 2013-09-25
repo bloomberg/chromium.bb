@@ -76,7 +76,7 @@ void AnalyserNode::reset()
 void AnalyserNode::setFftSize(unsigned size, ExceptionState& es)
 {
     if (!m_analyser.setFftSize(size))
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
 }
 
 } // namespace WebCore

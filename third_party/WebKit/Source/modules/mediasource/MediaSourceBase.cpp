@@ -144,11 +144,11 @@ PassRefPtr<TimeRanges> MediaSourceBase::buffered() const
 void MediaSourceBase::setDuration(double duration, ExceptionState& es)
 {
     if (duration < 0.0 || std::isnan(duration)) {
-        es.throwDOMException(InvalidAccessError);
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return;
     }
     if (!isOpen()) {
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
@@ -188,7 +188,7 @@ void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionState& es)
     // 1. If the readyState attribute is not in the "open" state then throw an
     // InvalidStateError exception and abort these steps.
     if (!isOpen()) {
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
@@ -201,7 +201,7 @@ void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionState& es)
     } else if (error == decode) {
         eosStatus = MediaSourcePrivate::EosDecodeError;
     } else {
-        es.throwDOMException(InvalidAccessError);
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return;
     }
 
@@ -271,13 +271,13 @@ PassOwnPtr<SourceBufferPrivate> MediaSourceBase::createSourceBufferPrivate(const
         // Step 2: If type contains a MIME type ... that is not supported with the types
         // specified for the other SourceBuffer objects in sourceBuffers, then throw
         // a NotSupportedError exception and abort these steps.
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return nullptr;
     case MediaSourcePrivate::ReachedIdLimit:
         // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
         // Step 3: If the user agent can't handle any more SourceBuffer objects then throw
         // a QuotaExceededError exception and abort these steps.
-        es.throwDOMException(QuotaExceededError);
+        es.throwUninformativeAndGenericDOMException(QuotaExceededError);
         return nullptr;
     }
 

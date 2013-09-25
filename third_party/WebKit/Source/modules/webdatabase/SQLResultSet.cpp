@@ -52,7 +52,7 @@ int64_t SQLResultSet::insertId(ExceptionState& es) const
     if (m_insertIdSet)
         return m_insertId;
 
-    es.throwDOMException(InvalidAccessError);
+    es.throwUninformativeAndGenericDOMException(InvalidAccessError);
     return -1;
 }
 

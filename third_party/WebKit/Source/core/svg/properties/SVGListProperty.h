@@ -52,7 +52,7 @@ public:
     bool canAlterList(ExceptionState& es) const
     {
         if (m_role == AnimValRole) {
-            es.throwDOMException(NoModificationAllowedError);
+            es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
             return false;
         }
 
@@ -172,7 +172,7 @@ public:
     bool canGetItem(unsigned index, ExceptionState& es)
     {
         if (index >= m_values->size()) {
-            es.throwDOMException(IndexSizeError);
+            es.throwUninformativeAndGenericDOMException(IndexSizeError);
             return false;
         }
 
@@ -274,7 +274,7 @@ public:
             return false;
 
         if (index >= m_values->size()) {
-            es.throwDOMException(IndexSizeError);
+            es.throwUninformativeAndGenericDOMException(IndexSizeError);
             return false;
         }
 
@@ -295,7 +295,7 @@ public:
 
         if (m_values->isEmpty()) {
             // 'newItem' already lived in our list, we removed it, and now we're empty, which means there's nothing to replace.
-            es.throwDOMException(IndexSizeError);
+            es.throwUninformativeAndGenericDOMException(IndexSizeError);
             return ListItemType();
         }
 
@@ -329,7 +329,7 @@ public:
         if (m_values->isEmpty()) {
             ASSERT(m_wrappers->isEmpty());
             // 'passNewItem' already lived in our list, we removed it, and now we're empty, which means there's nothing to replace.
-            es.throwDOMException(IndexSizeError);
+            es.throwUninformativeAndGenericDOMException(IndexSizeError);
             return 0;
         }
 
@@ -353,7 +353,7 @@ public:
             return false;
 
         if (index >= m_values->size()) {
-            es.throwDOMException(IndexSizeError);
+            es.throwUninformativeAndGenericDOMException(IndexSizeError);
             return false;
         }
 

@@ -202,7 +202,7 @@ void MediaList::deleteMedium(const String& medium, ExceptionState& es)
 
     bool success = m_mediaQueries->remove(medium);
     if (!success) {
-        es.throwDOMException(NotFoundError);
+        es.throwUninformativeAndGenericDOMException(NotFoundError);
         return;
     }
     if (m_parentStyleSheet)
@@ -215,7 +215,7 @@ void MediaList::appendMedium(const String& medium, ExceptionState& es)
 
     bool success = m_mediaQueries->add(medium);
     if (!success) {
-        es.throwDOMException(InvalidCharacterError);
+        es.throwUninformativeAndGenericDOMException(InvalidCharacterError);
         return;
     }
 

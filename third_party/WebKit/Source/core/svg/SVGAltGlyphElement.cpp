@@ -57,7 +57,7 @@ PassRefPtr<SVGAltGlyphElement> SVGAltGlyphElement::create(const QualifiedName& t
 
 void SVGAltGlyphElement::setGlyphRef(const AtomicString&, ExceptionState& es)
 {
-    es.throwDOMException(NoModificationAllowedError);
+    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
 const AtomicString& SVGAltGlyphElement::glyphRef() const
@@ -67,7 +67,7 @@ const AtomicString& SVGAltGlyphElement::glyphRef() const
 
 void SVGAltGlyphElement::setFormat(const AtomicString&, ExceptionState& es)
 {
-    es.throwDOMException(NoModificationAllowedError);
+    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
 const AtomicString& SVGAltGlyphElement::format() const

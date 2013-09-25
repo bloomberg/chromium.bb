@@ -50,9 +50,9 @@ PassRefPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScop
         database = dbManager.openDatabase(context, name, version, displayName, estimatedSize, creationCallback, error);
         ASSERT(database || error != DatabaseError::None);
         if (error != DatabaseError::None)
-            es.throwDOMException(DatabaseManager::exceptionCodeForDatabaseError(error));
+            es.throwUninformativeAndGenericDOMException(DatabaseManager::exceptionCodeForDatabaseError(error));
     } else {
-        es.throwDOMException(SecurityError);
+        es.throwUninformativeAndGenericDOMException(SecurityError);
     }
 
     return database.release();
@@ -67,9 +67,9 @@ PassRefPtr<DatabaseSync> WorkerGlobalScopeWebDatabase::openDatabaseSync(WorkerGl
         database = dbManager.openDatabaseSync(context, name, version, displayName, estimatedSize, creationCallback, error);
         ASSERT(database || error != DatabaseError::None);
         if (error != DatabaseError::None)
-            es.throwDOMException(DatabaseManager::exceptionCodeForDatabaseError(error));
+            es.throwUninformativeAndGenericDOMException(DatabaseManager::exceptionCodeForDatabaseError(error));
     } else {
-        es.throwDOMException(SecurityError);
+        es.throwUninformativeAndGenericDOMException(SecurityError);
     }
 
     return database.release();

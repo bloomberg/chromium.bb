@@ -44,7 +44,7 @@ PassRefPtr<MediaConstraintsImpl> MediaConstraintsImpl::create(const Dictionary& 
 {
     RefPtr<MediaConstraintsImpl> object = adoptRef(new MediaConstraintsImpl());
     if (!object->initialize(constraints)) {
-        es.throwDOMException(TypeMismatchError);
+        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return 0;
     }
     return object.release();

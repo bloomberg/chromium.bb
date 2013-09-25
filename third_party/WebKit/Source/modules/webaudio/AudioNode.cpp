@@ -130,23 +130,23 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
     AudioContext::AutoLocker locker(context());
 
     if (!destination) {
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 
     // Sanity check input and output indices.
     if (outputIndex >= numberOfOutputs()) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
     if (destination && inputIndex >= destination->numberOfInputs()) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
     if (context() != destination->context()) {
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 
@@ -164,17 +164,17 @@ void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionState&
     AudioContext::AutoLocker locker(context());
 
     if (!param) {
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 
     if (outputIndex >= numberOfOutputs()) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
     if (context() != param->context()) {
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 
@@ -189,7 +189,7 @@ void AudioNode::disconnect(unsigned outputIndex, ExceptionState& es)
 
     // Sanity check input and output indices.
     if (outputIndex >= numberOfOutputs()) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return;
     }
 
@@ -214,7 +214,7 @@ void AudioNode::setChannelCount(unsigned long channelCount, ExceptionState& es)
                 updateChannelsForInputs();
         }
     } else {
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
     }
 }
 
@@ -246,7 +246,7 @@ void AudioNode::setChannelCountMode(const String& mode, ExceptionState& es)
     else if (mode == "explicit")
         m_channelCountMode = Explicit;
     else
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
 
     if (m_channelCountMode != oldMode)
         updateChannelsForInputs();
@@ -274,7 +274,7 @@ void AudioNode::setChannelInterpretation(const String& interpretation, Exception
     else if (interpretation == "discrete")
         m_channelInterpretation = AudioBus::Discrete;
     else
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
 }
 
 void AudioNode::updateChannelsForInputs()

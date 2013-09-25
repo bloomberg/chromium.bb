@@ -121,7 +121,7 @@ PassRefPtr<IDBRequest> IDBCursor::update(ScriptState* state, ScriptValue& value,
         return 0;
     }
     if (m_transaction->isReadOnly()) {
-        es.throwDOMException(ReadOnlyError);
+        es.throwUninformativeAndGenericDOMException(ReadOnlyError);
         return 0;
     }
 
@@ -238,7 +238,7 @@ PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ScriptExecutionContext* context
         return 0;
     }
     if (m_transaction->isReadOnly()) {
-        es.throwDOMException(ReadOnlyError);
+        es.throwUninformativeAndGenericDOMException(ReadOnlyError);
         return 0;
     }
 

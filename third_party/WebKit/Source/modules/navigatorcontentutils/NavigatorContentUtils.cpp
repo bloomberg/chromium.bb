@@ -77,7 +77,7 @@ static bool verifyCustomHandlerURL(const String& baseURL, const String& url, Exc
     static const char token[] = "%s";
     int index = url.find(token);
     if (-1 == index) {
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return false;
     }
 
@@ -90,7 +90,7 @@ static bool verifyCustomHandlerURL(const String& baseURL, const String& url, Exc
     KURL kurl(base, newURL);
 
     if (kurl.isEmpty() || !kurl.isValid()) {
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return false;
     }
 

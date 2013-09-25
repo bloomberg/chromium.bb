@@ -97,7 +97,7 @@ void AudioBuffer::releaseMemory()
 PassRefPtr<Float32Array> AudioBuffer::getChannelData(unsigned channelIndex, ExceptionState& es)
 {
     if (channelIndex >= m_channels.size()) {
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return 0;
     }
 

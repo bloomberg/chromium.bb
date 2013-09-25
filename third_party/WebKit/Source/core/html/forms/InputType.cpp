@@ -207,7 +207,7 @@ double InputType::valueAsDate() const
 
 void InputType::setValueAsDate(double, ExceptionState& es) const
 {
-    es.throwDOMException(InvalidStateError);
+    es.throwUninformativeAndGenericDOMException(InvalidStateError);
 }
 
 double InputType::valueAsDouble() const
@@ -222,7 +222,7 @@ void InputType::setValueAsDouble(double doubleValue, TextFieldEventBehavior even
 
 void InputType::setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionState& es) const
 {
-    es.throwDOMException(InvalidStateError);
+    es.throwUninformativeAndGenericDOMException(InvalidStateError);
 }
 
 bool InputType::supportsValidation() const
@@ -835,24 +835,24 @@ void InputType::applyStep(int count, AnyStepHandling anyStepHandling, TextFieldE
 {
     StepRange stepRange(createStepRange(anyStepHandling));
     if (!stepRange.hasStep()) {
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
     const Decimal current = parseToNumberOrNaN(element()->value());
     if (!current.isFinite()) {
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     Decimal newValue = current + stepRange.step() * count;
     if (!newValue.isFinite()) {
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
     const Decimal acceptableErrorValue = stepRange.acceptableError();
     if (newValue - stepRange.minimum() < -acceptableErrorValue) {
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     if (newValue < stepRange.minimum())
@@ -863,7 +863,7 @@ void InputType::applyStep(int count, AnyStepHandling anyStepHandling, TextFieldE
         newValue = stepRange.alignValueForStep(current, newValue);
 
     if (newValue - stepRange.maximum() > acceptableErrorValue) {
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     if (newValue > stepRange.maximum())
@@ -891,7 +891,7 @@ StepRange InputType::createStepRange(AnyStepHandling) const
 void InputType::stepUp(int n, ExceptionState& es)
 {
     if (!isSteppable()) {
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
     applyStep(n, RejectAny, DispatchNoEvent, es);

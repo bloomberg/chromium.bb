@@ -148,7 +148,7 @@ void FileReader::readInternal(Blob* blob, FileReaderLoader::ReadType type, Excep
 {
     // If multiple concurrent read methods are called on the same FileReader, InvalidStateError should be thrown when the state is LOADING.
     if (m_state == LOADING) {
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 

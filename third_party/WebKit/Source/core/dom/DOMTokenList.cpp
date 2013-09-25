@@ -35,14 +35,14 @@ namespace WebCore {
 bool DOMTokenList::validateToken(const AtomicString& token, ExceptionState& es)
 {
     if (token.isEmpty()) {
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return false;
     }
 
     unsigned length = token.length();
     for (unsigned i = 0; i < length; ++i) {
         if (isHTMLSpace<UChar>(token[i])) {
-            es.throwDOMException(InvalidCharacterError);
+            es.throwUninformativeAndGenericDOMException(InvalidCharacterError);
             return false;
         }
     }

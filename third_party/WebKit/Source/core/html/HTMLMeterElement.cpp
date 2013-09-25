@@ -79,7 +79,7 @@ double HTMLMeterElement::min() const
 void HTMLMeterElement::setMin(double min, ExceptionState& es)
 {
     if (!std::isfinite(min)) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
     setAttribute(minAttr, String::number(min));
@@ -93,7 +93,7 @@ double HTMLMeterElement::max() const
 void HTMLMeterElement::setMax(double max, ExceptionState& es)
 {
     if (!std::isfinite(max)) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
     setAttribute(maxAttr, String::number(max));
@@ -108,7 +108,7 @@ double HTMLMeterElement::value() const
 void HTMLMeterElement::setValue(double value, ExceptionState& es)
 {
     if (!std::isfinite(value)) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
     setAttribute(valueAttr, String::number(value));
@@ -123,7 +123,7 @@ double HTMLMeterElement::low() const
 void HTMLMeterElement::setLow(double low, ExceptionState& es)
 {
     if (!std::isfinite(low)) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
     setAttribute(lowAttr, String::number(low));
@@ -138,7 +138,7 @@ double HTMLMeterElement::high() const
 void HTMLMeterElement::setHigh(double high, ExceptionState& es)
 {
     if (!std::isfinite(high)) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
     setAttribute(highAttr, String::number(high));
@@ -153,7 +153,7 @@ double HTMLMeterElement::optimum() const
 void HTMLMeterElement::setOptimum(double optimum, ExceptionState& es)
 {
     if (!std::isfinite(optimum)) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
     setAttribute(optimumAttr, String::number(optimum));

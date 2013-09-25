@@ -258,7 +258,7 @@ void SVGLength::setValueAsString(const String& string, ExceptionState& es)
         parseValueInternal<UChar>(string, convertedNumber, type);
 
     if (!success) {
-        es.throwDOMException(SyntaxError);
+        es.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
     }
 
@@ -274,7 +274,7 @@ String SVGLength::valueAsString() const
 void SVGLength::newValueSpecifiedUnits(unsigned short type, float value, ExceptionState& es)
 {
     if (type == LengthTypeUnknown || type > LengthTypePC) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
 
@@ -285,7 +285,7 @@ void SVGLength::newValueSpecifiedUnits(unsigned short type, float value, Excepti
 void SVGLength::convertToSpecifiedUnits(unsigned short type, const SVGLengthContext& context, ExceptionState& es)
 {
     if (type == LengthTypeUnknown || type > LengthTypePC) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return;
     }
 

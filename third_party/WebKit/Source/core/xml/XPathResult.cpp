@@ -186,7 +186,7 @@ Node* XPathResult::iterateNext(ExceptionState& es)
     }
 
     if (invalidIteratorState()) {
-        es.throwDOMException(InvalidStateError);
+        es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return 0;
     }
 

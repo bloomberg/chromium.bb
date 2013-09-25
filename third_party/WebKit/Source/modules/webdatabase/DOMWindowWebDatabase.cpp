@@ -52,9 +52,9 @@ PassRefPtr<Database> DOMWindowWebDatabase::openDatabase(DOMWindow* window, const
         database = dbManager.openDatabase(window->document(), name, version, displayName, estimatedSize, creationCallback, error);
         ASSERT(database || error != DatabaseError::None);
         if (error != DatabaseError::None)
-            es.throwDOMException(DatabaseManager::exceptionCodeForDatabaseError(error));
+            es.throwUninformativeAndGenericDOMException(DatabaseManager::exceptionCodeForDatabaseError(error));
     } else {
-        es.throwDOMException(SecurityError);
+        es.throwUninformativeAndGenericDOMException(SecurityError);
     }
 
     return database;

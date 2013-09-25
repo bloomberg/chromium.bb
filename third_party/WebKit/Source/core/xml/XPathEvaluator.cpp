@@ -53,7 +53,7 @@ PassRefPtr<XPathResult> XPathEvaluator::evaluate(const String& expression, Node*
     XPathNSResolver* resolver, unsigned short type, XPathResult* result, ExceptionState& es)
 {
     if (!isValidContextNode(contextNode)) {
-        es.throwDOMException(NotSupportedError);
+        es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 

@@ -123,7 +123,7 @@ PassRefPtr<HTMLElement> HTMLTableRowElement::insertCell(int index, ExceptionStat
     RefPtr<HTMLCollection> children = cells();
     int numCells = children ? children->length() : 0;
     if (index < -1 || index > numCells) {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
         return 0;
     }
 
@@ -151,7 +151,7 @@ void HTMLTableRowElement::deleteCell(int index, ExceptionState& es)
         RefPtr<Node> cell = children->item(index);
         HTMLElement::removeChild(cell.get(), es);
     } else {
-        es.throwDOMException(IndexSizeError);
+        es.throwUninformativeAndGenericDOMException(IndexSizeError);
     }
 }
 
@@ -162,7 +162,7 @@ PassRefPtr<HTMLCollection> HTMLTableRowElement::cells()
 
 void HTMLTableRowElement::setCells(HTMLCollection*, ExceptionState& es)
 {
-    es.throwDOMException(NoModificationAllowedError);
+    es.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
 }
 
 }
