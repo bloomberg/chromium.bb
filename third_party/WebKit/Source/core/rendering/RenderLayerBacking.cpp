@@ -1139,14 +1139,25 @@ bool RenderLayerBacking::updateScrollingLayers(bool needsScrollingLayers)
 
 void RenderLayerBacking::updateScrollParent(RenderLayer* scrollParent)
 {
-    if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer))
-        scrollingCoordinator->updateScrollParentForLayer(m_owningLayer, scrollParent);
+    if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
+        if (m_ancestorClippingLayer) {
+            ASSERT(childForSuperlayers() == m_ancestorClippingLayer.get());
+            // If we have an ancestor clipping layer, it is the scroll child. The other layer that may have
+            // been the scroll child is the graphics layer. We will ensure that we clear its association
+            // with a scroll parent if it had one.
+            scrollingCoordinator->updateScrollParentForGraphicsLayer(m_ancestorClippingLayer.get(), scrollParent);
+            scrollingCoordinator->updateScrollParentForGraphicsLayer(m_graphicsLayer.get(), 0);
+        } else {
+            ASSERT(childForSuperlayers() == m_graphicsLayer.get());
+            scrollingCoordinator->updateScrollParentForGraphicsLayer(m_graphicsLayer.get(), scrollParent);
+        }
+    }
 }
 
 void RenderLayerBacking::updateClipParent(RenderLayer* clipParent)
 {
     if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer))
-        scrollingCoordinator->updateClipParentForLayer(m_owningLayer, clipParent);
+        scrollingCoordinator->updateClipParentForGraphicsLayer(m_graphicsLayer.get(), clipParent);
 }
 
 GraphicsLayerPaintingPhase RenderLayerBacking::paintingPhaseForPrimaryLayer() const

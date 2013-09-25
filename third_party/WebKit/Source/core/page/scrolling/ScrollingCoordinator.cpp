@@ -516,30 +516,22 @@ void ScrollingCoordinator::touchEventTargetRectsDidChange(const Document*)
     setTouchEventTargetRects(touchEventTargetRects);
 }
 
-void ScrollingCoordinator::updateScrollParentForLayer(RenderLayer* child, RenderLayer* parent)
+void ScrollingCoordinator::updateScrollParentForGraphicsLayer(GraphicsLayer* child, RenderLayer* parent)
 {
-    WebLayer* childWebLayer = scrollingWebLayerForGraphicsLayer(child->layerForScrollChild());
-    if (!childWebLayer)
-        return;
-
     WebLayer* scrollParentWebLayer = 0;
     if (parent && parent->backing())
         scrollParentWebLayer = scrollingWebLayerForGraphicsLayer(parent->backing()->parentForSublayers());
 
-    childWebLayer->setScrollParent(scrollParentWebLayer);
+    child->setScrollParent(scrollParentWebLayer);
 }
 
-void ScrollingCoordinator::updateClipParentForLayer(RenderLayer* child, RenderLayer* parent)
+void ScrollingCoordinator::updateClipParentForGraphicsLayer(GraphicsLayer* child, RenderLayer* parent)
 {
-    WebLayer* childWebLayer = scrollingWebLayerForGraphicsLayer(child->backing()->graphicsLayer());
-    if (!childWebLayer)
-        return;
-
     WebLayer* clipParentWebLayer = 0;
     if (parent && parent->backing())
         clipParentWebLayer = scrollingWebLayerForGraphicsLayer(parent->backing()->parentForSublayers());
 
-    childWebLayer->setClipParent(clipParentWebLayer);
+    child->setClipParent(clipParentWebLayer);
 }
 
 void ScrollingCoordinator::willDestroyRenderLayer(RenderLayer* layer)

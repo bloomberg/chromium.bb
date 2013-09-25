@@ -53,7 +53,8 @@ enum {
     LayerTreeIncludesDebugInfo = 1 << 0, // Dump extra debugging info like layer addresses.
     LayerTreeIncludesRepaintRects = 1 << 1,
     LayerTreeIncludesPaintingPhases = 1 << 2,
-    LayerTreeIncludesRootLayer = 1 << 3
+    LayerTreeIncludesRootLayer = 1 << 3,
+    LayerTreeIncludesClipAndScrollParents = 1 << 4
 };
 typedef unsigned LayerTreeFlags;
 

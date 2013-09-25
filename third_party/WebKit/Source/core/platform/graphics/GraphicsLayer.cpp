@@ -94,6 +94,8 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_masksToBounds(false)
     , m_drawsContent(false)
     , m_contentsVisible(true)
+    , m_hasScrollParent(false)
+    , m_hasClipParent(false)
     , m_paintingPhase(GraphicsLayerPaintAllWithOverflowClip)
     , m_contentsOrientation(CompositingCoordinatesTopDown)
     , m_parent(0)
@@ -732,6 +734,17 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
         ts << ")\n";
     }
 
+    if (flags & LayerTreeIncludesClipAndScrollParents) {
+        if (m_hasScrollParent) {
+            writeIndent(ts, indent + 1);
+            ts << "(hasScrollParent 1)\n";
+        }
+        if (m_hasClipParent) {
+            writeIndent(ts, indent + 1);
+            ts << "(hasClipParent 1)\n";
+        }
+    }
+
     dumpAdditionalProperties(ts, indent, flags);
 
     if (m_children.size()) {
@@ -864,6 +877,18 @@ void GraphicsLayer::setContentsVisible(bool contentsVisible)
 
     m_contentsVisible = contentsVisible;
     updateLayerIsDrawable();
+}
+
+void GraphicsLayer::setClipParent(WebKit::WebLayer* parent)
+{
+    m_hasClipParent = !!parent;
+    m_layer->layer()->setClipParent(parent);
+}
+
+void GraphicsLayer::setScrollParent(WebKit::WebLayer* parent)
+{
+    m_hasScrollParent = !!parent;
+    m_layer->layer()->setScrollParent(parent);
 }
 
 void GraphicsLayer::setBackgroundColor(const Color& color)

@@ -186,6 +186,9 @@ public:
     bool contentsAreVisible() const { return m_contentsVisible; }
     void setContentsVisible(bool);
 
+    void setScrollParent(WebKit::WebLayer*);
+    void setClipParent(WebKit::WebLayer*);
+
     // For special cases, e.g. drawing missing tiles on Android.
     // The compositor should never paint this color in normal cases because the RenderLayer
     // will paint background by itself.
@@ -379,6 +382,9 @@ private:
     bool m_masksToBounds : 1;
     bool m_drawsContent : 1;
     bool m_contentsVisible : 1;
+
+    bool m_hasScrollParent : 1;
+    bool m_hasClipParent : 1;
 
     GraphicsLayerPaintingPhase m_paintingPhase;
     CompositingCoordinatesOrientation m_contentsOrientation; // affects orientation of layer contents
