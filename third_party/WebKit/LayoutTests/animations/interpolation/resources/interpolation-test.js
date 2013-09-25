@@ -51,17 +51,17 @@
  */
 'use strict';
 (function() {
-  var prefix = 'webkitAnimation' in document.createElement('div').style ? '-webkit-' : '';
+  var webkitPrefix = 'webkitAnimation' in document.documentElement.style ? '-webkit-' : '';
   var isRefTest = false;
-  var startEvent = prefix ? 'webkitAnimationStart' : 'animationstart';
-  var endEvent = prefix ? 'webkitAnimationEnd' : 'animationend';
+  var startEvent = webkitPrefix ? 'webkitAnimationStart' : 'animationstart';
+  var endEvent = webkitPrefix ? 'webkitAnimationEnd' : 'animationend';
   var testCount = 0;
-  var finishedCount = 0;
-  var startedCount = 0;
+  var animationEventCount = 0;
   // FIXME: This should be 0, but 0 duration animations are broken in at least
   // pre-Web-Animations Blink, WebKit and Gecko.
-  var durationSeconds = 0.1;
+  var durationSeconds = 0.001;
   var iterationCount = 0.5;
+  var delaySeconds = 0;
   var cssText = '';
   var fragment = document.createDocumentFragment();
   var style = document.createElement('style');
@@ -151,7 +151,7 @@
   var nextKeyframeId = 0;
   function defineKeyframes(params) {
     var id = 'test-' + ++nextKeyframeId;
-    cssText += '@' + prefix + 'keyframes ' + id + ' { \n' +
+    cssText += '@' + webkitPrefix + 'keyframes ' + id + ' { \n' +
         '  0% { ' + params.property + ': ' + params.from + '; }\n' +
         '  100% { ' + params.property + ': ' + params.to + '; }\n' +
         '}\n';
@@ -237,9 +237,10 @@
     };
     var easing = createEasing(fraction);
     cssText += '.' + id + '.active {\n' +
-        '  ' + prefix + 'animation: ' + keyframeId + ' ' + durationSeconds + 's forwards;\n' +
-        '  ' + prefix + 'animation-timing-function: ' + easing + ';\n' +
-        '  ' + prefix + 'animation-iteration-count: ' + iterationCount + ';\n' +
+        '  ' + webkitPrefix + 'animation: ' + keyframeId + ' ' + durationSeconds + 's forwards;\n' +
+        '  ' + webkitPrefix + 'animation-timing-function: ' + easing + ';\n' +
+        '  ' + webkitPrefix + 'animation-iteration-count: ' + iterationCount + ';\n' +
+        '  ' + webkitPrefix + 'animation-delay: ' + delaySeconds + 's;\n' +
         '}\n';
     testCount++;
     fragment.appendChild(targetContainer);
@@ -266,28 +267,48 @@
     testRunner.waitUntilDone();
   }
 
-  if (window.internals && !internals.runtimeFlags.webAnimationsCSSEnabled) {
-    // FIXME: Once http://crbug.com/279039 is fixed we can use the logic below
-    // that just waits for all of the animations to finish.
-    durationSeconds = 1000;
+  function isLastAnimationEvent() {
+    return !finished && animationEventCount === testCount;
+  }
+
+  function endEventListener() {
+    animationEventCount++;
+    if (!isLastAnimationEvent()) {
+      return;
+    }
+    finishTest();
+  }
+
+  if (window.internals) {
+    if (internals.runtimeFlags.webAnimationsCSSEnabled) {
+      durationSeconds = 0;
+      document.documentElement.addEventListener(endEvent, endEventListener);
+    } else {
+      // FIXME: Once http://crbug.com/279039 is fixed we can use the same logic as Web Animations for testing.
+      durationSeconds = 1000;
+      iterationCount = 1;
+      document.documentElement.addEventListener(startEvent, function() {
+        animationEventCount++;
+        if (!isLastAnimationEvent()) {
+          return;
+        }
+        internals.pauseAnimations(durationSeconds / 2);
+        finishTest();
+      });
+    }
+  } else if (webkitPrefix) {
+    durationSeconds = 1e9;
     iterationCount = 1;
+    delaySeconds = -durationSeconds / 2;
     document.documentElement.addEventListener(startEvent, function() {
-      if (finished || ++startedCount != testCount) {
+      animationEventCount++;
+      if (!isLastAnimationEvent()) {
         return;
       }
-      internals.pauseAnimations(durationSeconds / 2);
-      finishTest();
+      setTimeout(finishTest, 0);
     });
   } else {
-    if (window.internals && internals.runtimeFlags.webAnimationsCSSEnabled) {
-      durationSeconds = 0;
-    }
-    document.documentElement.addEventListener(endEvent, function() {
-      if (finished || ++finishedCount != testCount) {
-        return;
-      }
-      finishTest();
-    });
+    document.documentElement.addEventListener(endEvent, endEventListener);
   }
 
   if (!window.testRunner) {
