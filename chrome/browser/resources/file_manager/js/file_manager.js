@@ -488,97 +488,80 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.__lookupSetter__('hidden').call(this, value);
     };
 
-    var commands = this.dialogDom_.querySelectorAll('command');
-    for (var i = 0; i < commands.length; i++)
-      cr.ui.Command.decorate(commands[i]);
-
     var doc = this.document_;
-
-    CommandUtil.registerCommand(this.dialogContainer_, 'newfolder',
-        Commands.newFolderCommand, this, this.directoryModel_);
+    var handler = new CommandHandler(doc);
 
     // Required to handle the command outside of the container, on the footer.
     // TODO(mtomasz): Remove after fixing crbug.com/275235.
-    CommandUtil.registerCommand(this.dialogDom_.querySelector('.dialog-footer'),
-        'newfolder', Commands.newFolderCommand, this, this.directoryModel_);
+    handler.registerCommand('newfolder', Commands.newFolderCommand, this,
+                            this.directoryModel_);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'newwindow',
-        Commands.newWindowCommand, this, this.directoryModel_);
+    handler.registerCommand('newwindow', Commands.newWindowCommand, this,
+                            this.directoryModel_);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'change-default-app',
-        Commands.changeDefaultAppCommand, this);
+    handler.registerCommand('change-default-app',
+                            Commands.changeDefaultAppCommand, this);
 
-    CommandUtil.registerCommand(this.navigationList_, 'unmount',
-        Commands.unmountCommand, this);
+    handler.registerCommand('unmount', Commands.unmountCommand, this);
 
-    CommandUtil.registerCommand(this.navigationList_, 'import-photos',
-        Commands.importCommand, this.navigationList_);
+    handler.registerCommand('import-photos', Commands.importCommand,
+                            this.navigationList_);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'format',
-        Commands.formatCommand, this,
-        this.directoryModel_);
+    handler.registerCommand('format', Commands.formatCommand, this,
+                            this.directoryModel_);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'delete',
-        Commands.deleteFileCommand, this);
+    handler.registerCommand('delete', Commands.deleteFileCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'rename',
-        Commands.renameFileCommand, this);
+    handler.registerCommand('rename', Commands.renameFileCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'volume-help',
-        Commands.volumeHelpCommand, this);
+    handler.registerCommand('volume-help', Commands.volumeHelpCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'drive-buy-more-space',
-        Commands.driveBuySpaceCommand, this);
+    handler.registerCommand('drive-buy-more-space',
+                            Commands.driveBuySpaceCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_,
-        'drive-clear-local-cache', Commands.driveClearCacheCommand, this);
+    handler.registerCommand('drive-clear-local-cache',
+                            Commands.driveClearCacheCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'drive-go-to-drive',
-        Commands.driveGoToDriveCommand, this);
+    handler.registerCommand('drive-go-to-drive',
+                            Commands.driveGoToDriveCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'paste',
-        Commands.pasteFileCommand, doc, this.fileTransferController_);
+    handler.registerCommand('paste', Commands.pasteFileCommand, doc,
+                            this.fileTransferController_);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'open-with',
-        Commands.openWithCommand, this);
+    handler.registerCommand('open-with', Commands.openWithCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'toggle-pinned',
-        Commands.togglePinnedCommand, this);
+    handler.registerCommand('toggle-pinned', Commands.togglePinnedCommand,
+                            this);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'zip-selection',
-        Commands.zipSelectionCommand, this, this.directoryModel_);
+    handler.registerCommand('zip-selection', Commands.zipSelectionCommand, this,
+                            this.directoryModel_);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'share',
-        Commands.shareCommand, this);
+    handler.registerCommand('share', Commands.shareCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_,
-        'create-folder-shortcut', Commands.createFolderShortcutCommand, this);
+    handler.registerCommand('create-folder-shortcut',
+                            Commands.createFolderShortcutCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_,
-        'remove-folder-shortcut', Commands.removeFolderShortcutCommand, this);
+    handler.registerCommand('remove-folder-shortcut',
+                            Commands.removeFolderShortcutCommand, this);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'search',
-        Commands.searchCommand, this,
-        this.dialogDom_.querySelector('#search-box'));
+    handler.registerCommand('search', Commands.searchCommand, this,
+                            this.dialogDom_.querySelector('#search-box'));
 
     // Register commands with CTRL-1..9 shortcuts for switching between
     // volumes.
     for (var i = 1; i <= 9; i++) {
-      CommandUtil.registerCommand(this.dialogContainer_,
-                                  'volume-switch-' + i,
-                                  Commands.volumeSwitchCommand,
-                                  this.navigationList_,
-                                  i);
+      handler.registerCommand('volume-switch-' + i,
+                              Commands.volumeSwitchCommand,
+                              this.navigationList_,
+                              i);
     }
 
-    CommandUtil.registerCommand(doc, 'zoom-in', Commands.zoomInCommand);
-    CommandUtil.registerCommand(doc, 'zoom-out', Commands.zoomOutCommand);
-    CommandUtil.registerCommand(doc, 'zoom-reset', Commands.zoomResetCommand);
+    handler.registerCommand('zoom-in', Commands.zoomInCommand);
+    handler.registerCommand('zoom-out', Commands.zoomOutCommand);
+    handler.registerCommand('zoom-reset', Commands.zoomResetCommand);
 
-    CommandUtil.registerCommand(this.dialogContainer_, 'cut',
-        Commands.defaultCommand, doc);
-    CommandUtil.registerCommand(this.dialogContainer_, 'copy',
-        Commands.defaultCommand, doc);
+    handler.registerCommand('cut', Commands.defaultCommand, doc);
+    handler.registerCommand('copy', Commands.defaultCommand, doc);
 
     var inputs = this.dialogDom_.querySelectorAll(
         'input[type=text], input[type=search], textarea');

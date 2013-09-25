@@ -118,7 +118,7 @@ CommandUtil.getSingleEntry = function(event, fileManager) {
  * @param {Node} node Node to register command handler on.
  * @param {string} commandId Command id to respond to.
  * @param {{execute:function, canExecute:function}} handler Handler to use.
- * @param {...Object} var_args Additional arguments to pass to handler.
+ * @param {...*} var_args Additional arguments to pass to handler.
  */
 CommandUtil.registerCommand = function(node, commandId, handler, var_args) {
   var args = Array.prototype.slice.call(arguments, 3);
@@ -157,10 +157,84 @@ CommandUtil.forceDefaultHandler = function(node, commandId) {
   CommandUtil.registerCommand(node, commandId, Commands.defaultCommand, doc);
 };
 
+/**
+ * Handle of the command events.
+ * @param {HTMLDocument} doc Document of Files.app's UI.
+ * @constructor
+ */
+var CommandHandler = function(doc) {
+  // Set member variable.
+  this.commands_ = {};
+
+  // Decorate command tags in the document.
+  var commands = doc.querySelectorAll('command');
+  for (var i = 0; i < commands.length; i++) {
+    cr.ui.Command.decorate(commands[i]);
+  }
+
+  // Register events.
+  doc.addEventListener('command', this.onCommand_.bind(this));
+  doc.addEventListener('canExecute', this.onCanExecute_.bind(this));
+};
+
+/**
+ * Registers handler on specific command on specific node.
+ * @param {string} commandId Command id to respond to.
+ * @param {{execute:function, canExecute:function}} handler Handler to use.
+ * @param {...*} var_args Additional arguments to pass to handler.
+ */
+CommandHandler.prototype.registerCommand = function(commandId,
+                                                    handler,
+                                                    var_args) {
+  handler.args = Array.prototype.slice.call(arguments, 2);
+  this.commands_[commandId] = handler;
+};
+
+/**
+ * Handles command events.
+ * @param {Event} event Command event.
+ * @private
+ */
+CommandHandler.prototype.onCommand_ = function(event) {
+  var handler = this.commands_[event.command.id];
+  handler.execute.apply(handler, [event].concat(handler.args));
+};
+
+/**
+ * Handles canExecute events.
+ * @param {Event} event Can execute event.
+ * @private
+ */
+CommandHandler.prototype.onCanExecute_ = function(event) {
+  var handler = this.commands_[event.command.id];
+  handler.canExecute.apply(handler, [event].concat(handler.args));
+};
+
+/**
+ * A command.
+ * @interface
+ */
+var Command = function() {};
+
+/**
+ * Handles the execute event.
+ * @param {Event} event Command event.
+ * @param {...*} var_args Additional arguments.
+ */
+Command.prototype.execute = function(event, var_args) {};
+
+/**
+ * Handles the can execute event.
+ * @param {Event} event Can execute event.
+ * @param {...*} var_args Additional arguments.
+ */
+Command.prototype.canExecute = function(event, var_args) {};
+
 var Commands = {};
 
 /**
  * Forwards all command events to standard document handlers.
+ * @implements {Command}
  */
 Commands.defaultCommand = {
   execute: function(event, document) {
@@ -173,6 +247,7 @@ Commands.defaultCommand = {
 
 /**
  * Unmounts external drive.
+ * @implements {Command}
  */
 Commands.unmountCommand = {
   /**
@@ -201,6 +276,7 @@ Commands.unmountCommand = {
 
 /**
  * Formats external drive.
+ * @implements {Command}
  */
 Commands.formatCommand = {
   /**
@@ -233,7 +309,8 @@ Commands.formatCommand = {
 };
 
 /**
- * Imports photos from external drive
+ * Imports photos from external drive.
+ * @implements {Command}
  */
 Commands.importCommand = {
   /**
@@ -259,6 +336,7 @@ Commands.importCommand = {
 
 /**
  * Initiates new folder creation.
+ * @implements {Command}
  */
 Commands.newFolderCommand = {
   execute: function(event, fileManager) {
@@ -274,6 +352,7 @@ Commands.newFolderCommand = {
 
 /**
  * Initiates new window creation.
+ * @implements {Command}
  */
 Commands.newWindowCommand = {
   execute: function(event, fileManager, directoryModel) {
@@ -291,6 +370,7 @@ Commands.newWindowCommand = {
 
 /**
  * Changed the default app handling inserted media.
+ * @implements {Command}
  */
 Commands.changeDefaultAppCommand = {
   execute: function(event, fileManager) {
@@ -301,6 +381,7 @@ Commands.changeDefaultAppCommand = {
 
 /**
  * Deletes selected files.
+ * @implements {Command}
  */
 Commands.deleteFileCommand = {
   execute: function(event, fileManager) {
@@ -316,6 +397,7 @@ Commands.deleteFileCommand = {
 
 /**
  * Pastes files from clipboard.
+ * @implements {Command}
  */
 Commands.pasteFileCommand = {
   execute: Commands.defaultCommand.execute,
@@ -327,6 +409,7 @@ Commands.pasteFileCommand = {
 
 /**
  * Initiates file renaming.
+ * @implements {Command}
  */
 Commands.renameFileCommand = {
   execute: function(event, fileManager) {
@@ -344,6 +427,7 @@ Commands.renameFileCommand = {
 
 /**
  * Opens drive help.
+ * @implements {Command}
  */
 Commands.volumeHelpCommand = {
   execute: function() {
@@ -357,6 +441,7 @@ Commands.volumeHelpCommand = {
 
 /**
  * Opens drive buy-more-space url.
+ * @implements {Command}
  */
 Commands.driveBuySpaceCommand = {
   execute: function() {
@@ -367,6 +452,7 @@ Commands.driveBuySpaceCommand = {
 
 /**
  * Clears drive cache.
+ * @implements {Command}
  */
 Commands.driveClearCacheCommand = {
   execute: function() {
@@ -377,6 +463,7 @@ Commands.driveClearCacheCommand = {
 
 /**
  * Opens drive.google.com.
+ * @implements {Command}
  */
 Commands.driveGoToDriveCommand = {
   execute: function() {
@@ -387,6 +474,7 @@ Commands.driveGoToDriveCommand = {
 
 /**
  * Displays open with dialog for current selection.
+ * @implements {Command}
  */
 Commands.openWithCommand = {
   execute: function(event, fileManager) {
@@ -408,6 +496,7 @@ Commands.openWithCommand = {
 
 /**
  * Focuses search input box.
+ * @implements {Command}
  */
 Commands.searchCommand = {
   execute: function(event, fileManager, element) {
@@ -421,6 +510,7 @@ Commands.searchCommand = {
 
 /**
  * Activates the n-th volume.
+ * @implements {Command}
  */
 Commands.volumeSwitchCommand = {
   execute: function(event, navigationList, index) {
@@ -433,6 +523,7 @@ Commands.volumeSwitchCommand = {
 
 /**
  * Flips 'available offline' flag on the file.
+ * @implements {Command}
  */
 Commands.togglePinnedCommand = {
   execute: function(event, fileManager) {
@@ -529,6 +620,7 @@ Commands.togglePinnedCommand = {
 
 /**
  * Creates zip file for current selection.
+ * @implements {Command}
  */
 Commands.zipSelectionCommand = {
   execute: function(event, fileManager, directoryModel) {
@@ -546,6 +638,7 @@ Commands.zipSelectionCommand = {
 
 /**
  * Shows the share dialog for the current selection (single only).
+ * @implements {Command}
  */
 Commands.shareCommand = {
   execute: function(event, fileManager) {
@@ -562,6 +655,7 @@ Commands.shareCommand = {
 
 /**
  * Creates a shortcut of the selected folder (single only).
+ * @implements {Command}
  */
 Commands.createFolderShortcutCommand = {
   /**
@@ -609,6 +703,7 @@ Commands.createFolderShortcutCommand = {
 
 /**
  * Removes the folder shortcut.
+ * @implements {Command}
  */
 Commands.removeFolderShortcutCommand = {
   /**
@@ -645,6 +740,7 @@ Commands.removeFolderShortcutCommand = {
 
 /**
  * Zoom in to the Files.app.
+ * @implements {Command}
  */
 Commands.zoomInCommand = {
   execute: function(event) {
@@ -655,6 +751,7 @@ Commands.zoomInCommand = {
 
 /**
  * Zoom out from the Files.app.
+ * @implements {Command}
  */
 Commands.zoomOutCommand = {
   execute: function(event) {
@@ -665,6 +762,7 @@ Commands.zoomOutCommand = {
 
 /**
  * Reset the zoom factor.
+ * @implements {Command}
  */
 Commands.zoomResetCommand = {
   execute: function(event) {
