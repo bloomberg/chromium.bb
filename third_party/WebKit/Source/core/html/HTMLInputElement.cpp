@@ -43,7 +43,6 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/ScopedEventQueue.h"
-#include "core/dom/TouchController.h"
 #include "core/events/TouchEvent.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
@@ -164,7 +163,7 @@ HTMLInputElement::~HTMLInputElement()
     if (isRadioButton())
         document().formController()->checkedRadioButtons().removeButton(this);
     if (m_hasTouchEventHandler)
-        TouchController::from(&document())->didRemoveEventTargetNode(&document(), this);
+        document().didRemoveEventTargetNode(this);
 }
 
 const AtomicString& HTMLInputElement::name() const
@@ -434,11 +433,10 @@ void HTMLInputElement::updateType()
 
     bool hasTouchEventHandler = m_inputTypeView->hasTouchEventHandler();
     if (hasTouchEventHandler != m_hasTouchEventHandler) {
-        TouchController* controller = TouchController::from(&document());
         if (hasTouchEventHandler)
-            controller->didAddTouchEventHandler(&document(), this);
+            document().didAddTouchEventHandler(this);
         else
-            controller->didRemoveTouchEventHandler(&document(), this);
+            document().didRemoveTouchEventHandler(this);
         m_hasTouchEventHandler = hasTouchEventHandler;
     }
 
@@ -1463,11 +1461,11 @@ void HTMLInputElement::didMoveToNewDocument(Document* oldDocument)
         if (isRadioButton())
             oldDocument->formController()->checkedRadioButtons().removeButton(this);
         if (m_hasTouchEventHandler)
-            TouchController::from(oldDocument)->didRemoveEventTargetNode(oldDocument, this);
+            oldDocument->didRemoveEventTargetNode(this);
     }
 
     if (m_hasTouchEventHandler)
-        TouchController::from(&document())->didAddTouchEventHandler(&document(), this);
+        document().didAddTouchEventHandler(this);
 
     HTMLTextFormControlElement::didMoveToNewDocument(oldDocument);
 }

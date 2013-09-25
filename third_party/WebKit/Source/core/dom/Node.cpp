@@ -63,7 +63,6 @@
 #include "core/dom/TemplateContentDocumentFragment.h"
 #include "core/dom/Text.h"
 #include "core/events/TextEvent.h"
-#include "core/dom/TouchController.h"
 #include "core/events/TouchEvent.h"
 #include "core/dom/TreeScopeAdopter.h"
 #include "core/events/UIEvent.h"
@@ -312,7 +311,7 @@ void Node::willBeDeletedFrom(Document* document)
 {
     if (hasEventTargetData()) {
         if (document)
-            TouchController::from(document)->didRemoveEventTargetNode(document, this);
+            document->didRemoveEventTargetNode(this);
         clearEventTargetData();
     }
 
@@ -2040,25 +2039,23 @@ void Node::didMoveToNewDocument(Document* oldDocument)
             cache->remove(this);
 
     const EventListenerVector& mousewheelListeners = getEventListeners(eventNames().mousewheelEvent);
-    WheelController* oldWheelController = WheelController::from(oldDocument);
-    WheelController* newWheelController = WheelController::from(&document());
+    WheelController* oldController = WheelController::from(oldDocument);
+    WheelController* newController = WheelController::from(&document());
     for (size_t i = 0; i < mousewheelListeners.size(); ++i) {
-        oldWheelController->didRemoveWheelEventHandler(oldDocument);
-        newWheelController->didAddWheelEventHandler(&document());
+        oldController->didRemoveWheelEventHandler(oldDocument);
+        newController->didAddWheelEventHandler(&document());
     }
 
     const EventListenerVector& wheelListeners = getEventListeners(eventNames().wheelEvent);
     for (size_t i = 0; i < wheelListeners.size(); ++i) {
-        oldWheelController->didRemoveWheelEventHandler(oldDocument);
-        newWheelController->didAddWheelEventHandler(&document());
+        oldController->didRemoveWheelEventHandler(oldDocument);
+        newController->didAddWheelEventHandler(&document());
     }
 
-    TouchController* oldTouchController = TouchController::from(oldDocument);
-    if (const TouchEventTargetSet* touchHandlers = oldDocument ? oldTouchController->touchEventTargets() : 0) {
-        TouchController* newTouchController = TouchController::from(&document());
+    if (const TouchEventTargetSet* touchHandlers = oldDocument ? oldDocument->touchEventTargets() : 0) {
         while (touchHandlers->contains(this)) {
-            oldTouchController->didRemoveTouchEventHandler(oldDocument, this);
-            newTouchController->didAddTouchEventHandler(&document(), this);
+            oldDocument->didRemoveTouchEventHandler(this);
+            document().didAddTouchEventHandler(this);
         }
     }
 
@@ -2085,7 +2082,7 @@ static inline bool tryAddEventListener(Node* targetNode, const AtomicString& eve
     if (eventType == eventNames().wheelEvent || eventType == eventNames().mousewheelEvent)
         WheelController::from(&document)->didAddWheelEventHandler(&document);
     else if (eventNames().isTouchEventType(eventType))
-        TouchController::from(&document)->didAddTouchEventHandler(&document, targetNode);
+        document.didAddTouchEventHandler(targetNode);
 
     return true;
 }
@@ -2106,7 +2103,7 @@ static inline bool tryRemoveEventListener(Node* targetNode, const AtomicString& 
     if (eventType == eventNames().wheelEvent || eventType == eventNames().mousewheelEvent)
         WheelController::from(&document)->didAddWheelEventHandler(&document);
     else if (eventNames().isTouchEventType(eventType))
-        TouchController::from(&document)->didRemoveTouchEventHandler(&document, targetNode);
+        document.didRemoveTouchEventHandler(targetNode);
 
     return true;
 }

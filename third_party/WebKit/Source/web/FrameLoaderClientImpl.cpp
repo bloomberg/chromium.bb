@@ -56,7 +56,6 @@
 #include "core/dom/Document.h"
 #include "core/events/MessageEvent.h"
 #include "core/events/MouseEvent.h"
-#include "core/dom/TouchController.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/dom/WheelController.h"
 #include "core/history/HistoryItem.h"
@@ -123,7 +122,6 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*
         m_webFrame->client()->didClearWindowObject(m_webFrame);
         Document* document = m_webFrame->frame()->document();
         if (document) {
-            TouchController::from(document);
             WheelController::from(document);
             if (RuntimeEnabledFeatures::deviceMotionEnabled())
                 DeviceMotionController::from(document);

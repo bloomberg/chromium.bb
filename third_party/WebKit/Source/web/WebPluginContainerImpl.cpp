@@ -53,7 +53,6 @@
 #include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
-#include "core/dom/TouchController.h"
 #include "core/events/TouchEvent.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/events/WheelEvent.h"
@@ -500,11 +499,10 @@ void WebPluginContainerImpl::requestTouchEventType(TouchEventRequestType request
     if (m_touchEventRequestType == requestType)
         return;
 
-    Document& document = m_element->document();
     if (requestType != TouchEventRequestTypeNone && m_touchEventRequestType == TouchEventRequestTypeNone)
-        TouchController::from(&document)->didAddTouchEventHandler(&document, m_element);
+        m_element->document().didAddTouchEventHandler(m_element);
     else if (requestType == TouchEventRequestTypeNone && m_touchEventRequestType != TouchEventRequestTypeNone)
-        TouchController::from(&document)->didRemoveTouchEventHandler(&document, m_element);
+        m_element->document().didRemoveTouchEventHandler(m_element);
     m_touchEventRequestType = requestType;
 }
 
@@ -649,10 +647,8 @@ WebPluginContainerImpl::WebPluginContainerImpl(WebCore::HTMLPlugInElement* eleme
 
 WebPluginContainerImpl::~WebPluginContainerImpl()
 {
-    if (m_touchEventRequestType != TouchEventRequestTypeNone) {
-        Document& document = m_element->document();
-        TouchController::from(&document)->didRemoveTouchEventHandler(&document, m_element);
-    }
+    if (m_touchEventRequestType != TouchEventRequestTypeNone)
+        m_element->document().didRemoveTouchEventHandler(m_element);
 
     for (size_t i = 0; i < m_pluginLoadObservers.size(); ++i)
         m_pluginLoadObservers[i]->clearPluginContainer();

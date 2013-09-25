@@ -1967,8 +1967,6 @@
             'dom/TextLinkColors.h',
             'dom/Touch.cpp',
             'dom/Touch.h',
-            'dom/TouchController.cpp',
-            'dom/TouchController.h',
             'dom/TouchList.cpp',
             'dom/TouchList.h',
             'dom/TransformSource.h',

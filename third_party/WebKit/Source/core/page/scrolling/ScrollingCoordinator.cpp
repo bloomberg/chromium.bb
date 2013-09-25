@@ -30,7 +30,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
-#include "core/dom/TouchController.h"
 #include "core/dom/WheelController.h"
 #include "core/html/HTMLElement.h"
 #include "core/page/Frame.h"
@@ -633,14 +632,13 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
     return shouldHandleScrollGestureOnMainThreadRegion;
 }
 
-static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, Document* document)
+static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, const Document* document)
 {
     ASSERT(document);
-    TouchController* controller = TouchController::from(document);
-    if (!controller->touchEventTargets())
+    if (!document->touchEventTargets())
         return;
 
-    const TouchEventTargetSet* targets = controller->touchEventTargets();
+    const TouchEventTargetSet* targets = document->touchEventTargets();
 
     // If there's a handler on the document, html or body element (fairly common in practice),
     // then we can quickly mark the entire document and skip looking at any other handlers.
@@ -657,7 +655,7 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, Do
     }
 
     for (TouchEventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter) {
-        Node* target = iter->key;
+        const Node* target = iter->key;
         if (!target->inDocument())
             continue;
 
