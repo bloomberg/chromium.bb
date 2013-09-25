@@ -26,9 +26,8 @@ function initialize_extensionsSidebarTest()
 
     InspectorTest._extensionSidebar = function()
     {
-        var sidebarPanes = WebInspector.panel("elements").sidebarPanes;
-        // the sidebar of interest is presumed to always be last.
-        return sidebarPanes[Object.keys(sidebarPanes).pop()];
+        var sidebarPanes = WebInspector.panel("elements")._extensionSidebarPanes;
+        return sidebarPanes[sidebarPanes.length - 1];
     }
 }
 
