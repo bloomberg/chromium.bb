@@ -113,6 +113,7 @@
     'sources_for_nacl_extensions': [
       'gc_hooks.c',
       'nacl_irt.c',
+      'nacl_irt_init.c',
       'nacl_tls_get.c',
       'nacl_tls_init.c',
     ],
