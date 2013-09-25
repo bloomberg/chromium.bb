@@ -382,6 +382,7 @@ TEST_F(JobSchedulerTest, CopyResource) {
       "file:2_file_resource_id",  // resource ID
       "folder:1_folder_resource_id",  // parent resource ID
       "New Document",  // new title
+      base::Time(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
@@ -415,6 +416,7 @@ TEST_F(JobSchedulerTest, MoveResource) {
       "file:2_file_resource_id",  // resource ID
       "folder:1_folder_resource_id",  // parent resource ID
       "New Document",  // new title
+      base::Time(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 

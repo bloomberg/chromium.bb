@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,6 +49,7 @@ TEST_F(MoveOperationTest, MoveFileInSameDirectory) {
   FileError error = FILE_ERROR_FAILED;
   operation_->Move(src_path,
                    dest_path,
+                   false,
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -73,6 +75,7 @@ TEST_F(MoveOperationTest, MoveFileFromRootToSubDirectory) {
   FileError error = FILE_ERROR_FAILED;
   operation_->Move(src_path,
                    dest_path,
+                   false,
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -99,6 +102,7 @@ TEST_F(MoveOperationTest, MoveFileFromSubDirectoryToRoot) {
   FileError error = FILE_ERROR_FAILED;
   operation_->Move(src_path,
                    dest_path,
+                   false,
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -126,6 +130,7 @@ TEST_F(MoveOperationTest, MoveFileBetweenSubDirectories) {
   FileError error = FILE_ERROR_FAILED;
   operation_->Move(src_path,
                    dest_path,
+                   false,
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -153,6 +158,7 @@ TEST_F(MoveOperationTest, MoveFileBetweenSubDirectoriesNoRename) {
   FileError error = FILE_ERROR_FAILED;
   operation_->Move(src_path,
                    dest_path,
+                   false,
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -184,6 +190,7 @@ TEST_F(MoveOperationTest, MoveFileBetweenSubDirectoriesRenameWithTitle) {
   copy_operation_->Copy(
       src_path,
       src_path,
+      false,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -196,6 +203,7 @@ TEST_F(MoveOperationTest, MoveFileBetweenSubDirectoriesRenameWithTitle) {
   // Move the copied file.
   operation_->Move(copied_path,
                    dest_path,
+                   false,
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -218,6 +226,7 @@ TEST_F(MoveOperationTest, MoveNotExistingFile) {
   FileError error = FILE_ERROR_OK;
   operation_->Move(src_path,
                    dest_path,
+                   false,
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
@@ -234,6 +243,7 @@ TEST_F(MoveOperationTest, MoveFileToNonExistingDirectory) {
   FileError error = FILE_ERROR_OK;
   operation_->Move(src_path,
                    dest_path,
+                   false,
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
@@ -253,6 +263,7 @@ TEST_F(MoveOperationTest, MoveFileToInvalidPath) {
   FileError error = FILE_ERROR_OK;
   operation_->Move(src_path,
                    dest_path,
+                   false,
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY, error);
@@ -260,6 +271,36 @@ TEST_F(MoveOperationTest, MoveFileToInvalidPath) {
   ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(src_path, &entry));
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntry(dest_path, &entry));
+}
+
+TEST_F(MoveOperationTest, PreserveLastModified) {
+  // Preserve last modified feature is only available on Drive API v2.
+  if (util::IsDriveV2ApiEnabled()) {
+    const base::FilePath src_path(
+        FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
+    const base::FilePath dest_path(
+        FILE_PATH_LITERAL("drive/root/Directory 1/Test.log"));
+
+    ResourceEntry src_entry, dest_entry;
+    ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(src_path, &src_entry));
+    ASSERT_EQ(FILE_ERROR_NOT_FOUND,
+              GetLocalResourceEntry(dest_path, &dest_entry));
+
+    FileError error = FILE_ERROR_FAILED;
+    operation_->Move(src_path,
+                     dest_path,
+                     true,  // Preserve last modified.
+                     google_apis::test_util::CreateCopyResultCallback(&error));
+    test_util::RunBlockingPoolTask();
+    EXPECT_EQ(FILE_ERROR_OK, error);
+
+    EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &dest_entry));
+    EXPECT_EQ(src_entry.resource_id(), dest_entry.resource_id());
+    EXPECT_EQ(src_entry.file_info().last_modified(),
+              dest_entry.file_info().last_modified());
+    EXPECT_EQ(FILE_ERROR_NOT_FOUND,
+              GetLocalResourceEntry(src_path, &src_entry));
+  }
 }
 
 }  // namespace file_system

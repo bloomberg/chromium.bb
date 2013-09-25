@@ -405,6 +405,7 @@ void JobScheduler::CopyResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
     const std::string& new_title,
+    const base::Time& last_modified,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -416,7 +417,7 @@ void JobScheduler::CopyResource(
       resource_id,
       parent_resource_id,
       new_title,
-      base::Time(),  // TODO(hidehiko): Support last modified.
+      last_modified,
       base::Bind(&JobScheduler::OnGetResourceEntryJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,
@@ -450,6 +451,7 @@ void JobScheduler::MoveResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
     const std::string& new_title,
+    const base::Time& last_modified,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -461,7 +463,7 @@ void JobScheduler::MoveResource(
       resource_id,
       parent_resource_id,
       new_title,
-      base::Time(),  // TODO(hidehiko): Support last modified.
+      last_modified,
       base::Bind(&JobScheduler::OnGetResourceEntryJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,

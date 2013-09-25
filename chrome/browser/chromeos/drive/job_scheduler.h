@@ -123,6 +123,7 @@ class JobScheduler
       const std::string& resource_id,
       const std::string& parent_resource_id,
       const std::string& new_title,
+      const base::Time& last_modified,
       const google_apis::GetResourceEntryCallback& callback);
 
   // Adds a CopyHostedDocument operation to the queue.
@@ -136,6 +137,7 @@ class JobScheduler
       const std::string& resource_id,
       const std::string& parent_resource_id,
       const std::string& new_title,
+      const base::Time& last_modified,
       const google_apis::GetResourceEntryCallback& callback);
 
   // Adds a RenameResource operation to the queue.

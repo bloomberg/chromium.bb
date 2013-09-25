@@ -162,6 +162,7 @@ TEST_F(CopyOperationTest, CopyNotExistingFile) {
   FileError error = FILE_ERROR_OK;
   operation_->Copy(src_path,
                    dest_path,
+                   false,
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
@@ -183,6 +184,7 @@ TEST_F(CopyOperationTest, CopyFileToNonExistingDirectory) {
   FileError error = FILE_ERROR_OK;
   operation_->Copy(src_path,
                    dest_path,
+                   false,
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
@@ -208,6 +210,7 @@ TEST_F(CopyOperationTest, CopyFileToInvalidPath) {
   FileError error = FILE_ERROR_OK;
   operation_->Copy(src_path,
                    dest_path,
+                   false,
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY, error);
@@ -230,9 +233,37 @@ TEST_F(CopyOperationTest, CopyDirectory) {
   FileError error = FILE_ERROR_OK;
   operation_->Copy(src_path,
                    dest_path,
+                   false,
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_A_FILE, error);
+}
+
+TEST_F(CopyOperationTest, PreserveLastModified) {
+  // Preserve last modified feature is only available on Drive API v2.
+  if (util::IsDriveV2ApiEnabled()) {
+    base::FilePath src_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
+    base::FilePath dest_path(FILE_PATH_LITERAL("drive/root/File 2.txt"));
+
+    ResourceEntry entry;
+    ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(src_path, &entry));
+    ASSERT_EQ(FILE_ERROR_OK,
+              GetLocalResourceEntry(dest_path.DirName(), &entry));
+
+    FileError error = FILE_ERROR_OK;
+    operation_->Copy(src_path,
+                     dest_path,
+                     true,  // Preserve last modified.
+                     google_apis::test_util::CreateCopyResultCallback(&error));
+    test_util::RunBlockingPoolTask();
+    EXPECT_EQ(FILE_ERROR_OK, error);
+
+    ResourceEntry entry2;
+    EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(src_path, &entry));
+    EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &entry2));
+    EXPECT_EQ(entry.file_info().last_modified(),
+              entry2.file_info().last_modified());
+  }
 }
 
 }  // namespace file_system

@@ -60,6 +60,13 @@ FileError MoveDirectoryLocally(internal::ResourceMetadata* metadata,
 
 }  // namespace
 
+struct MoveOperation::MoveParams {
+  base::FilePath src_file_path;
+  base::FilePath dest_file_path;
+  bool preserve_last_modified;
+  FileOperationCallback callback;
+};
+
 MoveOperation::MoveOperation(base::SequencedTaskRunner* blocking_task_runner,
                              OperationObserver* observer,
                              JobScheduler* scheduler,
@@ -78,9 +85,16 @@ MoveOperation::~MoveOperation() {
 
 void MoveOperation::Move(const base::FilePath& src_file_path,
                          const base::FilePath& dest_file_path,
+                         bool preserve_last_modified,
                          const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  MoveParams params;
+  params.src_file_path = src_file_path;
+  params.dest_file_path = dest_file_path;
+  params.preserve_last_modified = preserve_last_modified;
+  params.callback = callback;
 
   scoped_ptr<ResourceEntry> src_entry(new ResourceEntry);
   scoped_ptr<ResourceEntry> dest_parent_entry(new ResourceEntry);
@@ -93,30 +107,27 @@ void MoveOperation::Move(const base::FilePath& src_file_path,
                  metadata_, src_file_path, dest_file_path.DirName(),
                  src_entry_ptr, dest_parent_entry_ptr),
       base::Bind(&MoveOperation::MoveAfterPrepare,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 src_file_path, dest_file_path, callback,
+                 weak_ptr_factory_.GetWeakPtr(), params,
                  base::Passed(&src_entry),
                  base::Passed(&dest_parent_entry)));
 }
 
 void MoveOperation::MoveAfterPrepare(
-    const base::FilePath& src_file_path,
-    const base::FilePath& dest_file_path,
-    const FileOperationCallback& callback,
+    const MoveParams& params,
     scoped_ptr<ResourceEntry> src_entry,
     scoped_ptr<ResourceEntry> dest_parent_entry,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
+  DCHECK(!params.callback.is_null());
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error);
+    params.callback.Run(error);
     return;
   }
 
   if (!dest_parent_entry->file_info().is_directory()) {
     // The parent of the destination is not a directory.
-    callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
+    params.callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
     return;
   }
 
@@ -124,21 +135,28 @@ void MoveOperation::MoveAfterPrepare(
   const bool has_hosted_document_extension =
       src_entry->has_file_specific_info() &&
       src_entry->file_specific_info().is_hosted_document() &&
-      dest_file_path.Extension() ==
+      params.dest_file_path.Extension() ==
       src_entry->file_specific_info().document_extension();
   const std::string new_title =
       has_hosted_document_extension ?
-      dest_file_path.BaseName().RemoveExtension().AsUTF8Unsafe() :
-      dest_file_path.BaseName().AsUTF8Unsafe();
+      params.dest_file_path.BaseName().RemoveExtension().AsUTF8Unsafe() :
+      params.dest_file_path.BaseName().AsUTF8Unsafe();
 
   // If Drive API v2 is enabled, we can move the file on server side by one
   // request.
   if (util::IsDriveV2ApiEnabled()) {
+    base::Time last_modified =
+        params.preserve_last_modified ?
+        base::Time::FromInternalValue(src_entry->file_info().last_modified()) :
+        base::Time();
+
     scheduler_->MoveResource(
-        src_entry->resource_id(), dest_parent_entry->resource_id(), new_title,
+        src_entry->resource_id(), dest_parent_entry->resource_id(),
+        new_title, last_modified,
         base::Bind(&MoveOperation::MoveAfterMoveResource,
                    weak_ptr_factory_.GetWeakPtr(),
-                   src_file_path, dest_file_path, callback));
+                   params.src_file_path, params.dest_file_path,
+                   params.callback));
     return;
   }
 
@@ -146,7 +164,8 @@ void MoveOperation::MoveAfterPrepare(
   Rename(*src_entry_ptr, new_title,
          base::Bind(&MoveOperation::MoveAfterRename,
                     weak_ptr_factory_.GetWeakPtr(),
-                    src_file_path, dest_file_path, callback,
+                    params.src_file_path, params.dest_file_path,
+                    params.callback,
                     base::Passed(&src_entry),
                     base::Passed(&dest_parent_entry)));
 }

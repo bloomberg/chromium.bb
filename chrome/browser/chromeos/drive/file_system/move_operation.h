@@ -42,17 +42,22 @@ class MoveOperation {
   ~MoveOperation();
 
   // Performs the move operation on the file at drive path |src_file_path|
-  // with a target of |dest_file_path|.  Invokes |callback| when finished with
-  // the result of the operation. |callback| must not be null.
+  // with a target of |dest_file_path|.
+  // If |preserve_last_modified| is set to true, this tries to preserve
+  // last modified time stamp. This is supported only on Drive API v2.
+  // Invokes |callback| when finished with the result of the operation.
+  // |callback| must not be null.
   void Move(const base::FilePath& src_file_path,
             const base::FilePath& dest_file_path,
+            bool preserve_last_modified,
             const FileOperationCallback& callback);
 
  private:
+  // Params of Move().
+  struct MoveParams;
+
   // Part of Move(). Called after local metadata look up.
-  void MoveAfterPrepare(const base::FilePath& src_file_path,
-                        const base::FilePath& dest_file_path,
-                        const FileOperationCallback& callback,
+  void MoveAfterPrepare(const MoveParams& params,
                         scoped_ptr<ResourceEntry> src_entry,
                         scoped_ptr<ResourceEntry> dest_parent_entry,
                         FileError error);

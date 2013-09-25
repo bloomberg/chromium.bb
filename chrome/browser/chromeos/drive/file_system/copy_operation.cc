@@ -151,6 +151,13 @@ FileError PrepareTransferFileFromLocalToRemote(
 
 }  // namespace
 
+struct CopyOperation::CopyParams {
+  base::FilePath src_file_path;
+  base::FilePath dest_file_path;
+  bool preserve_last_modified;
+  FileOperationCallback callback;
+};
+
 CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
                              OperationObserver* observer,
                              JobScheduler* scheduler,
@@ -189,9 +196,16 @@ CopyOperation::~CopyOperation() {
 
 void CopyOperation::Copy(const base::FilePath& src_file_path,
                          const base::FilePath& dest_file_path,
+                         bool preserve_last_modified,
                          const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  CopyParams params;
+  params.src_file_path = src_file_path;
+  params.dest_file_path = dest_file_path;
+  params.preserve_last_modified = preserve_last_modified;
+  params.callback = callback;
 
   ResourceEntry* src_entry = new ResourceEntry;
   std::string* parent_resource_id = new std::string;
@@ -202,38 +216,40 @@ void CopyOperation::Copy(const base::FilePath& src_file_path,
                  metadata_, src_file_path, dest_file_path,
                  src_entry, parent_resource_id),
       base::Bind(&CopyOperation::CopyAfterPrepare,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 src_file_path, dest_file_path, callback,
+                 weak_ptr_factory_.GetWeakPtr(), params,
                  base::Owned(src_entry), base::Owned(parent_resource_id)));
 }
 
 void CopyOperation::CopyAfterPrepare(
-    const base::FilePath& src_file_path,
-    const base::FilePath& dest_file_path,
-    const FileOperationCallback& callback,
+    const CopyParams& params,
     ResourceEntry* src_entry,
     std::string* parent_resource_id,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
+  DCHECK(!params.callback.is_null());
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error);
+    params.callback.Run(error);
     return;
   }
 
   // If Drive API v2 is enabled, we can copy resources on server side.
   if (util::IsDriveV2ApiEnabled()) {
-    base::FilePath new_title = dest_file_path.BaseName();
+    base::FilePath new_title = params.dest_file_path.BaseName();
     if (src_entry->file_specific_info().is_hosted_document()) {
       // Drop the document extension, which should not be in the title.
       // TODO(yoshiki): Remove this code with crbug.com/223304.
       new_title = new_title.RemoveExtension();
     }
 
+    base::Time last_modified =
+        params.preserve_last_modified ?
+        base::Time::FromInternalValue(src_entry->file_info().last_modified()) :
+        base::Time();
+
     CopyResourceOnServer(
         src_entry->resource_id(), *parent_resource_id,
-        new_title.AsUTF8Unsafe(), callback);
+        new_title.AsUTF8Unsafe(), last_modified, params.callback);
     return;
   }
 
@@ -244,20 +260,21 @@ void CopyOperation::CopyAfterPrepare(
         src_entry->resource_id(),
         // Drop the document extension, which should not be in the title.
         // TODO(yoshiki): Remove this code with crbug.com/223304.
-        dest_file_path.RemoveExtension(),
-        callback);
+        params.dest_file_path.RemoveExtension(),
+        params.callback);
     return;
   }
 
   // For regular files, download the content, and then re-upload.
   // Note that upload is done later by SyncClient.
   download_operation_->EnsureFileDownloadedByPath(
-      src_file_path,
+      params.src_file_path,
       ClientContext(USER_INITIATED),
       GetFileContentInitializedCallback(),
       google_apis::GetContentCallback(),
       base::Bind(&CopyOperation::CopyAfterDownload,
-                 weak_ptr_factory_.GetWeakPtr(), dest_file_path, callback));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 params.dest_file_path, params.callback));
 }
 
 void CopyOperation::CopyAfterDownload(
@@ -337,6 +354,7 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
         // Drop the document extension, which should not be in the title.
         // TODO(yoshiki): Remove this code with crbug.com/223304.
         remote_dest_path.BaseName().RemoveExtension().AsUTF8Unsafe(),
+        base::Time(),
         callback);
     return;
   }
@@ -354,12 +372,13 @@ void CopyOperation::CopyResourceOnServer(
     const std::string& resource_id,
     const std::string& parent_resource_id,
     const std::string& new_title,
+    const base::Time& last_modified,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   scheduler_->CopyResource(
-      resource_id, parent_resource_id, new_title,
+      resource_id, parent_resource_id, new_title, last_modified,
       base::Bind(&CopyOperation::CopyResourceOnServerAfterServerSideCopy,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
@@ -572,7 +591,7 @@ void CopyOperation::CopyHostedDocumentAfterUpdateLocalState(
   DCHECK_EQ(util::GetDriveMyDriveRootPath().value(),
             file_path->DirName().value()) << file_path->value();
 
-  move_operation_->Move(*file_path, dest_path, callback);
+  move_operation_->Move(*file_path, dest_path, false, callback);
 }
 
 }  // namespace file_system

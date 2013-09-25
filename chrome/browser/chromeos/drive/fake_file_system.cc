@@ -62,12 +62,14 @@ void FakeFileSystem::OpenFile(const base::FilePath& file_path,
 
 void FakeFileSystem::Copy(const base::FilePath& src_file_path,
                           const base::FilePath& dest_file_path,
+                          bool preserve_last_modified,
                           const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void FakeFileSystem::Move(const base::FilePath& src_file_path,
                           const base::FilePath& dest_file_path,
+                          bool preserve_last_modified,
                           const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }

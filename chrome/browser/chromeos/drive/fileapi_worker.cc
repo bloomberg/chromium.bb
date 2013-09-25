@@ -225,7 +225,7 @@ void Copy(const base::FilePath& src_file_path,
           const StatusCallback& callback,
           FileSystemInterface* file_system) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  file_system->Copy(src_file_path, dest_file_path,
+  file_system->Copy(src_file_path, dest_file_path, false,
                     base::Bind(&RunStatusCallbackByFileError, callback));
 }
 
@@ -234,7 +234,7 @@ void Move(const base::FilePath& src_file_path,
           const StatusCallback& callback,
           FileSystemInterface* file_system) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  file_system->Move(src_file_path, dest_file_path,
+  file_system->Move(src_file_path, dest_file_path, false,
                     base::Bind(&RunStatusCallbackByFileError, callback));
 }
 

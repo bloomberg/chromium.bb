@@ -16,6 +16,7 @@
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
+class Time;
 }  // namespace base
 
 namespace google_apis {
@@ -54,10 +55,14 @@ class CopyOperation {
   ~CopyOperation();
 
   // Performs the copy operation on the file at drive path |src_file_path|
-  // with a target of |dest_file_path|. Invokes |callback| when finished with
-  // the result of the operation. |callback| must not be null.
+  // with a target of |dest_file_path|.
+  // If |preserve_last_modified| is set to true, this tries to preserve
+  // last modified time stamp. This is supported only on Drive API v2.
+  // Invokes |callback| when finished with the result of the operation.
+  // |callback| must not be null.
   void Copy(const base::FilePath& src_file_path,
             const base::FilePath& dest_file_path,
+            bool preserve_last_modified,
             const FileOperationCallback& callback);
 
   // Initiates transfer of |local_src_file_path| to |remote_dest_file_path|.
@@ -72,10 +77,11 @@ class CopyOperation {
       const FileOperationCallback& callback);
 
  private:
+  // Params for Copy().
+  struct CopyParams;
+
   // Part of Copy(). Called after prepartion is done.
-  void CopyAfterPrepare(const base::FilePath& src_file_path,
-                        const base::FilePath& dest_file_path,
-                        const FileOperationCallback& callback,
+  void CopyAfterPrepare(const CopyParams& params,
                         ResourceEntry* src_entry,
                         std::string* parent_resource_id,
                         FileError error);
@@ -103,6 +109,7 @@ class CopyOperation {
   void CopyResourceOnServer(const std::string& resource_id,
                             const std::string& parent_resource_id,
                             const std::string& new_title,
+                            const base::Time& last_modified,
                             const FileOperationCallback& callback);
 
   // Part of CopyResourceOnServer. Called after server side copy is done.
