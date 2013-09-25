@@ -112,7 +112,7 @@ function checkForRectUpdate(expectUpdate, operation) {
 var visualize = false;
 
 if (window.testRunner) {
-    if (vistualize)
+    if (visualize)
         window.testRunner.dumpAsTextWithPixelResults();
     else
         window.testRunner.dumpAsText();
