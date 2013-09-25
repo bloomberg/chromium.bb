@@ -58,9 +58,7 @@ finish:
 int usbi_get_tid(void)
 {
 	int ret = -1;
-#if defined(__ANDROID__)
-	ret = gettid();
-#elif defined(__linux__)
+#if defined(__linux__)
 	ret = syscall(SYS_gettid);
 #elif defined(__OpenBSD__)
 	/* The following only works with OpenBSD > 5.1 as it requires
