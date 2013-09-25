@@ -34,9 +34,6 @@ NSString* const kUserMasterPrefsPath =
     @"~~/Library/Application Support/Google/Chrome/"
      "Google Chrome Master Preferences";
 
-NSString* const kChannelKey = @"KSChannelID";
-NSString* const kVersionKey = @"KSVersion";
-
 // Condensed from chromium's base/mac/mac_util.mm.
 bool IsOSXVersionSupported() {
   // On 10.6, Gestalt() was observed to be able to spawn threads (see

@@ -104,7 +104,6 @@ CK_MECHANISM_TYPE GcmSupportChecker::aes_key_mechanism_ = CKM_AES_GCM;
 base::LazyInstance<GcmSupportChecker>::Leaky g_gcm_support_checker =
     LAZY_INSTANCE_INITIALIZER;
 
-const size_t kKeySize = 16;
 const size_t kNoncePrefixSize = 4;
 const size_t kAESNonceSize = 12;
 

@@ -12,15 +12,13 @@
 // The identifier for the self url stream.
 #define SELF_URL_STREAM_ID 1
 
-// The identifier for the fetched url stream.
-#define FETCHED_URL_STREAM_ID 2
-
 // The maximum chunk size of stream data.
 #define STREAM_CHUNK 197
 
+#if defined(OS_WIN)
 const int kNPNEvaluateTimerID = 100;
 const int kNPNEvaluateTimerElapse = 50;
-
+#endif
 
 namespace NPAPIClient {
 

@@ -89,7 +89,6 @@ struct CookieMonsterTestTraits {
 
   static const bool is_cookie_monster              = true;
   static const bool supports_http_only             = true;
-  static const bool supports_cookies_with_info     = true;
   static const bool supports_non_dotted_domains    = true;
   static const bool supports_trailing_dots         = true;
   static const bool filters_schemes                = true;

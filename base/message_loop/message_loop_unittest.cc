@@ -609,7 +609,9 @@ void RunTest_Nesting(MessageLoop::Type message_loop_type) {
   EXPECT_EQ(depth, 0);
 }
 
-const wchar_t* const kMessageBoxTitle = L"MessageLoop Unit Test";
+#if defined(OS_WIN)
+const wchar_t kMessageBoxTitle[] = L"MessageLoop Unit Test";
+#endif  // defined(OS_WIN)
 
 enum TaskType {
   MESSAGEBOX,

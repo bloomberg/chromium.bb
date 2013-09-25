@@ -21,17 +21,11 @@ const char kSdch[]         = "sdch";
 // compress and x-compress are currently not supported.  If we decide to support
 // them, we'll need the same mime type compatibility hack we have for gzip.  For
 // more information, see Firefox's nsHttpChannel::ProcessNormal.
-const char kCompress[]     = "compress";
-const char kXCompress[]    = "x-compress";
-const char kIdentity[]     = "identity";
-const char kUncompressed[] = "uncompressed";
 
 // Mime types:
 const char kApplicationXGzip[]     = "application/x-gzip";
 const char kApplicationGzip[]      = "application/gzip";
 const char kApplicationXGunzip[]   = "application/x-gunzip";
-const char kApplicationXCompress[] = "application/x-compress";
-const char kApplicationCompress[]  = "application/compress";
 const char kTextHtml[]             = "text/html";
 
 // Buffer size allocated when de-compressing data.

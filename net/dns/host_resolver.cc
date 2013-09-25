@@ -24,9 +24,6 @@ namespace {
 // that limit this to 6, so we're temporarily holding it at that level.
 const size_t kDefaultMaxProcTasks = 6u;
 
-// When configuring from field trial, do not allow
-const size_t kSaneMaxProcTasks = 20u;
-
 PrioritizedDispatcher::Limits GetDispatcherLimits(
     const HostResolver::Options& options) {
   PrioritizedDispatcher::Limits limits(NUM_PRIORITIES,

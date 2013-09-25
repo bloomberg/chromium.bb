@@ -40,7 +40,6 @@ namespace net {
 namespace {
 
 const char kSocketFilename[] = "unix_domain_socket_for_testing";
-const char kFallbackSocketName[] = "unix_domain_socket_for_testing_2";
 const char kInvalidSocketPath[] = "/invalid/path";
 const char kMsg[] = "hello";
 
@@ -275,6 +274,7 @@ TEST_F(UnixDomainSocketTest, TestFallbackName) {
           file_path_.value(), "", socket_delegate_.get(), MakeAuthCallback());
   EXPECT_TRUE(socket_.get() == NULL);
   // Now with a fallback name.
+  const char kFallbackSocketName[] = "unix_domain_socket_for_testing_2";
   socket_ = UnixDomainSocket::CreateAndListenWithAbstractNamespace(
       file_path_.value(),
       MakeSocketPath(kFallbackSocketName),

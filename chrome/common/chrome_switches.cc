@@ -1134,8 +1134,10 @@ const char kPrerenderModeSwitchValueEnabled[] = "enabled";
 //   prefetch_only: No prerendering, but enables prefetching.
 const char kPrerenderModeSwitchValuePrefetchOnly[] = "prefetch_only";
 
+#if defined(OS_WIN)
 // Enable conversion from vector to raster for any page.
 const char kPrintRaster[]                   = "print-raster";
+#endif
 
 // Use IPv6 only for privet HTTP.
 const char kPrivetIPv6Only[]                   = "privet-ipv6-only";

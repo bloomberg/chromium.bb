@@ -16,17 +16,17 @@ namespace net {
 
 namespace {
 
-static const char kVerisignPolicy[] = "2.16.840.1.113733.1.7.23.6";
-static const char kThawtePolicy[] = "2.16.840.1.113733.1.7.48.1";
-static const char kFakePolicy[] = "2.16.840.1.42";
-static const SHA1HashValue kVerisignFingerprint =
+#if defined(USE_NSS) || defined(OS_WIN)
+const char kVerisignPolicy[] = "2.16.840.1.113733.1.7.23.6";
+const char kThawtePolicy[] = "2.16.840.1.113733.1.7.48.1";
+const char kFakePolicy[] = "2.16.840.1.42";
+const SHA1HashValue kVerisignFingerprint =
     { { 0x74, 0x2c, 0x31, 0x92, 0xe6, 0x07, 0xe4, 0x24, 0xeb, 0x45,
         0x49, 0x54, 0x2b, 0xe1, 0xbb, 0xc5, 0x3e, 0x61, 0x74, 0xe2 } };
-static const SHA1HashValue kFakeFingerprint =
+const SHA1HashValue kFakeFingerprint =
     { { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99,
         0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99 } };
 
-#if defined(USE_NSS) || defined(OS_WIN)
 class EVOidData {
  public:
   EVOidData();

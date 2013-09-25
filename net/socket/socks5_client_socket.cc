@@ -254,7 +254,6 @@ int SOCKS5ClientSocket::DoLoop(int last_io_result) {
 }
 
 const char kSOCKS5GreetWriteData[] = { 0x05, 0x01, 0x00 };  // no authentication
-const char kSOCKS5GreetReadData[] = { 0x05, 0x00 };
 
 int SOCKS5ClientSocket::DoGreetWrite() {
   // Since we only have 1 byte to send the hostname length in, if the

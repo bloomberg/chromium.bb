@@ -31,12 +31,6 @@ const char kFakeIndexFileName[] = "index";
 // Same as |SimpleIndexFile::kIndexFileName|.
 const char kIndexFileName[] = "the-real-index";
 
-// Same as |SimpleIndexFile::kIndexDirectory|.
-const char kIndexDirectory[] = "index-dir";
-
-// Same as |SimpleIndexFile::kTempIndexFileName|.
-const char kTempIndexFileName[] = "temp-index";
-
 bool WriteFakeIndexFileV5(const base::FilePath& cache_path) {
   disk_cache::FakeIndexData data;
   data.version = 5;

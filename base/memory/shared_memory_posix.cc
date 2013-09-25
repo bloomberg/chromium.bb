@@ -34,10 +34,6 @@ namespace base {
 
 namespace {
 
-// Paranoia. Semaphores and shared memory segments should live in different
-// namespaces, but who knows what's out there.
-const char kSemaphoreSuffix[] = "-sem";
-
 LazyInstance<Lock>::Leaky g_thread_lock_ = LAZY_INSTANCE_INITIALIZER;
 
 }

@@ -18,11 +18,9 @@
 
 namespace net {
 
-static const int kReadBufSize = 1024;
-static const char kHelloWorld[] = "HELLO, WORLD";
-static const int kMaxQueueSize = 20;
-static const char kLoopback[] = "127.0.0.1";
-static const int kDefaultTimeoutMs = 5000;
+const int kReadBufSize = 1024;
+const char kHelloWorld[] = "HELLO, WORLD";
+const char kLoopback[] = "127.0.0.1";
 
 TCPListenSocketTester::TCPListenSocketTester()
     : loop_(NULL),

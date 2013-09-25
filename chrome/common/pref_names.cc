@@ -1703,33 +1703,6 @@ const char kNtpPromoDesktopSessionFound[] = "ntp.promo_desktop_session_found";
 // Boolean indicating whether the web store is active for the current locale.
 const char kNtpWebStoreEnabled[] = "ntp.webstore_enabled";
 
-// The id of the last web store promo actually displayed on the NTP.
-const char kNtpWebStorePromoLastId[] = "ntp.webstore_last_promo_id";
-
-// The id of the current web store promo.
-const char kNtpWebStorePromoId[] = "ntp.webstorepromo.id";
-
-// The header line for the NTP web store promo.
-const char kNtpWebStorePromoHeader[] = "ntp.webstorepromo.header";
-
-// The button text for the NTP web store promo.
-const char kNtpWebStorePromoButton[] = "ntp.webstorepromo.button";
-
-// The button link for the NTP web store promo.
-const char kNtpWebStorePromoLink[] = "ntp.webstorepromo.link";
-
-// The image URL for the NTP web store promo logo.
-const char kNtpWebStorePromoLogo[] = "ntp.webstorepromo.logo";
-
-// The original URL for the NTP web store promo logo.
-const char kNtpWebStorePromoLogoSource[] = "ntp.webstorepromo.logo_source";
-
-// The "hide this" link text for the NTP web store promo.
-const char kNtpWebStorePromoExpire[] = "ntp.webstorepromo.expire";
-
-// Specifies what users should maximize the NTP web store promo.
-const char kNtpWebStorePromoUserGroup[] = "ntp.webstorepromo.usergroup";
-
 // Customized app page names that appear on the New Tab Page.
 const char kNtpAppPageNames[] = "ntp.app_page_names";
 

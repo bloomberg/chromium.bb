@@ -17,10 +17,6 @@ namespace remoting {
 
 const char kServiceName[] = SERVICE_NAME;
 
-const char kUpdateSucceededNotificationName[] =
-    SERVICE_NAME ".update_succeeded";
-const char kUpdateFailedNotificationName[] = SERVICE_NAME ".update_failed";
-
 const char kPrefPaneFileName[] = SERVICE_NAME ".prefPane";
 const char kPrefPaneFilePath[] = PREFERENCE_PANES_DIR SERVICE_NAME ".prefPane";
 

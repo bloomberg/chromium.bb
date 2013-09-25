@@ -30,9 +30,6 @@ const int kEntryFilesSuffixLength = 2;
 
 const uint64 kMaxEntiresInIndex = 100000000;
 
-const char kIndexFileName[] = "the-real-index";
-const char kTempIndexFileName[] = "temp-index";
-
 uint32 CalculatePickleCRC(const Pickle& pickle) {
   return crc32(crc32(0, Z_NULL, 0),
                reinterpret_cast<const Bytef*>(pickle.payload()),

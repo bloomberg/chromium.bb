@@ -20,8 +20,6 @@ namespace net {
 
 namespace {
 
-const int kFilesPerEvent = 8;
-
 bool IsDotDot(const base::FilePath& path) {
   return FILE_PATH_LITERAL("..") == path.BaseName().value();
 }
@@ -169,6 +167,7 @@ void DirectoryLister::Core::StartInternal() {
        should be done from JS to give more flexibility in the page. When we do
        that, we can uncomment this to send incremental updates to the page.
 
+    const int kFilesPerEvent = 8;
     if (file_data.size() < kFilesPerEvent)
       continue;
 

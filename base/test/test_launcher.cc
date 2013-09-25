@@ -564,8 +564,6 @@ const char kGTestRepeatFlag[] = "gtest_repeat";
 const char kGTestRunDisabledTestsFlag[] = "gtest_also_run_disabled_tests";
 const char kGTestOutputFlag[] = "gtest_output";
 
-const char kHelpFlag[]   = "help";
-
 TestResult::TestResult() : status(TEST_UNKNOWN) {
 }
 

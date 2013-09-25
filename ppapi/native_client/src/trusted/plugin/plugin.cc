@@ -92,9 +92,6 @@ const char* const kDevAttribute = "@dev";
 const char* const kChromeExtensionUriScheme = "chrome-extension";
 const char* const kDataUriScheme = "data";
 
-// The key used to find the dictionary nexe URLs in the manifest file.
-const char* const kNexesKey = "nexes";
-
 // Up to 20 seconds
 const int64_t kTimeSmallMin = 1;         // in ms
 const int64_t kTimeSmallMax = 20000;     // in ms
@@ -262,8 +259,6 @@ void HistogramHTTPStatusCode(const std::string& name, int status) {
 }
 
 }  // namespace
-
-static int const kAbiHeaderBuffer = 256;  // must be at least EI_ABIVERSION + 1
 
 void Plugin::AddPropertyGet(const nacl::string& prop_name,
                             Plugin::PropertyGetter getter) {
