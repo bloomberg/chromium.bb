@@ -1587,7 +1587,7 @@ egl_choose_config(struct gl_renderer *gr, const EGLint *attribs,
 					&id))
 				continue;
 
-			if (id != *visual_id)
+			if (id != 0 && id != *visual_id)
 				continue;
 		}
 

@@ -85,6 +85,7 @@ struct drm_compositor {
 	uint32_t crtc_allocator;
 	uint32_t connector_allocator;
 	struct wl_listener session_listener;
+	uint32_t format;
 
 	/* we need these parameters in order to not fail drmModeAddFB2()
 	 * due to out of bounds dimensions, and then mistakenly set
@@ -495,7 +496,7 @@ drm_output_render_gl(struct drm_output *output, pixman_region32_t *damage)
 		return;
 	}
 
-	output->next = drm_fb_get_from_bo(bo, c, GBM_FORMAT_XRGB8888);
+	output->next = drm_fb_get_from_bo(bo, c, c->format);
 	if (!output->next) {
 		weston_log("failed to get drm_fb for bo\n");
 		gbm_surface_release_buffer(output->surface, bo);
@@ -1246,8 +1247,9 @@ init_egl(struct drm_compositor *ec)
 	if (!ec->gbm)
 		return -1;
 
-	if (gl_renderer_create(&ec->base, ec->gbm, gl_renderer_opaque_attribs,
-			NULL) < 0) {
+	if (gl_renderer_create(&ec->base, ec->gbm,
+			       gl_renderer_opaque_attribs,
+			       &ec->format) < 0) {
 		gbm_device_destroy(ec->gbm);
 		return -1;
 	}
@@ -1441,7 +1443,7 @@ drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec)
 	output->surface = gbm_surface_create(ec->gbm,
 					     output->base.current_mode->width,
 					     output->base.current_mode->height,
-					     GBM_FORMAT_XRGB8888,
+					     ec->format,
 					     GBM_BO_USE_SCANOUT |
 					     GBM_BO_USE_RENDERING);
 	if (!output->surface) {
@@ -2552,7 +2554,7 @@ drm_compositor_create(struct wl_display *display,
 	/* KMS support for sprites is not complete yet, so disable the
 	 * functionality for now. */
 	ec->sprites_are_broken = 1;
-
+	ec->format = GBM_FORMAT_XRGB8888;
 	ec->use_pixman = pixman;
 
 	if (weston_compositor_init(&ec->base, display, argc, argv,
