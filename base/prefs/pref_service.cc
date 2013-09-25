@@ -87,11 +87,6 @@ void PrefService::InitFromStorage(bool async) {
   }
 }
 
-bool PrefService::ReloadPersistentPrefs() {
-  return user_pref_store_->ReadPrefs() ==
-             PersistentPrefStore::PREF_READ_ERROR_NONE;
-}
-
 void PrefService::CommitPendingWrite() {
   DCHECK(CalledOnValidThread());
   user_pref_store_->CommitPendingWrite();

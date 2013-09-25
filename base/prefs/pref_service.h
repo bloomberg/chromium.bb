@@ -150,11 +150,6 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
       bool async);
   virtual ~PrefService();
 
-  // Reloads the data from file. This should only be called when the importer
-  // is running during first run, and the main process may not change pref
-  // values while the importer process is running. Returns true on success.
-  bool ReloadPersistentPrefs();
-
   // Lands pending writes to disk. This should only be used if we need to save
   // immediately (basically, during shutdown).
   void CommitPendingWrite();
