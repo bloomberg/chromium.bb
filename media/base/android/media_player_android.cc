@@ -19,50 +19,6 @@ MediaPlayerAndroid::MediaPlayerAndroid(
 
 MediaPlayerAndroid::~MediaPlayerAndroid() {}
 
-void MediaPlayerAndroid::OnMediaError(int error_type) {
-  manager_->OnError(player_id_, error_type);
-}
-
-void MediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
-  manager_->OnVideoSizeChanged(player_id_, width, height);
-}
-
-void MediaPlayerAndroid::OnBufferingUpdate(int percent) {
-  manager_->OnBufferingUpdate(player_id_, percent);
-}
-
-void MediaPlayerAndroid::OnPlaybackComplete() {
-  manager_->OnPlaybackComplete(player_id_);
-}
-
-void MediaPlayerAndroid::OnMediaInterrupted() {
-  manager_->OnMediaInterrupted(player_id_);
-}
-
-void MediaPlayerAndroid::OnSeekComplete() {
-  manager_->OnSeekComplete(player_id_, GetCurrentTime());
-}
-
-void MediaPlayerAndroid::OnTimeUpdated() {
-  manager_->OnTimeUpdate(player_id_, GetCurrentTime());
-}
-
-void MediaPlayerAndroid::OnMediaMetadataChanged(
-    base::TimeDelta duration, int width, int height, bool success) {
-  manager_->OnMediaMetadataChanged(
-      player_id_, duration, width, height, success);
-}
-
-void MediaPlayerAndroid::RequestMediaResourcesFromManager() {
-  if (manager_)
-    manager_->RequestMediaResources(player_id_);
-}
-
-void MediaPlayerAndroid::ReleaseMediaResourcesFromManager() {
-  if (manager_)
-    manager_->ReleaseMediaResources(player_id_);
-}
-
 GURL MediaPlayerAndroid::GetUrl() {
   return GURL();
 }

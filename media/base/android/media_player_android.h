@@ -80,23 +80,6 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   MediaPlayerAndroid(int player_id,
                      MediaPlayerManager* manager);
 
-  // Called when player status changes.
-  // TODO(wolenetz): Replace these confusing subclass helper methods with
-  // explicit calls to the manager. See http://crbug.com/295781
-  virtual void OnMediaError(int error_type);
-  virtual void OnVideoSizeChanged(int width, int height);
-  virtual void OnBufferingUpdate(int percent);
-  virtual void OnPlaybackComplete();
-  virtual void OnSeekComplete();
-  virtual void OnMediaMetadataChanged(
-      base::TimeDelta duration, int width, int height, bool success);
-  virtual void OnMediaInterrupted();
-  virtual void OnTimeUpdated();
-
-  // Request or release decoding resources from |manager_|.
-  virtual void RequestMediaResourcesFromManager();
-  virtual void ReleaseMediaResourcesFromManager();
-
   MediaPlayerManager* manager() { return manager_; }
 
  private:

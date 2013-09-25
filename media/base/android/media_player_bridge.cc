@@ -140,7 +140,7 @@ void MediaPlayerBridge::SetDataSource(const std::string& url) {
   if (Java_MediaPlayerBridge_setDataSource(
       env, j_media_player_bridge_.obj(), j_context, j_url_string.obj(),
       j_cookies.obj(), hide_url_log_)) {
-    RequestMediaResourcesFromManager();
+    manager()->RequestMediaResources(player_id());
     Java_MediaPlayerBridge_prepareAsync(
         env, j_media_player_bridge_.obj());
   } else {
@@ -166,7 +166,8 @@ void MediaPlayerBridge::OnMediaMetadataExtracted(
     width_ = width;
     height_ = height;
   }
-  OnMediaMetadataChanged(duration_, width_, height_, success);
+  manager()->OnMediaMetadataChanged(
+      player_id(), duration_, width_, height_, success);
 }
 
 void MediaPlayerBridge::Start() {
@@ -261,7 +262,7 @@ void MediaPlayerBridge::Release() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_MediaPlayerBridge_release(env, j_media_player_bridge_.obj());
   j_media_player_bridge_.Reset();
-  ReleaseMediaResourcesFromManager();
+  manager()->ReleaseMediaResources(player_id());
   listener_.ReleaseMediaPlayerListenerResources();
 }
 
@@ -278,17 +279,29 @@ void MediaPlayerBridge::SetVolume(double volume) {
 void MediaPlayerBridge::OnVideoSizeChanged(int width, int height) {
   width_ = width;
   height_ = height;
-  MediaPlayerAndroid::OnVideoSizeChanged(width, height);
+  manager()->OnVideoSizeChanged(player_id(), width, height);
+}
+
+void MediaPlayerBridge::OnMediaError(int error_type) {
+  manager()->OnError(player_id(), error_type);
+}
+
+void MediaPlayerBridge::OnBufferingUpdate(int percent) {
+  manager()->OnBufferingUpdate(player_id(), percent);
 }
 
 void MediaPlayerBridge::OnPlaybackComplete() {
   time_update_timer_.Stop();
-  MediaPlayerAndroid::OnPlaybackComplete();
+  manager()->OnPlaybackComplete(player_id());
 }
 
 void MediaPlayerBridge::OnMediaInterrupted() {
   time_update_timer_.Stop();
-  MediaPlayerAndroid::OnMediaInterrupted();
+  manager()->OnMediaInterrupted(player_id());
+}
+
+void MediaPlayerBridge::OnSeekComplete() {
+  manager()->OnSeekComplete(player_id(), GetCurrentTime());
 }
 
 void MediaPlayerBridge::OnMediaPrepared() {
@@ -308,7 +321,8 @@ void MediaPlayerBridge::OnMediaPrepared() {
   }
 
   GetAllowedOperations();
-  OnMediaMetadataChanged(duration_, width_, height_, true);
+  manager()->OnMediaMetadataChanged(
+      player_id(), duration_, width_, height_, true);
 }
 
 void MediaPlayerBridge::GetAllowedOperations() {
@@ -332,7 +346,7 @@ void MediaPlayerBridge::StartInternal() {
     time_update_timer_.Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kTimeUpdateInterval),
-        this, &MediaPlayerBridge::OnTimeUpdated);
+        this, &MediaPlayerBridge::OnTimeUpdateTimerFired);
   }
 }
 
@@ -362,6 +376,10 @@ void MediaPlayerBridge::SeekInternal(base::TimeDelta time) {
   int time_msec = static_cast<int>(time.InMilliseconds());
   Java_MediaPlayerBridge_seekTo(
       env, j_media_player_bridge_.obj(), time_msec);
+}
+
+void MediaPlayerBridge::OnTimeUpdateTimerFired() {
+  manager()->OnTimeUpdate(player_id(), GetCurrentTime());
 }
 
 bool MediaPlayerBridge::RegisterMediaPlayerBridge(JNIEnv* env) {

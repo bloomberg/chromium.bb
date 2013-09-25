@@ -218,7 +218,7 @@ void MediaSourcePlayer::Release() {
   pending_event_ = NO_EVENT_PENDING;
   decoder_starvation_callback_.Cancel();
   surface_ = gfx::ScopedJavaSurface();
-  ReleaseMediaResourcesFromManager();
+  manager()->ReleaseMediaResources(player_id());
 }
 
 void MediaSourcePlayer::SetVolume(double volume) {
@@ -294,7 +294,8 @@ void MediaSourcePlayer::OnDemuxerConfigsAvailable(
   height_ = configs.video_size.height();
   is_video_encrypted_ = configs.is_video_encrypted;
 
-  OnMediaMetadataChanged(duration_, width_, height_, true);
+  manager()->OnMediaMetadataChanged(
+      player_id(), duration_, width_, height_, true);
 
   if (IsEventPending(CONFIG_CHANGE_EVENT_PENDING)) {
     if (reconfig_audio_decoder_)
@@ -371,7 +372,7 @@ void MediaSourcePlayer::OnDemuxerSeekDone() {
   DVLOG(1) << __FUNCTION__;
 
   ClearPendingEvent(SEEK_EVENT_PENDING);
-  OnSeekComplete();
+  manager()->OnSeekComplete(player_id(), GetCurrentTime());
   ProcessPendingEvents();
 }
 
@@ -386,7 +387,7 @@ void MediaSourcePlayer::UpdateTimestamps(
   }
 
   clock_.SetMaxTime(new_max_time);
-  OnTimeUpdated();
+  manager()->OnTimeUpdate(player_id(), GetCurrentTime());
 }
 
 void MediaSourcePlayer::ProcessPendingEvents() {
@@ -467,7 +468,7 @@ void MediaSourcePlayer::MediaDecoderCallback(
 
   if (status == MEDIA_CODEC_ERROR) {
     Release();
-    OnMediaError(MEDIA_ERROR_DECODE);
+    manager()->OnError(player_id(), MEDIA_ERROR_DECODE);
     return;
   }
 
@@ -551,7 +552,7 @@ void MediaSourcePlayer::PlaybackCompleted(bool is_audio) {
     playing_ = false;
     clock_.Pause();
     start_time_ticks_ = base::TimeTicks();
-    OnPlaybackComplete();
+    manager()->OnPlaybackComplete(player_id());
   }
 }
 
@@ -638,7 +639,8 @@ void MediaSourcePlayer::ConfigureVideoDecoderJob() {
   // Inform the fullscreen view the player is ready.
   // TODO(qinmin): refactor MediaPlayerBridge so that we have a better way
   // to inform ContentVideoView.
-  OnMediaMetadataChanged(duration_, width_, height_, true);
+  manager()->OnMediaMetadataChanged(
+      player_id(), duration_, width_, height_, true);
 }
 
 void MediaSourcePlayer::OnDecoderStarved() {
