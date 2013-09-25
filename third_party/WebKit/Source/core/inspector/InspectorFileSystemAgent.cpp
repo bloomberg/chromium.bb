@@ -150,22 +150,20 @@ void FileSystemRootRequest::start(ScriptExecutionContext* scriptExecutionContext
     ASSERT(scriptExecutionContext);
 
     RefPtr<ErrorCallback> errorCallback = CallbackDispatcherFactory<ErrorCallback>::create(this, &FileSystemRootRequest::didHitError);
-
     FileSystemType type;
-    if (!DOMFileSystemBase::pathPrefixToFileSystemType(m_type, type)) {
-        errorCallback->handleEvent(FileError::create(FileError::SYNTAX_ERR).get());
-        return;
-    }
-
-    KURL rootURL = DOMFileSystemBase::createFileSystemRootURL(scriptExecutionContext->securityOrigin()->toString(), type);
-    if (!rootURL.isValid()) {
+    if (m_type == DOMFileSystemBase::persistentPathPrefix)
+        type = FileSystemTypePersistent;
+    else if (m_type == DOMFileSystemBase::temporaryPathPrefix)
+        type = FileSystemTypeTemporary;
+    else {
         errorCallback->handleEvent(FileError::create(FileError::SYNTAX_ERR).get());
         return;
     }
 
     RefPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &FileSystemRootRequest::didGetEntry);
-    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext);
-    LocalFileSystem::from(scriptExecutionContext)->resolveURL(scriptExecutionContext, rootURL, fileSystemCallbacks.release());
+    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext, type, "/");
+
+    LocalFileSystem::from(scriptExecutionContext)->readFileSystem(scriptExecutionContext, type, fileSystemCallbacks.release());
 }
 
 bool FileSystemRootRequest::didGetEntry(Entry* entry)
@@ -225,11 +223,17 @@ void DirectoryContentRequest::start(ScriptExecutionContext* scriptExecutionConte
     ASSERT(scriptExecutionContext);
 
     RefPtr<ErrorCallback> errorCallback = CallbackDispatcherFactory<ErrorCallback>::create(this, &DirectoryContentRequest::didHitError);
+    FileSystemType type;
+    String path;
+    if (!DOMFileSystemBase::crackFileSystemURL(m_url, type, path)) {
+        errorCallback->handleEvent(FileError::create(FileError::SYNTAX_ERR).get());
+        return;
+    }
+
     RefPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &DirectoryContentRequest::didGetEntry);
+    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext, type, path);
 
-    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext);
-
-    LocalFileSystem::from(scriptExecutionContext)->resolveURL(scriptExecutionContext, m_url, fileSystemCallbacks.release());
+    LocalFileSystem::from(scriptExecutionContext)->readFileSystem(scriptExecutionContext, type, fileSystemCallbacks.release());
 }
 
 bool DirectoryContentRequest::didGetEntry(Entry* entry)
@@ -335,6 +339,7 @@ private:
 
     RefPtr<RequestMetadataCallback> m_requestCallback;
     KURL m_url;
+    String m_path;
     bool m_isDirectory;
 };
 
@@ -343,9 +348,16 @@ void MetadataRequest::start(ScriptExecutionContext* scriptExecutionContext)
     ASSERT(scriptExecutionContext);
 
     RefPtr<ErrorCallback> errorCallback = CallbackDispatcherFactory<ErrorCallback>::create(this, &MetadataRequest::didHitError);
+
+    FileSystemType type;
+    if (!DOMFileSystemBase::crackFileSystemURL(m_url, type, m_path)) {
+        errorCallback->handleEvent(FileError::create(FileError::SYNTAX_ERR).get());
+        return;
+    }
+
     RefPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &MetadataRequest::didGetEntry);
-    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext);
-    LocalFileSystem::from(scriptExecutionContext)->resolveURL(scriptExecutionContext, m_url, fileSystemCallbacks.release());
+    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext, type, m_path);
+    LocalFileSystem::from(scriptExecutionContext)->readFileSystem(scriptExecutionContext, type, fileSystemCallbacks.release());
 }
 
 bool MetadataRequest::didGetEntry(Entry* entry)
@@ -441,10 +453,18 @@ void FileContentRequest::start(ScriptExecutionContext* scriptExecutionContext)
     ASSERT(scriptExecutionContext);
 
     RefPtr<ErrorCallback> errorCallback = CallbackDispatcherFactory<ErrorCallback>::create(this, &FileContentRequest::didHitError);
-    RefPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &FileContentRequest::didGetEntry);
 
-    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext);
-    LocalFileSystem::from(scriptExecutionContext)->resolveURL(scriptExecutionContext, m_url, fileSystemCallbacks.release());
+    FileSystemType type;
+    String path;
+    if (!DOMFileSystemBase::crackFileSystemURL(m_url, type, path)) {
+        errorCallback->handleEvent(FileError::create(FileError::SYNTAX_ERR).get());
+        return;
+    }
+
+    RefPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &FileContentRequest::didGetEntry);
+    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext, type, path);
+
+    LocalFileSystem::from(scriptExecutionContext)->readFileSystem(scriptExecutionContext, type, fileSystemCallbacks.release());
 }
 
 bool FileContentRequest::didGetEntry(Entry* entry)
@@ -556,8 +576,8 @@ void DeleteEntryRequest::start(ScriptExecutionContext* scriptExecutionContext)
         LocalFileSystem::from(scriptExecutionContext)->deleteFileSystem(scriptExecutionContext, type, fileSystemCallbacks.release());
     } else {
         RefPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &DeleteEntryRequest::didGetEntry);
-        OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext);
-        LocalFileSystem::from(scriptExecutionContext)->resolveURL(scriptExecutionContext, m_url, fileSystemCallbacks.release());
+        OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext, type, path);
+        LocalFileSystem::from(scriptExecutionContext)->readFileSystem(scriptExecutionContext, type, fileSystemCallbacks.release());
     }
 }
 

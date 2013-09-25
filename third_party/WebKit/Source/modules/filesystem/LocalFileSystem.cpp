@@ -58,13 +58,14 @@ LocalFileSystemBase::~LocalFileSystemBase()
 {
 }
 
-void LocalFileSystemBase::resolveURL(ScriptExecutionContext* context, const KURL& fileSystemURL, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
+void LocalFileSystemBase::readFileSystem(ScriptExecutionContext* context, FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
     if (!client() || !client()->allowFileSystem(context)) {
         context->postTask(createCallbackTask(&fileSystemNotAllowed, callbacks));
         return;
     }
-    WebKit::Platform::current()->fileSystem()->resolveURL(fileSystemURL, callbacks);
+    KURL storagePartition = KURL(KURL(), context->securityOrigin()->toString());
+    WebKit::Platform::current()->fileSystem()->openFileSystem(storagePartition, static_cast<WebKit::WebFileSystemType>(type), false, callbacks);
 }
 
 void LocalFileSystemBase::requestFileSystem(ScriptExecutionContext* context, FileSystemType type, long long size, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
