@@ -160,6 +160,10 @@ const char kSubSubEntryPadding[] = "      ";
            new FundamentalValue(hwstate.timestamp));
   ListValue* fingers = new ListValue;
   for (size_t i = 0; i < hwstate.finger_cnt; ++i) {
+    if (hwstate.fingers == NULL) {
+      Err("Have finger_cnt %d but fingers is NULL!", hwstate.finger_cnt);
+      break;
+    }
     const FingerState& fs = hwstate.fingers[i];
     DictionaryValue* finger = new DictionaryValue;
     finger->Set(kKeyFingerStateTouchMajor,
