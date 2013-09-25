@@ -1574,8 +1574,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }
 
       var tracker = this.directoryModel_.createDirectoryChangeTracker();
-      // Expected finish of setupPath to Drive.
-      tracker.exceptInitialChange = true;
       tracker.start();
       // Waits until the Drive is mounted.
       this.volumeManager_.mountDrive(function() {
@@ -2447,11 +2445,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.updateSearchBoxOnDirChange_();
     util.updateAppState(this.getCurrentDirectory());
 
-    if (this.closeOnUnmount_ && !event.initial &&
+    // If the current directory is moved from the device's volume, do not
+    // automatically close the window on device removal.
+    if (event.previousDirEntry &&
         PathUtil.getRootPath(event.previousDirEntry.fullPath) !=
-            PathUtil.getRootPath(event.newDirEntry.fullPath)) {
+            PathUtil.getRootPath(event.newDirEntry.fullPath))
       this.closeOnUnmount_ = false;
-    }
 
     this.updateCommands();
     this.updateUnformattedDriveStatus_();

@@ -872,7 +872,7 @@ DirectoryModel.prototype.changeDirectory = function(path, opt_errorCallback) {
   }
 
   this.resolveDirectory(path, function(directoryEntry) {
-    this.changeDirectoryEntry_(false, directoryEntry);
+    this.changeDirectoryEntry_(directoryEntry);
   }.bind(this), function(error) {
     console.error('Error changing directory to ' + path + ': ', error);
     if (opt_errorCallback)
@@ -949,24 +949,21 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
  * Dispatches the 'directory-changed' event when the directory is successfully
  * changed.
  *
- * @param {boolean} initial True if it comes from setupPath and
- *                          false if caused by an user action.
  * @param {DirectoryEntry} dirEntry The absolute path to the new directory.
  * @param {function()=} opt_callback Executed if the directory loads
  *     successfully.
  * @private
  */
-DirectoryModel.prototype.changeDirectoryEntry_ = function(initial, dirEntry,
-                                                          opt_callback) {
+DirectoryModel.prototype.changeDirectoryEntry_ = function(
+    dirEntry, opt_callback) {
   this.fileWatcher_.changeWatchedDirectory(dirEntry, function() {
     var previous = this.currentDirContents_.getDirectoryEntry();
     this.clearSearch_();
     this.changeDirectoryEntrySilent_(dirEntry, opt_callback);
 
     var e = new cr.Event('directory-changed');
-    e.previousDirEntry = previous;
+    e.previousDirEntry = (previous.fullpath == '/') ? null : previous;
     e.newDirEntry = dirEntry;
-    e.initial = initial;
     this.dispatchEvent(e);
   }.bind(this));
 };
@@ -982,7 +979,6 @@ DirectoryModel.prototype.createDirectoryChangeTracker = function() {
     dm_: this,
     active_: false,
     hasChanged: false,
-    exceptInitialChange: false,
 
     start: function() {
       if (!this.active_) {
@@ -1002,9 +998,6 @@ DirectoryModel.prototype.createDirectoryChangeTracker = function() {
     },
 
     onDirectoryChange_: function(event) {
-      // this == tracker.dm_ here.
-      if (tracker.exceptInitialChange && event.initial)
-        return;
       tracker.stop();
       tracker.hasChanged = true;
     }
@@ -1015,6 +1008,8 @@ DirectoryModel.prototype.createDirectoryChangeTracker = function() {
 /**
  * Change the state of the model to reflect the specified path (either a
  * file or directory).
+ * TODO(hidehiko): This logic should be merged with
+ * FileManager.setupCurrentDirectory_.
  *
  * @param {string} path The root path to use.
  * @param {function(string, string, boolean)=} opt_pathResolveCallback Invoked
@@ -1036,20 +1031,19 @@ DirectoryModel.prototype.setupPath = function(path, opt_pathResolveCallback) {
                             exists && !tracker.hasChanged);
   };
 
-  var changeDirectoryEntry = function(directoryEntry, initial, opt_callback) {
+  var changeDirectoryEntry = function(directoryEntry, opt_callback) {
     tracker.stop();
     if (!tracker.hasChanged)
-      self.changeDirectoryEntry_(initial, directoryEntry, opt_callback);
+      self.changeDirectoryEntry_(directoryEntry, opt_callback);
   };
 
-  var INITIAL = true;
   var EXISTS = true;
 
   var changeToDefault = function(leafName) {
     var def = PathUtil.DEFAULT_DIRECTORY;
     self.resolveDirectory(def, function(directoryEntry) {
       resolveCallback(def, leafName, !EXISTS);
-      changeDirectoryEntry(directoryEntry, INITIAL);
+      changeDirectoryEntry(directoryEntry);
     }, function(error) {
       console.error('Failed to resolve default directory: ' + def, error);
       resolveCallback('/', leafName, !EXISTS);
@@ -1068,7 +1062,7 @@ DirectoryModel.prototype.setupPath = function(path, opt_pathResolveCallback) {
 
   this.resolveDirectory(path, function(directoryEntry) {
     resolveCallback(directoryEntry.fullPath, '', !EXISTS);
-    changeDirectoryEntry(directoryEntry, INITIAL);
+    changeDirectoryEntry(directoryEntry);
   }, function(error) {
     // Usually, leaf does not exist, because it's just a suggested file name.
     var fileExists = error.code == FileError.TYPE_MISMATCH_ERR;
@@ -1085,7 +1079,6 @@ DirectoryModel.prototype.setupPath = function(path, opt_pathResolveCallback) {
         var fileName = path.substr(nameDelimiter + 1);
         resolveCallback(parentDirectoryEntry.fullPath, fileName, fileExists);
         changeDirectoryEntry(parentDirectoryEntry,
-                             INITIAL,
                              function() {
                                self.selectEntry(fileName);
                              });
@@ -1219,7 +1212,7 @@ DirectoryModel.prototype.onDriveStatusChanged_ = function(callback) {
       } else if (PathUtil.isDriveBasedPath(currentDirEntry.fullPath)) {
         // Now, Drive file system is unmounted. Go back to the fake Drive
         // entry.
-        this.changeDirectoryEntry_(false, DirectoryModel.fakeDriveEntry_);
+        this.changeDirectoryEntry_(DirectoryModel.fakeDriveEntry_);
       }
     }
 
@@ -1368,7 +1361,6 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
     var e = new cr.Event('directory-changed');
     e.previousDirEntry = previous;
     e.newDirEntry = dirEntry;
-    e.initial = false;
     this.dispatchEvent(e);
   }.bind(this);
 
