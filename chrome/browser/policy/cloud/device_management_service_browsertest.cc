@@ -140,7 +140,6 @@ class DeviceManagementServiceIntegrationTest
   virtual void SetUpOnMainThread() OVERRIDE {
     std::string service_url((this->*(GetParam()))());
     service_.reset(new DeviceManagementService(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
         g_browser_process->system_request_context(),
         service_url));
     service_->ScheduleInitialization(0);

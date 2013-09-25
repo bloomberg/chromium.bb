@@ -170,19 +170,17 @@ BrowserPolicyConnector::~BrowserPolicyConnector() {
 
 void BrowserPolicyConnector::Init(
     PrefService* local_state,
-    scoped_refptr<net::URLRequestContextGetter> system_request_context) {
+    scoped_refptr<net::URLRequestContextGetter> request_context) {
   // Initialization of some of the providers requires the FILE thread; make
   // sure that threading is ready at this point.
   DCHECK(BrowserThread::IsThreadInitialized(BrowserThread::FILE));
   DCHECK(!is_initialized()) << "BrowserPolicyConnector::Init() called twice.";
 
   local_state_ = local_state;
-  system_request_context_ = system_request_context;
+  request_context_ = request_context;
 
-  device_management_service_.reset(new DeviceManagementService(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-      system_request_context,
-      GetDeviceManagementUrl()));
+  device_management_service_.reset(
+      new DeviceManagementService(request_context, GetDeviceManagementUrl()));
   device_management_service_->ScheduleInitialization(
       kServiceInitializationStartupDelay);
 
@@ -270,7 +268,7 @@ void BrowserPolicyConnector::Shutdown() {
 
   device_management_service_.reset();
 
-  system_request_context_ = NULL;
+  request_context_ = NULL;
 }
 
 PolicyService* BrowserPolicyConnector::GetPolicyService() {
@@ -357,10 +355,10 @@ UserAffiliation BrowserPolicyConnector::GetUserAffiliation(
 
 #if defined(OS_CHROMEOS)
 AppPackUpdater* BrowserPolicyConnector::GetAppPackUpdater() {
-  // system_request_context_ is NULL in unit tests.
-  if (!app_pack_updater_ && system_request_context_.get()) {
-    app_pack_updater_.reset(new AppPackUpdater(system_request_context_.get(),
-                                               install_attributes_.get()));
+  // request_context_ is NULL in unit tests.
+  if (!app_pack_updater_ && request_context_.get()) {
+    app_pack_updater_.reset(
+        new AppPackUpdater(request_context_.get(), install_attributes_.get()));
   }
   return app_pack_updater_.get();
 }

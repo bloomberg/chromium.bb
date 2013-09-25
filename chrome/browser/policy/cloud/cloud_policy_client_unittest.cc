@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/policy/cloud/mock_cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/mock_device_management_service.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
@@ -187,6 +188,7 @@ class CloudPolicyClientTest : public testing::Test {
   em::DeviceManagementResponse unregistration_response_;
   em::DeviceManagementResponse upload_certificate_response_;
 
+  base::MessageLoop loop_;
   std::string client_id_;
   PolicyNamespaceKey policy_ns_key_;
   MockDeviceManagementService service_;

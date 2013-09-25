@@ -49,6 +49,8 @@ const char kRobotAuthCode[] = "robot-oauth-auth-code";
 class DeviceManagementServiceTestBase : public testing::Test {
  protected:
   DeviceManagementServiceTestBase() {
+    request_context_ =
+        new net::TestURLRequestContextGetter(loop_.message_loop_proxy());
     ResetService();
     InitializeService();
   }
@@ -59,10 +61,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
   }
 
   void ResetService() {
-    service_.reset(new DeviceManagementService(
-        loop_.message_loop_proxy(),
-        NULL,
-        kServiceUrl));
+    service_.reset(new DeviceManagementService(request_context_, kServiceUrl));
   }
 
   void InitializeService() {
@@ -162,11 +161,10 @@ class DeviceManagementServiceTestBase : public testing::Test {
 
   MOCK_METHOD1(OnJobRetry, void(DeviceManagementRequestJob*));
 
+  base::MessageLoop loop_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   net::TestURLFetcherFactory factory_;
   scoped_ptr<DeviceManagementService> service_;
-
- private:
-  base::MessageLoop loop_;
 };
 
 struct FailedRequestParams {

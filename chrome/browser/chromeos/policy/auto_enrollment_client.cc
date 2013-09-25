@@ -134,7 +134,6 @@ AutoEnrollmentClient* AutoEnrollmentClient::Create(
     std::string url = BrowserPolicyConnector::GetDeviceManagementUrl();
     if (!url.empty()) {
       service = new DeviceManagementService(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
           g_browser_process->system_request_context(),
           url);
       service->ScheduleInitialization(0);

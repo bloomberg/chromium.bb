@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "chrome/browser/net/basic_http_user_agent_settings.h"
@@ -252,10 +251,8 @@ class DeviceManagementRequestContextGetter
     : public net::URLRequestContextGetter {
  public:
   DeviceManagementRequestContextGetter(
-      scoped_refptr<base::SingleThreadTaskRunner> net_task_runner,
       scoped_refptr<net::URLRequestContextGetter> base_context_getter)
-      : net_task_runner_(net_task_runner),
-        base_context_getter_(base_context_getter) {}
+      : base_context_getter_(base_context_getter) {}
 
   // Overridden from net::URLRequestContextGetter:
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
@@ -266,7 +263,6 @@ class DeviceManagementRequestContextGetter
   virtual ~DeviceManagementRequestContextGetter() {}
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> net_task_runner_;
   scoped_refptr<net::URLRequestContextGetter> base_context_getter_;
   scoped_ptr<net::URLRequestContext> context_;
 };
@@ -274,7 +270,7 @@ class DeviceManagementRequestContextGetter
 
 net::URLRequestContext*
 DeviceManagementRequestContextGetter::GetURLRequestContext() {
-  DCHECK(net_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(GetNetworkTaskRunner()->RunsTasksOnCurrentThread());
   if (!context_.get()) {
     context_.reset(new DeviceManagementRequestContext(
         base_context_getter_->GetURLRequestContext()));
@@ -285,7 +281,7 @@ DeviceManagementRequestContextGetter::GetURLRequestContext() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 DeviceManagementRequestContextGetter::GetNetworkTaskRunner() const {
-  return net_task_runner_;
+  return base_context_getter_->GetNetworkTaskRunner();
 }
 
 }  // namespace
@@ -568,9 +564,8 @@ void DeviceManagementService::Initialize() {
   if (initialized_)
     return;
   DCHECK(!request_context_getter_.get());
-  request_context_getter_ = new DeviceManagementRequestContextGetter(
-      net_task_runner_,
-      system_request_context_);
+  request_context_getter_ =
+      new DeviceManagementRequestContextGetter(request_context_);
   initialized_ = true;
 
   while (!queued_jobs_.empty()) {
@@ -590,11 +585,9 @@ void DeviceManagementService::Shutdown() {
 }
 
 DeviceManagementService::DeviceManagementService(
-    scoped_refptr<base::SingleThreadTaskRunner> net_task_runner,
-    scoped_refptr<net::URLRequestContextGetter> system_request_context,
+    scoped_refptr<net::URLRequestContextGetter> request_context,
     const std::string& server_url)
-    : net_task_runner_(net_task_runner),
-      system_request_context_(system_request_context),
+    : request_context_(request_context),
       server_url_(server_url),
       initialized_(false),
       weak_ptr_factory_(this) {

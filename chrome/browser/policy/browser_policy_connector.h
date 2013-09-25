@@ -55,7 +55,7 @@ class BrowserPolicyConnector {
   // Finalizes the initialization of the connector. This call can be skipped on
   // tests that don't require the full policy system running.
   void Init(PrefService* local_state,
-            scoped_refptr<net::URLRequestContextGetter> system_request_context);
+            scoped_refptr<net::URLRequestContextGetter> request_context);
 
   // Stops the policy providers and cleans up the connector before it can be
   // safely deleted. This must be invoked before the destructor and while the
@@ -163,7 +163,7 @@ class BrowserPolicyConnector {
   bool is_initialized_;
 
   PrefService* local_state_;
-  scoped_refptr<net::URLRequestContextGetter> system_request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // Used to convert policies to preferences. The providers declared below
   // may trigger policy updates during shutdown, which will result in
