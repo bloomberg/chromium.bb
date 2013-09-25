@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -43,13 +44,13 @@ class NET_EXPORT_PRIVATE MDnsConnection {
     virtual ~Delegate() {}
   };
 
-  explicit MDnsConnection(SocketFactory* socket_factory,
-                          MDnsConnection::Delegate* delegate);
+  explicit MDnsConnection(MDnsConnection::Delegate* delegate);
 
   virtual ~MDnsConnection();
 
-  int Init();
-  int Send(IOBuffer* buffer, unsigned size);
+  // Both methods return true if at least one of the socket handlers succeeded.
+  bool Init(MDnsConnection::SocketFactory* socket_factory);
+  bool Send(IOBuffer* buffer, unsigned size);
 
  private:
   class SocketHandler {
@@ -85,8 +86,8 @@ class NET_EXPORT_PRIVATE MDnsConnection {
 
   void OnError(SocketHandler* loop, int error);
 
-  SocketHandler socket_handler_ipv4_;
-  SocketHandler socket_handler_ipv6_;
+  // Only socket handlers which successfully bound and started are kept.
+  ScopedVector<SocketHandler> socket_handlers_;
 
   Delegate* delegate_;
 
@@ -103,12 +104,11 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
   // invalidate the core.
   class Core : public base::SupportsWeakPtr<Core>, MDnsConnection::Delegate {
    public:
-    Core(MDnsClientImpl* client,
-         MDnsConnection::SocketFactory* socket_factory);
+    explicit Core(MDnsClientImpl* client);
     virtual ~Core();
 
     // Initialize the core. Returns true on success.
-    bool Init();
+    bool Init(MDnsConnection::SocketFactory* socket_factory);
 
     // Send a query with a specific rrtype and name. Returns true on success.
     bool SendQuery(uint16 rrtype, std::string name);

@@ -1025,24 +1025,17 @@ class SimpleMockSocketFactory
   }
 
   virtual scoped_ptr<DatagramServerSocket> CreateSocket() OVERRIDE {
-    scoped_ptr<MockMDnsDatagramServerSocket> socket(
-        new StrictMock<MockMDnsDatagramServerSocket>);
-    sockets_.push(socket.get());
-    return socket.PassAs<DatagramServerSocket>();
+    MockMDnsDatagramServerSocket* socket = sockets_.back();
+    sockets_.weak_erase(sockets_.end() - 1);
+    return scoped_ptr<DatagramServerSocket>(socket);
   }
 
-  MockMDnsDatagramServerSocket* PopFirstSocket() {
-    MockMDnsDatagramServerSocket* socket = sockets_.front();
-    sockets_.pop();
-    return socket;
-  }
-
-  size_t num_sockets() {
-    return sockets_.size();
+  void PushSocket(MockMDnsDatagramServerSocket* socket) {
+    sockets_.push_back(socket);
   }
 
  private:
-  std::queue<MockMDnsDatagramServerSocket*> sockets_;
+  ScopedVector<MockMDnsDatagramServerSocket> sockets_;
 };
 
 class MockMDnsConnectionDelegate : public MDnsConnection::Delegate {
@@ -1058,16 +1051,16 @@ class MockMDnsConnectionDelegate : public MDnsConnection::Delegate {
 
 class MDnsConnectionTest : public ::testing::Test {
  public:
-  MDnsConnectionTest() : connection_(&factory_, &delegate_) {
+  MDnsConnectionTest() : connection_(&delegate_) {
   }
 
  protected:
   // Follow successful connection initialization.
   virtual void SetUp() OVERRIDE {
-    ASSERT_EQ(2u, factory_.num_sockets());
-
-    socket_ipv4_ = factory_.PopFirstSocket();
-    socket_ipv6_ = factory_.PopFirstSocket();
+    socket_ipv4_ = new MockMDnsDatagramServerSocket;
+    socket_ipv6_ = new MockMDnsDatagramServerSocket;
+    factory_.PushSocket(socket_ipv6_);
+    factory_.PushSocket(socket_ipv4_);
   }
 
   bool InitConnection() {
@@ -1087,7 +1080,7 @@ class MDnsConnectionTest : public ::testing::Test {
     EXPECT_CALL(*socket_ipv6_, JoinGroupInternal("ff02::fb"))
         .WillOnce(Return(OK));
 
-    return connection_.Init() == OK;
+    return connection_.Init(&factory_);
   }
 
   StrictMock<MockMDnsConnectionDelegate> delegate_;
