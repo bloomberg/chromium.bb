@@ -3215,7 +3215,6 @@
             'platform/sql/chromium/SQLiteFileSystemChromium.cpp',
             'platform/sql/chromium/SQLiteFileSystemChromiumPosix.cpp',
             'platform/sql/chromium/SQLiteFileSystemChromiumWin.cpp',
-            'platform/text/AtomicStringKeyedMRUCache.h',
             'platform/text/BidiContext.cpp',
             'platform/text/DateTimeFormat.cpp',
             'platform/text/LineEnding.cpp',
