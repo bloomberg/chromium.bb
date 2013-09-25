@@ -50,7 +50,6 @@ AllJsLoadTest.prototype = {
     'log_to_server.js',
     'menu_button.js',
     'oauth2_api.js',
-    'oauth2_callback.js',
     'oauth2.js',
     'paired_client_manager.js',
     'plugin_settings.js',
