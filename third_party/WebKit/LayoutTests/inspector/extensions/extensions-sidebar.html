@@ -6,32 +6,32 @@
 
 function initialize_extensionsSidebarTest()
 {
-    InspectorTest.dumpSidebarContent = function(callback)
+    InspectorTest.dumpSidebarContent = function(panelName, callback)
     {
-        var sidebar = InspectorTest._extensionSidebar();
+        var sidebar = InspectorTest._extensionSidebar(panelName);
         InspectorTest.runAfterPendingDispatches(function() {
-            InspectorTest.addResult("Sidebar content: " + sidebar.bodyElement.textContent);
+            InspectorTest.addResult(panelName + " sidebar content: " + sidebar.bodyElement.textContent);
             callback();
         });
     }
 
-    InspectorTest.expandSidebar = function(callback)
+    InspectorTest.expandSidebar = function(panelName, callback)
     {
-        var sidebar = InspectorTest._extensionSidebar();
+        var sidebar = InspectorTest._extensionSidebar(panelName);
         InspectorTest.runAfterPendingDispatches(function() {
             sidebar.expand();
             callback();
         });
     }
 
-    InspectorTest._extensionSidebar = function()
+    InspectorTest._extensionSidebar = function(panelName)
     {
-        var sidebarPanes = WebInspector.panel("elements")._extensionSidebarPanes;
-        return sidebarPanes[sidebarPanes.length - 1];
+        var sidebarPanes = WebInspector.panel(panelName)._extensionSidebarPanes;
+         return sidebarPanes[sidebarPanes.length - 1];
     }
 }
 
-function extension_testSidebarSetPage(nextTest)
+function extension_sidebarSetPage(panelName, nextTest)
 {
     function onSidebarCreated(sidebar)
     {
@@ -45,22 +45,44 @@ function extension_testSidebarSetPage(nextTest)
         sidebar.onShown.addListener(onShown);
         var basePath = location.pathname.replace(/\/[^/]*$/, "/");
         sidebar.setPage(basePath + "extension-sidebar.html");
-        extension_showPanel("elements", extension_expandSidebar);
+        extension_showPanel(panelName, extension_expandSidebar.bind(null, panelName));
     }
-    webInspector.panels.elements.createSidebarPane("Test Sidebar", onSidebarCreated);
+    output("Call createSidebarPane for " + panelName);
+    webInspector.panels[panelName].createSidebarPane("Test Sidebar", onSidebarCreated);
 }
 
-function extension_dumpSidebarContent(nextTest)
+function extension_testElementsSidebarSetPage(nextTest)
 {
-    evaluateOnFrontend("InspectorTest.dumpSidebarContent(reply);", nextTest);
+    extension_sidebarSetPage("elements", nextTest);
 }
 
-function extension_expandSidebar(callback)
+function extension_testSourcesSidebarSetPage(nextTest)
 {
-    evaluateOnFrontend("InspectorTest.expandSidebar(reply);", callback);
+    extension_sidebarSetPage("sources", nextTest);
 }
 
-function extension_testSidebarSetObject(nextTest)
+
+function extension_dumpSidebarContent(panelName, nextTest)
+{
+    evaluateOnFrontend("InspectorTest.dumpSidebarContent(\"" + panelName + "\", reply);", nextTest);
+}
+
+function extension_expandSidebar(panelName, callback)
+{
+    evaluateOnFrontend("InspectorTest.expandSidebar(\"" + panelName + "\", reply);", callback);
+}
+
+function extension_testElementsSidebarSetObject(nextTest)
+{
+    extension_sideBarSetObject("elements", nextTest);
+}
+
+function extension_testSourcesSidebarSetObject(nextTest)
+{
+    extension_sideBarSetObject("sources", nextTest);
+}
+
+function extension_sideBarSetObject (panelName, nextTest)
 {
     function onSidebarCreated(sidebar)
     {
@@ -75,13 +97,14 @@ function extension_testSidebarSetObject(nextTest)
             f5: ["aa", "bb", "cc"],
             f6: { f60: 42, f61: "foo", f62: [] },
             f7: 42
-        }, null, extension_dumpSidebarContent.bind(this, nextTest));
+        }, null, extension_dumpSidebarContent.bind(this, panelName, nextTest));
     }
-    webInspector.panels.elements.createSidebarPane("Watch Test: Object", onSidebarCreated);
+    webInspector.panels[panelName].createSidebarPane("Watch Test: Object", onSidebarCreated);
 }
 
-function extension_testSidebarSetExpression(nextTest)
+function extension_testElementsSidebarSetExpression(nextTest)
 {
+    var panelName = "elements";
     function onSidebarCreated(sidebar)
     {
         function expression()
@@ -105,15 +128,59 @@ function extension_testSidebarSetExpression(nextTest)
         // Do an extra round-trip to the inspected page to assure inspect()'s round-trip to
         // front-end is complete and $0 is properly updated with currently inspected node.
         webInspector.inspectedWindow.eval("", function() {
-            sidebar.setExpression("(" + expression.toString() + ")();", "title", extension_dumpSidebarContent.bind(this, nextTest));
+            sidebar.setExpression("(" + expression.toString() + ")();", "title", extension_dumpSidebarContent.bind(this, panelName, nextTest));
         });
     }
+    // The response to this eval gives Inspector protocol error: Object has too long reference chain(must not be longer than 1000)
     webInspector.inspectedWindow.eval("inspect(document.body)", function() {
         webInspector.panels.elements.createSidebarPane("Watch Test: Expression", onSidebarCreated);
     });
 }
 
-function extension_testSidebarPageReplacedWithObject(nextTest)
+function extension_testSourcesSidebarSetExpression(nextTest)
+{
+    var panelName = "sources";
+
+    function onSidebarExpanded(sidebar) {
+        function expression()
+        {
+            return {
+                f0: 'expression',
+                f1: undefined,
+                f2: null,
+                f3: {},
+                f4: [],
+                f5: ["aa", "bb", "cc"],
+                f6: { f60: 42, f61: "foo", f62: [] },
+                f7: 42,
+                f8: window.location,
+                f9: document.body.children,
+                f10: function() {},
+            };
+        }
+        sidebar.setExpression("(" + expression.toString() + ")();", "title", extension_dumpSidebarContent.bind(this, panelName, nextTest));
+    }
+
+    function onSidebarCreated(sidebar)
+    {
+        extension_showPanel(panelName, extension_expandSidebar.bind(this, panelName, onSidebarExpanded.bind(null, sidebar)));
+    }
+
+    webInspector.panels.sources.createSidebarPane("Watch Test: Expression", onSidebarCreated);
+}
+
+
+function extension_testElementsSidebarPageReplacedWithObject(nextTest)
+{
+    extension_sidebarPageReplacedWithObject("elements", nextTest);
+}
+
+function extension_testSourcesSidebarPageReplacedWithObject(nextTest)
+{
+    extension_sidebarPageReplacedWithObject("sources", nextTest);
+}
+
+function extension_sidebarPageReplacedWithObject(panelName, nextTest)
 {
      var basePath = location.pathname.replace(/\/[^/]*$/, "/");
      var sidebar;
@@ -123,7 +190,7 @@ function extension_testSidebarPageReplacedWithObject(nextTest)
          sidebar = aSidebar;
          sidebar.onShown.addListener(onShown);
          sidebar.setPage(basePath + "extension-sidebar.html");
-         extension_showPanel("elements", extension_expandSidebar);
+         extension_showPanel(panelName, extension_expandSidebar.bind(this, panelName));
      }
      var didSetObject = false;
      function onShown(frame)
@@ -137,7 +204,7 @@ function extension_testSidebarPageReplacedWithObject(nextTest)
             nextTest();
          }
      }
-     webInspector.panels.elements.createSidebarPane("Sidebar Test: replace page with object", onSidebarCreated);
+     webInspector.panels[panelName].createSidebarPane("Sidebar Test: replace page with object", onSidebarCreated);
 }
 
 </script>

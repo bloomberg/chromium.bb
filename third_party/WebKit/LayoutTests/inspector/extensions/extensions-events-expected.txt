@@ -11,6 +11,15 @@ RUNNING TEST: extension_testOnRequestFinished
 onRequestFinished fired
 RUNNING TEST: extension_testOnSelectionChanged
 onSelectionChanged fired
+RUNNING TEST: extension_testSourcesOnSelectionChanged
+sources onSelectionChanged fired, selectionInfo:
+{
+    endColumn : 0
+    endLine : 0
+    startColumn : 0
+    startLine : 0
+    url : .../edit-me.js
+}
 RUNNING TEST: extension_testTimelineEvents
 Got Layout event from timeline
 RUNNING TEST: extension_testViewShowHide

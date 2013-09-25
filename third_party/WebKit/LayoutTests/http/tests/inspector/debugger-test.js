@@ -171,7 +171,7 @@ InspectorTest.showUISourceCode = function(uiSourceCode, callback)
     if (sourceFrame.loaded)
         callback(sourceFrame);
     else
-        InspectorTest.addSniffer(sourceFrame, "onTextEditorContentLoaded", callback.bind(null, sourceFrame));
+        InspectorTest.addSniffer(sourceFrame, "onTextEditorContentLoaded", callback && callback.bind(null, sourceFrame));
 };
 
 InspectorTest.showScriptSource = function(scriptName, callback)

@@ -2,6 +2,8 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/extensions-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../debugger/resources/edit-me.js"></script>
 <script type="text/javascript">
 
 function initialize_extensionsSidebarTest()
@@ -36,6 +38,19 @@ function extension_testOnSelectionChanged(nextTest)
     }
     webInspector.panels.elements.onSelectionChanged.addListener(onSelectionChanged);
     webInspector.inspectedWindow.eval("inspect(document.body.children[0]), 0");
+}
+
+function extension_testSourcesOnSelectionChanged(nextTest)
+{
+    function onSelectionChanged(selectionInfo)
+    {
+        webInspector.panels.sources.onSelectionChanged.removeListener(onSelectionChanged);
+        output("sources onSelectionChanged fired, selectionInfo:");
+        dumpObject(selectionInfo, {url: "url"});
+        nextTest();
+    }
+    webInspector.panels.sources.onSelectionChanged.addListener(onSelectionChanged);
+    evaluateOnFrontend("InspectorTest.showScriptSource(\"edit-me.js\")");
 }
 
 function extension_testOnRequestFinished(nextTest)
