@@ -3762,4 +3762,54 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOmittedThirdStream5) {
   EXPECT_FALSE(SimpleCacheThirdStreamFileExists(key));
 }
 
+// There could be a race between Doom and an optimistic write.
+TEST_F(DiskCacheEntryTest, SimpleCacheDoomOptimisticWritesRace) {
+  // Test sequence:
+  // Create, first Write, second Write, Close.
+  // Open, Close.
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* null = NULL;
+  const char key[] = "the first key";
+
+  const int kSize = 200;
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize));
+  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kSize));
+  CacheTestFillBuffer(buffer1->data(), kSize, false);
+  CacheTestFillBuffer(buffer2->data(), kSize, false);
+
+  // The race only happens on stream 1 and stream 2.
+  for (int i = 0; i < disk_cache::kSimpleEntryStreamCount; ++i) {
+    ASSERT_EQ(net::OK, DoomAllEntries());
+    disk_cache::Entry* entry = NULL;
+
+    ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+    EXPECT_NE(null, entry);
+    entry->Close();
+    entry = NULL;
+
+    ASSERT_EQ(net::OK, DoomAllEntries());
+    ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+    EXPECT_NE(null, entry);
+
+    int offset = 0;
+    int buf_len = kSize;
+    // This write should not be optimistic (since create is).
+    EXPECT_EQ(buf_len,
+              WriteData(entry, i, offset, buffer1.get(), buf_len, false));
+
+    offset = kSize;
+    // This write should be optimistic.
+    EXPECT_EQ(buf_len,
+              WriteData(entry, i, offset, buffer2.get(), buf_len, false));
+    entry->Close();
+
+    ASSERT_EQ(net::OK, OpenEntry(key, &entry));
+    EXPECT_NE(null, entry);
+
+    entry->Close();
+    entry = NULL;
+  }
+}
+
 #endif  // defined(OS_POSIX)
