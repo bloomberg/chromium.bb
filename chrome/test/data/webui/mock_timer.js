@@ -177,7 +177,7 @@ MockTimer.prototype = {
    */
   tick: function(elapsedMs) {
     this.until_ += elapsedMs;
-    this.fireElaspedCallbacks_();
+    this.fireElapsedCallbacks_();
   },
 
   /**
@@ -185,7 +185,7 @@ MockTimer.prototype = {
    * timing.
    * @private
    */
-  fireElaspedCallbacks_: function() {
+  fireElapsedCallbacks_: function() {
     while (this.schedule_.length > 0) {
       var when = this.schedule_[this.schedule_.length - 1].when;
       if (when > this.until_)
