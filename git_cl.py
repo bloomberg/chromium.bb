@@ -1861,7 +1861,18 @@ def CMDpatch(parser, args):
   # TODO(maruel): Use apply_issue.py
   # TODO(ukai): use gerrit-cherry-pick for gerrit repository?
 
-  if issue_arg.isdigit():
+  if options.newbranch:
+    if options.force:
+      RunGit(['branch', '-D', options.newbranch],
+          stderr=subprocess2.PIPE, error_ok=True)
+    RunGit(['checkout', '-b', options.newbranch,
+            Changelist().GetUpstreamBranch()])
+
+  return PatchIssue(issue_arg, options.reject, options.nocommit)
+
+
+def PatchIssue(issue_arg, reject, nocommit):
+  if type(issue_arg) is int or issue_arg.isdigit():
     # Input is an issue id.  Figure out the URL.
     issue = int(issue_arg)
     cl = Changelist(issue=issue)
@@ -1877,13 +1888,6 @@ def CMDpatch(parser, args):
     issue = int(match.group(1))
     patchset = int(match.group(2))
     patch_data = urllib2.urlopen(issue_arg).read()
-
-  if options.newbranch:
-    if options.force:
-      RunGit(['branch', '-D', options.newbranch],
-          stderr=subprocess2.PIPE, error_ok=True)
-    RunGit(['checkout', '-b', options.newbranch,
-            Changelist().GetUpstreamBranch()])
 
   # Switch up to the top-level directory, if necessary, in preparation for
   # applying the patch.
@@ -1909,7 +1913,7 @@ def CMDpatch(parser, args):
   # pick up file adds.
   # The --index flag means: also insert into the index (so we catch adds).
   cmd = ['git', 'apply', '--index', '-p0']
-  if options.reject:
+  if reject:
     cmd.append('--reject')
   elif IsGitVersionAtLeast('1.7.12'):
     cmd.append('--3way')
@@ -1920,7 +1924,7 @@ def CMDpatch(parser, args):
     DieWithError('Failed to apply the patch')
 
   # If we had an issue, commit the current state and register the issue.
-  if not options.nocommit:
+  if not nocommit:
     RunGit(['commit', '-m', 'patch from issue %s' % issue])
     cl = Changelist()
     cl.SetIssue(issue)
@@ -2125,6 +2129,31 @@ def CMDset_close(parser, args):
   # Ensure there actually is an issue to close.
   cl.GetDescription()
   cl.CloseIssue()
+  return 0
+
+
+def CMDdiff(parser, args):
+  """shows differences between local tree and last upload."""
+  cl = Changelist()
+  branch = cl.GetBranch()
+  TMP_BRANCH = 'git-cl-diff'
+  base_branch = RunGit(['merge-base', cl.GetUpstreamBranch(), 'HEAD']).strip()
+
+  # Create a new branch based on the merge-base
+  RunGit(['checkout', '-q', '-b', TMP_BRANCH, base_branch])
+  try:
+    # Patch in the latest changes from rietveld.
+    rtn = PatchIssue(cl.GetIssue(), False, False)
+    if rtn != 0:
+      return rtn
+
+    # Switch back to starting brand and diff against the temporary
+    # branch containing the latest rietveld patch.
+    subprocess2.check_call(['git', 'diff', TMP_BRANCH, branch])
+  finally:
+    RunGit(['checkout', '-q', branch])
+    RunGit(['branch', '-D', TMP_BRANCH])
+
   return 0
 
 
