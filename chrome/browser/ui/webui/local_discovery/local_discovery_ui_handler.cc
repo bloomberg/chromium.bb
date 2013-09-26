@@ -330,6 +330,10 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterDone(
   DeviceDescriptionMap::iterator found = device_descriptions_.find(name);
 
   if (found == device_descriptions_.end() || found->second.id.empty()) {
+    // HACK(noamsml): Generate network traffic so the Windows firewall doesn't
+    // block the printer's announcement.
+    privet_lister_->DiscoverNewDevices(false);
+
     new_register_device_ = name;
     registration_announce_timeout_.Reset(base::Bind(
         &LocalDiscoveryUIHandler::OnAnnouncementTimeoutReached,
