@@ -69,6 +69,9 @@ namespace autofill {
 
 namespace {
 
+// The default height of the stack of messages in the overlay view.
+const int kDefaultMessageStackHeight = 90;
+
 // The width for the section container.
 const int kSectionContainerWidth = 440;
 
@@ -642,8 +645,6 @@ AutofillDialogViews::OverlayView::OverlayView(
   message_stack_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
                            kOverlayTextInterlineSpacing));
-  message_stack_->set_border(views::Border::CreateEmptyBorder(
-      kDialogEdgePadding, kDialogEdgePadding, 0, kDialogEdgePadding));
 }
 
 AutofillDialogViews::OverlayView::~OverlayView() {}
@@ -669,18 +670,29 @@ void AutofillDialogViews::OverlayView::UpdateState() {
 
   image_view_->SetImage(state.image.ToImageSkia());
 
+  int label_height = 0;
   message_stack_->RemoveAllChildViews(true);
-  for (size_t i = 0; i < state.strings.size(); ++i) {
+  if (!state.strings.empty() && !state.strings[0].text.empty()) {
+    const DialogOverlayString& string = state.strings[0];
     views::Label* label = new views::Label();
     label->SetAutoColorReadabilityEnabled(false);
     label->SetMultiLine(true);
-    label->SetText(state.strings[i].text);
-    label->SetFont(state.strings[i].font);
-    label->SetEnabledColor(state.strings[i].text_color);
-    label->SetHorizontalAlignment(state.strings[i].alignment);
+    label->SetText(string.text);
+    label->SetFont(string.font);
+    label->SetEnabledColor(string.text_color);
+    label->SetHorizontalAlignment(string.alignment);
     message_stack_->AddChildView(label);
+    label_height = label->GetPreferredSize().height();
   }
   message_stack_->SetVisible(message_stack_->child_count() > 0);
+
+  const int kVerticalPadding = std::max(
+      (kDefaultMessageStackHeight - label_height) / 2, kDialogEdgePadding);
+  message_stack_->set_border(
+      views::Border::CreateEmptyBorder(kVerticalPadding,
+                                       kDialogEdgePadding,
+                                       kVerticalPadding,
+                                       kDialogEdgePadding));
 
   SetVisible(true);
   InvalidateLayout();
@@ -700,7 +712,7 @@ void AutofillDialogViews::OverlayView::Layout() {
   }
 
   int message_height = message_stack_->GetHeightForWidth(bounds.width());
-  int y = bounds.bottom() - views::kButtonVEdgeMarginNew - message_height;
+  int y = bounds.bottom() - message_height;
   message_stack_->SetBounds(bounds.x(), y, bounds.width(), message_height);
 
   gfx::Size image_size = image_view_->GetPreferredSize();

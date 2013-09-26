@@ -884,7 +884,6 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() {
 
     string.text = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_CARD_GENERATION_DONE);
-    state.strings.push_back(DialogOverlayString());
   } else {
     // Start the refresher if it isn't running. Wait one second before pumping
     // updates to the view.
