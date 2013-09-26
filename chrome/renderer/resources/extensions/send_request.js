@@ -32,7 +32,7 @@ function handleResponse(requestId, name, success, responseList, error) {
   // The chrome objects we will set lastError on. Really we should only be
   // setting this on the callback's chrome object, but set on ours too since
   // it's conceivable that something relies on that.
-  var chromesForLastError = [chrome];
+  var callerChrome = chrome;
 
   try {
     var request = requests[requestId];
@@ -41,19 +41,19 @@ function handleResponse(requestId, name, success, responseList, error) {
     // lastError needs to be set on the caller's chrome object no matter what,
     // though chances are it's the same as ours (it will be different when
     // calling API methods on other contexts).
-    if (request.callback) {
-      var chromeForCallback = natives.GetGlobal(request.callback).chrome;
-      if (chromeForCallback != chrome)
-        $Array.push(chromesForLastError, chromeForCallback);
-    }
+    if (request.callback)
+      callerChrome = natives.GetGlobal(request.callback).chrome;
 
-    $Array.forEach(chromesForLastError, function(c) {lastError.clear(c)});
+    lastError.clear(chrome);
+    if (callerChrome !== chrome)
+      lastError.clear(callerChrome);
+
     if (!success) {
       if (!error)
         error = "Unknown error.";
-      $Array.forEach(chromesForLastError, function(c) {
-        lastError.set(name, error, request.stack, c)
-      });
+      lastError.set(name, error, request.stack, chrome);
+      if (callerChrome !== chrome)
+        lastError.set(name, error, request.stack, callerChrome);
     }
 
     if (request.customCallback) {
@@ -77,22 +77,21 @@ function handleResponse(requestId, name, success, responseList, error) {
     }
   } finally {
     delete requests[requestId];
-    $Array.forEach(chromesForLastError, function(c) {lastError.clear(c)});
+    lastError.clear(chrome);
+    if (callerChrome !== chrome)
+      lastError.clear(callerChrome);
   }
 };
 
 function getExtensionStackTrace(call_name) {
   var stack = $String.split(new Error().stack, '\n');
+  var id = processNatives.GetExtensionId();
 
   // Remove stack frames before and after that weren't associated with the
   // extension.
-  var id = processNatives.GetExtensionId();
-  while (stack.length > 0 && stack[0].indexOf(id) == -1)
-    stack.shift();
-  while (stack.length > 0 && stack[stack.length - 1].indexOf(id) == -1)
-    stack.pop();
-
-  return stack.join('\n');
+  return $Array.join(stack.filter(function(line) {
+    return line.indexOf(id) != -1;
+  }), '\n');
 }
 
 function prepareRequest(args, argSchemas) {
