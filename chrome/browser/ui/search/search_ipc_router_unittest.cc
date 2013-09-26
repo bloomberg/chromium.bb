@@ -4,12 +4,16 @@
 
 #include "chrome/browser/ui/search/search_ipc_router.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/instant_types.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -37,6 +41,8 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
 
   MOCK_METHOD0(ShouldProcessSetVoiceSearchSupport, bool());
   MOCK_METHOD0(ShouldSendSetDisplayInstantResults, bool());
+  MOCK_METHOD0(ShouldSendMostVisitedItems, bool());
+  MOCK_METHOD0(ShouldSendThemeBackgroundInfo, bool());
 };
 
 }  // namespace
@@ -153,4 +159,66 @@ TEST_F(SearchIPCRouterTest, DoNotSendSetDisplayInstantResultsMsg) {
   GetSearchTabHelper(web_contents())->ipc_router().SetDisplayInstantResults();
   ASSERT_FALSE(MessageWasSent(
       ChromeViewMsg_SearchBoxSetDisplayInstantResults::ID));
+}
+
+TEST_F(SearchIPCRouterTest, SendMostVisitedItemsMsg) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+  EXPECT_CALL(*policy, ShouldSendMostVisitedItems()).Times(1)
+      .WillOnce(testing::Return(true));
+
+  GetSearchTabHelper(web_contents())->ipc_router().SendMostVisitedItems(
+      std::vector<InstantMostVisitedItem>());
+  ASSERT_TRUE(MessageWasSent(
+      ChromeViewMsg_SearchBoxMostVisitedItemsChanged::ID));
+}
+
+TEST_F(SearchIPCRouterTest, DoNotSendMostVisitedItemsMsg) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+  EXPECT_CALL(*policy, ShouldSendMostVisitedItems()).Times(1)
+      .WillOnce(testing::Return(false));
+
+  GetSearchTabHelper(web_contents())->ipc_router().SendMostVisitedItems(
+      std::vector<InstantMostVisitedItem>());
+  ASSERT_FALSE(MessageWasSent(
+      ChromeViewMsg_SearchBoxMostVisitedItemsChanged::ID));
+}
+
+TEST_F(SearchIPCRouterTest, SendThemeBackgroundInfoMsg) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+  EXPECT_CALL(*policy, ShouldSendThemeBackgroundInfo()).Times(1)
+      .WillOnce(testing::Return(true));
+
+  GetSearchTabHelper(web_contents())->ipc_router().SendThemeBackgroundInfo(
+      ThemeBackgroundInfo());
+  ASSERT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxThemeChanged::ID));
+}
+
+TEST_F(SearchIPCRouterTest, DoNotSendThemeBackgroundInfoMsg) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+  EXPECT_CALL(*policy, ShouldSendThemeBackgroundInfo()).Times(1)
+      .WillOnce(testing::Return(false));
+
+  GetSearchTabHelper(web_contents())->ipc_router().SendThemeBackgroundInfo(
+      ThemeBackgroundInfo());
+  ASSERT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxThemeChanged::ID));
 }

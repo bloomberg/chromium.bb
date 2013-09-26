@@ -4,9 +4,13 @@
 
 #include "chrome/browser/ui/search/search_tab_helper.h"
 
+#include <set>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "build/build_config.h"
+#include "chrome/browser/history/most_visited_tiles_experiment.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -14,6 +18,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_utils.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -106,7 +112,8 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
       web_contents_(web_contents),
       ipc_router_(web_contents, this,
                   make_scoped_ptr(new SearchIPCRouterPolicyImpl(web_contents))
-                      .PassAs<SearchIPCRouter::Policy>()) {
+                      .PassAs<SearchIPCRouter::Policy>()),
+      instant_service_(NULL) {
   if (!is_search_enabled_)
     return;
 
@@ -118,9 +125,17 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<content::NavigationController>(
           &web_contents->GetController()));
+
+  instant_service_ =
+      InstantServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+  if (instant_service_)
+    instant_service_->AddObserver(this);
 }
 
 SearchTabHelper::~SearchTabHelper() {
+  if (instant_service_)
+    instant_service_->RemoveObserver(this);
 }
 
 void SearchTabHelper::InitForPreloadedNTP() {
@@ -282,6 +297,49 @@ void SearchTabHelper::OnInstantSupportDetermined(bool supports_instant) {
 
 void SearchTabHelper::OnSetVoiceSearchSupport(bool supports_voice_search) {
   model_.SetVoiceSearchSupported(supports_voice_search);
+}
+
+void SearchTabHelper::ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) {
+  ipc_router_.SendThemeBackgroundInfo(theme_info);
+}
+
+void SearchTabHelper::MostVisitedItemsChanged(
+    const std::vector<InstantMostVisitedItem>& items) {
+  std::vector<InstantMostVisitedItem> items_copy(items);
+  MaybeRemoveMostVisitedItems(&items_copy);
+  ipc_router_.SendMostVisitedItems(items_copy);
+}
+
+void SearchTabHelper::MaybeRemoveMostVisitedItems(
+    std::vector<InstantMostVisitedItem>* items) {
+// The code below uses APIs not available on Android and the experiment should
+// not run there.
+#if !defined(OS_ANDROID)
+  if (!history::MostVisitedTilesExperiment::IsDontShowOpenURLsEnabled())
+    return;
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  if (!profile)
+    return;
+
+  Browser* browser = chrome::FindBrowserWithProfile(profile,
+                                                    chrome::GetActiveDesktop());
+  if (!browser)
+    return;
+
+  TabStripModel* tab_strip_model = browser->tab_strip_model();
+  history::TopSites* top_sites = profile->GetTopSites();
+  if (!tab_strip_model || !top_sites) {
+    NOTREACHED();
+    return;
+  }
+
+  std::set<std::string> open_urls;
+  chrome::GetOpenUrls(*tab_strip_model, *top_sites, &open_urls);
+  history::MostVisitedTilesExperiment::RemoveItemsMatchingOpenTabs(
+      open_urls, items);
+#endif
 }
 
 void SearchTabHelper::UpdateMode(bool update_origin, bool is_preloaded_ntp) {

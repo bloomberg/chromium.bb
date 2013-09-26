@@ -12,17 +12,14 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/ui/search/instant_ipc_sender.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
-#include "chrome/common/instant_types.h"
 #include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_transition_types.h"
 
 class GURL;
-class InstantService;
 class Profile;
 
 namespace content {
@@ -40,7 +37,6 @@ class Rect;
 // InstantPage is not used directly but via one of its derived classes,
 // InstantNTP and InstantTab.
 class InstantPage : public content::WebContentsObserver,
-                    public InstantServiceObserver,
                     public SearchModelObserver {
  public:
   // InstantPage calls its delegate in response to messages received from the
@@ -177,11 +173,6 @@ class InstantPage : public content::WebContentsObserver,
       const string16& error_description,
       content::RenderViewHost* render_view_host) OVERRIDE;
 
-  // Overridden from InstantServiceObserver:
-  virtual void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) OVERRIDE;
-  virtual void MostVisitedItemsChanged(
-      const std::vector<InstantMostVisitedItem>& items) OVERRIDE;
-
   // Overridden from SearchModelObserver:
   virtual void ModelChanged(const SearchModel::State& old_state,
                             const SearchModel::State& new_state) OVERRIDE;
@@ -203,15 +194,10 @@ class InstantPage : public content::WebContentsObserver,
 
   void ClearContents();
 
-  // Removes recommended URLs if a matching URL is already open in the Browser,
-  // if the Most Visited Tile Placement experiment is enabled, and the client is
-  // in the experiment group.
-  void MaybeRemoveMostVisitedItems(std::vector<InstantMostVisitedItem>* items);
-
-  // Returns the InstantService for the |profile_|.
-  InstantService* GetInstantService();
-
+  // TODO(kmadhusu): Remove |profile_| from here and update InstantNTP to get
+  // |profile| from InstantNTPPrerenderer.
   Profile* profile_;
+
   Delegate* const delegate_;
   scoped_ptr<InstantIPCSender> ipc_sender_;
   const std::string instant_url_;

@@ -5,11 +5,15 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_SEARCH_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_TAB_HELPER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
 #include "chrome/browser/ui/search/search_model.h"
+#include "chrome/common/instant_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -20,6 +24,7 @@ class WebContents;
 }
 
 class InstantPageTest;
+class InstantService;
 class SearchIPCRouterTest;
 
 // Per-tab search "helper".  Acts as the owner and controller of the tab's
@@ -32,6 +37,7 @@ class SearchIPCRouterTest;
 class SearchTabHelper : public content::NotificationObserver,
                         public content::WebContentsObserver,
                         public content::WebContentsUserData<SearchTabHelper>,
+                        public InstantServiceObserver,
                         public SearchIPCRouter::Delegate {
  public:
   virtual ~SearchTabHelper();
@@ -76,12 +82,27 @@ class SearchTabHelper : public content::NotificationObserver,
                            SendSetDisplayInstantResults);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotSetDisplayInstantResultsForIncognitoPage);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendMostVisitedItems);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotSendMostVisitedItems);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotSendMostVisitedItemsForIncognitoPage);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendThemeBackgroundInfo);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotSendThemeBackgroundInfo);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotSendThemeBackgroundInfoForIncognitoPage);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessVoiceSearchSupportMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreVoiceSearchSupportMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            SendSetDisplayInstantResultsMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            DoNotSendSetDisplayInstantResultsMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, SendMostVisitedItemsMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, DoNotSendMostVisitedItemsMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, SendThemeBackgroundInfoMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
+                           DoNotSendThemeBackgroundInfoMsg);
   FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
                            DetermineIfPageSupportsInstant_Local);
   FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
@@ -118,6 +139,16 @@ class SearchTabHelper : public content::NotificationObserver,
   virtual void OnInstantSupportDetermined(bool supports_instant) OVERRIDE;
   virtual void OnSetVoiceSearchSupport(bool supports_voice_search) OVERRIDE;
 
+  // Overridden from InstantServiceObserver:
+  virtual void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) OVERRIDE;
+  virtual void MostVisitedItemsChanged(
+      const std::vector<InstantMostVisitedItem>& items) OVERRIDE;
+
+  // Removes recommended URLs if a matching URL is already open in the Browser,
+  // if the Most Visited Tile Placement experiment is enabled, and the client is
+  // in the experiment group.
+  void MaybeRemoveMostVisitedItems(std::vector<InstantMostVisitedItem>* items);
+
   // Sets the mode of the model based on the current URL of web_contents().
   // Only updates the origin part of the mode if |update_origin| is true,
   // otherwise keeps the current origin. If |is_preloaded_ntp| is true, the mode
@@ -150,6 +181,8 @@ class SearchTabHelper : public content::NotificationObserver,
   content::WebContents* web_contents_;
 
   SearchIPCRouter ipc_router_;
+
+  InstantService* instant_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchTabHelper);
 };

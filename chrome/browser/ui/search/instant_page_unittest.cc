@@ -341,17 +341,10 @@ TEST_F(InstantPageTest, AppropriateMessagesSentToIncognitoPages) {
   page->sender()->SetFontInformation(string16(), 0);
   EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxFontInformation::ID));
 
-  page->sender()->SendThemeBackgroundInfo(ThemeBackgroundInfo());
-  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxThemeChanged::ID));
-
   page->sender()->FocusChanged(
       OMNIBOX_FOCUS_NONE, OMNIBOX_FOCUS_CHANGE_EXPLICIT);
   EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxFocusChanged::ID));
 
   page->sender()->SetInputInProgress(false);
   EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxSetInputInProgress::ID));
-
-  page->sender()->SendMostVisitedItems(std::vector<InstantMostVisitedItem>());
-  EXPECT_FALSE(MessageWasSent(
-      ChromeViewMsg_SearchBoxMostVisitedItemsChanged::ID));
 }

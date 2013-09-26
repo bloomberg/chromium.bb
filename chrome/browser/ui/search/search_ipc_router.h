@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_SEARCH_IPC_ROUTER_H_
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_IPC_ROUTER_H_
 
+#include <vector>
+
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/common/instant_types.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -42,6 +45,8 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // to/from the page.
     virtual bool ShouldProcessSetVoiceSearchSupport() = 0;
     virtual bool ShouldSendSetDisplayInstantResults() = 0;
+    virtual bool ShouldSendMostVisitedItems() = 0;
+    virtual bool ShouldSendThemeBackgroundInfo() = 0;
   };
 
   SearchIPCRouter(content::WebContents* web_contents, Delegate* delegate,
@@ -55,6 +60,12 @@ class SearchIPCRouter : public content::WebContentsObserver {
 
   // Tells the renderer whether to display the Instant results.
   void SetDisplayInstantResults();
+
+  // Tells the renderer about the most visited items.
+  void SendMostVisitedItems(const std::vector<InstantMostVisitedItem>& items);
+
+  // Tells the renderer about the current theme background.
+  void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);
 
  private:
   friend class SearchIPCRouterTest;
@@ -70,6 +81,16 @@ class SearchIPCRouter : public content::WebContentsObserver {
                            SendSetDisplayInstantResults);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotSetDisplayInstantResultsForIncognitoPage);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendMostVisitedItems);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotSendMostVisitedItems);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotSendMostVisitedItemsForIncognitoPage);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendThemeBackgroundInfo);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotSendThemeBackgroundInfo);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotSendThemeBackgroundInfoForIncognitoPage);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessVoiceSearchSupportMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreVoiceSearchSupportMsg);
 

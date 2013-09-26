@@ -41,11 +41,6 @@ class InstantIPCSenderImpl : public InstantIPCSender {
                                                             suggestion));
   }
 
-  virtual void SendThemeBackgroundInfo(
-      const ThemeBackgroundInfo& theme_info) OVERRIDE {
-    Send(new ChromeViewMsg_SearchBoxThemeChanged(routing_id(), theme_info));
-  }
-
   virtual void FocusChanged(OmniboxFocusState state,
                     OmniboxFocusChangeReason reason) OVERRIDE {
     Send(new ChromeViewMsg_SearchBoxFocusChanged(routing_id(), state, reason));
@@ -54,12 +49,6 @@ class InstantIPCSenderImpl : public InstantIPCSender {
   virtual void SetInputInProgress(bool input_in_progress) OVERRIDE {
     Send(new ChromeViewMsg_SearchBoxSetInputInProgress(
         routing_id(), input_in_progress));
-  }
-
-  virtual void SendMostVisitedItems(
-      const std::vector<InstantMostVisitedItem>& items) OVERRIDE {
-    Send(new ChromeViewMsg_SearchBoxMostVisitedItemsChanged(
-        routing_id(), items));
   }
 
   virtual void ToggleVoiceSearch() OVERRIDE {

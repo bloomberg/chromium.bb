@@ -33,6 +33,23 @@ void SearchIPCRouter::SetDisplayInstantResults() {
        chrome::ShouldPrefetchSearchResultsOnSRP()));
 }
 
+void SearchIPCRouter::SendThemeBackgroundInfo(
+    const ThemeBackgroundInfo& theme_info) {
+  if (!policy_->ShouldSendThemeBackgroundInfo())
+    return;
+
+  Send(new ChromeViewMsg_SearchBoxThemeChanged(routing_id(), theme_info));
+}
+
+void SearchIPCRouter::SendMostVisitedItems(
+    const std::vector<InstantMostVisitedItem>& items) {
+  if (!policy_->ShouldSendMostVisitedItems())
+    return;
+
+  Send(new ChromeViewMsg_SearchBoxMostVisitedItemsChanged(
+      routing_id(), items));
+}
+
 bool SearchIPCRouter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SearchIPCRouter, message)

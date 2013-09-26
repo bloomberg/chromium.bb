@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_INSTANT_IPC_SENDER_H_
 #define CHROME_BROWSER_UI_SEARCH_INSTANT_IPC_SENDER_H_
 
-#include <vector>
-
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/omnibox_focus_state.h"
@@ -48,20 +46,12 @@ class InstantIPCSender : public content::WebContentsObserver {
   // Tells the page the suggestion to be prefetched if any.
   virtual void SetSuggestionToPrefetch(const InstantSuggestion& suggestion) {}
 
-  // Tells the page about the current theme background.
-  virtual void SendThemeBackgroundInfo(
-      const ThemeBackgroundInfo& theme_info) {}
-
   // Tells the page that the omnibox focus has changed.
   virtual void FocusChanged(OmniboxFocusState state,
                             OmniboxFocusChangeReason reason) {}
 
   // Tells the page that user input started or stopped.
   virtual void SetInputInProgress(bool input_in_progress) {}
-
-  // Tells the page about new Most Visited data.
-  virtual void SendMostVisitedItems(
-      const std::vector<InstantMostVisitedItem>& items) {}
 
   // Tells the page to toggle voice search.
   virtual void ToggleVoiceSearch() {}
