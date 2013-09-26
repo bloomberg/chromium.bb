@@ -288,6 +288,13 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   virtual InputEventAckState FilterInputEvent(
       const WebKit::WebInputEvent& input_event) = 0;
 
+  // Called by the host when it requires an input flush; the flush call should
+  // by synchronized with BeginFrame.
+  virtual void OnSetNeedsFlushInput() = 0;
+
+  // Called by the host when the input flush has completed.
+  virtual void OnDidFlushInput() = 0;
+
   virtual void GestureEventAck(int gesture_event_type,
                                InputEventAckState ack_result) = 0;
 

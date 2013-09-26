@@ -715,13 +715,20 @@ void ContentViewCoreImpl::LoadUrl(
   UpdateTabCrashedFlag();
 }
 
-void ContentViewCoreImpl::SetNeedsBeginFrame(bool enabled) {
+void ContentViewCoreImpl::AddBeginFrameSubscriber() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_ContentViewCore_setVSyncNotificationEnabled(
-      env, obj.obj(), static_cast<jboolean>(enabled));
+  Java_ContentViewCore_addVSyncSubscriber(env, obj.obj());
+}
+
+void ContentViewCoreImpl::RemoveBeginFrameSubscriber() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_ContentViewCore_removeVSyncSubscriber(env, obj.obj());
 }
 
 void ContentViewCoreImpl::SetNeedsAnimate() {

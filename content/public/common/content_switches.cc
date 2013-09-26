@@ -330,9 +330,6 @@ const char kEnableAudibleNotifications[]    = "enable-audible-notifications";
 // Use a begin frame signal from browser to renderer to schedule rendering.
 const char kEnableBeginFrameScheduling[]    = "enable-begin-frame-scheduling";
 
-// Synchronize delivery and response of input events to and from the renderer.
-const char kEnableBrowserInputController[]  = "enable-browser-input-controller";
-
 // Enables browser plugin for all types of pages.
 const char kEnableBrowserPluginForAllViewTypes[] =
     "enable-browser-plugin-for-all-view-types";
@@ -340,6 +337,9 @@ const char kEnableBrowserPluginForAllViewTypes[] =
 // Enables Drag and Drop into and out of Browser Plugin.
 // kEnableBrowserPluginGuestViews must also be set at this time.
 const char kEnableBrowserPluginDragDrop[]   = "enable-browser-plugin-drag-drop";
+
+// Batch and synchronize input event delivery to the renderer.
+const char kEnableBufferedInputRouter[]  = "enable-buffered-input-router";
 
 // Enables accelerated scrolling by the compositor for frames. Requires
 // kForceCompositingMode and kEnableAcceleratedScrollableFrames.

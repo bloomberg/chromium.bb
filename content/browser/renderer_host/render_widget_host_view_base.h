@@ -61,6 +61,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual InputEventAckState FilterInputEvent(
       const WebKit::WebInputEvent& input_event) OVERRIDE;
+  virtual void OnSetNeedsFlushInput() OVERRIDE;
+  virtual void OnDidFlushInput() OVERRIDE;
   virtual void GestureEventAck(int gesture_event_type,
                                InputEventAckState ack_result) OVERRIDE;
   virtual void SetPopupType(WebKit::WebPopupType popup_type) OVERRIDE;

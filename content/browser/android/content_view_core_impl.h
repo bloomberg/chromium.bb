@@ -300,7 +300,8 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void AttachLayer(scoped_refptr<cc::Layer> layer);
   void RemoveLayer(scoped_refptr<cc::Layer> layer);
-  void SetNeedsBeginFrame(bool enabled);
+  void AddBeginFrameSubscriber();
+  void RemoveBeginFrameSubscriber();
   void SetNeedsAnimate();
 
  private:

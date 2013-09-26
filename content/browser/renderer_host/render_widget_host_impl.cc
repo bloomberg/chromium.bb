@@ -226,8 +226,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
     g_created_callbacks.Get().at(i).Run(this);
 
-  input_router_.reset(
-      new ImmediateInputRouter(process_, this, this, routing_id_));
+  input_router_ = CreateInputRouter();
 
 #if defined(USE_AURA)
   bool overscroll_enabled = CommandLine::ForCurrentProcess()->
@@ -417,6 +416,10 @@ void RenderWidgetHostImpl::SetOverscrollControllerEnabled(bool enabled) {
 
 void RenderWidgetHostImpl::SuppressNextCharEvents() {
   suppress_next_char_events_ = true;
+}
+
+void RenderWidgetHostImpl::FlushInput() {
+  input_router_->Flush();
 }
 
 void RenderWidgetHostImpl::Init() {
@@ -1277,8 +1280,7 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   waiting_for_screen_rects_ack_ = false;
 
   // Reset to ensure that input routing works with a new renderer.
-  input_router_.reset(
-      new ImmediateInputRouter(process_, this, this, routing_id_));
+  input_router_ = CreateInputRouter();
 
   if (overscroll_controller_)
     overscroll_controller_->Reset();
@@ -2153,9 +2155,13 @@ bool RenderWidgetHostImpl::OnSendGestureEventImmediately(
 }
 
 void RenderWidgetHostImpl::SetNeedsFlush() {
+  if (view_)
+    view_->OnSetNeedsFlushInput();
 }
 
 void RenderWidgetHostImpl::DidFlush() {
+  if (view_)
+    view_->OnDidFlushInput();
 }
 
 void RenderWidgetHostImpl::OnKeyboardEventAck(
@@ -2462,6 +2468,17 @@ void RenderWidgetHostImpl::DelayedAutoResized() {
     return;
 
   OnRenderAutoResized(new_size);
+}
+
+scoped_ptr<InputRouter> RenderWidgetHostImpl::CreateInputRouter() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBufferedInputRouter)) {
+    return scoped_ptr<InputRouter>(
+        new BufferedInputRouter(process_, this, this, routing_id_));
+  } else {
+    return scoped_ptr<InputRouter>(
+        new ImmediateInputRouter(process_, this, this, routing_id_));
+  }
 }
 
 void RenderWidgetHostImpl::DetachDelegate() {

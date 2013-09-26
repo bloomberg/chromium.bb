@@ -456,6 +456,14 @@ InputEventAckState RenderWidgetHostViewBase::FilterInputEvent(
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
+void RenderWidgetHostViewBase::OnDidFlushInput() {
+  // The notification can safely be ignored by most implementations.
+}
+
+void RenderWidgetHostViewBase::OnSetNeedsFlushInput() {
+  NOTIMPLEMENTED();
+}
+
 void RenderWidgetHostViewBase::GestureEventAck(int gesture_event_type,
                                                InputEventAckState ack_result) {}
 

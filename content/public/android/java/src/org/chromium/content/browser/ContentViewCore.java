@@ -291,7 +291,7 @@ import java.util.Map;
         };
 
         if (mVSyncSubscriberCount > 0) {
-            // setVSyncNotificationEnabled(true) is called before getVSyncListener.
+            // addVSyncSubscriber() is called before getVSyncListener.
             vsyncProvider.registerVSyncListener(mVSyncListener);
             mVSyncListenerRegistered = true;
         }
@@ -300,27 +300,31 @@ import java.util.Map;
     }
 
     @CalledByNative
-    void setVSyncNotificationEnabled(boolean enabled) {
-        if (!isVSyncNotificationEnabled() && enabled) {
+    void addVSyncSubscriber() {
+        if (!isVSyncNotificationEnabled()) {
             mDidSignalVSyncUsingInputEvent = false;
         }
-        if (mVSyncProvider != null) {
-            if (!mVSyncListenerRegistered && enabled) {
-                mVSyncProvider.registerVSyncListener(mVSyncListener);
-                mVSyncListenerRegistered = true;
-            } else if (mVSyncSubscriberCount == 1 && !enabled) {
-                assert mVSyncListenerRegistered;
-                mVSyncProvider.unregisterVSyncListener(mVSyncListener);
-                mVSyncListenerRegistered = false;
-            }
+        if (mVSyncProvider != null && !mVSyncListenerRegistered) {
+            mVSyncProvider.registerVSyncListener(mVSyncListener);
+            mVSyncListenerRegistered = true;
         }
-        mVSyncSubscriberCount += enabled ? 1 : -1;
+        mVSyncSubscriberCount++;
+    }
+
+    @CalledByNative
+    void removeVSyncSubscriber() {
+        if (mVSyncProvider != null && mVSyncSubscriberCount == 1) {
+            assert mVSyncListenerRegistered;
+            mVSyncProvider.unregisterVSyncListener(mVSyncListener);
+            mVSyncListenerRegistered = false;
+        }
+        mVSyncSubscriberCount--;
         assert mVSyncSubscriberCount >= 0;
     }
 
     @CalledByNative
     private void resetVSyncNotification() {
-        while (isVSyncNotificationEnabled()) setVSyncNotificationEnabled(false);
+        while (isVSyncNotificationEnabled()) removeVSyncSubscriber();
         mVSyncSubscriberCount = 0;
         mVSyncListenerRegistered = false;
         mNeedAnimate = false;
@@ -334,7 +338,7 @@ import java.util.Map;
     private void setNeedsAnimate() {
         if (!mNeedAnimate) {
             mNeedAnimate = true;
-            setVSyncNotificationEnabled(true);
+            addVSyncSubscriber();
         }
     }
 
@@ -3084,7 +3088,7 @@ import java.util.Map;
     private void animateIfNecessary(long frameTimeMicros) {
         if (mNeedAnimate) {
             mNeedAnimate = onAnimate(frameTimeMicros);
-            if (!mNeedAnimate) setVSyncNotificationEnabled(false);
+            if (!mNeedAnimate) removeVSyncSubscriber();
         }
     }
 
