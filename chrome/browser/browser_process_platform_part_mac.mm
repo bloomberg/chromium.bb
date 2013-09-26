@@ -25,6 +25,9 @@ void BrowserProcessPlatformPart::AttemptExit() {
 }
 
 void BrowserProcessPlatformPart::PreMainMessageLoopRun() {
+  // AppShimHostManager can not simply be reset, otherwise destroying the old
+  // domain socket will cause the just-created socket to be unlinked.
+  DCHECK(!app_shim_host_manager_);
   app_shim_host_manager_ = new AppShimHostManager;
   // Init needs to be called after assigning to a scoped_refptr (i.e. after
   // incrementing the refcount).

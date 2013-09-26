@@ -26,6 +26,8 @@ void CreateAppShimHost(const IPC::ChannelHandle& handle) {
 
 }  // namespace
 
+const base::FilePath* AppShimHostManager::g_override_user_data_dir_ = NULL;
+
 AppShimHostManager::AppShimHostManager() {}
 
 void AppShimHostManager::Init() {
@@ -43,11 +45,14 @@ AppShimHostManager::~AppShimHostManager() {
 void AppShimHostManager::InitOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::FilePath user_data_dir;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+  if (g_override_user_data_dir_) {
+    user_data_dir = *g_override_user_data_dir_;
+  } else if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
     LOG(ERROR) << "Couldn't get user data directory while creating App Shim "
                << "Host manager.";
     return;
   }
+
   base::FilePath socket_path =
       user_data_dir.Append(app_mode::kAppShimSocketName);
   factory_.reset(new IPC::ChannelFactory(socket_path, this));
@@ -58,7 +63,11 @@ void AppShimHostManager::InitOnFileThread() {
 
 void AppShimHostManager::ListenOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  factory_->Listen();
+  if (!factory_->Listen()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&AppShimHostManager::OnListenError, this));
+  }
 }
 
 void AppShimHostManager::OnClientConnected(
@@ -70,5 +79,8 @@ void AppShimHostManager::OnClientConnected(
 }
 
 void AppShimHostManager::OnListenError() {
-  // TODO(jeremya): set a timeout and attempt to reconstruct the channel.
+  // TODO(tapted): Set a timeout and attempt to reconstruct the channel. Until
+  // cases where the error could occur are better known, just reset the factory
+  // to allow failure to be communicated via the test API.
+  factory_.reset();
 }
