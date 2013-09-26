@@ -1193,6 +1193,11 @@ bool WebFrameImpl::executeCommand(const WebString& name, const WebString& value,
     if (!frame()->editor().canEdit() && webName == "moveToEndOfDocument")
         return viewImpl()->propagateScroll(ScrollDown, ScrollByDocument);
 
+    if (webName == "showGuessPanel") {
+        frame()->editor().showSpellingGuessPanel();
+        return true;
+    }
+
     return frame()->editor().command(webName).execute(value);
 }
 
