@@ -124,10 +124,10 @@ class Timeout : public base::RefCountedThreadSafe<Timeout> {
 
   // Starts monitoring the timeout.
   void StartMonitoring(Bus* bus) {
-    bus->PostDelayedTaskToDBusThread(FROM_HERE,
-                                     base::Bind(&Timeout::HandleTimeout,
-                                                this),
-                                     GetInterval());
+    bus->GetDBusTaskRunner()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&Timeout::HandleTimeout, this),
+        GetInterval());
     monitoring_is_active_ = true;
   }
 
@@ -266,9 +266,10 @@ bool Bus::RemoveObjectProxyWithOptions(const std::string& service_name,
   ObjectProxyTable::iterator iter = object_proxy_table_.find(key);
   if (iter != object_proxy_table_.end()) {
     // Object is present. Remove it now and Detach in the DBus thread.
-    PostTaskToDBusThread(FROM_HERE, base::Bind(
-        &Bus::RemoveObjectProxyInternal,
-        this, iter->second, callback));
+    GetDBusTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&Bus::RemoveObjectProxyInternal,
+                   this, iter->second, callback));
 
     object_proxy_table_.erase(iter);
     return true;
@@ -282,7 +283,7 @@ void Bus::RemoveObjectProxyInternal(scoped_refptr<ObjectProxy> object_proxy,
 
   object_proxy.get()->Detach();
 
-  PostTaskToOriginThread(FROM_HERE, callback);
+  GetOriginTaskRunner()->PostTask(FROM_HERE, callback);
 }
 
 ExportedObject* Bus::GetExportedObject(const ObjectPath& object_path) {
@@ -318,9 +319,10 @@ void Bus::UnregisterExportedObject(const ObjectPath& object_path) {
   // TryRegisterObjectPath(), and the task runner we post to is a
   // SequencedTaskRunner, there is a guarantee that this will happen before any
   // future registration call.
-  PostTaskToDBusThread(FROM_HERE,
-                       base::Bind(&Bus::UnregisterExportedObjectInternal,
-                                  this, exported_object));
+  GetDBusTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&Bus::UnregisterExportedObjectInternal,
+                 this, exported_object));
 }
 
 void Bus::UnregisterExportedObjectInternal(
@@ -485,9 +487,9 @@ void Bus::ShutdownOnDBusThreadAndBlock() {
   AssertOnOriginThread();
   DCHECK(dbus_task_runner_.get());
 
-  PostTaskToDBusThread(FROM_HERE, base::Bind(
-      &Bus::ShutdownOnDBusThreadAndBlockInternal,
-      this));
+  GetDBusTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&Bus::ShutdownOnDBusThreadAndBlockInternal, this));
 
   // http://crbug.com/125222
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
@@ -505,9 +507,10 @@ void Bus::RequestOwnership(const std::string& service_name,
                            OnOwnershipCallback on_ownership_callback) {
   AssertOnOriginThread();
 
-  PostTaskToDBusThread(FROM_HERE, base::Bind(
-      &Bus::RequestOwnershipInternal,
-      this, service_name, options, on_ownership_callback));
+  GetDBusTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&Bus::RequestOwnershipInternal,
+                 this, service_name, options, on_ownership_callback));
 }
 
 void Bus::RequestOwnershipInternal(const std::string& service_name,
@@ -519,10 +522,10 @@ void Bus::RequestOwnershipInternal(const std::string& service_name,
   if (success)
     success = RequestOwnershipAndBlock(service_name, options);
 
-  PostTaskToOriginThread(FROM_HERE,
-                         base::Bind(on_ownership_callback,
-                                    service_name,
-                                    success));
+  GetOriginTaskRunner()->PostTask(FROM_HERE,
+                                  base::Bind(on_ownership_callback,
+                                             service_name,
+                                             success));
 }
 
 bool Bus::RequestOwnershipAndBlock(const std::string& service_name,
@@ -790,61 +793,16 @@ void Bus::ProcessAllIncomingDataIfAny() {
   }
 }
 
-void Bus::PostTaskToDBusThreadAndReply(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    const base::Closure& reply) {
-  AssertOnOriginThread();
-
-  if (dbus_task_runner_.get()) {
-    if (!dbus_task_runner_->PostTaskAndReply(from_here, task, reply)) {
-      LOG(WARNING) << "Failed to post a task to the D-Bus thread message loop";
-    }
-  } else {
-    DCHECK(origin_task_runner_.get());
-    if (!origin_task_runner_->PostTaskAndReply(from_here, task, reply)) {
-      LOG(WARNING) << "Failed to post a task to the origin message loop";
-    }
-  }
+base::TaskRunner* Bus::GetDBusTaskRunner() {
+  if (dbus_task_runner_.get())
+    return dbus_task_runner_.get();
+  else
+    return GetOriginTaskRunner();
 }
 
-void Bus::PostTaskToOriginThread(const tracked_objects::Location& from_here,
-                                 const base::Closure& task) {
+base::TaskRunner* Bus::GetOriginTaskRunner() {
   DCHECK(origin_task_runner_.get());
-  if (!origin_task_runner_->PostTask(from_here, task)) {
-    LOG(WARNING) << "Failed to post a task to the origin message loop";
-  }
-}
-
-void Bus::PostTaskToDBusThread(const tracked_objects::Location& from_here,
-                               const base::Closure& task) {
-  if (dbus_task_runner_.get()) {
-    if (!dbus_task_runner_->PostTask(from_here, task)) {
-      LOG(WARNING) << "Failed to post a task to the D-Bus thread message loop";
-    }
-  } else {
-    DCHECK(origin_task_runner_.get());
-    if (!origin_task_runner_->PostTask(from_here, task)) {
-      LOG(WARNING) << "Failed to post a task to the origin message loop";
-    }
-  }
-}
-
-void Bus::PostDelayedTaskToDBusThread(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    base::TimeDelta delay) {
-  if (dbus_task_runner_.get()) {
-    if (!dbus_task_runner_->PostDelayedTask(
-            from_here, task, delay)) {
-      LOG(WARNING) << "Failed to post a task to the D-Bus thread message loop";
-    }
-  } else {
-    DCHECK(origin_task_runner_.get());
-    if (!origin_task_runner_->PostDelayedTask(from_here, task, delay)) {
-      LOG(WARNING) << "Failed to post a task to the origin message loop";
-    }
-  }
+  return origin_task_runner_.get();
 }
 
 bool Bus::HasDBusThread() {
@@ -908,7 +866,7 @@ void Bus::GetServiceOwner(const std::string& service_name,
                           const GetServiceOwnerCallback& callback) {
   AssertOnOriginThread();
 
-  PostTaskToDBusThread(
+  GetDBusTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&Bus::GetServiceOwnerInternal, this, service_name, callback));
 }
@@ -920,7 +878,8 @@ void Bus::GetServiceOwnerInternal(const std::string& service_name,
   std::string service_owner;
   if (Connect())
     service_owner = GetServiceOwnerAndBlock(service_name, SUPPRESS_ERRORS);
-  PostTaskToOriginThread(FROM_HERE, base::Bind(callback, service_owner));
+  GetOriginTaskRunner()->PostTask(FROM_HERE,
+                                  base::Bind(callback, service_owner));
 }
 
 void Bus::ListenForServiceOwnerChange(
@@ -930,9 +889,10 @@ void Bus::ListenForServiceOwnerChange(
   DCHECK(!service_name.empty());
   DCHECK(!callback.is_null());
 
-  PostTaskToDBusThread(FROM_HERE,
-                       base::Bind(&Bus::ListenForServiceOwnerChangeInternal,
-                                  this, service_name, callback));
+  GetDBusTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&Bus::ListenForServiceOwnerChangeInternal,
+                 this, service_name, callback));
 }
 
 void Bus::ListenForServiceOwnerChangeInternal(
@@ -986,9 +946,10 @@ void Bus::UnlistenForServiceOwnerChange(
   DCHECK(!service_name.empty());
   DCHECK(!callback.is_null());
 
-  PostTaskToDBusThread(FROM_HERE,
-                       base::Bind(&Bus::UnlistenForServiceOwnerChangeInternal,
-                                  this, service_name, callback));
+  GetDBusTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&Bus::UnlistenForServiceOwnerChangeInternal,
+                 this, service_name, callback));
 }
 
 void Bus::UnlistenForServiceOwnerChangeInternal(
@@ -1103,16 +1064,16 @@ void Bus::OnDispatchStatusChanged(DBusConnection* connection,
   // dbus_connection_dispatch() inside DBusDispatchStatusFunction is
   // prohibited by the D-Bus library. Hence, we post a task here instead.
   // See comments for dbus_connection_set_dispatch_status_function().
-  PostTaskToDBusThread(FROM_HERE,
-                       base::Bind(&Bus::ProcessAllIncomingDataIfAny,
-                                  this));
+  GetDBusTaskRunner()->PostTask(FROM_HERE,
+                                base::Bind(&Bus::ProcessAllIncomingDataIfAny,
+                                           this));
 }
 
 void Bus::OnConnectionDisconnected(DBusConnection* connection) {
   AssertOnDBusThread();
 
   if (!on_disconnected_closure_.is_null())
-    PostTaskToOriginThread(FROM_HERE, on_disconnected_closure_);
+    GetOriginTaskRunner()->PostTask(FROM_HERE, on_disconnected_closure_);
 
   if (!connection)
     return;
@@ -1154,8 +1115,8 @@ void Bus::OnServiceOwnerChanged(DBusMessage* message) {
 
   const std::vector<GetServiceOwnerCallback>& callbacks = it->second;
   for (size_t i = 0; i < callbacks.size(); ++i) {
-    PostTaskToOriginThread(FROM_HERE,
-                           base::Bind(callbacks[i], new_owner));
+    GetOriginTaskRunner()->PostTask(FROM_HERE,
+                                    base::Bind(callbacks[i], new_owner));
   }
 }
 

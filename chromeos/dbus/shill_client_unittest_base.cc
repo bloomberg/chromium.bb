@@ -22,12 +22,6 @@ namespace chromeos {
 
 namespace {
 
-// Runs the given task.  This function is used to implement the mock bus.
-void RunTask(const tracked_objects::Location& from_here,
-             const base::Closure& task) {
-  task.Run();
-}
-
 // Pops a string-to-string dictionary from the reader.
 base::DictionaryValue* PopStringToStringDictionary(
     dbus::MessageReader* reader) {
@@ -158,10 +152,10 @@ void ShillClientUnittestBase::SetUp() {
               GetObjectProxy(shill::kFlimflamServiceName, object_path_))
       .WillOnce(Return(mock_proxy_.get()));
 
-  // Set an expectation so mock_bus's PostTaskToDBusThread() will run the
-  // given task.
-  EXPECT_CALL(*mock_bus_.get(), PostTaskToDBusThread(_, _))
-      .WillRepeatedly(Invoke(&RunTask));
+  // Set an expectation so mock_bus's GetDBusTaskRunner will return the current
+  // task runner.
+  EXPECT_CALL(*mock_bus_.get(), GetDBusTaskRunner())
+      .WillRepeatedly(Return(message_loop_.message_loop_proxy()));
 
   // ShutdownAndBlock() will be called in TearDown().
   EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());

@@ -23,6 +23,7 @@
 namespace base {
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
+class TaskRunner;
 }
 
 namespace tracked_objects {
@@ -529,32 +530,11 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // BLOCKING CALL.
   virtual void UnregisterObjectPath(const ObjectPath& object_path);
 
-  // Posts |task| to the task runner of the D-Bus thread. On completion, |reply|
-  // is posted to the origin thread.
-  virtual void PostTaskToDBusThreadAndReply(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      const base::Closure& reply);
+  // Returns the task runner of the D-Bus thread.
+  virtual base::TaskRunner* GetDBusTaskRunner();
 
-  // Posts the task to the task runner of the thread that created the bus.
-  virtual void PostTaskToOriginThread(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task);
-
-  // Posts the task to the task runner of the D-Bus thread. If D-Bus
-  // thread is not supplied, the task runner of the origin thread will be
-  // used.
-  virtual void PostTaskToDBusThread(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task);
-
-  // Posts the delayed task to the task runner of the D-Bus thread. If
-  // D-Bus thread is not supplied, the task runner of the origin thread
-  // will be used.
-  virtual void PostDelayedTaskToDBusThread(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay);
+  // Returns the task runner of the thread that created the bus.
+  virtual base::TaskRunner* GetOriginTaskRunner();
 
   // Returns true if the bus has the D-Bus thread.
   virtual bool HasDBusThread();

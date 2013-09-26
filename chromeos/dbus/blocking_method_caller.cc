@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "dbus/bus.h"
 #include "dbus/object_proxy.h"
@@ -49,7 +50,7 @@ scoped_ptr<dbus::Response> BlockingMethodCaller::CallMethodAndBlock(
       new base::ScopedClosureRunner(signal_task);
 
   scoped_ptr<dbus::Response> response;
-  bus_->PostTaskToDBusThread(
+  bus_->GetDBusTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&CallMethodAndBlockInternal,
                  &response,

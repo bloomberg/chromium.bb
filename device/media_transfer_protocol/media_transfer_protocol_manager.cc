@@ -69,8 +69,8 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                                             mtpd_owner_changed_callback_);
 
 #if !defined(OS_CHROMEOS)
-      session_bus_->PostTaskToDBusThread(
-          FROM_HERE, base::Bind(&dbus::Bus::ShutdownAndBlock, session_bus_));
+    session_bus_->GetDBusTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&dbus::Bus::ShutdownAndBlock, session_bus_));
 #endif
 
     VLOG(1) << "MediaTransferProtocolManager Shutdown completed";

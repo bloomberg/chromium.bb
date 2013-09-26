@@ -60,16 +60,8 @@ class MockBus : public Bus {
                                            void* user_data,
                                            DBusError* error));
   MOCK_METHOD1(UnregisterObjectPath, void(const ObjectPath& object_path));
-  MOCK_METHOD2(PostTaskToOriginThread, void(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task));
-  MOCK_METHOD2(PostTaskToDBusThread, void(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task));
-  MOCK_METHOD3(PostDelayedTaskToDBusThread, void(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay));
+  MOCK_METHOD0(GetDBusTaskRunner, base::TaskRunner*());
+  MOCK_METHOD0(GetOriginTaskRunner, base::TaskRunner*());
   MOCK_METHOD0(HasDBusThread, bool());
   MOCK_METHOD0(AssertOnOriginThread, void());
   MOCK_METHOD0(AssertOnDBusThread, void());

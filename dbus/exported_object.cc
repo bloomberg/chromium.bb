@@ -84,7 +84,7 @@ void ExportedObject::ExportMethod(const std::string& interface_name,
                                   method_name,
                                   method_call_callback,
                                   on_exported_calback);
-  bus_->PostTaskToDBusThread(FROM_HERE, task);
+  bus_->GetDBusTaskRunner()->PostTask(FROM_HERE, task);
 }
 
 void ExportedObject::SendSignal(Signal* signal) {
@@ -99,11 +99,12 @@ void ExportedObject::SendSignal(Signal* signal) {
   dbus_message_ref(signal_message);
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  bus_->PostTaskToDBusThread(FROM_HERE,
-                             base::Bind(&ExportedObject::SendSignalInternal,
-                                        this,
-                                        start_time,
-                                        signal_message));
+  bus_->GetDBusTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ExportedObject::SendSignalInternal,
+                 this,
+                 start_time,
+                 signal_message));
 }
 
 void ExportedObject::Unregister() {
@@ -126,13 +127,13 @@ void ExportedObject::ExportMethodInternal(
   const bool success = ExportMethodAndBlock(interface_name,
                                             method_name,
                                             method_call_callback);
-  bus_->PostTaskToOriginThread(FROM_HERE,
-                               base::Bind(&ExportedObject::OnExported,
-                                          this,
-                                          on_exported_calback,
-                                          interface_name,
-                                          method_name,
-                                          success));
+  bus_->GetOriginTaskRunner()->PostTask(FROM_HERE,
+                                        base::Bind(&ExportedObject::OnExported,
+                                                   this,
+                                                   on_exported_calback,
+                                                   interface_name,
+                                                   method_name,
+                                                   success));
 }
 
 void ExportedObject::OnExported(OnExportedCallback on_exported_callback,
@@ -214,12 +215,12 @@ DBusHandlerResult ExportedObject::HandleMessage(
   const base::TimeTicks start_time = base::TimeTicks::Now();
   if (bus_->HasDBusThread()) {
     // Post a task to run the method in the origin thread.
-    bus_->PostTaskToOriginThread(FROM_HERE,
-                                 base::Bind(&ExportedObject::RunMethod,
-                                            this,
-                                            iter->second,
-                                            base::Passed(&method_call),
-                                            start_time));
+    bus_->GetOriginTaskRunner()->PostTask(FROM_HERE,
+                                          base::Bind(&ExportedObject::RunMethod,
+                                                     this,
+                                                     iter->second,
+                                                     base::Passed(&method_call),
+                                                     start_time));
   } else {
     // If the D-Bus thread is not used, just call the method directly.
     MethodCall* method = method_call.get();
@@ -252,12 +253,13 @@ void ExportedObject::SendResponse(base::TimeTicks start_time,
                                   scoped_ptr<Response> response) {
   DCHECK(method_call);
   if (bus_->HasDBusThread()) {
-    bus_->PostTaskToDBusThread(FROM_HERE,
-                               base::Bind(&ExportedObject::OnMethodCompleted,
-                                          this,
-                                          base::Passed(&method_call),
-                                          base::Passed(&response),
-                                          start_time));
+    bus_->GetDBusTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&ExportedObject::OnMethodCompleted,
+                   this,
+                   base::Passed(&method_call),
+                   base::Passed(&response),
+                   start_time));
   } else {
     OnMethodCompleted(method_call.Pass(), response.Pass(), start_time);
   }

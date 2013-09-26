@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/task_runner.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
@@ -20,9 +21,24 @@ using ::testing::Return;
 
 namespace chromeos {
 
+namespace {
+
+class FakeTaskRunner : public base::TaskRunner {
+ public:
+  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
+                               const base::Closure& task,
+                               base::TimeDelta delay) OVERRIDE {
+    task.Run();
+    return true;
+  }
+  virtual bool RunsTasksOnCurrentThread() const OVERRIDE { return true; }
+};
+
+}  // namespace
+
 class BlockingMethodCallerTest : public testing::Test {
  public:
-  BlockingMethodCallerTest() {
+  BlockingMethodCallerTest() : task_runner_(new FakeTaskRunner) {
   }
 
   virtual void SetUp() {
@@ -50,10 +66,10 @@ class BlockingMethodCallerTest : public testing::Test {
                                dbus::ObjectPath("/org/chromium/TestObject")))
         .WillOnce(Return(mock_proxy_.get()));
 
-    // Set an expectation so mock_bus's PostTaskToDBusThread() will run the
-    // given task.
-    EXPECT_CALL(*mock_bus_.get(), PostTaskToDBusThread(_, _))
-        .WillRepeatedly(Invoke(this, &BlockingMethodCallerTest::RunTask));
+    // Set an expectation so mock_bus's GetDBusTaskRunner will return the fake
+    // task runner.
+    EXPECT_CALL(*mock_bus_.get(), GetDBusTaskRunner())
+        .WillRepeatedly(Return(task_runner_));
 
     // ShutdownAndBlock() will be called in TearDown().
     EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
@@ -64,6 +80,7 @@ class BlockingMethodCallerTest : public testing::Test {
   }
 
  protected:
+  scoped_refptr<FakeTaskRunner> task_runner_;
   scoped_refptr<dbus::MockBus> mock_bus_;
   scoped_refptr<dbus::MockObjectProxy> mock_proxy_;
 
@@ -86,12 +103,6 @@ class BlockingMethodCallerTest : public testing::Test {
 
     LOG(ERROR) << "Unexpected method call: " << method_call->ToString();
     return NULL;
-  }
-
-  // Runs the given task.
-  void RunTask(const tracked_objects::Location& from_here,
-               const base::Closure& task) {
-    task.Run();
   }
 };
 

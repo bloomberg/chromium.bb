@@ -580,9 +580,9 @@ TEST_F(EndToEndAsyncTest, TestHugeSignal) {
 }
 
 TEST_F(EndToEndAsyncTest, DisconnectedSignal) {
-  bus_->PostTaskToDBusThread(FROM_HERE,
-                             base::Bind(&Bus::ClosePrivateConnection,
-                                        base::Unretained(bus_.get())));
+  bus_->GetDBusTaskRunner()->PostTask(FROM_HERE,
+                                      base::Bind(&Bus::ClosePrivateConnection,
+                                                 base::Unretained(bus_.get())));
   // OnDisconnected callback quits message loop.
   message_loop_.Run();
   EXPECT_EQ(1, on_disconnected_call_count_);

@@ -140,7 +140,7 @@ void ObjectProxy::CallMethodWithErrorCallback(MethodCall* method_call,
                                     error_callback,
                                     start_time,
                                     response_message);
-    bus_->PostTaskToOriginThread(FROM_HERE, task);
+    bus_->GetOriginTaskRunner()->PostTask(FROM_HERE, task);
     return;
   }
 
@@ -162,7 +162,7 @@ void ObjectProxy::CallMethodWithErrorCallback(MethodCall* method_call,
                                 method_call->GetMember());
 
   // Wait for the response in the D-Bus thread.
-  bus_->PostTaskToDBusThread(FROM_HERE, task);
+  bus_->GetDBusTaskRunner()->PostTask(FROM_HERE, task);
 }
 
 void ObjectProxy::ConnectToSignal(const std::string& interface_name,
@@ -171,13 +171,14 @@ void ObjectProxy::ConnectToSignal(const std::string& interface_name,
                                   OnConnectedCallback on_connected_callback) {
   bus_->AssertOnOriginThread();
 
-  bus_->PostTaskToDBusThread(FROM_HERE,
-                             base::Bind(&ObjectProxy::ConnectToSignalInternal,
-                                        this,
-                                        interface_name,
-                                        signal_name,
-                                        signal_callback,
-                                        on_connected_callback));
+  bus_->GetDBusTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ObjectProxy::ConnectToSignalInternal,
+                 this,
+                 interface_name,
+                 signal_name,
+                 signal_callback,
+                 on_connected_callback));
 }
 
 void ObjectProxy::Detach() {
@@ -236,7 +237,7 @@ void ObjectProxy::StartAsyncMethodCall(int timeout_ms,
                                     error_callback,
                                     start_time,
                                     response_message);
-    bus_->PostTaskToOriginThread(FROM_HERE, task);
+    bus_->GetOriginTaskRunner()->PostTask(FROM_HERE, task);
 
     dbus_message_unref(request_message);
     return;
@@ -278,7 +279,7 @@ void ObjectProxy::OnPendingCallIsComplete(DBusPendingCall* pending_call,
                                   error_callback,
                                   start_time,
                                   response_message);
-  bus_->PostTaskToOriginThread(FROM_HERE, task);
+  bus_->GetOriginTaskRunner()->PostTask(FROM_HERE, task);
 }
 
 void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
@@ -298,7 +299,7 @@ void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
         ErrorResponse::FromRawMessage(response_message));
     error_callback.Run(error_response.get());
     // Delete the message  on the D-Bus thread. See below for why.
-    bus_->PostTaskToDBusThread(
+    bus_->GetDBusTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&base::DeletePointer<ErrorResponse>,
                    error_response.release()));
@@ -325,7 +326,7 @@ void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
     // The monitoring of the socket is done on the D-Bus thread (see Watch
     // class in bus.cc), hence we should stop the monitoring from D-Bus
     // thread, not from the current thread here, which is likely UI thread.
-    bus_->PostTaskToDBusThread(
+    bus_->GetDBusTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&base::DeletePointer<Response>, response.release()));
 
@@ -404,7 +405,7 @@ void ObjectProxy::ConnectToSignalInternal(
   }
 
   // Run on_connected_callback in the origin thread.
-  bus_->PostTaskToOriginThread(
+  bus_->GetOriginTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&ObjectProxy::OnConnected,
                  this,
@@ -484,12 +485,12 @@ DBusHandlerResult ObjectProxy::HandleMessage(
     // Transfer the ownership of |signal| to RunMethod().
     // |released_signal| will be deleted in RunMethod().
     Signal* released_signal = signal.release();
-    bus_->PostTaskToOriginThread(FROM_HERE,
-                                 base::Bind(&ObjectProxy::RunMethod,
-                                            this,
-                                            start_time,
-                                            iter->second,
-                                            released_signal));
+    bus_->GetOriginTaskRunner()->PostTask(FROM_HERE,
+                                          base::Bind(&ObjectProxy::RunMethod,
+                                                     this,
+                                                     start_time,
+                                                     iter->second,
+                                                     released_signal));
   } else {
     const base::TimeTicks start_time = base::TimeTicks::Now();
     // If the D-Bus thread is not used, just call the callback on the
@@ -512,7 +513,7 @@ void ObjectProxy::RunMethod(base::TimeTicks start_time,
 
   // Delete the message on the D-Bus thread. See comments in
   // RunResponseCallback().
-  bus_->PostTaskToDBusThread(
+  bus_->GetDBusTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&base::DeletePointer<Signal>, signal));
 
@@ -641,12 +642,13 @@ DBusHandlerResult ObjectProxy::HandleNameOwnerChanged(
         Signal* released_signal = signal.release();
         std::vector<SignalCallback> callbacks;
         callbacks.push_back(name_owner_changed_callback_);
-        bus_->PostTaskToOriginThread(FROM_HERE,
-                                     base::Bind(&ObjectProxy::RunMethod,
-                                                this,
-                                                start_time,
-                                                callbacks,
-                                                released_signal));
+        bus_->GetOriginTaskRunner()->PostTask(
+            FROM_HERE,
+            base::Bind(&ObjectProxy::RunMethod,
+                       this,
+                       start_time,
+                       callbacks,
+                       released_signal));
       }
     }
   }
