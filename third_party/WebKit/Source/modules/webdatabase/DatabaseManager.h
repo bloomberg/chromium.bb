@@ -43,6 +43,7 @@ class DatabaseCallback;
 class DatabaseContext;
 class DatabaseSync;
 class DatabaseTaskSynchronizer;
+class ExceptionState;
 class SecurityOrigin;
 class ScriptExecutionContext;
 
@@ -70,10 +71,10 @@ public:
     void didDestructDatabaseContext() { }
 #endif
 
-    static ExceptionCode exceptionCodeForDatabaseError(DatabaseError);
+    static void throwExceptionForDatabaseError(const String& method, const String& context, DatabaseError, const String& errorMessage, ExceptionState&);
 
-    PassRefPtr<Database> openDatabase(ScriptExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback>, DatabaseError&);
-    PassRefPtr<DatabaseSync> openDatabaseSync(ScriptExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback>, DatabaseError&);
+    PassRefPtr<Database> openDatabase(ScriptExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback>, DatabaseError&, String& errorMessage);
+    PassRefPtr<DatabaseSync> openDatabaseSync(ScriptExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback>, DatabaseError&, String& errorMessage);
 
     bool hasOpenDatabases(ScriptExecutionContext*);
     void stopDatabases(ScriptExecutionContext*, DatabaseTaskSynchronizer*);

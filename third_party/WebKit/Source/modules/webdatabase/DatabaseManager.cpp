@@ -26,6 +26,8 @@
 #include "config.h"
 #include "modules/webdatabase/DatabaseManager.h"
 
+#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/InspectorDatabaseInstrumentation.h"
@@ -156,21 +158,20 @@ void DatabaseManager::didDestructDatabaseContext()
 }
 #endif
 
-ExceptionCode DatabaseManager::exceptionCodeForDatabaseError(DatabaseError error)
+void DatabaseManager::throwExceptionForDatabaseError(const String& method, const String& context, DatabaseError error, const String& errorMessage, ExceptionState& es)
 {
     switch (error) {
     case DatabaseError::None:
-        return 0;
-    case DatabaseError::DatabaseIsBeingDeleted:
-    case DatabaseError::DatabaseSizeExceededQuota:
-    case DatabaseError::DatabaseSizeOverflowed:
+        return;
     case DatabaseError::GenericSecurityError:
-        return SecurityError;
+        es.throwSecurityError(ExceptionMessages::failedToExecute(method, context, errorMessage));
+        return;
     case DatabaseError::InvalidDatabaseState:
-        return InvalidStateError;
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute(method, context, errorMessage));
+        return;
+    default:
+        ASSERT_NOT_REACHED();
     }
-    ASSERT_NOT_REACHED();
-    return 0; // Make some older compilers happy.
 }
 
 static void logOpenDatabaseError(ScriptExecutionContext* context, const String& name)
@@ -197,10 +198,7 @@ PassRefPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend(ScriptExecu
         ASSERT(error != DatabaseError::None);
 
         switch (error) {
-        case DatabaseError::DatabaseIsBeingDeleted:
-        case DatabaseError::DatabaseSizeOverflowed:
         case DatabaseError::GenericSecurityError:
-        case DatabaseError::DatabaseSizeExceededQuota:
             logOpenDatabaseError(context, name);
             return 0;
 
@@ -219,12 +217,11 @@ PassRefPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend(ScriptExecu
 PassRefPtr<Database> DatabaseManager::openDatabase(ScriptExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback,
-    DatabaseError& error)
+    DatabaseError& error, String& errorMessage)
 {
     ASSERT(error == DatabaseError::None);
 
     bool setVersionInNewDatabase = !creationCallback;
-    String errorMessage;
     RefPtr<DatabaseBackendBase> backend = openDatabaseBackend(context, DatabaseType::Async, name,
         expectedVersion, displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
     if (!backend)
@@ -247,13 +244,13 @@ PassRefPtr<Database> DatabaseManager::openDatabase(ScriptExecutionContext* conte
 
 PassRefPtr<DatabaseSync> DatabaseManager::openDatabaseSync(ScriptExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
-    unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback, DatabaseError& error)
+    unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback,
+    DatabaseError& error, String& errorMessage)
 {
     ASSERT(context->isContextThread());
     ASSERT(error == DatabaseError::None);
 
     bool setVersionInNewDatabase = !creationCallback;
-    String errorMessage;
     RefPtr<DatabaseBackendBase> backend = openDatabaseBackend(context, DatabaseType::Sync, name,
         expectedVersion, displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
     if (!backend)

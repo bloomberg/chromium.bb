@@ -30,6 +30,7 @@
 #include "modules/webdatabase/WorkerGlobalScopeWebDatabase.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -47,12 +48,13 @@ PassRefPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScop
     RefPtr<Database> database;
     DatabaseError error = DatabaseError::None;
     if (RuntimeEnabledFeatures::databaseEnabled() && context->securityOrigin()->canAccessDatabase()) {
-        database = dbManager.openDatabase(context, name, version, displayName, estimatedSize, creationCallback, error);
+        String errorMessage;
+        database = dbManager.openDatabase(context, name, version, displayName, estimatedSize, creationCallback, error, errorMessage);
         ASSERT(database || error != DatabaseError::None);
         if (error != DatabaseError::None)
-            es.throwUninformativeAndGenericDOMException(DatabaseManager::exceptionCodeForDatabaseError(error));
+            DatabaseManager::throwExceptionForDatabaseError("openDatabase", "WorkerGlobalScope", error, errorMessage, es);
     } else {
-        es.throwUninformativeAndGenericDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute("openDatabase", "WorkerGlobalScope", "Access to the WebDatabase API is denied in this context."));
     }
 
     return database.release();
@@ -64,12 +66,13 @@ PassRefPtr<DatabaseSync> WorkerGlobalScopeWebDatabase::openDatabaseSync(WorkerGl
     RefPtr<DatabaseSync> database;
     DatabaseError error =  DatabaseError::None;
     if (RuntimeEnabledFeatures::databaseEnabled() && context->securityOrigin()->canAccessDatabase()) {
-        database = dbManager.openDatabaseSync(context, name, version, displayName, estimatedSize, creationCallback, error);
+        String errorMessage;
+        database = dbManager.openDatabaseSync(context, name, version, displayName, estimatedSize, creationCallback, error, errorMessage);
         ASSERT(database || error != DatabaseError::None);
         if (error != DatabaseError::None)
-            es.throwUninformativeAndGenericDOMException(DatabaseManager::exceptionCodeForDatabaseError(error));
+            DatabaseManager::throwExceptionForDatabaseError("openDatabaseSync", "WorkerGlobalScope", error, errorMessage, es);
     } else {
-        es.throwUninformativeAndGenericDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute("openDatabaseSync", "WorkerGlobalScope", "Access to the WebDatabase API is denied in this context."));
     }
 
     return database.release();

@@ -32,9 +32,6 @@ namespace WebCore {
 
 ENUM_CLASS(DatabaseError) {
     None = 0,
-    DatabaseIsBeingDeleted,
-    DatabaseSizeExceededQuota,
-    DatabaseSizeOverflowed,
     GenericSecurityError,
     InvalidDatabaseState
 } ENUM_CLASS_END(DatabaseError);

@@ -54,7 +54,7 @@ function shouldThrow(_a, _e)
 <script>
 
 window.onload = function() {
-    shouldThrow("window.openDatabase('SandboxedIframeStorageDisallowed', '1.0', '', 1)");
+    shouldThrow("window.openDatabase('SandboxedIframeStorageDisallowed', '1.0', '', 1)", '"SecurityError: Failed to execute \'openDatabase\' on \'Window\': Access to the WebDatabase API is denied in this context."');
     shouldThrow("window.indexedDB.webkitGetDatabaseNames()", '"SecurityError: Failed to execute \'getDatabaseNames\' on \'IDBFactory\': access to the Indexed Database API is denied in this context."');
     shouldThrow("window.indexedDB.open('foo')", '"SecurityError: Failed to execute \'open\' on \'IDBFactory\': access to the Indexed Database API is denied in this context."');
     shouldThrow("window.indexedDB.deleteDatabase('foo')", '"SecurityError: Failed to execute \'deleteDatabase\' on \'IDBFactory\': access to the Indexed Database API is denied in this context."');
