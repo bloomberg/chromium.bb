@@ -108,6 +108,8 @@ SVGElement::~SVGElement()
     document().accessSVGExtensions()->rebuildAllElementReferencesForTarget(this);
     document().accessSVGExtensions()->removeAllElementReferencesForTarget(this);
     SVGAnimatedProperty::detachAnimatedPropertiesForElement(this);
+
+    ASSERT(inDocument() || !hasRelativeLengths());
 }
 
 void SVGElement::willRecalcStyle(StyleRecalcChange change)
@@ -330,8 +332,19 @@ void SVGElement::removedFrom(ContainerNode* rootParent)
 {
     bool wasInDocument = rootParent->inDocument();
 
-    if (wasInDocument)
-        updateRelativeLengthsInformation(false, this);
+    if (wasInDocument && hasRelativeLengths()) {
+        // The root of the subtree being removed should take itself out from its parent's relative
+        // length set. For the other nodes in the subtree we don't need to do anything: they will
+        // get their own removedFrom() notification and just clear their sets.
+        if (rootParent->isSVGElement() && !parentNode()) {
+            ASSERT(toSVGElement(rootParent)->m_elementsWithRelativeLengths.contains(this));
+            toSVGElement(rootParent)->updateRelativeLengthsInformation(false, this);
+        }
+
+        m_elementsWithRelativeLengths.clear();
+    }
+
+    ASSERT_WITH_SECURITY_IMPLICATION(!rootParent->isSVGElement() || !toSVGElement(rootParent)->m_elementsWithRelativeLengths.contains(this));
 
     Element::removedFrom(rootParent);
 
@@ -429,7 +442,7 @@ CSSPropertyID SVGElement::cssPropertyIdForSVGAttributeName(const QualifiedName& 
     return propertyNameToIdMap->get(attrName.localName().impl());
 }
 
-void SVGElement::updateRelativeLengthsInformation(bool hasRelativeLengths, SVGElement* element)
+void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths, SVGElement* clientElement)
 {
     // If we're not yet in a document, this function will be called again from insertedInto(). Do nothing now.
     if (!inDocument())
@@ -438,28 +451,21 @@ void SVGElement::updateRelativeLengthsInformation(bool hasRelativeLengths, SVGEl
     // An element wants to notify us that its own relative lengths state changed.
     // Register it in the relative length map, and register us in the parent relative length map.
     // Register the parent in the grandparents map, etc. Repeat procedure until the root of the SVG tree.
-    if (hasRelativeLengths) {
-        m_elementsWithRelativeLengths.add(element);
-    } else {
-        if (!m_elementsWithRelativeLengths.contains(element)) {
-            // We were never registered. Do nothing.
-            return;
-        }
+    for (ContainerNode* currentNode = this; currentNode && currentNode->isSVGElement(); currentNode = currentNode->parentNode()) {
+        SVGElement* currentElement = toSVGElement(currentNode);
 
-        m_elementsWithRelativeLengths.remove(element);
-    }
+        bool hadRelativeLengths = currentElement->hasRelativeLengths();
+        if (clientHasRelativeLengths)
+            currentElement->m_elementsWithRelativeLengths.add(clientElement);
+        else
+            currentElement->m_elementsWithRelativeLengths.remove(clientElement);
 
-    // Find first styled parent node, and notify it that we've changed our relative length state.
-    ContainerNode* node = parentNode();
-    while (node) {
-        if (!node->isSVGElement())
+        // If the relative length state hasn't changed, we can stop propagating the notfication.
+        if (hadRelativeLengths == currentElement->hasRelativeLengths())
             break;
 
-        SVGElement* element = toSVGElement(node);
-
-        // Register us in the parent element map.
-        element->updateRelativeLengthsInformation(hasRelativeLengths, this);
-        break;
+        clientElement = currentElement;
+        clientHasRelativeLengths = clientElement->hasRelativeLengths();
     }
 }
 
