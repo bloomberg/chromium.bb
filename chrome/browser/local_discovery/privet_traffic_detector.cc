@@ -31,10 +31,15 @@ void GetNetworkListOnFileThread(
   for (size_t i = 0; i < networks.size(); ++i) {
     net::AddressFamily address_family =
         net::GetAddressFamily(networks[i].address);
-    if (address_family == net::ADDRESS_FAMILY_IPV4)
+    if (address_family == net::ADDRESS_FAMILY_IPV4 &&
+        networks[i].network_prefix >= 24) {
       ip4_networks.push_back(networks[i]);
+    }
   }
 
+  net::IPAddressNumber localhost_prefix(4, 0);
+  localhost_prefix[0] = 127;
+  ip4_networks.push_back(net::NetworkInterface("lo", localhost_prefix, 8));
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
                                    base::Bind(callback, ip4_networks));
 }
@@ -134,8 +139,10 @@ int PrivetTrafficDetector::Bind() {
 
 bool PrivetTrafficDetector::IsSourceAcceptable() const {
   for (size_t i = 0; i < networks_.size(); ++i) {
-    if (IsIpPrefixEqual(recv_addr_.address(), networks_[i].address))
+    if (net::IPNumberMatchesPrefix(recv_addr_.address(), networks_[i].address,
+                                   networks_[i].network_prefix)) {
       return true;
+    }
   }
   return false;
 }
