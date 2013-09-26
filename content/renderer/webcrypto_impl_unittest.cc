@@ -16,17 +16,97 @@
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 
+namespace {
+
+std::vector<uint8> HexStringToBytes(const std::string& hex) {
+  std::vector<uint8> bytes;
+  base::HexStringToBytes(hex, &bytes);
+  return bytes;
+}
+
+void ExpectArrayBufferMatchesHex(const std::string& expected_hex,
+                                 const WebKit::WebArrayBuffer& array_buffer) {
+  EXPECT_STRCASEEQ(
+      expected_hex.c_str(),
+      base::HexEncode(
+          array_buffer.data(), array_buffer.byteLength()).c_str());
+}
+
+WebKit::WebCryptoAlgorithm CreateAlgorithm(WebKit::WebCryptoAlgorithmId id) {
+  return WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(id, NULL);
+}
+
+WebKit::WebCryptoAlgorithm CreateHmacAlgorithm(
+    WebKit::WebCryptoAlgorithmId hashId) {
+  return WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
+      WebKit::WebCryptoAlgorithmIdHmac,
+      new WebKit::WebCryptoHmacParams(CreateAlgorithm(hashId)));
+}
+
+}  // namespace
+
 namespace content {
 
-const WebKit::WebCryptoAlgorithmId kAlgorithmIds[] = {
-    WebKit::WebCryptoAlgorithmIdSha1,
-    WebKit::WebCryptoAlgorithmIdSha224,
-    WebKit::WebCryptoAlgorithmIdSha256,
-    WebKit::WebCryptoAlgorithmIdSha384,
-    WebKit::WebCryptoAlgorithmIdSha512
-};
+class WebCryptoImplTest : public testing::Test {
+ protected:
+  WebKit::WebCryptoKey ImportSecretKeyFromRawHexString(
+      const std::string& key_hex,
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      WebKit::WebCryptoKeyUsageMask usage) {
+    WebKit::WebCryptoKeyType type;
+    scoped_ptr<WebKit::WebCryptoKeyHandle> handle;
 
-class WebCryptoImplTest : public testing::Test, public WebCryptoImpl {
+    std::vector<uint8> key_raw = HexStringToBytes(key_hex);
+
+    EXPECT_TRUE(crypto_.ImportKeyInternal(WebKit::WebCryptoKeyFormatRaw,
+                                          key_raw.data(),
+                                          key_raw.size(),
+                                          algorithm,
+                                          usage,
+                                          &handle,
+                                          &type));
+
+    EXPECT_EQ(WebKit::WebCryptoKeyTypeSecret, type);
+    EXPECT_TRUE(handle.get());
+
+    return WebKit::WebCryptoKey::create(
+        handle.release(), type, false, algorithm, usage);
+  }
+
+  // Forwarding methods to gain access to protected methods of
+  // WebCryptoImpl.
+
+  bool DigestInternal(
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      const unsigned char* data,
+      unsigned data_size,
+      WebKit::WebArrayBuffer* buffer) {
+    return crypto_.DigestInternal(algorithm, data, data_size, buffer);
+  }
+
+  bool ImportKeyInternal(
+      WebKit::WebCryptoKeyFormat format,
+      const unsigned char* key_data,
+      unsigned key_data_size,
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      WebKit::WebCryptoKeyUsageMask usage_mask,
+      scoped_ptr<WebKit::WebCryptoKeyHandle>* handle,
+      WebKit::WebCryptoKeyType* type) {
+    return crypto_.ImportKeyInternal(
+        format, key_data, key_data_size, algorithm, usage_mask, handle, type);
+  }
+
+  bool SignInternal(
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      const WebKit::WebCryptoKey& key,
+      const unsigned char* data,
+      unsigned data_size,
+      WebKit::WebArrayBuffer* buffer) {
+    return crypto_.SignInternal(algorithm, key, data, data_size, buffer);
+  }
+
+ private:
+  WebCryptoImpl crypto_;
 };
 
 TEST_F(WebCryptoImplTest, DigestSampleSets) {
@@ -34,103 +114,91 @@ TEST_F(WebCryptoImplTest, DigestSampleSets) {
   //
   // TODO(bryaneyler): Eventually, all these sample test sets should be replaced
   // with the sets here: http://csrc.nist.gov/groups/STM/cavp/index.html#03
-  struct {
-    const char* input;
-    unsigned input_length;
-    const char* hex_result[arraysize(kAlgorithmIds)];
-  } input_set[] = {
-    {
-      "", 0,
-      {
-        // echo -n "" | sha1sum
-        "da39a3ee5e6b4b0d3255bfef95601890afd80709",
-        // echo -n "" | sha224sum
-        "d14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f",
-        // echo -n "" | sha256sum
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        // echo -n "" | sha384sum
-        "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274e"
-        "debfe76f65fbd51ad2f14898b95b",
-        // echo -n "" | sha512sum
-        "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0"
-        "d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
-      },
+  //
+  // Results were generated using the command sha{1,224,256,384,512}sum.
+  struct TestCase {
+    WebKit::WebCryptoAlgorithmId algorithm;
+    const std::string hex_input;
+    const char* hex_result;
+  };
+
+  const TestCase kTests[] = {
+    { WebKit::WebCryptoAlgorithmIdSha1, "",
+      "da39a3ee5e6b4b0d3255bfef95601890afd80709"
     },
-    {
-      "\000", 1,
-      {
-        // echo -n -e "\000" | sha1sum
-        "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
-        // echo -n -e "\000" | sha224sum
-        "fff9292b4201617bdc4d3053fce02734166a683d7d858a7f5f59b073",
-        // echo -n -e "\000" | sha256sum
-        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
-        // echo -n -e "\000" | sha384sum
-        "bec021b4f368e3069134e012c2b4307083d3a9bdd206e24e5f0d86e13d6636655933"
-        "ec2b413465966817a9c208a11717",
-        // echo -n -e "\000" | sha512sum
-        "b8244d028981d693af7b456af8efa4cad63d282e19ff14942c246e50d9351d22704a"
-        "802a71c3580b6370de4ceb293c324a8423342557d4e5c38438f0e36910ee",
-      },
+    { WebKit::WebCryptoAlgorithmIdSha224, "",
+      "d14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f"
     },
-    {
-      "\000\001\002\003\004\005", 6,
-      {
-        // echo -n -e "\000\001\002\003\004\005" | sha1sum
-        "868460d98d09d8bbb93d7b6cdd15cc7fbec676b9",
-        // echo -n -e "\000\001\002\003\004\005" | sha224sum
-        "7d92e7f1cad1818ed1d13ab41f04ebabfe1fef6bb4cbeebac34c29bc",
-        // echo -n -e "\000\001\002\003\004\005" | sha256sum
-        "17e88db187afd62c16e5debf3e6527cd006bc012bc90b51a810cd80c2d511f43",
-        // echo -n -e "\000\001\002\003\004\005" | sha384sum
-        "79f4738706fce9650ac60266675c3cd07298b09923850d525604d040e6e448adc7dc"
-        "22780d7e1b95bfeaa86a678e4552",
-        // echo -n -e "\000\001\002\003\004\005" | sha512sum
-        "2f3831bccc94cf061bcfa5f8c23c1429d26e3bc6b76edad93d9025cb91c903af6cf9"
-        "c935dc37193c04c2c66e7d9de17c358284418218afea2160147aaa912f4c",
-      },
+    { WebKit::WebCryptoAlgorithmIdSha256, "",
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    { WebKit::WebCryptoAlgorithmIdSha384, "",
+      "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274e"
+      "debfe76f65fbd51ad2f14898b95b"
+    },
+    { WebKit::WebCryptoAlgorithmIdSha512, "",
+      "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0"
+      "d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
+    },
+    { WebKit::WebCryptoAlgorithmIdSha1, "00",
+      "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
+    },
+    { WebKit::WebCryptoAlgorithmIdSha224, "00",
+      "fff9292b4201617bdc4d3053fce02734166a683d7d858a7f5f59b073",
+    },
+    { WebKit::WebCryptoAlgorithmIdSha256, "00",
+      "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+    },
+    { WebKit::WebCryptoAlgorithmIdSha384, "00",
+      "bec021b4f368e3069134e012c2b4307083d3a9bdd206e24e5f0d86e13d6636655933"
+      "ec2b413465966817a9c208a11717",
+    },
+    { WebKit::WebCryptoAlgorithmIdSha512, "00",
+      "b8244d028981d693af7b456af8efa4cad63d282e19ff14942c246e50d9351d22704a"
+      "802a71c3580b6370de4ceb293c324a8423342557d4e5c38438f0e36910ee",
+    },
+    { WebKit::WebCryptoAlgorithmIdSha1, "000102030405",
+      "868460d98d09d8bbb93d7b6cdd15cc7fbec676b9",
+    },
+    { WebKit::WebCryptoAlgorithmIdSha224, "000102030405",
+      "7d92e7f1cad1818ed1d13ab41f04ebabfe1fef6bb4cbeebac34c29bc",
+    },
+    { WebKit::WebCryptoAlgorithmIdSha256, "000102030405",
+      "17e88db187afd62c16e5debf3e6527cd006bc012bc90b51a810cd80c2d511f43",
+    },
+    { WebKit::WebCryptoAlgorithmIdSha384, "000102030405",
+      "79f4738706fce9650ac60266675c3cd07298b09923850d525604d040e6e448adc7dc"
+      "22780d7e1b95bfeaa86a678e4552",
+    },
+    { WebKit::WebCryptoAlgorithmIdSha512, "000102030405",
+      "2f3831bccc94cf061bcfa5f8c23c1429d26e3bc6b76edad93d9025cb91c903af6cf9"
+      "c935dc37193c04c2c66e7d9de17c358284418218afea2160147aaa912f4c",
     },
   };
 
-  for (size_t id_index = 0; id_index < arraysize(kAlgorithmIds); id_index++) {
-    SCOPED_TRACE(id_index);
+  for (size_t test_index = 0; test_index < ARRAYSIZE_UNSAFE(kTests);
+       ++test_index) {
+    SCOPED_TRACE(test_index);
+    const TestCase& test = kTests[test_index];
 
-    WebKit::WebCryptoAlgorithm algorithm(
-        WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
-            kAlgorithmIds[id_index], NULL));
+    WebKit::WebCryptoAlgorithm algorithm = CreateAlgorithm(test.algorithm);
+    std::vector<uint8> input = HexStringToBytes(test.hex_input);
 
-    for (size_t set_index = 0;
-         set_index < ARRAYSIZE_UNSAFE(input_set);
-         set_index++) {
-      SCOPED_TRACE(set_index);
-
-      WebKit::WebArrayBuffer array_buffer;
-
-      WebCryptoImpl crypto;
-      EXPECT_TRUE(
-          crypto.DigestInternal(
-              algorithm,
-              reinterpret_cast<const unsigned char*>(
-                  input_set[set_index].input),
-              input_set[set_index].input_length,
-              &array_buffer));
-
-      // Ignore case, it's checking the hex value.
-      EXPECT_STRCASEEQ(
-          input_set[set_index].hex_result[id_index],
-          base::HexEncode(
-              array_buffer.data(), array_buffer.byteLength()).c_str());
-    }
+    WebKit::WebArrayBuffer output;
+    ASSERT_TRUE(DigestInternal(algorithm, input.data(), input.size(), &output));
+    ExpectArrayBufferMatchesHex(test.hex_result, output);
   }
 }
 
 TEST_F(WebCryptoImplTest, HMACSampleSets) {
-  struct {
+  struct TestCase {
     WebKit::WebCryptoAlgorithmId algorithm;
     const char* key;
     const char* message;
     const char* mac;
-  } input_set[] = {
+  };
+
+  const TestCase kTests[] = {
     // Empty sets.  Result generated via OpenSSL commandline tool.  These
     // particular results are also posted on the Wikipedia page examples:
     // http://en.wikipedia.org/wiki/Hash-based_message_authentication_code
@@ -210,67 +278,24 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
     },
   };
 
-  for (size_t index = 0; index < ARRAYSIZE_UNSAFE(input_set); index++) {
-    SCOPED_TRACE(index);
+  for (size_t test_index = 0; test_index < ARRAYSIZE_UNSAFE(kTests);
+       ++test_index) {
+    SCOPED_TRACE(test_index);
+    const TestCase& test = kTests[test_index];
 
-    WebKit::WebCryptoAlgorithm hash_algorithm(
-        WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
-            input_set[index].algorithm, NULL));
+    WebKit::WebCryptoAlgorithm algorithm = CreateHmacAlgorithm(test.algorithm);
 
-    scoped_ptr<WebKit::WebCryptoHmacParams> hmac_params(
-        new WebKit::WebCryptoHmacParams(hash_algorithm));
+    WebKit::WebCryptoKey key = ImportSecretKeyFromRawHexString(
+        test.key, algorithm, WebKit::WebCryptoKeyUsageSign);
 
-    WebKit::WebCryptoAlgorithm hmac_algorithm(
-        WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
-            WebKit::WebCryptoAlgorithmIdHmac, hmac_params.release()));
+    std::vector<uint8> message_raw = HexStringToBytes(test.message);
 
-    WebKit::WebCryptoKeyType type;
-    scoped_ptr<WebKit::WebCryptoKeyHandle> handle;
+    WebKit::WebArrayBuffer output;
 
-    std::vector<uint8> key_raw;
-    base::HexStringToBytes(input_set[index].key, &key_raw);
+    ASSERT_TRUE(SignInternal(
+        algorithm, key, message_raw.data(), message_raw.size(), &output));
 
-    WebCryptoImpl crypto;
-
-    EXPECT_TRUE(
-        crypto.ImportKeyInternal(
-            WebKit::WebCryptoKeyFormatRaw,
-            key_raw.data(),
-            key_raw.size(),
-            hmac_algorithm,
-            WebKit::WebCryptoKeyUsageSign,
-            &handle,
-            &type));
-
-    EXPECT_EQ(WebKit::WebCryptoKeyTypeSecret, type);
-    ASSERT_TRUE(handle.get());
-
-    WebKit::WebCryptoKey crypto_key =
-        WebKit::WebCryptoKey::create(
-            handle.release(),
-            type,
-            false,
-            hmac_algorithm,
-            WebKit::WebCryptoKeyUsageSign);
-
-    std::vector<uint8> message_raw;
-    base::HexStringToBytes(input_set[index].message, &message_raw);
-
-    WebKit::WebArrayBuffer array_buffer;
-
-    EXPECT_TRUE(
-        crypto.SignInternal(
-            hmac_algorithm,
-            crypto_key,
-            message_raw.data(),
-            message_raw.size(),
-            &array_buffer));
-
-    // Ignore case, it's checking the hex value.
-    EXPECT_STRCASEEQ(
-        input_set[index].mac,
-        base::HexEncode(
-            array_buffer.data(), array_buffer.byteLength()).c_str());
+    ExpectArrayBufferMatchesHex(test.mac, output);
   }
 }
 

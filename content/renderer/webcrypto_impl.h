@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
@@ -40,8 +39,7 @@ class CONTENT_EXPORT WebCryptoImpl
       WebKit::WebCryptoResult result);
 
  protected:
-  FRIEND_TEST_ALL_PREFIXES(WebCryptoImplTest, DigestSampleSets);
-  FRIEND_TEST_ALL_PREFIXES(WebCryptoImplTest, HMACSampleSets);
+  friend class WebCryptoImplTest;
 
   void Init();
 
