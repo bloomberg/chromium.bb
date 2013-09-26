@@ -1111,7 +1111,7 @@ void WebContentsImpl::WasShown() {
   RenderWidgetHostViewPort* rwhv =
       RenderWidgetHostViewPort::FromRWHV(GetRenderWidgetHostView());
   if (rwhv) {
-    rwhv->WasShown();
+    rwhv->Show();
 #if defined(OS_MACOSX)
     rwhv->SetActive(true);
 #endif
@@ -1149,7 +1149,7 @@ void WebContentsImpl::WasHidden() {
     RenderWidgetHostViewPort* rwhv =
         RenderWidgetHostViewPort::FromRWHV(GetRenderWidgetHostView());
     if (rwhv)
-      rwhv->WasHidden();
+      rwhv->Hide();
   }
 
   should_normally_be_visible_ = false;
