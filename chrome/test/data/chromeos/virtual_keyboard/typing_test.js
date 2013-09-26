@@ -51,8 +51,6 @@ function testLowercaseKeysetAsync(testDoneCallback) {
     mockTypeCharacter('\t', 0x09, false, 0x09);
     mockTypeCharacter('\n', 0x0D, false, 0x0A);
     mockTypeCharacter(' ', 0x20, false);
-    testDoneCallback(this.testFailure);
   };
-  runTest.name = 'testLowercaseKeysetAsync';
-  onKeyboardReady(runTest);
+  onKeyboardReady('testLowercaseKeysetAsync', runTest, testDoneCallback);
 }

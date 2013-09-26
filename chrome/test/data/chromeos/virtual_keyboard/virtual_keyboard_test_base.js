@@ -29,18 +29,26 @@ TestRunner.prototype = {
    */
   onStateChange: function(event) {
     if (event.detail.state == 'keysetLoaded') {
-      for (var i = 0; i < this.queue.length; i++) {
-        var callback = this.queue[i];
-        try {
-          callback();
-        } catch(err) {
-          console.error('Failure in test ' + callback.name + '\n' + err);
-          console.log(err.stack);
-          callback.testFailure = true;
-        }
-      }
+      for (var i = 0; i < this.queue.length; i++)
+        this.runTest(this.queue[i]);
       this.queue = [];
     }
+  },
+
+  /**
+   * Runs a single test, notifying the test harness of the results.
+   * @param {Funciton} callback The callback function containing the test.
+   */
+  runTest: function(callback) {
+    var testFailure = false;
+    try {
+      callback();
+    } catch(err) {
+      console.error('Failure in test "' + callback.testName + '"\n' + err);
+      console.log(err.stack);
+      testFailure = true;
+    }
+    callback.onTestComplete(testFailure);
   },
 };
 
@@ -108,11 +116,17 @@ function findKey(label) {
 /**
  * Triggers a callback function to run post initialization of the virtual
  * keyboard.
- * @param {Function} callback The callback function.
+ * @param {string} testName The name of the test.
+ * @param {Function} runTestCallback Callback function for running an
+ *     asynchronous test.
+ * @param {Function} testDoneCallback Callback function to indicate completion
+ *     of a test.
  */
-function onKeyboardReady(callback) {
+function onKeyboardReady(testName, runTestCallback, testDoneCallback) {
+  runTestCallback.testName = testName;
+  runTestCallback.onTestComplete = testDoneCallback;
   if (keyboard.initialized)
-    callback();
+    testRunner.runTest(runTestCallback);
   else
-    testRunner.append(callback);
+    testRunner.append(runTestCallback);
 }
