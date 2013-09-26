@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "grit/theme_resources.h"
@@ -216,6 +217,10 @@ User::~User() {}
 
 void User::SetAccountLocale(const std::string& raw_account_locale) {
   account_locale_.reset(new std::string);
+
+  // checking for IsLocaleAvailable  causes us to do blocking IO on UI thread.
+  // Temporarily allow it until we fix http://crosbug.com/297885
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   // Ignore result
   l10n_util::CheckAndResolveLocale(raw_account_locale, account_locale_.get());
 }
