@@ -28,7 +28,7 @@
 #include "core/html/forms/BaseChooserOnlyDateAndTimeInputType.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "bindings/v8/ScriptController.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -44,7 +44,7 @@ BaseChooserOnlyDateAndTimeInputType::~BaseChooserOnlyDateAndTimeInputType()
 
 void BaseChooserOnlyDateAndTimeInputType::handleDOMActivateEvent(Event*)
 {
-    if (element()->isDisabledOrReadOnly() || !element()->renderer() || !ScriptController::processingUserGesture() || element()->hasAuthorShadowRoot())
+    if (element()->isDisabledOrReadOnly() || !element()->renderer() || !UserGestureIndicator::processingUserGesture() || element()->hasAuthorShadowRoot())
         return;
 
     if (m_dateTimeChooser)

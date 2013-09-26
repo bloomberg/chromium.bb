@@ -28,11 +28,11 @@
 #include "core/html/shadow/TextControlInnerElements.h"
 
 #include "HTMLNames.h"
-#include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/events/EventNames.h"
 #include "core/events/MouseEvent.h"
 #include "core/dom/NodeRenderStyle.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/events/TextEvent.h"
 #include "core/events/TextEventInputType.h"
 #include "core/html/HTMLInputElement.h"
@@ -303,7 +303,7 @@ PassRefPtr<InputFieldSpeechButtonElement> InputFieldSpeechButtonElement::create(
 void InputFieldSpeechButtonElement::defaultEventHandler(Event* event)
 {
     // For privacy reasons, only allow clicks directly coming from the user.
-    if (!ScriptController::processingUserGesture()) {
+    if (!UserGestureIndicator::processingUserGesture()) {
         HTMLDivElement::defaultEventHandler(event);
         return;
     }

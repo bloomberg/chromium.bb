@@ -103,7 +103,7 @@ void InspectorFrontendClientImpl::windowObjectCleared()
             "     'addFileSystem',"
             "     'removeFileSystem']);";
 
-        scriptController->executeScriptInMainWorld(ScriptSourceCode(installLegacyOverrides));
+        scriptController->executeScriptInMainWorld(installLegacyOverrides, ScriptController::ExecuteScriptWhenScriptsDisabled);
     }
 }
 

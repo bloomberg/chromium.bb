@@ -791,11 +791,11 @@ void InspectorPageAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWor
         for (JSONObject::const_iterator it = scripts->begin(); it != end; ++it) {
             String scriptText;
             if (it->value->asString(&scriptText))
-                frame->script()->executeScript(scriptText);
+                frame->script()->executeScriptInMainWorld(scriptText);
         }
     }
     if (!m_scriptToEvaluateOnLoadOnce.isEmpty())
-        frame->script()->executeScript(m_scriptToEvaluateOnLoadOnce);
+        frame->script()->executeScriptInMainWorld(m_scriptToEvaluateOnLoadOnce);
 }
 
 void InspectorPageAgent::domContentLoadedEventFired(Frame* frame)

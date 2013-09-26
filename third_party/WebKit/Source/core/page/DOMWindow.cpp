@@ -54,6 +54,7 @@
 #include "core/events/PageTransitionEvent.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/editing/Editor.h"
 #include "core/history/BackForwardController.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -282,7 +283,7 @@ bool DOMWindow::allowPopUp(Frame* firstFrame)
 {
     ASSERT(firstFrame);
 
-    if (ScriptController::processingUserGesture())
+    if (UserGestureIndicator::processingUserGesture())
         return true;
 
     Settings* settings = firstFrame->settings();

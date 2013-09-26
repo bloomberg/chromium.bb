@@ -21,8 +21,8 @@
 #include "config.h"
 #include "core/html/HTMLPlugInImageElement.h"
 
-#include "bindings/v8/ScriptController.h"
 #include "core/dom/PostAttachCallbacks.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/PluginDocument.h"
 #include "core/loader/FrameLoader.h"
@@ -61,7 +61,7 @@ HTMLPlugInImageElement::HTMLPlugInImageElement(const QualifiedName& tagName, Doc
     // the same codepath in this class.
     , m_needsWidgetUpdate(!createdByParser)
     , m_shouldPreferPlugInsForImages(preferPlugInsForImagesOption == ShouldPreferPlugInsForImages)
-    , m_createdDuringUserGesture(ScriptController::processingUserGesture())
+    , m_createdDuringUserGesture(UserGestureIndicator::processingUserGesture())
 {
     setHasCustomStyleCallbacks();
 }

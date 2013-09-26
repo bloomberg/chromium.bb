@@ -747,7 +747,7 @@ void WebFrameImpl::executeScript(const WebScriptSource& source)
 {
     ASSERT(frame());
     TextPosition position(OrdinalNumber::fromOneBasedInt(source.startLine), OrdinalNumber::first());
-    frame()->script()->executeScript(ScriptSourceCode(source.code, source.url, position));
+    frame()->script()->executeScriptInMainWorld(ScriptSourceCode(source.code, source.url, position));
 }
 
 void WebFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSource* sourcesIn, unsigned numSources, int extensionGroup)
@@ -829,7 +829,7 @@ v8::Handle<v8::Value> WebFrameImpl::executeScriptAndReturnValue(const WebScriptS
     UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
 
     TextPosition position(OrdinalNumber::fromOneBasedInt(source.startLine), OrdinalNumber::first());
-    return frame()->script()->executeScript(ScriptSourceCode(source.code, source.url, position)).v8Value();
+    return frame()->script()->executeScriptInMainWorldAndReturnValue(ScriptSourceCode(source.code, source.url, position)).v8Value();
 }
 
 void WebFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSource* sourcesIn, unsigned numSources, int extensionGroup, WebVector<v8::Local<v8::Value> >* results)
@@ -2493,7 +2493,8 @@ void WebFrameImpl::loadJavaScriptURL(const KURL& url)
         return;
 
     String script = decodeURLEscapeSequences(url.string().substring(strlen("javascript:")));
-    ScriptValue result = frame()->script()->executeScript(script, true);
+    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+    ScriptValue result = frame()->script()->executeScriptInMainWorldAndReturnValue(ScriptSourceCode(script));
 
     String scriptResult;
     if (!result.getString(scriptResult))

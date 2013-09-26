@@ -92,7 +92,6 @@ ScriptController::ScriptController(Frame* frame)
     , m_sourceURL(0)
     , m_isolate(v8::Isolate::GetCurrent())
     , m_windowShell(V8WindowShell::create(frame, mainThreadNormalWorld(), m_isolate))
-    , m_paused(false)
     , m_windowScriptNPObject(0)
 {
 }
@@ -147,11 +146,6 @@ void ScriptController::updateSecurityOrigin()
     m_windowShell->updateSecurityOrigin();
 }
 
-bool ScriptController::processingUserGesture()
-{
-    return UserGestureIndicator::processingUserGesture();
-}
-
 v8::Local<v8::Value> ScriptController::callFunction(v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[])
 {
     // Keep Frame (and therefore ScriptController) alive.
@@ -161,7 +155,6 @@ v8::Local<v8::Value> ScriptController::callFunction(v8::Handle<v8::Function> fun
 
 ScriptValue ScriptController::callFunctionEvenIfScriptDisabled(v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> argv[])
 {
-    // FIXME: This should probably perform the same isPaused check that happens in ScriptController::executeScript.
     return ScriptValue(callFunction(function, receiver, argc, argv), m_isolate);
 }
 
@@ -598,22 +591,6 @@ bool ScriptController::canExecuteScripts(ReasonForCallingCanExecuteScripts reaso
     return allowed;
 }
 
-ScriptValue ScriptController::executeScript(const String& script, bool forceUserGesture)
-{
-    UserGestureIndicator gestureIndicator(forceUserGesture ? DefinitelyProcessingNewUserGesture : PossiblyProcessingUserGesture);
-    return executeScript(ScriptSourceCode(script, m_frame->document()->url()));
-}
-
-ScriptValue ScriptController::executeScript(const ScriptSourceCode& sourceCode)
-{
-    if (!canExecuteScripts(AboutToExecuteScript) || isPaused())
-        return ScriptValue();
-
-    RefPtr<Frame> protect(m_frame); // Script execution can destroy the frame, and thus the ScriptController.
-
-    return executeScriptInMainWorld(sourceCode);
-}
-
 bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
 {
     if (!protocolIsJavaScript(url))
@@ -633,7 +610,7 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
     bool locationChangeBefore = m_frame->navigationScheduler()->locationChangePending();
 
     String decodedURL = decodeURLEscapeSequences(url.string());
-    ScriptValue result = executeScript(decodedURL.substring(javascriptSchemeLength));
+    ScriptValue result = evaluateScriptInMainWorld(ScriptSourceCode(decodedURL.substring(javascriptSchemeLength)), NotSharableCrossOrigin, DoNotExecuteScriptWhenScriptsDisabled);
 
     // If executing script caused this frame to be removed from the page, we
     // don't want to try to replace its document!
@@ -657,8 +634,26 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
     return true;
 }
 
-ScriptValue ScriptController::executeScriptInMainWorld(const ScriptSourceCode& sourceCode, AccessControlStatus corsStatus)
+void ScriptController::executeScriptInMainWorld(const String& script, ExecuteScriptPolicy policy)
 {
+    evaluateScriptInMainWorld(ScriptSourceCode(script), NotSharableCrossOrigin, policy);
+}
+
+void ScriptController::executeScriptInMainWorld(const ScriptSourceCode& sourceCode, AccessControlStatus corsStatus)
+{
+    evaluateScriptInMainWorld(sourceCode, corsStatus, DoNotExecuteScriptWhenScriptsDisabled);
+}
+
+ScriptValue ScriptController::executeScriptInMainWorldAndReturnValue(const ScriptSourceCode& sourceCode)
+{
+    return evaluateScriptInMainWorld(sourceCode, NotSharableCrossOrigin, DoNotExecuteScriptWhenScriptsDisabled);
+}
+
+ScriptValue ScriptController::evaluateScriptInMainWorld(const ScriptSourceCode& sourceCode, AccessControlStatus corsStatus, ExecuteScriptPolicy policy)
+{
+    if (policy == DoNotExecuteScriptWhenScriptsDisabled && !canExecuteScripts(AboutToExecuteScript))
+        return ScriptValue();
+
     String sourceURL = sourceCode.url();
     const String* savedSourceURL = m_sourceURL;
     m_sourceURL = &sourceURL;

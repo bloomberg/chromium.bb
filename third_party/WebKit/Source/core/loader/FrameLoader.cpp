@@ -41,6 +41,7 @@
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/events/Event.h"
 #include "core/events/EventNames.h"
 #include "core/events/PageTransitionEvent.h"
@@ -654,7 +655,7 @@ bool FrameLoader::isScriptTriggeredFormSubmissionInChildFrame(const FrameLoadReq
     // If this is a child frame and the form submission was triggered by a script, lock the back/forward list
     // to match IE and Opera.
     // See https://bugs.webkit.org/show_bug.cgi?id=32383 for the original motivation for this.
-    if (!m_frame->tree()->parent() || ScriptController::processingUserGesture())
+    if (!m_frame->tree()->parent() || UserGestureIndicator::processingUserGesture())
         return false;
     return request.formState() && request.formState()->formSubmissionTrigger() == SubmittedByJavaScript;
 }

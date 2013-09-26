@@ -39,6 +39,7 @@
 #include "core/events/EventNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FullscreenElementStack.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLMediaSource.h"
 #include "core/html/HTMLSourceElement.h"
@@ -655,10 +656,10 @@ void HTMLMediaElement::load()
 
     LOG(Media, "HTMLMediaElement::load()");
 
-    if (userGestureRequiredForLoad() && !ScriptController::processingUserGesture())
+    if (userGestureRequiredForLoad() && !UserGestureIndicator::processingUserGesture())
         return;
 
-    m_loadInitiatedByUserGesture = ScriptController::processingUserGesture();
+    m_loadInitiatedByUserGesture = UserGestureIndicator::processingUserGesture();
     if (m_loadInitiatedByUserGesture)
         removeBehaviorsRestrictionsAfterFirstUserGesture();
     prepareForLoad();
@@ -2161,16 +2162,16 @@ void HTMLMediaElement::play()
 {
     LOG(Media, "HTMLMediaElement::play()");
 
-    if (userGestureRequiredForRateChange() && !ScriptController::processingUserGesture())
+    if (userGestureRequiredForRateChange() && !UserGestureIndicator::processingUserGesture())
         return;
-    if (ScriptController::processingUserGesture())
+    if (UserGestureIndicator::processingUserGesture())
         removeBehaviorsRestrictionsAfterFirstUserGesture();
 
     Settings* settings = document().settings();
     if (settings && settings->needsSiteSpecificQuirks() && m_dispatchingCanPlayEvent && !m_loadInitiatedByUserGesture) {
         // It should be impossible to be processing the canplay event while handling a user gesture
         // since it is dispatched asynchronously.
-        ASSERT(!ScriptController::processingUserGesture());
+        ASSERT(!UserGestureIndicator::processingUserGesture());
         String host = document().baseURL().host();
         if (host.endsWith(".npr.org", false) || equalIgnoringCase(host, "npr.org"))
             return;
@@ -2213,7 +2214,7 @@ void HTMLMediaElement::pause()
 {
     LOG(Media, "HTMLMediaElement::pause()");
 
-    if (userGestureRequiredForRateChange() && !ScriptController::processingUserGesture())
+    if (userGestureRequiredForRateChange() && !UserGestureIndicator::processingUserGesture())
         return;
 
     pauseInternal();

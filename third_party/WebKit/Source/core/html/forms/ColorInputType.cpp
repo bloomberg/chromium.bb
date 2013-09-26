@@ -35,6 +35,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptController.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/events/MouseEvent.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDataListElement.h"
@@ -146,7 +147,7 @@ void ColorInputType::handleDOMActivateEvent(Event* event)
     if (element()->isDisabledFormControl() || !element()->renderer())
         return;
 
-    if (!ScriptController::processingUserGesture())
+    if (!UserGestureIndicator::processingUserGesture())
         return;
 
     Chrome* chrome = this->chrome();

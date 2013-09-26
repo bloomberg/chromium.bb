@@ -440,7 +440,8 @@ WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url, bool popup
     String script = decodeURLEscapeSequences(
         kurl.string().substring(strlen("javascript:")));
 
-    ScriptValue result = frame->script()->executeScript(script, popupsAllowed);
+    UserGestureIndicator gestureIndicator(popupsAllowed ? DefinitelyProcessingNewUserGesture : PossiblyProcessingUserGesture);
+    ScriptValue result = frame->script()->executeScriptInMainWorldAndReturnValue(ScriptSourceCode(script));
 
     // Failure is reported as a null string.
     String resultStr;

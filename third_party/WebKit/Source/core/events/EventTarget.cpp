@@ -35,9 +35,9 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ScriptController.h"
 #include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/DOMWindow.h"
 #include "wtf/StdLibExtras.h"
@@ -320,7 +320,7 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
         // event listeners, even though that violates some versions of the DOM spec.
         registeredListener.listener->handleEvent(context, event);
-        if (!userEventWasHandled && ScriptController::processingUserGesture())
+        if (!userEventWasHandled && UserGestureIndicator::processingUserGesture())
             userEventWasHandled = true;
         InspectorInstrumentation::didHandleEvent(cookie);
     }

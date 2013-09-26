@@ -25,9 +25,9 @@
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "bindings/v8/ScriptController.h"
-#include "core/events/Event.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/events/Event.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
 #include "core/html/FormDataList.h"
@@ -141,7 +141,7 @@ void FileInputType::handleDOMActivateEvent(Event* event)
     if (element()->isDisabledFormControl())
         return;
 
-    if (!ScriptController::processingUserGesture())
+    if (!UserGestureIndicator::processingUserGesture())
         return;
 
     if (Chrome* chrome = this->chrome()) {

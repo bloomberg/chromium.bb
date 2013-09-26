@@ -35,6 +35,7 @@
 #include "core/events/Event.h"
 #include "core/events/EventNames.h"
 #include "core/dom/NamedNodesCollection.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -294,7 +295,7 @@ void HTMLFormElement::submit()
 
 void HTMLFormElement::submitFromJavaScript()
 {
-    submit(0, false, ScriptController::processingUserGesture(), SubmittedByJavaScript);
+    submit(0, false, UserGestureIndicator::processingUserGesture(), SubmittedByJavaScript);
 }
 
 void HTMLFormElement::getTextFieldValues(StringPairVector& fieldNamesAndValues) const
@@ -411,7 +412,7 @@ void HTMLFormElement::requestAutocomplete()
     if (!frame)
         return;
 
-    if (!shouldAutocomplete() || !ScriptController::processingUserGesture()) {
+    if (!shouldAutocomplete() || !UserGestureIndicator::processingUserGesture()) {
         finishRequestAutocomplete(AutocompleteResultErrorDisabled);
         return;
     }

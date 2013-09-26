@@ -86,7 +86,7 @@ void InspectorAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWorld* 
     scriptSource.append("(");
     scriptSource.appendNumber(injectedScriptId);
     scriptSource.append(")");
-    frame->script()->executeScript(scriptSource.toString());
+    frame->script()->executeScriptInMainWorld(scriptSource.toString());
 }
 
 void InspectorAgent::setFrontend(InspectorFrontend* inspectorFrontend)

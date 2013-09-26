@@ -29,9 +29,9 @@
 #include "core/dom/FullscreenElementStack.h"
 
 #include "HTMLNames.h"
-#include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/events/Event.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Chrome.h"
@@ -184,7 +184,7 @@ void FullscreenElementStack::requestFullScreenForElement(Element* element, unsig
         //   An algorithm is allowed to show a pop-up if, in the task in which the algorithm is running, either:
         //   - an activation behavior is currently being processed whose click event was trusted, or
         //   - the event listener for a trusted click event is being handled.
-        if (!ScriptController::processingUserGesture())
+        if (!UserGestureIndicator::processingUserGesture())
             break;
 
         // There is a previously-established user preference, security risk, or platform limitation.
