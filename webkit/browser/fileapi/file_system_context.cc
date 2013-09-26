@@ -501,12 +501,13 @@ void FileSystemContext::DidOpenFileSystemForResolveURL(
       filesystem_name, filesystem_root, url.mount_type());
 
   // Extract the virtual path not containing a filesystem type part from |url|.
-  base::FilePath parent =
-      base::FilePath::FromUTF8Unsafe(filesystem_root.path());
-  base::FilePath child = base::FilePath::FromUTF8Unsafe(url.ToGURL().path());
+  base::FilePath parent = CrackURL(filesystem_root).virtual_path();
+  base::FilePath child = url.virtual_path();
   base::FilePath path;
 
-  if (parent != child) {
+  if (parent.empty()) {
+    path = child;
+  } else if (parent != child) {
     bool result = parent.AppendRelativePath(child, &path);
     DCHECK(result);
   }
