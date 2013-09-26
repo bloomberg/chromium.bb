@@ -112,6 +112,7 @@ const char kShiftKey[] = "shiftKey";
 const char kShortcutKey[] = "shortcutKey";
 const char kShortName[] = "short_name";
 const char kSignature[] = "signature";
+const char kSockets[] = "sockets";
 const char kSpellcheck[] = "spellcheck";
 const char kSpellcheckDictionaryFormat[] = "dictionary_format";
 const char kSpellcheckDictionaryLanguage[] = "dictionary_language";

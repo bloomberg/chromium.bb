@@ -6,8 +6,7 @@
 
 #include "chrome/browser/extensions/api/socket/udp_socket.h"
 #include "chrome/browser/extensions/api/sockets_udp/udp_socket_event_dispatcher.h"
-#include "chrome/common/extensions/permissions/permissions_data.h"
-#include "chrome/common/extensions/permissions/socket_permission.h"
+#include "chrome/common/extensions/api/sockets/sockets_handler.h"
 #include "content/public/common/socket_permission_request.h"
 #include "net/base/net_errors.h"
 
@@ -156,12 +155,11 @@ void SocketsUdpBindFunction::Work() {
     return;
   }
 
-  SocketPermission::CheckParam param(
-      SocketPermissionRequest::UDP_BIND, params_->address, params_->port);
-  if (!PermissionsData::CheckAPIPermissionWithParam(
-          GetExtension(),
-          APIPermission::kSocket,
-          &param)) {
+  content::SocketPermissionRequest param(
+      SocketPermissionRequest::UDP_BIND,
+      params_->address,
+      params_->port);
+  if (!SocketsManifestData::CheckRequest(GetExtension(), param)) {
     error_ = kPermissionError;
     return;
   }
@@ -198,14 +196,11 @@ void SocketsUdpSendFunction::AsyncWorkStart() {
     return;
   }
 
-  SocketPermission::CheckParam param(
+  content::SocketPermissionRequest param(
       SocketPermissionRequest::UDP_SEND_TO,
       params_->address,
       params_->port);
-  if (!PermissionsData::CheckAPIPermissionWithParam(
-          GetExtension(),
-          APIPermission::kSocket,
-          &param)) {
+  if (!SocketsManifestData::CheckRequest(GetExtension(), param)) {
     error_ = kPermissionError;
     AsyncWorkCompleted();
     return;
@@ -341,13 +336,11 @@ void SocketsUdpJoinGroupFunction::Work() {
     return;
   }
 
-  SocketPermission::CheckParam param(
+  content::SocketPermissionRequest param(
       SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
       kWildcardAddress,
       kWildcardPort);
-
-  if (!PermissionsData::CheckAPIPermissionWithParam(
-          GetExtension(), APIPermission::kSocket, &param)) {
+  if (!SocketsManifestData::CheckRequest(GetExtension(), param)) {
     error_ = kPermissionError;
     return;
   }
@@ -375,13 +368,11 @@ void SocketsUdpLeaveGroupFunction::Work() {
     return;
   }
 
-  SocketPermission::CheckParam param(
+  content::SocketPermissionRequest param(
       SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
       kWildcardAddress,
       kWildcardPort);
-  if (!PermissionsData::CheckAPIPermissionWithParam(GetExtension(),
-                                                    APIPermission::kSocket,
-                                                    &param)) {
+  if (!SocketsManifestData::CheckRequest(GetExtension(), param)) {
     error_ = kPermissionError;
     return;
   }
@@ -459,14 +450,11 @@ void SocketsUdpGetJoinedGroupsFunction::Work() {
     return;
   }
 
-  SocketPermission::CheckParam param(
+  content::SocketPermissionRequest param(
       SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
       kWildcardAddress,
       kWildcardPort);
-  if (!PermissionsData::CheckAPIPermissionWithParam(
-          GetExtension(),
-          APIPermission::kSocket,
-          &param)) {
+  if (!SocketsManifestData::CheckRequest(GetExtension(), param)) {
     error_ = kPermissionError;
     return;
   }

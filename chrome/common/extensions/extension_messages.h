@@ -168,9 +168,13 @@ IPC_STRUCT_TRAITS_BEGIN(content::SocketPermissionRequest)
   IPC_STRUCT_TRAITS_MEMBER(port)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(extensions::SocketPermissionEntry)
+  IPC_STRUCT_TRAITS_MEMBER(pattern_)
+  IPC_STRUCT_TRAITS_MEMBER(match_subdomains_)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(extensions::SocketPermissionData)
-  IPC_STRUCT_TRAITS_MEMBER(pattern())
-  IPC_STRUCT_TRAITS_MEMBER(match_subdomains())
+  IPC_STRUCT_TRAITS_MEMBER(entry())
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(extensions::UsbDevicePermissionData)

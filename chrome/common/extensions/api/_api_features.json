@@ -481,7 +481,7 @@
     "contexts": ["blessed_extension"]
   },
   "sockets.udp": {
-    "dependencies": ["permission:sockets.udp"],
+    "dependencies": ["manifest:sockets"],
     "channel": "dev",
     "contexts": ["blessed_extension"]
   },

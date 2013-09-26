@@ -6,9 +6,11 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
-#include "content/public/common/socket_permission_request.h"
+#include "chrome/common/extensions/permissions/socket_permission_entry.h"
+#include "ipc/ipc_param_traits.h"
+
+template <class T> struct FuzzTraits;
 
 namespace extensions {
 
@@ -35,12 +37,6 @@ namespace extensions {
 // The multicast membership permission implies a permission to any address.
 class SocketPermissionData {
  public:
-  enum HostType {
-    ANY_HOST,
-    HOSTS_IN_DOMAINS,
-    SPECIFIC_HOSTS,
-  };
-
   SocketPermissionData();
   ~SocketPermissionData();
 
@@ -59,33 +55,26 @@ class SocketPermissionData {
   // Populate |this| from a base::Value.
   bool FromValue(const base::Value* value);
 
-  // Returns true if the permission type can be bound to a host or port.
-  bool IsAddressBoundType() const;
-
-  HostType GetHostType() const;
-  const std::string GetHost() const;
-
-  const content::SocketPermissionRequest& pattern() const { return pattern_; }
-  const bool& match_subdomains() const { return match_subdomains_; }
-
-  // These accessors are provided for IPC_STRUCT_TRAITS_MEMBER.  Please
-  // think twice before using them for anything else.
-  content::SocketPermissionRequest& pattern();
-  bool& match_subdomains();
-
   // TODO(bryeung): SocketPermissionData should be encoded as a base::Value
   // instead of a string.  Until that is done, expose these methods for
   // testing.
   bool ParseForTest(const std::string& permission) { return Parse(permission); }
   const std::string& GetAsStringForTest() const { return GetAsString(); }
 
+  const SocketPermissionEntry& entry() const { return entry_; }
+
  private:
+  // Friend so ParamTraits can serialize us.
+  friend struct IPC::ParamTraits<SocketPermissionData>;
+  friend struct FuzzTraits<SocketPermissionData>;
+
+  SocketPermissionEntry& entry();
+
   bool Parse(const std::string& permission);
   const std::string& GetAsString() const;
   void Reset();
 
-  content::SocketPermissionRequest pattern_;
-  bool match_subdomains_;
+  SocketPermissionEntry entry_;
   mutable std::string spec_;
 };
 

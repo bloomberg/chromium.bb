@@ -37,8 +37,8 @@ PermissionMessages SocketPermission::GetMessages() const {
 bool SocketPermission::AddAnyHostMessage(PermissionMessages& messages) const {
   std::set<SocketPermissionData>::const_iterator i;
   for (i = data_set_.begin(); i != data_set_.end(); ++i) {
-    if (i->IsAddressBoundType() &&
-        i->GetHostType() == SocketPermissionData::ANY_HOST) {
+    if (i->entry().IsAddressBoundType() &&
+        i->entry().GetHostType() == SocketPermissionEntry::ANY_HOST) {
       messages.push_back(PermissionMessage(
           PermissionMessage::kSocketAnyHost,
           l10n_util::GetStringUTF16(
@@ -54,8 +54,8 @@ void SocketPermission::AddSubdomainHostMessage(
   std::set<string16> domains;
   std::set<SocketPermissionData>::const_iterator i;
   for (i = data_set_.begin(); i != data_set_.end(); ++i) {
-    if (i->GetHostType() == SocketPermissionData::HOSTS_IN_DOMAINS)
-      domains.insert(UTF8ToUTF16(i->GetHost()));
+    if (i->entry().GetHostType() == SocketPermissionEntry::HOSTS_IN_DOMAINS)
+      domains.insert(UTF8ToUTF16(i->entry().pattern().host));
   }
   if (!domains.empty()) {
     int id = (domains.size() == 1) ?
@@ -76,8 +76,8 @@ void SocketPermission::AddSpecificHostMessage(
   std::set<string16> hostnames;
   std::set<SocketPermissionData>::const_iterator i;
   for (i = data_set_.begin(); i != data_set_.end(); ++i) {
-    if (i->GetHostType() == SocketPermissionData::SPECIFIC_HOSTS)
-      hostnames.insert(UTF8ToUTF16(i->GetHost()));
+    if (i->entry().GetHostType() == SocketPermissionEntry::SPECIFIC_HOSTS)
+      hostnames.insert(UTF8ToUTF16(i->entry().pattern().host));
   }
   if (!hostnames.empty()) {
     int id = (hostnames.size() == 1) ?
@@ -97,7 +97,8 @@ void SocketPermission::AddNetworkListMessage(
     PermissionMessages& messages) const {
   std::set<SocketPermissionData>::const_iterator i;
   for (i = data_set_.begin(); i != data_set_.end(); ++i) {
-    if (i->pattern().type == content::SocketPermissionRequest::NETWORK_STATE) {
+    if (i->entry().pattern().type ==
+        content::SocketPermissionRequest::NETWORK_STATE) {
       messages.push_back(PermissionMessage(
           PermissionMessage::kNetworkState,
           l10n_util::GetStringUTF16(

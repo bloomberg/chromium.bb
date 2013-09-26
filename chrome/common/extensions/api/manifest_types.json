@@ -32,6 +32,35 @@
             "items": {"type": "string"}
           }
         }
+      },
+      {
+        "id": "sockets",
+        "type": "object",
+        "description": "The <code>sockets</code> manifest property declares which sockets operations an app can issue.",
+        "properties": {
+          "udp": {
+            "description": "The <code>udp</code> manifest property declares which sockets.udp operations an app can issue.",
+            "optional": true,
+            "type": "object",
+            "properties": {
+              "bind": {
+                "description": "<p>The host:port pattern for <code>bind</code> operations.</p>",
+                "optional": true,
+                "type": "string"
+              },
+              "send": {
+                "description": "<p>The host:port pattern for <code>send</code> operations.</p>",
+                "optional": true,
+                "type": "string"
+              },
+              "multicastMembership": {
+                "description": "<p>The host:port pattern for <code>joinGroup</code> operations.</p>",
+                "optional": true,
+                "type": "string"
+              }
+            }
+          }
+        }
       }
     ]
   }

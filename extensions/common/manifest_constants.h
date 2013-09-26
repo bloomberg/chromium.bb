@@ -121,6 +121,7 @@ extern const char kShiftKey[];
 extern const char kShortcutKey[];
 extern const char kShortName[];
 extern const char kSignature[];
+extern const char kSockets[];
 extern const char kSpellcheck[];
 extern const char kSpellcheckDictionaryFormat[];
 extern const char kSpellcheckDictionaryLanguage[];
