@@ -199,3 +199,127 @@ TEST_F(ManagedModeURLFilterTest, HasStandardScheme) {
   EXPECT_FALSE(
       ManagedModeURLFilter::HasStandardScheme(GURL("wtf://example.com")));
 }
+
+TEST_F(ManagedModeURLFilterTest, HostMatchesPattern) {
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.com",
+                                               "*.google.com"));
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HostMatchesPattern("google.com", "*.google.com"));
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HostMatchesPattern("accounts.google.com",
+                                               "*.google.com"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.de",
+                                               "*.google.com"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("notgoogle.com",
+                                               "*.google.com"));
+
+
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.com",
+                                               "www.google.*"));
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.de",
+                                               "www.google.*"));
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.co.uk",
+                                               "www.google.*"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.blogspot.com",
+                                               "www.google.*"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google", "www.google.*"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("google.com", "www.google.*"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("mail.google.com",
+                                               "www.google.*"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("www.googleplex.com",
+                                               "www.google.*"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("www.googleco.uk",
+                                               "www.google.*"));
+
+
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.com", "*.google.*"));
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HostMatchesPattern("google.com", "*.google.*"));
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HostMatchesPattern("accounts.google.com",
+                                               "*.google.*"));
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HostMatchesPattern("mail.google.com",
+                                               "*.google.*"));
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.de",
+                                               "*.google.*"));
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HostMatchesPattern("google.de",
+                                               "*.google.*"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("google.blogspot.com",
+                                               "*.google.*"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("google", "*.google.*"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("notgoogle.com", "*.google.*"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("www.googleplex.com",
+                                               "*.google.*"));
+
+  // Now test a few invalid patterns. They should never match.
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.com", ""));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.com", "."));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.com", "*"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.com", ".*"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.com", "*."));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.com", "*.*"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google..com", "*..*"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.com", "*.*.com"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.com", "www.*.*"));
+  EXPECT_FALSE(ManagedModeURLFilter::HostMatchesPattern("www.google.com",
+                                                        "*.goo.*le.*"));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HostMatchesPattern("www.google.com", "*google*"));
+  EXPECT_FALSE(ManagedModeURLFilter::HostMatchesPattern("www.google.com",
+                                                        "www.*.google.com"));
+}
+
+TEST_F(ManagedModeURLFilterTest, Patterns) {
+  std::map<std::string, bool> hosts;
+
+  // Initally, the second rule is ignored because has the same value as the
+  // default (block). When we change the default to allow, the first rule is
+  // ignored instead.
+  hosts["*.google.com"] = true;
+  hosts["www.google.*"] = false;
+
+  hosts["accounts.google.com"] = false;
+  hosts["mail.google.com"] = true;
+  filter_->SetManualHosts(&hosts);
+
+  // Initially, the default filtering behavior is BLOCK.
+  EXPECT_TRUE(IsURLWhitelisted("http://www.google.com/foo/"));
+  EXPECT_FALSE(IsURLWhitelisted("http://accounts.google.com/bar/"));
+  EXPECT_FALSE(IsURLWhitelisted("http://www.google.co.uk/blurp/"));
+  EXPECT_TRUE(IsURLWhitelisted("http://mail.google.com/moose/"));
+
+  filter_->SetDefaultFilteringBehavior(ManagedModeURLFilter::ALLOW);
+  EXPECT_FALSE(IsURLWhitelisted("http://www.google.com/foo/"));
+  EXPECT_FALSE(IsURLWhitelisted("http://accounts.google.com/bar/"));
+  EXPECT_FALSE(IsURLWhitelisted("http://www.google.co.uk/blurp/"));
+  EXPECT_TRUE(IsURLWhitelisted("http://mail.google.com/moose/"));
+}

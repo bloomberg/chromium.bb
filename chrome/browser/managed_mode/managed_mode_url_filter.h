@@ -59,6 +59,21 @@ class ManagedModeURLFilter
   // This method is public for testing.
   static bool HasStandardScheme(const GURL& url);
 
+  // Returns true if the |host| matches the pattern. A pattern is a hostname
+  // with one or both of the following modifications:
+  // - If the pattern starts with "*.", it matches the host or any subdomain
+  //   (e.g. the pattern "*.google.com" would match google.com, www.google.com,
+  //   or accounts.google.com).
+  // - If the pattern ends with ".*", it matches the host on any known TLD
+  //   (e.g. the pattern "google.*" would match google.com or google.co.uk).
+  // See the ManagedModeURLFilterTest.HostMatchesPattern unit test for more
+  // examples.
+  // Asterisks in other parts of the pattern are not allowed.
+  // |host| and |pattern| are assumed to be normalized to lower-case.
+  // This method is public for testing.
+  static bool HostMatchesPattern(const std::string& host,
+                                 const std::string& pattern);
+
   void GetSites(const GURL& url,
                 std::vector<ManagedModeSiteList::Site*>* sites) const;
 

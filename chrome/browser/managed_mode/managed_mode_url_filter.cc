@@ -16,11 +16,15 @@
 #include "chrome/browser/policy/url_blacklist_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/matcher/url_matcher.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
 using extensions::URLMatcher;
 using extensions::URLMatcherConditionSet;
+using net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES;
+using net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
+using net::registry_controlled_domains::GetRegistryLength;
 
 struct ManagedModeURLFilter::Contents {
   URLMatcher url_matcher;
@@ -204,6 +208,44 @@ bool ManagedModeURLFilter::HasStandardScheme(const GURL& url) {
   return false;
 }
 
+// static
+bool ManagedModeURLFilter::HostMatchesPattern(const std::string& host,
+                                              const std::string& pattern) {
+  std::string trimmed_pattern = pattern;
+  std::string trimmed_host = host;
+  if (EndsWith(pattern, ".*", true)) {
+    size_t registry_length = GetRegistryLength(
+        trimmed_host, EXCLUDE_UNKNOWN_REGISTRIES, EXCLUDE_PRIVATE_REGISTRIES);
+    // A host without a known registry part does not match.
+    if (registry_length == 0)
+      return false;
+
+    trimmed_pattern.erase(trimmed_pattern.length() - 2);
+    trimmed_host.erase(trimmed_host.length() - (registry_length + 1));
+  }
+
+  if (StartsWithASCII(trimmed_pattern, "*.", true)) {
+    trimmed_pattern.erase(0, 2);
+
+    // The remaining pattern should be non-empty, and it should not contain
+    // further stars. Also the trimmed host needs to end with the trimmed
+    // pattern.
+    if (trimmed_pattern.empty() ||
+        trimmed_pattern.find('*') != std::string::npos ||
+        !EndsWith(trimmed_host, trimmed_pattern, true)) {
+      return false;
+    }
+
+    // The trimmed host needs to have a dot separating the subdomain from the
+    // matched pattern piece, unless there is no subdomain.
+    int pos = trimmed_host.length() - trimmed_pattern.length();
+    DCHECK_GE(pos, 0);
+    return (pos == 0) || (trimmed_host[pos - 1] == '.');
+  }
+
+  return trimmed_host == trimmed_pattern;
+}
+
 ManagedModeURLFilter::FilteringBehavior
 ManagedModeURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
   DCHECK(CalledOnValidThread());
@@ -218,10 +260,20 @@ ManagedModeURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
     return url_it->second ? ALLOW : BLOCK;
 
   // Check manual overrides for the hostname.
-  std::map<std::string, bool>::const_iterator host_it =
-      host_map_.find(url.host());
+  std::string host = url.host();
+  std::map<std::string, bool>::const_iterator host_it = host_map_.find(host);
   if (host_it != host_map_.end())
     return host_it->second ? ALLOW : BLOCK;
+
+  // Look for patterns matching the hostname, with a value that is different
+  // from the default (a value of true in the map meaning allowed).
+  for (std::map<std::string, bool>::const_iterator host_it =
+      host_map_.begin(); host_it != host_map_.end(); ++host_it) {
+    if ((host_it->second == (default_behavior_ == BLOCK)) &&
+        HostMatchesPattern(host, host_it->first)) {
+      return host_it->second ? ALLOW : BLOCK;
+    }
+  }
 
   // If the default behavior is to allow, we don't need to check anything else.
   if (default_behavior_ == ALLOW)
