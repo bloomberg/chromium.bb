@@ -850,9 +850,9 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() {
 
   state.strings.push_back(DialogOverlayString());
   DialogOverlayString& string = state.strings.back();
-  string.font = rb.GetFont(ui::ResourceBundle::BaseFont).DeriveFont(4);
+  string.font = rb.GetFont(ui::ResourceBundle::BaseFont).DeriveFont(3);
   string.alignment = gfx::ALIGN_CENTER;
-  string.text_color = SK_ColorBLACK;
+  string.text_color = SK_ColorDKGRAY;
 
   const SkColor start_top_color = SkColorSetRGB(0xD6, 0xD6, 0xD6);
   const SkColor start_bottom_color = SkColorSetRGB(0x98, 0x98, 0x98);
