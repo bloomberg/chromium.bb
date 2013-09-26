@@ -445,7 +445,7 @@ OAuth2TokenService::StartRequestForClientWithContext(
     Consumer* consumer) {
   DCHECK(CalledOnValidThread());
 
-  scoped_ptr<RequestImpl> request(new RequestImpl(consumer));
+  scoped_ptr<RequestImpl> request = CreateRequest(consumer);
 
   if (!RefreshTokenIsAvailable(account_id)) {
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
@@ -471,6 +471,11 @@ OAuth2TokenService::StartRequestForClientWithContext(
                      scopes);
   }
   return request.PassAs<Request>();
+}
+
+scoped_ptr<OAuth2TokenService::RequestImpl> OAuth2TokenService::CreateRequest(
+    Consumer* consumer) {
+  return scoped_ptr<RequestImpl>(new RequestImpl(consumer));
 }
 
 void OAuth2TokenService::FetchOAuth2Token(RequestImpl* request,
