@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/brightness/tray_brightness.h"
+#include "ash/system/chromeos/brightness/tray_brightness.h"
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_constants.h"
 #include "ash/shell.h"
-#include "ash/system/brightness/brightness_control_delegate.h"
+#include "ash/system/brightness_control_delegate.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -15,6 +15,8 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -135,11 +137,13 @@ TrayBrightness::TrayBrightness(SystemTray* system_tray)
       FROM_HERE,
       base::Bind(&TrayBrightness::GetInitialBrightness,
                  weak_ptr_factory_.GetWeakPtr()));
-  Shell::GetInstance()->system_tray_notifier()->AddBrightnessObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      AddObserver(this);
 }
 
 TrayBrightness::~TrayBrightness() {
-  Shell::GetInstance()->system_tray_notifier()->RemoveBrightnessObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      RemoveObserver(this);
 }
 
 void TrayBrightness::GetInitialBrightness() {
@@ -156,7 +160,7 @@ void TrayBrightness::GetInitialBrightness() {
 
 void TrayBrightness::HandleInitialBrightness(double percent) {
   if (!got_current_percent_)
-    OnBrightnessChanged(percent, false);
+    HandleBrightnessChanged(percent, false);
 }
 
 views::View* TrayBrightness::CreateTrayView(user::LoginStatus status) {
@@ -198,7 +202,13 @@ bool TrayBrightness::ShouldShowLauncher() const {
   return false;
 }
 
-void TrayBrightness::OnBrightnessChanged(double percent, bool user_initiated) {
+void TrayBrightness::BrightnessChanged(int level, bool user_initiated) {
+  double percent = static_cast<double>(level);
+  HandleBrightnessChanged(percent, user_initiated);
+}
+
+void TrayBrightness::HandleBrightnessChanged(double percent,
+                                             bool user_initiated) {
   current_percent_ = percent;
   got_current_percent_ = true;
 

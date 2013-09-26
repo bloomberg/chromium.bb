@@ -25,7 +25,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
-#include "chrome/browser/ui/ash/brightness_controller_chromeos.h"
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chromeos/chromeos_switches.h"
@@ -64,9 +63,6 @@ void OpenAsh() {
   shell->accelerator_controller()->SetScreenshotDelegate(
       scoped_ptr<ash::ScreenshotDelegate>(new ScreenshotTaker).Pass());
 #if defined(OS_CHROMEOS)
-  shell->accelerator_controller()->SetBrightnessControlDelegate(
-      scoped_ptr<ash::BrightnessControlDelegate>(
-          new BrightnessController).Pass());
   shell->accelerator_controller()->SetImeControlDelegate(
       scoped_ptr<ash::ImeControlDelegate>(new ImeController).Pass());
   ash::Shell::GetInstance()->high_contrast_controller()->SetEnabled(

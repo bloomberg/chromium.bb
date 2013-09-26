@@ -227,8 +227,6 @@
         'browser/ui/ash/caps_lock_delegate_chromeos.h',
         'browser/ui/ash/caps_lock_delegate_views.cc',
         'browser/ui/ash/caps_lock_delegate_views.h',
-        'browser/ui/ash/brightness_controller_chromeos.cc',
-        'browser/ui/ash/brightness_controller_chromeos.h',
         'browser/ui/ash/chrome_launcher_prefs.cc',
         'browser/ui/ash/chrome_launcher_prefs.h',
         'browser/ui/ash/chrome_shell_delegate.cc',

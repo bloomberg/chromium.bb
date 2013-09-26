@@ -17,7 +17,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
-#include "ash/system/brightness/brightness_observer.h"
 #include "ash/system/chromeos/network/network_connect.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/drive/drive_observer.h"
@@ -87,11 +86,8 @@
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
@@ -318,14 +314,12 @@ bool EnrollNetwork(const std::string& service_path,
 }
 
 class SystemTrayDelegate : public ash::SystemTrayDelegate,
-                           public PowerManagerClient::Observer,
                            public SessionManagerClient::Observer,
                            public drive::JobListObserver,
                            public content::NotificationObserver,
                            public input_method::InputMethodManager::Observer,
                            public system::TimezoneSettings::Observer,
                            public chromeos::LoginState::Observer,
-                           public chromeos::SystemClockClient::Observer,
                            public device::BluetoothAdapter::Observer,
                            public SystemKeyEventListener::CapsLockObserver,
                            public policy::CloudPolicyStore::Observer,
@@ -377,14 +371,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void Initialize() OVERRIDE {
-    DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
     DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
 
     input_method::InputMethodManager::Get()->AddObserver(this);
     UpdateClockType();
 
     system::TimezoneSettings::GetInstance()->AddObserver(this);
-    DBusThreadManager::Get()->GetSystemClockClient()->AddObserver(this);
 
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
@@ -443,8 +435,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     registrar_.reset();
 
     DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
-    DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
-    DBusThreadManager::Get()->GetSystemClockClient()->RemoveObserver(this);
     input_method::InputMethodManager::Get()->RemoveObserver(this);
     system::TimezoneSettings::GetInstance()->RemoveObserver(this);
     if (SystemKeyEventListener::GetInstance())
@@ -1089,17 +1079,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     UpdateClockType();
   }
 
-  // Overridden from PowerManagerClient::Observer.
-  virtual void BrightnessChanged(int level, bool user_initiated) OVERRIDE {
-    double leveld = static_cast<double>(level);
-    GetSystemTrayNotifier()->NotifyBrightnessChanged(leveld, user_initiated);
-  }
-
-  // Overridden from PowerManagerClient::Observer:
-  virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE {
-    GetSystemTrayNotifier()->NotifyRefreshClock();
-  }
-
   // Overridden from SessionManagerClient::Observer.
   virtual void LockScreen() OVERRIDE {
     screen_locked_ = true;
@@ -1112,8 +1091,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
         GetUserLoginStatus());
   }
-
-  // TODO(sad): Override more from PowerManagerClient::Observer here.
 
   gfx::NativeWindow GetNativeWindow() const {
     bool session_started = ash::Shell::GetInstance()->session_state_delegate()
@@ -1250,11 +1227,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // Overridden from system::TimezoneSettings::Observer.
   virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE {
     GetSystemTrayNotifier()->NotifyRefreshClock();
-  }
-
-  // Overridden from SystemClockClient::Observer.
-  virtual void SystemClockUpdated() OVERRIDE {
-    GetSystemTrayNotifier()->NotifySystemClockTimeUpdated();
   }
 
   // Overridden from BluetoothAdapter::Observer.

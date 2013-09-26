@@ -39,6 +39,10 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/system/chromeos/system_clock_observer.h"
+#endif
+
 namespace {
 
 const int kPaddingVertical = 19;
@@ -141,6 +145,9 @@ namespace internal {
 TrayDate::TrayDate(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       time_tray_(NULL) {
+#if defined(OS_CHROMEOS)
+  system_clock_observer_.reset(new SystemClockObserver());
+#endif
   Shell::GetInstance()->system_tray_notifier()->AddClockObserver(this);
 }
 

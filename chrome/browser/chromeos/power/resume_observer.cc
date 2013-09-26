@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/power/resume_observer.h"
 
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "chrome/browser/extensions/api/system_private/system_private_api.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/display/output_configurator.h"
@@ -22,6 +23,7 @@ ResumeObserver::~ResumeObserver() {
 void ResumeObserver::SystemResumed(const base::TimeDelta& sleep_duration) {
   extensions::DispatchWokeUpEvent();
   ash::Shell::GetInstance()->output_configurator()->ResumeDisplays();
+  ash::Shell::GetInstance()->system_tray_notifier()->NotifyRefreshClock();
 }
 
 }  // namespace chromeos

@@ -7,6 +7,7 @@
 
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace views {
 class Label;
@@ -14,6 +15,10 @@ class Label;
 
 namespace ash {
 namespace internal {
+
+#if defined(OS_CHROMEOS)
+class SystemClockObserver;
+#endif
 
 namespace tray {
 class TimeView;
@@ -49,6 +54,10 @@ class TrayDate : public SystemTrayItem,
   void SetupLabelForTimeTray(views::Label* label);
 
   tray::TimeView* time_tray_;
+
+#if defined(OS_CHROMEOS)
+  scoped_ptr<SystemClockObserver> system_clock_observer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TrayDate);
 };

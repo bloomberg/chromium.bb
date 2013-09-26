@@ -37,15 +37,6 @@ void SystemTrayNotifier::RemoveBluetoothObserver(BluetoothObserver* observer) {
   bluetooth_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::AddBrightnessObserver(BrightnessObserver* observer) {
-  brightness_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveBrightnessObserver(
-    BrightnessObserver* observer) {
-  brightness_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddCapsLockObserver(CapsLockObserver* observer) {
   caps_lock_observers_.AddObserver(observer);
 }
@@ -196,14 +187,6 @@ void SystemTrayNotifier::NotifyBluetoothDiscoveringChanged() {
   FOR_EACH_OBSERVER(BluetoothObserver,
                     bluetooth_observers_,
                     OnBluetoothDiscoveringChanged());
-}
-
-void SystemTrayNotifier::NotifyBrightnessChanged(double level,
-                                                 bool user_initiated) {
-  FOR_EACH_OBSERVER(
-      BrightnessObserver,
-      brightness_observers_,
-      OnBrightnessChanged(level, user_initiated));
 }
 
 void SystemTrayNotifier::NotifyCapsLockChanged(

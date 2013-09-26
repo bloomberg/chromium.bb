@@ -10,7 +10,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
-#include "ash/system/brightness/brightness_observer.h"
 #include "ash/system/chromeos/tray_tracing.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/drive/drive_observer.h"
@@ -47,9 +46,6 @@ public:
 
   void AddBluetoothObserver(BluetoothObserver* observer);
   void RemoveBluetoothObserver(BluetoothObserver* observer);
-
-  void AddBrightnessObserver(BrightnessObserver* observer);
-  void RemoveBrightnessObserver(BrightnessObserver* observer);
 
   void AddCapsLockObserver(CapsLockObserver* observer);
   void RemoveCapsLockObserver(CapsLockObserver* observer);
@@ -100,7 +96,6 @@ public:
   void NotifyTracingModeChanged(bool value);
   void NotifyRefreshBluetooth();
   void NotifyBluetoothDiscoveringChanged();
-  void NotifyBrightnessChanged(double level, bool user_initialted);
   void NotifyCapsLockChanged(bool enabled, bool search_mapped_to_caps_lock);
   void NotifyRefreshClock();
   void NotifyDateFormatChanged();
@@ -134,7 +129,6 @@ public:
  private:
   ObserverList<AccessibilityObserver> accessibility_observers_;
   ObserverList<BluetoothObserver> bluetooth_observers_;
-  ObserverList<BrightnessObserver> brightness_observers_;
   ObserverList<CapsLockObserver> caps_lock_observers_;
   ObserverList<ClockObserver> clock_observers_;
   ObserverList<DriveObserver> drive_observers_;

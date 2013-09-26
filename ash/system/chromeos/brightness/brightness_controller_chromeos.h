@@ -1,20 +1,25 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_BRIGHTNESS_CONTROLLER_CHROMEOS_H_
-#define CHROME_BROWSER_UI_ASH_BRIGHTNESS_CONTROLLER_CHROMEOS_H_
+#ifndef ASH_SYSTEM_CHROMEOS_BRIGHTNESS_BRIGHTNESS_CONTROLLER_CHROMEOS_H_
+#define ASH_SYSTEM_CHROMEOS_BRIGHTNESS_BRIGHTNESS_CONTROLLER_CHROMEOS_H_
 
-#include "ash/system/brightness/brightness_control_delegate.h"
+#include "ash/ash_export.h"
+#include "ash/system/brightness_control_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
+namespace ash {
+namespace system {
+
 // A class which controls brightness when F6, F7 or a multimedia key for
 // brightness is pressed.
-class BrightnessController : public ash::BrightnessControlDelegate {
+class ASH_EXPORT BrightnessControllerChromeos
+    : public ash::BrightnessControlDelegate {
  public:
-  BrightnessController() {}
-  virtual ~BrightnessController() {}
+  BrightnessControllerChromeos() {}
+  virtual ~BrightnessControllerChromeos() {}
 
   // Overridden from ash::BrightnessControlDelegate:
   virtual bool HandleBrightnessDown(
@@ -25,7 +30,10 @@ class BrightnessController : public ash::BrightnessControlDelegate {
       const base::Callback<void(double)>& callback) OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BrightnessController);
+  DISALLOW_COPY_AND_ASSIGN(BrightnessControllerChromeos);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_BRIGHTNESS_CONTROLLER_CHROMEOS_H_
+}  // namespace system
+}  // namespace ash
+
+#endif  // ASH_SYSTEM_CHROMEOS_BRIGHTNESS_BRIGHTNESS_CONTROLLER_CHROMEOS_H_

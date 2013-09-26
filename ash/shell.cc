@@ -119,6 +119,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "gpu/config/gpu_feature_type.h"
 #endif  // defined(USE_X11)
+#include "ash/system/chromeos/brightness/brightness_controller_chromeos.h"
 #include "ash/system/chromeos/power/power_status.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -584,6 +585,13 @@ void Shell::Init() {
     // Let the first mouse event show the cursor.
     env_filter_->set_cursor_hidden_by_filter(true);
   }
+
+  // Set accelerator controller delegates.
+#if defined(OS_CHROMEOS)
+  accelerator_controller_->SetBrightnessControlDelegate(
+      scoped_ptr<ash::BrightnessControlDelegate>(
+          new ash::system::BrightnessControllerChromeos).Pass());
+#endif
 
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop

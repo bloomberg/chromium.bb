@@ -21,30 +21,12 @@
 
 namespace ash {
 
-class AccessibilityObserver;
-class AudioObserver;
-class BluetoothObserver;
-class BrightnessObserver;
-class CapsLockObserver;
-class ClockObserver;
-class DriveObserver;
-class IMEObserver;
-class LocaleObserver;
-class LogoutButtonObserver;
 class SystemTrayDelegate;
-class UpdateObserver;
-class UserObserver;
-#if defined(OS_CHROMEOS)
-class NetworkObserver;
-#endif
-
 class SystemTrayItem;
 
 namespace internal {
 class SystemBubbleWrapper;
-class SystemTrayContainer;
 class TrayAccessibility;
-class TrayGestureHandler;
 }
 
 // There are different methods for creating bubble views.
