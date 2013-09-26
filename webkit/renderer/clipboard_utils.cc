@@ -25,7 +25,7 @@ std::string URLToMarkup(const WebKit::WebURL& url,
 std::string URLToImageMarkup(const WebKit::WebURL& url,
                              const WebKit::WebString& title) {
   std::string markup("<img src=\"");
-  markup.append(url.spec());
+  markup.append(net::EscapeForHTML(url.spec()));
   markup.append("\"");
   if (!title.isEmpty()) {
     markup.append(" alt=\"");
