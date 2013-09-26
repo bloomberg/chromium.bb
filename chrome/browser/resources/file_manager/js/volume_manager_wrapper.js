@@ -67,12 +67,6 @@ VolumeManagerWrapper.prototype.onReady_ = function(volumeManager) {
       'drive-connection-changed', this.onEventBound_);
   this.volumeManager_.addEventListener(
       'drive-status-changed', this.onEventBound_);
-
-  // TODO(hidehiko): 'change' event is used only for updating rootsList in
-  // directoryModel. By migrating rootsList to
-  // VolumeManagerWrapper.volumeInfoList, we should be able to remove the
-  // event completely.
-  this.volumeManager_.addEventListener('change', this.onEventBound_);
   this.volumeManager_.addEventListener(
       'externally-unmounted', this.onEventBound_);
 

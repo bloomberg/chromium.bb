@@ -1070,7 +1070,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.metadataCache_,
         this.volumeManager_,
         showSpecialSearchRoots);
-    this.directoryModel_.start();
 
     this.folderShortcutsModel_ = new FolderShortcutsDataModel();
 

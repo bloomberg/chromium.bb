@@ -541,8 +541,6 @@ VolumeManager.prototype.initMountPoints_ = function() {
 
       // Notify event listeners that the initialization is done.
       cr.dispatchSimpleEvent(this, 'ready');
-      if (mountPointList.length > 0)
-        cr.dispatchSimpleEvent(self, 'change');
     }.bind(this));
   }.bind(this));
 };
@@ -563,7 +561,6 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
           event.volumeType, event.mountPath, error, function(volume) {
             this.volumeInfoList.add(volume);
             this.finishRequest_(requestKey, event.status, event.mountPath);
-            cr.dispatchSimpleEvent(this, 'change');
 
             // For mounting Drive File System, we need to update some
             // VolumeManager's state.
@@ -606,7 +603,6 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
 
     if (event.status == 'success') {
       this.volumeInfoList.remove(mountPath);
-      cr.dispatchSimpleEvent(this, 'change');
 
       if (event.volumeType == 'drive')
         this.setDriveStatus_(VolumeManager.DriveStatus.UNMOUNTED);

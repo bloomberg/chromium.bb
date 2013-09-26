@@ -10,79 +10,6 @@ var SIMULTANEOUS_RESCAN_INTERVAL = 1000;
 // Used for operations that require almost instant rescan.
 var SHORT_RESCAN_INTERVAL = 100;
 
-function DirectoryModelUtil() {}
-
-/**
- * Returns root entries asynchronously.
- * @param {DirectoryEntry} root The root entry of the whole file system.
- * @param {boolean} isDriveEnabled True if the drive is enabled.
- * @param {function(Array.<Entry>)} completionCallback Called when roots are
- *     resolved.
- */
-DirectoryModelUtil.resolveRoots = function(
-    root, isDriveEnabled, completionCallback) {
-  var rootEntryGroup = {
-    drive: [],
-    downloads: [],
-    archives: [],
-    removables: []
-  };
-
-  // Add the entry at path as a root.
-  var addRootEntry = function(absolutePath, key, callback) {
-    root.getDirectory(
-        absolutePath.substring(1),  // Remove the leading '/'.
-        {create: false},
-        function(entry) {
-          rootEntryGroup[key] = [entry];
-          callback();
-        },
-        function(error) {
-          console.error('Error resolving ' + key + ' root dir: ' + error);
-          callback();
-        });
-  };
-
-  // Read the directory at path, and add all contained entries as roots.
-  var addRootEntryList = function(absolutePath, key, callback) {
-    util.readDirectory(
-        root,
-        absolutePath.substring(1),  // Remove the leading '/'.
-        function(entryList) {
-          rootEntryGroup[key] = entryList;
-          callback();
-        });
-  };
-
-  var group = new AsyncUtil.Group();
-
-  // Resolve the Drive root if enabled.
-  if (isDriveEnabled) {
-    group.add(addRootEntry.bind(
-        null, RootDirectory.DRIVE + '/' + DriveSubRootDirectory.ROOT, 'drive'));
-  }
-
-  // Resolve Download, Archives and Removables directories.
-  group.add(addRootEntry.bind(null, RootDirectory.DOWNLOADS, 'downloads'));
-  group.add(addRootEntryList.bind(null, RootDirectory.ARCHIVE, 'archives'));
-  group.add(addRootEntryList.bind(
-      null, RootDirectory.REMOVABLE, 'removables'));
-
-  group.run(function() {
-    if (!rootEntryGroup.drive && isDriveEnabled) {
-      // Drive is enabled, but not available. Use the fake entry here.
-      rootEntryGroup.drive = [DirectoryModel.fakeDriveEntry_];
-    }
-
-    // Concat the result in the order.
-    completionCallback([].concat(
-        rootEntryGroup.drive,
-        rootEntryGroup.downloads,
-        rootEntryGroup.archives,
-        rootEntryGroup.removables));
-  });
-};
-
 /**
  * Data model of the file manager.
  *
@@ -119,10 +46,9 @@ function DirectoryModel(root, singleSelection, fileFilter, fileWatcher,
   this.currentDirContents_ = new DirectoryContentsBasic(
       this.currentFileListContext_, root);
 
-  // TODO(hidehiko): Move this variable to VolumeManager.
-  this.rootsList_ = new cr.ui.ArrayDataModel([]);
-  this.taskQueue_ = new AsyncUtil.Queue();
   this.volumeManager_ = volumeManager;
+  this.volumeManager_.volumeInfoList.addEventListener(
+      'splice', this.onVolumeInfoListUpdated_.bind(this));
 
   this.fileWatcher_ = fileWatcher;
   this.fileWatcher_.addEventListener(
@@ -199,22 +125,6 @@ DirectoryModel.FAKE_DRIVE_SPECIAL_SEARCH_ENTRIES = [
  * DirectoryModel extends cr.EventTarget.
  */
 DirectoryModel.prototype.__proto__ = cr.EventTarget.prototype;
-
-/**
- * Fills the root list and starts tracking changes.
- */
-DirectoryModel.prototype.start = function() {
-  // TODO(hidehiko): Integrate these callback into VolumeManager.
-  this.volumeManager_.addEventListener(
-      'change',
-      this.taskQueue_.run.bind(
-          this.taskQueue_, this.onMountChanged_.bind(this)));
-  this.volumeManager_.addEventListener(
-      'drive-status-changed',
-      this.taskQueue_.run.bind(
-          this.taskQueue_, this.onDriveStatusChanged_.bind(this)));
-  this.taskQueue_.run(this.updateRoots_.bind(this));
-};
 
 /**
  * Disposes the directory model by removing file watchers.
@@ -492,13 +402,6 @@ DirectoryModel.prototype.setLeadPath_ = function(value) {
       return;
     }
   }
-};
-
-/**
- * @return {cr.ui.ArrayDataModel} The list of roots.
- */
-DirectoryModel.prototype.getRootsList = function() {
-  return this.rootsList_;
 };
 
 /**
@@ -1131,93 +1034,48 @@ DirectoryModel.prototype.selectIndex = function(index) {
 };
 
 /**
- * Updates the roots list.
+ * Called when VolumeInfoList is updated.
  *
- * @param {function()=} opt_callback Completion callback.
+ * @param {cr.Event} event Event of VolumeInfoList's 'sclice'.
  * @private
  */
-DirectoryModel.prototype.updateRoots_ = function(opt_callback) {
-  metrics.startInterval('Load.Roots');
-  DirectoryModelUtil.resolveRoots(
-      this.root_, !!this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE),
-      function(rootEntries) {
-        metrics.recordInterval('Load.Roots');
-
-        var rootsList = this.rootsList_;
-        rootsList.splice.apply(
-            rootsList, [0, rootsList.length].concat(rootEntries));
-        if (opt_callback)
-          opt_callback();
-      }.bind(this));
-};
-
-/**
- * Handler for the VolumeManager's 'change' event.
- *
- * @param {function()} callback Completion callback.
- * @private
- */
-DirectoryModel.prototype.onMountChanged_ = function(callback) {
-  this.updateRoots_(function() {
-    var rootPath = this.getCurrentRootPath();
-    var rootType = PathUtil.getRootType(rootPath);
-
-    // If the path is on drive, reduce to the Drive's mount point.
-    if (rootType == RootType.DRIVE)
-      rootPath = RootDirectory.DRIVE;
-
-    // When the volume where we are is unmounted, fallback to
-    // DEFAULT_DIRECTORY.
-    // Note: during the initialization, rootType can be undefined.
-    if (rootType && !this.volumeManager_.getVolumeInfo(rootPath))
-      this.changeDirectory(PathUtil.DEFAULT_DIRECTORY);
-
-    callback();
-  }.bind(this));
-};
-
-/**
- * Handler for the VolumeManager's 'drive-status-changed' event.
- *
- * @param {function()} callback Completion callback.
- * @private
- */
-DirectoryModel.prototype.onDriveStatusChanged_ = function(callback) {
-  this.updateRoots_(function() {
+DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
+  var driveVolume = this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE);
+  if (driveVolume && !driveVolume.error) {
     var currentDirEntry = this.getCurrentDirEntry();
-    var driveVolume = this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE);
-    if (driveVolume && !driveVolume.error) {
-      if (currentDirEntry == DirectoryModel.fakeDriveEntry_) {
-        // Replace the fake entry by real DirectoryEntry silently.
-        for (var i = 0; i < this.rootsList_.length; i++) {
-          if (this.rootsList_.item(i).fullPath ==
-              DirectoryModel.fakeDriveEntry_.fullPath) {
-            this.changeDirectoryEntrySilent_(this.rootsList_.item(i));
-            break;
-          }
+    if (currentDirEntry === DirectoryModel.fakeDriveEntry_) {
+      // Replace the fake entry by real DirectoryEntry silently.
+      this.volumeManager_.resolvePath(
+          DirectoryModel.fakeDriveEntry_.fullPath,
+          function(entry) {
+            // If the current entry is still fake drive entry, replace it.
+            if (this.getCurrentDirEntry() === DirectoryModel.fakeDriveEntry_)
+              this.changeDirectoryEntrySilent_(entry);
+          },
+          function(error) {});
+    } else if (PathUtil.isSpecialSearchRoot(currentDirEntry.fullPath)) {
+      for (var i = 0; i < event.added.length; i++) {
+        if (event.added[i].volumeType == VolumeManager.VolumeType.DRIVE) {
+          // If the Drive volume is newly mounted, rescan it.
+          this.rescan();
+          break;
         }
-      } else if (PathUtil.isSpecialSearchRoot(currentDirEntry.fullPath)) {
-        this.rescan();
-      }
-    } else {
-      // TODO(hidehiko): Conceptually, fakeDriveEntry should be a trick to
-      // initialize Drive file system mounting state lazily. So, moving back
-      // to the fakeDriveEntry sounds weird state. Disabling the Drive File
-      // System should be handled as same as other file systems (such as
-      // unmounting zip-archive, disconnecting USB flush storage, etc.).
-      // The handling code is here due to historical reason. Clean this up.
-      if (currentDirEntry.fullPath == DirectoryModel.fakeDriveEntry_.fullPath) {
-        // Replace silently and rescan.
-        this.changeDirectoryEntrySilent_(DirectoryModel.fakeDriveEntry_);
-      } else if (PathUtil.isDriveBasedPath(currentDirEntry.fullPath)) {
-        // Now, Drive file system is unmounted. Go back to the fake Drive
-        // entry.
-        this.changeDirectoryEntry_(DirectoryModel.fakeDriveEntry_);
       }
     }
+  }
 
-    callback();
-  }.bind(this));
+  var rootPath = this.getCurrentRootPath();
+  var rootType = PathUtil.getRootType(rootPath);
+
+  // If the path is on drive, reduce to the Drive's mount point.
+  if (rootType === RootType.DRIVE)
+    rootPath = RootDirectory.DRIVE;
+
+  // When the volume where we are is unmounted, fallback to
+  // DEFAULT_DIRECTORY.
+  // Note: during the initialization, rootType can be undefined.
+  if (rootType && !this.volumeManager_.getVolumeInfo(rootPath))
+    this.changeDirectory(PathUtil.DEFAULT_DIRECTORY);
 };
 
 /**
