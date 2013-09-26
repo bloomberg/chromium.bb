@@ -866,6 +866,9 @@ bool TabsQueryFunction::RunImpl() {
   }
 
   base::ListValue* result = new base::ListValue();
+  Browser* last_active_browser = chrome::FindAnyBrowser(
+      profile(), include_incognito(), chrome::GetActiveDesktop());
+  Browser* current_browser = GetCurrentBrowser();
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     Browser* browser = *it;
     if (!profile()->IsSameProfile(browser->profile()))
@@ -881,17 +884,17 @@ bool TabsQueryFunction::RunImpl() {
       continue;
 
     if (window_id == extension_misc::kCurrentWindowId &&
-        browser != GetCurrentBrowser()) {
+        browser != current_browser) {
       continue;
     }
 
     if (!MatchesBool(params->query_info.current_window.get(),
-                     browser == GetCurrentBrowser())) {
+                     browser == current_browser)) {
       continue;
     }
 
     if (!MatchesBool(params->query_info.last_focused_window.get(),
-                     browser->window()->IsActive())) {
+                     browser == last_active_browser)) {
       continue;
     }
 
