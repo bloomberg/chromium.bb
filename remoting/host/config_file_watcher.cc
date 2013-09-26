@@ -24,9 +24,11 @@ const char kHostConfigSwitchName[] = "host-config";
 const base::FilePath::CharType kDefaultHostConfigFile[] =
     FILE_PATH_LITERAL("host.json");
 
+#if defined(OS_WIN)
 // Maximum number of times to try reading the configuration file before
 // reporting an error.
 const int kMaxRetries = 3;
+#endif  // defined(OS_WIN)
 
 class ConfigFileWatcherImpl
     : public base::RefCountedThreadSafe<ConfigFileWatcherImpl> {

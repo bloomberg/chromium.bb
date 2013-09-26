@@ -28,9 +28,6 @@ namespace captive_portal {
 
 namespace {
 
-// A short amount of time that some tests wait for.
-const int kShortTimeMs = 10;
-
 // An observer watches the CaptivePortalDetector.  It tracks the last
 // received result and the total number of received results.
 class CaptivePortalObserver : public content::NotificationObserver {

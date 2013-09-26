@@ -25,10 +25,6 @@
 #include "encodings/compact_lang_det/win/cld_commandlineflags.h"
 #include "encodings/compact_lang_det/win/cld_google.h"
 
-DEFINE_bool(html, false, "Print language spans in HTML on stderr");
-DEFINE_bool(detail, false, "Print incoming text to stderr");
-DEFINE_bool(skipbig, false, "Skip BigInputTests");
-
 // Test strings.
 // These are all included here to make the unit test self-contained.
 const char* kTeststr_en =

@@ -11,9 +11,7 @@
 
 const char kOsVersion[] = "10.6.4";
 const uint32 kIntelVendorId = 0x8086;
-const uint32 kIntelDeviceId = 0x0166;  // 3rd Gen Core Graphics
 const uint32 kNvidiaVendorId = 0x10de;
-const uint32 kNvidiaDeviceId = 0x0fd5;  // GeForce GT 650M
 
 #define LONG_STRING_CONST(...) #__VA_ARGS__
 

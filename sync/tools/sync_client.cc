@@ -64,7 +64,6 @@ const char kXmppHostPortSwitch[] = "xmpp-host-port";
 const char kXmppTrySslTcpFirstSwitch[] = "xmpp-try-ssltcp-first";
 const char kXmppAllowInsecureConnectionSwitch[] =
     "xmpp-allow-insecure-connection";
-const char kNotificationMethodSwitch[] = "notification-method";
 
 // Needed to use a real host resolver.
 class MyTestURLRequestContext : public net::TestURLRequestContext {

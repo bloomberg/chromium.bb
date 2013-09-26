@@ -33,9 +33,6 @@ namespace {
 // the time.
 const CGFloat kWidth(300.0);
 
-// A narrow width for tests which test things that don't fit.
-const CGFloat kNarrowWidth(5.0);
-
 class MockDecoration : public LocationBarDecoration {
  public:
   virtual CGFloat GetWidthForSpace(CGFloat width) { return 20.0; }

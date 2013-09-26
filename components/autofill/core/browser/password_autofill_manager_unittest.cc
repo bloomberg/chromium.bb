@@ -7,19 +7,13 @@
 #include "components/autofill/core/browser/password_autofill_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
 // The name of the username/password element in the form.
-const char* const kUsernameName = "username";
-const char* const kInvalidUsername = "no-username";
-const char* const kPasswordName = "password";
+const char kUsernameName[] = "username";
+const char kInvalidUsername[] = "no-username";
+const char kPasswordName[] = "password";
 
-const char* const kAliceUsername = "alice";
-const char* const kAlicePassword = "password";
-
-const char* const kValue = "password";
-
-}  // namespace
+const char kAliceUsername[] = "alice";
+const char kAlicePassword[] = "password";
 
 namespace autofill {
 

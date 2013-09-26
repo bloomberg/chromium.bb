@@ -21,51 +21,55 @@ using testing::AtMost;
 
 namespace media {
 
-static const char kSourceId[] = "SourceId";
-static const char kClearKeySystem[] = "org.w3.clearkey";
-static const uint8 kInitData[] = { 0x69, 0x6e, 0x69, 0x74 };
+const char kSourceId[] = "SourceId";
+const uint8 kInitData[] = { 0x69, 0x6e, 0x69, 0x74 };
 
-static const char kWebM[] = "video/webm; codecs=\"vp8,vorbis\"";
-static const char kWebMVP9[] = "video/webm; codecs=\"vp9\"";
-static const char kAudioOnlyWebM[] = "video/webm; codecs=\"vorbis\"";
-static const char kOpusAudioOnlyWebM[] = "video/webm; codecs=\"opus\"";
-static const char kVideoOnlyWebM[] = "video/webm; codecs=\"vp8\"";
-static const char kMP4[] = "video/mp4; codecs=\"avc1.4D4041,mp4a.40.2\"";
-static const char kMP4Video[] = "video/mp4; codecs=\"avc1.4D4041\"";
-static const char kMP4Audio[] = "audio/mp4; codecs=\"mp4a.40.2\"";
-static const char kMP4AudioType[] = "audio/mp4";
-static const char kMP4VideoType[] = "video/mp4";
-static const char kMP3[] = "audio/mpeg";
+const char kWebM[] = "video/webm; codecs=\"vp8,vorbis\"";
+const char kWebMVP9[] = "video/webm; codecs=\"vp9\"";
+const char kAudioOnlyWebM[] = "video/webm; codecs=\"vorbis\"";
+const char kOpusAudioOnlyWebM[] = "video/webm; codecs=\"opus\"";
+const char kVideoOnlyWebM[] = "video/webm; codecs=\"vp8\"";
+const char kMP4VideoType[] = "video/mp4";
+const char kMP4AudioType[] = "audio/mp4";
+#if defined(USE_PROPRIETARY_CODECS)
+const char kMP4[] = "video/mp4; codecs=\"avc1.4D4041,mp4a.40.2\"";
+const char kMP4Video[] = "video/mp4; codecs=\"avc1.4D4041\"";
+const char kMP4Audio[] = "audio/mp4; codecs=\"mp4a.40.2\"";
+const char kMP3[] = "audio/mpeg";
+#endif  // defined(USE_PROPRIETARY_CODECS)
 
 // Key used to encrypt test files.
-static const uint8 kSecretKey[] = {
+const uint8 kSecretKey[] = {
   0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
   0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c
 };
 
 // The key ID for all encrypted files.
-static const uint8 kKeyId[] = {
+const uint8 kKeyId[] = {
   0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
   0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35
 };
 
-static const int kAppendWholeFile = -1;
+const int kAppendWholeFile = -1;
 
 // Constants for the Media Source config change tests.
-static const int kAppendTimeSec = 1;
-static const int kAppendTimeMs = kAppendTimeSec * 1000;
-static const int k320WebMFileDurationMs = 2737;
-static const int k640WebMFileDurationMs = 2763;
-static const int k640IsoFileDurationMs = 2737;
-static const int k640IsoCencFileDurationMs = 2736;
-static const int k1280IsoFileDurationMs = 2736;
-static const int kOpusEndTrimmingWebMFileDurationMs = 2771;
-static const uint32 kOpusEndTrimmingWebMFileAudioBytes = 528676;
-static const int kVP9WebMFileDurationMs = 2735;
-static const int kVP8AWebMFileDurationMs = 2700;
+const int kAppendTimeSec = 1;
+const int kAppendTimeMs = kAppendTimeSec * 1000;
+const int k320WebMFileDurationMs = 2737;
+const int k640WebMFileDurationMs = 2763;
+const int kOpusEndTrimmingWebMFileDurationMs = 2771;
+const uint32 kOpusEndTrimmingWebMFileAudioBytes = 528676;
+const int kVP9WebMFileDurationMs = 2735;
+const int kVP8AWebMFileDurationMs = 2700;
 
 // Command line switch for runtime adjustment of audio file to be benchmarked.
-static const char kBenchmarkAudioFile[] = "benchmark-audio-file";
+const char kBenchmarkAudioFile[] = "benchmark-audio-file";
+
+#if defined(USE_PROPRIETARY_CODECS)
+const int k640IsoFileDurationMs = 2737;
+const int k640IsoCencFileDurationMs = 2736;
+const int k1280IsoFileDurationMs = 2736;
+#endif  // defined(USE_PROPRIETARY_CODECS)
 
 // Note: Tests using this class only exercise the DecryptingDemuxerStream path.
 // They do not exercise the Decrypting{Audio|Video}Decoder path.

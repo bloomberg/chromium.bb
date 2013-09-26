@@ -10,8 +10,6 @@
 #include "gpu/config/gpu_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-const char kOsVersion[] = "10.6.4";
-
 namespace gpu {
 
 class GpuDriverBugListTest : public testing::Test {

@@ -15,7 +15,6 @@ const int kAddChunk4 = 7;
 // Disjoint chunk numbers for subs to flush out typos.
 const int kSubChunk1 = 2;
 const int kSubChunk2 = 4;
-const int kSubChunk3 = 6;
 
 const SBFullHash kHash1 = SBFullHashFromString("one");
 const SBFullHash kHash2 = SBFullHashFromString("two");

@@ -27,11 +27,10 @@ using history::VisitVector;
 namespace {
 
 // Constants used to limit size of visits processed.
-static const int kMaxTypedUrlVisits = 100;
-static const int kMaxVisitsToFetch = 1000;
+const int kMaxTypedUrlVisits = 100;
 
 // Visits with this timestamp are treated as expired.
-static const int EXPIRED_VISIT = -1;
+const int EXPIRED_VISIT = -1;
 
 // TestChangeProcessor --------------------------------------------------------
 

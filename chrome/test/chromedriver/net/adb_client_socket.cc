@@ -18,7 +18,6 @@
 namespace {
 
 const int kBufferSize = 16 * 1024;
-const int kResponseBufferSize = 16;
 const char kOkayResponse[] = "OKAY";
 const char kHostTransportCommand[] = "host:transport:%s";
 const char kLocalAbstractCommand[] = "localabstract:%s";

@@ -19,7 +19,7 @@
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
 #include "base/basictypes.h"
-static const int64 kNoTimestamp = kint64min;
+const int64 kNoTimestamp = kint64min;
 #endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
@@ -59,15 +59,14 @@ static bool InitializeFFmpegLibraries() {
 static bool g_ffmpeg_lib_initialized = InitializeFFmpegLibraries();
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 
-static const char kClearKeyCdmVersion[] = "0.1.0.1";
-static const char kExternalClearKey[] = "org.chromium.externalclearkey";
-static const int64 kSecondsPerMinute = 60;
-static const int64 kMsPerSecond = 1000;
-static const int64 kInitialTimerDelayMs = 200;
-static const int64 kMaxTimerDelayMs = 1 * kSecondsPerMinute * kMsPerSecond;
+const char kClearKeyCdmVersion[] = "0.1.0.1";
+const int64 kSecondsPerMinute = 60;
+const int64 kMsPerSecond = 1000;
+const int64 kInitialTimerDelayMs = 200;
+const int64 kMaxTimerDelayMs = 1 * kSecondsPerMinute * kMsPerSecond;
 // Heart beat message header. If a key message starts with |kHeartBeatHeader|,
 // it's a heart beat message. Otherwise, it's a key request.
-static const char kHeartBeatHeader[] = "HEARTBEAT";
+const char kHeartBeatHeader[] = "HEARTBEAT";
 
 // Copies |input_buffer| into a media::DecoderBuffer. If the |input_buffer| is
 // empty, an empty (end-of-stream) media::DecoderBuffer is returned.

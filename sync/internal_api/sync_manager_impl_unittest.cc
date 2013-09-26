@@ -96,8 +96,6 @@ using syncable::kEncryptedString;
 
 namespace {
 
-const char kTestChromeVersion[] = "test chrome version";
-
 void ExpectInt64Value(int64 expected_value,
                       const base::DictionaryValue& value,
                       const std::string& key) {

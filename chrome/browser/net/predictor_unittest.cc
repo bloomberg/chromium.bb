@@ -312,8 +312,6 @@ static void AddToSerializedList(const GURL& motivation,
   subresource_list->Append(new base::FundamentalValue(use_rate));
 }
 
-static const int kLatencyNotFound = -1;
-
 // For a given motivation, and subresource, find what latency is currently
 // listed.  This assume a well formed serialization, which has at most one such
 // entry for any pair of names.  If no such pair is found, then return false.

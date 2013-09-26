@@ -81,16 +81,15 @@
 
 namespace chrome {
 
-static const char kPrefixedClearKey[] = "webkit-org.w3.clearkey";
-static const char kPrefixedClearKeyParent[] = "webkit-org.w3";
+const char kPrefixedClearKey[] = "webkit-org.w3.clearkey";
+const char kPrefixedClearKeyParent[] = "webkit-org.w3";
 // TODO(ddorwin): Duplicate prefixed tests for unprefixed.
-static const char kUnprefixedClearKey[] = "org.w3.clearkey";
-static const char kUnprefixedClearKeyParent[] = "org.w3";
-static const char kExternalClearKey[] = "org.chromium.externalclearkey";
-static const char kWidevineAlpha[] = "com.widevine.alpha";
-static const char kWidevine[] = "com.widevine";
-static const char kWidevineAlphaHr[] = "com.widevine.alpha.hr";
-static const char kWidevineAlphaHrNonCompositing[] =
+const char kUnprefixedClearKey[] = "org.w3.clearkey";
+const char kExternalClearKey[] = "org.chromium.externalclearkey";
+const char kWidevineAlpha[] = "com.widevine.alpha";
+const char kWidevine[] = "com.widevine";
+const char kWidevineAlphaHr[] = "com.widevine.alpha.hr";
+const char kWidevineAlphaHrNonCompositing[] =
     "com.widevine.alpha.hrnoncompositing";
 
 class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {

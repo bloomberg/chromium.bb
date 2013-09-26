@@ -47,7 +47,6 @@ const char* const kInvalidURLs[] = {
 };
 
 // Internal packet sizes.
-const uint64_t kCloseFrameSize = 6;
 const uint64_t kMessageFrameOverhead = 6;
 
 namespace {

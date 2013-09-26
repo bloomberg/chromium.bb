@@ -49,20 +49,6 @@ namespace {
 
 const char kHTMLForGuest[] =
     "data:text/html,<html><body>hello world</body></html>";
-const char kHTMLForGuestBusyLoop[] =
-    "data:text/html,<html><head><script type=\"text/javascript\">"
-    "function PauseMs(timems) {"
-    "  document.title = \"start\";"
-    "  var date = new Date();"
-    "  var currDate = null;"
-    "  do {"
-    "    currDate = new Date();"
-    "  } while (currDate - date < timems)"
-    "}"
-    "function StartPauseMs(timems) {"
-    "  setTimeout(function() { PauseMs(timems); }, 0);"
-    "}"
-    "</script></head><body></body></html>";
 const char kHTMLForGuestTouchHandler[] =
     "data:text/html,<html><body><div id=\"touch\">With touch</div></body>"
     "<script type=\"text/javascript\">"

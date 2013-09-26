@@ -51,18 +51,13 @@ namespace em = enterprise_management;
 
 namespace policy {
 
-namespace {
-
 const char kDMToken[] = "dmtoken";
 const char kDeviceID[] = "deviceid";
 
 const char kTestExtension[] = "kjmkgkdkpedkejedfhmfcenooemhbpbo";
-const char kTestExtension2[] = "behllobkkfkfnphdnhnkndlbkcpglgmj";
 
 const base::FilePath::CharType kTestExtensionPath[] =
     FILE_PATH_LITERAL("extensions/managed_extension");
-const base::FilePath::CharType kTestExtension2Path[] =
-    FILE_PATH_LITERAL("extensions/managed_extension2");
 
 const char kTestPolicy[] =
     "{"
@@ -70,6 +65,11 @@ const char kTestPolicy[] =
     "    \"Value\": \"disable_all_the_things\""
     "  }"
     "}";
+
+#if defined(OS_CHROMEOS)
+const char kTestExtension2[] = "behllobkkfkfnphdnhnkndlbkcpglgmj";
+const base::FilePath::CharType kTestExtension2Path[] =
+    FILE_PATH_LITERAL("extensions/managed_extension2");
 
 const char kTestPolicyJSON[] = "{\"Name\":\"disable_all_the_things\"}";
 
@@ -81,8 +81,7 @@ const char kTestPolicy2[] =
     "}";
 
 const char kTestPolicy2JSON[] = "{\"Another\":\"turn_it_off\"}";
-
-}  // namespace
+#endif  // defined(OS_CHROMEOS)
 
 class ComponentCloudPolicyTest : public ExtensionBrowserTest {
  protected:

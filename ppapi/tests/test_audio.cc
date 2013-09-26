@@ -18,8 +18,6 @@
 
 REGISTER_TEST_CASE(Audio);
 
-const int32_t kMagicValue = 12345;
-
 TestAudio::TestAudio(TestingInstance* instance)
     : TestCase(instance),
       audio_callback_method_(NULL),

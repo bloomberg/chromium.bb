@@ -15,9 +15,6 @@ using ::testing::_;
 
 namespace media {
 
-static const int kTypeSubtitlesOrCaptions = 0x11;
-static const int kTypeDescriptionsOrMetadata = 0x21;
-
 class WebMTracksParserTest : public testing::Test {
  public:
   WebMTracksParserTest() {}

@@ -41,9 +41,6 @@ using notifier::ChromeNotifierService;
 
 namespace {
 
-const int kNotificationPriority = static_cast<int>(
-    message_center::LOW_PRIORITY);
-
 // Extract notification id from syncer::SyncData.
 std::string GetNotificationId(const SyncData& sync_data) {
   SyncedNotificationSpecifics specifics = sync_data.GetSpecifics().

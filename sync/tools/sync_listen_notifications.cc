@@ -45,7 +45,6 @@ const char kTokenSwitch[] = "token";
 const char kHostPortSwitch[] = "host-port";
 const char kTrySslTcpFirstSwitch[] = "try-ssltcp-first";
 const char kAllowInsecureConnectionSwitch[] = "allow-insecure-connection";
-const char kNotificationMethodSwitch[] = "notification-method";
 
 // Class to print received notifications events.
 class NotificationPrinter : public InvalidationHandler {

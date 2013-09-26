@@ -160,20 +160,19 @@ namespace keys = extensions::manifest_keys;
 namespace {
 
 // Extension ids used during testing.
-const char* const all_zero = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-const char* const zero_n_one = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab";
-const char* const good0 = "behllobkkfkfnphdnhnkndlbkcpglgmj";
-const char* const good1 = "hpiknbiabeeppbpihjehijgoemciehgk";
-const char* const good2 = "bjafgdebaacbbbecmhlhpofkepfkgcpa";
-const char* const good2048 = "nmgjhmhbleinmjpbdhgajfjkbijcmgbh";
-const char* const good_crx = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
-const char* const hosted_app = "kbmnembihfiondgfjekmnmcbddelicoi";
-const char* const page_action = "obcimlgaoabeegjmmpldobjndiealpln";
-const char* const theme_crx = "iamefpfkojoapidjnbafmgkgncegbkad";
-const char* const theme2_crx = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
-const char* const permissions_crx = "eagpmdpfmaekmmcejjbmjoecnejeiiin";
-const char* const unpacked = "cbcdidchbppangcjoddlpdjlenngjldk";
-const char* const updates_from_webstore = "akjooamlhcgeopfifcmlggaebeocgokj";
+const char all_zero[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const char good0[] = "behllobkkfkfnphdnhnkndlbkcpglgmj";
+const char good1[] = "hpiknbiabeeppbpihjehijgoemciehgk";
+const char good2[] = "bjafgdebaacbbbecmhlhpofkepfkgcpa";
+const char good2048[] = "nmgjhmhbleinmjpbdhgajfjkbijcmgbh";
+const char good_crx[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
+const char hosted_app[] = "kbmnembihfiondgfjekmnmcbddelicoi";
+const char page_action[] = "obcimlgaoabeegjmmpldobjndiealpln";
+const char theme_crx[] = "iamefpfkojoapidjnbafmgkgncegbkad";
+const char theme2_crx[] = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
+const char permissions_crx[] = "eagpmdpfmaekmmcejjbmjoecnejeiiin";
+const char unpacked[] = "cbcdidchbppangcjoddlpdjlenngjldk";
+const char updates_from_webstore[] = "akjooamlhcgeopfifcmlggaebeocgokj";
 
 struct ExtensionsOrder {
   bool operator()(const scoped_refptr<const Extension>& a,

@@ -124,8 +124,6 @@ class AudioOutputDeviceTest
   DISALLOW_COPY_AND_ASSIGN(AudioOutputDeviceTest);
 };
 
-static const int kStreamId = 123;
-
 int AudioOutputDeviceTest::CalculateMemorySize() {
   // Calculate output and input memory size.
   int output_memory_size =

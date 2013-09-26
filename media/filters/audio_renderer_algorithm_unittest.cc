@@ -26,10 +26,9 @@
 
 namespace media {
 
-static const int kFrameSize = 250;
-static const int kSamplesPerSecond = 3000;
-static const SampleFormat kSampleFormat = kSampleFormatS16;
-static const int kOutputDurationInSec = 10;
+const int kFrameSize = 250;
+const int kSamplesPerSecond = 3000;
+const int kOutputDurationInSec = 10;
 
 static void FillWithSquarePulseTrain(
     int half_pulse_width, int offset, int num_samples, float* data) {

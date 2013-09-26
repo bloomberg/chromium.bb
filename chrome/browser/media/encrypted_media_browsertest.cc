@@ -31,20 +31,22 @@ static const char kClearKeyCdmAdapterFileName[] =
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 // Available key systems.
-static const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
-static const char kExternalClearKeyKeySystem[] =
+const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
+const char kExternalClearKeyKeySystem[] =
     "org.chromium.externalclearkey";
 
 // Supported media types.
-static const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
-static const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
-static const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
-static const char kMP4AudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
-static const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.4D4041\"";
+const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
+const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
+const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
+#if defined(USE_PROPRIETARY_CODECS)
+const char kMP4AudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
+const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.4D4041\"";
+#endif  // defined(USE_PROPRIETARY_CODECS)
 
 // EME-specific test results and errors.
-static const char kEmeGkrException[] = "GENERATE_KEY_REQUEST_EXCEPTION";
-static const char kEmeKeyError[] = "KEYERROR";
+const char kEmeGkrException[] = "GENERATE_KEY_REQUEST_EXCEPTION";
+const char kEmeKeyError[] = "KEYERROR";
 
 // The type of video src used to load media.
 enum SrcType {

@@ -203,14 +203,12 @@ typedef WindowedNavigationObserver<chrome::NOTIFICATION_AUTH_CANCELLED>
 typedef WindowedNavigationObserver<chrome::NOTIFICATION_AUTH_SUPPLIED>
     WindowedAuthSuppliedObserver;
 
-const char* kPrefetchAuthPage = "files/login/prefetch.html";
+const char kPrefetchAuthPage[] = "files/login/prefetch.html";
 
-const char* kMultiRealmTestPage = "files/login/multi_realm.html";
-const int   kMultiRealmTestRealmCount = 2;
-const int   kMultiRealmTestResourceCount = 4;
+const char kMultiRealmTestPage[] = "files/login/multi_realm.html";
+const int  kMultiRealmTestRealmCount = 2;
 
-const char* kSingleRealmTestPage = "files/login/single_realm.html";
-const int   kSingleRealmTestResourceCount = 6;
+const char kSingleRealmTestPage[] = "files/login/single_realm.html";
 
 const char* kAuthBasicPage = "auth-basic";
 const char* kAuthDigestPage = "auth-digest";

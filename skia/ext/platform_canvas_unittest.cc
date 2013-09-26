@@ -187,9 +187,6 @@ const int kInnerY = 5;
 const int kInnerW = 2;
 const int kInnerH = 3;
 
-// Radius used by some tests to draw a rounded-corner rectangle.
-const SkScalar kRadius = 2.0;
-
 }
 
 // This just checks that our checking code is working properly, it just uses
@@ -381,6 +378,7 @@ TEST(PlatformCanvas, TranslateLayer) {
     SkRect rect;
     rect.iset(kInnerX - 1, kInnerY - 1,
               kInnerX + kInnerW, kInnerY + kInnerH);
+    const SkScalar kRadius = 2.0;
     path.addRoundRect(rect, kRadius, kRadius);
     canvas->clipPath(path);
 

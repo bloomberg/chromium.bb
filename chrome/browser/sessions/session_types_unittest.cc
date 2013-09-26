@@ -27,7 +27,6 @@
 
 namespace {
 
-const int kIndex = 3;
 const int kUniqueID = 50;
 const content::Referrer kReferrer =
     content::Referrer(GURL("http://www.referrer.com"),
@@ -48,8 +47,6 @@ const bool kIsOverridingUserAgent = true;
 const base::Time kTimestamp = syncer::ProtoTimeToTime(100);
 const string16 kSearchTerms = ASCIIToUTF16("my search terms");
 const GURL kFaviconURL("http://virtual-url.com/favicon.ico");
-
-const int kPageID = 10;
 
 // Create a NavigationEntry from the constants above.
 scoped_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {

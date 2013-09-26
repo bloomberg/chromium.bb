@@ -7,8 +7,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 
-namespace {
-
 // Configurable service data.
 const char kDirectoryBaseUrl[] = "https://www.googleapis.com/chromoting/v1";
 const char kXmppServerAddress[] = "talk.google.com:5222";
@@ -16,15 +14,15 @@ const bool kXmppServerUseTls = true;
 const char kDirectoryBotJid[] = "remoting@bot.talk.google.com";
 
 // Command line switches.
+#if !defined(NDEBUG)
 const char kDirectoryBaseUrlSwitch[] = "directory-base-url";
 const char kXmppServerAddressSwitch[] = "xmpp-server-address";
 const char kXmppServerDisableTlsSwitch[] = "disable-xmpp-server-tls";
 const char kDirectoryBotJidSwitch[] = "directory-bot-jid";
+#endif  // !defined(NDEBUG)
 
 // Non-configurable service paths.
 const char kDirectoryHostsSuffix[] = "/@me/hosts/";
-
-}  // namespace
 
 namespace remoting {
 

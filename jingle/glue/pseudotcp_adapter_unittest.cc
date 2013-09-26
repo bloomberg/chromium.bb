@@ -28,11 +28,6 @@ namespace jingle_glue {
 
 namespace {
 
-// The range is chosen arbitrarily. It must be big enough so that we
-// always have at least two UDP ports available.
-const int kMinPort = 32000;
-const int kMaxPort = 33000;
-
 const int kMessageSize = 1024;
 const int kMessages = 100;
 const int kTestDataSize = kMessages * kMessageSize;

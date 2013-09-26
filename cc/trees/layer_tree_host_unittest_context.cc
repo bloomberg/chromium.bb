@@ -1576,7 +1576,6 @@ class LayerTreeHostContextTestReadbackWithForcedDrawAndOutputSurfaceInit
  protected:
   static const int kFirstOutputSurfaceInitSourceFrameNumber = 0;
   static const int kReadbackSourceFrameNumber = 1;
-  static const int kReadbackReplacementSourceFrameNumber = 2;
   static const int kForcedDrawCommitSourceFrameNumber = 2;
   static const int kSecondOutputSurfaceInitSourceFrameNumber = 2;
 

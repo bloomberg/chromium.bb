@@ -18,13 +18,6 @@ using pp::NetAddressPrivate;
 using pp::TCPServerSocketPrivate;
 using pp::TCPSocketPrivate;
 
-namespace {
-
-const uint16_t kPortScanFrom = 1024;
-const uint16_t kPortScanTo = 4096;
-
-}  // namespace
-
 REGISTER_TEST_CASE(TCPServerSocketPrivate);
 
 TestTCPServerSocketPrivate::TestTCPServerSocketPrivate(

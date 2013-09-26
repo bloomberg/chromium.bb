@@ -18,8 +18,6 @@ static const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
 static const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
 static const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
 static const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
-static const char kMP4AudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
-static const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.4D4041\"";
 
 // EME-specific test results and errors.
 static const char kEmeGkrException[] = "GENERATE_KEY_REQUEST_EXCEPTION";

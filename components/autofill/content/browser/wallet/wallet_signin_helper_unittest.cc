@@ -34,14 +34,6 @@ namespace wallet {
 
 namespace {
 
-const char kGetTokenPairValidResponse[] =
-    "{"
-    "  \"refresh_token\": \"rt1\","
-    "  \"access_token\": \"at1\","
-    "  \"expires_in\": 3600,"
-    "  \"token_type\": \"Bearer\""
-    "}";
-
 const char kGetAccountInfoValidResponseFormat[] =
     "{\"user_info\":["
     "  {"

@@ -35,12 +35,11 @@ using testing::_;
 
 namespace chromeos {
 
-namespace {
-
+#if defined(OS_CHROMEOS)
 const char kUser1ProfilePath[] = "/profile/user1/shill";
 const char kUserIdStubHashSuffix[] = "-hash";
+#endif  // defined(OS_CHROMEOS)
 
-}  // namespace
 
 class ExtensionNetworkingPrivateApiTest :
     public ExtensionApiTest,

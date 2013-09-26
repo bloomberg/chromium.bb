@@ -103,9 +103,11 @@ namespace {
 // This is used for tagging system event logs.
 const char kApplicationName[] = "chromoting";
 
+#if defined(OS_LINUX)
 // The command line switch used to pass name of the pipe to capture audio on
 // linux.
 const char kAudioPipeSwitchName[] = "audio-pipe-name";
+#endif  // defined(OS_LINUX)
 
 // The command line switch used by the parent to request the host to signal it
 // when it is successfully started.

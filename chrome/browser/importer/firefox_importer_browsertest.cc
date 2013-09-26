@@ -94,8 +94,6 @@ const KeywordInfo kFirefoxKeywords[] = {
   { L"\x4E2D\x6587", "http://www.google.com/" },
 };
 
-const int kDefaultFirefoxKeywordIndex = 8;
-
 class FirefoxObserver : public ProfileWriter,
                         public importer::ImporterProgressObserver {
  public:

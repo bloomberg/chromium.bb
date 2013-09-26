@@ -27,35 +27,41 @@ const char kTestExtensionId[] = "gceegfkgibmgpfopknlcgleimclbknie";
 const char kTestExtensionPath[] = "media_galleries_private/gallerywatch";
 
 // JS commands.
-const char kAddGalleryChangedListenerCmd[] = "addGalleryChangedListener()";
 const char kGetAllWatchedGalleryIdsCmd[] = "getAllWatchedGalleryIds()";
 const char kGetMediaFileSystemsCmd[] = "getMediaFileSystems()";
+const char kSetupWatchOnValidGalleriesCmd[] = "setupWatchOnValidGalleries()";
+#if defined(OS_WIN)
+const char kAddGalleryChangedListenerCmd[] = "addGalleryChangedListener()";
 const char kRemoveAllGalleryWatchCmd[] = "removeAllGalleryWatch()";
 const char kRemoveGalleryChangedListenerCmd[] =
     "removeGalleryChangedListener()";
 const char kRemoveGalleryWatchCmd[] = "removeGalleryWatch()";
-const char kSetupWatchOnValidGalleriesCmd[] = "setupWatchOnValidGalleries()";
 const char kSetupWatchOnInvalidGalleryCmd[] = "setupWatchOnInvalidGallery()";
+#endif  // defined(OS_WIN)
 
 // And JS reply messages.
 const char kAddGalleryWatchOK[] = "add_gallery_watch_ok";
-const char kAddGalleryChangedListenerOK[] = "add_gallery_changed_listener_ok";
 const char kGetAllGalleryWatchOK[] = "get_all_gallery_watch_ok";
-const char kGetMediaFileSystemsOK[] = "get_media_file_systems_ok";
 const char kGetMediaFileSystemsCallbackOK[] =
     "get_media_file_systems_callback_ok";
+const char kGetMediaFileSystemsOK[] = "get_media_file_systems_ok";
+#if defined(OS_WIN)
+const char kAddGalleryChangedListenerOK[] = "add_gallery_changed_listener_ok";
 const char kRemoveAllGalleryWatchOK[] = "remove_all_gallery_watch_ok";
 const char kRemoveGalleryChangedListenerOK[] =
     "remove_gallery_changed_listener_ok";
 const char kRemoveGalleryWatchOK[] = "remove_gallery_watch_ok";
+#endif  // defined(OS_WIN)
 
 // Test reply messages.
-const char kAddGalleryWatchRequestSucceeded[] = "add_watch_request_succeeded";
-const char kAddGalleryWatchRequestFailed[] = "add_watch_request_failed";
-const char kGalleryChangedEventReceived[] = "gallery_changed_event_received";
 const char kGetAllGalleryWatchResultA[] = "gallery_watchers_does_not_exists";
+const char kAddGalleryWatchRequestFailed[] = "add_watch_request_failed";
+#if defined(OS_WIN)
+const char kAddGalleryWatchRequestSucceeded[] = "add_watch_request_succeeded";
+const char kGalleryChangedEventReceived[] = "gallery_changed_event_received";
 const char kGetAllGalleryWatchResultB[] =
     "watchers_for_galleries_{1, 2, 3}_found";
+#endif  // defined(OS_WIN)
 
 }  // namespace
 

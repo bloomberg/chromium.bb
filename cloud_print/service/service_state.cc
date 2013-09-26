@@ -25,7 +25,6 @@ const char kCloudPrintJsonName[] = "cloud_print";
 const char kEnabledOptionName[] = "enabled";
 
 const char kEmailOptionName[] = "email";
-const char kPasswordOptionName[] = "password";
 const char kProxyIdOptionName[] = "proxy_id";
 const char kRobotEmailOptionName[] = "robot_email";
 const char kRobotTokenOptionName[] = "robot_refresh_token";

@@ -22,18 +22,17 @@
 namespace media {
 
 // Parameters which control the many input case tests.
-static const int kMixerInputs = 8;
-static const int kMixerCycles = 3;
+const int kMixerInputs = 8;
+const int kMixerCycles = 3;
 
 // Parameters used for testing.
-static const int kBitsPerChannel = 32;
-static const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
-static const int kHighLatencyBufferSize = 8192;
-static const int kLowLatencyBufferSize = 256;
-static const int kSampleRate = 48000;
+const int kBitsPerChannel = 32;
+const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
+const int kHighLatencyBufferSize = 8192;
+const int kLowLatencyBufferSize = 256;
 
 // Number of full sine wave cycles for each Render() call.
-static const int kSineCycles = 4;
+const int kSineCycles = 4;
 
 // Tuple of <input sampling rate, output sampling rate, epsilon>.
 typedef std::tr1::tuple<int, int, double> AudioRendererMixerTestData;

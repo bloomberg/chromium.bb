@@ -68,8 +68,6 @@ const char kSearchSingleChar[] = "z";
 const wchar_t kSearchSingleCharKeys[] = { ui::VKEY_Z, 0 };
 const char kSearchSingleCharURL[] = "http://www.foo.com/search?q=z";
 
-const char kHistoryPageURL[] = "chrome://history/#q=abc";
-
 const char kDesiredTLDHostname[] = "www.bar.com";
 const wchar_t kDesiredTLDKeys[] = { ui::VKEY_B, ui::VKEY_A, ui::VKEY_R, 0 };
 

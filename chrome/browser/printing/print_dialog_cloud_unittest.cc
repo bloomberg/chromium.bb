@@ -43,11 +43,9 @@ using testing::StrEq;
 using testing::_;
 using ui::ExternalWebDialogUI;
 
-static const char* const kPDFTestFile = "printing/cloud_print_unittest.pdf";
-static const char* const kEmptyPDFTestFile =
-    "printing/cloud_print_emptytest.pdf";
-static const char* const kMockJobTitle = "Mock Job Title";
-static const char* const kMockPrintTicket = "Resolution=300";
+const char kPDFTestFile[] = "printing/cloud_print_unittest.pdf";
+const char kMockJobTitle[] = "Mock Job Title";
+const char kMockPrintTicket[] = "Resolution=300";
 
 
 base::FilePath GetTestDataFileName() {

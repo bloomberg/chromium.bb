@@ -84,7 +84,6 @@ const quota::StorageType kTemporary = quota::kStorageTypeTemporary;
 const quota::StorageType kPersistent = quota::kStorageTypePersistent;
 
 const quota::QuotaClient::ID kClientFile = quota::QuotaClient::kFileSystem;
-const quota::QuotaClient::ID kClientDB = quota::QuotaClient::kIndexedDatabase;
 
 void PopulateTestQuotaManagedNonBrowsingData(quota::MockQuotaManager* manager) {
   manager->AddOrigin(kOriginDevTools, kTemporary, kClientFile, base::Time());

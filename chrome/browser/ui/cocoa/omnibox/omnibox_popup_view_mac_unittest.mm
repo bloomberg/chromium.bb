@@ -15,8 +15,6 @@
 
 namespace {
 
-const float kLargeWidth = 10000;
-
 // Returns the length of the run starting at |location| for which
 // |attributeName| remains the same.
 NSUInteger RunLengthForAttribute(NSAttributedString* string,

@@ -25,13 +25,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/perf/perf_test.h"
 
-static const base::FilePath::CharType kPeerConnectionServer[] =
-#if defined(OS_WIN)
-    FILE_PATH_LITERAL("peerconnection_server.exe");
-#else
-    FILE_PATH_LITERAL("peerconnection_server");
-#endif
-
 static const base::FilePath::CharType kReferenceFile[] =
 #if defined (OS_WIN)
     FILE_PATH_LITERAL("pyauto_private/webrtc/human-voice-win.wav");

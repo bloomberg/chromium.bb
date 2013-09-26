@@ -21,11 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/notification_types.h"
 
-namespace {
 const char kTestNotificationId[] = "SomeRandomNotificationId";
-const int kNotificationPriority = static_cast<int>(
-    message_center::LOW_PRIORITY);
-}  // namespace
 
 class StubChromeNotifierService : public notifier::ChromeNotifierService {
  public:

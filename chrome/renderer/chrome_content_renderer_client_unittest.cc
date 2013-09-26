@@ -34,7 +34,6 @@ const bool kExtensionFromWebStore = true;
 const bool kNotHostedApp = false;
 const bool kHostedApp = true;
 
-const char kNaClMimeType[] = "application/x-nacl";
 const char kExtensionUrl[] = "chrome-extension://extension_id/background.html";
 
 const char kPhotosAppURL1[] = "https://foo.plus.google.com";

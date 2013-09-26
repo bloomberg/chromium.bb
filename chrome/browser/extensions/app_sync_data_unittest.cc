@@ -11,16 +11,10 @@
 
 namespace extensions {
 
-namespace {
-
 const char kValidId[] = "abcdefghijklmnopabcdefghijklmnop";
 const char kName[] = "MyExtension";
 const char kValidVersion[] = "0.0.0.0";
-const char kValidUpdateUrl[] =
-    "http://clients2.google.com/service/update2/crx";
-const char kOAuthClientId[] = "1234abcd";
-
-}  // namespace
+const char kValidUpdateUrl[] = "http://clients2.google.com/service/update2/crx";
 
 class AppSyncDataTest : public testing::Test {
  public:

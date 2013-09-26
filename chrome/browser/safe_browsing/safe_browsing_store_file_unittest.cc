@@ -13,9 +13,6 @@
 
 namespace {
 
-const base::FilePath::CharType kFolderPrefix[] =
-    FILE_PATH_LITERAL("SafeBrowsingTestStoreFile");
-
 class SafeBrowsingStoreFileTest : public PlatformTest {
  public:
   virtual void SetUp() {

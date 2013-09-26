@@ -44,7 +44,6 @@ namespace {
 
 const char kTestExtension[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char kTestExtension2[] = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
-const char kTestExtension3[] = "cccccccccccccccccccccccccccccccc";
 const char kTestDownload[] = "http://example.com/getpolicy?id=123";
 const char kTestDownload2[] = "http://example.com/getpolicy?id=456";
 

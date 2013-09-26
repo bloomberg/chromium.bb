@@ -32,6 +32,7 @@ enum Errors {
   TOOL_NOT_FOUND,
 };
 
+#if defined(OS_WIN)
 const char kUpgradeHelp[] =
     "\nIn order to use the upgrade function, a version of this tool that\n"
     "understands the file format of the files to upgrade is needed. For\n"
@@ -39,6 +40,7 @@ const char kUpgradeHelp[] =
     "a version of this program that was compiled with version 3.4 has to be\n"
     "located beside this executable, and named dump_cache_3.exe, and this\n"
     "executable should be compiled with version 5.2 being the current one.";
+#endif  // defined(OS_WIN)
 
 // Folders to read and write cache files.
 const char kInputPath[] = "input";
@@ -58,7 +60,9 @@ const char kUpgrade[] = "upgrade";
 
 // Internal use:
 const char kSlave[] = "slave";
+#if defined(OS_WIN)
 const char kPipe[] = "pipe";
+#endif  // defined(OS_WIN)
 
 int Help() {
   printf("warning: input files are modified by this tool\n");

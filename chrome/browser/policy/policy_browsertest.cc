@@ -178,8 +178,6 @@ const char kGoodCrxId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char kAdBlockCrxId[] = "dojnnbeimaimaojcialkkgajdnefpgcn";
 const char kHostedAppCrxId[] = "kbmnembihfiondgfjekmnmcbddelicoi";
 
-const base::FilePath::CharType kGoodCrxManifestName[] =
-    FILE_PATH_LITERAL("good_update_manifest.xml");
 const base::FilePath::CharType kGood2CrxManifestName[] =
     FILE_PATH_LITERAL("good2_update_manifest.xml");
 const base::FilePath::CharType kGoodV1CrxManifestName[] =
@@ -188,8 +186,11 @@ const base::FilePath::CharType kGoodUnpackedExt[] =
     FILE_PATH_LITERAL("good_unpacked");
 const base::FilePath::CharType kAppUnpackedExt[] =
     FILE_PATH_LITERAL("app");
+
+#if !defined(OS_MACOSX)
 const base::FilePath::CharType kUnpackedFullscreenAppName[] =
     FILE_PATH_LITERAL("fullscreen_app");
+#endif  // !defined(OS_MACOSX)
 
 // Filters requests to the hosts in |urls| and redirects them to the test data
 // dir through URLRequestMockHTTPJobs.

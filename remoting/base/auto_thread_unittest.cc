@@ -17,7 +17,6 @@
 namespace {
 
 const char kThreadName[] = "Test thread";
-const char kThreadName2[] = "Test thread 2";
 
 void SetFlagTask(bool* success) {
   *success = true;

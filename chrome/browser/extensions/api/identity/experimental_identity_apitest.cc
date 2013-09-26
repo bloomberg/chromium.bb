@@ -37,8 +37,7 @@ namespace {
 namespace errors = identity_constants;
 namespace utils = extension_function_test_utils;
 
-static const char kAccessToken[] = "auth_token";
-static const char kExtensionId[] = "ext_id";
+const char kAccessToken[] = "auth_token";
 
 // This helps us be able to wait until an AsyncExtensionFunction calls
 // SendResponse.

@@ -13,12 +13,8 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-  static const char kWindowId[] = "windowid";
-  static const char kWindowId2[] = "windowid2";
-
-  const char kWindowGeometryKey[] = "window_geometry";
-} // namespace
+const char kWindowId[] = "windowid";
+const char kWindowId2[] = "windowid2";
 
 using content::BrowserThread;
 

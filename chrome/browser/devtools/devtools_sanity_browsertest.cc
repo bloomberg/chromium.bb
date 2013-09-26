@@ -80,10 +80,6 @@ class BrowserClosedObserver : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(BrowserClosedObserver);
 };
 
-// The delay waited in some cases where we don't have a notifications for an
-// action we take.
-const int kActionDelayMs = 500;
-
 const char kDebuggerTestPage[] = "files/devtools/debugger_test_page.html";
 const char kPauseWhenLoadingDevTools[] =
     "files/devtools/pause_when_loading_devtools.html";

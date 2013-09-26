@@ -3249,8 +3249,6 @@ TEST_F(SyncerTest, UpdateWhereParentIsNotAFolder) {
   }
 }
 
-const char kRootId[] = "0";
-
 TEST_F(SyncerTest, DirectoryUpdateTest) {
   Id in_root_id = ids_.NewServerId();
   Id in_in_root_id = ids_.NewServerId();

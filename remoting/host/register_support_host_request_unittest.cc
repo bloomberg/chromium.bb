@@ -34,7 +34,6 @@ namespace remoting {
 namespace {
 const char kTestBotJid[] = "remotingunittest@bot.talk.google.com";
 const char kTestJid[] = "user@gmail.com/chromoting123";
-const int64 kTestTime = 123123123;
 const char kSupportId[] = "AB4RF3";
 const char kSupportIdLifetime[] = "300";
 const char kStanzaId[] = "123";

@@ -463,7 +463,6 @@ namespace {
 
 const char kEmptyPage[] = "files/empty.html";
 const char kMalwareFile[] = "files/downloads/dangerous/dangerous.exe";
-const char kMalwareIframe[] = "files/safe_browsing/malware_iframe.html";
 const char kMalwarePage[] = "files/safe_browsing/malware.html";
 
 // This test goes through DownloadResourceHandler.

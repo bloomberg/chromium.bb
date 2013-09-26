@@ -48,7 +48,6 @@ namespace {
 MATCHER_P(ModelTypeSetMatches, value, "") { return arg.Equals(value); }
 
 const char kTestUser[] = "chrome.p13n.test@gmail.com";
-const char kTestPassword[] = "passwd";
 
 // Returns a ModelTypeSet with all user selectable types set.
 syncer::ModelTypeSet GetAllTypes() {

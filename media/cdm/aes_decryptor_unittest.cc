@@ -26,23 +26,21 @@ MATCHER(IsEmpty, "") { return arg.empty(); }
 
 namespace media {
 
-static const char kClearKeySystem[] = "org.w3.clearkey";
+const uint8 kOriginalData[] = "Original subsample data.";
+const int kOriginalDataSize = 24;
 
-static const uint8 kOriginalData[] = "Original subsample data.";
-static const int kOriginalDataSize = 24;
-
-static const uint8 kKeyId[] = {
+const uint8 kKeyId[] = {
     // base64 equivalent is AAECAw==
     0x00, 0x01, 0x02, 0x03
 };
 
-static const uint8 kKey[] = {
+const uint8 kKey[] = {
     // base64 equivalent is BAUGBwgJCgsMDQ4PEBESEw==
     0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b,
     0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13
 };
 
-static const char kKeyAsJWK[] =
+const char kKeyAsJWK[] =
     "{"
     "  \"keys\": ["
     "    {"
@@ -53,7 +51,7 @@ static const char kKeyAsJWK[] =
     "  ]"
     "}";
 
-static const char kWrongKeyAsJWK[] =
+const char kWrongKeyAsJWK[] =
     "{"
     "  \"keys\": ["
     "    {"
@@ -64,7 +62,7 @@ static const char kWrongKeyAsJWK[] =
     "  ]"
     "}";
 
-static const char kWrongSizedKeyAsJWK[] =
+const char kWrongSizedKeyAsJWK[] =
     "{"
     "  \"keys\": ["
     "    {"
@@ -75,14 +73,14 @@ static const char kWrongSizedKeyAsJWK[] =
     "  ]"
     "}";
 
-static const uint8 kIv[] = {
+const uint8 kIv[] = {
   0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
 // kOriginalData encrypted with kKey and kIv but without any subsamples (or
 // equivalently using kSubsampleEntriesCypherOnly).
-static const uint8 kEncryptedData[] = {
+const uint8 kEncryptedData[] = {
   0x2f, 0x03, 0x09, 0xef, 0x71, 0xaf, 0x31, 0x16,
   0xfa, 0x9d, 0x18, 0x43, 0x1e, 0x96, 0x71, 0xb5,
   0xbf, 0xf5, 0x30, 0x53, 0x9a, 0x20, 0xdf, 0x95
@@ -90,27 +88,27 @@ static const uint8 kEncryptedData[] = {
 
 // kOriginalData encrypted with kSubsampleKey and kSubsampleIv using
 // kSubsampleEntriesNormal.
-static const uint8 kSubsampleEncryptedData[] = {
+const uint8 kSubsampleEncryptedData[] = {
   0x4f, 0x72, 0x09, 0x16, 0x09, 0xe6, 0x79, 0xad,
   0x70, 0x73, 0x75, 0x62, 0x09, 0xbb, 0x83, 0x1d,
   0x4d, 0x08, 0xd7, 0x78, 0xa4, 0xa7, 0xf1, 0x2e
 };
 
-static const uint8 kOriginalData2[] = "Changed Original data.";
+const uint8 kOriginalData2[] = "Changed Original data.";
 
-static const uint8 kIv2[] = {
+const uint8 kIv2[] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static const uint8 kKeyId2[] = {
+const uint8 kKeyId2[] = {
     // base64 equivalent is AAECAwQFBgcICQoLDA0ODxAREhM=
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
     0x10, 0x11, 0x12, 0x13
 };
 
-static const char kKey2AsJWK[] =
+const char kKey2AsJWK[] =
     "{"
     "  \"keys\": ["
     "    {"
@@ -123,7 +121,7 @@ static const char kKey2AsJWK[] =
 
 // 'k' in bytes is x14x15x16x17x18x19x1ax1bx1cx1dx1ex1fx20x21x22x23
 
-static const uint8 kEncryptedData2[] = {
+const uint8 kEncryptedData2[] = {
   0x57, 0x66, 0xf4, 0x12, 0x1a, 0xed, 0xb5, 0x79,
   0x1c, 0x8e, 0x25, 0xd7, 0x17, 0xe7, 0x5e, 0x16,
   0xe3, 0x40, 0x08, 0x27, 0x11, 0xe9
@@ -133,31 +131,31 @@ static const uint8 kEncryptedData2[] = {
 // all entries must be equal to kOriginalDataSize to make the subsample entries
 // valid.
 
-static const SubsampleEntry kSubsampleEntriesNormal[] = {
+const SubsampleEntry kSubsampleEntriesNormal[] = {
   { 2, 7 },
   { 3, 11 },
   { 1, 0 }
 };
 
-static const SubsampleEntry kSubsampleEntriesWrongSize[] = {
+const SubsampleEntry kSubsampleEntriesWrongSize[] = {
   { 3, 6 }, // This entry doesn't match the correct entry.
   { 3, 11 },
   { 1, 0 }
 };
 
-static const SubsampleEntry kSubsampleEntriesInvalidTotalSize[] = {
+const SubsampleEntry kSubsampleEntriesInvalidTotalSize[] = {
   { 1, 1000 }, // This entry is too large.
   { 3, 11 },
   { 1, 0 }
 };
 
-static const SubsampleEntry kSubsampleEntriesClearOnly[] = {
+const SubsampleEntry kSubsampleEntriesClearOnly[] = {
   { 7, 0 },
   { 8, 0 },
   { 9, 0 }
 };
 
-static const SubsampleEntry kSubsampleEntriesCypherOnly[] = {
+const SubsampleEntry kSubsampleEntriesCypherOnly[] = {
   { 0, 6 },
   { 0, 8 },
   { 0, 10 }
