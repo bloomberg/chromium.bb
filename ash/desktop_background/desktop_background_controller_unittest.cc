@@ -15,6 +15,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
+#include "ash/test/test_user_wallpaper_delegate.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -112,6 +113,9 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
     root_window_controller->SetWallpaperController(NULL);
     root_window_controller->SetAnimatingWallpaperController(NULL);
     controller_ = Shell::GetInstance()->desktop_background_controller();
+    wallpaper_delegate_ = static_cast<test::TestUserWallpaperDelegate*>(
+        Shell::GetInstance()->user_wallpaper_delegate());
+    controller_->set_wallpaper_reload_delay_for_test(0);
   }
 
  protected:
@@ -253,6 +257,8 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
   scoped_ptr<base::ScopedTempDir> wallpaper_dir_;
 
   DesktopBackgroundController* controller_;  // Not owned.
+
+  test::TestUserWallpaperDelegate* wallpaper_delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundControllerTest);
@@ -415,13 +421,9 @@ TEST_F(DesktopBackgroundControllerTest, ChangeWallpaperQuick) {
             root_window_controller->wallpaper_controller());
 }
 
-TEST_F(DesktopBackgroundControllerTest, GetAppropriateResolution) {
-  // TODO(derat|oshima|bshe): Configuring desktops seems busted on Win8,
-  // even when just a single display is being used -- the small wallpaper
-  // is used instead of the large one. Track down the cause of the problem
-  // and only use a SupportsMultipleDisplays() clause for the dual-display
-  // code below.
-  if (!SupportsMultipleDisplays())
+TEST_F(DesktopBackgroundControllerTest, DisplayChange) {
+  // TODO(derat|oshima|bshe): Host windows can't be resized on Win8.
+  if (!SupportsHostWindowResize())
     return;
 
   test::DisplayManagerTestApi display_manager_test_api(
@@ -431,36 +433,75 @@ TEST_F(DesktopBackgroundControllerTest, GetAppropriateResolution) {
   // equal to kSmallWallpaperMaxWidth by kSmallWallpaperMaxHeight, even if
   // multiple displays are connected.
   display_manager_test_api.UpdateDisplay("800x600");
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_SMALL,
             controller_->GetAppropriateResolution());
+  EXPECT_EQ(0,
+            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
+
   display_manager_test_api.UpdateDisplay("800x600,800x600");
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_SMALL,
             controller_->GetAppropriateResolution());
+  EXPECT_EQ(0,
+            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
+
   display_manager_test_api.UpdateDisplay("1366x800");
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_SMALL,
             controller_->GetAppropriateResolution());
+  EXPECT_EQ(1,
+            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
 
   // At larger sizes, large wallpapers should be used.
   display_manager_test_api.UpdateDisplay("1367x800");
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_LARGE,
             controller_->GetAppropriateResolution());
+  EXPECT_EQ(1,
+            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
+
   display_manager_test_api.UpdateDisplay("1367x801");
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_LARGE,
             controller_->GetAppropriateResolution());
+  EXPECT_EQ(1,
+            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
+
   display_manager_test_api.UpdateDisplay("2560x1700");
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_LARGE,
             controller_->GetAppropriateResolution());
+  EXPECT_EQ(1,
+            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
 
   // Rotated smaller screen may use larger image.
   display_manager_test_api.UpdateDisplay("800x600/r");
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_SMALL,
             controller_->GetAppropriateResolution());
+  EXPECT_EQ(1,
+            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
+
   display_manager_test_api.UpdateDisplay("800x600/r,800x600");
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_SMALL,
             controller_->GetAppropriateResolution());
+  EXPECT_EQ(1,
+            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
   display_manager_test_api.UpdateDisplay("1366x800/r");
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(WALLPAPER_RESOLUTION_LARGE,
             controller_->GetAppropriateResolution());
+  EXPECT_EQ(1,
+            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
+
+  // Max display size didn't chagne.
+  display_manager_test_api.UpdateDisplay("900x800/r,400x1366");
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(0,
+            wallpaper_delegate_->GetUpdateWallpaperCountAndReset());
+
 }
 
 // Test that DesktopBackgroundController loads the appropriate wallpaper

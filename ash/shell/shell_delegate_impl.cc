@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "ash/caps_lock_delegate_stub.h"
+#include "ash/default_user_wallpaper_delegate.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/keyboard_controller_proxy_stub.h"
 #include "ash/session_state_delegate.h"
@@ -173,7 +174,7 @@ ash::SystemTrayDelegate* ShellDelegateImpl::CreateSystemTrayDelegate() {
 }
 
 ash::UserWallpaperDelegate* ShellDelegateImpl::CreateUserWallpaperDelegate() {
-  return NULL;
+  return new DefaultUserWallpaperDelegate();
 }
 
 ash::CapsLockDelegate* ShellDelegateImpl::CreateCapsLockDelegate() {

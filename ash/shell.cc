@@ -128,47 +128,6 @@ namespace {
 using aura::Window;
 using views::Widget;
 
-// This dummy class is used for shell unit tests. We dont have chrome delegate
-// in these tests.
-class DummyUserWallpaperDelegate : public UserWallpaperDelegate {
- public:
-  DummyUserWallpaperDelegate() {}
-
-  virtual ~DummyUserWallpaperDelegate() {}
-
-  virtual int GetAnimationType() OVERRIDE {
-    return views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
-  }
-
-  virtual bool ShouldShowInitialAnimation() OVERRIDE {
-    return false;
-  }
-
-  virtual void UpdateWallpaper() OVERRIDE {
-  }
-
-  virtual void InitializeWallpaper() OVERRIDE {
-    ash::Shell::GetInstance()->desktop_background_controller()->
-        CreateEmptyWallpaper();
-  }
-
-  virtual void OpenSetWallpaperPage() OVERRIDE {
-  }
-
-  virtual bool CanOpenSetWallpaperPage() OVERRIDE {
-    return false;
-  }
-
-  virtual void OnWallpaperAnimationFinished() OVERRIDE {
-  }
-
-  virtual void OnWallpaperBootAnimationFinished() OVERRIDE {
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DummyUserWallpaperDelegate);
-};
-
 // A Corewm VisibilityController subclass that calls the Ash animation routine
 // so we can pick up our extended animations. See ash/wm/window_animations.h.
 class AshVisibilityController : public views::corewm::VisibilityController {
@@ -309,6 +268,7 @@ Shell::~Shell() {
   mru_window_tracker_.reset();
 
   resolution_notification_controller_.reset();
+  desktop_background_controller_.reset();
 
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
   // DisplayController before resetting |display_controller_|, since destruction
@@ -569,8 +529,6 @@ void Shell::Init() {
   // This controller needs to be set before SetupManagedWindowMode.
   desktop_background_controller_.reset(new DesktopBackgroundController());
   user_wallpaper_delegate_.reset(delegate_->CreateUserWallpaperDelegate());
-  if (!user_wallpaper_delegate_)
-    user_wallpaper_delegate_.reset(new DummyUserWallpaperDelegate());
 
   // StatusAreaWidget uses Shell's CapsLockDelegate.
   caps_lock_delegate_.reset(delegate_->CreateCapsLockDelegate());

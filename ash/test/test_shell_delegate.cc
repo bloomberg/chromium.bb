@@ -15,6 +15,7 @@
 #include "ash/test/test_launcher_delegate.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
+#include "ash/test/test_user_wallpaper_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
@@ -163,7 +164,7 @@ SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate() {
 }
 
 UserWallpaperDelegate* TestShellDelegate::CreateUserWallpaperDelegate() {
-  return NULL;
+  return new TestUserWallpaperDelegate();
 }
 
 CapsLockDelegate* TestShellDelegate::CreateCapsLockDelegate() {

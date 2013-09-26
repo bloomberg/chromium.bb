@@ -6,12 +6,14 @@
 #define ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/display/display_controller.h"
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/timer/timer.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/image/image_skia.h"
@@ -65,7 +67,8 @@ class WallpaperResizer;
 
 // Loads selected desktop wallpaper from file system asynchronously and updates
 // background layer if loaded successfully.
-class ASH_EXPORT DesktopBackgroundController {
+class ASH_EXPORT DesktopBackgroundController
+    : public DisplayController::Observer {
  public:
   enum BackgroundMode {
     BACKGROUND_NONE,
@@ -128,6 +131,9 @@ class ASH_EXPORT DesktopBackgroundController {
   // Returns true if the desktop moved.
   bool MoveDesktopToUnlockedContainer();
 
+  // Overrides DisplayController::Observer:
+  virtual void OnDisplayConfigurationChanged() OVERRIDE;
+
  private:
   friend class DesktopBackgroundControllerTest;
   FRIEND_TEST_ALL_PREFIXES(DesktopBackgroundControllerTest, GetMaxDisplaySize);
@@ -170,6 +176,13 @@ class ASH_EXPORT DesktopBackgroundController {
   // Send notification that background animation finished.
   void NotifyAnimationFinished();
 
+  // Reload the wallpaper.
+  void UpdateWallpaper();
+
+  void set_wallpaper_reload_delay_for_test(bool value) {
+    wallpaper_reload_delay_ = value;
+  }
+
   // Returns the maximum size of all displays combined in native
   // resolutions.  Note that this isn't the bounds of the display who
   // has maximum resolutions. Instead, this returns the size of the
@@ -197,9 +210,15 @@ class ASH_EXPORT DesktopBackgroundController {
   base::FilePath current_default_wallpaper_path_;
   int current_default_wallpaper_resource_id_;
 
+  gfx::Size current_max_display_size_;
+
   scoped_refptr<WallpaperLoader> wallpaper_loader_;
 
   base::WeakPtrFactory<DesktopBackgroundController> weak_ptr_factory_;
+
+  base::OneShotTimer<DesktopBackgroundController> timer_;
+
+  int wallpaper_reload_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundController);
 };
