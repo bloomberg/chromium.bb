@@ -138,12 +138,12 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
       MediaStreamType stream_type);
 
   // Create and Start a new VideoCaptureDevice, storing the result in
-  // |entry->video_capture_device|. Ownership of |handler| passes to
+  // |entry->video_capture_device|. Ownership of |client| passes to
   // the device.
   void DoStartDeviceOnDeviceThread(
       DeviceEntry* entry,
       const media::VideoCaptureCapability& capture_params,
-      scoped_ptr<media::VideoCaptureDevice::EventHandler> handler);
+      scoped_ptr<media::VideoCaptureDevice::Client> client);
 
   // Stop and destroy the VideoCaptureDevice held in
   // |entry->video_capture_device|.

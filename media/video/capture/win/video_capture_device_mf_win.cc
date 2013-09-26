@@ -312,7 +312,7 @@ const std::string VideoCaptureDevice::Name::GetModel() const {
 }
 
 VideoCaptureDeviceMFWin::VideoCaptureDeviceMFWin(const Name& device_name)
-    : name_(device_name), observer_(NULL), capture_(0) {
+    : name_(device_name), client_(NULL), capture_(0) {
   DetachFromThread();
 }
 
@@ -341,17 +341,17 @@ bool VideoCaptureDeviceMFWin::Init() {
 
 void VideoCaptureDeviceMFWin::Allocate(
     const VideoCaptureCapability& capture_format,
-    VideoCaptureDevice::EventHandler* observer) {
+    VideoCaptureDevice::Client* client) {
   DCHECK(CalledOnValidThread());
 
   base::AutoLock lock(lock_);
 
-  if (observer_) {
-    DCHECK_EQ(observer, observer_);
+  if (client_) {
+    DCHECK_EQ(client, client_);
     return;
   }
 
-  observer_ = observer;
+  client_ = client;
   DCHECK_EQ(capture_, false);
 
   CapabilityList capabilities;
@@ -380,7 +380,7 @@ void VideoCaptureDeviceMFWin::Allocate(
     return;
   }
 
-  observer_->OnFrameInfo(found_capability);
+  client_->OnFrameInfo(found_capability);
 }
 
 void VideoCaptureDeviceMFWin::Start() {
@@ -432,7 +432,7 @@ void VideoCaptureDeviceMFWin::DeAllocate() {
   Stop();
 
   base::AutoLock lock(lock_);
-  observer_ = NULL;
+  client_ = NULL;
 }
 
 const VideoCaptureDevice::Name& VideoCaptureDeviceMFWin::device_name() {
@@ -448,9 +448,9 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedFrame(
     bool flip_vert,
     bool flip_horiz) {
   base::AutoLock lock(lock_);
-  if (data && observer_)
-    observer_->OnIncomingCapturedFrame(data, length, time_stamp,
-                                       rotation, flip_vert, flip_horiz);
+  if (data && client_)
+    client_->OnIncomingCapturedFrame(data, length, time_stamp,
+                                     rotation, flip_vert, flip_horiz);
 
   if (capture_) {
     HRESULT hr = reader_->ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0,
@@ -468,8 +468,8 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedFrame(
 
 void VideoCaptureDeviceMFWin::OnError(HRESULT hr) {
   DLOG(ERROR) << "VideoCaptureDeviceMFWin: " << std::hex << hr;
-  if (observer_)
-    observer_->OnError();
+  if (client_)
+    client_->OnError();
 }
 
 }  // namespace media

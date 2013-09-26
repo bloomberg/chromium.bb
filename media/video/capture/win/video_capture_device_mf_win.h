@@ -39,7 +39,7 @@ class MEDIA_EXPORT VideoCaptureDeviceMFWin
 
   // VideoCaptureDevice implementation.
   virtual void Allocate(const VideoCaptureCapability& capture_format,
-                         VideoCaptureDevice::EventHandler* observer) OVERRIDE;
+                        VideoCaptureDevice::Client* client) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void DeAllocate() OVERRIDE;
@@ -71,7 +71,7 @@ class MEDIA_EXPORT VideoCaptureDeviceMFWin
   scoped_refptr<MFReaderCallback> callback_;
 
   base::Lock lock_;  // Used to guard the below variables.
-  VideoCaptureDevice::EventHandler* observer_;
+  VideoCaptureDevice::Client* client_;
   base::win::ScopedComPtr<IMFSourceReader> reader_;
   bool capture_;
 

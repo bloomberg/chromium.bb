@@ -139,7 +139,7 @@ void VideoCaptureManager::UseFakeDevice() {
 void VideoCaptureManager::DoStartDeviceOnDeviceThread(
     DeviceEntry* entry,
     const media::VideoCaptureCapability& capture_params,
-    scoped_ptr<media::VideoCaptureDevice::EventHandler> device_client) {
+    scoped_ptr<media::VideoCaptureDevice::Client> device_client) {
   SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StartDeviceTime");
   DCHECK(IsOnDeviceThread());
 

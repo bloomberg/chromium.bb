@@ -99,7 +99,7 @@ VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
 
 VideoCaptureDeviceMac::VideoCaptureDeviceMac(const Name& device_name)
     : device_name_(device_name),
-      observer_(NULL),
+      client_(NULL),
       sent_frame_info_(false),
       loop_proxy_(base::MessageLoopProxy::current()),
       state_(kNotInitialized),
@@ -115,7 +115,7 @@ VideoCaptureDeviceMac::~VideoCaptureDeviceMac() {
 
 void VideoCaptureDeviceMac::Allocate(
     const VideoCaptureCapability& capture_format,
-    EventHandler* observer) {
+    VideoCaptureDevice::Client* client) {
   DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
   if (state_ != kIdle) {
     return;
@@ -130,7 +130,7 @@ void VideoCaptureDeviceMac::Allocate(
   GetBestMatchSupportedResolution(&width,
                                   &height);
 
-  observer_ = observer;
+  client_ = client;
   NSString* deviceId =
       [NSString stringWithUTF8String:device_name_.id().c_str()];
 
@@ -160,7 +160,7 @@ void VideoCaptureDeviceMac::Allocate(
       return;
 
     sent_frame_info_ = true;
-    observer_->OnFrameInfo(current_settings_);
+    client_->OnFrameInfo(current_settings_);
   }
 
   // If the resolution is HD, start capturing without setting a resolution.
@@ -268,11 +268,11 @@ void VideoCaptureDeviceMac::ReceiveFrame(
     if (current_settings_.width == frame_info.width &&
         current_settings_.height == frame_info.height) {
       sent_frame_info_ = true;
-      observer_->OnFrameInfo(current_settings_);
+      client_->OnFrameInfo(current_settings_);
     } else {
       UpdateCaptureResolution();
       // The current frame does not have the right width and height, so it
-      // must not be passed to |observer_|.
+      // must not be passed to |client_|.
       return;
     }
   }
@@ -280,7 +280,7 @@ void VideoCaptureDeviceMac::ReceiveFrame(
   DCHECK(current_settings_.width == frame_info.width &&
          current_settings_.height == frame_info.height);
 
-  observer_->OnIncomingCapturedFrame(
+  client_->OnIncomingCapturedFrame(
       video_frame, video_frame_length, base::Time::Now(), 0, false, false);
 }
 
@@ -294,7 +294,7 @@ void VideoCaptureDeviceMac::SetErrorState(const std::string& reason) {
   DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
   DLOG(ERROR) << reason;
   state_ = kError;
-  observer_->OnError();
+  client_->OnError();
 }
 
 bool VideoCaptureDeviceMac::UpdateCaptureResolution() {

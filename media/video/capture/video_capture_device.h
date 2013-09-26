@@ -118,9 +118,9 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // Allow generated copy constructor and assignment.
   };
 
-  class MEDIA_EXPORT EventHandler {
+  class MEDIA_EXPORT Client {
    public:
-    virtual ~EventHandler() {}
+    virtual ~Client() {}
 
     // Reserve an output buffer into which a video frame can be captured
     // directly. If all buffers are currently busy, returns NULL.
@@ -132,7 +132,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
     //
     // The output buffer stays reserved for use by the calling
     // VideoCaptureDevice until either the last reference to the VideoFrame is
-    // released, or until the buffer is passed back to the EventHandler's
+    // released, or until the buffer is passed back to the Client's
     // OnIncomingCapturedFrame() method.
     virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer() = 0;
 
@@ -191,12 +191,12 @@ class MEDIA_EXPORT VideoCaptureDevice {
   static void GetDeviceNames(Names* device_names);
 
   // Prepare the camera for use. After this function has been called no other
-  // applications can use the camera. On completion EventHandler::OnFrameInfo()
+  // applications can use the camera. On completion Client::OnFrameInfo()
   // is called informing of the resulting resolution and frame rate.
   // StopAndDeAllocate() must be called before the object is deleted.
   virtual void AllocateAndStart(
       const VideoCaptureCapability& capture_format,
-      scoped_ptr<EventHandler> client) = 0;
+      scoped_ptr<Client> client) = 0;
 
   // Deallocates the camera, possibly asynchronously.
   //
@@ -218,9 +218,9 @@ class MEDIA_EXPORT VideoCaptureDevice {
 //
 // [1] The Stop+DeAllocate calls are merged in the new style.
 // [2] The Allocate+Start calls are merged in the new style.
-// [3] New style devices own their EventHandler* pointers, allowing handlers to
-//     remain valid even after the device is stopped. Whereas old style devices
-//     may not dereference their handlers after DeAllocate().
+// [3] New style devices own their Client* pointers, allowing the client to
+//     linger after the device is stopped. Whereas old style devices
+//     may not dereference their client after DeAllocate().
 // [4] device_name() is eliminated from the new-style interface.
 //
 // TODO(nick): Remove this bridge class. It exists to enable incremental
@@ -233,16 +233,16 @@ class MEDIA_EXPORT VideoCaptureDevice1 : public VideoCaptureDevice {
   // VideoCaptureDevice implementation.
   virtual void AllocateAndStart(
       const VideoCaptureCapability& capture_format,
-      scoped_ptr<EventHandler> client) OVERRIDE;
+      scoped_ptr<Client> client) OVERRIDE;
   virtual void StopAndDeAllocate() OVERRIDE;
 
   // Prepare the camera for use. After this function has been called no other
-  // applications can use the camera. On completion EventHandler::OnFrameInfo()
+  // applications can use the camera. On completion Client::OnFrameInfo()
   // is called informing of the resulting resolution and frame rate.
   // DeAllocate() must be called before this function can be called again and
   // before the object is deleted.
   virtual void Allocate(const VideoCaptureCapability& capture_format,
-                        EventHandler* client) = 0;
+                        Client* client) = 0;
 
   // Start capturing video frames. Allocate must be called before this function.
   virtual void Start() = 0;
@@ -253,7 +253,7 @@ class MEDIA_EXPORT VideoCaptureDevice1 : public VideoCaptureDevice {
   // Deallocates the camera. This means other applications can use it. After
   // this function has been called the capture device is reset to the state it
   // was when created. After DeAllocate() is called, the VideoCaptureDevice is
-  // not permitted to make any additional calls to its EventHandler.
+  // not permitted to make any additional calls to its Client.
   virtual void DeAllocate() = 0;
 
   // Get the name of the capture device.
@@ -261,7 +261,7 @@ class MEDIA_EXPORT VideoCaptureDevice1 : public VideoCaptureDevice {
 
  private:
   // The device client which proxies device events to the controller.
-  scoped_ptr<EventHandler> client_;
+  scoped_ptr<Client> client_;
 };
 
 }  // namespace media

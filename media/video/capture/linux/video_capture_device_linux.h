@@ -25,7 +25,7 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice1 {
 
   // VideoCaptureDevice implementation.
   virtual void Allocate(const VideoCaptureCapability& capture_format,
-                         EventHandler* observer) OVERRIDE;
+                        VideoCaptureDevice::Client* client) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void DeAllocate() OVERRIDE;
@@ -51,7 +51,7 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice1 {
   void OnAllocate(int width,
                   int height,
                   int frame_rate,
-                  EventHandler* observer);
+                  VideoCaptureDevice::Client* client);
   void OnStart();
   void OnStop();
   void OnDeAllocate();
@@ -62,7 +62,7 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice1 {
   void SetErrorState(const std::string& reason);
 
   InternalState state_;
-  VideoCaptureDevice::EventHandler* observer_;
+  VideoCaptureDevice::Client* client_;
   Name device_name_;
   int device_fd_;  // File descriptor for the opened camera device.
   base::Thread v4l2_thread_;  // Thread used for reading data from the device.

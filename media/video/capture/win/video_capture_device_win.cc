@@ -258,7 +258,7 @@ void VideoCaptureDeviceWin::GetDeviceNames(Names* device_names) {
 VideoCaptureDeviceWin::VideoCaptureDeviceWin(const Name& device_name)
     : device_name_(device_name),
       state_(kIdle),
-      observer_(NULL) {
+      client_(NULL) {
   DetachFromThread();
 }
 
@@ -335,12 +335,12 @@ bool VideoCaptureDeviceWin::Init() {
 
 void VideoCaptureDeviceWin::Allocate(
     const VideoCaptureCapability& capture_format,
-    VideoCaptureDevice::EventHandler* observer) {
+    VideoCaptureDevice::Client* client) {
   DCHECK(CalledOnValidThread());
   if (state_ != kIdle)
     return;
 
-  observer_ = observer;
+  client_ = client;
 
   // Get the camera capability that best match the requested resolution.
   const VideoCaptureCapabilityWin& found_capability =
@@ -430,7 +430,7 @@ void VideoCaptureDeviceWin::Allocate(
   // connected.
   const VideoCaptureCapability& used_capability
       = sink_filter_->ResultingCapability();
-  observer_->OnFrameInfo(used_capability);
+  client_->OnFrameInfo(used_capability);
 
   state_ = kAllocated;
 }
@@ -494,8 +494,8 @@ const VideoCaptureDevice::Name& VideoCaptureDeviceWin::device_name() {
 // Implements SinkFilterObserver::SinkFilterObserver.
 void VideoCaptureDeviceWin::FrameReceived(const uint8* buffer,
                                           int length) {
-  observer_->OnIncomingCapturedFrame(buffer, length, base::Time::Now(),
-                                     0, false, false);
+  client_->OnIncomingCapturedFrame(buffer, length, base::Time::Now(),
+                                   0, false, false);
 }
 
 bool VideoCaptureDeviceWin::CreateCapabilityMap() {
@@ -614,6 +614,6 @@ void VideoCaptureDeviceWin::SetErrorState(const char* reason) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << reason;
   state_ = kError;
-  observer_->OnError();
+  client_->OnError();
 }
 }  // namespace media

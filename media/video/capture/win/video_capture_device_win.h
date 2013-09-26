@@ -41,7 +41,7 @@ class VideoCaptureDeviceWin
 
   // VideoCaptureDevice implementation.
   virtual void Allocate(const VideoCaptureCapability& capture_format,
-                         VideoCaptureDevice::EventHandler* observer) OVERRIDE;
+                         VideoCaptureDevice::Client* client) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void DeAllocate() OVERRIDE;
@@ -66,7 +66,7 @@ class VideoCaptureDeviceWin
 
   Name device_name_;
   InternalState state_;
-  VideoCaptureDevice::EventHandler* observer_;
+  VideoCaptureDevice::Client* client_;
 
   base::win::ScopedComPtr<IBaseFilter> capture_filter_;
   base::win::ScopedComPtr<IGraphBuilder> graph_builder_;

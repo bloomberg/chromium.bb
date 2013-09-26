@@ -29,7 +29,7 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice1 {
 
   // VideoCaptureDevice implementation.
   virtual void Allocate(const VideoCaptureCapability& capture_format,
-                         VideoCaptureDevice::EventHandler* observer) OVERRIDE;
+                        VideoCaptureDevice::Client* client) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void DeAllocate() OVERRIDE;
@@ -60,7 +60,7 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice1 {
   };
 
   Name device_name_;
-  VideoCaptureDevice::EventHandler* observer_;
+  VideoCaptureDevice::Client* client_;
 
   VideoCaptureCapability current_settings_;
   bool sent_frame_info_;

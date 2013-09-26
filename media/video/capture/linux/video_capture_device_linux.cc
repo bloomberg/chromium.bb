@@ -196,7 +196,7 @@ VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
 
 VideoCaptureDeviceLinux::VideoCaptureDeviceLinux(const Name& device_name)
     : state_(kIdle),
-      observer_(NULL),
+      client_(NULL),
       device_name_(device_name),
       device_fd_(-1),
       v4l2_thread_("V4L2Thread"),
@@ -219,7 +219,7 @@ VideoCaptureDeviceLinux::~VideoCaptureDeviceLinux() {
 
 void VideoCaptureDeviceLinux::Allocate(
     const VideoCaptureCapability& capture_format,
-    EventHandler* observer) {
+    VideoCaptureDevice::Client* client) {
   if (v4l2_thread_.IsRunning()) {
     return;  // Wrong state.
   }
@@ -231,7 +231,7 @@ void VideoCaptureDeviceLinux::Allocate(
                             capture_format.width,
                             capture_format.height,
                             capture_format.frame_rate,
-                            observer));
+                            client));
 }
 
 void VideoCaptureDeviceLinux::Start() {
@@ -275,10 +275,10 @@ const VideoCaptureDevice::Name& VideoCaptureDeviceLinux::device_name() {
 void VideoCaptureDeviceLinux::OnAllocate(int width,
                                          int height,
                                          int frame_rate,
-                                         EventHandler* observer) {
+                                         Client* client) {
   DCHECK_EQ(v4l2_thread_.message_loop(), base::MessageLoop::current());
 
-  observer_ = observer;
+  client_ = client;
 
   // Need to open camera with O_RDWR after Linux kernel 3.3.
   if ((device_fd_ = open(device_name_.id().c_str(), O_RDWR)) < 0) {
@@ -369,8 +369,8 @@ void VideoCaptureDeviceLinux::OnAllocate(int width,
   current_settings.interlaced = false;
 
   state_ = kAllocated;
-  // Report the resulting frame size to the observer.
-  observer_->OnFrameInfo(current_settings);
+  // Report the resulting frame size to the client.
+  client_->OnFrameInfo(current_settings);
 }
 
 void VideoCaptureDeviceLinux::OnDeAllocate() {
@@ -488,7 +488,7 @@ void VideoCaptureDeviceLinux::OnCaptureTask() {
     buffer.memory = V4L2_MEMORY_MMAP;
     // Dequeue a buffer.
     if (ioctl(device_fd_, VIDIOC_DQBUF, &buffer) == 0) {
-      observer_->OnIncomingCapturedFrame(
+      client_->OnIncomingCapturedFrame(
           static_cast<uint8*> (buffer_pool_[buffer.index].start),
           buffer.bytesused, base::Time::Now(), 0, false, false);
 
@@ -583,7 +583,7 @@ void VideoCaptureDeviceLinux::DeAllocateVideoBuffers() {
 void VideoCaptureDeviceLinux::SetErrorState(const std::string& reason) {
   DVLOG(1) << reason;
   state_ = kError;
-  observer_->OnError();
+  client_->OnError();
 }
 
 }  // namespace media

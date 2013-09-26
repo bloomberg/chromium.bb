@@ -38,7 +38,7 @@ const int kTestFrameHeight2 = 150;
 
 const int kFrameRate = 30;
 
-class MockFrameObserver : public media::VideoCaptureDevice::EventHandler {
+class MockDeviceClient : public media::VideoCaptureDevice::Client {
  public:
   MOCK_METHOD0(ReserveOutputBuffer, scoped_refptr<media::VideoFrame>());
   MOCK_METHOD0(OnError, void());
@@ -120,12 +120,12 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   base::WaitableEvent done_event(false, false);
   int frame_size;
 
-  MockFrameObserver frame_observer;
-  EXPECT_CALL(frame_observer, OnFrameInfo(_))
+  MockDeviceClient client;
+  EXPECT_CALL(client, OnFrameInfo(_))
       .WillOnce(SaveArg<0>(&caps));
-  EXPECT_CALL(frame_observer, OnError())
+  EXPECT_CALL(client, OnError())
       .Times(0);
-  EXPECT_CALL(frame_observer, OnIncomingCapturedFrame(_, _, _, _, _, _))
+  EXPECT_CALL(client, OnIncomingCapturedFrame(_, _, _, _, _, _))
       .WillRepeatedly(DoAll(
           SaveArg<1>(&frame_size),
           InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
@@ -133,7 +133,7 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   media::VideoCaptureCapability capture_format(
       640, 480, kFrameRate, media::PIXEL_FORMAT_I420, 0, false,
       media::ConstantResolutionVideoCaptureDevice);
-  capture_device.Allocate(capture_format, &frame_observer);
+  capture_device.Allocate(capture_format, &client);
   capture_device.Start();
   EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
   capture_device.Stop();
@@ -161,14 +161,14 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
   base::WaitableEvent done_event(false, false);
   int frame_size;
 
-  MockFrameObserver frame_observer;
-  Expectation frame_info_called = EXPECT_CALL(frame_observer, OnFrameInfo(_))
+  MockDeviceClient client;
+  Expectation frame_info_called = EXPECT_CALL(client, OnFrameInfo(_))
       .WillOnce(SaveArg<0>(&caps));
-  EXPECT_CALL(frame_observer, OnFrameInfoChanged(_))
+  EXPECT_CALL(client, OnFrameInfoChanged(_))
       .Times(0);
-  EXPECT_CALL(frame_observer, OnError())
+  EXPECT_CALL(client, OnError())
       .Times(0);
-  EXPECT_CALL(frame_observer, OnIncomingCapturedFrame(_, _, _, _, _, _))
+  EXPECT_CALL(client, OnIncomingCapturedFrame(_, _, _, _, _, _))
       .After(frame_info_called)
       .WillRepeatedly(DoAll(
           SaveArg<1>(&frame_size),
@@ -183,7 +183,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
       false,
       media::ConstantResolutionVideoCaptureDevice);
 
-  capture_device.Allocate(capture_format, &frame_observer);
+  capture_device.Allocate(capture_format, &client);
   capture_device.Start();
 
   // Capture at least two frames, to ensure that the source frame size has
@@ -216,23 +216,23 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
   media::VideoCaptureCapability caps;
   base::WaitableEvent done_event(false, false);
 
-  MockFrameObserver frame_observer;
-  Expectation frame_info_called = EXPECT_CALL(frame_observer, OnFrameInfo(_))
+  MockDeviceClient client;
+  Expectation frame_info_called = EXPECT_CALL(client, OnFrameInfo(_))
       .WillOnce(SaveArg<0>(&caps));
-  Expectation first_info_changed = EXPECT_CALL(frame_observer,
+  Expectation first_info_changed = EXPECT_CALL(client,
       OnFrameInfoChanged(EqualsCaptureCapability(kTestFrameWidth2,
                                                  kTestFrameHeight2)))
       .After(frame_info_called);
-  Expectation second_info_changed = EXPECT_CALL(frame_observer,
+  Expectation second_info_changed = EXPECT_CALL(client,
       OnFrameInfoChanged(EqualsCaptureCapability(kTestFrameWidth1,
                                                  kTestFrameHeight1)))
       .After(first_info_changed);
-  EXPECT_CALL(frame_observer, OnFrameInfoChanged(_))
+  EXPECT_CALL(client, OnFrameInfoChanged(_))
       .Times(AnyNumber())
       .After(second_info_changed);
-  EXPECT_CALL(frame_observer, OnError())
+  EXPECT_CALL(client, OnError())
       .Times(0);
-  EXPECT_CALL(frame_observer, OnIncomingCapturedFrame(_, _, _, _, _, _))
+  EXPECT_CALL(client, OnIncomingCapturedFrame(_, _, _, _, _, _))
       .After(frame_info_called)
       .WillRepeatedly(
           InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal));
@@ -246,7 +246,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
       false,
       media::VariableResolutionVideoCaptureDevice);
 
-  capture_device.Allocate(capture_format, &frame_observer);
+  capture_device.Allocate(capture_format, &client);
   capture_device.Start();
 
   // Capture at least three frames, to ensure that the source frame size has

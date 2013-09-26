@@ -30,7 +30,7 @@
 //
 //   * VideoCaptureController indirectly observes a VideoCaptureDevice
 //     by means of its proxy, VideoCaptureDeviceClient, which implements
-//     the VideoCaptureDevice::EventHandler interface. The proxy forwards
+//     the VideoCaptureDevice::Client interface. The proxy forwards
 //     observed events to the VideoCaptureController on the IO thread.
 //   * A VideoCaptureController interacts with its clients (VideoCaptureHosts)
 //     via the VideoCaptureControllerEventHandler interface.
@@ -76,7 +76,7 @@ class CONTENT_EXPORT VideoCaptureController {
 
   // Return a new VideoCaptureDeviceClient to forward capture events to this
   // instance.
-  scoped_ptr<media::VideoCaptureDevice::EventHandler> NewDeviceClient();
+  scoped_ptr<media::VideoCaptureDevice::Client> NewDeviceClient();
 
   // Start video capturing and try to use the resolution specified in
   // |params|.

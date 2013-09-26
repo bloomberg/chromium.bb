@@ -305,7 +305,7 @@ class CaptureTestRenderViewHostFactory : public RenderViewHostFactory {
 
 // A stub consumer of captured video frames, which checks the output of
 // WebContentsVideoCaptureDevice.
-class StubConsumer : public media::VideoCaptureDevice::EventHandler {
+class StubConsumer : public media::VideoCaptureDevice::Client {
  public:
   StubConsumer()
       : error_encountered_(false),

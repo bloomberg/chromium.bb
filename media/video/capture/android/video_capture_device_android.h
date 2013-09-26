@@ -19,7 +19,7 @@ namespace media {
 
 // VideoCaptureDevice on Android. The VideoCaptureDevice API's are called
 // by VideoCaptureManager on its own thread, while OnFrameAvailable is called
-// on JAVA thread (i.e., UI thread). Both will access |state_| and |observer_|,
+// on JAVA thread (i.e., UI thread). Both will access |state_| and |client_|,
 // but only VideoCaptureManager would change their value.
 class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice1 {
  public:
@@ -30,7 +30,7 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice1 {
 
   // VideoCaptureDevice implementation.
   virtual void Allocate(const VideoCaptureCapability& capture_format,
-                         EventHandler* observer) OVERRIDE;
+                        Client* client) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void DeAllocate() OVERRIDE;
@@ -66,14 +66,14 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice1 {
   VideoPixelFormat GetColorspace();
   void SetErrorState(const std::string& reason);
 
-  // Prevent racing on accessing |state_| and |observer_| since both could be
+  // Prevent racing on accessing |state_| and |client_| since both could be
   // accessed from different threads.
   base::Lock lock_;
   InternalState state_;
   bool got_first_frame_;
   base::TimeTicks expected_next_frame_time_;
   base::TimeDelta frame_interval_;
-  VideoCaptureDevice::EventHandler* observer_;
+  VideoCaptureDevice::Client* client_;
 
   Name device_name_;
   VideoCaptureCapability current_settings_;

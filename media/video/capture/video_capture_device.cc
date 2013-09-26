@@ -34,7 +34,7 @@ VideoCaptureDevice1::~VideoCaptureDevice1() {}
 
 void VideoCaptureDevice1::AllocateAndStart(
     const VideoCaptureCapability& capture_format,
-    scoped_ptr<EventHandler> client) {
+    scoped_ptr<Client> client) {
   client_ = client.Pass();
   Allocate(capture_format, client_.get());
   Start();

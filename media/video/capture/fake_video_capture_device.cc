@@ -54,7 +54,7 @@ void FakeVideoCaptureDevice::SetFailNextCreate() {
 
 FakeVideoCaptureDevice::FakeVideoCaptureDevice(const Name& device_name)
     : device_name_(device_name),
-      observer_(NULL),
+      client_(NULL),
       state_(kIdle),
       capture_thread_("CaptureThread"),
       frame_count_(0),
@@ -69,7 +69,7 @@ FakeVideoCaptureDevice::~FakeVideoCaptureDevice() {
 
 void FakeVideoCaptureDevice::Allocate(
     const VideoCaptureCapability& capture_format,
-    EventHandler* observer) {
+    VideoCaptureDevice::Client* client) {
   capture_format_.frame_size_type = capture_format.frame_size_type;
   if (capture_format.frame_size_type == VariableResolutionVideoCaptureDevice)
     PopulateCapabilitiesRoster();
@@ -78,7 +78,7 @@ void FakeVideoCaptureDevice::Allocate(
     return;  // Wrong state.
   }
 
-  observer_ = observer;
+  client_ = client;
   capture_format_.color = PIXEL_FORMAT_I420;
   capture_format_.expected_capture_delay = 0;
   capture_format_.interlaced = false;
@@ -98,7 +98,7 @@ void FakeVideoCaptureDevice::Allocate(
   fake_frame_.reset(new uint8[fake_frame_size]);
 
   state_ = kAllocated;
-  observer_->OnFrameInfo(capture_format_);
+  client_->OnFrameInfo(capture_format_);
 }
 
 void FakeVideoCaptureDevice::Reallocate() {
@@ -114,7 +114,7 @@ void FakeVideoCaptureDevice::Reallocate() {
       gfx::Size(capture_format_.width, capture_format_.height));
   fake_frame_.reset(new uint8[fake_frame_size]);
 
-  observer_->OnFrameInfoChanged(capture_format_);
+  client_->OnFrameInfoChanged(capture_format_);
 }
 
 void FakeVideoCaptureDevice::Start() {
@@ -209,8 +209,8 @@ void FakeVideoCaptureDevice::OnCaptureTask() {
 
   frame_count_++;
 
-  // Give the captured frame to the observer.
-  observer_->OnIncomingCapturedFrame(
+  // Give the captured frame to the client.
+  client_->OnIncomingCapturedFrame(
       fake_frame_.get(), frame_size, base::Time::Now(), 0, false, false);
   if (!(frame_count_ % kFakeCaptureCapabilityChangePeriod) &&
       (capture_format_.frame_size_type ==

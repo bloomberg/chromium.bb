@@ -45,7 +45,7 @@ class DesktopCaptureDevice::Core
 
   // Implementation of VideoCaptureDevice methods.
   void Allocate(const media::VideoCaptureCapability& capture_format,
-                EventHandler* event_handler);
+                VideoCaptureDevice::Client* client);
   void Start();
   void Stop();
   void DeAllocate();
@@ -86,11 +86,11 @@ class DesktopCaptureDevice::Core
   // The underlying DesktopCapturer instance used to capture frames.
   scoped_ptr<webrtc::DesktopCapturer> desktop_capturer_;
 
-  // |event_handler_lock_| must be locked whenever |event_handler_| is used.
-  // It's necessary because DeAllocate() needs to reset it on the calling thread
-  // to ensure that the event handler is not called once DeAllocate() returns.
-  base::Lock event_handler_lock_;
-  EventHandler* event_handler_;
+  // |client_lock_| must be locked whenever |client_| is used. It's necessary
+  // because DeAllocate() needs to reset it on the calling thread to ensure
+  // that the client is not called once DeAllocate() returns.
+  base::Lock client_lock_;
+  VideoCaptureDevice::Client* client_;
 
   // Requested video capture format (width, height, frame rate, etc).
   media::VideoCaptureCapability requested_format_;
@@ -110,8 +110,8 @@ class DesktopCaptureDevice::Core
   // and/or letterboxed.
   webrtc::DesktopRect output_rect_;
 
-  // True between DoStart() and DoStop(). Can't just check |event_handler_|
-  // because |event_handler_| is used on the caller thread.
+  // True between DoStart() and DoStop(). Can't just check |client_| because
+  // |client_| is used on the caller thread.
   bool started_;
 
   // True when we have delayed OnCaptureTimer() task posted on
@@ -129,7 +129,7 @@ DesktopCaptureDevice::Core::Core(
     scoped_ptr<webrtc::DesktopCapturer> capturer)
     : task_runner_(task_runner),
       desktop_capturer_(capturer.Pass()),
-      event_handler_(NULL),
+      client_(NULL),
       started_(false),
       capture_task_posted_(false),
       capture_in_progress_(false) {
@@ -140,14 +140,14 @@ DesktopCaptureDevice::Core::~Core() {
 
 void DesktopCaptureDevice::Core::Allocate(
     const media::VideoCaptureCapability& capture_format,
-    EventHandler* event_handler) {
+    VideoCaptureDevice::Client* client) {
   DCHECK_GT(capture_format.width, 0);
   DCHECK_GT(capture_format.height, 0);
   DCHECK_GT(capture_format.frame_rate, 0);
 
   {
-    base::AutoLock auto_lock(event_handler_lock_);
-    event_handler_ = event_handler;
+    base::AutoLock auto_lock(client_lock_);
+    client_ = client;
   }
 
   task_runner_->PostTask(
@@ -167,8 +167,8 @@ void DesktopCaptureDevice::Core::Stop() {
 
 void DesktopCaptureDevice::Core::DeAllocate() {
   {
-    base::AutoLock auto_lock(event_handler_lock_);
-    event_handler_ = NULL;
+    base::AutoLock auto_lock(client_lock_);
+    client_ = NULL;
   }
   task_runner_->PostTask(FROM_HERE, base::Bind(&Core::DoDeAllocate, this));
 }
@@ -187,7 +187,7 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
 
   if (!frame) {
     LOG(ERROR) << "Failed to capture a frame.";
-    event_handler_->OnError();
+    client_->OnError();
     return;
   }
 
@@ -234,10 +234,10 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
     output_data = output_frame_->data();
   }
 
-  base::AutoLock auto_lock(event_handler_lock_);
-  if (event_handler_) {
-    event_handler_->OnIncomingCapturedFrame(output_data, output_bytes,
-                                            base::Time::Now(), 0, false, false);
+  base::AutoLock auto_lock(client_lock_);
+  if (client_) {
+    client_->OnIncomingCapturedFrame(output_data, output_bytes,
+                                     base::Time::Now(), 0, false, false);
   }
 }
 
@@ -321,12 +321,12 @@ void DesktopCaptureDevice::Core::RefreshCaptureFormat(
     capture_format_.height = output_rect_.height();
 
     {
-      base::AutoLock auto_lock(event_handler_lock_);
-      if (event_handler_) {
+      base::AutoLock auto_lock(client_lock_);
+      if (client_) {
         if (previous_frame_size_.is_empty()) {
-          event_handler_->OnFrameInfo(capture_format_);
+          client_->OnFrameInfo(capture_format_);
         } else {
-          event_handler_->OnFrameInfoChanged(capture_format_);
+          client_->OnFrameInfoChanged(capture_format_);
         }
       }
     }
@@ -436,8 +436,8 @@ DesktopCaptureDevice::~DesktopCaptureDevice() {
 
 void DesktopCaptureDevice::Allocate(
     const media::VideoCaptureCapability& capture_format,
-    EventHandler* event_handler) {
-  core_->Allocate(capture_format, event_handler);
+    VideoCaptureDevice::Client* client) {
+  core_->Allocate(capture_format, client);
 }
 
 void DesktopCaptureDevice::Start() {

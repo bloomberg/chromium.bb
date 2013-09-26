@@ -102,13 +102,13 @@ struct VideoCaptureController::ControllerClient {
 // device type; including, for example, the DirectShow thread on Windows, the
 // v4l2_thread on Linux, and the UI thread for tab capture.
 class VideoCaptureController::VideoCaptureDeviceClient
-    : public media::VideoCaptureDevice::EventHandler {
+    : public media::VideoCaptureDevice::Client {
  public:
   explicit VideoCaptureDeviceClient(
       const base::WeakPtr<VideoCaptureController>& controller);
   virtual ~VideoCaptureDeviceClient();
 
-  // VideoCaptureDevice::EventHandler implementation.
+  // VideoCaptureDevice::Client implementation.
   virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer() OVERRIDE;
   virtual void OnIncomingCapturedFrame(const uint8* data,
                                        int length,
@@ -166,9 +166,9 @@ base::WeakPtr<VideoCaptureController> VideoCaptureController::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-scoped_ptr<media::VideoCaptureDevice::EventHandler>
+scoped_ptr<media::VideoCaptureDevice::Client>
 VideoCaptureController::NewDeviceClient() {
-  scoped_ptr<media::VideoCaptureDevice::EventHandler> result(
+  scoped_ptr<media::VideoCaptureDevice::Client> result(
       new VideoCaptureDeviceClient(this->GetWeakPtr()));
   return result.Pass();
 }

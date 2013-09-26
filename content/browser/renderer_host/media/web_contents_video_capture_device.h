@@ -43,7 +43,7 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
 
   // VideoCaptureDevice implementation.
   virtual void Allocate(const media::VideoCaptureCapability& capture_format,
-                        VideoCaptureDevice::EventHandler* observer) OVERRIDE;
+                        VideoCaptureDevice::Client* client) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void DeAllocate() OVERRIDE;

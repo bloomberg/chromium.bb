@@ -103,7 +103,7 @@ class VideoCaptureControllerTest : public testing::Test {
   scoped_ptr<MockVideoCaptureControllerEventHandler> client_a_;
   scoped_ptr<MockVideoCaptureControllerEventHandler> client_b_;
   scoped_ptr<VideoCaptureController> controller_;
-  scoped_ptr<media::VideoCaptureDevice::EventHandler> device_;
+  scoped_ptr<media::VideoCaptureDevice::Client> device_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureControllerTest);

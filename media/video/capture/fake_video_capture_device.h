@@ -28,7 +28,7 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice1 {
 
   // VideoCaptureDevice implementation.
   virtual void Allocate(const VideoCaptureCapability& capture_format,
-                        VideoCaptureDevice::EventHandler* observer) OVERRIDE;
+                        VideoCaptureDevice::Client* client) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void DeAllocate() OVERRIDE;
@@ -48,12 +48,12 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice1 {
   void OnCaptureTask();
 
   // EXPERIMENTAL, similar to allocate, but changes resolution and calls
-  // observer->OnFrameInfoChanged(VideoCaptureCapability&)
+  // client->OnFrameInfoChanged(VideoCaptureCapability&)
   void Reallocate();
   void PopulateCapabilitiesRoster();
 
   Name device_name_;
-  VideoCaptureDevice::EventHandler* observer_;
+  VideoCaptureDevice::Client* client_;
   InternalState state_;
   base::Thread capture_thread_;
   scoped_ptr<uint8[]> fake_frame_;
