@@ -730,7 +730,7 @@ void Node::derefEventTarget()
 void Node::setNeedsStyleRecalc(StyleChangeType changeType, StyleChangeSource source)
 {
     ASSERT(changeType != NoStyleChange);
-    if (!attached()) // changed compared to what?
+    if (!confusingAndOftenMisusedAttached()) // changed compared to what?
         return;
 
     if (source == StyleChangeFromRenderer)
@@ -960,7 +960,7 @@ inline void Node::detachNode(Node* root, const AttachContext& context)
             continue;
         }
         // Handle normal reattaches from style recalc (ex. display type changes)
-        if (node->attached())
+        if (node->confusingAndOftenMisusedAttached())
             node->detach(context);
         node = NodeTraversal::nextSkippingChildren(node, root);
     }
@@ -978,7 +978,7 @@ void Node::reattach(const AttachContext& context)
 void Node::attach(const AttachContext&)
 {
     ASSERT(document().inStyleRecalc() || isDocumentNode());
-    ASSERT(!attached());
+    ASSERT(!confusingAndOftenMisusedAttached());
     ASSERT(!renderer() || (renderer()->style() && (renderer()->parent() || renderer()->isRenderView())));
 
     setAttached();

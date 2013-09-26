@@ -166,7 +166,7 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
     StyleResolver* styleResolver = document().styleResolver();
     styleResolver->pushParentShadowRoot(*this);
 
-    if (!attached()) {
+    if (!confusingAndOftenMisusedAttached()) {
         attach();
         return;
     }

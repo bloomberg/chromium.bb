@@ -123,7 +123,7 @@ void HistoryController::saveDocumentAndScrollState()
     Document* document = m_frame->document();
     ASSERT(document);
 
-    if (m_currentItem->isCurrentDocument(document) && document->attached()) {
+    if (m_currentItem->isCurrentDocument(document) && document->confusingAndOftenMisusedAttached()) {
         LOG(Loading, "WebCoreLoading %s: saving form state to %p", m_frame->tree()->uniqueName().string().utf8().data(), m_currentItem.get());
         m_currentItem->setDocumentState(document->formElementsState());
     }

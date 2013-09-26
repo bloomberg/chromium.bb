@@ -271,7 +271,7 @@ inline void ElementRareData::releasePseudoElement(PseudoElement* element)
 
     InspectorInstrumentation::pseudoElementDestroyed(element);
 
-    if (element->attached())
+    if (element->confusingAndOftenMisusedAttached())
         element->detach();
 
     ASSERT(!element->nextSibling());

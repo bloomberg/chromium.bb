@@ -365,7 +365,7 @@ bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
         return false;
 
     }
-    if (!m_document.renderer() || !m_document.attached())
+    if (!m_document.renderer() || !m_document.confusingAndOftenMisusedAttached())
         return false;
 
     bool requiresFullStyleRecalc = false;

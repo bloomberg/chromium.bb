@@ -45,9 +45,9 @@ void RemoveNodeCommand::doApply()
 {
     ContainerNode* parent = m_node->parentNode();
     if (!parent || (m_shouldAssumeContentIsAlwaysEditable == DoNotAssumeContentIsAlwaysEditable
-        && !parent->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable) && parent->attached()))
+        && !parent->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable) && parent->confusingAndOftenMisusedAttached()))
         return;
-    ASSERT(parent->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable) || !parent->attached());
+    ASSERT(parent->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable) || !parent->confusingAndOftenMisusedAttached());
 
     m_parent = parent;
     m_refChild = m_node->nextSibling();

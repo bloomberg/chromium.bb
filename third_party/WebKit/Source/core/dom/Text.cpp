@@ -332,7 +332,7 @@ bool Text::needsWhitespaceRenderer()
 
 void Text::updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior recalcStyleBehavior)
 {
-    if (!attached())
+    if (!confusingAndOftenMisusedAttached())
         return;
     RenderText* textRenderer = toRenderText(renderer());
     if (!textRenderer || !textRendererIsNeeded(NodeRenderingContext(this, textRenderer->style()))) {

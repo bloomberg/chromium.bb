@@ -377,7 +377,7 @@ void ImageLoader::dispatchPendingBeforeLoadEvent()
         return;
     if (!m_image)
         return;
-    if (!m_element->document().attached())
+    if (!m_element->document().confusingAndOftenMisusedAttached())
         return;
     m_hasPendingBeforeLoadEvent = false;
     if (m_element->dispatchBeforeLoadEvent(m_image->url().string())) {
@@ -407,7 +407,7 @@ void ImageLoader::dispatchPendingLoadEvent()
     if (!m_image)
         return;
     m_hasPendingLoadEvent = false;
-    if (element()->document().attached())
+    if (element()->document().confusingAndOftenMisusedAttached())
         dispatchLoadEvent();
 
     // Only consider updating the protection ref-count of the Element immediately before returning
@@ -420,7 +420,7 @@ void ImageLoader::dispatchPendingErrorEvent()
     if (!m_hasPendingErrorEvent)
         return;
     m_hasPendingErrorEvent = false;
-    if (element()->document().attached())
+    if (element()->document().confusingAndOftenMisusedAttached())
         element()->dispatchEvent(Event::create(eventNames().errorEvent));
 
     // Only consider updating the protection ref-count of the Element immediately before returning

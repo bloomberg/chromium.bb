@@ -40,12 +40,12 @@ AppendNodeCommand::AppendNodeCommand(PassRefPtr<ContainerNode> parent, PassRefPt
     ASSERT(m_node);
     ASSERT(!m_node->parentNode());
 
-    ASSERT(m_parent->rendererIsEditable() || !m_parent->attached());
+    ASSERT(m_parent->rendererIsEditable() || !m_parent->confusingAndOftenMisusedAttached());
 }
 
 void AppendNodeCommand::doApply()
 {
-    if (!m_parent->rendererIsEditable() && m_parent->attached())
+    if (!m_parent->rendererIsEditable() && m_parent->confusingAndOftenMisusedAttached())
         return;
 
     m_parent->appendChild(m_node.get(), IGNORE_EXCEPTION);

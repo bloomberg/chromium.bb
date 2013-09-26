@@ -420,7 +420,7 @@ void HTMLInputElement::updateType()
 
     m_inputType->destroyShadowSubtree();
 
-    bool wasAttached = attached();
+    bool wasAttached = confusingAndOftenMisusedAttached();
     if (wasAttached)
         detach();
 

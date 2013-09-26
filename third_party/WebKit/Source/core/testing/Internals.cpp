@@ -494,7 +494,7 @@ bool Internals::attached(Node* node, ExceptionState& es)
         return false;
     }
 
-    return node->attached();
+    return node->confusingAndOftenMisusedAttached();
 }
 
 Node* Internals::nextSiblingByWalker(Node* node, ExceptionState& es)

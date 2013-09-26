@@ -304,7 +304,7 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicSt
 
         m_size = size;
         setNeedsValidityCheck();
-        if (m_size != oldSize && attached()) {
+        if (m_size != oldSize && confusingAndOftenMisusedAttached()) {
             lazyReattach();
             setRecalcListItems();
         }

@@ -270,7 +270,7 @@ void FrameLoader::clear(ClearOptions options)
     m_frame->editor().clear();
     m_frame->document()->cancelParsing();
     m_frame->document()->stopActiveDOMObjects();
-    if (m_frame->document()->attached()) {
+    if (m_frame->document()->confusingAndOftenMisusedAttached()) {
         m_frame->document()->prepareForDestruction();
         m_frame->document()->removeFocusedElementOfSubtree(m_frame->document());
     }

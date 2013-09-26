@@ -85,7 +85,7 @@ RenderObject* NodeRenderingContext::nextRenderer() const
 
     // Avoid an O(N^2) problem with this function by not checking for
     // nextRenderer() when the parent element hasn't attached yet.
-    if (m_renderingParent && !m_renderingParent->attached())
+    if (m_renderingParent && !m_renderingParent->confusingAndOftenMisusedAttached())
         return 0;
 
     for (Node* sibling = NodeRenderingTraversal::nextSibling(m_node); sibling; sibling = NodeRenderingTraversal::nextSibling(sibling)) {

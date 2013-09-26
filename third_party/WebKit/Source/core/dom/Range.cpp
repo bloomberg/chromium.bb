@@ -304,7 +304,7 @@ bool Range::isPointInRange(Node* refNode, int offset, ExceptionState& es)
         return false;
     }
 
-    if (!refNode->attached() || &refNode->document() != m_ownerDocument) {
+    if (!refNode->confusingAndOftenMisusedAttached() || &refNode->document() != m_ownerDocument) {
         return false;
     }
 
@@ -332,7 +332,7 @@ short Range::comparePoint(Node* refNode, int offset, ExceptionState& es) const
         return 0;
     }
 
-    if (!refNode->attached() || &refNode->document() != m_ownerDocument) {
+    if (!refNode->confusingAndOftenMisusedAttached() || &refNode->document() != m_ownerDocument) {
         es.throwUninformativeAndGenericDOMException(WrongDocumentError);
         return 0;
     }
@@ -367,12 +367,12 @@ Range::CompareResults Range::compareNode(Node* refNode, ExceptionState& es) cons
         return NODE_BEFORE;
     }
 
-    if (!m_start.container() && refNode->attached()) {
+    if (!m_start.container() && refNode->confusingAndOftenMisusedAttached()) {
         es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return NODE_BEFORE;
     }
 
-    if (m_start.container() && !refNode->attached()) {
+    if (m_start.container() && !refNode->confusingAndOftenMisusedAttached()) {
         // Firefox doesn't throw an exception for this case; it returns 0.
         return NODE_BEFORE;
     }
@@ -581,7 +581,7 @@ bool Range::intersectsNode(Node* refNode, ExceptionState& es)
         return false;
     }
 
-    if (!refNode->attached() || &refNode->document() != m_ownerDocument) {
+    if (!refNode->confusingAndOftenMisusedAttached() || &refNode->document() != m_ownerDocument) {
         // Firefox doesn't throw an exception for these cases; it returns false.
         return false;
     }

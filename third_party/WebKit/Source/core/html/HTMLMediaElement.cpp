@@ -549,7 +549,7 @@ void HTMLMediaElement::removedFrom(ContainerNode* insertionPoint)
 
 void HTMLMediaElement::attach(const AttachContext& context)
 {
-    ASSERT(!attached());
+    ASSERT(!confusingAndOftenMisusedAttached());
 
     HTMLElement::attach(context);
 

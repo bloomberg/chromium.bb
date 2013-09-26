@@ -365,7 +365,7 @@ public:
     bool hovered() const { return isUserActionElement() && isUserActionElementHovered(); }
     bool focused() const { return isUserActionElement() && isUserActionElementFocused(); }
 
-    bool attached() const { return getFlag(IsAttachedFlag); }
+    bool confusingAndOftenMisusedAttached() const { return getFlag(IsAttachedFlag); }
     void setAttached() { setFlag(IsAttachedFlag); }
     bool needsStyleRecalc() const { return styleChangeType() != NoStyleChange; }
     StyleChangeType styleChangeType() const { return static_cast<StyleChangeType>(m_nodeFlags & StyleChangeMask); }
@@ -905,7 +905,7 @@ inline ContainerNode* Node::parentNodeGuaranteedHostFree() const
 
 inline void Node::lazyReattachIfAttached()
 {
-    if (attached())
+    if (confusingAndOftenMisusedAttached())
         lazyReattach();
 }
 
@@ -917,7 +917,7 @@ inline void Node::lazyReattach()
     AttachContext context;
     context.performingReattach = true;
 
-    if (attached())
+    if (confusingAndOftenMisusedAttached())
         detach(context);
     lazyAttach();
 }

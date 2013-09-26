@@ -76,7 +76,7 @@ void ContainerNode::removeDetachedChildren()
         for (Node* child = firstChild(); child; child = child->nextSibling())
             child->updateAncestorConnectedSubframeCountForRemoval();
     }
-    // FIXME: We should be able to ASSERT(!attached()) here: https://bugs.webkit.org/show_bug.cgi?id=107801
+    // FIXME: We should be able to ASSERT(!confusingAndOftenMisusedAttached()) here: https://bugs.webkit.org/show_bug.cgi?id=107801
     removeDetachedChildrenInContainer<Node, ContainerNode>(this);
 }
 
@@ -97,7 +97,7 @@ void ContainerNode::takeAllChildrenFrom(ContainerNode* oldParent)
     oldParent->removeDetachedChildren();
 
     for (unsigned i = 0; i < children.size(); ++i) {
-        if (children[i]->attached())
+        if (children[i]->confusingAndOftenMisusedAttached())
             children[i]->detach();
         // FIXME: We need a no mutation event version of adoptNode.
         RefPtr<Node> child = document().adoptNode(children[i].release(), ASSERT_NO_EXCEPTION);
@@ -499,7 +499,7 @@ void ContainerNode::removeBetween(Node* previousChild, Node* nextChild, Node* ol
     ASSERT(oldChild->parentNode() == this);
 
     // Remove from rendering tree
-    if (oldChild->attached())
+    if (oldChild->confusingAndOftenMisusedAttached())
         oldChild->detach();
 
     if (nextChild)

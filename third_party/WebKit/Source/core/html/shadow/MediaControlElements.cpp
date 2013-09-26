@@ -485,7 +485,7 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event)
     if (event->isMouseEvent() && toMouseEvent(event)->button())
         return;
 
-    if (!attached())
+    if (!confusingAndOftenMisusedAttached())
         return;
 
     if (event->type() == eventNames().mousedownEvent)
@@ -510,7 +510,7 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event)
 
 bool MediaControlTimelineElement::willRespondToMouseClickEvents()
 {
-    if (!attached())
+    if (!confusingAndOftenMisusedAttached())
         return false;
 
     return true;

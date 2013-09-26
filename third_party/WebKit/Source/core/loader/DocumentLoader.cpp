@@ -898,7 +898,7 @@ PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const D
         options = ClearWindowProperties | ClearScriptObjects;
     frame->loader()->clear(options);
 
-    if (frame->document() && frame->document()->attached())
+    if (frame->document() && frame->document()->confusingAndOftenMisusedAttached())
         frame->document()->prepareForDestruction();
 
     if (!shouldReuseDefaultView)

@@ -171,7 +171,7 @@ void HTMLPlugInImageElement::detach(const AttachContext& context)
     // FIXME: Because of the insanity that is HTMLPlugInImageElement::recalcStyle,
     // we can end up detaching during an attach() call, before we even have a
     // renderer.  In that case, don't mark the widget for update.
-    if (attached() && renderer() && !useFallbackContent())
+    if (confusingAndOftenMisusedAttached() && renderer() && !useFallbackContent())
         // Update the widget the next time we attach (detaching destroys the plugin).
         setNeedsWidgetUpdate(true);
     HTMLPlugInElement::detach(context);

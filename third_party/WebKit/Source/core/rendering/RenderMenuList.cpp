@@ -387,7 +387,7 @@ void RenderMenuList::didUpdateActiveOption(int optionIndex)
 
     HTMLElement* listItem = select->listItems()[listIndex];
     ASSERT(listItem);
-    if (listItem->attached()) {
+    if (listItem->confusingAndOftenMisusedAttached()) {
         if (AccessibilityMenuList* menuList = toAccessibilityMenuList(document().axObjectCache()->get(this)))
             menuList->didUpdateActiveOption(optionIndex);
     }

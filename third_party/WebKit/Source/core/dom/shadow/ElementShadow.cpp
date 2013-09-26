@@ -85,7 +85,7 @@ void ElementShadow::removeAllShadowRoots()
         InspectorInstrumentation::willPopShadowRoot(shadowHost, oldRoot.get());
         shadowHost->document().removeFocusedElementOfSubtree(oldRoot.get());
 
-        if (oldRoot->attached())
+        if (oldRoot->confusingAndOftenMisusedAttached())
             oldRoot->detach();
 
         m_shadowRoots.removeHead();
@@ -103,7 +103,7 @@ void ElementShadow::attach(const Node::AttachContext& context)
     childrenContext.resolvedStyle = 0;
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        if (!root->attached())
+        if (!root->confusingAndOftenMisusedAttached())
             root->attach(childrenContext);
     }
 }
@@ -114,7 +114,7 @@ void ElementShadow::detach(const Node::AttachContext& context)
     childrenContext.resolvedStyle = 0;
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        if (root->attached())
+        if (root->confusingAndOftenMisusedAttached())
             root->detach(childrenContext);
     }
 }

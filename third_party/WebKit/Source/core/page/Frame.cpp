@@ -190,7 +190,7 @@ void Frame::setView(PassRefPtr<FrameView> view)
     // Prepare for destruction now, so any unload event handlers get run and the DOMWindow is
     // notified. If we wait until the view is destroyed, then things won't be hooked up enough for
     // these calls to work.
-    if (!view && document() && document()->attached()) {
+    if (!view && document() && document()->confusingAndOftenMisusedAttached()) {
         // FIXME: We don't call willRemove here. Why is that OK?
         document()->prepareForDestruction();
     }

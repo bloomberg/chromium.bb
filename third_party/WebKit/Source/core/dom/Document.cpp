@@ -1549,7 +1549,7 @@ void Document::scheduleStyleRecalc()
 
 void Document::unscheduleStyleRecalc()
 {
-    ASSERT(!attached() || (!needsStyleRecalc() && !childNeedsStyleRecalc()));
+    ASSERT(!confusingAndOftenMisusedAttached() || (!needsStyleRecalc() && !childNeedsStyleRecalc()));
     m_styleRecalcTimer.stop();
 }
 
@@ -1982,7 +1982,7 @@ void Document::clearStyleResolver()
 
 void Document::attach(const AttachContext& context)
 {
-    ASSERT(!attached());
+    ASSERT(!confusingAndOftenMisusedAttached());
     ASSERT(!m_axObjectCache || this != topDocument());
 
     // Create the rendering tree
@@ -1996,7 +1996,7 @@ void Document::attach(const AttachContext& context)
 
 void Document::detach(const AttachContext& context)
 {
-    ASSERT(attached());
+    ASSERT(confusingAndOftenMisusedAttached());
 
     if (page())
         page()->documentDetached(this);
@@ -2027,7 +2027,7 @@ void Document::detach(const AttachContext& context)
             view->detachCustomScrollbars();
     }
 
-    // indicate destruction mode,  i.e. attached() but renderer == 0
+    // indicate destruction mode, i.e. confusingAndOftenMisusedAttached() but renderer == 0
     setRenderer(0);
 
     m_hoverNode = 0;
@@ -2065,7 +2065,7 @@ void Document::prepareForDestruction()
 
     // The process of disconnecting descendant frames could have already
     // detached us.
-    if (!attached())
+    if (!confusingAndOftenMisusedAttached())
         return;
 
     if (DOMWindow* window = this->domWindow())
@@ -3288,7 +3288,7 @@ void Document::styleResolverChanged(StyleResolverUpdateType updateType, StyleRes
 {
     // Don't bother updating, since we haven't loaded all our style info yet
     // and haven't calculated the style selector for the first time.
-    if (!attached() || (!m_didCalculateStyleResolver && !haveStylesheetsLoaded())) {
+    if (!confusingAndOftenMisusedAttached() || (!m_didCalculateStyleResolver && !haveStylesheetsLoaded())) {
         m_styleResolver.clear();
         return;
     }

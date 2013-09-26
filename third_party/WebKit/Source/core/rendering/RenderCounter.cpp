@@ -542,7 +542,7 @@ void RenderCounter::rendererSubtreeAttached(RenderObject* renderer)
         node = node->parentNode();
     else
         node = renderer->generatingNode();
-    if (node && !node->attached())
+    if (node && !node->confusingAndOftenMisusedAttached())
         return; // No need to update if the parent is not attached yet
     for (RenderObject* descendant = renderer; descendant; descendant = descendant->nextInPreOrder(renderer))
         updateCounters(descendant);
@@ -551,7 +551,7 @@ void RenderCounter::rendererSubtreeAttached(RenderObject* renderer)
 void RenderCounter::rendererStyleChanged(RenderObject* renderer, const RenderStyle* oldStyle, const RenderStyle* newStyle)
 {
     Node* node = renderer->generatingNode();
-    if (!node || !node->attached())
+    if (!node || !node->confusingAndOftenMisusedAttached())
         return; // cannot have generated content or if it can have, it will be handled during attaching
     const CounterDirectiveMap* newCounterDirectives;
     const CounterDirectiveMap* oldCounterDirectives;

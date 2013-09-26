@@ -228,7 +228,7 @@ inline void ChildNodeInsertionNotifier::notify(Node* node)
     // were inserted.
     // FIXME: We should merge the lazy attach logic into the tree traversal in
     // notifyNodeInsertedIntoDocument.
-    if (!node->attached() && node->parentNode() && node->parentNode()->attached())
+    if (!node->confusingAndOftenMisusedAttached() && node->parentNode() && node->parentNode()->confusingAndOftenMisusedAttached())
         node->lazyAttach();
 
     for (size_t i = 0; i < m_postInsertionNotificationTargets.size(); ++i) {

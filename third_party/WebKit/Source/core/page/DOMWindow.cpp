@@ -327,7 +327,7 @@ void DOMWindow::setDocument(PassRefPtr<Document> document)
 {
     ASSERT(!document || document->frame() == m_frame);
     if (m_document) {
-        if (m_document->attached()) {
+        if (m_document->confusingAndOftenMisusedAttached()) {
             // FIXME: We don't call willRemove here. Why is that OK?
             // This detach() call is also mostly redundant. Most of the calls to
             // this function come via DocumentLoader::createWriterFor, which
@@ -345,7 +345,7 @@ void DOMWindow::setDocument(PassRefPtr<Document> document)
         return;
 
     m_document->setDOMWindow(this);
-    if (!m_document->attached())
+    if (!m_document->confusingAndOftenMisusedAttached())
         m_document->attach();
 
     if (!m_frame)
@@ -394,7 +394,7 @@ DOMWindow::~DOMWindow()
 
     removeAllEventListeners();
 
-    ASSERT(!m_document->attached());
+    ASSERT(!m_document->confusingAndOftenMisusedAttached());
     setDocument(0);
 }
 
