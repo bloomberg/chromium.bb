@@ -568,7 +568,7 @@ skia::RefPtr<SkPicture> InProcessViewRenderer::CapturePicture(int width,
 
   // Reset scroll back to the origin, will go back to the old
   // value when scroll_reset is out of scope.
-  base::AutoReset<gfx::Vector2dF> scroll_reset(&scroll_offset_css_,
+  base::AutoReset<gfx::Vector2dF> scroll_reset(&scroll_offset_dip_,
                                                gfx::Vector2d());
 
   SkCanvas* rec_canvas = picture->beginRecording(width, height, 0);
@@ -710,29 +710,37 @@ void InProcessViewRenderer::SetDipScale(float dip_scale) {
   CHECK(dip_scale_ > 0);
 }
 
-void InProcessViewRenderer::SetPageScaleFactor(float page_scale_factor) {
-  page_scale_factor_ = page_scale_factor;
-  CHECK(page_scale_factor_ > 0);
+gfx::Vector2d InProcessViewRenderer::max_scroll_offset() const {
+  DCHECK_GT(dip_scale_, 0);
+  return gfx::ToCeiledVector2d(gfx::ScaleVector2d(
+      max_scroll_offset_dip_, dip_scale_ * page_scale_factor_));
 }
 
-void InProcessViewRenderer::ScrollTo(gfx::Vector2d new_value) {
-  DCHECK(dip_scale_ > 0);
-  // In general we don't guarantee that the scroll offset transforms are
-  // symmetrical. That is if scrolling from JS to offset1 results in a native
-  // offset2 then scrolling from UI to offset2 results in JS being scrolled to
-  // offset1 again.
-  // The reason we explicitly do rounding here is that it seems to yeld the
-  // most stabile transformation.
-  gfx::Vector2dF new_value_css = gfx::ToRoundedVector2d(
-      gfx::ScaleVector2d(new_value, 1.0f / (dip_scale_ * page_scale_factor_)));
+void InProcessViewRenderer::ScrollTo(gfx::Vector2d scroll_offset) {
+  gfx::Vector2d max_offset = max_scroll_offset();
+  gfx::Vector2dF scroll_offset_dip;
+  // To preserve the invariant that scrolling to the maximum physical pixel
+  // value also scrolls to the maximum dip pixel value we transform the physical
+  // offset into the dip offset by using a proportion (instead of dividing by
+  // dip_scale * page_scale_factor).
+  if (max_offset.x()) {
+    scroll_offset_dip.set_x((scroll_offset.x() * max_scroll_offset_dip_.x()) /
+                            max_offset.x());
+  }
+  if (max_offset.y()) {
+    scroll_offset_dip.set_y((scroll_offset.y() * max_scroll_offset_dip_.y()) /
+                            max_offset.y());
+  }
 
-  // It's possible that more than one set of unique physical coordinates maps
-  // to the same set of CSS coordinates which means we can't reliably early-out
-  // earlier in the call stack.
-  if (scroll_offset_css_ == new_value_css)
+  DCHECK_LE(0, scroll_offset_dip.x());
+  DCHECK_LE(0, scroll_offset_dip.y());
+  DCHECK_LE(scroll_offset_dip.x(), max_scroll_offset_dip_.x());
+  DCHECK_LE(scroll_offset_dip.y(), max_scroll_offset_dip_.y());
+
+  if (scroll_offset_dip_ == scroll_offset_dip)
     return;
 
-  scroll_offset_css_ = new_value_css;
+  scroll_offset_dip_ = scroll_offset_dip;
 
   if (compositor_)
     compositor_->DidChangeRootLayerScrollOffset();
@@ -743,26 +751,62 @@ void InProcessViewRenderer::DidUpdateContent() {
     client_->OnNewPicture();
 }
 
+void InProcessViewRenderer::SetMaxRootLayerScrollOffset(
+    gfx::Vector2dF new_value_dip) {
+  DCHECK_GT(dip_scale_, 0);
+
+  max_scroll_offset_dip_ = new_value_dip;
+  DCHECK_LE(0, max_scroll_offset_dip_.x());
+  DCHECK_LE(0, max_scroll_offset_dip_.y());
+
+  client_->SetMaxContainerViewScrollOffset(max_scroll_offset());
+}
+
 void InProcessViewRenderer::SetTotalRootLayerScrollOffset(
-    gfx::Vector2dF new_value_css) {
+    gfx::Vector2dF scroll_offset_dip) {
   // TOOD(mkosiba): Add a DCHECK to say that this does _not_ get called during
   // DrawGl when http://crbug.com/249972 is fixed.
-  if (scroll_offset_css_ == new_value_css)
+  if (scroll_offset_dip_ == scroll_offset_dip)
     return;
 
-  scroll_offset_css_ = new_value_css;
+  scroll_offset_dip_ = scroll_offset_dip;
 
-  DCHECK(dip_scale_ > 0);
-  DCHECK(page_scale_factor_ > 0);
+  gfx::Vector2d max_offset = max_scroll_offset();
+  gfx::Vector2d scroll_offset;
+  // For an explanation as to why this is done this way see the comment in
+  // InProcessViewRenderer::ScrollTo.
+  if (max_scroll_offset_dip_.x()) {
+    scroll_offset.set_x((scroll_offset_dip.x() * max_offset.x()) /
+                        max_scroll_offset_dip_.x());
+  }
 
-  gfx::Vector2d scroll_offset = gfx::ToRoundedVector2d(
-      gfx::ScaleVector2d(new_value_css, dip_scale_ * page_scale_factor_));
+  if (max_scroll_offset_dip_.y()) {
+    scroll_offset.set_y((scroll_offset_dip.y() * max_offset.y()) /
+                        max_scroll_offset_dip_.y());
+  }
+
+  DCHECK(0 <= scroll_offset.x());
+  DCHECK(0 <= scroll_offset.y());
+  DCHECK(scroll_offset.x() <= max_offset.x());
+  DCHECK(scroll_offset.y() <= max_offset.y());
 
   client_->ScrollContainerViewTo(scroll_offset);
 }
 
 gfx::Vector2dF InProcessViewRenderer::GetTotalRootLayerScrollOffset() {
-  return scroll_offset_css_;
+  return scroll_offset_dip_;
+}
+
+void InProcessViewRenderer::SetRootLayerPageScaleFactor(
+    float page_scale_factor) {
+  page_scale_factor_ = page_scale_factor;
+  DCHECK_GT(page_scale_factor_, 0);
+  client_->SetPageScaleFactor(page_scale_factor);
+}
+
+void InProcessViewRenderer::SetRootLayerScrollableSize(
+    gfx::SizeF scrollable_size) {
+  client_->SetContentsSize(scrollable_size);
 }
 
 void InProcessViewRenderer::DidOverscroll(
@@ -868,7 +912,7 @@ std::string InProcessViewRenderer::ToString(AwDrawGLInfo* draw_info) const {
                       "scroll_at_start_of_frame: %s ",
                       scroll_at_start_of_frame_.ToString().c_str());
   base::StringAppendF(
-      &str, "scroll_offset_css: %s ", scroll_offset_css_.ToString().c_str());
+      &str, "scroll_offset_dip: %s ", scroll_offset_dip_.ToString().c_str());
   base::StringAppendF(&str,
                       "overscroll_rounding_error_: %s ",
                       overscroll_rounding_error_.ToString().c_str());

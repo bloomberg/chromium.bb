@@ -189,6 +189,9 @@ void LayerTreeImpl::SetPageScaleFactorAndLimits(float page_scale_factor,
   min_page_scale_factor_ = min_page_scale_factor;
   max_page_scale_factor_ = max_page_scale_factor;
   page_scale_factor_ = page_scale_factor;
+
+  if (root_layer_scroll_offset_delegate_)
+    root_layer_scroll_offset_delegate_->SetPageScaleFactor(page_scale_factor_);
 }
 
 void LayerTreeImpl::SetPageScaleDelta(float delta) {
@@ -600,10 +603,19 @@ scoped_ptr<base::Value> LayerTreeImpl::AsValue() const {
 
 void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
     LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate) {
+  if (root_layer_scroll_offset_delegate_ == root_layer_scroll_offset_delegate)
+    return;
+
   root_layer_scroll_offset_delegate_ = root_layer_scroll_offset_delegate;
+
   if (root_scroll_layer_) {
     root_scroll_layer_->SetScrollOffsetDelegate(
         root_layer_scroll_offset_delegate_);
+  }
+
+  if (root_layer_scroll_offset_delegate_) {
+    root_layer_scroll_offset_delegate_->SetScrollableSize(ScrollableSize());
+    root_layer_scroll_offset_delegate_->SetPageScaleFactor(page_scale_factor_);
   }
 }
 

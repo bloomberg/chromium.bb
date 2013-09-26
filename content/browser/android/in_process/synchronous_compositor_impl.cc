@@ -415,6 +415,13 @@ void SynchronousCompositorImpl::DidActivatePendingTree() {
     compositor_client_->DidUpdateContent();
 }
 
+void SynchronousCompositorImpl::SetMaxScrollOffset(
+    gfx::Vector2dF max_scroll_offset) {
+  DCHECK(CalledOnValidThread());
+  if (compositor_client_)
+    compositor_client_->SetMaxRootLayerScrollOffset(max_scroll_offset);
+}
+
 void SynchronousCompositorImpl::SetTotalScrollOffset(gfx::Vector2dF new_value) {
   DCHECK(CalledOnValidThread());
   if (compositor_client_)
@@ -426,6 +433,18 @@ gfx::Vector2dF SynchronousCompositorImpl::GetTotalScrollOffset() {
   if (compositor_client_)
     return compositor_client_->GetTotalRootLayerScrollOffset();
   return gfx::Vector2dF();
+}
+
+void SynchronousCompositorImpl::SetPageScaleFactor(float page_scale_factor) {
+  DCHECK(CalledOnValidThread());
+  if (compositor_client_)
+    compositor_client_->SetRootLayerPageScaleFactor(page_scale_factor);
+}
+
+void SynchronousCompositorImpl::SetScrollableSize(gfx::SizeF scrollable_size) {
+  DCHECK(CalledOnValidThread());
+  if (compositor_client_)
+    compositor_client_->SetRootLayerScrollableSize(scrollable_size);
 }
 
 // Not using base::NonThreadSafe as we want to enforce a more exacting threading

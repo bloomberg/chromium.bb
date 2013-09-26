@@ -128,7 +128,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         final int scrollX = 11;
         final int scrollY = 13;
 
-        offsetManager.setContentSize(width, height);
+        offsetManager.setMaxScrollOffset(0, 0);
         offsetManager.setContainerViewSize(width, height);
 
         assertEquals(width, offsetManager.computeHorizontalScrollRange());
@@ -176,7 +176,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         OverScroller scroller = new OverScroller(getInstrumentation().getContext());
         AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
 
-        offsetManager.setContentSize(CONTENT_WIDTH, CONTENT_HEIGHT);
+        offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
 
         assertEquals(CONTENT_WIDTH, offsetManager.computeHorizontalScrollRange());
@@ -214,54 +214,6 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         assertEquals(0, delegate.getNativeScrollY());
     }
 
-
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    public void testScrollDeferredOnInvalidContentSize() {
-        TestScrollOffsetManagerDelegate delegate = new TestScrollOffsetManagerDelegate();
-        OverScroller scroller = new OverScroller(getInstrumentation().getContext());
-        AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
-
-        offsetManager.setContentSize(0, 0);
-        offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
-
-        final int firstScrollX = MAX_HORIZONTAL_OFFSET + 10;
-        final int firstScrollY = MAX_VERTICAL_OFFSET + 11;
-        int expectedCallCount = delegate.getOverScrollCallCount();
-        offsetManager.scrollContainerViewTo(firstScrollX, firstScrollY);
-        assertEquals(expectedCallCount, delegate.getOverScrollCallCount());
-        assertEquals(0, delegate.getOverScrollDeltaX() + delegate.getScrollX());
-        assertEquals(0, delegate.getOverScrollDeltaY() + delegate.getScrollY());
-
-        // Repeated scrolls will also be deferred, overwriting any previous deferred scroll offset.
-        final int secondScrollX = MAX_HORIZONTAL_OFFSET;
-        final int secondScrollY = MAX_VERTICAL_OFFSET;
-        offsetManager.scrollContainerViewTo(secondScrollX, secondScrollY);
-        assertEquals(expectedCallCount, delegate.getOverScrollCallCount());
-        assertEquals(0, delegate.getOverScrollDeltaX() + delegate.getScrollX());
-        assertEquals(0, delegate.getOverScrollDeltaY() + delegate.getScrollY());
-
-        // Setting a valid size will release the deferred container scroll offset.
-        expectedCallCount++;
-        offsetManager.setContentSize(CONTENT_WIDTH, CONTENT_HEIGHT);
-        assertEquals(expectedCallCount, delegate.getOverScrollCallCount());
-        assertEquals(secondScrollX, delegate.getOverScrollDeltaX() + delegate.getScrollX());
-        assertEquals(secondScrollY, delegate.getOverScrollDeltaY() + delegate.getScrollY());
-        offsetManager.onContainerViewOverScrolled(secondScrollX, secondScrollY, false, false);
-
-        assertEquals(secondScrollX, delegate.getOverScrollDeltaX());
-        assertEquals(secondScrollY, delegate.getOverScrollDeltaY());
-        assertEquals(MAX_HORIZONTAL_OFFSET, delegate.getScrollX());
-        assertEquals(MAX_VERTICAL_OFFSET, delegate.getScrollY());
-
-        // Subsequently setting valid content sizes should not release another scroll update.
-        offsetManager.setContentSize(CONTENT_WIDTH + 10, CONTENT_HEIGHT + 10);
-        assertEquals(expectedCallCount, delegate.getOverScrollCallCount());
-        offsetManager.setContentSize(CONTENT_WIDTH, CONTENT_HEIGHT);
-        assertEquals(expectedCallCount, delegate.getOverScrollCallCount());
-    }
-
-
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testDelegateCanOverrideScroll() {
@@ -282,7 +234,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         OverScroller scroller = new OverScroller(getInstrumentation().getContext());
         AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
 
-        offsetManager.setContentSize(CONTENT_WIDTH, CONTENT_HEIGHT);
+        offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
 
         offsetManager.onContainerViewOverScrolled(0, 0, false, false);
@@ -309,7 +261,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         OverScroller scroller = new OverScroller(getInstrumentation().getContext());
         AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
 
-        offsetManager.setContentSize(CONTENT_WIDTH, CONTENT_HEIGHT);
+        offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
 
         offsetManager.onContainerViewOverScrolled(0, 0, false, false);
@@ -327,7 +279,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         final int scrollX = 31;
         final int scrollY = 41;
 
-        offsetManager.setContentSize(CONTENT_WIDTH, CONTENT_HEIGHT);
+        offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
 
         assertEquals(0, delegate.getOverScrollDeltaX());
@@ -350,7 +302,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         final int scrollX = 31;
         final int scrollY = 41;
 
-        offsetManager.setContentSize(CONTENT_WIDTH, CONTENT_HEIGHT);
+        offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
 
         assertEquals(0, delegate.getScrollX());
@@ -375,7 +327,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         final int scrollX = 31;
         final int scrollY = 41;
 
-        offsetManager.setContentSize(CONTENT_WIDTH, CONTENT_HEIGHT);
+        offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
 
         offsetManager.setProcessingTouchEvent(true);
@@ -417,7 +369,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         OverScroller scroller = new OverScroller(getInstrumentation().getContext());
         AwScrollOffsetManager offsetManager = new AwScrollOffsetManager(delegate, scroller);
 
-        offsetManager.setContentSize(CONTENT_WIDTH, CONTENT_HEIGHT);
+        offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
 
         offsetManager.requestChildRectangleOnScreen(0, 0,
@@ -445,7 +397,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         final int rectWidth = 2;
         final int rectHeight = 3;
 
-        offsetManager.setContentSize(CONTENT_WIDTH, CONTENT_HEIGHT);
+        offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
 
         offsetManager.requestChildRectangleOnScreen(CONTENT_WIDTH - rectWidth,
@@ -467,7 +419,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         final int rectWidth = VIEW_WIDTH;
         final int rectHeight = VIEW_HEIGHT;
 
-        offsetManager.setContentSize(CONTENT_WIDTH, CONTENT_HEIGHT);
+        offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
 
         offsetManager.requestChildRectangleOnScreen(CONTENT_WIDTH - rectWidth,
@@ -489,7 +441,7 @@ public class AwScrollOffsetManagerTest extends InstrumentationTestCase {
         final int rectWidth = 2;
         final int rectHeight = 3;
 
-        offsetManager.setContentSize(CONTENT_WIDTH, CONTENT_HEIGHT);
+        offsetManager.setMaxScrollOffset(MAX_HORIZONTAL_OFFSET, MAX_VERTICAL_OFFSET);
         offsetManager.setContainerViewSize(VIEW_WIDTH, VIEW_HEIGHT);
         simulateScrolling(offsetManager, delegate,
                 CONTENT_WIDTH - VIEW_WIDTH, CONTENT_HEIGHT - VIEW_HEIGHT);

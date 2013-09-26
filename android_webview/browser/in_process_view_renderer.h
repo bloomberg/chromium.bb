@@ -65,7 +65,6 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   virtual void SetWindowVisibility(bool visible) OVERRIDE;
   virtual void OnSizeChanged(int width, int height) OVERRIDE;
   virtual void ScrollTo(gfx::Vector2d new_value) OVERRIDE;
-  virtual void SetPageScaleFactor(float page_scale_factor) OVERRIDE;
   virtual void OnAttachedToWindow(int width, int height) OVERRIDE;
   virtual void OnDetachedFromWindow() OVERRIDE;
   virtual void SetDipScale(float dip_scale) OVERRIDE;
@@ -79,10 +78,13 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   virtual void DidDestroyCompositor(
       content::SynchronousCompositor* compositor) OVERRIDE;
   virtual void SetContinuousInvalidate(bool invalidate) OVERRIDE;
+  virtual void SetMaxRootLayerScrollOffset(gfx::Vector2dF new_value) OVERRIDE;
   virtual void SetTotalRootLayerScrollOffset(
       gfx::Vector2dF new_value_css) OVERRIDE;
   virtual void DidUpdateContent() OVERRIDE;
   virtual gfx::Vector2dF GetTotalRootLayerScrollOffset() OVERRIDE;
+  virtual void SetRootLayerPageScaleFactor(float page_scale_factor) OVERRIDE;
+  virtual void SetRootLayerScrollableSize(gfx::SizeF scrollable_size) OVERRIDE;
   virtual void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
                              gfx::Vector2dF latest_overscroll_delta,
                              gfx::Vector2dF current_fling_velocity) OVERRIDE;
@@ -110,6 +112,8 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   void NoLongerExpectsDrawGL();
 
   bool InitializeHwDraw();
+
+  gfx::Vector2d max_scroll_offset() const;
 
   // For debug tracing or logging. Return the string representation of this
   // view renderer's state and the |draw_info| if provided.
@@ -160,7 +164,10 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   gfx::Vector2d scroll_at_start_of_frame_;
 
   // Current scroll offset in CSS pixels.
-  gfx::Vector2dF scroll_offset_css_;
+  gfx::Vector2dF scroll_offset_dip_;
+
+  // Max scroll offset in CSS pixels.
+  gfx::Vector2dF max_scroll_offset_dip_;
 
   // Used to prevent rounding errors from accumulating enough to generate
   // visible skew (especially noticeable when scrolling up and down in the same

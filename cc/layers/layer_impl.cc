@@ -990,8 +990,10 @@ void LayerImpl::SetScrollOffsetDelegate(
   }
   gfx::Vector2dF total_offset = TotalScrollOffset();
   scroll_offset_delegate_ = scroll_offset_delegate;
-  if (scroll_offset_delegate_)
+  if (scroll_offset_delegate_) {
+    scroll_offset_delegate_->SetMaxScrollOffset(max_scroll_offset_);
     scroll_offset_delegate_->SetTotalScrollOffset(total_offset);
+  }
 }
 
 void LayerImpl::SetScrollOffset(gfx::Vector2d scroll_offset) {
@@ -1076,6 +1078,9 @@ void LayerImpl::SetMaxScrollOffset(gfx::Vector2d max_scroll_offset) {
   if (max_scroll_offset_ == max_scroll_offset)
     return;
   max_scroll_offset_ = max_scroll_offset;
+
+  if (scroll_offset_delegate_)
+    scroll_offset_delegate_->SetMaxScrollOffset(max_scroll_offset_);
 
   layer_tree_impl()->set_needs_update_draw_properties();
   UpdateScrollbarPositions();

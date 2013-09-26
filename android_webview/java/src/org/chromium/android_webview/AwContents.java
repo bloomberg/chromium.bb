@@ -185,6 +185,12 @@ public class AwContents {
     private boolean mClearViewActive;
     private boolean mPictureListenerEnabled;
 
+    // These come from the compositor and are updated immediately (in contrast to the values in
+    // ContentViewCore, which are updated at end of every frame).
+    private float mPageScaleFactor = 1.0f;
+    private float mContentWidthDip;
+    private float mContentHeightDip;
+
     private AwAutofillManagerDelegate mAwAutofillManagerDelegate;
 
     private static final class DestroyRunnable implements Runnable {
@@ -351,22 +357,6 @@ public class AwContents {
         @Override
         public void setFixedLayoutSize(int widthDip, int heightDip) {
             nativeSetFixedLayoutSize(mNativeAwContents, widthDip, heightDip);
-        }
-    }
-
-    //--------------------------------------------------------------------------------------------
-    // NOTE: This content size change notification comes from the compositor and reflects the size
-    // of the content on screen (but not neccessarily in the renderer main thread).
-    private class AwContentUpdateFrameInfoListener
-                implements ContentViewCore.UpdateFrameInfoListener {
-        @Override
-        public void onFrameInfoUpdated(float widthCss, float heightCss, float pageScaleFactor) {
-            if (mNativeAwContents == 0) return;
-            int widthPix = (int) Math.floor(widthCss * mDIPScale * pageScaleFactor);
-            int heightPix = (int) Math.floor(heightCss * mDIPScale * pageScaleFactor);
-            mScrollOffsetManager.setContentSize(widthPix, heightPix);
-
-            nativeSetDisplayedPageScaleFactor(mNativeAwContents, pageScaleFactor);
         }
     }
 
@@ -567,7 +557,6 @@ public class AwContents {
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate);
         mContentsClient.installWebContentsObserver(mContentViewCore);
-        mContentViewCore.setUpdateFrameInfoListener(new AwContentUpdateFrameInfoListener());
         mSettings.setWebContents(nativeWebContents);
         nativeSetDipScale(mNativeAwContents, (float) mDIPScale);
         updateGlobalVisibleRect();
@@ -756,11 +745,11 @@ public class AwContents {
     }
 
     public int getContentHeightCss() {
-        return (int) Math.ceil(mContentViewCore.getContentHeightCss());
+        return (int) Math.ceil(mContentHeightDip);
     }
 
     public int getContentWidthCss() {
-        return (int) Math.ceil(mContentViewCore.getContentWidthCss());
+        return (int) Math.ceil(mContentWidthDip);
     }
 
     public Picture capturePicture() {
@@ -1345,7 +1334,7 @@ public class AwContents {
      * the screen density factor. See CTS WebViewTest.testSetInitialScale.
      */
     public float getScale() {
-        return (float)(mContentViewCore.getScale() * mDIPScale);
+        return (float)(mPageScaleFactor * mDIPScale);
     }
 
     /**
@@ -1823,8 +1812,24 @@ public class AwContents {
     }
 
     @CalledByNative
+    private void setMaxContainerViewScrollOffset(int maxX, int maxY) {
+        mScrollOffsetManager.setMaxScrollOffset(maxX, maxY);
+    }
+
+    @CalledByNative
     private void scrollContainerViewTo(int x, int y) {
         mScrollOffsetManager.scrollContainerViewTo(x, y);
+    }
+
+    @CalledByNative
+    private void setContentsSize(int widthDip, int heightDip) {
+        mContentWidthDip = widthDip;
+        mContentHeightDip = heightDip;
+    }
+
+    @CalledByNative
+    private void setPageScaleFactor(float pageScaleFactor) {
+        mPageScaleFactor = pageScaleFactor;
     }
 
     @CalledByNative
@@ -1942,8 +1947,6 @@ public class AwContents {
     private native void nativeOnAttachedToWindow(int nativeAwContents, int w, int h);
     private static native void nativeOnDetachedFromWindow(int nativeAwContents);
     private native void nativeSetDipScale(int nativeAwContents, float dipScale);
-    private native void nativeSetDisplayedPageScaleFactor(int nativeAwContents,
-            float pageScaleFactor);
     private native void nativeSetFixedLayoutSize(int nativeAwContents, int widthDip, int heightDip);
 
     // Returns null if save state fails.

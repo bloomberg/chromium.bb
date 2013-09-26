@@ -156,18 +156,19 @@ class AwContents : public FindHelper::Listener,
   virtual void UpdateGlobalVisibleRect() OVERRIDE;
   virtual void OnNewPicture() OVERRIDE;
   virtual gfx::Point GetLocationOnScreen() OVERRIDE;
+  virtual void SetMaxContainerViewScrollOffset(
+      gfx::Vector2d new_value) OVERRIDE;
   virtual void ScrollContainerViewTo(gfx::Vector2d new_value) OVERRIDE;
+  virtual void SetPageScaleFactor(float page_scale_factor) OVERRIDE;
+  virtual void SetContentsSize(gfx::SizeF contents_size_dip) OVERRIDE;
   virtual void DidOverscroll(gfx::Vector2d overscroll_delta) OVERRIDE;
 
   void ClearCache(JNIEnv* env, jobject obj, jboolean include_disk_files);
   void SetPendingWebContentsForPopup(scoped_ptr<content::WebContents> pending);
   jint ReleasePopupAwContents(JNIEnv* env, jobject obj);
 
-  void ScrollTo(JNIEnv* env, jobject obj, jint xPix, jint yPix);
+  void ScrollTo(JNIEnv* env, jobject obj, jint x, jint y);
   void SetDipScale(JNIEnv* env, jobject obj, jfloat dip_scale);
-  void SetDisplayedPageScaleFactor(JNIEnv* env,
-                                   jobject obj,
-                                   jfloat page_scale_factor);
   void SetFixedLayoutSize(JNIEnv* env,
                           jobject obj,
                           jint width_dip,

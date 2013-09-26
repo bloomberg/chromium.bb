@@ -800,6 +800,15 @@ gfx::Point AwContents::GetLocationOnScreen() {
   return gfx::Point(location[0], location[1]);
 }
 
+void AwContents::SetMaxContainerViewScrollOffset(gfx::Vector2d new_value) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_AwContents_setMaxContainerViewScrollOffset(
+      env, obj.obj(), new_value.x(), new_value.y());
+}
+
 void AwContents::ScrollContainerViewTo(gfx::Vector2d new_value) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
@@ -809,6 +818,22 @@ void AwContents::ScrollContainerViewTo(gfx::Vector2d new_value) {
       env, obj.obj(), new_value.x(), new_value.y());
 }
 
+void AwContents::SetPageScaleFactor(float page_scale_factor) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_AwContents_setPageScaleFactor(env, obj.obj(), page_scale_factor);
+}
+
+void AwContents::SetContentsSize(gfx::SizeF contents_size_dip) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_AwContents_setContentsSize(
+      env, obj.obj(), contents_size_dip.width(), contents_size_dip.height());
+}
 
 void AwContents::DidOverscroll(gfx::Vector2d overscroll_delta) {
   JNIEnv* env = AttachCurrentThread();
@@ -823,12 +848,6 @@ void AwContents::SetDipScale(JNIEnv* env, jobject obj, jfloat dip_scale) {
   browser_view_renderer_->SetDipScale(dip_scale);
 }
 
-void AwContents::SetDisplayedPageScaleFactor(JNIEnv* env,
-                                             jobject obj,
-                                             jfloat page_scale_factor) {
-  browser_view_renderer_->SetPageScaleFactor(page_scale_factor);
-}
-
 void AwContents::SetFixedLayoutSize(JNIEnv* env,
                                     jobject obj,
                                     jint width_dip,
@@ -836,8 +855,8 @@ void AwContents::SetFixedLayoutSize(JNIEnv* env,
   render_view_host_ext_->SetFixedLayoutSize(gfx::Size(width_dip, height_dip));
 }
 
-void AwContents::ScrollTo(JNIEnv* env, jobject obj, jint xPix, jint yPix) {
-  browser_view_renderer_->ScrollTo(gfx::Vector2d(xPix, yPix));
+void AwContents::ScrollTo(JNIEnv* env, jobject obj, jint x, jint y) {
+  browser_view_renderer_->ScrollTo(gfx::Vector2d(x, y));
 }
 
 void AwContents::OnWebLayoutPageScaleFactorChanged(float page_scale_factor) {
