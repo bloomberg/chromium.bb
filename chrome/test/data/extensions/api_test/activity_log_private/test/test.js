@@ -277,6 +277,19 @@ testCases.push({
     'tabs.remove'
   ]
 });
+testCases.push({
+  // TODO(karenlees): Enable when crbug.com/259079 is fixed.
+  disabled: {win: true},
+  func: function triggerFullscreen() {
+    chrome.runtime.sendMessage(
+        'pknkgggnfecklokoggaggchhaebkajji',
+        'launch_dom_fullscreen', function response() { });
+  },
+  expected_activity: [
+    'extension.getURL',
+    'Element.webkitRequestFullscreen'
+  ]
+});
 
 var domExpectedActivity = [
     'tabs.onUpdated',

@@ -352,6 +352,20 @@ function executeDOMChangesOnTabUpdated() {
   openTab(defaultUrl);
 }
 
+function executeDOMFullscreen() {
+  resetStatus();
+  appendCompleted('Switching to fullscreen...');
+  $('status').webkitRequestFullscreen();
+  setTimeout(
+      function() {document.webkitExitFullscreen(); window.close()}, 100);
+}
+
+// Opens the extensions options page and then runs the executeDOMFullscreen
+// test.
+function launchDOMFullscreenTest() {
+  openTab(chrome.extension.getURL('/options.html#dom_fullscreen'));
+}
+
 // ADD TESTS CASES TO THE MAP HERE.
 var fnMap = {};
 fnMap['api_call'] = makeApiCall;
@@ -367,27 +381,34 @@ fnMap['webrequest'] = doWebRequestModifications;
 fnMap['tab_ids'] = tabIdTranslation;
 fnMap['dom_tab_updated'] = executeDOMChangesOnTabUpdated;
 fnMap['api_tab_updated'] = executeApiCallsOnTabUpdated;
+fnMap['dom_fullscreen'] = executeDOMFullscreen;
+fnMap['launch_dom_fullscreen'] = launchDOMFullscreenTest;
 
-// Setup function mapping for the automated tests.
-try {
-  chrome.runtime.onMessageExternal.addListener(
-      function(message, sender, response) {
-        useIncognito = false;
-        if (message.match(/_incognito$/)) {
-          // Enable incognito windows for this test, then strip the _incognito
-          // suffix for the lookup below.
-          useIncognito = true;
-          message = message.slice(0, -10);
+// Setup function mapping for the automated tests, except when running on the
+// options page.
+if (window.location.pathname !== '/options.html') {
+  try {
+    chrome.runtime.onMessageExternal.addListener(
+        function(message, sender, response) {
+          useIncognito = false;
+          if (message.match(/_incognito$/)) {
+            // Enable incognito windows for this test, then strip the
+            // _incognito suffix for the lookup below.
+            useIncognito = true;
+            message = message.slice(0, -10);
+          }
+          if (fnMap.hasOwnProperty(message)) {
+            fnMap[message]();
+          } else {
+            console.log('UNKNOWN METHOD: ' + message);
+          }
         }
-        if (fnMap.hasOwnProperty(message)) {
-          fnMap[message]();
-        } else {
-          console.log('UNKNOWN METHOD: ' + message);
-        }
-      }
-      );
-} catch (err) {
-  console.log('Error while adding listeners: ' + err);
+        );
+  } catch (err) {
+    console.log('Error while adding listeners: ' + err);
+  }
+} else {
+  console.log('Not installing extension message listener on options.html');
 }
 
 // Convenience functions for the manual run mode.
@@ -421,7 +442,10 @@ function appendError(str) {
   }
 }
 
-// Set up the event listeners for use in manual run mode.
+// Set up the event listeners for use in manual run mode.  Then, if the URL
+// contains a test name in the URL fragment
+// (chrome-extension://pkn.../options.html#dom_fullscreen), launch that test
+// automatically.
 function setupEvents() {
   for (var key in fnMap) {
     if (fnMap.hasOwnProperty(key) && key != '' && $(key) != null) {
@@ -435,5 +459,13 @@ function setupEvents() {
   }
   completed = 0;
   appendCompleted('setup events');
+
+  // Automatically launch a requested test if specified in the URL.
+  if (window.location.hash) {
+    var requestedTest = window.location.hash.substr(1);
+    if (fnMap.hasOwnProperty(requestedTest)) {
+      fnMap[requestedTest]();
+    }
+  }
 }
 document.addEventListener('DOMContentLoaded', setupEvents);
