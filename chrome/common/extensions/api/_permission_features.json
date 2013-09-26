@@ -186,7 +186,7 @@
     "extension_types": ["extension", "legacy_packaged_app"]
   },
   "developerPrivate": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"],
     "whitelist": [
         "ohmmkhmmmpcnpikjeljgnaoabkaalbgc", // Published Apps developer tool.
