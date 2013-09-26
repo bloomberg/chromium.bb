@@ -954,7 +954,7 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
       SetPendingWebUI(entry);
 
       // Make sure the new RenderViewHost has the right bindings.
-      if (pending_web_ui())
+      if (pending_web_ui() && !render_view_host_->GetProcess()->IsGuest())
         render_view_host_->AllowBindings(pending_web_ui()->GetBindings());
     }
 
