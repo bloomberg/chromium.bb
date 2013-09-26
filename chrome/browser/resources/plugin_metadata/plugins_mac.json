@@ -1,5 +1,5 @@
 {
-  "x-version": 3,
+  "x-version": 4,
   "google-talk": {
     "mime_types": [
     ],
@@ -273,5 +273,37 @@
     ],
     "name": "Chrome PDF Viewer",
     "group_name_matcher": "*Chrome PDF Viewer*"
+  },
+  "facebook-video-calling": {
+    "mime_types": [
+      "application/skypesdk-plugin"
+    ],
+    "versions": [
+      {
+        "version": "0",
+        "status": "up_to_date",
+        "comment": "We do not track version information for the Facebook Video Calling Plugin."
+      }
+    ],
+    "lang": "en-US",
+    "name": "Facebook Video Calling",
+    "url": "https://www.facebook.com/chat/video/videocalldownload.php",
+    "group_name_matcher": "*Facebook Video*"
+  },
+  "google-earth": {
+    "mime_types": [
+      "application/geplugin"
+    ],
+    "versions": [
+      {
+        "version": "0",
+        "status": "up_to_date",
+        "comment": "We do not track version information for the Google Earth Plugin."
+      }
+    ],
+    "lang": "en-US",
+    "name": "Google Earth",
+    "url": "http://www.google.com/earth/explore/products/plugin.html",
+    "group_name_matcher": "*Google Earth*"
   }
 }

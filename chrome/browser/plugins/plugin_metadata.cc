@@ -93,12 +93,8 @@ bool PluginMetadata::ParseSecurityStatus(
 PluginMetadata::SecurityStatus PluginMetadata::GetSecurityStatus(
     const content::WebPluginInfo& plugin) const {
   if (versions_.empty()) {
-#if defined(OS_LINUX)
-    // On Linux, unknown plugins require authorization.
+    // Unknown plugins require authorization.
     return SECURITY_STATUS_REQUIRES_AUTHORIZATION;
-#else
-    return SECURITY_STATUS_UP_TO_DATE;
-#endif
   }
 
   Version version;

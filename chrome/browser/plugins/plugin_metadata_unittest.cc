@@ -38,12 +38,8 @@ TEST(PluginMetadataTest, SecurityStatus) {
                                  GURL(),
                                  ASCIIToUTF16("ClayBrick"),
                                  std::string());
-#if defined(OS_LINUX)
   EXPECT_EQ(kRequiresAuthorization,
             GetSecurityStatus(&plugin_metadata, "1.2.3"));
-#else
-  EXPECT_EQ(kUpToDate, GetSecurityStatus(&plugin_metadata, "1.2.3"));
-#endif
 
   plugin_metadata.AddVersion(Version("9.4.1"), kRequiresAuthorization);
   plugin_metadata.AddVersion(Version("10"), kOutOfDate);
