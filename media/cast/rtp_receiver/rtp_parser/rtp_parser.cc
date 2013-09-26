@@ -52,7 +52,7 @@ bool RtpParser::ParseCommon(const uint8* packet,
 
   uint16 sequence_number;
   uint32 rtp_timestamp, ssrc;
-  net::BigEndianReader big_endian_reader(packet + 2, 80);
+  net::BigEndianReader big_endian_reader(packet + 2, 10);
   big_endian_reader.ReadU16(&sequence_number);
   big_endian_reader.ReadU32(&rtp_timestamp);
   big_endian_reader.ReadU32(&ssrc);
@@ -83,7 +83,7 @@ bool RtpParser::ParseCast(const uint8* packet,
   rtp_header->is_reference = (data_ptr[0] & kCastReferenceFrameIdBitMask);
   rtp_header->frame_id = data_ptr[1];
 
-  net::BigEndianReader big_endian_reader(data_ptr + 2, 32);
+  net::BigEndianReader big_endian_reader(data_ptr + 2, 4);
   big_endian_reader.ReadU16(&rtp_header->packet_id);
   big_endian_reader.ReadU16(&rtp_header->max_packet_id);
 

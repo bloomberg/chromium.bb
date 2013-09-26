@@ -105,8 +105,8 @@ void RtpPacketizer::Cast(bool is_key,
         (is_key ? kCastKeyFrameBitMask : 0) | kCastReferenceFrameIdBitMask);
     packet.push_back(frame_id_);
     int start_size = packet.size();
-    packet.resize(start_size + 32);
-    net::BigEndianWriter big_endian_writer(&((packet)[start_size]), 32);
+    packet.resize(start_size + 4);
+    net::BigEndianWriter big_endian_writer(&((packet)[start_size]), 4);
     big_endian_writer.WriteU16(packet_id_);
     big_endian_writer.WriteU16(num_packets - 1);
     packet.push_back(reference_frame_id);
@@ -135,8 +135,8 @@ void RtpPacketizer::BuildCommonRTPheader(
   packet->push_back(static_cast<uint8>(config_.payload_type) |
                     (marker_bit ? kRtpMarkerBitMask : 0));
   int start_size = packet->size();
-  packet->resize(start_size + 80);
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 80);
+  packet->resize(start_size + 10);
+  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 10);
   big_endian_writer.WriteU16(sequence_number_);
   big_endian_writer.WriteU32(time_stamp);
   big_endian_writer.WriteU32(config_.ssrc);
