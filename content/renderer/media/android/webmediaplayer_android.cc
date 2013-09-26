@@ -137,7 +137,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     }
   }
 
-  if (WebKit::WebRuntimeFeatures::isLegacyEncryptedMediaEnabled()) {
+  if (WebKit::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()) {
     // TODO(xhwang): Report an error when there is encrypted stream but EME is
     // not enabled. Currently the player just doesn't start and waits for ever.
     decryptor_.reset(new ProxyDecryptor(
@@ -1189,7 +1189,7 @@ void WebMediaPlayerAndroid::OnNeedKey(const std::string& session_id,
   DCHECK(main_loop_->BelongsToCurrentThread());
   // Do not fire NeedKey event if encrypted media is not enabled.
   if (!WebKit::WebRuntimeFeatures::isEncryptedMediaEnabled() &&
-      !WebKit::WebRuntimeFeatures::isLegacyEncryptedMediaEnabled()) {
+      !WebKit::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()) {
     return;
   }
 

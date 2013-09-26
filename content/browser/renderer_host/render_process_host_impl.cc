@@ -915,7 +915,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableDeadlineScheduling,
     switches::kEnableDelegatedRenderer,
     switches::kEnableEncryptedMedia,
-    switches::kDisableLegacyEncryptedMedia,
+    switches::kDisablePrefixedEncryptedMedia,
     switches::kOverrideEncryptedMediaCanPlayType,
 #if defined(OS_ANDROID)
     switches::kMediaDrmEnableNonCompositing,

@@ -219,7 +219,8 @@ const char kDisableJava[]                   = "disable-java";
 const char kDisableJavaScript[]             = "disable-javascript";
 
 // Disables prefixed Encrypted Media API (e.g. webkitGenerateKeyRequest()).
-const char kDisableLegacyEncryptedMedia[] = "disable-legacy-encrypted-media";
+const char kDisablePrefixedEncryptedMedia[] =
+    "disable-prefixed-encrypted-media";
 
 // Disable LocalStorage.
 const char kDisableLocalStorage[]           = "disable-local-storage";

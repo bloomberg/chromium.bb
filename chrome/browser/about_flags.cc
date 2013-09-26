@@ -806,11 +806,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableEncryptedMedia)
   },
   {
-    "disable-encrypted-media",
+    "disable-prefixed-encrypted-media",
     IDS_FLAGS_DISABLE_PREFIXED_ENCRYPTED_MEDIA_NAME,
     IDS_FLAGS_DISABLE_PREFIXED_ENCRYPTED_MEDIA_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableLegacyEncryptedMedia)
+    SINGLE_VALUE_TYPE(switches::kDisablePrefixedEncryptedMedia)
   },
   {
     "override-encrypted-media-canplaytype",
