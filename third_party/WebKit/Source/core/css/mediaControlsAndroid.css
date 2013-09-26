@@ -30,8 +30,12 @@ audio {
     height: 35px;
 }
 
-audio::-webkit-media-controls-enclosure, video::-webkit-media-controls-enclosure {
+audio::-webkit-media-controls-enclosure {
     height: 35px;
+}
+
+video::-webkit-media-controls-enclosure {
+    height: 40px;
 }
 
 audio::-webkit-media-controls-overlay-enclosure {
@@ -54,7 +58,6 @@ video::-webkit-media-controls-overlay-enclosure {
 
 audio::-webkit-media-controls-panel, video::-webkit-media-controls-panel {
     height: 35px;
-    border-radius: 0;
 }
 
 audio::-webkit-media-controls-mute-button, video::-webkit-media-controls-mute-button {
