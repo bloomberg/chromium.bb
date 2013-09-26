@@ -59,7 +59,6 @@ class MockInputHandler : public cc::InputHandler {
   virtual void StartPageScaleAnimation(gfx::Vector2d target_offset,
                                        bool anchor_point,
                                        float page_scale,
-                                       base::TimeTicks start_time,
                                        base::TimeDelta duration) OVERRIDE {}
 
   virtual void NotifyCurrentFlingVelocity(gfx::Vector2dF velocity) OVERRIDE {}

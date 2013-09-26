@@ -997,13 +997,17 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
                                                            max_page_scale);
     scroll_layer->SetScrollOffset(gfx::Vector2d(50, 50));
 
-    host_impl_->StartPageScaleAnimation(gfx::Vector2d(),
-                                        false,
-                                        2.f,
-                                        start_time,
-                                        duration);
+    host_impl_->StartPageScaleAnimation(gfx::Vector2d(), false, 2.f, duration);
+    did_request_redraw_ = false;
+    host_impl_->Animate(start_time, base::Time());
+    EXPECT_TRUE(did_request_redraw_);
+
+    did_request_redraw_ = false;
     host_impl_->Animate(halfway_through_animation, base::Time());
     EXPECT_TRUE(did_request_redraw_);
+
+    did_request_redraw_ = false;
+    did_request_commit_ = false;
     host_impl_->Animate(end_time, base::Time());
     EXPECT_TRUE(did_request_commit_);
 
@@ -1020,10 +1024,14 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
                                                            max_page_scale);
     scroll_layer->SetScrollOffset(gfx::Vector2d(50, 50));
 
-    host_impl_->StartPageScaleAnimation(gfx::Vector2d(25, 25),
-                                        true,
-                                        min_page_scale,
-                                        start_time, duration);
+    host_impl_->StartPageScaleAnimation(
+        gfx::Vector2d(25, 25), true, min_page_scale, duration);
+    did_request_redraw_ = false;
+    host_impl_->Animate(start_time, base::Time());
+    EXPECT_TRUE(did_request_redraw_);
+
+    did_request_redraw_ = false;
+    did_request_commit_ = false;
     host_impl_->Animate(end_time, base::Time());
     EXPECT_TRUE(did_request_redraw_);
     EXPECT_TRUE(did_request_commit_);
@@ -1059,11 +1067,8 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationNoOp) {
                                                            max_page_scale);
     scroll_layer->SetScrollOffset(gfx::Vector2d(50, 50));
 
-    host_impl_->StartPageScaleAnimation(gfx::Vector2d(),
-                                        true,
-                                        1.f,
-                                        start_time,
-                                        duration);
+    host_impl_->StartPageScaleAnimation(gfx::Vector2d(), true, 1.f, duration);
+    host_impl_->Animate(start_time, base::Time());
     host_impl_->Animate(halfway_through_animation, base::Time());
     EXPECT_TRUE(did_request_redraw_);
     host_impl_->Animate(end_time, base::Time());

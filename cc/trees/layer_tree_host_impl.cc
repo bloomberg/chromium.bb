@@ -383,7 +383,6 @@ void LayerTreeHostImpl::ManageTiles() {
 void LayerTreeHostImpl::StartPageScaleAnimation(gfx::Vector2d target_offset,
                                                 bool anchor_point,
                                                 float page_scale,
-                                                base::TimeTicks start_time,
                                                 base::TimeDelta duration) {
   if (!RootScrollLayer())
     return;
@@ -392,8 +391,6 @@ void LayerTreeHostImpl::StartPageScaleAnimation(gfx::Vector2d target_offset,
       RootScrollLayer()->scroll_offset() + RootScrollLayer()->ScrollDelta();
   gfx::SizeF scaled_scrollable_size = active_tree_->ScrollableSize();
   gfx::SizeF viewport_size = UnscaledScrollableViewportSize();
-
-  double start_time_seconds = (start_time - base::TimeTicks()).InSecondsF();
 
   // Easing constants experimentally determined.
   scoped_ptr<TimingFunction> timing_function =
@@ -404,7 +401,6 @@ void LayerTreeHostImpl::StartPageScaleAnimation(gfx::Vector2d target_offset,
                                  active_tree_->total_page_scale_factor(),
                                  viewport_size,
                                  scaled_scrollable_size,
-                                 start_time_seconds,
                                  timing_function.Pass());
 
   if (anchor_point) {
@@ -2435,6 +2431,9 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks time) {
   double monotonic_time = (time - base::TimeTicks()).InSecondsF();
   gfx::Vector2dF scroll_total = RootScrollLayer()->scroll_offset() +
                                 RootScrollLayer()->ScrollDelta();
+
+  if (!page_scale_animation_->IsAnimationStarted())
+    page_scale_animation_->StartAnimation(monotonic_time);
 
   active_tree_->SetPageScaleDelta(
       page_scale_animation_->PageScaleFactorAtTime(monotonic_time) /

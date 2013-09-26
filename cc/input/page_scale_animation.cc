@@ -45,13 +45,11 @@ scoped_ptr<PageScaleAnimation> PageScaleAnimation::Create(
     float start_page_scale_factor,
     gfx::SizeF viewport_size,
     gfx::SizeF root_layer_size,
-    double start_time,
     scoped_ptr<TimingFunction> timing_function) {
   return make_scoped_ptr(new PageScaleAnimation(start_scroll_offset,
                                                 start_page_scale_factor,
                                                 viewport_size,
                                                 root_layer_size,
-                                                start_time,
                                                 timing_function.Pass()));
 }
 
@@ -60,7 +58,6 @@ PageScaleAnimation::PageScaleAnimation(
     float start_page_scale_factor,
     gfx::SizeF viewport_size,
     gfx::SizeF root_layer_size,
-    double start_time,
     scoped_ptr<TimingFunction> timing_function)
     : start_page_scale_factor_(start_page_scale_factor),
       target_page_scale_factor_(0.f),
@@ -69,7 +66,7 @@ PageScaleAnimation::PageScaleAnimation(
       target_anchor_(),
       viewport_size_(viewport_size),
       root_layer_size_(root_layer_size),
-      start_time_(start_time),
+      start_time_(-1.0),
       duration_(0.0),
       timing_function_(timing_function.Pass()) {}
 
@@ -165,19 +162,32 @@ gfx::SizeF PageScaleAnimation::ViewportSizeAt(float interp) const {
   return gfx::ScaleSize(viewport_size_, 1.f / PageScaleFactorAt(interp));
 }
 
+bool PageScaleAnimation::IsAnimationStarted() const {
+  return start_time_ >= 0;
+}
+
+void PageScaleAnimation::StartAnimation(double time) {
+  DCHECK_GT(0, start_time_);
+  start_time_ = time;
+}
+
 gfx::Vector2dF PageScaleAnimation::ScrollOffsetAtTime(double time) const {
+  DCHECK_GE(start_time_, 0);
   return ScrollOffsetAt(InterpAtTime(time));
 }
 
 float PageScaleAnimation::PageScaleFactorAtTime(double time) const {
+  DCHECK_GE(start_time_, 0);
   return PageScaleFactorAt(InterpAtTime(time));
 }
 
 bool PageScaleAnimation::IsAnimationCompleteAtTime(double time) const {
+  DCHECK_GE(start_time_, 0);
   return time >= end_time();
 }
 
 float PageScaleAnimation::InterpAtTime(double time) const {
+  DCHECK_GE(start_time_, 0);
   DCHECK_GE(time, start_time_);
   if (IsAnimationCompleteAtTime(time))
     return 1.f;

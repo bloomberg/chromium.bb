@@ -119,7 +119,6 @@ class CC_EXPORT InputHandler {
   virtual void StartPageScaleAnimation(gfx::Vector2d target_offset,
                                        bool anchor_point,
                                        float page_scale,
-                                       base::TimeTicks start_time,
                                        base::TimeDelta duration) = 0;
 
   // Request another callback to InputHandlerClient::Animate().

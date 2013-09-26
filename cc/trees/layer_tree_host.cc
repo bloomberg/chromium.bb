@@ -396,7 +396,6 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
         pending_page_scale_animation_->target_offset,
         pending_page_scale_animation_->use_anchor,
         pending_page_scale_animation_->scale,
-        host_impl->CurrentFrameTimeTicks(),
         pending_page_scale_animation_->duration);
     pending_page_scale_animation_.reset();
   }

@@ -29,7 +29,6 @@ class PageScaleAnimation {
       float start_page_scale_factor,
       gfx::SizeF viewport_size,
       gfx::SizeF root_layer_size,
-      double start_time,
       scoped_ptr<TimingFunction> timing_function);
 
   ~PageScaleAnimation();
@@ -50,6 +49,11 @@ class PageScaleAnimation {
                       float target_page_scale_factor,
                       double duration);
 
+  // These should be called before the first frame of animation to initialize
+  // the start time. StartAnimation should only be called once after creation.
+  bool IsAnimationStarted() const;
+  void StartAnimation(double time);
+
   // Call these functions while the animation is in progress to output the
   // current state.
   gfx::Vector2dF ScrollOffsetAtTime(double time) const;
@@ -69,7 +73,6 @@ class PageScaleAnimation {
                      float start_page_scale_factor,
                      gfx::SizeF viewport_size,
                      gfx::SizeF root_layer_size,
-                     double start_time,
                      scoped_ptr<TimingFunction> timing_function);
 
  private:
