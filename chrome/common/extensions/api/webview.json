@@ -165,6 +165,20 @@
         ]
       },
       {
+        "name": "overrideUserAgent",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          },
+          {
+            "type": "string",
+            "name": "userAgentOverride"
+          }
+        ]
+      },
+      {
         "name": "reload",
         "type": "function",
         "parameters": [

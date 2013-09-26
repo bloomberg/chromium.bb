@@ -50,6 +50,7 @@ class WebViewGuest : public GuestView,
   virtual bool HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool IsDragAndDropEnabled() OVERRIDE;
+  virtual bool IsOverridingUserAgent() const OVERRIDE;
   virtual void LoadAbort(bool is_top_level,
                          const GURL& url,
                          const std::string& error_type) OVERRIDE;
@@ -80,6 +81,10 @@ class WebViewGuest : public GuestView,
   bool SetPermission(int request_id,
                      bool should_allow,
                      const std::string& user_input);
+
+  // Overrides the user agent for this guest.
+  // This affects subsequent guest navigations.
+  void SetUserAgentOverride(const std::string& user_agent_override);
 
   // Stop loading the guest.
   void Stop();
@@ -154,6 +159,9 @@ class WebViewGuest : public GuestView,
   // A map to store the callback for a request keyed by the request's id.
   typedef std::map<int, PermissionResponseCallback> RequestMap;
   RequestMap pending_permission_requests_;
+
+  // True if the user agent is overridden.
+  bool is_overriding_user_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewGuest);
 };

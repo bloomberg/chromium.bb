@@ -15,6 +15,10 @@ bool BrowserPluginGuestDelegate::IsDragAndDropEnabled() {
   return false;
 }
 
+bool BrowserPluginGuestDelegate::IsOverridingUserAgent() const {
+  return false;
+}
+
 bool BrowserPluginGuestDelegate::RequestPermission(
     BrowserPluginPermissionType permission_type,
     const base::DictionaryValue& request_info,

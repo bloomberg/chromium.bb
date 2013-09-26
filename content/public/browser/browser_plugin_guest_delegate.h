@@ -46,6 +46,9 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
 
   virtual bool IsDragAndDropEnabled();
 
+  // Returns whether the user agent for the guest is being overridden.
+  virtual bool IsOverridingUserAgent() const;
+
   // Notification that a load in the guest resulted in abort. Note that |url|
   // may be invalid.
   virtual void LoadAbort(bool is_top_level,

@@ -31,6 +31,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/geolocation_permission_context.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -385,6 +386,21 @@ void BrowserPluginGuest::DestroyUnattachedWindows() {
   DCHECK_EQ(0ul, pending_new_windows_.size());
 }
 
+void BrowserPluginGuest::LoadURLWithParams(WebContents* web_contents,
+                                           const GURL& url,
+                                           const Referrer& referrer,
+                                           PageTransition transition_type) {
+  NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.referrer = referrer;
+  load_url_params.transition_type = transition_type;
+  load_url_params.extra_headers = std::string();
+  if (delegate_ && delegate_->IsOverridingUserAgent()) {
+    load_url_params.override_user_agent =
+        NavigationController::UA_OVERRIDE_TRUE;
+  }
+  web_contents->GetController().LoadURLWithParams(load_url_params);
+}
+
 void BrowserPluginGuest::RespondToPermissionRequest(
     int request_id,
     bool should_allow,
@@ -537,6 +553,7 @@ void BrowserPluginGuest::Initialize(
 
   RendererPreferences* renderer_prefs =
       GetWebContents()->GetMutableRendererPrefs();
+  std::string guest_user_agent_override = renderer_prefs->user_agent_override;
   // Copy renderer preferences (and nothing else) from the embedder's
   // WebContents to the guest.
   //
@@ -544,6 +561,7 @@ void BrowserPluginGuest::Initialize(
   // values for caret blinking interval, colors related to selection and
   // focus.
   *renderer_prefs = *embedder_web_contents_->GetMutableRendererPrefs();
+  renderer_prefs->user_agent_override = guest_user_agent_override;
 
   // We would like the guest to report changes to frame names so that we can
   // update the BrowserPlugin's corresponding 'name' attribute.
@@ -783,8 +801,7 @@ WebContents* BrowserPluginGuest::OpenURLFromTab(WebContents* source,
   }
   if (params.disposition == CURRENT_TAB) {
     // This can happen for cross-site redirects.
-    source->GetController().LoadURL(
-          params.url, params.referrer, params.transition, std::string());
+    LoadURLWithParams(source, params.url, params.referrer, params.transition);
     return source;
   }
 
@@ -1375,9 +1392,8 @@ void BrowserPluginGuest::OnNavigateGuest(
     // normal web URLs are supported.  No protocol handlers are installed for
     // other schemes (e.g., WebUI or extensions), and no permissions or bindings
     // can be granted to the guest process.
-    GetWebContents()->GetController().LoadURL(url, Referrer(),
-                                              PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                              std::string());
+    LoadURLWithParams(GetWebContents(), url, Referrer(),
+                      PAGE_TRANSITION_AUTO_TOPLEVEL);
   }
 }
 

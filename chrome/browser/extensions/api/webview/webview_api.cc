@@ -269,6 +269,28 @@ bool WebviewSetPermissionFunction::RunImpl() {
   return true;
 }
 
+WebviewOverrideUserAgentFunction::WebviewOverrideUserAgentFunction() {
+}
+
+WebviewOverrideUserAgentFunction::~WebviewOverrideUserAgentFunction() {
+}
+
+bool WebviewOverrideUserAgentFunction::RunImpl() {
+  scoped_ptr<extensions::api::webview::OverrideUserAgent::Params> params(
+      extensions::api::webview::OverrideUserAgent::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  int instance_id = params->instance_id;
+  std::string user_agent_override = params->user_agent_override;
+
+  WebViewGuest* guest = WebViewGuest::From(
+      render_view_host()->GetProcess()->GetID(), instance_id);
+  if (!guest)
+    return false;
+
+  guest->SetUserAgentOverride(user_agent_override);
+  return true;
+}
+
 WebviewStopFunction::WebviewStopFunction() {
 }
 

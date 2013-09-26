@@ -318,6 +318,11 @@ class CONTENT_EXPORT BrowserPluginGuest
   // BrowserPluginGuest.
   void DestroyUnattachedWindows();
 
+  void LoadURLWithParams(WebContents* web_contents,
+                         const GURL& url,
+                         const Referrer& referrer,
+                         PageTransition transition_type);
+
   // Bridge IDs correspond to a geolocation request. This method will remove
   // the bookkeeping for a particular geolocation request associated with the
   // provided |bridge_id|. It returns the request ID of the geolocation request.

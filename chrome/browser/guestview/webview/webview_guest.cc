@@ -94,7 +94,8 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents)
       WebContentsObserver(guest_web_contents),
       script_executor_(new extensions::ScriptExecutor(guest_web_contents,
                                                       &script_observers_)),
-      next_permission_request_id_(0) {
+      next_permission_request_id_(0),
+      is_overriding_user_agent_(false) {
   notification_registrar_.Add(
       this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::Source<WebContents>(guest_web_contents));
@@ -118,6 +119,14 @@ WebViewGuest* WebViewGuest::From(int embedder_process_id,
 void WebViewGuest::Attach(WebContents* embedder_web_contents,
                           const std::string& extension_id,
                           const base::DictionaryValue& args) {
+  std::string user_agent_override;
+  if (args.GetString(webview::kParameterUserAgentOverride,
+                     &user_agent_override)) {
+    SetUserAgentOverride(user_agent_override);
+  } else {
+    SetUserAgentOverride("");
+  }
+
   GuestView::Attach(
       embedder_web_contents, extension_id, args);
 
@@ -228,6 +237,10 @@ bool WebViewGuest::IsDragAndDropEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserPluginDragDrop);
 #endif
+}
+
+bool WebViewGuest::IsOverridingUserAgent() const {
+  return is_overriding_user_agent_;
 }
 
 void WebViewGuest::LoadProgressed(double progress) {
@@ -345,6 +358,12 @@ bool WebViewGuest::SetPermission(int request_id,
   request_itr->second.Run(should_allow, user_input);
   pending_permission_requests_.erase(request_itr);
   return true;
+}
+
+void WebViewGuest::SetUserAgentOverride(
+    const std::string& user_agent_override) {
+  is_overriding_user_agent_ = !user_agent_override.empty();
+  guest_web_contents()->SetUserAgentOverride(user_agent_override);
 }
 
 void WebViewGuest::Stop() {

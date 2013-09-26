@@ -52,4 +52,7 @@ const char kInternalCurrentEntryIndex[] = "currentEntryIndex";
 const char kInternalEntryCount[] = "entryCount";
 const char kInternalProcessId[] = "processId";
 
+// Initialization parameters.
+const char kParameterUserAgentOverride[] = "userAgentOverride";
+
 }  // namespace webview

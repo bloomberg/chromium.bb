@@ -55,7 +55,8 @@ utils.injectCss = function(cssScriptPath) {
 };
 
 embedder.loadGuest = function(
-    connectedCallback, postMessageCallback, opt_partitionName) {
+    connectedCallback, postMessageCallback, opt_partitionName,
+    opt_preLoadHooks) {
   LOG('embedder.loadGuest begin');
   document.querySelector('#webview-tag-container').innerHTML =
       '<webview style="width: 100px; height: 100px;"></webview>';
@@ -112,6 +113,10 @@ embedder.loadGuest = function(
       }
     }
   };
+
+  if (opt_preLoadHooks) {
+    opt_preLoadHooks(embedder.webview);
+  }
 
   window.addEventListener('message', onPostMessageReceived);
   embedder.webview.setAttribute('src', embedder.guestURL);

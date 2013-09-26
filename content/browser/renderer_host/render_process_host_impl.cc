@@ -1426,15 +1426,6 @@ bool RenderProcessHostImpl::IsSuitableHost(
   if (host->GetBrowserContext() != browser_context)
     return false;
 
-  // Check whether the given host and the intended site_url will be using the
-  // same StoragePartition, since a RenderProcessHost can only support a single
-  // StoragePartition.  This is relevant for packaged apps, browser tags, and
-  // isolated sites.
-  StoragePartition* dest_partition =
-      BrowserContext::GetStoragePartitionForSite(browser_context, site_url);
-  if (!host->InSameStoragePartition(dest_partition))
-    return false;
-
   // All URLs are suitable if this is associated with a guest renderer process.
   // TODO(fsamuel, creis): Further validation is needed to ensure that only
   // normal web URLs are permitted in guest processes. We need to investigate
@@ -1443,6 +1434,14 @@ bool RenderProcessHostImpl::IsSuitableHost(
     return true;
 
   if (!host->IsGuest() && site_url.SchemeIs(chrome::kGuestScheme))
+    return false;
+
+  // Check whether the given host and the intended site_url will be using the
+  // same StoragePartition, since a RenderProcessHost can only support a single
+  // StoragePartition.  This is relevant for packaged apps and isolated sites.
+  StoragePartition* dest_partition =
+      BrowserContext::GetStoragePartitionForSite(browser_context, site_url);
+  if (!host->InSameStoragePartition(dest_partition))
     return false;
 
   if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(

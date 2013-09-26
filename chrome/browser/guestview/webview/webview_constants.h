@@ -55,6 +55,9 @@ extern const char kInternalCurrentEntryIndex[];
 extern const char kInternalEntryCount[];
 extern const char kInternalProcessId[];
 
+// Initialization parameters.
+extern const char kParameterUserAgentOverride[];
+
 }  // namespace webview
 
 #endif  // CHROME_BROWSER_GUESTVIEW_WEBVIEW_WEBVIEW_CONSTANTS_H_

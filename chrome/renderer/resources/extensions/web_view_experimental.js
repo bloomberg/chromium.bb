@@ -113,13 +113,12 @@ WebViewInternal.prototype.handleDialogEvent_ =
   }
 };
 
-/**
- * @private
- */
+/** @private */
 WebViewInternal.prototype.maybeGetExperimentalEvents_ = function() {
   return WEB_VIEW_EXPERIMENTAL_EVENTS;
 };
 
+/** @private */
 WebViewInternal.prototype.clearData_ = function(var_args) {
   if (!this.instanceId_) {
     return;
@@ -128,9 +127,43 @@ WebViewInternal.prototype.clearData_ = function(var_args) {
   $Function.apply(WebView.clearData, null, args);
 };
 
+/** @private */
+WebViewInternal.prototype.getUserAgent_ = function() {
+  return this.userAgentOverride_ || navigator.userAgent;
+};
+
+/** @private */
+WebViewInternal.prototype.isUserAgentOverridden_ = function() {
+  return !!this.userAgentOverride_ &&
+      this.userAgentOverride_ != navigator.userAgent;
+};
+
+/** @private */
+WebViewInternal.prototype.setUserAgentOverride_ = function(userAgentOverride) {
+  this.userAgentOverride_ = userAgentOverride;
+  if (!this.instanceId_) {
+    // If we are not attached yet, then we will pick up the user agent on
+    // attachment.
+    return;
+  }
+  WebView.overrideUserAgent(this.instanceId_, userAgentOverride);
+};
+
 WebViewInternal.maybeRegisterExperimentalAPIs = function(proto, secret) {
   proto.clearData = function(var_args) {
     var internal = this.internal_(secret);
     $Function.apply(internal.clearData_, internal, arguments);
+  };
+
+  proto.getUserAgent = function() {
+    return this.internal_(secret).getUserAgent_();
+  };
+
+  proto.isUserAgentOverridden = function() {
+    return this.internal_(secret).isUserAgentOverridden_();
+  };
+
+  proto.setUserAgentOverride = function(userAgentOverride) {
+    this.internal_(secret).setUserAgentOverride_(userAgentOverride);
   };
 };

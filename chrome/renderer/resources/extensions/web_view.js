@@ -558,6 +558,9 @@ WebViewInternal.prototype.setupWebviewNodeEvents_ = function() {
       'api': 'webview',
       'instanceId': self.viewInstanceId_
     };
+    if (self.userAgentOverride_) {
+      params['userAgentOverride'] = self.userAgentOverride_;
+    }
     self.browserPluginNode_['-internal-attach'](params);
 
     var events = self.getEvents_();
