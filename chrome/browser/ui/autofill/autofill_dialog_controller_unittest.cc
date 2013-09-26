@@ -299,6 +299,9 @@ class TestAutofillDialogController
     AutofillDialogControllerImpl::SubmitButtonDelayEndForTesting();
   }
 
+  using AutofillDialogControllerImpl::
+      ClearLastWalletItemsFetchTimestampForTesting;
+
   // Returns the number of times that the submit button was delayed.
   int get_submit_button_delay_count() const {
     return submit_button_delay_count_;
@@ -448,6 +451,9 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
     controller_->Init(profile());
     controller_->Show();
     controller_->OnUserNameFetchSuccess(kFakeEmail);
+    EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_));
+    controller_->OnDidFetchWalletCookieValue(std::string());
+    controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
   }
 
   void FillCreditCardInputs() {
@@ -906,6 +912,7 @@ TEST_F(AutofillDialogControllerTest, CreditCardNumberValidation) {
 }
 
 TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
+  SwitchToAutofill();
   ui::MenuModel* shipping_model =
       controller()->MenuModelForSection(SECTION_SHIPPING);
   // Since the PersonalDataManager is empty, this should only have the
@@ -948,6 +955,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
 // Makes sure that the choice of which Autofill profile to use for each section
 // is sticky.
 TEST_F(AutofillDialogControllerTest, AutofillProfileDefaults) {
+  SwitchToAutofill();
   AutofillProfile profile(test::GetVerifiedProfile());
   AutofillProfile profile2(test::GetVerifiedProfile2());
   controller()->GetTestingManager()->AddTestingProfile(&profile);
@@ -1027,6 +1035,7 @@ TEST_F(AutofillDialogControllerTest, NewAutofillProfileIsDefault) {
 }
 
 TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
+  SwitchToAutofill();
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
   ui::MenuModel* shipping_model =
       controller()->MenuModelForSection(SECTION_SHIPPING);
@@ -1050,6 +1059,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
 }
 
 TEST_F(AutofillDialogControllerTest, SuggestValidEmail) {
+  SwitchToAutofill();
   AutofillProfile profile(test::GetVerifiedProfile());
   const string16 kValidEmail = ASCIIToUTF16(kFakeEmail);
   profile.SetRawInfo(EMAIL_ADDRESS, kValidEmail);
@@ -1064,6 +1074,7 @@ TEST_F(AutofillDialogControllerTest, SuggestValidEmail) {
 }
 
 TEST_F(AutofillDialogControllerTest, DoNotSuggestInvalidEmail) {
+  SwitchToAutofill();
   AutofillProfile profile(test::GetVerifiedProfile());
   profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16(".!#$%&'*+/=?^_`-@-.."));
   controller()->GetTestingManager()->AddTestingProfile(&profile);
@@ -1075,6 +1086,7 @@ TEST_F(AutofillDialogControllerTest, DoNotSuggestInvalidEmail) {
 }
 
 TEST_F(AutofillDialogControllerTest, SuggestValidAddress) {
+  SwitchToAutofill();
   AutofillProfile full_profile(test::GetVerifiedProfile());
   full_profile.set_origin(kSettingsOrigin);
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
@@ -1084,6 +1096,7 @@ TEST_F(AutofillDialogControllerTest, SuggestValidAddress) {
 }
 
 TEST_F(AutofillDialogControllerTest, DoNotSuggestInvalidAddress) {
+  SwitchToAutofill();
   AutofillProfile full_profile(test::GetVerifiedProfile());
   full_profile.set_origin(kSettingsOrigin);
   full_profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("C"));
@@ -1093,6 +1106,7 @@ TEST_F(AutofillDialogControllerTest, DoNotSuggestInvalidAddress) {
 }
 
 TEST_F(AutofillDialogControllerTest, DoNotSuggestIncompleteAddress) {
+  SwitchToAutofill();
   AutofillProfile profile(test::GetVerifiedProfile());
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::string16());
   controller()->GetTestingManager()->AddTestingProfile(&profile);
@@ -1101,6 +1115,7 @@ TEST_F(AutofillDialogControllerTest, DoNotSuggestIncompleteAddress) {
 }
 
 TEST_F(AutofillDialogControllerTest, AutofillCreditCards) {
+  SwitchToAutofill();
   // Since the PersonalDataManager is empty, this should only have the
   // default menu items.
   EXPECT_FALSE(controller()->MenuModelForSection(SECTION_CC));
@@ -1131,6 +1146,7 @@ TEST_F(AutofillDialogControllerTest, AutofillCreditCards) {
 
 // Test selecting a shipping address different from billing as address.
 TEST_F(AutofillDialogControllerTest, DontUseBillingAsShipping) {
+  SwitchToAutofill();
   AutofillProfile full_profile(test::GetVerifiedProfile());
   AutofillProfile full_profile2(test::GetVerifiedProfile2());
   CreditCard credit_card(test::GetVerifiedCreditCard());
@@ -1175,6 +1191,7 @@ TEST_F(AutofillDialogControllerTest, DontUseBillingAsShipping) {
 
 // Test selecting UseBillingForShipping.
 TEST_F(AutofillDialogControllerTest, UseBillingAsShipping) {
+  SwitchToAutofill();
   AutofillProfile full_profile(test::GetVerifiedProfile());
   AutofillProfile full_profile2(test::GetVerifiedProfile2());
   CreditCard credit_card(test::GetVerifiedCreditCard());
@@ -1228,6 +1245,8 @@ TEST_F(AutofillDialogControllerTest, BillingVsShippingPhoneNumber) {
   form_data.fields.push_back(shipping_tel);
   form_data.fields.push_back(billing_tel);
   SetUpControllerWithFormData(form_data);
+
+  SwitchToAutofill();
 
   // The profile that will be chosen for the shipping section.
   AutofillProfile shipping_profile(test::GetVerifiedProfile());
@@ -1756,7 +1775,7 @@ TEST_F(AutofillDialogControllerTest, WalletBanners) {
   // Simulate non-signed-in case.
   SetUpControllerWithFormData(DefaultFormData());
   GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
-  controller()->OnUserNameFetchFailure(error);
+  controller()->OnPassiveSigninFailure(error);
   EXPECT_EQ(0U, NotificationsOfType(
       DialogNotification::WALLET_USAGE_CONFIRMATION).size());
 
@@ -1904,6 +1923,9 @@ TEST_F(AutofillDialogControllerTest, HideWalletEmail) {
   EXPECT_TRUE(SectionContainsField(SECTION_BILLING, EMAIL_ADDRESS));
 
   SwitchToWallet();
+
+  // Reset the wallet state.
+  controller()->OnDidGetWalletItems(scoped_ptr<wallet::WalletItems>());
 
   // Setup some wallet state, submit, and get a full wallet to end the flow.
   scoped_ptr<wallet::WalletItems> wallet_items = CompleteAndValidWalletItems();
@@ -2056,8 +2078,6 @@ TEST_F(AutofillDialogControllerTest, NoManageMenuItemForNewWalletUsers) {
 }
 
 TEST_F(AutofillDialogControllerTest, ShippingSectionCanBeHidden) {
-  SwitchToAutofill();
-
   FormFieldData email_field;
   email_field.autocomplete_attribute = "email";
   FormFieldData cc_field;
@@ -2073,6 +2093,9 @@ TEST_F(AutofillDialogControllerTest, ShippingSectionCanBeHidden) {
   AutofillProfile full_profile(test::GetVerifiedProfile());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   SetUpControllerWithFormData(form_data);
+
+  SwitchToAutofill();
+
   EXPECT_FALSE(controller()->SectionIsActive(SECTION_SHIPPING));
 
   FillCreditCardInputs();
@@ -2245,6 +2268,7 @@ TEST_F(AutofillDialogControllerTest, ReloadWalletItemsOnActivation) {
 
   // Simulate switching away from the tab and back.  This should issue a request
   // for wallet items.
+  controller()->ClearLastWalletItemsFetchTimestampForTesting();
   EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_));
   controller()->TabActivated();
 
@@ -2294,6 +2318,7 @@ TEST_F(AutofillDialogControllerTest,
 
   // Simulate switching away from the tab and back.  This should issue a request
   // for wallet items.
+  controller()->ClearLastWalletItemsFetchTimestampForTesting();
   EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_));
   controller()->TabActivated();
 
@@ -2332,6 +2357,7 @@ TEST_F(AutofillDialogControllerTest, ReloadWithEmptyWalletItems) {
   controller()->MenuModelForSection(SECTION_CC_BILLING)->ActivatedAt(1);
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
 
+  controller()->ClearLastWalletItemsFetchTimestampForTesting();
   EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems(_));
   controller()->TabActivated();
 
@@ -2372,6 +2398,9 @@ TEST_F(AutofillDialogControllerTest,
 
 TEST_F(AutofillDialogControllerTest,
        SubmitButtonIsDisabled_SpinnerFinishesBeforeDelay) {
+  // Reset Wallet state.
+  controller()->OnDidGetWalletItems(scoped_ptr<wallet::WalletItems>());
+
   EXPECT_EQ(1, controller()->get_submit_button_delay_count());
 
   // Begin the submit button delay.
@@ -2395,6 +2424,9 @@ TEST_F(AutofillDialogControllerTest,
 
 TEST_F(AutofillDialogControllerTest,
        SubmitButtonIsDisabled_SpinnerFinishesAfterDelay) {
+  // Reset Wallet state.
+  controller()->OnDidGetWalletItems(scoped_ptr<wallet::WalletItems>());
+
   EXPECT_EQ(1, controller()->get_submit_button_delay_count());
 
   // Begin the submit button delay.
@@ -2417,16 +2449,12 @@ TEST_F(AutofillDialogControllerTest,
 }
 
 TEST_F(AutofillDialogControllerTest, SubmitButtonIsDisabled_NoSpinner) {
+  SwitchToAutofill();
+
   EXPECT_EQ(1, controller()->get_submit_button_delay_count());
 
   // Begin the submit button delay.
   controller()->SimulateSubmitButtonDelayBegin();
-
-  EXPECT_TRUE(controller()->ShouldShowSpinner());
-  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
-
-  // There's no spinner in Autofill mode.
-  SwitchToAutofill();
 
   EXPECT_FALSE(controller()->ShouldShowSpinner());
   EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));

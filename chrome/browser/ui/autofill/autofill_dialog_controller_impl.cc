@@ -704,9 +704,7 @@ void AutofillDialogControllerImpl::Show() {
   // Try to see if the user is already signed-in. If signed-in, fetch the user's
   // Wallet data. Otherwise, see if the user could be signed in passively.
   // TODO(aruslan): UMA metrics for sign-in.
-  signin_helper_.reset(new wallet::WalletSigninHelper(
-      this, profile_->GetRequestContext()));
-  signin_helper_->StartWalletCookieValueFetch();
+  FetchWalletCookieAndUserName();
 
   if (!account_chooser_model_.WalletIsSelected())
     LogDialogLatencyToShow();
@@ -986,6 +984,11 @@ AutofillDialogControllerImpl::DialogSignedInState
   if (wallet_items_->HasRequiredAction(wallet::PASSIVE_GAIA_AUTH))
     return REQUIRES_PASSIVE_SIGN_IN;
 
+  // Since the username can be pre-fetched as a performance optimization, Wallet
+  // required actions take precedence over a pending username fetch.
+  if (username_fetcher_)
+    return REQUIRES_RESPONSE;
+
   return SIGNED_IN;
 }
 
@@ -994,9 +997,10 @@ void AutofillDialogControllerImpl::SignedInStateUpdated() {
     case SIGNED_IN:
       // Start fetching the user name if we don't know it yet.
       if (account_chooser_model_.active_wallet_account_name().empty()) {
-        signin_helper_.reset(new wallet::WalletSigninHelper(
+        DCHECK(!username_fetcher_);
+        username_fetcher_.reset(new wallet::WalletSigninHelper(
             this, profile_->GetRequestContext()));
-        signin_helper_->StartUserNameFetch();
+        username_fetcher_->StartUserNameFetch();
       } else {
         LogDialogLatencyToShow();
       }
@@ -1005,13 +1009,18 @@ void AutofillDialogControllerImpl::SignedInStateUpdated() {
     case REQUIRES_SIGN_IN:
     case SIGN_IN_DISABLED:
       // Switch to the local account and refresh the dialog.
+      signin_helper_.reset();
+      username_fetcher_.reset();
       OnWalletSigninError();
       break;
 
     case REQUIRES_PASSIVE_SIGN_IN:
+      // Cancel any pending username fetch and clear any stale username data.
+      username_fetcher_.reset();
+      account_chooser_model_.ClearActiveWalletAccountName();
+
       // Attempt to passively sign in the user.
       DCHECK(!signin_helper_);
-      account_chooser_model_.ClearActiveWalletAccountName();
       signin_helper_.reset(new wallet::WalletSigninHelper(
           this,
           profile_->GetRequestContext()));
@@ -1304,7 +1313,8 @@ ui::MenuModel* AutofillDialogControllerImpl::MenuModelForAccountChooser() {
   // If there were unrecoverable Wallet errors, or if there are choices other
   // than "Pay without the wallet", show the full menu.
   if (wallet_error_notification_ ||
-      account_chooser_model_.HasAccountsToChoose()) {
+      (SignedInState() == SIGNED_IN &&
+       account_chooser_model_.HasAccountsToChoose())) {
     return &account_chooser_model_;
   }
 
@@ -2098,9 +2108,7 @@ void AutofillDialogControllerImpl::Observe(
       content::Details<content::LoadCommittedDetails>(details).ptr();
   if (wallet::IsSignInContinueUrl(load_details->entry->GetVirtualURL())) {
     account_chooser_model_.SelectActiveWalletAccount();
-    signin_helper_.reset(new wallet::WalletSigninHelper(
-        this, profile_->GetRequestContext()));
-    signin_helper_->StartWalletCookieValueFetch();
+    FetchWalletCookieAndUserName();
     HideSignIn();
   }
 }
@@ -2225,7 +2233,7 @@ void AutofillDialogControllerImpl::OnUserNameFetchSuccess(
     const std::string& username) {
   ScopedViewUpdates updates(view_.get());
   const string16 username16 = UTF8ToUTF16(username);
-  signin_helper_.reset();
+  username_fetcher_.reset();
   account_chooser_model_.SetActiveWalletAccountName(username16);
   OnWalletOrSigninUpdate();
 }
@@ -2234,6 +2242,7 @@ void AutofillDialogControllerImpl::OnPassiveSigninFailure(
     const GoogleServiceAuthError& error) {
   // TODO(aruslan): report an error.
   LOG(ERROR) << "failed to passively sign in: " << error.ToString();
+  signin_helper_.reset();
   OnWalletSigninError();
 }
 
@@ -2241,7 +2250,13 @@ void AutofillDialogControllerImpl::OnUserNameFetchFailure(
     const GoogleServiceAuthError& error) {
   // TODO(aruslan): report an error.
   LOG(ERROR) << "failed to fetch the user account name: " << error.ToString();
-  OnWalletSigninError();
+  username_fetcher_.reset();
+  // Only treat the failed fetch as an error if the user is known to already be
+  // signed in. Attempting to fetch the username prior to loading the
+  // |wallet_items_| is purely a performance optimization that shouldn't be
+  // treated as an error if it fails.
+  if (wallet_items_)
+    OnWalletSigninError();
 }
 
 void AutofillDialogControllerImpl::OnDidFetchWalletCookieValue(
@@ -2368,6 +2383,11 @@ void AutofillDialogControllerImpl::SubmitButtonDelayEndForTesting() {
   submit_button_delay_timer_.Stop();
 }
 
+void AutofillDialogControllerImpl::
+    ClearLastWalletItemsFetchTimestampForTesting() {
+  last_wallet_items_fetch_timestamp_ = base::TimeTicks();
+}
+
 AutofillDialogControllerImpl::AutofillDialogControllerImpl(
     content::WebContents* contents,
     const FormData& form_structure,
@@ -2477,7 +2497,6 @@ bool AutofillDialogControllerImpl::IsManuallyEditingSection(
 }
 
 void AutofillDialogControllerImpl::OnWalletSigninError() {
-  signin_helper_.reset();
   account_chooser_model_.SetHadWalletSigninError();
   GetWalletClient()->CancelRequests();
   LogDialogLatencyToShow();
@@ -2486,6 +2505,7 @@ void AutofillDialogControllerImpl::OnWalletSigninError() {
 void AutofillDialogControllerImpl::DisableWallet(
     wallet::WalletClient::ErrorType error_type) {
   signin_helper_.reset();
+  username_fetcher_.reset();
   wallet_items_.reset();
   wallet_errors_.clear();
   GetWalletClient()->CancelRequests();
@@ -2671,6 +2691,9 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
 
   for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
     DialogSection section = static_cast<DialogSection>(i);
+    if (!SectionIsActive(section))
+      continue;
+
     ShowEditUiIfBadSuggestion(section);
     UpdateSection(section);
   }
@@ -3411,6 +3434,16 @@ void AutofillDialogControllerImpl::OnSubmitButtonDelayEnd() {
     return;
   ScopedViewUpdates updates(view_.get());
   view_->UpdateButtonStrip();
+}
+
+void AutofillDialogControllerImpl::FetchWalletCookieAndUserName() {
+  net::URLRequestContextGetter* request_context = profile_->GetRequestContext();
+  signin_helper_.reset(new wallet::WalletSigninHelper(this, request_context));
+  signin_helper_->StartWalletCookieValueFetch();
+
+  username_fetcher_.reset(
+      new wallet::WalletSigninHelper(this, request_context));
+  username_fetcher_->StartUserNameFetch();
 }
 
 }  // namespace autofill

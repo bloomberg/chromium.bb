@@ -300,6 +300,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // finish, which would be flaky.
   void SubmitButtonDelayEndForTesting();
 
+  // Resets |last_wallet_items_fetch_timestamp_| for testing.
+  void ClearLastWalletItemsFetchTimestampForTesting();
+
  private:
   enum DialogSignedInState {
     REQUIRES_RESPONSE,
@@ -558,6 +561,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // Called when the delay for enabling the submit button ends.
   void OnSubmitButtonDelayEnd();
 
+  // Initiates a fetch of the user's current Wallet cookie and Google username.
+  void FetchWalletCookieAndUserName();
+
   // The |profile| for |contents_|.
   Profile* const profile_;
 
@@ -582,9 +588,13 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // and also tracks which data source the dialog is using.
   AccountChooserModel account_chooser_model_;
 
-  // The sign-in helper to fetch the user info and perform passive sign-in.
-  // The helper is set only during fetch/sign-in, and NULL otherwise.
+  // The sign-in helper to fetch the user's Wallet cookie and to perform passive
+  // sign-in. The helper is set only during fetch/sign-in, and NULL otherwise.
   scoped_ptr<wallet::WalletSigninHelper> signin_helper_;
+
+  // The sign-in helper to fetch the user's human-readable username. The helper
+  // is set only while fetching the username, and NULL otherwise.
+  scoped_ptr<wallet::WalletSigninHelper> username_fetcher_;
 
   // A client to talk to the Online Wallet API.
   wallet::WalletClient wallet_client_;

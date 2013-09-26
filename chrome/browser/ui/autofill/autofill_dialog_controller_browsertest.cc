@@ -566,6 +566,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 // Tests that credit card number is disabled while editing a Wallet instrument.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, WalletCreditCardDisabled) {
   controller()->OnUserNameFetchSuccess("user@example.com");
+  controller()->OnDidFetchWalletCookieValue(std::string());
 
   scoped_ptr<wallet::WalletItems> wallet_items =
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
@@ -733,6 +734,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
 
   // Set up some Wallet state.
   controller()->OnUserNameFetchSuccess("user@example.com");
+  controller()->OnDidFetchWalletCookieValue(std::string());
   controller()->OnDidGetWalletItems(
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
 
