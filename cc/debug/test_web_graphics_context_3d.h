@@ -183,6 +183,7 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   }
   void set_have_extension_io_surface(bool have) {
     test_capabilities_.iosurface = have;
+    test_capabilities_.texture_rectangle = have;
   }
   void set_have_extension_egl_image(bool have) {
     test_capabilities_.egl_image_external = have;

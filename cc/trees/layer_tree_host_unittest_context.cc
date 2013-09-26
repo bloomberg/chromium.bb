@@ -1126,72 +1126,76 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestLayersNotified);
 class LayerTreeHostContextTestDontUseLostResources
     : public LayerTreeHostContextTest {
  public:
+  LayerTreeHostContextTestDontUseLostResources() {
+    context_should_support_io_surface_ = true;
+  }
+
   virtual void SetupTree() OVERRIDE {
-    scoped_refptr<Layer> root_ = Layer::Create();
-    root_->SetBounds(gfx::Size(10, 10));
-    root_->SetAnchorPoint(gfx::PointF());
-    root_->SetIsDrawable(true);
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(10, 10));
+    root->SetAnchorPoint(gfx::PointF());
+    root->SetIsDrawable(true);
 
-    scoped_refptr<FakeDelegatedRendererLayer> delegated_ =
+    scoped_refptr<FakeDelegatedRendererLayer> delegated =
         FakeDelegatedRendererLayer::Create(NULL);
-    delegated_->SetBounds(gfx::Size(10, 10));
-    delegated_->SetAnchorPoint(gfx::PointF());
-    delegated_->SetIsDrawable(true);
-    root_->AddChild(delegated_);
+    delegated->SetBounds(gfx::Size(10, 10));
+    delegated->SetAnchorPoint(gfx::PointF());
+    delegated->SetIsDrawable(true);
+    root->AddChild(delegated);
 
-    scoped_refptr<ContentLayer> content_ = ContentLayer::Create(&client_);
-    content_->SetBounds(gfx::Size(10, 10));
-    content_->SetAnchorPoint(gfx::PointF());
-    content_->SetIsDrawable(true);
-    root_->AddChild(content_);
+    scoped_refptr<ContentLayer> content = ContentLayer::Create(&client_);
+    content->SetBounds(gfx::Size(10, 10));
+    content->SetAnchorPoint(gfx::PointF());
+    content->SetIsDrawable(true);
+    root->AddChild(content);
 
-    scoped_refptr<TextureLayer> texture_ = TextureLayer::Create(NULL);
-    texture_->SetBounds(gfx::Size(10, 10));
-    texture_->SetAnchorPoint(gfx::PointF());
-    texture_->SetIsDrawable(true);
-    root_->AddChild(texture_);
+    scoped_refptr<TextureLayer> texture = TextureLayer::Create(NULL);
+    texture->SetBounds(gfx::Size(10, 10));
+    texture->SetAnchorPoint(gfx::PointF());
+    texture->SetIsDrawable(true);
+    root->AddChild(texture);
 
-    scoped_refptr<ContentLayer> mask_ = ContentLayer::Create(&client_);
-    mask_->SetBounds(gfx::Size(10, 10));
-    mask_->SetAnchorPoint(gfx::PointF());
+    scoped_refptr<ContentLayer> mask = ContentLayer::Create(&client_);
+    mask->SetBounds(gfx::Size(10, 10));
+    mask->SetAnchorPoint(gfx::PointF());
 
-    scoped_refptr<ContentLayer> content_with_mask_ =
+    scoped_refptr<ContentLayer> content_with_mask =
         ContentLayer::Create(&client_);
-    content_with_mask_->SetBounds(gfx::Size(10, 10));
-    content_with_mask_->SetAnchorPoint(gfx::PointF());
-    content_with_mask_->SetIsDrawable(true);
-    content_with_mask_->SetMaskLayer(mask_.get());
-    root_->AddChild(content_with_mask_);
+    content_with_mask->SetBounds(gfx::Size(10, 10));
+    content_with_mask->SetAnchorPoint(gfx::PointF());
+    content_with_mask->SetIsDrawable(true);
+    content_with_mask->SetMaskLayer(mask.get());
+    root->AddChild(content_with_mask);
 
-    scoped_refptr<VideoLayer> video_color_ = VideoLayer::Create(
-        &color_frame_provider_);
-    video_color_->SetBounds(gfx::Size(10, 10));
-    video_color_->SetAnchorPoint(gfx::PointF());
-    video_color_->SetIsDrawable(true);
-    root_->AddChild(video_color_);
+    scoped_refptr<VideoLayer> video_color =
+        VideoLayer::Create(&color_frame_provider_);
+    video_color->SetBounds(gfx::Size(10, 10));
+    video_color->SetAnchorPoint(gfx::PointF());
+    video_color->SetIsDrawable(true);
+    root->AddChild(video_color);
 
-    scoped_refptr<VideoLayer> video_hw_ = VideoLayer::Create(
-        &hw_frame_provider_);
-    video_hw_->SetBounds(gfx::Size(10, 10));
-    video_hw_->SetAnchorPoint(gfx::PointF());
-    video_hw_->SetIsDrawable(true);
-    root_->AddChild(video_hw_);
+    scoped_refptr<VideoLayer> video_hw =
+        VideoLayer::Create(&hw_frame_provider_);
+    video_hw->SetBounds(gfx::Size(10, 10));
+    video_hw->SetAnchorPoint(gfx::PointF());
+    video_hw->SetIsDrawable(true);
+    root->AddChild(video_hw);
 
-    scoped_refptr<VideoLayer> video_scaled_hw_ = VideoLayer::Create(
-        &scaled_hw_frame_provider_);
-    video_scaled_hw_->SetBounds(gfx::Size(10, 10));
-    video_scaled_hw_->SetAnchorPoint(gfx::PointF());
-    video_scaled_hw_->SetIsDrawable(true);
-    root_->AddChild(video_scaled_hw_);
+    scoped_refptr<VideoLayer> video_scaled_hw =
+        VideoLayer::Create(&scaled_hw_frame_provider_);
+    video_scaled_hw->SetBounds(gfx::Size(10, 10));
+    video_scaled_hw->SetAnchorPoint(gfx::PointF());
+    video_scaled_hw->SetIsDrawable(true);
+    root->AddChild(video_scaled_hw);
 
     if (!delegating_renderer()) {
       // TODO(danakj): IOSurface layer can not be transported. crbug.com/239335
-      scoped_refptr<IOSurfaceLayer> io_surface_ = IOSurfaceLayer::Create();
-      io_surface_->SetBounds(gfx::Size(10, 10));
-      io_surface_->SetAnchorPoint(gfx::PointF());
-      io_surface_->SetIsDrawable(true);
-      io_surface_->SetIOSurfaceProperties(1, gfx::Size(10, 10));
-      root_->AddChild(io_surface_);
+      scoped_refptr<IOSurfaceLayer> io_surface = IOSurfaceLayer::Create();
+      io_surface->SetBounds(gfx::Size(10, 10));
+      io_surface->SetAnchorPoint(gfx::PointF());
+      io_surface->SetIsDrawable(true);
+      io_surface->SetIOSurfaceProperties(1, gfx::Size(10, 10));
+      root->AddChild(io_surface);
     }
 
     // Enable the hud.
@@ -1199,22 +1203,19 @@ class LayerTreeHostContextTestDontUseLostResources
     debug_state.show_property_changed_rects = true;
     layer_tree_host()->SetDebugState(debug_state);
 
-    scoped_refptr<PaintedScrollbarLayer> scrollbar_ =
+    scoped_refptr<PaintedScrollbarLayer> scrollbar =
         PaintedScrollbarLayer::Create(
-            scoped_ptr<Scrollbar>(new FakeScrollbar).Pass(), content_->id());
-    scrollbar_->SetBounds(gfx::Size(10, 10));
-    scrollbar_->SetAnchorPoint(gfx::PointF());
-    scrollbar_->SetIsDrawable(true);
-    root_->AddChild(scrollbar_);
+            scoped_ptr<Scrollbar>(new FakeScrollbar).Pass(), content->id());
+    scrollbar->SetBounds(gfx::Size(10, 10));
+    scrollbar->SetAnchorPoint(gfx::PointF());
+    scrollbar->SetIsDrawable(true);
+    root->AddChild(scrollbar);
 
-    layer_tree_host()->SetRootLayer(root_);
+    layer_tree_host()->SetRootLayer(root);
     LayerTreeHostContextTest::SetupTree();
   }
 
-  virtual void BeginTest() OVERRIDE {
-    context_should_support_io_surface_ = true;
-    PostSetNeedsCommitToMainThread();
-  }
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     LayerTreeHostContextTest::CommitCompleteOnThread(host_impl);
@@ -1231,17 +1232,16 @@ class LayerTreeHostContextTestDontUseLostResources
       scoped_ptr<TestRenderPass> pass_for_quad = TestRenderPass::Create();
       pass_for_quad->SetNew(
           // AppendOneOfEveryQuadType() makes a RenderPass quad with this id.
-          RenderPass::Id(1, 1),
+          RenderPass::Id(2, 1),
           gfx::Rect(0, 0, 10, 10),
           gfx::Rect(0, 0, 10, 10),
           gfx::Transform());
 
       scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
-      pass->SetNew(
-          RenderPass::Id(2, 1),
-          gfx::Rect(0, 0, 10, 10),
-          gfx::Rect(0, 0, 10, 10),
-          gfx::Transform());
+      pass->SetNew(RenderPass::Id(1, 1),
+                   gfx::Rect(0, 0, 10, 10),
+                   gfx::Rect(0, 0, 10, 10),
+                   gfx::Transform());
       pass->AppendOneOfEveryQuadType(resource_provider, RenderPass::Id(2, 1));
 
       ScopedPtrVector<RenderPass> pass_list;
@@ -1317,37 +1317,31 @@ class LayerTreeHostContextTestDontUseLostResources
     if (host_impl->active_tree()->source_frame_number() == 2) {
       // Lose the context during draw on the second commit. This will cause
       // a third commit to recover.
-      if (context3d_)
-        context3d_->set_times_bind_texture_succeeds(4);
+      context3d_->set_times_bind_texture_succeeds(4);
     }
     return true;
+  }
+
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(
+      bool fallback) OVERRIDE {
+    if (layer_tree_host())
+      EXPECT_EQ(layer_tree_host()->source_frame_number(), 3);
+    return LayerTreeHostContextTest::CreateOutputSurface(fallback);
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     ASSERT_TRUE(layer_tree_host()->hud_layer());
     // End the test once we know the 3nd frame drew.
-    if (layer_tree_host()->source_frame_number() == 4)
-      EndTest();
+    if (layer_tree_host()->source_frame_number() < 4)
+      layer_tree_host()->root_layer()->SetNeedsDisplay();
     else
-      layer_tree_host()->SetNeedsCommit();
+      EndTest();
   }
 
   virtual void AfterTest() OVERRIDE {}
 
  private:
   FakeContentLayerClient client_;
-
-  scoped_refptr<Layer> root_;
-  scoped_refptr<DelegatedRendererLayer> delegated_;
-  scoped_refptr<ContentLayer> content_;
-  scoped_refptr<TextureLayer> texture_;
-  scoped_refptr<ContentLayer> mask_;
-  scoped_refptr<ContentLayer> content_with_mask_;
-  scoped_refptr<VideoLayer> video_color_;
-  scoped_refptr<VideoLayer> video_hw_;
-  scoped_refptr<VideoLayer> video_scaled_hw_;
-  scoped_refptr<IOSurfaceLayer> io_surface_;
-  scoped_refptr<PaintedScrollbarLayer> scrollbar_;
 
   scoped_refptr<VideoFrame> color_video_frame_;
   scoped_refptr<VideoFrame> hw_video_frame_;
