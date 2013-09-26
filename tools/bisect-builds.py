@@ -48,6 +48,7 @@ import optparse
 import os
 import pipes
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -366,7 +367,7 @@ def RunRevision(context, revision, zipfile, profile, num_runs, command, args):
     testargs.append('--no-sandbox')
 
   runcommand = []
-  for token in command.split():
+  for token in shlex.split(command):
     if token == "%a":
       runcommand.extend(testargs)
     else:
