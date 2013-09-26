@@ -120,6 +120,35 @@ namespace screencastFrame {
   const char kName[] = "Page.screencastFrame";
 }  // screencastFrame
 
+namespace queryUsageAndQuota {
+  const char kName[] = "Page.queryUsageAndQuota";
+  const char kParamSecurityOrigin[] = "securityOrigin";
+  extern const char kResponseQuota[] = "quota";
+  extern const char kResponseUsage[] = "usage";
+}  // queryUsageAndQuota
+
+namespace Quota {
+  extern const char kItemTemporary[] = "temporary";
+  extern const char kItemPersistent[] = "persistent";
+}  // Quota
+
+namespace Usage {
+  extern const char kItemTemporary[] = "temporary";
+  extern const char kItemPersistent[] = "persistent";
+  extern const char kItemSyncable[] = "syncable";
+}  // Usage
+
+namespace UsageItem {
+  namespace ID {
+    extern const char kFilesystem[] = "filesystem";
+    extern const char kDatabase[] = "database";
+    extern const char kAppcache[] = "appcache";
+    extern const char kIndexedDatabase[] = "indexeddatabase";
+  }  // ID
+  extern const char kItemID[] = "id";
+  extern const char kItemValue[] = "value";
+}  // UsageItem
+
 namespace screencastVisibilityChanged {
   const char kName[] = "Page.screencastVisibilityChanged";
   const char kParamVisible[] = "visible";

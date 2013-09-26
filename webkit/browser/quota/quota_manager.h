@@ -204,6 +204,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaManager
   void GetGlobalUsage(StorageType type, const GlobalUsageCallback& callback);
   void GetHostUsage(const std::string& host, StorageType type,
                     const UsageCallback& callback);
+  void GetHostUsage(const std::string& host, StorageType type,
+                    QuotaClient::ID client_id,
+                    const UsageCallback& callback);
+
+  bool IsTrackingHostUsage(StorageType type, QuotaClient::ID client_id) const;
 
   void GetStatistics(std::map<std::string, std::string>* statistics);
 

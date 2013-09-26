@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "content/browser/devtools/devtools_protocol.h"
+#include "content/common/content_export.h"
 
 class SkBitmap;
 
@@ -27,7 +28,8 @@ class DevToolsTracingHandler;
 // Overrides Inspector commands before they are sent to the renderer.
 // May override the implementation completely, ignore it, or handle
 // additional browser process implementation details.
-class RendererOverridesHandler : public DevToolsProtocol::Handler {
+class CONTENT_EXPORT RendererOverridesHandler
+    : public DevToolsProtocol::Handler {
  public:
   explicit RendererOverridesHandler(DevToolsAgentHost* agent);
   virtual ~RendererOverridesHandler();
@@ -66,6 +68,8 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
       scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> PageStopScreencast(
       scoped_refptr<DevToolsProtocol::Command> command);
+  scoped_refptr<DevToolsProtocol::Response> PageQueryUsageAndQuota(
+      scoped_refptr<DevToolsProtocol::Command>);
 
   void ScreenshotCaptured(
       scoped_refptr<DevToolsProtocol::Command> command,
@@ -74,6 +78,10 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
       const cc::CompositorFrameMetadata& metadata,
       bool success,
       const SkBitmap& bitmap);
+
+  void PageQueryUsageAndQuotaCompleted(
+     scoped_refptr<DevToolsProtocol::Command>,
+     scoped_ptr<base::DictionaryValue> response_data);
 
   void NotifyScreencastVisibility(bool visible);
 

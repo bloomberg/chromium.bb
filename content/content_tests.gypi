@@ -863,6 +863,7 @@
             'browser/child_process_security_policy_browsertest.cc',
             'browser/database_browsertest.cc',
             'browser/device_orientation/device_orientation_browsertest.cc',
+            'browser/devtools/renderer_overrides_handler_browsertest.cc',
             'browser/dom_storage/dom_storage_browsertest.cc',
             'browser/download/download_browsertest.cc',
             'browser/download/drag_download_file_browsertest.cc',

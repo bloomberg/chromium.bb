@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
@@ -119,7 +120,7 @@ class DevToolsProtocol {
     DISALLOW_COPY_AND_ASSIGN(Notification);
   };
 
-  class Handler {
+  class CONTENT_EXPORT Handler {
    public:
     typedef base::Callback<scoped_refptr<DevToolsProtocol::Response>(
         scoped_refptr<DevToolsProtocol::Command> command)> CommandHandler;
@@ -156,8 +157,9 @@ class DevToolsProtocol {
     DISALLOW_COPY_AND_ASSIGN(Handler);
   };
 
-  static scoped_refptr<Command> ParseCommand(const std::string& json,
-                                             std::string* error_response);
+  CONTENT_EXPORT static scoped_refptr<Command> ParseCommand(
+      const std::string& json,
+      std::string* error_response);
 
   static scoped_refptr<Notification> ParseNotification(
       const std::string& json);

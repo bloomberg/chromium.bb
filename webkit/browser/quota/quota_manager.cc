@@ -1076,6 +1076,25 @@ void QuotaManager::GetHostUsage(const std::string& host,
   GetUsageTracker(type)->GetHostUsage(host, callback);
 }
 
+void QuotaManager::GetHostUsage(const std::string& host,
+                                StorageType type,
+                                QuotaClient::ID client_id,
+                                const UsageCallback& callback) {
+  LazyInitialize();
+  ClientUsageTracker* tracker =
+      GetUsageTracker(type)->GetClientTracker(client_id);
+  if (!tracker) {
+    callback.Run(0);
+    return;
+  }
+  tracker->GetHostUsage(host, callback);
+}
+
+bool QuotaManager::IsTrackingHostUsage(StorageType type,
+                                       QuotaClient::ID client_id) const {
+  return GetUsageTracker(type)->GetClientTracker(client_id) != NULL;
+}
+
 void QuotaManager::GetStatistics(
     std::map<std::string, std::string>* statistics) {
   DCHECK(statistics);
