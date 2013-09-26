@@ -1,0 +1,7 @@
+Test that FileReader.result returns the same result regardless of whether it's from cache or not by getting it twice.
+
+
+PASS Read from a blob as a binary string 
+PASS Read from a blob as a text 
+PASS Read from a blob as a data URL 
+
