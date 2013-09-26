@@ -20,7 +20,7 @@ function PhotoImport(dom, filesystem, params) {
   this.dom_ = dom;
   this.document_ = this.dom_.ownerDocument;
   this.metadataCache_ = params.metadataCache;
-  this.volumeManager_ = new VolumeManager();
+  this.volumeManager_ = new VolumeManagerWrapper(true);
   this.fileOperationManager_ =
       FileOperationManagerWrapper.getInstance(this.filesystem_.root);
   this.mediaFilesList_ = null;
@@ -135,8 +135,8 @@ PhotoImport.prototype.initDom_ = function() {
  * @private
  */
 PhotoImport.prototype.initMyPhotos_ = function() {
-  var onVolumeManagerReady = function() {
-    this.volumeManager_.removeEventListener('ready', onVolumeManagerReady);
+  this.volumeManager_.ensureInitialized(function() {
+    // TODO(hidehiko): Clean this up by removing filesystem_.
     var directoryPath = PathUtil.join(
         RootDirectory.DRIVE,
         loadTimeData.getString('PHOTO_IMPORT_MY_PHOTOS_DIRECTORY_NAME'));
@@ -150,12 +150,7 @@ PhotoImport.prototype.initMyPhotos_ = function() {
         function(error) {
           this.onError_(loadTimeData.getString('PHOTO_IMPORT_DRIVE_ERROR'));
         }.bind(this));
-  }.bind(this);
-
-  if (this.volumeManager_.isReady())
-    onVolumeManagerReady();
-  else
-    this.volumeManager_.addEventListener('ready', onVolumeManagerReady);
+  }.bind(this));
 };
 
 /**

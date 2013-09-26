@@ -526,7 +526,7 @@ NavigationList.prototype = {
 
 /**
  * @param {HTMLElement} el Element to be DirectoryItem.
- * @param {VolumeManager} volumeManager The VolumeManager of the system.
+ * @param {VolumeManagerWrapper} volumeManager The VolumeManager of the system.
  * @param {DirectoryModel} directoryModel Current DirectoryModel.
  *     folders.
  */
@@ -536,7 +536,7 @@ NavigationList.decorate = function(el, volumeManager, directoryModel) {
 };
 
 /**
- * @param {VolumeManager} volumeManager The VolumeManager of the system.
+ * @param {VolumeManagerWrapper} volumeManager The VolumeManager of the system.
  * @param {DirectoryModel} directoryModel Current DirectoryModel.
  */
 NavigationList.prototype.decorate = function(volumeManager, directoryModel) {
@@ -771,7 +771,6 @@ NavigationList.prototype.onDriveStatusChanged_ = function(event) {
 /**
  * Updates folder shortcut status.
  * If the drive is mounted, shows the folder shortcut. Otherwise, hide it.
- *
  * @private
  */
 NavigationList.prototype.updateFolderShortcutsStatus_ = function() {

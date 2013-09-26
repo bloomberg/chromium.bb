@@ -12,18 +12,16 @@ document.addEventListener('DOMContentLoaded', function() {
  * The main ActionChoice object.
  *
  * @param {HTMLElement} dom Container.
- * @param {FileSystem} filesystem Local file system.
- * @param {VolumeManager} volumeManager VolueManager of the app.
  * @param {Object} params Parameters.
  * @constructor
  */
-function ActionChoice(dom, filesystem, volumeManager, params) {
+function ActionChoice(dom, params) {
   this.dom_ = dom;
-  this.filesystem_ = filesystem;
   this.params_ = params;
   this.document_ = this.dom_.ownerDocument;
   this.metadataCache_ = this.params_.metadataCache;
-  this.volumeManager_ = volumeManager;
+  this.volumeManager_ = new VolumeManagerWrapper(
+      VolumeManagerWrapper.DriveEnabledStatus.DRIVE_ENABLED);
   this.volumeManager_.addEventListener('externally-unmounted',
      this.onDeviceUnmounted_.bind(this));
   this.initDom_();
@@ -87,10 +85,9 @@ ActionChoice.GPLUS_PHOTOS_EXTENSION_ID = 'efjnaogkjbogokcnohkmnjdojkikgobo';
 
 /**
  * Loads app in the document body.
- * @param {FileSystem=} opt_filesystem Local file system.
  * @param {Object=} opt_params Parameters.
  */
-ActionChoice.load = function(opt_filesystem, opt_params) {
+ActionChoice.load = function(opt_params) {
   ImageUtil.metrics = metrics;
 
   var hash = location.hash ? decodeURIComponent(location.hash.substr(1)) : '';
@@ -101,22 +98,11 @@ ActionChoice.load = function(opt_filesystem, opt_params) {
   if (!params.advancedMode) params.advancedMode = (query == 'advanced-mode');
   if (!params.metadataCache) params.metadataCache = MetadataCache.createFull();
 
-  var onFilesystem = function(filesystem) {
-    var dom = document.querySelector('.action-choice');
-    VolumeManager.getInstance(function(volumeManager) {
-      ActionChoice.instance = new ActionChoice(
-          dom, filesystem, volumeManager, params);
-    });
-  };
-
   chrome.fileBrowserPrivate.getStrings(function(strings) {
     loadTimeData.data = strings;
     i18nTemplate.process(document, loadTimeData);
-    if (opt_filesystem) {
-      onFilesystem(opt_filesystem);
-    } else {
-      chrome.fileBrowserPrivate.requestFileSystem('compatible', onFilesystem);
-    }
+    var dom = document.querySelector('.action-choice');
+    ActionChoice.instance = new ActionChoice(dom, params);
   });
 };
 
@@ -260,19 +246,12 @@ ActionChoice.prototype.renderItem = function(item) {
  * @private
  */
 ActionChoice.prototype.checkDrive_ = function(callback) {
-  var onVolumeManagerReady = function() {
-    this.volumeManager_.removeEventListener('ready', onVolumeManagerReady);
+  this.volumeManager_.ensureInitialized(function() {
     this.importPhotosToDriveAction_.disabled =
         !this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE);
     this.renderList_();
     callback();
-  }.bind(this);
-
-  if (this.volumeManager_.isReady()) {
-    onVolumeManagerReady();
-  } else {
-    this.volumeManager_.addEvventListener('ready', onVolumeManagerReady);
-  }
+  }.bind(this));
 };
 
 /**
@@ -348,20 +327,16 @@ ActionChoice.prototype.loadSource_ = function(source, callback) {
         });
   }.bind(this);
 
-  var onReady = function() {
-    // TODO(hidehiko): Replace filesystem by volumeManager.
-    util.resolvePath(this.filesystem_.root, source, onEntry, function() {
-      this.recordAction_('error');
-      this.close_();
-    }.bind(this));
-  }.bind(this);
-
   this.sourceEntry_ = null;
   metrics.startInterval('PhotoImport.Scan');
-  if (!this.volumeManager_.isReady())
-    this.volumeManager_.addEventListener('ready', onReady);
-  else
-    onReady();
+  this.volumeManager_.ensureInitialized(function() {
+    this.volumeManager_.resolvePath(
+        source, onEntry,
+        function(error) {
+          this.recordAction_('error');
+          this.close_();
+        }.bind(this));
+  }.bind(this));
 };
 
 /**

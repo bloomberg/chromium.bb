@@ -92,7 +92,7 @@ DirectoryModelUtil.resolveRoots = function(
  * @param {FileFilter} fileFilter Instance of FileFilter.
  * @param {FileWatcher} fileWatcher Instance of FileWatcher.
  * @param {MetadataCache} metadataCache The metadata cache service.
- * @param {VolumeManager} volumeManager The volume manager.
+ * @param {VolumeManagerWrapper} volumeManager The volume manager.
  * @param {boolean} showSpecialSearchRoots True if special-search roots are
  *     available. They should be hidden for the dialogs to save files.
  * @constructor
@@ -1139,7 +1139,7 @@ DirectoryModel.prototype.selectIndex = function(index) {
 DirectoryModel.prototype.updateRoots_ = function(opt_callback) {
   metrics.startInterval('Load.Roots');
   DirectoryModelUtil.resolveRoots(
-      this.root_, this.volumeManager_.driveEnabled,
+      this.root_, !!this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE),
       function(rootEntries) {
         metrics.recordInterval('Load.Roots');
 

@@ -8,6 +8,7 @@
  * Represents each volume, such as "drive", "download directory", each "USB
  * flush storage", or "mounted zip archive" etc.
  *
+ * @param {VolumeManager.VolumeType} volumeType The type of the volume.
  * @param {string} mountPath Where the volume is mounted.
  * @param {DirectoryEntry} root The root directory entry of this volume.
  * @param {string} error The error if an error is found.
@@ -17,7 +18,9 @@
  * @param {boolean} isReadOnly True if the volume is read only.
  * @constructor
  */
-function VolumeInfo(mountPath, root, error, deviceType, isReadOnly) {
+function VolumeInfo(
+    volumeType, mountPath, root, error, deviceType, isReadOnly) {
+  this.volumeType = volumeType;
   // TODO(hidehiko): This should include FileSystem instance.
   this.mountPath = mountPath;
   this.root = root;
@@ -108,12 +111,14 @@ volumeManagerUtil.getRootEntry_ = function(
 
 /**
  * Builds the VolumeInfo data for mountPath.
+ * @param {VolumeManager.VolumeType} volumeType The type of the volume.
  * @param {string} mountPath Path to the volume.
  * @param {VolumeManager.Error} error The error string if available.
  * @param {function(Object)} callback Called on completion.
  *     TODO(hidehiko): Replace the type from Object to its original type.
  */
-volumeManagerUtil.createVolumeInfo = function(mountPath, error, callback) {
+volumeManagerUtil.createVolumeInfo = function(
+    volumeType, mountPath, error, callback) {
   // Validation of the input.
   volumeManagerUtil.validateMountPath(mountPath);
   if (error)
@@ -154,7 +159,7 @@ volumeManagerUtil.createVolumeInfo = function(mountPath, error, callback) {
                     });
               }
               callback(new VolumeInfo(
-                  mountPath, entry, error, deviceType, isReadOnly));
+                  volumeType, mountPath, entry, error, deviceType, isReadOnly));
             },
             function(fileError) {
               console.error('Root entry is not found: ' +
@@ -162,7 +167,7 @@ volumeManagerUtil.createVolumeInfo = function(mountPath, error, callback) {
               if (!error)
                 error = VolumeManager.Error.UNKNOWN;
               callback(new VolumeInfo(
-                  mountPath, null, error, deviceType, isReadOnly));
+                  volumeType, mountPath, null, error, deviceType, isReadOnly));
             });
     });
 };
@@ -335,23 +340,14 @@ function VolumeManager() {
    */
   this.ready_ = false;
 
-  /**
-   * True if Drive file system is enabled.
-   * TODO(hidehiko): This should be migrated into the multi-file system
-   * support. If drive file system is disabled, Files.app should receive
-   * unmounted event and UI should hide Drive.
-   * @type {boolean}
-   */
-  this.driveEnabled = false;
-
   this.initMountPoints_();
 
   // These status should be merged into VolumeManager.
   // TODO(hidehiko): Remove them after the migration.
   this.driveStatus_ = VolumeManager.DriveStatus.UNMOUNTED;
   this.driveConnectionState_ = {
-      type: VolumeManager.DriveConnectionType.OFFLINE,
-      reasons: VolumeManager.DriveConnectionType.NO_SERVICE
+    type: VolumeManager.DriveConnectionType.OFFLINE,
+    reasons: [VolumeManager.DriveConnectionType.NO_SERVICE]
   };
 
   chrome.fileBrowserPrivate.onDriveConnectionStatusChanged.addListener(
@@ -399,6 +395,17 @@ VolumeManager.Error = {
   INVALID_ARCHIVE: 'error_invalid_archive',
   AUTHENTICATION: 'error_authentication',
   PATH_UNMOUNTED: 'error_path_unmounted'
+};
+
+/**
+ * The type of each volume.
+ * @enum {string}
+ */
+VolumeManager.VolumeType = {
+  DRIVE: 'drive',
+  DOWNLOADS: 'downloads',
+  REMOVABLE: 'removable',
+  ARCHIVE: 'archive'
 };
 
 /**
@@ -463,20 +470,6 @@ VolumeManager.getInstance = function(callback) {
 };
 
 /**
- * Enables/disables Drive file system. Dispatches
- * 'drive-enabled-status-changed' event, when the enabled state is actually
- * changed.
- * TODO(hidehiko): Enable/Disable of drive based on preference is managed by
- * backend (C++) layer. Remove this.
- * @param {boolean} enabled True if Drive file system is enabled.
- */
-VolumeManager.prototype.setDriveEnabled = function(enabled) {
-  if (this.driveEnabled == enabled)
-    return;
-  this.driveEnabled = enabled;
-};
-
-/**
  * @param {VolumeManager.DriveStatus} newStatus New DRIVE status.
  * @private
  */
@@ -514,6 +507,7 @@ VolumeManager.prototype.initMountPoints_ = function() {
         var error = mountPoint.mountCondition ?
             'error_' + mountPoint.mountCondition : '';
         volumeManagerUtil.createVolumeInfo(
+            mountPoint.volumeType,
             '/' + mountPoint.mountPath, error,
             function(volumeInfo) {
               this.volumeInfoList.add(volumeInfo);
@@ -566,7 +560,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
       var error = event.status == 'success' ? '' : event.status;
 
       volumeManagerUtil.createVolumeInfo(
-          event.mountPath, error, function(volume) {
+          event.volumeType, event.mountPath, error, function(volume) {
             this.volumeInfoList.add(volume);
             this.finishRequest_(requestKey, event.status, event.mountPath);
             cr.dispatchSimpleEvent(this, 'change');

@@ -9,7 +9,7 @@
  *  - WelcomeBanner
  *  - AuthFailBanner
  * @param {DirectoryModel} directoryModel The model.
- * @param {VolumeManager} volumeManager The manager.
+ * @param {VolumeManagerWrapper} volumeManager The manager.
  * @param {DOMDocument} document HTML document.
  * @param {boolean} showOffers True if we should show offer banners.
  * @constructor

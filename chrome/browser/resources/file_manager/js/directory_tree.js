@@ -438,7 +438,7 @@ function DirectoryTree() {}
  * Decorates an element.
  * @param {HTMLElement} el Element to be DirectoryTree.
  * @param {DirectoryModel} directoryModel Current DirectoryModel.
- * @param {VolumeManager} volumeManager VolumeManager of the system.
+ * @param {VolumeManagerWrapper} volumeManager VolumeManager of the system.
  */
 DirectoryTree.decorate = function(el, directoryModel, volumeManager) {
   el.__proto__ = DirectoryTree.prototype;
@@ -508,7 +508,7 @@ DirectoryTree.prototype.searchAndSelectByEntry = function(entry) {
 /**
  * Decorates an element.
  * @param {DirectoryModel} directoryModel Current DirectoryModel.
- * @param {VolumeManager} volumeManager VolumeManager of the system.
+ * @param {VolumeManagerWrapper} volumeManager VolumeManager of the system.
  */
 DirectoryTree.prototype.decorate = function(directoryModel, volumeManager) {
   cr.ui.Tree.prototype.decorate.call(this);

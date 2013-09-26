@@ -109,6 +109,7 @@
 //<include src="ui/progress_center_panel.js"/>
 //<include src="url_constants.js"/>
 //<include src="volume_manager.js"/>
+//<include src="volume_manager_wrapper.js"/>
 //<include src="media/media_util.js"/>
 //<include src="metadata/metadata_cache.js"/>
 //<include src="default_action_dialog.js"/>

@@ -31,8 +31,8 @@ function unload(opt_exiting) { Gallery.instance.onUnload(opt_exiting) }
  *     {string} readonlyDirName Directory name for readonly warning or null.
  *     {DirEntry} saveDirEntry Directory to save to.
  *     {function(string)} displayStringFunction.
- * @param {VolumeManager} volumeManager The VolumeManager instance of the
- *      system.
+ * @param {VolumeManagerWrapper} volumeManager The VolumeManager instance of
+ *      the system.
  * @class
  * @constructor
  */
@@ -60,7 +60,7 @@ Gallery.prototype.__proto__ = cr.EventTarget.prototype;
  * Create and initialize a Gallery object based on a context.
  *
  * @param {Object} context Gallery context.
- * @param {VolumeManager} volumeManager VolumeManager of the system.
+ * @param {VolumeManagerWrapper} volumeManager VolumeManager of the system.
  * @param {Array.<string>} urls Array of urls.
  * @param {Array.<string>} selectedUrls Array of selected urls.
  */
@@ -862,4 +862,3 @@ Gallery.prototype.updateButtons_ = function() {
         this.displayStringFunction_(oppositeMode.getTitle());
   }
 };
-

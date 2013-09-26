@@ -686,15 +686,23 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initVolumeManager_ = function(callback) {
-    VolumeManager.getInstance(function(volumeManager) {
-      this.volumeManager_ = volumeManager;
+    // Auto resolving to local path does not work for folders (e.g., dialog for
+    // loading unpacked extensions).
+    var noLocalPathResolution =
+      this.params_.type == DialogType.SELECT_FOLDER ||
+      this.params_.type == DialogType.SELECT_UPLOAD_FOLDER;
 
-      // Mount Drive if enabled.
-      // TODO(hidehiko): Mounting state of Drive file system should be
-      // handled by C++ backend side.
-      volumeManager.setDriveEnabled(this.isDriveEnabled());
-      callback();
-    }.bind(this));
+    // If this condition is false, VolumeManagerWrapper hides all drive
+    // related event and data, even if Drive is enabled on preference.
+    // In other words, even if Drive is disabled on preference but Files.app
+    // should show Drive when it is re-enabled, then the value should be set to
+    // true.
+    // Note that the Drive enabling preference change is listened by
+    // DriveIntegrationService, so here we don't need to take care about it.
+    var driveEnabled =
+        !noLocalPathResolution || !this.params_.shouldReturnLocalPath;
+    this.volumeManager_ = new VolumeManagerWrapper(driveEnabled);
+    callback();
   };
 
   /**
@@ -1544,32 +1552,21 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       path = PathUtil.DEFAULT_DIRECTORY + '/' + path;
     }
 
-    if (PathUtil.getRootType(path) === RootType.DRIVE) {
-      if (!this.isDriveEnabled()) {
-        var leafName = path.substr(path.indexOf('/') + 1);
-        path = PathUtil.DEFAULT_DIRECTORY + '/' + leafName;
-        this.finishSetupCurrentDirectory_(path);
+    var tracker = this.directoryModel_.createDirectoryChangeTracker();
+    tracker.start();
+    this.volumeManager_.ensureInitialized(function() {
+      tracker.stop();
+      if (tracker.hasChanged)
         return;
-      }
 
-      var tracker = this.directoryModel_.createDirectoryChangeTracker();
-      var onVolumeManagerReady = function() {
-        this.volumeManager_.removeEventListener('ready', onVolumeManagerReady);
-        tracker.stop();
-        if (!tracker.hasChanged)
-          this.finishSetupCurrentDirectory_(path);
-      }.bind(this);
+      // If Drive is disabled but the path points to Drive's entry,
+      // fallback to DEFAULT_DIRECTORY.
+      if (PathUtil.isDriveBasedPath(path) &&
+          !this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE))
+        path = PathUtil.DEFAULT_DIRECTORY + '/' + PathUtil.basename(path);
 
-      tracker.start();
-      if (this.volumeManager_.isReady()) {
-        onVolumeManagerReady();
-      } else {
-        // Wait until the VolumeManager gets ready.
-        this.volumeManager_.addEventListener('ready', onVolumeManagerReady);
-      }
-    } else {
       this.finishSetupCurrentDirectory_(path);
-    }
+    }.bind(this));
   };
 
   /**
@@ -1894,9 +1891,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       self.initDateTimeFormatters_();
       self.refreshCurrentDirectoryMetadata_();
 
-      var isDriveEnabled = self.isDriveEnabled();
-      self.volumeManager_.setDriveEnabled(isDriveEnabled);
-
       if (prefs.cellularDisabled)
         self.syncButton.setAttribute('checked', '');
       else
@@ -1944,17 +1938,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.isDriveOffline = function() {
     var connection = this.volumeManager_.getDriveConnectionState();
     return connection.type == VolumeManager.DriveConnectionType.OFFLINE;
-  };
-
-  FileManager.prototype.isDriveEnabled = function() {
-    // Auto resolving to local path does not work for folders (e.g., dialog for
-    // loading unpacked extensions).
-    var noLocalPathResolution =
-      this.params_.type == DialogType.SELECT_FOLDER ||
-      this.params_.type == DialogType.SELECT_UPLOAD_FOLDER;
-    if (noLocalPathResolution && this.params_.shouldReturnLocalPath)
-      return false;
-    return this.preferences_.driveEnabled;
   };
 
   FileManager.prototype.isOnReadonlyDirectory = function() {
