@@ -179,7 +179,8 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   virtual scoped_ptr<StreamTextureFactory> CreateStreamTextureFactory(
       int view_id) OVERRIDE {
     scoped_refptr<VideoContextProvider> context_provider;
-    if (CanCreateMainThreadContext()) {
+    if (CanCreateMainThreadContext() && offscreen_context_for_main_thread_) {
+      DCHECK(wrapped_gl_context_for_main_thread_);
       context_provider =
           new VideoContextProvider(offscreen_context_for_main_thread_,
                                    wrapped_gl_context_for_main_thread_);
