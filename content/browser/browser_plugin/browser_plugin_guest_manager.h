@@ -38,6 +38,9 @@ class WebContents;
 class WebContentsImpl;
 struct NativeWebKeyboardEvent;
 
+// WARNING: All APIs should be guarded with a process ID check like
+// CanEmbedderAccessInstanceIDMaybeKill, to prevent abuse by normal renderer
+// processes.
 class CONTENT_EXPORT BrowserPluginGuestManager :
     public base::SupportsUserData::Data {
  public:

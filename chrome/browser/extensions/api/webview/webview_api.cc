@@ -6,7 +6,6 @@
 
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/guestview/webview/webview_guest.h"
 #include "chrome/common/extensions/api/webview.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -38,6 +37,17 @@ int MaskForKey(const char* key) {
 }
 
 }  // namespace
+
+bool WebviewExtensionFunction::RunImpl() {
+  int instance_id = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
+  WebViewGuest* guest = WebViewGuest::From(
+      render_view_host()->GetProcess()->GetID(), instance_id);
+  if (!guest)
+    return false;
+
+  return RunImplSafe(guest);
+}
 
 WebviewClearDataFunction::WebviewClearDataFunction()
     : remove_mask_(0),
@@ -75,10 +85,8 @@ uint32 WebviewClearDataFunction::GetRemovalMask() {
 
 // TODO(lazyboy): Parameters in this extension function are similar (or a
 // sub-set) to BrowsingDataRemoverFunction. How can we share this code?
-bool WebviewClearDataFunction::RunImpl() {
+bool WebviewClearDataFunction::RunImplSafe(WebViewGuest* guest) {
   content::RecordAction(content::UserMetricsAction("WebView.ClearData"));
-  int instance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
 
   // Grab the initial |options| parameter, and parse out the arguments.
   base::DictionaryValue* options;
@@ -102,11 +110,6 @@ bool WebviewClearDataFunction::RunImpl() {
 
   remove_mask_ = GetRemovalMask();
   if (bad_message_)
-    return false;
-
-  WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), instance_id);
-  if (!guest)
     return false;
 
   AddRef();  // Balanced below or in WebviewClearDataFunction::Done().
@@ -211,15 +214,10 @@ WebviewGoFunction::WebviewGoFunction() {
 WebviewGoFunction::~WebviewGoFunction() {
 }
 
-bool WebviewGoFunction::RunImpl() {
+bool WebviewGoFunction::RunImplSafe(WebViewGuest* guest) {
   content::RecordAction(content::UserMetricsAction("WebView.Go"));
   scoped_ptr<webview::Go::Params> params(webview::Go::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), params->instance_id);
-  if (!guest)
-    return false;
 
   guest->Go(params->relative_index);
   return true;
@@ -231,16 +229,11 @@ WebviewReloadFunction::WebviewReloadFunction() {
 WebviewReloadFunction::~WebviewReloadFunction() {
 }
 
-bool WebviewReloadFunction::RunImpl() {
+bool WebviewReloadFunction::RunImplSafe(WebViewGuest* guest) {
   content::RecordAction(content::UserMetricsAction("WebView.Reload"));
   scoped_ptr<webview::Reload::Params> params(
       webview::Reload::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), params->instance_id);
-  if (!guest)
-    return false;
 
   guest->Reload();
   return true;
@@ -252,15 +245,10 @@ WebviewSetPermissionFunction::WebviewSetPermissionFunction() {
 WebviewSetPermissionFunction::~WebviewSetPermissionFunction() {
 }
 
-bool WebviewSetPermissionFunction::RunImpl() {
+bool WebviewSetPermissionFunction::RunImplSafe(WebViewGuest* guest) {
   scoped_ptr<webview::SetPermission::Params> params(
       webview::SetPermission::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), params->instance_id);
-  if (!guest)
-    return false;
 
   EXTENSION_FUNCTION_VALIDATE(
       guest->SetPermission(params->request_id,
@@ -297,16 +285,11 @@ WebviewStopFunction::WebviewStopFunction() {
 WebviewStopFunction::~WebviewStopFunction() {
 }
 
-bool WebviewStopFunction::RunImpl() {
+bool WebviewStopFunction::RunImplSafe(WebViewGuest* guest) {
   content::RecordAction(content::UserMetricsAction("WebView.Stop"));
   scoped_ptr<webview::Stop::Params> params(
       webview::Stop::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), params->instance_id);
-  if (!guest)
-    return false;
 
   guest->Stop();
   return true;
@@ -318,16 +301,11 @@ WebviewTerminateFunction::WebviewTerminateFunction() {
 WebviewTerminateFunction::~WebviewTerminateFunction() {
 }
 
-bool WebviewTerminateFunction::RunImpl() {
+bool WebviewTerminateFunction::RunImplSafe(WebViewGuest* guest) {
   content::RecordAction(content::UserMetricsAction("WebView.Terminate"));
   scoped_ptr<webview::Terminate::Params> params(
       webview::Terminate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), params->instance_id);
-  if (!guest)
-    return false;
 
   guest->Terminate();
   return true;

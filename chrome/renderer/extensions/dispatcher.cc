@@ -1113,7 +1113,16 @@ void Dispatcher::DidCreateScriptContext(
     module_system->Require("windowControls");
   }
 
-  if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
+  // Currently only platform apps and whitelisted component extensions support
+  // the <webview> tag, because the "denyWebView" module will affect the
+  // performance of DOM modifications (http://crbug.com/196453).
+  // We used to limit WebView to |BLESSED_EXTENSION_CONTEXT| within platform
+  // apps. An ext/app runs in a blessed extension context, if it is the active
+  // extension in the current process, in other words, if it is loaded in a top
+  // frame. To support webview in a non-frame extension, we have to allow
+  // unblessed extension context as well.
+  if (context_type == Feature::BLESSED_EXTENSION_CONTEXT ||
+      context_type == Feature::UNBLESSED_EXTENSION_CONTEXT) {
     // Note: setting up the WebView class here, not the chrome.webview API.
     // The API will be automatically set up when first used.
     if (extension->HasAPIPermission(APIPermission::kWebView)) {

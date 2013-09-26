@@ -6,10 +6,33 @@
 #define CHROME_BROWSER_EXTENSIONS_API_WEBVIEW_WEBVIEW_API_H_
 
 #include "chrome/browser/extensions/api/execute_code_function.h"
+#include "chrome/browser/guestview/webview/webview_guest.h"
 
+// WARNING: Webview could be loaded in an unblessed context, thus any new
+// APIs must extend WebviewExtensionFunction/WebviewExecuteCodeFunction which
+// do a process ID check to prevent abuse by normal renderer processes.
+// TODO(guohui): refactor WebviewExecuteCodeFunction to also extend
+// WebviewExtensionFunction.
 namespace extensions {
 
-class WebviewClearDataFunction : public AsyncExtensionFunction {
+// An abstract base class for async webview APIs. It does a process ID check
+// in RunImpl, and then calls RunImplSafe which must be overriden by all
+// subclasses.
+class WebviewExtensionFunction : public AsyncExtensionFunction {
+ public:
+   WebviewExtensionFunction() {}
+
+ protected:
+  virtual ~WebviewExtensionFunction() {}
+
+  // ExtensionFunction implementation.
+  virtual bool RunImpl() OVERRIDE FINAL;
+
+ private:
+  virtual bool RunImplSafe(WebViewGuest* guest) = 0;
+};
+
+class WebviewClearDataFunction : public WebviewExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webview.clearData", WEBVIEW_CLEARDATA);
 
@@ -18,10 +41,10 @@ class WebviewClearDataFunction : public AsyncExtensionFunction {
  protected:
   virtual ~WebviewClearDataFunction();
 
-  // ExtensionFunction implementation.
-  virtual bool RunImpl() OVERRIDE;
-
  private:
+  // WebviewExtensionFunction implementation.
+  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+
   uint32 GetRemovalMask();
   void ClearDataDone();
 
@@ -46,7 +69,8 @@ class WebviewExecuteCodeFunction : public extensions::ExecuteCodeFunction {
   virtual bool Init() OVERRIDE;
   virtual bool ShouldInsertCSS() const OVERRIDE;
   virtual bool CanExecuteScriptOnPage() OVERRIDE;
-  virtual extensions::ScriptExecutor* GetScriptExecutor() OVERRIDE;
+  // Guarded by a process ID check.
+  virtual extensions::ScriptExecutor* GetScriptExecutor() OVERRIDE FINAL;
   virtual bool IsWebView() const OVERRIDE;
 
  private:
@@ -92,7 +116,7 @@ class WebviewInsertCSSFunction : public WebviewExecuteCodeFunction {
   DISALLOW_COPY_AND_ASSIGN(WebviewInsertCSSFunction);
 };
 
-class WebviewGoFunction : public AsyncExtensionFunction {
+class WebviewGoFunction : public WebviewExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webview.go", WEBVIEW_GO);
 
@@ -101,14 +125,14 @@ class WebviewGoFunction : public AsyncExtensionFunction {
  protected:
   virtual ~WebviewGoFunction();
 
-  // ExtensionFunction implementation.
-  virtual bool RunImpl() OVERRIDE;
-
  private:
+  // WebviewExtensionFunction implementation.
+  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+
   DISALLOW_COPY_AND_ASSIGN(WebviewGoFunction);
 };
 
-class WebviewReloadFunction : public AsyncExtensionFunction {
+class WebviewReloadFunction : public WebviewExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webview.reload", WEBVIEW_RELOAD);
 
@@ -117,14 +141,14 @@ class WebviewReloadFunction : public AsyncExtensionFunction {
  protected:
   virtual ~WebviewReloadFunction();
 
-  // ExtensionFunction implementation.
-  virtual bool RunImpl() OVERRIDE;
-
  private:
+  // WebviewExtensionFunction implementation.
+  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+
   DISALLOW_COPY_AND_ASSIGN(WebviewReloadFunction);
 };
 
-class WebviewSetPermissionFunction : public AsyncExtensionFunction {
+class WebviewSetPermissionFunction : public WebviewExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webview.setPermission", WEBVIEW_SETPERMISSION);
 
@@ -133,10 +157,10 @@ class WebviewSetPermissionFunction : public AsyncExtensionFunction {
  protected:
   virtual ~WebviewSetPermissionFunction();
 
-  // ExtensionFunction implementation.
-  virtual bool RunImpl() OVERRIDE;
-
  private:
+  // WebviewExtensionFunction implementation.
+  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+
   DISALLOW_COPY_AND_ASSIGN(WebviewSetPermissionFunction);
 };
 
@@ -157,7 +181,7 @@ class WebviewOverrideUserAgentFunction: public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(WebviewOverrideUserAgentFunction);
 };
 
-class WebviewStopFunction : public AsyncExtensionFunction {
+class WebviewStopFunction : public WebviewExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webview.stop", WEBVIEW_STOP);
 
@@ -166,14 +190,14 @@ class WebviewStopFunction : public AsyncExtensionFunction {
  protected:
   virtual ~WebviewStopFunction();
 
-  // ExtensionFunction implementation.
-  virtual bool RunImpl() OVERRIDE;
-
  private:
+  // WebviewExtensionFunction implementation.
+  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+
   DISALLOW_COPY_AND_ASSIGN(WebviewStopFunction);
 };
 
-class WebviewTerminateFunction : public AsyncExtensionFunction {
+class WebviewTerminateFunction : public WebviewExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webview.terminate", WEBVIEW_TERMINATE);
 
@@ -182,10 +206,10 @@ class WebviewTerminateFunction : public AsyncExtensionFunction {
  protected:
   virtual ~WebviewTerminateFunction();
 
-  // ExtensionFunction implementation.
-  virtual bool RunImpl() OVERRIDE;
-
  private:
+  // WebviewExtensionFunction implementation.
+  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+
   DISALLOW_COPY_AND_ASSIGN(WebviewTerminateFunction);
 };
 

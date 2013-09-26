@@ -613,7 +613,7 @@
   "webview": {
     "internal": true,
     "dependencies": ["permission:webview"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension", "unblessed_extension"]
   },
   "windows": {
     "dependencies": ["api:tabs"],
