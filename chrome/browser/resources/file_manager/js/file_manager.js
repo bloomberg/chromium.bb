@@ -1160,10 +1160,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                             this.volumeManager_,
                             this.directoryModel_);
     this.navigationList_.fileManager = this;
-    this.navigationList_.dataModel =
-        new NavigationListModel(this.filesystem_,
-                                this.directoryModel_.getRootsList(),
-                                this.folderShortcutsModel_);
+    this.navigationList_.dataModel = new NavigationListModel(
+        this.volumeManager_, this.folderShortcutsModel_);
   };
 
   /**
