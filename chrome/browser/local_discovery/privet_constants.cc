@@ -16,6 +16,8 @@ const char kPrivetKeyTimeout[] = "timeout";
 const char kPrivetErrorDeviceBusy[] = "device_busy";
 const char kPrivetErrorPendingUserAction[] = "pending_user_action";
 const char kPrivetErrorInvalidXPrivetToken[] = "invalid_x_privet_token";
+const char kPrivetErrorTimeout[] = "confirmation_timeout";
+const char kPrivetErrorCancel[] = "user_cancel";
 
 const char kPrivetActionStart[] = "start";
 const char kPrivetActionGetClaimToken[] = "getClaimToken";

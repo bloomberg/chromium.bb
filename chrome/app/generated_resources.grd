@@ -15324,7 +15324,7 @@ Do you accept?
       Adding printer...
     </message>
     <message name="IDS_LOCAL_DISCOVERY_ERROR_OCURRED" desc="Title for error page">
-      An error has occured
+      Could not complete registration
     </message>
     <message name="IDS_LOCAL_DISCOVERY_ADDING_PRINTER_MESSAGE1" desc="Message for adding printer number 1">
       You must confirm registration on your printer to finish this process - check it now.
@@ -15395,6 +15395,12 @@ Do you accept?
     <!-- People search strings -->
     <message name="IDS_PEOPLE_SEARCH_ACTION_EMAIL_TOOLTIP" desc="Tooltip text for sending an email to the person in the result">
       E-mail this person
+    </message>
+    <message name="IDS_LOCAL_DISCOVERY_REGISTER_CANCELED_ON_PRINTER" desc="Label for when registration is canceled on the printer side">
+      Printer registration has been canceled.
+    </message>
+    <message name="IDS_LOCAL_DISCOVERY_REGISTER_TIMEOUT_ON_PRINTER" desc="Label for when registration has timed out on the printer side">
+      Printer registration has timed out. In order to register a printer, you must confirm registration on the printer.
     </message>
   </messages>
 

@@ -41,6 +41,10 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
                              IDS_LOCAL_DISCOVERY_ERROR_OCURRED);
   source->AddLocalizedString("addingErrorMessage",
                              IDS_LOCAL_DISCOVERY_ERROR_OCURRED_MESSAGE);
+  source->AddLocalizedString("addingCanceledMessage",
+                             IDS_LOCAL_DISCOVERY_REGISTER_CANCELED_ON_PRINTER);
+  source->AddLocalizedString("addingTimeoutMessage",
+                             IDS_LOCAL_DISCOVERY_REGISTER_TIMEOUT_ON_PRINTER);
   source->AddLocalizedString("addingMessage1",
                              IDS_LOCAL_DISCOVERY_ADDING_PRINTER_MESSAGE1);
   source->AddLocalizedString("addingMessage2",

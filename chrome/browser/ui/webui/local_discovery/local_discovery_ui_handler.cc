@@ -301,7 +301,21 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterError(
     PrivetRegisterOperation::FailureReason reason,
     int printer_http_code,
     const DictionaryValue* json) {
-  // TODO(noamsml): Add detailed error message.
+  std::string error;
+
+  if (reason == PrivetRegisterOperation::FAILURE_JSON_ERROR &&
+      json->GetString(kPrivetKeyError, &error)) {
+    if (error == kPrivetErrorTimeout) {
+        web_ui()->CallJavascriptFunction(
+            "local_discovery.onRegistrationTimeout");
+      return;
+    } else if (error == kPrivetErrorCancel) {
+      web_ui()->CallJavascriptFunction(
+            "local_discovery.onRegistrationCanceledPrinter");
+      return;
+    }
+  }
+
   SendRegisterError();
 }
 
@@ -341,7 +355,6 @@ void LocalDiscoveryUIHandler::OnConfirmDone(
     confirm_api_call_flow_.reset();
     current_register_operation_->CompleteRegistration();
   } else {
-    // TODO(noamsml): Add detailed error message.
     SendRegisterError();
   }
 }

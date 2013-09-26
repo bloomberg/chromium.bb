@@ -33,7 +33,9 @@ cr.define('local_discovery', function() {
     REGISTER_CANCEL: 7,
     REGISTER_FAILURE: 8,
     MANAGE_CLICKED: 9,
-    MAX_EVENT: 10,
+    REGISTER_CANCEL_ON_PRINTER: 10,
+    REGISTER_TIMEOUT: 11,
+    MAX_EVENT: 12,
   };
 
   /**
@@ -250,8 +252,30 @@ cr.define('local_discovery', function() {
    * Announce that a registration failed.
    */
   function onRegistrationFailed() {
+    $('error-message').textContent =
+      loadTimeData.getString('addingErrorMessage');
     setRegisterPage('register-page-error');
     recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_FAILURE);
+  }
+
+  /**
+   * Announce that a registration has been canceled on the printer.
+   */
+  function onRegistrationCanceledPrinter() {
+    $('error-message').textContent =
+      loadTimeData.getString('addingCanceledMessage');
+    setRegisterPage('register-page-error');
+    recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_CANCEL_ON_PRINTER);
+  }
+
+  /**
+   * Announce that a registration has timed out.
+   */
+  function onRegistrationTimeout() {
+    $('error-message').textContent =
+      loadTimeData.getString('addingTimeoutMessage');
+    setRegisterPage('register-page-error');
+    recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_TIMEOUT);
   }
 
   /**
@@ -556,6 +580,8 @@ cr.define('local_discovery', function() {
     onCloudDeviceListAvailable: onCloudDeviceListAvailable,
     onCloudDeviceListUnavailable: onCloudDeviceListUnavailable,
     onDeviceCacheFlushed: onDeviceCacheFlushed,
+    onRegistrationCanceledPrinter: onRegistrationCanceledPrinter,
+    onRegistrationTimeout: onRegistrationTimeout,
     setUserLoggedIn: setUserLoggedIn,
     setupCloudPrintConnectorSection: setupCloudPrintConnectorSection,
     removeCloudPrintConnectorSection: removeCloudPrintConnectorSection
