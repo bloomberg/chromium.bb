@@ -1,0 +1,10 @@
+{
+  "name": "<webview>",
+  "description": "Checks that <webview> elements lack an API without the webview permission",
+  "version": "2",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

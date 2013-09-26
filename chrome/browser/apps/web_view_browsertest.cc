@@ -1719,6 +1719,11 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, UserAgent) {
               "platform_apps/web_view/common", "useragent")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, NoPermission) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/nopermission"))
+                  << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestAlertDialog) {
   TestHelper("testAlertDialog",
              "DoneDialogTest.PASSED",

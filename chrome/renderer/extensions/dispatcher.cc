@@ -1138,9 +1138,7 @@ void Dispatcher::DidCreateScriptContext(
       }
       if (includeExperimental)
         module_system->Require("webViewExperimental");
-    } else if (is_within_platform_app) {
-      // Only inject the "denyWebView" module for platform apps, since it will
-      // affect the performance of DOM modifications (http://crbug.com/196453).
+    } else {
       module_system->Require("denyWebView");
     }
   }
