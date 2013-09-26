@@ -214,6 +214,8 @@ void ServiceDiscoveryHostClient::UnregisterLocalDomainResolverCallback(
 void ServiceDiscoveryHostClient::Start(
     const base::Closure& error_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!utility_host_);
+  DCHECK(error_callback_.is_null());
   error_callback_ = error_callback;
   io_runner_->PostTask(
       FROM_HERE,
@@ -259,6 +261,7 @@ void ServiceDiscoveryHostClient::ShutdownOnIOThread() {
   if (utility_host_) {
     utility_host_->Send(new LocalDiscoveryMsg_ShutdownLocalDiscovery);
     utility_host_->EndBatchMode();
+    utility_host_.reset();
   }
   error_callback_ = base::Closure();
 }
@@ -278,6 +281,7 @@ void ServiceDiscoveryHostClient::SendOnIOThread(IPC::Message* msg) {
 
 void ServiceDiscoveryHostClient::OnProcessCrashed(int exit_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!utility_host_);
   OnError();
 }
 
