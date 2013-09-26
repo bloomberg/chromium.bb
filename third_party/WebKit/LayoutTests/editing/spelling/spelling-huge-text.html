@@ -52,7 +52,7 @@ function test()
     shouldBecomeEqual('internals.markerCountForNode(testEditable.childNodes[0], "spelling")', '6', function() {
         testEditable.removeChild(testEditable.childNodes[0]);
         finishJSTest();
-    }, 1000 /* huge text needs more time to be spell checked */);
+    }, 5000 /* huge text needs more time to be spell checked */);
 }
 </script>
 <script src="../../fast/js/resources/js-test-post.js"></script>
