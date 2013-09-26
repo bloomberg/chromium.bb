@@ -366,6 +366,11 @@ class PipelineIntegrationTest
     message_loop_.Run();
   }
 
+  void StartHashedPipelineWithMediaSource(MockMediaSource* source) {
+    hashing_enabled_ = true;
+    StartPipelineWithMediaSource(source);
+  }
+
   void StartPipelineWithEncryptedMedia(
       MockMediaSource* source,
       FakeEncryptedMedia* encrypted_media) {
@@ -557,6 +562,35 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus_WebM) {
   ASSERT_TRUE(WaitUntilOnEnded());
   EXPECT_EQ(kOpusEndTrimmingWebMFileAudioBytes,
             pipeline_->GetStatistics().audio_bytes_decoded);
+  source.Abort();
+  Stop();
+}
+
+TEST_F(PipelineIntegrationTest, MediaSource_Opus_Seeking_WebM) {
+  EXPECT_CALL(*this, OnSetOpaque(false)).Times(AnyNumber());
+  MockMediaSource source("bear-opus-end-trimming.webm", kOpusAudioOnlyWebM,
+                         kAppendWholeFile);
+  StartHashedPipelineWithMediaSource(&source);
+
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(kOpusEndTrimmingWebMFileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  base::TimeDelta start_seek_time = base::TimeDelta::FromMilliseconds(1000);
+  base::TimeDelta seek_time = base::TimeDelta::FromMilliseconds(2000);
+
+  Play();
+  ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(start_seek_time));
+  source.Seek(seek_time, 0x1D5, 34017);
+  source.EndOfStream();
+  ASSERT_TRUE(Seek(seek_time));
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+
+  EXPECT_EQ("0.76,0.20,-0.82,-0.58,-1.29,-0.29,", GetAudioHash());
+
   source.Abort();
   Stop();
 }

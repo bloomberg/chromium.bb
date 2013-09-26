@@ -72,7 +72,20 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
 
   ReadCB read_cb_;
 
-  int skip_samples_;
+  // Number of frames to be discarded from the start of the packet. This value
+  // is respected for all packets except for the first one in the stream. For
+  // the first packet in the stream, |frame_delay_at_start_| is used. This is
+  // usually set to the SeekPreRoll value from the container whenever a seek
+  // happens.
+  int frames_to_discard_;
+
+  // Number of frames to be discarded at the start of the stream. This value
+  // is typically the CodecDelay value from the container.
+  int frame_delay_at_start_;
+
+  // Timestamp to be subtracted from all the frames. This is typically computed
+  // from the CodecDelay value in the container.
+  base::TimeDelta timestamp_offset_;
 
   // Buffer for output from libopus.
   scoped_ptr<int16[]> output_buffer_;
