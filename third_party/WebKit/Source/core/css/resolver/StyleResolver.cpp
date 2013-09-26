@@ -929,19 +929,19 @@ void StyleResolver::resolveKeyframes(const Element* element, const RenderStyle* 
         timingFunction = chainedTimingFunction;
 
     // Snapshot current property values for 0% and 100% if missing.
-    HashSet<CSSPropertyID> allProperties;
+    PropertySet allProperties;
     for (size_t i = 0; i < keyframes.size(); i++) {
-        const HashSet<CSSPropertyID>& keyframeProperties = keyframes[i]->properties();
-        for (HashSet<CSSPropertyID>::const_iterator iter = keyframeProperties.begin(); iter != keyframeProperties.end(); ++iter)
+        const PropertySet& keyframeProperties = keyframes[i]->properties();
+        for (PropertySet::const_iterator iter = keyframeProperties.begin(); iter != keyframeProperties.end(); ++iter)
             allProperties.add(*iter);
     }
-    const HashSet<CSSPropertyID>& startKeyframeProperties = startKeyframe->properties();
-    const HashSet<CSSPropertyID>& endKeyframeProperties = endKeyframe->properties();
+    const PropertySet& startKeyframeProperties = startKeyframe->properties();
+    const PropertySet& endKeyframeProperties = endKeyframe->properties();
     bool missingStartValues = startKeyframeProperties.size() < allProperties.size();
     bool missingEndValues = endKeyframeProperties.size() < allProperties.size();
     if (!missingStartValues && !missingEndValues)
         return;
-    for (HashSet<CSSPropertyID>::const_iterator iter = allProperties.begin(); iter != allProperties.end(); ++iter) {
+    for (PropertySet::const_iterator iter = allProperties.begin(); iter != allProperties.end(); ++iter) {
         const CSSPropertyID property = *iter;
         bool startNeedsValue = missingStartValues && !startKeyframeProperties.contains(property);
         bool endNeedsValue = missingEndValues && !endKeyframeProperties.contains(property);
