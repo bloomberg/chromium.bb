@@ -30,7 +30,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/chrome_network_data_saving_metrics.h"
-#include "chrome/browser/net/client_hints.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
@@ -335,11 +334,6 @@ void ChromeNetworkDelegate::set_predictor(
       new chrome_browser_net::ConnectInterceptor(predictor));
 }
 
-void ChromeNetworkDelegate::SetEnableClientHints() {
-  client_hints_.reset(new ClientHints());
-  client_hints_->Init();
-}
-
 // static
 void ChromeNetworkDelegate::NeverThrottleRequests() {
   g_never_throttle_requests_ = true;
@@ -423,12 +417,6 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
     request->SetReferrer(std::string());
   if (enable_do_not_track_ && enable_do_not_track_->GetValue())
     request->SetExtraRequestHeaderByName(kDNTHeader, "1", true /* override */);
-
-  if (client_hints_) {
-    request->SetExtraRequestHeaderByName(
-        ClientHints::kDevicePixelRatioHeader,
-        client_hints_->GetDevicePixelRatioHeader(), true);
-  }
 
   bool force_safe_search = force_google_safe_search_ &&
                            force_google_safe_search_->GetValue();

@@ -10,11 +10,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "net/base/network_delegate.h"
 
-class ClientHints;
 class CookieSettings;
 class ExtensionInfoMap;
 class PrefService;
@@ -91,9 +89,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
       BooleanPrefMember* force_google_safe_search) {
     force_google_safe_search_ = force_google_safe_search;
   }
-
-  // Adds the Client Hints header to HTTP requests.
-  void SetEnableClientHints();
 
   // Causes |OnCanThrottleRequest| to always return false, for all
   // instances of this object.
@@ -211,8 +206,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
   // Total original size of all content before it was transferred.
   int64 original_content_length_;
-
-  scoped_ptr<ClientHints> client_hints_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };

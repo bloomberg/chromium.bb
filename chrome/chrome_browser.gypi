@@ -1184,8 +1184,6 @@
         'browser/net/chrome_network_delegate.h',
         'browser/net/chrome_url_request_context.cc',
         'browser/net/chrome_url_request_context.h',
-        'browser/net/client_hints.cc',
-        'browser/net/client_hints.h',
         'browser/net/connect_interceptor.cc',
         'browser/net/connect_interceptor.h',
         'browser/net/connection_tester.cc',
