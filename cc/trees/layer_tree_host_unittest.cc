@@ -927,10 +927,10 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestFrameTimeUpdatesAfterDraw);
 
 // Verifies that StartPageScaleAnimation events propagate correctly
 // from LayerTreeHost to LayerTreeHostImpl in the MT compositor.
-class DISABLED_LayerTreeHostTestStartPageScaleAnimation
+class LayerTreeHostTestStartPageScaleAnimation
     : public LayerTreeHostTest {
  public:
-  DISABLED_LayerTreeHostTestStartPageScaleAnimation() {}
+  LayerTreeHostTestStartPageScaleAnimation() {}
 
   virtual void SetupTree() OVERRIDE {
     LayerTreeHostTest::SetupTree();
@@ -990,8 +990,7 @@ class DISABLED_LayerTreeHostTestStartPageScaleAnimation
   scoped_refptr<FakeContentLayer> scroll_layer_;
 };
 
-// Disabled. See: crbug.com/280508
-MULTI_THREAD_TEST_F(DISABLED_LayerTreeHostTestStartPageScaleAnimation);
+MULTI_THREAD_TEST_F(LayerTreeHostTestStartPageScaleAnimation);
 
 class LayerTreeHostTestSetVisible : public LayerTreeHostTest {
  public:
