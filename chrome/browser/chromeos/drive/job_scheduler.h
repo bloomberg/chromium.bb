@@ -103,11 +103,6 @@ class JobScheduler
       const GURL& next_link,
       const google_apis::GetResourceListCallback& callback);
 
-  // Adds a GetResourceEntry operation to the queue.
-  void GetResourceEntry(const std::string& resource_id,
-                        const ClientContext& context,
-                        const google_apis::GetResourceEntryCallback& callback);
-
   // Adds a GetShareUrl operation to the queue.
   void GetShareUrl(const std::string& resource_id,
                    const GURL& embed_origin,

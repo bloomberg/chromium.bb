@@ -28,8 +28,6 @@ std::string JobTypeToString(JobType type) {
       return "TYPE_GET_REMAINING_CHANGE_LIST";
     case TYPE_GET_REMAINING_FILE_LIST:
       return "TYPE_GET_REMAINING_FILE_LIST";
-    case TYPE_GET_RESOURCE_ENTRY:
-      return "TYPE_GET_RESOURCE_ENTRY";
     case TYPE_GET_SHARE_URL:
       return "TYPE_GET_SHARE_URL";
     case TYPE_DELETE_RESOURCE:
@@ -125,7 +123,6 @@ bool IsActiveFileTransferJobInfo(const JobInfo& job_info) {
     case TYPE_GET_CHANGE_LIST:
     case TYPE_GET_REMAINING_CHANGE_LIST:
     case TYPE_GET_REMAINING_FILE_LIST:
-    case TYPE_GET_RESOURCE_ENTRY:
     case TYPE_GET_SHARE_URL:
     case TYPE_DELETE_RESOURCE:
     case TYPE_COPY_RESOURCE:
