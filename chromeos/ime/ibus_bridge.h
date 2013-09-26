@@ -11,13 +11,12 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
 #include "chromeos/ime/ime_constants.h"
+#include "chromeos/ime/input_method_property.h"
 
 namespace chromeos {
 
 class IBusText;
 class IBusLookupTable;
-class IBusProperty;
-typedef ScopedVector<IBusProperty> IBusPropertyList;
 
 class CHROMEOS_EXPORT IBusInputContextHandlerInterface {
  public:
@@ -156,7 +155,8 @@ class CHROMEOS_EXPORT IBusPanelPropertyHandlerInterface {
   virtual ~IBusPanelPropertyHandlerInterface() {}
 
   // Called when a new property is registered.
-  virtual void RegisterProperties(const IBusPropertyList& properties) = 0;
+  virtual void RegisterProperties(
+    const chromeos::input_method::InputMethodPropertyList& properties) = 0;
 
  protected:
   IBusPanelPropertyHandlerInterface() {}

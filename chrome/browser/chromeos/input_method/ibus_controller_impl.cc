@@ -36,132 +36,6 @@
 namespace chromeos {
 namespace input_method {
 
-namespace {
-
-// Returns true if |key| is blacklisted.
-bool PropertyKeyIsBlacklisted(const std::string& key) {
-  // The list of input method property keys that we don't handle.
-  static const char* kInputMethodPropertyKeysBlacklist[] = {
-    "setup",  // used in ibus-m17n.
-    "status",  // used in ibus-m17n.
-  };
-  for (size_t i = 0; i < arraysize(kInputMethodPropertyKeysBlacklist); ++i) {
-    if (key == kInputMethodPropertyKeysBlacklist[i])
-      return true;
-  }
-  return false;
-}
-
-// This function is called by and FlattenProperty() and converts IBus
-// representation of a property, |ibus_prop|, to our own and push_back the
-// result to |out_prop_list|. This function returns true on success, and
-// returns false if sanity checks for |ibus_prop| fail.
-bool ConvertProperty(const IBusProperty& ibus_prop,
-                     InputMethodPropertyList* out_prop_list) {
-  DCHECK(out_prop_list);
-  DCHECK(!ibus_prop.key().empty());
-  IBusProperty::IBusPropertyType type = ibus_prop.type();
-
-  // Sanity checks.
-  const bool has_sub_props = !ibus_prop.sub_properties().empty();
-  if (has_sub_props && (type != IBusProperty::IBUS_PROPERTY_TYPE_MENU)) {
-    DVLOG(1) << "The property has sub properties, "
-             << "but the type of the property is not PROP_TYPE_MENU";
-    return false;
-  }
-  if ((!has_sub_props) &&
-      (type == IBusProperty::IBUS_PROPERTY_TYPE_MENU)) {
-    // This is usually not an error. ibus-daemon sometimes sends empty props.
-    DVLOG(1) << "Property list is empty";
-    return false;
-  }
-  if (type == IBusProperty::IBUS_PROPERTY_TYPE_SEPARATOR ||
-      type == IBusProperty::IBUS_PROPERTY_TYPE_MENU) {
-    // This is not an error, but we don't push an item for these types.
-    return true;
-  }
-
-  // This label will be localized later.
-  // See chrome/browser/chromeos/input_method/input_method_util.cc.
-  std::string label_to_use;
-  if (!ibus_prop.tooltip().empty())
-    label_to_use = ibus_prop.tooltip();
-  else if (!ibus_prop.label().empty())
-    label_to_use = ibus_prop.label();
-  else
-    label_to_use = ibus_prop.key();
-
-  out_prop_list->push_back(InputMethodProperty(
-      ibus_prop.key(),
-      label_to_use,
-      (type == IBusProperty::IBUS_PROPERTY_TYPE_RADIO),
-      ibus_prop.checked()));
-  return true;
-}
-
-// Converts |ibus_prop| to |out_prop_list|. Please note that |ibus_prop|
-// may or may not have children. See the comment for FlattenPropertyList
-// for details. Returns true if no error is found.
-bool FlattenProperty(const IBusProperty& ibus_prop,
-                     InputMethodPropertyList* out_prop_list) {
-  DCHECK(out_prop_list);
-
-  // Filter out unnecessary properties.
-  if (PropertyKeyIsBlacklisted(ibus_prop.key()))
-    return true;
-
-  // Convert |prop| to InputMethodProperty and push it to |out_prop_list|.
-  if (!ConvertProperty(ibus_prop, out_prop_list))
-    return false;
-
-  // Process childrens iteratively (if any). Push all sub properties to the
-  // stack.
-  if (!ibus_prop.sub_properties().empty()) {
-    const IBusPropertyList& sub_props = ibus_prop.sub_properties();
-    for (size_t i = 0; i < sub_props.size(); ++i) {
-      if (!FlattenProperty(*sub_props[i], out_prop_list))
-        return false;
-    }
-  }
-  return true;
-}
-
-// Converts IBus representation of a property list, |ibus_prop_list| to our
-// own. This function also flatten the original list (actually it's a tree).
-// Returns true if no error is found. The conversion to our own type is
-// necessary since our language switcher in Chrome tree don't (or can't) know
-// IBus types. Here is an example:
-//
-// ======================================================================
-// Input:
-//
-// --- Item-1
-//  |- Item-2
-//  |- SubMenuRoot --- Item-3-1
-//  |               |- Item-3-2
-//  |               |- Item-3-3
-//  |- Item-4
-//
-// (Note: Item-3-X is a selection item since they're on a sub menu.)
-//
-// Output:
-//
-// Item-1, Item-2, Item-3-1, Item-3-2, Item-3-3, Item-4
-// (Note: SubMenuRoot does not appear in the output.)
-// ======================================================================
-bool FlattenPropertyList(const IBusPropertyList& ibus_prop_list,
-                         InputMethodPropertyList* out_prop_list) {
-  DCHECK(out_prop_list);
-
-  bool result = true;
-  for (size_t i = 0; i < ibus_prop_list.size(); ++i) {
-    result &= FlattenProperty(*ibus_prop_list[i], out_prop_list);
-  }
-  return result;
-}
-
-}  // namespace
-
 IBusControllerImpl::IBusControllerImpl() {
   IBusBridge::Get()->SetPropertyHandler(this);
 }
@@ -211,10 +85,8 @@ void IBusControllerImpl::ClearProperties() {
 }
 
 void IBusControllerImpl::RegisterProperties(
-    const IBusPropertyList& ibus_prop_list) {
-  current_property_list_.clear();
-  if (!FlattenPropertyList(ibus_prop_list, &current_property_list_))
-    current_property_list_.clear(); // Clear properties on errors.
+    const InputMethodPropertyList& ibus_prop_list) {
+  current_property_list_ = ibus_prop_list;
   FOR_EACH_OBSERVER(IBusController::Observer, observers_, PropertyChanged());
 }
 

@@ -753,29 +753,26 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         host->host_contents(), set_menu_item_test_script));
     EXPECT_EQ(1, mock_property->register_properties_call_count());
 
-    const IBusPropertyList& props =
+    const InputMethodPropertyList& props =
         mock_property->last_registered_properties();
     ASSERT_EQ(5U, props.size());
 
-    EXPECT_EQ("ID0", props[0]->key());
-    EXPECT_EQ("ID1", props[1]->key());
-    EXPECT_EQ("ID2", props[2]->key());
-    EXPECT_EQ("ID3", props[3]->key());
-    EXPECT_EQ("ID4", props[4]->key());
+    EXPECT_EQ("ID0", props[0].key);
+    EXPECT_EQ("ID1", props[1].key);
+    EXPECT_EQ("ID2", props[2].key);
+    EXPECT_EQ("ID3", props[3].key);
+    EXPECT_EQ("ID4", props[4].key);
 
-    EXPECT_EQ("LABEL1", props[1]->label());
-    EXPECT_EQ("LABEL2", props[2]->label());
-    EXPECT_EQ("LABEL3", props[3]->label());
-    EXPECT_EQ("LABEL4", props[4]->label());
+    EXPECT_EQ("LABEL1", props[1].label);
+    EXPECT_EQ("LABEL2", props[2].label);
+    EXPECT_EQ("LABEL3", props[3].label);
+    EXPECT_EQ("LABEL4", props[4].label);
 
-    EXPECT_EQ(IBusProperty::IBUS_PROPERTY_TYPE_RADIO, props[2]->type());
-    EXPECT_EQ(IBusProperty::IBUS_PROPERTY_TYPE_TOGGLE, props[3]->type());
-    EXPECT_EQ(IBusProperty::IBUS_PROPERTY_TYPE_SEPARATOR, props[4]->type());
+    EXPECT_TRUE(props[2].is_selection_item);
+    // TODO(nona): Add tests for style: ["toggle" and "separator"]
+    // and visible:, when implement them.
 
-    EXPECT_TRUE(props[3]->visible());
-    EXPECT_TRUE(props[4]->visible());
-
-    EXPECT_TRUE(props[4]->checked());
+    EXPECT_TRUE(props[4].is_selection_item_checked);
   }
   {
     SCOPED_TRACE("deleteSurroundingText test");

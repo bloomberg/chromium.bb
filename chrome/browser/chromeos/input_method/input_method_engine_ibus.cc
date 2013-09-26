@@ -103,7 +103,7 @@ void InputMethodEngineIBus::Initialize(
   component_->set_author(engine_name);
 
   // TODO(nona): Remove IBusComponent once ibus is gone.
-  chromeos::IBusComponent::EngineDescription engine_desc;
+  IBusComponent::EngineDescription engine_desc;
   engine_desc.engine_id = ibus_id_;
   engine_desc.display_name = description;
   engine_desc.description = description;
@@ -179,7 +179,7 @@ bool InputMethodEngineIBus::SetComposition(
       *preedit_text_.get(),
       preedit_cursor_,
       true,
-      chromeos::IBusEngineService::IBUS_ENGINE_PREEEDIT_FOCUS_OUT_MODE_COMMIT);
+      IBusEngineService::IBUS_ENGINE_PREEEDIT_FOCUS_OUT_MODE_COMMIT);
   return true;
 }
 
@@ -200,7 +200,7 @@ bool InputMethodEngineIBus::ClearComposition(int context_id,
       *preedit_text_.get(),
       0,
       false,
-      chromeos::IBusEngineService::IBUS_ENGINE_PREEEDIT_FOCUS_OUT_MODE_COMMIT);
+      IBusEngineService::IBUS_ENGINE_PREEEDIT_FOCUS_OUT_MODE_COMMIT);
   return true;
 }
 
@@ -372,27 +372,7 @@ bool InputMethodEngineIBus::SetCursorPosition(int context_id, int candidate_id,
 }
 
 bool InputMethodEngineIBus::SetMenuItems(const std::vector<MenuItem>& items) {
-  if (!active_)
-    return false;
-
-  IBusPropertyList properties;
-  for (std::vector<MenuItem>::const_iterator item = items.begin();
-       item != items.end(); ++item) {
-    IBusProperty* property = new IBusProperty();
-    if (!MenuItemToProperty(*item, property)) {
-      delete property;
-      DVLOG(1) << "Bad menu item";
-      return false;
-    }
-    properties.push_back(property);
-  }
-
-  IBusPanelPropertyHandlerInterface* handler =
-      IBusBridge::Get()->GetPropertyHandler();
-  if (handler)
-    handler->RegisterProperties(properties);
-
-  return true;
+  return UpdateMenuItems(items);
 }
 
 bool InputMethodEngineIBus::UpdateMenuItems(
@@ -400,22 +380,18 @@ bool InputMethodEngineIBus::UpdateMenuItems(
   if (!active_)
     return false;
 
-  IBusPropertyList properties;
+  input_method::InputMethodPropertyList property_list;
   for (std::vector<MenuItem>::const_iterator item = items.begin();
        item != items.end(); ++item) {
-    IBusProperty* property = new IBusProperty();
-    if (!MenuItemToProperty(*item, property)) {
-      delete property;
-      DVLOG(1) << "Bad menu item";
-      return false;
-    }
-    properties.push_back(property);
+    input_method::InputMethodProperty property;
+    MenuItemToProperty(*item, &property);
+    property_list.push_back(property);
   }
 
   IBusPanelPropertyHandlerInterface* handler =
       IBusBridge::Get()->GetPropertyHandler();
   if (handler)
-    handler->RegisterProperties(properties);
+    handler->RegisterProperties(property_list);
 
   return true;
 }
@@ -578,59 +554,45 @@ IBusEngineService* InputMethodEngineIBus::GetCurrentService() {
   return DBusThreadManager::Get()->GetIBusEngineService(object_path_);
 }
 
-bool InputMethodEngineIBus::MenuItemToProperty(
+void InputMethodEngineIBus::MenuItemToProperty(
     const MenuItem& item,
-    IBusProperty* property) {
-  property->set_key(item.id);
+    input_method::InputMethodProperty* property) {
+  property->key = item.id;
 
   if (item.modified & MENU_ITEM_MODIFIED_LABEL) {
-    property->set_label(item.label);
+    property->label = item.label;
   }
   if (item.modified & MENU_ITEM_MODIFIED_VISIBLE) {
-    property->set_visible(item.visible);
+    // TODO(nona): Implement it.
   }
   if (item.modified & MENU_ITEM_MODIFIED_CHECKED) {
-    property->set_checked(item.checked);
+    property->is_selection_item_checked = item.checked;
   }
   if (item.modified & MENU_ITEM_MODIFIED_ENABLED) {
     // TODO(nona): implement sensitive entry(crbug.com/140192).
   }
   if (item.modified & MENU_ITEM_MODIFIED_STYLE) {
-    IBusProperty::IBusPropertyType type =
-        IBusProperty::IBUS_PROPERTY_TYPE_NORMAL;
     if (!item.children.empty()) {
-      type = IBusProperty::IBUS_PROPERTY_TYPE_MENU;
+      // TODO(nona): Implement it.
     } else {
       switch (item.style) {
         case MENU_ITEM_STYLE_NONE:
-          type = IBusProperty::IBUS_PROPERTY_TYPE_NORMAL;
+          NOTREACHED();
           break;
         case MENU_ITEM_STYLE_CHECK:
-          type = IBusProperty::IBUS_PROPERTY_TYPE_TOGGLE;
+          // TODO(nona): Implement it.
           break;
         case MENU_ITEM_STYLE_RADIO:
-          type = IBusProperty::IBUS_PROPERTY_TYPE_RADIO;
+          property->is_selection_item = true;
           break;
         case MENU_ITEM_STYLE_SEPARATOR:
-          type = IBusProperty::IBUS_PROPERTY_TYPE_SEPARATOR;
+          // TODO(nona): Implement it.
           break;
       }
     }
-    property->set_type(type);
   }
 
-  for (std::vector<MenuItem>::const_iterator child = item.children.begin();
-       child != item.children.end(); ++child) {
-    IBusProperty* new_property = new IBusProperty();
-    if (!MenuItemToProperty(*child, new_property)) {
-      delete new_property;
-      DVLOG(1) << "Bad menu item child";
-      return false;
-    }
-    property->mutable_sub_properties()->push_back(new_property);
-  }
-
-  return true;
+  // TODO(nona): Support item.children.
 }
 
 void InputMethodEngineIBus::OnConnected() {
@@ -645,8 +607,7 @@ bool InputMethodEngineIBus::IsConnected() {
 }
 
 void InputMethodEngineIBus::RegisterComponent() {
-  chromeos::IBusClient* client =
-      chromeos::DBusThreadManager::Get()->GetIBusClient();
+  IBusClient* client = DBusThreadManager::Get()->GetIBusClient();
   client->RegisterComponent(
       *component_.get(),
       base::Bind(&InputMethodEngineIBus::OnComponentRegistered,

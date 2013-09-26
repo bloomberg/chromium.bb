@@ -16,9 +16,6 @@
 namespace chromeos {
 namespace input_method {
 
-struct InputMethodProperty;
-typedef std::vector<InputMethodProperty> InputMethodPropertyList;
-
 // The IBusController implementation.
 class IBusControllerImpl : public IBusController,
                            public IBusPanelPropertyHandlerInterface {
@@ -46,7 +43,7 @@ class IBusControllerImpl : public IBusController,
  private:
   // IBusPanelPropertyHandlerInterface overrides:
   virtual void RegisterProperties(
-      const IBusPropertyList& properties) OVERRIDE;
+      const InputMethodPropertyList& properties) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(IBusControllerImpl);
 };

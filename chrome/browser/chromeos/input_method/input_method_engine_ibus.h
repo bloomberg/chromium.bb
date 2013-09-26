@@ -108,8 +108,9 @@ class InputMethodEngineIBus : public InputMethodEngine,
   // Returns true if the connection to ibus-daemon is avaiable.
   bool IsConnected();
 
-  // Converts MenuItem to IBusProperty.
-  bool MenuItemToProperty(const MenuItem& item, IBusProperty* property);
+  // Converts MenuItem to InputMethodProperty.
+  void MenuItemToProperty(const MenuItem& item,
+                          input_method::InputMethodProperty* property);
 
   // Registers the engine component.
   void RegisterComponent();

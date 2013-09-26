@@ -14,14 +14,9 @@ MockIMEPropertyHandler::~MockIMEPropertyHandler() {
 }
 
 void MockIMEPropertyHandler::RegisterProperties(
-    const IBusPropertyList& properties) {
+  const input_method::InputMethodPropertyList& properties) {
   ++register_properties_call_count_;
-  last_registered_properties_.clear();
-  last_registered_properties_.resize(properties.size());
-  for (size_t i = 0; i < properties.size(); ++i) {
-    last_registered_properties_[i] = new IBusProperty();
-    last_registered_properties_[i]->CopyFrom(*properties[i]);
-  }
+  last_registered_properties_ = properties;
 }
 
 void MockIMEPropertyHandler::Reset() {
