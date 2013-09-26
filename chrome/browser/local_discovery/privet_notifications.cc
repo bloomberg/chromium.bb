@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui_handler.h"
@@ -375,18 +376,11 @@ void PrivetNotificationDelegate::ButtonClick(int button_index) {
 void PrivetNotificationDelegate::OpenTab(const GURL& url) {
   Profile* profile_obj = Profile::FromBrowserContext(profile_);
 
-  Browser* browser = FindOrCreateTabbedBrowser(profile_obj,
-                                               chrome::GetActiveDesktop());
-  content::WebContents::CreateParams create_params(profile_obj);
-
-  scoped_ptr<content::WebContents> contents(
-      content::WebContents::Create(create_params));
-  contents->GetController().LoadURL(url,
-                                    content::Referrer(),
-                                    content::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                    "");
-
-  browser->tab_strip_model()->AppendWebContents(contents.release(), true);
+  chrome::NavigateParams params(profile_obj,
+                              url,
+                              content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  params.disposition = NEW_FOREGROUND_TAB;
+  chrome::Navigate(&params);
 }
 
 void PrivetNotificationDelegate::DisableNotifications() {
