@@ -124,6 +124,7 @@
       'WebDOMEventListener.cpp',
       'WebDOMEventListenerPrivate.cpp',
       'WebDOMEventListenerPrivate.h',
+      'WebDOMFileSystem.cpp',
       'WebDOMMessageEvent.cpp',
       'WebDOMMouseEvent.cpp',
       'WebDOMMutationEvent.cpp',
