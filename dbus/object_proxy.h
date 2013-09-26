@@ -204,17 +204,9 @@ class CHROME_DBUS_EXPORT ObjectProxy
                                            void* user_data);
 
   // Helper function for ConnectToSignal().
-  void ConnectToSignalInternal(
-      const std::string& interface_name,
-      const std::string& signal_name,
-      SignalCallback signal_callback,
-      OnConnectedCallback on_connected_callback);
-
-  // Called when the object proxy is connected to the signal, or failed.
-  void OnConnected(OnConnectedCallback on_connected_callback,
-                   const std::string& interface_name,
-                   const std::string& signal_name,
-                   bool success);
+  bool ConnectToSignalInternal(const std::string& interface_name,
+                               const std::string& signal_name,
+                               SignalCallback signal_callback);
 
   // Handles the incoming request messages and dispatches to the signal
   // callbacks.

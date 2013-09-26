@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "dbus/dbus_statistics.h"
@@ -171,14 +172,17 @@ void ObjectProxy::ConnectToSignal(const std::string& interface_name,
                                   OnConnectedCallback on_connected_callback) {
   bus_->AssertOnOriginThread();
 
-  bus_->GetDBusTaskRunner()->PostTask(
+  base::PostTaskAndReplyWithResult(
+      bus_->GetDBusTaskRunner(),
       FROM_HERE,
       base::Bind(&ObjectProxy::ConnectToSignalInternal,
                  this,
                  interface_name,
                  signal_name,
-                 signal_callback,
-                 on_connected_callback));
+                 signal_callback),
+      base::Bind(on_connected_callback,
+                 interface_name,
+                 signal_name));
 }
 
 void ObjectProxy::Detach() {
@@ -353,75 +357,54 @@ void ObjectProxy::OnPendingCallIsCompleteThunk(DBusPendingCall* pending_call,
   delete data;
 }
 
-void ObjectProxy::ConnectToSignalInternal(
-    const std::string& interface_name,
-    const std::string& signal_name,
-    SignalCallback signal_callback,
-    OnConnectedCallback on_connected_callback) {
+bool ObjectProxy::ConnectToSignalInternal(const std::string& interface_name,
+                                          const std::string& signal_name,
+                                          SignalCallback signal_callback) {
   bus_->AssertOnDBusThread();
 
   const std::string absolute_signal_name =
       GetAbsoluteSignalName(interface_name, signal_name);
 
-  // Will become true, if everything is successful.
-  bool success = false;
+  if (!bus_->Connect() || !bus_->SetUpAsyncOperations())
+    return false;
 
-  if (bus_->Connect() && bus_->SetUpAsyncOperations()) {
-    // We should add the filter only once. Otherwise, HandleMessage() will
-    // be called more than once.
-    if (!filter_added_) {
-      if (bus_->AddFilterFunction(&ObjectProxy::HandleMessageThunk, this)) {
-        filter_added_ = true;
-      } else {
-        LOG(ERROR) << "Failed to add filter function";
-      }
+  // We should add the filter only once. Otherwise, HandleMessage() will
+  // be called more than once.
+  if (!filter_added_) {
+    if (bus_->AddFilterFunction(&ObjectProxy::HandleMessageThunk, this)) {
+      filter_added_ = true;
+    } else {
+      LOG(ERROR) << "Failed to add filter function";
     }
-    // Add a match rule so the signal goes through HandleMessage().
-    const std::string match_rule =
-        base::StringPrintf("type='signal', interface='%s', path='%s'",
-                           interface_name.c_str(),
-                           object_path_.value().c_str());
-    // Add a match_rule listening NameOwnerChanged for the well-known name
-    // |service_name_|.
-    const std::string name_owner_changed_match_rule =
-        base::StringPrintf(
-            "type='signal',interface='org.freedesktop.DBus',"
-            "member='NameOwnerChanged',path='/org/freedesktop/DBus',"
-            "sender='org.freedesktop.DBus',arg0='%s'",
-            service_name_.c_str());
-    if (AddMatchRuleWithCallback(match_rule,
-                                 absolute_signal_name,
-                                 signal_callback) &&
-        AddMatchRuleWithoutCallback(name_owner_changed_match_rule,
-                                    "org.freedesktop.DBus.NameOwnerChanged")) {
-      success = true;
-    }
-
-    // Try getting the current name owner. It's not guaranteed that we can get
-    // the name owner at this moment, as the service may not yet be started. If
-    // that's the case, we'll get the name owner via NameOwnerChanged signal,
-    // as soon as the service is started.
-    UpdateNameOwnerAndBlock();
   }
+  // Add a match rule so the signal goes through HandleMessage().
+  const std::string match_rule =
+      base::StringPrintf("type='signal', interface='%s', path='%s'",
+                         interface_name.c_str(),
+                         object_path_.value().c_str());
+  // Add a match_rule listening NameOwnerChanged for the well-known name
+  // |service_name_|.
+  const std::string name_owner_changed_match_rule =
+      base::StringPrintf(
+          "type='signal',interface='org.freedesktop.DBus',"
+          "member='NameOwnerChanged',path='/org/freedesktop/DBus',"
+          "sender='org.freedesktop.DBus',arg0='%s'",
+          service_name_.c_str());
 
-  // Run on_connected_callback in the origin thread.
-  bus_->GetOriginTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ObjectProxy::OnConnected,
-                 this,
-                 on_connected_callback,
-                 interface_name,
-                 signal_name,
-                 success));
-}
+  const bool success =
+      AddMatchRuleWithCallback(match_rule,
+                               absolute_signal_name,
+                               signal_callback) &&
+      AddMatchRuleWithoutCallback(name_owner_changed_match_rule,
+                                  "org.freedesktop.DBus.NameOwnerChanged");
 
-void ObjectProxy::OnConnected(OnConnectedCallback on_connected_callback,
-                              const std::string& interface_name,
-                              const std::string& signal_name,
-                              bool success) {
-  bus_->AssertOnOriginThread();
+  // Try getting the current name owner. It's not guaranteed that we can get
+  // the name owner at this moment, as the service may not yet be started. If
+  // that's the case, we'll get the name owner via NameOwnerChanged signal,
+  // as soon as the service is started.
+  UpdateNameOwnerAndBlock();
 
-  on_connected_callback.Run(interface_name, signal_name, success);
+  return success;
 }
 
 void ObjectProxy::SetNameOwnerChangedCallback(SignalCallback callback) {
