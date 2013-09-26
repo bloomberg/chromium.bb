@@ -196,7 +196,7 @@ net::IsHandshake HasCryptoHandshake(
 // This means that if acks are not acked, and data is only flowing in
 // one direction, then the connection will deadlock.
 // static
-bool QuicConnection::g_acks_do_not_instigate_acks = false;
+bool QuicConnection::g_acks_do_not_instigate_acks = true;
 
 #define ENDPOINT (is_server_ ? "Server: " : " Client: ")
 
