@@ -131,8 +131,6 @@ namespace WebCore {
 
         void setOverrideEncoding(const String& encoding) { m_overrideEncoding = encoding; }
 
-        KURL urlForHistory() const;
-
         void setDefersLoading(bool);
 
         void startLoadingMainResource();

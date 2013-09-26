@@ -236,7 +236,7 @@ void FrameLoader::stopLoading()
 
 bool FrameLoader::closeURL()
 {
-    history()->saveDocumentState();
+    history()->saveDocumentAndScrollState();
 
     // Should only send the pagehide event here if the current document exists.
     if (m_frame->document())
@@ -664,6 +664,8 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
 {
     if (m_frame->tree()->parent() && !m_stateMachine.startedFirstRealLoad())
         return FrameLoadTypeInitialInChildFrame;
+    if (!m_frame->tree()->parent() && !history()->currentItem())
+        return FrameLoadTypeStandard;
     if (request.resourceRequest().cachePolicy() == ReloadIgnoringCacheData)
         return FrameLoadTypeReload;
     if (request.lockBackForwardList() || isScriptTriggeredFormSubmissionInChildFrame(request))
@@ -785,7 +787,6 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, con
 
     if (m_state == FrameStateProvisional)
         insertDummyHistoryItem();
-    frame()->loader()->history()->saveDocumentAndScrollState();
 
     ResourceRequest request = documentLoader->request();
     // FIXME: We need to reset cache policy to prevent it from being incorrectly propagted to the reload.
@@ -1144,7 +1145,6 @@ void FrameLoader::detachFromParent()
     RefPtr<Frame> protect(m_frame);
 
     closeURL();
-    history()->saveScrollPositionAndViewStateToItem(history()->currentItem());
     detachChildren();
     // stopAllLoaders() needs to be called after detachChildren(), because detachedChildren()
     // will trigger the unload event handlers of any child frames, and those event

@@ -59,18 +59,6 @@ HistoryController::~HistoryController()
 {
 }
 
-void HistoryController::saveScrollPositionAndViewStateToItem(HistoryItem* item)
-{
-    if (!item || !m_frame->view())
-        return;
-
-    item->setScrollPoint(m_frame->view()->scrollPosition());
-
-    Page* page = m_frame->page();
-    if (page && page->mainFrame() == m_frame)
-        item->setPageScaleFactor(page->pageScaleFactor());
-}
-
 void HistoryController::clearScrollPositionAndViewState()
 {
     if (!m_currentItem)
@@ -124,10 +112,10 @@ void HistoryController::restoreScrollPositionAndViewState()
 
 void HistoryController::updateBackForwardListForFragmentScroll()
 {
-    updateBackForwardListClippedAtTarget(false);
+    createNewBackForwardItem(false);
 }
 
-void HistoryController::saveDocumentState()
+void HistoryController::saveDocumentAndScrollState()
 {
     if (!m_currentItem)
         return;
@@ -139,16 +127,15 @@ void HistoryController::saveDocumentState()
         LOG(Loading, "WebCoreLoading %s: saving form state to %p", m_frame->tree()->uniqueName().string().utf8().data(), m_currentItem.get());
         m_currentItem->setDocumentState(document->formElementsState());
     }
-}
 
-// Walk the frame tree, telling all frames to save their form state into their current
-// history item.
-void HistoryController::saveDocumentAndScrollState()
-{
-    for (Frame* frame = m_frame; frame; frame = frame->tree()->traverseNext(m_frame)) {
-        frame->loader()->history()->saveDocumentState();
-        frame->loader()->history()->saveScrollPositionAndViewStateToItem(frame->loader()->history()->currentItem());
-    }
+    if (!m_frame->view())
+        return;
+
+    m_currentItem->setScrollPoint(m_frame->view()->scrollPosition());
+
+    Page* page = m_frame->page();
+    if (page && page->mainFrame() == m_frame)
+        m_currentItem->setPageScaleFactor(page->pageScaleFactor());
 }
 
 static inline bool isAssociatedToRequestedHistoryItem(const HistoryItem* current, Frame* frame, const HistoryItem* requested)
@@ -243,35 +230,6 @@ void HistoryController::setDefersLoading(bool defer)
     }
 }
 
-void HistoryController::updateForBackForwardNavigation()
-{
-#if !LOG_DISABLED
-    LOG(History, "WebCoreHistory: Updating History for back/forward navigation in frame %s", m_frame->document()->title().utf8().data());
-#endif
-
-    saveScrollPositionAndViewStateToItem(m_previousItem.get());
-
-    // When traversing history, we may end up redirecting to a different URL
-    // this time (e.g., due to cookies).  See http://webkit.org/b/49654.
-    updateCurrentItem();
-}
-
-void HistoryController::updateForReload()
-{
-#if !LOG_DISABLED
-    LOG(History, "WebCoreHistory: Updating History for reload in frame %s", m_frame->document()->title().utf8().data());
-#endif
-
-    if (m_currentItem) {
-        if (m_frame->loader()->loadType() == FrameLoadTypeReload || m_frame->loader()->loadType() == FrameLoadTypeReloadFromOrigin)
-            saveScrollPositionAndViewStateToItem(m_currentItem.get());
-    }
-
-    // When reloading the page, we may end up redirecting to a different URL
-    // this time (e.g., due to cookies).  See http://webkit.org/b/4072.
-    updateCurrentItem();
-}
-
 // There are 2 things you might think of as "history", all of which are handled by these functions.
 //
 //     1) Back/forward: The m_currentItem is part of this mechanism.
@@ -280,23 +238,7 @@ void HistoryController::updateForReload()
 void HistoryController::updateForStandardLoad()
 {
     LOG(History, "WebCoreHistory: Updating History for Standard Load in frame %s", m_frame->loader()->documentLoader()->url().string().ascii().data());
-
-    if (!m_frame->loader()->documentLoader()->urlForHistory().isEmpty())
-        updateBackForwardListClippedAtTarget(true);
-}
-
-void HistoryController::updateForRedirectWithLockedBackForwardList()
-{
-#if !LOG_DISABLED
-    LOG(History, "WebCoreHistory: Updating History for redirect load in frame %s", m_frame->document()->title().utf8().data());
-#endif
-
-    if (!m_currentItem && !m_frame->tree()->parent()) {
-        if (!m_frame->loader()->documentLoader()->urlForHistory().isEmpty())
-            updateBackForwardListClippedAtTarget(true);
-    }
-    // The client redirect replaces the current history item.
-    updateCurrentItem();
+    createNewBackForwardItem(true);
 }
 
 void HistoryController::updateForInitialLoadInChildFrame()
@@ -332,27 +274,12 @@ void HistoryController::updateForCommit()
         page->mainFrame()->loader()->history()->recursiveUpdateForCommit();
     }
 
-    switch (type) {
-    case FrameLoadTypeBackForward:
-        updateForBackForwardNavigation();
-        return;
-    case FrameLoadTypeReload:
-    case FrameLoadTypeReloadFromOrigin:
-    case FrameLoadTypeSame:
-        updateForReload();
-        return;
-    case FrameLoadTypeStandard:
+    if (type == FrameLoadTypeStandard)
         updateForStandardLoad();
-        return;
-    case FrameLoadTypeRedirectWithLockedBackForwardList:
-        updateForRedirectWithLockedBackForwardList();
-        return;
-    case FrameLoadTypeInitialInChildFrame:
+    else if (type == FrameLoadTypeInitialInChildFrame)
         updateForInitialLoadInChildFrame();
-        return;
-    default:
-        ASSERT_NOT_REACHED();
-    }
+    else
+        updateWithoutCreatingNewBackForwardItem();
 }
 
 bool HistoryController::isReloadTypeWithProvisionalItem(FrameLoadType type)
@@ -371,9 +298,6 @@ void HistoryController::recursiveUpdateForCommit()
     // (a matching URL and frame tree snapshot), just restore the scroll position.
     // Save form state
     if (m_currentItem && itemsAreClones(m_currentItem.get(), m_provisionalItem.get())) {
-        saveDocumentState();
-        saveScrollPositionAndViewStateToItem(m_currentItem.get());
-
         if (FrameView* view = m_frame->view())
             view->setWasScrolledByUser(false);
 
@@ -514,12 +438,8 @@ PassRefPtr<HistoryItem> HistoryController::createItem()
 PassRefPtr<HistoryItem> HistoryController::createItemTree(Frame* targetFrame, bool clipAtTarget)
 {
     RefPtr<HistoryItem> bfItem = createItem();
-    saveScrollPositionAndViewStateToItem(m_previousItem.get());
 
     if (!clipAtTarget || m_frame != targetFrame) {
-        // save frame state for items that aren't loading (khtml doesn't save those)
-        saveDocumentState();
-
         // clipAtTarget is false for navigations within the same document, so
         // we should copy the documentSequenceNumber over to the newly create
         // item.  Non-target items are just clones, and they should therefore
@@ -632,7 +552,7 @@ bool HistoryController::currentFramesMatchItem(HistoryItem* item) const
     return true;
 }
 
-void HistoryController::updateBackForwardListClippedAtTarget(bool doClip)
+void HistoryController::createNewBackForwardItem(bool doClip)
 {
     // In the case of saving state about a page with frames, we store a tree of items that mirrors the frame tree.
     // The item that was the target of the user's navigation is designated as the "targetItem".
@@ -643,7 +563,7 @@ void HistoryController::updateBackForwardListClippedAtTarget(bool doClip)
     if (!page)
         return;
 
-    if (m_frame->loader()->documentLoader()->urlForHistory().isEmpty())
+    if (m_frame->loader()->documentLoader()->originalRequest().url().isEmpty() && m_frame->loader()->documentLoader()->unreachableURL().isEmpty())
         return;
 
     Frame* mainFrame = page->mainFrame();
@@ -654,7 +574,7 @@ void HistoryController::updateBackForwardListClippedAtTarget(bool doClip)
     page->backForward().addItem(topItem.release());
 }
 
-void HistoryController::updateCurrentItem()
+void HistoryController::updateWithoutCreatingNewBackForwardItem()
 {
     if (!m_currentItem)
         return;

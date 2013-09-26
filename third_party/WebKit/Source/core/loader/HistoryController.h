@@ -47,13 +47,11 @@ public:
     explicit HistoryController(Frame*);
     ~HistoryController();
 
-    void saveScrollPositionAndViewStateToItem(HistoryItem*);
     void clearScrollPositionAndViewState();
     void restoreScrollPositionAndViewState();
 
     void updateBackForwardListForFragmentScroll();
 
-    void saveDocumentState();
     void saveDocumentAndScrollState();
     void restoreDocumentState();
 
@@ -84,10 +82,7 @@ private:
     PassRefPtr<HistoryItem> createItem();
     PassRefPtr<HistoryItem> createItemTree(Frame* targetFrame, bool clipAtTarget);
 
-    void updateForBackForwardNavigation();
-    void updateForReload();
     void updateForStandardLoad();
-    void updateForRedirectWithLockedBackForwardList();
     void updateForInitialLoadInChildFrame();
 
     void recursiveSetProvisionalItem(HistoryItem*, HistoryItem*);
@@ -97,8 +92,9 @@ private:
     void recursiveUpdateForSameDocumentNavigation();
     bool itemsAreClones(HistoryItem*, HistoryItem*) const;
     bool currentFramesMatchItem(HistoryItem*) const;
-    void updateBackForwardListClippedAtTarget(bool doClip);
-    void updateCurrentItem();
+
+    void createNewBackForwardItem(bool doClip);
+    void updateWithoutCreatingNewBackForwardItem();
 
     Frame* m_frame;
 

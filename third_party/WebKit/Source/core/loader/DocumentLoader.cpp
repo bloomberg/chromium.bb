@@ -758,17 +758,6 @@ bool DocumentLoader::scheduleArchiveLoad(Resource* cachedResource, const Resourc
     return true;
 }
 
-KURL DocumentLoader::urlForHistory() const
-{
-    // Return the URL to be used for history and B/F list.
-    // Returns nil for WebDataProtocol URLs that aren't alternates
-    // for unreachable URLs, because these can't be stored in history.
-    if (m_substituteData.isValid())
-        return unreachableURL();
-
-    return m_originalRequestCopy.url();
-}
-
 const KURL& DocumentLoader::originalURL() const
 {
     return m_originalRequestCopy.url();
