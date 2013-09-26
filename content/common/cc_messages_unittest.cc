@@ -11,6 +11,7 @@
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 
 using cc::CheckerboardDrawQuad;
@@ -191,6 +192,7 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a.id, b.id);
     EXPECT_EQ(a.sync_point, b.sync_point);
     EXPECT_EQ(a.format, b.format);
+    EXPECT_EQ(a.target, b.target);
     EXPECT_EQ(a.filter, b.filter);
     EXPECT_EQ(a.size.ToString(), b.size.ToString());
     for (size_t i = 0; i < arraysize(a.mailbox.name); ++i)
@@ -516,15 +518,17 @@ TEST_F(CCMessagesTest, Resources) {
   arbitrary_resource1.id = 2178312;
   arbitrary_resource1.sync_point = arbitrary_uint1;
   arbitrary_resource1.format = cc::RGBA_8888;
+  arbitrary_resource1.target = GL_TEXTURE_2D;
   arbitrary_resource1.filter = 53;
   arbitrary_resource1.size = gfx::Size(37189, 123123);
   arbitrary_resource1.mailbox.SetName(arbitrary_mailbox1);
 
   TransferableResource arbitrary_resource2;
   arbitrary_resource2.id = 789132;
-  arbitrary_resource1.sync_point = arbitrary_uint2;
+  arbitrary_resource2.sync_point = arbitrary_uint2;
   arbitrary_resource2.format = cc::RGBA_4444;
-  arbitrary_resource1.filter = 47;
+  arbitrary_resource2.target = GL_TEXTURE_EXTERNAL_OES;
+  arbitrary_resource2.filter = 47;
   arbitrary_resource2.size = gfx::Size(89123, 23789);
   arbitrary_resource2.mailbox.SetName(arbitrary_mailbox2);
 

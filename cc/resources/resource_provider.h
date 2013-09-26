@@ -354,6 +354,7 @@ class CC_EXPORT ResourceProvider {
     ~Resource();
     Resource(unsigned texture_id,
              gfx::Size size,
+             GLenum target,
              GLenum filter,
              GLenum texture_pool,
              GLint wrap_mode,
@@ -386,10 +387,10 @@ class CC_EXPORT ResourceProvider {
     bool enable_read_lock_fences;
     scoped_refptr<Fence> read_lock_fence;
     gfx::Size size;
+    GLenum target;
     // TODO(skyostil): Use a separate sampler object for filter state.
     GLenum original_filter;
     GLenum filter;
-    GLenum target;
     unsigned image_id;
     GLenum texture_pool;
     GLint wrap_mode;

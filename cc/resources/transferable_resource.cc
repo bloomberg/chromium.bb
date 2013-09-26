@@ -9,11 +9,7 @@
 namespace cc {
 
 TransferableResource::TransferableResource()
-    : id(0),
-      sync_point(0),
-      format(RGBA_8888),
-      filter(0) {
-}
+    : id(0), sync_point(0), format(RGBA_8888), target(0), filter(0) {}
 
 TransferableResource::~TransferableResource() {
 }

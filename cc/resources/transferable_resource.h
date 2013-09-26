@@ -31,6 +31,7 @@ struct CC_EXPORT TransferableResource {
   unsigned id;
   unsigned sync_point;
   ResourceFormat format;
+  uint32 target;
   uint32 filter;
   gfx::Size size;
   gpu::Mailbox mailbox;
