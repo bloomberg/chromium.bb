@@ -41,17 +41,26 @@ inline void MaskWebSocketFramePayloadByBytes(
 
 namespace net {
 
-scoped_ptr<WebSocketFrameHeader> WebSocketFrameHeader::Clone() {
+scoped_ptr<WebSocketFrameHeader> WebSocketFrameHeader::Clone() const {
   scoped_ptr<WebSocketFrameHeader> ret(new WebSocketFrameHeader(opcode));
-  ret->final = final;
-  ret->reserved1 = reserved1;
-  ret->reserved2 = reserved2;
-  ret->reserved3 = reserved3;
-  ret->opcode = opcode;
-  ret->masked = masked;
-  ret->payload_length = payload_length;
+  ret->CopyFrom(*this);
   return ret.Pass();
 }
+
+void WebSocketFrameHeader::CopyFrom(const WebSocketFrameHeader& source) {
+  final = source.final;
+  reserved1 = source.reserved1;
+  reserved2 = source.reserved2;
+  reserved3 = source.reserved3;
+  opcode = source.opcode;
+  masked = source.masked;
+  payload_length = source.payload_length;
+}
+
+WebSocketFrame::WebSocketFrame(WebSocketFrameHeader::OpCode opcode)
+    : header(opcode) {}
+
+WebSocketFrame::~WebSocketFrame() {}
 
 WebSocketFrameChunk::WebSocketFrameChunk() : final_chunk(false) {}
 
@@ -195,7 +204,7 @@ void MaskWebSocketFramePayload(const WebSocketMaskingKey& masking_key,
   // Create a version of the mask which is rotated by the appropriate offset
   // for our alignment. The "trick" here is that 0 XORed with the mask will
   // give the value of the mask for the appropriate byte.
-  char realigned_mask[kMaskingKeyLength] = { 0 };
+  char realigned_mask[kMaskingKeyLength] = {};
   MaskWebSocketFramePayloadByBytes(
       masking_key,
       (frame_offset + aligned_begin - data) % kMaskingKeyLength,

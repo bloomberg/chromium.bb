@@ -22,6 +22,7 @@ class GrowableIOBuffer;
 class HttpRequestHeaders;
 class HttpResponseInfo;
 class IOBufferWithSize;
+struct WebSocketFrame;
 struct WebSocketFrameChunk;
 
 // Implementation of WebSocketStream for non-multiplexed ws:// connections (or
@@ -39,10 +40,10 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
   virtual ~WebSocketBasicStream();
 
   // WebSocketStream implementation.
-  virtual int ReadFrames(ScopedVector<WebSocketFrameChunk>* frame_chunks,
+  virtual int ReadFrames(ScopedVector<WebSocketFrame>* frames,
                          const CompletionCallback& callback) OVERRIDE;
 
-  virtual int WriteFrames(ScopedVector<WebSocketFrameChunk>* frame_chunks,
+  virtual int WriteFrames(ScopedVector<WebSocketFrame>* frames,
                           const CompletionCallback& callback) OVERRIDE;
 
   virtual void Close() OVERRIDE;
@@ -83,13 +84,43 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
                        int result);
 
   // Attempts to parse the output of a read as WebSocket frames. On success,
-  // returns OK and places the frame(s) in frame_chunks.
-  int HandleReadResult(int result,
-                       ScopedVector<WebSocketFrameChunk>* frame_chunks);
+  // returns OK and places the frame(s) in |frames|.
+  int HandleReadResult(int result, ScopedVector<WebSocketFrame>* frames);
+
+  // Converts the chunks in |frame_chunks| into frames and writes them to
+  // |frames|. |frame_chunks| is destroyed in the process. Returns
+  // ERR_WS_PROTOCOL_ERROR if an invalid chunk was found. If one or more frames
+  // was added to |frames|, then returns OK, otherwise returns ERR_IO_PENDING.
+  int ConvertChunksToFrames(ScopedVector<WebSocketFrameChunk>* frame_chunks,
+                            ScopedVector<WebSocketFrame>* frames);
+
+  // Converts a |chunk| to a |frame|. |*frame| should be NULL on entry to this
+  // method. If |chunk| is an incomplete control frame, or an empty non-final
+  // frame, then |*frame| may still be NULL on exit. If an invalid control frame
+  // is found, returns ERR_WS_PROTOCOL_ERROR and the stream is no longer
+  // usable. Otherwise returns OK (even if frame is still NULL).
+  int ConvertChunkToFrame(scoped_ptr<WebSocketFrameChunk> chunk,
+                          scoped_ptr<WebSocketFrame>* frame);
+
+  // Creates a frame based on the value of |is_final_chunk|, |data| and
+  // |current_frame_header_|. Clears |current_frame_header_| if |is_final_chunk|
+  // is true. |data| may be NULL if the frame has an empty payload. A frame with
+  // no data and the "final" flag not set is not useful; in this case the
+  // returned frame will be NULL. Otherwise, |current_frame_header_->opcode| is
+  // set to Continuation after use if it was Text or Binary, in accordance with
+  // WebSocket RFC6455 section 5.4.
+  scoped_ptr<WebSocketFrame> CreateFrame(
+      bool is_final_chunk,
+      const scoped_refptr<IOBufferWithSize>& data);
+
+  // Adds |data_buffer| to the end of |incomplete_control_frame_body_|, applying
+  // bounds checks.
+  void AddToIncompleteControlFrameBody(
+      const scoped_refptr<IOBufferWithSize>& data_buffer);
 
   // Called when a read completes. Parses the result and (unless no complete
   // header has been received) calls |callback|.
-  void OnReadComplete(ScopedVector<WebSocketFrameChunk>* frame_chunks,
+  void OnReadComplete(ScopedVector<WebSocketFrame>* frames,
                       const CompletionCallback& callback,
                       int result);
 
@@ -101,6 +132,18 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
   // The connection, wrapped in a ClientSocketHandle so that we can prevent it
   // from being returned to the pool.
   scoped_ptr<ClientSocketHandle> connection_;
+
+  // Frame header for the frame currently being received. Only non-NULL while we
+  // are processing the frame. If the frame arrives in multiple chunks, it can
+  // remain non-NULL until additional chunks arrive. If the header of the frame
+  // was invalid, this is set to NULL, the channel is failed, and subsequent
+  // chunks of the same frame will be ignored.
+  scoped_ptr<WebSocketFrameHeader> current_frame_header_;
+
+  // Although it should rarely happen in practice, a control frame can arrive
+  // broken into chunks. This variable provides storage for a partial control
+  // frame until the rest arrives. It will be NULL the rest of the time.
+  scoped_refptr<GrowableIOBuffer> incomplete_control_frame_body_;
 
   // Only used during handshake. Some data may be left in this buffer after the
   // handshake, in which case it will be picked up during the first call to

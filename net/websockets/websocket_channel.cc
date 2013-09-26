@@ -27,10 +27,6 @@ const int kDefaultSendQuotaLowWaterMark = 1 << 16;
 const int kDefaultSendQuotaHighWaterMark = 1 << 17;
 const size_t kWebSocketCloseCodeLength = 2;
 
-// This uses type uint64 to match the definition of
-// WebSocketFrameHeader::payload_length in websocket_frame.h.
-const uint64 kMaxControlFramePayload = 125;
-
 }  // namespace
 
 // A class to encapsulate a set of frames and information about the size of
@@ -39,26 +35,25 @@ class WebSocketChannel::SendBuffer {
  public:
   SendBuffer() : total_bytes_(0) {}
 
-  // Add a WebSocketFrameChunk to the buffer and increase total_bytes_.
-  void AddFrame(scoped_ptr<WebSocketFrameChunk> chunk);
+  // Add a WebSocketFrame to the buffer and increase total_bytes_.
+  void AddFrame(scoped_ptr<WebSocketFrame> chunk);
 
   // Return a pointer to the frames_ for write purposes.
-  ScopedVector<WebSocketFrameChunk>* frames() { return &frames_; }
+  ScopedVector<WebSocketFrame>* frames() { return &frames_; }
 
  private:
   // The frames_ that will be sent in the next call to WriteFrames().
-  ScopedVector<WebSocketFrameChunk> frames_;
+  ScopedVector<WebSocketFrame> frames_;
 
-  // The total size of the buffers in |frames_|. This will be used to measure
-  // the throughput of the link.
+  // The total size of the payload data in |frames_|. This will be used to
+  // measure the throughput of the link.
   // TODO(ricea): Measure the throughput of the link.
   size_t total_bytes_;
 };
 
-void WebSocketChannel::SendBuffer::AddFrame(
-    scoped_ptr<WebSocketFrameChunk> chunk) {
-  total_bytes_ += chunk->data->size();
-  frames_.push_back(chunk.release());
+void WebSocketChannel::SendBuffer::AddFrame(scoped_ptr<WebSocketFrame> frame) {
+  total_bytes_ += frame->header.payload_length;
+  frames_.push_back(frame.release());
 }
 
 // Implementation of WebSocketStream::ConnectDelegate that simply forwards the
@@ -98,7 +93,7 @@ WebSocketChannel::WebSocketChannel(
       state_(FRESHLY_CONSTRUCTED) {}
 
 WebSocketChannel::~WebSocketChannel() {
-  // The stream may hold a pointer to read_frame_chunks_, and so it needs to be
+  // The stream may hold a pointer to read_frames_, and so it needs to be
   // destroyed first.
   stream_.reset();
 }
@@ -163,9 +158,9 @@ void WebSocketChannel::SendFrame(bool fin,
   // water mark" and "high water mark", but only if the link to the WebSocket
   // server is not saturated.
   // TODO(ricea): For kOpCodeText, do UTF-8 validation?
-  scoped_refptr<IOBufferWithSize> buffer(new IOBufferWithSize(data.size()));
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(data.size()));
   std::copy(data.begin(), data.end(), buffer->data());
-  SendIOBufferWithSize(fin, op_code, buffer);
+  SendIOBuffer(fin, op_code, buffer, data.size());
 }
 
 void WebSocketChannel::SendFlowControl(int64 quota) {
@@ -308,7 +303,7 @@ void WebSocketChannel::ReadFrames() {
     // WebSocketStream, and any pending reads will be cancelled when it is
     // destroyed.
     result = stream_->ReadFrames(
-        &read_frame_chunks_,
+        &read_frames_,
         base::Bind(
             &WebSocketChannel::OnReadDone, base::Unretained(this), false));
     if (result != ERR_IO_PENDING) {
@@ -325,18 +320,25 @@ void WebSocketChannel::OnReadDone(bool synchronous, int result) {
     case OK:
       // ReadFrames() must use ERR_CONNECTION_CLOSED for a closed connection
       // with no data read, not an empty response.
-      DCHECK(!read_frame_chunks_.empty())
+      DCHECK(!read_frames_.empty())
           << "ReadFrames() returned OK, but nothing was read.";
-      for (size_t i = 0; i < read_frame_chunks_.size(); ++i) {
-        scoped_ptr<WebSocketFrameChunk> chunk(read_frame_chunks_[i]);
-        read_frame_chunks_[i] = NULL;
-        ProcessFrameChunk(chunk.Pass());
+      for (size_t i = 0; i < read_frames_.size(); ++i) {
+        scoped_ptr<WebSocketFrame> frame(read_frames_[i]);
+        read_frames_[i] = NULL;
+        ProcessFrame(frame.Pass());
       }
-      read_frame_chunks_.clear();
+      read_frames_.clear();
       // There should always be a call to ReadFrames pending.
+      // TODO(ricea): Unless we are out of quota.
       if (!synchronous && state_ != CLOSED) {
         ReadFrames();
       }
+      return;
+
+    case ERR_WS_PROTOCOL_ERROR:
+      FailChannel(SEND_REAL_ERROR,
+                  kWebSocketErrorProtocolError,
+                  "WebSocket Protocol Error");
       return;
 
     default:
@@ -357,119 +359,33 @@ void WebSocketChannel::OnReadDone(bool synchronous, int result) {
   }
 }
 
-void WebSocketChannel::ProcessFrameChunk(
-    scoped_ptr<WebSocketFrameChunk> chunk) {
-  bool is_first_chunk = false;
-  if (chunk->header) {
-    DCHECK(current_frame_header_ == NULL)
-        << "Received the header for a new frame without notification that "
-        << "the previous frame was complete.";
-    is_first_chunk = true;
-    current_frame_header_.swap(chunk->header);
-    if (current_frame_header_->masked) {
-      // RFC6455 Section 5.1 "A client MUST close a connection if it detects a
-      // masked frame."
-      FailChannel(SEND_REAL_ERROR,
-                  kWebSocketErrorProtocolError,
-                  "Masked frame from server");
-      return;
-    }
-  }
-  if (!current_frame_header_) {
-    // If this channel rejected the previous chunk as invalid, then it will have
-    // reset |current_frame_header_| and closed the channel. More chunks of the
-    // invalid frame may still arrive, and it is not necessarily a bug for that
-    // to happen. However, if this happens when state_ is CONNECTED, it is
-    // definitely a bug.
-    DCHECK(state_ != CONNECTED) << "Unexpected header-less frame received "
-                                << "(final_chunk = " << chunk->final_chunk
-                                << ", data size = " << chunk->data->size()
-                                << ")";
+void WebSocketChannel::ProcessFrame(scoped_ptr<WebSocketFrame> frame) {
+  if (frame->header.masked) {
+    // RFC6455 Section 5.1 "A client MUST close a connection if it detects a
+    // masked frame."
+    FailChannel(SEND_REAL_ERROR,
+                kWebSocketErrorProtocolError,
+                "Masked frame from server");
     return;
   }
-  scoped_refptr<IOBufferWithSize> data_buffer;
-  data_buffer.swap(chunk->data);
-  const bool is_final_chunk = chunk->final_chunk;
-  chunk.reset();
-  const WebSocketFrameHeader::OpCode opcode = current_frame_header_->opcode;
-  if (WebSocketFrameHeader::IsKnownControlOpCode(opcode)) {
-    if (!current_frame_header_->final) {
-      FailChannel(SEND_REAL_ERROR,
-                  kWebSocketErrorProtocolError,
-                  "Control message with FIN bit unset received");
-      return;
-    }
-    if (current_frame_header_->payload_length > kMaxControlFramePayload) {
-      FailChannel(SEND_REAL_ERROR,
-                  kWebSocketErrorProtocolError,
-                  "Control message has payload over 125 bytes");
-      return;
-    }
-    if (!is_final_chunk) {
-      VLOG(2) << "Encountered a split control frame, opcode " << opcode;
-      if (incomplete_control_frame_body_) {
-        VLOG(3) << "Appending to an existing split control frame.";
-        AddToIncompleteControlFrameBody(data_buffer);
-      } else {
-        VLOG(3) << "Creating new storage for an incomplete control frame.";
-        incomplete_control_frame_body_ = new GrowableIOBuffer();
-        // This method checks for oversize control frames above, so as long as
-        // the frame parser is working correctly, this won't overflow. If a bug
-        // does cause it to overflow, it will CHECK() in
-        // AddToIncompleteControlFrameBody() without writing outside the buffer.
-        incomplete_control_frame_body_->SetCapacity(kMaxControlFramePayload);
-        AddToIncompleteControlFrameBody(data_buffer);
-      }
-      return;  // Handle when complete.
-    }
-    if (incomplete_control_frame_body_) {
-      VLOG(2) << "Rejoining a split control frame, opcode " << opcode;
-      AddToIncompleteControlFrameBody(data_buffer);
-      const int body_size = incomplete_control_frame_body_->offset();
-      data_buffer = new IOBufferWithSize(body_size);
-      memcpy(data_buffer->data(),
-             incomplete_control_frame_body_->StartOfBuffer(),
-             body_size);
-      incomplete_control_frame_body_ = NULL;  // Frame now complete.
-    }
+  const WebSocketFrameHeader::OpCode opcode = frame->header.opcode;
+  if (WebSocketFrameHeader::IsKnownControlOpCode(opcode) &&
+      !frame->header.final) {
+    FailChannel(SEND_REAL_ERROR,
+                kWebSocketErrorProtocolError,
+                "Control message with FIN bit unset received");
+    return;
   }
-
-  // Apply basic sanity checks to the |payload_length| field from the frame
-  // header. A check for exact equality can only be used when the whole frame
-  // arrives in one chunk.
-  DCHECK_GE(current_frame_header_->payload_length,
-            base::checked_numeric_cast<uint64>(data_buffer->size()));
-  DCHECK(!is_first_chunk || !is_final_chunk ||
-         current_frame_header_->payload_length ==
-             base::checked_numeric_cast<uint64>(data_buffer->size()));
 
   // Respond to the frame appropriately to its type.
-  HandleFrame(opcode, is_first_chunk, is_final_chunk, data_buffer);
-
-  if (is_final_chunk) {
-    // Make sure that this frame header is not applied to any future chunks.
-    current_frame_header_.reset();
-  }
+  HandleFrame(
+      opcode, frame->header.final, frame->data, frame->header.payload_length);
 }
 
-void WebSocketChannel::AddToIncompleteControlFrameBody(
-    const scoped_refptr<IOBufferWithSize>& data_buffer) {
-  const int new_offset =
-      incomplete_control_frame_body_->offset() + data_buffer->size();
-  CHECK_GE(incomplete_control_frame_body_->capacity(), new_offset)
-      << "Control frame body larger than frame header indicates; frame parser "
-         "bug?";
-  memcpy(incomplete_control_frame_body_->data(),
-         data_buffer->data(),
-         data_buffer->size());
-  incomplete_control_frame_body_->set_offset(new_offset);
-}
-
-void WebSocketChannel::HandleFrame(
-    const WebSocketFrameHeader::OpCode opcode,
-    bool is_first_chunk,
-    bool is_final_chunk,
-    const scoped_refptr<IOBufferWithSize>& data_buffer) {
+void WebSocketChannel::HandleFrame(const WebSocketFrameHeader::OpCode opcode,
+                                   bool final,
+                                   const scoped_refptr<IOBuffer>& data_buffer,
+                                   size_t size) {
   DCHECK_NE(RECV_CLOSED, state_)
       << "HandleFrame() does not support being called re-entrantly from within "
          "SendClose()";
@@ -513,12 +429,11 @@ void WebSocketChannel::HandleFrame(
     case WebSocketFrameHeader::kOpCodeBinary:  // fall-thru
     case WebSocketFrameHeader::kOpCodeContinuation:
       if (state_ == CONNECTED) {
-        const bool final = is_final_chunk && current_frame_header_->final;
         // TODO(ricea): Need to fail the connection if UTF-8 is invalid
         // post-reassembly. Requires a streaming UTF-8 validator.
         // TODO(ricea): Can this copy be eliminated?
         const char* const data_begin = data_buffer->data();
-        const char* const data_end = data_begin + data_buffer->size();
+        const char* const data_end = data_begin + size;
         const std::vector<char> data(data_begin, data_end);
         // TODO(ricea): Handle the case when ReadFrames returns far
         // more data at once than should be sent in a single IPC. This needs to
@@ -526,34 +441,31 @@ void WebSocketChannel::HandleFrame(
         // cause of receiving very large chunks.
 
         // Sends the received frame to the renderer process.
-        event_interface_->OnDataFrame(
-            final,
-            is_first_chunk ? opcode : WebSocketFrameHeader::kOpCodeContinuation,
-            data);
+        event_interface_->OnDataFrame(final, opcode, data);
       } else {
         VLOG(3) << "Ignored data packet received in state " << state_;
       }
       return;
 
     case WebSocketFrameHeader::kOpCodePing:
-      VLOG(1) << "Got Ping of size " << data_buffer->size();
+      VLOG(1) << "Got Ping of size " << size;
       if (state_ == CONNECTED) {
-        SendIOBufferWithSize(
-            true, WebSocketFrameHeader::kOpCodePong, data_buffer);
+        SendIOBuffer(
+            true, WebSocketFrameHeader::kOpCodePong, data_buffer, size);
       } else {
         VLOG(3) << "Ignored ping in state " << state_;
       }
       return;
 
     case WebSocketFrameHeader::kOpCodePong:
-      VLOG(1) << "Got Pong of size " << data_buffer->size();
+      VLOG(1) << "Got Pong of size " << size;
       // There is no need to do anything with pong messages.
       return;
 
     case WebSocketFrameHeader::kOpCodeClose: {
       uint16 code = kWebSocketNormalClosure;
       std::string reason;
-      ParseClose(data_buffer, &code, &reason);
+      ParseClose(data_buffer, size, &code, &reason);
       // TODO(ricea): Find a way to safely log the message from the close
       // message (escape control codes and so on).
       VLOG(1) << "Got Close with code " << code;
@@ -589,20 +501,18 @@ void WebSocketChannel::HandleFrame(
   }
 }
 
-void WebSocketChannel::SendIOBufferWithSize(
-    bool fin,
-    WebSocketFrameHeader::OpCode op_code,
-    const scoped_refptr<IOBufferWithSize>& buffer) {
+void WebSocketChannel::SendIOBuffer(bool fin,
+                                    WebSocketFrameHeader::OpCode op_code,
+                                    const scoped_refptr<IOBuffer>& buffer,
+                                    size_t size) {
   DCHECK(state_ == CONNECTED || state_ == RECV_CLOSED);
   DCHECK(stream_);
-  scoped_ptr<WebSocketFrameHeader> header(new WebSocketFrameHeader(op_code));
-  header->final = fin;
-  header->masked = true;
-  header->payload_length = buffer->size();
-  scoped_ptr<WebSocketFrameChunk> chunk(new WebSocketFrameChunk());
-  chunk->header = header.Pass();
-  chunk->final_chunk = true;
-  chunk->data = buffer;
+  scoped_ptr<WebSocketFrame> frame(new WebSocketFrame(op_code));
+  WebSocketFrameHeader& header = frame->header;
+  header.final = fin;
+  header.masked = true;
+  header.payload_length = size;
+  frame->data = buffer;
   if (data_being_sent_) {
     // Either the link to the WebSocket server is saturated, or several messages
     // are being sent in a batch.
@@ -610,10 +520,10 @@ void WebSocketChannel::SendIOBufferWithSize(
     // quota appropriately.
     if (!data_to_send_next_)
       data_to_send_next_.reset(new SendBuffer);
-    data_to_send_next_->AddFrame(chunk.Pass());
+    data_to_send_next_->AddFrame(frame.Pass());
   } else {
     data_being_sent_.reset(new SendBuffer);
-    data_being_sent_->AddFrame(chunk.Pass());
+    data_being_sent_->AddFrame(frame.Pass());
     WriteFrames();
   }
 }
@@ -640,9 +550,6 @@ void WebSocketChannel::FailChannel(ExposeError expose,
   stream_->Close();
   state_ = CLOSED;
 
-  // The channel may be in the middle of processing several chunks. It should
-  // not use this frame header for subsequent chunks.
-  current_frame_header_.reset();
   if (old_state != CLOSED) {
     event_interface_->OnDropChannel(code, reason);
   }
@@ -651,29 +558,31 @@ void WebSocketChannel::FailChannel(ExposeError expose,
 void WebSocketChannel::SendClose(uint16 code, const std::string& reason) {
   DCHECK(state_ == CONNECTED || state_ == RECV_CLOSED);
   // TODO(ricea): Ensure reason.length() <= 123
-  scoped_refptr<IOBufferWithSize> body;
+  scoped_refptr<IOBuffer> body;
+  size_t size = 0;
   if (code == kWebSocketErrorNoStatusReceived) {
     // Special case: translate kWebSocketErrorNoStatusReceived into a Close
     // frame with no payload.
-    body = new IOBufferWithSize(0);
+    body = new IOBuffer(0);
   } else {
     const size_t payload_length = kWebSocketCloseCodeLength + reason.length();
-    body = new IOBufferWithSize(payload_length);
+    body = new IOBuffer(payload_length);
+    size = payload_length;
     WriteBigEndian(body->data(), code);
     COMPILE_ASSERT(sizeof(code) == kWebSocketCloseCodeLength,
                    they_should_both_be_two);
     std::copy(
         reason.begin(), reason.end(), body->data() + kWebSocketCloseCodeLength);
   }
-  SendIOBufferWithSize(true, WebSocketFrameHeader::kOpCodeClose, body);
+  SendIOBuffer(true, WebSocketFrameHeader::kOpCodeClose, body, size);
   state_ = (state_ == CONNECTED) ? SEND_CLOSED : CLOSE_WAIT;
 }
 
-void WebSocketChannel::ParseClose(const scoped_refptr<IOBufferWithSize>& buffer,
+void WebSocketChannel::ParseClose(const scoped_refptr<IOBuffer>& buffer,
+                                  size_t size,
                                   uint16* code,
                                   std::string* reason) {
   const char* data = buffer->data();
-  size_t size = base::checked_numeric_cast<size_t>(buffer->size());
   reason->clear();
   if (size < kWebSocketCloseCodeLength) {
     *code = kWebSocketErrorNoStatusReceived;
