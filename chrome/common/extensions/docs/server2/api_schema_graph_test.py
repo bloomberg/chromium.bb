@@ -5,7 +5,7 @@
 
 import unittest
 
-from api_schema_graph import APISchemaGraph
+from api_schema_graph import APISchemaGraph, LookupResult
 
 
 API_SCHEMA = [{
@@ -62,56 +62,80 @@ class APISchemaGraphTest(unittest.TestCase):
     # A few assertions to make sure that Lookup works on empty sets.
     empty_graph = APISchemaGraph({})
     self.assertTrue(empty_graph.IsEmpty())
-    self.assertFalse(empty_graph.Lookup('tabs', 'properties',
+    self.assertEqual(LookupResult(False, None),
+                     empty_graph.Lookup('tabs', 'properties',
                                         'TAB_PROPERTY_ONE'))
-    self.assertFalse(empty_graph.Lookup('tabs', 'functions', 'get',
+    self.assertEqual(LookupResult(False, None),
+                     empty_graph.Lookup('tabs', 'functions', 'get',
                                         'parameters', 'tab'))
-    self.assertFalse(empty_graph.Lookup('tabs', 'functions', 'get',
+    self.assertEqual(LookupResult(False, None),
+                     empty_graph.Lookup('tabs', 'functions', 'get',
                                         'parameters', 'tabId'))
-    self.assertFalse(empty_graph.Lookup('tabs', 'events', 'onActivated',
+    self.assertEqual(LookupResult(False, None),
+                     empty_graph.Lookup('tabs', 'events', 'onActivated',
                                         'parameters', 'activeInfo'))
-    self.assertFalse(empty_graph.Lookup('tabs', 'events', 'onUpdated',
+    self.assertEqual(LookupResult(False, None),
+                     empty_graph.Lookup('tabs', 'events', 'onUpdated',
                                         'parameters', 'updateInfo'))
 
   def testSubtractEmpty(self):
     self._testApiSchema(
         APISchemaGraph(API_SCHEMA).Subtract(APISchemaGraph({})))
 
+  def _testApiSchema(self, api_schema_graph):
+    self.assertEqual(LookupResult(True, None),
+                     api_schema_graph.Lookup('tabs', 'properties',
+                                             'TAB_PROPERTY_ONE'))
+    self.assertEqual(LookupResult(True, None),
+                     api_schema_graph.Lookup('tabs', 'types', 'Tab'))
+    self.assertEqual(LookupResult(True, None),
+                    api_schema_graph.Lookup('tabs', 'functions', 'get',
+                                            'parameters', 'tab'))
+    self.assertEqual(LookupResult(True, None),
+                    api_schema_graph.Lookup('tabs', 'functions', 'get',
+                                            'parameters', 'tabId'))
+    self.assertEqual(LookupResult(True, None),
+                    api_schema_graph.Lookup('tabs', 'functions', 'get',
+                                            'parameters', 'tab', 'type'))
+    self.assertEqual(LookupResult(True, None),
+                    api_schema_graph.Lookup('tabs', 'events',
+                                            'onActivated', 'parameters',
+                                            'activeInfo'))
+    self.assertEqual(LookupResult(True, None),
+                    api_schema_graph.Lookup('tabs', 'events', 'onUpdated',
+                                            'parameters', 'updateInfo'))
+    self.assertEqual(LookupResult(True, None),
+                    api_schema_graph.Lookup('tabs', 'properties',
+                                            'lowercase', 'properties',
+                                            'one', 'value'))
+    self.assertEqual(LookupResult(True, None),
+                    api_schema_graph.Lookup('tabs', 'properties',
+                                            'lowercase', 'properties',
+                                            'two', 'description'))
+    self.assertEqual(LookupResult(False, None),
+                     api_schema_graph.Lookup('windows'))
+    self.assertEqual(LookupResult(False, None),
+                     api_schema_graph.Lookup('tabs', 'properties',
+                                             'TAB_PROPERTY_DEUX'))
+    self.assertEqual(LookupResult(False, None),
+                     api_schema_graph.Lookup('tabs', 'events', 'onActivated',
+                                             'parameters', 'callback'))
+    self.assertEqual(LookupResult(False, None),
+                     api_schema_graph.Lookup('tabs', 'functions', 'getById',
+                                             'parameters', 'tab'))
+    self.assertEqual(LookupResult(False, None),
+                     api_schema_graph.Lookup('tabs', 'functions', 'get',
+                                             'parameters', 'type'))
+    self.assertEqual(LookupResult(False, None),
+                     api_schema_graph.Lookup('tabs', 'properties',
+                                             'lowercase', 'properties',
+                                             'two', 'value'))
+
   def testSubtractSelf(self):
     self.assertTrue(
         APISchemaGraph(API_SCHEMA).Subtract(APISchemaGraph(API_SCHEMA))
             .IsEmpty())
 
-  def _testApiSchema(self, api_schema_graph):
-    self.assertTrue(api_schema_graph.Lookup('tabs', 'properties',
-                                            'TAB_PROPERTY_ONE'))
-    self.assertTrue(api_schema_graph.Lookup('tabs', 'types', 'Tab'))
-    self.assertTrue(api_schema_graph.Lookup('tabs', 'functions', 'get',
-                                            'parameters', 'tab'))
-    self.assertTrue(api_schema_graph.Lookup('tabs', 'functions', 'get',
-                                            'parameters', 'tabId'))
-    self.assertTrue(api_schema_graph.Lookup('tabs', 'functions', 'get',
-                                            'parameters', 'tab', 'type'))
-    self.assertTrue(api_schema_graph.Lookup('tabs', 'events', 'onActivated',
-                                            'parameters', 'activeInfo'))
-    self.assertTrue(api_schema_graph.Lookup('tabs', 'events', 'onUpdated',
-                                            'parameters', 'updateInfo'))
-    self.assertTrue(api_schema_graph.Lookup('tabs', 'properties', 'lowercase',
-                                            'properties', 'one', 'value'))
-    self.assertTrue(api_schema_graph.Lookup('tabs', 'properties', 'lowercase',
-                                            'properties', 'two', 'description'))
-
-    self.assertFalse(api_schema_graph.Lookup('windows'))
-    self.assertFalse(api_schema_graph.Lookup('tabs', 'properties',
-                                             'TAB_PROPERTY_DEUX'))
-    self.assertFalse(api_schema_graph.Lookup('tabs', 'events', 'onActivated',
-                                             'parameters', 'callback'))
-    self.assertFalse(api_schema_graph.Lookup('tabs', 'functions', 'getById',
-                                             'parameters', 'tab'))
-    self.assertFalse(api_schema_graph.Lookup('tabs', 'functions', 'get',
-                                             'parameters', 'type'))
-    self.assertFalse(api_schema_graph.Lookup('tabs', 'properties', 'lowercase',
-                                             'properties', 'two', 'value'))
 
   def testSubtractDisjointSet(self):
     difference = APISchemaGraph(API_SCHEMA).Subtract(APISchemaGraph({
@@ -148,23 +172,33 @@ class APISchemaGraphTest(unittest.TestCase):
         }
       }
     }))
-    self.assertTrue(difference.Lookup('tabs', 'properties',
+    self.assertEqual(LookupResult(True, None),
+                     difference.Lookup('tabs', 'properties',
                                       'TAB_PROPERTY_ONE'))
-    self.assertTrue(difference.Lookup('tabs', 'functions', 'get',
+    self.assertEqual(LookupResult(True, None),
+                    difference.Lookup('tabs', 'functions', 'get',
                                       'parameters', 'tab'))
-    self.assertTrue(difference.Lookup('tabs', 'events', 'onUpdated',
+    self.assertEqual(LookupResult(True, None),
+                     difference.Lookup('tabs', 'events', 'onUpdated',
                                       'parameters', 'updateInfo'))
-    self.assertTrue(difference.Lookup('tabs', 'functions', 'get',
+    self.assertEqual(LookupResult(True, None),
+                     difference.Lookup('tabs', 'functions', 'get',
                                       'parameters', 'tabId'))
-    self.assertFalse(difference.Lookup('contextMenus', 'properties',
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('contextMenus', 'properties',
                                        'CONTEXT_MENU_PROPERTY_ONE'))
-    self.assertFalse(difference.Lookup('contextMenus', 'types', 'Menu'))
-    self.assertFalse(difference.Lookup('contextMenus', 'types', 'Menu',
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('contextMenus', 'types', 'Menu'))
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('contextMenus', 'types', 'Menu',
                                        'properties', 'id'))
-    self.assertFalse(difference.Lookup('contextMenus', 'functions'))
-    self.assertFalse(difference.Lookup('contextMenus', 'events', 'onClicked',
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('contextMenus', 'functions'))
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('contextMenus', 'events', 'onClicked',
                                        'parameters', 'clickInfo'))
-    self.assertFalse(difference.Lookup('contextMenus', 'events', 'onUpdated',
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('contextMenus', 'events', 'onUpdated',
                                        'parameters', 'updateInfo'))
 
   def testSubtractSubset(self):
@@ -197,22 +231,31 @@ class APISchemaGraphTest(unittest.TestCase):
         }
       }
     }))
-    self.assertTrue(difference.Lookup('tabs'))
-    self.assertTrue(difference.Lookup('tabs', 'properties',
-                                      'TAB_PROPERTY_TWO'))
-    self.assertTrue(difference.Lookup('tabs', 'properties', 'lowercase',
-                                      'properties', 'two', 'description'))
-    self.assertTrue(difference.Lookup('tabs', 'types', 'Tab', 'properties',
-                                      'url'))
-    self.assertTrue(difference.Lookup('tabs', 'events', 'onActivated',
-                                      'parameters', 'activeInfo'))
-    self.assertFalse(difference.Lookup('tabs', 'events', 'onUpdated',
+    self.assertEqual(LookupResult(True, None),
+                     difference.Lookup('tabs'))
+    self.assertEqual(LookupResult(True, None),
+                     difference.Lookup('tabs', 'properties',
+                                       'TAB_PROPERTY_TWO'))
+    self.assertEqual(LookupResult(True, None),
+                     difference.Lookup('tabs', 'properties', 'lowercase',
+                                       'properties', 'two', 'description'))
+    self.assertEqual(LookupResult(True, None),
+                     difference.Lookup('tabs', 'types', 'Tab', 'properties',
+                                       'url'))
+    self.assertEqual(LookupResult(True, None),
+                     difference.Lookup('tabs', 'events', 'onActivated',
+                                       'parameters', 'activeInfo'))
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('tabs', 'events', 'onUpdated',
                                        'parameters', 'updateInfo'))
-    self.assertFalse(difference.Lookup('tabs', 'properties',
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('tabs', 'properties',
                                        'TAB_PROPERTY_ONE'))
-    self.assertFalse(difference.Lookup('tabs', 'properties',
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('tabs', 'properties',
                                        'TAB_PROPERTY_ONE', 'value'))
-    self.assertFalse(difference.Lookup('tabs', 'functions', 'get',
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('tabs', 'functions', 'get',
                                        'parameters', 'tab'))
 
   def testSubtractSuperset(self):
@@ -279,22 +322,126 @@ class APISchemaGraphTest(unittest.TestCase):
         }
       }
     }))
-    self.assertFalse(difference.Lookup('tabs'))
-    self.assertFalse(difference.Lookup('tabs', 'properties',
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('tabs'))
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('tabs', 'properties',
                                        'TAB_PROPERTY_TWO'))
-    self.assertFalse(difference.Lookup('tabs', 'properties'))
-    self.assertFalse(difference.Lookup('tabs', 'types', 'Tab', 'properties',
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('tabs', 'properties'))
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('tabs', 'types', 'Tab', 'properties',
                                        'url'))
-    self.assertFalse(difference.Lookup('tabs', 'types', 'Tab', 'properties',
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('tabs', 'types', 'Tab', 'properties',
                                        'id'))
-    self.assertFalse(difference.Lookup('tabs', 'events', 'onUpdated',
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('tabs', 'events', 'onUpdated',
                                        'parameters', 'updateInfo'))
-    self.assertFalse(difference.Lookup('tabs', 'properties',
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('tabs', 'properties',
                                        'TAB_PROPERTY_ONE'))
-    self.assertFalse(difference.Lookup('tabs', 'functions', 'get',
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('tabs', 'functions', 'get',
                                        'parameters', 'tabId'))
-    self.assertFalse(difference.Lookup('events', 'onUpdated', 'parameters',
+    self.assertEqual(LookupResult(False, None),
+                     difference.Lookup('events', 'onUpdated', 'parameters',
                                        'updateInfo'))
+
+  def testUpdate(self):
+    result = APISchemaGraph(API_SCHEMA)
+    to_add = APISchemaGraph({
+      'tabs': {
+        'properties': {
+          'TAB_PROPERTY_THREE': { 'description': 'better than two' },
+          'TAB_PROPERTY_FOUR': { 'value': 4 }
+        },
+        'functions': {
+        'get': {
+          'name': {},
+          'parameters': {
+            'tab': {
+              'type': {},
+              'name': {},
+              'description': {},
+              'surprise': {}
+            }
+          }
+        },
+          'getAllInWindow': {
+            'parameters': {
+              'windowId': { 'type': 'object' }
+            }
+          }
+        }
+      }
+    })
+    result.Update(to_add, annotation='first')
+    # Looking up elements that were originally available in |result|. Because
+    # of this, no |annotation| object should be attached to the LookupResult
+    # object.
+    self.assertEqual(LookupResult(True, None),
+                     result.Lookup('tabs'))
+    self.assertEqual(LookupResult(True, None),
+                     result.Lookup('tabs', 'functions', 'get',
+                                   'parameters'))
+    self.assertEqual(LookupResult(True, None),
+                     result.Lookup('tabs', 'properties',
+                                   'TAB_PROPERTY_ONE'))
+    self.assertEqual(LookupResult(True, None),
+                     result.Lookup('tabs', 'properties',
+                                   'TAB_PROPERTY_ONE'))
+    self.assertEqual(LookupResult(True, None),
+                     result.Lookup('tabs', 'functions', 'get',
+                                   'parameters', 'tabId'))
+
+    # Looking up elements that were just added to |result|.
+    self.assertEqual(LookupResult(True, 'first'),
+                     result.Lookup('tabs', 'properties',
+                                   'TAB_PROPERTY_THREE'))
+    self.assertEqual(LookupResult(True, 'first'),
+                     result.Lookup('tabs', 'properties',
+                                   'TAB_PROPERTY_FOUR'))
+    self.assertEqual(LookupResult(True, 'first'),
+                     result.Lookup('tabs', 'functions', 'getAllInWindow',
+                                   'parameters', 'windowId'))
+    self.assertEqual(LookupResult(True, 'first'),
+                     result.Lookup('tabs', 'functions', 'get', 'parameters',
+                                   'tab', 'surprise'))
+
+    to_add = APISchemaGraph({
+      'tabs': {
+        'properties': {
+          'TAB_PROPERTY_FIVE': { 'description': 'stayin\' alive' }
+        },
+        'functions': {
+          'getAllInWindow': {
+            'parameters': {
+              'callback': { 'type': 'function' }
+            }
+          }
+        }
+      }
+    })
+    result.Update(to_add, annotation='second')
+    # Looking up the second group of elements added to |result|.
+    self.assertEqual(LookupResult(True, 'first'),
+                     result.Lookup('tabs', 'properties',
+                                   'TAB_PROPERTY_FOUR'))
+    self.assertEqual(LookupResult(True, 'second'),
+                     result.Lookup('tabs', 'properties',
+                                   'TAB_PROPERTY_FIVE'))
+    self.assertEqual(LookupResult(True, 'first'),
+                     result.Lookup('tabs', 'functions',
+                                   'getAllInWindow', 'parameters',
+                                   'windowId'))
+    self.assertEqual(LookupResult(True, 'second'),
+                     result.Lookup('tabs', 'functions',
+                                   'getAllInWindow', 'parameters',
+                                   'callback'))
+    self.assertEqual(LookupResult(True, 'first'),
+                     result.Lookup('tabs', 'functions',
+                                   'getAllInWindow'))
 
 
 if __name__ == '__main__':

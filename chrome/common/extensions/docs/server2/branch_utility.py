@@ -189,7 +189,7 @@ class BranchUtility(object):
       # Here, entry['title'] looks like: '<title> - <version>.##.<branch>.##'
       version_title = entry['title'].split(' - ')[1].split('.')
       if version_title[0] == str(version):
-        self._branch_object_store.Set(str(version), version_title[2])
+        self._branch_object_store.Set(str(version), int(version_title[2]))
         return int(version_title[2])
 
     raise ValueError('The branch for %s could not be found.' % version)

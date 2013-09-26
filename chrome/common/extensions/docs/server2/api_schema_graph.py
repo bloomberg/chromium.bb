@@ -2,8 +2,48 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import collections
 import json
+from collections import Iterable, Mapping
+from copy import deepcopy
+
+class LookupResult(object):
+  '''Returned from APISchemaGraph.Lookup(), and relays whether or not
+  some element was found and what annotation object was associated with it,
+  if any.
+  '''
+
+  def __init__(self, found=None, annotation=None):
+    assert found is not None, 'LookupResult was given None value for |found|.'
+    self.found = found
+    self.annotation = annotation
+
+  def __eq__(self, other):
+    return self.found == other.found and self.annotation == other.annotation
+
+  def __ne__(self, other):
+    return not (self == other)
+
+
+class _GraphNode(dict):
+  '''Represents some element of an API schema, and allows extra information
+  about that element to be stored on the |_annotation| object.
+  '''
+
+  def __init__(self, *args, **kwargs):
+    # Use **kwargs here since Python is picky with ordering of default args
+    # and variadic args in the method signature. The only keyword arg we care
+    # about here is 'annotation'. Intentionally don't pass |**kwargs| into the
+    # superclass' __init__().
+    dict.__init__(self, *args)
+    self._annotation = kwargs.get('annotation')
+
+  def __eq__(self, other):
+    # _GraphNode inherits __eq__() from dict, which will not take annotation
+    # objects into account when comparing.
+    return dict.__eq__(self, other)
+
+  def __ne__(self, other):
+    return not (self == other)
 
 
 def _NameForNode(node):
@@ -14,6 +54,7 @@ def _NameForNode(node):
   if 'name' in node: return node['name']
   if 'id' in node: return node['id']
   if 'type' in node: return node['type']
+  if '$ref' in node: return node['$ref']
   assert False, 'Problems with naming node: %s' % json.dumps(node, indent=3)
 
 
@@ -21,25 +62,29 @@ def _IsObjectList(value):
   '''Determines whether or not |value| is a list made up entirely of
   dict-like objects.
   '''
-  return (isinstance(value, collections.Iterable) and
-          all(isinstance(node, collections.Mapping) for node in value))
+  return (isinstance(value, Iterable) and
+          all(isinstance(node, Mapping) for node in value))
 
 
 def _CreateGraph(root):
   '''Recursively moves through an API schema, replacing lists of objects
   and non-object values with objects.
   '''
-  schema_graph = {}
+  schema_graph = _GraphNode()
   if _IsObjectList(root):
     for node in root:
       name = _NameForNode(node)
-      assert name not in schema_graph, 'Duplicate name in availability graph.'
-      schema_graph[name] = dict((key, _CreateGraph(value)) for key, value
-                                in node.iteritems())
-  elif isinstance(root, collections.Mapping):
+      assert name not in schema_graph, 'Duplicate name in API schema graph.'
+      schema_graph[name] = _GraphNode((key, _CreateGraph(value)) for
+                                      key, value in node.iteritems())
+
+  elif isinstance(root, Mapping):
     for name, node in root.iteritems():
-      schema_graph[name] = dict((key, _CreateGraph(value)) for key, value
-                                in node.iteritems())
+      if not isinstance(node, Mapping):
+        schema_graph[name] = _GraphNode()
+      else:
+        schema_graph[name] = _GraphNode((key, _CreateGraph(value)) for
+                                        key, value in node.iteritems())
   return schema_graph
 
 
@@ -48,7 +93,7 @@ def _Subtract(minuend, subtrahend):
   which contains key-value pairs found in |minuend| but not in
   |subtrahend|.
   '''
-  difference = {}
+  difference = _GraphNode()
   for key in minuend:
     if key not in subtrahend:
       # Record all of this key's children as being part of the difference.
@@ -63,19 +108,49 @@ def _Subtract(minuend, subtrahend):
   return difference
 
 
+def _Update(base, addend, annotation=None):
+  '''A Set Union adaptation for graphs. Returns a graph which contains
+  the key-value pairs from |base| combined with any key-value pairs
+  from |addend| that are not present in |base|.
+  '''
+  for key in addend:
+    if key not in base:
+      # Add this key and the rest of its children.
+      base[key] = _Update(_GraphNode(annotation=annotation),
+                          addend[key],
+                          annotation=annotation)
+    else:
+      # The key is already in |base|, but check its children.
+       _Update(base[key], addend[key], annotation=annotation)
+  return base
+
+
+
 class APISchemaGraph(object):
   '''Provides an interface for interacting with an API schema graph, a
   nested dict structure that allows for simpler lookups of schema data.
   '''
 
-  def __init__(self, api_schema):
-    self._graph = _CreateGraph(api_schema)
+  def __init__(self, api_schema=None, _graph=None):
+    self._graph = _graph if _graph is not None else _CreateGraph(api_schema)
+
+  def __eq__(self, other):
+    return self._graph == other._graph
+
+  def __ne__(self, other):
+    return not (self == other)
 
   def Subtract(self, other):
     '''Returns an APISchemaGraph instance representing keys that are in
     this graph but not in |other|.
     '''
-    return APISchemaGraph(_Subtract(self._graph, other._graph))
+    return APISchemaGraph(_graph=_Subtract(self._graph, other._graph))
+
+  def Update(self, other, annotation=None):
+    '''Modifies this graph by adding keys from |other| that are not
+    already present in this graph.
+    '''
+    _Update(self._graph, other._graph, annotation=annotation)
 
   def Lookup(self, *path):
     '''Given a list of path components, |path|, checks if the
@@ -85,8 +160,8 @@ class APISchemaGraph(object):
     for path_piece in path:
       node = node.get(path_piece)
       if node is None:
-        return False
-    return True
+        return LookupResult(found=False, annotation=None)
+    return LookupResult(found=True, annotation=node._annotation)
 
   def IsEmpty(self):
     '''Checks for an empty schema graph.

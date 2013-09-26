@@ -5,13 +5,16 @@
 import collections
 import os
 
-import svn_constants
+from api_schema_graph import APISchemaGraph
 from branch_utility import BranchUtility
 from compiled_file_system import CompiledFileSystem
-from file_system import FileNotFoundError
-from third_party.json_schema_compiler import json_parse
-from third_party.json_schema_compiler.memoize import memoize
+from svn_constants import API_PATH
+from third_party.json_schema_compiler import idl_schema, idl_parser, json_parse
+from third_party.json_schema_compiler.json_parse import OrderedDict
 from third_party.json_schema_compiler.model import UnixName
+
+
+_EXTENSION_API = 'extension_api.json'
 
 
 def _GetChannelFromFeatures(api_name, file_system, path):
@@ -35,38 +38,55 @@ def _GetChannelFromApiFeatures(api_name, file_system):
   return _GetChannelFromFeatures(
       api_name,
       file_system,
-      '%s/_api_features.json' % svn_constants.API_PATH)
+      '%s/_api_features.json' % API_PATH)
 
 
 def _GetChannelFromManifestFeatures(api_name, file_system):
   return _GetChannelFromFeatures(
       UnixName(api_name), #_manifest_features uses unix_style API names
       file_system,
-      '%s/_manifest_features.json' % svn_constants.API_PATH)
+      '%s/_manifest_features.json' % API_PATH)
 
 
 def _GetChannelFromPermissionFeatures(api_name, file_system):
   return _GetChannelFromFeatures(
       api_name,
       file_system,
-      '%s/_permission_features.json' % svn_constants.API_PATH)
+      '%s/_permission_features.json' % API_PATH)
 
 
-def _ExistsInExtensionApi(api_name, file_system):
-  '''Parses the api/extension_api.json file (available in Chrome versions
-  before 18) for an API namespace. If this is successfully found, then the API
-  is considered to have been 'stable' for the given version.
+def _GetApiSchema(api_name, file_system):
+  '''Searches |file_system| for |api_name|'s API schema data, and parses and
+  returns it if found.
   '''
-  try:
-    extension_api_json = file_system.GetFromFile(
-        '%s/extension_api.json' % svn_constants.API_PATH)
-    api_rows = [row.get('namespace') for row in extension_api_json
-                if 'namespace' in row]
-    return api_name in api_rows
-  except FileNotFoundError:
-    # This should only happen on preview.py since extension_api.json is no
-    # longer present in trunk.
-    return False
+  file_names = file_system.ReadSingle('%s/' % API_PATH)
+  # API names can be represented in unix_style and camelCase formats.
+  possibilities = (api_name, UnixName(api_name))
+
+  def get_file_data(file_name):
+    return file_system.ReadSingle('%s/%s' % (API_PATH, file_name))
+
+  if _EXTENSION_API in file_names:
+    # Prior to Chrome version 18, extension_api.json contained all API schema
+    # data, which replaced the current implementation of individual API files.
+    #
+    # TODO(epeterson) This file will be parsed a lot, but the data remains the
+    # same for each API. Avoid doing unnecessary work by re-parsing.
+    # (see http://crbug.com/295812)
+    extension_api_json = json_parse.Parse(get_file_data(_EXTENSION_API))
+    api = [api for api in extension_api_json if api['namespace'] == api_name]
+    return api if api else None
+
+  def check_file(file_name):
+    return os.path.splitext(file_name)[0] in (api_name, UnixName(api_name))
+
+  for file_name in file_names:
+    if check_file(file_name):
+      if file_name.endswith('idl'):
+        idl_data = idl_parser.IDLParser().ParseData(get_file_data(file_name))
+        return idl_schema.IDLSchema(idl_data).process()
+      return json_parse.Parse(get_file_data(file_name))
+  return None
 
 
 class AvailabilityFinder(object):
@@ -77,23 +97,16 @@ class AvailabilityFinder(object):
   def __init__(self,
                file_system_iterator,
                object_store_creator,
-               branch_utility):
+               branch_utility,
+               host_file_system):
     self._file_system_iterator = file_system_iterator
     self._object_store_creator = object_store_creator
-    self._object_store = self._object_store_creator.Create(AvailabilityFinder)
+    def create_object_store(category):
+      return object_store_creator.Create(AvailabilityFinder, category=category)
+    self._top_level_object_store = create_object_store('top_level')
+    self._node_level_object_store = create_object_store('node_level')
     self._branch_utility = branch_utility
-
-  def _ExistsInFileSystem(self, api_name, file_system):
-    '''Checks for existence of |api_name| within the list of api files in the
-    api/ directory found using the given |file_system|.
-    '''
-    file_names = file_system.ReadSingle('%s/' % svn_constants.API_PATH)
-    api_names = tuple(os.path.splitext(name)[0] for name in file_names
-                      if os.path.splitext(name)[1][1:] in ['json', 'idl'])
-
-    # API file names in api/ are unix_name at every version except for versions
-    # 18, 19, and 20. Since unix_name is the more common format, check it first.
-    return (UnixName(api_name) in api_names) or (api_name in api_names)
+    self._host_file_system = host_file_system
 
   def _CheckStableAvailability(self, api_name, file_system, version):
     '''Checks for availability of an API, |api_name|, on the stable channel.
@@ -122,15 +135,11 @@ class AvailabilityFinder(object):
           or _GetChannelFromManifestFeatures(api_name, features_fs))
       if available_channel is not None:
         return available_channel == 'stable'
-    if version >= 18:
-      # Fall back to a check for file system existence if the API is not
-      # stable in any of the _features.json files, OR if we're dealing with
-      # version 18 or 19, which don't contain relevant _features information.
-      return self._ExistsInFileSystem(api_name, file_system)
     if version >= 5:
-      # Versions 17 down to 5 have an extension_api.json file which
-      # contains namespaces for each API that was available at the time.
-      return _ExistsInExtensionApi(api_name, features_fs)
+      # Fall back to a check for file system existence if the API is not
+      # stable in any of the _features.json files, or if the _features files
+      # do not exist (version 19 and earlier).
+      return _GetApiSchema(api_name, file_system) is not None
 
   def _CheckChannelAvailability(self, api_name, file_system, channel_name):
     '''Searches through the _features files in a given |file_system| and
@@ -146,7 +155,7 @@ class AvailabilityFinder(object):
         or _GetChannelFromPermissionFeatures(api_name, features_fs)
         or _GetChannelFromManifestFeatures(api_name, features_fs))
     if (available_channel is None and
-        self._ExistsInFileSystem(api_name, file_system)):
+        _GetApiSchema(api_name, file_system) is not None):
       # If an API is not represented in any of the _features files, but exists
       # in the filesystem, then assume it is available in this version.
       # The windows API is an example of this.
@@ -175,7 +184,7 @@ class AvailabilityFinder(object):
     HostFileSystemIterator instance to traverse multiple version of the
     SVN filesystem.
     '''
-    availability = self._object_store.Get(api_name).Get()
+    availability = self._top_level_object_store.Get(api_name).Get()
     if availability is not None:
       return availability
 
@@ -188,5 +197,37 @@ class AvailabilityFinder(object):
     if availability is None:
       # The API wasn't available on 'dev', so it must be a 'trunk'-only API.
       availability = self._branch_utility.GetChannelInfo('trunk')
-    self._object_store.Set(api_name, availability)
+    self._top_level_object_store.Set(api_name, availability)
     return availability
+
+  def GetApiNodeAvailability(self, api_name):
+    '''Returns an APISchemaGraph annotated with each node's availability (the
+    ChannelInfo at the oldest channel it's available in).
+    '''
+    availability_graph = self._node_level_object_store.Get(api_name).Get()
+    if availability_graph is not None:
+      return availability_graph
+
+    availability_graph = APISchemaGraph()
+    trunk_graph = APISchemaGraph(_GetApiSchema(api_name,
+                                               self._host_file_system))
+    def update_availability_graph(file_system, channel_info):
+      version_graph = APISchemaGraph(_GetApiSchema(api_name, file_system))
+      # Keep track of any new schema elements from this version by adding
+      # them to |availability_graph|.
+      #
+      # Calling |availability_graph|.Lookup() on the nodes being updated
+      # will return the |annotation| object.
+      availability_graph.Update(version_graph.Subtract(availability_graph),
+                                annotation=channel_info)
+
+      # Continue looping until there are no longer differences between this
+      # version and trunk.
+      return trunk_graph != version_graph
+
+    self._file_system_iterator.Ascending(
+        self.GetApiAvailability(api_name),
+        update_availability_graph)
+
+    self._node_level_object_store.Set(api_name, availability_graph)
+    return availability_graph

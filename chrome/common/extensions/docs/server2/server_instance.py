@@ -52,7 +52,8 @@ class ServerInstance(object):
     self.availability_finder = AvailabilityFinder(
         self.host_file_system_iterator,
         object_store_creator,
-        branch_utility)
+        branch_utility,
+        host_file_system)
 
     self.api_list_data_source_factory = APIListDataSource.Factory(
         self.compiled_host_fs_factory,
