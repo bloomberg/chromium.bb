@@ -12,11 +12,16 @@
 #include "base/strings/string_piece.h"
 #include "net/tools/flip_server/balsa_frame.h"
 #include "net/tools/flip_server/balsa_headers.h"
+#include "net/tools/flip_server/noop_balsa_visitor.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
 namespace net {
 namespace tools {
+
+namespace test {
+class QuicInMemoryCachePeer;
+}  // namespace
 
 extern std::string FLAGS_quic_in_memory_cache_dir;
 
@@ -51,6 +56,8 @@ class QuicInMemoryCache {
 
     DISALLOW_COPY_AND_ASSIGN(Response);
   };
+
+  // Returns the singleton instance of the cache.
   static QuicInMemoryCache* GetInstance();
 
   // Retrieve a response from this cache for a given request.
@@ -58,30 +65,32 @@ class QuicInMemoryCache {
   // Currently, responses are selected based on request URI only.
   const Response* GetResponse(const BalsaHeaders& request_headers) const;
 
-  // Adds a response to the cache if no matching entry exists.
-  // Otherwise it verifies that the existing entry matches.
-  void AddOrVerifyResponse(base::StringPiece method,
-                           base::StringPiece path,
-                           base::StringPiece version,
-                           base::StringPiece response_code,
-                           base::StringPiece response_detail,
-                           base::StringPiece body);
+  // Adds a simple response to the cache.  The response headers will
+  // only contain the "content-length" header with the lenght of |body|.
+  void AddSimpleResponse(base::StringPiece method,
+                         base::StringPiece path,
+                         base::StringPiece version,
+                         base::StringPiece response_code,
+                         base::StringPiece response_detail,
+                         base::StringPiece body);
 
   // Add a response to the cache.
   void AddResponse(const BalsaHeaders& request_headers,
                    const BalsaHeaders& response_headers,
                    base::StringPiece response_body);
 
-  void ResetForTests();
-
  private:
   typedef base::hash_map<std::string, Response*> ResponseMap;
   friend struct DefaultSingletonTraits<QuicInMemoryCache>;
+  friend class test::QuicInMemoryCachePeer;
 
   QuicInMemoryCache();
   ~QuicInMemoryCache();
 
+  void ResetForTests();
+
   void Initialize();
+
   std::string GetKey(const BalsaHeaders& response_headers) const;
 
   // Cached responses.

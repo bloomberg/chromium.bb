@@ -178,4 +178,3 @@ class BalsaVisitorInterface {
 }  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_BALSA_VISITOR_INTERFACE_H_
-
