@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
+#include "chrome/browser/ui/gtk/password_menu_model.h"
 #include "chrome/common/content_settings_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -89,9 +90,11 @@ class ContentSettingBubbleGtk : public BubbleDelegateGtk,
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnCustomLinkClicked);
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnManageLinkClicked);
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnSaveButtonClicked);
-  CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnCancelButtonClicked);
+  CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnDoneButtonClicked);
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnCloseButtonClicked);
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnMenuButtonClicked);
+  CHROMEGTK_CALLBACK_1(ContentSettingBubbleGtk, gboolean,
+                       OnMenuButtonPressEvent, GdkEventButton*);
 
   // We position the bubble near this widget.
   GtkWidget* anchor_;
@@ -122,6 +125,12 @@ class ContentSettingBubbleGtk : public BubbleDelegateGtk,
   RadioGroupGtk radio_group_gtk_;
 
   GtkMediaMenuMap media_menus_;
+
+  // The menu that provides the password menu.
+  scoped_ptr<MenuGtk> menu_;
+
+  // The model for the password |menu_|
+  scoped_ptr<PasswordMenuModel> menu_model_;
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_CONTENT_SETTING_BUBBLE_GTK_H_

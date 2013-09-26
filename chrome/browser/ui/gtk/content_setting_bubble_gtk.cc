@@ -298,18 +298,32 @@ void ContentSettingBubbleGtk::BuildBubble() {
   if (content_setting_bubble_model_->content_type() ==
       CONTENT_SETTINGS_TYPE_SAVE_PASSWORD) {
     GtkWidget* button_content = gtk_hbox_new(FALSE, 0);
-    GtkWidget* never_button =
-        gtk_button_new_with_label(l10n_util::GetStringUTF8(
-            IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON).c_str());
-    g_signal_connect(never_button, "clicked",
-                     G_CALLBACK(OnCancelButtonClickedThunk), this);
+    GtkWidget* nope_button = gtk_button_new_with_label(l10n_util::GetStringUTF8(
+        IDS_PASSWORD_MANAGER_CANCEL_DROP_DOWN).c_str());
+    g_signal_connect(nope_button, "clicked",
+                     G_CALLBACK(OnDoneButtonClickedThunk), this);
     GtkWidget* save_button = gtk_button_new_with_label(
         l10n_util::GetStringUTF8(IDS_PASSWORD_MANAGER_SAVE_BUTTON).c_str());
     g_signal_connect(save_button, "clicked",
                      G_CALLBACK(OnSaveButtonClickedThunk), this);
 
-    gtk_box_pack_start(GTK_BOX(button_content), never_button, FALSE, FALSE, 4);
-    gtk_box_pack_start(GTK_BOX(button_content), save_button, FALSE, FALSE, 0);
+    menu_model_.reset(
+        new PasswordMenuModel(content_setting_bubble_model_.get(), this));
+    MenuGtk::Delegate* delegate = new MenuGtk::Delegate();
+    menu_.reset(new MenuGtk(delegate, menu_model_.get()));
+    GtkWidget* menu_button = gtk_button_new();
+    GtkWidget* button_hbox = gtk_hbox_new(FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(menu_button), button_hbox);
+    GtkWidget* arrow = gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE);
+    gtk_box_pack_start(GTK_BOX(button_hbox), arrow, FALSE, FALSE, 0);
+    g_signal_connect(menu_button, "button-press-event",
+                     G_CALLBACK(OnMenuButtonPressEventThunk), this);
+
+    gtk_box_pack_end(GTK_BOX(button_content), save_button, FALSE, FALSE, 4);
+
+    gtk_box_pack_end(GTK_BOX(button_content), menu_button, FALSE, FALSE, 0);
+
+    gtk_box_pack_end(GTK_BOX(button_content), nope_button, FALSE, FALSE, 0);
 
     gtk_box_pack_start(GTK_BOX(bubble_content), button_content, FALSE, FALSE,
                        0);
@@ -432,8 +446,8 @@ void ContentSettingBubbleGtk::OnSaveButtonClicked(GtkWidget* button) {
   Close();
 }
 
-void ContentSettingBubbleGtk::OnCancelButtonClicked(GtkWidget* button) {
-  content_setting_bubble_model_->OnCancelClicked();
+void ContentSettingBubbleGtk::OnDoneButtonClicked(GtkWidget* button) {
+  content_setting_bubble_model_->OnDoneClicked();
   Close();
 }
 
@@ -451,6 +465,14 @@ void ContentSettingBubbleGtk::OnMenuButtonClicked(GtkWidget* button) {
   GtkMediaMenuMap::iterator i(media_menus_.find(button));
   DCHECK(i != media_menus_.end());
   i->second->menu->PopupForWidget(button, 1, gtk_get_current_event_time());
+}
+
+gboolean ContentSettingBubbleGtk::OnMenuButtonPressEvent(
+    GtkWidget* button, GdkEventButton* event) {
+  if (event->button != 1)
+    return FALSE;
+  menu_->PopupForWidget(button, event->button, event->time);
+  return TRUE;
 }
 
 ContentSettingBubbleGtk::MediaMenuGtk::MediaMenuGtk(

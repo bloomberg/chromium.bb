@@ -1233,6 +1233,8 @@
         'browser/ui/gtk/panels/panel_titlebar_gtk.h',
         'browser/ui/gtk/password_generation_bubble_gtk.cc',
         'browser/ui/gtk/password_generation_bubble_gtk.h',
+        'browser/ui/gtk/password_menu_model.cc',
+        'browser/ui/gtk/password_menu_model.h',
         'browser/ui/gtk/process_singleton_dialog.cc',
         'browser/ui/gtk/process_singleton_dialog.h',
         'browser/ui/gtk/protocol_dialog_gtk.cc',
