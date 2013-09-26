@@ -1296,8 +1296,8 @@ int SimpleEntryImpl::SetStream0Data(net::IOBuffer* buf,
                                     int buf_len,
                                     bool truncate) {
   // Currently, stream 0 is only used for HTTP headers, and always writes them
-  // with a single, truncating write.  Detect these writes and record the size
-  // changes of the headers.  Also, support writes to stream 0 that have
+  // with a single, truncating write. Detect these writes and record the size
+  // changes of the headers. Also, support writes to stream 0 that have
   // different access patterns, as required by the API contract.
   // All other clients of the Simple Cache are encouraged to use stream 1.
   have_written_[0] = true;

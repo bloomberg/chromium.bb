@@ -15122,6 +15122,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.App.EntryCreatedAndStream2Omitted"
+    enum="SimpleCache.EntryCreatedAndStream2Omitted">
+  <summary>
+    Whether, upon creation of a new cache entry, the file for stream 2 was
+    omitted since that stream was empty.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.App.EntryCreationResult" enum="BooleanSuccess">
   <summary>
     For entry creation operations that were sent to the disk, the result of
@@ -15131,6 +15139,14 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.App.EntryCreationTime" units="milliseconds">
   <summary>The time, in ms, spent creating a new entry on disk.</summary>
+</histogram>
+
+<histogram name="SimpleCache.App.EntryOpenedAndStream2Removed"
+    enum="SimpleCache.EntryOpenedAndStream2Removed">
+  <summary>
+    Whether, upon opening of an existing cache entry, stream 2 was empty and the
+    file for that stream was therefore removed.
+  </summary>
 </histogram>
 
 <histogram name="SimpleCache.App.EntryOperationsPending">
@@ -15821,6 +15837,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.Http.EntryCreatedAndStream2Omitted"
+    enum="SimpleCache.EntryCreatedAndStream2Omitted">
+  <summary>
+    Whether, upon creation of a new cache entry, the file for stream 2 was
+    omitted since that stream was empty.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.Http.EntryCreationResult" enum="BooleanSuccess">
   <summary>
     For entry creation operations that were sent to the disk, the result of
@@ -15830,6 +15854,14 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.Http.EntryCreationTime" units="milliseconds">
   <summary>The time, in ms, spent creating a new entry on disk.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Http.EntryOpenedAndStream2Removed"
+    enum="SimpleCache.EntryOpenedAndStream2Removed">
+  <summary>
+    Whether, upon opening of an existing cache entry, stream 2 was empty and the
+    file for that stream was therefore removed.
+  </summary>
 </histogram>
 
 <histogram name="SimpleCache.Http.EntryOperationsPending">
@@ -25417,6 +25449,16 @@ other types of suffix sets.
   <int value="0" label="Learn more"/>
   <int value="1" label="Settings page"/>
   <int value="2" label="Dismiss"/>
+</enum>
+
+<enum name="SimpleCache.EntryCreatedAndStream2Omitted" type="int">
+  <int value="0" label="Stream 2 file was present"/>
+  <int value="1" label="Empty stream 2 file was omitted"/>
+</enum>
+
+<enum name="SimpleCache.EntryOpenedAndStream2Removed" type="int">
+  <int value="0" label="Stream 2 file was already omitted or not empty"/>
+  <int value="1" label="Empty stream 2 file removed"/>
 </enum>
 
 <enum name="SimpleCache.FileDescriptorLimitStatus" type="int">

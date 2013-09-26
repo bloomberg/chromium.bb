@@ -175,12 +175,12 @@ class SimpleSynchronousEntry {
   // called.
   ~SimpleSynchronousEntry();
 
-  // Tries to open one of the cache entry files.  Succeeds if the open succeeds
+  // Tries to open one of the cache entry files. Succeeds if the open succeeds
   // or if the file was not found and is allowed to be omitted if the
   // corresponding stream is empty.
   bool MaybeOpenFile(int file_index,
                      base::PlatformFileError* out_error);
-  // Creates one of the cache entry files if necessary.  If the file is allowed
+  // Creates one of the cache entry files if necessary. If the file is allowed
   // to be omitted if the corresponding stream is empty, and if |file_required|
   // is FILE_NOT_REQUIRED, then the file is not created; otherwise, it is.
   bool MaybeCreateFile(int file_index,
@@ -193,7 +193,7 @@ class SimpleSynchronousEntry {
   void CloseFile(int index);
   void CloseFiles();
 
-  // Returns a net error, i.e. net::OK on success.  |had_index| is passed
+  // Returns a net error, i.e. net::OK on success. |had_index| is passed
   // from the main entry for metrics purposes, and is true if the index was
   // initialized when the open operation began.
   int InitializeForOpen(bool had_index,
@@ -201,13 +201,13 @@ class SimpleSynchronousEntry {
                         scoped_refptr<net::GrowableIOBuffer>* stream_0_data,
                         uint32* out_stream_0_crc32);
 
-  // Writes the header and key to a newly-created stream file.  |index| is the
-  // index of the stream.  Returns true on success; returns false and sets
+  // Writes the header and key to a newly-created stream file. |index| is the
+  // index of the stream. Returns true on success; returns false and sets
   // |*out_result| on failure.
   bool InitializeCreatedFile(int index, CreateEntryResult* out_result);
 
   // Returns a net error, including net::OK on success and net::FILE_EXISTS
-  // when the entry already exists.  |had_index| is passed from the main entry
+  // when the entry already exists. |had_index| is passed from the main entry
   // for metrics purposes, and is true if the index was initialized when the
   // create operation began.
   int InitializeForCreate(bool had_index, SimpleEntryStat* out_entry_stat);
@@ -250,6 +250,10 @@ class SimpleSynchronousEntry {
   // True if the corresponding stream is empty and therefore no on-disk file
   // was created to store it.
   bool empty_file_omitted_[kSimpleEntryFileCount];
+
+  // True if the entry was created, or false if it was opened. Used to log
+  // SimpleCache.*.EntryCreatedWithStream2Omitted only for created entries.
+  bool files_created_;
 };
 
 }  // namespace disk_cache

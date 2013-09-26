@@ -538,7 +538,7 @@ TEST_F(SimpleIndexTest, BasicEviction) {
 
   // Trigger an eviction, and make sure the right things are tossed.
   // TODO(rdsmith): This is dependent on the innards of the implementation
-  // as to at exactly what point we trigger eviction.  Not sure how to fix
+  // as to at exactly what point we trigger eviction. Not sure how to fix
   // that.
   index()->UpdateEntrySize(hashes_.at<3>(), 475);
   EXPECT_EQ(1, doom_entries_calls());

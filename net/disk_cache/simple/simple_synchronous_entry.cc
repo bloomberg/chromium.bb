@@ -482,6 +482,12 @@ void SimpleSynchronousEntry::Close(
                      cluster_loss * 100 / (cluster_loss + file_size));
   }
 
+  if (files_created_) {
+    const int stream2_file_index = GetFileIndexFromStreamIndex(2);
+    SIMPLE_CACHE_UMA(BOOLEAN, "EntryCreatedAndStream2Omitted", cache_type_,
+                     empty_file_omitted_[stream2_file_index]);
+  }
+
   RecordCloseResult(cache_type_, CLOSE_RESULT_SUCCESS);
   have_open_files_ = false;
   delete this;
@@ -622,6 +628,8 @@ bool SimpleSynchronousEntry::OpenFiles(
                    "SyncOpenEntryAge", cache_type_,
                    entry_age.InHours(), 1, 1000, 50);
 
+  files_created_ = false;
+
   return true;
 }
 
@@ -660,6 +668,8 @@ bool SimpleSynchronousEntry::CreateFiles(
   out_entry_stat->set_last_used(creation_time);
   for (int i = 0; i < kSimpleEntryStreamCount; ++i)
       out_entry_stat->set_data_size(i, 0);
+
+  files_created_ = true;
 
   return true;
 }
@@ -754,6 +764,7 @@ int SimpleSynchronousEntry::InitializeForOpen(
     }
   }
 
+  bool removed_stream2 = false;
   const int stream2_file_index = GetFileIndexFromStreamIndex(2);
   DCHECK(CanOmitEmptyFile(stream2_file_index));
   if (!empty_file_omitted_[stream2_file_index] &&
@@ -762,7 +773,11 @@ int SimpleSynchronousEntry::InitializeForOpen(
     CloseFile(stream2_file_index);
     DeleteFileForEntryHash(path_, entry_hash_, stream2_file_index);
     empty_file_omitted_[stream2_file_index] = true;
+    removed_stream2 = true;
   }
+
+  SIMPLE_CACHE_UMA(BOOLEAN, "EntryOpenedAndStream2Removed", cache_type_,
+                   removed_stream2);
 
   RecordSyncOpenResult(cache_type_, OPEN_ENTRY_SUCCESS, had_index);
   initialized_ = true;

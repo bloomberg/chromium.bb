@@ -40,15 +40,15 @@ struct NET_EXPORT_PRIVATE SimpleIndexLoadResult {
 };
 
 // Simple Index File format is a pickle serialized data of IndexMetadata and
-// EntryMetadata objects.  The file format is as follows: one instance of
+// EntryMetadata objects. The file format is as follows: one instance of
 // serialized |IndexMetadata| followed serialized |EntryMetadata| entries
-// repeated |number_of_entries| amount of times.  To know more about the format,
+// repeated |number_of_entries| amount of times. To know more about the format,
 // see SimpleIndexFile::Serialize() and SeeSimpleIndexFile::LoadFromDisk()
 // methods.
 //
-// The non-static methods must run on the IO thread.  All the real
+// The non-static methods must run on the IO thread. All the real
 // work is done in the static methods, which are run on the cache thread
-// or in worker threads.  Synchronization between methods is the
+// or in worker threads. Synchronization between methods is the
 // responsibility of the caller.
 class NET_EXPORT_PRIVATE SimpleIndexFile {
  public:
