@@ -101,6 +101,12 @@ public:
     // Call |function| synchronously or asynchronously, depending on |mode|.
     // If |function| throws an exception, this function catches it and does not rethrow.
     static void call(v8::Handle<v8::Function> /* function */, v8::Handle<v8::Object> receiver, v8::Handle<v8::Value> result, SynchronousMode /* mode */, v8::Isolate*);
+
+    // Return true if |maybePromise| is a Promise object.
+    static bool isPromise(v8::Handle<v8::Value> maybePromise, v8::Isolate*);
+
+    // Coerces |maybePromise| to a Promise object.
+    static v8::Local<v8::Object> toPromise(v8::Handle<v8::Value> maybePromise, v8::Isolate*);
 };
 
 } // namespace WebCore

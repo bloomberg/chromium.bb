@@ -344,6 +344,16 @@ void V8Promise::thenMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args
     v8SetReturnValue(args, promise);
 }
 
+void V8Promise::castMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    v8::Isolate* isolate = args.GetIsolate();
+    v8::Local<v8::Value> result = v8::Undefined(isolate);
+    if (args.Length() > 0)
+        result = args[0];
+
+    v8SetReturnValue(args, V8PromiseCustom::toPromise(result, isolate));
+}
+
 void V8Promise::catchMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     v8::Isolate* isolate = args.GetIsolate();
@@ -584,6 +594,25 @@ void V8PromiseCustom::call(v8::Handle<v8::Function> function, v8::Handle<v8::Obj
         ASSERT(mode == Asynchronous);
         postTask(function, receiver, result, isolate);
     }
+}
+
+bool V8PromiseCustom::isPromise(v8::Handle<v8::Value> maybePromise, v8::Isolate* isolate)
+{
+    WrapperWorldType currentWorldType = worldType(isolate);
+    return V8Promise::GetTemplate(isolate, currentWorldType)->HasInstance(maybePromise);
+}
+
+v8::Local<v8::Object> V8PromiseCustom::toPromise(v8::Handle<v8::Value> maybePromise, v8::Isolate* isolate)
+{
+    // FIXME: Currently we dones't check [[PromiseConstructor]] since we limits
+    // the creation of the promise objects only from the Blink Promise
+    // constructor.
+    if (isPromise(maybePromise, isolate))
+        return maybePromise.As<v8::Object>();
+
+    v8::Local<v8::Object> promise = createPromise(v8::Handle<v8::Object>(), isolate);
+    resolve(promise, maybePromise, Asynchronous, isolate);
+    return promise;
 }
 
 } // namespace WebCore
