@@ -62,6 +62,11 @@ struct {
 } const kDefaultAudioConstraints[] = {
   { webrtc::MediaConstraintsInterface::kEchoCancellation,
     webrtc::MediaConstraintsInterface::kValueTrue },
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+  // Enable the extended filter mode AEC on platforms with known echo issues.
+  { webrtc::MediaConstraintsInterface::kExperimentalEchoCancellation,
+    webrtc::MediaConstraintsInterface::kValueTrue },
+#endif
   { webrtc::MediaConstraintsInterface::kAutoGainControl,
     webrtc::MediaConstraintsInterface::kValueTrue },
   { webrtc::MediaConstraintsInterface::kNoiseSuppression,
