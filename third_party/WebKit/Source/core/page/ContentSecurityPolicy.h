@@ -109,6 +109,7 @@ public:
     bool allowFormAction(const KURL&, ReportingStatus = SendReport) const;
     bool allowBaseURI(const KURL&, ReportingStatus = SendReport) const;
     bool allowScriptNonce(const String& nonce) const;
+    bool allowStyleNonce(const String& nonce) const;
 
     ReflectedXSSDisposition reflectedXSSDisposition() const;
 

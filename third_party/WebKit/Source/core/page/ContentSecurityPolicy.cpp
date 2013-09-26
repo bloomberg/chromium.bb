@@ -799,6 +799,7 @@ public:
     bool allowFormAction(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowBaseURI(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowScriptNonce(const String&) const;
+    bool allowStyleNonce(const String&) const;
 
     void gatherReportURIs(DOMStringList&) const;
     const String& evalDisabledErrorMessage() const { return m_evalDisabledErrorMessage; }
@@ -1167,6 +1168,11 @@ bool CSPDirectiveList::allowBaseURI(const KURL& url, ContentSecurityPolicy::Repo
 bool CSPDirectiveList::allowScriptNonce(const String& nonce) const
 {
     return checkNonce(operativeDirective(m_scriptSrc.get()), nonce);
+}
+
+bool CSPDirectiveList::allowStyleNonce(const String& nonce) const
+{
+    return checkNonce(operativeDirective(m_styleSrc.get()), nonce);
 }
 
 // policy            = directive-list
@@ -1584,6 +1590,11 @@ bool ContentSecurityPolicy::allowScriptFromSource(const KURL& url, ContentSecuri
 bool ContentSecurityPolicy::allowScriptNonce(const String& nonce) const
 {
     return isAllowedByAllWithNonce<&CSPDirectiveList::allowScriptNonce>(m_policies, nonce);
+}
+
+bool ContentSecurityPolicy::allowStyleNonce(const String& nonce) const
+{
+    return isAllowedByAllWithNonce<&CSPDirectiveList::allowStyleNonce>(m_policies, nonce);
 }
 
 bool ContentSecurityPolicy::allowObjectFromSource(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
