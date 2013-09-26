@@ -1174,7 +1174,6 @@ crbug.com/284789 http/tests/media/media-source/mediasource-buffered.html [ Failu
 crbug.com/284793 http/tests/media/media-source/mediasource-play-then-seek-back.html [ Failure Pass ]
 
 crbug.com/286081 inspector/debugger/long-resume-vs-reload.html [ Failure Pass Timeout ]
-crbug.com/285703 [ Debug ] fast/table/table-rowspan-crash-with-huge-rowspan-cells.html [ Crash Pass ]
 crbug.com/286287 http/tests/inspector/network/network-initiator.html [ Failure Pass ]
 
 # Pixel captures are currently totally broken on Android at the moment.
