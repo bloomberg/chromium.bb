@@ -145,6 +145,7 @@ public class AutofillDialogControllerTest extends ChromiumTestShellTestBase {
     public void setUp() throws Exception {
         super.setUp();
         clearAppData();
+        AutofillDialogControllerAndroid.allowInsecureDialogsForTesting();
     }
 
     @MediumTest

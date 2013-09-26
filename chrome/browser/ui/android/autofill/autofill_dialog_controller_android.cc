@@ -182,16 +182,39 @@ void AutofillDialogController::RegisterProfilePrefs(
 }
 
 AutofillDialogControllerAndroid::~AutofillDialogControllerAndroid() {
+  if (java_object_.is_null())
+    return;
+
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AutofillDialogControllerAndroid_onDestroy(env, java_object_.obj());
 }
 
 void AutofillDialogControllerAndroid::Show() {
+  JNIEnv* env = base::android::AttachCurrentThread();
   dialog_shown_timestamp_ = base::Time::Now();
 
   content::NavigationEntry* entry = contents_->GetController().GetActiveEntry();
   const GURL& active_url = entry ? entry->GetURL() : contents_->GetURL();
   invoked_from_same_origin_ = active_url.GetOrigin() == source_url_.GetOrigin();
+
+  // Determine what field types should be included in the dialog.
+  bool has_types = false;
+  bool has_sections = false;
+  form_structure_.ParseFieldTypesFromAutocompleteAttributes(
+      &has_types, &has_sections);
+
+  // Fail if the author didn't specify autocomplete types, or
+  // if the dialog shouldn't be shown in a given circumstances.
+  if (!has_types ||
+      !Java_AutofillDialogControllerAndroid_isDialogAllowed(
+          env,
+          RequestingCreditCardInfo(),
+          TransmissionWillBeSecure(),
+          invoked_from_same_origin_)) {
+    callback_.Run(NULL);
+    delete this;
+    return;
+  }
 
   // Log any relevant UI metrics and security exceptions.
   GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_SHOWN);
@@ -207,19 +230,6 @@ void AutofillDialogControllerAndroid::Show() {
   if (!invoked_from_same_origin_) {
     GetMetricLogger().LogDialogSecurityMetric(
         AutofillMetrics::SECURITY_METRIC_CROSS_ORIGIN_FRAME);
-  }
-
-  // Determine what field types should be included in the dialog.
-  bool has_types = false;
-  bool has_sections = false;
-  form_structure_.ParseFieldTypesFromAutocompleteAttributes(
-      &has_types, &has_sections);
-
-  // Fail if the author didn't specify autocomplete types.
-  if (!has_types) {
-    callback_.Run(NULL);
-    delete this;
-    return;
   }
 
   const ServerFieldType full_billing_is_necessary_if[] = {
@@ -281,7 +291,6 @@ void AutofillDialogControllerAndroid::Show() {
   if (contents_->GetBrowserContext()->IsOffTheRecord())
     last_used_choice_is_autofill = true;
 
-  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jlast_used_account_name =
       base::android::ConvertUTF16ToJavaString(
           env, last_used_account_name);
