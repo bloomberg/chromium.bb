@@ -110,7 +110,10 @@ void DoLaunchChildTestProcess(
   std::string output_file_contents;
   CHECK(base::ReadFileToString(output_file, &output_file_contents));
 
-  CHECK(base::DeleteFile(output_file, false));
+  if (!base::DeleteFile(output_file, false)) {
+    // This needs to be non-fatal at least for Windows.
+    LOG(WARNING) << "Failed to delete " << output_file.AsUTF8Unsafe();
+  }
 
   // Run target callback on the thread it was originating from, not on
   // a worker pool thread.
