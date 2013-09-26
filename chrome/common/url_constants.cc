@@ -519,8 +519,10 @@ const char* const kChromeHostURLs[] = {
   kChromeUIChromeURLsHost,
   kChromeUICrashesHost,
   kChromeUICreditsHost,
+  kChromeUIDevicesHost,
   kChromeUIDNSHost,
   kChromeUIFlagsHost,
+  kChromeUIHelpHost,
   kChromeUIHistoryHost,
   kChromeUIIPCHost,
   kChromeUIMemoryHost,
@@ -539,6 +541,7 @@ const char* const kChromeHostURLs[] = {
   kChromeUISyncInternalsHost,
   kChromeUITermsHost,
   kChromeUITranslateInternalsHost,
+  kChromeUIUberHost,
   kChromeUIUserActionsHost,
   kChromeUIVersionHost,
 #if defined(OS_ANDROID)
