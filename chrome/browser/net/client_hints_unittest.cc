@@ -4,8 +4,9 @@
 
 #include "chrome/browser/net/client_hints.h"
 
+#include <locale.h>
+
 #include "base/logging.h"
-#include "base/test/scoped_locale.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ClientHintsTest : public testing::Test {
@@ -25,7 +26,7 @@ TEST_F(ClientHintsTest, HintsWellFormatted) {
 }
 
 TEST_F(ClientHintsTest, HintsWellFormattedWithNonEnLocale) {
-  base::ScopedLocale locale("fr_FR.UTF-8");
+  setlocale(LC_ALL, "fr_FR.UTF-8");
   UpdateScreenInfo(1.567f);
   std::string hint = client_hints_.GetDevicePixelRatioHeader();
   EXPECT_EQ("1.57", hint);
