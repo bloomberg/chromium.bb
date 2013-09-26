@@ -228,7 +228,6 @@ Status ExecuteWindowCommand(
       session->GetCurrentFrameId(), session->page_load_timeout, true);
 
   if (status.IsOk() && nav_status.IsError() &&
-      nav_status.code() != kDisconnected &&
       nav_status.code() != kUnexpectedAlertOpen)
     return nav_status;
   if (status.code() == kUnexpectedAlertOpen)

@@ -4,12 +4,13 @@
 
 #include "chrome/test/chromedriver/commands.h"
 
+#include <algorithm>
 #include <list>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"  // For CHECK macros.
+#include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -162,8 +163,24 @@ void ExecuteSessionCommandOnSessionThread(
           message += ", but failed to kill browser:" + quit_status.message();
       }
       status = Status(kUnknownError, message, status);
+    } else if (status.code() == kDisconnected) {
+      // Some commands, like clicking a button or link which closes the window,
+      // may result in a kDisconnected error code.
+      std::list<std::string> web_view_ids;
+      Status status_tmp = session->chrome->GetWebViewIds(&web_view_ids);
+      if (status_tmp.IsError() && status_tmp.code() != kChromeNotReachable) {
+        status.AddDetails(
+            "failed to check if window was closed: " + status_tmp.message());
+      } else if (std::find(web_view_ids.begin(),
+                           web_view_ids.end(),
+                           session->window) == web_view_ids.end()) {
+        status = Status(kOk);
+      }
     }
-    status.AddDetails("Session info: chrome=" + session->chrome->GetVersion());
+    if (status.IsError()) {
+      status.AddDetails(
+          "Session info: chrome=" + session->chrome->GetVersion());
+    }
   }
 
   if (IsVLogOn(0)) {
