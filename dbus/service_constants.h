@@ -438,6 +438,7 @@ const char kCheckPortalListProperty[] = "CheckPortalList";
 const char kArpGatewayProperty[] = "ArpGateway";
 const char kCountryProperty[] = "Country";
 const char kPortalURLProperty[] = "PortalURL";
+const char kConnectionStateProperty[] = "ConnectionState";
 
 // Flimflam Profile property names.
 const char kEntriesProperty[] = "Entries";
