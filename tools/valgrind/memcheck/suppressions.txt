@@ -7217,3 +7217,10 @@
    ...
    fun:_ZN7WebCore25TypeConversionsV8Internal*AttributeGetterE*
 }
+{
+   bug_298788
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN10extensions19TestExtensionSystem22CreateExtensionServiceEPK11CommandLineRKN4base8FilePathEb
+   fun:_ZN10extensions12_GLOBAL__N_130ExtensionActionIconFactoryTest5SetUpEv
+}
