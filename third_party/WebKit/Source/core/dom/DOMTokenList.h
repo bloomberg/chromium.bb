@@ -69,8 +69,8 @@ protected:
     virtual bool containsInternal(const AtomicString&) const = 0;
     virtual void removeInternal(const AtomicString&);
 
-    static bool validateToken(const AtomicString&, ExceptionState&);
-    static bool validateTokens(const Vector<String>&, ExceptionState&);
+    static bool validateToken(const AtomicString&, const String& method, ExceptionState&);
+    static bool validateTokens(const Vector<String>&, const String& method, ExceptionState&);
     static String addToken(const AtomicString&, const AtomicString&);
     static String addTokens(const AtomicString&, const Vector<String>&);
     static String removeToken(const AtomicString&, const AtomicString&);
