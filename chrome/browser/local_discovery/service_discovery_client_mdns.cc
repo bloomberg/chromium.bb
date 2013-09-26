@@ -81,8 +81,6 @@ void ServiceDiscoveryClientMdns::StartNewClient() {
     host_client_->Start(
         base::Bind(&ServiceDiscoveryClientMdns::ScheduleStartNewClient,
                    weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    host_client_ = NULL;
   }
   // Run when host_client_ is created. Callbacks created by InvalidateWatchers
   // may create new watchers.
