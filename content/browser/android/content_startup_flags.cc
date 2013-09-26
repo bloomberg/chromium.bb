@@ -62,8 +62,9 @@ void SetContentCommandLineFlags(int max_render_process_count,
 
   parsed_command_line->AppendSwitch(switches::kEnableGestureTapHighlight);
   parsed_command_line->AppendSwitch(switches::kEnablePinch);
-  parsed_command_line->AppendSwitch(switches::kEnableOverscrollNotifications);
+  parsed_command_line->AppendSwitch(switches::kEnableOverlayFullscreenVideo);
   parsed_command_line->AppendSwitch(switches::kEnableOverlayScrollbars);
+  parsed_command_line->AppendSwitch(switches::kEnableOverscrollNotifications);
 
   // Run the GPU service as a thread in the browser instead of as a
   // standalone process.

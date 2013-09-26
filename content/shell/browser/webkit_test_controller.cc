@@ -517,6 +517,9 @@ void WebKitTestController::OnImageDump(
 #else
     bool discard_transparency = true;
 #endif
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableOverlayFullscreenVideo))
+      discard_transparency = false;
 
     std::vector<gfx::PNGCodec::Comment> comments;
     comments.push_back(gfx::PNGCodec::Comment("checksum", actual_pixel_hash));

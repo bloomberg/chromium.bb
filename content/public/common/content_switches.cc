@@ -448,6 +448,9 @@ const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 // Enables use of cache if offline, even if it's stale
 const char kEnableOfflineCacheAccess[]      = "enable-offline-cache-access";
 
+// Enables use of hardware overlay for fullscreen video playback. Android only.
+const char kEnableOverlayFullscreenVideo[]  = "enable-overlay-fullscreen-video";
+
 // Enables overlay scrollbars on Aura or Linux. Does nothing on Mac.
 const char kEnableOverlayScrollbars[]       = "enable-overlay-scrollbars";
 

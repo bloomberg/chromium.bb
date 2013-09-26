@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/files/file_path.h"
 #include "base/md5.h"
@@ -19,6 +20,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/history_item_serialization.h"
 #include "content/public/renderer/render_view.h"
@@ -117,7 +119,9 @@ void CopyCanvasToBitmap(SkCanvas* canvas,  SkBitmap* snapshot) {
 
 #if !defined(OS_MACOSX)
   // Only the expected PNGs for Mac have a valid alpha channel.
-  MakeBitmapOpaque(snapshot);
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableOverlayFullscreenVideo))
+    MakeBitmapOpaque(snapshot);
 #endif
 }
 

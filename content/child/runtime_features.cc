@@ -132,6 +132,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableHTMLImports))
     WebRuntimeFeatures::enableHTMLImports(true);
 
+  if (command_line.HasSwitch(switches::kEnableOverlayFullscreenVideo))
+    WebRuntimeFeatures::enableOverlayFullscreenVideo(true);
+
   if (command_line.HasSwitch(switches::kEnableOverlayScrollbars))
     WebRuntimeFeatures::enableOverlayScrollbars(true);
 

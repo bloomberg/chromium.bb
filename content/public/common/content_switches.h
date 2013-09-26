@@ -138,6 +138,7 @@ CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kEnableMemoryBenchmarking[];
 extern const char kEnableMonitorProfile[];
 CONTENT_EXPORT extern const char kEnableOfflineCacheAccess[];
+CONTENT_EXPORT extern const char kEnableOverlayFullscreenVideo[];
 extern const char kEnableOverlayScrollbars[];
 CONTENT_EXPORT extern const char kEnableOverscrollNotifications[];
 extern const char kEnablePinch[];
