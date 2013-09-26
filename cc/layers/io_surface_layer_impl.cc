@@ -21,7 +21,8 @@ IOSurfaceLayerImpl::IOSurfaceLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id),
       io_surface_id_(0),
       io_surface_changed_(false),
-      io_surface_texture_id_(0) {}
+      io_surface_texture_id_(0),
+      io_surface_resource_id_(0) {}
 
 IOSurfaceLayerImpl::~IOSurfaceLayerImpl() {
   if (!io_surface_texture_id_)
