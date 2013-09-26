@@ -58,16 +58,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     return result;
   }
 
-  virtual void TpmCanAttemptOwnership() OVERRIDE {
-    DBusThreadManager::Get()->GetCryptohomeClient()->TpmCanAttemptOwnership(
-        EmptyVoidDBusMethodCallback());
-  }
-
-  virtual void TpmClearStoredPassword() OVERRIDE {
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        CallTpmClearStoredPasswordAndBlock();
-  }
-
   virtual bool InstallAttributesGet(
       const std::string& name, std::string* value) OVERRIDE {
     std::vector<uint8> buf;
@@ -254,10 +244,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   virtual bool TpmIsBeingOwned() OVERRIDE {
     return true;
   }
-
-  virtual void TpmCanAttemptOwnership() OVERRIDE {}
-
-  virtual void TpmClearStoredPassword() OVERRIDE {}
 
   virtual bool InstallAttributesGet(
       const std::string& name, std::string* value) OVERRIDE {

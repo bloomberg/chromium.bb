@@ -65,6 +65,8 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_library.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/ime/input_method_manager.h"
@@ -506,12 +508,13 @@ void LoginUtilsImpl::FinalizePrepareProfile(Profile* user_profile) {
   // Own TPM device if, for any reason, it has not been done in EULA
   // wizard screen.
   CryptohomeLibrary* cryptohome = CryptohomeLibrary::Get();
+  CryptohomeClient* client = DBusThreadManager::Get()->GetCryptohomeClient();
   btl->AddLoginTimeMarker("TPMOwn-Start", false);
   if (cryptohome->TpmIsEnabled() && !cryptohome->TpmIsBeingOwned()) {
     if (cryptohome->TpmIsOwned()) {
-      cryptohome->TpmClearStoredPassword();
+      client->CallTpmClearStoredPasswordAndBlock();
     } else {
-      cryptohome->TpmCanAttemptOwnership();
+      client->TpmCanAttemptOwnership(EmptyVoidDBusMethodCallback());
     }
   }
   btl->AddLoginTimeMarker("TPMOwn-End", false);

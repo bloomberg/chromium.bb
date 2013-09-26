@@ -44,13 +44,6 @@ class CHROMEOS_EXPORT CryptohomeLibrary {
   // Returns whether device is being owned (Tpm password is generating).
   virtual bool TpmIsBeingOwned() = 0;
 
-  // Attempts to start owning (if device isn't owned and isn't being owned).
-  virtual void TpmCanAttemptOwnership() = 0;
-
-  // Clears Tpm password. Password should be cleared after it was generated and
-  // shown to user.
-  virtual void TpmClearStoredPassword() = 0;
-
   virtual bool InstallAttributesGet(const std::string& name,
                                     std::string* value) = 0;
   virtual bool InstallAttributesSet(const std::string& name,

@@ -225,7 +225,7 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
   if (cryptohome_->TpmIsEnabled() &&
       !cryptohome_->TpmIsBeingOwned() &&
       cryptohome_->TpmIsOwned()) {
-    cryptohome_->TpmClearStoredPassword();
+    cryptohome_client_->CallTpmClearStoredPasswordAndBlock();
   }
 
   // Make sure we really have a working InstallAttrs.

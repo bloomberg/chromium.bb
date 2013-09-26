@@ -9,7 +9,9 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chromeos/cryptohome/cryptohome_library.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
 
@@ -32,7 +34,8 @@ void EulaScreen::PrepareToShow() {
 
 void EulaScreen::Show() {
   // Command to own the TPM.
-  CryptohomeLibrary::Get()->TpmCanAttemptOwnership();
+  DBusThreadManager::Get()->GetCryptohomeClient()->TpmCanAttemptOwnership(
+      EmptyVoidDBusMethodCallback());
   if (actor_)
     actor_->Show();
 }
