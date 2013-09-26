@@ -331,7 +331,7 @@ PassOwnPtr<XSSInfo> XSSAuditor::filterToken(const FilterTokenRequest& request)
 
     if (didBlockScript) {
         bool didBlockEntirePage = (m_xssProtection == ContentSecurityPolicy::BlockReflectedXSS);
-        OwnPtr<XSSInfo> xssInfo = XSSInfo::create(didBlockEntirePage, m_didSendValidXSSProtectionHeader, m_didSendValidCSPHeader);
+        OwnPtr<XSSInfo> xssInfo = XSSInfo::create(m_documentURL, didBlockEntirePage, m_didSendValidXSSProtectionHeader, m_didSendValidCSPHeader);
         return xssInfo.release();
     }
     return nullptr;

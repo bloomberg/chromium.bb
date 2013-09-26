@@ -31,6 +31,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/TextPosition.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -39,19 +40,21 @@ class FormData;
 
 class XSSInfo {
 public:
-    static PassOwnPtr<XSSInfo> create(bool didBlockEntirePage, bool didSendXSSProtectionHeader, bool didSendCSPHeader)
+    static PassOwnPtr<XSSInfo> create(const String& originalURL, bool didBlockEntirePage, bool didSendXSSProtectionHeader, bool didSendCSPHeader)
     {
-        return adoptPtr(new XSSInfo(didBlockEntirePage, didSendXSSProtectionHeader, didSendCSPHeader));
+        return adoptPtr(new XSSInfo(originalURL, didBlockEntirePage, didSendXSSProtectionHeader, didSendCSPHeader));
     }
 
+    String m_originalURL;
     bool m_didBlockEntirePage;
     bool m_didSendXSSProtectionHeader;
     bool m_didSendCSPHeader;
     TextPosition m_textPosition;
 
 private:
-    XSSInfo(bool didBlockEntirePage, bool didSendXSSProtectionHeader, bool didSendCSPHeader)
-        : m_didBlockEntirePage(didBlockEntirePage)
+    XSSInfo(const String& originalURL, bool didBlockEntirePage, bool didSendXSSProtectionHeader, bool didSendCSPHeader)
+        : m_originalURL(originalURL.isolatedCopy())
+        , m_didBlockEntirePage(didBlockEntirePage)
         , m_didSendXSSProtectionHeader(didSendXSSProtectionHeader)
         , m_didSendCSPHeader(didSendCSPHeader)
     { }
@@ -66,7 +69,7 @@ public:
     void setReportURL(const KURL& url) { m_reportURL = url; }
 
 private:
-    PassRefPtr<FormData> generateViolationReport();
+    PassRefPtr<FormData> generateViolationReport(const XSSInfo&);
 
     Document* m_document;
     bool m_didSendNotifications;
