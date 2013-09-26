@@ -239,6 +239,8 @@ std::string GetFileSystemTypeString(FileSystemType type) {
       return "Picasa";
     case kFileSystemTypeItunes:
       return "Itunes";
+    case kFileSystemTypeIphoto:
+      return "Iphoto";
     case kFileSystemTypeDrive:
       return "Drive";
     case kFileSystemTypeSyncable:

@@ -87,6 +87,7 @@ int FileSystemContext::GetPermissionPolicy(FileSystemType type) {
     case kFileSystemTypeDeviceMedia:
     case kFileSystemTypeDragged:
     case kFileSystemTypeForTransientFile:
+    case kFileSystemTypeIphoto:
     case kFileSystemTypeItunes:
     case kFileSystemTypeNativeMedia:
     case kFileSystemTypePicasa:

@@ -81,6 +81,9 @@ enum FileSystemType {
   // Indicates a synthetic iTunes filesystem.
   kFileSystemTypeItunes,
 
+  // Indicates a synthetic iPhoto filesystem.
+  kFileSystemTypeIphoto,
+
   // Indicates a Drive filesystem which provides access to Google Drive.
   kFileSystemTypeDrive,
 
