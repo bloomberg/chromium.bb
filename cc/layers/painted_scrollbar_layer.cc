@@ -183,7 +183,7 @@ void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
 }
 
 bool PaintedScrollbarLayer::Update(ResourceUpdateQueue* queue,
-                            const OcclusionTracker* occlusion) {
+                                   const OcclusionTracker* occlusion) {
   UpdateThumbAndTrackGeometry();
 
   gfx::Rect scaled_track_rect = ScrollbarLayerRectToContentRect(

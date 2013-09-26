@@ -26,6 +26,10 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
 
   virtual ~ScrollbarAnimationControllerThinning();
 
+  void set_mouse_move_distance_for_test(float distance) {
+    mouse_move_distance_to_trigger_animation_ = distance;
+  }
+
   // ScrollbarAnimationController overrides.
   virtual bool IsAnimating() const OVERRIDE;
   virtual base::TimeDelta DelayBeforeStart(base::TimeTicks now) const OVERRIDE;
@@ -34,6 +38,7 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
   virtual void DidScrollGestureBegin() OVERRIDE;
   virtual void DidScrollGestureEnd(base::TimeTicks now) OVERRIDE;
   virtual bool DidScrollUpdate(base::TimeTicks now) OVERRIDE;
+  virtual bool DidMouseMoveNear(base::TimeTicks now, float distance) OVERRIDE;
 
  protected:
   ScrollbarAnimationControllerThinning(LayerImpl* scroll_layer,
@@ -56,6 +61,7 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
 
   base::TimeDelta animation_delay_;
   base::TimeDelta animation_duration_;
+  float mouse_move_distance_to_trigger_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollbarAnimationControllerThinning);
 };

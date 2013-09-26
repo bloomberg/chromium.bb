@@ -143,6 +143,10 @@ class UI_EXPORT RectBase {
   // same height) with the given rectangle, and the rectangles do not overlap.
   bool SharesEdgeWith(const Class& rect) const;
 
+  // Returns the manhattan distance from the rect to the point. If the point is
+  // inside the rect, returns 0.
+  Type ManhattanDistanceToPoint(const PointClass& point) const;
+
  protected:
   RectBase(const PointClass& origin, const SizeClass& size)
       : origin_(origin), size_(size) {}

@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "cc/animation/scrollbar_animation_controller_thinning.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/input/top_controls_manager.h"
@@ -342,6 +343,8 @@ class LayerTreeHostImplTest : public testing::Test,
     EXPECT_TRUE(on_can_draw_state_changed_called_);
     on_can_draw_state_changed_called_ = false;
   }
+
+  void SetupMouseMoveAtWithDeviceScale(float device_scale_factor);
 
  protected:
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() {
@@ -1204,6 +1207,88 @@ TEST_F(LayerTreeHostImplTest, ScrollbarLinearFadeScheduling) {
   fake_now += base::TimeDelta::FromMilliseconds(10);
   host_impl_override_time->SetCurrentPhysicalTimeTicksForTest(fake_now);
   EXPECT_EQ(fake_now, host_impl_->CurrentFrameTimeTicks());
+}
+
+void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
+    float device_scale_factor) {
+  LayerTreeSettings settings;
+  settings.scrollbar_animator = LayerTreeSettings::Thinning;
+
+  gfx::Size viewport_size(300, 200);
+  gfx::Size device_viewport_size = gfx::ToFlooredSize(
+      gfx::ScaleSize(viewport_size, device_scale_factor));
+  gfx::Size content_size(1000, 1000);
+
+  host_impl_ = LayerTreeHostImpl::Create(
+      settings, this, &proxy_, &stats_instrumentation_);
+  host_impl_->InitializeRenderer(CreateOutputSurface());
+  host_impl_->SetDeviceScaleFactor(device_scale_factor);
+  host_impl_->SetViewportSize(device_viewport_size);
+
+  scoped_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl_->active_tree(), 1);
+  root->SetBounds(viewport_size);
+
+  scoped_ptr<LayerImpl> scroll =
+      LayerImpl::Create(host_impl_->active_tree(), 2);
+  scroll->SetScrollable(true);
+  scroll->SetScrollOffset(gfx::Vector2d());
+  scroll->SetMaxScrollOffset(gfx::Vector2d(content_size.width(),
+                                           content_size.height()));
+  scroll->SetBounds(content_size);
+  scroll->SetContentBounds(content_size);
+
+  scoped_ptr<LayerImpl> contents =
+      LayerImpl::Create(host_impl_->active_tree(), 3);
+  contents->SetDrawsContent(true);
+  contents->SetBounds(content_size);
+  contents->SetContentBounds(content_size);
+
+  // The scrollbar is on the right side.
+  scoped_ptr<PaintedScrollbarLayerImpl> scrollbar =
+      PaintedScrollbarLayerImpl::Create(host_impl_->active_tree(), 5, VERTICAL);
+  scrollbar->SetContentBounds(gfx::Size(15, viewport_size.height()));
+  scrollbar->SetPosition(gfx::Point(285, 0));
+  scroll->SetVerticalScrollbarLayer(scrollbar.get());
+
+  scroll->AddChild(contents.Pass());
+  root->AddChild(scroll.Pass());
+  root->AddChild(scrollbar.PassAs<LayerImpl>());
+
+  host_impl_->active_tree()->SetRootLayer(root.Pass());
+  host_impl_->active_tree()->DidBecomeActive();
+  InitializeRendererAndDrawFrame();
+
+  LayerImpl* root_scroll = host_impl_->active_tree()->RootScrollLayer();
+  ASSERT_TRUE(root_scroll->scrollbar_animation_controller());
+  ScrollbarAnimationControllerThinning* scrollbar_animation_controller =
+      static_cast<ScrollbarAnimationControllerThinning*>(
+          root_scroll->scrollbar_animation_controller());
+  scrollbar_animation_controller->set_mouse_move_distance_for_test(100.f);
+
+  host_impl_->MouseMoveAt(gfx::Point(1, 1));
+  EXPECT_FALSE(did_request_redraw_);
+
+  did_request_redraw_ = false;
+  host_impl_->MouseMoveAt(gfx::Point(200, 50));
+  EXPECT_TRUE(did_request_redraw_);
+
+  did_request_redraw_ = false;
+  host_impl_->MouseMoveAt(gfx::Point(184, 100));
+  EXPECT_FALSE(did_request_redraw_);
+
+  scrollbar_animation_controller->set_mouse_move_distance_for_test(102.f);
+  did_request_redraw_ = false;
+  host_impl_->MouseMoveAt(gfx::Point(184, 100));
+  EXPECT_TRUE(did_request_redraw_);
+}
+
+TEST_F(LayerTreeHostImplTest, MouseMoveAtWithDeviceScaleOf1) {
+  SetupMouseMoveAtWithDeviceScale(1.f);
+}
+
+TEST_F(LayerTreeHostImplTest, MouseMoveAtWithDeviceScaleOf2) {
+  SetupMouseMoveAtWithDeviceScale(2.f);
 }
 
 TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {

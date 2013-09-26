@@ -80,6 +80,12 @@ bool ScrollbarAnimationControllerLinearFade::DidScrollUpdate(
   return false;
 }
 
+bool ScrollbarAnimationControllerLinearFade::DidMouseMoveNear(
+    base::TimeTicks now, float distance) {
+  // Ignore mouse move events.
+  return false;
+}
+
 float ScrollbarAnimationControllerLinearFade::OpacityAtTime(
     base::TimeTicks now) {
   if (scroll_gesture_has_scrolled_)

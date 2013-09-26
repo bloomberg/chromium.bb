@@ -47,6 +47,7 @@ class PaintTimeCounter;
 class MemoryHistory;
 class RenderingStatsInstrumentation;
 class RenderPassDrawQuad;
+class ScrollbarLayerImplBase;
 class TextureMailboxDeleter;
 class TopControlsManager;
 class UIResourceBitmap;
@@ -116,6 +117,7 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void ScrollEnd() OVERRIDE;
   virtual InputHandler::ScrollStatus FlingScrollBegin() OVERRIDE;
   virtual void NotifyCurrentFlingVelocity(gfx::Vector2dF velocity) OVERRIDE;
+  virtual void MouseMoveAt(gfx::Point viewport_point) OVERRIDE;
   virtual void PinchGestureBegin() OVERRIDE;
   virtual void PinchGestureUpdate(float magnify_delta,
                                   gfx::Point anchor) OVERRIDE;
@@ -480,6 +482,12 @@ class CC_EXPORT LayerTreeHostImpl
 
   void UpdateCurrentFrameTime(base::TimeTicks* ticks, base::Time* now) const;
 
+  LayerImpl* FindScrollLayerForViewportPoint(
+      gfx::Point viewport_point,
+      InputHandler::ScrollInputType type,
+      bool* scroll_on_main_thread);
+  float DeviceSpaceDistanceToLayer(gfx::PointF device_viewport_point,
+                                   LayerImpl* layer_impl);
   void StartScrollbarAnimationRecursive(LayerImpl* layer, base::TimeTicks time);
   void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy,
                               bool zero_budget);

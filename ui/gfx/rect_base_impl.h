@@ -314,4 +314,20 @@ bool RectBase<Class, PointClass, SizeClass, InsetsClass, VectorClass, Type>::
              (y() == rect.bottom() || bottom() == rect.y()));
 }
 
+template<typename Class,
+         typename PointClass,
+         typename SizeClass,
+         typename InsetsClass,
+         typename VectorClass,
+         typename Type>
+Type RectBase<Class, PointClass, SizeClass, InsetsClass, VectorClass, Type>::
+    ManhattanDistanceToPoint(const PointClass& point) const {
+  Type x_distance = std::max<Type>(0, std::max(
+      x() - point.x(), point.x() - right()));
+  Type y_distance = std::max<Type>(0, std::max(
+      y() - point.y(), point.y() - bottom()));
+
+  return x_distance + y_distance;
+}
+
 }  // namespace gfx

@@ -27,6 +27,7 @@ class CC_EXPORT ScrollbarAnimationController {
 
   // Returns true if we should start an animation.
   virtual bool DidScrollUpdate(base::TimeTicks now) = 0;
+  virtual bool DidMouseMoveNear(base::TimeTicks now, float distance) = 0;
 };
 
 }  // namespace cc

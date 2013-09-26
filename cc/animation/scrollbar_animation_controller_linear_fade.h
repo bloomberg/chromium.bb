@@ -30,6 +30,7 @@ class CC_EXPORT ScrollbarAnimationControllerLinearFade
   virtual void DidScrollGestureBegin() OVERRIDE;
   virtual void DidScrollGestureEnd(base::TimeTicks now) OVERRIDE;
   virtual bool DidScrollUpdate(base::TimeTicks now) OVERRIDE;
+  virtual bool DidMouseMoveNear(base::TimeTicks now, float distance) OVERRIDE;
 
  protected:
   ScrollbarAnimationControllerLinearFade(LayerImpl* scroll_layer,

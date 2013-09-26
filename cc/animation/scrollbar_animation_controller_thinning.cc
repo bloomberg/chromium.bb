@@ -35,7 +35,8 @@ ScrollbarAnimationControllerThinning::ScrollbarAnimationControllerThinning(
       scroll_layer_(scroll_layer),
       scroll_gesture_in_progress_(false),
       animation_delay_(animation_delay),
-      animation_duration_(animation_duration) {}
+      animation_duration_(animation_duration),
+      mouse_move_distance_to_trigger_animation_(100.f) {}
 
 ScrollbarAnimationControllerThinning::~ScrollbarAnimationControllerThinning() {
 }
@@ -82,6 +83,14 @@ bool ScrollbarAnimationControllerThinning::DidScrollUpdate(
   return true;
 }
 
+bool ScrollbarAnimationControllerThinning::DidMouseMoveNear(
+    base::TimeTicks now, float distance) {
+  if (distance < mouse_move_distance_to_trigger_animation_)
+    return DidScrollUpdate(now);
+
+  return false;
+}
+
 float ScrollbarAnimationControllerThinning::AnimationProgressAtTime(
     base::TimeTicks now) {
   if (scroll_gesture_in_progress_)
@@ -100,7 +109,7 @@ float ScrollbarAnimationControllerThinning::OpacityAtAnimationProgress(
     float progress) {
   const float kIdleOpacity = 0.7f;
 
-  return ((1 - kIdleOpacity) * (1.f - progress)) + kIdleOpacity;
+  return ((1.f - kIdleOpacity) * (1.f - progress)) + kIdleOpacity;
 }
 
 float
@@ -108,7 +117,7 @@ ScrollbarAnimationControllerThinning::ThumbThicknessScaleAtAnimationProgress(
     float progress) {
   const float kIdleThicknessScale = 0.4f;
 
-  return ((1 - kIdleThicknessScale) * (1.f - progress)) + kIdleThicknessScale;
+  return ((1.f - kIdleThicknessScale) * (1.f - progress)) + kIdleThicknessScale;
 }
 
 void ScrollbarAnimationControllerThinning::ApplyOpacityAndThumbThicknessScale(
