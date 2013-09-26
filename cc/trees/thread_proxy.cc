@@ -1050,6 +1050,10 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
   base::TimeTicks monotonic_time =
       layer_tree_host_impl_->CurrentFrameTimeTicks();
   base::Time wall_clock_time = layer_tree_host_impl_->CurrentFrameTime();
+
+  // TODO(enne): This should probably happen post-animate.
+  if (layer_tree_host_impl_->pending_tree())
+    layer_tree_host_impl_->pending_tree()->UpdateDrawProperties();
   layer_tree_host_impl_->Animate(monotonic_time, wall_clock_time);
 
   // This method is called on a forced draw, regardless of whether we are able
