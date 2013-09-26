@@ -82,8 +82,7 @@ class SocketPpapiTest : public SocketApiTest {
     command_line->AppendSwitch("enable-pepper-testing");
 
     PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir_);
-    app_dir_ = app_dir_.AppendASCII(
-        "chrome/test/data/extensions/api_test/socket/ppapi/newlib");
+    app_dir_ = app_dir_.AppendASCII("ppapi/tests/extensions/socket/newlib");
   }
 
  protected:

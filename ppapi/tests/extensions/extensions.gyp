@@ -4,28 +4,28 @@
 
 {
   'includes': [
-    '../../../../../ppapi/ppapi_nacl_test_common.gypi',
+    '../../../ppapi/ppapi_nacl_test_common.gypi',
   ],
   'targets': [
     {
-      'target_name': 'socket_ppapi',
+      'target_name': 'ppapi_tests_extensions_socket',
       'type': 'none',
       'variables': {
-        'nexe_target': 'extensions_api_test_socket_ppapi',
+        'nexe_target': 'ppapi_tests_extensions_socket',
         'build_newlib': 1,
         'build_glibc': 0,
         'build_pnacl_newlib': 0,
-        'nexe_destination_dir': 'test_data/chrome/test/data/extensions/api_test/socket/ppapi',
+        'nexe_destination_dir': 'test_data/ppapi/tests/extensions/socket',
         'sources': [
-          'socket/ppapi/test_socket.cc',
+          'socket/test_socket.cc',
           '<(DEPTH)/ppapi/tests/test_utils.cc',
           '<(DEPTH)/ppapi/tests/test_utils.h',
         ],
         'test_files': [
-          'socket/ppapi/controller.js',
-          'socket/ppapi/index.html',
-          'socket/ppapi/main.js',
-          'socket/ppapi/manifest.json',
+          'socket/controller.js',
+          'socket/index.html',
+          'socket/main.js',
+          'socket/manifest.json',
         ],
       },
     },
