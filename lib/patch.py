@@ -674,14 +674,17 @@ class GitRepoPatch(object):
 
     if not git.DoesLocalBranchExist(git_repo, constants.PATCH_BRANCH):
       cmd = ['checkout', '-b', constants.PATCH_BRANCH, '-t', upstream]
-      git.RunGit(git_repo, cmd)
-      inflight = False
     else:
-      # Figure out if we're inflight.
-      upstream, head = [
-          git.RunGit(git_repo, ['rev-list', '-n1', x]).output.strip()
-          for x in (upstream, 'HEAD')]
-      inflight = (head != upstream)
+      cmd = ['checkout', '-f', constants.PATCH_BRANCH]
+    git.RunGit(git_repo, cmd)
+
+    # Figure out if we're inflight.  At this point, we assume that the branch
+    # is checked out and rebased onto upstream.  If HEAD differs from upstream,
+    # then there are already other patches that have been applied.
+    upstream, head = [
+        git.RunGit(git_repo, ['rev-list', '-n1', x]).output.strip()
+        for x in (upstream, 'HEAD')]
+    inflight = (head != upstream)
 
     # Run appropriate sanity checks.
     self._SanityChecks(git_repo, upstream, inflight=inflight)
