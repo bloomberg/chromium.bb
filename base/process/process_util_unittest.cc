@@ -769,7 +769,16 @@ TEST_F(ProcessUtilTest, GetAppOutputRestrictedSIGPIPE) {
 }
 #endif
 
-TEST_F(ProcessUtilTest, GetAppOutputRestrictedNoZombies) {
+#if defined(ADDRESS_SANITIZER) && defined(OS_MACOSX) && \
+    defined(ARCH_CPU_64_BITS)
+// Times out under AddressSanitizer on 64-bit OS X, see
+// http://crbug.com/298197.
+#define MAYBE_GetAppOutputRestrictedNoZombies \
+    DISABLED_GetAppOutputRestrictedNoZombies
+#else
+#define MAYBE_GetAppOutputRestrictedNoZombies GetAppOutputRestrictedNoZombies
+#endif
+TEST_F(ProcessUtilTest, MAYBE_GetAppOutputRestrictedNoZombies) {
   std::vector<std::string> argv;
 
   argv.push_back(std::string(kShellPath));  // argv[0]
