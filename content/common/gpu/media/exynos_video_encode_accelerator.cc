@@ -1364,7 +1364,7 @@ bool ExynosVideoEncodeAccelerator::SetMfcFormats() {
 }
 
 bool ExynosVideoEncodeAccelerator::InitMfcControls() {
-  struct v4l2_ext_control ctrls[8];
+  struct v4l2_ext_control ctrls[9];
   struct v4l2_ext_controls control;
   memset(&ctrls, 0, sizeof(ctrls));
   memset(&control, 0, sizeof(control));
@@ -1394,6 +1394,9 @@ bool ExynosVideoEncodeAccelerator::InitMfcControls() {
   // Use H.264 level 4.0 to match the supported max resolution.
   ctrls[7].id    = V4L2_CID_MPEG_VIDEO_H264_LEVEL;
   ctrls[7].value = V4L2_MPEG_VIDEO_H264_LEVEL_4_0;
+  // Disable periodic key frames.
+  ctrls[8].id    = V4L2_CID_MPEG_VIDEO_GOP_SIZE;
+  ctrls[8].value = 0;
   control.ctrl_class = V4L2_CTRL_CLASS_MPEG;
   control.count = arraysize(ctrls);
   control.controls = ctrls;
