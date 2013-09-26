@@ -245,6 +245,9 @@ base::DictionaryValue* SyncedNotificationImageToValue(
     const sync_pb::SyncedNotificationImage& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
   SET_STR(url);
+  SET_STR(alt_text);
+  SET_INT32(preferred_width);
+  SET_INT32(preferred_height);
   return value;
 }
 
@@ -252,6 +255,8 @@ base::DictionaryValue* SyncedNotificationProfileImageToValue(
     const sync_pb::SyncedNotificationProfileImage& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
   SET_STR(image_url);
+  SET_STR(oid);
+  SET_STR(display_name);
   return value;
 }
 
@@ -262,15 +267,45 @@ base::DictionaryValue* MediaToValue(
   return value;
 }
 
+base::DictionaryValue* SyncedNotificationActionToValue(
+    const sync_pb::SyncedNotificationAction& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(text);
+  SET(icon, SyncedNotificationImageToValue);
+  SET_STR(url);
+  SET_STR(request_data);
+  SET_STR(accessibility_label);
+  return value;
+}
+
+base::DictionaryValue* SyncedNotificationDestiationToValue(
+    const sync_pb::SyncedNotificationDestination& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(text);
+  SET(icon, SyncedNotificationImageToValue);
+  SET_STR(url);
+  SET_STR(accessibility_label);
+  return value;
+}
+
+base::DictionaryValue* TargetToValue(
+    const sync_pb::Target& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET(destination, SyncedNotificationDestiationToValue);
+  SET(action, SyncedNotificationActionToValue);
+  SET_STR(target_key);
+  return value;
+}
+
 base::DictionaryValue* SimpleCollapsedLayoutToValue(
     const sync_pb::SimpleCollapsedLayout& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
+  SET(app_icon, SyncedNotificationImageToValue);
+  SET_REP(profile_image, SyncedNotificationProfileImageToValue);
   SET_STR(heading);
   SET_STR(description);
   SET_STR(annotation);
   SET_REP(media, MediaToValue);
-  SET_REP(profile_image, SyncedNotificationProfileImageToValue);
-  SET(app_icon, SyncedNotificationImageToValue);
   return value;
 }
 
@@ -278,13 +313,25 @@ base::DictionaryValue* CollapsedInfoToValue(
     const sync_pb::CollapsedInfo& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
   SET(simple_collapsed_layout, SimpleCollapsedLayoutToValue);
+  SET_INT64(creation_timestamp_usec);
+  SET(default_destination, SyncedNotificationDestiationToValue);
+  SET_REP(target, TargetToValue);
+  return value;
+}
+
+base::DictionaryValue* SyncedNotificationToValue(
+    const sync_pb::SyncedNotification& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(type);
+  SET_STR(external_id);
+  // TODO(petewil) Add SyncedNotificationCreator here if we ever need it.
   return value;
 }
 
 base::DictionaryValue* RenderInfoToValue(
     const sync_pb::SyncedNotificationRenderInfo& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
-  // TODO(petewil): Add the expanded info values too.
+  // TODO(petewil): Add the expanded info values once we start using them.
   SET(collapsed_info, CollapsedInfoToValue);
   return value;
 }
@@ -293,10 +340,12 @@ base::DictionaryValue* CoalescedNotificationToValue(
     const sync_pb::CoalescedSyncedNotification& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
   SET_STR(key);
+  SET_STR(app_id);
+  SET_REP(notification, SyncedNotificationToValue);
+  SET(render_info, RenderInfoToValue);
   SET_INT32(read_state);
   SET_INT64(creation_time_msec);
   SET_INT32(priority);
-  SET(render_info, RenderInfoToValue);
   return value;
 }
 
