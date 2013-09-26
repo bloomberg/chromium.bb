@@ -89,7 +89,7 @@ public:
     bool isStepsTimingFunctionValue() const { return m_classType == StepsTimingFunctionClass; }
     bool isCSSTransformValue() const { return m_classType == CSSTransformClass; }
     bool isCSSLineBoxContainValue() const { return m_classType == LineBoxContainClass; }
-    bool isCalculationValue() const {return m_classType == CalculationClass; }
+    bool isCalcValue() const {return m_classType == CalculationClass; }
     bool isCSSFilterValue() const { return m_classType == CSSFilterClass; }
     bool isCSSArrayFunctionValue() const { return m_classType == CSSArrayFunctionValueClass; }
     bool isCSSMixFunctionValue() const { return m_classType == CSSMixFunctionValueClass; }

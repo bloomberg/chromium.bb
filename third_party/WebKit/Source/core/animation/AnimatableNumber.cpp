@@ -52,7 +52,7 @@ PassRefPtr<AnimatableNumber> AnimatableNumber::create(CSSValue* value)
         return create(primitiveValue->getDoubleValue() * scale, unitType, primitiveValue);
     }
 
-    if (value->isCalculationValue())
+    if (value->isCalcValue())
         return create(toCSSCalcValue(value)->expressionNode());
 
     ASSERT_NOT_REACHED();
@@ -78,7 +78,7 @@ bool AnimatableNumber::canCreateFrom(const CSSValue* value)
             return true;
         return primitiveUnitToNumberType(primitiveValue->primitiveType()) != UnitTypeInvalid;
     }
-    return value->isCalculationValue();
+    return value->isCalcValue();
 }
 
 PassRefPtr<CSSValue> AnimatableNumber::toCSSValue(NumberRange range) const
