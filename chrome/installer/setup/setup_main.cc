@@ -725,7 +725,7 @@ installer::InstallStatus InstallProducts(
       LOG(ERROR) << "Failed deleting master preferences file "
                  << prefs_path.value()
                  << ", scheduling for deletion after reboot.";
-      ScheduleFileSystemEntityForDeletion(prefs_path.value().c_str());
+      ScheduleFileSystemEntityForDeletion(prefs_path);
     }
   }
 
@@ -1023,7 +1023,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
         // the Windows last-error code.
         LOG(WARNING) << "Scheduling temporary path " << temp_path.path().value()
                      << " for deletion at reboot.";
-        ScheduleDirectoryForDeletion(temp_path.path().value().c_str());
+        ScheduleDirectoryForDeletion(temp_path.path());
       }
     }
 

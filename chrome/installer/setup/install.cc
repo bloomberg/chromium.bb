@@ -506,10 +506,8 @@ InstallStatus InstallOrUpdateProduct(
   DCHECK(products.size());
   if (installer_state.FindProduct(BrowserDistribution::CHROME_FRAME)) {
     // Make sure that we don't end up deleting installed files on next reboot.
-    if (!RemoveFromMovesPendingReboot(
-            installer_state.target_path().value().c_str())) {
+    if (!RemoveFromMovesPendingReboot(installer_state.target_path()))
       LOG(ERROR) << "Error accessing pending moves value.";
-    }
   }
 
   // Create VisualElementManifest.xml in |src_path| (if required) so that it

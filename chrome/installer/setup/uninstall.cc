@@ -428,13 +428,13 @@ void DeleteShortcuts(const InstallerState& installer_state,
 
 bool ScheduleParentAndGrandparentForDeletion(const base::FilePath& path) {
   base::FilePath parent_dir = path.DirName();
-  bool ret = ScheduleFileSystemEntityForDeletion(parent_dir.value().c_str());
+  bool ret = ScheduleFileSystemEntityForDeletion(parent_dir);
   if (!ret) {
     LOG(ERROR) << "Failed to schedule parent dir for deletion: "
                << parent_dir.value();
   } else {
     base::FilePath grandparent_dir(parent_dir.DirName());
-    ret = ScheduleFileSystemEntityForDeletion(grandparent_dir.value().c_str());
+    ret = ScheduleFileSystemEntityForDeletion(grandparent_dir);
     if (!ret) {
       LOG(ERROR) << "Failed to schedule grandparent dir for deletion: "
                  << grandparent_dir.value();
@@ -508,7 +508,7 @@ DeleteResult DeleteLocalState(
       LOG(ERROR) << "Failed to delete user profile dir: "
                  << user_local_state.value();
       if (schedule_on_failure) {
-        ScheduleDirectoryForDeletion(user_local_state.value().c_str());
+        ScheduleDirectoryForDeletion(user_local_state);
         result = DELETE_REQUIRES_REBOOT;
       } else {
         result = DELETE_FAILED;
@@ -652,9 +652,9 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
         // return a value that will trigger a reboot prompt.
         base::FileEnumerator::FileInfo find_info = file_enumerator.GetInfo();
         if (find_info.IsDirectory())
-          ScheduleDirectoryForDeletion(to_delete.value().c_str());
+          ScheduleDirectoryForDeletion(to_delete);
         else
-          ScheduleFileSystemEntityForDeletion(to_delete.value().c_str());
+          ScheduleFileSystemEntityForDeletion(to_delete);
         result = DELETE_REQUIRES_REBOOT;
       } else {
         // Try closing any running Chrome processes and deleting files once
@@ -1496,7 +1496,7 @@ void CleanUpInstallationDirectoryAfterUninstall(
 
   if (*uninstall_status == installer::UNINSTALL_REQUIRES_REBOOT) {
     // Delete the Application directory at reboot if empty.
-    ScheduleFileSystemEntityForDeletion(target_path.value().c_str());
+    ScheduleFileSystemEntityForDeletion(target_path);
 
     // If we need a reboot to continue, schedule the parent directories for
     // deletion unconditionally. If they are not empty, the session manager

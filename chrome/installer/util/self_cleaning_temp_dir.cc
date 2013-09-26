@@ -84,7 +84,7 @@ bool SelfCleaningTempDir::Delete() {
     LOG(WARNING) << "Failed to delete temporary directory " << path().value()
                  << ". Scheduling for deletion at reboot.";
     schedule_deletes = true;
-    if (!ScheduleDirectoryForDeletion(path().value().c_str()))
+    if (!ScheduleDirectoryForDeletion(path()))
       return false;  // Entirely unexpected failure (Schedule logs the reason).
   }
 
@@ -101,7 +101,7 @@ bool SelfCleaningTempDir::Delete() {
       if (schedule_deletes) {
         // Ignore the return code.  If we fail to schedule, go ahead and add the
         // other parent directories anyway.
-        ScheduleFileSystemEntityForDeletion(next_dir.value().c_str());
+        ScheduleFileSystemEntityForDeletion(next_dir);
       }
       if (next_dir == base_dir_)
         break;  // We just processed the topmost directory we created.

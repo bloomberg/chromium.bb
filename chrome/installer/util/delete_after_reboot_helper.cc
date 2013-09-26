@@ -30,20 +30,19 @@ namespace {
 
 // Returns true if this directory name is 'safe' for deletion (doesn't contain
 // "..", doesn't specify a drive root)
-bool IsSafeDirectoryNameForDeletion(const wchar_t* dir_name) {
-  DCHECK(dir_name);
-
+bool IsSafeDirectoryNameForDeletion(const base::FilePath& dir_name) {
   // empty name isn't allowed
-  if (!(dir_name && *dir_name))
+  if (dir_name.empty())
     return false;
 
   // require a character other than \/:. after the last :
   // disallow anything with ".."
   bool ok = false;
-  for (const wchar_t* s = dir_name; *s; ++s) {
+  const wchar_t* dir_name_str = dir_name.value().c_str();
+  for (const wchar_t* s = dir_name_str; *s; ++s) {
     if (*s != L'\\' && *s != L'/' && *s != L':' && *s != L'.')
       ok = true;
-    if (*s == L'.' && s > dir_name && *(s - 1) == L'.')
+    if (*s == L'.' && s > dir_name_str && *(s - 1) == L'.')
       return false;
     if (*s == L':')
       ok = false;
@@ -54,22 +53,23 @@ bool IsSafeDirectoryNameForDeletion(const wchar_t* dir_name) {
 }  // end namespace
 
 // Must only be called for regular files or directories that will be empty.
-bool ScheduleFileSystemEntityForDeletion(const wchar_t* path) {
+bool ScheduleFileSystemEntityForDeletion(const base::FilePath& path) {
   // Check if the file exists, return false if not.
   WIN32_FILE_ATTRIBUTE_DATA attrs = {0};
-  if (!::GetFileAttributesEx(path, ::GetFileExInfoStandard, &attrs)) {
-    PLOG(WARNING) << path << " does not exist.";
+  if (!::GetFileAttributesEx(path.value().c_str(),
+                             ::GetFileExInfoStandard, &attrs)) {
+    PLOG(WARNING) << path.value() << " does not exist.";
     return false;
   }
 
   DWORD flags = MOVEFILE_DELAY_UNTIL_REBOOT;
-  if (!base::DirectoryExists(base::FilePath::FromWStringHack(path))) {
+  if (!base::DirectoryExists(path)) {
     // This flag valid only for files
     flags |= MOVEFILE_REPLACE_EXISTING;
   }
 
-  if (!::MoveFileEx(path, NULL, flags)) {
-    PLOG(ERROR) << "Could not schedule " << path << " for deletion.";
+  if (!::MoveFileEx(path.value().c_str(), NULL, flags)) {
+    PLOG(ERROR) << "Could not schedule " << path.value() << " for deletion.";
     return false;
   }
 
@@ -77,51 +77,53 @@ bool ScheduleFileSystemEntityForDeletion(const wchar_t* path) {
   // Useful debugging code to track down what files are in use.
   if (flags & MOVEFILE_REPLACE_EXISTING) {
     // Attempt to open the file exclusively.
-    HANDLE file = ::CreateFileW(path, GENERIC_READ | GENERIC_WRITE, 0, NULL,
-        OPEN_EXISTING, 0, NULL);
+    HANDLE file = ::CreateFileW(path.value().c_str(),
+                                GENERIC_READ | GENERIC_WRITE, 0, NULL,
+                                OPEN_EXISTING, 0, NULL);
     if (file != INVALID_HANDLE_VALUE) {
-      LOG(INFO) << " file not in use: " << path;
+      LOG(INFO) << " file not in use: " << path.value();
       ::CloseHandle(file);
     } else {
-      PLOG(INFO) << " file in use (or not found?): " << path;
+      PLOG(INFO) << " file in use (or not found?): " << path.value();
     }
   }
 #endif
 
-  VLOG(1) << "Scheduled for deletion: " << path;
+  VLOG(1) << "Scheduled for deletion: " << path.value();
   return true;
 }
 
-bool ScheduleDirectoryForDeletion(const wchar_t* dir_name) {
+bool ScheduleDirectoryForDeletion(const base::FilePath& dir_name) {
   if (!IsSafeDirectoryNameForDeletion(dir_name)) {
-    LOG(ERROR) << "Unsafe directory name for deletion: " << dir_name;
+    LOG(ERROR) << "Unsafe directory name for deletion: " << dir_name.value();
     return false;
   }
 
   // Make sure the directory exists (it is ok if it doesn't)
-  DWORD dir_attributes = ::GetFileAttributes(dir_name);
+  DWORD dir_attributes = ::GetFileAttributes(dir_name.value().c_str());
   if (dir_attributes == INVALID_FILE_ATTRIBUTES) {
     if (::GetLastError() == ERROR_FILE_NOT_FOUND) {
       return true;  // Ok if directory is missing
     } else {
-      PLOG(ERROR) << "Could not GetFileAttributes for " << dir_name;
+      PLOG(ERROR) << "Could not GetFileAttributes for " << dir_name.value();
       return false;
     }
   }
   // Confirm it is a directory
   if (!(dir_attributes & FILE_ATTRIBUTE_DIRECTORY)) {
-    LOG(ERROR) << "Scheduled directory is not a directory: " << dir_name;
+    LOG(ERROR) << "Scheduled directory is not a directory: "
+               << dir_name.value();
     return false;
   }
 
   // First schedule all the normal files for deletion.
   {
     bool success = true;
-    base::FileEnumerator file_enum(base::FilePath(dir_name), false,
+    base::FileEnumerator file_enum(dir_name, false,
                                    base::FileEnumerator::FILES);
     for (base::FilePath file = file_enum.Next(); !file.empty();
          file = file_enum.Next()) {
-      success = ScheduleFileSystemEntityForDeletion(file.value().c_str());
+      success = ScheduleFileSystemEntityForDeletion(file);
       if (!success) {
         LOG(ERROR) << "Failed to schedule file for deletion: " << file.value();
         return false;
@@ -132,11 +134,11 @@ bool ScheduleDirectoryForDeletion(const wchar_t* dir_name) {
   // Then recurse to all the subdirectories.
   {
     bool success = true;
-    base::FileEnumerator dir_enum(base::FilePath(dir_name), false,
+    base::FileEnumerator dir_enum(dir_name, false,
                                   base::FileEnumerator::DIRECTORIES);
     for (base::FilePath sub_dir = dir_enum.Next(); !sub_dir.empty();
          sub_dir = dir_enum.Next()) {
-      success = ScheduleDirectoryForDeletion(sub_dir.value().c_str());
+      success = ScheduleDirectoryForDeletion(sub_dir);
       if (!success) {
         LOG(ERROR) << "Failed to schedule subdirectory for deletion: "
                    << sub_dir.value();
@@ -146,8 +148,10 @@ bool ScheduleDirectoryForDeletion(const wchar_t* dir_name) {
   }
 
   // Now schedule the empty directory itself
-  if (!ScheduleFileSystemEntityForDeletion(dir_name))
-    LOG(ERROR) << "Failed to schedule directory for deletion: " << dir_name;
+  if (!ScheduleFileSystemEntityForDeletion(dir_name)) {
+    LOG(ERROR) << "Failed to schedule directory for deletion: "
+               << dir_name.value();
+  }
 
   return true;
 }
@@ -240,9 +244,10 @@ void StringArrayToMultiSZBytes(const std::vector<PendingMove>& strings,
   DCHECK(++write_pointer == end_pointer);
 }
 
-std::wstring GetShortPathName(const wchar_t* path) {
+base::FilePath GetShortPathName(const base::FilePath& path) {
   std::wstring short_path;
-  DWORD length = GetShortPathName(path, WriteInto(&short_path, MAX_PATH),
+  DWORD length = GetShortPathName(path.value().c_str(),
+                                  WriteInto(&short_path, MAX_PATH),
                                   MAX_PATH);
   DWORD last_error = ::GetLastError();
   DLOG_IF(WARNING, length == 0 && last_error != ERROR_PATH_NOT_FOUND)
@@ -255,11 +260,10 @@ std::wstring GetShortPathName(const wchar_t* path) {
   }
 
   short_path.resize(length);
-  return short_path;
+  return base::FilePath(short_path);
 }
 
-HRESULT GetPendingMovesValue(
-    std::vector<PendingMove>* pending_moves) {
+HRESULT GetPendingMovesValue(std::vector<PendingMove>* pending_moves) {
   DCHECK(pending_moves);
   pending_moves->clear();
 
@@ -319,9 +323,10 @@ HRESULT GetPendingMovesValue(
   return hr;
 }
 
-bool MatchPendingDeletePath(const std::wstring& short_form_needle,
-                            const std::wstring& reg_path) {
-  std::wstring match_path(reg_path);  // Stores the path stored in each entry.
+bool MatchPendingDeletePath(const base::FilePath& short_form_needle,
+                            const base::FilePath& reg_path) {
+  // Stores the path stored in each entry.
+  std::wstring match_path(reg_path.value());
 
   // First chomp the prefix since that will mess up GetShortPathName.
   std::wstring prefix(L"\\??\\");
@@ -329,17 +334,16 @@ bool MatchPendingDeletePath(const std::wstring& short_form_needle,
     match_path = match_path.substr(4);
 
   // Get the short path name of the entry.
-  std::wstring short_match_path(GetShortPathName(match_path.c_str()));
+  base::FilePath short_match_path(GetShortPathName(base::FilePath(match_path)));
 
   // Now compare the paths. If it isn't one we're looking for, add it
   // to the list to keep.
-  return StartsWith(short_match_path, short_form_needle, false);
+  return StartsWith(short_match_path.value(), short_form_needle.value(), false);
 }
 
 // Removes all pending moves for the given |directory| and any contained
 // files or subdirectories. Returns true on success
-bool RemoveFromMovesPendingReboot(const wchar_t* directory) {
-  DCHECK(directory);
+bool RemoveFromMovesPendingReboot(const base::FilePath& directory) {
   std::vector<PendingMove> pending_moves;
   HRESULT hr = GetPendingMovesValue(&pending_moves);
   if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
@@ -352,12 +356,13 @@ bool RemoveFromMovesPendingReboot(const wchar_t* directory) {
   }
 
   // Get the short form of |directory| and use that to match.
-  std::wstring short_directory(GetShortPathName(directory));
+  base::FilePath short_directory(GetShortPathName(directory));
 
   std::vector<PendingMove> strings_to_keep;
   for (std::vector<PendingMove>::const_iterator iter(pending_moves.begin());
-       iter != pending_moves.end(); iter++) {
-    if (!MatchPendingDeletePath(short_directory, iter->first)) {
+       iter != pending_moves.end(); ++iter) {
+    base::FilePath move_path(iter->first);
+    if (!MatchPendingDeletePath(short_directory, move_path)) {
       // This doesn't match the deletions we are looking for. Preserve
       // this string pair, making sure that it is in fact a pair.
       strings_to_keep.push_back(*iter);

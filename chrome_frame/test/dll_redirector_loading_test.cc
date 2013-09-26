@@ -103,7 +103,7 @@ class DllRedirectorLoadingTest : public testing::Test {
       // The temp_dir cleanup has been observed to fail in some cases. It looks
       // like something is holding on to the Chrome Frame DLLs after they have
       // been explicitly unloaded. At least schedule them for cleanup on reboot.
-      ScheduleDirectoryForDeletion(temp_dir_.path().value().c_str());
+      ScheduleDirectoryForDeletion(temp_dir_.path());
     }
   }
 

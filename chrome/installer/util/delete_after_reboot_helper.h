@@ -13,6 +13,10 @@
 
 #include <windows.h>
 
+namespace base {
+class FilePath;
+}
+
 // Used by the unit tests.
 extern const wchar_t kSessionManagerKey[];
 extern const wchar_t kPendingFileRenameOps[];
@@ -20,14 +24,14 @@ extern const wchar_t kPendingFileRenameOps[];
 typedef std::pair<std::wstring, std::wstring> PendingMove;
 
 // Attempts to schedule only the item at path for deletion.
-bool ScheduleFileSystemEntityForDeletion(const wchar_t* path);
+bool ScheduleFileSystemEntityForDeletion(const base::FilePath& path);
 
 // Attempts to recursively schedule the directory for deletion.
-bool ScheduleDirectoryForDeletion(const wchar_t* dir_name);
+bool ScheduleDirectoryForDeletion(const base::FilePath& dir_name);
 
 // Removes all pending moves that are registered for |directory| and all
 // elements contained in |directory|.
-bool RemoveFromMovesPendingReboot(const wchar_t* directory);
+bool RemoveFromMovesPendingReboot(const base::FilePath& directory);
 
 // Retrieves the list of pending renames from the registry and returns a vector
 // containing pairs of strings that represent the operations. If the list
@@ -39,8 +43,8 @@ HRESULT GetPendingMovesValue(std::vector<PendingMove>* pending_moves);
 // |short_form_needle| is a file system path that has been shortened by
 // GetShortPathName and |reg_path| is a path stored in the
 // PendingFileRenameOperations key.
-bool MatchPendingDeletePath(const std::wstring& short_form_needle,
-                            const std::wstring& reg_path);
+bool MatchPendingDeletePath(const base::FilePath& short_form_needle,
+                            const base::FilePath& reg_path);
 
 // Converts the strings found in |buffer| to a list of PendingMoves that is
 // returned in |value|.
@@ -63,9 +67,9 @@ void StringArrayToMultiSZBytes(const std::vector<PendingMove>& strings,
                                std::vector<char>* buffer);
 
 // A helper function for the win32 GetShortPathName that more conveniently
-// returns a correctly sized wstring. Note that if |path| is not present on the
-// file system then GetShortPathName will return |path| unchanged, unlike the
-// win32 GetShortPathName which will return an error.
-std::wstring GetShortPathName(const wchar_t* path);
+// returns a FilePath. Note that if |path| is not present on the file system
+// then GetShortPathName will return |path| unchanged, unlike the win32
+// GetShortPathName which will return an error.
+base::FilePath GetShortPathName(const base::FilePath& path);
 
 #endif  // CHROME_INSTALLER_UTIL_DELETE_AFTER_REBOOT_HELPER_H_
