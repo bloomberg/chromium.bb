@@ -848,7 +848,7 @@ void RenderViewHostImpl::FilesSelectedInChooser(
   for (size_t i = 0; i < files.size(); ++i) {
     const ui::SelectedFileInfo& file = files[i];
     if (permissions == FileChooserParams::Save) {
-      ChildProcessSecurityPolicyImpl::GetInstance()->GrantCreateWriteFile(
+      ChildProcessSecurityPolicyImpl::GetInstance()->GrantCreateReadWriteFile(
           GetProcess()->GetID(), file.local_path);
     } else {
       ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(

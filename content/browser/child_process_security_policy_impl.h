@@ -45,8 +45,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   virtual void GrantReadFile(int child_id, const base::FilePath& file) OVERRIDE;
   virtual void GrantCreateReadWriteFile(int child_id,
                                         const base::FilePath& file) OVERRIDE;
-  virtual void GrantCreateWriteFile(int child_id,
-                                    const base::FilePath& file) OVERRIDE;
   virtual void GrantReadFileSystem(
       int child_id,
       const std::string& filesystem_id) OVERRIDE;
@@ -63,8 +61,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   virtual bool CanReadFile(int child_id, const base::FilePath& file) OVERRIDE;
   virtual bool CanWriteFile(int child_id, const base::FilePath& file) OVERRIDE;
   virtual bool CanCreateFile(int child_id, const base::FilePath& file) OVERRIDE;
-  virtual bool CanCreateWriteFile(int child_id,
-                                  const base::FilePath& file) OVERRIDE;
+  virtual bool CanCreateReadWriteFile(int child_id,
+                                      const base::FilePath& file) OVERRIDE;
   virtual bool CanReadFileSystem(int child_id,
                                  const std::string& filesystem_id) OVERRIDE;
   virtual bool CanReadWriteFileSystem(
@@ -145,8 +143,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool CanReadFileSystemFile(int child_id, const fileapi::FileSystemURL& url);
   bool CanWriteFileSystemFile(int child_id, const fileapi::FileSystemURL& url);
   bool CanCreateFileSystemFile(int child_id, const fileapi::FileSystemURL& url);
-  bool CanCreateWriteFileSystemFile(int child_id,
-                                    const fileapi::FileSystemURL& url);
+  bool CanCreateReadWriteFileSystemFile(int child_id,
+                                        const fileapi::FileSystemURL& url);
 
   // Returns true if the specified child_id has been granted WebUIBindings.
   // The browser should check this property before assuming the child process is

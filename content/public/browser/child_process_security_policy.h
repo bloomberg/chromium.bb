@@ -51,10 +51,6 @@ class ChildProcessSecurityPolicy {
   virtual void GrantCreateReadWriteFile(int child_id,
                                         const base::FilePath& file) = 0;
 
-  // This permission grants creation and write access to a file.
-  virtual void GrantCreateWriteFile(int child_id,
-                                    const base::FilePath& file) = 0;
-
   // These methods verify whether or not the child process has been granted
   // permissions perform these functions on |file|.
 
@@ -64,7 +60,8 @@ class ChildProcessSecurityPolicy {
   virtual bool CanReadFile(int child_id, const base::FilePath& file) = 0;
   virtual bool CanWriteFile(int child_id, const base::FilePath& file) = 0;
   virtual bool CanCreateFile(int child_id, const base::FilePath& file) = 0;
-  virtual bool CanCreateWriteFile(int child_id, const base::FilePath& file) = 0;
+  virtual bool CanCreateReadWriteFile(int child_id,
+                                      const base::FilePath& file) = 0;
 
   // Grants read access permission to the given isolated file system
   // identified by |filesystem_id|. An isolated file system can be

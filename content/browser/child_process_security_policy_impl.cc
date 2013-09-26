@@ -62,13 +62,6 @@ const int kCreateReadWriteFilePermissions =
     base::PLATFORM_FILE_CREATE_ALWAYS |
     base::PLATFORM_FILE_OPEN_TRUNCATED;
 
-const int kCreateWriteFilePermissions =
-    kWriteFilePermissions |
-    kCreateFilePermissions |
-    base::PLATFORM_FILE_OPEN_ALWAYS |
-    base::PLATFORM_FILE_CREATE_ALWAYS |
-    base::PLATFORM_FILE_OPEN_TRUNCATED;
-
 }  // namespace
 
 // The SecurityState class is used to maintain per-child process security state
@@ -444,11 +437,6 @@ void ChildProcessSecurityPolicyImpl::GrantCreateReadWriteFile(
   GrantPermissionsForFile(child_id, file, kCreateReadWriteFilePermissions);
 }
 
-void ChildProcessSecurityPolicyImpl::GrantCreateWriteFile(
-    int child_id, const base::FilePath& file) {
-  GrantPermissionsForFile(child_id, file, kCreateWriteFilePermissions);
-}
-
 void ChildProcessSecurityPolicyImpl::GrantReadDirectory(
     int child_id, const base::FilePath& directory) {
   GrantPermissionsForFile(child_id, directory, kEnumerateDirectoryPermissions);
@@ -636,10 +624,10 @@ bool ChildProcessSecurityPolicyImpl::CanCreateFile(int child_id,
   return HasPermissionsForFile(child_id, file, kCreateFilePermissions);
 }
 
-bool ChildProcessSecurityPolicyImpl::CanCreateWriteFile(
+bool ChildProcessSecurityPolicyImpl::CanCreateReadWriteFile(
     int child_id,
     const base::FilePath& file) {
-  return HasPermissionsForFile(child_id, file, kCreateWriteFilePermissions);
+  return HasPermissionsForFile(child_id, file, kCreateReadWriteFilePermissions);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanReadDirectory(
@@ -749,11 +737,11 @@ bool ChildProcessSecurityPolicyImpl::CanCreateFileSystemFile(
   return HasPermissionsForFileSystemFile(child_id, url, kCreateFilePermissions);
 }
 
-bool ChildProcessSecurityPolicyImpl::CanCreateWriteFileSystemFile(
+bool ChildProcessSecurityPolicyImpl::CanCreateReadWriteFileSystemFile(
     int child_id,
     const fileapi::FileSystemURL& url) {
   return HasPermissionsForFileSystemFile(child_id, url,
-                                         kCreateWriteFilePermissions);
+                                         kCreateReadWriteFilePermissions);
 }
 
 bool ChildProcessSecurityPolicyImpl::HasWebUIBindings(int child_id) {

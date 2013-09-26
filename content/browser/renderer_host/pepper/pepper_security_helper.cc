@@ -13,12 +13,12 @@ namespace content {
 namespace {
 
 template <typename CanRead, typename CanWrite,
-          typename CanCreate, typename CanCreateWrite,
+          typename CanCreate, typename CanCreateReadWrite,
           typename FileID>
 bool CanOpenFileWithPepperFlags(CanRead can_read,
                                 CanWrite can_write,
                                 CanCreate can_create,
-                                CanCreateWrite can_create_write,
+                                CanCreateReadWrite can_create_read_write,
                                 int pp_open_flags,
                                 int child_id,
                                 const FileID& file) {
@@ -39,7 +39,7 @@ bool CanOpenFileWithPepperFlags(CanRead can_read,
     return false;
 
   // TODO(tommycli): Maybe tighten up required permission. crbug.com/284792
-  if (pp_append && !(policy->*can_create_write)(child_id, file))
+  if (pp_append && !(policy->*can_create_read_write)(child_id, file))
     return false;
 
   if (pp_truncate && !pp_write)
@@ -50,10 +50,10 @@ bool CanOpenFileWithPepperFlags(CanRead can_read,
       return (policy->*can_create)(child_id, file);
     } else {
       // Asks for too much, but this is the only grant that allows overwrite.
-      return (policy->*can_create_write)(child_id, file);
+      return (policy->*can_create_read_write)(child_id, file);
     }
   } else if (pp_truncate) {
-    return (policy->*can_create_write)(child_id, file);
+    return (policy->*can_create_read_write)(child_id, file);
   }
 
   return true;
@@ -67,7 +67,7 @@ bool CanOpenWithPepperFlags(int pp_open_flags, int child_id,
       &ChildProcessSecurityPolicyImpl::CanReadFile,
       &ChildProcessSecurityPolicyImpl::CanWriteFile,
       &ChildProcessSecurityPolicyImpl::CanCreateFile,
-      &ChildProcessSecurityPolicyImpl::CanCreateWriteFile,
+      &ChildProcessSecurityPolicyImpl::CanCreateReadWriteFile,
       pp_open_flags, child_id, file);
 }
 
@@ -77,7 +77,7 @@ bool CanOpenFileSystemURLWithPepperFlags(int pp_open_flags, int child_id,
       &ChildProcessSecurityPolicyImpl::CanReadFileSystemFile,
       &ChildProcessSecurityPolicyImpl::CanWriteFileSystemFile,
       &ChildProcessSecurityPolicyImpl::CanCreateFileSystemFile,
-      &ChildProcessSecurityPolicyImpl::CanCreateWriteFileSystemFile,
+      &ChildProcessSecurityPolicyImpl::CanCreateReadWriteFileSystemFile,
       pp_open_flags, child_id, url);
 }
 
