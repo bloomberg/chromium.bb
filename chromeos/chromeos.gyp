@@ -88,6 +88,7 @@
         'dbus/cryptohome_client_stub.cc',
         'dbus/cryptohome_client_stub.h',
         'dbus/dbus_client_implementation_type.h',
+        'dbus/dbus_method_call_status.cc',
         'dbus/dbus_method_call_status.h',
         'dbus/dbus_thread_manager.cc',
         'dbus/dbus_thread_manager.h',

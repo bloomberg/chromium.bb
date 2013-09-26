@@ -19,6 +19,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/enterprise_metrics.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -33,9 +34,6 @@ void UMA(int sample) {
                             sample,
                             policy::kMetricEnrollmentSize);
 }
-
-// Does nothing.  Used as a VoidDBusMethodCallback.
-void EmptyVoidDBusMethodCallback(DBusMethodCallStatus result) {}
 
 }  // namespace
 
@@ -52,7 +50,7 @@ EnrollmentScreen::EnrollmentScreen(
   // Init the TPM if it has not been done until now (in debug build we might
   // have not done that yet).
   DBusThreadManager::Get()->GetCryptohomeClient()->TpmCanAttemptOwnership(
-      base::Bind(&EmptyVoidDBusMethodCallback));
+      EmptyVoidDBusMethodCallback());
 }
 
 EnrollmentScreen::~EnrollmentScreen() {}

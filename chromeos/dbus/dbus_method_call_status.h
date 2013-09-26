@@ -5,7 +5,10 @@
 #ifndef CHROMEOS_DBUS_DBUS_METHOD_CALL_STATUS_H_
 #define CHROMEOS_DBUS_DBUS_METHOD_CALL_STATUS_H_
 
+#include <string>
+
 #include "base/callback.h"
+#include "chromeos/chromeos_export.h"
 
 namespace dbus {
 
@@ -47,6 +50,9 @@ typedef base::Callback<void(
 // A callback to handle responses of methods returning a ObjectPath value that
 // doesn't get call status.
 typedef base::Callback<void(const dbus::ObjectPath& result)> ObjectPathCallback;
+
+// Returns an empty callback that does nothing.
+CHROMEOS_EXPORT VoidDBusMethodCallback EmptyVoidDBusMethodCallback();
 
 }  // namespace chromeos
 

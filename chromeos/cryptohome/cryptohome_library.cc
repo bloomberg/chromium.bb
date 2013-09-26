@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "crypto/encryptor.h"
 #include "crypto/nss_util.h"
@@ -24,9 +25,6 @@ namespace {
 
 const char kStubSystemSalt[] = "stub_system_salt";
 const size_t kNonceSize = 16;
-
-// Does nothing.  Used as a Cryptohome::VoidMethodCallback.
-void DoNothing(DBusMethodCallStatus call_status) {}
 
 }  // namespace
 
@@ -62,7 +60,7 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
 
   virtual void TpmCanAttemptOwnership() OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->TpmCanAttemptOwnership(
-        base::Bind(&DoNothing));
+        EmptyVoidDBusMethodCallback());
   }
 
   virtual void TpmClearStoredPassword() OVERRIDE {
