@@ -372,7 +372,7 @@ bool SetDefaultWebClient(const std::string& protocol) {
 ShellIntegration::DefaultWebClientState GetIsDefaultWebClient(
     const std::string& protocol) {
 #if defined(OS_CHROMEOS)
-  return ShellIntegration::IS_DEFAULT;
+  return ShellIntegration::UNKNOWN_DEFAULT;
 #else
   base::ThreadRestrictions::AssertIOAllowed();
 
