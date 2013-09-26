@@ -267,7 +267,8 @@ TEST_F(WebRtcLocalAudioTrackTest, DISABLED_DisableEnableAudioTrack) {
 
 // Create multiple audio tracks and enable/disable them, verify that the audio
 // callbacks appear/disappear.
-TEST_F(WebRtcLocalAudioTrackTest, MultipleAudioTracks) {
+// Flaky due to a data race, see http://crbug.com/295418
+TEST_F(WebRtcLocalAudioTrackTest, DISABLED_MultipleAudioTracks) {
   EXPECT_CALL(*capturer_source_.get(), Start()).WillOnce(Return());
   RTCMediaConstraints constraints;
   scoped_refptr<WebRtcLocalAudioTrack> track_1 =

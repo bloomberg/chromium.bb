@@ -304,7 +304,8 @@ TEST_F(SyncFileSystemServiceTest, InitializeForAppWithError) {
       SYNC_STATUS_FAILED);
 }
 
-TEST_F(SyncFileSystemServiceTest, SimpleLocalSyncFlow) {
+// Flaky.  http://crbug.com/237710
+TEST_F(SyncFileSystemServiceTest, DISABLED_SimpleLocalSyncFlow) {
   InitializeApp();
 
   StrictMock<MockSyncStatusObserver> status_observer;
