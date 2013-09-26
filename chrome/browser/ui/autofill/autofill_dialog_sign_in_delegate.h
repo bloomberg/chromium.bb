@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/gfx/size.h"
 
 namespace autofill {
 
@@ -23,11 +24,13 @@ class AutofillDialogSignInDelegate: public content::WebContentsDelegate,
  public:
   AutofillDialogSignInDelegate(AutofillDialogView* dialog_view,
                                content::WebContents* web_contents,
-                               content::WebContentsDelegate* wrapped_delegate);
+                               content::WebContentsDelegate* wrapped_delegate,
+                               const gfx::Size& minimum_size,
+                               const gfx::Size& maximum_size);
 
   // WebContentsDelegate implementation.
   virtual void ResizeDueToAutoResize(content::WebContents* source,
-                                     const gfx::Size& pref_size) OVERRIDE;
+                                     const gfx::Size& preferred_size) OVERRIDE;
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
@@ -42,20 +45,20 @@ class AutofillDialogSignInDelegate: public content::WebContentsDelegate,
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
 
-  // Sets the minimum width for the render view. This should be set to the
-  // width of the host AutofillDialogView.
-  void SetMinWidth(int width);
-
  private:
-  // Gets the minimum and maximum size for the dialog.
-  gfx::Size GetMinSize() const;
-  gfx::Size GetMaxSize() const;
+  // Enables auto-resizing for this view, if possible, constrained to the
+  // minimum and maximum size allowed by the delegate.
+  void EnableAutoResize();
 
-  AutofillDialogView* dialog_view_;
-  int min_width_;
+  // The dialog view hosting this sign in page.
+  AutofillDialogView* const dialog_view_;
 
   // The delegate for the WebContents hosting this dialog.
   content::WebContentsDelegate* const wrapped_delegate_;
+
+  // The minimum and maximum sizes that the sign-in view may have.
+  const gfx::Size minimum_size_;
+  const gfx::Size maximum_size_;
 };
 
 }  // namespace autofill

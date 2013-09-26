@@ -30,7 +30,9 @@
   signInDelegate_.reset(
       new autofill::AutofillDialogSignInDelegate(
           dialog_, webContents_.get(),
-          dialog_->delegate()->GetWebContents()->GetDelegate()));
+          dialog_->delegate()->GetWebContents()->GetDelegate(),
+          // TODO(groby): Implement proper minimum and maximum sizing on Mac.
+          dialog_->GetSize(), dialog_->GetSize()));
   NSView* webContentView = webContents_->GetView()->GetNativeView();
   [self setView:webContentView];
 }

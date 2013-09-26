@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,18 +13,24 @@ namespace autofill {
 AutofillDialogSignInDelegate::AutofillDialogSignInDelegate(
     AutofillDialogView* dialog_view,
     content::WebContents* web_contents,
-    content::WebContentsDelegate* wrapped_delegate)
+    content::WebContentsDelegate* wrapped_delegate,
+    const gfx::Size& minimum_size,
+    const gfx::Size& maximum_size)
     : WebContentsObserver(web_contents),
       dialog_view_(dialog_view),
-      min_width_(400),
-      wrapped_delegate_(wrapped_delegate) {
+      wrapped_delegate_(wrapped_delegate),
+      minimum_size_(minimum_size),
+      maximum_size_(maximum_size) {
+  DCHECK(dialog_view_);
   DCHECK(wrapped_delegate_);
   web_contents->SetDelegate(this);
+  EnableAutoResize();
 }
 
 void AutofillDialogSignInDelegate::ResizeDueToAutoResize(
-    content::WebContents* source, const gfx::Size& pref_size) {
-  dialog_view_->OnSignInResize(pref_size);
+    content::WebContents* source,
+    const gfx::Size& preferred_size) {
+  dialog_view_->OnSignInResize(preferred_size);
 }
 
 content::WebContents* AutofillDialogSignInDelegate::OpenURLFromTab(
@@ -46,26 +52,16 @@ void AutofillDialogSignInDelegate::AddNewContents(
 
 void AutofillDialogSignInDelegate::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
-  SetMinWidth(min_width_);
+  EnableAutoResize();
 
-  // Set the initial size as soon as we have an RVH to avoid
-  // bad size jumping.
-  dialog_view_->OnSignInResize(GetMinSize());
+  // Set the initial size as soon as we have an RVH to avoid bad size jumping.
+  dialog_view_->OnSignInResize(minimum_size_);
 }
 
-void AutofillDialogSignInDelegate::SetMinWidth(int width) {
-  min_width_ = width;
+void AutofillDialogSignInDelegate::EnableAutoResize() {
   content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   if (host)
-    host->EnableAutoResize(GetMinSize(), GetMaxSize());
-}
-
-gfx::Size AutofillDialogSignInDelegate::GetMinSize() const {
-  return gfx::Size(min_width_, 331);
-}
-
-gfx::Size AutofillDialogSignInDelegate::GetMaxSize() const {
-  return gfx::Size(std::max(min_width_, 800), 600);
+    host->EnableAutoResize(minimum_size_, maximum_size_);
 }
 
 }  // namespace autofill

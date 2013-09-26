@@ -114,7 +114,6 @@ class AutofillDialogViews : public AutofillDialogView,
   // views::View implementation.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
   // views::DialogDelegate implementation:
   virtual base::string16 GetWindowTitle() const OVERRIDE;
@@ -476,6 +475,18 @@ class AutofillDialogViews : public AutofillDialogView,
   typedef std::map<DialogSection, DetailsGroup> DetailGroupMap;
 
   gfx::Size CalculatePreferredSize();
+
+  // Returns the height of the initiating WebContents' view.
+  int GetBrowserViewHeight() const;
+
+  // Returns the |size| inset by |GetInsets()|.
+  gfx::Size InsetSize(const gfx::Size& size) const;
+
+  // Returns the minimum size of the sign in view for this dialog.
+  gfx::Size GetMinimumSignInViewSize() const;
+
+  // Returns the maximum size of the sign in view for this dialog.
+  gfx::Size GetMaximumSignInViewSize() const;
 
   void InitChildViews();
 

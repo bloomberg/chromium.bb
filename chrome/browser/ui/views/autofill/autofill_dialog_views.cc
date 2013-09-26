@@ -1413,7 +1413,8 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
   sign_in_delegate_.reset(
       new AutofillDialogSignInDelegate(
           this, sign_in_webview_->GetWebContents(),
-          delegate_->GetWebContents()->GetDelegate()));
+          delegate_->GetWebContents()->GetDelegate(),
+          GetMinimumSignInViewSize(), GetMaximumSignInViewSize()));
   sign_in_webview_->LoadInitialURL(wallet::GetSignInUrl());
 
   sign_in_webview_->SetVisible(true);
@@ -1552,11 +1553,6 @@ void AutofillDialogViews::Layout() {
 
   if (error_bubble_)
     error_bubble_->UpdatePosition();
-}
-
-void AutofillDialogViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  if (sign_in_delegate_)
-    sign_in_delegate_->SetMinWidth(GetContentsBounds().width());
 }
 
 base::string16 AutofillDialogViews::GetWindowTitle() const {
@@ -1794,25 +1790,49 @@ gfx::Size AutofillDialogViews::CalculatePreferredSize() {
   if (scrollable_area_->visible()) {
     // Show as much of the scroll view as is possible without going past the
     // bottom of the browser window.
-    views::Widget* widget =
-        views::Widget::GetTopLevelWidgetForNativeView(
-            delegate_->GetWebContents()->GetView()->GetNativeView());
-    int browser_window_height =
-        widget ? widget->GetContentsView()->bounds().height() : INT_MAX;
-    const int kWindowDecorationHeight = 200;
-    int browser_constrained_height =
-        browser_window_height - height - kWindowDecorationHeight;
+    int footnote_height = 0;
     if (footnote_view_->visible())
-      browser_constrained_height -= footnote_view_->GetHeightForWidth(width);
+      footnote_height = footnote_view_->GetHeightForWidth(width);
 
+    // TODO(estade): Replace this magic constant with a semantic computation.
+    const int kWindowDecorationHeight = 120;
+    int browser_constrained_scroll_height =
+        GetBrowserViewHeight() - kWindowDecorationHeight - height -
+            footnote_height;
     int scroll_height = std::min(
         scroll_size.height(),
-        std::max(kMinimumContentsHeight, browser_constrained_height));
+        std::max(kMinimumContentsHeight, browser_constrained_scroll_height));
 
     height += scroll_height;
   }
 
   return gfx::Size(width + insets.width(), height + insets.height());
+}
+
+int AutofillDialogViews::GetBrowserViewHeight() const {
+  return delegate_->GetWebContents()->GetView()->GetContainerSize().height();
+}
+
+gfx::Size AutofillDialogViews::InsetSize(const gfx::Size& size) const {
+  gfx::Insets insets = GetInsets();
+  return gfx::Size(size.width() - insets.width(),
+                   size.height() - insets.height());
+}
+
+gfx::Size AutofillDialogViews::GetMinimumSignInViewSize() const {
+  return InsetSize(GetDialogClientView()->size());
+}
+
+gfx::Size AutofillDialogViews::GetMaximumSignInViewSize() const {
+  // The sign-in view should never grow beyond the browser window, unless the
+  // minimum dialog height has already exceeded this limit.
+  gfx::Size size = GetDialogClientView()->size();
+  // TODO(isherman): This computation seems to come out about 30 pixels too
+  // large, possibly due to an invisible bubble border.
+  const int non_client_view_height = GetSize().height() - size.height();
+  size.set_height(
+      std::max(size.height(), GetBrowserViewHeight() - non_client_view_height));
+  return InsetSize(size);
 }
 
 void AutofillDialogViews::InitChildViews() {
