@@ -23,8 +23,8 @@
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::InSequence;
-using testing::SaveArg;
 using ::testing::Return;
+using ::testing::SaveArg;
 
 namespace content {
 
@@ -254,24 +254,6 @@ TEST_F(VideoCaptureManagerTest, OpenNotExisting) {
   vcm_->Close(session_id);
   message_loop_->RunUntilIdle();
 
-  vcm_->Unregister();
-}
-
-// Start a device using "magic" id, i.e. call Start without calling Open.
-TEST_F(VideoCaptureManagerTest, StartUsingId) {
-  InSequence s;
-  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
-  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
-
-  // Start shall trigger the Open callback.
-  VideoCaptureControllerID client_id = StartClient(
-      VideoCaptureManager::kStartOpenSessionId, true);
-
-  // Stop shall trigger the Close callback
-  StopClient(client_id);
-
-  // Wait to check callbacks before removing the listener.
-  message_loop_->RunUntilIdle();
   vcm_->Unregister();
 }
 

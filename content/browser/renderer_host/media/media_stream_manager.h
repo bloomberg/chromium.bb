@@ -53,16 +53,14 @@ class MediaStreamUIProxy;
 class VideoCaptureManager;
 
 // MediaStreamManager is used to generate and close new media devices, not to
-// start the media flow.
-// The classes requesting new media streams are answered using
-// MediaStreamManager::Listener.
+// start the media flow. The classes requesting new media streams are answered
+// using MediaStreamRequester.
 class CONTENT_EXPORT MediaStreamManager
     : public MediaStreamProviderListener,
       public base::MessageLoop::DestructionObserver,
       public base::SystemMonitor::DevicesChangedObserver {
  public:
-  // Callback to deliver the result of a media request. |label| is the string
-  // to identify the request,
+  // Callback to deliver the result of a media request.
   typedef base::Callback<void(const MediaStreamDevices& devices,
                               scoped_ptr<MediaStreamUIProxy> ui)>
       MediaRequestResponseCallback;

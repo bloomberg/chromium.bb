@@ -219,10 +219,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   media::VideoCaptureParams session_300 = session_100;
   session_300.session_id = 300;
 
-  // session_id of 1 is kStartOpenSessionId, which should have special meaning
-  // to VideoCaptureManager, but not to VideoCaptureController ... so test it.
   media::VideoCaptureParams session_1 = session_100;
-  session_1.session_id = VideoCaptureManager::kStartOpenSessionId;
+  session_1.session_id = 1;
 
   // The device format needn't match the VideoCaptureParams (the camera can do
   // what it wants). Pick something random to use for OnFrameInfo.

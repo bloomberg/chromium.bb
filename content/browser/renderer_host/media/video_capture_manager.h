@@ -37,11 +37,6 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   typedef base::Callback<
       void(const base::WeakPtr<VideoCaptureController>&)> DoneCB;
 
-  // Calling |Start| of this id will open the first device, even though open has
-  // not been called. This is used to be able to use video capture devices
-  // before MediaStream is implemented in Chrome and WebKit.
-  enum { kStartOpenSessionId = 1 };
-
   VideoCaptureManager();
 
   // Implements MediaStreamProvider.
@@ -90,23 +85,6 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
  private:
   virtual ~VideoCaptureManager();
   struct DeviceEntry;
-
-  // Helper for the kStartOpenSessionId case.
-  void OpenAndStartDefaultSession(
-      const media::VideoCaptureParams& capture_params,
-      base::ProcessHandle client_render_process,
-      VideoCaptureControllerID client_id,
-      VideoCaptureControllerEventHandler* client_handler,
-      const DoneCB& done_cb,
-      const media::VideoCaptureDevice::Names& device_names);
-
-  // Helper routine implementing StartCaptureForClient().
-  void DoStartCaptureForClient(
-      const media::VideoCaptureParams& capture_params,
-      base::ProcessHandle client_render_process,
-      VideoCaptureControllerID client_id,
-      VideoCaptureControllerEventHandler* client_handler,
-      const DoneCB& done_cb);
 
   // Check to see if |entry| has no clients left on its controller. If so,
   // remove it from the list of devices, and delete it asynchronously. |entry|

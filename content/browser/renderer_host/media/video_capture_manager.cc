@@ -29,11 +29,6 @@
 
 namespace content {
 
-// Starting id for the first capture session.
-// VideoCaptureManager::kStartOpenSessionId is used as default id without
-// explicitly calling open device.
-enum { kFirstSessionId = VideoCaptureManager::kStartOpenSessionId + 1 };
-
 VideoCaptureManager::DeviceEntry::DeviceEntry(
     MediaStreamType stream_type,
     const std::string& id,
@@ -46,7 +41,7 @@ VideoCaptureManager::DeviceEntry::~DeviceEntry() {}
 
 VideoCaptureManager::VideoCaptureManager()
     : listener_(NULL),
-      new_capture_session_id_(kFirstSessionId),
+      new_capture_session_id_(1),
       use_fake_device_(false) {
 }
 
@@ -201,30 +196,6 @@ void VideoCaptureManager::StartCaptureForClient(
          << ", #" << capture_params.session_id
          << ")";
 
-  if (capture_params.session_id == kStartOpenSessionId) {
-    // Solution for not using MediaStreamManager. Enumerate the devices and
-    // open the first one, and then start it.
-    base::PostTaskAndReplyWithResult(device_loop_, FROM_HERE,
-        base::Bind(&VideoCaptureManager::GetAvailableDevicesOnDeviceThread,
-                   this, MEDIA_DEVICE_VIDEO_CAPTURE),
-        base::Bind(&VideoCaptureManager::OpenAndStartDefaultSession, this,
-                   capture_params, client_render_process, client_id,
-                   client_handler, done_cb));
-    return;
-  } else {
-    DoStartCaptureForClient(capture_params, client_render_process, client_id,
-                            client_handler, done_cb);
-  }
-}
-
-void VideoCaptureManager::DoStartCaptureForClient(
-    const media::VideoCaptureParams& capture_params,
-    base::ProcessHandle client_render_process,
-    VideoCaptureControllerID client_id,
-    VideoCaptureControllerEventHandler* client_handler,
-    const DoneCB& done_cb) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
   DeviceEntry* entry = GetOrCreateDeviceEntry(capture_params.session_id);
   if (!entry) {
     done_cb.Run(base::WeakPtr<VideoCaptureController>());
@@ -279,14 +250,6 @@ void VideoCaptureManager::StopCaptureForClient(
 
   // If controller has no more clients, delete controller and device.
   DestroyDeviceEntryIfNoClients(entry);
-
-  // Close the session if it was auto-opened by StartCaptureForClient().
-  if (session_id == kStartOpenSessionId) {
-    sessions_.erase(session_id);
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&VideoCaptureManager::OnClosed, this,
-                   MEDIA_DEVICE_VIDEO_CAPTURE, kStartOpenSessionId));
-  }
 }
 
 void VideoCaptureManager::DoStopDeviceOnDeviceThread(DeviceEntry* entry) {
@@ -406,38 +369,6 @@ VideoCaptureManager::GetDeviceEntryForController(
     }
   }
   return NULL;
-}
-
-void VideoCaptureManager::OpenAndStartDefaultSession(
-    const media::VideoCaptureParams& capture_params,
-    base::ProcessHandle client_render_process,
-    VideoCaptureControllerID client_id,
-    VideoCaptureControllerEventHandler* client_handler,
-    const DoneCB& done_cb,
-    const media::VideoCaptureDevice::Names& device_names) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  // |device_names| is a value returned by GetAvailableDevicesOnDeviceThread().
-  // We'll mimic an Open() operation on the first element in that list.
-  DCHECK(capture_params.session_id == kStartOpenSessionId);
-  if (device_names.empty() ||
-      sessions_.count(capture_params.session_id) != 0) {
-    done_cb.Run(base::WeakPtr<VideoCaptureController>());
-    return;
-  }
-
-  // Open the device by creating a |sessions_| entry.
-  sessions_[capture_params.session_id] =
-      MediaStreamDevice(MEDIA_DEVICE_VIDEO_CAPTURE,
-                        device_names.front().id(),
-                        device_names.front().GetNameAndModel());
-
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&VideoCaptureManager::OnOpened, this,
-                 MEDIA_DEVICE_VIDEO_CAPTURE, kStartOpenSessionId));
-
-  DoStartCaptureForClient(capture_params, client_render_process, client_id,
-                          client_handler, done_cb);
 }
 
 void VideoCaptureManager::DestroyDeviceEntryIfNoClients(DeviceEntry* entry) {
