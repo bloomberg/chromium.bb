@@ -44,7 +44,6 @@ public:
 
     void didUpdateActiveOption(int optionIndex);
 
-
 private:
     AccessibilityMenuListPopup();
 
@@ -61,6 +60,21 @@ private:
 
     AccessibilityMenuListOption* menuListOptionAccessibilityObject(HTMLElement*) const;
 };
+
+inline AccessibilityMenuListPopup* toAccessibilityMenuListPopup(AccessibilityObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isMenuListPopup());
+    return static_cast<AccessibilityMenuListPopup*>(object);
+}
+
+inline const AccessibilityMenuListPopup* toAccessibilityMenuListPopup(const AccessibilityObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isMenuListPopup());
+    return static_cast<const AccessibilityMenuListPopup*>(object);
+}
+
+// This will catch anyone doing an unnecessary cast.
+void toAccessibilityMenuListPopup(const AccessibilityMenuListPopup*);
 
 } // namespace WebCore
 

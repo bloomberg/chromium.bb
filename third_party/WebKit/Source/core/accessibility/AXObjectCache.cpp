@@ -148,7 +148,7 @@ AccessibilityObject* AXObjectCache::focusedImageMapUIElement(HTMLAreaElement* ar
         if (!child->isImageMapLink())
             continue;
 
-        if (static_cast<AccessibilityImageMapLink*>(child)->areaElement() == areaElement)
+        if (toAccessibilityImageMapLink(child)->areaElement() == areaElement)
             return child;
     }
 
@@ -319,7 +319,7 @@ AccessibilityObject* AXObjectCache::getOrCreate(Widget* widget)
     if (widget->isFrameView())
         newObj = AccessibilityScrollView::create(toScrollView(widget));
     else if (widget->isScrollbar())
-        newObj = AccessibilityScrollbar::create(static_cast<Scrollbar*>(widget));
+        newObj = AccessibilityScrollbar::create(toScrollbar(widget));
 
     // Will crash later if we have two objects for the same widget.
     ASSERT(!get(widget));
@@ -924,7 +924,7 @@ void AXObjectCache::postPlatformNotification(AccessibilityObject* obj, AXNotific
 {
     if (obj && obj->isAccessibilityScrollbar() && notification == AXValueChanged) {
         // Send document value changed on scrollbar value changed notification.
-        Scrollbar* scrollBar = static_cast<AccessibilityScrollbar*>(obj)->scrollbar();
+        Scrollbar* scrollBar = toAccessibilityScrollbar(obj)->scrollbar();
         if (!scrollBar || !scrollBar->parent() || !scrollBar->parent()->isFrameView())
             return;
         Document* document = toFrameView(scrollBar->parent())->frame().document();

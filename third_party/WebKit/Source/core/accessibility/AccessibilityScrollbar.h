@@ -64,6 +64,21 @@ private:
     RefPtr<Scrollbar> m_scrollbar;
 };
 
+inline AccessibilityScrollbar* toAccessibilityScrollbar(AccessibilityObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isAccessibilityScrollbar());
+    return static_cast<AccessibilityScrollbar*>(object);
+}
+
+inline const AccessibilityScrollbar* toAccessibilityScrollbar(const AccessibilityObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isAccessibilityScrollbar());
+    return static_cast<const AccessibilityScrollbar*>(object);
+}
+
+// This will catch anyone doing an unnecessary cast.
+void toAccessibilityScrollbar(const AccessibilityScrollbar*);
+
 } // namespace WebCore
 
 #endif // AccessibilityScrollbar_h

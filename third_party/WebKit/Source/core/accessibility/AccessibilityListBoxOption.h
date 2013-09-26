@@ -66,6 +66,7 @@ public:
 private:
     HTMLElement* m_optionElement;
 
+    virtual bool isListBoxOption() const OVERRIDE { return true; }
     virtual bool canHaveChildren() const OVERRIDE { return false; }
     virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 
@@ -73,6 +74,21 @@ private:
     int listBoxOptionIndex() const;
     AccessibilityObject* listBoxOptionAccessibilityObject(HTMLElement*) const;
 };
+
+inline AccessibilityListBoxOption* toAccessibilityListBoxOption(AccessibilityObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isListBoxOption());
+    return static_cast<AccessibilityListBoxOption*>(object);
+}
+
+inline const AccessibilityListBoxOption* toAccessibilityListBoxOption(const AccessibilityObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isListBoxOption());
+    return static_cast<const AccessibilityListBoxOption*>(object);
+}
+
+// This will catch anyone doing an unnecessary cast.
+void toAccessibilityListBoxOption(const AccessibilityListBoxOption*);
 
 } // namespace WebCore
 

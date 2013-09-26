@@ -75,6 +75,21 @@ private:
     virtual bool isImageMapLink() const OVERRIDE { return true; }
 };
 
+inline AccessibilityImageMapLink* toAccessibilityImageMapLink(AccessibilityObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isImageMapLink());
+    return static_cast<AccessibilityImageMapLink*>(object);
+}
+
+inline const AccessibilityImageMapLink* toAccessibilityImageMapLink(const AccessibilityObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isImageMapLink());
+    return static_cast<const AccessibilityImageMapLink*>(object);
+}
+
+// This will catch anyone doing an unnecessary cast.
+void toAccessibilityImageMapLink(const AccessibilityImageMapLink*);
+
 } // namespace WebCore
 
 #endif // AccessibilityImageMapLink_h

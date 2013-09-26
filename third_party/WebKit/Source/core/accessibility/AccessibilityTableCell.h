@@ -60,6 +60,21 @@ private:
     virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 };
 
+inline AccessibilityTableCell* toAccessibilityTableCell(AccessibilityObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isTableCell());
+    return static_cast<AccessibilityTableCell*>(object);
+}
+
+inline const AccessibilityTableCell* toAccessibilityTableCell(const AccessibilityObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isTableCell());
+    return static_cast<const AccessibilityTableCell*>(object);
+}
+
+// This will catch anyone doing an unnecessary cast.
+void toAccessibilityTableCell(const AccessibilityTableCell*);
+
 } // namespace WebCore
 
 #endif // AccessibilityTableCell_h

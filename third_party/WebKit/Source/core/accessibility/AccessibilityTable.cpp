@@ -354,7 +354,7 @@ void AccessibilityTable::addChildren()
             if (!rowObject->isTableRow())
                 continue;
 
-            AccessibilityTableRow* row = static_cast<AccessibilityTableRow*>(rowObject);
+            AccessibilityTableRow* row = toAccessibilityTableRow(rowObject);
             // We need to check every cell for a new row, because cell spans
             // can cause us to miss rows if we just check the first column.
             if (appendedRows.contains(row))
@@ -373,7 +373,7 @@ void AccessibilityTable::addChildren()
     // make the columns based on the number of columns in the first body
     unsigned length = initialTableSection->numColumns();
     for (unsigned i = 0; i < length; ++i) {
-        AccessibilityTableColumn* column = static_cast<AccessibilityTableColumn*>(axCache->getOrCreate(ColumnRole));
+        AccessibilityTableColumn* column = toAccessibilityTableColumn(axCache->getOrCreate(ColumnRole));
         column->setColumnIndex((int)i);
         column->setParent(this);
         m_columns.append(column);
@@ -421,7 +421,7 @@ void AccessibilityTable::columnHeaders(AccessibilityChildrenVector& headers)
 
     unsigned colCount = m_columns.size();
     for (unsigned k = 0; k < colCount; ++k) {
-        AccessibilityObject* header = static_cast<AccessibilityTableColumn*>(m_columns[k].get())->headerObject();
+        AccessibilityObject* header = toAccessibilityTableColumn(m_columns[k].get())->headerObject();
         if (!header)
             continue;
         headers.append(header);
@@ -488,7 +488,7 @@ AccessibilityTableCell* AccessibilityTable::cellForColumnAndRow(unsigned column,
 
             pair<unsigned, unsigned> columnRange;
             pair<unsigned, unsigned> rowRange;
-            AccessibilityTableCell* tableCellChild = static_cast<AccessibilityTableCell*>(child);
+            AccessibilityTableCell* tableCellChild = toAccessibilityTableCell(child);
             tableCellChild->columnIndexRange(columnRange);
             tableCellChild->rowIndexRange(rowRange);
 

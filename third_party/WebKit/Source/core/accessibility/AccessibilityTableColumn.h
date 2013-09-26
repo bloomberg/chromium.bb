@@ -60,9 +60,25 @@ private:
     unsigned m_columnIndex;
     LayoutRect m_columnRect;
 
+    virtual bool isTableCol() const OVERRIDE { return true; }
     AccessibilityObject* headerObjectForSection(RenderTableSection*, bool thTagRequired);
     virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 };
+
+inline AccessibilityTableColumn* toAccessibilityTableColumn(AccessibilityObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isTableCol());
+    return static_cast<AccessibilityTableColumn*>(object);
+}
+
+inline const AccessibilityTableColumn* toAccessibilityTableColumn(const AccessibilityObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isTableCol());
+    return static_cast<const AccessibilityTableColumn*>(object);
+}
+
+// This will catch anyone doing an unnecessary cast.
+void toAccessibilityTableColumn(const AccessibilityTableColumn*);
 
 } // namespace WebCore
 

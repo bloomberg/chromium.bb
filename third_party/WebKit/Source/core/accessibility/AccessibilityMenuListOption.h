@@ -61,6 +61,21 @@ private:
     RefPtr<HTMLElement> m_element;
 };
 
+inline AccessibilityMenuListOption* toAccessibilityMenuListOption(AccessibilityObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isMenuListOption());
+    return static_cast<AccessibilityMenuListOption*>(object);
+}
+
+inline const AccessibilityMenuListOption* toAccessibilityMenuListOption(const AccessibilityObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isMenuListOption());
+    return static_cast<const AccessibilityMenuListOption*>(object);
+}
+
+// This will catch anyone doing an unnecessary cast.
+void toAccessibilityMenuListOption(const AccessibilityMenuListOption*);
+
 } // namespace WebCore
 
 #endif // AccessibilityMenuListOption_h
