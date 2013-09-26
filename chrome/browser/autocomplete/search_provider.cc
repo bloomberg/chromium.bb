@@ -639,6 +639,8 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   if (minimal_changes)
     return;
 
+  base::TimeTicks do_history_query_start_time(base::TimeTicks::Now());
+
   keyword_history_results_.clear();
   default_history_results_.clear();
 
@@ -646,10 +648,17 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
       input_.current_page_classification()))
     return;
 
+  base::TimeTicks start_time(base::TimeTicks::Now());
   HistoryService* const history_service =
       HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  base::TimeTicks now(base::TimeTicks::Now());
+  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.GetHistoryServiceTime",
+                      now - start_time);
+  start_time = now;
   history::URLDatabase* url_db = history_service ?
       history_service->InMemoryDatabase() : NULL;
+  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.InMemoryDatabaseTime",
+                      base::TimeTicks::Now() - start_time);
   if (!url_db)
     return;
 
@@ -665,14 +674,20 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   int num_matches = kMaxMatches * 5;
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
   if (default_url) {
+    start_time = base::TimeTicks::Now();
     url_db->GetMostRecentKeywordSearchTerms(default_url->id(), input_.text(),
         num_matches, &default_history_results_);
+    UMA_HISTOGRAM_TIMES(
+        "Omnibox.SearchProvider.GetMostRecentKeywordTermsDefaultProviderTime",
+        base::TimeTicks::Now() - start_time);
   }
   const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
   if (keyword_url) {
     url_db->GetMostRecentKeywordSearchTerms(keyword_url->id(),
         keyword_input_.text(), num_matches, &keyword_history_results_);
   }
+  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.DoHistoryQueryTime",
+                      base::TimeTicks::Now() - do_history_query_start_time);
 }
 
 void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
@@ -977,6 +992,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
 void SearchProvider::ConvertResultsToAutocompleteMatches() {
   // Convert all the results to matches and add them to a map, so we can keep
   // the most relevant match for each result.
+  base::TimeTicks start_time(base::TimeTicks::Now());
   MatchMap map;
   const base::Time no_time;
   int did_not_accept_keyword_suggestion =
@@ -1044,6 +1060,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   // We will always return any verbatim matches, no matter how we obtained their
   // scores, unless we have already accepted AutocompleteResult::kMaxMatches
   // higher-scoring matches under the conditions above.
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Omnibox.SearchProvider.NumMatchesToSort", matches.size(), 1, 50, 20);
   std::sort(matches.begin(), matches.end(), &AutocompleteMatch::MoreRelevant);
   matches_.clear();
 
@@ -1070,6 +1088,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
 
     matches_.push_back(*i);
   }
+  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.ConvertResultsTime",
+                      base::TimeTicks::Now() - start_time);
 }
 
 bool SearchProvider::IsTopMatchNavigationInKeywordMode() const {
@@ -1115,6 +1135,7 @@ bool SearchProvider::HasValidDefaultMatch(
 }
 
 void SearchProvider::UpdateMatches() {
+  base::TimeTicks update_matches_start_time(base::TimeTicks::Now());
   ConvertResultsToAutocompleteMatches();
 
   // Check constraints that may be violated by suggested relevances.
@@ -1186,8 +1207,13 @@ void SearchProvider::UpdateMatches() {
     DCHECK(HasValidDefaultMatch(omnibox_will_reorder_for_legal_default_match));
   }
 
+  base::TimeTicks update_starred_start_time(base::TimeTicks::Now());
   UpdateStarredStateOfMatches();
+  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.UpdateStarredTime",
+                      base::TimeTicks::Now() - update_starred_start_time);
   UpdateDone();
+  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.UpdateMatchesTime",
+                      base::TimeTicks::Now() - update_matches_start_time);
 }
 
 void SearchProvider::AddNavigationResultsToMatches(
@@ -1210,6 +1236,7 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
   if (results.empty())
     return;
 
+  base::TimeTicks start_time(base::TimeTicks::Now());
   bool prevent_inline_autocomplete = input_.prevent_inline_autocomplete() ||
       (input_.type() == AutocompleteInput::URL);
   const string16& input_text =
@@ -1242,6 +1269,8 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
                   false, std::string(), AutocompleteMatchType::SEARCH_HISTORY,
                   did_not_accept_suggestion, is_keyword, map);
   }
+  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.AddHistoryResultsTime",
+                      base::TimeTicks::Now() - start_time);
 }
 
 SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
