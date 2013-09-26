@@ -55,7 +55,7 @@ TEST_F(MoveOperationTest, MoveFileInSameDirectory) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &dest_entry));
-  EXPECT_EQ(src_entry.resource_id(), dest_entry.resource_id());
+  EXPECT_EQ(src_entry.local_id(), dest_entry.local_id());
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntry(src_path, &src_entry));
 
   EXPECT_EQ(1U, observer()->get_changed_paths().size());
@@ -81,7 +81,7 @@ TEST_F(MoveOperationTest, MoveFileFromRootToSubDirectory) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &dest_entry));
-  EXPECT_EQ(src_entry.resource_id(), dest_entry.resource_id());
+  EXPECT_EQ(src_entry.local_id(), dest_entry.local_id());
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntry(src_path, &src_entry));
 
   EXPECT_EQ(2U, observer()->get_changed_paths().size());
@@ -108,7 +108,7 @@ TEST_F(MoveOperationTest, MoveFileFromSubDirectoryToRoot) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &dest_entry));
-  EXPECT_EQ(src_entry.resource_id(), dest_entry.resource_id());
+  EXPECT_EQ(src_entry.local_id(), dest_entry.local_id());
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntry(src_path, &src_entry));
 
   EXPECT_EQ(2U, observer()->get_changed_paths().size());
@@ -136,7 +136,7 @@ TEST_F(MoveOperationTest, MoveFileBetweenSubDirectories) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &dest_entry));
-  EXPECT_EQ(src_entry.resource_id(), dest_entry.resource_id());
+  EXPECT_EQ(src_entry.local_id(), dest_entry.local_id());
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntry(src_path, &src_entry));
 
   EXPECT_EQ(2U, observer()->get_changed_paths().size());
@@ -164,7 +164,7 @@ TEST_F(MoveOperationTest, MoveFileBetweenSubDirectoriesNoRename) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &dest_entry));
-  EXPECT_EQ(src_entry.resource_id(), dest_entry.resource_id());
+  EXPECT_EQ(src_entry.local_id(), dest_entry.local_id());
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntry(src_path, &src_entry));
 
   EXPECT_EQ(2U, observer()->get_changed_paths().size());
@@ -210,7 +210,7 @@ TEST_F(MoveOperationTest, MoveFileBetweenSubDirectoriesRenameWithTitle) {
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &dest_entry));
   EXPECT_EQ("SubDirectory File 1 (1).txt", dest_entry.title());
-  EXPECT_EQ(copied_entry.resource_id(), dest_entry.resource_id());
+  EXPECT_EQ(copied_entry.local_id(), dest_entry.local_id());
   EXPECT_EQ(FILE_ERROR_NOT_FOUND,
             GetLocalResourceEntry(copied_path, &copied_entry));
 
@@ -295,7 +295,7 @@ TEST_F(MoveOperationTest, PreserveLastModified) {
     EXPECT_EQ(FILE_ERROR_OK, error);
 
     EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &dest_entry));
-    EXPECT_EQ(src_entry.resource_id(), dest_entry.resource_id());
+    EXPECT_EQ(src_entry.local_id(), dest_entry.local_id());
     EXPECT_EQ(src_entry.file_info().last_modified(),
               dest_entry.file_info().last_modified());
     EXPECT_EQ(FILE_ERROR_NOT_FOUND,
