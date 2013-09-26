@@ -61,6 +61,9 @@ class InputComponentsHandler : public ManifestHandler {
 
   virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
 
+  // Requires kOptionsPage is already parsed.
+  virtual const std::vector<std::string> PrerequisiteKeys() const OVERRIDE;
+
  private:
   virtual const std::vector<std::string> Keys() const OVERRIDE;
 
