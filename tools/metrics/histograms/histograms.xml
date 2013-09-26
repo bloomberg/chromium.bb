@@ -6083,6 +6083,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="MediaGalleries.Counts" enum="MediaGalleriesUsageType">
+  <summary>Various usage counts for media galleries.</summary>
+</histogram>
+
 <histogram name="Memory.BackingStore">
   <summary>TBD.</summary>
 </histogram>
@@ -23541,6 +23545,17 @@ other types of suffix sets.
   <int value="35" label="WAV / WAVE (Waveform Audio)"/>
   <int value="36" label="Matroska / WebM"/>
   <int value="37" label="WTV (Windows Television)"/>
+</enum>
+
+<enum name="MediaGalleriesUsageType" type="int">
+  <int value="0" label="Gallery added from dialog"/>
+  <int value="1" label="Gallery permission added from dialog"/>
+  <int value="2" label="Gallery permission removed from dialog"/>
+  <int value="3" label="GetMediaFileSystems API invocations"/>
+  <int value="4" label="Profiles With API Usage"/>
+  <int value="5" label="Dialog shown"/>
+  <int value="6" label="Gallery added from WebUI"/>
+  <int value="7" label="Gallery removed from WebUI"/>
 </enum>
 
 <enum name="MediaKeyError" type="int">

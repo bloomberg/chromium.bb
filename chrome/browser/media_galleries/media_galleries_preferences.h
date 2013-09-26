@@ -197,7 +197,9 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   MediaGalleryPrefIdSet GalleriesForExtension(
       const extensions::Extension& extension) const;
 
-  void SetGalleryPermissionForExtension(const extensions::Extension& extension,
+  // Returns true if the permission changed. Returns false if there was
+  // no change.
+  bool SetGalleryPermissionForExtension(const extensions::Extension& extension,
                                         MediaGalleryPrefId pref_id,
                                         bool has_permission);
 

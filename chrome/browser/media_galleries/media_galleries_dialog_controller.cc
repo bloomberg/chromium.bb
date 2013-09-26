@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
+#include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
@@ -349,14 +350,22 @@ void MediaGalleriesDialogController::InitializePermissions() {
 }
 
 void MediaGalleriesDialogController::SavePermissions() {
+  media_galleries::UsageCount(media_galleries::SAVE_DIALOG);
   for (KnownGalleryPermissions::const_iterator iter = known_galleries_.begin();
        iter != known_galleries_.end(); ++iter) {
-    preferences_->SetGalleryPermissionForExtension(
+    bool changed = preferences_->SetGalleryPermissionForExtension(
         *extension_, iter->first, iter->second.allowed);
+    if (changed) {
+      if (iter->second.allowed)
+        media_galleries::UsageCount(media_galleries::DIALOG_PERMISSION_ADDED);
+      else
+        media_galleries::UsageCount(media_galleries::DIALOG_PERMISSION_REMOVED);
+    }
   }
 
   for (GalleryPermissionsVector::const_iterator iter = new_galleries_.begin();
        iter != new_galleries_.end(); ++iter) {
+    media_galleries::UsageCount(media_galleries::DIALOG_GALLERY_ADDED);
     // If the user added a gallery then unchecked it, forget about it.
     if (!iter->allowed)
       continue;

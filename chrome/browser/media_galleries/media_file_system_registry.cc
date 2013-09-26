@@ -21,6 +21,7 @@
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "chrome/browser/media_galleries/media_file_system_context.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
+#include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/media_galleries/scoped_mtp_device_map_entry.h"
 #include "chrome/browser/profiles/profile.h"
@@ -476,6 +477,7 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
   // Create an empty entry so the initialization code below only gets called
   // once per profile.
   extension_hosts_map_[profile] = ExtensionHostMap();
+  media_galleries::UsageCount(media_galleries::PROFILES_WITH_USAGE);
 
   // TODO(gbillock): Move this stanza to MediaGalleriesPreferences init code.
   StorageMonitor* monitor = StorageMonitor::GetInstance();

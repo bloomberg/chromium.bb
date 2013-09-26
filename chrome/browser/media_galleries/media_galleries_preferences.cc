@@ -806,7 +806,7 @@ MediaGalleryPrefIdSet MediaGalleriesPreferences::GalleriesForExtension(
   return result;
 }
 
-void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
+bool MediaGalleriesPreferences::SetGalleryPermissionForExtension(
     const extensions::Extension& extension,
     MediaGalleryPrefId pref_id,
     bool has_permission) {
@@ -815,7 +815,7 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
   MediaGalleriesPrefInfoMap::const_iterator gallery_info =
       known_galleries_.find(pref_id);
   if (gallery_info == known_galleries_.end())
-    return;
+    return false;
 
   bool default_permission = false;
   if (gallery_info->second.type == MediaGalleryPrefInfo::kAutoDetected)
@@ -824,10 +824,10 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
   if (has_permission == default_permission) {
     if (!UnsetGalleryPermissionInPrefs(extension.id(), pref_id))
       // If permission wasn't set, assume nothing has changed.
-      return;
+      return false;
   } else {
     if (!SetGalleryPermissionInPrefs(extension.id(), pref_id, has_permission))
-      return;
+      return false;
   }
   if (has_permission)
     FOR_EACH_OBSERVER(GalleryChangeObserver,
@@ -837,6 +837,7 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
     FOR_EACH_OBSERVER(GalleryChangeObserver,
                       gallery_change_observers_,
                       OnPermissionRemoved(this, extension.id(), pref_id));
+  return true;
 }
 
 void MediaGalleriesPreferences::Shutdown() {

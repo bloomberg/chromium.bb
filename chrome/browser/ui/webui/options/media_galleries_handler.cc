@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
+#include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
@@ -134,6 +135,7 @@ void MediaGalleriesHandler::HandleForgetGallery(const base::ListValue* args) {
     return;
   }
 
+  media_galleries::UsageCount(media_galleries::WEBUI_FORGET_GALLERY);
   DCHECK(StorageMonitor::GetInstance()->IsInitialized());
   MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(
@@ -144,6 +146,7 @@ void MediaGalleriesHandler::HandleForgetGallery(const base::ListValue* args) {
 void MediaGalleriesHandler::FileSelected(const base::FilePath& path,
                                          int index,
                                          void* params) {
+  media_galleries::UsageCount(media_galleries::WEBUI_ADD_GALLERY);
   DCHECK(StorageMonitor::GetInstance()->IsInitialized());
   MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(
