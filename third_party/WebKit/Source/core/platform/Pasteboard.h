@@ -60,7 +60,6 @@ public:
     static Pasteboard* generalPasteboard();
     void writeSelection(Range*, bool canSmartCopyOrDelete, const String& text);
     void writePlainText(const String&, SmartReplaceOption);
-    void writeURL(const KURL&, const String&);
     void writeImage(Node*, const KURL&, const String& title);
     void writeDataObject(PassRefPtr<ChromiumDataObject>);
     bool canSmartReplace();

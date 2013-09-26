@@ -1025,11 +1025,6 @@ void Editor::simplifyMarkup(Node* startNode, Node* endNode)
     SimplifyMarkupCommand::create(*m_frame->document(), startNode, endNode ? NodeTraversal::next(endNode) : 0)->apply();
 }
 
-void Editor::copyURL(const KURL& url, const String& title)
-{
-    Pasteboard::generalPasteboard()->writeURL(url, title);
-}
-
 void Editor::copyImage(const HitTestResult& result)
 {
     KURL url = result.absoluteLinkURL();

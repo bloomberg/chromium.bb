@@ -85,8 +85,6 @@ public:
     virtual void writeHTML(
         const WebString& htmlText, const WebURL&,
         const WebString& plainText, bool writeSmartPaste) { }
-    virtual void writeURL(
-        const WebURL&, const WebString& title) { }
     virtual void writeImage(
         const WebImage&, const WebURL&, const WebString& title) { }
     virtual void writeDataObject(const WebDragData&) { }

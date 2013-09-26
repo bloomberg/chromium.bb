@@ -102,20 +102,6 @@ void Pasteboard::writePlainText(const String& text, SmartReplaceOption)
 #endif
 }
 
-void Pasteboard::writeURL(const KURL& url, const String& titleStr)
-{
-    ASSERT(!url.isEmpty());
-
-    String title(titleStr);
-    if (title.isEmpty()) {
-        title = url.lastPathComponent();
-        if (title.isEmpty())
-            title = url.host();
-    }
-
-    WebKit::Platform::current()->clipboard()->writeURL(url, title);
-}
-
 void Pasteboard::writeImage(Node* node, const KURL&, const String& title)
 {
     ASSERT(node);
