@@ -20,11 +20,6 @@
 #include "chromeos/system/name_value_pairs_parser.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
-// TODO(phajdan.jr): Drop that dependency, http://crbug.com/180711 .
-#include "chrome/common/chrome_version_info.h"
-#endif
-
 using content::BrowserThread;
 
 namespace chromeos {
@@ -56,11 +51,6 @@ const char kEchoCouponFile[] = "/var/cache/echo/vpd_echo.txt";
 const char kEchoCouponEq[] = "=";
 const char kEchoCouponDelim[] = "\n";
 
-// File to get machine OS info from, and key/value delimiters of the file.
-const char kMachineOSInfoFile[] = "/etc/lsb-release";
-const char kMachineOSInfoEq[] = "=";
-const char kMachineOSInfoDelim[] = "\n";
-
 // File to get VPD info from, and key/value delimiters of the file.
 const char kVpdFile[] = "/var/log/vpd_2.0.txt";
 const char kVpdEq[] = "=";
@@ -78,8 +68,6 @@ const CommandLine::CharType kOemManifestFilePath[] =
 // Key values for GetMachineStatistic()/GetMachineFlag() calls.
 const char kDevSwitchBootMode[] = "devsw_boot";
 const char kHardwareClass[] = "hardware_class";
-const char kMachineInfoBoard[] =
-    "CHROMEOS_RELEASE_BOARD";
 const char kOffersCouponCodeKey[] = "ubind_attribute";
 const char kOffersGroupCodeKey[] = "gbind_attribute";
 const char kOemCanExitEnterpriseEnrollmentKey[] =
@@ -113,13 +101,6 @@ class StatisticsProviderImpl : public StatisticsProvider {
   typedef std::map<std::string, bool> MachineFlags;
   friend struct DefaultSingletonTraits<StatisticsProviderImpl>;
 
-  // Loads the machine info file, which is necessary to get the Chrome channel.
-  // Treat MachineOSInfoFile specially, as distribution channel information
-  // (stable, beta, dev, canary) is required at earlier stage than everything
-  // else. Rather than posting a delayed task, read and parse the machine OS
-  // info file immediately.
-  void LoadMachineOSInfoFile();
-
   // Loads the machine statistcs by examining the system.
   void LoadMachineStatistics();
 
@@ -135,9 +116,6 @@ class StatisticsProviderImpl : public StatisticsProvider {
 void StatisticsProviderImpl::Init() {
   DCHECK(!initialized_);
   initialized_ = true;
-
-  // Load the machine info file immediately to get the channel info.
-  LoadMachineOSInfoFile();
 }
 
 bool StatisticsProviderImpl::GetMachineStatistic(
@@ -199,21 +177,6 @@ StatisticsProviderImpl::StatisticsProviderImpl()
       load_statistics_started_(false),
       on_statistics_loaded_(true  /* manual_reset */,
                             false /* initially_signaled */) {
-}
-
-void StatisticsProviderImpl::LoadMachineOSInfoFile() {
-  NameValuePairsParser parser(&machine_info_);
-  if (parser.GetNameValuePairsFromFile(base::FilePath(kMachineOSInfoFile),
-                                       kMachineOSInfoEq,
-                                       kMachineOSInfoDelim)) {
-#if defined(GOOGLE_CHROME_BUILD)
-    const char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
-    NameValuePairsParser::NameValueMap::iterator iter =
-        machine_info_.find(kChromeOSReleaseTrack);
-    if (iter != machine_info_.end())
-      chrome::VersionInfo::SetChannel(iter->second);
-#endif
-  }
 }
 
 void StatisticsProviderImpl::StartLoadingMachineStatistics() {

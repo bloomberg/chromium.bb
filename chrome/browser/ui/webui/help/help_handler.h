@@ -81,9 +81,6 @@ class HelpHandler : public content::WebUIMessageHandler,
   void OnOSFirmware(const std::string& firmware);
   void OnCurrentChannel(const std::string& channel);
   void OnTargetChannel(const std::string& channel);
-
-  void ProcessLsbFileInfo(
-      base::PlatformFileError rv, const base::PlatformFileInfo& file_info);
 #endif
 
   // Specialized instance of the VersionUpdater used to update the browser.

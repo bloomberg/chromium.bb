@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -37,7 +39,7 @@ TEST_F(SysInfoTest, AmountOfFreeDiskSpace) {
             << tmp_path.value();
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 TEST_F(SysInfoTest, OperatingSystemVersionNumbers) {
   int32 os_major_version = -1;
   int32 os_minor_version = -1;
@@ -62,17 +64,18 @@ TEST_F(SysInfoTest, Uptime) {
 }
 
 #if defined(OS_CHROMEOS)
+
 TEST_F(SysInfoTest, GoogleChromeOSVersionNumbers) {
   int32 os_major_version = -1;
   int32 os_minor_version = -1;
   int32 os_bugfix_version = -1;
-  std::string lsb_release("FOO=1234123.34.5\n");
-  lsb_release.append(base::SysInfo::GetLinuxStandardBaseVersionKey());
-  lsb_release.append("=1.2.3.4\n");
-  base::SysInfo::ParseLsbRelease(lsb_release,
-                                 &os_major_version,
-                                 &os_minor_version,
-                                 &os_bugfix_version);
+  const char* kLsbRelease =
+      "FOO=1234123.34.5\n"
+      "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
+  base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
+  base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
+                                               &os_minor_version,
+                                               &os_bugfix_version);
   EXPECT_EQ(1, os_major_version);
   EXPECT_EQ(2, os_minor_version);
   EXPECT_EQ(3, os_bugfix_version);
@@ -82,13 +85,13 @@ TEST_F(SysInfoTest, GoogleChromeOSVersionNumbersFirst) {
   int32 os_major_version = -1;
   int32 os_minor_version = -1;
   int32 os_bugfix_version = -1;
-  std::string lsb_release(base::SysInfo::GetLinuxStandardBaseVersionKey());
-  lsb_release.append("=1.2.3.4\n");
-  lsb_release.append("FOO=1234123.34.5\n");
-  base::SysInfo::ParseLsbRelease(lsb_release,
-                                 &os_major_version,
-                                 &os_minor_version,
-                                 &os_bugfix_version);
+  const char* kLsbRelease =
+      "CHROMEOS_RELEASE_VERSION=1.2.3.4\n"
+      "FOO=1234123.34.5\n";
+  base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
+  base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
+                                               &os_minor_version,
+                                               &os_bugfix_version);
   EXPECT_EQ(1, os_major_version);
   EXPECT_EQ(2, os_minor_version);
   EXPECT_EQ(3, os_bugfix_version);
@@ -98,14 +101,23 @@ TEST_F(SysInfoTest, GoogleChromeOSNoVersionNumbers) {
   int32 os_major_version = -1;
   int32 os_minor_version = -1;
   int32 os_bugfix_version = -1;
-  std::string lsb_release("FOO=1234123.34.5\n");
-  base::SysInfo::ParseLsbRelease(lsb_release,
-                                 &os_major_version,
-                                 &os_minor_version,
-                                 &os_bugfix_version);
-  EXPECT_EQ(-1, os_major_version);
-  EXPECT_EQ(-1, os_minor_version);
-  EXPECT_EQ(-1, os_bugfix_version);
+  const char* kLsbRelease = "FOO=1234123.34.5\n";
+  base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
+  base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
+                                               &os_minor_version,
+                                               &os_bugfix_version);
+  EXPECT_EQ(0, os_major_version);
+  EXPECT_EQ(0, os_minor_version);
+  EXPECT_EQ(0, os_bugfix_version);
+}
+
+TEST_F(SysInfoTest, GoogleChromeOSLsbReleaseTime) {
+  const char* kLsbRelease = "CHROMEOS_RELEASE_VERSION=1.2.3.4";
+  base::Time lsb_release_time = base::Time::Now();
+  base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, lsb_release_time);
+  base::Time parsed_lsb_release_time = base::SysInfo::GetLsbReleaseTime();
+  EXPECT_EQ(lsb_release_time.ToDoubleT(),
+            parsed_lsb_release_time.ToDoubleT());
 }
 
 #endif  // OS_CHROMEOS

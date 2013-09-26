@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_strings.h"
 
+#include "base/sys_info.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
-#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "grit/app_locale_settings.h"
 #include "grit/generated_resources.h"
@@ -516,14 +516,8 @@ bool FileBrowserPrivateGetStringsFunction::RunImpl() {
 
   webui::SetFontAndTextDirection(dict);
 
-  std::string board;
-  chromeos::system::StatisticsProvider* provider =
-      chromeos::system::StatisticsProvider::GetInstance();
-  if (!provider->GetMachineStatistic(chromeos::system::kMachineInfoBoard,
-                                     &board)) {
-    board = "unknown";
-  }
-  dict->SetString(chromeos::system::kMachineInfoBoard, board);
+  dict->SetString("CHROMEOS_RELEASE_BOARD",
+                  base::SysInfo::GetLsbReleaseBoard());
 
   dict->SetString("UI_LOCALE", extension_l10n_util::CurrentLocaleOrDefault());
 

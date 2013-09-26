@@ -71,7 +71,6 @@ const int kPolicyNotFound = 902;  // This error is not sent as HTTP status code.
 #if defined(OS_CHROMEOS)
 // Machine info keys.
 const char kMachineInfoHWClass[] = "hardware_class";
-const char kMachineInfoBoard[] = "CHROMEOS_RELEASE_BOARD";
 #endif
 
 bool IsProxyError(const net::URLRequestStatus status) {
@@ -177,12 +176,9 @@ const std::string& GetPlatformString() {
       chromeos::system::StatisticsProvider::GetInstance();
 
   std::string hwclass;
-  std::string board;
-  if (!provider->GetMachineStatistic(kMachineInfoHWClass, &hwclass) ||
-      !provider->GetMachineStatistic(kMachineInfoBoard, &board)) {
+  if (!provider->GetMachineStatistic(kMachineInfoHWClass, &hwclass))
     LOG(ERROR) << "Failed to get machine information";
-  }
-  os_name += ",CrOS," + board;
+  os_name += ",CrOS," + base::SysInfo::GetLsbReleaseBoard();
   os_hardware += "," + hwclass;
 #endif
 

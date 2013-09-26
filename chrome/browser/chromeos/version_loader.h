@@ -53,13 +53,7 @@ class VersionLoader {
   CancelableTaskTracker::TaskId GetFirmware(const GetFirmwareCallback& callback,
                                             CancelableTaskTracker* tracker);
 
-  static const char kFullVersionPrefix[];
-  static const char kVersionPrefix[];
-  static const char kFirmwarePrefix[];
-
  private:
-  FRIEND_TEST_ALL_PREFIXES(VersionLoaderTest, ParseFullVersion);
-  FRIEND_TEST_ALL_PREFIXES(VersionLoaderTest, ParseVersion);
   FRIEND_TEST_ALL_PREFIXES(VersionLoaderTest, ParseFirmware);
 
   // VersionLoader calls into the Backend in the blocking thread pool to load
@@ -68,13 +62,12 @@ class VersionLoader {
    public:
     Backend() {}
 
-    // Calls ParseVersion to get the version # and notifies request.
-    // This is invoked in the blocking thread pool.
-    // If |full_version| is true then extra info is passed in version string.
+    // Gets the version number from base::SysInfo. This is invoked on the
+    // blocking thread pool.
     void GetVersion(VersionFormat format, std::string* version);
 
-    // Calls ParseFirmware to get the firmware # and notifies request.
-    // This is invoked in the blocking thread pool.
+    // Calls ParseFirmware to get the firmware value. This is invoked on the
+    // blocking thread pool.
     void GetFirmware(std::string* firmware);
 
    private:
@@ -84,11 +77,6 @@ class VersionLoader {
 
     DISALLOW_COPY_AND_ASSIGN(Backend);
   };
-
-  // Extracts the version from the file.
-  // |prefix| specifies what key defines version data.
-  static std::string ParseVersion(const std::string& contents,
-                                  const std::string& prefix);
 
   // Extracts the firmware from the file.
   static std::string ParseFirmware(const std::string& contents);

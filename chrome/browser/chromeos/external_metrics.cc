@@ -97,17 +97,8 @@ void SetupProgressiveScanFieldTrial() {
 }
 
 // Finds out if we're on a 2GB Parrot.
-//
-// This code reads and parses /etc/lsb-release. There are at least four other
-// places that open and parse /etc/lsb-release, and I wish I could fix the
-// mess.  At least this code is temporary.
-
 bool Is2GBParrot() {
-  base::FilePath path("/etc/lsb-release");
-  std::string contents;
-  if (!base::ReadFileToString(path, &contents))
-    return false;
-  if (contents.find("CHROMEOS_RELEASE_BOARD=parrot") == std::string::npos)
+  if (base::SysInfo::GetLsbReleaseBoard() != "parrot")
     return false;
   // There are 2GB and 4GB models.
   return base::SysInfo::AmountOfPhysicalMemory() <= 2LL * 1024 * 1024 * 1024;

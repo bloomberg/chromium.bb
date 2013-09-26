@@ -5,11 +5,13 @@
 #ifndef BASE_SYS_INFO_H_
 #define BASE_SYS_INFO_H_
 
+#include <map>
 #include <string>
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -78,19 +80,25 @@ class BASE_EXPORT SysInfo {
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
 #if defined(OS_CHROMEOS)
-  // Returns the name of the version entry we wish to look up in the
-  // Linux Standard Base release information file.
-  static std::string GetLinuxStandardBaseVersionKey();
+  typedef std::map<std::string, std::string> LsbReleaseMap;
 
-  // Parses /etc/lsb-release to get version information for Google Chrome OS.
-  // Declared here so it can be exposed for unit testing.
-  static void ParseLsbRelease(const std::string& lsb_release,
-                              int32* major_version,
-                              int32* minor_version,
-                              int32* bugfix_version);
+  // Returns the contents of /etc/lsb-release as a map.
+  static const LsbReleaseMap& GetLsbReleaseMap();
 
-  // Returns the path to the lsb-release file.
-  static FilePath GetLsbReleaseFilePath();
+  // If |key| is present in the LsbReleaseMap, sets |value| and returns true.
+  static bool GetLsbReleaseValue(const std::string& key, std::string* value);
+
+  // Convenience function for GetLsbReleaseValue("CHROMEOS_RELEASE_BOARD",...).
+  // Returns "unknown" if CHROMEOS_RELEASE_BOARD is not set.
+  static std::string GetLsbReleaseBoard();
+
+  // Returns the creation time of /etc/lsb-release. (Used to get the date and
+  // time of the Chrome OS build).
+  static Time GetLsbReleaseTime();
+
+  // Test method to force re-parsing of lsb-release.
+  static void SetChromeOSVersionInfoForTest(const std::string& lsb_release,
+                                            const Time& lsb_release_time);
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)

@@ -21,6 +21,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -387,6 +388,13 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
   // Initialize the statistics provider, which will ensure that the Chrome
   // channel info is read and made available early.
   system::StatisticsProvider::GetInstance()->Init();
+
+#if defined(GOOGLE_CHROME_BUILD)
+  const char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
+  std::string channel;
+  if (base::SysInfo::GetLsbReleaseValue(kChromeOSReleaseTrack, &channel))
+    chrome::VersionInfo::SetChannel(channel);
+#endif
 
   ChromeBrowserMainPartsLinux::PreEarlyInitialization();
 }

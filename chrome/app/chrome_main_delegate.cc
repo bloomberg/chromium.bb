@@ -744,14 +744,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #endif
   }
 #endif
-
-#if defined(OS_CHROMEOS)
-  // Read and cache ChromeOS version from file,
-  // to be used from inside the sandbox.
-  int32 major_version, minor_version, bugfix_version;
-  base::SysInfo::OperatingSystemVersionNumbers(
-      &major_version, &minor_version, &bugfix_version);
-#endif
 }
 
 void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {

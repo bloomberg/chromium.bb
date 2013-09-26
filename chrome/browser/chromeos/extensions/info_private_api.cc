@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/info_private_api.h"
 
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -79,11 +80,7 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
     return new base::StringValue(
         chromeos::StartupUtils::GetInitialLocale());
   } else if (property_name == kPropertyBoard) {
-    std::string board;
-    chromeos::system::StatisticsProvider* provider =
-        chromeos::system::StatisticsProvider::GetInstance();
-    provider->GetMachineStatistic(chromeos::system::kMachineInfoBoard, &board);
-    return new base::StringValue(board);
+    return new base::StringValue(base::SysInfo::GetLsbReleaseBoard());
   } else if (property_name == kPropertyOwner) {
     return Value::CreateBooleanValue(
         chromeos::UserManager::Get()->IsCurrentUserOwner());

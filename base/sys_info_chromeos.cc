@@ -5,115 +5,190 @@
 #include "base/sys_info.h"
 
 #include "base/basictypes.h"
+#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 
 namespace base {
 
-static const char* kLinuxStandardBaseVersionKeys[] = {
+namespace {
+
+const char* kLinuxStandardBaseVersionKeys[] = {
   "CHROMEOS_RELEASE_VERSION",
   "GOOGLE_RELEASE",
   "DISTRIB_RELEASE",
-  NULL
 };
+const size_t kLinuxStandardBaseVersionKeysLength =
+    arraysize(kLinuxStandardBaseVersionKeys);
 
 const char kLinuxStandardBaseReleaseFile[] = "/etc/lsb-release";
 
-struct ChromeOSVersionNumbers {
-  ChromeOSVersionNumbers()
-      : major_version(0),
-        minor_version(0),
-        bugfix_version(0),
-        parsed(false) {
+const char kLsbReleaseKey[] = "LSB_RELEASE";
+const char kLsbReleaseTimeKey[] = "LSB_RELEASE_TIME";  // Seconds since epoch
+
+const char kLsbReleaseSourceKey[] = "lsb-release";
+const char kLsbReleaseSourceEnv[] = "env";
+const char kLsbReleaseSourceFile[] = "file";
+
+class ChromeOSVersionInfo {
+ public:
+  ChromeOSVersionInfo() {
+    Parse();
   }
 
-  int32 major_version;
-  int32 minor_version;
-  int32 bugfix_version;
-  bool parsed;
+  void Parse() {
+    lsb_release_map_.clear();
+    major_version_ = 0;
+    minor_version_ = 0;
+    bugfix_version_ = 0;
+
+    std::string lsb_release, lsb_release_time_str;
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    bool parsed_from_env =
+        env->GetVar(kLsbReleaseKey, &lsb_release) &&
+        env->GetVar(kLsbReleaseTimeKey, &lsb_release_time_str);
+    if (parsed_from_env) {
+      double us = 0;
+      if (StringToDouble(lsb_release_time_str, &us))
+        lsb_release_time_ = base::Time::FromDoubleT(us);
+    } else {
+      // If the LSB_RELEASE and LSB_RELEASE_TIME environment variables are not
+      // set, fall back to a blocking read of the lsb_release file. This should
+      // only happen in non Chrome OS environments.
+      ThreadRestrictions::ScopedAllowIO allow_io;
+      FilePath path(kLinuxStandardBaseReleaseFile);
+      ReadFileToString(path, &lsb_release);
+      base::PlatformFileInfo fileinfo;
+      if (file_util::GetFileInfo(path, &fileinfo))
+        lsb_release_time_ = fileinfo.creation_time;
+    }
+    ParseLsbRelease(lsb_release);
+    // For debugging:
+    lsb_release_map_[kLsbReleaseSourceKey] =
+        parsed_from_env ? kLsbReleaseSourceEnv : kLsbReleaseSourceFile;
+  }
+
+  bool GetLsbReleaseValue(const std::string& key, std::string* value) {
+    SysInfo::LsbReleaseMap::const_iterator iter = lsb_release_map_.find(key);
+    if (iter == lsb_release_map_.end())
+      return false;
+    *value = iter->second;
+    return true;
+  }
+
+  void GetVersionNumbers(int32* major_version,
+                         int32* minor_version,
+                         int32* bugfix_version) {
+    *major_version = major_version_;
+    *minor_version = minor_version_;
+    *bugfix_version = bugfix_version_;
+  }
+
+  const base::Time& lsb_release_time() const { return lsb_release_time_; }
+  const SysInfo::LsbReleaseMap& lsb_release_map() const {
+    return lsb_release_map_;
+  }
+
+ private:
+  void ParseLsbRelease(const std::string& lsb_release) {
+    // Parse and cache lsb_release key pairs. There should only be a handful
+    // of entries so the overhead for this will be small, and it can be
+    // useful for debugging.
+    std::vector<std::pair<std::string, std::string> > pairs;
+    base::SplitStringIntoKeyValuePairs(lsb_release, '=', '\n', &pairs);
+    for (size_t i = 0; i < pairs.size(); ++i) {
+      std::string key, value;
+      TrimWhitespaceASCII(pairs[i].first, TRIM_ALL, &key);
+      TrimWhitespaceASCII(pairs[i].second, TRIM_ALL, &value);
+      if (key.empty())
+        continue;
+      lsb_release_map_[key] = value;
+    }
+    // Parse the version from the first matching recognized version key.
+    std::string version;
+    for (size_t i = 0; i < kLinuxStandardBaseVersionKeysLength; ++i) {
+      std::string key = kLinuxStandardBaseVersionKeys[i];
+      if (GetLsbReleaseValue(key, &version) && !version.empty())
+        break;
+    }
+    StringTokenizer tokenizer(version, ".");
+    if (tokenizer.GetNext()) {
+      StringToInt(StringPiece(tokenizer.token_begin(), tokenizer.token_end()),
+                  &major_version_);
+    }
+    if (tokenizer.GetNext()) {
+      StringToInt(StringPiece(tokenizer.token_begin(), tokenizer.token_end()),
+                  &minor_version_);
+    }
+    if (tokenizer.GetNext()) {
+      StringToInt(StringPiece(tokenizer.token_begin(), tokenizer.token_end()),
+                  &bugfix_version_);
+    }
+  }
+
+  base::Time lsb_release_time_;
+  SysInfo::LsbReleaseMap lsb_release_map_;
+  int32 major_version_;
+  int32 minor_version_;
+  int32 bugfix_version_;
 };
 
-static LazyInstance<ChromeOSVersionNumbers>
-    g_chrome_os_version_numbers = LAZY_INSTANCE_INITIALIZER;
+static LazyInstance<ChromeOSVersionInfo>
+    g_chrome_os_version_info = LAZY_INSTANCE_INITIALIZER;
+
+ChromeOSVersionInfo& GetChromeOSVersionInfo() {
+  return g_chrome_os_version_info.Get();
+}
+
+}  // namespace
 
 // static
 void SysInfo::OperatingSystemVersionNumbers(int32* major_version,
                                             int32* minor_version,
                                             int32* bugfix_version) {
-  if (!g_chrome_os_version_numbers.Get().parsed) {
-    // The other implementations of SysInfo don't block on the disk.
-    // See http://code.google.com/p/chromium/issues/detail?id=60394
-    // Perhaps the caller ought to cache this?
-    // Temporary allowing while we work the bug out.
-    ThreadRestrictions::ScopedAllowIO allow_io;
-
-    FilePath path(kLinuxStandardBaseReleaseFile);
-    std::string contents;
-    if (ReadFileToString(path, &contents)) {
-      g_chrome_os_version_numbers.Get().parsed = true;
-      ParseLsbRelease(contents,
-          &(g_chrome_os_version_numbers.Get().major_version),
-          &(g_chrome_os_version_numbers.Get().minor_version),
-          &(g_chrome_os_version_numbers.Get().bugfix_version));
-    }
-  }
-  *major_version = g_chrome_os_version_numbers.Get().major_version;
-  *minor_version = g_chrome_os_version_numbers.Get().minor_version;
-  *bugfix_version = g_chrome_os_version_numbers.Get().bugfix_version;
+  return GetChromeOSVersionInfo().GetVersionNumbers(
+      major_version, minor_version, bugfix_version);
 }
 
 // static
-std::string SysInfo::GetLinuxStandardBaseVersionKey() {
-  return std::string(kLinuxStandardBaseVersionKeys[0]);
+const SysInfo::LsbReleaseMap& SysInfo::GetLsbReleaseMap() {
+  return GetChromeOSVersionInfo().lsb_release_map();
 }
 
 // static
-void SysInfo::ParseLsbRelease(const std::string& lsb_release,
-                              int32* major_version,
-                              int32* minor_version,
-                              int32* bugfix_version) {
-  size_t version_key_index = std::string::npos;
-  for (int i = 0; kLinuxStandardBaseVersionKeys[i] != NULL; ++i) {
-    version_key_index = lsb_release.find(kLinuxStandardBaseVersionKeys[i]);
-    if (std::string::npos != version_key_index) {
-      break;
-    }
-  }
-  if (std::string::npos == version_key_index) {
-    return;
-  }
-
-  size_t start_index = lsb_release.find_first_of('=', version_key_index);
-  start_index++;  // Move past '='.
-  size_t length = lsb_release.find_first_of('\n', start_index) - start_index;
-  std::string version = lsb_release.substr(start_index, length);
-  StringTokenizer tokenizer(version, ".");
-  for (int i = 0; i < 3 && tokenizer.GetNext(); ++i) {
-    if (0 == i) {
-      StringToInt(StringPiece(tokenizer.token_begin(),
-                              tokenizer.token_end()),
-                  major_version);
-      *minor_version = *bugfix_version = 0;
-    } else if (1 == i) {
-      StringToInt(StringPiece(tokenizer.token_begin(),
-                              tokenizer.token_end()),
-                  minor_version);
-    } else {  // 2 == i
-      StringToInt(StringPiece(tokenizer.token_begin(),
-                              tokenizer.token_end()),
-                  bugfix_version);
-    }
-  }
+bool SysInfo::GetLsbReleaseValue(const std::string& key, std::string* value) {
+  return GetChromeOSVersionInfo().GetLsbReleaseValue(key, value);
 }
 
 // static
-FilePath SysInfo::GetLsbReleaseFilePath() {
-  return FilePath(kLinuxStandardBaseReleaseFile);
+std::string SysInfo::GetLsbReleaseBoard() {
+  const char kMachineInfoBoard[] = "CHROMEOS_RELEASE_BOARD";
+  std::string board;
+  if (!GetLsbReleaseValue(kMachineInfoBoard, &board))
+    board = "unknown";
+  return board;
+}
+
+// static
+base::Time SysInfo::GetLsbReleaseTime() {
+  return GetChromeOSVersionInfo().lsb_release_time();
+}
+
+// static
+void SysInfo::SetChromeOSVersionInfoForTest(const std::string& lsb_release,
+                                            const Time& lsb_release_time) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  env->SetVar(kLsbReleaseKey, lsb_release);
+  env->SetVar(kLsbReleaseTimeKey,
+              base::DoubleToString(lsb_release_time.ToDoubleT()));
+  g_chrome_os_version_info.Get().Parse();
 }
 
 }  // namespace base

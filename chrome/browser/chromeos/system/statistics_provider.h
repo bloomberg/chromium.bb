@@ -16,9 +16,6 @@ extern const char kDevSwitchBootMode[];
 // HWID key.
 extern const char kHardwareClass[];
 
-// Machine board key.
-extern const char kMachineInfoBoard[];
-
 // OEM customization flag that permits exiting enterprise enrollment flow in
 // OOBE when 'oem_enterprise_managed' flag is set.
 extern const char kOemCanExitEnterpriseEnrollmentKey[];
