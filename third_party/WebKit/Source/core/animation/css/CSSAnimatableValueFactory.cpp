@@ -202,6 +202,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style->top(), style);
     case CSSPropertyWebkitColumnRuleColor:
         return createFromColor(property, style);
+    case CSSPropertyWebkitColumnRuleWidth:
+        return createFromDouble(style->columnRuleWidth());
     case CSSPropertyWebkitMaskBoxImageSource:
         return AnimatableImage::create(style->maskBoxImageSource());
     case CSSPropertyWebkitMaskImage:

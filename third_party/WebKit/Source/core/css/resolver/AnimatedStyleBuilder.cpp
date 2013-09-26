@@ -214,6 +214,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setColumnRuleColor(toAnimatableColor(value)->color());
         style->setVisitedLinkColumnRuleColor(toAnimatableColor(value)->visitedLinkColor());
         return;
+    case CSSPropertyWebkitColumnRuleWidth:
+        style->setColumnRuleWidth(animatableValueRoundClampTo<unsigned short>(value));
+        return;
     case CSSPropertyWebkitMaskBoxImageSource:
         style->setMaskBoxImageSource(toAnimatableImage(value)->toStyleImage());
         return;
