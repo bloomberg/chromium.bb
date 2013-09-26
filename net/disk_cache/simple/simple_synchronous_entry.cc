@@ -754,14 +754,14 @@ int SimpleSynchronousEntry::InitializeForOpen(
     }
   }
 
-  const int third_stream_file_index = GetFileIndexFromStreamIndex(2);
-  DCHECK(CanOmitEmptyFile(third_stream_file_index));
-  if (!empty_file_omitted_[third_stream_file_index] &&
+  const int stream2_file_index = GetFileIndexFromStreamIndex(2);
+  DCHECK(CanOmitEmptyFile(stream2_file_index));
+  if (!empty_file_omitted_[stream2_file_index] &&
       out_entry_stat->data_size(2) == 0) {
-    DLOG(INFO) << "Removing empty third stream file.";
-    CloseFile(third_stream_file_index);
-    DeleteFileForEntryHash(path_, entry_hash_, third_stream_file_index);
-    empty_file_omitted_[third_stream_file_index] = true;
+    DLOG(INFO) << "Removing empty stream 2 file.";
+    CloseFile(stream2_file_index);
+    DeleteFileForEntryHash(path_, entry_hash_, stream2_file_index);
+    empty_file_omitted_[stream2_file_index] = true;
   }
 
   RecordSyncOpenResult(cache_type_, OPEN_ENTRY_SUCCESS, had_index);
@@ -905,6 +905,7 @@ void SimpleSynchronousEntry::Doom() const {
   DeleteFilesForEntryHash(path_, entry_hash_);
 }
 
+// static
 bool SimpleSynchronousEntry::DeleteFileForEntryHash(
     const FilePath& path,
     const uint64 entry_hash,
@@ -914,6 +915,7 @@ bool SimpleSynchronousEntry::DeleteFileForEntryHash(
   return base::DeleteFile(to_delete, false);
 }
 
+// static
 bool SimpleSynchronousEntry::DeleteFilesForEntryHash(
     const FilePath& path,
     const uint64 entry_hash) {
