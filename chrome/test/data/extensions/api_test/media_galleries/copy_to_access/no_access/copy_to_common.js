@@ -2,32 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var mediaGalleries = chrome.mediaGalleries;
-
-function getOnwriteendCallbackExpectFailure(testImageFileEntry, galleries,
-                                            filename) {
-  return function() {
-    testImageFileEntry.copyTo(
-        galleries[0].root,
-        filename,
-        chrome.test.fail,
-        chrome.test.succeed);
-  };
-}
-
-function getOnwriteendCallbackExpectSuccess(testImageFileEntry, galleries,
-                                            filename) {
-  return function() {
-    testImageFileEntry.copyTo(
-        galleries[0].root,
-        filename,
-        chrome.test.succeed,
-        chrome.test.fail);
-  };
-}
-
 // Valid WEBP image.
-var validCase = {
+// TODO(thestig) Maybe copy these files to a media gallery in the C++ setup
+// phase to avoid having this and webkitRequestFileSystem() below.
+var validWEBPImageCase = {
   filename: "valid.webp",
   blobString: "RIFF0\0\0\0WEBPVP8 $\0\0\0\xB2\x02\0\x9D\x01\x2A" +
               "\x01\0\x01\0\x2F\x9D\xCE\xE7s\xA8((((\x01\x9CK(\0" +
@@ -35,18 +13,16 @@ var validCase = {
 }
 
 // Write an invalid test image and expect failure.
-var invalidCase = {
+var invalidWEBPImageCase = {
   filename: "invalid.webp",
   blobString: "abc123"
 }
 
-function runTest(testCase, getOnwriteendCallback) {
+function runCopyToTest(testCase, expectSucceed) {
   var galleries;
   var testImageFileEntry;
 
-  function getMediaFileSystemsList() {
-    mediaGalleries.getMediaFileSystems(testGalleries);
-  }
+  chrome.mediaGalleries.getMediaFileSystems(testGalleries);
 
   function testGalleries(results) {
     galleries = results;
@@ -82,33 +58,42 @@ function runTest(testCase, getOnwriteendCallback) {
       chrome.test.fail("Unable to write test image: " + e.toString());
     }
 
-    writer.onwriteend = getOnwriteendCallback(testImageFileEntry, galleries,
-                                              testCase.filename);
+    writer.onwriteend = testCopyTo(testImageFileEntry, galleries[0],
+                                   testCase.filename, expectSucceed);
 
     writer.write(blob);
   }
 
-  getMediaFileSystemsList();
-}
-
-function createTest(testCase, getOnwriteendCallback) {
-  return function() {
-    runTest(testCase, getOnwriteendCallback);
-  };
+  function testCopyTo(testImageFileEntry, gallery, filename, expectSucceed) {
+    var onSuccess;
+    var onFailure;
+    if (expectSucceed) {
+      onSuccess = chrome.test.succeed;
+      onFailure = chrome.test.fail;
+    } else {
+      onSuccess = chrome.test.fail;
+      onFailure = chrome.test.succeed;
+    }
+    return function() {
+      testImageFileEntry.copyTo(gallery.root, filename, onSuccess, onFailure);
+    };
+  }
 }
 
 // Create a dummy window to prevent the ExtensionProcessManager from suspending
 // the chrome-test app. Needed because the writer.onerror and writer.onwriteend
 // events do not qualify as pending callbacks, so the app looks dormant.
-chrome.app.runtime.onLaunched.addListener(function() {
-  chrome.app.window.create('dummy.html', {
-    bounds: {
-      width: 800,
-      height: 600,
-      left: 100,
-      top: 100
-    },
-    minWidth: 800,
-    minHeight: 600
+function CreateDummyWindowToPreventSleep() {
+  chrome.app.runtime.onLaunched.addListener(function() {
+    chrome.app.window.create('dummy.html', {
+      bounds: {
+        width: 800,
+        height: 600,
+        left: 100,
+        top: 100
+      },
+      minWidth: 800,
+      minHeight: 600
+    });
   });
-});
+}

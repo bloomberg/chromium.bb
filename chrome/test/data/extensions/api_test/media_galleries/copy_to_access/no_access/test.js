@@ -2,8 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+CreateDummyWindowToPreventSleep();
+
 chrome.test.runTests([
-  createTest(validCase, getOnwriteendCallbackExpectFailure),
-  createTest(invalidCase, getOnwriteendCallbackExpectFailure)
+  function validFileCopyToShouldFail() {
+    runCopyToTest(validWEBPImageCase, false /* expect failure */);
+  },
+  function invalidFileCopyToShouldFail() {
+    runCopyToTest(invalidWEBPImageCase, false /* expect failure */);
+  },
 ]);
 
