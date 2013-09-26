@@ -36,7 +36,6 @@
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "gpu/ipc/command_buffer_proxy.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "webkit/common/gpu/gl_bindings_skia_cmd_buffer.h"
 

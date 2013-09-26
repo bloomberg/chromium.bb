@@ -13,7 +13,6 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "gpu/ipc/command_buffer_proxy.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 
 namespace content {

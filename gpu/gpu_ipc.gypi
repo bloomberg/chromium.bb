@@ -11,8 +11,6 @@
     '..',
   ],
   'sources': [
-    'ipc/command_buffer_proxy.h',
-    'ipc/command_buffer_proxy.cc',
     'ipc/gpu_command_buffer_traits.cc',
     'ipc/gpu_command_buffer_traits.h',
   ],
@@ -23,12 +21,6 @@
       # gpu_ipc_win64 must only link against the 64-bit ipc target.
       'dependencies!': [
         '../ipc/ipc.gyp:ipc',
-      ],
-      # The NaCl Win64 build only needs the ParamTraits, so we exclude
-      # command_buffer_proxy.*.
-      'sources!': [
-        'ipc/command_buffer_proxy.h',
-        'ipc/command_buffer_proxy.cc',
       ],
     }],
   ],

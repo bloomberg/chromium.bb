@@ -29,32 +29,6 @@ PpapiCommandBufferProxy::~PpapiCommandBufferProxy() {
   }
 }
 
-void PpapiCommandBufferProxy::ReportChannelError() {
-  if (!channel_error_callback_.is_null()) {
-    channel_error_callback_.Run();
-    channel_error_callback_.Reset();
-  }
-}
-
-int PpapiCommandBufferProxy::GetRouteID() const {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
-bool PpapiCommandBufferProxy::Echo(const base::Closure& callback) {
-  return false;
-}
-
-bool PpapiCommandBufferProxy::ProduceFrontBuffer(const gpu::Mailbox& mailbox) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void PpapiCommandBufferProxy::SetChannelErrorCallback(
-    const base::Closure& callback) {
-  channel_error_callback_ = callback;
-}
-
 bool PpapiCommandBufferProxy::Initialize() {
   return true;
 }

@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "gpu/ipc/command_buffer_proxy.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/host_resource.h"
 
@@ -21,19 +20,11 @@ namespace proxy {
 
 class ProxyChannel;
 
-class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public CommandBufferProxy {
+class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer {
  public:
   PpapiCommandBufferProxy(const HostResource& resource,
                           ProxyChannel* channel);
   virtual ~PpapiCommandBufferProxy();
-
-  void ReportChannelError();
-
-  // CommandBufferProxy implementation:
-  virtual int GetRouteID() const OVERRIDE;
-  virtual bool Echo(const base::Closure& callback) OVERRIDE;
-  virtual bool ProduceFrontBuffer(const gpu::Mailbox& mailbox) OVERRIDE;
-  virtual void SetChannelErrorCallback(const base::Closure& callback) OVERRIDE;
 
   // gpu::CommandBuffer implementation:
   virtual bool Initialize();

@@ -9,8 +9,6 @@
 #include <queue>
 #include <string>
 
-#include "gpu/ipc/command_buffer_proxy.h"
-
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
@@ -42,7 +40,7 @@ class GpuChannelHost;
 // Client side proxy that forwards messages synchronously to a
 // CommandBufferStub.
 class CommandBufferProxyImpl
-    : public CommandBufferProxy,
+    : public gpu::CommandBuffer,
       public IPC::Listener,
       public base::SupportsWeakPtr<CommandBufferProxyImpl> {
  public:
@@ -80,12 +78,6 @@ class CommandBufferProxyImpl
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
-  // CommandBufferProxy implementation:
-  virtual int GetRouteID() const OVERRIDE;
-  virtual bool Echo(const base::Closure& callback) OVERRIDE;
-  virtual bool ProduceFrontBuffer(const gpu::Mailbox& mailbox) OVERRIDE;
-  virtual void SetChannelErrorCallback(const base::Closure& callback) OVERRIDE;
-
   // CommandBuffer implementation:
   virtual bool Initialize() OVERRIDE;
   virtual State GetState() OVERRIDE;
@@ -104,6 +96,11 @@ class CommandBufferProxyImpl
   virtual void SetContextLostReason(
       gpu::error::ContextLostReason reason) OVERRIDE;
   virtual uint32 InsertSyncPoint() OVERRIDE;
+
+  int GetRouteID() const;
+  bool Echo(const base::Closure& callback);
+  bool ProduceFrontBuffer(const gpu::Mailbox& mailbox);
+  void SetChannelErrorCallback(const base::Closure& callback);
 
   void SetMemoryAllocationChangedCallback(
       const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
