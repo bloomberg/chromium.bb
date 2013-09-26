@@ -507,15 +507,16 @@ TEST_F(ClipboardTest, MultipleDataTest) {
   EXPECT_EQ(payload1, unpickled_string1);
 }
 
-#if defined(OS_WIN)  // Windows only tests.
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
 TEST_F(ClipboardTest, HyperlinkTest) {
-  const std::string kTitle("The Example Company");
-  const std::string kUrl("http://www.example.com/");
-  const std::string kExpectedHtml("<a href=\"http://www.example.com/\">"
-                                  "The Example Company</a>");
+  const std::string kTitle("The <Example> Company's \"home page\"");
+  const std::string kUrl("http://www.example.com?x=3&lt=3#\"'<>");
+  const std::string kExpectedHtml(
+      "<a href=\"http://www.example.com?x=3&amp;lt=3#&quot;&#39;&lt;&gt;\">"
+      "The &lt;Example&gt; Company&#39;s &quot;home page&quot;</a>");
+
   std::string url_result;
   string16 html_result;
-
   {
     ScopedClipboardWriter clipboard_writer(&clipboard(),
                                            Clipboard::BUFFER_STANDARD);
@@ -529,7 +530,9 @@ TEST_F(ClipboardTest, HyperlinkTest) {
                        &ignored, &ignored);
   EXPECT_PRED2(MarkupMatches, ASCIIToUTF16(kExpectedHtml), html_result);
 }
+#endif
 
+#if defined(OS_WIN)  // Windows only tests.
 TEST_F(ClipboardTest, WebSmartPasteTest) {
   {
     ScopedClipboardWriter clipboard_writer(&clipboard(),

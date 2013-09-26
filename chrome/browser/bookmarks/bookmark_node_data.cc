@@ -13,7 +13,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "net/base/escape.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 const char* BookmarkNodeData::kClipboardFormatString =
@@ -144,7 +143,7 @@ void BookmarkNodeData::WriteToClipboard() const {
     const std::string url = elements[0].url.spec();
 
     scw.WriteBookmark(title, url);
-    scw.WriteHyperlink(net::EscapeForHTML(title), url);
+    scw.WriteHyperlink(title, url);
 
     // Also write the URL to the clipboard as text so that it can be pasted
     // into text fields. We use WriteText instead of WriteURL because we don't

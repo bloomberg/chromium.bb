@@ -50,8 +50,8 @@ class UI_EXPORT ScopedClipboardWriter {
   void WriteBookmark(const string16& bookmark_title,
                      const std::string& url);
 
-  // Adds an html hyperlink (<a href>) to the clipboard. |anchor_text| should
-  // be escaped prior to being passed in.
+  // Adds an html hyperlink (<a href>) to the clipboard. |anchor_text| and
+  // |url| will be escaped as needed.
   void WriteHyperlink(const string16& anchor_text, const std::string& url);
 
   // Used by WebKit to determine whether WebKit wrote the clipboard last

@@ -10,6 +10,7 @@
 
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
+#include "net/base/escape.h"
 #include "ui/gfx/size.h"
 
 namespace ui {
@@ -77,9 +78,9 @@ void ScopedClipboardWriter::WriteHyperlink(const string16& anchor_text,
 
   // Construct the hyperlink.
   std::string html("<a href=\"");
-  html.append(url);
+  html.append(net::EscapeForHTML(url));
   html.append("\">");
-  html.append(UTF16ToUTF8(anchor_text));
+  html.append(net::EscapeForHTML(UTF16ToUTF8(anchor_text)));
   html.append("</a>");
   WriteHTML(UTF8ToUTF16(html), std::string());
 }
