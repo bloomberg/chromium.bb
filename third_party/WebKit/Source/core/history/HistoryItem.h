@@ -116,7 +116,6 @@ public:
     HistoryItem* childItemWithDocumentSequenceNumber(long long number) const;
     const HistoryItemVector& children() const;
     void clearChildren();
-    bool isAncestorOf(const HistoryItem*) const;
 
     bool shouldDoSameDocumentNavigationTo(HistoryItem* otherItem) const;
     bool hasSameFrames(HistoryItem* otherItem) const;

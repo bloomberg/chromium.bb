@@ -437,7 +437,6 @@ void FrameLoader::checkCompleted()
 
     // OK, completed.
     m_isComplete = true;
-    m_requestedHistoryItem = 0;
     m_frame->document()->setReadyState(Document::Complete);
     if (m_frame->document()->loadEventStillNeeded())
         m_frame->document()->implicitClose();
@@ -1545,7 +1544,6 @@ Frame* FrameLoader::findFrameForNavigation(const AtomicString& name, Document* a
 
 void FrameLoader::loadHistoryItem(HistoryItem* item)
 {
-    m_requestedHistoryItem = item;
     HistoryItem* currentItem = history()->currentItem();
 
     if (currentItem && item->shouldDoSameDocumentNavigationTo(currentItem)) {

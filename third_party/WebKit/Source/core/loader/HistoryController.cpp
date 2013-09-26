@@ -138,46 +138,10 @@ void HistoryController::saveDocumentAndScrollState()
         m_currentItem->setPageScaleFactor(page->pageScaleFactor());
 }
 
-static inline bool isAssociatedToRequestedHistoryItem(const HistoryItem* current, Frame* frame, const HistoryItem* requested)
-{
-    if (requested == current)
-        return true;
-    if (requested)
-        return false;
-    while ((frame = frame->tree()->parent())) {
-        requested = frame->loader()->requestedHistoryItem();
-        if (!requested)
-            continue;
-        if (requested->isAncestorOf(current))
-            return true;
-    }
-    return false;
-}
-
 void HistoryController::restoreDocumentState()
 {
-    Document* doc = m_frame->document();
-
-    HistoryItem* itemToRestore = 0;
-
-    switch (m_frame->loader()->loadType()) {
-        case FrameLoadTypeReload:
-        case FrameLoadTypeReloadFromOrigin:
-        case FrameLoadTypeSame:
-            break;
-        case FrameLoadTypeBackForward:
-        case FrameLoadTypeRedirectWithLockedBackForwardList:
-        case FrameLoadTypeInitialInChildFrame:
-        case FrameLoadTypeStandard:
-            itemToRestore = m_currentItem.get();
-    }
-
-    if (!itemToRestore)
-        return;
-    if (isAssociatedToRequestedHistoryItem(itemToRestore, m_frame, m_frame->loader()->requestedHistoryItem()) && !m_frame->loader()->documentLoader()->isClientRedirect()) {
-        LOG(Loading, "WebCoreLoading %s: restoring form state from %p", m_frame->tree()->uniqueName().string().utf8().data(), itemToRestore);
-        doc->setStateForNewFormElements(itemToRestore->documentState());
-    }
+    if (m_frame->loader()->loadType() == FrameLoadTypeBackForward)
+        m_frame->document()->setStateForNewFormElements(m_currentItem->documentState());
 }
 
 bool HistoryController::shouldStopLoadingForHistoryItem(HistoryItem* targetItem) const
@@ -256,7 +220,7 @@ void HistoryController::updateForCommit()
         LOG(History, "WebCoreHistory: Updating History for commit in frame %s", m_frame->document()->title().utf8().data());
 #endif
     FrameLoadType type = frameLoader->loadType();
-    if (isBackForwardLoadType(type) || (isReloadTypeWithProvisionalItem(type) && !frameLoader->documentLoader()->unreachableURL().isEmpty())) {
+    if (isBackForwardLoadType(type)) {
         // Once committed, we want to use current item for saving DocState, and
         // the provisional item for restoring state.
         // Note previousItem must be set before we close the URL, which will
@@ -282,11 +246,6 @@ void HistoryController::updateForCommit()
         updateWithoutCreatingNewBackForwardItem();
 }
 
-bool HistoryController::isReloadTypeWithProvisionalItem(FrameLoadType type)
-{
-    return (type == FrameLoadTypeReload || type == FrameLoadTypeReloadFromOrigin) && m_provisionalItem;
-}
-
 void HistoryController::recursiveUpdateForCommit()
 {
     // The frame that navigated will now have a null provisional item.
@@ -305,9 +264,6 @@ void HistoryController::recursiveUpdateForCommit()
         m_previousItem = m_currentItem;
         m_currentItem = m_provisionalItem;
         m_provisionalItem = 0;
-
-        // Restore form state (works from currentItem)
-        restoreDocumentState();
 
         // Restore the scroll position (we choose to do this rather than going back to the anchor point)
         restoreScrollPositionAndViewState();

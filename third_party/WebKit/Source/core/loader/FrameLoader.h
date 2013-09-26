@@ -94,8 +94,6 @@ public:
     void reload(ReloadPolicy = NormalReload, const KURL& overrideURL = KURL(), const String& overrideEncoding = String());
     void loadHistoryItem(HistoryItem*); // The entry point for all back/forward loads
 
-    HistoryItem* requestedHistoryItem() const { return m_requestedHistoryItem.get(); }
-
     static void reportLocalLoadFailed(Frame*, const String& url);
 
     // FIXME: These are all functions which stop loads. We have too many.
@@ -304,8 +302,6 @@ private:
     bool m_startingClientRedirect;
 
     SandboxFlags m_forcedSandboxFlags;
-
-    RefPtr<HistoryItem> m_requestedHistoryItem;
 };
 
 } // namespace WebCore
