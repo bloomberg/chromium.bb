@@ -336,6 +336,7 @@ class MsvsSettings(object):
     cl('Optimization',
        map={'0': 'd', '1': '1', '2': '2', '3': 'x'}, prefix='/O', default='2')
     cl('InlineFunctionExpansion', prefix='/Ob')
+    cl('DisableSpecificWarnings', prefix='/wd')
     cl('StringPooling', map={'true': '/GF'})
     cl('EnableFiberSafeOptimizations', map={'true': '/GT'})
     cl('OmitFramePointers', map={'false': '-', 'true': ''}, prefix='/Oy')
