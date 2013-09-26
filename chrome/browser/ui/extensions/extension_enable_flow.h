@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "content/public/browser/notification_observer.h"
@@ -40,10 +41,14 @@ class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
   // Starts the flow and the logic continues on |delegate_| after enabling is
   // finished or aborted. Note that |delegate_| could be called synchronously
   // before this call returns when there is no need to show UI to finish the
-  // enabling flow. Two variations of the flow are supported: one with a
-  // parent WebContents and the other with a native parent window.
+  // enabling flow. Three variations of the flow are supported:
+  //   - one with a parent WebContents
+  //   - one with a native parent window
+  //   - one with a callback for creating a parent window
   void StartForWebContents(content::WebContents* parent_contents);
   void StartForNativeWindow(gfx::NativeWindow parent_window);
+  void StartForCurrentlyNonexistentWindow(
+      base::Callback<gfx::NativeWindow(void)> window_getter);
 
   const std::string& extension_id() const { return extension_id_; }
 
@@ -91,6 +96,10 @@ class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
   // Parent native window for ExtensionInstallPrompt. Note this is mutually
   // exclusive with |parent_contents_| above.
   gfx::NativeWindow parent_window_;
+
+  // Called to acquire a parent window for the prompt. This is used for clients
+  // who only want to create a window if it is required.
+  base::Callback<gfx::NativeWindow(void)> window_getter_;
 
   scoped_ptr<ExtensionInstallPrompt> prompt_;
   content::NotificationRegistrar registrar_;

@@ -62,6 +62,7 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -357,7 +358,17 @@ ExtensionService::ExtensionService(Profile* profile,
       installs_delayed_for_gc_(false),
       is_first_run_(false),
       app_sync_bundle_(this),
-      extension_sync_bundle_(this) {
+      extension_sync_bundle_(this),
+      pending_app_enables_(
+          make_scoped_ptr(new browser_sync::SyncPrefs(
+              extension_prefs_->pref_service())),
+          &app_sync_bundle_,
+          syncer::APPS),
+      pending_extension_enables_(
+          make_scoped_ptr(new browser_sync::SyncPrefs(
+              extension_prefs_->pref_service())),
+          &extension_sync_bundle_,
+          syncer::EXTENSIONS) {
 #if defined(OS_CHROMEOS)
   disable_garbage_collection_ = false;
 #endif
@@ -969,6 +980,13 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
       content::Source<Profile>(profile_),
       content::Details<const Extension>(extension));
 
+  // Syncing may not have started yet, so handle pending enables.
+  if (extensions::sync_helper::IsSyncableApp(extension))
+    pending_app_enables_.OnExtensionEnabled(extension->id());
+
+  if (extensions::sync_helper::IsSyncableExtension(extension))
+    pending_extension_enables_.OnExtensionEnabled(extension->id());
+
   SyncExtensionChangeIfNeeded(*extension);
 }
 
@@ -1011,6 +1029,13 @@ void ExtensionService::DisableExtension(
   } else {
     terminated_extensions_.Remove(extension->id());
   }
+
+  // Syncing may not have started yet, so handle pending enables.
+  if (extensions::sync_helper::IsSyncableApp(extension))
+    pending_app_enables_.OnExtensionDisabled(extension->id());
+
+  if (extensions::sync_helper::IsSyncableExtension(extension))
+    pending_extension_enables_.OnExtensionDisabled(extension->id());
 
   SyncExtensionChangeIfNeeded(*extension);
 }
@@ -1283,12 +1308,14 @@ syncer::SyncMergeResult ExtensionService::MergeDataAndStartSyncing(
       extension_sync_bundle_.SetupSync(sync_processor.release(),
                                        sync_error_factory.release(),
                                        initial_sync_data);
+      pending_extension_enables_.OnSyncStarted(this);
       break;
 
     case syncer::APPS:
       app_sync_bundle_.SetupSync(sync_processor.release(),
                                  sync_error_factory.release(),
                                  initial_sync_data);
+      pending_app_enables_.OnSyncStarted(this);
       break;
 
     default:
@@ -1474,6 +1501,11 @@ bool ExtensionService::IsCorrectSyncType(const Extension& extension,
   return false;
 }
 
+bool ExtensionService::IsPendingEnable(const std::string& extension_id) const {
+  return pending_app_enables_.Contains(extension_id) ||
+      pending_extension_enables_.Contains(extension_id);
+}
+
 bool ExtensionService::ProcessExtensionSyncDataHelper(
     const extensions::ExtensionSyncData& extension_sync_data,
     syncer::ModelType type) {
@@ -1510,7 +1542,7 @@ bool ExtensionService::ProcessExtensionSyncDataHelper(
   // is called for it.
   if (extension_sync_data.enabled())
     EnableExtension(id);
-  else
+  else if (!IsPendingEnable(id))
     DisableExtension(id, Extension::DISABLE_UNKNOWN_FROM_SYNC);
 
   // We need to cache some version information here because setting the

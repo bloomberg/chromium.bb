@@ -298,6 +298,14 @@ class WebContentsCloseObserver : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(WebContentsCloseObserver);
 };
 
+const Extension* GetDisabledPlatformApp(Profile* profile,
+                                        const std::string& extension_id) {
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  const Extension* extension = service->GetExtensionById(extension_id, true);
+  return extension && extension->is_platform_app() ? extension : NULL;
+}
+
 }  // namespace
 
 namespace internals {
@@ -350,7 +358,21 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   }
 
   AppListService::InitAll(profile);
-  if (command_line_.HasSwitch(switches::kShowAppList)) {
+  if (command_line_.HasSwitch(switches::kAppId)) {
+    std::string app_id = command_line_.GetSwitchValueASCII(switches::kAppId);
+    const Extension* extension = GetDisabledPlatformApp(profile, app_id);
+    // If |app_id| is a disabled platform app we handle it specially here,
+    // otherwise it will be handled below.
+    if (extension) {
+      RecordCmdLineAppHistogram(extensions::Manifest::TYPE_PLATFORM_APP);
+      chrome::AppLaunchParams params(profile, extension,
+                                     extension_misc::LAUNCH_NONE, NEW_WINDOW);
+      params.command_line = &command_line_;
+      params.current_directory = cur_dir_;
+      OpenApplicationWithReenablePrompt(params);
+      return true;
+    }
+  } else if (command_line_.HasSwitch(switches::kShowAppList)) {
     AppListService::RecordShowTimings(command_line_);
     AppListService::Get()->ShowForProfile(profile);
     return true;

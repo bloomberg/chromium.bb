@@ -66,6 +66,8 @@
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -106,6 +108,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/api/string_ordinal.h"
+#include "sync/api/sync_data.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/api/syncable_service.h"
@@ -5198,6 +5201,7 @@ TEST_F(ExtensionServiceTest, DeferredSyncStartupPreInstalledNormal) {
 
   ASSERT_FALSE(service_->is_ready());
   service_->Init();
+  ASSERT_EQ(3u, loaded_.size());
   ASSERT_TRUE(service_->is_ready());
 
   // Extensions added before service is_ready() don't trigger sync startup.
@@ -5238,6 +5242,89 @@ TEST_F(ExtensionServiceTest, DeferredSyncStartupOnInstall) {
   InstallCRX(path, INSTALL_NEW);
   EXPECT_FALSE(flare_was_called);
   ASSERT_EQ(syncer::UNSPECIFIED, triggered_type);
+}
+
+TEST_F(ExtensionServiceTest, DisableExtensionFromSync) {
+  // Start the extensions service with one external extension already installed.
+  base::FilePath source_install_dir = data_dir_
+      .AppendASCII("good")
+      .AppendASCII("Extensions");
+  base::FilePath pref_path = source_install_dir
+      .DirName()
+      .AppendASCII("Preferences");
+
+  InitializeInstalledExtensionService(pref_path, source_install_dir);
+
+  // The user has enabled sync.
+  ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_.get());
+  sync_service->SetSyncSetupCompleted();
+
+  service_->Init();
+  ASSERT_TRUE(service_->is_ready());
+
+  ASSERT_EQ(3u, loaded_.size());
+
+  // We start enabled.
+  const Extension* extension = service_->GetExtensionById(good0, true);
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(service_->IsExtensionEnabled(good0));
+  extensions::ExtensionSyncData disable_good_crx(*extension, false, false);
+
+  // Then sync data arrives telling us to disable |good0|.
+  syncer::SyncDataList sync_data;
+  sync_data.push_back(disable_good_crx.GetSyncData());
+  service_->MergeDataAndStartSyncing(
+      syncer::EXTENSIONS, sync_data,
+      scoped_ptr<syncer::SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+  ASSERT_FALSE(service_->IsExtensionEnabled(good0));
+}
+
+TEST_F(ExtensionServiceTest, DontDisableExtensionWithPendingEnableFromSync) {
+  // Start the extensions service with one external extension already installed.
+  base::FilePath source_install_dir = data_dir_
+      .AppendASCII("good")
+      .AppendASCII("Extensions");
+  base::FilePath pref_path = source_install_dir
+      .DirName()
+      .AppendASCII("Preferences");
+
+  InitializeInstalledExtensionService(pref_path, source_install_dir);
+
+  // The user has enabled sync.
+  ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_.get());
+  sync_service->SetSyncSetupCompleted();
+
+  service_->Init();
+  ASSERT_TRUE(service_->is_ready());
+  ASSERT_EQ(3u, loaded_.size());
+
+  const Extension* extension = service_->GetExtensionById(good0, true);
+  ASSERT_TRUE(service_->IsExtensionEnabled(good0));
+
+  // Disable extension before first sync data arrives.
+  service_->DisableExtension(good0, Extension::DISABLE_USER_ACTION);
+  ASSERT_FALSE(service_->IsExtensionEnabled(good0));
+
+  // Enable extension - this is now the most recent state.
+  service_->EnableExtension(good0);
+  ASSERT_TRUE(service_->IsExtensionEnabled(good0));
+
+  // Now sync data comes in that says to disable good0. This should be
+  // ignored.
+  extensions::ExtensionSyncData disable_good_crx(*extension, false, false);
+  syncer::SyncDataList sync_data;
+  sync_data.push_back(disable_good_crx.GetSyncData());
+  service_->MergeDataAndStartSyncing(
+      syncer::EXTENSIONS, sync_data,
+      scoped_ptr<syncer::SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+
+  // The extension was enabled locally before the sync data arrived, so it
+  // should still be enabled now.
+  ASSERT_TRUE(service_->IsExtensionEnabled(good0));
 }
 
 TEST_F(ExtensionServiceTest, GetSyncData) {

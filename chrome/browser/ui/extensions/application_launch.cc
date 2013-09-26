@@ -19,11 +19,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -268,6 +271,122 @@ WebContents* OpenApplicationTab(Profile* profile,
   return contents;
 }
 
+// Attempts to launch a packaged app, prompting the user to enable it if
+// necessary. If a prompt is required it will be shown inside the AppList.
+// This class manages its own lifetime.
+class EnableViaAppListFlow : public ExtensionEnableFlowDelegate {
+ public:
+  EnableViaAppListFlow(ExtensionService* service,
+                      Profile* profile,
+                      const std::string& extension_id,
+                      const base::Closure& callback)
+      : service_(service),
+        profile_(profile),
+        extension_id_(extension_id),
+        callback_(callback) {
+  }
+
+  virtual ~EnableViaAppListFlow() {
+  }
+
+  void Run() {
+    DCHECK(!service_->IsExtensionEnabled(extension_id_));
+    flow_.reset(new ExtensionEnableFlow(profile_, extension_id_, this));
+    flow_->StartForCurrentlyNonexistentWindow(
+        base::Bind(&EnableViaAppListFlow::ShowAppList, base::Unretained(this)));
+  }
+
+ private:
+  gfx::NativeWindow ShowAppList() {
+    AppListService::Get()->Show();
+    return AppListService::Get()->GetAppListWindow();
+  }
+
+  // ExtensionEnableFlowDelegate overrides.
+  virtual void ExtensionEnableFlowFinished() OVERRIDE {
+    const Extension* extension =
+        service_->GetExtensionById(extension_id_, false);
+    if (!extension)
+      return;
+    callback_.Run();
+    delete this;
+  }
+
+  virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE {
+    delete this;
+  }
+
+  ExtensionService* service_;
+  Profile* profile_;
+  std::string extension_id_;
+  base::Closure callback_;
+  scoped_ptr<ExtensionEnableFlow> flow_;
+
+  DISALLOW_COPY_AND_ASSIGN(EnableViaAppListFlow);
+};
+
+WebContents* OpenEnabledApplication(const chrome::AppLaunchParams& params) {
+  Profile* profile = params.profile;
+  const extensions::Extension* extension = params.extension;
+  extension_misc::LaunchContainer container = params.container;
+  const GURL& override_url = params.override_url;
+  const gfx::Rect& override_bounds = params.override_bounds;
+  WebContents* tab = NULL;
+  ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile)->
+      extension_service()->extension_prefs();
+  prefs->SetActiveBit(extension->id(), true);
+
+  UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchContainer", container, 100);
+
+  if (extension->is_platform_app()) {
+#if !defined(OS_CHROMEOS)
+    SigninManager* signin_manager =
+        SigninManagerFactory::GetForProfile(profile);
+    if (signin_manager && signin_manager->GetAuthenticatedUsername().empty()) {
+      const char kEnforceSigninToUseAppsFieldTrial[] = "EnforceSigninToUseApps";
+
+      std::string field_trial_value =
+          base::FieldTrialList::FindFullName(kEnforceSigninToUseAppsFieldTrial);
+
+      // Only enforce signin if the field trial is set.
+      if (!field_trial_value.empty()) {
+        GURL gurl(l10n_util::GetStringFUTF8(IDS_APP_LAUNCH_NOT_SIGNED_IN_LINK,
+                                            UTF8ToUTF16(extension->id())));
+        chrome::NavigateParams params(profile, gurl,
+                                      content::PAGE_TRANSITION_LINK);
+        chrome::Navigate(&params);
+        return NULL;
+      }
+    }
+#endif
+
+    apps::LaunchPlatformAppWithCommandLine(
+        profile, extension, params.command_line, params.current_directory);
+    return NULL;
+  }
+
+  switch (container) {
+    case extension_misc::LAUNCH_NONE: {
+      NOTREACHED();
+      break;
+    }
+    case extension_misc::LAUNCH_PANEL:
+    case extension_misc::LAUNCH_WINDOW:
+      tab = OpenApplicationWindow(profile, extension, container,
+                                  override_url, NULL, override_bounds);
+      break;
+    case extension_misc::LAUNCH_TAB: {
+      tab = OpenApplicationTab(profile, extension, override_url,
+                               params.disposition);
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
+  return tab;
+}
+
 }  // namespace
 
 namespace chrome {
@@ -332,66 +451,24 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
 }
 
 WebContents* OpenApplication(const AppLaunchParams& params) {
+  return OpenEnabledApplication(params);
+}
+
+
+void OpenApplicationWithReenablePrompt(const chrome::AppLaunchParams& params) {
   Profile* profile = params.profile;
   const extensions::Extension* extension = params.extension;
-  extension_misc::LaunchContainer container = params.container;
-  const GURL& override_url = params.override_url;
-  const gfx::Rect& override_bounds = params.override_bounds;
 
-  WebContents* tab = NULL;
-  ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile)->
-      extension_service()->extension_prefs();
-  prefs->SetActiveBit(extension->id(), true);
-
-  UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchContainer", container, 100);
-
-  if (extension->is_platform_app()) {
-#if !defined(OS_CHROMEOS)
-    SigninManager* signin_manager =
-        SigninManagerFactory::GetForProfile(profile);
-    if (signin_manager && signin_manager->GetAuthenticatedUsername().empty()) {
-      const char kEnforceSigninToUseAppsFieldTrial[] = "EnforceSigninToUseApps";
-
-      std::string field_trial_value =
-          base::FieldTrialList::FindFullName(kEnforceSigninToUseAppsFieldTrial);
-
-      // Only enforce signin if the field trial is set.
-      if (!field_trial_value.empty()) {
-        GURL gurl(l10n_util::GetStringFUTF8(IDS_APP_LAUNCH_NOT_SIGNED_IN_LINK,
-                                            UTF8ToUTF16(extension->id())));
-        chrome::NavigateParams params(profile, gurl,
-                                      content::PAGE_TRANSITION_LINK);
-        chrome::Navigate(&params);
-        return NULL;
-      }
-    }
-#endif
-
-    apps::LaunchPlatformAppWithCommandLine(
-        profile, extension, params.command_line, params.current_directory);
-    return NULL;
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  if (!service->IsExtensionEnabled(extension->id())) {
+    (new EnableViaAppListFlow(
+        service, profile, extension->id(),
+        base::Bind(base::IgnoreResult(OpenEnabledApplication), params)))->Run();
+    return;
   }
 
-  switch (container) {
-    case extension_misc::LAUNCH_NONE: {
-      NOTREACHED();
-      break;
-    }
-    case extension_misc::LAUNCH_PANEL:
-    case extension_misc::LAUNCH_WINDOW:
-      tab = OpenApplicationWindow(profile, extension, container,
-                                  override_url, NULL, override_bounds);
-      break;
-    case extension_misc::LAUNCH_TAB: {
-      tab = OpenApplicationTab(profile, extension, override_url,
-                               params.disposition);
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
-  return tab;
+  OpenEnabledApplication(params);
 }
 
 WebContents* OpenAppShortcutWindow(Profile* profile,

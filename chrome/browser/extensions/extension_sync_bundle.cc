@@ -81,17 +81,6 @@ syncer::SyncDataList ExtensionSyncBundle::GetAllSyncData() const {
   return result;
 }
 
-void ExtensionSyncBundle::SyncChangeIfNeeded(const Extension& extension) {
-  ExtensionSyncData extension_sync_data =
-      extension_service_->GetExtensionSyncData(extension);
-
-  syncer::SyncChangeList sync_change_list(1, extension_sync_data.GetSyncChange(
-      HasExtensionId(extension.id()) ?
-      syncer::SyncChange::ACTION_UPDATE : syncer::SyncChange::ACTION_ADD));
-  sync_processor_->ProcessSyncChanges(FROM_HERE, sync_change_list);
-  MarkPendingExtensionSynced(extension.id());
-}
-
 void ExtensionSyncBundle::ProcessSyncChange(
     ExtensionSyncData extension_sync_data) {
   if (extension_sync_data.uninstalled())
@@ -124,6 +113,17 @@ void ExtensionSyncBundle::AddPendingExtension(
 
 bool ExtensionSyncBundle::IsSyncing() const {
   return sync_processor_ != NULL;
+}
+
+void ExtensionSyncBundle::SyncChangeIfNeeded(const Extension& extension) {
+  ExtensionSyncData extension_sync_data =
+      extension_service_->GetExtensionSyncData(extension);
+
+  syncer::SyncChangeList sync_change_list(1, extension_sync_data.GetSyncChange(
+      HasExtensionId(extension.id()) ?
+      syncer::SyncChange::ACTION_UPDATE : syncer::SyncChange::ACTION_ADD));
+  sync_processor_->ProcessSyncChanges(FROM_HERE, sync_change_list);
+  MarkPendingExtensionSynced(extension.id());
 }
 
 std::vector<ExtensionSyncData> ExtensionSyncBundle::GetPendingData() const {

@@ -72,6 +72,9 @@ struct AppLaunchParams {
   base::FilePath current_directory;
 };
 
+// Opens the application, possibly prompting the user to re-enable it.
+void OpenApplicationWithReenablePrompt(const AppLaunchParams& params);
+
 // Open the application in a way specified by |params|.
 content::WebContents* OpenApplication(const AppLaunchParams& params);
 

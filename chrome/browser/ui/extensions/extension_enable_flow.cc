@@ -41,6 +41,12 @@ void ExtensionEnableFlow::StartForNativeWindow(
   Run();
 }
 
+void ExtensionEnableFlow::StartForCurrentlyNonexistentWindow(
+    base::Callback<gfx::NativeWindow(void)> window_getter) {
+  window_getter_ = window_getter;
+  Run();
+}
+
 void ExtensionEnableFlow::Run() {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
@@ -92,6 +98,8 @@ void ExtensionEnableFlow::CheckPermissionAndMaybePromptUser() {
 }
 
 void ExtensionEnableFlow::CreatePrompt() {
+  if (!window_getter_.is_null())
+    parent_window_ = window_getter_.Run();
   prompt_.reset(parent_contents_ ?
       new ExtensionInstallPrompt(parent_contents_) :
       new ExtensionInstallPrompt(profile_, parent_window_, this));
