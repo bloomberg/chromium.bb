@@ -18,8 +18,8 @@ ROOT_DIR = os.path.dirname(GOOGLETEST_DIR)
 sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(BASE_DIR, 'gtest_fake'))
 
-import trace_inputs
 import gtest_fake_base
+from utils import file_path
 
 FILE_PATH = os.path.realpath(unicode(os.path.abspath(__file__)))
 TARGET_UTIL_PATH = os.path.join(BASE_DIR, 'gtest_fake', 'gtest_fake_base.py')
@@ -46,7 +46,7 @@ class TraceTestCases(unittest.TestCase):
         # So it'll look like /usr/bin/python2.7
         self.executable += suffix
 
-    self.real_executable = trace_inputs.get_native_path_case(self.executable)
+    self.real_executable = file_path.get_native_path_case(self.executable)
     # Make sure there's no environment variable that could do side effects.
     os.environ.pop('GTEST_SHARD_INDEX', '')
     os.environ.pop('GTEST_TOTAL_SHARDS', '')
@@ -148,7 +148,7 @@ class TraceTestCases(unittest.TestCase):
           u'command': [
             self.executable, TARGET_PATH, '--gtest_filter=' + test_case,
           ],
-          u'executable': trace_inputs.get_native_path_case(
+          u'executable': file_path.get_native_path_case(
             unicode(self.executable)),
           u'initial_cwd': GOOGLETEST_DIR,
         },

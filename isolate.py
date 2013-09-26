@@ -36,6 +36,7 @@ from third_party import colorama
 from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
+from utils import file_path
 from utils import tools
 from utils import short_expression_finder
 
@@ -138,8 +139,8 @@ def path_starts_with(prefix, path):
   assert os.path.isabs(prefix) and os.path.isabs(path)
   prefix = os.path.normpath(prefix)
   path = os.path.normpath(path)
-  assert prefix == trace_inputs.get_native_path_case(prefix), prefix
-  assert path == trace_inputs.get_native_path_case(path), path
+  assert prefix == file_path.get_native_path_case(prefix), prefix
+  assert path == file_path.get_native_path_case(path), path
   prefix = prefix.rstrip(os.path.sep) + os.path.sep
   path = path.rstrip(os.path.sep) + os.path.sep
   return path.startswith(prefix)
@@ -153,7 +154,7 @@ def fix_native_path_case(root, path):
     if not raw_part or raw_part == '.':
       break
 
-    part = trace_inputs.find_item_native_case(native_case_path, raw_part)
+    part = file_path.find_item_native_case(native_case_path, raw_part)
     if not part:
       raise isolateserver.MappingError(
           'Input file %s doesn\'t exist' %
@@ -182,7 +183,7 @@ def expand_symlinks(indir, relfile):
   symlinks = []
 
   while todo:
-    pre_symlink, symlink, post_symlink = trace_inputs.split_at_symlink(
+    pre_symlink, symlink, post_symlink = file_path.split_at_symlink(
         done, todo)
     if not symlink:
       todo = fix_native_path_case(done, todo)
@@ -205,7 +206,7 @@ def expand_symlinks(indir, relfile):
     if not os.path.exists(target):
       raise isolateserver.MappingError(
           'Symlink target doesn\'t exist: %s -> %s' % (symlink_path, target))
-    target = trace_inputs.get_native_path_case(target)
+    target = file_path.get_native_path_case(target)
     if not path_starts_with(indir, target):
       done = symlink_path
       todo = post_symlink
@@ -254,7 +255,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
         'Can\'t map file %s outside %s' % (infile, indir))
 
   filepath = os.path.join(indir, relfile)
-  native_filepath = trace_inputs.get_native_path_case(filepath)
+  native_filepath = file_path.get_native_path_case(filepath)
   if filepath != native_filepath:
     # Special case './'.
     if filepath != native_filepath + '.' + os.path.sep:
@@ -266,7 +267,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
       #
       # Note that this is really something deep in OSX because running
       # ls Foo.framework/Versions/A
-      # will print out 'Resources', while trace_inputs.get_native_path_case()
+      # will print out 'Resources', while file_path.get_native_path_case()
       # returns a lower case 'r'.
       #
       # So *something* is happening under the hood resulting in the command 'ls'
@@ -476,7 +477,7 @@ def process_input(filepath, prevdict, read_only, flavor, algo):
       # expand_directory_and_symlink(), so it would not be necessary to do again
       # here.
       symlink_value = os.readlink(filepath)  # pylint: disable=E1101
-      filedir = trace_inputs.get_native_path_case(os.path.dirname(filepath))
+      filedir = file_path.get_native_path_case(os.path.dirname(filepath))
       native_dest = fix_native_path_case(filedir, symlink_value)
       out['l'] = os.path.relpath(native_dest, filedir)
   return out
@@ -530,7 +531,7 @@ def process_variables(cwd, variables, relative_base_dir):
   For each 'path' variable: first normalizes it based on |cwd|, verifies it
   exists then sets it as relative to relative_base_dir.
   """
-  relative_base_dir = trace_inputs.get_native_path_case(relative_base_dir)
+  relative_base_dir = file_path.get_native_path_case(relative_base_dir)
   variables = variables.copy()
   for i in PATH_VARIABLES:
     if i not in variables:
@@ -541,7 +542,7 @@ def process_variables(cwd, variables, relative_base_dir):
     variable = variable.replace('/', os.path.sep)
     variable = os.path.join(cwd, variable)
     variable = os.path.normpath(variable)
-    variable = trace_inputs.get_native_path_case(variable)
+    variable = file_path.get_native_path_case(variable)
     if not os.path.isdir(variable):
       raise ExecutionError('%s=%s is not a directory' % (i, variable))
 
@@ -1682,7 +1683,7 @@ class CompleteState(object):
     """
     # Make sure to not depend on os.getcwd().
     assert os.path.isabs(isolate_file), isolate_file
-    isolate_file = trace_inputs.get_native_path_case(isolate_file)
+    isolate_file = file_path.get_native_path_case(isolate_file)
     logging.info(
         'CompleteState.load_isolate(%s, %s, %s, %s)',
         cwd, isolate_file, variables, ignore_broken_items)
@@ -1811,7 +1812,7 @@ class CompleteState(object):
           isolate_dir, self.saved_state.relative_cwd)
       # Walk back back to the root directory.
       root_dir = isolate_dir[:-(len(self.saved_state.relative_cwd) + 1)]
-    return trace_inputs.get_native_path_case(root_dir)
+    return file_path.get_native_path_case(root_dir)
 
   @property
   def resultdir(self):
@@ -1852,7 +1853,7 @@ def load_complete_state(options, cwd, subdir, skip_update):
   """
   assert not options.isolate or os.path.isabs(options.isolate)
   assert not options.isolated or os.path.isabs(options.isolated)
-  cwd = trace_inputs.get_native_path_case(unicode(cwd))
+  cwd = file_path.get_native_path_case(unicode(cwd))
   if options.isolated:
     # Load the previous state if it was present. Namely, "foo.isolated.state".
     # Note: this call doesn't load the .isolate file.
@@ -2421,7 +2422,7 @@ class OptionParserIsolate(tools.OptionParserWithLogging):
     if not self.allow_interspersed_args and args:
       self.error('Unsupported argument: %s' % args)
 
-    cwd = trace_inputs.get_native_path_case(unicode(os.getcwd()))
+    cwd = file_path.get_native_path_case(unicode(os.getcwd()))
     parse_isolated_option(self, options, cwd, self.require_isolated)
     parse_variable_option(options)
 
@@ -2430,7 +2431,7 @@ class OptionParserIsolate(tools.OptionParserWithLogging):
       # The path must be in native path case for tracing purposes.
       options.isolate = unicode(options.isolate).replace('/', os.path.sep)
       options.isolate = os.path.normpath(os.path.join(cwd, options.isolate))
-      options.isolate = trace_inputs.get_native_path_case(options.isolate)
+      options.isolate = file_path.get_native_path_case(options.isolate)
 
     if options.outdir and not is_url(options.outdir):
       options.outdir = unicode(options.outdir).replace('/', os.path.sep)

@@ -18,6 +18,7 @@ ROOT_DIR = unicode(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT_DIR)
 
 import isolate
+from utils import file_path
 # Create shortcuts.
 from isolate import KEY_TOUCHED, KEY_TRACKED, KEY_UNTRACKED
 
@@ -1175,7 +1176,7 @@ class IsolateLoad(IsolateBase):
         },
       },
       'isolate_file': isolate.safe_relpath(
-          isolate.trace_inputs.get_native_path_case(isolate_file),
+          file_path.get_native_path_case(isolate_file),
           os.path.dirname(options.isolated)),
       'relative_cwd': os.path.join(u'tests', 'isolate'),
       'variables': {
@@ -1231,7 +1232,7 @@ class IsolateLoad(IsolateBase):
         },
       },
       'isolate_file': isolate.safe_relpath(
-          isolate.trace_inputs.get_native_path_case(isolate_file),
+          file_path.get_native_path_case(isolate_file),
           os.path.dirname(options.isolated)),
       'relative_cwd': os.path.join(u'tests', 'isolate'),
       'variables': {
@@ -1288,7 +1289,7 @@ class IsolateLoad(IsolateBase):
         },
       },
       'isolate_file': isolate.safe_relpath(
-          isolate.trace_inputs.get_native_path_case(isolate_file),
+          file_path.get_native_path_case(isolate_file),
           os.path.dirname(options.isolated)),
       'relative_cwd': os.path.join(u'tests', 'isolate'),
       'variables': {
@@ -1308,7 +1309,7 @@ class IsolateLoad(IsolateBase):
         ROOT_DIR, 'tests', 'isolate', 'touch_root.isolate')
     options = self._get_option(isolate_file)
     options.variables['PRODUCT_DIR'] = os.path.join(u'tests', u'isolate')
-    native_cwd = isolate.trace_inputs.get_native_path_case(unicode(self.cwd))
+    native_cwd = file_path.get_native_path_case(unicode(self.cwd))
     try:
       isolate.load_complete_state(options, self.cwd, None, False)
       self.fail()
@@ -1368,7 +1369,7 @@ class IsolateLoad(IsolateBase):
         },
       },
       'isolate_file': isolate.safe_relpath(
-          isolate.trace_inputs.get_native_path_case(isolate_file),
+          file_path.get_native_path_case(isolate_file),
           os.path.dirname(options.isolated)),
       'relative_cwd': os.path.join(u'tests', 'isolate'),
       'variables': {
@@ -1463,7 +1464,7 @@ class IsolateLoad(IsolateBase):
         },
       },
       'isolate_file': isolate.safe_relpath(
-          isolate.trace_inputs.get_native_path_case(isolate_file),
+          file_path.get_native_path_case(isolate_file),
           os.path.dirname(options.isolated)),
       'relative_cwd': os.path.join(u'tests', 'isolate'),
       'variables': {
@@ -1583,7 +1584,7 @@ class IsolateLoad(IsolateBase):
         },
       },
       u'isolate_file': isolate.safe_relpath(
-          isolate.trace_inputs.get_native_path_case(isolate_file),
+          file_path.get_native_path_case(isolate_file),
           unicode(os.path.dirname(options.isolated))),
       u'relative_cwd': u'.',
       u'variables': {

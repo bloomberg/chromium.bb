@@ -21,6 +21,7 @@ sys.path.insert(0, ROOT_DIR)
 
 import isolate
 import isolateserver
+from utils import file_path
 
 
 VERBOSE = False
@@ -265,7 +266,7 @@ class IsolateModeBase(IsolateBase):
       u'command': [],
       u'files': self._gen_files(read_only, empty_file, True),
       u'isolate_file': isolate.safe_relpath(
-          isolate.trace_inputs.get_native_path_case(unicode(self.filename())),
+          file_path.get_native_path_case(unicode(self.filename())),
           unicode(os.path.dirname(self.isolated))),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
       u'variables': {
@@ -361,7 +362,7 @@ class IsolateModeBase(IsolateBase):
       out = e.stderr
     self._expect_no_tree()
     self._expect_no_result()
-    root = isolate.trace_inputs.get_native_path_case(unicode(ROOT_DIR))
+    root = file_path.get_native_path_case(unicode(ROOT_DIR))
     expected = (
       '\n'
       'Error: Input directory %s must have a trailing slash\n' %
@@ -378,7 +379,7 @@ class IsolateModeBase(IsolateBase):
       out = e.stderr
     self._expect_no_tree()
     self._expect_no_result()
-    root = isolate.trace_inputs.get_native_path_case(unicode(ROOT_DIR))
+    root = file_path.get_native_path_case(unicode(ROOT_DIR))
     expected = (
       '\n'
       'Error: Input file %s doesn\'t exist\n' %
@@ -791,7 +792,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
   # Warning: merge updates .isolate files. But they are currently in their
   # canonical format so they shouldn't be changed.
   def _check_merge(self, filename):
-    filepath = isolate.trace_inputs.get_native_path_case(
+    filepath = file_path.get_native_path_case(
             os.path.join(unicode(ROOT_DIR), 'tests', 'isolate', filename))
     expected = 'Updating %s\n' % isolate.safe_relpath(filepath, self.tempdir)
     with open(filepath, 'rb') as f:

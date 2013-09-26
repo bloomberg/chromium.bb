@@ -18,6 +18,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 import trace_inputs
+from utils import file_path
 from utils import threading_utils
 
 FILENAME = os.path.basename(__file__)
@@ -72,9 +73,9 @@ class TraceInputsBase(unittest.TestCase):
         # So it'll look like /usr/bin/python2.7
         self.executable += suffix
 
-    self.real_executable = trace_inputs.get_native_path_case(
+    self.real_executable = file_path.get_native_path_case(
         unicode(self.executable))
-    self.tempdir = trace_inputs.get_native_path_case(
+    self.tempdir = file_path.get_native_path_case(
         unicode(tempfile.mkdtemp(prefix='trace_smoke_test')))
     self.log = os.path.join(self.tempdir, 'log')
 
@@ -452,7 +453,7 @@ class TraceInputsImport(TraceInputsBase):
     def blacklist(f):
       return f.endswith(('.pyc', 'do_not_care.txt', '.git', '.svn'))
     simplified = trace_inputs.extract_directories(
-        trace_inputs.get_native_path_case(unicode(ROOT_DIR)),
+        file_path.get_native_path_case(unicode(ROOT_DIR)),
         results.files,
         blacklist)
     self.assertEqual(files, [f.path for f in simplified])

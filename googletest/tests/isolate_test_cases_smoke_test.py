@@ -22,6 +22,7 @@ sys.path.insert(0, ROOT_DIR)
 
 import isolate
 import trace_test_cases
+from utils import file_path
 
 
 class IsolateTestCases(unittest.TestCase):
@@ -44,7 +45,7 @@ class IsolateTestCases(unittest.TestCase):
         # So it'll look like /usr/bin/python2.7
         self.executable += suffix
 
-    self.real_executable = isolate.trace_inputs.get_native_path_case(
+    self.real_executable = file_path.get_native_path_case(
         self.executable)
     # Make sure there's no environment variable that could cause side effects.
     os.environ.pop('GTEST_SHARD_INDEX', '')
