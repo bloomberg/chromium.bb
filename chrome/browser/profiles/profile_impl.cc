@@ -250,7 +250,7 @@ void SchedulePrefsFileVerification(const base::FilePath& prefs_file) {
   const int kVerifyPrefsFileDelaySeconds = 60;
   BrowserThread::GetBlockingPool()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&VerifyFileAtPath, prefs_file, "Preferences"),
+        base::Bind(&VerifyPreferencesFile, prefs_file),
         base::TimeDelta::FromSeconds(kVerifyPrefsFileDelaySeconds));
 #endif
 }
