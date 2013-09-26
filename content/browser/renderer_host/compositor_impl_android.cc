@@ -414,7 +414,7 @@ CreateGpuProcessViewContext(
           64 * 1024,  // min transfer buffer size
           std::min(3 * full_screen_texture_size_in_bytes,
                    kDefaultMaxTransferBufferSize),
-          WebGraphicsContext3DCommandBufferImpl::kNoLimit
+          2 * 1024 * 1024  // mapped memory limit
   )) {
     LOG(ERROR) << "Failed to create 3D context for compositor.";
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
