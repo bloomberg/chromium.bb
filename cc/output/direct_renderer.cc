@@ -430,6 +430,12 @@ bool DirectRenderer::HaveCachedResourcesForRenderPassId(RenderPass::Id id)
   return texture && texture->id() && texture->is_complete();
 }
 
+bool DirectRenderer::HasAllocatedResourcesForTesting(RenderPass::Id id)
+    const {
+  CachedResource* texture = render_pass_textures_.get(id);
+  return texture && texture->id();
+}
+
 // static
 gfx::Size DirectRenderer::RenderPassTextureSize(const RenderPass* render_pass) {
   return render_pass->output_rect.size();

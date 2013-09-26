@@ -1623,10 +1623,6 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestCompositeAndReadbackCleanup);
 class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
     : public LayerTreeHostTest {
  protected:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
-    settings->cache_render_pass_contents = true;
-  }
-
   virtual void SetupTree() OVERRIDE {
     root_layer_ = FakeContentLayer::Create(&client_);
     root_layer_->SetBounds(gfx::Size(100, 100));
@@ -1667,9 +1663,9 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
 
     switch (host_impl->active_tree()->source_frame_number()) {
       case 0:
-        EXPECT_TRUE(renderer->HaveCachedResourcesForRenderPassId(
+        EXPECT_TRUE(renderer->HasAllocatedResourcesForTesting(
             surface1_render_pass_id));
-        EXPECT_TRUE(renderer->HaveCachedResourcesForRenderPassId(
+        EXPECT_TRUE(renderer->HasAllocatedResourcesForTesting(
             surface2_render_pass_id));
 
         // Reduce the memory limit to only fit the root layer and one render
@@ -3007,10 +3003,6 @@ SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
 class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
     : public LayerTreeHostTest {
  protected:
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
-    settings->cache_render_pass_contents = true;
-  }
-
   virtual void SetupTree() OVERRIDE {
     root_ = FakeContentLayer::Create(&client_);
     root_->SetBounds(gfx::Size(20, 20));
@@ -3061,12 +3053,12 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
 
     // |parent| owns a surface, but it was hidden and not part of the copy
     // request so it should not allocate any resource.
-    EXPECT_FALSE(renderer->HaveCachedResourcesForRenderPassId(
+    EXPECT_FALSE(renderer->HasAllocatedResourcesForTesting(
         parent->render_surface()->RenderPassId()));
 
     // |copy_layer| should have been rendered to a texture since it was needed
     // for a copy request.
-    EXPECT_TRUE(renderer->HaveCachedResourcesForRenderPassId(
+    EXPECT_TRUE(renderer->HasAllocatedResourcesForTesting(
         copy_layer->render_surface()->RenderPassId()));
 
     did_draw_ = true;

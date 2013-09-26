@@ -31,6 +31,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
       const RenderPassList& render_passes_in_draw_order) OVERRIDE;
   virtual bool HaveCachedResourcesForRenderPassId(RenderPass::Id id) const
       OVERRIDE;
+  virtual bool HasAllocatedResourcesForTesting(RenderPass::Id id) const
+      OVERRIDE;
   virtual void DrawFrame(RenderPassList* render_passes_in_draw_order,
                          ContextProvider* offscreen_context_provider,
                          float device_scale_factor,
