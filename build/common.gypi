@@ -1784,6 +1784,11 @@
         'arm_float_abi%': '',
         'arm_thumb%': 0,
       }],
+
+      # Enable brlapi by default for chromeos.
+      [ 'chromeos==1', {
+        'use_brlapi%': 1,
+      }],
     ],
 
 

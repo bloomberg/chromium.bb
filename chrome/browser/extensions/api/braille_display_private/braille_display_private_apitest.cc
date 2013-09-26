@@ -88,7 +88,7 @@ class MockBrlapiConnection : public BrlapiConnection {
     return true;
   }
 
-  virtual int ReadKey(brlapi_keyCode_t* key_code) {
+  virtual int ReadKey(brlapi_keyCode_t* key_code) OVERRIDE {
     if (!data_->pending_keys.empty()) {
       int queued_key_code = data_->pending_keys.front();
       data_->pending_keys.pop_front();
@@ -120,7 +120,7 @@ class MockBrlapiConnection : public BrlapiConnection {
 
 class BrailleDisplayPrivateApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpInProcessBrowserTestFixture() {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     connection_data_.connected = false;
     connection_data_.display_size = 0;
