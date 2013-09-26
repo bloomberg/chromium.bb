@@ -82,7 +82,8 @@ protected:
         settings->setLoadsImagesAutomatically(true);
         settings->setJavaScriptEnabled(true);
 
-        m_webViewImpl->initializeMainFrame(&m_webFrameClient);
+        m_mainFrame = WebFrame::create(&m_webFrameClient);
+        m_webViewImpl->setMainFrame(m_mainFrame);
     }
 
     virtual void TearDown()
@@ -90,6 +91,8 @@ protected:
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
         m_webViewImpl->close();
         m_webViewImpl = 0;
+        m_mainFrame->close();
+        m_mainFrame = 0;
     }
 
     void setBaseUrl(const char* url)
@@ -174,6 +177,7 @@ protected:
 
 private:
     TestWebFrameClient m_webFrameClient;
+    WebFrame* m_mainFrame;
     WebString m_folder;
     KURL m_baseUrl;
     Vector<SerializedResource> m_resources;

@@ -43,7 +43,7 @@ namespace WebKit {
 
 class HelperPluginChromeClient;
 class WebDocument;
-class WebFrame;
+class WebFrameImpl;
 class WebViewImpl;
 class WebWidgetClient;
 
@@ -75,6 +75,7 @@ private:
 
     WebWidgetClient* m_widgetClient;
     WebViewImpl* m_webView;
+    WebFrameImpl* m_mainFrame;
     OwnPtr<WebCore::Page> m_page;
     OwnPtr<HelperPluginChromeClient> m_chromeClient;
 

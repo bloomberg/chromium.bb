@@ -76,6 +76,7 @@ public:
     {
         // We cannot reuse FrameTestHelpers::createWebViewAndLoad here because the compositing
         // settings need to be set before the page is loaded.
+        m_mainFrame = WebFrame::create(&m_mockWebFrameClient);
         m_webViewImpl = toWebViewImpl(WebView::create(&m_mockWebViewClient));
         m_webViewImpl->settings()->setJavaScriptEnabled(true);
         m_webViewImpl->settings()->setForceCompositingMode(true);
@@ -85,7 +86,7 @@ public:
         m_webViewImpl->settings()->setAcceleratedCompositingForScrollableFramesEnabled(true);
         m_webViewImpl->settings()->setCompositedScrollingForFramesEnabled(true);
         m_webViewImpl->settings()->setFixedPositionCreatesStackingContext(true);
-        m_webViewImpl->initializeMainFrame(&m_mockWebFrameClient);
+        m_webViewImpl->setMainFrame(m_mainFrame);
         m_webViewImpl->resize(IntSize(320, 240));
     }
 
@@ -93,6 +94,7 @@ public:
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
         m_webViewImpl->close();
+        m_mainFrame->close();
     }
 
     void navigateTo(const std::string& url)
@@ -121,6 +123,7 @@ protected:
     MockWebFrameClient m_mockWebFrameClient;
     FakeWebViewClient m_mockWebViewClient;
     WebViewImpl* m_webViewImpl;
+    WebFrame* m_mainFrame;
 };
 
 TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingByDefault)

@@ -173,6 +173,7 @@ private:
     // 'shadow page' - created to proxy loading requests from the worker.
     RefPtr<WebCore::ScriptExecutionContext> m_loadingDocument;
     WebView* m_webView;
+    WebFrame* m_mainFrame;
     bool m_askedToTerminate;
 
     RefPtr<WebCore::WorkerThread> m_workerThread;

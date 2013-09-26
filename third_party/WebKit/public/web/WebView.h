@@ -89,18 +89,19 @@ public:
 
     // Initialization ------------------------------------------------------
 
-    // Creates a WebView that is NOT yet initialized.  You will need to
-    // call initializeMainFrame to finish the initialization.  It is valid
-    // to pass null client pointers.
+    // Creates a WebView that is NOT yet initialized. You will need to
+    // call setMainFrame to finish the initialization. It is valid
+    // to pass a null client pointer.
     BLINK_EXPORT static WebView* create(WebViewClient*);
 
     // After creating a WebView, you should immediately call this method.
     // You can optionally modify the settings before calling this method.
-    // The WebFrameClient will receive events for the main frame and any
-    // child frames.  It is valid to pass a null WebFrameClient pointer.
+    // This WebFrame will receive events for the main frame and must not
+    // be null.
+    virtual void setMainFrame(WebFrame*) = 0;
+    // FIXME: Remove initializeMainFrame() after clients have migrated to
+    // setMainFrame().
     virtual void initializeMainFrame(WebFrameClient*) = 0;
-
-    virtual void initializeHelperPluginFrame(WebFrameClient*) = 0;
 
     // Initializes the various client interfaces.
     virtual void setAutofillClient(WebAutofillClient*) = 0;

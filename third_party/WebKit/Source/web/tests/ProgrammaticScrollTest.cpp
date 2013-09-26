@@ -82,7 +82,8 @@ TEST_F(ProgrammaticScrollTest, UserScroll)
     registerMockedHttpURLLoad("short_scroll.html");
     TestProgrammaticScrollClient client;
 
-    WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "short_scroll.html", false, 0, &client);
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "short_scroll.html", false, 0, &client);
     webView->resize(WebSize(1000, 1000));
     webView->layout();
 
@@ -91,8 +92,6 @@ TEST_F(ProgrammaticScrollTest, UserScroll)
     // Non zero page scale and scroll.
     toWebViewImpl(webView)->applyScrollAndScale(WebSize(9, 13), 2.0f);
     EXPECT_FALSE(client.eventReceived());
-
-    webView->close();
 }
 
 TEST_F(ProgrammaticScrollTest, ProgrammaticScroll)
@@ -100,7 +99,8 @@ TEST_F(ProgrammaticScrollTest, ProgrammaticScroll)
     registerMockedHttpURLLoad("long_scroll.html");
     TestProgrammaticScrollClient client;
 
-    WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "long_scroll.html", true, 0, &client);
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "long_scroll.html", true, 0, &client);
     webView->resize(WebSize(1000, 1000));
     webView->layout();
 
@@ -126,8 +126,6 @@ TEST_F(ProgrammaticScrollTest, ProgrammaticScroll)
     frameImpl->executeScript(WebScriptSource("window.scrollBy(0, 0);"));
     EXPECT_FALSE(client.eventReceived());
     client.reset();
-
-    webView->close();
 }
 
 TEST_F(ProgrammaticScrollTest, UserScrollOnMainThread)
@@ -135,7 +133,8 @@ TEST_F(ProgrammaticScrollTest, UserScrollOnMainThread)
     registerMockedHttpURLLoad("long_scroll.html");
     TestProgrammaticScrollClient client;
 
-    WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "long_scroll.html", true, 0, &client);
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "long_scroll.html", true, 0, &client);
     webView->resize(WebSize(1000, 1000));
     webView->layout();
 
@@ -156,8 +155,6 @@ TEST_F(ProgrammaticScrollTest, UserScrollOnMainThread)
     webView->handleInputEvent(gesture);
     FrameTestHelpers::runPendingTasks();
     EXPECT_FALSE(client.eventReceived());
-
-    webView->close();
 }
 
 TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale)
@@ -165,7 +162,8 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale)
     registerMockedHttpURLLoad("long_scroll.html");
     TestProgrammaticScrollClient client;
 
-    WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "long_scroll.html", true, 0, &client);
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "long_scroll.html", true, 0, &client);
     webView->resize(WebSize(1000, 1000));
     webView->layout();
 
@@ -187,8 +185,6 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale)
     EXPECT_EQ(200, webViewImpl->mainFrameImpl()->scrollOffset().height);
     EXPECT_TRUE(frameView->wasScrolledByUser());
     EXPECT_FALSE(client.eventReceived());
-
-    webView->close();
 }
 
 TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale)
@@ -196,7 +192,8 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale)
     registerMockedHttpURLLoad("long_scroll.html");
     TestProgrammaticScrollClient client;
 
-    WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "long_scroll.html", true, 0, &client);
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "long_scroll.html", true, 0, &client);
     webView->resize(WebSize(1000, 1000));
     webView->layout();
 
@@ -221,8 +218,6 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale)
     EXPECT_EQ(400, webViewImpl->mainFrameImpl()->scrollOffset().height);
     EXPECT_TRUE(frameView->wasScrolledByUser());
     EXPECT_FALSE(client.eventReceived());
-
-    webView->close();
 }
 
 }

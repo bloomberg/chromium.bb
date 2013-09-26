@@ -59,6 +59,7 @@ class WebDataSource;
 class WebDocument;
 class WebElement;
 class WebFormElement;
+class WebFrameClient;
 class WebHistoryItem;
 class WebInputElement;
 class WebPerformance;
@@ -92,6 +93,23 @@ public:
     };
     typedef unsigned RenderAsTextControls;
 
+    // Creates a WebFrame. Delete this WebFrame by calling WebFrame::close().
+    // It is valid to pass a null client pointer.
+    BLINK_EXPORT static WebFrame* create(WebFrameClient*);
+
+    // Same as create(WebFrameClient*) except the embedder may explicitly pass
+    // in the identifier for the WebFrame. This can be used with
+    // generateEmbedderIdentifier() if constructing the WebFrameClient for this
+    // frame requires the identifier.
+    //
+    // FIXME: Move the embedderIdentifier concept fully to the embedder and
+    // remove this factory method.
+    BLINK_EXPORT static WebFrame* create(WebFrameClient*, long long embedderIdentifier);
+
+    // Generates an identifier suitable for use with create() above.
+    // Never returns -1.
+    BLINK_EXPORT static long long generateEmbedderIdentifier();
+
     // Returns the number of live WebFrame objects, used for leak checking.
     BLINK_EXPORT static int instanceCount();
 
@@ -109,6 +127,9 @@ public:
     // the given element is not a frame, iframe or if the frame is empty.
     BLINK_EXPORT static WebFrame* fromFrameOwnerElement(const WebElement&);
 
+    // This method closes and deletes the WebFrame.
+    virtual void close() = 0;
+
 
     // Basic properties ---------------------------------------------------
 
@@ -124,7 +145,9 @@ public:
     virtual void setName(const WebString&) = 0;
 
     // A globally unique identifier for this frame.
-    virtual long long identifier() const = 0;
+    // FIXME: Convert users to embedderIdentifier() and remove identifier().
+    long long identifier() const { return embedderIdentifier(); }
+    virtual long long embedderIdentifier() const = 0;
 
     // The urls of the given combination types of favicon (if any) specified by
     // the document loaded in this frame. The iconTypesMask is a bit-mask of

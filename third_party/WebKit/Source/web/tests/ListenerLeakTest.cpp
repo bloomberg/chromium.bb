@@ -87,26 +87,22 @@ int GetNumObjects(const char* constructor)
 
 class ListenerLeakTest : public testing::Test {
 public:
-    ListenerLeakTest() : m_webView(0) { }
-
     void RunTest(const std::string& filename)
     {
         std::string baseURL("http://www.example.com/");
         std::string fileName(filename);
         bool executeScript = true;
         URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8(fileName.c_str()));
-        m_webView = FrameTestHelpers::createWebViewAndLoad(baseURL + fileName, executeScript);
+        webViewHelper.initializeAndLoad(baseURL + fileName, executeScript);
     }
 
     virtual void TearDown() OVERRIDE
     {
-        if (m_webView)
-            m_webView->close();
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
 
 protected:
-    WebView* m_webView;
+    FrameTestHelpers::WebViewHelper webViewHelper;
 };
 
 

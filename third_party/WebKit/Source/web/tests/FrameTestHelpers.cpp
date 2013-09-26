@@ -33,11 +33,11 @@
 
 #include "URLTestHelpers.h"
 #include "wtf/StdLibExtras.h"
-#include "WebFrame.h"
 #include "WebFrameClient.h"
+#include "WebFrameImpl.h"
 #include "WebSettings.h"
-#include "WebView.h"
 #include "WebViewClient.h"
+#include "WebViewImpl.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
@@ -48,56 +48,7 @@
 namespace WebKit {
 namespace FrameTestHelpers {
 
-void loadFrame(WebFrame* frame, const std::string& url)
-{
-    WebURLRequest urlRequest;
-    urlRequest.initialize();
-    urlRequest.setURL(URLTestHelpers::toKURL(url));
-    frame->loadRequest(urlRequest);
-}
-
-class TestWebFrameClient : public WebFrameClient {
-};
-
-static WebFrameClient* defaultWebFrameClient()
-{
-    DEFINE_STATIC_LOCAL(TestWebFrameClient, client, ());
-    return &client;
-}
-
-class TestWebViewClient : public WebViewClient {
-};
-
-static WebViewClient* defaultWebViewClient()
-{
-    DEFINE_STATIC_LOCAL(TestWebViewClient,  client, ());
-    return &client;
-}
-
-WebView* createWebView(bool enableJavascript, WebFrameClient* webFrameClient, WebViewClient* webViewClient)
-{
-    if (!webFrameClient)
-        webFrameClient = defaultWebFrameClient();
-    if (!webViewClient)
-        webViewClient = defaultWebViewClient();
-    WebView* webView = WebView::create(webViewClient);
-    webView->settings()->setJavaScriptEnabled(enableJavascript);
-    webView->settings()->setDeviceSupportsMouse(false);
-    webView->settings()->setForceCompositingMode(true);
-    webView->initializeMainFrame(webFrameClient);
-
-    return webView;
-}
-
-WebView* createWebViewAndLoad(const std::string& url, bool enableJavascript, WebFrameClient* webFrameClient, WebViewClient* webViewClient)
-{
-    WebView* webView = createWebView(enableJavascript, webFrameClient, webViewClient);
-
-    loadFrame(webView->mainFrame(), url);
-    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
-
-    return webView;
-}
+namespace {
 
 class QuitTask : public WebThread::Task {
 public:
@@ -107,10 +58,88 @@ public:
     }
 };
 
+WebFrameClient* defaultWebFrameClient()
+{
+    DEFINE_STATIC_LOCAL(WebFrameClient, client, ());
+    return &client;
+}
+
+WebViewClient* defaultWebViewClient()
+{
+    DEFINE_STATIC_LOCAL(WebViewClient,  client, ());
+    return &client;
+}
+
+} // namespace
+
+void loadFrame(WebFrame* frame, const std::string& url)
+{
+    WebURLRequest urlRequest;
+    urlRequest.initialize();
+    urlRequest.setURL(URLTestHelpers::toKURL(url));
+    frame->loadRequest(urlRequest);
+}
+
 void runPendingTasks()
 {
     Platform::current()->currentThread()->postTask(new QuitTask);
     Platform::current()->currentThread()->enterRunLoop();
+}
+
+WebViewHelper::WebViewHelper()
+    : m_mainFrame(0)
+    , m_webView(0)
+{
+}
+
+WebViewHelper::~WebViewHelper()
+{
+    reset();
+}
+
+WebViewImpl* WebViewHelper::initialize(bool enableJavascript, WebFrameClient* webFrameClient, WebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
+{
+    reset();
+
+    if (!webFrameClient)
+        webFrameClient = defaultWebFrameClient();
+    if (!webViewClient)
+        webViewClient = defaultWebViewClient();
+    m_webView = WebViewImpl::create(webViewClient);
+    m_webView->settings()->setJavaScriptEnabled(enableJavascript);
+    if (updateSettingsFunc) {
+        updateSettingsFunc(m_webView->settings());
+    } else {
+        m_webView->settings()->setDeviceSupportsMouse(false);
+        m_webView->settings()->setForceCompositingMode(true);
+    }
+
+    m_mainFrame = WebFrameImpl::create(webFrameClient);
+    m_webView->setMainFrame(m_mainFrame);
+
+    return m_webView;
+}
+
+WebViewImpl* WebViewHelper::initializeAndLoad(const std::string& url, bool enableJavascript, WebFrameClient* webFrameClient, WebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
+{
+    initialize(enableJavascript, webFrameClient, webViewClient, updateSettingsFunc);
+
+    loadFrame(webView()->mainFrame(), url);
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+
+    return webViewImpl();
+}
+
+void WebViewHelper::reset()
+{
+    if (m_webView) {
+        m_webView->close();
+        m_webView = 0;
+    }
+    if (m_mainFrame) {
+        m_mainFrame->close();
+        m_mainFrame = 0;
+    }
 }
 
 } // namespace FrameTestHelpers

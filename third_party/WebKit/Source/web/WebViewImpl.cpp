@@ -271,6 +271,12 @@ static int webInputEventKeyStateToPlatformEventKeyState(int webInputEventKeyStat
 WebView* WebView::create(WebViewClient* client)
 {
     // Pass the WebViewImpl's self-reference to the caller.
+    return WebViewImpl::create(client);
+}
+
+WebViewImpl* WebViewImpl::create(WebViewClient* client)
+{
+    // Pass the WebViewImpl's self-reference to the caller.
     return adoptRef(new WebViewImpl(client)).leakRef();
 }
 
@@ -314,18 +320,27 @@ void WebView::didExitModalLoop()
     pageGroupLoadDeferrerStack().removeLast();
 }
 
-void WebViewImpl::initializeMainFrame(WebFrameClient* frameClient)
+void WebViewImpl::setMainFrame(WebFrame* frame)
 {
-    // NOTE: The WebFrameImpl takes a reference to itself within InitMainFrame
-    // and releases that reference once the corresponding Frame is destroyed.
-    RefPtr<WebFrameImpl> frame = WebFrameImpl::create(frameClient);
-
-    frame->initializeAsMainFrame(page());
+    // NOTE: The WebFrameImpl takes a reference to itself within
+    // initializeAsMainFrame() and releases that reference once the
+    // corresponding Frame is destroyed.
+    toWebFrameImpl(frame)->initializeAsMainFrame(page());
 }
 
-void WebViewImpl::initializeHelperPluginFrame(WebFrameClient* client)
+void WebViewImpl::initializeMainFrame(WebFrameClient* frameClient)
 {
-    RefPtr<WebFrameImpl> frame = WebFrameImpl::create(client);
+    // NOTE: Previously, WebViewImpl was responsible for allocating its own
+    // mainframe. This code is for supporting clients that have yet to move
+    // to setMainFrame(). Though the setMainFrame() accepts a raw pointer, it
+    // implicitly takes a refcount on the frame. Dropping our RefPtr here
+    // will effectively pass ownership to m_page. New users of WebViewImpl
+    // should call WebFrameImpl::create() to construct their own mainframe,
+    // pass it into WebViewImpl::setMainFrame(), keep a pointer to the
+    // mainframe, and call WebFrameImpl::close() on it when closing the
+    // WebViewImpl.
+    RefPtr<WebFrameImpl> frame = adoptRef(WebFrameImpl::create(frameClient));
+    setMainFrame(frame.get());
 }
 
 void WebViewImpl::setAutofillClient(WebAutofillClient* autofillClient)

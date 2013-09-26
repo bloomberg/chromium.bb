@@ -96,7 +96,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     const std::string fileName("fixed_layout.html");
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
-    WebViewImpl* webViewImpl = toWebViewImpl(FrameTestHelpers::createWebViewAndLoad(baseURL + fileName, true));
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = toWebViewImpl(webViewHelper.initializeAndLoad(baseURL + fileName, true));
     webViewImpl->enableFixedLayoutMode(true);
     webViewImpl->settings()->setViewportEnabled(true);
     int pageWidth = 640;
@@ -277,8 +278,6 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         EXPECT_EQ(10, webTouchBuilder.touches[0].radiusX);
         EXPECT_EQ(10, webTouchBuilder.touches[0].radiusY);
     }
-
-    webViewImpl->close();
 }
 
 } // anonymous namespace

@@ -128,6 +128,7 @@ class WebViewImpl : public WebView
     , public WebCore::PagePopupDriver
     , public PageWidgetEventHandler {
 public:
+    static WebViewImpl* create(WebViewClient*);
 
     // WebWidget methods:
     virtual void close();
@@ -181,8 +182,8 @@ public:
     virtual void didExitCompositingMode();
 
     // WebView methods:
+    virtual void setMainFrame(WebFrame*);
     virtual void initializeMainFrame(WebFrameClient*);
-    virtual void initializeHelperPluginFrame(WebFrameClient*);
     virtual void setAutofillClient(WebAutofillClient*);
     virtual void setDevToolsAgentClient(WebDevToolsAgentClient*);
     virtual void setPermissionClient(WebPermissionClient*);
@@ -584,7 +585,7 @@ private:
       DragOver
     };
 
-    WebViewImpl(WebViewClient*);
+    explicit WebViewImpl(WebViewClient*);
     virtual ~WebViewImpl();
 
     WebTextInputType textInputType();

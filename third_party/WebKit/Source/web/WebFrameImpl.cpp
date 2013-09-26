@@ -50,7 +50,7 @@
 // ref initially and it is removed when the FrameLoader is getting destroyed.
 //
 // WebFrames are created in two places, first in WebViewImpl when the root
-// frame is created, and second in WebFrame::CreateChildFrame when sub-frames
+// frame is created, and second in WebFrame::createChildFrame when sub-frames
 // are created. WebKit will hook up this object to the FrameLoader/Frame
 // and the refcount will be correct.
 //
@@ -64,9 +64,12 @@
 // in FrameLoader::detachFromParent for each subframe.
 //
 // Frame going away causes the FrameLoader to get deleted. In FrameLoader's
-// destructor, it notifies its client with frameLoaderDestroyed. This calls
-// WebFrame::Closing and then derefs the WebFrame and will cause it to be
-// deleted (unless an external someone is also holding a reference).
+// destructor, it notifies its client with frameLoaderDestroyed. This derefs
+// the WebFrame and will cause it to be deleted (unless an external someone
+// is also holding a reference).
+//
+// Thie client is expected to be set whenever the WebFrameImpl is attached to
+// the DOM.
 
 #include "config.h"
 #include "WebFrameImpl.h"
@@ -264,12 +267,6 @@ static void frameContentAsPlainText(size_t maxChars, Frame* frame, StringBuilder
         if (output.length() >= maxChars)
             return; // Filled up the buffer.
     }
-}
-
-static long long generateFrameIdentifier()
-{
-    static long long next = 0;
-    return ++next;
 }
 
 WebPluginContainerImpl* WebFrameImpl::pluginContainerFromFrame(Frame* frame)
@@ -526,6 +523,12 @@ WebFrame* WebFrame::fromFrameOwnerElement(const WebElement& element)
     return WebFrameImpl::fromFrameOwnerElement(PassRefPtr<Element>(element).get());
 }
 
+void WebFrameImpl::close()
+{
+    m_client = 0;
+    deref(); // Balances ref() acquired in WebFrame::create
+}
+
 WebString WebFrameImpl::uniqueName() const
 {
     return frame()->tree()->uniqueName();
@@ -541,9 +544,9 @@ void WebFrameImpl::setName(const WebString& name)
     frame()->tree()->setName(name);
 }
 
-long long WebFrameImpl::identifier() const
+long long WebFrameImpl::embedderIdentifier() const
 {
-    return m_identifier;
+    return m_embedderIdentifier;
 }
 
 WebVector<WebIconURL> WebFrameImpl::iconURLs(int iconTypesMask) const
@@ -2066,12 +2069,34 @@ WebString WebFrameImpl::layerTreeAsText(bool showDebugInfo) const
 
 // WebFrameImpl public ---------------------------------------------------------
 
-PassRefPtr<WebFrameImpl> WebFrameImpl::create(WebFrameClient* client)
+WebFrame* WebFrame::create(WebFrameClient* client)
 {
-    return adoptRef(new WebFrameImpl(client));
+    return WebFrameImpl::create(client);
 }
 
-WebFrameImpl::WebFrameImpl(WebFrameClient* client)
+WebFrame* WebFrame::create(WebFrameClient* client, long long embedderIdentifier)
+{
+    return WebFrameImpl::create(client, embedderIdentifier);
+}
+
+long long WebFrame::generateEmbedderIdentifier()
+{
+    static long long next = 0;
+    // Assume that 64-bit will not wrap to -1.
+    return ++next;
+}
+
+WebFrameImpl* WebFrameImpl::create(WebFrameClient* client)
+{
+    return WebFrameImpl::create(client, generateEmbedderIdentifier());
+}
+
+WebFrameImpl* WebFrameImpl::create(WebFrameClient* client, long long embedderIdentifier)
+{
+    return adoptRef(new WebFrameImpl(client, embedderIdentifier)).leakRef();
+}
+
+WebFrameImpl::WebFrameImpl(WebFrameClient* client, long long embedderIdentifier)
     : FrameDestructionObserver(0)
     , m_frameLoaderClient(this)
     , m_client(client)
@@ -2088,7 +2113,7 @@ WebFrameImpl::WebFrameImpl(WebFrameClient* client)
     , m_nextInvalidateAfter(0)
     , m_findMatchMarkersVersion(0)
     , m_findMatchRectsAreValid(false)
-    , m_identifier(generateFrameIdentifier())
+    , m_embedderIdentifier(embedderIdentifier)
     , m_inSameDocumentHistoryLoad(false)
 {
     WebKit::Platform::current()->incrementStatsCounter(webFrameActiveCount);
@@ -2114,7 +2139,7 @@ void WebFrameImpl::initializeAsMainFrame(WebCore::Page* page)
     RefPtr<Frame> mainFrame = Frame::create(page, 0, &m_frameLoaderClient);
     setWebCoreFrame(mainFrame.get());
 
-    // Add reference on behalf of FrameLoader.  See comments in
+    // Add reference on behalf of FrameLoader. See comments in
     // WebFrameLoaderClient::frameLoaderDestroyed for more info.
     ref();
 
@@ -2125,7 +2150,24 @@ void WebFrameImpl::initializeAsMainFrame(WebCore::Page* page)
 
 PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request, HTMLFrameOwnerElement* ownerElement)
 {
-    RefPtr<WebFrameImpl> webframe(adoptRef(new WebFrameImpl(m_client)));
+    ASSERT(m_client);
+    WebFrameImpl* webframe = toWebFrameImpl(m_client->createChildFrame(this, request.frameName()));
+
+    // If the embedder is returning 0 from createChildFrame(), it has not been
+    // updated to the new ownership semantics where the embedder creates the
+    // WebFrame. In that case, fall back to the old logic where the
+    // WebFrameImpl is created here and published back to the embedder. To
+    // bridge between the two ownership semantics, webframeLifetimeHack is
+    // needeed to balance out the refcounting.
+    //
+    // FIXME: Remove once all embedders return non-null from createChildFrame().
+    RefPtr<WebFrameImpl> webframeLifetimeHack;
+    bool mustCallDidCreateFrame = false;
+    if (!webframe) {
+        mustCallDidCreateFrame = true;
+        webframeLifetimeHack = adoptRef(WebFrameImpl::create(m_client));
+        webframe = webframeLifetimeHack.get();
+    }
 
     // Add an extra ref on behalf of the Frame/FrameLoader, which references the
     // WebFrame via the FrameLoaderClient interface. See the comment at the top
@@ -2139,6 +2181,10 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
 
     frame()->tree()->appendChild(childFrame);
 
+    // FIXME: Remove once all embedders return non-null from createChildFrame().
+    if (mustCallDidCreateFrame)
+        m_client->didCreateFrame(this, webframe);
+
     // Frame::init() can trigger onload event in the parent frame,
     // which may detach this frame and trigger a null-pointer access
     // in FrameTree::removeChild. Move init() after appendChild call
@@ -2147,6 +2193,7 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     // Because the event handler may set webframe->mFrame to null,
     // it is necessary to check the value after calling init() and
     // return without loading URL.
+    // NOTE: m_client will be null if this frame has been detached.
     // (b:791612)
     childFrame->init(); // create an empty document
     if (!childFrame->tree()->parent())
@@ -2167,11 +2214,9 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     // A synchronous navigation (about:blank) would have already processed
     // onload, so it is possible for the frame to have already been destroyed by
     // script in the page.
+    // NOTE: m_client will be null if this frame has been detached.
     if (!childFrame->tree()->parent())
         return 0;
-
-    if (m_client)
-        m_client->didCreateFrame(this, webframe.get());
 
     return childFrame.release();
 }

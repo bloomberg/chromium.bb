@@ -30,6 +30,7 @@
 
 #include "config.h"
 
+#include "WebFrame.h"
 #include "WebFrameClient.h"
 #include "WebInputEvent.h"
 #include "WebView.h"
@@ -87,7 +88,8 @@ protected:
     virtual void SetUp()
     {
         m_webView = toWebViewImpl(WebView::create(&m_webViewClient));
-        m_webView->initializeMainFrame(&m_webFrameClient);
+        m_mainFrame = WebFrame::create(&m_webFrameClient);
+        m_webView->setMainFrame(m_mainFrame);
         m_chromeClientImpl = static_cast<ChromeClientImpl*>(&m_webView->page()->chrome().client());
         m_result = WebNavigationPolicyIgnore;
     }
@@ -95,6 +97,7 @@ protected:
     virtual void TearDown()
     {
         m_webView->close();
+        m_mainFrame->close();
     }
 
     WebNavigationPolicy getNavigationPolicyWithMouseEvent(int modifiers, WebMouseEvent::Button button, bool asPopup)
@@ -120,6 +123,7 @@ protected:
     WebNavigationPolicy m_result;
     TestWebViewClient m_webViewClient;
     WebViewImpl* m_webView;
+    WebFrame* m_mainFrame;
     TestWebFrameClient m_webFrameClient;
     ChromeClientImpl* m_chromeClientImpl;
 };

@@ -60,7 +60,8 @@ TEST(LinkHighlightTest, verifyWebViewImplIntegration)
     const std::string fileName("test_touch_link_highlight.html");
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("test_touch_link_highlight.html"));
-    WebViewImpl* webViewImpl = toWebViewImpl(FrameTestHelpers::createWebViewAndLoad(baseURL + fileName, true));
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true);
     int pageWidth = 640;
     int pageHeight = 480;
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
@@ -122,7 +123,6 @@ TEST(LinkHighlightTest, verifyWebViewImplIntegration)
     }
     ASSERT_EQ(0U, webViewImpl->numLinkHighlights());
 
-    webViewImpl->close();
     Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
 }
 
@@ -165,7 +165,8 @@ TEST(LinkHighlightTest, resetDuringNodeRemoval)
     const std::string fileName("test_touch_link_highlight.html");
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("test_touch_link_highlight.html"));
-    WebViewImpl* webViewImpl = toWebViewImpl(FrameTestHelpers::createWebViewAndLoad(baseURL + fileName, true, 0, compositingWebViewClient()));
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true, 0, compositingWebViewClient());
 
     int pageWidth = 640;
     int pageHeight = 480;
@@ -192,7 +193,6 @@ TEST(LinkHighlightTest, resetDuringNodeRemoval)
     webViewImpl->layout();
     ASSERT_EQ(0U, highlightLayer->numLinkHighlights());
 
-    webViewImpl->close();
     Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
 }
 
@@ -202,7 +202,8 @@ TEST(LinkHighlightTest, multipleHighlights)
     const std::string fileName("test_touch_link_highlight.html");
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("test_touch_link_highlight.html"));
-    WebViewImpl* webViewImpl = toWebViewImpl(FrameTestHelpers::createWebViewAndLoad(baseURL + fileName, true, 0, compositingWebViewClient()));
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true, 0, compositingWebViewClient());
 
     int pageWidth = 640;
     int pageHeight = 480;
@@ -223,7 +224,6 @@ TEST(LinkHighlightTest, multipleHighlights)
     webViewImpl->enableTapHighlights(highlightNodes);
     EXPECT_EQ(2U, webViewImpl->numLinkHighlights());
 
-    webViewImpl->close();
     Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
 }
 

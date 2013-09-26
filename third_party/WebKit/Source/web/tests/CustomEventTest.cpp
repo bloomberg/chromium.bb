@@ -100,8 +100,8 @@ TEST(CustomEventTest, InitWithSerializedScriptValue)
     const std::string path = "visible_iframe.html";
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8(path.c_str()));
-    WebView* webView = FrameTestHelpers::createWebViewAndLoad(baseURL + path);
-    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebFrameImpl* frame = toWebFrameImpl(webViewHelper.initializeAndLoad(baseURL + path)->mainFrame());
 
     WebDOMEvent event = frame->frame()->document()->createEvent("CustomEvent", IGNORE_EXCEPTION);
     WebDOMCustomEvent customEvent = event.to<WebDOMCustomEvent>();
@@ -113,7 +113,6 @@ TEST(CustomEventTest, InitWithSerializedScriptValue)
     frame->frame()->document()->dispatchEvent(event);
 
     Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
-    webView->close();
 }
 
 }

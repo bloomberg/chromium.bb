@@ -76,10 +76,11 @@ class WebFrameImpl
     , public WebCore::FrameDestructionObserver {
 public:
     // WebFrame methods:
+    virtual void close();
     virtual WebString uniqueName() const;
     virtual WebString assignedName() const;
     virtual void setName(const WebString&);
-    virtual long long identifier() const;
+    virtual long long embedderIdentifier() const;
     virtual WebVector<WebIconURL> iconURLs(int iconTypesMask) const;
     virtual WebSize scrollOffset() const;
     virtual void setScrollOffset(const WebSize&);
@@ -237,7 +238,10 @@ public:
     // WebCore::FrameDestructionObserver methods.
     virtual void willDetachPage();
 
-    static PassRefPtr<WebFrameImpl> create(WebFrameClient* client);
+    static WebFrameImpl* create(WebFrameClient*);
+    // FIXME: Move the embedderIdentifier concept fully to the embedder and
+    // remove this factory method.
+    static WebFrameImpl* create(WebFrameClient*, long long embedderIdentifier);
     virtual ~WebFrameImpl();
 
     // Called by the WebViewImpl to initialize the main frame for the page.
@@ -326,7 +330,7 @@ private:
       InvalidateAll          // Both content area and the scrollbar.
     };
 
-    explicit WebFrameImpl(WebFrameClient*);
+    WebFrameImpl(WebFrameClient*, long long frame_identifier);
 
     // Sets the local WebCore frame and registers destruction observers.
     void setWebCoreFrame(WebCore::Frame*);
@@ -490,7 +494,7 @@ private:
     OwnPtr<ChromePrintContext> m_printContext;
 
     // The identifier of this frame.
-    long long m_identifier;
+    long long m_embedderIdentifier;
 
     // Ensure we don't overwrite valid history data during same document loads
     // from HistoryItems

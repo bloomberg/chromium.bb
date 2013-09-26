@@ -66,13 +66,15 @@ protected:
     {
         // Create and initialize the WebView.
         m_webView = WebView::create(0);
-        m_webView->initializeMainFrame(&m_webFrameClient);
+        m_mainFrame = WebFrame::create(&m_webFrameClient);
+        m_webView->setMainFrame(m_mainFrame);
     }
 
     virtual void TearDown()
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
         m_webView->close();
+        m_mainFrame->close();
     }
 
     void registerMockedURLLoad(const std::string& url, const WebString& fileName)
@@ -107,6 +109,7 @@ protected:
 
 private:
     TestWebFrameClient m_webFrameClient;
+    WebFrame* m_mainFrame;
 };
 
 TEST_F(WebPageSerializerTest, HTMLNodes)

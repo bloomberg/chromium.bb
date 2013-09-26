@@ -91,7 +91,8 @@ public:
     void SetUp()
     {
         m_webView = WebView::create(0);
-        m_webView->initializeMainFrame(&m_webFrameClient);
+        m_mainFrame = WebFrame::create(&m_webFrameClient);
+        m_webView->setMainFrame(m_mainFrame);
 
         std::string urlRoot = "http://www.test.com/";
         WebCore::KURL url = RegisterMockedUrl(urlRoot, "iframes_test.html");
@@ -117,6 +118,7 @@ public:
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
         m_webView->close();
+        m_mainFrame->close();
     }
 
     void serveRequests()
@@ -274,6 +276,7 @@ protected:
     WTF::String m_frameFilePath;
     TestWebFrameClient m_webFrameClient;
     WebView* m_webView;
+    WebFrame* m_mainFrame;
 
     WebURLLoader* m_expectedLoader;
     WebURLResponse m_actualResponse;

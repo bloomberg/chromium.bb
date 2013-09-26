@@ -110,7 +110,11 @@ public:
     virtual void didAccessInitialDocument(WebFrame*) { }
 
     // A child frame was created in this frame. This is called when the frame
-    // is created and initialized.
+    // is created and initialized. Takes the name of the new frame, the parent
+    // frame and returns a new WebFrame. The WebFrame is considered in-use
+    // until frameDetached() is called on it.
+    virtual WebFrame* createChildFrame(WebFrame* parent, const WebString& frameName) { return 0; }
+    // FIXME: Remove when all embedders use createChildFrame().
     virtual void didCreateFrame(WebFrame* parent, WebFrame* child) { }
 
     // This frame set its opener to null, disowning it.

@@ -115,6 +115,7 @@ protected:
     {
         // Create and initialize the WebView.
         m_webView = WebView::create(0);
+        m_mainFrame = WebFrame::create(&m_webFrameClient);
 
         // We want the images to load and JavaScript to be on.
         WebSettings* settings = m_webView->settings();
@@ -122,13 +123,14 @@ protected:
         settings->setLoadsImagesAutomatically(true);
         settings->setJavaScriptEnabled(true);
 
-        m_webView->initializeMainFrame(&m_webFrameClient);
+        m_webView->setMainFrame(m_mainFrame);
     }
 
     virtual void TearDown()
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
         m_webView->close();
+        m_mainFrame->close();
     }
 
     WebURL setUpCSSTestPage()
@@ -189,6 +191,7 @@ private:
     WebString m_pngMimeType;
     WebString m_svgMimeType;
     TestWebFrameClient m_webFrameClient;
+    WebFrame* m_mainFrame;
 };
 
 // Tests that a page with resources and sub-frame is reported with all its resources.

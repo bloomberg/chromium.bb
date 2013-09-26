@@ -102,7 +102,8 @@ WebPluginContainer* getWebPluginContainer(WebView* webView, const WebString& id)
 TEST_F(WebPluginContainerTest, WindowToLocalPointTest)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("plugin_container.html"));
-    WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "plugin_container.html", true, new TestPluginWebFrameClient());
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, new TestPluginWebFrameClient());
     ASSERT(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
@@ -126,14 +127,13 @@ TEST_F(WebPluginContainerTest, WindowToLocalPointTest)
     WebPoint point4 = pluginContainerTwo->windowToLocalPoint(WebPoint(-10, 10));
     ASSERT_EQ(10, point4.x);
     ASSERT_EQ(10, point4.y);
-
-    webView->close();
 }
 
 TEST_F(WebPluginContainerTest, LocalToWindowPointTest)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("plugin_container.html"));
-    WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "plugin_container.html", true, new TestPluginWebFrameClient());
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, new TestPluginWebFrameClient());
     ASSERT(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
@@ -157,15 +157,14 @@ TEST_F(WebPluginContainerTest, LocalToWindowPointTest)
     WebPoint point4 = pluginContainerTwo->localToWindowPoint(WebPoint(10, 10));
     ASSERT_EQ(-10, point4.x);
     ASSERT_EQ(10, point4.y);
-
-    webView->close();
 }
 
 // Verifies executing the command 'Copy' results in copying to the clipboard.
 TEST_F(WebPluginContainerTest, Copy)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("plugin_container.html"));
-    WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "plugin_container.html", true, new TestPluginWebFrameClient());
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, new TestPluginWebFrameClient());
     ASSERT(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
@@ -175,8 +174,6 @@ TEST_F(WebPluginContainerTest, Copy)
     WebElement pluginContainerOneElement = webView->mainFrame()->document().getElementById(WebString::fromUTF8("translated-plugin"));
     EXPECT_TRUE(webView->mainFrame()->executeCommand("Copy",  pluginContainerOneElement));
     EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
-
-    webView->close();
 }
 
 }

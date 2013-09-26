@@ -31,24 +31,46 @@
 #ifndef FrameTestHelpers_h
 #define FrameTestHelpers_h
 
-#include <string>
+#include "WebViewImpl.h"
 #include "wtf/PassOwnPtr.h"
+#include <string>
 
 namespace WebKit {
 
-class WebFrame;
+class WebFrameImpl;
 class WebFrameClient;
-class WebView;
+class WebSettings;
 class WebViewClient;
 
 namespace FrameTestHelpers {
 
 void loadFrame(WebFrame*, const std::string& url);
-
-WebView* createWebView(bool enableJavascript = false, WebFrameClient* = 0, WebViewClient* = 0);
-WebView* createWebViewAndLoad(const std::string& url, bool enableJavascript = false, WebFrameClient* = 0, WebViewClient* = 0);
-
 void runPendingTasks();
+
+// Convenience class for handling the lifetime of a WebView and its associated mainframe in tests.
+class WebViewHelper {
+    WTF_MAKE_NONCOPYABLE(WebViewHelper);
+public:
+    WebViewHelper();
+    ~WebViewHelper();
+
+    // Creates and initializes the WebView. Implicitly calls reset() first. IF a
+    // WebFrameClient or a WebViewClient are passed in, they must outlive the
+    // WebViewHelper.
+    WebViewImpl* initialize(bool enableJavascript = false, WebFrameClient* = 0, WebViewClient* = 0, void (*updateSettingsFunc)(WebSettings*) = 0);
+
+    // Same as initialize() but also performs the initial load of the url.
+    WebViewImpl* initializeAndLoad(const std::string& url, bool enableJavascript = false, WebFrameClient* = 0, WebViewClient* = 0, void (*updateSettingsFunc)(WebSettings*) = 0);
+
+    void reset();
+
+    WebView* webView() const { return m_webView; }
+    WebViewImpl* webViewImpl() const { return m_webView; }
+
+private:
+    WebFrameImpl* m_mainFrame;
+    WebViewImpl* m_webView;
+};
 
 } // namespace FrameTestHelpers
 } // namespace WebKit

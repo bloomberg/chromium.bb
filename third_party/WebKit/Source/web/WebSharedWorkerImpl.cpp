@@ -92,6 +92,7 @@ static void initializeWebKitStaticValues()
 
 WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
     : m_webView(0)
+    , m_mainFrame(0)
     , m_askedToTerminate(false)
     , m_client(client)
     , m_pauseWorkerContextOnStart(false)
@@ -102,10 +103,11 @@ WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
 WebSharedWorkerImpl::~WebSharedWorkerImpl()
 {
     ASSERT(m_webView);
-    WebFrameImpl* webFrame = toWebFrameImpl(m_webView->mainFrame());
-    if (webFrame)
-        webFrame->setClient(0);
+    // Detach the client before closing the view to avoid getting called back.
+    toWebFrameImpl(m_mainFrame)->setClient(0);
+
     m_webView->close();
+    m_mainFrame->close();
 }
 
 void WebSharedWorkerImpl::stopWorkerThread()
@@ -127,7 +129,8 @@ void WebSharedWorkerImpl::initializeLoader(const WebURL& url)
     m_webView->settings()->setOfflineWebApplicationCacheEnabled(WebRuntimeFeatures::isApplicationCacheEnabled());
     // FIXME: Settings information should be passed to the Worker process from Browser process when the worker
     // is created (similar to RenderThread::OnCreateNewView).
-    m_webView->initializeMainFrame(this);
+    m_mainFrame = WebFrame::create(this);
+    m_webView->setMainFrame(m_mainFrame);
 
     WebFrameImpl* webFrame = toWebFrameImpl(m_webView->mainFrame());
 
