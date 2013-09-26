@@ -26,7 +26,6 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/cryptohome_library.h"
-#include "chromeos/cryptohome/mock_cryptohome_library.h"
 #include "chromeos/dbus/cryptohome_client_stub.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
