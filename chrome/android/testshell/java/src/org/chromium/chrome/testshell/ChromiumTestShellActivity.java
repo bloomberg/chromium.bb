@@ -97,9 +97,9 @@ public class ChromiumTestShellActivity extends Activity implements MenuHandler {
         mDevToolsServer = new DevToolsServer("chromium_testshell");
         mDevToolsServer.setRemoteDebuggingEnabled(true);
         mSyncController = SyncController.get(this);
-        // In case this method is called after the first onResume(), we need to inform the
-        // SyncController that we have resumed.
-        mSyncController.onResume();
+        // In case this method is called after the first onStart(), we need to inform the
+        // SyncController that we have started.
+        mSyncController.onStart();
     }
 
     @Override
@@ -148,22 +148,22 @@ public class ChromiumTestShellActivity extends Activity implements MenuHandler {
     }
 
     @Override
-    protected void onPause() {
-        ContentView view = getActiveContentView();
-        if (view != null) view.onActivityPause();
+    protected void onStop() {
+        super.onStop();
 
-        super.onPause();
+        ContentView view = getActiveContentView();
+        if (view != null) view.onHide();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onStart() {
+        super.onStart();
 
         ContentView view = getActiveContentView();
-        if (view != null) view.onActivityResume();
+        if (view != null) view.onShow();
 
         if (mSyncController != null) {
-            mSyncController.onResume();
+            mSyncController.onStart();
         }
     }
 

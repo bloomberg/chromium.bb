@@ -370,20 +370,6 @@ public class ContentView extends FrameLayout
     }
 
     /**
-     * This method should be called when the containing activity is paused.
-     **/
-    public void onActivityPause() {
-        mContentViewCore.onActivityPause();
-    }
-
-    /**
-     * This method should be called when the containing activity is resumed.
-     **/
-    public void onActivityResume() {
-        mContentViewCore.onActivityResume();
-    }
-
-    /**
      * To be called when the ContentView is shown.
      **/
     public void onShow() {

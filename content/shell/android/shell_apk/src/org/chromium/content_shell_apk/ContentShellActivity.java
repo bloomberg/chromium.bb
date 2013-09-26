@@ -200,20 +200,21 @@ public class ContentShellActivity extends Activity {
     }
 
     @Override
-    protected void onPause() {
-        ContentView view = getActiveContentView();
-        if (view != null) view.onActivityPause();
+    protected void onStop() {
+        super.onStop();
 
-        super.onPause();
+        ContentView view = getActiveContentView();
+        if (view != null) view.onHide();
+
         unregisterReceiver(mReceiver);
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onStart() {
+        super.onStart();
 
         ContentView view = getActiveContentView();
-        if (view != null) view.onActivityResume();
+        if (view != null) view.onShow();
         IntentFilter intentFilter = new IntentFilter(ACTION_START_TRACE);
         intentFilter.addAction(ACTION_STOP_TRACE);
         mReceiver = new BroadcastReceiver() {

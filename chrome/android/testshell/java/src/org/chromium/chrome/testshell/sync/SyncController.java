@@ -116,7 +116,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         });
     }
 
-    public void onResume() {
+    public void onStart() {
         refreshSyncState();
     }
 

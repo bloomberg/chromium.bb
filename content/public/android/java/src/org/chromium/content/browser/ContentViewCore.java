@@ -1402,24 +1402,6 @@ import java.util.Map;
     }
 
     /**
-     * This method should be called when the containing activity is paused.
-     */
-    public void onActivityPause() {
-        TraceEvent.begin();
-        hidePopupDialog();
-        nativeOnHide(mNativeContentViewCore);
-        TraceEvent.end();
-    }
-
-    /**
-     * This method should be called when the containing activity is resumed.
-     */
-    public void onActivityResume() {
-        nativeOnShow(mNativeContentViewCore);
-        setAccessibilityState(mAccessibilityManager.isEnabled());
-    }
-
-    /**
      * To be called when the ContentView is shown.
      */
     public void onShow() {
