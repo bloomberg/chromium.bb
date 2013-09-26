@@ -41,6 +41,7 @@ BrowserPluginCompositingHelper::BrowserPluginCompositingHelper(
       last_host_id_(0),
       last_mailbox_valid_(false),
       ack_pending_(true),
+      software_ack_pending_(false),
       container_(container),
       browser_plugin_manager_(manager) {
 }
@@ -49,6 +50,24 @@ BrowserPluginCompositingHelper::~BrowserPluginCompositingHelper() {
 }
 
 void BrowserPluginCompositingHelper::DidCommitCompositorFrame() {
+  if (software_ack_pending_) {
+    cc::CompositorFrameAck ack;
+    if (!unacked_software_frames_.empty()) {
+      ack.last_software_frame_id = unacked_software_frames_.back();
+      unacked_software_frames_.pop_back();
+    }
+
+    browser_plugin_manager_->Send(
+        new BrowserPluginHostMsg_CompositorFrameACK(
+            host_routing_id_,
+            instance_id_,
+            last_route_id_,
+            last_output_surface_id_,
+            last_host_id_,
+            ack));
+
+    software_ack_pending_ = false;
+  }
   if (!delegated_layer_.get() || !ack_pending_)
     return;
 
@@ -112,6 +131,9 @@ void BrowserPluginCompositingHelper::MailboxReleased(
       last_route_id_ != mailbox.route_id)
     return;
 
+  if (mailbox.type == SOFTWARE_COMPOSITOR_FRAME)
+    unacked_software_frames_.push_back(mailbox.software_frame_id);
+
   // We need to send an ACK to for every buffer sent to us.
   // However, if a buffer is freed up from
   // the compositor in cases like switching back to SW mode without a new
@@ -152,20 +174,8 @@ void BrowserPluginCompositingHelper::MailboxReleased(
              ack));
       break;
     }
-    case SOFTWARE_COMPOSITOR_FRAME: {
-      cc::CompositorFrameAck ack;
-      ack.last_software_frame_id = mailbox.software_frame_id;
-
-      browser_plugin_manager_->Send(
-         new BrowserPluginHostMsg_CompositorFrameACK(
-             host_routing_id_,
-             instance_id_,
-             mailbox.route_id,
-             mailbox.output_surface_id,
-             mailbox.host_id,
-             ack));
+    case SOFTWARE_COMPOSITOR_FRAME:
       break;
-    }
   }
 }
 
@@ -310,14 +320,19 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
       LOG(ERROR) << "Failed to map shared memory of size "
                  << size_in_bytes;
       // Send ACK right away.
-      ack_pending_ = true;
+      software_ack_pending_ = true;
       MailboxReleased(swap_info, 0, false);
+      DidCommitCompositorFrame();
       return;
     }
 
     swap_info.shared_memory = shared_memory.release();
     OnBuffersSwappedPrivate(swap_info, 0,
                             frame->metadata.device_scale_factor);
+    software_ack_pending_ = true;
+    last_route_id_ = route_id;
+    last_output_surface_id_ = output_surface_id;
+    last_host_id_ = host_id;
     return;
   }
 
