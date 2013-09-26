@@ -72,12 +72,12 @@ class OpenFileOperation {
 
   // Part of OpenFile(). Called after marking the cache file dirty.
   void OpenFileAfterMarkDirty(const base::FilePath& local_file_path,
-                              const std::string& resource_id,
+                              const std::string& local_id,
                               const OpenFileCallback& callback,
                               FileError error);
 
-  // Closes the file with |resource_id|.
-  void CloseFile(const std::string& resource_id);
+  // Closes the file with |local_id|.
+  void CloseFile(const std::string& local_id);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
@@ -86,7 +86,7 @@ class OpenFileOperation {
   scoped_ptr<CreateFileOperation> create_file_operation_;
   scoped_ptr<DownloadOperation> download_operation_;
 
-  // The map from resource id for an opened file to the number how many times
+  // The map from local id for an opened file to the number how many times
   // the file is opened.
   std::map<std::string, int> open_files_;
 

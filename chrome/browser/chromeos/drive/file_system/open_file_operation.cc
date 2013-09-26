@@ -126,17 +126,17 @@ void OpenFileOperation::OpenFileAfterFileDownloaded(
       FROM_HERE,
       base::Bind(&internal::FileCache::MarkDirty,
                  base::Unretained(cache_),
-                 entry->resource_id()),
+                 entry->local_id()),
       base::Bind(&OpenFileOperation::OpenFileAfterMarkDirty,
                  weak_ptr_factory_.GetWeakPtr(),
                  local_file_path,
-                 entry->resource_id(),
+                 entry->local_id(),
                  callback));
 }
 
 void OpenFileOperation::OpenFileAfterMarkDirty(
     const base::FilePath& local_file_path,
-    const std::string& resource_id,
+    const std::string& local_id,
     const OpenFileCallback& callback,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -147,20 +147,20 @@ void OpenFileOperation::OpenFileAfterMarkDirty(
     return;
   }
 
-  ++open_files_[resource_id];
+  ++open_files_[local_id];
   callback.Run(error, local_file_path,
                base::Bind(&OpenFileOperation::CloseFile,
-                          weak_ptr_factory_.GetWeakPtr(), resource_id));
+                          weak_ptr_factory_.GetWeakPtr(), local_id));
 }
 
-void OpenFileOperation::CloseFile(const std::string& resource_id) {
+void OpenFileOperation::CloseFile(const std::string& local_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_GT(open_files_[resource_id], 0);
+  DCHECK_GT(open_files_[local_id], 0);
 
-  if (--open_files_[resource_id] == 0) {
+  if (--open_files_[local_id] == 0) {
     // All clients closes this file, so notify to upload the file.
-    open_files_.erase(resource_id);
-    observer_->OnCacheFileUploadNeededByOperation(resource_id);
+    open_files_.erase(local_id);
+    observer_->OnCacheFileUploadNeededByOperation(local_id);
 
     // Clients may have enlarged the file. By FreeDiskpSpaceIfNeededFor(0),
     // we try to ensure (0 + the-minimum-safe-margin = 512MB as of now) space.
