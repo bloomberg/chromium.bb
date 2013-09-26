@@ -2408,12 +2408,17 @@ void RenderBlock::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffs
 {
     PaintPhase paintPhase = paintInfo.phase;
 
+    // Adjust our painting position if we're inside a scrolled layer (e.g., an overflow:auto div).
+    LayoutPoint scrolledOffset = paintOffset;
+    if (hasOverflowClip())
+        scrolledOffset.move(-scrolledContentOffset());
+
     // 1. paint background, borders etc
     if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground) && style()->visibility() == VISIBLE) {
         if (hasBoxDecorations())
             paintBoxDecorations(paintInfo, paintOffset);
         if (hasColumns() && !paintInfo.paintRootBackgroundOnly())
-            paintColumnRules(paintInfo, paintOffset);
+            paintColumnRules(paintInfo, scrolledOffset);
     }
 
     if (paintPhase == PaintPhaseMask && style()->visibility() == VISIBLE) {
@@ -2424,11 +2429,6 @@ void RenderBlock::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffs
     // We're done.  We don't bother painting any children.
     if (paintPhase == PaintPhaseBlockBackground || paintInfo.paintRootBackgroundOnly())
         return;
-
-    // Adjust our painting position if we're inside a scrolled layer (e.g., an overflow:auto div).
-    LayoutPoint scrolledOffset = paintOffset;
-    if (hasOverflowClip())
-        scrolledOffset.move(-scrolledContentOffset());
 
     // 2. paint contents
     if (paintPhase != PaintPhaseSelfOutline) {
