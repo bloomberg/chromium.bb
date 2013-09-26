@@ -935,15 +935,12 @@ void AutofillDialogViews::SectionContainer::SetForwardMouseEvents(
 
 void AutofillDialogViews::SectionContainer::OnMouseMoved(
     const ui::MouseEvent& event) {
-  if (!forward_mouse_events_)
-    return;
-
-  SetActive(true);
+  SetActive(ShouldForwardEvent(event));
 }
 
 void AutofillDialogViews::SectionContainer::OnMouseEntered(
     const ui::MouseEvent& event) {
-  if (!forward_mouse_events_)
+  if (!ShouldForwardEvent(event))
     return;
 
   SetActive(true);
@@ -953,17 +950,17 @@ void AutofillDialogViews::SectionContainer::OnMouseEntered(
 
 void AutofillDialogViews::SectionContainer::OnMouseExited(
     const ui::MouseEvent& event) {
-  if (!forward_mouse_events_)
+  SetActive(false);
+  if (!ShouldForwardEvent(event))
     return;
 
-  SetActive(false);
   proxy_button_->OnMouseExited(ProxyEvent(event));
   SchedulePaint();
 }
 
 bool AutofillDialogViews::SectionContainer::OnMousePressed(
     const ui::MouseEvent& event) {
-  if (!forward_mouse_events_)
+  if (!ShouldForwardEvent(event))
     return false;
 
   return proxy_button_->OnMousePressed(ProxyEvent(event));
@@ -971,10 +968,33 @@ bool AutofillDialogViews::SectionContainer::OnMousePressed(
 
 void AutofillDialogViews::SectionContainer::OnMouseReleased(
     const ui::MouseEvent& event) {
-  if (!forward_mouse_events_)
+  if (!ShouldForwardEvent(event))
     return;
 
   proxy_button_->OnMouseReleased(ProxyEvent(event));
+}
+
+views::View* AutofillDialogViews::SectionContainer::GetEventHandlerForPoint(
+    const gfx::Point& point) {
+  views::View* handler = views::View::GetEventHandlerForPoint(point);
+  // If the event is not in the label bar and there's no background to be
+  // cleared, let normal event handling take place.
+  if (!background() &&
+      point.y() > child_at(0)->bounds().bottom()) {
+    return handler;
+  }
+
+  // Special case for (CVC) inputs in the suggestion view.
+  if (forward_mouse_events_ &&
+      handler->GetAncestorWithClassName(DecoratedTextfield::kViewClassName)) {
+    return handler;
+  }
+
+  // Special case for the proxy button itself.
+  if (handler == proxy_button_)
+    return handler;
+
+  return this;
 }
 
 // static
@@ -983,6 +1003,12 @@ ui::MouseEvent AutofillDialogViews::SectionContainer::ProxyEvent(
   ui::MouseEvent event_copy = event;
   event_copy.set_location(gfx::Point());
   return event_copy;
+}
+
+bool AutofillDialogViews::SectionContainer::ShouldForwardEvent(
+    const ui::MouseEvent& event) {
+  // Always forward events on the label bar.
+  return forward_mouse_events_ || event.y() <= child_at(0)->bounds().bottom();
 }
 
 // AutofillDialogViews::SuggestedButton ----------------------------------------
