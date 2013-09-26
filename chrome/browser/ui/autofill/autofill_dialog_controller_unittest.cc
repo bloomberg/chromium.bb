@@ -473,7 +473,8 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   void FillInputs(DialogSection section, const AutofillDataModel& data_model) {
     // Select the 'Add new foo' option.
     ui::MenuModel* model = GetMenuModelForSection(section);
-    model->ActivatedAt(model->GetItemCount() - 2);
+    if (model)
+      model->ActivatedAt(model->GetItemCount() - 2);
 
     // Fill the inputs.
     DetailOutputMap outputs;
@@ -2506,6 +2507,49 @@ TEST_F(AutofillDialogControllerTest, FieldControlsIcons) {
   EXPECT_TRUE(controller()->FieldControlsIcons(CREDIT_CARD_NUMBER));
   EXPECT_FALSE(controller()->FieldControlsIcons(CREDIT_CARD_VERIFICATION_CODE));
   EXPECT_FALSE(controller()->FieldControlsIcons(EMAIL_ADDRESS));
+}
+
+TEST_F(AutofillDialogControllerTest, SaveCreditCardIncludesName_NoBilling) {
+  SwitchToAutofill();
+
+  CreditCard test_credit_card(test::GetVerifiedCreditCard());
+  FillInputs(SECTION_CC, test_credit_card);
+
+  AutofillProfile test_profile(test::GetVerifiedProfile());
+  FillInputs(SECTION_BILLING, test_profile);
+
+  UseBillingForShipping();
+
+  controller()->GetView()->CheckSaveDetailsLocallyCheckbox(true);
+  controller()->OnAccept();
+
+  TestPersonalDataManager* test_pdm = controller()->GetTestingManager();
+  const CreditCard& imported_card = test_pdm->imported_credit_card();
+  EXPECT_EQ(test_profile.GetRawInfo(NAME_FULL),
+            imported_card.GetRawInfo(CREDIT_CARD_NAME));
+}
+
+TEST_F(AutofillDialogControllerTest, SaveCreditCardIncludesName_WithBilling) {
+  SwitchToAutofill();
+
+  TestPersonalDataManager* test_pdm = controller()->GetTestingManager();
+  AutofillProfile test_profile(test::GetVerifiedProfile());
+
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
+  test_pdm->AddTestingProfile(&test_profile);
+  ASSERT_TRUE(controller()->MenuModelForSection(SECTION_BILLING));
+
+  CreditCard test_credit_card(test::GetVerifiedCreditCard());
+  FillInputs(SECTION_CC, test_credit_card);
+
+  controller()->GetView()->CheckSaveDetailsLocallyCheckbox(true);
+  controller()->OnAccept();
+
+  const CreditCard& imported_card = test_pdm->imported_credit_card();
+  EXPECT_EQ(test_profile.GetRawInfo(NAME_FULL),
+            imported_card.GetRawInfo(CREDIT_CARD_NAME));
+
+  controller()->ViewClosed();
 }
 
 }  // namespace autofill

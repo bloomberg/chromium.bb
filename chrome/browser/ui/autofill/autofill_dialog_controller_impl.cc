@@ -2741,7 +2741,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
 
       // The card holder name comes from the billing address section.
       card.SetRawInfo(CREDIT_CARD_NAME,
-                      GetValueFromSection(SECTION_BILLING, NAME_FULL));
+                      GetValueFromSection(SECTION_BILLING, NAME_BILLING_FULL));
 
       if (ShouldSaveDetailsLocally()) {
         std::string guid = GetManager()->SaveImportedCreditCard(card);
