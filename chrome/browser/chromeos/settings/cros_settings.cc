@@ -272,11 +272,11 @@ CrosSettings::AddSettingsObserver(const std::string& path,
   }
 
   // Get the callback registry associated with the path.
-  base::CallbackRegistry<void(void)>* registry = NULL;
+  base::CallbackList<void(void)>* registry = NULL;
   SettingsObserverMap::iterator observer_iterator =
       settings_observers_.find(path);
   if (observer_iterator == settings_observers_.end()) {
-    registry = new base::CallbackRegistry<void(void)>;
+    registry = new base::CallbackList<void(void)>;
     settings_observers_[path] = registry;
   } else {
     registry = observer_iterator->second;

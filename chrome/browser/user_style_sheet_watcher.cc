@@ -57,7 +57,7 @@ class UserStyleSheetLoader
   void LoadStyleSheet(const base::FilePath& style_sheet_file);
 
   // Register a callback to be called whenever the stylesheet gets updated.
-  scoped_ptr<base::CallbackRegistry<void(void)>::Subscription>
+  scoped_ptr<base::CallbackList<void(void)>::Subscription>
   RegisterOnStyleSheetUpdatedCallback(const base::Closure& callback);
 
   // Send out a notification if the stylesheet has already been loaded.
@@ -79,7 +79,7 @@ class UserStyleSheetLoader
   // Whether the stylesheet has been loaded.
   bool has_loaded_;
 
-  base::CallbackRegistry<void(void)> style_sheet_updated_callbacks_;
+  base::CallbackList<void(void)> style_sheet_updated_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(UserStyleSheetLoader);
 };
@@ -91,7 +91,7 @@ UserStyleSheetLoader::UserStyleSheetLoader()
 UserStyleSheetLoader::~UserStyleSheetLoader() {
 }
 
-scoped_ptr<base::CallbackRegistry<void(void)>::Subscription>
+scoped_ptr<base::CallbackList<void(void)>::Subscription>
 UserStyleSheetLoader::RegisterOnStyleSheetUpdatedCallback(
     const base::Closure& callback) {
   return style_sheet_updated_callbacks_.Add(callback);
@@ -192,7 +192,7 @@ GURL UserStyleSheetWatcher::user_style_sheet() const {
   return loader_->user_style_sheet();
 }
 
-scoped_ptr<base::CallbackRegistry<void(void)>::Subscription>
+scoped_ptr<base::CallbackList<void(void)>::Subscription>
 UserStyleSheetWatcher::RegisterOnStyleSheetUpdatedCallback(
     const base::Closure& callback) {
   return loader_->RegisterOnStyleSheetUpdatedCallback(callback);

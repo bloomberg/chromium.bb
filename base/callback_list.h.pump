@@ -12,8 +12,8 @@ $var MAX_ARITY = 7
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_CALLBACK_REGISTRY_H_
-#define BASE_CALLBACK_REGISTRY_H_
+#ifndef BASE_CALLBACK_LIST_H_
+#define BASE_CALLBACK_LIST_H_
 
 #include <list>
 
@@ -39,17 +39,17 @@ $var MAX_ARITY = 7
 //
 //   typedef base::Callback<void(const Foo&)> OnFooCallback;
 //
-//   scoped_ptr<base::CallbackRegistry<void(const Foo&)>::Subscription>
+//   scoped_ptr<base::CallbackList<void(const Foo&)>::Subscription>
 //   RegisterCallback(const OnFooCallback& cb) {
-//     return callback_registry_.Add(cb);
+//     return callback_list_.Add(cb);
 //   }
 //
 //  private:
 //   void NotifyFoo(const Foo& foo) {
-//      callback_registry_.Notify(foo);
+//      callback_list_.Notify(foo);
 //   }
 //
-//   base::CallbackRegistry<void(const Foo&)> callback_registry_;
+//   base::CallbackList<void(const Foo&)> callback_list_;
 // };
 //
 //
@@ -70,7 +70,8 @@ $var MAX_ARITY = 7
 //     // Do something.
 //   }
 //
-//   scoped_ptr<base::CallbackRegistry<Foo>::Subscription> foo_subscription_;
+//   scoped_ptr<base::CallbackList<void(const Foo&)>::Subscription>
+//       foo_subscription_;
 // };
 
 namespace base {
@@ -78,11 +79,11 @@ namespace base {
 namespace internal {
 
 template <typename CallbackType>
-class CallbackRegistryBase {
+class CallbackListBase {
  public:
   class Subscription {
    public:
-    Subscription(CallbackRegistryBase<CallbackType>* list,
+    Subscription(CallbackListBase<CallbackType>* list,
                  typename std::list<CallbackType>::iterator iter)
         : list_(list),
           iter_(iter) {}
@@ -95,7 +96,7 @@ class CallbackRegistryBase {
     }
 
    private:
-    CallbackRegistryBase<CallbackType>* list_;
+    CallbackListBase<CallbackType>* list_;
     typename std::list<CallbackType>::iterator iter_;
 
     DISALLOW_COPY_AND_ASSIGN(Subscription);
@@ -103,7 +104,7 @@ class CallbackRegistryBase {
 
   // Add a callback to the list. The callback will remain registered until the
   // returned Subscription is destroyed, which must occur before the
-  // CallbackRegistry is destroyed.
+  // CallbackList is destroyed.
   scoped_ptr<Subscription> Add(const CallbackType& cb) {
     DCHECK(!cb.is_null());
     return scoped_ptr<Subscription>(
@@ -114,7 +115,7 @@ class CallbackRegistryBase {
   // An iterator class that can be used to access the list of callbacks.
   class Iterator {
    public:
-    explicit Iterator(CallbackRegistryBase<CallbackType>* list)
+    explicit Iterator(CallbackListBase<CallbackType>* list)
         : list_(list),
           list_iter_(list_->callbacks_.begin()) {
       ++list_->active_iterator_count_;
@@ -145,19 +146,19 @@ class CallbackRegistryBase {
     }
 
    private:
-    CallbackRegistryBase<CallbackType>* list_;
+    CallbackListBase<CallbackType>* list_;
     typename std::list<CallbackType>::iterator list_iter_;
   };
 
-  CallbackRegistryBase()
+  CallbackListBase()
       : active_iterator_count_(0) {}
 
-  ~CallbackRegistryBase() {
+  ~CallbackListBase() {
     DCHECK_EQ(0, active_iterator_count_);
     DCHECK_EQ(0U, callbacks_.size());
   }
 
-  // Returns an instance of a CallbackRegistryBase::Iterator which can be used
+  // Returns an instance of a CallbackListBase::Iterator which can be used
   // to run callbacks.
   Iterator GetIterator() {
     return Iterator(this);
@@ -179,12 +180,12 @@ class CallbackRegistryBase {
   std::list<CallbackType> callbacks_;
   int active_iterator_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(CallbackRegistryBase);
+  DISALLOW_COPY_AND_ASSIGN(CallbackListBase);
 };
 
 }  // namespace internal
 
-template <typename Sig> class CallbackRegistry;
+template <typename Sig> class CallbackList;
 
 
 $range ARITY 0..MAX_ARITY
@@ -193,13 +194,13 @@ $range ARG 1..ARITY
 
 $if ARITY == 0 [[
 template <>
-class CallbackRegistry<void(void)>
-    : public internal::CallbackRegistryBase<Callback<void(void)> > {
+class CallbackList<void(void)>
+    : public internal::CallbackListBase<Callback<void(void)> > {
 ]] $else [[
 template <$for ARG , [[typename A$(ARG)]]>
-class CallbackRegistry<void($for ARG , [[A$(ARG)]])>
-    : public internal::CallbackRegistryBase<
-          Callback<void($for ARG , [[A$(ARG)]])> > {
+class CallbackList<void($for ARG , [[A$(ARG)]])>
+    : public internal::CallbackListBase<
+        Callback<void($for ARG , [[A$(ARG)]])> > {
 ]]
 
  public:
@@ -212,17 +213,17 @@ $if ARITY == 0 [[
 ]]
 
 
-  CallbackRegistry() {}
+  CallbackList() {}
 
   void Notify($for ARG ,
               [[typename internal::CallbackParamTraits<A$(ARG)>::ForwardType a$(ARG)]]) {
 $if ARITY == 0 [[
 
-    internal::CallbackRegistryBase<CallbackType>::Iterator it =
+    internal::CallbackListBase<CallbackType>::Iterator it =
         this->GetIterator();
 ]] $else [[
 
-    typename internal::CallbackRegistryBase<CallbackType>::Iterator it =
+    typename internal::CallbackListBase<CallbackType>::Iterator it =
         this->GetIterator();
 ]]
 
@@ -233,11 +234,11 @@ $if ARITY == 0 [[
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CallbackRegistry);
+  DISALLOW_COPY_AND_ASSIGN(CallbackList);
 };
 
 
 ]]  $$ for ARITY
 }  // namespace base
 
-#endif  // BASE_CALLBACK_REGISTRY_H
+#endif  // BASE_CALLBACK_LIST_H_
