@@ -198,8 +198,6 @@ void LocallyManagedUserCreationScreen::OnManagerCryptohomeAuthenticated() {
   }
 }
 
-void LocallyManagedUserCreationScreen::OnExit() {}
-
 void LocallyManagedUserCreationScreen::OnActorDestroyed(
     LocallyManagedUserCreationScreenHandler* actor) {
   if (actor_ == actor)

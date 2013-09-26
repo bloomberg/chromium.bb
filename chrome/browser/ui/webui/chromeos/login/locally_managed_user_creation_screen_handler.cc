@@ -38,7 +38,10 @@ LocallyManagedUserCreationScreenHandler()
 }
 
 LocallyManagedUserCreationScreenHandler::
-    ~LocallyManagedUserCreationScreenHandler() {}
+    ~LocallyManagedUserCreationScreenHandler() {
+  if (delegate_)
+    delegate_->OnActorDestroyed(this);
+}
 
 void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
     LocalizedValuesBuilder* builder) {

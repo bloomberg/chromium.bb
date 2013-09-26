@@ -65,7 +65,6 @@ class LocallyManagedUserCreationScreen
   virtual std::string GetName() const OVERRIDE;
 
   // LocallyManagedUserCreationScreenHandler::Delegate implementation:
-  virtual void OnExit() OVERRIDE;
   virtual void OnActorDestroyed(LocallyManagedUserCreationScreenHandler* actor)
       OVERRIDE;
   virtual void CreateManagedUser(
