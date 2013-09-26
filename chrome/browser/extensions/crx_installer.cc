@@ -38,6 +38,7 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/feature_switch.h"
+#include "chrome/common/extensions/manifest_handlers/kiosk_mode_info.h"
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
@@ -54,6 +55,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
 
 using content::BrowserThread;
 using content::UserMetricsAction;
@@ -511,6 +516,19 @@ void CrxInstaller::ConfirmInstall() {
   ExtensionService* service = service_weak_.get();
   if (!service || service->browser_terminating())
     return;
+
+  if (KioskModeInfo::IsKioskOnly(installer_.extension())) {
+    bool in_kiosk_mode = false;
+#if defined(OS_CHROMEOS)
+    chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+    in_kiosk_mode = user_manager && user_manager->IsLoggedInAsKioskApp();
+#endif
+    if (!in_kiosk_mode) {
+      ReportFailureFromUIThread(CrxInstallerError(
+          l10n_util::GetStringUTF16(
+              IDS_EXTENSION_INSTALL_KIOSK_MODE_ONLY)));
+    }
+  }
 
   string16 error = installer_.CheckManagementPolicy();
   if (!error.empty()) {

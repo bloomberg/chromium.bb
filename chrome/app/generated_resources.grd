@@ -4445,6 +4445,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_SHARED_MODULE" desc="Error displayed during installation of an extension which tries to imports resources from an extension which is not a shared module.">
         Unable to import extension with ID "<ph name="IMPORT_ID">$1<ex>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</ex></ph>" because it is not a shared module.
       </message>
+      <message name="IDS_EXTENSION_INSTALL_KIOSK_MODE_ONLY" desc="Error displayed during installation of an app with 'kiosk_only' attribute but user is not in ChromeOS kiosk mode.">
+        App with 'kiosk_only' manifest attribute must be installed in ChromeOS kiosk mode.
+      </message>
       <message name="IDS_EXTENSION_OVERLAPPING_WEB_EXTENT" desc="Error message when a user tries to install an app with a web extent that overlaps another installed app.">
         Could not add application because it conflicts with "<ph name="APP_NAME">$1<ex>Google Mail</ex></ph>".
       </message>

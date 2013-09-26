@@ -204,6 +204,12 @@
       "platform_app"
     ]
   },
+  "kiosk_only": {
+    "channel": "dev",
+    "extension_types": [
+      "platform_app"
+    ]
+  },
   "manifest_version": {
     "channel": "stable",
     "extension_types": "all"

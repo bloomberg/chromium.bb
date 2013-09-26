@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/system_display/system_display_api.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
+#include "chrome/common/extensions/manifest_handlers/kiosk_mode_info.h"
 
 namespace extensions {
 
@@ -37,7 +37,7 @@ bool SystemDisplaySetDisplayPropertiesFunction::RunImpl() {
   SetError("Function available only on ChromeOS.");
   return false;
 #else
-  if (!KioskEnabledInfo::IsKioskEnabled(GetExtension())) {
+  if (!KioskModeInfo::IsKioskEnabled(GetExtension())) {
     SetError("The extension needs to be kiosk enabled to use the function.");
     return false;
   }

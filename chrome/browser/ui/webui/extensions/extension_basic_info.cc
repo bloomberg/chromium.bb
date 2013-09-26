@@ -6,7 +6,7 @@
 
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
+#include "chrome/common/extensions/manifest_handlers/kiosk_mode_info.h"
 #include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 
@@ -19,6 +19,7 @@ const char kHomepageUrlKey[] = "homepageUrl";
 const char kIdKey[] = "id";
 const char kNameKey[] = "name";
 const char kKioskEnabledKey[] = "kioskEnabled";
+const char kKioskOnlyKey[] = "kioskOnly";
 const char kOfflineEnabledKey[] = "offlineEnabled";
 const char kOptionsUrlKey[] = "optionsUrl";
 const char kDetailsUrlKey[] = "detailsUrl";
@@ -36,7 +37,9 @@ void GetExtensionBasicInfo(const Extension* extension,
   info->SetString(kNameKey, extension->name());
   info->SetBoolean(kEnabledKey, enabled);
   info->SetBoolean(kKioskEnabledKey,
-                   KioskEnabledInfo::IsKioskEnabled(extension));
+                   KioskModeInfo::IsKioskEnabled(extension));
+  info->SetBoolean(kKioskOnlyKey,
+                   KioskModeInfo::IsKioskOnly(extension));
   info->SetBoolean(kOfflineEnabledKey,
                    OfflineEnabledInfo::IsOfflineEnabled(extension));
   info->SetString(kVersionKey, extension->VersionString());

@@ -30,6 +30,12 @@ void FakeUserManager::AddUser(const std::string& email) {
   user_list_.push_back(user);
 }
 
+void FakeUserManager::AddKioskAppUser(const std::string& kiosk_app_username) {
+  User* user = User::CreateKioskAppUser(kiosk_app_username);
+  user->set_username_hash(kiosk_app_username + kUserIdHashSuffix);
+  user_list_.push_back(user);
+}
+
 void FakeUserManager::LoginUser(const std::string& email) {
   UserLoggedIn(email, email + kUserIdHashSuffix, false);
 }
@@ -70,15 +76,18 @@ void FakeUserManager::UserLoggedIn(const std::string& email,
   }
 }
 
-const User* FakeUserManager::GetActiveUser() const {
-  return GetActiveUser();
-}
-
-User* FakeUserManager::GetActiveUser() {
-  // Just return the first user.
+User* FakeUserManager::GetActiveUserInternal() const {
   if (user_list_.size())
     return user_list_[0];
   return NULL;
+}
+
+const User* FakeUserManager::GetActiveUser() const {
+  return GetActiveUserInternal();
+}
+
+User* FakeUserManager::GetActiveUser() {
+  return GetActiveUserInternal();
 }
 
 void FakeUserManager::SaveUserDisplayName(
@@ -198,7 +207,7 @@ bool FakeUserManager::CanCurrentUserLock() const {
 }
 
 bool FakeUserManager::IsUserLoggedIn() const {
-  return true;
+  return logged_in_users_.size() > 0;
 }
 
 bool FakeUserManager::IsLoggedInAsRegularUser() const {
@@ -222,7 +231,10 @@ bool FakeUserManager::IsLoggedInAsLocallyManagedUser() const {
 }
 
 bool FakeUserManager::IsLoggedInAsKioskApp() const {
-  return false;
+  const User* active_user = GetActiveUser();
+  return active_user ?
+      active_user->GetType() == User::USER_TYPE_KIOSK_APP :
+      false;
 }
 
 bool FakeUserManager::IsLoggedInAsStub() const {

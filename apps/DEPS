@@ -15,6 +15,7 @@ include_rules = [
   "+chrome/browser/browser_process.h",
   "+chrome/browser/chrome_notification_types.h",
   "+chrome/browser/chromeos/drive",
+  "+chrome/browser/chromeos/login/user_manager.h",
   "+chrome/browser/lifetime/application_lifetime.h",
   "+chrome/browser/profiles",
   "+chrome/browser/sessions/session_id.h",
@@ -47,6 +48,7 @@ include_rules = [
   "+chrome/common/extensions/extension_messages.h",
   "+chrome/common/extensions/extension_set.h",
   "+chrome/common/extensions/manifest_handlers/icons_handler.h",
+  "+chrome/common/extensions/manifest_handlers/kiosk_mode_info.h",
   "+chrome/common/extensions/permissions/api_permission.h",
   "+chrome/common/extensions/permissions/permission_set.h",
 ]

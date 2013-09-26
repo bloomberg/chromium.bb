@@ -1,0 +1,11 @@
+{
+  "name": "kiosk only packaged app",
+  "version": "1",
+  "app": {
+    "launch": {
+      "local_path": "loco.html"
+    }
+  },
+  "kiosk_enabled": true,
+  "kiosk_only": true
+}

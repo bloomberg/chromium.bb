@@ -75,7 +75,11 @@
     "example": "publicKey"
   },
   "kiosk_enabled": {
-    "documentation": "manifest/kiosk_enabled.html",
+    "documentation": "manifest/kiosk_enabled.html#kiosk_enabled",
+    "example": true
+  },
+  "kiosk_only": {
+    "documentation": "manifest/kiosk_enabled.html#kiosk_only",
     "example": true
   },
   "manifest_version": {

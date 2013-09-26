@@ -1,0 +1,6 @@
+{
+  "name": "kiosk only extension",
+  "version": "1",
+  "kiosk_enabled": true,
+  "kiosk_only": true
+}

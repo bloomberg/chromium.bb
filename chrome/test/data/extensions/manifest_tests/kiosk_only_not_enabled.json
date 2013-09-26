@@ -1,0 +1,10 @@
+{
+  "name": "kiosk only not enabled",
+  "version": "1",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "kiosk_only": true 
+}

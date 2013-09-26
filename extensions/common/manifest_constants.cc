@@ -57,6 +57,8 @@ const char kJs[] = "js";
 const char kKey[] = "key";
 const char kKeycode[] = "keyCode";
 const char kKioskEnabled[] = "kiosk_enabled";
+const char kKioskOnly[] = "kiosk_only";
+const char kKioskMode[] = "kiosk_mode";
 const char kLanguage[] = "language";
 const char kLaunch[] = "app.launch";
 const char kLaunchContainer[] = "app.launch.container";
@@ -416,6 +418,10 @@ const char kInvalidKeyBindingUnknownPlatform[] =
     " 'chromeos', 'linux' and 'default'.";
 const char kInvalidKioskEnabled[] =
     "Invalid value for 'kiosk_enabled'.";
+const char kInvalidKioskOnly[] =
+    "Invalid value for 'kiosk_only'.";
+const char kInvalidKioskOnlyButNotEnabled[] =
+    "The 'kiosk_only' key is set, but 'kiosk_enabled' is not set.";
 const char kInvalidLaunchContainer[] =
     "Invalid value for 'app.launch.container'.";
 const char kInvalidLaunchValue[] =

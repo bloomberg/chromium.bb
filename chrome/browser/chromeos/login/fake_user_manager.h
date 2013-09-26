@@ -24,8 +24,11 @@ class FakeUserManager : public UserManager {
   // Create and add a new user.
   void AddUser(const std::string& email);
 
-  // Calculates the user name hash and calls UserLoggedIn to login a user.
-  void LoginUser(const std::string& email);
+  // Create and add a kiosk app user.
+  void AddKioskAppUser(const std::string& kiosk_app_username);
+
+   // Calculates the user name hash and calls UserLoggedIn to login a user.
+   void LoginUser(const std::string& email);
 
   // UserManager overrides.
   virtual const UserList& GetUsers() const OVERRIDE;
@@ -134,6 +137,9 @@ class FakeUserManager : public UserManager {
   }
 
  private:
+  // We use this internal function for const-correctness.
+  User* GetActiveUserInternal() const;
+
   UserList user_list_;
   UserList logged_in_users_;
   std::string owner_email_;
