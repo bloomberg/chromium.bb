@@ -125,8 +125,8 @@ const char kAshEnableMultiProfileShelfMenu[] = "ash-enable-multi-profile-shelf";
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
 
-// Disables overview mode for window switching.
-const char kAshDisableOverviewMode[] = "ash-disable-overview-mode";
+// Enables overview mode for window switching.
+const char kAshEnableOverviewMode[] = "ash-enable-overview-mode";
 
 // Enables software based mirroring.
 const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";

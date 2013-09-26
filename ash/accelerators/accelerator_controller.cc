@@ -88,8 +88,8 @@ bool DebugShortcutsEnabled() {
 }
 
 bool OverviewEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshDisableOverviewMode);
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshEnableOverviewMode);
 }
 
 void HandleCycleBackwardMRU(const ui::Accelerator& accelerator) {
