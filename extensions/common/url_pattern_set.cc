@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/error_utils.h"
@@ -28,10 +29,8 @@ void URLPatternSet::CreateDifference(const URLPatternSet& set1,
                                      const URLPatternSet& set2,
                                      URLPatternSet* out) {
   out->ClearPatterns();
-  std::set_difference(set1.patterns_.begin(), set1.patterns_.end(),
-                      set2.patterns_.begin(), set2.patterns_.end(),
-                      std::inserter<std::set<URLPattern> >(
-                          out->patterns_, out->patterns_.begin()));
+  out->patterns_ = base::STLSetDifference<std::set<URLPattern> >(
+      set1.patterns_, set2.patterns_);
 }
 
 // static

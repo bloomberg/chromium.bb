@@ -139,6 +139,10 @@ bool URLPattern::operator<(const URLPattern& other) const {
   return GetAsString() < other.GetAsString();
 }
 
+bool URLPattern::operator>(const URLPattern& other) const {
+  return GetAsString() > other.GetAsString();
+}
+
 bool URLPattern::operator==(const URLPattern& other) const {
   return GetAsString() == other.GetAsString();
 }

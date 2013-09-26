@@ -88,6 +88,7 @@ class URLPattern {
   ~URLPattern();
 
   bool operator<(const URLPattern& other) const;
+  bool operator>(const URLPattern& other) const;
   bool operator==(const URLPattern& other) const;
 
   // Initializes this instance by parsing the provided string. Returns
