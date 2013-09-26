@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_SEQUENTIAL_ID_GENERATOR_H_
-#define UI_BASE_SEQUENTIAL_ID_GENERATOR_H_
+#ifndef UI_GFX_SEQUENTIAL_ID_GENERATOR_H_
+#define UI_GFX_SEQUENTIAL_ID_GENERATOR_H_
 
 #include <map>
 
@@ -57,4 +57,4 @@ class UI_EXPORT SequentialIDGenerator {
 
 }  // namespace ui
 
-#endif  // UI_BASE_SEQUENTIAL_ID_GENERATOR_H_
+#endif  // UI_GFX_SEQUENTIAL_ID_GENERATOR_H_

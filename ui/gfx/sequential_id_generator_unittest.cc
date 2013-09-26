@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/sequential_id_generator.h"
+#include "ui/gfx/sequential_id_generator.h"
 
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"

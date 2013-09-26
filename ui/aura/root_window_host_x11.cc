@@ -32,7 +32,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/touch/touch_factory_x11.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/x/x11_util.h"
@@ -43,6 +42,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/x/device_data_manager.h"
 #include "ui/events/x/device_list_cache_x.h"
+#include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/screen.h"
 
 #if defined(OS_CHROMEOS)

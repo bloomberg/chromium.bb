@@ -21,7 +21,7 @@
 #include "ui/events/event.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/base/touch/touch_factory_x11.h"
+#include "ui/events/x/touch_factory_x11.h"
 #endif
 
 namespace {

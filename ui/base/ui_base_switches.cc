@@ -21,9 +21,6 @@ const char kDisableTouchEditing[] = "disable-touch-editing";
 // Disables the Views textfield on Windows.
 const char kDisableViewsTextfield[] = "disable-views-textfield";
 
-// Enable scroll prediction for scroll update events.
-const char kEnableScrollPrediction[] = "enable-scroll-prediction";
-
 // Enables touch event based drag and drop.
 const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
 
@@ -53,17 +50,6 @@ const char kLocalePak[] = "locale_pak";
 // do not have a user interface.
 const char kNoMessageBox[] = "no-message-box";
 
-// Enable support for touch events.
-const char kTouchEvents[] = "touch-events";
-
-// The values the kTouchEvents switch may have, as in --touch-events=disabled.
-//   auto: enabled at startup when an attached touchscreen is present.
-const char kTouchEventsAuto[] = "auto";
-//   enabled: touch events always enabled.
-const char kTouchEventsEnabled[] = "enabled";
-//   disabled: touch events are disabled.
-const char kTouchEventsDisabled[] = "disabled";
-
 // Enables UI changes that make it easier to use with a touchscreen.
 // WARNING: Do not check this flag directly when deciding what UI to draw,
 // instead you must call ui::GetDisplayLayout
@@ -84,13 +70,6 @@ const char kTouchSideBezels[] = "touch-side-bezels";
 #if defined(USE_XI2_MT)
 // The calibration factors given as "<left>,<right>,<top>,<bottom>".
 const char kTouchCalibration[] = "touch-calibration";
-#endif
-
-#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
-// Tells chrome to interpret events from these devices as touch events. Only
-// available with XInput 2 (i.e. X server 1.8 or above). The id's of the
-// devices can be retrieved from 'xinput list'.
-const char kTouchDevices[] = "touch-devices";
 #endif
 
 }  // namespace switches

@@ -17,6 +17,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event.h"
+#include "ui/events/event_switches.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_configuration.h"
 #include "ui/events/gestures/gesture_recognizer_impl.h"

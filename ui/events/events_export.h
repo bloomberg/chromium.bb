@@ -5,21 +5,23 @@
 #ifndef UI_EVENTS_EVENTS_EXPORT_H_
 #define UI_EVENTS_EVENTS_EXPORT_H_
 
-// TODO(beng): remove include once events dependencies have been corrected.
-
-#include "ui/base/ui_export.h"
+// TODO: Remove this block when the dependency of events (i.e. gfx) is its own
+// component, and allows events to be its own component.
+#if defined(UI_IMPLEMENTATION)
+#define EVENTS_IMPLEMENTATION
+#endif
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
-#if defined(UI_IMPLEMENTATION)
+#if defined(EVENTS_IMPLEMENTATION)
 #define EVENTS_EXPORT __declspec(dllexport)
 #else
 #define EVENTS_EXPORT __declspec(dllimport)
-#endif  // defined(UI_IMPLEMENTATION)
+#endif  // defined(EVENTS_IMPLEMENTATION)
 
 #else  // defined(WIN32)
-#if defined(UI_IMPLEMENTATION)
+#if defined(EVENTS_IMPLEMENTATION)
 #define EVENTS_EXPORT __attribute__((visibility("default")))
 #else
 #define EVENTS_EXPORT

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/events/event_switches.h"
 
 namespace ui {
 
