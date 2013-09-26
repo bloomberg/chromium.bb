@@ -47,8 +47,8 @@ do
   shift
 done
 
-ubuntu_versions="10\.04|10\.10|11\.04|11\.10|12\.04|12\.10|13\.04"
-ubuntu_codenames="lucid|maverick|natty|oneiric|precise|quantal|raring"
+ubuntu_versions="12\.04|12\.10|13\.04"
+ubuntu_codenames="precise|quantal|raring"
 ubuntu_issue="Ubuntu ($ubuntu_versions|$ubuntu_codenames)"
 # GCEL is an Ubuntu-derived VM image used on Google Compute Engine; /etc/issue
 # doesn't contain a version number so just trust that the user knows what
@@ -57,7 +57,7 @@ gcel_issue="^GCEL"
 
 if [ 0 -eq "${do_unsupported-0}" ] ; then
   if ! egrep -q "($ubuntu_issue|$gcel_issue)" /etc/issue; then
-    echo "ERROR: Only Ubuntu 10.04 (lucid) through 13.04 (raring) are"\
+    echo "ERROR: Only Ubuntu 12.04 (precise) through 13.04 (raring) are"\
         "currently supported" >&2
     exit 1
   fi
