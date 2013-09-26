@@ -183,8 +183,8 @@
         this.offset_y = 0;
         this.pre_x = 0;
         this.pre_y = 0;
-	this.swipeFlags = 0;
-	this.swipeDirection = 0;
+        this.swipeFlags = 0;
+        this.swipeDirection = 0;
       }
     };
 
@@ -252,40 +252,40 @@
        * @para {PointerEvent} event.
        */
       onSwipeUpdate: function(event) {
-	swipeStatus.offset_x += event.screenX - swipeStatus.pre_x;
-	swipeStatus.offset_y += event.screenY - swipeStatus.pre_y;
+        if (!event.isPrimary)
+          return;
+        swipeStatus.offset_x += event.screenX - swipeStatus.pre_x;
+        swipeStatus.offset_y += event.screenY - swipeStatus.pre_y;
         if (Math.abs(swipeStatus.offset_x) > MIN_SWIPE_DIST ||
             Math.abs(swipeStatus.offset_y) > MIN_SWIPE_DIST) {
           swipeInProgress = true;
           this.lastPressedKey.classList.remove('active');
         }
         if (swipeStatus.offset_x > MIN_SWIPE_DIST) {
-	  swipeStatus.swipeDirection |= SWIPE_DIRECTION.RIGHT;
+          swipeStatus.swipeDirection |= SWIPE_DIRECTION.RIGHT;
+          swipeStatus.offset_x = 0;
+        } else if (swipeStatus.offset_x < -MIN_SWIPE_DIST) {
+          swipeStatus.swipeDirection |= SWIPE_DIRECTION.LEFT;
           swipeStatus.offset_x = 0;
         }
-        else if (swipeStatus.offset_x < -MIN_SWIPE_DIST) {
-	  swipeStatus.swipeDirection |= SWIPE_DIRECTION.LEFT;
-	  swipeStatus.offset_x = 0;
-	}
         // Swipe vertically only when the swipe reaches the gradient of 45
         // degree. This can also be larger.
-	if (Math.abs(event.screenY - swipeStatus.pre_y) >
+        if (Math.abs(event.screenY - swipeStatus.pre_y) >
             Math.abs(event.screenX - swipeStatus.pre_x)) {
           if (swipeStatus.offset_y > MIN_SWIPE_DIST) {
             swipeStatus.swipeDirection |= SWIPE_DIRECTION.DOWN;
-	    swipeStatus.offset_y = 0;
-	  }
-          else if (swipeStatus.offset_y < -MIN_SWIPE_DIST) {
-	    swipeStatus.swipeDirection |= SWIPE_DIRECTION.UP;
             swipeStatus.offset_y = 0;
-	  }
+          } else if (swipeStatus.offset_y < -MIN_SWIPE_DIST) {
+            swipeStatus.swipeDirection |= SWIPE_DIRECTION.UP;
+            swipeStatus.offset_y = 0;
+          }
         }
-       if (swipeStatus.swipeDirection) {
-	  MoveCursor(swipeStatus.swipeDirection, swipeStatus.swipeFlags);
+        if (swipeStatus.swipeDirection) {
+          MoveCursor(swipeStatus.swipeDirection, swipeStatus.swipeFlags);
           swipeStatus.swipeDirection = 0;
         }
-	swipeStatus.pre_x = event.screenX;
-	swipeStatus.pre_y = event.screenY;
+        swipeStatus.pre_x = event.screenX;
+        swipeStatus.pre_y = event.screenY;
       },
 
       /**
@@ -377,9 +377,11 @@
        *     kb-keyboard.
        */
       down: function(event) {
-        swipeStatus.pre_x = event.screenX;
-        swipeStatus.pre_y = event.screenY;
-        this.addEventListener("pointermove", this.swipeHandler, false);
+        if (event.isPrimary) {
+          swipeStatus.pre_x = event.screenX;
+          swipeStatus.pre_y = event.screenY;
+          this.addEventListener("pointermove", this.swipeHandler, false);
+        }
       },
 
       /**
@@ -397,7 +399,7 @@
             var keyset = this.querySelector(keysetId);
             keyset.nextKeyset = this.dblTimer_.nextKeyset;
             clearTimeout(this.dblTimer_);
-            
+
             this.classList.add('caps-locked');
 
             this.dblDetail_ = null;
@@ -406,10 +408,10 @@
 
         // TODO(zyaozhujun): There are some edge cases to deal with later.
         // (for instance, what if a second finger trigger a down and up
-	// event sequence while swiping).
+        // event sequence while swiping).
         // When pointer up from the screen, a swipe selection session finished,
         // all the data should be reset to prepare for the next session.
-        if (swipeInProgress) {
+        if (event.isPrimary && swipeInProgress) {
           swipeInProgress = false;
           swipeStatus.resetAll();
         }
