@@ -199,9 +199,9 @@ bool RenderImage::updateIntrinsicSizeIfNeeded(const LayoutSize& newSize, bool im
 
 void RenderImage::updateInnerContentRect()
 {
-    // Propagate container size to image resource.
-    LayoutRect paintRect = replacedContentRect();
-    IntSize containerSize(paintRect.width(), paintRect.height());
+    // Propagate container size to the image resource.
+    LayoutRect containerRect = replacedContentRect();
+    IntSize containerSize(containerRect.width(), containerRect.height());
     if (!containerSize.isEmpty())
         m_imageResource->setContainerSizeForRenderer(containerSize);
 }
@@ -246,14 +246,14 @@ void RenderImage::imageDimensionsChanged(bool imageSizeChanged, const IntRect* r
             if (!selfNeedsLayout())
                 setNeedsLayout();
         }
+    }
 
-        if (everHadLayout() && !selfNeedsLayout()) {
-            // The inner content rectangle is calculated during layout, but may need an update now
-            // (unless the box has already been scheduled for layout). In order to calculate it, we
-            // may need values from the containing block, though, so make sure that we're not too
-            // early. It may be that layout hasn't even taken place once yet.
-            updateInnerContentRect();
-        }
+    if (everHadLayout() && !selfNeedsLayout()) {
+        // The inner content rectangle is calculated during layout, but may need an update now
+        // (unless the box has already been scheduled for layout). In order to calculate it, we
+        // may need values from the containing block, though, so make sure that we're not too
+        // early. It may be that layout hasn't even taken place once yet.
+        updateInnerContentRect();
     }
 
     if (shouldRepaint) {
