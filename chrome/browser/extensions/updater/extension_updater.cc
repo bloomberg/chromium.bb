@@ -31,6 +31,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "crypto/sha2.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/manifest.h"
 
 using base::RandDouble;
@@ -249,7 +250,7 @@ void ExtensionUpdater::TimerFired() {
 
   // If the user has overridden the update frequency, don't bother reporting
   // this.
-  if (frequency_seconds_ == ExtensionService::kDefaultUpdateFrequencySeconds) {
+  if (frequency_seconds_ == extensions::kDefaultUpdateFrequencySeconds) {
     Time last = Time::FromInternalValue(prefs_->GetInt64(
         kLastExtensionsUpdateCheck));
     if (last.ToInternalValue() != 0) {

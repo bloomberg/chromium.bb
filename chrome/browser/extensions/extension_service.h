@@ -137,37 +137,6 @@ class ExtensionService
       public content::NotificationObserver,
       public extensions::Blacklist::Observer {
  public:
-  // If auto-updates are turned on, default to running every 5 hours.
-  static const int kDefaultUpdateFrequencySeconds = 60 * 60 * 5;
-
-  // The name of the directory inside the profile where per-app local settings
-  // are stored.
-  static const char kLocalAppSettingsDirectoryName[];
-
-  // The name of the directory inside the profile where per-extension local
-  // settings are stored.
-  static const char kLocalExtensionSettingsDirectoryName[];
-
-  // The name of the directory inside the profile where per-app synced settings
-  // are stored.
-  static const char kSyncAppSettingsDirectoryName[];
-
-  // The name of the directory inside the profile where per-extension synced
-  // settings are stored.
-  static const char kSyncExtensionSettingsDirectoryName[];
-
-  // The name of the directory inside the profile where per-extension persistent
-  // managed settings are stored.
-  static const char kManagedSettingsDirectoryName[];
-
-  // The name of the database inside the profile where chrome-internal
-  // extension state resides.
-  static const char kStateStoreName[];
-
-  // The name of the database inside the profile where declarative extension
-  // rules are stored.
-  static const char kRulesStoreName[];
-
   // Returns the Extension of hosted or packaged apps, NULL otherwise.
   const extensions::Extension* GetInstalledApp(const GURL& url) const;
 

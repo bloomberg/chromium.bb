@@ -95,12 +95,12 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
   // requests.
   state_store_.reset(new StateStore(
       profile_,
-      profile_->GetPath().AppendASCII(ExtensionService::kStateStoreName),
+      profile_->GetPath().AppendASCII(extensions::kStateStoreName),
       true));
 
   rules_store_.reset(new StateStore(
       profile_,
-      profile_->GetPath().AppendASCII(ExtensionService::kRulesStoreName),
+      profile_->GetPath().AppendASCII(extensions::kRulesStoreName),
       false));
 
   blacklist_.reset(new Blacklist(ExtensionPrefs::Get(profile_)));

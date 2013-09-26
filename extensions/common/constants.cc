@@ -37,4 +37,15 @@ const base::FilePath::CharType kExtensionFileExtension[] =
 const base::FilePath::CharType kExtensionKeyFileExtension[] =
     FILE_PATH_LITERAL(".pem");
 
+// If auto-updates are turned on, default to running every 5 hours.
+const int kDefaultUpdateFrequencySeconds = 60 * 60 * 5;
+
+const char kLocalAppSettingsDirectoryName[] = "Local App Settings";
+const char kLocalExtensionSettingsDirectoryName[] = "Local Extension Settings";
+const char kSyncAppSettingsDirectoryName[] = "Sync App Settings";
+const char kSyncExtensionSettingsDirectoryName[] = "Sync Extension Settings";
+const char kManagedSettingsDirectoryName[] = "Managed Extension Settings";
+const char kStateStoreName[] = "Extension State";
+const char kRulesStoreName[] = "Extension Rules";
+
 }  // namespace extensions

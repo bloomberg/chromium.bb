@@ -199,19 +199,6 @@ ExtensionService::ExtensionRuntimeData::~ExtensionRuntimeData() {
 
 // ExtensionService.
 
-const char ExtensionService::kLocalAppSettingsDirectoryName[] =
-    "Local App Settings";
-const char ExtensionService::kLocalExtensionSettingsDirectoryName[] =
-    "Local Extension Settings";
-const char ExtensionService::kSyncAppSettingsDirectoryName[] =
-    "Sync App Settings";
-const char ExtensionService::kSyncExtensionSettingsDirectoryName[] =
-    "Sync Extension Settings";
-const char ExtensionService::kManagedSettingsDirectoryName[] =
-    "Managed Extension Settings";
-const char ExtensionService::kStateStoreName[] = "Extension State";
-const char ExtensionService::kRulesStoreName[] = "Extension Rules";
-
 void ExtensionService::CheckExternalUninstall(const std::string& id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -404,7 +391,7 @@ ExtensionService::ExtensionService(Profile* profile,
 
   // Set up the ExtensionUpdater
   if (autoupdate_enabled) {
-    int update_frequency = kDefaultUpdateFrequencySeconds;
+    int update_frequency = extensions::kDefaultUpdateFrequencySeconds;
     if (command_line->HasSwitch(switches::kExtensionsUpdateFrequency)) {
       base::StringToInt(command_line->GetSwitchValueASCII(
           switches::kExtensionsUpdateFrequency),

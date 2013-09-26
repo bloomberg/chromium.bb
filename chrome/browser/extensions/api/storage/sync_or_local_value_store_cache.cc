@@ -12,11 +12,11 @@
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/api/storage/settings_storage_quota_enforcer.h"
 #include "chrome/browser/extensions/api/storage/weak_unlimited_settings_storage.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/constants.h"
 
 using content::BrowserThread;
 
@@ -103,11 +103,11 @@ void SyncOrLocalValueStoreCache::InitOnFileThread(
   DCHECK(!extension_backend_.get());
   const bool local = settings_namespace_ == settings_namespace::LOCAL;
   const base::FilePath app_path = profile_path.AppendASCII(
-      local ? ExtensionService::kLocalAppSettingsDirectoryName
-            : ExtensionService::kSyncAppSettingsDirectoryName);
+      local ? extensions::kLocalAppSettingsDirectoryName
+            : extensions::kSyncAppSettingsDirectoryName);
   const base::FilePath extension_path = profile_path.AppendASCII(
-      local ? ExtensionService::kLocalExtensionSettingsDirectoryName
-            : ExtensionService::kSyncExtensionSettingsDirectoryName);
+      local ? extensions::kLocalExtensionSettingsDirectoryName
+            : extensions::kSyncExtensionSettingsDirectoryName);
   app_backend_.reset(new SettingsBackend(
       factory, app_path, syncer::APP_SETTINGS,
       sync_start_util::GetFlareForSyncableService(profile_path),

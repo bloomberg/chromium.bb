@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 
@@ -178,7 +179,7 @@ ManagedValueStoreCache::ManagedValueStoreCache(
       storage_factory_(factory),
       observers_(observers),
       base_path_(profile->GetPath().AppendASCII(
-          ExtensionService::kManagedSettingsDirectoryName)) {
+          extensions::kManagedSettingsDirectoryName)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // |event_router_| can be NULL on unit_tests.
   if (event_router_)
