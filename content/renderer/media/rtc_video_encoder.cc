@@ -16,6 +16,7 @@
 #include "media/base/video_util.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "media/video/video_encode_accelerator.h"
+#include "third_party/webrtc/system_wrappers/interface/tick_util.h"
 
 #define NOTIFY_ERROR(x)                             \
   do {                                              \
@@ -147,10 +148,6 @@ class RTCVideoEncoder::Impl
   // Input buffers ready to be filled with input from Encode().  As a LIFO since
   // we don't care about ordering.
   std::vector<int> input_buffers_free_;
-
-  // Timestamp of first frame returned from encoder.  We calculate subsequent
-  // capture times as deltas from this base.
-  base::Time time_base_;
 
   DISALLOW_COPY_AND_ASSIGN(Impl);
 };
@@ -324,10 +321,9 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32 bitstream_buffer_id,
     return;
   }
 
-  const base::Time now = base::Time::Now();
-  if (time_base_.is_null())
-    time_base_ = now;
-  const base::TimeDelta delta = now - time_base_;
+  // Use webrtc timestamps to ensure correct RTP sender behavior.
+  // TODO(hshi): obtain timestamp from the capturer, see crbug.com/284783.
+  const int64 capture_time_ms = webrtc::TickTime::MillisecondTimestamp();
 
   scoped_ptr<webrtc::EncodedImage> image(new webrtc::EncodedImage(
       reinterpret_cast<uint8_t*>(output_buffer->memory()),
@@ -336,8 +332,8 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32 bitstream_buffer_id,
   image->_encodedWidth = input_visible_size_.width();
   image->_encodedHeight = input_visible_size_.height();
   // Convert capture time to 90 kHz RTP timestamp.
-  image->_timeStamp = (delta * 90000).InSeconds();
-  image->capture_time_ms_ = delta.InMilliseconds();
+  image->_timeStamp = static_cast<uint32_t>(90 * capture_time_ms);
+  image->capture_time_ms_ = capture_time_ms;
   image->_frameType = (key_frame ? webrtc::kKeyFrame : webrtc::kDeltaFrame);
   image->_completeFrame = true;
 
