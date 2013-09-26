@@ -4771,6 +4771,75 @@ class LayerTreeHostTestMemoryLimits : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestMemoryLimits);
 
+class LayerSetsNeedsFilterContext : public Layer {
+ public:
+  static scoped_refptr<LayerSetsNeedsFilterContext> Create() {
+    return make_scoped_refptr(new LayerSetsNeedsFilterContext());
+  }
+
+  virtual bool Update(ResourceUpdateQueue* queue,
+                      const OcclusionTracker* occlusion) OVERRIDE {
+    bool updated = Layer::Update(queue, occlusion);
+    if (needs_context_) {
+      layer_tree_host()->set_needs_filter_context();
+      return true;
+    }
+    return updated;
+  }
+
+  void set_needs_context(bool need) { needs_context_ = need; }
+
+ private:
+  LayerSetsNeedsFilterContext() : needs_context_(false) {}
+  virtual ~LayerSetsNeedsFilterContext() {}
+
+  bool needs_context_;
+};
+
+class LayerTreeHostTestOffscreenContext : public LayerTreeHostTest {
+ protected:
+  virtual void SetupTree() OVERRIDE {
+    scoped_refptr<LayerSetsNeedsFilterContext> root =
+        LayerSetsNeedsFilterContext::Create();
+    root->SetIsDrawable(true);
+    root->SetAnchorPoint(gfx::PointF());
+    root->SetBounds(gfx::Size(10, 10));
+    root->set_needs_context(with_context_);
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    bool expect_context = with_context_;
+    if (delegating_renderer())
+      expect_context = false;
+    EXPECT_EQ(expect_context, !!host_impl->offscreen_context_provider());
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  bool with_context_;
+};
+
+class LayerTreeHostTestOffscreenContext_NoContext
+    : public LayerTreeHostTestOffscreenContext {
+ protected:
+  LayerTreeHostTestOffscreenContext_NoContext() { with_context_ = false; }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestOffscreenContext_NoContext);
+
+class LayerTreeHostTestOffscreenContext_WithContext
+    : public LayerTreeHostTestOffscreenContext {
+ protected:
+  LayerTreeHostTestOffscreenContext_WithContext() { with_context_ = true; }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestOffscreenContext_WithContext);
+
 }  // namespace
 
 }  // namespace cc

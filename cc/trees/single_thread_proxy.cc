@@ -420,15 +420,6 @@ bool SingleThreadProxy::CommitAndComposite(
 
   layer_tree_host_->AnimateLayers(frame_begin_time);
 
-  scoped_refptr<cc::ContextProvider> offscreen_context_provider;
-  if (renderer_capabilities_for_main_thread_.using_offscreen_context3d &&
-      layer_tree_host_->needs_offscreen_context()) {
-    offscreen_context_provider =
-        layer_tree_host_->client()->OffscreenContextProviderForMainThread();
-    if (offscreen_context_provider.get())
-      created_offscreen_context_provider_ = true;
-  }
-
   if (layer_tree_host_->contents_texture_manager()) {
     layer_tree_host_->contents_texture_manager()
         ->UnlinkAndClearEvictedBackings();
@@ -443,6 +434,16 @@ bool SingleThreadProxy::CommitAndComposite(
   layer_tree_host_->UpdateLayers(queue.get());
 
   layer_tree_host_->WillCommit();
+
+  scoped_refptr<cc::ContextProvider> offscreen_context_provider;
+  if (renderer_capabilities_for_main_thread_.using_offscreen_context3d &&
+      layer_tree_host_->needs_offscreen_context()) {
+    offscreen_context_provider =
+        layer_tree_host_->client()->OffscreenContextProviderForMainThread();
+    if (offscreen_context_provider.get())
+      created_offscreen_context_provider_ = true;
+  }
+
   DoCommit(queue.Pass());
   bool result = DoComposite(offscreen_context_provider,
                             frame_begin_time,
