@@ -9,6 +9,10 @@ Original elements tree:
           "Text"
           :after
       </div>
+    - <div id="empty">
+          :before
+          :after
+      </div>
   </div>
 
 Running: dumpNormalNodeStyles
@@ -59,6 +63,10 @@ Running: removeAfter
           :before
           "Text"
       </div>
+    - <div id="empty">
+          :before
+          :after
+      </div>
   </div>
 
 Running: removeBefore
@@ -66,12 +74,20 @@ Running: removeBefore
     - <div id="inspected">
           "Text"
       </div>
+    - <div id="empty">
+          :before
+          :after
+      </div>
   </div>
 
 Running: addAfter
 - <div id="container">
     - <div id="inspected">
           "Text"
+          :after
+      </div>
+    - <div id="empty">
+          :before
           :after
       </div>
   </div>
@@ -83,6 +99,10 @@ Running: addBefore
           "Text"
           :after
       </div>
+    - <div id="empty">
+          :before
+          :after
+      </div>
   </div>
 
 Running: modifyTextContent
@@ -90,6 +110,10 @@ Running: modifyTextContent
     - <div id="inspected">
           :before
           "bar"
+          :after
+      </div>
+    - <div id="empty">
+          :before
           :after
       </div>
   </div>
@@ -100,10 +124,18 @@ Running: clearTextContent
           :before
           :after
       </div>
+    - <div id="empty">
+          :before
+          :after
+      </div>
   </div>
 
 Running: removeNodeAndCheckPseudoElementsUnbound
 - <div id="container">
+    - <div id="empty">
+          :before
+          :after
+      </div>
   </div>
 inspected:before DOMNode in DOMAgent: false
 inspected:after DOMNode in DOMAgent: false
