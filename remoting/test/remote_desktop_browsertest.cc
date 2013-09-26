@@ -28,6 +28,15 @@ void RemoteDesktopBrowserTest::SetUp() {
   ExtensionBrowserTest::SetUp();
 }
 
+void RemoteDesktopBrowserTest::SetUpOnMainThread() {
+  ExtensionBrowserTest::SetUpOnMainThread();
+
+  // Initializing to browser() before RunTestOnMainThread() and after
+  // |InProcessBrowserTest::browser_| is initialized in
+  // InProcessBrowserTest::RunTestOnMainThreadLoop()
+  active_browser_ = browser();
+}
+
 // Change behavior of the default host resolver to avoid DNS lookup errors,
 // so we can make network calls.
 void RemoteDesktopBrowserTest::SetUpInProcessBrowserTestFixture() {
@@ -70,7 +79,7 @@ bool RemoteDesktopBrowserTest::HtmlElementVisible(const std::string& name) {
 void RemoteDesktopBrowserTest::InstallChromotingApp() {
   base::FilePath install_dir(WebAppCrxPath());
   scoped_refptr<const Extension> extension(InstallExtensionWithUIAutoConfirm(
-      install_dir, 1, browser()));
+      install_dir, 1, active_browser_));
 
   EXPECT_FALSE(extension.get() == NULL);
 }
@@ -124,15 +133,45 @@ void RemoteDesktopBrowserTest::Authorize() {
 
   // The chromoting main page should be loaded in the current tab
   // and isAuthenticated() should be false (auth dialog visible).
-  ASSERT_EQ(GetCurrentURL(), Chromoting_Main_URL());
+  ASSERT_EQ(Chromoting_Main_URL(), GetCurrentURL());
   ASSERT_FALSE(ExecuteScriptAndExtractBool(
-      "remoting.OAuth2.prototype.isAuthenticated()"));
+      "remoting.oauth2.isAuthenticated()"));
 
-  ExecuteScriptAndWaitForAnyPageLoad(
-      "remoting.OAuth2.prototype.doAuthRedirect();");
+  // The first observer monitors the creation of the new window for
+  // the Google loging page.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_BROWSER_OPENED,
+      content::NotificationService::AllSources());
+
+  // The second observer monitors the loading of the Google login page.
+  // Unfortunately we cannot specify a source in this observer because
+  // we can't get a handle of the new window until the first observer
+  // has finished waiting. But we will assert that the source of the
+  // load stop event is indeed the newly created browser window.
+  content::WindowedNotificationObserver observer2(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+
+  ClickOnControl("auth-button");
+
+  observer.Wait();
+
+  const content::Source<Browser>* source =
+      static_cast<const content::Source<Browser>*>(&observer.source());
+  active_browser_ = source->ptr();
+
+  observer2.Wait();
+
+  const content::Source<content::NavigationController>* source2 =
+      static_cast<const content::Source<content::NavigationController>*>(
+          &observer2.source());
+  content::NavigationController* controller = source2->ptr();
+
+  EXPECT_EQ(controller->GetWebContents(),
+            active_browser_->tab_strip_model()->GetActiveWebContents());
 
   // Verify the active tab is at the "Google Accounts" login page.
-  EXPECT_EQ(GetCurrentURL().host(), "accounts.google.com");
+  EXPECT_EQ("accounts.google.com", GetCurrentURL().host());
   EXPECT_TRUE(HtmlElementExists("Email"));
   EXPECT_TRUE(HtmlElementExists("Passwd"));
 }
@@ -142,7 +181,7 @@ void RemoteDesktopBrowserTest::Authenticate() {
   ASSERT_FALSE(ChromotingID().empty());
 
   // The active tab should have the "Google Accounts" login page loaded.
-  ASSERT_EQ(GetCurrentURL().host(), "accounts.google.com");
+  ASSERT_EQ("accounts.google.com", GetCurrentURL().host());
   ASSERT_TRUE(HtmlElementExists("Email"));
   ASSERT_TRUE(HtmlElementExists("Passwd"));
 
@@ -164,7 +203,7 @@ void RemoteDesktopBrowserTest::Approve() {
   ASSERT_FALSE(ChromotingID().empty());
 
   // The active tab should have the chromoting app loaded.
-  ASSERT_EQ(GetCurrentURL().host(), "accounts.google.com");
+  ASSERT_EQ("accounts.google.com", GetCurrentURL().host());
 
   // Is there a better way to verify we are on the "Request for Permission"
   // page?
@@ -172,42 +211,29 @@ void RemoteDesktopBrowserTest::Approve() {
 
   const GURL chromoting_main = Chromoting_Main_URL();
 
+  // |active_browser_| is still set to the login window but the observer
+  // should be set up to observe the chromoting window because that is
+  // where we'll receive the message from the login window and reload the
+  // chromoting app.
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      base::Bind(&RemoteDesktopBrowserTest::RetrieveRedirectURL, this));
+        base::Bind(
+            &RemoteDesktopBrowserTest::IsAuthenticated, browser()));
 
-  // TODO: HACK starts
-  // Remove this and uncomment the code above when issue 291207 is fixed.
-  // http://crbug.com/294343
   ExecuteScript(
       "lso.approveButtonAction();"
       "document.forms[\"connect-approve\"].submit();");
 
   observer.Wait();
 
-  if (GetCurrentURL() != chromoting_main) {
-    ASSERT_TRUE(GetCurrentURL().spec() == "about:blank");
-
-    content::WindowedNotificationObserver observer2(
-        content::NOTIFICATION_LOAD_STOP,
-        base::Bind(
-            &RemoteDesktopBrowserTest::IsURLLoaded, this, chromoting_main));
-
-    // Chrome doesn't allow redirection from the internet context to a page
-    // inside an extension. Our content script does exactly that: redirecting
-    // from a talkgadget page to a page inside the chrmoting app.
-    // Until we fix this issue, we need to manually navigate to that page
-    // in our test.
-    ui_test_utils::NavigateToURL(browser(), GURL(oauth_redirect_url_));
-
-    observer2.Wait();
-  }
-  // TODO: HACK ends.
+  // Resetting |active_browser_| to browser() now that the Google login
+  // window is closed and the focus has returned to the chromoting window.
+  active_browser_ = browser();
 
   ASSERT_TRUE(GetCurrentURL() == chromoting_main);
 
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      "remoting.OAuth2.prototype.isAuthenticated()"));
+      "remoting.oauth2.isAuthenticated()"));
 }
 
 void RemoteDesktopBrowserTest::StartMe2Me() {
@@ -215,9 +241,9 @@ void RemoteDesktopBrowserTest::StartMe2Me() {
   ASSERT_FALSE(ChromotingID().empty());
 
   // The active tab should have the chromoting app loaded.
-  ASSERT_EQ(GetCurrentURL(), Chromoting_Main_URL());
+  ASSERT_EQ(Chromoting_Main_URL(), GetCurrentURL());
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      "remoting.OAuth2.prototype.isAuthenticated()"));
+      "remoting.oauth2.isAuthenticated()"));
 
   // The Me2Me host list should be hidden.
   ASSERT_FALSE(HtmlElementVisible("me2me-content"));
@@ -232,7 +258,7 @@ void RemoteDesktopBrowserTest::StartMe2Me() {
 
   // Wait until localHost is initialized. This can take a while.
   ConditionalTimeoutWaiter waiter(
-      base::TimeDelta::FromSeconds(5),
+      base::TimeDelta::FromSeconds(3),
       base::TimeDelta::FromSeconds(1),
       base::Bind(&RemoteDesktopBrowserTest::IsLocalHostReady, this));
   EXPECT_TRUE(waiter.Wait());
@@ -258,7 +284,7 @@ void RemoteDesktopBrowserTest::SimulateKeyPressWithCode(
     bool alt,
     bool command) {
   content::SimulateKeyPressWithCode(
-      browser()->tab_strip_model()->GetActiveWebContents(),
+      active_browser_->tab_strip_model()->GetActiveWebContents(),
       keyCode,
       code,
       control,
@@ -325,7 +351,7 @@ void RemoteDesktopBrowserTest::Cleanup() {
   // The browser may still be loading images embedded in the webapp. If we
   // uinstall it now those load will fail. Navigating away to avoid the load
   // failures.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(active_browser_, GURL("about:blank"));
 
   if (!NoCleanup()) {
     UninstallChromotingApp();
@@ -412,7 +438,7 @@ void RemoteDesktopBrowserTest::ParseCommandLine() {
 
 void RemoteDesktopBrowserTest::ExecuteScript(const std::string& script) {
   ASSERT_TRUE(content::ExecuteScript(
-      browser()->tab_strip_model()->GetActiveWebContents(), script));
+      active_browser_->tab_strip_model()->GetActiveWebContents(), script));
 }
 
 void RemoteDesktopBrowserTest::ExecuteScriptAndWaitForAnyPageLoad(
@@ -420,7 +446,7 @@ void RemoteDesktopBrowserTest::ExecuteScriptAndWaitForAnyPageLoad(
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<content::NavigationController>(
-          &browser()->tab_strip_model()->GetActiveWebContents()->
+          &active_browser_->tab_strip_model()->GetActiveWebContents()->
               GetController()));
 
   ExecuteScript(script);
@@ -433,18 +459,21 @@ void RemoteDesktopBrowserTest::ExecuteScriptAndWaitForPageLoad(
     const GURL& target) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
-      base::Bind(&RemoteDesktopBrowserTest::IsURLLoaded, this, target));
+      base::Bind(&RemoteDesktopBrowserTest::IsURLLoadedInWindow,
+                 active_browser_,
+                 target));
 
   ExecuteScript(script);
 
   observer.Wait();
 }
 
+// static
 bool RemoteDesktopBrowserTest::ExecuteScriptAndExtractBool(
-    const std::string& script) {
+    Browser* browser, const std::string& script) {
   bool result;
   _ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetActiveWebContents(),
+      browser->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(" + script + ");",
       &result));
 
@@ -455,7 +484,7 @@ int RemoteDesktopBrowserTest::ExecuteScriptAndExtractInt(
     const std::string& script) {
   int result;
   _ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      browser()->tab_strip_model()->GetActiveWebContents(),
+      active_browser_->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(" + script + ");",
       &result));
 
@@ -466,7 +495,7 @@ std::string RemoteDesktopBrowserTest::ExecuteScriptAndExtractString(
     const std::string& script) {
   std::string result;
   _ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      browser()->tab_strip_model()->GetActiveWebContents(),
+      active_browser_->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(" + script + ");",
       &result));
 
@@ -479,16 +508,16 @@ void RemoteDesktopBrowserTest::NavigateToURLAndWaitForPageLoad(
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<content::NavigationController>(
-          &browser()->tab_strip_model()->GetActiveWebContents()->
+          &active_browser_->tab_strip_model()->GetActiveWebContents()->
               GetController()));
 
-  ui_test_utils::NavigateToURL(browser(), url);
+  ui_test_utils::NavigateToURL(active_browser_, url);
   observer.Wait();
 }
 
 void RemoteDesktopBrowserTest::ClickOnControl(const std::string& name) {
-  _ASSERT_TRUE(HtmlElementExists(name));
-  _ASSERT_TRUE(HtmlElementVisible(name));
+  ASSERT_TRUE(HtmlElementExists(name));
+  ASSERT_TRUE(HtmlElementVisible(name));
 
   ExecuteScript("document.getElementById(\"" + name + "\").click();");
 }
@@ -502,7 +531,7 @@ void RemoteDesktopBrowserTest::EnterPin(const std::string& pin) {
   // we should verify that it only pops up at the right circumstance. That
   // probably belongs in a separate test case though.
   ConditionalTimeoutWaiter waiter(
-      base::TimeDelta::FromSeconds(3),
+      base::TimeDelta::FromSeconds(5),
       base::TimeDelta::FromSeconds(1),
       base::Bind(&RemoteDesktopBrowserTest::IsPinFormVisible, this));
   EXPECT_TRUE(waiter.Wait());
@@ -519,15 +548,15 @@ void RemoteDesktopBrowserTest::WaitForConnection() {
   // TODO(weitaosu): Instead of polling, can we register a callback to
   // remoting.clientSession.onStageChange_?
   ConditionalTimeoutWaiter waiter(
-      base::TimeDelta::FromSeconds(8),
+      base::TimeDelta::FromSeconds(3),
       base::TimeDelta::FromSeconds(1),
       base::Bind(&RemoteDesktopBrowserTest::IsSessionConnected, this));
   EXPECT_TRUE(waiter.Wait());
 
   // The client is not yet ready to take input when the session state becomes
-  // CONNECTED. Wait for 3 seconds for the client to become ready.
+  // CONNECTED. Wait for 2 seconds for the client to become ready.
   // TODO(weitaosu): Find a way to detect when the client is truly ready.
-  TimeoutWaiter(base::TimeDelta::FromSeconds(3)).Wait();
+  TimeoutWaiter(base::TimeDelta::FromSeconds(2)).Wait();
 }
 
 bool RemoteDesktopBrowserTest::IsLocalHostReady() {
@@ -550,28 +579,16 @@ bool RemoteDesktopBrowserTest::IsPinFormVisible() {
   return HtmlElementVisible("pin-form");
 }
 
-bool RemoteDesktopBrowserTest::IsURLLoaded(const GURL& url) {
-  return GetCurrentURL() == url;
+// static
+bool RemoteDesktopBrowserTest::IsURLLoadedInWindow(Browser* browser,
+                                                   const GURL& url) {
+  return GetCurrentURLInBrowser(browser) == url;
 }
 
-// TODO: Remove this when issue 291207 is fixed.
-// http://crbug.com/294343
-bool RemoteDesktopBrowserTest::RetrieveRedirectURL() {
-  static const char kOAuthRedirectUrlPathPrefix[] =
-      "/talkgadget/oauth/chrome-remote-desktop/";
-
-  // Mimic the logic in cs_oauth2_trampoline.js
-  GURL url = GetCurrentURL();
-  if (url.path().compare(0,
-                         arraysize(kOAuthRedirectUrlPathPrefix) - 1,
-                         kOAuthRedirectUrlPathPrefix) == 0) {
-    oauth_redirect_url_ = "chrome-extension://" + ChromotingID();
-    oauth_redirect_url_ += "/oauth2_callback.html?";
-    oauth_redirect_url_ += url.query();
-    return false;
-  }
-
-  return url.spec() == "about:blank" || url == Chromoting_Main_URL();
+// static
+bool RemoteDesktopBrowserTest::IsAuthenticated(Browser* browser) {
+  return ExecuteScriptAndExtractBool(
+      browser, "remoting.oauth2.isAuthenticated()");
 }
 
 }  // namespace remoting

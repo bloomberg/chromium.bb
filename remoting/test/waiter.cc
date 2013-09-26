@@ -73,8 +73,8 @@ void ConditionalTimeoutWaiter::CancelWait() {
 
 void ConditionalTimeoutWaiter::CancelWaitCallback() {
   if (callback_.Run()) {
-    CancelWait();
     success_ = true;
+    CancelWait();
   }
 }
 

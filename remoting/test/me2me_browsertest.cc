@@ -41,7 +41,9 @@ void Me2MeBrowserTest::TestKeyboardInput() {
   // Run an arbitrary command so that I can verify the result visually.
   // TODO: Verify programatically the keyboard events are received by the host.
   SimulateStringInput("ls -la\n");
-  ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(5)).Wait());
+  ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(1)).Wait());
+  SimulateStringInput("exit\n");
+  ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(1)).Wait());
 }
 
 void Me2MeBrowserTest::TestMouseInput() {

@@ -41,6 +41,7 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
 
   // InProcessBrowserTest Overrides
   virtual void SetUp() OVERRIDE;
+  virtual void SetUpOnMainThread() OVERRIDE;
 
  protected:
   // InProcessBrowserTest Overrides
@@ -155,43 +156,58 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
     return GURL("chrome-extension://" + ChromotingID() + "/main.html");
   }
 
-  // Helper to retrieve the current URL of the active tab in the browser.
+  // Helper to retrieve the current URL of the active tab in the active browser
+  // window.
   GURL GetCurrentURL() {
-    return browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
+    return GetCurrentURLInBrowser(active_browser_);
+  }
+
+  // Helper to retrieve the current URL of the active tab in the given browser
+  // window.
+  static GURL GetCurrentURLInBrowser(Browser* browser) {
+    return browser->tab_strip_model()->GetActiveWebContents()->GetURL();
   }
 
   // Helpers to execute javascript code on a web page.
 
-  // Helper to execute a javascript code snippet on the current page.
+  // Helper to execute a javascript code snippet on the current page of
+  // the active browser window.
   void ExecuteScript(const std::string& script);
 
-  // Helper to execute a javascript code snippet on the current page and
-  // wait for page load to complete.
+  // Helper to execute a javascript code snippet one the current page of
+  // the active browser window and wait for page load to complete.
   void ExecuteScriptAndWaitForAnyPageLoad(const std::string& script);
 
-  // Helper to execute a javascript code snippet on the current page and
-  // wait until the target url is loaded. This is used when the target page
-  // is loaded after multiple redirections.
+  // Helper to execute a javascript code snippet one the current page of
+  // the active browser window and wait until the target url is loaded.
+  // This is used when the target page is loaded after one or more redirections.
   void ExecuteScriptAndWaitForPageLoad(const std::string& script,
                                        const GURL& target);
 
-  // Helper to execute a javascript code snippet on the current page and
-  // extract the boolean result.
-  bool ExecuteScriptAndExtractBool(const std::string& script);
+  // Helper to execute a javascript code snippet on the current page of
+  // the active browser window and extract the boolean result.
+  bool ExecuteScriptAndExtractBool(const std::string& script) {
+    return ExecuteScriptAndExtractBool(active_browser_, script);
+  }
 
-  // Helper to execute a javascript code snippet on the current page and
-  // extract the int result.
+  // Helper to execute a javascript code snippet one the current page of
+  // the active browser window and extract the boolean result.
+  static bool ExecuteScriptAndExtractBool(Browser* browser,
+                                          const std::string& script);
+
+  // Helper to execute a javascript code snippet one the current page of
+  // the active browser window and extract the int result.
   int ExecuteScriptAndExtractInt(const std::string& script);
 
-  // Helper to execute a javascript code snippet on the current page and
-  // extract the string result.
+  // Helper to execute a javascript code snippet one the current page of
+  // the active browser window and extract the string result.
   std::string ExecuteScriptAndExtractString(const std::string& script);
 
   // Helper to navigate to a given url.
   void NavigateToURLAndWaitForPageLoad(const GURL& url);
 
   // Helper to check whether an html element with the given name exists on
-  // the current page.
+  // the current page of the active browser window.
   bool HtmlElementExists(const std::string& name) {
     return ExecuteScriptAndExtractBool(
         "document.getElementById(\"" + name + "\") != null");
@@ -218,10 +234,12 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   bool IsSessionConnected();
 
   // Callback used by ExecuteScriptAndWaitForPageLoad to check whether
-  // the given page is currently loaded.
-  bool IsURLLoaded(const GURL& url);
+  // the given page is currently loaded in the given browser window.
+  static bool IsURLLoadedInWindow(Browser* browser, const GURL& url);
 
-  bool RetrieveRedirectURL();
+  // Callback used by Approve to check whether the chromoting app has
+  // successfully authenticated with the google services.
+  static bool IsAuthenticated(Browser* browser);
 
   // Fields
 
@@ -230,6 +248,23 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // to override the default resolver while the test is active.
   scoped_ptr<net::ScopedDefaultHostResolverProc> mock_host_resolver_override_;
 
+  // The "active" browser window the test needs to interact with.
+  // We initialize |active_browser_| to the browser instance created by
+  // InProcessBrowserTest as the initial browser window to run test in.
+  // Whenever a new browser window is spawned and needs attention
+  // |active_browser_| is set to that browser window and all subsequent
+  // test actions happen there.
+  // And when the focus is returned to the original browser window
+  // |active_browser_| is reset to browser().
+  // This pattern is sufficient for simple streamlined workflows where all
+  // the browser windows form a LIFO stack. The test always interacts
+  // with the "active" window which is always on the top of the "browser
+  // stack". See also http://crrev.com/chrome/browser/ui/browser_list.h
+  // If we ever need to deal with more complicated workflows the test
+  // code will need to explicitly pass browser instances to the helper
+  // routines.
+  Browser* active_browser_;
+
   bool no_cleanup_;
   bool no_install_;
   std::string chromoting_id_;
@@ -237,10 +272,6 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   std::string username_;
   std::string password_;
   std::string me2me_pin_;
-
-  // TODO: Remove this when issue 291207 is fixed.
-  // http://crbug.com/294343
-  std::string oauth_redirect_url_;
 };
 
 }  // namespace remoting
