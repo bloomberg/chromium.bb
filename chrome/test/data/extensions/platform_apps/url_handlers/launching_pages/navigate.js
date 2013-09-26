@@ -6,8 +6,9 @@
   var target_dir = '/extensions/platform_apps/url_handlers/common/';
   var link = document.getElementById('link');
   var mismatching_link = document.getElementById('mismatching_link');
+  var form  = document.getElementById('form');
 
-  if (link || mismatching_link) {
+  if (link || mismatching_link || form) {
     var clickEvent = document.createEvent('MouseEvents');
     clickEvent.initMouseEvent('click', true, true, window,
                               0, 0, 0, 0, 0, false, false,
@@ -27,6 +28,15 @@
       // match the url_handlers of the app. It should open the link in a new
       // tab instead.
       mismatching_link.dispatchEvent(clickEvent);
+    }
+
+    if (form) {
+      console.log("Submitting a form");
+      form.action = target_dir + 'target.html';
+      var submit_button = document.getElementById("submit_button");
+      // This click should NOT open the handler app, because form submissions
+      // using POST should not be intercepted.
+      submit_button.dispatchEvent(clickEvent);
     }
   } else {
     console.log("Calling window.open()");

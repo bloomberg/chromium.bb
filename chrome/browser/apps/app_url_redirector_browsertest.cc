@@ -100,12 +100,14 @@ class PlatformAppUrlRedirectorBrowserTest : public PlatformAppBrowserTest {
   // but should not launch it.
   void TestNegativeNavigationInBrowser(const char* matching_target_page,
                                        content::PageTransition transition,
+                                       const char* success_tab_title,
                                        const char* handler);
 
   // Same as above, but expects the |mismatching_target_page| should not match
   // any of the |handler|'s url_handlers, and therefor not launch the app.
   void TestMismatchingNavigationInBrowser(const char* mismatching_target_page,
                                           content::PageTransition transition,
+                                          const char* success_tab_title,
                                           const char* handler);
 };
 
@@ -288,10 +290,16 @@ void PlatformAppUrlRedirectorBrowserTest::TestNavigationInBrowser(
 void PlatformAppUrlRedirectorBrowserTest::TestNegativeNavigationInBrowser(
     const char* matching_target_page,
     content::PageTransition transition,
+    const char* success_tab_title,
     const char* handler) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   InstallPlatformApp(handler);
+
+  const string16 success_title = ASCIIToUTF16(success_tab_title);
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TitleWatcher title_watcher(tab, success_title);
 
   chrome::NavigateParams params(
       browser(),
@@ -300,14 +308,17 @@ void PlatformAppUrlRedirectorBrowserTest::TestNegativeNavigationInBrowser(
       transition);
   ui_test_utils::NavigateToURL(&params);
 
+  ASSERT_EQ(success_title, title_watcher.WaitAndGetTitle());
   ASSERT_EQ(0U, GetShellWindowCount());
 }
 
 void PlatformAppUrlRedirectorBrowserTest::TestMismatchingNavigationInBrowser(
     const char* mismatching_target_page,
     content::PageTransition transition,
+    const char* success_tab_title,
     const char* handler) {
-  TestNegativeNavigationInBrowser(mismatching_target_page, transition, handler);
+  TestNegativeNavigationInBrowser(
+      mismatching_target_page, transition, success_tab_title, handler);
 }
 
 // Test that a click on a regular link in a tab launches an app that has
@@ -431,17 +442,17 @@ IN_PROC_BROWSER_TEST_F(PlatformAppUrlRedirectorBrowserTest,
   TestMismatchingNavigationInBrowser(
       "url_handlers/common/mismatching_target.html",
       content::PAGE_TRANSITION_TYPED,
+      "Mismatching link target loaded",
       "url_handlers/handlers/simple");
 }
 
 // Test that a form submission in a page is never subject to interception
 // by apps even with matching url_handlers.
-// Test disabled due to flakiness (http://crbug.com/288984).
 IN_PROC_BROWSER_TEST_F(PlatformAppUrlRedirectorBrowserTest,
-                       DISABLED_FormSubmissionInTabNotIntercepted) {
-  TestNegativeNavigationInBrowser(
-      "url_handlers/common/target.html",
-      content::PAGE_TRANSITION_FORM_SUBMIT,
+                       FormSubmissionInTabNotIntercepted) {
+  TestMismatchingNavigationInTab(
+      "url_handlers/launching_pages/submit_form.html",
+      "Link target loaded",
       "url_handlers/handlers/simple");
 }
 
