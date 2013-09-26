@@ -51,10 +51,15 @@
           if (state == KEY_STATES.PRESSED) {
             state = KEY_STATES.TAPPED;
           } else if (state == KEY_STATES.CHORDING) {
-            // Resets shift state.
-            state = KEY_STATES.UNLOCKED;
-            // TODO(rsadam@): Only end chording if the key-up is on the same
-            // shift key that started the chording.
+            // Leaves chording only if the shift key that triggered 
+            // it is released.
+            // TODO (rsadam@): Fix edge case: If we enter chording while
+            // pressing another key, will not leave chording upon shift
+            // release.
+            if (event.isPrimary)
+              state = KEY_STATES.UNLOCKED;
+            else
+              return;
           }
           this.super();
         },
