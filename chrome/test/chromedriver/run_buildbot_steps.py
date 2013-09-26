@@ -20,21 +20,17 @@ import sys
 import tempfile
 import time
 import urllib2
-import zipfile
 
 import archive
 import chrome_paths
 import util
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-GS_ARCHIVE_BUCKET = 'gs://chromedriver-prebuilts'
-GS_ZIP_PREFIX = 'chromedriver_prebuilts'
-GS_RC_BUCKET = 'gs://chromedriver-rc'
-GS_RELEASE_PATH = GS_RC_BUCKET + '/releases'
-RC_LOG_FORMAT = '%s_log.json'
-RC_ZIP_FORMAT = 'chromedriver_%s_%s_%s.zip'
-RC_ZIP_GLOB = 'chromedriver_%s_%s_*'
-RELEASE_ZIP_FORMAT = 'chromedriver_%s_%s.zip'
+GS_CHROMEDRIVER_BUCKET = 'gs://chromedriver'
+GS_CHROMEDRIVER_DATA_BUCKET = 'gs://chromedriver-data'
+GS_CONTINUOUS_URL = GS_CHROMEDRIVER_DATA_BUCKET + '/continuous'
+GS_PREBUILTS_URL = GS_CHROMEDRIVER_DATA_BUCKET + '/prebuilts'
+TEST_LOG_FORMAT = '%s_log.json'
 
 SCRIPT_DIR = os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir, os.pardir,
                           os.pardir, os.pardir, os.pardir, 'scripts')
@@ -47,52 +43,29 @@ from slave import gsutil_download
 from slave import slave_utils
 
 
-def ArchivePrebuilts(revision):
+def _ArchivePrebuilts(revision):
   """Uploads the prebuilts to google storage."""
-  util.MarkBuildStepStart('archive')
-  prebuilts = ['chromedriver',
-               'chromedriver_unittests', 'chromedriver_tests']
-  build_dir = chrome_paths.GetBuildDir(prebuilts[0:1])
-  zip_name = '%s_r%s.zip' % (GS_ZIP_PREFIX, revision)
-  temp_dir = util.MakeTempDir()
-  zip_path = os.path.join(temp_dir, zip_name)
-  print 'Zipping prebuilts %s' % zip_path
-  f = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED)
-  for prebuilt in prebuilts:
-    f.write(os.path.join(build_dir, prebuilt), prebuilt)
-  f.close()
-  if slave_utils.GSUtilCopyFile(zip_path, GS_ARCHIVE_BUCKET):
+  util.MarkBuildStepStart('archive prebuilts')
+  zip_path = util.Zip(os.path.join(chrome_paths.GetBuildDir(['chromedriver']),
+                                   'chromedriver'))
+  if slave_utils.GSUtilCopy(
+      zip_path,
+      '%s/%s' % (GS_PREBUILTS_URL, 'r%s.zip' % revision)):
     util.MarkBuildStepError()
 
 
-def DownloadPrebuilts():
+def _DownloadPrebuilts():
   """Downloads the most recent prebuilts from google storage."""
-  util.MarkBuildStepStart('Download chromedriver prebuilts')
+  util.MarkBuildStepStart('Download latest chromedriver')
 
-  temp_dir = util.MakeTempDir()
-  zip_path = os.path.join(temp_dir, 'chromedriver_prebuilts.zip')
-  if gsutil_download.DownloadLatestFile(GS_ARCHIVE_BUCKET, GS_ZIP_PREFIX,
-                                        zip_path):
+  zip_path = os.path.join(util.MakeTempDir(), 'build.zip')
+  if gsutil_download.DownloadLatestFile(GS_PREBUILTS_URL, 'r', zip_path):
     util.MarkBuildStepError()
 
-  build_dir = chrome_paths.GetBuildDir(['host_forwarder'])
-  print 'Unzipping prebuilts %s to %s' % (zip_path, build_dir)
-  f = zipfile.ZipFile(zip_path, 'r')
-  f.extractall(build_dir)
-  f.close()
-  # Workaround for Python bug: http://bugs.python.org/issue15795
-  os.chmod(os.path.join(build_dir, 'chromedriver'), 0700)
+  util.Unzip(zip_path, chrome_paths.GetBuildDir(['host_forwarder']))
 
 
-def GetDownloads():
-  """Gets the chromedriver google code downloads page."""
-  result, output = slave_utils.GSUtilListBucket(GS_RELEASE_PATH + '/*', ['-l'])
-  if result:
-    return ''
-  return output
-
-
-def GetTestResultsLog(platform):
+def _GetTestResultsLog(platform):
   """Gets the test results log for the given platform.
 
   Returns:
@@ -100,9 +73,9 @@ def GetTestResultsLog(platform):
     indicating whether the tests passed.
   """
   temp_log = tempfile.mkstemp()[1]
-  log_name = RC_LOG_FORMAT % platform
+  log_name = TEST_LOG_FORMAT % platform
   result = slave_utils.GSUtilDownloadFile(
-      '%s/%s' % (GS_RC_BUCKET, log_name), temp_log)
+      '%s/%s' % (GS_CHROMEDRIVER_DATA_BUCKET, log_name), temp_log)
   if result:
     return {}
   with open(temp_log, 'rb') as log_file:
@@ -114,15 +87,15 @@ def GetTestResultsLog(platform):
 def _PutTestResultsLog(platform, test_results_log):
   """Pushes the given test results log to google storage."""
   temp_dir = util.MakeTempDir()
-  log_name = RC_LOG_FORMAT % platform
+  log_name = TEST_LOG_FORMAT % platform
   log_path = os.path.join(temp_dir, log_name)
   with open(log_path, 'wb') as log_file:
     json.dump(test_results_log, log_file)
-  if slave_utils.GSUtilCopyFile(log_path, GS_RC_BUCKET):
+  if slave_utils.GSUtilCopyFile(log_path, GS_CHROMEDRIVER_DATA_BUCKET):
     raise Exception('Failed to upload test results log to google storage')
 
 
-def UpdateTestResultsLog(platform, revision, passed):
+def _UpdateTestResultsLog(platform, revision, passed):
   """Updates the test results log for the given platform.
 
   Args:
@@ -131,7 +104,7 @@ def UpdateTestResultsLog(platform, revision, passed):
     passed: Boolean indicating whether the tests passed at this revision.
   """
   assert isinstance(revision, int), 'The revision must be an integer'
-  log = GetTestResultsLog(platform)
+  log = _GetTestResultsLog(platform)
   if len(log) > 500:
     del log[min(log.keys())]
   assert revision not in log, 'Results already exist for revision %s' % revision
@@ -139,13 +112,13 @@ def UpdateTestResultsLog(platform, revision, passed):
   _PutTestResultsLog(platform, log)
 
 
-def GetVersion():
+def _GetVersion():
   """Get the current chromedriver version."""
   with open(os.path.join(_THIS_DIR, 'VERSION'), 'r') as f:
     return f.read().strip()
 
 
-def GetSupportedChromeVersions():
+def _GetSupportedChromeVersions():
   """Get the minimum and maximum supported Chrome versions.
 
   Returns:
@@ -163,51 +136,6 @@ def GetSupportedChromeVersions():
   return (chrome_min_version, chrome_max_version)
 
 
-def GetReleaseCandidateUrl(platform):
-  """Get the google storage url for the current version's release candidate."""
-  rc_glob = RC_ZIP_GLOB % (platform, GetVersion())
-  rc_url = '%s/%s' % (GS_RC_BUCKET, rc_glob)
-  result, output = slave_utils.GSUtilListBucket(rc_url, ['-l'])
-  assert result == 0 and output, 'Release candidate doesn\'t exist'
-  rc_list = [b.split()[2] for b in output.split('\n') if GS_RC_BUCKET in b]
-  assert len(rc_list) == 1, 'Only one release candidate should exist'
-  return rc_list[0]
-
-
-def ReleaseCandidateExists(platform):
-  """Return whether a release candidate exists for the current version."""
-  try:
-    GetReleaseCandidateUrl(platform)
-    return True
-  except AssertionError:
-    return False
-
-
-def DeleteReleaseCandidate(platform):
-  """Delete the release candidate for the current version."""
-  rc_url = GetReleaseCandidateUrl(platform)
-  result = slave_utils.GSUtilDeleteFile(rc_url)
-  assert result == 0, 'Failed to delete %s' % rc_url
-
-
-def DownloadReleaseCandidate(platform):
-  """Download the release candidate for the current version."""
-  release_name = RELEASE_ZIP_FORMAT % (platform, GetVersion())
-  rc_url = GetReleaseCandidateUrl(platform)
-  temp_dir = util.MakeTempDir()
-  zip_path = os.path.join(temp_dir, release_name)
-  slave_utils.GSUtilDownloadFile(rc_url, zip_path)
-  return zip_path
-
-
-def GetReleaseCandidateRevision(platform):
-  """Get the SVN revision for the current release candidate."""
-  rc_url = GetReleaseCandidateUrl(platform)
-  match = re.search(RC_ZIP_FORMAT % (platform, GetVersion(), '(\d+)'), rc_url)
-  assert match, 'Bad format for release candidate zip name: %s' % rc_url
-  return int(match.group(1))
-
-
 def _RevisionState(test_results_log, revision):
   """Check the state of tests at a given SVN revision.
 
@@ -215,7 +143,7 @@ def _RevisionState(test_results_log, revision):
   before and after.
 
   Args:
-    test_results_log: A test results log dictionary from GetTestResultsLog().
+    test_results_log: A test results log dictionary from _GetTestResultsLog().
     revision: The revision to check at.
 
   Returns:
@@ -240,79 +168,83 @@ def _RevisionState(test_results_log, revision):
   return 'failed'
 
 
-def _MaybeUpdateReleaseCandidate(platform, revision):
-  """Uploads a release candidate if one doesn't already exist."""
+def _ArchiveGoodBuild(platform, revision):
   assert platform != 'android'
-  version = GetVersion()
-  if not ReleaseCandidateExists(platform):
-    util.MarkBuildStepStart('upload release candidate')
-    rc_file = _ConstructReleaseCandidate(platform, revision)
-    if slave_utils.GSUtilCopyFile(rc_file, GS_RC_BUCKET):
-      util.MarkBuildStepError()
-  else:
-    print 'Release candidate already exists'
+  util.MarkBuildStepStart('archive build')
+
+  server_name = 'chromedriver'
+  if util.IsWindows():
+    server_name += '.exe'
+  zip_path = util.Zip(os.path.join(chrome_paths.GetBuildDir([server_name]),
+                                   server_name))
+
+  build_url = '%s/chromedriver_%s_%s.%s.zip' % (
+      GS_CONTINUOUS_URL, platform, _GetVersion(), revision)
+  if slave_utils.GSUtilCopy(zip_path, build_url):
+    util.MarkBuildStepError()
 
 
 def _MaybeRelease(platform):
-  """Releases the release candidate if conditions are right."""
+  """Releases a release candidate if conditions are right."""
   assert platform != 'android'
-  if not ReleaseCandidateExists(platform):
+
+  # Check if the current version has already been released.
+  result, _ = slave_utils.GSUtilListBucket(
+      '%s/%s/chromedriver_%s*' % (
+          GS_CHROMEDRIVER_BUCKET, _GetVersion(), platform),
+      [])
+  if result == 0:
     return
-  revision = GetReleaseCandidateRevision(platform)
-  android_tests = _RevisionState(GetTestResultsLog('android'), revision)
-  if android_tests == 'failed':
-    print 'Android tests did not pass at revision %s' % revision
-    version = GetVersion()
-    DeleteReleaseCandidate(platform)
-  elif android_tests == 'passed':
-    print 'Android tests passed at revision %s' % revision
-    Release(platform, revision)
-  else:
-    print 'Android tests have not run at a revision as recent as %s' % revision
+
+  # Fetch Android test results.
+  android_test_results = _GetTestResultsLog('android')
+
+  # Fetch release candidates.
+  result, output = slave_utils.GSUtilListBucket(
+      '%s/chromedriver_%s_%s*' % (
+          GS_CONTINUOUS_URL, platform, _GetVersion()),
+      [])
+  assert result == 0 and output, 'No release candidates found'
+  candidates = [b.split('/')[-1] for b in output.strip().split('\n')]
+
+  # Release the first candidate build that passed Android, if any.
+  for candidate in candidates:
+    revision = candidate.split('.')[2]
+    android_result = _RevisionState(android_test_results, int(revision))
+    if android_result == 'failed':
+      print 'Android tests did not pass at revision', revision
+    elif android_result == 'passed':
+      print 'Android tests passed at revision', revision
+      _Release('%s/%s' % (GS_CONTINUOUS_URL, candidate), platform)
+      break
+    else:
+      print 'Android tests have not run at a revision as recent as', revision
 
 
-def _ConstructReleaseCandidate(platform, revision):
-  """Constructs a release candidate zip from the current build."""
-  zip_name = RC_ZIP_FORMAT % (platform, GetVersion(), revision)
-  if util.IsWindows():
-    server_name = 'chromedriver.exe'
-  else:
-    server_name = 'chromedriver'
-  server = os.path.join(chrome_paths.GetBuildDir([server_name]), server_name)
+def _Release(build, platform):
+  """Releases the given candidate build."""
+  release_name = 'chromedriver_%s.zip' % platform
+  util.MarkBuildStepStart('releasing %s' % release_name)
+  slave_utils.GSUtilCopy(
+      build, '%s/%s/%s' % (GS_CHROMEDRIVER_BUCKET, _GetVersion(), release_name))
 
-  print 'Zipping ChromeDriver server', server
-  temp_dir = util.MakeTempDir()
-  zip_path = os.path.join(temp_dir, zip_name)
-  f = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED)
-  f.write(server, server_name)
-  f.close()
-  return zip_path
+  _MaybeUploadReleaseNotes()
 
 
-def Release(platform, revision):
-  """Releases the current release candidate if it hasn't been released yet."""
-  version = GetVersion()
-  chrome_min_version, chrome_max_version = GetSupportedChromeVersions()
-  zip_name = RELEASE_ZIP_FORMAT % (platform, GetVersion())
-
-  if zip_name in GetDownloads():
-    print 'chromedriver version %s has already been released for %s' % (
-        version, platform)
-    return 0
-  util.MarkBuildStepStart('releasing %s' % zip_name)
-  zip_path = DownloadReleaseCandidate(platform)
-  if slave_utils.GSUtilCopyFile(zip_path, GS_RELEASE_PATH):
-    util.MarkBuildStepError()
-  _MaybeUploadReleaseNotes(version)
-
-
-def _MaybeUploadReleaseNotes(version):
+def _MaybeUploadReleaseNotes():
   """Upload release notes if conditions are right."""
-  name_template = 'release_notes_%s.txt'
-  new_name = name_template % version
+  # Check if the current version has already been released.
+  version = _GetVersion()
+  notes_name = 'notes.txt'
+  notes_url = '%s/%s/%s' % (GS_CHROMEDRIVER_BUCKET, version, notes_name)
   prev_version = '.'.join([version.split('.')[0],
                           str(int(version.split('.')[1]) - 1)])
-  old_name = name_template % prev_version
+  prev_notes_url = '%s/%s/%s' % (
+      GS_CHROMEDRIVER_BUCKET, prev_version, notes_name)
+
+  result, _ = slave_utils.GSUtilListBucket(notes_url, [])
+  if result == 0:
+    return
 
   fixed_issues = []
   query = ('https://code.google.com/p/chromedriver/issues/csv?'
@@ -328,25 +260,23 @@ def _MaybeUploadReleaseNotes(version):
 
   old_notes = ''
   temp_notes_fname = tempfile.mkstemp()[1]
-  if not slave_utils.GSUtilDownloadFile('%s/%s' % (GS_RELEASE_PATH, old_name),
-                                        temp_notes_fname):
+  if not slave_utils.GSUtilDownloadFile(prev_notes_url, temp_notes_fname):
     with open(temp_notes_fname, 'rb') as f:
       old_notes = f.read()
-  new_notes = '----------ChromeDriver v%s (%s)----------\n%s\n\n%s' % (
+
+  new_notes = '----------ChromeDriver v%s (%s)----------\n%s\n%s\n\n%s' % (
       version, datetime.date.today().isoformat(),
+      'Supports Chrome v%s-%s' % _GetSupportedChromeVersions(),
       '\n'.join(fixed_issues),
       old_notes)
-  release_notes_txt = os.path.join(util.MakeTempDir(), new_name)
-  with open(release_notes_txt, 'w') as f:
+  with open(temp_notes_fname, 'w') as f:
     f.write(new_notes)
 
-  if new_name in GetDownloads():
-    return
-  if slave_utils.GSUtilCopyFile(release_notes_txt, GS_RELEASE_PATH):
+  if slave_utils.GSUtilCopy(temp_notes_fname, notes_url):
     util.MarkBuildStepError()
 
 
-def KillChromes():
+def _KillChromes():
   chrome_map = {
       'win': 'chrome.exe',
       'mac': 'Chromium',
@@ -360,7 +290,7 @@ def KillChromes():
   util.RunCommand(cmd)
 
 
-def CleanTmpDir():
+def _CleanTmpDir():
   tmp_dir = tempfile.gettempdir()
   print 'cleaning temp directory:', tmp_dir
   for file_name in os.listdir(tmp_dir):
@@ -369,7 +299,7 @@ def CleanTmpDir():
       shutil.rmtree(os.path.join(tmp_dir, file_name), True)
 
 
-def WaitForLatestSnapshot(revision):
+def _WaitForLatestSnapshot(revision):
   util.MarkBuildStepStart('wait_for_snapshot')
   while True:
     snapshot_revision = archive.GetLatestRevision(archive.Site.SNAPSHOT)
@@ -401,20 +331,19 @@ def main():
     platform = 'android'
 
   if platform != 'android':
-    KillChromes()
-  CleanTmpDir()
+    _KillChromes()
+  _CleanTmpDir()
 
   if platform == 'android':
     if not options.revision and options.update_log:
       parser.error('Must supply a --revision with --update-log')
-    DownloadPrebuilts()
+    _DownloadPrebuilts()
   else:
     if not options.revision:
       parser.error('Must supply a --revision')
     if platform == 'linux64':
-      ArchivePrebuilts(options.revision)
-
-    WaitForLatestSnapshot(options.revision)
+      _ArchivePrebuilts(options.revision)
+    _WaitForLatestSnapshot(options.revision)
 
   cmd = [
       sys.executable,
@@ -428,9 +357,9 @@ def main():
   if platform == 'android':
     if options.update_log:
       util.MarkBuildStepStart('update test result log')
-      UpdateTestResultsLog(platform, options.revision, passed)
+      _UpdateTestResultsLog(platform, options.revision, passed)
   elif passed:
-    _MaybeUpdateReleaseCandidate(platform, options.revision)
+    _ArchiveGoodBuild(platform, options.revision)
     _MaybeRelease(platform)
 
 

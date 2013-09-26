@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 import urlparse
+import zipfile
 
 
 def GetPlatformName():
@@ -81,6 +82,15 @@ def MakeTempDir(parent_dir=None):
   path = tempfile.mkdtemp(dir=parent_dir)
   atexit.register(MaybeDelete, path)
   return path
+
+
+def Zip(path):
+  """Zips the given path and returns the zipped file."""
+  zip_path = os.path.join(MakeTempDir(), 'build.zip')
+  f = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED)
+  f.write(path, os.path.basename(path))
+  f.close()
+  return zip_path
 
 
 def Unzip(zip_path, output_dir):
