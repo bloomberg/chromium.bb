@@ -16,7 +16,8 @@ namespace cloud_print {
 // Helper methods for the cloud print proxy code.
 GURL GetUrlForJobStatusUpdate(const GURL& cloud_print_server_url,
                               const std::string& job_id,
-                              PrintJobStatus status);
+                              PrintJobStatus status,
+                              int connector_code);
 
 GURL GetUrlForJobStatusUpdate(const GURL& cloud_print_server_url,
                               const std::string& job_id,

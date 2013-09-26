@@ -68,6 +68,7 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   virtual void OnUnregisterPrinters(
       const std::string& auth_token,
       const std::list<std::string>& printer_ids) OVERRIDE;
+  virtual void OnXmppPingUpdated(int ping_timeout) OVERRIDE;
 
   // CloudPrintWipeout::Client implementation.
   virtual void OnUnregisterPrintersComplete() OVERRIDE;

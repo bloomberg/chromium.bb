@@ -19,10 +19,11 @@ void CheckJobStatusURLs(const GURL& server_base_url) {
   if (expected_url_base[expected_url_base.length() - 1] != '/')
     expected_url_base += "/";
 
-  EXPECT_EQ(base::StringPrintf("%scontrol?jobid=87654321&status=ERROR",
+  EXPECT_EQ(base::StringPrintf(
+                "%scontrol?jobid=87654321&status=ERROR&connector_code=1",
                 expected_url_base.c_str()),
             GetUrlForJobStatusUpdate(server_base_url, "87654321",
-                PRINT_JOB_STATUS_ERROR).spec());
+                PRINT_JOB_STATUS_ERROR, 1).spec());
 
   PrintJobDetails details;
   details.status = PRINT_JOB_STATUS_IN_PROGRESS;

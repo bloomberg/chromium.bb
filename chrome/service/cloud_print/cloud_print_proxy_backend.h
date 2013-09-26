@@ -44,6 +44,8 @@ class CloudPrintProxyFrontend {
   virtual void OnUnregisterPrinters(
       const std::string& auth_token,
       const std::list<std::string>& printer_ids) = 0;
+  // Update and store service settings.
+  virtual void OnXmppPingUpdated(int ping_timeout) = 0;
 
  protected:
   // Don't delete through SyncFrontend interface.

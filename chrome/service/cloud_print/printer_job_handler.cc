@@ -26,6 +26,10 @@
 
 namespace cloud_print {
 
+PrinterJobHandler::PrinterInfoFromCloud::PrinterInfoFromCloud()
+    : current_xmpp_timeout(0), pending_xmpp_timeout(0) {
+}
+
 PrinterJobHandler::PrinterJobHandler(
     const printing::PrinterBasicInfo& printer_info,
     const PrinterInfoFromCloud& printer_info_cloud,
@@ -304,7 +308,7 @@ PrinterJobHandler::HandlePrintTicketResponse(const net::URLFetcher* source,
                               accept_headers);
   } else {
     // The print ticket was not valid. We are done here.
-    FailedFetchingJobData();
+    ValidatePrintTicketFailed();
   }
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }
@@ -477,7 +481,7 @@ void PrinterJobHandler::UpdateJobStatus(PrintJobStatus status,
   request_ = CloudPrintURLFetcher::Create();
   request_->StartGetRequest(
       GetUrlForJobStatusUpdate(cloud_print_server_url_, job_details_.job_id_,
-                               status),
+                               status, error),
       this, kCloudPrintAPIMaxRetryCount, std::string());
 }
 
@@ -569,12 +573,12 @@ bool PrinterJobHandler::HavePendingTasks() {
   return (job_check_pending_ || printer_update_pending_);
 }
 
-void PrinterJobHandler::FailedFetchingJobData() {
+void PrinterJobHandler::ValidatePrintTicketFailed() {
   if (!shutting_down_) {
-    LOG(ERROR) << "CP_CONNECTOR: Failed fetching job data"
+    LOG(ERROR) << "CP_CONNECTOR: Failed validating print ticket"
                << ", printer name: " << printer_info_.printer_name
                << ", job id: " << job_details_.job_id_;
-    JobFailed(INVALID_JOB_DATA);
+    JobFailed(VALIDATE_PRINT_TICKET_FAILED);
   }
 }
 
@@ -636,6 +640,16 @@ void PrinterJobHandler::OnReceivePrinterCaps(
         base::StringPrintf("%d", printer_info.printer_status), mime_boundary,
         std::string(), &post_data);
   }
+
+  // Add local_settings with a current XMPP ping interval.
+  if (printer_info_cloud_.pending_xmpp_timeout != 0) {
+    DCHECK(kMinXmppPingTimeoutSecs <= printer_info_cloud_.pending_xmpp_timeout);
+    net::AddMultipartValueForUpload(kPrinterLocalSettingsValue,
+        base::StringPrintf(kUpdateLocalSettingsXmppPingFormat,
+            printer_info_cloud_.current_xmpp_timeout),
+        mime_boundary, std::string(), &post_data);
+  }
+
   printer_info_ = printer_info;
   if (!post_data.empty()) {
     net::AddMultipartFinalDelimiterForUpload(mime_boundary, &post_data);

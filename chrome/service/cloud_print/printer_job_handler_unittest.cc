@@ -231,7 +231,8 @@ std::string DownloadURI(int job_num) {
 std::string InProgressURI(int job_num) {
   return GetUrlForJobStatusUpdate(GURL(kExampleCloudPrintServerURL),
                                   StringPrintf(kExampleJobID, job_num),
-                                  PRINT_JOB_STATUS_IN_PROGRESS).spec();
+                                  PRINT_JOB_STATUS_IN_PROGRESS,
+                                  0).spec();
 }
 
 std::string StatusResponse(int job_num, const char* status_string) {
@@ -474,6 +475,8 @@ void PrinterJobHandlerTest::SetUp() {
   info_from_cloud_.tags_hash = GetHashOfPrinterInfo(basic_info_);
 
   info_from_cloud_.caps_hash = base::MD5String(kExamplePrinterCapabilities);
+  info_from_cloud_.current_xmpp_timeout = 300;
+  info_from_cloud_.pending_xmpp_timeout = 0;
 
   caps_and_defaults_.printer_capabilities = kExamplePrinterCapabilities;
   caps_and_defaults_.caps_mime_type = kExampleCapsMimeType;

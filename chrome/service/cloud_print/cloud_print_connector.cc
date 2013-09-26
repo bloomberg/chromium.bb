@@ -124,6 +124,17 @@ void CloudPrintConnector::CheckForJobs(const std::string& reason,
   }
 }
 
+void CloudPrintConnector::UpdatePrinterSettings(const std::string& printer_id) {
+  // Since connector is managing many printers we need to go through all of them
+  // to select the correct settings.
+  GURL printer_list_url = GetUrlForPrinterList(
+      settings_.server_url(), settings_.proxy_id());
+  StartGetRequest(
+      printer_list_url,
+      kCloudPrintRegisterMaxRetryCount,
+      &CloudPrintConnector::HandlePrinterListResponseSettingsUpdate);
+}
+
 void CloudPrintConnector::OnPrinterAdded() {
   AddPendingAvailableTask();
 }
@@ -181,6 +192,8 @@ CloudPrintConnector::HandlePrinterListResponse(
   DCHECK(succeeded);
   if (!succeeded)
     return CloudPrintURLFetcher::RETRY_REQUEST;
+
+  UpdateSettingsFromPrintersList(json_data);
 
   // Now we need to get the list of printers from the print system
   // and split printers into 3 categories:
@@ -248,6 +261,20 @@ CloudPrintConnector::HandlePrinterListResponse(
 
   RegisterPrinters(local_printers);
   ContinuePendingTaskProcessing();  // Continue processing background tasks.
+  return CloudPrintURLFetcher::STOP_PROCESSING;
+}
+
+CloudPrintURLFetcher::ResponseAction
+CloudPrintConnector::HandlePrinterListResponseSettingsUpdate(
+    const net::URLFetcher* source,
+    const GURL& url,
+    DictionaryValue* json_data,
+    bool succeeded) {
+  DCHECK(succeeded);
+  if (!succeeded)
+    return CloudPrintURLFetcher::RETRY_REQUEST;
+
+  UpdateSettingsFromPrintersList(json_data);
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }
 
@@ -376,6 +403,12 @@ void CloudPrintConnector::InitJobHandlerForPrinter(
       }
     }
   }
+
+  int xmpp_timeout = 0;
+  printer_data->GetInteger(kLocalSettingsPendingXmppValue, &xmpp_timeout);
+  printer_info_cloud.current_xmpp_timeout = settings_.xmpp_ping_timeout_sec();
+  printer_info_cloud.pending_xmpp_timeout = xmpp_timeout;
+
   scoped_refptr<PrinterJobHandler> job_handler;
   job_handler = new PrinterJobHandler(printer_info,
                                       printer_info_cloud,
@@ -385,6 +418,32 @@ void CloudPrintConnector::InitJobHandlerForPrinter(
   job_handler_map_[printer_info_cloud.printer_id] = job_handler;
   job_handler->Initialize();
 }
+
+void CloudPrintConnector::UpdateSettingsFromPrintersList(
+    DictionaryValue* json_data) {
+  ListValue* printer_list = NULL;
+  int min_xmpp_timeout = std::numeric_limits<int>::max();
+  // There may be no "printers" value in the JSON
+  if (json_data->GetList(kPrinterListValue, &printer_list) && printer_list) {
+    for (size_t index = 0; index < printer_list->GetSize(); index++) {
+      DictionaryValue* printer_data = NULL;
+      if (printer_list->GetDictionary(index, &printer_data)) {
+        int xmpp_timeout = 0;
+        if (printer_data->GetInteger(kLocalSettingsPendingXmppValue,
+                                     &xmpp_timeout)) {
+          min_xmpp_timeout = std::min(xmpp_timeout, min_xmpp_timeout);
+        }
+      }
+    }
+  }
+
+  if (min_xmpp_timeout != std::numeric_limits<int>::max()) {
+    DCHECK(min_xmpp_timeout >= kMinXmppPingTimeoutSecs);
+    settings_.SetXmppPingTimeoutSec(min_xmpp_timeout);
+    client_->OnXmppPingUpdated(min_xmpp_timeout);
+  }
+}
+
 
 void CloudPrintConnector::AddPendingAvailableTask() {
   PendingTask task;
@@ -535,6 +594,11 @@ void CloudPrintConnector::OnReceivePrinterCaps(
       info.printer_description, mime_boundary, std::string(), &post_data);
   net::AddMultipartValueForUpload(kPrinterStatusValue,
       base::StringPrintf("%d", info.printer_status),
+      mime_boundary, std::string(), &post_data);
+  // Add local_settings with a current XMPP ping interval.
+  net::AddMultipartValueForUpload(kPrinterLocalSettingsValue,
+      base::StringPrintf(kCreateLocalSettingsXmppPingFormat,
+          settings_.xmpp_ping_timeout_sec()),
       mime_boundary, std::string(), &post_data);
   post_data += GetPostDataForPrinterInfo(info, mime_boundary);
   net::AddMultipartValueForUpload(kPrinterCapsValue,

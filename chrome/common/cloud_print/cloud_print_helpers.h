@@ -48,7 +48,8 @@ GURL GetUrlForJobDelete(const GURL& cloud_print_server_url,
                         const std::string& job_id);
 GURL GetUrlForJobStatusUpdate(const GURL& cloud_print_server_url,
                               const std::string& job_id,
-                              const std::string& status_string);
+                              const std::string& status_string,
+                              int connector_code);
 GURL GetUrlForUserMessage(const GURL& cloud_print_server_url,
                           const std::string& message_id);
 GURL GetUrlForGetAuthCode(const GURL& cloud_print_server_url,

@@ -254,6 +254,12 @@ void CloudPrintProxy::OnUnregisterPrinters(
   wipeout_->UnregisterPrinters(auth_token, printer_ids);
 }
 
+void CloudPrintProxy::OnXmppPingUpdated(int ping_timeout) {
+  DCHECK(CalledOnValidThread());
+  service_prefs_->SetInt(prefs::kCloudPrintXmppPingTimeout, ping_timeout);
+  service_prefs_->WritePrefs();
+}
+
 void CloudPrintProxy::OnUnregisterPrintersComplete() {
   wipeout_.reset();
   // Finish disabling cloud print for this user.

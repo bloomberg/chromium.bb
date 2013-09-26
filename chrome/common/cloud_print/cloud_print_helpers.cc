@@ -136,12 +136,14 @@ GURL GetUrlForJobDelete(const GURL& cloud_print_server_url,
 
 GURL GetUrlForJobStatusUpdate(const GURL& cloud_print_server_url,
                               const std::string& job_id,
-                              const std::string& status_string) {
+                              const std::string& status_string,
+                              int connector_code) {
   std::string path(AppendPathToUrl(cloud_print_server_url, "control"));
   GURL::Replacements replacements;
   replacements.SetPathStr(path);
   std::string query = base::StringPrintf(
-      "jobid=%s&status=%s", job_id.c_str(), status_string.c_str());
+      "jobid=%s&status=%s&connector_code=%d", job_id.c_str(),
+      status_string.c_str(), connector_code);
   replacements.SetQueryStr(query);
   return cloud_print_server_url.ReplaceComponents(replacements);
 }

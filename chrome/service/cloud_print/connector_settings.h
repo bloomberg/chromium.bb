@@ -55,6 +55,8 @@ class ConnectorSettings {
 
   bool ShouldConnect(const std::string& printer_name) const;
 
+  void SetXmppPingTimeoutSec(int timeout);
+
  private:
   friend class ConnectorSettingsTest;
   FRIEND_TEST_ALL_PREFIXES(ConnectorSettingsTest, SettersTest);
@@ -62,8 +64,6 @@ class ConnectorSettings {
   void set_xmpp_ping_enabled(bool enabled) {
     xmpp_ping_enabled_ = enabled;
   }
-
-  void SetXmppPingTimeoutSec(int timeout);
 
   // Cloud Print server url.
   GURL server_url_;

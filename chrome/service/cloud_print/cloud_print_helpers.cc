@@ -32,16 +32,18 @@ std::string StringFromJobStatus(cloud_print::PrintJobStatus status) {
   return ret;
 }
 
-}
+}  // namespace
 
 namespace cloud_print {
 
 GURL GetUrlForJobStatusUpdate(const GURL& cloud_print_server_url,
                               const std::string& job_id,
-                              PrintJobStatus status) {
+                              PrintJobStatus status,
+                              int connector_code) {
   return GetUrlForJobStatusUpdate(cloud_print_server_url,
                                   job_id,
-                                  StringFromJobStatus(status));
+                                  StringFromJobStatus(status),
+                                  connector_code);
 }
 
 GURL GetUrlForJobStatusUpdate(const GURL& cloud_print_server_url,

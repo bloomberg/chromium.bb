@@ -146,7 +146,7 @@ TEST_F(ConnectorSettingsTest, SettersTest) {
 
   // Set invalid settings, and check correct defaults.
   settings.SetXmppPingTimeoutSec(1);
-  EXPECT_EQ(settings.xmpp_ping_timeout_sec(), kMinimumXmppPingTimeoutSecs);
+  EXPECT_EQ(settings.xmpp_ping_timeout_sec(), kMinXmppPingTimeoutSecs);
 }
 
 }  // namespace cloud_print

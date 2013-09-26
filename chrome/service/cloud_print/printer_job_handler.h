@@ -85,6 +85,10 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
     std::string printer_id;
     std::string caps_hash;
     std::string tags_hash;
+    int current_xmpp_timeout;
+    int pending_xmpp_timeout;
+
+    PrinterInfoFromCloud();
   };
 
   // Begin public interface
@@ -153,7 +157,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   enum PrintJobError {
     SUCCESS,
     JOB_DOWNLOAD_FAILED,
-    INVALID_JOB_DATA,
+    VALIDATE_PRINT_TICKET_FAILED,
     PRINT_FAILED,
   };
 
@@ -233,7 +237,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   // Returns false if printer info is up to date and no updating is needed.
   bool UpdatePrinterInfo();
   bool HavePendingTasks();
-  void FailedFetchingJobData();
+  void ValidatePrintTicketFailed();
 
   // Callback that asynchronously receives printer caps and defaults.
   void OnReceivePrinterCaps(
@@ -282,6 +286,9 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   // Flags that specify various pending server updates
   bool job_check_pending_;
   bool printer_update_pending_;
+
+  // Number of seconds between XMPP pings (for server registration)
+  int xmpp_ping_interval_;
 
   // Some task in the state machine is in progress.
   bool task_in_progress_;

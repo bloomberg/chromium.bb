@@ -52,10 +52,11 @@ void CheckURLs(const GURL& server_base_url) {
                 expected_url_base.c_str()),
             GetUrlForJobDelete(server_base_url, "myprinter").spec());
 
-  EXPECT_EQ(base::StringPrintf("%scontrol?jobid=myprinter&status=s1",
+  EXPECT_EQ(base::StringPrintf(
+                "%scontrol?jobid=myprinter&status=s1&connector_code=0",
                 expected_url_base.c_str()),
             GetUrlForJobStatusUpdate(
-                server_base_url, "myprinter", "s1").spec());
+                server_base_url, "myprinter", "s1", 0).spec());
 
   EXPECT_EQ(base::StringPrintf("%smessage?code=testmsg",
                 expected_url_base.c_str()),

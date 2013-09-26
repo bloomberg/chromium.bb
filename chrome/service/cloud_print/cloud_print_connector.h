@@ -33,6 +33,7 @@ class CloudPrintConnector
   class Client {
    public:
     virtual void OnAuthFailed() = 0;
+    virtual void OnXmppPingUpdated(int ping_timeout) = 0;
    protected:
      virtual ~Client() {}
   };
@@ -49,6 +50,9 @@ class CloudPrintConnector
   // Check for jobs for specific printer. If printer id is empty
   // jobs will be checked for all available printers.
   void CheckForJobs(const std::string& reason, const std::string& printer_id);
+
+  // Update settings for specific printer.
+  void UpdatePrinterSettings(const std::string& printer_id);
 
  private:
   friend class base::RefCountedThreadSafe<CloudPrintConnector>;
@@ -106,6 +110,12 @@ class CloudPrintConnector
       DictionaryValue* json_data,
       bool succeeded);
 
+  CloudPrintURLFetcher::ResponseAction HandlePrinterListResponseSettingsUpdate(
+      const net::URLFetcher* source,
+      const GURL& url,
+      DictionaryValue* json_data,
+      bool succeeded);
+
   CloudPrintURLFetcher::ResponseAction HandlePrinterDeleteResponse(
       const net::URLFetcher* source,
       const GURL& url,
@@ -137,6 +147,8 @@ class CloudPrintConnector
                              printing::PrinterList* printer_list);
 
   void InitJobHandlerForPrinter(DictionaryValue* printer_data);
+
+  void UpdateSettingsFromPrintersList(DictionaryValue* json_data);
 
   void AddPendingAvailableTask();
   void AddPendingDeleteTask(const std::string& id);

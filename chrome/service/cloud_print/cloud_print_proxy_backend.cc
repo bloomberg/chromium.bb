@@ -74,6 +74,7 @@ class CloudPrintProxyBackend::Core
 
   // CloudPrintConnector::Client implementation.
   virtual void OnAuthFailed() OVERRIDE;
+  virtual void OnXmppPingUpdated(int ping_timeout) OVERRIDE;
 
   // notifier::PushClientObserver implementation.
   virtual void OnNotificationsEnabled() OVERRIDE;
@@ -103,12 +104,13 @@ class CloudPrintProxyBackend::Core
   void NotifyPrintSystemUnavailable();
   void NotifyUnregisterPrinters(const std::string& auth_token,
                                 const std::list<std::string>& printer_ids);
+  void NotifyXmppPingUpdated(int ping_timeout);
 
   // Init XMPP channel
   void InitNotifications(const std::string& robot_email,
                          const std::string& access_token);
 
-  void HandlePrinterNotification(const std::string& printer_id);
+  void HandlePrinterNotification(const std::string& notification);
   void PollForJobs();
   // Schedules a task to poll for jobs. Does nothing if a task is already
   // scheduled.
@@ -320,6 +322,13 @@ void CloudPrintProxyBackend::Core::OnAuthFailed() {
   auth_->RefreshAccessToken();
 }
 
+void CloudPrintProxyBackend::Core::OnXmppPingUpdated(int ping_timeout) {
+  settings_.SetXmppPingTimeoutSec(ping_timeout);
+  backend_->frontend_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&Core::NotifyXmppPingUpdated, this, ping_timeout));
+}
+
 void CloudPrintProxyBackend::Core::InitNotifications(
     const std::string& robot_email,
     const std::string& access_token) {
@@ -375,10 +384,20 @@ void CloudPrintProxyBackend::Core::DoUnregisterPrinters() {
 }
 
 void CloudPrintProxyBackend::Core::HandlePrinterNotification(
-    const std::string& printer_id) {
+    const std::string& notification) {
   DCHECK(base::MessageLoop::current() == backend_->core_thread_.message_loop());
-  VLOG(1) << "CP_CONNECTOR: Handle printer notification, id: " << printer_id;
-  connector_->CheckForJobs(kJobFetchReasonNotified, printer_id);
+
+  size_t pos = notification.rfind(kNotificationUpdateSettings);
+  if (pos == std::string::npos) {
+    VLOG(1) << "CP_CONNECTOR: Handle printer notification, id: "
+            << notification;
+    connector_->CheckForJobs(kJobFetchReasonNotified, notification);
+  } else {
+    DCHECK(pos == notification.length() - strlen(kNotificationUpdateSettings));
+    std::string printer_id = notification.substr(0, pos);
+    VLOG(1) << "CP_CONNECTOR: Update printer settings, id: " << printer_id;
+    connector_->UpdatePrinterSettings(printer_id);
+  }
 }
 
 void CloudPrintProxyBackend::Core::PollForJobs() {
@@ -429,9 +448,8 @@ void CloudPrintProxyBackend::Core::PingXmppServer() {
 }
 
 void CloudPrintProxyBackend::Core::ScheduleXmppPing() {
-  if (!settings_.xmpp_ping_enabled())
-    return;
-
+  // settings_.xmpp_ping_enabled() is obsolete, we are now control
+  // XMPP pings from Cloud Print server.
   if (!xmpp_ping_scheduled_) {
     base::TimeDelta interval = base::TimeDelta::FromSeconds(
       base::RandInt(settings_.xmpp_ping_timeout_sec() * 0.9,
@@ -484,6 +502,11 @@ void CloudPrintProxyBackend::Core::NotifyUnregisterPrinters(
     const std::list<std::string>& printer_ids) {
   DCHECK(base::MessageLoop::current() == backend_->frontend_loop_);
   backend_->frontend_->OnUnregisterPrinters(auth_token, printer_ids);
+}
+
+void CloudPrintProxyBackend::Core::NotifyXmppPingUpdated(int ping_timeout) {
+  DCHECK(base::MessageLoop::current() == backend_->frontend_loop_);
+  backend_->frontend_->OnXmppPingUpdated(ping_timeout);
 }
 
 void CloudPrintProxyBackend::Core::OnNotificationsEnabled() {
