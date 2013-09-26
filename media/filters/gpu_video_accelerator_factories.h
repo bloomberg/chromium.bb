@@ -45,7 +45,6 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories
 
   // Read pixels from a native texture and store into |pixels| as RGBA.
   virtual void ReadPixels(uint32 texture_id,
-                          uint32 texture_target,
                           const gfx::Size& size,
                           const SkBitmap& pixels) = 0;
 

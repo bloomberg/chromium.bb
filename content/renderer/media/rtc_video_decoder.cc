@@ -409,7 +409,6 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
       base::Bind(&media::GpuVideoAcceleratorFactories::ReadPixels,
                  factories_,
                  pb.texture_id(),
-                 decoder_texture_target_,
                  natural_size),
       base::Closure());
 }

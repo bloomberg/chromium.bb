@@ -63,7 +63,6 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   virtual void DeleteTexture(uint32 texture_id) OVERRIDE;
   virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE;
   virtual void ReadPixels(uint32 texture_id,
-                          uint32 texture_target,
                           const gfx::Size& size,
                           const SkBitmap& pixels) OVERRIDE;
   virtual base::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
@@ -104,9 +103,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
                            uint32* sync_point);
   void AsyncDeleteTexture(uint32 texture_id);
   void AsyncWaitSyncPoint(uint32 sync_point);
-  void AsyncReadPixels(uint32 texture_id,
-                       uint32 texture_target,
-                       const gfx::Size& size);
+  void AsyncReadPixels(uint32 texture_id, const gfx::Size& size);
   void AsyncDestroyVideoDecodeAccelerator();
   void AsyncDestroyVideoEncodeAccelerator();
 

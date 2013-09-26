@@ -448,7 +448,6 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
       base::Bind(&GpuVideoAcceleratorFactories::ReadPixels,
                  factories_,
                  pb.texture_id(),
-                 decoder_texture_target_,
                  gfx::Size(visible_rect.width(), visible_rect.height())),
       base::Closure()));
   CHECK_GT(available_pictures_, 0);

@@ -302,7 +302,6 @@ void RendererGpuVideoAcceleratorFactories::AsyncWaitSyncPoint(
 }
 
 void RendererGpuVideoAcceleratorFactories::ReadPixels(uint32 texture_id,
-                                                      uint32 texture_target,
                                                       const gfx::Size& size,
                                                       const SkBitmap& pixels) {
   // SkBitmaps use the SkPixelRef object to refcount the underlying pixels.
@@ -317,14 +316,13 @@ void RendererGpuVideoAcceleratorFactories::ReadPixels(uint32 texture_id,
         base::Bind(&RendererGpuVideoAcceleratorFactories::AsyncReadPixels,
                    this,
                    texture_id,
-                   texture_target,
                    size));
     base::WaitableEvent* objects[] = {&aborted_waiter_,
                                       &message_loop_async_waiter_};
     if (base::WaitableEvent::WaitMany(objects, arraysize(objects)) == 0)
       return;
   } else {
-    AsyncReadPixels(texture_id, texture_target, size);
+    AsyncReadPixels(texture_id, size);
     message_loop_async_waiter_.Reset();
   }
   read_pixels_bitmap_.setPixelRef(NULL);
@@ -332,7 +330,6 @@ void RendererGpuVideoAcceleratorFactories::ReadPixels(uint32 texture_id,
 
 void RendererGpuVideoAcceleratorFactories::AsyncReadPixels(
     uint32 texture_id,
-    uint32 texture_target,
     const gfx::Size& size) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
@@ -345,19 +342,19 @@ void RendererGpuVideoAcceleratorFactories::AsyncReadPixels(
 
   GLuint tmp_texture;
   gles2->GenTextures(1, &tmp_texture);
-  gles2->BindTexture(texture_target, tmp_texture);
-  gles2->TexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  gles2->TexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  gles2->BindTexture(GL_TEXTURE_2D, tmp_texture);
+  gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   context->copyTextureCHROMIUM(
-      texture_target, texture_id, tmp_texture, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+      GL_TEXTURE_2D, texture_id, tmp_texture, 0, GL_RGBA, GL_UNSIGNED_BYTE);
 
   GLuint fb;
   gles2->GenFramebuffers(1, &fb);
   gles2->BindFramebuffer(GL_FRAMEBUFFER, fb);
   gles2->FramebufferTexture2D(
-      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture_target, tmp_texture, 0);
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmp_texture, 0);
   gles2->PixelStorei(GL_PACK_ALIGNMENT, 4);
   gles2->ReadPixels(0,
                     0,

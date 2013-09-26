@@ -42,9 +42,8 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
                       uint32 texture_target));
   MOCK_METHOD1(DeleteTexture, void(uint32 texture_id));
   MOCK_METHOD1(WaitSyncPoint, void(uint32 sync_point));
-  MOCK_METHOD4(ReadPixels,
+  MOCK_METHOD3(ReadPixels,
                void(uint32 texture_id,
-                    uint32 texture_target,
                     const gfx::Size& size,
                     const SkBitmap& pixels));
   MOCK_METHOD1(CreateSharedMemory, base::SharedMemory*(size_t size));
