@@ -58,6 +58,15 @@ class QuicInMemoryCache {
   // Currently, responses are selected based on request URI only.
   const Response* GetResponse(const BalsaHeaders& request_headers) const;
 
+  // Adds a response to the cache if no matching entry exists.
+  // Otherwise it verifies that the existing entry matches.
+  void AddOrVerifyResponse(base::StringPiece method,
+                           base::StringPiece path,
+                           base::StringPiece version,
+                           base::StringPiece response_code,
+                           base::StringPiece response_detail,
+                           base::StringPiece body);
+
   // Add a response to the cache.
   void AddResponse(const BalsaHeaders& request_headers,
                    const BalsaHeaders& response_headers,
@@ -67,10 +76,9 @@ class QuicInMemoryCache {
 
  private:
   typedef base::hash_map<std::string, Response*> ResponseMap;
-
+  friend struct DefaultSingletonTraits<QuicInMemoryCache>;
 
   QuicInMemoryCache();
-  friend struct DefaultSingletonTraits<QuicInMemoryCache>;
   ~QuicInMemoryCache();
 
   void Initialize();

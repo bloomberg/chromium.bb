@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 
 using base::FilePath;
 using base::StringPiece;
@@ -91,6 +92,36 @@ const QuicInMemoryCache::Response* QuicInMemoryCache::GetResponse(
     return NULL;
   }
   return it->second;
+}
+
+void QuicInMemoryCache::AddOrVerifyResponse(StringPiece method,
+                                            StringPiece path,
+                                            StringPiece version,
+                                            StringPiece response_code,
+                                            StringPiece response_detail,
+                                            StringPiece body) {
+  BalsaHeaders request_headers, response_headers;
+  request_headers.SetRequestFirstlineFromStringPieces(method,
+                                                      path,
+                                                      version);
+  response_headers.SetRequestFirstlineFromStringPieces(version,
+                                                       response_code,
+                                                       response_detail);
+  response_headers.AppendHeader("content-length",
+                                base::IntToString(body.length()));
+
+  // Check if response already exists and matches.
+  const QuicInMemoryCache::Response* cached_response =
+      GetResponse(request_headers);
+  if (cached_response == NULL) {
+    AddResponse(request_headers, response_headers, body);
+    return;
+  }
+  string cached_response_headers_str, response_headers_str;
+  cached_response->headers().DumpToString(&cached_response_headers_str);
+  response_headers.DumpToString(&response_headers_str);
+  CHECK_EQ(cached_response_headers_str, response_headers_str);
+  CHECK_EQ(cached_response->body(), body);
 }
 
 void QuicInMemoryCache::AddResponse(const BalsaHeaders& request_headers,

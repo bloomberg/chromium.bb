@@ -9,7 +9,6 @@
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/threading/simple_thread.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/crypto/null_encrypter.h"
@@ -27,6 +26,7 @@
 #include "net/tools/quic/test_tools/quic_client_peer.h"
 #include "net/tools/quic/test_tools/quic_epoll_connection_helper_peer.h"
 #include "net/tools/quic/test_tools/quic_test_client.h"
+#include "net/tools/quic/test_tools/server_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
@@ -56,61 +56,6 @@ void GenerateBody(string* body, int length) {
     body->append(1, static_cast<char>(32 + i % (126 - 32)));
   }
 }
-
-
-// Simple wrapper class to run server in a thread.
-class ServerThread : public base::SimpleThread {
- public:
-  ServerThread(IPEndPoint address,
-               const QuicConfig& config,
-               bool strike_register_no_startup_period)
-      : SimpleThread("server_thread"),
-        listening_(true, false),
-        quit_(true, false),
-        server_(config),
-        address_(address),
-        port_(0) {
-    if (strike_register_no_startup_period) {
-      server_.SetStrikeRegisterNoStartupPeriod();
-    }
-  }
-  virtual ~ServerThread() {
-  }
-
-  virtual void Run() OVERRIDE {
-    server_.Listen(address_);
-
-    port_lock_.Acquire();
-    port_ = server_.port();
-    port_lock_.Release();
-
-    listening_.Signal();
-    while (!quit_.IsSignaled()) {
-      server_.WaitForEvents();
-    }
-    server_.Shutdown();
-  }
-
-  int GetPort() {
-    port_lock_.Acquire();
-    int rc = port_;
-    port_lock_.Release();
-    return rc;
-  }
-
-  WaitableEvent* listening() { return &listening_; }
-  WaitableEvent* quit() { return &quit_; }
-
- private:
-  WaitableEvent listening_;
-  WaitableEvent quit_;
-  base::Lock port_lock_;
-  QuicServer server_;
-  IPEndPoint address_;
-  int port_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServerThread);
-};
 
 class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
  public:
@@ -180,35 +125,14 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
     }
   }
 
-  void AddToCache(const StringPiece& method,
-                  const StringPiece& path,
-                  const StringPiece& version,
-                  const StringPiece& response_code,
-                  const StringPiece& response_detail,
-                  const StringPiece& body) {
-    BalsaHeaders request_headers, response_headers;
-    request_headers.SetRequestFirstlineFromStringPieces(method,
-                                                        path,
-                                                        version);
-    response_headers.SetRequestFirstlineFromStringPieces(version,
-                                                         response_code,
-                                                         response_detail);
-    response_headers.AppendHeader("content-length",
-                                  base::IntToString(body.length()));
-
-    // Check if response already exists and matches.
-    QuicInMemoryCache* cache = QuicInMemoryCache::GetInstance();
-    const QuicInMemoryCache::Response* cached_response =
-        cache->GetResponse(request_headers);
-    if (cached_response != NULL) {
-      string cached_response_headers_str, response_headers_str;
-      cached_response->headers().DumpToString(&cached_response_headers_str);
-      response_headers.DumpToString(&response_headers_str);
-      CHECK_EQ(cached_response_headers_str, response_headers_str);
-      CHECK_EQ(cached_response->body(), body);
-      return;
-    }
-    cache->AddResponse(request_headers, response_headers, body);
+  void AddToCache(StringPiece method,
+                  StringPiece path,
+                  StringPiece version,
+                  StringPiece response_code,
+                  StringPiece response_detail,
+                  StringPiece body) {
+    QuicInMemoryCache::GetInstance()->AddOrVerifyResponse(
+        method, path, version, response_code, response_detail, body);
   }
 
   IPEndPoint server_address_;
