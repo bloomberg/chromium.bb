@@ -78,11 +78,10 @@ class CodeGeneratorV8:
             header_template_filename = 'interface.h'
             cpp_template_filename = 'interface.cpp'
             self.generate_contents = v8_interface.generate_interface
-        # FIXME: update to Jinja 2.7 and use:
-        # keep_trailing_newline=True,  # newline-terminate generated files
-        # lstrip_blocks=True,  # so can indent control flow tags
         jinja_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(templates_dir),
+            keep_trailing_newline=True,  # newline-terminate generated files
+            lstrip_blocks=True,  # so can indent control flow tags
             trim_blocks=True)
         self.header_template = jinja_env.get_template(header_template_filename)
         self.cpp_template = jinja_env.get_template(cpp_template_filename)

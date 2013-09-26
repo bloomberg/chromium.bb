@@ -46,4 +46,18 @@ interface TestObjectPython {
     readonly attribute DOMTimeStamp readonlyDOMTimeStampAttribute;
     readonly attribute SerializedScriptValue readonlySerializedScriptValueAttribute;
     readonly attribute any readonlyAnyAttribute;
+    // DOM Node types
+    readonly attribute Document readonlyDocumentAttribute;
+    readonly attribute DocumentFragment readonlyDocumentFragmentAttribute;
+    readonly attribute DocumentType readonlyDocumentTypeAttribute;
+    readonly attribute Element readonlyElementAttribute;
+    readonly attribute Entity readonlyEntityAttribute;
+    readonly attribute Node readonlyNodeAttribute;
+    readonly attribute ShadowRoot readonlyShadowRootAttribute;
+    // Exceptions for is_keep_alive_for_gc
+    readonly attribute BarProp self;
+    readonly attribute SerializedScriptValue readonlySerializedScriptValueAttribute;
+    readonly attribute Window readonlyWindowAttribute;
+    readonly attribute HTMLCollection readonlyHTMLCollectionAttribute;
+    readonly attribute HTMLElement readonlyHTMLElementAttribute;
 };

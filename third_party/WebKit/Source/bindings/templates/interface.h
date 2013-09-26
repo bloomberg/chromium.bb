@@ -152,4 +152,3 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<{{
 {% endif %}
 
 #endif // {{v8_class_name}}_h
-

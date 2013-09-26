@@ -74,4 +74,3 @@ private:
 #endif // {{conditional_string}}
 {% endif %}
 #endif // {{v8_class_name}}_h
-
