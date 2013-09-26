@@ -7,13 +7,17 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
+#include "webkit/browser/fileapi/copy_or_move_operation_delegate.h"
+#include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
@@ -114,6 +118,41 @@ void RecordProgressCallback(std::vector<ProgressRecord>* records,
   records->push_back(record);
 }
 
+void RecordFileProgressCallback(std::vector<int64>* records,
+                                int64 progress) {
+  records->push_back(progress);
+}
+
+void AssignAndQuit(base::RunLoop* run_loop,
+                   base::PlatformFileError* result_out,
+                   base::PlatformFileError result) {
+  *result_out = result;
+  run_loop->Quit();
+}
+
+class ScopedThreadStopper {
+ public:
+  ScopedThreadStopper(base::Thread* thread) : thread_(thread) {
+  }
+
+  ~ScopedThreadStopper() {
+    if (thread_) {
+      // Give another chance for deleted streams to perform Close.
+      base::RunLoop run_loop;
+      thread_->message_loop_proxy()->PostTaskAndReply(
+          FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure());
+      run_loop.Run();
+      thread_->Stop();
+    }
+  }
+
+  bool is_valid() const { return thread_; }
+
+ private:
+  base::Thread* thread_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedThreadStopper);
+};
+
 }  // namespace
 
 class CopyOrMoveOperationTestHelper {
@@ -124,7 +163,8 @@ class CopyOrMoveOperationTestHelper {
       FileSystemType dest_type)
       : origin_(origin),
         src_type_(src_type),
-        dest_type_(dest_type) {}
+        dest_type_(dest_type),
+        message_loop_(base::MessageLoop::TYPE_IO) {}
 
   ~CopyOrMoveOperationTestHelper() {
     file_system_context_ = NULL;
@@ -660,6 +700,60 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
       }
     }
   }
+}
+
+
+TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath source_path = temp_dir.path().AppendASCII("source");
+  const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
+  file_util::WriteFile(source_path, kTestData,
+                       arraysize(kTestData) - 1);  // Exclude trailing '\0'.
+
+  base::FilePath dest_path = temp_dir.path().AppendASCII("dest");
+  // LocalFileWriter requires the file exists. So create an empty file here.
+  file_util::WriteFile(dest_path, "", 0);
+
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::Thread file_thread("file_thread");
+  ASSERT_TRUE(file_thread.Start());
+  ScopedThreadStopper thread_stopper(&file_thread);
+  ASSERT_TRUE(thread_stopper.is_valid());
+
+  scoped_refptr<base::MessageLoopProxy> task_runner =
+      file_thread.message_loop_proxy();
+
+  scoped_ptr<webkit_blob::FileStreamReader> reader(
+      webkit_blob::FileStreamReader::CreateForLocalFile(
+          task_runner.get(), source_path, 0, base::Time()));
+
+  scoped_ptr<FileStreamWriter> writer(
+      FileStreamWriter::CreateForLocalFile(task_runner.get(), dest_path, 0));
+
+  std::vector<int64> progress;
+  CopyOrMoveOperationDelegate::StreamCopyHelper helper(
+      reader.Pass(), writer.Pass(),
+      10,  // buffer size
+      base::Bind(&RecordFileProgressCallback, base::Unretained(&progress)),
+      base::TimeDelta());  // For testing, we need all the progress.
+
+  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+  base::RunLoop run_loop;
+  helper.Run(base::Bind(&AssignAndQuit, &run_loop, &error));
+  run_loop.Run();
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK, error);
+  ASSERT_EQ(5U, progress.size());
+  EXPECT_EQ(0, progress[0]);
+  EXPECT_EQ(10, progress[1]);
+  EXPECT_EQ(20, progress[2]);
+  EXPECT_EQ(30, progress[3]);
+  EXPECT_EQ(36, progress[4]);
+
+  std::string content;
+  ASSERT_TRUE(base::ReadFileToString(dest_path, &content));
+  EXPECT_EQ(kTestData, content);
 }
 
 }  // namespace fileapi

@@ -89,7 +89,8 @@ FileSystemURL GetOtherURL(FileSystemContext* file_system_context,
 
 class DraggedFileUtilTest : public testing::Test {
  public:
-  DraggedFileUtilTest() {}
+  DraggedFileUtilTest()
+      : message_loop_(base::MessageLoop::TYPE_IO) {}
 
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());

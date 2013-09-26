@@ -9,15 +9,23 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "webkit/browser/fileapi/recursive_operation_delegate.h"
 
+namespace net {
+class DrainableIOBuffer;
+class IOBufferWithSize;
+}
+
 namespace webkit_blob {
+class FileStreamReader;
 class ShareableFileReference;
 }
 
 namespace fileapi {
 
 class CopyOrMoveFileValidator;
+class FileStreamWriter;
 
 // A delegate class for recursive copy or move operations.
 class CopyOrMoveOperationDelegate
@@ -30,6 +38,43 @@ class CopyOrMoveOperationDelegate
   enum OperationType {
     OPERATION_COPY,
     OPERATION_MOVE
+  };
+
+  // Helper to copy a file by reader and writer streams.
+  // Export for testing.
+  class WEBKIT_STORAGE_BROWSER_EXPORT StreamCopyHelper {
+   public:
+    StreamCopyHelper(
+        scoped_ptr<webkit_blob::FileStreamReader> reader,
+        scoped_ptr<FileStreamWriter> writer,
+        int buffer_size,
+        const FileSystemOperation::CopyFileProgressCallback&
+            file_progress_callback,
+        const base::TimeDelta& min_progress_callback_invocation_span);
+    ~StreamCopyHelper();
+
+    void Run(const StatusCallback& callback);
+
+   private:
+    // Reads the content from the |reader_|.
+    void Read(const StatusCallback& callback);
+    void DidRead(const StatusCallback& callback, int result);
+
+    // Writes the content in |buffer| to |writer_|.
+    void Write(const StatusCallback& callback,
+               scoped_refptr<net::DrainableIOBuffer> buffer);
+    void DidWrite(const StatusCallback& callback,
+                  scoped_refptr<net::DrainableIOBuffer> buffer, int result);
+
+    scoped_ptr<webkit_blob::FileStreamReader> reader_;
+    scoped_ptr<FileStreamWriter> writer_;
+    FileSystemOperation::CopyFileProgressCallback file_progress_callback_;
+    scoped_refptr<net::IOBufferWithSize> io_buffer_;
+    int64 num_copied_bytes_;
+    base::Time last_progress_callback_invocation_time_;
+    base::TimeDelta min_progress_callback_invocation_span_;
+    base::WeakPtrFactory<StreamCopyHelper> weak_factory_;
+    DISALLOW_COPY_AND_ASSIGN(StreamCopyHelper);
   };
 
   CopyOrMoveOperationDelegate(
