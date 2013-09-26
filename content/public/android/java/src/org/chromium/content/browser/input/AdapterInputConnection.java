@@ -315,16 +315,19 @@ public class AdapterInputConnection extends BaseInputConnection {
      */
     @Override
     public boolean sendKeyEvent(KeyEvent event) {
-        if (DEBUG) Log.w(TAG, "sendKeyEvent [" + event.getAction() + "]");
-
+        if (DEBUG) {
+            Log.w(TAG, "sendKeyEvent [" + event.getAction() + "] [" + event.getKeyCode() + "]");
+        }
         // If this is a key-up, and backspace/del or if the key has a character representation,
         // need to update the underlying Editable (i.e. the local representation of the text
         // being edited).
         if (event.getAction() == KeyEvent.ACTION_UP) {
             if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
-                super.deleteSurroundingText(1, 0);
+                deleteSurroundingText(1, 0);
+                return true;
             } else if (event.getKeyCode() == KeyEvent.KEYCODE_FORWARD_DEL) {
-                super.deleteSurroundingText(0, 1);
+                deleteSurroundingText(0, 1);
+                return true;
             } else {
                 int unicodeChar = event.getUnicodeChar();
                 if (unicodeChar != 0) {
@@ -347,6 +350,10 @@ public class AdapterInputConnection extends BaseInputConnection {
                 finishComposingText();
                 mImeAdapter.translateAndSendNativeEvents(event);
                 endBatchEdit();
+                return true;
+            } else if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
+                return true;
+            } else if (event.getKeyCode() == KeyEvent.KEYCODE_FORWARD_DEL) {
                 return true;
             }
         }
