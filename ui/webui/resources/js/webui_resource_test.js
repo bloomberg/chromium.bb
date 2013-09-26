@@ -156,8 +156,13 @@ function assertDeepEquals(expected, observed, opt_message) {
   /**
    * Runs the next test in the queue. Reports the test results if the queue is
    * empty.
+   * @param {boolean=} opt_asyncTestFailure Optional parameter indicated if the
+   *     last asynchronous test failed.
    */
-  function continueTesting() {
+  function continueTesting(opt_asyncTestFailure) {
+    if (opt_asyncTestFailure)
+      cleanTestRun = false;
+    var done = false;
     if (pendingTearDown) {
       pendingTearDown();
       pendingTearDown = null;
@@ -179,9 +184,10 @@ function assertDeepEquals(expected, observed, opt_message) {
       if (!isAsyncTest)
         continueTesting();
     } else {
+      done = true;
       endTests(cleanTestRun);
     }
-    if (testCases.length) {
+    if (!done) {
       domAutomationController.setAutomationId(1);
       domAutomationController.send('PENDING');
     }

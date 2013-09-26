@@ -65,10 +65,22 @@ MockMethod.prototype = {
                  this.calls_.length,
                  'Number of method calls did not match expectation.');
     for (var i = 0; i < this.expectations_.length; i++) {
-      assertDeepEquals(this.expectations_[i],
-                       this.calls_[i]);
+      this.validateCall(i, this.expectations_[i], this.calls_[i]);
     }
-  }
+  },
+
+  /**
+   * Verifies that the observed function arguments match expectations.
+   * Override if strict equality is not required.
+   * @param {number} index Canonical index of the function call. Unused in the
+   *     base implementation, but provides context that may be useful for
+   *     overrides.
+   * @param {!Array} expected The expected arguments.
+   * @parma {!Array} observed The observed arguments.
+   */
+  validateCall: function(index, expected, observed) {
+    assertDeepEquals(expected, observed);
+  },
 };
 
 /**
@@ -138,4 +150,5 @@ MockController.prototype = {
       override.parent[override.functionName] = override.originalFunction;
     }
   },
+
 };

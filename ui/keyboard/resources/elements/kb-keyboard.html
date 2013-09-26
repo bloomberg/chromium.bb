@@ -133,6 +133,14 @@
     var swipeInProgress = false;
 
     /**
+     * A boolean used to track if the keyboard is ready for user input. As
+     * alternate layouts are dynamically loaded, the keyboard may be in a state
+     * where it is not fully initialized until all links, key-sequences, and
+     * imports are fully resolved.
+     */
+    var isReady = false;
+
+    /**
      * The enumeration of swipe directions.
      * @const
      * @type {Enum}
@@ -523,6 +531,9 @@
        */
       layoutChanged: function() {
         if (!this.selectDefaultKeyset()) {
+          this.isReady = false;
+          this.fire('stateChange', {state: 'loadingKeyset'});
+
           // Keyset selection fails if the keysets have not been loaded yet.
           var keysets = document.querySelector('#' + this.layout);
           if (keysets) {
@@ -556,6 +567,14 @@
       },
 
       /**
+       * Indicate if the keyboard is ready for user input.
+       * @type {boolean}
+       */
+      get initialized() {
+        return this.isReady;
+      },
+
+      /**
        * Generates fabricated key events to simulate typing on a
        * physical keyboard.
        * @param {Object} detail Attributes of the key being typed.
@@ -582,6 +601,11 @@
              keysetsLoaded = true;
              if (keysets[i].isDefault) {
                this.keyset = matches[REGEX_KEYSET_INDEX];
+               this.isReady = true;
+               this.fire('stateChange', {
+                 state: 'keysetLoaded',
+                 keyset: this.keyset,
+               });
                return true;
              }
           }
