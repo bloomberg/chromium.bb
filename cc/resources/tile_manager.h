@@ -12,6 +12,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "cc/base/ref_counted_managed.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/managed_tile_state.h"
 #include "cc/resources/memory_history.h"
@@ -45,7 +46,8 @@ scoped_ptr<base::Value> RasterTaskCompletionStatsAsValue(
 // should no longer have any memory assigned to them. Tile objects are "owned"
 // by layers; they automatically register with the manager when they are
 // created, and unregister from the manager when they are deleted.
-class CC_EXPORT TileManager : public RasterWorkerPoolClient {
+class CC_EXPORT TileManager : public RasterWorkerPoolClient,
+                              public RefCountedManager<Tile> {
  public:
   static scoped_ptr<TileManager> Create(
       TileManagerClient* client,
@@ -60,6 +62,15 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
 
   // Returns true when visible tiles have been initialized.
   bool UpdateVisibleTiles();
+
+  scoped_refptr<Tile> CreateTile(PicturePileImpl* picture_pile,
+                                 gfx::Size tile_size,
+                                 gfx::Rect content_rect,
+                                 gfx::Rect opaque_rect,
+                                 float contents_scale,
+                                 int layer_id,
+                                 int source_frame_number,
+                                 bool can_use_lcd_text);
 
   scoped_ptr<base::Value> BasicStateAsValue() const;
   scoped_ptr<base::Value> AllTilesAsValue() const;
@@ -102,9 +113,12 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
 
   // Methods called by Tile
   friend class Tile;
-  void RegisterTile(Tile* tile);
-  void UnregisterTile(Tile* tile);
   void DidChangeTilePriority(Tile* tile);
+
+  void CleanUpReleasedTiles();
+
+  // Overriden from RefCountedManager<Tile>:
+  virtual void Release(Tile* tile) OVERRIDE;
 
   // Overriden from RasterWorkerPoolClient:
   virtual bool ShouldForceTasksRequiredForActivationToComplete() const
@@ -149,7 +163,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
       Tile* tile, skia::LazyPixelRef* pixel_ref);
   RasterWorkerPool::RasterTask CreateRasterTask(Tile* tile);
   scoped_ptr<base::Value> GetMemoryRequirementsAsValue() const;
-  PrioritizedTileSet* GetPrioritizedTileSet();
+  void UpdatePrioritizedTileSetIfNeeded();
 
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;
@@ -187,6 +201,8 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   LayerCountMap used_layer_counts_;
 
   RasterTaskCompletionStats update_visible_tiles_stats_;
+
+  std::vector<Tile*> released_tiles_;
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };

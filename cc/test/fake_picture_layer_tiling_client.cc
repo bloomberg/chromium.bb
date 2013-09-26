@@ -36,16 +36,9 @@ scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
     PictureLayerTiling*,
     gfx::Rect rect) {
   if (!allow_create_tile_)
-    return NULL;
-  return new Tile(tile_manager_.get(),
-                  pile_.get(),
-                  tile_size_,
-                  rect,
-                  gfx::Rect(),
-                  1,
-                  0,
-                  0,
-                  true);
+    return scoped_refptr<Tile>();
+  return tile_manager_->CreateTile(
+      pile_.get(), tile_size_, rect, gfx::Rect(), 1, 0, 0, true);
 }
 
 void FakePictureLayerTilingClient::SetTileSize(gfx::Size tile_size) {

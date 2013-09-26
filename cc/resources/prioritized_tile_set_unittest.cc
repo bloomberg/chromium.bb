@@ -64,15 +64,14 @@ class PrioritizedTileSetTest : public testing::Test {
   }
 
   scoped_refptr<Tile> CreateTile() {
-    return make_scoped_refptr(new Tile(tile_manager_.get(),
-                                       picture_pile_.get(),
-                                       settings_.default_tile_size,
-                                       gfx::Rect(),
-                                       gfx::Rect(),
-                                       1.0,
-                                       0,
-                                       0,
-                                       true));
+    return tile_manager_->CreateTile(picture_pile_.get(),
+                                     settings_.default_tile_size,
+                                     gfx::Rect(),
+                                     gfx::Rect(),
+                                     1.0,
+                                     0,
+                                     0,
+                                     true);
   }
 
  private:

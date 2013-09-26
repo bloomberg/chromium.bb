@@ -79,16 +79,14 @@ class TileManagerTest : public testing::TestWithParam<bool> {
                                  gfx::Size tile_size) {
     TileVector tiles;
     for (int i = 0; i < count; ++i) {
-      scoped_refptr<Tile> tile =
-          make_scoped_refptr(new Tile(tile_manager_.get(),
-                                      picture_pile_.get(),
-                                      tile_size,
-                                      gfx::Rect(),
-                                      gfx::Rect(),
-                                      1.0,
-                                      0,
-                                      0,
-                                      true));
+      scoped_refptr<Tile> tile = tile_manager_->CreateTile(picture_pile_.get(),
+                                                           tile_size,
+                                                           gfx::Rect(),
+                                                           gfx::Rect(),
+                                                           1.0,
+                                                           0,
+                                                           0,
+                                                           true);
       tile->SetPriority(ACTIVE_TREE, active_priority);
       tile->SetPriority(PENDING_TREE, pending_priority);
       tiles.push_back(tile);

@@ -18,6 +18,7 @@
 #include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
+#include "cc/resources/tile_manager.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect_conversions.h"
@@ -453,8 +454,7 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
   if (!pile_->CanRaster(tiling->contents_scale(), content_rect))
     return scoped_refptr<Tile>();
 
-  return make_scoped_refptr(new Tile(
-      layer_tree_impl()->tile_manager(),
+  return layer_tree_impl()->tile_manager()->CreateTile(
       pile_.get(),
       content_rect.size(),
       content_rect,
@@ -462,7 +462,7 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
       tiling->contents_scale(),
       id(),
       layer_tree_impl()->source_frame_number(),
-      is_using_lcd_text_));
+      is_using_lcd_text_);
 }
 
 void PictureLayerImpl::UpdatePile(Tile* tile) {

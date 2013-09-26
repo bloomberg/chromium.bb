@@ -22,7 +22,8 @@ Tile::Tile(TileManager* tile_manager,
            int layer_id,
            int source_frame_number,
            bool can_use_lcd_text)
-  : tile_manager_(tile_manager),
+  : RefCountedManaged<Tile>(tile_manager),
+    tile_manager_(tile_manager),
     tile_size_(tile_size),
     content_rect_(content_rect),
     contents_scale_(contents_scale),
@@ -32,7 +33,6 @@ Tile::Tile(TileManager* tile_manager,
     can_use_lcd_text_(can_use_lcd_text),
     id_(s_next_id_++) {
   set_picture_pile(picture_pile);
-  tile_manager_->RegisterTile(this);
 }
 
 Tile::~Tile() {
@@ -40,7 +40,6 @@ Tile::~Tile() {
       TRACE_DISABLED_BY_DEFAULT("cc.debug") ","
           TRACE_DISABLED_BY_DEFAULT("cc.debug.quads"),
       "cc::Tile", this);
-  tile_manager_->UnregisterTile(this);
 }
 
 void Tile::SetPriority(WhichTree tree, const TilePriority& priority) {

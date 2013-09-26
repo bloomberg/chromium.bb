@@ -168,6 +168,7 @@ TileManager::~TileManager() {
   // our memory usage to drop to zero.
   global_state_ = GlobalStateThatImpactsTilePriority();
 
+  CleanUpReleasedTiles();
   DCHECK_EQ(0u, tiles_.size());
 
   RasterWorkerPool::RasterTask::Queue empty;
@@ -182,29 +183,9 @@ TileManager::~TileManager() {
   DCHECK_EQ(0u, resources_releasable_);
 }
 
-void TileManager::RegisterTile(Tile* tile) {
-  DCHECK(!tile->required_for_activation());
-  DCHECK(tiles_.find(tile->id()) == tiles_.end());
-
-  tiles_[tile->id()] = tile;
-  used_layer_counts_[tile->layer_id()]++;
+void TileManager::Release(Tile* tile) {
   prioritized_tiles_dirty_ = true;
-}
-
-void TileManager::UnregisterTile(Tile* tile) {
-  FreeResourcesForTile(tile);
-
-  DCHECK(tiles_.find(tile->id()) != tiles_.end());
-  tiles_.erase(tile->id());
-
-  LayerCountMap::iterator layer_it = used_layer_counts_.find(tile->layer_id());
-  DCHECK_GT(layer_it->second, 0);
-  if (--layer_it->second == 0) {
-    used_layer_counts_.erase(layer_it);
-    image_decode_tasks_.erase(tile->layer_id());
-  }
-
-  prioritized_tiles_dirty_ = true;
+  released_tiles_.push_back(tile);
 }
 
 void TileManager::DidChangeTilePriority(Tile* tile) {
@@ -215,14 +196,40 @@ bool TileManager::ShouldForceTasksRequiredForActivationToComplete() const {
   return global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY;
 }
 
-PrioritizedTileSet* TileManager::GetPrioritizedTileSet() {
+void TileManager::CleanUpReleasedTiles() {
+  for (std::vector<Tile*>::iterator it = released_tiles_.begin();
+       it != released_tiles_.end();
+       ++it) {
+    Tile* tile = *it;
+
+    FreeResourcesForTile(tile);
+
+    DCHECK(tiles_.find(tile->id()) != tiles_.end());
+    tiles_.erase(tile->id());
+
+    LayerCountMap::iterator layer_it =
+        used_layer_counts_.find(tile->layer_id());
+    DCHECK_GT(layer_it->second, 0);
+    if (--layer_it->second == 0) {
+      used_layer_counts_.erase(layer_it);
+      image_decode_tasks_.erase(tile->layer_id());
+    }
+
+    delete tile;
+  }
+
+  released_tiles_.clear();
+}
+
+void TileManager::UpdatePrioritizedTileSetIfNeeded() {
   if (!prioritized_tiles_dirty_)
-    return &prioritized_tiles_;
+    return;
+
+  CleanUpReleasedTiles();
 
   prioritized_tiles_.Clear();
   GetTilesWithAssignedBins(&prioritized_tiles_);
   prioritized_tiles_dirty_ = false;
-  return &prioritized_tiles_;
 }
 
 void TileManager::DidFinishRunningTasks() {
@@ -237,7 +244,7 @@ void TileManager::DidFinishRunningTasks() {
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
   TileVector tiles_that_need_to_be_rasterized;
-  AssignGpuMemoryToTiles(GetPrioritizedTileSet(),
+  AssignGpuMemoryToTiles(&prioritized_tiles_,
                          &tiles_that_need_to_be_rasterized);
 
   // |tiles_that_need_to_be_rasterized| will be empty when we reach a
@@ -417,8 +424,10 @@ void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
     did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
   }
 
+  UpdatePrioritizedTileSetIfNeeded();
+
   TileVector tiles_that_need_to_be_rasterized;
-  AssignGpuMemoryToTiles(GetPrioritizedTileSet(),
+  AssignGpuMemoryToTiles(&prioritized_tiles_,
                          &tiles_that_need_to_be_rasterized);
 
   // Finally, schedule rasterizer tasks.
@@ -859,6 +868,31 @@ void TileManager::OnRasterTaskCompleted(
   FreeUnusedResourcesForTile(tile);
   if (tile->priority(ACTIVE_TREE).distance_to_visible_in_pixels == 0)
     did_initialize_visible_tile_ = true;
+}
+
+scoped_refptr<Tile> TileManager::CreateTile(PicturePileImpl* picture_pile,
+                                            gfx::Size tile_size,
+                                            gfx::Rect content_rect,
+                                            gfx::Rect opaque_rect,
+                                            float contents_scale,
+                                            int layer_id,
+                                            int source_frame_number,
+                                            bool can_use_lcd_text) {
+  scoped_refptr<Tile> tile = make_scoped_refptr(new Tile(this,
+                                                         picture_pile,
+                                                         tile_size,
+                                                         content_rect,
+                                                         opaque_rect,
+                                                         contents_scale,
+                                                         layer_id,
+                                                         source_frame_number,
+                                                         can_use_lcd_text));
+  DCHECK(tiles_.find(tile->id()) == tiles_.end());
+
+  tiles_[tile->id()] = tile;
+  used_layer_counts_[tile->layer_id()]++;
+  prioritized_tiles_dirty_ = true;
+  return tile;
 }
 
 }  // namespace cc

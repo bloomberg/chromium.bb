@@ -106,15 +106,14 @@ class TileManagerPerfTest : public testing::Test {
   void CreateBinTiles(int count, ManagedTileBin bin, TileBinVector* tiles) {
     for (int i = 0; i < count; ++i) {
       scoped_refptr<Tile> tile =
-          make_scoped_refptr(new Tile(tile_manager_.get(),
-                                      picture_pile_.get(),
-                                      settings_.default_tile_size,
-                                      gfx::Rect(),
-                                      gfx::Rect(),
-                                      1.0,
-                                      0,
-                                      0,
-                                      true));
+          tile_manager_->CreateTile(picture_pile_.get(),
+                                    settings_.default_tile_size,
+                                    gfx::Rect(),
+                                    gfx::Rect(),
+                                    1.0,
+                                    0,
+                                    0,
+                                    true);
       tile->SetPriority(ACTIVE_TREE, GetTilePriorityFromBin(bin));
       tile->SetPriority(PENDING_TREE, GetTilePriorityFromBin(bin));
       tiles->push_back(std::make_pair(tile, bin));
