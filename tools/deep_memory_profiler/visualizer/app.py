@@ -3,7 +3,9 @@
 # found in the LICENSE file.
 
 import jinja2
+import json
 import os
+import re
 import urllib
 import webapp2
 
@@ -68,7 +70,26 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
     self.redirect('/?' + urllib.urlencode(req_params))
 
 
+class ShareHandler(webapp2.RequestHandler):
+  """Handle breakdown template sharing. Generate public url for transferred
+  template and return it back."""
+  def post(self):
+    run_id = self.request.POST['run_id']
+    content = json.loads(self.request.POST['content'])
+    tmpl_key = services.CreateTemplate(content)
+
+    req_params = {
+      'run_id': run_id,
+      'tmpl_id': tmpl_key.urlsafe()
+    }
+
+    # Take out host url from request by removing share suffix.
+    url = re.sub('share', '', self.request.url)
+    self.response.write(url + '?' + urllib.urlencode(req_params))
+
+
 application = webapp2.WSGIApplication([
   ('/', MainPage),
-  ('/upload', UploadHandler)
+  ('/upload', UploadHandler),
+  ('/share', ShareHandler)
 ], debug=True)

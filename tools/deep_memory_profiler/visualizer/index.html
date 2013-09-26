@@ -5,8 +5,8 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 <meta charset="utf-8">
-<link rel="stylesheet" href="static/index.css">
 <link rel="stylesheet" href="static/third_party/jqTree/jqtree.css">
+<link rel="stylesheet" href="static/index.css">
 
 <script src="static/third_party/flot/jquery.min.js"></script>
 <script src="static/third_party/flot/jquery.flot.min.js"></script>
@@ -29,22 +29,53 @@ $(function() {
 
     // initialize categories according to roots information.
     profiler.reparse();
+
+    // Share feature only appears in server version, so it should be written
+    // here where the unique file different against local version, rather than
+    // written as a view which is shared with local version.
+    $('#share-btn').click(function() {
+      // Get run_id and current breakdown template and send them to server.
+      // Post data will be decoded weirdly at app engine side if content isn't
+      // encoded.
+      var req_data = {
+        run_id: profiler.getRunId(),
+        content: JSON.stringify(profiler.getTemplate())
+      };
+
+      $.ajax({
+        type: 'POST',
+        url: '/share',
+        data: req_data,
+        success: function(url) {
+          $('.url').val(url);
+          $('.url').select();
+        }
+      });
+    });
   {% endif %}
 });
 </script>
 
 <body>
-  <h2>Deep Memory Profiler Visulaizer</h2>
-  <form enctype="multipart/form-data" action="{{ upload_url }}" method="post">
-    <input type="file" name="file"/>
-    <input type="submit" value="Upload"/>
-    <p><font color="red">
+  <h1>Deep Memory Profiler Visualizer</h1>
+  <div>
+    <form enctype="multipart/form-data" action="{{ upload_url }}" method="post">
+      <input type="file" name="file"/>
+      <input class="btn" type="submit" value="Upload"/>
+    </form>
+    <p class="error-message">
       {{ upload_msg }}
-    </font></p>
-  </form>
-  <div id="graph-div"></div>
-  <div id="info-div">
-    <div id="subs-dropdown"></div>
-    <div id="category-menu"></div>
+    </p>
+  </div>
+  <div>
+    <button class="btn" id="share-btn">Share</button>
+    <input type="text" class="url">
+  </div>
+  <div id="view-div">
+    <div id="graph-div"></div>
+    <div id="info-div">
+      <div id="subs-dropdown"></div>
+      <div id="category-menu"></div>
+    </div>
   </div>
 </body>

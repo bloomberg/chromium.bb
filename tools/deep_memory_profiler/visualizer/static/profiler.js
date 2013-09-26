@@ -59,6 +59,22 @@ Profiler.prototype.reparse = function() {
 };
 
 /**
+ * Get current breakdown template.
+ * @return {Object} current breakdown template.
+ */
+Profiler.prototype.getTemplate = function() {
+  return this.template_;
+};
+
+/**
+ * Get run_id of current profiler.
+ * @return {string} run_id of current profiler.
+ */
+Profiler.prototype.getRunId = function() {
+  return this.jsonData_['run_id'];
+};
+
+/**
  * To be called by view when new model being selected.
  * And then triggers all relative views to update.
  */

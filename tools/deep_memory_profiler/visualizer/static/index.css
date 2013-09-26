@@ -2,23 +2,54 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+h1 {
+  text-align: center;
+}
+
+.error-message {
+  color: red;
+  font-size: large;
+}
+
+.btn,
+.url {
+  color: #333333;
+  background-color: #ffffff;
+  padding: 6px 12px;
+  font-size: 14px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+}
+
+.btn:hover,
+.btn:focus {
+  background-color: #ebebeb;
+}
+
+#view-div {
+  margin: 35px auto;
+  width: 70%;
+}
+
 #graph-div {
   width: 1024px;
   height: 600px;
-  margin-top: 30px;
-  margin-left: 50px;
   float: left;
 }
 
 #info-div {
   width: 240px;
   height: 600px;
-  margin-top: 35px;
-  margin-left: 50px;
   float: left;
+  margin-left: 50px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.2);
   outline: 1px solid rgba(0,0,0,0.2);
   overflow: auto;
+}
+
+ul.jqtree-tree .jqtree-title {
+  color: #333333;
+  font-size: small;
 }
 
 #category-menu {
