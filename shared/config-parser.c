@@ -385,7 +385,7 @@ weston_config_parse(const char *name)
 const char *
 weston_config_get_full_path(struct weston_config *config)
 {
-	return config->path;
+	return config == NULL ? NULL : config->path;
 }
 
 int
