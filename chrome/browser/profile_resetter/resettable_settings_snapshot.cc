@@ -34,7 +34,8 @@ const char kHomepagePath[] = "homepage";
 const char kStartupTypePath[] = "startup_type";
 const char kStartupURLPath[] = "startup_urls";
 
-void AddPair(ListValue* list, const string16& key, const string16& value) {
+template <class StringType>
+void AddPair(ListValue* list, const string16& key, const StringType& value) {
   DictionaryValue* results = new DictionaryValue();
   results->SetString("key", key);
   results->SetString("value", value);
@@ -180,16 +181,16 @@ ListValue* GetReadableFeedback(Profile* profile) {
   DCHECK(profile);
   ListValue* list = new ListValue;
   AddPair(list, l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_LOCALE),
-          ASCIIToUTF16(g_browser_process->GetApplicationLocale()));
+          g_browser_process->GetApplicationLocale());
   AddPair(list,
           l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_USER_AGENT),
-          ASCIIToUTF16(content::GetUserAgent(GURL())));
+          content::GetUserAgent(GURL()));
   chrome::VersionInfo version_info;
   std::string version = version_info.Version();
   version += chrome::VersionInfo::GetVersionStringModifier();
   AddPair(list,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-          ASCIIToUTF16(version));
+          version);
 
   // Add snapshot data.
   ResettableSettingsSnapshot snapshot(profile);
@@ -203,7 +204,7 @@ ListValue* GetReadableFeedback(Profile* profile) {
     startup_urls.erase(startup_urls.end() - 1);
     AddPair(list,
             l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_STARTUP_URLS),
-            ASCIIToUTF16(startup_urls));
+            startup_urls);
   }
 
   string16 startup_type;
@@ -228,7 +229,7 @@ ListValue* GetReadableFeedback(Profile* profile) {
   if (!snapshot.homepage().empty()) {
     AddPair(list,
             l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_HOMEPAGE),
-            ASCIIToUTF16(snapshot.homepage()));
+            snapshot.homepage());
   }
 
   int is_ntp_message_id = snapshot.homepage_is_ntp() ?
@@ -245,21 +246,21 @@ ListValue* GetReadableFeedback(Profile* profile) {
   if (dse) {
     AddPair(list,
             l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_DSE),
-            ASCIIToUTF16(TemplateURLService::GenerateSearchURL(dse).host()));
+            TemplateURLService::GenerateSearchURL(dse).host());
   }
 
   const ResettableSettingsSnapshot::ExtensionList& extensions =
       snapshot.enabled_extensions();
-  std::string extension_ids;
+  std::string extension_names;
   for (ResettableSettingsSnapshot::ExtensionList::const_iterator i =
        extensions.begin(); i != extensions.end(); ++i) {
-    (extension_ids += i->second) += '\n';
+    (extension_names += i->second) += '\n';
   }
-  if (!extension_ids.empty()) {
-    extension_ids.erase(extension_ids.end() - 1);
+  if (!extension_names.empty()) {
+    extension_names.erase(extension_names.end() - 1);
     AddPair(list,
             l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_EXTENSIONS),
-            ASCIIToUTF16(extension_ids));
+            extension_names);
   }
   return list;
 }
