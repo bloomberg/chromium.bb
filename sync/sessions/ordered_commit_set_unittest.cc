@@ -14,23 +14,17 @@ namespace {
 
 class OrderedCommitSetTest : public testing::Test {
  public:
-  OrderedCommitSetTest() {
-    routes_[BOOKMARKS] = GROUP_UI;
-    routes_[PREFERENCES] = GROUP_UI;
-    routes_[AUTOFILL] = GROUP_DB;
-    routes_[SESSIONS] = GROUP_PASSIVE;
-  }
+  OrderedCommitSetTest() {}
  protected:
   TestIdFactory ids_;
-  ModelSafeRoutingInfo routes_;
 };
 
-TEST_F(OrderedCommitSetTest, Projections) {
+TEST_F(OrderedCommitSetTest, Insertions) {
   vector<int64> expected;
   for (int64 i = 0; i < 8; i++)
     expected.push_back(i);
 
-  OrderedCommitSet commit_set1(routes_), commit_set2(routes_);
+  OrderedCommitSet commit_set1, commit_set2;
   commit_set1.AddCommitItem(expected[0], BOOKMARKS);
   commit_set1.AddCommitItem(expected[1], BOOKMARKS);
   commit_set1.AddCommitItem(expected[2], PREFERENCES);
@@ -69,38 +63,11 @@ TEST_F(OrderedCommitSetTest, Projections) {
       EXPECT_TRUE(expected[i] == all_ids[i]);
       EXPECT_TRUE(expected[i] == commit_set1.GetCommitHandleAt(i));
     }
-
-    OrderedCommitSet::Projection p1, p2, p3;
-    p1 = commit_set1.GetCommitIdProjection(GROUP_UI);
-    p2 = commit_set1.GetCommitIdProjection(GROUP_PASSIVE);
-    p3 = commit_set1.GetCommitIdProjection(GROUP_DB);
-    EXPECT_TRUE(p1.size() + p2.size() + p3.size() == expected_size) << "Sum"
-        << "of sizes of projections should equal full expected size!";
-
-    for (size_t i = 0; i < p1.size(); i++) {
-      SCOPED_TRACE(::testing::Message("UI projection mismatch at i = ") << i);
-      EXPECT_TRUE(expected[p1[i]] == commit_set1.GetCommitHandleAt(p1[i]))
-          << "expected[p1[i]] = " << expected[p1[i]]
-          << ", commit_set1[p1[i]] = " << commit_set1.GetCommitHandleAt(p1[i]);
-    }
-    for (size_t i = 0; i < p2.size(); i++) {
-      SCOPED_TRACE(::testing::Message("PASSIVE projection mismatch at i = ")
-                   << i);
-      EXPECT_TRUE(expected[p2[i]] == commit_set1.GetCommitHandleAt(p2[i]))
-          << "expected[p2[i]] = " << expected[p2[i]]
-          << ", commit_set1[p2[i]] = " << commit_set1.GetCommitHandleAt(p2[i]);
-    }
-    for (size_t i = 0; i < p3.size(); i++) {
-      SCOPED_TRACE(::testing::Message("DB projection mismatch at i = ") << i);
-      EXPECT_TRUE(expected[p3[i]] == commit_set1.GetCommitHandleAt(p3[i]))
-          << "expected[p3[i]] = " << expected[p3[i]]
-          << ", commit_set1[p3[i]] = " << commit_set1.GetCommitHandleAt(p3[i]);
-    }
   }
 }
 
 TEST_F(OrderedCommitSetTest, HasBookmarkCommitId) {
-  OrderedCommitSet commit_set(routes_);
+  OrderedCommitSet commit_set;
 
   commit_set.AddCommitItem(0, AUTOFILL);
   commit_set.AddCommitItem(1, SESSIONS);
@@ -118,7 +85,7 @@ TEST_F(OrderedCommitSetTest, HasBookmarkCommitId) {
 }
 
 TEST_F(OrderedCommitSetTest, AddAndRemoveEntries) {
-  OrderedCommitSet commit_set(routes_);
+  OrderedCommitSet commit_set;
 
   ASSERT_TRUE(commit_set.Empty());
 

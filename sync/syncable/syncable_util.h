@@ -20,13 +20,14 @@ namespace syncer {
 namespace syncable {
 
 class BaseTransaction;
-class WriteTransaction;
-class MutableEntry;
+class BaseWriteTransaction;
+class ModelNeutralMutableEntry;
 class Id;
 
-SYNC_EXPORT_PRIVATE void ChangeEntryIDAndUpdateChildren(WriteTransaction* trans,
-                                                        MutableEntry* entry,
-                                                        const Id& new_id);
+SYNC_EXPORT_PRIVATE void ChangeEntryIDAndUpdateChildren(
+    BaseWriteTransaction* trans,
+    ModelNeutralMutableEntry* entry,
+    const Id& new_id);
 
 SYNC_EXPORT_PRIVATE bool IsLegalNewParent(BaseTransaction* trans,
                                           const Id& id,

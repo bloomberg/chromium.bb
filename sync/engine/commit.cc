@@ -12,25 +12,26 @@
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/syncable/mutable_entry.h"
-#include "sync/syncable/syncable_write_transaction.h"
+#include "sync/syncable/syncable_model_neutral_write_transaction.h"
 
 namespace syncer {
 
 using sessions::SyncSession;
 using sessions::StatusController;
 using syncable::SYNCER;
-using syncable::WriteTransaction;
+using syncable::ModelNeutralWriteTransaction;
 
 namespace {
 
 // Sets the SYNCING bits of all items in the commit set to value_to_set.
-void SetAllSyncingBitsToValue(WriteTransaction* trans,
+void SetAllSyncingBitsToValue(ModelNeutralWriteTransaction* trans,
                               const sessions::OrderedCommitSet& commit_set,
                               bool value_to_set) {
   const std::vector<int64>& commit_handles = commit_set.GetAllCommitHandles();
   for (std::vector<int64>::const_iterator it = commit_handles.begin();
        it != commit_handles.end(); ++it) {
-    syncable::MutableEntry entry(trans, syncable::GET_BY_HANDLE, *it);
+    syncable::ModelNeutralMutableEntry entry(
+        trans, syncable::GET_BY_HANDLE, *it);
     if (entry.good()) {
       entry.PutSyncing(value_to_set);
     }
@@ -38,7 +39,7 @@ void SetAllSyncingBitsToValue(WriteTransaction* trans,
 }
 
 // Sets the SYNCING bits for all items in the OrderedCommitSet.
-void SetSyncingBits(WriteTransaction* trans,
+void SetSyncingBits(ModelNeutralWriteTransaction* trans,
                     const sessions::OrderedCommitSet& commit_set) {
   SetAllSyncingBitsToValue(trans, commit_set, true);
 }
@@ -46,7 +47,7 @@ void SetSyncingBits(WriteTransaction* trans,
 // Clears the SYNCING bits for all items in the OrderedCommitSet.
 void ClearSyncingBits(syncable::Directory* dir,
                       const sessions::OrderedCommitSet& commit_set) {
-  WriteTransaction trans(FROM_HERE, SYNCER, dir);
+  ModelNeutralWriteTransaction trans(FROM_HERE, SYNCER, dir);
   SetAllSyncingBitsToValue(&trans, commit_set, false);
 }
 
@@ -73,7 +74,8 @@ bool PrepareCommitMessage(
   commit_set->Clear();
   commit_message->Clear();
 
-  WriteTransaction trans(FROM_HERE, SYNCER, session->context()->directory());
+  ModelNeutralWriteTransaction trans(
+      FROM_HERE, SYNCER, session->context()->directory());
 
   // Fetch the items to commit.
   const size_t batch_size = session->context()->max_commit_batch_size();
@@ -176,7 +178,7 @@ SyncerError BuildAndPostCommitsImpl(ModelTypeSet requested_types,
 SyncerError BuildAndPostCommits(ModelTypeSet requested_types,
                                 Syncer* syncer,
                                 sessions::SyncSession* session) {
-  sessions::OrderedCommitSet commit_set(session->context()->routing_info());
+  sessions::OrderedCommitSet commit_set;
   SyncerError result =
       BuildAndPostCommitsImpl(requested_types, syncer, session, &commit_set);
   if (result != SYNCER_OK) {

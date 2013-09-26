@@ -16,11 +16,11 @@
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/syncable/entry.h"
-#include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/model_neutral_mutable_entry.h"
+#include "sync/syncable/syncable_model_neutral_write_transaction.h"
 #include "sync/syncable/syncable_proto_util.h"
 #include "sync/syncable/syncable_read_transaction.h"
 #include "sync/syncable/syncable_util.h"
-#include "sync/syncable/syncable_write_transaction.h"
 #include "sync/util/time.h"
 
 using std::set;
@@ -33,8 +33,8 @@ namespace syncer {
 using sessions::OrderedCommitSet;
 using sessions::StatusController;
 using sessions::SyncSession;
-using syncable::WriteTransaction;
-using syncable::MutableEntry;
+using syncable::ModelNeutralWriteTransaction;
+using syncable::ModelNeutralMutableEntry;
 using syncable::Entry;
 using syncable::BASE_VERSION;
 using syncable::GET_BY_ID;
@@ -62,24 +62,7 @@ ProcessCommitResponseCommand::ProcessCommitResponseCommand(
 
 ProcessCommitResponseCommand::~ProcessCommitResponseCommand() {}
 
-std::set<ModelSafeGroup> ProcessCommitResponseCommand::GetGroupsToChange(
-    const sessions::SyncSession& session) const {
-  std::set<ModelSafeGroup> groups_with_commits;
-
-  syncable::Directory* dir = session.context()->directory();
-  syncable::ReadTransaction trans(FROM_HERE, dir);
-  for (size_t i = 0; i < commit_set_.Size(); ++i) {
-    groups_with_commits.insert(
-        GetGroupForModelType(commit_set_.GetModelTypeAt(i),
-                             session.context()->routing_info()));
-  }
-
-  return groups_with_commits;
-}
-
-
-SyncerError ProcessCommitResponseCommand::ModelChangingExecuteImpl(
-    SyncSession* session) {
+SyncerError ProcessCommitResponseCommand::ExecuteImpl(SyncSession* session) {
   syncable::Directory* dir = session->context()->directory();
   StatusController* status = session->mutable_status_controller();
   const CommitResponse& cr = commit_response_.commit();
@@ -91,17 +74,15 @@ SyncerError ProcessCommitResponseCommand::ModelChangingExecuteImpl(
   int successes = 0;
 
   set<syncable::Id> deleted_folders;
-  OrderedCommitSet::Projection proj = status->commit_id_projection(
-      commit_set_);
 
-  if (!proj.empty()) { // Scope for WriteTransaction.
-    WriteTransaction trans(FROM_HERE, SYNCER, dir);
-    for (size_t i = 0; i < proj.size(); i++) {
+  { // Scope for ModelNeutralWriteTransaction.
+    ModelNeutralWriteTransaction trans(FROM_HERE, SYNCER, dir);
+    for (size_t i = 0; i < commit_set_.Size(); i++) {
       CommitResponse::ResponseType response_type = ProcessSingleCommitResponse(
           &trans,
-          cr.entryresponse(proj[i]),
-          commit_message.entries(proj[i]),
-          commit_set_.GetCommitHandleAt(proj[i]),
+          cr.entryresponse(i),
+          commit_message.entries(i),
+          commit_set_.GetCommitHandleAt(i),
           &deleted_folders);
       switch (response_type) {
         case CommitResponse::INVALID_MESSAGE:
@@ -114,7 +95,7 @@ SyncerError ProcessCommitResponseCommand::ModelChangingExecuteImpl(
         case CommitResponse::SUCCESS:
           // TODO(sync): worry about sync_rate_ rate calc?
           ++successes;
-          if (commit_set_.GetModelTypeAt(proj[i]) == BOOKMARKS)
+          if (commit_set_.GetModelTypeAt(i) == BOOKMARKS)
             status->increment_num_successful_bookmark_commits();
           status->increment_num_successful_commits();
           break;
@@ -132,7 +113,7 @@ SyncerError ProcessCommitResponseCommand::ModelChangingExecuteImpl(
 
   MarkDeletedChildrenSynced(dir, &deleted_folders);
 
-  int commit_count = static_cast<int>(proj.size());
+  int commit_count = static_cast<int>(commit_set_.Size());
   if (commit_count == successes) {
     return SYNCER_OK;
   } else if (error_commits > 0) {
@@ -166,12 +147,12 @@ void LogServerError(const sync_pb::CommitResponse_EntryResponse& res) {
 
 CommitResponse::ResponseType
 ProcessCommitResponseCommand::ProcessSingleCommitResponse(
-    syncable::WriteTransaction* trans,
+    syncable::ModelNeutralWriteTransaction* trans,
     const sync_pb::CommitResponse_EntryResponse& server_entry,
     const sync_pb::SyncEntity& commit_request_entry,
     const int64 metahandle,
     set<syncable::Id>* deleted_folders) {
-  MutableEntry local_entry(trans, GET_BY_HANDLE, metahandle);
+  ModelNeutralMutableEntry local_entry(trans, GET_BY_HANDLE, metahandle);
   CHECK(local_entry.good());
   bool syncing_was_set = local_entry.GetSyncing();
   local_entry.PutSyncing(false);
@@ -250,7 +231,7 @@ bool ProcessCommitResponseCommand::UpdateVersionAfterCommit(
     const sync_pb::SyncEntity& committed_entry,
     const sync_pb::CommitResponse_EntryResponse& entry_response,
     const syncable::Id& pre_commit_id,
-    syncable::MutableEntry* local_entry) {
+    syncable::ModelNeutralMutableEntry* local_entry) {
   int64 old_version = local_entry->GetBaseVersion();
   int64 new_version = entry_response.version();
   bool bad_commit_version = false;
@@ -286,8 +267,8 @@ bool ProcessCommitResponseCommand::UpdateVersionAfterCommit(
 bool ProcessCommitResponseCommand::ChangeIdAfterCommit(
     const sync_pb::CommitResponse_EntryResponse& entry_response,
     const syncable::Id& pre_commit_id,
-    syncable::MutableEntry* local_entry) {
-  syncable::WriteTransaction* trans = local_entry->write_transaction();
+    syncable::ModelNeutralMutableEntry* local_entry) {
+  syncable::BaseWriteTransaction* trans = local_entry->base_write_transaction();
   const syncable::Id& entry_response_id =
       SyncableIdFromProto(entry_response.id_string());
   if (entry_response_id != pre_commit_id) {
@@ -297,7 +278,7 @@ bool ProcessCommitResponseCommand::ChangeIdAfterCommit(
       DVLOG(1) << " ID changed while committing an old entry. "
                << pre_commit_id << " became " << entry_response_id << ".";
     }
-    MutableEntry same_id(trans, GET_BY_ID, entry_response_id);
+    ModelNeutralMutableEntry same_id(trans, GET_BY_ID, entry_response_id);
     // We should trap this before this function.
     if (same_id.good()) {
       LOG(ERROR) << "ID clash with id " << entry_response_id
@@ -313,7 +294,7 @@ bool ProcessCommitResponseCommand::ChangeIdAfterCommit(
 void ProcessCommitResponseCommand::UpdateServerFieldsAfterCommit(
     const sync_pb::SyncEntity& committed_entry,
     const sync_pb::CommitResponse_EntryResponse& entry_response,
-    syncable::MutableEntry* local_entry) {
+    syncable::ModelNeutralMutableEntry* local_entry) {
 
   // We just committed an entry successfully, and now we want to make our view
   // of the server state consistent with the server state. We must be careful;
@@ -364,7 +345,8 @@ void ProcessCommitResponseCommand::UpdateServerFieldsAfterCommit(
 void ProcessCommitResponseCommand::ProcessSuccessfulCommitResponse(
     const sync_pb::SyncEntity& committed_entry,
     const sync_pb::CommitResponse_EntryResponse& entry_response,
-    const syncable::Id& pre_commit_id, syncable::MutableEntry* local_entry,
+    const syncable::Id& pre_commit_id,
+    syncable::ModelNeutralMutableEntry* local_entry,
     bool syncing_was_set, set<syncable::Id>* deleted_folders) {
   DCHECK(local_entry->GetIsUnsynced());
 

@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "sync/base/sync_export.h"
-#include "sync/engine/model_changing_syncer_command.h"
+#include "sync/engine/syncer_command.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -22,8 +22,8 @@ class OrderedCommitSet;
 
 namespace syncable {
 class Id;
-class WriteTransaction;
-class MutableEntry;
+class ModelNeutralWriteTransaction;
+class ModelNeutralMutableEntry;
 class Directory;
 }
 
@@ -32,15 +32,14 @@ class Directory;
 // PostClientToServerMessage command.
 //
 // As part of processing the commit response, this command will modify sync
-// entries.  It can rename items, update their versions, etc.
+// entries.  It can change their IDs, update their versions, etc.
 //
 // This command will return a non-SYNCER_OK value if an error occurred while
 // processing the response, or if the server's response indicates that it had
 // trouble processing the request.
 //
 // See SyncerCommand documentation for more info.
-class SYNC_EXPORT_PRIVATE ProcessCommitResponseCommand
-    : public ModelChangingSyncerCommand {
+class SYNC_EXPORT_PRIVATE ProcessCommitResponseCommand : public SyncerCommand {
  public:
 
   // The commit_set parameter contains references to all the items which were
@@ -59,15 +58,12 @@ class SYNC_EXPORT_PRIVATE ProcessCommitResponseCommand
   virtual ~ProcessCommitResponseCommand();
 
  protected:
-  // ModelChangingSyncerCommand implementation.
-  virtual std::set<ModelSafeGroup> GetGroupsToChange(
-      const sessions::SyncSession& session) const OVERRIDE;
-  virtual SyncerError ModelChangingExecuteImpl(
-      sessions::SyncSession* session) OVERRIDE;
+  // SyncerCommand implementation.
+  virtual SyncerError ExecuteImpl(sessions::SyncSession* session) OVERRIDE;
 
  private:
   sync_pb::CommitResponse::ResponseType ProcessSingleCommitResponse(
-      syncable::WriteTransaction* trans,
+      syncable::ModelNeutralWriteTransaction* trans,
       const sync_pb::CommitResponse_EntryResponse& pb_commit_response,
       const sync_pb::SyncEntity& pb_committed_entry,
       int64 metahandle,
@@ -76,7 +72,8 @@ class SYNC_EXPORT_PRIVATE ProcessCommitResponseCommand
   void ProcessSuccessfulCommitResponse(
       const sync_pb::SyncEntity& committed_entry,
       const sync_pb::CommitResponse_EntryResponse& entry_response,
-      const syncable::Id& pre_commit_id, syncable::MutableEntry* local_entry,
+      const syncable::Id& pre_commit_id,
+      syncable::ModelNeutralMutableEntry* local_entry,
       bool syncing_was_set, std::set<syncable::Id>* deleted_folders);
 
   // Update the BASE_VERSION and SERVER_VERSION, post-commit.
@@ -85,21 +82,21 @@ class SYNC_EXPORT_PRIVATE ProcessCommitResponseCommand
       const sync_pb::SyncEntity& committed_entry,
       const sync_pb::CommitResponse_EntryResponse& entry_response,
       const syncable::Id& pre_commit_id,
-      syncable::MutableEntry* local_entry);
+      syncable::ModelNeutralMutableEntry* local_entry);
 
   // If the server generated an ID for us during a commit, apply the new ID.
   // Helper for ProcessSuccessfulCommitResponse.
   bool ChangeIdAfterCommit(
       const sync_pb::CommitResponse_EntryResponse& entry_response,
       const syncable::Id& pre_commit_id,
-      syncable::MutableEntry* local_entry);
+      syncable::ModelNeutralMutableEntry* local_entry);
 
   // Update the SERVER_ fields to reflect the server state after committing.
   // Helper for ProcessSuccessfulCommitResponse.
   void UpdateServerFieldsAfterCommit(
       const sync_pb::SyncEntity& committed_entry,
       const sync_pb::CommitResponse_EntryResponse& entry_response,
-      syncable::MutableEntry* local_entry);
+      syncable::ModelNeutralMutableEntry* local_entry);
 
   // Helper to extract the final name from the protobufs.
   const std::string& GetResultingPostCommitName(

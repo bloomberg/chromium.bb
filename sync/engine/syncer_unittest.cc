@@ -403,7 +403,7 @@ class SyncerTest : public testing::Test,
       ModelSafeRoutingInfo routes;
       GetModelSafeRoutingInfo(&routes);
       ModelTypeSet types = GetRoutingInfoTypes(routes);
-      sessions::OrderedCommitSet output_set(routes);
+      sessions::OrderedCommitSet output_set;
       GetCommitIds(&wtrans, types, limit, &output_set);
       size_t truncated_size = std::min(limit, expected_handle_order.size());
       ASSERT_EQ(truncated_size, output_set.Size());
@@ -411,15 +411,11 @@ class SyncerTest : public testing::Test,
         ASSERT_EQ(expected_handle_order[i], output_set.GetCommitHandleAt(i))
             << "At index " << i << " with batch size limited to " << limit;
       }
-      sessions::OrderedCommitSet::Projection proj;
-      proj = output_set.GetCommitIdProjection(GROUP_PASSIVE);
-      ASSERT_EQ(truncated_size, proj.size());
+      ASSERT_EQ(truncated_size, output_set.Size());
       for (size_t i = 0; i < truncated_size; ++i) {
         SCOPED_TRACE(::testing::Message("Projection mismatch with i = ") << i);
-        int64 projected = output_set.GetCommitHandleAt(proj[i]);
-        ASSERT_EQ(expected_handle_order[proj[i]], projected);
-        // Since this projection is the identity, the following holds.
-        ASSERT_EQ(expected_handle_order[i], projected);
+        int64 handle = output_set.GetCommitHandleAt(i);
+        ASSERT_EQ(expected_handle_order[i], handle);
       }
     }
   }

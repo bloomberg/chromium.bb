@@ -21,15 +21,8 @@ namespace sessions {
 // all these implementations.
 class SYNC_EXPORT_PRIVATE OrderedCommitSet {
  public:
-  // A list of indices into the full list of commit ids such that:
-  // 1 - each element is an index belonging to a particular ModelSafeGroup.
-  // 2 - the vector is in sorted (smallest to largest) order.
-  // 3 - each element is a valid index for GetCommitItemAt.
-  // See GetCommitIdProjection for usage.
-  typedef std::vector<size_t> Projection;
-
   // TODO(chron): Reserve space according to batch size?
-  explicit OrderedCommitSet(const ModelSafeRoutingInfo& routes);
+  OrderedCommitSet();
   ~OrderedCommitSet();
 
   bool HaveCommitItem(const int64 metahandle) const {
@@ -59,13 +52,6 @@ class SYNC_EXPORT_PRIVATE OrderedCommitSet {
     return types_[position];
   }
 
-  // Get the projection of commit ids onto the space of commit ids
-  // belonging to |group|.  This is useful when you need to process a commit
-  // response one ModelSafeGroup at a time. See GetCommitIdAt for how the
-  // indices contained in the returned Projection can be used.
-  const Projection& GetCommitIdProjection(
-      ModelSafeGroup group) const;
-
   size_t Size() const {
     return metahandle_order_.size();
   }
@@ -92,9 +78,6 @@ class SYNC_EXPORT_PRIVATE OrderedCommitSet {
 
   void operator=(const OrderedCommitSet& other);
  private:
-  // A set of CommitIdProjections associated with particular ModelSafeGroups.
-  typedef std::map<ModelSafeGroup, Projection> Projections;
-
   // Helper container for return value of GetCommitItemAt.
   struct CommitItem {
     int64 meta;
@@ -107,7 +90,6 @@ class SYNC_EXPORT_PRIVATE OrderedCommitSet {
   // isomorphic.
   std::set<int64> inserted_metahandles_;
   std::vector<int64> metahandle_order_;
-  Projections projections_;
 
   // We need this because of operations like AppendReverse that take ids from
   // one OrderedCommitSet and insert into another -- we need to know the
@@ -117,8 +99,6 @@ class SYNC_EXPORT_PRIVATE OrderedCommitSet {
 
   // The set of types which are included in this particular list.
   ModelTypeSet types_in_list_;
-
-  ModelSafeRoutingInfo routes_;
 };
 
 }  // namespace sessions

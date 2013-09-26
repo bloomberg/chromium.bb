@@ -71,13 +71,6 @@ class SYNC_EXPORT_PRIVATE StatusController {
     return model_neutral_.num_server_changes_remaining;
   }
 
-  const OrderedCommitSet::Projection& commit_id_projection(
-      const sessions::OrderedCommitSet &commit_set) {
-    DCHECK(group_restriction_in_effect_)
-        << "No group restriction for projection.";
-    return commit_set.GetCommitIdProjection(group_restriction_);
-  }
-
   // Various conflict counters.
   int num_encryption_conflicts() const;
   int num_hierarchy_conflicts() const;

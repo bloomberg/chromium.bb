@@ -167,7 +167,7 @@ class ProcessCommitResponseCommandTest : public SyncerCommandTest {
 };
 
 TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
-  sessions::OrderedCommitSet commit_set(session()->context()->routing_info());
+  sessions::OrderedCommitSet commit_set;
   sync_pb::ClientToServerMessage request;
   sync_pb::ClientToServerResponse response;
 
@@ -195,8 +195,7 @@ TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
       AUTOFILL, &commit_set, &request, &response);
 
   ProcessCommitResponseCommand command(commit_set, request, response);
-  ExpectGroupsToChange(command, GROUP_UI, GROUP_DB);
-  command.ExecuteImpl(session());
+  command.Execute(session());
 
   syncable::ReadTransaction trans(FROM_HERE, directory());
 
@@ -243,7 +242,7 @@ TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
 // how this scenario used to fail, reversing the order for the second half
 // of the children.
 TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
-  sessions::OrderedCommitSet commit_set(session()->context()->routing_info());
+  sessions::OrderedCommitSet commit_set;
   sync_pb::ClientToServerMessage request;
   sync_pb::ClientToServerResponse response;
 
@@ -306,8 +305,7 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
   // each CommitResponse_EntryResponse to the syncable Entries.  All new
   // items in the commit batch should have their IDs changed to server IDs.
   ProcessCommitResponseCommand command(commit_set, request, response);
-  ExpectGroupToChange(command, GROUP_UI);
-  command.ExecuteImpl(session());
+  command.Execute(session());
 
   syncable::ReadTransaction trans(FROM_HERE, directory());
   // Lookup the parent folder by finding a child of the root.  We can't use
