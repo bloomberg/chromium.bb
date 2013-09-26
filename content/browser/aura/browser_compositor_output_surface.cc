@@ -58,6 +58,8 @@ bool BrowserCompositorOutputSurface::BindToClient(
     return false;
 
   output_surface_map_->AddWithID(this, surface_id_);
+  if (reflector_)
+    reflector_->OnSourceSurfaceReady(surface_id_);
   return true;
 }
 

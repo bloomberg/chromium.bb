@@ -75,6 +75,9 @@ class ReflectorImpl : public ImageTransportFactoryObserver,
   // race with ImplThread accessing |texture_id_|.
   void CreateSharedTexture();
 
+  // Called when the source surface is bound and available. This must
+  // be called on ImplThread.
+  void OnSourceSurfaceReady(int surface_id);
 
  private:
   virtual ~ReflectorImpl();

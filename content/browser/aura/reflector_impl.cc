@@ -33,7 +33,19 @@ ReflectorImpl::ReflectorImpl(
 }
 
 void ReflectorImpl::InitOnImplThread() {
-  AttachToOutputSurface(output_surface_map_->Lookup(surface_id_));
+  // Ignore if the reflector was shutdown before
+  // initialized, or it's already initialized.
+  if (!output_surface_map_ || gl_helper_.get())
+    return;
+
+  BrowserCompositorOutputSurface* source_surface =
+      output_surface_map_->Lookup(surface_id_);
+  // Skip if the source surface isn't ready yet. This will be
+  // initiailze when the source surface becomes ready.
+  if (!source_surface)
+    return;
+
+  AttachToOutputSurface(source_surface);
   gl_helper_->CopyTextureFullImage(texture_id_, texture_size_);
   // The shared texture doesn't have the data, so invokes full redraw
   // now.
@@ -41,6 +53,11 @@ void ReflectorImpl::InitOnImplThread() {
       FROM_HERE,
       base::Bind(&ReflectorImpl::FullRedrawContentOnMainThread,
                  scoped_refptr<ReflectorImpl>(this)));
+}
+
+void ReflectorImpl::OnSourceSurfaceReady(int surface_id) {
+  DCHECK_EQ(surface_id_, surface_id);
+  InitOnImplThread();
 }
 
 void ReflectorImpl::Shutdown() {
@@ -55,7 +72,9 @@ void ReflectorImpl::Shutdown() {
 void ReflectorImpl::ShutdownOnImplThread() {
   BrowserCompositorOutputSurface* output_surface =
       output_surface_map_->Lookup(surface_id_);
-  output_surface->SetReflector(NULL);
+  if (output_surface)
+    output_surface->SetReflector(NULL);
+  output_surface_map_ = NULL;
   gl_helper_.reset();
   // The instance must be deleted on main thread.
   main_message_loop_->PostTask(
