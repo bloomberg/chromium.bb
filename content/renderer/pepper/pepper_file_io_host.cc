@@ -166,10 +166,6 @@ int32_t PepperFileIOHost::OnResourceMessageReceived(
                                         OnHostMsgFlush)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileIO_Close,
                                         OnHostMsgClose)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileIO_WillWrite,
-                                      OnHostMsgWillWrite)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileIO_WillSetLength,
-                                      OnHostMsgWillSetLength)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileIO_GetOSFileDescriptor,
                                         OnHostMsgGetOSFileDescriptor)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileIO_RequestOSFileHandle,
@@ -393,51 +389,6 @@ int32_t PepperFileIOHost::OnHostMsgClose(
     quota_file_io_.reset();
   }
   return PP_OK;
-}
-
-int32_t PepperFileIOHost::OnHostMsgWillWrite(
-    ppapi::host::HostMessageContext* context,
-    int64_t offset,
-    int32_t bytes_to_write) {
-  int32_t rv = state_manager_.CheckOperationState(
-      FileIOStateManager::OPERATION_EXCLUSIVE, true);
-  if (rv != PP_OK)
-    return rv;
-
-  if (!quota_file_io_)
-    return PP_OK;
-
-  if (!quota_file_io_->WillWrite(
-          offset, bytes_to_write,
-          base::Bind(&PepperFileIOHost::ExecutePlatformWriteCallback,
-                     weak_factory_.GetWeakPtr(),
-                     context->MakeReplyMessageContext())))
-    return PP_ERROR_FAILED;
-
-  state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
-  return PP_OK_COMPLETIONPENDING;
-}
-
-int32_t PepperFileIOHost::OnHostMsgWillSetLength(
-    ppapi::host::HostMessageContext* context,
-    int64_t length) {
-  int32_t rv = state_manager_.CheckOperationState(
-      FileIOStateManager::OPERATION_EXCLUSIVE, true);
-  if (rv != PP_OK)
-    return rv;
-
-  if (!quota_file_io_)
-    return PP_OK;
-
-  if (!quota_file_io_->WillSetLength(
-          length,
-          base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
-                     weak_factory_.GetWeakPtr(),
-                     context->MakeReplyMessageContext())))
-    return PP_ERROR_FAILED;
-
-  state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
-  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PepperFileIOHost::OnHostMsgRequestOSFileHandle(

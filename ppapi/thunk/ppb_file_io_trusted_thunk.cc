@@ -25,31 +25,8 @@ int32_t GetOSFileDescriptor(PP_Resource file_io) {
   return enter.object()->GetOSFileDescriptor();
 }
 
-int32_t WillWrite(PP_Resource file_io,
-                  int64_t offset,
-                  int32_t bytes_to_write,
-                  PP_CompletionCallback callback) {
-  EnterFileIO enter(file_io, callback, true);
-  if (enter.failed())
-    return enter.retval();
-  return enter.SetResult(enter.object()->WillWrite(offset, bytes_to_write,
-                                                   enter.callback()));
-}
-
-int32_t WillSetLength(PP_Resource file_io,
-                      int64_t length,
-                      PP_CompletionCallback callback) {
-  EnterFileIO enter(file_io, callback, true);
-  if (enter.failed())
-    return enter.retval();
-  return enter.SetResult(enter.object()->WillSetLength(length,
-                                                       enter.callback()));
-}
-
 const PPB_FileIOTrusted g_ppb_file_io_trusted_thunk = {
-  &GetOSFileDescriptor,
-  &WillWrite,
-  &WillSetLength
+  &GetOSFileDescriptor
 };
 
 }  // namespace

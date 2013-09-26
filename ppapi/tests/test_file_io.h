@@ -46,7 +46,6 @@ class TestFileIO : public TestCase {
   std::string TestParallelReads();
   std::string TestParallelWrites();
   std::string TestNotAllowMixedReadWrite();
-  std::string TestWillWriteWillSetLength();
   std::string TestRequestOSFileHandle();
   std::string TestRequestOSFileHandleWithOpenExclusive();
   std::string TestMmap();

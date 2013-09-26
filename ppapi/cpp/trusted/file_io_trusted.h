@@ -20,15 +20,6 @@ class FileIO_Trusted {
   FileIO_Trusted();
 
   int32_t GetOSFileDescriptor(const FileIO& file_io);
-
-  int32_t WillWrite(const FileIO& file_io,
-                    int64_t offset,
-                    int32_t bytes_to_write,
-                    const CompletionCallback& callback);
-
-  int32_t WillSetLength(const FileIO& file_io,
-                        int64_t length,
-                        const CompletionCallback& callback);
 };
 
 }  // namespace pp

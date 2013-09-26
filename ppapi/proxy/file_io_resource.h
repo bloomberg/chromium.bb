@@ -61,12 +61,6 @@ class PPAPI_PROXY_EXPORT FileIOResource
   virtual int32_t RequestOSFileHandle(
       PP_FileHandle* handle,
       scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual int32_t WillWrite(int64_t offset,
-                            int32_t bytes_to_write,
-                            scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual int32_t WillSetLength(
-      int64_t length,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
  private:
   // Class to perform file query operations across multiple threads.

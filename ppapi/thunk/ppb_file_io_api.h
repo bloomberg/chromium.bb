@@ -47,11 +47,6 @@ class PPAPI_THUNK_EXPORT PPB_FileIO_API {
 
   // Trusted API.
   virtual int32_t GetOSFileDescriptor() = 0;
-  virtual int32_t WillWrite(int64_t offset,
-                            int32_t bytes_to_write,
-                            scoped_refptr<TrackedCallback> callback) = 0;
-  virtual int32_t WillSetLength(int64_t length,
-                                scoped_refptr<TrackedCallback> callback) = 0;
 
   // Private API.
   virtual int32_t RequestOSFileHandle(

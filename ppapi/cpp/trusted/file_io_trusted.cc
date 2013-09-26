@@ -31,24 +31,4 @@ int32_t FileIO_Trusted::GetOSFileDescriptor(const FileIO& file_io) {
       file_io.pp_resource());
 }
 
-int32_t FileIO_Trusted::WillWrite(const FileIO& file_io,
-                                  int64_t offset,
-                                  int32_t bytes_to_write,
-                                  const CompletionCallback& callback) {
-  if (!has_interface<PPB_FileIOTrusted>())
-    return callback.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_FileIOTrusted>()->WillWrite(
-      file_io.pp_resource(), offset, bytes_to_write,
-      callback.pp_completion_callback());
-}
-
-int32_t FileIO_Trusted::WillSetLength(const FileIO& file_io,
-                                      int64_t length,
-                                      const CompletionCallback& callback) {
-  if (!has_interface<PPB_FileIOTrusted>())
-    return callback.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_FileIOTrusted>()->WillSetLength(
-      file_io.pp_resource(), length, callback.pp_completion_callback());
-}
-
 }  // namespace pp

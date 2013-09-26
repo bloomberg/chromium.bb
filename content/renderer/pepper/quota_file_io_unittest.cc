@@ -115,7 +115,7 @@ class QuotaFileIOTest : public PpapiUnittest {
   }
 
  protected:
-  void WriteTestBody(bool will_operation) {
+  void WriteTestBody() {
     // Attempt to write zero bytes.
     EXPECT_FALSE(quota_file_io_->Write(
         0, "data", 0,
@@ -130,7 +130,7 @@ class QuotaFileIOTest : public PpapiUnittest {
 
     // Write 8 bytes at offset 0 (-> length=8).
     std::string data("12345678");
-    Write(0, data, will_operation);
+    Write(0, data);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
@@ -138,20 +138,13 @@ class QuotaFileIOTest : public PpapiUnittest {
     EXPECT_EQ(100 - 8, delegate()->available_space());
     reset_results();
 
-    if (will_operation) {
-      // WillWrite doesn't actually write.
-      EXPECT_EQ(0, GetPlatformFileSize());
-      // Adjust the actual file size to 'fake' write to proceed testing.
-      SetPlatformFileSize(8);
-    } else {
-      EXPECT_EQ(8, GetPlatformFileSize());
-      ReadPlatformFile(&read_buffer);
-      EXPECT_EQ(data, read_buffer);
-    }
+    EXPECT_EQ(8, GetPlatformFileSize());
+    ReadPlatformFile(&read_buffer);
+    EXPECT_EQ(data, read_buffer);
 
     // Write 5 bytes at offset 5 (-> length=10).
     data = "55555";
-    Write(5, data, will_operation);
+    Write(5, data);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
@@ -159,18 +152,13 @@ class QuotaFileIOTest : public PpapiUnittest {
     EXPECT_EQ(100 - 10, delegate()->available_space());
     reset_results();
 
-    if (will_operation) {
-      EXPECT_EQ(8, GetPlatformFileSize());
-      SetPlatformFileSize(10);
-    } else {
-      EXPECT_EQ(10, GetPlatformFileSize());
-      ReadPlatformFile(&read_buffer);
-      EXPECT_EQ("1234555555", read_buffer);
-    }
+    EXPECT_EQ(10, GetPlatformFileSize());
+    ReadPlatformFile(&read_buffer);
+    EXPECT_EQ("1234555555", read_buffer);
 
     // Write 7 bytes at offset 8 (-> length=15).
     data = "9012345";
-    Write(8, data, will_operation);
+    Write(8, data);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
@@ -178,18 +166,13 @@ class QuotaFileIOTest : public PpapiUnittest {
     EXPECT_EQ(100 - 15, delegate()->available_space());
     reset_results();
 
-    if (will_operation) {
-      EXPECT_EQ(10, GetPlatformFileSize());
-      SetPlatformFileSize(15);
-    } else {
-      EXPECT_EQ(15, GetPlatformFileSize());
-      ReadPlatformFile(&read_buffer);
-      EXPECT_EQ("123455559012345", read_buffer);
-    }
+    EXPECT_EQ(15, GetPlatformFileSize());
+    ReadPlatformFile(&read_buffer);
+    EXPECT_EQ("123455559012345", read_buffer);
 
     // Write 2 bytes at offset 2 (-> length=15).
     data = "33";
-    Write(2, data, will_operation);
+    Write(2, data);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
@@ -197,17 +180,13 @@ class QuotaFileIOTest : public PpapiUnittest {
     EXPECT_EQ(100 - 15, delegate()->available_space());
     reset_results();
 
-    if (will_operation) {
-      EXPECT_EQ(15, GetPlatformFileSize());
-    } else {
-      EXPECT_EQ(15, GetPlatformFileSize());
-      ReadPlatformFile(&read_buffer);
-      EXPECT_EQ("123355559012345", read_buffer);
-    }
+    EXPECT_EQ(15, GetPlatformFileSize());
+    ReadPlatformFile(&read_buffer);
+    EXPECT_EQ("123355559012345", read_buffer);
 
     // Write 4 bytes at offset 20 (-> length=24).
     data = "XXXX";
-    Write(20, data, will_operation);
+    Write(20, data);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
@@ -215,20 +194,15 @@ class QuotaFileIOTest : public PpapiUnittest {
     EXPECT_EQ(100 - 24, delegate()->available_space());
     reset_results();
 
-    if (will_operation) {
-      EXPECT_EQ(15, GetPlatformFileSize());
-      SetPlatformFileSize(24);
-    } else {
-      EXPECT_EQ(24, GetPlatformFileSize());
-      ReadPlatformFile(&read_buffer);
-      EXPECT_EQ(std::string("123355559012345\0\0\0\0\0XXXX", 24), read_buffer);
-    }
+    EXPECT_EQ(24, GetPlatformFileSize());
+    ReadPlatformFile(&read_buffer);
+    EXPECT_EQ(std::string("123355559012345\0\0\0\0\0XXXX", 24), read_buffer);
 
     delegate()->set_available_space(5);
 
     // Quota error case.  Write 7 bytes at offset 23 (-> length is unchanged)
     data = "ABCDEFG";
-    Write(23, data, will_operation);
+    Write(23, data);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status().front());
@@ -237,7 +211,7 @@ class QuotaFileIOTest : public PpapiUnittest {
 
     // Overlapping write.  Write 6 bytes at offset 2 (-> length is unchanged)
     data = "ABCDEF";
-    Write(2, data, will_operation);
+    Write(2, data);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
@@ -247,7 +221,7 @@ class QuotaFileIOTest : public PpapiUnittest {
 
     // Overlapping + extending the file size, but within the quota.
     // Write 6 bytes at offset 23 (-> length=29).
-    Write(23, data, will_operation);
+    Write(23, data);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(static_cast<int>(data.size()), bytes_written().front());
@@ -255,18 +229,16 @@ class QuotaFileIOTest : public PpapiUnittest {
     EXPECT_EQ(0, delegate()->available_space());
     reset_results();
 
-    if (!will_operation) {
-      EXPECT_EQ(29, GetPlatformFileSize());
-      ReadPlatformFile(&read_buffer);
-      EXPECT_EQ(std::string("12ABCDEF9012345\0\0\0\0\0XXXABCDEF", 29),
-                read_buffer);
-    }
+    EXPECT_EQ(29, GetPlatformFileSize());
+    ReadPlatformFile(&read_buffer);
+    EXPECT_EQ(std::string("12ABCDEF9012345\0\0\0\0\0XXXABCDEF", 29),
+              read_buffer);
   }
 
-  void SetLengthTestBody(bool will_operation) {
+  void SetLengthTestBody() {
     delegate()->set_available_space(100);
 
-    SetLength(0, will_operation);
+    SetLength(0);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
@@ -274,66 +246,46 @@ class QuotaFileIOTest : public PpapiUnittest {
     EXPECT_EQ(100, delegate()->available_space());
     reset_results();
 
-    SetLength(8, will_operation);
+    SetLength(8);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
     EXPECT_EQ(100 - 8, delegate()->available_space());
     reset_results();
 
-    if (will_operation) {
-      EXPECT_EQ(0, GetPlatformFileSize());
-      SetPlatformFileSize(8);
-    } else {
-      EXPECT_EQ(8, GetPlatformFileSize());
-    }
+    EXPECT_EQ(8, GetPlatformFileSize());
 
-    SetLength(16, will_operation);
+    SetLength(16);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
     EXPECT_EQ(100 - 16, delegate()->available_space());
     reset_results();
 
-    if (will_operation) {
-      EXPECT_EQ(8, GetPlatformFileSize());
-      SetPlatformFileSize(16);
-    } else {
-      EXPECT_EQ(16, GetPlatformFileSize());
-    }
+    EXPECT_EQ(16, GetPlatformFileSize());
 
-    SetLength(4, will_operation);
+    SetLength(4);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
     EXPECT_EQ(100 - 4, delegate()->available_space());
     reset_results();
 
-    if (will_operation) {
-      EXPECT_EQ(16, GetPlatformFileSize());
-      SetPlatformFileSize(4);
-    } else {
-      EXPECT_EQ(4, GetPlatformFileSize());
-    }
+    EXPECT_EQ(4, GetPlatformFileSize());
 
-    SetLength(0, will_operation);
+    SetLength(0);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_OK, status().front());
     EXPECT_EQ(100, delegate()->available_space());
     reset_results();
 
-    if (will_operation) {
-      EXPECT_EQ(4, GetPlatformFileSize());
-      SetPlatformFileSize(0);
-    } else {
-      EXPECT_EQ(0, GetPlatformFileSize());
-    }
+    EXPECT_EQ(0, GetPlatformFileSize());
 
     delegate()->set_available_space(5);
 
     // Quota error case.
-    SetLength(7, will_operation);
+    SetLength(7);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(1U, num_results());
     EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status().front());
@@ -345,30 +297,17 @@ class QuotaFileIOTest : public PpapiUnittest {
     return delegate_;
   }
 
-  void Write(int64_t offset, const std::string& data, bool will_operation) {
-    if (will_operation) {
-      ASSERT_TRUE(quota_file_io_->WillWrite(
-          offset, data.size(),
-          base::Bind(&QuotaFileIOTest::DidWrite, weak_factory_.GetWeakPtr())));
-    } else {
-      ASSERT_TRUE(quota_file_io_->Write(
-          offset, data.c_str(), data.size(),
-          base::Bind(&QuotaFileIOTest::DidWrite, weak_factory_.GetWeakPtr())));
-    }
+  void Write(int64_t offset, const std::string& data) {
+    ASSERT_TRUE(quota_file_io_->Write(
+        offset, data.c_str(), data.size(),
+        base::Bind(&QuotaFileIOTest::DidWrite, weak_factory_.GetWeakPtr())));
   }
 
-  void SetLength(int64_t length, bool will_operation) {
-    if (will_operation) {
-      ASSERT_TRUE(quota_file_io_->WillSetLength(
-          length,
-          base::Bind(&QuotaFileIOTest::DidSetLength,
-                     weak_factory_.GetWeakPtr())));
-    } else {
-      ASSERT_TRUE(quota_file_io_->SetLength(
-          length,
-          base::Bind(&QuotaFileIOTest::DidSetLength,
-                     weak_factory_.GetWeakPtr())));
-    }
+  void SetLength(int64_t length) {
+    ASSERT_TRUE(quota_file_io_->SetLength(
+        length,
+        base::Bind(&QuotaFileIOTest::DidSetLength,
+                   weak_factory_.GetWeakPtr())));
   }
 
   void DidWrite(PlatformFileError status, int bytes_written) {
@@ -429,19 +368,11 @@ class QuotaFileIOTest : public PpapiUnittest {
 };
 
 TEST_F(QuotaFileIOTest, Write) {
-  WriteTestBody(false);
-}
-
-TEST_F(QuotaFileIOTest, WillWrite) {
-  WriteTestBody(true);
+  WriteTestBody();
 }
 
 TEST_F(QuotaFileIOTest, SetLength) {
-  SetLengthTestBody(false);
-}
-
-TEST_F(QuotaFileIOTest, WillSetLength) {
-  SetLengthTestBody(true);
+  SetLengthTestBody();
 }
 
 TEST_F(QuotaFileIOTest, ParallelWrites) {
@@ -453,9 +384,9 @@ TEST_F(QuotaFileIOTest, ParallelWrites) {
     std::string("55555"),
     std::string("9012345"),
   };
-  Write(0, data1[0], false);
-  Write(5, data1[1], false);
-  Write(8, data1[2], false);
+  Write(0, data1[0]);
+  Write(5, data1[1]);
+  Write(8, data1[2]);
   base::MessageLoop::current()->RunUntilIdle();
 
   ASSERT_EQ(ARRAYSIZE_UNSAFE(data1), num_results());
@@ -475,8 +406,8 @@ TEST_F(QuotaFileIOTest, ParallelWrites) {
     std::string("33"),
     std::string("XXXX"),
   };
-  Write(2, data2[0], false);
-  Write(20, data2[1], false);
+  Write(2, data2[0]);
+  Write(20, data2[1]);
   base::MessageLoop::current()->RunUntilIdle();
 
   ASSERT_EQ(ARRAYSIZE_UNSAFE(data2), num_results());

@@ -62,21 +62,15 @@ class QuotaFileIO {
   // Otherwise it returns false and |callback| will not be dispatched.
   // |callback| will not be dispatched either when this instance is
   // destroyed before the operation completes.
-  // SetLength/WillSetLength cannot be called while there're any in-flight
-  // operations.  For Write/WillWrite it is guaranteed that |callback| are
+  // SetLength cannot be called while there're any in-flight
+  // operations.  For Write it is guaranteed that |callback| are
   // always dispatched in the same order as Write being called.
   CONTENT_EXPORT bool Write(int64_t offset,
                             const char* buffer,
                             int32_t bytes_to_write,
                             const WriteCallback& callback);
-  CONTENT_EXPORT bool WillWrite(int64_t offset,
-                                int32_t bytes_to_write,
-                                const WriteCallback& callback);
-
   CONTENT_EXPORT bool SetLength(int64_t length,
                                 const StatusCallback& callback);
-  CONTENT_EXPORT bool WillSetLength(int64_t length,
-                                    const StatusCallback& callback);
 
   Delegate* delegate() const { return delegate_.get(); }
 

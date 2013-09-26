@@ -183,7 +183,6 @@ void TestFileIO::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestFileIO, ParallelReads, filter);
   RUN_CALLBACK_TEST(TestFileIO, ParallelWrites, filter);
   RUN_CALLBACK_TEST(TestFileIO, NotAllowMixedReadWrite, filter);
-  RUN_CALLBACK_TEST(TestFileIO, WillWriteWillSetLength, filter);
   RUN_CALLBACK_TEST(TestFileIO, RequestOSFileHandle, filter);
   RUN_CALLBACK_TEST(TestFileIO, RequestOSFileHandleWithOpenExclusive, filter);
   RUN_CALLBACK_TEST(TestFileIO, Mmap, filter);
@@ -987,76 +986,6 @@ std::string TestFileIO::TestNotAllowMixedReadWrite() {
   ASSERT_EQ(PP_ERROR_INPROGRESS, callback_2.result());
   callback_1.WaitForResult(rv_1);
   CHECK_CALLBACK_BEHAVIOR(callback_1);
-
-  PASS();
-}
-
-std::string TestFileIO::TestWillWriteWillSetLength() {
-  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-
-  pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
-  pp::FileRef file_ref(file_system, "/file_will_write");
-  callback.WaitForResult(file_system.Open(1024, callback.GetCallback()));
-  CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_OK, callback.result());
-
-  pp::FileIO file_io(instance_);
-  callback.WaitForResult(file_io.Open(file_ref,
-                                      PP_FILEOPENFLAG_CREATE |
-                                      PP_FILEOPENFLAG_TRUNCATE |
-                                      PP_FILEOPENFLAG_READ |
-                                      PP_FILEOPENFLAG_WRITE,
-                                      callback.GetCallback()));
-  CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_OK, callback.result());
-
-  const PPB_FileIOTrusted* trusted = static_cast<const PPB_FileIOTrusted*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_INTERFACE));
-  ASSERT_TRUE(trusted);
-
-  // Get file descriptor. This is only supported in-process for now, so don't
-  // test out of process.
-  const PPB_Testing_Dev* testing_interface = GetTestingInterface();
-  if (testing_interface && !testing_interface->IsOutOfProcess()) {
-    int32_t fd = trusted->GetOSFileDescriptor(file_io.pp_resource());
-    ASSERT_TRUE(fd >= 0);
-  }
-
-  // Calling WillWrite.
-  callback.WaitForResult(trusted->WillWrite(
-      file_io.pp_resource(), 0, 9,
-      callback.GetCallback().pp_completion_callback()));
-  CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(9, callback.result());
-
-  // Writing the actual data.
-  int32_t rv = WriteEntireBuffer(instance_->pp_instance(), &file_io, 0,
-                                 "test_test", callback_type());
-  ASSERT_EQ(PP_OK, rv);
-
-  std::string read_buffer;
-  rv = ReadEntireFile(instance_->pp_instance(), &file_io, 0, &read_buffer,
-                      callback_type());
-  ASSERT_EQ(PP_OK, rv);
-  ASSERT_EQ(std::string("test_test"), read_buffer);
-
-  // Calling WillSetLength.
-  callback.WaitForResult(trusted->WillSetLength(
-      file_io.pp_resource(), 4,
-      callback.GetCallback().pp_completion_callback()));
-  CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_OK, rv);
-
-  // Calling actual SetLength.
-  callback.WaitForResult(file_io.SetLength(4, callback.GetCallback()));
-  CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_OK, rv);
-
-  read_buffer.clear();
-  rv = ReadEntireFile(instance_->pp_instance(), &file_io, 0, &read_buffer,
-                      callback_type());
-  ASSERT_EQ(PP_OK, rv);
-  ASSERT_EQ(std::string("test"), read_buffer);
 
   PASS();
 }

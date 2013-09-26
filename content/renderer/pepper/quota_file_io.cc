@@ -51,25 +51,22 @@ class QuotaFileIO::PendingOperationBase {
   virtual void DidFail(PlatformFileError error) = 0;
 
  protected:
-  PendingOperationBase(QuotaFileIO* quota_io, bool is_will_operation)
-      : quota_io_(quota_io), is_will_operation_(is_will_operation) {
+  explicit PendingOperationBase(QuotaFileIO* quota_io) : quota_io_(quota_io) {
     DCHECK(quota_io_);
     quota_io_->WillUpdate();
   }
 
   QuotaFileIO* quota_io_;
-  const bool is_will_operation_;
 };
 
 class QuotaFileIO::WriteOperation : public PendingOperationBase {
  public:
   WriteOperation(QuotaFileIO* quota_io,
-                 bool is_will_operation,
                  int64_t offset,
                  const char* buffer,
                  int32_t bytes_to_write,
                  const WriteCallback& callback)
-      : PendingOperationBase(quota_io, is_will_operation),
+      : PendingOperationBase(quota_io),
         offset_(offset),
         bytes_to_write_(bytes_to_write),
         callback_(callback),
@@ -77,23 +74,16 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
         status_(base::PLATFORM_FILE_OK),
         bytes_written_(0),
         weak_factory_(this) {
-    if (!is_will_operation) {
-      // TODO(kinuko): Check the API convention if we really need to keep a copy
-      // of the buffer during the async write operations.
-      buffer_.reset(new char[bytes_to_write]);
-      memcpy(buffer_.get(), buffer, bytes_to_write);
-    }
+    // TODO(kinuko): Check the API convention if we really need to keep a copy
+    // of the buffer during the async write operations.
+    buffer_.reset(new char[bytes_to_write]);
+    memcpy(buffer_.get(), buffer, bytes_to_write);
   }
   virtual ~WriteOperation() {}
   virtual void Run() OVERRIDE {
     DCHECK(quota_io_);
     if (quota_io_->CheckIfExceedsQuota(offset_ + bytes_to_write_)) {
       DidFail(base::PLATFORM_FILE_ERROR_NO_SPACE);
-      return;
-    }
-    if (is_will_operation_) {
-      // Assuming the write will succeed.
-      DidFinish(base::PLATFORM_FILE_OK, bytes_to_write_);
       return;
     }
     DCHECK(buffer_.get());
@@ -161,10 +151,9 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
 class QuotaFileIO::SetLengthOperation : public PendingOperationBase {
  public:
   SetLengthOperation(QuotaFileIO* quota_io,
-                     bool is_will_operation,
                      int64_t length,
                      const StatusCallback& callback)
-      : PendingOperationBase(quota_io, is_will_operation),
+      : PendingOperationBase(quota_io),
         length_(length),
         callback_(callback),
         weak_factory_(this) {}
@@ -175,10 +164,6 @@ class QuotaFileIO::SetLengthOperation : public PendingOperationBase {
     DCHECK(quota_io_);
     if (quota_io_->CheckIfExceedsQuota(length_)) {
       DidFail(base::PLATFORM_FILE_ERROR_NO_SPACE);
-      return;
-    }
-    if (is_will_operation_) {
-      DidFinish(base::PLATFORM_FILE_OK);
       return;
     }
 
@@ -247,28 +232,13 @@ bool QuotaFileIO::Write(
     return false;
 
   WriteOperation* op = new WriteOperation(
-      this, false, offset, buffer, bytes_to_write, callback);
+      this, offset, buffer, bytes_to_write, callback);
   return RegisterOperationForQuotaChecks(op);
 }
 
 bool QuotaFileIO::SetLength(int64_t length, const StatusCallback& callback) {
   DCHECK(pending_operations_.empty());
-  SetLengthOperation* op = new SetLengthOperation(
-      this, false, length, callback);
-  return RegisterOperationForQuotaChecks(op);
-}
-
-bool QuotaFileIO::WillWrite(
-    int64_t offset, int32_t bytes_to_write, const WriteCallback& callback) {
-  WriteOperation* op = new WriteOperation(
-      this, true, offset, NULL, bytes_to_write, callback);
-  return RegisterOperationForQuotaChecks(op);
-}
-
-bool QuotaFileIO::WillSetLength(int64_t length,
-                                const StatusCallback& callback) {
-  DCHECK(pending_operations_.empty());
-  SetLengthOperation* op = new SetLengthOperation(this, true, length, callback);
+  SetLengthOperation* op = new SetLengthOperation(this, length, callback);
   return RegisterOperationForQuotaChecks(op);
 }
 

@@ -73,11 +73,6 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   // Trusted API.
   int32_t OnHostMsgGetOSFileDescriptor(
       ppapi::host::HostMessageContext* context);
-  int32_t OnHostMsgWillWrite(ppapi::host::HostMessageContext* context,
-                             int64_t offset,
-                             int32_t bytes_to_write);
-  int32_t OnHostMsgWillSetLength(ppapi::host::HostMessageContext* context,
-                                 int64_t length);
 
   // Callback handlers. These mostly convert the PlatformFileError to the
   // PP_Error code and send back the reply. Note that the argument

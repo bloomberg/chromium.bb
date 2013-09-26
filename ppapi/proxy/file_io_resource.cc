@@ -291,27 +291,6 @@ int32_t FileIOResource::RequestOSFileHandle(
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t FileIOResource::WillWrite(int64_t offset,
-                                  int32_t bytes_to_write,
-                                  scoped_refptr<TrackedCallback> callback) {
-  Call<PpapiPluginMsg_FileIO_GeneralReply>(RENDERER,
-      PpapiHostMsg_FileIO_WillWrite(offset, bytes_to_write),
-      base::Bind(&FileIOResource::OnPluginMsgGeneralComplete, this, callback));
-
-  state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
-  return PP_OK_COMPLETIONPENDING;
-}
-
-int32_t FileIOResource::WillSetLength(int64_t length,
-                                      scoped_refptr<TrackedCallback> callback) {
-  Call<PpapiPluginMsg_FileIO_GeneralReply>(RENDERER,
-      PpapiHostMsg_FileIO_WillSetLength(length),
-      base::Bind(&FileIOResource::OnPluginMsgGeneralComplete, this, callback));
-
-  state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
-  return PP_OK_COMPLETIONPENDING;
-}
-
 int32_t FileIOResource::ReadValidated(int64_t offset,
                                       int32_t bytes_to_read,
                                       const PP_ArrayOutput& array_output,
