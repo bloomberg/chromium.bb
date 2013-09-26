@@ -59,12 +59,16 @@ class MEDIA_EXPORT AudioDecoderSelector {
                           const StatisticsCB& statistics_cb,
                           const SelectDecoderCB& select_decoder_cb);
 
+  // Aborts pending AudioDecoder selection and fires |select_decoder_cb| with
+  // NULL and NULL immediately if it's pending.
+  void Abort();
+
  private:
   void DecryptingAudioDecoderInitDone(PipelineStatus status);
   void DecryptingDemuxerStreamInitDone(PipelineStatus status);
-  void InitializeDecoder(ScopedVector<AudioDecoder>::iterator iter);
-  void DecoderInitDone(ScopedVector<AudioDecoder>::iterator iter,
-                       PipelineStatus status);
+  void InitializeDecoder();
+  void DecoderInitDone(PipelineStatus status);
+  void ReturnNullDecoder();
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   ScopedVector<AudioDecoder> decoders_;

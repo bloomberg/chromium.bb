@@ -28,13 +28,15 @@ AudioDecoderSelector::AudioDecoderSelector(
       weak_ptr_factory_(this) {
 }
 
-AudioDecoderSelector::~AudioDecoderSelector() {}
+AudioDecoderSelector::~AudioDecoderSelector() {
+  DVLOG(2) << __FUNCTION__;
+}
 
 void AudioDecoderSelector::SelectAudioDecoder(
     DemuxerStream* stream,
     const StatisticsCB& statistics_cb,
     const SelectDecoderCB& select_decoder_cb) {
-  DVLOG(2) << "SelectAudioDecoder()";
+  DVLOG(2) << __FUNCTION__;
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(stream);
 
@@ -44,8 +46,7 @@ void AudioDecoderSelector::SelectAudioDecoder(
   const AudioDecoderConfig& config = stream->audio_decoder_config();
   if (!config.IsValidConfig()) {
     DLOG(ERROR) << "Invalid audio stream config.";
-    base::ResetAndReturn(&select_decoder_cb_).Run(
-        scoped_ptr<AudioDecoder>(), scoped_ptr<DecryptingDemuxerStream>());
+    ReturnNullDecoder();
     return;
   }
 
@@ -53,14 +54,13 @@ void AudioDecoderSelector::SelectAudioDecoder(
   statistics_cb_ = statistics_cb;
 
   if (!config.is_encrypted()) {
-    InitializeDecoder(decoders_.begin());
+    InitializeDecoder();
     return;
   }
 
   // This could happen if Encrypted Media Extension (EME) is not enabled.
   if (set_decryptor_ready_cb_.is_null()) {
-    base::ResetAndReturn(&select_decoder_cb_).Run(
-        scoped_ptr<AudioDecoder>(), scoped_ptr<DecryptingDemuxerStream>());
+    ReturnNullDecoder();
     return;
   }
 
@@ -69,14 +69,47 @@ void AudioDecoderSelector::SelectAudioDecoder(
 
   audio_decoder_->Initialize(
       input_stream_,
-      BindToCurrentLoop(base::Bind(
-          &AudioDecoderSelector::DecryptingAudioDecoderInitDone,
-          weak_ptr_factory_.GetWeakPtr())),
+      base::Bind(&AudioDecoderSelector::DecryptingAudioDecoderInitDone,
+                 weak_ptr_factory_.GetWeakPtr()),
       statistics_cb_);
+}
+
+void AudioDecoderSelector::Abort() {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(message_loop_->BelongsToCurrentThread());
+
+  // This could happen when SelectAudioDecoder() was not called or when
+  // |select_decoder_cb_| was already posted but not fired (e.g. in the
+  // message loop queue).
+  if (select_decoder_cb_.is_null())
+    return;
+
+  // We must be trying to initialize the |audio_decoder_| or the
+  // |decrypted_stream_|. Invalid all weak pointers so that all initialization
+  // callbacks won't fire.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
+  if (audio_decoder_) {
+    // AudioDecoder doesn't provide a Stop() method. Also, |decrypted_stream_|
+    // is either NULL or already initialized. We don't need to Reset()
+    // |decrypted_stream_| in either case.
+    ReturnNullDecoder();
+    return;
+  }
+
+  if (decrypted_stream_) {
+    decrypted_stream_->Reset(
+        base::Bind(&AudioDecoderSelector::ReturnNullDecoder,
+                   weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  NOTREACHED();
 }
 
 void AudioDecoderSelector::DecryptingAudioDecoderInitDone(
     PipelineStatus status) {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (status == PIPELINE_OK) {
@@ -92,60 +125,63 @@ void AudioDecoderSelector::DecryptingAudioDecoderInitDone(
 
   decrypted_stream_->Initialize(
       input_stream_,
-      BindToCurrentLoop(base::Bind(
-          &AudioDecoderSelector::DecryptingDemuxerStreamInitDone,
-          weak_ptr_factory_.GetWeakPtr())));
+      base::Bind(&AudioDecoderSelector::DecryptingDemuxerStreamInitDone,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AudioDecoderSelector::DecryptingDemuxerStreamInitDone(
     PipelineStatus status) {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (status != PIPELINE_OK) {
-    decrypted_stream_.reset();
-    base::ResetAndReturn(&select_decoder_cb_).Run(
-        scoped_ptr<AudioDecoder>(), scoped_ptr<DecryptingDemuxerStream>());
+    ReturnNullDecoder();
     return;
   }
 
   DCHECK(!decrypted_stream_->audio_decoder_config().is_encrypted());
   input_stream_ = decrypted_stream_.get();
-  InitializeDecoder(decoders_.begin());
+  InitializeDecoder();
 }
 
-void AudioDecoderSelector::InitializeDecoder(
-    ScopedVector<AudioDecoder>::iterator iter) {
+void AudioDecoderSelector::InitializeDecoder() {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(!audio_decoder_);
 
-  if (iter == decoders_.end()) {
-    base::ResetAndReturn(&select_decoder_cb_).Run(
-        scoped_ptr<AudioDecoder>(), scoped_ptr<DecryptingDemuxerStream>());
+  if (decoders_.empty()) {
+    ReturnNullDecoder();
     return;
   }
 
-  (*iter)->Initialize(
-      input_stream_,
-      BindToCurrentLoop(base::Bind(
-          &AudioDecoderSelector::DecoderInitDone,
-          weak_ptr_factory_.GetWeakPtr(),
-          iter)),
-      statistics_cb_);
+  audio_decoder_.reset(decoders_.front());
+  decoders_.weak_erase(decoders_.begin());
+
+  audio_decoder_->Initialize(input_stream_,
+                             base::Bind(&AudioDecoderSelector::DecoderInitDone,
+                                        weak_ptr_factory_.GetWeakPtr()),
+                             statistics_cb_);
 }
 
-void AudioDecoderSelector::DecoderInitDone(
-    ScopedVector<AudioDecoder>::iterator iter, PipelineStatus status) {
+void AudioDecoderSelector::DecoderInitDone(PipelineStatus status) {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (status != PIPELINE_OK) {
-    InitializeDecoder(++iter);
+    audio_decoder_.reset();
+    InitializeDecoder();
     return;
   }
 
-  scoped_ptr<AudioDecoder> audio_decoder(*iter);
-  decoders_.weak_erase(iter);
-
-  base::ResetAndReturn(&select_decoder_cb_).Run(audio_decoder.Pass(),
+  base::ResetAndReturn(&select_decoder_cb_).Run(audio_decoder_.Pass(),
                                                 decrypted_stream_.Pass());
+}
+
+void AudioDecoderSelector::ReturnNullDecoder() {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  base::ResetAndReturn(&select_decoder_cb_).Run(
+      scoped_ptr<AudioDecoder>(), scoped_ptr<DecryptingDemuxerStream>());
 }
 
 }  // namespace media
