@@ -36,7 +36,6 @@ class AutoEnrollmentClient
  public:
   // |completion_callback| will be invoked on completion of the protocol, after
   // Start() is invoked.
-  // Takes ownership of |device_management_service|.
   // The result of the protocol will be cached in |local_state|.
   // |power_initial| and |power_limit| are exponents of power-of-2 values which
   // will be the initial modulus and the maximum modulus used by this client.
@@ -140,7 +139,7 @@ class AutoEnrollmentClient
   int requests_sent_;
 
   // Used to communicate with the device management service.
-  scoped_ptr<DeviceManagementService> device_management_service_;
+  DeviceManagementService* device_management_service_;
   scoped_ptr<DeviceManagementRequestJob> request_job_;
 
   // PrefService where the protocol's results are cached.

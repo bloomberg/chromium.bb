@@ -41,7 +41,6 @@ class AutoEnrollmentClientTest : public testing::Test {
       : scoped_testing_local_state_(
             TestingBrowserProcess::GetGlobal()),
         local_state_(scoped_testing_local_state_.Get()),
-        service_(NULL),
         completion_callback_count_(0) {}
 
   virtual void SetUp() OVERRIDE {
@@ -53,14 +52,14 @@ class AutoEnrollmentClientTest : public testing::Test {
   void CreateClient(const std::string& serial,
                     int power_initial,
                     int power_limit) {
-    service_ = new MockDeviceManagementService();
+    service_.reset(new MockDeviceManagementService());
     EXPECT_CALL(*service_, StartJob(_, _, _, _, _, _, _))
         .WillRepeatedly(SaveArg<6>(&last_request_));
     base::Closure callback =
         base::Bind(&AutoEnrollmentClientTest::CompletionCallback,
                    base::Unretained(this));
     client_.reset(new AutoEnrollmentClient(callback,
-                                           service_,
+                                           service_.get(),
                                            local_state_,
                                            serial,
                                            power_initial,
@@ -129,7 +128,7 @@ class AutoEnrollmentClientTest : public testing::Test {
   content::TestBrowserThreadBundle browser_threads_;
   ScopedTestingLocalState scoped_testing_local_state_;
   TestingPrefServiceSimple* local_state_;
-  MockDeviceManagementService* service_;
+  scoped_ptr<MockDeviceManagementService> service_;
   scoped_ptr<AutoEnrollmentClient> client_;
   em::DeviceManagementRequest last_request_;
   int completion_callback_count_;

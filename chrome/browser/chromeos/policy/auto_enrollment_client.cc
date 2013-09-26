@@ -131,13 +131,10 @@ AutoEnrollmentClient* AutoEnrollmentClient::Create(
   if (IsDisabled()) {
     VLOG(1) << "Auto-enrollment is disabled";
   } else {
-    std::string url = BrowserPolicyConnector::GetDeviceManagementUrl();
-    if (!url.empty()) {
-      service = new DeviceManagementService(
-          g_browser_process->system_request_context(),
-          url);
-      service->ScheduleInitialization(0);
-    }
+    BrowserPolicyConnector* connector =
+        g_browser_process->browser_policy_connector();
+    service = connector->device_management_service();
+    service->ScheduleInitialization(0);
   }
 
   int power_initial = GetSanitizedArg(
