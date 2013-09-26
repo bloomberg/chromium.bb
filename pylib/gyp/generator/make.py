@@ -201,6 +201,24 @@ cmd_solink_module_host = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(T
 """
 
 
+LINK_COMMANDS_AIX = """\
+quiet_cmd_alink = AR($(TOOLSET)) $@
+cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) crs $@ $(filter %.o,$^)
+
+quiet_cmd_alink_thin = AR($(TOOLSET)) $@
+cmd_alink_thin = rm -f $@ && $(AR.$(TOOLSET)) crs $@ $(filter %.o,$^)
+
+quiet_cmd_link = LINK($(TOOLSET)) $@
+cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ $(LD_INPUTS) $(LIBS)
+
+quiet_cmd_solink = SOLINK($(TOOLSET)) $@
+cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ $(LD_INPUTS) $(LIBS)
+
+quiet_cmd_solink_module = SOLINK_MODULE($(TOOLSET)) $@
+cmd_solink_module = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ $(filter-out FORCE_DO_CMD, $^) $(LIBS)
+"""
+
+
 # Header of toplevel Makefile.
 # This should go into the build tree, but it's easier to keep it here for now.
 SHARED_HEADER = ("""\
@@ -477,14 +495,6 @@ cmd_mac_package_framework = ./gyp-mac-tool package-framework "$@" $(4)
 
 quiet_cmd_infoplist = INFOPLIST $@
 cmd_infoplist = $(CC.$(TOOLSET)) -E -P -Wno-trigraphs -x c $(INFOPLIST_DEFINES) "$<" -o "$@"
-"""
-
-SHARED_HEADER_SUN_COMMANDS = """
-# gyp-sun-tool is written next to the root Makefile by gyp.
-# Use $(4) for the command, since $(2) and $(3) are used as flag by do_cmd
-# already.
-quiet_cmd_sun_tool = SUNTOOL $(4) $<
-cmd_sun_tool = ./gyp-sun-tool $(4) $< "$@"
 """
 
 
@@ -1988,12 +1998,17 @@ def GenerateOutput(target_list, target_dicts, data, params):
     header_params.update({
         'flock': './gyp-sun-tool flock',
         'flock_index': 2,
-        'extra_commands': SHARED_HEADER_SUN_COMMANDS,
     })
   elif flavor == 'freebsd':
     # Note: OpenBSD has sysutils/flock. lockf seems to be FreeBSD specific.
     header_params.update({
         'flock': 'lockf',
+    })
+  elif flavor == 'aix':
+    header_params.update({
+        'link_commands': LINK_COMMANDS_AIX,
+        'flock': './gyp-aix-tool flock',
+        'flock_index': 2,
     })
 
   header_params.update({
