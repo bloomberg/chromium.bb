@@ -24,7 +24,7 @@ function handler(){
     newChild.appendChild(target);
 }   
 document.addEventListener("DOMNodeRemoved", handler, false);
-shouldThrow("target.replaceChild(newChild, oldChild);",  "'HierarchyRequestError: A Node was inserted somewhere it doesn\\'t belong.'");
+shouldThrow("target.replaceChild(newChild, oldChild);", '"HierarchyRequestError: Failed to execute \'replaceChild\' on \'ContainerNode\': The new child element contains the parent."');
 </script>
 <script src="../js/resources/js-test-post.js"></script>
 </body>

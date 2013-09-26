@@ -3,7 +3,7 @@ Ensures that insertBefore() throws an exception if mutation even handler does so
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS newparent.insertBefore(child, beforeChild); threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
+PASS newparent.insertBefore(child, beforeChild); threw exception HierarchyRequestError: Failed to execute 'insertBefore' on 'ContainerNode': The new child element contains the parent..
 PASS successfullyParsed is true
 
 TEST COMPLETE

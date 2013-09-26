@@ -23,6 +23,7 @@
 #include "config.h"
 #include "core/dom/ContainerNode.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ChildListMutationScope.h"
@@ -140,11 +141,11 @@ static inline bool containsConsideringHostElements(const Node* newChild, const N
         : newChild->contains(newParent);
 }
 
-static inline bool checkAcceptChild(ContainerNode* newParent, Node* newChild, Node* oldChild, ExceptionState& es)
+static inline bool checkAcceptChild(ContainerNode* newParent, Node* newChild, Node* oldChild, const String& method, ExceptionState& es)
 {
     // Not mentioned in spec: throw NotFoundError if newChild is null
     if (!newChild) {
-        es.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute(method, "ContainerNode", "The new child element is null."));
         return false;
     }
 
@@ -153,7 +154,7 @@ static inline bool checkAcceptChild(ContainerNode* newParent, Node* newChild, No
         ASSERT(!newParent->isDocumentTypeNode());
         ASSERT(isChildTypeAllowed(newParent, newChild));
         if (containsConsideringHostElements(newChild, newParent)) {
-            es.throwUninformativeAndGenericDOMException(HierarchyRequestError);
+            es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute(method, "ContainerNode", "The new child element contains the parent."));
             return false;
         }
         return true;
@@ -162,48 +163,49 @@ static inline bool checkAcceptChild(ContainerNode* newParent, Node* newChild, No
     // This should never happen, but also protect release builds from tree corruption.
     ASSERT(!newChild->isPseudoElement());
     if (newChild->isPseudoElement()) {
-        es.throwUninformativeAndGenericDOMException(HierarchyRequestError);
+        es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute(method, "ContainerNode", "The new child element is a pseudo-element."));
         return false;
     }
 
     if (containsConsideringHostElements(newChild, newParent)) {
-        es.throwUninformativeAndGenericDOMException(HierarchyRequestError);
+        es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute(method, "ContainerNode", "The new child element contains the parent."));
         return false;
     }
 
     if (oldChild && newParent->isDocumentNode()) {
         if (!toDocument(newParent)->canReplaceChild(newChild, oldChild)) {
-            es.throwUninformativeAndGenericDOMException(HierarchyRequestError);
+            // FIXME: Adjust 'Document::canReplaceChild' to return some additional detail (or an error message).
+            es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute(method, "ContainerNode"));
             return false;
         }
     } else if (!isChildTypeAllowed(newParent, newChild)) {
-        es.throwUninformativeAndGenericDOMException(HierarchyRequestError);
+        es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute(method, "ContainerNode", "Nodes of type '" + newChild->nodeName() + "' may not be inserted inside nodes of type '" + newParent->nodeName() + "'."));
         return false;
     }
 
     return true;
 }
 
-static inline bool checkAcceptChildGuaranteedNodeTypes(ContainerNode* newParent, Node* newChild, ExceptionState& es)
+static inline bool checkAcceptChildGuaranteedNodeTypes(ContainerNode* newParent, Node* newChild, const String& method, ExceptionState& es)
 {
     ASSERT(!newParent->isDocumentTypeNode());
     ASSERT(isChildTypeAllowed(newParent, newChild));
     if (newChild->contains(newParent)) {
-        es.throwUninformativeAndGenericDOMException(HierarchyRequestError);
+        es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute(method, "ContainerNode", "The new child element contains the parent."));
         return false;
     }
 
     return true;
 }
 
-static inline bool checkAddChild(ContainerNode* newParent, Node* newChild, ExceptionState& es)
+static inline bool checkAddChild(ContainerNode* newParent, Node* newChild, const String& method, ExceptionState& es)
 {
-    return checkAcceptChild(newParent, newChild, 0, es);
+    return checkAcceptChild(newParent, newChild, 0, method, es);
 }
 
-static inline bool checkReplaceChild(ContainerNode* newParent, Node* newChild, Node* oldChild, ExceptionState& es)
+static inline bool checkReplaceChild(ContainerNode* newParent, Node* newChild, Node* oldChild, const String& method, ExceptionState& es)
 {
-    return checkAcceptChild(newParent, newChild, oldChild, es);
+    return checkAcceptChild(newParent, newChild, oldChild, method, es);
 }
 
 void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& es)
@@ -221,12 +223,12 @@ void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, Exce
     }
 
     // Make sure adding the new child is OK.
-    if (!checkAddChild(this, newChild.get(), es))
+    if (!checkAddChild(this, newChild.get(), "insertBefore", es))
         return;
 
     // NotFoundError: Raised if refChild is not a child of this node
     if (refChild->parentNode() != this) {
-        es.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("insertBefore", "ContainerNode", "The node before which the new node is to be inserted is not a child of this node."));
         return;
     }
 
@@ -243,7 +245,7 @@ void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, Exce
         return;
 
     // We need this extra check because collectChildrenAndRemoveFromOldParent() can fire mutation events.
-    if (!checkAcceptChildGuaranteedNodeTypes(this, newChild.get(), es))
+    if (!checkAcceptChildGuaranteedNodeTypes(this, newChild.get(), "insertBefore", es))
         return;
 
     InspectorInstrumentation::willInsertDOMNode(&document(), this);
@@ -334,17 +336,17 @@ void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
         return;
 
     if (!oldChild) {
-        es.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("replaceChild", "ContainerNode", "The node to be replaced is null."));
         return;
     }
 
     // Make sure replacing the old child with the new is ok
-    if (!checkReplaceChild(this, newChild.get(), oldChild, es))
+    if (!checkReplaceChild(this, newChild.get(), oldChild, "replaceChild", es))
         return;
 
     // NotFoundError: Raised if oldChild is not a child of this node.
     if (oldChild->parentNode() != this) {
-        es.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("replaceChild", "ContainerNode", "The node to be replaced is not a child of this node."));
         return;
     }
 
@@ -362,7 +364,7 @@ void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
         return;
 
     // Does this one more time because removeChild() fires a MutationEvent.
-    if (!checkReplaceChild(this, newChild.get(), oldChild, es))
+    if (!checkReplaceChild(this, newChild.get(), oldChild, "replaceChild", es))
         return;
 
     NodeVector targets;
@@ -371,7 +373,7 @@ void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
         return;
 
     // Does this yet another check because collectChildrenAndRemoveFromOldParent() fires a MutationEvent.
-    if (!checkReplaceChild(this, newChild.get(), oldChild, es))
+    if (!checkReplaceChild(this, newChild.get(), oldChild, "replaceChild", es))
         return;
 
     InspectorInstrumentation::willInsertDOMNode(&document(), this);
@@ -451,7 +453,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& es)
 
     // NotFoundError: Raised if oldChild is not a child of this node.
     if (!oldChild || oldChild->parentNode() != this) {
-        es.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("removeChild", "ContainerNode", "The node to be removed is not a child of this node."));
         return;
     }
 
@@ -465,7 +467,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& es)
     // Events fired when blurring currently focused node might have moved this
     // child into a different parent.
     if (child->parentNode() != this) {
-        es.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("removeChild", "ContainerNode", "The node to be removed is no longer a child of this node. Perhaps it was moved in a 'blur' event handler?"));
         return;
     }
 
@@ -473,7 +475,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& es)
 
     // Mutation events might have moved this child into a different parent.
     if (child->parentNode() != this) {
-        es.throwUninformativeAndGenericDOMException(NotFoundError);
+        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("removeChild", "ContainerNode", "The node to be removed is no longer a child of this node. Perhaps it was moved in response to a mutation?"));
         return;
     }
 
@@ -595,7 +597,7 @@ void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& es)
     ASSERT(refCount() || parentOrShadowHostNode());
 
     // Make sure adding the new child is ok
-    if (!checkAddChild(this, newChild.get(), es))
+    if (!checkAddChild(this, newChild.get(), "appendChild", es))
         return;
 
     if (newChild == m_lastChild) // nothing to do
@@ -610,7 +612,7 @@ void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& es)
         return;
 
     // We need this extra check because collectChildrenAndRemoveFromOldParent() can fire mutation events.
-    if (!checkAcceptChildGuaranteedNodeTypes(this, newChild.get(), es))
+    if (!checkAcceptChildGuaranteedNodeTypes(this, newChild.get(), "appendChild", es))
         return;
 
     InspectorInstrumentation::willInsertDOMNode(&document(), this);

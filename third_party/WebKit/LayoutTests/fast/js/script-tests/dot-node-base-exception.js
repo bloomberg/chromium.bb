@@ -3,4 +3,4 @@ description(
 );
 
 // Should be a DOM exception, not just some "TypeError: Null value".
-shouldThrow('(document.appendChild()).foobar()', '"NotFoundError: An attempt was made to reference a Node in a context where it does not exist."');
+shouldThrow('(document.appendChild()).foobar()', '"NotFoundError: Failed to execute \'appendChild\' on \'ContainerNode\': The new child element is null."');

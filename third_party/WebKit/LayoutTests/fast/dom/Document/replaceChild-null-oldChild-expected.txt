@@ -3,7 +3,7 @@ Test behavior of Document.replaceChild() when oldChild is null.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS document.replaceChild(document.firstChild, null) threw exception NotFoundError: An attempt was made to reference a Node in a context where it does not exist..
+PASS document.replaceChild(document.firstChild, null) threw exception NotFoundError: Failed to execute 'replaceChild' on 'ContainerNode': The node to be replaced is null..
 PASS successfullyParsed is true
 
 TEST COMPLETE

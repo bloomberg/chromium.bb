@@ -12,7 +12,7 @@ try {
   e = err;
 }
 
-shouldBeEqualToString("e.toString()", "HierarchyRequestError: A Node was inserted somewhere it doesn't belong.");
+shouldBeEqualToString("e.toString()", "HierarchyRequestError: Failed to execute 'appendChild' on 'ContainerNode': The new child element contains the parent.");
 shouldBeEqualToString("Object.prototype.toString.call(e)", "[object DOMException]");
 shouldBeEqualToString("Object.prototype.toString.call(e.__proto__)", "[object DOMExceptionPrototype]");
 shouldBeEqualToString("Object.prototype.toString.call(e.__proto__.__proto__)", "[object Error]");
@@ -24,7 +24,7 @@ shouldBe("e.HIERARCHY_REQUEST_ERR", "e.constructor.HIERARCHY_REQUEST_ERR");
 shouldBe("e.HIERARCHY_REQUEST_ERR", "3");
 shouldBe("e.code", "3");
 shouldBeEqualToString("e.name", "HierarchyRequestError");
-shouldBeEqualToString("e.message", "A Node was inserted somewhere it doesn't belong.");
+shouldBeEqualToString("e.message", "Failed to execute 'appendChild' on 'ContainerNode': The new child element contains the parent.");
 
 </script>
 <script src="../../js/resources/js-test-post.js"></script>
