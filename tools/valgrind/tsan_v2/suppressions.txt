@@ -122,6 +122,9 @@ race:net::RuleBasedHostResolverProc::Resolve
 # http://crbug.com/272095
 race:base::g_top_manager
 
+# http://crbug.com/272987
+race:webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>::set_enabled
+
 # http://crbug.com/273047
 race:base::*::g_lazy_tls_ptr
 race:IPC::SyncChannel::ReceivedSyncMsgQueue::lazy_tls_ptr_
@@ -134,3 +137,6 @@ race:PostponeInterruptsScope
 
 # http://crbug.com/296883
 race:net::URLFetcherCore::Stop
+
+# http://crbug.com/298981
+race:content::VideoCaptureImpl::DoBufferReceivedOnCaptureThread
