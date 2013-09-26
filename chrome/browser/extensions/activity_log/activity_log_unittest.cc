@@ -110,7 +110,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
 
   static void RetrieveActions_ArgUrlExtraction(
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
-    ASSERT_EQ(3U, i->size());
+    ASSERT_EQ(4U, i->size());
     scoped_refptr<Action> action = i->at(0);
     ASSERT_EQ("XMLHttpRequest.open", action->api_name());
     ASSERT_EQ("[\"POST\",\"\\u003Carg_url\\u003E\"]",
@@ -119,14 +119,17 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
 
     action = i->at(1);
     ASSERT_EQ("XMLHttpRequest.open", action->api_name());
+    ASSERT_EQ("[\"POST\",\"\\u003Carg_url\\u003E\"]",
+              ActivityLogPolicy::Util::Serialize(action->args()));
+    ASSERT_EQ("http://www.google.com/api/", action->arg_url().spec());
+
+    action = i->at(2);
+    ASSERT_EQ("XMLHttpRequest.open", action->api_name());
     ASSERT_EQ("[\"POST\",\"/api/\"]",
               ActivityLogPolicy::Util::Serialize(action->args()));
     ASSERT_FALSE(action->arg_url().is_valid());
-    // TODO(mvrable): If we are able to resolve relative URLs, then the test
-    // case should produce:
-    // ASSERT_EQ("http://www.google.com/api/", action->arg_url().spec());
 
-    action = i->at(2);
+    action = i->at(3);
     ASSERT_EQ("windows.create", action->api_name());
     ASSERT_EQ("[{\"url\":\"\\u003Carg_url\\u003E\"}]",
               ActivityLogPolicy::Util::Serialize(action->args()));
@@ -240,8 +243,8 @@ TEST_F(ActivityLogTest, ArgUrlExtraction) {
   action->mutable_args()->AppendString("http://api.google.com/");
   activity_log->LogAction(action);
 
-  // Submit a DOM API call with a relative URL, which cannot (currently) be
-  // handled.
+  // Submit a DOM API call with a relative URL in the argument, which should be
+  // resolved relative to the page URL.
   action = new Action(kExtensionId,
                       now - base::TimeDelta::FromSeconds(1),
                       Action::ACTION_DOM_ACCESS,
@@ -251,9 +254,19 @@ TEST_F(ActivityLogTest, ArgUrlExtraction) {
   action->mutable_args()->AppendString("/api/");
   activity_log->LogAction(action);
 
-  // Submit an API call with an embedded URL.
+  // Submit a DOM API call with a relative URL but no base page URL against
+  // which to resolve.
   action = new Action(kExtensionId,
                       now - base::TimeDelta::FromSeconds(2),
+                      Action::ACTION_DOM_ACCESS,
+                      "XMLHttpRequest.open");
+  action->mutable_args()->AppendString("POST");
+  action->mutable_args()->AppendString("/api/");
+  activity_log->LogAction(action);
+
+  // Submit an API call with an embedded URL.
+  action = new Action(kExtensionId,
+                      now - base::TimeDelta::FromSeconds(3),
                       Action::ACTION_API_CALL,
                       "windows.create");
   action->set_args(
