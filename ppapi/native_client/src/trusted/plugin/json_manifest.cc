@@ -42,8 +42,6 @@ const char* const kUrlKey =            "url";
 
 // PNaCl keys
 const char* const kOptLevelKey = "optlevel";
-// DEPRECATED! TODO(jvoung): remove the error message after launch.
-const char* const kOptLevelKeyDeprecated = "-O";
 
 // Sample NaCl manifest file:
 // {
@@ -209,14 +207,6 @@ bool IsValidUrlSpec(const Json::Value& url_spec,
     error_stream << parent_key << " property '" << container_key <<
         "' has non-numeric value '" << opt_level.toStyledString() <<
         "' for key '" << kOptLevelKey << "'.";
-    *error_string = error_stream.str();
-    return false;
-  }
-  if (url_spec.isMember(kOptLevelKeyDeprecated)) {
-    nacl::stringstream error_stream;
-    error_stream << parent_key << " property '" << container_key <<
-        "' has deprecated key '" << kOptLevelKeyDeprecated <<
-        "' please use '" << kOptLevelKey << "' instead.";
     *error_string = error_stream.str();
     return false;
   }
