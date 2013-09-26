@@ -37,6 +37,7 @@ const size_t kReadBufferSize = 4096;
 const char kFailedToStartError[] = "Failed to start native messaging host.";
 const char kInvalidNameError[] =
     "Invalid native messaging host name specified.";
+const char kNativeHostExited[] = "Native host has exited.";
 const char kNotFoundError[] = "Specified native messaging host not found.";
 const char kForbiddenError[] =
     "Access to the specified native messaging host is forbidden.";
@@ -59,8 +60,8 @@ NativeMessageProcessHost::NativeMessageProcessHost(
       destination_port_(destination_port),
       launcher_(launcher.Pass()),
       closed_(false),
+      read_file_(base::kInvalidPlatformFileValue),
       read_pending_(false),
-      read_eof_(false),
       write_pending_(false) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -196,7 +197,7 @@ void NativeMessageProcessHost::ReadNowForTesting() {
 }
 
 void NativeMessageProcessHost::WaitRead() {
-  if (closed_ || read_eof_)
+  if (closed_)
     return;
 
   DCHECK(!read_pending_);
@@ -217,7 +218,7 @@ void NativeMessageProcessHost::WaitRead() {
 void NativeMessageProcessHost::DoRead() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  while (!closed_ && !read_eof_ && !read_pending_) {
+  while (!closed_ && !read_pending_) {
     read_buffer_ = new net::IOBuffer(kReadBufferSize);
     int result = read_stream_->Read(
         read_buffer_.get(),
@@ -244,10 +245,10 @@ void NativeMessageProcessHost::HandleReadResult(int result) {
 
   if (result > 0) {
     ProcessIncomingData(read_buffer_->data(), result);
-  } else if (result == 0) {
-    read_eof_ = true;
   } else if (result == net::ERR_IO_PENDING) {
     read_pending_ = true;
+  } else if (result == 0 || result == net::ERR_CONNECTION_RESET) {
+    Close(kNativeHostExited);
   } else {
     LOG(ERROR) << "Error when reading from Native Messaging host: " << result;
     Close(kHostInputOuputError);

@@ -76,10 +76,7 @@ chrome.test.getConfig(function(config) {
         port.onMessage.addListener(function(message) {
           port.onDisconnect.addListener(chrome.test.callback(
               function() {},
-              "Error when communicating with the native messaging host."));
-          // Sending second message here should fail because the host has
-          // already stopped.
-          port.postMessage({ "secondMessage" : "foo" });
+              "Native host has exited."));
         });
 
         // Send first message that should stop the host.

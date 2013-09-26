@@ -148,9 +148,6 @@ class NativeMessageProcessHost
   // Set to true when a read is pending.
   bool read_pending_;
 
-  // Set to true once we've read EOF from the child process.
-  bool read_eof_;
-
   // Buffer for incomplete incoming messages.
   std::string incoming_data_;
 

@@ -110,6 +110,8 @@ Error MapSystemError(int os_error) {
       return ERR_ACCESS_DENIED;    // been detected.
     case ERROR_BAD_DEVICE:  // The specified device name is invalid.
       return ERR_INVALID_ARGUMENT;
+    case ERROR_BROKEN_PIPE:  // Pipe is not connected.
+      return ERR_CONNECTION_RESET;
 
     case ERROR_SUCCESS:
       return OK;
