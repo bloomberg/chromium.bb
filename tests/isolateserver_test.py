@@ -3,6 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# pylint: disable=W0223
+# pylint: disable=W0231
+
 import binascii
 import hashlib
 import json
@@ -23,6 +26,8 @@ sys.path.insert(0, ROOT_DIR)
 
 import auto_stub
 import isolateserver
+
+from utils import threading_utils
 
 
 ALGO = hashlib.sha1
@@ -60,6 +65,21 @@ class TestCase(auto_stub.TestCase):
 
 
 class StorageTest(TestCase):
+  """Tests for Storage methods."""
+
+  @staticmethod
+  def mock_push(side_effect=None):
+    """Returns StorageApi subclass with mocked 'push' method."""
+    class MockedStorageApi(isolateserver.StorageApi):
+      def __init__(self):
+        self.pushed = []
+      def push(self, item, expected_size, content_generator, push_urls=None):
+        self.pushed.append(
+          (item, expected_size, ''.join(content_generator), push_urls))
+        if side_effect:
+          side_effect()
+    return MockedStorageApi()
+
   def test_batch_files_for_check(self):
     items = {
       'foo': {'s': 12},
@@ -93,10 +113,10 @@ class StorageTest(TestCase):
     }
     fake_upload_urls = ('a', 'b')
 
-    class MockedStorageApi(isolateserver.StorageApi):  # pylint: disable=W0223
+    class MockedStorageApi(isolateserver.StorageApi):
       def contains(self, files):
         return [f + (fake_upload_urls,) for f in files if f[0] in missing]
-    storage = isolateserver.Storage(MockedStorageApi(), False)
+    storage = isolateserver.Storage(MockedStorageApi(), use_zip=False)
 
     # 'get_missing_files' is a generator, materialize its result in a list.
     result = list(storage.get_missing_files(items))
@@ -108,6 +128,166 @@ class StorageTest(TestCase):
     # 'get_missing_files' doesn't guarantee order of its results, so convert
     # it to unordered dict and compare dicts.
     self.assertEqual(dict(x[:2] for x in result), missing)
+
+  def test_async_push(self):
+    data_to_push = '1234567'
+    digest = ALGO(data_to_push).hexdigest()
+    compression_level = 5
+    zipped = zlib.compress(data_to_push, compression_level)
+    push_urls = ('fake1', 'fake2')
+
+    for use_zip in (False, True):
+      storage_api = self.mock_push()
+      storage = isolateserver.Storage(storage_api, use_zip)
+      channel = threading_utils.TaskChannel()
+      storage.async_push(
+          channel, 0, digest, len(data_to_push), [data_to_push],
+          compression_level, push_urls)
+      # Wait for push to finish.
+      pushed_item = channel.pull()
+      self.assertEqual(digest, pushed_item)
+      # StorageApi.push was called with correct arguments.
+      if use_zip:
+        expected_data = zipped
+        expected_size = isolateserver.UNKNOWN_FILE_SIZE
+      else:
+        expected_data = data_to_push
+        expected_size = len(data_to_push)
+      self.assertEqual(
+          [(digest, expected_size, expected_data, push_urls)],
+          storage_api.pushed)
+
+  def test_async_push_generator_errors(self):
+    class FakeException(Exception):
+      pass
+
+    def faulty_generator():
+      yield 'Hi!'
+      raise FakeException('fake exception')
+
+    for use_zip in (False, True):
+      storage_api = self.mock_push()
+      storage = isolateserver.Storage(storage_api, use_zip)
+      channel = threading_utils.TaskChannel()
+      storage.async_push(
+          channel, 0, 'item', isolateserver.UNKNOWN_FILE_SIZE,
+          faulty_generator(), 0, None)
+      with self.assertRaises(FakeException):
+        channel.pull()
+      # StorageApi's push should never complete when data can not be read.
+      self.assertEqual(0, len(storage_api.pushed))
+
+  def test_async_push_upload_errors(self):
+    chunk = 'data_chunk'
+    compression_level = 5
+    zipped = zlib.compress(chunk, compression_level)
+
+    def _generator():
+      yield chunk
+
+    def push_side_effect():
+      raise IOError('Nope')
+
+    # TODO(vadimsh): Retrying push when fetching data from a generator is
+    # broken now (it reuses same generator instance when retrying).
+    content_sources = (
+        # generator(),
+        [chunk],
+    )
+
+    for use_zip in (False, True):
+      for source in content_sources:
+        storage_api = self.mock_push(push_side_effect)
+        storage = isolateserver.Storage(storage_api, use_zip)
+        channel = threading_utils.TaskChannel()
+        storage.async_push(
+            channel, 0, 'item', isolateserver.UNKNOWN_FILE_SIZE,
+            source, compression_level, None)
+        with self.assertRaises(IOError):
+          channel.pull()
+        # First initial attempt + all retries.
+        attempts = 1 + isolateserver.WorkerPool.RETRIES
+        # Single push attempt parameters.
+        expected_push = (
+            'item', isolateserver.UNKNOWN_FILE_SIZE,
+            zipped if use_zip else chunk, None)
+        # Ensure all pushes are attempted.
+        self.assertEqual(
+            [expected_push] * attempts, storage_api.pushed)
+
+  def test_upload_tree(self):
+    root = 'root'
+    files = {
+      'a': {
+        's': 100,
+        'h': 'hash_a',
+      },
+      'b': {
+        's': 200,
+        'h': 'hash_b',
+      },
+      'c': {
+        's': 300,
+        'h': 'hash_c',
+      },
+    }
+    push_urls = {
+      'a': ('upload_a', 'finalize_a'),
+      'b': ('upload_b', None),
+      'c': ('upload_c', None),
+    }
+    files_data = dict((k, k * files[k]['s']) for k in files)
+    missing = set(['a', 'b'])
+
+    # Files read by mocked_file_read.
+    read_calls = []
+    # 'contains' calls.
+    contains_calls = []
+    # 'push' calls.
+    push_calls = []
+
+    def mocked_file_read(filepath, _chunk_size=0):
+      self.assertEqual(root, os.path.dirname(filepath))
+      filename = os.path.basename(filepath)
+      self.assertIn(filename, files_data)
+      read_calls.append(filename)
+      return files_data[filename]
+    self.mock(isolateserver, 'file_read', mocked_file_read)
+
+    class MockedStorageApi(isolateserver.StorageApi):
+      def contains(self, files):
+        contains_calls.append(files)
+        return [f + (push_urls[f[0]],) for f in files if f[0] in missing]
+
+      def push(self, item, expected_size, content_generator, push_urls=None):
+        push_calls.append(
+          (item, expected_size, ''.join(content_generator), push_urls))
+
+    storage_api = MockedStorageApi()
+    storage = isolateserver.Storage(storage_api, use_zip=False)
+    storage.upload_tree(root, files)
+
+    # Was reading only missing files.
+    self.assertEqual(missing, set(read_calls))
+    # 'contains' checked for existence of all files.
+    self.assertEqual(files, dict(sum(contains_calls, [])))
+    # Pushed only missing files.
+    self.assertEqual(
+      set(files[name]['h'] for name in missing),
+      set(call[0] for call in push_calls))
+    # Pushing with correct data, size and push urls.
+    for push_call in push_calls:
+      digest = push_call[0]
+      filenames = [
+          name for name, metadata in files.iteritems()
+          if metadata['h'] == digest
+      ]
+      self.assertEqual(1, len(filenames))
+      filename = filenames[0]
+      data = files_data[filename]
+      self.assertEqual(
+          (digest, len(data), data, push_urls[filename]),
+          push_call)
 
 
 class IsolateServerArchiveTest(TestCase):
