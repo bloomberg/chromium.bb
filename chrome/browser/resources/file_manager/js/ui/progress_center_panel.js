@@ -5,32 +5,6 @@
 'use strict';
 
 /**
- * Item of the progress center.
- * @constructor
- */
-var ProgressCenterItem = function() {
-  /**
-   * Message of the progress item.
-   * @type {string}
-   */
-  this.message = '';
-
-  /**
-   * Max value of the progress.
-   * @type {number}
-   */
-  this.progressMax = 1;
-
-  /**
-   * Current value of the progress.
-   * @type {number}
-   */
-  this.progressValue = 0;
-
-  Object.seal(this);
-};
-
-/**
  * Progress center panel.
  *
  * @param {HTMLElement} element DOM Element of the process center panel.

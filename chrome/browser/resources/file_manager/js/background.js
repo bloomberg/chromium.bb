@@ -595,3 +595,6 @@ function initApp() {
 
 // Initialize Files.app.
 initApp();
+
+// Initialize the progress center.
+var progressCenter = new ProgressCenter();

@@ -850,6 +850,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.progressCenterPanel_ = new ProgressCenterPanel(
         dom.querySelector('#progress-center'));
+    this.progressCenterClient_ = new ProgressCenterClient(function(items) {
+      for (var i = 0; i < items.length; i++) {
+        this.progressCenterPanel_.addItem(items[i]);
+      }
+    }.bind(this), function(item) {
+      this.progressCenterPanel_.addItem(item);
+    }.bind(this));
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.document_.addEventListener('keyup', this.onKeyUp_.bind(this));
