@@ -19,12 +19,6 @@ namespace ppapi {
 
 // Var -------------------------------------------------------------------------
 
-Var::Var() : var_id_(0) {
-}
-
-Var::~Var() {
-}
-
 // static
 std::string Var::PPVarToLogString(PP_Var var) {
   switch (var.type) {
@@ -124,6 +118,12 @@ PP_Var Var::GetPPVar() {
 
 int32 Var::GetExistingVarID() const {
   return var_id_;
+}
+
+Var::Var() : var_id_(0) {
+}
+
+Var::~Var() {
 }
 
 int32 Var::GetOrCreateVarID() {
