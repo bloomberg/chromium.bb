@@ -94,6 +94,13 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // Simulate typing a string
   void SimulateStringInput(const std::string& input);
 
+  // Helper to simulate a left button mouse click.
+  void SimulateMouseLeftClickAt(int x, int y);
+
+  // Helper to simulate a mouse click.
+  void SimulateMouseClickAt(
+      int modifiers, WebKit::WebMouseEvent::Button button, int x, int y);
+
   // The following helpers each perform a composite task.
 
   // Install the chromoting extension

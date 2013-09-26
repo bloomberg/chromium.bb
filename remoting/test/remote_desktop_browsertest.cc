@@ -281,6 +281,34 @@ void RemoteDesktopBrowserTest::SimulateStringInput(const std::string& input) {
     SimulateCharInput(input[i]);
 }
 
+void RemoteDesktopBrowserTest::SimulateMouseLeftClickAt(int x, int y) {
+  SimulateMouseClickAt(0, WebKit::WebMouseEvent::ButtonLeft, x, y);
+}
+
+void RemoteDesktopBrowserTest::SimulateMouseClickAt(
+    int modifiers, WebKit::WebMouseEvent::Button button, int x, int y) {
+  ExecuteScript(
+      "var clientPluginElement = "
+           "document.getElementById('session-client-plugin');"
+      "var clientPluginRect = clientPluginElement.getBoundingClientRect();");
+
+  int top = ExecuteScriptAndExtractInt("clientPluginRect.top");
+  int left = ExecuteScriptAndExtractInt("clientPluginRect.left");
+  int width = ExecuteScriptAndExtractInt("clientPluginRect.width");
+  int height = ExecuteScriptAndExtractInt("clientPluginRect.height");
+
+  ASSERT_GT(x, 0);
+  ASSERT_LT(x, width);
+  ASSERT_GT(y, 0);
+  ASSERT_LT(y, height);
+
+  content::SimulateMouseClickAt(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      modifiers,
+      button,
+      gfx::Point(left + x, top + y));
+}
+
 void RemoteDesktopBrowserTest::Install() {
   // TODO(weitaosu): add support for unpacked extension (the v2 app needs it).
   if (!NoInstall()) {
