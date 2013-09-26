@@ -92,9 +92,6 @@ namespace WebCore {
     // "datetime-local" input UI instead "----".
     String placeholderForYearField();
 #endif
-    // weekFormatInLDML() returns week and year format in LDML, Unicode
-    // technical standard 35, Locale Data Markup Language, e.g. "'Week' ww, yyyy"
-    String weekFormatInLDML();
 
     String missingPluginText();
     String blockedPluginByContentSecurityPolicyText();

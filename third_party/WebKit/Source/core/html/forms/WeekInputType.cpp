@@ -36,7 +36,7 @@
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "core/html/forms/InputTypeNames.h"
 #include "core/platform/DateComponents.h"
-#include "core/platform/LocalizedStrings.h"
+#include "core/platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -108,7 +108,7 @@ String WeekInputType::formatDateTimeFieldsState(const DateTimeFieldsState& dateT
 
 void WeekInputType::setupLayoutParameters(DateTimeEditElement::LayoutParameters& layoutParameters, const DateComponents&) const
 {
-    layoutParameters.dateTimeFormat = weekFormatInLDML();
+    layoutParameters.dateTimeFormat = locale().weekFormatInLDML();
     layoutParameters.fallbackDateTimeFormat = "yyyy-'W'ww";
     if (!parseToDateComponents(element()->fastGetAttribute(minAttr), &layoutParameters.minimum))
         layoutParameters.minimum = DateComponents();

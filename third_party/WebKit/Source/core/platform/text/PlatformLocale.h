@@ -93,6 +93,10 @@ public:
     // field.
     virtual String dateTimeFormatWithoutSeconds() = 0;
 
+    // weekFormatInLDML() returns week and year format in LDML, Unicode
+    // technical standard 35, Locale Data Markup Language, e.g. "'Week' ww, yyyy"
+    String weekFormatInLDML();
+
     // Returns a vector of string of which size is 12. The first item is a
     // localized string of Jan and the last item is a localized string of
     // Dec. These strings should be short.

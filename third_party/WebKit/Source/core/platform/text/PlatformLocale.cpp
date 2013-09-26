@@ -207,6 +207,27 @@ String Locale::validationMessageTooLongText(unsigned valueLength, int maxLength)
     return queryString(WebLocalizedString::ValidationTooLong, convertToLocalizedNumber(String::number(valueLength)), convertToLocalizedNumber(String::number(maxLength)));
 }
 
+String Locale::weekFormatInLDML()
+{
+    String templ = queryString(WebLocalizedString::WeekFormatTemplate);
+    // Converts a string like "Week $2, $1" to an LDML date format pattern like
+    // "'Week 'ww', 'yyyy".
+    StringBuilder builder;
+    unsigned literalStart = 0;
+    unsigned length = templ.length();
+    for (unsigned i = 0; i + 1 < length; ++i) {
+        if (templ[i] == '$' && (templ[i + 1] == '1' || templ[i + 1] == '2')) {
+            if (literalStart < i)
+                DateTimeFormat::quoteAndAppendLiteral(templ.substring(literalStart, i - literalStart), builder);
+            builder.append(templ[++i] == '1' ? "yyyy" : "ww");
+            literalStart = i + 1;
+        }
+    }
+    if (literalStart < length)
+        DateTimeFormat::quoteAndAppendLiteral(templ.substring(literalStart, length - literalStart), builder);
+    return builder.toString();
+}
+
 void Locale::setLocaleData(const Vector<String, DecimalSymbolsSize>& symbols, const String& positivePrefix, const String& positiveSuffix, const String& negativePrefix, const String& negativeSuffix)
 {
     for (size_t i = 0; i < symbols.size(); ++i) {
