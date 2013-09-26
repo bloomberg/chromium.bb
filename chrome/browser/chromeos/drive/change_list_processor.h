@@ -123,13 +123,11 @@ class ChangeListProcessor {
   // |about_resource| must not be null.
   FileError ApplyEntryMap(
       bool is_delta_update,
+      int64 changestamp,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
   // Apply |entry| to resource_metadata_.
   FileError ApplyEntry(const ResourceEntry& entry);
-
-  // Updates the root directory entry. changestamp will be updated.
-  FileError UpdateRootEntry(int64 largest_changestamp);
 
   // Adds the directories changed by the update on |entry| to |changed_dirs_|.
   void UpdateChangedDirs(const ResourceEntry& entry);

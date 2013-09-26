@@ -88,7 +88,7 @@ FileError ChangeListProcessor::Apply(
     scoped_ptr<google_apis::AboutResource> about_resource,
     ScopedVector<ChangeList> change_lists,
     bool is_delta_update) {
-  DCHECK(is_delta_update || about_resource.get());
+  DCHECK(about_resource);
 
   int64 largest_changestamp = 0;
   if (is_delta_update) {
@@ -98,14 +98,11 @@ FileError ChangeListProcessor::Apply(
       largest_changestamp = change_lists[0]->largest_changestamp();
       DCHECK_GE(change_lists[0]->largest_changestamp(), 0);
     }
-  } else if (about_resource.get()) {
+  } else {
     largest_changestamp = about_resource->largest_change_id();
 
     DVLOG(1) << "Root folder ID is " << about_resource->root_folder_id();
     DCHECK(!about_resource->root_folder_id().empty());
-  } else {
-    // A full update without AboutResouce will have no effective changestamp.
-    NOTREACHED();
   }
 
   ChangeListToEntryMapUMAStats uma_stats;
@@ -120,16 +117,11 @@ FileError ChangeListProcessor::Apply(
     }
   }
 
-  FileError error = ApplyEntryMap(is_delta_update, about_resource.Pass());
+  FileError error = ApplyEntryMap(is_delta_update,
+                                  largest_changestamp,
+                                  about_resource.Pass());
   if (error != FILE_ERROR_OK) {
     DLOG(ERROR) << "ApplyEntryMap failed: " << FileErrorToString(error);
-    return error;
-  }
-
-  // Update the root entry and finish.
-  error = UpdateRootEntry(largest_changestamp);
-  if (error != FILE_ERROR_OK) {
-    DLOG(ERROR) << "UpdateRootEntry failed: " << FileErrorToString(error);
     return error;
   }
 
@@ -149,10 +141,16 @@ FileError ChangeListProcessor::Apply(
 
 FileError ChangeListProcessor::ApplyEntryMap(
     bool is_delta_update,
+    int64 changestamp,
     scoped_ptr<google_apis::AboutResource> about_resource) {
-  if (!is_delta_update) {  // Full update.
-    DCHECK(about_resource);
+  DCHECK(about_resource);
 
+  // Create the entry for "My Drive" folder with the latest changestamp.
+  ResourceEntry root =
+      util::CreateMyDriveRootEntry(about_resource->root_folder_id());
+  root.mutable_directory_specific_info()->set_changestamp(changestamp);
+
+  if (!is_delta_update) {  // Full update.
     FileError error = resource_metadata_->Reset();
     if (error != FILE_ERROR_OK) {
       LOG(ERROR) << "Failed to reset: " << FileErrorToString(error);
@@ -162,11 +160,25 @@ FileError ChangeListProcessor::ApplyEntryMap(
     changed_dirs_.insert(util::GetDriveGrandRootPath());
     changed_dirs_.insert(util::GetDriveMyDriveRootPath());
 
-    // Create the MyDrive root directory.
-    error = ApplyEntry(
-        util::CreateMyDriveRootEntry(about_resource->root_folder_id()));
+    // Add the My Drive root directory.
+    error = ApplyEntry(root);
     if (error != FILE_ERROR_OK)
       return error;
+  } else {
+    // Refresh the existing root entry.
+    std::string root_local_id;
+    FileError error = resource_metadata_->GetIdByResourceId(root.resource_id(),
+                                                            &root_local_id);
+    if (error != FILE_ERROR_OK) {
+      LOG(ERROR) << "Failed to get root entry: " << FileErrorToString(error);
+      return error;
+    }
+    root.set_local_id(root_local_id);
+    error = resource_metadata_->RefreshEntry(root);
+    if (error != FILE_ERROR_OK) {
+      LOG(ERROR) << "Failed to update root entry: " << FileErrorToString(error);
+      return error;
+    }
   }
 
   // Gather the set of changes in the old path.
@@ -195,7 +207,7 @@ FileError ChangeListProcessor::ApplyEntryMap(
     }
 
     // Start from entry_map_.begin() and traverse ancestors using the
-    // parent-child relashonships in the result (after this apply) tree.
+    // parent-child relationships in the result (after this apply) tree.
     // Then apply the topmost change first.
     //
     // By doing this, assuming the result tree does not contain any cycles, we
@@ -230,12 +242,16 @@ FileError ChangeListProcessor::ApplyEntryMap(
     // Apply the parent first.
     std::reverse(entries.begin(), entries.end());
     for (size_t i = 0; i < entries.size(); ++i) {
-      // TODO(hashimoto): Handle ApplyEntry errors correctly.
+      // Skip root entry in the change list. We don't expect servers to send
+      // root entry, but we should better be defensive (see crbug.com/297259).
       ResourceEntryMap::iterator it = entries[i];
-      FileError error = ApplyEntry(it->second);
-      DLOG_IF(WARNING, error != FILE_ERROR_OK)
-          << "ApplyEntry failed: " << FileErrorToString(error)
-          << ", title = " << it->second.title();
+      if (it->first != root.resource_id()) {
+        // TODO(hashimoto): Handle ApplyEntry errors correctly.
+        FileError error = ApplyEntry(it->second);
+        DLOG_IF(WARNING, error != FILE_ERROR_OK)
+            << "ApplyEntry failed: " << FileErrorToString(error)
+            << ", title = " << it->second.title();
+      }
       entry_map_.erase(it);
     }
   }
@@ -368,33 +384,6 @@ FileError ChangeListProcessor::RefreshDirectory(
     return error;
 
   *out_file_path = resource_metadata->GetFilePath(directory.resource_id());
-  return FILE_ERROR_OK;
-}
-
-FileError ChangeListProcessor::UpdateRootEntry(int64 largest_changestamp) {
-  std::string root_local_id;
-  FileError error = resource_metadata_->GetIdByPath(
-      util::GetDriveMyDriveRootPath(), &root_local_id);
-
-  ResourceEntry root;
-  if (error == FILE_ERROR_OK)
-    error = resource_metadata_->GetResourceEntryById(root_local_id, &root);
-
-  if (error != FILE_ERROR_OK) {
-    // TODO(satorux): Need to trigger recovery if root is corrupt.
-    LOG(WARNING) << "Failed to get the entry for root directory";
-    return error;
-  }
-
-  // The changestamp should always be updated.
-  root.mutable_directory_specific_info()->set_changestamp(largest_changestamp);
-
-  error = resource_metadata_->RefreshEntry(root);
-  if (error != FILE_ERROR_OK) {
-    LOG(WARNING) << "Failed to refresh root directory";
-    return error;
-  }
-
   return FILE_ERROR_OK;
 }
 

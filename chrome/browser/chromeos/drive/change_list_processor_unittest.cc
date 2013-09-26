@@ -81,8 +81,13 @@ class ChangeListProcessorTest : public testing::Test {
   // should contain their changestamp in themselves.
   FileError ApplyChangeList(ScopedVector<ChangeList> changes,
                             std::set<base::FilePath>* changed_dirs) {
+    scoped_ptr<google_apis::AboutResource> about_resource(
+        new google_apis::AboutResource);
+    about_resource->set_largest_change_id(kBaseResourceListChangestamp);
+    about_resource->set_root_folder_id(kRootId);
+
     ChangeListProcessor processor(metadata_.get());
-    FileError error = processor.Apply(scoped_ptr<google_apis::AboutResource>(),
+    FileError error = processor.Apply(about_resource.Pass(),
                                       changes.Pass(),
                                       true /* is_delta_update */);
     *changed_dirs = processor.changed_dirs();
