@@ -7,12 +7,18 @@
 import logging
 import os
 import re
+import sys
 import time
+
+
+sys.path.append(os.path.join(sys.path[0],
+                             os.pardir, os.pardir, 'build', 'util', 'lib',
+                             'common'))
+import perf_tests_results_helper
 
 from pylib import android_commands
 from pylib import constants
 from pylib import flag_changer
-from pylib import perf_tests_helper
 from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
@@ -283,9 +289,9 @@ class TestRunner(base_test_runner.BaseTestRunner):
           # Process the performance data
           result = json_perf_parser.GetAverageRunInfoFromJSONString(json_string,
                                                                     perf_set[0])
-          perf_tests_helper.PrintPerfResult(perf_set[1], perf_set[2],
-                                            [result['average']],
-                                            result['units'])
+          perf_tests_results_helper.PrintPerfResult(perf_set[1], perf_set[2],
+                                                    [result['average']],
+                                                    result['units'])
 
   def _SetupIndividualTestTimeoutScale(self, test):
     timeout_scale = self._GetIndividualTestTimeoutScale(test)

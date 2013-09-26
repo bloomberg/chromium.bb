@@ -15,10 +15,14 @@ import urllib
 
 import bb_annotations
 
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                             os.pardir, os.pardir, 'util', 'lib',
+                             'common'))
+import perf_tests_results_helper  # pylint: disable=F0401
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pylib import android_commands
 from pylib import constants
-from pylib import perf_tests_helper
 from pylib.cmd_helper import GetCmdOutput
 
 
@@ -244,14 +248,15 @@ def main():
     SendDeviceStatusAlert(msg)
 
   if options.device_status_dashboard:
-    perf_tests_helper.PrintPerfResult('BotDevices', 'OnlineDevices',
-                                      [len(devices)], 'devices')
-    perf_tests_helper.PrintPerfResult('BotDevices', 'OfflineDevices',
-                                      [len(offline_devices)], 'devices',
-                                      'unimportant')
+    perf_tests_results_helper.PrintPerfResult('BotDevices', 'OnlineDevices',
+                                              [len(devices)], 'devices')
+    perf_tests_results_helper.PrintPerfResult('BotDevices', 'OfflineDevices',
+                                              [len(offline_devices)], 'devices',
+                                              'unimportant')
     for serial, battery in zip(devices, batteries):
-      perf_tests_helper.PrintPerfResult('DeviceBattery', serial, [battery], '%',
-                                        'unimportant')
+      perf_tests_results_helper.PrintPerfResult('DeviceBattery', serial,
+                                                [battery], '%',
+                                                'unimportant')
 
   if False in fail_step_lst:
     # TODO(navabi): Build fails on device status check step if there exists any
