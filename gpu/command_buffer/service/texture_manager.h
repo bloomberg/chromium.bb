@@ -528,8 +528,10 @@ class GPU_EXPORT TextureManager {
   }
 
   // Returns the maxium number of levels a texture of the given size can have.
-  static GLsizei ComputeMipMapCount(
-    GLsizei width, GLsizei height, GLsizei depth);
+  static GLsizei ComputeMipMapCount(GLenum target,
+                                    GLsizei width,
+                                    GLsizei height,
+                                    GLsizei depth);
 
   // Checks if a dimensions are valid for a given target.
   bool ValidForTarget(

@@ -103,15 +103,17 @@ void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(
   // Rearrange data for IPC command.
   std::vector<int32> buffer_ids;
   std::vector<uint32> texture_ids;
-  std::vector<gfx::Size> sizes;
   for (uint32 i = 0; i < buffers.size(); i++) {
     const media::PictureBuffer& buffer = buffers[i];
+    if (buffer.size() != picture_buffer_dimensions_) {
+      OnErrorNotification(INVALID_ARGUMENT);
+      return;
+    }
     texture_ids.push_back(buffer.texture_id());
     buffer_ids.push_back(buffer.id());
-    sizes.push_back(buffer.size());
   }
   Send(new AcceleratedVideoDecoderMsg_AssignPictureBuffers(
-      decoder_route_id_, buffer_ids, texture_ids, sizes));
+      decoder_route_id_, buffer_ids, texture_ids));
 }
 
 void GpuVideoDecodeAcceleratorHost::ReusePictureBuffer(
@@ -184,12 +186,13 @@ void GpuVideoDecodeAcceleratorHost::OnBitstreamBufferProcessed(
 
 void GpuVideoDecodeAcceleratorHost::OnProvidePictureBuffer(
     uint32 num_requested_buffers,
-    const gfx::Size& buffer_size,
+    const gfx::Size& dimensions,
     uint32 texture_target) {
   DCHECK(CalledOnValidThread());
+  picture_buffer_dimensions_ = dimensions;
   if (client_) {
     client_->ProvidePictureBuffers(
-        num_requested_buffers, buffer_size, texture_target);
+        num_requested_buffers, dimensions, texture_target);
   }
 }
 

@@ -12,6 +12,7 @@
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "ipc/ipc_listener.h"
 #include "media/video/video_decode_accelerator.h"
+#include "ui/gfx/size.h"
 
 namespace content {
 class GpuChannelHost;
@@ -55,7 +56,7 @@ class GpuVideoDecodeAcceleratorHost
 
   void OnBitstreamBufferProcessed(int32 bitstream_buffer_id);
   void OnProvidePictureBuffer(uint32 num_requested_buffers,
-                              const gfx::Size& buffer_size,
+                              const gfx::Size& dimensions,
                               uint32 texture_target);
   void OnDismissPictureBuffer(int32 picture_buffer_id);
   void OnPictureReady(int32 picture_buffer_id, int32 bitstream_buffer_id);
@@ -74,6 +75,9 @@ class GpuVideoDecodeAcceleratorHost
 
   // Unowned reference to the CommandBufferProxyImpl that created us.
   CommandBufferProxyImpl* impl_;
+
+  // Requested dimensions of the buffer, from ProvidePictureBuffers().
+  gfx::Size picture_buffer_dimensions_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecodeAcceleratorHost);
 };

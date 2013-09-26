@@ -37,8 +37,6 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gfx/size.h"
 
-using gpu::gles2::TextureManager;
-
 namespace content {
 
 static bool MakeDecoderContextCurrent(
@@ -166,6 +164,7 @@ void GpuVideoDecodeAccelerator::ProvidePictureBuffers(
     DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers) "
                 << "failed";
   }
+  texture_dimensions_ = dimensions;
   texture_target_ = texture_target;
 }
 
@@ -277,7 +276,7 @@ void GpuVideoDecodeAccelerator::OnDecode(
     base::SharedMemoryHandle handle, int32 id, uint32 size) {
   DCHECK(video_decode_accelerator_.get());
   if (id < 0) {
-    DLOG(FATAL) << "BitstreamBuffer id " << id << " out of range";
+    DLOG(ERROR) << "BitstreamBuffer id " << id << " out of range";
     if (child_message_loop_->BelongsToCurrentThread()) {
       NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
     } else {
@@ -293,12 +292,10 @@ void GpuVideoDecodeAccelerator::OnDecode(
 }
 
 void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
-      const std::vector<int32>& buffer_ids,
-      const std::vector<uint32>& texture_ids,
-      const std::vector<gfx::Size>& sizes) {
+    const std::vector<int32>& buffer_ids,
+    const std::vector<uint32>& texture_ids) {
   DCHECK(stub_);
-  if (buffer_ids.size() != texture_ids.size() ||
-      buffer_ids.size() != sizes.size()) {
+  if (buffer_ids.size() != texture_ids.size()) {
     NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
     return;
   }
@@ -310,49 +307,65 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
   std::vector<media::PictureBuffer> buffers;
   for (uint32 i = 0; i < buffer_ids.size(); ++i) {
     if (buffer_ids[i] < 0) {
-      DLOG(FATAL) << "Buffer id " << buffer_ids[i] << " out of range";
+      DLOG(ERROR) << "Buffer id " << buffer_ids[i] << " out of range";
       NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
       return;
     }
     gpu::gles2::TextureRef* texture_ref = texture_manager->GetTexture(
         texture_ids[i]);
     if (!texture_ref) {
-      DLOG(FATAL) << "Failed to find texture id " << texture_ids[i];
+      DLOG(ERROR) << "Failed to find texture id " << texture_ids[i];
       NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
       return;
     }
     gpu::gles2::Texture* info = texture_ref->texture();
     if (info->target() != texture_target_) {
-      DLOG(FATAL) << "Texture target mismatch for texture id "
+      DLOG(ERROR) << "Texture target mismatch for texture id "
                   << texture_ids[i];
       NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
       return;
     }
-    // GL_TEXTURE_EXTERNAL_OES textures have their dimensions defined by the
-    // underlying EGLImage.
-    if (texture_target_ != GL_TEXTURE_EXTERNAL_OES) {
+    if (texture_target_ == GL_TEXTURE_EXTERNAL_OES) {
+      // GL_TEXTURE_EXTERNAL_OES textures have their dimensions defined by the
+      // underlying EGLImage.  Use |texture_dimensions_| for this size.  The
+      // textures cannot be rendered to or cleared, so we set |cleared| true to
+      // skip clearing.
+      texture_manager->SetLevelInfo(texture_ref,
+                                    GL_TEXTURE_EXTERNAL_OES,
+                                    0,
+                                    0,
+                                    texture_dimensions_.width(),
+                                    texture_dimensions_.height(),
+                                    1,
+                                    0,
+                                    0,
+                                    0,
+                                    true);
+    } else {
+      // For other targets, texture dimensions should already be defined.
       GLsizei width = 0, height = 0;
       info->GetLevelSize(texture_target_, 0, &width, &height);
-      if (width != sizes[i].width() || height != sizes[i].height()) {
-        DLOG(FATAL) << "Size mismatch for texture id " << texture_ids[i];
+      if (width != texture_dimensions_.width() ||
+          height != texture_dimensions_.height()) {
+        DLOG(ERROR) << "Size mismatch for texture id " << texture_ids[i];
         NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
         return;
       }
     }
     if (!texture_manager->ClearRenderableLevels(command_decoder, texture_ref)) {
-      DLOG(FATAL) << "Failed to Clear texture id " << texture_ids[i];
+      DLOG(ERROR) << "Failed to Clear texture id " << texture_ids[i];
       NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
       return;
     }
     uint32 service_texture_id;
     if (!command_decoder->GetServiceTextureId(
             texture_ids[i], &service_texture_id)) {
-      DLOG(FATAL) << "Failed to translate texture!";
+      DLOG(ERROR) << "Failed to translate texture!";
       NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
       return;
     }
     buffers.push_back(media::PictureBuffer(
-        buffer_ids[i], sizes[i], service_texture_id));
+        buffer_ids[i], texture_dimensions_, service_texture_id));
   }
   video_decode_accelerator_->AssignPictureBuffers(buffers);
 }

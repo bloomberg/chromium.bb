@@ -198,11 +198,7 @@ Texture::CanRenderCondition Texture::GetCanRenderCondition() const {
   if (target_ == 0)
     return CAN_RENDER_ALWAYS;
 
-  if (target_ == GL_TEXTURE_EXTERNAL_OES) {
-    if (!IsStreamTexture()) {
-      return CAN_RENDER_NEVER;
-    }
-  } else {
+  if (target_ != GL_TEXTURE_EXTERNAL_OES) {
     if (level_infos_.empty()) {
       return CAN_RENDER_NEVER;
     }
@@ -294,7 +290,8 @@ bool Texture::MarkMipmapsGenerated(
     GLsizei depth = info1.depth;
     GLenum target = target_ == GL_TEXTURE_2D ? GL_TEXTURE_2D :
                                FaceIndexToGLTarget(ii);
-    int num_mips = TextureManager::ComputeMipMapCount(width, height, depth);
+    int num_mips =
+        TextureManager::ComputeMipMapCount(target_, width, height, depth);
     for (int level = 1; level < num_mips; ++level) {
       width = std::max(1, width >> 1);
       height = std::max(1, height >> 1);
@@ -390,7 +387,7 @@ void Texture::UpdateCleared() {
 
   const Texture::LevelInfo& first_face = level_infos_[0][0];
   int levels_needed = TextureManager::ComputeMipMapCount(
-      first_face.width, first_face.height, first_face.depth);
+      target_, first_face.width, first_face.height, first_face.depth);
   bool cleared = true;
   for (size_t ii = 0; ii < level_infos_.size(); ++ii) {
     for (GLint jj = 0; jj < levels_needed; ++jj) {
@@ -643,7 +640,7 @@ void Texture::Update(const FeatureInfo* feature_info) {
   // Update texture_complete and cube_complete status.
   const Texture::LevelInfo& first_face = level_infos_[0][0];
   int levels_needed = TextureManager::ComputeMipMapCount(
-      first_face.width, first_face.height, first_face.depth);
+      target_, first_face.width, first_face.height, first_face.depth);
   texture_complete_ =
       max_level_set_ >= (levels_needed - 1) && max_level_set_ >= 0;
   cube_complete_ = (level_infos_.size() == 6) &&
@@ -708,7 +705,7 @@ bool Texture::ClearRenderableLevels(GLES2Decoder* decoder) {
 
   const Texture::LevelInfo& first_face = level_infos_[0][0];
   int levels_needed = TextureManager::ComputeMipMapCount(
-      first_face.width, first_face.height, first_face.depth);
+      target_, first_face.width, first_face.height, first_face.depth);
 
   for (size_t ii = 0; ii < level_infos_.size(); ++ii) {
     for (GLint jj = 0; jj < levels_needed; ++jj) {
@@ -824,13 +821,12 @@ TextureRef::~TextureRef() {
   manager_ = NULL;
 }
 
-TextureManager::TextureManager(
-    MemoryTracker* memory_tracker,
-    FeatureInfo* feature_info,
-    GLint max_texture_size,
-    GLint max_cube_map_texture_size)
-    : memory_tracker_managed_(
-          new MemoryTypeTracker(memory_tracker, MemoryTracker::kManaged)),
+TextureManager::TextureManager(MemoryTracker* memory_tracker,
+                               FeatureInfo* feature_info,
+                               GLint max_texture_size,
+                               GLint max_cube_map_texture_size)
+    : memory_tracker_managed_(new MemoryTypeTracker(memory_tracker,
+                                                    MemoryTracker::kManaged)),
       memory_tracker_unmanaged_(
           new MemoryTypeTracker(memory_tracker, MemoryTracker::kUnmanaged)),
       feature_info_(feature_info),
@@ -838,10 +834,12 @@ TextureManager::TextureManager(
       stream_texture_manager_(NULL),
       max_texture_size_(max_texture_size),
       max_cube_map_texture_size_(max_cube_map_texture_size),
-      max_levels_(ComputeMipMapCount(max_texture_size,
+      max_levels_(ComputeMipMapCount(GL_TEXTURE_2D,
+                                     max_texture_size,
                                      max_texture_size,
                                      max_texture_size)),
-      max_cube_map_levels_(ComputeMipMapCount(max_cube_map_texture_size,
+      max_cube_map_levels_(ComputeMipMapCount(GL_TEXTURE_CUBE_MAP,
+                                              max_cube_map_texture_size,
                                               max_cube_map_texture_size,
                                               max_cube_map_texture_size)),
       num_unrenderable_textures_(0),
@@ -1184,9 +1182,17 @@ Texture* TextureManager::GetTextureForServiceId(GLuint service_id) const {
   return NULL;
 }
 
-GLsizei TextureManager::ComputeMipMapCount(
-    GLsizei width, GLsizei height, GLsizei depth) {
-  return 1 + base::bits::Log2Floor(std::max(std::max(width, height), depth));
+GLsizei TextureManager::ComputeMipMapCount(GLenum target,
+                                           GLsizei width,
+                                           GLsizei height,
+                                           GLsizei depth) {
+  switch (target) {
+    case GL_TEXTURE_EXTERNAL_OES:
+      return 1;
+    default:
+      return 1 +
+             base::bits::Log2Floor(std::max(std::max(width, height), depth));
+  }
 }
 
 void TextureManager::SetLevelImage(

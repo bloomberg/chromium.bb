@@ -15,6 +15,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "media/video/video_decode_accelerator.h"
+#include "ui/gfx/size.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -70,12 +71,9 @@ class GpuVideoDecodeAccelerator
 
   // Handlers for IPC messages.
   void OnDecode(base::SharedMemoryHandle handle, int32 id, uint32 size);
-  void OnAssignPictureBuffers(
-      const std::vector<int32>& buffer_ids,
-      const std::vector<uint32>& texture_ids,
-      const std::vector<gfx::Size>& sizes);
-  void OnReusePictureBuffer(
-      int32 picture_buffer_id);
+  void OnAssignPictureBuffers(const std::vector<int32>& buffer_ids,
+                              const std::vector<uint32>& texture_ids);
+  void OnReusePictureBuffer(int32 picture_buffer_id);
   void OnFlush();
   void OnReset();
   void OnDestroy();
@@ -100,6 +98,9 @@ class GpuVideoDecodeAccelerator
   // Callback for making the relevant context current for GL calls.
   // Returns false if failed.
   base::Callback<bool(void)> make_context_current_;
+
+  // The texture dimensions as requested by ProvidePictureBuffers().
+  gfx::Size texture_dimensions_;
 
   // The texture target as requested by ProvidePictureBuffers().
   uint32 texture_target_;

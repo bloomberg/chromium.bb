@@ -9646,34 +9646,17 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   if (dest_texture->target() != GL_TEXTURE_2D ||
       (source_texture->target() != GL_TEXTURE_2D &&
       source_texture->target() != GL_TEXTURE_EXTERNAL_OES)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE,
-        "glCopyTextureCHROMIUM", "invalid texture target binding");
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+                       "glCopyTextureCHROMIUM",
+                       "invalid texture target binding");
     return;
   }
 
   int source_width, source_height, dest_width, dest_height;
 
-  if (source_texture->target() == GL_TEXTURE_2D) {
-    if (!source_texture->GetLevelSize(GL_TEXTURE_2D, 0, &source_width,
-                                      &source_height)) {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_VALUE,
-          "glCopyTextureChromium", "source texture has no level 0");
-      return;
-    }
-
-    // Check that this type of texture is allowed.
-    if (!texture_manager()->ValidForTarget(GL_TEXTURE_2D, level, source_width,
-                                           source_height, 1)) {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_VALUE,
-          "glCopyTextureCHROMIUM", "Bad dimensions");
-      return;
-    }
-  }
-
-  if (source_texture->target() == GL_TEXTURE_EXTERNAL_OES) {
+  if (source_texture->IsStreamTexture()) {
+    DCHECK_EQ(source_texture->target(),
+              static_cast<GLenum>(GL_TEXTURE_EXTERNAL_OES));
     DCHECK(stream_texture_manager());
     StreamTexture* stream_tex =
         stream_texture_manager()->LookupStreamTexture(
@@ -9691,6 +9674,22 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
       LOCAL_SET_GL_ERROR(
           GL_INVALID_VALUE,
           "glCopyTextureChromium", "invalid streamtexture size");
+      return;
+    }
+  } else {
+    if (!source_texture->GetLevelSize(
+             source_texture->target(), 0, &source_width, &source_height)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+                         "glCopyTextureChromium",
+                         "source texture has no level 0");
+      return;
+    }
+
+    // Check that this type of texture is allowed.
+    if (!texture_manager()->ValidForTarget(
+             source_texture->target(), level, source_width, source_height, 1)) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_VALUE, "glCopyTextureCHROMIUM", "Bad dimensions");
       return;
     }
   }
@@ -9828,7 +9827,7 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
     GLsizei height) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoTexStorage2DEXT");
   if (!texture_manager()->ValidForTarget(target, 0, width, height, 1) ||
-      TextureManager::ComputeMipMapCount(width, height, 1) < levels) {
+      TextureManager::ComputeMipMapCount(target, width, height, 1) < levels) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glTexStorage2DEXT", "dimensions out of range");
     return;
