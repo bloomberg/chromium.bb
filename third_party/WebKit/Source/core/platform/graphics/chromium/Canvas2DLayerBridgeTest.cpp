@@ -51,8 +51,6 @@ public:
     MOCK_METHOD0(flush, void(void));
     MOCK_METHOD0(createTexture, unsigned(void));
     MOCK_METHOD1(deleteTexture, void(unsigned));
-
-    virtual GrGLInterface* onCreateGrGLInterface() OVERRIDE { return 0; }
 };
 
 class FakeCanvas2DLayerBridge : public Canvas2DLayerBridge {
