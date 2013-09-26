@@ -9,6 +9,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+
+using net::test_server::BasicHttpResponse;
+using net::test_server::HttpResponse;
+using net::test_server::HttpRequest;
 
 namespace extensions {
 
@@ -27,22 +34,28 @@ class ActivityLogApiTest : public ExtensionApiTest {
     command_line->AppendSwitch(switches::kEnableExtensionActivityLogging);
   }
 
+  scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
+    scoped_ptr<BasicHttpResponse> response(new BasicHttpResponse);
+    response->set_code(net::HTTP_OK);
+    response->set_content("<html><head><title>ActivityLogTest</title>"
+                          "</head><body>Hello World</body></html>");
+    return response.PassAs<HttpResponse>();
+  }
+
  private:
   CommandLine saved_cmdline_;
 };
 
-#if defined(OS_WIN)
-// TODO(karenlees): test flaky on windows. See Bug: crbug.com/245594
-#define MAYBE_TriggerEvent DISABLED_TriggerEvent
-#else
-#define MAYBE_TriggerEvent TriggerEvent
-#endif
-
 // The test extension sends a message to its 'friend'. The test completes
 // if it successfully sees the 'friend' receive the message.
-IN_PROC_BROWSER_TEST_F(ActivityLogApiTest, MAYBE_TriggerEvent) {
+IN_PROC_BROWSER_TEST_F(ActivityLogApiTest, TriggerEvent) {
   ActivityLog::GetInstance(profile())->SetWatchdogAppActive(true);
+
   host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&ActivityLogApiTest::HandleRequest, base::Unretained(this)));
+
   const Extension* friend_extension = LoadExtensionIncognito(
       test_data_dir_.AppendASCII("activity_log_private/friend"));
   ASSERT_TRUE(friend_extension);

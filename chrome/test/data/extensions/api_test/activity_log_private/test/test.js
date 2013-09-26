@@ -84,8 +84,6 @@ testCases.push({
   ]
 });
 testCases.push({
-  // TODO(karenlees): Enable when crbug.com/259079 is fixed.
-  disabled: {win: true},
   func: function triggerTabIds() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
                                'tab_ids', function response() { });
@@ -101,8 +99,6 @@ testCases.push({
   ]
 });
 testCases.push({
-  // TODO(karenlees): Enable when crbug.com/259079 is fixed.
-  disabled: {win: true},
   func: function triggerTabIdsIncognito() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
                                'tab_ids_incognito', function response() { });
@@ -133,27 +129,6 @@ testCases.push({
   expected_activity: [
     'webRequestInternal.addEventListener',
     'webRequestInternal.addEventListener',
-    'webRequest.onBeforeSendHeaders/1',
-    'webRequestInternal.eventHandled',
-    'webRequest.onBeforeSendHeaders',
-    'webRequest.onHeadersReceived/2',
-    'webRequestInternal.eventHandled',
-    'webRequest.onHeadersReceived',
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.remove'
-  ],
-  // TODO(karenlees): the webrequest functions seem to be called/logged twice,
-  // figure out why that is (crbug.com/292242).
-  expected_activity_mac: [
-    'webRequestInternal.addEventListener',
-    'webRequestInternal.addEventListener',
-    'webRequest.onBeforeSendHeaders/1',
-    'webRequestInternal.eventHandled',
-    'webRequest.onBeforeSendHeaders',
-    'webRequest.onHeadersReceived/2',
-    'webRequestInternal.eventHandled',
-    'webRequest.onHeadersReceived',
     'webRequest.onBeforeSendHeaders/1',
     'webRequestInternal.eventHandled',
     'webRequest.onBeforeSendHeaders',
@@ -205,26 +180,6 @@ testCases.push({
     'tabs.onUpdated',
     'tabs.remove'
   ],
-  expected_activity_mac: [
-    'webRequestInternal.addEventListener',
-    'webRequestInternal.addEventListener',
-    'windows.create',
-    'webRequest.onBeforeSendHeaders/3',
-    'webRequestInternal.eventHandled',
-    'webRequest.onBeforeSendHeaders',
-    'webRequest.onHeadersReceived/4',
-    'webRequestInternal.eventHandled',
-    'webRequest.onHeadersReceived',
-    'webRequest.onBeforeSendHeaders/3',
-    'webRequestInternal.eventHandled',
-    'webRequest.onBeforeSendHeaders',
-    'webRequest.onHeadersReceived/4',
-    'webRequestInternal.eventHandled',
-    'webRequest.onHeadersReceived',
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.remove'
-  ],
   expected_activity_win: [
     'webRequestInternal.addEventListener',
     'webRequestInternal.addEventListener',
@@ -239,8 +194,6 @@ testCases.push({
 });
 
 testCases.push({
-  // TODO(karenlees): Enable when crbug.com/259079 is fixed.
-  disabled: {win: true},
   func: function triggerApiCallsOnTabsUpdated() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
                                'api_tab_updated', function response() { });
@@ -257,8 +210,6 @@ testCases.push({
   ]
 });
 testCases.push({
-  // TODO(karenlees): Enable when crbug.com/259079 is fixed.
-  disabled: {win: true},
   func: function triggerApiCallsOnTabsUpdatedIncognito() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
                                'api_tab_updated_incognito',
@@ -278,8 +229,6 @@ testCases.push({
   ]
 });
 testCases.push({
-  // TODO(karenlees): Enable when crbug.com/259079 is fixed.
-  disabled: {win: true},
   func: function triggerFullscreen() {
     chrome.runtime.sendMessage(
         'pknkgggnfecklokoggaggchhaebkajji',
@@ -287,6 +236,7 @@ testCases.push({
   },
   expected_activity: [
     'extension.getURL',
+    'test.getConfig',
     'Element.webkitRequestFullscreen'
   ]
 });
@@ -360,8 +310,6 @@ for (var i = 0; i < hookNames.length; i++) {
 domExpectedActivity.push('tabs.remove');
 
 testCases.push({
-  // TODO(karenlees): Enable when crbug.com/259079 is fixed.
-  disabled: {win: true},
   func: function triggerDOMChangesOnTabsUpdated() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
                                'dom_tab_updated', function response() { });
@@ -370,8 +318,6 @@ testCases.push({
 });
 
 testCases.push({
-  // TODO(karenlees): Enable when crbug.com/259079 is fixed.
-  disabled: {win: true},
   func: function triggerDOMChangesOnTabsUpdated() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
                                'dom_tab_updated_incognito',
@@ -452,19 +398,21 @@ testCases.push({
 
 testCases.push({
   func: function deleteGoogleUrls() {
-    chrome.activityLogPrivate.deleteUrls(
-        ['http://www.google.com', 'http://www.google.com/b/build/slave/']);
+    chrome.test.getConfig(function(config) {
+      chrome.activityLogPrivate.deleteUrls(
+          ['http://www.google.com:' + config.testServer.port]);
 
-    var filter = new Object();
-    filter.extensionId = 'pknkgggnfecklokoggaggchhaebkajji';
-    filter.activityType = 'any';
-    filter.pageUrl = 'http://www.google.com';
-    chrome.activityLogPrivate.getExtensionActivities(
+      var filter = new Object();
+      filter.extensionId = 'pknkgggnfecklokoggaggchhaebkajji';
+      filter.activityType = 'any';
+      filter.pageUrl = 'http://www.google.com';
+      chrome.activityLogPrivate.getExtensionActivities(
         filter,
         function(result) {
           chrome.test.assertEq(0, result['activities'].length);
           chrome.test.succeed();
         });
+     });
   }
 });
 

@@ -9,11 +9,32 @@ var defaultUrl = 'http://www.google.com';
 // a new tab in the current window.  Alternatively, whether to use incognito
 // can be specified as a second argument which overrides the global setting.
 var useIncognito = false;
+
+// For the automated tests a port needs to be specified for the URLs in order to
+// contact the embedded test server. The manual tests do not use an embedded
+// test server so the port will remain undefined for manual testing and no
+// modifications will be made to the URLs.
+var testServerPort = undefined;
+
+chrome.test.getConfig(function(config) {
+  // config is undefined in manual mode, this check required to stop crashes in
+  // manual mode.
+  if (config != undefined)
+    testServerPort = config.testServer.port;
+});
+
+function getURLWithPort(url) {
+  if (testServerPort == undefined || url.substring(0, 4) != 'http')
+    return url;
+  return url + ':' + testServerPort;
+}
+
 function openTab(url, incognito) {
+  var testUrl = getURLWithPort(url);
   if (incognito == undefined ? useIncognito : incognito) {
-    chrome.windows.create({'url': url, 'incognito': true});
+    chrome.windows.create({'url': testUrl, 'incognito': true});
   } else {
-    window.open(url);
+    window.open(testUrl);
   }
 }
 
@@ -307,8 +328,9 @@ function executeDOMChangesOnTabUpdated() {
           'var testContext = testCanvas.getContext("2d");';
 
   // Does an XHR from inside a content script.
+  var cnnUrl = getURLWithPort('http://www.cnn.com');
   code += 'var request = new XMLHttpRequest(); ' +
-          'request.open("POST", "http://www.cnn.com", false); ' +
+          'request.open("POST", "' + cnnUrl + '", false); ' +
           'request.setRequestHeader("Content-type", ' +
           '                         "text/plain;charset=UTF-8"); ' +
           'request.send(); ' +
