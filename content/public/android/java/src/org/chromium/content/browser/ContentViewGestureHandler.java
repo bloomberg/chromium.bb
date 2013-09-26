@@ -584,7 +584,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                                     pinchBy(e.getEventTime(),
                                             Math.round(mDoubleTapDragZoomAnchorX),
                                             Math.round(mDoubleTapDragZoomAnchorY),
-                                            (float) Math.pow(dy < 0 ?
+                                            (float) Math.pow(dy > 0 ?
                                                     1.0f - DOUBLE_TAP_DRAG_ZOOM_SPEED :
                                                     1.0f + DOUBLE_TAP_DRAG_ZOOM_SPEED,
                                                     Math.abs(dy * mPxToDp)));
