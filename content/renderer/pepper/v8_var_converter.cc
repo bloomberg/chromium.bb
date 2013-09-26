@@ -137,8 +137,7 @@ bool GetOrCreateV8Value(const PP_Var& var,
       }
       HostArrayBufferVar* host_buffer =
           static_cast<HostArrayBufferVar*>(buffer);
-      *result =
-          v8::Local<v8::Value>::New(host_buffer->webkit_buffer().toV8Value());
+      *result = host_buffer->webkit_buffer().toV8Value();
       break;
     }
     case PP_VARTYPE_ARRAY:

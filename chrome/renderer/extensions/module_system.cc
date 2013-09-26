@@ -291,8 +291,7 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
   v8::Local<v8::Value> module;
   {
     NativesEnabledScope natives_enabled(this);
-    module = v8::Local<v8::Value>::New(
-        RequireForJsInner(v8::String::New(module_name.c_str())));
+    module = RequireForJsInner(v8::String::New(module_name.c_str()));
   }
 
   if (module.IsEmpty() || !module->IsObject()) {
