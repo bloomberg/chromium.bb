@@ -15,8 +15,6 @@
 #include "chrome/browser/infobars/infobar_container.h"
 
 class InfoBarAndroid;
-class InfoBarDelegate;
-class InfoBarService;
 
 namespace content {
 class WebContents;
@@ -38,21 +36,22 @@ class InfoBarContainerAndroid : public InfoBarContainer {
   }
 
   // The prerender is swapping the web contents.
+// TODO(miguelg) Move this out of infobar container.
   void OnWebContentsReplaced(content::WebContents* old_web_contents,
                              content::WebContents* new_web_contents);
 
  private:
   virtual ~InfoBarContainerAndroid() OVERRIDE;
 
-  // InfobarContainer
-  virtual void PlatformSpecificAddInfoBar(InfoBar* infobar, size_t position)
-      OVERRIDE;
+  // InfobarContainer:
+  virtual void PlatformSpecificAddInfoBar(InfoBar* infobar,
+                                          size_t position) OVERRIDE;
   virtual void PlatformSpecificRemoveInfoBar(InfoBar* infobar) OVERRIDE;
   virtual void PlatformSpecificReplaceInfoBar(InfoBar* old_infobar,
                                               InfoBar* new_infobar)  OVERRIDE;
 
   // Create the Java equivalent of |android_bar| and add it to the java
-  // container
+  // container.
   void AttachJavaInfoBar(InfoBarAndroid* android_bar);
 
   // We're owned by the java infobar, need to use a weak ref so it can destroy
@@ -63,7 +62,7 @@ class InfoBarContainerAndroid : public InfoBarContainer {
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainerAndroid);
 };
 
-// Register the InfoBarContainer's native methods through jni
+// Registers the InfoBarContainer's native methods through JNI.
 bool RegisterInfoBarContainer(JNIEnv* env);
 
 #endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_INFOBAR_CONTAINER_ANDROID_H_

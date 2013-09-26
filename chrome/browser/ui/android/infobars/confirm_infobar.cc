@@ -11,73 +11,63 @@
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "jni/ConfirmInfoBarDelegate_jni.h"
 
-using base::android::ConvertUTF16ToJavaString;
-using base::android::ScopedJavaLocalRef;
+
+// ConfirmInfoBarDelegate -----------------------------------------------------
 
 // static
 InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   return new ConfirmInfoBar(owner, this);
 }
 
+
+// ConfirmInfoBar -------------------------------------------------------------
+
 ConfirmInfoBar::ConfirmInfoBar(InfoBarService* owner, InfoBarDelegate* delegate)
     : InfoBarAndroid(owner, delegate),
       delegate_(delegate->AsConfirmInfoBarDelegate()),
-      java_confirm_delegate_() {}
+      java_confirm_delegate_() {
+}
 
-ConfirmInfoBar::~ConfirmInfoBar() {}
+ConfirmInfoBar::~ConfirmInfoBar() {
+}
 
-ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(JNIEnv* env) {
+base::android::ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(
+    JNIEnv* env) {
   java_confirm_delegate_.Reset(Java_ConfirmInfoBarDelegate_create(env));
-  ScopedJavaLocalRef<jstring> ok_button_text =
-      ConvertUTF16ToJavaString(env, GetTextFor(InfoBarAndroid::ACTION_OK));
-  ScopedJavaLocalRef<jstring> cancel_button_text =
-      ConvertUTF16ToJavaString(env, GetTextFor(InfoBarAndroid::ACTION_CANCEL));
-  ScopedJavaLocalRef<jstring> message_text =
-      ConvertUTF16ToJavaString(env, GetMessage());
+  base::android::ScopedJavaLocalRef<jstring> ok_button_text =
+      base::android::ConvertUTF16ToJavaString(
+          env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_OK));
+  base::android::ScopedJavaLocalRef<jstring> cancel_button_text =
+      base::android::ConvertUTF16ToJavaString(
+          env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_CANCEL));
+  base::android::ScopedJavaLocalRef<jstring> message_text =
+      base::android::ConvertUTF16ToJavaString(
+          env, delegate_->GetMessageText());
 
   return Java_ConfirmInfoBarDelegate_showConfirmInfoBar(
-      env,
-      java_confirm_delegate_.obj(),
-      reinterpret_cast<jint>(this),
-      GetEnumeratedIconId(),
-      message_text.obj(),
-      ok_button_text.obj(),
+      env, java_confirm_delegate_.obj(), reinterpret_cast<jint>(this),
+      GetEnumeratedIconId(), message_text.obj(), ok_button_text.obj(),
       cancel_button_text.obj());
 }
 
 void ConfirmInfoBar::ProcessButton(int action,
                                    const std::string& action_value) {
-  DCHECK(action == InfoBarAndroid::ACTION_OK ||
-         action == InfoBarAndroid::ACTION_CANCEL);
-  if ((action == InfoBarAndroid::ACTION_OK) ? delegate_->Accept()
-                                            : delegate_->Cancel())
+  DCHECK((action == InfoBarAndroid::ACTION_OK) ||
+      (action == InfoBarAndroid::ACTION_CANCEL));
+  if ((action == InfoBarAndroid::ACTION_OK) ?
+      delegate_->Accept() : delegate_->Cancel())
     CloseInfoBar();
 }
 
-string16 ConfirmInfoBar::GetTextFor(ActionType action) {
-  int buttons = delegate_->GetButtons();
-  switch (action) {
-    case InfoBarAndroid::ACTION_OK:
-      if (buttons & ConfirmInfoBarDelegate::BUTTON_OK)
-        return delegate_->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK);
-      break;
-    case InfoBarAndroid::ACTION_CANCEL:
-      if (buttons & ConfirmInfoBarDelegate::BUTTON_CANCEL)
-        return delegate_->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL);
-      break;
-    default:
-      break;
-  }
-  return string16();
+string16 ConfirmInfoBar::GetTextFor(
+    ConfirmInfoBarDelegate::InfoBarButton button) {
+  return (delegate_->GetButtons() & button) ?
+      delegate_->GetButtonLabel(button) : string16();
 }
 
-string16 ConfirmInfoBar::GetMessage() {
-  return delegate_->GetMessageText();
-}
 
-// -----------------------------------------------------------------------------
-// Native JNI methods for confirm delegate.
-// -----------------------------------------------------------------------------
+// Native JNI methods ---------------------------------------------------------
+
 bool RegisterConfirmInfoBarDelegate(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

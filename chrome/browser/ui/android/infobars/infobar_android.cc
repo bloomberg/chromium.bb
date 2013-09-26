@@ -1,6 +1,7 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 
 #include "base/android/jni_android.h"
@@ -12,22 +13,20 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "jni/InfoBar_jni.h"
 
-namespace gfx {
-  class Image;
-}
 
-using base::android::AttachCurrentThread;
-using base::android::JavaRef;
+// InfoBar --------------------------------------------------------------------
 
-
-// static constants defined in infobar.h we don't really use them for anything
-// but they are required. The values are copied from the GTK implementation.
+// Static constants defined in infobar.h.  We don't really use them for anything
+// but they are required.  The values are copied from the GTK implementation.
 const int InfoBar::kSeparatorLineHeight = 1;
 const int InfoBar::kDefaultArrowTargetHeight = 9;
 const int InfoBar::kMaximumArrowTargetHeight = 24;
 const int InfoBar::kDefaultArrowTargetHalfWidth = kDefaultArrowTargetHeight;
 const int InfoBar::kMaximumArrowTargetHalfWidth = 14;
 const int InfoBar::kDefaultBarTargetHeight = 36;
+
+
+// InfoBarAndroid -------------------------------------------------------------
 
 InfoBarAndroid::InfoBarAndroid(InfoBarService* owner, InfoBarDelegate* delegate)
     : InfoBar(owner, delegate),
@@ -36,7 +35,8 @@ InfoBarAndroid::InfoBarAndroid(InfoBarService* owner, InfoBarDelegate* delegate)
   DCHECK(delegate_->owner());
 }
 
-InfoBarAndroid::~InfoBarAndroid() {}
+InfoBarAndroid::~InfoBarAndroid() {
+}
 
 void InfoBarAndroid::ReassignJavaInfoBar(InfoBarAndroid* replacement) {
   DCHECK(replacement);
@@ -46,7 +46,8 @@ void InfoBarAndroid::ReassignJavaInfoBar(InfoBarAndroid* replacement) {
   }
 }
 
-void InfoBarAndroid::set_java_infobar(const JavaRef<jobject>& java_info_bar) {
+void InfoBarAndroid::set_java_infobar(
+    const base::android::JavaRef<jobject>& java_info_bar) {
   DCHECK(java_info_bar_.is_null());
   java_info_bar_.Reset(java_info_bar);
 }
@@ -55,8 +56,10 @@ bool InfoBarAndroid::HasSetJavaInfoBar() const {
   return !java_info_bar_.is_null();
 }
 
-void InfoBarAndroid::OnButtonClicked(
-    JNIEnv* env, jobject obj, jint action, jstring action_value) {
+void InfoBarAndroid::OnButtonClicked(JNIEnv* env,
+                                     jobject obj,
+                                     jint action,
+                                     jstring action_value) {
   DCHECK(delegate_);
   std::string value = base::android::ConvertJavaStringToUTF8(env, action_value);
   ProcessButton(action, value);
@@ -72,15 +75,9 @@ void InfoBarAndroid::OnInfoBarClosed(JNIEnv* env, jobject obj) {
     RemoveSelf();
 }
 
-void InfoBarAndroid::CloseInfoBar() {
-  CloseJavaInfoBar();
-  if (owner())
-    RemoveSelf();
-}
-
 void InfoBarAndroid::CloseJavaInfoBar() {
   if (!java_info_bar_.is_null()) {
-    JNIEnv* env = AttachCurrentThread();
+    JNIEnv* env = base::android::AttachCurrentThread();
     Java_InfoBar_closeInfoBar(env, java_info_bar_.obj());
   }
 }
@@ -90,11 +87,15 @@ int InfoBarAndroid::GetEnumeratedIconId() {
   return ResourceMapper::MapFromChromiumId(delegate_->GetIconID());
 }
 
-// -----------------------------------------------------------------------------
-// Native JNI methods
-// -----------------------------------------------------------------------------
+void InfoBarAndroid::CloseInfoBar() {
+  CloseJavaInfoBar();
+  if (owner())
+    RemoveSelf();
+}
 
-// Register native methods
+
+// Native JNI methods ---------------------------------------------------------
+
 bool RegisterNativeInfoBar(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

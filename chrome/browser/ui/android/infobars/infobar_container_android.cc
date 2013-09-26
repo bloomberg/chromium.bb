@@ -15,18 +15,16 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/InfoBarContainer_jni.h"
 
-using base::android::AttachCurrentThread;
-using base::android::JavaRef;
-using base::android::ScopedJavaLocalRef;
-using content::WebContents;
 
-// InfoBarContainerAndroid
+// InfoBarContainerAndroid ----------------------------------------------------
+
 InfoBarContainerAndroid::InfoBarContainerAndroid(JNIEnv* env,
                                                  jobject obj,
                                                  jobject auto_login_delegate)
     : InfoBarContainer(NULL),
       weak_java_infobar_container_(env, obj),
-      weak_java_auto_login_delegate_(env, auto_login_delegate) {}
+      weak_java_auto_login_delegate_(env, auto_login_delegate) {
+}
 
 InfoBarContainerAndroid::~InfoBarContainerAndroid() {
   RemoveAllInfoBarsForDestruction();
@@ -36,21 +34,15 @@ void InfoBarContainerAndroid::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
 
-// TODO(miguelg) Move this out of infobar container.
 void InfoBarContainerAndroid::OnWebContentsReplaced(
-    WebContents* old_web_contents,
-    WebContents* new_web_contents) {
-
-  InfoBarService* new_infobar_service = NULL;
-  if (new_web_contents)
-    new_infobar_service = InfoBarService::FromWebContents(new_web_contents);
-  if (!new_infobar_service)
-    return;
-
-  ChangeInfoBarService(new_infobar_service);
+    content::WebContents* old_web_contents,
+    content::WebContents* new_web_contents) {
+  InfoBarService* new_infobar_service = new_web_contents ?
+      InfoBarService::FromWebContents(new_web_contents) : NULL;
+  if (new_infobar_service)
+    ChangeInfoBarService(new_infobar_service);
 }
 
-// InfobarContainer
 void InfoBarContainerAndroid::PlatformSpecificAddInfoBar(InfoBar* infobar,
                                                          size_t position) {
   DCHECK(infobar);
@@ -68,20 +60,18 @@ void InfoBarContainerAndroid::PlatformSpecificAddInfoBar(InfoBar* infobar,
     AutoLoginInfoBarDelegateAndroid* auto_login_delegate =
         static_cast<AutoLoginInfoBarDelegateAndroid*>(
             infobar->delegate()->AsAutoLoginInfoBarDelegate());
-    if (!auto_login_delegate->AttachAccount(weak_java_auto_login_delegate_)) {
+    if (!auto_login_delegate->AttachAccount(weak_java_auto_login_delegate_))
       return;
-    }
   }
 
   AttachJavaInfoBar(android_bar);
 }
 
 void InfoBarContainerAndroid::AttachJavaInfoBar(InfoBarAndroid* android_bar) {
-  // Java infobar already set on the new bar, nothing to do.
   if (android_bar->HasSetJavaInfoBar())
     return;
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> java_infobar =
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jobject> java_infobar =
       android_bar->CreateRenderInfoBar(env);
   Java_InfoBarContainer_addInfoBar(
       env, weak_java_infobar_container_.get(env).obj(), java_infobar.obj());
@@ -89,10 +79,11 @@ void InfoBarContainerAndroid::AttachJavaInfoBar(InfoBarAndroid* android_bar) {
 }
 
 void InfoBarContainerAndroid::PlatformSpecificReplaceInfoBar(
-    InfoBar* old_infobar, InfoBar* new_infobar) {
+    InfoBar* old_infobar,
+    InfoBar* new_infobar) {
   InfoBarAndroid* new_android_bar = static_cast<InfoBarAndroid*>(new_infobar);
-  InfoBarAndroid* old_android_bar =
-      old_infobar != NULL ? static_cast<InfoBarAndroid*>(old_infobar) : NULL;
+  InfoBarAndroid* old_android_bar = (old_infobar == NULL) ?
+      NULL : static_cast<InfoBarAndroid*>(old_infobar);
   new_android_bar->PassJavaInfoBar(old_android_bar);
 }
 
@@ -102,23 +93,20 @@ void InfoBarContainerAndroid::PlatformSpecificRemoveInfoBar(InfoBar* infobar) {
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, infobar);
 }
 
-// -----------------------------------------------------------------------------
-// Native JNI methods
-// -----------------------------------------------------------------------------
+
+// Native JNI methods ---------------------------------------------------------
+
 static int Init(JNIEnv* env,
                 jobject obj,
                 jint native_web_contents,
                 jobject auto_login_delegate) {
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(
-      reinterpret_cast<content::WebContents*>(native_web_contents));
-
   InfoBarContainerAndroid* infobar_container =
       new InfoBarContainerAndroid(env, obj, auto_login_delegate);
-  infobar_container->ChangeInfoBarService(infobar_service);
+  infobar_container->ChangeInfoBarService(InfoBarService::FromWebContents(
+      reinterpret_cast<content::WebContents*>(native_web_contents)));
   return reinterpret_cast<int>(infobar_container);
 }
 
-// Register native methods
 bool RegisterInfoBarContainer(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

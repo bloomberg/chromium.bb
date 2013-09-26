@@ -16,38 +16,38 @@
 #include "jni/AutoLoginDelegate_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
-using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
 AutoLoginInfoBarDelegateAndroid::AutoLoginInfoBarDelegateAndroid(
     InfoBarService* owner,
     const Params& params)
-    : AutoLoginInfoBarDelegate(owner, params), params_(params) {}
+    : AutoLoginInfoBarDelegate(owner, params),
+      params_(params) {
+}
 
-AutoLoginInfoBarDelegateAndroid::~AutoLoginInfoBarDelegateAndroid() {}
+AutoLoginInfoBarDelegateAndroid::~AutoLoginInfoBarDelegateAndroid() {
+}
 
 bool AutoLoginInfoBarDelegateAndroid::AttachAccount(
     JavaObjectWeakGlobalRef weak_java_auto_login_delegate) {
   weak_java_auto_login_delegate_ = weak_java_auto_login_delegate;
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jrealm = ConvertUTF8ToJavaString(env, realm());
   ScopedJavaLocalRef<jstring> jaccount =
       ConvertUTF8ToJavaString(env, account());
   ScopedJavaLocalRef<jstring> jargs = ConvertUTF8ToJavaString(env, args());
-  DCHECK(!jrealm.is_null() && !jaccount.is_null() && !jargs.is_null());
+  DCHECK(!jrealm.is_null());
+  DCHECK(!jaccount.is_null());
+  DCHECK(!jargs.is_null());
 
   ScopedJavaLocalRef<jobject> delegate =
       weak_java_auto_login_delegate_.get(env);
   DCHECK(delegate.obj());
-  user_ = ConvertJavaStringToUTF8(
-      Java_AutoLoginDelegate_initializeAccount(env,
-                                               delegate.obj(),
-                                               reinterpret_cast<jint>(this),
-                                               jrealm.obj(),
-                                               jaccount.obj(),
-                                               jargs.obj()));
+  user_ = base::android::ConvertJavaStringToUTF8(
+      Java_AutoLoginDelegate_initializeAccount(
+          env, delegate.obj(), reinterpret_cast<jint>(this), jrealm.obj(),
+          jaccount.obj(), jargs.obj()));
   return !user_.empty();
 }
 
@@ -57,13 +57,13 @@ string16 AutoLoginInfoBarDelegateAndroid::GetMessageText() const {
 }
 
 bool AutoLoginInfoBarDelegateAndroid::Accept() {
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> delegate =
       weak_java_auto_login_delegate_.get(env);
   DCHECK(delegate.obj());
 
-  Java_AutoLoginDelegate_logIn(
-      env, delegate.obj(), reinterpret_cast<jint>(this));
+  Java_AutoLoginDelegate_logIn(env, delegate.obj(),
+                               reinterpret_cast<jint>(this));
 
   // Do not close the infobar on accept, it will be closed as part
   // of the log in callback.
@@ -71,12 +71,12 @@ bool AutoLoginInfoBarDelegateAndroid::Accept() {
 }
 
 bool AutoLoginInfoBarDelegateAndroid::Cancel() {
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> delegate =
       weak_java_auto_login_delegate_.get(env);
   DCHECK(delegate.obj());
-  Java_AutoLoginDelegate_cancelLogIn(
-      env, delegate.obj(), reinterpret_cast<jint>(this));
+  Java_AutoLoginDelegate_cancelLogIn(env, delegate.obj(),
+                                     reinterpret_cast<jint>(this));
   return true;
 }
 
@@ -89,10 +89,8 @@ void AutoLoginInfoBarDelegateAndroid::LoginSuccess(JNIEnv* env,
       web_contents->Stop();
       web_contents->OpenURL(content::OpenURLParams(
           GURL(base::android::ConvertJavaStringToUTF8(env, result)),
-          content::Referrer(),
-          CURRENT_TAB,
-          content::PAGE_TRANSITION_AUTO_BOOKMARK,
-          false));
+          content::Referrer(), CURRENT_TAB,
+          content::PAGE_TRANSITION_AUTO_BOOKMARK, false));
     }
     owner()->RemoveInfoBar(this);
   }
@@ -104,10 +102,8 @@ void AutoLoginInfoBarDelegateAndroid::LoginFailed(JNIEnv* env, jobject obj) {
   DCHECK(delegate.obj());
   if (owner()) {
     SimpleAlertInfoBarDelegate::Create(
-        owner(),
-        IDR_INFOBAR_WARNING,
-        l10n_util::GetStringUTF16(IDS_AUTO_LOGIN_FAILED),
-        false);
+        owner(), IDR_INFOBAR_WARNING,
+        l10n_util::GetStringUTF16(IDS_AUTO_LOGIN_FAILED), false);
     owner()->RemoveInfoBar(this);
   }
 }
@@ -117,7 +113,6 @@ void AutoLoginInfoBarDelegateAndroid::LoginDismiss(JNIEnv* env, jobject obj) {
     owner()->RemoveInfoBar(this);
 }
 
-// Register Android JNI bindings.
 bool AutoLoginInfoBarDelegateAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

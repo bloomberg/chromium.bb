@@ -1,6 +1,7 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_AUTO_LOGIN_INFOBAR_DELEGATE_ANDROID_H_
 #define CHROME_BROWSER_UI_ANDROID_INFOBARS_AUTO_LOGIN_INFOBAR_DELEGATE_ANDROID_H_
 
@@ -13,7 +14,7 @@ class AutoLoginInfoBarDelegateAndroid : public AutoLoginInfoBarDelegate {
   AutoLoginInfoBarDelegateAndroid(InfoBarService* owner, const Params& params);
   virtual ~AutoLoginInfoBarDelegateAndroid();
 
-  // ConfirmInfoBarDelegate:
+  // AutoLoginInfoBarDelegate:
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
@@ -38,7 +39,6 @@ class AutoLoginInfoBarDelegateAndroid : public AutoLoginInfoBarDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(AutoLoginInfoBarDelegateAndroid);
 };
-
 
 #endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_AUTO_LOGIN_INFOBAR_DELEGATE_ANDROID_H_
 
