@@ -1804,6 +1804,7 @@
             'dom/DatasetDOMStringMap.h',
             'dom/DataTransferItem.cpp',
             'dom/DataTransferItem.h',
+            'dom/DataTransferItemList.cpp',
             'dom/DataTransferItemList.h',
             'dom/DecodedDataDocumentParser.cpp',
             'dom/DecodedDataDocumentParser.h',

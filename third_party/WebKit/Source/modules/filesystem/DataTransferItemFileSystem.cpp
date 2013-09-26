@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/filesystem/DataTransferItemFileSystem.h"
 
+#include "core/dom/DataTransferItem.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "core/platform/AsyncFileSystemCallbacks.h"
@@ -50,19 +51,17 @@ namespace WebCore {
 // static
 PassRefPtr<Entry> DataTransferItemFileSystem::webkitGetAsEntry(ScriptExecutionContext* scriptExecutionContext, DataTransferItem* item)
 {
-    DataTransferItemPolicyWrapper* itemPolicyWrapper = static_cast<DataTransferItemPolicyWrapper*>(item);
-
-    if (!itemPolicyWrapper->dataObjectItem()->isFilename())
+    if (!item->dataObjectItem()->isFilename())
         return adoptRef(static_cast<Entry*>(0));
 
     // For dragged files getAsFile must be pretty lightweight.
-    Blob* file = itemPolicyWrapper->getAsFile().get();
+    Blob* file = item->getAsFile().get();
     // The clipboard may not be in a readable state.
     if (!file)
         return adoptRef(static_cast<Entry*>(0));
     ASSERT(file->isFile());
 
-    DraggedIsolatedFileSystem* filesystem = DraggedIsolatedFileSystem::from(itemPolicyWrapper->clipboard()->dataObject().get());
+    DraggedIsolatedFileSystem* filesystem = DraggedIsolatedFileSystem::from(item->clipboard()->dataObject().get());
     DOMFileSystem* domFileSystem = filesystem ? filesystem->getDOMFileSystem(scriptExecutionContext) : 0;
     if (!filesystem) {
         // IsolatedFileSystem may not be enabled.

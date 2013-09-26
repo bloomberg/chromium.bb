@@ -31,7 +31,6 @@
 #define ClipboardChromium_h
 
 #include "core/dom/Clipboard.h"
-#include "core/dom/DataTransferItem.h"
 #include "core/fetch/ImageResourceClient.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 
@@ -42,27 +41,6 @@ class ImageResource;
     class ClipboardChromium;
     class Frame;
     class IntPoint;
-
-    // A wrapper class that invalidates a DataTransferItem when the associated Clipboard object goes out of scope.
-    class DataTransferItemPolicyWrapper : public DataTransferItem {
-    public:
-        static PassRefPtr<DataTransferItemPolicyWrapper> create(PassRefPtr<ClipboardChromium>, PassRefPtr<ChromiumDataObjectItem>);
-        virtual ~DataTransferItemPolicyWrapper();
-
-        virtual String kind() const OVERRIDE;
-        virtual String type() const OVERRIDE;
-        virtual void getAsString(PassRefPtr<StringCallback>) const OVERRIDE;
-        virtual PassRefPtr<Blob> getAsFile() const OVERRIDE;
-
-        ClipboardChromium* clipboard() { return m_clipboard.get(); }
-        ChromiumDataObjectItem* dataObjectItem() { return m_item.get(); }
-
-    private:
-        DataTransferItemPolicyWrapper(PassRefPtr<ClipboardChromium>, PassRefPtr<ChromiumDataObjectItem>);
-
-        RefPtr<ClipboardChromium> m_clipboard;
-        RefPtr<ChromiumDataObjectItem> m_item;
-    };
 
     class ClipboardChromium : public Clipboard, public ImageResourceClient {
         WTF_MAKE_FAST_ALLOCATED;

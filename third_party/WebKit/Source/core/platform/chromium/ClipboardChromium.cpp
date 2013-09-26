@@ -28,12 +28,10 @@
 #include "core/platform/chromium/ClipboardChromium.h"
 
 #include "HTMLNames.h"
-#include "bindings/v8/ExceptionState.h"
+#include "core/dom/DataTransferItem.h"
 #include "core/dom/DataTransferItemList.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/StringCallback.h"
 #include "core/editing/markup.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fileapi/File.h"
@@ -42,7 +40,6 @@
 #include "core/platform/DragData.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
-#include "core/platform/chromium/ChromiumDataObjectItem.h"
 #include "core/platform/chromium/ClipboardMimeTypes.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 #include "core/platform/graphics/Image.h"
@@ -51,149 +48,6 @@
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-
-namespace {
-
-// A wrapper class that invalidates a DataTransferItemList when the associated Clipboard object goes out of scope.
-class DataTransferItemListPolicyWrapper : public DataTransferItemList {
-public:
-    static PassRefPtr<DataTransferItemListPolicyWrapper> create(PassRefPtr<ClipboardChromium>, PassRefPtr<ChromiumDataObject>);
-    virtual ~DataTransferItemListPolicyWrapper();
-
-    virtual size_t length() const;
-    virtual PassRefPtr<DataTransferItem> item(unsigned long index) OVERRIDE;
-    virtual void deleteItem(unsigned long index, ExceptionState&) OVERRIDE;
-    virtual void clear() OVERRIDE;
-    virtual PassRefPtr<DataTransferItem> add(const String& data, const String& type, ExceptionState&) OVERRIDE;
-    virtual PassRefPtr<DataTransferItem> add(PassRefPtr<File>) OVERRIDE;
-
-private:
-    DataTransferItemListPolicyWrapper(PassRefPtr<ClipboardChromium>, PassRefPtr<ChromiumDataObject>);
-
-    RefPtr<ClipboardChromium> m_clipboard;
-    RefPtr<ChromiumDataObject> m_dataObject;
-};
-
-
-PassRefPtr<DataTransferItemListPolicyWrapper> DataTransferItemListPolicyWrapper::create(
-    PassRefPtr<ClipboardChromium> clipboard, PassRefPtr<ChromiumDataObject> list)
-{
-    return adoptRef(new DataTransferItemListPolicyWrapper(clipboard, list));
-}
-
-DataTransferItemListPolicyWrapper::~DataTransferItemListPolicyWrapper()
-{
-}
-
-size_t DataTransferItemListPolicyWrapper::length() const
-{
-    if (!m_clipboard->canReadTypes())
-        return 0;
-    return m_dataObject->length();
-}
-
-PassRefPtr<DataTransferItem> DataTransferItemListPolicyWrapper::item(unsigned long index)
-{
-    if (!m_clipboard->canReadTypes())
-        return 0;
-    RefPtr<ChromiumDataObjectItem> item = m_dataObject->item(index);
-    if (!item)
-        return 0;
-
-    return DataTransferItemPolicyWrapper::create(m_clipboard, item);
-}
-
-void DataTransferItemListPolicyWrapper::deleteItem(unsigned long index, ExceptionState& es)
-{
-    if (!m_clipboard->canWriteData()) {
-        es.throwUninformativeAndGenericDOMException(InvalidStateError);
-        return;
-    }
-    m_dataObject->deleteItem(index);
-}
-
-void DataTransferItemListPolicyWrapper::clear()
-{
-    if (!m_clipboard->canWriteData())
-        return;
-    m_dataObject->clearAll();
-}
-
-PassRefPtr<DataTransferItem> DataTransferItemListPolicyWrapper::add(const String& data, const String& type, ExceptionState& es)
-{
-    if (!m_clipboard->canWriteData())
-        return 0;
-    RefPtr<ChromiumDataObjectItem> item = m_dataObject->add(data, type, es);
-    if (!item)
-        return 0;
-    return DataTransferItemPolicyWrapper::create(m_clipboard, item);
-}
-
-PassRefPtr<DataTransferItem> DataTransferItemListPolicyWrapper::add(PassRefPtr<File> file)
-{
-    if (!m_clipboard->canWriteData())
-        return 0;
-    RefPtr<ChromiumDataObjectItem> item = m_dataObject->add(file, m_clipboard->frame()->document()->scriptExecutionContext());
-    if (!item)
-        return 0;
-    return DataTransferItemPolicyWrapper::create(m_clipboard, item);
-}
-
-DataTransferItemListPolicyWrapper::DataTransferItemListPolicyWrapper(
-    PassRefPtr<ClipboardChromium> clipboard, PassRefPtr<ChromiumDataObject> dataObject)
-    : m_clipboard(clipboard)
-    , m_dataObject(dataObject)
-{
-}
-
-} // namespace
-
-PassRefPtr<DataTransferItemPolicyWrapper> DataTransferItemPolicyWrapper::create(
-    PassRefPtr<ClipboardChromium> clipboard, PassRefPtr<ChromiumDataObjectItem> item)
-{
-    return adoptRef(new DataTransferItemPolicyWrapper(clipboard, item));
-}
-
-DataTransferItemPolicyWrapper::~DataTransferItemPolicyWrapper()
-{
-}
-
-String DataTransferItemPolicyWrapper::kind() const
-{
-    if (!m_clipboard->canReadTypes())
-        return String();
-    return m_item->kind();
-}
-
-String DataTransferItemPolicyWrapper::type() const
-{
-    if (!m_clipboard->canReadTypes())
-        return String();
-    return m_item->type();
-}
-
-void DataTransferItemPolicyWrapper::getAsString(PassRefPtr<StringCallback> callback) const
-{
-    if (!m_clipboard->canReadData())
-        return;
-
-    m_item->getAsString(callback, m_clipboard->frame()->document()->scriptExecutionContext());
-}
-
-PassRefPtr<Blob> DataTransferItemPolicyWrapper::getAsFile() const
-{
-    if (!m_clipboard->canReadData())
-        return 0;
-
-    return m_item->getAsFile();
-}
-
-DataTransferItemPolicyWrapper::DataTransferItemPolicyWrapper(
-    PassRefPtr<ClipboardChromium> clipboard, PassRefPtr<ChromiumDataObjectItem> item)
-    : m_clipboard(clipboard)
-    , m_item(item)
-{
-}
 
 using namespace HTMLNames;
 
@@ -473,7 +327,7 @@ PassRefPtr<DataTransferItemList> ClipboardChromium::items()
     // FIXME: According to the spec, we are supposed to return the same collection of items each
     // time. We now return a wrapper that always wraps the *same* set of items, so JS shouldn't be
     // able to tell, but we probably still want to fix this.
-    return DataTransferItemListPolicyWrapper::create(this, m_dataObject);
+    return DataTransferItemList::create(this, m_dataObject);
 }
 
 } // namespace WebCore

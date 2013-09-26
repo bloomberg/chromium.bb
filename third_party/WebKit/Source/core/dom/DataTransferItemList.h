@@ -32,32 +32,36 @@
 #define DataTransferItemList_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/DataTransferItem.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class Clipboard;
+class ChromiumDataObject;
+class ClipboardChromium;
+class DataTransferItem;
 class File;
 
 class ExceptionState;
 
 class DataTransferItemList : public RefCounted<DataTransferItemList>, public ScriptWrappable {
 public:
-    DataTransferItemList()
-    {
-        ScriptWrappable::init(this);
-    }
+    static PassRefPtr<DataTransferItemList> create(PassRefPtr<ClipboardChromium>, PassRefPtr<ChromiumDataObject>);
+    ~DataTransferItemList();
 
-    virtual ~DataTransferItemList() { }
+    size_t length() const;
+    PassRefPtr<DataTransferItem> item(unsigned long index);
+    void deleteItem(unsigned long index, ExceptionState&);
+    void clear();
+    PassRefPtr<DataTransferItem> add(const String& data, const String& type, ExceptionState&);
+    PassRefPtr<DataTransferItem> add(PassRefPtr<File>);
 
-    virtual size_t length() const = 0;
-    virtual PassRefPtr<DataTransferItem> item(unsigned long index) = 0;
-    virtual void deleteItem(unsigned long index, ExceptionState&) = 0;
-    virtual void clear() = 0;
-    virtual PassRefPtr<DataTransferItem> add(const String& data, const String& type, ExceptionState&) = 0;
-    virtual PassRefPtr<DataTransferItem> add(PassRefPtr<File>) = 0;
+private:
+    DataTransferItemList(PassRefPtr<ClipboardChromium>, PassRefPtr<ChromiumDataObject>);
+
+    RefPtr<ClipboardChromium> m_clipboard;
+    RefPtr<ChromiumDataObject> m_dataObject;
 };
 
 } // namespace WebCore
