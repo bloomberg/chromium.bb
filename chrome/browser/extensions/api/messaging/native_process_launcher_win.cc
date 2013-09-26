@@ -128,12 +128,8 @@ bool NativeProcessLauncher::LaunchNativeProcess(
 
   string16 command_line_string = command_line.GetCommandLineString();
 
-  // 'start' command has a moronic syntax: if first argument is quoted then it
-  // interprets it as a command title. Host path may need to be in quotes, so
-  // we always need to specify the title as the first argument.
   string16 command = base::StringPrintf(
-      L"%ls /c start \"Chrome Native Messaging Host\" /b "
-      L"%ls < %ls > %ls",
+      L"%ls /c %ls < %ls > %ls",
       comspec.get(), command_line_string.c_str(),
       in_pipe_name.c_str(), out_pipe_name.c_str());
 
@@ -155,19 +151,6 @@ bool NativeProcessLauncher::LaunchNativeProcess(
     base::CloseProcessHandle(cmd_handle);
     LOG(ERROR) << "Failed to connect IO pipes when starting "
                << command_line.GetProgram().MaybeAsASCII();
-    return false;
-  }
-
-  // Check that cmd.exe has completed with 0 exit code to make sure it was
-  // able to connect IO pipes.
-  int error_code;
-  if (!base::WaitForExitCodeWithTimeout(
-          cmd_handle, &error_code,
-          base::TimeDelta::FromMilliseconds(kTimeoutMs)) ||
-      error_code != 0) {
-    LOG(ERROR) << "cmd.exe did not exit cleanly";
-    base::KillProcess(cmd_handle, 0, false);
-    base::CloseProcessHandle(cmd_handle);
     return false;
   }
 
