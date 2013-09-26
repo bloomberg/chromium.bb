@@ -41,7 +41,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_webkit_preferences.h"
-#include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
@@ -1995,10 +1994,6 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   }
 
   if (is_guest)
-    return true;
-
-  // Exempt extension processes from popup blocking.
-  if (map->process_map().Contains(render_process_id))
     return true;
 
   HostContentSettingsMap* content_settings =
