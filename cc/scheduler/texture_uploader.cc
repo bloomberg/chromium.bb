@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/debug/alias.h"
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
 #include "cc/base/util.h"
@@ -179,29 +178,13 @@ void TextureUploader::UploadWithTexSubImage(const uint8* image,
                                             gfx::Rect source_rect,
                                             gfx::Vector2d dest_offset,
                                             ResourceFormat format) {
-  // Instrumentation to debug issue 156107
-  int source_rect_x = source_rect.x();
-  int source_rect_y = source_rect.y();
-  int source_rect_width = source_rect.width();
-  int source_rect_height = source_rect.height();
-  int image_rect_x = image_rect.x();
-  int image_rect_y = image_rect.y();
-  int image_rect_width = image_rect.width();
-  int image_rect_height = image_rect.height();
-  int dest_offset_x = dest_offset.x();
-  int dest_offset_y = dest_offset.y();
-  base::debug::Alias(&image);
-  base::debug::Alias(&source_rect_x);
-  base::debug::Alias(&source_rect_y);
-  base::debug::Alias(&source_rect_width);
-  base::debug::Alias(&source_rect_height);
-  base::debug::Alias(&image_rect_x);
-  base::debug::Alias(&image_rect_y);
-  base::debug::Alias(&image_rect_width);
-  base::debug::Alias(&image_rect_height);
-  base::debug::Alias(&dest_offset_x);
-  base::debug::Alias(&dest_offset_y);
   TRACE_EVENT0("cc", "TextureUploader::UploadWithTexSubImage");
+
+  // Early-out if this is a no-op, and assert that |image| be valid if this is
+  // not a no-op.
+  if (source_rect.IsEmpty())
+    return;
+  DCHECK(image);
 
   // Offset from image-rect to source-rect.
   gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
@@ -249,30 +232,13 @@ void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
                                                gfx::Rect source_rect,
                                                gfx::Vector2d dest_offset,
                                                ResourceFormat format) {
-  // Instrumentation to debug issue 156107
-  int source_rect_x = source_rect.x();
-  int source_rect_y = source_rect.y();
-  int source_rect_width = source_rect.width();
-  int source_rect_height = source_rect.height();
-  int image_rect_x = image_rect.x();
-  int image_rect_y = image_rect.y();
-  int image_rect_width = image_rect.width();
-  int image_rect_height = image_rect.height();
-  int dest_offset_x = dest_offset.x();
-  int dest_offset_y = dest_offset.y();
-  base::debug::Alias(&image);
-  base::debug::Alias(&source_rect_x);
-  base::debug::Alias(&source_rect_y);
-  base::debug::Alias(&source_rect_width);
-  base::debug::Alias(&source_rect_height);
-  base::debug::Alias(&image_rect_x);
-  base::debug::Alias(&image_rect_y);
-  base::debug::Alias(&image_rect_width);
-  base::debug::Alias(&image_rect_height);
-  base::debug::Alias(&dest_offset_x);
-  base::debug::Alias(&dest_offset_y);
-
   TRACE_EVENT0("cc", "TextureUploader::UploadWithMapTexSubImage");
+
+  // Early-out if this is a no-op, and assert that |image| be valid if this is
+  // not a no-op.
+  if (source_rect.IsEmpty())
+    return;
+  DCHECK(image);
 
   // Offset from image-rect to source-rect.
   gfx::Vector2d offset(source_rect.origin() - image_rect.origin());

@@ -1743,6 +1743,7 @@ class EvictionTestLayer : public Layer {
         layer_tree_host()->contents_texture_manager());
     texture_->SetDimensions(gfx::Size(10, 10), RGBA_8888);
     bitmap_.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
+    bitmap_.allocPixels();
   }
 
   scoped_ptr<PrioritizedResource> texture_;

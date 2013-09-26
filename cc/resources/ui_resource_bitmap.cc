@@ -10,12 +10,6 @@
 
 namespace cc {
 
-uint8_t* UIResourceBitmap::GetPixels() const {
-  if (!pixel_ref_)
-    return NULL;
-  return static_cast<uint8_t*>(pixel_ref_->pixels());
-}
-
 void UIResourceBitmap::Create(const skia::RefPtr<SkPixelRef>& pixel_ref,
                               UIResourceFormat format,
                               UIResourceWrapMode wrap_mode,
@@ -44,5 +38,18 @@ UIResourceBitmap::UIResourceBitmap(const SkBitmap& skbitmap,
 }
 
 UIResourceBitmap::~UIResourceBitmap() {}
+
+AutoLockUIResourceBitmap::AutoLockUIResourceBitmap(
+    const UIResourceBitmap& bitmap) : bitmap_(bitmap) {
+  bitmap_.pixel_ref_->lockPixels();
+}
+
+AutoLockUIResourceBitmap::~AutoLockUIResourceBitmap() {
+  bitmap_.pixel_ref_->unlockPixels();
+}
+
+const uint8_t* AutoLockUIResourceBitmap::GetPixels() const {
+  return static_cast<const uint8_t*>(bitmap_.pixel_ref_->pixels());
+}
 
 }  // namespace cc

@@ -2728,8 +2728,10 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       resource_provider_->best_texture_format());
 
   ui_resource_map_[uid] = id;
+
+  AutoLockUIResourceBitmap bitmap_lock(bitmap);
   resource_provider_->SetPixels(id,
-                                bitmap.GetPixels(),
+                                bitmap_lock.GetPixels(),
                                 gfx::Rect(bitmap.GetSize()),
                                 gfx::Rect(bitmap.GetSize()),
                                 gfx::Vector2d(0, 0));

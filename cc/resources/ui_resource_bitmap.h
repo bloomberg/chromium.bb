@@ -34,7 +34,6 @@ class CC_EXPORT UIResourceBitmap {
   gfx::Size GetSize() const { return size_; }
   UIResourceFormat GetFormat() const { return format_; }
   UIResourceWrapMode GetWrapMode() const { return wrap_mode_; }
-  uint8_t* GetPixels() const;
 
   // The constructor for the UIResourceBitmap.  User must ensure that |skbitmap|
   // is immutable.  The SkBitmap format should be in 32-bit RGBA.  Wrap mode is
@@ -45,6 +44,7 @@ class CC_EXPORT UIResourceBitmap {
   ~UIResourceBitmap();
 
  private:
+  friend class AutoLockUIResourceBitmap;
   void Create(const skia::RefPtr<SkPixelRef>& pixel_ref,
               UIResourceFormat format,
               UIResourceWrapMode wrap_mode,
@@ -54,6 +54,16 @@ class CC_EXPORT UIResourceBitmap {
   UIResourceFormat format_;
   UIResourceWrapMode wrap_mode_;
   gfx::Size size_;
+};
+
+class CC_EXPORT AutoLockUIResourceBitmap {
+ public:
+  explicit AutoLockUIResourceBitmap(const UIResourceBitmap& bitmap);
+  ~AutoLockUIResourceBitmap();
+  const uint8_t* GetPixels() const;
+
+ private:
+  const UIResourceBitmap& bitmap_;
 };
 
 }  // namespace cc
