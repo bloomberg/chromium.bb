@@ -8,7 +8,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_controller_observer.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
@@ -41,7 +41,7 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
       bookmark_bar_(NULL) {
   menu_delegate_->Init(this, NULL, node, start_child_index,
                        BookmarkMenuDelegate::HIDE_PERMANENT_FOLDERS,
-                       bookmark_utils::LAUNCH_BAR_SUBFOLDER);
+                       BOOKMARK_LAUNCH_LOCATION_BAR_SUBFOLDER);
   menu_runner_.reset(new views::MenuRunner(menu_delegate_->menu()));
 }
 

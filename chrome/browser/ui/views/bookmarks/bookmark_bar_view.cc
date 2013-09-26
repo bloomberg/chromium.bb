@@ -18,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -1169,7 +1168,7 @@ void BookmarkBarView::OnMenuButtonClicked(views::View* view,
     node = model_->bookmark_bar_node()->GetChild(button_index);
   }
 
-  bookmark_utils::RecordBookmarkFolderOpen(GetBookmarkLaunchLocation());
+  RecordBookmarkFolderOpen(GetBookmarkLaunchLocation());
   bookmark_menu_ = new BookmarkMenuController(
       browser_, page_navigator_, GetWidget(), node, start_index);
   bookmark_menu_->set_observer(this);
@@ -1188,7 +1187,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
                          content::PAGE_TRANSITION_AUTO_BOOKMARK,
                          false);
     page_navigator_->OpenURL(params);
-    bookmark_utils::RecordAppsPageOpen(GetBookmarkLaunchLocation());
+    RecordBookmarkAppsPageOpen(GetBookmarkLaunchLocation());
     return;
   }
 
@@ -1213,7 +1212,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
                     disposition_from_event_flags, browser_->profile());
   }
 
-  bookmark_utils::RecordBookmarkLaunch(GetBookmarkLaunchLocation());
+  RecordBookmarkLaunch(GetBookmarkLaunchLocation());
 }
 
 void BookmarkBarView::ShowContextMenuForView(views::View* source,
@@ -1315,10 +1314,9 @@ views::TextButton* BookmarkBarView::GetBookmarkButton(int index) {
   return static_cast<views::TextButton*>(child_at(index));
 }
 
-bookmark_utils::BookmarkLaunchLocation
-    BookmarkBarView::GetBookmarkLaunchLocation() const {
-  return IsDetached() ? bookmark_utils::LAUNCH_DETACHED_BAR :
-                        bookmark_utils::LAUNCH_ATTACHED_BAR;
+BookmarkLaunchLocation BookmarkBarView::GetBookmarkLaunchLocation() const {
+  return IsDetached() ? BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR :
+                        BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR;
 }
 
 int BookmarkBarView::GetFirstHiddenNodeIndex() {

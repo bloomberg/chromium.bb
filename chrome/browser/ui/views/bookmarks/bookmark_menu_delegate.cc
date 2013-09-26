@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -53,20 +52,18 @@ BookmarkMenuDelegate::BookmarkMenuDelegate(Browser* browser,
       next_menu_id_(first_menu_id),
       real_delegate_(NULL),
       is_mutating_model_(false),
-      location_(bookmark_utils::LAUNCH_NONE){
-}
+      location_(BOOKMARK_LAUNCH_LOCATION_NONE) {}
 
 BookmarkMenuDelegate::~BookmarkMenuDelegate() {
   GetBookmarkModel()->RemoveObserver(this);
 }
 
-void BookmarkMenuDelegate::Init(
-    views::MenuDelegate* real_delegate,
-    MenuItemView* parent,
-    const BookmarkNode* node,
-    int start_child_index,
-    ShowOptions show_options,
-    bookmark_utils::BookmarkLaunchLocation location) {
+void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
+                                MenuItemView* parent,
+                                const BookmarkNode* node,
+                                int start_child_index,
+                                ShowOptions show_options,
+                                BookmarkLaunchLocation location) {
   GetBookmarkModel()->AddObserver(this);
   real_delegate_ = real_delegate;
   if (parent) {
@@ -141,11 +138,12 @@ void BookmarkMenuDelegate::ExecuteCommand(int id, int mouse_event_flags) {
   chrome::OpenAll(parent_->GetNativeWindow(), page_navigator_, selection,
                   ui::DispositionFromEventFlags(mouse_event_flags),
                   profile_);
-  bookmark_utils::RecordBookmarkLaunch(location_);
+  RecordBookmarkLaunch(location_);
 }
 
 bool BookmarkMenuDelegate::ShouldExecuteCommandWithoutClosingMenu(
-    int id, const ui::Event& event) {
+    int id,
+    const ui::Event& event) {
   return (event.flags() & ui::EF_LEFT_MOUSE_BUTTON) &&
          ui::DispositionFromEventFlags(event.flags()) == NEW_BACKGROUND_TAB;
 }

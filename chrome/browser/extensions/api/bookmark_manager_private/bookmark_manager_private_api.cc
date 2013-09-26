@@ -13,6 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
+#include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api_constants.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
@@ -520,7 +521,7 @@ bool BookmarkManagerPrivateCanEditFunction::RunImpl() {
 }
 
 bool BookmarkManagerPrivateRecordLaunchFunction::RunImpl() {
-  bookmark_utils::RecordBookmarkLaunch(bookmark_utils::LAUNCH_MANAGER);
+  RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_MANAGER);
   return true;
 }
 

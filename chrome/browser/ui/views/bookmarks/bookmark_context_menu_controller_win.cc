@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_context_menu_controller.h"
 
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -124,8 +124,7 @@ bool BookmarkContextMenuController::ExecutePlatformCommand(int command_id,
 
         chrome::OpenAll(parent_window_, navigator, selection_,
                         NEW_FOREGROUND_TAB, profile_to_use);
-        bookmark_utils::RecordBookmarkLaunch(
-            bookmark_utils::LAUNCH_CONTEXT_MENU);
+        RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_CONTEXT_MENU);
         return true;
       }
 

@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -88,7 +89,7 @@ TEST_F(BookmarkMenuDelegateTest, RemoveBookmarks) {
   const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(1);
   bookmark_menu_delegate_->Init(&test_delegate, NULL, node, 0,
                                 BookmarkMenuDelegate::HIDE_PERMANENT_FOLDERS,
-                                bookmark_utils::LAUNCH_NONE);
+                                BOOKMARK_LAUNCH_LOCATION_NONE);
   std::vector<const BookmarkNode*> nodes_to_remove;
   nodes_to_remove.push_back(node->GetChild(1));
   bookmark_menu_delegate_->WillRemoveBookmarks(nodes_to_remove);

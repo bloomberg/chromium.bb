@@ -15,7 +15,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -587,11 +587,10 @@ int BookmarkBarGtk::GetBookmarkButtonCount() {
   return count;
 }
 
-bookmark_utils::BookmarkLaunchLocation
-    BookmarkBarGtk::GetBookmarkLaunchLocation() const {
+BookmarkLaunchLocation BookmarkBarGtk::GetBookmarkLaunchLocation() const {
   return bookmark_bar_state_ == BookmarkBar::DETACHED ?
-      bookmark_utils::LAUNCH_DETACHED_BAR :
-      bookmark_utils::LAUNCH_ATTACHED_BAR;
+      BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR :
+      BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR;
 }
 
 void BookmarkBarGtk::SetOverflowButtonAppearance() {
@@ -1187,7 +1186,7 @@ void BookmarkBarGtk::OnClicked(GtkWidget* sender) {
                   event_utils::DispositionForCurrentButtonPressEvent(),
                   browser_->profile());
 
-  bookmark_utils::RecordBookmarkLaunch(GetBookmarkLaunchLocation());
+  RecordBookmarkLaunch(GetBookmarkLaunchLocation());
 }
 
 void BookmarkBarGtk::OnButtonDragBegin(GtkWidget* button,
@@ -1264,7 +1263,7 @@ void BookmarkBarGtk::OnAppsButtonClicked(GtkWidget* sender) {
       content::PAGE_TRANSITION_AUTO_BOOKMARK,
       false);
   browser_->OpenURL(params);
-  bookmark_utils::RecordAppsPageOpen(GetBookmarkLaunchLocation());
+  RecordBookmarkAppsPageOpen(GetBookmarkLaunchLocation());
 }
 
 void BookmarkBarGtk::OnFolderClicked(GtkWidget* sender) {
@@ -1277,7 +1276,7 @@ void BookmarkBarGtk::OnFolderClicked(GtkWidget* sender) {
   GdkEvent* event = gtk_get_current_event();
   if (event->button.button == 1 ||
       (event->button.button == 2 && sender == overflow_button_)) {
-    bookmark_utils::RecordBookmarkFolderOpen(GetBookmarkLaunchLocation());
+    RecordBookmarkFolderOpen(GetBookmarkLaunchLocation());
     PopupForButton(sender);
   } else if (event->button.button == 2) {
     const BookmarkNode* node = GetNodeForToolButton(sender);

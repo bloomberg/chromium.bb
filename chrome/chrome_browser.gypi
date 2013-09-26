@@ -279,6 +279,8 @@
         'browser/bookmarks/bookmark_prompt_prefs.h',
         'browser/bookmarks/bookmark_service.cc',
         'browser/bookmarks/bookmark_service.h',
+        'browser/bookmarks/bookmark_stats.cc',
+        'browser/bookmarks/bookmark_stats.h',
         'browser/bookmarks/bookmark_storage.cc',
         'browser/bookmarks/bookmark_storage.h',
         'browser/bookmarks/bookmark_title_match.cc',

@@ -11,7 +11,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
+#include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -672,7 +673,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   if (!animate)
     [self closeFolderAndStopTrackingMenus];
-  bookmark_utils::RecordBookmarkLaunch([self bookmarkLaunchLocation]);
+  RecordBookmarkLaunch([self bookmarkLaunchLocation]);
 }
 
 // Common function to open a bookmark folder of any type.
@@ -682,7 +683,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   // Only record the action if it's the initial folder being opened.
   if (!showFolderMenus_)
-    bookmark_utils::RecordBookmarkFolderOpen([self bookmarkLaunchLocation]);
+    RecordBookmarkFolderOpen([self bookmarkLaunchLocation]);
   showFolderMenus_ = !showFolderMenus_;
 
   if (sender == offTheSideButton_)
@@ -726,10 +727,10 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   return (AnimatableView*)[self view];
 }
 
-- (bookmark_utils::BookmarkLaunchLocation)bookmarkLaunchLocation {
+- (BookmarkLaunchLocation)bookmarkLaunchLocation {
   return currentState_ == BookmarkBar::DETACHED ?
-      bookmark_utils::LAUNCH_DETACHED_BAR :
-      bookmark_utils::LAUNCH_ATTACHED_BAR;
+      BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR :
+      BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR;
 }
 
 // Position the right-side buttons including the off-the-side chevron.
@@ -1225,7 +1226,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   WindowOpenDisposition disposition =
       ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   [self openURL:GURL(chrome::kChromeUIAppsURL) disposition:disposition];
-  bookmark_utils::RecordAppsPageOpen([self bookmarkLaunchLocation]);
+  RecordBookmarkAppsPageOpen([self bookmarkLaunchLocation]);
 }
 
 // To avoid problems with sync, changes that may impact the current

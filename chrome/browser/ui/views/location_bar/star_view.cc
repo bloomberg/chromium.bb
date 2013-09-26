@@ -7,7 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
@@ -28,8 +28,7 @@ StarView::StarView(CommandUpdater* command_updater)
   LocationBarView::InitTouchableLocationBarChildView(this);
 }
 
-StarView::~StarView() {
-}
+StarView::~StarView() {}
 
 void StarView::SetToggled(bool on) {
   SetTooltipText(l10n_util::GetStringUTF16(
@@ -72,8 +71,8 @@ void StarView::OnMouseReleased(const ui::MouseEvent& event) {
 
   if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location())) {
     UMA_HISTOGRAM_ENUMERATION("Bookmarks.EntryPoint",
-                              bookmark_utils::ENTRY_POINT_STAR_MOUSE,
-                              bookmark_utils::ENTRY_POINT_LIMIT);
+                              BOOKMARK_ENTRY_POINT_STAR_MOUSE,
+                              BOOKMARK_ENTRY_POINT_LIMIT);
     command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE_FROM_STAR);
   }
 }
@@ -82,8 +81,8 @@ bool StarView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE ||
       event.key_code() == ui::VKEY_RETURN) {
     UMA_HISTOGRAM_ENUMERATION("Bookmarks.EntryPoint",
-                              bookmark_utils::ENTRY_POINT_STAR_KEY,
-                              bookmark_utils::ENTRY_POINT_LIMIT);
+                              BOOKMARK_ENTRY_POINT_STAR_KEY,
+                              BOOKMARK_ENTRY_POINT_LIMIT);
     command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE_FROM_STAR);
     return true;
   }
@@ -93,8 +92,8 @@ bool StarView::OnKeyPressed(const ui::KeyEvent& event) {
 void StarView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
     UMA_HISTOGRAM_ENUMERATION("Bookmarks.EntryPoint",
-                              bookmark_utils::ENTRY_POINT_STAR_GESTURE,
-                              bookmark_utils::ENTRY_POINT_LIMIT);
+                              BOOKMARK_ENTRY_POINT_STAR_GESTURE,
+                              BOOKMARK_ENTRY_POINT_LIMIT);
     command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE_FROM_STAR);
     event->SetHandled();
   }

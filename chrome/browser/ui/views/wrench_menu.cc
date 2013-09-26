@@ -13,6 +13,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -1264,8 +1265,10 @@ void WrenchMenu::CreateBookmarkMenu() {
                                browser_,
                                parent,
                                first_bookmark_command_id_));
-  bookmark_menu_delegate_->Init(
-      this, bookmark_menu_, model->bookmark_bar_node(), 0,
-      BookmarkMenuDelegate::SHOW_PERMANENT_FOLDERS,
-      bookmark_utils::LAUNCH_WRENCH_MENU);
+  bookmark_menu_delegate_->Init(this,
+                                bookmark_menu_,
+                                model->bookmark_bar_node(),
+                                0,
+                                BookmarkMenuDelegate::SHOW_PERMANENT_FOLDERS,
+                                BOOKMARK_LAUNCH_LOCATION_WRENCH_MENU);
 }

@@ -95,47 +95,6 @@ void AddIfNotBookmarked(BookmarkModel* model,
 // Removes all bookmarks for the given |url|.
 void RemoveAllBookmarks(BookmarkModel* model, const GURL& url);
 
-// This enum is used for the Bookmarks.EntryPoint histogram.
-enum BookmarkEntryPoint {
-  ENTRY_POINT_ACCELERATOR,
-  ENTRY_POINT_STAR_GESTURE,
-  ENTRY_POINT_STAR_KEY,
-  ENTRY_POINT_STAR_MOUSE,
-
-  ENTRY_POINT_LIMIT // Keep this last.
-};
-
-// This enum is used for the Bookmarks.LaunchLocation histogram.
-enum BookmarkLaunchLocation {
-  LAUNCH_NONE,
-  LAUNCH_ATTACHED_BAR = 0,
-  LAUNCH_DETACHED_BAR,
-  // These two are kind of sub-categories of the bookmark bar. Generally
-  // a launch from a context menu or subfolder could be classified in one of
-  // the other two bar buckets, but doing so is difficult because the menus
-  // don't know of their greater place in Chrome.
-  LAUNCH_BAR_SUBFOLDER,
-  LAUNCH_CONTEXT_MENU,
-
-  // Bookmarks menu within wrench menu.
-  LAUNCH_WRENCH_MENU,
-  // Bookmark manager.
-  LAUNCH_MANAGER,
-  // Autocomplete suggestion.
-  LAUNCH_OMNIBOX,
-
-  LAUNCH_LIMIT  // Keep this last.
-};
-
-// Records the launch of a bookmark for UMA purposes.
-void RecordBookmarkLaunch(BookmarkLaunchLocation location);
-
-// Records the user opening a folder of bookmarks for UMA purposes.
-void RecordBookmarkFolderOpen(BookmarkLaunchLocation location);
-
-// Records the user opening the apps page for UMA purposes.
-void RecordAppsPageOpen(BookmarkLaunchLocation location);
-
 }  // namespace bookmark_utils
 
 #endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_UTILS_H_
