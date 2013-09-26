@@ -108,7 +108,7 @@ void CreateWebKitSourceVector(
           type,
           UTF8ToUTF16(devices[i].device.name));
     webkit_sources[i].setExtraData(
-        new content::MediaStreamSourceExtraData(devices[i], webkit_sources[i]));
+        new content::MediaStreamSourceExtraData(devices[i]));
     webkit_sources[i].setDeviceId(UTF8ToUTF16(
         base::IntToString(devices[i].session_id)));
   }
@@ -721,10 +721,8 @@ bool MediaStreamImpl::GetAuthorizedDeviceInfoForAudioRenderer(
 }
 
 MediaStreamSourceExtraData::MediaStreamSourceExtraData(
-    const StreamDeviceInfo& device_info,
-    const WebKit::WebMediaStreamSource& webkit_source)
-    : device_info_(device_info),
-      webkit_source_(webkit_source) {
+    const StreamDeviceInfo& device_info)
+    : device_info_(device_info) {
 }
 
 MediaStreamSourceExtraData::MediaStreamSourceExtraData() {
@@ -765,21 +763,14 @@ MediaStreamImpl::UserMediaRequestInfo::UserMediaRequestInfo(
 }
 
 MediaStreamImpl::UserMediaRequestInfo::~UserMediaRequestInfo() {
-  // Release the extra data field of all sources created by
-  // MediaStreamImpl for this request. This breaks the circular reference to
-  // WebKit::MediaStreamSource.
-  // TODO(tommyw): Remove this once WebKit::MediaStreamSource::Owner has been
-  // implemented to fully avoid a circular dependency.
   for (size_t i = 0; i < audio_sources.size(); ++i) {
     audio_sources[i].setReadyState(
         WebKit::WebMediaStreamSource::ReadyStateEnded);
-    audio_sources[i].setExtraData(NULL);
   }
 
   for (size_t i = 0; i < video_sources.size(); ++i) {
     video_sources[i].setReadyState(
             WebKit::WebMediaStreamSource::ReadyStateEnded);
-    video_sources[i].setExtraData(NULL);
   }
 }
 

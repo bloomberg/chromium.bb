@@ -33,7 +33,7 @@ void MediaStreamSourceObserver::OnChanged() {
   if (state == state_)
     return;
   state_ = state;
-  WebKit::WebMediaStreamSource webkit_source(extra_data_->webkit_source());
+  WebKit::WebMediaStreamSource webkit_source(extra_data_->owner());
 
   switch (state) {
     case webrtc::MediaSourceInterface::kInitializing:

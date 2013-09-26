@@ -17,16 +17,9 @@ namespace content {
 class CONTENT_EXPORT MediaStreamSourceExtraData
     : NON_EXPORTED_BASE(public WebKit::WebMediaStreamSource::ExtraData) {
  public:
-  MediaStreamSourceExtraData(
-      const StreamDeviceInfo& device_info,
-      const WebKit::WebMediaStreamSource& webkit_source);
+  explicit MediaStreamSourceExtraData(const StreamDeviceInfo& device_info);
   MediaStreamSourceExtraData();
   virtual ~MediaStreamSourceExtraData();
-
-  // Returns the WebMediaStreamSource object that owns this object.
-  const WebKit::WebMediaStreamSource& webkit_source() const {
-    return webkit_source_;
-  }
 
   // Return device information about the camera or microphone.
   const StreamDeviceInfo& device_info() const {
@@ -52,15 +45,6 @@ class CONTENT_EXPORT MediaStreamSourceExtraData
  private:
   StreamDeviceInfo device_info_;
 
-  // TODO(tommyw): Remove |webkit_source_| after WebMediaStreamSource::Owner()
-  // is implemented, which let us fetch the
-  // WebMediaStreamSource without increasing the reference count.
-  // |webkit_source_| will create a circular reference to WebMediaStreamSource.
-  // WebMediaStreamSource -> MediaStreamSourceExtraData -> WebMediaStreamSource
-  // Currently, we rely on manually releasing the MediaStreamSourceExtraData
-  // from WebMediaStreamSource like what
-  // MediaStreamImpl::~UserMediaRequestInfo() does.
-  WebKit::WebMediaStreamSource webkit_source_;
   scoped_refptr<webrtc::VideoSourceInterface> video_source_;
 
   // This member holds an instance of webrtc::LocalAudioSource. This is used
