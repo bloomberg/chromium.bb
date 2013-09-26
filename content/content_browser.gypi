@@ -870,6 +870,8 @@
     'browser/renderer_host/java/java_method.h',
     'browser/renderer_host/java/java_type.cc',
     'browser/renderer_host/java/java_type.h',
+    'browser/renderer_host/java/jni_helper.cc',
+    'browser/renderer_host/java/jni_helper.h',
     'browser/renderer_host/media/audio_input_device_manager.cc',
     'browser/renderer_host/media/audio_input_device_manager.h',
     'browser/renderer_host/media/audio_input_renderer_host.cc',

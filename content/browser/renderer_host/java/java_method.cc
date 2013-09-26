@@ -9,11 +9,11 @@
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_util.h"  // For ReplaceSubstringsAfterOffset
+#include "content/browser/renderer_host/java/jni_helper.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::GetClass;
-using base::android::GetMethodIDFromClassName;
 using base::android::MethodID;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;

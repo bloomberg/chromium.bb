@@ -56,9 +56,6 @@ const BASE_EXPORT jobject GetApplicationContext();
 BASE_EXPORT ScopedJavaLocalRef<jclass> GetClass(JNIEnv* env,
                                                 const char* class_name);
 
-// Returns true iff the class |class_name| could be found.
-BASE_EXPORT bool HasClass(JNIEnv* env, const char* class_name);
-
 // This class is a wrapper for JNIEnv Get(Static)MethodID.
 class BASE_EXPORT MethodID {
  public:
@@ -85,39 +82,6 @@ class BASE_EXPORT MethodID {
                            const char* jni_signature,
                            base::subtle::AtomicWord* atomic_method_id);
 };
-
-// Gets the method ID from the class name. Clears the pending Java exception
-// and returns NULL if the method is not found. Caches results. Note that
-// MethodID::Get() above avoids a class lookup, but does not cache results.
-// Strings passed to this function are held in the cache and MUST remain valid
-// beyond the duration of all future calls to this function, across all
-// threads. In practice, this means that the function should only be used with
-// string constants.
-BASE_EXPORT jmethodID GetMethodIDFromClassName(JNIEnv* env,
-                                               const char* class_name,
-                                               const char* method,
-                                               const char* jni_signature);
-
-// Gets the field ID for a class field.
-// This method triggers a fatal assertion if the field could not be found.
-BASE_EXPORT jfieldID GetFieldID(JNIEnv* env,
-                                const JavaRef<jclass>& clazz,
-                                const char* field_name,
-                                const char* jni_signature);
-
-// Returns true if |clazz| as a field with the given name and signature.
-// TODO(jcivelli): Determine whether we explicitly have to pass the environment.
-BASE_EXPORT bool HasField(JNIEnv* env,
-                          const JavaRef<jclass>& clazz,
-                          const char* field_name,
-                          const char* jni_signature);
-
-// Gets the field ID for a static class field.
-// This method triggers a fatal assertion if the field could not be found.
-BASE_EXPORT jfieldID GetStaticFieldID(JNIEnv* env,
-                                      const JavaRef<jclass>& clazz,
-                                      const char* field_name,
-                                      const char* jni_signature);
 
 // Returns true if an exception is pending in the provided JNIEnv*.
 BASE_EXPORT bool HasException(JNIEnv* env);

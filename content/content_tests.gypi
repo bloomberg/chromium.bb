@@ -758,6 +758,9 @@
           ],
         }],
         ['OS == "android"', {
+          'sources': [
+            'browser/renderer_host/java/jni_helper_unittest.cc',
+          ],
           'sources!': [
             'browser/geolocation/gps_location_provider_unittest_linux.cc',
             'browser/geolocation/network_location_provider_unittest.cc',

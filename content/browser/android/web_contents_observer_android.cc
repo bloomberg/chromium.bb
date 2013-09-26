@@ -22,7 +22,6 @@ using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
-using base::android::HasClass;
 
 namespace content {
 
@@ -252,10 +251,6 @@ void WebContentsObserverAndroid::DidFailLoadInternal(
 }
 
 bool RegisterWebContentsObserverAndroid(JNIEnv* env) {
-  if (!HasClass(env, kWebContentsObserverAndroidClassPath)) {
-    DLOG(ERROR) << "Unable to find class WebContentsObserverAndroid!";
-    return false;
-  }
   return RegisterNativesImpl(env);
 }
 }  // namespace content

@@ -27,7 +27,6 @@
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
-using base::android::HasClass;
 using base::android::ScopedJavaLocalRef;
 using content::ColorChooser;
 using content::WebContents;
@@ -327,10 +326,6 @@ void WebContentsDelegateAndroid::DidProgrammaticallyScroll(
 // Register native methods
 
 bool RegisterWebContentsDelegateAndroid(JNIEnv* env) {
-  if (!HasClass(env, kWebContentsDelegateAndroidClassPath)) {
-    DLOG(ERROR) << "Unable to find class WebContentsDelegateAndroid!";
-    return false;
-  }
   return RegisterNativesImpl(env);
 }
 

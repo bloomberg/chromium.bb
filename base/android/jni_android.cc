@@ -10,48 +10,17 @@
 #include "base/android/jni_string.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/threading/platform_thread.h"
 
 namespace {
 using base::android::GetClass;
 using base::android::MethodID;
 using base::android::ScopedJavaLocalRef;
 
-struct MethodIdentifier {
-  const char* class_name;
-  const char* method;
-  const char* jni_signature;
-
-  bool operator<(const MethodIdentifier& other) const {
-    int r = strcmp(class_name, other.class_name);
-    if (r < 0) {
-      return true;
-    } else if (r > 0) {
-      return false;
-    }
-
-    r = strcmp(method, other.method);
-    if (r < 0) {
-      return true;
-    } else if (r > 0) {
-      return false;
-    }
-
-    return strcmp(jni_signature, other.jni_signature) < 0;
-  }
-};
-
-typedef std::map<MethodIdentifier, jmethodID> MethodIDMap;
-
-const base::subtle::AtomicWord kUnlocked = 0;
-const base::subtle::AtomicWord kLocked = 1;
-base::subtle::AtomicWord g_method_id_map_lock = kUnlocked;
 JavaVM* g_jvm = NULL;
 // Leak the global app context, as it is used from a non-joinable worker thread
 // that may still be running at shutdown. There is no harm in doing this.
 base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject> >::Leaky
     g_application_context = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<MethodIDMap> g_method_id_map = LAZY_INSTANCE_INITIALIZER;
 
 std::string GetJavaExceptionInfo(JNIEnv* env, jthrowable java_throwable) {
   ScopedJavaLocalRef<jclass> throwable_clazz =
@@ -144,17 +113,6 @@ ScopedJavaLocalRef<jclass> GetClass(JNIEnv* env, const char* class_name) {
   return ScopedJavaLocalRef<jclass>(env, clazz);
 }
 
-bool HasClass(JNIEnv* env, const char* class_name) {
-  ScopedJavaLocalRef<jclass> clazz(env, env->FindClass(class_name));
-  if (!clazz.obj()) {
-    ClearException(env);
-    return false;
-  }
-  bool error = ClearException(env);
-  DCHECK(!error);
-  return true;
-}
-
 template<MethodID::Type type>
 jmethodID MethodID::Get(JNIEnv* env,
                         jclass clazz,
@@ -206,87 +164,6 @@ template jmethodID MethodID::LazyGet<MethodID::TYPE_STATIC>(
 template jmethodID MethodID::LazyGet<MethodID::TYPE_INSTANCE>(
     JNIEnv* env, jclass clazz, const char* method_name,
     const char* jni_signature, base::subtle::AtomicWord* atomic_method_id);
-
-jfieldID GetFieldID(JNIEnv* env,
-                    const JavaRef<jclass>& clazz,
-                    const char* field_name,
-                    const char* jni_signature) {
-  jfieldID field_id = env->GetFieldID(clazz.obj(), field_name, jni_signature);
-  CHECK(!ClearException(env) && field_id) << "Failed to find field " <<
-      field_name << " " << jni_signature;
-  return field_id;
-}
-
-bool HasField(JNIEnv* env,
-              const JavaRef<jclass>& clazz,
-              const char* field_name,
-              const char* jni_signature) {
-  jfieldID field_id = env->GetFieldID(clazz.obj(), field_name, jni_signature);
-  if (!field_id) {
-    ClearException(env);
-    return false;
-  }
-  bool error = ClearException(env);
-  DCHECK(!error);
-  return true;
-}
-
-jfieldID GetStaticFieldID(JNIEnv* env,
-                          const JavaRef<jclass>& clazz,
-                          const char* field_name,
-                          const char* jni_signature) {
-  jfieldID field_id =
-      env->GetStaticFieldID(clazz.obj(), field_name, jni_signature);
-  CHECK(!ClearException(env) && field_id) << "Failed to find static field " <<
-      field_name << " " << jni_signature;
-  return field_id;
-}
-
-jmethodID GetMethodIDFromClassName(JNIEnv* env,
-                                   const char* class_name,
-                                   const char* method,
-                                   const char* jni_signature) {
-  MethodIdentifier key;
-  key.class_name = class_name;
-  key.method = method;
-  key.jni_signature = jni_signature;
-
-  MethodIDMap* map = g_method_id_map.Pointer();
-  bool found = false;
-
-  while (base::subtle::Acquire_CompareAndSwap(&g_method_id_map_lock,
-                                              kUnlocked,
-                                              kLocked) != kUnlocked) {
-    base::PlatformThread::YieldCurrentThread();
-  }
-  MethodIDMap::const_iterator iter = map->find(key);
-  if (iter != map->end()) {
-    found = true;
-  }
-  base::subtle::Release_Store(&g_method_id_map_lock, kUnlocked);
-
-  // Addition to the map does not invalidate this iterator.
-  if (found) {
-    return iter->second;
-  }
-
-  ScopedJavaLocalRef<jclass> clazz(env, env->FindClass(class_name));
-  jmethodID id = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, clazz.obj(), method, jni_signature);
-
-  while (base::subtle::Acquire_CompareAndSwap(&g_method_id_map_lock,
-                                              kUnlocked,
-                                              kLocked) != kUnlocked) {
-    base::PlatformThread::YieldCurrentThread();
-  }
-  // Another thread may have populated the map already.
-  std::pair<MethodIDMap::const_iterator, bool> result =
-      map->insert(std::make_pair(key, id));
-  DCHECK_EQ(id, result.first->second);
-  base::subtle::Release_Store(&g_method_id_map_lock, kUnlocked);
-
-  return id;
-}
 
 bool HasException(JNIEnv* env) {
   return env->ExceptionCheck() != JNI_FALSE;
