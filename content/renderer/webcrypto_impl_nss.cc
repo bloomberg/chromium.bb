@@ -7,9 +7,12 @@
 #include <pk11pub.h>
 #include <sechash.h>
 
+#include <vector>
+
 #include "base/logging.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
+#include "crypto/secure_util.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
@@ -246,6 +249,38 @@ bool WebCryptoImpl::SignInternal(
   }
 
   *buffer = result;
+  return true;
+}
+
+bool WebCryptoImpl::VerifySignatureInternal(
+    const WebKit::WebCryptoAlgorithm& algorithm,
+    const WebKit::WebCryptoKey& key,
+    const unsigned char* signature,
+    unsigned signature_size,
+    const unsigned char* data,
+    unsigned data_size,
+    bool* signature_match) {
+  switch (algorithm.id()) {
+    case WebKit::WebCryptoAlgorithmIdHmac: {
+      WebKit::WebArrayBuffer result;
+      if (!SignInternal(algorithm, key, data, data_size, &result)) {
+        return false;
+      }
+
+      // Handling of truncated signatures is underspecified in the WebCrypto
+      // spec, so here we fail verification if a truncated signature is being
+      // verified.
+      // See https://www.w3.org/Bugs/Public/show_bug.cgi?id=23097
+      *signature_match =
+          result.byteLength() == signature_size &&
+          crypto::SecureMemEqual(result.data(), signature, signature_size);
+
+      break;
+    }
+    default:
+      return false;
+  }
+
   return true;
 }
 

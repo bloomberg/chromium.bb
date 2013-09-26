@@ -37,6 +37,14 @@ class CONTENT_EXPORT WebCryptoImpl
       const unsigned char* data,
       unsigned data_size,
       WebKit::WebCryptoResult result);
+  virtual void verifySignature(
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      const WebKit::WebCryptoKey& key,
+      const unsigned char* signature,
+      unsigned signature_size,
+      const unsigned char* data,
+      unsigned data_size,
+      WebKit::WebCryptoResult result);
 
  protected:
   friend class WebCryptoImplTest;
@@ -62,6 +70,14 @@ class CONTENT_EXPORT WebCryptoImpl
       const unsigned char* data,
       unsigned data_size,
       WebKit::WebArrayBuffer* buffer);
+  bool VerifySignatureInternal(
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      const WebKit::WebCryptoKey& key,
+      const unsigned char* signature,
+      unsigned signature_size,
+      const unsigned char* data,
+      unsigned data_size,
+      bool* signature_match);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebCryptoImpl);

@@ -105,6 +105,23 @@ class WebCryptoImplTest : public testing::Test {
     return crypto_.SignInternal(algorithm, key, data, data_size, buffer);
   }
 
+  bool VerifySignatureInternal(
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      const WebKit::WebCryptoKey& key,
+      const unsigned char* signature,
+      unsigned signature_size,
+      const unsigned char* data,
+      unsigned data_size,
+      bool* signature_match) {
+    return crypto_.VerifySignatureInternal(algorithm,
+                                           key,
+                                           signature,
+                                           signature_size,
+                                           data,
+                                           data_size,
+                                           signature_match);
+  }
+
  private:
   WebCryptoImpl crypto_;
 };
@@ -296,6 +313,40 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
         algorithm, key, message_raw.data(), message_raw.size(), &output));
 
     ExpectArrayBufferMatchesHex(test.mac, output);
+
+    bool signature_match = false;
+    EXPECT_TRUE(VerifySignatureInternal(
+        algorithm,
+        key,
+        static_cast<const unsigned char*>(output.data()),
+        output.byteLength(),
+        message_raw.data(),
+        message_raw.size(),
+        &signature_match));
+    EXPECT_TRUE(signature_match);
+
+    // Ensure truncated signature does not verify by passing one less byte.
+    EXPECT_TRUE(VerifySignatureInternal(
+        algorithm,
+        key,
+        static_cast<const unsigned char*>(output.data()),
+        output.byteLength() - 1,
+        message_raw.data(),
+        message_raw.size(),
+        &signature_match));
+    EXPECT_FALSE(signature_match);
+
+    // Ensure extra long signature does not cause issues and fails.
+    const unsigned char kLongSignature[1024] = { 0 };
+    EXPECT_TRUE(VerifySignatureInternal(
+        algorithm,
+        key,
+        kLongSignature,
+        sizeof(kLongSignature),
+        message_raw.data(),
+        message_raw.size(),
+        &signature_match));
+    EXPECT_FALSE(signature_match);
   }
 }
 

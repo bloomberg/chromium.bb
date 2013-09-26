@@ -43,4 +43,17 @@ bool WebCryptoImpl::SignInternal(
   return false;
 }
 
+bool WebCryptoImpl::VerifySignatureInternal(
+    const WebKit::WebCryptoAlgorithm& algorithm,
+    const WebKit::WebCryptoKey& key,
+    const unsigned char* signature,
+    unsigned signature_size,
+    const unsigned char* data,
+    unsigned data_size,
+    bool* signature_match) {
+  // TODO(bryaneyler): Placeholder for OpenSSL implementation.
+  // Issue http://crbug.com/267888.
+  return false;
+}
+
 }  // namespace content

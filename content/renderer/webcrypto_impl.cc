@@ -71,4 +71,26 @@ void WebCryptoImpl::sign(
   }
 }
 
+void WebCryptoImpl::verifySignature(
+    const WebKit::WebCryptoAlgorithm& algorithm,
+    const WebKit::WebCryptoKey& key,
+    const unsigned char* signature,
+    unsigned signature_size,
+    const unsigned char* data,
+    unsigned data_size,
+    WebKit::WebCryptoResult result) {
+  bool signature_match = false;
+  if (!VerifySignatureInternal(algorithm,
+                               key,
+                               signature,
+                               signature_size,
+                               data,
+                               data_size,
+                               &signature_match)) {
+    result.completeWithError();
+  } else {
+    result.completeWithBoolean(signature_match);
+  }
+}
+
 }  // namespace content
