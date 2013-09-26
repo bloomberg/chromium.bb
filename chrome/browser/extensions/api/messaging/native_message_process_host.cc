@@ -248,6 +248,8 @@ void NativeMessageProcessHost::HandleReadResult(int result) {
   } else if (result == net::ERR_IO_PENDING) {
     read_pending_ = true;
   } else if (result == 0 || result == net::ERR_CONNECTION_RESET) {
+    // On Windows we get net::ERR_CONNECTION_RESET for a broken pipe, while on
+    // Posix read() returns 0 in that case.
     Close(kNativeHostExited);
   } else {
     LOG(ERROR) << "Error when reading from Native Messaging host: " << result;
