@@ -375,16 +375,7 @@ void GpuVideoDecodeAccelerator::OnReset() {
 
 void GpuVideoDecodeAccelerator::OnDestroy() {
   DCHECK(video_decode_accelerator_.get());
-  DCHECK(stub_);
-  stub_->channel()->RemoveRoute(host_route_id_);
-  stub_->RemoveDestructionObserver(this);
-  if (filter_.get()) {
-    // Remove the filter first because the member variables can be accessed on
-    // IO thread. When filter is removed, OnFilterRemoved will delete |this|.
-    stub_->channel()->RemoveFilter(filter_.get());
-  } else {
-    delete this;
-  }
+  OnWillDestroyStub();
 }
 
 void GpuVideoDecodeAccelerator::OnFilterRemoved() {
@@ -421,7 +412,18 @@ void GpuVideoDecodeAccelerator::NotifyResetDone() {
     DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ResetDone) failed";
 }
 
-void GpuVideoDecodeAccelerator::OnWillDestroyStub() { OnDestroy(); }
+void GpuVideoDecodeAccelerator::OnWillDestroyStub() {
+  DCHECK(stub_);
+  stub_->channel()->RemoveRoute(host_route_id_);
+  stub_->RemoveDestructionObserver(this);
+  if (filter_.get()) {
+    // Remove the filter first because the member variables can be accessed on
+    // IO thread. When filter is removed, OnFilterRemoved will delete |this|.
+    stub_->channel()->RemoveFilter(filter_.get());
+  } else {
+    delete this;
+  }
+}
 
 bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {
   DCHECK(stub_);
