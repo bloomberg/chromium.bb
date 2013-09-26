@@ -859,9 +859,10 @@ ULONG DataObjectImpl::Release() {
 
 static STGMEDIUM* GetStorageForBytes(const void* data, size_t bytes) {
   HANDLE handle = GlobalAlloc(GPTR, static_cast<int>(bytes));
-  base::win::ScopedHGlobal<uint8> scoped(handle);
-  size_t allocated = static_cast<size_t>(GlobalSize(handle));
-  memcpy(scoped.get(), data, allocated);
+  if (handle) {
+    base::win::ScopedHGlobal<uint8> scoped(handle);
+    memcpy(scoped.get(), data, bytes);
+  }
 
   STGMEDIUM* storage = new STGMEDIUM;
   storage->hGlobal = handle;
