@@ -113,8 +113,6 @@ const char kRemotingViewerPluginDescription[] =
     "shared with you. To use this plugin you must first install the "
     "<a href=\"https://chrome.google.com/remotedesktop\">"
     "Chrome Remote Desktop</a> webapp.";
-const base::FilePath::CharType kRemotingViewerPluginPath[] =
-    FILE_PATH_LITERAL("internal-remoting-viewer");
 // Use a consistent MIME-type regardless of branding.
 const char kRemotingViewerPluginMimeType[] =
     "application/vnd.chromium.remoting-viewer";
@@ -304,7 +302,8 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   info.is_out_of_process = true;
   info.name = kRemotingViewerPluginName;
   info.description = kRemotingViewerPluginDescription;
-  info.path = base::FilePath(kRemotingViewerPluginPath);
+  info.path = base::FilePath(
+      chrome::ChromeContentClient::kRemotingViewerPluginPath);
   content::WebPluginMimeType remoting_mime_type(
       kRemotingViewerPluginMimeType,
       kRemotingViewerPluginMimeExtension,

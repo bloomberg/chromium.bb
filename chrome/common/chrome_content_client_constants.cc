@@ -9,5 +9,8 @@ namespace chrome {
 const char* const ChromeContentClient::kPDFPluginName = "Chrome PDF Viewer";
 const char* const ChromeContentClient::kNaClPluginName = "Native Client";
 const char* const ChromeContentClient::kNaClOldPluginName = "Chrome NaCl";
+const base::FilePath::CharType
+    ChromeContentClient::kRemotingViewerPluginPath[] =
+        FILE_PATH_LITERAL("internal-remoting-viewer");
 
 }  // namespace chrome

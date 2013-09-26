@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "content/public/common/content_client.h"
 
 namespace chrome {
@@ -18,6 +19,7 @@ class ChromeContentClient : public content::ContentClient {
   static const char* const kPDFPluginName;
   static const char* const kNaClPluginName;
   static const char* const kNaClOldPluginName;
+  static const base::FilePath::CharType kRemotingViewerPluginPath[];
 
   virtual void SetActiveURL(const GURL& url) OVERRIDE;
   virtual void SetGpuInfo(const gpu::GPUInfo& gpu_info) OVERRIDE;
