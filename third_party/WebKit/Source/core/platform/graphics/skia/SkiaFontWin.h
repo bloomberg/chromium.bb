@@ -58,13 +58,14 @@ void paintSkiaText(GraphicsContext*,
 // Note: this is less efficient than calling the version with FontPlatformData,
 // as that caches the SkTypeface object.
 void paintSkiaText(GraphicsContext*,
-                   HFONT,
-                   int numGlyphs,
-                   const WORD* glyphs,
-                   const int* advances,
-                   const GOFFSET* offsets,
-                   const SkPoint& origin,
-                   const SkRect& textRect);
+    const FontPlatformData&,
+    HFONT,
+    int numGlyphs,
+    const WORD* glyphs,
+    const int* advances,
+    const GOFFSET* offsets,
+    const SkPoint& origin,
+    const SkRect& textRect);
 
 }  // namespace WebCore
 

@@ -59,6 +59,7 @@ namespace WebCore {
 PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT, int* size, int* paintTextFlags);
 
 class FontDescription;
+class GraphicsContext;
 
 class FontPlatformData {
 public:
@@ -76,9 +77,7 @@ public:
     FontPlatformData(const FontPlatformData&, float textSize);
     FontPlatformData(SkTypeface*, const char* name, float textSize, bool fakeBold, bool fakeItalic, FontOrientation = Horizontal);
 
-#if !ENABLE(GDI_FONTS_ON_WINDOWS)
-    void setupPaint(SkPaint*) const;
-#endif
+    void setupPaint(SkPaint*, GraphicsContext* = 0) const;
 
     FontPlatformData& operator=(const FontPlatformData&);
 

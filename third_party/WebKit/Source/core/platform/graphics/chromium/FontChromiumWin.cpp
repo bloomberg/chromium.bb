@@ -177,8 +177,8 @@ FloatRect Font::selectionRectForComplexText(const TextRun& run,
 }
 
 void Font::drawComplexText(GraphicsContext* graphicsContext,
-                           const TextRunPaintInfo& runInfo,
-                           const FloatPoint& point) const
+    const TextRunPaintInfo& runInfo,
+    const FloatPoint& point) const
 {
     UniscribeHelperTextRun state(runInfo.run, *this);
 
@@ -191,7 +191,7 @@ void Font::drawComplexText(GraphicsContext* graphicsContext,
     HDC hdc = 0;
     // Uniscribe counts the coordinates from the upper left, while WebKit uses
     // the baseline, so we have to subtract off the ascent.
-    state.draw(graphicsContext, hdc, lroundf(point.x()), lroundf(point.y() - fontMetrics().ascent()), runInfo.bounds, runInfo.from, runInfo.to);
+    state.draw(graphicsContext, primaryFont()->platformData(), hdc, lroundf(point.x()), lroundf(point.y() - fontMetrics().ascent()), runInfo.bounds, runInfo.from, runInfo.to);
 }
 
 void Font::drawEmphasisMarksForComplexText(GraphicsContext* /* context */, const TextRunPaintInfo& /* runInfo */, const AtomicString& /* mark */, const FloatPoint& /* point */) const

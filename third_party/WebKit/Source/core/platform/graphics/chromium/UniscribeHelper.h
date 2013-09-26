@@ -46,6 +46,7 @@ namespace WebCore {
 
 class FloatRect;
 class FontFeatureSettings;
+class FontPlatformData;
 class GraphicsContext;
 
 const unsigned cUniscribeHelperStackRuns = 8;
@@ -197,10 +198,9 @@ public:
     // be pre-set.
     //
     // The y position is the upper left corner, NOT the baseline.
-    void draw(GraphicsContext* graphicsContext, HDC dc,
-              int x, int y,
-              const FloatRect& textRect,
-              int from, int to);
+    void draw(GraphicsContext*, const FontPlatformData&, HDC,
+        int x, int y, const FloatRect& textRect,
+        int from, int to);
 
     // Returns the first glyph assigned to the character at the given offset.
     // This function is used to retrieve glyph information when Uniscribe is
