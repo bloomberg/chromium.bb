@@ -63,7 +63,15 @@ class PnaclComponentInstaller : public ComponentInstaller {
 
   base::Version current_version() const { return current_version_; }
 
-  void set_current_version(const base::Version& v) { current_version_ = v; }
+  void set_current_version(const base::Version& current_version) {
+    current_version_ = current_version;
+  }
+
+  std::string current_fingerprint() const { return current_fingerprint_; }
+
+  void set_current_fingerprint(const std::string& current_fingerprint) {
+    current_fingerprint_ = current_fingerprint;
+  }
 
   ComponentUpdateService* cus() const { return cus_; }
 
@@ -88,6 +96,7 @@ class PnaclComponentInstaller : public ComponentInstaller {
   scoped_ptr<PnaclProfileObserver> profile_observer_;
   base::FilePath current_profile_path_;
   base::Version current_version_;
+  std::string current_fingerprint_;
   ComponentUpdateService* cus_;
   // The one callback to call when there is a RequestFirstInstall.
   InstallCallback install_callback_;

@@ -336,6 +336,7 @@ CrxComponent PnaclComponentInstaller::GetCrxComponent() {
   pnacl_component.name = "pnacl";
   pnacl_component.installer = this;
   pnacl_component.observer = updater_observer_.get();
+  pnacl_component.fingerprint = current_fingerprint();
   SetPnaclHash(&pnacl_component);
 
   return pnacl_component;
@@ -344,9 +345,11 @@ CrxComponent PnaclComponentInstaller::GetCrxComponent() {
 namespace {
 
 void FinishPnaclUpdateRegistration(const Version& current_version,
+                                   const std::string& current_fingerprint,
                                    PnaclComponentInstaller* pci) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   pci->set_current_version(current_version);
+  pci->set_current_fingerprint(current_fingerprint);
   CrxComponent pnacl_component = pci->GetCrxComponent();
 
   ComponentUpdateService::Status status =
@@ -369,9 +372,10 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
     }
   }
 
-  Version version(kNullVersion);
+  Version current_version(kNullVersion);
+  std::string current_fingerprint;
   std::vector<base::FilePath> older_dirs;
-  if (GetLatestPnaclDirectory(pci, &path, &version, &older_dirs)) {
+  if (GetLatestPnaclDirectory(pci, &path, &current_version, &older_dirs)) {
     scoped_ptr<base::DictionaryValue> manifest(
         ReadComponentManifest(path));
     scoped_ptr<base::DictionaryValue> pnacl_manifest(
@@ -384,10 +388,12 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
         || !CheckPnaclComponentManifest(*manifest,
                                         *pnacl_manifest,
                                         &manifest_version)
-        || !version.Equals(manifest_version)) {
-      version = Version(kNullVersion);
+        || !current_version.Equals(manifest_version)) {
+      current_version = Version(kNullVersion);
     } else {
       OverrideDirPnaclComponent(path);
+      base::ReadFileToString(path.AppendASCII("manifest.fingerprint"),
+                             &current_fingerprint);
     }
   }
 
@@ -400,7 +406,10 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&FinishPnaclUpdateRegistration, version, pci));
+      base::Bind(&FinishPnaclUpdateRegistration,
+                 current_version,
+                 current_fingerprint,
+                 pci));
 
   // Remove older versions of PNaCl.
   for (std::vector<base::FilePath>::iterator iter = older_dirs.begin();
