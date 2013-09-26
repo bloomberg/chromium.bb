@@ -41,6 +41,10 @@ class SYNC_EXPORT_PRIVATE MutableEntry : public ModelNeutralMutableEntry {
   MutableEntry(WriteTransaction* trans, GetByClientTag, const std::string& tag);
   MutableEntry(WriteTransaction* trans, GetByServerTag, const std::string& tag);
 
+  inline WriteTransaction* write_transaction() const {
+    return write_transaction_;
+  }
+
   // Model-changing setters.  These setters make user-visible changes that will
   // need to be communicated either to the local model or the sync server.
   void PutLocalExternalId(int64 value);
@@ -58,6 +62,14 @@ class SYNC_EXPORT_PRIVATE MutableEntry : public ModelNeutralMutableEntry {
   // and fails if |predecessor_id| does not identify a sibling.  Pass the root
   // ID to put the node in first position.
   bool PutPredecessor(const Id& predecessor_id);
+
+ private:
+  // Kind of redundant. We should reduce the number of pointers
+  // floating around if at all possible. Could we store this in Directory?
+  // Scope: Set on construction, never changed after that.
+  WriteTransaction* const write_transaction_;
+
+  DISALLOW_COPY_AND_ASSIGN(MutableEntry);
 };
 
 // This function sets only the flags needed to get this entry to sync.

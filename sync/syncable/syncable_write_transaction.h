@@ -7,7 +7,7 @@
 
 #include "sync/base/sync_export.h"
 #include "sync/syncable/entry_kernel.h"
-#include "sync/syncable/syncable_base_transaction.h"
+#include "sync/syncable/syncable_base_write_transaction.h"
 
 namespace syncer {
 namespace syncable {
@@ -15,7 +15,7 @@ namespace syncable {
 SYNC_EXPORT extern const int64 kInvalidTransactionVersion;
 
 // Locks db in constructor, unlocks in destructor.
-class SYNC_EXPORT WriteTransaction : public BaseTransaction {
+class SYNC_EXPORT WriteTransaction : public BaseWriteTransaction {
  public:
   WriteTransaction(const tracked_objects::Location& from_here,
                    WriterTag writer, Directory* directory);
@@ -30,7 +30,7 @@ class SYNC_EXPORT WriteTransaction : public BaseTransaction {
 
   virtual ~WriteTransaction();
 
-  void SaveOriginal(const EntryKernel* entry);
+  virtual void TrackChangesTo(const EntryKernel* entry) OVERRIDE;
 
  protected:
   // Overridden by tests.

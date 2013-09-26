@@ -14,7 +14,7 @@ class WriteNode;
 
 namespace syncable {
 
-class WriteTransaction;
+class BaseWriteTransaction;
 
 // This Entry includes all the operations one can safely perform on the sync
 // thread.  In particular, it does not expose setters to make changes that need
@@ -23,19 +23,19 @@ class WriteTransaction;
 // entry.
 class SYNC_EXPORT_PRIVATE ModelNeutralMutableEntry : public Entry {
  public:
-  ModelNeutralMutableEntry(WriteTransaction* trans, GetByHandle, int64);
-  ModelNeutralMutableEntry(WriteTransaction* trans, GetById, const Id&);
+  ModelNeutralMutableEntry(BaseWriteTransaction* trans, GetByHandle, int64);
+  ModelNeutralMutableEntry(BaseWriteTransaction* trans, GetById, const Id&);
   ModelNeutralMutableEntry(
-      WriteTransaction* trans,
+      BaseWriteTransaction* trans,
       GetByClientTag,
       const std::string& tag);
   ModelNeutralMutableEntry(
-      WriteTransaction* trans,
+      BaseWriteTransaction* trans,
       GetByServerTag,
       const std::string& tag);
 
-  inline WriteTransaction* write_transaction() const {
-    return write_transaction_;
+  inline BaseWriteTransaction* base_write_transaction() const {
+    return base_write_transaction_;
   }
 
   // Non-model-changing setters.  These setters will change properties internal
@@ -84,7 +84,7 @@ class SYNC_EXPORT_PRIVATE ModelNeutralMutableEntry : public Entry {
   void UpdateTransactionVersion(int64 version);
 
  protected:
-  explicit ModelNeutralMutableEntry(WriteTransaction* trans);
+  explicit ModelNeutralMutableEntry(BaseWriteTransaction* trans);
 
   syncable::MetahandleSet* GetDirtyIndexHelper();
 
@@ -98,7 +98,7 @@ class SYNC_EXPORT_PRIVATE ModelNeutralMutableEntry : public Entry {
   // Kind of redundant. We should reduce the number of pointers
   // floating around if at all possible. Could we store this in Directory?
   // Scope: Set on construction, never changed after that.
-  WriteTransaction* const write_transaction_;
+  BaseWriteTransaction* const base_write_transaction_;
 
   DISALLOW_COPY_AND_ASSIGN(ModelNeutralMutableEntry);
 };

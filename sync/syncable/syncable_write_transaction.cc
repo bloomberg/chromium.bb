@@ -17,7 +17,7 @@ const int64 kInvalidTransactionVersion = -1;
 
 WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
                                    WriterTag writer, Directory* directory)
-    : BaseTransaction(location, "WriteTransaction", writer, directory),
+    : BaseWriteTransaction(location, "WriteTransaction", writer, directory),
       transaction_version_(NULL) {
   Lock();
 }
@@ -25,14 +25,14 @@ WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
 WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
                                    Directory* directory,
                                    int64* transaction_version)
-    : BaseTransaction(location, "WriteTransaction", SYNCAPI, directory),
+    : BaseWriteTransaction(location, "WriteTransaction", SYNCAPI, directory),
       transaction_version_(transaction_version) {
   Lock();
   if (transaction_version_)
     *transaction_version_ = kInvalidTransactionVersion;
 }
 
-void WriteTransaction::SaveOriginal(const EntryKernel* entry) {
+void WriteTransaction::TrackChangesTo(const EntryKernel* entry) {
   if (!entry) {
     return;
   }
@@ -147,7 +147,13 @@ void WriteTransaction::UpdateTransactionVersion(
 
 WriteTransaction::~WriteTransaction() {
   const ImmutableEntryKernelMutationMap& mutations = RecordMutations();
-  directory()->CheckInvariantsOnTransactionClose(this, mutations.Get());
+
+  MetahandleSet modified_handles;
+  for (EntryKernelMutationMap::const_iterator i = mutations.Get().begin();
+       i != mutations.Get().end(); ++i) {
+    modified_handles.insert(i->first);
+  }
+  directory()->CheckInvariantsOnTransactionClose(this, modified_handles);
 
   // |CheckTreeInvariants| could have thrown an unrecoverable error.
   if (unrecoverable_error_set_) {

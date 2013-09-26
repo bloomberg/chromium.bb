@@ -5,6 +5,8 @@
 #ifndef SYNC_SYNCABLE_METAHANDLE_SET_
 #define SYNC_SYNCABLE_METAHANDLE_SET_
 
+#include <set>
+
 #include "base/basictypes.h"
 
 namespace syncer {

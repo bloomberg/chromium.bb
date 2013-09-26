@@ -47,7 +47,7 @@ void MutableEntry::Init(WriteTransaction* trans,
 
   // Because this entry is new, it was originally deleted.
   kernel->put(IS_DEL, true);
-  trans->SaveOriginal(kernel.get());
+  trans->TrackChangesTo(kernel.get());
   kernel->put(IS_DEL, false);
 
   // Now swap the pointers.
@@ -59,7 +59,7 @@ MutableEntry::MutableEntry(WriteTransaction* trans,
                            ModelType model_type,
                            const Id& parent_id,
                            const string& name)
-    : ModelNeutralMutableEntry(trans) {
+    : ModelNeutralMutableEntry(trans), write_transaction_(trans) {
   Init(trans, model_type, parent_id, name);
   // We need to have a valid position ready before we can index the item.
   if (model_type == BOOKMARKS) {
@@ -78,7 +78,7 @@ MutableEntry::MutableEntry(WriteTransaction* trans,
 
 MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
                            const Id& id)
-    : ModelNeutralMutableEntry(trans) {
+    : ModelNeutralMutableEntry(trans), write_transaction_(trans) {
   Entry same_id(trans, GET_BY_ID, id);
   kernel_ = NULL;
   if (same_id.good()) {
@@ -95,33 +95,37 @@ MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
   if (!trans->directory()->InsertEntry(trans, kernel.get())) {
     return;  // Failed inserting.
   }
-  trans->SaveOriginal(kernel.get());
+  trans->TrackChangesTo(kernel.get());
 
   kernel_ = kernel.release();
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetById, const Id& id)
-    : ModelNeutralMutableEntry(trans, GET_BY_ID, id) {
+    : ModelNeutralMutableEntry(trans, GET_BY_ID, id),
+      write_transaction_(trans) {
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetByHandle,
                            int64 metahandle)
-    : ModelNeutralMutableEntry(trans, GET_BY_HANDLE, metahandle) {
+    : ModelNeutralMutableEntry(trans, GET_BY_HANDLE, metahandle),
+      write_transaction_(trans) {
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetByClientTag,
                            const std::string& tag)
-    : ModelNeutralMutableEntry(trans, GET_BY_CLIENT_TAG, tag) {
+    : ModelNeutralMutableEntry(trans, GET_BY_CLIENT_TAG, tag),
+      write_transaction_(trans) {
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetByServerTag,
                            const string& tag)
-    : ModelNeutralMutableEntry(trans, GET_BY_SERVER_TAG, tag) {
+    : ModelNeutralMutableEntry(trans, GET_BY_SERVER_TAG, tag),
+      write_transaction_(trans) {
 }
 
 void MutableEntry::PutLocalExternalId(int64 value) {
   DCHECK(kernel_);
-  write_transaction()->SaveOriginal(kernel_);
+  write_transaction()->TrackChangesTo(kernel_);
   if (kernel_->ref(LOCAL_EXTERNAL_ID) != value) {
     ScopedKernelLock lock(dir());
     kernel_->put(LOCAL_EXTERNAL_ID, value);
@@ -131,7 +135,7 @@ void MutableEntry::PutLocalExternalId(int64 value) {
 
 void MutableEntry::PutMtime(base::Time value) {
   DCHECK(kernel_);
-  write_transaction()->SaveOriginal(kernel_);
+  write_transaction()->TrackChangesTo(kernel_);
   if (kernel_->ref(MTIME) != value) {
     kernel_->put(MTIME, value);
     kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
@@ -140,7 +144,7 @@ void MutableEntry::PutMtime(base::Time value) {
 
 void MutableEntry::PutCtime(base::Time value) {
   DCHECK(kernel_);
-  write_transaction()->SaveOriginal(kernel_);
+  write_transaction()->TrackChangesTo(kernel_);
   if (kernel_->ref(CTIME) != value) {
     kernel_->put(CTIME, value);
     kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
@@ -149,7 +153,7 @@ void MutableEntry::PutCtime(base::Time value) {
 
 void MutableEntry::PutParentId(const Id& value) {
   DCHECK(kernel_);
-  write_transaction()->SaveOriginal(kernel_);
+  write_transaction()->TrackChangesTo(kernel_);
   if (kernel_->ref(PARENT_ID) != value) {
     PutParentIdPropertyOnly(value);
     if (!GetIsDel()) {
@@ -163,7 +167,7 @@ void MutableEntry::PutParentId(const Id& value) {
 
 void MutableEntry::PutIsDir(bool value) {
   DCHECK(kernel_);
-  write_transaction()->SaveOriginal(kernel_);
+  write_transaction()->TrackChangesTo(kernel_);
   bool old_value = kernel_->ref(IS_DIR);
   if (old_value != value) {
     kernel_->put(IS_DIR, value);
@@ -173,7 +177,7 @@ void MutableEntry::PutIsDir(bool value) {
 
 void MutableEntry::PutIsDel(bool value) {
   DCHECK(kernel_);
-  write_transaction()->SaveOriginal(kernel_);
+  write_transaction()->TrackChangesTo(kernel_);
   if (value == kernel_->ref(IS_DEL)) {
     return;
   }
@@ -205,7 +209,7 @@ void MutableEntry::PutIsDel(bool value) {
 
 void MutableEntry::PutNonUniqueName(const std::string& value) {
   DCHECK(kernel_);
-  write_transaction()->SaveOriginal(kernel_);
+  write_transaction()->TrackChangesTo(kernel_);
 
   if (kernel_->ref(NON_UNIQUE_NAME) != value) {
     kernel_->put(NON_UNIQUE_NAME, value);
@@ -216,7 +220,7 @@ void MutableEntry::PutNonUniqueName(const std::string& value) {
 void MutableEntry::PutSpecifics(const sync_pb::EntitySpecifics& value) {
   DCHECK(kernel_);
   CHECK(!value.password().has_client_only_encrypted_data());
-  write_transaction()->SaveOriginal(kernel_);
+  write_transaction()->TrackChangesTo(kernel_);
   // TODO(ncarter): This is unfortunately heavyweight.  Can we do
   // better?
   if (kernel_->ref(SPECIFICS).SerializeAsString() !=
@@ -228,7 +232,7 @@ void MutableEntry::PutSpecifics(const sync_pb::EntitySpecifics& value) {
 
 void MutableEntry::PutUniquePosition(const UniquePosition& value) {
   DCHECK(kernel_);
-  write_transaction()->SaveOriginal(kernel_);
+  write_transaction()->TrackChangesTo(kernel_);
   if(!kernel_->ref(UNIQUE_POSITION).Equals(value)) {
     // We should never overwrite a valid position with an invalid one.
     DCHECK(value.IsValid());
