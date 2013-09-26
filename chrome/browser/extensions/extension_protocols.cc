@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -42,6 +43,7 @@
 #include "grit/component_extension_resources_map.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request_error_job.h"
@@ -134,6 +136,11 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
                       const net::CompletionCallback& callback) const OVERRIDE {
     const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     *data = rb.GetRawDataResource(resource_id_).as_string();
+
+    // Add the Content-Length header now that we know the resource length.
+    response_info_.headers->AddHeader(base::StringPrintf(
+        "%s: %s",  net::HttpRequestHeaders::kContentLength,
+        base::UintToString(data->size()).c_str()));
 
     std::string* read_mime_type = new std::string;
     bool* read_result = new bool;

@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -201,6 +202,16 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
   }
 }
 
+void CheckForContentLengthHeader(net::URLRequest* request) {
+  std::string content_length;
+  request->GetResponseHeaderByName(net::HttpRequestHeaders::kContentLength,
+                                  &content_length);
+  EXPECT_FALSE(content_length.empty());
+  int length_value = 0;
+  EXPECT_TRUE(base::StringToInt(content_length, &length_value));
+  EXPECT_GT(length_value, 0);
+}
+
 // Tests getting a resource for a component extension works correctly, both when
 // the extension is enabled and when it is disabled.
 TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
@@ -217,6 +228,7 @@ TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
                             resource_context_.GetRequestContext());
     StartRequest(&request, ResourceType::MEDIA);
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
+    CheckForContentLengthHeader(&request);
   }
 
   // And then test it with the extension disabled.
@@ -228,6 +240,7 @@ TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
                             resource_context_.GetRequestContext());
     StartRequest(&request, ResourceType::MEDIA);
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
+    CheckForContentLengthHeader(&request);
   }
 }
 
