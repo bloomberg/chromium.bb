@@ -4,11 +4,11 @@
 
 from metrics import Metric
 
-class Cpu(Metric):
+class CpuMetric(Metric):
   """Calulates CPU load over a span of time."""
 
   def __init__(self, browser):
-    super(Cpu, self).__init__()
+    super(CpuMetric, self).__init__()
     self._results = None
     self._browser = browser
     self.start_cpu = None
@@ -22,7 +22,7 @@ class Cpu(Metric):
 
   def Stop(self, page, tab):
     assert self.start_cpu != None, 'Must call Start() first'
-    self._results = Cpu.SubtractCpuStats(self._browser.cpu_stats,
+    self._results = CpuMetric.SubtractCpuStats(self._browser.cpu_stats,
                                          self.start_cpu)
 
   # pylint: disable=W0221

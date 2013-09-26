@@ -30,7 +30,7 @@ class TabSwitching(page_measurement.PageMeasurement):
     ])
 
   def DidStartBrowser(self, browser):
-    self._cpu_metric = cpu.Cpu(browser)
+    self._cpu_metric = cpu.CpuMetric(browser)
 
   def CanRunForPage(self, page):
     return not page.page_set.pages.index(page)
