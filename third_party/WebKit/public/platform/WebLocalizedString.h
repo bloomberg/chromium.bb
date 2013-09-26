@@ -114,8 +114,17 @@ struct WebLocalizedString {
         OtherMonthLabel,
         OtherTimeLabel,
         OtherWeekLabel,
+        // PlaceholderForDayOfMonthField is for day placeholder text, e.g.
+        // "dd", for date field used in multiple fields "date", "datetime", and
+        // "datetime-local" input UI instead of "--".
         PlaceholderForDayOfMonthField,
+        // PlaceholderForfMonthField is for month placeholder text, e.g.
+        // "mm", for month field used in multiple fields "date", "datetime", and
+        // "datetime-local" input UI instead of "--".
         PlaceholderForMonthField,
+        // PlaceholderForYearField is for year placeholder text, e.g. "yyyy",
+        // for year field used in multiple fields "date", "datetime", and
+        // "datetime-local" input UI instead of "----".
         PlaceholderForYearField,
         ResetButtonDefaultLabel,
         SearchableIndexIntroduction,

@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/platform/SSLKeyGenerator.h"
 
+#include "core/platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
@@ -38,15 +39,11 @@
 
 namespace WebCore {
 
-// These are defined in webkit/api/src/LocalizedStrings.cpp.
-String keygenMenuHighGradeKeySize();
-String keygenMenuMediumGradeKeySize();
-
-void getSupportedKeySizes(Vector<String>& sizes)
+void getSupportedKeySizes(Locale& locale, Vector<String>& sizes)
 {
     sizes.resize(2);
-    sizes[0] = keygenMenuHighGradeKeySize();
-    sizes[1] = keygenMenuMediumGradeKeySize();
+    sizes[0] = locale.queryString(WebKit::WebLocalizedString::KeygenMenuHighGradeKeySize);
+    sizes[1] = locale.queryString(WebKit::WebLocalizedString::KeygenMenuMediumGradeKeySize);
 }
 
 String signedPublicKeyAndChallengeString(unsigned keySizeIndex, const String& challengeString, const KURL& url)

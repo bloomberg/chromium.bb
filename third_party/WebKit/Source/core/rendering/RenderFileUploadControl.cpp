@@ -30,6 +30,7 @@
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/TextRun.h"
+#include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderButton.h"
 #include "core/rendering/RenderTheme.h"
@@ -163,7 +164,7 @@ void RenderFileUploadControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogic
     RenderFileUploadControl* renderer = const_cast<RenderFileUploadControl*>(this);
     float minDefaultLabelWidth = defaultWidthNumChars * font.width(constructTextRun(renderer, font, characterAsString, style(), TextRun::AllowTrailingExpansion));
 
-    const String label = RenderTheme::theme().fileListDefaultLabel(toHTMLInputElement(node())->multiple());
+    const String label = toHTMLInputElement(node())->locale().queryString(WebKit::WebLocalizedString::FileButtonNoFileSelectedLabel);
     float defaultLabelWidth = font.width(constructTextRun(renderer, font, label, style(), TextRun::AllowTrailingExpansion));
     if (HTMLInputElement* button = uploadButton())
         if (RenderObject* buttonRenderer = button->renderer())
@@ -228,7 +229,7 @@ String RenderFileUploadControl::fileTextValue() const
 {
     HTMLInputElement* input = toHTMLInputElement(node());
     ASSERT(input->files());
-    return RenderTheme::theme().fileListNameForWidth(input->files(), style()->font(), maxFilenameWidth(), input->multiple());
+    return RenderTheme::theme().fileListNameForWidth(input->locale(), input->files(), style()->font(), maxFilenameWidth());
 }
 
 } // namespace WebCore

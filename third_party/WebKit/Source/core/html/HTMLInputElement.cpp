@@ -66,8 +66,8 @@
 #include "core/page/UseCounter.h"
 #include "core/platform/DateTimeChooser.h"
 #include "core/platform/Language.h"
-#include "core/platform/LocalizedStrings.h"
 #include "core/platform/PlatformMouseEvent.h"
+#include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderTheme.h"
 #include "wtf/MathExtras.h"
@@ -814,7 +814,7 @@ String HTMLInputElement::altText() const
     if (alt.isNull())
         alt = getAttribute(valueAttr);
     if (alt.isEmpty())
-        alt = inputElementAltText();
+        alt = locale().queryString(WebKit::WebLocalizedString::InputElementAltText);
     return alt;
 }
 

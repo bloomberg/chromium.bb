@@ -32,11 +32,12 @@
 namespace WebCore {
 
     class KURL;
+    class Locale;
 
     // Returns strings representing key sizes that may be used
     // for the <keygen> tag. The first string is displayed as the default
     // key size in the <keygen> menu.
-    void getSupportedKeySizes(Vector<String>& sizes);
+    void getSupportedKeySizes(Locale&, Vector<String>& sizes);
 
     // This function handles the <keygen> tag in form elements.
     // Returns a signed copy of the combined challenge string and public

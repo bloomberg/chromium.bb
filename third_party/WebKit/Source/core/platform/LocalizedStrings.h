@@ -36,14 +36,7 @@ namespace WebCore {
 
     // FIXME: Use Locale::queryString instead of the following functions.
 
-    String inputElementAltText();
-    String resetButtonDefaultLabel();
     String searchableIndexIntroduction();
-    String submitButtonDefaultLabel();
-    String fileButtonChooseFileLabel();
-    String fileButtonChooseMultipleFilesLabel();
-    String fileButtonNoFileSelectedLabel();
-    String fileButtonNoFilesSelectedLabel();
     String defaultDetailsSummaryText();
 
     String searchMenuNoRecentSearchesText();
@@ -76,27 +69,10 @@ namespace WebCore {
     String AXSecondFieldText();
     String AXWeekOfYearFieldText();
     String AXYearFieldText();
-
-    // placeholderForDayOfMonthField() returns localized placeholder text, e.g.
-    // "dd", for date field used in multiple fields "date", "datetime", and
-    // "datetime-local" input UI instead "--".
-    String placeholderForDayOfMonthField();
-
-    // placeholderForfMonthField() returns localized placeholder text, e.g.
-    // "mm", for month field used in multiple fields "date", "datetime", and
-    // "datetime-local" input UI instead "--".
-    String placeholderForMonthField();
-
-    // placeholderForYearField() returns localized placeholder text, e.g.
-    // "yyyy", for year field used in multiple fields "date", "datetime", and
-    // "datetime-local" input UI instead "----".
-    String placeholderForYearField();
 #endif
 
     String missingPluginText();
     String blockedPluginByContentSecurityPolicyText();
-
-    String multipleFileUploadText(unsigned numberOfFiles);
 
     String imageTitle(const String& filename, const IntSize& size);
 

@@ -36,7 +36,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/InputTypeNames.h"
-#include "core/platform/LocalizedStrings.h"
+#include "core/platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
@@ -66,7 +66,7 @@ void ResetInputType::handleDOMActivateEvent(Event* event)
 
 String ResetInputType::defaultValue() const
 {
-    return resetButtonDefaultLabel();
+    return locale().queryString(WebKit::WebLocalizedString::ResetButtonDefaultLabel);
 }
 
 bool ResetInputType::isTextButton() const

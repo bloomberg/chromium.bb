@@ -36,7 +36,6 @@
 #import "core/html/shadow/MediaControlElements.h"
 #import "core/page/FrameView.h"
 #import "core/platform/LayoutTestSupport.h"
-#import "core/platform/LocalizedStrings.h"
 #import "core/platform/SharedBuffer.h"
 #import "core/platform/graphics/BitmapImage.h"
 #import "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -48,6 +47,7 @@
 #import "core/platform/mac/LocalCurrentGraphicsContext.h"
 #import "core/platform/mac/ThemeMac.h"
 #import "core/platform/mac/WebCoreNSCellExtras.h"
+#import "core/platform/text/PlatformLocale.h"
 #import "core/rendering/PaintInfo.h"
 #import "core/rendering/RenderLayer.h"
 #import "core/rendering/RenderMedia.h"
@@ -1875,18 +1875,20 @@ NSTextFieldCell* RenderThemeChromiumMac::textField() const
     return m_textField.get();
 }
 
-String RenderThemeChromiumMac::fileListNameForWidth(const FileList* fileList, const Font& font, int width, bool multipleFilesAllowed) const
+String RenderThemeChromiumMac::fileListNameForWidth(Locale& locale, const FileList* fileList, const Font& font, int width) const
 {
     if (width <= 0)
         return String();
 
     String strToTruncate;
-    if (fileList->isEmpty())
-        strToTruncate = fileListDefaultLabel(multipleFilesAllowed);
-    else if (fileList->length() == 1)
+    if (fileList->isEmpty()) {
+        strToTruncate = locale.queryString(WebKit::WebLocalizedString::FileButtonNoFileSelectedLabel);
+    } else if (fileList->length() == 1) {
         strToTruncate = [[NSFileManager defaultManager] displayNameAtPath:(fileList->item(0)->path())];
-    else
-        return StringTruncator::rightTruncate(multipleFileUploadText(fileList->length()), width, font, StringTruncator::EnableRoundingHacks);
+    } else {
+        // FIXME: Localization of fileList->length().
+        return StringTruncator::rightTruncate(locale.queryString(WebKit::WebLocalizedString::MultipleFileUploadText, String::number(fileList->length())), width, font, StringTruncator::EnableRoundingHacks);
+    }
 
     return StringTruncator::centerTruncate(strToTruncate, width, font, StringTruncator::EnableRoundingHacks);
 }

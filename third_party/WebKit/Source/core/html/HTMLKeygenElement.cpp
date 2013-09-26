@@ -55,7 +55,7 @@ void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot* root)
     DEFINE_STATIC_LOCAL(AtomicString, keygenSelectPseudoId, ("-webkit-keygen-select", AtomicString::ConstructFromLiteral));
 
     Vector<String> keys;
-    getSupportedKeySizes(keys);
+    getSupportedKeySizes(locale(), keys);
 
     // Create a select element with one option element for each key size.
     RefPtr<HTMLSelectElement> select = HTMLSelectElement::create(document());

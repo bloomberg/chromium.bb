@@ -37,7 +37,6 @@
 #include "core/page/Chrome.h"
 #include "core/platform/DragData.h"
 #include "core/platform/FileSystem.h"
-#include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderFileUploadControl.h"
 #include "wtf/PassOwnPtr.h"
@@ -250,7 +249,7 @@ void FileInputType::createShadowSubtree()
     ASSERT(element()->shadow());
     RefPtr<HTMLInputElement> button = HTMLInputElement::create(inputTag, element()->document(), 0, false);
     button->setType(InputTypeNames::button());
-    button->setAttribute(valueAttr, element()->multiple() ? fileButtonChooseMultipleFilesLabel() : fileButtonChooseFileLabel());
+    button->setAttribute(valueAttr, locale().queryString(element()->multiple() ? WebLocalizedString::FileButtonChooseMultipleFilesLabel : WebLocalizedString::FileButtonChooseFileLabel));
     button->setPart(AtomicString("-webkit-file-upload-button", AtomicString::ConstructFromLiteral));
     element()->userAgentShadowRoot()->appendChild(button.release());
 }
@@ -266,7 +265,7 @@ void FileInputType::multipleAttributeChanged()
 {
     ASSERT(element()->shadow());
     if (Element* button = toElement(element()->userAgentShadowRoot()->firstChild()))
-        button->setAttribute(valueAttr, element()->multiple() ? fileButtonChooseMultipleFilesLabel() : fileButtonChooseFileLabel());
+        button->setAttribute(valueAttr, locale().queryString(element()->multiple() ? WebLocalizedString::FileButtonChooseMultipleFilesLabel : WebLocalizedString::FileButtonChooseFileLabel));
 }
 
 void FileInputType::setFiles(PassRefPtr<FileList> files)
@@ -367,9 +366,7 @@ String FileInputType::defaultToolTip() const
     FileList* fileList = m_fileList.get();
     unsigned listSize = fileList->length();
     if (!listSize) {
-        if (element()->multiple())
-            return fileButtonNoFilesSelectedLabel();
-        return fileButtonNoFileSelectedLabel();
+        return locale().queryString(WebLocalizedString::FileButtonNoFileSelectedLabel);
     }
 
     StringBuilder names;

@@ -203,8 +203,7 @@ public:
     virtual bool popsMenuByArrowKeys() const { return false; }
     virtual bool popsMenuBySpaceOrReturn() const { return false; }
 
-    virtual String fileListDefaultLabel(bool multipleFilesAllowed) const;
-    virtual String fileListNameForWidth(const FileList*, const Font&, int width, bool multipleFilesAllowed) const;
+    virtual String fileListNameForWidth(Locale&, const FileList*, const Font&, int width) const;
 
     virtual bool shouldOpenPickerWithF4Key() const;
 

@@ -128,7 +128,7 @@ protected:
     virtual bool supportsClosedCaptioning() const { return true; }
 
 private:
-    virtual String fileListNameForWidth(const FileList*, const Font&, int width, bool multipleFilesAllowed) const OVERRIDE;
+    virtual String fileListNameForWidth(Locale&, const FileList*, const Font&, int width) const OVERRIDE;
 
     IntRect inflateRect(const IntRect&, const IntSize&, const int* margins, float zoomLevel = 1.0f) const;
 

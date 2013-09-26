@@ -63,44 +63,9 @@ String searchableIndexIntroduction()
     return query(WebLocalizedString::SearchableIndexIntroduction);
 }
 
-String submitButtonDefaultLabel()
-{
-    return query(WebLocalizedString::SubmitButtonDefaultLabel);
-}
-
-String inputElementAltText()
-{
-    return query(WebLocalizedString::InputElementAltText);
-}
-
-String resetButtonDefaultLabel()
-{
-    return query(WebLocalizedString::ResetButtonDefaultLabel);
-}
-
-String fileButtonChooseFileLabel()
-{
-    return query(WebLocalizedString::FileButtonChooseFileLabel);
-}
-
-String fileButtonChooseMultipleFilesLabel()
-{
-    return query(WebLocalizedString::FileButtonChooseMultipleFilesLabel);
-}
-
 String defaultDetailsSummaryText()
 {
     return query(WebLocalizedString::DetailsLabel);
-}
-
-String fileButtonNoFileSelectedLabel()
-{
-    return query(WebLocalizedString::FileButtonNoFileSelectedLabel);
-}
-
-String fileButtonNoFilesSelectedLabel()
-{
-    return query(WebLocalizedString::FileButtonNoFileSelectedLabel);
 }
 
 String searchMenuNoRecentSearchesText()
@@ -232,21 +197,6 @@ String AXYearFieldText()
 {
     return query(WebLocalizedString::AXYearFieldText);
 }
-
-String placeholderForDayOfMonthField()
-{
-    return query(WebLocalizedString::PlaceholderForDayOfMonthField);
-}
-
-String placeholderForMonthField()
-{
-    return query(WebLocalizedString::PlaceholderForMonthField);
-}
-
-String placeholderForYearField()
-{
-    return query(WebLocalizedString::PlaceholderForYearField);
-}
 #endif
 
 String missingPluginText()
@@ -258,11 +208,6 @@ String blockedPluginByContentSecurityPolicyText()
 {
     notImplemented();
     return String();
-}
-
-String multipleFileUploadText(unsigned numberOfFiles)
-{
-    return query(WebLocalizedString::MultipleFileUploadText, String::number(numberOfFiles));
 }
 
 // The following two functions are not declared in core/platform/LocalizedStrings.h.

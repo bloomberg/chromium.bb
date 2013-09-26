@@ -46,10 +46,10 @@
 #include "core/page/Settings.h"
 #include "core/platform/FileSystem.h"
 #include "core/platform/FloatConversion.h"
-#include "core/platform/LocalizedStrings.h"
 #include "core/platform/graphics/FontSelector.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/StringTruncator.h"
+#include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderMeter.h"
 #include "core/rendering/RenderView.h"
@@ -1206,25 +1206,20 @@ Color RenderTheme::focusRingColor()
     return customFocusRingColor().isValid() ? customFocusRingColor() : theme().platformFocusRingColor();
 }
 
-String RenderTheme::fileListDefaultLabel(bool multipleFilesAllowed) const
-{
-    if (multipleFilesAllowed)
-        return fileButtonNoFilesSelectedLabel();
-    return fileButtonNoFileSelectedLabel();
-}
-
-String RenderTheme::fileListNameForWidth(const FileList* fileList, const Font& font, int width, bool multipleFilesAllowed) const
+String RenderTheme::fileListNameForWidth(Locale& locale, const FileList* fileList, const Font& font, int width) const
 {
     if (width <= 0)
         return String();
 
     String string;
-    if (fileList->isEmpty())
-        string = fileListDefaultLabel(multipleFilesAllowed);
-    else if (fileList->length() == 1)
+    if (fileList->isEmpty()) {
+        string = locale.queryString(WebKit::WebLocalizedString::FileButtonNoFileSelectedLabel);
+    } else if (fileList->length() == 1) {
         string = fileList->item(0)->name();
-    else
-        return StringTruncator::rightTruncate(multipleFileUploadText(fileList->length()), width, font, StringTruncator::EnableRoundingHacks);
+    } else {
+        // FIXME: Localization of fileList->length().
+        return StringTruncator::rightTruncate(locale.queryString(WebKit::WebLocalizedString::MultipleFileUploadText, String::number(fileList->length())), width, font, StringTruncator::EnableRoundingHacks);
+    }
 
     return StringTruncator::centerTruncate(string, width, font, StringTruncator::EnableRoundingHacks);
 }

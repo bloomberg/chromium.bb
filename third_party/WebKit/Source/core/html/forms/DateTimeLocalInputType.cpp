@@ -37,13 +37,13 @@
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "core/html/forms/InputTypeNames.h"
 #include "core/platform/DateComponents.h"
-#include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
+using WebKit::WebLocalizedString;
 using namespace HTMLNames;
 
 static const int dateTimeLocalDefaultStep = 60;
@@ -162,9 +162,9 @@ void DateTimeLocalInputType::setupLayoutParameters(DateTimeEditElement::LayoutPa
         layoutParameters.minimum = DateComponents();
     if (!parseToDateComponents(element()->fastGetAttribute(maxAttr), &layoutParameters.maximum))
         layoutParameters.maximum = DateComponents();
-    layoutParameters.placeholderForDay = placeholderForDayOfMonthField();
-    layoutParameters.placeholderForMonth = placeholderForMonthField();
-    layoutParameters.placeholderForYear = placeholderForYearField();
+    layoutParameters.placeholderForDay = locale().queryString(WebLocalizedString::PlaceholderForDayOfMonthField);
+    layoutParameters.placeholderForMonth = locale().queryString(WebLocalizedString::PlaceholderForMonthField);
+    layoutParameters.placeholderForYear = locale().queryString(WebLocalizedString::PlaceholderForYearField);
 }
 
 bool DateTimeLocalInputType::isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const
