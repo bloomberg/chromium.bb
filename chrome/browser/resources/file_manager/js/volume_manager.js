@@ -474,10 +474,6 @@ VolumeManager.prototype.setDriveEnabled = function(enabled) {
   if (this.driveEnabled == enabled)
     return;
   this.driveEnabled = enabled;
-
-  // When drive is enabled, start to mount.
-  if (enabled)
-    this.mountDrive(function() {}, function() {});
 };
 
 /**
@@ -640,26 +636,6 @@ VolumeManager.prototype.makeRequestKey_ = function(requestType,
                                                    volumeType,
                                                    mountOrSourcePath) {
   return requestType + ':' + volumeType + ':' + mountOrSourcePath;
-};
-
-
-/**
- * @param {function(string)} successCallback Success callback.
- * @param {function(VolumeManager.Error)} errorCallback Error callback.
- */
-VolumeManager.prototype.mountDrive = function(successCallback, errorCallback) {
-  if (this.driveStatus_ == VolumeManager.DriveStatus.ERROR) {
-    this.setDriveStatus_(VolumeManager.DriveStatus.UNMOUNTED);
-  }
-  var self = this;
-  this.mount_(
-      '', 'drive',
-      successCallback,
-      function(error) {
-        if (self.driveStatus_ != VolumeManager.DriveStatus.MOUNTED)
-          self.setDriveStatus_(VolumeManager.DriveStatus.ERROR);
-        errorCallback(error);
-      });
 };
 
 /**

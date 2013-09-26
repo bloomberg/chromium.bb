@@ -135,27 +135,27 @@ PhotoImport.prototype.initDom_ = function() {
  * @private
  */
 PhotoImport.prototype.initMyPhotos_ = function() {
-  var onError = this.onError_.bind(
-      this, loadTimeData.getString('PHOTO_IMPORT_DRIVE_ERROR'));
-
-  var onDirectory = function(dir) {
-    // This may enable the import button, so check that.
-    this.myPhotosDirectory_ = dir;
-    this.onSelectionChanged_();
-  }.bind(this);
-
-  var onMounted = function() {
-    var dir = PathUtil.join(
+  var onVolumeManagerReady = function() {
+    this.volumeManager_.removeEventListener('ready', onVolumeManagerReady);
+    var directoryPath = PathUtil.join(
         RootDirectory.DRIVE,
         loadTimeData.getString('PHOTO_IMPORT_MY_PHOTOS_DIRECTORY_NAME'));
-    util.getOrCreateDirectory(this.filesystem_.root, dir, onDirectory, onError);
+    util.getOrCreateDirectory(
+        this.filesystem_.root, directoryPath,
+        function(entry) {
+          // This may enable the import button, so check that.
+          this.myPhotosDirectory_ = entry;
+          this.onSelectionChanged_();
+        }.bind(this),
+        function(error) {
+          this.onError_(loadTimeData.getString('PHOTO_IMPORT_DRIVE_ERROR'));
+        }.bind(this));
   }.bind(this);
 
-  if (this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE)) {
-    onMounted();
-  } else {
-    this.volumeManager_.mountDrive(onMounted, onError);
-  }
+  if (this.volumeManager_.isReady())
+    onVolumeManagerReady();
+  else
+    this.volumeManager_.addEventListener('ready', onVolumeManagerReady);
 };
 
 /**

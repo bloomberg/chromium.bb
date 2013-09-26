@@ -260,16 +260,18 @@ ActionChoice.prototype.renderItem = function(item) {
  * @private
  */
 ActionChoice.prototype.checkDrive_ = function(callback) {
-  var onMounted = function() {
-    this.importPhotosToDriveAction_.disabled = false;
+  var onVolumeManagerReady = function() {
+    this.volumeManager_.removeEventListener('ready', onVolumeManagerReady);
+    this.importPhotosToDriveAction_.disabled =
+        !this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE);
     this.renderList_();
     callback();
   }.bind(this);
 
-  if (this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE)) {
-    onMounted();
+  if (this.volumeManager_.isReady()) {
+    onVolumeManagerReady();
   } else {
-    this.volumeManager_.mountDrive(onMounted, callback);
+    this.volumeManager_.addEvventListener('ready', onVolumeManagerReady);
   }
 };
 

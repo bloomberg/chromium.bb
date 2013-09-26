@@ -1551,21 +1551,22 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.finishSetupCurrentDirectory_(path);
         return;
       }
-      if (this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE)) {
-        this.finishSetupCurrentDirectory_(path);
-        return;
-      }
 
       var tracker = this.directoryModel_.createDirectoryChangeTracker();
-      tracker.start();
-      // Waits until the Drive is mounted.
-      this.volumeManager_.mountDrive(function() {
+      var onVolumeManagerReady = function() {
+        this.volumeManager_.removeEventListener('ready', onVolumeManagerReady);
         tracker.stop();
         if (!tracker.hasChanged)
           this.finishSetupCurrentDirectory_(path);
-      }.bind(this), function(error) {
-        tracker.stop();
-      });
+      }.bind(this);
+
+      tracker.start();
+      if (this.volumeManager_.isReady()) {
+        onVolumeManagerReady();
+      } else {
+        // Wait until the VolumeManager gets ready.
+        this.volumeManager_.addEventListener('ready', onVolumeManagerReady);
+      }
     } else {
       this.finishSetupCurrentDirectory_(path);
     }
