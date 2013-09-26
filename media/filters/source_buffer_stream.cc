@@ -1702,6 +1702,8 @@ int SourceBufferRange::GetRemovalGOP(
   int bytes_removed = 0;
 
   KeyframeMap::iterator gop_itr = GetFirstKeyframeAt(start_timestamp, false);
+  if (gop_itr == keyframe_map_.end())
+    return 0;
   int keyframe_index = gop_itr->second - keyframe_map_index_base_;
   BufferQueue::iterator buffer_itr = buffers_.begin() + keyframe_index;
   KeyframeMap::iterator gop_end = keyframe_map_.end();

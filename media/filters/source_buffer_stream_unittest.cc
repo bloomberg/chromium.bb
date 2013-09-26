@@ -2594,13 +2594,7 @@ TEST_F(SourceBufferStreamTest, GetRemovalRange_BytesToFree) {
   EXPECT_EQ(18, bytes_removed);
 }
 
-// Disabled as test fails on windows: http://crbug.com/297564 .
-#if defined(OS_WIN)
-#define MAYBE_GetRemovalRange_Range DISABLED_GetRemovalRange_Range
-#else
-#define MAYBE_GetRemovalRange_Range GetRemovalRange_Range
-#endif
-TEST_F(SourceBufferStreamTest, MAYBE_GetRemovalRange_Range) {
+TEST_F(SourceBufferStreamTest, GetRemovalRange_Range) {
   // Append 2 GOPs starting at 300ms, 30ms apart.
   NewSegmentAppend("300K 330 360 390K 420 450");
 
