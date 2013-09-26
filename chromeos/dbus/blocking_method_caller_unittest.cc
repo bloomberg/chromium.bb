@@ -32,6 +32,9 @@ class FakeTaskRunner : public base::TaskRunner {
     return true;
   }
   virtual bool RunsTasksOnCurrentThread() const OVERRIDE { return true; }
+
+ protected:
+  ~FakeTaskRunner() {}
 };
 
 }  // namespace
