@@ -173,8 +173,18 @@ WindowSelector::~WindowSelector() {
 }
 
 void WindowSelector::Step(WindowSelector::Direction direction) {
-  DCHECK_EQ(CYCLE, mode_);
   DCHECK(!windows_.empty());
+  // Upgrade to CYCLE mode if currently in OVERVIEW mode.
+  if (mode_ != CYCLE) {
+    event_handler_.reset(new WindowSelectorEventFilter(this));
+    DCHECK(window_overview_);
+    // Set the initial selection window to animate to the new selection.
+    window_overview_->SetSelection(selected_window_);
+    window_overview_->MoveToSingleRootWindow(
+        windows_[selected_window_]->GetRootWindow());
+    mode_ = CYCLE;
+  }
+
   selected_window_ = (selected_window_ + windows_.size() +
       (direction == WindowSelector::FORWARD ? 1 : -1)) % windows_.size();
   if (window_overview_) {

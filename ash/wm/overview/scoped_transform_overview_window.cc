@@ -27,6 +27,12 @@ namespace {
 views::Widget* CreateCopyOfWindow(aura::RootWindow* target_root,
                                   aura::Window* src_window,
                                   ui::Layer* recreated_layer) {
+  // Save and remove the transform from the layer to later reapply to both the
+  // source and newly created copy window.
+  gfx::Transform transform = recreated_layer->transform();
+  recreated_layer->SetTransform(gfx::Transform());
+
+  src_window->SetTransform(transform);
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
@@ -67,6 +73,7 @@ views::Widget* CreateCopyOfWindow(aura::RootWindow* target_root,
   window->layer()->Add(recreated_layer);
   window->layer()->StackAtTop(recreated_layer);
   window->layer()->SetOpacity(1);
+  window->SetTransform(transform);
   window->Show();
   return widget;
 }

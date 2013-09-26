@@ -99,12 +99,17 @@ void WindowOverview::SetSelection(size_t index) {
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     selection_widget_->SetBounds(target_bounds);
   } else {
-    InitializeSelectionWidget();
+    InitializeSelectionWidget((*windows_)[index]->GetRootWindow());
     selection_widget_->SetBounds(target_bounds);
   }
 }
 
 void WindowOverview::OnWindowsChanged() {
+  PositionWindows();
+}
+
+void WindowOverview::MoveToSingleRootWindow(aura::RootWindow* root_window) {
+  single_root_window_ = root_window;
   PositionWindows();
 }
 
@@ -241,7 +246,7 @@ void WindowOverview::PositionWindowsOnRoot(
   }
 }
 
-void WindowOverview::InitializeSelectionWidget() {
+void WindowOverview::InitializeSelectionWidget(aura::RootWindow* root_window) {
   selection_widget_.reset(new views::Widget);
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
@@ -250,7 +255,7 @@ void WindowOverview::InitializeSelectionWidget() {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
   params.parent = Shell::GetContainer(
-      single_root_window_,
+      root_window,
       internal::kShellWindowId_DefaultContainer);
   params.accept_events = false;
   selection_widget_->set_focus_on_creation(false);

@@ -205,6 +205,24 @@ TEST_F(WindowSelectorTest, BasicCycle) {
   EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
 }
 
+// Tests beginning cycling while in overview mode.
+TEST_F(WindowSelectorTest, OverviewTransitionToCycle) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+
+  ToggleOverview();
+  Cycle(WindowSelector::FORWARD);
+  StopCycling();
+
+  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
+  EXPECT_EQ(window2.get(), GetFocusedWindow());
+}
+
+
 // Tests cycles between panel and normal windows.
 TEST_F(WindowSelectorTest, CyclePanels) {
   gfx::Rect bounds(0, 0, 400, 400);
@@ -469,6 +487,36 @@ TEST_F(WindowSelectorTest, CycleOverviewUsesCurrentDisplay) {
       ToEnclosingRect(GetTransformedTargetBounds(window1.get()))));
   EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
       ToEnclosingRect(GetTransformedTargetBounds(window2.get()))));
+}
+
+// Tests that beginning to cycle from overview mode moves windows to the
+// active display.
+TEST_F(WindowSelectorTest, MultipleDisplaysOverviewTransitionToCycle) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("400x400,400x400");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
+  scoped_ptr<aura::Window> window1(CreateWindow(gfx::Rect(0, 0, 100, 100)));
+  scoped_ptr<aura::Window> window2(CreateWindow(gfx::Rect(450, 0, 100, 100)));
+  EXPECT_EQ(root_windows[0], window1->GetRootWindow());
+  EXPECT_EQ(root_windows[1], window2->GetRootWindow());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+
+  ToggleOverview();
+  EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(window1.get()))));
+  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(window2.get()))));
+
+  Cycle(WindowSelector::FORWARD);
+  EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(window1.get()))));
+  EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(window2.get()))));
+  StopCycling();
 }
 
 }  // namespace internal

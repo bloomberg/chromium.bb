@@ -57,6 +57,9 @@ class WindowOverview : public ui::EventHandler {
   // Dispatched when the list of windows has changed.
   void OnWindowsChanged();
 
+  // Moves the overview to only |root_window|.
+  void MoveToSingleRootWindow(aura::RootWindow* root_window);
+
   // ui::EventHandler:
   virtual void OnEvent(ui::Event* event) OVERRIDE;
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
@@ -76,7 +79,7 @@ class WindowOverview : public ui::EventHandler {
   void PositionWindowsOnRoot(aura::RootWindow* root_window,
                              const std::vector<WindowSelectorItem*>& windows);
 
-  void InitializeSelectionWidget();
+  void InitializeSelectionWidget(aura::RootWindow* root_window);
 
   // Updates the selection widget's location to the currently selected window.
   // If |animate| the transition to the new location is animated.

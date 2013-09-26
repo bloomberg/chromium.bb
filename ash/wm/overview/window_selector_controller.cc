@@ -59,10 +59,8 @@ void WindowSelectorController::HandleCycleWindow(
     window_selector_.reset(
         new WindowSelector(windows, WindowSelector::CYCLE, this));
     OnSelectionStarted();
-    window_selector_->Step(direction);
-  } else if (window_selector_->mode() == WindowSelector::CYCLE) {
-    window_selector_->Step(direction);
   }
+  window_selector_->Step(direction);
 }
 
 bool WindowSelectorController::IsSelecting() {
