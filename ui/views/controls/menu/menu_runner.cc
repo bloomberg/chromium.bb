@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -125,6 +126,9 @@ class MenuRunnerImpl : public internal::MenuControllerDelegate {
   // The timestamp of the event which closed the menu - or 0.
   base::TimeDelta closing_event_time_;
 
+  // Used to detect deletion of |this| when notifying delegate of success.
+  base::WeakPtrFactory<MenuRunnerImpl> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(MenuRunnerImpl);
 };
 
@@ -135,7 +139,8 @@ MenuRunnerImpl::MenuRunnerImpl(MenuItemView* menu)
       for_drop_(false),
       controller_(NULL),
       owns_controller_(false),
-      closing_event_time_(base::TimeDelta()) {
+      closing_event_time_(base::TimeDelta()),
+      weak_factory_(this) {
 }
 
 void MenuRunnerImpl::Release() {
@@ -283,8 +288,12 @@ MenuRunner::RunResult MenuRunnerImpl::MenuDone(MenuItemView* result,
   }
   running_ = false;
   if (result && menu_->GetDelegate()) {
+    // Executing the command may also delete this.
+    base::WeakPtr<MenuRunnerImpl> ref(weak_factory_.GetWeakPtr());
     menu_->GetDelegate()->ExecuteCommand(result->GetCommand(),
                                          mouse_event_flags);
+    if (!ref)
+      return MenuRunner::MENU_DELETED;
   }
   return MenuRunner::NORMAL_EXIT;
 }
