@@ -641,7 +641,7 @@ bool Connection::Execute(const char* sql) {
 
   int error = ExecuteAndReturnErrorCode(sql);
   if (error != SQLITE_OK)
-    error = OnSqliteError(error, NULL);
+    error = OnSqliteError(error, NULL, sql);
 
   // This needs to be a FATAL log because the error case of arriving here is
   // that there's a malformed SQL statement. This can arise in development if
@@ -702,7 +702,7 @@ scoped_refptr<Connection::StatementRef> Connection::GetUniqueStatement(
     DLOG(FATAL) << "SQL compile error " << GetErrorMessage();
 
     // It could also be database corruption.
-    OnSqliteError(rc, NULL);
+    OnSqliteError(rc, NULL, sql);
     return new StatementRef(NULL, NULL, false);
   }
   return new StatementRef(this, stmt, true);
@@ -864,7 +864,7 @@ bool Connection::OpenInternal(const std::string& file_name,
     // purposes.
     UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.OpenFailure", err);
 
-    OnSqliteError(err, NULL);
+    OnSqliteError(err, NULL, "-- sqlite3_open()");
     bool was_poisoned = poisoned_;
     Close();
 
@@ -1022,14 +1022,19 @@ void Connection::AddTaggedHistogram(const std::string& name,
     histogram->Add(sample);
 }
 
-int Connection::OnSqliteError(int err, sql::Statement *stmt) {
+int Connection::OnSqliteError(int err, sql::Statement *stmt, const char* sql) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.Error", err);
   AddTaggedHistogram("Sqlite.Error", err);
 
   // Always log the error.
-  LOG(ERROR) << "sqlite error " << err
+  if (!sql && stmt)
+    sql = stmt->GetSQLStatement();
+  if (!sql)
+    sql = "-- unknown";
+  LOG(ERROR) << histogram_tag_ << " sqlite error " << err
              << ", errno " << GetLastErrno()
-             << ": " << GetErrorMessage();
+             << ": " << GetErrorMessage()
+             << ", sql: " << sql;
 
   if (!error_callback_.is_null()) {
     // Fire from a copy of the callback in case of reentry into

@@ -516,9 +516,17 @@ class SQL_EXPORT Connection {
   void StatementRefCreated(StatementRef* ref);
   void StatementRefDeleted(StatementRef* ref);
 
-  // Called by Statement objects when an sqlite function returns an error.
-  // The return value is the error code reflected back to client code.
-  int OnSqliteError(int err, Statement* stmt);
+  // Called when a sqlite function returns an error, which is passed
+  // as |err|.  The return value is the error code to be reflected
+  // back to client code.  |stmt| is non-NULL if the error relates to
+  // an sql::Statement instance.  |sql| is non-NULL if the error
+  // relates to non-statement sql code (Execute, for instance).  Both
+  // can be NULL, but both should never be set.
+  // NOTE(shess): Originally, the return value was intended to allow
+  // error handlers to transparently convert errors into success.
+  // Unfortunately, transactions are not generally restartable, so
+  // this did not work out.
+  int OnSqliteError(int err, Statement* stmt, const char* sql);
 
   // Like |Execute()|, but retries if the database is locked.
   bool ExecuteWithTimeout(const char* sql, base::TimeDelta ms_timeout)
