@@ -91,6 +91,7 @@ class ExtensionSettingsHandler
 
  private:
   friend class ExtensionUITest;
+  friend class BrokerDelegate;
 
   void RenderViewHostCreated(content::RenderViewHost* render_view_host);
 
