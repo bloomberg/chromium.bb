@@ -349,13 +349,13 @@ void CSSValue::destroy()
         delete static_cast<CSSCanvasValue*>(this);
         return;
     case CursorImageClass:
-        delete static_cast<CSSCursorImageValue*>(this);
+        delete toCSSCursorImageValue(this);
         return;
     case FontClass:
         delete static_cast<FontValue*>(this);
         return;
     case FontFaceSrcClass:
-        delete static_cast<CSSFontFaceSrcValue*>(this);
+        delete toCSSFontFaceSrcValue(this);
         return;
     case FontFeatureClass:
         delete static_cast<FontFeatureValue*>(this);

@@ -95,11 +95,7 @@ private:
 #endif
 };
 
-inline CSSFontFaceSrcValue* toCSSFontFaceSrcValue(CSSValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->isFontFaceSrcValue());
-    return static_cast<CSSFontFaceSrcValue*>(value);
-}
+DEFINE_CSS_VALUE_TYPE_CASTS(FontFaceSrcValue);
 
 }
 
