@@ -302,11 +302,13 @@ void WindowSelector::RemoveFocusAndSetRestoreWindow() {
   DCHECK(!restore_focus_window_);
   restore_focus_window_ = focus_client->GetFocusedWindow();
   if (restore_focus_window_) {
-    focus_client->FocusWindow(NULL);
+    // Removing focus from the window could cause the window to be destroyed so
+    // it must be observed before removing focus.
     if (observed_windows_.find(restore_focus_window_) ==
             observed_windows_.end()) {
       restore_focus_window_->AddObserver(this);
     }
+    focus_client->FocusWindow(NULL);
   }
 }
 
