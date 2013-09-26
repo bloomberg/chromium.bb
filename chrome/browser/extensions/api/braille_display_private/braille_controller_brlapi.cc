@@ -134,7 +134,7 @@ void BrailleControllerImpl::SetCreateBrlapiConnectionForTesting(
 }
 
 void BrailleControllerImpl::PokeSocketDirForTesting() {
-  OnSocketDirChangedOnIOThread();
+  OnSocketDirChanged(base::FilePath(), false /*error*/);
 }
 
 void BrailleControllerImpl::StartConnecting() {
@@ -146,44 +146,26 @@ void BrailleControllerImpl::StartConnecting() {
   if (!libbrlapi_loader_.loaded()) {
     return;
   }
-  // One could argue that there is a race condition between starting to
-  // watch the socket asynchonously and trying to connect.  While this is true,
-  // we are actually retrying to connect for a while, so this doesn't matter
-  // in practice.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, base::Bind(
-          &BrailleControllerImpl::StartWatchingSocketDirOnFileThread,
-          base::Unretained(this)));
+  base::FilePath brlapi_dir(BRLAPI_SOCKETPATH);
+  if (!file_path_watcher_.Watch(
+          brlapi_dir, false, base::Bind(
+              &BrailleControllerImpl::OnSocketDirChanged,
+              base::Unretained(this)))) {
+    LOG(WARNING) << "Couldn't watch brlapi directory " << BRLAPI_SOCKETPATH;
+    return;
+  }
   ResetRetryConnectHorizon();
   TryToConnect();
 }
 
-void BrailleControllerImpl::StartWatchingSocketDirOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  base::FilePath brlapi_dir(BRLAPI_SOCKETPATH);
-  if (!file_path_watcher_.Watch(
-          brlapi_dir, false, base::Bind(
-              &BrailleControllerImpl::OnSocketDirChangedOnFileThread,
-              base::Unretained(this)))) {
-    LOG(WARNING) << "Couldn't watch brlapi directory " << BRLAPI_SOCKETPATH;
-  }
-}
-
-void BrailleControllerImpl::OnSocketDirChangedOnFileThread(
-    const base::FilePath& path, bool error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+void BrailleControllerImpl::OnSocketDirChanged(const base::FilePath& path,
+                                               bool error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(libbrlapi_loader_.loaded());
   if (error) {
     LOG(ERROR) << "Error watching brlapi directory: " << path.value();
     return;
   }
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, base::Bind(
-          &BrailleControllerImpl::OnSocketDirChangedOnIOThread,
-          base::Unretained(this)));
-}
-
-void BrailleControllerImpl::OnSocketDirChangedOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   LOG(INFO) << "BrlAPI directory changed";
   // Every directory change resets the max retry time to the appropriate delay
   // into the future.
