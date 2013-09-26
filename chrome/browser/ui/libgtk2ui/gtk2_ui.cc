@@ -293,7 +293,6 @@ color_utils::HSL GetDefaultTint(int id) {
 namespace libgtk2ui {
 
 Gtk2UI::Gtk2UI() {
-  DLOG(ERROR) << "Activating the gtk2 component";
   GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
 
   // Create our fake widgets.
