@@ -212,7 +212,7 @@ class ThumbnailDatabaseTest : public testing::Test {
     }
 
     scoped_ptr<ThumbnailDatabase> db(new ThumbnailDatabase());
-    EXPECT_EQ(sql::INIT_OK, db->Init(file_name_, NULL, url_db));
+    EXPECT_EQ(sql::INIT_OK, db->Init(file_name_, url_db));
     db->BeginTransaction();
 
     return db.Pass();
@@ -232,7 +232,7 @@ class ThumbnailDatabaseTest : public testing::Test {
 
 TEST_F(ThumbnailDatabaseTest, AddIconMapping) {
   ThumbnailDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
   db.BeginTransaction();
 
   std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
@@ -257,7 +257,7 @@ TEST_F(ThumbnailDatabaseTest, AddIconMapping) {
 
 TEST_F(ThumbnailDatabaseTest, UpdateIconMapping) {
   ThumbnailDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
   db.BeginTransaction();
 
   GURL url("http://google.com");
@@ -286,7 +286,7 @@ TEST_F(ThumbnailDatabaseTest, UpdateIconMapping) {
 
 TEST_F(ThumbnailDatabaseTest, DeleteIconMappings) {
   ThumbnailDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
   db.BeginTransaction();
 
   std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
@@ -318,7 +318,7 @@ TEST_F(ThumbnailDatabaseTest, DeleteIconMappings) {
 
 TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURL) {
   ThumbnailDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
   db.BeginTransaction();
 
   std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
@@ -347,7 +347,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURL) {
 TEST_F(ThumbnailDatabaseTest, RetainDataForPageUrls) {
   ThumbnailDatabase db;
 
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
 
   db.BeginTransaction();
 
@@ -397,7 +397,7 @@ TEST_F(ThumbnailDatabaseTest, RetainDataForPageUrls) {
 // rows from the database.
 TEST_F(ThumbnailDatabaseTest, DeleteFavicon) {
   ThumbnailDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
   db.BeginTransaction();
 
   std::vector<unsigned char> data1(kBlob1, kBlob1 + sizeof(kBlob1));
@@ -421,7 +421,7 @@ TEST_F(ThumbnailDatabaseTest, DeleteFavicon) {
 
 TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
   ThumbnailDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
   db.BeginTransaction();
 
   // Add a favicon
@@ -489,7 +489,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
 // Test result of GetIconMappingsForPageURL when an icon type is passed in.
 TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLWithIconType) {
   ThumbnailDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
   db.BeginTransaction();
 
   GURL url("http://google.com");
@@ -553,7 +553,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLWithIconType) {
 
 TEST_F(ThumbnailDatabaseTest, HasMappingFor) {
   ThumbnailDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
   db.BeginTransaction();
 
   std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
@@ -604,7 +604,7 @@ TEST_F(ThumbnailDatabaseTest, HasMappingFor) {
 
 TEST_F(ThumbnailDatabaseTest, CloneIconMappings) {
   ThumbnailDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
   db.BeginTransaction();
 
   std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
@@ -669,7 +669,7 @@ TEST_F(ThumbnailDatabaseTest, CloneIconMappings) {
 
 TEST_F(ThumbnailDatabaseTest, IconMappingEnumerator) {
   ThumbnailDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
   db.BeginTransaction();
 
   std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
@@ -848,7 +848,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
   // TODO(shess): Merge with the load-dump code when that lands.
   {
     ThumbnailDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
     db.BeginTransaction();
 
     std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
@@ -872,7 +872,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
   // Test that the contents make sense after clean open.
   {
     ThumbnailDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
 
     std::vector<IconMapping> icon_mappings;
     EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url1, &icon_mappings));
@@ -923,7 +923,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
     sql::ScopedErrorIgnorer ignore_errors;
     ignore_errors.IgnoreError(SQLITE_CORRUPT);
     ThumbnailDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
 
     // Data for page_url2 was deleted, but the index entry remains,
     // this will throw SQLITE_CORRUPT.  The corruption handler will
@@ -947,7 +947,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
   // Database should also be recovered at higher levels.
   {
     ThumbnailDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
 
     std::vector<IconMapping> icon_mappings;
 
@@ -990,7 +990,7 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
     sql::ScopedErrorIgnorer ignore_errors;
     ignore_errors.IgnoreError(SQLITE_CORRUPT);
     ThumbnailDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+    ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
 
     std::vector<IconMapping> icon_mappings;
 

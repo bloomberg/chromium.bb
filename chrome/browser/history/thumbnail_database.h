@@ -15,23 +15,13 @@
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 
-struct ThumbnailScore;
-class SkBitmap;
-
 namespace base {
 class FilePath;
 class RefCountedMemory;
 class Time;
 }
 
-namespace gfx {
-class Image;
-}
-
 namespace history {
-
-class ExpireHistoryBackend;
-class HistoryPublisher;
 
 // This database interface is owned by the history backend and runs on the
 // history thread. It is a totally separate component from history partially
@@ -48,7 +38,6 @@ class ThumbnailDatabase {
   // Must be called after creation but before any other methods are called.
   // When not INIT_OK, no other functions should be called.
   sql::InitStatus Init(const base::FilePath& db_name,
-                       const HistoryPublisher* history_publisher,
                        URLDatabase* url_database);
 
   // Open database on a given filename. If the file does not exist,
@@ -249,16 +238,12 @@ class ThumbnailDatabase {
   bool RetainDataForPageUrls(const std::vector<GURL>& urls_to_keep);
 
  private:
-  friend class ExpireHistoryBackend;
-  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest,
-                           GetFaviconAfterMigrationToTopSites);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version3);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version4);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version5);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version6);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version7);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, RetainDataForPageUrls);
-  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationIconMapping);
 
   // Creates the thumbnail table, returning true if the table already exists
   // or was successfully created.
@@ -294,12 +279,6 @@ class ThumbnailDatabase {
 
   sql::Connection db_;
   sql::MetaTable meta_table_;
-
-  // This object is created and managed by the history backend. We maintain an
-  // opaque pointer to the object for our use.
-  // This can be NULL if there are no indexers registered to receive indexing
-  // data from us.
-  const HistoryPublisher* history_publisher_;
 };
 
 }  // namespace history

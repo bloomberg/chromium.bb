@@ -8,23 +8,6 @@
 
 namespace history {
 
-const char* const HistoryPublisher::kThumbnailImageFormat = "image/jpeg";
-
-void HistoryPublisher::PublishPageThumbnail(
-    const std::vector<unsigned char>& thumbnail, const GURL& url,
-    const base::Time& time) const {
-  PageData page_data = {
-    time,
-    url,
-    NULL,
-    NULL,
-    kThumbnailImageFormat,
-    &thumbnail,
-  };
-
-  PublishDataToIndexers(page_data);
-}
-
 void HistoryPublisher::PublishPageContent(const base::Time& time,
                                           const GURL& url,
                                           const string16& title,
@@ -34,8 +17,6 @@ void HistoryPublisher::PublishPageContent(const base::Time& time,
     url,
     contents.c_str(),
     title.c_str(),
-    NULL,
-    NULL,
   };
 
   PublishDataToIndexers(page_data);

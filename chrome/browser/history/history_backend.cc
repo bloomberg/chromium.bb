@@ -634,7 +634,6 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   // sort.
   thumbnail_db_.reset(new ThumbnailDatabase());
   if (thumbnail_db_->Init(thumbnail_name,
-                          history_publisher_.get(),
                           db_.get()) != sql::INIT_OK) {
     // Unlike the main database, we don't error out when the database is too
     // new because this error is much less severe. Generally, this shouldn't

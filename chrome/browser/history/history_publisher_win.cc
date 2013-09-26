@@ -93,22 +93,18 @@ void HistoryPublisher::PublishDataToIndexers(const PageData& page_data)
     const {
   double var_time = TimeToUTCVariantTime(page_data.time);
 
-  CComSafeArray<unsigned char> thumbnail_arr;
-  if (page_data.thumbnail) {
-    for (size_t i = 0; i < page_data.thumbnail->size(); ++i)
-      thumbnail_arr.Add((*page_data.thumbnail)[i]);
-  }
-
   // Send data to registered indexers.
   base::win::ScopedVariant time(var_time, VT_DATE);
   base::win::ScopedBstr url(ASCIIToWide(page_data.url.spec()).c_str());
   base::win::ScopedBstr html(page_data.html);
   base::win::ScopedBstr title(page_data.title);
-  // Don't send a NULL string through ASCIIToWide.
-  base::win::ScopedBstr format(page_data.thumbnail_format ?
-      ASCIIToWide(page_data.thumbnail_format).c_str() :
-      NULL);
+
+  // No clients send thumbnail data anymore, these are needed only to
+  // retain the interface.
+  base::win::ScopedBstr format(NULL);
+  CComSafeArray<unsigned char> thumbnail_arr;
   base::win::ScopedVariant psa(thumbnail_arr.m_psa);
+
   for (size_t i = 0; i < indexers_.size(); ++i) {
     indexers_[i]->SendPageData(time, url, html, title, format, psa);
   }

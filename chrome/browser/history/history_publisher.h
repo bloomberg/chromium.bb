@@ -38,8 +38,6 @@ class HistoryPublisher {
   // there are none registered. On false, no other function should be called.
   bool Init();
 
-  void PublishPageThumbnail(const std::vector<unsigned char>& thumbnail,
-                            const GURL& url, const base::Time& time) const;
   void PublishPageContent(const base::Time& time, const GURL& url,
                           const string16& title,
                           const string16& contents) const;
@@ -50,8 +48,6 @@ class HistoryPublisher {
     const GURL& url;
     const char16* html;
     const char16* title;
-    const char* thumbnail_format;
-    const std::vector<unsigned char>* thumbnail;
   };
 
   void PublishDataToIndexers(const PageData& page_data) const;

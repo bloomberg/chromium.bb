@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/dump_without_crashing.h"
@@ -643,8 +642,7 @@ bool ThumbnailDatabase::IconMappingEnumerator::GetNextIconMapping(
   return true;
 }
 
-ThumbnailDatabase::ThumbnailDatabase()
-    : history_publisher_(NULL) {
+ThumbnailDatabase::ThumbnailDatabase() {
 }
 
 sql::InitStatus ThumbnailDatabase::CantUpgradeToVersion(int cur_version) {
@@ -660,9 +658,7 @@ ThumbnailDatabase::~ThumbnailDatabase() {
 
 sql::InitStatus ThumbnailDatabase::Init(
     const base::FilePath& db_name,
-    const HistoryPublisher* history_publisher,
     URLDatabase* url_db) {
-  history_publisher_ = history_publisher;
   sql::InitStatus status = OpenDatabase(&db_, db_name);
   if (status != sql::INIT_OK)
     return status;
