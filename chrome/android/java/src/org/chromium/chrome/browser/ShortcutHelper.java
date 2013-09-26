@@ -7,7 +7,9 @@ package org.chromium.chrome.browser;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
@@ -19,8 +21,9 @@ import java.util.UUID;
  * This is a helper class to create shortcuts on the Android home screen.
  */
 public class ShortcutHelper {
-    public static final String EXTRA_ID = "webapp_id";
-    public static final String EXTRA_URL = "webapp_url";
+    public static final String EXTRA_ID = "org.chromium.chrome.browser.webapp_id";
+    public static final String EXTRA_MAC = "org.chromium.chrome.browser.webapp_mac";
+    public static final String EXTRA_URL = "org.chromium.chrome.browser.webapp_url";
 
     private static String sFullScreenAction;
 
@@ -65,6 +68,13 @@ public class ShortcutHelper {
             shortcutIntent.setAction(sFullScreenAction);
             shortcutIntent.putExtra(EXTRA_URL, url);
             shortcutIntent.putExtra(EXTRA_ID, UUID.randomUUID().toString());
+
+            // The only reason we convert to a String here is because Android inexplicably eats a
+            // byte[] when adding the shortcut -- the Bundle received by the launched Activity even
+            // lacks the key for the extra.
+            byte[] mac = WebappAuthenticator.getMacForUrl(context, url);
+            String encodedMac = Base64.encodeToString(mac, Base64.DEFAULT);
+            shortcutIntent.putExtra(EXTRA_MAC, encodedMac);
         } else {
             // Add the shortcut as a launcher icon to open in the browser Activity.
             shortcutIntent = BookmarkUtils.createShortcutIntent(context, url);
