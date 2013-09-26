@@ -83,53 +83,34 @@ bool FileBrowserPrivateAddMountFunction::RunImpl() {
                    Params::ToString(params->volume_type).c_str());
   set_log_on_completion(true);
 
-  switch (params->volume_type) {
-    case Params::VOLUME_TYPE_DRIVE: {
-      // Dispatch fake 'mounted' event because JS code depends on it.
-      // TODO(hashimoto): Remove this redanduncy.
-      file_manager::VolumeManager::Get(profile_)->OnFileSystemMounted();
-
-      // Pass back the drive mount point path as source path.
-      const std::string& drive_path =
-          drive::util::GetDriveMountPointPathAsString();
-      SetResult(new base::StringValue(drive_path));
-      SendResponse(true);
-      return true;
-    }
-
-    case Params::VOLUME_TYPE_ARCHIVE: {
-      const base::FilePath path = file_manager::util::GetLocalPathFromURL(
-          render_view_host(), profile(), GURL(params->source));
-
-      if (path.empty())
-        return false;
-
-      const base::FilePath::StringType display_name = path.BaseName().value();
-
-      // Check if the source path is under Drive cache directory.
-      if (drive::util::IsUnderDriveMountPoint(path)) {
-        drive::FileSystemInterface* file_system =
-            drive::util::GetFileSystemByProfile(profile());
-        if (!file_system)
-          return false;
-
-        file_system->MarkCacheFileAsMounted(
-            drive::util::ExtractDrivePath(path),
-            base::Bind(&FileBrowserPrivateAddMountFunction::OnMountedStateSet,
-                       this, display_name));
-      } else {
-        OnMountedStateSet(display_name, drive::FILE_ERROR_OK, path);
-      }
-      return true;
-    }
-
-    case Params::VOLUME_TYPE_NONE:
-      // Invalid mount type.
-      break;
+  if (params->volume_type != Params::VOLUME_TYPE_ARCHIVE) {
+    error_ = "Invalid mount type";
+    return false;
   }
 
-  error_ = "Invalid mount type";
-  return false;
+  const base::FilePath path = file_manager::util::GetLocalPathFromURL(
+      render_view_host(), profile(), GURL(params->source));
+
+  if (path.empty())
+    return false;
+
+  const base::FilePath::StringType display_name = path.BaseName().value();
+
+  // Check if the source path is under Drive cache directory.
+  if (drive::util::IsUnderDriveMountPoint(path)) {
+    drive::FileSystemInterface* file_system =
+        drive::util::GetFileSystemByProfile(profile());
+    if (!file_system)
+      return false;
+
+    file_system->MarkCacheFileAsMounted(
+        drive::util::ExtractDrivePath(path),
+        base::Bind(&FileBrowserPrivateAddMountFunction::OnMountedStateSet,
+                   this, display_name));
+  } else {
+    OnMountedStateSet(display_name, drive::FILE_ERROR_OK, path);
+  }
+  return true;
 }
 
 void FileBrowserPrivateAddMountFunction::OnMountedStateSet(
