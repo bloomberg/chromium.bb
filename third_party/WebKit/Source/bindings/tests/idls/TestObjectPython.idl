@@ -29,16 +29,21 @@
  */
 
 interface TestObjectPython {
-    readonly attribute Date readOnlyDateAttribute;
-    readonly attribute boolean readOnlyBooleanAttribute;
-    readonly attribute byte readOnlyByteAttribute;
-    readonly attribute double readOnlyDoubleAttribute;
-    readonly attribute float readOnlyFloatAttribute;
-    readonly attribute long readOnlyLongAttribute;
-    readonly attribute long long readOnlyLongLongAttribute;
-    readonly attribute octet readOnlyOctetAttribute;
-    readonly attribute short readOnlyShortAttribute;
-    readonly attribute unsigned long readOnlyUnsignedLongAttribute;
-    readonly attribute unsigned long long readOnlyUnsignedLongLongAttribute;
-    readonly attribute unsigned short readOnlyUnsignedShortAttribute;
+    readonly attribute Date readonlyDateAttribute;
+    readonly attribute boolean readonlyBooleanAttribute;
+    readonly attribute byte readonlyByteAttribute;
+    readonly attribute double readonlyDoubleAttribute;
+    readonly attribute float readonlyFloatAttribute;
+    readonly attribute long readonlyLongAttribute;
+    readonly attribute long long readonlyLongLongAttribute;
+    readonly attribute octet readonlyOctetAttribute;
+    readonly attribute short readonlyShortAttribute;
+    readonly attribute unsigned long readonlyUnsignedLongAttribute;
+    readonly attribute unsigned long long readonlyUnsignedLongLongAttribute;
+    readonly attribute unsigned short readonlyUnsignedShortAttribute;
+    // Non-wrapper types
+    readonly attribute DOMString readonlyDOMStringAttribute;
+    readonly attribute DOMTimeStamp readonlyDOMTimeStampAttribute;
+    readonly attribute SerializedScriptValue readonlySerializedScriptValueAttribute;
+    readonly attribute any readonlyAnyAttribute;
 };

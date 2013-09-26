@@ -1643,9 +1643,9 @@ sub ShouldKeepAttributeAlive
 
     return 1 if $attribute->extendedAttributes->{"KeepAttributeAliveForGC"};
 
-    # Basically, for readonly or replaceable attributes, we have to guarantee
-    # that JS wrappers don't get garbage-collected prematually when their
-    # lifetime is strongly tied to their owner.
+    # For readonly attributes (including Replaceable), as a general rule, for
+    # performance reasons we keep the attribute wrapper alive while the owner
+    # wrapper is alive, because the attribute never changes.
     return 0 if !IsWrapperType($returnType);
     return 0 if !IsReadonly($attribute) && !$attribute->extendedAttributes->{"Replaceable"};
 
@@ -5098,8 +5098,10 @@ sub GetNativeType
     return "bool" if $type eq "boolean";
 
     if (($type eq "DOMString" || IsEnumType($type)) and $isParameter) {
-        # FIXME: This implements [TreatNullAs=NullString] and [TreatUndefinedAs=NullString],
-        # but the Web IDL spec requires [TreatNullAs=EmptyString] and [TreatUndefinedAs=EmptyString].
+        # Blink uses the non-standard identifier NullString instead of Web IDL
+        # standard EmptyString, in [TreatNullAs=NullString] and [TreatUndefinedAs=NullString],
+        # and does not support [TreatUndefinedAs=Null] or [TreatUndefinedAs=Missing]
+        # https://sites.google.com/a/chromium.org/dev/blink/webidl/blink-idl-extended-attributes#TOC-TreatNullAs-a-p-TreatUndefinedAs-a-p-
         my $mode = "";
         if (($extendedAttributes->{"TreatNullAs"} and $extendedAttributes->{"TreatNullAs"} eq "NullString") and ($extendedAttributes->{"TreatUndefinedAs"} and $extendedAttributes->{"TreatUndefinedAs"} eq "NullString")) {
             $mode = "WithUndefinedOrNullCheck";

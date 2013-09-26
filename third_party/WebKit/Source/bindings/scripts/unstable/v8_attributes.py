@@ -64,23 +64,31 @@ def generate_attributes_common(interface):
 
 def generate_attribute_and_includes(attribute):
     idl_type = attribute.data_type
-    # FIXME: need to check should_keep_attribute_alive, but for now sufficient
-    # to check if primitive.
-    should_keep_attribute_alive = not v8_types.primitive_type(idl_type)
-    if should_keep_attribute_alive:
-        return_v8_value_statement = None  # unused
-        includes = v8_types.includes_for_type(idl_type)
-        includes.add('bindings/v8/V8HiddenPropertyName.h')
-    else:
-        cpp_value = 'imp->%s()' % uncapitalize(attribute.name)
-        return_v8_value_statement, includes = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='info', isolate='info.GetIsolate()', extended_attributes=attribute.extended_attributes)
+    this_should_keep_attribute_alive = should_keep_attribute_alive(attribute)
     contents = {
         'name': attribute.name,
         'conditional_string': generate_conditional_string(attribute),
         'cpp_method_name': cpp_method_name(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
-        'should_keep_attribute_alive': should_keep_attribute_alive,
-        'return_v8_value_statement': return_v8_value_statement,
+        'should_keep_attribute_alive': this_should_keep_attribute_alive,
         'v8_type': v8_types.v8_type(idl_type),
     }
+    if this_should_keep_attribute_alive:
+        includes = v8_types.includes_for_type(idl_type)
+        includes.add('bindings/v8/V8HiddenPropertyName.h')
+    else:
+        cpp_value = 'imp->%s()' % uncapitalize(attribute.name)
+        return_v8_value_statement, includes = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='info', isolate='info.GetIsolate()', extended_attributes=attribute.extended_attributes)
+        contents['return_v8_value_statement'] = return_v8_value_statement
     return contents, includes
+
+
+def should_keep_attribute_alive(attribute):
+    idl_type = attribute.data_type
+    extended_attributes = attribute.extended_attributes
+    return (
+        'KeepAttributeAliveForGC' in extended_attributes or
+        # For readonly attributes, for performance reasons we keep the attribute
+        # wrapper alive while the owner wrapper is alive, because the attribute
+        # never changes. (There are some exceptions.)
+        (attribute.is_read_only and v8_types.wrapper_type(idl_type)))

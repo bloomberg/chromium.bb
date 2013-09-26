@@ -23,6 +23,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptController.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
@@ -59,189 +60,249 @@ namespace TestObjectPythonV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static void readOnlyDateAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyDateAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValue(info, v8DateOrNull(imp->readOnlyDateAttribute(), info.GetIsolate()));
+    v8SetReturnValue(info, v8DateOrNull(imp->readonlyDateAttribute(), info.GetIsolate()));
     return;
 }
 
-static void readOnlyDateAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyDateAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readOnlyDateAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::readonlyDateAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void readOnlyBooleanAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyBooleanAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueBool(info, imp->readOnlyBooleanAttribute());
+    v8SetReturnValueBool(info, imp->readonlyBooleanAttribute());
     return;
 }
 
-static void readOnlyBooleanAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyBooleanAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readOnlyBooleanAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::readonlyBooleanAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void readOnlyByteAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyByteAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->readOnlyByteAttribute());
+    v8SetReturnValueInt(info, imp->readonlyByteAttribute());
     return;
 }
 
-static void readOnlyByteAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyByteAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readOnlyByteAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::readonlyByteAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void readOnlyDoubleAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyDoubleAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValue(info, imp->readOnlyDoubleAttribute());
+    v8SetReturnValue(info, imp->readonlyDoubleAttribute());
     return;
 }
 
-static void readOnlyDoubleAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyDoubleAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readOnlyDoubleAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::readonlyDoubleAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void readOnlyFloatAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyFloatAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValue(info, imp->readOnlyFloatAttribute());
+    v8SetReturnValue(info, imp->readonlyFloatAttribute());
     return;
 }
 
-static void readOnlyFloatAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyFloatAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readOnlyFloatAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::readonlyFloatAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void readOnlyLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->readOnlyLongAttribute());
+    v8SetReturnValueInt(info, imp->readonlyLongAttribute());
     return;
 }
 
-static void readOnlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readOnlyLongAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::readonlyLongAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void readOnlyLongLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyLongLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValue(info, static_cast<double>(imp->readOnlyLongLongAttribute()));
+    v8SetReturnValue(info, static_cast<double>(imp->readonlyLongLongAttribute()));
     return;
 }
 
-static void readOnlyLongLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyLongLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readOnlyLongLongAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::readonlyLongLongAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void readOnlyOctetAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyOctetAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueUnsigned(info, imp->readOnlyOctetAttribute());
+    v8SetReturnValueUnsigned(info, imp->readonlyOctetAttribute());
     return;
 }
 
-static void readOnlyOctetAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyOctetAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readOnlyOctetAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::readonlyOctetAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void readOnlyShortAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyShortAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->readOnlyShortAttribute());
+    v8SetReturnValueInt(info, imp->readonlyShortAttribute());
     return;
 }
 
-static void readOnlyShortAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyShortAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readOnlyShortAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::readonlyShortAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void readOnlyUnsignedLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyUnsignedLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueUnsigned(info, imp->readOnlyUnsignedLongAttribute());
+    v8SetReturnValueUnsigned(info, imp->readonlyUnsignedLongAttribute());
     return;
 }
 
-static void readOnlyUnsignedLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyUnsignedLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readOnlyUnsignedLongAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::readonlyUnsignedLongAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void readOnlyUnsignedLongLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyUnsignedLongLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValue(info, static_cast<double>(imp->readOnlyUnsignedLongLongAttribute()));
+    v8SetReturnValue(info, static_cast<double>(imp->readonlyUnsignedLongLongAttribute()));
     return;
 }
 
-static void readOnlyUnsignedLongLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyUnsignedLongLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readOnlyUnsignedLongLongAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::readonlyUnsignedLongLongAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void readOnlyUnsignedShortAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyUnsignedShortAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueUnsigned(info, imp->readOnlyUnsignedShortAttribute());
+    v8SetReturnValueUnsigned(info, imp->readonlyUnsignedShortAttribute());
     return;
 }
 
-static void readOnlyUnsignedShortAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void readonlyUnsignedShortAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readOnlyUnsignedShortAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::readonlyUnsignedShortAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void readonlyDOMStringAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->readonlyDOMStringAttribute(), info.GetIsolate());
+    return;
+}
+
+static void readonlyDOMStringAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::readonlyDOMStringAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void readonlyDOMTimeStampAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValue(info, static_cast<double>(imp->readonlyDOMTimeStampAttribute()));
+    return;
+}
+
+static void readonlyDOMTimeStampAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::readonlyDOMTimeStampAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void readonlySerializedScriptValueAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValue(info, imp->readonlySerializedScriptValueAttribute() ? imp->readonlySerializedScriptValueAttribute()->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
+    return;
+}
+
+static void readonlySerializedScriptValueAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::readonlySerializedScriptValueAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void readonlyAnyAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValue(info, imp->readonlyAnyAttribute().v8Value());
+    return;
+}
+
+static void readonlyAnyAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::readonlyAnyAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 } // namespace TestObjectPythonV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttributes[] = {
-    {"readOnlyDateAttribute", TestObjectPythonV8Internal::readOnlyDateAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"readOnlyBooleanAttribute", TestObjectPythonV8Internal::readOnlyBooleanAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"readOnlyByteAttribute", TestObjectPythonV8Internal::readOnlyByteAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"readOnlyDoubleAttribute", TestObjectPythonV8Internal::readOnlyDoubleAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"readOnlyFloatAttribute", TestObjectPythonV8Internal::readOnlyFloatAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"readOnlyLongAttribute", TestObjectPythonV8Internal::readOnlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"readOnlyLongLongAttribute", TestObjectPythonV8Internal::readOnlyLongLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"readOnlyOctetAttribute", TestObjectPythonV8Internal::readOnlyOctetAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"readOnlyShortAttribute", TestObjectPythonV8Internal::readOnlyShortAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"readOnlyUnsignedLongAttribute", TestObjectPythonV8Internal::readOnlyUnsignedLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"readOnlyUnsignedLongLongAttribute", TestObjectPythonV8Internal::readOnlyUnsignedLongLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"readOnlyUnsignedShortAttribute", TestObjectPythonV8Internal::readOnlyUnsignedShortAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyDateAttribute", TestObjectPythonV8Internal::readonlyDateAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyBooleanAttribute", TestObjectPythonV8Internal::readonlyBooleanAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyByteAttribute", TestObjectPythonV8Internal::readonlyByteAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyDoubleAttribute", TestObjectPythonV8Internal::readonlyDoubleAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyFloatAttribute", TestObjectPythonV8Internal::readonlyFloatAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyLongAttribute", TestObjectPythonV8Internal::readonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyLongLongAttribute", TestObjectPythonV8Internal::readonlyLongLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyOctetAttribute", TestObjectPythonV8Internal::readonlyOctetAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyShortAttribute", TestObjectPythonV8Internal::readonlyShortAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyUnsignedLongAttribute", TestObjectPythonV8Internal::readonlyUnsignedLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyUnsignedLongLongAttribute", TestObjectPythonV8Internal::readonlyUnsignedLongLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyUnsignedShortAttribute", TestObjectPythonV8Internal::readonlyUnsignedShortAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyDOMStringAttribute", TestObjectPythonV8Internal::readonlyDOMStringAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyDOMTimeStampAttribute", TestObjectPythonV8Internal::readonlyDOMTimeStampAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlySerializedScriptValueAttribute", TestObjectPythonV8Internal::readonlySerializedScriptValueAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyAnyAttribute", TestObjectPythonV8Internal::readonlyAnyAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
