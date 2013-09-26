@@ -597,6 +597,7 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
       error = NativeFileUtil::CopyOrMoveFile(
           src_local_path,
           dest_local_path,
+          option,
           true /* copy */);
     } else {  // non-overwrite
       error = CreateFile(context, src_local_path,
@@ -702,7 +703,8 @@ PlatformFileError ObfuscatedFileUtil::CopyInForeignFile(
     base::FilePath dest_local_path = DataPathToLocalPath(
         dest_url.origin(), dest_url.type(), dest_file_info.data_path);
     error = NativeFileUtil::CopyOrMoveFile(
-        src_file_path, dest_local_path, true);
+        src_file_path, dest_local_path,
+        FileSystemOperation::OPTION_NONE, true);
   } else {
     error = CreateFile(context, src_file_path,
                        dest_url.origin(), dest_url.type(),
@@ -1100,7 +1102,8 @@ PlatformFileError ObfuscatedFileUtil::CreateFile(
     DCHECK(!file_flags);
     DCHECK(!handle);
     error = NativeFileUtil::CopyOrMoveFile(
-        src_file_path, dest_local_path, true /* copy */);
+        src_file_path, dest_local_path,
+        FileSystemOperation::OPTION_NONE, true /* copy */);
     created = true;
   } else {
     if (base::PathExists(dest_local_path)) {

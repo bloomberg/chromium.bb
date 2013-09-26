@@ -225,10 +225,12 @@ TEST_F(NativeFileUtilTest, CopyFile) {
   EXPECT_EQ(1020, GetSize(from_file));
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            NativeFileUtil::CopyOrMoveFile(from_file, to_file1, true));
+            NativeFileUtil::CopyOrMoveFile(
+                from_file, to_file1, FileSystemOperation::OPTION_NONE, true));
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            NativeFileUtil::CopyOrMoveFile(from_file, to_file2, true));
+            NativeFileUtil::CopyOrMoveFile(
+                from_file, to_file2, FileSystemOperation::OPTION_NONE, true));
 
   EXPECT_TRUE(FileExists(from_file));
   EXPECT_EQ(1020, GetSize(from_file));
@@ -243,32 +245,37 @@ TEST_F(NativeFileUtilTest, CopyFile) {
   ASSERT_TRUE(base::DirectoryExists(dir));
   base::FilePath to_dir_file = dir.AppendASCII("file");
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            NativeFileUtil::CopyOrMoveFile(from_file, to_dir_file, true));
+            NativeFileUtil::CopyOrMoveFile(
+                from_file, to_dir_file,
+                FileSystemOperation::OPTION_NONE, true));
   EXPECT_TRUE(FileExists(to_dir_file));
   EXPECT_EQ(1020, GetSize(to_dir_file));
 
   // Following tests are error checking.
   // Source doesn't exist.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-            NativeFileUtil::CopyOrMoveFile(Path("nonexists"), Path("file"),
-                                           true));
+            NativeFileUtil::CopyOrMoveFile(
+                Path("nonexists"), Path("file"),
+                FileSystemOperation::OPTION_NONE, true));
 
   // Source is not a file.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE,
-            NativeFileUtil::CopyOrMoveFile(dir, Path("file"), true));
+            NativeFileUtil::CopyOrMoveFile(
+                dir, Path("file"), FileSystemOperation::OPTION_NONE, true));
   // Destination is not a file.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
-            NativeFileUtil::CopyOrMoveFile(from_file, dir, true));
+            NativeFileUtil::CopyOrMoveFile(
+                from_file, dir, FileSystemOperation::OPTION_NONE, true));
   // Destination's parent doesn't exist.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-            NativeFileUtil::CopyOrMoveFile(from_file,
-                                           Path("nodir").AppendASCII("file"),
-                                           true));
+            NativeFileUtil::CopyOrMoveFile(
+                from_file, Path("nodir").AppendASCII("file"),
+                FileSystemOperation::OPTION_NONE, true));
   // Destination's parent is a file.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-            NativeFileUtil::CopyOrMoveFile(from_file,
-                                           Path("tofile1").AppendASCII("file"),
-                                           true));
+            NativeFileUtil::CopyOrMoveFile(
+                from_file, Path("tofile1").AppendASCII("file"),
+                FileSystemOperation::OPTION_NONE, true));
 }
 
 TEST_F(NativeFileUtilTest, MoveFile) {
@@ -285,7 +292,8 @@ TEST_F(NativeFileUtilTest, MoveFile) {
   EXPECT_EQ(1020, GetSize(from_file));
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            NativeFileUtil::CopyOrMoveFile(from_file, to_file, false));
+            NativeFileUtil::CopyOrMoveFile(
+                from_file, to_file, FileSystemOperation::OPTION_NONE, false));
 
   EXPECT_FALSE(FileExists(from_file));
   EXPECT_TRUE(FileExists(to_file));
@@ -302,7 +310,9 @@ TEST_F(NativeFileUtilTest, MoveFile) {
   ASSERT_TRUE(base::DirectoryExists(dir));
   base::FilePath to_dir_file = dir.AppendASCII("file");
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            NativeFileUtil::CopyOrMoveFile(from_file, to_dir_file, false));
+            NativeFileUtil::CopyOrMoveFile(
+                from_file, to_dir_file,
+                FileSystemOperation::OPTION_NONE, false));
   EXPECT_FALSE(FileExists(from_file));
   EXPECT_TRUE(FileExists(to_dir_file));
   EXPECT_EQ(1020, GetSize(to_dir_file));
@@ -310,32 +320,73 @@ TEST_F(NativeFileUtilTest, MoveFile) {
   // Following is error checking.
   // Source doesn't exist.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-            NativeFileUtil::CopyOrMoveFile(Path("nonexists"), Path("file"),
-                                           false));
+            NativeFileUtil::CopyOrMoveFile(
+                Path("nonexists"), Path("file"),
+                FileSystemOperation::OPTION_NONE, false));
 
   // Source is not a file.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE,
-            NativeFileUtil::CopyOrMoveFile(dir, Path("file"), false));
+            NativeFileUtil::CopyOrMoveFile(
+                dir, Path("file"), FileSystemOperation::OPTION_NONE, false));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::EnsureFileExists(from_file, &created));
   ASSERT_TRUE(FileExists(from_file));
   // Destination is not a file.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
-            NativeFileUtil::CopyOrMoveFile(from_file, dir, false));
+            NativeFileUtil::CopyOrMoveFile(
+                from_file, dir, FileSystemOperation::OPTION_NONE, false));
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::EnsureFileExists(from_file, &created));
   ASSERT_TRUE(FileExists(from_file));
   // Destination's parent doesn't exist.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-            NativeFileUtil::CopyOrMoveFile(from_file,
-                                           Path("nodir").AppendASCII("file"),
-                                           false));
+            NativeFileUtil::CopyOrMoveFile(
+                from_file, Path("nodir").AppendASCII("file"),
+                FileSystemOperation::OPTION_NONE, false));
   // Destination's parent is a file.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-            NativeFileUtil::CopyOrMoveFile(from_file,
-                                           Path("tofile1").AppendASCII("file"),
-                                           false));
+            NativeFileUtil::CopyOrMoveFile(
+                from_file, Path("tofile1").AppendASCII("file"),
+                FileSystemOperation::OPTION_NONE, false));
+}
+
+TEST_F(NativeFileUtilTest, PreserveLastModified) {
+  base::FilePath from_file = Path("fromfile");
+  base::FilePath to_file1 = Path("tofile1");
+  base::FilePath to_file2 = Path("tofile2");
+  bool created = false;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            NativeFileUtil::EnsureFileExists(from_file, &created));
+  ASSERT_TRUE(created);
+  EXPECT_TRUE(FileExists(from_file));
+
+  base::PlatformFileInfo file_info1;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            NativeFileUtil::GetFileInfo(from_file, &file_info1));
+
+  // Test for copy.
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            NativeFileUtil::CopyOrMoveFile(
+                from_file, to_file1,
+                FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED, true));
+
+  base::PlatformFileInfo file_info2;
+  ASSERT_TRUE(FileExists(to_file1));
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            NativeFileUtil::GetFileInfo(to_file1, &file_info2));
+  EXPECT_EQ(file_info1.last_modified, file_info2.last_modified);
+
+  // Test for move.
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            NativeFileUtil::CopyOrMoveFile(
+                from_file, to_file2,
+                FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED, false));
+
+  ASSERT_TRUE(FileExists(to_file2));
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            NativeFileUtil::GetFileInfo(to_file2, &file_info2));
+  EXPECT_EQ(file_info1.last_modified, file_info2.last_modified);
 }
 
 }  // namespace fileapi

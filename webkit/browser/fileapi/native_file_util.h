@@ -53,9 +53,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE NativeFileUtil {
                                           int64 length);
   static bool PathExists(const base::FilePath& path);
   static bool DirectoryExists(const base::FilePath& path);
-  static base::PlatformFileError CopyOrMoveFile(const base::FilePath& src_path,
-                                                const base::FilePath& dest_path,
-                                                bool copy);
+  static base::PlatformFileError CopyOrMoveFile(
+      const base::FilePath& src_path,
+      const base::FilePath& dest_path,
+      FileSystemOperation::CopyOrMoveOption option,
+      bool copy);
   static base::PlatformFileError DeleteFile(const base::FilePath& path);
   static base::PlatformFileError DeleteDirectory(const base::FilePath& path);
 

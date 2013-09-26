@@ -113,6 +113,7 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& src_url,
       const fileapi::FileSystemURL& dest_url,
+      CopyOrMoveOption option,
       bool copy,
       const StatusCallback& callback);
   virtual void CopyInForeignFileOnTaskRunnerThread(
@@ -141,6 +142,7 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& src_url,
       const fileapi::FileSystemURL& dest_url,
+      CopyOrMoveOption option,
       bool copy);
   virtual base::PlatformFileError CopyInForeignFileSync(
       fileapi::FileSystemOperationContext* context,
