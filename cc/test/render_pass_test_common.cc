@@ -29,7 +29,8 @@ void TestRenderPass::AppendSharedQuadState(
 }
 
 void TestRenderPass::AppendOneOfEveryQuadType(
-    cc::ResourceProvider* resource_provider, RenderPass::Id child_pass) {
+    ResourceProvider* resource_provider,
+    RenderPass::Id child_pass) {
   gfx::Rect rect(0, 0, 100, 100);
   gfx::Rect opaque_rect(10, 10, 80, 80);
   const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -202,9 +203,11 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                                 false);
   AppendQuad(transformed_tile_quad.PassAs<DrawQuad>());
 
-  scoped_ptr<cc::TileDrawQuad> tile_quad =
-      cc::TileDrawQuad::Create();
-  tile_quad->SetNew(shared_state.get(),
+  scoped_ptr<cc::SharedQuadState> shared_state2 = cc::SharedQuadState::Create();
+  shared_state->SetAll(gfx::Transform(), rect.size(), rect, rect, false, 1);
+
+  scoped_ptr<cc::TileDrawQuad> tile_quad = cc::TileDrawQuad::Create();
+  tile_quad->SetNew(shared_state2.get(),
                     rect,
                     opaque_rect,
                     resource4,
@@ -225,7 +228,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   }
   scoped_ptr<cc::YUVVideoDrawQuad> yuv_quad =
       cc::YUVVideoDrawQuad::Create();
-  yuv_quad->SetNew(shared_state.get(),
+  yuv_quad->SetNew(shared_state2.get(),
                    rect,
                    opaque_rect,
                    gfx::Size(100, 100),
@@ -235,8 +238,9 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                    plane_resources[3]);
   AppendQuad(yuv_quad.PassAs<DrawQuad>());
 
-  AppendSharedQuadState(transformed_state.Pass());
   AppendSharedQuadState(shared_state.Pass());
+  AppendSharedQuadState(transformed_state.Pass());
+  AppendSharedQuadState(shared_state2.Pass());
 }
 
 }  // namespace cc

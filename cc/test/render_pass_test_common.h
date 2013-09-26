@@ -13,17 +13,17 @@ class ResourceProvider;
 
 namespace cc {
 
-class TestRenderPass : public cc::RenderPass {
+class TestRenderPass : public RenderPass {
  public:
   static scoped_ptr<TestRenderPass> Create() {
     return make_scoped_ptr(new TestRenderPass);
   }
 
-  void AppendQuad(scoped_ptr<cc::DrawQuad> quad);
-  void AppendSharedQuadState(scoped_ptr<cc::SharedQuadState> state);
+  void AppendQuad(scoped_ptr<DrawQuad> quad);
+  void AppendSharedQuadState(scoped_ptr<SharedQuadState> state);
 
-  void AppendOneOfEveryQuadType(
-      cc::ResourceProvider*, RenderPass::Id child_pass);
+  void AppendOneOfEveryQuadType(ResourceProvider* resource_provider,
+                                RenderPass::Id child_pass);
 
  protected:
   TestRenderPass() : RenderPass() {}
