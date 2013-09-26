@@ -94,13 +94,6 @@ Window::~Window() {
   if (parent_)
     parent_->RemoveChild(this);
 
-  // And let the delegate do any post cleanup.
-  // TODO(beng): Figure out if this notification needs to happen here, or if it
-  // can be moved down adjacent to the observer notification. If it has to be
-  // done here, the reason why should be documented.
-  if (delegate_)
-    delegate_->OnWindowDestroyed();
-
   // Destroy transient children, only after we've removed ourselves from our
   // parent, as destroying an active transient child may otherwise attempt to
   // refocus us.
@@ -108,6 +101,9 @@ Window::~Window() {
   STLDeleteElements(&transient_children);
   DCHECK(transient_children_.empty());
 
+  // Delegate and observers need to be notified after transients are deleted.
+  if (delegate_)
+    delegate_->OnWindowDestroyed();
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroyed(this));
 
   // Clear properties.

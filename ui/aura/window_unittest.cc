@@ -4,7 +4,9 @@
 
 #include "ui/aura/window.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -3048,6 +3050,50 @@ TEST_F(WindowTest, OnWindowHierarchyChange) {
     w2.reset();
   }
 
+}
+
+namespace {
+
+// Used by NotifyDelegateAfterDeletingTransients. Adds a string to a vector when
+// OnWindowDestroyed() is invoked so that destruction order can be verified.
+class DestroyedTrackingDelegate : public TestWindowDelegate {
+ public:
+  explicit DestroyedTrackingDelegate(const std::string& name,
+                                     std::vector<std::string>* results)
+      : name_(name),
+        results_(results) {}
+
+  virtual void OnWindowDestroyed() OVERRIDE {
+    results_->push_back(name_);
+  }
+
+ private:
+  const std::string name_;
+  std::vector<std::string>* results_;
+
+  DISALLOW_COPY_AND_ASSIGN(DestroyedTrackingDelegate);
+};
+
+}  // namespace
+
+// Verifies the delegate is notified of destruction after transients are
+// destroyed.
+TEST_F(WindowTest, NotifyDelegateAfterDeletingTransients) {
+  std::vector<std::string> destruction_order;
+
+  DestroyedTrackingDelegate parent_delegate("parent", &destruction_order);
+  scoped_ptr<Window> parent(new Window(&parent_delegate));
+  parent->Init(ui::LAYER_NOT_DRAWN);
+
+  DestroyedTrackingDelegate transient_delegate("transient", &destruction_order);
+  Window* transient = new Window(&transient_delegate);  // Owned by |parent|.
+  transient->Init(ui::LAYER_NOT_DRAWN);
+  parent->AddTransientChild(transient);
+  parent.reset();
+
+  ASSERT_EQ(2u, destruction_order.size());
+  EXPECT_EQ("transient", destruction_order[0]);
+  EXPECT_EQ("parent", destruction_order[1]);
 }
 
 }  // namespace test
