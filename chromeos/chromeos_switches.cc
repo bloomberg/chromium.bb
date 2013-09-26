@@ -88,6 +88,10 @@ const char kEnableChromeAudioSwitching[] = "enable-chrome-audio-switching";
 const char kEnableChromeCaptivePortalDetector[] =
     "enable-chrome-captive-portal-detector";
 
+// Enable to show the indicator about the IME (input method editor) mode
+// on Chrome OS.
+const char kEnableIMEModeIndicator[] = "enable-ime-mode-indicator";
+
 // Enables screensaver extensions.
 const char kEnableScreensaverExtensions[] = "enable-screensaver-extensions";
 
