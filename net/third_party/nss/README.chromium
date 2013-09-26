@@ -120,6 +120,10 @@ Patches:
     patches/cachelocks.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=764646
 
+  * Don't advertise TLS 1.2-only cipher suites in a TLS 1.1 ClientHello.
+    https://bugzilla.mozilla.org/show_bug.cgi?id=919677
+    patches/ciphersuiteversion.patch
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 
