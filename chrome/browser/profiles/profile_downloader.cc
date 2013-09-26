@@ -286,7 +286,15 @@ void ProfileDownloader::StartFetchingOAuth2AccessToken() {
       token_service->GetPrimaryAccountId(), scopes, this);
 }
 
-ProfileDownloader::~ProfileDownloader() {}
+ProfileDownloader::~ProfileDownloader() {
+  // Ensures PO2TS observation is cleared when ProfileDownloader is destructed
+  // before refresh token is available.
+  ProfileOAuth2TokenService* service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(
+          delegate_->GetBrowserProfile());
+  if (service)
+    service->RemoveObserver(this);
+}
 
 void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -378,10 +386,13 @@ void ProfileDownloader::OnDecodeImageFailed(const ImageDecoder* decoder) {
 }
 
 void ProfileDownloader::OnRefreshTokenAvailable(const std::string& account_id) {
-  // TODO(fgorski): Once in multi-login environment we need to filter the
-  // account_id to the one that is exposed on the profile.
-  ProfileOAuth2TokenServiceFactory::GetForProfile(
-      delegate_->GetBrowserProfile())->RemoveObserver(this);
+  ProfileOAuth2TokenService* service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(
+          delegate_->GetBrowserProfile());
+  if (account_id != service->GetPrimaryAccountId())
+    return;
+
+  service->RemoveObserver(this);
   StartFetchingOAuth2AccessToken();
 }
 
