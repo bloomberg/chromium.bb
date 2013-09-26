@@ -837,9 +837,6 @@ void RenderWidgetHostViewAndroid::AttachLayers() {
     return;
 
   content_view_core_->AttachLayer(layer_);
-
-  if (overscroll_effect_)
-    content_view_core_->AttachLayer(overscroll_effect_->root_layer());
 }
 
 void RenderWidgetHostViewAndroid::RemoveLayers() {
@@ -855,7 +852,12 @@ void RenderWidgetHostViewAndroid::RemoveLayers() {
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
   if (!overscroll_effect_)
     return false;
-  return overscroll_effect_->Animate(frame_time);
+
+  bool overscroll_running = overscroll_effect_->Animate(frame_time);
+  if (!overscroll_running)
+    content_view_core_->RemoveLayer(overscroll_effect_->root_layer());
+
+  return overscroll_running;
 }
 
 void RenderWidgetHostViewAndroid::CreateOverscrollEffectIfNecessary() {
@@ -867,9 +869,6 @@ void RenderWidgetHostViewAndroid::CreateOverscrollEffectIfNecessary() {
   // Prevent future creation attempts on failure.
   if (!overscroll_effect_)
     overscroll_effect_enabled_ = false;
-
-  if (overscroll_effect_ && content_view_core_ && are_layers_attached_)
-    content_view_core_->AttachLayer(overscroll_effect_->root_layer());
 }
 
 void RenderWidgetHostViewAndroid::UpdateAnimationSize(
@@ -887,10 +886,16 @@ void RenderWidgetHostViewAndroid::UpdateAnimationSize(
 }
 
 void RenderWidgetHostViewAndroid::ScheduleAnimationIfNecessary() {
-  if (!content_view_core_)
+  if (!content_view_core_ || !overscroll_effect_)
     return;
-  if (overscroll_effect_ && overscroll_effect_->NeedsAnimate())
+
+  if (overscroll_effect_->NeedsAnimate() && are_layers_attached_) {
+    if (!overscroll_effect_->root_layer()->parent())
+      content_view_core_->AttachLayer(overscroll_effect_->root_layer());
     content_view_core_->SetNeedsAnimate();
+  } else {
+    content_view_core_->RemoveLayer(overscroll_effect_->root_layer());
+  }
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfacePostSubBuffer(
