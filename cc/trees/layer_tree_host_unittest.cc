@@ -1675,9 +1675,9 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
         host_impl->SetDiscardBackBufferWhenNotVisible(true);
         break;
       case 1:
-        EXPECT_FALSE(renderer->HaveCachedResourcesForRenderPassId(
+        EXPECT_FALSE(renderer->HasAllocatedResourcesForTesting(
             surface1_render_pass_id));
-        EXPECT_FALSE(renderer->HaveCachedResourcesForRenderPassId(
+        EXPECT_FALSE(renderer->HasAllocatedResourcesForTesting(
             surface2_render_pass_id));
 
         EndTest();
