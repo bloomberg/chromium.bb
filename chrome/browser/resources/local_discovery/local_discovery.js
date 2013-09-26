@@ -311,6 +311,26 @@ cr.define('local_discovery', function() {
   }
 
   /**
+   * Create the DOM for a cloud device described by the device section.
+   * @param {Array.<Object>} devices_list List of devices.
+   */
+  function createCloudDeviceDOM(device) {
+    var devicesDomElement = document.createElement('div');
+
+    var description;
+    if (device.description == '') {
+        description = loadTimeData.getString('noDescription');
+      } else {
+        description = device.description;
+      }
+
+    fillDeviceDescription(devicesDomElement, device.display_name,
+                          description, 'Manage' /*Localize*/,
+                          manageCloudDevice.bind(null, device.id));
+    return devicesDomElement;
+  }
+
+  /**
    * Handle a list of cloud devices available to the user globally.
    * @param {Array.<Object>} devices_list List of devices.
    */
@@ -322,19 +342,7 @@ cr.define('local_discovery', function() {
     $('cloud-devices-loading').hidden = true;
 
     for (var i = 0; i < devicesListLength; i++) {
-      var devicesDomElement = document.createElement('div');
-      devicesContainer.appendChild(devicesDomElement);
-
-      var description;
-      if (devices_list[i].description == '') {
-        description = loadTimeData.getString('noDescription');
-      } else {
-        description = devices_list[i].description;
-      }
-
-      fillDeviceDescription(devicesDomElement, devices_list[i].display_name,
-                            description, 'Manage' /*Localize*/,
-                            manageCloudDevice.bind(null, devices_list[i].id));
+      devicesContainer.appendChild(createCloudDeviceDOM(devices_list[i]));
     }
   }
 
@@ -375,13 +383,13 @@ cr.define('local_discovery', function() {
     }
   }
 
-
   /**
    * Announce that a registration succeeeded.
    */
-  function onRegistrationSuccess() {
+  function onRegistrationSuccess(device_data) {
     hideRegisterOverlay();
-    requestPrinterList();
+    var deviceDOM = createCloudDeviceDOM(device_data);
+    $('cloud-devices').insertBefore(deviceDOM, $('cloud-devices').firstChild);
     recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_SUCCESS);
   }
 

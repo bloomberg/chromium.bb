@@ -385,7 +385,7 @@ void LocalDiscoveryUIHandler::DeviceChanged(
 
     if (name == new_register_device_) {
       new_register_device_.clear();
-      SendRegisterDone();
+      SendRegisterDone(description);
     }
   }
 }
@@ -444,8 +444,16 @@ void LocalDiscoveryUIHandler::SendRegisterError() {
   web_ui()->CallJavascriptFunction("local_discovery.onRegistrationFailed");
 }
 
-void LocalDiscoveryUIHandler::SendRegisterDone() {
-  web_ui()->CallJavascriptFunction("local_discovery.onRegistrationSuccess");
+void LocalDiscoveryUIHandler::SendRegisterDone(
+    const DeviceDescription& device) {
+  base::DictionaryValue printer_value;
+
+  printer_value.SetString("id", device.id);
+  printer_value.SetString("display_name", device.name);
+  printer_value.SetString("description", device.description);
+
+  web_ui()->CallJavascriptFunction("local_discovery.onRegistrationSuccess",
+                                   printer_value);
 }
 
 void LocalDiscoveryUIHandler::SetIsVisible(bool visible) {
