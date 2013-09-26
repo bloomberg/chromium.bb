@@ -108,6 +108,9 @@ void OAuth2LoginManager::StoreOAuth2Tokens(
     const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens) {
   TokenService* token_service = SetupTokenService();
   token_service->UpdateCredentialsWithOAuth2(oauth2_tokens);
+
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnNewRefreshTokenAvaiable(user_profile_));
 }
 
 void OAuth2LoginManager::LoadAndVerifyOAuth2Tokens() {

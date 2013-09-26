@@ -64,6 +64,10 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
     // Raised when merge session state changes.
     virtual void OnSessionRestoreStateChanged(Profile* user_profile,
                                               SessionRestoreState state) {}
+
+    // Raised when a new OAuth2 refresh token is avaialble.
+    virtual void OnNewRefreshTokenAvaiable(Profile* user_profile) {}
+
     // Raised when session's GAIA credentials (SID+LSID) are available to
     // other signed in services.
     virtual void OnSessionAuthenticated(Profile* user_profile) {}
