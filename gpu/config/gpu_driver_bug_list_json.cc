@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.19",
+  "version": "2.20",
   "entries": [
     {
       "id": 1,
@@ -366,17 +366,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
                     "0x0a04", "0x0a16", "0x0a22", "0x0a26", "0x0a2a"],
       "features": [
         "swizzle_rgba_for_async_readpixels"
-      ]
-    },
-    {
-      "id": 28,
-      "cr_bugs": [277817],
-      "description": "Disable use of ANGLE_instanced_arrays on Windows",
-      "os": {
-        "type": "win"
-      },
-      "features": [
-        "disable_angle_instanced_arrays"
       ]
     },
     {
