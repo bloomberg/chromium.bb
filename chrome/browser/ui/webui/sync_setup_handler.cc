@@ -576,8 +576,8 @@ void SyncSetupHandler::SyncStartupFailed() {
   backend_start_timer_.reset();
 
   // Just close the sync overlay (the idea is that the base settings page will
-  // display the current err
-  CloseSyncSetup();
+  // display the current error.)
+  CloseUI();
 }
 
 void SyncSetupHandler::SyncStartupCompleted() {
@@ -627,7 +627,7 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
   // If the sync engine has shutdown for some reason, just close the sync
   // dialog.
   if (!service || !service->sync_initialized()) {
-    CloseSyncSetup();
+    CloseUI();
     return;
   }
 
@@ -638,7 +638,7 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
   if (configuration.sync_nothing) {
     ProfileSyncService::SyncEvent(
         ProfileSyncService::STOP_FROM_ADVANCED_DIALOG);
-    CloseSyncSetup();
+    CloseUI();
     service->OnStopSyncingPermanently();
     service->SetSetupInProgress(false);
     return;
@@ -731,10 +731,7 @@ void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
     // signin) or by directly navigating to settings/syncSetup
     // (http://crbug.com/229836). So just exit and go back to the settings page.
     DLOG(WARNING) << "Cannot display sync setup UI when not signed in";
-    CloseSyncSetup();
-    StringValue page("done");
-    web_ui()->CallJavascriptFunction(
-        "SyncSetupOverlay.showSyncSetupPage", page);
+    CloseUI();
     return;
   }
 
@@ -744,10 +741,7 @@ void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
   // one tab. See crbug.com/261566.
   // Note: The following block will transfer focus to the existing wizard.
   if (IsExistingWizardPresent() && !IsActiveLogin()) {
-    CloseSyncSetup();
-    StringValue page("done");
-    web_ui()->CallJavascriptFunction(
-        "SyncSetupOverlay.showSyncSetupPage", page);
+    CloseUI();
   }
 
   // If a setup wizard is present on this page or another, bring it to focus.
@@ -860,7 +854,7 @@ void SyncSetupHandler::OpenSyncSetup() {
     // because previously working credentials have expired (case 3). Close sync
     // setup including any visible overlays, and display the gaia auth page.
     // Control will be returned to the sync settings page once auth is complete.
-    CloseSyncSetup();
+    CloseUI();
     DisplayGaiaLogin();
     return;
   }
@@ -868,7 +862,7 @@ void SyncSetupHandler::OpenSyncSetup() {
   if (!GetSyncService()) {
     // This can happen if the user directly navigates to /settings/syncSetup.
     DLOG(WARNING) << "Cannot display sync UI when sync is disabled";
-    CloseSyncSetup();
+    CloseUI();
     return;
   }
 
@@ -892,8 +886,10 @@ void SyncSetupHandler::FocusUI() {
 }
 
 void SyncSetupHandler::CloseUI() {
-  DCHECK(IsActiveLogin());
   CloseSyncSetup();
+  StringValue page("done");
+  web_ui()->CallJavascriptFunction(
+      "SyncSetupOverlay.showSyncSetupPage", page);
 }
 
 bool SyncSetupHandler::IsExistingWizardPresent() {

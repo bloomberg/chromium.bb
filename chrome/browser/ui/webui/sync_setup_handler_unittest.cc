@@ -690,7 +690,11 @@ TEST_F(SyncSetupHandlerTest, TestSyncNothing) {
   EXPECT_CALL(*mock_pss_, DisableForUser());
   SetupInitializedProfileSyncService();
   handler_->HandleConfigure(&list_args);
-  ASSERT_EQ(0U, web_ui_.call_data().size());
+
+  // We expect a call to SyncSetupOverlay.showSyncSetupPage.
+  ASSERT_EQ(1U, web_ui_.call_data().size());
+  const TestWebUI::CallData& data = web_ui_.call_data()[0];
+  EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data.function_name);
 }
 
 TEST_F(SyncSetupHandlerTest, TurnOnEncryptAll) {
