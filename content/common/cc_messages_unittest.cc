@@ -136,11 +136,16 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->contents_changed_since_last_frame,
               b->contents_changed_since_last_frame);
     EXPECT_EQ(a->mask_uv_rect.ToString(), b->mask_uv_rect.ToString());
-    EXPECT_EQ(a->filters, b->filters);
-    if (!a->filter || !b->filter)
-        EXPECT_EQ(a->filter, b->filter);
-    else
-        EXPECT_EQ(a->filter->countInputs(), b->filter->countInputs());
+    EXPECT_EQ(a->filters.size(), b->filters.size());
+    for (size_t i = 0; i < a->filters.size(); ++i) {
+      if (a->filters.at(i).type() != cc::FilterOperation::REFERENCE) {
+        EXPECT_EQ(a->filters.at(i), b->filters.at(i));
+      } else {
+        EXPECT_EQ(b->filters.at(i).type(), cc::FilterOperation::REFERENCE);
+        EXPECT_EQ(a->filters.at(i).image_filter()->countInputs(),
+                  b->filters.at(i).image_filter()->countInputs());
+      }
+    }
     EXPECT_EQ(a->background_filters, b->background_filters);
   }
 
@@ -235,13 +240,14 @@ TEST_F(CCMessagesTest, AllQuads) {
   FilterOperations arbitrary_filters1;
   arbitrary_filters1.Append(FilterOperation::CreateGrayscaleFilter(
       arbitrary_float1));
+  skia::RefPtr<SkImageFilter> arbitrary_filter = skia::AdoptRef(
+    new SkBlurImageFilter(arbitrary_sigma, arbitrary_sigma));
+  arbitrary_filters1.Append(
+      cc::FilterOperation::CreateReferenceFilter(arbitrary_filter));
 
   FilterOperations arbitrary_filters2;
   arbitrary_filters2.Append(FilterOperation::CreateBrightnessFilter(
       arbitrary_float2));
-
-  skia::RefPtr<SkImageFilter> arbitrary_filter = skia::AdoptRef(
-    new SkBlurImageFilter(arbitrary_sigma, arbitrary_sigma));
 
   scoped_ptr<SharedQuadState> shared_state1_in = SharedQuadState::Create();
   shared_state1_in->SetAll(arbitrary_matrix,
@@ -301,7 +307,6 @@ TEST_F(CCMessagesTest, AllQuads) {
                         arbitrary_rect1,
                         arbitrary_rectf1,
                         arbitrary_filters1,
-                        arbitrary_filter,
                         arbitrary_filters2);
   scoped_ptr<RenderPassDrawQuad> renderpass_cmp = renderpass_in->Copy(
       renderpass_in->shared_quad_state, renderpass_in->render_pass_id);

@@ -89,7 +89,6 @@ scoped_ptr<DrawQuad> CreateTestRenderPassDrawQuad(
                rect,          // contents_changed_since_last_frame
                gfx::RectF(),  // mask_uv_rect
                FilterOperations(),   // foreground filters
-               skia::RefPtr<SkImageFilter>(),   // foreground filter
                FilterOperations());  // background filters
 
   return quad.PassAs<DrawQuad>();
@@ -623,6 +622,8 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
       new SkColorMatrixFilter(matrix)));
   skia::RefPtr<SkImageFilter> filter =
       skia::AdoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), NULL));
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateReferenceFilter(filter));
 
   scoped_ptr<RenderPassDrawQuad> render_pass_quad =
       RenderPassDrawQuad::Create();
@@ -633,8 +634,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
                            0,
                            pass_rect,
                            gfx::RectF(),
-                           FilterOperations(),
-                           filter,
+                           filters,
                            FilterOperations());
 
   root_pass->quad_list.push_back(render_pass_quad.PassAs<DrawQuad>());
@@ -726,6 +726,8 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
       new SkColorMatrixFilter(matrix)));
   skia::RefPtr<SkImageFilter> filter =
       skia::AdoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), NULL));
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateReferenceFilter(filter));
 
   scoped_ptr<RenderPassDrawQuad> render_pass_quad =
       RenderPassDrawQuad::Create();
@@ -736,8 +738,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
                            0,
                            pass_rect,
                            gfx::RectF(),
-                           FilterOperations(),
-                           filter,
+                           filters,
                            FilterOperations());
 
   root_pass->quad_list.push_back(render_pass_quad.PassAs<DrawQuad>());
@@ -931,7 +932,6 @@ class RendererPixelTestWithBackgroundFilter
           filter_pass_content_rect_,  // contents_changed_since_last_frame
           gfx::RectF(),  // mask_uv_rect
           FilterOperations(),  // filters
-          skia::RefPtr<SkImageFilter>(),  // filter
           this->background_filters_);
       root_pass->quad_list.push_back(filter_pass_quad.PassAs<DrawQuad>());
       root_pass->shared_quad_state_list.push_back(shared_state.Pass());

@@ -63,8 +63,7 @@ void EmulateDrawingOneFrame(LayerImpl* root) {
         target_surface->SurfacePropertyChangedOnlyFromDescendant(),
         target_surface->content_rect(),
         render_surface_layer_list[i]->mask_layer(),
-        render_surface_layer_list[i]->filters(),
-        render_surface_layer_list[i]->filter().get());
+        render_surface_layer_list[i]->filters());
   }
 
   root->ResetAllChangeTrackingForSubtree();
@@ -446,10 +445,12 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
   skia::RefPtr<SkImageFilter> filter =
           skia::AdoptRef(new SkBlurImageFilter(SkIntToScalar(2),
                                                SkIntToScalar(2)));
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateReferenceFilter(filter));
 
   // Setting the filter will damage the whole surface.
   ClearDamageForAllSurfaces(root.get());
-  child->SetFilter(filter);
+  child->SetFilters(filters);
   EmulateDrawingOneFrame(root.get());
   root_damage_rect =
           root->render_surface()->damage_tracker()->current_damage_rect();
@@ -1297,8 +1298,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForEmptyLayerList) {
       false,
       gfx::Rect(),
       NULL,
-      FilterOperations(),
-      NULL);
+      FilterOperations());
 
   gfx::RectF damage_rect =
           target_surface->damage_tracker()->current_damage_rect();

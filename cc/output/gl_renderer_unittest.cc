@@ -1429,6 +1429,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
       skia::AdoptRef(new SkColorMatrixFilter(matrix)));
   skia::RefPtr<SkImageFilter> filter = skia::AdoptRef(
       SkColorFilterImageFilter::Create(color_filter.get(), NULL));
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateReferenceFilter(filter));
 
   gfx::Transform transform_causing_aa;
   transform_causing_aa.Rotate(20.0);
@@ -1445,7 +1447,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   AddRenderPassQuad(root_pass,
                     child_pass,
                     0,
-                    skia::RefPtr<SkImageFilter>(),
+                    FilterOperations(),
                     gfx::Transform());
 
   renderer_->DecideRenderPassAllocationsForFrame(
@@ -1463,7 +1465,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   root_pass = AddRenderPass(
       render_passes, root_pass_id, viewport_rect, gfx::Transform());
 
-  AddRenderPassQuad(root_pass, child_pass, 0, filter, gfx::Transform());
+  AddRenderPassQuad(root_pass, child_pass, 0, filters, gfx::Transform());
 
   renderer_->DecideRenderPassAllocationsForFrame(
       *renderer_client_.render_passes_in_draw_order());
@@ -1483,7 +1485,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   AddRenderPassQuad(root_pass,
                     child_pass,
                     mask,
-                    skia::RefPtr<SkImageFilter>(),
+                    FilterOperations(),
                     gfx::Transform());
 
   renderer_->DecideRenderPassAllocationsForFrame(
@@ -1501,7 +1503,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   root_pass = AddRenderPass(
       render_passes, root_pass_id, viewport_rect, gfx::Transform());
 
-  AddRenderPassQuad(root_pass, child_pass, mask, filter, gfx::Transform());
+  AddRenderPassQuad(root_pass, child_pass, mask, filters, gfx::Transform());
 
   renderer_->DecideRenderPassAllocationsForFrame(
       *renderer_client_.render_passes_in_draw_order());
@@ -1521,7 +1523,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   AddRenderPassQuad(root_pass,
                     child_pass,
                     0,
-                    skia::RefPtr<SkImageFilter>(),
+                    FilterOperations(),
                     transform_causing_aa);
 
   renderer_->DecideRenderPassAllocationsForFrame(
@@ -1539,7 +1541,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   root_pass = AddRenderPass(
       render_passes, root_pass_id, viewport_rect, gfx::Transform());
 
-  AddRenderPassQuad(root_pass, child_pass, 0, filter, transform_causing_aa);
+  AddRenderPassQuad(root_pass, child_pass, 0, filters, transform_causing_aa);
 
   renderer_->DecideRenderPassAllocationsForFrame(
       *renderer_client_.render_passes_in_draw_order());
@@ -1556,7 +1558,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   root_pass = AddRenderPass(render_passes, root_pass_id, viewport_rect,
       gfx::Transform());
 
-  AddRenderPassQuad(root_pass, child_pass, mask, skia::RefPtr<SkImageFilter>(),
+  AddRenderPassQuad(root_pass, child_pass, mask, FilterOperations(),
       transform_causing_aa);
 
   renderer_->DecideRenderPassAllocationsForFrame(
@@ -1574,7 +1576,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   root_pass = AddRenderPass(render_passes, root_pass_id, viewport_rect,
       transform_causing_aa);
 
-  AddRenderPassQuad(root_pass, child_pass, mask, filter, transform_causing_aa);
+  AddRenderPassQuad(root_pass, child_pass, mask, filters, transform_causing_aa);
 
   renderer_->DecideRenderPassAllocationsForFrame(
       *renderer_client_.render_passes_in_draw_order());
@@ -1622,7 +1624,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
   AddRenderPassQuad(root_pass,
                     child_pass,
                     0,
-                    skia::RefPtr<SkImageFilter>(),
+                    FilterOperations(),
                     transform_preventing_aa);
 
   renderer_->DecideRenderPassAllocationsForFrame(

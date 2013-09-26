@@ -127,7 +127,6 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                              rect,
                              gfx::RectF(),
                              FilterOperations(),
-                             skia::RefPtr<SkImageFilter>(),
                              FilterOperations());
     AppendQuad(render_pass_quad.PassAs<DrawQuad>());
 
@@ -141,7 +140,6 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                                      rect,
                                      gfx::RectF(),
                                      FilterOperations(),
-                                     skia::RefPtr<SkImageFilter>(),
                                      FilterOperations());
     AppendQuad(render_pass_replica_quad.PassAs<DrawQuad>());
   }

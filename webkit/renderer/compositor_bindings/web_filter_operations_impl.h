@@ -34,6 +34,7 @@ class WebFilterOperationsImpl : public WebKit::WebFilterOperations {
   virtual void appendColorMatrixFilter(SkScalar matrix[20]);
   virtual void appendZoomFilter(float amount, int inset);
   virtual void appendSaturatingBrightnessFilter(float amount);
+  virtual void appendReferenceFilter(SkImageFilter* image_filter);
 
   virtual void clear();
 

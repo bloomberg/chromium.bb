@@ -21,6 +21,8 @@ bool FilterOperation::operator==(const FilterOperation& other) const {
            drop_shadow_offset_ == other.drop_shadow_offset_ &&
            drop_shadow_color_ == other.drop_shadow_color_;
   }
+  if (type_ == REFERENCE)
+    return image_filter_.get() == other.image_filter_.get();
   return amount_ == other.amount_;
 }
 
@@ -32,6 +34,7 @@ FilterOperation::FilterOperation(FilterType type, float amount)
       zoom_inset_(0) {
   DCHECK_NE(type_, DROP_SHADOW);
   DCHECK_NE(type_, COLOR_MATRIX);
+  DCHECK_NE(type_, REFERENCE);
   memset(matrix_, 0, sizeof(matrix_));
 }
 
@@ -66,6 +69,32 @@ FilterOperation::FilterOperation(FilterType type, float amount, int inset)
       zoom_inset_(inset) {
   DCHECK_EQ(type_, ZOOM);
   memset(matrix_, 0, sizeof(matrix_));
+}
+
+FilterOperation::FilterOperation(
+    FilterType type,
+    const skia::RefPtr<SkImageFilter>& image_filter)
+    : type_(type),
+      amount_(0),
+      drop_shadow_offset_(0, 0),
+      drop_shadow_color_(0),
+      image_filter_(image_filter),
+      zoom_inset_(0) {
+  DCHECK_EQ(type_, REFERENCE);
+  memset(matrix_, 0, sizeof(matrix_));
+}
+
+FilterOperation::FilterOperation(const FilterOperation& other)
+    : type_(other.type_),
+      amount_(other.amount_),
+      drop_shadow_offset_(other.drop_shadow_offset_),
+      drop_shadow_color_(other.drop_shadow_color_),
+      image_filter_(other.image_filter_),
+      zoom_inset_(other.zoom_inset_) {
+  memcpy(matrix_, other.matrix_, sizeof(matrix_));
+}
+
+FilterOperation::~FilterOperation() {
 }
 
 // TODO(ajuma): Define a version of gfx::Tween::ValueBetween for floats, and use
@@ -147,6 +176,9 @@ static FilterOperation CreateNoOpFilter(FilterOperation::FilterType type) {
       return FilterOperation::CreateZoomFilter(1.f, 0);
     case FilterOperation::SATURATING_BRIGHTNESS:
       return FilterOperation::CreateSaturatingBrightnessFilter(0.f);
+    case FilterOperation::REFERENCE:
+      return FilterOperation::CreateReferenceFilter(
+          skia::RefPtr<SkImageFilter>());
   }
   NOTREACHED();
   return FilterOperation::CreateEmptyFilter();
@@ -172,6 +204,7 @@ static float ClampAmountForFilterType(float amount,
     case FilterOperation::SATURATING_BRIGHTNESS:
       return amount;
     case FilterOperation::COLOR_MATRIX:
+    case FilterOperation::REFERENCE:
       NOTREACHED();
       return amount;
   }
@@ -196,6 +229,14 @@ FilterOperation FilterOperation::Blend(const FilterOperation* from,
 
   DCHECK(to_op.type() != FilterOperation::COLOR_MATRIX);
   blended_filter.set_type(to_op.type());
+
+  if (to_op.type() == FilterOperation::REFERENCE) {
+    if (progress > 0.5)
+      blended_filter.set_image_filter(to_op.image_filter());
+    else
+      blended_filter.set_image_filter(from_op.image_filter());
+    return blended_filter;
+  }
 
   blended_filter.set_amount(ClampAmountForFilterType(
       BlendFloats(from_op.amount(), to_op.amount(), progress), to_op.type()));
@@ -250,6 +291,18 @@ scoped_ptr<base::Value> FilterOperation::AsValue() const {
       value->SetDouble("amount", amount_);
       value->SetDouble("inset", zoom_inset_);
       break;
+    case FilterOperation::REFERENCE: {
+      int count_inputs = 0;
+      bool can_filter_image_gpu = false;
+      if (image_filter_) {
+        count_inputs = image_filter_->countInputs();
+        can_filter_image_gpu = image_filter_->canFilterImageGPU();
+      }
+      value->SetBoolean("is_null", !image_filter_);
+      value->SetInteger("count_inputs", count_inputs);
+      value->SetBoolean("can_filter_image_gpu", can_filter_image_gpu);
+      break;
+    }
   }
   return value.PassAs<base::Value>();
 }

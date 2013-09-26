@@ -555,8 +555,7 @@ static bool SubtreeShouldRenderToSeparateSurface(
   }
 
   // If the layer uses a CSS filter.
-  if (!layer->filters().IsEmpty() || !layer->background_filters().IsEmpty() ||
-      layer->filter()) {
+  if (!layer->filters().IsEmpty() || !layer->background_filters().IsEmpty()) {
     DCHECK(!is_root);
     return true;
   }
@@ -1546,7 +1545,8 @@ static void CalculateDrawPropertiesInternal(
 
     // TODO(senorblanco): make this smarter for the SkImageFilter case (check
     // for pixel-moving filters)
-    if (layer->filters().HasFilterThatMovesPixels() || layer->filter())
+    if (layer->filters().HasReferenceFilter() ||
+        layer->filters().HasFilterThatMovesPixels())
       nearest_ancestor_surface_that_moves_pixels = render_surface;
 
     render_surface->SetNearestAncestorThatMovesPixels(

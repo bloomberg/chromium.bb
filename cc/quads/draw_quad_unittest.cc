@@ -249,6 +249,24 @@ void CompareDrawQuad(DrawQuad* quad,
     } \
     SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
+#define CREATE_QUAD_7_NEW_1(Type, a, b, c, d, e, f, g, copy_a) \
+    scoped_ptr<Type> quad_new(Type::Create()); \
+    { \
+      QUAD_DATA \
+      quad_new->SetNew(shared_state.get(), quad_rect, a, b, c, d, e, f, g); \
+    } \
+    SETUP_AND_COPY_QUAD_NEW_1(Type, quad_new, copy_a);
+
+#define CREATE_QUAD_7_ALL_1(Type, a, b, c, d, e, f, g, copy_a) \
+    scoped_ptr<Type> quad_all(Type::Create()); \
+    { \
+      QUAD_DATA \
+      quad_all->SetAll(shared_state.get(), quad_rect, quad_opaque_rect, \
+                       quad_visible_rect, needs_blending, \
+                       a, b, c, d, e, f, g); \
+    } \
+    SETUP_AND_COPY_QUAD_ALL_1(Type, quad_all, copy_a);
+
 #define CREATE_QUAD_8_NEW(Type, a, b, c, d, e, f, g, h) \
     scoped_ptr<Type> quad_new(Type::Create()); \
     { \
@@ -366,20 +384,17 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   FilterOperations background_filters;
   background_filters.Append(
       FilterOperation::CreateGrayscaleFilter(1.f));
-  skia::RefPtr<SkImageFilter> filter =
-      skia::AdoptRef(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
 
   RenderPass::Id copied_render_pass_id(235, 11);
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_8_NEW_1(RenderPassDrawQuad,
+  CREATE_QUAD_7_NEW_1(RenderPassDrawQuad,
                       render_pass_id,
                       is_replica,
                       mask_resource_id,
                       contents_changed_since_last_frame,
                       mask_u_v_rect,
                       filters,
-                      filter,
                       background_filters,
                       copied_render_pass_id);
   EXPECT_EQ(DrawQuad::RENDER_PASS, copy_quad->material);
@@ -390,17 +405,15 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
                  copy_quad->contents_changed_since_last_frame);
   EXPECT_EQ(mask_u_v_rect.ToString(), copy_quad->mask_uv_rect.ToString());
   EXPECT_EQ(filters, copy_quad->filters);
-  EXPECT_EQ(filter, copy_quad->filter);
   EXPECT_EQ(background_filters, copy_quad->background_filters);
 
-  CREATE_QUAD_8_ALL_1(RenderPassDrawQuad,
+  CREATE_QUAD_7_ALL_1(RenderPassDrawQuad,
                       render_pass_id,
                       is_replica,
                       mask_resource_id,
                       contents_changed_since_last_frame,
                       mask_u_v_rect,
                       filters,
-                      filter,
                       background_filters,
                       copied_render_pass_id);
   EXPECT_EQ(DrawQuad::RENDER_PASS, copy_quad->material);
@@ -411,7 +424,6 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
                  copy_quad->contents_changed_since_last_frame);
   EXPECT_EQ(mask_u_v_rect.ToString(), copy_quad->mask_uv_rect.ToString());
   EXPECT_EQ(filters, copy_quad->filters);
-  EXPECT_EQ(filter, copy_quad->filter);
   EXPECT_EQ(background_filters, copy_quad->background_filters);
 }
 
@@ -772,20 +784,17 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   FilterOperations background_filters;
   background_filters.Append(
       FilterOperation::CreateGrayscaleFilter(1.f));
-  skia::RefPtr<SkImageFilter> filter =
-      skia::AdoptRef(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
 
   RenderPass::Id copied_render_pass_id(235, 11);
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_8_NEW_1(RenderPassDrawQuad,
+  CREATE_QUAD_7_NEW_1(RenderPassDrawQuad,
                       render_pass_id,
                       is_replica,
                       mask_resource_id,
                       contents_changed_since_last_frame,
                       mask_u_v_rect,
                       filters,
-                      filter,
                       background_filters,
                       copied_render_pass_id);
   EXPECT_EQ(mask_resource_id, quad_new->mask_resource_id);

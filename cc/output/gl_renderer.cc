@@ -772,25 +772,31 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   SkBitmap filter_bitmap;
   SkScalar color_matrix[20];
   bool use_color_matrix = false;
-  if (quad->filter) {
-    skia::RefPtr<SkColorFilter> cf;
+  // TODO(ajuma): Always use RenderSurfaceFilters::BuildImageFilter, not just
+  // when we have a reference filter.
+  if (quad->filters.HasReferenceFilter()) {
+    skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
+        quad->filters, contents_texture->size());
+    if (filter) {
+      skia::RefPtr<SkColorFilter> cf;
 
-    {
-      SkColorFilter* colorfilter_rawptr = NULL;
-      quad->filter->asColorFilter(&colorfilter_rawptr);
-      cf = skia::AdoptRef(colorfilter_rawptr);
-    }
+      {
+        SkColorFilter* colorfilter_rawptr = NULL;
+        filter->asColorFilter(&colorfilter_rawptr);
+        cf = skia::AdoptRef(colorfilter_rawptr);
+      }
 
-    if (cf && cf->asColorMatrix(color_matrix) && !quad->filter->getInput(0)) {
-      // We have a single color matrix as a filter; apply it locally
-      // in the compositor.
-      use_color_matrix = true;
-    } else {
-      filter_bitmap = ApplyImageFilter(this,
-                                       frame->offscreen_context_provider,
-                                       quad->rect.origin(),
-                                       quad->filter.get(),
-                                       contents_texture);
+      if (cf && cf->asColorMatrix(color_matrix) && !filter->getInput(0)) {
+        // We have a single color matrix as a filter; apply it locally
+        // in the compositor.
+        use_color_matrix = true;
+      } else {
+        filter_bitmap = ApplyImageFilter(this,
+                                         frame->offscreen_context_provider,
+                                         quad->rect.origin(),
+                                         filter.get(),
+                                         contents_texture);
+      }
     }
   } else if (!quad->filters.IsEmpty()) {
     FilterOperations optimized_filters =

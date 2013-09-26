@@ -8,7 +8,9 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "ui/gfx/point.h"
 
@@ -33,13 +35,19 @@ class CC_EXPORT FilterOperation {
     DROP_SHADOW,
     COLOR_MATRIX,
     ZOOM,
+    REFERENCE,
     SATURATING_BRIGHTNESS,  // Not used in CSS/SVG.
   };
+
+  FilterOperation(const FilterOperation& other);
+
+  ~FilterOperation();
 
   FilterType type() const { return type_; }
 
   float amount() const {
     DCHECK_NE(type_, COLOR_MATRIX);
+    DCHECK_NE(type_, REFERENCE);
     return amount_;
   }
 
@@ -51,6 +59,11 @@ class CC_EXPORT FilterOperation {
   SkColor drop_shadow_color() const {
     DCHECK_EQ(type_, DROP_SHADOW);
     return drop_shadow_color_;
+  }
+
+  skia::RefPtr<SkImageFilter> image_filter() const {
+    DCHECK_EQ(type_, REFERENCE);
+    return image_filter_;
   }
 
   const SkScalar* matrix() const {
@@ -113,6 +126,11 @@ class CC_EXPORT FilterOperation {
     return FilterOperation(ZOOM, amount, inset);
   }
 
+  static FilterOperation CreateReferenceFilter(
+      const skia::RefPtr<SkImageFilter>& image_filter) {
+    return FilterOperation(REFERENCE, image_filter);
+  }
+
   static FilterOperation CreateSaturatingBrightnessFilter(float amount) {
     return FilterOperation(SATURATING_BRIGHTNESS, amount);
   }
@@ -132,6 +150,7 @@ class CC_EXPORT FilterOperation {
 
   void set_amount(float amount) {
     DCHECK_NE(type_, COLOR_MATRIX);
+    DCHECK_NE(type_, REFERENCE);
     amount_ = amount;
   }
 
@@ -143,6 +162,11 @@ class CC_EXPORT FilterOperation {
   void set_drop_shadow_color(SkColor color) {
     DCHECK_EQ(type_, DROP_SHADOW);
     drop_shadow_color_ = color;
+  }
+
+  void set_image_filter(const skia::RefPtr<SkImageFilter>& image_filter) {
+    DCHECK_EQ(type_, REFERENCE);
+    image_filter_ = image_filter;
   }
 
   void set_matrix(const SkScalar matrix[20]) {
@@ -180,10 +204,14 @@ class CC_EXPORT FilterOperation {
 
   FilterOperation(FilterType type, float amount, int inset);
 
+  FilterOperation(FilterType type,
+                  const skia::RefPtr<SkImageFilter>& image_filter);
+
   FilterType type_;
   float amount_;
   gfx::Point drop_shadow_offset_;
   SkColor drop_shadow_color_;
+  skia::RefPtr<SkImageFilter> image_filter_;
   SkScalar matrix_[20];
   int zoom_inset_;
 };

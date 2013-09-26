@@ -44,6 +44,7 @@ class CC_EXPORT FilterOperations {
   void GetOutsets(int* top, int* right, int* bottom, int* left) const;
   bool HasFilterThatMovesPixels() const;
   bool HasFilterThatAffectsOpacity() const;
+  bool HasReferenceFilter() const;
 
   size_t size() const {
     return operations_.size();

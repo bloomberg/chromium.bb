@@ -6,6 +6,7 @@
 #define CC_TEST_RENDER_PASS_TEST_UTILS_H_
 
 #include "cc/base/scoped_ptr_vector.h"
+#include "cc/output/filter_operations.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/resource_provider.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -52,7 +53,7 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
 void AddRenderPassQuad(TestRenderPass* toPass,
                        TestRenderPass* contributing_pass,
                        ResourceProvider::ResourceId mask_resource_id,
-                       skia::RefPtr<SkImageFilter> filter,
+                       const FilterOperations& filters,
                        gfx::Transform transform);
 
 }  // namespace cc

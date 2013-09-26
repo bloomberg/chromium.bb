@@ -52,8 +52,7 @@ void DamageTracker::UpdateDamageTrackingState(
     bool target_surface_property_changed_only_from_descendant,
     gfx::Rect target_surface_content_rect,
     LayerImpl* target_surface_mask_layer,
-    const FilterOperations& filters,
-    SkImageFilter* filter) {
+    const FilterOperations& filters) {
   //
   // This function computes the "damage rect" of a target surface, and updates
   // the state that is used to correctly track damage across frames. The damage
@@ -143,12 +142,12 @@ void DamageTracker::UpdateDamageTrackingState(
     damage_rect_for_this_update.Union(damage_from_surface_mask);
     damage_rect_for_this_update.Union(damage_from_leftover_rects);
 
-    if (filters.HasFilterThatMovesPixels()) {
-      ExpandRectWithFilters(&damage_rect_for_this_update, filters);
-    } else if (filter) {
+    if (filters.HasReferenceFilter()) {
       // TODO(senorblanco):  Once SkImageFilter reports its outsets, use
       // those here to limit damage.
       damage_rect_for_this_update = target_surface_content_rect;
+    } else if (filters.HasFilterThatMovesPixels()) {
+      ExpandRectWithFilters(&damage_rect_for_this_update, filters);
     }
   }
 

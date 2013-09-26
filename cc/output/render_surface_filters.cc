@@ -11,8 +11,13 @@
 #include "cc/output/filter_operations.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkFlattenableBuffers.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
+#include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
+#include "third_party/skia/include/effects/SkComposeImageFilter.h"
+#include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 #include "third_party/skia/include/effects/SkMagnifierImageFilter.h"
 #include "third_party/skia/include/gpu/SkGpuDevice.h"
 #include "third_party/skia/include/gpu/SkGrPixelRef.h"
@@ -229,10 +234,20 @@ bool GetColorMatrix(const FilterOperation& op, SkScalar matrix[20]) {
     case FilterOperation::BLUR:
     case FilterOperation::DROP_SHADOW:
     case FilterOperation::ZOOM:
+    case FilterOperation::REFERENCE:
       return false;
   }
   NOTREACHED();
   return false;
+}
+
+skia::RefPtr<SkImageFilter> CreateMatrixImageFilter(
+    const SkScalar matrix[20],
+    const skia::RefPtr<SkImageFilter>& input) {
+  skia::RefPtr<SkColorFilter> color_filter =
+      skia::AdoptRef(new SkColorMatrixFilter(matrix));
+  return skia::AdoptRef(
+      SkColorFilterImageFilter::Create(color_filter.get(), input.get()));
 }
 
 class FilterBufferState {
@@ -359,6 +374,9 @@ FilterOperations RenderSurfaceFilters::Optimize(
       case FilterOperation::ZOOM:
         new_list.Append(op);
         break;
+      case FilterOperation::REFERENCE:
+        // Not supported on this code path.
+        NOTREACHED();
       case FilterOperation::BRIGHTNESS:
       case FilterOperation::SATURATING_BRIGHTNESS:
       case FilterOperation::CONTRAST:
@@ -446,6 +464,7 @@ SkBitmap RenderSurfaceFilters::Apply(const FilterOperations& filters,
         canvas->restore();
         break;
       }
+      case FilterOperation::REFERENCE:
       case FilterOperation::BRIGHTNESS:
       case FilterOperation::SATURATING_BRIGHTNESS:
       case FilterOperation::CONTRAST:
@@ -461,6 +480,113 @@ SkBitmap RenderSurfaceFilters::Apply(const FilterOperations& filters,
     state.Swap();
   }
   return state.Source();
+}
+
+skia::RefPtr<SkImageFilter> RenderSurfaceFilters::BuildImageFilter(
+    const FilterOperations& filters,
+    gfx::SizeF size) {
+  skia::RefPtr<SkImageFilter> image_filter;
+  SkScalar matrix[20];
+  for (size_t i = 0; i < filters.size(); ++i) {
+    const FilterOperation& op = filters.at(i);
+    switch (op.type()) {
+      case FilterOperation::GRAYSCALE:
+        GetGrayscaleMatrix(1.f - op.amount(), matrix);
+        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        break;
+      case FilterOperation::SEPIA:
+        GetSepiaMatrix(1.f - op.amount(), matrix);
+        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        break;
+      case FilterOperation::SATURATE:
+        GetSaturateMatrix(op.amount(), matrix);
+        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        break;
+      case FilterOperation::HUE_ROTATE:
+        GetHueRotateMatrix(op.amount(), matrix);
+        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        break;
+      case FilterOperation::INVERT:
+        GetInvertMatrix(op.amount(), matrix);
+        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        break;
+      case FilterOperation::OPACITY:
+        GetOpacityMatrix(op.amount(), matrix);
+        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        break;
+      case FilterOperation::BRIGHTNESS:
+        GetBrightnessMatrix(op.amount(), matrix);
+        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        break;
+      case FilterOperation::CONTRAST:
+        GetContrastMatrix(op.amount(), matrix);
+        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        break;
+      case FilterOperation::BLUR:
+        image_filter = skia::AdoptRef(new SkBlurImageFilter(
+            op.amount(), op.amount(), image_filter.get()));
+        break;
+      case FilterOperation::DROP_SHADOW:
+        image_filter = skia::AdoptRef(new SkDropShadowImageFilter(
+            SkIntToScalar(op.drop_shadow_offset().x()),
+            SkIntToScalar(op.drop_shadow_offset().y()),
+            SkIntToScalar(op.amount()),
+            op.drop_shadow_color(),
+            image_filter.get()));
+        break;
+      case FilterOperation::COLOR_MATRIX:
+        image_filter = CreateMatrixImageFilter(op.matrix(), image_filter);
+        break;
+      case FilterOperation::ZOOM: {
+        skia::RefPtr<SkImageFilter> zoom_filter = skia::AdoptRef(
+            new SkMagnifierImageFilter(
+                SkRect::MakeXYWH(
+                    (size.width() - (size.width() / op.amount())) / 2.f,
+                    (size.height() - (size.height() / op.amount())) / 2.f,
+                    size.width() / op.amount(),
+                    size.height() / op.amount()),
+                op.zoom_inset()));
+        if (image_filter.get()) {
+          // TODO(ajuma): When there's a 1-input version of
+          // SkMagnifierImageFilter, use that to handle the input filter
+          // instead of using an SkComposeImageFilter.
+          image_filter = skia::AdoptRef(new SkComposeImageFilter(
+              zoom_filter.get(), image_filter.get()));
+        } else {
+          image_filter = zoom_filter;
+        }
+        break;
+      }
+      case FilterOperation::SATURATING_BRIGHTNESS:
+        GetSaturatingBrightnessMatrix(op.amount(), matrix);
+        image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        break;
+      case FilterOperation::REFERENCE: {
+        if (!op.image_filter())
+          break;
+
+        skia::RefPtr<SkColorFilter> cf;
+
+        {
+          SkColorFilter* colorfilter_rawptr = NULL;
+          op.image_filter()->asColorFilter(&colorfilter_rawptr);
+          cf = skia::AdoptRef(colorfilter_rawptr);
+        }
+
+        if (cf && cf->asColorMatrix(matrix) &&
+            !op.image_filter()->getInput(0)) {
+          image_filter = CreateMatrixImageFilter(matrix, image_filter);
+        } else if (image_filter) {
+          image_filter = skia::AdoptRef(new SkComposeImageFilter(
+              op.image_filter().get(), image_filter.get()));
+        } else {
+          image_filter = op.image_filter();
+        }
+        break;
+      }
+    }
+  }
+  return image_filter;
 }
 
 }  // namespace cc

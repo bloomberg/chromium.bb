@@ -43,7 +43,6 @@ void RenderPassDrawQuad::SetNew(
     gfx::Rect contents_changed_since_last_frame,
     gfx::RectF mask_uv_rect,
     const FilterOperations& filters,
-    skia::RefPtr<SkImageFilter> filter,
     const FilterOperations& background_filters) {
   DCHECK_GT(render_pass_id.layer_id, 0);
   DCHECK_GE(render_pass_id.index, 0);
@@ -53,7 +52,7 @@ void RenderPassDrawQuad::SetNew(
   bool needs_blending = false;
   SetAll(shared_quad_state, rect, opaque_rect, visible_rect, needs_blending,
          render_pass_id, is_replica, mask_resource_id,
-         contents_changed_since_last_frame, mask_uv_rect, filters, filter,
+         contents_changed_since_last_frame, mask_uv_rect, filters,
          background_filters);
 }
 
@@ -69,7 +68,6 @@ void RenderPassDrawQuad::SetAll(
     gfx::Rect contents_changed_since_last_frame,
     gfx::RectF mask_uv_rect,
     const FilterOperations& filters,
-    skia::RefPtr<SkImageFilter> filter,
     const FilterOperations& background_filters) {
   DCHECK_GT(render_pass_id.layer_id, 0);
   DCHECK_GE(render_pass_id.index, 0);
@@ -82,7 +80,6 @@ void RenderPassDrawQuad::SetAll(
   this->contents_changed_since_last_frame = contents_changed_since_last_frame;
   this->mask_uv_rect = mask_uv_rect;
   this->filters = filters;
-  this->filter = filter;
   this->background_filters = background_filters;
 }
 
@@ -107,9 +104,6 @@ void RenderPassDrawQuad::ExtendValue(base::DictionaryValue* value) const {
              MathUtil::AsValue(contents_changed_since_last_frame).release());
   value->Set("mask_uv_rect", MathUtil::AsValue(mask_uv_rect).release());
   value->Set("filters", filters.AsValue().release());
-  // TODO(piman): dump SkImageFilters rather than just indicating if there are
-  // any or not.
-  value->SetBoolean("has_filter", !!filter);
   value->Set("background_filters", background_filters.AsValue().release());
 }
 

@@ -123,8 +123,7 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
 
   if (host && layer_animation_controller_->has_any_animation())
     host->SetNeedsCommit();
-  if (host &&
-      (!filters_.IsEmpty() || !background_filters_.IsEmpty() || filter_))
+  if (host && (!filters_.IsEmpty() || !background_filters_.IsEmpty()))
     layer_tree_host_->set_needs_filter_context();
 }
 
@@ -472,21 +471,9 @@ void Layer::SetFilters(const FilterOperations& filters) {
   DCHECK(IsPropertyChangeAllowed());
   if (filters_ == filters)
     return;
-  DCHECK(!filter_);
   filters_ = filters;
   SetNeedsCommit();
   if (!filters.IsEmpty() && layer_tree_host_)
-    layer_tree_host_->set_needs_filter_context();
-}
-
-void Layer::SetFilter(const skia::RefPtr<SkImageFilter>& filter) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (filter_.get() == filter.get())
-    return;
-  DCHECK(filters_.IsEmpty());
-  filter_ = filter;
-  SetNeedsCommit();
-  if (filter && layer_tree_host_)
     layer_tree_host_->set_needs_filter_context();
 }
 
@@ -821,7 +808,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetDrawsContent(DrawsContent());
   layer->SetHideLayerAndSubtree(hide_layer_and_subtree_);
   layer->SetFilters(filters());
-  layer->SetFilter(filter());
   layer->SetBackgroundFilters(background_filters());
   layer->SetMasksToBounds(masks_to_bounds_);
   layer->SetShouldScrollOnMainThread(should_scroll_on_main_thread_);

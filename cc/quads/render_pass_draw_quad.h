@@ -28,7 +28,6 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               gfx::Rect contents_changed_since_last_frame,
               gfx::RectF mask_uv_rect,
               const FilterOperations& filters,
-              skia::RefPtr<SkImageFilter> filter,
               const FilterOperations& background_filters);
 
   void SetAll(const SharedQuadState* shared_quad_state,
@@ -42,7 +41,6 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               gfx::Rect contents_changed_since_last_frame,
               gfx::RectF mask_uv_rect,
               const FilterOperations& filters,
-              skia::RefPtr<SkImageFilter> filter,
               const FilterOperations& background_filters);
 
   scoped_ptr<RenderPassDrawQuad> Copy(
@@ -55,11 +53,8 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
   gfx::Rect contents_changed_since_last_frame;
   gfx::RectF mask_uv_rect;
 
-  // Deprecated post-processing filters, applied to the pixels in the render
-  // pass' texture.
+  // Post-processing filters, applied to the pixels in the render pass' texture.
   FilterOperations filters;
-  // Post-processing filter applied to the pixels in the render pass' texture.
-  skia::RefPtr<SkImageFilter> filter;
 
   // Post-processing filters, applied to the pixels showing through the
   // background of the render pass, from behind it.

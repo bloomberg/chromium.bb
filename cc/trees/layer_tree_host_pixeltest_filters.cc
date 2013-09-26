@@ -175,11 +175,13 @@ TEST_F(LayerTreeHostFiltersPixelTest, ImageFilterClipped) {
           colorFilter.get(),
           NULL,
           &cropRect));
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateReferenceFilter(filter));
 
   // Make the foreground layer's render surface be clipped by the background
   // layer.
   background->SetMasksToBounds(true);
-  foreground->SetFilter(filter);
+  foreground->SetFilters(filters);
 
   // Then we translate the foreground up by 100 pixels in Y, so the cropped
   // region is moved to to the top. This ensures that the crop rect is being

@@ -228,7 +228,6 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
                contents_changed_since_last_frame,
                mask_uv_rect,
                owning_layer_->filters(),
-               owning_layer_->filter(),
                owning_layer_->background_filters());
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
 }

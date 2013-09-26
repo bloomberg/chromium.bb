@@ -40,8 +40,7 @@ class CC_EXPORT DamageTracker {
       bool target_surface_property_changed_only_from_descendant,
       gfx::Rect target_surface_content_rect,
       LayerImpl* target_surface_mask_layer,
-      const FilterOperations& filters,
-      SkImageFilter* filter);
+      const FilterOperations& filters);
 
   gfx::RectF current_damage_rect() { return current_damage_rect_; }
 

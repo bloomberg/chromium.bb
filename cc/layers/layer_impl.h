@@ -193,9 +193,6 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
     return background_filters_;
   }
 
-  void SetFilter(const skia::RefPtr<SkImageFilter>& filter);
-  skia::RefPtr<SkImageFilter> filter() const { return filter_; }
-
   void SetMasksToBounds(bool masks_to_bounds);
   bool masks_to_bounds() const { return masks_to_bounds_; }
 
@@ -597,7 +594,6 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 
   FilterOperations filters_;
   FilterOperations background_filters_;
-  skia::RefPtr<SkImageFilter> filter_;
 
  protected:
   DrawMode current_draw_mode_;

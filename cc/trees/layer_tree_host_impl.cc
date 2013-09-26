@@ -476,8 +476,7 @@ void LayerTreeHostImpl::TrackDamageForAllSurfaces(
         render_surface->SurfacePropertyChangedOnlyFromDescendant(),
         render_surface->content_rect(),
         render_surface_layer->mask_layer(),
-        render_surface_layer->filters(),
-        render_surface_layer->filter().get());
+        render_surface_layer->filters());
   }
 }
 

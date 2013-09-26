@@ -124,9 +124,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetFilters(const FilterOperations& filters);
   const FilterOperations& filters() const { return filters_; }
 
-  void SetFilter(const skia::RefPtr<SkImageFilter>& filter);
-  skia::RefPtr<SkImageFilter> filter() const { return filter_; }
-
   // Background filters are filters applied to what is behind this layer, when
   // they are viewed through non-opaque regions in this layer. They are used
   // through the WebLayer interface, and are not exposed to HTML.
@@ -543,7 +540,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   SkColor background_color_;
   CompositingReasons compositing_reasons_;
   float opacity_;
-  skia::RefPtr<SkImageFilter> filter_;
   FilterOperations filters_;
   FilterOperations background_filters_;
   float anchor_point_z_;

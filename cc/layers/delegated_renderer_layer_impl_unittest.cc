@@ -549,7 +549,6 @@ class DelegatedRendererLayerImplTestTransform
         child_pass_rect,  // contents_changed_since_last_frame
         gfx::RectF(),  // mask_uv_rect
         FilterOperations(),  // filters
-        skia::RefPtr<SkImageFilter>(),  // filter
         FilterOperations());  // background_filters
     quad_sink.Append(render_pass_quad.PassAs<DrawQuad>(), &data);
 
@@ -951,7 +950,6 @@ class DelegatedRendererLayerImplTestClip
         child_pass_rect,  // contents_changed_since_last_frame
         gfx::RectF(),  // mask_uv_rect
         FilterOperations(),  // filters
-        skia::RefPtr<SkImageFilter>(),  // filter
         FilterOperations());  // background_filters
     quad_sink.Append(render_pass_quad.PassAs<DrawQuad>(), &data);
 

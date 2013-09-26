@@ -183,7 +183,6 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                  damage_rect,
                  gfx::Rect(0, 0, 1, 1),  // mask_uv_rect
                  filters,
-                 skia::RefPtr<SkImageFilter>(),
                  background_filters);
     frame->render_pass_list[0]->shared_quad_state_list.push_back(sqs.Pass());
     frame->render_pass_list[0]->quad_list.push_back(quad.PassAs<DrawQuad>());

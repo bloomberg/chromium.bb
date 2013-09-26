@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "cc/output/filter_operations.h"
+#include "skia/ext/refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/gfx/point.h"
 
 namespace cc {
@@ -495,6 +497,45 @@ TEST(FilterOperationsTest, BlendSaturatingBrightnessWithNull) {
   blended = FilterOperation::Blend(NULL, &filter, 0.25);
   expected = FilterOperation::CreateSaturatingBrightnessFilter(0.25f);
   EXPECT_EQ(expected, blended);
+}
+
+TEST(FilterOperationsTest, BlendReferenceFilters) {
+  skia::RefPtr<SkImageFilter> from_filter = skia::AdoptRef(
+      new SkBlurImageFilter(1.f, 1.f));
+  skia::RefPtr<SkImageFilter> to_filter = skia::AdoptRef(
+      new SkBlurImageFilter(2.f, 2.f));
+  FilterOperation from = FilterOperation::CreateReferenceFilter(from_filter);
+  FilterOperation to = FilterOperation::CreateReferenceFilter(to_filter);
+
+  FilterOperation blended = FilterOperation::Blend(&from, &to, -0.75);
+  EXPECT_EQ(from, blended);
+
+  blended = FilterOperation::Blend(&from, &to, 0.5);
+  EXPECT_EQ(from, blended);
+
+  blended = FilterOperation::Blend(&from, &to, 0.6);
+  EXPECT_EQ(to, blended);
+
+  blended = FilterOperation::Blend(&from, &to, 1.5);
+  EXPECT_EQ(to, blended);
+}
+
+TEST(FilterOperationsTest, BlendReferenceWithNull) {
+  skia::RefPtr<SkImageFilter> image_filter = skia::AdoptRef(
+      new SkBlurImageFilter(1.f, 1.f));
+  FilterOperation filter = FilterOperation::CreateReferenceFilter(image_filter);
+  FilterOperation null_filter =
+      FilterOperation::CreateReferenceFilter(skia::RefPtr<SkImageFilter>());
+
+  FilterOperation blended = FilterOperation::Blend(&filter, NULL, 0.25);
+  EXPECT_EQ(filter, blended);
+  blended = FilterOperation::Blend(&filter, NULL, 0.75);
+  EXPECT_EQ(null_filter, blended);
+
+  blended = FilterOperation::Blend(NULL, &filter, 0.25);
+  EXPECT_EQ(null_filter, blended);
+  blended = FilterOperation::Blend(NULL, &filter, 0.75);
+  EXPECT_EQ(filter, blended);
 }
 
 // Tests blending non-empty sequences that have the same length and matching

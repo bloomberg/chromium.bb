@@ -102,8 +102,6 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   arbitrary_transform.Scale3d(0.1f, 0.2f, 0.3f);
   FilterOperations arbitrary_filters;
   arbitrary_filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
-  skia::RefPtr<SkImageFilter> arbitrary_filter =
-      skia::AdoptRef(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
 
   // These properties are internal, and should not be considered "change" when
   // they are used.
@@ -117,7 +115,6 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetAnchorPointZ(arbitrary_number));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilters(arbitrary_filters));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilters(FilterOperations()));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilter(arbitrary_filter));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
       root->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 4)));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetMasksToBounds(true));
@@ -216,15 +213,12 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   arbitrary_transform.Scale3d(0.1f, 0.2f, 0.3f);
   FilterOperations arbitrary_filters;
   arbitrary_filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
-  skia::RefPtr<SkImageFilter> arbitrary_filter =
-      skia::AdoptRef(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
 
   // Related filter functions.
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(arbitrary_filters));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(arbitrary_filters));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(FilterOperations()));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilter(arbitrary_filter));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilter(arbitrary_filter));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(arbitrary_filters));
 
   // Related scrolling functions.
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetMaxScrollOffset(large_vector2d));
@@ -271,7 +265,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   // Unrelated functions, set to the same values, no needs update.
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       root->SetAnchorPointZ(arbitrary_number));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilter(arbitrary_filter));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(arbitrary_filters));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetMasksToBounds(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetContentsOpaque(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetPosition(arbitrary_point_f));

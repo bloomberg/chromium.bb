@@ -88,14 +88,14 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
   scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
   quad->SetNew(shared_state, output_rect, contributing_pass->id, false, 0,
                output_rect, gfx::RectF(), FilterOperations(),
-               skia::RefPtr<SkImageFilter>(), FilterOperations());
+               FilterOperations());
   quad_sink.Append(quad.PassAs<DrawQuad>(), &data);
 }
 
 void AddRenderPassQuad(TestRenderPass* to_pass,
                        TestRenderPass* contributing_pass,
                        ResourceProvider::ResourceId mask_resource_id,
-                       skia::RefPtr<SkImageFilter> filter,
+                       const FilterOperations& filters,
                        gfx::Transform transform) {
   MockQuadCuller quad_sink(&to_pass->quad_list,
                            &to_pass->shared_quad_state_list);
@@ -107,9 +107,8 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
         transform, output_rect.size(), output_rect, output_rect, false, 1);
   scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
   quad->SetNew(shared_state, output_rect, contributing_pass->id, false,
-               mask_resource_id, output_rect, gfx::RectF(),
-               FilterOperations(),
-               filter, FilterOperations());
+               mask_resource_id, output_rect, gfx::RectF(), filters,
+               FilterOperations());
   quad_sink.Append(quad.PassAs<DrawQuad>(), &data);
 }
 

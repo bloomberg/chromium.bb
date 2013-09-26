@@ -8,9 +8,11 @@
 
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
+#include "skia/ext/refptr.h"
 
 class GrContext;
 class SkBitmap;
+class SkImageFilter;
 
 namespace gfx {
 class SizeF;
@@ -27,6 +29,10 @@ class CC_EXPORT RenderSurfaceFilters {
                         gfx::SizeF size,
                         GrContext* gr_context);
   static FilterOperations Optimize(const FilterOperations& filters);
+
+  static skia::RefPtr<SkImageFilter> BuildImageFilter(
+      const FilterOperations& filters,
+      gfx::SizeF size);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(RenderSurfaceFilters);

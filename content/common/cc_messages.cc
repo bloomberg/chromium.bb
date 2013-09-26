@@ -44,6 +44,9 @@ void ParamTraits<cc::FilterOperation>::Write(
       WriteParam(m, p.amount());
       WriteParam(m, p.zoom_inset());
       break;
+    case cc::FilterOperation::REFERENCE:
+      WriteParam(m, p.image_filter());
+      break;
   }
 }
 
@@ -109,6 +112,16 @@ bool ParamTraits<cc::FilterOperation>::Read(
         success = true;
       }
       break;
+    case cc::FilterOperation::REFERENCE: {
+      skia::RefPtr<SkImageFilter> filter;
+      if (!ReadParam(m, iter, &filter)) {
+        success = false;
+        break;
+      }
+      r->set_image_filter(filter);
+      success = true;
+      break;
+    }
   }
   return success;
 }
@@ -150,6 +163,9 @@ void ParamTraits<cc::FilterOperation>::Log(
       LogParam(p.amount(), l);
       l->append(", ");
       LogParam(p.zoom_inset(), l);
+      break;
+    case cc::FilterOperation::REFERENCE:
+      LogParam(p.image_filter(), l);
       break;
   }
   l->append(")");
