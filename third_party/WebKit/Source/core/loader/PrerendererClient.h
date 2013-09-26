@@ -38,13 +38,13 @@ namespace WebCore {
 
 class Document;
 class Page;
-class PrerenderHandle;
+class Prerender;
 
 class PrerendererClient : public Supplement<Page> {
 public:
     virtual ~PrerendererClient() { }
 
-    virtual void willAddPrerender(PrerenderHandle*) = 0;
+    virtual void willAddPrerender(Prerender*) = 0;
 
     static const char* supplementName();
     static PrerendererClient* from(Page*);

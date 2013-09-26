@@ -30,17 +30,18 @@
  */
 
 #include "config.h"
-#include "core/platform/PrerenderClient.h"
-#include "core/platform/chromium/Prerender.h"
+#include "core/platform/Prerender.h"
 
-#include "public/platform/Platform.h"
+#include "core/platform/PrerenderClient.h"
 #include "public/platform/WebPrerender.h"
 #include "public/platform/WebPrerenderingSupport.h"
-#include "public/platform/WebReferrerPolicy.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
 
 namespace WebCore {
+
+PassRefPtr<Prerender> Prerender::create(PrerenderClient* client, const KURL& url, const String& referrer, ReferrerPolicy policy)
+{
+    return adoptRef(new Prerender(client, url, referrer, policy));
+}
 
 Prerender::Prerender(PrerenderClient* client, const KURL& url, const String& referrer, ReferrerPolicy policy)
     : m_client(client)

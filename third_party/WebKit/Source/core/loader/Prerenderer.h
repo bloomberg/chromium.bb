@@ -43,7 +43,7 @@ namespace WebCore {
 
 class Document;
 class PrerenderClient;
-class PrerenderHandle;
+class Prerender;
 class PrerendererClient;
 class Page;
 
@@ -52,7 +52,7 @@ class Prerenderer : public ActiveDOMObject {
 public:
     virtual ~Prerenderer();
 
-    PassRefPtr<PrerenderHandle> render(PrerenderClient*, const KURL&);
+    PassRefPtr<Prerender> render(PrerenderClient*, const KURL&);
 
     static PassOwnPtr<Prerenderer> create(Document*);
 
@@ -63,7 +63,7 @@ public:
     virtual void resume() OVERRIDE;
 
 private:
-    typedef Vector<RefPtr<PrerenderHandle> > HandleVector;
+    typedef Vector<RefPtr<Prerender> > PrerenderVector;
     typedef Vector<KURL> KURLVector;
 
     explicit Prerenderer(Document*);
@@ -73,8 +73,8 @@ private:
 
     bool m_initializedClient;
     PrerendererClient* m_client;
-    HandleVector m_activeHandles;
-    HandleVector m_suspendedHandles;
+    PrerenderVector m_activePrerenders;
+    PrerenderVector m_suspendedPrerenders;
 };
 
 }

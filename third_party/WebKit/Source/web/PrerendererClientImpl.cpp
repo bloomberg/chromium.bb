@@ -35,8 +35,7 @@
 #include "WebPrerendererClient.h"
 #include "WebViewImpl.h"
 #include "core/dom/Document.h"
-#include "core/platform/PrerenderHandle.h"
-#include "core/platform/chromium/Prerender.h"
+#include "core/platform/Prerender.h"
 #include "public/platform/WebPrerender.h"
 #include "wtf/PassRefPtr.h"
 
@@ -47,11 +46,11 @@ PrerendererClientImpl::PrerendererClientImpl(WebPrerendererClient* client)
 {
 }
 
-void PrerendererClientImpl::willAddPrerender(WebCore::PrerenderHandle* prerenderHandle)
+void PrerendererClientImpl::willAddPrerender(WebCore::Prerender* prerender)
 {
     if (!m_client)
         return;
-    WebPrerender webPrerender(prerenderHandle->prerender());
+    WebPrerender webPrerender(prerender);
     m_client->willAddPrerender(&webPrerender);
 }
 

@@ -29,81 +29,71 @@
  *
  */
 
-#include "config.h"
-#include "core/platform/PrerenderHandle.h"
+#ifndef Prerender_h
+#define Prerender_h
 
-#include "core/platform/chromium/Prerender.h"
+#include "weborigin/KURL.h"
 #include "weborigin/ReferrerPolicy.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
+
+namespace WebKit {
+class WebPrerender;
+}
 
 namespace WebCore {
 
-class KURL;
+class PrerenderClient;
 
-PassRefPtr<PrerenderHandle> PrerenderHandle::create(PrerenderClient* client, const KURL& url, const String& referrer, ReferrerPolicy policy)
-{
-    return adoptRef(new PrerenderHandle(client, url, referrer, policy));
-}
+class Prerender : public RefCounted<Prerender> {
+    WTF_MAKE_NONCOPYABLE(Prerender);
+public:
+    class ExtraData : public RefCounted<ExtraData> {
+    public:
+        virtual ~ExtraData() { }
+    };
 
-PrerenderHandle::PrerenderHandle(PrerenderClient* client, const KURL& url, const String& referrer, ReferrerPolicy policy)
-    : m_prerender(adoptRef(new Prerender(client, url, referrer, policy)))
-{
-}
+    static PassRefPtr<Prerender> create(PrerenderClient*, const KURL&, const String& referrer, ReferrerPolicy);
+    ~Prerender();
 
-PrerenderHandle::~PrerenderHandle()
-{
-    m_prerender->removeClient();
-}
+    void removeClient();
 
-Prerender* PrerenderHandle::prerender()
-{
-    return m_prerender.get();
-}
+    void add();
+    void cancel();
+    void abandon();
+    void suspend();
+    void resume();
 
-void PrerenderHandle::removeClient()
-{
-    prerender()->removeClient();
-}
+    const KURL& url() const { return m_url; }
+    const String& referrer() const { return m_referrer; }
+    ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
 
-void PrerenderHandle::add()
-{
-    prerender()->add();
-}
+    void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
+    ExtraData* extraData() { return m_extraData.get(); }
 
-void PrerenderHandle::cancel()
-{
-    prerender()->cancel();
-}
+    void didStartPrerender();
+    void didStopPrerender();
+    void didSendLoadForPrerender();
+    void didSendDOMContentLoadedForPrerender();
 
-void PrerenderHandle::abandon()
-{
-    prerender()->abandon();
-}
+private:
+    Prerender(PrerenderClient*, const KURL&, const String& referrer, ReferrerPolicy);
 
-void PrerenderHandle::suspend()
-{
-    prerender()->suspend();
-}
+    PrerenderClient* m_client;
 
-void PrerenderHandle::resume()
-{
-    prerender()->resume();
-}
+    const KURL m_url;
+    const String m_referrer;
+    const ReferrerPolicy m_referrerPolicy;
 
-const KURL& PrerenderHandle::url() const
-{
-    return m_prerender->url();
-}
+    bool m_isActive;
 
-const String& PrerenderHandle::referrer() const
-{
-    return m_prerender->url();
-}
-
-ReferrerPolicy PrerenderHandle::referrerPolicy() const
-{
-    return m_prerender->referrerPolicy();
-}
+    RefPtr<ExtraData> m_extraData;
+};
 
 }
+
+#endif // Prerender_h

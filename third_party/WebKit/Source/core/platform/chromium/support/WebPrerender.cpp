@@ -30,9 +30,9 @@
 
 #include "config.h"
 #include "public/platform/WebPrerender.h"
-#include "wtf/PassRefPtr.h"
 
-#include "core/platform/chromium/Prerender.h"
+#include "core/platform/Prerender.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebKit {
 

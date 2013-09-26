@@ -37,7 +37,7 @@
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
-class PrerenderHandle;
+class Prerender;
 }
 
 namespace WebKit {
@@ -49,7 +49,7 @@ class PrerendererClientImpl : public WebCore::PrerendererClient {
 public:
     explicit PrerendererClientImpl(WebPrerendererClient*);
 
-    void willAddPrerender(WebCore::PrerenderHandle*) OVERRIDE;
+    void willAddPrerender(WebCore::Prerender*) OVERRIDE;
 
 private:
     WebPrerendererClient* m_client;

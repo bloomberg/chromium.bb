@@ -39,7 +39,7 @@
 #include "core/html/LinkRelAttribute.h"
 #include "core/loader/Prerenderer.h"
 #include "core/page/Settings.h"
-#include "core/platform/PrerenderHandle.h"
+#include "core/platform/Prerender.h"
 #include "core/platform/network/DNS.h"
 
 namespace WebCore {
@@ -55,8 +55,8 @@ LinkLoader::~LinkLoader()
 {
     if (m_cachedLinkResource)
         m_cachedLinkResource->removeClient(this);
-    if (m_prerenderHandle)
-        m_prerenderHandle->removeClient();
+    if (m_prerender)
+        m_prerender->removeClient();
 }
 
 void LinkLoader::linkLoadTimerFired(Timer<LinkLoader>* timer)
@@ -129,15 +129,17 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
     }
 
     if (relAttribute.isLinkPrerender()) {
-        if (!m_prerenderHandle) {
-            m_prerenderHandle = document.prerenderer()->render(this, href);
-        } else if (m_prerenderHandle->url() != href) {
-            m_prerenderHandle->cancel();
-            m_prerenderHandle = document.prerenderer()->render(this, href);
+        if (!m_prerender) {
+            m_prerender = document.prerenderer()->render(this, href);
+        } else if (m_prerender->url() != href) {
+            m_prerender->cancel();
+            m_prerender->removeClient();
+            m_prerender = document.prerenderer()->render(this, href);
         }
-    } else if (m_prerenderHandle) {
-        m_prerenderHandle->cancel();
-        m_prerenderHandle = 0;
+    } else if (m_prerender) {
+        m_prerender->cancel();
+        m_prerender->removeClient();
+        m_prerender = 0;
     }
     return true;
 }
@@ -146,10 +148,10 @@ void LinkLoader::released()
 {
     // Only prerenders need treatment here; other links either use the Resource interface, or are notionally
     // atomic (dns prefetch).
-    if (m_prerenderHandle) {
-        m_prerenderHandle->cancel();
-        m_prerenderHandle->removeClient();
-        m_prerenderHandle.clear();
+    if (m_prerender) {
+        m_prerender->cancel();
+        m_prerender->removeClient();
+        m_prerender.clear();
     }
 }
 
