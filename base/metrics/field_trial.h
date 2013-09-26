@@ -166,9 +166,6 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, ActiveGroupsNotFinalized);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, Save);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, DuplicateRestore);
-  FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, HashClientId);
-  FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, HashClientIdIsUniform);
-  FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, NameGroupIds);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, SetForcedTurnFeatureOff);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, SetForcedTurnFeatureOn);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, SetForcedChangeDefault_Default);
