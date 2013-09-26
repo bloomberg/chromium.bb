@@ -2670,6 +2670,26 @@ TEST_F(LayerTreeHostImplTest, OverscrollChildEventBubbling) {
   }
 }
 
+TEST_F(LayerTreeHostImplTest, OverscrollAlways) {
+  LayerTreeSettings settings;
+  settings.always_overscroll = true;
+  host_impl_ = LayerTreeHostImpl::Create(
+      settings, this, &proxy_, &stats_instrumentation_);
+
+  SetupScrollAndContentsLayers(gfx::Size(50, 50));
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f, 0.5f, 4.f);
+  InitializeRendererAndDrawFrame();
+  EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(gfx::Vector2dF(), host_impl_->current_fling_velocity());
+
+  // Even though the layer can't scroll the overscroll still happens.
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
+  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10));
+  EXPECT_EQ(gfx::Vector2dF(0, 10), host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(gfx::Vector2dF(), host_impl_->current_fling_velocity());
+}
 
 class BlendStateTrackerContext: public TestWebGraphicsContext3D {
  public:

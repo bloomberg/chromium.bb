@@ -58,7 +58,8 @@ LayerTreeSettings::LayerTreeSettings()
       strict_layer_property_change_checking(false),
       use_map_image(false),
       ignore_root_layer_flings(false),
-      use_rgba_4444_textures(false) {
+      use_rgba_4444_textures(false),
+      always_overscroll(false) {
   // TODO(danakj): Renable surface caching when we can do it more realiably.
   // crbug.com/170713
   cache_render_pass_contents = false;

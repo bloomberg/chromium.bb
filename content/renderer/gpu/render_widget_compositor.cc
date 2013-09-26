@@ -283,6 +283,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   // Android WebView handles root layer flings itself.
   settings.ignore_root_layer_flings =
       widget->UsingSynchronousRendererCompositor();
+  settings.always_overscroll = widget->UsingSynchronousRendererCompositor();
   // RGBA_4444 textures are only enabled for low end devices
   // and are disabled for Android WebView as it doesn't support the format.
   settings.use_rgba_4444_textures =

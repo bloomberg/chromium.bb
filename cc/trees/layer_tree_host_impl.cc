@@ -2002,6 +2002,10 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     return ScrollOnMainThread;
   }
 
+  // If we want to send a DidOverscroll for this scroll it can't be ignored.
+  if (!potentially_scrolling_layer_impl && settings_.always_overscroll)
+    potentially_scrolling_layer_impl = RootScrollLayer();
+
   if (potentially_scrolling_layer_impl) {
     active_tree_->SetCurrentlyScrollingLayer(
         potentially_scrolling_layer_impl);
