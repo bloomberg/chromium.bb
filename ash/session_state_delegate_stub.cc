@@ -73,6 +73,9 @@ void SessionStateDelegateStub::GetLoggedInUsers(UserIdList* users) {
 void SessionStateDelegateStub::SwitchActiveUser(const std::string& user_id) {
 }
 
+void SessionStateDelegateStub::SwitchActiveUserToNext() {
+}
+
 void SessionStateDelegateStub::AddSessionStateObserver(
     ash::SessionStateObserver* observer) {
 }

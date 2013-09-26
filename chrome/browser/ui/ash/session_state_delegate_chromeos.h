@@ -39,6 +39,7 @@ class SessionStateDelegateChromeos
       ash::MultiProfileIndex index) const OVERRIDE;
   virtual void GetLoggedInUsers(ash::UserIdList* users) OVERRIDE;
   virtual void SwitchActiveUser(const std::string& user_email) OVERRIDE;
+  virtual void SwitchActiveUserToNext() OVERRIDE;
   virtual void AddSessionStateObserver(
       ash::SessionStateObserver* observer) OVERRIDE;
   virtual void RemoveSessionStateObserver(

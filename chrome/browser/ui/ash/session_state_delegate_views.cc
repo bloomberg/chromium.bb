@@ -77,6 +77,10 @@ void SessionStateDelegate::SwitchActiveUser(const std::string& user_email) {
   NOTIMPLEMENTED();
 }
 
+void SessionStateDelegate::SwitchActiveUserToNext() {
+  NOTIMPLEMENTED();
+}
+
 void SessionStateDelegate::AddSessionStateObserver(
     ash::SessionStateObserver* observer) {
   NOTIMPLEMENTED();

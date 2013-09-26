@@ -81,6 +81,10 @@ class ASH_EXPORT SessionStateDelegate {
   // (if that user has already signed in).
   virtual void SwitchActiveUser(const std::string& user_email) = 0;
 
+  // Switches the active user to the next user, with the same ordering as
+  // GetLoggedInUsers.
+  virtual void SwitchActiveUserToNext() = 0;
+
   // Adds or removes sessions state observer.
   virtual void AddSessionStateObserver(SessionStateObserver* observer) = 0;
   virtual void RemoveSessionStateObserver(SessionStateObserver* observer) = 0;

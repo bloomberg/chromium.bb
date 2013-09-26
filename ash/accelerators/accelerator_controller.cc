@@ -68,6 +68,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/session_state_delegate.h"
 #include "ash/system/chromeos/keyboard_brightness_controller.h"
 #include "base/chromeos/chromeos_version.h"
 #endif  // defined(OS_CHROMEOS)
@@ -185,6 +186,18 @@ bool HandleCrosh() {
 bool HandleToggleSpokenFeedback() {
   Shell::GetInstance()->delegate()->
       ToggleSpokenFeedback(A11Y_NOTIFICATION_SHOW);
+  return true;
+}
+
+bool SwitchToNextUser() {
+  if (!Shell::GetInstance()->delegate()->IsMultiProfilesEnabled() ||
+      !ash::switches::ShowMultiProfileShelfMenu())
+    return false;
+  ash::SessionStateDelegate* delegate =
+      ash::Shell::GetInstance()->session_state_delegate();
+  if (delegate->NumberOfLoggedInUsers() <= 1)
+    return false;
+  delegate->SwitchActiveUserToNext();
   return true;
 }
 
@@ -570,6 +583,8 @@ bool AcceleratorController::PerformAction(int action,
     case SWAP_PRIMARY_DISPLAY:
       Shell::GetInstance()->display_controller()->SwapPrimaryDisplay();
       return true;
+    case SWITCH_TO_NEXT_USER:
+      return SwitchToNextUser();
     case TOGGLE_SPOKEN_FEEDBACK:
       return HandleToggleSpokenFeedback();
     case TOGGLE_WIFI:

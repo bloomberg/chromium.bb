@@ -130,6 +130,7 @@ enum AcceleratorAction {
   OPEN_CROSH,
   OPEN_FILE_DIALOG,  // Open 'Open file' dialog.
   OPEN_FILE_MANAGER,
+  SWITCH_TO_NEXT_USER,
 #endif
 };
 

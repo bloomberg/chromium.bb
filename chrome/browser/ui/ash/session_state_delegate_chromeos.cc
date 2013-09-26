@@ -98,9 +98,45 @@ void SessionStateDelegateChromeos::GetLoggedInUsers(ash::UserIdList* users) {
 
 void SessionStateDelegateChromeos::SwitchActiveUser(
     const std::string& user_email) {
-  // The user_id can be a display email which might be capitalized and has dots.
-  chromeos::UserManager::Get()->SwitchActiveUser(
-      gaia::CanonicalizeEmail(gaia::SanitizeEmail(user_email)));
+  // Disallow switching to an already active user since that might crash.
+  // Transform the |user_email| into a |user_id| for comparison & switching.
+  std::string user_id =
+      gaia::CanonicalizeEmail(gaia::SanitizeEmail(user_email));
+  if (user_id == chromeos::UserManager::Get()->GetActiveUser()->email())
+    return;
+  chromeos::UserManager::Get()->SwitchActiveUser(user_id);
+}
+
+void SessionStateDelegateChromeos::SwitchActiveUserToNext() {
+  // Make sure there is a user to switch to.
+  if (NumberOfLoggedInUsers() <= 1)
+    return;
+
+  const chromeos::UserList& logged_in_users =
+      chromeos::UserManager::Get()->GetLoggedInUsers();
+
+  std::string user_id = chromeos::UserManager::Get()->GetActiveUser()->email();
+
+  // Get an iterator positioned at the active user.
+  chromeos::UserList::const_iterator it;
+  for (it = logged_in_users.begin();
+       it != logged_in_users.end(); ++it) {
+    if ((*it)->email() == user_id)
+      break;
+  }
+
+  // Active user not found.
+  if (it == logged_in_users.end())
+    return;
+
+  // Get the next user's email, wrapping to the start of the list if necessary.
+  if (++it == logged_in_users.end())
+    user_id = (*logged_in_users.begin())->email();
+  else
+    user_id = (*it)->email();
+
+  // Switch using the transformed |user_id|.
+  chromeos::UserManager::Get()->SwitchActiveUser(user_id);
 }
 
 void SessionStateDelegateChromeos::AddSessionStateObserver(

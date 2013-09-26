@@ -114,6 +114,10 @@ void TestSessionStateDelegate::SwitchActiveUser(const std::string& email) {
   activated_user_ = email;
 }
 
+void TestSessionStateDelegate::SwitchActiveUserToNext() {
+  activated_user_ = "someone@tray";
+}
+
 void TestSessionStateDelegate::AddSessionStateObserver(
     SessionStateObserver* observer) {
 }
