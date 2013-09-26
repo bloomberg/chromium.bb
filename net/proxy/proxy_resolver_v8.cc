@@ -730,7 +730,8 @@ void ProxyResolverV8::CancelSetPacScript() {
 }
 
 void ProxyResolverV8::PurgeMemory() {
-  context_->PurgeMemory();
+  if (context_)
+    context_->PurgeMemory();
 }
 
 int ProxyResolverV8::SetPacScript(
