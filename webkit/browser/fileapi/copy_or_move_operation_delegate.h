@@ -112,6 +112,14 @@ class CopyOrMoveOperationDelegate
                           const FileSystemURL& dest_url,
                           const StatusCallback& callback,
                           base::PlatformFileError error);
+  void PostProcessDirectoryAfterGetMetadata(
+      const FileSystemURL& src_url,
+      const StatusCallback& callback,
+      base::PlatformFileError error,
+      const base::PlatformFileInfo& file_info);
+  void PostProcessDirectoryAfterTouchFile(const FileSystemURL& src_url,
+                                          const StatusCallback& callback,
+                                          base::PlatformFileError error);
   void DidRemoveSourceForMove(const StatusCallback& callback,
                               base::PlatformFileError error);
 
