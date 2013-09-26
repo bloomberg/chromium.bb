@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/cdm/ppapi/api/content_decryption_module.h"
 #include "media/cdm/ppapi/cdm_video_decoder.h"
 
@@ -14,6 +15,9 @@ struct AVCodecContext;
 struct AVFrame;
 
 namespace media {
+
+class ScopedPtrAVFreeContext;
+class ScopedPtrAVFreeFrame;
 
 class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
  public:
@@ -43,8 +47,8 @@ class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
   void ReleaseFFmpegResources();
 
   // FFmpeg structures owned by this object.
-  AVCodecContext* codec_context_;
-  AVFrame* av_frame_;
+  scoped_ptr_malloc<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
+  scoped_ptr_malloc<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
 
   bool is_initialized_;
 

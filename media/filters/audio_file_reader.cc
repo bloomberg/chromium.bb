@@ -114,10 +114,10 @@ bool AudioFileReader::Open() {
 }
 
 void AudioFileReader::Close() {
-  if (codec_context_) {
-    avcodec_close(codec_context_);
-    codec_context_ = NULL;
-  }
+  // |codec_context_| is a stream inside glue_->format_context(), so it is
+  // closed when |glue_| is disposed.
+  glue_.reset();
+  codec_context_ = NULL;
 }
 
 int AudioFileReader::Read(AudioBus* audio_bus) {

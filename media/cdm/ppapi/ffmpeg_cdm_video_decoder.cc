@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/buffers.h"
 #include "media/base/limits.h"
+#include "media/ffmpeg/ffmpeg_common.h"
 
 // Include FFmpeg header files.
 extern "C" {
@@ -128,9 +129,7 @@ static void CopyPlane(const uint8_t* source,
 }
 
 FFmpegCdmVideoDecoder::FFmpegCdmVideoDecoder(cdm::Host* host)
-    : codec_context_(NULL),
-      av_frame_(NULL),
-      is_initialized_(false),
+    : is_initialized_(false),
       host_(host) {
 }
 
@@ -152,8 +151,8 @@ bool FFmpegCdmVideoDecoder::Initialize(const cdm::VideoDecoderConfig& config) {
   }
 
   // Initialize AVCodecContext structure.
-  codec_context_ = avcodec_alloc_context3(NULL);
-  CdmVideoDecoderConfigToAVCodecContext(config, codec_context_);
+  codec_context_.reset(avcodec_alloc_context3(NULL));
+  CdmVideoDecoderConfigToAVCodecContext(config, codec_context_.get());
 
   // Enable motion vector search (potentially slow), strong deblocking filter
   // for damaged macroblocks, and set our error detection sensitivity.
@@ -170,12 +169,12 @@ bool FFmpegCdmVideoDecoder::Initialize(const cdm::VideoDecoderConfig& config) {
   }
 
   int status;
-  if ((status = avcodec_open2(codec_context_, codec, NULL)) < 0) {
+  if ((status = avcodec_open2(codec_context_.get(), codec, NULL)) < 0) {
     LOG(ERROR) << "Initialize(): avcodec_open2 failed: " << status;
     return false;
   }
 
-  av_frame_ = avcodec_alloc_frame();
+  av_frame_.reset(avcodec_alloc_frame());
   is_initialized_ = true;
 
   return true;
@@ -189,7 +188,7 @@ void FFmpegCdmVideoDecoder::Deinitialize() {
 
 void FFmpegCdmVideoDecoder::Reset() {
   DVLOG(1) << "Reset()";
-  avcodec_flush_buffers(codec_context_);
+  avcodec_flush_buffers(codec_context_.get());
 }
 
 // static
@@ -223,15 +222,15 @@ cdm::Status FFmpegCdmVideoDecoder::DecodeFrame(
   codec_context_->reordered_opaque = timestamp;
 
   // Reset frame to default values.
-  avcodec_get_frame_defaults(av_frame_);
+  avcodec_get_frame_defaults(av_frame_.get());
 
   // This is for codecs not using get_buffer to initialize
   // |av_frame_->reordered_opaque|
   av_frame_->reordered_opaque = codec_context_->reordered_opaque;
 
   int frame_decoded = 0;
-  int result = avcodec_decode_video2(codec_context_,
-                                     av_frame_,
+  int result = avcodec_decode_video2(codec_context_.get(),
+                                     av_frame_.get(),
                                      &frame_decoded,
                                      &packet);
   // Log the problem when we can't decode a video frame and exit early.
@@ -329,16 +328,8 @@ bool FFmpegCdmVideoDecoder::CopyAvFrameTo(cdm::VideoFrame* cdm_video_frame) {
 void FFmpegCdmVideoDecoder::ReleaseFFmpegResources() {
   DVLOG(1) << "ReleaseFFmpegResources()";
 
-  if (codec_context_) {
-    av_free(codec_context_->extradata);
-    avcodec_close(codec_context_);
-    av_free(codec_context_);
-    codec_context_ = NULL;
-  }
-  if (av_frame_) {
-    av_free(av_frame_);
-    av_frame_ = NULL;
-  }
+  codec_context_.reset();
+  av_frame_.reset();
 }
 
 }  // namespace media

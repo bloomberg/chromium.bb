@@ -8,6 +8,7 @@
 #include <list>
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
@@ -22,6 +23,8 @@ class MessageLoopProxy;
 namespace media {
 
 class DecoderBuffer;
+class ScopedPtrAVFreeContext;
+class ScopedPtrAVFreeFrame;
 
 class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
  public:
@@ -77,8 +80,8 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
   base::Closure reset_cb_;
 
   // FFmpeg structures owned by this object.
-  AVCodecContext* codec_context_;
-  AVFrame* av_frame_;
+  scoped_ptr_malloc<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
+  scoped_ptr_malloc<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
 
   VideoDecoderConfig config_;
 

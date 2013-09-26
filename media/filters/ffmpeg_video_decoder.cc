@@ -58,9 +58,7 @@ FFmpegVideoDecoder::FFmpegVideoDecoder(
     const scoped_refptr<base::MessageLoopProxy>& message_loop)
     : message_loop_(message_loop),
       weak_factory_(this),
-      state_(kUninitialized),
-      codec_context_(NULL),
-      av_frame_(NULL) {
+      state_(kUninitialized) {
 }
 
 int FFmpegVideoDecoder::GetVideoBuffer(AVCodecContext* codec_context,
@@ -189,7 +187,7 @@ void FFmpegVideoDecoder::Reset(const base::Closure& closure) {
 void FFmpegVideoDecoder::DoReset() {
   DCHECK(decode_cb_.is_null());
 
-  avcodec_flush_buffers(codec_context_);
+  avcodec_flush_buffers(codec_context_.get());
   state_ = kNormal;
   base::ResetAndReturn(&reset_cb_).Run();
 }
@@ -290,7 +288,7 @@ bool FFmpegVideoDecoder::FFmpegDecode(
   DCHECK(video_frame);
 
   // Reset frame to default values.
-  avcodec_get_frame_defaults(av_frame_);
+  avcodec_get_frame_defaults(av_frame_.get());
 
   // Create a packet for input data.
   // Due to FFmpeg API changes we no longer have const read-only pointers.
@@ -312,8 +310,8 @@ bool FFmpegVideoDecoder::FFmpegDecode(
   }
 
   int frame_decoded = 0;
-  int result = avcodec_decode_video2(codec_context_,
-                                     av_frame_,
+  int result = avcodec_decode_video2(codec_context_.get(),
+                                     av_frame_.get(),
                                      &frame_decoded,
                                      &packet);
   // Log the problem if we can't decode a video frame and exit early.
@@ -356,16 +354,8 @@ bool FFmpegVideoDecoder::FFmpegDecode(
 }
 
 void FFmpegVideoDecoder::ReleaseFFmpegResources() {
-  if (codec_context_) {
-    av_free(codec_context_->extradata);
-    avcodec_close(codec_context_);
-    av_free(codec_context_);
-    codec_context_ = NULL;
-  }
-  if (av_frame_) {
-    av_free(av_frame_);
-    av_frame_ = NULL;
-  }
+  codec_context_.reset();
+  av_frame_.reset();
 }
 
 bool FFmpegVideoDecoder::ConfigureDecoder() {
@@ -373,8 +363,8 @@ bool FFmpegVideoDecoder::ConfigureDecoder() {
   ReleaseFFmpegResources();
 
   // Initialize AVCodecContext structure.
-  codec_context_ = avcodec_alloc_context3(NULL);
-  VideoDecoderConfigToAVCodecContext(config_, codec_context_);
+  codec_context_.reset(avcodec_alloc_context3(NULL));
+  VideoDecoderConfigToAVCodecContext(config_, codec_context_.get());
 
   // Enable motion vector search (potentially slow), strong deblocking filter
   // for damaged macroblocks, and set our error detection sensitivity.
@@ -386,12 +376,12 @@ bool FFmpegVideoDecoder::ConfigureDecoder() {
   codec_context_->release_buffer = ReleaseVideoBufferImpl;
 
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
-  if (!codec || avcodec_open2(codec_context_, codec, NULL) < 0) {
+  if (!codec || avcodec_open2(codec_context_.get(), codec, NULL) < 0) {
     ReleaseFFmpegResources();
     return false;
   }
 
-  av_frame_ = avcodec_alloc_frame();
+  av_frame_.reset(avcodec_alloc_frame());
   return true;
 }
 

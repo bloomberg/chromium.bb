@@ -8,6 +8,7 @@
 #include <list>
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder.h"
@@ -26,6 +27,8 @@ namespace media {
 class AudioTimestampHelper;
 class DecoderBuffer;
 struct QueuedAudioBuffer;
+class ScopedPtrAVFreeContext;
+class ScopedPtrAVFreeFrame;
 
 class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
  public:
@@ -66,7 +69,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
 
   DemuxerStream* demuxer_stream_;
   StatisticsCB statistics_cb_;
-  AVCodecContext* codec_context_;
+  scoped_ptr_malloc<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
 
   // Decoded audio format.
   int bytes_per_channel_;
@@ -86,7 +89,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   int output_frames_to_drop_;
 
   // Holds decoded audio.
-  AVFrame* av_frame_;
+  scoped_ptr_malloc<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
 
   ReadCB read_cb_;
 

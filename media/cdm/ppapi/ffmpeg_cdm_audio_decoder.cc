@@ -12,6 +12,7 @@
 #include "media/base/buffers.h"
 #include "media/base/data_buffer.h"
 #include "media/base/limits.h"
+#include "media/ffmpeg/ffmpeg_common.h"
 
 // Include FFmpeg header files.
 extern "C" {
@@ -82,8 +83,6 @@ static void CdmAudioDecoderConfigToAVCodecContext(
 FFmpegCdmAudioDecoder::FFmpegCdmAudioDecoder(cdm::Host* host)
     : is_initialized_(false),
       host_(host),
-      codec_context_(NULL),
-      av_frame_(NULL),
       bits_per_channel_(0),
       samples_per_second_(0),
       channels_(0),
@@ -111,15 +110,15 @@ bool FFmpegCdmAudioDecoder::Initialize(const cdm::AudioDecoderConfig& config) {
   }
 
   // Initialize AVCodecContext structure.
-  codec_context_ = avcodec_alloc_context3(NULL);
-  CdmAudioDecoderConfigToAVCodecContext(config, codec_context_);
+  codec_context_.reset(avcodec_alloc_context3(NULL));
+  CdmAudioDecoderConfigToAVCodecContext(config, codec_context_.get());
 
   // MP3 decodes to S16P which we don't support, tell it to use S16 instead.
   if (codec_context_->sample_fmt == AV_SAMPLE_FMT_S16P)
     codec_context_->request_sample_fmt = AV_SAMPLE_FMT_S16;
 
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
-  if (!codec || avcodec_open2(codec_context_, codec, NULL) < 0) {
+  if (!codec || avcodec_open2(codec_context_.get(), codec, NULL) < 0) {
     DLOG(ERROR) << "Could not initialize audio decoder: "
                 << codec_context_->codec_id;
     return false;
@@ -146,7 +145,7 @@ bool FFmpegCdmAudioDecoder::Initialize(const cdm::AudioDecoderConfig& config) {
   }
 
   // Success!
-  av_frame_ = avcodec_alloc_frame();
+  av_frame_.reset(avcodec_alloc_frame());
   bits_per_channel_ = config.bits_per_channel;
   samples_per_second_ = config.samples_per_second;
   bytes_per_frame_ = codec_context_->channels * bits_per_channel_ / 8;
@@ -171,7 +170,7 @@ void FFmpegCdmAudioDecoder::Deinitialize() {
 
 void FFmpegCdmAudioDecoder::Reset() {
   DVLOG(1) << "Reset()";
-  avcodec_flush_buffers(codec_context_);
+  avcodec_flush_buffers(codec_context_.get());
   ResetTimestampState();
 }
 
@@ -233,11 +232,11 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
   // skipping end of stream packets since they have a size of zero.
   do {
     // Reset frame to default values.
-    avcodec_get_frame_defaults(av_frame_);
+    avcodec_get_frame_defaults(av_frame_.get());
 
     int frame_decoded = 0;
     int result = avcodec_decode_audio4(
-        codec_context_, av_frame_, &frame_decoded, &packet);
+        codec_context_.get(), av_frame_.get(), &frame_decoded, &packet);
 
     if (result < 0) {
       DCHECK(!is_end_of_stream)
@@ -391,16 +390,8 @@ void FFmpegCdmAudioDecoder::ResetTimestampState() {
 void FFmpegCdmAudioDecoder::ReleaseFFmpegResources() {
   DVLOG(1) << "ReleaseFFmpegResources()";
 
-  if (codec_context_) {
-    av_free(codec_context_->extradata);
-    avcodec_close(codec_context_);
-    av_free(codec_context_);
-    codec_context_ = NULL;
-  }
-  if (av_frame_) {
-    av_free(av_frame_);
-    av_frame_ = NULL;
-  }
+  codec_context_.reset();
+  av_frame_.reset();
 }
 
 void FFmpegCdmAudioDecoder::SerializeInt64(int64 value) {

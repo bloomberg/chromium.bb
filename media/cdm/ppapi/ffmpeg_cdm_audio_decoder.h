@@ -19,10 +19,11 @@ struct AVFrame;
 namespace media {
 class AudioBus;
 class AudioTimestampHelper;
+class ScopedPtrAVFreeContext;
+class ScopedPtrAVFreeFrame;
 }
 
 namespace media {
-
 // TODO(xhwang): This class is partially cloned from FFmpegAudioDecoder. When
 // FFmpegAudioDecoder is updated, it's a pain to keep this class in sync with
 // FFmpegAudioDecoder. We need a long term sustainable solution for this. See
@@ -63,8 +64,8 @@ class FFmpegCdmAudioDecoder {
   cdm::Host* const host_;
 
   // FFmpeg structures owned by this object.
-  AVCodecContext* codec_context_;
-  AVFrame* av_frame_;
+  scoped_ptr_malloc<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
+  scoped_ptr_malloc<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
 
   // Audio format.
   int bits_per_channel_;

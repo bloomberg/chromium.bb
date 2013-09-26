@@ -58,6 +58,28 @@ class ScopedPtrAVFreePacket {
   }
 };
 
+// Frees an AVCodecContext object in a class that can be passed as a Deleter
+// argument to scoped_ptr_malloc.
+class ScopedPtrAVFreeContext {
+ public:
+  inline void operator()(void* x) const {
+    AVCodecContext* codec_context = static_cast<AVCodecContext*>(x);
+    av_free(codec_context->extradata);
+    avcodec_close(codec_context);
+    av_free(codec_context);
+  }
+};
+
+// Frees an AVFrame object in a class that can be passed as a Deleter argument
+// to scoped_ptr_malloc.
+class ScopedPtrAVFreeFrame {
+ public:
+  inline void operator()(void* x) const {
+    AVFrame* frame = static_cast<AVFrame*>(x);
+    av_frame_free(&frame);
+  }
+};
+
 // Converts an int64 timestamp in |time_base| units to a base::TimeDelta.
 // For example if |timestamp| equals 11025 and |time_base| equals {1, 44100}
 // then the return value will be a base::TimeDelta for 0.25 seconds since that
