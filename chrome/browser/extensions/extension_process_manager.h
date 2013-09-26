@@ -199,6 +199,10 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // extension. Does nothing if this is not an extension renderer.
   void RegisterRenderViewHost(content::RenderViewHost* render_view_host);
 
+  // Unregister RenderViewHosts and clear background page data for an extension
+  // which has been unloaded.
+  void UnregisterExtension(const std::string& extension_id);
+
   // Clears background page data for this extension.
   void ClearBackgroundPageData(const std::string& extension_id);
 

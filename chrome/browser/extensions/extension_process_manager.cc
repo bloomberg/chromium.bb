@@ -66,6 +66,14 @@ std::string GetExtensionID(RenderViewHost* render_view_host) {
   return render_view_host->GetSiteInstance()->GetSiteURL().host();
 }
 
+void OnRenderViewHostUnregistered(Profile* profile,
+                                  RenderViewHost* render_view_host) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED,
+      content::Source<Profile>(profile),
+      content::Details<RenderViewHost>(render_view_host));
+}
+
 // Incognito profiles use this process manager. It is mostly a shim that decides
 // whether to fall back on the original profile's ExtensionProcessManager based
 // on whether a given extension uses "split" or "spanning" incognito behavior.
@@ -360,11 +368,7 @@ void ExtensionProcessManager::UnregisterRenderViewHost(
   if (view == all_extension_views_.end())
     return;
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED,
-      content::Source<Profile>(GetProfile()),
-      content::Details<RenderViewHost>(render_view_host));
-
+  OnRenderViewHostUnregistered(GetProfile(), render_view_host);
   extensions::ViewType view_type = view->second;
   all_extension_views_.erase(view);
 
@@ -607,7 +611,7 @@ void ExtensionProcessManager::Observe(
           break;
         }
       }
-      background_page_data_.erase(extension->id());
+      UnregisterExtension(extension->id());
       break;
     }
 
@@ -771,6 +775,27 @@ void ExtensionProcessManager::CloseBackgroundHosts() {
     ExtensionHostSet::iterator current = iter++;
     delete *current;
   }
+}
+
+void ExtensionProcessManager::UnregisterExtension(
+    const std::string& extension_id) {
+  // The lazy_keepalive_count may be greater than zero at this point because
+  // RenderViewHosts are still alive. During extension reloading, they will
+  // decrement the lazy_keepalive_count to negative for the new extension
+  // instance when they are destroyed. Since we are erasing the background page
+  // data for the unloaded extension, unregister the RenderViewHosts too.
+  Profile* profile = GetProfile();
+  for (ExtensionRenderViews::iterator it = all_extension_views_.begin();
+       it != all_extension_views_.end(); ) {
+    if (GetExtensionID(it->first) == extension_id) {
+      OnRenderViewHostUnregistered(profile, it->first);
+      all_extension_views_.erase(it++);
+    } else {
+      ++it;
+    }
+  }
+
+  background_page_data_.erase(extension_id);
 }
 
 void ExtensionProcessManager::ClearBackgroundPageData(

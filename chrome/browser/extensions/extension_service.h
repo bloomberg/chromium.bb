@@ -224,7 +224,7 @@ class ExtensionService
 
   // Getter and setter for the flag that specifies whether the extension is
   // being reloaded.
-  bool IsBeingReloaded(const std::string& extension_name) const;
+  bool IsBeingReloaded(const std::string& extension_id) const;
   void SetBeingReloaded(const std::string& extension_id, bool value);
 
   // Getter and setter for the flag that specifies if the extension has used
