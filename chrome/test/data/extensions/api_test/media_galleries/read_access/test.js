@@ -7,7 +7,8 @@ var mediaGalleries = chrome.mediaGalleries;
 var galleries;
 var testResults = [];
 var foundGalleryWithEntry = false;
-var expectedGalleryEntryLength = 306;  // hard-coded size of ../common/test.jpg
+var expectedFileSystems;
+var expectedGalleryEntryLength;
 
 function checkFinished() {
   if (testResults.length != galleries.length)
@@ -76,27 +77,32 @@ var mediaFileSystemsDirectoryErrorCallback = function(err) {
   checkFinished();
 };
 
-function testGalleries(expectedFileSystems) {
-  chrome.test.assertEq(expectedFileSystems, galleries.length);
-  if (expectedFileSystems == 0) {
-    chrome.test.succeed();
-    return;
-  }
-
-  for (var i = 0; i < galleries.length; i++) {
-    var dirReader = galleries[i].root.createReader();
-    dirReader.readEntries(mediaFileSystemsDirectoryEntryCallback,
-                          mediaFileSystemsDirectoryErrorCallback);
-  }
-};
-
 var mediaFileSystemsListCallback = function(results) {
   galleries = results;
 };
 
-chrome.test.runTests([
-  function mediaGalleriesReadAccess() {
-    mediaGalleries.getMediaFileSystems(
-        chrome.test.callbackPass(mediaFileSystemsListCallback));
-  },
-]);
+chrome.test.getConfig(function(config) {
+  customArg = JSON.parse(config.customArg);
+  expectedFileSystems = customArg[0];
+  expectedGalleryEntryLength = customArg[1];
+
+  chrome.test.runTests([
+    function getMediaFileSystems() {
+      mediaGalleries.getMediaFileSystems(
+          chrome.test.callbackPass(mediaFileSystemsListCallback));
+    },
+    function readFileSystems() {
+      chrome.test.assertEq(expectedFileSystems, galleries.length);
+      if (expectedFileSystems == 0) {
+        chrome.test.succeed();
+        return;
+      }
+
+      for (var i = 0; i < galleries.length; i++) {
+        var dirReader = galleries[i].root.createReader();
+        dirReader.readEntries(mediaFileSystemsDirectoryEntryCallback,
+                              mediaFileSystemsDirectoryErrorCallback);
+      }
+    },
+  ]);
+})
