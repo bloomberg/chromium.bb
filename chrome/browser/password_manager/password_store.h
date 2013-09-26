@@ -195,6 +195,9 @@ class PasswordStore
   // thread so the callback can be executed there. This should be the UI thread.
   virtual void ForwardLoginsResult(GetLoginsRequest* request);
 
+  // Log UMA stats for number of bulk deletions.
+  void LogStatsForBulkDeletion(int num_deletions);
+
  private:
   // Schedule the given |func| to be run in the PasswordStore's own thread with
   // responses delivered to |consumer| on the current thread.

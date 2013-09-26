@@ -896,6 +896,7 @@ void PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
         changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE,
                                               **it));
       }
+      LogStatsForBulkDeletion(changes.size());
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_LOGINS_CHANGED,
           content::Source<PasswordStore>(this),

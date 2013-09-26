@@ -139,6 +139,7 @@ void PasswordFormManager::PermanentlyBlacklist() {
 
   // Retroactively forget existing matches for this form, so we NEVER prompt or
   // autofill it again.
+  int num_passwords_deleted = 0;
   if (!best_matches_.empty()) {
     PasswordFormMap::const_iterator iter;
     PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
@@ -154,10 +155,15 @@ void PasswordFormManager::PermanentlyBlacklist() {
       // delete logins that were actually saved on a different page (hence with
       // different origin URL) and just happened to match this form because of
       // the scoring algorithm. See bug 1204493.
-      if (iter->second->origin == observed_form_.origin)
+      if (iter->second->origin == observed_form_.origin) {
         password_store->RemoveLogin(*iter->second);
+        ++num_passwords_deleted;
+      }
     }
   }
+
+  UMA_HISTOGRAM_COUNTS("PasswordManager.NumPasswordsDeletedWhenBlacklisting",
+                       num_passwords_deleted);
 
   // Save the pending_credentials_ entry marked as blacklisted.
   SaveAsNewLogin(false);

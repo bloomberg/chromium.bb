@@ -10984,6 +10984,21 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.NumPasswordsDeletedByBulkDelete">
+  <summary>
+    Number of passwords deleted when the user chooses to clear passwords via the
+    clear browsing data UI.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.NumPasswordsDeletedWhenBlacklisting">
+  <summary>
+    When the user chooses to never remember passwords for a form, we remove all
+    previously saved credentials for that form. This is the count of those
+    credentials.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.OtherPossibleUsernamesUsage"
     enum="OtherPossibleUsernamesUsage">
   <summary>

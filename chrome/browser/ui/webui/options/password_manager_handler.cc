@@ -17,6 +17,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -94,12 +95,6 @@ void PasswordManagerHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("removePasswordException",
       base::Bind(&PasswordManagerHandler::RemovePasswordException,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("removeAllSavedPasswords",
-      base::Bind(&PasswordManagerHandler::RemoveAllSavedPasswords,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("removeAllPasswordExceptions",
-      base::Bind(&PasswordManagerHandler::RemoveAllPasswordExceptions,
-                 base::Unretained(this)));
 }
 
 void PasswordManagerHandler::OnLoginsChanged() {
@@ -129,8 +124,11 @@ void PasswordManagerHandler::RemoveSavedPassword(const ListValue* args) {
   std::string string_value = UTF16ToUTF8(ExtractStringValue(args));
   int index;
   if (base::StringToInt(string_value, &index) && index >= 0 &&
-      static_cast<size_t>(index) < password_list_.size())
+      static_cast<size_t>(index) < password_list_.size()) {
     store->RemoveLogin(*password_list_[index]);
+    content::RecordAction(
+        content::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
+  }
 }
 
 void PasswordManagerHandler::RemovePasswordException(
@@ -141,28 +139,11 @@ void PasswordManagerHandler::RemovePasswordException(
   std::string string_value = UTF16ToUTF8(ExtractStringValue(args));
   int index;
   if (base::StringToInt(string_value, &index) && index >= 0 &&
-      static_cast<size_t>(index) < password_exception_list_.size())
+      static_cast<size_t>(index) < password_exception_list_.size()) {
     store->RemoveLogin(*password_exception_list_[index]);
-}
-
-void PasswordManagerHandler::RemoveAllSavedPasswords(
-    const ListValue* args) {
-  // TODO(jhawkins): This will cause a list refresh for every password in the
-  // list. Add PasswordStore::RemoveAllLogins().
-  PasswordStore* store = GetPasswordStore();
-  if (!store)
-    return;
-  for (size_t i = 0; i < password_list_.size(); ++i)
-    store->RemoveLogin(*password_list_[i]);
-}
-
-void PasswordManagerHandler::RemoveAllPasswordExceptions(
-    const ListValue* args) {
-  PasswordStore* store = GetPasswordStore();
-  if (!store)
-    return;
-  for (size_t i = 0; i < password_exception_list_.size(); ++i)
-    store->RemoveLogin(*password_exception_list_[i]);
+    content::RecordAction(
+        content::UserMetricsAction("PasswordManager_RemovePasswordException"));
+  }
 }
 
 void PasswordManagerHandler::SetPasswordList() {

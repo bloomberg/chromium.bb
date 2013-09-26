@@ -200,20 +200,6 @@ cr.define('options', function() {
       chrome.send('removePasswordException', [String(rowIndex)]);
   };
 
-  /**
-   * Removes all saved passwords.
-   */
-  PasswordManager.removeAllPasswords = function() {
-    chrome.send('removeAllSavedPasswords');
-  };
-
-  /**
-   * Removes all password exceptions.
-   */
-  PasswordManager.removeAllPasswordExceptions = function() {
-    chrome.send('removeAllPasswordExceptions');
-  };
-
   PasswordManager.setSavedPasswordsList = function(entries) {
     PasswordManager.getInstance().setSavedPasswordsList_(entries);
   };
