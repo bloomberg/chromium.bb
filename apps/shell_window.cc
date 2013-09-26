@@ -286,8 +286,12 @@ void ShellWindow::RequestToLockMouse(WebContents* web_contents,
 
 void ShellWindow::OnNativeClose() {
   ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
-  if (shell_window_contents_)
+  if (shell_window_contents_) {
+    WebContents* web_contents = shell_window_contents_->GetWebContents();
+    WebContentsModalDialogManager::FromWebContents(web_contents)->
+        SetDelegate(NULL);
     shell_window_contents_->NativeWindowClosed();
+  }
   delete this;
 }
 
