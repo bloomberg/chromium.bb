@@ -113,11 +113,12 @@ TEST_F(SysInfoTest, GoogleChromeOSNoVersionNumbers) {
 
 TEST_F(SysInfoTest, GoogleChromeOSLsbReleaseTime) {
   const char* kLsbRelease = "CHROMEOS_RELEASE_VERSION=1.2.3.4";
-  base::Time lsb_release_time = base::Time::Now();
+  // Use a fake time that can be safely displayed as a string.
+  const base::Time lsb_release_time(base::Time::FromDoubleT(12345.6));
   base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, lsb_release_time);
   base::Time parsed_lsb_release_time = base::SysInfo::GetLsbReleaseTime();
-  EXPECT_EQ(lsb_release_time.ToDoubleT(),
-            parsed_lsb_release_time.ToDoubleT());
+  EXPECT_DOUBLE_EQ(lsb_release_time.ToDoubleT(),
+                   parsed_lsb_release_time.ToDoubleT());
 }
 
 #endif  // OS_CHROMEOS
