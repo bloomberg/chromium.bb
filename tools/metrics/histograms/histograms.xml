@@ -5343,6 +5343,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Keyboard.KeystrokeDeltas" units="milliseconds">
+  <summary>
+    The time between keystrokes in Aura text fields. The only keystrokes that
+    are measured are ones that produce a printable character and are not over 5
+    seconds apart.
+  </summary>
+</histogram>
+
 <histogram name="LanguageUsage.AcceptLanguage" enum="LanguageCode">
   <summary>Accept languages.</summary>
 </histogram>

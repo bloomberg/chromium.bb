@@ -111,6 +111,7 @@ class EventClientImpl;
 class EventRewriterEventFilter;
 class EventTransformationHandler;
 class FocusCycler;
+class KeyboardUMAEventFilter;
 class LocaleNotificationController;
 class MouseCursorEventFilter;
 class OutputConfiguratorAnimation;
@@ -584,6 +585,9 @@ class ASH_EXPORT Shell
   // An event filter that pre-handles key events while the partial
   // screenshot UI or the keyboard overlay is active.
   scoped_ptr<internal::OverlayEventFilter> overlay_filter_;
+
+  // An event filter for logging keyboard-related metrics.
+  scoped_ptr<internal::KeyboardUMAEventFilter> keyboard_metrics_filter_;
 
   // An event filter which handles system level gestures
   scoped_ptr<internal::SystemGestureEventFilter> system_gesture_filter_;

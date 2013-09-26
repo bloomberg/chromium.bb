@@ -26,6 +26,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/root_window_host_factory.h"
+#include "ash/keyboard_uma_event_filter.h"
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_item_delegate.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
@@ -218,6 +219,7 @@ Shell::~Shell() {
   if (mouse_cursor_filter_)
     RemovePreTargetHandler(mouse_cursor_filter_.get());
   RemovePreTargetHandler(system_gesture_filter_.get());
+  RemovePreTargetHandler(keyboard_metrics_filter_.get());
   RemovePreTargetHandler(event_transformation_handler_.get());
   RemovePreTargetHandler(accelerator_filter_.get());
 
@@ -481,6 +483,9 @@ void Shell::Init() {
 
   system_gesture_filter_.reset(new internal::SystemGestureEventFilter);
   AddPreTargetHandler(system_gesture_filter_.get());
+
+  keyboard_metrics_filter_.reset(new internal::KeyboardUMAEventFilter);
+  AddPreTargetHandler(keyboard_metrics_filter_.get());
 
   // The keyboard system must be initialized before the RootWindowController is
   // created.

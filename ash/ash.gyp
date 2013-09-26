@@ -140,6 +140,8 @@
         'keyboard_overlay/keyboard_overlay_delegate.h',
         'keyboard_overlay/keyboard_overlay_view.cc',
         'keyboard_overlay/keyboard_overlay_view.h',
+        'keyboard_uma_event_filter.cc',
+        'keyboard_uma_event_filter.h',
         'launcher/launcher.cc',
         'launcher/launcher.h',
         'launcher/launcher_button.cc',
