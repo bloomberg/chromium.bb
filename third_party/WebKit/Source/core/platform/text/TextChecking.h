@@ -38,9 +38,10 @@
 namespace WebCore {
 
 enum TextCheckingType {
-    TextCheckingTypeNone        = 0,
-    TextCheckingTypeSpelling    = 1 << 1,
-    TextCheckingTypeGrammar     = 1 << 2,
+    TextCheckingTypeNone                         = 0,
+    TextCheckingTypeSpelling                     = 1 << 1,
+    TextCheckingTypeGrammar                      = 1 << 2,
+    TextCheckingTypeInCustomSpellcheckDictionary = 1 << 3,
 };
 
 typedef unsigned TextCheckingTypeMask;

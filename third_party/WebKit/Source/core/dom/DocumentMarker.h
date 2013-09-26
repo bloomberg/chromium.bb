@@ -42,13 +42,15 @@ public:
         SpellingMarkerIndex = 0,
         GramarMarkerIndex,
         TextMatchMarkerIndex,
+        InCustomSpellcheckDictionaryMarkerIndex,
         MarkerTypeIndexesCount
     };
 
     enum MarkerType {
         Spelling = 1 << SpellingMarkerIndex,
         Grammar = 1 << GramarMarkerIndex,
-        TextMatch = 1 << TextMatchMarkerIndex
+        TextMatch = 1 << TextMatchMarkerIndex,
+        InCustomSpellcheckDictionary = 1 << InCustomSpellcheckDictionaryMarkerIndex
     };
 
     class MarkerTypes {
@@ -70,7 +72,7 @@ public:
     class AllMarkers : public MarkerTypes {
     public:
         AllMarkers()
-            : MarkerTypes(Spelling | Grammar | TextMatch)
+            : MarkerTypes(Spelling | Grammar | TextMatch | InCustomSpellcheckDictionary)
         {
         }
     };
