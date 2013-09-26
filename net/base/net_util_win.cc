@@ -169,7 +169,8 @@ bool GetNetworkList(NetworkInterfaceList* networks) {
         if (endpoint.FromSockAddr(address->Address.lpSockaddr,
                                   address->Address.iSockaddrLength)) {
           std::string name = adapter->AdapterName;
-          networks->push_back(NetworkInterface(name, endpoint.address()));
+          networks->push_back(NetworkInterface(name, endpoint.address(),
+                                               address->OnLinkPrefixLength));
         }
       }
     }

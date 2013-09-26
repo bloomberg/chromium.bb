@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -66,24 +67,33 @@ bool FileURLToFilePath(const GURL& url, base::FilePath* path) {
 bool GetNetworkList(NetworkInterfaceList* networks) {
 #if defined(OS_ANDROID)
   std::string network_list = android::GetNetworkList();
-  base::StringTokenizer network_interfaces(network_list, ";");
+  base::StringTokenizer network_interfaces(network_list, "\n");
   while (network_interfaces.GetNext()) {
     std::string network_item = network_interfaces.token();
-    base::StringTokenizer network_tokenizer(network_item, ",");
-    std::string name;
-    if (!network_tokenizer.GetNext())
-      continue;
-    name = network_tokenizer.token();
+    base::StringTokenizer network_tokenizer(network_item, "\t");
+    CHECK(network_tokenizer.GetNext());
+    std::string name = network_tokenizer.token();
 
-    std::string literal_address;
-    if (!network_tokenizer.GetNext())
-      continue;
-    literal_address = network_tokenizer.token();
+    CHECK(network_tokenizer.GetNext());
+    std::string interface_address = network_tokenizer.token();
+
+    base::StringTokenizer address_tokenizer(interface_address, "/");
+
+    CHECK(address_tokenizer.GetNext());
+    std::string literal_address = address_tokenizer.token();
+
+    CHECK(address_tokenizer.GetNext());
+    std::string network_prefix = address_tokenizer.token();
 
     IPAddressNumber address;
-    if (!ParseIPLiteralToNumber(literal_address, &address))
-      continue;
-    networks->push_back(NetworkInterface(name, address));
+    CHECK(ParseIPLiteralToNumber(literal_address, &address));
+
+    unsigned net_mask = 0;
+    CHECK(base::StringToUint(network_prefix, &net_mask));
+    CHECK_LE(net_mask, address.size() * 8);
+
+    networks->push_back(
+        NetworkInterface(name, address, static_cast<uint8>(net_mask)));
   }
   return true;
 #else
@@ -133,10 +143,19 @@ bool GetNetworkList(NetworkInterfaceList* networks) {
       // Skip non-IP addresses.
       continue;
     }
+
     IPEndPoint address;
     std::string name = interface->ifa_name;
     if (address.FromSockAddr(addr, addr_size)) {
-      networks->push_back(NetworkInterface(name, address.address()));
+      uint8 net_mask = 0;
+      if (interface->ifa_netmask) {
+        IPEndPoint netmask;
+        if (netmask.FromSockAddr(interface->ifa_netmask, addr_size)) {
+          net_mask = MaskPrefixLength(netmask.address());
+        }
+      }
+
+      networks->push_back(NetworkInterface(name, address.address(), net_mask));
     }
   }
 

@@ -3291,7 +3291,6 @@ TEST(NetUtilTest, IsLocalhost) {
 TEST(NetUtilTest, GetNetworkList) {
   NetworkInterfaceList list;
   ASSERT_TRUE(GetNetworkList(&list));
-
   for (NetworkInterfaceList::iterator it = list.begin();
        it != list.end(); ++it) {
     // Verify that the name is not empty.
@@ -3309,6 +3308,8 @@ TEST(NetUtilTest, GetNetworkList) {
       }
     }
     EXPECT_FALSE(all_zeroes);
+    EXPECT_GE(it->network_prefix, 1u);
+    EXPECT_LE(it->network_prefix, it->address.size() * 8);
   }
 }
 

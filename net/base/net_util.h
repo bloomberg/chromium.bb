@@ -516,11 +516,14 @@ NET_EXPORT_PRIVATE bool IsLocalhost(const std::string& host);
 // interface.
 struct NET_EXPORT NetworkInterface {
   NetworkInterface();
-  NetworkInterface(const std::string& name, const IPAddressNumber& address);
+  NetworkInterface(const std::string& name,
+                   const IPAddressNumber& address,
+                   uint8 network_prefix);
   ~NetworkInterface();
 
   std::string name;
   IPAddressNumber address;
+  uint8 network_prefix;
 };
 
 typedef std::vector<NetworkInterface> NetworkInterfaceList;
@@ -552,6 +555,13 @@ enum WifiPHYLayerProtocol {
 // Characterize the PHY mode of the currently associated access point.
 // Currently only available on OS_WIN.
 NET_EXPORT WifiPHYLayerProtocol GetWifiPHYLayerProtocol();
+
+// Returns number of matching initial bits between the addresses |a1| and |a2|.
+unsigned CommonPrefixLength(const IPAddressNumber& a1,
+                            const IPAddressNumber& a2);
+
+// Computes the number of leading 1-bits in |mask|.
+unsigned MaskPrefixLength(const IPAddressNumber& mask);
 
 }  // namespace net
 
