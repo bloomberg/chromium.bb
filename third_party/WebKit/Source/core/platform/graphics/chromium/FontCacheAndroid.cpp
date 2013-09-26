@@ -39,12 +39,64 @@
 
 namespace WebCore {
 
+static AtomicString getFamilyNameForCharacter(UChar32 c, UScriptCode script)
+{
+    // This is a hack to use the preferred font for CJK scripts.
+    // FIXME: Use new Skia API once Android system supports per-family and per-script fallback fonts.
+    const char* locale;
+    switch (script) {
+    case USCRIPT_SIMPLIFIED_HAN:
+        locale = "zh-CN";
+        break;
+    case USCRIPT_TRADITIONAL_HAN:
+        locale = "zh-TW";
+        break;
+    case USCRIPT_KATAKANA_OR_HIRAGANA:
+        locale = "ja";
+        break;
+    case USCRIPT_HANGUL:
+        locale = "ko";
+        break;
+    default:
+        locale = 0;
+        break;
+    }
+
+    SkString skiaFamilyName;
+    if (!SkGetFallbackFamilyNameForChar(c, locale, &skiaFamilyName) || skiaFamilyName.isEmpty())
+        return AtomicString();
+    return skiaFamilyName.c_str();
+}
+
 PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, UChar32 c)
 {
-    SkString skiaFamilyName;
-    if (!SkGetFallbackFamilyNameForChar(c, &skiaFamilyName) || skiaFamilyName.isEmpty())
+    AtomicString familyName = getFamilyNameForCharacter(c, font.fontDescription().script());
+    if (familyName.isEmpty())
         return 0;
-    return getFontResourceData(getFontResourcePlatformData(font.fontDescription(), AtomicString(skiaFamilyName.c_str()), DoNotRetain), DoNotRetain);
+    return getFontResourceData(getFontResourcePlatformData(font.fontDescription(), familyName, DoNotRetain), DoNotRetain);
+}
+
+// static
+AtomicString FontCache::getGenericFamilyNameForScript(const AtomicString& familyName, UScriptCode script)
+{
+    // This is a hack to use the preferred font for CJK scripts.
+    // FIXME: Use new Skia API once Android system supports per-family and per-script fallback fonts.
+    UChar32 examplerChar;
+    switch (script) {
+    case USCRIPT_SIMPLIFIED_HAN:
+    case USCRIPT_TRADITIONAL_HAN:
+    case USCRIPT_KATAKANA_OR_HIRAGANA:
+        examplerChar = 0x4E00; // A common character in Japanese and Chinese.
+        break;
+    case USCRIPT_HANGUL:
+        examplerChar = 0xAC00;
+        break;
+    default:
+        // For other scripts, use the default generic family mapping logic.
+        return familyName;
+    }
+
+    return getFamilyNameForCharacter(examplerChar, script);
 }
 
 } // namespace WebCore
