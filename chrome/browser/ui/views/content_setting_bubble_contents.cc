@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_media_menu_model.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/browser/ui/views/password_menu_model.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/plugin_service.h"
@@ -134,7 +135,6 @@ ContentSettingBubbleContents::MediaMenuParts::MediaMenuParts(
     : type(type) {}
 
 ContentSettingBubbleContents::MediaMenuParts::~MediaMenuParts() {}
-
 
 // ContentSettingBubbleContents -----------------------------------------------
 
@@ -391,9 +391,12 @@ void ContentSettingBubbleContents::Init() {
   const int kDoubleColumnSetId = 1;
   views::ColumnSet* double_column_set =
       layout->AddColumnSet(kDoubleColumnSetId);
+
   if (content_setting_bubble_model_->content_type() ==
       CONTENT_SETTINGS_TYPE_SAVE_PASSWORD) {
     double_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 1,
+                                 GridLayout::USE_PREF, 0, 0);
+    double_column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                                  GridLayout::USE_PREF, 0, 0);
     double_column_set->AddPaddingColumn(
         0, views::kRelatedControlSmallVerticalSpacing);
@@ -407,11 +410,13 @@ void ContentSettingBubbleContents::Init() {
                                 GridLayout::USE_PREF, 0, 0);
 
     cancel_button_ = new views::LabelButton(
-        this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON));
-    cancel_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+        this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_DROP_DOWN));
+    cancel_button_->set_border(
+        new views::TextButtonNativeThemeBorder(cancel_button_));
     save_button_ = new views::LabelButton(
         this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
-    save_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    save_button_->set_border(
+        new views::TextButtonNativeThemeBorder(save_button_));
     manage_link_ = new views::Link(UTF8ToUTF16(bubble_content.manage_link));
     manage_link_->set_listener(this);
 
@@ -419,6 +424,18 @@ void ContentSettingBubbleContents::Init() {
 
     layout->StartRow(0, kDoubleColumnSetId);
     layout->AddView(cancel_button_);
+
+    views::MenuButton* menu_button =
+        new views::MenuButton(NULL, UTF8ToUTF16(" "), this, true);
+    menu_button->set_alignment(views::TextButton::ALIGN_LEFT);
+    menu_button->set_border(
+        new views::TextButtonNativeThemeBorder(menu_button));
+
+    password_menu_model_.reset(
+        new PasswordMenuModel(content_setting_bubble_model_.get(), this));
+    layout->AddView(menu_button);
+    menu_button->set_max_width(15);
+
     layout->AddView(save_button_);
 
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -468,9 +485,7 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
 
   if (sender == save_button_)
     content_setting_bubble_model_->OnSaveClicked();
-  else if (sender == cancel_button_)
-    content_setting_bubble_model_->OnCancelClicked();
-  else if (sender == close_button_)
+  else if (sender == cancel_button_ || sender == close_button_)
     content_setting_bubble_model_->OnDoneClicked();
   else
     NOTREACHED();
@@ -500,21 +515,36 @@ void ContentSettingBubbleContents::LinkClicked(views::Link* source,
 void ContentSettingBubbleContents::OnMenuButtonClicked(
     views::View* source,
     const gfx::Point& point) {
-  MediaMenuPartsMap::iterator i(media_menus_.find(
-      static_cast<views::MenuButton*>(source)));
-  DCHECK(i != media_menus_.end());
+  if (password_menu_model_) {
+    menu_runner_.reset(new views::MenuRunner(password_menu_model_.get()));
 
-  menu_runner_.reset(new views::MenuRunner(i->second->menu_model.get()));
+    gfx::Point screen_location;
+    views::View::ConvertPointToScreen(static_cast<views::MenuButton*>(source),
+                                      &screen_location);
+    ignore_result(menu_runner_->RunMenuAt(
+        source->GetWidget(),
+        static_cast<views::MenuButton*>(source),
+        gfx::Rect(screen_location,
+                  static_cast<views::MenuButton*>(source)->size()),
+        views::MenuItemView::TOPRIGHT,
+        ui::MENU_SOURCE_NONE,
+        views::MenuRunner::HAS_MNEMONICS));
+  } else {
+    MediaMenuPartsMap::iterator j(media_menus_.find(
+        static_cast<views::MenuButton*>(source)));
+    DCHECK(j != media_menus_.end());
+    menu_runner_.reset(new views::MenuRunner(j->second->menu_model.get()));
 
-  gfx::Point screen_location;
-  views::View::ConvertPointToScreen(i->first, &screen_location);
-  ignore_result(menu_runner_->RunMenuAt(
-      source->GetWidget(),
-      i->first,
-      gfx::Rect(screen_location, i->first->size()),
-      views::MenuItemView::TOPLEFT,
-      ui::MENU_SOURCE_NONE,
-      views::MenuRunner::HAS_MNEMONICS));
+    gfx::Point screen_location;
+    views::View::ConvertPointToScreen(j->first, &screen_location);
+    ignore_result(menu_runner_->RunMenuAt(
+        source->GetWidget(),
+        j->first,
+        gfx::Rect(screen_location, j->first->size()),
+        views::MenuItemView::TOPLEFT,
+        ui::MENU_SOURCE_NONE,
+        views::MenuRunner::HAS_MNEMONICS));
+  }
 }
 
 void ContentSettingBubbleContents::Observe(

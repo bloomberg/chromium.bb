@@ -1909,6 +1909,8 @@
         'browser/ui/views/panels/taskbar_window_thumbnailer_win.h',
         'browser/ui/views/password_generation_bubble_view.cc',
         'browser/ui/views/password_generation_bubble_view.h',
+        'browser/ui/views/password_menu_model.cc',
+        'browser/ui/views/password_menu_model.h',
         'browser/ui/views/pdf_password_dialog.cc',
         'browser/ui/views/profile_chooser_view.cc',
         'browser/ui/views/profile_chooser_view.h',

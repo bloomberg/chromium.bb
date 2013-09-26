@@ -117,6 +117,7 @@ class ContentSettingBubbleContents : public content::NotificationObserver,
   views::LabelButton* close_button_;
   scoped_ptr<views::MenuRunner> menu_runner_;
   MediaMenuPartsMap media_menus_;
+  scoped_ptr<ui::SimpleMenuModel> password_menu_model_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleContents);
 };
