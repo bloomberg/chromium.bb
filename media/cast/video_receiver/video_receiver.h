@@ -38,7 +38,6 @@ class VideoDecoder;
 class VideoReceiver : public base::NonThreadSafe,
                       public base::SupportsWeakPtr<VideoReceiver> {
  public:
-
   VideoReceiver(scoped_refptr<CastThread> cast_thread,
                 const VideoReceiverConfig& video_config,
                 PacedPacketSender* const packet_sender);

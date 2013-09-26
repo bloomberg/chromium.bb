@@ -98,7 +98,6 @@ AudioSender::AudioSender(scoped_refptr<CastThread> cast_thread,
               audio_config.rtcp_c_name),
         clock_(&default_tick_clock_),
         weak_factory_(this) {
-
   rtcp_.SetRemoteSSRC(audio_config.incoming_feedback_ssrc);
 
   if (!audio_config.use_external_encoder) {
@@ -137,7 +136,7 @@ void AudioSender::SendEncodedAudioFrame(
 }
 
 void AudioSender::ResendPackets(
-   const MissingFramesAndPacketsMap& missing_frames_and_packets) {
+    const MissingFramesAndPacketsMap& missing_frames_and_packets) {
   rtp_sender_.ResendPackets(missing_frames_and_packets);
 }
 

@@ -176,6 +176,7 @@ void AudioReceiver::DecodeAudioFrameThread(
     int number_of_10ms_blocks,
     int desired_frequency,
     const AudioFrameDecodedCallback callback) {
+  DCHECK(cast_thread_->CurrentlyOn(CastThread::AUDIO_DECODER));
   // TODO(mikhal): Allow the application to allocate this memory.
   scoped_ptr<PcmAudioFrame> audio_frame(new PcmAudioFrame());
 

@@ -75,7 +75,6 @@ AudioEncoder::AudioEncoder(scoped_refptr<CastThread> cast_thread,
           new WebrtEncodedDataCallback(cast_thread, audio_config.codec,
                                        audio_config.frequency)),
       timestamp_(0) {  // Must start at 0; used above.
-
   if (audio_encoder_->InitializeSender() != 0) {
     DCHECK(false) << "Invalid webrtc return value";
   }
@@ -131,6 +130,7 @@ void AudioEncoder::EncodeAudioFrameThread(
     const base::TimeTicks& recorded_time,
     const FrameEncodedCallback& frame_encoded_callback,
     const base::Closure release_callback) {
+  DCHECK(cast_thread_->CurrentlyOn(CastThread::AUDIO_ENCODER));
   int samples_per_10ms = audio_frame->frequency / 100;
   int number_of_10ms_blocks = audio_frame->samples.size() /
       (samples_per_10ms * audio_frame->channels);

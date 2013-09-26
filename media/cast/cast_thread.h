@@ -52,6 +52,8 @@ class CastThread : public base::RefCountedThreadSafe<CastThread> {
                        const base::Closure& task,
                        base::TimeDelta delay);
 
+  bool CurrentlyOn(ThreadId identifier);
+
  private:
   scoped_refptr<base::TaskRunner> GetMessageTaskRunnerForThread(
       ThreadId identifier);

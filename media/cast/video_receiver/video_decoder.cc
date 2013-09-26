@@ -47,7 +47,9 @@ void VideoDecoder::DecodeFrame(
     const EncodedVideoFrame* encoded_frame,
     const base::TimeTicks render_time,
     const VideoFrameDecodedCallback& frame_decoded_callback) {
+  DCHECK(cast_thread_->CurrentlyOn(CastThread::VIDEO_DECODER));
   DCHECK(encoded_frame->codec == codec_) << "Invalid codec";
+
   // TODO(mikhal): Allow the application to allocate this memory.
   scoped_ptr<I420VideoFrame> video_frame(new I420VideoFrame());
 

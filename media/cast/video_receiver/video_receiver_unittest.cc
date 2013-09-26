@@ -55,7 +55,7 @@ class VideoReceiverTest : public ::testing::Test {
     config_.codec = kVp8;
     config_.use_external_decoder = false;
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    cast_thread_ = new CastThread(task_runner_, task_runner_, task_runner_,
+    cast_thread_ = new CastThread(task_runner_, NULL, NULL,
                                   task_runner_, task_runner_);
     receiver_.reset(new
         PeerVideoReceiver(cast_thread_, config_, &mock_transport_));

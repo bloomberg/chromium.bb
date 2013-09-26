@@ -24,7 +24,7 @@ class AudioDecoderTest : public ::testing::Test {
   virtual void SetUp() {
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
     cast_thread_ = new CastThread(task_runner_, task_runner_, task_runner_,
-                                  task_runner_, task_runner_);
+                                  NULL, NULL);
   }
   void Configure(const AudioReceiverConfig& audio_config) {
     audio_decoder_ = new AudioDecoder(cast_thread_, audio_config);

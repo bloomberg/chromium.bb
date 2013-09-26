@@ -52,8 +52,8 @@ class VideoDecoderTest : public ::testing::Test {
   ~VideoDecoderTest() {}
   virtual void SetUp() {
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    cast_thread_ = new CastThread(task_runner_, task_runner_, task_runner_,
-                                  task_runner_, task_runner_);
+    cast_thread_ = new CastThread(task_runner_, NULL, NULL,
+                                  NULL, task_runner_);
     decoder_ = new VideoDecoder(cast_thread_, config_);
   }
 

@@ -42,7 +42,7 @@ class AudioReceiverTest : public ::testing::Test {
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
     cast_thread_ = new CastThread(task_runner_, task_runner_, task_runner_,
-                                  task_runner_, task_runner_);
+                                  NULL, NULL);
   }
 
   void Configure(bool use_external_decoder) {

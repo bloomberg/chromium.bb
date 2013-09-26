@@ -60,5 +60,22 @@ scoped_refptr<TaskRunner> CastThread::GetMessageTaskRunnerForThread(
   }
 }
 
+bool CastThread::CurrentlyOn(ThreadId identifier) {
+  switch (identifier) {
+    case CastThread::MAIN:
+      return main_thread_proxy_->RunsTasksOnCurrentThread();
+    case CastThread::AUDIO_ENCODER:
+      return audio_encode_thread_proxy_->RunsTasksOnCurrentThread();
+    case CastThread::AUDIO_DECODER:
+      return audio_decode_thread_proxy_->RunsTasksOnCurrentThread();
+    case CastThread::VIDEO_ENCODER:
+      return video_encode_thread_proxy_->RunsTasksOnCurrentThread();
+    case CastThread::VIDEO_DECODER:
+      return video_decode_thread_proxy_->RunsTasksOnCurrentThread();
+    default:
+      DCHECK(false) << "Wrong thread identifier";
+  }
+}
+
 }  // namespace cast
 }  // namespace media

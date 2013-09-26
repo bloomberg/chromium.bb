@@ -176,6 +176,7 @@ void VideoReceiver::DecodeVideoFrameThread(
     const base::TimeTicks render_time,
     const VideoFrameDecodedCallback& frame_decoded_callback,
     base::Closure frame_release_callback) {
+  DCHECK(cast_thread_->CurrentlyOn(CastThread::VIDEO_DECODER));
   video_decoder_->DecodeVideoFrame(encoded_frame, render_time,
       frame_decoded_callback, frame_release_callback);
   // Release memory.

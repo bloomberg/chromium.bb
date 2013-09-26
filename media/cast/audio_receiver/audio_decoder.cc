@@ -56,6 +56,7 @@ bool AudioDecoder::GetRawAudioFrame(int number_of_10ms_blocks,
                                     int desired_frequency,
                                     PcmAudioFrame* audio_frame,
                                     uint32* rtp_timestamp) {
+  DCHECK(cast_thread_->CurrentlyOn(CastThread::AUDIO_DECODER));
   if (!have_received_packets_) return false;
 
   for (int i = 0; i < number_of_10ms_blocks; ++i) {
