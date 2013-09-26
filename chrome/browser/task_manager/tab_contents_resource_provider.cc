@@ -214,8 +214,13 @@ void TabContentsResourceProvider::StartUpdating() {
   // pages, prerender pages, and background printed pages.
 
   // Add all the existing WebContentses.
-  for (TabContentsIterator iterator; !iterator.done(); iterator.Next())
+  for (TabContentsIterator iterator; !iterator.done(); iterator.Next()) {
     Add(*iterator);
+    DevToolsWindow* docked =
+        DevToolsWindow::GetDockedInstanceForInspectedTab(*iterator);
+    if (docked)
+      Add(docked->web_contents());
+  }
 
   // Add all the prerender pages.
   std::vector<Profile*> profiles(

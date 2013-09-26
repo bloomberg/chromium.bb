@@ -111,15 +111,15 @@ class BackgroundContentsService : private content::NotificationObserver,
  private:
   friend class BackgroundContentsServiceTest;
   friend class MockBackgroundContents;
-  friend class TaskManagerBrowserTest;
+  friend class TaskManagerNoShowBrowserTest;
 
   FRIEND_TEST_ALL_PREFIXES(BackgroundContentsServiceTest,
                            BackgroundContentsCreateDestroy);
   FRIEND_TEST_ALL_PREFIXES(BackgroundContentsServiceTest,
                            TestApplicationIDLinkage);
-  FRIEND_TEST_ALL_PREFIXES(TaskManagerBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(TaskManagerNoShowBrowserTest,
                            NoticeBGContentsChanges);
-  FRIEND_TEST_ALL_PREFIXES(TaskManagerBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(TaskManagerNoShowBrowserTest,
                            KillBGContents);
 
   // Registers for various notifications.
