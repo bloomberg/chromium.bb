@@ -6250,18 +6250,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ASH_FRAME_CAPTION_BUTTON_STYLE_DESCRIPTION" desc="Description for the flag for the alternate frame caption button style.">
         Enables an experimental visual style for the frame caption buttons (minimize, maximize, close).
       </message>
-      <message name="IDS_FLAGS_DISABLE_TAB_SCRUBBING_NAME" desc="Title for the flag to disable tab scrubbing.">
-        Disable tab scrubbing
-      </message>
-      <message name="IDS_FLAGS_DISABLE_TAB_SCRUBBING_DESCRIPTION" desc="Description for the flag to disable tab scrubbing.">
-        Disables tab switching via 3 finger horizontal scroll.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_WORKSPACE_SCRUBBING_NAME" desc="Title for the flag to enable workspace scrubbing.">
-        Enable workspace scrubbing
-      </message>
-      <message name="IDS_FLAGS_ENABLE_WORKSPACE_SCRUBBING_DESCRIPTION" desc="Description for the flag to enable workspace scrubbing.">
-        Enables workspace switching via 3 finger vertical scroll.
-      </message>
       <message name="IDS_FLAGS_DND_APPLIST_TO_LAUNCHER_NAME" desc="Title for the flag to disable drag and drop from the app list menu to the launcher.">
         Drag and drop from the app list menu to the launcher
       </message>

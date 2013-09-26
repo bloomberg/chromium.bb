@@ -89,11 +89,8 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   // Initialize TabScrubber after the Ash Shell has been initialized.
-  if (ash::Shell::HasInstance() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshDisableTabScrubbing)) {
+  if (ash::Shell::HasInstance())
     TabScrubber::GetInstance();
-  }
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {

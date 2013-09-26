@@ -1224,12 +1224,6 @@ const Experiment kExperiments[] = {
         ash::switches::kAshEnableAlternateFrameCaptionButtonStyle,
         ash::switches::kAshDisableAlternateFrameCaptionButtonStyle),
   },
-  { "ash-disable-tab-scrubbing",
-    IDS_FLAGS_DISABLE_TAB_SCRUBBING_NAME,
-    IDS_FLAGS_DISABLE_TAB_SCRUBBING_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kAshDisableTabScrubbing),
-  },
   {
     "ash-disable-auto-maximizing",
     IDS_FLAGS_ASH_AUTO_MAXIMIZING_NAME,
