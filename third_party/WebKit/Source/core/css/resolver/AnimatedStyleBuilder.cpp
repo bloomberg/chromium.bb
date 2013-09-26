@@ -207,6 +207,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setTextDecorationColor(toAnimatableColor(value)->color());
         style->setVisitedLinkTextDecorationColor(toAnimatableColor(value)->visitedLinkColor());
         return;
+    case CSSPropertyTextIndent:
+        style->setTextIndent(animatableValueToLength(value, state));
+        return;
     case CSSPropertyTop:
         style->setTop(animatableValueToLength(value, state));
         return;

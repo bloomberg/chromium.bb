@@ -198,6 +198,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style->right(), style);
     case CSSPropertyTextDecorationColor:
         return createFromColor(property, style);
+    case CSSPropertyTextIndent:
+        return createFromLength(style->textIndent(), style);
     case CSSPropertyTop:
         return createFromLength(style->top(), style);
     case CSSPropertyWebkitColumnRuleColor:
