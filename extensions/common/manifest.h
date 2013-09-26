@@ -40,6 +40,9 @@ class Manifest {
     EXTERNAL_POLICY_DOWNLOAD,  // A crx file from an external directory (via
                                // admin policies), installed from an update URL.
     COMMAND_LINE,       // --load-extension.
+    EXTERNAL_POLICY,    // A crx file from an external directory (via admin
+                        // policies), cached locally and installed from the
+                        // cache.
 
     NUM_LOCATIONS
   };
@@ -69,6 +72,7 @@ class Manifest {
     return location == EXTERNAL_PREF ||
            location == EXTERNAL_REGISTRY ||
            location == EXTERNAL_PREF_DOWNLOAD ||
+           location == EXTERNAL_POLICY ||
            location == EXTERNAL_POLICY_DOWNLOAD;
   }
 
@@ -82,6 +86,12 @@ class Manifest {
     // Only internal and external extensions can be autoupdated.
     return location == INTERNAL ||
            IsExternalLocation(location);
+  }
+
+  // Whether the |location| is a source of extensions force-installed through
+  // policy.
+  static inline bool IsPolicyLocation(Location location) {
+    return location == EXTERNAL_POLICY || location == EXTERNAL_POLICY_DOWNLOAD;
   }
 
   // Unpacked extensions start off with file access since they are a developer

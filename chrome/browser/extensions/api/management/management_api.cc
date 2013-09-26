@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -190,10 +191,14 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
     case Manifest::EXTERNAL_PREF_DOWNLOAD:
       info->install_type = management::ExtensionInfo::INSTALL_TYPE_SIDELOAD;
       break;
+    case Manifest::EXTERNAL_POLICY:
     case Manifest::EXTERNAL_POLICY_DOWNLOAD:
       info->install_type = management::ExtensionInfo::INSTALL_TYPE_ADMIN;
       break;
-    default:
+    case Manifest::NUM_LOCATIONS:
+      NOTREACHED();
+    case Manifest::INVALID_LOCATION:
+    case Manifest::COMPONENT:
       info->install_type = management::ExtensionInfo::INSTALL_TYPE_OTHER;
       break;
   }

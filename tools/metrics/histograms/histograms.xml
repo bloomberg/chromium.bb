@@ -21233,6 +21233,8 @@ other types of suffix sets.
   <int value="5" label="COMPONENT"/>
   <int value="6" label="EXTERNAL_PREF_DOWNLOAD"/>
   <int value="7" label="EXTERNAL_POLICY_DOWNLOAD"/>
+  <int value="8" label="COMMAND_LINE"/>
+  <int value="9" label="EXTERNAL_POLICY"/>
 </enum>
 
 <enum name="ExtensionPermission" type="int">

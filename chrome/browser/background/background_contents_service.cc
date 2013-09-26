@@ -409,8 +409,8 @@ void BackgroundContentsService::Observe(
       if (!extension)
         break;
 
-      const bool force_installed = extension->location() ==
-          extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD;
+      const bool force_installed =
+          extensions::Manifest::IsPolicyLocation(extension->location());
       if (!force_installed) {
         // When an extension crashes, EXTENSION_PROCESS_TERMINATED is followed
         // by an EXTENSION_UNLOADED notification. This UNLOADED signal causes

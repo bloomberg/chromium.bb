@@ -43,6 +43,7 @@ TEST(ExtensionTest, LocationValuesTest) {
   ASSERT_EQ(6, Manifest::EXTERNAL_PREF_DOWNLOAD);
   ASSERT_EQ(7, Manifest::EXTERNAL_POLICY_DOWNLOAD);
   ASSERT_EQ(8, Manifest::COMMAND_LINE);
+  ASSERT_EQ(9, Manifest::EXTERNAL_POLICY);
 }
 
 TEST(ExtensionTest, LocationPriorityTest) {

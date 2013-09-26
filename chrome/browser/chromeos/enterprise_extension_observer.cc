@@ -36,10 +36,8 @@ void EnterpriseExtensionObserver::Observe(
   const extensions::Extension* extension =
       content::Details<const extensions::InstalledExtensionInfo>(details)->
           extension;
-  if (extension->location() !=
-      extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD) {
+  if (!extensions::Manifest::IsPolicyLocation(extension->location()))
     return;
-  }
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,

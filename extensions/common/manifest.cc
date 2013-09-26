@@ -34,11 +34,15 @@ int GetLocationRank(Manifest::Location location) {
   switch (location) {
     // Component extensions can not be overriden by any other type.
     case Manifest::COMPONENT:
-      rank = 7;
+      rank = 8;
       break;
 
     // Policy controlled extensions may not be overridden by any type
     // that is not part of chrome.
+    case Manifest::EXTERNAL_POLICY:
+      rank = 7;
+      break;
+
     case Manifest::EXTERNAL_POLICY_DOWNLOAD:
       rank = 6;
       break;
