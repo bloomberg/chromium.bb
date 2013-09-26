@@ -10,7 +10,6 @@ HttpRequestInfo::HttpRequestInfo()
     : upload_data_stream(NULL),
       load_flags(0),
       motivation(NORMAL_MOTIVATION),
-      request_id(0),
       privacy_mode(kPrivacyModeDisabled) {
 }
 

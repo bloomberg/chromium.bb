@@ -186,7 +186,6 @@ void URLRequestFtpJob::StartHttpTransaction() {
   http_request_info_.url = request_->url();
   http_request_info_.method = request_->method();
   http_request_info_.load_flags = request_->load_flags();
-  http_request_info_.request_id = request_->identifier();
 
   int rv = request_->context()->http_transaction_factory()->CreateTransaction(
       priority_, &http_transaction_, NULL);

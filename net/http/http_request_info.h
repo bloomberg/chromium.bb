@@ -49,10 +49,6 @@ struct NET_EXPORT HttpRequestInfo {
   // The motivation behind this request.
   RequestMotivation motivation;
 
-  // An optional globally unique identifier for this request for use by the
-  // consumer. 0 is invalid.
-  uint64 request_id;
-
   // If enabled, then request must be sent over connection that cannot be
   // tracked by the server (e.g. without channel id).
   PrivacyMode privacy_mode;
