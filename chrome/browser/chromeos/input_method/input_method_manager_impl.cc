@@ -427,20 +427,10 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
     FOR_EACH_OBSERVER(InputMethodManager::Observer,
                       observers_,
                       InputMethodPropertyChanged(this));
-    // Hack for fixing http://crosbug.com/p/12798
-    // We should notify IME switching to ibus-daemon, otherwise
-    // IBusPreeditFocusMode does not work. To achieve it, change engine to
-    // itself if the next engine is XKB layout.
-    if (current_input_method_id.empty() ||
-        InputMethodUtil::IsKeyboardLayout(current_input_method_id)) {
-      if (engine)
-        engine->Reset();
-    } else {
-      if (client)
-        client->SetGlobalEngine(current_input_method_id,
-                                base::Bind(&base::DoNothing));
+    if (engine) {
+      engine->Disable();
+      IBusBridge::Get()->SetEngineHandler(NULL);
     }
-    IBusBridge::Get()->SetEngineHandler(NULL);
   } else {
     DCHECK(client);
     client->SetGlobalEngine(input_method_id_to_switch,

@@ -1111,15 +1111,15 @@ TEST_F(InputMethodManagerImplTest, TestReset) {
   ids.push_back(nacl_mozc_us_id);
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
-  EXPECT_EQ(1, mock_engine_handler_->reset_call_count());
+  EXPECT_EQ(0, mock_engine_handler_->reset_call_count());
   manager_->ChangeInputMethod(nacl_mozc_us_id);
   EXPECT_EQ(1, mock_ibus_client_->set_global_engine_call_count());
   EXPECT_EQ(nacl_mozc_us_id, mock_ibus_client_->latest_global_engine_name());
-  EXPECT_EQ(1, mock_engine_handler_->reset_call_count());
+  EXPECT_EQ(0, mock_engine_handler_->reset_call_count());
   manager_->ChangeInputMethod("xkb:us::eng");
-  EXPECT_EQ(2, mock_ibus_client_->set_global_engine_call_count());
+  EXPECT_EQ(1, mock_ibus_client_->set_global_engine_call_count());
   EXPECT_EQ(nacl_mozc_us_id, mock_ibus_client_->latest_global_engine_name());
-  EXPECT_EQ(1, mock_engine_handler_->reset_call_count());
+  EXPECT_EQ(0, mock_engine_handler_->reset_call_count());
 }
 
 TEST_F(InputMethodManagerImplTest,
