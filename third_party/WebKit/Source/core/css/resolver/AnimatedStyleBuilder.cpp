@@ -256,6 +256,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyWidth:
         style->setWidth(animatableValueToLength(value, state));
         return;
+    case CSSPropertyWordSpacing:
+        style->setWordSpacing(clampTo<float>(toAnimatableNumber(value)->toDouble()));
+        return;
     case CSSPropertyVisibility:
         style->setVisibility(toAnimatableVisibility(value)->visibility());
         return;

@@ -228,6 +228,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style->transformOriginY(), style);
     case CSSPropertyWidth:
         return createFromLength(style->width(), style);
+    case CSSPropertyWordSpacing:
+        return createFromDouble(style->wordSpacing());
     case CSSPropertyVisibility:
         return AnimatableVisibility::create(style->visibility());
     case CSSPropertyZIndex:

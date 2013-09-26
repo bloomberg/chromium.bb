@@ -1,0 +1,19 @@
+The helipad
+The helipad
+The helipad
+The helipad
+The helipad
+The helipad
+The helipad
+The helipad
+The helipad
+The helipad
+The helipad
+The helipad
+PASS: word-spacing from [-10px] to [40px] was [-25px] at -0.3
+PASS: word-spacing from [-10px] to [40px] was [-10px] at 0
+PASS: word-spacing from [-10px] to [40px] was [5px] at 0.3
+PASS: word-spacing from [-10px] to [40px] was [20px] at 0.6
+PASS: word-spacing from [-10px] to [40px] was [40px] at 1
+PASS: word-spacing from [-10px] to [40px] was [65px] at 1.5
+
