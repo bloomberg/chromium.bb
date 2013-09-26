@@ -293,9 +293,11 @@ void AsyncFileUtil::CopyFileLocal(
 
   PostFileSystemCallback(
       file_system_getter_,
-      base::Bind(&fileapi_internal::Copy,
-                 src_path, dest_path,
-                 google_apis::CreateRelayCallback(callback)),
+      base::Bind(
+          &fileapi_internal::Copy,
+          src_path, dest_path,
+          option == fileapi::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
+          google_apis::CreateRelayCallback(callback)),
       base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
 }
 
@@ -318,9 +320,11 @@ void AsyncFileUtil::MoveFileLocal(
 
   PostFileSystemCallback(
       file_system_getter_,
-      base::Bind(&fileapi_internal::Move,
-                 src_path, dest_path,
-                 google_apis::CreateRelayCallback(callback)),
+      base::Bind(
+          &fileapi_internal::Move,
+          src_path, dest_path,
+          option == fileapi::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
+          google_apis::CreateRelayCallback(callback)),
       base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
 }
 

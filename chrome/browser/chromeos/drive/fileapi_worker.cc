@@ -222,19 +222,21 @@ void GetFileInfo(const base::FilePath& file_path,
 
 void Copy(const base::FilePath& src_file_path,
           const base::FilePath& dest_file_path,
+          bool preserve_last_modified,
           const StatusCallback& callback,
           FileSystemInterface* file_system) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  file_system->Copy(src_file_path, dest_file_path, false,
+  file_system->Copy(src_file_path, dest_file_path, preserve_last_modified,
                     base::Bind(&RunStatusCallbackByFileError, callback));
 }
 
 void Move(const base::FilePath& src_file_path,
           const base::FilePath& dest_file_path,
+          bool preserve_last_modified,
           const StatusCallback& callback,
           FileSystemInterface* file_system) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  file_system->Move(src_file_path, dest_file_path, false,
+  file_system->Move(src_file_path, dest_file_path, preserve_last_modified,
                     base::Bind(&RunStatusCallbackByFileError, callback));
 }
 
