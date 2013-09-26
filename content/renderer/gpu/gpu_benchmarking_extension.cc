@@ -167,6 +167,72 @@ class CallbackAndContext : public base::RefCounted<CallbackAndContext> {
   DISALLOW_COPY_AND_ASSIGN(CallbackAndContext);
 };
 
+class GpuBenchmarkingContext {
+ public:
+  GpuBenchmarkingContext()
+      : web_frame_(NULL),
+        web_view_(NULL),
+        render_view_impl_(NULL),
+        compositor_(NULL) {}
+
+  bool Init(bool init_compositor) {
+    web_frame_ = WebFrame::frameForCurrentContext();
+    if (!web_frame_)
+      return false;
+
+    web_view_ = web_frame_->view();
+    if (!web_view_) {
+      web_frame_ = NULL;
+      return false;
+    }
+
+    render_view_impl_ = RenderViewImpl::FromWebView(web_view_);
+    if (!render_view_impl_) {
+      web_frame_ = NULL;
+      web_view_ = NULL;
+      return false;
+    }
+
+    if (!init_compositor)
+      return true;
+
+    compositor_ = render_view_impl_->compositor();
+    if (!compositor_) {
+      web_frame_ = NULL;
+      web_view_ = NULL;
+      render_view_impl_ = NULL;
+      return false;
+    }
+
+    return true;
+  }
+
+  WebFrame* web_frame() const {
+    DCHECK(web_frame_ != NULL);
+    return web_frame_;
+  }
+  WebView* web_view() const {
+    DCHECK(web_view_ != NULL);
+    return web_view_;
+  }
+  RenderViewImpl* render_view_impl() const {
+    DCHECK(render_view_impl_ != NULL);
+    return render_view_impl_;
+  }
+  RenderWidgetCompositor* compositor() const {
+    DCHECK(compositor_ != NULL);
+    return compositor_;
+  }
+
+ private:
+  WebFrame* web_frame_;
+  WebView* web_view_;
+  RenderViewImpl* render_view_impl_;
+  RenderWidgetCompositor* compositor_;
+
+  DISALLOW_COPY_AND_ASSIGN(GpuBenchmarkingContext);
+};
+
 }  // namespace
 
 class GpuBenchmarkingWrapper : public v8::Extension {
@@ -258,68 +324,36 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
   static void SetNeedsDisplayOnAllLayers(
       const v8::FunctionCallbackInfo<v8::Value>& args) {
-    WebFrame* web_frame = WebFrame::frameForCurrentContext();
-    if (!web_frame)
+    GpuBenchmarkingContext context;
+    if (!context.Init(true))
       return;
 
-    WebView* web_view = web_frame->view();
-    if (!web_view)
-      return;
-
-    RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
-    if (!render_view_impl)
-      return;
-
-    RenderWidgetCompositor* compositor = render_view_impl->compositor();
-    if (!compositor)
-      return;
-
-    compositor->SetNeedsDisplayOnAllLayers();
+    context.compositor()->SetNeedsDisplayOnAllLayers();
   }
 
   static void SetRasterizeOnlyVisibleContent(
       const v8::FunctionCallbackInfo<v8::Value>& args) {
-    WebFrame* web_frame = WebFrame::frameForCurrentContext();
-    if (!web_frame)
+    GpuBenchmarkingContext context;
+    if (!context.Init(true))
       return;
 
-    WebView* web_view = web_frame->view();
-    if (!web_view)
-      return;
-
-    RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
-    if (!render_view_impl)
-      return;
-
-    RenderWidgetCompositor* compositor = render_view_impl->compositor();
-    if (!compositor)
-      return;
-
-    compositor->SetRasterizeOnlyVisibleContent();
+    context.compositor()->SetRasterizeOnlyVisibleContent();
   }
 
   static void GetRenderingStats(
       const v8::FunctionCallbackInfo<v8::Value>& args) {
 
-    WebFrame* web_frame = WebFrame::frameForCurrentContext();
-    if (!web_frame)
-      return;
-
-    WebView* web_view = web_frame->view();
-    if (!web_view)
-      return;
-
-    RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
-    if (!render_view_impl)
+    GpuBenchmarkingContext context;
+    if (!context.Init(false))
       return;
 
     WebRenderingStatsImpl stats;
-    render_view_impl->GetRenderingStats(stats);
+    context.render_view_impl()->GetRenderingStats(stats);
 
     content::GpuRenderingStats gpu_stats;
-    render_view_impl->GetGpuRenderingStats(&gpu_stats);
+    context.render_view_impl()->GetGpuRenderingStats(&gpu_stats);
     BrowserRenderingStats browser_stats;
-    render_view_impl->GetBrowserRenderingStats(&browser_stats);
+    context.render_view_impl()->GetBrowserRenderingStats(&browser_stats);
     v8::Handle<v8::Object> stats_object = v8::Object::New();
 
     RenderingStatsEnumerator enumerator(stats_object);
@@ -339,23 +373,11 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     if (dirname.length() == 0)
       return;
 
-    WebFrame* web_frame = WebFrame::frameForCurrentContext();
-    if (!web_frame)
+    GpuBenchmarkingContext context;
+    if (!context.Init(true))
       return;
 
-    WebView* web_view = web_frame->view();
-    if (!web_view)
-      return;
-
-    RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
-    if (!render_view_impl)
-      return;
-
-    RenderWidgetCompositor* compositor = render_view_impl->compositor();
-    if (!compositor)
-      return;
-
-    const cc::Layer* root_layer = compositor->GetRootLayer();
+    const cc::Layer* root_layer = context.compositor()->GetRootLayer();
     if (!root_layer)
       return;
 
@@ -398,16 +420,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
   static void BeginSmoothScroll(
       const v8::FunctionCallbackInfo<v8::Value>& args) {
-    WebFrame* web_frame = WebFrame::frameForCurrentContext();
-    if (!web_frame)
-      return;
-
-    WebView* web_view = web_frame->view();
-    if (!web_view)
-      return;
-
-    RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
-    if (!render_view_impl)
+    GpuBenchmarkingContext context;
+    if (!context.Init(false))
       return;
 
     // Account for the 2 optional arguments, mouse_event_x and mouse_event_y.
@@ -427,7 +441,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     scoped_refptr<CallbackAndContext> callback_and_context =
         new CallbackAndContext(args.GetIsolate(),
                                callback_local,
-                               web_frame->mainWorldScriptContext());
+                               context.web_frame()->mainWorldScriptContext());
 
     int pixels_to_scroll = args[2]->IntegerValue();
 
@@ -435,7 +449,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     int mouse_event_y = 0;
 
     if (arglen == 3) {
-      WebKit::WebRect rect = render_view_impl->windowRect();
+      WebKit::WebRect rect = context.render_view_impl()->windowRect();
       mouse_event_x = rect.x + rect.width / 2;
       mouse_event_y = rect.y + rect.height / 2;
     } else {
@@ -446,14 +460,16 @@ class GpuBenchmarkingWrapper : public v8::Extension {
         return;
       }
 
-      mouse_event_x = args[3]->IntegerValue() * web_view->pageScaleFactor();
-      mouse_event_y = args[4]->IntegerValue() * web_view->pageScaleFactor();
+      mouse_event_x = args[3]->IntegerValue() *
+          context.web_view()->pageScaleFactor();
+      mouse_event_y = args[4]->IntegerValue() *
+          context.web_view()->pageScaleFactor();
     }
 
     // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
     // progress, we will leak the callback and context. This needs to be fixed,
     // somehow.
-    render_view_impl->BeginSmoothScroll(
+    context.render_view_impl()->BeginSmoothScroll(
         scroll_down,
         base::Bind(&OnSmoothScrollCompleted,
                    callback_and_context),
@@ -466,16 +482,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
   static void BeginPinch(
       const v8::FunctionCallbackInfo<v8::Value>& args) {
-    WebFrame* web_frame = WebFrame::frameForCurrentContext();
-    if (!web_frame)
-      return;
-
-    WebView* web_view = web_frame->view();
-    if (!web_view)
-      return;
-
-    RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
-    if (!render_view_impl)
+    GpuBenchmarkingContext context;
+    if (!context.Init(false))
       return;
 
     int arglen = args.Length();
@@ -500,13 +508,13 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     scoped_refptr<CallbackAndContext> callback_and_context =
         new CallbackAndContext(args.GetIsolate(),
                                callback_local,
-                               web_frame->mainWorldScriptContext());
+                               context.web_frame()->mainWorldScriptContext());
 
 
     // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
     // progress, we will leak the callback and context. This needs to be fixed,
     // somehow.
-    render_view_impl->BeginPinch(
+    context.render_view_impl()->BeginPinch(
         zoom_in,
         pixels_to_move,
         anchor_x,
@@ -559,16 +567,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
   static void BeginWindowSnapshotPNG(
       const v8::FunctionCallbackInfo<v8::Value>& args) {
-    WebFrame* web_frame = WebFrame::frameForCurrentContext();
-    if (!web_frame)
-      return;
-
-    WebView* web_view = web_frame->view();
-    if (!web_view)
-      return;
-
-    RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
-    if (!render_view_impl)
+    GpuBenchmarkingContext context;
+    if (!context.Init(false))
       return;
 
     if (!args[0]->IsFunction())
@@ -580,9 +580,9 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     scoped_refptr<CallbackAndContext> callback_and_context =
         new CallbackAndContext(args.GetIsolate(),
                                callback_local,
-                               web_frame->mainWorldScriptContext());
+                               context.web_frame()->mainWorldScriptContext());
 
-    render_view_impl->GetWindowSnapshot(
+    context.render_view_impl()->GetWindowSnapshot(
         base::Bind(&OnSnapshotCompleted, callback_and_context));
   }
 
