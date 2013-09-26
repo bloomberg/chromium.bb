@@ -4022,10 +4022,11 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF12AtomicStringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceModeE0EE8toStringIN3WTF12AtomicStringEEET_v
-   fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceModeE0EEcvN3WTF12AtomicStringEEv
+   fun:_ZN*7WebCore16V8StringResourceILNS_20V8StringResourceModeE0EE8toStringIN3WTF12AtomicStringEEET_v
+   fun:_ZN*7WebCore16V8StringResourceILNS_20V8StringResourceModeE0EEcvN3WTF12AtomicStringEEv
    ...
    fun:_ZN7WebCore24XMLHttpRequestV8Internal*
+   ...
    fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
 {
@@ -7206,4 +7207,16 @@
    fun:_Znw*
    fun:_ZN10extensions19TestExtensionSystem22CreateExtensionServiceEPK11CommandLineRKN4base8FilePathEb
    fun:_ZN10extensions12_GLOBAL__N_130ExtensionActionIconFactoryTest5SetUpEv
+}
+{
+   bug_298887
+   Memcheck:Leak
+   ...
+   fun:_ZN2ui25KeyboardCodeFromXKeyEventEP7_XEvent
+   fun:_ZN2ui22KeyboardCodeFromNativeERKP7_XEvent
+   fun:_ZN12_GLOBAL__N_121XModifierStateWatcher20UpdateStateFromEventERKP7_XEvent
+   fun:_ZN2ui20EventFlagsFromNativeERKP7_XEvent
+   fun:_ZN2ui8KeyEventC1ERKP7_XEventb
+   fun:_ZN8chromeos31KeyboardDrivenEventRewriterTest25GetRewrittenEventAsStringEN2ui12KeyboardCodeEiNS1_9EventTypeEhj
+   fun:_ZN8chromeos48KeyboardDrivenEventRewriterTest_PassThrough_Test8TestBodyEv
 }

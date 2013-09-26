@@ -886,3 +886,15 @@
    fun:v8::internal::ZoneObject::operator new
    fun:v8::internal::HCompareNumericAndBranch::New
 }
+{
+   bug_298887
+   Heapcheck:Leak
+   ...
+   fun:ui::KeyboardCodeFromXKeyEvent
+   fun:ui::KeyboardCodeFromNative
+   fun:UpdateStateFromEvent
+   fun:ui::EventFlagsFromNative
+   fun:KeyEvent
+   fun:chromeos::KeyboardDrivenEventRewriterTest::GetRewrittenEventAsString
+   fun:chromeos::KeyboardDrivenEventRewriterTest_PassThrough_Test::TestBody
+}
