@@ -56,6 +56,8 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context) cons
     const float ts = m_size >= 0 ? m_size : 12;
     paint->setTextSize(SkFloatToScalar(m_size));
     paint->setTypeface(typeface());
+    paint->setFakeBoldText(m_fakeBold);
+    paint->setTextSkewX(m_fakeItalic ? -SK_Scalar1 / 4 : 0);
 
     // Only set painting flags when we're actually painting.
     if (context) {
@@ -168,6 +170,8 @@ PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT hfont, int* size, int* pain
 FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     : m_font(0)
     , m_size(-1)
+    , m_fakeBold(false)
+    , m_fakeItalic(false)
     , m_orientation(Horizontal)
     , m_scriptCache(0)
     , m_typeface(SkTypeface::RefDefault())
@@ -179,6 +183,8 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
 FontPlatformData::FontPlatformData()
     : m_font(0)
     , m_size(0)
+    , m_fakeBold(false)
+    , m_fakeItalic(false)
     , m_orientation(Horizontal)
     , m_scriptCache(0)
     , m_typeface(SkTypeface::RefDefault())
@@ -190,6 +196,8 @@ FontPlatformData::FontPlatformData()
 FontPlatformData::FontPlatformData(HFONT font, float size, FontOrientation orientation)
     : m_font(RefCountedHFONT::create(font))
     , m_size(size)
+    , m_fakeBold(false)
+    , m_fakeItalic(false)
     , m_orientation(orientation)
     , m_scriptCache(0)
     , m_typeface(CreateTypefaceFromHFont(font, 0, &m_paintTextFlags))
@@ -201,6 +209,8 @@ FontPlatformData::FontPlatformData(HFONT font, float size, FontOrientation orien
 FontPlatformData::FontPlatformData(float size, bool bold, bool oblique)
     : m_font(0)
     , m_size(size)
+    , m_fakeBold(false)
+    , m_fakeItalic(false)
     , m_orientation(Horizontal)
     , m_scriptCache(0)
     , m_typeface(SkTypeface::RefDefault())
@@ -212,6 +222,8 @@ FontPlatformData::FontPlatformData(float size, bool bold, bool oblique)
 FontPlatformData::FontPlatformData(const FontPlatformData& data)
     : m_font(data.m_font)
     , m_size(data.m_size)
+    , m_fakeBold(false)
+    , m_fakeItalic(false)
     , m_orientation(data.m_orientation)
     , m_scriptCache(0)
     , m_typeface(data.m_typeface)
@@ -223,6 +235,8 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data)
 FontPlatformData::FontPlatformData(const FontPlatformData& data, float textSize)
     : m_font(data.m_font)
     , m_size(textSize)
+    , m_fakeBold(false)
+    , m_fakeItalic(false)
     , m_orientation(data.m_orientation)
     , m_scriptCache(0)
     , m_typeface(data.m_typeface)
@@ -234,6 +248,8 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data, float textSize)
 FontPlatformData::FontPlatformData(SkTypeface* tf, const char* family, float textSize, bool fakeBold, bool fakeItalic, FontOrientation orientation)
     : m_font(0)
     , m_size(textSize)
+    , m_fakeBold(fakeBold)
+    , m_fakeItalic(fakeItalic)
     , m_orientation(orientation)
     , m_scriptCache(0)
     , m_typeface(tf)
@@ -255,6 +271,8 @@ FontPlatformData& FontPlatformData::operator=(const FontPlatformData& data)
     if (this != &data) {
         m_font = data.m_font;
         m_size = data.m_size;
+        m_fakeBold = data.m_fakeBold;
+        m_fakeItalic = data.m_fakeItalic;
         m_orientation = data.m_orientation;
         m_typeface = data.m_typeface;
         m_paintTextFlags = data.m_paintTextFlags;

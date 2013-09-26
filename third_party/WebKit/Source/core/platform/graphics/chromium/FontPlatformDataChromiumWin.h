@@ -103,7 +103,7 @@ public:
 
     bool operator==(const FontPlatformData& other) const
     {
-        return m_font == other.m_font && m_size == other.m_size && m_orientation == other.m_orientation;
+        return m_font == other.m_font && m_size == other.m_size && m_fakeBold == other.m_fakeBold && m_fakeItalic == other.m_fakeItalic && m_orientation == other.m_orientation;
     }
 
 #if ENABLE(OPENTYPE_VERTICAL)
@@ -157,6 +157,8 @@ private:
     RefPtr<RefCountedHFONT> m_font;
     float m_size;  // Point size of the font in pixels.
     FontOrientation m_orientation;
+    bool m_fakeBold;
+    bool m_fakeItalic;
 
     RefPtr<SkTypeface> m_typeface; // cached from m_font
     int m_paintTextFlags; // cached from m_font
