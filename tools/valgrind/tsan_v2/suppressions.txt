@@ -132,8 +132,5 @@ race:content::WebRtcAudioCapturer::SetCapturerSource
 # http://crbug.com/290964
 race:PostponeInterruptsScope
 
-# http://crbug.com/296862
-race:browser_sync::PasswordChangeProcessor::Disconnect
-
 # http://crbug.com/296883
 race:net::URLFetcherCore::Stop
