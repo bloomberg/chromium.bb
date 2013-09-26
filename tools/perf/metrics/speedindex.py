@@ -33,16 +33,20 @@ class SpeedIndexMetric(Metric):
     in DidNavigateToPage, that will be too late.
     """
     tab.StartTimelineRecording()
+    self._script_is_loaded = False
+    self._is_finished = False
 
   def Stop(self, _, tab):
     """Stop timeline recording."""
     assert self.IsFinished(tab)
     tab.StopTimelineRecording()
 
-  def AddResults(self, tab, results):
+  # Optional argument chart_name is not in base class Metric.
+  # pylint: disable=W0221
+  def AddResults(self, tab, results, chart_name=None):
     """Calculate the speed index and add it to the results."""
     events = tab.timeline_model.GetAllEvents()
-    results.Add('speed_index', 'ms', _SpeedIndex(events))
+    results.Add('speed_index', 'ms', _SpeedIndex(events), chart_name=chart_name)
 
   def IsFinished(self, tab):
     """Decide whether the timeline recording should be stopped.
@@ -69,8 +73,8 @@ class SpeedIndexMetric(Metric):
     # needs to be loaded for this function, but it must be loaded AFTER
     # the Start method is called, because if the Start method is called in
     # the PageMeasurement's WillNavigateToPage function, then it will
-    # not be available here. The script should only be loaded once, so that
-    # variables in the script don't get reset.
+    # not be available here. The script should only be re-loaded once per page
+    # so that variables in the script get reset only for a new page.
     if not self._script_is_loaded:
       tab.ExecuteJavaScript(self._js)
       self._script_is_loaded = True
