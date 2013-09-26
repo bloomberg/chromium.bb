@@ -1367,9 +1367,5 @@ int32_t NaClSysMprotect(struct NaClAppThread  *natp,
           "0x%08"NACL_PRIxPTR", 0x%"NACL_PRIxS", 0x%x)\n",
           (uintptr_t) natp, (uintptr_t) start, length, prot);
 
-  if (!NaClAclBypassChecks) {
-    return -NACL_ABI_EACCES;
-  }
-
   return NaClSysMprotectInternal(nap, start, length, prot);
 }
