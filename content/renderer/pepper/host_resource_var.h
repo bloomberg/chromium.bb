@@ -24,22 +24,37 @@ class HostResourceVar : public ppapi::ResourceVar {
   explicit HostResourceVar(PP_Resource pp_resource);
 
   // Makes a resource var with a pending resource host.
-  // The |creation_message| contains data needed to create the plugin-side
-  // resource. Its type depends on the type of resource.
-  explicit HostResourceVar(const IPC::Message& creation_message);
+  // The |pending_renderer_host_id| is a pending resource host ID in the
+  // renderer to attach from the plugin. Depending on the type of resource, this
+  // may be 0. The |creation_message| contains additional data needed to create
+  // the plugin-side resource. Its type depends on the type of resource.
+  HostResourceVar(int pending_renderer_host_id,
+                  const IPC::Message& creation_message);
 
   // ResourceVar override.
   virtual PP_Resource GetPPResource() const OVERRIDE;
+  virtual int GetPendingRendererHostId() const OVERRIDE;
+  virtual int GetPendingBrowserHostId() const OVERRIDE;
   virtual const IPC::Message* GetCreationMessage() const OVERRIDE;
   virtual bool IsPending() const OVERRIDE;
+
+  void set_pending_browser_host_id(int id) {
+    pending_browser_host_id_ = id;
+  }
 
  protected:
   virtual ~HostResourceVar();
 
  private:
   // Real resource ID in the plugin. 0 if one has not yet been created
-  // (indicating that there is a pending host resource).
+  // (indicating that there is a pending resource host).
   PP_Resource pp_resource_;
+
+  // Pending resource host ID in the renderer.
+  int pending_renderer_host_id_;
+
+  // Pending resource host ID in the browser.
+  int pending_browser_host_id_;
 
   // If the plugin-side resource has not yet been created, carries a message to
   // create a resource of the specific type on the plugin side. Otherwise, NULL.

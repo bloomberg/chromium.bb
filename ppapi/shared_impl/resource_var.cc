@@ -9,6 +9,14 @@
 
 namespace ppapi {
 
+int ResourceVar::GetPendingRendererHostId() const {
+  return 0;
+}
+
+int ResourceVar::GetPendingBrowserHostId() const {
+  return 0;
+}
+
 const IPC::Message* ResourceVar::GetCreationMessage() const {
   return NULL;
 }

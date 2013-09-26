@@ -283,6 +283,12 @@ class ResourceRawVarData : public RawVarData {
   // This is a borrowed reference; the resource's refcount is not incremented.
   PP_Resource pp_resource_;
 
+  // Pending resource host ID in the renderer.
+  int pending_renderer_host_id_;
+
+  // Pending resource host ID in the browser.
+  int pending_browser_host_id_;
+
   // A message containing information about how to create a plugin-side
   // resource. The message type will vary based on the resource type, and will
   // usually contain a pending resource host ID, and other required information.

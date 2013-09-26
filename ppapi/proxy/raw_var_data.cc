@@ -665,8 +665,10 @@ bool DictionaryRawVarData::Read(PP_VarType type,
 }
 
 // ResourceRawVarData ----------------------------------------------------------
-ResourceRawVarData::ResourceRawVarData() {
-}
+ResourceRawVarData::ResourceRawVarData()
+    : pp_resource_(0),
+      pending_renderer_host_id_(0),
+      pending_browser_host_id_(0) {}
 
 ResourceRawVarData::~ResourceRawVarData() {
 }
@@ -686,6 +688,8 @@ bool ResourceRawVarData::Init(const PP_Var& var, PP_Instance /*instance*/) {
     creation_message_.reset(new IPC::Message(*message));
   else
     creation_message_.reset();
+  pending_renderer_host_id_ = resource_var->GetPendingRendererHostId();
+  pending_browser_host_id_ = resource_var->GetPendingBrowserHostId();
   initialized_ = true;
   return true;
 }
@@ -708,6 +712,8 @@ void ResourceRawVarData::PopulatePPVar(const PP_Var& var,
 void ResourceRawVarData::Write(IPC::Message* m,
                                const HandleWriter& handle_writer) {
   m->WriteInt(static_cast<int>(pp_resource_));
+  m->WriteInt(pending_renderer_host_id_);
+  m->WriteInt(pending_browser_host_id_);
   m->WriteBool(creation_message_);
   if (creation_message_)
     IPC::ParamTraits<IPC::Message>::Write(m, *creation_message_);
@@ -720,6 +726,10 @@ bool ResourceRawVarData::Read(PP_VarType type,
   if (!m->ReadInt(iter, &value))
     return false;
   pp_resource_ = static_cast<PP_Resource>(value);
+  if (!m->ReadInt(iter, &pending_renderer_host_id_))
+    return false;
+  if (!m->ReadInt(iter, &pending_browser_host_id_))
+    return false;
   bool has_creation_message;
   if (!m->ReadBool(iter, &has_creation_message))
     return false;

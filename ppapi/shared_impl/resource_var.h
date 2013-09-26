@@ -25,6 +25,12 @@ class PPAPI_SHARED_EXPORT ResourceVar : public Var {
   // plugin side. It should be AddRef'd if the resource is passed to the user.
   virtual PP_Resource GetPPResource() const = 0;
 
+  // Gets the pending resource host ID in the renderer.
+  virtual int GetPendingRendererHostId() const;
+
+  // Gets the pending resource host ID in the browser.
+  virtual int GetPendingBrowserHostId() const;
+
   // Gets the message for creating a plugin-side resource. Returns NULL if the
   // message is empty (which is always true on the plugin side).
   virtual const IPC::Message* GetCreationMessage() const;

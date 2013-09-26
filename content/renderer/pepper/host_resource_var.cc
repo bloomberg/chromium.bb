@@ -9,14 +9,27 @@ namespace content {
 HostResourceVar::HostResourceVar() : pp_resource_(0) {}
 
 HostResourceVar::HostResourceVar(PP_Resource pp_resource)
-    : pp_resource_(pp_resource) {}
+    : pp_resource_(pp_resource),
+      pending_renderer_host_id_(0),
+      pending_browser_host_id_(0) {}
 
-HostResourceVar::HostResourceVar(const IPC::Message& creation_message)
+HostResourceVar::HostResourceVar(int pending_renderer_host_id,
+                                 const IPC::Message& creation_message)
     : pp_resource_(0),
+      pending_renderer_host_id_(pending_renderer_host_id),
+      pending_browser_host_id_(0),
       creation_message_(new IPC::Message(creation_message)) {}
 
 PP_Resource HostResourceVar::GetPPResource() const {
   return pp_resource_;
+}
+
+int HostResourceVar::GetPendingRendererHostId() const {
+  return pending_renderer_host_id_;
+}
+
+int HostResourceVar::GetPendingBrowserHostId() const {
+  return pending_browser_host_id_;
 }
 
 const IPC::Message* HostResourceVar::GetCreationMessage() const {
