@@ -12,6 +12,7 @@
 #include "android_webview/native/aw_geolocation_permission_context.h"
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"
 #include "android_webview/native/aw_web_contents_view_delegate.h"
+#include "android_webview/native/aw_web_preferences_populater_impl.h"
 #include "android_webview/renderer/aw_content_renderer_client.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -139,6 +140,10 @@ content::GeolocationPermissionContext*
 content::WebContentsViewDelegate* AwMainDelegate::CreateViewDelegate(
     content::WebContents* web_contents) {
   return AwWebContentsViewDelegate::Create(web_contents);
+}
+
+AwWebPreferencesPopulater* AwMainDelegate::CreateWebPreferencesPopulater() {
+  return new AwWebPreferencesPopulaterImpl();
 }
 
 }  // namespace android_webview

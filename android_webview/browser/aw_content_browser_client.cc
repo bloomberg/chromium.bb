@@ -9,6 +9,7 @@
 #include "android_webview/browser/aw_contents_client_bridge_base.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
+#include "android_webview/browser/aw_web_preferences_populater.h"
 #include "android_webview/browser/jni_dependency_factory.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
@@ -19,12 +20,14 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "grit/ui_resources.h"
 #include "net/android/network_library.h"
 #include "net/ssl/ssl_info.h"
 #include "ui/base/l10n/l10n_util_android.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "webkit/common/webpreferences.h"
 
 namespace android_webview {
 namespace {
@@ -385,6 +388,17 @@ bool AwContentBrowserClient::AllowPepperSocketAPI(
     const content::SocketPermissionRequest* params) {
   NOTREACHED() << "Android WebView does not support plugins";
   return false;
+}
+
+void AwContentBrowserClient::OverrideWebkitPrefs(content::RenderViewHost* rvh,
+                                                 const GURL& url,
+                                                 WebPreferences* web_prefs) {
+  if (!preferences_populater_.get()) {
+    preferences_populater_ = make_scoped_ptr(native_factory_->
+        CreateWebPreferencesPopulater());
+  }
+  preferences_populater_->PopulateFor(
+      content::WebContents::FromRenderViewHost(rvh), web_prefs);
 }
 
 }  // namespace android_webview

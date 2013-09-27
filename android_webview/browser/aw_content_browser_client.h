@@ -5,11 +5,14 @@
 #ifndef ANDROID_WEBVIEW_LIB_AW_CONTENT_BROWSER_CLIENT_H_
 #define ANDROID_WEBVIEW_LIB_AW_CONTENT_BROWSER_CLIENT_H_
 
+#include "android_webview/browser/aw_web_preferences_populater.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
 #include "net/url_request/url_request_job_factory.h"
+
+struct WebPreferences;
 
 namespace android_webview {
 
@@ -150,11 +153,15 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url,
       bool private_api,
       const content::SocketPermissionRequest* params) OVERRIDE;
+  virtual void OverrideWebkitPrefs(content::RenderViewHost* rvh,
+                                   const GURL& url,
+                                   WebPreferences* web_prefs) OVERRIDE;
 
  private:
   // Android WebView currently has a single global (non-off-the-record) browser
   // context.
   scoped_ptr<AwBrowserContext> browser_context_;
+  scoped_ptr<AwWebPreferencesPopulater> preferences_populater_;
 
   JniDependencyFactory* native_factory_;
 

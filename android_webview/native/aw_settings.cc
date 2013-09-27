@@ -8,6 +8,7 @@
 #include "android_webview/native/aw_contents.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/supports_user_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -24,13 +25,37 @@ using base::android::ScopedJavaLocalRef;
 
 namespace android_webview {
 
+const void* kAwSettingsUserDataKey = &kAwSettingsUserDataKey;
+
+class AwSettingsUserData : public base::SupportsUserData::Data {
+ public:
+  AwSettingsUserData(AwSettings* ptr) : settings_(ptr) {}
+
+  static AwSettings* GetSettings(content::WebContents* web_contents) {
+    if (!web_contents)
+      return NULL;
+    AwSettingsUserData* data = reinterpret_cast<AwSettingsUserData*>(
+        web_contents->GetUserData(kAwSettingsUserDataKey));
+    return data ? data->settings_ : NULL;
+  }
+
+ private:
+  AwSettings* settings_;
+};
+
 AwSettings::AwSettings(JNIEnv* env, jobject obj, jint web_contents)
     : WebContentsObserver(
           reinterpret_cast<content::WebContents*>(web_contents)),
       aw_settings_(env, obj) {
+  reinterpret_cast<content::WebContents*>(web_contents)->
+      SetUserData(kAwSettingsUserDataKey, new AwSettingsUserData(this));
 }
 
 AwSettings::~AwSettings() {
+  if (web_contents()) {
+    web_contents()->SetUserData(kAwSettingsUserDataKey, NULL);
+  }
+
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> scoped_obj = aw_settings_.get(env);
   jobject obj = scoped_obj.obj();
@@ -41,6 +66,10 @@ AwSettings::~AwSettings() {
 
 void AwSettings::Destroy(JNIEnv* env, jobject obj) {
   delete this;
+}
+
+AwSettings* AwSettings::FromWebContents(content::WebContents* web_contents) {
+  return AwSettingsUserData::GetSettings(web_contents);
 }
 
 AwRenderViewHostExt* AwSettings::GetAwRenderViewHostExt() {
@@ -100,118 +129,8 @@ void AwSettings::UpdateWebkitPreferencesLocked(JNIEnv* env, jobject obj) {
   content::RenderViewHost* render_view_host =
       web_contents()->GetRenderViewHost();
   if (!render_view_host) return;
-  WebPreferences prefs = render_view_host->GetWebkitPreferences();
-
-  prefs.text_autosizing_enabled =
-      Java_AwSettings_getTextAutosizingEnabledLocked(env, obj);
-
-  int text_size_percent = Java_AwSettings_getTextSizePercentLocked(env, obj);
-  if (prefs.text_autosizing_enabled) {
-    prefs.font_scale_factor = text_size_percent / 100.0f;
-    prefs.force_enable_zoom = text_size_percent >= 130;
-    // Use the default zoom factor value when Text Autosizer is turned on.
-    render_view_host_ext->SetTextZoomFactor(1);
-  } else {
-    prefs.force_enable_zoom = false;
-    render_view_host_ext->SetTextZoomFactor(text_size_percent / 100.0f);
-  }
-
-  prefs.standard_font_family_map[webkit_glue::kCommonScript] =
-      ConvertJavaStringToUTF16(
-          Java_AwSettings_getStandardFontFamilyLocked(env, obj));
-
-  prefs.fixed_font_family_map[webkit_glue::kCommonScript] =
-      ConvertJavaStringToUTF16(
-          Java_AwSettings_getFixedFontFamilyLocked(env, obj));
-
-  prefs.sans_serif_font_family_map[webkit_glue::kCommonScript] =
-      ConvertJavaStringToUTF16(
-          Java_AwSettings_getSansSerifFontFamilyLocked(env, obj));
-
-  prefs.serif_font_family_map[webkit_glue::kCommonScript] =
-      ConvertJavaStringToUTF16(
-          Java_AwSettings_getSerifFontFamilyLocked(env, obj));
-
-  prefs.cursive_font_family_map[webkit_glue::kCommonScript] =
-      ConvertJavaStringToUTF16(
-          Java_AwSettings_getCursiveFontFamilyLocked(env, obj));
-
-  prefs.fantasy_font_family_map[webkit_glue::kCommonScript] =
-      ConvertJavaStringToUTF16(
-          Java_AwSettings_getFantasyFontFamilyLocked(env, obj));
-
-  prefs.default_encoding = ConvertJavaStringToUTF8(
-      Java_AwSettings_getDefaultTextEncodingLocked(env, obj));
-
-  prefs.minimum_font_size = Java_AwSettings_getMinimumFontSizeLocked(env, obj);
-
-  prefs.minimum_logical_font_size =
-      Java_AwSettings_getMinimumLogicalFontSizeLocked(env, obj);
-
-  prefs.default_font_size = Java_AwSettings_getDefaultFontSizeLocked(env, obj);
-
-  prefs.default_fixed_font_size =
-      Java_AwSettings_getDefaultFixedFontSizeLocked(env, obj);
-
-  // Blink's LoadsImagesAutomatically and ImagesEnabled must be
-  // set cris-cross to Android's. See
-  // https://code.google.com/p/chromium/issues/detail?id=224317#c26
-  prefs.loads_images_automatically =
-      Java_AwSettings_getImagesEnabledLocked(env, obj);
-  prefs.images_enabled =
-      Java_AwSettings_getLoadsImagesAutomaticallyLocked(env, obj);
-
-  prefs.javascript_enabled =
-      Java_AwSettings_getJavaScriptEnabledLocked(env, obj);
-
-  prefs.allow_universal_access_from_file_urls =
-      Java_AwSettings_getAllowUniversalAccessFromFileURLsLocked(env, obj);
-
-  prefs.allow_file_access_from_file_urls =
-      Java_AwSettings_getAllowFileAccessFromFileURLsLocked(env, obj);
-
-  prefs.javascript_can_open_windows_automatically =
-      Java_AwSettings_getJavaScriptCanOpenWindowsAutomaticallyLocked(env, obj);
-
-  prefs.supports_multiple_windows =
-      Java_AwSettings_getSupportMultipleWindowsLocked(env, obj);
-
-  prefs.plugins_enabled = !Java_AwSettings_getPluginsDisabledLocked(env, obj);
-
-  prefs.application_cache_enabled =
-      Java_AwSettings_getAppCacheEnabledLocked(env, obj);
-
-  prefs.local_storage_enabled =
-      Java_AwSettings_getDomStorageEnabledLocked(env, obj);
-
-  prefs.databases_enabled = Java_AwSettings_getDatabaseEnabledLocked(env, obj);
-
-  prefs.wide_viewport_quirk = true;
-  prefs.double_tap_to_zoom_enabled = prefs.use_wide_viewport =
-      Java_AwSettings_getUseWideViewportLocked(env, obj);
-
-  prefs.initialize_at_minimum_page_scale =
-      Java_AwSettings_getLoadWithOverviewModeLocked(env, obj);
-
-  prefs.user_gesture_required_for_media_playback =
-      Java_AwSettings_getMediaPlaybackRequiresUserGestureLocked(env, obj);
-
-  ScopedJavaLocalRef<jstring> url =
-      Java_AwSettings_getDefaultVideoPosterURLLocked(env, obj);
-  prefs.default_video_poster_url = url.obj() ?
-      GURL(ConvertJavaStringToUTF8(url)) : GURL();
-
-  bool support_quirks = Java_AwSettings_getSupportLegacyQuirksLocked(env, obj);
-  prefs.support_deprecated_target_density_dpi = support_quirks;
-  prefs.use_legacy_background_size_shorthand_behavior = support_quirks;
-  prefs.viewport_meta_layout_size_quirk = support_quirks;
-  prefs.viewport_meta_zero_values_quirk = support_quirks;
-  prefs.ignore_main_frame_overflow_hidden_quirk = support_quirks;
-
-  prefs.password_echo_enabled =
-      Java_AwSettings_getPasswordEchoEnabled(env, obj);
-
-  render_view_host->UpdateWebkitPreferences(prefs);
+  render_view_host->UpdateWebkitPreferences(
+      render_view_host->GetWebkitPreferences());
 }
 
 void AwSettings::UpdateInitialPageScaleLocked(JNIEnv* env, jobject obj) {
@@ -254,6 +173,131 @@ void AwSettings::RenderViewCreated(content::RenderViewHost* render_view_host) {
 
 void AwSettings::WebContentsDestroyed(content::WebContents* web_contents) {
   delete this;
+}
+
+void AwSettings::PopulateWebPreferences(WebPreferences* web_prefs) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  CHECK(env);
+
+  AwRenderViewHostExt* render_view_host_ext = GetAwRenderViewHostExt();
+  if (!render_view_host_ext) return;
+
+  ScopedJavaLocalRef<jobject> scoped_obj = aw_settings_.get(env);
+  jobject obj = scoped_obj.obj();
+  if (!obj) return;
+
+  web_prefs->text_autosizing_enabled =
+      Java_AwSettings_getTextAutosizingEnabledLocked(env, obj);
+
+  int text_size_percent = Java_AwSettings_getTextSizePercentLocked(env, obj);
+  if (web_prefs->text_autosizing_enabled) {
+    web_prefs->font_scale_factor = text_size_percent / 100.0f;
+    web_prefs->force_enable_zoom = text_size_percent >= 130;
+    // Use the default zoom factor value when Text Autosizer is turned on.
+    render_view_host_ext->SetTextZoomFactor(1);
+  } else {
+    web_prefs->force_enable_zoom = false;
+    render_view_host_ext->SetTextZoomFactor(text_size_percent / 100.0f);
+  }
+
+  web_prefs->standard_font_family_map[webkit_glue::kCommonScript] =
+      ConvertJavaStringToUTF16(
+          Java_AwSettings_getStandardFontFamilyLocked(env, obj));
+
+  web_prefs->fixed_font_family_map[webkit_glue::kCommonScript] =
+      ConvertJavaStringToUTF16(
+          Java_AwSettings_getFixedFontFamilyLocked(env, obj));
+
+  web_prefs->sans_serif_font_family_map[webkit_glue::kCommonScript] =
+      ConvertJavaStringToUTF16(
+          Java_AwSettings_getSansSerifFontFamilyLocked(env, obj));
+
+  web_prefs->serif_font_family_map[webkit_glue::kCommonScript] =
+      ConvertJavaStringToUTF16(
+          Java_AwSettings_getSerifFontFamilyLocked(env, obj));
+
+  web_prefs->cursive_font_family_map[webkit_glue::kCommonScript] =
+      ConvertJavaStringToUTF16(
+          Java_AwSettings_getCursiveFontFamilyLocked(env, obj));
+
+  web_prefs->fantasy_font_family_map[webkit_glue::kCommonScript] =
+      ConvertJavaStringToUTF16(
+          Java_AwSettings_getFantasyFontFamilyLocked(env, obj));
+
+  web_prefs->default_encoding = ConvertJavaStringToUTF8(
+      Java_AwSettings_getDefaultTextEncodingLocked(env, obj));
+
+  web_prefs->minimum_font_size =
+      Java_AwSettings_getMinimumFontSizeLocked(env, obj);
+
+  web_prefs->minimum_logical_font_size =
+      Java_AwSettings_getMinimumLogicalFontSizeLocked(env, obj);
+
+  web_prefs->default_font_size =
+      Java_AwSettings_getDefaultFontSizeLocked(env, obj);
+
+  web_prefs->default_fixed_font_size =
+      Java_AwSettings_getDefaultFixedFontSizeLocked(env, obj);
+
+  // Blink's LoadsImagesAutomatically and ImagesEnabled must be
+  // set cris-cross to Android's. See
+  // https://code.google.com/p/chromium/issues/detail?id=224317#c26
+  web_prefs->loads_images_automatically =
+      Java_AwSettings_getImagesEnabledLocked(env, obj);
+  web_prefs->images_enabled =
+      Java_AwSettings_getLoadsImagesAutomaticallyLocked(env, obj);
+
+  web_prefs->javascript_enabled =
+      Java_AwSettings_getJavaScriptEnabledLocked(env, obj);
+
+  web_prefs->allow_universal_access_from_file_urls =
+      Java_AwSettings_getAllowUniversalAccessFromFileURLsLocked(env, obj);
+
+  web_prefs->allow_file_access_from_file_urls =
+      Java_AwSettings_getAllowFileAccessFromFileURLsLocked(env, obj);
+
+  web_prefs->javascript_can_open_windows_automatically =
+      Java_AwSettings_getJavaScriptCanOpenWindowsAutomaticallyLocked(env, obj);
+
+  web_prefs->supports_multiple_windows =
+      Java_AwSettings_getSupportMultipleWindowsLocked(env, obj);
+
+  web_prefs->plugins_enabled =
+      !Java_AwSettings_getPluginsDisabledLocked(env, obj);
+
+  web_prefs->application_cache_enabled =
+      Java_AwSettings_getAppCacheEnabledLocked(env, obj);
+
+  web_prefs->local_storage_enabled =
+      Java_AwSettings_getDomStorageEnabledLocked(env, obj);
+
+  web_prefs->databases_enabled =
+      Java_AwSettings_getDatabaseEnabledLocked(env, obj);
+
+  web_prefs->wide_viewport_quirk = true;
+  web_prefs->double_tap_to_zoom_enabled = web_prefs->use_wide_viewport =
+      Java_AwSettings_getUseWideViewportLocked(env, obj);
+
+  web_prefs->initialize_at_minimum_page_scale =
+      Java_AwSettings_getLoadWithOverviewModeLocked(env, obj);
+
+  web_prefs->user_gesture_required_for_media_playback =
+      Java_AwSettings_getMediaPlaybackRequiresUserGestureLocked(env, obj);
+
+  ScopedJavaLocalRef<jstring> url =
+      Java_AwSettings_getDefaultVideoPosterURLLocked(env, obj);
+  web_prefs->default_video_poster_url = url.obj() ?
+      GURL(ConvertJavaStringToUTF8(url)) : GURL();
+
+  bool support_quirks = Java_AwSettings_getSupportLegacyQuirksLocked(env, obj);
+  web_prefs->support_deprecated_target_density_dpi = support_quirks;
+  web_prefs->use_legacy_background_size_shorthand_behavior = support_quirks;
+  web_prefs->viewport_meta_layout_size_quirk = support_quirks;
+  web_prefs->viewport_meta_zero_values_quirk = support_quirks;
+  web_prefs->ignore_main_frame_overflow_hidden_quirk = support_quirks;
+
+  web_prefs->password_echo_enabled =
+      Java_AwSettings_getPasswordEchoEnabled(env, obj);
 }
 
 static jint Init(JNIEnv* env,
