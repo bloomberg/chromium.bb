@@ -382,7 +382,8 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     : ContainerNode(0, CreateDocument)
     , TreeScope(this)
     , m_styleResolverThrowawayTimer(this, &Document::styleResolverThrowawayTimerFired)
-    , m_lastStyleResolverAccessTime(0)
+    , m_styleResolverAccessCount(0)
+    , m_lastStyleResolverAccessCount(0)
     , m_didCalculateStyleResolver(false)
     , m_ignorePendingStylesheets(false)
     , m_evaluateMediaQueriesOnStyleRecalc(false)
@@ -1991,6 +1992,8 @@ void Document::attach(const AttachContext& context)
 
     recalcStyle(Force);
 
+    m_styleResolverThrowawayTimer.startRepeating(60);
+
     ContainerNode::attach(context);
 }
 
@@ -2033,6 +2036,8 @@ void Document::detach(const AttachContext& context)
     m_hoverNode = 0;
     m_focusedElement = 0;
     m_activeElement = 0;
+
+    m_styleResolverThrowawayTimer.stop();
 
     ContainerNode::detach(context);
 
@@ -4468,23 +4473,11 @@ void Document::sharedObjectPoolClearTimerFired(Timer<Document>*)
     m_sharedObjectPool.clear();
 }
 
-void Document::didAccessStyleResolver()
-{
-    static const int timeBeforeThrowingAwayStyleResolverAfterLastUseInSeconds = 60;
-    static const int holdOffTimeBeforeReschedulingTimerInSeconds = 5;
-
-    double currentTime = WTF::currentTime();
-
-    if (currentTime > m_lastStyleResolverAccessTime + holdOffTimeBeforeReschedulingTimerInSeconds) {
-        m_styleResolverThrowawayTimer.startOneShot(timeBeforeThrowingAwayStyleResolverAfterLastUseInSeconds);
-        m_lastStyleResolverAccessTime = currentTime;
-    }
-}
-
 void Document::styleResolverThrowawayTimerFired(Timer<Document>*)
 {
-    ASSERT(!m_inStyleRecalc);
-    clearStyleResolver();
+    if (m_styleResolverAccessCount == m_lastStyleResolverAccessCount)
+        clearStyleResolver();
+    m_lastStyleResolverAccessCount = m_styleResolverAccessCount;
 }
 
 const Vector<IconURL>& Document::shortcutIconURLs()

@@ -454,7 +454,7 @@ public:
     void addedStyleSheet(StyleSheet*, StyleResolverUpdateType type = RecalcStyleDeferred) { styleResolverChanged(type); }
     void modifiedStyleSheet(StyleSheet*, StyleResolverUpdateType type = RecalcStyleDeferred) { styleResolverChanged(type); }
 
-    void didAccessStyleResolver();
+    void didAccessStyleResolver() { ++m_styleResolverAccessCount; }
 
     void evaluateMediaQueryList();
 
@@ -1156,8 +1156,10 @@ private:
     void processHttpEquivXFrameOptions(const String& content);
     void processHttpEquivContentSecurityPolicy(const String& equiv, const String& content);
 
+    // FIXME: This should probably be handled inside the style resolver itself.
     Timer<Document> m_styleResolverThrowawayTimer;
-    double m_lastStyleResolverAccessTime;
+    unsigned m_styleResolverAccessCount;
+    unsigned m_lastStyleResolverAccessCount;
 
     OwnPtr<StyleResolver> m_styleResolver;
     bool m_didCalculateStyleResolver;
