@@ -199,7 +199,6 @@ void HistoryQuickProviderTest::FillData() {
         PRId64 ", 0, 0)",
         i + 1, cur.url.c_str(), cur.title.c_str(), cur.visit_count,
         cur.typed_count, visit_time.ToInternalValue());
-    std::string sql_cmd(sql_cmd_line);
     sql::Statement sql_stmt(db.GetUniqueStatement(sql_cmd_line.c_str()));
     EXPECT_TRUE(sql_stmt.Run());
     transaction.Commit();
@@ -217,7 +216,6 @@ void HistoryQuickProviderTest::FillData() {
           (j < cur.typed_count) ? content::PAGE_TRANSITION_TYPED :
                                   content::PAGE_TRANSITION_LINK);
 
-      std::string sql_cmd(sql_cmd_line);
       sql::Statement sql_stmt(db.GetUniqueStatement(sql_cmd_line.c_str()));
       EXPECT_TRUE(sql_stmt.Run());
       transaction.Commit();
