@@ -203,21 +203,38 @@ MediaCodecStatus MediaCodecBridge::QueueSecureInputBuffer(
       base::android::ToJavaByteArray(env, key_id, key_id_size);
   ScopedJavaLocalRef<jbyteArray> j_iv =
       base::android::ToJavaByteArray(env, iv, iv_size);
-  scoped_ptr<jint[]> native_clear_array(new jint[subsamples_size]);
-  scoped_ptr<jint[]> native_cypher_array(new jint[subsamples_size]);
-  for (int i = 0; i < subsamples_size; ++i) {
-    native_clear_array[i] = subsamples[i].clear_bytes;
-    native_cypher_array[i] = subsamples[i].cypher_bytes;
+
+  // MediaCodec.CryptoInfo documentations says passing NULL for |clear_array|
+  // to indicate that all data is encrypted. But it doesn't specify what
+  // |cypher_array| and |subsamples_size| should be in that case. Passing
+  // one subsample here just to be on the safe side.
+  int new_subsamples_size = subsamples_size == 0 ? 1 : subsamples_size;
+
+  scoped_ptr<jint[]> native_clear_array(new jint[new_subsamples_size]);
+  scoped_ptr<jint[]> native_cypher_array(new jint[new_subsamples_size]);
+
+  if (subsamples_size == 0) {
+    DCHECK(!subsamples);
+    native_clear_array[0] = 0;
+    native_cypher_array[0] = data_size;
+  } else {
+    DCHECK_GT(subsamples_size, 0);
+    DCHECK(subsamples);
+    for (int i = 0; i < subsamples_size; ++i) {
+      native_clear_array[i] = subsamples[i].clear_bytes;
+      native_cypher_array[i] = subsamples[i].cypher_bytes;
+    }
   }
-  ScopedJavaLocalRef<jintArray> clear_array = ToJavaIntArray(
-      env, native_clear_array.Pass(), subsamples_size);
-  ScopedJavaLocalRef<jintArray> cypher_array = ToJavaIntArray(
-      env, native_cypher_array.Pass(), subsamples_size);
+
+  ScopedJavaLocalRef<jintArray> clear_array =
+        ToJavaIntArray(env, native_clear_array.Pass(), new_subsamples_size);
+  ScopedJavaLocalRef<jintArray> cypher_array =
+        ToJavaIntArray(env, native_cypher_array.Pass(), new_subsamples_size);
 
   return static_cast<MediaCodecStatus>(
       Java_MediaCodecBridge_queueSecureInputBuffer(
           env, j_media_codec_.obj(), index, 0, j_iv.obj(), j_key_id.obj(),
-          clear_array.obj(), cypher_array.obj(), subsamples_size,
+          clear_array.obj(), cypher_array.obj(), new_subsamples_size,
           presentation_time.InMicroseconds()));
 }
 

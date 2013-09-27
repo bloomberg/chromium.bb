@@ -155,22 +155,20 @@ MediaCodecStatus MediaDecoderJob::QueueInputBuffer(const AccessUnit& unit) {
     return MEDIA_CODEC_INPUT_END_OF_STREAM;
   }
 
-  if (unit.key_id.empty()) {
+  if (unit.key_id.empty() || unit.iv.empty()) {
+    DCHECK(unit.iv.empty() || !unit.key_id.empty());
     return media_codec_bridge_->QueueInputBuffer(
         input_buf_index, &unit.data[0], unit.data.size(), unit.timestamp);
   }
 
-  if (unit.iv.empty() || unit.subsamples.empty()) {
-    DVLOG(1) << "The access unit doesn't have iv or subsamples while it "
-               << "has key IDs!";
-    return MEDIA_CODEC_ERROR;
-  }
-
   MediaCodecStatus status = media_codec_bridge_->QueueSecureInputBuffer(
-      input_buf_index, &unit.data[0], unit.data.size(),
+      input_buf_index,
+      &unit.data[0], unit.data.size(),
       reinterpret_cast<const uint8*>(&unit.key_id[0]), unit.key_id.size(),
       reinterpret_cast<const uint8*>(&unit.iv[0]), unit.iv.size(),
-      &unit.subsamples[0], unit.subsamples.size(), unit.timestamp);
+      unit.subsamples.empty() ? NULL : &unit.subsamples[0],
+      unit.subsamples.size(),
+      unit.timestamp);
 
   // In case of MEDIA_CODEC_NO_KEY, we must reuse the |input_buf_index_|.
   // Otherwise MediaDrm will report errors.

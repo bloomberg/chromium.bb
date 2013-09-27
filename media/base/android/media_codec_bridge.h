@@ -89,6 +89,7 @@ class MEDIA_EXPORT MediaCodecBridge {
                                     const base::TimeDelta& presentation_time);
 
   // Similar to the above call, but submits a buffer that is encrypted.
+  // Note: NULL |subsamples| indicates the whole buffer is encrypted.
   MediaCodecStatus QueueSecureInputBuffer(
       int index,
       const uint8* data, int data_size,
