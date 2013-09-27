@@ -218,6 +218,10 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
       const aura::RootWindow* root) OVERRIDE;
 
  private:
+  // To save a clear on platforms where the window is never transparent, the
+  // window is only set as transparent when the glass frame is in use.
+  void UpdateWindowTransparency();
+
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;
 

@@ -283,7 +283,6 @@ void DesktopNativeWidgetAura::InitNativeWidget(
     window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
   }
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
-  window_->SetTransparent(true);
   window_->Init(params.layer_type);
   corewm::SetShadowType(window_, corewm::SHADOW_TYPE_NONE);
 #if defined(OS_LINUX)  // TODO(scottmg): http://crbug.com/180071
@@ -296,6 +295,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
                                     this, params.bounds);
   root_window_.reset(
       desktop_root_window_host_->Init(window_, params));
+
+  UpdateWindowTransparency();
 
   content_window_container_ = new aura::Window(NULL);
   content_window_container_->Init(ui::LAYER_NOT_DRAWN);
@@ -353,6 +354,7 @@ bool DesktopNativeWidgetAura::ShouldUseNativeFrame() const {
 
 void DesktopNativeWidgetAura::FrameTypeChanged() {
   desktop_root_window_host_->FrameTypeChanged();
+  UpdateWindowTransparency();
 }
 
 Widget* DesktopNativeWidgetAura::GetWidget() {
@@ -973,6 +975,10 @@ void DesktopNativeWidgetAura::OnRootWindowHostCloseRequested(
 
 ui::EventHandler* DesktopNativeWidgetAura::GetEventHandler() {
   return this;
+}
+
+void DesktopNativeWidgetAura::UpdateWindowTransparency() {
+  window_->SetTransparent(ShouldUseNativeFrame());
 }
 
 }  // namespace views
