@@ -92,13 +92,55 @@ public class LocationProviderTest extends InstrumentationTestCase {
     }
 
     /**
+     * Verify that calling start when the activity is being created doesn't start listening
+     * for location updates until activity resumes.
+     */
+    @SmallTest
+    @UiThreadTest
+    @Feature({"Location"})
+    public void testCreatedStartedStartResumeStop() throws Exception {
+        ActivityStatus.onStateChangeForTesting(mActivity, ActivityStatus.CREATED);
+        mLocationProvider.start(false);
+        assertFalse("Should not be running", mLocationProvider.isRunning());
+        ActivityStatus.onStateChangeForTesting(mActivity, ActivityStatus.STARTED);
+        mLocationProvider.start(false);
+        assertFalse("Should not be running", mLocationProvider.isRunning());
+        ActivityStatus.onStateChangeForTesting(mActivity, ActivityStatus.RESUMED);
+        assertTrue("Should have resumed", mLocationProvider.isRunning());
+        mLocationProvider.stop();
+        assertFalse("Should have stopped", mLocationProvider.isRunning());
+    }
+
+    /**
+     * Verify that calling start when the activity is being created then immediately paused doesn't
+     * start listening for location updates until activity resumes.
+     */
+    @SmallTest
+    @UiThreadTest
+    @Feature({"Location"})
+    public void testCreatedStartedStartPausedResumeStop() throws Exception {
+        ActivityStatus.onStateChangeForTesting(mActivity, ActivityStatus.CREATED);
+        mLocationProvider.start(false);
+        assertFalse("Should not be running", mLocationProvider.isRunning());
+        ActivityStatus.onStateChangeForTesting(mActivity, ActivityStatus.STARTED);
+        mLocationProvider.start(false);
+        assertFalse("Should not be running", mLocationProvider.isRunning());
+        ActivityStatus.onStateChangeForTesting(mActivity, ActivityStatus.PAUSED);
+        assertFalse("Should not be running", mLocationProvider.isRunning());
+        ActivityStatus.onStateChangeForTesting(mActivity, ActivityStatus.RESUMED);
+        assertTrue("Should have resumed", mLocationProvider.isRunning());
+        mLocationProvider.stop();
+        assertFalse("Should have stopped", mLocationProvider.isRunning());
+    }
+
+    /**
      * Verify that calling start when the activity is stopped doesn't start listening
      * for location updates until activity resumes.
      */
     @SmallTest
     @UiThreadTest
     @Feature({"Location"})
-    public void testPauseStopStartResumeStop() throws Exception {
+    public void testStopStartResumeStop() throws Exception {
         ActivityStatus.onStateChangeForTesting(mActivity, ActivityStatus.STOPPED);
         mLocationProvider.start(false);
         assertFalse("Should not be running", mLocationProvider.isRunning());
