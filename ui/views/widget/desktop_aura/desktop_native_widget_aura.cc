@@ -192,6 +192,12 @@ DesktopNativeWidgetAura::~DesktopNativeWidgetAura() {
     delete native_widget_delegate_;
   else
     CloseNow();
+
+  stacking_client_.reset();  // Uses root_window_ at destruction.
+
+  root_window_->RemoveRootWindowObserver(this);
+  root_window_.reset();  // Uses input_method_event_filter_ at destruction.
+  input_method_event_filter_.reset();
 }
 
 // static
@@ -201,41 +207,10 @@ DesktopNativeWidgetAura* DesktopNativeWidgetAura::ForWindow(
 }
 
 void DesktopNativeWidgetAura::OnHostClosed() {
-  // Don't invoke Widget::OnNativeWidgetDestroying(), its done by
-  // DesktopRootWindowHost.
-
-  // Make sure we don't still have capture. Otherwise CaptureController and
-  // RootWindow are left referencing a deleted Window.
-  {
-    aura::Window* capture_window =
-        capture_client_->capture_client()->GetCaptureWindow();
-    if (capture_window && root_window_->Contains(capture_window))
-      capture_window->ReleaseCapture();
-  }
-
-  // DesktopRootWindowHost owns the ActivationController which ShadowController
-  // references. Make sure we destroy ShadowController early on.
-  shadow_controller_.reset();
-  tooltip_manager_.reset();
-  scoped_tooltip_client_.reset();
-  if (window_modality_controller_) {
-    root_window_->RemovePreTargetHandler(window_modality_controller_.get());
-    window_modality_controller_.reset();
-  }
-
   root_window_event_filter_->RemoveHandler(input_method_event_filter_.get());
-
-  stacking_client_.reset();  // Uses root_window_ at destruction.
-
-  root_window_->RemoveRootWindowObserver(this);
-  root_window_.reset();  // Uses input_method_event_filter_ at destruction.
-  // RootWindow owns |desktop_root_window_host_|.
-  desktop_root_window_host_ = NULL;
-  window_ = NULL;
-
-  native_widget_delegate_->OnNativeWidgetDestroyed();
-  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
-    delete this;
+  // This will, through a long list of callbacks, trigger |root_window_| going
+  // away. See OnWindowDestroyed()
+  delete window_;
 }
 
 void DesktopNativeWidgetAura::InstallInputMethodEventFilter(
@@ -703,8 +678,7 @@ void DesktopNativeWidgetAura::ClearNativeFocus() {
 }
 
 gfx::Rect DesktopNativeWidgetAura::GetWorkAreaBoundsInScreen() const {
-  return desktop_root_window_host_ ?
-      desktop_root_window_host_->GetWorkAreaBoundsInScreen() : gfx::Rect();
+  return desktop_root_window_host_->GetWorkAreaBoundsInScreen();
 }
 
 void DesktopNativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
@@ -806,12 +780,23 @@ void DesktopNativeWidgetAura::OnDeviceScaleFactorChanged(
 }
 
 void DesktopNativeWidgetAura::OnWindowDestroying() {
-  // Cleanup happens in OnHostClosed().
+  // DesktopRootWindowHost owns the ActivationController which ShadowController
+  // references. Make sure we destroy ShadowController early on.
+  shadow_controller_.reset();
+  // The DesktopRootWindowHost implementation sends OnNativeWidgetDestroying().
+  tooltip_manager_.reset();
+  scoped_tooltip_client_.reset();
+  if (window_modality_controller_) {
+    root_window_->RemovePreTargetHandler(window_modality_controller_.get());
+    window_modality_controller_.reset();
+  }
 }
 
 void DesktopNativeWidgetAura::OnWindowDestroyed() {
-  // Cleanup happens in OnHostClosed(). We own |window_| (indirectly by way of
-  // |root_window_|) so there should be no need to do any processing here.
+  window_ = NULL;
+  native_widget_delegate_->OnNativeWidgetDestroyed();
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+    delete this;
 }
 
 void DesktopNativeWidgetAura::OnWindowTargetVisibilityChanged(bool visible) {

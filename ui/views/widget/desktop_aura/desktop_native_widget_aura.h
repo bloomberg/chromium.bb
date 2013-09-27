@@ -59,7 +59,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   // Called by our DesktopRootWindowHost after it has deleted native resources;
   // this is the signal that we should start our shutdown.
-  virtual void OnHostClosed();
+  void OnHostClosed();
 
   // Installs the input method filter on |root|. This is intended to be invoked
   // by the DesktopRootWindowHost implementation during Init().
