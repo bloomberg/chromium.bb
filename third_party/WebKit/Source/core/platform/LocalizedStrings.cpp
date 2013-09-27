@@ -32,10 +32,8 @@
 #include "core/platform/LocalizedStrings.h"
 
 #include "core/platform/NotImplemented.h"
-#include "core/platform/graphics/IntSize.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
-#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
 using WebKit::WebLocalizedString;
@@ -208,19 +206,6 @@ String blockedPluginByContentSecurityPolicyText()
 {
     notImplemented();
     return String();
-}
-
-// Used in ImageDocument.cpp as the title for pages when that page is an image.
-String imageTitle(const String& filename, const IntSize& size)
-{
-    StringBuilder result;
-    result.append(filename);
-    result.append(" (");
-    result.append(String::number(size.width()));
-    result.append(static_cast<UChar>(0xD7)); // U+00D7 (multiplication sign)
-    result.append(String::number(size.height()));
-    result.append(')');
-    return result.toString();
 }
 
 String textTrackClosedCaptionsText() { return String(); }

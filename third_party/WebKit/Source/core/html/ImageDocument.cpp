@@ -45,6 +45,7 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/LocalizedStrings.h"
+#include "wtf/text/StringBuilder.h"
 
 using std::min;
 
@@ -104,6 +105,20 @@ static float pageZoomFactor(const Document* document)
 {
     Frame* frame = document->frame();
     return frame ? frame->pageZoomFactor() : 1;
+}
+
+static String imageTitle(const String& filename, const IntSize& size)
+{
+    StringBuilder result;
+    result.append(filename);
+    result.append(" (");
+    // FIXME: Localize numbers. Safari/OSX shows localized numbers with group
+    // separaters. For example, "1,920x1,080".
+    result.append(String::number(size.width()));
+    result.append(static_cast<UChar>(0xD7)); // U+00D7 (multiplication sign)
+    result.append(String::number(size.height()));
+    result.append(')');
+    return result.toString();
 }
 
 size_t ImageDocumentParser::appendBytes(const char* data, size_t length)

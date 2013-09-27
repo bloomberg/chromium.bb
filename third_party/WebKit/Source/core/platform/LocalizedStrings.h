@@ -32,8 +32,6 @@
 
 namespace WebCore {
 
-    class IntSize;
-
     // FIXME: Use Locale::queryString instead of the following functions.
 
     String searchableIndexIntroduction();
@@ -73,8 +71,6 @@ namespace WebCore {
 
     String missingPluginText();
     String blockedPluginByContentSecurityPolicyText();
-
-    String imageTitle(const String& filename, const IntSize& size);
 
     String localizedMediaControlElementString(const String&);
     String localizedMediaControlElementHelpText(const String&);
