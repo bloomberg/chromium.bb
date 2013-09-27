@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_WEBCRYPTO_IMPL_H_
-#define CONTENT_RENDERER_WEBCRYPTO_IMPL_H_
+#ifndef CONTENT_RENDERER_WEBCRYPTO_WEBCRYPTO_IMPL_H_
+#define CONTENT_RENDERER_WEBCRYPTO_WEBCRYPTO_IMPL_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -85,4 +85,4 @@ class CONTENT_EXPORT WebCryptoImpl
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_WEBCRYPTO_IMPL_H_
+#endif  // CONTENT_RENDERER_WEBCRYPTO_WEBCRYPTO_IMPL_H_
