@@ -27,12 +27,13 @@
 namespace WebCore {
 
 class Document;
+class ExceptionState;
 
 class DOMParser : public RefCounted<DOMParser>, public ScriptWrappable {
 public:
     static PassRefPtr<DOMParser> create() { return adoptRef(new DOMParser); }
 
-    PassRefPtr<Document> parseFromString(const String&, const String& contentType);
+    PassRefPtr<Document> parseFromString(const String&, const String& contentType, ExceptionState&);
 
 private:
     DOMParser()

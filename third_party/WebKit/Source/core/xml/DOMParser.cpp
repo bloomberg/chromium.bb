@@ -20,14 +20,23 @@
 #include "core/xml/DOMParser.h"
 
 #include "core/dom/DOMImplementation.h"
+#include "core/dom/ExceptionCode.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-PassRefPtr<Document> DOMParser::parseFromString(const String& str, const String& contentType)
+PassRefPtr<Document> DOMParser::parseFromString(const String& str, const String& contentType, ExceptionState& es)
 {
-    if (!DOMImplementation::isXMLMIMEType(contentType) && contentType != "text/html")
+    // HTML5 is very explicit about which types we're allowed to support here:
+    // http://domparsing.spec.whatwg.org/#the-domparser-interface
+    if (contentType != "text/html"
+        && contentType != "text/xml"
+        && contentType != "application/xml"
+        && contentType != "application/xhtml+xml"
+        && contentType != "image/svg+xml") {
+        es.throwDOMException(TypeError, "Unsupported mime-type specified.");
         return 0;
+    }
 
     RefPtr<Document> doc = DOMImplementation::createDocument(contentType, 0, KURL(), false);
     doc->setContent(str);

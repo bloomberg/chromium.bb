@@ -109,23 +109,27 @@ function shouldSupport(content, mimeType)
     document.body.appendChild(document.createElement("br"));
 }
 
-function shouldNotSupport(content, mimeType)
+function shouldThrowException(content, mimeType)
 {
     var description = document.createElement("div");
-    description.innerHTML = (++count) + ". Should NOT support mime-type = \"" + mimeType + "\"";
+    description.innerHTML = (++count) + ". Should THROW exception for mime-type = \"" + mimeType + "\"";
     document.body.appendChild(description);
 
     var parser = new DOMParser();
-    var resultDocument = parser.parseFromString(content, mimeType);
-    if (!resultDocument) {
-        var result = document.createElement("div");
-        result.className = "pass";
-        result.textContent = "PASS";
-        document.body.appendChild(result);
-    } else {
+    try {
+        parser.parseFromString(content, mimeType);
         var result = document.createElement("div");
         result.className = "fail";
         result.textContent = "FAIL";
+        document.body.appendChild(result);
+    } catch (exception) {
+        var message = document.createElement("div");
+        message.className = "pass";
+        message.textContent = exception;
+        document.body.appendChild(message);
+        var result = document.createElement("div");
+        result.className = "pass";
+        result.textContent = "PASS";
         document.body.appendChild(result);
     }
     document.body.appendChild(document.createElement("br"));
@@ -141,7 +145,10 @@ function runTest()
     shouldSupport(xmlContent, "application/xml");
     shouldSupport(xhtmlContent, "application/xhtml+xml");
     shouldSupport(svgImageContent, "image/svg+xml");
-    shouldNotSupport(xslContent, "text/xsl");
+    shouldThrowException(xslContent, "text/xsl");
+    shouldThrowException(xmlContent, "text/dummy+xml");
+    shouldThrowException(xmlContent, "text/XML");
+    shouldThrowException(xmlContent, "TEXT/html");
 }
 </script>
 </head>

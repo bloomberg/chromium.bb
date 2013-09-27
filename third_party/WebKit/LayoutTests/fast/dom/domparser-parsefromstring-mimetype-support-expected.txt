@@ -22,7 +22,20 @@ PASS
 Root element: svg
 PASS
 
-6. Should NOT support mime-type = "text/xsl"
-FAIL
+6. Should THROW exception for mime-type = "text/xsl"
+TypeError: Unsupported mime-type specified.
+PASS
+
+7. Should THROW exception for mime-type = "text/dummy+xml"
+TypeError: Unsupported mime-type specified.
+PASS
+
+8. Should THROW exception for mime-type = "text/XML"
+TypeError: Unsupported mime-type specified.
+PASS
+
+9. Should THROW exception for mime-type = "TEXT/html"
+TypeError: Unsupported mime-type specified.
+PASS
 
 
