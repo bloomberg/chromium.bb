@@ -123,9 +123,6 @@ class SCMWrapper(object):
 
   This is the abstraction layer to bind to different SCM.
   """
-  nag_timer = 30
-  nag_max = 30
-
   def __init__(self, url=None, root_dir=None, relpath=None):
     self.url = url
     self._root_dir = root_dir
@@ -247,8 +244,6 @@ class GitWrapper(SCMWrapper):
     gclient_utils.CheckCallAndFilter(
         ['git', 'diff', merge_base],
         cwd=self.checkout_path,
-        nag_timer=self.nag_timer,
-        nag_max=self.nag_max,
         filter_fn=GitDiffFilterer(self.relpath).Filter)
 
   def UpdateSubmoduleConfig(self):
@@ -262,8 +257,6 @@ class GitWrapper(SCMWrapper):
     cmd4 = ['git', 'config', 'fetch.recurseSubmodules', 'false']
     kwargs = {'cwd': self.checkout_path,
               'print_stdout': False,
-              'nag_timer': self.nag_timer,
-              'nag_max': self.nag_max,
               'filter_fn': lambda x: None}
     try:
       gclient_utils.CheckCallAndFilter(cmd, **kwargs)
@@ -1036,8 +1029,6 @@ class GitWrapper(SCMWrapper):
     return subprocess2.check_output(
         ['git'] + args,
         stderr=subprocess2.VOID,
-        nag_timer=self.nag_timer,
-        nag_max=self.nag_max,
         cwd=cwd or self.checkout_path).strip()
 
   def _UpdateBranchHeads(self, options, fetch=False):
@@ -1064,11 +1055,8 @@ class GitWrapper(SCMWrapper):
 
   def _Run(self, args, _options, git_filter=False, **kwargs):
     kwargs.setdefault('cwd', self.checkout_path)
-    kwargs.setdefault('nag_timer', self.nag_timer)
-    kwargs.setdefault('nag_max', self.nag_max)
     if git_filter:
-      kwargs['filter_fn'] = GitFilter(kwargs['nag_timer'] / 2,
-                                      kwargs.get('filter_fn'))
+      kwargs['filter_fn'] = GitFilter(kwargs.get('filter_fn'))
       kwargs.setdefault('print_stdout', False)
       # Don't prompt for passwords; just fail quickly and noisily.
       # By default, git will use an interactive terminal prompt when a username/
@@ -1136,8 +1124,6 @@ class SVNWrapper(SCMWrapper):
         ['svn', 'diff', '-x', '--ignore-eol-style'] + args,
         cwd=self.checkout_path,
         print_stdout=False,
-        nag_timer=self.nag_timer,
-        nag_max=self.nag_max,
         filter_fn=SvnDiffFilterer(self.relpath).Filter)
 
   def update(self, options, args, file_list):
@@ -1442,8 +1428,6 @@ class SVNWrapper(SCMWrapper):
   def _Run(self, args, options, **kwargs):
     """Runs a commands that goes to stdout."""
     kwargs.setdefault('cwd', self.checkout_path)
-    kwargs.setdefault('nag_timer', self.nag_timer)
-    kwargs.setdefault('nag_max', self.nag_max)
     gclient_utils.CheckCallAndFilterAndHeader(['svn'] + args,
         always=options.verbose, **kwargs)
 

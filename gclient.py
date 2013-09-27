@@ -1768,8 +1768,7 @@ class OptionParser(optparse.OptionParser):
             'Cygwin/Python brokenness, it can\'t contain any newlines.')
     self.add_option(
         '--no-nag-max', default=False, action='store_true',
-        help='If a subprocess runs for too long without generating terminal '
-             'output, generate warnings, but do not kill the process.')
+        help='Ignored for backwards compatibility.')
 
   def parse_args(self, args=None, values=None):
     """Integrates standard options processing."""
@@ -1800,8 +1799,6 @@ class OptionParser(optparse.OptionParser):
       options.manually_grab_svn_rev = None
     if not hasattr(options, 'force'):
       options.force = None
-    if options.no_nag_max:
-      gclient_scm.SCMWrapper.nag_max = None
     return (options, args)
 
 
