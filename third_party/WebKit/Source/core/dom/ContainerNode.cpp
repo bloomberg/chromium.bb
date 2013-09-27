@@ -125,7 +125,7 @@ static inline bool checkAcceptChild(ContainerNode* newParent, Node* newChild, No
 {
     // Not mentioned in spec: throw NotFoundError if newChild is null
     if (!newChild) {
-        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute(method, "ContainerNode", "The new child element is null."));
+        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute(method, "Node", "The new child element is null."));
         return false;
     }
 
@@ -134,7 +134,7 @@ static inline bool checkAcceptChild(ContainerNode* newParent, Node* newChild, No
         ASSERT(!newParent->isDocumentTypeNode());
         ASSERT(isChildTypeAllowed(newParent, newChild));
         if (containsConsideringHostElements(newChild, newParent)) {
-            es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute(method, "ContainerNode", "The new child element contains the parent."));
+            es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute(method, "Node", "The new child element contains the parent."));
             return false;
         }
         return true;
@@ -143,12 +143,12 @@ static inline bool checkAcceptChild(ContainerNode* newParent, Node* newChild, No
     // This should never happen, but also protect release builds from tree corruption.
     ASSERT(!newChild->isPseudoElement());
     if (newChild->isPseudoElement()) {
-        es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute(method, "ContainerNode", "The new child element is a pseudo-element."));
+        es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute(method, "Node", "The new child element is a pseudo-element."));
         return false;
     }
 
     if (containsConsideringHostElements(newChild, newParent)) {
-        es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute(method, "ContainerNode", "The new child element contains the parent."));
+        es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute(method, "Node", "The new child element contains the parent."));
         return false;
     }
 
@@ -159,7 +159,7 @@ static inline bool checkAcceptChild(ContainerNode* newParent, Node* newChild, No
             return false;
         }
     } else if (!isChildTypeAllowed(newParent, newChild)) {
-        es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute(method, "ContainerNode", "Nodes of type '" + newChild->nodeName() + "' may not be inserted inside nodes of type '" + newParent->nodeName() + "'."));
+        es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute(method, "Node", "Nodes of type '" + newChild->nodeName() + "' may not be inserted inside nodes of type '" + newParent->nodeName() + "'."));
         return false;
     }
 
@@ -171,7 +171,7 @@ static inline bool checkAcceptChildGuaranteedNodeTypes(ContainerNode* newParent,
     ASSERT(!newParent->isDocumentTypeNode());
     ASSERT(isChildTypeAllowed(newParent, newChild));
     if (newChild->contains(newParent)) {
-        es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute(method, "ContainerNode", "The new child element contains the parent."));
+        es.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute(method, "Node", "The new child element contains the parent."));
         return false;
     }
 
@@ -208,7 +208,7 @@ void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, Exce
 
     // NotFoundError: Raised if refChild is not a child of this node
     if (refChild->parentNode() != this) {
-        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("insertBefore", "ContainerNode", "The node before which the new node is to be inserted is not a child of this node."));
+        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("insertBefore", "Node", "The node before which the new node is to be inserted is not a child of this node."));
         return;
     }
 
@@ -316,7 +316,7 @@ void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
         return;
 
     if (!oldChild) {
-        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("replaceChild", "ContainerNode", "The node to be replaced is null."));
+        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("replaceChild", "Node", "The node to be replaced is null."));
         return;
     }
 
@@ -326,7 +326,7 @@ void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
 
     // NotFoundError: Raised if oldChild is not a child of this node.
     if (oldChild->parentNode() != this) {
-        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("replaceChild", "ContainerNode", "The node to be replaced is not a child of this node."));
+        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("replaceChild", "Node", "The node to be replaced is not a child of this node."));
         return;
     }
 
@@ -433,7 +433,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& es)
 
     // NotFoundError: Raised if oldChild is not a child of this node.
     if (!oldChild || oldChild->parentNode() != this) {
-        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("removeChild", "ContainerNode", "The node to be removed is not a child of this node."));
+        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("removeChild", "Node", "The node to be removed is not a child of this node."));
         return;
     }
 
@@ -447,7 +447,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& es)
     // Events fired when blurring currently focused node might have moved this
     // child into a different parent.
     if (child->parentNode() != this) {
-        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("removeChild", "ContainerNode", "The node to be removed is no longer a child of this node. Perhaps it was moved in a 'blur' event handler?"));
+        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("removeChild", "Node", "The node to be removed is no longer a child of this node. Perhaps it was moved in a 'blur' event handler?"));
         return;
     }
 
@@ -455,7 +455,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& es)
 
     // Mutation events might have moved this child into a different parent.
     if (child->parentNode() != this) {
-        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("removeChild", "ContainerNode", "The node to be removed is no longer a child of this node. Perhaps it was moved in response to a mutation?"));
+        es.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("removeChild", "Node", "The node to be removed is no longer a child of this node. Perhaps it was moved in response to a mutation?"));
         return;
     }
 

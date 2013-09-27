@@ -35,9 +35,9 @@ shouldBeTrue('e.stack.contains("innerFunction")');
 shouldBeTrue('e.stack.contains("outerFunction")');
 
 shouldBeEqualToString('Object.prototype.toString.call(e)', '[object DOMException]');
-shouldBeEqualToString("e.toString()", "HierarchyRequestError: Failed to execute 'appendChild' on 'ContainerNode': The new child element contains the parent.");
+shouldBeEqualToString("e.toString()", "HierarchyRequestError: Failed to execute 'appendChild' on 'Node': The new child element contains the parent.");
 shouldBeEqualToString('e.name', 'HierarchyRequestError');
-shouldBeEqualToString("e.message", "Failed to execute 'appendChild' on 'ContainerNode': The new child element contains the parent.");
+shouldBeEqualToString("e.message", "Failed to execute 'appendChild' on 'Node': The new child element contains the parent.");
 shouldBe('e.code', '3');
 
 e.stack = 42;

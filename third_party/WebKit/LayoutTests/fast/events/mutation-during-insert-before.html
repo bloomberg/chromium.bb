@@ -16,7 +16,7 @@ var listener = function() {
     child.appendChild(newparent);
 };
 document.addEventListener("DOMNodeRemoved", listener, false);
-shouldThrow("newparent.insertBefore(child, beforeChild);",  '"HierarchyRequestError: Failed to execute \'insertBefore\' on \'ContainerNode\': The new child element contains the parent."');
+shouldThrow("newparent.insertBefore(child, beforeChild);",  '"HierarchyRequestError: Failed to execute \'insertBefore\' on \'Node\': The new child element contains the parent."');
 </script>
 <script src="../js/resources/js-test-post.js"></script>
 </body>

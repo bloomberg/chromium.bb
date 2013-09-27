@@ -1,2 +1,2 @@
-CONSOLE MESSAGE: line 9: Uncaught HierarchyRequestError: Failed to execute 'appendChild' on 'ContainerNode': Nodes of type 'UNDEFINED' may not be inserted inside nodes of type '#document'.
+CONSOLE MESSAGE: line 9: Uncaught HierarchyRequestError: Failed to execute 'appendChild' on 'Node': Nodes of type 'UNDEFINED' may not be inserted inside nodes of type '#document'.
 This tests that we are getting the correct message for DOM Exception 3: HIERARCHY_REQUEST_ERR.

@@ -1,2 +1,2 @@
-CONSOLE MESSAGE: line 9: Uncaught NotFoundError: Failed to execute 'appendChild' on 'ContainerNode': The new child element is null.
+CONSOLE MESSAGE: line 9: Uncaught NotFoundError: Failed to execute 'appendChild' on 'Node': The new child element is null.
 This tests that we are getting the correct message for DOM Exception 8: NOT_FOUND_ERR.

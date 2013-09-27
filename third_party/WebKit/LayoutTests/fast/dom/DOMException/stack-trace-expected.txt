@@ -3,9 +3,9 @@ PASS typeof e.stack is "string"
 PASS e.stack.contains("innerFunction") is true
 PASS e.stack.contains("outerFunction") is true
 PASS Object.prototype.toString.call(e) is "[object DOMException]"
-PASS e.toString() is "HierarchyRequestError: Failed to execute 'appendChild' on 'ContainerNode': The new child element contains the parent."
+PASS e.toString() is "HierarchyRequestError: Failed to execute 'appendChild' on 'Node': The new child element contains the parent."
 PASS e.name is "HierarchyRequestError"
-PASS e.message is "Failed to execute 'appendChild' on 'ContainerNode': The new child element contains the parent."
+PASS e.message is "Failed to execute 'appendChild' on 'Node': The new child element contains the parent."
 PASS e.code is 3
 PASS e.stack === 42 is true
 PASS successfullyParsed is true
