@@ -11,7 +11,7 @@ import unittest
 def main():
   if len(sys.argv) != 2:
     sys.stderr.write("""Usage: run_tests.py <path/to/google_appengine>""")
-    sys.exit(1)
+    return 1
 
   sys.path.insert(0, sys.argv.pop(1))
   import dev_appserver

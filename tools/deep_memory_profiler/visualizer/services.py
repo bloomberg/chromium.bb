@@ -50,10 +50,10 @@ def CreateTemplates(blob_info):
   json_obj = json.loads(json_str)
 
   # Return None when no default template indicated.
-  if not 'default_template' in json_obj:
+  if 'default_template' not in json_obj:
     return None
   # Return None when no default template found in templates.
-  if not json_obj['default_template'] in json_obj['templates']:
+  if json_obj['default_template'] not in json_obj['templates']:
     return None
 
   # Check the uniqueness of template content and store new one.

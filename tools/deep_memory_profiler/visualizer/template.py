@@ -51,9 +51,8 @@ _TEMPLATE = """<!DOCTYPE html>
 
 def main(argv):
   # Read json data.
-  data_file = open(argv[1], 'r')
-  data = data_file.read()
-  data_file.close()
+  with open(argv[1]) as data_file:
+    data = data_file.read()
 
   # Fill in the template of index.js.
   dmprof_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
