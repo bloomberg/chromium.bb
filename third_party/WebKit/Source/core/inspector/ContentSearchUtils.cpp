@@ -132,68 +132,51 @@ static String findMagicComment(const String& content, const String& name, MagicC
     ASSERT(name.find("=") == kNotFound);
     if (deprecated)
         *deprecated = false;
-
-    const unsigned limitSearchLength = 1000; // limit to 1000 last characters.
-    unsigned length = content.length();
-    unsigned nameLength = name.length();
-    unsigned stop = length > limitSearchLength ? length - limitSearchLength : 0;
-
-    size_t pos = length;
-    size_t equalSignPos = 0;
-    size_t closingCommentPos = 0;
-    while (true) {
-        pos = content.reverseFind(name, pos, stop);
-        if (pos == kNotFound)
-            return String();
-
-        // Check for a /\/[\/*][@#][ \t]/ regexp (length of 4) before found name.
-        if (pos < stop + 4)
-            return String();
-        pos -= 4;
-        if (content[pos] != '/')
-            continue;
-        if ((content[pos + 1] != '/' || commentType != JavaScriptMagicComment)
-            && (content[pos + 1] != '*' || commentType != CSSMagicComment))
-            continue;
-        if (content[pos + 2] != '#' && content[pos + 2] != '@')
-            continue;
-        if (content[pos + 3] != ' ' && content[pos + 3] != '\t')
-            continue;
-        equalSignPos = pos + 4 + nameLength;
-        if (equalSignPos < length && content[equalSignPos] != '=')
-            continue;
-        if (commentType == CSSMagicComment) {
-            closingCommentPos = content.find("*/", equalSignPos + 1);
-            if (closingCommentPos == kNotFound)
-                return String();
-            if (!content.substring(closingCommentPos + 2).containsOnlyWhitespace())
-                return String();
-        }
-
+    String pattern;
+    String deprecatedPattern;
+    switch (commentType) {
+    case JavaScriptMagicComment:
+        pattern = "//#[\040\t]" + createSearchRegexSource(name) + "=[\040\t]*([^\\s\'\"]*)[\040\t]*$";
+        deprecatedPattern = "//@[\040\t]" + createSearchRegexSource(name) + "=[\040\t]*([^\\s\'\"]*)[\040\t]*$";
         break;
+    case CSSMagicComment:
+        pattern = "/\\*#[\040\t]" + createSearchRegexSource(name) + "=[\040\t]*([^\\s]*)[\040\t]*\\*/[\040\t]*$";
+        deprecatedPattern = "/\\*@[\040\t]" + createSearchRegexSource(name) + "=[\040\t]*([^\\s]*)[\040\t]*\\*/[\040\t]*$";
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        return String();
     }
+    RegularExpression regex(pattern, TextCaseSensitive, MultilineEnabled);
+    RegularExpression deprecatedRegex(deprecatedPattern, TextCaseSensitive, MultilineEnabled);
 
-    if (pos < stop)
+    int matchLength;
+    int offset = regex.match(content, 0, &matchLength);
+    if (offset == -1) {
+        offset = deprecatedRegex.match(content, 0, &matchLength);
+        if (offset != -1 && deprecated)
+            *deprecated = true;
+    }
+    if (offset == -1)
         return String();
 
-    if (deprecated && content[pos + 2] == '@')
-        *deprecated = true;
+    String match = content.substring(offset, matchLength);
+    size_t separator = match.find("=");
+    ASSERT(separator != kNotFound);
+    match = match.substring(separator + 1);
 
-    ASSERT(equalSignPos);
-    ASSERT(commentType != CSSMagicComment || closingCommentPos);
-    size_t urlPos = equalSignPos + 1;
-    String match = commentType == CSSMagicComment
-        ? content.substring(urlPos, closingCommentPos - urlPos)
-        : content.substring(urlPos);
-    match = match.stripWhiteSpace();
-
-    String disallowedChars("\"' \t\n\r");
-    for (unsigned i = 0; i < match.length(); ++i) {
-        if (disallowedChars.find(match[i]) != kNotFound)
-            return String();
+    switch (commentType) {
+    case JavaScriptMagicComment:
+        return match.stripWhiteSpace();
+    case CSSMagicComment: {
+        size_t lastStarIndex = match.reverseFind('*');
+        ASSERT(lastStarIndex != kNotFound);
+        return match.substring(0, lastStarIndex).stripWhiteSpace();
     }
-
-    return match;
+    default:
+        ASSERT_NOT_REACHED();
+        return String();
+    }
 }
 
 String findSourceURL(const String& content, MagicCommentType commentType, bool* deprecated)
