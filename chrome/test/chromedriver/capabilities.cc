@@ -52,8 +52,6 @@ Status ParseFilePath(base::FilePath* to_set,
   base::FilePath::StringType str;
   if (!option.GetAsString(&str))
     return Status(kUnknownError, "must be a string");
-  if (str.empty())
-    return Status(kUnknownError, "cannot be empty");
   *to_set = base::FilePath(str);
   return Status(kOk);
 }
