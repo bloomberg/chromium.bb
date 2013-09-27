@@ -82,4 +82,9 @@ void FakeTileManager::CheckForCompletedTasks() {
   RasterWorkerPoolForTesting()->CheckForCompletedTasks();
 }
 
+void FakeTileManager::Release(Tile* tile) {
+  TileManager::Release(tile);
+  CleanUpReleasedTiles();
+}
+
 }  // namespace cc

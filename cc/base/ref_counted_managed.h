@@ -42,10 +42,12 @@ class CC_EXPORT RefCountedManaged : public base::subtle::RefCountedBase {
 
   void Release() {
     if (base::subtle::RefCountedBase::Release()) {
-      manager_->Release(static_cast<T*>(this));
-
       DCHECK_GT(manager_->live_object_count_, 0);
       manager_->live_object_count_--;
+
+      // This must be the last statement in case manager deletes
+      // the object immediately.
+      manager_->Release(static_cast<T*>(this));
     }
   }
 
