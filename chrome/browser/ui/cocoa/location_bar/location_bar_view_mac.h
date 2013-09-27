@@ -92,6 +92,10 @@ class LocationBarViewMac : public LocationBar,
   // be obscured by other UI (wrench menu) or redundant (+/- from wrench).
   void ZoomChangedForActiveTab(bool can_show_bubble);
 
+  // Pops up a bubble for a content setting. This depends on the image having
+  // already been laid out, therefore it must be called after Layout().
+  void PopUpContentSettingIfNeeded();
+
   // Get the point in window coordinates on the star for the bookmark bubble to
   // aim at.
   NSPoint GetBookmarkBubblePoint() const;
@@ -131,12 +135,6 @@ class LocationBarViewMac : public LocationBar,
   // If |page_action| is not a page action or not visible, NOTREACHED()
   // is called and this function returns |NSZeroPoint|.
   NSPoint GetPageActionBubblePoint(ExtensionAction* page_action);
-
-  // Get the blocked-popup content setting's frame in window
-  // coordinates.  Used by the blocked-popup animation.  Returns
-  // |NSZeroRect| if the relevant content setting decoration is not
-  // visible.
-  NSRect GetBlockedPopupRect() const;
 
   // OmniboxEditController:
   virtual void OnAutocompleteAccept(

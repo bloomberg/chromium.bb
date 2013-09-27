@@ -191,6 +191,7 @@ void LocationBarViewMac::FocusSearch() {
 void LocationBarViewMac::UpdateContentSettingsIcons() {
   if (RefreshContentSettingsDecorations())
     OnDecorationsChanged();
+  PopUpContentSettingIfNeeded();
 }
 
 void LocationBarViewMac::UpdatePageActions() {
@@ -245,6 +246,7 @@ void LocationBarViewMac::Update(const WebContents* contents) {
   else
     omnibox_view_->Update();
   OnChanged();
+  PopUpContentSettingIfNeeded();
 }
 
 void LocationBarViewMac::OnAutocompleteAccept(
@@ -430,19 +432,6 @@ NSPoint LocationBarViewMac::GetPageActionBubblePoint(
   return [field_ convertPoint:bubble_point toView:nil];
 }
 
-NSRect LocationBarViewMac::GetBlockedPopupRect() const {
-  const size_t kPopupIndex = CONTENT_SETTINGS_TYPE_POPUPS;
-  const LocationBarDecoration* decoration =
-      content_setting_decorations_[kPopupIndex];
-  if (!decoration || !decoration->IsVisible())
-    return NSZeroRect;
-
-  AutocompleteTextFieldCell* cell = [field_ cell];
-  const NSRect frame = [cell frameForDecoration:decoration
-                                        inFrame:[field_ bounds]];
-  return [field_ convertRect:frame toView:nil];
-}
-
 ExtensionAction* LocationBarViewMac::GetPageAction(size_t index) {
   if (index < page_action_decorations_.size())
     return page_action_decorations_[index]->page_action();
@@ -600,6 +589,17 @@ bool LocationBarViewMac::RefreshContentSettingsDecorations() {
         content_setting_decorations_[i]->UpdateFromWebContents(web_contents);
   }
   return icons_updated;
+}
+
+void LocationBarViewMac::PopUpContentSettingIfNeeded() {
+  AutocompleteTextFieldCell* cell = [field_ cell];
+  const NSRect bounds = [field_ bounds];
+  for (size_t i = 0; i < content_setting_decorations_.size(); ++i) {
+    const NSRect frame =
+        [cell frameForDecoration:content_setting_decorations_[i]
+                         inFrame:bounds];
+    content_setting_decorations_[i]->PopUpIfNeeded(frame);
+  }
 }
 
 void LocationBarViewMac::DeletePageActionDecorations() {

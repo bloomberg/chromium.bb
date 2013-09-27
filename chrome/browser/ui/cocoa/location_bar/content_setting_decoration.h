@@ -43,6 +43,11 @@ class ContentSettingDecoration : public ImageDecoration {
   // be friends.
   virtual void AnimationTimerFired();
 
+  // Check whether the content setting is blocked already, if not it pops up a
+  // bubble if required by the content setting and blocks the content setting in
+  // in both cases.
+  void PopUpIfNeeded(NSRect frame);
+
  private:
   // Helper to get where the bubble point should land.  Similar to
   // |PageActionDecoration| or |StarDecoration| (|LocationBarViewMac|
