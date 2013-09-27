@@ -98,7 +98,7 @@ public:
     bool isGridTemplateValue() const { return m_classType == GridTemplateClass; }
     bool isSVGColor() const { return m_classType == SVGColorClass || m_classType == SVGPaintClass; }
     bool isSVGPaint() const { return m_classType == SVGPaintClass; }
-    bool isCSSSVGDocumentValue() const { return m_classType == CSSSVGDocumentClass; }
+    bool isSVGDocumentValue() const { return m_classType == CSSSVGDocumentClass; }
 
     bool isCSSOMSafe() const { return m_isCSSOMSafe; }
     bool isSubtypeExposedToCSSOM() const

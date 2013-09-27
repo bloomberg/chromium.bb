@@ -361,7 +361,7 @@ void CSSValue::destroy()
         delete static_cast<FontFeatureValue*>(this);
         return;
     case FunctionClass:
-        delete static_cast<CSSFunctionValue*>(this);
+        delete toCSSFunctionValue(this);
         return;
     case LinearGradientClass:
         delete static_cast<CSSLinearGradientValue*>(this);
@@ -439,7 +439,7 @@ void CSSValue::destroy()
         delete static_cast<SVGPaint*>(this);
         return;
     case CSSSVGDocumentClass:
-        delete static_cast<CSSSVGDocumentValue*>(this);
+        delete toCSSSVGDocumentValue(this);
         return;
     }
     ASSERT_NOT_REACHED();

@@ -405,10 +405,10 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const Re
                 continue;
             CSSValue* argument = filterValue->itemWithoutBoundsCheck(0);
 
-            if (!argument->isCSSSVGDocumentValue())
+            if (!argument->isSVGDocumentValue())
                 continue;
 
-            CSSSVGDocumentValue* svgDocumentValue = static_cast<CSSSVGDocumentValue*>(argument);
+            CSSSVGDocumentValue* svgDocumentValue = toCSSSVGDocumentValue(argument);
             KURL url = state.document().completeURL(svgDocumentValue->url());
 
             RefPtr<ReferenceFilterOperation> operation = ReferenceFilterOperation::create(svgDocumentValue->url(), url.fragmentIdentifier(), operationType);
