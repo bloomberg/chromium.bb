@@ -622,6 +622,15 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     # This breaks tests depending on focus.
     self.assertTrue(self._driver.ExecuteScript('return document.hasFocus()'))
 
+  def testTabCrash(self):
+    # If a tab is crashed, the session will be deleted.
+    # When 31 is released, will reload the tab instead.
+    # https://code.google.com/p/chromedriver/issues/detail?id=547
+    self.assertRaises(chromedriver.UnknownError,
+                      self._driver.Load, 'chrome://crash')
+    self.assertRaises(chromedriver.NoSuchSession,
+                      self._driver.GetCurrentUrl)
+
 
 class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes chromeOptions.args capabilities.

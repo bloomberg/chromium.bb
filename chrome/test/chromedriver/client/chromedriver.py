@@ -38,6 +38,7 @@ class NoSuchSession(ChromeDriverException):
 
 def _ExceptionForResponse(response):
   exception_class_map = {
+    6: NoSuchSession,
     7: NoSuchElement,
     8: NoSuchFrame,
     9: UnknownCommand,
@@ -49,8 +50,7 @@ def _ExceptionForResponse(response):
     24: InvalidCookieDomain,
     28: ScriptTimeout,
     32: InvalidSelector,
-    33: SessionNotCreatedException,
-    100: NoSuchSession
+    33: SessionNotCreatedException
   }
   status = response['status']
   msg = response['value']['message']
