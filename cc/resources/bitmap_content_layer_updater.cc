@@ -61,7 +61,8 @@ void BitmapContentLayerUpdater::PrepareToUpdate(
     gfx::Rect* resulting_opaque_rect) {
   devtools_instrumentation::ScopedLayerTask paint_layer(
       devtools_instrumentation::kPaintLayer, layer_id_);
-  if (canvas_size_ != content_rect.size()) {
+  if (canvas_size_.width() < content_rect.size().width() ||
+      canvas_size_.height() < content_rect.size().height()) {
     devtools_instrumentation::ScopedLayerTask paint_setup(
         devtools_instrumentation::kPaintSetup, layer_id_);
     canvas_size_ = content_rect.size();
@@ -72,7 +73,7 @@ void BitmapContentLayerUpdater::PrepareToUpdate(
   base::TimeTicks start_time =
       rendering_stats_instrumentation_->StartRecording();
   PaintContents(canvas_.get(),
-                content_rect.origin(),
+                content_rect,
                 contents_width_scale,
                 contents_height_scale,
                 resulting_opaque_rect);
@@ -89,12 +90,10 @@ void BitmapContentLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,
                                               gfx::Vector2d dest_offset,
                                               bool partial_update) {
   CHECK(canvas_);
-  ResourceUpdate upload =
-      ResourceUpdate::CreateFromCanvas(texture,
-                                       canvas_,
-                                       content_rect(),
-                                       source_rect,
-                                       dest_offset);
+  gfx::Rect canvas_rect = content_rect();
+  canvas_rect.set_size(canvas_size_);
+  ResourceUpdate upload = ResourceUpdate::CreateFromCanvas(
+      texture, canvas_, canvas_rect, source_rect, dest_offset);
   if (partial_update)
     queue->AppendPartialUpload(upload);
   else
