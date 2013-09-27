@@ -15,7 +15,7 @@
 namespace chromeos {
 
 // A fake implementation of GsmSMSClient used for tests.
-class FakeGsmSMSClient : public GsmSMSClient {
+class CHROMEOS_EXPORT FakeGsmSMSClient : public GsmSMSClient {
  public:
   FakeGsmSMSClient();
   virtual ~FakeGsmSMSClient();

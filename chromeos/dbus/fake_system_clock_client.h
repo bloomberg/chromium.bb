@@ -10,7 +10,7 @@
 namespace chromeos {
 
 // A fake implementation of SystemClockClient. This class does nothing.
-class FakeSystemClockClient : public SystemClockClient {
+class CHROMEOS_EXPORT FakeSystemClockClient : public SystemClockClient {
  public:
   FakeSystemClockClient();
   virtual ~FakeSystemClockClient();

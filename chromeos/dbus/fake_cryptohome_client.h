@@ -1,24 +1,23 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROMEOS_DBUS_FAKE_CRYPTOHOME_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_CRYPTOHOME_CLIENT_H_
 
-#include <string>
+#include <map>
 
+#include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/cryptohome_client.h"
 
 namespace chromeos {
 
-// A fake implementation of CryptohomeClient. This only calls callbacks given
-// as parameters.
-class FakeCryptohomeClient : public CryptohomeClient {
+class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
  public:
   FakeCryptohomeClient();
   virtual ~FakeCryptohomeClient();
 
-  // CryptohomeClient overrides
   virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void SetAsyncCallStatusHandlers(
       const AsyncCallStatusHandler& handler,
@@ -83,9 +82,9 @@ class FakeCryptohomeClient : public CryptohomeClient {
   virtual bool InstallAttributesIsInvalid(bool* is_invalid) OVERRIDE;
   virtual bool InstallAttributesIsFirstInstall(bool* is_first_install) OVERRIDE;
   virtual void TpmAttestationIsPrepared(
-        const BoolDBusMethodCallback& callback) OVERRIDE;
+      const BoolDBusMethodCallback& callback) OVERRIDE;
   virtual void TpmAttestationIsEnrolled(
-        const BoolDBusMethodCallback& callback) OVERRIDE;
+      const BoolDBusMethodCallback& callback) OVERRIDE;
   virtual void AsyncTpmAttestationCreateEnrollRequest(
       const AsyncMethodCallback& callback) OVERRIDE;
   virtual void AsyncTpmAttestationEnroll(
@@ -140,17 +139,31 @@ class FakeCryptohomeClient : public CryptohomeClient {
       const std::string& payload,
       const BoolDBusMethodCallback& callback) OVERRIDE;
 
-  // Sets the unmount result of Unmount() call. Unmount() always sets the result
-  // and pretends that the underlying method call succeeds.
+  // Sets the unmount result of Unmount() call.
   void set_unmount_result(bool result) {
     unmount_result_= result;
   }
 
  private:
-  AsyncCallStatusHandler handler_;
-  AsyncCallStatusWithDataHandler data_handler_;
+  // Posts tasks which return fake results to the UI thread.
+  void ReturnAsyncMethodResult(const AsyncMethodCallback& callback,
+                               bool returns_data);
 
+  // This method is used to implement ReturnAsyncMethodResult.
+  void ReturnAsyncMethodResultInternal(const AsyncMethodCallback& callback,
+                                       bool returns_data);
+
+  int async_call_id_;
+  AsyncCallStatusHandler async_call_status_handler_;
+  AsyncCallStatusWithDataHandler async_call_status_data_handler_;
+  int tpm_is_ready_counter_;
   bool unmount_result_;
+
+  // A stub store for InstallAttributes, mapping an attribute name to the
+  // associated data blob. Used to implement InstallAttributesSet and -Get.
+  std::map<std::string, std::vector<uint8> > install_attrs_;
+  bool locked_;
+  base::WeakPtrFactory<FakeCryptohomeClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCryptohomeClient);
 };

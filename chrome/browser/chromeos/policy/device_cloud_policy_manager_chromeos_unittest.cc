@@ -26,8 +26,8 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/cryptohome_library.h"
-#include "chromeos/dbus/cryptohome_client_stub.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "chromeos/dbus/fake_cryptohome_client.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -59,15 +59,15 @@ class DeviceCloudPolicyManagerChromeOSTest
  protected:
   DeviceCloudPolicyManagerChromeOSTest()
       : cryptohome_library_(chromeos::CryptohomeLibrary::GetTestImpl()),
-        stub_cryptohome_client_(new chromeos::CryptohomeClientStubImpl()),
+        fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
         install_attributes_(cryptohome_library_.get(),
-                            stub_cryptohome_client_.get()),
+                            fake_cryptohome_client_.get()),
         store_(new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
                                                   &install_attributes_)),
         manager_(make_scoped_ptr(store_),
                  loop_.message_loop_proxy(),
                  &install_attributes_) {
-    stub_cryptohome_client_->Init(NULL /* no dbus::Bus */);
+    fake_cryptohome_client_->Init(NULL /* no dbus::Bus */);
   }
 
   virtual void SetUp() OVERRIDE {
@@ -101,7 +101,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   }
 
   scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_library_;
-  scoped_ptr<chromeos::CryptohomeClientStubImpl> stub_cryptohome_client_;
+  scoped_ptr<chromeos::FakeCryptohomeClient> fake_cryptohome_client_;
   EnterpriseInstallAttributes install_attributes_;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;

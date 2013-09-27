@@ -37,7 +37,6 @@ namespace chromeos {
 
 #if defined(OS_CHROMEOS)
 const char kUser1ProfilePath[] = "/profile/user1/shill";
-const char kUserIdStubHashSuffix[] = "-hash";
 #endif  // defined(OS_CHROMEOS)
 
 
@@ -78,8 +77,8 @@ class ExtensionNetworkingPrivateApiTest :
     // uses the ProfileHelper to obtain the userhash crbug/238623.
     std::string login_user =
         command_line->GetSwitchValueNative(switches::kLoginUser);
-    // Do the same as CryptohomeClientStubImpl::GetSanitizedUsername
-    std::string sanitized_user = login_user + kUserIdStubHashSuffix;
+    std::string sanitized_user = CryptohomeClient::GetStubSanitizedUsername(
+        login_user);
     command_line->AppendSwitchASCII(switches::kLoginProfile, sanitized_user);
     if (GetParam())
       command_line->AppendSwitch(::switches::kMultiProfiles);

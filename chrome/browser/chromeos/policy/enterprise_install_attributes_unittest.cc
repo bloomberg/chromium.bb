@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/policy/proto/chromeos/install_attributes.pb.h"
 #include "chromeos/cryptohome/cryptohome_library.h"
-#include "chromeos/dbus/cryptohome_client_stub.h"
+#include "chromeos/dbus/fake_cryptohome_client.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,9 +37,9 @@ class EnterpriseInstallAttributesTest : public testing::Test {
  protected:
   EnterpriseInstallAttributesTest()
       : cryptohome_(chromeos::CryptohomeLibrary::GetTestImpl()),
-        stub_cryptohome_client_(new chromeos::CryptohomeClientStubImpl()),
-        install_attributes_(cryptohome_.get(), stub_cryptohome_client_.get()) {
-    stub_cryptohome_client_->Init(NULL /* no dbus::Bus */);
+        fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
+        install_attributes_(cryptohome_.get(), fake_cryptohome_client_.get()) {
+    fake_cryptohome_client_->Init(NULL /* no dbus::Bus */);
   }
 
   virtual void SetUp() OVERRIDE {
@@ -63,7 +63,7 @@ class EnterpriseInstallAttributesTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_;
-  scoped_ptr<chromeos::CryptohomeClientStubImpl> stub_cryptohome_client_;
+  scoped_ptr<chromeos::FakeCryptohomeClient> fake_cryptohome_client_;
   EnterpriseInstallAttributes install_attributes_;
 
   EnterpriseInstallAttributes::LockResult LockDeviceAndWaitForResult(

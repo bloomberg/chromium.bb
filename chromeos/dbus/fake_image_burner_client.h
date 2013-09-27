@@ -12,7 +12,7 @@
 namespace chromeos {
 
 // A fake implemetation of ImageBurnerClient. This class does nothing.
-class FakeImageBurnerClient : public ImageBurnerClient {
+class CHROMEOS_EXPORT FakeImageBurnerClient : public ImageBurnerClient {
  public:
   FakeImageBurnerClient();
   virtual ~FakeImageBurnerClient();

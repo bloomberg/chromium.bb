@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
 #include "chromeos/cryptohome/cryptohome_library.h"
-#include "chromeos/dbus/cryptohome_client_stub.h"
+#include "chromeos/dbus/fake_cryptohome_client.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,12 +36,12 @@ class DeviceCloudPolicyStoreChromeOSTest
  protected:
   DeviceCloudPolicyStoreChromeOSTest()
       : cryptohome_library_(chromeos::CryptohomeLibrary::GetTestImpl()),
-        stub_cryptohome_client_(new chromeos::CryptohomeClientStubImpl()),
+        fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
         install_attributes_(new EnterpriseInstallAttributes(
-            cryptohome_library_.get(), stub_cryptohome_client_.get())),
+            cryptohome_library_.get(), fake_cryptohome_client_.get())),
         store_(new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
                                                   install_attributes_.get())) {
-    stub_cryptohome_client_->Init(NULL /* no dbus::Bus */);
+    fake_cryptohome_client_->Init(NULL /* no dbus::Bus */);
   }
 
   virtual void SetUp() OVERRIDE {
@@ -99,13 +99,13 @@ class DeviceCloudPolicyStoreChromeOSTest
     cryptohome_library_->InstallAttributesSet("enterprise.owned",
                                               std::string());
     install_attributes_.reset(new EnterpriseInstallAttributes(
-        cryptohome_library_.get(), stub_cryptohome_client_.get()));
+        cryptohome_library_.get(), fake_cryptohome_client_.get()));
     store_.reset(new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
                                                     install_attributes_.get()));
   }
 
   scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_library_;
-  scoped_ptr<chromeos::CryptohomeClientStubImpl> stub_cryptohome_client_;
+  scoped_ptr<chromeos::FakeCryptohomeClient> fake_cryptohome_client_;
   scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
 
   scoped_ptr<DeviceCloudPolicyStoreChromeOS> store_;
