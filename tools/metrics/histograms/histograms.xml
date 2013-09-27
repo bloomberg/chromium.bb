@@ -4865,6 +4865,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="History.FaviconsRecovery" enum="HistoryFaviconsRecoveryEnum">
+  <summary>
+    Track results of SQLite database recovery code in thumbnail_database.cc.
+  </summary>
+</histogram>
+
 <histogram name="History.TopSitesVisitsByRank" units="rank">
   <summary>
     Page visits to each of a user's top 50 sites. Visits to all other sites go
@@ -22082,6 +22088,56 @@ other types of suffix sets.
   <int value="10" label="HOSTED_NOT_ALLOWED"/>
   <int value="11" label="UNEXPECTED_SERVICE_RESPONSE"/>
   <int value="12" label="SERVICE_ERROR"/>
+</enum>
+
+<enum name="HistoryFaviconsRecoveryEnum" type="int">
+  <summary>Error states noted in thumbnail_database.cc recovery code.</summary>
+  <int value="0" label="RECOVERY_EVENT_RECOVERED">Successful recovery.</int>
+  <int value="1" label="RECOVERY_EVENT_FAILED_SCOPER">
+    sql::Recovery failed init.
+  </int>
+  <int value="2" label="RECOVERY_EVENT_FAILED_META_VERSION_ERROR">
+    Query failed against recovery meta table.
+  </int>
+  <int value="3" label="RECOVERY_EVENT_FAILED_META_VERSION_NONE">
+    No version row in recovery meta table.
+  </int>
+  <int value="4" label="RECOVERY_EVENT_FAILED_META_WRONG_VERSION6">
+    Recovery meta table has version 6.
+  </int>
+  <int value="5" label="RECOVERY_EVENT_FAILED_META_WRONG_VERSION5">
+    Recovery meta table has version 5.
+  </int>
+  <int value="6" label="RECOVERY_EVENT_FAILED_META_WRONG_VERSION">
+    Recovery meta table has an unexpected version.
+  </int>
+  <int value="7" label="RECOVERY_EVENT_FAILED_RECOVER_META">
+    Failed to create recovery meta table.
+  </int>
+  <int value="8" label="RECOVERY_EVENT_FAILED_META_INSERT">
+    Failed to copy recovery meta table.
+  </int>
+  <int value="9" label="RECOVERY_EVENT_FAILED_INIT">
+    Failed to init target schema.
+  </int>
+  <int value="10" label="RECOVERY_EVENT_FAILED_RECOVER_FAVICONS">
+    Failed to create recovery favicons table.
+  </int>
+  <int value="11" label="RECOVERY_EVENT_FAILED_FAVICONS_INSERT">
+    Failed to copy recovery favicons table.
+  </int>
+  <int value="12" label="RECOVERY_EVENT_FAILED_RECOVER_FAVICON_BITMAPS">
+    Failed to create recovery favicon_bitmaps table.
+  </int>
+  <int value="13" label="RECOVERY_EVENT_FAILED_FAVICON_BITMAPS_INSERT">
+    Failed to copy recovery favicon_bitmaps table.
+  </int>
+  <int value="14" label="RECOVERY_EVENT_FAILED_RECOVER_ICON_MAPPING">
+    Failed to create recovery icon_mapping table.
+  </int>
+  <int value="15" label="RECOVERY_EVENT_FAILED_ICON_MAPPING_INSERT">
+    Failed to copy recovery icon_mapping table.
+  </int>
 </enum>
 
 <enum name="HttpAuthCount" type="int">
