@@ -4,9 +4,6 @@
 
 #include "base/guid.h"
 
-#include "base/rand_util.h"
-#include "base/strings/stringprintf.h"
-
 namespace base {
 
 bool IsValidGUID(const std::string& guid) {
@@ -14,7 +11,7 @@ bool IsValidGUID(const std::string& guid) {
   if (guid.length() != kGUIDLength)
     return false;
 
-  std::string hexchars = "0123456789ABCDEF";
+  const std::string hexchars = "0123456789ABCDEF";
   for (uint32 i = 0; i < guid.length(); ++i) {
     char current = guid[i];
     if (i == 8 || i == 13 || i == 18 || i == 23) {
@@ -29,4 +26,4 @@ bool IsValidGUID(const std::string& guid) {
   return true;
 }
 
-}  // namespace guid
+}  // namespace base
