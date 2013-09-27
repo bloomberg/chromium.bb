@@ -3,26 +3,30 @@
 // found in the LICENSE file.
 
 (function() {
-  var search_box = document.getElementById('search_input');
+  var searchBox = document.getElementById('search_input');
   var samples = document.getElementsByClassName('sample');
 
   function filterSamples() {
-    var search_text = search_box.value.toLowerCase();
+    var searchText = searchBox.value.toLowerCase();
     for (var i = 0; i < samples.length; ++i) {
-      var sample = samples[i]
-      if (sample.getAttribute('tags').toLowerCase().indexOf(search_text) < 0)
+      var sample = samples[i];
+      var sampleTitle = '';
+      if (sample.getElementsByTagName('h2').length > 0)
+        sampleTitle = sample.getElementsByTagName('h2')[0].textContent;
+      if (sample.getAttribute('tags').toLowerCase().indexOf(searchText) < 0 &&
+          sampleTitle.toLowerCase().indexOf(searchText) < 0)
         sample.style.display = 'none';
       else
         sample.style.display = '';
     }
   }
-  search_box.addEventListener('search', filterSamples);
-  search_box.addEventListener('keyup', filterSamples);
+  searchBox.addEventListener('search', filterSamples);
+  searchBox.addEventListener('keyup', filterSamples);
 
-  var api_filter_items = document.getElementById('api_filter_items');
-  api_filter_items.addEventListener('click', function(event) {
+  var apiFilterItems = document.getElementById('api_filter_items');
+  apiFilterItems.addEventListener('click', function(event) {
     if (event.target instanceof HTMLAnchorElement) {
-      search_box.value = event.target.innerText;
+      searchBox.value = event.target.innerText;
       filterSamples();
     }
   });

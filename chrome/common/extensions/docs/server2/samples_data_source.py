@@ -6,6 +6,7 @@ import hashlib
 import json
 import logging
 import re
+import traceback
 
 from compiled_file_system import CompiledFileSystem
 import third_party.json_schema_compiler.json_comment_eater as json_comment_eater
@@ -151,7 +152,6 @@ class SamplesDataSource(object):
           icon_path = '%s/%s' % (icon_base, manifest_data['icon'])
         manifest_data.update({
           'icon': icon_path,
-          'id': hashlib.md5(url).hexdigest(),
           'download_url': download_url,
           'url': url,
           'files': [f.replace(sample_path + '/', '') for f in sample_files],
@@ -172,6 +172,9 @@ class SamplesDataSource(object):
     self._extension_samples_path = extension_samples_path
     self._base_path = base_path
     self._request = request
+
+  def _GetSampleId(self, sample_name):
+    return sample_name.lower().replace(' ', '-')
 
   def _GetAcceptedLanguages(self):
     accept_language = self._request.headers.get('Accept-Language', None)
@@ -227,12 +230,14 @@ class SamplesDataSource(object):
           locale_data = sample_data['locales'][locale]
           sample_data['name'] = locale_data[name_key]['message']
           sample_data['description'] = locale_data[description_key]['message']
+          sample_data['id'] = self._GetSampleId(sample_data['name'])
         except Exception as e:
-          logging.error(e)
+          logging.error(traceback.format_exc())
           # Revert the sample to the original dict.
           sample_data = dict_
         return_list.append(sample_data)
       else:
+        dict_['id'] = self._GetSampleId(name)
         return_list.append(dict_)
     return return_list
 
