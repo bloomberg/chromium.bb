@@ -116,7 +116,14 @@ bool SerialConnection::PostOpen() {
       options.c_cflag &= ~(PARENB | PARODD);
       break;
   }
-  options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+
+  // Set flags for 'raw' operation
+  // At least on Linux the flags are persistent and thus we cannot trust
+  // the default values.
+  options.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHONL | ISIG);
+  options.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR |
+                       ICRNL | IXON);
+  options.c_oflag &= ~OPOST;
 
   // Enable receiver and set local mode
   // See http://www.easysw.com/~mike/serial/serial.html to understand.
