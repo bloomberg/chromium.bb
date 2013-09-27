@@ -44,7 +44,7 @@ class SequenceCheckerDoNothing {
 // class MyClass {
 //  public:
 //   void Foo() {
-//     DCHECK(sequence_checker_.CalledOnValidSequence());
+//     DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 //     ... (do stuff) ...
 //   }
 //
