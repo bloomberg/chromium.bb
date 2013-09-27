@@ -1828,26 +1828,28 @@ bool RenderLayerBacking::startTransition(double timeOffset, CSSPropertyID proper
         fromOpacity = compositingOpacity(fromStyle->opacity());
         toOpacity = compositingOpacity(toStyle->opacity());
     }
+
+    // Although KeyframeAnimation can have multiple properties of the animation, ImplicitAnimation (= Transition) has only one animation property.
     WebAnimations animations(m_animationProvider->startTransition(timeOffset, property, fromStyle,
         toStyle, m_owningLayer->hasTransform(), m_owningLayer->hasFilter(), boxSize, fromOpacity, toOpacity));
-    bool didAnimate = false;
     if (animations.m_transformAnimation && m_graphicsLayer->addAnimation(animations.m_transformAnimation.get())) {
         // To ensure that the correct transform is visible when the animation ends, also set the final transform.
         updateTransform(toStyle);
-        didAnimate = true;
+        return true;
     }
     if (animations.m_opacityAnimation && m_graphicsLayer->addAnimation(animations.m_opacityAnimation.get())) {
         // To ensure that the correct opacity is visible when the animation ends, also set the final opacity.
         updateOpacity(toStyle);
-        didAnimate = true;
+        return true;
     }
     if (animations.m_filterAnimation && m_graphicsLayer->addAnimation(animations.m_filterAnimation.get())) {
         // To ensure that the correct filter is visible when the animation ends, also set the final filter.
         updateFilters(toStyle);
-        didAnimate = true;
+        ASSERT_NOT_REACHED(); // Chromium compositor cannot accelerate filter yet.
+        return false;
     }
 
-    return didAnimate;
+    return false;
 }
 
 void RenderLayerBacking::transitionPaused(double timeOffset, CSSPropertyID property)
