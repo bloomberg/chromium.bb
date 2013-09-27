@@ -9,12 +9,14 @@
 #include "cc/debug/traced_value.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/draw_quad.h"
+#include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 
 namespace cc {
 
 void* RenderPass::Id::AsTracingId() const {
-  COMPILE_ASSERT(sizeof(size_t) <= sizeof(void*), size_t_bigger_than_pointer);
+  COMPILE_ASSERT(sizeof(size_t) <= sizeof(void*),  // NOLINT(runtime/sizeof)
+                 size_t_bigger_than_pointer);
   return reinterpret_cast<void*>(base::HashPair(layer_id, index));
 }
 
@@ -42,6 +44,52 @@ scoped_ptr<RenderPass> RenderPass::Copy(Id new_id) const {
                     has_transparent_background,
                     has_occlusion_from_outside_target_surface);
   return copy_pass.Pass();
+}
+
+// static
+void RenderPass::CopyAll(const ScopedPtrVector<RenderPass>& in,
+                         ScopedPtrVector<RenderPass>* out) {
+  for (size_t i = 0; i < in.size(); ++i) {
+    RenderPass* source = in[i];
+
+    // Since we can't copy these, it's wrong to use CopyAll in a situation where
+    // you may have copy_requests present.
+    DCHECK_EQ(source->copy_requests.size(), 0u);
+
+    scoped_ptr<RenderPass> copy_pass(Create());
+    copy_pass->SetAll(source->id,
+                      source->output_rect,
+                      source->damage_rect,
+                      source->transform_to_root_target,
+                      source->has_transparent_background,
+                      source->has_occlusion_from_outside_target_surface);
+    for (size_t i = 0; i < source->shared_quad_state_list.size(); ++i) {
+      copy_pass->shared_quad_state_list.push_back(
+          source->shared_quad_state_list[i]->Copy());
+    }
+    for (size_t i = 0, sqs_i = 0; i < source->quad_list.size(); ++i) {
+      if (source->quad_list[i]->shared_quad_state !=
+          source->shared_quad_state_list[sqs_i])
+        ++sqs_i;
+      DCHECK(sqs_i < source->shared_quad_state_list.size());
+      DCHECK(source->quad_list[i]->shared_quad_state ==
+             source->shared_quad_state_list[sqs_i]);
+
+      DrawQuad* quad = source->quad_list[i];
+
+      if (quad->material == DrawQuad::RENDER_PASS) {
+        const RenderPassDrawQuad* pass_quad =
+            RenderPassDrawQuad::MaterialCast(quad);
+        copy_pass->quad_list.push_back(
+            pass_quad->Copy(copy_pass->shared_quad_state_list[sqs_i],
+                            pass_quad->render_pass_id).PassAs<DrawQuad>());
+      } else {
+        copy_pass->quad_list.push_back(source->quad_list[i]->Copy(
+            copy_pass->shared_quad_state_list[sqs_i]));
+      }
+    }
+    out->push_back(copy_pass.Pass());
+  }
 }
 
 void RenderPass::SetNew(Id id,

@@ -66,8 +66,13 @@ class CC_EXPORT RenderPass {
 
   static scoped_ptr<RenderPass> Create();
 
-  // A shallow copy of the render pass, which does not include its quads.
+  // A shallow copy of the render pass, which does not include its quads or copy
+  // requests.
   scoped_ptr<RenderPass> Copy(Id new_id) const;
+
+  // A deep copy of the render passes in the list including the quads.
+  static void CopyAll(const ScopedPtrVector<RenderPass>& in,
+                      ScopedPtrVector<RenderPass>* out);
 
   void SetNew(Id id,
               gfx::Rect output_rect,
