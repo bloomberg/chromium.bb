@@ -394,17 +394,25 @@ void DownloadRequestLimiter::CanDownloadImpl(
             CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
             std::string());
       switch (setting) {
-        case CONTENT_SETTING_ALLOW:
-          TabSpecificContentSettings::FromWebContents(
-              originating_contents)->SetDownloadsBlocked(false);
+        case CONTENT_SETTING_ALLOW: {
+          TabSpecificContentSettings* settings =
+              TabSpecificContentSettings::FromWebContents(
+                  originating_contents);
+          if (settings)
+            settings->SetDownloadsBlocked(false);
           ScheduleNotification(callback, true);
           state->increment_download_count();
           return;
-        case CONTENT_SETTING_BLOCK:
-          TabSpecificContentSettings::FromWebContents(
-              originating_contents)->SetDownloadsBlocked(true);
+        }
+        case CONTENT_SETTING_BLOCK: {
+          TabSpecificContentSettings* settings =
+              TabSpecificContentSettings::FromWebContents(
+                  originating_contents);
+          if (settings)
+            settings->SetDownloadsBlocked(true);
           ScheduleNotification(callback, false);
           return;
+        }
         case CONTENT_SETTING_DEFAULT:
         case CONTENT_SETTING_ASK:
         case CONTENT_SETTING_SESSION_ONLY:

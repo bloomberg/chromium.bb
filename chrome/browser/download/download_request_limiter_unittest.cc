@@ -119,6 +119,15 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     }
   }
 
+  void SetHostContentSetting(WebContents* contents, ContentSetting setting) {
+    content_settings_->SetContentSetting(
+        ContentSettingsPattern::FromURL(contents->GetURL()),
+        ContentSettingsPattern::Wildcard(),
+        CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+        std::string(),
+        setting);
+  }
+
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
 
   // The action that FakeCreate() should take.
@@ -348,4 +357,32 @@ TEST_F(DownloadRequestLimiterTest,
   ExpectAndResetCounts(1, 0, 0, __LINE__);
   EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents.get()));
+}
+
+TEST_F(DownloadRequestLimiterTest,
+       DownloadRequestLimiter_SetHostContentSetting) {
+  NavigateAndCommit(GURL("http://foo.com/bar"));
+  SetHostContentSetting(web_contents(), CONTENT_SETTING_ALLOW);
+
+  CanDownload();
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  CanDownload();
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  SetHostContentSetting(web_contents(), CONTENT_SETTING_BLOCK);
+
+  CanDownload();
+  ExpectAndResetCounts(0, 1, 0, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  CanDownload();
+  ExpectAndResetCounts(0, 1, 0, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
 }
