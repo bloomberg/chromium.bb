@@ -148,10 +148,10 @@ const int64 kFallbackTickTimeoutInMilliseconds = 20;
 
 
 // Used to calculate memory and resource allocation. Determined experimentally.
-size_t g_memory_multiplier = 15;
+size_t g_memory_multiplier = 10;
 const size_t kMaxNumTilesToFillDisplay = 20;
 const size_t kBytesPerPixel = 4;
-const size_t kMemoryAllocationStep = 10 * 1024 * 1024;
+const size_t kMemoryAllocationStep = 5 * 1024 * 1024;
 
 class ScopedAllowGL {
  public:
