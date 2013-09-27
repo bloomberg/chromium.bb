@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/extensions/api/extension_api.h"
-#include "chrome/common/extensions/api/runtime.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -114,13 +113,13 @@ using content::RenderView;
 
 namespace extensions {
 
-namespace runtime = api::runtime;
-
 namespace {
 
 static const int64 kInitialExtensionIdleHandlerDelayMs = 5*1000;
 static const int64 kMaxExtensionIdleHandlerDelayMs = 5*60*1000;
 static const char kEventDispatchFunction[] = "dispatchEvent";
+static const char kOnSuspendEvent[] = "runtime.onSuspend";
+static const char kOnSuspendCanceledEvent[] = "runtime.onSuspendCanceled";
 
 // Returns the global value for "chrome" from |context|. If one doesn't exist
 // creates a new object for it.
@@ -1419,12 +1418,12 @@ void Dispatcher::OnSuspend(const std::string& extension_id) {
   // the browser know when we are starting and stopping the event dispatch, so
   // that it still considers the extension idle despite any activity the suspend
   // event creates.
-  DispatchEvent(extension_id, runtime::OnSuspend::kEventName);
+  DispatchEvent(extension_id, kOnSuspendEvent);
   RenderThread::Get()->Send(new ExtensionHostMsg_SuspendAck(extension_id));
 }
 
 void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
-  DispatchEvent(extension_id, runtime::OnSuspendCanceled::kEventName);
+  DispatchEvent(extension_id, kOnSuspendCanceledEvent);
 }
 
 // TODO(kalman): This is checking for the wrong thing, it should be checking if
