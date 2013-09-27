@@ -75,7 +75,6 @@ struct CC_EXPORT TilePriority {
       std::min(active.distance_to_visible_in_pixels,
                pending.distance_to_visible_in_pixels);
   }
-  void set_current_screen_quad(const gfx::QuadF& q) { current_screen_quad = q; }
 
   scoped_ptr<base::Value> AsValue() const;
 
@@ -108,8 +107,6 @@ struct CC_EXPORT TilePriority {
         time_to_visible_in_seconds == other.time_to_visible_in_seconds &&
         distance_to_visible_in_pixels == other.distance_to_visible_in_pixels &&
         required_for_activation == other.required_for_activation;
-    // No need to compare current_screen_quad which is for debug only and
-    // never changes by itself.
   }
 
   bool operator !=(const TilePriority& other) const {
@@ -120,9 +117,6 @@ struct CC_EXPORT TilePriority {
   bool required_for_activation;
   float time_to_visible_in_seconds;
   float distance_to_visible_in_pixels;
-
- private:
-  gfx::QuadF current_screen_quad;
 };
 
 enum TileMemoryLimitPolicy {

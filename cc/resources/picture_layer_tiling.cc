@@ -423,10 +423,6 @@ void PictureLayerTiling::UpdateTilePriorities(
   float current_scale = current_layer_contents_scale / contents_scale_;
   float last_scale = last_layer_contents_scale / contents_scale_;
 
-  bool store_screen_space_quads_on_tiles;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-                                     &store_screen_space_quads_on_tiles);
-
   // Fast path tile priority calculation when both transforms are translations.
   if (ApproximatelyTranslation(last_screen_transform.matrix()) &&
       ApproximatelyTranslation(current_screen_transform.matrix())) {
@@ -465,8 +461,6 @@ void PictureLayerTiling::UpdateTilePriorities(
           resolution_,
           time_to_visible_in_seconds,
           distance_to_visible_in_pixels);
-      if (store_screen_space_quads_on_tiles)
-        priority.set_current_screen_quad(gfx::QuadF(current_screen_rect));
       tile->SetPriority(tree, priority);
     }
   } else if (!last_screen_transform.HasPerspective() &&
@@ -547,21 +541,6 @@ void PictureLayerTiling::UpdateTilePriorities(
           resolution_,
           time_to_visible_in_seconds,
           distance_to_visible_in_pixels);
-
-      if (store_screen_space_quads_on_tiles) {
-        // This overhead is only triggered when logging event tracing data.
-        gfx::Rect tile_bounds =
-            tiling_data_.TileBounds(iter.index_x(), iter.index_y());
-        gfx::RectF current_layer_content_rect = gfx::ScaleRect(
-            tile_bounds,
-            current_scale,
-            current_scale);
-        bool clipped;
-        priority.set_current_screen_quad(
-            MathUtil::MapQuad(current_screen_transform,
-                              gfx::QuadF(current_layer_content_rect),
-                              &clipped));
-      }
       tile->SetPriority(tree, priority);
     }
   } else {
@@ -598,13 +577,6 @@ void PictureLayerTiling::UpdateTilePriorities(
           resolution_,
           time_to_visible_in_seconds,
           distance_to_visible_in_pixels);
-      if (store_screen_space_quads_on_tiles) {
-        bool clipped;
-        priority.set_current_screen_quad(
-            MathUtil::MapQuad(current_screen_transform,
-                              gfx::QuadF(current_layer_content_rect),
-                              &clipped));
-      }
       tile->SetPriority(tree, priority);
     }
   }
