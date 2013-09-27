@@ -80,6 +80,7 @@ $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
 all: $(LIBDIR)/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
 $(LIBDIR)/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_pnacl))
 	$(MKDIR) -p $$(dir $$@)
+	$(RM) $$@
 	$(call LOG,LIB,$$@,$(PNACL_LIB) -cr $$@ $$^ $(3))
 endef
 

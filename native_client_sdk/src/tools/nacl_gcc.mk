@@ -229,12 +229,14 @@ ifneq (,$(findstring x86_32,$(ARCHES)))
 all: $(OUTDIR)/lib$(1)_x86_32.a
 $(OUTDIR)/lib$(1)_x86_32.a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32))
 	$(MKDIR) -p $$(dir $$@)
+	$(RM) $$@
 	$(call LOG,LIB ,$$@,$(X86_32_LIB) -cr $$@ $$^)
 
 $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a
 install: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a
 $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a: $(OUTDIR)/lib$(1)_x86_32.a
 	$(MKDIR) -p $$(dir $$@)
+	$(RM) $$@
 	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
 endif
 
@@ -242,6 +244,7 @@ ifneq (,$(findstring x86_64,$(ARCHES)))
 all: $(OUTDIR)/lib$(1)_x86_64.a
 $(OUTDIR)/lib$(1)_x86_64.a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64))
 	$(MKDIR) -p $$(dir $$@)
+	$(RM) $$@
 	$(call LOG,LIB ,$$@,$(X86_64_LIB) -cr $$@ $$^)
 
 $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a
@@ -256,6 +259,7 @@ ifneq ($(TOOLCHAIN),glibc)
 all: $(OUTDIR)/lib$(1)_arm.a
 $(OUTDIR)/lib$(1)_arm.a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm))
 	$(MKDIR) -p $$(dir $$@)
+	$(RM) $$@
 	$(call LOG,LIB ,$$@,$(ARM_LIB) -cr $$@ $$^)
 
 $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a

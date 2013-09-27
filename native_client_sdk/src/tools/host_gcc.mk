@@ -93,6 +93,7 @@ $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(OSNAME)_host/$(CONFIG)/lib$(1).a
 all: $(LIBDIR)/$(OSNAME)_host/$(CONFIG)/lib$(1).a
 $(LIBDIR)/$(OSNAME)_host/$(CONFIG)/lib$(1).a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src)))
 	$(MKDIR) -p $$(dir $$@)
+	$(RM) $$@
 	$(call LOG,LIB,$$@,$(HOST_LIB) -cr $$@ $$^)
 endef
 
