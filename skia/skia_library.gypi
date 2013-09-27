@@ -67,9 +67,6 @@
   'sources': [
     # this should likely be moved into src/utils in skia
     '../third_party/skia/src/core/SkFlate.cpp',
-    # We don't want to add this to Skia's core.gypi since it is
-    # Android only. Include it here and remove it for everyone
-    # but Android later.
     '../third_party/skia/src/core/SkPaintOptionsAndroid.cpp',
 
     '../third_party/skia/src/ports/SkImageDecoder_empty.cpp',
@@ -235,11 +232,6 @@
       },
     }],
 
-    [ 'OS != "android"', {
-      'sources!': [
-        '../third_party/skia/src/core/SkPaintOptionsAndroid.cpp',
-      ],
-    }],
     [ 'OS != "ios"', {
       'dependencies': [
         '../third_party/WebKit/public/blink_skia_config.gyp:blink_skia_config',
