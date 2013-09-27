@@ -34,15 +34,11 @@
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Clipboard.h"
-#include "core/events/ClipboardEvent.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentMarkerController.h"
-#include "core/events/EventNames.h"
-#include "core/events/KeyboardEvent.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
-#include "core/events/TextEvent.h"
 #include "core/editing/ApplyStyleCommand.h"
 #include "core/editing/DeleteSelectionCommand.h"
 #include "core/editing/IndentOutdentCommand.h"
@@ -60,6 +56,10 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
+#include "core/events/ClipboardEvent.h"
+#include "core/events/EventNames.h"
+#include "core/events/KeyboardEvent.h"
+#include "core/events/TextEvent.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -76,7 +76,6 @@
 #include "core/platform/Pasteboard.h"
 #include "core/platform/Sound.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
-#include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/text/TextCheckerClient.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderBlock.h"
@@ -413,19 +412,18 @@ bool Editor::dispatchCPPEvent(const AtomicString &eventType, ClipboardAccessPoli
     if (!target)
         return true;
 
-    RefPtr<Clipboard> clipboard = ClipboardChromium::create(
+    RefPtr<Clipboard> clipboard = Clipboard::create(
         Clipboard::CopyAndPaste,
+        policy,
         policy == ClipboardWritable
             ? ChromiumDataObject::create()
-            : ChromiumDataObject::createFromPasteboard(pasteMode),
-        policy,
-        m_frame);
+            : ChromiumDataObject::createFromPasteboard(pasteMode));
 
     RefPtr<Event> evt = ClipboardEvent::create(eventType, true, true, clipboard);
     target->dispatchEvent(evt, IGNORE_EXCEPTION);
     bool noDefaultProcessing = evt->defaultPrevented();
     if (noDefaultProcessing && policy == ClipboardWritable) {
-        RefPtr<ChromiumDataObject> dataObject = static_cast<ClipboardChromium*>(clipboard.get())->dataObject();
+        RefPtr<ChromiumDataObject> dataObject = clipboard->dataObject();
         Pasteboard::generalPasteboard()->writeDataObject(dataObject.release());
     }
 

@@ -26,52 +26,25 @@
 #include "config.h"
 #include "core/dom/Clipboard.h"
 
+#include "HTMLNames.h"
+#include "core/dom/DataTransferItem.h"
+#include "core/dom/DataTransferItemList.h"
+#include "core/editing/markup.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fileapi/FileList.h"
+#include "core/page/Frame.h"
+#include "core/platform/DragImage.h"
+#include "core/platform/MIMETypeRegistry.h"
+#include "core/platform/chromium/ChromiumDataObject.h"
+#include "core/platform/chromium/ClipboardMimeTypes.h"
+#include "core/platform/chromium/ClipboardUtilitiesChromium.h"
+#include "core/rendering/RenderImage.h"
+#include "core/rendering/RenderObject.h"
 
 namespace WebCore {
 
-Clipboard::Clipboard(ClipboardAccessPolicy policy, ClipboardType clipboardType)
-    : m_policy(policy)
-    , m_dropEffect("uninitialized")
-    , m_effectAllowed("uninitialized")
-    , m_dragStarted(false)
-    , m_clipboardType(clipboardType)
-    , m_dragImage(0)
-{
-    ScriptWrappable::init(this);
-}
-
-void Clipboard::setAccessPolicy(ClipboardAccessPolicy policy)
-{
-    // once you go numb, can never go back
-    ASSERT(m_policy != ClipboardNumb || policy == ClipboardNumb);
-    m_policy = policy;
-}
-
-bool Clipboard::canReadTypes() const
-{
-    return m_policy == ClipboardReadable || m_policy == ClipboardTypesReadable || m_policy == ClipboardWritable;
-}
-
-bool Clipboard::canReadData() const
-{
-    return m_policy == ClipboardReadable || m_policy == ClipboardWritable;
-}
-
-bool Clipboard::canWriteData() const
-{
-    return m_policy == ClipboardWritable;
-}
-
-bool Clipboard::canSetDragImage() const
-{
-    return m_policy == ClipboardImageWritable || m_policy == ClipboardWritable;
-}
-
 // These "conversion" methods are called by both WebCore and WebKit, and never make sense to JS, so we don't
 // worry about security for these. They don't allow access to the pasteboard anyway.
-
 static DragOperation dragOpFromIEOp(const String& op)
 {
     // yep, it's really just this fixed set
@@ -118,54 +91,28 @@ static String IEOpFromDragOp(DragOperation op)
     return "none";
 }
 
-DragOperation Clipboard::sourceOperation() const
+// We provide the IE clipboard types (URL and Text), and the clipboard types specified in the WHATWG Web Applications 1.0 draft
+// see http://www.whatwg.org/specs/web-apps/current-work/ Section 6.3.5.3
+static String normalizeType(const String& type, bool* convertToURL = 0)
 {
-    DragOperation op = dragOpFromIEOp(m_effectAllowed);
-    ASSERT(op != DragOperationPrivate);
-    return op;
-}
-
-DragOperation Clipboard::destinationOperation() const
-{
-    DragOperation op = dragOpFromIEOp(m_dropEffect);
-    ASSERT(op == DragOperationCopy || op == DragOperationNone || op == DragOperationLink || op == (DragOperation)(DragOperationGeneric | DragOperationMove) || op == DragOperationEvery);
-    return op;
-}
-
-void Clipboard::setSourceOperation(DragOperation op)
-{
-    ASSERT_ARG(op, op != DragOperationPrivate);
-    m_effectAllowed = IEOpFromDragOp(op);
-}
-
-void Clipboard::setDestinationOperation(DragOperation op)
-{
-    ASSERT_ARG(op, op == DragOperationCopy || op == DragOperationNone || op == DragOperationLink || op == DragOperationGeneric || op == DragOperationMove || op == (DragOperation)(DragOperationGeneric | DragOperationMove));
-    m_dropEffect = IEOpFromDragOp(op);
-}
-
-bool Clipboard::hasFileOfType(const String& type) const
-{
-    if (!canReadTypes())
-        return false;
-
-    RefPtr<FileList> fileList = files();
-    if (fileList->isEmpty())
-        return false;
-
-    for (unsigned int f = 0; f < fileList->length(); f++) {
-        if (equalIgnoringCase(fileList->item(f)->type(), type))
-            return true;
+    String cleanType = type.stripWhiteSpace().lower();
+    if (cleanType == mimeTypeText || cleanType.startsWith(mimeTypeTextPlainEtc))
+        return mimeTypeTextPlain;
+    if (cleanType == mimeTypeURL) {
+        if (convertToURL)
+            *convertToURL = true;
+        return mimeTypeTextURIList;
     }
-    return false;
+    return cleanType;
 }
 
-bool Clipboard::hasStringOfType(const String& type) const
+PassRefPtr<Clipboard> Clipboard::create(ClipboardType type, ClipboardAccessPolicy policy, PassRefPtr<ChromiumDataObject> dataObject)
 {
-    if (!canReadTypes())
-        return false;
+    return adoptRef(new Clipboard(type, policy , dataObject));
+}
 
-    return types().contains(type);
+Clipboard::~Clipboard()
+{
 }
 
 void Clipboard::setDropEffect(const String &effect)
@@ -203,6 +150,338 @@ void Clipboard::setEffectAllowed(const String &effect)
         m_effectAllowed = effect;
 }
 
+void Clipboard::clearData(const String& type)
+{
+    if (!canWriteData())
+        return;
+
+    m_dataObject->clearData(normalizeType(type));
+}
+
+void Clipboard::clearAllData()
+{
+    if (!canWriteData())
+        return;
+
+    m_dataObject->clearAll();
+}
+
+String Clipboard::getData(const String& type) const
+{
+    if (!canReadData())
+        return String();
+
+    bool convertToURL = false;
+    String data = m_dataObject->getData(normalizeType(type, &convertToURL));
+    if (!convertToURL)
+        return data;
+    return convertURIListToURL(data);
+}
+
+bool Clipboard::setData(const String& type, const String& data)
+{
+    if (!canWriteData())
+        return false;
+
+    return m_dataObject->setData(normalizeType(type), data);
+}
+
+// extensions beyond IE's API
+ListHashSet<String> Clipboard::types() const
+{
+    if (!canReadTypes())
+        return ListHashSet<String>();
+
+    return m_dataObject->types();
+}
+
+PassRefPtr<FileList> Clipboard::files() const
+{
+    RefPtr<FileList> files = FileList::create();
+    if (!canReadData())
+        return files.release();
+
+    for (size_t i = 0; i < m_dataObject->length(); ++i) {
+        if (m_dataObject->item(i)->kind() == DataTransferItem::kindFile) {
+            RefPtr<Blob> blob = m_dataObject->item(i)->getAsFile();
+            if (blob && blob->isFile())
+                files->append(toFile(blob.get()));
+        }
+    }
+
+    return files.release();
+}
+
+void Clipboard::setDragImage(ImageResource* img, const IntPoint& loc)
+{
+    setDragImage(img, 0, loc);
+}
+
+void Clipboard::setDragImageElement(Node* node, const IntPoint& loc)
+{
+    setDragImage(0, node, loc);
+}
+
+PassOwnPtr<DragImage> Clipboard::createDragImage(IntPoint& loc, Frame* frame) const
+{
+    if (m_dragImageElement) {
+        loc = m_dragLoc;
+        return frame->nodeImage(m_dragImageElement.get());
+    }
+    if (m_dragImage) {
+        loc = m_dragLoc;
+        return DragImage::create(m_dragImage->image());
+    }
+    return nullptr;
+}
+
+static ImageResource* getImageResource(Element* element)
+{
+    // Attempt to pull ImageResource from element
+    ASSERT(element);
+    RenderObject* renderer = element->renderer();
+    if (!renderer || !renderer->isImage())
+        return 0;
+
+    RenderImage* image = toRenderImage(renderer);
+    if (image->cachedImage() && !image->cachedImage()->errorOccurred())
+        return image->cachedImage();
+
+    return 0;
+}
+
+static void writeImageToDataObject(ChromiumDataObject* dataObject, Element* element, const KURL& url)
+{
+    // Shove image data into a DataObject for use as a file
+    ImageResource* cachedImage = getImageResource(element);
+    if (!cachedImage || !cachedImage->imageForRenderer(element->renderer()) || !cachedImage->isLoaded())
+        return;
+
+    SharedBuffer* imageBuffer = cachedImage->imageForRenderer(element->renderer())->data();
+    if (!imageBuffer || !imageBuffer->size())
+        return;
+
+    String imageExtension = cachedImage->image()->filenameExtension();
+    ASSERT(!imageExtension.isEmpty());
+
+    // Determine the filename for the file contents of the image.
+    String filename = cachedImage->response().suggestedFilename();
+    if (filename.isEmpty())
+        filename = url.lastPathComponent();
+
+    String fileExtension;
+    if (filename.isEmpty()) {
+        filename = element->getAttribute(HTMLNames::altAttr);
+    } else {
+        // Strip any existing extension. Assume that alt text is usually not a filename.
+        int extensionIndex = filename.reverseFind('.');
+        if (extensionIndex != -1) {
+            fileExtension = filename.substring(extensionIndex + 1);
+            filename.truncate(extensionIndex);
+        }
+    }
+
+    if (!fileExtension.isEmpty() && fileExtension != imageExtension) {
+        String imageMimeType = MIMETypeRegistry::getMIMETypeForExtension(imageExtension);
+        ASSERT(imageMimeType.startsWith("image/"));
+        // Use the file extension only if it has imageMimeType: it's untrustworthy otherwise.
+        if (imageMimeType == MIMETypeRegistry::getMIMETypeForExtension(fileExtension))
+            imageExtension = fileExtension;
+    }
+
+    imageExtension = "." + imageExtension;
+    validateFilename(filename, imageExtension);
+
+    dataObject->addSharedBuffer(filename + imageExtension, imageBuffer);
+}
+
+void Clipboard::declareAndWriteDragImage(Element* element, const KURL& url, const String& title)
+{
+    if (!m_dataObject)
+        return;
+
+    m_dataObject->setURLAndTitle(url, title);
+
+    // Write the bytes in the image to the file format.
+    writeImageToDataObject(m_dataObject.get(), element, url);
+
+    // Put img tag on the clipboard referencing the image
+    m_dataObject->setData(mimeTypeTextHTML, createMarkup(element, IncludeNode, 0, ResolveAllURLs));
+}
+
+void Clipboard::writeURL(const KURL& url, const String& title)
+{
+    if (!m_dataObject)
+        return;
+    ASSERT(!url.isEmpty());
+
+    m_dataObject->setURLAndTitle(url, title);
+
+    // The URL can also be used as plain text.
+    m_dataObject->setData(mimeTypeTextPlain, url.string());
+
+    // The URL can also be used as an HTML fragment.
+    m_dataObject->setHTMLAndBaseURL(urlToMarkup(url, title), url);
+}
+
+void Clipboard::writeRange(Range* selectedRange, Frame* frame)
+{
+    ASSERT(selectedRange);
+    if (!m_dataObject)
+        return;
+
+    m_dataObject->setHTMLAndBaseURL(createMarkup(selectedRange, 0, AnnotateForInterchange, false, ResolveNonLocalURLs), frame->document()->url());
+
+    String str = frame->selectedTextForClipboard();
+#if OS(WIN)
+    replaceNewlinesWithWindowsStyleNewlines(str);
+#endif
+    replaceNBSPWithSpace(str);
+    m_dataObject->setData(mimeTypeTextPlain, str);
+}
+
+void Clipboard::writePlainText(const String& text)
+{
+    if (!m_dataObject)
+        return;
+
+    String str = text;
+#if OS(WIN)
+    replaceNewlinesWithWindowsStyleNewlines(str);
+#endif
+    replaceNBSPWithSpace(str);
+
+    m_dataObject->setData(mimeTypeTextPlain, str);
+}
+
+bool Clipboard::hasData()
+{
+    ASSERT(isForDragAndDrop());
+
+    return m_dataObject->length() > 0;
+}
+
+void Clipboard::setAccessPolicy(ClipboardAccessPolicy policy)
+{
+    // once you go numb, can never go back
+    ASSERT(m_policy != ClipboardNumb || policy == ClipboardNumb);
+    m_policy = policy;
+}
+
+bool Clipboard::canReadTypes() const
+{
+    return m_policy == ClipboardReadable || m_policy == ClipboardTypesReadable || m_policy == ClipboardWritable;
+}
+
+bool Clipboard::canReadData() const
+{
+    return m_policy == ClipboardReadable || m_policy == ClipboardWritable;
+}
+
+bool Clipboard::canWriteData() const
+{
+    return m_policy == ClipboardWritable;
+}
+
+bool Clipboard::canSetDragImage() const
+{
+    return m_policy == ClipboardImageWritable || m_policy == ClipboardWritable;
+}
+
+DragOperation Clipboard::sourceOperation() const
+{
+    DragOperation op = dragOpFromIEOp(m_effectAllowed);
+    ASSERT(op != DragOperationPrivate);
+    return op;
+}
+
+DragOperation Clipboard::destinationOperation() const
+{
+    DragOperation op = dragOpFromIEOp(m_dropEffect);
+    ASSERT(op == DragOperationCopy || op == DragOperationNone || op == DragOperationLink || op == (DragOperation)(DragOperationGeneric | DragOperationMove) || op == DragOperationEvery);
+    return op;
+}
+
+void Clipboard::setSourceOperation(DragOperation op)
+{
+    ASSERT_ARG(op, op != DragOperationPrivate);
+    m_effectAllowed = IEOpFromDragOp(op);
+}
+
+void Clipboard::setDestinationOperation(DragOperation op)
+{
+    ASSERT_ARG(op, op == DragOperationCopy || op == DragOperationNone || op == DragOperationLink || op == DragOperationGeneric || op == DragOperationMove || op == (DragOperation)(DragOperationGeneric | DragOperationMove));
+    m_dropEffect = IEOpFromDragOp(op);
+}
+
+bool Clipboard::hasDropZoneType(const String& keyword)
+{
+    if (keyword.startsWith("file:"))
+        return hasFileOfType(keyword.substring(5));
+
+    if (keyword.startsWith("string:"))
+        return hasStringOfType(keyword.substring(7));
+
+    return false;
+}
+
+PassRefPtr<DataTransferItemList> Clipboard::items()
+{
+    // FIXME: According to the spec, we are supposed to return the same collection of items each
+    // time. We now return a wrapper that always wraps the *same* set of items, so JS shouldn't be
+    // able to tell, but we probably still want to fix this.
+    return DataTransferItemList::create(this, m_dataObject);
+}
+
+PassRefPtr<ChromiumDataObject> Clipboard::dataObject() const
+{
+    return m_dataObject;
+}
+
+Clipboard::Clipboard(ClipboardType type, ClipboardAccessPolicy policy, PassRefPtr<ChromiumDataObject> dataObject)
+    : m_policy(policy)
+    , m_dropEffect("uninitialized")
+    , m_effectAllowed("uninitialized")
+    , m_clipboardType(type)
+    , m_dataObject(dataObject)
+{
+    ScriptWrappable::init(this);
+}
+
+void Clipboard::setDragImage(ImageResource* image, Node* node, const IntPoint& loc)
+{
+    if (!canSetDragImage())
+        return;
+
+    m_dragImage = image;
+    m_dragLoc = loc;
+    m_dragImageElement = node;
+}
+
+bool Clipboard::hasFileOfType(const String& type) const
+{
+    if (!canReadTypes())
+        return false;
+
+    RefPtr<FileList> fileList = files();
+    if (fileList->isEmpty())
+        return false;
+
+    for (unsigned f = 0; f < fileList->length(); f++) {
+        if (equalIgnoringCase(fileList->item(f)->type(), type))
+            return true;
+    }
+    return false;
+}
+
+bool Clipboard::hasStringOfType(const String& type) const
+{
+    if (!canReadTypes())
+        return false;
+
+    return types().contains(type);
+}
+
 DragOperation convertDropZoneOperationToDragOperation(const String& dragOperation)
 {
     if (dragOperation == "copy")
@@ -226,17 +505,6 @@ String convertDragOperationToDropZoneOperation(DragOperation operation)
     default:
         return String("copy");
     }
-}
-
-bool Clipboard::hasDropZoneType(const String& keyword)
-{
-    if (keyword.startsWith("file:"))
-        return hasFileOfType(keyword.substring(5));
-
-    if (keyword.startsWith("string:"))
-        return hasStringOfType(keyword.substring(7));
-
-    return false;
 }
 
 } // namespace WebCore

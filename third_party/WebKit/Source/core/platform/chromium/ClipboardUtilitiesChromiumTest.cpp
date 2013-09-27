@@ -29,8 +29,9 @@
  */
 
 #include "config.h"
+#include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 
-#include "core/platform/chromium/ClipboardChromium.h"
+#include "wtf/text/WTFString.h"
 
 #include <gtest/gtest.h>
 
@@ -50,37 +51,37 @@ const char longString[] =
     "0,1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711,28657,46368,"
     "75025,121393,196418,317811,514229,832040,1346269,2178309,3524578,5702887,9227465,14930352";
 
-TEST(ClipboardChromiumTest, Normal)
+TEST(ClipboardUtilitiesChromiumTest, Normal)
 {
     String name = "name";
     String extension = "ext";
-    ClipboardChromium::validateFilename(name, extension);
+    validateFilename(name, extension);
     EXPECT_EQ("name", name);
     EXPECT_EQ("ext", extension);
 }
 
-TEST(ClipboardChromiumTest, InvalidCharacters)
+TEST(ClipboardUtilitiesChromiumTest, InvalidCharacters)
 {
     String name = "na" + String(invalidCharacters, arraysize(invalidCharacters)) + "me";
     String extension = "e" + String(invalidCharacters, arraysize(invalidCharacters)) + "xt";
-    ClipboardChromium::validateFilename(name, extension);
+    validateFilename(name, extension);
     EXPECT_EQ("name", name);
     EXPECT_EQ("ext", extension);
 }
 
-TEST(ClipboardChromiumTest, ExtensionTooLong)
+TEST(ClipboardUtilitiesChromiumTest, ExtensionTooLong)
 {
     String name;
     String extension = String(longString) + longString;
-    ClipboardChromium::validateFilename(name, extension);
+    validateFilename(name, extension);
     EXPECT_EQ(String(), extension);
 }
 
-TEST(ClipboardChromiumTest, NamePlusExtensionTooLong)
+TEST(ClipboardUtilitiesChromiumTest, NamePlusExtensionTooLong)
 {
     String name = String(longString) + longString;
     String extension = longString;
-    ClipboardChromium::validateFilename(name, extension);
+    validateFilename(name, extension);
     EXPECT_EQ("0,1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,109", name);
     EXPECT_EQ(longString, extension);
     EXPECT_EQ(254u, name.length() + extension.length());

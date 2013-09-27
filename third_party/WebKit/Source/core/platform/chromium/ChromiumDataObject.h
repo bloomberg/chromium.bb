@@ -64,7 +64,7 @@ public:
     void deleteItem(unsigned long index);
     void clearAll();
     PassRefPtr<ChromiumDataObjectItem> add(const String& data, const String& type, ExceptionState&);
-    PassRefPtr<ChromiumDataObjectItem> add(PassRefPtr<File>, ScriptExecutionContext*);
+    PassRefPtr<ChromiumDataObjectItem> add(PassRefPtr<File>);
 
     // WebCore helpers.
     void clearData(const String& type);

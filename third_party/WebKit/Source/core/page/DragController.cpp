@@ -63,6 +63,7 @@
 #include "core/page/Settings.h"
 #include "core/platform/DragData.h"
 #include "core/platform/DragImage.h"
+#include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageOrientation.h"
@@ -119,6 +120,11 @@ static PlatformMouseEvent createMouseEvent(DragData* dragData)
     return PlatformMouseEvent(dragData->clientPosition(), dragData->globalPosition(),
                               LeftButton, PlatformEvent::MouseMoved, 0, shiftKey, ctrlKey, altKey,
                               metaKey, currentTime());
+}
+
+static PassRefPtr<Clipboard> createDraggingClipboard(ClipboardAccessPolicy policy, DragData* dragData)
+{
+    return Clipboard::create(Clipboard::DragAndDrop, policy, dragData->platformData());
 }
 
 DragController::DragController(Page* page, DragClient* client)
@@ -213,7 +219,7 @@ void DragController::dragExited(DragData* dragData)
 
     if (RefPtr<FrameView> v = mainFrame->view()) {
         ClipboardAccessPolicy policy = (!m_documentUnderMouse || m_documentUnderMouse->securityOrigin()->isLocal()) ? ClipboardReadable : ClipboardTypesReadable;
-        RefPtr<Clipboard> clipboard = Clipboard::create(policy, dragData, mainFrame);
+        RefPtr<Clipboard> clipboard = createDraggingClipboard(policy, dragData);
         clipboard->setSourceOperation(dragData->draggingSourceOperationMask());
         mainFrame->eventHandler()->cancelDragAndDrop(createMouseEvent(dragData), clipboard.get());
         clipboard->setAccessPolicy(ClipboardNumb);    // invalidate clipboard here for security
@@ -238,7 +244,7 @@ bool DragController::performDrag(DragData* dragData)
         bool preventedDefault = false;
         if (mainFrame->view()) {
             // Sending an event can result in the destruction of the view and part.
-            RefPtr<Clipboard> clipboard = Clipboard::create(ClipboardReadable, dragData, mainFrame.get());
+            RefPtr<Clipboard> clipboard = createDraggingClipboard(ClipboardReadable, dragData);
             clipboard->setSourceOperation(dragData->draggingSourceOperationMask());
             preventedDefault = mainFrame->eventHandler()->performDragAndDrop(createMouseEvent(dragData), clipboard.get());
             clipboard->setAccessPolicy(ClipboardNumb); // Invalidate clipboard here for security
@@ -592,7 +598,7 @@ bool DragController::tryDHTMLDrag(DragData* dragData, DragOperation& operation)
         return false;
 
     ClipboardAccessPolicy policy = m_documentUnderMouse->securityOrigin()->isLocal() ? ClipboardReadable : ClipboardTypesReadable;
-    RefPtr<Clipboard> clipboard = Clipboard::create(policy, dragData, mainFrame.get());
+    RefPtr<Clipboard> clipboard = createDraggingClipboard(policy, dragData);
     DragOperation srcOpMask = dragData->draggingSourceOperationMask();
     clipboard->setSourceOperation(srcOpMask);
 
@@ -683,7 +689,7 @@ static void prepareClipboardForImageDrag(Frame* source, Clipboard* clipboard, El
         range->selectNode(node, ASSERT_NO_EXCEPTION);
         source->selection().setSelection(VisibleSelection(range.get(), DOWNSTREAM));
     }
-    clipboard->declareAndWriteDragImage(node, !linkURL.isEmpty() ? linkURL : imageURL, label, source);
+    clipboard->declareAndWriteDragImage(node, !linkURL.isEmpty() ? linkURL : imageURL, label);
 }
 
 bool DragController::populateDragClipboard(Frame* src, const DragState& state, const IntPoint& dragOrigin)
@@ -727,7 +733,7 @@ bool DragController::populateDragClipboard(Frame* src, const DragState& state, c
             return false;
         // Simplify whitespace so the title put on the clipboard resembles what the user sees
         // on the web page. This includes replacing newlines with spaces.
-        clipboard->writeURL(linkURL, hitTestResult.textContent().simplifyWhiteSpace(), src);
+        clipboard->writeURL(linkURL, hitTestResult.textContent().simplifyWhiteSpace());
     }
     // FIXME: For DHTML/draggable element drags, write element markup to clipboard.
     return true;
@@ -830,7 +836,7 @@ bool DragController::startDrag(Frame* src, const DragState& state, const Platfor
     Clipboard* clipboard = state.m_dragClipboard.get();
     // We allow DHTML/JS to set the drag image, even if its a link, image or text we're dragging.
     // This is in the spirit of the IE API, which allows overriding of pasteboard data and DragOp.
-    OwnPtr<DragImage> dragImage = clipboard->createDragImage(dragOffset);
+    OwnPtr<DragImage> dragImage = clipboard->createDragImage(dragOffset, src);
     if (dragImage) {
         dragLocation = dragLocationForDHTMLDrag(mouseDraggedPoint, dragOrigin, dragOffset, !linkURL.isEmpty());
     }

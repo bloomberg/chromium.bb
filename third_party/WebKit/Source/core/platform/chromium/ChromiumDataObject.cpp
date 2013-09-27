@@ -103,7 +103,7 @@ PassRefPtr<ChromiumDataObjectItem> ChromiumDataObject::add(const String& data, c
     return item;
 }
 
-PassRefPtr<ChromiumDataObjectItem> ChromiumDataObject::add(PassRefPtr<File> file, ScriptExecutionContext* context)
+PassRefPtr<ChromiumDataObjectItem> ChromiumDataObject::add(PassRefPtr<File> file)
 {
     if (!file)
         return 0;

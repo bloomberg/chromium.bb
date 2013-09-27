@@ -43,18 +43,18 @@
 #include "WebViewImpl.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
-#include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
 
 #include "HTMLNames.h"
 #include "WebPrintParams.h"
 #include "bindings/v8/ScriptController.h"
+#include "core/dom/Clipboard.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/events/EventNames.h"
 #include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/TouchEvent.h"
-#include "core/dom/UserGestureIndicator.h"
 #include "core/events/WheelEvent.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -70,6 +70,7 @@
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/ScrollView.h"
 #include "core/platform/ScrollbarTheme.h"
+#include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayer.h"
@@ -722,7 +723,7 @@ void WebPluginContainerImpl::handleDragEvent(MouseEvent* event)
     if (dragStatus == WebDragStatusUnknown)
         return;
 
-    ClipboardChromium* clipboard = static_cast<ClipboardChromium*>(event->dataTransfer());
+    Clipboard* clipboard = event->dataTransfer();
     WebDragData dragData = clipboard->dataObject();
     WebDragOperationsMask dragOperationMask = static_cast<WebDragOperationsMask>(clipboard->sourceOperation());
     WebPoint dragScreenLocation(event->screenX(), event->screenY());

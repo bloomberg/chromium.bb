@@ -32,21 +32,22 @@
 #include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/dom/Clipboard.h"
 #include "core/dom/Document.h"
-#include "core/events/DocumentEventQueue.h"
 #include "core/dom/DocumentMarkerController.h"
+#include "core/dom/FullscreenElementStack.h"
+#include "core/dom/TouchList.h"
+#include "core/dom/UserTypingGestureIndicator.h"
+#include "core/dom/shadow/ShadowRoot.h"
+#include "core/editing/Editor.h"
+#include "core/events/DocumentEventQueue.h"
 #include "core/events/EventNames.h"
 #include "core/events/EventPathWalker.h"
-#include "core/dom/FullscreenElementStack.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/TextEvent.h"
 #include "core/events/TouchEvent.h"
-#include "core/dom/TouchList.h"
-#include "core/dom/UserTypingGestureIndicator.h"
 #include "core/events/WheelEvent.h"
-#include "core/dom/shadow/ShadowRoot.h"
-#include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/htmlediting.h"
@@ -80,7 +81,6 @@
 #include "core/platform/Scrollbar.h"
 #include "core/platform/WindowsKeyboardCodes.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
-#include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/Image.h"
 #include "core/rendering/HitTestRequest.h"
@@ -3291,12 +3291,6 @@ bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
     dragState().m_dragClipboard->setAccessPolicy(ClipboardImageWritable);
 
     if (m_mouseDownMayStartDrag) {
-        // Yuck, a draggedImage:moveTo: message can be fired as a result of kicking off the
-        // drag with dragImage! Because of that dumb reentrancy, we may think we've not
-        // started the drag when that happens. So we have to assume it's started before we
-        // kick it off.
-        dragState().m_dragClipboard->setDragHasStarted();
-
         // Dispatching the event could cause Page to go away. Make sure it's still valid before trying to use DragController.
         m_didStartDrag = m_frame->page() && dragController.startDrag(m_frame, dragState(), event.event(), m_mouseDownPos);
         // FIXME: This seems pretty useless now. The gesture code uses this as a signal for
@@ -3830,8 +3824,7 @@ bool EventHandler::passWidgetMouseDownEventToWidget(const MouseEventWithHitTestR
 
 PassRefPtr<Clipboard> EventHandler::createDraggingClipboard() const
 {
-    RefPtr<ChromiumDataObject> dataObject = ChromiumDataObject::create();
-    return ClipboardChromium::create(Clipboard::DragAndDrop, dataObject.get(), ClipboardWritable, m_frame);
+    return Clipboard::create(Clipboard::DragAndDrop, ClipboardWritable, ChromiumDataObject::create());
 }
 
 void EventHandler::focusDocumentView()

@@ -44,6 +44,8 @@ void replaceNewlinesWithWindowsStyleNewlines(String&);
 #endif
 void replaceNBSPWithSpace(String&);
 String convertURIListToURL(const String& uriList);
+// FIXME: This should probably be implemented in the embedder rather than here.
+void validateFilename(String& name, String& extension);
 
 } // namespace WebCore
 

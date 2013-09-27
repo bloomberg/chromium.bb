@@ -28,16 +28,14 @@
 #include "core/dom/DataTransferItemList.h"
 
 #include "bindings/v8/ExceptionState.h"
+#include "core/dom/Clipboard.h"
 #include "core/dom/DataTransferItem.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/page/Frame.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
-#include "core/platform/chromium/ClipboardChromium.h"
 
 namespace WebCore {
 
-PassRefPtr<DataTransferItemList> DataTransferItemList::create(PassRefPtr<ClipboardChromium> clipboard, PassRefPtr<ChromiumDataObject> list)
+PassRefPtr<DataTransferItemList> DataTransferItemList::create(PassRefPtr<Clipboard> clipboard, PassRefPtr<ChromiumDataObject> list)
 {
     return adoptRef(new DataTransferItemList(clipboard, list));
 }
@@ -94,13 +92,13 @@ PassRefPtr<DataTransferItem> DataTransferItemList::add(PassRefPtr<File> file)
 {
     if (!m_clipboard->canWriteData())
         return 0;
-    RefPtr<ChromiumDataObjectItem> item = m_dataObject->add(file, m_clipboard->frame()->document()->scriptExecutionContext());
+    RefPtr<ChromiumDataObjectItem> item = m_dataObject->add(file);
     if (!item)
         return 0;
     return DataTransferItem::create(m_clipboard, item);
 }
 
-DataTransferItemList::DataTransferItemList(PassRefPtr<ClipboardChromium> clipboard, PassRefPtr<ChromiumDataObject> dataObject)
+DataTransferItemList::DataTransferItemList(PassRefPtr<Clipboard> clipboard, PassRefPtr<ChromiumDataObject> dataObject)
     : m_clipboard(clipboard)
     , m_dataObject(dataObject)
 {

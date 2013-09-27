@@ -39,7 +39,7 @@
 namespace WebCore {
 
 class ChromiumDataObject;
-class ClipboardChromium;
+class Clipboard;
 class DataTransferItem;
 class File;
 
@@ -47,7 +47,7 @@ class ExceptionState;
 
 class DataTransferItemList : public RefCounted<DataTransferItemList>, public ScriptWrappable {
 public:
-    static PassRefPtr<DataTransferItemList> create(PassRefPtr<ClipboardChromium>, PassRefPtr<ChromiumDataObject>);
+    static PassRefPtr<DataTransferItemList> create(PassRefPtr<Clipboard>, PassRefPtr<ChromiumDataObject>);
     ~DataTransferItemList();
 
     size_t length() const;
@@ -58,9 +58,9 @@ public:
     PassRefPtr<DataTransferItem> add(PassRefPtr<File>);
 
 private:
-    DataTransferItemList(PassRefPtr<ClipboardChromium>, PassRefPtr<ChromiumDataObject>);
+    DataTransferItemList(PassRefPtr<Clipboard>, PassRefPtr<ChromiumDataObject>);
 
-    RefPtr<ClipboardChromium> m_clipboard;
+    RefPtr<Clipboard> m_clipboard;
     RefPtr<ChromiumDataObject> m_dataObject;
 };
 

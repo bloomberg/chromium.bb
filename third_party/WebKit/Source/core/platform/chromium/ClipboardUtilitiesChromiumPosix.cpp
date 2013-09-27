@@ -25,33 +25,36 @@
  */
 
 #include "config.h"
-#include "core/platform/chromium/ClipboardChromium.h"
+#include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 
-#include <shlwapi.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-// FAT32 and NTFS both limit filenames to a maximum of 255 characters.
+// On POSIX systems, the typical filename length limit is 255 character units. HFS+'s limit is
+// actually 255 Unicode characters using Apple's modification of Normzliation Form D, but the
+// differences aren't really worth dealing with here.
 static const unsigned maxFilenameLength = 255;
 
-// Returns true if the specified character is not valid in a file name. This
-// is intended for use with removeCharacters.
 static bool isInvalidFileCharacter(UChar c)
 {
-    return (PathGetCharType(c) & (GCT_LFNCHAR | GCT_SHORTCHAR)) == 0;
+    // HFS+ disallows '/' and Linux systems also disallow null. For sanity's sake we'll also
+    // disallow control characters.
+    return c < ' ' || c == 0x7F || c == '/';
 }
 
-void ClipboardChromium::validateFilename(String& name, String& extension)
+void validateFilename(String& name, String& extension)
 {
-    // Remove any invalid file system characters.
+    // Remove any invalid file system characters, especially "/".
     name = name.removeCharacters(&isInvalidFileCharacter);
     extension = extension.removeCharacters(&isInvalidFileCharacter);
 
+    // Remove a ridiculously-long extension.
     if (extension.length() >= maxFilenameLength)
         extension = String();
 
-    // Truncate overly-long filenames, reserving one character for a dot.
+    // Truncate an overly-long filename, reserving one character for a dot.
     name.truncate(maxFilenameLength - extension.length() - 1);
 }
 
-}  // namespace WebCore
+} // namespace WebCore

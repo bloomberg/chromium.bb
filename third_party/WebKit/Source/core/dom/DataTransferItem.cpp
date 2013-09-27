@@ -31,18 +31,17 @@
 #include "config.h"
 #include "core/dom/DataTransferItem.h"
 
-#include "core/dom/Document.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/Clipboard.h"
 #include "core/dom/StringCallback.h"
-#include "core/page/Frame.h"
 #include "core/platform/chromium/ChromiumDataObjectItem.h"
-#include "core/platform/chromium/ClipboardChromium.h"
 
 namespace WebCore {
 
 const char DataTransferItem::kindString[] = "string";
 const char DataTransferItem::kindFile[] = "file";
 
-PassRefPtr<DataTransferItem> DataTransferItem::create(PassRefPtr<ClipboardChromium> clipboard, PassRefPtr<ChromiumDataObjectItem> item)
+PassRefPtr<DataTransferItem> DataTransferItem::create(PassRefPtr<Clipboard> clipboard, PassRefPtr<ChromiumDataObjectItem> item)
 {
     return adoptRef(new DataTransferItem(clipboard, item));
 }
@@ -65,12 +64,12 @@ String DataTransferItem::type() const
     return m_item->type();
 }
 
-void DataTransferItem::getAsString(PassRefPtr<StringCallback> callback) const
+void DataTransferItem::getAsString(ScriptExecutionContext* context, PassRefPtr<StringCallback> callback) const
 {
     if (!m_clipboard->canReadData())
         return;
 
-    m_item->getAsString(callback, m_clipboard->frame()->document()->scriptExecutionContext());
+    m_item->getAsString(callback, context);
 }
 
 PassRefPtr<Blob> DataTransferItem::getAsFile() const
@@ -81,7 +80,7 @@ PassRefPtr<Blob> DataTransferItem::getAsFile() const
     return m_item->getAsFile();
 }
 
-DataTransferItem::DataTransferItem(PassRefPtr<ClipboardChromium> clipboard, PassRefPtr<ChromiumDataObjectItem> item)
+DataTransferItem::DataTransferItem(PassRefPtr<Clipboard> clipboard, PassRefPtr<ChromiumDataObjectItem> item)
     : m_clipboard(clipboard)
     , m_item(item)
 {

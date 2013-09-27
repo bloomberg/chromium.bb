@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/filesystem/DataTransferItemFileSystem.h"
 
+#include "core/dom/Clipboard.h"
 #include "core/dom/DataTransferItem.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/File.h"
@@ -38,7 +39,6 @@
 #include "core/platform/FileMetadata.h"
 #include "core/platform/FileSystem.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
-#include "core/platform/chromium/ClipboardChromium.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"

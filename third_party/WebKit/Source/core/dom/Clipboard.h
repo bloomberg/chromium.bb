@@ -26,21 +26,24 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ClipboardAccessPolicy.h"
-#include "core/dom/Node.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/page/DragActions.h"
-#include "core/platform/DragImage.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "wtf/Forward.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class ImageResource;
+class ChromiumDataObject;
 class DataTransferItemList;
-class DragData;
 class DragImage;
+class Element;
 class FileList;
 class Frame;
+class ImageResource;
+class Node;
 class Range;
 
 // State available during IE's events for drag and drop and copy/paste
@@ -52,9 +55,8 @@ public:
         DragAndDrop,
     };
 
-    static PassRefPtr<Clipboard> create(ClipboardAccessPolicy, DragData*, Frame*);
-
-    virtual ~Clipboard() { }
+    static PassRefPtr<Clipboard> create(ClipboardType, ClipboardAccessPolicy, PassRefPtr<ChromiumDataObject>);
+    ~Clipboard();
 
     bool isForCopyAndPaste() const { return m_clipboardType == CopyAndPaste; }
     bool isForDragAndDrop() const { return m_clipboardType == DragAndDrop; }
@@ -65,28 +67,28 @@ public:
     String effectAllowed() const { return m_effectAllowed; }
     void setEffectAllowed(const String&);
 
-    virtual void clearData(const String& type) = 0;
-    virtual void clearAllData() = 0;
-    virtual String getData(const String& type) const = 0;
-    virtual bool setData(const String& type, const String& data) = 0;
+    void clearData(const String& type);
+    void clearAllData();
+    String getData(const String& type) const;
+    bool setData(const String& type, const String& data);
 
     // extensions beyond IE's API
-    virtual ListHashSet<String> types() const = 0;
-    virtual PassRefPtr<FileList> files() const = 0;
+    ListHashSet<String> types() const;
+    PassRefPtr<FileList> files() const;
 
     IntPoint dragLocation() const { return m_dragLoc; }
     ImageResource* dragImage() const { return m_dragImage.get(); }
-    virtual void setDragImage(ImageResource*, const IntPoint&) = 0;
+    void setDragImage(ImageResource*, const IntPoint&);
     Node* dragImageElement() const { return m_dragImageElement.get(); }
-    virtual void setDragImageElement(Node*, const IntPoint&) = 0;
+    void setDragImageElement(Node*, const IntPoint&);
 
-    virtual PassOwnPtr<DragImage> createDragImage(IntPoint& dragLocation) const = 0;
-    virtual void declareAndWriteDragImage(Element*, const KURL&, const String& title, Frame*) = 0;
-    virtual void writeURL(const KURL&, const String&, Frame*) = 0;
-    virtual void writeRange(Range*, Frame*) = 0;
-    virtual void writePlainText(const String&) = 0;
+    PassOwnPtr<DragImage> createDragImage(IntPoint& dragLocation, Frame*) const;
+    void declareAndWriteDragImage(Element*, const KURL&, const String& title);
+    void writeURL(const KURL&, const String&);
+    void writeRange(Range*, Frame*);
+    void writePlainText(const String&);
 
-    virtual bool hasData() = 0;
+    bool hasData();
 
     void setAccessPolicy(ClipboardAccessPolicy);
     bool canReadTypes() const;
@@ -105,16 +107,15 @@ public:
 
     bool hasDropZoneType(const String&);
 
-    void setDragHasStarted() { m_dragStarted = true; }
+    PassRefPtr<DataTransferItemList> items();
 
-    virtual PassRefPtr<DataTransferItemList> items() = 0;
-
-protected:
-    Clipboard(ClipboardAccessPolicy, ClipboardType);
-
-    bool dragStarted() const { return m_dragStarted; }
+    PassRefPtr<ChromiumDataObject> dataObject() const;
 
 private:
+    Clipboard(ClipboardType, ClipboardAccessPolicy, PassRefPtr<ChromiumDataObject>);
+
+    void setDragImage(ImageResource*, Node*, const IntPoint&);
+
     bool hasFileOfType(const String&) const;
     bool hasStringOfType(const String&) const;
 
@@ -122,10 +123,9 @@ private:
     ClipboardAccessPolicy m_policy;
     String m_dropEffect;
     String m_effectAllowed;
-    bool m_dragStarted;
     ClipboardType m_clipboardType;
+    RefPtr<ChromiumDataObject> m_dataObject;
 
-protected:
     IntPoint m_dragLoc;
     ResourcePtr<ImageResource> m_dragImage;
     RefPtr<Node> m_dragImageElement;

@@ -32,10 +32,10 @@
 #include "DragClientImpl.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/dom/Clipboard.h"
 #include "core/page/Frame.h"
 #include "core/platform/DragImage.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
-#include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "public/platform/WebCommon.h"
@@ -69,7 +69,7 @@ void DragClientImpl::startDrag(DragImage* dragImage,
     // Add a ref to the frame just in case a load occurs mid-drag.
     RefPtr<Frame> frameProtector = frame;
 
-    WebDragData dragData = static_cast<ClipboardChromium*>(clipboard)->dataObject();
+    WebDragData dragData = clipboard->dataObject();
     WebDragOperationsMask dragOperationMask = static_cast<WebDragOperationsMask>(clipboard->sourceOperation());
     WebImage image;
     IntSize offsetSize(eventPos - dragImageOrigin);
