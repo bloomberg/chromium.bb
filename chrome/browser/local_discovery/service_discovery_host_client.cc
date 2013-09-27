@@ -275,8 +275,11 @@ void ServiceDiscoveryHostClient::Send(IPC::Message* msg) {
 
 void ServiceDiscoveryHostClient::SendOnIOThread(IPC::Message* msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (utility_host_)
+  if (utility_host_) {
     utility_host_->Send(msg);
+  } else {
+    delete msg;
+  }
 }
 
 void ServiceDiscoveryHostClient::OnProcessCrashed(int exit_code) {
