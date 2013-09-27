@@ -1872,5 +1872,100 @@ TEST_F(WidgetTest, GetAllChildWidgets) {
   EXPECT_TRUE(std::equal(expected.begin(), expected.end(), widgets.begin()));
 }
 
+// Used by DestroyChildWidgetsInOrder. On destruction adds the supplied name to
+// a vector.
+class DestroyedTrackingView : public View {
+ public:
+  DestroyedTrackingView(const std::string& name,
+                        std::vector<std::string>* add_to)
+      : name_(name),
+        add_to_(add_to) {
+  }
+
+  virtual ~DestroyedTrackingView() {
+    add_to_->push_back(name_);
+  }
+
+ private:
+  const std::string name_;
+  std::vector<std::string>* add_to_;
+
+  DISALLOW_COPY_AND_ASSIGN(DestroyedTrackingView);
+};
+
+class WidgetChildDestructionTest : public WidgetTest {
+ public:
+  WidgetChildDestructionTest() {}
+
+  // Creates a top level and a child, destroys the child and verifies the views
+  // of the child are destroyed before the views of the parent.
+  void RunDestroyChildWidgetsTest(bool top_level_has_desktop_native_widget_aura,
+                                  bool child_has_desktop_native_widget_aura) {
+    // When a View is destroyed its name is added here.
+    std::vector<std::string> destroyed;
+
+    Widget* top_level = new Widget;
+    Widget::InitParams params =
+        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+    if (top_level_has_desktop_native_widget_aura)
+      params.native_widget = new DesktopNativeWidgetAura(top_level);
+#endif
+    top_level->Init(params);
+    top_level->GetRootView()->AddChildView(
+        new DestroyedTrackingView("parent", &destroyed));
+    top_level->Show();
+
+    Widget* child = new Widget;
+    Widget::InitParams child_params =
+        CreateParams(views::Widget::InitParams::TYPE_POPUP);
+    child_params.parent = top_level->GetNativeView();
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+    if (child_has_desktop_native_widget_aura)
+      child_params.native_widget = new DesktopNativeWidgetAura(child);
+#endif
+    child->Init(child_params);
+    child->GetRootView()->AddChildView(
+        new DestroyedTrackingView("child", &destroyed));
+    child->Show();
+
+    // Should trigger destruction of the child too.
+    top_level->native_widget_private()->CloseNow();
+
+    // Child should be destroyed first.
+    ASSERT_EQ(2u, destroyed.size());
+    EXPECT_EQ("child", destroyed[0]);
+    EXPECT_EQ("parent", destroyed[1]);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WidgetChildDestructionTest);
+};
+
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+// See description of RunDestroyChildWidgetsTest(). Parent uses
+// DesktopNativeWidgetAura.
+TEST_F(WidgetChildDestructionTest,
+       DestroyChildWidgetsInOrderWithDesktopNativeWidget) {
+  RunDestroyChildWidgetsTest(true, false);
+}
+
+// TODO: test fails on linux as destroying parent X widget does not
+// automatically destroy transients. http://crbug.com/300020 .
+#if !defined(OS_LINUX)
+// See description of RunDestroyChildWidgetsTest(). Both parent and child use
+// DesktopNativeWidgetAura.
+TEST_F(WidgetChildDestructionTest,
+       DestroyChildWidgetsInOrderWithDesktopNativeWidgetForBoth) {
+  RunDestroyChildWidgetsTest(true, true);
+}
+#endif
+#endif
+
+// See description of RunDestroyChildWidgetsTest().
+TEST_F(WidgetChildDestructionTest, DestroyChildWidgetsInOrder) {
+  RunDestroyChildWidgetsTest(false, false);
+}
+
 }  // namespace test
 }  // namespace views
