@@ -186,28 +186,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Request local file system, resolve roots and init_ after that.
-   * Warning, you can't use DOM nor any external scripts here, since it may not
-   * be loaded yet. Functions in util.* and metrics.* are available and can
-   * be used.
-   *
-   * @param {function()} callback Completion callback.
-   * @private
-   */
-  FileManager.prototype.initFileSystem_ = function(callback) {
-    util.installFileErrorToString();
-
-    metrics.startInterval('Load.FileSystem');
-    chrome.fileBrowserPrivate.requestFileSystem(
-      'compatible',
-      function(filesystem) {
-        metrics.recordInterval('Load.FileSystem');
-        this.filesystem_ = filesystem;
-        callback();
-      }.bind(this));
-  };
-
-  /**
    * One time initialization for the file system and related things.
    *
    * @param {function()} callback Completion callback.
@@ -606,15 +584,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.initializeCore = function() {
     this.initializeQueue_.add(this.initGeneral_.bind(this), [], 'initGeneral');
     this.initializeQueue_.add(this.initStrings_.bind(this), [], 'initStrings');
-    this.initializeQueue_.add(
-        this.initPreferences_.bind(this), ['initGeneral'], 'initPreferences');
-    this.initializeQueue_.add(
-        this.initVolumeManager_.bind(this),
-        ['initPreferences'], 'initVolumeManager');
-    this.initializeQueue_.add(
-        this.initFileSystem_.bind(this),
-        ['initGeneral', 'initPreferences', 'initVolumeManager'],
-        'initFileSystem');
+    this.initializeQueue_.add(this.initPreferences_.bind(this),
+                              ['initGeneral'], 'initPreferences');
+    this.initializeQueue_.add(this.initVolumeManager_.bind(this),
+                              ['initGeneral'], 'initVolumeManager');
 
     this.initializeQueue_.run();
   };
@@ -630,8 +603,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         ['initEssentialUI'], 'initAdditionalUI');
     this.initializeQueue_.add(
         this.initFileSystemUI_.bind(this),
-        ['initFileSystem', 'initAdditionalUI'],
-        'initFileSystemUI');
+        ['initAdditionalUI'], 'initFileSystemUI');
 
     // Run again just in case if all pending closures have completed and the
     // queue has stopped and monitor the completion.
@@ -1063,7 +1035,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.onWatcherMetadataChanged_.bind(this));
 
     this.directoryModel_ = new DirectoryModel(
-        this.filesystem_.root,
         singleSelection,
         this.fileFilter_,
         this.fileWatcher_,

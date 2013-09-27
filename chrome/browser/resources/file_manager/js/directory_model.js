@@ -13,7 +13,6 @@ var SHORT_RESCAN_INTERVAL = 100;
 /**
  * Data model of the file manager.
  *
- * @param {DirectoryEntry} root File system root.
  * @param {boolean} singleSelection True if only one file could be selected
  *                                  at the time.
  * @param {FileFilter} fileFilter Instance of FileFilter.
@@ -24,10 +23,9 @@ var SHORT_RESCAN_INTERVAL = 100;
  *     available. They should be hidden for the dialogs to save files.
  * @constructor
  */
-function DirectoryModel(root, singleSelection, fileFilter, fileWatcher,
+function DirectoryModel(singleSelection, fileFilter, fileWatcher,
                         metadataCache, volumeManager,
                         showSpecialSearchRoots) {
-  this.root_ = root;
   this.fileListSelection_ = singleSelection ?
       new cr.ui.ListSingleSelectionModel() : new cr.ui.ListSelectionModel();
 
@@ -799,11 +797,6 @@ DirectoryModel.prototype.resolveDirectory = function(
     }
   }
 
-  if (path == '/') {
-    successCallback(this.root_);
-    return;
-  }
-
   var onError = function(error) {
     // Handle the special case, when in offline mode, and there are no cached
     // contents on the C++ side. In such case, let's display the stub.
@@ -820,8 +813,16 @@ DirectoryModel.prototype.resolveDirectory = function(
     errorCallback(error);
   }.bind(this);
 
-  this.root_.getDirectory(path, {create: false},
-                          successCallback, onError);
+  this.volumeManager_.resolvePath(
+      path,
+      function(entry) {
+        if (entry.isFile) {
+          onError(util.createFileError(FileError.TYPE_MISMATCH_ERR));
+          return;
+        }
+        successCallback(entry);
+      },
+      onError);
 };
 
 /**

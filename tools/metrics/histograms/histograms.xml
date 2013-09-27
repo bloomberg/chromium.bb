@@ -27233,7 +27233,8 @@ other types of suffix sets.
       label="Time spent constructing the main Javascript object."/>
   <group name="DOM" label="Time to initialize DOM."/>
   <group name="FileSystem"
-      label="Time to get access to the local file system."/>
+      label="Deprecated as of 9/2013. Time to get access to the local file
+             system."/>
   <group name="Parse" label="Time to parse Javascript and CSS."/>
   <group name="Roots" label="Time to enumerate file system roots."/>
   <group name="Total"
