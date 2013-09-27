@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/SharedBufferChunkReader.h"
 
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 
 namespace WebCore {
 

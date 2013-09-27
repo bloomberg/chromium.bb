@@ -26,7 +26,7 @@
 
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/svg/SVGDocument.h"
 #include "wtf/text/StringBuilder.h"
 

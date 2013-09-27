@@ -32,7 +32,7 @@
 #include "public/platform/WebImage.h"
 
 #include <gtest/gtest.h>
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"

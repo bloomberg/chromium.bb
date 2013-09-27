@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/PurgeableBuffer.h"
+#include "platform/PurgeableBuffer.h"
 
 #include "public/platform/Platform.h"
 #include "public/platform/WebDiscardableMemory.h"

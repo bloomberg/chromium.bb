@@ -44,7 +44,7 @@
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/ImageBitmap.h"
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/ImageSource.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"

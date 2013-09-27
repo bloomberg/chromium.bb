@@ -36,7 +36,7 @@
 #include <mlang.h>
 #include <objidl.h>
 #include "core/platform/LayoutTestSupport.h"
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/skia/SkiaFontWin.h"

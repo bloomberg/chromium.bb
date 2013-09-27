@@ -29,7 +29,7 @@
 #ifndef IDBCallbacks_h
 #define IDBCallbacks_h
 
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "modules/indexeddb/IDBDatabaseBackendInterface.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"

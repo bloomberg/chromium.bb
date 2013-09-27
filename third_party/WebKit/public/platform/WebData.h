@@ -33,7 +33,7 @@
 
 #include "WebCommon.h"
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 namespace WebCore { class SharedBuffer; }
 namespace WTF { template <typename T> class PassRefPtr; }
 namespace WTF { template <typename T> class RefPtr; }
@@ -47,19 +47,21 @@ class WebDataPrivate;
 //
 // WARNING: It is not safe to pass a WebData across threads!!!
 //
-class WebData {
+class BLINK_PLATFORM_EXPORT WebData {
 public:
     ~WebData() { reset(); }
 
     WebData() : m_private(0) { }
 
-    WebData(const char* data, size_t size) : m_private(0)
+    WebData(const char* data, size_t size)
+        : m_private(0)
     {
         assign(data, size);
     }
 
     template <int N>
-    WebData(const char (&data)[N]) : m_private(0)
+    WebData(const char (&data)[N])
+        : m_private(0)
     {
         assign(data, N - 1);
     }
@@ -72,24 +74,25 @@ public:
         return *this;
     }
 
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebData&);
-    BLINK_EXPORT void assign(const char* data, size_t size);
+    void reset();
+    void assign(const WebData&);
+    void assign(const char* data, size_t size);
 
-    BLINK_EXPORT size_t size() const;
-    BLINK_EXPORT const char* data() const;
+    size_t size() const;
+    const char* data() const;
 
     bool isEmpty() const { return !size(); }
     bool isNull() const { return !m_private; }
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
     WebData(const WTF::PassRefPtr<WebCore::SharedBuffer>&);
     WebData& operator=(const WTF::PassRefPtr<WebCore::SharedBuffer>&);
     operator WTF::PassRefPtr<WebCore::SharedBuffer>() const;
     operator WTF::RefPtr<WebCore::SharedBuffer>() const;
 #else
     template <class C>
-    WebData(const C& c) : m_private(0)
+    WebData(const C& c)
+        : m_private(0)
     {
         assign(c.data(), c.size());
     }
@@ -104,6 +107,8 @@ public:
 
 private:
     void assign(WebDataPrivate*);
+
+    // FIXME: We should use WebPrivatePtr instead of a raw pointer here.
     WebDataPrivate* m_private;
 };
 

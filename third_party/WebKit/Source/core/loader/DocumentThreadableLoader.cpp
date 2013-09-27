@@ -45,7 +45,7 @@
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "weborigin/SchemeRegistry.h"

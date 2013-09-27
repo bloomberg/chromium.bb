@@ -32,7 +32,7 @@
 #include "core/platform/graphics/skia/SkiaSharedBufferStream.h"
 
 #include "third_party/skia/include/core/SkStream.h"
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include <algorithm>
 #include <cstring>
 

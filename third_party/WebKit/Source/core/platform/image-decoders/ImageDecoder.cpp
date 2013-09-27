@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/image-decoders/bmp/BMPImageDecoder.h"
 #include "core/platform/image-decoders/gif/GIFImageDecoder.h"
 #include "core/platform/image-decoders/ico/ICOImageDecoder.h"

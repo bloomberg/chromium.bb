@@ -51,7 +51,7 @@
 #include "core/loader/ImageLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/UseCounter.h"
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"

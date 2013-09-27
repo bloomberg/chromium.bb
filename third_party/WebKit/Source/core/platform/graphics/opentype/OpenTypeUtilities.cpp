@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/platform/graphics/opentype/OpenTypeUtilities.h"
 
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 
 namespace WebCore {
 

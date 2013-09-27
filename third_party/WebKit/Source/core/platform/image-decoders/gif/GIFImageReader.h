@@ -40,7 +40,7 @@
 
 // Define ourselves as the clientPtr.  Mozilla just hacked their C++ callback class into this old C decoder,
 // so we will too.
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/image-decoders/gif/GIFImageDecoder.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

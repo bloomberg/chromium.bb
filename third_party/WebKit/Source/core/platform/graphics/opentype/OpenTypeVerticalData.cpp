@@ -26,7 +26,7 @@
 #if ENABLE(OPENTYPE_VERTICAL)
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GlyphPage.h"
 #include "core/platform/graphics/SimpleFontData.h"

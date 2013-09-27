@@ -106,9 +106,9 @@ public:
     typedef int FileHandle;
 #endif
 
-    BLINK_EXPORT static void initialize(Platform*);
-    BLINK_EXPORT static void shutdown();
-    BLINK_EXPORT static Platform* current();
+    BLINK_PLATFORM_EXPORT static void initialize(Platform*);
+    BLINK_PLATFORM_EXPORT static void shutdown();
+    BLINK_PLATFORM_EXPORT static Platform* current();
 
     // May return null.
     virtual WebCookieJar* cookieJar() { return 0; }

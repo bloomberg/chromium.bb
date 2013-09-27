@@ -45,7 +45,7 @@
 #include "core/platform/ContextMenuItem.h"
 #include "core/platform/JSONValues.h"
 #include "core/platform/Pasteboard.h"
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"

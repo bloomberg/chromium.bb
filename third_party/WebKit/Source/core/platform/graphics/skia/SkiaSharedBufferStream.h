@@ -31,7 +31,7 @@
 #ifndef SkiaSharedBufferStream_h
 #define SkiaSharedBufferStream_h
 
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

@@ -32,7 +32,7 @@
 #define ChromiumDataObjectItem_h
 
 #include "core/fileapi/File.h"
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "weborigin/KURL.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

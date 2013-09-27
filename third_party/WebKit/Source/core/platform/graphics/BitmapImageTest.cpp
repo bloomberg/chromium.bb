@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/graphics/BitmapImage.h"
 
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/graphics/ImageObserver.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"

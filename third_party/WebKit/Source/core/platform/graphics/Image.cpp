@@ -29,7 +29,7 @@
 
 #include "core/platform/Length.h"
 #include "core/platform/MIMETypeRegistry.h"
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/FloatPoint.h"

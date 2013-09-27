@@ -46,7 +46,7 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Settings.h"
 #include "core/platform/HistogramSupport.h"
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/network/BlobData.h"
 #include "core/platform/network/HTTPParsers.h"
 #include "core/platform/network/ParsedContentType.h"

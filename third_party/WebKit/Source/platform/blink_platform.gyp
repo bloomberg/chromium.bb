@@ -41,7 +41,8 @@
       '../wtf/wtf.gyp:wtf',
     ],
     'defines': [
-      'PLATFORM_IMPLEMENTATION=1',
+      'BLINK_PLATFORM_IMPLEMENTATION=1',
+      'INSIDE_BLINK',
     ],
     'sources': [
       '<@(platform_files)',

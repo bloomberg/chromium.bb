@@ -37,7 +37,7 @@
 #include "../ports/SkTypeface_win.h"
 #include "SkPaint.h"
 #include "SkTypeface.h"
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/graphics/FontOrientation.h"
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 #include "wtf/Forward.h"

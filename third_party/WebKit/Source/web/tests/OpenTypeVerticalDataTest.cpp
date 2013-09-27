@@ -27,7 +27,7 @@
 #if ENABLE(OPENTYPE_VERTICAL)
 
 #include <gtest/gtest.h>
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/graphics/opentype/OpenTypeTypes.h"
 #include "wtf/RefPtr.h"
 

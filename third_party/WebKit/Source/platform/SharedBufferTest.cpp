@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 
 #include "wtf/ArrayBuffer.h"
 #include "wtf/RefPtr.h"

@@ -32,7 +32,7 @@
 #include "core/platform/graphics/opentype/OpenTypeSanitizer.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "opentype-sanitiser.h"
 #include "ots-memory-stream.h"
 #include "wtf/OwnArrayPtr.h"

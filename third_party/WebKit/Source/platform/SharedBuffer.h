@@ -27,6 +27,7 @@
 #ifndef SharedBuffer_h
 #define SharedBuffer_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
@@ -38,7 +39,7 @@ namespace WebCore {
 
 class PurgeableBuffer;
 
-class SharedBuffer : public RefCounted<SharedBuffer> {
+class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
 public:
     static PassRefPtr<SharedBuffer> create() { return adoptRef(new SharedBuffer); }
     static PassRefPtr<SharedBuffer> create(size_t size) { return adoptRef(new SharedBuffer(size)); }

@@ -31,7 +31,7 @@
 #ifndef SerializedResource_h
 #define SerializedResource_h
 
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 

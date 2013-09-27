@@ -32,13 +32,13 @@
 #ifndef PlatformExport_h
 #define PlatformExport_h
 
-#if !defined(PLATFORM_IMPLEMENTATION)
-#define PLATFORM_IMPLEMENTATION 0
+#if !defined(BLINK_PLATFORM_IMPLEMENTATION)
+#define BLINK_PLATFORM_IMPLEMENTATION 0
 #endif
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
-#if PLATFORM_IMPLEMENTATION
+#if BLINK_PLATFORM_IMPLEMENTATION
 #define PLATFORM_EXPORT __declspec(dllexport)
 #else
 #define PLATFORM_EXPORT __declspec(dllimport)

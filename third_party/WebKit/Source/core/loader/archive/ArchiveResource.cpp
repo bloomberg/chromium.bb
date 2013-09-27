@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/loader/archive/ArchiveResource.h"
 
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 
 namespace WebCore {
 

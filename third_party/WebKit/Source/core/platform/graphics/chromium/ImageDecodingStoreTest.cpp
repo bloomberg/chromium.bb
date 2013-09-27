@@ -27,7 +27,7 @@
 
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/graphics/chromium/ImageFrameGenerator.h"
 #include "core/platform/graphics/chromium/test/MockDiscardablePixelRef.h"
 #include "core/platform/graphics/chromium/test/MockImageDecoder.h"

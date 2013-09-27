@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebImageDecoder.h"
 
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/image-decoders/bmp/BMPImageDecoder.h"
 #include "core/platform/image-decoders/ico/ICOImageDecoder.h"
 #include "public/platform/Platform.h"

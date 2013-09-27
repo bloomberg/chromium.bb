@@ -31,7 +31,7 @@
 #include "core/fetch/ShaderResource.h"
 
 #include "core/fetch/TextResourceDecoder.h"
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

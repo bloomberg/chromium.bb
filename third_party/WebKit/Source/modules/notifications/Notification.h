@@ -37,7 +37,7 @@
 #include "core/events/EventNames.h"
 #include "core/events/EventTarget.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/Timer.h"
 #include "core/platform/text/TextDirection.h"
 #include "modules/notifications/NotificationClient.h"

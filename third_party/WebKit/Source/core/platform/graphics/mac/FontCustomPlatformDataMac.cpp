@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/platform/graphics/FontCustomPlatformData.h"
 
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/opentype/OpenTypeSanitizer.h"
 #include "core/platform/graphics/skia/SkiaSharedBufferStream.h"

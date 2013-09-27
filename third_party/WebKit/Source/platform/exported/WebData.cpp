@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/platform/WebData.h"
 
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 
 using namespace WebCore;
 

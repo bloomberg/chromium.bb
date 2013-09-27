@@ -37,7 +37,7 @@
 #include "core/events/EventNames.h"
 #include "core/events/EventQueue.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "modules/indexeddb/IDBCursorBackendInterface.h"
 #include "modules/indexeddb/IDBCursorWithValue.h"
 #include "modules/indexeddb/IDBDatabase.h"

@@ -42,6 +42,9 @@
       '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
       '<(DEPTH)/url/url.gyp:url_lib',
     ],
+    'export_dependent_settings': [
+      '<(DEPTH)/url/url.gyp:url_lib',
+    ],
     'defines': [
       'WEBORIGIN_IMPLEMENTATION=1',
     ],

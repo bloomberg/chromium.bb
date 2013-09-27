@@ -59,7 +59,7 @@
 #include "core/html/ImageData.h"
 #include "core/html/canvas/DataView.h"
 #include "core/platform/AsyncFileSystem.h"
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/ArrayBufferView.h"

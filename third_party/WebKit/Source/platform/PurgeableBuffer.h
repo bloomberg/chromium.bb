@@ -29,6 +29,7 @@
 
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include "platform/PlatformExport.h"
 
 namespace WebKit {
 class WebDiscardableMemory;
@@ -36,7 +37,7 @@ class WebDiscardableMemory;
 
 namespace WebCore {
 
-class PurgeableBuffer {
+class PLATFORM_EXPORT PurgeableBuffer {
     WTF_MAKE_NONCOPYABLE(PurgeableBuffer);
 public:
     static PassOwnPtr<PurgeableBuffer> create(const char* data, size_t);

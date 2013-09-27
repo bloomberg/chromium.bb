@@ -26,7 +26,7 @@
 #ifndef SubstituteData_h
 #define SubstituteData_h
 
-#include "core/platform/SharedBuffer.h"
+#include "platform/SharedBuffer.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
