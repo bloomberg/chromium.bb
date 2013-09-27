@@ -5,6 +5,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/launcher_test_api.h"
@@ -14,6 +15,7 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -180,6 +182,21 @@ TEST_F(WindowSelectorTest, Basic) {
 
   // Cursor should have been unlocked.
   EXPECT_FALSE(GetCursorClient(root_window)->IsCursorLocked());
+}
+
+// Tests that the shelf dimming state is removed while in overview and restored
+// on exiting overview.
+TEST_F(WindowSelectorTest, OverviewUndimsShelf) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  wm::WindowState* window_state = wm::GetWindowState(window1.get());
+  window_state->Maximize();
+  ash::ShelfWidget* shelf = Shell::GetPrimaryRootWindowController()->shelf();
+  EXPECT_TRUE(shelf->GetDimsShelf());
+  ToggleOverview();
+  EXPECT_FALSE(shelf->GetDimsShelf());
+  ToggleOverview();
+  EXPECT_TRUE(shelf->GetDimsShelf());
 }
 
 // Tests entering overview mode with three windows and cycling through them.

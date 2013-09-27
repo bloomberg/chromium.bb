@@ -88,6 +88,9 @@ class ScopedTransformOverviewWindow {
   // was not selected.
   bool minimized_;
 
+  // Tracks if this window was ignored by the shelf.
+  bool ignored_by_shelf_;
+
   // True if the window has been transformed for overview mode.
   bool overview_started_;
 

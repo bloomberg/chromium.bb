@@ -5,6 +5,7 @@
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 
 #include "ash/shell.h"
+#include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
@@ -160,6 +161,7 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
       layer_(NULL),
       minimized_(window->GetProperty(aura::client::kShowStateKey) ==
                  ui::SHOW_STATE_MINIMIZED),
+      ignored_by_shelf_(ash::wm::GetWindowState(window)->ignored_by_shelf()),
       overview_started_(false),
       original_transform_(window->layer()->GetTargetTransform()) {
 }
@@ -187,6 +189,7 @@ ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
       window_->SetProperty(aura::client::kShowStateKey,
                            ui::SHOW_STATE_MINIMIZED);
     }
+    ash::wm::GetWindowState(window_)->set_ignored_by_shelf(ignored_by_shelf_);
   } else if (window_copy_) {
     // If this class still owns a copy of the window, clean up the copy. This
     // will be the case if the window was destroyed.
@@ -288,6 +291,7 @@ void ScopedTransformOverviewWindow::
 }
 
 void ScopedTransformOverviewWindow::OnOverviewStarted() {
+  ash::wm::GetWindowState(window_)->set_ignored_by_shelf(true);
   RestoreWindow();
 }
 

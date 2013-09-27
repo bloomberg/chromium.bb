@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_overview.h"
@@ -93,6 +94,17 @@ void WindowSelectorEventFilter::OnKeyEvent(ui::KeyEvent* event) {
   }
 }
 
+// Triggers a shelf visibility update on all root window controllers.
+void UpdateShelfVisibility() {
+  Shell::RootWindowControllerList root_window_controllers =
+      Shell::GetInstance()->GetAllRootWindowControllers();
+  for (Shell::RootWindowControllerList::iterator iter =
+          root_window_controllers.begin();
+       iter != root_window_controllers.end(); ++iter) {
+    (*iter)->UpdateShelfVisibility();
+  }
+}
+
 }  // namespace
 
 WindowSelector::WindowSelector(const WindowList& windows,
@@ -170,6 +182,10 @@ WindowSelector::~WindowSelector() {
           kSwitchableWindowContainerIds[i])->RemoveObserver(this);
     }
   }
+  window_overview_.reset();
+  // Clearing the window list resets the ignored_by_shelf flag on the windows.
+  windows_.clear();
+  UpdateShelfVisibility();
 }
 
 void WindowSelector::Step(WindowSelector::Direction direction) {
@@ -294,6 +310,7 @@ void WindowSelector::StartOverview() {
       mode_ == CYCLE ? windows_[selected_window_]->GetRootWindow() : NULL));
   if (mode_ == CYCLE)
     window_overview_->SetSelection(selected_window_);
+  UpdateShelfVisibility();
 }
 
 void WindowSelector::RemoveFocusAndSetRestoreWindow() {
