@@ -4277,11 +4277,11 @@ void TestingAutomationProvider::LaunchApp(
     return;
   }
 
-  chrome::AppLaunchParams launch_params(profile(), extension, CURRENT_TAB);
+  AppLaunchParams launch_params(profile(), extension, CURRENT_TAB);
   // This observer will delete itself.
   new AppLaunchObserver(&old_contents->GetController(), this, reply_message,
                         launch_params.container);
-  chrome::OpenApplication(launch_params);
+  OpenApplication(launch_params);
 }
 
 // Sample JSON input: { "command": "SetAppLaunchType",

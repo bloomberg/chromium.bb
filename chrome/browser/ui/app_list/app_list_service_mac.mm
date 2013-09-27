@@ -255,8 +255,7 @@ void AppListControllerDelegateCocoa::LaunchApp(
     int event_flags) {
   AppListServiceImpl::RecordAppListAppLaunch();
 
-  chrome::AppLaunchParams params(
-      profile, extension, NEW_FOREGROUND_TAB);
+  AppLaunchParams params(profile, extension, NEW_FOREGROUND_TAB);
 
   if (source != LAUNCH_FROM_UNKNOWN &&
       extension->id() == extension_misc::kWebStoreAppId) {
@@ -268,7 +267,7 @@ void AppListControllerDelegateCocoa::LaunchApp(
         AppListSourceToString(source));
   }
 
-  chrome::OpenApplication(params);
+  OpenApplication(params);
 }
 
 void AppListControllerDelegateCocoa::ShowForProfileByPath(

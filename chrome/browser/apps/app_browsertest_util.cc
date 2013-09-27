@@ -50,10 +50,10 @@ const Extension* PlatformAppBrowserTest::LoadAndLaunchPlatformApp(
       test_data_dir_.AppendASCII("platform_apps").AppendASCII(name));
   EXPECT_TRUE(extension);
 
-  chrome::OpenApplication(chrome::AppLaunchParams(browser()->profile(),
-                                                  extension,
-                                                  extension_misc::LAUNCH_NONE,
-                                                  NEW_WINDOW));
+  OpenApplication(AppLaunchParams(browser()->profile(),
+                                  extension,
+                                  extension_misc::LAUNCH_NONE,
+                                  NEW_WINDOW));
 
   app_loaded_observer.Wait();
 
@@ -77,10 +77,10 @@ const Extension* PlatformAppBrowserTest::InstallAndLaunchPlatformApp(
 
   const Extension* extension = InstallPlatformApp(name);
 
-  chrome::OpenApplication(chrome::AppLaunchParams(browser()->profile(),
-                                                  extension,
-                                                  extension_misc::LAUNCH_NONE,
-                                                  NEW_WINDOW));
+  OpenApplication(AppLaunchParams(browser()->profile(),
+                                  extension,
+                                  extension_misc::LAUNCH_NONE,
+                                  NEW_WINDOW));
 
   app_loaded_observer.Wait();
 

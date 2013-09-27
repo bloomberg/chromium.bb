@@ -73,8 +73,7 @@ void ChromeSigninDelegate::OpenSettings() {
   if (!extension)
     return;
 
-  chrome::OpenApplication(chrome::AppLaunchParams(
-      profile_, extension, NEW_FOREGROUND_TAB));
+  OpenApplication(AppLaunchParams(profile_, extension, NEW_FOREGROUND_TAB));
 }
 
 string16 ChromeSigninDelegate::GetSigninHeading() {

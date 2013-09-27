@@ -56,8 +56,6 @@
 #include "ui/webui/web_ui_util.h"
 #include "url/gurl.h"
 
-using chrome::AppLaunchParams;
-using chrome::OpenApplication;
 using content::WebContents;
 using extensions::CrxInstaller;
 using extensions::Extension;

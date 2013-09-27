@@ -220,10 +220,10 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
         service->GetExtensionById(last_loaded_extension_id_, false);
     EXPECT_TRUE(extension);
 
-    chrome::OpenApplication(chrome::AppLaunchParams(profile(),
-                                                    extension,
-                                                    container,
-                                                    disposition));
+    OpenApplication(AppLaunchParams(profile(),
+                                    extension,
+                                    container,
+                                    disposition));
     return extension;
   }
 

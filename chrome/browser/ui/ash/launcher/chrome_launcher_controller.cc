@@ -565,9 +565,7 @@ void ChromeLauncherController::LaunchApp(const std::string& app_id,
     return;
   }
 
-  chrome::AppLaunchParams params(GetProfileForNewWindows(),
-                                 extension,
-                                 event_flags);
+  AppLaunchParams params(GetProfileForNewWindows(), extension, event_flags);
   if (source != ash::LAUNCH_FROM_UNKNOWN &&
       app_id == extension_misc::kWebStoreAppId) {
     // Get the corresponding source string.
@@ -579,7 +577,7 @@ void ChromeLauncherController::LaunchApp(const std::string& app_id,
         extension_url, extension_urls::kWebstoreSourceField, source_value);
   }
 
-  chrome::OpenApplication(params);
+  OpenApplication(params);
 }
 
 void ChromeLauncherController::ActivateApp(const std::string& app_id,

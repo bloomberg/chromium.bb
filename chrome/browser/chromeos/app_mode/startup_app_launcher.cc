@@ -228,10 +228,8 @@ void StartupAppLauncher::LaunchApp() {
   }
 
   // Always open the app in a window.
-  chrome::OpenApplication(chrome::AppLaunchParams(profile_,
-                                                  extension,
-                                                  extension_misc::LAUNCH_WINDOW,
-                                                  NEW_WINDOW));
+  OpenApplication(AppLaunchParams(profile_, extension,
+                                  extension_misc::LAUNCH_WINDOW, NEW_WINDOW));
   InitAppSession(profile_, app_id_);
 
   UserManager::Get()->SessionStarted();

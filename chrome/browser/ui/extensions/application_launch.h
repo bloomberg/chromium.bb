@@ -23,8 +23,6 @@ namespace extensions {
 class Extension;
 }
 
-namespace chrome {
-
 struct AppLaunchParams {
   AppLaunchParams(Profile* profile,
                   const extensions::Extension* extension,
@@ -86,7 +84,5 @@ content::WebContents* OpenApplication(const AppLaunchParams& params);
 content::WebContents* OpenAppShortcutWindow(Profile* profile,
                                             const GURL& url,
                                             const gfx::Rect& override_bounds);
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_

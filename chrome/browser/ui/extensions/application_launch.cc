@@ -325,7 +325,7 @@ class EnableViaAppListFlow : public ExtensionEnableFlowDelegate {
   DISALLOW_COPY_AND_ASSIGN(EnableViaAppListFlow);
 };
 
-WebContents* OpenEnabledApplication(const chrome::AppLaunchParams& params) {
+WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
   Profile* profile = params.profile;
   const extensions::Extension* extension = params.extension;
   extension_misc::LaunchContainer container = params.container;
@@ -388,8 +388,6 @@ WebContents* OpenEnabledApplication(const chrome::AppLaunchParams& params) {
 }
 
 }  // namespace
-
-namespace chrome {
 
 AppLaunchParams::AppLaunchParams(Profile* profile,
                                  const extensions::Extension* extension,
@@ -454,8 +452,7 @@ WebContents* OpenApplication(const AppLaunchParams& params) {
   return OpenEnabledApplication(params);
 }
 
-
-void OpenApplicationWithReenablePrompt(const chrome::AppLaunchParams& params) {
+void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {
   Profile* profile = params.profile;
   const extensions::Extension* extension = params.extension;
 
@@ -497,5 +494,3 @@ WebContents* OpenAppShortcutWindow(Profile* profile,
 
   return tab;
 }
-
-}  // namespace chrome

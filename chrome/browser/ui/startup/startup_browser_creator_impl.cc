@@ -365,8 +365,8 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     // otherwise it will be handled below.
     if (extension) {
       RecordCmdLineAppHistogram(extensions::Manifest::TYPE_PLATFORM_APP);
-      chrome::AppLaunchParams params(profile, extension,
-                                     extension_misc::LAUNCH_NONE, NEW_WINDOW);
+      AppLaunchParams params(profile, extension,
+                             extension_misc::LAUNCH_NONE, NEW_WINDOW);
       params.command_line = &command_line_;
       params.current_directory = cur_dir_;
       OpenApplicationWithReenablePrompt(params);
@@ -480,7 +480,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationTab(Profile* profile) {
 
   RecordCmdLineAppHistogram(extension->GetType());
 
-  WebContents* app_tab = chrome::OpenApplication(chrome::AppLaunchParams(
+  WebContents* app_tab = OpenApplication(AppLaunchParams(
       profile, extension, extension_misc::LAUNCH_TAB, NEW_FOREGROUND_TAB));
   return (app_tab != NULL);
 }
@@ -515,11 +515,10 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
 
     RecordCmdLineAppHistogram(extension->GetType());
 
-    chrome::AppLaunchParams params(profile, extension,
-                                   launch_container, NEW_WINDOW);
+    AppLaunchParams params(profile, extension, launch_container, NEW_WINDOW);
     params.command_line = &command_line_;
     params.current_directory = cur_dir_;
-    WebContents* tab_in_app_window = chrome::OpenApplication(params);
+    WebContents* tab_in_app_window = OpenApplication(params);
 
     if (out_app_contents)
       *out_app_contents = tab_in_app_window;
@@ -555,9 +554,9 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
       gfx::Rect override_bounds;
       ExtractOptionalAppWindowSize(&override_bounds);
 
-      WebContents* app_tab = chrome::OpenAppShortcutWindow(profile,
-                                                           url,
-                                                           override_bounds);
+      WebContents* app_tab = OpenAppShortcutWindow(profile,
+                                                   url,
+                                                   override_bounds);
 
       if (out_app_contents)
         *out_app_contents = app_tab;

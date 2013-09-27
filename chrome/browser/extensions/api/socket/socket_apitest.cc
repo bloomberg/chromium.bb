@@ -90,11 +90,11 @@ class SocketPpapiTest : public SocketApiTest {
     const Extension* extension = LoadExtension(app_dir_);
     ASSERT_TRUE(extension);
 
-    chrome::AppLaunchParams params(browser()->profile(), extension,
+    AppLaunchParams params(browser()->profile(), extension,
                                    extension_misc::LAUNCH_NONE,
                                    NEW_WINDOW);
     params.command_line = CommandLine::ForCurrentProcess();
-    chrome::OpenApplication(params);
+    OpenApplication(params);
   }
 
  private:

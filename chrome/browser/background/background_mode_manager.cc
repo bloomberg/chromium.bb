@@ -259,8 +259,7 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
 void BackgroundModeManager::LaunchBackgroundApplication(
     Profile* profile,
     const Extension* extension) {
-  chrome::OpenApplication(chrome::AppLaunchParams(profile, extension,
-                                                  NEW_FOREGROUND_TAB));
+  OpenApplication(AppLaunchParams(profile, extension, NEW_FOREGROUND_TAB));
 }
 
 bool BackgroundModeManager::IsBackgroundModeActiveForTest() {

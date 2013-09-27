@@ -30,7 +30,7 @@ class NativeAppWindowCocoaBrowserTest : public PlatformAppBrowserTest {
       content::WindowedNotificationObserver app_loaded_observer(
           content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
           content::NotificationService::AllSources());
-      chrome::OpenApplication(chrome::AppLaunchParams(
+      OpenApplication(AppLaunchParams(
           profile(), app_, extension_misc::LAUNCH_NONE, NEW_WINDOW));
       app_loaded_observer.Wait();
     }

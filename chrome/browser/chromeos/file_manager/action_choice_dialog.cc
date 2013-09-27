@@ -81,12 +81,12 @@ void OpenActionChoiceDialog(const base::FilePath& file_path,
   if (!extension)
     return;
 
-  chrome::AppLaunchParams params(profile, extension,
-                                 extension_misc::LAUNCH_WINDOW,
-                                 NEW_FOREGROUND_TAB);
+  AppLaunchParams params(profile, extension,
+                         extension_misc::LAUNCH_WINDOW,
+                         NEW_FOREGROUND_TAB);
   params.override_url = dialog_url;
   params.override_bounds = bounds;
-  chrome::OpenApplication(params);
+  OpenApplication(params);
 }
 
 }  // namespace util

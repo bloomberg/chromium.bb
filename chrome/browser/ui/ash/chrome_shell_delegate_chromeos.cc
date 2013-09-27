@@ -99,8 +99,7 @@ void ChromeShellDelegate::OpenFileManager(bool as_dialog) {
           service->GetInstalledExtension(kFileManagerAppId);
       // event_flags = 0 means this invokes the same behavior as the launcher
       // item is clicked without any keyboard modifiers.
-      chrome::OpenApplication(
-          chrome::AppLaunchParams(profile, extension, 0 /* event_flags */));
+      OpenApplication(AppLaunchParams(profile, extension, 0 /* event_flags */));
     } else {
       // Activate the existing window.
       list.front()->GetBaseWindow()->Activate();
