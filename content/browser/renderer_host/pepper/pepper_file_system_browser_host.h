@@ -22,9 +22,20 @@ class PepperFileSystemBrowserHost :
     public ppapi::host::ResourceHost,
     public base::SupportsWeakPtr<PepperFileSystemBrowserHost> {
  public:
+  // Creates a new PepperFileSystemBrowserHost for a file system of a given
+  // |type|. The host must be opened before use.
   PepperFileSystemBrowserHost(BrowserPpapiHost* host,
                               PP_Instance instance,
                               PP_Resource resource,
+                              PP_FileSystemType type);
+  // Creates a new PepperFileSystemBrowserHost with an existing file system at
+  // the given |root_url| and of the given |type|. The file system at |root_url|
+  // must already be opened. Once created, the PepperFileSystemBrowserHost may
+  // be used without being opened.
+  PepperFileSystemBrowserHost(BrowserPpapiHost* host,
+                              PP_Instance instance,
+                              PP_Resource resource,
+                              const GURL& root_url,
                               PP_FileSystemType type);
   virtual ~PepperFileSystemBrowserHost();
 

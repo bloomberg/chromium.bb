@@ -20,9 +20,20 @@ class PepperFileSystemHost :
     public ppapi::host::ResourceHost,
     public base::SupportsWeakPtr<PepperFileSystemHost> {
  public:
+  // Creates a new PepperFileSystemHost for a file system of a given |type|. The
+  // host will not be connected to any specific file system, and will need to
+  // subsequently be opened before use.
   PepperFileSystemHost(RendererPpapiHost* host,
                        PP_Instance instance,
                        PP_Resource resource,
+                       PP_FileSystemType type);
+  // Creates a new PepperFileSystemHost with an existing file system at the
+  // given |root_url| and of the given |type|. The file system must already be
+  // opened. Once created, the PepperFileSystemHost is already opened for use.
+  PepperFileSystemHost(RendererPpapiHost* host,
+                       PP_Instance instance,
+                       PP_Resource resource,
+                       const GURL& root_url,
                        PP_FileSystemType type);
   virtual ~PepperFileSystemHost();
 
