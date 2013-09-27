@@ -10,6 +10,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "content/renderer/media/buffered_resource_loader.h"
+#include "content/test/mock_webframeclient.h"
+#include "content/test/mock_weburlloader.h"
 #include "media/base/media_log.h"
 #include "media/base/seekable_buffer.h"
 #include "net/base/net_errors.h"
@@ -21,8 +23,6 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "webkit/mocks/mock_webframeclient.h"
-#include "webkit/mocks/mock_weburlloader.h"
 
 using ::testing::_;
 using ::testing::InSequence;
@@ -34,9 +34,6 @@ using WebKit::WebString;
 using WebKit::WebURLError;
 using WebKit::WebURLResponse;
 using WebKit::WebView;
-
-using webkit_glue::MockWebFrameClient;
-using webkit_glue::MockWebURLLoader;
 
 namespace content {
 

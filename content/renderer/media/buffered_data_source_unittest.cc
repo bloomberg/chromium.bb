@@ -6,14 +6,14 @@
 #include "base/message_loop/message_loop.h"
 #include "content/renderer/media/buffered_data_source.h"
 #include "content/renderer/media/test_response_generator.h"
+#include "content/test/mock_webframeclient.h"
+#include "content/test/mock_weburlloader.h"
 #include "media/base/media_log.h"
 #include "media/base/mock_data_source_host.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "webkit/mocks/mock_webframeclient.h"
-#include "webkit/mocks/mock_weburlloader.h"
 
 using ::testing::_;
 using ::testing::Assign;
@@ -27,9 +27,6 @@ using WebKit::WebString;
 using WebKit::WebURLLoader;
 using WebKit::WebURLResponse;
 using WebKit::WebView;
-
-using webkit_glue::MockWebFrameClient;
-using webkit_glue::MockWebURLLoader;
 
 namespace content {
 

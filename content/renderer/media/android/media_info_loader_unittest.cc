@@ -5,13 +5,13 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "content/renderer/media/android/media_info_loader.h"
+#include "content/test/mock_webframeclient.h"
+#include "content/test/mock_weburlloader.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebMediaPlayer.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "webkit/mocks/mock_webframeclient.h"
-#include "webkit/mocks/mock_weburlloader.h"
 
 using ::testing::_;
 using ::testing::InSequence;
@@ -21,9 +21,6 @@ using WebKit::WebString;
 using WebKit::WebURLError;
 using WebKit::WebURLResponse;
 using WebKit::WebView;
-
-using webkit_glue::MockWebFrameClient;
-using webkit_glue::MockWebURLLoader;
 
 namespace content {
 

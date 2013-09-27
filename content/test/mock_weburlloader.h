@@ -1,14 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_MOCKS_MOCK_WEBURLLOADER_H_
-#define WEBKIT_MOCKS_MOCK_WEBURLLOADER_H_
+#ifndef CONTENT_TEST_MOCK_WEBURLLOADER_H_
+#define CONTENT_TEST_MOCK_WEBURLLOADER_H_
 
 #include "testing/gmock/include/gmock/gmock.h"
-#include "webkit/child/weburlloader_impl.h"
+#include "third_party/WebKit/public/platform/WebURLLoader.h"
 
-namespace webkit_glue {
+namespace content {
 
 class MockWebURLLoader : public WebKit::WebURLLoader {
  public:
@@ -28,6 +28,6 @@ class MockWebURLLoader : public WebKit::WebURLLoader {
   DISALLOW_COPY_AND_ASSIGN(MockWebURLLoader);
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_MOCKS_MOCK_WEBURLLOADER_H_
+#endif  // CONTENT_TEST_MOCK_WEBURLLOADER_H_
