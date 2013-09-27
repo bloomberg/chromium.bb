@@ -67,8 +67,8 @@ Error EventListenerLock::WaitOnEvent(uint32_t events, int ms_timeout) {
     int return_code;
     if (ms_timeout >= 0) {
       return_code = pthread_cond_timedwait(&signal_cond_,
-                                            emitter_->GetLock().mutex(),
-                                            &timeout);
+                                           emitter_->GetLock().mutex(),
+                                           &timeout);
     } else {
       return_code = pthread_cond_wait(&signal_cond_,
                                       emitter_->GetLock().mutex());

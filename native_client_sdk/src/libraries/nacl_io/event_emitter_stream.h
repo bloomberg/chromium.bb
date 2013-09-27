@@ -26,10 +26,10 @@ class EventEmitterStream : public EventEmitter {
   void DetachStream();
 
   MountNodeStream* stream() { return stream_; }
-  virtual FIFOInterface* in_fifo() = 0;
-  virtual FIFOInterface* out_fifo() = 0;
 
 protected:
+  virtual FIFOInterface* in_fifo() = 0;
+  virtual FIFOInterface* out_fifo() = 0;
   void UpdateStatus_Locked();
 
 protected:

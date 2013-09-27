@@ -4,7 +4,6 @@
 
 #include "nacl_io/kernel_proxy.h"
 
-
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>

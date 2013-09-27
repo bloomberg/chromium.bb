@@ -59,8 +59,7 @@ class TCPSendWork : public TCPWork {
     // If not currently sending...
     if (!stream->TestStreamFlags(SSF_SENDING)) {
       size_t tx_data_avail = emitter_->out_fifo()->ReadAvailable();
-      int capped_len =
-          static_cast<int32_t>(std::min(tx_data_avail, kMaxPacketSize));
+      int capped_len = std::min(tx_data_avail, kMaxPacketSize);
 
       if (capped_len == 0)
         return false;
@@ -125,9 +124,9 @@ class TCPRecvWork : public TCPWork {
       stream->SetStreamFlags(SSF_RECVING);
       data_ = new char[capped_len];
       int err = TCPInterface()->Read(stream->socket_resource(),
-                                      data_,
-                                      capped_len,
-                                      mount()->GetRunCompletion(this));
+                                     data_,
+                                     capped_len,
+                                     mount()->GetRunCompletion(this));
       if (err == PP_OK_COMPLETIONPENDING)
         return true;
 
@@ -145,6 +144,7 @@ class TCPRecvWork : public TCPWork {
     if (stream) {
       if (length_error > 0) {
         emitter_->WriteIn_Locked(data_, length_error);
+        stream->ClearStreamFlags(SSF_RECVING);
         stream->QueueInput();
       } else {
         stream->SetError_Locked(length_error);
@@ -249,7 +249,7 @@ Error MountNodeTCP::Recv_Locked(void* buf,
                                 size_t len,
                                 PP_Resource* out_addr,
                                 int* out_len) {
-  *out_len = emitter_->in_fifo()->Read(buf, len);
+  *out_len = emitter_->ReadIn_Locked((char*)buf, len);
   *out_addr = remote_addr_;
 
   // Ref the address copy we pass back.
@@ -262,7 +262,7 @@ Error MountNodeTCP::Send_Locked(const void* buf,
                                 size_t len,
                                 PP_Resource,
                                 int* out_len) {
-  *out_len = emitter_->out_fifo()->Write(buf, len);
+  *out_len = emitter_->WriteOut_Locked((char*)buf, len);
   return 0;
 }
 
