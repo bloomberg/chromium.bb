@@ -4,7 +4,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS document.body = nodelist; threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
-PASS table.tHead = nodelist; threw exception NotFoundError: Failed to execute 'appendChild' on 'Node': The new child element is null..
+PASS table.tHead = nodelist; threw exception NotFoundError: An attempt was made to reference a Node in a context where it does not exist..
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -1,2 +1,2 @@
-CONSOLE MESSAGE: line 10: Uncaught NotFoundError: Failed to execute 'appendChild' on 'Node': The new child element is null.
+CONSOLE MESSAGE: line 10: Uncaught NotFoundError: An attempt was made to reference a Node in a context where it does not exist.
 

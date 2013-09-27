@@ -16,7 +16,7 @@ var listener = function() {
     child.appendChild(newparent);
 };
 document.addEventListener("DOMNodeRemoved", listener, false);
-shouldThrow("newparent.appendChild(child);",  '"HierarchyRequestError: Failed to execute \'appendChild\' on \'Node\': The new child element contains the parent."');
+shouldThrow("newparent.appendChild(child);",  "'HierarchyRequestError: A Node was inserted somewhere it doesn\\'t belong.'");
 </script>
 <script src="../js/resources/js-test-post.js"></script>
 </body>
