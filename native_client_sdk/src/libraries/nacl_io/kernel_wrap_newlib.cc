@@ -13,6 +13,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <irt.h>
+#include <irt_dev.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -44,7 +45,7 @@ EXTERN_C_BEGIN
 #define USE_WRAP(group, name) \
   __libnacl_irt_##group.name = (typeof(REAL(name))) WRAP(name); \
 
-extern void __libnacl_irt_filename_init(void);
+extern void __libnacl_irt_dev_filename_init(void);
 
 extern struct nacl_irt_fdio __libnacl_irt_fdio;
 extern struct nacl_irt_dev_filename __libnacl_irt_dev_filename;
@@ -139,7 +140,7 @@ int WRAP(write)(int fd, const void* buf, size_t count, size_t* nwrote) {
 static void assign_real_pointers() {
   static bool assigned = false;
   if (!assigned) {
-    __libnacl_irt_filename_init();
+    __libnacl_irt_dev_filename_init();
     EXPAND_SYMBOL_LIST_OPERATION(ASSIGN_REAL_PTR)
     assigned = true;
   }

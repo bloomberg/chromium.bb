@@ -286,6 +286,7 @@ src/ppapi_simple/*
 src/sdk_util/*
 toolchain/${PLATFORM}_arm_newlib/*
 toolchain/${PLATFORM}_arm_newlib/arm-nacl/include/irt.h
+toolchain/${PLATFORM}_arm_newlib/arm-nacl/include/irt_dev.h
 toolchain/${PLATFORM}_arm_newlib/arm-nacl/include/irt_ppapi.h
 toolchain/${PLATFORM}_arm_newlib/arm-nacl/include/nacl/dynamic_annotations.h
 toolchain/${PLATFORM}_arm_newlib/arm-nacl/include/nacl/nacl_dyncode.h
@@ -309,6 +310,7 @@ toolchain/${PLATFORM}_arm_newlib/arm-nacl/lib/libppapi_stub.a
 toolchain/${PLATFORM}_arm_newlib/arm-nacl/lib/libpthread.a
 toolchain/${PLATFORM}_pnacl/*
 toolchain/${PLATFORM}_pnacl/sdk/include/irt.h
+toolchain/${PLATFORM}_pnacl/sdk/include/irt_dev.h
 toolchain/${PLATFORM}_pnacl/sdk/include/irt_ppapi.h
 toolchain/${PLATFORM}_pnacl/sdk/include/nacl/dynamic_annotations.h
 toolchain/${PLATFORM}_pnacl/sdk/include/nacl/nacl_dyncode.h
@@ -330,6 +332,7 @@ toolchain/${PLATFORM}_pnacl/sdk/lib/libppapi_stub.a
 toolchain/${PLATFORM}_pnacl/sdk/lib/libpthread.a
 toolchain/${PLATFORM}_x86_glibc/*
 toolchain/${PLATFORM}_x86_glibc/x86_64-nacl/include/irt.h
+toolchain/${PLATFORM}_x86_glibc/x86_64-nacl/include/irt_dev.h
 toolchain/${PLATFORM}_x86_glibc/x86_64-nacl/include/irt_ppapi.h
 toolchain/${PLATFORM}_x86_glibc/x86_64-nacl/include/nacl/dynamic_annotations.h
 toolchain/${PLATFORM}_x86_glibc/x86_64-nacl/include/nacl/nacl_dyncode.h
@@ -364,6 +367,7 @@ toolchain/${PLATFORM}_x86_glibc/x86_64-nacl/lib32/libppapi.so
 toolchain/${PLATFORM}_x86_glibc/x86_64-nacl/lib32/libppapi_stub.a
 toolchain/${PLATFORM}_x86_newlib/*
 toolchain/${PLATFORM}_x86_newlib/x86_64-nacl/include/irt.h
+toolchain/${PLATFORM}_x86_newlib/x86_64-nacl/include/irt_dev.h
 toolchain/${PLATFORM}_x86_newlib/x86_64-nacl/include/irt_ppapi.h
 toolchain/${PLATFORM}_x86_newlib/x86_64-nacl/include/nacl/dynamic_annotations.h
 toolchain/${PLATFORM}_x86_newlib/x86_64-nacl/include/nacl/nacl_dyncode.h
