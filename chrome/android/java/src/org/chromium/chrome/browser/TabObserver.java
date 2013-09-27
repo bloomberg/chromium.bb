@@ -40,4 +40,11 @@ public interface TabObserver {
      * @param tab The notifying {@link TabBase}.
      */
     public void onFaviconUpdated(TabBase tab);
+
+    /**
+     * Called when the {@link TabBase} should enter or leave fullscreen mode.
+     * @param tab    The notifying {@link TabBase}.
+     * @param enable Whether or not to enter fullscreen mode.
+     */
+    public void onToggleFullscreenMode(TabBase tab, boolean enable);
 }

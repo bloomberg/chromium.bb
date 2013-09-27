@@ -97,6 +97,13 @@ public abstract class TabBase implements NavigationClient {
         public void onUpdateUrl(String url) {
             for (TabObserver observer : mObservers) observer.onUpdateUrl(TabBase.this, url);
         }
+
+        @Override
+        public void toggleFullscreenModeForTab(boolean enableFullscreen) {
+            for (TabObserver observer: mObservers) {
+                observer.onToggleFullscreenMode(TabBase.this, enableFullscreen);
+            }
+        }
     }
 
     /**

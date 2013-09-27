@@ -63,6 +63,10 @@ public class TabShellTabUtils {
         @Override
         public void onFaviconUpdated(TabBase tab) {
         }
+
+        @Override
+        public void onToggleFullscreenMode(TabBase tab, boolean enabled) {
+        }
     }
 
     /**
