@@ -174,7 +174,7 @@ void WebDevToolsFrontendImpl::doDispatchOnInspectorFrontend(const WebString& mes
     args.append(v8String(message, isolate));
     v8::TryCatch tryCatch;
     tryCatch.SetVerbose(true);
-    ScriptController::callFunctionWithInstrumentation(frame->frame() ? frame->frame()->document() : 0, function, dispatcherObject, args.size(), args.data(), isolate);
+    ScriptController::callFunction(frame->frame()->document(), function, dispatcherObject, args.size(), args.data(), isolate);
 }
 
 } // namespace WebKit

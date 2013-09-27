@@ -150,12 +150,7 @@ v8::Local<v8::Value> ScriptController::callFunction(v8::Handle<v8::Function> fun
 {
     // Keep Frame (and therefore ScriptController) alive.
     RefPtr<Frame> protect(m_frame);
-    return ScriptController::callFunctionWithInstrumentation(m_frame ? m_frame->document() : 0, function, receiver, argc, args, m_isolate);
-}
-
-ScriptValue ScriptController::callFunctionEvenIfScriptDisabled(v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> argv[])
-{
-    return ScriptValue(callFunction(function, receiver, argc, argv), m_isolate);
+    return ScriptController::callFunction(m_frame->document(), function, receiver, argc, args, m_isolate);
 }
 
 static void resourceInfo(const v8::Handle<v8::Function> function, String& resourceName, int& lineNumber)
@@ -183,7 +178,7 @@ static String resourceString(const v8::Handle<v8::Function> function)
     return builder.toString();
 }
 
-v8::Local<v8::Value> ScriptController::callFunctionWithInstrumentation(ScriptExecutionContext* context, v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[], v8::Isolate* isolate)
+v8::Local<v8::Value> ScriptController::callFunction(ScriptExecutionContext* context, v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[], v8::Isolate* isolate)
 {
     InspectorInstrumentationCookie cookie;
     if (InspectorInstrumentation::timelineAgentEnabled(context)) {
@@ -199,9 +194,9 @@ v8::Local<v8::Value> ScriptController::callFunctionWithInstrumentation(ScriptExe
     return result;
 }
 
-v8::Local<v8::Value> ScriptController::compileAndRunScript(const ScriptSourceCode& source, AccessControlStatus corsStatus)
+v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Handle<v8::Context> context, const ScriptSourceCode& source, AccessControlStatus corsStatus)
 {
-    ASSERT(v8::Context::InContext());
+    v8::Context::Scope scope(context);
 
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willEvaluateScript(m_frame, source.url().isNull() ? String() : source.url().string(), source.startLine());
 
@@ -314,9 +309,6 @@ v8::Local<v8::Context> ScriptController::currentWorldContext()
         return contextForWorld(this, mainThreadNormalWorld());
 
     Frame* frame = toFrameIfNotDetached(context);
-    if (!m_frame)
-        return v8::Local<v8::Context>();
-
     if (m_frame == frame)
         return v8::Local<v8::Context>::New(m_isolate, context);
 
@@ -670,9 +662,7 @@ ScriptValue ScriptController::evaluateScriptInMainWorld(const ScriptSourceCode& 
     OwnPtr<ScriptSourceCode> maybeProcessedSourceCode =  InspectorInstrumentation::preprocess(m_frame, sourceCode);
     const ScriptSourceCode& sourceCodeToCompile = maybeProcessedSourceCode ? *maybeProcessedSourceCode : sourceCode;
 
-    v8::Context::Scope scope(v8Context);
-    v8::Local<v8::Value> object = compileAndRunScript(sourceCodeToCompile, corsStatus);
-
+    v8::Local<v8::Value> object = executeScriptAndReturnValue(v8Context, sourceCodeToCompile, corsStatus);
     m_sourceURL = savedSourceURL;
 
     if (object.IsEmpty())
@@ -700,7 +690,7 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
         v8::Local<v8::Array> resultArray = v8::Array::New(sources.size());
 
         for (size_t i = 0; i < sources.size(); ++i) {
-            v8::Local<v8::Value> evaluationResult = compileAndRunScript(sources[i]);
+            v8::Local<v8::Value> evaluationResult = executeScriptAndReturnValue(context, sources[i]);
             if (evaluationResult.IsEmpty())
                 evaluationResult = v8::Local<v8::Value>::New(m_isolate, v8::Undefined(m_isolate));
             resultArray->Set(i, evaluationResult);

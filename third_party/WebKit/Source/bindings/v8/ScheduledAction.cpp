@@ -90,16 +90,17 @@ void ScheduledAction::execute(Frame* frame)
     v8::Handle<v8::Context> context = m_context.newLocal(m_isolate);
     if (context.IsEmpty())
         return;
-    v8::Context::Scope scope(context);
 
     TRACE_EVENT0("v8", "ScheduledAction::execute");
 
     if (!m_function.isEmpty()) {
+        v8::Context::Scope scope(context);
         Vector<v8::Handle<v8::Value> > args;
         createLocalHandlesForArgs(&args);
         frame->script()->callFunction(m_function.newLocal(m_isolate), context->Global(), args.size(), args.data());
-    } else
-        frame->script()->compileAndRunScript(m_code);
+    } else {
+        frame->script()->executeScriptAndReturnValue(context, ScriptSourceCode(m_code));
+    }
 
     // The frame might be invalid at this point because JavaScript could have released it.
 }

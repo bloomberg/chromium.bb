@@ -185,6 +185,7 @@ ScriptObject ScriptFunctionCall::construct(bool& hadException, bool reportExcept
 
 ScriptCallback::ScriptCallback(ScriptState* state, const ScriptValue& function)
     : ScriptCallArgumentHandler(state)
+    , m_scriptState(state)
     , m_function(function)
 {
 }
@@ -203,7 +204,7 @@ ScriptValue ScriptCallback::call()
     for (size_t i = 0; i < m_arguments.size(); ++i)
         args[i] = m_arguments[i].v8Value();
 
-    v8::Handle<v8::Value> result = ScriptController::callFunctionWithInstrumentation(0, function, object, m_arguments.size(), args.get(), m_scriptState->isolate());
+    v8::Handle<v8::Value> result = ScriptController::callFunction(m_scriptState->scriptExecutionContext(), function, object, m_arguments.size(), args.get(), m_scriptState->isolate());
     return ScriptValue(result, m_scriptState->isolate());
 }
 

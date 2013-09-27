@@ -83,6 +83,7 @@ public:
     void executeScriptInMainWorld(const String&, ExecuteScriptPolicy = DoNotExecuteScriptWhenScriptsDisabled);
     void executeScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus = NotSharableCrossOrigin);
     ScriptValue executeScriptInMainWorldAndReturnValue(const ScriptSourceCode&);
+    v8::Local<v8::Value> executeScriptAndReturnValue(v8::Handle<v8::Context>, const ScriptSourceCode&, AccessControlStatus = NotSharableCrossOrigin);
 
     // Executes JavaScript in an isolated world. The script gets its own global scope,
     // its own prototypes for intrinsic JavaScript objects (String, Array, and so-on),
@@ -97,11 +98,8 @@ public:
     // Returns true if argument is a JavaScript URL.
     bool executeScriptIfJavaScriptURL(const KURL&);
 
-    v8::Local<v8::Value> compileAndRunScript(const ScriptSourceCode&, AccessControlStatus = NotSharableCrossOrigin);
-
     v8::Local<v8::Value> callFunction(v8::Handle<v8::Function>, v8::Handle<v8::Object>, int argc, v8::Handle<v8::Value> argv[]);
-    ScriptValue callFunctionEvenIfScriptDisabled(v8::Handle<v8::Function>, v8::Handle<v8::Object>, int argc, v8::Handle<v8::Value> argv[]);
-    static v8::Local<v8::Value> callFunctionWithInstrumentation(ScriptExecutionContext*, v8::Handle<v8::Function>, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[], v8::Isolate*);
+    static v8::Local<v8::Value> callFunction(ScriptExecutionContext*, v8::Handle<v8::Function>, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[], v8::Isolate*);
 
     // Returns true if the current world is isolated, and has its own Content
     // Security Policy. In this case, the policy of the main world should be
@@ -165,7 +163,6 @@ private:
     typedef HashMap<Widget*, NPObject*> PluginObjectMap;
 
     ScriptValue evaluateScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus, ExecuteScriptPolicy);
-
     void clearForClose(bool destroyGlobal);
 
     Frame* m_frame;

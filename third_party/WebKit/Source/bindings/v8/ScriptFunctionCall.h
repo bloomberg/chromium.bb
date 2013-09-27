@@ -79,6 +79,7 @@ namespace WebCore {
         ScriptValue call();
 
     private:
+        ScriptState* m_scriptState;
         ScriptValue m_function;
     };
 

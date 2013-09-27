@@ -59,7 +59,7 @@ bool invokeCallback(v8::Handle<v8::Object> callback, v8::Handle<v8::Object> this
     if (callbackFunction.IsEmpty())
         return false;
 
-    v8::Handle<v8::Value> result = ScriptController::callFunctionWithInstrumentation(scriptExecutionContext, callbackFunction, thisObject, argc, argv, isolate);
+    v8::Handle<v8::Value> result = ScriptController::callFunction(scriptExecutionContext, callbackFunction, thisObject, argc, argv, isolate);
 
     callbackReturnValue = !result.IsEmpty() && result->BooleanValue();
     return exceptionCatcher.HasCaught();
