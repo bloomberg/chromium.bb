@@ -30,7 +30,13 @@ function takeScreenshot(callback) {
 
   navigator.webkitGetUserMedia(
     {
-      video: {mandatory: {chromeMediaSource: 'screen'}}
+      video: {
+        mandatory: {
+          chromeMediaSource: 'screen',
+          maxWidth: 4096,
+          maxHeight: 2560
+        }
+      }
     },
     function(stream) {
       video.src = window.webkitURL.createObjectURL(stream);
