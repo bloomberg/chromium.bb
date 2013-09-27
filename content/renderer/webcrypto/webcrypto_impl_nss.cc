@@ -84,23 +84,17 @@ void ShrinkBuffer(WebKit::WebArrayBuffer* buffer, unsigned new_size) {
   *buffer = new_buffer;
 }
 
-}  // namespace
-
-void WebCryptoImpl::Init() {
-  crypto::EnsureNSSInit();
-}
-
-bool WebCryptoImpl::EncryptInternal(
+bool AesCbcEncryptDecrypt(
+    CK_ATTRIBUTE_TYPE operation,
     const WebKit::WebCryptoAlgorithm& algorithm,
     const WebKit::WebCryptoKey& key,
     const unsigned char* data,
     unsigned data_size,
     WebKit::WebArrayBuffer* buffer) {
-  if (algorithm.id() != WebKit::WebCryptoAlgorithmIdAesCbc)
-    return false;
-
+  DCHECK_EQ(WebKit::WebCryptoAlgorithmIdAesCbc, algorithm.id());
   DCHECK_EQ(algorithm.id(), key.algorithm().id());
   DCHECK_EQ(WebKit::WebCryptoKeyTypeSecret, key.type());
+  DCHECK(operation == CKA_ENCRYPT || operation == CKA_DECRYPT);
 
   SymKeyHandle* sym_key = reinterpret_cast<SymKeyHandle*>(key.handle());
 
@@ -118,7 +112,7 @@ bool WebCryptoImpl::EncryptInternal(
     return false;
 
   crypto::ScopedPK11Context context(PK11_CreateContextBySymKey(
-      CKM_AES_CBC_PAD, CKA_ENCRYPT, sym_key->key(), param.get()));
+      CKM_AES_CBC_PAD, operation, sym_key->key(), param.get()));
 
   if (!context.get())
     return false;
@@ -133,6 +127,8 @@ bool WebCryptoImpl::EncryptInternal(
     return false;
   }
 
+  // TODO(eroman): Refine the output buffer size. It can be computed exactly for
+  //               encryption, and can be smaller for decryption.
   unsigned output_max_len = data_size + AES_BLOCK_SIZE;
   CHECK_GT(output_max_len, data_size);
 
@@ -160,6 +156,40 @@ bool WebCryptoImpl::EncryptInternal(
 
   ShrinkBuffer(buffer, final_output_chunk_len + output_len);
   return true;
+}
+
+}  // namespace
+
+void WebCryptoImpl::Init() {
+  crypto::EnsureNSSInit();
+}
+
+bool WebCryptoImpl::EncryptInternal(
+    const WebKit::WebCryptoAlgorithm& algorithm,
+    const WebKit::WebCryptoKey& key,
+    const unsigned char* data,
+    unsigned data_size,
+    WebKit::WebArrayBuffer* buffer) {
+  if (algorithm.id() == WebKit::WebCryptoAlgorithmIdAesCbc) {
+    return AesCbcEncryptDecrypt(
+        CKA_ENCRYPT, algorithm, key, data, data_size, buffer);
+  }
+
+  return false;
+}
+
+bool WebCryptoImpl::DecryptInternal(
+    const WebKit::WebCryptoAlgorithm& algorithm,
+    const WebKit::WebCryptoKey& key,
+    const unsigned char* data,
+    unsigned data_size,
+    WebKit::WebArrayBuffer* buffer) {
+  if (algorithm.id() == WebKit::WebCryptoAlgorithmIdAesCbc) {
+    return AesCbcEncryptDecrypt(
+        CKA_DECRYPT, algorithm, key, data, data_size, buffer);
+  }
+
+  return false;
 }
 
 bool WebCryptoImpl::DigestInternal(
