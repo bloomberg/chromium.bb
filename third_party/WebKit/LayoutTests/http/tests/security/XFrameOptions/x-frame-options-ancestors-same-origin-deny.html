@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        if (window.testRunner) {
+            testRunner.dumpAsText();
+            testRunner.dumpChildFramesAsText();
+            testRunner.dumpResourceLoadCallbacks();
+        }
+    </script>
+</head>
+<body>
+    <p>This tests verifies that 'X-Frame-Options: SAMEORIGIN' blocks
+    sameorigin.com -&gt; crossorigin.com -&gt; sameorigin.com ancestor chains.</p>
+    <p>There should be content in the iframe below, but not in its child frame.</p>
+    <iframe style="width:500px; height:500px" src="http://localhost:8000/security/XFrameOptions/resources/x-frame-options-parent-same-origin-ancestor.html"></iframe>
+</body>
+</html>
