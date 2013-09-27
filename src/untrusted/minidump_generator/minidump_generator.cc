@@ -318,9 +318,32 @@ static bool GetStackEnd(void **stack_end) {
 #endif
 }
 
+static void WriteExceptionList(MinidumpAllocator *minidump_writer,
+                               MDRawDirectory *dirent,
+                               MDLocationDescriptor thread_context) {
+  TypedMDRVA<MDRawExceptionStream> exception(minidump_writer);
+  if (!exception.Allocate())
+    return;
+
+  // TODO(bradnelson): Specify a particular thread once we gather more than the
+  // crashing thread.
+  exception.get()->thread_id = 0;
+  // TODO(bradnelson): Provide information on the type of exception once we
+  // have it. For now report everything as SIGSEGV.
+  exception.get()->exception_record.exception_code =
+      MD_EXCEPTION_CODE_LIN_SIGSEGV;
+  // TODO(bradnelson): Provide the address of the fault, once we have it.
+  exception.get()->exception_record.exception_address = 0;
+  exception.get()->thread_context = thread_context;
+
+  dirent->stream_type = MD_EXCEPTION_STREAM;
+  dirent->location = exception.location();
+}
+
 static void WriteThreadList(MinidumpAllocator *minidump_writer,
                             MDRawDirectory *dirent,
-                            struct NaClExceptionContext *context) {
+                            struct NaClExceptionContext *context,
+                            MDLocationDescriptor *thread_context_out) {
   // This records only the thread that crashed.
   // TODO(mseaborn): Record other threads too.  This will require NaCl
   // to provide an interface for suspending threads.
@@ -332,6 +355,7 @@ static void WriteThreadList(MinidumpAllocator *minidump_writer,
 
   MDRawThread thread = {0};
   ConvertRegisters(minidump_writer, context, &thread);
+  *thread_context_out = thread.thread_context;
 
   // Record the stack contents.
   NaClExceptionPortableContext *pcontext =
@@ -544,7 +568,7 @@ static void WriteModuleList(MinidumpAllocator *minidump_writer,
 
 static void WriteMinidump(MinidumpAllocator *minidump_writer,
                           struct NaClExceptionContext *context) {
-  const int kNumWriters = 3;
+  const int kNumWriters = 4;
   TypedMDRVA<MDRawHeader> header(minidump_writer);
   TypedMDRVA<MDRawDirectory> dir(minidump_writer);
   if (!header.Allocate())
@@ -558,7 +582,10 @@ static void WriteMinidump(MinidumpAllocator *minidump_writer,
   header.get()->stream_directory_rva = dir.position();
 
   int dir_index = 0;
-  WriteThreadList(minidump_writer, &dir.get()[dir_index++], context);
+  MDLocationDescriptor thread_context = {0};
+  WriteThreadList(minidump_writer, &dir.get()[dir_index++], context,
+                  &thread_context);
+  WriteExceptionList(minidump_writer, &dir.get()[dir_index++], thread_context);
   WriteSystemInfo(minidump_writer, &dir.get()[dir_index++], context);
   WriteModuleList(minidump_writer, &dir.get()[dir_index++]);
   assert(dir_index == kNumWriters);
