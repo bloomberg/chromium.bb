@@ -210,18 +210,6 @@ String blockedPluginByContentSecurityPolicyText()
     return String();
 }
 
-// The following two functions are not declared in core/platform/LocalizedStrings.h.
-// They are used by the menu for the HTML keygen tag.
-String keygenMenuHighGradeKeySize()
-{
-    return query(WebLocalizedString::KeygenMenuHighGradeKeySize);
-}
-
-String keygenMenuMediumGradeKeySize()
-{
-    return query(WebLocalizedString::KeygenMenuMediumGradeKeySize);
-}
-
 // Used in ImageDocument.cpp as the title for pages when that page is an image.
 String imageTitle(const String& filename, const IntSize& size)
 {
