@@ -125,6 +125,13 @@ class CGen(object):
       'return': '%s',
       'store': '%s'
     },
+    'mem_ptr_t': {
+      'in': 'const %s',
+      'inout': '%s',
+      'out': '%s',
+      'return': '%s',
+      'store': '%s'
+    },
     'str_t': {
       'in': 'const %s',
       'inout': '%s',
@@ -161,6 +168,7 @@ class CGen(object):
   'double_t': 'double',
   'handle_t': 'int',
   'mem_t': 'void*',
+  'mem_ptr_t': 'void**',
   'str_t': 'char*',
   'cstr_t': 'const char*',
   'interface_t' : 'const void*'

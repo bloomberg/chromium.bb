@@ -15,7 +15,8 @@ from idl_release import IDLReleaseList, IDLReleaseMap
 #
 BuiltIn = set(['int8_t', 'int16_t', 'int32_t', 'int64_t', 'uint8_t',
                'uint16_t', 'uint32_t', 'uint64_t', 'double_t', 'float_t',
-               'handle_t', 'interface_t', 'char', 'mem_t', 'str_t', 'void'])
+               'handle_t', 'interface_t', 'char', 'mem_t', 'mem_ptr_t',
+               'str_t', 'void'])
 
 
 #

@@ -40,6 +40,9 @@ describe {
   /** Pointer to memory (void *). */
   mem_t;
 
+  /** Pointer to pointer to memory (void **). */
+  mem_ptr_t;
+
   /** Pointer to null terminated string (char *). */
   str_t;
 

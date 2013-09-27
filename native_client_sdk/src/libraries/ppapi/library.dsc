@@ -93,6 +93,7 @@
         'ppb_cursor_control_dev.h',
         'ppb_device_ref_dev.h',
         'ppb_file_chooser_dev.h',
+        'ppb_file_io_dev.h',
         'ppb_find_dev.h',
         'ppb_font_dev.h',
         'ppb_gles_chromium_texture_mapping_dev.h',
