@@ -706,7 +706,10 @@ PassRefPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document& docum
     RefPtr<DocumentFragment> taggedFragment = createFragmentFromMarkup(document, taggedMarkup.toString(), baseURL, parserContentPolicy);
     RefPtr<Document> taggedDocument = Document::create();
     taggedDocument->setContextFeatures(document.contextFeatures());
-    taggedDocument->takeAllChildrenFrom(taggedFragment.get());
+
+    // FIXME: It's not clear what this code is trying to do. It puts nodes as direct children of a
+    // Document that are not normally allowed by using the parser machinery.
+    taggedDocument->parserTakeAllChildrenFrom(taggedFragment.get());
 
     RefPtr<Node> nodeBeforeContext;
     RefPtr<Node> nodeAfterContext;
@@ -727,7 +730,7 @@ PassRefPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document& docum
     if (specialCommonAncestor)
         fragment->appendChild(specialCommonAncestor);
     else
-        fragment->takeAllChildrenFrom(toContainerNode(commonAncestor));
+        fragment->parserTakeAllChildrenFrom(toContainerNode(commonAncestor));
 
     trimFragment(fragment.get(), nodeBeforeContext.get(), nodeAfterContext.get());
 

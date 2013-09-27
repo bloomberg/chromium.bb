@@ -134,9 +134,7 @@ static inline void executeTakeAllChildrenTask(HTMLConstructionSiteTask& task)
 {
     ASSERT(task.operation == HTMLConstructionSiteTask::TakeAllChildren);
 
-    task.parent->takeAllChildrenFrom(task.oldParent());
-    // Notice that we don't need to manually attach the moved children
-    // because takeAllChildrenFrom does that work for us.
+    task.parent->parserTakeAllChildrenFrom(task.oldParent());
 }
 
 static inline void executeTask(HTMLConstructionSiteTask& task)

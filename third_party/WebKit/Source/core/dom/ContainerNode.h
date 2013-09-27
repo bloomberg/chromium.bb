@@ -107,9 +107,9 @@ public:
     void parserAppendChild(PassRefPtr<Node>);
     void parserRemoveChild(Node*);
     void parserInsertBefore(PassRefPtr<Node> newChild, Node* refChild);
+    void parserTakeAllChildrenFrom(ContainerNode*);
 
     void removeChildren();
-    void takeAllChildrenFrom(ContainerNode*);
 
     void cloneChildNodes(ContainerNode* clone);
 

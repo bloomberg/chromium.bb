@@ -80,30 +80,10 @@ void ContainerNode::removeDetachedChildren()
     removeDetachedChildrenInContainer<Node, ContainerNode>(this);
 }
 
-void ContainerNode::takeAllChildrenFrom(ContainerNode* oldParent)
+void ContainerNode::parserTakeAllChildrenFrom(ContainerNode* oldParent)
 {
-    NodeVector children;
-    getChildNodes(oldParent, children);
-
-    if (oldParent->document().hasMutationObserversOfType(MutationObserver::ChildList)) {
-        ChildListMutationScope mutation(oldParent);
-        for (unsigned i = 0; i < children.size(); ++i)
-            mutation.willRemoveChild(children[i].get());
-    }
-
-    // FIXME: We need to do notifyMutationObserversNodeWillDetach() for each child,
-    // probably inside removeDetachedChildrenInContainer.
-
-    oldParent->removeDetachedChildren();
-
-    for (unsigned i = 0; i < children.size(); ++i) {
-        if (children[i]->confusingAndOftenMisusedAttached())
-            children[i]->detach();
-        // FIXME: We need a no mutation event version of adoptNode.
-        RefPtr<Node> child = document().adoptNode(children[i].release(), ASSERT_NO_EXCEPTION);
-        // FIXME: Together with adoptNode above, the tree scope might get updated recursively twice
-        // (if the document changed or oldParent was in a shadow tree, AND *this is in a shadow tree).
-        // Can we do better?
+    while (RefPtr<Node> child = oldParent->firstChild()) {
+        oldParent->parserRemoveChild(child.get());
         treeScope().adoptIfNeeded(child.get());
         parserAppendChild(child.get());
     }
