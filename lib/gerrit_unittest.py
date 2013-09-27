@@ -116,36 +116,6 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     self.assertEqual(len(changes), 550)
 
   @unittest.skip('Not yet ported to gerrit-on-borg.')
-  def testIsChangeCommitted(self):
-    """Tests that we can parse a json to check if a change is committed."""
-    changeid = 'Ia6e663415c004bdaa77101a7e3258657598b0468'
-    changeid_bad = 'I97663415c004bdaa77101a7e3258657598b0468'
-    fake_result_from_gerrit = self.mox.CreateMock(cros_build_lib.CommandResult)
-    fake_result_from_gerrit.output = self.merged_change
-    fake_bad_result_from_gerrit = self.mox.CreateMock(
-        cros_build_lib.CommandResult)
-    fake_bad_result_from_gerrit.output = self.no_results
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    cros_build_lib.RunCommand(mox.In('change:%s' % changeid),
-                              redirect_stdout=True).AndReturn(
-                                  fake_result_from_gerrit)
-    cros_build_lib.RunCommand(mox.In('change:%s' % changeid_bad),
-                              redirect_stdout=True).AndReturn(
-                                  fake_bad_result_from_gerrit)
-    self.mox.ReplayAll()
-    helper = self._GetHelper()
-    self.assertTrue(helper.IsChangeCommitted(changeid))
-    self.assertFalse(helper.IsChangeCommitted(changeid_bad, must_match=False))
-    self.mox.VerifyAll()
-
-  @unittest.skip('Not yet ported to gerrit-on-borg.')
-  def testCanRunIsChangeCommand(self):
-    """Sanity test for IsChangeCommitted to make sure it works."""
-    changeid = 'Ia6e663415c004bdaa77101a7e3258657598b0468'
-    helper = self._GetHelper()
-    self.assertTrue(helper.IsChangeCommitted(changeid))
-
-  @unittest.skip('Not yet ported to gerrit-on-borg.')
   def testGetLatestSHA1ForBranch(self):
     """Verifies we can return the correct sha1 from mock data."""
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommandWithRetries')

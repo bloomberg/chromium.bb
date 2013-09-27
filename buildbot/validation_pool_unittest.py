@@ -669,11 +669,7 @@ class TestCoreLogic(MoxBase):
     pool._patch_series.CreateDisjointTransactions(patches
         ).AndReturn(([[patch2, patch1, patch3]], []))
 
-    self.mox.StubOutWithMock(gerrit.GerritOnBorgHelper, 'IsChangeCommitted')
-
-    pool._SubmitChange(patch2).AndReturn(None)
-    gerrit.GerritOnBorgHelper.IsChangeCommitted(
-        str(patch2.gerrit_number), False).InAnyOrder().AndReturn(False)
+    pool._SubmitChange(patch2).AndReturn(False)
 
     pool._HandleCouldNotSubmit(patch1).InAnyOrder()
     pool._HandleCouldNotSubmit(patch2).InAnyOrder()
@@ -702,12 +698,8 @@ class TestCoreLogic(MoxBase):
     pool._patch_series.CreateDisjointTransactions(passed
         ).AndReturn(([passed], []))
 
-    self.mox.StubOutWithMock(gerrit.GerritOnBorgHelper, 'IsChangeCommitted')
-
     for patch in passed:
-      pool._SubmitChange(patch).AndReturn(None)
-      gerrit.GerritOnBorgHelper.IsChangeCommitted(
-          str(patch.gerrit_number), False).AndReturn(True)
+      pool._SubmitChange(patch).AndReturn(True)
 
     pool._HandleApplyFailure(failed)
 
@@ -731,15 +723,8 @@ class TestCoreLogic(MoxBase):
     pool._patch_series.CreateDisjointTransactions(passed
         ).AndReturn(([passed], []))
 
-    self.mox.StubOutWithMock(gerrit.GerritOnBorgHelper, 'IsChangeCommitted')
-
-    pool._SubmitChange(patch1).AndReturn(None)
-    gerrit.GerritOnBorgHelper.IsChangeCommitted(
-        str(patch1.gerrit_number), False).AndReturn(True)
-
-    pool._SubmitChange(patch2).AndReturn(None)
-    gerrit.GerritOnBorgHelper.IsChangeCommitted(
-        str(patch2.gerrit_number), False).AndReturn(True)
+    pool._SubmitChange(patch1).AndReturn(True)
+    pool._SubmitChange(patch2).AndReturn(True)
 
     cros_build_lib.TreeOpen(
         validation_pool.ValidationPool.STATUS_URL,
@@ -1208,7 +1193,8 @@ class SubmitPoolTest(MockCreateDisjointTransactions,
   """Test full ability to submit and reject CL pools."""
 
   def setUp(self):
-    self.PatchObject(gerrit.GerritOnBorgHelper, 'IsChangeCommitted')
+    self.PatchObject(gerrit.GerritOnBorgHelper, 'SubmitChange')
+    self.PatchObject(gerrit.GerritOnBorgHelper, 'QuerySingleRecord')
 
   def testSubmitPool(self):
     """Test that we can submit a pool successfully."""

@@ -1477,15 +1477,8 @@ class ValidationPool(object):
       for change in plan:
         was_change_submitted = False
         if submit_changes:
-          logging.info('Change %s will be submitted', change)
-          was_change_submitted = False
-          try:
-            self._SubmitChange(change)
-            was_change_submitted = self._IsChangeCommitted(change)
-          except gob_util.GOBError as e:
-            logging.error('Communication with gerrit server failed: %r', e)
+          was_change_submitted = self._SubmitChange(change)
           submitted_changes += int(was_change_submitted)
-
         if not was_change_submitted and not self.dryrun:
           changes_that_failed_to_submit.append(change)
           submit_changes = False
@@ -1527,24 +1520,25 @@ class ValidationPool(object):
     return ([x[1] for x in int_pool.QueryMultipleCurrentPatchset(int_numbers)] +
             [x[1] for x in ext_pool.QueryMultipleCurrentPatchset(ext_numbers)])
 
-  def _IsChangeCommitted(self, change, default=None):
-    """Return whether |change| was committed.
-
-    If an error occurs, return |default|.
-    """
-    try:
-      return self._helper_pool.ForChange(
-          change).IsChangeCommitted(str(change.gerrit_number),
-                                    self.dryrun)
-    except cros_build_lib.RunCommandError:
-      logging.error('Could not determine whether %s was committed.', change,
-                    exc_info=True)
-      return default
-
   def _SubmitChange(self, change):
     """Submits patch using Gerrit Review."""
-    self._helper_pool.ForChange(change).SubmitChange(
-        change, dryrun=self.dryrun)
+    logging.info('Change %s will be submitted', change)
+    was_change_submitted = False
+    try:
+      helper = self._helper_pool.ForChange(change)
+      helper.SubmitChange(change, dryrun=self.dryrun)
+      updated_change = helper.QuerySingleRecord(change.gerrit_number)
+      was_change_submitted = (updated_change.status == 'MERGED')
+      if not was_change_submitted:
+        logging.warning(
+            'Change %s was successfully submitted, but has status "%s"',
+            change.gerrit_number_str, updated_change.status)
+    except gerrit.GerritException as e:
+      logging.error('Could not query gerrit for status of patch %s:\n%r',
+                    change.gerrit_number_str, e)
+    except gob_util.GOBError as e:
+      logging.error('Communication with gerrit server failed: %r', e)
+    return was_change_submitted
 
   def RemoveCommitReady(self, change):
     """Remove the commit ready bit for the specified |change|."""
