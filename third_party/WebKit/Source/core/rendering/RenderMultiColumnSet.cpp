@@ -415,13 +415,24 @@ void RenderMultiColumnSet::repaintFlowThreadContent(const LayoutRect& repaintRec
 
 void RenderMultiColumnSet::collectLayerFragments(LayerFragments& fragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect)
 {
-    // Put the layer bounds into flow thread-local coordinates by flipping it first.
+    // The two rectangles passed to this method are physical, except that we pretend that there's
+    // only one long column (that's how a flow thread works).
+    //
+    // Then there's the output from this method - the stuff we put into the list of fragments. The
+    // fragment.paginationOffset point is the actual physical translation required to get from a
+    // location in the flow thread to a location in a given column. The fragment.paginationClip
+    // rectangle, on the other hand, is in the same coordinate system as the two rectangles passed
+    // to this method (flow thread coordinates).
+    //
+    // All other rectangles in this method are sized physically, and the inline direction coordinate
+    // is physical too, but the block direction coordinate is "logical top". This is the same as
+    // e.g. RenderBox::frameRect(). These rectangles also pretend that there's only one long column,
+    // i.e. they are for the flow thread.
+
+    // Put the layer bounds into flow thread-local coordinates by flipping it first. Since we're in
+    // a renderer, most rectangles are represented this way.
     LayoutRect layerBoundsInFlowThread(layerBoundingBox);
     flowThread()->flipForWritingMode(layerBoundsInFlowThread);
-
-    // Do the same for the dirty rect.
-    LayoutRect dirtyRectInFlowThread(dirtyRect);
-    flowThread()->flipForWritingMode(dirtyRectInFlowThread);
 
     // Now we can compare with the flow thread portions owned by each column. First let's
     // see if the rect intersects our flow thread portion at all.
@@ -474,11 +485,11 @@ void RenderMultiColumnSet::collectLayerFragments(LayerFragments& fragments, cons
         // multicolumn block as well. This won't be an issue until we start creating multiple multicolumn sets.
 
         // Shift the dirty rect to be in flow thread coordinates with this translation applied.
-        LayoutRect translatedDirtyRect(dirtyRectInFlowThread);
+        LayoutRect translatedDirtyRect(dirtyRect);
         translatedDirtyRect.moveBy(-translationOffset);
 
         // See if we intersect the dirty rect.
-        clippedRect = layerBoundsInFlowThread;
+        clippedRect = layerBoundingBox;
         clippedRect.intersect(translatedDirtyRect);
         if (clippedRect.isEmpty())
             continue;
@@ -489,7 +500,8 @@ void RenderMultiColumnSet::collectLayerFragments(LayerFragments& fragments, cons
         fragment.paginationOffset = translationOffset;
 
         LayoutRect flippedFlowThreadOverflowPortion(flowThreadOverflowPortion);
-        flipForWritingMode(flippedFlowThreadOverflowPortion);
+        // Flip it into more a physical (RenderLayer-style) rectangle.
+        flowThread()->flipForWritingMode(flippedFlowThreadOverflowPortion);
         fragment.paginationClip = flippedFlowThreadOverflowPortion;
         fragments.append(fragment);
     }
