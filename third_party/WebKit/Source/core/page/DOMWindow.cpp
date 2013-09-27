@@ -44,7 +44,6 @@
 #include "core/css/MediaQueryMatcher.h"
 #include "core/css/StyleMedia.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/dom/DeviceOrientationController.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/events/EventListener.h"
@@ -95,6 +94,7 @@
 #include "core/storage/Storage.h"
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
+#include "modules/device_orientation/NewDeviceOrientationController.h"
 #include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityPolicy.h"
@@ -434,8 +434,8 @@ void DOMWindow::willDetachPage()
     InspectorInstrumentation::frameWindowDiscarded(m_frame, this);
     // FIXME: Once DeviceOrientationController is a ScriptExecutionContext
     // Supplement, this will no longer be needed.
-    if (DeviceOrientationController* controller = DeviceOrientationController::from(page()))
-        controller->removeAllDeviceEventListeners(this);
+    if (NewDeviceOrientationController* controller = NewDeviceOrientationController::from(document()))
+        controller->stopUpdating();
 }
 
 void DOMWindow::willDestroyDocumentInFrame()
@@ -1432,8 +1432,8 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
             UseCounter::count(this, UseCounter::SubFrameBeforeUnloadRegistered);
         }
     } else if (eventType == eventNames().deviceorientationEvent && RuntimeEnabledFeatures::deviceOrientationEnabled()) {
-        if (DeviceOrientationController* controller = DeviceOrientationController::from(page()))
-            controller->addDeviceEventListener(this);
+        if (NewDeviceOrientationController* controller = NewDeviceOrientationController::from(document()))
+            controller->startUpdating();
     }
 
     return true;
@@ -1456,8 +1456,8 @@ bool DOMWindow::removeEventListener(const AtomicString& eventType, EventListener
     } else if (eventType == eventNames().beforeunloadEvent && allowsBeforeUnloadListeners(this)) {
         removeBeforeUnloadEventListener(this);
     } else if (eventType == eventNames().deviceorientationEvent) {
-        if (DeviceOrientationController* controller = DeviceOrientationController::from(page()))
-            controller->removeDeviceEventListener(this);
+        if (NewDeviceOrientationController* controller = NewDeviceOrientationController::from(document()))
+            controller->stopUpdating();
     }
 
     return true;
@@ -1511,8 +1511,8 @@ void DOMWindow::removeAllEventListeners()
 
     lifecycleNotifier()->notifyRemoveAllEventListeners(this);
 
-    if (DeviceOrientationController* controller = DeviceOrientationController::from(page()))
-        controller->removeAllDeviceEventListeners(this);
+    if (NewDeviceOrientationController* controller = NewDeviceOrientationController::from(document()))
+        controller->stopUpdating();
     if (Document* document = this->document())
         document->didRemoveEventTargetNode(document);
 

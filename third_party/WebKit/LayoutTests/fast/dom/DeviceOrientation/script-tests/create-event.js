@@ -10,6 +10,7 @@ shouldBeTrue("'cancelable' in event");
 shouldBeTrue("'alpha' in event");
 shouldBeTrue("'beta' in event");
 shouldBeTrue("'gamma' in event");
+shouldBeTrue("'absolute' in event");
 
 shouldBeTrue("typeof event.type == 'string'");
 shouldBeTrue("typeof event.bubbles == 'boolean'");
@@ -17,3 +18,4 @@ shouldBeTrue("typeof event.cancelable == 'boolean'");
 shouldBeTrue("typeof event.alpha == 'object'");
 shouldBeTrue("typeof event.beta == 'object'");
 shouldBeTrue("typeof event.gamma == 'object'");
+shouldBeTrue("typeof event.absolute == 'object'");
