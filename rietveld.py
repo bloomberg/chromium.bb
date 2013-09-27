@@ -257,7 +257,7 @@ class Rietveld(object):
     return self.post('/%d/edit_flags' % issue, [
         ('last_patchset', str(patchset)),
         ('xsrf_token', self.xsrf_token()),
-        (flag, value)])
+        (flag, str(value))])
 
   def search(
       self,
