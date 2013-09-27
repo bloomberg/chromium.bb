@@ -138,7 +138,8 @@ void NetworkStateHandler::SetTechnologyEnabled(
 const DeviceState* NetworkStateHandler::GetDeviceState(
     const std::string& device_path) const {
   const DeviceState* device = GetModifiableDeviceState(device_path);
-  DCHECK(!device || device->update_received());
+  if (device && !device->update_received())
+    return NULL;
   return device;
 }
 
@@ -172,7 +173,8 @@ bool NetworkStateHandler::GetScanningByType(
 const NetworkState* NetworkStateHandler::GetNetworkState(
     const std::string& service_path) const {
   const NetworkState* network = GetModifiableNetworkState(service_path);
-  DCHECK(!network || network->update_received());
+  if (network && !network->update_received())
+    return NULL;
   return network;
 }
 
@@ -312,7 +314,8 @@ const FavoriteState* NetworkStateHandler::GetFavoriteState(
       GetModifiableManagedState(&favorite_list_, service_path);
   if (!managed)
     return NULL;
-  DCHECK(managed->update_received());
+  if (managed && !managed->update_received())
+    return NULL;
   return managed->AsFavoriteState();
 }
 
@@ -495,8 +498,9 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
   // Update any associated FavoriteState.
   ManagedState* favorite =
       GetModifiableManagedState(&favorite_list_, service_path);
+  bool changed = false;
   if (favorite)
-    favorite->PropertyChanged(key, value);
+    changed |= favorite->PropertyChanged(key, value);
 
   // Update the NetworkState.
   NetworkState* network = GetModifiableNetworkState(service_path);
@@ -504,7 +508,8 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
     return;
   std::string prev_connection_state = network->connection_state();
   std::string prev_profile_path = network->profile_path();
-  if (!network->PropertyChanged(key, value))
+  changed |= network->PropertyChanged(key, value);
+  if (!changed)
     return;
 
   if (key == shill::kStateProperty) {

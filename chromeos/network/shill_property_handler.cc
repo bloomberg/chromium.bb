@@ -465,7 +465,6 @@ void ShillPropertyHandler::GetPropertiesCallback(
                   base::StringPrintf("%s: %d", path.c_str(), call_status));
     return;
   }
-  listener_->UpdateManagedStateProperties(type, path, properties);
   // Update Favorite properties for networks in the Services list.
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
     // Only networks with a ProfilePath set are Favorites.
@@ -477,6 +476,7 @@ void ShillPropertyHandler::GetPropertiesCallback(
           ManagedState::MANAGED_TYPE_FAVORITE, path, properties);
     }
   }
+  listener_->UpdateManagedStateProperties(type, path, properties);
   // Request IPConfig parameters for networks.
   if (type == ManagedState::MANAGED_TYPE_NETWORK &&
       properties.HasKey(shill::kIPConfigProperty)) {
