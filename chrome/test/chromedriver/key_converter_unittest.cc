@@ -236,7 +236,14 @@ TEST(KeyConverter, ToggleModifiers) {
   CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
 }
 
-TEST(KeyConverter, AllShorthandKeys) {
+#if defined(OS_WIN)
+// https://code.google.com/p/chromedriver/issues/detail?id=546
+#define MAYBE_AllShorthandKeys DISABLED_AllShorthandKeys
+#else
+#define MAYBE_AllShorthandKeys AllShorthandKeys
+#endif
+
+TEST(KeyConverter, MAYBE_AllShorthandKeys) {
   KeyEvent event_array[] = {
       CreateKeyDownEvent(ui::VKEY_RETURN, 0),
       CreateCharEvent("\r", "\r", 0),
@@ -313,8 +320,9 @@ TEST(KeyConverter, AllEnglishKeyboardTextChars) {
   }
 }
 
-#if defined(OS_LINUX)
-// Fails on bots: crbug.com/174962
+#if defined(OS_LINUX) || defined(OS_WIN)
+// https://code.google.com/p/chromedriver/issues/detail?id=240
+// https://code.google.com/p/chromedriver/issues/detail?id=546
 #define MAYBE_AllSpecialWebDriverKeysOnEnglishKeyboard \
     DISABLED_AllSpecialWebDriverKeysOnEnglishKeyboard
 #else
