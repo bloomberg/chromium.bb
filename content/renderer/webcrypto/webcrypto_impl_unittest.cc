@@ -59,7 +59,7 @@ class WebCryptoImplTest : public testing::Test {
     std::vector<uint8> key_raw = HexStringToBytes(key_hex);
 
     EXPECT_TRUE(crypto_.ImportKeyInternal(WebKit::WebCryptoKeyFormatRaw,
-                                          key_raw.data(),
+                                          &key_raw[0],
                                           key_raw.size(),
                                           algorithm,
                                           usage,
@@ -202,7 +202,7 @@ TEST_F(WebCryptoImplTest, DigestSampleSets) {
     std::vector<uint8> input = HexStringToBytes(test.hex_input);
 
     WebKit::WebArrayBuffer output;
-    ASSERT_TRUE(DigestInternal(algorithm, input.data(), input.size(), &output));
+    ASSERT_TRUE(DigestInternal(algorithm, &input[0], input.size(), &output));
     ExpectArrayBufferMatchesHex(test.hex_result, output);
   }
 }
@@ -310,7 +310,7 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
     WebKit::WebArrayBuffer output;
 
     ASSERT_TRUE(SignInternal(
-        algorithm, key, message_raw.data(), message_raw.size(), &output));
+        algorithm, key, &message_raw[0], message_raw.size(), &output));
 
     ExpectArrayBufferMatchesHex(test.mac, output);
 
@@ -320,7 +320,7 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
         key,
         static_cast<const unsigned char*>(output.data()),
         output.byteLength(),
-        message_raw.data(),
+        &message_raw[0],
         message_raw.size(),
         &signature_match));
     EXPECT_TRUE(signature_match);
@@ -331,7 +331,7 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
         key,
         static_cast<const unsigned char*>(output.data()),
         output.byteLength() - 1,
-        message_raw.data(),
+        &message_raw[0],
         message_raw.size(),
         &signature_match));
     EXPECT_FALSE(signature_match);
@@ -343,7 +343,7 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
         key,
         kLongSignature,
         sizeof(kLongSignature),
-        message_raw.data(),
+        &message_raw[0],
         message_raw.size(),
         &signature_match));
     EXPECT_FALSE(signature_match);
