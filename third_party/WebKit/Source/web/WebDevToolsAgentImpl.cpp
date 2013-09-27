@@ -614,6 +614,8 @@ void WebDevToolsAgentImpl::setTraceEventCallback(TraceEventCallback callback)
 
 void WebDevToolsAgentImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)
 {
+    // Emulate attach for protocol tests.
+    m_attached = true;
     WebKeyboardEvent webEvent = WebKeyboardEventBuilder(event);
     if (!webEvent.keyIdentifier[0] && webEvent.type != WebInputEvent::Char)
         webEvent.setKeyIdentifierFromWindowsKeyCode();
@@ -622,6 +624,8 @@ void WebDevToolsAgentImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)
 
 void WebDevToolsAgentImpl::dispatchMouseEvent(const PlatformMouseEvent& event)
 {
+    // Emulate attach for protocol tests.
+    m_attached = true;
     WebMouseEvent webEvent = WebMouseEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), event);
     m_webViewImpl->handleInputEvent(webEvent);
 }

@@ -1143,6 +1143,7 @@ void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, SearchMode
 {
     if (m_searchingForNode == searchMode)
         return;
+
     m_searchingForNode = searchMode;
     m_overlay->setInspectModeEnabled(searchMode != NotSearching);
     if (searchMode != NotSearching) {
@@ -1178,6 +1179,8 @@ PassOwnPtr<HighlightConfig> InspectorDOMAgent::highlightConfigFromInspectorObjec
 
 void InspectorDOMAgent::setInspectModeEnabled(ErrorString* errorString, bool enabled, const bool* inspectShadowDOM, const RefPtr<JSONObject>* highlightConfig)
 {
+    if (enabled && !pushDocumentUponHandlelessOperation(errorString))
+        return;
     SearchMode searchMode = enabled ? (inspectShadowDOM && *inspectShadowDOM ? SearchingForShadow : SearchingForNormal) : NotSearching;
     setSearchingForNode(errorString, searchMode, highlightConfig ? highlightConfig->get() : 0);
 }
@@ -1375,13 +1378,8 @@ void InspectorDOMAgent::getBoxModel(ErrorString* errorString, int nodeId, RefPtr
 
 void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int y, int* nodeId)
 {
-    // This call operates no handles, it could emerge before getDocument.
-    if (!m_documentNodeToIdMap.contains(m_document)) {
-        RefPtr<TypeBuilder::DOM::Node> root;
-        getDocument(errorString, root);
-        if (!errorString->isEmpty())
-            return;
-    }
+    if (!pushDocumentUponHandlelessOperation(errorString))
+        return;
 
     Node* node = hoveredNodeForPoint(m_document->frame(), IntPoint(x, y), false);
     if (!node) {
@@ -2010,6 +2008,16 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(No
         return 0;
 
     return injectedScript.wrapNode(node, objectGroup);
+}
+
+bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorString)
+{
+    if (!m_documentNodeToIdMap.contains(m_document)) {
+        RefPtr<TypeBuilder::DOM::Node> root;
+        getDocument(errorString, root);
+        return errorString->isEmpty();
+    }
+    return true;
 }
 
 } // namespace WebCore

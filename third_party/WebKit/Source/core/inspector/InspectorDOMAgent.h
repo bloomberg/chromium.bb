@@ -246,6 +246,8 @@ private:
 
     void innerHighlightQuad(PassOwnPtr<FloatQuad>, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor);
 
+    bool pushDocumentUponHandlelessOperation(ErrorString*);
+
     InspectorPageAgent* m_pageAgent;
     InjectedScriptManager* m_injectedScriptManager;
     InspectorOverlay* m_overlay;
