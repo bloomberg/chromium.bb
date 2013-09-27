@@ -259,6 +259,7 @@ bool HTMLFormElement::validateInteractively(Event* event)
 
 bool HTMLFormElement::prepareForSubmission(Event* event)
 {
+    RefPtr<HTMLFormElement> protector(this);
     Frame* frame = document().frame();
     if (m_isSubmittingOrPreparingForSubmission || !frame)
         return m_isSubmittingOrPreparingForSubmission;
