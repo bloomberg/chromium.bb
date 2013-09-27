@@ -135,7 +135,11 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
         const BasicShapeCircle* circle = static_cast<const BasicShapeCircle*>(basicShape);
         float centerX = floatValueForLength(circle->centerX(), boxWidth);
         float centerY = floatValueForLength(circle->centerY(), boxHeight);
-        float radius = floatValueForLength(circle->radius(), std::min(boxHeight, boxWidth));
+        // This method of computing the radius is as defined in SVG
+        // (http://www.w3.org/TR/SVG/coords.html#Units). It bases the radius
+        // off of the diagonal of the box and ensures that if the box is
+        // square, the radius is equal to half the diagonal.
+        float radius = floatValueForLength(circle->radius(), sqrtf((boxWidth * boxWidth + boxHeight * boxHeight) / 2));
         FloatPoint logicalCenter = physicalPointToLogical(FloatPoint(centerX, centerY), logicalBoxSize.height(), writingMode);
 
         shape = createCircleShape(logicalCenter, radius);
