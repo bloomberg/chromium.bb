@@ -62,12 +62,43 @@ function declareTests(tester) {
       '(has pnacl-translate).');
 }
 
+// Test that when a surfaway causes the plugin to be destroyed, the PnaclHost
+// receives a TranslationFinished message and clears its state so subsequent
+// translations do not get blocked.
+function surfawayTest(tester) {
+  tester.addAsyncTest('surfaway', function(test) {
+    var progress_event_count = 0;
+    var module = createModule('surfaway', 'simple.nmf', 'application/x-pnacl');
+    var f = function(e) {
+      progress_event_count += 1;
+      if (progress_event_count < 2) {
+        // The first 'progress' event indicates that we read the manifest and
+        // got a nexe URL. The actual translation has not started until the
+        // second event. On the first call, just re-hook to catch the next event
+        test.expectEvent(module, 'progress', f);
+      } else {
+        // Removing the embed will shutdown the plugin, and adding it will
+        // re-create it and start a new translation
+        removeModule(module);
+        addModule(module);
+      }
+    }
+    test.expectEvent(module, 'progress', f);
+    test.expectEvent(module, 'load', function(e) {
+      test.assertEqual(progress_event_count, 2);
+      removeModule(module);
+      test.pass();
+    });
+    addModule(module);
+  });
+}
 
 // The driver invoked when the body has finished loading.
 function runTests() {
   var tester = new Tester($('body'));
   tester.loadErrorsAreOK();
   declareTests(tester);
+  surfawayTest(tester);
   tester.run();
 }
 //]]>

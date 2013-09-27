@@ -251,6 +251,7 @@ PnaclCoordinator::PnaclCoordinator(
   : translate_finish_error_(PP_OK),
     plugin_(plugin),
     translate_notify_callback_(translate_notify_callback),
+    translation_finished_reported_(false),
     manifest_(new PnaclManifest()),
     pexe_url_(pexe_url),
     pnacl_options_(pnacl_options),
@@ -277,6 +278,11 @@ PnaclCoordinator::~PnaclCoordinator() {
   // translation_complete_callback_, so no notification will be delivered.
   if (translate_thread_.get() != NULL) {
     translate_thread_->AbortSubprocesses();
+  }
+  if (!translation_finished_reported_) {
+    plugin_->nacl_interface()->ReportTranslationFinished(
+        plugin_->pp_instance(),
+        PP_FALSE);
   }
 }
 
@@ -315,6 +321,10 @@ void PnaclCoordinator::ExitWithError() {
   callback_factory_.CancelAll();
   if (!error_already_reported_) {
     error_already_reported_ = true;
+    translation_finished_reported_ = true;
+    plugin_->nacl_interface()->ReportTranslationFinished(
+        plugin_->pp_instance(),
+        PP_FALSE);
     translate_notify_callback_.Run(PP_ERROR_FAILED);
   } else {
     PLUGIN_PRINTF(("PnaclCoordinator::ExitWithError an earlier error was "
@@ -329,9 +339,6 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   // Bail out if there was an earlier error (e.g., pexe load failure),
   // or if there is an error from the translation thread.
   if (translate_finish_error_ != PP_OK || pp_error != PP_OK) {
-    plugin_->nacl_interface()->ReportTranslationFinished(
-        plugin_->pp_instance(),
-        PP_FALSE);
     ExitWithError();
     return;
   }
@@ -389,6 +396,7 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
 
   // Report to the browser that translation finished. The browser will take
   // care of storing the nexe in the cache.
+  translation_finished_reported_ = true;
   plugin_->nacl_interface()->ReportTranslationFinished(
       plugin_->pp_instance(), PP_TRUE);
 
@@ -505,8 +513,6 @@ void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
   nacl::string headers = streaming_downloader_->GetResponseHeaders();
   NaClHttpResponseHeaders parser;
   parser.Parse(headers);
-  // TODO(dschuff): honor parser.CacheControlNoStore(). It wasn't handled in
-  // the new cache case before.
 
   temp_nexe_file_.reset(new TempFile(plugin_));
   pp::CompletionCallback cb =
@@ -596,9 +602,6 @@ void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
       ss << "PnaclCoordinator: pexe load failed (pp_error=" << pp_error << ").";
       error_info_.SetReport(ERROR_PNACL_PEXE_FETCH_OTHER, ss.str());
     }
-    plugin_->nacl_interface()->ReportTranslationFinished(
-        plugin_->pp_instance(),
-        PP_FALSE);
     translate_thread_->AbortSubprocesses();
   } else {
     // Compare download completion pct (100% now), to compile completion pct.
@@ -673,9 +676,6 @@ void PnaclCoordinator::ObjectFileDidOpen(int32_t pp_error) {
     ReportPpapiError(ERROR_PNACL_CREATE_TEMP,
                      pp_error,
                      "Failed to open scratch object file.");
-    plugin_->nacl_interface()->ReportTranslationFinished(
-        plugin_->pp_instance(),
-        PP_FALSE);
     return;
   }
   // Open the nexe file for connecting ld and sel_ldr.

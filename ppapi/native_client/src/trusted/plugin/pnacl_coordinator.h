@@ -185,6 +185,12 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   Plugin* plugin_;
 
   pp::CompletionCallback translate_notify_callback_;
+  // Set to true when the translation (if applicable) is finished and the nexe
+  // file is loaded, (or when there was an error), and the browser has been
+  // notified via ReportTranslationFinished. If it is not set before
+  // plugin/coordinator destruction, the destructor will call
+  // ReportTranslationFinished.
+  bool translation_finished_reported_;
   // Threadsafety is required to support file lookups.
   pp::CompletionCallbackFactory<PnaclCoordinator,
                                 pp::ThreadSafeThreadTraits> callback_factory_;
