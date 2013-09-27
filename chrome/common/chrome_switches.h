@@ -191,6 +191,7 @@ extern const char kEnableMemoryInfo[];
 extern const char kEnableMetricsReportingForTesting[];
 extern const char kEnableNaCl[];
 extern const char kEnableNetBenchmarking[];
+extern const char kEnableNetworkTime[];
 extern const char kEnableNpn[];
 extern const char kEnableNpnHttpOnly[];
 extern const char kEnableOmniboxAutoCompletionForIme[];

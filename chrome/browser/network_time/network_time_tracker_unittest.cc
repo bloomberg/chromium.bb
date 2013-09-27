@@ -1,6 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "chrome/browser/network_time/network_time_tracker.h"
 
 #include <math.h>
 
@@ -8,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/net/network_time_tracker.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/network_time_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"

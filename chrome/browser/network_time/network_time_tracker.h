@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_NETWORK_TIME_TRACKER_H_
-#define CHROME_BROWSER_NET_NETWORK_TIME_TRACKER_H_
+#ifndef CHROME_BROWSER_NETWORK_TIME_NETWORK_TIME_TRACKER_H_
+#define CHROME_BROWSER_NETWORK_TIME_NETWORK_TIME_TRACKER_H_
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -39,6 +39,16 @@ class NetworkTimeTracker {
   // Starts tracking network time.
   void Start();
 
+  struct TimeMapping {
+    TimeMapping(base::Time local_time, base::Time network_time);
+    base::Time local_time;
+    base::Time network_time;
+  };
+
+  // Initializes from saved times to be able to compute network time before
+  // receiving accurate time from HTTP response.
+  void InitFromSavedTime(const TimeMapping& saved);
+
   // Returns the network time corresponding to |time_ticks| if network time
   // is available. Returns false if no network time is available yet. Can also
   // return the error range if |uncertainty| isn't NULL.
@@ -50,6 +60,10 @@ class NetworkTimeTracker {
   // This method must be called on the UI thread, while the callback can be
   // called from any thread.
   static UpdateCallback BuildNotifierUpdateCallback();
+
+  bool received_network_time() const {
+    return received_network_time_;
+  }
 
  private:
   friend class NetworkTimeTrackerTest;
@@ -78,7 +92,9 @@ class NetworkTimeTracker {
 
   base::ThreadChecker thread_checker_;
 
+  bool received_network_time_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkTimeTracker);
 };
 
-#endif  // CHROME_BROWSER_NET_NETWORK_TIME_TRACKER_H_
+#endif  // CHROME_BROWSER_NETWORK_TIME_NETWORK_TIME_TRACKER_H_

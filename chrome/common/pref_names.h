@@ -920,6 +920,8 @@ extern const char kWatchdogExtensionActive[];
 
 extern const char kProfilePreferenceHashes[];
 
+extern const char kNetworkTimeMapping[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

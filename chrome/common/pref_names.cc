@@ -2513,4 +2513,8 @@ const char kWatchdogExtensionActive[] =
 // of Chrome.
 const char kProfilePreferenceHashes[] = "profile.preference_hashes";
 
+// Stores a pair of local time and corresponding network time to bootstrap
+// network time tracker when browser starts.
+const char kNetworkTimeMapping[] = "profile.network_time_mapping";
+
 }  // namespace prefs

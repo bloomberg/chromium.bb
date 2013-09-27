@@ -4,6 +4,8 @@
 
 #include "chrome/browser/network_time/navigation_time_helper.h"
 
+#include "chrome/browser/network_time/network_time_service.h"
+#include "chrome/browser/network_time/network_time_service_factory.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -68,6 +70,8 @@ void NavigationTimeHelper::Observe(
 }
 
 base::Time NavigationTimeHelper::GetNetworkTime(base::Time local_time) {
-  // TODO(haitaol): calculate network time based on local_time.
-  return local_time;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  return NetworkTimeServiceFactory::GetForProfile(profile)->
+      GetNetworkTime(local_time);
 }

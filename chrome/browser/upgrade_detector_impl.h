@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/net/network_time_tracker.h"
+#include "chrome/browser/network_time/network_time_tracker.h"
 #include "chrome/browser/upgrade_detector.h"
 
 template <typename T> struct DefaultSingletonTraits;

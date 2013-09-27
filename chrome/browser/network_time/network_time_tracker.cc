@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/network_time_tracker.h"
+#include "chrome/browser/network_time/network_time_tracker.h"
 
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/browser_process.h"
@@ -84,8 +84,14 @@ void OnNetworkTimeUpdatedOnIOThread(
 
 }  // namespace
 
+NetworkTimeTracker::TimeMapping::TimeMapping(base::Time local_time,
+                                             base::Time network_time)
+    : local_time(local_time),
+      network_time(network_time) {}
+
 NetworkTimeTracker::NetworkTimeTracker()
-    : weak_ptr_factory_(this) {
+    : weak_ptr_factory_(this),
+      received_network_time_(false) {
 }
 
 NetworkTimeTracker::~NetworkTimeTracker() {
@@ -98,6 +104,22 @@ void NetworkTimeTracker::Start() {
       FROM_HERE,
       base::Bind(&RegisterObserverOnUIThread,
                  BuildObserverCallback()));
+}
+
+void NetworkTimeTracker::InitFromSavedTime(const TimeMapping& saved) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!network_time_.is_null() || saved.local_time.is_null() ||
+      saved.network_time.is_null())
+    return;
+
+  base::Time local_time_now = base::Time::Now();
+  if (local_time_now < saved.local_time) {
+    DLOG(WARNING) << "Can't initialize because clock skew has changed.";
+    return;
+  }
+
+  network_time_ = saved.network_time + (local_time_now - saved.local_time);
+  network_time_ticks_ = base::TimeTicks::Now();
 }
 
 bool NetworkTimeTracker::GetNetworkTime(const base::TimeTicks& time_ticks,
@@ -141,5 +163,6 @@ void NetworkTimeTracker::OnNetworkTimeUpdate(
   network_time_ = network_time;
   network_time_ticks_ = network_time_ticks;
   network_time_uncertainty_ = network_time_uncertainty;
+  received_network_time_ = true;
 }
 
