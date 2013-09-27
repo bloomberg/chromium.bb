@@ -2241,7 +2241,7 @@ def CMDformat(parser, args):
                             'clang-format-diff.py')
     if not os.path.exists(cfd_path):
       DieWithError('Could not find clang-format-diff at %s.' % cfd_path)
-    cmd = [sys.executable, cfd_path, '-style', 'Chromium']
+    cmd = [sys.executable, cfd_path, '-p0', '-style', 'Chromium']
     RunCommand(cmd, stdin=diff_output, cwd=top_dir)
 
   return 0
