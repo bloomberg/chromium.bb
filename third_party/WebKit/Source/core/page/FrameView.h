@@ -39,12 +39,11 @@
 namespace WebCore {
 
 class Element;
-class Event;
 class FloatSize;
 class Frame;
-class FrameActionScheduler;
 class KURL;
 class Node;
+class OverflowEvent;
 class Page;
 class RenderBox;
 class RenderEmbeddedObject;
@@ -203,9 +202,10 @@ public:
 
     void restoreScrollbar();
 
-    void scheduleEvent(PassRefPtr<Event>, PassRefPtr<Node>);
-    void pauseScheduledEvents();
-    void resumeScheduledEvents();
+    void suspendOverflowEvents();
+    void resumeOverflowEvents();
+    void scheduleOverflowEvent(PassRefPtr<OverflowEvent>);
+
     void postLayoutTimerFired(Timer<FrameView>*);
 
     bool wasScrolledByUser() const;
@@ -469,7 +469,8 @@ private:
     AtomicString m_mediaType;
     AtomicString m_mediaTypeWhenNotPrinting;
 
-    OwnPtr<FrameActionScheduler> m_actionScheduler;
+    unsigned m_overflowEventSuspendCount;
+    Vector<RefPtr<OverflowEvent> > m_overflowEventQueue;
 
     bool m_overflowStatusDirty;
     bool m_horizontalOverflow;

@@ -1194,8 +1194,6 @@
             'page/EventSource.h',
             'page/FocusController.cpp',
             'page/Frame.cpp',
-            'page/FrameActionScheduler.cpp',
-            'page/FrameActionScheduler.h',
             'page/FrameDestructionObserver.cpp',
             'page/FrameDestructionObserver.h',
             'page/FrameTree.cpp',

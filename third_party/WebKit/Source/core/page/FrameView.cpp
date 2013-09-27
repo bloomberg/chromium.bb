@@ -49,7 +49,6 @@
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
 #include "core/page/Frame.h"
-#include "core/page/FrameActionScheduler.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Settings.h"
 #include "core/page/animation/AnimationController.h"
@@ -163,7 +162,7 @@ FrameView::FrameView(Frame* frame)
     , m_isTransparent(false)
     , m_baseBackgroundColor(Color::white)
     , m_mediaType("screen")
-    , m_actionScheduler(adoptPtr(new FrameActionScheduler))
+    , m_overflowEventSuspendCount(0)
     , m_overflowStatusDirty(true)
     , m_viewportRenderer(0)
     , m_wasScrolledByUser(false)
@@ -212,7 +211,7 @@ FrameView::~FrameView()
 {
     if (m_postLayoutTasksTimer.isActive()) {
         m_postLayoutTasksTimer.stop();
-        m_actionScheduler->clear();
+        m_overflowEventQueue.clear();
     }
 
     removeFromAXObjectCache();
@@ -226,7 +225,7 @@ FrameView::~FrameView()
     setHasVerticalScrollbar(false);
 
     ASSERT(!m_scrollCorner);
-    ASSERT(m_actionScheduler->isEmpty());
+    ASSERT(m_overflowEventQueue.isEmpty());
 
     ASSERT(m_frame);
     ASSERT(m_frame->view() != this || !m_frame->contentRenderer());
@@ -925,7 +924,7 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
 void FrameView::scheduleOrPerformPostLayoutTasks()
 {
     if (m_postLayoutTasksTimer.isActive()) {
-        m_actionScheduler->resume();
+        resumeOverflowEvents();
         return;
     }
 
@@ -951,7 +950,7 @@ void FrameView::scheduleOrPerformPostLayoutTasks()
         // we call it through the timer here.
         m_postLayoutTasksTimer.startOneShot(0);
         if (!partialLayout().isStopping() && needsLayout()) {
-            m_actionScheduler->pause();
+            suspendOverflowEvents();
             layout();
         }
     }
@@ -1074,7 +1073,7 @@ void FrameView::layout(bool allowSubtree)
 
         layer = rootForThisLayout->enclosingLayer();
 
-        m_actionScheduler->pause();
+        suspendOverflowEvents();
 
         performLayout(rootForThisLayout, inSubtreeLayout);
         m_layoutRoot = 0;
@@ -1115,8 +1114,6 @@ void FrameView::layout(bool allowSubtree)
     if (document->hasListenerType(Document::OVERFLOWCHANGED_LISTENER))
         updateOverflowStatus(layoutWidth() < contentsWidth(), layoutHeight() < contentsHeight());
 
-    // Resume scheduled events (FrameActionScheduler m_actionScheduler)
-    // and ensure post layout tasks are executed or scheduled to be.
     scheduleOrPerformPostLayoutTasks();
 
     InspectorInstrumentation::didLayout(cookie, rootForThisLayout);
@@ -2100,19 +2097,31 @@ bool FrameView::shouldUpdate() const
     return true;
 }
 
-void FrameView::scheduleEvent(PassRefPtr<Event> event, PassRefPtr<Node> eventTarget)
+void FrameView::suspendOverflowEvents()
 {
-    m_actionScheduler->scheduleEvent(event, eventTarget);
+    ++m_overflowEventSuspendCount;
 }
 
-void FrameView::pauseScheduledEvents()
+void FrameView::resumeOverflowEvents()
 {
-    m_actionScheduler->pause();
+    ASSERT(m_overflowEventSuspendCount > 0);
+
+    if (--m_overflowEventSuspendCount)
+        return;
+
+    Vector<RefPtr<OverflowEvent> > events;
+    m_overflowEventQueue.swap(events);
+
+    for (Vector<RefPtr<OverflowEvent> >::iterator it = events.begin(); it != events.end(); ++it) {
+        Node* target = (*it)->target()->toNode();
+        if (target->inDocument())
+            target->dispatchEvent(*it, IGNORE_EXCEPTION);
+    }
 }
 
-void FrameView::resumeScheduledEvents()
+void FrameView::scheduleOverflowEvent(PassRefPtr<OverflowEvent> event)
 {
-    m_actionScheduler->resume();
+    m_overflowEventQueue.append(event);
 }
 
 void FrameView::scrollToAnchor()
@@ -2273,7 +2282,7 @@ void FrameView::performPostLayoutTasks()
 
     scrollToAnchor();
 
-    m_actionScheduler->resume();
+    resumeOverflowEvents();
 
     sendResizeEventIfNeeded();
 }
@@ -2439,9 +2448,9 @@ void FrameView::updateOverflowStatus(bool horizontalOverflow, bool verticalOverf
         m_horizontalOverflow = horizontalOverflow;
         m_verticalOverflow = verticalOverflow;
 
-        m_actionScheduler->scheduleEvent(OverflowEvent::create(horizontalOverflowChanged, horizontalOverflow,
-            verticalOverflowChanged, verticalOverflow),
-            m_viewportRenderer->node());
+        RefPtr<OverflowEvent> event = OverflowEvent::create(horizontalOverflowChanged, horizontalOverflow, verticalOverflowChanged, verticalOverflow);
+        event->setTarget(m_viewportRenderer->node());
+        scheduleOverflowEvent(event);
     }
 
 }

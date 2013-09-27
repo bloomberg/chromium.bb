@@ -101,14 +101,12 @@ static bool gColumnFlowSplitEnabled = true;
 bool RenderBlock::s_canPropagateFloatIntoSibling = false;
 
 // This class helps dispatching the 'overflow' event on layout change. overflow can be set on RenderBoxes, yet the existing code
-// only works on RenderBlocks. If this change, this class should be shared with other RenderBoxes.
+// only works on RenderBlocks. If this changes, this class should be shared with other RenderBoxes.
 class OverflowEventDispatcher {
     WTF_MAKE_NONCOPYABLE(OverflowEventDispatcher);
 public:
     OverflowEventDispatcher(const RenderBlock* block)
         : m_block(block)
-        , m_hadHorizontalLayoutOverflow(false)
-        , m_hadVerticalLayoutOverflow(false)
     {
         m_shouldDispatchEvent = !m_block->isAnonymous() && m_block->hasOverflowClip() && m_block->document().hasListenerType(Document::OVERFLOWCHANGED_LISTENER);
         if (m_shouldDispatchEvent) {
@@ -127,9 +125,14 @@ public:
 
         bool horizontalLayoutOverflowChanged = hasHorizontalLayoutOverflow != m_hadHorizontalLayoutOverflow;
         bool verticalLayoutOverflowChanged = hasVerticalLayoutOverflow != m_hadVerticalLayoutOverflow;
-        if (horizontalLayoutOverflowChanged || verticalLayoutOverflowChanged) {
-            if (FrameView* frameView = m_block->document().view())
-                frameView->scheduleEvent(OverflowEvent::create(horizontalLayoutOverflowChanged, hasHorizontalLayoutOverflow, verticalLayoutOverflowChanged, hasVerticalLayoutOverflow), m_block->node());
+
+        if (!horizontalLayoutOverflowChanged && !verticalLayoutOverflowChanged)
+            return;
+
+        if (FrameView* frameView = m_block->frameView()) {
+            RefPtr<OverflowEvent> event = OverflowEvent::create(horizontalLayoutOverflowChanged, hasHorizontalLayoutOverflow, verticalLayoutOverflowChanged, hasVerticalLayoutOverflow);
+            event->setTarget(m_block->node());
+            frameView->scheduleOverflowEvent(event);
         }
     }
 

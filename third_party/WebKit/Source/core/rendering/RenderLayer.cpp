@@ -2301,12 +2301,6 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
     RenderLayer* parentLayer = 0;
     LayoutRect newRect = rect;
 
-    // We may end up propagating a scroll event. It is important that we suspend events until
-    // the end of the function since they could delete the layer or the layer's renderer().
-    FrameView* frameView = renderer()->document().view();
-    if (frameView)
-        frameView->pauseScheduledEvents();
-
     bool restrictedByLineClamp = false;
     if (renderer()->parent()) {
         parentLayer = renderer()->parent()->enclosingLayer();
@@ -2331,7 +2325,7 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
             newRect = LayoutRect(box->localToAbsoluteQuad(FloatQuad(FloatRect(localExposeRect)), UseTransforms).boundingBox());
         }
     } else if (!parentLayer && renderer()->isBox() && renderBox()->canBeProgramaticallyScrolled()) {
-        if (frameView) {
+        if (FrameView* frameView = renderer()->frameView()) {
             Element* ownerElement = renderer()->document().ownerElement();
 
             if (ownerElement && ownerElement->renderer()) {
@@ -2373,9 +2367,6 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
 
     if (parentLayer)
         parentLayer->scrollRectToVisible(newRect, alignX, alignY);
-
-    if (frameView)
-        frameView->resumeScheduledEvents();
 }
 
 void RenderLayer::updateCompositingLayersAfterScroll()

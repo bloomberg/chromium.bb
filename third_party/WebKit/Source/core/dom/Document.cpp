@@ -1708,7 +1708,6 @@ void Document::recalcStyle(StyleRecalcChange change)
         m_inStyleRecalc = true;
 
         RefPtr<FrameView> frameView = view();
-        frameView->pauseScheduledEvents();
         frameView->beginDeferredRepaints();
 
         if (styleChangeType() >= SubtreeStyleChange)
@@ -1748,7 +1747,6 @@ void Document::recalcStyle(StyleRecalcChange change)
 
         m_inStyleRecalc = false;
 
-        frameView->resumeScheduledEvents();
         frameView->endDeferredRepaints();
     }
 
