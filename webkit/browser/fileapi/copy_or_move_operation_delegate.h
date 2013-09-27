@@ -55,6 +55,10 @@ class CopyOrMoveOperationDelegate
 
     void Run(const StatusCallback& callback);
 
+    // Requests cancelling. After the cancelling is done, |callback| passed to
+    // Run will be called.
+    void Cancel();
+
    private:
     // Reads the content from the |reader_|.
     void Read(const StatusCallback& callback);
@@ -73,6 +77,7 @@ class CopyOrMoveOperationDelegate
     int64 num_copied_bytes_;
     base::Time last_progress_callback_invocation_time_;
     base::TimeDelta min_progress_callback_invocation_span_;
+    bool cancel_requested_;
     base::WeakPtrFactory<StreamCopyHelper> weak_factory_;
     DISALLOW_COPY_AND_ASSIGN(StreamCopyHelper);
   };
@@ -96,6 +101,10 @@ class CopyOrMoveOperationDelegate
                                 const StatusCallback& callback) OVERRIDE;
   virtual void PostProcessDirectory(const FileSystemURL& url,
                                     const StatusCallback& callback) OVERRIDE;
+
+
+ protected:
+  virtual void OnCancel() OVERRIDE;
 
  private:
   void DidCopyOrMoveFile(const FileSystemURL& src_url,

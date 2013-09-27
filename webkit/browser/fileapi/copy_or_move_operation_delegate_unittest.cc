@@ -702,7 +702,6 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
   }
 }
 
-
 TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -754,6 +753,55 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
   std::string content;
   ASSERT_TRUE(base::ReadFileToString(dest_path, &content));
   EXPECT_EQ(kTestData, content);
+}
+
+TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath source_path = temp_dir.path().AppendASCII("source");
+  const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
+  file_util::WriteFile(source_path, kTestData,
+                       arraysize(kTestData) - 1);  // Exclude trailing '\0'.
+
+  base::FilePath dest_path = temp_dir.path().AppendASCII("dest");
+  // LocalFileWriter requires the file exists. So create an empty file here.
+  file_util::WriteFile(dest_path, "", 0);
+
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::Thread file_thread("file_thread");
+  ASSERT_TRUE(file_thread.Start());
+  ScopedThreadStopper thread_stopper(&file_thread);
+  ASSERT_TRUE(thread_stopper.is_valid());
+
+  scoped_refptr<base::MessageLoopProxy> task_runner =
+      file_thread.message_loop_proxy();
+
+  scoped_ptr<webkit_blob::FileStreamReader> reader(
+      webkit_blob::FileStreamReader::CreateForLocalFile(
+          task_runner.get(), source_path, 0, base::Time()));
+
+  scoped_ptr<FileStreamWriter> writer(
+      FileStreamWriter::CreateForLocalFile(task_runner.get(), dest_path, 0));
+
+  std::vector<int64> progress;
+  CopyOrMoveOperationDelegate::StreamCopyHelper helper(
+      reader.Pass(), writer.Pass(),
+      10,  // buffer size
+      base::Bind(&RecordFileProgressCallback, base::Unretained(&progress)),
+      base::TimeDelta());  // For testing, we need all the progress.
+
+  // Call Cancel() later.
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&CopyOrMoveOperationDelegate::StreamCopyHelper::Cancel,
+                 base::Unretained(&helper)));
+
+  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+  base::RunLoop run_loop;
+  helper.Run(base::Bind(&AssignAndQuit, &run_loop, &error));
+  run_loop.Run();
+
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_ABORT, error);
 }
 
 }  // namespace fileapi

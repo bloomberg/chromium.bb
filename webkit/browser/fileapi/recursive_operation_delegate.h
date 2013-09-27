@@ -115,6 +115,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT RecursiveOperationDelegate
 
   FileSystemOperationRunner* operation_runner();
 
+  // Called when Cancel() is called. This is a hook to do something more
+  // in a derived class. By default, do nothing.
+  virtual void OnCancel();
+
  private:
   void DidTryProcessFile(const FileSystemURL& root,
                          base::PlatformFileError error);

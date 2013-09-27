@@ -27,6 +27,7 @@ RecursiveOperationDelegate::~RecursiveOperationDelegate() {
 
 void RecursiveOperationDelegate::Cancel() {
   canceled_ = true;
+  OnCancel();
 }
 
 void RecursiveOperationDelegate::StartRecursiveOperation(
@@ -46,6 +47,9 @@ void RecursiveOperationDelegate::StartRecursiveOperation(
 
 FileSystemOperationRunner* RecursiveOperationDelegate::operation_runner() {
   return file_system_context_->operation_runner();
+}
+
+void RecursiveOperationDelegate::OnCancel() {
 }
 
 void RecursiveOperationDelegate::DidTryProcessFile(
