@@ -1667,22 +1667,26 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
 void Document::recalcStyle(StyleRecalcChange change)
 {
     // we should not enter style recalc while painting
-    ASSERT(!view() || !view()->isPainting());
-    if (view() && view()->isPainting())
+    RELEASE_ASSERT(!view() || !view()->isPainting());
+
+    // FIXME: We should never enter here without a FrameView or a RenderView.
+    if (!renderer() || !view())
         return;
 
     if (m_inStyleRecalc)
-        return; // Guard against re-entrancy. -dwh
+        return;
 
     TRACE_EVENT0("webkit", "Document::recalcStyle");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "RecalcStyle");
+
+    updateDistributionIfNeeded();
+
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRecalculateStyle(this);
 
     if (m_evaluateMediaQueriesOnStyleRecalc) {
         m_evaluateMediaQueriesOnStyleRecalc = false;
         evaluateMediaQueryList();
     }
-
-    updateDistributionIfNeeded();
 
     // FIXME: We should update style on our ancestor chain before proceeding (especially for seamless),
     // however doing so currently causes several tests to crash, as Frame::setDocument calls Document::attach
@@ -1694,29 +1698,23 @@ void Document::recalcStyle(StyleRecalcChange change)
     if (m_styleEngine->needsUpdateActiveStylesheetsOnStyleRecalc())
         m_styleEngine->updateActiveStyleSheets(FullStyleUpdate);
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRecalculateStyle(this);
-
     if (m_elemSheet && m_elemSheet->contents()->usesRemUnits())
         m_styleEngine->setUsesRemUnit(true);
 
-    m_inStyleRecalc = true;
     {
         PostAttachCallbacks::SuspendScope suspendPostAttachCallbacks;
         WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
 
-        RefPtr<FrameView> frameView = view();
-        if (frameView) {
-            frameView->pauseScheduledEvents();
-            frameView->beginDeferredRepaints();
-        }
+        m_inStyleRecalc = true;
 
-        if (!renderer())
-            goto bailOut;
+        RefPtr<FrameView> frameView = view();
+        frameView->pauseScheduledEvents();
+        frameView->beginDeferredRepaints();
 
         if (styleChangeType() >= SubtreeStyleChange)
             change = Force;
 
-        if ((change == Force) || (shouldDisplaySeamlesslyWithParent() && (change >= Inherit))) {
+        if (change == Force || (change >= Inherit && shouldDisplaySeamlesslyWithParent())) {
             m_hasNodesWithPlaceholderStyle = false;
             RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*this, m_styleResolver ? m_styleResolver->fontSelector() : 0);
             StyleRecalcChange localChange = RenderStyle::compare(documentStyle.get(), renderer()->style());
@@ -1726,18 +1724,13 @@ void Document::recalcStyle(StyleRecalcChange change)
 
         inheritHtmlAndBodyElementStyles(change);
 
-        for (Node* n = firstChild(); n; n = n->nextSibling()) {
-            if (!n->isElementNode())
-                continue;
-            Element* element = toElement(n);
-            if (shouldRecalcStyle(change, element))
-                element->recalcStyle(change);
+        if (Element* documentElement = this->documentElement()) {
+            if (shouldRecalcStyle(change, documentElement))
+                documentElement->recalcStyle(change);
         }
 
-        if (view())
-            view()->updateCompositingLayersAfterStyleChange();
+        frameView->updateCompositingLayersAfterStyleChange();
 
-    bailOut:
         clearNeedsStyleRecalc();
         clearChildNeedsStyleRecalc();
         unscheduleStyleRecalc();
@@ -1747,18 +1740,16 @@ void Document::recalcStyle(StyleRecalcChange change)
         if (m_styleEngine->needsUpdateActiveStylesheetsOnStyleRecalc())
             setNeedsStyleRecalc();
 
-        m_inStyleRecalc = false;
-
         // Pseudo element removal and similar may only work with these flags still set. Reset them after the style recalc.
         if (m_styleResolver) {
             m_styleEngine->resetCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
             m_styleResolver->clearStyleSharingList();
         }
 
-        if (frameView) {
-            frameView->resumeScheduledEvents();
-            frameView->endDeferredRepaints();
-        }
+        m_inStyleRecalc = false;
+
+        frameView->resumeScheduledEvents();
+        frameView->endDeferredRepaints();
     }
 
     STYLE_STATS_PRINT();
