@@ -603,7 +603,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         ['initEssentialUI'], 'initAdditionalUI');
     this.initializeQueue_.add(
         this.initFileSystemUI_.bind(this),
-        ['initAdditionalUI'], 'initFileSystemUI');
+        ['initAdditionalUI', 'initPreferences'], 'initFileSystemUI');
 
     // Run again just in case if all pending closures have completed and the
     // queue has stopped and monitor the completion.
