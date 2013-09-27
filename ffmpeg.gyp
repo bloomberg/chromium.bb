@@ -71,6 +71,63 @@
     'extra_header': 'chromium/ffmpeg_stub_headers.fragment',
   },
   'conditions': [
+    ['target_arch != "arm"', {
+      'targets': [
+        {
+          'target_name': 'ffmpeg_yasm',
+          'type': 'static_library',
+          # VS2010 does not correctly incrementally link obj files generated
+          # from asm files. This flag disables UseLibraryDependencyInputs to
+          # avoid this problem.
+          'msvs_2010_disable_uldi_when_referenced': 1,
+          'includes': [
+            'ffmpeg_generated.gypi',
+            '../yasm/yasm_compile.gypi',
+          ],
+          'sources': [
+            '<@(asm_sources)',
+            # XCode doesn't want to link a pure assembly target and will fail
+            # to link when it creates an empty file list.  So add a dummy file
+            # keep the linker happy.  See http://crbug.com/157073
+            'xcode_hack.c',
+          ],
+          'variables': {
+            # Path to platform configuration files.
+            'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+            'conditions': [
+              ['target_arch == "ia32"', {
+                'more_yasm_flags': [
+                  '-DARCH_X86_32',
+                 ],
+              }, {
+                'more_yasm_flags': [
+                  '-DARCH_X86_64',
+                ],
+              }],
+              ['OS == "mac"', {
+                'more_yasm_flags': [
+                  # Necessary to ensure symbols end up with a _ prefix; added by
+                  # yasm_compile.gypi for Windows, but not Mac.
+                  '-DPREFIX',
+                ]
+              }],
+            ],
+            'yasm_flags': [
+              '-DPIC',
+              '>@(more_yasm_flags)',
+              '-I', '<(platform_config_root)',
+              '-I', 'libavcodec/x86/',
+              '-I', 'libavutil/x86/',
+              '-I', '.',
+              # Disable warnings, prevents log spam for things we won't fix.
+              '-w',
+              '-P', 'config.asm',
+            ],
+            'yasm_output_path': '<(shared_generated_dir)/yasm'
+          },
+        },
+      ] # targets
+    }], # arch != arm
     ['OS == "win" and clang == 0', {
       # Convert the source code from c99 to c89 if we're on Windows and not
       # using clang, which can compile c99 directly.  Clang support is
@@ -592,59 +649,6 @@
           ],  # conditions
         }],
       ],  # conditions
-    },
-    {
-      'target_name': 'ffmpeg_yasm',
-      'type': 'static_library',
-      # VS2010 does not correctly incrementally link obj files generated
-      # from asm files. This flag disables UseLibraryDependencyInputs to
-      # avoid this problem.
-      'msvs_2010_disable_uldi_when_referenced': 1,
-      'includes': [
-        'ffmpeg_generated.gypi',
-        '../yasm/yasm_compile.gypi',
-      ],
-      'sources': [
-        '<@(asm_sources)',
-        # XCode doesn't want to link a pure assembly target and will fail
-        # to link when it creates an empty file list.  So add a dummy file
-        # keep the linker happy.  See http://crbug.com/157073
-        'xcode_hack.c',
-      ],
-      'variables': {
-        # Path to platform configuration files.
-        'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
-        'conditions': [
-          ['target_arch == "ia32"', {
-            'more_yasm_flags': [
-              '-DARCH_X86_32',
-             ],
-          }, {
-            'more_yasm_flags': [
-              '-DARCH_X86_64',
-            ],
-          }],
-          ['OS == "mac"', {
-            'more_yasm_flags': [
-              # Necessary to ensure symbols end up with a _ prefix; added by
-              # yasm_compile.gypi for Windows, but not Mac.
-              '-DPREFIX',
-            ]
-          }],
-        ],
-        'yasm_flags': [
-          '-DPIC',
-          '>@(more_yasm_flags)',
-          '-I', '<(platform_config_root)',
-          '-I', 'libavcodec/x86/',
-          '-I', 'libavutil/x86/',
-          '-I', '.',
-          # Disable warnings, prevents log spam for things we won't fix.
-          '-w',
-          '-P', 'config.asm',
-        ],
-        'yasm_output_path': '<(shared_generated_dir)/yasm'
-      },
     },
   ],  # targets
 }
