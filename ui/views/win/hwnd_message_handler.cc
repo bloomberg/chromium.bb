@@ -964,7 +964,12 @@ void HWNDMessageHandler::SetInitialFocus() {
 void HWNDMessageHandler::PostProcessActivateMessage(int activation_state,
                                                     bool minimized) {
   DCHECK(delegate_->CanSaveFocus());
-  if (WA_INACTIVE == activation_state || minimized) {
+
+  bool active = activation_state != WA_INACTIVE && !minimized;
+  if (delegate_->CanActivate())
+    delegate_->HandleActivationChanged(active);
+
+  if (!active) {
     // We might get activated/inactivated without being enabled, so we need to
     // clear restore_focus_when_enabled_.
     restore_focus_when_enabled_ = false;
@@ -1629,9 +1634,6 @@ LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
   BOOL active = static_cast<BOOL>(LOWORD(w_param));
 
   bool inactive_rendering_disabled = delegate_->IsInactiveRenderingDisabled();
-
-  if (delegate_->CanActivate())
-    delegate_->HandleActivationChanged(!!active);
 
   if (!delegate_->IsWidgetWindow()) {
     SetMsgHandled(FALSE);
