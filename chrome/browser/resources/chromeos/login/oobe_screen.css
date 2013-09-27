@@ -77,19 +77,21 @@
  * instead of top: 0; bottom: 0 due to http://crbug.com/155320.
  */
 .step-loading {
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
-  display: -webkit-box;
+  -webkit-align-items: center;
+  -webkit-justify-content: center;
+  display: -webkit-flex;
   left: 0;
-  margin-top: -16px;
+  margin-top: -8px;
   position: absolute;
   right: 0;
   top: 50%;
 }
 
-.step-loading .spinner {
-  height: 32px;
-  width: 32px;
+/* Fixes perfomance problem caused by http://crbug.com/229405 . */
+.step.hidden .throbber,
+.step.hidden .spinner,
+.step.hidden .inline-spinner {
+  display: none;
 }
 
 #security-info a,
@@ -176,3 +178,4 @@ html[highlight=strong] input[type='button']:focus,
 html[highlight=strong] button:focus {
   box-shadow: 0 0 23px rgb(77, 144, 254) !important;
 }
+
