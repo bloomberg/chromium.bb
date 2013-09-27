@@ -370,7 +370,7 @@ AccessibilityUIElement::AccessibilityUIElement(const WebAXObject& object, Factor
     , m_factory(factory)
 {
 
-    WEBKIT_ASSERT(factory);
+    BLINK_ASSERT(factory);
 
     //
     // Properties

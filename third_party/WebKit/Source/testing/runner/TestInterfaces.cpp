@@ -153,7 +153,7 @@ void TestInterfaces::windowClosed(WebTestProxyBase* proxy)
 {
     vector<WebTestProxyBase*>::iterator pos = find(m_windowList.begin(), m_windowList.end(), proxy);
     if (pos == m_windowList.end()) {
-        WEBKIT_ASSERT_NOT_REACHED();
+        BLINK_ASSERT_NOT_REACHED();
         return;
     }
     m_windowList.erase(pos);

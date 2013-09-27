@@ -43,7 +43,7 @@ namespace WebTestRunner {
 
 bool MockGrammarCheck::checkGrammarOfString(const WebString& text, vector<WebTextCheckingResult>* results)
 {
-    WEBKIT_ASSERT(results);
+    BLINK_ASSERT(results);
     string16 stringText = text;
     if (find_if(stringText.begin(), stringText.end(), isASCIIAlpha) == stringText.end())
         return true;

@@ -45,8 +45,8 @@ public:
         PrevNoDuplicate = 3,
     };
 
-    virtual void advance(unsigned long, WebIDBCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void continueFunction(const WebIDBKey&, WebIDBCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void advance(unsigned long, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void continueFunction(const WebIDBKey&, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void postSuccessHandlerCallback() { } // Only used in frontend.
 
 protected:

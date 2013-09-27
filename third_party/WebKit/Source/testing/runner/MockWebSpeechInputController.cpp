@@ -119,7 +119,7 @@ bool MockWebSpeechInputController::startRecognition(int requestId, const WebRect
 void MockWebSpeechInputController::cancelRecognition(int requestId)
 {
     if (m_speechTask) {
-        WEBKIT_ASSERT(requestId == m_requestId);
+        BLINK_ASSERT(requestId == m_requestId);
 
         m_speechTask->stop();
         m_recording = false;
@@ -130,7 +130,7 @@ void MockWebSpeechInputController::cancelRecognition(int requestId)
 
 void MockWebSpeechInputController::stopRecording(int requestId)
 {
-    WEBKIT_ASSERT(requestId == m_requestId);
+    BLINK_ASSERT(requestId == m_requestId);
     if (m_speechTask && m_recording) {
         m_speechTask->stop();
         speechTaskFired();

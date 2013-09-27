@@ -134,7 +134,7 @@ void MockWebSpeechRecognizer::start(const WebSpeechRecognitionHandle& handle, co
     m_taskQueue.push_back(new ClientCallTask(this, &WebSpeechRecognizerClient::didStartSound));
 
     if (!m_mockTranscripts.empty()) {
-        WEBKIT_ASSERT(m_mockTranscripts.size() == m_mockConfidences.size());
+        BLINK_ASSERT(m_mockTranscripts.size() == m_mockConfidences.size());
 
         for (size_t i = 0; i < m_mockTranscripts.size(); ++i)
             m_taskQueue.push_back(new ResultTask(this, m_mockTranscripts[i], m_mockConfidences[i]));
@@ -157,7 +157,7 @@ void MockWebSpeechRecognizer::stop(const WebSpeechRecognitionHandle& handle, Web
     m_client = client;
 
     // FIXME: Implement.
-    WEBKIT_ASSERT_NOT_REACHED();
+    BLINK_ASSERT_NOT_REACHED();
 }
 
 void MockWebSpeechRecognizer::abort(const WebSpeechRecognitionHandle& handle, WebSpeechRecognizerClient* client)

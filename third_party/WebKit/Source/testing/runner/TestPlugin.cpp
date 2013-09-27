@@ -97,7 +97,7 @@ const char* pointState(WebTouchPoint::State state)
         return "Unknown";
     }
 
-    WEBKIT_ASSERT_NOT_REACHED();
+    BLINK_ASSERT_NOT_REACHED();
     return 0;
 }
 
@@ -172,7 +172,7 @@ TestPlugin::TestPlugin(WebFrame* frame, const WebPluginParams& params, WebTestDe
     static const WebString kAttributeCanProcessDrag = WebString::fromUTF8("can-process-drag");
     static const WebString kAttributePrintUserGestureStatus = WebString::fromUTF8("print-user-gesture-status");
 
-    WEBKIT_ASSERT(params.attributeNames.size() == params.attributeValues.size());
+    BLINK_ASSERT(params.attributeNames.size() == params.attributeValues.size());
     size_t size = params.attributeNames.size();
     for (size_t i = 0; i < size; ++i) {
         const WebString& attributeName = params.attributeNames[i];
@@ -300,7 +300,7 @@ TestPlugin::Primitive TestPlugin::parsePrimitive(const WebString& string)
     else if (string == kPrimitiveTriangle)
         primitive = PrimitiveTriangle;
     else
-        WEBKIT_ASSERT_NOT_REACHED();
+        BLINK_ASSERT_NOT_REACHED();
     return primitive;
 }
 
@@ -319,7 +319,7 @@ void TestPlugin::parseColor(const WebString& string, unsigned color[3])
     else if (string == "blue")
         color[2] = 255;
     else
-        WEBKIT_ASSERT_NOT_REACHED();
+        BLINK_ASSERT_NOT_REACHED();
 }
 
 float TestPlugin::parseOpacity(const WebString& string)
@@ -412,7 +412,7 @@ bool TestPlugin::initProgram()
 
 bool TestPlugin::initPrimitive()
 {
-    WEBKIT_ASSERT(m_scene.primitive == PrimitiveTriangle);
+    BLINK_ASSERT(m_scene.primitive == PrimitiveTriangle);
 
     m_scene.vbo = m_context->createBuffer();
     if (!m_scene.vbo)
@@ -430,9 +430,9 @@ bool TestPlugin::initPrimitive()
 
 void TestPlugin::drawPrimitive()
 {
-    WEBKIT_ASSERT(m_scene.primitive == PrimitiveTriangle);
-    WEBKIT_ASSERT(m_scene.vbo);
-    WEBKIT_ASSERT(m_scene.program);
+    BLINK_ASSERT(m_scene.primitive == PrimitiveTriangle);
+    BLINK_ASSERT(m_scene.vbo);
+    BLINK_ASSERT(m_scene.program);
 
     m_context->useProgram(m_scene.program);
 
@@ -560,7 +560,7 @@ bool TestPlugin::handleDragStatusUpdate(WebDragStatus dragStatus, const WebDragD
         dragStatusName = "DragDrop";
         break;
     case WebDragStatusUnknown:
-        WEBKIT_ASSERT_NOT_REACHED();
+        BLINK_ASSERT_NOT_REACHED();
     }
     m_delegate->printMessage(std::string("Plugin received event: ") + dragStatusName + "\n");
     return false;

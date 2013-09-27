@@ -108,14 +108,14 @@ BLINK_COMMON_EXPORT void failedAssertion(const char* file, int line, const char*
 
 // Ideally, only use inside the public directory but outside of INSIDE_BLINK blocks.  (Otherwise use WTF's ASSERT.)
 #if defined(NDEBUG)
-#define WEBKIT_ASSERT(assertion) ((void)0)
+#define BLINK_ASSERT(assertion) ((void)0)
 #else
-#define WEBKIT_ASSERT(assertion) do { \
+#define BLINK_ASSERT(assertion) do { \
     if (!(assertion)) \
         failedAssertion(__FILE__, __LINE__, __FUNCTION__, #assertion); \
 } while (0)
 #endif
 
-#define WEBKIT_ASSERT_NOT_REACHED() WEBKIT_ASSERT(0)
+#define BLINK_ASSERT_NOT_REACHED() BLINK_ASSERT(0)
 
 #endif

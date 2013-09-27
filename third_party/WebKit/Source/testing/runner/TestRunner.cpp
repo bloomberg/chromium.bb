@@ -651,7 +651,7 @@ WebFrame* TestRunner::topLoadingFrame() const
 
 void TestRunner::policyDelegateDone()
 {
-    WEBKIT_ASSERT(m_waitUntilDone);
+    BLINK_ASSERT(m_waitUntilDone);
     m_delegate->testFinished();
     m_waitUntilDone = false;
 }
@@ -693,13 +693,13 @@ bool TestRunner::requestPointerLock()
         m_delegate->postDelayedTask(new HostMethodTask(this, &TestRunner::didAcquirePointerLockInternal), 0);
         return true;
     case PointerLockWillRespondAsync:
-        WEBKIT_ASSERT(!m_pointerLocked);
+        BLINK_ASSERT(!m_pointerLocked);
         return true;
     case PointerLockWillFailSync:
-        WEBKIT_ASSERT(!m_pointerLocked);
+        BLINK_ASSERT(!m_pointerLocked);
         return false;
     default:
-        WEBKIT_ASSERT_NOT_REACHED();
+        BLINK_ASSERT_NOT_REACHED();
         return false;
     }
 }
@@ -752,7 +752,7 @@ void TestRunner::didAcquirePointerLockInternal()
 
 void TestRunner::didNotAcquirePointerLockInternal()
 {
-    WEBKIT_ASSERT(!m_pointerLocked);
+    BLINK_ASSERT(!m_pointerLocked);
     m_pointerLocked = false;
     m_webView->didNotAcquirePointerLock();
 
@@ -1696,7 +1696,7 @@ void TestRunner::overridePreference(const CppArgumentList& arguments, CppVariant
     else if (key == "WebKitShouldRespectImageOrientation")
         prefs->shouldRespectImageOrientation = cppVariantToBool(value);
     else if (key == "WebKitWebAudioEnabled")
-        WEBKIT_ASSERT(cppVariantToBool(value));
+        BLINK_ASSERT(cppVariantToBool(value));
     else {
         string message("Invalid name for preference: ");
         message.append(key);

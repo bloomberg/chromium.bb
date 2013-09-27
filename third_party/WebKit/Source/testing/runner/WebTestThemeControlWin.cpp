@@ -253,7 +253,7 @@ void WebTestThemeControlWin::markState()
         break;
 
     default:
-        WEBKIT_ASSERT_NOT_REACHED();
+        BLINK_ASSERT_NOT_REACHED();
         break;
     }
 }
@@ -286,12 +286,12 @@ void WebTestThemeControlWin::draw()
 
     switch (m_type) {
     case UnknownType:
-        WEBKIT_ASSERT_NOT_REACHED();
+        BLINK_ASSERT_NOT_REACHED();
         break;
 
     case TextFieldType:
         // We render this by hand outside of this function.
-        WEBKIT_ASSERT_NOT_REACHED();
+        BLINK_ASSERT_NOT_REACHED();
         break;
 
     case PushButtonType:
@@ -441,7 +441,7 @@ void WebTestThemeControlWin::draw()
         break;
 
     default:
-        WEBKIT_ASSERT_NOT_REACHED();
+        BLINK_ASSERT_NOT_REACHED();
         break;
     }
 

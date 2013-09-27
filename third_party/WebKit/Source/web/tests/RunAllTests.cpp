@@ -39,7 +39,7 @@
 #include "public/platform/Platform.h"
 #include <content/test/webkit_unit_test_support.h>
 
-#if defined(WEBKIT_DLL_UNITTEST)
+#if defined(BLINK_DLL_UNITTEST)
 #include "WebUnitTests.h"
 #endif
 
@@ -51,7 +51,7 @@
 // and run inside webkit.dll.
 int main(int argc, char** argv)
 {
-#if defined(WEBKIT_DLL_UNITTEST)
+#if defined(BLINK_DLL_UNITTEST)
     WebKit::InitTestSuite(argc, argv);
     content::SetUpTestEnvironmentForWebKitUnitTests();
     int result = WebKit::RunAllUnitTests();

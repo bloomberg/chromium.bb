@@ -44,17 +44,17 @@ class WebIDBDatabase {
 public:
     virtual ~WebIDBDatabase() { }
 
-    virtual void createObjectStore(long long transactionId, long long objectStoreId, const WebString& name, const WebIDBKeyPath&, bool autoIncrement) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void deleteObjectStore(long long transactionId, long long objectStoreId) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void createTransaction(long long id, WebIDBDatabaseCallbacks* callbacks, const WebVector<long long>&, unsigned short mode) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void close() { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void forceClose() { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void createObjectStore(long long transactionId, long long objectStoreId, const WebString& name, const WebIDBKeyPath&, bool autoIncrement) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void deleteObjectStore(long long transactionId, long long objectStoreId) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void createTransaction(long long id, WebIDBDatabaseCallbacks* callbacks, const WebVector<long long>&, unsigned short mode) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void close() { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void forceClose() { BLINK_ASSERT_NOT_REACHED(); }
 
-    virtual void abort(long long transactionId) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void commit(long long transactionId) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void abort(long long transactionId) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void commit(long long transactionId) { BLINK_ASSERT_NOT_REACHED(); }
 
-    virtual void createIndex(long long transactionId, long long objectStoreId, long long indexId, const WebString& name, const WebIDBKeyPath&, bool unique, bool multiEntry) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void deleteIndex(long long transactionId, long long objectStoreId, long long indexId) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void createIndex(long long transactionId, long long objectStoreId, long long indexId, const WebString& name, const WebIDBKeyPath&, bool unique, bool multiEntry) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void deleteIndex(long long transactionId, long long objectStoreId, long long indexId) { BLINK_ASSERT_NOT_REACHED(); }
 
     enum TaskType {
         NormalTask = 0,
@@ -69,15 +69,15 @@ public:
 
     typedef WebVector<WebIDBKey> WebIndexKeys;
 
-    virtual void get(long long transactionId, long long objectStoreId, long long indexId, const WebIDBKeyRange&, bool keyOnly, WebIDBCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void get(long long transactionId, long long objectStoreId, long long indexId, const WebIDBKeyRange&, bool keyOnly, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
     // Note that 'value' may be consumed/adopted by this call.
-    virtual void put(long long transactionId, long long objectStoreId, const WebData& value, const WebIDBKey&, PutMode, WebIDBCallbacks*, const WebVector<long long>& indexIds, const WebVector<WebIndexKeys>&) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void setIndexKeys(long long transactionId, long long objectStoreId, const WebIDBKey&, const WebVector<long long>& indexIds, const WebVector<WebIndexKeys>&) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void setIndexesReady(long long transactionId, long long objectStoreId, const WebVector<long long>& indexIds) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void openCursor(long long transactionId, long long objectStoreId, long long indexId, const WebIDBKeyRange&, unsigned short direction, bool keyOnly, TaskType, WebIDBCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void count(long long transactionId, long long objectStoreId, long long indexId, const WebIDBKeyRange&, WebIDBCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void deleteRange(long long transactionId, long long objectStoreId, const WebIDBKeyRange&, WebIDBCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void clear(long long transactionId, long long objectStoreId, WebIDBCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void put(long long transactionId, long long objectStoreId, const WebData& value, const WebIDBKey&, PutMode, WebIDBCallbacks*, const WebVector<long long>& indexIds, const WebVector<WebIndexKeys>&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void setIndexKeys(long long transactionId, long long objectStoreId, const WebIDBKey&, const WebVector<long long>& indexIds, const WebVector<WebIndexKeys>&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void setIndexesReady(long long transactionId, long long objectStoreId, const WebVector<long long>& indexIds) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void openCursor(long long transactionId, long long objectStoreId, long long indexId, const WebIDBKeyRange&, unsigned short direction, bool keyOnly, TaskType, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void count(long long transactionId, long long objectStoreId, long long indexId, const WebIDBKeyRange&, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void deleteRange(long long transactionId, long long objectStoreId, const WebIDBKeyRange&, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void clear(long long transactionId, long long objectStoreId, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
 
 protected:
     WebIDBDatabase() { }

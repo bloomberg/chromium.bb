@@ -40,7 +40,7 @@ template <typename T>
 class WebPrivateOwnPtr {
 public:
     WebPrivateOwnPtr() : m_ptr(0) {}
-    ~WebPrivateOwnPtr() { WEBKIT_ASSERT(!m_ptr); }
+    ~WebPrivateOwnPtr() { BLINK_ASSERT(!m_ptr); }
 
 #if INSIDE_BLINK
     explicit WebPrivateOwnPtr(T* ptr)
@@ -58,7 +58,7 @@ public:
 
     T* operator->() const
     {
-        WEBKIT_ASSERT(m_ptr);
+        BLINK_ASSERT(m_ptr);
         return m_ptr;
     }
 #endif // INSIDE_BLINK

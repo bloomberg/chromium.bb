@@ -497,7 +497,7 @@ WebWidget* WebTestProxyBase::webWidget()
 
 WebView* WebTestProxyBase::webView()
 {
-    WEBKIT_ASSERT(m_webWidget);
+    BLINK_ASSERT(m_webWidget);
     // TestRunner does not support popup widgets. So m_webWidget is always a WebView.
     return static_cast<WebView*>(m_webWidget);
 }
@@ -619,8 +619,8 @@ void WebTestProxyBase::setLogConsoleOutput(bool enabled)
 
 void WebTestProxyBase::paintRect(const WebRect& rect)
 {
-    WEBKIT_ASSERT(!m_isPainting);
-    WEBKIT_ASSERT(canvas());
+    BLINK_ASSERT(!m_isPainting);
+    BLINK_ASSERT(canvas());
     m_isPainting = true;
     float deviceScaleFactor = webView()->deviceScaleFactor();
     int scaledX = static_cast<int>(static_cast<float>(rect.x) * deviceScaleFactor);
@@ -660,13 +660,13 @@ void WebTestProxyBase::paintInvalidatedRegion()
             continue;
         paintRect(rect);
     }
-    WEBKIT_ASSERT(m_paintRect.isEmpty());
+    BLINK_ASSERT(m_paintRect.isEmpty());
 }
 
 void WebTestProxyBase::paintPagesWithBoundaries()
 {
-    WEBKIT_ASSERT(!m_isPainting);
-    WEBKIT_ASSERT(canvas());
+    BLINK_ASSERT(!m_isPainting);
+    BLINK_ASSERT(canvas());
     m_isPainting = true;
 
     WebSize pageSizeInPixels = webWidget()->size();
@@ -753,7 +753,7 @@ WebDeviceOrientationClientMock* WebTestProxyBase::deviceOrientationClientMock()
 #if ENABLE_INPUT_SPEECH
 MockWebSpeechInputController* WebTestProxyBase::speechInputControllerMock()
 {
-    WEBKIT_ASSERT(m_speechInputController.get());
+    BLINK_ASSERT(m_speechInputController.get());
     return m_speechInputController.get();
 }
 #endif
@@ -1127,7 +1127,7 @@ WebSpeechInputController* WebTestProxyBase::speechInputController(WebSpeechInput
     }
     return m_speechInputController.get();
 #else
-    WEBKIT_ASSERT(listener);
+    BLINK_ASSERT(listener);
     return 0;
 #endif
 }
@@ -1326,7 +1326,7 @@ void WebTestProxyBase::willSendRequest(WebFrame*, unsigned identifier, WebKit::W
     GURL mainDocumentURL = request.firstPartyForCookies();
 
     if (redirectResponse.isNull() && (m_testInterfaces->testRunner()->shouldDumpResourceLoadCallbacks() || m_testInterfaces->testRunner()->shouldDumpResourcePriorities())) {
-        WEBKIT_ASSERT(m_resourceIdentifierMap.find(identifier) == m_resourceIdentifierMap.end());
+        BLINK_ASSERT(m_resourceIdentifierMap.find(identifier) == m_resourceIdentifierMap.end());
         m_resourceIdentifierMap[identifier] = descriptionSuitableForTestResult(requestURL);
     }
 

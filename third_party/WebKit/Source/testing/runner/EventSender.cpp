@@ -336,7 +336,7 @@ void EventSender::setContextMenuData(const WebContextMenuData& contextMenuData)
 void EventSender::reset()
 {
     // The test should have finished a drag and the mouse button state.
-    WEBKIT_ASSERT(currentDragData.isNull());
+    BLINK_ASSERT(currentDragData.isNull());
     currentDragData.reset();
     currentDragEffect = WebKit::WebDragOperationNone;
     currentDragEffectsAllowed = WebKit::WebDragOperationNone;
@@ -434,7 +434,7 @@ void EventSender::mouseDown(const CppArgumentList& arguments, CppVariant* result
         webview()->layout();
 
     int buttonNumber = getButtonNumberFromSingleArg(arguments);
-    WEBKIT_ASSERT(buttonNumber != -1);
+    BLINK_ASSERT(buttonNumber != -1);
 
     WebMouseEvent::Button buttonType = getButtonTypeFromButtonNumber(buttonNumber);
 
@@ -457,7 +457,7 @@ void EventSender::mouseUp(const CppArgumentList& arguments, CppVariant* result)
         webview()->layout();
 
     int buttonNumber = getButtonNumberFromSingleArg(arguments);
-    WEBKIT_ASSERT(buttonNumber != -1);
+    BLINK_ASSERT(buttonNumber != -1);
 
     WebMouseEvent::Button buttonType = getButtonTypeFromButtonNumber(buttonNumber);
 
@@ -620,7 +620,7 @@ void EventSender::keyDown(const CppArgumentList& arguments, CppVariant* result)
         }
         if (!code) {
             WebString webCodeStr = WebString::fromUTF8(codeStr.data(), codeStr.size());
-            WEBKIT_ASSERT(webCodeStr.length() == 1);
+            BLINK_ASSERT(webCodeStr.length() == 1);
             text = code = webCodeStr.at(0);
             needsShiftKeyModifier = needsShiftModifier(code);
             if ((code & 0xFF) >= 'a' && (code & 0xFF) <= 'z')
@@ -723,7 +723,7 @@ void EventSender::dispatchMessage(const CppArgumentList& arguments, CppVariant* 
         unsigned long lparam = static_cast<unsigned long>(arguments[2].toDouble());
         webview()->handleInputEvent(WebInputEventFactory::keyboardEvent(0, msg, arguments[1].toInt32(), lparam));
     } else
-        WEBKIT_ASSERT_NOT_REACHED();
+        BLINK_ASSERT_NOT_REACHED();
 #endif
 }
 
@@ -836,7 +836,7 @@ void EventSender::replaySavedEvents()
             break;
         }
         default:
-            WEBKIT_ASSERT_NOT_REACHED();
+            BLINK_ASSERT_NOT_REACHED();
         }
     }
 
@@ -1010,7 +1010,7 @@ void EventSender::releaseTouchPoint(const CppArgumentList& arguments, CppVariant
     result->setNull();
 
     const unsigned index = arguments[0].toInt32();
-    WEBKIT_ASSERT(index < touchPoints.size());
+    BLINK_ASSERT(index < touchPoints.size());
 
     WebTouchPoint* touchPoint = &touchPoints[index];
     touchPoint->state = WebTouchPoint::StateReleased;
@@ -1042,7 +1042,7 @@ void EventSender::updateTouchPoint(const CppArgumentList& arguments, CppVariant*
     result->setNull();
 
     const unsigned index = arguments[0].toInt32();
-    WEBKIT_ASSERT(index < touchPoints.size());
+    BLINK_ASSERT(index < touchPoints.size());
 
     WebPoint position(arguments[1].toInt32(), arguments[2].toInt32());
     WebTouchPoint* touchPoint = &touchPoints[index];
@@ -1056,7 +1056,7 @@ void EventSender::cancelTouchPoint(const CppArgumentList& arguments, CppVariant*
     result->setNull();
 
     const unsigned index = arguments[0].toInt32();
-    WEBKIT_ASSERT(index < touchPoints.size());
+    BLINK_ASSERT(index < touchPoints.size());
 
     WebTouchPoint* touchPoint = &touchPoints[index];
     touchPoint->state = WebTouchPoint::StateCancelled;
@@ -1064,7 +1064,7 @@ void EventSender::cancelTouchPoint(const CppArgumentList& arguments, CppVariant*
 
 void EventSender::sendCurrentTouchEvent(const WebInputEvent::Type type)
 {
-    WEBKIT_ASSERT(static_cast<unsigned>(WebTouchEvent::touchesLengthCap) > touchPoints.size());
+    BLINK_ASSERT(static_cast<unsigned>(WebTouchEvent::touchesLengthCap) > touchPoints.size());
     if (shouldForceLayoutOnEvents())
         webview()->layout();
 
@@ -1325,7 +1325,7 @@ void EventSender::gestureEvent(WebInputEvent::Type type, const CppArgumentList& 
         }
         break;
     default:
-        WEBKIT_ASSERT_NOT_REACHED();
+        BLINK_ASSERT_NOT_REACHED();
     }
 
     event.globalX = event.x;

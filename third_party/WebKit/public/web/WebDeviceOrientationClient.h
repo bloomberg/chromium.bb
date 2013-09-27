@@ -38,13 +38,13 @@ class WebDeviceOrientationClient {
 public:
     virtual ~WebDeviceOrientationClient() {}
 
-    virtual void setController(WebDeviceOrientationController*) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void startUpdating() { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void stopUpdating() { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void setController(WebDeviceOrientationController*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void startUpdating() { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void stopUpdating() { BLINK_ASSERT_NOT_REACHED(); }
 
     virtual WebDeviceOrientation lastOrientation() const
     {
-        WEBKIT_ASSERT_NOT_REACHED();
+        BLINK_ASSERT_NOT_REACHED();
         return WebDeviceOrientation::nullOrientation();
     }
 };

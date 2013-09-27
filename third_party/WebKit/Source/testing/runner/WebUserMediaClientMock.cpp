@@ -81,7 +81,7 @@ WebUserMediaClientMock::WebUserMediaClientMock(WebTestDelegate* delegate)
 
 void WebUserMediaClientMock::requestUserMedia(const WebUserMediaRequest& streamRequest)
 {
-    WEBKIT_ASSERT(!streamRequest.isNull());
+    BLINK_ASSERT(!streamRequest.isNull());
     WebUserMediaRequest request = streamRequest;
 
     if (request.ownerDocument().isNull() || !request.ownerDocument().frame()) {

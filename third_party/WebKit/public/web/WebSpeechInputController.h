@@ -48,20 +48,20 @@ public:
     // of the element where the user clicked in the RootView coordinate system.
     virtual bool startRecognition(int requestId, const WebRect& elementRect, const WebString& language, const WebString& grammar, const WebSecurityOrigin& origin)
     {
-        WEBKIT_ASSERT_NOT_REACHED();
+        BLINK_ASSERT_NOT_REACHED();
         return false;
     }
 
     // Cancels an ongoing recognition and discards any audio recorded so far. No partial
     // recognition results are returned to the listener.
-    virtual void cancelRecognition(int) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void cancelRecognition(int) { BLINK_ASSERT_NOT_REACHED(); }
 
     // Stops audio recording and performs recognition with the audio recorded until now
     // (does not discard audio). This is an optional call and is typically invoked if the user
     // wants to stop recording audio as soon as they finished speaking. Otherwise, the speech
     // recording 'endpointer' should detect silence in the input and stop recording automatically.
     // Call startRecognition() to record audio and recognize speech again.
-    virtual void stopRecording(int) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void stopRecording(int) { BLINK_ASSERT_NOT_REACHED(); }
 
 protected:
     virtual ~WebSpeechInputController() { }

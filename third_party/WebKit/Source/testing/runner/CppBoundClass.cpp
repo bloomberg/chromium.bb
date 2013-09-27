@@ -343,7 +343,7 @@ CppVariant* CppBoundClass::getAsCppVariant()
         m_selfVariant.set(npObj);
         WebBindings::releaseObject(npObj); // CppVariant takes the reference.
     }
-    WEBKIT_ASSERT(m_selfVariant.isObject());
+    BLINK_ASSERT(m_selfVariant.isObject());
     return &m_selfVariant;
 }
 

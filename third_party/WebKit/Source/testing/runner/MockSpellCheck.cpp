@@ -58,8 +58,8 @@ MockSpellCheck::~MockSpellCheck() { }
 
 bool MockSpellCheck::spellCheckWord(const WebString& text, int* misspelledOffset, int* misspelledLength)
 {
-    WEBKIT_ASSERT(misspelledOffset);
-    WEBKIT_ASSERT(misspelledLength);
+    BLINK_ASSERT(misspelledOffset);
+    BLINK_ASSERT(misspelledLength);
 
     // Initialize this spellchecker.
     initializeIfNeeded();
@@ -113,7 +113,7 @@ bool MockSpellCheck::spellCheckWord(const WebString& text, int* misspelledOffset
         else
             wordLength = distance(firstChar, lastChar);
 
-        WEBKIT_ASSERT(0 < wordOffset + wordLength);
+        BLINK_ASSERT(0 < wordOffset + wordLength);
         stringText = stringText.substr(wordOffset + wordLength);
         skippedLength += wordOffset + wordLength;
     }

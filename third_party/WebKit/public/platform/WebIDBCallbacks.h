@@ -52,23 +52,23 @@ public:
 
     // For classes that follow the PImpl pattern, pass a const reference.
     // For the rest, pass ownership to the callee via a pointer.
-    virtual void onError(const WebIDBDatabaseError&) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(const WebVector<WebString>&) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(WebIDBCursor*, const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData&) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(WebIDBDatabase*) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(const WebIDBKey&) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(const WebData&) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(const WebData&, const WebIDBKey&, const WebIDBKeyPath&) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(long long) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess() { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData&) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void onBlocked(long long oldVersion) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void onError(const WebIDBDatabaseError&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebVector<WebString>&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(WebIDBCursor*, const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(WebIDBDatabase*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebIDBKey&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebData&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebData&, const WebIDBKey&, const WebIDBKeyPath&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(long long) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess() { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onBlocked(long long oldVersion) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase* database, const WebIDBMetadata& metadata)
     {
         onUpgradeNeeded(oldVersion, database, metadata, DataLossNone);
     }
-    virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, DataLoss dataLoss) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, DataLoss dataLoss) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
 } // namespace WebKit

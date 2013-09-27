@@ -158,7 +158,7 @@ IntPoint ScrollbarGroup::convertFromContainingViewToScrollbar(const Scrollbar* s
         return m_horizontalScrollbar->convertFromContainingViewToScrollbar(parentPoint);
     if (m_verticalScrollbar && scrollbar == m_verticalScrollbar->scrollbar())
         return m_verticalScrollbar->convertFromContainingViewToScrollbar(parentPoint);
-    WEBKIT_ASSERT_NOT_REACHED();
+    BLINK_ASSERT_NOT_REACHED();
     return IntPoint();
 }
 
@@ -195,7 +195,7 @@ int ScrollbarGroup::visibleHeight() const
         return m_verticalScrollbar->scrollbar()->height();
     if (m_horizontalScrollbar)
         return m_horizontalScrollbar->scrollbar()->height();
-    WEBKIT_ASSERT_NOT_REACHED();
+    BLINK_ASSERT_NOT_REACHED();
     return 0;
 }
 
@@ -205,7 +205,7 @@ int ScrollbarGroup::visibleWidth() const
         return m_horizontalScrollbar->scrollbar()->width();
     if (m_verticalScrollbar)
         return m_verticalScrollbar->scrollbar()->width();
-    WEBKIT_ASSERT_NOT_REACHED();
+    BLINK_ASSERT_NOT_REACHED();
     return 0;
 }
 

@@ -68,7 +68,7 @@
             'conditions': [
                 ['component=="shared_library"', {
                     'defines': [
-                        'WEBKIT_DLL_UNITTEST',
+                        'BLINK_DLL_UNITTEST',
                     ],
                 }, {
                     'dependencies': [
