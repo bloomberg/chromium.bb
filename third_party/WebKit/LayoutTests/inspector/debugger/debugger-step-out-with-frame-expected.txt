@@ -1,0 +1,19 @@
+Tests "step out within specified frame" functionality in debugger.
+
+Debugger was enabled.
+Set timer for test function.
+Script execution paused.
+Call stack:
+    0) frame3 (debugger-step-out-with-frame.html:12)
+    1) frame2 (debugger-step-out-with-frame.html:18)
+    2) frame1 (debugger-step-out-with-frame.html:24)
+    3) testFunction (debugger-step-out-with-frame.html:30)
+Selecting frame: 2) frame1
+Stepping out...
+Script execution resumed.
+Script execution paused.
+Call stack:
+    0) testFunction (debugger-step-out-with-frame.html:31)
+Script execution resumed.
+Debugger was disabled.
+

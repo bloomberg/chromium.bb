@@ -222,7 +222,7 @@ void ScriptDebugServer::stepIntoStatement()
     continueProgram();
 }
 
-void ScriptDebugServer::stepOverStatement(const ScriptValue& frame)
+void ScriptDebugServer::stepCommandWithFrame(const char* functionName, const ScriptValue& frame)
 {
     ASSERT(isPaused());
     v8::HandleScope handleScope(m_isolate);
@@ -239,17 +239,18 @@ void ScriptDebugServer::stepOverStatement(const ScriptValue& frame)
         callFrame
     };
 
-    callDebuggerMethod("stepOverStatement", 2, argv);
+    callDebuggerMethod(functionName, 2, argv);
     continueProgram();
 }
 
-void ScriptDebugServer::stepOutOfFunction()
+void ScriptDebugServer::stepOverStatement(const ScriptValue& frame)
 {
-    ASSERT(isPaused());
-    v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Value> argv[] = { m_executionState.newLocal(m_isolate) };
-    callDebuggerMethod(stepOutV8MethodName, 1, argv);
-    continueProgram();
+    stepCommandWithFrame("stepOverStatement", frame);
+}
+
+void ScriptDebugServer::stepOutOfFunction(const ScriptValue& frame)
+{
+    stepCommandWithFrame(stepOutV8MethodName, frame);
 }
 
 bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, ScriptValue* newCallFrames, ScriptObject* result)

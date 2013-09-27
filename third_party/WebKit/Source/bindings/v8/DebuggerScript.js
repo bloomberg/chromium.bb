@@ -223,9 +223,10 @@ DebuggerScript.stepOverStatement = function(execState, callFrame)
     execState.prepareStep(Debug.StepAction.StepNext, 1, frameMirror);
 }
 
-DebuggerScript.stepOutOfFunction = function(execState)
+DebuggerScript.stepOutOfFunction = function(execState, callFrame)
 {
-    execState.prepareStep(Debug.StepAction.StepOut, 1);
+    var frameMirror = callFrame ? callFrame.frameMirror : undefined;
+    execState.prepareStep(Debug.StepAction.StepOut, 1, frameMirror);
 }
 
 // Returns array in form:

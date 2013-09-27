@@ -296,7 +296,7 @@ ScriptValue InjectedScript::findObjectById(const String& objectId) const
     return resultValue;
 }
 
-ScriptValue InjectedScript::findCallframeById(ErrorString* errorString, const ScriptValue& topCallFrame, const String& callFrameId)
+ScriptValue InjectedScript::findCallFrameById(ErrorString* errorString, const ScriptValue& topCallFrame, const String& callFrameId)
 {
     ScriptFunctionCall function(injectedScriptObject(), "callFrameForId");
     function.appendArgument(topCallFrame);

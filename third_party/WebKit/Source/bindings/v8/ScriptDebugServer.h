@@ -76,7 +76,7 @@ public:
     void continueProgram();
     void stepIntoStatement();
     void stepOverStatement(const ScriptValue& frame);
-    void stepOutOfFunction();
+    void stepOutOfFunction(const ScriptValue& frame);
 
     bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, ScriptValue* newCallFrames, ScriptObject* result);
     void updateCallStack(ScriptValue* callFrame);
@@ -136,6 +136,7 @@ protected:
     v8::Isolate* m_isolate;
 
 private:
+    void stepCommandWithFrame(const char* functionName, const ScriptValue& frame);
     PassRefPtr<JavaScriptCallFrame> wrapCallFrames(v8::Handle<v8::Object> executionState, int maximumLimit);
     bool executeSkipPauseRequest(ScriptDebugListener::SkipPauseRequest, v8::Handle<v8::Object> executionState);
 
