@@ -22,7 +22,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chromeos/dbus/ibus/ibus_property.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/ibus_bridge.h"
@@ -85,8 +84,8 @@ void IBusControllerImpl::ClearProperties() {
 }
 
 void IBusControllerImpl::RegisterProperties(
-    const InputMethodPropertyList& ibus_prop_list) {
-  current_property_list_ = ibus_prop_list;
+    const InputMethodPropertyList& property_list) {
+  current_property_list_ = property_list;
   FOR_EACH_OBSERVER(IBusController::Observer, observers_, PropertyChanged());
 }
 

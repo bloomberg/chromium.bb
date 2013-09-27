@@ -177,45 +177,4 @@ TEST(IBusObjectTest, PopAppendStringAsIBusText) {
   EXPECT_EQ(kSampleString, result_str);
 }
 
-TEST(IBusObjectTest, PopAppendIBusPropertyTest) {
-  const char kSampleTypeName[] = "Empty IBusObject Name";
-  const char kSampleKey[] = "Key";
-  const IBusProperty::IBusPropertyType kSampleType =
-      IBusProperty::IBUS_PROPERTY_TYPE_MENU;
-  const char kSampleLabel[] = "Label";
-  const char kSampleTooltip[] = "Tooltip";
-  const bool kSampleVisible = true;
-  const bool kSampleChecked = false;
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
-
-  // Create IBusProperty.
-  IBusProperty property;
-  property.set_key(kSampleKey);
-  property.set_type(kSampleType);
-  property.set_label(kSampleLabel);
-  property.set_tooltip(kSampleTooltip);
-  property.set_visible(kSampleVisible);
-  property.set_checked(kSampleChecked);
-
-  // Write a IBusProperty.
-  dbus::MessageWriter writer(response.get());
-  IBusObjectWriter ibus_object_writer(kSampleTypeName, "v", &writer);
-  ibus_object_writer.CloseHeader();
-  ibus_object_writer.AppendIBusProperty(property);
-  ibus_object_writer.CloseAll();
-
-  // Read string from IBusText.
-  dbus::MessageReader reader(response.get());
-  IBusObjectReader ibus_object_reader(kSampleTypeName, &reader);
-  IBusProperty result_property;
-  ASSERT_TRUE(ibus_object_reader.Init());
-  ASSERT_TRUE(ibus_object_reader.PopIBusProperty(&result_property));
-  EXPECT_EQ(kSampleKey, result_property.key());
-  EXPECT_EQ(kSampleType, result_property.type());
-  EXPECT_EQ(kSampleLabel, result_property.label());
-  EXPECT_EQ(kSampleTooltip, result_property.tooltip());
-  EXPECT_EQ(kSampleVisible, result_property.visible());
-  EXPECT_TRUE(kSampleChecked == result_property.checked());
-}
-
 }  // namespace chromeos

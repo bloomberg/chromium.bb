@@ -7,8 +7,6 @@
 
 #include <string>
 #include "chromeos/dbus/ibus/ibus_engine_service.h"
-
-#include "chromeos/dbus/ibus/ibus_property.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
 
 namespace chromeos {
@@ -73,20 +71,6 @@ class MockIBusEngineService : public IBusEngineService {
     return *last_update_aux_text_arg_.get();
   }
 
-  int register_properties_call_count() const {
-    return register_properties_call_count_;
-  }
-  const IBusPropertyList& last_registered_properties() const {
-    return *last_registered_properties_.get();
-  }
-
-  int update_property_call_count() const {
-    return update_property_call_count_;
-  }
-  const IBusProperty& last_updated_property() const {
-    return *last_updated_property_.get();
-  }
-
   int delete_surrounding_text_call_count() const {
     return delete_surrounding_text_call_count_;
   }
@@ -95,10 +79,8 @@ class MockIBusEngineService : public IBusEngineService {
   }
 
  private:
-  int register_properties_call_count_;
   int update_preedit_call_count_;
   int update_auxiliary_text_call_count_;
-  int update_property_call_count_;
   int forward_key_event_call_count_;
   int commit_text_call_count_;
   int delete_surrounding_text_call_count_;
@@ -106,8 +88,6 @@ class MockIBusEngineService : public IBusEngineService {
   std::string last_commit_text_;
   scoped_ptr<UpdatePreeditArg> last_update_preedit_arg_;
   scoped_ptr<UpdateAuxiliaryTextArg> last_update_aux_text_arg_;
-  scoped_ptr<IBusPropertyList> last_registered_properties_;
-  scoped_ptr<IBusProperty> last_updated_property_;
   scoped_ptr<DeleteSurroundingTextArg> last_delete_surrounding_text_arg_;
 
   IBusEngineHandlerInterface* current_engine_;

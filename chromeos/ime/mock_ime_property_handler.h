@@ -5,7 +5,6 @@
 #ifndef CHROMEOS_IME_MOCK_IME_PROPERTY_HANDLER_H_
 #define CHROMEOS_IME_MOCK_IME_PROPERTY_HANDLER_H_
 
-#include "chromeos/dbus/ibus/ibus_property.h"
 #include "chromeos/ime/ibus_bridge.h"
 
 namespace chromeos {

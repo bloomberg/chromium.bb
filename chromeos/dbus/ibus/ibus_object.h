@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/ibus/ibus_property.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
 
 namespace base {
@@ -129,12 +128,6 @@ class CHROMEOS_EXPORT IBusObjectReader {
   // Return true on success.
   bool PopStringFromIBusText(std::string* text);
 
-  // Pops a IBusProperty.
-  bool PopIBusProperty(IBusProperty* property);
-
-  // Pops a IBusPropertyList.
-  bool PopIBusPropertyList(IBusPropertyList* property_list);
-
   // Gets attachment entry corresponding to |key|. Do not free returned value.
   // Returns NULL if there is no entry.
   const base::Value* GetAttachment(const std::string& key);
@@ -227,12 +220,6 @@ class CHROMEOS_EXPORT IBusObjectWriter {
   // Appends a string as IBusText without any attributes. Use AppendIBusText
   // instead in the case of using any attribute entries.
   void AppendStringAsIBusText(const std::string& text);
-
-  // Appends a IBusProperty.
-  void AppendIBusProperty(const IBusProperty& property);
-
-  // Appends a IBusPropertyList.
-  void AppendIBusPropertyList(const IBusPropertyList& property_list);
 
  private:
   // Appends IBusObject headers, should be called once.

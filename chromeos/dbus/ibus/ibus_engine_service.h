@@ -16,10 +16,8 @@
 namespace chromeos {
 
 class IBusLookupTable;
-class IBusProperty;
 class IBusText;
 class IBusEngineHandlerInterface;
-typedef ScopedVector<IBusProperty> IBusPropertyList;
 
 // A class to make the actual DBus method call handling for IBusEngine service.
 // The exported method call is used by ibus-demon to process key event, because

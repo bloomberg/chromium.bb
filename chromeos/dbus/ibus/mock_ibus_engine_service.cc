@@ -9,17 +9,13 @@
 namespace chromeos {
 
 MockIBusEngineService::MockIBusEngineService()
-    : register_properties_call_count_(0),
-      update_preedit_call_count_(0),
+    : update_preedit_call_count_(0),
       update_auxiliary_text_call_count_(0),
-      update_property_call_count_(0),
       forward_key_event_call_count_(0),
       commit_text_call_count_(0),
       delete_surrounding_text_call_count_(0),
       last_update_preedit_arg_(new UpdatePreeditArg()),
       last_update_aux_text_arg_(new UpdateAuxiliaryTextArg()),
-      last_registered_properties_(new IBusPropertyList()),
-      last_updated_property_(new IBusProperty()),
       last_delete_surrounding_text_arg_(new DeleteSurroundingTextArg()),
       current_engine_(NULL) {
 }
@@ -77,18 +73,14 @@ IBusEngineHandlerInterface* MockIBusEngineService::GetEngine() const {
 }
 
 void MockIBusEngineService::Clear() {
-  register_properties_call_count_ = 0;
   update_preedit_call_count_ = 0;
   update_auxiliary_text_call_count_ = 0;
-  update_property_call_count_ = 0;
   forward_key_event_call_count_ = 0;
   commit_text_call_count_ = 0;
   delete_surrounding_text_call_count_ = 0;
   last_commit_text_.clear();
   last_update_preedit_arg_.reset(new UpdatePreeditArg());
   last_update_aux_text_arg_.reset(new UpdateAuxiliaryTextArg());
-  last_registered_properties_.reset(new IBusPropertyList());
-  last_updated_property_.reset(new IBusProperty());
   last_delete_surrounding_text_arg_.reset(new DeleteSurroundingTextArg());
 }
 
