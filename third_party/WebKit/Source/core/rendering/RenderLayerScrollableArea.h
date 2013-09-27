@@ -58,15 +58,15 @@ enum ScrollOffsetClamping {
     ScrollOffsetClamped
 };
 
+class RenderBox;
 class RenderLayer;
-class RenderLayerModelObject;
 class RenderScrollbarPart;
 
 class RenderLayerScrollableArea FINAL : public ScrollableArea {
     // FIXME: Remove once the bits from RenderLayer have been moved here.
     friend class RenderLayer;
 public:
-    RenderLayerScrollableArea(RenderLayer*);
+    RenderLayerScrollableArea(RenderBox*);
     virtual ~RenderLayerScrollableArea();
 
     virtual Scrollbar* horizontalScrollbar() const OVERRIDE { return m_hBar.get(); }
@@ -165,9 +165,9 @@ private:
     void paintScrollCorner(GraphicsContext*, const IntPoint&, const IntRect& damageRect);
     bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint, const IntRect&);
 
-    RenderLayerModelObject* renderer() const;
+    RenderLayer* layer() const;
 
-    RenderLayer* m_layer;
+    RenderBox* m_box;
 
     unsigned m_scrollDimensionsDirty : 1;
     unsigned m_inOverflowRelayout : 1;

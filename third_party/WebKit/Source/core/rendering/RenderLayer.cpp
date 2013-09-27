@@ -161,10 +161,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_resizer(0)
     , m_enclosingPaginationLayer(0)
     , m_forceNeedsCompositedScrolling(DoNotForceCompositedScrolling)
-    // FIXME: We could lazily allocate our ScrollableArea based on style properties
-    // ('overflow', ...) but for now, we are always allocating it as it's safer.
-    , m_scrollableArea(adoptPtr(new RenderLayerScrollableArea(this)))
-
 {
     m_isNormalFlowOnly = shouldBeNormalFlowOnly();
     m_isSelfPaintingLayer = shouldBeSelfPaintingLayer();
@@ -178,6 +174,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
         m_hasVisibleContent = renderer->style()->visibility() == VISIBLE;
     }
 
+    updateScrollableArea();
     updateResizerAreaSet();
 }
 
@@ -2383,6 +2380,14 @@ void RenderLayer::updateCompositingLayersAfterScroll()
     }
 }
 
+void RenderLayer::updateScrollableArea()
+{
+    if (requiresScrollableArea())
+        m_scrollableArea = adoptPtr(new RenderLayerScrollableArea(renderBox()));
+    else
+        m_scrollableArea = nullptr;
+}
+
 LayoutRect RenderLayer::getRectToExpose(const LayoutRect &visibleRect, const LayoutRect &exposeRect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
 {
     // Determine the appropriate X behavior.
@@ -2733,7 +2738,7 @@ IntSize RenderLayer::offsetFromResizeCorner(const IntPoint& absolutePoint) const
 
 bool RenderLayer::hasOverflowControls() const
 {
-    return m_scrollableArea->hasScrollbar() || m_scrollableArea->hasScrollCorner() || renderer()->style()->resize() != RESIZE_NONE;
+    return m_scrollableArea && (m_scrollableArea->hasScrollbar() || m_scrollableArea->hasScrollCorner() || renderer()->style()->resize() != RESIZE_NONE);
 }
 
 void RenderLayer::positionOverflowControls(const IntSize& offsetFromRoot)
@@ -5606,7 +5611,8 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
     updateIsNormalFlowOnly();
 
     updateResizerAreaSet();
-    m_scrollableArea->updateAfterStyleChange(oldStyle);
+    if (m_scrollableArea)
+        m_scrollableArea->updateAfterStyleChange(oldStyle);
     updateStackingContextsAfterStyleChange(oldStyle);
     updateVisibilityAfterStyleChange(oldStyle);
     // Overlay scrollbars can make this layer self-painting so we need
@@ -5956,31 +5962,49 @@ bool RenderLayer::hasOverlayScrollbars() const
 
 Scrollbar* RenderLayer::horizontalScrollbar() const
 {
+    if (!m_scrollableArea)
+        return 0;
+
     return m_scrollableArea->horizontalScrollbar();
 }
 
 Scrollbar* RenderLayer::verticalScrollbar() const
 {
+    if (!m_scrollableArea)
+        return 0;
+
     return m_scrollableArea->verticalScrollbar();
 }
 
 bool RenderLayer::hasVerticalScrollbar() const
 {
+    if (!m_scrollableArea)
+        return false;
+
     return m_scrollableArea->hasVerticalScrollbar();
 }
 
 bool RenderLayer::hasHorizontalScrollbar() const
 {
+    if (!m_scrollableArea)
+        return false;
+
     return m_scrollableArea->hasHorizontalScrollbar();
 }
 
 int RenderLayer::verticalScrollbarWidth(OverlayScrollbarSizeRelevancy relevancy) const
 {
+    if (!m_scrollableArea)
+        return 0;
+
     return m_scrollableArea->verticalScrollbarWidth(relevancy);
 }
 
 int RenderLayer::horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy relevancy) const
 {
+    if (!m_scrollableArea)
+        return 0;
+
     return m_scrollableArea->horizontalScrollbarHeight(relevancy);
 }
 

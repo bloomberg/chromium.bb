@@ -791,7 +791,11 @@ private:
 
     void updateCompositingLayersAfterScroll();
 
-    bool requiresScrollableArea() const { return renderer()->style()->overflowX() != OVISIBLE || renderer()->canResize() || usesCompositedScrolling(); }
+    // FIXME: We could lazily allocate our ScrollableArea based on style properties ('overflow', ...)
+    // but for now, we are always allocating it for RenderBox as it's safer.
+    bool requiresScrollableArea() const { return renderBox(); }
+    void updateScrollableArea();
+
     void updateResizerAreaSet();
     void updateScrollableAreaSet(bool hasOverflow);
 
