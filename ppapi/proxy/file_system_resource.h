@@ -25,8 +25,18 @@ class PPAPI_PROXY_EXPORT FileSystemResource
     : public PluginResource,
       public NON_EXPORTED_BASE(thunk::PPB_FileSystem_API) {
  public:
+  // Creates a new FileSystemResource. The resource must be subsequently opened
+  // via Open() before use.
   FileSystemResource(Connection connection,
                      PP_Instance instance,
+                     PP_FileSystemType type);
+  // Creates a FileSystemResource, attached to an existing pending host
+  // resource. The |pending_renderer_id| and |pending_browser_id| must be
+  // already-opened file systems.
+  FileSystemResource(Connection connection,
+                     PP_Instance instance,
+                     int pending_renderer_id,
+                     int pending_browser_id,
                      PP_FileSystemType type);
   virtual ~FileSystemResource();
 

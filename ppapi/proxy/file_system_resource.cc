@@ -23,10 +23,21 @@ FileSystemResource::FileSystemResource(Connection connection,
       called_open_(false),
       callback_count_(0) {
   DCHECK(type_ != PP_FILESYSTEMTYPE_INVALID);
-  // TODO(teravest): Temporarily create hosts in both the browser and renderer
-  // while we move file related hosts to the browser.
   SendCreate(RENDERER, PpapiHostMsg_FileSystem_Create(type_));
   SendCreate(BROWSER, PpapiHostMsg_FileSystem_Create(type_));
+}
+
+FileSystemResource::FileSystemResource(Connection connection,
+                                       PP_Instance instance,
+                                       int pending_renderer_id,
+                                       int pending_browser_id,
+                                       PP_FileSystemType type)
+    : PluginResource(connection, instance),
+      type_(type),
+      called_open_(true) {
+  DCHECK(type_ != PP_FILESYSTEMTYPE_INVALID);
+  AttachToPendingHost(RENDERER, pending_renderer_id);
+  AttachToPendingHost(BROWSER, pending_browser_id);
 }
 
 FileSystemResource::~FileSystemResource() {
