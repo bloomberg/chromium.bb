@@ -39,6 +39,7 @@ struct TestResult {
     TEST_FAILURE,  // Assertion failure (think EXPECT_TRUE, not DCHECK).
     TEST_TIMEOUT,  // Test timed out and was killed.
     TEST_CRASH,    // Test crashed (includes CHECK/DCHECK failures).
+    TEST_SKIPPED,  // Test skipped (not run at all).
   };
 
   TestResult();

@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -19,7 +18,6 @@ class CommandLine;
 namespace base {
 
 class SequencedWorkerPoolOwner;
-class Timer;
 
 // Launches child gtest process in parallel. Keeps track of running processes,
 // prints a message in case no output is produced for a while.
@@ -46,28 +44,12 @@ class ParallelTestLauncher {
                                base::TimeDelta timeout,
                                const LaunchChildGTestProcessCallback& callback);
 
-  // Similar to above, but with processes sharing the same value of |token_name|
-  // being serialized, with order matching order of calls of this method.
-  void LaunchNamedSequencedChildGTestProcess(
-      const std::string& token_name,
-      const CommandLine& command_line,
-      const std::string& wrapper,
-      base::TimeDelta timeout,
-      const LaunchChildGTestProcessCallback& callback);
-
   // Resets the output watchdog, indicating some test results have been printed
   // out. If a pause between the calls exceeds an internal treshold, a message
   // will be printed listing all child processes we're still waiting for.
   void ResetOutputWatchdog();
 
  private:
-  void LaunchSequencedChildGTestProcess(
-      SequencedWorkerPool::SequenceToken sequence_token,
-      const CommandLine& command_line,
-      const std::string& wrapper,
-      base::TimeDelta timeout,
-      const LaunchChildGTestProcessCallback& callback);
-
   // Called on a worker thread after a child process finishes.
   void OnLaunchTestProcessFinished(
       size_t sequence_number,

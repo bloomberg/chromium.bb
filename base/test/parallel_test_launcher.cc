@@ -154,43 +154,6 @@ void ParallelTestLauncher::LaunchChildGTestProcess(
     const LaunchChildGTestProcessCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  LaunchSequencedChildGTestProcess(
-      worker_pool_owner_->pool()->GetSequenceToken(),
-      command_line,
-      wrapper,
-      timeout,
-      callback);
-}
-
-void ParallelTestLauncher::LaunchNamedSequencedChildGTestProcess(
-    const std::string& token_name,
-    const CommandLine& command_line,
-    const std::string& wrapper,
-    base::TimeDelta timeout,
-    const LaunchChildGTestProcessCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  LaunchSequencedChildGTestProcess(
-      worker_pool_owner_->pool()->GetNamedSequenceToken(token_name),
-      command_line,
-      wrapper,
-      timeout,
-      callback);
-}
-
-void ParallelTestLauncher::ResetOutputWatchdog() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  timer_.Reset();
-}
-
-void ParallelTestLauncher::LaunchSequencedChildGTestProcess(
-    SequencedWorkerPool::SequenceToken sequence_token,
-    const CommandLine& command_line,
-    const std::string& wrapper,
-    base::TimeDelta timeout,
-    const LaunchChildGTestProcessCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
   // Record the exact command line used to launch the child.
   CommandLine new_command_line(
       PrepareCommandLineForGTest(command_line, wrapper));
@@ -198,8 +161,7 @@ void ParallelTestLauncher::LaunchSequencedChildGTestProcess(
   running_processes_map_.insert(
       std::make_pair(launch_sequence_number_, new_command_line));
 
-  worker_pool_owner_->pool()->PostSequencedWorkerTask(
-      sequence_token,
+  worker_pool_owner_->pool()->PostWorkerTask(
       FROM_HERE,
       Bind(&DoLaunchChildTestProcess,
            new_command_line,
@@ -209,6 +171,11 @@ void ParallelTestLauncher::LaunchSequencedChildGTestProcess(
                 Unretained(this),
                 launch_sequence_number_,
                 callback)));
+}
+
+void ParallelTestLauncher::ResetOutputWatchdog() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  timer_.Reset();
 }
 
 void ParallelTestLauncher::OnLaunchTestProcessFinished(

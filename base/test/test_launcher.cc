@@ -351,6 +351,8 @@ void ResultsPrinter::AddTestResult(const TestResult& result) {
     status_line.append("(TIMED OUT)");
   } else if (result.status == TestResult::TEST_CRASH) {
     status_line.append("(CRASHED)");
+  } else if (result.status == TestResult::TEST_SKIPPED) {
+    status_line.append("(SKIPPED)");
   } else if (result.status == TestResult::TEST_UNKNOWN) {
     status_line.append("(UNKNOWN)");
   } else {
@@ -371,6 +373,7 @@ void ResultsPrinter::AddTestResult(const TestResult& result) {
     PrintTestsByStatus(TestResult::TEST_FAILURE, "failed");
     PrintTestsByStatus(TestResult::TEST_TIMEOUT, "timed out");
     PrintTestsByStatus(TestResult::TEST_CRASH, "crashed");
+    PrintTestsByStatus(TestResult::TEST_SKIPPED, "skipped");
     PrintTestsByStatus(TestResult::TEST_UNKNOWN, "had unknown result");
 
     callback_.Run(
