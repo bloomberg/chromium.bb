@@ -113,6 +113,7 @@ class APIPermission {
     kPlugin,
     kPower,
     kPreferencesPrivate,
+    kPrincipalsPrivate,
     kPrivacy,
     kProcesses,
     kProxy,

@@ -1,0 +1,18 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Experimental APIs to trigger Chrome sign in actions.
+// Only enabled if the flag "new-profile-management" is set.
+[nodoc] namespace principalsPrivate {
+
+  interface Functions {
+    // Triggers Chrome sign out.
+    // Only enabled if the flag "new-profile-management" is set.
+    static void signOut();
+
+    // Shows the avatar bubble.
+    // Only enabled if the flag "new-profile-management" is set.
+    static void showAvatarBubble();
+  };
+};

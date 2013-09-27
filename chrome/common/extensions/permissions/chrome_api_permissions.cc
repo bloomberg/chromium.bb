@@ -236,6 +236,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kWebrtcLoggingPrivate, "webrtcLoggingPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
+    { APIPermission::kPrincipalsPrivate, "principalsPrivate",
+      APIPermissionInfo::kFlagCannotBeOptional },
 
     // Full url access permissions.
     { APIPermission::kDebugger, "debugger",
