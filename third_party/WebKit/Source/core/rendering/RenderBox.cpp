@@ -420,7 +420,9 @@ bool RenderBox::requiresLayoutToDetermineWidth() const
         || style->boxSizing() == BORDER_BOX
         || !isRenderBlock()
         || !isRenderBlockFlow()
-        || isFlexItemIncludingDeprecated();
+        || isFlexItemIncludingDeprecated()
+        // TableCells can expand beyond a specified width.
+        || isTableCell();
 }
 
 LayoutUnit RenderBox::fixedOffsetWidth() const
