@@ -239,10 +239,6 @@ static bool shouldCheckForCycles(int depth)
     return !(depth & (depth - 1));
 }
 
-// Increment this for each incompatible change to the wire format.
-// Version 2: Added StringUCharTag for UChar v8 strings.
-static const uint32_t wireFormatVersion = 2;
-
 static const int maxDepth = 20000;
 
 // VarInt encoding constants.
@@ -366,7 +362,7 @@ public:
     void writeVersion()
     {
         append(VersionTag);
-        doWriteUint32(wireFormatVersion);
+        doWriteUint32(SerializedScriptValue::wireFormatVersion);
     }
 
     void writeInt32(int32_t value)
@@ -1984,7 +1980,7 @@ public:
 
     v8::Handle<v8::Value> deserialize()
     {
-        if (!m_reader.readVersion(m_version) || m_version > wireFormatVersion)
+        if (!m_reader.readVersion(m_version) || m_version > SerializedScriptValue::wireFormatVersion)
             return v8NullWithCheck(m_reader.getIsolate());
         m_reader.setVersion(m_version);
         v8::HandleScope scope(m_reader.getIsolate());
@@ -2533,11 +2529,6 @@ SerializedScriptValue::~SerializedScriptValue()
         ASSERT(v8::Isolate::GetCurrent());
         v8::V8::AdjustAmountOfExternalAllocatedMemory(-m_externallyAllocatedMemory);
     }
-}
-
-uint32_t SerializedScriptValue::wireFormatVersion()
-{
-    return WebCore::wireFormatVersion;
 }
 
 } // namespace WebCore

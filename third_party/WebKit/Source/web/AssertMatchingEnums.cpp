@@ -59,6 +59,7 @@
 #include "WebTextCheckingResult.h"
 #include "WebTextCheckingType.h"
 #include "WebView.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityObject.h"
 #include "core/dom/DocumentMarker.h"
@@ -126,6 +127,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/web/WebNavigationPolicy.h"
+#include "public/web/WebSerializedScriptValueVersion.h"
 #include "weborigin/ReferrerPolicy.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/StringImpl.h"
@@ -697,3 +699,4 @@ COMPILE_ASSERT_MATCHING_UINT64(CompositingReasonLayerForBackground, CompositingR
 COMPILE_ASSERT_MATCHING_UINT64(CompositingReasonLayerForMask, CompositingReasonLayerForMask);
 COMPILE_ASSERT_MATCHING_UINT64(CompositingReasonOverflowScrollingParent, CompositingReasonOverflowScrollingParent);
 COMPILE_ASSERT_MATCHING_UINT64(CompositingReasonOutOfFlowClipping, CompositingReasonOutOfFlowClipping);
+COMPILE_ASSERT_MATCHING_UINT64(kSerializedScriptValueVersion, SerializedScriptValue::wireFormatVersion);

@@ -52,6 +52,10 @@ typedef Vector<RefPtr<WTF::ArrayBuffer>, 1> ArrayBufferArray;
 
 class SerializedScriptValue : public ThreadSafeRefCounted<SerializedScriptValue> {
 public:
+    // Increment this for each incompatible change to the wire format.
+    // Version 2: Added StringUCharTag for UChar v8 strings.
+    static const uint32_t wireFormatVersion = 2;
+
     virtual ~SerializedScriptValue();
 
     // If a serialization error occurs (e.g., cyclic input value) this
@@ -78,8 +82,6 @@ public:
     static PassRefPtr<SerializedScriptValue> booleanValue(bool, v8::Isolate*);
     static PassRefPtr<SerializedScriptValue> numberValue(double);
     static PassRefPtr<SerializedScriptValue> numberValue(double, v8::Isolate*);
-
-    static uint32_t wireFormatVersion();
 
     PassRefPtr<SerializedScriptValue> release();
 
