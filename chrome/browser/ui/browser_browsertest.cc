@@ -231,9 +231,6 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
   void Proceed() {
     interstitial_page_->Proceed();
   }
-  void DontProceed() {
-    interstitial_page_->DontProceed();
-  }
 
   virtual std::string GetHTMLContents() OVERRIDE {
     return "<h1>INTERSTITIAL</h1>";
@@ -1730,13 +1727,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialClosesDialogs) {
     InterstitialObserver observer(contents,
                                   base::Closure(),
                                   loop_runner->QuitClosure());
-    interstitial->DontProceed();
+    interstitial->Proceed();
     loop_runner->Run();
     // interstitial is deleted now.
   }
-
-  // Make sure input events still work in the renderer process.
-  EXPECT_FALSE(contents->GetRenderProcessHost()->IgnoreInputEvents());
 }
 
 

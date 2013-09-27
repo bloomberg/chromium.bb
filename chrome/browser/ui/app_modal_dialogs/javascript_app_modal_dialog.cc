@@ -108,10 +108,7 @@ void JavaScriptAppModalDialog::Invalidate() {
     return;
 
   AppModalDialog::Invalidate();
-  if (!callback_.is_null()) {
-    callback_.Run(false, string16());
-    callback_.Reset();
-  }
+  callback_.Reset();
   if (native_dialog())
     CloseModalDialog();
 }
@@ -164,10 +161,7 @@ void JavaScriptAppModalDialog::NotifyDelegate(bool success,
   if (!IsValid())
     return;
 
-  if (!callback_.is_null()) {
-    callback_.Run(success, user_input);
-    callback_.Reset();
-  }
+  callback_.Run(success, user_input);
 
   // The callback_ above may delete web_contents_, thus removing the extra
   // data from the map owned by ChromeJavaScriptDialogManager. Make sure
