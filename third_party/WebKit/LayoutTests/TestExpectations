@@ -1292,3 +1292,6 @@ crbug.com/299788 [ Mac Linux ] virtual/android/fullscreen/full-screen-fixed-pos-
 crbug.com/299788 [ Mac Linux ] virtual/android/fullscreen/full-screen-with-flex-item.html [ Crash ]
 crbug.com/299788 [ Mac Linux ] css3/viewport-percentage-lengths/viewport-percentage-lengths-scaled-overlay-scrollbars.html [ Crash ]
 crbug.com/299788 [ Mac Linux ] fast/dom/partial-layout-block.html [ Crash ]
+
+# Flaky on all platforms.
+crbug.com/299819 inspector/console/console-timeline.html [ Failure Pass Timeout ]
