@@ -31,11 +31,3 @@ NativeMessagingTest.*
 
 # Timing out all over the place. Disabling for now. http://crbug.com/164589
 StorageInfoProviderTest.*
-
-# Fail on memory bots, see http://crbug.com/298893
-AutofillDownloadTest.QueryAndUploadTest
-AutofillUploadXmlParserTest.TestSuccessfulResponse
-AutofillUploadXmlParserTest.TestFailedResponse
-
-# Fail on memory bots, see http://crbug.com/298900
-ExtensionPermissionsTest.GetPermissionMessages_ManyHostsPermissions

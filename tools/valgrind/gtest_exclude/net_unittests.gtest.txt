@@ -20,5 +20,5 @@ SimpleIndexFileTest.WriteThenLoadIndex
 DiskCacheBackendTest.SimpleCacheAppCacheOnlyDoomAll
 DiskCacheBackendTest.SimpleCacheDoomAll
 
-# Flaky, see http://crbug.com/298777
+# Flaky, see http://crbug.com/297070
 *EndToEndTest.LargePostNoPacketLoss*

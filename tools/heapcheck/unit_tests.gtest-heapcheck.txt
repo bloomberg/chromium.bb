@@ -35,11 +35,3 @@ AppsModelBuilderTest.OnExtensionMoved
 # They may cause flaky leak reports and timeouts.
 *FLAKY_*
 *FAILS_*
-
-# Fail on memory bots, see http://crbug.com/298893
-AutofillDownloadTest.QueryAndUploadTest
-AutofillUploadXmlParserTest.TestSuccessfulResponse
-AutofillUploadXmlParserTest.TestFailedResponse
-
-# Fail on memory bots, see http://crbug.com/298900
-ExtensionPermissionsTest.GetPermissionMessages_ManyHostsPermissions
