@@ -18,15 +18,6 @@ bool WebCryptoImpl::EncryptInternal(
   return false;
 }
 
-bool WebCryptoImpl::DecryptInternal(
-    const WebKit::WebCryptoAlgorithm& algorithm,
-    const WebKit::WebCryptoKey& key,
-    const unsigned char* data,
-    unsigned data_size,
-    WebKit::WebArrayBuffer* buffer) {
-  return false;
-}
-
 bool WebCryptoImpl::DigestInternal(
     const WebKit::WebCryptoAlgorithm& algorithm,
     const unsigned char* data,

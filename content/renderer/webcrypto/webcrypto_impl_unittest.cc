@@ -138,15 +138,6 @@ class WebCryptoImplTest : public testing::Test {
     return crypto_.EncryptInternal(algorithm, key, data, data_size, buffer);
   }
 
-  bool DecryptInternal(
-      const WebKit::WebCryptoAlgorithm& algorithm,
-      const WebKit::WebCryptoKey& key,
-      const unsigned char* data,
-      unsigned data_size,
-      WebKit::WebArrayBuffer* buffer) {
-    return crypto_.DecryptInternal(algorithm, key, data, data_size, buffer);
-  }
-
  private:
   WebCryptoImpl crypto_;
 };
@@ -375,7 +366,7 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
   }
 }
 
-TEST_F(WebCryptoImplTest, AesCbcFailures) {
+TEST_F(WebCryptoImplTest, AesCbcEncryptionFailures) {
   WebKit::WebCryptoKey key = ImportSecretKeyFromRawHexString(
       "2b7e151628aed2a6abf7158809cf4f3c",
       CreateAlgorithm(WebKit::WebCryptoAlgorithmIdAesCbc),
@@ -385,22 +376,24 @@ TEST_F(WebCryptoImplTest, AesCbcFailures) {
 
   // Use an invalid |iv| (fewer than 16 bytes)
   {
-    std::vector<uint8> input(32);
+    std::vector<uint8> plain_text(33);
     std::vector<uint8> iv;
-    EXPECT_FALSE(EncryptInternal(
-        CreateAesCbcAlgorithm(iv), key, &input[0], input.size(), &output));
-    EXPECT_FALSE(DecryptInternal(
-        CreateAesCbcAlgorithm(iv), key, &input[0], input.size(), &output));
+    EXPECT_FALSE(EncryptInternal(CreateAesCbcAlgorithm(iv),
+                                 key,
+                                 &plain_text[0],
+                                 plain_text.size(),
+                                 &output));
   }
 
   // Use an invalid |iv| (more than 16 bytes)
   {
-    std::vector<uint8> input(32);
+    std::vector<uint8> plain_text(33);
     std::vector<uint8> iv(17);
-    EXPECT_FALSE(EncryptInternal(
-        CreateAesCbcAlgorithm(iv), key, &input[0], input.size(), &output));
-    EXPECT_FALSE(DecryptInternal(
-        CreateAesCbcAlgorithm(iv), key, &input[0], input.size(), &output));
+    EXPECT_FALSE(EncryptInternal(CreateAesCbcAlgorithm(iv),
+                                 key,
+                                 &plain_text[0],
+                                 plain_text.size(),
+                                 &output));
   }
 
   // Give an input that is too large (would cause integer overflow when
@@ -411,13 +404,11 @@ TEST_F(WebCryptoImplTest, AesCbcFailures) {
     // Pretend the input is large. Don't pass data pointer as NULL in case that
     // is special cased; the implementation shouldn't actually dereference the
     // data.
-    const unsigned char* input = &iv[0];
-    unsigned input_len = INT_MAX - 3;
+    const unsigned char* plain_text = &iv[0];
+    unsigned plain_text_len = INT_MAX - 3;
 
     EXPECT_FALSE(EncryptInternal(
-        CreateAesCbcAlgorithm(iv), key, input, input_len, &output));
-    EXPECT_FALSE(DecryptInternal(
-        CreateAesCbcAlgorithm(iv), key, input, input_len, &output));
+        CreateAesCbcAlgorithm(iv), key, plain_text, plain_text_len, &output));
   }
 
   // Fail importing the key (too few bytes specified)
@@ -530,44 +521,13 @@ TEST_F(WebCryptoImplTest, AesCbcSampleSets) {
 
     WebKit::WebArrayBuffer output;
 
-    // Test encryption.
     EXPECT_TRUE(EncryptInternal(CreateAesCbcAlgorithm(iv),
                                 key,
                                 &plain_text[0],
                                 plain_text.size(),
                                 &output));
+
     ExpectArrayBufferMatchesHex(test.cipher_text, output);
-
-    // Test decryption.
-    std::vector<uint8> cipher_text = HexStringToBytes(test.cipher_text);
-    EXPECT_TRUE(DecryptInternal(CreateAesCbcAlgorithm(iv),
-                                key,
-                                &cipher_text[0],
-                                cipher_text.size(),
-                                &output));
-    ExpectArrayBufferMatchesHex(test.plain_text, output);
-
-    const unsigned kAesCbcBlockSize = 16;
-
-    // Decrypt with a padding error by stripping the last block. This also ends
-    // up testing decryption over empty cipher text.
-    if (cipher_text.size() >= kAesCbcBlockSize) {
-      EXPECT_FALSE(DecryptInternal(CreateAesCbcAlgorithm(iv),
-                                   key,
-                                   &cipher_text[0],
-                                   cipher_text.size() - kAesCbcBlockSize,
-                                   &output));
-    }
-
-    // Decrypt cipher text which is not block-aligned, by stripping a few bytes
-    // off the cipher text.
-    if (cipher_text.size() > 3) {
-      EXPECT_FALSE(DecryptInternal(CreateAesCbcAlgorithm(iv),
-                                   key,
-                                   &cipher_text[0],
-                                   cipher_text.size() - 3,
-                                   &output));
-    }
   }
 }
 
