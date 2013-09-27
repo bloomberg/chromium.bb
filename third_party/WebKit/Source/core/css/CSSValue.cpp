@@ -427,7 +427,7 @@ void CSSValue::destroy()
         delete static_cast<CSSMixFunctionValue*>(this);
         return;
     case CSSShaderClass:
-        delete static_cast<CSSShaderValue*>(this);
+        delete toCSSShaderValue(this);
         return;
     case VariableClass:
         delete toCSSVariableValue(this);

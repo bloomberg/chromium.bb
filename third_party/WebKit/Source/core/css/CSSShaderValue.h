@@ -64,13 +64,7 @@ private:
     bool m_accessedShader;
 };
 
-// This will catch anyone doing an unnecessary cast.
-CSSShaderValue* toCSSShaderValue(const CSSShaderValue*);
-
-inline CSSShaderValue* toCSSShaderValue(CSSValue* value)
-{
-    return value->isCSSShaderValue() ? static_cast<CSSShaderValue*>(value) : 0;
-}
+DEFINE_CSS_VALUE_TYPE_CASTS(ShaderValue);
 
 } // namespace WebCore
 

@@ -93,7 +93,7 @@ public:
     bool isCSSFilterValue() const { return m_classType == CSSFilterClass; }
     bool isCSSArrayFunctionValue() const { return m_classType == CSSArrayFunctionValueClass; }
     bool isCSSMixFunctionValue() const { return m_classType == CSSMixFunctionValueClass; }
-    bool isCSSShaderValue() const { return m_classType == CSSShaderClass; }
+    bool isShaderValue() const { return m_classType == CSSShaderClass; }
     bool isVariableValue() const { return m_classType == VariableClass; }
     bool isGridTemplateValue() const { return m_classType == GridTemplateClass; }
     bool isSVGColor() const { return m_classType == SVGColorClass || m_classType == SVGPaintClass; }

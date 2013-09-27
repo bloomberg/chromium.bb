@@ -102,8 +102,8 @@ static StyleShader* cachedOrPendingStyleShaderFromValue(CSSShaderValue* value, S
 
 static StyleShader* styleShader(CSSValue* value, StyleResolverState& state)
 {
-    if (value->isCSSShaderValue())
-        return cachedOrPendingStyleShaderFromValue(static_cast<CSSShaderValue*>(value), state);
+    if (value->isShaderValue())
+        return cachedOrPendingStyleShaderFromValue(toCSSShaderValue(value), state);
     return 0;
 }
 
@@ -252,8 +252,12 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSy
     unsigned shadersListLength = shadersList->length();
     ASSERT(shadersListLength);
 
-    CSSShaderValue* vertexShader = toCSSShaderValue(shadersList->itemWithoutBoundsCheck(0));
+    CSSShaderValue* vertexShader = 0;
     CSSShaderValue* fragmentShader = 0;
+
+    if (shadersList->itemWithoutBoundsCheck(0)->isShaderValue())
+        vertexShader = toCSSShaderValue(shadersList->itemWithoutBoundsCheck(0));
+
     CustomFilterProgramType programType = PROGRAM_TYPE_BLENDS_ELEMENT_TEXTURE;
     CustomFilterProgramMixSettings mixSettings;
 
@@ -264,7 +268,9 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSy
             CSSValueListIterator iterator(mixFunction);
 
             ASSERT(mixFunction->length());
-            fragmentShader = toCSSShaderValue(iterator.value());
+            if (iterator.value()->isShaderValue())
+                fragmentShader = toCSSShaderValue(iterator.value());
+
             iterator.advance();
 
             ASSERT(mixFunction->length() <= 3);
@@ -280,7 +286,8 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSy
             }
         } else {
             programType = PROGRAM_TYPE_NO_ELEMENT_TEXTURE;
-            fragmentShader = toCSSShaderValue(fragmentShaderOrMixFunction);
+            if (fragmentShaderOrMixFunction->isShaderValue())
+                fragmentShader = toCSSShaderValue(fragmentShaderOrMixFunction);
         }
     }
 
