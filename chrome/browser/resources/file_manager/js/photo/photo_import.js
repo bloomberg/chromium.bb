@@ -11,18 +11,17 @@ document.addEventListener('DOMContentLoaded', function() {
 /**
  * The main Photo App object.
  * @param {HTMLElement} dom Container.
- * @param {FileSystem} filesystem Local file system.
+ * @param {VolumeManagerWrapper} volumeManager The initialized
+ *     VolumeManagerWrapper instance.
  * @param {Object} params Parameters.
  * @constructor
  */
-function PhotoImport(dom, filesystem, params) {
-  this.filesystem_ = filesystem;
+function PhotoImport(dom, volumeManager, params) {
   this.dom_ = dom;
   this.document_ = this.dom_.ownerDocument;
   this.metadataCache_ = params.metadataCache;
-  this.volumeManager_ = new VolumeManagerWrapper(true);
-  this.fileOperationManager_ =
-      FileOperationManagerWrapper.getInstance(this.filesystem_.root);
+  this.volumeManager_ = volumeManager;
+  this.fileOperationManager_ = FileOperationManagerWrapper.getInstance();
   this.mediaFilesList_ = null;
   this.destination_ = null;
   this.myPhotosDirectory_ = null;
@@ -48,10 +47,9 @@ PhotoImport.CREATE_DESTINATION_TRIES = 100;
 
 /**
  * Loads app in the document body.
- * @param {FileSystem=} opt_filesystem Local file system.
  * @param {Object=} opt_params Parameters.
  */
-PhotoImport.load = function(opt_filesystem, opt_params) {
+PhotoImport.load = function(opt_params) {
   ImageUtil.metrics = metrics;
 
   var hash = location.hash ? location.hash.substr(1) : '';
@@ -61,20 +59,16 @@ PhotoImport.load = function(opt_filesystem, opt_params) {
   if (!params.parentWindowId && query) params.parentWindowId = query;
   if (!params.metadataCache) params.metadataCache = MetadataCache.createFull();
 
-  function onFilesystem(filesystem) {
-    var dom = document.querySelector('.photo-import');
-    new PhotoImport(dom, filesystem, params);
-  }
-
   var api = chrome.fileBrowserPrivate || window.top.chrome.fileBrowserPrivate;
   api.getStrings(function(strings) {
     loadTimeData.data = strings;
+    var dom = document.querySelector('.photo-import');
 
-    if (opt_filesystem) {
-      onFilesystem(opt_filesystem);
-    } else {
-      api.requestFileSystem('compatible', onFilesystem);
-    }
+    var volumeManager = new VolumeManagerWrapper(
+        VolumeManagerWrapper.DriveEnabledStatus.DRIVE_ENABLED);
+    volumeManager.ensureInitialized(function() {
+      new PhotoImport(dom, volumeManager, params);
+    });
   });
 };
 
@@ -135,22 +129,23 @@ PhotoImport.prototype.initDom_ = function() {
  * @private
  */
 PhotoImport.prototype.initMyPhotos_ = function() {
-  this.volumeManager_.ensureInitialized(function() {
-    // TODO(hidehiko): Clean this up by removing filesystem_.
-    var directoryPath = PathUtil.join(
-        RootDirectory.DRIVE,
-        loadTimeData.getString('PHOTO_IMPORT_MY_PHOTOS_DIRECTORY_NAME'));
-    util.getOrCreateDirectory(
-        this.filesystem_.root, directoryPath,
-        function(entry) {
-          // This may enable the import button, so check that.
-          this.myPhotosDirectory_ = entry;
-          this.onSelectionChanged_();
-        }.bind(this),
-        function(error) {
-          this.onError_(loadTimeData.getString('PHOTO_IMPORT_DRIVE_ERROR'));
-        }.bind(this));
-  }.bind(this));
+  var driveVolume = this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE);
+  if (!driveVolume || driveVolume.error || !driveVolume.root) {
+    this.onError_(loadTimeData.getString('PHOTO_IMPORT_DRIVE_ERROR'));
+    return;
+  }
+
+  util.getOrCreateDirectory(
+      driveVolume.root,
+      loadTimeData.getString('PHOTO_IMPORT_MY_PHOTOS_DIRECTORY_NAME'),
+      function(entry) {
+        // This may enable the import button, so check that.
+        this.myPhotosDirectory_ = entry;
+        this.onSelectionChanged_();
+      },
+      function(error) {
+        this.onError_(loadTimeData.getString('PHOTO_IMPORT_DRIVE_ERROR'));
+      }.bind(this));
 };
 
 /**
@@ -171,32 +166,38 @@ PhotoImport.prototype.createDestination_ = function(onSuccess) {
       loadTimeData.getString('PHOTO_IMPORT_MY_PHOTOS_DIRECTORY_NAME'),
       dateFormatter.format(new Date()));
 
-  var createDirectory = function(directoryName) {
-    this.filesystem_.root.getDirectory(
-        directoryName,
-        { create: true },
-        function(dir) {
-          this.destination_ = dir;
-          onSuccess();
-        }.bind(this),
-        onError);
-  };
+  var driveVolume = this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE);
+  if (!driveVolume || driveVolume.error || !driveVolume.root) {
+    onError();
+    return;
+  }
 
-  // Try to create a directory: Name, Name (2), Name (3)...
-  var tryNext = function(tryNumber) {
-    if (tryNumber > PhotoImport.CREATE_DESTINATION_TRIES) {
+  var tryNext = function(number) {
+    if (number > PhotoImport.CREATE_DESTINATION_TRIES) {
       console.error('Too many directories with the same base name exist.');
       onError();
       return;
     }
+
     var directoryName = baseName;
-    if (tryNumber > 1)
+    if (number > 1)
       directoryName += ' (' + (tryNumber) + ')';
-    this.filesystem_.root.getDirectory(
+    driveVolume.root.getDirectory(
         directoryName,
-        { create: false },
-        tryNext.bind(this, tryNumber + 1),
-        createDirectory.bind(this, directoryName));
+        {create: true, exclusive: true},
+        function(entry) {
+          this.destination_ = entry;
+          onSuccess();
+        }.bind(this),
+        function(error) {
+          if (error.code === FileError.PATH_EXISTS_ERR) {
+            // If there already exists an entry, retry with incrementing the
+            // number.
+            tryNext(number + 1);
+            return;
+          }
+          onError();
+        }.bind(this));
   }.bind(this);
 
   tryNext(1);
@@ -209,21 +210,30 @@ PhotoImport.prototype.createDestination_ = function(onSuccess) {
  * @private
  */
 PhotoImport.prototype.loadSource_ = function(source) {
-  var onTraversed = function(results) {
-    this.dom_.removeAttribute('loading');
-    this.mediaFilesList_ = results.filter(FileType.isImageOrVideo);
-    this.fillGrid_();
-  }.bind(this);
-
-  var onEntry = function(entry) {
-    util.traverseTree(entry, onTraversed, 0 /* infinite depth */,
-        FileType.isVisible);
-  }.bind(this);
-
   var onError = this.onError_.bind(
       this, loadTimeData.getString('PHOTO_IMPORT_SOURCE_ERROR'));
 
-  util.resolvePath(this.filesystem_.root, source, onEntry, onError);
+  var result = [];
+  this.volumeManager_.resolvePath(
+      source,
+      function(sourceEntry) {
+        util.traverseTree(
+            entry,
+            function(entry) {
+              if (!FileType.isVisible(entry))
+                return false;
+              if (FileType.isImageOrVideo(entry))
+                result.push(entry);
+              return true;
+            },
+            function() {
+              this.dom_.removeAttribute('loading');
+              this.mediaFilesList_ = result;
+              this.fillGrid_();
+            }.bind(this),
+            onError);
+      }.bind(this),
+      onError);
 };
 
 /**

@@ -150,7 +150,7 @@ function loadVideoPlayer() {
     // If the video player is starting before the first instance of the File
     // Manager then it does not have access to filesystem URLs.
     // Request it now.
-    chrome.fileBrowserPrivate.requestFileSystem('compatible', reload);
+    volumeManager.ensureInitialized(reload);
     var reloadVideo = function(e) {
       if (decodeErrorOccured) {
         reload();
