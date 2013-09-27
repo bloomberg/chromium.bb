@@ -3906,26 +3906,6 @@
    fun:_ZN12RenderWidget18OnHandleInputEventERKN3IPC7MessageE
 }
 {
-   bug_107699
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   ...
-   fun:_ZN7WebCore13AnimationBase17ensurePropertyMapEv
-   fun:_ZN7WebCore13AnimationBase16getNumPropertiesEv
-   fun:_ZN7WebCore18CompositeAnimation17updateTransitionsEPNS_12RenderObjectEPNS_11RenderStyleES4_
-   fun:_ZN7WebCore18CompositeAnimation7animateEPNS_12RenderObjectEPNS_11RenderStyleES4_
-   fun:_ZN7WebCore19AnimationController16updateAnimationsEPNS_12RenderObjectEPNS_11RenderStyleE
-   fun:_ZN7WebCore12RenderObject18setAnimatableStyleEN3WTF10PassRefPtrINS_11RenderStyleEEE
-   fun:_ZN7WebCore4Node14setRenderStyleEN3WTF10PassRefPtrINS_11RenderStyleEEE
-   ...
-   fun:_ZN7WebCore7Element11recalcStyleENS_4Node11StyleChangeE
-   fun:_ZN7WebCore8Document11recalcStyleENS_4Node11StyleChangeE
-   fun:_ZN7WebCore8Document19updateStyleIfNeededEv
-   fun:_ZN7WebCore8Document12updateLayoutEv
-   fun:_ZN7WebCore8Document36updateLayoutIgnorePendingStylesheetsEv
-}
-{
    bug_108146a
    Memcheck:Leak
    fun:_Znw*
@@ -7219,4 +7199,30 @@
    fun:_ZN2ui8KeyEventC1ERKP7_XEventb
    fun:_ZN8chromeos31KeyboardDrivenEventRewriterTest25GetRewrittenEventAsStringEN2ui12KeyboardCodeEiNS1_9EventTypeEhj
    fun:_ZN8chromeos48KeyboardDrivenEventRewriterTest_PassThrough_Test8TestBodyEv
+}
+{
+   bug_299647
+   Memcheck:Unaddressable
+   fun:_ZNK3WTF6OwnPtrIN7WebCore19AnimationControllerEE3getEv
+   fun:_ZNK7WebCore5Frame9animationEv
+   fun:_ZNK7WebCore12RenderObject9animationEv
+   fun:_ZN7WebCore12RenderObject15willBeDestroyedEv
+   fun:_ZN7WebCore22RenderLayerModelObject15willBeDestroyedEv
+   fun:_ZN7WebCore20RenderBoxModelObject15willBeDestroyedEv
+   fun:_ZN7WebCore9RenderBox15willBeDestroyedEv
+   fun:_ZN7WebCore11RenderBlock15willBeDestroyedEv
+   fun:_ZN7WebCore16RenderFullScreen15willBeDestroyedEv
+   fun:_ZN7WebCore12RenderObject7destroyEv
+   fun:_ZN7WebCore22FullscreenElementStack21setFullScreenRendererEPNS_16RenderFullScreenE
+   fun:_ZN7WebCore22FullscreenElementStack19documentWasDetachedEv
+   fun:_ZN7WebCore25DocumentLifecycleNotifier25notifyDocumentWasDetachedEv
+   fun:_ZN7WebCore8Document6detachERKNS_4Node13AttachContextE
+   fun:_ZN7WebCore8Document21prepareForDestructionEv
+   fun:_ZN7WebCore5Frame7setViewEN3WTF10PassRefPtrINS_9FrameViewEEE
+   fun:_ZN7WebCore5Frame10createViewERKNS_7IntSizeERKNS_5ColorEbS3_bNS_13ScrollbarModeEbS7_b
+   fun:_ZN6WebKit12WebFrameImpl15createFrameViewEv
+   fun:_ZN6WebKit21FrameLoaderClientImpl31transitionToCommittedForNewPageEv
+   fun:_ZN7WebCore11FrameLoader21commitProvisionalLoadEv
+   fun:_ZN7WebCore14DocumentLoader13commitIfReadyEv
+   fun:_ZN7WebCore14DocumentLoader15finishedLoadingEd
 }

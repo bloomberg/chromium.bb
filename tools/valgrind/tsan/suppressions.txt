@@ -1101,12 +1101,21 @@
   fun:base::MessagePumpLibevent::OnLibeventNotification
 }
 {
-  bug_268924
+  bug_268924_a
   ThreadSanitizer:Race
   fun:base::PowerMonitor::PowerMonitor
   fun:content::ChildThread::Init
   fun:content::ChildThread::ChildThread
   fun:content::UtilityThreadImpl::UtilityThreadImpl
+}
+{
+  bug_268924_b
+  ThreadSanitizer:Race
+  ...
+  fun:base::PowerMonitor::*
+  fun:content::PowerMonitorMessageBroadcaster::~PowerMonitorMessageBroadcaster
+  fun:content::BrowserChildProcessHostImpl::~BrowserChildProcessHostImpl
+  fun:content::BrowserChildProcessHostImpl::~BrowserChildProcessHostImpl
 }
 {
   bug_295418
