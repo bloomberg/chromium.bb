@@ -162,7 +162,7 @@ void MediaSourcePlayer::Start() {
   playing_ = true;
 
   if (IsProtectedSurfaceRequired())
-    manager()->OnProtectedSurfaceRequested(demuxer_client_id_);
+    manager()->OnProtectedSurfaceRequested(player_id());
 
   StartInternal();
 }
