@@ -68,6 +68,8 @@ DownloadContentTest.ResumeInterruptedDownloadBadPrecondition
 DownloadContentTest.ResumeWithDeletedFile
 
 # http://crbug.com/181069
+WebrtcBrowserTest.CanForwardRemoteStream
+WebrtcBrowserTest.CanForwardRemoteStream720p
 WebrtcBrowserTest.CanSetupVideoCall
 WebrtcBrowserTest.CanSetupAudioAndVideoCall
 WebrtcBrowserTest.CanSetupAudioAndVideoCallWithoutMsidAndBundle
