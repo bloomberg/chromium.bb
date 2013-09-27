@@ -28,7 +28,9 @@ enum BrowserPluginPermissionType {
   // Note: Even through dialogs do not use the permission API, the dialog API
   // is sufficiently similiar that it's convenient to consider it a permission
   // type for code reuse.
-  BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG
+  BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG,
+
+  BROWSER_PLUGIN_PERMISSION_TYPE_CONTENT_END,
 };
 
 #endif  // CONTENT_COMMON_BROWSER_PLUGIN_PERMISSION_TYPE_H_

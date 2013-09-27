@@ -111,7 +111,9 @@ var WEB_VIEW_EVENTS = {
     },
     evt: CreateEvent('webview.onPermissionRequest'),
     fields: [
+      'identifier',
       'lastUnlockedBySelf',
+      'name',
       'permission',
       'requestMethod',
       'url',
@@ -751,7 +753,16 @@ WebViewInternal.prototype.handlePermissionEvent_ =
     console.warn(WARNING_MSG_PERMISSION_DENIED.replace('%1', permission));
   };
 
-  var PERMISSION_TYPES = this.getPermissionTypes_();
+  var PERMISSION_TYPES = this.getPermissionTypes_().concat(
+                             this.maybeGetExperimentalPermissions_());
+  if (PERMISSION_TYPES.indexOf(event.permission) < 0) {
+    // The permission type is not allowed. Trigger the default response.
+    var defaultPermission = this.getDefaultPermission_(event);
+    WebView.setPermission(self.instanceId_, requestId, defaultPermission, '');
+    if (!defaultPermission)
+      showWarningMessage(event.permission);
+    return;
+  }
 
   var self = this;
   var browserPluginNode = this.browserPluginNode_;
@@ -785,6 +796,7 @@ WebViewInternal.prototype.handlePermissionEvent_ =
     return;
   }
 
+  var defaultPermission = this.getDefaultPermission_(event);
   if (defaultPrevented) {
     // Make browser plugin track lifetime of |request|.
     MessagingNatives.BindToGC(request, function() {
@@ -792,13 +804,15 @@ WebViewInternal.prototype.handlePermissionEvent_ =
       if (decisionMade) {
         return;
       }
-      WebView.setPermission(self.instanceId_, requestId, false, '');
-      showWarningMessage(event.permission);
+      WebView.setPermission(self.instanceId_, requestId, defaultPermission, '');
+      if (!defaultPermission)
+        showWarningMessage(event.permission);
     });
   } else {
     decisionMade = true;
-    WebView.setPermission(self.instanceId_, requestId, false, '');
-    showWarningMessage(event.permission);
+    WebView.setPermission(self.instanceId_, requestId, defaultPermission, '');
+    if (!defaultPermission)
+      showWarningMessage(event.permission);
   }
 };
 
@@ -968,6 +982,20 @@ WebViewInternal.prototype.maybeGetExperimentalEvents_ = function() {};
  * @private
  */
 WebViewInternal.prototype.maybeAttachWebRequestEventToWebview_ = function() {};
+
+/**
+ * Implemented when the experimental API is available.
+ * @private
+ */
+WebViewInternal.prototype.maybeGetExperimentalPermissions_ = function() {
+  return [];
+};
+
+/** @private */
+WebViewInternal.prototype.getDefaultPermission_ = function(event) {
+  var PERMISSIONS_DEFAULT_ALLOWED = ['loadplugin'];
+  return PERMISSIONS_DEFAULT_ALLOWED.indexOf(event.permission) >= 0;
+};
 
 exports.WebView = WebView;
 exports.WebViewInternal = WebViewInternal;

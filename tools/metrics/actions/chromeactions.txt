@@ -1039,6 +1039,8 @@
 0x2df1e564b9b0952f	Launcher_ClickOnApplistButton
 0x384a6609143bbcae	LoadURL
 0xe009e92f3909009c	LoadURLFromKeyword
+0x5c9174370534d67c	LocalDiscoveryNotificationsDisabled_Settings_Disable
+0xf4495a1060f7a361	LocalDiscoveryNotificationsDisabled_Settings_Enable
 0x795fc04747be6afa	LockScreen
 0x733f4fb7447b7323	Login.CreateAccount
 0xb9cc6258dfd41f37	Login_DemoUserLoginSuccess
@@ -1256,6 +1258,7 @@
 0x98ccc71c44973ca0	Options_CheckCertRevocation_Disable
 0xc6599b9ffadec866	Options_CheckCertRevocation_Enable
 0x67aa79d60894f3d7	Options_ClearData
+0x4f27f3cc73dfa3ce	Options_CloudPrintDevicesPage
 0x2d5b58850046ac0a	Options_ContentSettings
 0xe2fd858f8395432f	Options_CustomFrame_Disable
 0x531823c36ca21da2	Options_CustomFrame_Enable
@@ -1642,6 +1645,9 @@
 0x462194a5096cab5e	WebView.ClearData
 0x1058b3af68275a1d	WebView.ExecuteScript
 0xbe313bfe6325dad0	WebView.Go
+0x8d7ae1bf68c5a2fe	WebView.Guest.PluginLoadAllowed
+0x26c605f6aa82b885	WebView.Guest.PluginLoadDenied
+0xdc50ad37450d2f2d	WebView.Guest.PluginLoadRequest
 0x749d2199e73fa34c	WebView.Guest.Terminate
 0xdeb501c069a2ff19	WebView.Reload
 0xdc14030aa71d5472	WebView.Stop

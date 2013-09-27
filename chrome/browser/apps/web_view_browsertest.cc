@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "apps/native_app_window.h"
+#include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
@@ -42,6 +43,15 @@ const char kEmptyResponsePath[] = "/close-socket";
 const char kRedirectResponsePath[] = "/server-redirect";
 const char kRedirectResponseFullPath[] =
     "/extensions/platform_apps/web_view/shim/guest_redirect.html";
+
+// Platform-specific filename relative to the chrome executable.
+#if defined(OS_WIN)
+const wchar_t library_name[] = L"ppapi_tests.dll";
+#elif defined(OS_MACOSX)
+const char library_name[] = "ppapi_tests.plugin";
+#elif defined(OS_POSIX)
+const char library_name[] = "libppapi_tests.so";
+#endif
 
 class EmptyHttpResponse : public net::test_server::HttpResponse {
  public:
@@ -1771,3 +1781,32 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestPromptDialog) {
              "DoneDialogTest.FAILED",
              "web_view/dialog");
 }
+
+#if defined(ENABLE_PLUGINS)
+class WebViewPluginTest : public WebViewTest {
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    WebViewTest::SetUpCommandLine(command_line);
+
+    // Append the switch to register the pepper plugin.
+    // library name = <out dir>/<test_name>.<library_extension>
+    // MIME type = application/x-ppapi-<test_name>
+    base::FilePath plugin_dir;
+    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
+
+    base::FilePath plugin_lib = plugin_dir.Append(library_name);
+    EXPECT_TRUE(base::PathExists(plugin_lib));
+    base::FilePath::StringType pepper_plugin = plugin_lib.value();
+    pepper_plugin.append(FILE_PATH_LITERAL(";application/x-ppapi-tests"));
+    command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
+                                     pepper_plugin);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginEvent) {
+  TestHelper("testPluginLoadPermission",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+#endif  // defined(ENABLE_PLUGINS)

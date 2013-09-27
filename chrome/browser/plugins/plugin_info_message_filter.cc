@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
@@ -227,6 +228,17 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     return;
   }
 #endif
+  if (plugin.type == WebPluginInfo::PLUGIN_TYPE_NPAPI) {
+    CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    // NPAPI plugins are not supported inside <webview> guests.
+    ExtensionRendererState::WebViewInfo info;
+    if (ExtensionRendererState::GetInstance()->GetWebViewInfo(
+            render_process_id_, params.render_view_id, &info)) {
+      status->value =
+          ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported;
+      return;
+    }
+  }
 
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
   bool uses_default_content_setting = true;
@@ -278,6 +290,19 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     status->value = ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay;
   else if (plugin_setting == CONTENT_SETTING_BLOCK)
     status->value = ChromeViewHostMsg_GetPluginInfo_Status::kBlocked;
+
+  if (status->value == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed) {
+    // Allow an embedder of <webview> to block a plugin from being loaded inside
+    // the guest. In order to do this, set the status to 'Unauthorized' here,
+    // and update the status as appropriate depending on the response from the
+    // embedder.
+    ExtensionRendererState::WebViewInfo info;
+    if (ExtensionRendererState::GetInstance()->GetWebViewInfo(
+            render_process_id_, params.render_view_id, &info)) {
+      status->value =
+          ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized;
+    }
+  }
 }
 
 bool PluginInfoMessageFilter::Context::FindEnabledPlugin(

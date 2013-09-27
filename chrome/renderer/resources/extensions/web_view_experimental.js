@@ -118,6 +118,10 @@ WebViewInternal.prototype.maybeGetExperimentalEvents_ = function() {
   return WEB_VIEW_EXPERIMENTAL_EVENTS;
 };
 
+WebViewInternal.prototype.maybeGetExperimentalPermissions_ = function() {
+  return ['loadplugin'];
+};
+
 /** @private */
 WebViewInternal.prototype.clearData_ = function(var_args) {
   if (!this.instanceId_) {

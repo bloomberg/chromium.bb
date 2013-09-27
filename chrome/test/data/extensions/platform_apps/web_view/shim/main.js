@@ -699,6 +699,31 @@ function testBrowserPluginNotAllowed() {
   embedder.test.succeed();
 }
 
+function testPluginLoadPermission() {
+  var pluginIdentifier = 'unknown platform';
+  if (navigator.platform.match(/linux/i))
+    pluginIdentifier = 'libppapi_tests.so';
+  else if (navigator.platform.match(/win32/i))
+    pluginIdentifier = 'ppapi_tests.dll';
+  else if (navigator.platform.match(/mac/i))
+    pluginIdentifier = 'ppapi_tests.plugin';
+
+  var webview = document.createElement('webview');
+  webview.addEventListener('permissionrequest', function(e) {
+    e.preventDefault();
+    embedder.test.assertEq('loadplugin', e.permission);
+    embedder.test.assertEq(pluginIdentifier, e.name);
+    embedder.test.assertEq(pluginIdentifier, e.identifier);
+    embedder.test.assertEq('function', typeof e.request.allow);
+    embedder.test.assertEq('function', typeof e.request.deny);
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', 'data:text/html,<body>' +
+                              '<embed type="application/x-ppapi-tests">' +
+                              '</embed></body>');
+  document.body.appendChild(webview);
+}
+
 // This test verifies that new window attachment functions as expected.
 function testNewWindow() {
   var webview = document.createElement('webview');
@@ -1072,6 +1097,7 @@ embedder.test.testList = {
   'testReassignSrcAttribute': testReassignSrcAttribute,
   'testRemoveSrcAttribute': testRemoveSrcAttribute,
   'testBrowserPluginNotAllowed': testBrowserPluginNotAllowed,
+  'testPluginLoadPermission': testPluginLoadPermission,
   'testNewWindow': testNewWindow,
   'testNewWindowTwoListeners': testNewWindowTwoListeners,
   'testNewWindowNoPreventDefault': testNewWindowNoPreventDefault,

@@ -29,6 +29,7 @@ class WebViewGuest : public GuestView,
   explicit WebViewGuest(content::WebContents* guest_web_contents);
 
   static WebViewGuest* From(int embedder_process_id, int instance_id);
+  static WebViewGuest* FromWebContents(content::WebContents* contents);
 
   // GuestView implementation.
   virtual void Attach(content::WebContents* embedder_web_contents,

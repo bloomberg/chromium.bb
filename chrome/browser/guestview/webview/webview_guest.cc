@@ -11,6 +11,7 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/guestview/guestview_constants.h"
 #include "chrome/browser/guestview/webview/webview_constants.h"
+#include "chrome/browser/guestview/webview/webview_permission_types.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -25,6 +26,10 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "net/base/net_errors.h"
+
+#if defined(ENABLE_PLUGINS)
+#include "chrome/browser/guestview/webview/plugin_permission_helper.h"
+#endif
 
 using content::WebContents;
 
@@ -63,9 +68,16 @@ static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
     case BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
       return webview::kPermissionTypeDialog;
     case BROWSER_PLUGIN_PERMISSION_TYPE_UNKNOWN:
-    default:
       NOTREACHED();
       break;
+    default: {
+      WebViewPermissionType webview = static_cast<WebViewPermissionType>(type);
+      switch (webview) {
+        case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
+          return webview::kPermissionTypeLoadPlugin;
+      }
+      NOTREACHED();
+    }
   }
   return std::string();
 }
@@ -85,6 +97,9 @@ void RemoveWebViewEventListenersOnIOThread(
 
 void AttachWebViewHelpers(WebContents* contents) {
   FaviconTabHelper::CreateForWebContents(contents);
+#if defined(ENABLE_PLUGINS)
+  PluginPermissionHelper::CreateForWebContents(contents);
+#endif
 }
 
 }  // namespace
@@ -114,6 +129,12 @@ WebViewGuest* WebViewGuest::From(int embedder_process_id,
   if (!guest)
     return NULL;
   return guest->AsWebView();
+}
+
+// static
+WebViewGuest* WebViewGuest::FromWebContents(WebContents* contents) {
+  GuestView* guest = GuestView::FromWebContents(contents);
+  return guest ? guest->AsWebView() : NULL;
 }
 
 void WebViewGuest::Attach(WebContents* embedder_web_contents,

@@ -713,10 +713,13 @@
         'browser/guestview/guestview_constants.h',
         'browser/guestview/guestview.cc',
         'browser/guestview/guestview.h',
+        'browser/guestview/webview/plugin_permission_helper.cc',
+        'browser/guestview/webview/plugin_permission_helper.h',
         'browser/guestview/webview/webview_constants.cc',
         'browser/guestview/webview/webview_constants.h',
         'browser/guestview/webview/webview_guest.cc',
         'browser/guestview/webview/webview_guest.h',
+        'browser/guestview/webview/webview_permission_types.h',
         'browser/hang_monitor/hang_crash_dump_win.cc',
         'browser/hang_monitor/hang_crash_dump_win.h',
         'browser/hang_monitor/hung_plugin_action.cc',
@@ -2779,6 +2782,7 @@
           ],
         }, {  # enable_plugins==0
           'sources/': [
+            ['exclude', '^browser/guestview/webview/plugin_permission_helper'],
             ['exclude', '^browser/pepper_'],
             ['exclude', '^browser/plugins/'],
             ['exclude', '^browser/renderer_host/pepper/'],

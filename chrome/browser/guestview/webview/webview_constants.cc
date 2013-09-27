@@ -37,6 +37,7 @@ const char kPermission[] = "permission";
 const char kPermissionTypeDialog[] = "dialog";
 const char kPermissionTypeDownload[] = "download";
 const char kPermissionTypeGeolocation[] = "geolocation";
+const char kPermissionTypeLoadPlugin[] = "loadplugin";
 const char kPermissionTypeMedia[] = "media";
 const char kPermissionTypeNewWindow[] = "newwindow";
 const char kPermissionTypePointerLock[] = "pointerLock";
