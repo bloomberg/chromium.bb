@@ -62,12 +62,15 @@ class ChromeSpeechRecognitionManagerDelegate::OptionalRequestInfo
 
   void CheckUMAAndGetHardwareInfo() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    // prefs::kMetricsReportingEnabled is not registered for OS_CHROMEOS.
+#if !defined(OS_CHROMEOS)
     if (g_browser_process->local_state()->GetBoolean(
         prefs::kMetricsReportingEnabled)) {
       // Access potentially slow OS calls from the FILE thread.
       BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
           base::Bind(&OptionalRequestInfo::GetHardwareInfo, this));
     }
+#endif
   }
 
   void GetHardwareInfo() {
