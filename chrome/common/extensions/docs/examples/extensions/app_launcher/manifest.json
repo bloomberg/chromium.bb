@@ -1,5 +1,6 @@
 {
   "name": "App Launcher",
+  "description": "Get access to your apps in a browser action",
   "version": "0.7.3",
   "permissions": ["management"],
   "browser_action": {

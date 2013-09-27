@@ -1,5 +1,6 @@
 {
   "name": "Sandboxed Frame",
+  "description": "Demonstrate use of handlebars inside a sandboxed frame",
   "version": "1.0",
   "manifest_version": 2,
   "permissions": ["notifications"],
