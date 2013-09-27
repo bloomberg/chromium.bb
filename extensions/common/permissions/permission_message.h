@@ -1,11 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_PERMISSIONS_PERMISSION_MESSAGE_H_
-#define CHROME_COMMON_EXTENSIONS_PERMISSIONS_PERMISSION_MESSAGE_H_
+#ifndef EXTENSIONS_COMMON_PERMISSIONS_PERMISSION_MESSAGE_H_
+#define EXTENSIONS_COMMON_PERMISSIONS_PERMISSION_MESSAGE_H_
 
-#include <set>
 #include <string>
 #include <vector>
 
@@ -80,12 +79,6 @@ class PermissionMessage {
   COMPILE_ASSERT(PermissionMessage::kNone > PermissionMessage::kUnknown,
                  kNone_not_greater_than_kUnknown);
 
-  // Creates the corresponding permission message for a list of hosts. This is
-  // simply a convenience method around the constructor, since the messages
-  // change depending on what hosts are present.
-  static PermissionMessage CreateFromHostList(
-      const std::set<std::string>& hosts);
-
   // Creates the corresponding permission message.
   PermissionMessage(ID id, const string16& message);
   PermissionMessage(ID id, const string16& message, const string16& details);
@@ -123,4 +116,4 @@ typedef std::vector<PermissionMessage> PermissionMessages;
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_PERMISSIONS_PERMISSION_MESSAGE_H_
+#endif  // EXTENSIONS_COMMON_PERMISSIONS_PERMISSION_MESSAGE_H_

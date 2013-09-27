@@ -13,7 +13,7 @@
 #include "base/lazy_instance.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
-#include "chrome/common/extensions/permissions/permission_message.h"
+#include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_provider.h"
 
 namespace extensions {

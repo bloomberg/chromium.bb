@@ -16,8 +16,8 @@
 #include "base/strings/string16.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
-#include "chrome/common/extensions/permissions/permission_message.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/url_pattern_set.h"
 
 namespace extensions {

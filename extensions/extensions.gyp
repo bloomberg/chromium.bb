@@ -64,6 +64,8 @@
         'common/matcher/url_matcher_helpers.h',
         'common/one_shot_event.cc',
         'common/one_shot_event.h',
+        'common/permissions/permission_message.cc',
+        'common/permissions/permission_message.h',
         'common/permissions/permissions_provider.h',
         'common/stack_frame.cc',
         'common/stack_frame.h',

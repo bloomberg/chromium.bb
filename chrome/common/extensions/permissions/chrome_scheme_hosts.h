@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_EXTENSIONS_PERMISSIONS_CHROME_SCHEME_HOSTS_H_
 #define CHROME_COMMON_EXTENSIONS_PERMISSIONS_CHROME_SCHEME_HOSTS_H_
 
-#include "chrome/common/extensions/permissions/permission_message.h"
+#include "extensions/common/permissions/permission_message.h"
 
 // Chrome-specific special case handling for permissions on hosts in
 // the chrome:// scheme.

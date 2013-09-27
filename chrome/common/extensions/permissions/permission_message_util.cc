@@ -1,49 +1,47 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/permissions/permission_message.h"
+#include "chrome/common/extensions/permissions/permission_message_util.h"
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "extensions/common/permissions/permission_message.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace extensions {
-//
-// PermissionMessage
-//
+using extensions::PermissionMessage;
 
-// static
-PermissionMessage PermissionMessage::CreateFromHostList(
-    const std::set<std::string>& hosts) {
+namespace permission_message_util {
+
+PermissionMessage CreateFromHostList(const std::set<std::string>& hosts) {
   std::vector<std::string> host_list(hosts.begin(), hosts.end());
   DCHECK(host_list.size());
-  ID message_id;
+  PermissionMessage::ID message_id;
   string16 message;
   string16 details;
 
   switch (host_list.size()) {
     case 1:
-      message_id = kHosts1;
+      message_id = PermissionMessage::kHosts1;
       message = l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_1_HOST,
                                            UTF8ToUTF16(host_list[0]));
       break;
     case 2:
-      message_id = kHosts2;
+      message_id = PermissionMessage::kHosts2;
       message = l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_2_HOSTS,
                                            UTF8ToUTF16(host_list[0]),
                                            UTF8ToUTF16(host_list[1]));
       break;
     case 3:
-      message_id = kHosts3;
+      message_id = PermissionMessage::kHosts3;
       message = l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_3_HOSTS,
                                            UTF8ToUTF16(host_list[0]),
                                            UTF8ToUTF16(host_list[1]),
                                            UTF8ToUTF16(host_list[2]));
       break;
     default:
-      message_id = kHosts4OrMore;
+      message_id = PermissionMessage::kHosts4OrMore;
 
       const int kRetainedFilesMessageIDs[6] = {
           IDS_EXTENSION_PROMPT_WARNING_HOSTS_DEFAULT,
@@ -71,19 +69,4 @@ PermissionMessage PermissionMessage::CreateFromHostList(
   return PermissionMessage(message_id, message, details);
 }
 
-PermissionMessage::PermissionMessage(
-    PermissionMessage::ID id, const string16& message)
-  : id_(id),
-    message_(message) {
-}
-
-PermissionMessage::PermissionMessage(
-    PermissionMessage::ID id, const string16& message, const string16& details)
-  : id_(id),
-    message_(message),
-    details_(details) {
-}
-
-PermissionMessage::~PermissionMessage() {}
-
-}  // namespace extensions
+}  // namespace permission_message_util

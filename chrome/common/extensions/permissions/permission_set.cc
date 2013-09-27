@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "chrome/common/extensions/permissions/chrome_scheme_hosts.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission.h"
+#include "chrome/common/extensions/permissions/permission_message_util.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/url_pattern.h"
@@ -520,7 +521,7 @@ std::set<PermissionMessage> PermissionSet::GetHostPermissionMessages(
 
     std::set<std::string> hosts = GetDistinctHostsForDisplay();
     if (!hosts.empty())
-      messages.insert(PermissionMessage::CreateFromHostList(hosts));
+      messages.insert(permission_message_util::CreateFromHostList(hosts));
   }
   return messages;
 }

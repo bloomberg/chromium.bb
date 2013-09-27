@@ -8,10 +8,10 @@
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/bluetooth_permission.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission.h"
-#include "chrome/common/extensions/permissions/permission_message.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/common/extensions/permissions/usb_device_permission.h"
+#include "extensions/common/permissions/permission_message.h"
 #include "grit/generated_resources.h"
 
 namespace extensions {

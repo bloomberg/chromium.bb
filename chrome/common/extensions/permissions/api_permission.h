@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/values.h"
-#include "chrome/common/extensions/permissions/permission_message.h"
+#include "extensions/common/permissions/permission_message.h"
 
 namespace IPC {
 class Message;
