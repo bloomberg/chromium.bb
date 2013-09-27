@@ -126,8 +126,12 @@ Status DeviceManager::AcquireDevice(scoped_ptr<Device>* device) {
   if (!status.IsOk())
     return status;
 
+  if (devices.empty())
+    return Status(kUnknownError, "There are no devices online");
+
   base::AutoLock lock(devices_lock_);
-  status = Status(kUnknownError, "No device avaliable");
+  status = Status(kUnknownError, "All devices are in use (" +
+                  base::IntToString(devices.size()) + " online)");
   std::vector<std::string>::iterator iter;
   for (iter = devices.begin(); iter != devices.end(); iter++) {
     if (!IsDeviceLocked(*iter)) {
@@ -148,12 +152,12 @@ Status DeviceManager::AcquireSpecificDevice(
 
   if (std::find(devices.begin(), devices.end(), device_serial) == devices.end())
     return Status(kUnknownError,
-        "Device " + device_serial + " is not avaliable");
+        "Device " + device_serial + " is not online");
 
   base::AutoLock lock(devices_lock_);
   if (IsDeviceLocked(device_serial)) {
     status = Status(kUnknownError,
-        "Device " + device_serial + " already has an active session");
+        "Device " + device_serial + " is already in use");
   } else {
     device->reset(LockDevice(device_serial));
     status = Status(kOk);
