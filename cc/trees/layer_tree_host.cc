@@ -797,6 +797,7 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
     }
 
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::CalcDrawProps");
+    bool can_render_to_separate_surface = true;
     LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(
         root_layer,
         device_viewport_size(),
@@ -806,6 +807,7 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
         page_scale_layer,
         GetRendererCapabilities().max_texture_size,
         settings_.can_use_lcd_text,
+        can_render_to_separate_surface,
         settings_.layer_transforms_should_scale_layer_contents,
         &update_list);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);

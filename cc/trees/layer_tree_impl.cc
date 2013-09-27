@@ -355,6 +355,8 @@ void LayerTreeImpl::UpdateDrawProperties() {
                  source_frame_number_);
     LayerImpl* page_scale_layer =
         page_scale_layer_ ? page_scale_layer_ : RootContainerLayer();
+    bool can_render_to_separate_surface =
+        !output_surface()->ForcedDrawToSoftwareDevice();
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         root_layer(),
         DrawViewportSize(),
@@ -364,6 +366,7 @@ void LayerTreeImpl::UpdateDrawProperties() {
         page_scale_layer,
         MaxTextureSize(),
         settings().can_use_lcd_text,
+        can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
         &render_surface_layer_list_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);

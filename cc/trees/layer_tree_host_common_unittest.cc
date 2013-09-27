@@ -8883,6 +8883,84 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(0, render_surface2->num_unclipped_descendants());
 }
 
+TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
+  FakeImplProxy proxy;
+  FakeLayerTreeHostImpl host_impl(&proxy);
+  scoped_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl.active_tree(), 12345);
+  scoped_ptr<LayerImpl> child1 =
+      LayerImpl::Create(host_impl.active_tree(), 123456);
+  scoped_ptr<LayerImpl> child2 =
+      LayerImpl::Create(host_impl.active_tree(), 1234567);
+  scoped_ptr<LayerImpl> child3 =
+      LayerImpl::Create(host_impl.active_tree(), 12345678);
+
+  gfx::Transform identity_matrix;
+  gfx::PointF anchor;
+  gfx::PointF position;
+  gfx::Size bounds(100, 100);
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               anchor,
+                               position,
+                               bounds,
+                               false);
+  root->SetDrawsContent(true);
+
+  // This layer structure normally forces render surface due to preserves3d
+  // behavior.
+  bool preserves3d = true;
+  SetLayerPropertiesForTesting(child1.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               anchor,
+                               position,
+                               bounds,
+                               preserves3d);
+  child1->SetDrawsContent(true);
+  SetLayerPropertiesForTesting(child2.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               anchor,
+                               position,
+                               bounds,
+                               false);
+  child2->SetDrawsContent(true);
+  SetLayerPropertiesForTesting(child3.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               anchor,
+                               position,
+                               bounds,
+                               false);
+  child3->SetDrawsContent(true);
+
+  child2->AddChild(child3.Pass());
+  child1->AddChild(child2.Pass());
+  root->AddChild(child1.Pass());
+
+  {
+    LayerImplList render_surface_layer_list;
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root.get(), root->bounds(), &render_surface_layer_list);
+    inputs.can_render_to_separate_surface = true;
+    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+    EXPECT_EQ(2u, render_surface_layer_list.size());
+  }
+
+  {
+    LayerImplList render_surface_layer_list;
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root.get(), root->bounds(), &render_surface_layer_list);
+    inputs.can_render_to_separate_surface = false;
+    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+    EXPECT_EQ(1u, render_surface_layer_list.size());
+  }
+}
+
 TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
   scoped_refptr<Layer> root = Layer::Create();
   scoped_refptr<Layer> render_surface = Layer::Create();

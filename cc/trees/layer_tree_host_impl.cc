@@ -859,8 +859,7 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     DCHECK(!have_copy_request);
 
   RemoveRenderPasses(CullRenderPassesWithNoQuads(), frame);
-  if (!output_surface_->ForcedDrawToSoftwareDevice())
-    renderer_->DecideRenderPassAllocationsForFrame(frame->render_passes);
+  renderer_->DecideRenderPassAllocationsForFrame(frame->render_passes);
   RemoveRenderPasses(CullRenderPassesWithCachedTextures(renderer_.get()),
                      frame);
 
@@ -876,6 +875,11 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
   // If we're making a frame to draw, it better have at least one render pass.
   DCHECK(!frame->render_passes.empty());
+
+  // Should only have one render pass in resourceless software mode.
+  if (output_surface_->ForcedDrawToSoftwareDevice())
+    DCHECK_EQ(1u, frame->render_passes.size());
+
   return draw_frame;
 }
 
