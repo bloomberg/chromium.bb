@@ -14,4 +14,4 @@ SVN_URL = 'http://src.chromium.org/chrome'
 VIEWVC_URL = 'http://src.chromium.org/viewvc/chrome'
 EXTENSIONS_SAMPLES = ('http://src.chromium.org/viewvc/chrome/trunk/src/chrome/'
                       'common/extensions/docs/examples')
-CODEREVIEW_SERVER = 'https://chromiumcodereview.appspot.com'
+CODEREVIEW_SERVER = 'https://codereview.chromium.org'
