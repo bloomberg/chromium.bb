@@ -72,6 +72,11 @@ class CHROME_DBUS_EXPORT ObjectProxy
   // Called when a signal is received. Signal* is the incoming signal.
   typedef base::Callback<void (Signal*)> SignalCallback;
 
+  // Called when NameOwnerChanged signal is received.
+  typedef base::Callback<void(
+      const std::string& old_owner,
+      const std::string& new_owner)> NameOwnerChangedCallback;
+
   // Called when the object proxy is connected to the signal.
   // Parameters:
   // - the interface name.
@@ -145,7 +150,7 @@ class CHROME_DBUS_EXPORT ObjectProxy
   // Sets a callback for "NameOwnerChanged" signal. The callback is called on
   // the origin thread when D-Bus system sends "NameOwnerChanged" for the name
   // represented by |service_name_|.
-  virtual void SetNameOwnerChangedCallback(SignalCallback callback);
+  virtual void SetNameOwnerChangedCallback(NameOwnerChangedCallback callback);
 
   // Detaches from the remote object. The Bus object will take care of
   // detaching so you don't have to do this manually.
@@ -253,6 +258,10 @@ class CHROME_DBUS_EXPORT ObjectProxy
   // Handles NameOwnerChanged signal from D-Bus's special message bus.
   DBusHandlerResult HandleNameOwnerChanged(scoped_ptr<dbus::Signal> signal);
 
+  // Runs |name_owner_changed_callback_|.
+  void RunNameOwnerChangedCallback(const std::string& old_owner,
+                                   const std::string& new_owner);
+
   scoped_refptr<Bus> bus_;
   std::string service_name_;
   ObjectPath object_path_;
@@ -266,7 +275,7 @@ class CHROME_DBUS_EXPORT ObjectProxy
   MethodTable method_table_;
 
   // The callback called when NameOwnerChanged signal is received.
-  SignalCallback name_owner_changed_callback_;
+  NameOwnerChangedCallback name_owner_changed_callback_;
 
   std::set<std::string> match_rules_;
 

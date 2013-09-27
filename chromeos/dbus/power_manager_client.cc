@@ -338,7 +338,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  void NameOwnerChangedReceived(dbus::Signal* signal) {
+  void NameOwnerChangedReceived(const std::string& old_owner,
+                                const std::string& new_owner) {
     VLOG(1) << "Power manager restarted";
     RegisterSuspendDelay();
     SetIsProjecting(last_is_projecting_);

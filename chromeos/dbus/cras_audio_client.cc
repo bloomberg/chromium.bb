@@ -197,7 +197,8 @@ class CrasAudioClientImpl : public CrasAudioClient {
         << "Failed to connect to cras signal:" << signal_name;
   }
 
-  void NameOwnerChangedReceived(dbus::Signal* signal) {
+  void NameOwnerChangedReceived(const std::string& old_owner,
+                                const std::string& new_owner) {
     FOR_EACH_OBSERVER(Observer, observers_, AudioClientRestarted());
   }
 

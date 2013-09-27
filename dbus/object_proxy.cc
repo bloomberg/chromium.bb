@@ -185,6 +185,13 @@ void ObjectProxy::ConnectToSignal(const std::string& interface_name,
                  signal_name));
 }
 
+void ObjectProxy::SetNameOwnerChangedCallback(
+    NameOwnerChangedCallback callback) {
+  bus_->AssertOnOriginThread();
+
+  name_owner_changed_callback_ = callback;
+}
+
 void ObjectProxy::Detach() {
   bus_->AssertOnDBusThread();
 
@@ -407,12 +414,6 @@ bool ObjectProxy::ConnectToSignalInternal(const std::string& interface_name,
   return success;
 }
 
-void ObjectProxy::SetNameOwnerChangedCallback(SignalCallback callback) {
-  bus_->AssertOnOriginThread();
-
-  name_owner_changed_callback_ = callback;
-}
-
 DBusHandlerResult ObjectProxy::HandleMessage(
     DBusConnection* connection,
     DBusMessage* raw_message) {
@@ -620,25 +621,23 @@ DBusHandlerResult ObjectProxy::HandleNameOwnerChanged(
         reader.PopString(&new_owner) &&
         name == service_name_) {
       service_name_owner_ = new_owner;
-      if (!name_owner_changed_callback_.is_null()) {
-        const base::TimeTicks start_time = base::TimeTicks::Now();
-        Signal* released_signal = signal.release();
-        std::vector<SignalCallback> callbacks;
-        callbacks.push_back(name_owner_changed_callback_);
-        bus_->GetOriginTaskRunner()->PostTask(
-            FROM_HERE,
-            base::Bind(&ObjectProxy::RunMethod,
-                       this,
-                       start_time,
-                       callbacks,
-                       released_signal));
-      }
+      bus_->GetOriginTaskRunner()->PostTask(
+          FROM_HERE,
+          base::Bind(&ObjectProxy::RunNameOwnerChangedCallback,
+                     this, old_owner, new_owner));
     }
   }
 
   // Always return unhandled to let other object proxies handle the same
   // signal.
   return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+void ObjectProxy::RunNameOwnerChangedCallback(const std::string& old_owner,
+                                              const std::string& new_owner) {
+  bus_->AssertOnOriginThread();
+  if (!name_owner_changed_callback_.is_null())
+    name_owner_changed_callback_.Run(old_owner, new_owner);
 }
 
 }  // namespace dbus

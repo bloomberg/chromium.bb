@@ -120,12 +120,9 @@ class SignalSenderVerificationTest : public testing::Test {
     message_loop_.Quit();
   }
 
-  void OnNameOwnerChanged(bool* called_flag, Signal* signal) {
-    MessageReader reader(signal);
-    std::string name, old_owner, new_owner;
-    ASSERT_TRUE(reader.PopString(&name));
-    ASSERT_TRUE(reader.PopString(&old_owner));
-    ASSERT_TRUE(reader.PopString(&new_owner));
+  void OnNameOwnerChanged(bool* called_flag,
+                          const std::string& old_owner,
+                          const std::string& new_owner) {
     latest_name_owner_ = new_owner;
     *called_flag = true;
     message_loop_.Quit();
