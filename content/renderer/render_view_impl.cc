@@ -2998,14 +2998,15 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     return NULL;
   }
 
-  scoped_refptr<cc::ContextProvider> context_provider =
-      RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
   scoped_ptr<StreamTextureFactory> stream_texture_factory;
   if (UsingSynchronousRendererCompositor()) {
     SynchronousCompositorFactory* factory =
         SynchronousCompositorFactory::GetInstance();
     stream_texture_factory = factory->CreateStreamTextureFactory(routing_id_);
   } else {
+    scoped_refptr<cc::ContextProvider> context_provider =
+        RenderThreadImpl::current()->SharedMainThreadContextProvider();
+
     if (!context_provider.get()) {
       LOG(ERROR) << "Failed to get context3d for media player";
       return NULL;

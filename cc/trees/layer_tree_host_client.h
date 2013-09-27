@@ -39,12 +39,10 @@ class LayerTreeHostClient {
   // Used only in the single-threaded path.
   virtual void ScheduleComposite() = 0;
 
-  // These must always return a valid ContextProvider. But the provider does not
-  // need to be capable of creating contexts.
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForMainThread() = 0;
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForCompositorThread() = 0;
+  // If the client provides an OutputSurface bound to a 3d context for direct
+  // rendering, this must return a provider that provides contexts usable from
+  // the same thread as the OutputSurface's context.
+  virtual scoped_refptr<cc::ContextProvider> OffscreenContextProvider() = 0;
 
   // This hook is for testing.
   virtual void DidFailToInitializeOutputSurface() {}

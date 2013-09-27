@@ -115,9 +115,7 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   virtual void DidCompleteSwapBuffers() OVERRIDE;
   virtual void ScheduleComposite() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForMainThread() OVERRIDE;
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForCompositorThread() OVERRIDE;
+      OffscreenContextProvider() OVERRIDE;
 
  private:
   RenderWidgetCompositor(RenderWidget* widget, bool threaded);

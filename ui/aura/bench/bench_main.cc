@@ -182,7 +182,6 @@ class WebGLBench : public BenchCompositorObserver {
         parent_(parent),
         webgl_(ui::LAYER_TEXTURED),
         compositor_(compositor),
-        context_provider_(),
         texture_(),
         fbo_(0),
         do_draw_(true) {
@@ -208,8 +207,8 @@ class WebGLBench : public BenchCompositorObserver {
     webgl_.SetBounds(bounds);
     parent_->Add(&webgl_);
 
-    context_provider_ = ui::ContextFactory::GetInstance()
-        ->OffscreenContextProviderForMainThread();
+    context_provider_ =
+        ui::ContextFactory::GetInstance()->SharedMainThreadContextProvider();
     WebKit::WebGraphicsContext3D* context = context_provider_->Context3d();
     context->makeContextCurrent();
     texture_ = new WebGLTexture(context, bounds.size());

@@ -136,7 +136,7 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   // Synchronously initialize context3d and enter hardware mode.
   // This can only supported in threaded compositing mode.
   // |offscreen_context_provider| should match what is returned by
-  // LayerTreeClient::OffscreenContextProviderForCompositorThread.
+  // LayerTreeClient::OffscreenContextProvider().
   bool InitializeAndSetContext3d(
       scoped_refptr<ContextProvider> context_provider,
       scoped_refptr<ContextProvider> offscreen_context_provider);

@@ -35,23 +35,12 @@ scoped_ptr<OutputSurface> FakeLayerTreeHostClient::CreateOutputSurface(
   return FakeOutputSurface::Create3d().PassAs<OutputSurface>();
 }
 
-scoped_refptr<ContextProvider> FakeLayerTreeHostClient::
-    OffscreenContextProviderForMainThread() {
-  if (!main_thread_contexts_.get() ||
-      main_thread_contexts_->DestroyedOnMainThread()) {
-    main_thread_contexts_ = TestContextProvider::Create();
-    if (main_thread_contexts_ && !main_thread_contexts_->BindToCurrentThread())
-      main_thread_contexts_ = NULL;
-  }
-  return main_thread_contexts_;
-}
-
-scoped_refptr<ContextProvider> FakeLayerTreeHostClient::
-    OffscreenContextProviderForCompositorThread() {
-  if (!compositor_thread_contexts_.get() ||
-      compositor_thread_contexts_->DestroyedOnMainThread())
-    compositor_thread_contexts_ = TestContextProvider::Create();
-  return compositor_thread_contexts_;
+scoped_refptr<ContextProvider>
+FakeLayerTreeHostClient::OffscreenContextProvider() {
+  if (!offscreen_contexts_.get() ||
+      offscreen_contexts_->DestroyedOnMainThread())
+    offscreen_contexts_ = TestContextProvider::Create();
+  return offscreen_contexts_;
 }
 
 }  // namespace cc

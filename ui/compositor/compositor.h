@@ -96,10 +96,18 @@ class COMPOSITOR_EXPORT ContextFactory {
   // Removes the reflector, which stops the mirroring.
   virtual void RemoveReflector(scoped_refptr<Reflector> reflector) = 0;
 
+  // Returns a reference to the offscreen context provider used by the
+  // compositor. This provider is bound and used on whichever thread the
+  // compositor is rendering from.
   virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForMainThread() = 0;
+      OffscreenCompositorContextProvider() = 0;
+
+  // Return a reference to a shared offscreen context provider usable from the
+  // main thread. This may be the same as OffscreenCompositorContextProvider()
+  // depending on the compositor's threading configuration. This provider will
+  // be bound to the main thread.
   virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForCompositorThread() = 0;
+      SharedMainThreadContextProvider() = 0;
 
   // Destroys per-compositor data.
   virtual void RemoveCompositor(Compositor* compositor) = 0;
@@ -125,9 +133,9 @@ class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
   virtual void RemoveReflector(scoped_refptr<Reflector> reflector) OVERRIDE;
 
   virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForMainThread() OVERRIDE;
+      OffscreenCompositorContextProvider() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForCompositorThread() OVERRIDE;
+      SharedMainThreadContextProvider() OVERRIDE;
   virtual void RemoveCompositor(Compositor* compositor) OVERRIDE;
   virtual bool DoesCreateTestContexts() OVERRIDE;
 
@@ -135,9 +143,9 @@ class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
 
  private:
   scoped_refptr<webkit::gpu::ContextProviderInProcess>
-      offscreen_contexts_main_thread_;
+      offscreen_compositor_contexts_;
   scoped_refptr<webkit::gpu::ContextProviderInProcess>
-      offscreen_contexts_compositor_thread_;
+      shared_main_thread_contexts_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultContextFactory);
 };
@@ -158,15 +166,15 @@ class COMPOSITOR_EXPORT TestContextFactory : public ContextFactory {
   virtual void RemoveReflector(scoped_refptr<Reflector> reflector) OVERRIDE;
 
   virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForMainThread() OVERRIDE;
+      OffscreenCompositorContextProvider() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForCompositorThread() OVERRIDE;
+      SharedMainThreadContextProvider() OVERRIDE;
   virtual void RemoveCompositor(Compositor* compositor) OVERRIDE;
   virtual bool DoesCreateTestContexts() OVERRIDE;
 
  private:
-  scoped_refptr<cc::TestContextProvider> offscreen_contexts_main_thread_;
-  scoped_refptr<cc::TestContextProvider> offscreen_contexts_compositor_thread_;
+  scoped_refptr<cc::TestContextProvider> offscreen_compositor_contexts_;
+  scoped_refptr<cc::TestContextProvider> shared_main_thread_contexts_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContextFactory);
 };
@@ -397,9 +405,7 @@ class COMPOSITOR_EXPORT Compositor
   virtual void DidCompleteSwapBuffers() OVERRIDE;
   virtual void ScheduleComposite() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForMainThread() OVERRIDE;
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForCompositorThread() OVERRIDE;
+      OffscreenContextProvider() OVERRIDE;
 
   int last_started_frame() { return last_started_frame_; }
   int last_ended_frame() { return last_ended_frame_; }

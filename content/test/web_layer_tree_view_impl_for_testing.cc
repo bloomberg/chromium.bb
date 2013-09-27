@@ -165,15 +165,10 @@ void WebLayerTreeViewImplForTesting::ScheduleComposite() {
 }
 
 scoped_refptr<cc::ContextProvider>
-WebLayerTreeViewImplForTesting::OffscreenContextProviderForMainThread() {
+WebLayerTreeViewImplForTesting::OffscreenContextProvider() {
+  // Unit tests only run in single threaded mode.
   return webkit::gpu::TestContextProviderFactory::GetInstance()->
       OffscreenContextProviderForMainThread();
-}
-
-scoped_refptr<cc::ContextProvider>
-WebLayerTreeViewImplForTesting::OffscreenContextProviderForCompositorThread() {
-  NOTREACHED();
-  return NULL;
 }
 
 }  // namespace webkit

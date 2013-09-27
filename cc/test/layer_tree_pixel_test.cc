@@ -65,15 +65,7 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface(
 }
 
 scoped_refptr<cc::ContextProvider>
-LayerTreePixelTest::OffscreenContextProviderForMainThread() {
-  scoped_refptr<webkit::gpu::ContextProviderInProcess> provider =
-      webkit::gpu::ContextProviderInProcess::CreateOffscreen();
-  CHECK(provider->BindToCurrentThread());
-  return provider;
-}
-
-scoped_refptr<cc::ContextProvider>
-LayerTreePixelTest::OffscreenContextProviderForCompositorThread() {
+LayerTreePixelTest::OffscreenContextProvider() {
   scoped_refptr<webkit::gpu::ContextProviderInProcess> provider =
       webkit::gpu::ContextProviderInProcess::CreateOffscreen();
   CHECK(provider.get());

@@ -141,26 +141,34 @@ void DefaultContextFactory::RemoveReflector(
 }
 
 scoped_refptr<cc::ContextProvider>
-DefaultContextFactory::OffscreenContextProviderForMainThread() {
-  if (!offscreen_contexts_main_thread_.get() ||
-      !offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
-    offscreen_contexts_main_thread_ =
+DefaultContextFactory::OffscreenCompositorContextProvider() {
+  if (!offscreen_compositor_contexts_.get() ||
+      !offscreen_compositor_contexts_->DestroyedOnMainThread()) {
+    offscreen_compositor_contexts_ =
         webkit::gpu::ContextProviderInProcess::CreateOffscreen();
-    if (offscreen_contexts_main_thread_.get() &&
-        !offscreen_contexts_main_thread_->BindToCurrentThread())
-      offscreen_contexts_main_thread_ = NULL;
   }
-  return offscreen_contexts_main_thread_;
+  return offscreen_compositor_contexts_;
 }
 
 scoped_refptr<cc::ContextProvider>
-DefaultContextFactory::OffscreenContextProviderForCompositorThread() {
-  if (!offscreen_contexts_compositor_thread_.get() ||
-      !offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
-    offscreen_contexts_compositor_thread_ =
+DefaultContextFactory::SharedMainThreadContextProvider() {
+  if (shared_main_thread_contexts_ &&
+      !shared_main_thread_contexts_->DestroyedOnMainThread())
+    return shared_main_thread_contexts_;
+
+  if (ui::Compositor::WasInitializedWithThread()) {
+    shared_main_thread_contexts_ =
         webkit::gpu::ContextProviderInProcess::CreateOffscreen();
+  } else {
+    shared_main_thread_contexts_ =
+        static_cast<webkit::gpu::ContextProviderInProcess*>(
+            OffscreenCompositorContextProvider().get());
   }
-  return offscreen_contexts_compositor_thread_;
+  if (shared_main_thread_contexts_ &&
+      !shared_main_thread_contexts_->BindToCurrentThread())
+    shared_main_thread_contexts_ = NULL;
+
+  return shared_main_thread_contexts_;
 }
 
 void DefaultContextFactory::RemoveCompositor(Compositor* compositor) {
@@ -188,22 +196,31 @@ void TestContextFactory::RemoveReflector(scoped_refptr<Reflector> reflector) {
 }
 
 scoped_refptr<cc::ContextProvider>
-TestContextFactory::OffscreenContextProviderForMainThread() {
-  if (!offscreen_contexts_main_thread_.get() ||
-      offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
-    offscreen_contexts_main_thread_ = cc::TestContextProvider::Create();
-    CHECK(offscreen_contexts_main_thread_->BindToCurrentThread());
-  }
-  return offscreen_contexts_main_thread_;
+TestContextFactory::OffscreenCompositorContextProvider() {
+  if (!offscreen_compositor_contexts_.get() ||
+      offscreen_compositor_contexts_->DestroyedOnMainThread())
+    offscreen_compositor_contexts_ = cc::TestContextProvider::Create();
+  return offscreen_compositor_contexts_;
 }
 
 scoped_refptr<cc::ContextProvider>
-TestContextFactory::OffscreenContextProviderForCompositorThread() {
-  if (!offscreen_contexts_compositor_thread_.get() ||
-      offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
-    offscreen_contexts_compositor_thread_ = cc::TestContextProvider::Create();
+TestContextFactory::SharedMainThreadContextProvider() {
+  if (shared_main_thread_contexts_ &&
+      !shared_main_thread_contexts_->DestroyedOnMainThread())
+    return shared_main_thread_contexts_;
+
+  if (ui::Compositor::WasInitializedWithThread()) {
+    shared_main_thread_contexts_ = cc::TestContextProvider::Create();
+  } else {
+    shared_main_thread_contexts_ =
+        static_cast<cc::TestContextProvider*>(
+            OffscreenCompositorContextProvider().get());
   }
-  return offscreen_contexts_compositor_thread_;
+  if (shared_main_thread_contexts_ &&
+      !shared_main_thread_contexts_->BindToCurrentThread())
+    shared_main_thread_contexts_ = NULL;
+
+  return shared_main_thread_contexts_;
 }
 
 void TestContextFactory::RemoveCompositor(Compositor* compositor) {
@@ -513,6 +530,7 @@ void Compositor::Initialize() {
 
 // static
 bool Compositor::WasInitializedWithThread() {
+  DCHECK(g_compositor_initialized);
   return !!g_compositor_thread;
 }
 
@@ -736,15 +754,8 @@ void Compositor::ScheduleComposite() {
     ScheduleDraw();
 }
 
-scoped_refptr<cc::ContextProvider>
-Compositor::OffscreenContextProviderForMainThread() {
-  return ContextFactory::GetInstance()->OffscreenContextProviderForMainThread();
-}
-
-scoped_refptr<cc::ContextProvider>
-Compositor::OffscreenContextProviderForCompositorThread() {
-  return ContextFactory::GetInstance()->
-      OffscreenContextProviderForCompositorThread();
+scoped_refptr<cc::ContextProvider> Compositor::OffscreenContextProvider() {
+  return ContextFactory::GetInstance()->OffscreenCompositorContextProvider();
 }
 
 const cc::LayerTreeDebugState& Compositor::GetLayerTreeDebugState() const {

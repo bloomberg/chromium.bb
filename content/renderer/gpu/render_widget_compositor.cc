@@ -623,14 +623,8 @@ void RenderWidgetCompositor::ScheduleComposite() {
 }
 
 scoped_refptr<cc::ContextProvider>
-RenderWidgetCompositor::OffscreenContextProviderForMainThread() {
-  return RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
-}
-
-scoped_refptr<cc::ContextProvider>
-RenderWidgetCompositor::OffscreenContextProviderForCompositorThread() {
-  return RenderThreadImpl::current()->
-      OffscreenContextProviderForCompositorThread();
+RenderWidgetCompositor::OffscreenContextProvider() {
+  return RenderThreadImpl::current()->OffscreenCompositorContextProvider();
 }
 
 }  // namespace content

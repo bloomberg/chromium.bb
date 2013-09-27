@@ -214,8 +214,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<QuotaMessageFilter> quota_message_filter_;
 
-  scoped_refptr<cc::ContextProvider> shared_offscreen_context_;
-
   webkit::WebCompositorSupportImpl compositor_support_;
 
   scoped_ptr<WebCryptoImpl> web_crypto_;

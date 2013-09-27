@@ -472,17 +472,7 @@ void CompositorImpl::ScheduleComposite() {
   client_->ScheduleComposite();
 }
 
-scoped_refptr<cc::ContextProvider>
-CompositorImpl::OffscreenContextProviderForMainThread() {
-  // There is no support for offscreen contexts, or compositor filters that
-  // would require them in this compositor instance. If they are needed,
-  // then implement a context provider that provides contexts from
-  // ImageTransportSurfaceAndroid.
-  return NULL;
-}
-
-scoped_refptr<cc::ContextProvider>
-CompositorImpl::OffscreenContextProviderForCompositorThread() {
+scoped_refptr<cc::ContextProvider> CompositorImpl::OffscreenContextProvider() {
   // There is no support for offscreen contexts, or compositor filters that
   // would require them in this compositor instance. If they are needed,
   // then implement a context provider that provides contexts from

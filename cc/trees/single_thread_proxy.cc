@@ -117,8 +117,9 @@ void SingleThreadProxy::CreateAndInitializeOutputSurface() {
   scoped_refptr<cc::ContextProvider> offscreen_context_provider;
   if (created_offscreen_context_provider_) {
     offscreen_context_provider =
-        layer_tree_host_->client()->OffscreenContextProviderForMainThread();
-    if (!offscreen_context_provider.get()) {
+        layer_tree_host_->client()->OffscreenContextProvider();
+    if (!offscreen_context_provider.get() ||
+        !offscreen_context_provider->BindToCurrentThread()) {
       OnOutputSurfaceInitializeAttempted(false);
       return;
     }
@@ -439,7 +440,11 @@ bool SingleThreadProxy::CommitAndComposite(
   if (renderer_capabilities_for_main_thread_.using_offscreen_context3d &&
       layer_tree_host_->needs_offscreen_context()) {
     offscreen_context_provider =
-        layer_tree_host_->client()->OffscreenContextProviderForMainThread();
+        layer_tree_host_->client()->OffscreenContextProvider();
+    if (offscreen_context_provider.get() &&
+        !offscreen_context_provider->BindToCurrentThread())
+      offscreen_context_provider = NULL;
+
     if (offscreen_context_provider.get())
       created_offscreen_context_provider_ = true;
   }

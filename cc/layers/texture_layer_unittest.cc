@@ -892,7 +892,8 @@ class TextureLayerNoMailboxIsActivatedDuringCommit : public LayerTreeTest,
  protected:
   TextureLayerNoMailboxIsActivatedDuringCommit()
       : wait_thread_("WAIT"),
-        wait_event_(false, false) {
+        wait_event_(false, false),
+        context_(TestWebGraphicsContext3D::Create()) {
     wait_thread_.Start();
   }
 
@@ -918,11 +919,11 @@ class TextureLayerNoMailboxIsActivatedDuringCommit : public LayerTreeTest,
 
   // TextureLayerClient implementation.
   virtual unsigned PrepareTexture() OVERRIDE {
-    return OffscreenContextProviderForMainThread()
-        ->Context3d()->createTexture();
+    context_->makeContextCurrent();
+    return context_->createTexture();
   }
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
-    return OffscreenContextProviderForMainThread()->Context3d();
+    return context_.get();
   }
   virtual bool PrepareTextureMailbox(
       TextureMailbox* mailbox,
@@ -1005,6 +1006,7 @@ class TextureLayerNoMailboxIsActivatedDuringCommit : public LayerTreeTest,
   int activate_commit_;
   scoped_refptr<Layer> root_;
   scoped_refptr<TextureLayer> layer_;
+  scoped_ptr<TestWebGraphicsContext3D> context_;
 };
 
 SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(

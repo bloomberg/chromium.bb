@@ -192,12 +192,12 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
 };
 
 // Adapts LayerTreeHost for test. Injects LayerTreeHostImplForTesting.
-class LayerTreeHostForTesting : public cc::LayerTreeHost {
+class LayerTreeHostForTesting : public LayerTreeHost {
  public:
   static scoped_ptr<LayerTreeHostForTesting> Create(
       TestHooks* test_hooks,
-      cc::LayerTreeHostClient* host_client,
-      const cc::LayerTreeSettings& settings,
+      LayerTreeHostClient* host_client,
+      const LayerTreeSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
     scoped_ptr<LayerTreeHostForTesting> layer_tree_host(
         new LayerTreeHostForTesting(test_hooks, host_client, settings));
@@ -206,14 +206,14 @@ class LayerTreeHostForTesting : public cc::LayerTreeHost {
     return layer_tree_host.Pass();
   }
 
-  virtual scoped_ptr<cc::LayerTreeHostImpl> CreateLayerTreeHostImpl(
-      cc::LayerTreeHostImplClient* host_impl_client) OVERRIDE {
+  virtual scoped_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
+      LayerTreeHostImplClient* host_impl_client) OVERRIDE {
     return LayerTreeHostImplForTesting::Create(
         test_hooks_,
         settings(),
         host_impl_client,
         proxy(),
-        rendering_stats_instrumentation()).PassAs<cc::LayerTreeHostImpl>();
+        rendering_stats_instrumentation()).PassAs<LayerTreeHostImpl>();
   }
 
   virtual void SetNeedsCommit() OVERRIDE {
@@ -230,8 +230,8 @@ class LayerTreeHostForTesting : public cc::LayerTreeHost {
 
  private:
   LayerTreeHostForTesting(TestHooks* test_hooks,
-                          cc::LayerTreeHostClient* client,
-                          const cc::LayerTreeSettings& settings)
+                          LayerTreeHostClient* client,
+                          const LayerTreeSettings& settings)
       : LayerTreeHost(client, settings),
         test_hooks_(test_hooks),
         test_started_(false) {}
@@ -298,14 +298,8 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient {
     test_hooks_->ScheduleComposite();
   }
 
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForMainThread() OVERRIDE {
-    return test_hooks_->OffscreenContextProviderForMainThread();
-  }
-
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForCompositorThread() OVERRIDE {
-    return test_hooks_->OffscreenContextProviderForCompositorThread();
+  virtual scoped_refptr<ContextProvider> OffscreenContextProvider() OVERRIDE {
+    return test_hooks_->OffscreenContextProvider();
   }
 
  private:
@@ -641,23 +635,11 @@ scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface(bool fallback) {
   return output_surface.PassAs<OutputSurface>();
 }
 
-scoped_refptr<cc::ContextProvider> LayerTreeTest::
-    OffscreenContextProviderForMainThread() {
-  if (!main_thread_contexts_.get() ||
-      main_thread_contexts_->DestroyedOnMainThread()) {
-    main_thread_contexts_ = TestContextProvider::Create();
-    if (main_thread_contexts_ && !main_thread_contexts_->BindToCurrentThread())
-      main_thread_contexts_ = NULL;
-  }
-  return main_thread_contexts_;
-}
-
-scoped_refptr<cc::ContextProvider> LayerTreeTest::
-    OffscreenContextProviderForCompositorThread() {
-  if (!compositor_thread_contexts_.get() ||
-      compositor_thread_contexts_->DestroyedOnMainThread())
-    compositor_thread_contexts_ = TestContextProvider::Create();
-  return compositor_thread_contexts_;
+scoped_refptr<ContextProvider> LayerTreeTest::OffscreenContextProvider() {
+  if (!compositor_contexts_.get() ||
+      compositor_contexts_->DestroyedOnMainThread())
+    compositor_contexts_ = TestContextProvider::Create();
+  return compositor_contexts_;
 }
 
 }  // namespace cc

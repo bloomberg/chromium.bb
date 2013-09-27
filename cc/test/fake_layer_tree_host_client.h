@@ -41,17 +41,13 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient {
   // Used only in the single-threaded path.
   virtual void ScheduleComposite() OVERRIDE {}
 
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForMainThread() OVERRIDE;
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForCompositorThread() OVERRIDE;
+  virtual scoped_refptr<ContextProvider> OffscreenContextProvider() OVERRIDE;
 
  private:
   bool use_software_rendering_;
   bool use_delegating_renderer_;
 
-  scoped_refptr<TestContextProvider> main_thread_contexts_;
-  scoped_refptr<TestContextProvider> compositor_thread_contexts_;
+  scoped_refptr<TestContextProvider> offscreen_contexts_;
 };
 
 }  // namespace cc

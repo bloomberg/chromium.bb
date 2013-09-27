@@ -76,10 +76,7 @@ class TestHooks : public AnimationDelegate {
   virtual void NotifyAnimationFinished(double time) OVERRIDE {}
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback) = 0;
-  virtual scoped_refptr<cc::ContextProvider>
-  OffscreenContextProviderForMainThread() = 0;
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForCompositorThread() = 0;
+  virtual scoped_refptr<ContextProvider> OffscreenContextProvider() = 0;
 };
 
 class BeginTask;
@@ -166,10 +163,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   FakeOutputSurface* output_surface() { return output_surface_; }
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback) OVERRIDE;
-  virtual scoped_refptr<cc::ContextProvider>
-  OffscreenContextProviderForMainThread() OVERRIDE;
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForCompositorThread() OVERRIDE;
+  virtual scoped_refptr<ContextProvider> OffscreenContextProvider() OVERRIDE;
 
  private:
   LayerTreeSettings settings_;
@@ -193,8 +187,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   base::CancelableClosure timeout_;
   base::WeakPtr<LayerTreeTest> main_thread_weak_ptr_;
   base::WeakPtrFactory<LayerTreeTest> weak_factory_;
-  scoped_refptr<TestContextProvider> main_thread_contexts_;
-  scoped_refptr<TestContextProvider> compositor_thread_contexts_;
+  scoped_refptr<TestContextProvider> compositor_contexts_;
 };
 
 }  // namespace cc

@@ -135,35 +135,15 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     return offscreen_context3d.Pass();
   }
 
-  virtual scoped_refptr<cc::ContextProvider>
-  OffscreenContextProviderForMainThread() OVERRIDE {
-    DCHECK(!HasImplThread());
-
-    if (!offscreen_contexts_main_thread_.get() ||
-        offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
-      offscreen_contexts_main_thread_ =
-          TestContextProvider::Create(
-              base::Bind(&LayerTreeHostContextTest::CreateOffscreenContext3d,
-                         base::Unretained(this)));
-      if (offscreen_contexts_main_thread_ &&
-          !offscreen_contexts_main_thread_->BindToCurrentThread())
-        offscreen_contexts_main_thread_ = NULL;
-    }
-    return offscreen_contexts_main_thread_;
-  }
-
-  virtual scoped_refptr<cc::ContextProvider>
-  OffscreenContextProviderForCompositorThread() OVERRIDE {
-    DCHECK(HasImplThread());
-
-    if (!offscreen_contexts_compositor_thread_.get() ||
-        offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
-      offscreen_contexts_compositor_thread_ =
+  virtual scoped_refptr<ContextProvider> OffscreenContextProvider() OVERRIDE {
+    if (!offscreen_contexts_.get() ||
+        offscreen_contexts_->DestroyedOnMainThread()) {
+      offscreen_contexts_ =
           TestContextProvider::Create(
               base::Bind(&LayerTreeHostContextTest::CreateOffscreenContext3d,
                          base::Unretained(this)));
     }
-    return offscreen_contexts_compositor_thread_;
+    return offscreen_contexts_;
   }
 
   virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
@@ -238,8 +218,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   bool context_should_support_io_surface_;
   bool fallback_context_works_;
 
-  scoped_refptr<TestContextProvider> offscreen_contexts_main_thread_;
-  scoped_refptr<TestContextProvider> offscreen_contexts_compositor_thread_;
+  scoped_refptr<TestContextProvider> offscreen_contexts_;
 };
 
 class LayerTreeHostContextTestLostContextSucceeds
@@ -476,7 +455,7 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
     // the active context.
     EXPECT_TRUE(content_impl->HaveResourceForTileAt(0, 0));
 
-    cc::ContextProvider* contexts = host_impl->offscreen_context_provider();
+    ContextProvider* contexts = host_impl->offscreen_context_provider();
     if (use_surface_) {
       ASSERT_TRUE(contexts);
       EXPECT_TRUE(contexts->Context3d());
@@ -597,7 +576,7 @@ class LayerTreeHostContextTestOffscreenContextFails
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    cc::ContextProvider* contexts = host_impl->offscreen_context_provider();
+    ContextProvider* contexts = host_impl->offscreen_context_provider();
     EXPECT_FALSE(contexts);
 
     // This did not lead to create failure.

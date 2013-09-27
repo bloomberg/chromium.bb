@@ -92,9 +92,7 @@ class CONTENT_EXPORT CompositorImpl
   virtual void DidCompleteSwapBuffers() OVERRIDE;
   virtual void ScheduleComposite() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForMainThread() OVERRIDE;
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForCompositorThread() OVERRIDE;
+      OffscreenContextProvider() OVERRIDE;
 
   // WebGraphicsContext3DSwapBuffersClient implementation.
   virtual void OnViewContextSwapBuffersPosted() OVERRIDE;

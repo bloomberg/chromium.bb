@@ -45,9 +45,7 @@ class FakeTexture : public ui::Texture {
 
 NoTransportImageTransportFactory::NoTransportImageTransportFactory(
     ui::ContextFactory* context_factory)
-    : context_factory_(context_factory),
-      context_provider_(
-          context_factory_->OffscreenContextProviderForMainThread()) {}
+    : context_factory_(context_factory) {}
 
 NoTransportImageTransportFactory::~NoTransportImageTransportFactory() {}
 
@@ -66,7 +64,8 @@ void NoTransportImageTransportFactory::DestroySharedSurfaceHandle(
 scoped_refptr<ui::Texture>
 NoTransportImageTransportFactory::CreateTransportClient(
     float device_scale_factor) {
-  return new FakeTexture(context_provider_, device_scale_factor);
+  return new FakeTexture(context_factory_->SharedMainThreadContextProvider(),
+                         device_scale_factor);
 }
 
 scoped_refptr<ui::Texture> NoTransportImageTransportFactory::CreateOwnedTexture(
@@ -77,8 +76,10 @@ scoped_refptr<ui::Texture> NoTransportImageTransportFactory::CreateOwnedTexture(
 }
 
 GLHelper* NoTransportImageTransportFactory::GetGLHelper() {
-  if (!gl_helper_)
+  if (!gl_helper_) {
+    context_provider_ = context_factory_->SharedMainThreadContextProvider();
     gl_helper_.reset(new GLHelper(context_provider_->Context3d()));
+  }
   return gl_helper_.get();
 }
 

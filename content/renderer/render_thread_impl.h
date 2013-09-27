@@ -268,10 +268,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_refptr<RendererGpuVideoAcceleratorFactories> GetGpuFactories(
       const scoped_refptr<base::MessageLoopProxy>& factories_loop);
 
-  scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForMainThread();
-  scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForCompositorThread();
+  scoped_refptr<cc::ContextProvider> OffscreenCompositorContextProvider();
+  scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider();
 
   // AudioRendererMixerManager instance which manages renderer side mixer
   // instances shared based on configured audio parameters.  Lazily created on
@@ -470,9 +468,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_ptr<InputHandlerManager> input_handler_manager_;
   scoped_refptr<IPC::ForwardingMessageFilter> compositor_output_surface_filter_;
 
-  scoped_refptr<ContextProviderCommandBuffer> shared_contexts_main_thread_;
-  scoped_refptr<ContextProviderCommandBuffer>
-      shared_contexts_compositor_thread_;
+  scoped_refptr<ContextProviderCommandBuffer> offscreen_compositor_contexts_;
+  scoped_refptr<ContextProviderCommandBuffer> shared_main_thread_contexts_;
 
   ObserverList<RenderProcessObserver> observers_;
 
