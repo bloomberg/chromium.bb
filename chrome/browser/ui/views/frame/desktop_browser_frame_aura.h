@@ -45,9 +45,9 @@ class DesktopBrowserFrameAura : public views::DesktopNativeWidgetAura,
   virtual ~DesktopBrowserFrameAura();
 
   // Overridden from views::DesktopNativeWidgetAura:
+  virtual void OnHostClosed() OVERRIDE;
   virtual void InitNativeWidget(
       const views::Widget::InitParams& params) OVERRIDE;
-  virtual void OnWindowDestroying() OVERRIDE;
 
   // Overridden from NativeBrowserFrame:
   virtual views::NativeWidget* AsNativeWidget() OVERRIDE;

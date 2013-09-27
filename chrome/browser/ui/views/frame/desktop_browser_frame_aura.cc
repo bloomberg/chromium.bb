@@ -45,6 +45,11 @@ DesktopBrowserFrameAura::~DesktopBrowserFrameAura() {
 ///////////////////////////////////////////////////////////////////////////////
 // DesktopBrowserFrameAura, views::DesktopNativeWidgetAura overrides:
 
+void DesktopBrowserFrameAura::OnHostClosed() {
+  aura::client::SetVisibilityClient(GetNativeView()->GetRootWindow(), NULL);
+  DesktopNativeWidgetAura::OnHostClosed();
+}
+
 void DesktopBrowserFrameAura::InitNativeWidget(
     const views::Widget::InitParams& params) {
   browser_desktop_root_window_host_ =
@@ -69,11 +74,6 @@ void DesktopBrowserFrameAura::InitNativeWidget(
                                     visibility_controller_.get());
   views::corewm::SetChildWindowVisibilityChangesAnimated(
       GetNativeView()->GetRootWindow());
-}
-
-void DesktopBrowserFrameAura::OnWindowDestroying() {
-  aura::client::SetVisibilityClient(GetNativeView()->GetRootWindow(), NULL);
-  DesktopNativeWidgetAura::OnWindowDestroying();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
