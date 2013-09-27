@@ -99,11 +99,11 @@ ValueStoreFrontend::ValueStoreFrontend(const base::FilePath& db_path)
   Init(db_path);
 }
 
-ValueStoreFrontend::ValueStoreFrontend(ValueStore* value_store)
+ValueStoreFrontend::ValueStoreFrontend(scoped_ptr<ValueStore> value_store)
     : backend_(new Backend()) {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&ValueStoreFrontend::Backend::InitWithStore,
-                 backend_, base::Passed(scoped_ptr<ValueStore>(value_store))));
+                 backend_, base::Passed(&value_store)));
 }
 
 ValueStoreFrontend::~ValueStoreFrontend() {

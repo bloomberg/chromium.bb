@@ -78,8 +78,10 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
     CreateExtensionPrefs(command_line, install_directory);
   // The ownership of |value_store_| is immediately transferred to state_store_,
   // but we keep a naked pointer to the TestingValueStore.
-  value_store_ = new TestingValueStore();
-  state_store_.reset(new StateStore(profile_, value_store_));
+  scoped_ptr<TestingValueStore> value_store(new TestingValueStore());
+  value_store_ = value_store.get();
+  state_store_.reset(
+      new StateStore(profile_, value_store.PassAs<ValueStore>()));
   blacklist_.reset(new Blacklist(ExtensionPrefs::Get(profile_)));
   standard_management_policy_provider_.reset(
       new StandardManagementPolicyProvider(ExtensionPrefs::Get(profile_)));

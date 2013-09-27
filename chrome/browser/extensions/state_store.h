@@ -30,7 +30,7 @@ class StateStore
   StateStore(Profile* profile, const base::FilePath& db_path,
              bool deferred_load);
   // This variant is useful for testing (using a mock ValueStore).
-  StateStore(Profile* profile, ValueStore* store);
+  StateStore(Profile* profile, scoped_ptr<ValueStore> store);
   virtual ~StateStore();
 
   // Register a key for removal upon extension install/uninstall. We remove

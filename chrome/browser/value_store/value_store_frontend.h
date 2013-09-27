@@ -13,8 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
-
-class ValueStore;
+#include "chrome/browser/value_store/value_store.h"
 
 namespace base {
 class FilePath;
@@ -30,7 +29,7 @@ class ValueStoreFrontend
   ValueStoreFrontend();
   explicit ValueStoreFrontend(const base::FilePath& db_path);
   // This variant is useful for testing (using a mock ValueStore).
-  explicit ValueStoreFrontend(ValueStore* value_store);
+  explicit ValueStoreFrontend(scoped_ptr<ValueStore> value_store);
   ~ValueStoreFrontend();
 
   void Init(const base::FilePath& db_path);
