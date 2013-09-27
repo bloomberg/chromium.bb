@@ -489,12 +489,6 @@ void MemoryDetails::UpdateHistograms() {
   int total_sample = static_cast<int>(aggregate_memory / 1000);
   UMA_HISTOGRAM_MEMORY_MB("Memory.Total", total_sample);
 
-  // Predict the number of processes needed when isolating all sites and when
-  // isolating only HTTPS sites.
-  int all_renderer_count = renderer_count + chrome_count + extension_count;
-  int non_renderer_count = browser.processes.size() - all_renderer_count;
-  SiteDetails::UpdateHistograms(browser.site_data, all_renderer_count,
-                                non_renderer_count);
 #if defined(OS_CHROMEOS)
   UpdateSwapHistograms();
 #endif
