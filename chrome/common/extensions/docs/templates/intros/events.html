@@ -3,17 +3,15 @@ An <code>Event</code> is an object
 that allows you to be notified
 when something interesting happens.
 Here's an example of using the
-<code>chrome.tabs.onCreated</code> event
-to be notified whenever there's a new tab:
+<code>chrome.alarms.onAlarm</code> event
+to be notified whenever an alarm has elapsed:
 </p>
 
 <pre>
-chrome.tabs.onCreated.<b>addListener(function(</b>tab<b>) {</b>
-  appendToLog('tabs.onCreated --'
-              + ' window: ' + tab.windowId
-              + ' tab: '    + tab.id
-              + ' index: '  + tab.index
-              + ' url: '    + tab.url);
+chrome.alarms.onAlarm.<b>addListener(function(</b>alarm<b>) {</b>
+  appendToLog('alarms.onAlarm --'
+              + ' name: '          + alarm.name
+              + ' scheduledTime: ' + alarm.scheduledTime);
 <b>});</b>
 </pre>
 
@@ -25,10 +23,10 @@ is always a function that you define to handle the event,
 but the parameters to the function depend on
 which event you're handling.
 Checking the documentation for
-$ref:tabs.onCreated,
+$ref:alarms.onAlarm,
 you can see that the function has a single parameter:
-a $ref:tabs.Tab object
-that has details about the newly created tab.
+an $ref:alarms.Alarm object
+that has details about the elapsed alarm.
 </p>
 
 
