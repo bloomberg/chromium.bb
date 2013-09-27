@@ -785,9 +785,9 @@ void CollectNetworkStats(const std::string& network_stats_server,
 
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // Check that there is a network connection. We get called only if UMA upload
-  // to the server has succeeded.
-  CHECK(!net::NetworkChangeNotifier::IsOffline());
+  if (net::NetworkChangeNotifier::IsOffline()) {
+    return;
+  }
 
   CR_DEFINE_STATIC_LOCAL(scoped_refptr<base::FieldTrial>, trial, ());
   static bool collect_stats = false;
