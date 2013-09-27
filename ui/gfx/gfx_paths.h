@@ -22,7 +22,7 @@ enum {
 };
 
 // Call once to register the provider for the path keys defined above.
-UI_EXPORT void RegisterPathProvider();
+GFX_EXPORT void RegisterPathProvider();
 
 }  // namespace gfx
 

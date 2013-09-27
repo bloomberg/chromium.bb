@@ -25,7 +25,7 @@ class Size;
 // size, with high-DPI bitmap versions; use an Image or ImageSkia for that. Each
 // image in an ImageFamily should have a different logical size (and may also
 // include high-DPI representations).
-class UI_EXPORT ImageFamily {
+class GFX_EXPORT ImageFamily {
  private:
   // An <aspect ratio, DIP width> pair.
   // A 0x0 image has aspect ratio 1.0. 0xN and Nx0 images are treated as 0x0.
@@ -41,7 +41,7 @@ class UI_EXPORT ImageFamily {
  public:
   // Type for iterating over all images in the family, in order.
   // Dereferencing this iterator returns a gfx::Image.
-  class UI_EXPORT const_iterator :
+  class GFX_EXPORT const_iterator :
     std::iterator<std::bidirectional_iterator_tag, const gfx::Image> {
    public:
     const_iterator();

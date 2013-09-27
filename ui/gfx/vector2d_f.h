@@ -16,7 +16,7 @@
 
 namespace gfx {
 
-class UI_EXPORT Vector2dF {
+class GFX_EXPORT Vector2dF {
  public:
   Vector2dF() : x_(0), y_(0) {}
   Vector2dF(float x, float y) : x_(x), y_(y) {}
@@ -91,16 +91,16 @@ inline Vector2dF operator-(const Vector2dF& lhs, const Vector2dF& rhs) {
 }
 
 // Return the cross product of two vectors.
-UI_EXPORT double CrossProduct(const Vector2dF& lhs, const Vector2dF& rhs);
+GFX_EXPORT double CrossProduct(const Vector2dF& lhs, const Vector2dF& rhs);
 
 // Return the dot product of two vectors.
-UI_EXPORT double DotProduct(const Vector2dF& lhs, const Vector2dF& rhs);
+GFX_EXPORT double DotProduct(const Vector2dF& lhs, const Vector2dF& rhs);
 
 // Return a vector that is |v| scaled by the given scale factors along each
 // axis.
-UI_EXPORT Vector2dF ScaleVector2d(const Vector2dF& v,
-                                  float x_scale,
-                                  float y_scale);
+GFX_EXPORT Vector2dF ScaleVector2d(const Vector2dF& v,
+                                   float x_scale,
+                                   float y_scale);
 
 // Return a vector that is |v| scaled by the given scale factor.
 inline Vector2dF ScaleVector2d(const Vector2dF& v, float scale) {

@@ -17,7 +17,7 @@ class Size;
 
 class SkBitmap;
 
-class UI_EXPORT SkBitmapOperations {
+class GFX_EXPORT SkBitmapOperations {
  public:
   // Enum for use in rotating images (must be in 90 degree increments),
   // see: Rotate.

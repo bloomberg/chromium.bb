@@ -12,7 +12,7 @@
 namespace gfx {
 
 // An ImageSkiaRep represents a bitmap and the scale factor it is intended for.
-class UI_EXPORT ImageSkiaRep {
+class GFX_EXPORT ImageSkiaRep {
  public:
   // Create null bitmap.
   ImageSkiaRep();

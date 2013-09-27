@@ -53,7 +53,7 @@ class ImageRep;
 class ImageStorage;
 }
 
-class UI_EXPORT Image {
+class GFX_EXPORT Image {
  public:
   enum RepresentationType {
     kImageRepGdk,

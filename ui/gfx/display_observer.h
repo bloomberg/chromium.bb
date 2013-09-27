@@ -13,7 +13,7 @@ class Display;
 // Observers for display configuration changes.
 // TODO(oshima): consolidate |WorkAreaWatcherObserver| and
 // |DisplaySettingsProvier|. crbug.com/122863.
-class UI_EXPORT DisplayObserver {
+class GFX_EXPORT DisplayObserver {
  public:
   // Called when the |display|'s bound has changed.
   virtual void OnDisplayBoundsChanged(const Display& display) = 0;

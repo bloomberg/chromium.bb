@@ -15,6 +15,10 @@
 #include <X11/Xlib.h>
 #endif
 
+#if defined(OS_WIN)
+#include "ui/gfx/win/dpi.h"
+#endif
+
 namespace ui {
 namespace test {
 
@@ -31,6 +35,10 @@ void CompositorTestSuite::Initialize() {
   base::TestSuite::Initialize();
 
   gfx::RegisterPathProvider();
+
+#if defined(OS_WIN)
+  gfx::InitDeviceScaleFactor(1.0f);
+#endif
 
   message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
 }

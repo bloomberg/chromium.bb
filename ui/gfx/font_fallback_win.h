@@ -20,20 +20,20 @@ namespace internal {
 //
 // Sets |filename| and |font_name| respectively. If a field is not present
 // or could not be parsed, the corresponding parameter will be cleared.
-void UI_EXPORT ParseFontLinkEntry(const std::string& entry,
+void GFX_EXPORT ParseFontLinkEntry(const std::string& entry,
                                   std::string* filename,
                                   std::string* font_name);
 
 // Parses a font |family| in the format "FamilyFoo & FamilyBar (TrueType)".
 // Splits by '&' and strips off the trailing parenthesized expression.
-void UI_EXPORT ParseFontFamilyString(const std::string& family,
+void GFX_EXPORT ParseFontFamilyString(const std::string& family,
                                      std::vector<std::string>* font_names);
 
 }  // namespace internal
 
 // Iterator over linked fallback fonts for a given font. The linked font chain
 // comes from the Windows registry, but gets cached between uses.
-class UI_EXPORT LinkedFontsIterator {
+class GFX_EXPORT LinkedFontsIterator {
  public:
   // Instantiates the iterator over the linked font chain for |font|. The first
   // item will be |font| itself.

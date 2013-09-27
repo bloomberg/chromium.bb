@@ -14,7 +14,7 @@
 namespace gfx {
 
 // A floating versin of gfx::Insets.
-class UI_EXPORT InsetsF : public InsetsBase<InsetsF, float> {
+class GFX_EXPORT InsetsF : public InsetsBase<InsetsF, float> {
  public:
   InsetsF();
   InsetsF(float top, float left, float bottom, float right);

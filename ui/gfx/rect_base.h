@@ -24,7 +24,7 @@ template<typename Class,
          typename InsetsClass,
          typename VectorClass,
          typename Type>
-class UI_EXPORT RectBase {
+class GFX_EXPORT RectBase {
  public:
   Type x() const { return origin_.x(); }
   void set_x(Type x) { origin_.set_x(x); }

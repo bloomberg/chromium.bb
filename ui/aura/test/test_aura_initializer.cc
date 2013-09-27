@@ -12,19 +12,15 @@ namespace aura {
 namespace test {
 
 TestAuraInitializer::TestAuraInitializer() {
-#if defined(OS_LINUX)
   base::FilePath pak_file;
   PathService::Get(base::DIR_MODULE, &pak_file);
   pak_file = pak_file.Append(FILE_PATH_LITERAL(
       "aura_test_support_resources.pak"));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
-#endif
 }
 
 TestAuraInitializer::~TestAuraInitializer() {
-#if defined(OS_LINUX)
   ui::ResourceBundle::CleanupSharedInstance();
-#endif
 }
 
 }  // namespace test

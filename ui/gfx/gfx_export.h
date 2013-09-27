@@ -5,10 +5,6 @@
 #ifndef UI_GFX_GFX_EXPORT_H_
 #define UI_GFX_GFX_EXPORT_H_
 
-// TODO(beng): remove include once gfx dependencies have been corrected.
-
-#include "ui/base/ui_export.h"
-
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 

@@ -34,7 +34,7 @@ class TestOnThread;
 // returned from ImageSkia::GetRepresentation, not on ImageSkia.
 //
 // ImageSkia is cheap to copy and intentionally supports copy semantics.
-class UI_EXPORT ImageSkia {
+class GFX_EXPORT ImageSkia {
  public:
   typedef std::vector<ImageSkiaRep> ImageSkiaReps;
 

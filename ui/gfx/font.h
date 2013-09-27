@@ -18,7 +18,7 @@ class PlatformFont;
 
 // Font provides a wrapper around an underlying font. Copy and assignment
 // operators are explicitly allowed, and cheap.
-class UI_EXPORT Font {
+class GFX_EXPORT Font {
  public:
   // The following constants indicate the font style.
   enum FontStyle {

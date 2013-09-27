@@ -13,10 +13,10 @@ typedef struct _GdkColor GdkColor;
 namespace gfx {
 
 // Converts GdkColors to the ARGB layout Skia expects.
-UI_EXPORT SkColor GdkColorToSkColor(GdkColor color);
+GFX_EXPORT SkColor GdkColorToSkColor(GdkColor color);
 
 // Converts ARGB to GdkColor.
-UI_EXPORT GdkColor SkColorToGdkColor(SkColor color);
+GFX_EXPORT GdkColor SkColorToGdkColor(SkColor color);
 
 }  // namespace gfx
 

@@ -15,7 +15,7 @@ namespace gfx {
 
 // A point has an x and y coordinate.
 template<typename Class, typename Type, typename VectorClass>
-class UI_EXPORT PointBase {
+class GFX_EXPORT PointBase {
  public:
   Type x() const { return x_; }
   Type y() const { return y_; }

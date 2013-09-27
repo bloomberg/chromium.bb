@@ -11,13 +11,13 @@
 namespace gfx {
 
 // Returns a Size with each component from the input SizeF floored.
-UI_EXPORT Size ToFlooredSize(const SizeF& size);
+GFX_EXPORT Size ToFlooredSize(const SizeF& size);
 
 // Returns a Size with each component from the input SizeF ceiled.
-UI_EXPORT Size ToCeiledSize(const SizeF& size);
+GFX_EXPORT Size ToCeiledSize(const SizeF& size);
 
 // Returns a Size with each component from the input SizeF rounded.
-UI_EXPORT Size ToRoundedSize(const SizeF& size);
+GFX_EXPORT Size ToRoundedSize(const SizeF& size);
 
 }  // namespace gfx
 

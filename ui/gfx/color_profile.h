@@ -16,7 +16,7 @@ namespace gfx {
 static const size_t kMinProfileLength = 128;
 static const size_t kMaxProfileLength = 4 * 1024 * 1024;
 
-class UI_EXPORT ColorProfile {
+class GFX_EXPORT ColorProfile {
  public:
   // On Windows, this reads a file from disk so it shouldn't be run on the UI
   // or IO thread.
@@ -32,7 +32,7 @@ class UI_EXPORT ColorProfile {
 };
 
 // Loads the monitor color space if available.
-UI_EXPORT void GetColorProfile(std::vector<char>* profile);
+GFX_EXPORT void GetColorProfile(std::vector<char>* profile);
 
 }  // namespace gfx
 

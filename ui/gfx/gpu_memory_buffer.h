@@ -47,7 +47,7 @@ struct GpuMemoryBufferHandle {
 // This interface is thread-safe. However, multiple threads mapping
 // a buffer for Write or ReadOrWrite simultaneously may result in undefined
 // behavior and is not allowed.
-class UI_EXPORT GpuMemoryBuffer {
+class GFX_EXPORT GpuMemoryBuffer {
  public:
   enum AccessMode {
     READ_ONLY,

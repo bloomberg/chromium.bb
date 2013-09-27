@@ -22,7 +22,7 @@ typedef struct tagPOINT POINT;
 namespace gfx {
 
 // A point has an x and y coordinate.
-class UI_EXPORT Point : public PointBase<Point, int, Vector2d> {
+class GFX_EXPORT Point : public PointBase<Point, int, Vector2d> {
  public:
   Point() : PointBase<Point, int, Vector2d>(0, 0) {}
   Point(int x, int y) : PointBase<Point, int, Vector2d>(x, y) {}

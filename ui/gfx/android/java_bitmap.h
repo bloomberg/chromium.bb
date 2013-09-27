@@ -17,7 +17,7 @@ namespace gfx {
 // This class wraps a JNI AndroidBitmap object to make it easier to use. It
 // handles locking and unlocking of the underlying pixels, along with wrapping
 // various JNI methods.
-class UI_EXPORT JavaBitmap {
+class GFX_EXPORT JavaBitmap {
  public:
   explicit JavaBitmap(jobject bitmap);
   ~JavaBitmap();
@@ -41,14 +41,15 @@ class UI_EXPORT JavaBitmap {
   DISALLOW_COPY_AND_ASSIGN(JavaBitmap);
 };
 
-UI_EXPORT base::android::ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(
+GFX_EXPORT base::android::ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(
     const SkBitmap* skbitmap);
 
-UI_EXPORT SkBitmap CreateSkBitmapFromJavaBitmap(JavaBitmap& jbitmap);
+GFX_EXPORT SkBitmap CreateSkBitmapFromJavaBitmap(JavaBitmap& jbitmap);
 
 // If the resource loads successfully, it will be resized to |size|.
 // Note: If the source resource is smaller than |size|, quality may suffer.
-UI_EXPORT SkBitmap CreateSkBitmapFromResource(const char* name, gfx::Size size);
+GFX_EXPORT SkBitmap CreateSkBitmapFromResource(const char* name,
+                                               gfx::Size size);
 
 }  // namespace gfx
 

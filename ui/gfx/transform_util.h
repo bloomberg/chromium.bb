@@ -13,11 +13,11 @@ namespace gfx {
 class Point;
 
 // Returns a scale transform at |anchor| point.
-UI_EXPORT Transform GetScaleTransform(const Point& anchor, float scale);
+GFX_EXPORT Transform GetScaleTransform(const Point& anchor, float scale);
 
 // Contains the components of a factored transform. These components may be
 // blended and recomposed.
-struct UI_EXPORT DecomposedTransform {
+struct GFX_EXPORT DecomposedTransform {
   // The default constructor initializes the components in such a way that
   // if used with Compose below, will produce the identity transform.
   DecomposedTransform();
@@ -37,21 +37,21 @@ struct UI_EXPORT DecomposedTransform {
 // routines described in http://www.w3.org/TR/css3-3d-transform/.
 // |progress| is in the range [0, 1] (0 leaves |out| unchanged, and 1
 // assigns |from| to |out|).
-UI_EXPORT bool BlendDecomposedTransforms(DecomposedTransform* out,
-                                         const DecomposedTransform& to,
-                                         const DecomposedTransform& from,
-                                         double progress);
+GFX_EXPORT bool BlendDecomposedTransforms(DecomposedTransform* out,
+                                          const DecomposedTransform& to,
+                                          const DecomposedTransform& from,
+                                          double progress);
 
 // Decomposes this transform into its translation, scale, skew, perspective,
 // and rotation components following the routines detailed in this spec:
 // http://www.w3.org/TR/css3-3d-transforms/.
-UI_EXPORT bool DecomposeTransform(DecomposedTransform* out,
-                                  const Transform& transform);
+GFX_EXPORT bool DecomposeTransform(DecomposedTransform* out,
+                                   const Transform& transform);
 
 // Composes a transform from the given translation, scale, skew, prespective,
 // and rotation components following the routines detailed in this spec:
 // http://www.w3.org/TR/css3-3d-transforms/.
-UI_EXPORT Transform ComposeTransform(const DecomposedTransform& decomp);
+GFX_EXPORT Transform ComposeTransform(const DecomposedTransform& decomp);
 
 }  // namespace gfx
 

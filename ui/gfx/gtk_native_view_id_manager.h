@@ -31,7 +31,7 @@ struct _GtkPreserveWindow;
 // pointers and observes the various signals from the widget for when an X
 // window is created, destroyed etc. Thus it provides a thread safe mapping
 // from NativeViewIds to the current XID for that widget.
-class UI_EXPORT GtkNativeViewManager {
+class GFX_EXPORT GtkNativeViewManager {
  public:
   // Returns the singleton instance.
   static GtkNativeViewManager* GetInstance();

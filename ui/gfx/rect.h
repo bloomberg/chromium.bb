@@ -35,7 +35,7 @@ namespace gfx {
 
 class Insets;
 
-class UI_EXPORT Rect
+class GFX_EXPORT Rect
     : public RectBase<Rect, Point, Size, Insets, Vector2d, int> {
  public:
   Rect() : RectBase<Rect, Point, Size, Insets, Vector2d, int>(Point()) {}
@@ -89,16 +89,16 @@ inline bool operator!=(const Rect& lhs, const Rect& rhs) {
   return !(lhs == rhs);
 }
 
-UI_EXPORT Rect operator+(const Rect& lhs, const Vector2d& rhs);
-UI_EXPORT Rect operator-(const Rect& lhs, const Vector2d& rhs);
+GFX_EXPORT Rect operator+(const Rect& lhs, const Vector2d& rhs);
+GFX_EXPORT Rect operator-(const Rect& lhs, const Vector2d& rhs);
 
 inline Rect operator+(const Vector2d& lhs, const Rect& rhs) {
   return rhs + lhs;
 }
 
-UI_EXPORT Rect IntersectRects(const Rect& a, const Rect& b);
-UI_EXPORT Rect UnionRects(const Rect& a, const Rect& b);
-UI_EXPORT Rect SubtractRects(const Rect& a, const Rect& b);
+GFX_EXPORT Rect IntersectRects(const Rect& a, const Rect& b);
+GFX_EXPORT Rect UnionRects(const Rect& a, const Rect& b);
+GFX_EXPORT Rect SubtractRects(const Rect& a, const Rect& b);
 
 // Constructs a rectangle with |p1| and |p2| as opposite corners.
 //
@@ -106,7 +106,7 @@ UI_EXPORT Rect SubtractRects(const Rect& a, const Rect& b);
 // points", except that we consider points on the right/bottom edges of the
 // rect to be outside the rect.  So technically one or both points will not be
 // contained within the rect, because they will appear on one of these edges.
-UI_EXPORT Rect BoundingRect(const Point& p1, const Point& p2);
+GFX_EXPORT Rect BoundingRect(const Point& p1, const Point& p2);
 
 inline Rect ScaleToEnclosingRect(const Rect& rect,
                                  float x_scale,

@@ -18,8 +18,8 @@ namespace gfx {
 
 // Creates an image from the given JPEG-encoded input. If there was an error
 // creating the image, returns an IsEmpty() Image.
-UI_EXPORT Image ImageFrom1xJPEGEncodedData(const unsigned char* input,
-                                           size_t input_size);
+GFX_EXPORT Image ImageFrom1xJPEGEncodedData(const unsigned char* input,
+                                            size_t input_size);
 
 // Fills the |dst| vector with JPEG-encoded bytes of the 1x representation of
 // the given image.
@@ -27,9 +27,9 @@ UI_EXPORT Image ImageFrom1xJPEGEncodedData(const unsigned char* input,
 // was encoded successfully.
 // |quality| determines the compression level, 0 == lowest, 100 == highest.
 // Returns true if the Image was encoded successfully.
-UI_EXPORT bool JPEG1xEncodedDataFromImage(const Image& image,
-                                          int quality,
-                                          std::vector<unsigned char>* dst);
+GFX_EXPORT bool JPEG1xEncodedDataFromImage(const Image& image,
+                                           int quality,
+                                           std::vector<unsigned char>* dst);
 
 }  // namespace gfx
 

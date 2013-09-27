@@ -17,7 +17,7 @@ namespace gfx {
 
 // A Quad is defined by four corners, allowing it to have edges that are not
 // axis-aligned, unlike a Rect.
-class UI_EXPORT QuadF {
+class GFX_EXPORT QuadF {
  public:
   QuadF() {}
   QuadF(const PointF& p1, const PointF& p2, const PointF& p3, const PointF& p4)
@@ -99,10 +99,10 @@ inline bool operator!=(const QuadF& lhs, const QuadF& rhs) {
 }
 
 // Add a vector to a quad, offseting each point in the quad by the vector.
-UI_EXPORT QuadF operator+(const QuadF& lhs, const Vector2dF& rhs);
+GFX_EXPORT QuadF operator+(const QuadF& lhs, const Vector2dF& rhs);
 // Subtract a vector from a quad, offseting each point in the quad by the
 // inverse of the vector.
-UI_EXPORT QuadF operator-(const QuadF& lhs, const Vector2dF& rhs);
+GFX_EXPORT QuadF operator-(const QuadF& lhs, const Vector2dF& rhs);
 
 }  // namespace gfx
 

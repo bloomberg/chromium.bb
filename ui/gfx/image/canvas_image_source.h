@@ -19,7 +19,7 @@ class ImageSkiaRep;
 // a scale factor using gfx::Canvas. It creates a new Canvas
 // with target scale factor and generates ImageSkiaRep when drawing is
 // completed.
-class UI_EXPORT CanvasImageSource : public gfx::ImageSkiaSource {
+class GFX_EXPORT CanvasImageSource : public gfx::ImageSkiaSource {
  public:
   CanvasImageSource(const gfx::Size& size, bool is_opaque);
 

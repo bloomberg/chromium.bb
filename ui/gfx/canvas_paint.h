@@ -17,7 +17,7 @@ class CanvasPaint {
  public:
   // Creates a canvas that paints to |view| when it is destroyed. The canvas is
   // sized to the client area of |view|.
-  UI_EXPORT static CanvasPaint* CreateCanvasPaint(gfx::NativeView view);
+  GFX_EXPORT static CanvasPaint* CreateCanvasPaint(gfx::NativeView view);
 
   virtual ~CanvasPaint() {}
 

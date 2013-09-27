@@ -23,7 +23,7 @@ class Size;
 // isn't as robust as would be required for a browser (see Decode() for more).
 // WebKit has its own more complicated PNG decoder which handles, among other
 // things, partially downloaded data.
-class UI_EXPORT PNGCodec {
+class GFX_EXPORT PNGCodec {
  public:
   enum ColorFormat {
     // 3 bytes per pixel (packed), in RGB order regardless of endianness.
@@ -43,7 +43,7 @@ class UI_EXPORT PNGCodec {
   };
 
   // Represents a comment in the tEXt ancillary chunk of the png.
-  struct UI_EXPORT Comment {
+  struct GFX_EXPORT Comment {
     Comment(const std::string& k, const std::string& t);
     ~Comment();
 

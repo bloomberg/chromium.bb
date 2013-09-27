@@ -32,7 +32,7 @@ namespace gfx {
 //
 // FontList allows operator= since FontList is a data member type in RenderText,
 // and operator= is used in RenderText::SetFontList().
-class UI_EXPORT FontList {
+class GFX_EXPORT FontList {
  public:
   // Creates a font list with a Font with default name and style.
   FontList();

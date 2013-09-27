@@ -11,25 +11,25 @@
 namespace gfx {
 
 // Returns the smallest Rect that encloses the given RectF.
-UI_EXPORT Rect ToEnclosingRect(const RectF& rect);
+GFX_EXPORT Rect ToEnclosingRect(const RectF& rect);
 
 // Returns the largest Rect that is enclosed by the given RectF.
-UI_EXPORT Rect ToEnclosedRect(const RectF& rect);
+GFX_EXPORT Rect ToEnclosedRect(const RectF& rect);
 
 // Returns the Rect after snapping the corners of the RectF to an integer grid.
 // This should only be used when the RectF you provide is expected to be an
 // integer rect with floating point error. If it is an arbitrary RectF, then
 // you should use a different method.
-UI_EXPORT Rect ToNearestRect(const RectF& rect);
+GFX_EXPORT Rect ToNearestRect(const RectF& rect);
 
 // Returns true if the Rect produced after snapping the corners of the RectF
 // to an integer grid is withing |distance|.
-UI_EXPORT bool IsNearestRectWithinDistance(
+GFX_EXPORT bool IsNearestRectWithinDistance(
     const gfx::RectF& rect, float distance);
 
 // Returns a Rect obtained by flooring the values of the given RectF.
 // Please prefer the previous two functions in new code.
-UI_EXPORT Rect ToFlooredRectDeprecated(const RectF& rect);
+GFX_EXPORT Rect ToFlooredRectDeprecated(const RectF& rect);
 
 }  // namespace gfx
 

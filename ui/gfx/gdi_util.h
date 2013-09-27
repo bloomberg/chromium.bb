@@ -15,7 +15,8 @@
 namespace gfx {
 
 // Creates a BITMAPINFOHEADER structure given the bitmap's size.
-UI_EXPORT void CreateBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr);
+GFX_EXPORT void CreateBitmapHeader(int width, int height,
+                                   BITMAPINFOHEADER* hdr);
 
 // Creates a BITMAPINFOHEADER structure given the bitmap's size and
 // color depth in bits per pixel.
@@ -25,28 +26,29 @@ void CreateBitmapHeaderWithColorDepth(int width, int height, int color_depth,
 // Creates a BITMAPV4HEADER structure given the bitmap's size.  You probably
 // only need to use BMP V4 if you need transparency (alpha channel). This
 // function sets the AlphaMask to 0xff000000.
-UI_EXPORT void CreateBitmapV4Header(int width, int height, BITMAPV4HEADER* hdr);
+GFX_EXPORT void CreateBitmapV4Header(int width, int height,
+                                     BITMAPV4HEADER* hdr);
 
 // Creates a monochrome bitmap header.
 void CreateMonochromeBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr);
 
 // Modify the given hrgn by subtracting the given rectangles.
-UI_EXPORT void SubtractRectanglesFromRegion(
+GFX_EXPORT void SubtractRectanglesFromRegion(
     HRGN hrgn,
     const std::vector<gfx::Rect>& cutouts);
 
-UI_EXPORT HRGN ConvertPathToHRGN(const gfx::Path& path);
+GFX_EXPORT HRGN ConvertPathToHRGN(const gfx::Path& path);
 
 // Calculate scale to fit an entire page on DC.
-UI_EXPORT double CalculatePageScale(HDC dc, int page_width, int page_height);
+GFX_EXPORT double CalculatePageScale(HDC dc, int page_width, int page_height);
 
 // Apply scaling to the DC.
-UI_EXPORT bool ScaleDC(HDC dc, double scale_factor);
+GFX_EXPORT bool ScaleDC(HDC dc, double scale_factor);
 
-UI_EXPORT void StretchDIBits(HDC hdc,
-                             int dest_x, int dest_y, int dest_w, int dest_h,
-                             int src_x, int src_y, int src_w, int src_h,
-                             void* pixels, const BITMAPINFO* bitmap_info);
+GFX_EXPORT void StretchDIBits(HDC hdc,
+                              int dest_x, int dest_y, int dest_w, int dest_h,
+                              int src_x, int src_y, int src_w, int src_h,
+                              void* pixels, const BITMAPINFO* bitmap_info);
 
 }  // namespace gfx
 

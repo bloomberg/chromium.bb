@@ -57,7 +57,7 @@ class SkBitmap;
 //   ::DestroyIcon(icon);
 //
 ///////////////////////////////////////////////////////////////////////////////
-class UI_EXPORT IconUtil {
+class GFX_EXPORT IconUtil {
  public:
   // The size of the large icon entries in .ico files on Windows Vista+.
   static const int kLargeIconSize = 256;

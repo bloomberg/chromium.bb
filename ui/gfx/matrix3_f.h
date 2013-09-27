@@ -10,7 +10,7 @@
 
 namespace gfx {
 
-class UI_EXPORT Matrix3F {
+class GFX_EXPORT Matrix3F {
  public:
   ~Matrix3F();
 

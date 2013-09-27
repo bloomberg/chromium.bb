@@ -27,7 +27,7 @@ namespace gfx {
 // them with a certain XDisplay. Some users of surfaces (CustomDrawButtonBase,
 // for example) own their surfaces instead since they interact with the
 // ResourceBundle instead of the GtkThemeService.
-class UI_EXPORT CairoCachedSurface {
+class GFX_EXPORT CairoCachedSurface {
  public:
   CairoCachedSurface();
   ~CairoCachedSurface();

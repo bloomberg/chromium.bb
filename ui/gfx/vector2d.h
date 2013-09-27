@@ -18,7 +18,7 @@
 
 namespace gfx {
 
-class UI_EXPORT Vector2d {
+class GFX_EXPORT Vector2d {
  public:
   Vector2d() : x_(0), y_(0) {}
   Vector2d(int x, int y) : x_(x), y_(y) {}

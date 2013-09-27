@@ -12,7 +12,7 @@
 
 namespace gfx {
 
-class UI_EXPORT Path : public SkPath {
+class GFX_EXPORT Path : public SkPath {
  public:
   // Used by Path(Point,size_t) constructor.
   struct Point {

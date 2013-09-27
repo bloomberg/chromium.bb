@@ -25,7 +25,7 @@ class Rect;
 // computer -- see the Display class for that. A single Screen object exists on
 // most operating systems regardless of the number of connected displays. On
 // Windows 8, two Screens exist: one for Metro UI and another for the desktop.
-class UI_EXPORT Screen {
+class GFX_EXPORT Screen {
  public:
   // Retrieves the Screen that the specified NativeView belongs to. A value of
   // NULL is treated as |SCREEN_TYPE_NATIVE|.

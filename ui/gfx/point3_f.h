@@ -14,7 +14,7 @@
 namespace gfx {
 
 // A point has an x, y and z coordinate.
-class UI_EXPORT Point3F {
+class GFX_EXPORT Point3F {
  public:
   Point3F() : x_(0), y_(0), z_(0) {}
 
@@ -90,15 +90,15 @@ inline bool operator!=(const Point3F& lhs, const Point3F& rhs) {
 }
 
 // Add a vector to a point, producing a new point offset by the vector.
-UI_EXPORT Point3F operator+(const Point3F& lhs, const Vector3dF& rhs);
+GFX_EXPORT Point3F operator+(const Point3F& lhs, const Vector3dF& rhs);
 
 // Subtract a vector from a point, producing a new point offset by the vector's
 // inverse.
-UI_EXPORT Point3F operator-(const Point3F& lhs, const Vector3dF& rhs);
+GFX_EXPORT Point3F operator-(const Point3F& lhs, const Vector3dF& rhs);
 
 // Subtract one point from another, producing a vector that represents the
 // distances between the two points along each axis.
-UI_EXPORT Vector3dF operator-(const Point3F& lhs, const Point3F& rhs);
+GFX_EXPORT Vector3dF operator-(const Point3F& lhs, const Point3F& rhs);
 
 inline Point3F PointAtOffsetFromOrigin(const Vector3dF& offset) {
   return Point3F(offset.x(), offset.y(), offset.z());

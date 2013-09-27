@@ -38,7 +38,7 @@ class Transform;
 // source and destination colors are combined. Unless otherwise specified,
 // the variant that does not take a SkXfermode::Mode uses a transfer mode
 // of kSrcOver_Mode.
-class UI_EXPORT Canvas {
+class GFX_EXPORT Canvas {
  public:
   enum TruncateFadeMode {
     TruncateFadeTail,

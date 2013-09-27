@@ -41,6 +41,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "ui/base/win/dpi_setup.h"
 #include "ui/gfx/win/dpi.h"
 #endif
 
@@ -562,6 +563,7 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
   if (base::mac::IsOSLionOrLater())
     supported_scale_factors.push_back(SCALE_FACTOR_200P);
 #elif defined(OS_WIN)
+  ui::win::InitDeviceScaleFactor();
   // Have high-DPI resources for 140% and 180% scaling on Windows based on
   // default scaling for Metro mode.  Round to nearest supported scale in
   // all cases.

@@ -25,21 +25,21 @@ namespace gfx {
 class ImageSkia;
 
 // Converts to ImageSkia from NSImage.
-UI_EXPORT gfx::ImageSkia ImageSkiaFromNSImage(NSImage* image);
+GFX_EXPORT gfx::ImageSkia ImageSkiaFromNSImage(NSImage* image);
 
 // Resizes NSImage to |size| DIP and then converts to ImageSkia.
-UI_EXPORT gfx::ImageSkia ImageSkiaFromResizedNSImage(NSImage* image,
-                                                     NSSize size);
+GFX_EXPORT gfx::ImageSkia ImageSkiaFromResizedNSImage(NSImage* image,
+                                                      NSSize size);
 
 // Resizes |[NSImage imageNamed:@NSApplicationIcon]| to have edge width of
 // |size| DIP and returns result as ImageSkia.
-UI_EXPORT gfx::ImageSkia ApplicationIconAtSize(int size);
+GFX_EXPORT gfx::ImageSkia ApplicationIconAtSize(int size);
 
 // Converts to NSImage from ImageSkia.
-UI_EXPORT NSImage* NSImageFromImageSkia(const gfx::ImageSkia& image_skia);
+GFX_EXPORT NSImage* NSImageFromImageSkia(const gfx::ImageSkia& image_skia);
 
 // Converts to NSImage from given ImageSkia and a color space.
-UI_EXPORT NSImage* NSImageFromImageSkiaWithColorSpace(
+GFX_EXPORT NSImage* NSImageFromImageSkiaWithColorSpace(
     const gfx::ImageSkia& image_skia,
     CGColorSpaceRef color_space);
 

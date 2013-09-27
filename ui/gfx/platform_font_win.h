@@ -14,7 +14,7 @@
 
 namespace gfx {
 
-class UI_EXPORT PlatformFontWin : public PlatformFont {
+class GFX_EXPORT PlatformFontWin : public PlatformFont {
  public:
   PlatformFontWin();
   explicit PlatformFontWin(NativeFont native_font);

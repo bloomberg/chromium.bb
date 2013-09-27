@@ -21,7 +21,7 @@ typedef std::vector<ShadowValue> ShadowValues;
 
 // ShadowValue encapsulates parameters needed to define a shadow, including the
 // shadow's offset, blur amount and color.
-class UI_EXPORT ShadowValue {
+class GFX_EXPORT ShadowValue {
  public:
   ShadowValue();
   ShadowValue(const gfx::Point& offset, double blur, SkColor color);

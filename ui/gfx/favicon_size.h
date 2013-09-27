@@ -10,12 +10,12 @@
 namespace gfx {
 
 // Size (along each axis) of the favicon.
-UI_EXPORT extern const int kFaviconSize;
+GFX_EXPORT extern const int kFaviconSize;
 
 // If the width or height is bigger than the favicon size, a new width/height
 // is calculated and returned in width/height that maintains the aspect
 // ratio of the supplied values.
-UI_EXPORT void CalculateFaviconTargetSize(int* width, int* height);
+GFX_EXPORT void CalculateFaviconTargetSize(int* width, int* height);
 
 }  // namespace gfx
 

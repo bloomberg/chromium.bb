@@ -18,7 +18,7 @@ class SkPaint;
 
 namespace gfx {
 
-class UI_EXPORT PlatformFontPango : public PlatformFont {
+class GFX_EXPORT PlatformFontPango : public PlatformFont {
  public:
   PlatformFontPango();
   explicit PlatformFontPango(NativeFont native_font);

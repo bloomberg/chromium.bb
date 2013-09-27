@@ -12,7 +12,7 @@ namespace gfx {
 // An insets represents the borders of a container (the space the container must
 // leave at each of its edges).
 template<typename Class, typename Type>
-class UI_EXPORT InsetsBase {
+class GFX_EXPORT InsetsBase {
  public:
   Type top() const { return top_; }
   Type left() const { return left_; }

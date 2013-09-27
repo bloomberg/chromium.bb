@@ -16,7 +16,7 @@ namespace gfx {
 
 // Creates a new REGION given |path|. The caller is responsible for destroying
 // the returned region.
-UI_EXPORT REGION* CreateRegionFromSkPath(const SkPath& path);
+GFX_EXPORT REGION* CreateRegionFromSkPath(const SkPath& path);
 
 }  // namespace gfx
 

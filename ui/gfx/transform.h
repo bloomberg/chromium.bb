@@ -21,7 +21,7 @@ class Vector3dF;
 
 // 4x4 transformation matrix. Transform is cheap and explicitly allows
 // copy/assign.
-class UI_EXPORT Transform {
+class GFX_EXPORT Transform {
  public:
 
   enum SkipInitialization {

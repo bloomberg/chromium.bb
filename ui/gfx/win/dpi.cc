@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/windows_version.h"
-#include "ui/base/layout.h"
 #include "base/win/registry.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/switches.h"
@@ -21,31 +20,6 @@ namespace {
 int kDefaultDPIX = 96;
 int kDefaultDPIY = 96;
 
-// Tests to see if the command line flag "--high-dpi-support" is set.
-bool IsHighDPIEnabled() {
-  // Default is disabled.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kHighDPISupport)) {
-    return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kHighDPISupport).compare("1") == 0;
-  }
-  return false;
-}
-
-// Gets the device scale factor. If support is enabled, this will return the
-// best available scale based on the screen's pixel density. This can be
-// affected (overridden) by --force-device-scale-factor=x
-float GetDeviceScaleFactorImpl() {
-  if (IsHighDPIEnabled()) {
-    float scale = gfx::Display::HasForceDeviceScaleFactor() ?
-        gfx::Display::GetForcedDeviceScaleFactor() : gfx::GetDPIScale();
-    // Quantize to nearest supported scale factor.
-    scale = ui::GetImageScale(ui::GetSupportedScaleFactor(scale));
-    return scale;
-  }
-  return 1.0f;
-}
-
 BOOL IsProcessDPIAwareWrapper() {
   typedef BOOL(WINAPI *IsProcessDPIAwarePtr)(VOID);
   IsProcessDPIAwarePtr is_process_dpi_aware_func =
@@ -56,9 +30,16 @@ BOOL IsProcessDPIAwareWrapper() {
   return FALSE;
 }
 
+float g_device_scale_factor = 0.0f;
+
 }  // namespace
 
 namespace gfx {
+
+void InitDeviceScaleFactor(float scale) {
+  DCHECK_NE(0.0f, scale);
+  g_device_scale_factor = scale;
+}
 
 Size GetDPI() {
   static int dpi_x = 0;
@@ -85,6 +66,16 @@ float GetDPIScale() {
   return 1.0;
 }
 
+bool IsHighDPIEnabled() {
+  // Default is disabled.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kHighDPISupport)) {
+    return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kHighDPISupport).compare("1") == 0;
+  }
+  return false;
+}
+
 bool IsInHighDPIMode() {
   return GetDPIScale() > 1.0;
 }
@@ -104,8 +95,8 @@ void EnableHighDPISupport() {
 namespace win {
 
 float GetDeviceScaleFactor() {
-  static const float device_scale_factor = GetDeviceScaleFactorImpl();
-  return device_scale_factor;
+  DCHECK_NE(0.0f, g_device_scale_factor);
+  return g_device_scale_factor;
 }
 
 Point ScreenToDIPPoint(const Point& pixel_point) {

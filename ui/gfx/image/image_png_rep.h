@@ -13,7 +13,7 @@ class Size;
 
 // An ImagePNGRep represents a bitmap's png encoded data and the scale factor it
 // was intended for.
-struct UI_EXPORT ImagePNGRep {
+struct GFX_EXPORT ImagePNGRep {
  public:
   ImagePNGRep();
   ImagePNGRep(const scoped_refptr<base::RefCountedMemory>& data,

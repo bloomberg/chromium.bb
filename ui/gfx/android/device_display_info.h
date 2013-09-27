@@ -16,7 +16,7 @@ namespace gfx {
 
 // Facilitates access to device information typically only
 // available using the Android SDK, including Display properties.
-class UI_EXPORT DeviceDisplayInfo {
+class GFX_EXPORT DeviceDisplayInfo {
  public:
   DeviceDisplayInfo();
   ~DeviceDisplayInfo();

@@ -11,13 +11,13 @@
 namespace gfx {
 
 // Returns a Vector2d with each component from the input Vector2dF floored.
-UI_EXPORT Vector2d ToFlooredVector2d(const Vector2dF& vector2d);
+GFX_EXPORT Vector2d ToFlooredVector2d(const Vector2dF& vector2d);
 
 // Returns a Vector2d with each component from the input Vector2dF ceiled.
-UI_EXPORT Vector2d ToCeiledVector2d(const Vector2dF& vector2d);
+GFX_EXPORT Vector2d ToCeiledVector2d(const Vector2dF& vector2d);
 
 // Returns a Vector2d with each component from the input Vector2dF rounded.
-UI_EXPORT Vector2d ToRoundedVector2d(const Vector2dF& vector2d);
+GFX_EXPORT Vector2d ToRoundedVector2d(const Vector2dF& vector2d);
 
 }  // namespace gfx
 

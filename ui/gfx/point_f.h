@@ -14,7 +14,7 @@
 namespace gfx {
 
 // A floating version of gfx::Point.
-class UI_EXPORT PointF : public PointBase<PointF, float, Vector2dF> {
+class GFX_EXPORT PointF : public PointBase<PointF, float, Vector2dF> {
  public:
   PointF() : PointBase<PointF, float, Vector2dF>(0, 0) {}
   PointF(float x, float y) : PointBase<PointF, float, Vector2dF>(x, y) {}
@@ -60,7 +60,7 @@ inline PointF PointAtOffsetFromOrigin(const Vector2dF& offset_from_origin) {
   return PointF(offset_from_origin.x(), offset_from_origin.y());
 }
 
-UI_EXPORT PointF ScalePoint(const PointF& p, float x_scale, float y_scale);
+GFX_EXPORT PointF ScalePoint(const PointF& p, float x_scale, float y_scale);
 
 inline PointF ScalePoint(const PointF& p, float scale) {
   return ScalePoint(p, scale, scale);

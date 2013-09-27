@@ -20,7 +20,7 @@ namespace gfx {
 // system. For platforms that support DIP (density independent pixel),
 // |bounds()| and |work_area| will return values in DIP coordinate
 // system, not in backing pixels.
-class UI_EXPORT Display {
+class GFX_EXPORT Display {
  public:
   // Screen Rotation in clock-wise degrees.
   enum Rotation {

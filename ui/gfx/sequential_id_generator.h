@@ -9,13 +9,13 @@
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/gfx_export.h"
 
 namespace ui {
 
 // This is used to generate a series of sequential ID numbers in a way that a
 // new ID is always the lowest possible ID in the sequence.
-class UI_EXPORT SequentialIDGenerator {
+class GFX_EXPORT SequentialIDGenerator {
  public:
    // Creates a new generator with the specified lower bound for the IDs.
   explicit SequentialIDGenerator(uint32 min_id);

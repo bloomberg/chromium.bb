@@ -33,7 +33,7 @@ namespace gfx {
 //     return 0;
 //   }
 // Note: The created context is always inialized to (0, 0, 0, 0).
-class UI_EXPORT CanvasSkiaPaint : public Canvas {
+class GFX_EXPORT CanvasSkiaPaint : public Canvas {
  public:
   // This constructor assumes the canvas is opaque.
   CanvasSkiaPaint(HWND hwnd, HDC dc, const PAINTSTRUCT& ps);

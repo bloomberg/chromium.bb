@@ -16,7 +16,7 @@ namespace gfx {
 
 class Font;
 
-class UI_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
+class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
  public:
   // Creates an appropriate PlatformFont implementation.
   static PlatformFont* CreateDefault();

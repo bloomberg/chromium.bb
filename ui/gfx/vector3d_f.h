@@ -17,7 +17,7 @@
 
 namespace gfx {
 
-class UI_EXPORT Vector3dF {
+class GFX_EXPORT Vector3dF {
  public:
   Vector3dF();
   Vector3dF(float x, float y, float z);
@@ -105,14 +105,14 @@ inline Vector3dF CrossProduct(const Vector3dF& lhs, const Vector3dF& rhs) {
 }
 
 // Return the dot product of two vectors.
-UI_EXPORT float DotProduct(const Vector3dF& lhs, const Vector3dF& rhs);
+GFX_EXPORT float DotProduct(const Vector3dF& lhs, const Vector3dF& rhs);
 
 // Return a vector that is |v| scaled by the given scale factors along each
 // axis.
-UI_EXPORT Vector3dF ScaleVector3d(const Vector3dF& v,
-                                  float x_scale,
-                                  float y_scale,
-                                  float z_scale);
+GFX_EXPORT Vector3dF ScaleVector3d(const Vector3dF& v,
+                                   float x_scale,
+                                   float y_scale,
+                                   float z_scale);
 
 // Return a vector that is |v| scaled by the given scale factor.
 inline Vector3dF ScaleVector3d(const Vector3dF& v, float scale) {

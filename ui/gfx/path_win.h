@@ -15,7 +15,7 @@ namespace gfx {
 
 // Creates a new HRGN given |path|. The caller is responsible for destroying
 // the returned region.
-UI_EXPORT HRGN CreateHRGNFromSkPath(const SkPath& path);
+GFX_EXPORT HRGN CreateHRGNFromSkPath(const SkPath& path);
 
 }  // namespace gfx
 

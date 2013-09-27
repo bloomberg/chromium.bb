@@ -15,10 +15,10 @@ namespace gfx {
 // only true if the system has high-contrast mode enabled and and is using a
 // light-on-dark color scheme. To be notified when this status changes, use
 // ScopedSysColorChangeListener, below.
-UI_EXPORT bool IsInvertedColorScheme();
+GFX_EXPORT bool IsInvertedColorScheme();
 
 // Interface for classes that want to listen to system color changes.
-class UI_EXPORT SysColorChangeListener {
+class GFX_EXPORT SysColorChangeListener {
  public:
   virtual void OnSysColorChange() = 0;
 
@@ -28,7 +28,7 @@ class UI_EXPORT SysColorChangeListener {
 
 // Create an instance of this class in any object that wants to listen
 // for system color changes.
-class UI_EXPORT ScopedSysColorChangeListener {
+class GFX_EXPORT ScopedSysColorChangeListener {
  public:
   explicit ScopedSysColorChangeListener(SysColorChangeListener* listener);
   ~ScopedSysColorChangeListener();

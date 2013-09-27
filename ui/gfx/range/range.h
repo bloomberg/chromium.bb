@@ -31,7 +31,7 @@ namespace gfx {
 // position; when they are the same, the Range is akin to a caret. Note that
 // |start_| can be greater than |end_| to respect the directionality of the
 // range.
-class UI_EXPORT Range {
+class GFX_EXPORT Range {
  public:
   // Creates an empty range {0,0}.
   Range();
@@ -110,7 +110,7 @@ class UI_EXPORT Range {
   size_t end_;
 };
 
-UI_EXPORT std::ostream& operator<<(std::ostream& os, const Range& range);
+GFX_EXPORT std::ostream& operator<<(std::ostream& os, const Range& range);
 
 }  // namespace gfx
 

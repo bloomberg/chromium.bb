@@ -23,7 +23,7 @@ typedef struct tagSIZE SIZE;
 namespace gfx {
 
 // A size has width and height values.
-class UI_EXPORT Size : public SizeBase<Size, int> {
+class GFX_EXPORT Size : public SizeBase<Size, int> {
  public:
   Size() : SizeBase<Size, int>(0, 0) {}
   Size(int width, int height) : SizeBase<Size, int>(width, height) {}

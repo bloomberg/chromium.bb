@@ -9,10 +9,10 @@
 
 namespace switches {
 
-UI_EXPORT extern const char kEnableBrowserTextSubpixelPositioning[];
-UI_EXPORT extern const char kEnableWebkitTextSubpixelPositioning[];
-UI_EXPORT extern const char kForceDeviceScaleFactor[];
-UI_EXPORT extern const char kHighDPISupport[];
+GFX_EXPORT extern const char kEnableBrowserTextSubpixelPositioning[];
+GFX_EXPORT extern const char kEnableWebkitTextSubpixelPositioning[];
+GFX_EXPORT extern const char kForceDeviceScaleFactor[];
+GFX_EXPORT extern const char kHighDPISupport[];
 
 }  // namespace switches
 

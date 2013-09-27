@@ -17,7 +17,7 @@ namespace gfx {
 class InsetsF;
 
 // A floating version of gfx::Rect.
-class UI_EXPORT RectF
+class GFX_EXPORT RectF
     : public RectBase<RectF, PointF, SizeF, InsetsF, Vector2dF, float> {
  public:
   RectF()
@@ -83,9 +83,9 @@ inline RectF operator+(const Vector2dF& lhs, const RectF& rhs) {
   return rhs + lhs;
 }
 
-UI_EXPORT RectF IntersectRects(const RectF& a, const RectF& b);
-UI_EXPORT RectF UnionRects(const RectF& a, const RectF& b);
-UI_EXPORT RectF SubtractRects(const RectF& a, const RectF& b);
+GFX_EXPORT RectF IntersectRects(const RectF& a, const RectF& b);
+GFX_EXPORT RectF UnionRects(const RectF& a, const RectF& b);
+GFX_EXPORT RectF SubtractRects(const RectF& a, const RectF& b);
 
 inline RectF ScaleRect(const RectF& r, float x_scale, float y_scale) {
   return RectF(r.x() * x_scale, r.y() * y_scale,
@@ -102,7 +102,7 @@ inline RectF ScaleRect(const RectF& r, float scale) {
 // points", except that we consider points on the right/bottom edges of the
 // rect to be outside the rect.  So technically one or both points will not be
 // contained within the rect, because they will appear on one of these edges.
-UI_EXPORT RectF BoundingRect(const PointF& p1, const PointF& p2);
+GFX_EXPORT RectF BoundingRect(const PointF& p1, const PointF& p2);
 
 #if !defined(COMPILER_MSVC)
 extern template class RectBase<RectF, PointF, SizeF, InsetsF, Vector2dF, float>;

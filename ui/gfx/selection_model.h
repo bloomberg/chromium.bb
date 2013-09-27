@@ -56,7 +56,7 @@ enum LogicalCursorDirection {
 // is given by a "caret affinity" which is either CURSOR_BACKWARD (indicating
 // the trailing half of the 'c' in this case) or CURSOR_FORWARD (indicating
 // the leading half of the 'D').
-class UI_EXPORT SelectionModel {
+class GFX_EXPORT SelectionModel {
  public:
   // Create a default SelectionModel to be overwritten later.
   SelectionModel();

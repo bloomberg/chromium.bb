@@ -12,7 +12,7 @@ namespace gfx {
 
 // A 3d version of gfx::RectF, with the positive z-axis pointed towards
 // the camera.
-class UI_EXPORT BoxF {
+class GFX_EXPORT BoxF {
  public:
   BoxF()
       : width_(0.f),
@@ -101,7 +101,7 @@ class UI_EXPORT BoxF {
   float depth_;
 };
 
-UI_EXPORT BoxF UnionBoxes(const BoxF& a, const BoxF& b);
+GFX_EXPORT BoxF UnionBoxes(const BoxF& a, const BoxF& b);
 
 inline BoxF ScaleBox(const BoxF& b,
                      float x_scale,

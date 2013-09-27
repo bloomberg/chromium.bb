@@ -151,7 +151,7 @@ struct Line {
 // visual layout. Support is built in for a cursor, a selection, simple styling,
 // complex scripts, and bi-directional text. Implementations provide mechanisms
 // for rendering and translation between logical and visual data.
-class UI_EXPORT RenderText {
+class GFX_EXPORT RenderText {
  public:
   virtual ~RenderText();
 

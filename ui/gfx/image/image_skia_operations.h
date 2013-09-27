@@ -17,7 +17,7 @@ class ImageSkia;
 class Rect;
 class Size;
 
-class UI_EXPORT ImageSkiaOperations {
+class GFX_EXPORT ImageSkiaOperations {
  public:
   // Create an image that is a blend of two others. The alpha argument
   // specifies the opacity of the second imag. The provided image must

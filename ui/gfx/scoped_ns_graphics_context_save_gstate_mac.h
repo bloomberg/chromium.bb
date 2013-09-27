@@ -17,7 +17,7 @@ class NSGraphicsContext;
 namespace gfx {
 
 // A class to save/restore the state of the current context.
-class UI_EXPORT ScopedNSGraphicsContextSaveGState {
+class GFX_EXPORT ScopedNSGraphicsContextSaveGState {
  public:
   ScopedNSGraphicsContextSaveGState();
   ~ScopedNSGraphicsContextSaveGState();

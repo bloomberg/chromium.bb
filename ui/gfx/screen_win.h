@@ -11,7 +11,7 @@
 
 namespace gfx {
 
-class UI_EXPORT ScreenWin : public gfx::Screen {
+class GFX_EXPORT ScreenWin : public gfx::Screen {
  public:
   ScreenWin();
   virtual ~ScreenWin();

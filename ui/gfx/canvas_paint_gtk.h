@@ -17,7 +17,7 @@ namespace gfx {
 // On construction, it will set up a context for painting into, and on
 // destruction, it will commit it to the GdkWindow.
 // Note: The created context is always inialized to (0, 0, 0, 0).
-class UI_EXPORT CanvasSkiaPaint : public Canvas {
+class GFX_EXPORT CanvasSkiaPaint : public Canvas {
  public:
   // This constructor assumes the result is opaque.
   explicit CanvasSkiaPaint(GdkEventExpose* event);

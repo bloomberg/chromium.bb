@@ -40,7 +40,7 @@ class MessageMapInterface {
 //  Windows.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class UI_EXPORT WindowImpl : public MessageMapInterface {
+class GFX_EXPORT WindowImpl : public MessageMapInterface {
  public:
   WindowImpl();
   virtual ~WindowImpl();

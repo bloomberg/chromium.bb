@@ -13,7 +13,7 @@ namespace gfx {
 
 class ImageSkiaRep;
 
-class UI_EXPORT ImageSkiaSource {
+class GFX_EXPORT ImageSkiaSource {
  public:
   virtual ~ImageSkiaSource() {}
 
