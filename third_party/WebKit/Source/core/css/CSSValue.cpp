@@ -376,13 +376,13 @@ void CSSValue::destroy()
         delete toCSSImageValue(this);
         return;
     case InheritedClass:
-        delete static_cast<CSSInheritedValue*>(this);
+        delete toCSSInheritedValue(this);
         return;
     case InitialClass:
         delete static_cast<CSSInitialValue*>(this);
         return;
     case GridTemplateClass:
-        delete static_cast<CSSGridTemplateValue*>(this);
+        delete toCSSGridTemplateValue(this);
         return;
     case PrimitiveClass:
         delete toCSSPrimitiveValue(this);

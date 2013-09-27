@@ -56,20 +56,7 @@ private:
     size_t m_columnCount;
 };
 
-inline CSSGridTemplateValue* toCSSGridTemplateValue(CSSValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value->isGridTemplateValue());
-    return static_cast<CSSGridTemplateValue*>(value);
-}
-
-inline const CSSGridTemplateValue* toCSSGridTemplateValue(const CSSValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(value->isGridTemplateValue());
-    return static_cast<const CSSGridTemplateValue*>(value);
-}
-
-// Catch unneeded cast.
-void toCSSGridTemplateValue(const CSSGridTemplateValue*);
+DEFINE_CSS_VALUE_TYPE_CASTS(GridTemplateValue);
 
 } // namespace WebCore
 

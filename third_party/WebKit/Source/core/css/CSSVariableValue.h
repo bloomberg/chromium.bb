@@ -59,17 +59,7 @@ private:
     const String m_value;
 };
 
-inline CSSVariableValue* toCSSVariableValue(CSSValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->isVariableValue());
-    return static_cast<CSSVariableValue*>(value);
-}
-
-inline const CSSVariableValue* toCSSVariableValue(const CSSValue* value)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->isVariableValue());
-    return static_cast<const CSSVariableValue*>(value);
-}
+DEFINE_CSS_VALUE_TYPE_CASTS(VariableValue);
 
 }
 
