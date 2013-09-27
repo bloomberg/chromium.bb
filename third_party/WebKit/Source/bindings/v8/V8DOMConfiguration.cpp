@@ -43,8 +43,8 @@ void V8DOMConfiguration::installConstants(v8::Handle<v8::FunctionTemplate> funct
 {
     for (size_t i = 0; i < constantCount; ++i) {
         const ConstantConfiguration* constant = &constants[i];
-        functionDescriptor->Set(v8::String::NewSymbol(constant->name), v8::Integer::New(constant->value, isolate), v8::ReadOnly);
-        prototype->Set(v8::String::NewSymbol(constant->name), v8::Integer::New(constant->value, isolate), v8::ReadOnly);
+        functionDescriptor->Set(v8::String::NewSymbol(constant->name), v8::Integer::New(constant->value, isolate), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+        prototype->Set(v8::String::NewSymbol(constant->name), v8::Integer::New(constant->value, isolate), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
     }
 }
 

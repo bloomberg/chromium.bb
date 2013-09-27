@@ -98,14 +98,14 @@ FAIL PerformanceTiming interface: window.performance.timing must inherit propert
 PASS PerformanceNavigation interface: existence and properties of interface object 
 FAIL PerformanceNavigation interface: existence and properties of interface prototype object assert_equals: class string of PerformanceNavigation.prototype expected "[object PerformanceNavigationPrototype]" but got "[object Object]"
 PASS PerformanceNavigation interface: existence and properties of interface prototype object's "constructor" property 
-FAIL PerformanceNavigation interface: constant TYPE_NAVIGATE on interface object assert_false: property is configurable expected false got true
-FAIL PerformanceNavigation interface: constant TYPE_NAVIGATE on interface prototype object assert_false: property is configurable expected false got true
-FAIL PerformanceNavigation interface: constant TYPE_RELOAD on interface object assert_false: property is configurable expected false got true
-FAIL PerformanceNavigation interface: constant TYPE_RELOAD on interface prototype object assert_false: property is configurable expected false got true
-FAIL PerformanceNavigation interface: constant TYPE_BACK_FORWARD on interface object assert_false: property is configurable expected false got true
-FAIL PerformanceNavigation interface: constant TYPE_BACK_FORWARD on interface prototype object assert_false: property is configurable expected false got true
-FAIL PerformanceNavigation interface: constant TYPE_RESERVED on interface object assert_false: property is configurable expected false got true
-FAIL PerformanceNavigation interface: constant TYPE_RESERVED on interface prototype object assert_false: property is configurable expected false got true
+PASS PerformanceNavigation interface: constant TYPE_NAVIGATE on interface object 
+PASS PerformanceNavigation interface: constant TYPE_NAVIGATE on interface prototype object 
+PASS PerformanceNavigation interface: constant TYPE_RELOAD on interface object 
+PASS PerformanceNavigation interface: constant TYPE_RELOAD on interface prototype object 
+PASS PerformanceNavigation interface: constant TYPE_BACK_FORWARD on interface object 
+PASS PerformanceNavigation interface: constant TYPE_BACK_FORWARD on interface prototype object 
+PASS PerformanceNavigation interface: constant TYPE_RESERVED on interface object 
+PASS PerformanceNavigation interface: constant TYPE_RESERVED on interface prototype object 
 FAIL PerformanceNavigation interface: attribute type assert_true: The prototype object must have a property "type" expected true got false
 FAIL PerformanceNavigation interface: attribute redirectCount assert_true: The prototype object must have a property "redirectCount" expected true got false
 PASS PerformanceNavigation must be primary interface of window.performance.navigation 

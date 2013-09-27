@@ -53,7 +53,7 @@ PASS Object.getOwnPropertyDescriptor(Node, 'DOCUMENT_POSITION_DISCONNECTED').val
 PASS Object.getOwnPropertyDescriptor(Node, 'DOCUMENT_POSITION_DISCONNECTED').hasOwnProperty('get') is false
 PASS Object.getOwnPropertyDescriptor(Node, 'DOCUMENT_POSITION_DISCONNECTED').hasOwnProperty('set') is false
 PASS Object.getOwnPropertyDescriptor(Node, 'DOCUMENT_POSITION_DISCONNECTED').enumerable is true
-FAIL Object.getOwnPropertyDescriptor(Node, 'DOCUMENT_POSITION_DISCONNECTED').configurable should be false. Was true.
+PASS Object.getOwnPropertyDescriptor(Node, 'DOCUMENT_POSITION_DISCONNECTED').configurable is false
 PASS Object.getOwnPropertyDescriptor(Math, 'sin').value is Math.sin
 PASS Object.getOwnPropertyDescriptor(Math, 'sin').hasOwnProperty('get') is false
 PASS Object.getOwnPropertyDescriptor(Math, 'sin').hasOwnProperty('set') is false
