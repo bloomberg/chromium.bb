@@ -77,7 +77,14 @@ namespace thumbnailing_utils {
 class ThumbnailContentAnalysisTest : public testing::Test {
 };
 
-TEST_F(ThumbnailContentAnalysisTest, ApplyGradientMagnitudeOnImpulse) {
+// http://crbug.com/299284
+#if defined(OS_MACOSX)
+#define MAYBE_ApplyGradientMagnitudeOnImpulse \
+    DISABLED_ApplyGradientMagnitudeOnImpulse
+#else
+#define MAYBE_ApplyGradientMagnitudeOnImpulse ApplyGradientMagnitudeOnImpulse
+#endif
+TEST_F(ThumbnailContentAnalysisTest, MAYBE_ApplyGradientMagnitudeOnImpulse) {
   gfx::Canvas canvas(gfx::Size(800, 600), 1.0f, true);
 
   // The image consists of vertical non-overlapping stripes 100 pixels wide.
@@ -167,7 +174,14 @@ TEST_F(ThumbnailContentAnalysisTest, MAYBE_ApplyGradientMagnitudeOnFrame) {
   EXPECT_EQ(ImagePixelSum(reduced_color, inner_rect), 0U);
 }
 
-TEST_F(ThumbnailContentAnalysisTest, ExtractImageProfileInformation) {
+// http://crbug.com/299284
+#if defined(OS_MACOSX)
+#define MAYBE_ExtractImageProfileInformation \
+    DISABLED_ExtractImageProfileInformation
+#else
+#define MAYBE_ExtractImageProfileInformation ExtractImageProfileInformation
+#endif
+TEST_F(ThumbnailContentAnalysisTest, MAYBE_ExtractImageProfileInformation) {
   gfx::Canvas canvas(gfx::Size(800, 600), 1.0f, true);
 
   // The image consists of a white frame drawn in the centre.
