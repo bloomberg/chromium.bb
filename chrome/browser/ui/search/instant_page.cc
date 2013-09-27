@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/search/instant_page.h"
 
 #include "apps/app_launcher.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/search/instant_tab.h"
@@ -20,8 +19,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/font.h"
 
 InstantPage::Delegate::~Delegate() {
 }
@@ -43,21 +40,6 @@ const std::string& InstantPage::instant_url() const {
 bool InstantPage::IsLocal() const {
   return contents() &&
       contents()->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl);
-}
-
-void InstantPage::InitializeFonts() {
-#if defined(OS_MACOSX)
-  // This value should be kept in sync with OmniboxViewMac::GetFieldFont.
-  const gfx::Font& omnibox_font =
-      ui::ResourceBundle::GetSharedInstance().GetFont(
-          ui::ResourceBundle::MediumFont).DeriveFont(1);
-#else
-  const gfx::Font& omnibox_font =
-      ui::ResourceBundle::GetSharedInstance().GetFont(
-          ui::ResourceBundle::MediumFont);
-#endif
-  sender()->SetFontInformation(UTF8ToUTF16(omnibox_font.GetFontName()),
-                               omnibox_font.GetFontSize());
 }
 
 void InstantPage::InitializePromos() {

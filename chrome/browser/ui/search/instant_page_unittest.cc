@@ -338,9 +338,6 @@ TEST_F(InstantPageTest, AppropriateMessagesSentToIncognitoPages) {
   EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxToggleVoiceSearch::ID));
 
   // Incognito pages should not get any others.
-  page->sender()->SetFontInformation(string16(), 0);
-  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxFontInformation::ID));
-
   page->sender()->FocusChanged(
       OMNIBOX_FOCUS_NONE, OMNIBOX_FOCUS_CHANGE_EXPLICIT);
   EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxFocusChanged::ID));

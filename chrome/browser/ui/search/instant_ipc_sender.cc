@@ -24,12 +24,6 @@ class InstantIPCSenderImpl : public InstantIPCSender {
         routing_id(), bounds.x(), bounds.width()));
   }
 
-  virtual void SetFontInformation(const string16& omnibox_font_name,
-                          size_t omnibox_font_size) OVERRIDE {
-    Send(new ChromeViewMsg_SearchBoxFontInformation(
-        routing_id(), omnibox_font_name, omnibox_font_size));
-  }
-
   virtual void SetPromoInformation(bool is_app_launcher_enabled) OVERRIDE {
     Send(new ChromeViewMsg_SearchBoxPromoInformation(
         routing_id(), is_app_launcher_enabled));

@@ -36,10 +36,6 @@ class InstantIPCSender : public content::WebContentsObserver {
   // the page to align text or assets properly with the omnibox.
   virtual void SetOmniboxBounds(const gfx::Rect& bounds) {}
 
-  // Tells the page about the font information.
-  virtual void SetFontInformation(const string16& omnibox_font_name,
-                                  size_t omnibox_font_size) {}
-
   // Tells the page information it needs to display promos.
   virtual void SetPromoInformation(bool is_app_launcher_enabled) {}
 

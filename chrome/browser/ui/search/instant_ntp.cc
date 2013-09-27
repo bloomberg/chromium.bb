@@ -50,7 +50,6 @@ void InstantNTP::LoadCompletedMainFrame() {
 }
 
 void InstantNTP::RenderViewCreated(content::RenderViewHost* render_view_host) {
-  InitializeFonts();
   InitializePromos();
 }
 

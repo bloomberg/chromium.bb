@@ -15,8 +15,6 @@ if (!chrome.embeddedSearch) {
       // =======================================================================
       native function Focus();
       native function GetDisplayInstantResults();
-      native function GetFont();
-      native function GetFontSize();
       native function GetMostVisitedItemData();
       native function GetQuery();
       native function GetRightToLeft();
@@ -33,8 +31,6 @@ if (!chrome.embeddedSearch) {
       //                           Exported functions
       // =======================================================================
       this.__defineGetter__('displayInstantResults', GetDisplayInstantResults);
-      this.__defineGetter__('font', GetFont);
-      this.__defineGetter__('fontSize', GetFontSize);
       this.__defineGetter__('isFocused', IsFocused);
       this.__defineGetter__('isKeyCaptureEnabled', IsKeyCaptureEnabled);
       this.__defineGetter__('rtl', GetRightToLeft);

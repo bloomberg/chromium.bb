@@ -149,8 +149,6 @@ SearchBox::SearchBox(content::RenderView* render_view)
     is_key_capture_enabled_(false),
     display_instant_results_(false),
     most_visited_items_cache_(kMaxInstantMostVisitedItemCacheSize),
-    omnibox_font_(),
-    omnibox_font_size_(12),
     query_(),
     start_margin_(0),
     width_(0) {
@@ -279,8 +277,6 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_DetermineIfPageSupportsInstant,
                         OnDetermineIfPageSupportsInstant)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxFocusChanged, OnFocusChanged)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxFontInformation,
-                        OnFontInformationReceived)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxMarginChange, OnMarginChange)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
                         OnMostVisitedChanged)
@@ -343,12 +339,6 @@ void SearchBox::OnFocusChanged(OmniboxFocusState new_focus_state,
           render_view()->GetWebView()->mainFrame());
     }
   }
-}
-
-void SearchBox::OnFontInformationReceived(const string16& omnibox_font,
-                                          size_t omnibox_font_size) {
-  omnibox_font_ = omnibox_font;
-  omnibox_font_size_ = omnibox_font_size;
 }
 
 void SearchBox::OnMarginChange(int margin, int width) {

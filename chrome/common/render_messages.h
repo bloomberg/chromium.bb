@@ -311,10 +311,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFocusChanged,
                     OmniboxFocusState /* new_focus_state */,
                     OmniboxFocusChangeReason /* reason */)
 
-IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFontInformation,
-                    string16 /* omnibox_font */,
-                    size_t /* omnibox_font_size */)
-
 IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxMarginChange,
                     int /* start */,
                     int /* width */)

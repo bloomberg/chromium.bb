@@ -112,8 +112,6 @@ class InstantPage : public content::WebContentsObserver,
   // chrome::kChromeSearchLocalNTPURL).
   virtual bool IsLocal() const;
 
-  void InitializeFonts();
-
   void InitializePromos();
 
  protected:

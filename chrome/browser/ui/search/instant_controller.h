@@ -194,7 +194,7 @@ class InstantController : public InstantPage::Delegate {
   // point to it. Else, deletes any existing |instant_tab_|.
   void ResetInstantTab();
 
-  // Sends theme info, omnibox bounds, font info, etc. down to the Instant tab.
+  // Sends theme info, omnibox bounds, etc. down to the Instant tab.
   void UpdateInfoForInstantTab();
 
   // Returns whether input is in progress, i.e. if the omnibox has focus and the

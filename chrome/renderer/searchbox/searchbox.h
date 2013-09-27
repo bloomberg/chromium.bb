@@ -101,8 +101,6 @@ class SearchBox : public content::RenderViewObserver,
   bool is_input_in_progress() const { return is_input_in_progress_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
   bool display_instant_results() const { return display_instant_results_; }
-  const string16& omnibox_font() const { return omnibox_font_; }
-  size_t omnibox_font_size() const { return omnibox_font_size_; }
   const string16& query() const { return query_; }
   int start_margin() const { return start_margin_; }
   const InstantSuggestion& suggestion() const { return suggestion_; }
@@ -114,8 +112,6 @@ class SearchBox : public content::RenderViewObserver,
   void OnDetermineIfPageSupportsInstant();
   void OnFocusChanged(OmniboxFocusState new_focus_state,
                       OmniboxFocusChangeReason reason);
-  void OnFontInformationReceived(const string16& omnibox_font,
-                                 size_t omnibox_font_size);
   void OnMarginChange(int margin, int width);
   void OnMostVisitedChanged(
       const std::vector<InstantMostVisitedItem>& items);
@@ -143,8 +139,6 @@ class SearchBox : public content::RenderViewObserver,
   bool display_instant_results_;
   InstantRestrictedIDCache<InstantMostVisitedItem> most_visited_items_cache_;
   ThemeBackgroundInfo theme_info_;
-  string16 omnibox_font_;
-  size_t omnibox_font_size_;
   string16 query_;
   int start_margin_;
   InstantSuggestion suggestion_;

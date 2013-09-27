@@ -328,12 +328,6 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static void GetAppLauncherEnabled(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  // Gets the font family of the text in the omnibox.
-  static void GetFont(const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Gets the font size of the text in the omnibox.
-  static void GetFontSize(const v8::FunctionCallbackInfo<v8::Value>& args);
-
   // Gets Most Visited Items.
   static void GetMostVisitedItems(
       const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -492,10 +486,6 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(Focus);
   if (name->Equals(v8::String::New("GetAppLauncherEnabled")))
     return v8::FunctionTemplate::New(GetAppLauncherEnabled);
-  if (name->Equals(v8::String::New("GetFont")))
-    return v8::FunctionTemplate::New(GetFont);
-  if (name->Equals(v8::String::New("GetFontSize")))
-    return v8::FunctionTemplate::New(GetFontSize);
   if (name->Equals(v8::String::New("GetMostVisitedItems")))
     return v8::FunctionTemplate::New(GetMostVisitedItems);
   if (name->Equals(v8::String::New("GetMostVisitedItemData")))
@@ -576,26 +566,6 @@ void SearchBoxExtensionWrapper::GetAppLauncherEnabled(
 
   args.GetReturnValue().Set(
       SearchBox::Get(render_view)->app_launcher_enabled());
-}
-
-// static
-void SearchBoxExtensionWrapper::GetFont(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
-
-  args.GetReturnValue().Set(
-      UTF16ToV8String(SearchBox::Get(render_view)->omnibox_font()));
-}
-
-// static
-void SearchBoxExtensionWrapper::GetFontSize(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
-
-  args.GetReturnValue().Set(static_cast<uint32_t>(
-      SearchBox::Get(render_view)->omnibox_font_size()));
 }
 
 // static
