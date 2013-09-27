@@ -47,12 +47,12 @@ public:
         WrapperCallbackEnvironmentFieldCount, // This entry must always be at the bottom.
     };
 
-    enum PromiseEveryEnvironmentFieldIndex {
-        PromiseEveryEnvironmentPromiseIndex,
-        PromiseEveryEnvironmentCountdownIndex,
-        PromiseEveryEnvironmentIndexIndex,
-        PromiseEveryEnvironmentResultsIndex,
-        PromiseEveryEnvironmentFieldCount, // This entry must always be at the bottom.
+    enum PromiseAllEnvironmentFieldIndex {
+        PromiseAllEnvironmentPromiseIndex,
+        PromiseAllEnvironmentCountdownIndex,
+        PromiseAllEnvironmentIndexIndex,
+        PromiseAllEnvironmentResultsIndex,
+        PromiseAllEnvironmentFieldCount, // This entry must always be at the bottom.
     };
 
     enum PrimitiveWrapperFieldIndex {

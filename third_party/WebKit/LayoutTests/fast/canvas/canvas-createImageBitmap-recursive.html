@@ -62,7 +62,7 @@ function imageLoaded() {
     var bitmapFromImage, bitmapFromCanvas;
     var p1 = createImageBitmap(image, -10, -10, 20, 20).then(function(imageBitmap) { bitmapFromImage = imageBitmap });
     var p2 = createImageBitmap(aCanvas, 10, 10, 20, 20).then(function(imageBitmap) { bitmapFromCanvas = imageBitmap });
-    Promise.every(p1, p2).then(function() {
+    Promise.all([p1, p2]).then(function() {
         checkBitmaps(bitmapFromImage, bitmapFromCanvas);
     }, shouldNotBeCalled);
 }
@@ -87,7 +87,7 @@ function checkBitmaps(bitmapFromImage, bitmapFromCanvas) {
     var p6 = createImageBitmap(bitmapFromCanvas, 5, 5, 10, 10).then(function(imageBitmap) {
         funcs[5] = checkDrawnToRect(imageBitmap, 0, 0, 5, 5);
     });
-    Promise.every(p1, p2, p3, p4, p5, p6).then(function() {
+    Promise.all([p1, p2, p3, p4, p5, p6]).then(function() {
         for (var i = 0; i < funcs.length; ++i)
             funcs[i]();
         finishJSTest();

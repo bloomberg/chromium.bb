@@ -43,5 +43,5 @@ callback AnyCallback = any (optional any value);
 
    [Custom] static Promise cast(any value);
    [Custom] static Promise race(any iterable);
-   [Custom] static Promise every(any... values);
+   [Custom] static Promise all(any iterable);
 };

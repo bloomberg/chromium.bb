@@ -177,7 +177,7 @@ function nextCheck(elementIndex) {
     var p7 = createImageBitmap(element, 10, 10, -10, -10).then(function (image) { imageBitmaps.negativeCrop = image });
     var p8 = createImageBitmap(element, -30, -30, 30, 30).then(function (image) { imageBitmaps.empty = image });
     var p9 = createImageBitmap(element, 40, 30, 30, 30).then(function (image) { imageBitmaps.emptyTwo = image });
-    Promise.every(p1, p2, p3, p4, p5, p6, p7, p8, p9).then(function() {
+    Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9]).then(function() {
         checkNoCrop(imageBitmaps.noCrop);
         checkCrop(imageBitmaps.crop);
         checkCropCenter(imageBitmaps.cropCenter);

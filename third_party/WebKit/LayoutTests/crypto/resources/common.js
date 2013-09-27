@@ -10,7 +10,7 @@ function importTestKeys()
     var aesCbcPromise = crypto.subtle.importKey(keyFormat, data, {name: 'AES-CBC'}, extractable, keyUsages);
     var aesCbcJustDecrypt = crypto.subtle.importKey(keyFormat, data, {name: 'AES-CBC'}, false, ['decrypt']);
 
-    return Promise.every(hmacPromise, rsaSsaPromise, aesCbcPromise, aesCbcJustDecrypt).then(function(results) {
+    return Promise.all([hmacPromise, rsaSsaPromise, aesCbcPromise, aesCbcJustDecrypt]).then(function(results) {
         return {
             hmacSha1: results[0],
             rsaSsaSha1: results[1],

@@ -67,7 +67,7 @@ function videoLoaded() {
     var p8 = createImageBitmap(video, -300, -300, 300, 300).then(function (image) { imageBitmaps.empty = image });
     var p9 = createImageBitmap(video, 400, 300, 300, 300).then(function (image) { imageBitmaps.emptyTwo = image });
 
-    Promise.every(p1, p2, p3, p4, p5, p6, p7, p8, p9).then(function() {
+    Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9]).then(function() {
         checkNoCrop(imageBitmaps.noCrop);
         checkCrop(imageBitmaps.crop);
         checkCrop(imageBitmaps.cropRight);

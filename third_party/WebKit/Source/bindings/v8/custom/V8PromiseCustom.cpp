@@ -73,11 +73,11 @@ v8::Local<v8::ObjectTemplate> wrapperCallbackEnvironmentObjectTemplate(v8::Isola
     return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::WrapperCallbackEnvironmentFieldCount, isolate);
 }
 
-v8::Local<v8::ObjectTemplate> promiseEveryEnvironmentObjectTemplate(v8::Isolate* isolate)
+v8::Local<v8::ObjectTemplate> promiseAllEnvironmentObjectTemplate(v8::Isolate* isolate)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static int privateTemplateUniqueKey = 0;
-    return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::PromiseEveryEnvironmentFieldCount, isolate);
+    return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::PromiseAllEnvironmentFieldCount, isolate);
 }
 
 v8::Local<v8::ObjectTemplate> primitiveWrapperObjectTemplate(v8::Isolate* isolate)
@@ -222,7 +222,7 @@ void callCallbacks(v8::Handle<v8::Array> callbacks, v8::Handle<v8::Value> result
     }
 }
 
-void promiseEveryFulfillCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+void promiseAllFulfillCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     v8::Isolate* isolate = args.GetIsolate();
     ASSERT(!args.Data().IsEmpty());
@@ -231,10 +231,10 @@ void promiseEveryFulfillCallback(const v8::FunctionCallbackInfo<v8::Value>& args
     if (args.Length() > 0)
         result = args[0];
 
-    v8::Local<v8::Object> promise = environment->GetInternalField(V8PromiseCustom::PromiseEveryEnvironmentPromiseIndex).As<v8::Object>();
-    v8::Local<v8::Object> countdownWrapper = environment->GetInternalField(V8PromiseCustom::PromiseEveryEnvironmentCountdownIndex).As<v8::Object>();
-    v8::Local<v8::Integer> index = environment->GetInternalField(V8PromiseCustom::PromiseEveryEnvironmentIndexIndex).As<v8::Integer>();
-    v8::Local<v8::Array> results = environment->GetInternalField(V8PromiseCustom::PromiseEveryEnvironmentResultsIndex).As<v8::Array>();
+    v8::Local<v8::Object> promise = environment->GetInternalField(V8PromiseCustom::PromiseAllEnvironmentPromiseIndex).As<v8::Object>();
+    v8::Local<v8::Object> countdownWrapper = environment->GetInternalField(V8PromiseCustom::PromiseAllEnvironmentCountdownIndex).As<v8::Object>();
+    v8::Local<v8::Integer> index = environment->GetInternalField(V8PromiseCustom::PromiseAllEnvironmentIndexIndex).As<v8::Integer>();
+    v8::Local<v8::Array> results = environment->GetInternalField(V8PromiseCustom::PromiseAllEnvironmentResultsIndex).As<v8::Array>();
 
     results->Set(index->Value(), result);
 
@@ -247,15 +247,15 @@ void promiseEveryFulfillCallback(const v8::FunctionCallbackInfo<v8::Value>& args
     countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(countdown->Value() - 1, isolate));
 }
 
-v8::Local<v8::Object> promiseEveryEnvironment(v8::Handle<v8::Object> promise, v8::Handle<v8::Object> countdownWrapper, int index, v8::Handle<v8::Array> results, v8::Isolate* isolate)
+v8::Local<v8::Object> promiseAllEnvironment(v8::Handle<v8::Object> promise, v8::Handle<v8::Object> countdownWrapper, int index, v8::Handle<v8::Array> results, v8::Isolate* isolate)
 {
-    v8::Local<v8::ObjectTemplate> objectTemplate = promiseEveryEnvironmentObjectTemplate(isolate);
+    v8::Local<v8::ObjectTemplate> objectTemplate = promiseAllEnvironmentObjectTemplate(isolate);
     v8::Local<v8::Object> environment = objectTemplate->NewInstance();
 
-    environment->SetInternalField(V8PromiseCustom::PromiseEveryEnvironmentPromiseIndex, promise);
-    environment->SetInternalField(V8PromiseCustom::PromiseEveryEnvironmentCountdownIndex, countdownWrapper);
-    environment->SetInternalField(V8PromiseCustom::PromiseEveryEnvironmentIndexIndex, v8::Integer::New(index, isolate));
-    environment->SetInternalField(V8PromiseCustom::PromiseEveryEnvironmentResultsIndex, results);
+    environment->SetInternalField(V8PromiseCustom::PromiseAllEnvironmentPromiseIndex, promise);
+    environment->SetInternalField(V8PromiseCustom::PromiseAllEnvironmentCountdownIndex, countdownWrapper);
+    environment->SetInternalField(V8PromiseCustom::PromiseAllEnvironmentIndexIndex, v8::Integer::New(index, isolate));
+    environment->SetInternalField(V8PromiseCustom::PromiseAllEnvironmentResultsIndex, results);
     return environment;
 }
 
@@ -422,29 +422,39 @@ void V8Promise::raceMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args
     v8SetReturnValue(args, promise);
 }
 
-void V8Promise::everyMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8Promise::allMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     v8::Isolate* isolate = args.GetIsolate();
     v8::Local<v8::Object> promise = V8PromiseCustom::createPromise(args.Holder(), isolate);
+    v8::Local<v8::Array> results = v8::Array::New();
 
-    if (!args.Length()) {
-        V8PromiseCustom::resolve(promise, v8::Undefined(isolate), V8PromiseCustom::Asynchronous, isolate);
+    if (!args.Length() || !args[0]->IsArray()) {
+        V8PromiseCustom::resolve(promise, results, V8PromiseCustom::Asynchronous, isolate);
+        v8SetReturnValue(args, promise);
+        return;
+    }
+
+    // FIXME: Now we limit the iterable type to the Array type.
+    v8::Local<v8::Array> iterable = args[0].As<v8::Array>();
+
+    if (!iterable->Length()) {
+        V8PromiseCustom::resolve(promise, results, V8PromiseCustom::Asynchronous, isolate);
         v8SetReturnValue(args, promise);
         return;
     }
 
     v8::Local<v8::ObjectTemplate> objectTemplate = primitiveWrapperObjectTemplate(isolate);
     v8::Local<v8::Object> countdownWrapper = objectTemplate->NewInstance();
-    countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(args.Length(), isolate));
-    v8::Local<v8::Array> results = v8::Array::New();
+    countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(iterable->Length(), isolate));
 
     v8::Local<v8::Function> rejectCallback = createClosure(promiseRejectCallback, promise, isolate);
-    for (int i = 0; i < args.Length(); ++i) {
-        v8::Local<v8::Object> environment = promiseEveryEnvironment(promise, countdownWrapper, i, results, isolate);
-        v8::Local<v8::Function> fulfillCallback = createClosure(promiseEveryFulfillCallback, environment, isolate);
-        v8::Local<v8::Object> eachPromise = V8PromiseCustom::createPromise(args.Holder(), isolate);
-        V8PromiseCustom::resolve(eachPromise, args[i], V8PromiseCustom::Asynchronous, isolate);
-        V8PromiseCustom::append(eachPromise, fulfillCallback, rejectCallback, isolate);
+    for (unsigned i = 0, length = iterable->Length(); i < length; ++i) {
+        // Array-holes should not be skipped by for-of iteration semantics.
+        v8::Local<v8::Object> environment = promiseAllEnvironment(promise, countdownWrapper, i, results, isolate);
+        v8::Local<v8::Function> fulfillCallback = createClosure(promiseAllFulfillCallback, environment, isolate);
+        V8TRYCATCH_VOID(v8::Local<v8::Value>, nextValue, iterable->Get(i));
+        v8::Local<v8::Object> nextPromise = V8PromiseCustom::toPromise(nextValue, isolate);
+        V8PromiseCustom::append(nextPromise, fulfillCallback, rejectCallback, isolate);
     }
     v8SetReturnValue(args, promise);
 }
