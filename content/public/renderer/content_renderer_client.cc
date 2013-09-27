@@ -79,10 +79,6 @@ WebKit::WebSpeechSynthesizer* ContentRendererClient::OverrideSpeechSynthesizer(
   return NULL;
 }
 
-WebKit::WebCrypto* ContentRendererClient::OverrideWebCrypto() {
-  return NULL;
-}
-
 bool ContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
   return true;
 }

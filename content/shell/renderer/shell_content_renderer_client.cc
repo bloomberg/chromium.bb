@@ -160,14 +160,6 @@ WebClipboard* ShellContentRendererClient::OverrideWebClipboard() {
   return clipboard_.get();
 }
 
-WebKit::WebCrypto* ShellContentRendererClient::OverrideWebCrypto() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
-    return NULL;
-  WebTestInterfaces* interfaces =
-      ShellRenderProcessObserver::GetInstance()->test_interfaces();
-  return interfaces->crypto();
-}
-
 WebThemeEngine* ShellContentRendererClient::OverrideThemeEngine() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return NULL;

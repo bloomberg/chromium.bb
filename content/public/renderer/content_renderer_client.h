@@ -29,7 +29,6 @@ class MessageLoop;
 namespace WebKit {
 class WebAudioDevice;
 class WebClipboard;
-class WebCrypto;
 class WebFrame;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
@@ -155,10 +154,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // If it returns NULL the content layer will provide an engine.
   virtual WebKit::WebSpeechSynthesizer* OverrideSpeechSynthesizer(
       WebKit::WebSpeechSynthesizerClient* client);
-
-  // Allows the embedder to override the WebCrypto used.
-  // If it returns NULL the content layer will handle crypto.
-  virtual WebKit::WebCrypto* OverrideWebCrypto();
 
   // Returns true if the renderer process should schedule the idle handler when
   // all widgets are hidden.
