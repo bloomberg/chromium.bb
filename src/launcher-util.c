@@ -40,7 +40,9 @@
 #include <linux/kd.h>
 #include <linux/major.h>
 
+#ifdef BUILD_DRM_COMPOSITOR
 #include <xf86drm.h>
+#endif
 
 #include "compositor.h"
 #include "launcher-util.h"
@@ -196,6 +198,26 @@ weston_launcher_data(int fd, uint32_t mask, void *data)
 	return 1;
 }
 
+#ifdef BUILD_DRM_COMPOSITOR
+static int
+drm_drop_master(int drm_fd)
+{
+	if (drm_fd != -1)
+		return drmDropMaster(drm_fd);
+	return -EBADF;
+}
+static int
+drm_set_master(int drm_fd)
+{
+	if (drm_fd != -1)
+		return drmSetMaster(drm_fd);
+	return -EBADF;
+}
+#else
+static int drm_drop_master(int drm_fd) {return 0;}
+static int drm_set_master(int drm_fd) {return 0;}
+#endif
+
 static int
 vt_handler(int signal_number, void *data)
 {
@@ -205,13 +227,11 @@ vt_handler(int signal_number, void *data)
 	if (compositor->session_active) {
 		compositor->session_active = 0;
 		wl_signal_emit(&compositor->session_signal, compositor);
-		if (launcher->drm_fd != -1)
-			drmDropMaster(launcher->drm_fd);
+		drm_drop_master(launcher->drm_fd);
 		ioctl(launcher->tty, VT_RELDISP, 1);
 	} else {
 		ioctl(launcher->tty, VT_RELDISP, VT_ACKACQ);
-		if (launcher->drm_fd != -1)
-			drmSetMaster(launcher->drm_fd);
+		drm_set_master(launcher->drm_fd);
 		compositor->session_active = 1;
 		wl_signal_emit(&compositor->session_signal, compositor);
 	}
