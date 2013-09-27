@@ -96,7 +96,7 @@ function test()
     addMockHeader(cssURL, cssURL + ".map");
     InspectorTest.addResult("Adding network resource.");
     InspectorTest.addMockUISourceCodeToWorkspace(cssURL, WebInspector.resourceTypes.Stylesheet, cssContent);
-    liveLocation = cssModel.styleSheetHeaderForId(1).createLiveLocation(cssLocation, updateDelegate);
+    liveLocation = cssModel.createLiveLocation("1", cssLocation, updateDelegate);
     dumpLiveLocation();
 
     InspectorTest.addResult("Adding filesystem SCSS.");
