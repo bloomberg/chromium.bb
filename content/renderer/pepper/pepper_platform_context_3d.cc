@@ -133,6 +133,10 @@ gpu::CommandBuffer* PlatformContext3D::GetCommandBuffer() {
   return command_buffer_;
 }
 
+gpu::GpuControl* PlatformContext3D::GetGpuControl() {
+  return command_buffer_;
+}
+
 int PlatformContext3D::GetCommandBufferRouteId() {
   DCHECK(command_buffer_);
   return command_buffer_->GetRouteID();

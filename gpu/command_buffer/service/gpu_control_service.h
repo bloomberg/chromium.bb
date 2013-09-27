@@ -22,6 +22,8 @@ class GPU_EXPORT GpuControlService : public GpuControl {
   virtual ~GpuControlService();
 
   // Overridden from GpuControl:
+  virtual bool SupportsGpuMemoryBuffer() OVERRIDE;
+
   virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(
       size_t width,
       size_t height,

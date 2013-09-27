@@ -189,6 +189,10 @@ gpu::CommandBuffer* PPB_Graphics3D_Impl::GetCommandBuffer() {
   return platform_context_->GetCommandBuffer();
 }
 
+gpu::GpuControl* PPB_Graphics3D_Impl::GetGpuControl() {
+  return platform_context_->GetGpuControl();
+}
+
 int32 PPB_Graphics3D_Impl::DoSwapBuffers() {
   // We do not have a GLES2 implementation when using an OOP proxy.
   // The plugin-side proxy is responsible for adding the SwapBuffers command

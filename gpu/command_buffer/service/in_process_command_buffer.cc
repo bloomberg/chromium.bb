@@ -242,6 +242,7 @@ InProcessCommandBuffer::InProcessCommandBuffer()
     : context_lost_(false),
       share_group_id_(0),
       last_put_offset_(-1),
+      supports_gpu_memory_buffer_(false),
       flush_event_(false, false),
       queue_(CreateSchedulerClient()) {}
 
@@ -406,6 +407,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   gpu_control_.reset(
       new GpuControlService(decoder_->GetContextGroup()->image_manager(),
                             g_gpu_memory_buffer_factory));
+  supports_gpu_memory_buffer_ = gpu_control_->SupportsGpuMemoryBuffer();
 
   decoder_->set_engine(gpu_scheduler_.get());
 
@@ -645,6 +647,10 @@ void InProcessCommandBuffer::SignalSyncPoint(unsigned sync_point,
                                              const base::Closure& callback) {
   CheckSequencedThread();
   QueueTask(WrapCallback(callback));
+}
+
+bool InProcessCommandBuffer::SupportsGpuMemoryBuffer() {
+  return supports_gpu_memory_buffer_;
 }
 
 gfx::GpuMemoryBuffer* InProcessCommandBuffer::CreateGpuMemoryBuffer(

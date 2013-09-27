@@ -15,6 +15,7 @@
 
 namespace gpu {
 class CommandBuffer;
+class GpuControl;
 class TransferBuffer;
 namespace gles2 {
 class GLES2CmdHelper;
@@ -85,6 +86,7 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
   virtual ~PPB_Graphics3D_Shared();
 
   virtual gpu::CommandBuffer* GetCommandBuffer() = 0;
+  virtual gpu::GpuControl* GetGpuControl() = 0;
   virtual int32 DoSwapBuffers() = 0;
 
   bool HasPendingSwap() const;

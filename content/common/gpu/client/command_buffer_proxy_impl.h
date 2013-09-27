@@ -20,6 +20,7 @@
 #include "content/common/gpu/surface_capturer.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
+#include "gpu/command_buffer/common/gpu_control.h"
 #include "ipc/ipc_listener.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/events/latency_info.h"
@@ -41,6 +42,7 @@ class GpuChannelHost;
 // CommandBufferStub.
 class CommandBufferProxyImpl
     : public gpu::CommandBuffer,
+      public gpu::GpuControl,
       public IPC::Listener,
       public base::SupportsWeakPtr<CommandBufferProxyImpl> {
  public:
@@ -96,6 +98,15 @@ class CommandBufferProxyImpl
   virtual void SetContextLostReason(
       gpu::error::ContextLostReason reason) OVERRIDE;
   virtual uint32 InsertSyncPoint() OVERRIDE;
+
+  // gpu::GpuControl implementation:
+  virtual bool SupportsGpuMemoryBuffer() OVERRIDE;
+  virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(
+      size_t width,
+      size_t height,
+      unsigned internalformat,
+      int32* id) OVERRIDE;
+  virtual void DestroyGpuMemoryBuffer(int32 id) OVERRIDE;
 
   int GetRouteID() const;
   bool Echo(const base::Closure& callback);

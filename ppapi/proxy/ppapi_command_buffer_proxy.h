@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/gpu_control.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/host_resource.h"
 
@@ -20,28 +21,40 @@ namespace proxy {
 
 class ProxyChannel;
 
-class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer {
+class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy
+    : public gpu::CommandBuffer,
+      public gpu::GpuControl {
  public:
   PpapiCommandBufferProxy(const HostResource& resource,
                           ProxyChannel* channel);
   virtual ~PpapiCommandBufferProxy();
 
   // gpu::CommandBuffer implementation:
-  virtual bool Initialize();
-  virtual State GetState();
-  virtual State GetLastState();
-  virtual int32 GetLastToken();
-  virtual void Flush(int32 put_offset);
-  virtual State FlushSync(int32 put_offset, int32 last_known_get);
-  virtual void SetGetBuffer(int32 transfer_buffer_id);
-  virtual void SetGetOffset(int32 get_offset);
-  virtual gpu::Buffer CreateTransferBuffer(size_t size, int32* id);
-  virtual void DestroyTransferBuffer(int32 id);
-  virtual gpu::Buffer GetTransferBuffer(int32 id);
-  virtual void SetToken(int32 token);
-  virtual void SetParseError(gpu::error::Error error);
-  virtual void SetContextLostReason(gpu::error::ContextLostReason reason);
-  virtual uint32 InsertSyncPoint();
+  virtual bool Initialize() OVERRIDE;
+  virtual State GetState() OVERRIDE;
+  virtual State GetLastState() OVERRIDE;
+  virtual int32 GetLastToken() OVERRIDE;
+  virtual void Flush(int32 put_offset) OVERRIDE;
+  virtual State FlushSync(int32 put_offset, int32 last_known_get) OVERRIDE;
+  virtual void SetGetBuffer(int32 transfer_buffer_id) OVERRIDE;
+  virtual void SetGetOffset(int32 get_offset) OVERRIDE;
+  virtual gpu::Buffer CreateTransferBuffer(size_t size, int32* id) OVERRIDE;
+  virtual void DestroyTransferBuffer(int32 id) OVERRIDE;
+  virtual gpu::Buffer GetTransferBuffer(int32 id) OVERRIDE;
+  virtual void SetToken(int32 token) OVERRIDE;
+  virtual void SetParseError(gpu::error::Error error) OVERRIDE;
+  virtual void SetContextLostReason(gpu::error::ContextLostReason reason)
+      OVERRIDE;
+  virtual uint32 InsertSyncPoint() OVERRIDE;
+
+  // gpu::GpuControl implementation:
+  virtual bool SupportsGpuMemoryBuffer() OVERRIDE;
+  virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(
+      size_t width,
+      size_t height,
+      unsigned internalformat,
+      int32* id) OVERRIDE;
+  virtual void DestroyGpuMemoryBuffer(int32 id) OVERRIDE;
 
  private:
   bool Send(IPC::Message* msg);

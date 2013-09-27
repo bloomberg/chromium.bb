@@ -19,6 +19,10 @@ GpuControlService::GpuControlService(
 GpuControlService::~GpuControlService() {
 }
 
+bool GpuControlService::SupportsGpuMemoryBuffer() {
+  return gpu_memory_buffer_manager_ && gpu_memory_buffer_factory_;
+}
+
 gfx::GpuMemoryBuffer* GpuControlService::CreateGpuMemoryBuffer(
     size_t width,
     size_t height,

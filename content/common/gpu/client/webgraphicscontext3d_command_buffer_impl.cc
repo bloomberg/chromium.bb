@@ -470,7 +470,7 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
       share_group,
       transfer_buffer_.get(),
       bind_generates_resources_,
-      NULL));
+      command_buffer_.get()));
   gl_ = real_gl_.get();
 
   if (attributes_.shareResources) {

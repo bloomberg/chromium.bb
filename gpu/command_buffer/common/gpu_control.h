@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_GPU_CONTROL_H_
 #define GPU_COMMAND_BUFFER_COMMON_GPU_CONTROL_H_
 
+#include "gpu/command_buffer/common/types.h"
 #include "gpu/gpu_export.h"
 
 namespace gfx {
@@ -18,6 +19,8 @@ class GPU_EXPORT GpuControl {
  public:
   GpuControl() {}
   virtual ~GpuControl() {}
+
+  virtual bool SupportsGpuMemoryBuffer() = 0;
 
   // Create a gpu memory buffer of the given dimensions and format. Returns
   // its ID or -1 on error.

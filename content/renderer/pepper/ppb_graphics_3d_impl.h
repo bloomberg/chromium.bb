@@ -55,6 +55,7 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
   virtual ~PPB_Graphics3D_Impl();
   // ppapi::PPB_Graphics3D_Shared overrides.
   virtual gpu::CommandBuffer* GetCommandBuffer() OVERRIDE;
+  virtual gpu::GpuControl* GetGpuControl() OVERRIDE;
   virtual int32 DoSwapBuffers() OVERRIDE;
 
  private:

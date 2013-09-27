@@ -204,6 +204,23 @@ uint32 PpapiCommandBufferProxy::InsertSyncPoint() {
   return sync_point;
 }
 
+bool PpapiCommandBufferProxy::SupportsGpuMemoryBuffer() {
+  return false;
+}
+
+gfx::GpuMemoryBuffer* PpapiCommandBufferProxy::CreateGpuMemoryBuffer(
+    size_t width,
+    size_t height,
+    unsigned internalformat,
+    int32* id) {
+  NOTREACHED();
+  return NULL;
+}
+
+void PpapiCommandBufferProxy::DestroyGpuMemoryBuffer(int32 id) {
+  NOTREACHED();
+}
+
 bool PpapiCommandBufferProxy::Send(IPC::Message* msg) {
   DCHECK(last_state_.error == gpu::error::kNoError);
 

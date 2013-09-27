@@ -2504,6 +2504,8 @@ TEST_F(GLES2ImplementationTest, GetString) {
   char buf[sizeof(kString) + 1];
   memset(buf, kBad, sizeof(buf));
 
+  EXPECT_CALL(*gpu_control_.get(), SupportsGpuMemoryBuffer())
+      .WillOnce(Return(true));
   EXPECT_CALL(*command_buffer(), OnFlush())
       .WillOnce(DoAll(SetMemory(result1.ptr, uint32(sizeof(kString))),
                       SetMemory(mem1.ptr, kString)))
@@ -2540,6 +2542,8 @@ TEST_F(GLES2ImplementationTest, PixelStoreiGLPackReverseRowOrderANGLE) {
   expected.set_bucket_size2.Init(kBucketId, 0);
   expected.pixel_store.Init(GL_PACK_REVERSE_ROW_ORDER_ANGLE, 1);
 
+  EXPECT_CALL(*gpu_control_.get(), SupportsGpuMemoryBuffer())
+      .WillOnce(Return(false));
   EXPECT_CALL(*command_buffer(), OnFlush())
       .WillOnce(DoAll(SetMemory(result1.ptr, uint32(sizeof(kString))),
                       SetMemory(mem1.ptr, kString)))

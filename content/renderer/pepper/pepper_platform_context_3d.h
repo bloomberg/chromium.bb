@@ -43,6 +43,9 @@ class PlatformContext3D {
   // destroyed.
   gpu::CommandBuffer* GetCommandBuffer();
 
+  // Returns the GpuControl class that services out-of-band messages.
+  gpu::GpuControl* GetGpuControl();
+
   // If the command buffer is routed in the GPU channel, return the route id.
   // Otherwise return 0.
   int GetCommandBufferRouteId();

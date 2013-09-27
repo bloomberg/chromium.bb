@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/client/vertex_array_object_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/gpu_control.h"
 #include "gpu/command_buffer/common/trace_event.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -113,6 +114,7 @@ GLES2Implementation::GLES2Implementation(
       gpu_control_(gpu_control) {
   GPU_DCHECK(helper);
   GPU_DCHECK(transfer_buffer);
+  GPU_DCHECK(gpu_control);
 
   char temp[128];
   sprintf(temp, "%p", static_cast<void*>(this));
@@ -2090,7 +2092,7 @@ const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
             "GL_CHROMIUM_map_sub "
             "GL_CHROMIUM_shallow_flush "
             "GL_EXT_unpack_subimage";
-        if (gpu_control_ != NULL) {
+        if (gpu_control_->SupportsGpuMemoryBuffer()) {
           // The first space character is intentional.
           str += " GL_CHROMIUM_map_image";
         }

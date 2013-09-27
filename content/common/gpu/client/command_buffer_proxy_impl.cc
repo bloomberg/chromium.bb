@@ -367,6 +367,23 @@ void CommandBufferProxyImpl::SetContextLostReason(
   NOTREACHED();
 }
 
+bool CommandBufferProxyImpl::SupportsGpuMemoryBuffer() {
+  return false;
+}
+
+gfx::GpuMemoryBuffer* CommandBufferProxyImpl::CreateGpuMemoryBuffer(
+    size_t width,
+    size_t height,
+    unsigned internalformat,
+    int32* id) {
+  NOTREACHED();
+  return NULL;
+}
+
+void CommandBufferProxyImpl::DestroyGpuMemoryBuffer(int32 id) {
+  NOTREACHED();
+}
+
 int CommandBufferProxyImpl::GetRouteID() const {
   return route_id_;
 }

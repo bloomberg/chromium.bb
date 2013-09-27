@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/gpu_control_service.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/gles2_conform_support/egl/config.h"
 #include "gpu/gles2_conform_support/egl/surface.h"
@@ -122,6 +123,7 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   gpu_scheduler_.reset(new gpu::GpuScheduler(command_buffer.get(),
                                              decoder_.get(),
                                              NULL));
+  gpu_control_.reset(new gpu::GpuControlService(NULL, NULL));
 
   decoder_->set_engine(gpu_scheduler_.get());
   gfx::Size size(create_offscreen_width_, create_offscreen_height_);
@@ -228,7 +230,7 @@ EGLContext Display::CreateContext(EGLConfig config,
       NULL,
       transfer_buffer_.get(),
       true,
-      NULL));
+      gpu_control_.get()));
 
   if (!context_->Initialize(
       kTransferBufferSize,

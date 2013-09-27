@@ -245,6 +245,10 @@ gpu::CommandBuffer* Graphics3D::GetCommandBuffer() {
   return locking_command_buffer_.get();
 }
 
+gpu::GpuControl* Graphics3D::GetGpuControl() {
+  return command_buffer_.get();
+}
+
 int32 Graphics3D::DoSwapBuffers() {
   // gles2_impl()->SwapBuffers() results in CommandBuffer calls, and we already
   // have the proxy lock.

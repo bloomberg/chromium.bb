@@ -18,6 +18,7 @@
 
 namespace gpu {
 class CommandBufferService;
+class GpuControl;
 class GpuScheduler;
 class TransferBuffer;
 class TransferBufferManagerInterface;
@@ -83,6 +84,7 @@ class Display {
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::GpuScheduler> gpu_scheduler_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
+  scoped_ptr<gpu::GpuControl> gpu_control_;
   scoped_refptr<gfx::GLContext> gl_context_;
   scoped_refptr<gfx::GLSurface> gl_surface_;
   scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_cmd_helper_;

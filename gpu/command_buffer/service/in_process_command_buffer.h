@@ -110,6 +110,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   virtual gpu::error::Error GetLastError() OVERRIDE;
 
   // GpuControl implementation:
+  virtual bool SupportsGpuMemoryBuffer() OVERRIDE;
   virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(
       size_t width,
       size_t height,
@@ -165,6 +166,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // Members accessed on the client thread:
   State last_state_;
   int32 last_put_offset_;
+  bool supports_gpu_memory_buffer_;
 
   // Accessed on both threads:
   scoped_ptr<CommandBuffer> command_buffer_;

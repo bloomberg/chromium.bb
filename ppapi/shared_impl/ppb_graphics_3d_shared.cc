@@ -129,8 +129,7 @@ bool PPB_Graphics3D_Shared::CreateGLES2Impl(
       share_gles2 ? share_gles2->share_group() : NULL,
       transfer_buffer_.get(),
       true,
-      NULL  // Do not use GpuMemoryBuffers.
-      ));
+      GetGpuControl()));
 
   if (!gles2_impl_->Initialize(
       transfer_buffer_size,
