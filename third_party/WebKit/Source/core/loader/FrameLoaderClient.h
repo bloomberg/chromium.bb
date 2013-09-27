@@ -33,7 +33,6 @@
 #include "core/dom/IconURL.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
-#include "core/page/LayoutMilestones.h"
 #include "core/platform/network/ResourceLoadPriority.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
@@ -111,8 +110,7 @@ class FetchRequest;
         virtual void dispatchDidFailLoad(const ResourceError&) = 0;
         virtual void dispatchDidFinishDocumentLoad() = 0;
         virtual void dispatchDidFinishLoad() = 0;
-
-        virtual void dispatchDidLayout(LayoutMilestones) { }
+        virtual void dispatchDidFirstVisuallyNonEmptyLayout() = 0;
 
         virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) = 0;
 

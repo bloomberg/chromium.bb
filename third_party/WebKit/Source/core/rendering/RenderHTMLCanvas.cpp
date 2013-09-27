@@ -69,13 +69,6 @@ void RenderHTMLCanvas::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& pa
         paintInfo.context->clip(pixelSnappedIntRect(contentRect));
     }
 
-    if (Frame* frame = this->frame()) {
-        if (Page* page = frame->page()) {
-            if (paintInfo.phase == PaintPhaseForeground)
-                page->addRelevantRepaintedObject(this, intersection(paintRect, contentRect));
-        }
-    }
-
     bool useLowQualityScale = style()->imageRendering() == ImageRenderingOptimizeContrast;
     toHTMLCanvasElement(node())->paint(context, paintRect, useLowQualityScale);
 

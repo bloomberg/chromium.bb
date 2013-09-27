@@ -484,9 +484,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
 
     m_page->setGroupType(Page::SharedPageGroup);
 
-    unsigned layoutMilestones = DidFirstLayout | DidFirstVisuallyNonEmptyLayout;
-    m_page->addLayoutMilestones(static_cast<LayoutMilestones>(layoutMilestones));
-
     if (m_client) {
         setDeviceScaleFactor(m_client->screenInfo().deviceScaleFactor);
         setVisibilityState(m_client->visibilityState(), true);

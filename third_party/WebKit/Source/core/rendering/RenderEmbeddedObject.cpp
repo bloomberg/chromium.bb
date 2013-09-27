@@ -122,19 +122,10 @@ void RenderEmbeddedObject::paintContents(PaintInfo& paintInfo, const LayoutPoint
 
 void RenderEmbeddedObject::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    Page* page = 0;
-    if (Frame* frame = this->frame())
-        page = frame->page();
-
     if (showsUnavailablePluginIndicator()) {
-        if (page && paintInfo.phase == PaintPhaseForeground)
-            page->addRelevantUnpaintedObject(this, visualOverflowRect());
         RenderReplaced::paint(paintInfo, paintOffset);
         return;
     }
-
-    if (page && paintInfo.phase == PaintPhaseForeground)
-        page->addRelevantRepaintedObject(this, visualOverflowRect());
 
     RenderPart::paint(paintInfo, paintOffset);
 }

@@ -2235,20 +2235,10 @@ void FrameView::performPostLayoutTasks()
     m_frame->selection().setCaretRectNeedsUpdate();
     m_frame->selection().updateAppearance();
 
-    LayoutMilestones milestonesOfInterest = 0;
-    LayoutMilestones milestonesAchieved = 0;
-    Page* page = m_frame->page();
-    if (page)
-        milestonesOfInterest = page->layoutMilestones();
-
     if (m_nestedLayoutCount <= 1) {
         if (m_firstLayoutCallbackPending) {
             m_firstLayoutCallbackPending = false;
             m_frame->loader()->didFirstLayout();
-            if (milestonesOfInterest & DidFirstLayout)
-                milestonesAchieved |= DidFirstLayout;
-            if (isMainFrame())
-                page->startCountingRelevantRepaintedObjects();
         }
 
         // Ensure that we always send this eventually.
@@ -2258,12 +2248,12 @@ void FrameView::performPostLayoutTasks()
         // If the layout was done with pending sheets, we are not in fact visually non-empty yet.
         if (m_isVisuallyNonEmpty && !m_frame->document()->didLayoutWithPendingStylesheets() && m_firstVisuallyNonEmptyLayoutCallbackPending) {
             m_firstVisuallyNonEmptyLayoutCallbackPending = false;
-            if (milestonesOfInterest & DidFirstVisuallyNonEmptyLayout)
-                milestonesAchieved |= DidFirstVisuallyNonEmptyLayout;
+            // FIXME: This callback is probably not needed, but is currently used
+            // by android for setting the background color.
+            m_frame->loader()->client()->dispatchDidFirstVisuallyNonEmptyLayout();
         }
     }
 
-    m_frame->loader()->didLayout(milestonesAchieved);
     m_frame->document()->fonts()->didLayout();
 
     RenderView* renderView = this->renderView();
@@ -2275,7 +2265,7 @@ void FrameView::performPostLayoutTasks()
             break;
     }
 
-    if (page) {
+    if (Page* page = m_frame->page()) {
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
             scrollingCoordinator->frameViewLayoutUpdated(this);
     }
@@ -2308,9 +2298,8 @@ void FrameView::sendResizeEventIfNeeded()
 
     m_frame->eventHandler()->sendResizeEvent();
 
-    Page* page = m_frame->page();
     if (isMainFrame())
-        InspectorInstrumentation::didResizeMainFrame(page);
+        InspectorInstrumentation::didResizeMainFrame(m_frame->page());
 }
 
 void FrameView::postLayoutTimerFired(Timer<FrameView>*)

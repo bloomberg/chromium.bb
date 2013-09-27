@@ -256,22 +256,12 @@ void RenderSVGRoot::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paint
     if (svg->hasEmptyViewBox())
         return;
 
-    Page* page = 0;
-    if (Frame* frame = this->frame())
-        page = frame->page();
-
     // Don't paint if we don't have kids, except if we have filters we should paint those.
     if (!firstChild()) {
         SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(this);
-        if (!resources || !resources->filter()) {
-            if (page && paintInfo.phase == PaintPhaseForeground)
-                page->addRelevantUnpaintedObject(this, visualOverflowRect());
+        if (!resources || !resources->filter())
             return;
-        }
     }
-
-    if (page && paintInfo.phase == PaintPhaseForeground)
-        page->addRelevantRepaintedObject(this, visualOverflowRect());
 
     // Make a copy of the PaintInfo because applyTransform will modify the damage rect.
     PaintInfo childPaintInfo(paintInfo);

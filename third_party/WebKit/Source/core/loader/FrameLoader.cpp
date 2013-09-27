@@ -1038,10 +1038,6 @@ void FrameLoader::checkLoadCompleteForThisFrame()
         return;
 
     m_progressTracker->progressCompleted();
-    if (Page* page = m_frame->page()) {
-        if (m_frame == page->mainFrame())
-            page->resetRelevantPaintedObjectCounter();
-    }
 
     const ResourceError& error = m_documentLoader->mainDocumentError();
     if (!error.isNull())
@@ -1049,11 +1045,6 @@ void FrameLoader::checkLoadCompleteForThisFrame()
     else
         m_client->dispatchDidFinishLoad();
     m_loadType = FrameLoadTypeStandard;
-}
-
-void FrameLoader::didLayout(LayoutMilestones milestones)
-{
-    m_client->dispatchDidLayout(milestones);
 }
 
 void FrameLoader::didFirstLayout()

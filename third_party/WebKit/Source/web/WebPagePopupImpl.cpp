@@ -201,9 +201,6 @@ bool WebPagePopupImpl::initializePage()
     m_page->setDeviceScaleFactor(m_webView->deviceScaleFactor());
     m_page->settings().setDeviceSupportsTouch(m_webView->page()->settings().deviceSupportsTouch());
 
-    unsigned layoutMilestones = DidFirstLayout | DidFirstVisuallyNonEmptyLayout;
-    m_page->addLayoutMilestones(static_cast<LayoutMilestones>(layoutMilestones));
-
     static ContextFeaturesClient* pagePopupFeaturesClient =  new PagePopupFeaturesClient();
     provideContextFeaturesTo(m_page.get(), pagePopupFeaturesClient);
     static FrameLoaderClient* emptyFrameLoaderClient =  new EmptyFrameLoaderClient();

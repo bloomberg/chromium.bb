@@ -206,7 +206,7 @@ public:
     virtual void dispatchDidFailLoad(const ResourceError&) OVERRIDE { }
     virtual void dispatchDidFinishDocumentLoad() OVERRIDE { }
     virtual void dispatchDidFinishLoad() OVERRIDE { }
-    virtual void dispatchDidLayout(LayoutMilestones) OVERRIDE { }
+    virtual void dispatchDidFirstVisuallyNonEmptyLayout() OVERRIDE { }
 
     virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) OVERRIDE;
 

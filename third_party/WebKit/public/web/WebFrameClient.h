@@ -278,9 +278,6 @@ public:
 
     // Geometry notifications ----------------------------------------------
 
-    // The frame's document finished the initial layout of a page.
-    virtual void didFirstLayout(WebFrame*) { }
-
     // The frame's document finished the initial non-empty layout of a page.
     virtual void didFirstVisuallyNonEmptyLayout(WebFrame*) { }
 

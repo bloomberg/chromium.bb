@@ -310,9 +310,6 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
         if (paintInfo.phase == PaintPhaseSelection)
             return;
 
-        if (page && paintInfo.phase == PaintPhaseForeground)
-            page->addRelevantUnpaintedObject(this, visualOverflowRect());
-
         if (cWidth > 2 && cHeight > 2) {
             const int borderWidth = 1;
 
@@ -375,11 +372,8 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
         }
     } else if (m_imageResource->hasImage() && cWidth > 0 && cHeight > 0) {
         RefPtr<Image> img = m_imageResource->image(cWidth, cHeight);
-        if (!img || img->isNull()) {
-            if (page && paintInfo.phase == PaintPhaseForeground)
-                page->addRelevantUnpaintedObject(this, visualOverflowRect());
+        if (!img || img->isNull())
             return;
-        }
 
         LayoutRect contentRect = contentBoxRect();
         contentRect.moveBy(paintOffset);
@@ -392,16 +386,6 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
         }
 
         paintIntoRect(context, paintRect);
-
-        if (cachedImage() && page && paintInfo.phase == PaintPhaseForeground) {
-            // For now, count images as unpainted if they are still progressively loading. We may want
-            // to refine this in the future to account for the portion of the image that has painted.
-            LayoutRect visibleRect = intersection(paintRect, contentRect);
-            if (cachedImage()->isLoading())
-                page->addRelevantUnpaintedObject(this, visibleRect);
-            else
-                page->addRelevantRepaintedObject(this, visibleRect);
-        }
 
         if (clip)
             context->restore();

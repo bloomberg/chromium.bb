@@ -1202,7 +1202,6 @@
             'page/History.h',
             'page/ImageBitmap.cpp',
             'page/ImageBitmap.h',
-            'page/LayoutMilestones.h',
             'page/Location.cpp',
             'page/Location.h',
             'page/MemoryInfo.cpp',

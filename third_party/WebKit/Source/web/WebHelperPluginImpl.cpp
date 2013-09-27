@@ -190,9 +190,6 @@ bool WebHelperPluginImpl::initializePage(const String& pluginType, const WebDocu
     ASSERT(!m_page->settings().isScriptEnabled());
     m_page->settings().setPluginsEnabled(true);
 
-    unsigned layoutMilestones = DidFirstLayout | DidFirstVisuallyNonEmptyLayout;
-    m_page->addLayoutMilestones(static_cast<LayoutMilestones>(layoutMilestones));
-
     m_webView->client()->initializeHelperPluginWebFrame(this);
 
     // The page's main frame was set in initializeFrame() as a result of the above call.
