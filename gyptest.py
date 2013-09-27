@@ -216,6 +216,7 @@ def main(argv=None):
   else:
     # TODO:  not duplicate this mapping from pylib/gyp/__init__.py
     format_list = {
+      'aix5':     ['make'],
       'freebsd7': ['make'],
       'freebsd8': ['make'],
       'openbsd5': ['make'],
