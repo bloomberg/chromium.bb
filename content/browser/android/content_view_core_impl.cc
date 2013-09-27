@@ -1593,12 +1593,17 @@ void ContentViewCoreImpl::SetAccessibilityEnabled(JNIEnv* env, jobject obj,
     return;
   RenderWidgetHostImpl* host_impl = RenderWidgetHostImpl::From(
       host_view->GetRenderWidgetHost());
+  BrowserAccessibilityState* accessibility_state =
+      BrowserAccessibilityState::GetInstance();
   if (enabled) {
-    BrowserAccessibilityState::GetInstance()->EnableAccessibility();
-    if (host_impl)
+    // This enables accessibility globally unless it was explicitly disallowed
+    // by a command-line flag.
+    accessibility_state->OnScreenReaderDetected();
+    // If it was actually enabled globally, enable it for this RenderWidget now.
+    if (accessibility_state->IsAccessibleBrowser() && host_impl)
       host_impl->SetAccessibilityMode(AccessibilityModeComplete);
   } else {
-    BrowserAccessibilityState::GetInstance()->DisableAccessibility();
+    accessibility_state->DisableAccessibility();
     if (host_impl)
       host_impl->SetAccessibilityMode(AccessibilityModeOff);
   }
