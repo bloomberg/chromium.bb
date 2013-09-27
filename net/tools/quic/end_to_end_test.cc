@@ -25,7 +25,6 @@
 #include "net/tools/quic/test_tools/http_message_test_utils.h"
 #include "net/tools/quic/test_tools/quic_client_peer.h"
 #include "net/tools/quic/test_tools/quic_epoll_connection_helper_peer.h"
-#include "net/tools/quic/test_tools/quic_in_memory_cache_peer.h"
 #include "net/tools/quic/test_tools/quic_test_client.h"
 #include "net/tools/quic/test_tools/server_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,7 +60,7 @@ void GenerateBody(string* body, int length) {
 class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
  public:
   static void SetUpTestCase() {
-    QuicInMemoryCachePeer::ResetForTests();
+    QuicInMemoryCache::GetInstance()->ResetForTests();
   }
 
  protected:
@@ -132,7 +131,7 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
                   StringPiece response_code,
                   StringPiece response_detail,
                   StringPiece body) {
-    QuicInMemoryCache::GetInstance()->AddSimpleResponse(
+    QuicInMemoryCache::GetInstance()->AddOrVerifyResponse(
         method, path, version, response_code, response_detail, body);
   }
 
