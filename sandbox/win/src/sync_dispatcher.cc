@@ -1,9 +1,10 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "sandbox/win/src/sync_dispatcher.h"
 
+#include "base/win/windows_version.h"
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/interception.h"
 #include "sandbox/win/src/interceptors.h"
@@ -34,15 +35,29 @@ SyncDispatcher::SyncDispatcher(PolicyBase* policy_base)
 
 bool SyncDispatcher::SetupService(InterceptionManager* manager,
                                   int service) {
-  if (IPC_CREATEEVENT_TAG == service)
-      return INTERCEPT_EAT(manager, L"kernel32.dll", CreateEventW,
-                           CREATE_EVENT_ID, 20);
+  bool ret = false;
+  static const wchar_t* kWin32SyncDllName =
+      base::win::GetVersion() >= base::win::VERSION_WIN8 ? kKernelBasedllName :
+          kKerneldllName;
 
-  if (IPC_OPENEVENT_TAG == service)
-    return INTERCEPT_EAT(manager, L"kernel32.dll", OpenEventW,
-                         OPEN_EVENT_ID, 16);
-
-  return false;
+  // We need to intercept kernelbase.dll on Windows 8 and beyond and
+  // kernel32.dll for earlier versions.
+  if (IPC_CREATEEVENT_TAG == service) {
+    ret = INTERCEPT_EAT(manager, kWin32SyncDllName, CreateEventW,
+                        CREATE_EVENTW_ID, 20);
+    if (ret) {
+      ret = INTERCEPT_EAT(manager, kWin32SyncDllName, CreateEventA,
+                          CREATE_EVENTA_ID, 20);
+    }
+  } else if (IPC_OPENEVENT_TAG == service) {
+    ret = INTERCEPT_EAT(manager, kWin32SyncDllName, OpenEventW, OPEN_EVENTW_ID,
+                        16);
+    if (ret) {
+      ret = INTERCEPT_EAT(manager, kWin32SyncDllName, OpenEventW,
+                          OPEN_EVENTA_ID, 16);
+    }
+  }
+  return ret;
 }
 
 bool SyncDispatcher::CreateEvent(IPCInfo* ipc, std::wstring* name,

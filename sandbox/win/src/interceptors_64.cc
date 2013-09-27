@@ -253,16 +253,32 @@ SANDBOX_INTERCEPT HANDLE WINAPI TargetCreateEventW64(
     LPSECURITY_ATTRIBUTES security_attributes, BOOL manual_reset,
     BOOL initial_state, LPCWSTR name) {
   CreateEventWFunction orig_fn = reinterpret_cast<
-      CreateEventWFunction>(g_originals[CREATE_EVENT_ID]);
+      CreateEventWFunction>(g_originals[CREATE_EVENTW_ID]);
   return TargetCreateEventW(orig_fn, security_attributes, manual_reset,
+                            initial_state, name);
+}
+
+SANDBOX_INTERCEPT HANDLE WINAPI TargetCreateEventA64(
+    LPSECURITY_ATTRIBUTES security_attributes, BOOL manual_reset,
+    BOOL initial_state, LPCSTR name) {
+  CreateEventAFunction orig_fn = reinterpret_cast<
+      CreateEventAFunction>(g_originals[CREATE_EVENTA_ID]);
+  return TargetCreateEventA(orig_fn, security_attributes, manual_reset,
                             initial_state, name);
 }
 
 SANDBOX_INTERCEPT HANDLE WINAPI TargetOpenEventW64(
     ACCESS_MASK desired_access, BOOL inherit_handle, LPCWSTR name) {
   OpenEventWFunction orig_fn = reinterpret_cast<
-      OpenEventWFunction>(g_originals[OPEN_EVENT_ID]);
+      OpenEventWFunction>(g_originals[OPEN_EVENTW_ID]);
   return TargetOpenEventW(orig_fn, desired_access, inherit_handle, name);
+}
+
+SANDBOX_INTERCEPT HANDLE WINAPI TargetOpenEventA64(
+    ACCESS_MASK desired_access, BOOL inherit_handle, LPCSTR name) {
+  OpenEventAFunction orig_fn = reinterpret_cast<
+      OpenEventAFunction>(g_originals[OPEN_EVENTA_ID]);
+  return TargetOpenEventA(orig_fn, desired_access, inherit_handle, name);
 }
 
 }  // namespace sandbox

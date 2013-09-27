@@ -18,21 +18,49 @@ typedef HANDLE (WINAPI *CreateEventWFunction) (
     BOOL bInheritHandle,
     LPCWSTR lpName);
 
+typedef HANDLE (WINAPI *CreateEventAFunction) (
+    LPSECURITY_ATTRIBUTES lpEventAttributes,
+    DWORD dwDesiredAccess,
+    BOOL bInheritHandle,
+    LPCSTR lpName);
+
 typedef HANDLE (WINAPI *OpenEventWFunction) (
     BOOL bManualReset,
     BOOL bInitialState,
     LPCWSTR lpName);
 
-// Interception of CreateEvent on the child process.
+typedef HANDLE (WINAPI *OpenEventAFunction) (
+    BOOL bManualReset,
+    BOOL bInitialState,
+    LPCSTR lpName);
+
+// Interceptors for CreateEventW/A
 SANDBOX_INTERCEPT HANDLE WINAPI TargetCreateEventW(
     CreateEventWFunction orig_CreateEvent,
-    LPSECURITY_ATTRIBUTES security_attributes, BOOL manual_reset,
-    BOOL initial_state, LPCWSTR name);
+    LPSECURITY_ATTRIBUTES security_attributes,
+    BOOL manual_reset,
+    BOOL initial_state,
+    LPCWSTR name);
 
-// Interception of OpenEvent on the child process.
+SANDBOX_INTERCEPT HANDLE WINAPI TargetCreateEventA(
+    CreateEventAFunction orig_CreateEvent,
+    LPSECURITY_ATTRIBUTES security_attributes,
+    BOOL manual_reset,
+    BOOL initial_state,
+    LPCSTR name);
+
+// Interceptors for OpenEventW/A
 SANDBOX_INTERCEPT HANDLE WINAPI TargetOpenEventW(
-    OpenEventWFunction orig_OpenEvent, ACCESS_MASK desired_access,
-    BOOL inherit_handle, LPCWSTR name);
+    OpenEventWFunction orig_OpenEvent,
+    ACCESS_MASK desired_access,
+    BOOL inherit_handle,
+    LPCWSTR name);
+
+SANDBOX_INTERCEPT HANDLE WINAPI TargetOpenEventA(
+    OpenEventAFunction orig_OpenEvent,
+    ACCESS_MASK desired_access,
+    BOOL inherit_handle,
+    LPCSTR name);
 
 }  // extern "C"
 
