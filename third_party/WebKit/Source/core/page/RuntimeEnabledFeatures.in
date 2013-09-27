@@ -18,7 +18,7 @@
 AnimatedWebP status=experimental
 ApplicationCache status=stable
 AuthorShadowDOMForAnyElement
-Crypto status=test
+Crypto status=experimental
 CSSAnimationUnprefixed status=experimental
 CSSCompositing status=experimental
 CSSExclusions status=experimental
