@@ -10,8 +10,6 @@ PASS crypto.subtle.exportKey('raw', null) threw exception TypeError: Invalid key
 PASS crypto.subtle.exportKey('raw', 3) threw exception TypeError: Invalid key argument.
 PASS keys.aesCbcJustDecrypt.extractable is false
 PASS crypto.subtle.exportKey('raw', keys.aesCbcJustDecrypt) threw exception NotSupportedError: key is not extractable.
-PASS keyData.byteLength is 3
-PASS keyData.byteLength is 5
 PASS successfullyParsed is true
 
 TEST COMPLETE

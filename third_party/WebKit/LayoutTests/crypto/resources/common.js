@@ -1,21 +1,19 @@
 function importTestKeys()
 {
-    var keyFormat = "spki";
-    var data = new Uint8Array([]);
+    var keyFormat = "raw";
+    var data = asciiToArrayBuffer("16 bytes of key!");
     var extractable = true;
     var keyUsages = ['encrypt', 'decrypt', 'sign', 'verify'];
 
     var hmacPromise = crypto.subtle.importKey(keyFormat, data, {name: 'hmac', hash: {name: 'sha-1'}}, extractable, keyUsages);
-    var rsaSsaPromise = crypto.subtle.importKey(keyFormat, data, {name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-1'}}, extractable, keyUsages);
     var aesCbcPromise = crypto.subtle.importKey(keyFormat, data, {name: 'AES-CBC'}, extractable, keyUsages);
     var aesCbcJustDecrypt = crypto.subtle.importKey(keyFormat, data, {name: 'AES-CBC'}, false, ['decrypt']);
 
-    return Promise.all([hmacPromise, rsaSsaPromise, aesCbcPromise, aesCbcJustDecrypt]).then(function(results) {
+    return Promise.all([hmacPromise, aesCbcPromise, aesCbcJustDecrypt]).then(function(results) {
         return {
             hmacSha1: results[0],
-            rsaSsaSha1: results[1],
-            aesCbc: results[2],
-            aesCbcJustDecrypt: results[3],
+            aesCbc: results[1],
+            aesCbcJustDecrypt: results[2],
         };
     });
 }
@@ -35,6 +33,11 @@ function byteArrayToHexString(bytes)
     }
 
     return "[" + hexBytes.join(" ") + "]";
+}
+
+function arrayBufferToHexString(buffer)
+{
+    return byteArrayToHexString(new Uint8Array(buffer));
 }
 
 function asciiToArrayBuffer(str)

@@ -11,8 +11,6 @@
 <script>
 description("Tests cypto.subtle.generateKey.");
 
-jsTestIsAsync = true;
-
 extractable = true;
 keyUsages = ['encrypt', 'decrypt'];
 
@@ -73,61 +71,6 @@ shouldThrow("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5'}, extractable ,
 shouldThrow("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: 10}, extractable , keyUsages)");
 shouldThrow("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: 10, publicExponent: 10}, extractable , keyUsages)");
 shouldThrow("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: 10, publicExponent: null}, extractable , keyUsages)");
-
-// Note that fractional numbers are truncated, so this length should be
-// interpreted as 1024.
-crypto.subtle.generateKey({name: 'aes-cbc', length: 1024.9}, extractable, ['decrypt', 'encrypt']).then(function(result) {
-    key = result;
-    shouldBe("key.type", "'private'")
-    shouldBe("key.extractable", "true")
-    shouldBe("key.algorithm.name", "'AES-CBC'")
-    shouldBe("key.algorithm.length", "1024")
-    shouldBe("key.usages.join(',')", "'encrypt,decrypt'")
-
-    return crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256' }}, false, ['sign']);
-}).then(function(result) {
-    key = result;
-    shouldBe("key.type", "'private'")
-    shouldBe("key.extractable", "false")
-    shouldBe("key.algorithm.name", "'HMAC'")
-    shouldBe("key.algorithm.hash.name", "'SHA-256'")
-    shouldBe("key.algorithm.length", "null")
-    shouldBe("key.usages.join(',')", "'sign'")
-
-    return crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256' }, length:48 }, false, ['sign']);
-}).then(function(result) {
-    key = result;
-    shouldBe("key.type", "'private'")
-    shouldBe("key.extractable", "false")
-    shouldBe("key.algorithm.name", "'HMAC'")
-    shouldBe("key.algorithm.hash.name", "'SHA-256'")
-    shouldBe("key.algorithm.length", "48")
-    shouldBe("key.usages.join(',')", "'sign'")
-
-    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10, publicExponent: new Uint8Array([0])}, false, ['sign']);
-}).then(function(result) {
-    keyPair = result;
-
-    shouldBeDefined("keyPair.publicKey");
-    shouldBeDefined("keyPair.privateKey");
-
-    shouldBe("keyPair.publicKey.type", "'public'");
-    shouldBe("keyPair.publicKey.algorithm.name", "'RSASSA-PKCS1-v1_5'");
-
-    shouldBe("keyPair.privateKey.type", "'private'");
-    shouldBe("keyPair.privateKey.algorithm.name", "'RSASSA-PKCS1-v1_5'");
-
-    // KeyPair should return the same Key wrapper
-    keyPair.publicKey.foo = "bar";
-    shouldBe("keyPair.publicKey.foo", "'bar'");
-    if (window.gc) {
-        window.gc();
-        window.gc();
-    }
-    shouldBe("keyPair.publicKey.foo", "'bar'");
-
-}).then(finishJSTest, failAndFinishJSTest);
-
 </script>
 
 <script src="../fast/js/resources/js-test-post.js"></script>

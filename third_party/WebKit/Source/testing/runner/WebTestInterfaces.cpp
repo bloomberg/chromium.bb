@@ -31,7 +31,6 @@
 #include "public/testing/WebTestInterfaces.h"
 
 #include "MockWebAudioDevice.h"
-#include "MockWebCrypto.h"
 #include "MockWebMIDIAccessor.h"
 #include "MockWebMediaStreamCenter.h"
 #include "MockWebRTCPeerConnectionHandler.h"
@@ -114,11 +113,6 @@ WebMIDIAccessor* WebTestInterfaces::createMIDIAccessor(WebMIDIAccessorClient* cl
 WebAudioDevice* WebTestInterfaces::createAudioDevice(double sampleRate)
 {
     return new MockWebAudioDevice(sampleRate);
-}
-
-WebCrypto* WebTestInterfaces::crypto()
-{
-    return MockWebCrypto::get();
 }
 
 }

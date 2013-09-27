@@ -3,24 +3,20 @@ Tests cypto.subtle.importKey.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS key.type is 'private'
+PASS key.type is 'secret'
 PASS key.extractable is true
 PASS key.algorithm.name is 'HMAC'
 PASS key.algorithm.hash.name is 'SHA-256'
 PASS key.usages.join(',') is 'encrypt,sign'
-PASS key.type is 'private'
+PASS key.type is 'secret'
 PASS key.extractable is true
 PASS key.algorithm.name is 'AES-CBC'
 PASS key.usages.join(',') is ''
-PASS key.type is 'private'
+PASS key.type is 'secret'
 PASS key.extractable is false
 PASS key.algorithm.name is 'AES-CBC'
 PASS key.usages.join(',') is ''
-PASS key.type is 'public'
-PASS key.extractable is false
-PASS key.algorithm.name is 'AES-CBC'
-PASS key.usages.join(',') is ''
-PASS key.type is 'public'
+PASS key.type is 'secret'
 PASS key.extractable is false
 PASS key.algorithm.name is 'AES-CBC'
 PASS key.usages.join(',') is ''

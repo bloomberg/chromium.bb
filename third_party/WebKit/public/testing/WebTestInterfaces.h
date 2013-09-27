@@ -36,7 +36,6 @@
 
 namespace WebKit {
 class WebAudioDevice;
-class WebCrypto;
 class WebFrame;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
@@ -77,8 +76,6 @@ public:
     WebKit::WebMIDIAccessor* createMIDIAccessor(WebKit::WebMIDIAccessorClient*);
 
     WebKit::WebAudioDevice* createAudioDevice(double sampleRate);
-
-    WebKit::WebCrypto* crypto();
 
 #if WEBTESTRUNNER_IMPLEMENTATION
     TestInterfaces* testInterfaces();

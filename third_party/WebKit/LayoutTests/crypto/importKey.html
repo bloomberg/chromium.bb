@@ -17,7 +17,7 @@ aesCbc = {name: 'aes-cbc'};
 
 Promise.resolve(null).then(function() {
     keyFormat = "raw";
-    data = asciiToArrayBuffer("private");
+    data = asciiToArrayBuffer("raw bytes for key");
     algorithm = { name: 'hmac', hash: { name: 'sha-256' } };
     extractable = true;
     // Note there are duplicates
@@ -26,7 +26,7 @@ Promise.resolve(null).then(function() {
     return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
 }).then(function(result) {
     key = result;
-    shouldBe("key.type", "'private'")
+    shouldBe("key.type", "'secret'")
     shouldBe("key.extractable", "true")
     shouldBe("key.algorithm.name", "'HMAC'")
     shouldBe("key.algorithm.hash.name", "'SHA-256'")
@@ -34,7 +34,7 @@ Promise.resolve(null).then(function() {
 
     // Same test as above, but with an keyUsages, and AES-CBC.
     keyFormat = "raw";
-    data = asciiToArrayBuffer("private");
+    data = asciiToArrayBuffer("16 bytes of key!");
     algorithm = aesCbc;
     extractable = true;
     keyUsages = [];
@@ -42,14 +42,14 @@ Promise.resolve(null).then(function() {
     return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
 }).then(function(result) {
     key = result;
-    shouldBe("key.type", "'private'")
+    shouldBe("key.type", "'secret'")
     shouldBe("key.extractable", "true")
     shouldBe("key.algorithm.name", "'AES-CBC'")
     shouldBe("key.usages.join(',')", "''")
 
     // Same test as above, but with extractable = false.
     keyFormat = "raw";
-    data = asciiToArrayBuffer("private");
+    data = asciiToArrayBuffer("16 bytes of key!");
     algorithm = aesCbc;
     extractable = false;
     keyUsages = [];
@@ -57,14 +57,14 @@ Promise.resolve(null).then(function() {
     return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
 }).then(function(result) {
     key = result;
-    shouldBe("key.type", "'private'")
+    shouldBe("key.type", "'secret'")
     shouldBe("key.extractable", "false")
     shouldBe("key.algorithm.name", "'AES-CBC'")
     shouldBe("key.usages.join(',')", "''")
 
     // Same test as above, but with key.type of public.
     keyFormat = "raw";
-    data = asciiToArrayBuffer("public");
+    data = asciiToArrayBuffer("16 bytes of key!");
     algorithm = aesCbc;
     extractable = false;
     keyUsages = [];
@@ -72,34 +72,21 @@ Promise.resolve(null).then(function() {
     return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
 }).then(function(result) {
     key = result;
-    shouldBe("key.type", "'public'")
+    shouldBe("key.type", "'secret'")
     shouldBe("key.extractable", "false")
     shouldBe("key.algorithm.name", "'AES-CBC'")
     shouldBe("key.usages.join(',')", "''")
 
     // Same test as above, but with keyFormat = spki
     keyFormat = "spki";
-    data = asciiToArrayBuffer("public");
-    algorithm = aesCbc;
-    extractable = false;
-    keyUsages = [];
-
-    return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
-}).then(function(result) {
-    key = result;
-    shouldBe("key.type", "'public'")
-    shouldBe("key.extractable", "false")
-    shouldBe("key.algorithm.name", "'AES-CBC'")
-    shouldBe("key.usages.join(',')", "''")
-
-    keyFormat = "spki";
-    data = asciiToArrayBuffer("error");
+    data = asciiToArrayBuffer("16 bytes of key!");
     algorithm = aesCbc;
     extractable = false;
     keyUsages = [];
 
     return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
 }).then(undefined, function(result) {
+    // TODO(eroman): Only "raw" key format is supported at the moment.
     debug("rejected with " + result);
 
     keyFormat = "raw";

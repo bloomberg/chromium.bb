@@ -15,17 +15,7 @@ PASS crypto.subtle.sign({name: 'hmac', hash: null}, keys.hmacSha1, data) threw e
 PASS crypto.subtle.sign({name: 'hmac', hash: {}}, keys.hmacSha1, data) threw exception TypeError: Algorithm: HMAC: HmacParams: hash: Algorithm: name: Missing or not a string.
 PASS crypto.subtle.sign({name: 'hmac', hash: {name: 'foo'}}, keys.hmacSha1, data) threw exception NotSupportedError: Algorithm: HMAC: HmacParams: hash: Algorithm: Unrecognized algorithm name.
 PASS crypto.subtle.sign({name: 'hmac', hash: {name: 'AES-CBC'}}, keys.hmacSha1, data) threw exception NotSupportedError: Algorithm: HMAC: HmacParams: hash: Algorithm: AES-CBC: Unsupported operation.
-PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5'}, keys.rsaSsaSha1, data) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaSSaParams: hash: Missing or not a dictionary.
-PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: 3}, keys.rsaSsaSha1, data) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaSSaParams: hash: Algorithm: Not an object.
-PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: null}, keys.rsaSsaSha1, data) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaSSaParams: hash: Algorithm: Not an object.
-PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: {}}, keys.rsaSsaSha1, data) threw exception TypeError: Algorithm: RSASSA-PKCS1-v1_5: RsaSSaParams: hash: Algorithm: name: Missing or not a string.
-PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'foo'}}, keys.rsaSsaSha1, data) threw exception NotSupportedError: Algorithm: RSASSA-PKCS1-v1_5: RsaSSaParams: hash: Algorithm: Unrecognized algorithm name.
-PASS crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'AES-CBC'}}, keys.rsaSsaSha1, data) threw exception NotSupportedError: Algorithm: RSASSA-PKCS1-v1_5: RsaSSaParams: hash: Algorithm: AES-CBC: Unsupported operation.
-PASS signResult.byteLength is 17
-PASS verifyResult is true
-PASS verifyResult is false
-PASS crypto.subtle.sign({name: 'hmac', hash: {name: 'sha-256'}}, generatedHmacSha1Key, data) threw exception NotSupportedError: key.algorithm does not match that of operation (HMAC's hash differs).
-PASS crypto.subtle.sign(hmacSha1, generatedHmacSha1Key, data) did not throw exception.
+PASS signResult is '[89 0d 9b 89 4b 23 97 69 ac 77 25 04 66 dc e4 2a f9 26 ed 76]'
 PASS successfullyParsed is true
 
 TEST COMPLETE

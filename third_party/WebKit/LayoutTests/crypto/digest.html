@@ -34,18 +34,6 @@ Promise.resolve(null).then(function() {
 }).then(function(result) {
     printAcceptedResult(result);
 
-    debug("SHA-256 rejects (dummy implementation)");
-    return crypto.subtle.digest({name: 'sha-256'}, new Uint8Array([]));
-
-}).then(undefined, function(result) {
-    printRejectedResult(result);
-
-    debug("Error (dummy implementation rejects this input)");
-    var data = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-    return crypto.subtle.digest({name: 'sha-1'}, data);
-}).then(undefined, function(result) {
-    printRejectedResult(result);
-
     // Pass invalid data to digeset()
     shouldThrow("crypto.subtle.digest({name: 'sha-1'})");
     shouldThrow("crypto.subtle.digest({name: 'sha-1'}, null)");

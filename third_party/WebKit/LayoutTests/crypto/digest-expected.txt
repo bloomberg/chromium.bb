@@ -7,10 +7,6 @@ SHA1 of []
     = [da 39 a3 ee 5e 6b 4b 0d 32 55 bf ef 95 60 18 90 af d8 07 09]
 SHA1 of [0x0]
     = [5b a9 3c 9d b0 cf f9 3f 52 b5 21 d7 42 0e 43 f6 ed a2 78 4f]
-SHA-256 rejects (dummy implementation)
-    rejected with value of null
-Error (dummy implementation rejects this input)
-    rejected with value of null
 PASS crypto.subtle.digest({name: 'sha-1'}) threw exception TypeError: Failed to execute 'digest' on 'SubtleCrypto': 2 arguments required, but only 1 present..
 PASS crypto.subtle.digest({name: 'sha-1'}, null) threw exception TypeError: Invalid dataBuffer argument.
 PASS crypto.subtle.digest({name: 'sha-1'}, 10) threw exception TypeError: Invalid dataBuffer argument.

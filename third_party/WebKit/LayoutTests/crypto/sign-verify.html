@@ -44,41 +44,15 @@ importTestKeys().then(function(importedKeys) {
     shouldThrow("crypto.subtle.sign({name: 'hmac', hash: {name: 'foo'}}, keys.hmacSha1, data)");
     shouldThrow("crypto.subtle.sign({name: 'hmac', hash: {name: 'AES-CBC'}}, keys.hmacSha1, data)");
 
-    // ---------------------------------------------------
-    // RSASSA-PKCS1-v1_5 normalization failures (RsaSsaParams)
-    // ---------------------------------------------------
-    shouldThrow("crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5'}, keys.rsaSsaSha1, data)");
-    shouldThrow("crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: 3}, keys.rsaSsaSha1, data)");
-    shouldThrow("crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: null}, keys.rsaSsaSha1, data)");
-    shouldThrow("crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: {}}, keys.rsaSsaSha1, data)");
-    shouldThrow("crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'foo'}}, keys.rsaSsaSha1, data)");
-    shouldThrow("crypto.subtle.sign({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'AES-CBC'}}, keys.rsaSsaSha1, data)");
-
     return crypto.subtle.sign(hmacSha1, keys.hmacSha1, data);
 }).then(function(result) {
-    signResult = result;
-    shouldBe("signResult.byteLength", "17");
-
-    expectedSignature = asciiToArrayBuffer("signed HMAC:hello");
-    return crypto.subtle.verify(hmacSha1, keys.hmacSha1, expectedSignature, data);
-}).then(function(result) {
-    verifyResult = result;
-    shouldBe("verifyResult", "true");
+    signResult = arrayBufferToHexString(result);
+    shouldBe("signResult", "'[89 0d 9b 89 4b 23 97 69 ac 77 25 04 66 dc e4 2a f9 26 ed 76]'");
 
     return crypto.subtle.verify(hmacSha1, keys.hmacSha1, asciiToArrayBuffer("badsignature"), data);
 }).then(function(result) {
     verifyResult = result;
     shouldBe("verifyResult", "false");
-
-    return crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-1' }, length: 48}, false, ['sign']);
-}).then(function(result) {
-    generatedHmacSha1Key = result;
-
-    // Cannot use an HMAC SHA-1 key for signing HMAC SHA-256
-    shouldThrow("crypto.subtle.sign({name: 'hmac', hash: {name: 'sha-256'}}, generatedHmacSha1Key, data)");
-
-    // However it can be used to sign for HMAC SHA-1
-    shouldNotThrow("crypto.subtle.sign(hmacSha1, generatedHmacSha1Key, data)");
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

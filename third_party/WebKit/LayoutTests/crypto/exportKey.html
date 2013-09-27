@@ -28,15 +28,7 @@ importTestKeys().then(function(result) {
     shouldBe("keys.aesCbcJustDecrypt.extractable", "false")
     shouldThrow("crypto.subtle.exportKey('raw', keys.aesCbcJustDecrypt)");
 
-    return crypto.subtle.exportKey('raw', keys.hmacSha1);
-}).then(function(result) {
-    keyData = result;
-    shouldBe("keyData.byteLength", "3");
-
-    return crypto.subtle.exportKey('pkcs8', keys.hmacSha1);
-}).then(function(result) {
-    keyData = result;
-    shouldBe("keyData.byteLength", "5");
+    // TODO(eroman): exportKey() is not implemented.
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

@@ -53,8 +53,6 @@
       'MockSpellCheck.h',
       'MockWebAudioDevice.cpp',
       'MockWebAudioDevice.h',
-      'MockWebCrypto.cpp',
-      'MockWebCrypto.h',
       'MockWebMediaStreamCenter.cpp',
       'MockWebMediaStreamCenter.h',
       'MockWebMIDIAccessor.cpp',
