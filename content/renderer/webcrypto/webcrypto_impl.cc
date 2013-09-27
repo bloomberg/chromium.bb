@@ -15,6 +15,20 @@ WebCryptoImpl::WebCryptoImpl() {
   Init();
 }
 
+void WebCryptoImpl::encrypt(
+    const WebKit::WebCryptoAlgorithm& algorithm,
+    const WebKit::WebCryptoKey& key,
+    const unsigned char* data,
+    unsigned data_size,
+    WebKit::WebCryptoResult result) {
+  WebKit::WebArrayBuffer buffer;
+  if (!EncryptInternal(algorithm, key, data, data_size, &buffer)) {
+    result.completeWithError();
+  } else {
+    result.completeWithBuffer(buffer);
+  }
+}
+
 void WebCryptoImpl::digest(
     const WebKit::WebCryptoAlgorithm& algorithm,
     const unsigned char* data,

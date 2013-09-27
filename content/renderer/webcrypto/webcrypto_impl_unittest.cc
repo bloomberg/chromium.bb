@@ -43,6 +43,13 @@ WebKit::WebCryptoAlgorithm CreateHmacAlgorithm(
       new WebKit::WebCryptoHmacParams(CreateAlgorithm(hashId)));
 }
 
+WebKit::WebCryptoAlgorithm CreateAesCbcAlgorithm(
+    const std::vector<uint8>& iv) {
+  return WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
+      WebKit::WebCryptoAlgorithmIdAesCbc,
+      new WebKit::WebCryptoAesCbcParams(&iv[0], iv.size()));
+}
+
 }  // namespace
 
 namespace content {
@@ -120,6 +127,15 @@ class WebCryptoImplTest : public testing::Test {
                                            data,
                                            data_size,
                                            signature_match);
+  }
+
+  bool EncryptInternal(
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      const WebKit::WebCryptoKey& key,
+      const unsigned char* data,
+      unsigned data_size,
+      WebKit::WebArrayBuffer* buffer) {
+    return crypto_.EncryptInternal(algorithm, key, data, data_size, buffer);
   }
 
  private:
@@ -347,6 +363,171 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
         message_raw.size(),
         &signature_match));
     EXPECT_FALSE(signature_match);
+  }
+}
+
+TEST_F(WebCryptoImplTest, AesCbcEncryptionFailures) {
+  WebKit::WebCryptoKey key = ImportSecretKeyFromRawHexString(
+      "2b7e151628aed2a6abf7158809cf4f3c",
+      CreateAlgorithm(WebKit::WebCryptoAlgorithmIdAesCbc),
+      WebKit::WebCryptoKeyUsageEncrypt | WebKit::WebCryptoKeyUsageDecrypt);
+
+  WebKit::WebArrayBuffer output;
+
+  // Use an invalid |iv| (fewer than 16 bytes)
+  {
+    std::vector<uint8> plain_text(33);
+    std::vector<uint8> iv;
+    EXPECT_FALSE(EncryptInternal(CreateAesCbcAlgorithm(iv),
+                                 key,
+                                 &plain_text[0],
+                                 plain_text.size(),
+                                 &output));
+  }
+
+  // Use an invalid |iv| (more than 16 bytes)
+  {
+    std::vector<uint8> plain_text(33);
+    std::vector<uint8> iv(17);
+    EXPECT_FALSE(EncryptInternal(CreateAesCbcAlgorithm(iv),
+                                 key,
+                                 &plain_text[0],
+                                 plain_text.size(),
+                                 &output));
+  }
+
+  // Give an input that is too large (would cause integer overflow when
+  // narrowing to an int).
+  {
+    std::vector<uint8> iv(16);
+
+    // Pretend the input is large. Don't pass data pointer as NULL in case that
+    // is special cased; the implementation shouldn't actually dereference the
+    // data.
+    const unsigned char* plain_text = &iv[0];
+    unsigned plain_text_len = INT_MAX - 3;
+
+    EXPECT_FALSE(EncryptInternal(
+        CreateAesCbcAlgorithm(iv), key, plain_text, plain_text_len, &output));
+  }
+
+  // Fail importing the key (too few bytes specified)
+  {
+    WebKit::WebCryptoKeyType type;
+    scoped_ptr<WebKit::WebCryptoKeyHandle> handle;
+
+    std::vector<uint8> key_raw(1);
+    std::vector<uint8> iv(16);
+
+    EXPECT_FALSE(ImportKeyInternal(WebKit::WebCryptoKeyFormatRaw,
+                                   &key_raw[0],
+                                   key_raw.size(),
+                                   CreateAesCbcAlgorithm(iv),
+                                   WebKit::WebCryptoKeyUsageDecrypt,
+                                   &handle,
+                                   &type));
+  }
+}
+
+TEST_F(WebCryptoImplTest, AesCbcSampleSets) {
+  struct TestCase {
+    const char* key;
+    const char* iv;
+    const char* plain_text;
+    const char* cipher_text;
+  };
+
+  TestCase kTests[] = {
+    // F.2.1 (CBC-AES128.Encrypt)
+    // http://csrc.nist.gov/publications/nistpubs/800-38a/sp800-38a.pdf
+    {
+      // key
+      "2b7e151628aed2a6abf7158809cf4f3c",
+
+      // iv
+      "000102030405060708090a0b0c0d0e0f",
+
+      // plain_text
+      "6bc1bee22e409f96e93d7e117393172a"
+      "ae2d8a571e03ac9c9eb76fac45af8e51"
+      "30c81c46a35ce411e5fbc1191a0a52ef"
+      "f69f2445df4f9b17ad2b417be66c3710",
+
+      // cipher_text
+      "7649abac8119b246cee98e9b12e9197d"
+      "5086cb9b507219ee95db113a917678b2"
+      "73bed6b8e3c1743b7116e69e22229516"
+      "3ff1caa1681fac09120eca307586e1a7"
+      // Padding block: encryption of {0x10, 0x10, ... 0x10}) (not given by the
+      // NIST test vector)
+      "8cb82807230e1321d3fae00d18cc2012"
+    },
+
+    // F.2.6 CBC-AES256.Decrypt [*]
+    // http://csrc.nist.gov/publications/nistpubs/800-38a/sp800-38a.pdf
+    //
+    // [*] Truncated 3 bytes off the plain text, so block 4 differs from the
+    // NIST vector.
+    {
+      // key
+      "603deb1015ca71be2b73aef0857d7781"
+      "1f352c073b6108d72d9810a30914dff4",
+
+      // iv
+      "000102030405060708090a0b0c0d0e0f",
+
+      // plain_text
+      "6bc1bee22e409f96e93d7e117393172a"
+      "ae2d8a571e03ac9c9eb76fac45af8e51"
+      "30c81c46a35ce411e5fbc1191a0a52ef"
+      // Truncated this last block to make it more interesting.
+      "f69f2445df4f9b17ad2b417be6",
+
+      // cipher_text
+      "f58c4c04d6e5f1ba779eabfb5f7bfbd6"
+      "9cfc4e967edb808d679f777bc6702c7d"
+      "39f23369a9d9bacfa530e26304231461"
+      // This block differs from source vector (due to truncation)
+      "c9aaf02a6a54e9e242ccbf48c59daca6"
+    },
+
+    // Taken from encryptor_unittest.cc (EncryptorTest.EmptyEncrypt())
+    {
+      // key
+      "3132383d5369787465656e4279746573",
+
+      // iv
+      "5377656574205369787465656e204956",
+
+      // plain_text
+      "",
+
+      // cipher_text
+      "8518b8878d34e7185e300d0fcc426396"
+    },
+  };
+
+  for (size_t index = 0; index < ARRAYSIZE_UNSAFE(kTests); index++) {
+    SCOPED_TRACE(index);
+    const TestCase& test = kTests[index];
+
+    WebKit::WebCryptoKey key = ImportSecretKeyFromRawHexString(
+        test.key,
+        CreateAlgorithm(WebKit::WebCryptoAlgorithmIdAesCbc),
+        WebKit::WebCryptoKeyUsageEncrypt | WebKit::WebCryptoKeyUsageDecrypt);
+
+    std::vector<uint8> plain_text = HexStringToBytes(test.plain_text);
+    std::vector<uint8> iv = HexStringToBytes(test.iv);
+
+    WebKit::WebArrayBuffer output;
+
+    EXPECT_TRUE(EncryptInternal(CreateAesCbcAlgorithm(iv),
+                                key,
+                                &plain_text[0],
+                                plain_text.size(),
+                                &output));
+
+    ExpectArrayBufferMatchesHex(test.cipher_text, output);
   }
 }
 

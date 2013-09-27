@@ -18,6 +18,12 @@ class CONTENT_EXPORT WebCryptoImpl
  public:
   WebCryptoImpl();
 
+  virtual void encrypt(
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      const WebKit::WebCryptoKey& key,
+      const unsigned char* data,
+      unsigned data_size,
+      WebKit::WebCryptoResult result);
   virtual void digest(
       const WebKit::WebCryptoAlgorithm& algorithm,
       const unsigned char* data,
@@ -51,6 +57,12 @@ class CONTENT_EXPORT WebCryptoImpl
 
   void Init();
 
+  bool EncryptInternal(
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      const WebKit::WebCryptoKey& key,
+      const unsigned char* data,
+      unsigned data_size,
+      WebKit::WebArrayBuffer* buffer);
   bool DigestInternal(
       const WebKit::WebCryptoAlgorithm& algorithm,
       const unsigned char* data,

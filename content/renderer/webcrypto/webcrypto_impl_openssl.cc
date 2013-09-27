@@ -9,6 +9,15 @@ namespace content {
 void WebCryptoImpl::Init() {
 }
 
+bool WebCryptoImpl::EncryptInternal(
+    const WebKit::WebCryptoAlgorithm& algorithm,
+    const WebKit::WebCryptoKey& key,
+    const unsigned char* data,
+    unsigned data_size,
+    WebKit::WebArrayBuffer* buffer) {
+  return false;
+}
+
 bool WebCryptoImpl::DigestInternal(
     const WebKit::WebCryptoAlgorithm& algorithm,
     const unsigned char* data,

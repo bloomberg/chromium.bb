@@ -4,6 +4,7 @@
 
 #include "content/renderer/webcrypto/webcrypto_impl.h"
 
+#include <cryptohi.h>
 #include <pk11pub.h>
 #include <sechash.h>
 
@@ -68,10 +69,97 @@ CK_MECHANISM_TYPE WebCryptoAlgorithmToHMACMechanism(
   }
 }
 
+// TODO(eroman): This works by re-allocating a new buffer. It would be better if
+//               the WebArrayBuffer could just be truncated instead.
+void ShrinkBuffer(WebKit::WebArrayBuffer* buffer, unsigned new_size) {
+  DCHECK_LE(new_size, buffer->byteLength());
+
+  if (new_size == buffer->byteLength())
+    return;
+
+  WebKit::WebArrayBuffer new_buffer =
+      WebKit::WebArrayBuffer::create(new_size, 1);
+  DCHECK(!new_buffer.isNull());
+  memcpy(new_buffer.data(), buffer->data(), new_size);
+  *buffer = new_buffer;
+}
+
 }  // namespace
 
 void WebCryptoImpl::Init() {
   crypto::EnsureNSSInit();
+}
+
+bool WebCryptoImpl::EncryptInternal(
+    const WebKit::WebCryptoAlgorithm& algorithm,
+    const WebKit::WebCryptoKey& key,
+    const unsigned char* data,
+    unsigned data_size,
+    WebKit::WebArrayBuffer* buffer) {
+  if (algorithm.id() != WebKit::WebCryptoAlgorithmIdAesCbc)
+    return false;
+
+  DCHECK_EQ(algorithm.id(), key.algorithm().id());
+  DCHECK_EQ(WebKit::WebCryptoKeyTypeSecret, key.type());
+
+  SymKeyHandle* sym_key = reinterpret_cast<SymKeyHandle*>(key.handle());
+
+  const WebKit::WebCryptoAesCbcParams* params = algorithm.aesCbcParams();
+  if (params->iv().size() != AES_BLOCK_SIZE)
+    return false;
+
+  SECItem iv_item;
+  iv_item.type = siBuffer;
+  iv_item.data = const_cast<unsigned char*>(params->iv().data());
+  iv_item.len = params->iv().size();
+
+  crypto::ScopedSECItem param(PK11_ParamFromIV(CKM_AES_CBC_PAD, &iv_item));
+  if (!param)
+    return false;
+
+  crypto::ScopedPK11Context context(PK11_CreateContextBySymKey(
+      CKM_AES_CBC_PAD, CKA_ENCRYPT, sym_key->key(), param.get()));
+
+  if (!context.get())
+    return false;
+
+  // Oddly PK11_CipherOp takes input and output lenths as "int" rather than
+  // "unsigned". Do some checks now to avoid integer overflowing.
+  if (data_size >= INT_MAX - AES_BLOCK_SIZE) {
+    // TODO(eroman): Handle this by chunking the input fed into NSS. Right now
+    // it doesn't make much difference since the one-shot API would end up
+    // blowing out the memory and crashing anyway. However a newer version of
+    // the spec allows for a sequence<CryptoData> so this will be relevant.
+    return false;
+  }
+
+  unsigned output_max_len = data_size + AES_BLOCK_SIZE;
+  CHECK_GT(output_max_len, data_size);
+
+  *buffer = WebKit::WebArrayBuffer::create(output_max_len, 1);
+
+  unsigned char* buffer_data = reinterpret_cast<unsigned char*>(buffer->data());
+
+  int output_len;
+  if (SECSuccess != PK11_CipherOp(context.get(),
+                                  buffer_data,
+                                  &output_len,
+                                  buffer->byteLength(),
+                                  data,
+                                  data_size)) {
+    return false;
+  }
+
+  unsigned int final_output_chunk_len;
+  if (SECSuccess != PK11_DigestFinal(context.get(),
+                                     buffer_data + output_len,
+                                     &final_output_chunk_len,
+                                     output_max_len - output_len)) {
+    return false;
+  }
+
+  ShrinkBuffer(buffer, final_output_chunk_len + output_len);
+  return true;
 }
 
 bool WebCryptoImpl::DigestInternal(
@@ -118,6 +206,7 @@ bool WebCryptoImpl::ImportKeyInternal(
     WebKit::WebCryptoKeyType* type) {
   switch (algorithm.id()) {
     case WebKit::WebCryptoAlgorithmIdHmac:
+    case WebKit::WebCryptoAlgorithmIdAesCbc:
       *type = WebKit::WebCryptoKeyTypeSecret;
       break;
     // TODO(bryaneyler): Support more key types.
@@ -146,6 +235,11 @@ bool WebCryptoImpl::ImportKeyInternal(
 
       flags |= CKF_SIGN | CKF_VERIFY;
 
+      break;
+    }
+    case WebKit::WebCryptoAlgorithmIdAesCbc: {
+      mechanism = CKM_AES_CBC;
+      flags |= CKF_ENCRYPT | CKF_DECRYPT;
       break;
     }
     default:
@@ -177,7 +271,6 @@ bool WebCryptoImpl::ImportKeyInternal(
                                  false,
                                  NULL));
   if (!pk11_sym_key.get()) {
-    NOTREACHED();
     return false;
   }
 
