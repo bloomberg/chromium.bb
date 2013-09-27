@@ -1125,7 +1125,7 @@ static inline void setupResolverToResumeInIsolate(InlineBidiResolver& resolver, 
 }
 
 // FIXME: BidiResolver should have this logic.
-static inline void constructBidiRunsForSegment(InlineBidiResolver& topResolver, BidiRunList<BidiRun>& bidiRuns, const InlineIterator& endOfRuns, VisualDirectionOverride override, bool previousLineBrokeCleanly)
+static inline void constructBidiRunsForSegment(InlineBidiResolver& topResolver, BidiRunList<BidiRun>& bidiRuns, const InlineIterator& endOfRuns, VisualDirectionOverride override, bool previousLineBrokeCleanly, bool isNewUBAParagraph)
 {
     // FIXME: We should pass a BidiRunList into createBidiRunsForLine instead
     // of the resolver owning the runs.
@@ -1152,9 +1152,12 @@ static inline void constructBidiRunsForSegment(InlineBidiResolver& topResolver, 
         InlineBidiResolver isolatedResolver;
         EUnicodeBidi unicodeBidi = isolatedInline->style()->unicodeBidi();
         TextDirection direction = isolatedInline->style()->direction();
-        if (unicodeBidi == Plaintext)
-            direction = determinePlaintextDirectionality(isolatedInline, startObj);
-        else {
+        if (unicodeBidi == Plaintext) {
+            if (isNewUBAParagraph)
+                direction = determinePlaintextDirectionality(isolatedInline, startObj);
+            else
+                direction = determinePlaintextDirectionality(isolatedInline);
+        } else {
             ASSERT(unicodeBidi == Isolate || unicodeBidi == IsolateOverride);
             direction = isolatedInline->style()->direction();
         }
@@ -1194,11 +1197,11 @@ static inline bool segmentIsEmpty(const InlineIterator& segmentStart, const Inli
     return segmentStart == segmentEnd;
 }
 
-static inline void constructBidiRunsForLine(const RenderBlock* block, InlineBidiResolver& topResolver, BidiRunList<BidiRun>& bidiRuns, const InlineIterator& endOfLine, VisualDirectionOverride override, bool previousLineBrokeCleanly)
+static inline void constructBidiRunsForLine(const RenderBlock* block, InlineBidiResolver& topResolver, BidiRunList<BidiRun>& bidiRuns, const InlineIterator& endOfLine, VisualDirectionOverride override, bool previousLineBrokeCleanly, bool isNewUBAParagraph)
 {
     ShapeInsideInfo* shapeInsideInfo = block->layoutShapeInsideInfo();
     if (!shapeInsideInfo || !shapeInsideInfo->hasSegments()) {
-        constructBidiRunsForSegment(topResolver, bidiRuns, endOfLine, override, previousLineBrokeCleanly);
+        constructBidiRunsForSegment(topResolver, bidiRuns, endOfLine, override, previousLineBrokeCleanly, isNewUBAParagraph);
         return;
     }
 
@@ -1220,7 +1223,7 @@ static inline void constructBidiRunsForLine(const RenderBlock* block, InlineBidi
         }
         if (!segmentIsEmpty(segmentStart, segmentEnd)) {
             topResolver.setPosition(segmentStart, numberOfIsolateAncestors(segmentStart));
-            constructBidiRunsForSegment(topResolver, bidiRuns, segmentEnd, override, previousLineBrokeCleanly);
+            constructBidiRunsForSegment(topResolver, bidiRuns, segmentEnd, override, previousLineBrokeCleanly, isNewUBAParagraph);
         }
     }
 }
@@ -1687,7 +1690,7 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
             }
             // FIXME: This ownership is reversed. We should own the BidiRunList and pass it to createBidiRunsForLine.
             BidiRunList<BidiRun>& bidiRuns = resolver.runs();
-            constructBidiRunsForLine(this, resolver, bidiRuns, end, override, layoutState.lineInfo().previousLineBrokeCleanly());
+            constructBidiRunsForLine(this, resolver, bidiRuns, end, override, layoutState.lineInfo().previousLineBrokeCleanly(), isNewUBAParagraph);
             ASSERT(resolver.position() == end);
 
             BidiRun* trailingSpaceRun = !layoutState.lineInfo().previousLineBrokeCleanly() ? handleTrailingSpaces(bidiRuns, resolver.context()) : 0;
