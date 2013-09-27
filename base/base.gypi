@@ -667,6 +667,9 @@
           'win/windows_version.h',
           'win/wrapped_window_proc.cc',
           'win/wrapped_window_proc.h',
+          'x11/x11_error_tracker.cc',
+          'x11/x11_error_tracker.h',
+          'x11/x11_error_tracker_gtk.cc',
         ],
         'conditions': [
           ['use_aura==1 and use_x11==1', {
@@ -907,6 +910,11 @@
           ['<(use_system_nspr)==1 and >(nacl_untrusted_build)==0', {
             'sources/': [
               ['exclude', '^third_party/nspr/'],
+            ],
+          }],
+          ['<(toolkit_uses_gtk) == 1', {
+            'sources!': [
+              'x11/x11_error_tracker.cc',
             ],
           }],
         ],

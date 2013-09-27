@@ -5,7 +5,7 @@
 #include "chrome/browser/screensaver_window_finder_x11.h"
 
 #include "base/basictypes.h"
-#include "ui/base/x/x11_error_tracker.h"
+#include "base/x11/x11_error_tracker.h"
 #include "ui/base/x/x11_util.h"
 
 ScreensaverWindowFinder::ScreensaverWindowFinder()
@@ -13,7 +13,7 @@ ScreensaverWindowFinder::ScreensaverWindowFinder()
 }
 
 bool ScreensaverWindowFinder::ScreensaverWindowExists() {
-  ui::X11ErrorTracker err_tracker;
+  base::X11ErrorTracker err_tracker;
   ScreensaverWindowFinder finder;
   ui::EnumerateTopLevelWindows(&finder);
   return finder.exists_ && !err_tracker.FoundNewError();

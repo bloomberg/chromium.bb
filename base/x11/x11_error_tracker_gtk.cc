@@ -1,14 +1,14 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/x/x11_error_tracker.h"
+#include "base/x11/x11_error_tracker.h"
 
 #include <gdk/gdkx.h>
 
 #include "base/logging.h"
 
-namespace ui {
+namespace base {
 
 X11ErrorTracker::X11ErrorTracker() {
   gdk_error_trap_push();
@@ -26,4 +26,4 @@ bool X11ErrorTracker::FoundNewError() {
   return found_error;
 }
 
-}  // namespace ui
+}  // namespace base
