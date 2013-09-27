@@ -462,7 +462,6 @@ void ExternalCache::OnCacheEntryInstalled(const std::string& id,
   VLOG(1) << "AppPack installed a new extension in the cache: " << path;
 
   base::DictionaryValue* entry = NULL;
-  std::string update_url;
   if (!extensions_->GetDictionary(id, &entry)) {
     LOG(ERROR) << "ExternalCache cannot find entry for extension " << id;
     return;
@@ -470,11 +469,16 @@ void ExternalCache::OnCacheEntryInstalled(const std::string& id,
 
   // Copy entry to don't modify it inside extensions_.
   entry = entry->DeepCopy();
+
+  std::string update_url;
+  if (entry->GetString(extensions::ExternalProviderImpl::kExternalUpdateUrl,
+                       &update_url) &&
+      extension_urls::IsWebstoreUpdateUrl(GURL(update_url))) {
+    entry->SetBoolean(extensions::ExternalProviderImpl::kIsFromWebstore, true);
+  }
   entry->Remove(extensions::ExternalProviderImpl::kExternalUpdateUrl, NULL);
   entry->SetString(extensions::ExternalProviderImpl::kExternalVersion, version);
   entry->SetString(extensions::ExternalProviderImpl::kExternalCrx, path);
-  if (extension_urls::IsWebstoreUpdateUrl(GURL(update_url)))
-    entry->SetBoolean(extensions::ExternalProviderImpl::kIsFromWebstore, true);
 
   cached_extensions_->Set(id, entry);
   UpdateExtensionLoader();
