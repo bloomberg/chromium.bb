@@ -69,6 +69,12 @@ static void checkThatPreloadsAreSafeToSendToAnotherThread(const PreloadRequestSt
         ASSERT(preloads[i]->isSafeToSendToAnotherThread());
 }
 
+static void checkThatXSSInfosAreSafeToSendToAnotherThread(const XSSInfoStream& infos)
+{
+    for (size_t i = 0; i < infos.size(); ++i)
+        ASSERT(infos[i]->isSafeToSendToAnotherThread());
+}
+
 #endif
 
 BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser> > reference, PassOwnPtr<Configuration> config)
@@ -185,6 +191,7 @@ void BackgroundHTMLParser::sendTokensToMainThread()
 #ifndef NDEBUG
     checkThatTokensAreSafeToSendToAnotherThread(m_pendingTokens.get());
     checkThatPreloadsAreSafeToSendToAnotherThread(m_pendingPreloads);
+    checkThatXSSInfosAreSafeToSendToAnotherThread(m_pendingXSSInfos);
 #endif
 
     OwnPtr<HTMLDocumentParser::ParsedChunk> chunk = adoptPtr(new HTMLDocumentParser::ParsedChunk);

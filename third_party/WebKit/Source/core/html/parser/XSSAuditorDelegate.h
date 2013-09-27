@@ -45,6 +45,9 @@ public:
         return adoptPtr(new XSSInfo(originalURL, didBlockEntirePage, didSendXSSProtectionHeader, didSendCSPHeader));
     }
 
+    String buildConsoleError() const;
+    bool isSafeToSendToAnotherThread() const;
+
     String m_originalURL;
     bool m_didBlockEntirePage;
     bool m_didSendXSSProtectionHeader;
