@@ -77,12 +77,21 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
     SkPoint* vPosEnd = storage3.get();
 
     bool isVertical = font->platformData().orientation() == Vertical;
+    SkScalar verticalPosCompensation = isVertical ? SkFloatToScalar((font->fontMetrics().floatHeight() - font->fontMetrics().floatAscent()) / 2) : 0;
     for (int i = 0; i < numGlyphs; i++) {
         SkScalar myWidth = SkFloatToScalar(adv[i].width());
         pos[i].set(x, y);
         if (isVertical) {
-            vPosBegin[i].set(x + myWidth, y);
-            vPosEnd[i].set(x + myWidth, y - myWidth);
+            // In vertical mode, we need to align the left of ideographics to the vertical baseline.
+            // (Note vertical/horizontal are in absolute orientation, that is, here x is vertical.)
+            // However, when the glyph is drawn in drawTextOnPath(), the baseline is the horizontal path,
+            // so the ideographics will look shifted to the bottom-right direction because the ascent is
+            // applied vertically. Compensate the position so that ascent will look like to be applied
+            // horizontally.
+            SkScalar bottom = x + myWidth - verticalPosCompensation;
+            SkScalar left = y + verticalPosCompensation;
+            vPosBegin[i].set(bottom, left);
+            vPosEnd[i].set(bottom, left - myWidth);
         }
         x += myWidth;
         y += SkFloatToScalar(adv[i].height());
