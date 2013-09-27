@@ -1001,12 +1001,9 @@ InjectedScript.RemoteObject.prototype = {
                 var type = typeof value;
 
                 if (InjectedScript.primitiveTypes[type]) {
-                    if (type === "string") {
-                        if (value.length > maxLength) {
-                            value = this._abbreviateString(value, maxLength, true);
-                            preview.lossless = false;
-                        }
-                        value = value.replace(/\n/g, "\u21B5");
+                    if (type === "string" && value.length > maxLength) {
+                        value = this._abbreviateString(value, maxLength, true);
+                        preview.lossless = false;
                     }
                     this._appendPropertyPreview(preview, { name: name, type: type, value: value + "" }, propertiesThreshold);
                     continue;

@@ -1,6 +1,7 @@
 CONSOLE MESSAGE: line 9: test1,test2
 CONSOLE MESSAGE: line 10: [object NodeList]
 CONSOLE MESSAGE: line 11: [object XPathResult]
+CONSOLE MESSAGE: line 20: [object Object]
 Tests that console logging dumps proper messages.
 
 
@@ -25,4 +26,13 @@ XPathResult
     snapshotLength: [Exception: TypeError]
     stringValue: [Exception: TypeError]
     __proto__: XPathResult console-dir.html:11
+
+Object
+    "": ""
+    "  ": "  "
+    " a b ": " a b "
+    $foo5_: 0
+    "a↵↵b↵c": "a↵↵b↵c"
+    c d: "c d"
+    __proto__: Object console-dir.html:20
 

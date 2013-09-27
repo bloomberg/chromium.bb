@@ -51,6 +51,15 @@ function logToConsole()
         denseArray["property_" + i] = i;
     }
     console.log(denseArray);
+
+    console.log("Object with properties containing whitespaces");
+    var obj = { $foo5_: 0 };
+    obj[" a b "] = " a b ";
+    obj["c d"] = "c d";
+    obj[""] = "";
+    obj["  "] = "  ";
+    obj["a\n\nb\nc"] = "a\n\nb\nc";
+    console.log(obj);
 }
 
 function test()

@@ -9,6 +9,16 @@ function onload()
     console.dir(["test1", "test2"]);
     console.dir(document.childNodes);
     console.dir(document.evaluate("//head", document, null, XPathResult.ANY_TYPE, null));
+
+    // Object with properties containing whitespaces
+    var obj = { $foo5_: 0 };
+    obj[" a b "] = " a b ";
+    obj["c d"] = "c d";
+    obj[""] = "";
+    obj["  "] = "  ";
+    obj["a\n\nb\nc"] = "a\n\nb\nc";
+    console.dir(obj);
+
     runTest();
 }
 
