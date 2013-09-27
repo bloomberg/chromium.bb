@@ -155,6 +155,10 @@ std::vector<aura::Window*> DesktopRootWindowHostX11::GetAllOpenWindows() {
   return windows;
 }
 
+gfx::Rect DesktopRootWindowHostX11::GetX11RootWindowBounds() const {
+  return bounds_;
+}
+
 void DesktopRootWindowHostX11::HandleNativeWidgetActivationChanged(
     bool active) {
   if (active)
@@ -824,10 +828,11 @@ void DesktopRootWindowHostX11::InitX11Window(
       break;
   }
 
+  bounds_ = params.bounds;
   xwindow_ = XCreateWindow(
       xdisplay_, x_root_window_,
-      params.bounds.x(), params.bounds.y(),
-      params.bounds.width(), params.bounds.height(),
+      bounds_.x(), bounds_.y(),
+      bounds_.width(), bounds_.height(),
       0,               // border width
       CopyFromParent,  // depth
       InputOutput,
@@ -835,6 +840,7 @@ void DesktopRootWindowHostX11::InitX11Window(
       attribute_mask,
       &swa);
   base::MessagePumpX11::Current()->AddDispatcherForWindow(this, xwindow_);
+  open_windows().push_back(xwindow_);
 
   // TODO(erg): Maybe need to set a ViewProp here like in RWHL::RWHL().
 
@@ -904,12 +910,8 @@ void DesktopRootWindowHostX11::InitX11Window(
   }
 }
 
-// TODO(erg): This method should basically be everything I need form
-// RootWindowHostX11::RootWindowHostX11().
 aura::RootWindow* DesktopRootWindowHostX11::InitRootWindow(
     const Widget::InitParams& params) {
-  bounds_ = params.bounds;
-
   aura::RootWindow::CreateParams rw_params(bounds_);
   rw_params.host = this;
   root_window_ = new aura::RootWindow(rw_params);

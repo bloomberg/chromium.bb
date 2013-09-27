@@ -7,13 +7,16 @@
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/display_observer.h"
+#include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_root_window_host_x11.h"
 
 namespace views {
 
 const int64 kFirstDisplay = 5321829;
 const int64 kSecondDisplay = 928310;
 
-class DesktopScreenX11Test : public testing::Test,
+class DesktopScreenX11Test : public views::ViewsTestBase,
                              public gfx::DisplayObserver {
  public:
   DesktopScreenX11Test() {}
@@ -21,15 +24,17 @@ class DesktopScreenX11Test : public testing::Test,
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
+    ViewsTestBase::SetUp();
     // Initialize the world to the single monitor case.
     std::vector<gfx::Display> displays;
     displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
     screen_.reset(new DesktopScreenX11(displays));
     screen_->AddObserver(this);
   }
+
   virtual void TearDown() OVERRIDE {
     screen_.reset();
-    message_loop_.RunUntilIdle();
+    ViewsTestBase::TearDown();
   }
 
  protected:
@@ -43,6 +48,17 @@ class DesktopScreenX11Test : public testing::Test,
     changed_display_.clear();
     added_display_.clear();
     removed_display_.clear();
+  }
+
+  Widget* BuildTopLevelDesktopWidget(const gfx::Rect& bounds) {
+    Widget* toplevel = new Widget;
+    Widget::InitParams toplevel_params =
+        CreateParams(Widget::InitParams::TYPE_WINDOW);
+    toplevel_params.native_widget =
+        new views::DesktopNativeWidgetAura(toplevel);
+    toplevel_params.bounds = bounds;
+    toplevel->Init(toplevel_params);
+    return toplevel;
   }
 
  private:
@@ -59,7 +75,6 @@ class DesktopScreenX11Test : public testing::Test,
     removed_display_.push_back(old_display);
   }
 
-  base::MessageLoopForUI message_loop_;
   scoped_ptr<DesktopScreenX11> screen_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopScreenX11Test);
@@ -181,6 +196,47 @@ TEST_F(DesktopScreenX11Test, GetPrimaryDisplay) {
   // The first display in the list is always the primary, even if other
   // displays are to the left in screen layout.
   EXPECT_EQ(kFirstDisplay, screen()->GetPrimaryDisplay().id());
+}
+
+TEST_F(DesktopScreenX11Test, GetWindowAtScreenPoint) {
+  Widget* window_one = BuildTopLevelDesktopWidget(gfx::Rect(10, 10, 10, 10));
+  Widget* window_two = BuildTopLevelDesktopWidget(gfx::Rect(50, 50, 10, 10));
+
+  // Make sure the internal state of DesktopRootWindowHostX11 is set up
+  // correctly.
+  ASSERT_EQ(2u, DesktopRootWindowHostX11::GetAllOpenWindows().size());
+
+  EXPECT_EQ(window_one->GetNativeWindow(),
+            screen()->GetWindowAtScreenPoint(gfx::Point(15, 15)));
+  EXPECT_EQ(window_two->GetNativeWindow(),
+            screen()->GetWindowAtScreenPoint(gfx::Point(55, 55)));
+  EXPECT_EQ(NULL,
+            screen()->GetWindowAtScreenPoint(gfx::Point(100, 100)));
+
+  window_one->CloseNow();
+  window_two->CloseNow();
+}
+
+TEST_F(DesktopScreenX11Test, GetDisplayNearestWindow) {
+  // Set up a two monitor situation.
+  std::vector<gfx::Display> displays;
+  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  displays.push_back(gfx::Display(kSecondDisplay,
+                                  gfx::Rect(640, 0, 1024, 768)));
+  screen()->ProcessDisplayChange(displays);
+
+  Widget* window_one = BuildTopLevelDesktopWidget(gfx::Rect(10, 10, 10, 10));
+  Widget* window_two = BuildTopLevelDesktopWidget(gfx::Rect(650, 50, 10, 10));
+
+  EXPECT_EQ(
+      kFirstDisplay,
+      screen()->GetDisplayNearestWindow(window_one->GetNativeWindow()).id());
+  EXPECT_EQ(
+      kSecondDisplay,
+      screen()->GetDisplayNearestWindow(window_two->GetNativeWindow()).id());
+
+  window_one->CloseNow();
+  window_two->CloseNow();
 }
 
 }  // namespace views

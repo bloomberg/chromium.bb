@@ -20,6 +20,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/views/widget/desktop_aura/desktop_root_window_host_x11.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 
 namespace {
@@ -155,9 +156,15 @@ gfx::NativeWindow DesktopScreenX11::GetWindowUnderCursor() {
 
 gfx::NativeWindow DesktopScreenX11::GetWindowAtScreenPoint(
     const gfx::Point& point) {
-  // TODO(erg): Implement using the discussion at
-  // http://codereview.chromium.org/10279005/
-  NOTIMPLEMENTED();
+  std::vector<aura::Window*> windows =
+    DesktopRootWindowHostX11::GetAllOpenWindows();
+
+  for (std::vector<aura::Window*>::const_iterator it = windows.begin();
+       it != windows.end(); ++it) {
+    if ((*it)->GetBoundsInScreen().Contains(point))
+      return *it;
+  }
+
   return NULL;
 }
 
@@ -171,16 +178,23 @@ std::vector<gfx::Display> DesktopScreenX11::GetAllDisplays() const {
 
 gfx::Display DesktopScreenX11::GetDisplayNearestWindow(
     gfx::NativeView window) const {
-  // TODO(erg): This should theoretically be easy, but it isn't. At the time we
-  // get called here, our aura::Window has not been Init()ed, because this
-  // method is called to get the device scale factor as part of
-  // RootWindow::Init(), before Window::Init(). This seems very confused; we're
-  // trying to get a display nearest window even before we've allocated the
-  // root window. Once fixed, the correct implementation should probably be:
+  // Getting screen bounds here safely is hard.
   //
-  //   return GetDisplayMatching(window->GetBoundsInScreen());
-  //
-  // But at least for now, we'll just fallback:
+  // You'd think we'd be able to just call window->GetBoundsInScreen(), but we
+  // can't because |window| (and the associated RootWindow*) can be partially
+  // initialized at this point; RootWindow initializations call through into
+  // GetDisplayNearestWindow(). But the X11 resources are created before we
+  // create the aura::RootWindow. So we ask what the DRWHX11 believes the
+  // window bounds are instead of going through the aura::Window's screen
+  // bounds.
+  aura::RootWindow* root_window = window->GetRootWindow();
+  if (root_window) {
+    DesktopRootWindowHostX11* rwh = DesktopRootWindowHostX11::GetHostForXID(
+        root_window->GetAcceleratedWidget());
+    if (rwh)
+      return GetDisplayMatching(rwh->GetX11RootWindowBounds());
+  }
+
   return GetPrimaryDisplay();
 }
 

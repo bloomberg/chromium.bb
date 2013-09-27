@@ -60,6 +60,9 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
   // visible.
   static std::vector<aura::Window*> GetAllOpenWindows();
 
+  // Returns the current bounds in terms of the X11 Root Window.
+  gfx::Rect GetX11RootWindowBounds() const;
+
   // Called by X11DesktopHandler to notify us that the native windowing system
   // has changed our activation.
   void HandleNativeWidgetActivationChanged(bool active);
