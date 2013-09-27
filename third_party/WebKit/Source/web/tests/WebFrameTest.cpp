@@ -902,6 +902,34 @@ TEST_F(WebFrameTest, WideViewportInitialScaleDoesNotExpandFixedLayoutWidth)
     EXPECT_EQ(viewportWidth, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->fixedLayoutSize().width());
 }
 
+TEST_F(WebFrameTest, WideViewportAndWideContentWithInitialScale)
+{
+    registerMockedHttpURLLoad("wide_document_width_viewport.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 600;
+    int viewportHeight = 800;
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad("about:blank", true, 0, &client);
+    webViewHelper.webView()->enableFixedLayoutMode(true);
+    webViewHelper.webView()->settings()->setViewportEnabled(true);
+    webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
+    webViewHelper.webView()->settings()->setUseWideViewport(true);
+    webViewHelper.webView()->settings()->setViewportMetaLayoutSizeQuirk(true);
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+
+    FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "wide_document_width_viewport.html");
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+
+    int wideDocumentWidth = 800;
+    float minimumPageScaleFactor = viewportWidth / (float) wideDocumentWidth;
+    EXPECT_EQ(minimumPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
+    EXPECT_EQ(minimumPageScaleFactor, webViewHelper.webView()->minimumPageScaleFactor());
+}
+
 TEST_F(WebFrameTest, ZeroValuesQuirk)
 {
     registerMockedHttpURLLoad("viewport-zero-values.html");

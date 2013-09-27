@@ -132,7 +132,7 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportArgume
         if (arguments.zoom == -1) {
             if (arguments.maxWidth.isAuto())
                 resetInitialScale = true;
-            if (useWideViewport && arguments.maxWidth.isFixed())
+            if (useWideViewport || !arguments.maxWidth.isFixed())
                 resetInitialScale = true;
         }
         if (resetInitialScale)

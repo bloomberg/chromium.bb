@@ -3044,7 +3044,7 @@ void Document::processViewport(const String& features, ViewportArguments::Type o
     if (settings.viewportMetaZeroValuesQuirk()
         && newArgumentsFromLegacyTag.type == ViewportArguments::ViewportMeta
         && newArgumentsFromLegacyTag.maxWidth.type() == ViewportPercentageWidth
-        && !static_cast<int>(newArgumentsFromLegacyTag.zoom)) {
+        && !newArgumentsFromLegacyTag.zoom) {
         newArgumentsFromLegacyTag.zoom = 1.0;
     }
 

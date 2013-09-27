@@ -270,8 +270,12 @@ static float findScaleValue(const String& keyString, const String& valueString, 
     if (value > 10.0)
         reportViewportWarning(document, MaximumScaleTooLargeError, String(), String());
 
-    if (!value && document->page() && document->page()->settings().viewportMetaZeroValuesQuirk() && (keyString == "minimum-scale" || keyString == "maximum-scale"))
-        return ViewportArguments::ValueAuto;
+    if (!value && document->page() && document->page()->settings().viewportMetaZeroValuesQuirk()) {
+        if (keyString == "minimum-scale" || keyString == "maximum-scale")
+            return ViewportArguments::ValueAuto;
+        if (keyString == "initial-scale")
+            return value;
+    }
 
     return clampScaleValue(value);
 }
