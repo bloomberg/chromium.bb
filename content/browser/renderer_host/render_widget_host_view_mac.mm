@@ -2174,14 +2174,15 @@ void RenderWidgetHostViewMac::FrameSwapped() {
   return YES;
 }
 
-- (void)keyEvent:(NSEvent*)theEvent {
+- (EventHandled)keyEvent:(NSEvent*)theEvent {
   if (delegate_ && [delegate_ respondsToSelector:@selector(handleEvent:)]) {
     BOOL handled = [delegate_ handleEvent:theEvent];
     if (handled)
-      return;
+      return kEventHandled;
   }
 
   [self keyEvent:theEvent wasKeyEquivalent:NO];
+  return kEventHandled;
 }
 
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv {

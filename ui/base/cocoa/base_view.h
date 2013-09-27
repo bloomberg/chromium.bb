@@ -18,15 +18,24 @@
 // - Coordinate conversion utilities
 UI_EXPORT
 @interface BaseView : NSView {
+ @public
+  enum EventHandled {
+    kEventNotHandled,
+    kEventHandled
+  };
+
  @private
   ui::ScopedCrTrackingArea trackingArea_;
   BOOL dragging_;
   base::scoped_nsobject<NSEvent> pendingExitEvent_;
 }
 
-// Override these methods in a subclass.
+// Override these methods (mouseEvent, keyEvent) in a subclass.
 - (void)mouseEvent:(NSEvent *)theEvent;
-- (void)keyEvent:(NSEvent *)theEvent;
+
+// keyEvent should return kEventHandled if it handled the event, or
+// kEventNotHandled if it should be forwarded to BaseView's super class.
+- (EventHandled)keyEvent:(NSEvent *)theEvent;
 
 // Useful rect conversions (doing coordinate flipping)
 - (gfx::Rect)flipNSRectToRect:(NSRect)rect;

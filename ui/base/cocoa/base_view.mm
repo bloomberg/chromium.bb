@@ -26,8 +26,11 @@ const int kTrackingOptions = NSTrackingMouseMoved |
   // This method left intentionally blank.
 }
 
-- (void)keyEvent:(NSEvent*)theEvent {
-  // This method left intentionally blank.
+- (EventHandled)keyEvent:(NSEvent*)theEvent {
+  // The default implementation of this method does not handle any key events.
+  // Derived classes should return kEventHandled if they handled an event,
+  // otherwise it will be forwarded on to |super|.
+  return kEventNotHandled;
 }
 
 - (void)mouseDown:(NSEvent*)theEvent {
@@ -109,15 +112,18 @@ const int kTrackingOptions = NSTrackingMouseMoved |
 }
 
 - (void)keyDown:(NSEvent*)theEvent {
-  [self keyEvent:theEvent];
+  if ([self keyEvent:theEvent] != kEventHandled)
+    [super keyDown:theEvent];
 }
 
 - (void)keyUp:(NSEvent*)theEvent {
-  [self keyEvent:theEvent];
+  if ([self keyEvent:theEvent] != kEventHandled)
+    [super keyUp:theEvent];
 }
 
 - (void)flagsChanged:(NSEvent*)theEvent {
-  [self keyEvent:theEvent];
+  if ([self keyEvent:theEvent] != kEventHandled)
+    [super flagsChanged:theEvent];
 }
 
 - (gfx::Rect)flipNSRectToRect:(NSRect)rect {
