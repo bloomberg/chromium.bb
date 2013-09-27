@@ -67,7 +67,7 @@
             ],
             'defines': [
                 'BLINK_IMPLEMENTATION=1',
-                'INSIDE_WEBKIT',
+                'INSIDE_BLINK',
             ],
             'sources': [
                 '<@(webcore_platform_support_files)',
@@ -277,7 +277,7 @@
               '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
             ],
             'defines': [
-                'INSIDE_WEBKIT',
+                'INSIDE_BLINK',
                 'BLINK_COMMON_IMPLEMENTATION=1',
             ],
             'include_dirs': [

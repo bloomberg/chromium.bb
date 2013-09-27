@@ -33,7 +33,7 @@
 
 #include "WebCommon.h"
 
-#if INSIDE_WEBKIT
+#if INSIDE_BLINK
 #include "core/platform/graphics/IntPoint.h"
 #else
 #include <ui/gfx/point.h>
@@ -57,7 +57,7 @@ struct WebPoint {
     {
     }
 
-#if INSIDE_WEBKIT
+#if INSIDE_BLINK
     WebPoint(const WebCore::IntPoint& p)
         : x(p.x())
         , y(p.y())

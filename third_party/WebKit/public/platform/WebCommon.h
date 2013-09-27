@@ -106,7 +106,7 @@ BLINK_COMMON_EXPORT void failedAssertion(const char* file, int line, const char*
 
 } // namespace WebKit
 
-// Ideally, only use inside the public directory but outside of INSIDE_WEBKIT blocks.  (Otherwise use WTF's ASSERT.)
+// Ideally, only use inside the public directory but outside of INSIDE_BLINK blocks.  (Otherwise use WTF's ASSERT.)
 #if defined(NDEBUG)
 #define WEBKIT_ASSERT(assertion) ((void)0)
 #else

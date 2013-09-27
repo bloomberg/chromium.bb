@@ -35,7 +35,7 @@
 #include "WebPrivatePtr.h"
 #include <string>
 
-#if INSIDE_WEBKIT
+#if INSIDE_BLINK
 #include "wtf/Forward.h"
 #else
 #include <base/strings/latin1_string_conversions.h>
@@ -119,7 +119,7 @@ public:
         return *this;
     }
 
-#if INSIDE_WEBKIT
+#if INSIDE_BLINK
     BLINK_COMMON_EXPORT WebString(const WTF::String&);
     BLINK_COMMON_EXPORT WebString& operator=(const WTF::String&);
     BLINK_COMMON_EXPORT operator WTF::String() const;

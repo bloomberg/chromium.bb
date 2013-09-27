@@ -42,7 +42,7 @@
     ],
     'defines': [
       'BLINK_IMPLEMENTATION=1',
-      'INSIDE_WEBKIT',
+      'INSIDE_BLINK',
     ],
     'sources': [
       '<@(modules_files)',

@@ -394,7 +394,7 @@
       'direct_dependent_settings': {
         'defines': [
           'BLINK_IMPLEMENTATION=1',
-          'INSIDE_WEBKIT',
+          'INSIDE_BLINK',
         ],
         'include_dirs': [
           '<@(webcore_include_dirs)',
@@ -1067,7 +1067,7 @@
       ],
       'defines': [
         'BLINK_IMPLEMENTATION=1',
-        'INSIDE_WEBKIT',
+        'INSIDE_BLINK',
       ],
       'include_dirs': [
         '<(bindings_dir)/v8',  # FIXME: Remove once http://crbug.com/236119 is fixed.

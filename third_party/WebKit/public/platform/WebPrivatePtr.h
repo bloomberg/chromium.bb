@@ -33,7 +33,7 @@
 
 #include "WebCommon.h"
 
-#if INSIDE_WEBKIT
+#if INSIDE_BLINK
 #include "wtf/PassRefPtr.h"
 #endif
 
@@ -63,8 +63,8 @@ namespace WebKit {
 //        BLINK_EXPORT doWebFooThing();
 //
 //        // Methods that are used only by other WebKit/chromium API classes
-//        // should only be declared when INSIDE_WEBKIT is set.
-//    #if INSIDE_WEBKIT
+//        // should only be declared when INSIDE_BLINK is set.
+//    #if INSIDE_BLINK
 //        WebFoo(const WTF::PassRefPtr<WebCore::Foo>&);
 //    #endif
 //
@@ -80,7 +80,7 @@ public:
 
     bool isNull() const { return !m_ptr; }
 
-#if INSIDE_WEBKIT
+#if INSIDE_BLINK
     WebPrivatePtr(const PassRefPtr<T>& prp)
         : m_ptr(prp.leakRef())
     {
@@ -119,7 +119,7 @@ public:
 #endif
 
 private:
-#if INSIDE_WEBKIT
+#if INSIDE_BLINK
     void assign(T* p)
     {
         // p is already ref'd for us by the caller
@@ -129,7 +129,7 @@ private:
     }
 #else
     // Disable the assignment operator; we define it above for when
-    // INSIDE_WEBKIT is set, but we need to make sure that it is not
+    // INSIDE_BLINK is set, but we need to make sure that it is not
     // used outside there; the compiler-provided version won't handle reference
     // counting properly.
     WebPrivatePtr<T>& operator=(const WebPrivatePtr<T>& other);

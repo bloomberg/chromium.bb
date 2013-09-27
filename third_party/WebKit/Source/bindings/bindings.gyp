@@ -61,7 +61,7 @@
       ],
       'defines': [
         'BLINK_IMPLEMENTATION=1',
-        'INSIDE_WEBKIT',
+        'INSIDE_BLINK',
       ],
       'xcode_settings': {
         # Some Mac-specific parts of WebKit won't compile without having this
