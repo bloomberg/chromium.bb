@@ -1198,6 +1198,7 @@ sub GenerateDomainSafeFunctionSetter
     my $v8ClassName = GetV8ClassName($interface);
 
     AddToImplIncludes("bindings/v8/BindingSecurity.h");
+    AddToImplIncludes("bindings/v8/ExceptionState.h");
     $implementation{nameSpaceInternal}->add(<<END);
 static void ${implClassName}DomainSafeFunctionSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
@@ -1205,8 +1206,11 @@ static void ${implClassName}DomainSafeFunctionSetter(v8::Local<v8::String> name,
     if (holder.IsEmpty())
         return;
     ${implClassName}* imp = ${v8ClassName}::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
+    ExceptionState es(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), es)) {
+        es.throwIfNeeded();
         return;
+    }
 
     info.This()->SetHiddenValue(name, value);
 }

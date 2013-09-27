@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/js-test-resources/js-test-pre.js"></script>
+</head>
+<body>
+    <iframe src="http://localhost:8080/security/resources/innocent-victim.html"></iframe>
+    <script>
+        window.jsTestIsAsync = true;
+        description("Certain window properties are readable cross-origin, but ought not be writable.");
+
+        var iWindow;
+        window.onload = function () {
+            iWindow = document.querySelector('iframe').contentWindow;
+
+            var ex = '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."';
+
+            shouldThrow('iWindow.focus = function () {}', ex);
+            shouldThrow('iWindow.blur = function () {}', ex);
+            shouldThrow('iWindow.close = function () {}', ex);
+            shouldThrow('iWindow.postMessage = function () {}', ex);
+            shouldThrow('iWindow.toString = function () {}', ex);
+            finishJSTest();
+        };
+    </script>
+    <script src="/js-test-resources/js-test-post.js"></script>
+</body>
+</html>

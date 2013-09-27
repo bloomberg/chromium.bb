@@ -1,0 +1,14 @@
+Certain window properties are readable cross-origin, but ought not be writable.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS iWindow.focus = function () {} threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS iWindow.blur = function () {} threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS iWindow.close = function () {} threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS iWindow.postMessage = function () {} threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS iWindow.toString = function () {} threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
