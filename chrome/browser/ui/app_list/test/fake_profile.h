@@ -1,0 +1,104 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_APP_LIST_TEST_FAKE_PROFILE_H_
+#define CHROME_BROWSER_UI_APP_LIST_TEST_FAKE_PROFILE_H_
+
+#include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
+#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
+
+class ResourceContext;
+
+namespace net {
+class URLRequestContextGetter;
+}
+
+namespace content {
+class DownloadManagerDelegate;
+class GeolocationPermissionContext;
+class ResourceContext;
+}
+
+class FakeProfile : public Profile {
+ public:
+  explicit FakeProfile(const std::string& name);
+
+  // Profile overrides.
+  virtual std::string GetProfileName() OVERRIDE;
+  virtual base::FilePath GetPath() const OVERRIDE;
+  virtual bool IsOffTheRecord() const OVERRIDE;
+  virtual content::DownloadManagerDelegate*
+      GetDownloadManagerDelegate() OVERRIDE;
+  virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
+      int renderer_child_id) OVERRIDE;
+  virtual net::URLRequestContextGetter* GetMediaRequestContext() OVERRIDE;
+  virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
+      int renderer_child_id) OVERRIDE;
+  virtual net::URLRequestContextGetter*
+      GetMediaRequestContextForStoragePartition(
+          const base::FilePath& partition_path,
+          bool in_memory) OVERRIDE;
+  virtual void RequestMIDISysExPermission(
+      int render_process_id,
+      int render_view_id,
+      const GURL& requesting_frame,
+      const MIDISysExPermissionCallback& callback) OVERRIDE;
+  virtual content::ResourceContext* GetResourceContext() OVERRIDE;
+  virtual content::GeolocationPermissionContext*
+      GetGeolocationPermissionContext() OVERRIDE;
+  virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
+  virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() OVERRIDE;
+  virtual Profile* GetOffTheRecordProfile() OVERRIDE;
+  virtual void DestroyOffTheRecordProfile() OVERRIDE;
+  virtual bool HasOffTheRecordProfile() OVERRIDE;
+  virtual Profile* GetOriginalProfile() OVERRIDE;
+  virtual bool IsManaged() OVERRIDE;
+  virtual history::TopSites* GetTopSites() OVERRIDE;
+  virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
+  virtual ExtensionService* GetExtensionService() OVERRIDE;
+  virtual ExtensionSpecialStoragePolicy*
+      GetExtensionSpecialStoragePolicy() OVERRIDE;
+  virtual PrefService* GetPrefs() OVERRIDE;
+  virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
+  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
+  virtual net::URLRequestContextGetter*
+      GetRequestContextForExtensions() OVERRIDE;
+  virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
+  virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
+  virtual bool IsSameProfile(Profile* profile) OVERRIDE;
+  virtual base::Time GetStartTime() const OVERRIDE;
+  virtual net::URLRequestContextGetter* CreateRequestContext(
+      content::ProtocolHandlerMap* protocol_handlers) OVERRIDE;
+  virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
+      const base::FilePath& partition_path,
+      bool in_memory,
+      content::ProtocolHandlerMap* protocol_handlers) OVERRIDE;
+  virtual base::FilePath last_selected_directory() OVERRIDE;
+  virtual void set_last_selected_directory(const base::FilePath& path) OVERRIDE;
+
+#if defined(OS_CHROMEOS)
+  virtual void ChangeAppLocale(
+      const std::string& locale, AppLocaleChangedVia via) OVERRIDE;
+  virtual void OnLogin() OVERRIDE;
+  virtual void SetupChromeOSEnterpriseExtensionObserver() OVERRIDE;
+  virtual void InitChromeOSPreferences() OVERRIDE;
+#endif  // defined(OS_CHROMEOS)
+
+  virtual PrefProxyConfigTracker* GetProxyConfigTracker() OVERRIDE;
+  virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
+  virtual void ClearNetworkingHistorySince(
+      base::Time time, const base::Closure& completion) OVERRIDE;
+  virtual GURL GetHomePage() OVERRIDE;
+  virtual bool WasCreatedByVersionOrLater(const std::string& version) OVERRIDE;
+  virtual void SetExitType(ExitType exit_type) OVERRIDE;
+  virtual ExitType GetLastSessionExitType() OVERRIDE;
+
+ private:
+  std::string name_;
+};
+
+#endif  // CHROME_BROWSER_UI_APP_LIST_TEST_FAKE_PROFILE_H_

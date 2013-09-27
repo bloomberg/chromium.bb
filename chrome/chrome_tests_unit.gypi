@@ -2818,6 +2818,7 @@
           'type': '<(gtest_target_type)',
           'dependencies': [
             '../base/base.gyp:run_all_unittests',
+            '../chrome/chrome.gyp:test_support_common',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
             'apps',
@@ -2825,6 +2826,9 @@
           ],
           'sources': [
             'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
+            'browser/ui/app_list/test/fake_profile.cc',
+            'browser/ui/app_list/test/fake_profile.h',
+            'browser/ui/views/app_list/win/test/app_list_shower_unittest.cc',
           ],
         },
       ],
