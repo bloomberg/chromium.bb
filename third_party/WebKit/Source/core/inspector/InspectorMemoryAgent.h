@@ -60,8 +60,6 @@ public:
 private:
     InspectorMemoryAgent(InstrumentingAgents*, InspectorCompositeState*);
 
-    PassRefPtr<JSONObject> getProcessMemoryDistributionImpl(bool reportGraph, HashMap<String, size_t>* memoryInfo);
-
     InspectorFrontend::Memory* m_frontend;
 };
 
