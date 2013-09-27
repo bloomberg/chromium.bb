@@ -202,6 +202,8 @@ _settings = dict(
 # boards -- A list of boards to build.
   boards=None,
 
+# TODO(mtennant): The description sounds independent of anything to do with a
+# paladin.  See if this should just be: "builder_waterfall_name".
 # paladin_builder_name -- Used by paladin logic. The name of the builder on the
 #                         buildbot waterfall if it differs from the config name.
 #                         If None is used, defaults to config name.
@@ -296,6 +298,7 @@ _settings = dict(
   chrome_rev=None,
 
 # compilecheck -- Exit the builder right after checking compilation.
+# TODO(mtennant): Should be something like "compile_check_only".
   compilecheck=False,
 
 # pre_cq -- Test CLs to verify they're ready for the commit queue.
@@ -1121,10 +1124,7 @@ internal_pre_cq = internal_paladin.derive(
 )
 
 internal_pre_cq.add_group(constants.PRE_CQ_BUILDER_NAME,
-  internal_pre_cq.add_config(
-    'parrot-pre-cq',
-    boards=['parrot'],
-  ),
+  internal_pre_cq.add_config('parrot-pre-cq', boards=['parrot']),
   internal_pre_cq.add_config('lumpy-pre-cq', boards=['lumpy']),
   internal_pre_cq.add_config('daisy_spring-pre-cq',
                              arm, boards=['daisy_spring']),
@@ -1197,6 +1197,14 @@ internal_paladin.add_config('mario-paladin',
 )
 
 ### Other paladins (CQ builders).
+# These are slaves of the master paladin by virtue of matching
+# in a few config values (e.g. 'build_type', 'branch', etc).  If
+# they are not 'important' then they are ignored slaves.
+# TODO(mtennant): This master-slave relationship should be specified
+# here in the configuration, rather than BuilderStage._GetSlavesForMaster.
+# Something like the following:
+# master_paladin = internal_paladin.add_config(...)
+# master_paladin.AddSlave(internal_paladin.add_config(...))
 
 internal_paladin.add_config('alex-paladin',
   boards=['x86-alex'],

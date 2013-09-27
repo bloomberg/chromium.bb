@@ -131,8 +131,8 @@ def AcquirePoolFromOptions(options):
 class Builder(object):
   """Parent class for all builder types.
 
-  This class functions as a parent class for various build types.  It's intended
-  use is builder_instance.Run().
+  This class functions as an abstract parent class for various build types.
+  Its intended use is builder_instance.Run().
 
   Vars:
     build_config: The configuration dictionary from cbuildbot_config.
@@ -162,10 +162,13 @@ class Builder(object):
     self._RunStage(stages.CleanUpStage)
 
   def _GetStageInstance(self, stage, *args, **kwargs):
-    """Helper function to get an instance given the args.
+    """Helper function to get a stage instance given the args.
 
     Useful as almost all stages just take in options and build_config.
     """
+    # Normally the current build config is used, but that config can be
+    # overridden with a config kwarg.  For example, when getting a stage
+    # for a "child" config.
     config = kwargs.pop('config', self.build_config)
     return stage(self.options, config, *args, **kwargs)
 
@@ -180,7 +183,16 @@ class Builder(object):
       self.release_tag = manifest_manager.current_version
 
   def _RunStage(self, stage, *args, **kwargs):
-    """Wrapper to run a stage."""
+    """Wrapper to run a stage.
+
+    Args:
+      stage: A BuilderStage class.
+      args: args to pass to stage constructor.
+      kwargs: kwargs to pass to stage constructor.
+    Returns:
+
+      Whatever the stage's Run method returns.
+    """
     stage_instance = self._GetStageInstance(stage, *args, **kwargs)
     return stage_instance.Run()
 
@@ -315,6 +327,7 @@ class Builder(object):
         success = self._ReExecuteInBuildroot(sync_instance)
       else:
         self.RunStages()
+
     except Exception as ex:
       # If the build is marked as successful, but threw exceptions, that's a
       # problem.
@@ -322,8 +335,10 @@ class Builder(object):
       if results_lib.Results.BuildSucceededSoFar():
         traceback.print_exc(file=sys.stdout)
         raise
+
       if not (print_report and isinstance(ex, results_lib.StepFailure)):
         raise
+
     finally:
       if print_report:
         results_lib.WriteCheckpoint(self.options.buildroot)
@@ -349,7 +364,7 @@ class SimpleBuilder(Builder):
   def GetSyncInstance(self):
     """Sync to lkgm or TOT as necessary.
 
-    Returns: the instance of the sync stage that was run.
+    Returns: the instance of the sync stage to run.
     """
     if self.options.force_version:
       sync_stage = self._GetStageInstance(stages.ManifestVersionedSyncStage)
@@ -364,7 +379,11 @@ class SimpleBuilder(Builder):
 
   @staticmethod
   def _RunParallelStages(stage_objs):
-    """Run the specified stages in parallel."""
+    """Run the specified stages in parallel.
+
+    Args:
+      stage_objs: BuilderStage objects.
+    """
     steps = [stage.Run for stage in stage_objs]
     try:
       parallel.RunParallelSteps(steps)
@@ -376,19 +395,28 @@ class SimpleBuilder(Builder):
       for stage in stage_objs:
         if not results_lib.Results.StageHasResults(stage.name):
           results_lib.Results.Record(stage.name, ex, str(ex))
+
       raise
 
   def _RunBackgroundStagesForBoard(self, config, board, compilecheck):
-    """Run background board-specific stages for the specified board."""
+    """Run background board-specific stages for the specified board.
+
+    Args:
+      config: Build config dict.
+      board: Board name.
+      compilecheck: Boolean.  If True, run only the compile steps.
+    """
     archive_stage = self.archive_stages[BoardConfig(board, config['name'])]
     if config['pgo_generate']:
       self._RunParallelStages([archive_stage])
       return
+
     if compilecheck:
       self._RunStage(stages.BuildPackagesStage, board, archive_stage,
                      config=config)
       self._RunStage(stages.UnitTestStage, board, config=config)
       return
+
     stage_list = []
     if self.options.chrome_sdk and self.build_config['chrome_sdk']:
       stage_list.append([stages.ChromeSDKStage, board, archive_stage])
@@ -439,11 +467,16 @@ class SimpleBuilder(Builder):
       self._RunStage(stages.InitSDKStage)
       self._RunStage(stages.UprevStage)
       self._RunStage(stages.SetupBoardStage)
+
       # We need a handle to this stage to extract info from it.
+      # TODO(mtennant): Just have _RunStage return the stage object, since
+      # nothing uses the return value of _RunStage now, and the Run method
+      # of stage objects does not appear to return anything, either.
       sync_chrome_stage = self._GetStageInstance(stages.SyncChromeStage)
       sync_chrome_stage.Run()
       self._RunStage(stages.PatchChromeStage)
 
+      # Prepare stages to run in background.
       configs = self.build_config['child_configs'] or [self.build_config]
       tasks = []
       for config in configs:
@@ -457,8 +490,8 @@ class SimpleBuilder(Builder):
 
       # Set up a process pool to run test/archive stages in the background.
       # This process runs task(board) for each board added to the queue.
-      task = self._RunBackgroundStagesForBoard
-      with parallel.BackgroundTaskRunner(task) as queue:
+      task_runner = self._RunBackgroundStagesForBoard
+      with parallel.BackgroundTaskRunner(task_runner) as queue:
         for config, board, archive_stage in tasks:
           compilecheck = config['compilecheck'] or self.options.compilecheck
           if not compilecheck:
@@ -469,6 +502,7 @@ class SimpleBuilder(Builder):
               kwargs['pgo_generate'] = True
             elif config['pgo_use']:
               kwargs['pgo_use'] = True
+
             self._RunStage(stages.BuildPackagesStage, board, **kwargs)
             self._RunStage(stages.BuildImageStage, board, **kwargs)
 
@@ -501,7 +535,7 @@ class DistributedBuilder(SimpleBuilder):
   def GetSyncInstance(self):
     """Syncs the tree using one of the distributed sync logic paths.
 
-    Returns: the instance of the sync stage that was run.
+    Returns: the instance of the sync stage to run.
     """
     # Determine sync class to use.  CQ overrides PFQ bits so should check it
     # first.
@@ -1111,7 +1145,8 @@ def _FinishParsing(options, args):
   _PostParseCheck().
 
   Args:
-    options, args: The options/args object returned by optparse
+    options: The options object returned by optparse
+    args: The args object returned by optparse
   """
   # Populate options.pass_through_args.
   accepted, _ = commandline.FilteringParser.FilterArgs(
@@ -1282,6 +1317,7 @@ def _ParseCommandLine(parser, argv):
   return options, args
 
 
+# TODO(build): This function is too damn long.
 def main(argv):
   # Turn on strict sudo checks.
   cros_build_lib.STRICT_SUDO = True
@@ -1325,6 +1361,7 @@ def main(argv):
     print ('Go to %s to view the status of your job.'
            % tryjob.GetTrybotWaterfallLink())
     sys.exit(0)
+
   elif (not options.buildbot and not options.remote_trybot
         and not options.resume and not options.local):
     options.local = True
@@ -1336,7 +1373,7 @@ def main(argv):
         'trybot.')
     time.sleep(5)
 
-  # Only expecting one config
+  # Only one config arg is allowed in this mode, which was confirmed earlier.
   bot_id = args[-1]
   build_config = _GetConfig(bot_id)
 

@@ -39,10 +39,12 @@ class BuilderStage(object):
 
   # Class should set this if they have a corresponding no<stage> option that
   # skips their stage.
+  # TODO(mtennant): Rename this something like skip_option_name.
   option_name = None
 
   # Class should set this if they have a corresponding setting in
   # self._build_config that skips their stage.
+  # TODO(mtennant): Rename this something like skip_config_name.
   config_name = None
 
   @staticmethod
@@ -151,13 +153,19 @@ class BuilderStage(object):
 
   @staticmethod
   def _GetSlavesForMaster(build_config, configs=None):
-    """Gets the important builds corresponding to this master.
+    """Gets the important slave builds corresponding to this master.
 
+    Args:
+      build_config: A build config for a master builder.
+      configs: Option override of cbuildbot_config.config for the list
+        of build configs to look through for slaves.
     Returns:
-      A list of the slaves for this builder.
+      A list of build configs corresponding to the slaves for the master
+        represented by build_config.
     """
     if configs is None:
       configs = cbuildbot_config.config
+
     builders = []
     assert build_config['manifest_version']
     assert build_config['master']
@@ -168,6 +176,7 @@ class BuilderStage(object):
           config['chrome_rev'] == build_config['chrome_rev'] and
           config['branch'] == build_config['branch']):
         builders.append(config)
+
     return builders
 
   def _Begin(self):
@@ -232,6 +241,7 @@ class BuilderStage(object):
 
   def Run(self):
     """Have the builder execute the stage."""
+    # See if this stage should be skipped.
     if (self.option_name and not getattr(self._options, self.option_name) or
         self.config_name and not self._build_config[self.config_name]):
       self._PrintLoudly('Not running Stage %s' % self.name)
@@ -265,11 +275,13 @@ class BuilderStage(object):
     except SystemExit as e:
       if e.code != 0:
         result, description = self._HandleStageException(e)
+
       raise
     except Exception as e:
       if mox is not None and isinstance(e, mox.Error):
         raise
-      # Tell the build bot this step failed for the waterfall
+
+      # Tell the build bot this step failed for the waterfall.
       result, description = self._HandleStageException(e)
       if result not in (results_lib.Results.FORGIVEN,
                         results_lib.Results.SUCCESS):
