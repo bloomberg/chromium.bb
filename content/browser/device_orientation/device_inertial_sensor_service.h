@@ -44,6 +44,10 @@ class CONTENT_EXPORT DeviceInertialSensorService {
   // Stop/join with the background polling thread in |provider_|.
   void Shutdown();
 
+  // Injects a custom data fetcher for testing purposes. This class takes
+  // ownership of the injected object.
+  void SetDataFetcherForTests(DataFetcherSharedMemory* test_data_fetcher);
+
  private:
   friend struct DefaultSingletonTraits<DeviceInertialSensorService>;
 

@@ -91,4 +91,9 @@ void DeviceInertialSensorService::Shutdown() {
   is_shutdown_ = true;
 }
 
+void DeviceInertialSensorService::SetDataFetcherForTests(
+    DataFetcherSharedMemory* test_data_fetcher) {
+  data_fetcher_.reset(test_data_fetcher);
+}
+
 }  // namespace content

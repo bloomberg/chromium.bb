@@ -1,0 +1,40 @@
+<html>
+  <head>
+    <title>DeviceMotion test</title>
+    <script type="text/javascript">
+      function checkMotionEvent(event) {
+        return event.acceleration.x == 1 &&
+               event.acceleration.y == 2 &&
+               event.acceleration.z == 3 &&
+               event.accelerationIncludingGravity.x == 4 &&
+               event.accelerationIncludingGravity.y == 5 &&
+               event.accelerationIncludingGravity.z == 6 &&
+               event.rotationRate.alpha == 7 &&
+               event.rotationRate.beta == 8 &&
+               event.rotationRate.gamma == 9 &&
+               event.interval == 100;
+      }
+
+      function onMotion(event) {
+        if (checkMotionEvent(event)) {
+          window.removeEventListener('devicemotion', onMotion);
+          pass();
+        } else {
+          fail();
+        }
+      }
+
+      function pass() {
+        document.getElementById('status').innerHTML = 'PASS';
+        document.location = '#pass';
+      }
+
+      function fail() {
+        document.location = '#fail';
+      }
+    </script>
+  </head>
+  <body onLoad="window.addEventListener('devicemotion', onMotion)">
+    <div id="status">FAIL</div>
+  </body>
+</html>
