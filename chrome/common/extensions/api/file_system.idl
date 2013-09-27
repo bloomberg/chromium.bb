@@ -52,7 +52,8 @@ namespace fileSystem {
     // Type of the prompt to show. The default is 'openFile'. From Chrome 31
     // onwards, 'openWritableFile' is deprecated and 'openFile' will return a
     // writable file entry for apps with the 'write' permission under
-    // 'fileSystem'.
+    // 'fileSystem'. 'openDirectory' is new in Chrome 31 and will fail unless
+    // the application has the 'directory' permission under 'fileSystem'.
     ChooseEntryType? type;
 
     // The suggested file name that will be presented to the user as the
@@ -105,21 +106,19 @@ namespace fileSystem {
                             EntriesCallback callback);
 
     // Returns the file entry with the given id if it can be restored. This call
-    // will fail otherwise. This method is new in Chrome 30.
+    // will fail otherwise. This method is new in Chrome 31.
     static void restoreEntry(DOMString id, EntryCallback callback);
 
-    // Returns whether a file entry for the given id can be restored, i.e.
-    // whether restoreEntry would succeed with this id now. This method is new
-    // in Chrome 30.
+    // Returns whether the app has permission to restore the entry with the
+    // given id. This method is new in Chrome 31.
     static void isRestorable(DOMString id, IsRestorableCallback callback);
 
     // Returns an id that can be passed to restoreEntry to regain access to a
     // given file entry. Only the 500 most recently used entries are retained,
     // where calls to retainEntry and restoreEntry count as use. If the app has
-    // the 'retainEntries' permission under 'fileSystem' (new in Chrome 31),
-    // entries are retained indefinitely. Otherwise, entries are retained only
-    // while the app is running and across restarts. This method is new in
-    // Chrome 30.
+    // the 'retainEntries' permission under 'fileSystem', entries are retained
+    // indefinitely. Otherwise, entries are retained only while the app is
+    // running and across restarts. This method is new in Chrome 31.
     static DOMString retainEntry([instanceOf=Entry] object entry);
   };
 };

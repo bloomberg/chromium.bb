@@ -99,7 +99,7 @@
       },
       {
         "class": "code",
-        "text": "{\"fileSystem\": [\"write\", \"retainEntries\"]}"
+        "text": "{\"fileSystem\": [\"write\", \"retainEntries\", \"directory\"]}"
       }
     ],
     "Learn More": [
