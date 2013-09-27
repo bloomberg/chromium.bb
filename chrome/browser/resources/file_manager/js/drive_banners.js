@@ -416,7 +416,8 @@ FileListBannerController.prototype.onDirectoryChanged_ = function(event) {
 
   // Add or remove listener to show low space warning, if necessary.
   var isLowSpaceWarningTarget = this.isLowSpaceWarningTarget_(root);
-  var previousRoot = PathUtil.getTopDirectory(event.previousDirEntry.fullPath);
+  var previousRoot = event.previousDirEntry ?
+      PathUtil.getTopDirectory(event.previousDirEntry.fullPath) : '';
   if (isLowSpaceWarningTarget !== this.isLowSpaceWarningTarget_(previousRoot)) {
     if (isLowSpaceWarningTarget) {
       chrome.fileBrowserPrivate.onDirectoryChanged.addListener(
@@ -456,6 +457,9 @@ FileListBannerController.prototype.isLowSpaceWarningTarget_ = function(root) {
  */
 FileListBannerController.prototype.privateOnDirectoryChanged_ = function(
     event) {
+  if (!this.directoryModel_.getCurrentDirEntry())
+    return;
+
   var currentRoot = PathUtil.getTopDirectory(
       this.directoryModel_.getCurrentDirPath());
   var eventRoot = PathUtil.getTopDirectory(

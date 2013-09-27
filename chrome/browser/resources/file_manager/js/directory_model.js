@@ -44,7 +44,7 @@ function DirectoryModel(root, singleSelection, fileFilter, fileWatcher,
   this.currentFileListContext_ = new FileListContext(
       fileFilter, metadataCache);
   this.currentDirContents_ = new DirectoryContentsBasic(
-      this.currentFileListContext_, root);
+      this.currentFileListContext_, null);
 
   this.volumeManager_ = volumeManager;
   this.volumeManager_.volumeInfoList.addEventListener(
@@ -161,24 +161,16 @@ DirectoryModel.prototype.getFileListSelection = function() {
  * @return {RootType} Root type of current root.
  */
 DirectoryModel.prototype.getCurrentRootType = function() {
-  return PathUtil.getRootType(
-      this.currentDirContents_.getDirectoryEntry().fullPath);
+  var entry = this.currentDirContents_.getDirectoryEntry();
+  return PathUtil.getRootType(entry ? entry.fullPath : '');
 };
 
 /**
- * @return {string} Root name.
- */
-DirectoryModel.prototype.getCurrentRootName = function() {
-  var rootPath = PathUtil.split(this.getCurrentRootPath());
-  return rootPath[rootPath.length - 1];
-};
-
-/**
- * @return {string} Root name.
+ * @return {string} Root path.
  */
 DirectoryModel.prototype.getCurrentRootPath = function() {
-  return PathUtil.getRootPath(
-      this.currentDirContents_.getDirectoryEntry().fullPath);
+  var entry = this.currentDirContents_.getDirectoryEntry();
+  return entry ? PathUtil.getRootPath(entry.fullPath) : '';
 };
 
 /**
@@ -326,17 +318,20 @@ DirectoryModel.prototype.getCurrentDirEntry = function() {
  */
 DirectoryModel.prototype.getCurrentDirectoryURL = function() {
   var entry = this.currentDirContents_.getDirectoryEntry();
-  if (entry == DirectoryModel.fakeDriveOfflineEntry_) {
+  if (!entry)
+    return null;
+  if (entry === DirectoryModel.fakeDriveOfflineEntry_)
     return util.makeFilesystemUrl(entry.fullPath);
-  }
   return entry.toURL();
 };
 
 /**
- * @return {string} Path for the current directory.
+ * @return {string} Path for the current directory, or empty string if the
+ *     current directory is not yet set.
  */
 DirectoryModel.prototype.getCurrentDirPath = function() {
-  return this.currentDirContents_.getDirectoryEntry().fullPath;
+  var entry = this.currentDirContents_.getDirectoryEntry();
+  return entry ? entry.fullPath : '';
 };
 
 /**
@@ -734,12 +729,16 @@ DirectoryModel.prototype.onRenameEntry = function(
  */
 DirectoryModel.prototype.createDirectory = function(name, successCallback,
                                                     errorCallback) {
-  var currentDirPath = this.getCurrentDirPath();
+  var entry = this.getCurrentDirEntry();
+  if (!entry) {
+    errorCallback(util.createFileError(FileError.INVALID_MODIFICATION_ERR));
+    return;
+  }
 
   var onSuccess = function(newEntry) {
     // Do not change anything or call the callback if current
     // directory changed.
-    if (currentDirPath != this.getCurrentDirPath())
+    if (entry.fullPath != this.getCurrentDirPath())
       return;
 
     var existing = this.getFileList().slice().filter(
@@ -865,7 +864,7 @@ DirectoryModel.prototype.changeDirectoryEntry_ = function(
     this.changeDirectoryEntrySilent_(dirEntry, opt_callback);
 
     var e = new cr.Event('directory-changed');
-    e.previousDirEntry = (previous.fullpath == '/') ? null : previous;
+    e.previousDirEntry = previous;
     e.newDirEntry = dirEntry;
     this.dispatchEvent(e);
   }.bind(this));
@@ -1043,22 +1042,24 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
   var driveVolume = this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE);
   if (driveVolume && !driveVolume.error) {
     var currentDirEntry = this.getCurrentDirEntry();
-    if (currentDirEntry === DirectoryModel.fakeDriveEntry_) {
-      // Replace the fake entry by real DirectoryEntry silently.
-      this.volumeManager_.resolvePath(
-          DirectoryModel.fakeDriveEntry_.fullPath,
-          function(entry) {
-            // If the current entry is still fake drive entry, replace it.
-            if (this.getCurrentDirEntry() === DirectoryModel.fakeDriveEntry_)
-              this.changeDirectoryEntrySilent_(entry);
-          },
-          function(error) {});
-    } else if (PathUtil.isSpecialSearchRoot(currentDirEntry.fullPath)) {
-      for (var i = 0; i < event.added.length; i++) {
-        if (event.added[i].volumeType == VolumeManager.VolumeType.DRIVE) {
-          // If the Drive volume is newly mounted, rescan it.
-          this.rescan();
-          break;
+    if (currentDirEntry) {
+      if (currentDirEntry === DirectoryModel.fakeDriveEntry_) {
+        // Replace the fake entry by real DirectoryEntry silently.
+        this.volumeManager_.resolvePath(
+            DirectoryModel.fakeDriveEntry_.fullPath,
+            function(entry) {
+              // If the current entry is still fake drive entry, replace it.
+              if (this.getCurrentDirEntry() === DirectoryModel.fakeDriveEntry_)
+                this.changeDirectoryEntrySilent_(entry);
+            },
+            function(error) {});
+      } else if (PathUtil.isSpecialSearchRoot(currentDirEntry.fullPath)) {
+        for (var i = 0; i < event.added.length; i++) {
+          if (event.added[i].volumeType == VolumeManager.VolumeType.DRIVE) {
+            // If the Drive volume is newly mounted, rescan it.
+            this.rescan();
+            break;
+          }
         }
       }
     }
@@ -1128,10 +1129,15 @@ DirectoryModel.prototype.search = function(query,
 
   this.clearSearch_();
 
-  var newDirContents;
+  var currentDirEntry = this.getCurrentDirEntry();
+  if (!currentDirEntry) {
+    // Not yet initialized. Do nothing.
+    return;
+  }
+
   if (!query) {
     if (this.isSearching()) {
-      newDirContents = new DirectoryContentsBasic(
+      var newDirContents = new DirectoryContentsBasic(
           this.currentFileListContext_,
           this.currentDirContents_.getLastNonSearchDirectoryEntry());
       this.clearAndScan_(newDirContents);
@@ -1147,18 +1153,19 @@ DirectoryModel.prototype.search = function(query,
   // If we are offline, let's fallback to file name search inside dir.
   // A search initiated from directories in Drive or special search results
   // should trigger Drive search.
+  var newDirContents;
   if (!this.isDriveOffline() &&
-      PathUtil.isDriveBasedPath(this.getCurrentDirPath())) {
+      PathUtil.isDriveBasedPath(currentDirEntry.fullPath)) {
     // Drive search is performed over the whole drive, so pass  drive root as
     // |directoryEntry|.
     newDirContents = new DirectoryContentsDriveSearch(
         this.currentFileListContext_,
-        this.getCurrentDirEntry(),
+        currentDirEntry,
         this.currentDirContents_.getLastNonSearchDirectoryEntry(),
         query);
   } else {
     newDirContents = new DirectoryContentsLocalSearch(
-        this.currentFileListContext_, this.getCurrentDirEntry(), query);
+        this.currentFileListContext_, currentDirEntry, query);
   }
   this.clearAndScan_(newDirContents);
 };

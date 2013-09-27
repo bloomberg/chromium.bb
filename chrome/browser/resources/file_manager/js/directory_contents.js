@@ -357,7 +357,7 @@ DirectoryContentsBasic.prototype.getLastNonSearchDirectoryEntry = function() {
  * Start directory scan.
  */
 DirectoryContentsBasic.prototype.scan = function() {
-  if (this.entry_ === DirectoryModel.fakeDriveEntry_) {
+  if (!this.entry_ || this.entry_ === DirectoryModel.fakeDriveEntry_) {
     this.lastChunkReceived();
     return;
   }
@@ -398,9 +398,8 @@ DirectoryContentsBasic.prototype.onChunkComplete_ = function(entries) {
  */
 DirectoryContentsBasic.prototype.recordMetrics_ = function() {
   metrics.recordInterval('DirectoryScan');
-  if (this.entry_.fullPath === RootDirectory.DOWNLOADS) {
+  if (this.entry_.fullPath === RootDirectory.DOWNLOADS)
     metrics.recordMediumCount('DownloadsCount', this.fileList_.length);
-  }
 };
 
 /**
@@ -410,6 +409,11 @@ DirectoryContentsBasic.prototype.recordMetrics_ = function() {
  */
 DirectoryContentsBasic.prototype.createDirectory = function(
     name, successCallback, errorCallback) {
+  if (!this.entry_) {
+    errorCallback(util.createFileError(FileError.INVALID_MODIFICATION_ERR));
+    return;
+  }
+
   var onSuccess = function(newEntry) {
     this.reloadMetadata([newEntry], function() {
       successCallback(newEntry);

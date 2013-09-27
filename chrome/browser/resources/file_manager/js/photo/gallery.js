@@ -112,7 +112,7 @@ Gallery.prototype.initListeners_ = function() {
 
   // Search results may contain files from different subdirectories so
   // the observer is not going to work.
-  if (!this.context_.searchResults) {
+  if (!this.context_.searchResults && this.context_.curDirEntry) {
     this.thumbnailObserverId_ = this.metadataCache_.addObserver(
         this.context_.curDirEntry,
         MetadataCache.CHILDREN,
@@ -631,7 +631,7 @@ Gallery.prototype.updateSelectionAndState_ = function() {
     var fullName = item.getFileName();
     window.top.document.title = fullName;
     displayName = ImageUtil.getFileNameFromFullName(fullName);
-  } else if (selectedItems.length > 1) {
+  } else if (selectedItems.length > 1 && this.context_.curDirEntry) {
     // If the Gallery was opened on search results the search query will not be
     // recorded in the app state and the relaunch will just open the gallery
     // in the curDirEntry directory.

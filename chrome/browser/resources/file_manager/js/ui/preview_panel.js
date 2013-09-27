@@ -414,13 +414,15 @@ PreviewPanel.Thumbnails.prototype.loadThumbnails_ = function(selection) {
     box.style.zIndex = PreviewPanel.Thumbnails.MAX_THUMBNAIL_COUNT + 1 - i;
 
     // Load the image.
-    FileGrid.decorateThumbnailBox(box,
-                                  entries[i],
-                                  this.metadataCache_,
-                                  ThumbnailLoader.FillMode.FILL,
-                                  FileGrid.ThumbnailQuality.LOW,
-                                  i == 0 && length == 1 &&
-                                      this.setZoomedImage_.bind(this));
+    if (entries[i]) {
+      FileGrid.decorateThumbnailBox(box,
+                                    entries[i],
+                                    this.metadataCache_,
+                                    ThumbnailLoader.FillMode.FILL,
+                                    FileGrid.ThumbnailQuality.LOW,
+                                    i == 0 && length == 1 &&
+                                        this.setZoomedImage_.bind(this));
+    }
 
     // Register the click handler.
     if (clickHandler)

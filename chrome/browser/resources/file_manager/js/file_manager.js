@@ -533,8 +533,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     handler.registerCommand('toggle-pinned', Commands.togglePinnedCommand,
                             this);
 
-    handler.registerCommand('zip-selection', Commands.zipSelectionCommand, this,
-                            this.directoryModel_);
+    handler.registerCommand('zip-selection', Commands.zipSelectionCommand,
+                            this);
 
     handler.registerCommand('share', Commands.shareCommand, this);
 
@@ -1167,10 +1167,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.updateMiddleBarVisibility_ = function() {
-    var currentPath = this.directoryModel_.getCurrentDirPath();
+    var entry = this.directoryModel_.getCurrentDirEntry();
+    if (!entry)
+      return;
+
     var driveVolume = this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE);
     var visible =
-        DirectoryTreeUtil.isEligiblePathForDirectoryTree(currentPath) &&
+        DirectoryTreeUtil.isEligiblePathForDirectoryTree(entry.fullPath) &&
         driveVolume && !driveVolume.error;
     this.dialogDom_.
         querySelector('.dialog-middlebar-contents').hidden = !visible;
@@ -1699,6 +1702,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.refreshCurrentDirectoryMetadata_ = function() {
     var entries = this.directoryModel_.getFileList().slice();
     var directoryEntry = this.directoryModel_.getCurrentDirEntry();
+    if (!directoryEntry)
+      return;
     // We don't pass callback here. When new metadata arrives, we have an
     // observer registered to update the UI.
 
@@ -2036,8 +2041,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @return {?string} The full path of the current directory.
    */
   FileManager.prototype.getCurrentDirectory = function() {
-    return this.directoryModel_ &&
-        this.directoryModel_.getCurrentDirPath();
+    return this.directoryModel_ && this.directoryModel_.getCurrentDirPath();
   };
 
   /**
@@ -2046,7 +2050,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.getCurrentDirectoryURL = function() {
     return this.directoryModel_ &&
-        this.directoryModel_.getCurrentDirectoryURL();
+           this.directoryModel_.getCurrentDirectoryURL();
   };
 
   /**
@@ -2056,8 +2060,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    *     not set.
    */
   FileManager.prototype.getCurrentDirectoryEntry = function() {
-    return this.directoryModel_ &&
-        this.directoryModel_.getCurrentDirEntry();
+    return this.directoryModel_ && this.directoryModel_.getCurrentDirEntry();
   };
 
   /**

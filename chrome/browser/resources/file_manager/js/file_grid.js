@@ -102,25 +102,29 @@ FileGrid.prototype.relayoutImmediately_ = function() {
  */
 FileGrid.decorateThumbnail = function(li, entry, metadataCache) {
   li.className = 'thumbnail-item';
-  filelist.decorateListItem(li, entry, metadataCache);
+  if (entry)
+    filelist.decorateListItem(li, entry, metadataCache);
 
   var frame = li.ownerDocument.createElement('div');
   frame.className = 'thumbnail-frame';
   li.appendChild(frame);
 
   var box = li.ownerDocument.createElement('div');
-  FileGrid.decorateThumbnailBox(box,
-                                entry,
-                                metadataCache,
-                                ThumbnailLoader.FillMode.AUTO,
-                                FileGrid.ThumbnailQuality.HIGH);
+  if (entry) {
+    FileGrid.decorateThumbnailBox(box,
+                                  entry,
+                                  metadataCache,
+                                  ThumbnailLoader.FillMode.AUTO,
+                                  FileGrid.ThumbnailQuality.HIGH);
+  }
   frame.appendChild(box);
 
   var bottom = li.ownerDocument.createElement('div');
   bottom.className = 'thumbnail-bottom';
   frame.appendChild(bottom);
 
-  bottom.appendChild(filelist.renderFileNameLabel(li.ownerDocument, entry));
+  bottom.appendChild(filelist.renderFileNameLabel(
+      li.ownerDocument, entry ? entry.name : ''));
 };
 
 /**

@@ -674,7 +674,8 @@ NavigationList.prototype.selectByIndex = function(index) {
   // Prevents double-moving to the current directory.
   // eg. When user clicks the item, changing directory has already been done in
   //     click handler.
-  if (this.directoryModel_.getCurrentDirEntry().fullPath == newPath)
+  var entry = this.directoryModel_.getCurrentDirEntry();
+  if (entry && entry.fullPath == newPath)
     return false;
 
   metrics.recordUserAction('FolderShortcut.Navigate');

@@ -563,15 +563,16 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
     // root. We should check more granular permission to know whether the file
     // is writable or not.
     var readonly = fm.isOnReadonlyDirectory();
-    var currentDir = fm.directoryModel_.getCurrentDirEntry();
+    var currentDir = fm.getCurrentDirectoryEntry();
     var downloadsVolume =
         fm.volumeManager_.getVolumeInfo(RootDirectory.DOWNLOADS);
     var downloadsDir = downloadsVolume && downloadsVolume.root;
     var readonlyDirName = null;
-    if (readonly) {
+    if (readonly && currentDir) {
+      var rootPath = PathUtil.getRootPath(currentDir.fullPath);
       readonlyDirName = fm.isOnDrive() ?
-          PathUtil.getRootLabel(PathUtil.getRootPath(currentDir.fullPath)) :
-          fm.directoryModel_.getCurrentRootName();
+          PathUtil.getRootLabel(rootPath) :
+          PathUtil.basename(rootPath);
     }
 
     var context = {

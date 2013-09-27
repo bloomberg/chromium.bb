@@ -358,13 +358,15 @@ Commands.newWindowCommand = {
   execute: function(event, fileManager, directoryModel) {
     chrome.runtime.getBackgroundPage(function(background) {
       var appState = {
-        defaultPath: directoryModel.getCurrentDirPath()
+        defaultPath: fileManager.getCurrentDirectory()
       };
       background.launchFileManager(appState);
     });
   },
   canExecute: function(event, fileManager) {
-    event.canExecute = (fileManager.dialogType == DialogType.FULL_PAGE);
+    event.canExecute =
+        fileManager.getCurrentDirectoryEntry() &&
+        (fileManager.dialogType === DialogType.FULL_PAGE);
   }
 };
 
@@ -624,13 +626,16 @@ Commands.togglePinnedCommand = {
  */
 Commands.zipSelectionCommand = {
   execute: function(event, fileManager, directoryModel) {
-    var dirEntry = directoryModel.getCurrentDirEntry();
+    var dirEntry = fileManager.getCurrentDirectoryEntry();
     var selectionEntries = fileManager.getSelection().entries;
     fileManager.fileOperationManager_.zipSelection(dirEntry, selectionEntries);
   },
   canExecute: function(event, fileManager) {
+    var dirEntry = fileManager.getCurrentDirectoryEntry();
     var selection = fileManager.getSelection();
-    event.canExecute = !fileManager.isOnReadonlyDirectory() &&
+    event.canExecute =
+        dirEntry &&
+        !fileManager.isOnReadonlyDirectory() &&
         !fileManager.isOnDrive() &&
         selection && selection.totalCount > 0;
   }

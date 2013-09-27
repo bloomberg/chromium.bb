@@ -1101,7 +1101,7 @@ util.createFileError = function(code) {
 util.isSameEntry = function(entry1, entry2) {
   // Currently, we can assume there is only one root.
   // When we support multi-file system, we need to look at filesystem, too.
-  return entry1.fullPath == entry2.fullPath;
+  return entry1 === null ? entry2 === null : entry1.fullPath == entry2.fullPath;
 };
 
 /**
