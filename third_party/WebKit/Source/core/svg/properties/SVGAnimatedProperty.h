@@ -31,8 +31,7 @@ class SVGElement;
 
 class SVGAnimatedProperty : public RefCounted<SVGAnimatedProperty> {
 public:
-    SVGElement* contextElement() const { return m_contextElement; }
-    void resetContextElement() { m_contextElement = 0; }
+    SVGElement* contextElement() const { return m_contextElement.get(); }
     const QualifiedName& attributeName() const { return m_attributeName; }
     AnimatedPropertyType animatedPropertyType() const { return m_animatedPropertyType; }
     bool isAnimating() const { return m_isAnimating; }
@@ -42,10 +41,9 @@ public:
     void commitChange();
 
     virtual bool isAnimatedListTearOff() const { return false; }
-    virtual void detachWrappers() { }
 
     // Caching facilities.
-    typedef HashMap<SVGAnimatedPropertyDescription, RefPtr<SVGAnimatedProperty>, SVGAnimatedPropertyDescriptionHash, SVGAnimatedPropertyDescriptionHashTraits> Cache;
+    typedef HashMap<SVGAnimatedPropertyDescription, SVGAnimatedProperty*, SVGAnimatedPropertyDescriptionHash, SVGAnimatedPropertyDescriptionHashTraits> Cache;
 
     virtual ~SVGAnimatedProperty();
 
@@ -59,7 +57,7 @@ public:
             wrapper = TearOffType::create(element, info->attributeName, info->animatedPropertyType, property);
             if (info->animatedPropertyState == PropertyIsReadOnly)
                 wrapper->setIsReadOnly();
-            animatedPropertyCache()->set(key, wrapper);
+            animatedPropertyCache()->set(key, wrapper.get());
         }
         return static_pointer_cast<TearOffType>(wrapper);
     }
@@ -78,16 +76,13 @@ public:
         return lookupWrapper<OwnerType, TearOffType>(const_cast<OwnerType*>(element), info);
     }
 
-    static void detachAnimatedPropertiesWrappersForElement(SVGElement*);
-    static void detachAnimatedPropertiesForElement(SVGElement*);
-
 protected:
     SVGAnimatedProperty(SVGElement*, const QualifiedName&, AnimatedPropertyType);
 
 private:
     static Cache* animatedPropertyCache();
 
-    SVGElement* m_contextElement;
+    RefPtr<SVGElement> m_contextElement;
     const QualifiedName& m_attributeName;
     AnimatedPropertyType m_animatedPropertyType;
 

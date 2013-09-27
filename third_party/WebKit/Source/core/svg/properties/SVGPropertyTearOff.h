@@ -74,8 +74,7 @@ public:
     {
         if (!m_animatedProperty || m_valueIsCopy)
             return 0;
-        ASSERT(m_contextElement);
-        return m_contextElement;
+        return m_contextElement.get();
     }
 
     void addChild(WeakPtr<SVGPropertyTearOffBase> child)
@@ -155,7 +154,7 @@ protected:
         m_childTearOffs.clear();
     }
 
-    SVGElement* m_contextElement;
+    RefPtr<SVGElement> m_contextElement;
     SVGAnimatedProperty* m_animatedProperty;
     SVGPropertyRole m_role;
     PropertyType* m_value;

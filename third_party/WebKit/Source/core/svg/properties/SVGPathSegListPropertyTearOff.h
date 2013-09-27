@@ -41,9 +41,6 @@ public:
         return adoptRef(new SVGPathSegListPropertyTearOff(animatedProperty, role, pathSegRole, values, wrappers));
     }
 
-    SVGPathElement* contextElement() const;
-    SVGAnimatedProperty* animatedProperty() const { return m_animatedProperty.get(); }
-
     int findItem(const ListItemType& item) const
     {
         ASSERT(m_values);
@@ -121,6 +118,8 @@ private:
         , m_pathSegRole(pathSegRole)
     {
     }
+
+    SVGPathElement* contextElement() const;
 
     void clearContextAndRoles();
 
