@@ -44,7 +44,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/webclipboard_impl.h"
-#include "content/renderer/webcrypto_impl.h"
+#include "content/renderer/webcrypto/webcrypto_impl.h"
 #include "content/renderer/websharedworkerrepository_impl.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_sync_message_filter.h"

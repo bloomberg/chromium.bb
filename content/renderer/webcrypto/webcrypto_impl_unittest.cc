@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
-#include "content/renderer/webcrypto_impl.h"
+#include "content/renderer/webcrypto/webcrypto_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"

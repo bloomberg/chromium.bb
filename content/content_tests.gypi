@@ -506,7 +506,7 @@
         'renderer/render_view_impl_unittest.cc',
         'renderer/skia_benchmarking_extension_unittest.cc',
         'renderer/v8_value_converter_impl_unittest.cc',
-        'renderer/webcrypto_impl_unittest.cc',
+        'renderer/webcrypto/webcrypto_impl_unittest.cc',
         'test/image_decoder_test.cc',
         'test/image_decoder_test.h',
         'test/run_all_unittests.cc',
@@ -795,7 +795,7 @@
         # implementation is ready.  Issue 267888.
         ['use_nss!=1', {
           'sources!': [
-            'renderer/webcrypto_impl_unittest.cc',
+            'renderer/webcrypto/webcrypto_impl_unittest.cc',
           ],
         }],
       ],
