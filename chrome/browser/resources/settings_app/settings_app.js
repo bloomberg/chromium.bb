@@ -5,5 +5,5 @@
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create(
       'chrome://settings-frame/options_settings_app.html',
-      {'id': 'settings_app', 'height': 550, 'width': 660});
+      {'id': 'settings_app', 'height': 550, 'width': 750});
 });
