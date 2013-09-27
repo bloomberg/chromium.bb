@@ -1771,6 +1771,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableCast)
   },
 #endif
+#if defined(OS_CHROMEOS)
+  {
+    "enable-first-run-ui",
+    IDS_FLAGS_ENABLE_FIRST_RUN_UI_NAME,
+    IDS_FLAGS_ENABLE_FIRST_RUN_UI_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kEnableFirstRunUI)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

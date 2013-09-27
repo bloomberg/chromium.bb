@@ -6770,6 +6770,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable playing videos remotely on Chromecast.
         </message>
       </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_FLAGS_ENABLE_FIRST_RUN_UI_NAME" desc="Name of the flag to enable new first-run UI.">
+          Enable new first-run UI.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_FIRST_RUN_UI_DESCRIPTION" desc="Description for the flag to enable new first-run UI.">
+          If enabled, overlay tutorial will be shown after first login.
+        </message>
+      </if>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
