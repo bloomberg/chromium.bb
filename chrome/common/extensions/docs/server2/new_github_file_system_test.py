@@ -189,7 +189,7 @@ class TestGithubFileSystem(unittest.TestCase):
     gfs.Refresh().Get()
 
     # Check that the changes have effected the file system.
-    self.assertIn('new-file', gfs.ReadSingle('/'))
+    self.assertTrue('new-file' in gfs.ReadSingle('/'))
     self.assertEqual(files['zipfile/dir/file1'], gfs.ReadSingle('/dir/file1'))
 
 
