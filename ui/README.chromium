@@ -1,16 +1,6 @@
-This directory contains elements of Chromium's user interface toolkit:
+This directory contains discrete components used to build Chromium's user
+interface.
 
-base/
-  Common UI framework components for resource loading, localization,
-  string formatting, cross platform model interfaces etc.
-views/
-  UI "View" framework used for building interfaces on Windows and Linux
-  (ChromeOS).
-
-This directory is NOT for things that are unrelated to a user interface library,
-even if:
-* they are shared by multiple top level directories in src/,
-* brettw won't let you put them in base!
-* it's just two little files... come on!
-
-- ben@chromium.org
+Each subdirectory must be an isolated component that lists its dependencies in
+a DEPS file. See subdirectory README.chromium files for specific information
+about each component.
