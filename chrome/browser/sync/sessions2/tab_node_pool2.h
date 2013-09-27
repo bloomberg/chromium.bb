@@ -90,7 +90,7 @@ class TabNodePool2 {
   // Note: this should only be called when we discover tab sync nodes from
   // previous sessions, not for freeing tab nodes we created through
   // GetFreeTabNode (use FreeTabNode below for that).
-  void AddTabNode(int tab_node_id, const SessionID& tab_id);
+  void AddTabNode(int tab_node_id);
 
   // Returns the tab_id for |tab_node_id| if it is associated else returns
   // kInvalidTabID.
@@ -107,7 +107,7 @@ class TabNodePool2 {
   // |change_output| *must* be provided. It is the TabNodePool's link to
   // the SyncChange pipeline that exists in the caller's context.
   // See FreeTabNode for more detail.
-  void FreeUnassociatedTabNodes(syncer::SyncChangeList* change_output);
+  void DeleteUnassociatedTabNodes(syncer::SyncChangeList* change_output);
 
   // Clear tab pool.
   void Clear();

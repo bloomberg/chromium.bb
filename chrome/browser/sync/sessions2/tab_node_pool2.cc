@@ -33,10 +33,8 @@ std::string TabNodePool2::TabIdToTag(
   return base::StringPrintf("%s %d", machine_tag.c_str(), tab_node_id);
 }
 
-void TabNodePool2::AddTabNode(int tab_node_id,
-                              const SessionID& tab_id) {
+void TabNodePool2::AddTabNode(int tab_node_id) {
   DCHECK_GT(tab_node_id, kInvalidTabNodeID);
-  DCHECK_GT(tab_id.id(), kInvalidTabID);
   DCHECK(nodeid_tabid_map_.find(tab_node_id) == nodeid_tabid_map_.end());
   unassociated_nodes_.insert(tab_node_id);
   if (max_used_tab_node_id_ < tab_node_id)
@@ -156,7 +154,7 @@ SessionID::id_type TabNodePool2::GetTabIdFromTabNodeId(
   return kInvalidTabID;
 }
 
-void TabNodePool2::FreeUnassociatedTabNodes(
+void TabNodePool2::DeleteUnassociatedTabNodes(
     syncer::SyncChangeList* append_changes) {
   for (std::set<int>::iterator it = unassociated_nodes_.begin();
        it != unassociated_nodes_.end();) {
