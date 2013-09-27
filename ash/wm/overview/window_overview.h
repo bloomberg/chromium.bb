@@ -10,6 +10,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "ui/events/event_handler.h"
+#include "ui/gfx/rect.h"
 
 namespace aura {
 
@@ -79,11 +80,11 @@ class WindowOverview : public ui::EventHandler {
   void PositionWindowsOnRoot(aura::RootWindow* root_window,
                              const std::vector<WindowSelectorItem*>& windows);
 
-  void InitializeSelectionWidget(aura::RootWindow* root_window);
+  // Creates the selection widget.
+  void InitializeSelectionWidget();
 
-  // Updates the selection widget's location to the currently selected window.
-  // If |animate| the transition to the new location is animated.
-  void UpdateSelectionLocation(bool animate);
+  // Returns the bounds for the selection widget for the windows_ at |index|.
+  gfx::Rect GetSelectionBounds(size_t index);
 
   // Weak pointer to the window selector which owns this class.
   WindowSelector* window_selector_;
@@ -95,6 +96,10 @@ class WindowOverview : public ui::EventHandler {
 
   // Widget indicating which window is currently selected.
   scoped_ptr<views::Widget> selection_widget_;
+
+  // Index of the currently selected window. This is used to determine when the
+  // selection changes rows and use a different animation.
+  size_t selection_index_;
 
   // If NULL, each root window displays an overview of the windows in that
   // display. Otherwise, all windows are in a single overview on

@@ -47,6 +47,53 @@ struct WindowSelectorItemComparator
   const aura::Window* target;
 };
 
+// An observer which holds onto the passed widget until the animation is
+// complete.
+class CleanupWidgetAfterAnimationObserver : public ui::LayerAnimationObserver {
+ public:
+  explicit CleanupWidgetAfterAnimationObserver(
+      scoped_ptr<views::Widget> widget);
+
+  // ui::LayerAnimationObserver:
+  virtual void OnLayerAnimationEnded(
+      ui::LayerAnimationSequence* sequence) OVERRIDE;
+  virtual void OnLayerAnimationAborted(
+      ui::LayerAnimationSequence* sequence) OVERRIDE;
+  virtual void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) OVERRIDE;
+
+ private:
+  virtual ~CleanupWidgetAfterAnimationObserver();
+
+  scoped_ptr<views::Widget> widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(CleanupWidgetAfterAnimationObserver);
+};
+
+CleanupWidgetAfterAnimationObserver::CleanupWidgetAfterAnimationObserver(
+    scoped_ptr<views::Widget> widget)
+    : widget_(widget.Pass()) {
+  widget_->GetNativeWindow()->layer()->GetAnimator()->AddObserver(this);
+}
+
+CleanupWidgetAfterAnimationObserver::~CleanupWidgetAfterAnimationObserver() {
+  widget_->GetNativeWindow()->layer()->GetAnimator()->RemoveObserver(this);
+}
+
+void CleanupWidgetAfterAnimationObserver::OnLayerAnimationEnded(
+    ui::LayerAnimationSequence* sequence) {
+  delete this;
+}
+
+void CleanupWidgetAfterAnimationObserver::OnLayerAnimationAborted(
+    ui::LayerAnimationSequence* sequence) {
+  delete this;
+}
+
+void CleanupWidgetAfterAnimationObserver::OnLayerAnimationScheduled(
+    ui::LayerAnimationSequence* sequence) {
+}
+
 }  // namespace
 
 WindowOverview::WindowOverview(WindowSelector* window_selector,
@@ -54,6 +101,7 @@ WindowOverview::WindowOverview(WindowSelector* window_selector,
                                aura::RootWindow* single_root_window)
     : window_selector_(window_selector),
       windows_(windows),
+      selection_index_(0),
       single_root_window_(single_root_window),
       overview_start_time_(base::Time::Now()),
       cursor_client_(NULL) {
@@ -84,13 +132,54 @@ WindowOverview::~WindowOverview() {
 }
 
 void WindowOverview::SetSelection(size_t index) {
-  DCHECK_LT(index, windows_->size());
-  gfx::Rect target_bounds = (*windows_)[index]->bounds();
-  target_bounds.Inset(-kWindowOverviewSelectionPadding,
-                      -kWindowOverviewSelectionPadding);
+  gfx::Rect target_bounds(GetSelectionBounds(index));
 
   if (selection_widget_) {
-    // If the selection widget is already active, animate to the new bounds.
+    // If the selection widget is already active, determine the animation to
+    // use to animate the widget to the new bounds.
+    int change = static_cast<int>(index) - static_cast<int>(selection_index_);
+    int windows = static_cast<int>(windows_->size());
+    // If moving from the first to the last or last to the first index,
+    // convert the delta to be +/- 1.
+    if (windows > 2 && abs(change) == windows - 1) {
+      if (change < 0)
+        change += windows;
+      else
+        change -= windows;
+    }
+    if (selection_index_ < windows_->size() &&
+        (*windows_)[selection_index_]->bounds().y() !=
+            (*windows_)[index]->bounds().y() &&
+        abs(change) == 1) {
+      // The selection has changed forward or backwards by one with a change
+      // in the height of the target. In this case create a new selection widget
+      // to fade in on the new position and animate and fade out the old one.
+      gfx::Display dst_display = gfx::Screen::GetScreenFor(
+          selection_widget_->GetNativeWindow())->GetDisplayMatching(
+              target_bounds);
+      gfx::Vector2d fade_out_direction(
+          change * ((*windows_)[selection_index_]->bounds().width() +
+                    2 * kWindowMargin), 0);
+      aura::Window* old_selection = selection_widget_->GetNativeWindow();
+
+      // CleanupWidgetAfterAnimationObserver will delete itself (and the
+      // widget) when the animation is complete.
+      new CleanupWidgetAfterAnimationObserver(selection_widget_.Pass());
+      ui::ScopedLayerAnimationSettings animation_settings(
+          old_selection->layer()->GetAnimator());
+      animation_settings.SetTransitionDuration(
+          base::TimeDelta::FromMilliseconds(
+              kOverviewSelectorTransitionMilliseconds));
+      animation_settings.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      old_selection->SetBoundsInScreen(
+          GetSelectionBounds(selection_index_) + fade_out_direction,
+          dst_display);
+      old_selection->layer()->SetOpacity(0);
+      InitializeSelectionWidget();
+      selection_widget_->GetNativeWindow()->SetBoundsInScreen(
+          target_bounds - fade_out_direction, dst_display);
+    }
     ui::ScopedLayerAnimationSettings animation_settings(
         selection_widget_->GetNativeWindow()->layer()->GetAnimator());
     animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
@@ -98,10 +187,15 @@ void WindowOverview::SetSelection(size_t index) {
     animation_settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     selection_widget_->SetBounds(target_bounds);
+    selection_widget_->GetNativeWindow()->layer()->SetOpacity(
+        kWindowOverviewSelectionOpacity);
   } else {
-    InitializeSelectionWidget((*windows_)[index]->GetRootWindow());
+    InitializeSelectionWidget();
     selection_widget_->SetBounds(target_bounds);
+    selection_widget_->GetNativeWindow()->layer()->SetOpacity(
+        kWindowOverviewSelectionOpacity);
   }
+  selection_index_ = index;
 }
 
 void WindowOverview::OnWindowsChanged() {
@@ -246,7 +340,7 @@ void WindowOverview::PositionWindowsOnRoot(
   }
 }
 
-void WindowOverview::InitializeSelectionWidget(aura::RootWindow* root_window) {
+void WindowOverview::InitializeSelectionWidget() {
   selection_widget_.reset(new views::Widget);
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
@@ -255,7 +349,8 @@ void WindowOverview::InitializeSelectionWidget(aura::RootWindow* root_window) {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
   params.parent = Shell::GetContainer(
-      root_window,
+      single_root_window_ ? single_root_window_ :
+                            windows_->front()->GetRootWindow(),
       internal::kShellWindowId_DefaultContainer);
   params.accept_events = false;
   selection_widget_->set_focus_on_creation(false);
@@ -267,8 +362,14 @@ void WindowOverview::InitializeSelectionWidget(aura::RootWindow* root_window) {
   selection_widget_->GetNativeWindow()->parent()->StackChildAtBottom(
       selection_widget_->GetNativeWindow());
   selection_widget_->Show();
-  selection_widget_->GetNativeWindow()->layer()->SetOpacity(
-      kWindowOverviewSelectionOpacity);
+  selection_widget_->GetNativeWindow()->layer()->SetOpacity(0);
+}
+
+gfx::Rect WindowOverview::GetSelectionBounds(size_t index) {
+  gfx::Rect bounds((*windows_)[index]->bounds());
+  bounds.Inset(-kWindowOverviewSelectionPadding,
+               -kWindowOverviewSelectionPadding);
+  return bounds;
 }
 
 }  // namespace ash

@@ -85,6 +85,7 @@ class CleanupWidgetAfterAnimationObserver : public ui::LayerAnimationObserver {
  public:
   CleanupWidgetAfterAnimationObserver(views::Widget* widget, ui::Layer* layer);
 
+  // ui::LayerAnimationObserver:
   virtual void OnLayerAnimationEnded(
       ui::LayerAnimationSequence* sequence) OVERRIDE;
   virtual void OnLayerAnimationAborted(
@@ -92,10 +93,9 @@ class CleanupWidgetAfterAnimationObserver : public ui::LayerAnimationObserver {
   virtual void OnLayerAnimationScheduled(
       ui::LayerAnimationSequence* sequence) OVERRIDE;
 
- protected:
+ private:
   virtual ~CleanupWidgetAfterAnimationObserver();
 
- private:
   views::Widget* widget_;
   ui::Layer* layer_;
 
