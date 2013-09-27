@@ -1131,9 +1131,6 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   const string16 chrome_exe(
       installer_state.target_path().Append(installer::kChromeExe).value());
 
-  const string16 suffix(ShellUtil::GetCurrentInstallationSuffix(browser_dist,
-                                                                chrome_exe));
-
   bool is_chrome = product.is_chrome();
 
   VLOG(1) << "UninstallProduct: " << browser_dist->GetDisplayName();
@@ -1150,6 +1147,9 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     if (status != installer::UNINSTALL_CONFIRMED &&
         status != installer::UNINSTALL_DELETE_PROFILE)
       return status;
+
+    const string16 suffix(ShellUtil::GetCurrentInstallationSuffix(browser_dist,
+                                                                  chrome_exe));
 
     // Check if we need admin rights to cleanup HKLM (the conditions for
     // requiring a cleanup are the same as the conditions to do the actual
@@ -1244,6 +1244,9 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   InstallStatus ret = installer::UNKNOWN_STATUS;
 
   if (is_chrome) {
+    const string16 suffix(ShellUtil::GetCurrentInstallationSuffix(browser_dist,
+                                                                  chrome_exe));
+
     // Remove all Chrome registration keys.
     // Registration data is put in HKCU for both system level and user level
     // installs.
