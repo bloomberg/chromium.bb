@@ -168,7 +168,6 @@ class FileDownloader {
   bool InitialResponseIsValid(int32_t pp_error);
   void URLLoadStartNotify(int32_t pp_error);
   void URLLoadFinishNotify(int32_t pp_error);
-  void URLBufferStartNotify(int32_t pp_error);
   void URLReadBodyNotify(int32_t pp_error);
   void StreamFinishNotify(int32_t pp_error);
 

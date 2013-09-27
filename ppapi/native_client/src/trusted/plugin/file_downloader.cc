@@ -137,18 +137,12 @@ bool FileDownloader::Open(
     }
   } while (0);
 
-  void (FileDownloader::*start_notify)(int32_t);
-  if (streaming_to_file())
-    start_notify = &FileDownloader::URLLoadStartNotify;
-  else
-    start_notify = &FileDownloader::URLBufferStartNotify;
-
   // Request asynchronous download of the url providing an on-load callback.
   // As long as this step is guaranteed to be asynchronous, we can call
   // synchronously all other internal callbacks that eventually result in the
   // invocation of the user callback. The user code will not be reentered.
   pp::CompletionCallback onload_callback =
-      callback_factory_.NewCallback(start_notify);
+      callback_factory_.NewCallback(&FileDownloader::URLLoadStartNotify);
   int32_t pp_error = url_loader_.Open(url_request, onload_callback);
   PLUGIN_PRINTF(("FileDownloader::Open (pp_error=%" NACL_PRId32 ")\n",
                  pp_error));
@@ -276,21 +270,6 @@ bool FileDownloader::InitialResponseIsValid(int32_t pp_error) {
 
 void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
   PLUGIN_PRINTF(("FileDownloader::URLLoadStartNotify (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
-
-  if (!InitialResponseIsValid(pp_error)) {
-    // InitialResponseIsValid() calls file_open_notify_callback_ on errors.
-    return;
-  }
-
-  if (open_and_stream_)
-    return FinishStreaming(file_open_notify_callback_);
-
-  file_open_notify_callback_.RunAndClear(pp_error);
-}
-
-void FileDownloader::URLBufferStartNotify(int32_t pp_error) {
-  PLUGIN_PRINTF(("FileDownloader::URLBufferStartNotify (pp_error=%"
                  NACL_PRId32")\n", pp_error));
 
   if (!InitialResponseIsValid(pp_error)) {
