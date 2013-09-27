@@ -97,6 +97,9 @@ const int kArrowWidth = 2 * kArrowHeight;
 // The padding inside the edges of the dialog, in pixels.
 const int kDialogEdgePadding = 20;
 
+// The vertical padding between rows of manual inputs (in pixels).
+const int kManualInputRowPadding = 10;
+
 // Slight shading for mouse hover and legal document background.
 SkColor kShadingColor = SkColorSetARGB(7, 0, 0, 0);
 
@@ -2019,7 +2022,7 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
       // Create a new column set and row.
       column_set = layout->AddColumnSet(kColumnSetId);
       if (it != inputs.begin())
-        layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+        layout->AddPaddingRow(0, kManualInputRowPadding);
       layout->StartRow(0, kColumnSetId);
     } else {
       // Add a new column to existing row.
