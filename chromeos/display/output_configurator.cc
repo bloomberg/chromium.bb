@@ -9,9 +9,9 @@
 #include <X11/extensions/XInput2.h>
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "chromeos/display/output_util.h"
 #include "chromeos/display/real_output_configurator_delegate.h"
@@ -224,7 +224,7 @@ OutputConfigurator::OutputConfigurator()
     : state_controller_(NULL),
       mirroring_controller_(NULL),
       is_panel_fitting_enabled_(false),
-      configure_display_(base::chromeos::IsRunningOnChromeOS()),
+      configure_display_(base::SysInfo::IsRunningOnChromeOS()),
       xrandr_event_base_(0),
       output_state_(STATE_INVALID),
       power_state_(DISPLAY_POWER_ALL_ON) {

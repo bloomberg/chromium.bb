@@ -52,8 +52,8 @@
 #include "net/url_request/url_request.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
+#include "base/sys_info.h"
 #include "chrome/common/chrome_switches.h"
 #endif
 
@@ -641,7 +641,7 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
 #if defined(OS_CHROMEOS)
   // If we're running Chrome for ChromeOS on Linux, we want to allow file
   // access.
-  if (!base::chromeos::IsRunningOnChromeOS() ||
+  if (!base::SysInfo::IsRunningOnChromeOS() ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
     return true;
   }

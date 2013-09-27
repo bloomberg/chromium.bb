@@ -7,9 +7,9 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "chromeos/dbus/fake_bluetooth_agent_service_provider.h"
 #include "dbus/bus.h"
@@ -469,7 +469,7 @@ BluetoothAgentServiceProvider* BluetoothAgentServiceProvider::Create(
     dbus::Bus* bus,
     const dbus::ObjectPath& object_path,
     Delegate* delegate) {
-  if (base::chromeos::IsRunningOnChromeOS()) {
+  if (base::SysInfo::IsRunningOnChromeOS()) {
     return new BluetoothAgentServiceProviderImpl(bus, object_path, delegate);
   } else {
     return new FakeBluetoothAgentServiceProvider(object_path, delegate);

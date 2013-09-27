@@ -7,13 +7,13 @@
 #include <map>
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
 #include "base/values.h"
@@ -722,14 +722,14 @@ CrosDisksClient* CrosDisksClient::Create(DBusClientImplementationType type) {
 
 // static
 base::FilePath CrosDisksClient::GetArchiveMountPoint() {
-  return base::FilePath(base::chromeos::IsRunningOnChromeOS() ?
+  return base::FilePath(base::SysInfo::IsRunningOnChromeOS() ?
                         FILE_PATH_LITERAL("/media/archive") :
                         FILE_PATH_LITERAL("/tmp/chromeos/media/archive"));
 }
 
 // static
 base::FilePath CrosDisksClient::GetRemovableDiskMountPoint() {
-  return base::FilePath(base::chromeos::IsRunningOnChromeOS() ?
+  return base::FilePath(base::SysInfo::IsRunningOnChromeOS() ?
                         FILE_PATH_LITERAL("/media/removable") :
                         FILE_PATH_LITERAL("/tmp/chromeos/media/removable"));
 }

@@ -38,7 +38,7 @@
 #include "ui/gfx/screen.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
+#include "base/sys_info.h"
 #include "base/time/time.h"
 #if defined(USE_X11)
 #include "ash/display/output_configurator_animation.h"
@@ -225,7 +225,7 @@ DisplayController::DisplayController()
 #if defined(OS_CHROMEOS)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kAshDisableDisplayChangeLimiter) &&
-      base::chromeos::IsRunningOnChromeOS())
+      base::SysInfo::IsRunningOnChromeOS())
     limiter_.reset(new DisplayChangeLimiter);
 #endif
   // Reset primary display to make sure that tests don't use
@@ -787,7 +787,7 @@ aura::RootWindow* DisplayController::AddRootWindowForDisplay(
   static bool force_constrain_pointer_to_root =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshConstrainPointerToRoot);
-  if (base::chromeos::IsRunningOnChromeOS() || force_constrain_pointer_to_root)
+  if (base::SysInfo::IsRunningOnChromeOS() || force_constrain_pointer_to_root)
     root_window->ConfineCursorToWindow();
 #endif
   return root_window;

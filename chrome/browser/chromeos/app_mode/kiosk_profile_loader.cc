@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_profile_loader.h"
 
-#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
+#include "base/sys_info.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
@@ -113,7 +113,7 @@ class KioskProfileLoader::CryptohomedChecker
       LOG(ERROR) << "Cryptohome is mounted before launching kiosk app.";
 
     // Proceed only when cryptohome is not mounded or running on dev box.
-    if (!is_mounted || !base::chromeos::IsRunningOnChromeOS())
+    if (!is_mounted || !base::SysInfo::IsRunningOnChromeOS())
       ReportCheckResult(KioskAppLaunchError::NONE);
     else
       ReportCheckResult(KioskAppLaunchError::ALREADY_MOUNTED);

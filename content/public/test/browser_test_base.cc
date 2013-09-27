@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
 #include "base/message_loop/message_loop.h"
+#include "base/sys_info.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -33,10 +34,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
 #endif
 
 namespace content {
@@ -188,7 +185,7 @@ void BrowserTestBase::SetUp() {
   // If the test is running on the chromeos envrionment (such as
   // device or vm bots), the compositor will use real GL contexts, and
   // we should use real GL bindings with it.
-  if (base::chromeos::IsRunningOnChromeOS())
+  if (base::SysInfo::IsRunningOnChromeOS())
     allow_osmesa_ = false;
 #endif
 

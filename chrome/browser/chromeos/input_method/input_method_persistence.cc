@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_persistence.h"
 
-#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -47,7 +47,7 @@ static void SetUserLRUInputMethod(
     return;
 
   const std::string username = profile->GetProfileName();
-  if (base::chromeos::IsRunningOnChromeOS() && !username.empty() &&
+  if (base::SysInfo::IsRunningOnChromeOS() && !username.empty() &&
       !local_state->ReadOnly()) {
     bool update_succeed = false;
     {

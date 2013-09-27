@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -21,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
@@ -1045,7 +1045,7 @@ bool UserManagerImpl::UserSessionsRestored() const {
 
 bool UserManagerImpl::HasBrowserRestarted() const {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return base::chromeos::IsRunningOnChromeOS() &&
+  return base::SysInfo::IsRunningOnChromeOS() &&
          command_line->HasSwitch(switches::kLoginUser) &&
          !command_line->HasSwitch(switches::kLoginPassword);
 }

@@ -6,11 +6,11 @@
 
 #include <algorithm>
 
-#include "base/chromeos/chromeos_version.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -52,7 +52,7 @@ void CallOpenPersistentNSSDB() {
   VLOG(1) << "CallOpenPersistentNSSDB";
 
   // Ensure we've opened the user's key/certificate database.
-  if (base::chromeos::IsRunningOnChromeOS())
+  if (base::SysInfo::IsRunningOnChromeOS())
     crypto::OpenPersistentNSSDB();
   crypto::EnableTPMTokenForNSS();
 }
@@ -159,7 +159,7 @@ void CertLoader::MaybeRequestCertificates() {
 
   // Ensure we only initialize the TPM token once.
   DCHECK_EQ(tpm_token_state_, TPM_STATE_UNKNOWN);
-  if (!initialize_tpm_for_test_ && !base::chromeos::IsRunningOnChromeOS())
+  if (!initialize_tpm_for_test_ && !base::SysInfo::IsRunningOnChromeOS())
     tpm_token_state_ = TPM_DISABLED;
 
   // Treat TPM as disabled for guest users since they do not store certs.

@@ -34,13 +34,13 @@
 #include "ash/wm/lock_state_controller.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -494,7 +494,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual bool IsOobeCompleted() const OVERRIDE {
-    if (!base::chromeos::IsRunningOnChromeOS() &&
+    if (!base::SysInfo::IsRunningOnChromeOS() &&
         LoginState::Get()->IsUserLoggedIn())
       return true;
     return StartupUtils::IsOobeCompleted();
@@ -1263,7 +1263,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // Overridden from SystemKeyEventListener::CapsLockObserver.
   virtual void OnCapsLockChange(bool enabled) OVERRIDE {
     bool search_mapped_to_caps_lock = false;
-    if (!base::chromeos::IsRunningOnChromeOS() ||
+    if (!base::SysInfo::IsRunningOnChromeOS() ||
         search_key_mapped_to_ == input_method::kCapsLockKey)
       search_mapped_to_caps_lock = true;
     GetSystemTrayNotifier()->NotifyCapsLockChanged(

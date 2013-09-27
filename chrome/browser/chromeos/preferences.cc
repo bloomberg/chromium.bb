@@ -6,7 +6,6 @@
 
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/shell.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram.h"
@@ -15,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
@@ -85,7 +85,7 @@ void Preferences::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   std::string hardware_keyboard_id;
   // TODO(yusukes): Remove the runtime hack.
-  if (base::chromeos::IsRunningOnChromeOS()) {
+  if (base::SysInfo::IsRunningOnChromeOS()) {
     input_method::InputMethodManager* manager =
         input_method::InputMethodManager::Get();
     if (manager) {
@@ -627,7 +627,7 @@ void Preferences::SetInputMethodList() {
 
 void Preferences::UpdateAutoRepeatRate() {
   // Avoid setting repeat rate on desktop dev environment.
-  if (!base::chromeos::IsRunningOnChromeOS())
+  if (!base::SysInfo::IsRunningOnChromeOS())
     return;
 
   input_method::AutoRepeatRate rate;

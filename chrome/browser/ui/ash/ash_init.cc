@@ -24,7 +24,7 @@
 #include "ui/aura/root_window.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
+#include "base/sys_info.h"
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chromeos/chromeos_switches.h"
@@ -44,7 +44,7 @@ bool ShouldOpenAshOnStartup() {
 
 void OpenAsh() {
 #if defined(OS_CHROMEOS)
-  if (base::chromeos::IsRunningOnChromeOS()) {
+  if (base::SysInfo::IsRunningOnChromeOS()) {
     // Hides the cursor outside of the Aura root window. The cursor will be
     // drawn within the Aura root window, and it'll remain hidden after the
     // Aura window is closed.

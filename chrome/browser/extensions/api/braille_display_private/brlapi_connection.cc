@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/api/braille_display_private/brlapi_connection.h"
 
-#include "base/chromeos/chromeos_version.h"
 #include "base/message_loop/message_loop.h"
+#include "base/sys_info.h"
 
 namespace extensions {
 using base::MessageLoopForIO;
@@ -87,7 +87,7 @@ bool BrlapiConnectionImpl::Connect(const OnDataReadyCallback& on_data_ready) {
   int path[2] = {0, 0};
   int pathElements = 0;
 #if defined(OS_CHROMEOS)
-  if (base::chromeos::IsRunningOnChromeOS())
+  if (base::SysInfo::IsRunningOnChromeOS())
     path[pathElements++] = kDefaultTtyChromeOS;
 #endif
   if (pathElements == 0 && getenv("WINDOWPATH") == NULL)

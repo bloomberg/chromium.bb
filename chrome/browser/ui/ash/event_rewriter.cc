@@ -25,8 +25,8 @@
 // Get rid of a macro from Xlib.h that conflicts with OwnershipService class.
 #undef Status
 
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
+#include "base/sys_info.h"
 #include "chrome/browser/chromeos/keyboard_driven_event_rewriter.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -156,7 +156,7 @@ EventRewriter::EventRewriter()
   if (ash::Shell::HasInstance())
     ash::Shell::GetPrimaryRootWindow()->AddRootWindowObserver(this);
 #if defined(OS_CHROMEOS)
-  if (base::chromeos::IsRunningOnChromeOS()) {
+  if (base::SysInfo::IsRunningOnChromeOS()) {
     chromeos::XInputHierarchyChangedEventListener::GetInstance()
         ->AddObserver(this);
   }
@@ -168,7 +168,7 @@ EventRewriter::~EventRewriter() {
   if (ash::Shell::HasInstance())
     ash::Shell::GetPrimaryRootWindow()->RemoveRootWindowObserver(this);
 #if defined(OS_CHROMEOS)
-  if (base::chromeos::IsRunningOnChromeOS()) {
+  if (base::SysInfo::IsRunningOnChromeOS()) {
     chromeos::XInputHierarchyChangedEventListener::GetInstance()
         ->RemoveObserver(this);
   }

@@ -43,6 +43,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 
@@ -52,10 +53,6 @@
 
 #if !defined(OS_IOS)
 #include <grp.h>
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
 #endif
 
 namespace base {
@@ -771,7 +768,7 @@ bool GetShmemTempDir(FilePath* path, bool executable) {
 
 FilePath GetHomeDir() {
 #if defined(OS_CHROMEOS)
-  if (base::chromeos::IsRunningOnChromeOS())
+  if (base::SysInfo::IsRunningOnChromeOS())
     return FilePath("/home/chronos/user");
 #endif
 

@@ -113,8 +113,8 @@
 #include "ash/display/display_change_observer_chromeos.h"
 #include "ash/display/display_error_observer_chromeos.h"
 #include "ash/display/output_configurator_animation.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/message_loop/message_pump_x11.h"
+#include "base/sys_info.h"
 #include "chromeos/display/output_configurator.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "gpu/config/gpu_feature_type.h"
@@ -407,7 +407,7 @@ void Shell::Init() {
   output_configurator_animation_.reset(
       new internal::OutputConfiguratorAnimation());
   output_configurator_->AddObserver(output_configurator_animation_.get());
-  if (base::chromeos::IsRunningOnChromeOS()) {
+  if (base::SysInfo::IsRunningOnChromeOS()) {
     display_change_observer_.reset(new internal::DisplayChangeObserver);
     // Register |display_change_observer_| first so that the rest of
     // observer gets invoked after the root windows are configured.

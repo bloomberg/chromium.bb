@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/stl_util.h"
+#include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/chromeos/dbus/display_power_service_provider.h"
 #include "chrome/browser/chromeos/dbus/liveness_service_provider.h"
@@ -118,7 +118,7 @@ void CrosDBusService::Initialize() {
     return;
   }
   dbus::Bus* bus = DBusThreadManager::Get()->GetSystemBus();
-  if (base::chromeos::IsRunningOnChromeOS() && bus) {
+  if (base::SysInfo::IsRunningOnChromeOS() && bus) {
     CrosDBusServiceImpl* service = new CrosDBusServiceImpl(bus);
     service->RegisterServiceProvider(ProxyResolutionServiceProvider::Create());
     service->RegisterServiceProvider(new DisplayPowerServiceProvider);

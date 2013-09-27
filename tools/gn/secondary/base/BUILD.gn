@@ -92,8 +92,6 @@ component("base") {
     "callback_internal.cc",
     "callback_internal.h",
     "cancelable_callback.h",
-    "chromeos/chromeos_version.cc",
-    "chromeos/chromeos_version.h",
     "command_line.cc",
     "command_line.h",
     "compiler_specific.h",

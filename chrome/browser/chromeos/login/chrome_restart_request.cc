@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -17,6 +16,7 @@
 #include "base/process/launch.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "cc/base/switches.h"
@@ -358,7 +358,7 @@ void RestartChrome(const std::string& command_line) {
   }
   restart_requested = true;
 
-  if (!base::chromeos::IsRunningOnChromeOS()) {
+  if (!base::SysInfo::IsRunningOnChromeOS()) {
     // Relaunch chrome without session manager on dev box.
     ReLaunch(command_line);
     return;

@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -17,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -442,7 +442,7 @@ TimezoneSettings::Observer::~Observer() {}
 
 // static
 TimezoneSettings* TimezoneSettings::GetInstance() {
-  if (base::chromeos::IsRunningOnChromeOS()) {
+  if (base::SysInfo::IsRunningOnChromeOS()) {
     return TimezoneSettingsImpl::GetInstance();
   } else {
     return TimezoneSettingsStubImpl::GetInstance();

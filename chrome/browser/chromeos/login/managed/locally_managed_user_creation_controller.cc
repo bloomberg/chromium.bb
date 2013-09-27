@@ -5,11 +5,11 @@
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_controller.h"
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
@@ -37,7 +37,7 @@ const int kUserCreationTimeoutSeconds = 30; // 30 seconds.
 
 bool StoreManagedUserFiles(const std::string& token,
                            const base::FilePath& base_path) {
-  if (!base::chromeos::IsRunningOnChromeOS()) {
+  if (!base::SysInfo::IsRunningOnChromeOS()) {
     // If running on desktop, cryptohome stub does not create home directory.
     file_util::CreateDirectory(base_path);
   }

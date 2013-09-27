@@ -33,7 +33,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/display/output_configurator_animation.h"
-#include "base/chromeos/chromeos_version.h"
+#include "base/sys_info.h"
 #include "chromeos/display/output_configurator.h"
 #endif
 
@@ -149,7 +149,7 @@ DisplayManager::DisplayManager()
       change_display_upon_host_resize_(false),
       software_mirroring_enabled_(false) {
 #if defined(OS_CHROMEOS)
-  change_display_upon_host_resize_ = !base::chromeos::IsRunningOnChromeOS();
+  change_display_upon_host_resize_ = !base::SysInfo::IsRunningOnChromeOS();
 #endif
 }
 
@@ -177,7 +177,7 @@ std::vector<float> DisplayManager::GetScalesForDisplay(
       ret.assign(kUIScalesFor1280,
                  kUIScalesFor1280 + arraysize(kUIScalesFor1280));
 #if defined(OS_CHROMEOS)
-      if (base::chromeos::IsRunningOnChromeOS())
+      if (base::SysInfo::IsRunningOnChromeOS())
         NOTREACHED() << "Unknown resolution:" << info.ToString();
 #endif
   }
@@ -388,7 +388,7 @@ void DisplayManager::SetDisplayResolution(int64 display_id,
     resolutions_[display_id] = resolution;
   }
 #if defined(OS_CHROMEOS) && defined(USE_X11)
-  if (base::chromeos::IsRunningOnChromeOS())
+  if (base::SysInfo::IsRunningOnChromeOS())
     Shell::GetInstance()->output_configurator()->ScheduleConfigureOutputs();
 #endif
 }
@@ -677,7 +677,7 @@ void DisplayManager::UpdateDisplays(
     delegate_->PostDisplayConfigurationChange();
 
 #if defined(USE_X11) && defined(OS_CHROMEOS)
-  if (!changed_display_indices.empty() && base::chromeos::IsRunningOnChromeOS())
+  if (!changed_display_indices.empty() && base::SysInfo::IsRunningOnChromeOS())
     ui::ClearX11DefaultRootWindow();
 #endif
 }
@@ -736,7 +736,7 @@ void DisplayManager::SetMirrorMode(bool mirrored) {
     return;
 
 #if defined(OS_CHROMEOS)
-  if (base::chromeos::IsRunningOnChromeOS()) {
+  if (base::SysInfo::IsRunningOnChromeOS()) {
     chromeos::OutputState new_state = mirrored ?
         chromeos::STATE_DUAL_MIRROR : chromeos::STATE_DUAL_EXTENDED;
     Shell::GetInstance()->output_configurator()->SetDisplayMode(new_state);

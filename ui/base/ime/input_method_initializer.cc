@@ -7,7 +7,6 @@
 #include "ui/base/ime/input_method_factory.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/ime/ibus_bridge.h"

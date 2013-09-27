@@ -4,9 +4,9 @@
 
 #include "chromeos/login/login_state.h"
 
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/sys_info.h"
 #include "chromeos/chromeos_switches.h"
 
 namespace chromeos {
@@ -17,7 +17,7 @@ namespace {
 // workstation) and not running as login-manager, pretend like we're always
 // logged in.
 bool AlwaysLoggedIn() {
-  return !base::chromeos::IsRunningOnChromeOS() &&
+  return !base::SysInfo::IsRunningOnChromeOS() &&
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginManager);
 }
 

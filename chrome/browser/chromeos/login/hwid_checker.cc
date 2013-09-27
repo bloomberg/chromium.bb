@@ -6,10 +6,10 @@
 
 #include <cstdio>
 
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/sys_info.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
@@ -116,7 +116,7 @@ bool IsMachineHWIDCorrect() {
   if (cmd_line->HasSwitch(::switches::kTestType) ||
       cmd_line->HasSwitch(chromeos::switches::kSkipHWIDCheck))
     return true;
-  if (!base::chromeos::IsRunningOnChromeOS())
+  if (!base::SysInfo::IsRunningOnChromeOS())
     return true;
   std::string hwid;
   chromeos::system::StatisticsProvider* stats =
@@ -133,4 +133,3 @@ bool IsMachineHWIDCorrect() {
 }
 
 } // namespace chromeos
-

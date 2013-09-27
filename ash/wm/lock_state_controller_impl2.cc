@@ -12,15 +12,12 @@
 #include "ash/wm/session_state_animator.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/sys_info.h"
 #include "base/timer/timer.h"
 #include "ui/aura/root_window.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/corewm/compound_event_filter.h"
-
-#if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
-#endif
 
 namespace ash {
 
@@ -369,7 +366,7 @@ void LockStateControllerImpl2::StartRealShutdownTimer(
 void LockStateControllerImpl2::OnRealShutdownTimeout() {
   DCHECK(shutting_down_);
 #if defined(OS_CHROMEOS)
-  if (!base::chromeos::IsRunningOnChromeOS()) {
+  if (!base::SysInfo::IsRunningOnChromeOS()) {
     ShellDelegate* delegate = Shell::GetInstance()->delegate();
     if (delegate) {
       delegate->Exit();

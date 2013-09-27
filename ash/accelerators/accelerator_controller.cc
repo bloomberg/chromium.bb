@@ -70,7 +70,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/session_state_delegate.h"
 #include "ash/system/chromeos/keyboard_brightness_controller.h"
-#include "base/chromeos/chromeos_version.h"
+#include "base/sys_info.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -901,7 +901,7 @@ bool AcceleratorController::PerformAction(int action,
     case POWER_PRESSED:  // fallthrough
     case POWER_RELEASED:
 #if defined(OS_CHROMEOS)
-      if (!base::chromeos::IsRunningOnChromeOS()) {
+      if (!base::SysInfo::IsRunningOnChromeOS()) {
         // There is no powerd in linux desktop, so call the
         // PowerButtonController here.
         Shell::GetInstance()->power_button_controller()->

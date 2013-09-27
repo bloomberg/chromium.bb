@@ -110,8 +110,6 @@
           'callback_internal.h',
           'callback_list.h',
           'cancelable_callback.h',
-          'chromeos/chromeos_version.cc',
-          'chromeos/chromeos_version.h',
           'command_line.cc',
           'command_line.h',
           'compiler_specific.h',

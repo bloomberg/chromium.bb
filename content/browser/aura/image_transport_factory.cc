@@ -5,15 +5,12 @@
 #include "content/browser/aura/image_transport_factory.h"
 
 #include "base/command_line.h"
+#include "base/sys_info.h"
 #include "content/browser/aura/gpu_process_transport_factory.h"
 #include "content/browser/aura/no_transport_image_transport_factory.h"
 #include "content/public/common/content_switches.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
-
-#if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
-#endif
 
 namespace content {
 
@@ -26,7 +23,7 @@ static bool UseTestContextAndTransportFactory() {
 #if defined(OS_CHROMEOS)
   // If the test is running on the chromeos envrionment (such as
   // device or vm bots), always use real contexts.
-  if (base::chromeos::IsRunningOnChromeOS())
+  if (base::SysInfo::IsRunningOnChromeOS())
     return false;
 #endif
 

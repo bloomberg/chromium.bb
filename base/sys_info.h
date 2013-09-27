@@ -96,6 +96,9 @@ class BASE_EXPORT SysInfo {
   // time of the Chrome OS build).
   static Time GetLsbReleaseTime();
 
+  // Returns true when actually running in a Chrome OS environment.
+  static bool IsRunningOnChromeOS();
+
   // Test method to force re-parsing of lsb-release.
   static void SetChromeOSVersionInfoForTest(const std::string& lsb_release,
                                             const Time& lsb_release_time);

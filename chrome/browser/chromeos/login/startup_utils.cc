@@ -5,11 +5,11 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
@@ -95,7 +95,7 @@ static base::FilePath GetOobeCompleteFlagPath() {
   // The constant is defined here so it won't be referenced directly.
   const char kOobeCompleteFlagFilePath[] = "/home/chronos/.oobe_completed";
 
-  if (base::chromeos::IsRunningOnChromeOS()) {
+  if (base::SysInfo::IsRunningOnChromeOS()) {
     return base::FilePath(kOobeCompleteFlagFilePath);
   } else {
     base::FilePath user_data_dir;

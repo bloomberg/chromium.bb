@@ -33,7 +33,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
+#include "base/sys_info.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/owner_flags_storage.h"
@@ -74,7 +74,7 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
 
 #if defined(OS_CHROMEOS)
   if (!chromeos::UserManager::Get()->IsCurrentUserOwner() &&
-      base::chromeos::IsRunningOnChromeOS()) {
+      base::SysInfo::IsRunningOnChromeOS()) {
     // Set the strings to show which user can actually change the flags.
     std::string owner;
     chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);

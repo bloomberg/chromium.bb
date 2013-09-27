@@ -5,12 +5,12 @@
 #include "chrome/browser/chromeos/login/default_user_images.h"
 
 #include "base/basictypes.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -74,7 +74,7 @@ const int kDefaultImageDescriptions[] = {
 // image if its valid.
 std::string GetDefaultImageString(int index, const std::string& prefix) {
   if (index < 0 || index >= kDefaultImagesCount) {
-    DCHECK(!base::chromeos::IsRunningOnChromeOS());
+    DCHECK(!base::SysInfo::IsRunningOnChromeOS());
     return std::string();
   }
   return base::StringPrintf("%s%d", prefix.c_str(), index);

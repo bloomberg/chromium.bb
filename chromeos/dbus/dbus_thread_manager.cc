@@ -6,9 +6,9 @@
 
 #include <map>
 
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/observer_list.h"
+#include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
@@ -421,7 +421,7 @@ void DBusThreadManager::Initialize() {
   CHECK(g_dbus_thread_manager == NULL);
   // Determine whether we use stub or real client implementations.
   DBusThreadManagerImpl* dbus_thread_manager_impl;
-  if (base::chromeos::IsRunningOnChromeOS()) {
+  if (base::SysInfo::IsRunningOnChromeOS()) {
     dbus_thread_manager_impl =
         new DBusThreadManagerImpl(REAL_DBUS_CLIENT_IMPLEMENTATION);
     VLOG(1) << "DBusThreadManager initialized for ChromeOS";

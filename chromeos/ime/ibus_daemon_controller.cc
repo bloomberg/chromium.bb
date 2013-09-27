@@ -5,7 +5,6 @@
 #include "chromeos/ime/ibus_daemon_controller.h"
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/environment.h"
 #include "base/files/file_path_watcher.h"
 #include "base/location.h"

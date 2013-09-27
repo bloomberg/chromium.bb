@@ -4,16 +4,16 @@
 
 #include "chrome/browser/ui/ash/caps_lock_delegate_chromeos.h"
 
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/sys_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "content/public/browser/browser_thread.h"
 
 CapsLockDelegate::CapsLockDelegate(chromeos::input_method::XKeyboard* xkeyboard)
     : xkeyboard_(xkeyboard),
-      is_running_on_chromeos_(base::chromeos::IsRunningOnChromeOS()),
+      is_running_on_chromeos_(base::SysInfo::IsRunningOnChromeOS()),
       caps_lock_is_on_(xkeyboard_->CapsLockIsEnabled()) {
   chromeos::SystemKeyEventListener* system_event_listener =
       chromeos::SystemKeyEventListener::GetInstance();

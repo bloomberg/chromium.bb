@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -199,7 +199,7 @@ void KioskAppsHandler::OnGetConsumerKioskModeStatus(
   is_kiosk_enabled_ =
       ((status == KioskAppManager::CONSUMER_KIOSK_MODE_ENABLED) &&
           chromeos::UserManager::Get()->IsCurrentUserOwner()) ||
-      !base::chromeos::IsRunningOnChromeOS();
+      !base::SysInfo::IsRunningOnChromeOS();
 
   if (is_kiosk_enabled_) {
     base::FundamentalValue enabled(is_kiosk_enabled_);

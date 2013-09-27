@@ -5,13 +5,13 @@
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chromeos/app_mode/kiosk_oem_manifest_parser.h"
@@ -295,7 +295,7 @@ class StatisticsProviderStubImpl : public StatisticsProviderImpl {
 };
 
 StatisticsProvider* StatisticsProvider::GetInstance() {
-  if (base::chromeos::IsRunningOnChromeOS()) {
+  if (base::SysInfo::IsRunningOnChromeOS()) {
     return StatisticsProviderImpl::GetInstance();
   } else {
     return StatisticsProviderStubImpl::GetInstance();

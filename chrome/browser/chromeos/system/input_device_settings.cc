@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -19,6 +18,7 @@
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
@@ -52,7 +52,7 @@ void ExecuteScriptOnFileThread(const std::vector<std::string>& argv) {
   const std::string& script(argv[0]);
 
   // Script must exist on device.
-  DCHECK(!base::chromeos::IsRunningOnChromeOS() || ScriptExists(script));
+  DCHECK(!base::SysInfo::IsRunningOnChromeOS() || ScriptExists(script));
 
   if (!ScriptExists(script))
     return;

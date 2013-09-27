@@ -11,7 +11,6 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
@@ -259,7 +258,7 @@ namespace internal {
 class DBusServices {
  public:
   explicit DBusServices(const content::MainFunctionParams& parameters) {
-    if (!base::chromeos::IsRunningOnChromeOS()) {
+    if (!base::SysInfo::IsRunningOnChromeOS()) {
       // Override this path on the desktop, so that the user policy key can be
       // stored by the stub SessionManagerClient.
       base::FilePath user_data_dir;
@@ -299,7 +298,7 @@ class DBusServices {
     // detector starts to monitor changes from the update engine.
     UpgradeDetectorChromeos::GetInstance()->Init();
 
-    if (base::chromeos::IsRunningOnChromeOS()) {
+    if (base::SysInfo::IsRunningOnChromeOS()) {
       // Disable Num Lock on X start up for http://crosbug.com/29169.
       input_method::InputMethodManager::Get()->GetXKeyboard()->
           SetNumLockEnabled(false);
@@ -370,7 +369,7 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
   // If we're not running on real ChromeOS hardware (or under VM), and are not
   // showing the login manager or attempting a command line login, login with a
   // stub user.
-  if (!base::chromeos::IsRunningOnChromeOS() &&
+  if (!base::SysInfo::IsRunningOnChromeOS() &&
       !parsed_command_line().HasSwitch(switches::kLoginManager) &&
       !parsed_command_line().HasSwitch(switches::kLoginUser) &&
       !parsed_command_line().HasSwitch(switches::kGuestSession)) {
@@ -440,7 +439,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   // volume on the login screen, if Chrome is running on Chrome OS
   // (i.e. not Linux desktop), and in non-test mode.
   // Note: SystemKeyEventListener depends on the DBus thread.
-  if (base::chromeos::IsRunningOnChromeOS() &&
+  if (base::SysInfo::IsRunningOnChromeOS() &&
       !parameters().ui_task) {  // ui_task is non-NULL when running tests.
     SystemKeyEventListener::Initialize();
   }

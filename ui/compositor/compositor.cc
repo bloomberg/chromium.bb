@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
@@ -37,10 +38,6 @@
 #include "webkit/common/gpu/context_provider_in_process.h"
 #include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
-
-#if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
-#endif
 
 namespace {
 
@@ -477,7 +474,7 @@ void Compositor::InitializeContextFactoryForTests(bool allow_test_contexts) {
 #if defined(OS_CHROMEOS)
   // If the test is running on the chromeos envrionment (such as
   // device or vm bots), always use real contexts.
-  if (base::chromeos::IsRunningOnChromeOS())
+  if (base::SysInfo::IsRunningOnChromeOS())
     use_test_contexts = false;
 #endif
 

@@ -13,7 +13,7 @@
 #include "third_party/libusb/src/libusb/libusb.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
+#include "base/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #endif  // defined(OS_CHROMEOS)
@@ -74,7 +74,7 @@ void UsbDevice::RequestUsbAcess(
 
   // ChromeOS builds on non-ChromeOS machines (dev) should not attempt to
   // use permission broker.
-  if (base::chromeos::IsRunningOnChromeOS()) {
+  if (base::SysInfo::IsRunningOnChromeOS()) {
     chromeos::PermissionBrokerClient* client =
         chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
     DCHECK(client) << "Could not get permission broker client.";

@@ -7,10 +7,10 @@
 #include <map>
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/sys_info.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -110,7 +110,7 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
 
   virtual std::string EncryptWithSystemSalt(const std::string& token) OVERRIDE {
     // Don't care about token encryption while debugging.
-    if (!base::chromeos::IsRunningOnChromeOS())
+    if (!base::SysInfo::IsRunningOnChromeOS())
       return token;
 
     if (!LoadSystemSaltKey()) {
@@ -125,7 +125,7 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
   virtual std::string DecryptWithSystemSalt(
       const std::string& encrypted_token_hex) OVERRIDE {
     // Don't care about token encryption while debugging.
-    if (!base::chromeos::IsRunningOnChromeOS())
+    if (!base::SysInfo::IsRunningOnChromeOS())
       return encrypted_token_hex;
 
     if (!LoadSystemSaltKey()) {
@@ -301,7 +301,7 @@ static CryptohomeLibrary* g_test_cryptohome_library = NULL;
 // static
 void CryptohomeLibrary::Initialize() {
   CHECK(!g_cryptohome_library);
-  if (base::chromeos::IsRunningOnChromeOS())
+  if (base::SysInfo::IsRunningOnChromeOS())
     g_cryptohome_library = new CryptohomeLibraryImpl();
   else
     g_cryptohome_library = new CryptohomeLibraryStubImpl();

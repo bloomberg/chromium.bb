@@ -25,8 +25,13 @@ const char* kLinuxStandardBaseVersionKeys[] = {
   "GOOGLE_RELEASE",
   "DISTRIB_RELEASE",
 };
-const size_t kLinuxStandardBaseVersionKeysLength =
-    arraysize(kLinuxStandardBaseVersionKeys);
+
+const char kChromeOsReleaseNameKey[] = "CHROMEOS_RELEASE_NAME";
+
+const char* const kChromeOsReleaseNames[] = {
+  "Chrome OS",
+  "Chromium OS",
+};
 
 const char kLinuxStandardBaseReleaseFile[] = "/etc/lsb-release";
 
@@ -48,6 +53,7 @@ class ChromeOSVersionInfo {
     major_version_ = 0;
     minor_version_ = 0;
     bugfix_version_ = 0;
+    is_running_on_chromeos_ = false;
 
     std::string lsb_release, lsb_release_time_str;
     scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -95,6 +101,7 @@ class ChromeOSVersionInfo {
   const SysInfo::LsbReleaseMap& lsb_release_map() const {
     return lsb_release_map_;
   }
+  bool is_running_on_chromeos() const { return is_running_on_chromeos_; }
 
  private:
   void ParseLsbRelease(const std::string& lsb_release) {
@@ -113,7 +120,7 @@ class ChromeOSVersionInfo {
     }
     // Parse the version from the first matching recognized version key.
     std::string version;
-    for (size_t i = 0; i < kLinuxStandardBaseVersionKeysLength; ++i) {
+    for (size_t i = 0; i < arraysize(kLinuxStandardBaseVersionKeys); ++i) {
       std::string key = kLinuxStandardBaseVersionKeys[i];
       if (GetLsbReleaseValue(key, &version) && !version.empty())
         break;
@@ -131,6 +138,17 @@ class ChromeOSVersionInfo {
       StringToInt(StringPiece(tokenizer.token_begin(), tokenizer.token_end()),
                   &bugfix_version_);
     }
+
+    // Check release name for Chrome OS.
+    std::string release_name;
+    if (GetLsbReleaseValue(kChromeOsReleaseNameKey, &release_name)) {
+      for (size_t i = 0; i < arraysize(kChromeOsReleaseNames); ++i) {
+        if (release_name == kChromeOsReleaseNames[i]) {
+          is_running_on_chromeos_ = true;
+          break;
+        }
+      }
+    }
   }
 
   base::Time lsb_release_time_;
@@ -138,6 +156,7 @@ class ChromeOSVersionInfo {
   int32 major_version_;
   int32 minor_version_;
   int32 bugfix_version_;
+  bool is_running_on_chromeos_;
 };
 
 static LazyInstance<ChromeOSVersionInfo>
@@ -179,6 +198,11 @@ std::string SysInfo::GetLsbReleaseBoard() {
 // static
 base::Time SysInfo::GetLsbReleaseTime() {
   return GetChromeOSVersionInfo().lsb_release_time();
+}
+
+// static
+bool SysInfo::IsRunningOnChromeOS() {
+  return GetChromeOSVersionInfo().is_running_on_chromeos();
 }
 
 // static

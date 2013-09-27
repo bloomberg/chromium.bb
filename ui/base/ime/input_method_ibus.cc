@@ -17,7 +17,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"

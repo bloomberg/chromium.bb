@@ -25,6 +25,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -44,10 +45,6 @@
 #include "ui/events/x/device_list_cache_x.h"
 #include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/screen.h"
-
-#if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
-#endif
 
 using std::max;
 using std::min;
@@ -931,7 +928,7 @@ void RootWindowHostX11::DispatchXI2Event(const base::NativeEvent& event) {
       }
 #endif  // defined(USE_XI2_MT)
 #if defined(OS_CHROMEOS)
-      if (base::chromeos::IsRunningOnChromeOS()) {
+      if (base::SysInfo::IsRunningOnChromeOS()) {
         if (!bounds_.Contains(touchev.location()))
           break;
         // X maps the touch-surface to the size of the X root-window.

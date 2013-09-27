@@ -11,12 +11,9 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/session_state_animator.h"
 #include "base/command_line.h"
+#include "base/sys_info.h"
 #include "ui/aura/root_window.h"
 #include "ui/views/corewm/compound_event_filter.h"
-
-#if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
-#endif
 
 namespace ash {
 
@@ -321,7 +318,7 @@ void SessionStateControllerImpl::StartRealShutdownTimer() {
 void SessionStateControllerImpl::OnRealShutdownTimeout() {
   DCHECK(shutting_down_);
 #if defined(OS_CHROMEOS)
-  if (!base::chromeos::IsRunningOnChromeOS()) {
+  if (!base::SysInfo::IsRunningOnChromeOS()) {
     ShellDelegate* delegate = Shell::GetInstance()->delegate();
     if (delegate) {
       delegate->Exit();

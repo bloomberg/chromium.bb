@@ -121,4 +121,26 @@ TEST_F(SysInfoTest, GoogleChromeOSLsbReleaseTime) {
                    parsed_lsb_release_time.ToDoubleT());
 }
 
+TEST_F(SysInfoTest, IsRunningOnChromeOS) {
+  base::SysInfo::SetChromeOSVersionInfoForTest("", base::Time());
+  EXPECT_FALSE(base::SysInfo::IsRunningOnChromeOS());
+
+  const char* kLsbRelease1 =
+      "CHROMEOS_RELEASE_NAME=Non Chrome OS\n"
+      "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
+  base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease1, base::Time());
+  EXPECT_FALSE(base::SysInfo::IsRunningOnChromeOS());
+
+  const char* kLsbRelease2 =
+      "CHROMEOS_RELEASE_NAME=Chrome OS\n"
+      "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
+  base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease2, base::Time());
+  EXPECT_TRUE(base::SysInfo::IsRunningOnChromeOS());
+
+  const char* kLsbRelease3 =
+      "CHROMEOS_RELEASE_NAME=Chromium OS\n";
+  base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease3, base::Time());
+  EXPECT_TRUE(base::SysInfo::IsRunningOnChromeOS());
+}
+
 #endif  // OS_CHROMEOS

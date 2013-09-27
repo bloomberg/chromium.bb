@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/input_method/browser_state_monitor.h"

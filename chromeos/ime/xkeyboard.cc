@@ -10,14 +10,14 @@
 #include <set>
 #include <utility>
 
-#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/process/process_handle.h"
 #include "base/process/launch.h"
+#include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_checker.h"
 
 // These includes conflict with base/tracked_objects.h so must come last.
@@ -114,7 +114,7 @@ class XKeyboardImpl : public XKeyboard {
 };
 
 XKeyboardImpl::XKeyboardImpl()
-    : is_running_on_chrome_os_(base::chromeos::IsRunningOnChromeOS()) {
+    : is_running_on_chrome_os_(base::SysInfo::IsRunningOnChromeOS()) {
   num_lock_mask_ = GetNumLockMask();
 
   // web_input_event_aurax11.cc seems to assume that Mod2Mask is always assigned
