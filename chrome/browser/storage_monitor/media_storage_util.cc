@@ -76,6 +76,7 @@ void FilterAttachedDevicesOnFileThread(MediaStorageUtil::DeviceIdSet* devices) {
 
     if (type == StorageInfo::FIXED_MASS_STORAGE ||
         type == StorageInfo::ITUNES ||
+        type == StorageInfo::IPHOTO ||
         type == StorageInfo::PICASA) {
       if (!base::PathExists(base::FilePath::FromUTF8Unsafe(unique_id)))
         missing_devices.insert(*it);
@@ -197,6 +198,7 @@ base::FilePath MediaStorageUtil::FindDevicePathById(
 
   if (type == StorageInfo::FIXED_MASS_STORAGE ||
       type == StorageInfo::ITUNES ||
+      type == StorageInfo::IPHOTO ||
       type == StorageInfo::PICASA) {
     // For this type, the unique_id is the path.
     return base::FilePath::FromUTF8Unsafe(unique_id);

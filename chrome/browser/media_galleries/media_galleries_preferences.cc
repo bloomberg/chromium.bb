@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/media_galleries/fileapi/iphoto_finder_mac.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_finder.h"
 #include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
@@ -64,6 +65,7 @@ const char kMediaGalleriesTypeAutoDetectedValue[] = "autoDetected";
 const char kMediaGalleriesTypeUserAddedValue[] = "userAdded";
 const char kMediaGalleriesTypeBlackListedValue[] = "blackListed";
 
+const char kIPhotoGalleryName[] = "iPhoto";
 const char kITunesGalleryName[] = "iTunes";
 const char kPicasaGalleryName[] = "Picasa";
 
@@ -353,6 +355,12 @@ MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
       base::Bind(&MediaGalleriesPreferences::OnITunesDeviceID,
                  weak_factory_.GetWeakPtr()));
 
+#if 0
+  iphoto::FindIPhotoLibrary(
+      base::Bind(&MediaGalleriesPreferences::OnIPhotoDeviceID,
+                 weak_factory_.GetWeakPtr()));
+#endif
+
   // TODO(tommycli): Turn on when Picasa code is ready.
 #if 0
   picasa::PicasaFinder::FindPicasaDatabaseOnUIThread(
@@ -447,6 +455,17 @@ void MediaGalleriesPreferences::OnITunesDeviceID(const std::string& device_id) {
     return;
   if (!UpdateDeviceIDForSingletonType(device_id)) {
     AddGalleryInternal(device_id, ASCIIToUTF16(kITunesGalleryName),
+                       base::FilePath(), false /*not user added*/,
+                       string16(), string16(), string16(), 0,
+                       base::Time(), false, 2);
+  }
+}
+
+void MediaGalleriesPreferences::OnIPhotoDeviceID(const std::string& device_id) {
+  if (device_id.empty())
+    return;
+  if (!UpdateDeviceIDForSingletonType(device_id)) {
+    AddGalleryInternal(device_id, ASCIIToUTF16(kIPhotoGalleryName),
                        base::FilePath(), false /*not user added*/,
                        string16(), string16(), string16(), 0,
                        base::Time(), false, 2);
