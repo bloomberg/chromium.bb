@@ -88,6 +88,7 @@ public:
     String httpHeaderField(const char* name) const;
     void setHTTPHeaderField(const AtomicString& name, const String& value);
     void addHTTPHeaderField(const AtomicString& name, const String& value);
+    void clearHTTPHeaderField(const AtomicString& name);
     const HTTPHeaderMap& httpHeaderFields() const;
 
     bool isMultipart() const { return mimeType() == "multipart/x-mixed-replace"; }

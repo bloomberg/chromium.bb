@@ -127,6 +127,7 @@ namespace WebCore {
         void setHTTPHeaderField(const char* name, const String& value);
         void addHTTPHeaderField(const AtomicString& name, const String& value);
         void addHTTPHeaderFields(const HTTPHeaderMap& headerFields);
+        void clearHTTPHeaderField(const AtomicString& name);
 
         void clearHTTPAuthorization();
 

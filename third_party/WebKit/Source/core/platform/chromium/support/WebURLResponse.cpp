@@ -261,9 +261,7 @@ void WebURLResponse::addHTTPHeaderField(const WebString& name, const WebString& 
 
 void WebURLResponse::clearHTTPHeaderField(const WebString& name)
 {
-    // FIXME: Add a clearHTTPHeaderField method to ResourceResponse.
-    const HTTPHeaderMap& map = m_private->m_resourceResponse->httpHeaderFields();
-    const_cast<HTTPHeaderMap*>(&map)->remove(name);
+    m_private->m_resourceResponse->clearHTTPHeaderField(name);
 }
 
 void WebURLResponse::visitHTTPHeaderFields(WebHTTPHeaderVisitor* visitor) const

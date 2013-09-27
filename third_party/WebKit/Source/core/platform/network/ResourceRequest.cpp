@@ -247,6 +247,11 @@ void ResourceRequest::addHTTPHeaderFields(const HTTPHeaderMap& headerFields)
         addHTTPHeaderField(it->key, it->value);
 }
 
+void ResourceRequest::clearHTTPHeaderField(const AtomicString& name)
+{
+    m_httpHeaderFields.remove(name);
+}
+
 bool equalIgnoringHeaderFields(const ResourceRequest& a, const ResourceRequest& b)
 {
     if (a.url() != b.url())

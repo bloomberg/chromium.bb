@@ -315,6 +315,11 @@ void ResourceResponse::addHTTPHeaderField(const AtomicString& name, const String
         result.iterator->value = result.iterator->value + ", " + value;
 }
 
+void ResourceResponse::clearHTTPHeaderField(const AtomicString& name)
+{
+    m_httpHeaderFields.remove(name);
+}
+
 const HTTPHeaderMap& ResourceResponse::httpHeaderFields() const
 {
     return m_httpHeaderFields;
