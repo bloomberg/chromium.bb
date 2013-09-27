@@ -48,7 +48,6 @@ class Node;
 class Page;
 class RenderBox;
 class RenderEmbeddedObject;
-class RenderLayer;
 class RenderObject;
 class RenderScrollbarPart;
 class RenderStyle;
@@ -303,9 +302,9 @@ public:
     // With CSS style "resize:" enabled, a little resizer handle will appear at the bottom
     // right of the object. We keep track of these resizer areas for checking if touches
     // (implemented using Scroll gesture) are targeting the resizer.
-    typedef HashSet<RenderLayer*> ResizerAreaSet;
-    void addResizerArea(RenderLayer*);
-    void removeResizerArea(RenderLayer*);
+    typedef HashSet<RenderBox*> ResizerAreaSet;
+    void addResizerArea(RenderBox*);
+    void removeResizerArea(RenderBox*);
     const ResizerAreaSet* resizerAreas() const { return m_resizerAreas.get(); }
 
     virtual void removeChild(Widget*) OVERRIDE;

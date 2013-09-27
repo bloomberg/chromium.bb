@@ -606,9 +606,9 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
     // on main thread).
     if (const FrameView::ResizerAreaSet* resizerAreas = frameView->resizerAreas()) {
         for (FrameView::ResizerAreaSet::const_iterator it = resizerAreas->begin(), end = resizerAreas->end(); it != end; ++it) {
-            RenderLayer* layer = *it;
-            IntRect bounds = layer->renderer()->absoluteBoundingBoxRect();
-            IntRect corner = layer->resizerCornerRect(bounds, ResizerForTouch);
+            RenderBox* box = *it;
+            IntRect bounds = box->absoluteBoundingBoxRect();
+            IntRect corner = box->layer()->resizerCornerRect(bounds, ResizerForTouch);
             corner.moveBy(offset);
             shouldHandleScrollGestureOnMainThreadRegion.unite(corner);
         }

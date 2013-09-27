@@ -189,8 +189,10 @@ RenderLayer::~RenderLayer()
     }
 
     if (Frame* frame = renderer()->frame()) {
-        if (FrameView* frameView = frame->view())
-            frameView->removeResizerArea(this);
+        if (FrameView* frameView = frame->view()) {
+            if (RenderBox* box = renderBox())
+                frameView->removeResizerArea(box);
+        }
     }
 
     if (!m_renderer->documentBeingDestroyed())
@@ -5662,9 +5664,9 @@ void RenderLayer::updateResizerAreaSet() {
     if (!frameView)
         return;
     if (renderer()->canResize())
-        frameView->addResizerArea(this);
-    else
-        frameView->removeResizerArea(this);
+        frameView->addResizerArea(renderBox());
+    else if (RenderBox* box = renderBox())
+        frameView->removeResizerArea(box);
 }
 
 void RenderLayer::updateScrollableAreaSet(bool hasOverflow)

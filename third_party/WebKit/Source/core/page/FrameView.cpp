@@ -3319,19 +3319,19 @@ String FrameView::trackedRepaintRectsAsText() const
     return ts.release();
 }
 
-void FrameView::addResizerArea(RenderLayer* resizerLayer)
+void FrameView::addResizerArea(RenderBox* resizerBox)
 {
     if (!m_resizerAreas)
         m_resizerAreas = adoptPtr(new ResizerAreaSet);
-    m_resizerAreas->add(resizerLayer);
+    m_resizerAreas->add(resizerBox);
 }
 
-void FrameView::removeResizerArea(RenderLayer* resizerLayer)
+void FrameView::removeResizerArea(RenderBox* resizerBox)
 {
     if (!m_resizerAreas)
         return;
 
-    ResizerAreaSet::iterator it = m_resizerAreas->find(resizerLayer);
+    ResizerAreaSet::iterator it = m_resizerAreas->find(resizerBox);
     if (it != m_resizerAreas->end())
         m_resizerAreas->remove(it);
 }
