@@ -2077,16 +2077,6 @@ void Document::removeAllEventListeners()
         node->removeAllEventListeners();
 }
 
-void Document::suspendActiveDOMObjects(ActiveDOMObject::ReasonForSuspension why)
-{
-    ScriptExecutionContext::suspendActiveDOMObjects(why);
-}
-
-void Document::resumeActiveDOMObjects()
-{
-    ScriptExecutionContext::resumeActiveDOMObjects();
-}
-
 void Document::clearAXObjectCache()
 {
     ASSERT(topDocument() == this);

@@ -514,10 +514,6 @@ public:
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     void prepareForDestruction();
 
-    // Override ScriptExecutionContext methods to do additional work
-    virtual void suspendActiveDOMObjects(ActiveDOMObject::ReasonForSuspension) OVERRIDE;
-    virtual void resumeActiveDOMObjects() OVERRIDE;
-
     // Implemented in RenderView.h to avoid a cyclic header dependency this just
     // returns renderer so callers can avoid verbose casts.
     RenderView* renderView() const;
