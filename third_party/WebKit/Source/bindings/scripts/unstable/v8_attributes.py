@@ -37,12 +37,12 @@ For details, see bug http://crbug.com/239771
 
 import v8_types
 import v8_utilities
-from v8_utilities import cpp_method_name, generate_conditional_string, uncapitalize
+from v8_utilities import generate_conditional_string, uncapitalize
 
 
 def generate_attributes(interface):
     def generate_attribute(attribute):
-        attribute_contents, attribute_includes = generate_attribute_and_includes(attribute)
+        attribute_contents, attribute_includes = generate_attribute_and_includes(interface, attribute)
         includes.update(attribute_includes)
         return attribute_contents
 
@@ -62,25 +62,34 @@ def generate_attributes_common(interface):
     }
 
 
-def generate_attribute_and_includes(attribute):
+def generate_attribute_and_includes(interface, attribute):
     idl_type = attribute.data_type
+    this_getter_name = getter_name(interface, attribute)
+    cpp_value = '%s()' % this_getter_name
     this_is_keep_alive_for_gc = is_keep_alive_for_gc(attribute)
     contents = {
-        'name': attribute.name,
         'conditional_string': generate_conditional_string(attribute),
-        'cpp_method_name': cpp_method_name(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
+        'cpp_value': cpp_value,
         'is_keep_alive_for_gc': this_is_keep_alive_for_gc,
+        'is_static': attribute.is_static,
+        'name': attribute.name,
         'v8_type': v8_types.v8_type(idl_type),
     }
     if this_is_keep_alive_for_gc:
         includes = v8_types.includes_for_type(idl_type)
         includes.add('bindings/v8/V8HiddenPropertyName.h')
     else:
-        cpp_value = 'imp->%s()' % uncapitalize(attribute.name)
         return_v8_value_statement, includes = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='info', isolate='info.GetIsolate()', extended_attributes=attribute.extended_attributes, script_wrappable='imp')
         contents['return_v8_value_statement'] = return_v8_value_statement
     return contents, includes
+
+
+def getter_name(interface, attribute):
+    getter_method_name = uncapitalize(attribute.name)
+    if attribute.is_static:
+        return '%s::%s' % (interface.name, getter_method_name)
+    return 'imp->%s' % getter_method_name
 
 
 def is_keep_alive_for_gc(attribute):

@@ -3089,10 +3089,7 @@ sub GenerateStaticAttribute
 
     my $conditionalString = GenerateConditionalString($attribute);
 
-    my $commentInfo = "Attribute '$attrName' (Extended Attributes: '" . join(' ', keys(%{$attrExt})) . "')";
-
     $code .= "#if ${conditionalString}\n" if $conditionalString;
-    $code .= "    // $commentInfo\n";
     $code .= "    desc->SetNativeDataProperty(v8::String::NewSymbol(\"$attrName\"), $getter, $setter, v8::External::New($data), $propAttribute, v8::Handle<v8::AccessorSignature>(), $accessControl);\n";
     $code .= "#endif // ${conditionalString}\n" if $conditionalString;
 

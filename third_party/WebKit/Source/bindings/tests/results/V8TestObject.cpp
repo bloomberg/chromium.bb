@@ -5479,15 +5479,10 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
     v8::Handle<v8::Signature> variadicNodeMethodSignature = v8::Signature::New(desc, variadicNodeMethodArgc, variadicNodeMethodArgv);
     proto->Set(v8::String::NewSymbol("variadicNodeMethod"), v8::FunctionTemplate::New(TestObjV8Internal::variadicNodeMethodMethodCallback, v8Undefined(), variadicNodeMethodSignature, 2));
     desc->Set(v8::String::NewSymbol("deprecatedStaticMethod"), v8::FunctionTemplate::New(TestObjV8Internal::deprecatedStaticMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
-    // Attribute 'staticReadOnlyLongAttr' (Extended Attributes: '')
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticReadOnlyLongAttr"), TestObjV8Internal::staticReadOnlyLongAttrAttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
-    // Attribute 'staticStringAttr' (Extended Attributes: '')
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticStringAttr"), TestObjV8Internal::staticStringAttrAttributeGetterCallback, TestObjV8Internal::staticStringAttrAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
-    // Attribute 'TestSubObj' (Extended Attributes: '')
     desc->SetNativeDataProperty(v8::String::NewSymbol("TestSubObj"), TestObjV8Internal::TestObjConstructorGetter, 0, v8::External::New(&V8TestSubObj::info), static_cast<v8::PropertyAttribute>(v8::None | v8::DontEnum), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
-    // Attribute 'deprecatedStaticReadOnlyAttr' (Extended Attributes: 'DeprecateAs')
     desc->SetNativeDataProperty(v8::String::NewSymbol("deprecatedStaticReadOnlyAttr"), TestObjV8Internal::deprecatedStaticReadOnlyAttrAttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
-    // Attribute 'deprecatedStaticAttr' (Extended Attributes: 'DeprecateAs')
     desc->SetNativeDataProperty(v8::String::NewSymbol("deprecatedStaticAttr"), TestObjV8Internal::deprecatedStaticAttrAttributeGetterCallback, TestObjV8Internal::deprecatedStaticAttrAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 
     // Custom toString template

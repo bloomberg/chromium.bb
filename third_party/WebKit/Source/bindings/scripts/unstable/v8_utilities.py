@@ -42,19 +42,14 @@ import v8_types
 ACRONYMS = ['CSS', 'HTML', 'IME', 'JS', 'SVG', 'URL', 'WOFF', 'XML', 'XSLT']
 
 
-# FIXME: these could be merged as implemented_as_cpp_name
-def cpp_class_name(interface):
-    return interface.extended_attributes.get('ImplementedAs', interface.name)
+def cpp_implemented_as_name(definition_or_member):
+    return definition_or_member.extended_attributes.get('ImplementedAs', definition_or_member.name)
 
 
-def cpp_method_name(attribute_or_operation):
-    return attribute_or_operation.extended_attributes.get('ImplementedAs', attribute_or_operation.name)
-
-
-def generate_conditional_string(interface_or_attribute_or_operation):
-    if 'Conditional' not in interface_or_attribute_or_operation.extended_attributes:
+def generate_conditional_string(definition_or_member):
+    if 'Conditional' not in definition_or_member.extended_attributes:
         return ''
-    conditional = interface_or_attribute_or_operation.extended_attributes['Conditional']
+    conditional = definition_or_member.extended_attributes['Conditional']
     for operator in ['&', '|']:
         if operator in conditional:
             conditions = set(conditional.split(operator))

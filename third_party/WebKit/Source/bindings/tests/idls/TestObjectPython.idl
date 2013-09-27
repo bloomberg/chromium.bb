@@ -60,4 +60,7 @@ interface TestObjectPython {
     readonly attribute Window readonlyWindowAttribute;
     readonly attribute HTMLCollection readonlyHTMLCollectionAttribute;
     readonly attribute HTMLElement readonlyHTMLElementAttribute;
+    // static attributes (Blink extension)
+    static readonly attribute DOMString staticReadonlyStringAttribute;
+    static readonly attribute long staticReadonlyLongAttribute;
 };

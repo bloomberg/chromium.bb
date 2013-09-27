@@ -6,9 +6,9 @@
 {# FIXME: rename to install_attributes and put into configure_class_template #}
 {% if attributes %}
 static const V8DOMConfiguration::AttributeConfiguration {{v8_class_name}}Attributes[] = {
-{% for attribute in attributes %}
+    {% for attribute in attributes if not attribute.is_static %}
     {"{{attribute.name}}", {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-{% endfor %}
+    {% endfor %}
 };
 
 {% endif %}
@@ -27,15 +27,18 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
         {{attribute_templates}}, {{number_of_attributes}},
         0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
-{% if constants %}{# In general more checks than just constants #}
+    {% for attribute in attributes if attribute.is_static %}
+    desc->SetNativeDataProperty(v8::String::NewSymbol("{{attribute.name}}"), {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    {% endfor %}
+    {% if constants %}{# In general more checks than just constants #}
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance);
     UNUSED_PARAM(proto);
-{% endif %}
-{% if constants %}
+    {% endif %}
+    {% if constants %}
     {{install_constants() | indent}}
-{% endif %}
+    {% endif %}
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
@@ -50,9 +53,9 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
 {# FIXME: should use reflected_name instead of name #}
 {# Normal (always enabled) constants #}
 static const V8DOMConfiguration::ConstantConfiguration {{v8_class_name}}Constants[] = {
-{% for constant in constants if not constant.enabled_at_runtime %}
+    {% for constant in constants if not constant.enabled_at_runtime %}
     {"{{constant.name}}", {{constant.value}}},
-{% endfor %}
+    {% endfor %}
 };
 V8DOMConfiguration::installConstants(desc, proto, {{v8_class_name}}Constants, WTF_ARRAY_LENGTH({{v8_class_name}}Constants), isolate);
 {# Runtime-enabled constants #}

@@ -465,6 +465,32 @@ static void readonlyHTMLElementAttributeAttributeGetterCallback(v8::Local<v8::St
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void staticReadonlyStringAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8SetReturnValueString(info, TestObjectPython::staticReadonlyStringAttribute(), info.GetIsolate());
+    return;
+}
+
+static void staticReadonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::staticReadonlyStringAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void staticReadonlyLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8SetReturnValueInt(info, TestObjectPython::staticReadonlyLongAttribute());
+    return;
+}
+
+static void staticReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::staticReadonlyLongAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 } // namespace TestObjectPythonV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttributes[] = {
@@ -507,6 +533,8 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
         V8TestObjectPythonAttributes, WTF_ARRAY_LENGTH(V8TestObjectPythonAttributes),
         0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
+    desc->SetNativeDataProperty(v8::String::NewSymbol("staticReadonlyStringAttribute"), TestObjectPythonV8Internal::staticReadonlyStringAttributeAttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    desc->SetNativeDataProperty(v8::String::NewSymbol("staticReadonlyLongAttribute"), TestObjectPythonV8Internal::staticReadonlyLongAttributeAttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());

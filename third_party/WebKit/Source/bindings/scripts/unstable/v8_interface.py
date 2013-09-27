@@ -36,7 +36,7 @@ For details, see bug http://crbug.com/239771
 """
 
 import v8_attributes
-from v8_utilities import cpp_class_name, runtime_enable_function_name, v8_class_name
+from v8_utilities import cpp_implemented_as_name, runtime_enable_function_name, v8_class_name
 
 
 INTERFACE_H_INCLUDES = set([
@@ -63,7 +63,7 @@ def generate_interface(interface):
 
     template_contents = {
         'interface_name': interface.name,
-        'cpp_class_name': cpp_class_name(interface),
+        'cpp_class_name': cpp_implemented_as_name(interface),
         'v8_class_name': v8_class_name(interface),
         'constants': [generate_constant(constant) for constant in interface.constants],
         'do_not_check_constants': 'DoNotCheckConstants' in interface.extended_attributes,
