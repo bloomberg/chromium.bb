@@ -25,8 +25,6 @@ class CC_EXPORT TestContextProvider
 
   static scoped_refptr<TestContextProvider> Create();
   static scoped_refptr<TestContextProvider> Create(
-      const CreateCallback& create_callback);
-  static scoped_refptr<TestContextProvider> Create(
       scoped_ptr<TestWebGraphicsContext3D> context);
 
   virtual bool BindToCurrentThread() OVERRIDE;
@@ -55,10 +53,8 @@ class CC_EXPORT TestContextProvider
   void SetMaxTransferBufferUsageBytes(size_t max_transfer_buffer_usage_bytes);
 
  protected:
-  TestContextProvider();
+  TestContextProvider(scoped_ptr<TestWebGraphicsContext3D> context);
   virtual ~TestContextProvider();
-
-  bool InitializeOnMainThread(const CreateCallback& create_callback);
 
   void OnLostContext();
   void OnSwapBuffersComplete();

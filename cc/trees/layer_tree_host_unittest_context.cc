@@ -139,9 +139,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     if (!offscreen_contexts_.get() ||
         offscreen_contexts_->DestroyedOnMainThread()) {
       offscreen_contexts_ =
-          TestContextProvider::Create(
-              base::Bind(&LayerTreeHostContextTest::CreateOffscreenContext3d,
-                         base::Unretained(this)));
+          TestContextProvider::Create(CreateOffscreenContext3d());
     }
     return offscreen_contexts_;
   }

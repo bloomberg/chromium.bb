@@ -63,44 +63,23 @@ scoped_refptr<TestContextProvider> TestContextProvider::Create() {
 
 // static
 scoped_refptr<TestContextProvider> TestContextProvider::Create(
-    const CreateCallback& create_callback) {
-  scoped_refptr<TestContextProvider> provider = new TestContextProvider;
-  if (!provider->InitializeOnMainThread(create_callback))
+    scoped_ptr<TestWebGraphicsContext3D> context) {
+  if (!context)
     return NULL;
-  return provider;
+  return new TestContextProvider(context.Pass());
 }
 
-scoped_ptr<TestWebGraphicsContext3D> ReturnScopedContext(
-    scoped_ptr<TestWebGraphicsContext3D> context) {
-  return context.Pass();
-}
-
-// static
-scoped_refptr<TestContextProvider> TestContextProvider::Create(
-    scoped_ptr<TestWebGraphicsContext3D> context) {
-  return Create(base::Bind(&ReturnScopedContext, base::Passed(&context)));
-}
-
-TestContextProvider::TestContextProvider()
-    : bound_(false),
-      destroyed_(false) {
+TestContextProvider::TestContextProvider(
+    scoped_ptr<TestWebGraphicsContext3D> context)
+    : context3d_(context.Pass()), bound_(false), destroyed_(false) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(context3d_);
   context_thread_checker_.DetachFromThread();
 }
 
 TestContextProvider::~TestContextProvider() {
   DCHECK(main_thread_checker_.CalledOnValidThread() ||
          context_thread_checker_.CalledOnValidThread());
-}
-
-bool TestContextProvider::InitializeOnMainThread(
-    const CreateCallback& create_callback) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  DCHECK(!context3d_);
-  DCHECK(!create_callback.is_null());
-  context3d_ = create_callback.Run();
-  return context3d_;
 }
 
 bool TestContextProvider::BindToCurrentThread() {
