@@ -1538,7 +1538,7 @@ const browser_sync::user_selectable_type::UserSelectableSyncType
     browser_sync::user_selectable_type::PROXY_TABS
   };
 
-  COMPILE_ASSERT(28 == syncer::MODEL_TYPE_COUNT, UpdateCustomConfigHistogram);
+  COMPILE_ASSERT(29 == syncer::MODEL_TYPE_COUNT, UpdateCustomConfigHistogram);
 
   if (!sync_everything) {
     const syncer::ModelTypeSet current_types = GetPreferredDataTypes();

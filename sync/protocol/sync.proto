@@ -17,6 +17,7 @@ package sync_pb;
 import "app_notification_specifics.proto";
 import "app_setting_specifics.proto";
 import "app_specifics.proto";
+import "article_specifics.proto";
 import "autofill_specifics.proto";
 import "bookmark_specifics.proto";
 import "client_commands.proto";
@@ -118,6 +119,7 @@ message EntitySpecifics {
   optional FaviconImageSpecifics favicon_image = 182019;
   optional ManagedUserSettingSpecifics managed_user_setting = 186662;
   optional ManagedUserSpecifics managed_user = 194582;
+  optional ArticleSpecifics article = 223759;
 }
 
 message SyncEntity {

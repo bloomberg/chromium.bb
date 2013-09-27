@@ -756,6 +756,9 @@ const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
 const char kEnableSyncSyncedNotifications[] =
     "enable-sync-synced-notifications";
 
+// Enables synced articles.
+const char kEnableSyncArticles[] = "enable-sync-articles";
+
 // Enables context menu for selecting groups of tabs.
 const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
 

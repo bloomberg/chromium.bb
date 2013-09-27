@@ -564,12 +564,29 @@ base::DictionaryValue* NigoriSpecificsToValue(
   SET_BOOL(encrypt_apps);
   SET_BOOL(encrypt_search_engines);
   SET_BOOL(encrypt_dictionary);
+  SET_BOOL(encrypt_articles);
   SET_BOOL(encrypt_everything);
   SET_BOOL(sync_tab_favicons);
   SET_ENUM(passphrase_type, PassphraseTypeString);
   SET(keystore_decryptor_token, EncryptedDataToValue);
   SET_INT64(keystore_migration_time);
   SET_INT64(custom_passphrase_time);
+  return value;
+}
+
+base::DictionaryValue* ArticlePageToValue(
+    const sync_pb::ArticlePage& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(url);
+  return value;
+}
+
+base::DictionaryValue* ArticleSpecificsToValue(
+    const sync_pb::ArticleSpecifics& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(entry_id);
+  SET_STR(title);
+  SET_REP(pages, ArticlePageToValue);
   return value;
 }
 
@@ -672,6 +689,7 @@ base::DictionaryValue* EntitySpecificsToValue(
   SET_FIELD(app, AppSpecificsToValue);
   SET_FIELD(app_notification, AppNotificationToValue);
   SET_FIELD(app_setting, AppSettingSpecificsToValue);
+  SET_FIELD(article, ArticleSpecificsToValue);
   SET_FIELD(autofill, AutofillSpecificsToValue);
   SET_FIELD(autofill_profile, AutofillProfileSpecificsToValue);
   SET_FIELD(bookmark, BookmarkSpecificsToValue);

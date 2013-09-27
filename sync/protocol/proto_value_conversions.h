@@ -18,6 +18,7 @@ class AppNotification;
 class AppNotificationSettings;
 class AppSettingSpecifics;
 class AppSpecifics;
+class ArticleSpecifics;
 class AutofillProfileSpecifics;
 class AutofillSpecifics;
 class BookmarkSpecifics;
@@ -177,6 +178,9 @@ base::DictionaryValue* AppSettingSpecificsToValue(
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* AppSpecificsToValue(
     const sync_pb::AppSpecifics& app_specifics);
+
+SYNC_EXPORT_PRIVATE base::DictionaryValue* ArticleSpecificsToValue(
+    const sync_pb::ArticleSpecifics& article_specifics);
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* AutofillSpecificsToValue(
     const sync_pb::AutofillSpecifics& autofill_specifics);

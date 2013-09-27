@@ -214,6 +214,7 @@ extern const char kEnableSpellingAutoCorrect[];
 extern const char kEnableSpellingServiceFeedback[];
 extern const char kEnableStackedTabStrip[];
 extern const char kEnableSuggestionsTabPage[];
+extern const char kEnableSyncArticles[];
 extern const char kEnableSyncSyncedNotifications[];
 extern const char kEnableTabGroupsContextMenu[];
 extern const char kEnableThumbnailRetargeting[];

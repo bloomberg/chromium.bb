@@ -127,6 +127,7 @@ void SyncPrefs::RegisterProfilePrefs(
   model_set.Put(syncer::APPS);
   model_set.Put(syncer::TYPED_URLS);
   model_set.Put(syncer::SESSIONS);
+  model_set.Put(syncer::ARTICLES);
   registry->RegisterListPref(prefs::kSyncAcknowledgedSyncTypes,
                              syncer::ModelTypeSetToValue(model_set),
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
@@ -346,6 +347,8 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncPriorityPreferences;
     case syncer::MANAGED_USERS:
       return prefs::kSyncManagedUsers;
+    case syncer::ARTICLES:
+      return prefs::kSyncArticles;
     default:
       break;
   }

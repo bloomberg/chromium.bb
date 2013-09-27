@@ -196,6 +196,11 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     pss->RegisterDataTypeController(
         new PasswordDataTypeController(this, profile_, pss));
   }
+  // Article sync is disabled by default.  Register only if explicitly enabled.
+  if (command_line_->HasSwitch(switches::kEnableSyncArticles)) {
+    pss->RegisterDataTypeController(
+        new UIDataTypeController(syncer::ARTICLES, this, profile_, pss));
+  }
 }
 
 void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
@@ -397,6 +402,9 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
       return ManagedUserSyncServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();
 #endif
+    case syncer::ARTICLES:
+      // TODO(nyquist) Hook up real syncer::SyncableService API here.
+      return base::WeakPtr<syncer::SyncableService>();
     default:
       // The following datatypes still need to be transitioned to the
       // syncer::SyncableService API:

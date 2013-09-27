@@ -111,6 +111,9 @@
       case ::syncer::MANAGED_USERS: \
         PER_DATA_TYPE_MACRO("ManagedUser"); \
         break; \
+      case ::syncer::ARTICLES: \
+        PER_DATA_TYPE_MACRO("Article"); \
+        break; \
       case ::syncer::PROXY_TABS: \
         PER_DATA_TYPE_MACRO("Tabs"); \
         break; \

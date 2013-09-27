@@ -107,6 +107,9 @@ void AddDefaultFieldValue(ModelType datatype,
     case MANAGED_USERS:
       specifics->mutable_managed_user();
       break;
+    case ARTICLES:
+      specifics->mutable_article();
+      break;
     default:
       NOTREACHED() << "No known extension for model type.";
   }
@@ -197,6 +200,8 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
       return sync_pb::EntitySpecifics::kManagedUserSettingFieldNumber;
     case MANAGED_USERS:
       return sync_pb::EntitySpecifics::kManagedUserFieldNumber;
+    case ARTICLES:
+      return sync_pb::EntitySpecifics::kArticleFieldNumber;
     default:
       NOTREACHED() << "No known extension for model type.";
       return 0;
@@ -318,6 +323,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 
   if (specifics.has_managed_user())
     return MANAGED_USERS;
+
+  if (specifics.has_article())
+    return ARTICLES;
 
   return UNSPECIFIED;
 }
@@ -484,6 +492,8 @@ const char* ModelTypeToString(ModelType model_type) {
       return "Managed User Settings";
     case MANAGED_USERS:
       return "Managed Users";
+    case ARTICLES:
+      return "Articles";
     case PROXY_TABS:
       return "Tabs";
     default:
@@ -555,6 +565,8 @@ int ModelTypeToHistogramInt(ModelType model_type) {
       return 26;
     case MANAGED_USERS:
       return 27;
+    case ARTICLES:
+      return 28;
     // Silence a compiler warning.
     case MODEL_TYPE_COUNT:
       return 0;
@@ -640,6 +652,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return MANAGED_USER_SETTINGS;
   else if (model_type_string == "Managed Users")
     return MANAGED_USERS;
+  else if (model_type_string == "Articles")
+    return ARTICLES;
   else if (model_type_string == "Tabs")
     return PROXY_TABS;
   else
@@ -732,6 +746,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_managed_user_settings";
     case MANAGED_USERS:
       return "google_chrome_managed_users";
+    case ARTICLES:
+      return "google_chrome_articles";
     case PROXY_TABS:
       return std::string();
     default:
@@ -771,6 +787,7 @@ const char kFaviconImageNotificationType[] = "FAVICON_IMAGE";
 const char kFaviconTrackingNotificationType[] = "FAVICON_TRACKING";
 const char kManagedUserSettingNotificationType[] = "MANAGED_USER_SETTING";
 const char kManagedUserNotificationType[] = "MANAGED_USER";
+const char kArticleNotificationType[] = "ARTICLE";
 }  // namespace
 
 bool RealModelTypeToNotificationType(ModelType model_type,
@@ -850,6 +867,9 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case MANAGED_USERS:
       *notification_type = kManagedUserNotificationType;
+      return true;
+    case ARTICLES:
+      *notification_type = kArticleNotificationType;
       return true;
     default:
       break;
@@ -934,6 +954,9 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kManagedUserNotificationType) {
     *model_type = MANAGED_USERS;
+    return true;
+  } else if (notification_type == kArticleNotificationType) {
+    *model_type = ARTICLES;
     return true;
   }
   *model_type = UNSPECIFIED;

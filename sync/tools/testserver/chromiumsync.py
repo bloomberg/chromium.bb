@@ -22,6 +22,7 @@ import urlparse
 import app_notification_specifics_pb2
 import app_setting_specifics_pb2
 import app_specifics_pb2
+import article_specifics_pb2
 import autofill_specifics_pb2
 import bookmark_specifics_pb2
 import dictionary_specifics_pb2
@@ -54,6 +55,7 @@ ALL_TYPES = (
     APPS,
     APP_NOTIFICATION,
     APP_SETTINGS,
+    ARTICLE,
     AUTOFILL,
     AUTOFILL_PROFILE,
     BOOKMARK,
@@ -75,7 +77,7 @@ ALL_TYPES = (
     TYPED_URL,
     EXTENSION_SETTINGS,
     FAVICON_IMAGES,
-    FAVICON_TRACKING) = range(26)
+    FAVICON_TRACKING) = range(27)
 
 # An enumeration on the frequency at which the server should send errors
 # to the client. This would be specified by the url that triggers the error.
@@ -95,6 +97,7 @@ SYNC_TYPE_TO_DESCRIPTOR = {
     APP_NOTIFICATION: SYNC_TYPE_FIELDS['app_notification'],
     APP_SETTINGS: SYNC_TYPE_FIELDS['app_setting'],
     APPS: SYNC_TYPE_FIELDS['app'],
+    ARTICLE: SYNC_TYPE_FIELDS['article'],
     AUTOFILL: SYNC_TYPE_FIELDS['autofill'],
     AUTOFILL_PROFILE: SYNC_TYPE_FIELDS['autofill_profile'],
     BOOKMARK: SYNC_TYPE_FIELDS['bookmark'],
@@ -530,6 +533,8 @@ class SyncDataModel(object):
                     parent_tag=ROOT_ID, sync_type=TYPED_URL),
       PermanentItem('google_chrome_dictionary', name='Dictionary',
                     parent_tag=ROOT_ID, sync_type=DICTIONARY),
+      PermanentItem('google_chrome_articles', name='Articles',
+                    parent_tag=ROOT_ID, sync_type=ARTICLE),
       ]
 
   def __init__(self):
