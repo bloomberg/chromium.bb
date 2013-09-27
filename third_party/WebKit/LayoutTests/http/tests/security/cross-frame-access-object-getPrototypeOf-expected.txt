@@ -1,4 +1,4 @@
 This tests that you can't get the prototype of the window object cross-origin using Object.getPrototypeOf().
 
-PASS: Object.getPrototypeOf(targetWindow) should have thrown an exception, and did.
+PASS: Object.getPrototypeOf(targetWindow) should have thrown an exception, and did: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 

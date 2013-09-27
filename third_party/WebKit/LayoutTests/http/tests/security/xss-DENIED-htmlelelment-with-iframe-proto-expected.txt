@@ -1,4 +1,4 @@
 
 Tests that making other frame window a prototype doesn't expose that window subframe
-PASS: targetWindow.myinput should have thrown an exception, and did.
+PASS: targetWindow.myinput should have thrown an exception, and did: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 

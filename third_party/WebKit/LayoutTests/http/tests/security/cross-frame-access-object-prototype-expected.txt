@@ -4,9 +4,9 @@ SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessin
 
 ----- test getting values cross-frame using Object.prototype -----
 
-PASS: Object.prototype.__lookupGetter__.call(targetFrame, 'myGetter'); should have thrown an exception, and did.
-PASS: Object.prototype.__lookupSetter__.call(targetFrame, 'mySetter'); should have thrown an exception, and did.
-PASS: Object.prototype.propertyIsEnumerable.call(targetFrame, 'myProp'); should have thrown an exception, and did.
+PASS: Object.prototype.__lookupGetter__.call(targetFrame, 'myGetter'); should have thrown an exception, and did: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
+PASS: Object.prototype.__lookupSetter__.call(targetFrame, 'mySetter'); should have thrown an exception, and did: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
+PASS: Object.prototype.propertyIsEnumerable.call(targetFrame, 'myProp'); should have thrown an exception, and did: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 
 
 --------

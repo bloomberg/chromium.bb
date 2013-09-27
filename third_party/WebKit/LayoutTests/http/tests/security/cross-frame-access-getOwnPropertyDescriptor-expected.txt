@@ -229,5 +229,5 @@ PASS: canGetDescriptor(targetLocation, 'reload') should be 'false' and is.
 PASS: canGetDescriptor(targetLocation, 'assign') should be 'true' and is.
 PASS: canGetDescriptor(targetLocation, 'replace') should be 'true' and is.
 ----- tests access to cross domain history object -----
-PASS: targetWindow.history should have thrown an exception, and did.
+PASS: targetWindow.history should have thrown an exception, and did: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 

@@ -60,11 +60,11 @@ function canGet(keyPath)
 
 function shouldThrowException(a) {
     try {
-        var evalA = eval(e);
+        var evalA = eval(a);
         log("FAIL: " + a + " should have thrown an exception, but instead returned " + evalA + ".");
         return false;
     } catch (e) {
-        log("PASS: " + a + " should have thrown an exception, and did.");
+        log("PASS: " + a + " should have thrown an exception, and did: " + e.toString());
         return true;
     }
 }
