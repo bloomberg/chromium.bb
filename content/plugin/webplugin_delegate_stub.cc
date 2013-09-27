@@ -435,7 +435,7 @@ void WebPluginDelegateStub::OnFetchURL(
                       params.first_party_for_cookies,
                       params.method,
                       data,
-                      params.post_data.size(),
+                      static_cast<unsigned int>(params.post_data.size()),
                       params.referrer,
                       params.notify_redirect,
                       params.is_plugin_src_load,
