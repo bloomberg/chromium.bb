@@ -19,6 +19,7 @@ import collections
 import os
 import sys
 
+from metrics import cpu
 from metrics import io
 from metrics import memory
 from metrics import speedindex
@@ -38,6 +39,7 @@ class PageCycler(page_measurement.PageMeasurement):
     self._report_speed_index = False
     self._speedindex_metric = speedindex.SpeedIndexMetric()
     self._memory_metric = None
+    self._cpu_metric = None
     self._v8_object_stats_metric = None
     self._number_warm_runs = None
     self._cold_runs_requested = False
@@ -66,6 +68,7 @@ class PageCycler(page_measurement.PageMeasurement):
   def DidStartBrowser(self, browser):
     """Initialize metrics once right after the browser has been launched."""
     self._memory_metric = memory.MemoryMetric(browser)
+    self._cpu_metric = cpu.CpuMetric(browser)
     if self._record_v8_object_stats:
       self._v8_object_stats_metric = v8_object_stats.V8ObjectStatsMetric()
 
@@ -83,6 +86,7 @@ class PageCycler(page_measurement.PageMeasurement):
 
   def DidNavigateToPage(self, page, tab):
     self._memory_metric.Start(page, tab)
+    self._cpu_metric.Start(page, tab)
     if self._record_v8_object_stats:
       self._v8_object_stats_metric.Start(page, tab)
 
@@ -149,6 +153,8 @@ class PageCycler(page_measurement.PageMeasurement):
 
     self._memory_metric.Stop(page, tab)
     self._memory_metric.AddResults(tab, results)
+    self._cpu_metric.Stop(page, tab)
+    self._cpu_metric.AddResults(tab, results)
     if self._record_v8_object_stats:
       self._v8_object_stats_metric.Stop(page, tab)
       self._v8_object_stats_metric.AddResults(tab, results)
