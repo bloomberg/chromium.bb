@@ -160,7 +160,6 @@ PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const Element* ele
         for (AnimationMap::const_iterator iter = cssAnimations->m_animations.begin(); iter != cssAnimations->m_animations.end(); ++iter)
             inactive.add(iter->key);
 
-    RefPtr<MutableStylePropertySet> newStyles;
     if (style->display() != NONE) {
         for (size_t i = 0; animationDataList && i < animationDataList->size(); ++i) {
             const CSSAnimationData* animationData = animationDataList->animation(i);
