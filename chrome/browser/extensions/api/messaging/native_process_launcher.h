@@ -30,10 +30,11 @@ class NativeProcessLauncher {
     RESULT_FAILED_TO_START,
   };
 
-  // Callback that's called after the process has been launched. |result| is
-  // set to false in case of a failure. Handler must take ownership of the IO
+  // Callback that's called after the process has been launched. |result| is set
+  // to false in case of a failure. Handler must take ownership of the IO
   // handles.
   typedef base::Callback<void (LaunchResult result,
+                               base::ProcessHandle process_handle,
                                base::PlatformFile read_file,
                                base::PlatformFile write_file)> LaunchedCallback;
 
@@ -62,10 +63,10 @@ class NativeProcessLauncher {
                                      std::string* error_message);
 
   // Launches native messaging process.
-  static bool LaunchNativeProcess(
-      const CommandLine& command_line,
-      base::PlatformFile* read_file,
-      base::PlatformFile* write_file);
+  static bool LaunchNativeProcess(const CommandLine& command_line,
+                                  base::ProcessHandle* process_handle,
+                                  base::PlatformFile* read_file,
+                                  base::PlatformFile* write_file);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeProcessLauncher);

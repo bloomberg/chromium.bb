@@ -88,7 +88,7 @@ class FakeLauncher : public NativeProcessLauncher {
                       const std::string& native_host_name,
                       LaunchedCallback callback) const OVERRIDE {
     callback.Run(NativeProcessLauncher::RESULT_SUCCESS,
-                 read_file_, write_file_);
+                 base::kNullProcessHandle, read_file_, write_file_);
   }
 
  private:

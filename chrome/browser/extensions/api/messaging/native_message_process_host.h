@@ -92,6 +92,7 @@ class NativeMessageProcessHost
 
   // Callback for NativeProcessLauncher::Launch().
   void OnHostProcessLaunched(NativeProcessLauncher::LaunchResult result,
+                             base::ProcessHandle process_handle,
                              base::PlatformFile read_file,
                              base::PlatformFile write_file);
 
@@ -130,6 +131,8 @@ class NativeMessageProcessHost
   // Set to true after the native messaging connection has been stopped, e.g.
   // due to an error.
   bool closed_;
+
+  base::ProcessHandle process_handle_;
 
   // Input stream handle and reader.
   base::PlatformFile read_file_;

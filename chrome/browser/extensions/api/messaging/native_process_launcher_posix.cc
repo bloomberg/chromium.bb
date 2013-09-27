@@ -38,6 +38,7 @@ base::FilePath NativeProcessLauncher::FindManifest(
 // static
 bool NativeProcessLauncher::LaunchNativeProcess(
     const CommandLine& command_line,
+    base::ProcessHandle* process_handle,
     base::PlatformFile* read_file,
     base::PlatformFile* write_file) {
   base::FileHandleMappingVector fd_map;
@@ -62,8 +63,7 @@ bool NativeProcessLauncher::LaunchNativeProcess(
 
   base::LaunchOptions options;
   options.fds_to_remap = &fd_map;
-  int process_id;
-  if (!base::LaunchProcess(command_line, options, &process_id)) {
+  if (!base::LaunchProcess(command_line, options, process_handle)) {
     LOG(ERROR) << "Error launching process";
     return false;
   }

@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
+#include "base/process/kill.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
@@ -60,6 +61,7 @@ NativeMessageProcessHost::NativeMessageProcessHost(
       destination_port_(destination_port),
       launcher_(launcher.Pass()),
       closed_(false),
+      process_handle_(base::kNullProcessHandle),
       read_file_(base::kInvalidPlatformFileValue),
       read_pending_(false),
       write_pending_(false) {
@@ -117,6 +119,7 @@ void NativeMessageProcessHost::LaunchHostProcess() {
 
 void NativeMessageProcessHost::OnHostProcessLaunched(
     NativeProcessLauncher::LaunchResult result,
+    base::ProcessHandle process_handle,
     base::PlatformFile read_file,
     base::PlatformFile write_file) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -138,6 +141,7 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
       break;
   }
 
+  process_handle_ = process_handle;
   read_file_ = read_file;
 
   scoped_refptr<base::TaskRunner> task_runner(
@@ -347,6 +351,19 @@ void NativeMessageProcessHost::Close(const std::string& error_message) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
         base::Bind(&Client::CloseChannel, weak_client_ui_,
                    destination_port_, error_message));
+  }
+
+  if (process_handle_ != base::kNullProcessHandle) {
+    // Kill the host process if necessary to make sure we don't leave zombies.
+    // On OSX base::EnsureProcessTerminated() may block, so we have to post a
+    // task on the blocking pool.
+#if defined(OS_MACOSX)
+    content::BrowserThread::PostBlockingPoolTask(
+        FROM_HERE, base::Bind(&base::EnsureProcessTerminated, process_handle_));
+#else
+    base::EnsureProcessTerminated(process_handle_);
+#endif
+    process_handle_ = base::kNullProcessHandle;
   }
 }
 

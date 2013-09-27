@@ -81,10 +81,12 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
                               LaunchedCallback callback);
     void PostErrorResult(const LaunchedCallback& callback, LaunchResult error);
     void PostResult(const LaunchedCallback& callback,
+                    base::ProcessHandle process_handle,
                     base::PlatformFile read_file,
                     base::PlatformFile write_file);
     void CallCallbackOnIOThread(LaunchedCallback callback,
                                 LaunchResult result,
+                                base::ProcessHandle process_handle,
                                 base::PlatformFile read_file,
                                 base::PlatformFile write_file);
 
@@ -199,11 +201,12 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
                                  base::Int64ToString(window_handle));
 #endif  // !defined(OS_WIN)
 
+  base::ProcessHandle process_handle;
   base::PlatformFile read_file;
   base::PlatformFile write_file;
   if (NativeProcessLauncher::LaunchNativeProcess(
-          command_line, &read_file, &write_file)) {
-    PostResult(callback, read_file, write_file);
+          command_line, &process_handle, &read_file, &write_file)) {
+    PostResult(callback, process_handle, read_file, write_file);
   } else {
     PostErrorResult(callback, RESULT_FAILED_TO_START);
   }
@@ -212,6 +215,7 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
 void NativeProcessLauncherImpl::Core::CallCallbackOnIOThread(
     LaunchedCallback callback,
     LaunchResult result,
+    base::ProcessHandle process_handle,
     base::PlatformFile read_file,
     base::PlatformFile write_file) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -223,7 +227,7 @@ void NativeProcessLauncherImpl::Core::CallCallbackOnIOThread(
     return;
   }
 
-  callback.Run(result, read_file, write_file);
+  callback.Run(result, process_handle, read_file, write_file);
 }
 
 void NativeProcessLauncherImpl::Core::PostErrorResult(
@@ -231,20 +235,22 @@ void NativeProcessLauncherImpl::Core::PostErrorResult(
     LaunchResult error) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
-                 this, callback, error,
+      base::Bind(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread, this,
+                 callback, error, base::kNullProcessHandle,
                  base::kInvalidPlatformFileValue,
                  base::kInvalidPlatformFileValue));
 }
 
 void NativeProcessLauncherImpl::Core::PostResult(
     const LaunchedCallback& callback,
+    base::ProcessHandle process_handle,
     base::PlatformFile read_file,
     base::PlatformFile write_file) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
-                 this, callback, RESULT_SUCCESS, read_file, write_file));
+      base::Bind(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread, this,
+                 callback, RESULT_SUCCESS, process_handle, read_file,
+                 write_file));
 }
 
 NativeProcessLauncherImpl::NativeProcessLauncherImpl(
