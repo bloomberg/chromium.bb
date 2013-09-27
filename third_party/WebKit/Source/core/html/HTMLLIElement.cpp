@@ -86,8 +86,6 @@ void HTMLLIElement::parseAttribute(const QualifiedName& name, const AtomicString
 
 void HTMLLIElement::attach(const AttachContext& context)
 {
-    ASSERT(!confusingAndOftenMisusedAttached());
-
     HTMLElement::attach(context);
 
     if (renderer() && renderer()->isListItem()) {

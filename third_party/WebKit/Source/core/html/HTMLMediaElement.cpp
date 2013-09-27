@@ -549,8 +549,6 @@ void HTMLMediaElement::removedFrom(ContainerNode* insertionPoint)
 
 void HTMLMediaElement::attach(const AttachContext& context)
 {
-    ASSERT(!confusingAndOftenMisusedAttached());
-
     HTMLElement::attach(context);
 
     if (renderer())
