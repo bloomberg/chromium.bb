@@ -6,7 +6,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 Verify the widths of the outer RTL element are the same as the widths of the outer LTR element.
 PASS outerLTR.offsetWidth == outerRTL.offsetWidth is true
 PASS outerLTR.clientWidth == outerRTL.clientWidth is true
-FAIL outerLTR.scrollWidth ==  outerRTL.scrollWidth should be true. Was false.
+PASS outerLTR.scrollWidth ==  outerRTL.scrollWidth is true
 Verify the widths of the inner RTL element are the same as the widths of the inner LTR element.
 PASS innerLTR.offsetWidth == innerRTL.offsetWidth is true
 PASS innerLTR.clientWidth == innerRTL.clientWidth is true

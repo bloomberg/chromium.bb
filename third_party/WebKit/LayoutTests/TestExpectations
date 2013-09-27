@@ -5,6 +5,7 @@ webkit.org/b/109400 [ Win ] http/tests/css/css-image-loading.html [ Pass Timeout
 # This test can't just be rebaselined because it has absolute file paths in the output.
 crbug.com/257132 http/tests/inspector/network/network-xhr-replay.html [ Failure ]
 
+crbug.com/129746 [ Win Mac ] fast/overflow/unreachable-overflow-rtl-bug.html [ NeedsRebaseline ]
 crbug.com/247466 [ Win Debug ] inspector/debugger/live-edit-breakpoints.html [ Skip ]
 crbug.com/247466 [ Debug ] inspector/debugger/dom-breakpoints.html [ Skip ]
 crbug.com/247466 [ Debug ] inspector/debugger/xhr-breakpoints.html [ Skip ]

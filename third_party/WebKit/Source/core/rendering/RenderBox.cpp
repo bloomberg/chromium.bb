@@ -3329,7 +3329,6 @@ void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const Re
     RenderView* renderView = view();
     LayoutUnit& marginLogicalLeftValue = style()->isLeftToRightDirection() ? computedValues.m_margins.m_start : computedValues.m_margins.m_end;
     LayoutUnit& marginLogicalRightValue = style()->isLeftToRightDirection() ? computedValues.m_margins.m_end : computedValues.m_margins.m_start;
-
     if (!logicalLeftIsAuto && !logicalWidthIsAuto && !logicalRightIsAuto) {
         /*-----------------------------------------------------------------------*\
          * If none of the three is 'auto': If both 'margin-left' and 'margin-
@@ -3484,6 +3483,10 @@ void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const Re
             computedValues.m_position = logicalLeftValue + marginLogicalLeftValue + lastLine->borderLogicalLeft() + (lastLine->logicalLeft() - firstLine->logicalLeft());
             return;
         }
+    }
+
+    if (containerBlock->isBox() && toRenderBox(containerBlock)->scrollsOverflowY() && containerBlock->style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
+        logicalLeftValue = logicalLeftValue + toRenderBox(containerBlock)->verticalScrollbarWidth();
     }
 
     computedValues.m_position = logicalLeftValue + marginLogicalLeftValue;
