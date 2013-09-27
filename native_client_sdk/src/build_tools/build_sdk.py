@@ -287,7 +287,6 @@ NACL_HEADER_MAP = {
       ('src/untrusted/nacl/nacl_dyncode.h', 'nacl/'),
       ('src/untrusted/nacl/nacl_startup.h', 'nacl/'),
       ('src/untrusted/nacl/nacl_thread.h', 'nacl/'),
-      ('src/untrusted/nacl/pnacl.h', ''),
       ('src/untrusted/pthread/pthread.h', ''),
       ('src/untrusted/pthread/semaphore.h', ''),
       ('src/untrusted/valgrind/dynamic_annotations.h', 'nacl/'),
@@ -301,7 +300,6 @@ NACL_HEADER_MAP = {
       ('src/untrusted/nacl/nacl_dyncode.h', 'nacl/'),
       ('src/untrusted/nacl/nacl_startup.h', 'nacl/'),
       ('src/untrusted/nacl/nacl_thread.h', 'nacl/'),
-      ('src/untrusted/nacl/pnacl.h', ''),
       ('src/untrusted/valgrind/dynamic_annotations.h', 'nacl/'),
   ],
   'host': []
