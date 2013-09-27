@@ -33,6 +33,7 @@
 #define Prerenderer_h
 
 #include "core/dom/ActiveDOMObject.h"
+#include "core/platform/Supplementable.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -47,14 +48,15 @@ class Prerender;
 class PrerendererClient;
 class Page;
 
-class Prerenderer : public ActiveDOMObject {
+class Prerenderer : public ActiveDOMObject, public Supplement<ScriptExecutionContext> {
     WTF_MAKE_NONCOPYABLE(Prerenderer);
 public:
     virtual ~Prerenderer();
 
     PassRefPtr<Prerender> render(PrerenderClient*, const KURL&);
 
-    static PassOwnPtr<Prerenderer> create(Document*);
+    static const char* supplementName();
+    static Prerenderer* from(Document*);
 
     // From ActiveDOMObject:
     virtual bool canSuspend() const OVERRIDE { return true; }

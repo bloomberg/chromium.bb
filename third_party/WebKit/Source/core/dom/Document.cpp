@@ -136,7 +136,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ImageLoader.h"
-#include "core/loader/Prerenderer.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
@@ -451,7 +450,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_writeRecursionIsTooDeep(false)
     , m_writeRecursionDepth(0)
     , m_lastHandledUserGestureTimestamp(0)
-    , m_prerenderer(Prerenderer::create(this))
     , m_textAutosizer(TextAutosizer::create(this))
     , m_registrationContext(initializer.registrationContext(this))
     , m_pendingTasksTimer(this, &Document::pendingTasksTimerFired)

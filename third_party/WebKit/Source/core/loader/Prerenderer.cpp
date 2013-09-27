@@ -47,14 +47,6 @@
 
 namespace WebCore {
 
-// static
-PassOwnPtr<Prerenderer> Prerenderer::create(Document* document)
-{
-    Prerenderer* prerenderer = new Prerenderer(document);
-    prerenderer->suspendIfNeeded();
-    return adoptPtr(prerenderer);
-}
-
 Prerenderer::Prerenderer(Document* document)
     : ActiveDOMObject(document)
     , m_initializedClient(false)
@@ -64,6 +56,22 @@ Prerenderer::Prerenderer(Document* document)
 
 Prerenderer::~Prerenderer()
 {
+}
+
+const char* Prerenderer::supplementName()
+{
+    return "Prerenderer";
+}
+
+Prerenderer* Prerenderer::from(Document* document)
+{
+    Prerenderer* prerenderer = static_cast<Prerenderer*>(Supplement<ScriptExecutionContext>::from(document, supplementName()));
+    if (!prerenderer) {
+        prerenderer = new Prerenderer(document);
+        prerenderer->suspendIfNeeded();
+        Supplement<ScriptExecutionContext>::provideTo(document, supplementName(), adoptPtr(prerenderer));
+    }
+    return prerenderer;
 }
 
 PassRefPtr<Prerender> Prerenderer::render(PrerenderClient* prerenderClient, const KURL& url)

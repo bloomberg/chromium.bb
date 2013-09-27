@@ -130,11 +130,11 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
 
     if (relAttribute.isLinkPrerender()) {
         if (!m_prerender) {
-            m_prerender = document.prerenderer()->render(this, href);
+            m_prerender = Prerenderer::from(&document)->render(this, href);
         } else if (m_prerender->url() != href) {
             m_prerender->cancel();
             m_prerender->removeClient();
-            m_prerender = document.prerenderer()->render(this, href);
+            m_prerender = Prerenderer::from(&document)->render(this, href);
         }
     } else if (m_prerender) {
         m_prerender->cancel();

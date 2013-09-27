@@ -126,7 +126,6 @@ class NodeFilter;
 class NodeIterator;
 class Page;
 class PlatformMouseEvent;
-class Prerenderer;
 class ProcessingInstruction;
 class Range;
 class RegisteredEventListener;
@@ -1001,8 +1000,6 @@ public:
 
     IntSize initialViewportSize() const;
 
-    Prerenderer* prerenderer() { return m_prerenderer.get(); }
-
     TextAutosizer* textAutosizer() { return m_textAutosizer.get(); }
 
     PassRefPtr<Element> createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState&);
@@ -1352,8 +1349,6 @@ private:
 
     Timer<Document> m_pendingTasksTimer;
     Vector<OwnPtr<Task> > m_pendingTasks;
-
-    OwnPtr<Prerenderer> m_prerenderer;
 
     OwnPtr<TextAutosizer> m_textAutosizer;
 
