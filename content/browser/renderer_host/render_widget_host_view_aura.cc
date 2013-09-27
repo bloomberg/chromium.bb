@@ -3173,6 +3173,9 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   // associated with the window, but just in case.
   DetachFromInputMethod();
   FrameMemoryManager::GetInstance()->RemoveFrame(this);
+  // The destruction of the holder may call back into the RWHVA, so do it
+  // early.
+  framebuffer_holder_ = NULL;
 }
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
