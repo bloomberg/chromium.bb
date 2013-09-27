@@ -1279,8 +1279,7 @@ crbug.com/246077 virtual/android/fullscreen/full-screen-render-inline.html [ Ima
 crbug.com/298045 [ Mac ] virtual/implsidepainting [ Skip ]
 crbug.com/298188 [ Linux Win ] virtual/implsidepainting/inspector/timeline/timeline-paint.html [ Failure Pass ]
 
-# TODO(eroman): Temporary, to facilitate landing of https://codereview.chromium.org/24702003/
-crbug.com/245025 crypto [ Skip ]
+crbug.com/267888 [ Android ] crypto [ Skip ]
 
 # Transient. Removes as https://codereview.chromium.org/23597036/ lands.
 crbug.com/254989 virtual/android/fullscreen/full-screen-stacking-context.html [ ImageOnlyFailure ]

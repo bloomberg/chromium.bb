@@ -49,6 +49,11 @@ importTestKeys().then(function(importedKeys) {
     signResult = arrayBufferToHexString(result);
     shouldBe("signResult", "'[89 0d 9b 89 4b 23 97 69 ac 77 25 04 66 dc e4 2a f9 26 ed 76]'");
 
+    return crypto.subtle.verify(hmacSha1, keys.hmacSha1, new Uint8Array(result), data);
+}).then(function(result) {
+    verifyResult = result;
+    shouldBe("verifyResult", "true");
+
     return crypto.subtle.verify(hmacSha1, keys.hmacSha1, asciiToArrayBuffer("badsignature"), data);
 }).then(function(result) {
     verifyResult = result;
