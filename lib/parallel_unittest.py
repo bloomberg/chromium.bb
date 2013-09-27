@@ -11,10 +11,13 @@ import signal
 import sys
 import tempfile
 import time
+import unittest
 import Queue
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % __file__))
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import partial_mock
 
@@ -28,6 +31,7 @@ _NUM_WRITES = 100
 _NUM_THREADS = 50
 _TOTAL_BYTES = _NUM_THREADS * _NUM_WRITES * _BUFSIZE
 _GREETING = 'hello world'
+_SKIP_FLAKY_TESTS = True
 
 
 class ParallelMock(partial_mock.PartialMock):
@@ -167,6 +171,7 @@ class TestHelloWorld(TestBackgroundWrapper):
     out = self.wrapOutputTest(self._ParallelHelloWorld)
     self.assertEquals(out, _GREETING)
 
+  @unittest.skipIf(_SKIP_FLAKY_TESTS, 'Occasionally fails on buildbots')
   def testMultipleHelloWorlds(self):
     """Test that multiple threads can be created."""
     parallel.RunParallelSteps([self.testParallelHelloWorld] * 2)
@@ -201,6 +206,32 @@ class TestBackgroundTaskRunnerArgs(TestBackgroundWrapper):
       self.assertEquals(result[3], None)
     self.assertEquals(arg2s, result_arg2s)
     self.assertEquals(results.empty(), True)
+
+
+@unittest.skipIf(_SKIP_FLAKY_TESTS, 'Occasionally fails on buildbots')
+class TestFastPrinting(TestBackgroundWrapper):
+
+  def _FastPrinter(self):
+    # Writing lots of output quickly often reproduces bugs in this module
+    # because it can trigger race conditions.
+    for _ in range(_NUM_WRITES - 1):
+      sys.stdout.write('x' * _BUFSIZE)
+    sys.stdout.write('x' * (_BUFSIZE - 1) + '\n')
+
+  def _ParallelPrinter(self):
+    parallel.RunParallelSteps([self._FastPrinter] * _NUM_THREADS)
+
+  def _NestedParallelPrinter(self):
+    parallel.RunParallelSteps([self._ParallelPrinter])
+
+  def testSimpleParallelPrinter(self):
+    out = self.wrapOutputTest(self._ParallelPrinter)
+    self.assertEquals(len(out), _TOTAL_BYTES)
+
+  def testNestedParallelPrinter(self):
+    """Verify that no output is lost when lots of output is written."""
+    out = self.wrapOutputTest(self._NestedParallelPrinter)
+    self.assertEquals(len(out), _TOTAL_BYTES)
 
 
 class TestRunParallelSteps(cros_test_lib.TestCase):
@@ -284,6 +315,74 @@ class TestExceptions(cros_test_lib.MockOutputTestCase):
             ex_str = str(ex)
         self.assertTrue('Traceback' in ex_str)
         self.assertEqual(output_str, _GREETING)
+
+
+@unittest.skipIf(_SKIP_FLAKY_TESTS, 'Fails often on buildbots')
+class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
+  """Test that child processes are halted when exceptions occur."""
+
+  def setUp(self):
+    self.failed = multiprocessing.Event()
+    self.passed = multiprocessing.Event()
+
+  def _Pass(self):
+    self.passed.set()
+    sys.stdout.write(_GREETING)
+
+  def _Exit(self):
+    sys.stdout.write(_GREETING)
+    self.passed.wait()
+    sys.exit(1)
+
+  def _Fail(self):
+    self.failed.wait(60)
+    self.failed.set()
+
+  def testExceptionRaising(self):
+    """Test that exceptions halt all running steps."""
+    steps = [self._Exit, self._Fail, self._Pass, self._Fail]
+    output_str, ex_str = None, None
+    with self.OutputCapturer() as capture:
+      try:
+        parallel.RunParallelSteps(steps, halt_on_error=True)
+      except parallel.BackgroundFailure as ex:
+        output_str = capture.GetStdout()
+        ex_str = str(ex)
+        logging.debug(ex_str)
+    self.assertTrue('Traceback' in ex_str)
+    self.assertTrue(self.passed.is_set())
+    self.assertEqual(output_str, _GREETING)
+    self.assertFalse(self.failed.is_set())
+
+  def testTempFileCleanup(self):
+    """Test that all temp files are cleaned up."""
+    with osutils.TempDir() as tempdir:
+      self.assertEqual(os.listdir(tempdir), [])
+      self.testExceptionRaising()
+      self.assertEqual(os.listdir(tempdir), [])
+
+  def testKillQuiet(self, steps=None, **kwds):
+    """Test that processes do get killed if they're silent for too long."""
+    if steps is None:
+      steps = [self._Fail] * 10
+    kwds.setdefault('SILENT_TIMEOUT', 0.1)
+    kwds.setdefault('MINIMUM_SILENT_TIMEOUT', 0.01)
+    kwds.setdefault('SILENT_TIMEOUT_STEP', 0)
+    kwds.setdefault('SIGTERM_TIMEOUT', 0.1)
+    kwds.setdefault('PRINT_INTERVAL', 0.01)
+
+    ex_str = None
+    with mock.patch.multiple(parallel._BackgroundTask, **kwds):
+      with self.OutputCapturer() as capture:
+        try:
+          with cros_test_lib.LoggingCapturer(cros_build_lib.logger.name):
+            with cros_test_lib.LoggingCapturer(parallel.logger.name):
+              parallel.RunParallelSteps(steps)
+        except parallel.BackgroundFailure as ex:
+          ex_str = str(ex)
+          error_str = capture.GetStderr()
+    self.assertTrue('parallel_unittest.py' in error_str)
+    self.assertTrue(ex_str)
 
 
 if __name__ == '__main__':
