@@ -1805,6 +1805,8 @@
         'browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.h',
         'browser/renderer_host/pepper/pepper_flash_drm_host.cc',
         'browser/renderer_host/pepper/pepper_flash_drm_host.h',
+        'browser/renderer_host/pepper/pepper_output_protection_message_filter.cc',
+        'browser/renderer_host/pepper/pepper_output_protection_message_filter.h',
         'browser/renderer_host/pepper/pepper_platform_verification_message_filter.cc',
         'browser/renderer_host/pepper/pepper_platform_verification_message_filter.h',
         'browser/renderer_host/pepper/pepper_talk_host.cc',

@@ -88,6 +88,8 @@
           'proxy/network_monitor_resource.h',
           'proxy/network_proxy_resource.cc',
           'proxy/network_proxy_resource.h',
+          'proxy/output_protection_resource.cc',
+          'proxy/output_protection_resource.h',
           'proxy/pdf_resource.cc',
           'proxy/pdf_resource.h',
           'proxy/platform_verification_private_resource.cc',

@@ -36,12 +36,38 @@ enum OutputState {
   STATE_DUAL_EXTENDED,
 };
 
+// Video output types.
+enum OutputType {
+  OUTPUT_TYPE_NONE = 0,
+  OUTPUT_TYPE_UNKNOWN = 1 << 0,
+  OUTPUT_TYPE_INTERNAL = 1 << 1,
+  OUTPUT_TYPE_VGA = 1 << 2,
+  OUTPUT_TYPE_HDMI = 1 << 3,
+  OUTPUT_TYPE_DVI = 1 << 4,
+  OUTPUT_TYPE_DISPLAYPORT = 1 << 5,
+};
+
+// Content protection methods applied on video output.
+enum OutputProtectionMethod {
+  OUTPUT_PROTECTION_METHOD_NONE = 0,
+  OUTPUT_PROTECTION_METHOD_HDCP = 1 << 0,
+};
+
+// HDCP protection state.
+enum HDCPState {
+  HDCP_STATE_UNDESIRED,
+  HDCP_STATE_DESIRED,
+  HDCP_STATE_ENABLED
+};
+
 // This class interacts directly with the underlying Xrandr API to manipulate
 // CTRCs and Outputs.
 class CHROMEOS_EXPORT OutputConfigurator
     : public base::MessageLoop::Dispatcher,
       public base::MessagePumpObserver {
  public:
+  typedef uint64_t OutputProtectionClientId;
+
   struct ModeInfo {
     ModeInfo();
     ModeInfo(int width, int height, bool interlaced, float refresh_rate);
@@ -95,8 +121,12 @@ class CHROMEOS_EXPORT OutputConfigurator
     uint64 width_mm;
     uint64 height_mm;
 
+    // TODO(kcwu): Remove this. Check type == OUTPUT_TYPE_INTERNAL instead.
     bool is_internal;
     bool is_aspect_preserving_scaling;
+
+    // The type of output.
+    OutputType type;
 
     // Map from mode IDs to details about the corresponding modes.
     ModeInfoMap mode_infos;
@@ -223,6 +253,12 @@ class CHROMEOS_EXPORT OutputConfigurator
     // Sends a D-Bus message to the power manager telling it that the
     // machine is or is not projecting.
     virtual void SendProjectingStateToPowerManager(bool projecting) = 0;
+
+    // Gets HDCP state of output.
+    virtual bool GetHDCPState(RROutput id, HDCPState* state) = 0;
+
+    // Sets HDCP state of output.
+    virtual bool SetHDCPState(RROutput id, HDCPState state) = 0;
   };
 
   // Helper class used by tests.
@@ -362,7 +398,36 @@ class CHROMEOS_EXPORT OutputConfigurator
   // so that time-consuming ConfigureOutputs() won't be called multiple times.
   void ScheduleConfigureOutputs();
 
+  // Registers a client for output protection and requests a client id. Returns
+  // 0 if requesting failed.
+  OutputProtectionClientId RegisterOutputProtectionClient();
+
+  // Unregisters the client.
+  void UnregisterOutputProtectionClient(OutputProtectionClientId client_id);
+
+  // Queries link status and protection status.
+  // |link_mask| is the type of connected output links, which is a bitmask of
+  // OutputType values. |protection_mask| is the desired protection methods,
+  // which is a bitmask of the OutputProtectionMethod values.
+  // Returns true on success.
+  bool QueryOutputProtectionStatus(
+      OutputProtectionClientId client_id,
+      uint32_t* link_mask,
+      uint32_t* protection_mask);
+
+  // Requests the desired protection methods.
+  // |protection_mask| is the desired protection methods, which is a bitmask
+  // of the OutputProtectionMethod values.
+  // Returns true when the protection request has been made.
+  bool EnableOutputProtection(
+      OutputProtectionClientId client_id,
+      uint32_t desired_protection_mask);
+
  private:
+  // Mapping a client to its protection request bitmask.
+  typedef std::map<chromeos::OutputConfigurator::OutputProtectionClientId,
+                   uint32_t> ProtectionRequests;
+
   // Updates |cached_outputs_| to contain currently-connected outputs. Calls
   // |delegate_->GetOutputs()| and then does additional work, like finding the
   // mirror mode and setting user-preferred modes. Note that the server must be
@@ -462,6 +527,12 @@ class CHROMEOS_EXPORT OutputConfigurator
   // The timer to delay configuring outputs. See also the comments in
   // Dispatch().
   scoped_ptr<base::OneShotTimer<OutputConfigurator> > configure_timer_;
+
+  // Id for next output protection client.
+  OutputProtectionClientId next_output_protection_client_id_;
+
+  // Output protection requests of each client.
+  ProtectionRequests client_protection_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputConfigurator);
 };

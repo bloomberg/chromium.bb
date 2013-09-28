@@ -52,6 +52,8 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
       int touch_device_id,
       const OutputConfigurator::CoordinateTransformation& ctm) OVERRIDE;
   virtual void SendProjectingStateToPowerManager(bool projecting) OVERRIDE;
+  virtual bool GetHDCPState(RROutput id, HDCPState* state) OVERRIDE;
+  virtual bool SetHDCPState(RROutput id, HDCPState state) OVERRIDE;
 
  private:
   // Initializes |mode_info| to contain details corresponding to |mode|. Returns

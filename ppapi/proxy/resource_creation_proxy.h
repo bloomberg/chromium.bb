@@ -134,6 +134,8 @@ class ResourceCreationProxy : public InterfaceProxy,
       PP_Instance instance,
       const PP_NetAddress_Private& private_addr) OVERRIDE;
   virtual PP_Resource CreateNetworkMonitor(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateOutputProtectionPrivate(
+      PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreatePrinting(PP_Instance) OVERRIDE;
   virtual PP_Resource CreateTCPServerSocketPrivate(
       PP_Instance instance) OVERRIDE;

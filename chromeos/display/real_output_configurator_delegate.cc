@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_pump_x11.h"
 #include "base/x11/edid_parser_x11.h"
+#include "base/x11/x11_error_tracker.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/display/output_util.h"
@@ -30,6 +31,17 @@ namespace {
 const float kMmInInch = 25.4;
 const float kDpi96 = 96.0;
 const float kPixelsToMmScale = kMmInInch / kDpi96;
+
+// Prefixes of output name
+const char kOutputName_VGA[] = "VGA";
+const char kOutputName_HDMI[] = "HDMI";
+const char kOutputName_DVI[] = "DVI";
+const char kOutputName_DisplayPort[] = "DP";
+
+const char kContentProtectionAtomName[] = "Content Protection";
+const char kProtectionUndesiredAtomName[] = "Undesired";
+const char kProtectionDesiredAtomName[] = "Desired";
+const char kProtectionEnabledAtomName[] = "Enabled";
 
 bool IsInternalOutput(const XRROutputInfo* output_info) {
   return IsInternalOutputName(std::string(output_info->name));
@@ -304,7 +316,99 @@ RealOutputConfiguratorDelegate::InitOutputSnapshot(
       LOG(WARNING) << "Unable to find XRRModeInfo for mode " << mode;
   }
 
+  std::string name(info->name);
+  if (output.is_internal) {
+    output.type = OUTPUT_TYPE_INTERNAL;
+  } else if (name.find(kOutputName_VGA) == 0) {
+    output.type = OUTPUT_TYPE_VGA;
+  } else if (name.find(kOutputName_HDMI) == 0) {
+    output.type = OUTPUT_TYPE_HDMI;
+  } else if (name.find(kOutputName_DVI) == 0) {
+    output.type = OUTPUT_TYPE_DVI;
+  } else if (name.find(kOutputName_DisplayPort) == 0) {
+    output.type = OUTPUT_TYPE_DISPLAYPORT;
+  } else {
+    LOG(ERROR) << "Unknown link type: " << name;
+    output.type = OUTPUT_TYPE_UNKNOWN;
+  }
+
   return output;
+}
+
+bool RealOutputConfiguratorDelegate::GetHDCPState(RROutput id,
+                                                  HDCPState* state) {
+  unsigned char* values = NULL;
+  int actual_format = 0;
+  unsigned long nitems = 0;
+  unsigned long bytes_after = 0;
+  Atom actual_type = None;
+  int success = 0;
+  // TODO(kcwu): Use X11AtomCache to save round trip time of XInternAtom.
+  Atom prop = XInternAtom(display_, kContentProtectionAtomName, False);
+
+  bool ok = true;
+  // TODO(kcwu): Move this to x11_util (similar method calls in this file and
+  // output_util.cc)
+  success = XRRGetOutputProperty(display_, id, prop, 0, 100, False,
+                                 False, AnyPropertyType, &actual_type,
+                                 &actual_format, &nitems, &bytes_after,
+                                 &values);
+  if (actual_type == None) {
+    LOG(ERROR) << "Property '" << kContentProtectionAtomName
+               << "' does not exist";
+    ok = false;
+  } else if (success == Success && actual_type == XA_ATOM &&
+             actual_format == 32 && nitems == 1) {
+    Atom value = reinterpret_cast<Atom*>(values)[0];
+    if (value == XInternAtom(display_, kProtectionUndesiredAtomName, False)) {
+      *state = HDCP_STATE_UNDESIRED;
+    } else if (value == XInternAtom(display_, kProtectionDesiredAtomName,
+                                    False)) {
+      *state = HDCP_STATE_DESIRED;
+    } else if (value == XInternAtom(display_, kProtectionEnabledAtomName,
+                                    False)) {
+      *state = HDCP_STATE_ENABLED;
+    } else {
+      LOG(ERROR) << "Unknown " << kContentProtectionAtomName << " value: "
+                 << value;
+      ok = false;
+    }
+  } else {
+    LOG(ERROR) << "XRRGetOutputProperty failed";
+    ok = false;
+  }
+  if (values)
+    XFree(values);
+
+  VLOG(3) << "HDCP state: " << ok << "," << *state;
+  return ok;
+}
+
+bool RealOutputConfiguratorDelegate::SetHDCPState(RROutput id,
+                                                  HDCPState state) {
+  Atom name = XInternAtom(display_, kContentProtectionAtomName, False);
+  Atom value = None;
+  switch (state) {
+    case HDCP_STATE_UNDESIRED:
+      value = XInternAtom(display_, kProtectionUndesiredAtomName, False);
+      break;
+    case HDCP_STATE_DESIRED:
+      value = XInternAtom(display_, kProtectionDesiredAtomName, False);
+      break;
+    default:
+      NOTREACHED() << "Invalid HDCP state: " << state;
+      return false;
+  }
+  base::X11ErrorTracker err_tracker;
+  unsigned char* data = reinterpret_cast<unsigned char*>(&value);
+  XRRChangeOutputProperty(display_, id, name, XA_ATOM, 32,
+                          PropModeReplace, data, 1);
+  if (err_tracker.FoundNewError()) {
+    LOG(ERROR) << "XRRChangeOutputProperty failed";
+    return false;
+  } else {
+    return true;
+  }
 }
 
 void RealOutputConfiguratorDelegate::DestroyUnusedCrtcs(

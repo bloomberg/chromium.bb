@@ -167,6 +167,14 @@ class TestDelegate : public OutputConfigurator::Delegate {
     AppendAction(projecting ? kProjectingOn : kProjectingOff);
   }
 
+  virtual bool GetHDCPState(RROutput id, HDCPState* state) OVERRIDE {
+    return true;
+  }
+
+  virtual bool SetHDCPState(RROutput id, HDCPState state) OVERRIDE {
+    return true;
+  }
+
  private:
   struct ModeDetails {
     ModeDetails() : width(0), height(0), interlaced(false) {}

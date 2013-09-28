@@ -132,6 +132,7 @@ OutputConfigurator::OutputSnapshot::OutputSnapshot()
       height_mm(0),
       is_internal(false),
       is_aspect_preserving_scaling(false),
+      type(OUTPUT_TYPE_UNKNOWN),
       touch_device_id(0),
       display_id(0),
       has_display_id(false),
@@ -227,7 +228,8 @@ OutputConfigurator::OutputConfigurator()
       configure_display_(base::SysInfo::IsRunningOnChromeOS()),
       xrandr_event_base_(0),
       output_state_(STATE_INVALID),
-      power_state_(DISPLAY_POWER_ALL_ON) {
+      power_state_(DISPLAY_POWER_ALL_ON),
+      next_output_protection_client_id_(1) {
 }
 
 OutputConfigurator::~OutputConfigurator() {}
@@ -271,6 +273,120 @@ void OutputConfigurator::Start(uint32 background_color_argb) {
   delegate_->UngrabServer();
   delegate_->SendProjectingStateToPowerManager(IsProjecting(cached_outputs_));
   NotifyObservers(success, new_state);
+}
+
+OutputConfigurator::OutputProtectionClientId
+OutputConfigurator::RegisterOutputProtectionClient() {
+  if (!configure_display_)
+    return 0;
+
+  return next_output_protection_client_id_++;
+}
+
+void OutputConfigurator::UnregisterOutputProtectionClient(
+    OutputProtectionClientId client_id) {
+  EnableOutputProtection(client_id, OUTPUT_PROTECTION_METHOD_NONE);
+}
+
+bool OutputConfigurator::QueryOutputProtectionStatus(
+    OutputProtectionClientId client_id,
+    uint32_t* link_mask,
+    uint32_t* protection_mask) {
+  if (!configure_display_)
+    return false;
+
+  uint32_t enabled = 0;
+  uint32_t unfulfilled = 0;
+  *link_mask = 0;
+  for (std::vector<OutputSnapshot>::const_iterator it = cached_outputs_.begin();
+       it != cached_outputs_.end(); ++it) {
+    RROutput this_id = it->output;
+    *link_mask |= it->type;
+    switch (it->type) {
+      case OUTPUT_TYPE_UNKNOWN:
+        return false;
+      // HDMI and DisplayPort both support HDCP.
+      case OUTPUT_TYPE_HDMI:
+      case OUTPUT_TYPE_DISPLAYPORT: {
+        HDCPState state;
+        if (!delegate_->GetHDCPState(this_id, &state))
+          return false;
+        if (state == HDCP_STATE_ENABLED)
+          enabled |= OUTPUT_PROTECTION_METHOD_HDCP;
+        else
+          unfulfilled |= OUTPUT_PROTECTION_METHOD_HDCP;
+        break;
+      }
+      case OUTPUT_TYPE_INTERNAL:
+      case OUTPUT_TYPE_VGA:
+      case OUTPUT_TYPE_DVI:
+        // No protections for these types. Do nothing.
+        break;
+      case OUTPUT_TYPE_NONE:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  // Don't reveal protections requested by other clients.
+  ProtectionRequests::iterator it = client_protection_requests_.find(client_id);
+  if (it != client_protection_requests_.end()) {
+    uint32_t requested_mask = it->second;
+    *protection_mask = enabled & ~unfulfilled & requested_mask;
+  } else {
+    *protection_mask = 0;
+  }
+  return true;
+}
+
+bool OutputConfigurator::EnableOutputProtection(
+    OutputProtectionClientId client_id,
+    uint32_t desired_method_mask) {
+  if (!configure_display_)
+    return false;
+
+  uint32_t all_desired = desired_method_mask;
+  for (ProtectionRequests::const_iterator it =
+           client_protection_requests_.begin();
+       it != client_protection_requests_.end();
+       ++it) {
+    if (it->first != client_id)
+      all_desired |= it->second;
+  }
+
+  for (std::vector<OutputSnapshot>::const_iterator it = cached_outputs_.begin();
+       it != cached_outputs_.end(); ++it) {
+    RROutput this_id = it->output;
+    switch (it->type) {
+      case OUTPUT_TYPE_UNKNOWN:
+        return false;
+      // HDMI and DisplayPort both support HDCP.
+      case OUTPUT_TYPE_HDMI:
+      case OUTPUT_TYPE_DISPLAYPORT: {
+        HDCPState new_desired_state =
+            (all_desired & OUTPUT_PROTECTION_METHOD_HDCP) ?
+            HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED;
+        if (!delegate_->SetHDCPState(this_id, new_desired_state))
+          return false;
+        break;
+      }
+      case OUTPUT_TYPE_INTERNAL:
+      case OUTPUT_TYPE_VGA:
+      case OUTPUT_TYPE_DVI:
+        // No protections for these types. Do nothing.
+        break;
+      case OUTPUT_TYPE_NONE:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  if (desired_method_mask == OUTPUT_PROTECTION_METHOD_NONE)
+    client_protection_requests_.erase(client_id);
+  else
+    client_protection_requests_[client_id] = desired_method_mask;
+
+  return true;
 }
 
 void OutputConfigurator::Stop() {

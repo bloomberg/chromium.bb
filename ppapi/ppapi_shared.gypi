@@ -213,6 +213,8 @@
           'thunk/ppb_network_monitor_thunk.cc',
           'thunk/ppb_network_proxy_api.h',
           'thunk/ppb_network_proxy_thunk.cc',
+          'thunk/ppb_output_protection_api.h',
+          'thunk/ppb_output_protection_private_thunk.cc',
           'thunk/ppb_pdf_api.h',
           'thunk/ppb_pdf_thunk.cc',
           'thunk/ppb_platform_verification_api.h',
