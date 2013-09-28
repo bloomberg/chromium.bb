@@ -3548,19 +3548,28 @@ public:
         m_completion = completion;
     }
 
+    void kickNoResults()
+    {
+        kick(-1, -1);
+    }
+
     void kick()
+    {
+        kick(1, 8);
+    }
+
+private:
+    void kick(int misspellingStartOffset, int misspellingLength)
     {
         if (!m_completion)
             return;
         Vector<WebTextCheckingResult> results;
-        const int misspellingStartOffset = 1;
-        const int misspellingLength = 8;
-        results.append(WebTextCheckingResult(WebTextCheckingTypeSpelling, misspellingStartOffset, misspellingLength));
+        if (misspellingStartOffset >= 0 && misspellingLength > 0)
+            results.append(WebTextCheckingResult(WebTextCheckingTypeSpelling, misspellingStartOffset, misspellingLength));
         m_completion->didFinishCheckingText(results);
         m_completion = 0;
     }
 
-private:
     WebKit::WebTextCheckingCompletion* m_completion;
 };
 
@@ -3614,6 +3623,35 @@ TEST_F(WebFrameTest, CancelSpellingRequestCrash)
     element->focus();
     frame->frame()->editor().replaceSelectionWithText("A", false, false);
     frame->frame()->editor().spellCheckRequester().cancelCheck();
+}
+
+TEST_F(WebFrameTest, SpellcheckResultErasesMarkers)
+{
+    registerMockedHttpURLLoad("spell.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
+
+    StubbornSpellCheckClient spellcheck;
+    webViewHelper.webView()->setSpellCheckClient(&spellcheck);
+
+    WebFrameImpl* frame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
+    WebInputElement webInputElement = frame->document().getElementById("data").to<WebInputElement>();
+    Document* document = frame->frame()->document();
+    Element* element = document->getElementById("data");
+
+    webViewHelper.webView()->settings()->setAsynchronousSpellCheckingEnabled(true);
+    webViewHelper.webView()->settings()->setUnifiedTextCheckerEnabled(true);
+    webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
+
+    element->focus();
+    document->execCommand("InsertText", false, "welcome ");
+    document->markers()->addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::Spelling);
+    document->markers()->addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::Grammar);
+    document->markers()->addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::InCustomSpellcheckDictionary);
+    EXPECT_EQ(3U, document->markers()->markers().size());
+
+    spellcheck.kickNoResults();
+    EXPECT_EQ(0U, document->markers()->markers().size());
 }
 
 class TestAccessInitialDocumentWebFrameClient : public WebFrameClient {

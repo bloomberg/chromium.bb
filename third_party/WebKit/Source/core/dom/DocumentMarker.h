@@ -85,6 +85,14 @@ public:
         }
     };
 
+    class SpellCheckClientMarkers : public MarkerTypes {
+    public:
+        SpellCheckClientMarkers()
+            : MarkerTypes(Spelling | Grammar | InCustomSpellcheckDictionary)
+        {
+        }
+    };
+
     DocumentMarker();
     DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset);
     DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset, const String& description);

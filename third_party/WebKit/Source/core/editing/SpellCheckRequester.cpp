@@ -250,13 +250,12 @@ void SpellCheckRequester::didCheckSucceed(int sequence, const Vector<TextCheckin
 {
     TextCheckingRequestData requestData = m_processingRequest->data();
     if (requestData.sequence() == sequence) {
-        unsigned markers = 0;
-        if (requestData.mask() & TextCheckingTypeSpelling)
-            markers |= DocumentMarker::Spelling;
-        if (requestData.mask() & TextCheckingTypeGrammar)
-            markers |= DocumentMarker::Grammar;
-        if (markers)
-            m_frame.document()->markers()->removeMarkers(m_processingRequest->checkingRange().get(), markers);
+        DocumentMarker::MarkerTypes markers = DocumentMarker::SpellCheckClientMarkers();
+        if (!requestData.maskContains(TextCheckingTypeSpelling))
+            markers.remove(DocumentMarker::Spelling);
+        if (!requestData.maskContains(TextCheckingTypeGrammar))
+            markers.remove(DocumentMarker::Grammar);
+        m_frame.document()->markers()->removeMarkers(m_processingRequest->checkingRange().get(), markers);
     }
     didCheck(sequence, results);
 }

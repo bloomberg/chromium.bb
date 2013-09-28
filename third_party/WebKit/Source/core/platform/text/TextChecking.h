@@ -89,6 +89,7 @@ public:
     int sequence() const { return m_sequence; }
     String text() const { return m_text; }
     TextCheckingTypeMask mask() const { return m_mask; }
+    bool maskContains(TextCheckingType type) const { return m_mask & type; }
     TextCheckingProcessType processType() const { return m_processType; }
     const Vector<uint32_t>& markers() const { return m_markers; }
     const Vector<unsigned>& offsets() const { return m_offsets; }
