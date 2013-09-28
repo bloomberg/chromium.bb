@@ -105,10 +105,8 @@ static void paintSkiaText(GraphicsContext* context,
 
     // FIXME: Only needed to support the HFONT based paintSkiaText
     // version where a new typeface is created from the HFONT.
-    // As such it can go away once the direct-GDI code path is removed.
-#if ENABLE(GDI_FONTS_ON_WINDOWS)
+    // As such it can go away once the HFONT code path is removed.
     paint.setTypeface(face);
-#endif
 
     bool didFill = false;
 
@@ -126,9 +124,7 @@ static void paintSkiaText(GraphicsContext* context,
         context->setupPaintForStroking(&paint);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
         data.setupPaint(&paint, context);
-#if ENABLE(GDI_FONTS_ON_WINDOWS)
         paint.setTypeface(face);
-#endif
 
         if (didFill) {
             // If there is a shadow and we filled above, there will already be
