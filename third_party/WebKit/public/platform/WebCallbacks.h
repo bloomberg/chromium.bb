@@ -35,6 +35,8 @@ namespace WebKit {
 
 template<typename S, typename T>
 class WebCallbacks {
+public:
+    virtual ~WebCallbacks() { };
     virtual void onSuccess(S*) { };
     virtual void onError(T*) { };
 };

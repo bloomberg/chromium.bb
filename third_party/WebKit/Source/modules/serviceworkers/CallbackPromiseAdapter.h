@@ -42,6 +42,7 @@ public:
         : m_resolver(resolver)
     {
     }
+    virtual ~CallbackPromiseAdapter() { }
 
     virtual void onSuccess(WebKit::WebServiceWorker* worker) OVERRIDE
     {
