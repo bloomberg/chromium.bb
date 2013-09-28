@@ -28,7 +28,7 @@
 
 #include "wtf/CurrentTime.h"
 
-using namespace WebCore;
+namespace WebCore {
 
 Clock::Clock()
     : m_running(false)
@@ -82,7 +82,9 @@ double Clock::now() const
     return WTF::currentTime();
 }
 
-PassRefPtr<Clock> Clock::create()
+PassOwnPtr<Clock> Clock::create()
 {
-    return adoptRef(new Clock());
+    return adoptPtr(new Clock());
 }
+
+} // namespace WebCore

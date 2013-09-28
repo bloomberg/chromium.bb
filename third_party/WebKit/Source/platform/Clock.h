@@ -27,20 +27,20 @@
 #define Clock_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/PassRefPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class PLATFORM_EXPORT Clock : public RefCounted<Clock> {
+class PLATFORM_EXPORT Clock {
 public:
-    static PassRefPtr<Clock> create();
+    static PassOwnPtr<Clock> create();
 
     void setCurrentTime(double);
     double currentTime() const;
 
     void setPlayRate(double);
-    virtual double playRate() const { return m_rate; }
+    double playRate() const { return m_rate; }
 
     void start();
     void stop();

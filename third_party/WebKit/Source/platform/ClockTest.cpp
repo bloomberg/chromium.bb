@@ -31,7 +31,7 @@
 #include "config.h"
 #include "platform/Clock.h"
 
-#include "wtf/RefPtr.h"
+#include "wtf/OwnPtr.h"
 
 #include <gtest/gtest.h>
 
@@ -41,7 +41,7 @@ namespace {
 
 TEST(Clock, StartStop)
 {
-    RefPtr<Clock> clock = Clock::create();
+    OwnPtr<Clock> clock = Clock::create();
     EXPECT_FALSE(clock->isRunning());
     clock->start();
     EXPECT_TRUE(clock->isRunning());
