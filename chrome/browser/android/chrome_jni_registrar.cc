@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
+#include "chrome/browser/ui/android/infobars/translate_infobar.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
 #include "chrome/browser/ui/android/navigation_popup.h"
 #include "chrome/browser/ui/android/ssl_client_certificate_request.h"
@@ -108,6 +109,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "StartupMetricUtils", RegisterStartupMetricUtils },
   { "TabAndroid", TabAndroid::RegisterTabAndroid },
   { "TemplateUrlServiceAndroid", TemplateUrlServiceAndroid::Register },
+  { "TranslateInfoBarDelegate", RegisterTranslateInfoBarDelegate},
   { "TtsPlatformImpl", TtsPlatformImplAndroid::Register },
   {"UrlUtilities", RegisterUrlUtilities},
   { "ValidationMessageBubbleAndroid",

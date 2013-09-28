@@ -83,6 +83,8 @@
         'browser/ui/android/infobars/infobar_android.h',
         'browser/ui/android/infobars/infobar_container_android.cc',
         'browser/ui/android/infobars/infobar_container_android.h',
+        'browser/ui/android/infobars/translate_infobar.cc',
+        'browser/ui/android/infobars/translate_infobar.h',
         'browser/ui/android/certificate_viewer_android.cc',
         'browser/ui/android/chrome_http_auth_handler.cc',
         'browser/ui/android/chrome_http_auth_handler.h',

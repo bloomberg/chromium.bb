@@ -69,6 +69,58 @@ You are signing in with a managed account and giving its administrator control o
         <message desc="Accessibility label for the dismiss infobar Button" name="IDS_INFOBAR_CLOSE">
         Close
       </message>
+      <!-- TranslateInfoBar -->
+      <message name="IDS_TRANSLATE_INFOBAR_TEXT" desc="Text to display on the translate infobar to offer a translate. [CHAR-LIMIT=64]">
+        This page is in <ph name="SOURCE_LANGUAGE">^1<ex>English</ex></ph>. Translate it to <ph name="TARGET_LANGUAGE">^2<ex>FRENCH</ex></ph>?
+      </message>
+      <message name="IDS_TRANSLATE_INFOBAR_CHANGE_LANGUAGES" desc="link text to offer to change languages.">
+        Change languages
+      </message>
+      <message name="IDS_TRANSLATE_INFOBAR_TRANSLATION_DONE">
+        Translated to <ph name="TARGET_LANGUAGE">%1$s<ex>FRENCH</ex></ph>.
+      </message>
+      <message name="IDS_TRANSLATE_INFOBAR_TRANSLATION_MORE_OPTIONS" desc="Text link that will provide more options after a translate [CHAR-LIMIT=24]">
+        More
+      </message>
+      <message name="IDS_TRANSLATE_INFOBAR_TRANSLATING">
+        Translating page to <ph name="SOURCE_LANGUAGE">%1$s<ex>English</ex></ph>...
+      </message>
+      <message name="IDS_TRANSLATE_INFOBAR_ERROR">
+        Oops. This page could not be translated.
+      </message>
+      <message name="IDS_TRANSLATE_ALWAYS_TEXT" desc="checkbox to always translate a language pair">
+        Always translate <ph name="SOURCE_LANGUAGE">%1$s<ex>French</ex></ph>
+      </message>
+      <message name="IDS_TRANSLATE_NEVER_TRANSLATE_MESSAGE_TEXT">
+        Would you like Google Chrome to offer to translate <ph name="LANGUAGE">%1$s<ex>French</ex></ph> pages from this site next time?
+      </message>
+      <message name="IDS_TRANSLATE_BUTTON" desc="Possible texts to display on the translate infobar buttons. [CHAR-LIMIT=24]">
+        Translate
+      </message>
+      <message name="IDS_TRANSLATE_NOPE" desc="Button text for rejecting infobar translations">
+        Nope
+      </message>
+      <message name="IDS_TRANSLATE_SHOW_ORIGINAL">
+        Show original
+      </message>
+      <message name="IDS_TRANSLATE_RETRY">
+        Try again
+      </message>
+      <message name="IDS_TRANSLATE_OPTIONS_SOURCE_HINT" desc="Language drop down text for the source language. [CHAR-LIMIT=64]">
+        Page Language: <ph name="SOURCE_LANGUAGE">^1<ex>FRENCH</ex></ph>
+      </message>
+      <message name="IDS_TRANSLATE_OPTIONS_TARGET_HINT" desc="Language drop down text for the target language. [CHAR-LIMIT=64]">
+        Translation Language: <ph name="SOURCE_LANGUAGE">^1<ex>FRENCH</ex></ph>
+      </message>
+      <message name="IDS_TRANSLATE_BUTTON_DONE" desc="Text to display on the translate infobar button to apply new languages. [CHAR-LIMIT=24]">
+        Done
+      </message>
+      <message name="IDS_TRANSLATE_NEVER_TRANSLATE_SITE" desc="Text to display on the never translate site (like www.google.com) button. [CHAR-LIMIT=64]">
+        Never translate this site
+      </message>
+      <message name="IDS_TRANSLATE_NEVER_TRANSLATE_LANGUAGE" desc="Text to display on the never translate language button. [CHAR-LIMIT=64]">
+        Never translate <ph name="LANGUAGE">%1$s<ex>French</ex></ph>
+      </message>
     </messages>
   </release>
   <translations>

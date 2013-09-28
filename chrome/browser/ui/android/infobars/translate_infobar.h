@@ -1,0 +1,54 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_TRANSLATE_INFOBAR_H_
+#define CHROME_BROWSER_UI_ANDROID_INFOBARS_TRANSLATE_INFOBAR_H_
+
+#include "base/android/scoped_java_ref.h"
+#include "base/basictypes.h"
+#include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/browser/ui/android/infobars/infobar_android.h"
+
+namespace gfx {
+class Image;
+}
+
+// Implementation of InfoBar for translate.
+class TranslateInfoBar : public InfoBarAndroid {
+ public:
+  TranslateInfoBar(InfoBarService* owner, TranslateInfoBarDelegate* delegate);
+  virtual ~TranslateInfoBar();
+
+  // JNI methods specific to translate
+  void ApplyTranslateOptions(JNIEnv* env,
+                             jobject obj,
+                             int source_language_index,
+                             int target_language_index,
+                             bool always_translate,
+                             bool never_translate_language,
+                             bool never_translate_site);
+
+ private:
+  // InfoBar overrides.
+  virtual base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
+      JNIEnv* env) OVERRIDE;
+  virtual void ProcessButton(int action,
+                             const std::string& action_value) OVERRIDE;
+  virtual void PassJavaInfoBar(InfoBarAndroid* source) OVERRIDE;
+  bool ShouldDisplayNeverInfoBarOnNope();
+
+  void SetJavaDelegate(jobject delegate);
+  void TransferOwnership(TranslateInfoBar* destination,
+                         TranslateInfoBarDelegate::Type new_type);
+
+  TranslateInfoBarDelegate* delegate_;
+  base::android::ScopedJavaGlobalRef<jobject> java_translate_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(TranslateInfoBar);
+};
+
+// Registers native methods
+bool RegisterTranslateInfoBarDelegate(JNIEnv* env);
+
+#endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_TRANSLATE_INFOBAR_H_

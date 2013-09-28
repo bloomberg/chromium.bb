@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/strings/string16.h"
-#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "printing/printing_context.h"
 #include "printing/printing_context_android.h"
 
@@ -11,13 +10,6 @@
 // compile. They will be removed once real implementations are
 // written/upstreamed, or once other code is refactored to eliminate the
 // need for them.
-
-class InfoBarService;
-
-// static
-InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  return NULL;
-}
 
 // static
 printing::PrintingContext* printing::PrintingContext::Create(

@@ -5,15 +5,9 @@
 // This file contains stubs for some Chrome for Android specific code that is
 // needed to compile some tests.
 
-#include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "printing/printing_context.h"
 #include "printing/printing_context_android.h"
 
-// static
-InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  return NULL;
-}
 
 // static
 printing::PrintingContext* printing::PrintingContext::Create(

@@ -3617,6 +3617,7 @@
             'android/java/src/org/chromium/chrome/browser/infobar/ConfirmInfoBarDelegate.java',
             'android/java/src/org/chromium/chrome/browser/infobar/InfoBar.java',
             'android/java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java',
+            'android/java/src/org/chromium/chrome/browser/infobar/TranslateInfoBarDelegate.java',
           ],
           'variables': {
             'jni_gen_package': 'chrome',
