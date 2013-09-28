@@ -461,11 +461,14 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   bool InputIsEditable(const DetailInput& input, DialogSection section) const;
 
   // Whether all of the input fields currently showing in the dialog have valid
-  // contents.
+  // contents. This validates only by checking "sure" messages, i.e. messages
+  // that would have been displayed to the user during editing, as opposed to
+  // submission.
   bool AllSectionsAreValid();
 
   // Whether all of the input fields currently showing in the given |section| of
-  // the dialog have valid contents.
+  // the dialog have valid contents. This validates only by checking "sure"
+  // messages - see AllSectionsAreValid.
   bool SectionIsValid(DialogSection section);
 
   // Whether the currently active credit card expiration date is valid.
