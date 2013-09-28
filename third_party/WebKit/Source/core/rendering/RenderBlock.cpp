@@ -28,6 +28,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/Text.h"
 #include "core/events/OverflowEvent.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
@@ -5813,8 +5814,6 @@ void RenderBlock::updateFirstLetter()
     if (style()->styleType() == FIRST_LETTER)
         return;
 
-    // FIXME: We need to destroy the first-letter object if it is no longer the first child. Need to find
-    // an efficient way to check for that situation though before implementing anything.
     RenderObject* firstLetterBlock = findFirstLetterBlock(this);
     if (!firstLetterBlock)
         return;
@@ -5845,9 +5844,24 @@ void RenderBlock::updateFirstLetter()
     if (!currChild)
         return;
 
-    // If the child already has style, then it has already been created, so we just want
-    // to update it.
     if (currChild->parent()->style()->styleType() == FIRST_LETTER) {
+        // Destroy the first-letter object if it is no longer the first child.
+        RenderObject* remainingText = currChild->parent()->nextSibling();
+        if (remainingText && currChild->node() != remainingText->node()) {
+            if (!remainingText->isText() || remainingText->isBR())
+                return;
+
+            LayoutStateDisabler layoutStateDisabler(view());
+
+            if (RenderObject* oldRemainingText = toRenderBoxModelObject(currChild->parent())->firstLetterRemainingText())
+                toRenderText(oldRemainingText)->setText(toText(oldRemainingText->node())->data().impl());
+
+            createFirstLetterRenderer(firstLetterBlock, remainingText);
+            return;
+        }
+
+        // If the child already has style, then it has already been created, so we just want
+        // to update it.
         updateFirstLetterStyle(firstLetterBlock, currChild);
         return;
     }

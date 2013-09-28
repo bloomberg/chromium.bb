@@ -1294,3 +1294,5 @@ crbug.com/299819 inspector/console/console-timeline.html [ Failure Pass Timeout 
 
 # Flaky.
 crbug.com/300025 [ Win7 Debug ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Timeout Pass ]
+
+crbug.com/92797 fast/css/first-letter-block-change.html [ NeedsRebaseline ]
