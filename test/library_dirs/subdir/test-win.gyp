@@ -22,7 +22,7 @@
       ],
     },
     {
-      'target_name': 'libraries-search-path-test',
+      'target_name': 'libraries-search-path-test-lib-suffix',
       'type': 'executable',
       'dependencies': [
         # It is important to NOT list the mylib as a dependency here, because
@@ -52,7 +52,7 @@
       ],
       'link_settings': {
         'libraries': [
-          '-lmylib',
+          '-lmylib.lib',
         ],
       },
     },

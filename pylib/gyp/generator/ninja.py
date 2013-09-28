@@ -1055,8 +1055,8 @@ class NinjaWriter:
     if self.flavor == 'win':
       library_dirs = [self.msvs_settings.ConvertVSMacros(l, config_name)
                       for l in library_dirs]
-      library_dirs = [QuoteShellArgument('-LIBPATH:' + self.GypPathToNinja(l),
-                                         self.flavor)
+      library_dirs = ['/LIBPATH:' + QuoteShellArgument(self.GypPathToNinja(l),
+                                                       self.flavor)
                       for l in library_dirs]
     else:
       library_dirs = [QuoteShellArgument('-L' + self.GypPathToNinja(l),
