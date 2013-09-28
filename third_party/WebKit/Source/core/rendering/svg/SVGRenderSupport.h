@@ -46,6 +46,9 @@ public:
     // Shares child layouting code between RenderSVGRoot/RenderSVG(Hidden)Container
     static void layoutChildren(RenderObject*, bool selfNeedsLayout);
 
+    // Layout resources used by this node.
+    static void layoutResourcesIfNeeded(const RenderObject*);
+
     // Helper function determining wheter overflow is hidden
     static bool isOverflowHidden(const RenderObject*);
 

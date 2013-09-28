@@ -23,10 +23,11 @@
 
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGGraphicsElement.h"
+
+#include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 
@@ -41,6 +42,7 @@ RenderSVGResourceContainer::RenderSVGResourceContainer(SVGElement* node)
     , m_id(node->getIdAttribute())
     , m_registered(false)
     , m_isInvalidating(false)
+    , m_isInLayout(false)
 {
 }
 
@@ -52,9 +54,15 @@ RenderSVGResourceContainer::~RenderSVGResourceContainer()
 
 void RenderSVGResourceContainer::layout()
 {
+    ASSERT(needsLayout());
+    if (m_isInLayout)
+        return;
+
+    TemporaryChange<bool> inLayoutChange(m_isInLayout, true);
+
     // Invalidate all resources if our layout changed.
     if (everHadLayout() && selfNeedsLayout())
-        RenderSVGRoot::addResourceForClientInvalidation(this);
+        removeAllClientsFromCache();
 
     RenderSVGHiddenContainer::layout();
 }

@@ -277,6 +277,27 @@ bool SVGResources::buildResources(const RenderObject* object, const SVGRenderSty
     return foundResources;
 }
 
+void SVGResources::layoutIfNeeded()
+{
+    if (m_clipperFilterMaskerData) {
+        if (RenderSVGResourceClipper* clipper = m_clipperFilterMaskerData->clipper)
+            clipper->layoutIfNeeded();
+        if (RenderSVGResourceMasker* masker = m_clipperFilterMaskerData->masker)
+            masker->layoutIfNeeded();
+        if (RenderSVGResourceFilter* filter = m_clipperFilterMaskerData->filter)
+            filter->layoutIfNeeded();
+    }
+
+    if (m_markerData) {
+        if (RenderSVGResourceMarker* marker = m_markerData->markerStart)
+            marker->layoutIfNeeded();
+        if (RenderSVGResourceMarker* marker = m_markerData->markerMid)
+            marker->layoutIfNeeded();
+        if (RenderSVGResourceMarker* marker = m_markerData->markerEnd)
+            marker->layoutIfNeeded();
+    }
+}
+
 void SVGResources::removeClientFromCache(RenderObject* object, bool markForInvalidation) const
 {
     if (!m_clipperFilterMaskerData && !m_markerData && !m_fillStrokeData && !m_linkedResource)

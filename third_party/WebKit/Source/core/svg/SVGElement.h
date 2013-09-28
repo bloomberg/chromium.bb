@@ -37,6 +37,7 @@ namespace WebCore {
 class AffineTransform;
 class CSSCursorImageValue;
 class Document;
+class SubtreeLayoutScope;
 class SVGAttributeToPropertyMap;
 class SVGCursorElement;
 class SVGDocumentExtensions;
@@ -133,6 +134,8 @@ public:
 
     virtual bool shouldMoveToFlowThread(RenderStyle*) const OVERRIDE;
 
+    void invalidateRelativeLengthClients(SubtreeLayoutScope* = 0);
+
 protected:
     SVGElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 
@@ -186,6 +189,10 @@ private:
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGElement)
         DECLARE_ANIMATED_STRING(ClassName, className)
     END_DECLARE_ANIMATED_PROPERTIES
+
+#if !ASSERT_DISABLED
+    bool m_inRelativeLengthClientsInvalidation;
+#endif
 };
 
 struct SVGAttributeHashTranslator {

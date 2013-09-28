@@ -42,6 +42,7 @@
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderSelectionInfo.h"
 #include "core/rendering/RenderWidget.h"
+#include "core/svg/SVGElement.h"
 
 namespace WebCore {
 
@@ -273,6 +274,12 @@ void RenderView::layout()
                     || child->style()->logicalMaxHeight().isViewportPercentage()
                     || child->isSVGRoot())
                 layoutScope.setChildNeedsLayout(child);
+
+            if (child->isSVGRoot()) {
+                ASSERT(child->node());
+                ASSERT(child->node()->isSVGElement());
+                toSVGElement(child->node())->invalidateRelativeLengthClients(&layoutScope);
+            }
         }
     }
 

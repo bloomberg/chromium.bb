@@ -63,10 +63,6 @@ public:
     // localToBorderBoxTransform maps local SVG viewport coordinates to local CSS box coordinates.
     const AffineTransform& localToBorderBoxTransform() const { return m_localToBorderBoxTransform; }
 
-    // The flag is cleared at the beginning of each layout() pass. Elements then call this
-    // method during layout when they are invalidated by a filter.
-    static void addResourceForClientInvalidation(RenderSVGResourceContainer*);
-
 private:
     virtual RenderObjectChildList* virtualChildren() { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const { return children(); }
@@ -119,7 +115,6 @@ private:
     FloatRect m_repaintBoundingBox;
     mutable AffineTransform m_localToParentTransform;
     AffineTransform m_localToBorderBoxTransform;
-    HashSet<RenderSVGResourceContainer*> m_resourcesNeedingToInvalidateClients;
     bool m_isLayoutSizeChanged : 1;
     bool m_needsBoundariesOrTransformUpdate : 1;
 };

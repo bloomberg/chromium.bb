@@ -60,12 +60,13 @@ protected:
     void markAllClientLayersForInvalidation();
     void markClientForInvalidation(RenderObject*, InvalidationMode);
 
+    bool m_isInLayout;
+
 private:
     friend class SVGResourcesCache;
     void addClient(RenderObject*);
     void removeClient(RenderObject*);
 
-private:
     virtual void willBeDestroyed() OVERRIDE FINAL;
     void registerResource();
 

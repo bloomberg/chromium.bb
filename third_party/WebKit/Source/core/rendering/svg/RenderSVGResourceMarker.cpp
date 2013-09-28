@@ -25,10 +25,11 @@
 
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
-#include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGMarkerElement.h"
+
+#include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 
@@ -45,9 +46,15 @@ RenderSVGResourceMarker::~RenderSVGResourceMarker()
 
 void RenderSVGResourceMarker::layout()
 {
+    ASSERT(needsLayout());
+    if (m_isInLayout)
+        return;
+
+    TemporaryChange<bool> inLayoutChange(m_isInLayout, true);
+
     // Invalidate all resources if our layout changed.
     if (everHadLayout() && selfNeedsLayout())
-        RenderSVGRoot::addResourceForClientInvalidation(this);
+        removeAllClientsFromCache();
 
     // RenderSVGHiddenContainer overwrites layout(). We need the
     // layouting of RenderSVGContainer for calculating  local

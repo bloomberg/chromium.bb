@@ -43,6 +43,7 @@ public:
     SVGResources();
 
     bool buildResources(const RenderObject*, const SVGRenderStyle*);
+    void layoutIfNeeded();
 
     // Ordinary resources
     RenderSVGResourceClipper* clipper() const { return m_clipperFilterMaskerData ? m_clipperFilterMaskerData->clipper : 0; }

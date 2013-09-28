@@ -47,6 +47,8 @@
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGUseElement.h"
 
+#include "wtf/TemporaryChange.h"
+
 namespace WebCore {
 
 // Animated property definitions
@@ -71,6 +73,9 @@ void mapAttributeToCSSProperty(HashMap<StringImpl*, CSSPropertyID>* propertyName
 
 SVGElement::SVGElement(const QualifiedName& tagName, Document& document, ConstructionType constructionType)
     : Element(tagName, &document, constructionType)
+#if !ASSERT_DISABLED
+    , m_inRelativeLengthClientsInvalidation(false)
+#endif
 {
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGElement();
@@ -451,6 +456,7 @@ void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths,
     // Register the parent in the grandparents map, etc. Repeat procedure until the root of the SVG tree.
     for (ContainerNode* currentNode = this; currentNode && currentNode->isSVGElement(); currentNode = currentNode->parentNode()) {
         SVGElement* currentElement = toSVGElement(currentNode);
+        ASSERT(!currentElement->m_inRelativeLengthClientsInvalidation);
 
         bool hadRelativeLengths = currentElement->hasRelativeLengths();
         if (clientHasRelativeLengths)
@@ -464,6 +470,28 @@ void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths,
 
         clientElement = currentElement;
         clientHasRelativeLengths = clientElement->hasRelativeLengths();
+    }
+}
+
+void SVGElement::invalidateRelativeLengthClients(SubtreeLayoutScope* layoutScope)
+{
+    if (!inDocument())
+        return;
+
+    ASSERT(!m_inRelativeLengthClientsInvalidation);
+#if !ASSERT_DISABLED
+    TemporaryChange<bool> inRelativeLengthClientsInvalidationChange(m_inRelativeLengthClientsInvalidation, true);
+#endif
+
+    HashSet<SVGElement*>::iterator end = m_elementsWithRelativeLengths.end();
+    for (HashSet<SVGElement*>::iterator it = m_elementsWithRelativeLengths.begin(); it != end; ++it) {
+        if (*it == this)
+            continue;
+
+        if ((*it)->renderer() && (*it)->selfHasRelativeLengths())
+            (*it)->renderer()->setNeedsLayout(MarkContainingBlockChain, layoutScope);
+
+        (*it)->invalidateRelativeLengthClients(layoutScope);
     }
 }
 

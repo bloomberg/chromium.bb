@@ -280,6 +280,7 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
         || attrName == SVGNames::yAttr) {
         updateRelativeLengthsOrViewBox = true;
         updateRelativeLengthsInformation();
+        invalidateRelativeLengthClients();
 
         // At the SVG/HTML boundary (aka RenderSVGRoot), the width attribute can
         // affect the replaced size so we need to mark it for updating.
