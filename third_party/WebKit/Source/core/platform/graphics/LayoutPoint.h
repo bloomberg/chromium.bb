@@ -39,7 +39,7 @@ namespace WebCore {
 
 class LayoutPoint {
 public:
-    LayoutPoint() : m_x(0), m_y(0) { }
+    LayoutPoint() { }
     LayoutPoint(LayoutUnit x, LayoutUnit y) : m_x(x), m_y(y) { }
     LayoutPoint(const IntPoint& point) : m_x(point.x()), m_y(point.y()) { }
     explicit LayoutPoint(const FloatPoint& size) : m_x(size.x()), m_y(size.y()) { }

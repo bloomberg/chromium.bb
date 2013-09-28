@@ -46,7 +46,7 @@ enum AspectRatioFit {
 
 class LayoutSize {
 public:
-    LayoutSize() : m_width(0), m_height(0) { }
+    LayoutSize() { }
     LayoutSize(const IntSize& size) : m_width(size.width()), m_height(size.height()) { }
     LayoutSize(LayoutUnit width, LayoutUnit height) : m_width(width), m_height(height) { }
 
