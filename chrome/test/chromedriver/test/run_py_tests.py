@@ -91,6 +91,8 @@ def _GetDesktopNegativeFilter(version_name):
 _ANDROID_NEGATIVE_FILTER = {}
 _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] = (
     _NEGATIVE_FILTER['HEAD'] + [
+        # TODO(chrisgao): fix hang of tab crash test on android.
+        'ChromeDriverTest.testTabCrash',
         # Android doesn't support switches and extensions.
         'ChromeSwitchesCapabilityTest.*',
         'ChromeExtensionsCapabilityTest.*',
