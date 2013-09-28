@@ -9,6 +9,7 @@
       'type': 'shared_library',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../ui/gfx/gfx.gyp:gfx',
         '../../ui/ui.gyp:ui',
       ],
       'defines': [

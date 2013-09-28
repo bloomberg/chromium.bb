@@ -43,6 +43,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
+        '../ui/gfx/gfx.gyp:gfx',
         '../ui/message_center/message_center.gyp:message_center',
         '../ui/native_theme/native_theme.gyp:native_theme',
         '../ui/snapshot/snapshot.gyp:snapshot',

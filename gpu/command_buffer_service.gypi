@@ -15,6 +15,7 @@
     '../base/base.gyp:base',
     '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
     '../crypto/crypto.gyp:crypto',
+    '../ui/gfx/gfx.gyp:gfx',
     '../ui/gl/gl.gyp:gl',
     '../ui/ui.gyp:ui',
     '../third_party/angle_dx11/src/build_angle.gyp:translator_glsl',

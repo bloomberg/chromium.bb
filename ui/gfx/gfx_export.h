@@ -8,14 +8,14 @@
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
-#if defined(UI_IMPLEMENTATION)
+#if defined(GFX_IMPLEMENTATION)
 #define GFX_EXPORT __declspec(dllexport)
 #else
 #define GFX_EXPORT __declspec(dllimport)
-#endif  // defined(UI_IMPLEMENTATION)
+#endif  // defined(GFX_IMPLEMENTATION)
 
 #else  // defined(WIN32)
-#if defined(UI_IMPLEMENTATION)
+#if defined(GFX_IMPLEMENTATION)
 #define GFX_EXPORT __attribute__((visibility("default")))
 #else
 #define GFX_EXPORT

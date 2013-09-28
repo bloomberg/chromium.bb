@@ -14,6 +14,7 @@
     '../third_party/re2/re2.gyp:re2',
     '../third_party/zlib/google/zip.gyp:zip',
     '../third_party/zlib/zlib.gyp:zlib',
+    '../ui/gfx/gfx.gyp:gfx',
     '../ui/snapshot/snapshot.gyp:snapshot',
     '../ui/ui.gyp:ui',
     '../ui/ui.gyp:ui_resources',

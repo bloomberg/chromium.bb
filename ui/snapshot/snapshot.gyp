@@ -13,6 +13,7 @@
       'dependencies': [
         '../../skia/skia.gyp:skia',
         '../../base/base.gyp:base',
+        '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
       ],
       'defines': [
@@ -49,6 +50,7 @@
         '../../base/base.gyp:base',
         '../../base/base.gyp:test_support_base',
         '../../testing/gtest.gyp:gtest',
+        '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         'snapshot'
       ],
