@@ -18,6 +18,8 @@
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+class FakeSigninManagerBase;
+
 // TestNotificationTracker doesn't do a deep copy on the notification details.
 // We have to in order to read it out, or we have a bad ptr, since the details
 // are a reference on the stack.
@@ -73,9 +75,12 @@ class TokenServiceTestHarness : public testing::Test {
   TokenAvailableTracker* success_tracker() { return &success_tracker_; }
   TokenFailedTracker* failure_tracker() { return &failure_tracker_; }
 
+  void CreateSigninManager(const std::string& username);
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
 
+  FakeSigninManagerBase* signin_manager_;
   TokenService* service_;
   TokenAvailableTracker success_tracker_;
   TokenFailedTracker failure_tracker_;
