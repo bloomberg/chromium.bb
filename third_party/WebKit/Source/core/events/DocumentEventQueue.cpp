@@ -78,17 +78,16 @@ bool DocumentEventQueue::enqueueEvent(PassRefPtr<Event> event)
     return true;
 }
 
-void DocumentEventQueue::enqueueOrDispatchScrollEvent(PassRefPtr<Node> target, ScrollEventTargetType targetType)
+void DocumentEventQueue::enqueueScrollEventForNode(Node* target)
 {
     if (!target->document().hasListenerType(Document::SCROLL_LISTENER))
         return;
 
-    // Per the W3C CSSOM View Module, scroll events fired at the document should bubble, others should not.
-    RefPtr<Event> scrollEvent = targetType == ScrollEventDocumentTarget ? Event::createBubble(eventNames().scrollEvent) : Event::create(eventNames().scrollEvent);
-
-    if (!m_nodesWithQueuedScrollEvents.add(target.get()).isNewEntry)
+    if (!m_nodesWithQueuedScrollEvents.add(target).isNewEntry)
         return;
 
+    // Per the W3C CSSOM View Module only scroll events fired at the document should bubble.
+    RefPtr<Event> scrollEvent = target->isDocumentNode() ? Event::createBubble(eventNames().scrollEvent) : Event::create(eventNames().scrollEvent);
     scrollEvent->setTarget(target);
     enqueueEvent(scrollEvent.release());
 }

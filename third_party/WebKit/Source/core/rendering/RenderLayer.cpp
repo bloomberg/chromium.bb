@@ -50,7 +50,6 @@
 #include "SVGNames.h"
 #include "core/css/PseudoStyleRequest.h"
 #include "core/dom/Document.h"
-#include "core/events/DocumentEventQueue.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"

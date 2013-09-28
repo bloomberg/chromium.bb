@@ -55,14 +55,12 @@
 #include "core/css/resolver/FontBuilder.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Attr.h"
-#include "core/events/BeforeUnloadEvent.h"
 #include "core/dom/CDATASection.h"
 #include "core/dom/Comment.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/CustomElementRegistrationContext.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DOMNamedFlowCollection.h"
-#include "core/events/DocumentEventQueue.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/DocumentMarkerController.h"
@@ -70,12 +68,7 @@
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/events/Event.h"
-#include "core/events/EventFactory.h"
-#include "core/events/EventListener.h"
-#include "core/events/EventNames.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/events/HashChangeEvent.h"
 #include "core/dom/NamedFlowCollection.h"
 #include "core/dom/NodeFilter.h"
 #include "core/dom/NodeIterator.h"
@@ -84,13 +77,10 @@
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/NodeWithIndex.h"
-#include "core/events/PageTransitionEvent.h"
-#include "core/events/PopStateEvent.h"
 #include "core/dom/PostAttachCallbacks.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
-#include "core/events/ScopedEventQueue.h"
 #include "core/dom/ScriptRunner.h"
 #include "core/dom/ScriptedAnimationController.h"
 #include "core/dom/SelectorQuery.h"
@@ -104,6 +94,16 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/events/BeforeUnloadEvent.h"
+#include "core/events/DocumentEventQueue.h"
+#include "core/events/Event.h"
+#include "core/events/EventFactory.h"
+#include "core/events/EventListener.h"
+#include "core/events/EventNames.h"
+#include "core/events/HashChangeEvent.h"
+#include "core/events/PageTransitionEvent.h"
+#include "core/events/PopStateEvent.h"
+#include "core/events/ScopedEventQueue.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/html/HTMLAllCollection.h"
@@ -3716,6 +3716,11 @@ void Document::dispatchWindowEvent(PassRefPtr<Event> event,  PassRefPtr<EventTar
     domWindow->dispatchEvent(event, target);
 }
 
+EventQueue* Document::eventQueue() const
+{
+    return m_eventQueue.get();
+}
+
 void Document::enqueueWindowEvent(PassRefPtr<Event> event)
 {
     event->setTarget(domWindow());
@@ -3726,6 +3731,11 @@ void Document::enqueueDocumentEvent(PassRefPtr<Event> event)
 {
     event->setTarget(this);
     m_eventQueue->enqueueEvent(event);
+}
+
+void Document::enqueueScrollEventForNode(Node* target)
+{
+    m_eventQueue->enqueueScrollEventForNode(target);
 }
 
 PassRefPtr<Event> Document::createEvent(const String& eventType, ExceptionState& es)

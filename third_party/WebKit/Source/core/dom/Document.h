@@ -32,7 +32,6 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/CustomElement.h"
 #include "core/dom/DOMTimeStamp.h"
-#include "core/events/DocumentEventQueue.h"
 #include "core/dom/DocumentInit.h"
 #include "core/dom/DocumentTiming.h"
 #include "core/dom/IconURL.h"
@@ -63,7 +62,6 @@ class CDATASection;
 class CSSStyleDeclaration;
 class CSSStyleSheet;
 class CSSStyleSheetResource;
-class ScriptResource;
 class CanvasRenderingContext;
 class CharacterData;
 class Chrome;
@@ -79,6 +77,7 @@ class DOMWindow;
 class DOMWrapperWorld;
 class Database;
 class DatabaseThread;
+class DocumentEventQueue;
 class DocumentFragment;
 class DocumentLifecycleNotifier;
 class DocumentLifecycleObserver;
@@ -134,6 +133,7 @@ class RequestAnimationFrameCallback;
 class ResourceFetcher;
 class SVGDocumentExtensions;
 class ScriptElementData;
+class ScriptResource;
 class ScriptRunner;
 class ScriptableDocumentParser;
 class ScriptedAnimationController;
@@ -142,9 +142,9 @@ class SegmentedString;
 class SelectorQueryCache;
 class SerializedScriptValue;
 class Settings;
+class StyleEngine;
 class StyleResolver;
 class StyleSheet;
-class StyleEngine;
 class StyleSheetContents;
 class StyleSheetList;
 class Text;
@@ -952,7 +952,7 @@ public:
     void enqueuePageshowEvent(PageshowEventPersistence);
     void enqueueHashchangeEvent(const String& oldURL, const String& newURL);
     void enqueuePopstateEvent(PassRefPtr<SerializedScriptValue> stateObject);
-    virtual DocumentEventQueue* eventQueue() const { return m_eventQueue.get(); }
+    void enqueueScrollEventForNode(Node*);
 
     const QualifiedName& idAttributeName() const { return m_idAttributeName; }
 
@@ -1076,6 +1076,8 @@ protected:
 private:
     friend class Node;
     friend class IgnoreDestructiveWriteCountIncrementer;
+
+    virtual EventQueue* eventQueue() const FINAL;
 
     void updateDistributionIfNeeded();
 

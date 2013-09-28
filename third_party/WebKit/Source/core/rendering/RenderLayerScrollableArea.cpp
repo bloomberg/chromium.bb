@@ -304,7 +304,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 
     // Schedule the scroll DOM event.
     if (m_box->node())
-        m_box->node()->document().eventQueue()->enqueueOrDispatchScrollEvent(m_box->node(), DocumentEventQueue::ScrollEventElementTarget);
+        m_box->node()->document().enqueueScrollEventForNode(m_box->node());
 
     InspectorInstrumentation::didScrollLayer(m_box);
 }

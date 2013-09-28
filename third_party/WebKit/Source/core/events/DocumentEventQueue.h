@@ -43,11 +43,6 @@ class ScriptExecutionContext;
 
 class DocumentEventQueue : public RefCounted<DocumentEventQueue>, public EventQueue {
 public:
-    enum ScrollEventTargetType {
-        ScrollEventDocumentTarget,
-        ScrollEventElementTarget
-    };
-
     static PassRefPtr<DocumentEventQueue> create(ScriptExecutionContext*);
     virtual ~DocumentEventQueue();
 
@@ -56,7 +51,7 @@ public:
     virtual bool cancelEvent(Event*) OVERRIDE;
     virtual void close() OVERRIDE;
 
-    void enqueueOrDispatchScrollEvent(PassRefPtr<Node>, ScrollEventTargetType);
+    void enqueueScrollEventForNode(Node*);
 
 private:
     explicit DocumentEventQueue(ScriptExecutionContext*);
