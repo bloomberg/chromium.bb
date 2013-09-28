@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/scoped_temp_dir.h"
@@ -97,10 +99,21 @@ void VerifyTestAlbumsImagesIndex(PicasaDataProvider* data_provider,
 class TestPicasaDataProvider : public PicasaDataProvider {
  public:
   explicit TestPicasaDataProvider(const base::FilePath& database_path)
-      : PicasaDataProvider(database_path) {
+      : PicasaDataProvider(database_path),
+        file_watch_request_returned_(false)  {
   }
 
   virtual ~TestPicasaDataProvider() {}
+
+  // |ready_callback| called with true if and when the file watch is started
+  // successfully. If the file watch fails, it's called with false.
+  void EnsureFileWatchStartedForTesting(const ReadyCallback& ready_callback) {
+    if (!file_watch_request_returned_) {
+      file_watch_started_callbacks_.push_back(ready_callback);
+      return;
+    }
+    ready_callback.Run(temp_dir_watcher_.get() != NULL);
+  }
 
   // Simulates the actual writing process of moving all the database files
   // from the temporary directory to the database directory in a loop.
@@ -140,6 +153,24 @@ class TestPicasaDataProvider : public PicasaDataProvider {
   }
 
  private:
+  virtual void OnTempDirWatchStarted(
+      scoped_ptr<base::FilePathWatcher> temp_dir_watcher) OVERRIDE {
+    PicasaDataProvider::OnTempDirWatchStarted(temp_dir_watcher.Pass());
+
+    file_watch_request_returned_ = true;
+    for (std::vector<ReadyCallback>::const_iterator it =
+             file_watch_started_callbacks_.begin();
+         it != file_watch_started_callbacks_.end();
+         ++it) {
+      it->Run(temp_dir_watcher_.get() != NULL);
+    }
+    file_watch_started_callbacks_.clear();
+  }
+
+  // Used for test that utilizes file watch
+  bool file_watch_request_returned_;
+  std::vector<ReadyCallback> file_watch_started_callbacks_;
+
   base::Closure invalidate_callback_;
 };
 
@@ -414,6 +445,14 @@ class PicasaDataProviderFileWatcherInvalidateTest
  protected:
   virtual void ListCallback(bool parse_success) {
     ASSERT_FALSE(parse_success);
+    data_provider()->EnsureFileWatchStartedForTesting(
+        base::Bind(&PicasaDataProviderFileWatcherInvalidateTest::
+                       OnPicasaTempDirWatchStarted,
+                   base::Unretained(this)));
+  }
+
+  void OnPicasaTempDirWatchStarted(bool file_watch_successful) {
+    ASSERT_TRUE(file_watch_successful);
 
     // Validate the list after the file move triggers an invalidate.
     data_provider()->SetInvalidateCallback(base::Bind(
@@ -444,15 +483,8 @@ class PicasaDataProviderFileWatcherInvalidateTest
   }
 };
 
-// Flaky on the Windows.  See http://crbug.com/289681
-#if defined(OS_WIN)
-#define MAYBE_FileWatcherInvalidateTest DISABLED_FileWatcherInvalidateTest
-#else
-#define MAYBE_FileWatcherInvalidateTest FileWatcherInvalidateTest
-#endif
-
 IN_PROC_BROWSER_TEST_F(PicasaDataProviderFileWatcherInvalidateTest,
-                       MAYBE_FileWatcherInvalidateTest) {
+                       FileWatcherInvalidateTest) {
   RunTest();
 }
 

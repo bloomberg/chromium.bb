@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_DATA_PROVIDER_H_
 
 #include <map>
-#include <queue>
 #include <string>
 #include <vector>
 
@@ -66,7 +65,7 @@ class PicasaDataProvider {
   friend class TestPicasaDataProvider;
 
   // Called when the FilePathWatcher for Picasa's temp directory has started.
-  void OnTempDirWatchStarted(
+  virtual void OnTempDirWatchStarted(
       scoped_ptr<base::FilePathWatcher> temp_dir_watcher);
 
   // Called when Picasa's temp directory has changed. Virtual for testing.
@@ -98,8 +97,8 @@ class PicasaDataProvider {
   State state_;
 
   // Callbacks that are waiting for their requested data to be ready.
-  std::queue<ReadyCallback> album_list_ready_callbacks_;
-  std::queue<ReadyCallback> albums_index_ready_callbacks_;
+  std::vector<ReadyCallback> album_list_ready_callbacks_;
+  std::vector<ReadyCallback> albums_index_ready_callbacks_;
 
   // Stores the "live" in-flight utility processes. Callbacks from other
   // (older) utility processes are stale and ignored. Only one of these at a

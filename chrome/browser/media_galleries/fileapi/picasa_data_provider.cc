@@ -24,12 +24,15 @@ namespace picasa {
 namespace {
 
 void RunAllCallbacks(
-    std::queue<PicasaDataProvider::ReadyCallback>* ready_callbacks_queue,
+    std::vector<PicasaDataProvider::ReadyCallback>* ready_callbacks,
     bool success) {
-  while (!ready_callbacks_queue->empty()) {
-    ready_callbacks_queue->front().Run(success);
-    ready_callbacks_queue->pop();
+  for (std::vector<PicasaDataProvider::ReadyCallback>::const_iterator it =
+           ready_callbacks->begin();
+       it != ready_callbacks->end();
+       ++it) {
+    it->Run(success);
   }
+  ready_callbacks->clear();
 }
 
 }  // namespace
@@ -67,13 +70,13 @@ void PicasaDataProvider::RefreshData(DataType needed_data,
       ready_callback.Run(true /* success */);
       return;
     }
-    album_list_ready_callbacks_.push(ready_callback);
+    album_list_ready_callbacks_.push_back(ready_callback);
   } else {
     if (state_ == ALBUMS_IMAGES_FRESH_STATE) {
       ready_callback.Run(true /* success */);
       return;
     }
-    albums_index_ready_callbacks_.push(ready_callback);
+    albums_index_ready_callbacks_.push_back(ready_callback);
   }
   DoRefreshIfNecessary();
 }
