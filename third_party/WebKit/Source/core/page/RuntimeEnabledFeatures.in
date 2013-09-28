@@ -77,7 +77,7 @@ Promise status=experimental
 Quota status=stable
 OverlayScrollbars
 RequestAutocomplete status=test
-RowSpanLogicalHeightSpreading status=test
+RowSpanLogicalHeightSpreading status=stable
 ScriptedSpeech status=stable
 SeamlessIFrames status=experimental
 ServiceWorker status=experimental
