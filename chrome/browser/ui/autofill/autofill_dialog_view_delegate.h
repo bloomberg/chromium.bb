@@ -142,11 +142,9 @@ class AutofillDialogViewDelegate {
 
 
   // Decides whether the combination of all |inputs| is valid, returns a
-  // map of field types to error strings.
-  virtual ValidityData InputsAreValid(
-      DialogSection section,
-      const DetailOutputMap& inputs,
-      ValidationType validation_type) = 0;
+  // map of field types to validity messages.
+  virtual ValidityMessages InputsAreValid(DialogSection section,
+                                          const DetailOutputMap& inputs) = 0;
 
   // Called when the user changes the contents of a text field or activates it
   // (by focusing and then clicking it). |was_edit| is true when the function

@@ -353,19 +353,20 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 
   autofill::DetailOutputMap detailOutputs;
   [self fillDetailOutputs:&detailOutputs fromControls:fields];
-  autofill::ValidityData invalidInputs = delegate_->InputsAreValid(
-      section_, detailOutputs, validationType);
+  autofill::ValidityMessages messages = delegate_->InputsAreValid(
+      section_, detailOutputs);
 
   for (NSControl<AutofillInputField>* input in fields) {
     const autofill::ServerFieldType type = [self fieldTypeForControl:input];
-    if (invalidInputs.count(type))
-      [input setValidityMessage:base::SysUTF16ToNSString(invalidInputs[type])];
-    else
-      [input setValidityMessage:@""];
+    const autofill::ValidityMessage& message =
+        messages.GetMessageOrDefault(type);
+    if (validationType != autofill::VALIDATE_FINAL && !message.sure)
+      continue;
+    [input setValidityMessage:base::SysUTF16ToNSString(message.text)];
     [validationDelegate_ updateMessageForField:input];
   }
 
-  return invalidInputs.empty();
+  return !messages.HasErrors();
 }
 
 #pragma mark Internal API for AutofillSectionContainer.
@@ -405,7 +406,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   // so flagging them as invalid prematurely is not helpful. However,
   // correcting a minor mistake (i.e. a wrong CC digit) should immediately
   // result in validation - positive user feedback.
-  if ([textfield invalid]) {
+  if ([textfield invalid] && edited) {
     string16 message = delegate_->InputValidityMessage(section_,
                                                          type,
                                                          fieldValue);
@@ -492,6 +493,8 @@ bool CompareInputRows(const autofill::DetailInput* input1,
         }
       }
     }
+    if (shouldClobber)
+      [field setValidityMessage:@""];
   }
   [self modelChanged];
 }

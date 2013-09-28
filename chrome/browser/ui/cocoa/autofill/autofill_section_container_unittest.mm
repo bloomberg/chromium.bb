@@ -218,10 +218,12 @@ TEST_F(AutofillSectionContainerTest, ControllerInformsValidity) {
   inputs.push_back(kTestInputs[1]);
 
   DetailOutputMap output;
-  ValidityData validity, validity2;
+  ValidityMessages validity, validity2;
 
-  validity[EMAIL_ADDRESS] = ASCIIToUTF16("Some error message");
-  validity2[CREDIT_CARD_EXP_MONTH ] = ASCIIToUTF16("Some other error message");
+  validity.Set(EMAIL_ADDRESS,
+      ValidityMessage(ASCIIToUTF16("Some error message"), false));
+  validity2.Set(CREDIT_CARD_EXP_MONTH,
+      ValidityMessage(ASCIIToUTF16("Some other error message"), false));
   EXPECT_CALL(delegate_, RequestedFieldsForSection(section_))
       .WillOnce(ReturnRef(inputs));
   EXPECT_CALL(delegate_, ComboboxModelForAutofillType(EMAIL_ADDRESS))
@@ -231,7 +233,7 @@ TEST_F(AutofillSectionContainerTest, ControllerInformsValidity) {
 
   ResetContainer();
   [container_ getInputs:&output];
-  EXPECT_CALL(delegate_, InputsAreValid(section_, output, VALIDATE_FINAL))
+  EXPECT_CALL(delegate_, InputsAreValid(section_, output))
       .WillOnce(Return(validity))
       .WillOnce(Return(validity2));
 
@@ -240,7 +242,6 @@ TEST_F(AutofillSectionContainerTest, ControllerInformsValidity) {
   EXPECT_TRUE([field invalid]);
   field = [container_ getField:CREDIT_CARD_EXP_MONTH];
   EXPECT_FALSE([field invalid]);
-
 
   [container_ validateFor:VALIDATE_FINAL];
   field = [container_ getField:EMAIL_ADDRESS];

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_DIALOG_VIEWS_H_
 
 #include <map>
+#include <set>
 
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -547,9 +548,11 @@ class AutofillDialogViews : public AutofillDialogView,
   // |validity_map_|.
   void ShowErrorBubbleForViewIfNecessary(views::View* view);
 
-  // Updates validity of the inputs in |section| with the new validity data.
+  // Updates validity of the inputs in |section| with new |validity_messages|.
+  // Fields are only updated with unsure messages if |overwrite_valid| is true.
   void MarkInputsInvalid(DialogSection section,
-                         const ValidityData& validity_data);
+                         const ValidityMessages& validity_messages,
+                         bool overwrite_invalid);
 
   // Checks all manual inputs in |group| for validity. Decorates the invalid
   // ones and returns true if all were valid.

@@ -11,6 +11,14 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+namespace {
+
+bool IsSureError(const autofill::ValidityMessage& message) {
+  return message.sure && !message.text.empty();
+}
+
+}  // namespace
+
 namespace autofill {
 
 static const base::char16 kRangeSeparator = '|';
@@ -122,5 +130,47 @@ DialogOverlayString::~DialogOverlayString() {}
 
 DialogOverlayState::DialogOverlayState() {}
 DialogOverlayState::~DialogOverlayState() {}
+
+ValidityMessage::ValidityMessage(const base::string16& text, bool sure)
+    : text(text), sure(sure) {}
+ValidityMessage::~ValidityMessage() {}
+
+ValidityMessages::ValidityMessages()
+    : default_message_(ValidityMessage(base::string16(), false)) {}
+ValidityMessages::~ValidityMessages() {}
+
+void ValidityMessages::Set(
+    ServerFieldType field, const ValidityMessage& message) {
+  messages_.erase(field);
+  messages_.insert(MessageMap::value_type(field, message));
+}
+
+const ValidityMessage& ValidityMessages::GetMessageOrDefault(
+    ServerFieldType field) const {
+  MessageMap::const_iterator iter = messages_.find(field);
+  return iter != messages_.end() ? iter->second : default_message_;
+}
+
+bool ValidityMessages::HasSureError(ServerFieldType field) const {
+  return IsSureError(GetMessageOrDefault(field));
+}
+
+bool ValidityMessages::HasErrors() const {
+  for (MessageMap::const_iterator iter = messages_.begin();
+       iter != messages_.end(); ++iter) {
+    if (!iter->second.text.empty())
+      return true;
+  }
+  return false;
+}
+
+bool ValidityMessages::HasSureErrors() const {
+ for (MessageMap::const_iterator iter = messages_.begin();
+      iter != messages_.end(); ++iter) {
+    if (IsSureError(iter->second))
+      return true;
+  }
+  return false;
+}
 
 }  // namespace autofill

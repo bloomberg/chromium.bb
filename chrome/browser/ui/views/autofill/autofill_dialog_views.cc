@@ -76,7 +76,7 @@ const int kDefaultMessageStackHeight = 90;
 const int kSectionContainerWidth = 440;
 
 // The minimum useful height of the contents area of the dialog.
-const int kMinimumContentsHeight = 100;
+const int kMinimumContentsHeight = 101;
 
 // The default height of the loading shield.
 const int kLoadingShieldHeight = 150;
@@ -2056,6 +2056,10 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
 void AutofillDialogViews::UpdateSectionImpl(
     DialogSection section,
     bool clobber_inputs) {
+  // Reset all validity marks for this section.
+  if (clobber_inputs)
+    MarkInputsInvalid(section, ValidityMessages(), true);
+
   const DetailInputs& updated_inputs =
       delegate_->RequestedFieldsForSection(section);
   DetailsGroup* group = GroupForSection(section);
@@ -2149,29 +2153,27 @@ void AutofillDialogViews::ShowErrorBubbleForViewIfNecessary(views::View* view) {
   }
 }
 
-void AutofillDialogViews::MarkInputsInvalid(DialogSection section,
-                                            const ValidityData& validity_data) {
+void AutofillDialogViews::MarkInputsInvalid(
+    DialogSection section,
+    const ValidityMessages& messages,
+    bool overwrite_unsure) {
   DetailsGroup* group = GroupForSection(section);
   DCHECK(group->container->visible());
-
-  typedef std::map<ServerFieldType,
-      base::Callback<void(const base::string16&)> > FieldMap;
-  FieldMap field_map;
 
   if (group->manual_input->visible()) {
     for (TextfieldMap::const_iterator iter = group->textfields.begin();
          iter != group->textfields.end(); ++iter) {
-      field_map[iter->first->type] = base::Bind(
-          &AutofillDialogViews::SetValidityForInput<DecoratedTextfield>,
-          base::Unretained(this),
-          iter->second);
+      const ValidityMessage& message =
+          messages.GetMessageOrDefault(iter->first->type);
+      if (overwrite_unsure || message.sure)
+        SetValidityForInput(iter->second, message.text);
     }
     for (ComboboxMap::const_iterator iter = group->comboboxes.begin();
          iter != group->comboboxes.end(); ++iter) {
-      field_map[iter->first->type] = base::Bind(
-          &AutofillDialogViews::SetValidityForInput<views::Combobox>,
-          base::Unretained(this),
-          iter->second);
+      const ValidityMessage& message =
+          messages.GetMessageOrDefault(iter->first->type);
+      if (overwrite_unsure || message.sure)
+        SetValidityForInput(iter->second, message.text);
     }
   } else {
     // Purge invisible views from |validity_map_|.
@@ -2186,25 +2188,13 @@ void AutofillDialogViews::MarkInputsInvalid(DialogSection section,
 
     if (section == SECTION_CC) {
       // Special case CVC as it's not part of |group->manual_input|.
-      field_map[CREDIT_CARD_VERIFICATION_CODE] = base::Bind(
-          &AutofillDialogViews::SetValidityForInput<DecoratedTextfield>,
-          base::Unretained(this),
-          group->suggested_info->decorated_textfield());
+      const ValidityMessage& message =
+          messages.GetMessageOrDefault(CREDIT_CARD_VERIFICATION_CODE);
+      if (overwrite_unsure || message.sure) {
+        SetValidityForInput(group->suggested_info->decorated_textfield(),
+                            message.text);
+      }
     }
-  }
-
-  // Flag invalid fields, removing them from |field_map|.
-  for (ValidityData::const_iterator iter = validity_data.begin();
-       iter != validity_data.end(); ++iter) {
-    const base::string16& message = iter->second;
-    field_map[iter->first].Run(message);
-    field_map.erase(iter->first);
-  }
-
-  // The remaining fields in |field_map| are valid. Mark them as such.
-  for (FieldMap::iterator iter = field_map.begin(); iter != field_map.end();
-       ++iter) {
-    iter->second.Run(base::string16());
   }
 }
 
@@ -2241,11 +2231,12 @@ bool AutofillDialogViews::ValidateGroup(const DetailsGroup& group,
     detail_outputs[cvc_input.get()] = decorated_cvc->text();
   }
 
-  ValidityData invalid_inputs = delegate_->InputsAreValid(
-      group.section, detail_outputs, validation_type);
-  MarkInputsInvalid(group.section, invalid_inputs);
+  ValidityMessages validity = delegate_->InputsAreValid(group.section,
+                                                        detail_outputs);
+  MarkInputsInvalid(group.section, validity, validation_type == VALIDATE_FINAL);
 
-  return invalid_inputs.empty();
+  // If there are any validation errors, sure or unsure, the group is invalid.
+  return !validity.HasErrors();
 }
 
 bool AutofillDialogViews::ValidateForm() {
@@ -2304,7 +2295,7 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
   // correcting a minor mistake (i.e. a wrong CC digit) should immediately
   // result in validation - positive user feedback.
   if (decorated->invalid() && was_edit) {
-    SetValidityForInput<DecoratedTextfield>(
+    SetValidityForInput(
         decorated,
         delegate_->InputValidityMessage(group->section, type,
                                         textfield->text()));
@@ -2362,9 +2353,9 @@ AutofillDialogViews::DetailsGroup* AutofillDialogViews::GroupForView(
     views::View* decorated =
         view->GetAncestorWithClassName(DecoratedTextfield::kViewClassName);
 
-    // Textfields need to check a second case, since they can be
-    // suggested inputs instead of directly editable inputs. Those are
-    // accessed via |suggested_info|.
+    // Textfields need to check a second case, since they can be suggested
+    // inputs instead of directly editable inputs. Those are accessed via
+    // |suggested_info|.
     if (decorated &&
         decorated == group->suggested_info->decorated_textfield()) {
       return group;

@@ -1711,31 +1711,38 @@ string16 AutofillDialogControllerImpl::InputValidityMessage(
       base::string16();
 }
 
-// TODO(estade): Replace all the error messages here with more helpful and
-// translateable ones. TODO(groby): Also add tests.
-ValidityData AutofillDialogControllerImpl::InputsAreValid(
+// TODO(groby): Also add tests.
+ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
     DialogSection section,
-    const DetailOutputMap& inputs,
-    ValidationType validation_type) {
-  ValidityData invalid_messages;
+    const DetailOutputMap& inputs) {
+  ValidityMessages messages;
   std::map<ServerFieldType, string16> field_values;
   for (DetailOutputMap::const_iterator iter = inputs.begin();
        iter != inputs.end(); ++iter) {
     const ServerFieldType type = iter->first->type;
 
-    // Skip empty/unchanged fields in edit mode. Ignore country code as it
-    // always has a value.
-    if (validation_type == VALIDATE_EDIT &&
-        !InputWasEdited(type, iter->second) &&
-        ComboboxModelForAutofillType(type) != &country_combobox_model_) {
-      continue;
-    }
+    base::string16 text = InputValidityMessage(section, type, iter->second);
 
-    string16 message = InputValidityMessage(section, type, iter->second);
-    if (!message.empty())
-      invalid_messages[type] = message;
-    else
+    // Skip empty/unchanged fields in edit mode. Ignore country code as it
+    // always has a value. If the individual field does not have validation
+    // errors, assume it to be valid unless later proven otherwise.
+    bool sure = InputWasEdited(type, iter->second) ||
+                ComboboxModelForAutofillType(type) == &country_combobox_model_;
+
+    // Consider only individually valid fields for inter-field validation.
+    if (text.empty()) {
       field_values[type] = iter->second;
+      // If the field is valid but can be invalidated by inter-field validation,
+      // assume it to be unsure.
+      if (type == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
+          type == CREDIT_CARD_EXP_MONTH ||
+          type == CREDIT_CARD_VERIFICATION_CODE ||
+          type == PHONE_HOME_WHOLE_NUMBER ||
+          type == PHONE_BILLING_WHOLE_NUMBER) {
+        sure = false;
+      }
+    }
+    messages.Set(type, ValidityMessage(text, sure));
   }
 
   // Validate the date formed by month and year field. (Autofill dialog is
@@ -1745,26 +1752,32 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
       InputWasEdited(CREDIT_CARD_EXP_4_DIGIT_YEAR,
                      field_values[CREDIT_CARD_EXP_4_DIGIT_YEAR]) &&
       InputWasEdited(CREDIT_CARD_EXP_MONTH,
-                     field_values[CREDIT_CARD_EXP_MONTH]) &&
-      !IsCreditCardExpirationValid(field_values[CREDIT_CARD_EXP_4_DIGIT_YEAR],
-                                   field_values[CREDIT_CARD_EXP_MONTH])) {
-    // The dialog shows the same error message for the month and year fields.
-    invalid_messages[CREDIT_CARD_EXP_4_DIGIT_YEAR] = l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_EXPIRATION_DATE);
-    invalid_messages[CREDIT_CARD_EXP_MONTH] = l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_EXPIRATION_DATE);
+                     field_values[CREDIT_CARD_EXP_MONTH])) {
+    ValidityMessage year_message(base::string16(), true);
+    ValidityMessage month_message(base::string16(), true);
+    if (!IsCreditCardExpirationValid(field_values[CREDIT_CARD_EXP_4_DIGIT_YEAR],
+                                     field_values[CREDIT_CARD_EXP_MONTH])) {
+      // The dialog shows the same error message for the month and year fields.
+      year_message.text = l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_EXPIRATION_DATE);
+      month_message.text = l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_EXPIRATION_DATE);
+    }
+    messages.Set(CREDIT_CARD_EXP_4_DIGIT_YEAR, year_message);
+    messages.Set(CREDIT_CARD_EXP_MONTH, month_message);
   }
 
   // If there is a credit card number and a CVC, validate them together.
   if (field_values.count(CREDIT_CARD_NUMBER) &&
-      field_values.count(CREDIT_CARD_VERIFICATION_CODE) &&
-      !invalid_messages.count(CREDIT_CARD_NUMBER) &&
-      !autofill::IsValidCreditCardSecurityCode(
-          field_values[CREDIT_CARD_VERIFICATION_CODE],
-          field_values[CREDIT_CARD_NUMBER])) {
-    invalid_messages[CREDIT_CARD_VERIFICATION_CODE] =
-        l10n_util::GetStringUTF16(
-            IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_SECURITY_CODE);
+      field_values.count(CREDIT_CARD_VERIFICATION_CODE)) {
+    ValidityMessage ccv_message(base::string16(), true);
+    if (!autofill::IsValidCreditCardSecurityCode(
+            field_values[CREDIT_CARD_VERIFICATION_CODE],
+            field_values[CREDIT_CARD_NUMBER])) {
+      ccv_message.text = l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_SECURITY_CODE);
+    }
+    messages.Set(CREDIT_CARD_VERIFICATION_CODE, ccv_message);
   }
 
   // Validate the shipping phone number against the country code of the address.
@@ -1775,10 +1788,12 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
         AutofillCountry::GetCountryCode(
             field_values[ADDRESS_HOME_COUNTRY],
             g_browser_process->GetApplicationLocale()));
+    ValidityMessage phone_message(base::string16(), true);
     if (!phone_object.IsValidNumber()) {
-      invalid_messages[PHONE_HOME_WHOLE_NUMBER] = l10n_util::GetStringUTF16(
+      phone_message.text = l10n_util::GetStringUTF16(
           IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_PHONE_NUMBER);
     }
+    messages.Set(PHONE_HOME_WHOLE_NUMBER, phone_message);
   }
 
   // Validate the billing phone number against the country code of the address.
@@ -1789,13 +1804,15 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
         AutofillCountry::GetCountryCode(
             field_values[ADDRESS_BILLING_COUNTRY],
             g_browser_process->GetApplicationLocale()));
+    ValidityMessage phone_message(base::string16(), true);
     if (!phone_object.IsValidNumber()) {
-      invalid_messages[PHONE_BILLING_WHOLE_NUMBER] = l10n_util::GetStringUTF16(
+      phone_message.text = l10n_util::GetStringUTF16(
           IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_PHONE_NUMBER);
     }
+    messages.Set(PHONE_BILLING_WHOLE_NUMBER, phone_message);
   }
 
-  return invalid_messages;
+  return messages;
 }
 
 void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
@@ -2937,7 +2954,7 @@ bool AutofillDialogControllerImpl::SectionIsValid(
 
   DetailOutputMap detail_outputs;
   view_->GetUserInput(section, &detail_outputs);
-  return InputsAreValid(section, detail_outputs, VALIDATE_EDIT).empty();
+  return !InputsAreValid(section, detail_outputs).HasSureErrors();
 }
 
 bool AutofillDialogControllerImpl::IsCreditCardExpirationValid(

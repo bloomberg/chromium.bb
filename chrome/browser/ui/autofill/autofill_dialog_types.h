@@ -192,7 +192,38 @@ enum ValidationType {
 typedef std::vector<DetailInput> DetailInputs;
 typedef std::map<const DetailInput*, string16> DetailOutputMap;
 
-typedef std::map<ServerFieldType, string16> ValidityData;
+// A validity message for a single input field.
+struct ValidityMessage {
+  ValidityMessage(const base::string16& text, bool sure);
+  ~ValidityMessage();
+
+  // Message text. If not empty, error text. If empty, indicates valid field.
+  base::string16 text;
+
+  // If |sure| is true, always display message. If it is false,
+  // only display on final validation (i.e. after the user has attempted to
+  // submit).
+  bool sure;
+};
+
+// A mapping of field types to their corresponding ValidityMessage results.
+class ValidityMessages {
+ public:
+  ValidityMessages();
+  ~ValidityMessages();
+
+  void Set(ServerFieldType field, const ValidityMessage& message);
+  const ValidityMessage& GetMessageOrDefault(ServerFieldType field) const;
+
+  bool HasSureError(ServerFieldType field) const;
+  bool HasErrors() const;
+  bool HasSureErrors() const;
+
+ private:
+  typedef std::map<ServerFieldType, ValidityMessage> MessageMap;
+  MessageMap messages_;
+  ValidityMessage default_message_;
+};
 
 }  // namespace autofill
 

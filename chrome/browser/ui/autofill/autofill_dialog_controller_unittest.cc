@@ -129,6 +129,15 @@ scoped_ptr<risk::Fingerprint> GetFakeFingerprint() {
   return fingerprint.Pass();
 }
 
+bool HasAnyError(const ValidityMessages& messages, ServerFieldType field) {
+  return !messages.GetMessageOrDefault(field).text.empty();
+}
+
+bool HasUnsureError(const ValidityMessages& messages, ServerFieldType field) {
+  const ValidityMessage& message = messages.GetMessageOrDefault(field);
+  return !message.text.empty() && !message.sure;
+}
+
 class TestAutofillDialogView : public AutofillDialogView {
  public:
   TestAutofillDialogView()
@@ -531,9 +540,9 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
 
     SetOutputValue(inputs, CREDIT_CARD_NUMBER,
                    ASCIIToUTF16(cc_number), &outputs);
-    ValidityData validity_data =
-        controller()->InputsAreValid(section, outputs, VALIDATE_FINAL);
-    EXPECT_EQ(should_pass ? 0U : 1U, validity_data.count(CREDIT_CARD_NUMBER));
+    ValidityMessages messages =
+        controller()->InputsAreValid(section, outputs);
+    EXPECT_EQ(should_pass, !messages.HasSureError(CREDIT_CARD_NUMBER));
   }
 
   void SubmitWithWalletItems(scoped_ptr<wallet::WalletItems> wallet_items) {
@@ -617,6 +626,14 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
 
 }  // namespace
 
+// Ensure the default ValidityMessage has the expected values.
+TEST_F(AutofillDialogControllerTest, DefaultValidityMessage) {
+  ValidityMessages messages;
+  ValidityMessage message = messages.GetMessageOrDefault(UNKNOWN_TYPE);
+  EXPECT_FALSE(message.sure);
+  EXPECT_TRUE(message.text.empty());
+}
+
 // This test makes sure nothing falls over when fields are being validity-
 // checked.
 TEST_F(AutofillDialogControllerTest, ValidityCheck) {
@@ -657,51 +674,39 @@ TEST_F(AutofillDialogControllerTest, PhoneNumberValidation) {
     SetOutputValue(inputs, address, ASCIIToUTF16("United States"), &outputs);
 
     // Existing data should have no errors.
-    ValidityData validity_data =
-        controller()->InputsAreValid(section, outputs, VALIDATE_FINAL);
-    EXPECT_EQ(0U, validity_data.count(phone));
+    ValidityMessages messages = controller()->InputsAreValid(section, outputs);
+    EXPECT_FALSE(HasAnyError(messages, phone));
 
-    // Input an empty phone number with VALIDATE_FINAL.
+    // Input an empty phone number.
     SetOutputValue(inputs, phone, base::string16(), &outputs);
-    validity_data =
-        controller()->InputsAreValid(section, outputs, VALIDATE_FINAL);
-    EXPECT_EQ(1U, validity_data.count(phone));
-
-    // Input an empty phone number with VALIDATE_EDIT.
-    validity_data =
-        controller()->InputsAreValid(section, outputs, VALIDATE_EDIT);
-    EXPECT_EQ(0U, validity_data.count(phone));
+    messages = controller()->InputsAreValid(section, outputs);
+    EXPECT_TRUE(HasUnsureError(messages, phone));
 
     // Input an invalid phone number.
     SetOutputValue(inputs, phone, ASCIIToUTF16("ABC"), &outputs);
-    validity_data =
-        controller()->InputsAreValid(section, outputs, VALIDATE_EDIT);
-    EXPECT_EQ(1U, validity_data.count(phone));
+    messages = controller()->InputsAreValid(section, outputs);
+    EXPECT_TRUE(messages.HasSureError(phone));
 
     // Input a local phone number.
     SetOutputValue(inputs, phone, ASCIIToUTF16("2155546699"), &outputs);
-    validity_data =
-        controller()->InputsAreValid(section, outputs, VALIDATE_EDIT);
-    EXPECT_EQ(0U, validity_data.count(phone));
+    messages = controller()->InputsAreValid(section, outputs);
+    EXPECT_FALSE(HasAnyError(messages, phone));
 
     // Input an invalid local phone number.
     SetOutputValue(inputs, phone, ASCIIToUTF16("215554669"), &outputs);
-    validity_data =
-        controller()->InputsAreValid(section, outputs, VALIDATE_EDIT);
-    EXPECT_EQ(1U, validity_data.count(phone));
+    messages = controller()->InputsAreValid(section, outputs);
+    EXPECT_TRUE(messages.HasSureError(phone));
 
     // Input an international phone number.
     SetOutputValue(inputs, phone, ASCIIToUTF16("+33 892 70 12 39"), &outputs);
-    validity_data =
-        controller()->InputsAreValid(section, outputs, VALIDATE_EDIT);
-    EXPECT_EQ(0U, validity_data.count(phone));
+    messages = controller()->InputsAreValid(section, outputs);
+    EXPECT_FALSE(HasAnyError(messages, phone));
 
     // Input an invalid international phone number.
     SetOutputValue(inputs, phone,
                    ASCIIToUTF16("+112333 892 70 12 39"), &outputs);
-    validity_data =
-        controller()->InputsAreValid(section, outputs, VALIDATE_EDIT);
-    EXPECT_EQ(1U, validity_data.count(phone));
+    messages = controller()->InputsAreValid(section, outputs);
+    EXPECT_TRUE(messages.HasSureError(phone));
   }
 }
 
@@ -729,56 +734,28 @@ TEST_F(AutofillDialogControllerTest, ExpirationDateValidity) {
   SetOutputValue(inputs, CREDIT_CARD_EXP_4_DIGIT_YEAR,
                  default_year_value, &outputs);
 
-  // Expiration default values "validate" with VALIDATE_EDIT.
-  ValidityData validity_data =
-      controller()->InputsAreValid(SECTION_CC_BILLING, outputs, VALIDATE_EDIT);
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_MONTH));
+  // Expiration default values generate unsure validation errors (but not sure).
+  ValidityMessages messages = controller()->InputsAreValid(SECTION_CC_BILLING,
+                                                           outputs);
+  EXPECT_TRUE(HasUnsureError(messages, CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  EXPECT_TRUE(HasUnsureError(messages, CREDIT_CARD_EXP_MONTH));
 
-  // Expiration default values fail with VALIDATE_FINAL.
-  validity_data =
-      controller()->InputsAreValid(SECTION_CC_BILLING, outputs, VALIDATE_FINAL);
-  EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
-  EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_EXP_MONTH));
+  // Expiration date with default month fails.
+  SetOutputValue(inputs,
+                 CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                 other_year_value,
+                 &outputs);
+  messages = controller()->InputsAreValid(SECTION_CC_BILLING, outputs);
+  EXPECT_FALSE(HasUnsureError(messages, CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  EXPECT_TRUE(HasUnsureError(messages, CREDIT_CARD_EXP_MONTH));
 
-  // Expiration date with default month "validates" with VALIDATE_EDIT.
-  SetOutputValue(inputs, CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                 other_year_value, &outputs);
-
-  validity_data =
-      controller()->InputsAreValid(SECTION_CC_BILLING, outputs, VALIDATE_EDIT);
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_MONTH));
-
-  // Expiration date with default year "validates" with VALIDATE_EDIT.
+  // Expiration date with default year fails.
   SetOutputValue(inputs, CREDIT_CARD_EXP_MONTH, other_month_value, &outputs);
   SetOutputValue(inputs, CREDIT_CARD_EXP_4_DIGIT_YEAR,
                  default_year_value, &outputs);
-
-  validity_data =
-      controller()->InputsAreValid(SECTION_CC_BILLING, outputs, VALIDATE_EDIT);
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_MONTH));
-
-  // Expiration date with default month fails with VALIDATE_FINAL.
-  SetOutputValue(inputs, CREDIT_CARD_EXP_MONTH, default_month_value, &outputs);
-  SetOutputValue(inputs, CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                 other_year_value, &outputs);
-
-  validity_data =
-      controller()->InputsAreValid(SECTION_CC_BILLING, outputs, VALIDATE_FINAL);
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
-  EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_EXP_MONTH));
-
-  // Expiration date with default year fails with VALIDATE_FINAL.
-  SetOutputValue(inputs, CREDIT_CARD_EXP_MONTH, other_month_value, &outputs);
-  SetOutputValue(inputs, CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                 default_year_value, &outputs);
-
-  validity_data =
-      controller()->InputsAreValid(SECTION_CC_BILLING, outputs, VALIDATE_FINAL);
-  EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_MONTH));
+  messages = controller()->InputsAreValid(SECTION_CC_BILLING, outputs);
+  EXPECT_TRUE(HasUnsureError(messages, CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  EXPECT_FALSE(HasUnsureError(messages, CREDIT_CARD_EXP_MONTH));
 }
 
 TEST_F(AutofillDialogControllerTest, BillingNameValidation) {
@@ -789,22 +766,16 @@ TEST_F(AutofillDialogControllerTest, BillingNameValidation) {
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_BILLING);
 
-  // Input an empty billing name with VALIDATE_FINAL.
+  // Input an empty billing name.
   SetOutputValue(inputs, NAME_BILLING_FULL, base::string16(), &outputs);
-  ValidityData validity_data =
-      controller()->InputsAreValid(SECTION_BILLING, outputs, VALIDATE_FINAL);
-  EXPECT_EQ(1U, validity_data.count(NAME_BILLING_FULL));
-
-  // Input an empty billing name with VALIDATE_EDIT.
-  validity_data =
-      controller()->InputsAreValid(SECTION_BILLING, outputs, VALIDATE_EDIT);
-  EXPECT_EQ(0U, validity_data.count(NAME_BILLING_FULL));
+  ValidityMessages messages = controller()->InputsAreValid(SECTION_BILLING,
+                                                           outputs);
+  EXPECT_TRUE(HasUnsureError(messages, NAME_BILLING_FULL));
 
   // Input a non-empty billing name.
   SetOutputValue(inputs, NAME_BILLING_FULL, ASCIIToUTF16("Bob"), &outputs);
-  validity_data =
-      controller()->InputsAreValid(SECTION_BILLING, outputs, VALIDATE_FINAL);
-  EXPECT_EQ(0U, validity_data.count(NAME_BILLING_FULL));
+  messages = controller()->InputsAreValid(SECTION_BILLING, outputs);
+  EXPECT_FALSE(HasAnyError(messages, NAME_BILLING_FULL));
 
   // Switch to Wallet which only considers names with with at least two names to
   // be valid.
@@ -819,56 +790,38 @@ TEST_F(AutofillDialogControllerTest, BillingNameValidation) {
   const DetailInputs& wallet_inputs =
       controller()->RequestedFieldsForSection(SECTION_CC_BILLING);
 
-  // Input an empty billing name with VALIDATE_FINAL. Data source should not
-  // change this behavior.
+  // Input an empty billing name. Data source should not change this behavior.
   SetOutputValue(wallet_inputs, NAME_BILLING_FULL,
                  base::string16(), &wallet_outputs);
-  validity_data =
-      controller()->InputsAreValid(
-          SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
-  EXPECT_EQ(1U, validity_data.count(NAME_BILLING_FULL));
-
-  // Input an empty billing name with VALIDATE_EDIT. Data source should not
-  // change this behavior.
-  validity_data =
-      controller()->InputsAreValid(
-          SECTION_CC_BILLING, wallet_outputs, VALIDATE_EDIT);
-  EXPECT_EQ(0U, validity_data.count(NAME_BILLING_FULL));
+  messages = controller()->InputsAreValid(SECTION_CC_BILLING, wallet_outputs);
+  EXPECT_TRUE(HasUnsureError(messages, NAME_BILLING_FULL));
 
   // Input a one name billing name. Wallet does not currently support this.
   SetOutputValue(wallet_inputs, NAME_BILLING_FULL,
                  ASCIIToUTF16("Bob"), &wallet_outputs);
-  validity_data =
-      controller()->InputsAreValid(
-          SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
-  EXPECT_EQ(1U, validity_data.count(NAME_BILLING_FULL));
+  messages = controller()->InputsAreValid(SECTION_CC_BILLING, wallet_outputs);
+  EXPECT_TRUE(messages.HasSureError(NAME_BILLING_FULL));
 
   // Input a two name billing name.
   SetOutputValue(wallet_inputs, NAME_BILLING_FULL,
                  ASCIIToUTF16("Bob Barker"), &wallet_outputs);
-  validity_data =
-      controller()->InputsAreValid(
-          SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
-  EXPECT_EQ(0U, validity_data.count(NAME_BILLING_FULL));
+  messages = controller()->InputsAreValid(SECTION_CC_BILLING, wallet_outputs);
+  EXPECT_FALSE(HasAnyError(messages, NAME_BILLING_FULL));
 
   // Input a more than two name billing name.
   SetOutputValue(wallet_inputs, NAME_BILLING_FULL,
                  ASCIIToUTF16("John Jacob Jingleheimer Schmidt"),
                  &wallet_outputs);
-  validity_data =
-      controller()->InputsAreValid(
-          SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
-  EXPECT_EQ(0U, validity_data.count(NAME_BILLING_FULL));
+  messages = controller()->InputsAreValid(SECTION_CC_BILLING, wallet_outputs);
+  EXPECT_FALSE(HasAnyError(messages, NAME_BILLING_FULL));
 
   // Input a billing name with lots of crazy whitespace.
   SetOutputValue(
       wallet_inputs, NAME_BILLING_FULL,
       ASCIIToUTF16("     \\n\\r John \\n  Jacob Jingleheimer \\t Schmidt  "),
       &wallet_outputs);
-  validity_data =
-      controller()->InputsAreValid(
-          SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
-  EXPECT_EQ(0U, validity_data.count(NAME_BILLING_FULL));
+  messages = controller()->InputsAreValid(SECTION_CC_BILLING, wallet_outputs);
+  EXPECT_FALSE(HasAnyError(messages, NAME_BILLING_FULL));
 }
 
 TEST_F(AutofillDialogControllerTest, CreditCardNumberValidation) {
@@ -2165,29 +2118,27 @@ TEST_F(AutofillDialogControllerTest, WalletExpiredCard) {
   CopyInitialValues(inputs, &outputs);
   SetOutputValue(inputs, COMPANY_NAME, ASCIIToUTF16("Bluth Company"), &outputs);
 
-  ValidityData validity_data =
-      controller()->InputsAreValid(SECTION_CC_BILLING, outputs, VALIDATE_EDIT);
-  EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_EXP_MONTH));
-  EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  // The local inputs are invalid because the server said so. They'll
+  // stay invalid until they differ from the remotely fetched model.
+  ValidityMessages messages = controller()->InputsAreValid(SECTION_CC_BILLING,
+                                                           outputs);
+  EXPECT_TRUE(messages.HasSureError(CREDIT_CARD_EXP_MONTH));
+  EXPECT_TRUE(messages.HasSureError(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
   // Make the local input year differ from the instrument.
   CopyInitialValues(inputs, &outputs);
   SetOutputValue(inputs, CREDIT_CARD_EXP_4_DIGIT_YEAR,
                  ASCIIToUTF16("3002"), &outputs);
-
-  validity_data =
-      controller()->InputsAreValid(SECTION_CC_BILLING, outputs, VALIDATE_EDIT);
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_MONTH));
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  messages = controller()->InputsAreValid(SECTION_CC_BILLING, outputs);
+  EXPECT_FALSE(HasAnyError(messages, CREDIT_CARD_EXP_MONTH));
+  EXPECT_FALSE(HasAnyError(messages, CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
   // Make the local input month differ from the instrument.
   CopyInitialValues(inputs, &outputs);
   SetOutputValue(inputs, CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("06"), &outputs);
-
-  validity_data =
-      controller()->InputsAreValid(SECTION_CC_BILLING, outputs, VALIDATE_EDIT);
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_MONTH));
-  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  messages = controller()->InputsAreValid(SECTION_CC_BILLING, outputs);
+  EXPECT_FALSE(HasAnyError(messages, CREDIT_CARD_EXP_MONTH));
+  EXPECT_FALSE(HasAnyError(messages, CREDIT_CARD_EXP_4_DIGIT_YEAR));
 }
 
 TEST_F(AutofillDialogControllerTest, ChooseAnotherInstrumentOrAddress) {

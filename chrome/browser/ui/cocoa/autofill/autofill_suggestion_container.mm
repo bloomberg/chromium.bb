@@ -100,7 +100,6 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   [[inputField_ cell] setPlaceholderString:text];
   [[inputField_ cell] setIcon:icon];
   [inputField_ setHidden:NO];
-  [[inputField_ cell] setInvalid:YES];
   [inputField_ sizeToFit];
 }
 

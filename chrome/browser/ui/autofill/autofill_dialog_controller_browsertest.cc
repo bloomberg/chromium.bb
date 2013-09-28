@@ -107,14 +107,12 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
         section, type, value);
   }
 
-  virtual ValidityData InputsAreValid(
+  virtual ValidityMessages InputsAreValid(
       DialogSection section,
-      const DetailOutputMap& inputs,
-      ValidationType validation_type) OVERRIDE {
+      const DetailOutputMap& inputs) OVERRIDE {
     if (!use_validation_)
-      return ValidityData();
-    return AutofillDialogControllerImpl::InputsAreValid(
-        section, inputs, validation_type);
+      return ValidityMessages();
+    return AutofillDialogControllerImpl::InputsAreValid(section, inputs);
   }
 
   // Saving to Chrome is tested in AutofillDialogControllerImpl unit tests.

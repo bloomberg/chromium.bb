@@ -141,10 +141,8 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual string16 InputValidityMessage(DialogSection section,
                                         ServerFieldType type,
                                         const string16& value) OVERRIDE;
-  virtual ValidityData InputsAreValid(
-      DialogSection section,
-      const DetailOutputMap& inputs,
-      ValidationType validation_type) OVERRIDE;
+  virtual ValidityMessages InputsAreValid(
+      DialogSection section, const DetailOutputMap& inputs) OVERRIDE;
   virtual void UserEditedOrActivatedInput(DialogSection section,
                                           const DetailInput* input,
                                           gfx::NativeView parent_view,
