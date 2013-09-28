@@ -93,8 +93,6 @@ public:
     virtual KURL baseURL() const OVERRIDE { return m_finalURL; }
     virtual bool isLoading() const OVERRIDE;
 
-    virtual bool isXSLStyleSheet() const OVERRIDE { return true; }
-
 private:
     XSLStyleSheet(Node* parentNode, const String& originalURL, const KURL& finalURL, bool embedded);
     XSLStyleSheet(XSLImportRule* parentImport, const String& originalURL, const KURL& finalURL);

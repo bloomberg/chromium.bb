@@ -51,7 +51,6 @@ public:
     virtual KURL baseURL() const = 0;
     virtual bool isLoading() const = 0;
     virtual bool isCSSStyleSheet() const { return false; }
-    virtual bool isXSLStyleSheet() const { return false; }
 };
 
 } // namespace
