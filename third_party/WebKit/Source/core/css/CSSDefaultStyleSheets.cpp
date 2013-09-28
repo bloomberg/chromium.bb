@@ -57,7 +57,7 @@ StyleSheetContents* CSSDefaultStyleSheets::mediaControlsStyleSheet;
 StyleSheetContents* CSSDefaultStyleSheets::fullscreenStyleSheet;
 
 // FIXME: It would be nice to use some mechanism that guarantees this is in sync with the real UA stylesheet.
-static const char* simpleUserAgentStyleSheet = "html,body,div{display:block}head{display:none}body{margin:8px}div:focus,span:focus{outline:auto 5px -webkit-focus-ring-color}a:-webkit-any-link{color:-webkit-link;text-decoration:underline}a:-webkit-any-link:active{color:-webkit-activelink}body:-webkit-seamless-document{margin:0}body:-webkit-full-page-media{background-color:black}";
+static const char* simpleUserAgentStyleSheet = "html,body,div{display:block}head{display:none}body{margin:8px}div:focus,span:focus{outline:auto 5px -webkit-focus-ring-color}a:-webkit-any-link{color:-webkit-link;text-decoration:underline}a:-webkit-any-link:active{color:-webkit-activelink}body:-webkit-seamless-document{margin:0}body:-webkit-full-page-media{background-color:black}@viewport{min-width:980px}";
 
 static inline bool elementCanUseSimpleDefaultStyle(Element* e)
 {

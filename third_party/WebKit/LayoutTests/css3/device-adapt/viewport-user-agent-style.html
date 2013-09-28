@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@viewport user agent stylesheet</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script>
+        if (window.testRunner) {
+            testRunner.enableFixedLayoutMode(true);
+            internals.settings.setViewportEnabled(true);
+        }
+    </script>
+    <style>
+        html, body { width: 100%; height: 100%; margin: 0 }
+    </style>
+</head>
+<body>
+    <div id="log"></div>
+    <script>
+        test(function(){
+            assert_equals(document.body.offsetWidth, 980);
+        }, "Check that we get a viewport width of 980px from the user agent stylesheet.");
+    </script>
+</body>
+</html>
