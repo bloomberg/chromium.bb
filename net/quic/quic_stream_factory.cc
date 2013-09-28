@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
@@ -473,15 +474,51 @@ void QuicStreamFactory::ActivateSession(
 QuicCryptoClientConfig* QuicStreamFactory::GetOrCreateCryptoConfig(
     const HostPortProxyPair& host_port_proxy_pair) {
   QuicCryptoClientConfig* crypto_config;
+
   if (ContainsKey(all_crypto_configs_, host_port_proxy_pair)) {
     crypto_config = all_crypto_configs_[host_port_proxy_pair];
     DCHECK(crypto_config);
   } else {
+    // TODO(rtenneti): if two quic_sessions for the same host_port_proxy_pair
+    // share the same crypto_config, will it cause issues?
     crypto_config = new QuicCryptoClientConfig();
     crypto_config->SetDefaults();
     all_crypto_configs_[host_port_proxy_pair] = crypto_config;
+    PopulateFromCanonicalConfig(host_port_proxy_pair, crypto_config);
   }
   return crypto_config;
+}
+
+void QuicStreamFactory::PopulateFromCanonicalConfig(
+    const HostPortProxyPair& host_port_proxy_pair,
+    QuicCryptoClientConfig* crypto_config) {
+  const string server_hostname = host_port_proxy_pair.first.host();
+  const string kYouTubeSuffix(".c.youtube.com");
+  if (!EndsWith(server_hostname, kYouTubeSuffix, false)) {
+    return;
+  }
+
+  HostPortPair canonical_host_port(kYouTubeSuffix,
+                                   host_port_proxy_pair.first.port());
+  if (!ContainsKey(canonical_hostname_to_origin_map_, canonical_host_port)) {
+    // This is the first host we've seen which matches the suffix, so make it
+    // canonical.
+    canonical_hostname_to_origin_map_[canonical_host_port] =
+        host_port_proxy_pair;
+    return;
+  }
+
+  const HostPortProxyPair& canonical_host_port_proxy_pair =
+      canonical_hostname_to_origin_map_[canonical_host_port];
+  QuicCryptoClientConfig* canonical_crypto_config =
+      all_crypto_configs_[canonical_host_port_proxy_pair];
+  DCHECK(canonical_crypto_config);
+
+  // Copy the CachedState for the canonical server from canonical_crypto_config
+  // as the initial CachedState for the server_hostname in crypto_config.
+  crypto_config->InitializeFrom(server_hostname,
+                                canonical_host_port_proxy_pair.first.host(),
+                                canonical_crypto_config);
 }
 
 }  // namespace net

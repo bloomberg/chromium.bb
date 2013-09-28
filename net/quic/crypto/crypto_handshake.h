@@ -233,7 +233,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // A CachedState contains the information that the client needs in order to
   // perform a 0-RTT handshake with a server. This information can be reused
   // over several connections to the same server.
-  class CachedState {
+  class NET_EXPORT_PRIVATE CachedState {
    public:
     CachedState();
     ~CachedState();
@@ -288,6 +288,12 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // SetProofVerifyDetails takes ownership of |details|.
     void SetProofVerifyDetails(ProofVerifyDetails* details);
 
+    // Copy the |server_config_|, |source_address_token_|, |certs_| and
+    // |server_config_sig_| from the |other|.  The remaining fields,
+    // |generation_counter_|, |proof_verify_details_|, and |scfg_| remain
+    // unchanged.
+    void InitializeFrom(const CachedState& other);
+
    private:
     std::string server_config_id_;      // An opaque id from the server.
     std::string server_config_;         // A serialized handshake message.
@@ -307,6 +313,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
     // scfg contains the cached, parsed value of |server_config|.
     mutable scoped_ptr<CryptoHandshakeMessage> scfg_;
+
+    DISALLOW_COPY_AND_ASSIGN(CachedState);
   };
 
   QuicCryptoClientConfig();
@@ -383,6 +391,13 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // server supports channel IDs to sign a message proving possession of the
   // given ChannelID. This object takes ownership of |signer|.
   void SetChannelIDSigner(ChannelIDSigner* signer);
+
+  // Initialize the CachedState from |canonical_crypto_config| for the
+  // |canonical_server_hostname| as the initial CachedState for
+  // |server_hostname|.
+  void InitializeFrom(const std::string& server_hostname,
+                      const std::string& canonical_server_hostname,
+                      QuicCryptoClientConfig* canonical_crypto_config);
 
  private:
   // cached_states_ maps from the server hostname to the cached information

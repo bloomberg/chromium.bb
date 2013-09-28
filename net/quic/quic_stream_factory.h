@@ -32,6 +32,10 @@ class QuicCryptoClientStreamFactory;
 class QuicRandom;
 class QuicStreamFactory;
 
+namespace test {
+class QuicStreamFactoryPeer;
+}  // namespace test
+
 // Encapsulates a pending request for a QuicHttpStream.
 // If the request is still pending when it is destroyed, it will
 // cancel the request with the factory.
@@ -130,12 +134,14 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
  private:
   class Job;
+  friend class test::QuicStreamFactoryPeer;
 
   typedef std::map<HostPortProxyPair, QuicClientSession*> SessionMap;
   typedef std::set<HostPortProxyPair> AliasSet;
   typedef std::map<QuicClientSession*, AliasSet> SessionAliasMap;
   typedef std::set<QuicClientSession*> SessionSet;
   typedef std::map<HostPortProxyPair, QuicCryptoClientConfig*> CryptoConfigMap;
+  typedef std::map<HostPortPair, HostPortProxyPair> CanonicalHostMap;
   typedef std::map<HostPortProxyPair, Job*> JobMap;
   typedef std::map<QuicStreamRequest*, Job*> RequestMap;
   typedef std::set<QuicStreamRequest*> RequestSet;
@@ -155,6 +161,14 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   QuicCryptoClientConfig* GetOrCreateCryptoConfig(
       const HostPortProxyPair& host_port_proxy_pair);
+
+  // If |host_port_proxy_pair| suffix contains ".c.youtube.com" (in future we
+  // could support other suffixes), then populate |crypto_config| with a
+  // canonical server config data from |canonical_hostname_to_origin_map_| for
+  // that suffix.
+  void PopulateFromCanonicalConfig(
+      const HostPortProxyPair& host_port_proxy_pair,
+      QuicCryptoClientConfig* crypto_config);
 
   bool require_confirmation_;
   HostResolver* host_resolver_;
@@ -176,6 +190,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // TODO(rtenneti): Persist all_crypto_configs_ to disk and decide when to
   // clear the data in the map.
   CryptoConfigMap all_crypto_configs_;
+
+  // Contains a map of servers which could share the same server config. Map
+  // from a Canonical host/port (host is some postfix of host names) to an
+  // actual origin, which has a plausible set of initial certificates (or at
+  // least server public key).
+  CanonicalHostMap canonical_hostname_to_origin_map_;
 
   QuicConfig config_;
 

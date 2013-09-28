@@ -11,6 +11,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
+#include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_http_stream.h"
@@ -23,6 +24,15 @@
 
 namespace net {
 namespace test {
+
+class QuicStreamFactoryPeer {
+ public:
+  static QuicCryptoClientConfig* GetOrCreateCryptoConfig(
+      QuicStreamFactory* factory,
+      const HostPortProxyPair& host_port_proxy_pair) {
+    return factory->GetOrCreateCryptoConfig(host_port_proxy_pair);
+  }
+};
 
 class QuicStreamFactoryTest : public ::testing::Test {
  protected:
@@ -368,6 +378,31 @@ TEST_F(QuicStreamFactoryTest, OnIPAddressChanged) {
   EXPECT_TRUE(socket_data.at_write_eof());
   EXPECT_TRUE(socket_data2.at_read_eof());
   EXPECT_TRUE(socket_data2.at_write_eof());
+}
+
+TEST_F(QuicStreamFactoryTest, SharedCryptoConfig) {
+  HostPortProxyPair host_port_proxy_pair1(HostPortPair("r1.c.youtube.com", 80),
+                                          ProxyServer::Direct());
+
+  QuicCryptoClientConfig* crypto_config1 =
+      QuicStreamFactoryPeer::GetOrCreateCryptoConfig(&factory_,
+                                                     host_port_proxy_pair1);
+  DCHECK(crypto_config1);
+  QuicCryptoClientConfig::CachedState* cached1 =
+      crypto_config1->LookupOrCreate(host_port_proxy_pair1.first.host());
+  // Mutate the cached1 to have different data.
+  // TODO(rtenneti): mutate other members of CachedState.
+  cached1->set_source_address_token("c.youtube.com");
+
+  HostPortProxyPair host_port_proxy_pair2(HostPortPair("r2.c.youtube.com", 80),
+                                          ProxyServer::Direct());
+  QuicCryptoClientConfig* crypto_config2 =
+      QuicStreamFactoryPeer::GetOrCreateCryptoConfig(&factory_,
+                                                     host_port_proxy_pair2);
+  DCHECK(crypto_config2);
+  QuicCryptoClientConfig::CachedState* cached2 =
+      crypto_config2->LookupOrCreate(host_port_proxy_pair2.first.host());
+  EXPECT_EQ(cached1->source_address_token(), cached2->source_address_token());
 }
 
 }  // namespace test

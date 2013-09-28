@@ -519,6 +519,17 @@ void QuicCryptoClientConfig::CachedState::SetProofVerifyDetails(
   proof_verify_details_.reset(details);
 }
 
+void QuicCryptoClientConfig::CachedState::InitializeFrom(
+    const QuicCryptoClientConfig::CachedState& other) {
+  DCHECK(server_config_.empty());
+  DCHECK(!server_config_valid_);
+  server_config_ = other.server_config_;
+  source_address_token_ = other.source_address_token_;
+  certs_ = other.certs_;
+  server_config_sig_ = other.server_config_sig_;
+  server_config_valid_ = other.server_config_valid_;
+}
+
 void QuicCryptoClientConfig::SetDefaults() {
   // Version must be 0.
   // TODO(agl): this version stuff is obsolete now.
@@ -915,6 +926,16 @@ ChannelIDSigner* QuicCryptoClientConfig::channel_id_signer() const {
 
 void QuicCryptoClientConfig::SetChannelIDSigner(ChannelIDSigner* signer) {
   channel_id_signer_.reset(signer);
+}
+
+void QuicCryptoClientConfig::InitializeFrom(
+    const std::string& server_hostname,
+    const std::string& canonical_server_hostname,
+    QuicCryptoClientConfig* canonical_crypto_config) {
+  CachedState* canonical_cached =
+      canonical_crypto_config->LookupOrCreate(canonical_server_hostname);
+  CachedState* cached = LookupOrCreate(server_hostname);
+  cached->InitializeFrom(*canonical_cached);
 }
 
 }  // namespace net
