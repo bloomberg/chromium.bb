@@ -292,7 +292,6 @@
         '../third_party/WebKit/public/blink.gyp:blink_minimal',
         '../third_party/mesa/mesa.gyp:osmesa',
         '../ui/gl/gl.gyp:gl',
-        '../ui/gfx/gfx.gyp:gfx',
         '../ui/ui.gyp:ui',
       ],
       'sources': [
@@ -315,7 +314,7 @@
       ],
       'dependencies': [
         '../skia/skia.gyp:skia',
-        '../ui/gfx/gfx.gyp:gfx',
+        '../ui/ui.gyp:ui',  # for png_codec
       ],
     },
   ],

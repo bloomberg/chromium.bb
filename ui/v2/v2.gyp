@@ -18,7 +18,6 @@
         '../../gpu/gpu.gyp:gpu',
         '../../skia/skia.gyp:skia',
         '../compositor/compositor.gyp:compositor',
-        '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
       ],

@@ -17,7 +17,6 @@
         '../../../../content/content.gyp:content_browser',
         '../../../../skia/skia.gyp:skia',
         '../../../../url/url.gyp:url_lib',
-        '../../../gfx/gfx.gyp:gfx',
         '../../../ui.gyp:ui',
         '../../../web_dialogs/web_dialogs.gyp:web_dialogs',
         '../../views.gyp:views',

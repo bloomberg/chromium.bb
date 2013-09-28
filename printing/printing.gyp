@@ -17,7 +17,6 @@
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        '../ui/gfx/gfx.gyp:gfx',
         '../ui/ui.gyp:ui',
         '../url/url.gyp:url_lib',
       ],
@@ -245,7 +244,6 @@
         '../testing/gtest.gyp:gtest',
         '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
-        '../ui/gfx/gfx.gyp:gfx',
         '../ui/ui.gyp:ui',
       ],
       'sources': [

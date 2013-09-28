@@ -49,7 +49,6 @@
         '../gpu/gpu.gyp:command_buffer_common',
         '../skia/skia.gyp:skia',
         '../third_party/opus/opus.gyp:opus',
-        '../ui/gfx/gfx.gyp:gfx',
         '../ui/ui.gyp:ui',
         '../url/url.gyp:url_lib',
         'shared_memory_support',
@@ -859,7 +858,6 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../ui/gfx/gfx.gyp:gfx',
         '../ui/ui.gyp:ui',
       ],
       'sources': [
@@ -1327,7 +1325,6 @@
             'media',
             '../base/base.gyp:base',
             '../ui/gl/gl.gyp:gl',
-            '../ui/gfx/gfx.gyp:gfx',
             '../ui/ui.gyp:ui',
           ],
           'link_settings': {

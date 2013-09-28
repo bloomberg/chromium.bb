@@ -18,7 +18,6 @@
         '../../url/url.gyp:url_lib',
         '../aura/aura.gyp:aura',
         '../compositor/compositor.gyp:compositor',
-        '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
         '../views/views.gyp:views',

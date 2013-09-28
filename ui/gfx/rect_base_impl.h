@@ -9,7 +9,7 @@
 
 // This file provides the implementation for RectBaese template and
 // used to instantiate the base class for Rect and RectF classes.
-#if !defined(GFX_IMPLEMENTATION)
+#if !defined(UI_IMPLEMENTATION)
 #error "This file is intended for UI implementation only"
 #endif
 

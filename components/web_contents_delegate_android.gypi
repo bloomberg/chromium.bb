@@ -16,7 +16,6 @@
             '../content/content.gyp:content_common',
             '../net/net.gyp:net',
             '../skia/skia.gyp:skia',
-            '../ui/gfx/gfx.gyp:gfx',
             '../ui/ui.gyp:ui',
             '../webkit/glue/webkit_glue.gyp:glue',
             'web_contents_delegate_android_jni_headers',

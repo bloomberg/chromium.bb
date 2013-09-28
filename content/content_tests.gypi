@@ -13,7 +13,6 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../ui/gfx/gfx.gyp:gfx',
         '../ui/ui.gyp:keycode_converter',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
@@ -309,7 +308,6 @@
         '../sql/sql.gyp:test_support_sql',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../ui/gfx/gfx.gyp:gfx',
         '../ui/ui.gyp:ui',
         '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
       ],
@@ -833,7 +831,6 @@
             '../testing/gtest.gyp:gtest',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/mesa/mesa.gyp:osmesa',
-            '../ui/gfx/gfx.gyp:gfx',
             '../ui/gl/gl.gyp:gl',
             '../ui/snapshot/snapshot.gyp:snapshot',
             '../ui/ui.gyp:shell_dialogs',
@@ -1067,9 +1064,8 @@
             '../base/base.gyp:test_support_base',
             '../gpu/gpu.gyp:command_buffer_common',
             '../testing/gtest.gyp:gtest',
-            '../ui/gfx/gfx.gyp:gfx',
-            '../ui/gl/gl.gyp:gl',
             '../ui/ui.gyp:ui',
+            '../ui/gl/gl.gyp:gl',
             '../third_party/WebKit/public/blink.gyp:blink',
             # The following two dependencies provide the missing
             # symbol HeapProfilerStart in Linux component builds.
@@ -1100,9 +1096,8 @@
             'test_support_content',
             '../base/base.gyp:test_support_base',
             '../testing/gtest.gyp:gtest',
-            '../ui/gfx/gfx.gyp:gfx',
-            '../ui/gl/gl.gyp:gl',
             '../ui/ui.gyp:ui',
+            '../ui/gl/gl.gyp:gl',
             '../third_party/WebKit/public/blink.gyp:blink',
             # The following two dependencies provide the missing
             # symbol HeapProfilerStart in Linux component builds.
@@ -1143,7 +1138,6 @@
               '../testing/gtest.gyp:gtest',
               '../media/media.gyp:media',
               '../ui/gl/gl.gyp:gl',
-              '../ui/gfx/gfx.gyp:gfx',
               '../ui/ui.gyp:ui',
             ],
             'include_dirs': [
@@ -1209,7 +1203,6 @@
             '../testing/gtest.gyp:gtest',
             '../media/media.gyp:media',
               '../ui/gl/gl.gyp:gl',
-              '../ui/gfx/gfx.gyp:gfx',
               '../ui/ui.gyp:ui',
           ],
           'sources': [
