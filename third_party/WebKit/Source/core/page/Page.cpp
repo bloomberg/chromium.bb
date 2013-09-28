@@ -35,6 +35,7 @@
 #include "core/loader/ProgressTracker.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/DOMTimer.h"
 #include "core/page/DragController.h"
@@ -409,6 +410,7 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
             view->setVisibleContentScaleFactor(scale);
 
         mainFrame()->deviceOrPageScaleFactorChanged();
+        m_chrome->client().deviceOrPageScaleFactorChanged();
 
         if (view)
             view->setViewportConstrainedObjectsNeedLayout();
@@ -426,8 +428,10 @@ void Page::setDeviceScaleFactor(float scaleFactor)
     m_deviceScaleFactor = scaleFactor;
     setNeedsRecalcStyleInAllFrames();
 
-    if (mainFrame())
+    if (mainFrame()) {
         mainFrame()->deviceOrPageScaleFactorChanged();
+        m_chrome->client().deviceOrPageScaleFactorChanged();
+    }
 }
 
 void Page::setPagination(const Pagination& pagination)

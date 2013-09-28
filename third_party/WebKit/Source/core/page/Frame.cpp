@@ -575,8 +575,6 @@ void Frame::deviceOrPageScaleFactorChanged()
 {
     for (RefPtr<Frame> child = tree()->firstChild(); child; child = child->tree()->nextSibling())
         child->deviceOrPageScaleFactorChanged();
-
-    m_page->chrome().client().deviceOrPageScaleFactorChanged();
 }
 
 void Frame::notifyChromeClientWheelEventHandlerCountChanged() const
