@@ -30,12 +30,7 @@ struct CC_EXPORT DrawProperties {
         num_unclipped_descendants(0),
         descendants_can_clip_selves(false),
         can_draw_directly_to_backbuffer(false),
-        layer_or_descendant_has_copy_request(false),
-        sorted_for_recursion(false),
-        index_of_first_descendants_addition(0),
-        num_descendants_added(0),
-        index_of_first_render_surface_layer_list_addition(0),
-        num_render_surfaces_added(0) {}
+        layer_or_descendant_has_copy_request(false) {}
 
   // Transforms objects from content space to target surface space, where
   // this layer would be drawn.
@@ -107,18 +102,6 @@ struct CC_EXPORT DrawProperties {
   // If true, the layer or some layer in its sub-tree has a CopyOutputRequest
   // present on it.
   bool layer_or_descendant_has_copy_request;
-
-  // This is true if the order (wrt to its siblings in the tree) in which the
-  // layer will be visited while computing draw properties has been determined.
-  bool sorted_for_recursion;
-
-  // If this layer is visited out of order, its contribution to the descendant
-  // and render surface layer lists will be put aside in a temporary list.
-  // These values will allow for an efficient reordering of these additions.
-  size_t index_of_first_descendants_addition;
-  size_t num_descendants_added;
-  size_t index_of_first_render_surface_layer_list_addition;
-  size_t num_render_surfaces_added;
 };
 
 }  // namespace cc
