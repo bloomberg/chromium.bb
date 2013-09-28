@@ -47,14 +47,6 @@ using content::UserMetricsAction;
   return controller_ ? controller_ : [[self window] windowController];
 }
 
-// TODO(mrossetti,jrg): Identical to -[BookmarkBarView
-// dragClipboardContainsBookmarks].  http://crbug.com/35966
-// Shim function to assist in unit testing.
-- (BOOL)dragClipboardContainsBookmarks {
-  return bookmark_pasteboard_helper_mac::PasteboardContainsBookmarks(
-      bookmark_pasteboard_helper_mac::kDragPasteboard);
-}
-
 // Virtually identical to [BookmarkBarView draggingEntered:].
 // TODO(jrg): find a way to share code.  Lack of multiple inheritance
 // makes things more of a pain but there should be no excuse for laziness.
@@ -64,7 +56,7 @@ using content::UserMetricsAction;
   if (![[self controller] draggingAllowed:info])
     return NSDragOperationNone;
   if ([[info draggingPasteboard] dataForType:kBookmarkButtonDragType] ||
-      [self dragClipboardContainsBookmarks] ||
+      PasteboardContainsBookmarks(BOOKMARK_PASTEBOARD_TYPE_DRAG) ||
       [[info draggingPasteboard] containsURLData]) {
     // Find the position of the drop indicator.
     BOOL showIt = [[self controller]

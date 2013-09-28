@@ -143,10 +143,8 @@ void DragBookmarks(Profile* profile,
     elements.push_back(BookmarkNodeData::Element(*it));
   }
 
-  bookmark_pasteboard_helper_mac::WriteToPasteboard(
-      bookmark_pasteboard_helper_mac::kDragPasteboard,
-      elements,
-      profile->GetPath());
+  WriteBookmarksToPasteboard(
+      BOOKMARK_PASTEBOARD_TYPE_DRAG, elements, profile->GetPath());
 
   // Synthesize an event for dragging, since we can't be sure that
   // [NSApp currentEvent] will return a valid dragging event.
