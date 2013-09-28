@@ -187,12 +187,15 @@ bool Clipboard::setData(const String& type, const String& data)
 }
 
 // extensions beyond IE's API
-ListHashSet<String> Clipboard::types() const
+Vector<String> Clipboard::types() const
 {
+    Vector<String> types;
     if (!canReadTypes())
-        return ListHashSet<String>();
+        return types;
 
-    return m_dataObject->types();
+    ListHashSet<String> typesSet = m_dataObject->types();
+    types.appendRange(typesSet.begin(), typesSet.end());
+    return types;
 }
 
 PassRefPtr<FileList> Clipboard::files() const

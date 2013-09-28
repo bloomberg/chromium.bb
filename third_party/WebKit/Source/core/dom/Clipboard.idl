@@ -30,7 +30,7 @@
 ] interface Clipboard {
              [TreatReturnedNullStringAs=Undefined] attribute DOMString dropEffect;
              [TreatReturnedNullStringAs=Undefined] attribute DOMString effectAllowed;
-    [CustomGetter] readonly attribute Array types;
+    readonly attribute DOMString[] types;
     readonly attribute FileList files;
 
     [Custom, RaisesException] void clearData(optional DOMString type);

@@ -30,9 +30,9 @@
 #include "core/page/DragActions.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "wtf/Forward.h"
-#include "wtf/ListHashSet.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -73,7 +73,7 @@ public:
     bool setData(const String& type, const String& data);
 
     // extensions beyond IE's API
-    ListHashSet<String> types() const;
+    Vector<String> types() const;
     PassRefPtr<FileList> files() const;
 
     IntPoint dragLocation() const { return m_dragLoc; }
