@@ -17,9 +17,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-static const char kTestAccountId[] = "testuser@test.com";
-static const char kOtherTestAccountId[] = "otheruser@test.com";
-
 class SigninGlobalErrorTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
@@ -30,7 +27,7 @@ class SigninGlobalErrorTest : public testing::Test {
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), FakeSigninManagerBase::Build));
     profile_->GetPrefs()->SetString(
-        prefs::kGoogleServicesUsername, kTestAccountId);
+        prefs::kGoogleServicesUsername, "testuser@test.com");
     manager->Initialize(profile_.get(), NULL);
     global_error_ = SigninGlobalError::GetForProfile(profile_.get());
   }
@@ -59,7 +56,7 @@ TEST_F(SigninGlobalErrorTest, ErrorAuthStatusProvider) {
     ASSERT_FALSE(global_error_->HasMenuItem());
     {
       FakeAuthStatusProvider error_provider(global_error_);
-      error_provider.SetAuthError(kTestAccountId, GoogleServiceAuthError(
+      error_provider.SetAuthError(GoogleServiceAuthError(
           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
       ASSERT_TRUE(global_error_->HasMenuItem());
     }
@@ -76,60 +73,17 @@ TEST_F(SigninGlobalErrorTest, AuthStatusProviderErrorTransition) {
     FakeAuthStatusProvider provider1(global_error_);
     ASSERT_FALSE(global_error_->HasMenuItem());
     provider0.SetAuthError(
-        kTestAccountId,
         GoogleServiceAuthError(
             GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
     ASSERT_TRUE(global_error_->HasMenuItem());
     provider1.SetAuthError(
-        kTestAccountId,
         GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED));
     ASSERT_TRUE(global_error_->HasMenuItem());
 
     // Now resolve the auth errors - the menu item should go away.
-    provider0.SetAuthError(kTestAccountId,
-                           GoogleServiceAuthError::AuthErrorNone());
+    provider0.SetAuthError(GoogleServiceAuthError::AuthErrorNone());
     ASSERT_TRUE(global_error_->HasMenuItem());
-    provider1.SetAuthError(kTestAccountId,
-                           GoogleServiceAuthError::AuthErrorNone());
-    ASSERT_FALSE(global_error_->HasMenuItem());
-  }
-  ASSERT_FALSE(global_error_->HasMenuItem());
-}
-
-TEST_F(SigninGlobalErrorTest, AuthStatusProviderAccountTransition) {
-  {
-    FakeAuthStatusProvider provider0(global_error_);
-    FakeAuthStatusProvider provider1(global_error_);
-    ASSERT_FALSE(global_error_->HasMenuItem());
-
-    provider0.SetAuthError(
-        kTestAccountId,
-        GoogleServiceAuthError(
-            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-    provider1.SetAuthError(
-        kOtherTestAccountId,
-        GoogleServiceAuthError(GoogleServiceAuthError::NONE));
-    ASSERT_TRUE(global_error_->HasMenuItem());
-    ASSERT_STREQ(kTestAccountId,
-                 global_error_->GetAccountIdOfLastAuthError().c_str());
-
-    // Swap providers reporting errors.
-    provider1.set_error_without_status_change(
-        GoogleServiceAuthError(
-            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-    provider0.set_error_without_status_change(
-        GoogleServiceAuthError(GoogleServiceAuthError::NONE));
-    global_error_->AuthStatusChanged();
-    ASSERT_TRUE(global_error_->HasMenuItem());
-    ASSERT_STREQ(kOtherTestAccountId,
-                 global_error_->GetAccountIdOfLastAuthError().c_str());
-
-    // Now resolve the auth errors - the menu item should go away.
-    provider0.set_error_without_status_change(
-        GoogleServiceAuthError::AuthErrorNone());
-    provider1.set_error_without_status_change(
-        GoogleServiceAuthError::AuthErrorNone());
-    global_error_->AuthStatusChanged();
+    provider1.SetAuthError(GoogleServiceAuthError::AuthErrorNone());
     ASSERT_FALSE(global_error_->HasMenuItem());
   }
   ASSERT_FALSE(global_error_->HasMenuItem());
@@ -162,8 +116,7 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(table); ++i) {
     FakeAuthStatusProvider provider(global_error_);
-    provider.SetAuthError(kTestAccountId,
-                          GoogleServiceAuthError(table[i].error_state));
+    provider.SetAuthError(GoogleServiceAuthError(table[i].error_state));
     EXPECT_EQ(global_error_->HasMenuItem(), table[i].is_error);
     // Only on chromeos do we have a separate menu item - on other platforms
     // there's code in WrenchMenuModel to re-use the "sign in to chrome"

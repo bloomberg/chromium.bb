@@ -14,17 +14,11 @@ FakeAuthStatusProvider::~FakeAuthStatusProvider() {
   global_error_->RemoveProvider(this);
 }
 
-std::string FakeAuthStatusProvider::GetAccountId() const {
-  return account_id_;
-}
-
 GoogleServiceAuthError FakeAuthStatusProvider::GetAuthStatus() const {
   return auth_error_;
 }
 
-void FakeAuthStatusProvider::SetAuthError(const std::string& account_id,
-                                          const GoogleServiceAuthError& error) {
-  account_id_ = account_id;
+void FakeAuthStatusProvider::SetAuthError(const GoogleServiceAuthError& error) {
   auth_error_ = error;
   global_error_->AuthStatusChanged();
 }

@@ -25,15 +25,12 @@ class SigninGlobalError : public GlobalError {
     AuthStatusProvider();
     virtual ~AuthStatusProvider();
 
-    // Returns the account id with the status specified by GetAuthStatus().
-    virtual std::string GetAccountId() const = 0;
-
     // API invoked by SigninGlobalError to get the current auth status of
     // the various signed in services.
     virtual GoogleServiceAuthError GetAuthStatus() const = 0;
   };
 
-  explicit SigninGlobalError(Profile* profile);
+  SigninGlobalError(Profile* profile);
   virtual ~SigninGlobalError();
 
   // Adds a provider which the SigninGlobalError object will start querying for
@@ -46,8 +43,6 @@ class SigninGlobalError : public GlobalError {
 
   // Invoked when the auth status of an AuthStatusProvider has changed.
   void AuthStatusChanged();
-
-  std::string GetAccountIdOfLastAuthError() const { return account_id_; }
 
   GoogleServiceAuthError GetLastAuthError() const { return auth_error_; }
 
@@ -70,9 +65,6 @@ class SigninGlobalError : public GlobalError {
 
  private:
   std::set<const AuthStatusProvider*> provider_set_;
-
-  // The account that generated the last auth error.
-  std::string account_id_;
 
   // The auth error detected the last time AuthStatusChanged() was invoked (or
   // NONE if AuthStatusChanged() has never been invoked).

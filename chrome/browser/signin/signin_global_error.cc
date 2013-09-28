@@ -59,12 +59,9 @@ SigninGlobalError::AuthStatusProvider::~AuthStatusProvider() {
 void SigninGlobalError::AuthStatusChanged() {
   // Walk all of the status providers and collect any error.
   GoogleServiceAuthError current_error(GoogleServiceAuthError::AuthErrorNone());
-  std::string current_account_id;
   for (std::set<const AuthStatusProvider*>::const_iterator it =
            provider_set_.begin(); it != provider_set_.end(); ++it) {
-    current_account_id = (*it)->GetAccountId();
     current_error = (*it)->GetAuthStatus();
-
     // Break out if any provider reports an error (ignoring ordinary network
     // errors, which are not surfaced to the user). This logic may eventually
     // need to be extended to prioritize different auth errors, but for now
@@ -74,15 +71,8 @@ void SigninGlobalError::AuthStatusChanged() {
       break;
     }
   }
-  if (current_error.state() != auth_error_.state() ||
-      account_id_ != current_account_id) {
+  if (current_error.state() != auth_error_.state()) {
     auth_error_ = current_error;
-    if (auth_error_.state() == GoogleServiceAuthError::NONE) {
-      account_id_.clear();
-    } else {
-      account_id_ = current_account_id;
-    }
-
     GlobalErrorServiceFactory::GetForProfile(profile_)->NotifyErrorsChanged(
         this);
   }
@@ -97,7 +87,12 @@ int SigninGlobalError::MenuItemCommandID() {
 }
 
 string16 SigninGlobalError::MenuItemLabel() {
-  if (account_id_.empty() ||
+  std::string username;
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfileIfExists(profile_);
+  if (signin_manager)
+    username = signin_manager->GetAuthenticatedUsername();
+  if (username.empty() ||
       auth_error_.state() == GoogleServiceAuthError::NONE ||
       auth_error_.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
     // If the user isn't signed in, or there's no auth error worth elevating to
@@ -118,10 +113,6 @@ void SigninGlobalError::ExecuteMenuItem(Browser* browser) {
     return;
   }
 #endif
-
-  // TODO(rogerta): what we do depends on which account is reporting an error.
-  // This will be needed once the account reconcilor is implemented.  The
-  // LoginUIService will support multi-login as well.
 
   // Global errors don't show up in the wrench menu on android.
 #if !defined(OS_ANDROID)
@@ -161,8 +152,6 @@ std::vector<string16> SigninGlobalError::GetBubbleViewMessages() {
     case GoogleServiceAuthError::CONNECTION_FAILED:
     case GoogleServiceAuthError::NONE:
       return messages;
-
-    // TODO(rogerta): use account id in error messages.
 
     // User credentials are invalid (bad acct, etc).
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:

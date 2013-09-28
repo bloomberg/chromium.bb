@@ -749,11 +749,6 @@ ProfileKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
   return &g_factory.Get();
 }
 
-std::string IdentityAPI::GetAccountId() const {
-  return ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
-      GetPrimaryAccountId();
-}
-
 GoogleServiceAuthError IdentityAPI::GetAuthStatus() const {
   return error_;
 }

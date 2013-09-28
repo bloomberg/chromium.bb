@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service_unittest.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -21,14 +19,12 @@ using content::BrowserThread;
 // Defining constant here to handle backward compatiblity tests, but this
 // constant is no longer used in current versions of chrome.
 static const char kLSOService[] = "lso";
-static const char kEmail[] = "user@gmail.com";
 
 class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
                                       public OAuth2TokenService::Observer {
  public:
   ProfileOAuth2TokenServiceTest()
-      : oauth2_service_(NULL),
-        token_available_count_(0),
+      : token_available_count_(0),
         token_revoked_count_(0),
         tokens_loaded_count_(0) {
   }
@@ -38,6 +34,7 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
     UpdateCredentialsOnService();
     oauth2_service_ = ProfileOAuth2TokenServiceFactory::GetForProfile(
         profile());
+
     oauth2_service_->AddObserver(this);
   }
 
@@ -102,7 +99,6 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
 
 TEST_F(ProfileOAuth2TokenServiceTest, Notifications) {
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-  CreateSigninManager(kEmail);
   service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
                                    "refreshToken");
   ExpectOneTokenAvailableNotification();
@@ -112,9 +108,8 @@ TEST_F(ProfileOAuth2TokenServiceTest, Notifications) {
 }
 
 TEST_F(ProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
-  CreateSigninManager(kEmail);
-
-  std::string main_account_id(kEmail);
+  // No username for profile in unit tests, defaulting to empty string.
+  std::string main_account_id;
   std::string main_refresh_token("old_refresh_token");
 
   // Populate DB with legacy tokens.
@@ -137,7 +132,7 @@ TEST_F(ProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
   EXPECT_TRUE(oauth2_service_->RefreshTokenIsAvailable(main_account_id));
   EXPECT_EQ(1U, oauth2_service_->refresh_tokens_.size());
   EXPECT_EQ(main_refresh_token,
-            oauth2_service_->refresh_tokens_[main_account_id]->refresh_token());
+            oauth2_service_->refresh_tokens_[main_account_id]);
 
   // Add an old legacy token to the DB, to ensure it will not overwrite existing
   // credentials for main account.
@@ -166,10 +161,9 @@ TEST_F(ProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
   // tokens using GetRefreshToken()
   EXPECT_EQ(2U, oauth2_service_->refresh_tokens_.size());
   EXPECT_EQ(main_refresh_token,
-            oauth2_service_->refresh_tokens_[main_account_id]->refresh_token());
-  EXPECT_EQ(
-      other_refresh_token,
-      oauth2_service_->refresh_tokens_[other_account_id]->refresh_token());
+            oauth2_service_->refresh_tokens_[main_account_id]);
+  EXPECT_EQ(other_refresh_token,
+            oauth2_service_->refresh_tokens_[other_account_id]);
 
   oauth2_service_->RevokeAllCredentials();
 }
@@ -285,7 +279,6 @@ TEST_F(ProfileOAuth2TokenServiceTest, TokensLoaded) {
 
 TEST_F(ProfileOAuth2TokenServiceTest, UnknownNotificationsAreNoops) {
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-  CreateSigninManager(kEmail);
   service()->IssueAuthTokenForTest("foo", "toto");
   ExpectNoNotifications();
 
@@ -300,7 +293,6 @@ TEST_F(ProfileOAuth2TokenServiceTest, UnknownNotificationsAreNoops) {
 
 TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-  CreateSigninManager(kEmail);
   std::set<std::string> scope_list;
   scope_list.insert("scope");
   oauth2_service_->UpdateCredentials(oauth2_service_->GetPrimaryAccountId(),
@@ -340,4 +332,3 @@ TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   EXPECT_EQ("another token", consumer_.last_token_);
   EXPECT_EQ(1, oauth2_service_->cache_size_for_testing());
 }
-

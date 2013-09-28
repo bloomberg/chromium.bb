@@ -11,8 +11,6 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/signin/fake_signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/webdata/token_web_data.h"
 #include "chrome/common/chrome_switches.h"
@@ -51,9 +49,7 @@ void TokenFailedTracker::Observe(int type,
   }
 }
 
-TokenServiceTestHarness::TokenServiceTestHarness()
-    : signin_manager_(NULL), service_(NULL) {
-}
+TokenServiceTestHarness::TokenServiceTestHarness() {}
 
 TokenServiceTestHarness::~TokenServiceTestHarness() {}
 
@@ -88,15 +84,6 @@ void TokenServiceTestHarness::SetUp() {
 
 scoped_ptr<TestingProfile> TokenServiceTestHarness::CreateProfile() {
   return make_scoped_ptr(new TestingProfile());
-}
-
-void TokenServiceTestHarness::CreateSigninManager(const std::string& username) {
-  signin_manager_ =
-      static_cast<FakeSigninManagerBase*>(
-          SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-              profile(), FakeSigninManagerBase::Build));
-  signin_manager_->Initialize(profile(), NULL);
-  signin_manager_->SetAuthenticatedUsername(username);
 }
 
 void TokenServiceTestHarness::TearDown() {
@@ -162,7 +149,6 @@ TEST_F(TokenServiceTest, NotificationSuccess) {
 TEST_F(TokenServiceTest, NotificationOAuthLoginTokenSuccess) {
   EXPECT_EQ(0U, success_tracker()->size());
   EXPECT_EQ(0U, failure_tracker()->size());
-  CreateSigninManager("test@gmail.com");
   service()->OnClientOAuthSuccess(
       GaiaAuthConsumer::ClientOAuthResult("rt1", "at1", 3600));
   EXPECT_EQ(1U, success_tracker()->size());
@@ -178,7 +164,6 @@ TEST_F(TokenServiceTest, NotificationOAuthLoginTokenSuccess) {
 TEST_F(TokenServiceTest, NotificationFailed) {
   EXPECT_EQ(0U, success_tracker()->size());
   EXPECT_EQ(0U, failure_tracker()->size());
-  CreateSigninManager("test@gmail.com");
   GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
   service()->OnIssueAuthTokenFailure(GaiaConstants::kSyncService, error);
   EXPECT_EQ(0U, success_tracker()->size());
@@ -194,7 +179,6 @@ TEST_F(TokenServiceTest, NotificationFailed) {
 TEST_F(TokenServiceTest, NotificationOAuthLoginTokenFailed) {
   EXPECT_EQ(0U, success_tracker()->size());
   EXPECT_EQ(0U, failure_tracker()->size());
-  CreateSigninManager("test@gmail.com");
   GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
   service()->OnClientOAuthFailure(error);
   EXPECT_EQ(0U, success_tracker()->size());
@@ -227,7 +211,6 @@ TEST_F(TokenServiceTest, OnTokenSuccessUpdate) {
 }
 
 TEST_F(TokenServiceTest, OnOAuth2LoginTokenSuccessUpdate) {
-  CreateSigninManager("test@gmail.com");
   EXPECT_FALSE(service()->HasOAuthLoginToken());
 
   service()->OnClientOAuthSuccess(
@@ -247,7 +230,6 @@ TEST_F(TokenServiceTest, OnOAuth2LoginTokenSuccessUpdate) {
 }
 
 TEST_F(TokenServiceTest, OnTokenSuccess) {
-  CreateSigninManager("test@gmail.com");
   // Don't "start fetching", just go ahead and issue the callback.
   service()->OnIssueAuthTokenSuccess(GaiaConstants::kSyncService, "token");
   EXPECT_TRUE(service()->HasTokenForService(GaiaConstants::kSyncService));
@@ -258,7 +240,6 @@ TEST_F(TokenServiceTest, OnTokenSuccess) {
 }
 
 TEST_F(TokenServiceTest, Reset) {
-  CreateSigninManager("test@gmail.com");
   net::TestURLFetcherFactory factory;
   service()->StartFetchingTokens();
   // You have to call delegates by hand with the test fetcher,
@@ -302,7 +283,6 @@ TEST_F(TokenServiceTest, FullIntegration) {
 }
 
 TEST_F(TokenServiceTest, LoadTokensIntoMemoryBasic) {
-  CreateSigninManager("test@gmail.com");
   // Validate that the method sets proper data in notifications and map.
   std::map<std::string, std::string> db_tokens;
   std::map<std::string, std::string> memory_tokens;
@@ -325,7 +305,6 @@ TEST_F(TokenServiceTest, LoadTokensIntoMemoryBasic) {
 }
 
 TEST_F(TokenServiceTest, LoadTokensIntoMemoryAdvanced) {
-  CreateSigninManager("test@gmail.com");
   // LoadTokensIntoMemory should avoid setting tokens already in the
   // token map.
   std::map<std::string, std::string> db_tokens;
@@ -355,7 +334,6 @@ TEST_F(TokenServiceTest, LoadTokensIntoMemoryAdvanced) {
 }
 
 TEST_F(TokenServiceTest, WebDBLoadIntegration) {
-  CreateSigninManager("test@gmail.com");
   service()->LoadTokensFromDB();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(service()->TokensLoadedFromDB());
@@ -379,7 +357,6 @@ TEST_F(TokenServiceTest, WebDBLoadIntegration) {
 }
 
 TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
-  CreateSigninManager("test@gmail.com");
   // Should result in DB write.
   service()->OnIssueAuthTokenSuccess(GaiaConstants::kSyncService, "token");
   service()->ResetCredentialsInMemory();

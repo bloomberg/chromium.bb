@@ -17,20 +17,13 @@ class FakeAuthStatusProvider : public SigninGlobalError::AuthStatusProvider {
 
   // Sets the auth error that this provider reports to SigninGlobalError. Also
   // notifies SigninGlobalError via AuthStatusChanged().
-  void SetAuthError(const std::string& account_id,
-                    const GoogleServiceAuthError& error);
-
-  void set_error_without_status_change(const GoogleServiceAuthError& error) {
-    auth_error_ = error;
-  }
+  void SetAuthError(const GoogleServiceAuthError& error);
 
   // AuthStatusProvider implementation.
-  virtual std::string GetAccountId() const OVERRIDE;
   virtual GoogleServiceAuthError GetAuthStatus() const OVERRIDE;
 
  private:
   SigninGlobalError* global_error_;
-  std::string account_id_;
   GoogleServiceAuthError auth_error_;
 };
 

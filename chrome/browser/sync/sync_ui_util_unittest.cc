@@ -43,8 +43,6 @@ enum DistinctState {
 
 namespace {
 
-const char kTestUser[] = "test_user@test.com";
-
 // Utility function to test that GetStatusLabelsForSyncGlobalError returns
 // the correct results for the given states.
 void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
@@ -243,9 +241,8 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
       EXPECT_CALL(service, QueryDetailedSyncStatus(_))
                   .WillRepeatedly(DoAll(SetArgPointee<0>(status),
                                   Return(false)));
-      provider->SetAuthError(
-          kTestUser,
-          GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+      provider->SetAuthError(GoogleServiceAuthError(
+          GoogleServiceAuthError::SERVICE_UNAVAILABLE));
       EXPECT_CALL(service, HasUnrecoverableError())
                   .WillRepeatedly(Return(false));
       return;
@@ -330,7 +327,7 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
     GoogleServiceAuthError error = GoogleServiceAuthError::AuthErrorNone();
     EXPECT_CALL(service, GetAuthError()).WillRepeatedly(ReturnRef(error));
     FakeSigninManagerForSyncUIUtilTest signin(profile.get());
-    signin.SetAuthenticatedUsername(kTestUser);
+    signin.SetAuthenticatedUsername("test_user@test.com");
     scoped_ptr<FakeAuthStatusProvider> provider(
         new FakeAuthStatusProvider(
             SigninGlobalError::GetForProfile(profile.get())));
@@ -370,7 +367,7 @@ TEST_F(SyncUIUtilTest, HtmlNotIncludedInStatusIfNotRequested) {
     GoogleServiceAuthError error = GoogleServiceAuthError::AuthErrorNone();
     EXPECT_CALL(service, GetAuthError()).WillRepeatedly(ReturnRef(error));
     FakeSigninManagerForSyncUIUtilTest signin(profile.get());
-    signin.SetAuthenticatedUsername(kTestUser);
+    signin.SetAuthenticatedUsername("test_user@test.com");
     scoped_ptr<FakeAuthStatusProvider> provider(
         new FakeAuthStatusProvider(
             SigninGlobalError::GetForProfile(profile.get())));

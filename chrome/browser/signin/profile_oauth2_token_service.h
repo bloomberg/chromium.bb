@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/memory/linked_ptr.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/webdata/common/web_data_service_consumer.h"
@@ -41,6 +40,7 @@ class SigninGlobalError;
 // request from other thread, please use ProfileOAuth2TokenServiceRequest.
 class ProfileOAuth2TokenService : public OAuth2TokenService,
                                   public content::NotificationObserver,
+                                  public SigninGlobalError::AuthStatusProvider,
                                   public BrowserContextKeyedService,
                                   public WebDataServiceConsumer {
  public:
@@ -54,6 +54,9 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
 
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
+
+  // SigninGlobalError::AuthStatusProvider implementation.
+  virtual GoogleServiceAuthError GetAuthStatus() const OVERRIDE;
 
   // Gets an account id of the primary account related to the profile.
   std::string GetPrimaryAccountId();
@@ -109,37 +112,6 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   virtual void ClearPersistedCredentials(const std::string& account_id);
 
  private:
-  class AccountInfo : public SigninGlobalError::AuthStatusProvider {
-   public:
-    AccountInfo(ProfileOAuth2TokenService* token_service,
-                const std::string& account_id,
-                const std::string& refresh_token);
-    virtual ~AccountInfo();
-
-    const std::string& refresh_token() const { return refresh_token_; }
-    void set_refresh_token(const std::string& token) {
-      refresh_token_ = token;
-    }
-
-    void SetLastAuthError(const GoogleServiceAuthError& error);
-
-    // SigninGlobalError::AuthStatusProvider implementation.
-    virtual std::string GetAccountId() const OVERRIDE;
-    virtual GoogleServiceAuthError GetAuthStatus() const OVERRIDE;
-
-   private:
-    ProfileOAuth2TokenService* token_service_;
-    std::string account_id_;
-    std::string refresh_token_;
-    GoogleServiceAuthError last_auth_error_;
-
-    DISALLOW_COPY_AND_ASSIGN(AccountInfo);
-  };
-
-  // Maps the |account_id| of accounts known to ProfileOAuth2TokenService
-  // to information about the account.
-  typedef std::map<std::string, linked_ptr<AccountInfo> > AccountInfoMap;
-
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
                            TokenServiceUpdateClearsCache);
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
@@ -171,13 +143,16 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   WebDataServiceBase::Handle web_data_service_request_;
 
   // In memory refresh token store mapping account_id to refresh_token.
-  AccountInfoMap refresh_tokens_;
+  std::map<std::string, std::string> refresh_tokens_;
 
   // Used to show auth errors in the wrench menu. The SigninGlobalError is
   // different than most GlobalErrors in that its lifetime is controlled by
   // ProfileOAuth2TokenService (so we can expose a reference for use in the
   // wrench menu).
   scoped_ptr<SigninGlobalError> signin_global_error_;
+
+  // The auth status from the most-recently-completed request.
+  GoogleServiceAuthError last_auth_error_;
 
   // Registrar for notifications from the TokenService.
   content::NotificationRegistrar registrar_;
