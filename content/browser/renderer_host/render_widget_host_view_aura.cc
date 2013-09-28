@@ -3189,10 +3189,15 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   gfx::Point local_point = screen_point;
   local_point.Offset(-screen_rect.x(), -screen_rect.y());
 
-  if (!root_window->HasFocus() ||
-      root_window->GetEventHandlerForPoint(local_point) != window_) {
+#if defined(OS_WIN)
+  // If there's another toplevel window above us at this point (for example a
+  // menu), we don't want to update the cursor.
+  POINT windows_point = { screen_point.x(), screen_point.y() };
+  if (root_window->GetAcceleratedWidget() != ::WindowFromPoint(windows_point))
     return;
-  }
+#endif
+  if (root_window->GetEventHandlerForPoint(local_point) != window_)
+    return;
 
   gfx::NativeCursor cursor = current_cursor_.GetNativeCursor();
   // Do not show loading cursor when the cursor is currently hidden.
