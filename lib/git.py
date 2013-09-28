@@ -53,7 +53,7 @@ class RemoteRef(object):
   """Object representing a remote ref.
 
   A remote ref encapsulates both a remote (e.g., 'origin',
-  'ssh://gerrit.chromium.org:29418/chromiumos/chromite.git', etc.) and a ref
+  'https://chromium.googlesource.com/chromiumos/chromite.git', etc.) and a ref
   name (e.g., 'refs/heads/master').
   """
   def __init__(self, remote, ref):

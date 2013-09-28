@@ -969,7 +969,7 @@ class LocalPatch(GitRepoPatch):
     for num, line in enumerate(lines):
       # Look for output like:
       # remote: New Changes:
-      # remote:   https://gerrit.chromium.org/gerrit/36756
+      # remote:   https://chromium-review.googlesource.com/36756
       if 'New Changes:' in line:
         urls = []
         for line in lines[num + 1:]:

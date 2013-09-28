@@ -80,9 +80,9 @@ def _CreateCrosSymlink(repo_root):
 
 def _ExtractProjectFromUrl(repo_url):
   """Get the Gerrit project name from an url."""
-  # Example: 'ssh://gerrit-int.chromium.org:12121/my/project.git' would parse to
-  # 'my/project'.  See unit test for more examples.  For 'URL's like
-  # '../abc/efg' leave as-is to support unit tests.
+  # Example: 'https:/chrome-internal.googlesource.com/my/project.git'
+  # would parse to 'my/project'.  See unit test for more examples.
+  # For 'URL's like '../abc/efg' leave as-is to support unit tests.
   mo = re.match(r'(?:[\w\+]+://[^/]+/)?(.*)', repo_url)
   return os.path.splitext(mo.group(1))[0]
 

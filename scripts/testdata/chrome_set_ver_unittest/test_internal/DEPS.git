@@ -2,7 +2,7 @@
 # ALL MANUAL CHANGES WILL BE OVERWRITTEN.
 vars = {
     'git_url':
-         'ssh://gerrit-int.chromium.org:29419',
+         'https://chrome-internal.googlesource.com',
     'rev1':
          '@8d35063e1836c79c9ef97bf81eb43f450dc111ac',
 }

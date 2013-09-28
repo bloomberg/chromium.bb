@@ -397,7 +397,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     BUG=chromium-os:99999
 
     Change-Id: Ib72a742fd2cee3c4a5223b8easwasdgsdgfasdf
-    Reviewed-on: http://gerrit.chromium.org/gerrit/1234
+    Reviewed-on: https://chromium-review.googlesource.com/1234
     Reviewed-by: Fake person <fake@fake.org>
     Tested-by: Sammy Sosa <fake@fake.com>
     Author: Sammy Sosa <fake@fake.com>
@@ -411,7 +411,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     BUG=chromium-os:99999
 
     Change-Id: Ib72a742fd2cee3c4a5223b8easwasdgsdgfasdf
-    Reviewed-on: http://gerrit.chromium.org/gerrit/1235
+    Reviewed-on: https://chromium-review.googlesource.com/1235
     Reviewed-by: Fake person <fake@fake.org>
     Tested-by: Sammy Sosa <fake@fake.com>
     """
@@ -437,10 +437,12 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     os.path.exists(mox.StrContains('fake/path')).AndReturn(True)
     cmd = ['log', '--pretty=full', '%s..HEAD' % fake_revision]
     git.RunGit(self.tmpdir + '/fake/path', cmd).AndReturn(fake_result)
-    cros_build_lib.PrintBuildbotLink('CHUMP | repo | fake | 1234',
-                                     'http://gerrit.chromium.org/gerrit/1234')
-    cros_build_lib.PrintBuildbotLink('repo | fake | 1235',
-                                     'http://gerrit.chromium.org/gerrit/1235')
+    cros_build_lib.PrintBuildbotLink(
+        'CHUMP | repo | fake | 1234',
+        'https://chromium-review.googlesource.com/1234')
+    cros_build_lib.PrintBuildbotLink(
+        'repo | fake | 1235',
+        'https://chromium-review.googlesource.com/1235')
     self.mox.ReplayAll()
     self.manager._GenerateBlameListSinceLKGM()
     self.mox.VerifyAll()

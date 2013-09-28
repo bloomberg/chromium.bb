@@ -1446,7 +1446,8 @@ def main(argv):
     _BackupPreviousLog(log_file)
 
   with cros_build_lib.ContextManagerStack() as stack:
-    # TODO(ferringb): update this once https://gerrit.chromium.org/gerrit/25359
+    # TODO(ferringb): update this once
+    # https://chromium-review.googlesource.com/25359
     # is landed- it's sensitive to the manifest-versions cache path.
     options.preserve_paths = set(['manifest-versions', '.cache',
                                   'manifest-versions-internal'])

@@ -204,7 +204,7 @@ update_manifests() {
   if [[ -z ${URL} ]]; then
     # Extract the local URI if they didn't specify one.
     URL=$(eval $(grep -h fetch= *.xml); echo ${fetch})
-    if [[ ${URL} == "https://git.chromium.org/git" ]]; then
+    if [[ ${URL} == "https://chromium.googlesource.com" ]]; then
       # Guess they want the current system.
       URL="git://$(hostname -f)"
     fi

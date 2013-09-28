@@ -371,8 +371,8 @@ _settings = dict(
   hwqual=False,
 
 # manifest_repo_url -- git repository URL for our manifests.
-#   External: https://git.chromium.org/git/chromiumos/manifest
-#   Internal: ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal
+#  External: https://chromium.googlesource.com/chromiumos/manifest
+#  Internal: https://chrome-internal.googlesource.com/chromeos/manifest-internal
   manifest_repo_url=constants.MANIFEST_URL,
 
 # manifest_version -- Whether we are using the manifest_version repo that stores

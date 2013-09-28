@@ -1884,12 +1884,12 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
   <notice>
     Your sources have been sync'd successfully.
   </notice>
-  <remote fetch="ssh://gerrit-int.chromium.org:29419" name="chrome"/>
+  <remote fetch="https://chrome-internal.googlesource.com" name="chrome"/>
   <remote fetch="https://chromium.googlesource.com/" name="chromium"/>
-  <remote fetch="https://git.chromium.org/git" name="cros" \
-review="gerrit.chromium.org/gerrit"/>
-  <remote fetch="ssh://gerrit-int.chromium.org:29419" name="cros-internal" \
-review="gerrit-int.chromium.org"/>
+  <remote fetch="https://chromium.googlesource.com" name="cros" \
+review="chromium-review.googlesource.com"/>
+  <remote fetch="https://chrome-internal.googlesource.com" name="cros-internal" \
+review="https://chrome-internal-review.googlesource.com"/>
   <remote fetch="https://special.googlesource.com/" name="special" \
 review="https://special.googlesource.com/"/>
 
@@ -1922,8 +1922,8 @@ upstream="special-upstream"/>
   <notice>
     Your sources have been sync'd successfully.
   </notice>
-  <remote fetch="https://git.chromium.org/git" name="cros" \
-review="gerrit.chromium.org/gerrit"/>
+  <remote fetch="https://chromium.googlesource.com" name="cros" \
+review="chromium-review.googlesource.com"/>
 
   <default remote="cros" revision="refs/heads/master" sync-j="8"/>
 

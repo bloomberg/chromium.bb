@@ -40,7 +40,7 @@ FAKE_PATCH_JSON = {
   "number":"1112",
   "subject":"chromite commit",
   "owner":{"name":"Chromite Master", "email":"chromite@chromium.org"},
-  "url":"http://gerrit.chromium.org/gerrit/1112",
+  "url":"https://chromium-review.googlesource.com/1112",
   "lastUpdated":1311024529,
   "sortKey":"00166e8700001052",
   "open": True,

@@ -34,7 +34,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
 #        '"owner":{"name":"Init master","email":"init@chromium.org"},'
 #        '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
 #            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785ef"},'
-#        '"url":"http://gerrit.chromium.org/gerrit/1111",'
+#        '"url":"https://chromium-review.googlesource.com/1111",'
 #        '"lastUpdated":1311024429,'
 #        '"sortKey":"00166e8700001051",'
 #        '"open":true,"'
@@ -47,7 +47,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
 #        '"owner":{"name":"Init master","email":"init@chromium.org"},'
 #        '"currentPatchSet":{"number":"2","ref":"refs/changes/72/5172/1",'
 #            '"revision":"ff10979dd360e75ff21f5cf53b7f8647578785ef"},'
-#        '"url":"http://gerrit.chromium.org/gerrit/1110",'
+#        '"url":"https://chromium-review.googlesource.com/1110",'
 #        '"lastUpdated":1311024429,'
 #        '"sortKey":"00166e8700001051",'
 #        '"open":true,"'
@@ -60,7 +60,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
 #        '"number":"1112",'
 #        '"subject":"chromite commit",'
 #        '"owner":{"name":"Chromite Master","email":"chromite@chromium.org"},'
-#        '"url":"http://gerrit.chromium.org/gerrit/1112",'
+#        '"url":"https://chromium-review.googlesource.com/1112",'
 #        '"lastUpdated":1311024529,'
 #        '"sortKey":"00166e8700001052",'
 #        '"open":true,"'
@@ -74,7 +74,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
 #        '"number":"1112",'
 #        '"subject":"chromite commit",'
 #        '"owner":{"name":"Chromite Master","email":"chromite@chromium.org"},'
-#        '"url":"http://gerrit.chromium.org/gerrit/1112",'
+#        '"url":"https://chromium-review.googlesource.com/1112",'
 #        '"lastUpdated":1311024529,'
 #        '"sortKey":"00166e8700001052",'
 #        '"open":true,"'
@@ -156,7 +156,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     result.output = '   '.join([my_hash, my_branch])
     cros_build_lib.RunCommandWithRetries(
         3, ['git', 'ls-remote',
-            'ssh://gerrit.chromium.org:29418/tacos/chromite',
+            'https://chromium.googlesource.com/tacos/chromite',
             'refs/heads/master'],
         redirect_stdout=True, print_cmd=True).AndReturn(result)
     self.mox.ReplayAll()
@@ -201,7 +201,7 @@ class GerritQueryTests(cros_test_lib.MoxTestCase):
              '"subject":"Add functionality to cbuildbot to patch in a set '
              'of Gerrit CL\u0027s","owner":{"name":"Ryan Cui","email":'
              '"rcui@chromium.org"},"url":'
-             '"http://gerrit.chromium.org/gerrit/2144","lastUpdated":'
+             '"https://chromium-review.googlesource.com/2144","lastUpdated":'
              '1307577655,"sortKey":"00158e2000000860","open":true,"status":'
              '"NEW","currentPatchSet":{"number":"3",'
              '"revision":"b1c82d0f1c916b7f66cfece625d67fb5ecea9ea7","ref":'
@@ -223,7 +223,7 @@ class GerritQueryTests(cros_test_lib.MoxTestCase):
     output_obj.output = ('{"type":"error",'
                          '"message":"Unsupported query:5S2D4D2D4"}')
 
-    cros_build_lib.RunCommand(mox.In('gerrit.chromium.org'),
+    cros_build_lib.RunCommand(mox.In('chromium-review.googlesource.com'),
                               redirect_stdout=True).AndReturn(output_obj)
 
     self.mox.ReplayAll()
@@ -237,7 +237,7 @@ class GerritQueryTests(cros_test_lib.MoxTestCase):
     output_obj.returncode = 0
     output_obj.output = '%s\n%s\n%s' % \
                         (self.raw_json, self.raw_json, self.good_footer)
-    cros_build_lib.RunCommand(mox.In('gerrit.chromium.org'),
+    cros_build_lib.RunCommand(mox.In('chromium-review.googlesource.com'),
                               redirect_stdout=True).AndReturn(output_obj)
 
     self.mox.ReplayAll()
@@ -268,7 +268,7 @@ class GerritQueryTests(cros_test_lib.MoxTestCase):
     """verify it complains if the last numeric didn't match, but first did"""
     self._test_missing(['21445', '2144'])
 
-  def _common_test(self, patches, server='gerrit.chromium.org',
+  def _common_test(self, patches, server='chromium-review.googlesource.com',
     remote=constants.EXTERNAL_REMOTE, calls_allowed=1):
 
     output_obj = cros_build_lib.CommandResult()
@@ -287,7 +287,7 @@ class GerritQueryTests(cros_test_lib.MoxTestCase):
     return patch_info
 
   def testInternalID(self):
-    self._common_test(['*Icb8e1d'], 'gerrit-int.chromium.org',
+    self._common_test(['*Icb8e1d'], 'chrome-internal-review.googlesource.com',
                       constants.INTERNAL_REMOTE)
 
   def testExternalID(self):
@@ -297,11 +297,12 @@ class GerritQueryTests(cros_test_lib.MoxTestCase):
     self._common_test(['2144'])
 
   def testInternallNumeric(self):
-    self._common_test(['*2144'], 'gerrit-int.chromium.org',
+    self._common_test(['*2144'], 'chrome-internal-review.googlesource.com',
                       constants.INTERNAL_REMOTE)
 
   def testInternalUnique(self):
-    self._common_test(['*2144', '*Icb8e1d'], 'gerrit-int.chromium.org',
+    self._common_test(['*2144', '*Icb8e1d'],
+                      'chrome-internal-review.googlesource.com',
                       constants.INTERNAL_REMOTE, calls_allowed=2)
 
   def testExternalUnique(self):
@@ -317,7 +318,7 @@ class GerritQueryTests(cros_test_lib.MoxTestCase):
     output_obj.returncode = 0
     output_obj.output = self.result
 
-    cros_build_lib.RunCommand(mox.In('gerrit.chromium.org'),
+    cros_build_lib.RunCommand(mox.In('chromium-review.googlesource.com'),
                               redirect_stdout=True).AndReturn(output_obj)
 
     self.mox.ReplayAll()

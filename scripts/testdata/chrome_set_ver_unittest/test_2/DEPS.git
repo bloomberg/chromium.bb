@@ -2,9 +2,9 @@
 # ALL MANUAL CHANGES WILL BE OVERWRITTEN.
 vars = {
     'webkit_url':
-         'http://git.chromium.org/external/WebKit_trimmed.git',
+         'https://chromium.googlesource.com/external/WebKit_trimmed.git',
     'git_url':
-         'http://git.chromium.org',
+         'https://chromium.googlesource.com',
     'webkit_rev':
          '@1ec58e4a7f6aa04324257b8de1e819b9ce8a238d',
     'rev1':

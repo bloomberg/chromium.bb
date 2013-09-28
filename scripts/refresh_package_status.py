@@ -8,6 +8,7 @@
 import optparse
 import os
 
+from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import operation
 from chromite.lib import osutils
@@ -22,7 +23,7 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 GDATA_CRED_FILE = '.gdata_cred.txt'
 GDATA_TOKEN_FILE = '.gdata_token'
 GENTOO_DIR = 'gentoo-portage'
-PRTG_GIT_URL = 'ssh://gerrit.chromium.org:29418/chromiumos/overlays/portage.git'
+PRTG_GIT_URL = '%s/chromiumos/overlays/portage.git' % constants.GIT_HTTP_URL
 FUNTOO_GIT_URL = 'git://github.com/funtoo/portage.git'
 
 
