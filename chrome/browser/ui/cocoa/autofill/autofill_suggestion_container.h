@@ -19,6 +19,9 @@ namespace autofill {
 // Container for the data suggested for a particular input section.
 @interface AutofillSuggestionContainer : NSViewController<AutofillLayout> {
  @private
+  // The spacer at the top of the suggestion.
+  base::scoped_nsobject<NSBox> spacer_;
+
   // The label that holds the suggestion description text.
   base::scoped_nsobject<NSTextField> label_;
 

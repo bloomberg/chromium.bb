@@ -23,6 +23,9 @@ const int kAroundTextPadding = 4;
 // Vertical padding between individual elements.
 const int kVerticalPadding = 8;
 
+// Padding at the top of suggestions.
+const CGFloat kTopPadding = 10;
+
 // Centers |rect2| vertically in |rect1|, on an integral y coordinate.
 // Assumes |rect1| has integral origin coordinates.
 NSRect CenterVertically(NSRect rect1, NSRect rect2) {
@@ -63,9 +66,13 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   inputField_.reset([[AutofillTextField alloc] initWithFrame:NSZeroRect]);
   [inputField_ setHidden:YES];
 
+  spacer_.reset([[NSBox alloc] initWithFrame:NSZeroRect]);
+  [spacer_ setBoxType:NSBoxSeparator];
+  [spacer_ setBorderType:NSLineBorder];
+
   base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
   [view setSubviews:
-      @[iconImageView_, label_, inputField_, label2_ ]];
+      @[ iconImageView_, label_, inputField_, label2_, spacer_ ]];
   [self setView:view];
 }
 
@@ -126,6 +133,9 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
         std::ceil(std::max(size.width, size2.width)),
         std::ceil(size.height) + kVerticalPadding + std::ceil(size2.height));
   }
+
+  size.height += kTopPadding;
+
   return size;
 }
 
@@ -135,10 +145,14 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   // width is externally determined.
   preferredContainerSize.width = NSWidth(bounds);
 
+  NSRect spacerFrame = NSMakeRect(0, preferredContainerSize.height - 1,
+                                  preferredContainerSize.width, 1);
+
   NSRect lineFrame;
   lineFrame.size = [self preferredSizeForFirstLine];
   lineFrame.origin.x = NSMinX(bounds);
-  lineFrame.origin.y = preferredContainerSize.height - NSHeight(lineFrame);
+  lineFrame.origin.y =
+      preferredContainerSize.height - NSHeight(lineFrame) - kTopPadding;
 
   // Ensure text does not exceed the view width.
   lineFrame.size.width = std::min(NSWidth(lineFrame), NSWidth(bounds));
@@ -170,6 +184,7 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
                  NSWidth(inputfieldFrame) + kAroundTextPadding, NSMaxXEdge);
   }
 
+  [spacer_ setFrame:spacerFrame];
   [label_ setFrame:labelFrame];
   [label2_ setFrameOrigin:NSMakePoint(
           0,

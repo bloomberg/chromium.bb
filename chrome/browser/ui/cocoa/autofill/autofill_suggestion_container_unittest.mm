@@ -27,12 +27,13 @@ class AutofillSuggestionContainerTest : public ui::CocoaTest {
 TEST_VIEW(AutofillSuggestionContainerTest, [container_ view])
 
 TEST_F(AutofillSuggestionContainerTest, HasSubviews) {
-  ASSERT_EQ(4U, [[[container_ view] subviews] count]);
+  ASSERT_EQ(5U, [[[container_ view] subviews] count]);
 
   int num_text_fields = 0;
   bool has_edit_field = false;
   bool has_icon = false;
 
+  // Ignore |spacer_| NSBox in this test.
   for (id view in [[container_ view] subviews]) {
     if ([view isKindOfClass:[NSImageView class]]) {
       has_icon = true;

@@ -46,10 +46,13 @@ const int kLabelWidth = 180;
 const int kPadding = 30;
 
 // Fixed width for the details section.
-const int kDetailsWidth = 300;
+const int kDetailsWidth = 440;
 
 // Top/bottom inset for contents of a detail section.
 const size_t kDetailSectionInset = 10;
+
+// Vertical padding around the section header.
+const CGFloat kVerticalHeaderPadding = 6;
 
 // Break suggestion text into two lines. TODO(groby): Should be on delegate.
 void BreakSuggestionText(const string16& text,
@@ -212,12 +215,10 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   CGFloat controlHeight = [inputs_ preferredHeightForWidth:kDetailsWidth];
   if ([inputs_ isHidden])
     controlHeight = [suggestContainer_ preferredSize].height;
-  CGFloat contentHeight = std::max(controlHeight, labelSize.height);
-  contentHeight = std::max(contentHeight, labelSize.height);
-  contentHeight = std::max(contentHeight, NSHeight([suggestButton_ frame]));
 
-  return NSMakeSize(kLabelWidth + kPadding + kDetailsWidth,
-                    contentHeight + 2 * kDetailSectionInset);
+  return NSMakeSize(kDetailsWidth,
+                    labelSize.height + kVerticalHeaderPadding +
+                        controlHeight + 2 * kDetailSectionInset);
 }
 
 - (void)performLayout {
@@ -234,34 +235,26 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   viewFrame.size = [self preferredSize];
 
   NSRect contentFrame = NSInsetRect(viewFrame, 0, kDetailSectionInset);
-  NSRect dummy;
+  NSRect controlFrame, labelFrame, buttonFrame;
 
-  // Set up three content columns. kLabelWidth is first column width,
-  // then padding, then have suggestButton and inputs share kDetailsWidth.
-  NSRect column[3];
-  NSDivideRect(contentFrame, &column[0], &dummy, kLabelWidth, NSMinXEdge);
-  NSDivideRect(contentFrame, &column[1], &dummy, kDetailsWidth, NSMaxXEdge);
-  NSDivideRect(column[1],
-               &column[2], &column[1], buttonSize.width, NSMaxXEdge);
+  // Label is top left, suggestion button is top right, controls are below that.
+  NSDivideRect(contentFrame, &labelFrame, &controlFrame,
+               kVerticalHeaderPadding + labelSize.height, NSMaxYEdge);
+  NSDivideRect(labelFrame, &buttonFrame, &labelFrame,
+               buttonSize.width, NSMaxXEdge);
 
-  // Center inputs by height in column 1.
-  NSRect controlFrame = column[1];
-  int centerOffset = (NSHeight(controlFrame) - controlHeight) / 2;
-  controlFrame.origin.x += centerOffset;
-  controlFrame.size.height = controlHeight;
+  labelFrame = NSOffsetRect(labelFrame, 0, kVerticalHeaderPadding);
+  labelFrame.size = labelSize;
 
-  // Align label to right top in column 0.
-  NSRect labelFrame;
-  NSDivideRect(column[0], &labelFrame, &dummy, labelSize.height, NSMaxYEdge);
-  NSDivideRect(labelFrame, &labelFrame, &dummy, labelSize.width, NSMaxXEdge);
+  buttonFrame = NSOffsetRect(buttonFrame, 0, 5);
+  buttonFrame.size = buttonSize;
 
-  // suggest button is top left of column 2.
-  NSRect buttonFrame = column[2];
-  NSDivideRect(column[2], &buttonFrame, &dummy, buttonSize.height, NSMaxYEdge);
-
-  [[suggestContainer_ view] setFrame:controlFrame];
-  [suggestContainer_ performLayout];
-  [inputs_ setFrame:controlFrame];
+  if ([inputs_ isHidden]) {
+    [[suggestContainer_ view] setFrame:controlFrame];
+    [suggestContainer_ performLayout];
+  } else {
+    [inputs_ setFrame:controlFrame];
+  }
   [label_ setFrame:labelFrame];
   [suggestButton_ setFrame:buttonFrame];
   [view_ setFrameSize:viewFrame.size];
@@ -510,21 +503,22 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   NSImage* image =
       rb.GetNativeImageNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON).ToNSImage();
   [[button cell] setImage:image
-             forButtonState:image_button_cell::kDefaultState];
+           forButtonState:image_button_cell::kDefaultState];
   image = rb.GetNativeImageNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON_H).
       ToNSImage();
   [[button cell] setImage:image
-             forButtonState:image_button_cell::kHoverState];
+           forButtonState:image_button_cell::kHoverState];
   image = rb.GetNativeImageNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON_P).
       ToNSImage();
   [[button cell] setImage:image
-             forButtonState:image_button_cell::kPressedState];
+           forButtonState:image_button_cell::kPressedState];
   image = rb.GetNativeImageNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON_D).
       ToNSImage();
   [[button cell] setImage:image
-             forButtonState:image_button_cell::kDisabledState];
+           forButtonState:image_button_cell::kDisabledState];
 
-  [button sizeToFit];
+  // ImageButtonCell's cellSize is not working. (http://crbug.com/298501)
+  [button setFrameSize:[image size]];
   return button.autorelease();
 }
 
