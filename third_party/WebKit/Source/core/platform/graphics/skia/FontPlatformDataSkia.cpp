@@ -37,6 +37,24 @@
 
 namespace WebCore {
 
+#if (!ENABLE(GDI_FONTS_ON_WINDOWS) || !OS(WIN)) && !OS(MACOSX)
+unsigned FontPlatformData::hash() const
+{
+    unsigned h = SkTypeface::UniqueID(m_typeface.get());
+    h ^= 0x01010101 * ((static_cast<int>(m_orientation) << 2) | (static_cast<int>(m_fakeBold) << 1) | static_cast<int>(m_fakeItalic));
+
+    // This memcpy is to avoid a reinterpret_cast that breaks strict-aliasing
+    // rules. Memcpy is generally optimized enough so that performance doesn't
+    // matter here.
+    uint32_t textSizeBytes;
+    memcpy(&textSizeBytes, &m_textSize, sizeof(uint32_t));
+    h ^= textSizeBytes;
+
+    return h;
+}
+
+#endif
+
 #if ENABLE(OPENTYPE_VERTICAL)
 PassRefPtr<OpenTypeVerticalData> FontPlatformData::verticalData() const
 {

@@ -87,7 +87,7 @@ public:
 
     bool isFixedPitch() const;
     HFONT hfont() const { return m_font ? m_font->hfont() : 0; }
-    float size() const { return m_size; }
+    float size() const { return m_textSize; }
     SkTypeface* typeface() const { return m_typeface.get(); }
     int paintTextFlags() const { return m_paintTextFlags; }
 
@@ -96,14 +96,18 @@ public:
     FontOrientation orientation() const { return m_orientation; }
     void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
 
+#if ENABLE(GDI_FONTS_ON_WINDOWS)
     unsigned hash() const
     {
         return m_font ? m_font->hash() : NULL;
     }
+#else
+    unsigned hash() const;
+#endif
 
     bool operator==(const FontPlatformData& other) const
     {
-        return m_font == other.m_font && m_size == other.m_size && m_fakeBold == other.m_fakeBold && m_fakeItalic == other.m_fakeItalic && m_orientation == other.m_orientation;
+        return m_font == other.m_font && m_textSize == other.m_textSize && m_fakeBold == other.m_fakeBold && m_fakeItalic == other.m_fakeItalic && m_orientation == other.m_orientation;
     }
 
 #if ENABLE(OPENTYPE_VERTICAL)
@@ -155,7 +159,7 @@ private:
     };
 
     RefPtr<RefCountedHFONT> m_font;
-    float m_size;  // Point size of the font in pixels.
+    float m_textSize; // Point size of the font in pixels.
     FontOrientation m_orientation;
     bool m_fakeBold;
     bool m_fakeItalic;
