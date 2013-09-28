@@ -71,7 +71,7 @@ PassRefPtr<SpellCheckRequest> SpellCheckRequest::create(TextCheckingTypeMask tex
     if (!text.length())
         return PassRefPtr<SpellCheckRequest>();
 
-    const Vector<DocumentMarker*>& markers = checkingRange->ownerDocument().markers()->markersInRange(checkingRange.get(), DocumentMarker::MisspellingMarkers());
+    const Vector<DocumentMarker*>& markers = checkingRange->ownerDocument().markers()->markersInRange(checkingRange.get(), DocumentMarker::SpellCheckClientMarkers());
     Vector<uint32_t> hashes(markers.size());
     Vector<unsigned> offsets(markers.size());
     for (size_t i = 0; i < markers.size(); i++) {
