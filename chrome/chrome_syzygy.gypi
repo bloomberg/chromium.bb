@@ -56,8 +56,8 @@
           'outputs': [
             '<(dest_dir)/<(dll_name).dll',
             '<(dest_dir)/<(dll_name).dll.pdb',
-            '<(dest_dir)/asan_rtl.dll',
-            '<(dest_dir)/asan_rtl.dll.pdb',
+            '<(dest_dir)/syzyasan_rtl.dll',
+            '<(dest_dir)/syzyasan_rtl.dll.pdb',
             '<(dest_dir)/win-syzyasan-filter-<(dll_name).txt.json',
           ],
           'action': [

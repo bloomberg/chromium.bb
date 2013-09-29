@@ -22,7 +22,7 @@ _DEFAULT_SYZYGY_DIR = os.path.abspath(os.path.join(
 # Basenames of various tools.
 _INSTRUMENT_EXE = 'instrument.exe'
 _GENFILTER_EXE = 'genfilter.exe'
-_ASAN_AGENT_DLL = 'asan_rtl.dll'
+_ASAN_AGENT_DLL = 'syzyasan_rtl.dll'
 
 # Default agents for known modes.
 _DEFAULT_AGENT_DLLS = { 'asan': _ASAN_AGENT_DLL }
