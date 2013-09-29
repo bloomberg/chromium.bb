@@ -1815,6 +1815,8 @@
             'dom/DocumentFullscreen.h',
             'dom/DocumentInit.cpp',
             'dom/DocumentInit.h',
+            'dom/DocumentLifecycle.cpp',
+            'dom/DocumentLifecycle.h',
             'dom/DocumentLifecycleObserver.cpp',
             'dom/DocumentLifecycleObserver.h',
             'dom/DocumentMarker.cpp',

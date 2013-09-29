@@ -33,6 +33,7 @@
 #include "core/dom/CustomElement.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "core/dom/DocumentInit.h"
+#include "core/dom/DocumentLifecycle.h"
 #include "core/dom/DocumentTiming.h"
 #include "core/dom/IconURL.h"
 #include "core/dom/MutationObserver.h"
@@ -42,12 +43,13 @@
 #include "core/dom/TreeScope.h"
 #include "core/dom/UserActionElementSet.h"
 #include "core/dom/ViewportArguments.h"
+#include "core/events/DocumentEventQueue.h"
 #include "core/html/CollectionType.h"
 #include "core/page/FocusDirection.h"
 #include "core/page/PageVisibilityState.h"
-#include "weborigin/ReferrerPolicy.h"
 #include "core/platform/Timer.h"
 #include "core/rendering/HitTestRequest.h"
+#include "weborigin/ReferrerPolicy.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -1057,6 +1059,7 @@ public:
 
     PassRefPtr<FontFaceSet> fonts();
     DocumentLifecycleNotifier* lifecycleNotifier();
+    bool isActive() const { return m_lifecyle.state() == DocumentLifecycle::Active; }
 
     enum HttpRefreshType {
         HttpRefreshFromHeader,
@@ -1150,6 +1153,8 @@ private:
     void processHttpEquivSetCookie(const String& content);
     void processHttpEquivXFrameOptions(const String& content);
     void processHttpEquivContentSecurityPolicy(const String& equiv, const String& content);
+
+    DocumentLifecycle m_lifecyle;
 
     // FIXME: This should probably be handled inside the style resolver itself.
     Timer<Document> m_styleResolverThrowawayTimer;

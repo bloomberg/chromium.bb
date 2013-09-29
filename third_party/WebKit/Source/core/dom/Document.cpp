@@ -490,6 +490,8 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
         m_nodeListCounts[i] = 0;
 
     InspectorCounters::incrementCounter(InspectorCounters::DocumentCounter);
+
+    m_lifecyle.advanceTo(DocumentLifecycle::Inactive);
 }
 
 static bool isAttributeOnAllOwners(const WebCore::QualifiedName& attribute, const WebCore::QualifiedName& prefixedAttribute, const HTMLFrameOwnerElement* owner)
@@ -613,6 +615,7 @@ void Document::dispose()
     if (svgExtensions())
         accessSVGExtensions()->pauseAnimations();
 
+    m_lifecyle.advanceTo(DocumentLifecycle::Disposed);
     lifecycleNotifier()->notifyDocumentWasDisposed();
 }
 
@@ -1982,10 +1985,14 @@ void Document::attach(const AttachContext& context)
     m_styleResolverThrowawayTimer.startRepeating(60);
 
     ContainerNode::attach(context);
+
+    m_lifecyle.advanceTo(DocumentLifecycle::Active);
 }
 
 void Document::detach(const AttachContext& context)
 {
+    m_lifecyle.advanceTo(DocumentLifecycle::Stopping);
+
     ASSERT(confusingAndOftenMisusedAttached());
 
     if (page())
@@ -2049,6 +2056,7 @@ void Document::detach(const AttachContext& context)
         m_mediaQueryMatcher->documentDestroyed();
 
     lifecycleNotifier()->notifyDocumentWasDetached();
+    m_lifecyle.advanceTo(DocumentLifecycle::Stopped);
 }
 
 void Document::prepareForDestruction()
