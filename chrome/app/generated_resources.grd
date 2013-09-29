@@ -6251,10 +6251,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enables an experimental visual style for the frame caption buttons (minimize, maximize, close).
       </message>
       <message name="IDS_FLAGS_DND_APPLIST_TO_LAUNCHER_NAME" desc="Title for the flag to disable drag and drop from the app list menu to the launcher.">
-        Drag and drop from the app list menu to the launcher
+        Drag and drop from the app list menu to the shelf.
       </message>
       <message name="IDS_FLAGS_DND_APPLIST_TO_LAUNCHER_DESCRIPTION" desc="Description for the flag to disable drag and drop opertions from the app list menu to the launcher.">
-        Disallow drag and drop from the app list menu to the launcher.
+        Disallow drag and drop from the app list menu to the shelf.
       </message>
       <message name="IDS_FLAGS_ASH_IMMERSIVE_FULLSCREEN_NAME" desc="Title for the flag for immersive fullscreen mode.">
         Immersive fullscreen
@@ -6421,10 +6421,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
      </message>
 
       <message name="IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_NAME" desc="Name for the flag which allows to minimize a window upon launcher item click under certain conditions.">
-        Disallow launcher to minimize-on-click
+        Disallow shelf to minimize-on-click.
       </message>
       <message name="IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_DESCRIPTION" desc="Description for the flag which allows to minimize a window upon launcher item click under certain conditions.">
-        Disallow the launcher to minimize a window if a launcher item gets clicked which has only a single, already active, window associated with it.
+        Disallow the shelf to minimize a window if a shelf item gets clicked which has only a single, already active, window associated with it.
       </message>
 
       <message name="IDS_FLAGS_SHOW_TOUCH_HUD_NAME" desc="Name for the flag to show a heads-up display for tracking touch-points.">
@@ -14708,10 +14708,10 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
     <!-- Aura strings -->
     <if expr="pp_ifdef('use_ash')">
       <message name="IDS_LAUNCHER_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of the launcher for apps configured to open in a tab">
-        New Tab
+        New tab
       </message>
       <message name="IDS_LAUNCHER_CONTEXT_MENU_NEW_WINDOW" desc="Title text for the 'open new' context menu item of the launcher for apps configured to open windowed">
-        New Window
+        New window
       </message>
       <message name="IDS_LAUNCHER_CONTEXT_MENU_CLOSE" desc="Title text for the 'close' context menu item of the launcher">
         Close
@@ -14981,41 +14981,75 @@ Do you accept?
     <message name="IDS_APP_LIST_CONTACT_VIDEO_TOOLTIP" desc="Tooltip text for the 'video' icon displayed next to a contact search result.">
       Start Hangout
     </message>
-    <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
-      New Tab
-    </message>
-    <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW" desc="Title text for the 'open new' context menu item of an app list item configured to open windowed">
-      New Window
-    </message>
-    <message name="IDS_APP_LIST_CONTEXT_MENU_PIN" desc="Title text for the 'pin' context menu item of an app list item.">
-      Pin to Launcher
-    </message>
-    <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
-      Unpin from Launcher
-    </message>
-    <message name="IDS_APP_LIST_UNINSTALL_ITEM" desc="Title text for the 'uninstall' context menu item of an app list item.">
-      Uninstall
-    </message>
-    <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
-      Search
-    </message>
-    <message name="IDS_APP_LIST_SIGNIN_BUTTON" desc="App launcher signin button text.">
-      Sign in
-    </message>
-    <message name="IDS_APP_LIST_SIGNIN_LEARN_MORE_TEXT" desc="App launcher signin learn more link text.">
-      Learn more
-    </message>
+    <if expr="not pp_ifdef('use_titlecase')">
+      <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
+        New tab
+      </message>
+      <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW" desc="Title text for the 'open new' context menu item of an app list item configured to open windowed">
+        New window
+      </message>
+      <message name="IDS_APP_LIST_CONTEXT_MENU_PIN" desc="Title text for the 'pin' context menu item of an app list item.">
+        Pin to shelf
+      </message>
+      <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
+        Unpin from shelf
+      </message>
+      <message name="IDS_APP_LIST_UNINSTALL_ITEM" desc="Title text for the 'uninstall' context menu item of an app list item.">
+        Uninstall
+      </message>
+      <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
+        Search
+      </message>
+      <message name="IDS_APP_LIST_SIGNIN_BUTTON" desc="App launcher signin button text.">
+        Sign in
+      </message>
+      <message name="IDS_APP_LIST_SIGNIN_LEARN_MORE_TEXT" desc="App launcher signin learn more link text.">
+        Learn more
+      </message>
+      <message name="IDS_APP_LIST_NEW_WINDOW" desc="The text label of the New Window menu item">
+        New window
+      </message>
+      <message name="IDS_APP_LIST_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
+        New incognito window
+      </message>
+    </if>
+    <if expr="pp_ifdef('use_titlecase')">
+      <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
+        New Tab
+      </message>
+      <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW" desc="Title text for the 'open new' context menu item of an app list item configured to open windowed">
+        New Window
+      </message>
+      <message name="IDS_APP_LIST_CONTEXT_MENU_PIN" desc="Title text for the 'pin' context menu item of an app list item.">
+        Pin to Shelf
+      </message>
+      <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
+        Unpin from Shelf
+      </message>
+      <message name="IDS_APP_LIST_UNINSTALL_ITEM" desc="Title text for the 'uninstall' context menu item of an app list item.">
+        Uninstall
+      </message>
+      <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
+        Search
+      </message>
+      <message name="IDS_APP_LIST_SIGNIN_BUTTON" desc="App launcher signin button text.">
+        Sign In
+      </message>
+      <message name="IDS_APP_LIST_SIGNIN_LEARN_MORE_TEXT" desc="App launcher signin learn more link text.">
+        Learn More
+      </message>
+      <message name="IDS_APP_LIST_NEW_WINDOW" desc="The text label of the New Window menu item">
+        New Window
+      </message>
+      <message name="IDS_APP_LIST_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
+        New Incognito Window
+      </message>
+    </if>
     <message name="IDS_APP_LIST_SIGNIN_LEARN_MORE_LINK" desc="App launcher signin learn more URL.">
       https://support.google.com/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=165139&amp;p=settings_sign_in
     </message>
     <message name="IDS_APP_LIST_SIGNIN_SETTINGS_TEXT" desc="App launcher signin settings link text.">
       App Launcher Settings
-    </message>
-    <message name="IDS_APP_LIST_NEW_WINDOW" desc="The text label of the New Window menu item">
-      New window
-    </message>
-    <message name="IDS_APP_LIST_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
-      New incognito window
     </message>
 
     <!-- chrome://diagnostics strings -->
@@ -15398,7 +15432,7 @@ Do you accept?
     </message>
     <!-- People search strings -->
     <message name="IDS_PEOPLE_SEARCH_ACTION_EMAIL_TOOLTIP" desc="Tooltip text for sending an email to the person in the result">
-      E-mail this person
+      Email this person
     </message>
     <message name="IDS_LOCAL_DISCOVERY_REGISTER_CANCELED_ON_PRINTER" desc="Label for when registration is canceled on the printer side">
       Printer registration has been canceled.
