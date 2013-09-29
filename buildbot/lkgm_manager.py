@@ -530,7 +530,8 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
             current_author,
             change_number,
         ]
-        if current_committer not in ('chrome-bot', 'chrome-internal-fetch'):
+        if current_committer not in ('chrome-bot', 'chrome-internal-fetch',
+                                     'chromeos-commit-bot'):
           items.insert(0, 'CHUMP')
         elif only_print_chumps:
           continue
