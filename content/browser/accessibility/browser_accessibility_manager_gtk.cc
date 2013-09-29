@@ -56,11 +56,9 @@ void BrowserAccessibilityManagerGtk::NotifyAccessibilityEvent(
       RecursivelySendChildrenChanged(GetRoot()->ToBrowserAccessibilityGtk());
       break;
     case WebKit::WebAXEventFocus:
-      // Note: atk_focus_tracker_notify may be deprecated in the future;
-      // follow this bug for the replacement:
-      // https://bugzilla.gnome.org/show_bug.cgi?id=649575#c4
+      // Note: the focus-event was deprecated in ATK 2.9.4
+      // See https://bugzilla.gnome.org/show_bug.cgi?id=649575#c8
       g_signal_emit_by_name(atk_object, "focus-event", true);
-      atk_focus_tracker_notify(atk_object);
       break;
     default:
       break;
