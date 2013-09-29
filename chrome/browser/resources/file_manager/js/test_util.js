@@ -61,14 +61,14 @@ test.util.repeatUntilTrue_ = function(closure) {
 /**
  * Opens the main Files.app's window and waits until it is ready.
  *
- * @param {string} path Path of the directory to be opened.
+ * @param {Object} appState App state.
  * @param {function(string)} callback Completion callback with the new window's
  *     App ID.
  */
-test.util.async.openMainWindow = function(path, callback) {
+test.util.async.openMainWindow = function(appState, callback) {
   var steps = [
     function() {
-      launchFileManager({defaultPath: path},
+      launchFileManager(appState,
                         undefined,  // opt_type
                         undefined,  // opt_id
                         steps.shift());

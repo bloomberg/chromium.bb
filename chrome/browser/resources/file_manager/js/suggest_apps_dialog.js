@@ -68,10 +68,11 @@ var REGEXP_LOCALHOST_MATCH = /^https?:\/\/localhost(?:\:\d{1,5})?$/;
  * Creates dialog in DOM tree.
  *
  * @param {HTMLElement} parentNode Node to be parent for this dialog.
+ * @param {Object} state Static state of suggest app dialog.
  * @constructor
  * @extends {FileManagerDialogBase}
  */
-function SuggestAppsDialog(parentNode) {
+function SuggestAppsDialog(parentNode, state) {
   FileManagerDialogBase.call(this, parentNode);
 
   this.frame_.id = 'suggest-app-dialog';
@@ -107,8 +108,10 @@ function SuggestAppsDialog(parentNode) {
 
   this.webview_ = null;
   this.accessToken_ = null;
-  this.widgetUrl_ = CWS_WIDGET_URL;
-  this.widgetOrigin_ = CWS_WIDGET_ORIGIN;
+  this.widgetUrl_ =
+      state.overrideCwsContainerUrlForTest || CWS_WIDGET_URL;
+  this.widgetOrigin_ =
+      state.overrideCwsContainerOriginForTest || CWS_WIDGET_ORIGIN;
 
   this.extension_ = null;
   this.mime_ = null;
@@ -184,6 +187,11 @@ SuggestAppsDialog.prototype.authorizeRequest_ = function(e) {
  * @private
  */
 SuggestAppsDialog.prototype.retrieveAuthorizeToken_ = function(callback) {
+  if (window.IN_TEST) {
+    // In test, use a dummy string as token. This must be a non-empty string.
+    this.accessToken_ = 'DUMMY_ACCESS_TOKEN_FOR_TEST';
+  }
+
   if (this.accessToken_) {
     callback();
     return;

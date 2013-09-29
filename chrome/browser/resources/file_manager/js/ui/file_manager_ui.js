@@ -71,6 +71,7 @@ FileManagerUI.prototype.initDialogs = function() {
   var dialogs = cr.ui.dialogs;
   dialogs.BaseDialog.OK_LABEL = str('OK_LABEL');
   dialogs.BaseDialog.CANCEL_LABEL = str('CANCEL_LABEL');
+  var appState = window.appState || {};
 
   // Create the dialog instances.
   this.errorDialog = new ErrorDialog(this.element_);
@@ -80,5 +81,6 @@ FileManagerUI.prototype.initDialogs = function() {
   this.shareDialog = new ShareDialog(this.element_);
   this.defaultTaskPicker =
       new cr.filebrowser.DefaultActionDialog(this.element_);
-  this.suggestAppsDialog = new SuggestAppsDialog(this.element_);
+  this.suggestAppsDialog = new SuggestAppsDialog(
+      this.element_, appState.suggestAppsDialogState || {});
 };
