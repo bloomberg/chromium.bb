@@ -399,19 +399,138 @@ TEST(URLCanonTest, Host) {
     {"%ef%bc%85%ef%bc%90%ef%bc%90.com", L"%ef%bc%85%ef%bc%90%ef%bc%90.com", "%00.com", url_parse::Component(0, 7), CanonHostInfo::BROKEN, -1, ""},
       // Basic IDN support, UTF-8 and UTF-16 input should be converted to IDN
     {"\xe4\xbd\xa0\xe5\xa5\xbd\xe4\xbd\xa0\xe5\xa5\xbd", L"\x4f60\x597d\x4f60\x597d", "xn--6qqa088eba", url_parse::Component(0, 14), CanonHostInfo::NEUTRAL, -1, ""},
+      // See http://unicode.org/cldr/utility/idna.jsp for other
+      // examples/experiments and http://goo.gl/7yG11o
+      // for the full list of characters handled differently by
+      // IDNA 2003, UTS 46 (http://unicode.org/reports/tr46/ ) and IDNA 2008.
+
+      // 4 Deviation characters are mapped/ignored in UTS 46 transitional
+      // mechansm. UTS 46, table 4 row (g).
+      // Sharp-s is mapped to 'ss' in UTS 46 and IDNA 2003.
+      // Otherwise, it'd be "xn--fuball-cta.de".
+    {"fu\xc3\x9f" "ball.de", L"fu\x00df" L"ball.de", "fussball.de",
+      url_parse::Component(0, 11), CanonHostInfo::NEUTRAL, -1, ""},
+      // Final-sigma (U+03C3) is mapped to regular sigma (U+03C2).
+      // Otherwise, it'd be "xn--wxaijb9b".
+    {"\xcf\x83\xcf\x8c\xce\xbb\xce\xbf\xcf\x82", L"\x3c3\x3cc\x3bb\x3bf\x3c2",
+      "xn--wxaikc6b", url_parse::Component(0, 12),
+      CanonHostInfo::NEUTRAL, -1, ""},
+      // ZWNJ (U+200C) and ZWJ (U+200D) are mapped away in UTS 46 transitional
+      // handling as well as in IDNA 2003.
+    {"a\xe2\x80\x8c" "b\xe2\x80\x8d" "c", L"a\x200c" L"b\x200d" L"c", "abc",
+      url_parse::Component(0, 3), CanonHostInfo::NEUTRAL, -1, ""},
+      // ZWJ between Devanagari characters is still mapped away in UTS 46
+      // transitional handling. IDNA 2008 would give xn--11bo0mv54g.
+    {"\xe0\xa4\x95\xe0\xa5\x8d\xe2\x80\x8d\xe0\xa4\x9c",
+     L"\x915\x94d\x200d\x91c", "xn--11bo0m",
+     url_parse::Component(0, 10), CanonHostInfo::NEUTRAL, -1, ""},
+      // Fullwidth exclamation mark is disallowed. UTS 46, table 4, row (b)
+      // However, we do allow this at the moment because we don't use
+      // STD3 rules and canonicalize full-width ASCII to ASCII.
+    {"wow\xef\xbc\x81", L"wow\xff01", "wow%21",
+      url_parse::Component(0, 6), CanonHostInfo::NEUTRAL, -1, ""},
+      // U+2132 (turned capital F) is disallowed. UTS 46, table 4, row (c)
+      // Allowed in IDNA 2003, but the mapping changed after Unicode 3.2
+    {"\xe2\x84\xb2oo", L"\x2132oo", "%E2%84%B2oo",
+      url_parse::Component(0, 11), CanonHostInfo::BROKEN, -1, ""},
+      // U+2F868 (CJK Comp) is disallowed. UTS 46, table 4, row (d)
+      // Allowed in IDNA 2003, but the mapping changed after Unicode 3.2
+    {"\xf0\xaf\xa1\xa8\xe5\xa7\xbb.cn", L"\xd87e\xdc68\x59fb.cn",
+      "%F0%AF%A1%A8%E5%A7%BB.cn",
+      url_parse::Component(0, 24), CanonHostInfo::BROKEN, -1, ""},
+      // Maps uppercase letters to lower case letters. UTS 46 table 4 row (e)
+    {"M\xc3\x9cNCHEN", L"M\xdcNCHEN", "xn--mnchen-3ya",
+      url_parse::Component(0, 14), CanonHostInfo::NEUTRAL, -1, ""},
+      // Symbol/punctuations are allowed in IDNA 2003/UTS46.
+      // Not allowed in IDNA 2008. UTS 46 table 4 row (f).
+    {"\xe2\x99\xa5ny.us", L"\x2665ny.us", "xn--ny-s0x.us",
+      url_parse::Component(0, 13), CanonHostInfo::NEUTRAL, -1, ""},
+      // U+11013 is new in Unicode 6.0 and is allowed. UTS 46 table 4, row (h)
+      // We used to allow it because we passed through unassigned code points.
+    {"\xf0\x91\x80\x93.com", L"\xd804\xdc13.com", "xn--n00d.com",
+      url_parse::Component(0, 12), CanonHostInfo::NEUTRAL, -1, ""},
+      // U+0602 is disallowed in UTS46/IDNA 2008. UTS 46 table 4, row(i)
+      // Used to be allowed in INDA 2003.
+    {"\xd8\x82.eg", L"\x602.eg", "%D8%82.eg",
+      url_parse::Component(0, 9), CanonHostInfo::BROKEN, -1, ""},
+      // U+20B7 is new in Unicode 5.2 (not a part of IDNA 2003 based
+      // on Unicode 3.2). We did allow it in the past because we let unassigned
+      // code point pass. We continue to allow it even though it's a
+      // "punctuation and symbol" blocked in IDNA 2008.
+      // UTS 46 table 4, row (j)
+    {"\xe2\x82\xb7.com", L"\x20b7.com", "xn--wzg.com",
+      url_parse::Component(0, 11), CanonHostInfo::NEUTRAL, -1, ""},
+      // Maps uppercase letters to lower case letters.
+      // In IDNA 2003, it's allowed without case-folding
+      // ( xn--bc-7cb.com ) because it's not defined in Unicode 3.2
+      // (added in Unicode 4.1). UTS 46 table 4 row (k)
+    {"bc\xc8\xba.com", L"bc\x23a.com", "xn--bc-is1a.com",
+      url_parse::Component(0, 15), CanonHostInfo::NEUTRAL, -1, ""},
+      // BiDi check test
+      // "Divehi" in Divehi (Thaana script) ends with BidiClass=NSM.
+      // Disallowed in IDNA 2003 but now allowed in UTS 46/IDNA 2008.
+    {"\xde\x8b\xde\xa8\xde\x88\xde\xac\xde\x80\xde\xa8",
+     L"\x78b\x7a8\x788\x7ac\x780\x7a8", "xn--hqbpi0jcw",
+     url_parse::Component(0, 13), CanonHostInfo::NEUTRAL, -1, ""},
+      // Disallowed in both IDNA 2003 and 2008 with BiDi check.
+      // Labels starting with a RTL character cannot end with a LTR character.
+    {"\xd8\xac\xd8\xa7\xd8\xb1xyz", L"\x62c\x627\x631xyz",
+     "%D8%AC%D8%A7%D8%B1xyz", url_parse::Component(0, 21),
+     CanonHostInfo::BROKEN, -1, ""},
+      // Labels starting with a RTL character can end with BC=EN (European
+      // number). Disallowed in IDNA 2003 but now allowed.
+    {"\xd8\xac\xd8\xa7\xd8\xb1" "2", L"\x62c\x627\x631" L"2",
+     "xn--2-ymcov", url_parse::Component(0, 11),
+     CanonHostInfo::NEUTRAL, -1, ""},
+      // Labels starting with a RTL character cannot have "L" characters
+      // even if it ends with an BC=EN. Disallowed in both IDNA 2003/2008.
+    {"\xd8\xac\xd8\xa7\xd8\xb1xy2", L"\x62c\x627\x631xy2",
+     "%D8%AC%D8%A7%D8%B1xy2", url_parse::Component(0, 21),
+     CanonHostInfo::BROKEN, -1, ""},
+      // Labels starting with a RTL character can end with BC=AN (Arabic number)
+      // Disallowed in IDNA 2003, but now allowed.
+    {"\xd8\xac\xd8\xa7\xd8\xb1\xd9\xa2", L"\x62c\x627\x631\x662",
+     "xn--mgbjq0r", url_parse::Component(0, 11),
+     CanonHostInfo::NEUTRAL, -1, ""},
+      // Labels starting with a RTL character cannot have "L" characters
+      // even if it ends with an BC=AN (Arabic number).
+      // Disallowed in both IDNA 2003/2008.
+    {"\xd8\xac\xd8\xa7\xd8\xb1xy\xd9\xa2", L"\x62c\x627\x631xy\x662",
+     "%D8%AC%D8%A7%D8%B1xy%D9%A2", url_parse::Component(0, 26),
+     CanonHostInfo::BROKEN, -1, ""},
+      // Labels starting with a RTL character cannot mix BC=EN and BC=AN
+    {"\xd8\xac\xd8\xa7\xd8\xb1xy2\xd9\xa2", L"\x62c\x627\x631xy2\x662",
+     "%D8%AC%D8%A7%D8%B1xy2%D9%A2", url_parse::Component(0, 27),
+     CanonHostInfo::BROKEN, -1, ""},
+      // As of Unicode 6.2, U+20CF is not assigned. We do not allow it.
+    {"\xe2\x83\x8f.com", L"\x20cf.com", "%E2%83%8F.com",
+      url_parse::Component(0, 13), CanonHostInfo::BROKEN, -1, ""},
+      // U+0080 is not allowed.
+    {"\xc2\x80.com", L"\x80.com", "%C2%80.com",
+      url_parse::Component(0, 10), CanonHostInfo::BROKEN, -1, ""},
+      // Mixed UTF-8 and escaped UTF-8 (narrow case) and UTF-16 and escaped
       // Mixed UTF-8 and escaped UTF-8 (narrow case) and UTF-16 and escaped
       // UTF-8 (wide case). The output should be equivalent to the true wide
       // character input above).
-    {"%E4%BD%A0%E5%A5%BD\xe4\xbd\xa0\xe5\xa5\xbd", L"%E4%BD%A0%E5%A5%BD\x4f60\x597d", "xn--6qqa088eba", url_parse::Component(0, 14), CanonHostInfo::NEUTRAL, -1, ""},
+    {"%E4%BD%A0%E5%A5%BD\xe4\xbd\xa0\xe5\xa5\xbd",
+      L"%E4%BD%A0%E5%A5%BD\x4f60\x597d", "xn--6qqa088eba",
+      url_parse::Component(0, 14), CanonHostInfo::NEUTRAL, -1, ""},
       // Invalid escaped characters should fail and the percents should be
       // escaped.
-    {"%zz%66%a", L"%zz%66%a", "%25zzf%25a", url_parse::Component(0, 10), CanonHostInfo::BROKEN, -1, ""},
+    {"%zz%66%a", L"%zz%66%a", "%25zzf%25a", url_parse::Component(0, 10),
+      CanonHostInfo::BROKEN, -1, ""},
       // If we get an invalid character that has been escaped.
-    {"%25", L"%25", "%25", url_parse::Component(0, 3), CanonHostInfo::BROKEN, -1, ""},
-    {"hello%00", L"hello%00", "hello%00", url_parse::Component(0, 8), CanonHostInfo::BROKEN, -1, ""},
+    {"%25", L"%25", "%25", url_parse::Component(0, 3),
+      CanonHostInfo::BROKEN, -1, ""},
+    {"hello%00", L"hello%00", "hello%00", url_parse::Component(0, 8),
+      CanonHostInfo::BROKEN, -1, ""},
       // Escaped numbers should be treated like IP addresses if they are.
-    {"%30%78%63%30%2e%30%32%35%30.01", L"%30%78%63%30%2e%30%32%35%30.01", "192.168.0.1", url_parse::Component(0, 11), CanonHostInfo::IPV4, 3, "C0A80001"},
-    {"%30%78%63%30%2e%30%32%35%30.01%2e", L"%30%78%63%30%2e%30%32%35%30.01%2e", "192.168.0.1", url_parse::Component(0, 11), CanonHostInfo::IPV4, 3, "C0A80001"},
+    {"%30%78%63%30%2e%30%32%35%30.01", L"%30%78%63%30%2e%30%32%35%30.01",
+      "192.168.0.1", url_parse::Component(0, 11), CanonHostInfo::IPV4, 3,
+      "C0A80001"},
+    {"%30%78%63%30%2e%30%32%35%30.01%2e", L"%30%78%63%30%2e%30%32%35%30.01%2e",
+      "192.168.0.1", url_parse::Component(0, 11), CanonHostInfo::IPV4, 3,
+      "C0A80001"},
       // Invalid escaping should trigger the regular host error handling.
     {"%3g%78%63%30%2e%30%32%35%30%2E.01", L"%3g%78%63%30%2e%30%32%35%30%2E.01", "%253gxc0.0250..01", url_parse::Component(0, 17), CanonHostInfo::BROKEN, -1, ""},
       // Something that isn't exactly an IP should get treated as a host and
@@ -423,9 +542,12 @@ TEST(URLCanonTest, Host) {
       // Broken IP addresses get marked as such.
     {"192.168.0.257", L"192.168.0.257", "192.168.0.257", url_parse::Component(0, 13), CanonHostInfo::BROKEN, -1, ""},
     {"[google.com]", L"[google.com]", "[google.com]", url_parse::Component(0, 12), CanonHostInfo::BROKEN, -1, ""},
-      // Cyrillic letter followed buy ( should return punicode for ( escaped before punicode string was created. I.e.
-      // if ( is escaped after punicode is created we would get xn--%28-8tb (incorrect).
-    {"\xd1\x82(", L"\x0442(", "xn--%28-7ed", url_parse::Component(0, 11), CanonHostInfo::NEUTRAL, -1, ""},
+      // Cyrillic letter followed by '(' should return punycode for '(' escaped
+      // before punycode string was created. I.e.
+      // if '(' is escaped after punycode is created we would get xn--%28-8tb
+      // (incorrect).
+    {"\xd1\x82(", L"\x0442(", "xn--%28-7ed", url_parse::Component(0, 11),
+      CanonHostInfo::NEUTRAL, -1, ""},
       // Address with all hexidecimal characters with leading number of 1<<32
       // or greater and should return NEUTRAL rather than BROKEN if not all
       // components are numbers.
@@ -453,10 +575,13 @@ TEST(URLCanonTest, Host) {
       output.Complete();
 
       EXPECT_EQ(host_cases[i].expected_family != CanonHostInfo::BROKEN,
-                success);
-      EXPECT_EQ(std::string(host_cases[i].expected), out_str);
-      EXPECT_EQ(host_cases[i].expected_component.begin, out_comp.begin);
-      EXPECT_EQ(host_cases[i].expected_component.len, out_comp.len);
+                success) << "for input: " << host_cases[i].input8;
+      EXPECT_EQ(std::string(host_cases[i].expected), out_str) <<
+                "for input: " << host_cases[i].input8;
+      EXPECT_EQ(host_cases[i].expected_component.begin, out_comp.begin) <<
+                "for input: " << host_cases[i].input8;
+      EXPECT_EQ(host_cases[i].expected_component.len, out_comp.len) <<
+                "for input: " << host_cases[i].input8;
     }
 
     // Wide version.

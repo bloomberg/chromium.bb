@@ -324,7 +324,7 @@ bool IsIDNComponentSafe(const base::char16* str,
   UErrorCode status = U_ZERO_ERROR;
 #ifdef U_WCHAR_IS_UTF16
   icu::UnicodeSet dangerous_characters(icu::UnicodeString(
-      L"[[\\ \u00bc\u00bd\u01c3\u0337\u0338"
+      L"[[\\ \u00ad\u00bc\u00bd\u01c3\u0337\u0338"
       L"\u05c3\u05f4\u06d4\u0702\u115f\u1160][\u2000-\u200b]"
       L"[\u2024\u2027\u2028\u2029\u2039\u203a\u2044\u205f]"
       L"[\u2154-\u2156][\u2159-\u215b][\u215f\u2215\u23ae"
@@ -341,7 +341,7 @@ bool IsIDNComponentSafe(const base::char16* str,
       0, status);
 #else
   icu::UnicodeSet dangerous_characters(icu::UnicodeString(
-      "[[\\u0020\\u00bc\\u00bd\\u01c3\\u0337\\u0338"
+      "[[\\u0020\\u00ad\\u00bc\\u00bd\\u01c3\\u0337\\u0338"
       "\\u05c3\\u05f4\\u06d4\\u0702\\u115f\\u1160][\\u2000-\\u200b]"
       "[\\u2024\\u2027\\u2028\\u2029\\u2039\\u203a\\u2044\\u205f]"
       "[\\u2154-\\u2156][\\u2159-\\u215b][\\u215f\\u2215\\u23ae"
@@ -398,6 +398,42 @@ bool IsIDNComponentSafe(const base::char16* str,
   return false;
 }
 
+// A wrapper to use LazyInstance<>::Leaky with ICU's UIDNA, a C pointer to
+// a UTS46/IDNA 2008 handling object opened with uidna_openUTS46().
+//
+// We use UTS46 with BiDiCheck to migrate from IDNA 2003 to IDNA 2008 with
+// the backward compatibility in mind. What it does:
+//
+// 1. Use the up-to-date Unicode data.
+// 2. Define a case folding/mapping with the up-to-date Unicode data as
+//    in IDNA 2003.
+// 3. Use transitional mechanism for 4 deviation characters (sharp-s,
+//    final sigma, ZWJ and ZWNJ) for now.
+// 4. Continue to allow symbols and punctuations.
+// 5. Apply new BiDi check rules more permissive than the IDNA 2003 BiDI rules.
+// 6. Do not apply STD3 rules
+// 7. Do not allow unassigned code points.
+//
+// It also closely matches what IE 10 does except for the BiDi check (
+// http://goo.gl/3XBhqw ).
+// See http://http://unicode.org/reports/tr46/ and references therein
+// for more details.
+struct UIDNAWrapper {
+  UIDNAWrapper() {
+    UErrorCode err = U_ZERO_ERROR;
+    // TODO(jungshik): Change options as different parties (browsers,
+    // registrars, search engines) converge toward a consensus.
+    value = uidna_openUTS46(UIDNA_CHECK_BIDI, &err);
+    if (U_FAILURE(err))
+      value = NULL;
+  }
+
+  UIDNA* value;
+};
+
+static base::LazyInstance<UIDNAWrapper>::Leaky
+    g_uidna = LAZY_INSTANCE_INITIALIZER;
+
 // Converts one component of a host (between dots) to IDN if safe. The result
 // will be APPENDED to the given output string and will be the same as the input
 // if it is not IDN or the IDN is unsafe to display.  Returns whether any
@@ -414,29 +450,33 @@ bool IDNToUnicodeOneComponent(const base::char16* comp,
   static const base::char16 kIdnPrefix[] = {'x', 'n', '-', '-'};
   if ((comp_len > arraysize(kIdnPrefix)) &&
       !memcmp(comp, kIdnPrefix, arraysize(kIdnPrefix) * sizeof(base::char16))) {
-    // Repeatedly expand the output string until it's big enough.  It looks like
-    // ICU will return the required size of the buffer, but that's not
-    // documented, so we'll just grow by 2x. This should be rare and is not on a
-    // critical path.
+    UIDNA* uidna = g_uidna.Get().value;
+    DCHECK(uidna != NULL);
     size_t original_length = out->length();
-    for (int extra_space = 64; ; extra_space *= 2) {
-      UErrorCode status = U_ZERO_ERROR;
-      out->resize(out->length() + extra_space);
-      int output_chars = uidna_IDNToUnicode(comp,
-          static_cast<int32_t>(comp_len), &(*out)[original_length], extra_space,
-          UIDNA_DEFAULT, NULL, &status);
-      if (status == U_ZERO_ERROR) {
-        // Converted successfully.
-        out->resize(original_length + output_chars);
-        if (IsIDNComponentSafe(out->data() + original_length, output_chars,
-                               languages))
-          return true;
-      }
+    int output_length = 64;
+    UIDNAInfo info = UIDNA_INFO_INITIALIZER;
+    UErrorCode status;
+    do {
+      out->resize(original_length + output_length);
+      status = U_ZERO_ERROR;
+      // This returns the actual length required. If this is more than 64
+      // code units, |status| will be U_BUFFER_OVERFLOW_ERROR and we'll try
+      // the conversion again, but with a sufficiently large buffer.
+      output_length = uidna_labelToUnicode(
+          uidna, comp, static_cast<int32_t>(comp_len), &(*out)[original_length],
+          output_length, &info, &status);
+    } while ((status == U_BUFFER_OVERFLOW_ERROR && info.errors == 0));
 
-      if (status != U_BUFFER_OVERFLOW_ERROR)
-        break;
+    if (U_SUCCESS(status) && info.errors == 0) {
+      // Converted successfully. Ensure that the converted component
+      // can be safely displayed to the user.
+      out->resize(original_length + output_length);
+      if (IsIDNComponentSafe(out->data() + original_length, output_length,
+                             languages))
+        return true;
     }
-    // Failed, revert back to original string.
+
+    // Something went wrong. Revert to original string.
     out->resize(original_length);
   }
 

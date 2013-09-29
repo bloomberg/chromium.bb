@@ -8,6 +8,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "grit/generated_resources.h"
+#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace x509_certificate_model {
@@ -18,28 +19,7 @@ std::string ProcessIDN(const std::string& input) {
   input16.reserve(input.length());
   input16.insert(input16.end(), input.begin(), input.end());
 
-  string16 output16;
-  output16.resize(input.length());
-
-  UErrorCode status = U_ZERO_ERROR;
-  int output_chars = uidna_IDNToUnicode(input16.data(), input.length(),
-                                        &output16[0], output16.length(),
-                                        UIDNA_DEFAULT, NULL, &status);
-  if (status == U_ZERO_ERROR) {
-    output16.resize(output_chars);
-  } else if (status != U_BUFFER_OVERFLOW_ERROR) {
-    return input;
-  } else {
-    output16.resize(output_chars);
-    output_chars = uidna_IDNToUnicode(input16.data(), input.length(),
-                                      &output16[0], output16.length(),
-                                      UIDNA_DEFAULT, NULL, &status);
-    if (status != U_ZERO_ERROR)
-      return input;
-    DCHECK_EQ(static_cast<size_t>(output_chars), output16.length());
-    output16.resize(output_chars);  // Just to be safe.
-  }
-
+  string16 output16 = net::IDNToUnicode(input, std::string());
   if (input16 == output16)
     return input;  // Input did not contain any encoded data.
 
@@ -89,5 +69,5 @@ std::string ProcessRawBits(const unsigned char* data, size_t data_length) {
 }
 #endif  // USE_NSS
 
-}  // x509_certificate_model
+}  // namespace x509_certificate_model
 
