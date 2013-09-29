@@ -137,6 +137,3 @@ race:PostponeInterruptsScope
 
 # http://crbug.com/296883
 race:net::URLFetcherCore::Stop
-
-# http://crbug.com/298981
-race:content::VideoCaptureImpl::DoBufferReceivedOnCaptureThread

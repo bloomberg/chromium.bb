@@ -13,7 +13,8 @@
 
 namespace content {
 
-class VideoCaptureImpl::ClientBuffer : public base::RefCounted<ClientBuffer> {
+class VideoCaptureImpl::ClientBuffer
+    : public base::RefCountedThreadSafe<ClientBuffer> {
  public:
   ClientBuffer(scoped_ptr<base::SharedMemory> buffer,
                size_t buffer_size,
@@ -32,7 +33,7 @@ class VideoCaptureImpl::ClientBuffer : public base::RefCounted<ClientBuffer> {
   const int frame_stride;  // In pixels.
 
  private:
-  friend class base::RefCounted<ClientBuffer>;
+  friend class base::RefCountedThreadSafe<ClientBuffer>;
 
   virtual ~ClientBuffer() {}
 
