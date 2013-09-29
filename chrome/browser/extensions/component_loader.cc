@@ -407,7 +407,8 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   // because they generate a lot of background behavior that can interfere.
   if (!enable_background_extensions_during_testing &&
       (command_line->HasSwitch(switches::kTestType) ||
-          command_line->HasSwitch(switches::kMetricsRecordingOnly))) {
+          command_line->HasSwitch(
+              switches::kDisableComponentExtensionsWithBackgroundPages))) {
     return;
   }
 

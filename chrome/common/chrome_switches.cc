@@ -307,6 +307,11 @@ const char kDisableClientSidePhishingDetection[] =
 // Disables pushing cloud policy to Chrome using an invalidation service.
 const char kDisableCloudPolicyPush[]        = "disable-cloud-policy-push";
 
+// Disable default component extensions with background pages - useful for
+// performance tests where these pages may interfere with perf results.
+const char kDisableComponentExtensionsWithBackgroundPages[] =
+    "disable-component-extensions-with-background-pages";
+
 const char kDisableComponentUpdate[]        = "disable-component-update";
 
 // Disables establishing certificate revocation information by downloading a

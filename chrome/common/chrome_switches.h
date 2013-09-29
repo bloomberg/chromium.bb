@@ -94,6 +94,7 @@ extern const char kDisableBookmarkAutocompleteProvider[];
 extern const char kDisableClientSidePhishingDetection[];
 extern const char kDisableCloudPolicyOnSignin[];
 extern const char kDisableCloudPolicyPush[];
+extern const char kDisableComponentExtensionsWithBackgroundPages[];
 extern const char kDisableComponentUpdate[];
 extern const char kDisableCRLSets[];
 extern const char kDisableCustomJumpList[];
