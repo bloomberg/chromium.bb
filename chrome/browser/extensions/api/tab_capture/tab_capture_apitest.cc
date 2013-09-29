@@ -27,8 +27,6 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/common/features/feature.h"
 
-namespace chrome {
-
 namespace {
 
 const char kExtensionId[] = "ddchlicdkolnonkihahngkmmmjnjlkkf";
@@ -288,5 +286,3 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GrantForChromePages) {
   catcher.RestrictToProfile(browser()->profile());
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
-
-}  // namespace chrome

@@ -33,8 +33,6 @@ using sync_file_system::MockRemoteFileSyncService;
 using sync_file_system::RemoteFileSyncService;
 using sync_file_system::SyncFileSystemServiceFactory;
 
-namespace chrome {
-
 namespace {
 
 class SyncFileSystemApiTest : public ExtensionApiTest {
@@ -205,5 +203,3 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetServiceStatus) {
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/get_service_status"))
       << message_;
 }
-
-}  // namespace chrome

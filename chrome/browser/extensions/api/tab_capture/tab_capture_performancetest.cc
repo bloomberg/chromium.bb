@@ -34,8 +34,6 @@
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_switches.h"
 
-namespace chrome {
-
 namespace {
 
 const char kExtensionId[] = "ddchlicdkolnonkihahngkmmmjnjlkkf";
@@ -56,7 +54,6 @@ enum TestFlags {
   kScaleQualityGood    = 2 << 5,
   kScaleQualityBest    = 3 << 5,
 };
-
 
 class TabCapturePerformanceTest
     : public ExtensionApiTest,
@@ -275,5 +272,3 @@ INSTANTIATE_TEST_CASE_P(
         kScalingTestBase | kScaleQualityBest | kSmallWindow));
 
 #endif  // USE_AURA
-
-}  // namespace chrome
