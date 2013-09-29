@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/tools/flip_server/buffer_interface.h"
+#include "net/tools/balsa/buffer_interface.h"
 
 namespace net {
 

@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/flip_server/balsa_headers_token_utils.h"
-#include "net/tools/flip_server/string_piece_utils.h"
+#include "net/tools/balsa/balsa_headers_token_utils.h"
+#include "net/tools/balsa/string_piece_utils.h"
 
 namespace net {
 

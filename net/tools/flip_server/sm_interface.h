@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "net/tools/flip_server/balsa_headers.h"
+#include "net/tools/balsa/balsa_headers.h"
 
 namespace net {
 

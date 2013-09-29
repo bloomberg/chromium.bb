@@ -4,7 +4,7 @@
 
 #include "net/tools/flip_server/mem_cache.h"
 
-#include "net/tools/flip_server/balsa_headers.h"
+#include "net/tools/balsa/balsa_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

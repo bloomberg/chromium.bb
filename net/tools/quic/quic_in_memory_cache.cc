@@ -8,7 +8,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "net/tools/flip_server/balsa_headers.h"
+#include "net/tools/balsa/balsa_headers.h"
 
 using base::FilePath;
 using base::StringPiece;

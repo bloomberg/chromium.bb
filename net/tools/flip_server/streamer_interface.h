@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "net/tools/flip_server/balsa_headers.h"
-#include "net/tools/flip_server/balsa_visitor_interface.h"
+#include "net/tools/balsa/balsa_headers.h"
+#include "net/tools/balsa/balsa_visitor_interface.h"
 #include "net/tools/flip_server/sm_interface.h"
 
 namespace net {

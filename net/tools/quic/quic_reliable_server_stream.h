@@ -9,7 +9,7 @@
 
 #include "net/quic/quic_protocol.h"
 #include "net/quic/reliable_quic_stream.h"
-#include "net/tools/flip_server/balsa_headers.h"
+#include "net/tools/balsa/balsa_headers.h"
 
 namespace net {
 

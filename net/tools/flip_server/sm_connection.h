@@ -12,8 +12,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/flip_server/create_listener.h"
-#include "net/tools/flip_server/epoll_server.h"
 #include "net/tools/flip_server/mem_cache.h"
 #include "net/tools/flip_server/ring_buffer.h"
 #include "net/tools/flip_server/sm_interface.h"

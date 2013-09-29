@@ -1,15 +1,15 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Utility class that performs basic operations on header value tokens: parsing
 // them out, checking for presense of certain tokens, and removing them.
 
-#ifndef NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_TOKEN_UTILS_H_
-#define NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_TOKEN_UTILS_H_
+#ifndef NET_TOOLS_BALSA_BALSA_HEADERS_TOKEN_UTILS_H_
+#define NET_TOOLS_BALSA_BALSA_HEADERS_TOKEN_UTILS_H_
 
 #include "base/strings/string_piece.h"
-#include "net/tools/flip_server/balsa_headers.h"
+#include "net/tools/balsa/balsa_headers.h"
 
 namespace net {
 
@@ -57,5 +57,5 @@ class BalsaHeadersTokenUtils {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_TOKEN_UTILS_H_
+#endif  // NET_TOOLS_BALSA_BALSA_HEADERS_TOKEN_UTILS_H_
 

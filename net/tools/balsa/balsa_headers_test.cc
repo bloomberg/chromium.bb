@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/flip_server/balsa_headers.h"
+#include "net/tools/balsa/balsa_headers.h"
 
 #include <iterator>
 #include <string>
@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
-#include "net/tools/flip_server/balsa_enums.h"
+#include "net/tools/balsa/balsa_enums.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

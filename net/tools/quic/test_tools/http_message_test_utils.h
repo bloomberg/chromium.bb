@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/strings/string_piece.h"
-#include "net/tools/flip_server/balsa_enums.h"
-#include "net/tools/flip_server/balsa_headers.h"
+#include "net/tools/balsa/balsa_enums.h"
+#include "net/tools/balsa/balsa_headers.h"
 
 namespace net {
 namespace tools {

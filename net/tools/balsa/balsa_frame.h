@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_FLIP_SERVER_BALSA_FRAME_H_
-#define NET_TOOLS_FLIP_SERVER_BALSA_FRAME_H_
+#ifndef NET_TOOLS_BALSA_BALSA_FRAME_H_
+#define NET_TOOLS_BALSA_BALSA_FRAME_H_
 
 #include <strings.h>
 
@@ -12,12 +12,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/port.h"
-#include "net/tools/flip_server/balsa_enums.h"
-#include "net/tools/flip_server/balsa_headers.h"
-#include "net/tools/flip_server/balsa_visitor_interface.h"
-#include "net/tools/flip_server/buffer_interface.h"
-#include "net/tools/flip_server/http_message_constants.h"
-#include "net/tools/flip_server/simple_buffer.h"
+#include "net/tools/balsa/balsa_enums.h"
+#include "net/tools/balsa/balsa_headers.h"
+#include "net/tools/balsa/balsa_visitor_interface.h"
+#include "net/tools/balsa/buffer_interface.h"
+#include "net/tools/balsa/http_message_constants.h"
+#include "net/tools/balsa/simple_buffer.h"
 
 // For additional debug output, uncomment the following:
 // #define DEBUGFRAMER 1
@@ -261,5 +261,5 @@ class BalsaFrame {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_FLIP_SERVER_BALSA_FRAME_H_
+#endif  // NET_TOOLS_BALSA_BALSA_FRAME_H_
 

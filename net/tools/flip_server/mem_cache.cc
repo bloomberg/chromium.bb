@@ -17,10 +17,10 @@
 #include <string>
 
 #include "base/strings/string_util.h"
+#include "net/tools/balsa/balsa_frame.h"
+#include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/dump_cache/url_to_filename_encoder.h"
 #include "net/tools/dump_cache/url_utilities.h"
-#include "net/tools/flip_server/balsa_frame.h"
-#include "net/tools/flip_server/balsa_headers.h"
 
 namespace {
 // The directory where cache locates);

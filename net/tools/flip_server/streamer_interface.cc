@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "net/tools/flip_server/balsa_frame.h"
+#include "net/tools/balsa/balsa_frame.h"
 #include "net/tools/flip_server/constants.h"
 #include "net/tools/flip_server/flip_config.h"
 #include "net/tools/flip_server/sm_connection.h"

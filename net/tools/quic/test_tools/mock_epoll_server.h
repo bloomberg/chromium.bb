@@ -6,7 +6,7 @@
 #define NET_TOOLS_QUIC_TEST_TOOLS_MOCK_EPOLL_SERVER_H_
 
 #include "base/logging.h"
-#include "net/tools/flip_server/epoll_server.h"
+#include "net/tools/epoll_server/epoll_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace net {

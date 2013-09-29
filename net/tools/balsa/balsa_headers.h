@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_H_
-#define NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_H_
+#ifndef NET_TOOLS_BALSA_BALSA_HEADERS_H_
+#define NET_TOOLS_BALSA_BALSA_HEADERS_H_
 
 #include <algorithm>
 #include <iosfwd>
@@ -15,8 +15,8 @@
 #include "base/logging.h"
 #include "base/port.h"
 #include "base/strings/string_piece.h"
-#include "net/tools/flip_server/balsa_enums.h"
-#include "net/tools/flip_server/string_piece_utils.h"
+#include "net/tools/balsa/balsa_enums.h"
+#include "net/tools/balsa/string_piece_utils.h"
 
 namespace net {
 
@@ -1135,4 +1135,4 @@ class BalsaHeaders {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_H_
+#endif  // NET_TOOLS_BALSA_BALSA_HEADERS_H_

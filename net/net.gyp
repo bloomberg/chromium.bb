@@ -1903,19 +1903,18 @@
       'conditions': [
         ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
           'dependencies': [
-            'quic_library',
-            'flip_in_mem_edsm_server_library',
-            'flip_balsa_and_epoll_library',
+            'balsa',
+            'epoll_server',
+            'flip_in_mem_edsm_server_base',
+            'quic_base',
           ],
           'sources': [
-            'tools/flip_server/balsa_frame_test.cc',
-            'tools/flip_server/balsa_headers_test.cc',
+            'tools/balsa/balsa_frame_test.cc',
+            'tools/balsa/balsa_headers_test.cc',
             'tools/flip_server/flip_test_utils.cc',
             'tools/flip_server/flip_test_utils.h',
             'tools/flip_server/http_interface_test.cc',
             'tools/flip_server/mem_cache_test.cc',
-            'tools/flip_server/simple_buffer.cc',
-            'tools/flip_server/simple_buffer.h',
             'tools/flip_server/spdy_interface_test.cc',
             'tools/quic/end_to_end_test.cc',
             'tools/quic/quic_client_session_test.cc',
@@ -2647,33 +2646,44 @@
     ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
       'targets': [
         {
-          'target_name': 'flip_balsa_and_epoll_library',
+          'target_name': 'balsa',
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
             'net',
           ],
           'sources': [
-            'tools/flip_server/balsa_enums.h',
-            'tools/flip_server/balsa_frame.cc',
-            'tools/flip_server/balsa_frame.h',
-            'tools/flip_server/balsa_headers.cc',
-            'tools/flip_server/balsa_headers.h',
-            'tools/flip_server/balsa_headers_token_utils.cc',
-            'tools/flip_server/balsa_headers_token_utils.h',
-            'tools/flip_server/balsa_visitor_interface.h',
-            'tools/flip_server/constants.h',
-            'tools/flip_server/epoll_server.cc',
-            'tools/flip_server/epoll_server.h',
-            'tools/flip_server/http_message_constants.cc',
-            'tools/flip_server/http_message_constants.h',
-            'tools/flip_server/noop_balsa_visitor.h',
-            'tools/flip_server/split.h',
-            'tools/flip_server/split.cc',
+            'tools/balsa/balsa_enums.h',
+            'tools/balsa/balsa_frame.cc',
+            'tools/balsa/balsa_frame.h',
+            'tools/balsa/balsa_headers.cc',
+            'tools/balsa/balsa_headers.h',
+            'tools/balsa/balsa_headers_token_utils.cc',
+            'tools/balsa/balsa_headers_token_utils.h',
+            'tools/balsa/balsa_visitor_interface.h',
+            'tools/balsa/http_message_constants.cc',
+            'tools/balsa/http_message_constants.h',
+            'tools/balsa/noop_balsa_visitor.h',
+            'tools/balsa/simple_buffer.cc',
+            'tools/balsa/simple_buffer.h',
+            'tools/balsa/split.cc',
+            'tools/balsa/split.h',
           ],
         },
         {
-          'target_name': 'flip_in_mem_edsm_server_library',
+          'target_name': 'epoll_server',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'net',
+          ],
+          'sources': [
+            'tools/epoll_server/epoll_server.cc',
+            'tools/epoll_server/epoll_server.h',
+          ],
+        },
+        {
+          'target_name': 'flip_in_mem_edsm_server_base',
           'type': 'static_library',
           'cflags': [
             '-Wno-deprecated',
@@ -2681,7 +2691,8 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../third_party/openssl/openssl.gyp:openssl',
-            'flip_balsa_and_epoll_library',
+            'balsa',
+            'epoll_server',
             'net',
           ],
           'sources': [
@@ -2691,9 +2702,9 @@
             'tools/dump_cache/url_utilities.cc',
             'tools/flip_server/acceptor_thread.h',
             'tools/flip_server/acceptor_thread.cc',
-            'tools/flip_server/buffer_interface.h',
             'tools/flip_server/create_listener.cc',
             'tools/flip_server/create_listener.h',
+            'tools/flip_server/constants.h',
             'tools/flip_server/flip_config.cc',
             'tools/flip_server/flip_config.h',
             'tools/flip_server/http_interface.cc',
@@ -2705,8 +2716,6 @@
             'tools/flip_server/output_ordering.h',
             'tools/flip_server/ring_buffer.cc',
             'tools/flip_server/ring_buffer.h',
-            'tools/flip_server/simple_buffer.cc',
-            'tools/flip_server/simple_buffer.h',
             'tools/flip_server/sm_connection.cc',
             'tools/flip_server/sm_connection.h',
             'tools/flip_server/sm_interface.h',
@@ -2729,8 +2738,7 @@
           ],
           'dependencies': [
             '../base/base.gyp:base',
-            'flip_balsa_and_epoll_library',
-            'flip_in_mem_edsm_server_library',
+            'flip_in_mem_edsm_server_base',
             'net',
           ],
           'sources': [
@@ -2738,7 +2746,7 @@
           ],
         },
         {
-          'target_name': 'quic_library',
+          'target_name': 'quic_base',
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
@@ -2746,7 +2754,8 @@
             '../crypto/crypto.gyp:crypto',
             '../third_party/openssl/openssl.gyp:openssl',
             '../url/url.gyp:url_lib',
-            'flip_balsa_and_epoll_library',
+            'balsa',
+            'epoll_server',
             'net',
           ],
           'sources': [
@@ -2790,7 +2799,7 @@
             '../base/base.gyp:base',
             '../third_party/openssl/openssl.gyp:openssl',
             'net',
-            'quic_library',
+            'quic_base',
           ],
           'sources': [
             'tools/quic/quic_client_bin.cc',
@@ -2803,7 +2812,7 @@
             '../base/base.gyp:base',
             '../third_party/openssl/openssl.gyp:openssl',
             'net',
-            'quic_library',
+            'quic_base',
           ],
           'sources': [
             'tools/quic/quic_server_bin.cc',

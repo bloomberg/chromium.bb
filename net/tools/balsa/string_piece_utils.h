@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_FLIP_SERVER_STRING_PIECE_UTILS_H_
-#define NET_TOOLS_FLIP_SERVER_STRING_PIECE_UTILS_H_
+#ifndef NET_TOOLS_BALSA_STRING_PIECE_UTILS_H_
+#define NET_TOOLS_BALSA_STRING_PIECE_UTILS_H_
 
 #include <ctype.h>
 
@@ -79,5 +79,5 @@ struct StringPieceCaseEqual {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_FLIP_SERVER_STRING_PIECE_UTILS_H_
+#endif  // NET_TOOLS_BALSA_STRING_PIECE_UTILS_H_
 

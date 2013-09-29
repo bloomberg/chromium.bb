@@ -1,14 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_FLIP_SERVER_SIMPLE_BUFFER_H__
-#define NET_TOOLS_FLIP_SERVER_SIMPLE_BUFFER_H__
+#ifndef NET_TOOLS_BALSA_SIMPLE_BUFFER_H__
+#define NET_TOOLS_BALSA_SIMPLE_BUFFER_H__
 
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "net/tools/flip_server/buffer_interface.h"
+#include "net/tools/balsa/buffer_interface.h"
 
 namespace net {
 
@@ -89,4 +89,4 @@ class SimpleBuffer : public BufferInterface {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_FLIP_SERVER_SIMPLE_BUFFER_H__
+#endif  // NET_TOOLS_BALSA_SIMPLE_BUFFER_H__

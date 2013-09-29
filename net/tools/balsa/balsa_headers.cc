@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/flip_server/balsa_headers.h"
+#include "net/tools/balsa/balsa_headers.h"
 
 #include <stdio.h>
 #include <algorithm>
@@ -13,14 +13,12 @@
 
 #include "base/logging.h"
 #include "base/port.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/string_piece.h"
-#include "net/tools/flip_server/balsa_enums.h"
-#include "net/tools/flip_server/buffer_interface.h"
-#include "net/tools/flip_server/simple_buffer.h"
+#include "base/strings/stringprintf.h"
+#include "net/tools/balsa/balsa_enums.h"
+#include "net/tools/balsa/buffer_interface.h"
+#include "net/tools/balsa/simple_buffer.h"
 #include "third_party/tcmalloc/chromium/src/base/googleinit.h"
-// #include "util/gtl/iterator_adaptors-inl.h"
-// #include "util/gtl/map-util.h"
 
 namespace {
 

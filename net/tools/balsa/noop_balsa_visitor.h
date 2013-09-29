@@ -6,10 +6,10 @@
 // Intended to be used as a base class for BalsaVisitorInterface subclasses that
 // only need to override a small number of methods.
 
-#ifndef NET_TOOLS_FLIP_SERVER_NOOP_BALSA_VISITOR_H_
-#define NET_TOOLS_FLIP_SERVER_NOOP_BALSA_VISITOR_H_
+#ifndef NET_TOOLS_BALSA_NOOP_BALSA_VISITOR_H_
+#define NET_TOOLS_BALSA_NOOP_BALSA_VISITOR_H_
 
-#include "net/tools/flip_server/balsa_visitor_interface.h"
+#include "net/tools/balsa/balsa_visitor_interface.h"
 
 namespace net {
 
@@ -57,4 +57,4 @@ class NoOpBalsaVisitor : public BalsaVisitorInterface {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_FLIP_SERVER_NOOP_BALSA_VISITOR_H_
+#endif  // NET_TOOLS_BALSA_NOOP_BALSA_VISITOR_H_

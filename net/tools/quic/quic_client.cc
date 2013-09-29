@@ -16,7 +16,7 @@
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_data_reader.h"
 #include "net/quic/quic_protocol.h"
-#include "net/tools/flip_server/balsa_headers.h"
+#include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_reliable_client_stream.h"
 #include "net/tools/quic/quic_socket_utils.h"

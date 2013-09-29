@@ -10,9 +10,9 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_piece.h"
-#include "net/tools/flip_server/balsa_frame.h"
-#include "net/tools/flip_server/balsa_headers.h"
-#include "net/tools/flip_server/noop_balsa_visitor.h"
+#include "net/tools/balsa/balsa_frame.h"
+#include "net/tools/balsa/balsa_headers.h"
+#include "net/tools/balsa/noop_balsa_visitor.h"
 
 template <typename T> struct DefaultSingletonTraits;
 

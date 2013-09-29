@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "base/timer/timer.h"
+#include "net/tools/balsa/split.h"
 #include "net/tools/flip_server/acceptor_thread.h"
 #include "net/tools/flip_server/constants.h"
 #include "net/tools/flip_server/flip_config.h"
@@ -22,7 +23,6 @@
 #include "net/tools/flip_server/sm_connection.h"
 #include "net/tools/flip_server/sm_interface.h"
 #include "net/tools/flip_server/spdy_interface.h"
-#include "net/tools/flip_server/split.h"
 #include "net/tools/flip_server/streamer_interface.h"
 
 using std::cout;
@@ -421,4 +421,3 @@ int main (int argc, char**argv)
   close(pidfile_fd);
   return 0;
 }
-

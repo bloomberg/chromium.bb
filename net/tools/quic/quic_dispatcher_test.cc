@@ -12,7 +12,7 @@
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "net/tools/flip_server/epoll_server.h"
+#include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_time_wait_list_manager.h"
 #include "net/tools/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -1,16 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_FLIP_SERVER_EPOLL_SERVER_H_
-#define NET_TOOLS_FLIP_SERVER_EPOLL_SERVER_H_
+#ifndef NET_TOOLS_EPOLL_SERVER_EPOLL_SERVER_H_
+#define NET_TOOLS_EPOLL_SERVER_EPOLL_SERVER_H_
 
 #include <fcntl.h>
 #include <sys/queue.h>
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
-#include <set>
 #include <vector>
 
 // #define EPOLL_SERVER_EVENT_TRACING 1
@@ -1050,5 +1050,4 @@ class EpollAlarm : public EpollAlarmCallbackInterface {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_FLIP_SERVER_EPOLL_SERVER_H_
-
+#endif  // NET_TOOLS_EPOLL_SERVER_EPOLL_SERVER_H_
