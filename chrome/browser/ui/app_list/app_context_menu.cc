@@ -179,14 +179,15 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
     extension_menu_items_->AppendExtensionItems(app_id_, string16(),
                                                 &index);
 
-    if (controller_->CanPin()) {
-      menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
-      menu_model_->AddItemWithStringId(
-          TOGGLE_PIN,
-          controller_->IsAppPinned(app_id_) ?
-              IDS_APP_LIST_CONTEXT_MENU_UNPIN :
-              IDS_APP_LIST_CONTEXT_MENU_PIN);
-    }
+#if defined(USE_ASH)
+    // Always show Pin/Unpin option for ash.
+    menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_->AddItemWithStringId(
+        TOGGLE_PIN,
+        controller_->IsAppPinned(app_id_) ?
+            IDS_APP_LIST_CONTEXT_MENU_UNPIN :
+            IDS_APP_LIST_CONTEXT_MENU_PIN);
+#endif
 
     if (controller_->CanDoCreateShortcutsFlow(is_platform_app_)) {
       menu_model_->AddItemWithStringId(CREATE_SHORTCUTS,

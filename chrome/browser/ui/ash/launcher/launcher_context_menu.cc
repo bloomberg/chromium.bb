@@ -205,8 +205,7 @@ bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
 bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
     case MENU_PIN:
-      return item_.type == ash::TYPE_PLATFORM_APP ||
-          controller_->IsPinnable(item_.id);
+      return controller_->IsPinnable(item_.id);
 #if defined(OS_CHROMEOS)
     case MENU_CHANGE_WALLPAPER:
       return ash::Shell::GetInstance()->user_wallpaper_delegate()->
