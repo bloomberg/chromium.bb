@@ -44,6 +44,7 @@
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/mime_types_handler.h"
 #include "chrome/common/extensions/web_accessible_resources_handler.h"
+#include "chrome/common/extensions/webview_handler.h"
 
 namespace extensions {
 
@@ -97,6 +98,7 @@ void RegisterChromeManifestHandlers() {
   (new UrlHandlersParser)->Register();
   (new URLOverridesHandler)->Register();
   (new WebAccessibleResourcesHandler)->Register();
+  (new WebviewHandler)->Register();
   ManifestHandler::FinalizeRegistration();
 #endif
 }

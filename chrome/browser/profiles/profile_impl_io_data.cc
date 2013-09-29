@@ -18,6 +18,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
@@ -582,19 +583,11 @@ ProfileImplIOData::InitializeAppRequestContext(
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
   InstallProtocolHandlers(job_factory.get(), protocol_handlers);
-  scoped_ptr<net::URLRequestJobFactory> top_job_factory;
-  // Overwrite the job factory that we inherit from the main context so
-  // that we can later provide our own handlers for storage related protocols.
-  // Install all the usual protocol handlers unless we are in a browser plugin
-  // guest process, in which case only web-safe schemes are allowed.
-  if (!partition_descriptor.in_memory) {
-    top_job_factory = SetUpJobFactoryDefaults(
-        job_factory.Pass(), protocol_handler_interceptor.Pass(),
-        network_delegate(),
-        ftp_factory_.get());
-  } else {
-    top_job_factory = job_factory.PassAs<net::URLRequestJobFactory>();
-  }
+  scoped_ptr<net::URLRequestJobFactory> top_job_factory(
+      SetUpJobFactoryDefaults(
+          job_factory.Pass(), protocol_handler_interceptor.Pass(),
+          network_delegate(),
+          ftp_factory_.get()));
   context->SetJobFactory(top_job_factory.Pass());
 
   return context;

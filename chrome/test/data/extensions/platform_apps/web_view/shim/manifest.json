@@ -1,6 +1,6 @@
 {
   "name": "Platform App Test: <webview>",
-  "version": "1",
+  "version": "2",
   "permissions": [
     "webview"
   ],
@@ -8,5 +8,13 @@
     "background": {
       "scripts": ["test.js"]
     }
+  },
+  "webview": {
+    "accessible_resources": [
+      "guest.html"
+    ],
+    "privileged_partitions": [
+      "foobar"
+    ]
   }
 }

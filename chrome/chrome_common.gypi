@@ -288,6 +288,8 @@
         'common/extensions/value_counter.h',
         'common/extensions/web_accessible_resources_handler.cc',
         'common/extensions/web_accessible_resources_handler.h',
+        'common/extensions/webview_handler.cc',
+        'common/extensions/webview_handler.h',
         'common/external_ipc_fuzzer.cc',
         'common/external_ipc_fuzzer.h',
         'common/favicon/favicon_types.cc',

@@ -662,6 +662,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIExistence) {
              "web_view/shim");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestChromeExtensionURL) {
+  TestHelper("testChromeExtensionURL",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestEventName) {
   TestHelper("testEventName",
              "DoneShimTest.PASSED",
@@ -847,6 +854,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadStartLoadRedirect) {
   TestHelper("testLoadStartLoadRedirect",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       Shim_TestLoadAbortChromeExtensionURLWrongPartition) {
+  TestHelper("testLoadAbortChromeExtensionURLWrongPartition",
              "DoneShimTest.PASSED",
              "DoneShimTest.FAILED",
              "web_view/shim");

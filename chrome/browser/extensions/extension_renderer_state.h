@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/basictypes.h"
@@ -21,6 +22,7 @@ class ExtensionRendererState {
   struct WebViewInfo {
     int embedder_process_id;
     int instance_id;
+    std::string partition_id;
   };
 
   static ExtensionRendererState* GetInstance();

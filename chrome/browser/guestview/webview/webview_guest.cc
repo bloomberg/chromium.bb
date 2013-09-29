@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_details.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -492,9 +493,13 @@ void WebViewGuest::LoadRedirect(const GURL& old_url,
 }
 
 void WebViewGuest::AddWebViewToExtensionRendererState() {
+  const GURL& site_url = web_contents()->GetSiteInstance()->GetSiteURL();
   ExtensionRendererState::WebViewInfo webview_info;
   webview_info.embedder_process_id = embedder_render_process_id();
   webview_info.instance_id = view_instance_id();
+  // TODO(fsamuel): Partition IDs should probably be a chrome-only concept. They
+  // should probably be passed in via attach args.
+  webview_info.partition_id =  site_url.query();
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,

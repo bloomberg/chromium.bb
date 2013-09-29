@@ -24,6 +24,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/background_info.h"
@@ -35,6 +36,7 @@
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/web_accessible_resources_handler.h"
+#include "chrome/common/extensions/webview_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
@@ -365,6 +367,21 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
   // request.
   if (extension_info_map->process_map().Contains(
       request->url().host(), info->GetChildID())) {
+    return true;
+  }
+
+  // Extensions with webview: allow loading certain resources by guest renderers
+  // with privileged partition IDs as specified in the manifest file.
+  ExtensionRendererState* renderer_state =
+      ExtensionRendererState::GetInstance();
+  ExtensionRendererState::WebViewInfo webview_info;
+  bool is_guest = renderer_state->GetWebViewInfo(info->GetChildID(),
+                                                 info->GetRouteID(),
+                                                 &webview_info);
+  std::string resource_path = request->url().path();
+  if (is_guest &&
+      extensions::WebviewInfo::IsResourceWebviewAccessible(
+            extension, webview_info.partition_id, resource_path)) {
     return true;
   }
 

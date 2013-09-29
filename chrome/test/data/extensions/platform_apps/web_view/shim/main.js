@@ -299,6 +299,23 @@ function testAPIMethodExistence() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that the loadstop event fires when loading a webview
+// accessible resource from a partition that is privileged.
+function testChromeExtensionURL() {
+  var localResource = chrome.runtime.getURL('guest.html');
+  var webview = document.createElement('webview');
+  // foobar is a privileged partition according to the manifest file.
+  webview.partition = 'foobar';
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.fail();
+  });
+  webview.addEventListener('loadstop', function(e) {
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', localResource);
+  document.body.appendChild(webview);
+}
+
 function testWebRequestAPIExistence() {
   var apiPropertiesToCheck = [
     'onBeforeRequest',
@@ -907,6 +924,22 @@ function testLoadStartLoadRedirect() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that the loadabort event fires when loading a webview
+// accessible resource from a partition that is not privileged.
+function testLoadAbortChromeExtensionURLWrongPartition() {
+  var localResource = chrome.runtime.getURL('guest.html');
+  var webview = document.createElement('webview');
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq('ERR_ADDRESS_UNREACHABLE', e.reason);
+    embedder.test.succeed();
+  });
+  webview.addEventListener('loadstop', function(e) {
+    embedder.test.fail();
+  });
+  webview.setAttribute('src', localResource);
+  document.body.appendChild(webview);
+}
+
 // This test verifies that the loadabort event fires as expected and with the
 // appropriate fields when an empty response is returned.
 function testLoadAbortEmptyResponse() {
@@ -1080,6 +1113,7 @@ embedder.test.testList = {
   'testAutosizeRemoveAttributes': testAutosizeRemoveAttributes,
   'testAutosizeWithPartialAttributes': testAutosizeWithPartialAttributes,
   'testAPIMethodExistence': testAPIMethodExistence,
+  'testChromeExtensionURL': testChromeExtensionURL,
   'testWebRequestAPIExistence': testWebRequestAPIExistence,
   'testEventName': testEventName,
   'testOnEventProperties': testOnEventProperties,
@@ -1109,6 +1143,8 @@ embedder.test.testList = {
       testWebRequestListenerSurvivesReparenting,
   'testGetProcessId': testGetProcessId,
   'testLoadStartLoadRedirect': testLoadStartLoadRedirect,
+  'testLoadAbortChromeExtensionURLWrongPartition':
+      testLoadAbortChromeExtensionURLWrongPartition,
   'testLoadAbortEmptyResponse': testLoadAbortEmptyResponse,
   'testLoadAbortIllegalChromeURL': testLoadAbortIllegalChromeURL,
   'testLoadAbortIllegalFileURL': testLoadAbortIllegalFileURL,
