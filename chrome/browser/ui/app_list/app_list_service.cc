@@ -77,6 +77,17 @@ void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kAppListAppLaunchCount, 0);
   registry->RegisterStringPref(prefs::kAppListProfile, std::string());
   registry->RegisterBooleanPref(prefs::kRestartWithAppList, false);
+  registry->RegisterBooleanPref(prefs::kAppLauncherIsEnabled, false);
+  registry->RegisterBooleanPref(prefs::kAppLauncherHasBeenEnabled, false);
+
+#if defined(OS_MACOSX)
+  registry->RegisterIntegerPref(prefs::kAppLauncherShortcutVersion, 0);
+#endif
+
+  // Identifies whether we should show the app launcher promo or not.
+  // Note that a field trial also controls the showing, so the promo won't show
+  // unless the pref is set AND the field trial is set to a proper group.
+  registry->RegisterBooleanPref(prefs::kShowAppLauncherPromo, true);
 }
 
 // static

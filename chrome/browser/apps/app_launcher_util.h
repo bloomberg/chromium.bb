@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_APP_LAUNCHER_H_
-#define APPS_APP_LAUNCHER_H_
+#ifndef CHROME_BROWSER_APPS_APP_LAUNCHER_UTIL_H_
+#define CHROME_BROWSER_APPS_APP_LAUNCHER_UTIL_H_
 
 #include "base/callback_forward.h"
 
-namespace apps {
+class PrefService;
+
+// Does initializiation for the ShowAppLauncherPromo field trial.
+void SetupShowAppLauncherPromoFieldTrial(PrefService* local_state);
 
 // Returns whether the app launcher has been enabled.
 bool IsAppLauncherEnabled();
@@ -15,6 +18,4 @@ bool IsAppLauncherEnabled();
 // Returns whether the app launcher promo should be shown.
 bool ShouldShowAppLauncherPromo();
 
-}  // namespace apps
-
-#endif  // APPS_APP_LAUNCHER_H_
+#endif  // CHROME_BROWSER_APPS_APP_LAUNCHER_UTIL_H_

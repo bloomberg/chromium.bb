@@ -4,7 +4,6 @@
 
 #include "chrome/browser/apps/shortcut_manager.h"
 
-#include "apps/pref_names.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -23,6 +22,8 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/pref_names.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -55,6 +56,15 @@ bool ShouldCreateShortcutFor(const extensions::Extension* extension) {
 }
 
 }  // namespace
+
+// static
+void AppShortcutManager::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  // Indicates whether app shortcuts have been created.
+  registry->RegisterBooleanPref(
+      prefs::kAppShortcutsHaveBeenCreated, false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
 
 AppShortcutManager::AppShortcutManager(Profile* profile)
     : profile_(profile),
@@ -151,7 +161,7 @@ void AppShortcutManager::OnProfileWillBeRemoved(
 }
 
 void AppShortcutManager::OnceOffCreateShortcuts() {
-  bool was_enabled = prefs_->GetBoolean(apps::prefs::kShortcutsHaveBeenCreated);
+  bool was_enabled = prefs_->GetBoolean(prefs::kAppShortcutsHaveBeenCreated);
 
   // Creation of shortcuts on Mac currently sits behind --enable-app-shims.
   // Until it is enabled permanently, we need to check the flag, and set the
@@ -163,7 +173,7 @@ void AppShortcutManager::OnceOffCreateShortcuts() {
 #endif  // defined(OS_MACOSX)
 
   if (was_enabled != is_now_enabled)
-    prefs_->SetBoolean(apps::prefs::kShortcutsHaveBeenCreated, is_now_enabled);
+    prefs_->SetBoolean(prefs::kAppShortcutsHaveBeenCreated, is_now_enabled);
 
   if (was_enabled || !is_now_enabled)
     return;

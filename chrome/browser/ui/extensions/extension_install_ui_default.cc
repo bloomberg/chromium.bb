@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/extensions/extension_install_ui_default.h"
 
-#include "apps/app_launcher.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/apps/app_launcher_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
@@ -244,7 +244,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
                   cmdline->HasSwitch(switches::kAppsNewInstallBubble));
 #endif
 
-    if (apps::IsAppLauncherEnabled()) {
+    if (IsAppLauncherEnabled()) {
       AppListService::Get()->ShowForProfile(current_profile);
 
       content::NotificationService::current()->Notify(

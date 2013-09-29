@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/search/instant_page.h"
 
-#include "apps/app_launcher.h"
+#include "chrome/browser/apps/app_launcher_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/search/instant_tab.h"
@@ -43,7 +43,7 @@ bool InstantPage::IsLocal() const {
 }
 
 void InstantPage::InitializePromos() {
-  sender()->SetPromoInformation(apps::IsAppLauncherEnabled());
+  sender()->SetPromoInformation(IsAppLauncherEnabled());
 }
 
 InstantPage::InstantPage(Delegate* delegate, const std::string& instant_url,

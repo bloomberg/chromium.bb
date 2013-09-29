@@ -55,6 +55,8 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under browser/extensions except for
         # tests and mocks.
+        'browser/apps/app_launcher_util.cc',
+        'browser/apps/app_launcher_util.h',
         'browser/apps/app_url_redirector.cc',
         'browser/apps/app_url_redirector.h',
         'browser/apps/chrome_apps_client.cc',

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 
-#include "apps/app_launcher.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -14,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/about_flags.h"
+#include "chrome/browser/apps/app_launcher_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -539,7 +539,7 @@ bool WebstorePrivateCompleteInstallFunction::RunImpl() {
   if (approval_->enable_launcher)
     AppListService::Get()->EnableAppList(profile());
 
-  if (apps::IsAppLauncherEnabled() && approval_->manifest->is_app()) {
+  if (IsAppLauncherEnabled() && approval_->manifest->is_app()) {
     // Show the app list to show download is progressing. Don't show the app
     // list on first app install so users can be trained to open it themselves.
     if (approval_->enable_launcher)
@@ -650,8 +650,7 @@ void WebstorePrivateGetWebGLStatusFunction::
 }
 
 bool WebstorePrivateGetIsLauncherEnabledFunction::RunImpl() {
-  results_ = GetIsLauncherEnabled::Results::Create(
-      apps::IsAppLauncherEnabled());
+  results_ = GetIsLauncherEnabled::Results::Create(IsAppLauncherEnabled());
   return true;
 }
 

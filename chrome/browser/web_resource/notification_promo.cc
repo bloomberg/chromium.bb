@@ -7,7 +7,6 @@
 #include <cmath>
 #include <vector>
 
-#include "apps/pref_names.h"
 #include "base/bind.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -398,7 +397,7 @@ void NotificationPromo::InitFromPrefs(PromoType promo_type) {
 }
 
 bool NotificationPromo::CheckAppLauncher() const {
-#if defined(OS_IOS)
+#if !defined(ENABLE_APP_LIST)
   return true;
 #else
   bool is_app_launcher_promo = false;
@@ -406,8 +405,8 @@ bool NotificationPromo::CheckAppLauncher() const {
                                   &is_app_launcher_promo))
     return true;
   return !is_app_launcher_promo ||
-         !prefs_->GetBoolean(apps::prefs::kAppLauncherIsEnabled);
-#endif  // defined(OS_IOS)
+         !prefs_->GetBoolean(prefs::kAppLauncherIsEnabled);
+#endif  // !defined(ENABLE_APP_LIST)
 }
 
 bool NotificationPromo::CanShow() const {

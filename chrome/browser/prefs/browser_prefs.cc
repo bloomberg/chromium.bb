@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/accessibility/invert_bubble_prefs.h"
+#include "chrome/browser/apps/shortcut_manager.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/bookmarks/bookmark_prompt_prefs.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -311,6 +312,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // User prefs. Please keep this list alphabetized.
   AlternateErrorPageTabObserver::RegisterProfilePrefs(registry);
   apps::RegisterProfilePrefs(registry);
+#if !defined(OS_ANDROID)
+  AppShortcutManager::RegisterProfilePrefs(registry);
+#endif
   autofill::AutofillManager::RegisterProfilePrefs(registry);
 #if !defined(OS_ANDROID)
   autofill::GeneratedCreditCardBubbleController::RegisterUserPrefs(registry);

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_bridge.h"
 
-#include "apps/app_launcher.h"
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"

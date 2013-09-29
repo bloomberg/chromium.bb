@@ -5,7 +5,6 @@
 #include <dwmapi.h>
 #include <sstream>
 
-#include "apps/pref_names.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
@@ -88,10 +87,10 @@ static const int kAnchorOffset = 25;
 // chrome::kAppLauncherHasBeenEnabled pref.
 void MigrateAppLauncherEnabledPref() {
   PrefService* prefs = g_browser_process->local_state();
-  if (prefs->HasPrefPath(apps::prefs::kAppLauncherIsEnabled)) {
-    prefs->SetBoolean(apps::prefs::kAppLauncherHasBeenEnabled,
-                      prefs->GetBoolean(apps::prefs::kAppLauncherIsEnabled));
-    prefs->ClearPref(apps::prefs::kAppLauncherIsEnabled);
+  if (prefs->HasPrefPath(prefs::kAppLauncherIsEnabled)) {
+    prefs->SetBoolean(prefs::kAppLauncherHasBeenEnabled,
+                      prefs->GetBoolean(prefs::kAppLauncherIsEnabled));
+    prefs->ClearPref(prefs::kAppLauncherIsEnabled);
   }
 }
 
@@ -601,7 +600,7 @@ void AppListController::HandleFirstRun() {
   // Note we can't directly create the shortcuts here because the IO thread
   // hasn't been created yet.
   enable_app_list_on_next_init_ = local_state->GetBoolean(
-      apps::prefs::kAppLauncherHasBeenEnabled);
+      prefs::kAppLauncherHasBeenEnabled);
 }
 
 void AppListController::Init(Profile* initial_profile) {

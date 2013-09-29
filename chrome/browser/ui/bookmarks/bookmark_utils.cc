@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 
-#include "apps/app_launcher.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/apps/app_launcher_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -276,7 +276,7 @@ string16 FormatBookmarkURLForDisplay(const GURL& url,
 bool IsAppsShortcutEnabled(const Profile* profile) {
 #if defined(USE_ASH)
   // Don't show the apps shortcut in ash when the app launcher is enabled.
-  if (apps::IsAppLauncherEnabled())
+  if (IsAppLauncherEnabled())
     return false;
 #endif
 

@@ -5,7 +5,6 @@
 #include <utility>
 #include <vector>
 
-#include "apps/pref_names.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
@@ -534,6 +533,7 @@ TEST_F(PromoResourceServiceTest, PromoServerURLTest) {
   // TODO(achuith): Test this better.
 }
 
+#if defined(ENABLE_APP_LIST)
 TEST_F(PromoResourceServiceTest, AppLauncherPromoTest) {
   // Check that prefs are set correctly.
   NotificationPromoTest promo_test;
@@ -576,6 +576,7 @@ TEST_F(PromoResourceServiceTest, AppLauncherPromoTest) {
                   933672366,  // unix epoch for 3 Aug 1999 9:26:06 GMT.
                   1000, 200, 100, 3600, 400, 30);
   promo_test.InitPromoFromJson(true);
-  local_state_.Get()->SetBoolean(apps::prefs::kAppLauncherIsEnabled, true);
+  local_state_.Get()->SetBoolean(prefs::kAppLauncherIsEnabled, true);
   EXPECT_FALSE(promo_test.promo().CanShow());
 }
+#endif

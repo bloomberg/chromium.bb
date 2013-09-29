@@ -9,7 +9,6 @@
 #include <set>
 #include <vector>
 
-#include "apps/app_launcher.h"
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"

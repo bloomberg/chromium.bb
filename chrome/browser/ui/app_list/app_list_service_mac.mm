@@ -7,15 +7,14 @@
 #include <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
 
-#include "apps/app_launcher.h"
 #include "apps/app_shim/app_shim_mac.h"
-#include "apps/pref_names.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/apps/app_launcher_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -32,6 +31,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/mac/app_mode_common.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "grit/google_chrome_strings.h"
@@ -160,7 +160,7 @@ void CreateAppListShim(const base::FilePath& profile_path) {
   ShellIntegration::ShortcutLocations shortcut_locations;
   PrefService* local_state = g_browser_process->local_state();
   int installed_version =
-      local_state->GetInteger(apps::prefs::kAppLauncherShortcutVersion);
+      local_state->GetInteger(prefs::kAppLauncherShortcutVersion);
 
   // If this is a first-time install, add a dock icon. Otherwise just update
   // the target, and wait for OSX to refresh its icon caches. This might not
@@ -173,7 +173,7 @@ void CreateAppListShim(const base::FilePath& profile_path) {
                            shortcut_locations,
                            web_app::SHORTCUT_CREATION_AUTOMATED);
 
-  local_state->SetInteger(apps::prefs::kAppLauncherShortcutVersion,
+  local_state->SetInteger(prefs::kAppLauncherShortcutVersion,
                           kShortcutVersion);
 }
 
@@ -418,11 +418,11 @@ void AppListServiceMac::Init(Profile* initial_profile) {
     init_called_with_profile = true;
     HandleCommandLineFlags(initial_profile);
     PrefService* local_state = g_browser_process->local_state();
-    if (!apps::IsAppLauncherEnabled()) {
-      local_state->SetInteger(apps::prefs::kAppLauncherShortcutVersion, 0);
+    if (!IsAppLauncherEnabled()) {
+      local_state->SetInteger(prefs::kAppLauncherShortcutVersion, 0);
     } else {
       int installed_shortcut_version =
-          local_state->GetInteger(apps::prefs::kAppLauncherShortcutVersion);
+          local_state->GetInteger(prefs::kAppLauncherShortcutVersion);
 
       if (kShortcutVersion > installed_shortcut_version)
         CreateShortcut();

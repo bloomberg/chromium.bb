@@ -15,11 +15,17 @@
 class PrefService;
 class Profile;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 // This class manages the installation of shortcuts for platform apps.
 class AppShortcutManager : public BrowserContextKeyedService,
                            public content::NotificationObserver,
                            public ProfileInfoCacheObserver {
  public:
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
   explicit AppShortcutManager(Profile* profile);
 
   virtual ~AppShortcutManager();

@@ -2475,6 +2475,7 @@ const char kRLZBrand[] = "rlz.brand";
 const char kRLZDisabled[] = "rlz.disabled";
 #endif
 
+#if defined(ENABLE_APP_LIST)
 // The directory in user data dir that contains the profile to be used with the
 // app launcher.
 extern const char kAppListProfile[] = "app_list.profile";
@@ -2492,6 +2493,28 @@ extern const char kLastAppListLaunchPing[] = "app_list.last_launch_ping";
 // ping and the time of the last ping.
 extern const char kAppListAppLaunchCount[] = "app_list.app_launch_count";
 extern const char kLastAppListAppLaunchPing[] = "app_list.last_app_launch_ping";
+
+// A boolean that tracks whether the user has ever enabled the app launcher.
+const char kAppLauncherHasBeenEnabled[] =
+    "apps.app_launcher.has_been_enabled";
+
+// TODO(calamity): remove this pref since app launcher will always be
+// installed.
+// Local state caching knowledge of whether the app launcher is installed.
+const char kAppLauncherIsEnabled[] =
+    "apps.app_launcher.should_show_apps_page";
+
+// Integer representing the version of the app launcher shortcut installed on
+// the system. Incremented, e.g., when embedded icons change.
+const char kAppLauncherShortcutVersion[] = "apps.app_launcher.shortcut_version";
+
+// A boolean identifying if we should show the app launcher promo or not.
+const char kShowAppLauncherPromo[] = "app_launcher.show_promo";
+#endif
+
+// A boolean that indicates whether app shortcuts have been created.
+// On a transition from false to true, shortcuts are created for all apps.
+const char kAppShortcutsHaveBeenCreated[] = "apps.shortcuts_have_been_created";
 
 // How often the bubble has been shown.
 extern const char kModuleConflictBubbleShown[] = "module_conflict.bubble_shown";

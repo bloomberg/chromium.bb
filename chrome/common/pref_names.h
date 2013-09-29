@@ -903,6 +903,7 @@ extern const char kRLZBrand[];
 extern const char kRLZDisabled[];
 #endif
 
+#if defined(ENABLE_APP_LIST)
 extern const char kAppListProfile[];
 extern const char kRestartWithAppList[];
 
@@ -910,6 +911,13 @@ extern const char kLastAppListLaunchPing[];
 extern const char kAppListLaunchCount[];
 extern const char kLastAppListAppLaunchPing[];
 extern const char kAppListAppLaunchCount[];
+extern const char kAppLauncherHasBeenEnabled[];
+extern const char kAppLauncherIsEnabled[];
+extern const char kAppLauncherShortcutVersion[];
+extern const char kShowAppLauncherPromo[];
+#endif
+
+extern const char kAppShortcutsHaveBeenCreated[];
 
 extern const char kModuleConflictBubbleShown[];
 

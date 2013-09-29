@@ -25,8 +25,6 @@
       'sources': [
         'app_launch_for_metro_restart_win.cc',
         'app_launch_for_metro_restart_win.h',
-        'app_launcher.cc',
-        'app_launcher.h',
         'app_lifetime_monitor.cc',
         'app_lifetime_monitor.h',
         'app_lifetime_monitor_factory.cc',
@@ -54,8 +52,6 @@
         'app_window_contents.h',
         'apps_client.cc',
         'apps_client.h',
-        'field_trial_names.cc',
-        'field_trial_names.h',
         'launcher.cc',
         'launcher.h',
         'metrics_names.h',

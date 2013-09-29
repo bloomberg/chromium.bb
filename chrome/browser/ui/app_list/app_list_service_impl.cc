@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 
-#include "apps/pref_names.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
@@ -68,12 +67,12 @@ void RecordDailyEventFrequency(
 
 bool HasAppListEnabledPreference() {
   PrefService* local_state = g_browser_process->local_state();
-  return local_state->GetBoolean(apps::prefs::kAppLauncherHasBeenEnabled);
+  return local_state->GetBoolean(prefs::kAppLauncherHasBeenEnabled);
 }
 
 void SetAppListEnabledPreference(bool enabled) {
   PrefService* local_state = g_browser_process->local_state();
-  local_state->SetBoolean(apps::prefs::kAppLauncherHasBeenEnabled, enabled);
+  local_state->SetBoolean(prefs::kAppLauncherHasBeenEnabled, enabled);
 }
 
 }  // namespace

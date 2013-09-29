@@ -4,7 +4,6 @@
 
 #include "apps/prefs.h"
 
-#include "apps/app_launcher.h"
 #include "apps/pref_names.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -12,29 +11,10 @@
 namespace apps {
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
-  // This pref is a cache of the value from the registry the last time it was
-  // checked.
-  //
-  // During the pref initialization, if it is impossible to synchronously
-  // determine whether the app launcher is enabled, assume it is disabled.
-  // Anything that needs to know the absolute truth should call
-  // GetIsAppLauncherEnabled().
-  registry->RegisterBooleanPref(prefs::kAppLauncherIsEnabled, false);
-  registry->RegisterBooleanPref(prefs::kAppLauncherHasBeenEnabled, false);
-
-#if defined(OS_MACOSX)
-  registry->RegisterIntegerPref(prefs::kAppLauncherShortcutVersion, 0);
-#endif
-
 #if defined(OS_WIN)
   registry->RegisterStringPref(prefs::kAppLaunchForMetroRestart, "");
   registry->RegisterStringPref(prefs::kAppLaunchForMetroRestartProfile, "");
 #endif
-
-  // Identifies whether we should show the app launcher promo or not.
-  // Now that a field trial also controls the showing, so the promo won't show
-  // unless the pref is set AND the field trial is set to a proper group.
-  registry->RegisterBooleanPref(prefs::kShowAppLauncherPromo, true);
 }
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -43,11 +23,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kAppFullscreenAllowed, true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
-
-  // Indicates whether app shortcuts have been created.
-  registry->RegisterBooleanPref(
-      prefs::kShortcutsHaveBeenCreated, false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace apps

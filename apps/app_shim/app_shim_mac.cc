@@ -4,8 +4,8 @@
 
 #include "apps/app_shim/app_shim_mac.h"
 
-#include "apps/app_launcher.h"
 #include "base/command_line.h"
+#include "chrome/browser/apps/app_launcher_util.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace apps {

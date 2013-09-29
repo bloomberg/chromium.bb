@@ -7,8 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "apps/app_launcher.h"
-#include "apps/pref_names.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/prefs/pref_service.h"
@@ -17,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/apps/app_launcher_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -185,13 +184,15 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
   profile_pref_change_registrar_.Add(prefs::kHideWebStoreIcon, callback);
 
   // Some tests don't have a local state.
+#if defined(ENABLE_APP_LIST)
   if (g_browser_process->local_state()) {
     local_state_pref_change_registrar_.Init(g_browser_process->local_state());
-    local_state_pref_change_registrar_.Add(apps::prefs::kShowAppLauncherPromo,
+    local_state_pref_change_registrar_.Add(prefs::kShowAppLauncherPromo,
                                            callback);
     local_state_pref_change_registrar_.Add(
-        apps::prefs::kAppLauncherHasBeenEnabled, callback);
+        prefs::kAppLauncherHasBeenEnabled, callback);
   }
+#endif
 }
 
 NTPResourceCache::~NTPResourceCache() {}
@@ -380,7 +381,7 @@ void NTPResourceCache::CreateNewTabHTML() {
           IDR_THEME_NTP_ATTRIBUTION));
   load_time_data.SetBoolean("showMostvisited", should_show_most_visited_page_);
   load_time_data.SetBoolean("showAppLauncherPromo",
-      apps::ShouldShowAppLauncherPromo());
+      ShouldShowAppLauncherPromo());
   load_time_data.SetBoolean("showRecentlyClosed",
       should_show_recently_closed_menu_);
   load_time_data.SetString("title",

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 
-#include "apps/app_launcher.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
