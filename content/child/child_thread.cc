@@ -12,6 +12,8 @@
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
+#include "base/synchronization/condition_variable.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
 #include "base/tracked_objects.h"
 #include "components/tracing/child_trace_message_filter.h"
@@ -96,7 +98,31 @@ class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
 #endif  // OS(POSIX)
 
 #if defined(OS_ANDROID)
-ChildThread* g_child_thread;
+ChildThread* g_child_thread = NULL;
+
+// A lock protects g_child_thread.
+base::LazyInstance<base::Lock> g_lazy_child_thread_lock =
+    LAZY_INSTANCE_INITIALIZER;
+
+// base::ConditionVariable has an explicit constructor that takes
+// a base::Lock pointer as parameter. The base::DefaultLazyInstanceTraits
+// doesn't handle the case. Thus, we need our own class here.
+struct CondVarLazyInstanceTraits {
+  static const bool kRegisterOnExit = true;
+  static const bool kAllowedToAccessOnNonjoinableThread = false;
+  static base::ConditionVariable* New(void* instance) {
+    return new (instance) base::ConditionVariable(
+        g_lazy_child_thread_lock.Pointer());
+  }
+  static void Delete(base::ConditionVariable* instance) {
+    instance->~ConditionVariable();
+  }
+};
+
+// A condition variable that synchronize threads initializing and waiting
+// for g_child_thread.
+base::LazyInstance<base::ConditionVariable, CondVarLazyInstanceTraits>
+    g_lazy_child_thread_cv = LAZY_INSTANCE_INITIALIZER;
 
 void QuitMainThreadMessageLoop() {
   base::MessageLoop::current()->Quit();
@@ -203,7 +229,13 @@ void ChildThread::Init() {
       base::TimeDelta::FromSeconds(kConnectionTimeoutS));
 
 #if defined(OS_ANDROID)
-  g_child_thread = this;
+  {
+    base::AutoLock lock(g_lazy_child_thread_lock.Get());
+    g_child_thread = this;
+  }
+  // Signalling without locking is fine here because only
+  // one thread can wait on the condition variable.
+  g_lazy_child_thread_cv.Get().Signal();
 #endif
 
 #if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
@@ -413,7 +445,16 @@ ChildThread* ChildThread::current() {
 }
 
 #if defined(OS_ANDROID)
+// The method must NOT be called on the child thread itself.
+// It may block the child thread if so.
 void ChildThread::ShutdownThread() {
+  DCHECK(!ChildThread::current()) <<
+      "this method should NOT be called from child thread itself";
+  {
+    base::AutoLock lock(g_lazy_child_thread_lock.Get());
+    while (!g_child_thread)
+      g_lazy_child_thread_cv.Get().Wait();
+  }
   DCHECK_NE(base::MessageLoop::current(), g_child_thread->message_loop());
   g_child_thread->message_loop()->PostTask(
       FROM_HERE, base::Bind(&QuitMainThreadMessageLoop));
