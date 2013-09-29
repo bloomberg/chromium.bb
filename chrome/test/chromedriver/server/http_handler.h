@@ -35,6 +35,7 @@ class HttpServerResponseInfo;
 
 class Adb;
 class DeviceManager;
+class PortManager;
 class PortServer;
 class URLRequestContextGetter;
 
@@ -109,6 +110,7 @@ class HttpHandler {
   scoped_ptr<Adb> adb_;
   scoped_ptr<DeviceManager> device_manager_;
   scoped_ptr<PortServer> port_server_;
+  scoped_ptr<PortManager> port_manager_;
 
   base::WeakPtrFactory<HttpHandler> weak_ptr_factory_;
 

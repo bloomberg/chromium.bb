@@ -13,11 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
-#include "net/base/ip_endpoint.h"
-#include "net/base/net_errors.h"
-#include "net/base/net_log.h"
-#include "net/base/net_util.h"
-#include "net/socket/tcp_server_socket.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -95,22 +90,4 @@ bool FetchUrl(const std::string& url,
               URLRequestContextGetter* getter,
               std::string* response) {
   return SyncUrlFetcher(GURL(url), getter, response).Fetch();
-}
-
-bool FindOpenPort(int* port) {
-  char parts[] = {127, 0, 0, 1};
-  net::IPAddressNumber address(parts, parts + arraysize(parts));
-  net::NetLog::Source source;
-  for (int i = 0; i < 10; ++i) {
-    net::TCPServerSocket sock(NULL, source);
-    // Use port 0, so that the OS will assign an available ephemeral port.
-    if (sock.Listen(net::IPEndPoint(address, 0), 1) != net::OK)
-      continue;
-    net::IPEndPoint end_point;
-    if (sock.GetLocalAddress(&end_point) != net::OK)
-      continue;
-    *port = end_point.port();
-    return true;
-  }
-  return false;
 }

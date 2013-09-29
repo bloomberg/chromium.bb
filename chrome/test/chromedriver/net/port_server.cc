@@ -8,10 +8,15 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/process/process_handle.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sync_socket.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "net/base/net_errors.h"
+#include "net/base/net_log.h"
+#include "net/base/net_util.h"
 #include "net/base/sys_addrinfo.h"
+#include "net/socket/tcp_server_socket.h"
 
 #if defined(OS_LINUX)
 #include <sys/socket.h>
@@ -127,4 +132,49 @@ Status PortServer::RequestPort(int* port) {
 void PortServer::ReleasePort(int port) {
   base::AutoLock lock(free_lock_);
   free_.push_back(port);
+}
+
+PortManager::PortManager(int min_port, int max_port)
+    : min_port_(min_port), max_port_(max_port) {
+  CHECK_GE(max_port_, min_port_);
+}
+
+PortManager::~PortManager() {}
+
+Status PortManager::ReservePort(int* port,
+                                scoped_ptr<PortReservation>* reservation) {
+  base::AutoLock lock(taken_lock_);
+
+  int start = base::RandInt(min_port_, max_port_);
+  bool wrapped = false;
+  for (int try_port = start; try_port != start || !wrapped; ++try_port) {
+    if (try_port > max_port_) {
+      wrapped = true;
+      if (min_port_ == max_port_)
+        break;
+      try_port = min_port_;
+    }
+    if (taken_.count(try_port))
+      continue;
+
+    char parts[] = {127, 0, 0, 1};
+    net::IPAddressNumber address(parts, parts + arraysize(parts));
+    net::NetLog::Source source;
+    net::TCPServerSocket sock(NULL, source);
+    if (sock.Listen(net::IPEndPoint(address, try_port), 1) != net::OK)
+      continue;
+
+    taken_.insert(try_port);
+    *port = try_port;
+    reservation->reset(new PortReservation(
+        base::Bind(&PortManager::ReleasePort, base::Unretained(this), try_port),
+        try_port));
+    return Status(kOk);
+  }
+  return Status(kUnknownError, "unable to find open port");
+}
+
+void PortManager::ReleasePort(int port) {
+  base::AutoLock lock(taken_lock_);
+  taken_.erase(port);
 }

@@ -6,6 +6,7 @@
 #define CHROME_TEST_CHROMEDRIVER_NET_PORT_SERVER_H_
 
 #include <list>
+#include <set>
 #include <string>
 
 #include "base/callback.h"
@@ -46,6 +47,22 @@ class PortServer {
   std::list<int> free_;
 };
 
-bool SetSocketTimeout(const base::TimeDelta& timeout);
+// Manages reservation of a block of local ports.
+class PortManager {
+ public:
+  PortManager(int min_port, int max_port);
+  ~PortManager();
+
+  Status ReservePort(int* port, scoped_ptr<PortReservation>* reservation);
+
+ private:
+  void ReleasePort(int port);
+
+  base::Lock taken_lock_;
+  std::set<int> taken_;
+
+  int min_port_;
+  int max_port_;
+};
 
 #endif  // CHROME_TEST_CHROMEDRIVER_NET_PORT_SERVER_H_

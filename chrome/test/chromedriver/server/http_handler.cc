@@ -80,6 +80,7 @@ HttpHandler::HttpHandler(
   adb_.reset(new AdbImpl(io_task_runner, adb_port));
   device_manager_.reset(new DeviceManager(adb_.get()));
   port_server_ = port_server.Pass();
+  port_manager_.reset(new PortManager(12000, 13000));
 
   CommandMapping commands[] = {
       CommandMapping(
@@ -93,7 +94,8 @@ HttpHandler::HttpHandler(
                                     InitSessionParams(context_getter_,
                                                       socket_factory_,
                                                       device_manager_.get(),
-                                                      port_server_.get()))))),
+                                                      port_server_.get(),
+                                                      port_manager_.get()))))),
       CommandMapping(kGet,
                      "session/:sessionId",
                      WrapToCommand("GetSessionCapabilities",

@@ -37,7 +37,6 @@
 #include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/chrome/zip.h"
-#include "chrome/test/chromedriver/net/net_util.h"
 #include "chrome/test/chromedriver/net/port_server.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "crypto/sha2.h"
@@ -352,6 +351,7 @@ Status LaunchChrome(
     const SyncWebSocketFactory& socket_factory,
     DeviceManager* device_manager,
     PortServer* port_server,
+    PortManager* port_manager,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<Chrome>* chrome) {
@@ -363,16 +363,13 @@ Status LaunchChrome(
 
   int port = 0;
   scoped_ptr<PortReservation> port_reservation;
-  if (port_server) {
-    Status status = port_server->ReservePort(&port, &port_reservation);
-    if (status.IsError()) {
-      return Status(
-          kUnknownError, "failed to reserve port from port server", status);
-    }
-  } else {
-    if (!FindOpenPort(&port))
-      return Status(kUnknownError, "failed to find an open port for Chrome");
-  }
+  Status port_status(kOk);
+  if (port_server)
+    port_status = port_server->ReservePort(&port, &port_reservation);
+  else
+    port_status = port_manager->ReservePort(&port, &port_reservation);
+  if (port_status.IsError())
+    return Status(kUnknownError, "cannot reserve port for Chrome", port_status);
 
   if (capabilities.IsAndroid()) {
     return LaunchAndroidChrome(context_getter,

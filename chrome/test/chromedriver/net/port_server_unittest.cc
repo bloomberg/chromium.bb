@@ -187,3 +187,15 @@ TEST_F(PortServerTest, ReserveReserve) {
   ASSERT_EQ(port, 12346);
 }
 #endif
+
+TEST(PortManagerTest, Reserve) {
+  PortManager mgr(15000, 16000);
+  int port = 0;
+  scoped_ptr<PortReservation> reservation;
+  Status status = mgr.ReservePort(&port, &reservation);
+  ASSERT_EQ(kOk, status.code()) << status.message();
+
+  ASSERT_GE(port, 15000);
+  ASSERT_LE(port, 16000);
+  ASSERT_TRUE(reservation);
+}

@@ -56,11 +56,13 @@ InitSessionParams::InitSessionParams(
     scoped_refptr<URLRequestContextGetter> context_getter,
     const SyncWebSocketFactory& socket_factory,
     DeviceManager* device_manager,
-    PortServer* port_server)
+    PortServer* port_server,
+    PortManager* port_manager)
     : context_getter(context_getter),
       socket_factory(socket_factory),
       device_manager(device_manager),
-      port_server(port_server) {}
+      port_server(port_server),
+      port_manager(port_manager) {}
 
 InitSessionParams::~InitSessionParams() {}
 
@@ -122,6 +124,7 @@ Status InitSessionHelper(
                         bound_params.socket_factory,
                         bound_params.device_manager,
                         bound_params.port_server,
+                        bound_params.port_manager,
                         capabilities,
                         devtools_event_listeners,
                         &session->chrome);
