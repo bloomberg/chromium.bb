@@ -384,21 +384,21 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
       content::RenderViewHost::FromID(render_process_id, render_view_id);
 
   bool allowed = false;
-  bool ask_permission = false;
+  bool check_permission = false;
 
   if (!render_view_host) {
     if (!js_api) {
       // If there is no render view, we cannot show the speech bubble, so this
       // is not allowed.
       allowed = false;
-      ask_permission = false;
+      check_permission = false;
     } else {
       // This happens for extensions. Manifest should be checked for permission.
       allowed = true;
-      ask_permission = false;
+      check_permission = false;
     }
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(callback, ask_permission, allowed));
+                            base::Bind(callback, check_permission, allowed));
     return;
   }
 
@@ -412,17 +412,25 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
   // click.
   if (view_type == extensions::VIEW_TYPE_TAB_CONTENTS ||
       view_type == extensions::VIEW_TYPE_APP_SHELL ||
-      view_type == extensions::VIEW_TYPE_VIRTUAL_KEYBOARD) {
-    // If it is a tab, we can show the speech input bubble or ask for
+      view_type == extensions::VIEW_TYPE_VIRTUAL_KEYBOARD ||
+      // Only allow requests through JavaScript API (|js_api| = true).
+      // Requests originating from html element (|js_api| = false) would want
+      // to show bubble which isn't quite intuitive from a background page. Also
+      // see todo above about issues with rendering such bubbles from extension
+      // popups.
+      (view_type == extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE &&
+           js_api)) {
+    // If it is a tab, we can show the speech input bubble or check for
+    // permission. For apps, this means manifest would be checked for
     // permission.
 
     allowed = true;
     if (js_api)
-      ask_permission = true;
+      check_permission = true;
   }
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(callback, ask_permission, allowed));
+                          base::Bind(callback, check_permission, allowed));
 }
 
 }  // namespace speech

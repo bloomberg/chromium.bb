@@ -940,6 +940,7 @@
         'browser/apps/app_browsertest_util.cc',
         'browser/apps/app_browsertest_util.h',
         'browser/apps/app_url_redirector_browsertest.cc',
+        'browser/apps/speech_recognition_browsertest.cc',
         'browser/apps/web_view_browsertest.cc',
         'browser/apps/window_controls_browsertest.cc',
         'browser/autocomplete/autocomplete_browsertest.cc',

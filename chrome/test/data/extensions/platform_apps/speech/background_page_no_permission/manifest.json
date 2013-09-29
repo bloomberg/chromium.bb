@@ -1,0 +1,10 @@
+{
+  "name": "Platform App Test: Speech recognition",
+  "description": "webkitSpeechRecognition test from background page of an app, app doesn't have audioCapture permission.",
+  "version": "1",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}
