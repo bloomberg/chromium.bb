@@ -135,7 +135,7 @@ bool NetworkStats::Start(net::HostResolver* host_resolver,
                          bool has_proxy_server,
                          uint32 probe_bytes,
                          const net::CompletionCallback& finished_callback) {
-  CHECK(host_resolver);
+  DCHECK(host_resolver);
   histogram_port_ = histogram_port;
   has_proxy_server_ = has_proxy_server;
   probe_packet_bytes_ = probe_bytes;
@@ -196,8 +196,8 @@ bool NetworkStats::DoConnect(int result) {
           net::RandIntCallback(),
           NULL,
           net::NetLog::Source());
-  CHECK(udp_socket);
-  CHECK(!socket_);
+  DCHECK(udp_socket);
+  DCHECK(!socket_);
   socket_ = udp_socket.Pass();
 
   const net::IPEndPoint& endpoint = addresses_.front();
@@ -265,7 +265,7 @@ void NetworkStats::SendProbeRequest() {
     }
     case NAT_BIND_TEST: {
       // Make sure no integer overflow.
-      CHECK_LE(maximum_NAT_idle_seconds_, 4000U);
+      DCHECK_LE(maximum_NAT_idle_seconds_, 4000U);
       int nat_test_idle_seconds = base::RandInt(1, maximum_NAT_idle_seconds_);
       pacing_interval_ = base::TimeDelta::FromSeconds(nat_test_idle_seconds);
       timeout_seconds = nat_test_idle_seconds + kReadNATTimeoutSeconds;
@@ -300,7 +300,7 @@ int NetworkStats::ReadData() {
 
   int rv = 0;
   do {
-    CHECK(!read_buffer_.get());
+    DCHECK(!read_buffer_.get());
     read_buffer_ = new net::IOBuffer(kMaxMessageSize);
 
     rv = socket_->Read(
@@ -326,8 +326,8 @@ void NetworkStats::OnReadComplete(int result) {
 }
 
 bool NetworkStats::ReadComplete(int result) {
-  CHECK(socket_.get());
-  CHECK_NE(net::ERR_IO_PENDING, result);
+  DCHECK(socket_.get());
+  DCHECK_NE(net::ERR_IO_PENDING, result);
   if (result < 0) {
     // Something is wrong, finish the test.
     read_buffer_ = NULL;
@@ -435,8 +435,8 @@ int NetworkStats::SendData(const std::string& output) {
 }
 
 void NetworkStats::OnWriteComplete(int result) {
-  CHECK(socket_.get());
-  CHECK_NE(net::ERR_IO_PENDING, result);
+  DCHECK(socket_.get());
+  DCHECK_NE(net::ERR_IO_PENDING, result);
   if (result < 0) {
     TestPhaseComplete(WRITE_FAILED, result);
     return;
@@ -446,7 +446,7 @@ void NetworkStats::OnWriteComplete(int result) {
 
 void NetworkStats::UpdateSendBuffer(int bytes_sent) {
   write_buffer_->DidConsume(bytes_sent);
-  CHECK_EQ(write_buffer_->BytesRemaining(), 0);
+  DCHECK_EQ(write_buffer_->BytesRemaining(), 0);
   write_buffer_ = NULL;
 }
 
@@ -495,7 +495,7 @@ void NetworkStats::TestPhaseComplete(Status status, int result) {
   if (token_.timestamp_micros() != 0 &&
       (status == SUCCESS || status == READ_TIMED_OUT)) {
     TestType current_test = test_sequence_[current_test_index_];
-    CHECK_LT(current_test, TEST_TYPE_MAX);
+    DCHECK_LT(current_test, TEST_TYPE_MAX);
     if (current_test != TOKEN_REQUEST)
       RecordHistograms(current_test);
     else if (current_test_index_ > 0 &&
@@ -689,7 +689,7 @@ void NetworkStats::RecordPacketLossSeriesHistograms(TestType test_type) {
 }
 
 void NetworkStats::RecordRTTHistograms(TestType test_type, uint32 index) {
-  CHECK_LT(index, packet_rtt_.size());
+  DCHECK_LT(index, packet_rtt_.size());
 
   if (!packets_received_mask_.test(index))
     return;  // Probe packet never received.
@@ -741,7 +741,7 @@ void ProxyDetector::StartResolveProxy() {
   GURL gurl(url);
 
   has_pending_proxy_resolution_ = true;
-  CHECK(proxy_service_);
+  DCHECK(proxy_service_);
   int rv = proxy_service_->ResolveProxy(
       gurl,
       &proxy_info_,
@@ -783,7 +783,7 @@ void CollectNetworkStats(const std::string& network_stats_server,
     return;
   }
 
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (net::NetworkChangeNotifier::IsOffline()) {
     return;
@@ -801,8 +801,8 @@ void CollectNetworkStats(const std::string& network_stats_server,
 
     chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
     if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
-      // Enable the connectivity testing for 20% of the users in canary channel.
-      probability_per_group = kDivisor / 5;
+      // Enable the connectivity testing for 50% of the users in canary channel.
+      probability_per_group = kDivisor / 2;
     } else if (channel == chrome::VersionInfo::CHANNEL_DEV) {
       // Enable the connectivity testing for 10% of the users in dev channel.
       probability_per_group = kDivisor / 10;
@@ -835,7 +835,7 @@ void CollectNetworkStats(const std::string& network_stats_server,
   ++number_of_tests_done;
 
   net::HostResolver* host_resolver = io_thread->globals()->host_resolver.get();
-  CHECK(host_resolver);
+  DCHECK(host_resolver);
 
   uint32 port_index = base::RandInt(0, arraysize(kPorts) - 1);
   uint16 histogram_port = kPorts[port_index];
@@ -843,7 +843,7 @@ void CollectNetworkStats(const std::string& network_stats_server,
 
   net::ProxyService* proxy_service =
       io_thread->globals()->system_proxy_service.get();
-  CHECK(proxy_service);
+  DCHECK(proxy_service);
 
   ProxyDetector::OnResolvedCallback callback = base::Bind(
       &StartNetworkStatsTest, host_resolver, server_address, histogram_port);
