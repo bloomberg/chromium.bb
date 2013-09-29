@@ -6,9 +6,19 @@ var startTest = function(testDir) {
   LOG('startTest: ' + testDir);
   // load bootstrap script.
   var script = document.createElement('script');
+  var scriptPath = testDir + '/bootstrap.js';
   script.type = 'text/javascript';
-  script.src = testDir + '/bootstrap.js';
+  script.src = scriptPath;
   document.getElementsByTagName('head')[0].appendChild(script);
+
+  script.addEventListener('error', function(e) {
+    // This is mostly for debugging, e.g. if you specify an incorrect path
+    // for guest bootstrap.js script.
+    window.console.log('Error in loading guest script from path: ' +
+                       scriptPath +
+                       ', Possibly misspelled path?');
+    utils.test.fail();
+  });
 };
 
 var onloadFunction = function() {
