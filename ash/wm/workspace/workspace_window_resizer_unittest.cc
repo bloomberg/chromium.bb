@@ -723,6 +723,23 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
       ash::DisplayLayout(ash::DisplayLayout::BOTTOM, 0));
 
   {
+    window_->SetBounds(gfx::Rect(100, 200, 300, 20));
+    DCHECK_LT(window_->bounds().height(),
+              WorkspaceWindowResizer::kMinOnscreenHeight);
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION,
+        aura::client::WINDOW_MOVE_SOURCE_MOUSE, empty_windows()));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 400), 0);
+    int expected_y = kRootHeight - window_->bounds().height() - 10;
+    // When the mouse cursor is in the primary display, the window cannot move
+    // on non-work area but can get all the way towards the bottom,
+    // restricted only by the window height.
+    EXPECT_EQ("100," + base::IntToString(expected_y) + " 300x20",
+              window_->bounds().ToString());
+  }
+
+  {
     window_->SetBounds(gfx::Rect(100, 200, 300, 400));
     scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
         window_.get(), gfx::Point(), HTCAPTION,

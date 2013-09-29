@@ -773,8 +773,10 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
       ScreenAsh::ConvertRectFromScreen(window()->parent(), display.work_area());
   if (details_.window_component == HTCAPTION) {
     // Adjust the bounds to the work area where the mouse cursor is located.
-    // Always keep kMinOnscreenHeight on the bottom.
-    int max_y = work_area.bottom() - kMinOnscreenHeight;
+    // Always keep kMinOnscreenHeight or the window height (whichever is less)
+    // on the bottom.
+    int max_y = work_area.bottom() - std::min(kMinOnscreenHeight,
+                                              bounds->height());
     if (bounds->y() > max_y) {
       bounds->set_y(max_y);
     } else if (bounds->y() <= work_area.y()) {
