@@ -2187,7 +2187,7 @@ NetworkInterface::NetworkInterface() : network_prefix(0) {
 
 NetworkInterface::NetworkInterface(const std::string& name,
                                    const IPAddressNumber& address,
-                                   uint8 network_prefix)
+                                   size_t network_prefix)
     : name(name), address(address), network_prefix(network_prefix) {
 }
 

@@ -76,24 +76,14 @@ bool GetNetworkList(NetworkInterfaceList* networks) {
 
     CHECK(network_tokenizer.GetNext());
     std::string interface_address = network_tokenizer.token();
-
-    base::StringTokenizer address_tokenizer(interface_address, "/");
-
-    CHECK(address_tokenizer.GetNext());
-    std::string literal_address = address_tokenizer.token();
-
-    CHECK(address_tokenizer.GetNext());
-    std::string network_prefix = address_tokenizer.token();
-
     IPAddressNumber address;
-    CHECK(ParseIPLiteralToNumber(literal_address, &address));
-
-    unsigned net_mask = 0;
-    CHECK(base::StringToUint(network_prefix, &net_mask));
-    CHECK_LE(net_mask, address.size() * 8);
+    size_t network_prefix = 0;
+    CHECK(ParseCIDRBlock(network_tokenizer.token(),
+                         &address,
+                         &network_prefix));
 
     networks->push_back(
-        NetworkInterface(name, address, static_cast<uint8>(net_mask)));
+        NetworkInterface(name, address, network_prefix));
   }
   return true;
 #else

@@ -518,12 +518,12 @@ struct NET_EXPORT NetworkInterface {
   NetworkInterface();
   NetworkInterface(const std::string& name,
                    const IPAddressNumber& address,
-                   uint8 network_prefix);
+                   size_t network_prefix);
   ~NetworkInterface();
 
   std::string name;
   IPAddressNumber address;
-  uint8 network_prefix;
+  size_t network_prefix;
 };
 
 typedef std::vector<NetworkInterface> NetworkInterfaceList;
