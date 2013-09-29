@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
-#include "base/test/perftimer.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/timer/elapsed_timer.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/dhcp_proxy_script_adapter_fetcher_win.h"
 
@@ -324,7 +324,7 @@ bool DhcpProxyScriptFetcherWin::GetCandidateAdapterNames(
   ULONG error = ERROR_SUCCESS;
   int num_tries = 0;
 
-  PerfTimer time_api_access;
+  base::ElapsedTimer time_api_access;
   do {
     adapters.reset(
         reinterpret_cast<IP_ADAPTER_ADDRESSES*>(malloc(adapters_size)));

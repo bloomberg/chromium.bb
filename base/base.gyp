@@ -907,8 +907,6 @@
         'test/perf_test_suite.h',
         'test/perf_time_logger.cc',
         'test/perf_time_logger.h',
-        'test/perftimer.cc',
-        'test/perftimer.h',
         'test/power_monitor_test_base.cc',
         'test/power_monitor_test_base.h',
         'test/scoped_locale.cc',

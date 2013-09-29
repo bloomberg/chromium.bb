@@ -10,9 +10,9 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
-#include "base/test/perftimer.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "base/timer/elapsed_timer.h"
 #include "net/base/completion_callback.h"
 #include "net/proxy/dhcp_proxy_script_adapter_fetcher_win.h"
 #include "net/url_request/url_request_test_util.h"
@@ -577,7 +577,7 @@ void TestShortCircuitLessPreferredAdapters(FetcherClient* client) {
   // time to kick in before the timeout waiting for more adapters kicks in.
   client->fetcher_.max_wait_ = TestTimeouts::action_timeout();
 
-  PerfTimer timer;
+  base::ElapsedTimer timer;
   client->RunTest();
   client->RunMessageLoopUntilComplete();
   ASSERT_TRUE(client->fetcher_.HasPendingFetchers());

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/test/perftimer.h"
+#include "base/timer/elapsed_timer.h"
 
 namespace base {
 
@@ -27,7 +27,7 @@ class PerfTimeLogger {
  private:
   bool logged_;
   std::string test_name_;
-  PerfTimer timer_;
+  ElapsedTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PerfTimeLogger);
 };

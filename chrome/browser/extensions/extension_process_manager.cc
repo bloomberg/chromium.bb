@@ -126,7 +126,7 @@ struct ExtensionProcessManager::BackgroundPageData {
   bool is_closing;
 
   // Keeps track of when this page was last suspended. Used for perf metrics.
-  linked_ptr<PerfTimer> since_suspended;
+  linked_ptr<base::ElapsedTimer> since_suspended;
 
   BackgroundPageData()
       : lazy_keepalive_count(0), close_sequence_id(0), is_closing(false) {}
@@ -620,7 +620,7 @@ void ExtensionProcessManager::Observe(
       if (background_hosts_.erase(host)) {
         ClearBackgroundPageData(host->extension()->id());
         background_page_data_[host->extension()->id()].since_suspended.reset(
-            new PerfTimer());
+            new base::ElapsedTimer());
       }
       break;
     }
@@ -750,7 +750,7 @@ void ExtensionProcessManager::OnExtensionHostCreated(ExtensionHost* host,
     background_hosts_.insert(host);
 
     if (BackgroundInfo::HasLazyBackgroundPage(host->extension())) {
-      linked_ptr<PerfTimer> since_suspended(
+      linked_ptr<base::ElapsedTimer> since_suspended(
           background_page_data_[host->extension()->id()].
               since_suspended.release());
       if (since_suspended.get()) {

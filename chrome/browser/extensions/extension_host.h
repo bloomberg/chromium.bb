@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/test/perftimer.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -285,7 +285,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   content::WebContents* associated_web_contents_;
 
   // Used to measure how long it's been since the host was created.
-  PerfTimer since_created_;
+  base::ElapsedTimer since_created_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHost);
 };

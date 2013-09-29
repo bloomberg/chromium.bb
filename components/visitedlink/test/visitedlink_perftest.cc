@@ -12,8 +12,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/perf_log.h"
 #include "base/test/perf_time_logger.h"
-#include "base/test/perftimer.h"
 #include "base/test/test_file_util.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -148,7 +148,7 @@ TEST_F(VisitedLink, TestLoad) {
 
     // cold load (no OS cache, hopefully)
     {
-      PerfTimer cold_timer;
+      base::ElapsedTimer cold_timer;
 
       VisitedLinkMaster master(new DummyVisitedLinkEventListener(),
                                NULL,
@@ -165,7 +165,7 @@ TEST_F(VisitedLink, TestLoad) {
 
     // hot load (with OS caching the file in memory)
     {
-      PerfTimer hot_timer;
+      base::ElapsedTimer hot_timer;
 
       VisitedLinkMaster master(new DummyVisitedLinkEventListener(),
                                NULL,

@@ -592,9 +592,11 @@ component("base") {
     "time/time_mac.cc",
     "time/time_posix.cc",
     "time/time_win.cc",
+    "timer/elapsed_timer.cc",
+    "timer/elapsed_timer.h",
+    "timer/hi_res_timer_manager.h",
     "timer/hi_res_timer_manager_posix.cc",
     "timer/hi_res_timer_manager_win.cc",
-    "timer/hi_res_timer_manager.h",
     "timer/timer.cc",
     "timer/timer.h",
     "tracked_objects.cc",
@@ -894,7 +896,6 @@ static_library("test_support_base") {
     "test/parallel_test_launcher.h",
     "test/perf_test_suite.cc",
     "test/perf_test_suite.h",
-    "test/perftimer.cc",
     "test/scoped_locale.cc",
     "test/scoped_locale.h",
     "test/scoped_path_override.cc",
@@ -983,7 +984,6 @@ config("perf_test_config") {
 static_library("test_support_perf") {
   external = true
   sources = [
-    "test/perftimer.cc",
     "test/run_all_perftests.cc",
   ]
   deps = [

@@ -25,8 +25,8 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/sys_info.h"
-#include "base/test/perftimer.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -384,7 +384,7 @@ void ExternalMetrics::CollectEvents() {
 }
 
 void ExternalMetrics::CollectEventsAndReschedule() {
-  PerfTimer timer;
+  base::ElapsedTimer timer;
   CollectEvents();
   UMA_HISTOGRAM_TIMES("UMA.CollectExternalEventsTime", timer.Elapsed());
   ScheduleCollector();

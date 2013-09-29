@@ -7,7 +7,7 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/perftimer.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
@@ -78,7 +78,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // Measures the "Save password?" prompt lifetime. Used to report an UMA
   // signal.
-  PerfTimer timer_;
+  base::ElapsedTimer timer_;
 
   // The group name corresponding to the domain name of |form_to_save_| if the
   // form is on a monitored domain. Otherwise, an empty string.

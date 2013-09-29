@@ -12,7 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/perftimer.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -265,7 +265,7 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
     data_source_url = GURL(content::kViewSourceScheme + std::string(":") +
                            data_source_url.spec());
 
-  PerfTimer timer;
+  base::ElapsedTimer timer;
   int num_css = 0;
   int num_scripts = 0;
 
@@ -333,7 +333,7 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
 
       int isolated_world_id = GetIsolatedWorldIdForExtension(extension, frame);
 
-      PerfTimer exec_timer;
+      base::ElapsedTimer exec_timer;
       DOMActivityLogger::AttachToWorld(isolated_world_id, extension->id());
       frame->executeScriptInIsolatedWorld(
           isolated_world_id, &sources.front(), sources.size(),
