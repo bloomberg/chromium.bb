@@ -6,9 +6,11 @@
 #define ASH_WM_WINDOW_STATE_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/wm_types.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
 
 namespace aura {
@@ -21,6 +23,7 @@ class Rect;
 
 namespace ash {
 namespace wm {
+class WindowStateObserver;
 
 // WindowState manages and defines ash specific window state and
 // behavior. Ash specific per-window state (such as ones that controls
@@ -33,25 +36,23 @@ namespace wm {
 // Prefer using this class instead of passing aura::Window* around in
 // ash code as this is often what you need to interact with, and
 // accessing the window using |window()| is cheap.
-class ASH_EXPORT WindowState {
+class ASH_EXPORT WindowState : public aura::WindowObserver {
  public:
-  class ASH_EXPORT Observer {
-   public:
-    // Called when the tracked_by_workspace has changed.
-    virtual void OnTrackedByWorkspaceChanged(aura::Window* window,
-                                             bool old_value) {}
-  };
-
   static bool IsMaximizedOrFullscreenState(ui::WindowShowState state);
 
   explicit WindowState(aura::Window* window);
-  ~WindowState();
+  virtual ~WindowState();
 
   aura::Window* window() { return window_; }
   const aura::Window* window() const { return window_; }
 
-  // Returns the window's current shows tate.
+  // Returns the window's current show state.
   ui::WindowShowState GetShowState() const;
+
+  // Returns the window's current ash show type.
+  // Refer to WindowShowType definition in wm_types.h as for why Ash
+  // has its own show type.
+  WindowShowType window_show_type() const { return window_show_type_; }
 
   // Predicates to check window state.
   bool IsMinimized() const;
@@ -80,6 +81,8 @@ class ASH_EXPORT WindowState {
   void Deactivate();
   void Restore();
   void ToggleMaximized();
+  void SnapLeft(const gfx::Rect& bounds);
+  void SnapRight(const gfx::Rect& bounds);
 
   // Sets the window's bounds in screen coordinates.
   void SetBoundsInScreen(const gfx::Rect& bounds_in_screen);
@@ -128,8 +131,8 @@ class ASH_EXPORT WindowState {
 
   // Layout related properties
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(WindowStateObserver* observer);
+  void RemoveObserver(WindowStateObserver* observer);
 
   // Whether the window is tracked by workspace code. Default is
   // true. If set to false the workspace does not switch the current
@@ -175,7 +178,17 @@ class ASH_EXPORT WindowState {
     ignored_by_shelf_ = ignored_by_shelf;
   }
 
+  // aura::WindowObserver overrides:
+  virtual void OnWindowPropertyChanged(aura::Window* window,
+                                       const void* key,
+                                       intptr_t old) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+
  private:
+  // Snaps the window to left or right of the desktop with given bounds.
+  void SnapWindow(WindowShowType left_or_right,
+                  const gfx::Rect& bounds);
+
   // The owner of this window settings.
   aura::Window* window_;
 
@@ -193,7 +206,9 @@ class ASH_EXPORT WindowState {
   // restored when only this one window gets shown.
   scoped_ptr<gfx::Rect> pre_auto_manage_window_bounds_;
 
-  ObserverList<Observer> observer_list_;
+  ObserverList<WindowStateObserver> observer_list_;
+
+  WindowShowType window_show_type_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowState);
 };

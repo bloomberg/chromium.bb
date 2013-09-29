@@ -16,7 +16,6 @@
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "grit/ash_strings.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -441,10 +440,11 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location,
     SnapSizer::InputType input_type =
         is_touch ? SnapSizer::TOUCH_MAXIMIZE_BUTTON_INPUT :
                    SnapSizer::OTHER_INPUT;
-    snap_sizer_.reset(new SnapSizer(frame_->GetNativeWindow(),
-                                    LocationForSnapSizer(location),
-                                    snap_edge,
-                                    input_type));
+    snap_sizer_.reset(new SnapSizer(
+        wm::GetWindowState(frame_->GetNativeWindow()),
+        LocationForSnapSizer(location),
+        snap_edge,
+        input_type));
     if (select_default)
       snap_sizer_->SelectDefaultSizeAndDisableResize();
   }

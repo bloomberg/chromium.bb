@@ -826,16 +826,16 @@ bool AcceleratorController::PerformAction(int action,
       return true;
     case WINDOW_SNAP_LEFT:
     case WINDOW_SNAP_RIGHT: {
-      aura::Window* window = wm::GetActiveWindow();
+      wm::WindowState* window_state = wm::GetActiveWindowState();
       // Disable window docking shortcut key for full screen window due to
       // http://crbug.com/135487.
-      if (!window ||
-          window->type() != aura::client::WINDOW_TYPE_NORMAL ||
-          wm::GetWindowState(window)->IsFullscreen()) {
+      if (!window_state ||
+          window_state->window()->type() != aura::client::WINDOW_TYPE_NORMAL ||
+          window_state->IsFullscreen()) {
         break;
       }
 
-      internal::SnapSizer::SnapWindow(window,
+      internal::SnapSizer::SnapWindow(window_state,
           action == WINDOW_SNAP_LEFT ? internal::SnapSizer::LEFT_EDGE :
                                        internal::SnapSizer::RIGHT_EDGE);
       return true;

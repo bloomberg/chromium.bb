@@ -110,29 +110,6 @@ void BaseLayoutManager::SetChildBounds(aura::Window* child,
 /////////////////////////////////////////////////////////////////////////////
 // BaseLayoutManager, aura::WindowObserver overrides:
 
-void BaseLayoutManager::OnWindowPropertyChanged(aura::Window* window,
-                                                const void* key,
-                                                intptr_t old) {
-  if (key == aura::client::kShowStateKey) {
-    ui::WindowShowState old_state = static_cast<ui::WindowShowState>(old);
-    ui::WindowShowState new_state =
-        window->GetProperty(aura::client::kShowStateKey);
-    wm::WindowState* window_state = wm::GetWindowState(window);
-
-    if (old_state != new_state && old_state != ui::SHOW_STATE_MINIMIZED &&
-        !window_state->HasRestoreBounds() &&
-        ((new_state == ui::SHOW_STATE_MAXIMIZED &&
-          old_state != ui::SHOW_STATE_FULLSCREEN) ||
-         (new_state == ui::SHOW_STATE_FULLSCREEN &&
-          old_state != ui::SHOW_STATE_MAXIMIZED))) {
-      window_state->SetRestoreBoundsInParent(window->bounds());
-    }
-
-    UpdateBoundsFromShowState(window_state);
-    ShowStateChanged(window_state, old_state);
-  }
-}
-
 void BaseLayoutManager::OnWindowDestroying(aura::Window* window) {
   if (root_window_ == window) {
     root_window_->RemoveObserver(this);
@@ -166,6 +143,27 @@ void BaseLayoutManager::OnWindowActivated(aura::Window* gained_active,
 void BaseLayoutManager::OnDisplayWorkAreaInsetsChanged() {
   AdjustAllWindowsBoundsForWorkAreaChange(
       ADJUST_WINDOW_WORK_AREA_INSETS_CHANGED);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// BaseLayoutManager, ash::wm::WindowStateObserver overrides:
+
+void BaseLayoutManager::OnWindowShowTypeChanged(wm::WindowState* window_state,
+                                                wm::WindowShowType old_type) {
+  ui::WindowShowState old_state = ToWindowShowState(old_type);
+  ui::WindowShowState new_state = window_state->GetShowState();
+
+  if (old_state != new_state && old_state != ui::SHOW_STATE_MINIMIZED &&
+      !window_state->HasRestoreBounds() &&
+      ((new_state == ui::SHOW_STATE_MAXIMIZED &&
+        old_state != ui::SHOW_STATE_FULLSCREEN) ||
+       (new_state == ui::SHOW_STATE_FULLSCREEN &&
+        old_state != ui::SHOW_STATE_MAXIMIZED))) {
+    window_state->SetRestoreBoundsInParent(window_state->window()->bounds());
+  }
+
+  UpdateBoundsFromShowState(window_state);
+  ShowStateChanged(window_state, old_state);
 }
 
 //////////////////////////////////////////////////////////////////////////////

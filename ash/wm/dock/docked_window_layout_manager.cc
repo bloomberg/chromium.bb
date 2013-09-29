@@ -21,7 +21,6 @@
 #include "base/command_line.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/activation_client.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -189,8 +188,11 @@ void DockedWindowLayoutManager::Shutdown() {
   }
   shelf_layout_manager_ = NULL;
   launcher_ = NULL;
-  for (size_t i = 0; i < dock_container_->children().size(); ++i)
-    dock_container_->children()[i]->RemoveObserver(this);
+  for (size_t i = 0; i < dock_container_->children().size(); ++i) {
+    aura::Window* child = dock_container_->children()[i];
+    child->RemoveObserver(this);
+    wm::GetWindowState(child)->RemoveObserver(this);
+  }
   aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
       RemoveObserver(this);
   Shell::GetInstance()->RemoveShellObserver(this);
@@ -211,8 +213,10 @@ void DockedWindowLayoutManager::StartDragging(aura::Window* window) {
   dragged_window_ = window;
   // Start observing a window unless it is docked container's child in which
   // case it is already observed.
-  if (dragged_window_->parent() != dock_container_)
+  if (dragged_window_->parent() != dock_container_) {
     dragged_window_->AddObserver(this);
+    wm::GetWindowState(dragged_window_)->AddObserver(this);
+  }
   is_dragged_from_dock_ = window->parent() == dock_container_;
   DCHECK(!is_dragged_window_docked_);
 }
@@ -238,6 +242,7 @@ void DockedWindowLayoutManager::FinishDragging() {
   // case it needs to keep being observed after the drag completes.
   if (dragged_window_->parent() != dock_container_) {
     dragged_window_->RemoveObserver(this);
+    wm::GetWindowState(dragged_window_)->RemoveObserver(this);
     if (last_active_window_ == dragged_window_)
       last_active_window_ = NULL;
   } else {
@@ -359,6 +364,7 @@ void DockedWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   }
   MaybeMinimizeChildrenExcept(child);
   child->AddObserver(this);
+  wm::GetWindowState(child)->AddObserver(this);
   Relayout();
   UpdateDockBounds();
 }
@@ -379,6 +385,7 @@ void DockedWindowLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
   if (last_active_window_ == child)
     last_active_window_ = NULL;
   child->RemoveObserver(this);
+  wm::GetWindowState(child)->RemoveObserver(this);
   Relayout();
 }
 
@@ -388,7 +395,7 @@ void DockedWindowLayoutManager::OnChildWindowVisibilityChanged(
   if (child->type() == aura::client::WINDOW_TYPE_POPUP)
     return;
   if (visible)
-    child->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+    wm::GetWindowState(child)->Restore();
   Relayout();
   UpdateDockBounds();
 }
@@ -429,22 +436,23 @@ void DockedWindowLayoutManager::OnShelfAlignmentChanged(
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// DockLayoutManager, WindowObserver implementation:
+// DockLayoutManager, WindowStateObserver implementation:
 
-void DockedWindowLayoutManager::OnWindowPropertyChanged(aura::Window* window,
-                                                        const void* key,
-                                                        intptr_t old) {
-  if (key != aura::client::kShowStateKey)
-    return;
+void DockedWindowLayoutManager::OnWindowShowTypeChanged(
+    wm::WindowState* window_state,
+    wm::WindowShowType old_type) {
   // The window property will still be set, but no actual change will occur
   // until WillChangeVisibilityState is called when the shelf is visible again
   if (shelf_hidden_)
     return;
-  if (wm::GetWindowState(window)->IsMinimized())
-    MinimizeDockedWindow(window);
+  if (window_state->IsMinimized())
+    MinimizeDockedWindow(window_state);
   else
-    RestoreDockedWindow(window);
+    RestoreDockedWindow(window_state);
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// DockLayoutManager, WindowObserver implementation:
 
 void DockedWindowLayoutManager::OnWindowBoundsChanged(
     aura::Window* window,
@@ -517,12 +525,13 @@ void DockedWindowLayoutManager::WillChangeVisibilityState(
       aura::Window* window = dock_container_->children()[i];
       if (window->type() == aura::client::WINDOW_TYPE_POPUP)
         continue;
+      wm::WindowState* window_state = wm::GetWindowState(window);
       if (shelf_hidden_) {
         if (window->IsVisible())
-          MinimizeDockedWindow(window);
+          MinimizeDockedWindow(window_state);
       } else {
-        if (!wm::GetWindowState(window)->IsMinimized())
-          RestoreDockedWindow(window);
+        if (!window_state->IsMinimized())
+          RestoreDockedWindow(window_state);
       }
     }
   }
@@ -548,15 +557,17 @@ void DockedWindowLayoutManager::MaybeMinimizeChildrenExcept(
   }
 }
 
-void DockedWindowLayoutManager::MinimizeDockedWindow(aura::Window* window) {
-  DCHECK_NE(window->type(), aura::client::WINDOW_TYPE_POPUP);
-  window->Hide();
-  wm::WindowState* window_state = wm::GetWindowState(window);
+void DockedWindowLayoutManager::MinimizeDockedWindow(
+    wm::WindowState* window_state) {
+  DCHECK_NE(window_state->window()->type(), aura::client::WINDOW_TYPE_POPUP);
+  window_state->window()->Hide();
   if (window_state->IsActive())
     window_state->Deactivate();
 }
 
-void DockedWindowLayoutManager::RestoreDockedWindow(aura::Window* window) {
+void DockedWindowLayoutManager::RestoreDockedWindow(
+    wm::WindowState* window_state) {
+  aura::Window* window = window_state->window();
   DCHECK_NE(window->type(), aura::client::WINDOW_TYPE_POPUP);
   // Always place restored window at the top shuffling the other windows down.
   // TODO(varkha): add a separate container for docked windows to keep track

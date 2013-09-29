@@ -4,7 +4,7 @@
 
 #include "ash/wm/panels/panel_window_event_handler.h"
 
-#include "ui/aura/client/aura_constants.h"
+#include "ash/wm/window_state.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -27,7 +27,7 @@ void PanelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event) {
       event->IsOnlyLeftMouseButton() &&
       target->delegate()->GetNonClientComponent(event->location()) ==
           HTCAPTION) {
-    target->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+    wm::GetWindowState(target)->Minimize();
     return;
   }
   ToplevelWindowEventHandler::OnMouseEvent(event);
@@ -39,7 +39,7 @@ void PanelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       event->details().tap_count() == 2 &&
       target->delegate()->GetNonClientComponent(event->location()) ==
           HTCAPTION) {
-    target->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+    wm::GetWindowState(target)->Minimize();
     event->StopPropagation();
     return;
   }

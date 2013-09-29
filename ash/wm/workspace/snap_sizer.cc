@@ -126,31 +126,22 @@ std::vector<int> BuildIdealWidthList(aura::Window* window) {
 // Changes |window|'s bounds to |snap_bounds| while preserving the restore
 // bounds.
 void SnapWindowToBounds(wm::WindowState* window_state,
+                        SnapSizer::Edge edge,
                         const gfx::Rect& snap_bounds) {
-  if (window_state->IsMaximizedOrFullscreen()) {
-    // Before we can set the bounds we need to restore the window.
-    // Restoring the window will set the window to its restored bounds.
-    // To avoid an unnecessary bounds changes (which may have side effects)
-    // we set the restore bounds to the bounds we want, restore the window,
-    // then reset the restore bounds. This way no unnecessary bounds
-    // changes occurs and the original restore bounds is remembered.
-    gfx::Rect restore_bounds_in_screen =
-        window_state->GetRestoreBoundsInScreen();
-    window_state->SetRestoreBoundsInParent(snap_bounds);
-    window_state->Restore();
-    window_state->SetRestoreBoundsInScreen(restore_bounds_in_screen);
+  if (edge == SnapSizer::LEFT_EDGE) {
+    window_state->SnapLeft(snap_bounds);
   } else {
-    window_state->window()->SetBounds(snap_bounds);
+    window_state->SnapRight(snap_bounds);
   }
 }
 
 }  // namespace
 
-SnapSizer::SnapSizer(aura::Window* window,
+SnapSizer::SnapSizer(wm::WindowState* window_state,
                      const gfx::Point& start,
                      Edge edge,
                      InputType input_type)
-    : window_(window),
+    : window_state_(window_state),
       edge_(edge),
       time_last_update_(base::TimeTicks::Now()),
       size_index_(0),
@@ -161,7 +152,7 @@ SnapSizer::SnapSizer(aura::Window* window,
       last_update_x_(start.x()),
       start_x_(start.x()),
       input_type_(input_type),
-      usable_width_(BuildIdealWidthList(window)) {
+      usable_width_(BuildIdealWidthList(window_state->window())) {
   DCHECK(!usable_width_.empty());
   target_bounds_ = GetTargetBounds();
 }
@@ -169,18 +160,18 @@ SnapSizer::SnapSizer(aura::Window* window,
 SnapSizer::~SnapSizer() {
 }
 
-void SnapSizer::SnapWindow(aura::Window* window, SnapSizer::Edge edge) {
-  wm::WindowState* window_state = wm::GetWindowState(window);
+void SnapSizer::SnapWindow(wm::WindowState* window_state,
+                           SnapSizer::Edge edge) {
   if (!window_state->CanSnap())
     return;
-  internal::SnapSizer sizer(window, gfx::Point(), edge,
+  internal::SnapSizer sizer(window_state, gfx::Point(), edge,
       internal::SnapSizer::OTHER_INPUT);
-  SnapWindowToBounds(window_state,
+  SnapWindowToBounds(window_state, edge,
                      sizer.GetSnapBounds(window_state->window()->bounds()));
 }
 
 void SnapSizer::SnapWindowToTargetBounds() {
-  SnapWindowToBounds(wm::GetWindowState(window_), target_bounds());
+  SnapWindowToBounds(window_state_, edge_, target_bounds());
 }
 
 void SnapSizer::Update(const gfx::Point& location) {
@@ -194,7 +185,8 @@ void SnapSizer::Update(const gfx::Point& location) {
     bool along_edge = AlongEdge(location.x());
     int pixels_before_adjust = kPixelsBeforeAdjust;
     if (input_type_ == TOUCH_MAXIMIZE_BUTTON_INPUT) {
-      const gfx::Rect& workspace_bounds = window_->parent()->bounds();
+      const gfx::Rect& workspace_bounds =
+          window_state_->window()->parent()->bounds();
       if (start_x_ > location.x()) {
         pixels_before_adjust =
             std::min(pixels_before_adjust, start_x_ / 10);
@@ -238,12 +230,13 @@ void SnapSizer::SelectDefaultSizeAndDisableResize() {
 }
 
 gfx::Rect SnapSizer::GetTargetBoundsForSize(size_t size_index) const {
-  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_));
+  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+      window_state_->window()));
   int y = work_area.y();
   int max_y = work_area.bottom();
   int width = 0;
   if (resize_disabled_) {
-    width = GetDefaultWidth(window_);
+    width = GetDefaultWidth(window_state_->window());
   } else {
     DCHECK(size_index < usable_width_.size());
     width = usable_width_[size_index];
@@ -293,7 +286,8 @@ gfx::Rect SnapSizer::GetTargetBounds() const {
 }
 
 bool SnapSizer::AlongEdge(int x) const {
-  gfx::Rect area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_));
+  gfx::Rect area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+      window_state_->window()));
   return (x <= area.x()) || (x >= area.right() - 1);
 }
 

@@ -9,6 +9,7 @@
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/dock/dock_types.h"
+#include "ash/wm/window_state_observer.h"
 #include "ash/wm/workspace/snap_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -59,7 +60,8 @@ class ASH_EXPORT DockedWindowLayoutManager
       public aura::WindowObserver,
       public aura::client::ActivationChangeObserver,
       public keyboard::KeyboardControllerObserver,
-      public ash::ShelfLayoutManagerObserver {
+      public ash::ShelfLayoutManagerObserver,
+      public wm::WindowStateObserver {
  public:
   // Maximum width of the docked windows area.
   static const int kMaxDockWidth;
@@ -125,10 +127,11 @@ class ASH_EXPORT DockedWindowLayoutManager
   // ash::ShellObserver:
   virtual void OnShelfAlignmentChanged(aura::RootWindow* root_window) OVERRIDE;
 
+  // wm::WindowStateObserver:
+  virtual void OnWindowShowTypeChanged(wm::WindowState* window_state,
+                                       wm::WindowShowType old_type) OVERRIDE;
+
   // aura::WindowObserver:
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const void* key,
-                                       intptr_t old) OVERRIDE;
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE;
@@ -179,8 +182,8 @@ class ASH_EXPORT DockedWindowLayoutManager
   void MaybeMinimizeChildrenExcept(aura::Window* child);
 
   // Minimize / restore window and relayout.
-  void MinimizeDockedWindow(aura::Window* window);
-  void RestoreDockedWindow(aura::Window* window);
+  void MinimizeDockedWindow(wm::WindowState* window_state);
+  void RestoreDockedWindow(wm::WindowState* window_state);
 
   // Updates docked layout state when a window gets inside the dock.
   void OnWindowDocked(aura::Window* window);

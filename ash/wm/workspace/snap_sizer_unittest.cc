@@ -36,8 +36,8 @@ TEST_F(SnapSizerTest, MultipleDisplays) {
 
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
-
-  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  SnapSizer::SnapWindow(window_state, SnapSizer::LEFT_EDGE);
   gfx::Rect expected = gfx::Rect(
       kPrimaryDisplayWorkAreaBounds.x(),
       kPrimaryDisplayWorkAreaBounds.y(),
@@ -45,7 +45,7 @@ TEST_F(SnapSizerTest, MultipleDisplays) {
       kPrimaryDisplayWorkAreaBounds.height());
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
-  SnapSizer::SnapWindow(window.get(), SnapSizer::RIGHT_EDGE);
+  SnapSizer::SnapWindow(window_state, SnapSizer::RIGHT_EDGE);
   // The width should not change when a window switches from being snapped to
   // the left edge to being snapped to the right edge.
   expected.set_x(kPrimaryDisplayWorkAreaBounds.right() - expected.width());
@@ -55,7 +55,7 @@ TEST_F(SnapSizerTest, MultipleDisplays) {
   window->SetBoundsInScreen(gfx::Rect(600, 0, 100, 100),
                             ScreenAsh::GetSecondaryDisplay());
 
-  SnapSizer::SnapWindow(window.get(), SnapSizer::RIGHT_EDGE);
+  SnapSizer::SnapWindow(window_state, SnapSizer::RIGHT_EDGE);
   expected = gfx::Rect(
       kSecondaryDisplayWorkAreaBounds.right() - window->bounds().width(),
       kSecondaryDisplayWorkAreaBounds.y(),
@@ -63,7 +63,7 @@ TEST_F(SnapSizerTest, MultipleDisplays) {
       kSecondaryDisplayWorkAreaBounds.height());
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
-  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  SnapSizer::SnapWindow(window_state, SnapSizer::LEFT_EDGE);
   // The width should not change when a window switches from being snapped to
   // the right edge to being snapped to the left edge.
   expected.set_x(kSecondaryDisplayWorkAreaBounds.x());
@@ -88,7 +88,7 @@ TEST_F(SnapSizerTest, MinimumSize) {
   delegate.set_minimum_size(gfx::Size(kWorkAreaBounds.width() - 1, 0));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   EXPECT_TRUE(window_state->CanSnap());
-  SnapSizer::SnapWindow(window.get(), SnapSizer::RIGHT_EDGE);
+  SnapSizer::SnapWindow(window_state, SnapSizer::RIGHT_EDGE);
   gfx::Rect expected = gfx::Rect(kWorkAreaBounds.x() + 1,
                                  kWorkAreaBounds.y(),
                                  kWorkAreaBounds.width() - 1,
@@ -113,33 +113,34 @@ TEST_F(SnapSizerTest, StepThroughSizes) {
 
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
 
   // Make sure that the work area is the size we expect it to be.
   EXPECT_GT(kWorkAreaBounds.width() * 0.9, 768);
 
   // The first width should be 1024 * 0.9 because the larger ideal widths
   // (1280, 1024) > 1024 * 0.9.
-  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  SnapSizer::SnapWindow(window_state, SnapSizer::LEFT_EDGE);
   gfx::Rect expected = gfx::Rect(kWorkAreaBounds.x(),
                                  kWorkAreaBounds.y(),
                                  kWorkAreaBounds.width() * 0.9,
                                  kWorkAreaBounds.height());
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
-  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  SnapSizer::SnapWindow(window_state, SnapSizer::LEFT_EDGE);
   expected.set_width(768);
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
-  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  SnapSizer::SnapWindow(window_state, SnapSizer::LEFT_EDGE);
   expected.set_width(640);
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
-  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  SnapSizer::SnapWindow(window_state, SnapSizer::LEFT_EDGE);
   expected.set_width(kWorkAreaBounds.width() * 0.5);
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
   // Wrap around.
-  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  SnapSizer::SnapWindow(window_state, SnapSizer::LEFT_EDGE);
   expected.set_width(kWorkAreaBounds.width() * 0.9);
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 }
@@ -151,8 +152,8 @@ TEST_F(SnapSizerTest, Default) {
 
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
-  SnapSizer sizer(window.get(), gfx::Point(), SnapSizer::LEFT_EDGE,
-      SnapSizer::OTHER_INPUT);
+  SnapSizer sizer(wm::GetWindowState(window.get()), gfx::Point(),
+                  SnapSizer::LEFT_EDGE, SnapSizer::OTHER_INPUT);
 
   // For small workspace widths, we should snap to 90% of the workspace width
   // because it is the largest width the window can snap to.
@@ -199,8 +200,8 @@ TEST_F(SnapSizerTest, AlternateFrameCaptionButtonStyle) {
 
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
-
-  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  SnapSizer::SnapWindow(window_state, SnapSizer::LEFT_EDGE);
   gfx::Rect expected = gfx::Rect(kWorkAreaBounds.x(),
                                  kWorkAreaBounds.y(),
                                  kWorkAreaBounds.width() / 2,
@@ -210,17 +211,17 @@ TEST_F(SnapSizerTest, AlternateFrameCaptionButtonStyle) {
   // Because a window can only be snapped to one size when using the alternate
   // caption button style, a second call to SnapSizer::SnapWindow() should have
   // no effect.
-  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  SnapSizer::SnapWindow(window_state, SnapSizer::LEFT_EDGE);
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
   // It should still be possible to switch a window from being snapped to the
   // left edge to being snapped to the right edge.
-  SnapSizer::SnapWindow(window.get(), SnapSizer::RIGHT_EDGE);
+  SnapSizer::SnapWindow(window_state, SnapSizer::RIGHT_EDGE);
   expected.set_x(kWorkAreaBounds.right() - expected.width());
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
 
   // If resizing is disabled, the window should be snapped to 50% too.
-  SnapSizer sizer(window.get(), gfx::Point(), SnapSizer::RIGHT_EDGE,
+  SnapSizer sizer(window_state, gfx::Point(), SnapSizer::RIGHT_EDGE,
       SnapSizer::OTHER_INPUT);
   sizer.SelectDefaultSizeAndDisableResize();
   sizer.SnapWindowToTargetBounds();
@@ -239,8 +240,8 @@ TEST_F(SnapSizerTest, RestoreBounds) {
   gfx::Rect restore_bounds = window->GetBoundsInScreen();
   restore_bounds.set_width(restore_bounds.width() + 1);
   window_state->SetRestoreBoundsInScreen(restore_bounds);
-  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
-  SnapSizer::SnapWindow(window.get(), SnapSizer::RIGHT_EDGE);
+  SnapSizer::SnapWindow(window_state, SnapSizer::LEFT_EDGE);
+  SnapSizer::SnapWindow(window_state, SnapSizer::RIGHT_EDGE);
   EXPECT_NE(restore_bounds.ToString(), window->GetBoundsInScreen().ToString());
   EXPECT_EQ(restore_bounds.ToString(),
             window_state->GetRestoreBoundsInScreen().ToString());
@@ -254,7 +255,7 @@ TEST_F(SnapSizerTest, RestoreBounds) {
   EXPECT_EQ(restore_bounds.ToString(),
             window_state->GetRestoreBoundsInScreen().ToString());
 
-  SnapSizer::SnapWindow(window.get(), SnapSizer::LEFT_EDGE);
+  SnapSizer::SnapWindow(window_state, SnapSizer::LEFT_EDGE);
   EXPECT_NE(restore_bounds.ToString(), window->GetBoundsInScreen().ToString());
   EXPECT_NE(maximized_bounds.ToString(),
             window->GetBoundsInScreen().ToString());
@@ -276,7 +277,7 @@ TEST_F(SnapSizerTest, AutoManaged) {
   window->Show();
 
   window_state->Maximize();
-  SnapSizer::SnapWindow(window.get(), SnapSizer::RIGHT_EDGE);
+  SnapSizer::SnapWindow(window_state, SnapSizer::RIGHT_EDGE);
 
   const gfx::Rect kWorkAreaBounds =
       ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();
@@ -289,7 +290,7 @@ TEST_F(SnapSizerTest, AutoManaged) {
             window->GetBoundsInScreen().ToString());
 
   // The window should still be auto managed despite being right maximized.
-  EXPECT_TRUE(wm::GetWindowState(window.get())->window_position_managed());
+  EXPECT_TRUE(window_state->window_position_managed());
 }
 
 }  // namespace ash

@@ -618,36 +618,31 @@ void FramePainter::OnThemeChanged() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// WindowState::Observer overrides:
-void FramePainter::OnTrackedByWorkspaceChanged(aura::Window* window,
+// WindowStateObserver overrides:
+void FramePainter::OnTrackedByWorkspaceChanged(wm::WindowState* window_state,
                                                bool old) {
   // When 'TrackedByWorkspace' changes, we are going to paint the header
   // differently. Schedule a paint to ensure everything is updated correctly.
-  if (wm::GetWindowState(window)->tracked_by_workspace())
+  if (window_state->tracked_by_workspace())
     frame_->non_client_view()->SchedulePaint();
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// aura::WindowObserver overrides:
-
-void FramePainter::OnWindowPropertyChanged(aura::Window* window,
-                                           const void* key,
-                                           intptr_t old) {
-  if (key != aura::client::kShowStateKey)
-    return;
-
+void FramePainter::OnWindowShowTypeChanged(wm::WindowState* window_state,
+                                           wm::WindowShowType old_type) {
   // Maximized and fullscreen windows don't want resize handles overlapping the
   // content area, because when the user moves the cursor to the right screen
   // edge we want them to be able to hit the scroll bar.
-  wm::WindowState* window_state = wm::GetWindowState(window);
   if (window_state->IsMaximizedOrFullscreen()) {
-    window->set_hit_test_bounds_override_inner(gfx::Insets());
+    window_state->window()->set_hit_test_bounds_override_inner(gfx::Insets());
   } else {
-    window->set_hit_test_bounds_override_inner(
+    window_state->window()->set_hit_test_bounds_override_inner(
         gfx::Insets(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
                     kResizeInsideBoundsSize, kResizeInsideBoundsSize));
   }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// aura::WindowObserver overrides:
 
 void FramePainter::OnWindowVisibilityChanged(aura::Window* window,
                                              bool visible) {

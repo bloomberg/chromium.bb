@@ -12,11 +12,11 @@
 #include "base/time/time.h"
 #include "ui/gfx/rect.h"
 
-namespace aura {
-class Window;
+namespace ash {
+namespace wm {
+class WindowState;
 }
 
-namespace ash {
 namespace internal {
 
 // SnapSizer is responsible for determining the resulting bounds of a window
@@ -37,14 +37,14 @@ class ASH_EXPORT SnapSizer {
   // Set |input_type| to |TOUCH_MAXIMIZE_BUTTON_INPUT| when called by a touch
   // operation by the maximize button. This will allow the user to snap resize
   // the window beginning close to the border.
-  SnapSizer(aura::Window* window,
+  SnapSizer(wm::WindowState* window_state,
             const gfx::Point& start,
             Edge edge,
             InputType input_type);
   virtual ~SnapSizer();
 
   // Snaps a window left or right.
-  static void SnapWindow(aura::Window* window, Edge edge);
+  static void SnapWindow(wm::WindowState* window_state, Edge edge);
 
   // Snaps |window_| to the target bounds.
   void SnapWindowToTargetBounds();
@@ -87,8 +87,8 @@ class ASH_EXPORT SnapSizer {
   // Returns true if the specified point is along the edge of the screen.
   bool AlongEdge(int x) const;
 
-  // Window being snapped.
-  aura::Window* window_;
+  // WindowState of the window being snapped.
+  wm::WindowState* window_state_;
 
   const Edge edge_;
 

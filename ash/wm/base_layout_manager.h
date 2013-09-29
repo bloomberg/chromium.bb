@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
-#include "ash/wm/window_state.h"
+#include "ash/wm/window_state_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/client/activation_change_observer.h"
@@ -40,7 +40,7 @@ class ASH_EXPORT BaseLayoutManager
       public aura::WindowObserver,
       public aura::client::ActivationChangeObserver,
       public ShellObserver,
-      public wm::WindowState::Observer {
+      public wm::WindowStateObserver {
  public:
   typedef std::set<aura::Window*> WindowSet;
 
@@ -66,9 +66,6 @@ class ASH_EXPORT BaseLayoutManager
                               const gfx::Rect& requested_bounds) OVERRIDE;
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const void* key,
-                                       intptr_t old) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
@@ -80,6 +77,10 @@ class ASH_EXPORT BaseLayoutManager
 
   // ash::ShellObserver overrides:
   virtual void OnDisplayWorkAreaInsetsChanged() OVERRIDE;
+
+  // wm::WindowStateObserver overrides:
+  virtual void OnWindowShowTypeChanged(wm::WindowState* window_state,
+                                       wm::WindowShowType type) OVERRIDE;
 
  protected:
   enum AdjustWindowReason {

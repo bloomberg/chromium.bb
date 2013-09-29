@@ -8,11 +8,11 @@
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -53,7 +53,8 @@ gfx::Point ConvertPointToParent(aura::Window* window,
 // the window is destroyed ResizerWindowDestroyed() is invoked back on the
 // ToplevelWindowEventHandler to clean up.
 class ToplevelWindowEventHandler::ScopedWindowResizer
-    : public aura::WindowObserver {
+    : public aura::WindowObserver,
+      public wm::WindowStateObserver {
  public:
   ScopedWindowResizer(ToplevelWindowEventHandler* handler,
                       WindowResizer* resizer);
@@ -64,10 +65,11 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
   // WindowObserver overrides:
   virtual void OnWindowHierarchyChanging(
       const HierarchyChangeParams& params) OVERRIDE;
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const void* key,
-                                       intptr_t old) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+
+  // WindowStateObserver overrides:
+  virtual void OnWindowShowTypeChanged(wm::WindowState* window_state,
+                                       wm::WindowShowType type) OVERRIDE;
 
  private:
   void AddHandlers(aura::Window* container);
@@ -89,14 +91,18 @@ ToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
     : handler_(handler),
       resizer_(resizer),
       target_container_(NULL) {
-  if (resizer_)
+  if (resizer_) {
     resizer_->GetTarget()->AddObserver(this);
+    wm::GetWindowState(resizer_->GetTarget())->AddObserver(this);
+  }
 }
 
 ToplevelWindowEventHandler::ScopedWindowResizer::~ScopedWindowResizer() {
   RemoveHandlers();
-  if (resizer_)
+  if (resizer_) {
     resizer_->GetTarget()->RemoveObserver(this);
+    wm::GetWindowState(resizer_->GetTarget())->RemoveObserver(this);
+  }
 }
 
 void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowHierarchyChanging(
@@ -112,12 +118,10 @@ void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowHierarchyChanging(
   }
 }
 
-void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowPropertyChanged(
-    aura::Window* window,
-    const void* key,
-    intptr_t old) {
-  if (key == aura::client::kShowStateKey &&
-      !wm::GetWindowState(window)->IsNormalShowState())
+void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowShowTypeChanged(
+    wm::WindowState* window_state,
+    wm::WindowShowType old) {
+  if (!window_state->IsNormalShowState())
     handler_->CompleteDrag(DRAG_COMPLETE, 0);
 }
 
@@ -311,7 +315,7 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
             target->layer()->GetAnimator());
         scoped_setter.SetPreemptionStrategy(
             ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-        internal::SnapSizer::SnapWindow(target,
+        internal::SnapSizer::SnapWindow(window_state,
             event->details().velocity_x() < 0 ?
             internal::SnapSizer::LEFT_EDGE : internal::SnapSizer::RIGHT_EDGE);
       }

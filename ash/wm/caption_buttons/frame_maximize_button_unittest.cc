@@ -13,7 +13,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "base/command_line.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
@@ -226,7 +225,7 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
 
     EXPECT_FALSE(window_state->IsMaximized());
     EXPECT_FALSE(window_state->IsMinimized());
-    internal::SnapSizer sizer(window, center,
+    internal::SnapSizer sizer(window_state, center,
         internal::SnapSizer::RIGHT_EDGE,
         internal::SnapSizer::OTHER_INPUT);
     EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
@@ -243,7 +242,7 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
 
     EXPECT_FALSE(window_state->IsMaximized());
     EXPECT_FALSE(window_state->IsMinimized());
-    internal::SnapSizer sizer(window, center,
+    internal::SnapSizer sizer(window_state, center,
         internal::SnapSizer::LEFT_EDGE,
         internal::SnapSizer::OTHER_INPUT);
     EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
@@ -294,7 +293,7 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
 
     EXPECT_FALSE(window_state->IsMaximized());
     EXPECT_FALSE(window_state->IsMinimized());
-    internal::SnapSizer sizer(window, center,
+    internal::SnapSizer sizer(window_state, center,
         internal::SnapSizer::LEFT_EDGE,
         internal::SnapSizer::OTHER_INPUT);
     EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
@@ -474,6 +473,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeLeftButtonDragOut) {
 // maximize left button) will do the requested action.
 TEST_F(FrameMaximizeButtonTest, MaximizeLeftByButton) {
   aura::Window* window = widget()->GetNativeWindow();
+
   ash::FrameMaximizeButton* maximize_button =
       FrameMaximizeButtonTest::maximize_button();
   maximize_button->set_bubble_appearance_delay_ms(0);
@@ -502,7 +502,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeLeftByButton) {
   wm::WindowState* window_state = wm::GetWindowState(window);
   EXPECT_FALSE(window_state->IsMaximized());
   EXPECT_FALSE(window_state->IsMinimized());
-  internal::SnapSizer sizer(window, button_pos,
+  internal::SnapSizer sizer(window_state, button_pos,
                             internal::SnapSizer::LEFT_EDGE,
                             internal::SnapSizer::OTHER_INPUT);
   sizer.SelectDefaultSizeAndDisableResize();
@@ -713,7 +713,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeMaximizeLeftRestore) {
 }
 
 // Left/right maximize, maximize and then restore should work.
-TEST_F(FrameMaximizeButtonTest, MaximizeLeftMaximizeRestore) {
+TEST_F(FrameMaximizeButtonTest, MaximizeSnapLeftRestore) {
   aura::Window* window = widget()->GetNativeWindow();
   gfx::Rect initial_bounds = widget()->GetWindowBoundsInScreen();
   ash::FrameMaximizeButton* maximize_button =

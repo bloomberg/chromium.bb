@@ -148,7 +148,7 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
             target->layer()->GetAnimator());
         scoped_setter.SetPreemptionStrategy(
             ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-        internal::SnapSizer::SnapWindow(target,
+        internal::SnapSizer::SnapWindow(window_state,
             event.details().swipe_left() ? internal::SnapSizer::LEFT_EDGE :
                                            internal::SnapSizer::RIGHT_EDGE);
       }

@@ -86,7 +86,7 @@ SystemGestureStatus SystemPinchHandler::ProcessGestureEvent(
         // Snap for left/right swipes.
         ui::ScopedLayerAnimationSettings settings(
             target_->layer()->GetAnimator());
-        internal::SnapSizer::SnapWindow(target_,
+        internal::SnapSizer::SnapWindow(window_state,
             event.details().swipe_left() ? internal::SnapSizer::LEFT_EDGE :
                                            internal::SnapSizer::RIGHT_EDGE);
       } else if (event.details().swipe_up()) {

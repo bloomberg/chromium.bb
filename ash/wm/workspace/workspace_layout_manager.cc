@@ -140,52 +140,54 @@ void WorkspaceLayoutManager::OnDisplayWorkAreaInsetsChanged() {
   }
 }
 
-void WorkspaceLayoutManager::OnTrackedByWorkspaceChanged(Window* window,
-                                                         bool old){
-  if (wm::GetWindowState(window)->tracked_by_workspace())
-    SetMaximizedOrFullscreenBounds(wm::GetWindowState(window));
-}
-
 void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
                                                      const void* key,
                                                      intptr_t old) {
-  wm::WindowState* window_state = wm::GetWindowState(window);
-  if (key == aura::client::kShowStateKey) {
-    ui::WindowShowState old_state = static_cast<ui::WindowShowState>(old);
-    ui::WindowShowState new_state = window_state->GetShowState();
-    if (old_state != ui::SHOW_STATE_MINIMIZED &&
-        !window_state->HasRestoreBounds() &&
-        window_state->IsMaximizedOrFullscreen() &&
-        !wm::WindowState::IsMaximizedOrFullscreenState(old_state)) {
-      window_state->SaveCurrentBoundsForRestore();
-    }
-    // When restoring from a minimized state, we want to restore to the
-    // previous (maybe L/R maximized) state. Since we do also want to keep the
-    // restore rectangle, we set the restore rectangle to the rectangle we want
-    // to restore to and restore it after we switched so that it is preserved.
-    gfx::Rect restore;
-    if (old_state == ui::SHOW_STATE_MINIMIZED &&
-        (new_state == ui::SHOW_STATE_NORMAL ||
-         new_state == ui::SHOW_STATE_DEFAULT) &&
-        window_state->HasRestoreBounds() &&
-        !window_state->always_restores_to_restore_bounds()) {
-      restore = window_state->GetRestoreBoundsInScreen();
-      window_state->SaveCurrentBoundsForRestore();
-    }
-
-    UpdateBoundsFromShowState(window_state, old_state);
-    ShowStateChanged(window_state, old_state);
-
-    // Set the restore rectangle to the previously set restore rectangle.
-    if (!restore.IsEmpty())
-      window_state->SetRestoreBoundsInScreen(restore);
-  }
-
   if (key == aura::client::kAlwaysOnTopKey &&
       window->GetProperty(aura::client::kAlwaysOnTopKey)) {
     GetRootWindowController(window->GetRootWindow())->
         always_on_top_controller()->GetContainer(window)->AddChild(window);
   }
+}
+
+void WorkspaceLayoutManager::OnTrackedByWorkspaceChanged(
+    wm::WindowState* window_state,
+    bool old){
+  if (window_state->tracked_by_workspace())
+    SetMaximizedOrFullscreenBounds(window_state);
+}
+
+void WorkspaceLayoutManager::OnWindowShowTypeChanged(
+    wm::WindowState* window_state,
+    wm::WindowShowType old_type) {
+  ui::WindowShowState old_state = ToWindowShowState(old_type);
+  ui::WindowShowState new_state = window_state->GetShowState();
+  if (old_state != ui::SHOW_STATE_MINIMIZED &&
+      !window_state->HasRestoreBounds() &&
+      window_state->IsMaximizedOrFullscreen() &&
+      !wm::WindowState::IsMaximizedOrFullscreenState(old_state)) {
+    window_state->SaveCurrentBoundsForRestore();
+  }
+  // When restoring from a minimized state, we want to restore to the
+  // previous (maybe L/R maximized) state. Since we do also want to keep the
+  // restore rectangle, we set the restore rectangle to the rectangle we want
+  // to restore to and restore it after we switched so that it is preserved.
+  gfx::Rect restore;
+  if (old_state == ui::SHOW_STATE_MINIMIZED &&
+      (new_state == ui::SHOW_STATE_NORMAL ||
+       new_state == ui::SHOW_STATE_DEFAULT) &&
+      window_state->HasRestoreBounds() &&
+      !window_state->always_restores_to_restore_bounds()) {
+    restore = window_state->GetRestoreBoundsInScreen();
+    window_state->SaveCurrentBoundsForRestore();
+  }
+
+  UpdateBoundsFromShowState(window_state, old_state);
+  ShowStateChanged(window_state, old_state);
+
+  // Set the restore rectangle to the previously set restore rectangle.
+  if (!restore.IsEmpty())
+    window_state->SetRestoreBoundsInScreen(restore);
 }
 
 void WorkspaceLayoutManager::ShowStateChanged(

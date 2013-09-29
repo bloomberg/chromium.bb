@@ -379,6 +379,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
           new TestWindowDelegate(HTCAPTION),
           0,
           gfx::Rect(0, 0, 100, 100)));
+  wm::WindowState* window_state = wm::GetWindowState(target.get());
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        target.get());
   gfx::Rect old_bounds = target->bounds();
@@ -390,7 +391,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   // Snap right;
   {
     // Get the expected snapped bounds before snapping.
-    internal::SnapSizer sizer(target.get(), location,
+    internal::SnapSizer sizer(window_state, location,
         internal::SnapSizer::RIGHT_EDGE,
         internal::SnapSizer::OTHER_INPUT);
     gfx::Rect snapped_bounds = sizer.GetSnapBounds(target->bounds());
@@ -411,7 +412,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   // Snap left.
   {
     // Get the expected snapped bounds before snapping.
-    internal::SnapSizer sizer(target.get(), location,
+    internal::SnapSizer sizer(window_state, location,
         internal::SnapSizer::LEFT_EDGE,
         internal::SnapSizer::OTHER_INPUT);
     gfx::Rect snapped_bounds = sizer.GetSnapBounds(target->bounds());
@@ -439,7 +440,6 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
       10);
   RunAllPendingInMessageLoop();
 
-  wm::WindowState* window_state = wm::GetWindowState(target.get());
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
   EXPECT_TRUE(window_state->IsMaximized());
   EXPECT_EQ(old_bounds.ToString(),
@@ -520,6 +520,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {
 // Tests that an unresizable window cannot be dragged or snapped using gestures.
 TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
   scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+  wm::WindowState* window_state = wm::GetWindowState(target.get());
 
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        target.get());
@@ -533,7 +534,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
   // Try to snap right. The window is not resizable. So it should not snap.
   {
     // Get the expected snapped bounds before the gesture.
-    internal::SnapSizer sizer(target.get(), location,
+    internal::SnapSizer sizer(window_state, location,
         internal::SnapSizer::RIGHT_EDGE,
         internal::SnapSizer::OTHER_INPUT);
     gfx::Rect snapped_bounds = sizer.GetSnapBounds(target->bounds());
@@ -558,7 +559,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
   // Try to snap left. It should not snap.
   {
     // Get the expected snapped bounds before the gesture.
-    internal::SnapSizer sizer(target.get(), location,
+    internal::SnapSizer sizer(window_state, location,
         internal::SnapSizer::LEFT_EDGE,
         internal::SnapSizer::OTHER_INPUT);
     gfx::Rect snapped_bounds = sizer.GetSnapBounds(target->bounds());
