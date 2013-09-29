@@ -22,23 +22,30 @@ namespace tools {
 
 // static
 IPAddressNumber QuicSocketUtils::GetAddressFromMsghdr(struct msghdr *hdr) {
-  IPAddressNumber ret;
   if (hdr->msg_controllen > 0) {
     for (cmsghdr* cmsg = CMSG_FIRSTHDR(hdr);
          cmsg != NULL;
          cmsg = CMSG_NXTHDR(hdr, cmsg)) {
-      const uint8* addr_data = reinterpret_cast<const uint8*>CMSG_DATA(cmsg);
+      const uint8* addr_data = NULL;
       int len = 0;
       if (cmsg->cmsg_type == IPV6_PKTINFO) {
-        len = sizeof(in6_pktinfo);
+        in6_pktinfo* info = reinterpret_cast<in6_pktinfo*>CMSG_DATA(cmsg);
+        in6_addr addr = info->ipi6_addr;
+        addr_data = reinterpret_cast<const uint8*>(&addr);
+        len = sizeof(addr);
       } else if (cmsg->cmsg_type == IP_PKTINFO) {
-        len = sizeof(in_pktinfo);
+        in_pktinfo* info = reinterpret_cast<in_pktinfo*>CMSG_DATA(cmsg);
+        in_addr addr = info->ipi_addr;
+        addr_data = reinterpret_cast<const uint8*>(&addr);
+        len = sizeof(addr);
+      } else {
+        continue;
       }
-      ret.assign(addr_data, addr_data + len);
-      break;
+      return IPAddressNumber(addr_data, addr_data + len);
     }
   }
-  return ret;
+  DCHECK(false) << "Unable to get address from msghdr";
+  return IPAddressNumber();
 }
 
 // static
