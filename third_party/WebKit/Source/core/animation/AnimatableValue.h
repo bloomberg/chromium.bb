@@ -49,6 +49,7 @@ public:
     bool isColor() const { return m_type == TypeColor; }
     bool isImage() const { return m_type == TypeImage; }
     bool isLengthBox() const { return m_type == TypeLengthBox; }
+    bool isLengthSize() const { return m_type == TypeLengthSize; }
     bool isNumber() const { return m_type == TypeNumber; }
     bool isNeutral() const { return m_type == TypeNeutral; }
     bool isTransform() const { return m_type == TypeTransform; }
@@ -60,6 +61,7 @@ protected:
         TypeColor,
         TypeImage,
         TypeLengthBox,
+        TypeLengthSize,
         TypeNeutral,
         TypeNumber,
         TypeTransform,

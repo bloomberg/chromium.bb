@@ -35,6 +35,7 @@
 #include "core/animation/AnimatableColor.h"
 #include "core/animation/AnimatableImage.h"
 #include "core/animation/AnimatableLengthBox.h"
+#include "core/animation/AnimatableLengthSize.h"
 #include "core/animation/AnimatableNumber.h"
 #include "core/animation/AnimatableTransform.h"
 #include "core/animation/AnimatableUnknown.h"
@@ -101,6 +102,13 @@ inline static PassRefPtr<AnimatableValue> createFromLengthBox(const LengthBox le
         createFromLength(lengthBox.bottom(), style));
 }
 
+inline static PassRefPtr<AnimatableValue> createFromLengthSize(const LengthSize lengthSize, const RenderStyle* style)
+{
+    return AnimatableLengthSize::create(
+        createFromLength(lengthSize.width(), style),
+        createFromLength(lengthSize.height(), style));
+}
+
 PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::createFromColor(CSSPropertyID property, const RenderStyle* style)
 {
     Color color = style->colorIncludingFallback(property, false);
@@ -128,6 +136,10 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromColor(property, style);
     case CSSPropertyBorderBottomColor:
         return createFromColor(property, style);
+    case CSSPropertyBorderBottomLeftRadius:
+        return createFromLengthSize(style->borderBottomLeftRadius(), style);
+    case CSSPropertyBorderBottomRightRadius:
+        return createFromLengthSize(style->borderBottomRightRadius(), style);
     case CSSPropertyBorderBottomWidth:
         return createFromDouble(style->borderBottomWidth());
     case CSSPropertyBorderImageOutset:
@@ -148,6 +160,10 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromDouble(style->borderRightWidth());
     case CSSPropertyBorderTopColor:
         return createFromColor(property, style);
+    case CSSPropertyBorderTopLeftRadius:
+        return createFromLengthSize(style->borderTopLeftRadius(), style);
+    case CSSPropertyBorderTopRightRadius:
+        return createFromLengthSize(style->borderTopRightRadius(), style);
     case CSSPropertyBorderTopWidth:
         return createFromDouble(style->borderTopWidth());
     case CSSPropertyBottom:

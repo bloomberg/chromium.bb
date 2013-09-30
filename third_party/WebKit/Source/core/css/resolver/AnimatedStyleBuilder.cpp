@@ -34,6 +34,7 @@
 #include "core/animation/AnimatableColor.h"
 #include "core/animation/AnimatableImage.h"
 #include "core/animation/AnimatableLengthBox.h"
+#include "core/animation/AnimatableLengthSize.h"
 #include "core/animation/AnimatableNumber.h"
 #include "core/animation/AnimatableTransform.h"
 #include "core/animation/AnimatableUnknown.h"
@@ -51,11 +52,11 @@ namespace WebCore {
 
 namespace {
 
-Length animatableValueToLength(const AnimatableValue* value, const StyleResolverState& state)
+Length animatableValueToLength(const AnimatableValue* value, const StyleResolverState& state, NumberRange range = AllValues)
 {
     const RenderStyle* style = state.style();
     if (value->isNumber())
-        return toAnimatableNumber(value)->toLength(style, state.rootElementStyle(), style->effectiveZoom());
+        return toAnimatableNumber(value)->toLength(style, state.rootElementStyle(), style->effectiveZoom(), range);
     RefPtr<CSSValue> cssValue = toAnimatableUnknown(value)->toCSSValue();
     CSSPrimitiveValue* cssPrimitiveValue = toCSSPrimitiveValue(cssValue.get());
     return cssPrimitiveValue->convertToLength<AnyConversion>(style, state.rootElementStyle(), style->effectiveZoom());
@@ -77,6 +78,14 @@ LengthBox animatableValueToLengthBox(const AnimatableValue* value, const StyleRe
         animatableValueToLength(animatableLengthBox->left(), state));
 }
 
+LengthSize animatableValueToLengthSize(const AnimatableValue* value, const StyleResolverState& state, NumberRange range)
+{
+    const AnimatableLengthSize* animatableLengthSize = toAnimatableLengthSize(value);
+    return LengthSize(
+        animatableValueToLength(animatableLengthSize->width(), state, range),
+        animatableValueToLength(animatableLengthSize->height(), state, range));
+}
+
 } // namespace
 
 // FIXME: Generate this function.
@@ -95,6 +104,12 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyBorderBottomColor:
         style->setBorderBottomColor(toAnimatableColor(value)->color());
         style->setVisitedLinkBorderBottomColor(toAnimatableColor(value)->visitedLinkColor());
+        return;
+    case CSSPropertyBorderBottomLeftRadius:
+        style->setBorderBottomLeftRadius(animatableValueToLengthSize(value, state, NonNegativeValues));
+        return;
+    case CSSPropertyBorderBottomRightRadius:
+        style->setBorderBottomRightRadius(animatableValueToLengthSize(value, state, NonNegativeValues));
         return;
     case CSSPropertyBorderBottomWidth:
         style->setBorderBottomWidth(animatableValueRoundClampTo<unsigned>(value));
@@ -128,6 +143,12 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyBorderTopColor:
         style->setBorderTopColor(toAnimatableColor(value)->color());
         style->setVisitedLinkBorderTopColor(toAnimatableColor(value)->visitedLinkColor());
+        return;
+    case CSSPropertyBorderTopLeftRadius:
+        style->setBorderTopLeftRadius(animatableValueToLengthSize(value, state, NonNegativeValues));
+        return;
+    case CSSPropertyBorderTopRightRadius:
+        style->setBorderTopRightRadius(animatableValueToLengthSize(value, state, NonNegativeValues));
         return;
     case CSSPropertyBorderTopWidth:
         style->setBorderTopWidth(animatableValueRoundClampTo<unsigned>(value));

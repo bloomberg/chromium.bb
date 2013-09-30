@@ -18,15 +18,27 @@
 <script>
 assertInterpolation({
   property: 'border-radius',
-  from: '0px',
-  to: '40px'
+  from: '10px',
+  to: '50px'
 }, [
   {at: -0.3, is: '0px'}, // CSS border-radius can't be negative.
-  {at: 0, is: '0px'},
-  {at: 0.3, is: '12px'},
-  {at: 0.6, is: '24px'},
-  {at: 1, is: '40px'},
-  {at: 1.5, is: '60px'},
+  {at: 0, is: '10px'},
+  {at: 0.3, is: '22px'},
+  {at: 0.6, is: '34px'},
+  {at: 1, is: '50px'},
+  {at: 1.5, is: '70px'},
+]);
+assertInterpolation({
+  property: 'border-radius',
+  from: '10px',
+  to: '100%'
+}, [
+  {at: -0.3, is: '0px'},
+  {at: 0, is: '10px'},
+  {at: 0.3, is: '31px'},
+  {at: 0.6, is: '52px'},
+  {at: 1, is: '100%'},
+  {at: 1.5, is: '115px'},
 ]);
 </script>
 </body>
