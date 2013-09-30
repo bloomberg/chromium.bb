@@ -199,7 +199,7 @@ base::Value* RunFunctionAndReturnSingleResult(
   return NULL;
 }
 
-// This helps us be able to wait until an AsyncExtensionFunction calls
+// This helps us be able to wait until an UIThreadExtensionFunction calls
 // SendResponse.
 class SendResponseDelegate
     : public UIThreadExtensionFunction::DelegateForTests {
