@@ -97,7 +97,8 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
       close_button_(NULL),
       options_menu_button_(NULL),
       enable_web_ui_(false),
-      closed_by_user_(false) {
+      closed_by_user_(false),
+      closed_(false) {
   // We're owned by Balloon and don't want to be deleted by our parent View.
   set_owned_by_client();
 
@@ -109,6 +110,10 @@ BalloonViewImpl::~BalloonViewImpl() {
 }
 
 void BalloonViewImpl::Close(bool by_user) {
+  if (closed_)
+    return;
+
+  closed_ = true;
   animation_->Stop();
   html_contents_->Shutdown();
   // Detach contents from the widget before they close.
@@ -194,6 +199,9 @@ void BalloonViewImpl::SizeContentsWindow() {
 }
 
 void BalloonViewImpl::RepositionToBalloon() {
+  if (closed_)
+    return;
+
   DCHECK(frame_container_);
   DCHECK(html_container_);
   DCHECK(balloon_);
@@ -217,6 +225,9 @@ void BalloonViewImpl::RepositionToBalloon() {
 }
 
 void BalloonViewImpl::Update() {
+  if (closed_)
+    return;
+
   // Tls might get called before html_contents_ is set in Show() if more than
   // one update with the same replace_id occurs, or if an update occurs after
   // the ballon has been closed (e.g. during shutdown) but before this has been
@@ -282,6 +293,9 @@ gfx::Rect BalloonViewImpl::GetLabelBounds() const {
 }
 
 void BalloonViewImpl::Show(Balloon* balloon) {
+  if (closed_)
+    return;
+
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   balloon_ = balloon;

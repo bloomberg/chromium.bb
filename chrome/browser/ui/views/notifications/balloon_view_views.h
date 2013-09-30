@@ -158,6 +158,11 @@ class BalloonViewImpl : public BalloonView,
   // Most recent value passed to Close().
   bool closed_by_user_;
 
+  // Has Close() been invoked? Use to ensure we don't attempt to do anything
+  // once Close() has been invoked. This is important as Close() destroys state
+  // such that other BalloonView methods may crash if used after Close().
+  bool closed_;
+
   DISALLOW_COPY_AND_ASSIGN(BalloonViewImpl);
 };
 
