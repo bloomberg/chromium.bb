@@ -36,6 +36,7 @@
 #include "chrome/browser/android/chrome_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
 #include "ui/android/ui_jni_registrar.h"
+#include "ui/gfx/android/gfx_jni_registrar.h"
 #include "ui/gl/android/gl_jni_registrar.h"
 #endif
 
@@ -149,6 +150,7 @@ void ChromeTestSuite::Initialize() {
 
 #if defined(OS_ANDROID)
   // Register JNI bindings for android.
+  gfx::android::RegisterJni(base::android::AttachCurrentThread());
   net::android::RegisterJni(base::android::AttachCurrentThread());
   ui::android::RegisterJni(base::android::AttachCurrentThread());
   ui::gl::android::RegisterJni(base::android::AttachCurrentThread());

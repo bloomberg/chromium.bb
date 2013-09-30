@@ -7,6 +7,7 @@
     '../base/base.gyp:base',
     '../components/tracing.gyp:tracing',
     '../skia/skia.gyp:skia',
+    '../ui/gfx/gfx.gyp:gfx',
     '../ui/ui.gyp:ui',
     '../url/url.gyp:url_lib',
   ],

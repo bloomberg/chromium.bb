@@ -18,6 +18,7 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink_minimal',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/ui.gyp:ui',
       ],
       'defines': [

@@ -8,6 +8,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../ppapi/ppapi_internal.gyp:ppapi_ipc',
+        '../ui/gfx/gfx.gyp:gfx',
         '../ui/ui.gyp:ui',
       ],
       'sources': [

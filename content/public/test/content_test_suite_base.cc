@@ -29,6 +29,7 @@
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
 #include "ui/android/ui_jni_registrar.h"
+#include "ui/gfx/android/gfx_jni_registrar.h"
 #include "ui/gl/android/gl_jni_registrar.h"
 #include "ui/shell_dialogs/android/shell_dialogs_jni_registrar.h"
 #endif
@@ -63,6 +64,7 @@ void ContentTestSuiteBase::Initialize() {
   JNIEnv* env = base::android::AttachCurrentThread();
   content::android::RegisterCommonJni(env);
   content::android::RegisterBrowserJni(env);
+  gfx::android::RegisterJni(env);
   media::RegisterJni(env);
   net::android::RegisterJni(env);
   ui::android::RegisterJni(env);

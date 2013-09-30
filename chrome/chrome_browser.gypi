@@ -58,6 +58,7 @@
         '../third_party/zlib/zlib.gyp:minizip',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
+        '../ui/gfx/gfx.gyp:gfx',
         '../ui/message_center/message_center.gyp:message_center',
         '../ui/ui.gyp:shell_dialogs',
         '../ui/ui.gyp:ui',

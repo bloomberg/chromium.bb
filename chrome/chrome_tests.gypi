@@ -489,6 +489,7 @@
         '../net/net.gyp:net',
         '../third_party/zlib/zlib.gyp:minizip',
         '../third_party/zlib/zlib.gyp:zlib',
+        '../ui/gfx/gfx.gyp:gfx',
         '../ui/ui.gyp:ui',
         '../url/url.gyp:url_lib',
       ],
@@ -675,6 +676,7 @@
         '../crypto/crypto.gyp:crypto',
         '../net/net.gyp:http_server',
         '../net/net.gyp:net',
+        '../ui/gfx/gfx.gyp:gfx',
         '../ui/ui.gyp:ui',
       ],
       'include_dirs': [
@@ -775,6 +777,7 @@
         '../net/net.gyp:http_server',
         '../net/net.gyp:net',
         '../testing/gtest.gyp:gtest',
+        '../ui/gfx/gfx.gyp:gfx',
         '../ui/ui.gyp:ui',
       ],
       'include_dirs': [
@@ -797,6 +800,7 @@
         '../net/net.gyp:http_server',
         '../net/net.gyp:net',
         '../testing/gtest.gyp:gtest',
+        '../ui/gfx/gfx.gyp:gfx',
         '../ui/ui.gyp:ui',
       ],
       'include_dirs': [

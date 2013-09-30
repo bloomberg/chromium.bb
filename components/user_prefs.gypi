@@ -12,6 +12,7 @@
         '../base/base.gyp:base_prefs',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../content/content.gyp:content_browser',
+        '../ui/gfx/gfx.gyp:gfx',
         '../ui/ui.gyp:ui',
       ],
       'include_dirs': [

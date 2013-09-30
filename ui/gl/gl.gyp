@@ -18,6 +18,7 @@
         '<(DEPTH)/gpu/command_buffer/command_buffer.gyp:gles2_utils',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/mesa/mesa.gyp:mesa_headers',
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/ui.gyp:ui',
       ],
       'variables': {

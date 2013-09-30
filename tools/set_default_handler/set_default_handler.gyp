@@ -12,6 +12,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../win8/win8.gyp:test_support_win8',
+        '../../ui/gfx/gfx.gyp:gfx',
         '../../ui/ui.gyp:ui',
       ],
       'include_dirs': [

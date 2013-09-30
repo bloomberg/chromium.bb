@@ -39,11 +39,11 @@ JavaBitmap::~JavaBitmap() {
 
 // static
 bool JavaBitmap::RegisterJavaBitmap(JNIEnv* env) {
-  return ui::RegisterNativesImpl(env);
+  return RegisterNativesImpl(env);
 }
 
 static ScopedJavaLocalRef<jobject> CreateJavaBitmap(const gfx::Size& size) {
-  return ui::Java_BitmapHelper_createBitmap(AttachCurrentThread(),
+  return Java_BitmapHelper_createBitmap(AttachCurrentThread(),
       size.width(), size.height());
 }
 
@@ -87,7 +87,7 @@ SkBitmap CreateSkBitmapFromResource(const char* name, gfx::Size size) {
   DCHECK(!size.IsEmpty());
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jname(env, env->NewStringUTF(name));
-  ScopedJavaLocalRef<jobject> jobj(ui::Java_BitmapHelper_decodeDrawableResource(
+  ScopedJavaLocalRef<jobject> jobj(Java_BitmapHelper_decodeDrawableResource(
       env, jname.obj(), size.width(), size.height()));
   if (jobj.is_null())
     return SkBitmap();

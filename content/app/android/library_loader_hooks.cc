@@ -27,6 +27,7 @@
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
 #include "ui/android/ui_jni_registrar.h"
+#include "ui/gfx/android/gfx_jni_registrar.h"
 #include "ui/gl/android/gl_jni_registrar.h"
 #include "ui/shell_dialogs/android/shell_dialogs_jni_registrar.h"
 
@@ -71,6 +72,9 @@ static jint LibraryLoaded(JNIEnv* env, jclass clazz,
           << ", default verbosity = " << logging::GetVlogVerbosity();
 
   if (!base::android::RegisterJni(env))
+    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
+
+  if (!gfx::android::RegisterJni(env))
     return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   if (!net::android::RegisterJni(env))

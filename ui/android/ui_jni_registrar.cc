@@ -18,8 +18,6 @@ namespace android {
 
 static base::android::RegistrationMethod kUiRegisteredMethods[] = {
   { "Clipboard", ui::RegisterClipboardAndroid },
-  { "DeviceDisplayInfo", gfx::DeviceDisplayInfo::RegisterDeviceDisplayInfo },
-  { "JavaBitmap", gfx::JavaBitmap::RegisterJavaBitmap },
   { "LocalizationUtils", l10n_util::RegisterLocalizationUtil },
   { "ViewAndroid", ui::ViewAndroid::RegisterViewAndroid },
   { "WindowAndroid", ui::WindowAndroid::RegisterWindowAndroid },

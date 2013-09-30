@@ -15,6 +15,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "ui/android/ui_jni_registrar.h"
+#include "ui/gfx/android/gfx_jni_registrar.h"
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -31,6 +32,7 @@ void UITestSuite::Initialize() {
 
 #if defined(OS_ANDROID)
   // Register JNI bindings for android.
+  gfx::android::RegisterJni(base::android::AttachCurrentThread());
   ui::android::RegisterJni(base::android::AttachCurrentThread());
 #endif
 

@@ -10,6 +10,7 @@
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
+        'gfx/gfx.gyp:gfx',
       ],
       'sources': [
         'base/test/cocoa_test_event_utils.h',

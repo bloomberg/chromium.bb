@@ -25,6 +25,7 @@
             '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink_minimal',
             '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator_glsl',
             '<(DEPTH)/ui/gl/gl.gyp:gl',
+            '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
             '<(DEPTH)/ui/ui.gyp:ui',
           ],
           'sources': [

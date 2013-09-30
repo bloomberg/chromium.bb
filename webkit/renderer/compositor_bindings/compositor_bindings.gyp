@@ -34,6 +34,7 @@
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
       ],
