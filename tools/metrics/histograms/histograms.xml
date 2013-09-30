@@ -9009,6 +9009,22 @@ other types of suffix sets.
   <summary>The time that a Wi-fi scan takes.</summary>
 </histogram>
 
+<histogram name="Net.WpadQuickCheckFailure" units="milliseconds">
+  <summary>
+    Duration of time that a failing WPAD QuickCheck takes. WPAD QuickCheck does
+    a name lookup for &quot;wpad&quot; and times out quickly to fail fast when
+    there's no WPAD server on the network.
+  </summary>
+</histogram>
+
+<histogram name="Net.WpadQuickCheckSuccess" units="milliseconds">
+  <summary>
+    Duration of time that a successful WPAD QuickCheck takes. WPAD QuickCheck
+    does a name lookup for &quot;wpad&quot; and times out quickly to fail fast
+    when there's no WPAD server on the network.
+  </summary>
+</histogram>
+
 <histogram name="NetConnectivity.Pipeline.0.NetworkError" enum="NetErrorCodes">
   <summary>
     The network error, if any, of the first pipeline connectivity request.
