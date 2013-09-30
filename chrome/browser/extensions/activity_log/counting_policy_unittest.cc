@@ -305,6 +305,7 @@ class CountingPolicyTest : public testing::Test {
 
 TEST_F(CountingPolicyTest, Construct) {
   ActivityLogDatabasePolicy* policy = new CountingPolicy(profile_.get());
+  policy->Init();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
@@ -325,6 +326,7 @@ TEST_F(CountingPolicyTest, Construct) {
 
 TEST_F(CountingPolicyTest, LogWithStrippedArguments) {
   ActivityLogDatabasePolicy* policy = new CountingPolicy(profile_.get());
+  policy->Init();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
@@ -353,6 +355,7 @@ TEST_F(CountingPolicyTest, LogWithStrippedArguments) {
 
 TEST_F(CountingPolicyTest, GetTodaysActions) {
   CountingPolicy* policy = new CountingPolicy(profile_.get());
+  policy->Init();
   // Disable row expiration for this test by setting a time before any actions
   // we generate.
   policy->set_retention_time(base::TimeDelta::FromDays(14));
@@ -414,6 +417,7 @@ TEST_F(CountingPolicyTest, GetTodaysActions) {
 // Check that we can read back less recent actions in the db.
 TEST_F(CountingPolicyTest, GetOlderActions) {
   CountingPolicy* policy = new CountingPolicy(profile_.get());
+  policy->Init();
   policy->set_retention_time(base::TimeDelta::FromDays(14));
 
   // Use a mock clock to ensure that events are not recorded on the wrong day
@@ -468,6 +472,7 @@ TEST_F(CountingPolicyTest, GetOlderActions) {
 
 TEST_F(CountingPolicyTest, LogAndFetchFilteredActions) {
   ActivityLogDatabasePolicy* policy = new CountingPolicy(profile_.get());
+  policy->Init();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
@@ -567,6 +572,7 @@ TEST_F(CountingPolicyTest, LogAndFetchFilteredActions) {
 // days, and that old data can be expired from the database.
 TEST_F(CountingPolicyTest, MergingAndExpiring) {
   CountingPolicy* policy = new CountingPolicy(profile_.get());
+  policy->Init();
   // Initially disable expiration by setting a retention time before any
   // actions we generate.
   policy->set_retention_time(base::TimeDelta::FromDays(14));
@@ -636,6 +642,7 @@ TEST_F(CountingPolicyTest, MergingAndExpiring) {
 // Test cleaning of old data in the string and URL tables.
 TEST_F(CountingPolicyTest, StringTableCleaning) {
   CountingPolicy* policy = new CountingPolicy(profile_.get());
+  policy->Init();
   // Initially disable expiration by setting a retention time before any
   // actions we generate.
   policy->set_retention_time(base::TimeDelta::FromDays(14));
@@ -690,6 +697,7 @@ TEST_F(CountingPolicyTest, StringTableCleaning) {
 // items are merged properly and final timestamps are correct.
 TEST_F(CountingPolicyTest, MoreMerging) {
   CountingPolicy* policy = new CountingPolicy(profile_.get());
+  policy->Init();
   policy->set_retention_time(base::TimeDelta::FromDays(14));
 
   // Use a mock clock to ensure that events are not recorded on the wrong day
@@ -765,6 +773,7 @@ TEST_F(CountingPolicyTest, MoreMerging) {
 // memory.
 TEST_F(CountingPolicyTest, EarlyFlush) {
   CountingPolicy* policy = new CountingPolicy(profile_.get());
+  policy->Init();
 
   for (int i = 0; i < 500; i++) {
     scoped_refptr<Action> action =
@@ -783,6 +792,7 @@ TEST_F(CountingPolicyTest, EarlyFlush) {
 
 TEST_F(CountingPolicyTest, CapReturns) {
   CountingPolicy* policy = new CountingPolicy(profile_.get());
+  policy->Init();
 
   for (int i = 0; i < 305; i++) {
     scoped_refptr<Action> action =
@@ -811,6 +821,7 @@ TEST_F(CountingPolicyTest, CapReturns) {
 
 TEST_F(CountingPolicyTest, RemoveAllURLs) {
   ActivityLogDatabasePolicy* policy = new CountingPolicy(profile_.get());
+  policy->Init();
 
   // Use a mock clock to ensure that events are not recorded on the wrong day
   // when the test is run close to local midnight.
@@ -853,6 +864,7 @@ TEST_F(CountingPolicyTest, RemoveAllURLs) {
 
 TEST_F(CountingPolicyTest, RemoveSpecificURLs) {
   ActivityLogDatabasePolicy* policy = new CountingPolicy(profile_.get());
+  policy->Init();
 
   // Use a mock clock to ensure that events are not recorded on the wrong day
   // when the test is run close to local midnight.
@@ -929,6 +941,7 @@ TEST_F(CountingPolicyTest, RemoveSpecificURLs) {
 
 TEST_F(CountingPolicyTest, RemoveExtensionData) {
   CountingPolicy* policy = new CountingPolicy(profile_.get());
+  policy->Init();
 
   // Use a mock clock to ensure that events are not recorded on the wrong day
   // when the test is run close to local midnight.
@@ -987,6 +1000,7 @@ TEST_F(CountingPolicyTest, RemoveExtensionData) {
 
 TEST_F(CountingPolicyTest, DeleteActions) {
   CountingPolicy* policy = new CountingPolicy(profile_.get());
+  policy->Init();
   // Disable row expiration for this test by setting a time before any actions
   // we generate.
   policy->set_retention_time(base::TimeDelta::FromDays(14));
@@ -1063,6 +1077,7 @@ TEST_F(CountingPolicyTest, DeleteActions) {
 // when updating counts.
 TEST_F(CountingPolicyTest, DuplicateRows) {
   CountingPolicy* policy = new CountingPolicy(profile_.get());
+  policy->Init();
   base::SimpleTestClock* mock_clock = new base::SimpleTestClock();
   mock_clock->SetNow(base::Time::Now().LocalMidnight() +
                      base::TimeDelta::FromHours(12));

@@ -154,6 +154,10 @@ class ActivityLogDatabasePolicy : public ActivityLogPolicy,
   ActivityLogDatabasePolicy(Profile* profile,
                             const base::FilePath& database_name);
 
+  // Initializes an activity log policy database. This needs to be called after
+  // constructing ActivityLogDatabasePolicy.
+  void Init();
+
   // Requests that in-memory state be written to the database.  This method can
   // be called from any thread, but the database writes happen asynchronously
   // on the database thread.
@@ -223,6 +227,7 @@ class ActivityLogDatabasePolicy : public ActivityLogPolicy,
   // See the comments for the ActivityDatabase class for a discussion of how
   // database cleanup runs.
   ActivityDatabase* db_;
+  base::FilePath database_path_;
 };
 
 }  // namespace extensions

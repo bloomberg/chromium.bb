@@ -419,6 +419,7 @@ void ActivityLog::SetDatabasePolicy(
     default:
       NOTREACHED();
   }
+  database_policy_->Init();
   database_policy_type_ = policy_type;
 }
 

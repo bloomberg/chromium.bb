@@ -237,6 +237,7 @@ class FullStreamUIPolicyTest : public testing::Test {
 
 TEST_F(FullStreamUIPolicyTest, Construct) {
   ActivityLogDatabasePolicy* policy = new FullStreamUIPolicy(profile_.get());
+  policy->Init();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
@@ -257,6 +258,7 @@ TEST_F(FullStreamUIPolicyTest, Construct) {
 
 TEST_F(FullStreamUIPolicyTest, LogAndFetchActions) {
   ActivityLogDatabasePolicy* policy = new FullStreamUIPolicy(profile_.get());
+  policy->Init();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
@@ -294,6 +296,7 @@ TEST_F(FullStreamUIPolicyTest, LogAndFetchActions) {
 
 TEST_F(FullStreamUIPolicyTest, LogAndFetchFilteredActions) {
   ActivityLogDatabasePolicy* policy = new FullStreamUIPolicy(profile_.get());
+  policy->Init();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
@@ -391,6 +394,7 @@ TEST_F(FullStreamUIPolicyTest, LogAndFetchFilteredActions) {
 
 TEST_F(FullStreamUIPolicyTest, LogWithArguments) {
   ActivityLogDatabasePolicy* policy = new FullStreamUIPolicy(profile_.get());
+  policy->Init();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
@@ -419,6 +423,7 @@ TEST_F(FullStreamUIPolicyTest, LogWithArguments) {
 
 TEST_F(FullStreamUIPolicyTest, GetTodaysActions) {
   ActivityLogDatabasePolicy* policy = new FullStreamUIPolicy(profile_.get());
+  policy->Init();
 
   // Use a mock clock to ensure that events are not recorded on the wrong day
   // when the test is run close to local midnight.  Note: Ownership is passed
@@ -467,6 +472,7 @@ TEST_F(FullStreamUIPolicyTest, GetTodaysActions) {
 // Check that we can read back less recent actions in the db.
 TEST_F(FullStreamUIPolicyTest, GetOlderActions) {
   ActivityLogDatabasePolicy* policy = new FullStreamUIPolicy(profile_.get());
+  policy->Init();
 
   // Use a mock clock to ensure that events are not recorded on the wrong day
   // when the test is run close to local midnight.
@@ -519,6 +525,7 @@ TEST_F(FullStreamUIPolicyTest, GetOlderActions) {
 
 TEST_F(FullStreamUIPolicyTest, RemoveAllURLs) {
   ActivityLogDatabasePolicy* policy = new FullStreamUIPolicy(profile_.get());
+  policy->Init();
 
   // Use a mock clock to ensure that events are not recorded on the wrong day
   // when the test is run close to local midnight.
@@ -561,6 +568,7 @@ TEST_F(FullStreamUIPolicyTest, RemoveAllURLs) {
 
 TEST_F(FullStreamUIPolicyTest, RemoveSpecificURLs) {
   ActivityLogDatabasePolicy* policy = new FullStreamUIPolicy(profile_.get());
+  policy->Init();
 
   // Use a mock clock to ensure that events are not recorded on the wrong day
   // when the test is run close to local midnight.
@@ -636,6 +644,7 @@ TEST_F(FullStreamUIPolicyTest, RemoveSpecificURLs) {
 
 TEST_F(FullStreamUIPolicyTest, RemoveExtensionData) {
   FullStreamUIPolicy* policy = new FullStreamUIPolicy(profile_.get());
+  policy->Init();
 
   // Use a mock clock to ensure that events are not recorded on the wrong day
   // when the test is run close to local midnight.
@@ -694,6 +703,7 @@ TEST_F(FullStreamUIPolicyTest, RemoveExtensionData) {
 
 TEST_F(FullStreamUIPolicyTest, CapReturns) {
   FullStreamUIPolicy* policy = new FullStreamUIPolicy(profile_.get());
+  policy->Init();
 
   for (int i = 0; i < 305; i++) {
     scoped_refptr<Action> action =
@@ -727,6 +737,7 @@ TEST_F(FullStreamUIPolicyTest, CapReturns) {
 
 TEST_F(FullStreamUIPolicyTest, DeleteActions) {
   ActivityLogDatabasePolicy* policy = new FullStreamUIPolicy(profile_.get());
+  policy->Init();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()

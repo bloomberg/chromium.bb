@@ -53,8 +53,11 @@ ActivityLogDatabasePolicy::ActivityLogDatabasePolicy(
   CHECK(profile);
   base::FilePath profile_base_path = profile->GetPath();
   db_ = new ActivityDatabase(this);
-  base::FilePath database_path = profile_base_path.Append(database_name);
-  ScheduleAndForget(db_, &ActivityDatabase::Init, database_path);
+  database_path_ = profile_base_path.Append(database_name);
+}
+
+void ActivityLogDatabasePolicy::Init() {
+  ScheduleAndForget(db_, &ActivityDatabase::Init, database_path_);
 }
 
 void ActivityLogDatabasePolicy::Flush() {
