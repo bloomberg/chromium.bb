@@ -491,7 +491,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       var managerId = selectedPod.user.username;
       var managerDisplayId = selectedPod.user.emailAddress;
       var managerPassword = selectedPod.passwordElement.value;
-      if (managerPassword.empty)
+      if (managerPassword.length == 0)
         return;
       if (this.disabled)
         return;
@@ -663,6 +663,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       selectedPod.showPasswordError();
       selectedPod.passwordElement.value = '';
       selectedPod.focusInput();
+      this.updateNextButtonForManager_();
     },
 
     /**
