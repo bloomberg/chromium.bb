@@ -340,10 +340,23 @@ void MediaStreamImpl::OnStreamGenerated(
   request_info->generated = true;
 
   WebKit::WebVector<WebKit::WebMediaStreamSource> audio_source_vector(
-      audio_array.size());
-  CreateWebKitSourceVector(label, audio_array,
+        audio_array.size());
+
+  StreamDeviceInfoArray overridden_audio_array = audio_array;
+  if (!request_info->enable_automatic_output_device_selection) {
+    // If the GetUserMedia request did not explicitly set the constraint
+    // kMediaStreamRenderToAssociatedSink, the output device parameters must
+    // be removed.
+    for (StreamDeviceInfoArray::iterator it = overridden_audio_array.begin();
+         it != overridden_audio_array.end(); ++it) {
+      it->device.matched_output_device_id = "";
+      it->device.matched_output = MediaStreamDevice::AudioDeviceParameters();
+    }
+  }
+  CreateWebKitSourceVector(label, overridden_audio_array,
                            WebKit::WebMediaStreamSource::TypeAudio,
                            audio_source_vector);
+
   request_info->audio_sources.assign(audio_source_vector);
   WebKit::WebVector<WebKit::WebMediaStreamSource> video_source_vector(
       video_array.size());
@@ -676,48 +689,18 @@ bool MediaStreamImpl::GetAuthorizedDeviceInfoForAudioRenderer(
     int* output_frames_per_buffer) {
   DCHECK(CalledOnValidThread());
 
-  const StreamDeviceInfo* device_info = NULL;
-  WebKit::WebString session_id_str;
-  UserMediaRequests::iterator it = user_media_requests_.begin();
-  for (; it != user_media_requests_.end(); ++it) {
-    UserMediaRequestInfo* request = (*it);
-    for (size_t i = 0; i < request->audio_sources.size(); ++i) {
-      const WebKit::WebMediaStreamSource& source = request->audio_sources[i];
-      if (source.readyState() == WebKit::WebMediaStreamSource::ReadyStateEnded)
-        continue;
-
-      // Check if this request explicitly turned on the automatic output
-      // device selection constraint.
-      if (!request->enable_automatic_output_device_selection)
-        continue;
-
-      if (!session_id_str.isEmpty() &&
-          !session_id_str.equals(source.deviceId())) {
-        DVLOG(1) << "Multiple capture devices are open so we can't pick a "
-                    "session for a matching output device.";
-        return false;
-      }
-
-      // TODO(tommi): Storing the session id in the deviceId field doesn't
-      // feel right.  Move it over to MediaStreamSourceExtraData?
-      session_id_str = source.deviceId();
-      content::MediaStreamSourceExtraData* extra_data =
-          static_cast<content::MediaStreamSourceExtraData*>(source.extraData());
-      device_info = &extra_data->device_info();
-    }
-  }
-
-  if (session_id_str.isEmpty() || !device_info ||
-      !device_info->device.matched_output.sample_rate) {
+  WebRtcAudioDeviceImpl* audio_device =
+      dependency_factory_->GetWebRtcAudioDevice();
+  if (!audio_device)
     return false;
-  }
 
-  base::StringToInt(UTF16ToUTF8(session_id_str), session_id);
-  *output_sample_rate = device_info->device.matched_output.sample_rate;
-  *output_frames_per_buffer =
-      device_info->device.matched_output.frames_per_buffer;
+  if (!audio_device->GetDefaultCapturer())
+    return false;
 
-  return true;
+  return audio_device->GetDefaultCapturer()->GetPairedOutputParameters(
+      session_id,
+      output_sample_rate,
+      output_frames_per_buffer);
 }
 
 MediaStreamSourceExtraData::MediaStreamSourceExtraData(

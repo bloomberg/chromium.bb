@@ -845,7 +845,9 @@ MediaStreamDependencyFactory::MaybeCreateAudioCapturer(
           device_info.device.input.sample_rate,
           device_info.device.input.frames_per_buffer,
           device_info.session_id,
-          device_info.device.id)) {
+          device_info.device.id,
+          device_info.device.matched_output.sample_rate,
+          device_info.device.matched_output.frames_per_buffer)) {
     return NULL;
   }
 

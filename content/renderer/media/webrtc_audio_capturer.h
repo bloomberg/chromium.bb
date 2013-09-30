@@ -53,7 +53,9 @@ class CONTENT_EXPORT WebRtcAudioCapturer
                   int sample_rate,
                   int buffer_size,
                   int session_id,
-                  const std::string& device_id);
+                  const std::string& device_id,
+                  int paired_output_sample_rate,
+                  int paired_output_frames_per_buffer);
 
   // Add a audio track to the sinks of the capturer.
   // WebRtcAudioDeviceImpl calls this method on the main render thread but
@@ -99,6 +101,12 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // parameters can become outdated at any time. Think over the implications
   // of this accessor and if we can remove it.
   media::AudioParameters audio_parameters() const;
+
+  // Gets information about the paired output device. Returns true if such a
+  // device exists.
+  bool GetPairedOutputParameters(int* session_id,
+                                 int* output_sample_rate,
+                                 int* output_frames_per_buffer) const;
 
   const std::string& device_id() const { return device_id_; }
 
@@ -187,6 +195,9 @@ class CONTENT_EXPORT WebRtcAudioCapturer
 
   // Flag which affects the buffer size used by the capturer.
   bool peer_connection_mode_;
+
+  int output_sample_rate_;
+  int output_frames_per_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioCapturer);
 };

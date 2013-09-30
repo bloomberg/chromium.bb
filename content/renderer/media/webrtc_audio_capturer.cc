@@ -134,7 +134,9 @@ bool WebRtcAudioCapturer::Initialize(int render_view_id,
                                      int sample_rate,
                                      int buffer_size,
                                      int session_id,
-                                     const std::string& device_id) {
+                                     const std::string& device_id,
+                                     int paired_output_sample_rate,
+                                     int paired_output_frames_per_buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GE(render_view_id, 0);
   DVLOG(1) << "WebRtcAudioCapturer::Initialize()";
@@ -147,6 +149,8 @@ bool WebRtcAudioCapturer::Initialize(int render_view_id,
   session_id_ = session_id;
   device_id_ = device_id;
   hardware_buffer_size_ = buffer_size;
+  output_sample_rate_ = paired_output_sample_rate;
+  output_frames_per_buffer_= paired_output_frames_per_buffer;
 
   if (render_view_id == -1) {
     // Return true here to allow injecting a new source via SetCapturerSource()
@@ -202,7 +206,9 @@ WebRtcAudioCapturer::WebRtcAudioCapturer()
       session_id_(0),
       volume_(0),
       source_provider_(new WebRtcLocalAudioSourceProvider()),
-      peer_connection_mode_(false) {
+      peer_connection_mode_(false),
+      output_sample_rate_(0),
+      output_frames_per_buffer_(0) {
   DCHECK(source_provider_.get());
   DVLOG(1) << "WebRtcAudioCapturer::WebRtcAudioCapturer()";
 }
@@ -440,6 +446,17 @@ void WebRtcAudioCapturer::OnCaptureError() {
 media::AudioParameters WebRtcAudioCapturer::audio_parameters() const {
   base::AutoLock auto_lock(lock_);
   return params_;
+}
+
+bool WebRtcAudioCapturer::GetPairedOutputParameters(
+    int* session_id,
+    int* output_sample_rate,
+    int* output_frames_per_buffer) const {
+  *session_id = session_id_;
+  *output_sample_rate = output_sample_rate_;
+  *output_frames_per_buffer = output_frames_per_buffer_;
+  return session_id_ > 0 && output_sample_rate_ > 0 &&
+      output_frames_per_buffer_> 0;
 }
 
 int WebRtcAudioCapturer::GetBufferSize(int sample_rate) const {
