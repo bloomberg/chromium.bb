@@ -2201,8 +2201,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   EXPECT_STREQ(kPayloadData, disk_data.c_str());
 }
 
+// Test is flaky: http://crbug.com/302071
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DownloadExtensionTest_OnDeterminingFilename_NoChange) {
+                       DISABLED_DownloadExtensionTest_OnDeterminingFilename_NoChange) {
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
