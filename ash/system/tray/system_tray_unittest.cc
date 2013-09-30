@@ -146,6 +146,47 @@ TEST_F(SystemTrayTest, SystemTrayDefaultView) {
   ASSERT_FALSE(tray->CloseSystemBubble());
 }
 
+// Opening and closing the bubble should change the coloring of the tray.
+TEST_F(SystemTrayTest, SystemTrayColoring) {
+  SystemTray* tray = GetSystemTray();
+  ASSERT_TRUE(tray->GetWidget());
+  // At the beginning the tray coloring is not active.
+  ASSERT_FALSE(tray->draw_background_as_active());
+
+  // Showing the system bubble should show the background as active.
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  ASSERT_TRUE(tray->draw_background_as_active());
+
+  // Closing the system menu should change the coloring back to normal.
+  ASSERT_TRUE(tray->CloseSystemBubble());
+  RunAllPendingInMessageLoop();
+  ASSERT_FALSE(tray->draw_background_as_active());
+}
+
+// Closing the system bubble through an alignment change should change the
+// system tray coloring back to normal.
+TEST_F(SystemTrayTest, SystemTrayColoringAfterAlignmentChange) {
+  SystemTray* tray = GetSystemTray();
+  ASSERT_TRUE(tray->GetWidget());
+  internal::ShelfLayoutManager* manager =
+      Shell::GetPrimaryRootWindowController()->shelf()->shelf_layout_manager();
+  manager->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  // At the beginning the tray coloring is not active.
+  ASSERT_FALSE(tray->draw_background_as_active());
+
+  // Showing the system bubble should show the background as active.
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  ASSERT_TRUE(tray->draw_background_as_active());
+
+  // Changing the alignment should close the system bubble and change the
+  // background color.
+  manager->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  ASSERT_FALSE(tray->draw_background_as_active());
+  RunAllPendingInMessageLoop();
+  // The bubble should already be closed by now.
+  ASSERT_FALSE(tray->CloseSystemBubble());
+}
+
 TEST_F(SystemTrayTest, SystemTrayTestItems) {
   SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());

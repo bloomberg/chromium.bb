@@ -174,6 +174,9 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
   // notification tray according to the current status.
   void UpdateWebNotifications();
 
+  // Deactivate the system tray in the shelf if it was active before.
+  void CloseSystemBubbleAndDeactivateSystemTray();
+
   const ScopedVector<SystemTrayItem>& items() const { return items_; }
 
   // Overridden from internal::ActionableView.

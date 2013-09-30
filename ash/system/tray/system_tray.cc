@@ -362,15 +362,9 @@ bool SystemTray::HasSystemBubbleType(SystemTrayBubble::BubbleType type) {
 }
 
 void SystemTray::DestroySystemBubble() {
-  system_bubble_.reset();
+  CloseSystemBubbleAndDeactivateSystemTray();
   detailed_item_ = NULL;
   UpdateWebNotifications();
-  // When closing a system bubble with the alternate shelf layout, we need to
-  // turn off the active tinting of the shelf.
-  if (full_system_tray_menu_) {
-    SetDrawBackgroundAsActive(false);
-    full_system_tray_menu_ = false;
-  }
 }
 
 void SystemTray::DestroyNotificationBubble() {
@@ -562,7 +556,7 @@ void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
   internal::TrayBackgroundView::SetShelfAlignment(alignment);
   UpdateAfterShelfAlignmentChange(alignment);
   // Destroy any existing bubble so that it is rebuilt correctly.
-  system_bubble_.reset();
+  CloseSystemBubbleAndDeactivateSystemTray();
   // Rebuild any notification bubble.
   if (notification_bubble_) {
     notification_bubble_.reset();
@@ -661,6 +655,16 @@ bool SystemTray::PerformAction(const ui::Event& event) {
     ShowDefaultViewWithOffset(BUBBLE_CREATE_NEW, arrow_offset);
   }
   return true;
+}
+
+void SystemTray::CloseSystemBubbleAndDeactivateSystemTray() {
+  system_bubble_.reset();
+  // When closing a system bubble with the alternate shelf layout, we need to
+  // turn off the active tinting of the shelf.
+  if (full_system_tray_menu_) {
+    SetDrawBackgroundAsActive(false);
+    full_system_tray_menu_ = false;
+  }
 }
 
 }  // namespace ash
