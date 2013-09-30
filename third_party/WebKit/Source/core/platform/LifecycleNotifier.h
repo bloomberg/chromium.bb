@@ -45,6 +45,8 @@ public:
     virtual void addObserver(LifecycleObserver*);
     virtual void removeObserver(LifecycleObserver*);
 
+    bool isIteratingOverObservers() const { return m_iterating != IteratingNone; }
+
 protected:
     explicit LifecycleNotifier(LifecycleContext*);
 

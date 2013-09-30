@@ -310,6 +310,11 @@ PassOwnPtr<LifecycleNotifier> ScriptExecutionContext::createLifecycleNotifier()
     return ContextLifecycleNotifier::create(this);
 }
 
+bool ScriptExecutionContext::isIteratingOverObservers() const
+{
+    return m_lifecycleNotifier && m_lifecycleNotifier->isIteratingOverObservers();
+}
+
 ScriptExecutionContext::Task::~Task()
 {
 }

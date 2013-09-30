@@ -98,6 +98,7 @@ public:
 
     bool activeDOMObjectsAreSuspended() const { return m_activeDOMObjectsAreSuspended; }
     bool activeDOMObjectsAreStopped() const { return m_activeDOMObjectsAreStopped; }
+    bool isIteratingOverObservers() const;
 
     // Called after the construction of an ActiveDOMObject to synchronize suspend state.
     void suspendActiveDOMObjectIfNeeded(ActiveDOMObject*);

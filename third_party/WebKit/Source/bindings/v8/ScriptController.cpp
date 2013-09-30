@@ -180,6 +180,8 @@ static String resourceString(const v8::Handle<v8::Function> function)
 
 v8::Local<v8::Value> ScriptController::callFunction(ScriptExecutionContext* context, v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[], v8::Isolate* isolate)
 {
+    RELEASE_ASSERT(!context->isIteratingOverObservers());
+
     InspectorInstrumentationCookie cookie;
     if (InspectorInstrumentation::timelineAgentEnabled(context)) {
         String resourceName;
@@ -218,6 +220,7 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Handle<v8
 
         // Keep Frame (and therefore ScriptController) alive.
         RefPtr<Frame> protect(m_frame);
+        RELEASE_ASSERT(!m_frame->document()->isIteratingOverObservers());
         result = V8ScriptRunner::runCompiledScript(script, m_frame->document(), m_isolate);
         ASSERT(!tryCatch.HasCaught() || result.IsEmpty());
     }
