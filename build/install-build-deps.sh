@@ -158,7 +158,7 @@ else
 fi
 
 
-# Some packages are only needed, if the distribution actually supports
+# Some packages are only needed if the distribution actually supports
 # installing them.
 if package_exists appmenu-gtk; then
   lib_list="$lib_list appmenu-gtk"
@@ -172,6 +172,7 @@ fi
 # Users can abort the function by pressing CTRL-C. This will call "exit 1".
 yes_no() {
   if [ 0 -ne "${do_default-0}" ] ; then
+    [ $1 -eq 0 ] && echo "Y" || echo "N"
     return $1
   fi
   local c
@@ -329,7 +330,9 @@ if [ "$(uname -m)" = "x86_64" ]; then
     # There are other ways to achieve the same goal. But resetting the
     # variable is the best way to document the intended behavior -- and to
     # allow us to gradually deprecate and then remove the obsolete code.
-    do_inst_lib32=
+    if test "${do_default-0}" -ne 1; then
+      do_inst_lib32=
+    fi
   fi
 
   echo "WARNING"
@@ -342,10 +345,12 @@ if [ "$(uname -m)" = "x86_64" ]; then
   echo "The code for installing 32bit libraries on a 64bit system is"
   echo "unmaintained and might not work with modern versions of Ubuntu"
   echo "or Debian."
-  echo
-  echo -n "Are you sure you want to proceed (y/N) "
-  if yes_no 1; then
-    do_inst_lib32=1
+  if test "$do_inst_lib32" != "" ; then
+    echo
+    echo -n "Are you sure you want to proceed (y/N) "
+    if yes_no 1; then
+      do_inst_lib32=1
+    fi
   fi
   if test "$do_inst_lib32" != "1"
   then
