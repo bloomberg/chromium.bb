@@ -25,9 +25,13 @@ function VolumeManagerWrapper(driveEnabled) {
   this.onVolumeInfoListUpdatedBound_ =
       this.onVolumeInfoListUpdated_.bind(this);
 
+  this.disposed_ = false;
+
   // Start initialize the VolumeManager.
-  VolumeManager.getInstance(function(volumeManager) {
-    this.onReady_(volumeManager);
+  chrome.runtime.getBackgroundPage(function(backgroundPage) {
+    backgroundPage.VolumeManager.getInstance(function(volumeManager) {
+      this.onReady_(volumeManager);
+    }.bind(this));
   }.bind(this));
 }
 
@@ -51,6 +55,9 @@ VolumeManagerWrapper.prototype.__proto__ = cr.EventTarget.prototype;
  * @private
  */
 VolumeManagerWrapper.prototype.onReady_ = function(volumeManager) {
+  if (this.disposed_)
+    return;
+
   this.volumeManager_ = volumeManager;
 
   // Subscribe to VolumeManager.
@@ -84,6 +91,25 @@ VolumeManagerWrapper.prototype.onReady_ = function(volumeManager) {
   this.pendingTasks_ = null;
   for (var i = 0; i < pendingTasks.length; i++)
     pendingTasks[i]();
+};
+
+/**
+ * Disposes the instance. After the invocation of this method, any other
+ * method should not be called.
+ */
+VolumeManagerWrapper.prototype.dispose = function() {
+  this.disposed_ = true;
+
+  if (!this.volumeManager_)
+    return;
+  this.volumeManager_.removeEventListener(
+      'drive-connection-changed', this.onEventBound_);
+  this.volumeManager_.removeEventListener(
+      'drive-status-changed', this.onEventBound_);
+  this.volumeManager_.removeEventListener(
+      'externally-unmounted', this.onEventBound_);
+  this.volumeManager_.volumeInfoList.removeEventListener(
+      'splice', this.onVolumeInfoListUpdatedBound_);
 };
 
 /**

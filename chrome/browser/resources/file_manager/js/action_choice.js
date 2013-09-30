@@ -511,3 +511,15 @@ ActionChoice.prototype.recordAction_ = function(action) {
        'error',
        'close']);
 };
+
+/**
+ * Called when the page is unloaded.
+ */
+ActionChoice.prototype.onUnload = function() {
+  this.volumeManager_.dispose();
+};
+
+function unload() {
+  if (ActionChoice.instance)
+    ActionChoice.instance.onUnload();
+}

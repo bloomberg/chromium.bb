@@ -178,6 +178,9 @@ function onExternallyUnmounted(event) {
  * Unload the player.
  */
 function unload() {
+  if (volumeManager)
+    volumeManager.dispose();
+
   if (!controls.getMedia())
     return;
 

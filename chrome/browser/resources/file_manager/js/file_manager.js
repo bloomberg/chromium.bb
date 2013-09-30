@@ -2409,6 +2409,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.onUnload_ = function() {
     if (this.directoryModel_)
       this.directoryModel_.dispose();
+    if (this.volumeManager_)
+      this.volumeManager_.dispose();
     if (this.filePopup_ &&
         this.filePopup_.contentWindow &&
         this.filePopup_.contentWindow.unload)

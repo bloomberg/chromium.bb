@@ -81,7 +81,8 @@ util.addPageLoadHandler(AudioPlayer.load);
  * Unload the player.
  */
 function unload() {
-  AudioPlayer.instance.audioControls_.cleanup();
+  if (AudioPlayer.instance)
+    AudioPlayer.instance.onUnload();
 }
 
 /**
@@ -180,6 +181,14 @@ AudioPlayer.prototype.onExternallyUnmounted_ = function(event) {
     return;
   if (this.selectedItemFilesystemPath_.indexOf(event.mountPath) == 0)
     close();
+};
+
+/**
+ * Called on window is being unloaded.
+ */
+AudioPlayer.prototype.onUnload = function() {
+  this.audioControls_.cleanup();
+  this.volumeManager_.dispose();
 };
 
 /**
