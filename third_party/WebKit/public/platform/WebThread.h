@@ -48,6 +48,9 @@ public:
         virtual void didProcessTask() = 0;
     };
 
+    // postTask() and postDelayedTask() take ownership of the passed Task
+    // object. It is safe to invoke postTask() and postDelayedTask() from any
+    // thread.
     virtual void postTask(Task*) = 0;
     virtual void postDelayedTask(Task*, long long delayMs) = 0;
 
