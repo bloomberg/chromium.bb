@@ -130,12 +130,18 @@ void FindBarHost::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
   view()->SchedulePaint();
 }
 
-void FindBarHost::SetFindText(const string16& find_text) {
-  find_bar_view()->SetFindText(find_text);
+void FindBarHost::SetFindTextAndSelectedRange(
+    const string16& find_text,
+    const gfx::Range& selected_range) {
+  find_bar_view()->SetFindTextAndSelectedRange(find_text, selected_range);
 }
 
 string16 FindBarHost::GetFindText() {
   return find_bar_view()->GetFindText();
+}
+
+gfx::Range FindBarHost::GetSelectedRange() {
+  return find_bar_view()->GetSelectedRange();
 }
 
 void FindBarHost::UpdateUIForFindResult(const FindNotificationDetails& result,
@@ -364,8 +370,4 @@ void FindBarHost::GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect) {
       find_bar_controller_->web_contents()->GetView();
   gfx::Rect webcontents_rect = tab_view->GetViewBounds();
   avoid_overlapping_rect->Offset(0, webcontents_rect.y() - frame_rect.y());
-}
-
-FindBarView* FindBarHost::find_bar_view() {
-  return static_cast<FindBarView*>(view());
 }

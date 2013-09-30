@@ -8,13 +8,13 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
+#include "chrome/browser/ui/views/find_bar_view.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/textfield/textfield.h"
 
 class BrowserView;
 class FindBarController;
-class FindBarView;
 class FindNotificationDetails;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -56,8 +56,11 @@ class FindBarHost : public DropdownBarHost,
   virtual void StopAnimation() OVERRIDE;
   virtual void MoveWindowIfNecessary(const gfx::Rect& selection_rect,
                                      bool no_redraw) OVERRIDE;
-  virtual void SetFindText(const string16& find_text) OVERRIDE;
+  virtual void SetFindTextAndSelectedRange(
+      const string16& find_text,
+      const gfx::Range& selected_range) OVERRIDE;
   virtual string16 GetFindText() OVERRIDE;
+  virtual gfx::Range GetSelectedRange() OVERRIDE;
   virtual void UpdateUIForFindResult(const FindNotificationDetails& result,
                                      const string16& find_text) OVERRIDE;
   virtual void AudibleAlert() OVERRIDE;
@@ -129,7 +132,7 @@ class FindBarHost : public DropdownBarHost,
   bool ShouldForwardKeyEventToWebpageNative(const ui::KeyEvent& key_event);
 
   // Returns the FindBarView.
-  FindBarView* find_bar_view();
+  FindBarView* find_bar_view() { return static_cast<FindBarView*>(view()); }
 
   // A pointer back to the owning controller.
   FindBarController* find_bar_controller_;

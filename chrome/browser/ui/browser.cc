@@ -1048,18 +1048,8 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
                                int reason) {
   content::RecordAction(UserMetricsAction("ActiveTabChanged"));
 
-  // Switch the find bar to the new tab if necessary.  This must be done before
-  // changing focus for unittests to pass.
-  // TODO(pkasting): http://crbug.com/297385  Move this to near the end of this
-  // function (where it used to be) once the find bar properly restores
-  // selections across tab changes.
-  if (HasFindBarController()) {
-    find_bar_controller_->ChangeWebContents(new_contents);
-    find_bar_controller_->find_bar()->MoveWindowIfNecessary(gfx::Rect(), true);
-  }
-
-  // Let the BrowserWindow do its handling.  On e.g. views this changes the
-  // focused object, which should happen before we update the toolbar below,
+  // First let the BrowserWindow do its handling.  On e.g. views this changes
+  // the focused object, which should happen before we update the toolbar below,
   // since the omnibox expects the correct element to already be focused when it
   // is updated.
   window_->OnActiveTabChanged(old_contents, new_contents, index, reason);
@@ -1097,6 +1087,11 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
     // Show the loading state (if any).
     status_bubble->SetStatus(CoreTabHelper::FromWebContents(
         tab_strip_model_->GetActiveWebContents())->GetStatusText());
+  }
+
+  if (HasFindBarController()) {
+    find_bar_controller_->ChangeWebContents(new_contents);
+    find_bar_controller_->find_bar()->MoveWindowIfNecessary(gfx::Rect(), true);
   }
 
   // Update sessions. Don't force creation of sessions. If sessions doesn't

@@ -367,19 +367,30 @@ void FindBarGtk::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
   // Not moving the window on demand, so do nothing.
 }
 
-void FindBarGtk::SetFindText(const string16& find_text) {
+void FindBarGtk::SetFindTextAndSelectedRange(const string16& find_text,
+                                             const gfx::Range& selected_range) {
   std::string find_text_utf8 = UTF16ToUTF8(find_text);
 
   // Ignore the "changed" signal handler because programatically setting the
   // text should not fire a "changed" event.
   ignore_changed_signal_ = true;
   gtk_entry_set_text(GTK_ENTRY(text_entry_), find_text_utf8.c_str());
+  if (selected_range.IsValid()) {
+    gtk_editable_select_region(GTK_EDITABLE(text_entry_),
+                               selected_range.start(), selected_range.end());
+  }
   ignore_changed_signal_ = false;
 }
 
 string16 FindBarGtk::GetFindText() {
   std::string contents(gtk_entry_get_text(GTK_ENTRY(text_entry_)));
   return UTF8ToUTF16(contents);
+}
+
+gfx::Range FindBarGtk::GetSelectedRange() {
+  gint start, end;
+  gtk_editable_get_selection_bounds(GTK_EDITABLE(text_entry_), &start, &end);
+  return gfx::Range(start, end);
 }
 
 void FindBarGtk::UpdateUIForFindResult(const FindNotificationDetails& result,
@@ -401,10 +412,8 @@ void FindBarGtk::UpdateUIForFindResult(const FindNotificationDetails& result,
       result.number_of_matches() != -1 && result.active_match_ordinal() != -1;
 
   std::string entry_text(gtk_entry_get_text(GTK_ENTRY(text_entry_)));
-  if (entry_text != find_text_utf8) {
-    SetFindText(find_text);
-    gtk_editable_select_region(GTK_EDITABLE(text_entry_), 0, -1);
-  }
+  if (entry_text != find_text_utf8)
+    SetFindTextAndSelectedRange(find_text, gfx::Range(0, find_text.length()));
 
   if (!find_text.empty() && have_valid_range) {
     gtk_label_set_text(GTK_LABEL(match_count_label_),

@@ -137,7 +137,8 @@ class FindInPageControllerTest : public InProcessBrowserTest {
                       int* ordinal) {
     string16 search_str16(WideToUTF16(std::wstring(search_str)));
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-    browser->GetFindBarController()->find_bar()->SetFindText(search_str16);
+    browser->GetFindBarController()->find_bar()->SetFindTextAndSelectedRange(
+        search_str16, gfx::Range());
     return ui_test_utils::FindInPage(
         web_contents, search_str16, forward, case_sensitive, ordinal, NULL);
   }

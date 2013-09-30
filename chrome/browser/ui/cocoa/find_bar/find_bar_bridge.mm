@@ -7,6 +7,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
+#include "ui/gfx/range/range.h"
 
 // static
 bool FindBarBridge::disable_animations_during_testing_ = false;
@@ -52,12 +53,19 @@ void FindBarBridge::ClearResults(const FindNotificationDetails& results) {
   [cocoa_controller_ clearResults:results];
 }
 
-void FindBarBridge::SetFindText(const string16& find_text) {
-  [cocoa_controller_ setFindText:base::SysUTF16ToNSString(find_text)];
+void FindBarBridge::SetFindTextAndSelectedRange(
+    const string16& find_text,
+    const gfx::Range& selected_range) {
+  [cocoa_controller_ setFindText:base::SysUTF16ToNSString(find_text)
+                   selectedRange:selected_range.ToNSRange()];
 }
 
 string16 FindBarBridge::GetFindText() {
   return base::SysNSStringToUTF16([cocoa_controller_ findText]);
+}
+
+gfx::Range FindBarBridge::GetSelectedRange() {
+  return gfx::Range([cocoa_controller_ selectedRange]);
 }
 
 void FindBarBridge::UpdateUIForFindResult(const FindNotificationDetails& result,

@@ -82,7 +82,7 @@ TEST_F(FindBarCocoaControllerTest, SetFindText) {
 
   // Set the find text.
   NSString* const kFindText = @"Google";
-  [controller_ setFindText:kFindText];
+  [controller_ setFindText:kFindText selectedRange:NSMakeRange(NSNotFound, 0)];
   EXPECT_EQ(
       NSOrderedSame,
       [[findTextField stringValue] compare:kFindText]);
@@ -112,7 +112,7 @@ TEST_F(FindBarCocoaControllerTest, FindTextIsGlobal) {
   // Setting the text in one controller should update the other controller's
   // text as well.
   NSString* const kFindText = @"Respect to the man in the ice cream van";
-  [controller_ setFindText:kFindText];
+  [controller_ setFindText:kFindText selectedRange:NSMakeRange(NSNotFound, 0)];
   EXPECT_EQ(
       NSOrderedSame,
       [[controller_ findText] compare:kFindText]);
@@ -124,7 +124,7 @@ TEST_F(FindBarCocoaControllerTest, FindTextIsGlobal) {
 TEST_F(FindBarCocoaControllerTest, SettingFindTextUpdatesFindPboard) {
   NSString* const kFindText =
       @"It's not a bird, it's not a plane, it must be Dave who's on the train";
-  [controller_ setFindText:kFindText];
+  [controller_ setFindText:kFindText selectedRange:NSMakeRange(NSNotFound, 0)];
   EXPECT_EQ(
       NSOrderedSame,
       [[[FindPasteboard sharedInstance] findText] compare:kFindText]);

@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "ui/gfx/range/range.h"
 
 namespace gfx {
 class RectF;
@@ -56,6 +57,11 @@ class FindTabHelper : public content::WebContentsObserver,
 
   // Accessor for the previous search we issued.
   string16 previous_find_text() const { return previous_find_text_; }
+
+  gfx::Range selected_range() const { return selected_range_; }
+  void set_selected_range(const gfx::Range& selected_range) {
+    selected_range_ = selected_range;
+  }
 
   // Accessor for find_result_.
   const FindNotificationDetails& find_result() const {
@@ -107,6 +113,9 @@ class FindTabHelper : public content::WebContentsObserver,
 
   // The string we searched for before |find_text_|.
   string16 previous_find_text_;
+
+  // The selection within the text.
+  gfx::Range selected_range_;
 
   // Whether the last search was case sensitive or not.
   bool last_search_case_sensitive_;

@@ -333,11 +333,8 @@ const float kRightEdgeOffset = 25;
   focusTracker_.reset(nil);
 }
 
-- (NSString*)findText {
-  return [findText_ stringValue];
-}
-
-- (void)setFindText:(NSString*)findText {
+- (void)setFindText:(NSString*)findText
+      selectedRange:(const NSRange&)selectedRange {
   [findText_ setStringValue:findText];
 
   if (![self isOffTheRecordProfile]) {
@@ -346,6 +343,19 @@ const float kRightEdgeOffset = 25;
     base::AutoReset<BOOL> suppressReset(&suppressPboardUpdateActions_, YES);
     [[FindPasteboard sharedInstance] setFindText:findText];
   }
+
+  NSText* editor = [findText_ currentEditor];
+  if (selectedRange.location != NSNotFound)
+    [editor setSelectedRange:selectedRange];
+}
+
+- (NSString*)findText {
+  return [findText_ stringValue];
+}
+
+- (NSRange)selectedRange {
+  NSText* editor = [findText_ currentEditor];
+  return (editor != nil) ? [editor selectedRange] : NSMakeRange(NSNotFound, 0);
 }
 
 - (NSString*)matchCountText {
@@ -583,7 +593,7 @@ const float kRightEdgeOffset = 25;
 }
 
 - (void)prepopulateText:(NSString*)text {
-  [self setFindText:text];
+  [self setFindText:text selectedRange:NSMakeRange(NSNotFound, 0)];
 
   // Has to happen after |ClearResults()| above.
   BOOL buttonsEnabled = [text length] > 0 ? YES : NO;

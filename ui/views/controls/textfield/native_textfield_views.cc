@@ -703,8 +703,6 @@ void NativeTextfieldViews::HandleBlur() {
   }
 
   touch_selection_controller_.reset();
-
-  ClearSelection();
 }
 
 ui::TextInputClient* NativeTextfieldViews::GetTextInputClient() {
