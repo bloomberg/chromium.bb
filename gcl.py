@@ -878,7 +878,17 @@ def CMDupload(change_info, args):
         watchlist = watchlists.Watchlists(change_info.GetLocalRoot())
         watchers = watchlist.GetWatchersForPaths(change_info.GetFileNames())
 
-      cc_list = GetCodeReviewSetting("CC_LIST")
+      # We check this before applying the "PRIVATE" parameter of codereview
+      # settings assuming that the author of the settings file has put
+      # addresses which we can send private CLs to, and so we should ignore
+      # CC_LIST only when --private is specified explicitly on the command
+      # line.
+      if "--private" in upload_arg:
+        Warn("WARNING: CC_LIST is ignored since private flag is specified.  "
+             "You need to review and add them manually if necessary.")
+        cc_list = ""
+      else:
+        cc_list = GetCodeReviewSetting("CC_LIST")
       if not no_watchlists and watchers:
         # Filter out all empty elements and join by ','
         cc_list = ','.join(filter(None, [cc_list] + watchers))

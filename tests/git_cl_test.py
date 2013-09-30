@@ -188,15 +188,16 @@ class TestGitCl(TestCase):
   @classmethod
   def _git_upload_calls(cls, private):
     if private:
+      cc_call = []
       private_call = []
     else:
+      cc_call = [((['git', 'config', 'rietveld.cc'],), '')]
       private_call = [
           ((['git', 'config', 'rietveld.private'],), '')]
 
     return [
         ((['git', 'config', 'core.editor'],), ''),
-        ((['git', 'config', 'rietveld.cc'],), '')
-    ] + private_call + [
+    ] + cc_call + private_call + [
         ((['git', 'config', 'branch.master.base-url'],), ''),
         ((['git',
            'config', '--local', '--get-regexp', '^svn-remote\\.'],),

@@ -442,9 +442,15 @@ class Changelist(object):
     Return is a string suitable for passing to gcl with the --cc flag.
     """
     if self.cc is None:
-      base_cc = settings  .GetDefaultCCList()
+      base_cc = settings.GetDefaultCCList()
       more_cc = ','.join(self.watchers)
       self.cc = ','.join(filter(None, (base_cc, more_cc))) or ''
+    return self.cc
+
+  def GetCCListWithoutDefault(self):
+    """Return the users cc'd on this CL excluding default ones."""
+    if self.cc is None:
+      self.cc = ','.join(self.watchers)
     return self.cc
 
   def SetWatchers(self, watchers):
@@ -1421,7 +1427,18 @@ def RietveldUpload(options, args, cl):
       if not change_desc.get_reviewers():
         DieWithError("Must specify reviewers to send email.")
       upload_args.append('--send_mail')
-    cc = ','.join(filter(None, (cl.GetCCList(), ','.join(options.cc))))
+
+    # We check this before applying rietveld.private assuming that in
+    # rietveld.cc only addresses which we can send private CLs to are listed
+    # if rietveld.private is set, and so we should ignore rietveld.cc only when
+    # --private is specified explicitly on the command line.
+    if options.private:
+      logging.warn('rietveld.cc is ignored since private flag is specified.  '
+                   'You need to review and add them manually if necessary.')
+      cc = cl.GetCCListWithoutDefault()
+    else:
+      cc = cl.GetCCList()
+    cc = ','.join(filter(None, (cc, ','.join(options.cc))))
     if cc:
       upload_args.extend(['--cc', cc])
 
