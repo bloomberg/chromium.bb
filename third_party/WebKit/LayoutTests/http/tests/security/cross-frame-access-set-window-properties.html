@@ -15,11 +15,53 @@
 
             var ex = '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."';
 
-            shouldThrow('iWindow.focus = function () {}', ex);
-            shouldThrow('iWindow.blur = function () {}', ex);
-            shouldThrow('iWindow.close = function () {}', ex);
-            shouldThrow('iWindow.postMessage = function () {}', ex);
-            shouldThrow('iWindow.toString = function () {}', ex);
+            // 'DoNotCheckSecurity' methods.
+            var DoNotCheckSecurityMethods = [
+                'focus',
+                'blur',
+                'close',
+                'postMessage',
+                'toString'
+            ];
+            for (var i = 0; i < DoNotCheckSecurityMethods.length; i++) {
+                shouldThrow('iWindow.' + DoNotCheckSecurityMethods[i] + ' = function () {};', ex);
+            }
+
+            // 'Replacable' properties (not an exhaustive list).
+            var ReplaceableProperties = [
+                'clientInformation',
+                'devicePixelRatio',
+                'event',
+                'frames',
+                'history',
+                'innerHeight',
+                'innerWidth',
+                'length',
+                'locationbar',
+                'menubar',
+                'navigator',
+                'offscreenBuffering',
+                'opener',
+                'outerHeight',
+                'outerWidth',
+                'parent',
+                'personalbar',
+                'screen',
+                'screenLeft',
+                'screenTop',
+                'screenX',
+                'screenY',
+                'scrollX',
+                'scrollY',
+                'scrollbars',
+                'self',
+                'statusbar',
+                'toolbar'
+            ];
+            for (var i = 0; i < ReplaceableProperties.length; i++) {
+                shouldThrow('iWindow.' + ReplaceableProperties[i] + ' = 1;', ex);
+            }
+            
             finishJSTest();
         };
     </script>
