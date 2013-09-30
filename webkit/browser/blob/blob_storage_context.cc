@@ -94,6 +94,26 @@ scoped_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
   return handle.Pass();
 }
 
+bool BlobStorageContext::RegisterPublicBlobURL(
+    const GURL& blob_url, const std::string& uuid) {
+  DCHECK(!BlobUrlHasRef(blob_url));
+  DCHECK(IsInUse(uuid));
+  DCHECK(!IsUrlRegistered(blob_url));
+  if (!IsInUse(uuid) || IsUrlRegistered(blob_url))
+    return false;
+  IncrementBlobRefCount(uuid);
+  public_blob_urls_[blob_url] = uuid;
+  return true;
+}
+
+void BlobStorageContext::RevokePublicBlobURL(const GURL& blob_url) {
+  DCHECK(!BlobUrlHasRef(blob_url));
+  if (!IsUrlRegistered(blob_url))
+    return;
+  DecrementBlobRefCount(public_blob_urls_[blob_url]);
+  public_blob_urls_.erase(blob_url);
+}
+
 std::string BlobStorageContext::LookupUuidFromDeprecatedURL(
     const GURL& url) {
   BlobURLMap::const_iterator found = deprecated_blob_urls_.find(url);
@@ -214,23 +234,6 @@ void BlobStorageContext::DecrementBlobRefCount(const std::string& uuid) {
     memory_usage_ -= found->second.data->GetMemoryUsage();
     blob_map_.erase(found);
   }
-}
-
-void BlobStorageContext::RegisterPublicBlobURL(
-    const GURL& blob_url, const std::string& uuid) {
-  DCHECK(!BlobUrlHasRef(blob_url));
-  DCHECK(IsInUse(uuid));
-  DCHECK(!IsUrlRegistered(blob_url));
-  IncrementBlobRefCount(uuid);
-  public_blob_urls_[blob_url] = uuid;
-}
-
-void BlobStorageContext::RevokePublicBlobURL(const GURL& blob_url) {
-  DCHECK(!BlobUrlHasRef(blob_url));
-  if (!IsUrlRegistered(blob_url))
-    return;
-  DecrementBlobRefCount(public_blob_urls_[blob_url]);
-  public_blob_urls_.erase(blob_url);
 }
 
 void BlobStorageContext::DeprecatedRegisterPrivateBlobURL(
