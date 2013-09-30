@@ -35,7 +35,7 @@ base::FilePath GetProfilePath(const DictionaryValue& root,
   ReplaceSubstringsAfterOffset(
       &path16, 0, ASCIIToUTF16("/"), ASCIIToUTF16("\\"));
 #endif
-  base::FilePath path = base::FilePath::FromWStringHack(UTF16ToWide(path16));
+  base::FilePath path = base::FilePath::FromUTF16Unsafe(path16);
 
   // IsRelative=1 means the folder path would be relative to the
   // path of profiles.ini. IsRelative=0 refers to a custom profile
@@ -120,8 +120,7 @@ bool GetFirefoxVersionAndPathFromProfile(const base::FilePath& profile_path,
         // UTF-8, what does Firefox do?  If it puts raw bytes in the
         // file, we could go straight from bytes -> filepath;
         // otherwise, we're out of luck here.
-        *app_path = base::FilePath::FromWStringHack(
-            UTF8ToWide(line.substr(equal + 1)));
+        *app_path = base::FilePath::FromUTF8Unsafe(line.substr(equal + 1));
       }
     }
   }
