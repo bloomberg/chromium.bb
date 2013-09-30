@@ -41,7 +41,7 @@ const int64 kMBytes = 1024 * 1024;
 const int kMinutesInMilliSeconds = 60 * 1000;
 
 const int64 kReportHistogramInterval = 60 * 60 * 1000;  // 1 hour
-const double kTemporaryQuotaRatioToAvail = 0.5;  // 50%
+const double kTemporaryQuotaRatioToAvail = 1.0 / 3.0;  // 33%
 
 }  // namespace
 
