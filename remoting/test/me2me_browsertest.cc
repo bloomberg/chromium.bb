@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "remoting/test/remote_desktop_browsertest.h"
 #include "remoting/test/waiter.h"
 
@@ -30,20 +32,42 @@ IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
 
   TestKeyboardInput();
 
+  TestMouseInput();
+
   Cleanup();
 }
 
+// Typing a command which writes to a temp file and then verify the contents of
+// the file.
 void Me2MeBrowserTest::TestKeyboardInput() {
   // Start a terminal windows with ctrl+alt+T
   SimulateKeyPressWithCode(ui::VKEY_T, "KeyT", true, false, true, false);
+
+  // Wait for the keyboard events to be sent to and processed by the host.
+  ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromMilliseconds(300)).Wait());
+
+  base::FilePath temp_file;
+  EXPECT_TRUE(file_util::CreateTemporaryFile(&temp_file));
+
+  // Write some text into the temp file.
+  std::string text = "Abigail";
+  std::string command = "echo -n " + text + " > " +
+                        temp_file.MaybeAsASCII() + "\n";
+  SimulateStringInput(command);
+  SimulateStringInput("exit\n");
+
+  // Wait for the keyboard events to be sent to and processed by the host.
   ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(1)).Wait());
 
-  // Run an arbitrary command so that I can verify the result visually.
-  // TODO: Verify programatically the keyboard events are received by the host.
-  SimulateStringInput("ls -la\n");
-  ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(1)).Wait());
-  SimulateStringInput("exit\n");
-  ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(1)).Wait());
+  // Read the content of the temp file.
+  std::string content;
+  EXPECT_TRUE(base::ReadFileToString(temp_file, &content));
+
+  LOG(INFO) << temp_file.value();
+
+  EXPECT_EQ(text, content);
+
+  EXPECT_TRUE(base::DeleteFile(temp_file, false));
 }
 
 void Me2MeBrowserTest::TestMouseInput() {

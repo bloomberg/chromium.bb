@@ -548,7 +548,7 @@ void RemoteDesktopBrowserTest::WaitForConnection() {
   // TODO(weitaosu): Instead of polling, can we register a callback to
   // remoting.clientSession.onStageChange_?
   ConditionalTimeoutWaiter waiter(
-      base::TimeDelta::FromSeconds(3),
+      base::TimeDelta::FromSeconds(4),
       base::TimeDelta::FromSeconds(1),
       base::Bind(&RemoteDesktopBrowserTest::IsSessionConnected, this));
   EXPECT_TRUE(waiter.Wait());
