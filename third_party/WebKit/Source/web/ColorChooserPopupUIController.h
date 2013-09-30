@@ -64,7 +64,7 @@ private:
     ChromeClientImpl* m_chromeClient;
     WebCore::ColorChooserClient* m_client;
     WebCore::PagePopup* m_popup;
-    OwnPtr<WebCore::Locale> m_locale;
+    WebCore::Locale* m_locale;
 };
 }
 

@@ -39,7 +39,8 @@ class Locale {
 
 public:
     static PassOwnPtr<Locale> create(const AtomicString& localeIdentifier);
-    static PassOwnPtr<Locale> createDefault();
+    // Never returns 0.
+    static Locale* defaultLocale();
 
     String queryString(WebKit::WebLocalizedString::Name);
     String queryString(WebKit::WebLocalizedString::Name, const String& parameter);
@@ -166,11 +167,6 @@ private:
     String m_negativeSuffix;
     bool m_hasLocaleData;
 };
-
-inline PassOwnPtr<Locale> Locale::createDefault()
-{
-    return Locale::create(defaultLanguage());
-}
 
 }
 #endif

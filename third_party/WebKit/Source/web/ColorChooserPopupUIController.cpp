@@ -54,7 +54,7 @@ ColorChooserPopupUIController::ColorChooserPopupUIController(ChromeClientImpl* c
     , m_chromeClient(chromeClient)
     , m_client(client)
     , m_popup(0)
-    , m_locale(Locale::createDefault())
+    , m_locale(Locale::defaultLocale())
 {
 }
 

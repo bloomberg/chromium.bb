@@ -180,6 +180,12 @@ String DateTimeStringBuilder::toString()
     return m_builder.toString();
 }
 
+Locale* Locale::defaultLocale()
+{
+    static Locale* locale = Locale::create(defaultLanguage()).leakPtr();
+    return locale;
+}
+
 Locale::~Locale()
 {
 }
