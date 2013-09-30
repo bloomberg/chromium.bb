@@ -163,8 +163,7 @@ class CopyOrMoveOperationTestHelper {
       FileSystemType dest_type)
       : origin_(origin),
         src_type_(src_type),
-        dest_type_(dest_type),
-        message_loop_(base::MessageLoop::TYPE_IO) {}
+        dest_type_(dest_type) {}
 
   ~CopyOrMoveOperationTestHelper() {
     file_system_context_ = NULL;
@@ -378,7 +377,7 @@ class CopyOrMoveOperationTestHelper {
   const FileSystemType src_type_;
   const FileSystemType dest_type_;
 
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   scoped_refptr<FileSystemContext> file_system_context_;
   scoped_refptr<quota::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<quota::MockQuotaManager> quota_manager_;
@@ -714,7 +713,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
   // LocalFileWriter requires the file exists. So create an empty file here.
   file_util::WriteFile(dest_path, "", 0);
 
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
   base::Thread file_thread("file_thread");
   ASSERT_TRUE(file_thread.Start());
   ScopedThreadStopper thread_stopper(&file_thread);
@@ -767,7 +766,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
   // LocalFileWriter requires the file exists. So create an empty file here.
   file_util::WriteFile(dest_path, "", 0);
 
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
   base::Thread file_thread("file_thread");
   ASSERT_TRUE(file_thread.Start());
   ScopedThreadStopper thread_stopper(&file_thread);

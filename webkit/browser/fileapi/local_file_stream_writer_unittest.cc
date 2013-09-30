@@ -23,8 +23,7 @@ namespace fileapi {
 class LocalFileStreamWriterTest : public testing::Test {
  public:
   LocalFileStreamWriterTest()
-      : message_loop_(base::MessageLoop::TYPE_IO),
-        file_thread_("FileUtilProxyTestFileThread") {}
+      : file_thread_("FileUtilProxyTestFileThread") {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(file_thread_.Start());
@@ -85,7 +84,7 @@ class LocalFileStreamWriterTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   base::Thread file_thread_;
   base::ScopedTempDir temp_dir_;
 };

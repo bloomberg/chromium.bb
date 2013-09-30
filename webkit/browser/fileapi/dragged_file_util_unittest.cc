@@ -89,8 +89,7 @@ FileSystemURL GetOtherURL(FileSystemContext* file_system_context,
 
 class DraggedFileUtilTest : public testing::Test {
  public:
-  DraggedFileUtilTest()
-      : message_loop_(base::MessageLoop::TYPE_IO) {}
+  DraggedFileUtilTest() {}
 
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -276,7 +275,7 @@ class DraggedFileUtilTest : public testing::Test {
 
   base::ScopedTempDir data_dir_;
   base::ScopedTempDir partition_dir_;
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   std::string filesystem_id_;
   scoped_refptr<FileSystemContext> file_system_context_;
   std::map<base::FilePath, base::FilePath> toplevel_root_map_;

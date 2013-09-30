@@ -50,9 +50,7 @@ void FillBuffer(char* buffer, size_t len) {
 
 class FileSystemURLRequestJobTest : public testing::Test {
  protected:
-  FileSystemURLRequestJobTest()
-    : message_loop_(base::MessageLoop::TYPE_IO),  // simulate an IO thread
-      weak_factory_(this) {
+  FileSystemURLRequestJobTest() : weak_factory_(this) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -173,7 +171,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
   }
 
   // Put the message loop at the top, so that it's the last thing deleted.
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
 
   base::ScopedTempDir temp_dir_;
   scoped_refptr<FileSystemContext> file_system_context_;

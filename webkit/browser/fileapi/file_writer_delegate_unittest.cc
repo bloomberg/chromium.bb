@@ -72,8 +72,7 @@ class Result {
 
 class FileWriterDelegateTest : public PlatformTest {
  public:
-  FileWriterDelegateTest()
-      : loop_(base::MessageLoop::TYPE_IO) {}
+  FileWriterDelegateTest() {}
 
  protected:
   virtual void SetUp() OVERRIDE;
@@ -136,7 +135,7 @@ class FileWriterDelegateTest : public PlatformTest {
   static net::URLRequest::ProtocolFactory Factory;
 
   // This should be alive until the very end of this instance.
-  base::MessageLoop loop_;
+  base::MessageLoopForIO loop_;
 
   scoped_refptr<FileSystemContext> file_system_context_;
 

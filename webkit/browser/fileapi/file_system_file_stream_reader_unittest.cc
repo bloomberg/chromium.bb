@@ -60,8 +60,7 @@ void NeverCalled(int unused) { ADD_FAILURE(); }
 
 class FileSystemFileStreamReaderTest : public testing::Test {
  public:
-  FileSystemFileStreamReaderTest()
-      : message_loop_(base::MessageLoop::TYPE_IO) {}
+  FileSystemFileStreamReaderTest() {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -130,7 +129,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
         base::FilePath().AppendASCII(file_name));
   }
 
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::Time test_file_modification_time_;

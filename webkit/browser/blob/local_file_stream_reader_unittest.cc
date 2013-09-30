@@ -60,8 +60,7 @@ void QuitLoop() {
 class LocalFileStreamReaderTest : public testing::Test {
  public:
   LocalFileStreamReaderTest()
-      : message_loop_(base::MessageLoop::TYPE_IO),
-        file_thread_("FileUtilProxyTestFileThread") {}
+      : file_thread_("FileUtilProxyTestFileThread") {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(file_thread_.Start());
@@ -117,7 +116,7 @@ class LocalFileStreamReaderTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   base::Thread file_thread_;
   base::ScopedTempDir dir_;
   base::Time test_file_modification_time_;

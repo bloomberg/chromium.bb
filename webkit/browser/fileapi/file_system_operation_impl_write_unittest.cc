@@ -51,8 +51,7 @@ class FileSystemOperationImplWriteTest
     : public testing::Test {
  public:
   FileSystemOperationImplWriteTest()
-      : loop_(base::MessageLoop::TYPE_IO),
-        status_(base::PLATFORM_FILE_OK),
+      : status_(base::PLATFORM_FILE_OK),
         cancel_status_(base::PLATFORM_FILE_ERROR_FAILED),
         bytes_written_(0),
         complete_(false),
@@ -152,7 +151,7 @@ class FileSystemOperationImplWriteTest
   scoped_refptr<FileSystemContext> file_system_context_;
   scoped_refptr<quota::MockQuotaManager> quota_manager_;
 
-  base::MessageLoop loop_;
+  base::MessageLoopForIO loop_;
 
   base::ScopedTempDir dir_;
   base::FilePath virtual_path_;

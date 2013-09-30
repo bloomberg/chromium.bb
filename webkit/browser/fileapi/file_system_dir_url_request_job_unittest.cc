@@ -42,8 +42,7 @@ static const char kFileSystemURLPrefix[] =
 class FileSystemDirURLRequestJobTest : public testing::Test {
  protected:
   FileSystemDirURLRequestJobTest()
-    : message_loop_(base::MessageLoop::TYPE_IO),  // simulate an IO thread
-      weak_factory_(this) {
+    : weak_factory_(this) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -212,7 +211,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   // Put the message loop at the top, so that it's the last thing deleted.
   // Delete all MessageLoopProxy objects before the MessageLoop, to help prevent
   // leaks caused by tasks posted during shutdown.
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
 
   base::ScopedTempDir temp_dir_;
   net::URLRequestContext empty_context_;

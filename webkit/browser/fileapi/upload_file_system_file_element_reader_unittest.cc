@@ -28,8 +28,7 @@ const fileapi::FileSystemType kFileSystemType =
 
 class UploadFileSystemFileElementReaderTest : public testing::Test {
  public:
-  UploadFileSystemFileElementReaderTest()
-      : message_loop_(base::MessageLoop::TYPE_IO) {}
+  UploadFileSystemFileElementReaderTest() {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -108,7 +107,7 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
     file_system_root_url_ = root;
   }
 
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<FileSystemContext> file_system_context_;
   GURL file_system_root_url_;

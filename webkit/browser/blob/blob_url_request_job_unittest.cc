@@ -133,8 +133,7 @@ class BlobURLRequestJobTest : public testing::Test {
   };
 
   BlobURLRequestJobTest()
-      : message_loop_(base::MessageLoop::TYPE_IO),
-        blob_data_(new BlobData()),
+      : blob_data_(new BlobData()),
         expected_status_code_(0) {}
 
   virtual void SetUp() {
@@ -283,7 +282,7 @@ class BlobURLRequestJobTest : public testing::Test {
   base::Time temp_file_system_file_modification_time1_;
   base::Time temp_file_system_file_modification_time2_;
 
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_refptr<BlobData> blob_data_;
   net::URLRequestJobFactoryImpl url_request_job_factory_;
