@@ -1398,9 +1398,9 @@ testcase.restoreCurrentView = function() {
     },
     // Change the current view.
     function() {
-      callRemoteTestUtil('fakeEvent',
+      callRemoteTestUtil('fakeMouseClick',
                          appId,
-                         ['#thumbnail-view', 'activate'],
+                         ['#thumbnail-view'],
                          this.next);
     },
     // Check the new current view.

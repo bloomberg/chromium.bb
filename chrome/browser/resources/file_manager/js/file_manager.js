@@ -811,21 +811,21 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.dialogContainer_ = this.dialogDom_.querySelector('.dialog-container');
 
     this.syncButton = this.dialogDom_.querySelector('#drive-sync-settings');
-    this.syncButton.addEventListener('activate', this.onDrivePrefClick_.bind(
+    this.syncButton.addEventListener('click', this.onDrivePrefClick_.bind(
         this, 'cellularDisabled', false /* not inverted */));
 
     this.hostedButton = this.dialogDom_.querySelector('#drive-hosted-settings');
-    this.hostedButton.addEventListener('activate', this.onDrivePrefClick_.bind(
+    this.hostedButton.addEventListener('click', this.onDrivePrefClick_.bind(
         this, 'hostedFilesDisabled', true /* inverted */));
 
     this.detailViewButton_ =
         this.dialogDom_.querySelector('#detail-view');
-    this.detailViewButton_.addEventListener('activate',
+    this.detailViewButton_.addEventListener('click',
         this.onDetailViewButtonClick_.bind(this));
 
     this.thumbnailViewButton_ =
         this.dialogDom_.querySelector('#thumbnail-view');
-    this.thumbnailViewButton_.addEventListener('activate',
+    this.thumbnailViewButton_.addEventListener('click',
         this.onThumbnailViewButtonClick_.bind(this));
 
     cr.ui.ComboButton.decorate(this.taskItems_);
@@ -918,7 +918,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.driveBuyMoreStorageCommand_ =
         this.dialogDom_.querySelector('#drive-buy-more-space');
 
-    this.defaultActionMenuItem_.addEventListener('activate',
+    this.defaultActionMenuItem_.addEventListener('click',
         this.dispatchSelectionAction_.bind(this));
 
     this.initFileTypeFilter_();
