@@ -202,8 +202,7 @@ class GpuSandboxedProcessLauncherDelegate
       } else {
         if (cmd_line_->GetSwitchValueASCII(switches::kUseGL) ==
                 gfx::kGLImplementationSwiftShaderName ||
-            cmd_line_->HasSwitch(switches::kReduceGpuSandbox) ||
-            cmd_line_->HasSwitch(switches::kDisableImageTransportSurface)) {
+            cmd_line_->HasSwitch(switches::kReduceGpuSandbox)) {
           // Swiftshader path.
           policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                                 sandbox::USER_LIMITED);
@@ -250,6 +249,13 @@ class GpuSandboxedProcessLauncherDelegate
       return;
     }
 
+    result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_SYNC,
+                             sandbox::TargetPolicy::EVENTS_ALLOW_ANY,
+                             L"Dwm*");
+    if (result != sandbox::SBOX_ALL_OK) {
+      *success = false;
+      return;
+    }
     // Block this DLL even if it is not loaded by the browser process.
     policy->AddDllToUnload(L"cmsetac.dll");
 
