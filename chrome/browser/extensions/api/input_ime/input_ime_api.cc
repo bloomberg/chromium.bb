@@ -532,14 +532,40 @@ bool InputImeSetCandidateWindowPropertiesFunction::RunImpl() {
     return true;
   }
 
-  if (properties.cursor_visible)
-    engine->SetCandidateWindowCursorVisible(*properties.cursor_visible);
+  chromeos::InputMethodEngine::CandidateWindowProperty properties_out =
+    engine->GetCandidateWindowProperty();
+  bool modified = false;
 
-  if (properties.vertical)
-    engine->SetCandidateWindowVertical(*properties.vertical);
+  if (properties.cursor_visible) {
+    properties_out.is_cursor_visible = *properties.cursor_visible;
+    modified = true;
+  }
 
-  if (properties.page_size)
-    engine->SetCandidateWindowPageSize(*properties.page_size);
+  if (properties.vertical) {
+    properties_out.is_vertical = *properties.vertical;
+    modified = true;
+  }
+
+  if (properties.page_size) {
+    properties_out.page_size = *properties.page_size;
+    modified = true;
+  }
+
+  if (properties.window_position ==
+      SetCandidateWindowProperties::Params::Parameters::Properties::
+          WINDOW_POSITION_COMPOSITION) {
+    properties_out.show_window_at_composition = true;
+    modified = true;
+  } else if (properties.window_position ==
+             SetCandidateWindowProperties::Params::Parameters::Properties::
+                 WINDOW_POSITION_CURSOR) {
+    properties_out.show_window_at_composition = false;
+    modified = true;
+  }
+
+  if (modified) {
+    engine->SetCandidateWindowProperty(properties_out);
+  }
 
   if (properties.auxiliary_text)
     engine->SetCandidateWindowAuxText(properties.auxiliary_text->c_str());
@@ -547,18 +573,6 @@ bool InputImeSetCandidateWindowPropertiesFunction::RunImpl() {
   if (properties.auxiliary_text_visible) {
     engine->SetCandidateWindowAuxTextVisible(
         *properties.auxiliary_text_visible);
-  }
-
-  if (properties.window_position ==
-      SetCandidateWindowProperties::Params::Parameters::Properties::
-          WINDOW_POSITION_COMPOSITION) {
-    engine->SetCandidateWindowPosition(
-        chromeos::InputMethodEngine::WINDOW_POS_COMPOSITTION);
-  } else if (properties.window_position ==
-             SetCandidateWindowProperties::Params::Parameters::Properties::
-                 WINDOW_POSITION_CURSOR) {
-    engine->SetCandidateWindowPosition(
-        chromeos::InputMethodEngine::WINDOW_POS_CURSOR);
   }
 
   SetResult(new base::FundamentalValue(true));

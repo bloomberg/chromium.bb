@@ -102,6 +102,15 @@ class InputMethodEngine {
     std::vector<Candidate> candidates;
   };
 
+  struct CandidateWindowProperty {
+    CandidateWindowProperty();
+    virtual ~CandidateWindowProperty();
+    int page_size;
+    bool is_cursor_visible;
+    bool is_vertical;
+    bool show_window_at_composition;
+  };
+
   struct SegmentInfo {
     int start;
     int end;
@@ -175,26 +184,25 @@ class InputMethodEngine {
   virtual bool CommitText(int context_id, const char* text,
                           std::string* error) = 0;
 
+  // This function returns the current property of the candidate window.
+  // The caller can use the returned value as the default property and
+  // modify some of specified items.
+  virtual const CandidateWindowProperty&
+    GetCandidateWindowProperty() const = 0;
+
+  // Change the property of the candidate window and repaint the candidate
+  // window widget.
+  virtual void SetCandidateWindowProperty(
+      const CandidateWindowProperty& property) = 0;
+
   // Show or hide the candidate window.
   virtual bool SetCandidateWindowVisible(bool visible, std::string* error) = 0;
-
-  // Show or hide the cursor in the candidate window.
-  virtual void SetCandidateWindowCursorVisible(bool visible) = 0;
-
-  // Set the orientation of the candidate window.
-  virtual void SetCandidateWindowVertical(bool vertical) = 0;
-
-  // Set the number of candidates displayed in the candidate window.
-  virtual void SetCandidateWindowPageSize(int size) = 0;
 
   // Set the text that appears as a label in the candidate window.
   virtual void SetCandidateWindowAuxText(const char* text) = 0;
 
   // Show or hide the extra text in the candidate window.
   virtual void SetCandidateWindowAuxTextVisible(bool visible) = 0;
-
-  // Sets the candidate window position.
-  virtual void SetCandidateWindowPosition(CandidateWindowPosition position) = 0;
 
   // Set the list of entries displayed in the candidate window.
   virtual bool SetCandidates(int context_id,

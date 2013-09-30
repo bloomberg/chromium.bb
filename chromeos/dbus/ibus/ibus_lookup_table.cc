@@ -52,6 +52,9 @@ void IBusLookupTable::CopyFrom(const IBusLookupTable& table) {
   candidates_ = table.candidates_;
 }
 
+
+// When the default values are changed, please modify
+// InputMethodEngine::CandidateWindowProperty too.
 IBusLookupTable::CandidateWindowProperty::CandidateWindowProperty()
     : page_size(kDefaultPageSize),
       cursor_position(0),

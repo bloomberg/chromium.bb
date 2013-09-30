@@ -55,15 +55,14 @@ class InputMethodEngineIBus : public InputMethodEngine,
   virtual bool ClearComposition(int context_id, std::string* error) OVERRIDE;
   virtual bool CommitText(int context_id, const char* text,
                           std::string* error) OVERRIDE;
+  virtual const CandidateWindowProperty&
+    GetCandidateWindowProperty() const OVERRIDE;
+  virtual void SetCandidateWindowProperty(
+      const CandidateWindowProperty& property) OVERRIDE;
   virtual bool SetCandidateWindowVisible(bool visible,
                                          std::string* error) OVERRIDE;
-  virtual void SetCandidateWindowCursorVisible(bool visible) OVERRIDE;
-  virtual void SetCandidateWindowVertical(bool vertical) OVERRIDE;
-  virtual void SetCandidateWindowPageSize(int size) OVERRIDE;
   virtual void SetCandidateWindowAuxText(const char* text) OVERRIDE;
   virtual void SetCandidateWindowAuxTextVisible(bool visible) OVERRIDE;
-  virtual void SetCandidateWindowPosition(
-      CandidateWindowPosition position) OVERRIDE;
   virtual bool SetCandidates(int context_id,
                              const std::vector<Candidate>& candidates,
                              std::string* error) OVERRIDE;
@@ -167,6 +166,9 @@ class InputMethodEngineIBus : public InputMethodEngine,
 
   // The current lookup table.
   scoped_ptr<IBusLookupTable> table_;
+
+  // The current candidate window property.
+  CandidateWindowProperty candidate_window_property_;
 
   // Indicates whether the candidate window is visible.
   bool window_visible_;

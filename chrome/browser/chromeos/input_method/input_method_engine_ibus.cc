@@ -219,6 +219,31 @@ bool InputMethodEngineIBus::CommitText(int context_id, const char* text,
   return true;
 }
 
+const InputMethodEngineIBus::CandidateWindowProperty&
+InputMethodEngineIBus::GetCandidateWindowProperty() const {
+  return candidate_window_property_;
+}
+
+void InputMethodEngineIBus::SetCandidateWindowProperty(
+    const CandidateWindowProperty& property) {
+  IBusLookupTable::CandidateWindowProperty ibus_property;
+  ibus_property.page_size = property.page_size;
+  ibus_property.is_cursor_visible = property.is_cursor_visible;
+  ibus_property.is_vertical = property.is_vertical;
+  ibus_property.show_window_at_composition =
+      property.show_window_at_composition;
+  ibus_property.cursor_position = table_->GetProperty().cursor_position;
+  table_->SetProperty(ibus_property);
+  candidate_window_property_ = property;
+
+  if (active_) {
+    IBusPanelCandidateWindowHandlerInterface* candidate_window =
+      IBusBridge::Get()->GetCandidateWindowHandler();
+    if (candidate_window)
+      candidate_window->UpdateLookupTable(*table_, window_visible_);
+  }
+}
+
 bool InputMethodEngineIBus::SetCandidateWindowVisible(bool visible,
                                                       std::string* error) {
   if (!active_) {
@@ -232,44 +257,6 @@ bool InputMethodEngineIBus::SetCandidateWindowVisible(bool visible,
   if (candidate_window)
     candidate_window->UpdateLookupTable(*table_, window_visible_);
   return true;
-}
-
-void InputMethodEngineIBus::SetCandidateWindowCursorVisible(bool visible) {
-  table_->set_is_cursor_visible(visible);
-  // IBus shows candidates on a page where the cursor is placed, so we need to
-  // set the cursor position appropriately so IBus shows the right page.
-  // In the case that the cursor is not visible, we always show the first page.
-  // This trick works because only extension IMEs use this method and extension
-  // IMEs do not depend on the pagination feature of IBus.
-  if (!visible)
-    table_->set_cursor_position(0);
-  if (active_) {
-    IBusPanelCandidateWindowHandlerInterface* candidate_window =
-      IBusBridge::Get()->GetCandidateWindowHandler();
-    if (candidate_window)
-      candidate_window->UpdateLookupTable(*table_, window_visible_);
-  }
-}
-
-void InputMethodEngineIBus::SetCandidateWindowVertical(bool vertical) {
-  table_->set_orientation(vertical ? IBusLookupTable::VERTICAL :
-                          IBusLookupTable::HORIZONTAL);
-  if (active_) {
-    IBusPanelCandidateWindowHandlerInterface* candidate_window =
-      IBusBridge::Get()->GetCandidateWindowHandler();
-    if (candidate_window)
-      candidate_window->UpdateLookupTable(*table_, window_visible_);
-  }
-}
-
-void InputMethodEngineIBus::SetCandidateWindowPageSize(int size) {
-  table_->set_page_size(size);
-  if (active_) {
-    IBusPanelCandidateWindowHandlerInterface* candidate_window =
-      IBusBridge::Get()->GetCandidateWindowHandler();
-    if (candidate_window)
-      candidate_window->UpdateLookupTable(*table_, window_visible_);
-  }
 }
 
 void InputMethodEngineIBus::SetCandidateWindowAuxText(const char* text) {
@@ -289,17 +276,6 @@ void InputMethodEngineIBus::SetCandidateWindowAuxTextVisible(bool visible) {
     GetCurrentService()->UpdateAuxiliaryText(
         *aux_text_.get(),
         window_visible_ && aux_text_visible_);
-  }
-}
-
-void InputMethodEngineIBus::SetCandidateWindowPosition(
-    CandidateWindowPosition position) {
-  table_->set_show_window_at_composition(position == WINDOW_POS_COMPOSITTION);
-  if (active_) {
-    IBusPanelCandidateWindowHandlerInterface* candidate_window =
-      IBusBridge::Get()->GetCandidateWindowHandler();
-    if (candidate_window)
-      candidate_window->UpdateLookupTable(*table_, window_visible_);
   }
 }
 
