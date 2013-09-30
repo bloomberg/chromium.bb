@@ -276,6 +276,10 @@ function process_file {
 # Usage: optimize_file <file>
 function optimize_file {
   local file=$1
+  if $using_cygwin ; then
+    file=$(cygpath -w $file)
+  fi
+
   local name=$(basename $file)
   local old=$(stat -c%s $file)
   local tmp_file=$TMP_DIR/$name
@@ -304,12 +308,12 @@ function optimize_file {
 
 function optimize_dir {
   local dir=$1
+  if $using_cygwin ; then
+    dir=$(cygpath -w $dir)
+  fi
+
   for f in $(find $dir -name "*.png"); do
-    if $using_cygwin ; then
-      optimize_file $(cygpath -w $f)
-    else
-      optimize_file $f
-    fi
+    optimize_file $f
   done
 }
 
@@ -357,6 +361,9 @@ Options:
       2  Aggressively optimize the size of png files. This may produce
          addtional 1%~5% reduction.  Warning: this is *VERY*
          slow and can take hours to process all files.
+  -r<revision> If this is specified, the script processes only png files
+               changed since this revision. The <dir> options will be used
+               to narrow down the files under specific directories.
   -h  Print this help text."
   exit 1
 }
@@ -374,20 +381,29 @@ fi
 
 OPTIMIZE_LEVEL=1
 # Parse options
-while getopts o:h opts
+while getopts o:r:h opts
 do
   case $opts in
+    r)
+      COMMIT=$(git svn find-rev r$OPTARG | tail -1) || exit
+      if [ -z "$COMMIT" ] ; then
+        echo "Revision $OPTARG not found"
+        show_help
+      fi
+      ;;
     o)
-      if [[ ! "$OPTARG" =~ [012] ]]; then
+      if [[ ! "$OPTARG" =~ [012] ]] ; then
         show_help
       fi
       OPTIMIZE_LEVEL=$OPTARG
-      [ "$1" == "-o" ] && shift
-      shift;;
+      ;;
     [h?])
       show_help;;
   esac
 done
+
+# Remove options from argument list.
+shift $(($OPTIND -1))
 
 # Make sure we have all necessary commands installed.
 install_if_not_installed pngcrush pngcrush
@@ -422,14 +438,24 @@ DIRS=$@
 set ${DIRS:=$ALL_DIRS}
 
 echo "Optimize level=$OPTIMIZE_LEVEL"
-for d in $DIRS; do
-  if $using_cygwin ; then
-    d=$(cygpath -w $d)
-  fi
-  echo "Optimizing png files in $d"
-  optimize_dir $d
-  echo
-done
+if [ -n "$COMMIT" ] ; then
+ ALL_FILES=$(git diff --name-only $COMMIT HEAD $DIRS | grep "png$")
+ ALL_FILES_LIST=( $ALL_FILES )
+ echo "Processing ${#ALL_FILES_LIST[*]} files"
+ for f in $ALL_FILES; do
+   if [ -f $f ] ; then
+     optimize_file $f
+   else
+     echo "Skipping deleted file: $f";
+   fi
+ done
+else
+  for d in $DIRS; do
+    echo "Optimizing png files in $d"
+    optimize_dir $d
+    echo
+  done
+fi
 
 # Print the results.
 if [ $PROCESSED_FILE == 0 ]; then
