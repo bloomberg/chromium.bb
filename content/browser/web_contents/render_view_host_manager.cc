@@ -745,14 +745,6 @@ void RenderViewHostManager::CommitPending() {
   // The process will no longer try to exit, so we can decrement the count.
   render_view_host_->GetProcess()->RemovePendingView();
 
-  // Hide the old view before showing the new view.  This has the potential to
-  // reduce peak memory usage, by freeing up a large resource before allocating
-  // a new large resource.
-  if (old_render_view_host->GetView()) {
-    old_render_view_host->GetView()->Hide();
-    old_render_view_host->WasSwappedOut();
-  }
-
   // If the view is gone, then this RenderViewHost died while it was hidden.
   // We ignored the RenderProcessGone call at the time, so we should send it now
   // to make sure the sad tab shows up, etc.
@@ -760,6 +752,12 @@ void RenderViewHostManager::CommitPending() {
     delegate_->RenderProcessGoneFromRenderManager(render_view_host_);
   else if (!delegate_->IsHidden())
     render_view_host_->GetView()->Show();
+
+  // Hide the old view now that the new one is visible.
+  if (old_render_view_host->GetView()) {
+    old_render_view_host->GetView()->Hide();
+    old_render_view_host->WasSwappedOut();
+  }
 
   // Make sure the size is up to date.  (Fix for bug 1079768.)
   delegate_->UpdateRenderViewSizeForRenderManager();

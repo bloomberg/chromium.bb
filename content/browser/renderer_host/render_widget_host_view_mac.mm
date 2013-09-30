@@ -867,6 +867,10 @@ void RenderWidgetHostViewMac::Show() {
 }
 
 void RenderWidgetHostViewMac::Hide() {
+  // We're messing with the window, so do this to ensure no flashes.
+  if (!use_core_animation_)
+    [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
+
   [cocoa_view_ setHidden:YES];
 
   WasHidden();
