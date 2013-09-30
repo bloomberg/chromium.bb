@@ -167,7 +167,8 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
   EXPECT_TRUE(fetcher_->stopped_orientation_);
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, MotionTest) {
+// Flaky on all platforms: crbug.com/301572.
+IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, DISABLED_MotionTest) {
   // The test page will register an event handler for motion events,
   // expects to get an event with fake values, then removes the event
   // handler and navigates to #pass.
