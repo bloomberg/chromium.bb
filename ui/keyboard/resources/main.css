@@ -150,6 +150,7 @@ kb-key:-webkit-any(.backspace,
                    .dotcom,
                    .left-more,
                    .return,
+                   .right-more,
                    .symbol,
                    .tab) {
   font-size: 70%;
