@@ -38,8 +38,6 @@ var mediaFileSystemsListCallback = function(results) {
   galleries = results;
 };
 
-CreateDummyWindowToPreventSleep();
-
 chrome.test.getConfig(function(config) {
   customArg = JSON.parse(config.customArg);
   expectedFileSystems = customArg[0];
@@ -51,17 +49,17 @@ chrome.test.getConfig(function(config) {
     },
     function testGalleries() {
       chrome.test.assertEq(expectedFileSystems, galleries.length);
+      if (expectedFileSystems == 0) {
+        chrome.test.succeed();
+        return;
+      }
+
       for (var i = 0; i < galleries.length; i++) {
         var dirReader = galleries[i].root.createReader();
         dirReader.readEntries(mediaFileSystemsDirectoryEntryCallback,
                               mediaFileSystemsDirectoryErrorCallback);
       }
     },
-    function validFileCopyToShouldFail() {
-      runCopyToTest(validWEBPImageCase, false /* expect failure */);
-    },
-    function invalidFileCopyToShouldFail() {
-      runCopyToTest(invalidWEBPImageCase, false /* expect failure */);
-    },
+
   ]);
 })

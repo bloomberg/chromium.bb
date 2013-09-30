@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/auto_reset.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
@@ -83,26 +82,6 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
 
   bool RunMediaGalleriesTestWithArg(const std::string& extension_name,
                                     const base::ListValue& custom_arg_value) {
-    // Copy the test data for this test into a temporary directory. Then add
-    // a common_injected.js to the temporary copy and run it.
-    const char kTestDir[] = "api_test/media_galleries/";
-    base::FilePath from_dir =
-        test_data_dir_.AppendASCII(kTestDir + extension_name);
-    base::ScopedTempDir temp_dir;
-    if (!temp_dir.CreateUniqueTempDir())
-      return false;
-
-    if (!base::CopyDirectory(from_dir, temp_dir.path(), true))
-      return false;
-
-    base::FilePath common_js_path(
-        GetCommonDataDir().AppendASCII("common_injected.js"));
-    base::FilePath inject_js_path(
-        temp_dir.path().AppendASCII(extension_name)
-                       .AppendASCII("common_injected.js"));
-    if (!base::CopyFile(common_js_path, inject_js_path))
-      return false;
-
     const char* custom_arg = NULL;
     std::string json_string;
     if (!custom_arg_value.empty()) {
@@ -110,8 +89,8 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
       custom_arg = json_string.c_str();
     }
 
-    base::AutoReset<base::FilePath> reset(&test_data_dir_, temp_dir.path());
-    return RunPlatformAppTestWithArg(extension_name, custom_arg);
+    const char kTestDir[] = "api_test/media_galleries/";
+    return RunPlatformAppTestWithArg(kTestDir + extension_name, custom_arg);
   }
 
   void AttachFakeDevice() {
@@ -134,7 +113,10 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
     if (ensure_media_directories_exist_->num_galleries() == 0)
       return;
 
-    base::FilePath test_data_path(GetCommonDataDir());
+    base::FilePath test_data_path =
+        test_data_dir_.AppendASCII("api_test")
+                      .AppendASCII("media_galleries")
+                      .AppendASCII("common");
     base::FilePath write_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_USER_PICTURES, &write_path));
 
@@ -152,12 +134,6 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
     test_jpg_size_ = base::checked_numeric_cast<int>(file_size);
   }
 
-  base::FilePath GetCommonDataDir() const {
-    return test_data_dir_.AppendASCII("api_test")
-                         .AppendASCII("media_galleries")
-                         .AppendASCII("common");
-  }
-
   int num_galleries() const {
     return ensure_media_directories_exist_->num_galleries();
   }
@@ -172,12 +148,8 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        MediaGalleriesNoAccess) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  MakeFakeMediaGalleryForTest(browser()->profile(), temp_dir.path());
-
   base::ListValue custom_args;
-  custom_args.AppendInteger(num_galleries() + 1);
+  custom_args.AppendInteger(num_galleries());
 
   ASSERT_TRUE(RunMediaGalleriesTestWithArg("no_access", custom_args))
       << message_;
@@ -208,6 +180,14 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   MakeFakeMediaGalleryForTest(browser()->profile(), temp_dir.path());
   ASSERT_TRUE(RunMediaGalleriesTest("copy_to_access")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
+                       MediaGalleriesCopyToNoAccess) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  MakeFakeMediaGalleryForTest(browser()->profile(), temp_dir.path());
+  ASSERT_TRUE(RunMediaGalleriesTest("copy_to_access/no_access")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,

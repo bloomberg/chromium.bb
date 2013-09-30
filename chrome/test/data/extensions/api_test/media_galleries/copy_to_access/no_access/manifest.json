@@ -1,0 +1,11 @@
+{
+  "name": "chrome.mediaGalleries.copyTo_no_access",
+  "version": "0.1",
+  "description": "test copyTo access denial for chrome.mediaGalleries.getMediaFileSystems",
+  "app": {
+    "background": {
+      "scripts": ["copy_to_common.js", "test.js"]
+    }
+  },
+  "permissions": [{"mediaGalleries": ["allAutoDetected"]}]
+}
