@@ -1354,12 +1354,15 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         if (!renderer->style()->hasViewportConstrainedPosition())
             continue;
 
-        if (renderer->isComposited())
-            continue;
-
         // Fixed items should always have layers.
         ASSERT(renderer->hasLayer());
         RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
+
+        // Composited layers may still actually paint into their ancestor.
+        // If that happens, the viewport constrained object needs to be
+        // repainted on scroll.
+        if (layer->isComposited() && !layer->backing()->paintsIntoCompositedAncestor())
+            continue;
 
         if (layer->viewportConstrainedNotCompositedReason() == RenderLayer::NotCompositedForBoundsOutOfView
             || layer->viewportConstrainedNotCompositedReason() == RenderLayer::NotCompositedForNoVisibleContent) {
