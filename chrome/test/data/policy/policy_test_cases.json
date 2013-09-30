@@ -1545,6 +1545,9 @@
     ]
   },
 
+  "ForceEphemeralProfiles": {
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

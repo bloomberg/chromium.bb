@@ -118,7 +118,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 244
+#   For your editing convenience: highest ID currently used: 245
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -3352,6 +3352,26 @@
       If <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is unable to obtain revocation status information, such certificates will be treated as revoked ('hard-fail').
 
       If this policy is not set, or it is set to false, then Chrome will use the existing online revocation checking settings.''',
+    },
+    {
+      'name': 'ForceEphemeralProfiles',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:32-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 245,
+      'caption': '''Ephemeral profile''',
+      'desc': '''If set to enabled this policy forces the profile to be switched to ephemeral mode. If this policy is specified as an OS policy (e.g. GPO on Windows) it will apply to every profile on the system; if the policy is set as a Cloud policy it will apply only to a profile signed in with a managed account.
+
+      In this mode the profile data is persisted on disk only for the length of the user session. Features like browser history, extensions and their data, web data like cookies and web databases are not preserved after the browser is closed. However this does not prevent the user from downloading any data to disk manually, save pages or print them.
+
+      If the user has enabled sync all this data is preserved in his sync profile just like with regular profiles. Incognito mode is also available if not explicitly disabled by policy.
+
+      If the policy is set to disabled or left not set signing in leads to regular profiles.'''
     },
     {
       'name': 'ReportDeviceVersionInfo',
