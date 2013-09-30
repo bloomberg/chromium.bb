@@ -563,7 +563,6 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
   if (base::mac::IsOSLionOrLater())
     supported_scale_factors.push_back(SCALE_FACTOR_200P);
 #elif defined(OS_WIN)
-  ui::win::InitDeviceScaleFactor();
   // Have high-DPI resources for 140% and 180% scaling on Windows based on
   // default scaling for Metro mode.  Round to nearest supported scale in
   // all cases.
@@ -576,6 +575,11 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
   supported_scale_factors.push_back(SCALE_FACTOR_200P);
 #endif
   ui::SetSupportedScaleFactors(supported_scale_factors);
+#if defined(OS_WIN)
+  // Must be called _after_ supported scale factors are set since it
+  // uses them.
+  ui::win::InitDeviceScaleFactor();
+#endif
 }
 
 void ResourceBundle::FreeImages() {
