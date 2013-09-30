@@ -1741,6 +1741,11 @@ class MasterCQSyncTest(BaseCQTest):
     """Test basic ability to sync with standard options."""
     self.PerformSync()
 
+  def testNoGerritHelper(self):
+    """Test that setting a non-standard remote raises an exception."""
+    self.assertRaises(validation_pool.GerritHelperNotAvailable,
+                      self.testCommitNonManifestChange, remote='foo', runs=1)
+
 
 class ExtendedMasterCQSyncTest(MasterCQSyncTest):
   """Additional tests for the CommitQueueSync stage.
