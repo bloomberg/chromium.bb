@@ -15,26 +15,20 @@ var ProgressItemContainer = Object.freeze({
 });
 
 /**
- * Messages to communicate between the background page and the application
- * windows.
+ * Event of the ProgressCenter class.
  * @enum {string}
  * @const
  */
-var ProgressCenterMessage = Object.freeze({
+var ProgressCenterEvent = Object.freeze({
   /**
-   * Application window obtains the current progress items.
+   * Background page notifies item added to application windows.
    */
-  GET_ITEMS: 'getItems',
+  ITEM_ADDED: 'itemAdded',
 
   /**
    * Background page notifies item update to application windows.
    */
   ITEM_UPDATED: 'itemUpdated',
-
-  /**
-   * Background page notifies item added to application windows.
-   */
-  ITEM_ADDED: 'itemAdded',
 
   /**
    * Background page notifies item removed to application windows.

@@ -9,6 +9,8 @@
  * @constructor
  */
 var ProgressCenter = function() {
+  cr.EventTarget.call(this);
+
   /**
    * ID counter.
    * @type {number}
@@ -36,19 +38,16 @@ var ProgressCenter = function() {
    * @private
    */
   this.queue_ = new AsyncUtil.Queue();
-
-  Object.seal(this);
-
-  // Register the evnets.
-  chrome.runtime.onMessage.addListener(this.onMessage_.bind(this));
 };
 
 ProgressCenter.prototype = {
+  __proto__: cr.EventTarget.prototype,
+
   /**
    * Obtains the items to be displayed in the application window.
    * @private
    */
-  get applicationItems_() {
+  get applicationItems() {
     return this.items_.filter(function(item) {
       return item.container == ProgressItemContainer.CLIENT;
     });
@@ -66,8 +65,9 @@ ProgressCenter.prototype.addItem = function(item) {
   item.id = this.idCounter_++;
   item.container = this.targetContainer_;
   this.items_.push(item);
-  var message = {name: ProgressCenterMessage.ITEM_ADDED, item: item};
-  this.sendMessage_(message);
+  var event = new cr.Event(ProgressCenterEvent.ITEM_ADDED);
+  event.item = item;
+  this.dispatchEvent(event);
   return item.id;
 };
 
@@ -101,7 +101,7 @@ ProgressCenter.prototype.switchContainer = function(newContainer) {
 
   // Current items to be moved to the notification center.
   if (newContainer == ProgressItemContainer.NOTIFICATION) {
-    var items = this.applicationItems_;
+    var items = this.applicationItems;
     for (var i = 0; i < items.length; i++) {
       items[i].container = ProgressItemContainer.NOTIFICATION;
       this.postItemToNotification_(items);
@@ -116,23 +116,6 @@ ProgressCenter.prototype.switchContainer = function(newContainer) {
 };
 
 /**
- * Send a message to the target container.
- *
- * @param {object} message Message to be sent.
- * @private
- */
-ProgressCenter.prototype.sendMessage_ = function(message) {
-  switch (this.targetContainer_) {
-    case ProgressItemContainer.CLIENT:
-      chrome.runtime.sendMessage(message);
-      break;
-    case ProgressItemContainer.NOTIFICATION:
-      // TODO(hirono): Implement it.
-      break;
-  }
-};
-
-/**
  * Passes the item to the ChromeOS's message center.
  *
  * TODO(hirono): Implement the method.
@@ -141,23 +124,4 @@ ProgressCenter.prototype.sendMessage_ = function(message) {
  */
 ProgressCenter.prototype.passItemsToNotification_ = function() {
 
-};
-
-/**
- * Handles the messages form the client windows.
- * @param {*} message Message from the client windows.
- * @param {*} sender Sender of the message.
- * @param {function(*)} reply Function to reply values to the client windows.
- * @private
- */
-ProgressCenter.prototype.onMessage_ = function(message, sender, reply) {
-  switch (message.name) {
-    case ProgressCenterMessage.GET_ITEMS:
-      reply(this.applicationItems_);
-      break;
-
-    default:
-      // Just ignore it.
-      break;
-  }
 };

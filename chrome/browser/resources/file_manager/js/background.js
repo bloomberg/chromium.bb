@@ -596,5 +596,8 @@ function initApp() {
 // Initialize Files.app.
 initApp();
 
-// Initialize the progress center.
-var progressCenter = new ProgressCenter();
+/**
+ * Progress center of the background page.
+ * @type {ProgressCenter}
+ */
+window.progressCenter = new ProgressCenter();

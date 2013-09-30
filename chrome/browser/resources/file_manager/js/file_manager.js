@@ -557,6 +557,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initGeneral_ = function(callback) {
+    // Initialize the application state.
     if (window.appState) {
       this.params_ = window.appState.params || {};
       this.defaultPath = window.appState.defaultPath;
@@ -566,7 +567,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                      {};
       this.defaultPath = this.params_.defaultPath;
     }
-    callback();
+
+    // Initialize the background page.
+    chrome.runtime.getBackgroundPage(function(backgroundPage) {
+      this.backgroundPage_ = backgroundPage;
+      callback();
+    }.bind(this));
   };
 
   /**
@@ -759,15 +765,18 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.previewPanel_.breadcrumbs.addEventListener(
          'pathclick', this.onBreadcrumbClick_.bind(this));
 
+    // Initialize progress center panel.
     this.progressCenterPanel_ = new ProgressCenterPanel(
         dom.querySelector('#progress-center'));
-    this.progressCenterClient_ = new ProgressCenterClient(function(items) {
-      for (var i = 0; i < items.length; i++) {
-        this.progressCenterPanel_.addItem(items[i]);
-      }
-    }.bind(this), function(item) {
-      this.progressCenterPanel_.addItem(item);
-    }.bind(this));
+    var initialItems = this.backgroundPage_.progressCenter.applicationItems;
+    for (var i = 0; i < initialItems.length; i++) {
+      this.progressCenterPanel.addItem(initialItems[i]);
+    }
+    this.backgroundPage_.progressCenter.addEventListener(
+        ProgressCenterEvent.ITEM_ADDED,
+        function(event) {
+          this.progressCenterPanel_.addItem(event.item);
+        }.bind(this));
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.document_.addEventListener('keyup', this.onKeyUp_.bind(this));
