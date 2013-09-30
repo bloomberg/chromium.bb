@@ -62,6 +62,7 @@
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DOMNamedFlowCollection.h"
 #include "core/dom/DocumentFragment.h"
+#include "core/dom/DocumentLifecycleNotifier.h"
 #include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/DocumentSharedObjectPool.h"

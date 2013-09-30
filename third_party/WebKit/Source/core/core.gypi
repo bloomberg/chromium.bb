@@ -1822,6 +1822,8 @@
             'dom/DocumentInit.h',
             'dom/DocumentLifecycle.cpp',
             'dom/DocumentLifecycle.h',
+            'dom/DocumentLifecycleNotifier.cpp',
+            'dom/DocumentLifecycleNotifier.h',
             'dom/DocumentLifecycleObserver.cpp',
             'dom/DocumentLifecycleObserver.h',
             'dom/DocumentMarker.cpp',

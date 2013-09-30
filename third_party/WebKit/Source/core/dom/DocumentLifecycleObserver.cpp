@@ -40,29 +40,4 @@ DocumentLifecycleObserver::~DocumentLifecycleObserver()
 {
 }
 
-DocumentLifecycleNotifier::DocumentLifecycleNotifier(ScriptExecutionContext* context)
-    : ContextLifecycleNotifier(context)
-{
-}
-
-void DocumentLifecycleNotifier::addObserver(LifecycleObserver* observer)
-{
-    if (observer->observerType() == LifecycleObserver::DocumentLifecycleObserverType) {
-        RELEASE_ASSERT(m_iterating != IteratingOverDocumentObservers);
-        m_documentObservers.add(static_cast<DocumentLifecycleObserver*>(observer));
-    }
-
-    ContextLifecycleNotifier::addObserver(observer);
-}
-
-void DocumentLifecycleNotifier::removeObserver(LifecycleObserver* observer)
-{
-    if (observer->observerType() == LifecycleObserver::DocumentLifecycleObserverType) {
-        RELEASE_ASSERT(m_iterating != IteratingOverDocumentObservers);
-        m_documentObservers.remove(static_cast<DocumentLifecycleObserver*>(observer));
-    }
-
-    ContextLifecycleNotifier::removeObserver(observer);
-}
-
 } // namespace WebCore

@@ -23,24 +23,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DocumentLifecycleObserver_h
-#define DocumentLifecycleObserver_h
 
-#include "core/dom/ContextLifecycleNotifier.h"
-#include "core/dom/ContextLifecycleObserver.h"
+#include "config.h"
+#include "core/dom/DocumentLifecycleNotifier.h"
+
+#include "core/dom/Document.h"
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 
-class Document;
+DocumentLifecycleNotifier::DocumentLifecycleNotifier(ScriptExecutionContext* context)
+    : ContextLifecycleNotifier(context)
+{
+}
 
-class DocumentLifecycleObserver : public ContextLifecycleObserver {
-public:
-    explicit DocumentLifecycleObserver(Document*);
-    virtual ~DocumentLifecycleObserver();
-    virtual void documentWasDetached() { }
-    virtual void documentWasDisposed() { }
-};
+void DocumentLifecycleNotifier::addObserver(LifecycleObserver* observer)
+{
+    if (observer->observerType() == LifecycleObserver::DocumentLifecycleObserverType) {
+        RELEASE_ASSERT(m_iterating != IteratingOverDocumentObservers);
+        m_documentObservers.add(static_cast<DocumentLifecycleObserver*>(observer));
+    }
+
+    ContextLifecycleNotifier::addObserver(observer);
+}
+
+void DocumentLifecycleNotifier::removeObserver(LifecycleObserver* observer)
+{
+    if (observer->observerType() == LifecycleObserver::DocumentLifecycleObserverType) {
+        RELEASE_ASSERT(m_iterating != IteratingOverDocumentObservers);
+        m_documentObservers.remove(static_cast<DocumentLifecycleObserver*>(observer));
+    }
+
+    ContextLifecycleNotifier::removeObserver(observer);
+}
 
 } // namespace WebCore
-
-#endif // DocumentLifecycleObserver_h
