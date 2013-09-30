@@ -810,20 +810,33 @@ def main():
     # Silently ignore the failure.
     min_blink_rev, max_blink_rev = 0, 0
 
-  # We're done. Let the user know the results in an official manner.
-  if good_rev > bad_rev:
-    print DONE_MESSAGE_GOOD_MAX % (str(min_chromium_rev), str(max_chromium_rev))
-  else:
-    print DONE_MESSAGE_GOOD_MIN % (str(min_chromium_rev), str(max_chromium_rev))
+  if opts.blink:
+    # We're done. Let the user know the results in an official manner.
+    if good_rev > bad_rev:
+      print DONE_MESSAGE_GOOD_MAX % (str(min_blink_rev), str(max_blink_rev))
+    else:
+      print DONE_MESSAGE_GOOD_MIN % (str(min_blink_rev), str(max_blink_rev))
 
-  if min_blink_rev != max_blink_rev:
     print 'BLINK CHANGELOG URL:'
     print '  ' + BLINK_CHANGELOG_URL % (max_blink_rev, min_blink_rev)
-  print 'CHANGELOG URL:'
-  if opts.official_builds:
-    print OFFICIAL_CHANGELOG_URL % (min_chromium_rev, max_chromium_rev)
+
   else:
-    print '  ' + CHANGELOG_URL % (min_chromium_rev, max_chromium_rev)
+    # We're done. Let the user know the results in an official manner.
+    if good_rev > bad_rev:
+      print DONE_MESSAGE_GOOD_MAX % (str(min_chromium_rev),
+                                     str(max_chromium_rev))
+    else:
+      print DONE_MESSAGE_GOOD_MIN % (str(min_chromium_rev),
+                                     str(max_chromium_rev))
+    if min_blink_rev != max_blink_rev:
+      print ("NOTE: There is a blink roll in the range, "
+             "you might also want to do a blink bisect.")
+
+    print 'CHANGELOG URL:'
+    if opts.official_builds:
+      print OFFICIAL_CHANGELOG_URL % (min_chromium_rev, max_chromium_rev)
+    else:
+      print '  ' + CHANGELOG_URL % (min_chromium_rev, max_chromium_rev)
 
 if __name__ == '__main__':
   sys.exit(main())
