@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
 
 #include "base/callback.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
@@ -28,6 +29,11 @@ void DataModelWrapper::FillInputs(DetailInputs* inputs) {
   for (size_t i = 0; i < inputs->size(); ++i) {
     (*inputs)[i].initial_value = GetInfo(AutofillType((*inputs)[i].type));
   }
+}
+
+base::string16 DataModelWrapper::GetInfoForDisplay(const AutofillType& type)
+    const {
+  return GetInfo(type);
 }
 
 gfx::Image DataModelWrapper::GetIcon() {
@@ -71,23 +77,23 @@ void DataModelWrapper::FillFormField(AutofillField* field) const {
 
 base::string16 DataModelWrapper::GetAddressDisplayText(
     const base::string16& separator) {
-  base::string16 address = GetInfo(AutofillType(NAME_FULL)) + separator +
-      GetInfo(AutofillType(ADDRESS_HOME_LINE1));
-  base::string16 address2 = GetInfo(AutofillType(ADDRESS_HOME_LINE2));
+  base::string16 address = GetInfoForDisplay(AutofillType(NAME_FULL)) +
+      separator + GetInfoForDisplay(AutofillType(ADDRESS_HOME_LINE1));
+  base::string16 address2 = GetInfoForDisplay(AutofillType(ADDRESS_HOME_LINE2));
   if (!address2.empty())
     address += separator + address2;
 
   base::string16 comma = ASCIIToUTF16(", ");
   base::string16 newline = ASCIIToUTF16("\n");
   address += separator +
-      GetInfo(AutofillType(ADDRESS_HOME_CITY)) + comma +
-      GetInfo(AutofillType(ADDRESS_HOME_STATE)) + ASCIIToUTF16(" ") +
-      GetInfo(AutofillType(ADDRESS_HOME_ZIP));
+      GetInfoForDisplay(AutofillType(ADDRESS_HOME_CITY)) + comma +
+      GetInfoForDisplay(AutofillType(ADDRESS_HOME_STATE)) + ASCIIToUTF16(" ") +
+      GetInfoForDisplay(AutofillType(ADDRESS_HOME_ZIP));
 
-  base::string16 email = GetInfo(AutofillType(EMAIL_ADDRESS));
+  base::string16 email = GetInfoForDisplay(AutofillType(EMAIL_ADDRESS));
   if (!email.empty())
     address += newline + email;
-  address += newline + GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER));
+  address += newline + GetInfoForDisplay(AutofillType(PHONE_HOME_WHOLE_NUMBER));
 
   return address;
 }
@@ -126,6 +132,29 @@ base::string16 AutofillProfileWrapper::GetInfo(const AutofillType& type)
   std::vector<base::string16> values;
   profile_->GetMultiInfo(type, app_locale, &values);
   return values[GetVariantForType(type)];
+}
+
+base::string16 AutofillProfileWrapper::GetInfoForDisplay(
+    const AutofillType& type) const {
+  // We display the "raw" phone number which contains user-defined formatting.
+  if (type.GetStorableType() == PHONE_HOME_WHOLE_NUMBER) {
+    std::vector<base::string16> values;
+    profile_->GetRawMultiInfo(type.GetStorableType(), &values);
+    const base::string16& phone_number = values[GetVariantForType(type)];
+
+    // If there is no user-defined formatting at all, add some standard
+    // formatting.
+    if (ContainsOnlyChars(phone_number, ASCIIToUTF16("0123456789"))) {
+      std::string region = UTF16ToASCII(
+          GetInfo(AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE)));
+      i18n::PhoneObject phone(phone_number, region);
+      return phone.GetFormattedNumber();
+    }
+
+    return phone_number;
+  }
+
+  return DataModelWrapper::GetInfoForDisplay(type);
 }
 
 void AutofillProfileWrapper::FillFormField(AutofillField* field) const {
@@ -229,6 +258,15 @@ base::string16 WalletAddressWrapper::GetInfo(const AutofillType& type) const {
   return address_->GetInfo(type, g_browser_process->GetApplicationLocale());
 }
 
+base::string16 WalletAddressWrapper::GetInfoForDisplay(const AutofillType& type)
+    const {
+  if (type.GetStorableType() == PHONE_HOME_WHOLE_NUMBER)
+    return address_->DisplayPhoneNumber();
+
+  return DataModelWrapper::GetInfoForDisplay(type);
+  return GetInfo(type);
+}
+
 bool WalletAddressWrapper::GetDisplayText(
     base::string16* vertically_compact,
     base::string16* horizontally_compact) {
@@ -259,6 +297,14 @@ base::string16 WalletInstrumentWrapper::GetInfo(const AutofillType& type)
     return MonthComboboxModel::FormatMonth(instrument_->expiration_month());
 
   return instrument_->GetInfo(type, g_browser_process->GetApplicationLocale());
+}
+
+base::string16 WalletInstrumentWrapper::GetInfoForDisplay(
+    const AutofillType& type) const {
+  if (type.GetStorableType() == PHONE_HOME_WHOLE_NUMBER)
+    return instrument_->address().DisplayPhoneNumber();
+
+  return DataModelWrapper::GetInfoForDisplay(type);
 }
 
 gfx::Image WalletInstrumentWrapper::GetIcon() {

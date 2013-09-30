@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/state_names.h"
 
 namespace autofill {
@@ -127,9 +128,12 @@ Address::Address(const std::string& country_name_code,
       locality_name_(locality_name),
       administrative_area_name_(administrative_area_name),
       postal_code_number_(postal_code_number),
-      phone_number_(phone_number),
       object_id_(object_id),
       is_complete_address_(true) {
+  // Wallet doesn't store user phone number formatting, so just strip all
+  // formatting.
+  i18n::PhoneObject phone(phone_number, country_name_code);
+  phone_number_ = phone.GetWholeNumber();
 }
 
 Address::~Address() {}
@@ -260,6 +264,15 @@ string16 Address::DisplayNameDetail() const {
 #else
   return string16();
 #endif
+}
+
+string16 Address::DisplayPhoneNumber() const {
+  // Return a formatted phone number. Wallet doesn't store user formatting, so
+  // impose our own. phone_number() always includes a country code, so using
+  // PhoneObject to format it would result in an internationalized format. Since
+  // Wallet only supports the US right now, stick to national formatting.
+  return i18n::PhoneObject(phone_number(), country_name_code()).
+      GetNationallyFormattedNumber();
 }
 
 string16 Address::GetInfo(const AutofillType& type,

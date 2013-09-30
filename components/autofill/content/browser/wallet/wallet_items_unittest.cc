@@ -34,7 +34,7 @@ const char kMaskedInstrument[] =
     "    \"state\":\"state\","
     "    \"postal_code\":\"postal_code\","
     "    \"phone_number\":\"phone_number\","
-    "    \"country_code\":\"country_code\","
+    "    \"country_code\":\"US\","
     "    \"type\":\"FULL\""
     "  },"
     "  \"status\":\"VALID\","
@@ -61,7 +61,7 @@ const char kMaskedInstrumentMissingStatus[] =
     "    \"state\":\"state\","
     "    \"postal_code\":\"postal_code\","
     "    \"phone_number\":\"phone_number\","
-    "    \"country_code\":\"country_code\""
+    "    \"country_code\":\"US\""
     "  },"
     "  \"object_id\":\"object_id\","
     "  \"amex_disallowed\":true"
@@ -86,7 +86,7 @@ const char kMaskedInstrumentMissingType[] =
     "    \"state\":\"state\","
     "    \"postal_code\":\"postal_code\","
     "    \"phone_number\":\"phone_number\","
-    "    \"country_code\":\"country_code\""
+    "    \"country_code\":\"US\""
     "  },"
     "  \"status\":\"VALID\","
     "  \"object_id\":\"object_id\""
@@ -111,7 +111,7 @@ const char kMaskedInstrumentMissingLastFourDigits[] =
     "    \"state\":\"state\","
     "    \"postal_code\":\"postal_code\","
     "    \"phone_number\":\"phone_number\","
-    "    \"country_code\":\"country_code\""
+    "    \"country_code\":\"US\""
     "  },"
     "  \"status\":\"VALID\","
     "  \"object_id\":\"object_id\""
@@ -150,7 +150,7 @@ const char kMaskedInstrumentMalformedAddress[] =
     "    \"city\":\"city\","
     "    \"state\":\"state\","
     "    \"phone_number\":\"phone_number\","
-    "    \"country_code\":\"country_code\""
+    "    \"country_code\":\"US\""
     "  },"
     "  \"status\":\"VALID\","
     "  \"object_id\":\"object_id\""
@@ -176,7 +176,7 @@ const char kMaskedInstrumentMissingObjectId[] =
     "    \"state\":\"state\","
     "    \"postal_code\":\"postal_code\","
     "    \"phone_number\":\"phone_number\","
-    "    \"country_code\":\"country_code\""
+    "    \"country_code\":\"US\""
     "  },"
     "  \"status\":\"VALID\""
     "}";
@@ -250,7 +250,7 @@ const char kWalletItemsMissingGoogleTransactionId[] =
     "        \"state\":\"state\","
     "        \"postal_code\":\"postal_code\","
     "        \"phone_number\":\"phone_number\","
-    "        \"country_code\":\"country_code\""
+    "        \"country_code\":\"US\""
     "      },"
     "      \"status\":\"VALID\","
     "      \"object_id\":\"object_id\""
@@ -273,7 +273,7 @@ const char kWalletItemsMissingGoogleTransactionId[] =
     "        \"locality_name\":\"locality_name\","
     "        \"administrative_area_name\":\"administrative_area_name\","
     "        \"postal_code_number\":\"postal_code_number\","
-    "        \"country_name_code\":\"country_name_code\""
+    "        \"country_name_code\":\"US\""
     "      }"
     "    }"
     "  ],"
@@ -316,7 +316,7 @@ const char kWalletItems[] =
     "        \"state\":\"state\","
     "        \"postal_code\":\"postal_code\","
     "        \"phone_number\":\"phone_number\","
-    "        \"country_code\":\"country_code\","
+    "        \"country_code\":\"US\","
     "        \"type\":\"FULL\""
     "      },"
     "      \"status\":\"VALID\","
@@ -340,7 +340,7 @@ const char kWalletItems[] =
     "        \"locality_name\":\"locality_name\","
     "        \"administrative_area_name\":\"administrative_area_name\","
     "        \"postal_code_number\":\"postal_code_number\","
-    "        \"country_name_code\":\"country_name_code\""
+    "        \"country_name_code\":\"US\""
     "      }"
     "    }"
     "  ],"
@@ -416,7 +416,7 @@ TEST_F(WalletItemsTest, CreateMaskedInstrumentMissingObjectId) {
 
 TEST_F(WalletItemsTest, CreateMaskedInstrument) {
   SetUpDictionary(kMaskedInstrument);
-  scoped_ptr<Address> address(new Address("country_code",
+  scoped_ptr<Address> address(new Address("US",
                                           ASCIIToUTF16("name"),
                                           ASCIIToUTF16("address1"),
                                           ASCIIToUTF16("address2"),
@@ -528,7 +528,7 @@ TEST_F(WalletItemsTest, CreateWalletItems) {
                        "obfuscated_gaia_id",
                        AMEX_DISALLOWED);
 
-  scoped_ptr<Address> billing_address(new Address("country_code",
+  scoped_ptr<Address> billing_address(new Address("US",
                                                   ASCIIToUTF16("name"),
                                                   ASCIIToUTF16("address1"),
                                                   ASCIIToUTF16("address2"),
@@ -552,7 +552,7 @@ TEST_F(WalletItemsTest, CreateWalletItems) {
   expected.AddInstrument(masked_instrument.Pass());
 
   scoped_ptr<Address> shipping_address(
-      new Address("country_name_code",
+      new Address("US",
                   ASCIIToUTF16("recipient_name"),
                   ASCIIToUTF16("address_line_1"),
                   ASCIIToUTF16("address_line_2"),

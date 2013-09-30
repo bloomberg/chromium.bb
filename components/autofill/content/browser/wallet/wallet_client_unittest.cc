@@ -117,7 +117,7 @@ const char kGetWalletItemsValidResponse[] =
     "        \"state\":\"state\","
     "        \"postal_code\":\"postal_code\","
     "        \"phone_number\":\"phone_number\","
-    "        \"country_code\":\"country_code\""
+    "        \"country_code\":\"US\""
     "      },"
     "      \"status\":\"VALID\","
     "      \"object_id\":\"default_instrument_id\""
