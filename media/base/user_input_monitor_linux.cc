@@ -38,7 +38,8 @@ namespace {
 // UserInputMonitorLinux since it needs to be deleted on the IO thread.
 class UserInputMonitorLinuxCore
     : public base::MessagePumpLibevent::Watcher,
-      public base::SupportsWeakPtr<UserInputMonitorLinuxCore> {
+      public base::SupportsWeakPtr<UserInputMonitorLinuxCore>,
+      public base::MessageLoop::DestructionObserver {
  public:
   enum EventType {
     MOUSE_EVENT,
@@ -50,6 +51,9 @@ class UserInputMonitorLinuxCore
       const scoped_refptr<UserInputMonitor::MouseListenerList>&
           mouse_listeners);
   virtual ~UserInputMonitorLinuxCore();
+
+  // DestructionObserver overrides.
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
   size_t GetKeyPressCount() const;
   void StartMonitor(EventType type);
@@ -123,6 +127,12 @@ UserInputMonitorLinuxCore::~UserInputMonitorLinuxCore() {
   DCHECK(!x_record_context_);
 }
 
+void UserInputMonitorLinuxCore::WillDestroyCurrentMessageLoop() {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  StopMonitor(MOUSE_EVENT);
+  StopMonitor(KEYBOARD_EVENT);
+}
+
 size_t UserInputMonitorLinuxCore::GetKeyPressCount() const {
   return counter_.GetKeyPressCount();
 }
@@ -146,6 +156,7 @@ void UserInputMonitorLinuxCore::StartMonitor(EventType type) {
 
   if (!x_control_display_ || !x_record_display_) {
     LOG(ERROR) << "Couldn't open X display";
+    StopMonitor(type);
     return;
   }
 
@@ -153,6 +164,7 @@ void UserInputMonitorLinuxCore::StartMonitor(EventType type) {
   if (!XQueryExtension(
            x_control_display_, "RECORD", &xr_opcode, &xr_event, &xr_error)) {
     LOG(ERROR) << "X Record extension not available.";
+    StopMonitor(type);
     return;
   }
 
@@ -161,6 +173,7 @@ void UserInputMonitorLinuxCore::StartMonitor(EventType type) {
 
   if (!x_record_range_[type]) {
     LOG(ERROR) << "XRecordAllocRange failed.";
+    StopMonitor(type);
     return;
   }
 
@@ -193,6 +206,7 @@ void UserInputMonitorLinuxCore::StartMonitor(EventType type) {
                                            number_of_ranges);
   if (!x_record_context_) {
     LOG(ERROR) << "XRecordCreateContext failed.";
+    StopMonitor(type);
     return;
   }
 
@@ -201,6 +215,7 @@ void UserInputMonitorLinuxCore::StartMonitor(EventType type) {
                                  &UserInputMonitorLinuxCore::ProcessReply,
                                  reinterpret_cast<XPointer>(this))) {
     LOG(ERROR) << "XRecordEnableContextAsync failed.";
+    StopMonitor(type);
     return;
   }
 
@@ -216,8 +231,13 @@ void UserInputMonitorLinuxCore::StartMonitor(EventType type) {
                                           this);
     if (!result) {
       LOG(ERROR) << "Failed to create X record task.";
+      StopMonitor(type);
       return;
     }
+
+    // Start observing message loop destruction if we start monitoring the first
+    // event.
+    base::MessageLoop::current()->AddDestructionObserver(this);
   }
 
   // Fetch pending events if any.
@@ -243,15 +263,17 @@ void UserInputMonitorLinuxCore::StopMonitor(EventType type) {
     x_record_context_ = 0;
 
     controller_.StopWatchingFileDescriptor();
-    if (x_record_display_) {
-      XCloseDisplay(x_record_display_);
-      x_record_display_ = NULL;
-    }
-    if (x_control_display_) {
-      XCloseDisplay(x_control_display_);
-      x_control_display_ = NULL;
-    }
   }
+  if (x_record_display_) {
+    XCloseDisplay(x_record_display_);
+    x_record_display_ = NULL;
+  }
+  if (x_control_display_) {
+    XCloseDisplay(x_control_display_);
+    x_control_display_ = NULL;
+  }
+  // Stop observing message loop destruction if no event is being monitored.
+  base::MessageLoop::current()->RemoveDestructionObserver(this);
 }
 
 void UserInputMonitorLinuxCore::OnFileCanReadWithoutBlocking(int fd) {
