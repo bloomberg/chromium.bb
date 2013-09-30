@@ -33,13 +33,14 @@
 
 namespace WebKit {
 class WebMediaConstraints;
+class WebString;
 }
 
 namespace WebTestRunner {
 
 class MockConstraints {
 public:
-    static bool verifyConstraints(const WebKit::WebMediaConstraints&);
+    static bool verifyConstraints(const WebKit::WebMediaConstraints&, WebKit::WebString* failedConstraint = 0);
 };
 
 }
