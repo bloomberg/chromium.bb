@@ -1,0 +1,36 @@
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ FAIL: border-spacing from [0px] to [10px] was [-3px -3px] at -0.3, expected [0px 0px]
+PASS: border-spacing from [0px] to [10px] was [0px 0px] at 0
+PASS: border-spacing from [0px] to [10px] was [3px 3px] at 0.3
+PASS: border-spacing from [0px] to [10px] was [6px 6px] at 0.6
+PASS: border-spacing from [0px] to [10px] was [10px 10px] at 1
+PASS: border-spacing from [0px] to [10px] was [15px 15px] at 1.5
+FAIL: -webkit-border-horizontal-spacing from [0px] to [10px] was [-3px] at -0.3, expected [0px]
+PASS: -webkit-border-horizontal-spacing from [0px] to [10px] was [0px] at 0
+PASS: -webkit-border-horizontal-spacing from [0px] to [10px] was [3px] at 0.3
+PASS: -webkit-border-horizontal-spacing from [0px] to [10px] was [6px] at 0.6
+PASS: -webkit-border-horizontal-spacing from [0px] to [10px] was [10px] at 1
+PASS: -webkit-border-horizontal-spacing from [0px] to [10px] was [15px] at 1.5
+FAIL: -webkit-border-vertical-spacing from [0px] to [10px] was [-3px] at -0.3, expected [0px]
+PASS: -webkit-border-vertical-spacing from [0px] to [10px] was [0px] at 0
+PASS: -webkit-border-vertical-spacing from [0px] to [10px] was [3px] at 0.3
+PASS: -webkit-border-vertical-spacing from [0px] to [10px] was [6px] at 0.6
+PASS: -webkit-border-vertical-spacing from [0px] to [10px] was [10px] at 1
+PASS: -webkit-border-vertical-spacing from [0px] to [10px] was [15px] at 1.5
+

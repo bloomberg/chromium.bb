@@ -234,6 +234,12 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyTop:
         style->setTop(animatableValueToLength(value, state));
         return;
+    case CSSPropertyWebkitBorderHorizontalSpacing:
+        style->setHorizontalBorderSpacing(animatableValueRoundClampTo<unsigned short>(value));
+        return;
+    case CSSPropertyWebkitBorderVerticalSpacing:
+        style->setVerticalBorderSpacing(animatableValueRoundClampTo<unsigned short>(value));
+        return;
     case CSSPropertyWebkitColumnRuleColor:
         style->setColumnRuleColor(toAnimatableColor(value)->color());
         style->setVisitedLinkColumnRuleColor(toAnimatableColor(value)->visitedLinkColor());
