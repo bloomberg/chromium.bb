@@ -22,10 +22,10 @@ namespace {
 class FakeDataFetcher : public DataFetcherSharedMemory {
  public:
   FakeDataFetcher()
-      : started_orientation_(false),
-        stopped_orientation_(false),
-        started_motion_(false),
-        stopped_motion_(false) {
+      : started_orientation_(false, false),
+        stopped_orientation_(false, false),
+        started_motion_(false, false),
+        stopped_motion_(false, false) {
   }
   virtual ~FakeDataFetcher() { }
 
@@ -35,12 +35,12 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
         UpdateMotion(static_cast<DeviceMotionHardwareBuffer*>(buffer));
-        started_motion_ = true;
+        started_motion_.Signal();
         break;
       case CONSUMER_TYPE_ORIENTATION:
         UpdateOrientation(
             static_cast<DeviceOrientationHardwareBuffer*>(buffer));
-        started_orientation_ = true;
+        started_orientation_.Signal();
         break;
       default:
         return false;
@@ -51,10 +51,10 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
   virtual bool Stop(ConsumerType consumer_type) OVERRIDE {
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
-        stopped_motion_ = true;
+        stopped_motion_.Signal();
         break;
       case CONSUMER_TYPE_ORIENTATION:
-        stopped_orientation_ = true;
+        stopped_orientation_.Signal();
         break;
       default:
         return false;
@@ -106,10 +106,10 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
     return false;
   }
 
-  bool started_orientation_;
-  bool stopped_orientation_;
-  bool started_motion_;
-  bool stopped_motion_;
+  base::WaitableEvent started_orientation_;
+  base::WaitableEvent stopped_orientation_;
+  base::WaitableEvent started_motion_;
+  base::WaitableEvent stopped_motion_;
 
  private:
 
@@ -163,12 +163,11 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
 
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
-  EXPECT_TRUE(fetcher_->started_orientation_);
-  EXPECT_TRUE(fetcher_->stopped_orientation_);
+  fetcher_->started_orientation_.Wait();
+  fetcher_->stopped_orientation_.Wait();
 }
 
-// Flaky on all platforms: crbug.com/301572.
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, DISABLED_MotionTest) {
+IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, MotionTest) {
   // The test page will register an event handler for motion events,
   // expects to get an event with fake values, then removes the event
   // handler and navigates to #pass.
@@ -177,8 +176,8 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, DISABLED_MotionTest) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
 
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
-  EXPECT_TRUE(fetcher_->started_motion_);
-  EXPECT_TRUE(fetcher_->stopped_motion_);
+  fetcher_->started_motion_.Wait();
+  fetcher_->stopped_motion_.Wait();
 }
 
 } //  namespace
