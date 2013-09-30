@@ -54,11 +54,11 @@ protected:
 
 private:
     explicit AnimatableUnknown(PassRefPtr<CSSValue> value)
-        : AnimatableValue(TypeUnknown)
-        , m_value(value)
+        : m_value(value)
     {
         ASSERT(m_value);
     }
+    virtual AnimatableType type() const OVERRIDE { return TypeUnknown; }
 
     const RefPtr<CSSValue> m_value;
 };

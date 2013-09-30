@@ -82,8 +82,7 @@ protected:
 
 private:
     AnimatableNumber(double number, NumberUnitType unitType, CSSPrimitiveValue* cssPrimitiveValue)
-        : AnimatableValue(TypeNumber)
-        , m_number(number)
+        : m_number(number)
         , m_unitType(unitType)
         , m_isCalc(false)
         , m_cachedCSSPrimitiveValue(cssPrimitiveValue)
@@ -91,13 +90,13 @@ private:
         ASSERT(m_unitType != UnitTypeInvalid);
     }
     AnimatableNumber(PassRefPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue)
-        : AnimatableValue(TypeNumber)
-        , m_isCalc(true)
+        : m_isCalc(true)
         , m_calcExpression(calcExpression)
         , m_cachedCSSPrimitiveValue(cssPrimitiveValue)
     {
         ASSERT(m_calcExpression);
     }
+    virtual AnimatableType type() const OVERRIDE { return TypeNumber; }
 
     static PassRefPtr<AnimatableNumber> create(PassRefPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue = 0)
     {

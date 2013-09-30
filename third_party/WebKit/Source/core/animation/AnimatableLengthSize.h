@@ -51,11 +51,11 @@ protected:
 
 private:
     AnimatableLengthSize(PassRefPtr<AnimatableValue> width, PassRefPtr<AnimatableValue> height)
-        : AnimatableValue(TypeLengthSize)
-        , m_width(width)
+        : m_width(width)
         , m_height(height)
     {
     }
+    virtual AnimatableType type() const OVERRIDE { return TypeLengthSize; }
 
     RefPtr<AnimatableValue> m_width;
     RefPtr<AnimatableValue> m_height;

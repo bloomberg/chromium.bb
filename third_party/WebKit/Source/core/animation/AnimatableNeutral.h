@@ -41,7 +41,6 @@ public:
 
 protected:
     static PassRefPtr<AnimatableNeutral> create() { return adoptRef(new AnimatableNeutral()); }
-
     virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value, double fraction) const OVERRIDE
     {
         ASSERT_NOT_REACHED();
@@ -49,9 +48,8 @@ protected:
     }
 
 private:
-    AnimatableNeutral() : AnimatableValue(TypeNeutral) { }
-
     friend class AnimatableValue;
+    virtual AnimatableType type() const OVERRIDE { return TypeNeutral; }
 };
 
 } // namespace WebCore

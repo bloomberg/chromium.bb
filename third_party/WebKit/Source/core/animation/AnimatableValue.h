@@ -46,15 +46,15 @@ public:
     // For noncommutative values read add(A, B) to mean the value A with B composed onto it.
     static PassRefPtr<AnimatableValue> add(const AnimatableValue*, const AnimatableValue*);
 
-    bool isColor() const { return m_type == TypeColor; }
-    bool isImage() const { return m_type == TypeImage; }
-    bool isLengthBox() const { return m_type == TypeLengthBox; }
-    bool isLengthSize() const { return m_type == TypeLengthSize; }
-    bool isNumber() const { return m_type == TypeNumber; }
-    bool isNeutral() const { return m_type == TypeNeutral; }
-    bool isTransform() const { return m_type == TypeTransform; }
-    bool isUnknown() const { return m_type == TypeUnknown; }
-    bool isVisibility() const { return m_type == TypeVisibility; }
+    bool isColor() const { return type() == TypeColor; }
+    bool isImage() const { return type() == TypeImage; }
+    bool isLengthBox() const { return type() == TypeLengthBox; }
+    bool isLengthSize() const { return type() == TypeLengthSize; }
+    bool isNumber() const { return type() == TypeNumber; }
+    bool isNeutral() const { return type() == TypeNeutral; }
+    bool isTransform() const { return type() == TypeTransform; }
+    bool isUnknown() const { return type() == TypeUnknown; }
+    bool isVisibility() const { return type() == TypeVisibility; }
 
 protected:
     enum AnimatableType {
@@ -69,12 +69,10 @@ protected:
         TypeVisibility,
     };
 
-    AnimatableValue(AnimatableType type) : m_type(type) { }
-
     bool isSameType(const AnimatableValue* value) const
     {
         ASSERT(value);
-        return value->m_type == m_type;
+        return value->type() == type();
     }
 
     virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const = 0;
@@ -87,7 +85,8 @@ protected:
     template <class T>
     static PassRefPtr<T> takeConstRef(const T* value) { return PassRefPtr<T>(const_cast<T*>(value)); }
 
-    const AnimatableType m_type;
+private:
+    virtual AnimatableType type() const = 0;
 };
 
 } // namespace WebCore

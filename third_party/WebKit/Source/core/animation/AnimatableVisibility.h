@@ -51,10 +51,10 @@ protected:
 
 private:
     explicit AnimatableVisibility(EVisibility visibility)
-        : AnimatableValue(TypeVisibility)
-        , m_visibility(visibility)
+        : m_visibility(visibility)
     {
     }
+    virtual AnimatableType type() const OVERRIDE { return TypeVisibility; }
     const EVisibility m_visibility;
 };
 
