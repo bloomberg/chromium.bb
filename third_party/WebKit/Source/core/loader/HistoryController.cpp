@@ -140,7 +140,7 @@ void HistoryController::saveDocumentAndScrollState()
 
 void HistoryController::restoreDocumentState()
 {
-    if (m_frame->loader()->loadType() == FrameLoadTypeBackForward)
+    if (m_currentItem && m_frame->loader()->loadType() == FrameLoadTypeBackForward)
         m_frame->document()->setStateForNewFormElements(m_currentItem->documentState());
 }
 
