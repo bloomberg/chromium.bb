@@ -2992,14 +2992,16 @@ void RenderObject::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
     if (style()->visibility() != VISIBLE || !isBox())
         return;
 
-    RenderBox* box = toRenderBox(this);
-    FloatPoint absPos = localToAbsolute();
-
     if (style()->getDraggableRegionMode() == DraggableRegionNone)
         return;
+
+    RenderBox* box = toRenderBox(this);
+    FloatRect localBounds(FloatPoint(), FloatSize(box->width(), box->height()));
+    FloatRect absBounds = localToAbsoluteQuad(localBounds).boundingBox();
+
     AnnotatedRegionValue region;
     region.draggable = style()->getDraggableRegionMode() == DraggableRegionDrag;
-    region.bounds = LayoutRect(absPos.x(), absPos.y(), box->width(), box->height());
+    region.bounds = LayoutRect(absBounds);
     regions.append(region);
 }
 

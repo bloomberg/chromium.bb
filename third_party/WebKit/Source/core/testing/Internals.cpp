@@ -2086,6 +2086,35 @@ void Internals::stopTrackingRepaints(Document* document, ExceptionState& es)
     frameView->setTracksRepaints(false);
 }
 
+PassRefPtr<ClientRectList> Internals::draggableRegions(Document* document, ExceptionState& es)
+{
+    return annotatedRegions(document, true, es);
+}
+
+PassRefPtr<ClientRectList> Internals::nonDraggableRegions(Document* document, ExceptionState& es)
+{
+    return annotatedRegions(document, false, es);
+}
+
+PassRefPtr<ClientRectList> Internals::annotatedRegions(Document* document, bool draggable, ExceptionState& es)
+{
+    if (!document || !document->view()) {
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        return ClientRectList::create();
+    }
+
+    document->updateLayout();
+    document->view()->updateAnnotatedRegions();
+    Vector<AnnotatedRegionValue> regions = document->annotatedRegions();
+
+    Vector<FloatQuad> quads;
+    for (size_t i = 0; i < regions.size(); ++i) {
+        if (regions[i].draggable == draggable)
+            quads.append(FloatQuad(regions[i].bounds));
+    }
+    return ClientRectList::create(quads);
+}
+
 static const char* cursorTypeToString(Cursor::Type cursorType)
 {
     switch (cursorType) {

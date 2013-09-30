@@ -240,6 +240,10 @@
     [RaisesException] void startTrackingRepaints(Document document);
     [RaisesException] void stopTrackingRepaints(Document document);
 
+    // Returns a list of draggable/non-draggable regions in the document.
+    [RaisesException] ClientRectList draggableRegions(Document document);
+    [RaisesException] ClientRectList nonDraggableRegions(Document document);
+
     // Returns a string with information about the mouse cursor used at the specified client location.
     [RaisesException] DOMString getCurrentCursorInfo(Document document);
 
