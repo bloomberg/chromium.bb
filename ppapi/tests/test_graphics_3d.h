@@ -27,6 +27,7 @@ class TestGraphics3D : public TestCase {
   std::string TestExtensionsGL();
   std::string TestFrameGL();
   std::string TestFramePPAPI();
+  std::string TestBadResource();
 
   // Utils used by various tests.
   int32_t SwapBuffersSync(pp::Graphics3D* context);

@@ -50,6 +50,11 @@ class PPAPI_SHARED_EXPORT ProxyLock {
   // Assert that the lock is owned by the current thread (in the plugin
   // process). Does nothing when running in-process (or in the host process).
   static void AssertAcquired();
+  static void AssertAcquiredDebugOnly() {
+#ifndef NDEBUG
+    AssertAcquired();
+#endif
+  }
 
   // We have some unit tests where one thread pretends to be the host and one
   // pretends to be the plugin. This allows the lock to do nothing on only one

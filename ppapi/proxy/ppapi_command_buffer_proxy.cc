@@ -8,6 +8,7 @@
 #include "ppapi/proxy/proxy_channel.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/host_resource.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 
 namespace ppapi {
 namespace proxy {
@@ -48,14 +49,12 @@ gpu::CommandBuffer::State PpapiCommandBufferProxy::GetState() {
 }
 
 gpu::CommandBuffer::State PpapiCommandBufferProxy::GetLastState() {
-  // Note: The locking command buffer wrapper does not take a global lock before
-  // calling this function.
+  ppapi::ProxyLock::AssertAcquiredDebugOnly();
   return last_state_;
 }
 
 int32 PpapiCommandBufferProxy::GetLastToken() {
-  // Note: The locking command buffer wrapper does not take a global lock before
-  // calling this function.
+  ppapi::ProxyLock::AssertAcquiredDebugOnly();
   return last_state_.token;
 }
 

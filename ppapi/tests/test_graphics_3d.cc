@@ -34,6 +34,7 @@ void TestGraphics3D::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestGraphics3D, FramePPAPI, filter);
   RUN_CALLBACK_TEST(TestGraphics3D, FrameGL, filter);
   RUN_CALLBACK_TEST(TestGraphics3D, ExtensionsGL, filter);
+  RUN_CALLBACK_TEST(TestGraphics3D, BadResource, filter);
 }
 
 std::string TestGraphics3D::TestFramePPAPI() {
@@ -164,6 +165,35 @@ std::string TestGraphics3D::CheckPixelGL(
   ASSERT_EQ(pixel_color[1], expected_color[1]);
   ASSERT_EQ(pixel_color[2], expected_color[2]);
   ASSERT_EQ(pixel_color[3], expected_color[3]);
+  PASS();
+}
+
+std::string TestGraphics3D::TestBadResource() {
+  // The point of this test is mostly just to make sure that we don't crash and
+  // provide reasonable (error) results when the resource is bad.
+  const PP_Resource kBadResource = 123;
+
+  // Access OpenGLES API through the PPAPI interface.
+  opengl_es2_->ClearColor(kBadResource, 0.0f, 0.0f, 0.0f, 0.0f);
+  opengl_es2_->Clear(kBadResource, GL_COLOR_BUFFER_BIT);
+  ASSERT_EQ(0, opengl_es2_->GetError(kBadResource));
+  ASSERT_EQ(NULL, opengl_es2_->GetString(kBadResource, GL_VERSION));
+  ASSERT_EQ(-1, opengl_es2_->GetUniformLocation(kBadResource, 0, NULL));
+  ASSERT_EQ(GL_FALSE, opengl_es2_->IsBuffer(kBadResource, 0));
+  ASSERT_EQ(0, opengl_es2_->CheckFramebufferStatus(kBadResource,
+                                                   GL_DRAW_FRAMEBUFFER));
+
+  glSetCurrentContextPPAPI(kBadResource);
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+  ASSERT_EQ(0, glGetError());
+  ASSERT_EQ(NULL, glGetString(GL_VERSION));
+  ASSERT_EQ(-1, glGetUniformLocation(0, NULL));
+  ASSERT_EQ(GL_FALSE, glIsBuffer(0));
+  ASSERT_EQ(0, glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
+  glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+
   PASS();
 }
 

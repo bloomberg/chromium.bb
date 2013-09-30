@@ -17,827 +17,1344 @@ namespace ppapi {
 
 namespace {
 
-gpu::gles2::GLES2Implementation* GetGLES(PP_Resource context) {
-  thunk::EnterResource<thunk::PPB_Graphics3D_API> enter_g3d(context, false);
-  DCHECK(enter_g3d.succeeded());
-  return static_cast<PPB_Graphics3D_Shared*>(enter_g3d.object())->gles2_impl();
+typedef thunk::EnterResource<thunk::PPB_Graphics3D_API> Enter3D;
+
+gpu::gles2::GLES2Implementation* ToGles2Impl(Enter3D* enter) {
+  DCHECK(enter);
+  DCHECK(enter->succeeded());
+  return static_cast<PPB_Graphics3D_Shared*>(enter->object())->gles2_impl();
 }
 
 void ActiveTexture(PP_Resource context_id, GLenum texture) {
-  GetGLES(context_id)->ActiveTexture(texture);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->ActiveTexture(texture);
+  }
 }
 
 void AttachShader(PP_Resource context_id, GLuint program, GLuint shader) {
-  GetGLES(context_id)->AttachShader(program, shader);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->AttachShader(program, shader);
+  }
 }
 
 void BindAttribLocation(
     PP_Resource context_id, GLuint program, GLuint index, const char* name) {
-  GetGLES(context_id)->BindAttribLocation(program, index, name);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->BindAttribLocation(program, index, name);
+  }
 }
 
 void BindBuffer(PP_Resource context_id, GLenum target, GLuint buffer) {
-  GetGLES(context_id)->BindBuffer(target, buffer);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->BindBuffer(target, buffer);
+  }
 }
 
 void BindFramebuffer(
     PP_Resource context_id, GLenum target, GLuint framebuffer) {
-  GetGLES(context_id)->BindFramebuffer(target, framebuffer);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->BindFramebuffer(target, framebuffer);
+  }
 }
 
 void BindRenderbuffer(
     PP_Resource context_id, GLenum target, GLuint renderbuffer) {
-  GetGLES(context_id)->BindRenderbuffer(target, renderbuffer);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->BindRenderbuffer(target, renderbuffer);
+  }
 }
 
 void BindTexture(PP_Resource context_id, GLenum target, GLuint texture) {
-  GetGLES(context_id)->BindTexture(target, texture);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->BindTexture(target, texture);
+  }
 }
 
 void BlendColor(
     PP_Resource context_id, GLclampf red, GLclampf green, GLclampf blue,
     GLclampf alpha) {
-  GetGLES(context_id)->BlendColor(red, green, blue, alpha);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->BlendColor(red, green, blue, alpha);
+  }
 }
 
 void BlendEquation(PP_Resource context_id, GLenum mode) {
-  GetGLES(context_id)->BlendEquation(mode);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->BlendEquation(mode);
+  }
 }
 
 void BlendEquationSeparate(
     PP_Resource context_id, GLenum modeRGB, GLenum modeAlpha) {
-  GetGLES(context_id)->BlendEquationSeparate(modeRGB, modeAlpha);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->BlendEquationSeparate(modeRGB, modeAlpha);
+  }
 }
 
 void BlendFunc(PP_Resource context_id, GLenum sfactor, GLenum dfactor) {
-  GetGLES(context_id)->BlendFunc(sfactor, dfactor);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->BlendFunc(sfactor, dfactor);
+  }
 }
 
 void BlendFuncSeparate(
     PP_Resource context_id, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha,
     GLenum dstAlpha) {
-  GetGLES(context_id)->BlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->BlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+  }
 }
 
 void BufferData(
     PP_Resource context_id, GLenum target, GLsizeiptr size, const void* data,
     GLenum usage) {
-  GetGLES(context_id)->BufferData(target, size, data, usage);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->BufferData(target, size, data, usage);
+  }
 }
 
 void BufferSubData(
     PP_Resource context_id, GLenum target, GLintptr offset, GLsizeiptr size,
     const void* data) {
-  GetGLES(context_id)->BufferSubData(target, offset, size, data);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->BufferSubData(target, offset, size, data);
+  }
 }
 
 GLenum CheckFramebufferStatus(PP_Resource context_id, GLenum target) {
-  return GetGLES(context_id)->CheckFramebufferStatus(target);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->CheckFramebufferStatus(target);
+  } else {
+    return 0;
+  }
 }
 
 void Clear(PP_Resource context_id, GLbitfield mask) {
-  GetGLES(context_id)->Clear(mask);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Clear(mask);
+  }
 }
 
 void ClearColor(
     PP_Resource context_id, GLclampf red, GLclampf green, GLclampf blue,
     GLclampf alpha) {
-  GetGLES(context_id)->ClearColor(red, green, blue, alpha);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->ClearColor(red, green, blue, alpha);
+  }
 }
 
 void ClearDepthf(PP_Resource context_id, GLclampf depth) {
-  GetGLES(context_id)->ClearDepthf(depth);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->ClearDepthf(depth);
+  }
 }
 
 void ClearStencil(PP_Resource context_id, GLint s) {
-  GetGLES(context_id)->ClearStencil(s);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->ClearStencil(s);
+  }
 }
 
 void ColorMask(
     PP_Resource context_id, GLboolean red, GLboolean green, GLboolean blue,
     GLboolean alpha) {
-  GetGLES(context_id)->ColorMask(red, green, blue, alpha);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->ColorMask(red, green, blue, alpha);
+  }
 }
 
 void CompileShader(PP_Resource context_id, GLuint shader) {
-  GetGLES(context_id)->CompileShader(shader);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->CompileShader(shader);
+  }
 }
 
 void CompressedTexImage2D(
     PP_Resource context_id, GLenum target, GLint level, GLenum internalformat,
     GLsizei width, GLsizei height, GLint border, GLsizei imageSize,
     const void* data) {
-  GetGLES(
-      context_id)->CompressedTexImage2D(
-          target, level, internalformat, width, height, border, imageSize,
-          data);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->CompressedTexImage2D(
+            target, level, internalformat, width, height, border, imageSize,
+            data);
+  }
 }
 
 void CompressedTexSubImage2D(
     PP_Resource context_id, GLenum target, GLint level, GLint xoffset,
     GLint yoffset, GLsizei width, GLsizei height, GLenum format,
     GLsizei imageSize, const void* data) {
-  GetGLES(
-      context_id)->CompressedTexSubImage2D(
-          target, level, xoffset, yoffset, width, height, format, imageSize,
-          data);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->CompressedTexSubImage2D(
+            target, level, xoffset, yoffset, width, height, format, imageSize,
+            data);
+  }
 }
 
 void CopyTexImage2D(
     PP_Resource context_id, GLenum target, GLint level, GLenum internalformat,
     GLint x, GLint y, GLsizei width, GLsizei height, GLint border) {
-  GetGLES(
-      context_id)->CopyTexImage2D(
-          target, level, internalformat, x, y, width, height, border);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->CopyTexImage2D(
+            target, level, internalformat, x, y, width, height, border);
+  }
 }
 
 void CopyTexSubImage2D(
     PP_Resource context_id, GLenum target, GLint level, GLint xoffset,
     GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height) {
-  GetGLES(
-      context_id)->CopyTexSubImage2D(
-          target, level, xoffset, yoffset, x, y, width, height);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->CopyTexSubImage2D(
+            target, level, xoffset, yoffset, x, y, width, height);
+  }
 }
 
 GLuint CreateProgram(PP_Resource context_id) {
-  return GetGLES(context_id)->CreateProgram();
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->CreateProgram();
+  } else {
+    return 0;
+  }
 }
 
 GLuint CreateShader(PP_Resource context_id, GLenum type) {
-  return GetGLES(context_id)->CreateShader(type);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->CreateShader(type);
+  } else {
+    return 0;
+  }
 }
 
 void CullFace(PP_Resource context_id, GLenum mode) {
-  GetGLES(context_id)->CullFace(mode);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->CullFace(mode);
+  }
 }
 
 void DeleteBuffers(PP_Resource context_id, GLsizei n, const GLuint* buffers) {
-  GetGLES(context_id)->DeleteBuffers(n, buffers);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->DeleteBuffers(n, buffers);
+  }
 }
 
 void DeleteFramebuffers(
     PP_Resource context_id, GLsizei n, const GLuint* framebuffers) {
-  GetGLES(context_id)->DeleteFramebuffers(n, framebuffers);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->DeleteFramebuffers(n, framebuffers);
+  }
 }
 
 void DeleteProgram(PP_Resource context_id, GLuint program) {
-  GetGLES(context_id)->DeleteProgram(program);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->DeleteProgram(program);
+  }
 }
 
 void DeleteRenderbuffers(
     PP_Resource context_id, GLsizei n, const GLuint* renderbuffers) {
-  GetGLES(context_id)->DeleteRenderbuffers(n, renderbuffers);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->DeleteRenderbuffers(n, renderbuffers);
+  }
 }
 
 void DeleteShader(PP_Resource context_id, GLuint shader) {
-  GetGLES(context_id)->DeleteShader(shader);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->DeleteShader(shader);
+  }
 }
 
 void DeleteTextures(
     PP_Resource context_id, GLsizei n, const GLuint* textures) {
-  GetGLES(context_id)->DeleteTextures(n, textures);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->DeleteTextures(n, textures);
+  }
 }
 
 void DepthFunc(PP_Resource context_id, GLenum func) {
-  GetGLES(context_id)->DepthFunc(func);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->DepthFunc(func);
+  }
 }
 
 void DepthMask(PP_Resource context_id, GLboolean flag) {
-  GetGLES(context_id)->DepthMask(flag);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->DepthMask(flag);
+  }
 }
 
 void DepthRangef(PP_Resource context_id, GLclampf zNear, GLclampf zFar) {
-  GetGLES(context_id)->DepthRangef(zNear, zFar);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->DepthRangef(zNear, zFar);
+  }
 }
 
 void DetachShader(PP_Resource context_id, GLuint program, GLuint shader) {
-  GetGLES(context_id)->DetachShader(program, shader);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->DetachShader(program, shader);
+  }
 }
 
 void Disable(PP_Resource context_id, GLenum cap) {
-  GetGLES(context_id)->Disable(cap);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Disable(cap);
+  }
 }
 
 void DisableVertexAttribArray(PP_Resource context_id, GLuint index) {
-  GetGLES(context_id)->DisableVertexAttribArray(index);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->DisableVertexAttribArray(index);
+  }
 }
 
 void DrawArrays(
     PP_Resource context_id, GLenum mode, GLint first, GLsizei count) {
-  GetGLES(context_id)->DrawArrays(mode, first, count);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->DrawArrays(mode, first, count);
+  }
 }
 
 void DrawElements(
     PP_Resource context_id, GLenum mode, GLsizei count, GLenum type,
     const void* indices) {
-  GetGLES(context_id)->DrawElements(mode, count, type, indices);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->DrawElements(mode, count, type, indices);
+  }
 }
 
 void Enable(PP_Resource context_id, GLenum cap) {
-  GetGLES(context_id)->Enable(cap);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Enable(cap);
+  }
 }
 
 void EnableVertexAttribArray(PP_Resource context_id, GLuint index) {
-  GetGLES(context_id)->EnableVertexAttribArray(index);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->EnableVertexAttribArray(index);
+  }
 }
 
 void Finish(PP_Resource context_id) {
-  GetGLES(context_id)->Finish();
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Finish();
+  }
 }
 
 void Flush(PP_Resource context_id) {
-  GetGLES(context_id)->Flush();
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Flush();
+  }
 }
 
 void FramebufferRenderbuffer(
     PP_Resource context_id, GLenum target, GLenum attachment,
     GLenum renderbuffertarget, GLuint renderbuffer) {
-  GetGLES(
-      context_id)->FramebufferRenderbuffer(
-          target, attachment, renderbuffertarget, renderbuffer);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->FramebufferRenderbuffer(
+            target, attachment, renderbuffertarget, renderbuffer);
+  }
 }
 
 void FramebufferTexture2D(
     PP_Resource context_id, GLenum target, GLenum attachment, GLenum textarget,
     GLuint texture, GLint level) {
-  GetGLES(
-      context_id)->FramebufferTexture2D(
-          target, attachment, textarget, texture, level);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->FramebufferTexture2D(
+            target, attachment, textarget, texture, level);
+  }
 }
 
 void FrontFace(PP_Resource context_id, GLenum mode) {
-  GetGLES(context_id)->FrontFace(mode);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->FrontFace(mode);
+  }
 }
 
 void GenBuffers(PP_Resource context_id, GLsizei n, GLuint* buffers) {
-  GetGLES(context_id)->GenBuffers(n, buffers);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GenBuffers(n, buffers);
+  }
 }
 
 void GenerateMipmap(PP_Resource context_id, GLenum target) {
-  GetGLES(context_id)->GenerateMipmap(target);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GenerateMipmap(target);
+  }
 }
 
 void GenFramebuffers(PP_Resource context_id, GLsizei n, GLuint* framebuffers) {
-  GetGLES(context_id)->GenFramebuffers(n, framebuffers);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GenFramebuffers(n, framebuffers);
+  }
 }
 
 void GenRenderbuffers(
     PP_Resource context_id, GLsizei n, GLuint* renderbuffers) {
-  GetGLES(context_id)->GenRenderbuffers(n, renderbuffers);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GenRenderbuffers(n, renderbuffers);
+  }
 }
 
 void GenTextures(PP_Resource context_id, GLsizei n, GLuint* textures) {
-  GetGLES(context_id)->GenTextures(n, textures);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GenTextures(n, textures);
+  }
 }
 
 void GetActiveAttrib(
     PP_Resource context_id, GLuint program, GLuint index, GLsizei bufsize,
     GLsizei* length, GLint* size, GLenum* type, char* name) {
-  GetGLES(
-      context_id)->GetActiveAttrib(
-          program, index, bufsize, length, size, type, name);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->GetActiveAttrib(
+            program, index, bufsize, length, size, type, name);
+  }
 }
 
 void GetActiveUniform(
     PP_Resource context_id, GLuint program, GLuint index, GLsizei bufsize,
     GLsizei* length, GLint* size, GLenum* type, char* name) {
-  GetGLES(
-      context_id)->GetActiveUniform(
-          program, index, bufsize, length, size, type, name);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->GetActiveUniform(
+            program, index, bufsize, length, size, type, name);
+  }
 }
 
 void GetAttachedShaders(
     PP_Resource context_id, GLuint program, GLsizei maxcount, GLsizei* count,
     GLuint* shaders) {
-  GetGLES(context_id)->GetAttachedShaders(program, maxcount, count, shaders);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetAttachedShaders(program, maxcount, count, shaders);
+  }
 }
 
 GLint GetAttribLocation(
     PP_Resource context_id, GLuint program, const char* name) {
-  return GetGLES(context_id)->GetAttribLocation(program, name);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->GetAttribLocation(program, name);
+  } else {
+    return -1;
+  }
 }
 
 void GetBooleanv(PP_Resource context_id, GLenum pname, GLboolean* params) {
-  GetGLES(context_id)->GetBooleanv(pname, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetBooleanv(pname, params);
+  }
 }
 
 void GetBufferParameteriv(
     PP_Resource context_id, GLenum target, GLenum pname, GLint* params) {
-  GetGLES(context_id)->GetBufferParameteriv(target, pname, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetBufferParameteriv(target, pname, params);
+  }
 }
 
 GLenum GetError(PP_Resource context_id) {
-  return GetGLES(context_id)->GetError();
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->GetError();
+  } else {
+    return 0;
+  }
 }
 
 void GetFloatv(PP_Resource context_id, GLenum pname, GLfloat* params) {
-  GetGLES(context_id)->GetFloatv(pname, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetFloatv(pname, params);
+  }
 }
 
 void GetFramebufferAttachmentParameteriv(
     PP_Resource context_id, GLenum target, GLenum attachment, GLenum pname,
     GLint* params) {
-  GetGLES(
-      context_id)->GetFramebufferAttachmentParameteriv(
-          target, attachment, pname, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->GetFramebufferAttachmentParameteriv(
+            target, attachment, pname, params);
+  }
 }
 
 void GetIntegerv(PP_Resource context_id, GLenum pname, GLint* params) {
-  GetGLES(context_id)->GetIntegerv(pname, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetIntegerv(pname, params);
+  }
 }
 
 void GetProgramiv(
     PP_Resource context_id, GLuint program, GLenum pname, GLint* params) {
-  GetGLES(context_id)->GetProgramiv(program, pname, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetProgramiv(program, pname, params);
+  }
 }
 
 void GetProgramInfoLog(
     PP_Resource context_id, GLuint program, GLsizei bufsize, GLsizei* length,
     char* infolog) {
-  GetGLES(context_id)->GetProgramInfoLog(program, bufsize, length, infolog);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetProgramInfoLog(program, bufsize, length, infolog);
+  }
 }
 
 void GetRenderbufferParameteriv(
     PP_Resource context_id, GLenum target, GLenum pname, GLint* params) {
-  GetGLES(context_id)->GetRenderbufferParameteriv(target, pname, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetRenderbufferParameteriv(target, pname, params);
+  }
 }
 
 void GetShaderiv(
     PP_Resource context_id, GLuint shader, GLenum pname, GLint* params) {
-  GetGLES(context_id)->GetShaderiv(shader, pname, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetShaderiv(shader, pname, params);
+  }
 }
 
 void GetShaderInfoLog(
     PP_Resource context_id, GLuint shader, GLsizei bufsize, GLsizei* length,
     char* infolog) {
-  GetGLES(context_id)->GetShaderInfoLog(shader, bufsize, length, infolog);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetShaderInfoLog(shader, bufsize, length, infolog);
+  }
 }
 
 void GetShaderPrecisionFormat(
     PP_Resource context_id, GLenum shadertype, GLenum precisiontype,
     GLint* range, GLint* precision) {
-  GetGLES(
-      context_id)->GetShaderPrecisionFormat(
-          shadertype, precisiontype, range, precision);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->GetShaderPrecisionFormat(
+            shadertype, precisiontype, range, precision);
+  }
 }
 
 void GetShaderSource(
     PP_Resource context_id, GLuint shader, GLsizei bufsize, GLsizei* length,
     char* source) {
-  GetGLES(context_id)->GetShaderSource(shader, bufsize, length, source);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetShaderSource(shader, bufsize, length, source);
+  }
 }
 
 const GLubyte* GetString(PP_Resource context_id, GLenum name) {
-  return GetGLES(context_id)->GetString(name);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->GetString(name);
+  } else {
+    return NULL;
+  }
 }
 
 void GetTexParameterfv(
     PP_Resource context_id, GLenum target, GLenum pname, GLfloat* params) {
-  GetGLES(context_id)->GetTexParameterfv(target, pname, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetTexParameterfv(target, pname, params);
+  }
 }
 
 void GetTexParameteriv(
     PP_Resource context_id, GLenum target, GLenum pname, GLint* params) {
-  GetGLES(context_id)->GetTexParameteriv(target, pname, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetTexParameteriv(target, pname, params);
+  }
 }
 
 void GetUniformfv(
     PP_Resource context_id, GLuint program, GLint location, GLfloat* params) {
-  GetGLES(context_id)->GetUniformfv(program, location, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetUniformfv(program, location, params);
+  }
 }
 
 void GetUniformiv(
     PP_Resource context_id, GLuint program, GLint location, GLint* params) {
-  GetGLES(context_id)->GetUniformiv(program, location, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetUniformiv(program, location, params);
+  }
 }
 
 GLint GetUniformLocation(
     PP_Resource context_id, GLuint program, const char* name) {
-  return GetGLES(context_id)->GetUniformLocation(program, name);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->GetUniformLocation(program, name);
+  } else {
+    return -1;
+  }
 }
 
 void GetVertexAttribfv(
     PP_Resource context_id, GLuint index, GLenum pname, GLfloat* params) {
-  GetGLES(context_id)->GetVertexAttribfv(index, pname, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetVertexAttribfv(index, pname, params);
+  }
 }
 
 void GetVertexAttribiv(
     PP_Resource context_id, GLuint index, GLenum pname, GLint* params) {
-  GetGLES(context_id)->GetVertexAttribiv(index, pname, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetVertexAttribiv(index, pname, params);
+  }
 }
 
 void GetVertexAttribPointerv(
     PP_Resource context_id, GLuint index, GLenum pname, void** pointer) {
-  GetGLES(context_id)->GetVertexAttribPointerv(index, pname, pointer);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetVertexAttribPointerv(index, pname, pointer);
+  }
 }
 
 void Hint(PP_Resource context_id, GLenum target, GLenum mode) {
-  GetGLES(context_id)->Hint(target, mode);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Hint(target, mode);
+  }
 }
 
 GLboolean IsBuffer(PP_Resource context_id, GLuint buffer) {
-  return GetGLES(context_id)->IsBuffer(buffer);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->IsBuffer(buffer);
+  } else {
+    return GL_FALSE;
+  }
 }
 
 GLboolean IsEnabled(PP_Resource context_id, GLenum cap) {
-  return GetGLES(context_id)->IsEnabled(cap);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->IsEnabled(cap);
+  } else {
+    return GL_FALSE;
+  }
 }
 
 GLboolean IsFramebuffer(PP_Resource context_id, GLuint framebuffer) {
-  return GetGLES(context_id)->IsFramebuffer(framebuffer);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->IsFramebuffer(framebuffer);
+  } else {
+    return GL_FALSE;
+  }
 }
 
 GLboolean IsProgram(PP_Resource context_id, GLuint program) {
-  return GetGLES(context_id)->IsProgram(program);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->IsProgram(program);
+  } else {
+    return GL_FALSE;
+  }
 }
 
 GLboolean IsRenderbuffer(PP_Resource context_id, GLuint renderbuffer) {
-  return GetGLES(context_id)->IsRenderbuffer(renderbuffer);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->IsRenderbuffer(renderbuffer);
+  } else {
+    return GL_FALSE;
+  }
 }
 
 GLboolean IsShader(PP_Resource context_id, GLuint shader) {
-  return GetGLES(context_id)->IsShader(shader);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->IsShader(shader);
+  } else {
+    return GL_FALSE;
+  }
 }
 
 GLboolean IsTexture(PP_Resource context_id, GLuint texture) {
-  return GetGLES(context_id)->IsTexture(texture);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->IsTexture(texture);
+  } else {
+    return GL_FALSE;
+  }
 }
 
 void LineWidth(PP_Resource context_id, GLfloat width) {
-  GetGLES(context_id)->LineWidth(width);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->LineWidth(width);
+  }
 }
 
 void LinkProgram(PP_Resource context_id, GLuint program) {
-  GetGLES(context_id)->LinkProgram(program);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->LinkProgram(program);
+  }
 }
 
 void PixelStorei(PP_Resource context_id, GLenum pname, GLint param) {
-  GetGLES(context_id)->PixelStorei(pname, param);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->PixelStorei(pname, param);
+  }
 }
 
 void PolygonOffset(PP_Resource context_id, GLfloat factor, GLfloat units) {
-  GetGLES(context_id)->PolygonOffset(factor, units);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->PolygonOffset(factor, units);
+  }
 }
 
 void ReadPixels(
     PP_Resource context_id, GLint x, GLint y, GLsizei width, GLsizei height,
     GLenum format, GLenum type, void* pixels) {
-  GetGLES(context_id)->ReadPixels(x, y, width, height, format, type, pixels);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->ReadPixels(x, y, width, height, format, type, pixels);
+  }
 }
 
 void ReleaseShaderCompiler(PP_Resource context_id) {
-  GetGLES(context_id)->ReleaseShaderCompiler();
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->ReleaseShaderCompiler();
+  }
 }
 
 void RenderbufferStorage(
     PP_Resource context_id, GLenum target, GLenum internalformat, GLsizei width,
     GLsizei height) {
-  GetGLES(
-      context_id)->RenderbufferStorage(target, internalformat, width, height);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->RenderbufferStorage(target, internalformat, width, height);
+  }
 }
 
 void SampleCoverage(PP_Resource context_id, GLclampf value, GLboolean invert) {
-  GetGLES(context_id)->SampleCoverage(value, invert);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->SampleCoverage(value, invert);
+  }
 }
 
 void Scissor(
     PP_Resource context_id, GLint x, GLint y, GLsizei width, GLsizei height) {
-  GetGLES(context_id)->Scissor(x, y, width, height);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Scissor(x, y, width, height);
+  }
 }
 
 void ShaderBinary(
     PP_Resource context_id, GLsizei n, const GLuint* shaders,
     GLenum binaryformat, const void* binary, GLsizei length) {
-  GetGLES(context_id)->ShaderBinary(n, shaders, binaryformat, binary, length);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->ShaderBinary(n, shaders, binaryformat, binary, length);
+  }
 }
 
 void ShaderSource(
     PP_Resource context_id, GLuint shader, GLsizei count, const char** str,
     const GLint* length) {
-  GetGLES(context_id)->ShaderSource(shader, count, str, length);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->ShaderSource(shader, count, str, length);
+  }
 }
 
 void StencilFunc(PP_Resource context_id, GLenum func, GLint ref, GLuint mask) {
-  GetGLES(context_id)->StencilFunc(func, ref, mask);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->StencilFunc(func, ref, mask);
+  }
 }
 
 void StencilFuncSeparate(
     PP_Resource context_id, GLenum face, GLenum func, GLint ref, GLuint mask) {
-  GetGLES(context_id)->StencilFuncSeparate(face, func, ref, mask);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->StencilFuncSeparate(face, func, ref, mask);
+  }
 }
 
 void StencilMask(PP_Resource context_id, GLuint mask) {
-  GetGLES(context_id)->StencilMask(mask);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->StencilMask(mask);
+  }
 }
 
 void StencilMaskSeparate(PP_Resource context_id, GLenum face, GLuint mask) {
-  GetGLES(context_id)->StencilMaskSeparate(face, mask);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->StencilMaskSeparate(face, mask);
+  }
 }
 
 void StencilOp(
     PP_Resource context_id, GLenum fail, GLenum zfail, GLenum zpass) {
-  GetGLES(context_id)->StencilOp(fail, zfail, zpass);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->StencilOp(fail, zfail, zpass);
+  }
 }
 
 void StencilOpSeparate(
     PP_Resource context_id, GLenum face, GLenum fail, GLenum zfail,
     GLenum zpass) {
-  GetGLES(context_id)->StencilOpSeparate(face, fail, zfail, zpass);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->StencilOpSeparate(face, fail, zfail, zpass);
+  }
 }
 
 void TexImage2D(
     PP_Resource context_id, GLenum target, GLint level, GLint internalformat,
     GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type,
     const void* pixels) {
-  GetGLES(
-      context_id)->TexImage2D(
-          target, level, internalformat, width, height, border, format, type,
-          pixels);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->TexImage2D(
+            target, level, internalformat, width, height, border, format, type,
+            pixels);
+  }
 }
 
 void TexParameterf(
     PP_Resource context_id, GLenum target, GLenum pname, GLfloat param) {
-  GetGLES(context_id)->TexParameterf(target, pname, param);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->TexParameterf(target, pname, param);
+  }
 }
 
 void TexParameterfv(
     PP_Resource context_id, GLenum target, GLenum pname,
     const GLfloat* params) {
-  GetGLES(context_id)->TexParameterfv(target, pname, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->TexParameterfv(target, pname, params);
+  }
 }
 
 void TexParameteri(
     PP_Resource context_id, GLenum target, GLenum pname, GLint param) {
-  GetGLES(context_id)->TexParameteri(target, pname, param);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->TexParameteri(target, pname, param);
+  }
 }
 
 void TexParameteriv(
     PP_Resource context_id, GLenum target, GLenum pname, const GLint* params) {
-  GetGLES(context_id)->TexParameteriv(target, pname, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->TexParameteriv(target, pname, params);
+  }
 }
 
 void TexSubImage2D(
     PP_Resource context_id, GLenum target, GLint level, GLint xoffset,
     GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type,
     const void* pixels) {
-  GetGLES(
-      context_id)->TexSubImage2D(
-          target, level, xoffset, yoffset, width, height, format, type,
-          pixels);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->TexSubImage2D(
+            target, level, xoffset, yoffset, width, height, format, type,
+            pixels);
+  }
 }
 
 void Uniform1f(PP_Resource context_id, GLint location, GLfloat x) {
-  GetGLES(context_id)->Uniform1f(location, x);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Uniform1f(location, x);
+  }
 }
 
 void Uniform1fv(
     PP_Resource context_id, GLint location, GLsizei count, const GLfloat* v) {
-  GetGLES(context_id)->Uniform1fv(location, count, v);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Uniform1fv(location, count, v);
+  }
 }
 
 void Uniform1i(PP_Resource context_id, GLint location, GLint x) {
-  GetGLES(context_id)->Uniform1i(location, x);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Uniform1i(location, x);
+  }
 }
 
 void Uniform1iv(
     PP_Resource context_id, GLint location, GLsizei count, const GLint* v) {
-  GetGLES(context_id)->Uniform1iv(location, count, v);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Uniform1iv(location, count, v);
+  }
 }
 
 void Uniform2f(PP_Resource context_id, GLint location, GLfloat x, GLfloat y) {
-  GetGLES(context_id)->Uniform2f(location, x, y);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Uniform2f(location, x, y);
+  }
 }
 
 void Uniform2fv(
     PP_Resource context_id, GLint location, GLsizei count, const GLfloat* v) {
-  GetGLES(context_id)->Uniform2fv(location, count, v);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Uniform2fv(location, count, v);
+  }
 }
 
 void Uniform2i(PP_Resource context_id, GLint location, GLint x, GLint y) {
-  GetGLES(context_id)->Uniform2i(location, x, y);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Uniform2i(location, x, y);
+  }
 }
 
 void Uniform2iv(
     PP_Resource context_id, GLint location, GLsizei count, const GLint* v) {
-  GetGLES(context_id)->Uniform2iv(location, count, v);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Uniform2iv(location, count, v);
+  }
 }
 
 void Uniform3f(
     PP_Resource context_id, GLint location, GLfloat x, GLfloat y, GLfloat z) {
-  GetGLES(context_id)->Uniform3f(location, x, y, z);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Uniform3f(location, x, y, z);
+  }
 }
 
 void Uniform3fv(
     PP_Resource context_id, GLint location, GLsizei count, const GLfloat* v) {
-  GetGLES(context_id)->Uniform3fv(location, count, v);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Uniform3fv(location, count, v);
+  }
 }
 
 void Uniform3i(
     PP_Resource context_id, GLint location, GLint x, GLint y, GLint z) {
-  GetGLES(context_id)->Uniform3i(location, x, y, z);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Uniform3i(location, x, y, z);
+  }
 }
 
 void Uniform3iv(
     PP_Resource context_id, GLint location, GLsizei count, const GLint* v) {
-  GetGLES(context_id)->Uniform3iv(location, count, v);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Uniform3iv(location, count, v);
+  }
 }
 
 void Uniform4f(
     PP_Resource context_id, GLint location, GLfloat x, GLfloat y, GLfloat z,
     GLfloat w) {
-  GetGLES(context_id)->Uniform4f(location, x, y, z, w);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Uniform4f(location, x, y, z, w);
+  }
 }
 
 void Uniform4fv(
     PP_Resource context_id, GLint location, GLsizei count, const GLfloat* v) {
-  GetGLES(context_id)->Uniform4fv(location, count, v);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Uniform4fv(location, count, v);
+  }
 }
 
 void Uniform4i(
     PP_Resource context_id, GLint location, GLint x, GLint y, GLint z,
     GLint w) {
-  GetGLES(context_id)->Uniform4i(location, x, y, z, w);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Uniform4i(location, x, y, z, w);
+  }
 }
 
 void Uniform4iv(
     PP_Resource context_id, GLint location, GLsizei count, const GLint* v) {
-  GetGLES(context_id)->Uniform4iv(location, count, v);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Uniform4iv(location, count, v);
+  }
 }
 
 void UniformMatrix2fv(
     PP_Resource context_id, GLint location, GLsizei count, GLboolean transpose,
     const GLfloat* value) {
-  GetGLES(context_id)->UniformMatrix2fv(location, count, transpose, value);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->UniformMatrix2fv(location, count, transpose, value);
+  }
 }
 
 void UniformMatrix3fv(
     PP_Resource context_id, GLint location, GLsizei count, GLboolean transpose,
     const GLfloat* value) {
-  GetGLES(context_id)->UniformMatrix3fv(location, count, transpose, value);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->UniformMatrix3fv(location, count, transpose, value);
+  }
 }
 
 void UniformMatrix4fv(
     PP_Resource context_id, GLint location, GLsizei count, GLboolean transpose,
     const GLfloat* value) {
-  GetGLES(context_id)->UniformMatrix4fv(location, count, transpose, value);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->UniformMatrix4fv(location, count, transpose, value);
+  }
 }
 
 void UseProgram(PP_Resource context_id, GLuint program) {
-  GetGLES(context_id)->UseProgram(program);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->UseProgram(program);
+  }
 }
 
 void ValidateProgram(PP_Resource context_id, GLuint program) {
-  GetGLES(context_id)->ValidateProgram(program);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->ValidateProgram(program);
+  }
 }
 
 void VertexAttrib1f(PP_Resource context_id, GLuint indx, GLfloat x) {
-  GetGLES(context_id)->VertexAttrib1f(indx, x);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->VertexAttrib1f(indx, x);
+  }
 }
 
 void VertexAttrib1fv(
     PP_Resource context_id, GLuint indx, const GLfloat* values) {
-  GetGLES(context_id)->VertexAttrib1fv(indx, values);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->VertexAttrib1fv(indx, values);
+  }
 }
 
 void VertexAttrib2f(
     PP_Resource context_id, GLuint indx, GLfloat x, GLfloat y) {
-  GetGLES(context_id)->VertexAttrib2f(indx, x, y);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->VertexAttrib2f(indx, x, y);
+  }
 }
 
 void VertexAttrib2fv(
     PP_Resource context_id, GLuint indx, const GLfloat* values) {
-  GetGLES(context_id)->VertexAttrib2fv(indx, values);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->VertexAttrib2fv(indx, values);
+  }
 }
 
 void VertexAttrib3f(
     PP_Resource context_id, GLuint indx, GLfloat x, GLfloat y, GLfloat z) {
-  GetGLES(context_id)->VertexAttrib3f(indx, x, y, z);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->VertexAttrib3f(indx, x, y, z);
+  }
 }
 
 void VertexAttrib3fv(
     PP_Resource context_id, GLuint indx, const GLfloat* values) {
-  GetGLES(context_id)->VertexAttrib3fv(indx, values);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->VertexAttrib3fv(indx, values);
+  }
 }
 
 void VertexAttrib4f(
     PP_Resource context_id, GLuint indx, GLfloat x, GLfloat y, GLfloat z,
     GLfloat w) {
-  GetGLES(context_id)->VertexAttrib4f(indx, x, y, z, w);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->VertexAttrib4f(indx, x, y, z, w);
+  }
 }
 
 void VertexAttrib4fv(
     PP_Resource context_id, GLuint indx, const GLfloat* values) {
-  GetGLES(context_id)->VertexAttrib4fv(indx, values);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->VertexAttrib4fv(indx, values);
+  }
 }
 
 void VertexAttribPointer(
     PP_Resource context_id, GLuint indx, GLint size, GLenum type,
     GLboolean normalized, GLsizei stride, const void* ptr) {
-  GetGLES(
-      context_id)->VertexAttribPointer(
-          indx, size, type, normalized, stride, ptr);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->VertexAttribPointer(
+            indx, size, type, normalized, stride, ptr);
+  }
 }
 
 void Viewport(
     PP_Resource context_id, GLint x, GLint y, GLsizei width, GLsizei height) {
-  GetGLES(context_id)->Viewport(x, y, width, height);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->Viewport(x, y, width, height);
+  }
 }
 
 void BlitFramebufferEXT(
     PP_Resource context_id, GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
     GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask,
     GLenum filter) {
-  GetGLES(
-      context_id)->BlitFramebufferEXT(
-          srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask,
-          filter);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->BlitFramebufferEXT(
+            srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask,
+            filter);
+  }
 }
 
 void RenderbufferStorageMultisampleEXT(
     PP_Resource context_id, GLenum target, GLsizei samples,
     GLenum internalformat, GLsizei width, GLsizei height) {
-  GetGLES(
-      context_id)->RenderbufferStorageMultisampleEXT(
-          target, samples, internalformat, width, height);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->RenderbufferStorageMultisampleEXT(
+            target, samples, internalformat, width, height);
+  }
 }
 
 void GenQueriesEXT(PP_Resource context_id, GLsizei n, GLuint* queries) {
-  GetGLES(context_id)->GenQueriesEXT(n, queries);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GenQueriesEXT(n, queries);
+  }
 }
 
 void DeleteQueriesEXT(
     PP_Resource context_id, GLsizei n, const GLuint* queries) {
-  GetGLES(context_id)->DeleteQueriesEXT(n, queries);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->DeleteQueriesEXT(n, queries);
+  }
 }
 
 GLboolean IsQueryEXT(PP_Resource context_id, GLuint id) {
-  return GetGLES(context_id)->IsQueryEXT(id);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->IsQueryEXT(id);
+  } else {
+    return GL_FALSE;
+  }
 }
 
 void BeginQueryEXT(PP_Resource context_id, GLenum target, GLuint id) {
-  GetGLES(context_id)->BeginQueryEXT(target, id);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->BeginQueryEXT(target, id);
+  }
 }
 
 void EndQueryEXT(PP_Resource context_id, GLenum target) {
-  GetGLES(context_id)->EndQueryEXT(target);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->EndQueryEXT(target);
+  }
 }
 
 void GetQueryivEXT(
     PP_Resource context_id, GLenum target, GLenum pname, GLint* params) {
-  GetGLES(context_id)->GetQueryivEXT(target, pname, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetQueryivEXT(target, pname, params);
+  }
 }
 
 void GetQueryObjectuivEXT(
     PP_Resource context_id, GLuint id, GLenum pname, GLuint* params) {
-  GetGLES(context_id)->GetQueryObjectuivEXT(id, pname, params);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GetQueryObjectuivEXT(id, pname, params);
+  }
 }
 
 GLboolean EnableFeatureCHROMIUM(PP_Resource context_id, const char* feature) {
-  return GetGLES(context_id)->EnableFeatureCHROMIUM(feature);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->EnableFeatureCHROMIUM(feature);
+  } else {
+    return GL_FALSE;
+  }
 }
 
 void* MapBufferSubDataCHROMIUM(
     PP_Resource context_id, GLuint target, GLintptr offset, GLsizeiptr size,
     GLenum access) {
-  return GetGLES(
-      context_id)->MapBufferSubDataCHROMIUM(target, offset, size, access);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(
+        &enter)->MapBufferSubDataCHROMIUM(target, offset, size, access);
+  } else {
+    return NULL;
+  }
 }
 
 void UnmapBufferSubDataCHROMIUM(PP_Resource context_id, const void* mem) {
-  GetGLES(context_id)->UnmapBufferSubDataCHROMIUM(mem);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->UnmapBufferSubDataCHROMIUM(mem);
+  }
 }
 
 void* MapTexSubImage2DCHROMIUM(
     PP_Resource context_id, GLenum target, GLint level, GLint xoffset,
     GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type,
     GLenum access) {
-  return GetGLES(
-      context_id)->MapTexSubImage2DCHROMIUM(
-          target, level, xoffset, yoffset, width, height, format, type,
-          access);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(
+        &enter)->MapTexSubImage2DCHROMIUM(
+            target, level, xoffset, yoffset, width, height, format, type,
+            access);
+  } else {
+    return NULL;
+  }
 }
 
 void UnmapTexSubImage2DCHROMIUM(PP_Resource context_id, const void* mem) {
-  GetGLES(context_id)->UnmapTexSubImage2DCHROMIUM(mem);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->UnmapTexSubImage2DCHROMIUM(mem);
+  }
 }
 
 void DrawArraysInstancedANGLE(
     PP_Resource context_id, GLenum mode, GLint first, GLsizei count,
     GLsizei primcount) {
-  GetGLES(context_id)->DrawArraysInstancedANGLE(mode, first, count, primcount);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->DrawArraysInstancedANGLE(mode, first, count, primcount);
+  }
 }
 
 void DrawElementsInstancedANGLE(
     PP_Resource context_id, GLenum mode, GLsizei count, GLenum type,
     const void* indices, GLsizei primcount) {
-  GetGLES(
-      context_id)->DrawElementsInstancedANGLE(
-          mode, count, type, indices, primcount);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(
+        &enter)->DrawElementsInstancedANGLE(
+            mode, count, type, indices, primcount);
+  }
 }
 
 void VertexAttribDivisorANGLE(
     PP_Resource context_id, GLuint index, GLuint divisor) {
-  GetGLES(context_id)->VertexAttribDivisorANGLE(index, divisor);
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->VertexAttribDivisorANGLE(index, divisor);
+  }
 }
 
 }  // namespace
