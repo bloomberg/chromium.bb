@@ -49,6 +49,13 @@ class MockResourceConverter : public content::ResourceConverter {
   virtual void Flush(const base::Callback<void(bool)>& callback) OVERRIDE {
     callback.Run(true);
   }
+  virtual bool FromV8Value(v8::Handle<v8::Object> val,
+                           v8::Handle<v8::Context> context,
+                           PP_Var* result,
+                           bool* was_resource) OVERRIDE {
+    *was_resource = false;
+    return true;
+  }
 };
 
 // Maps PP_Var IDs to the V8 value handle they correspond to.
