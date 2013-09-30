@@ -18,12 +18,14 @@ Err ErrInsideStringToken(const Token& token, size_t offset, size_t size,
                          const std::string& msg,
                          const std::string& help = std::string()) {
   // The "+1" is skipping over the " at the beginning of the token.
+  int int_offset = static_cast<int>(offset);
   Location begin_loc(token.location().file(),
                      token.location().line_number(),
-                     token.location().char_offset() + offset + 1);
+                     token.location().char_offset() + int_offset + 1);
   Location end_loc(token.location().file(),
                    token.location().line_number(),
-                   token.location().char_offset() + offset + 1 + size);
+                   token.location().char_offset() + int_offset + 1 +
+                   static_cast<int>(size));
   return Err(LocationRange(begin_loc, end_loc), msg, help);
 }
 

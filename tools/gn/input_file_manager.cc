@@ -165,7 +165,7 @@ const ParseNode* InputFileManager::SyncLoadFile(
 
 int InputFileManager::GetInputFileCount() const {
   base::AutoLock lock(lock_);
-  return input_files_.size();
+  return static_cast<int>(input_files_.size());
 }
 
 void InputFileManager::GetAllPhysicalInputFileNames(

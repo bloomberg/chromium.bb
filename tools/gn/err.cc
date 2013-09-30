@@ -41,7 +41,7 @@ void FillRangeOnLine(const LocationRange& range, int line_number,
 
   int end_char;
   if (range.end().line_number() > line_number)
-    end_char = line->size();  // Ending is non-inclusive.
+    end_char = static_cast<int>(line->size());  // Ending is non-inclusive.
   else
     end_char = range.end().char_offset() - 1;
 

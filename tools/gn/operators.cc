@@ -127,11 +127,13 @@ Value ExecuteEquals(Scope* scope,
           !right.list_value().empty()) {
         *err = Err(op_node->left()->GetRange(), "Replacing nonempty list.",
             std::string("This overwrites a previously-defined nonempty list ") +
-            "(length " + base::IntToString(old_value->list_value().size()) +
-            ").");
+            "(length " +
+            base::IntToString(static_cast<int>(old_value->list_value().size()))
+            + ").");
         err->AppendSubErr(Err(*old_value, "for previous definition",
             "with another one (length " +
-            base::IntToString(right.list_value().size()) + "). Did you mean " +
+            base::IntToString(static_cast<int>(right.list_value().size())) +
+            "). Did you mean " +
             "\"+=\" to append instead? If you\nreally want to do this, do\n  " +
             left.value().as_string() + " = []\nbefore reassigning."));
         return Value();

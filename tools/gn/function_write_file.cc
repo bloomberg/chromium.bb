@@ -76,9 +76,9 @@ Value RunWriteFile(Scope* scope,
                "I was using \"" + FilePathToUTF8(file_path.DirName()) + "\".");
     return Value();
   }
-  if (file_util::WriteFile(file_path,
-                           contents_string.c_str(), contents_string.size())
-      != static_cast<int>(contents_string.size())) {
+  int int_size = static_cast<int>(contents_string.size());
+  if (file_util::WriteFile(file_path, contents_string.c_str(), int_size)
+      != int_size) {
     *err = Err(function->function(), "Unable to write file.",
                "I was writing \"" + FilePathToUTF8(file_path) + "\".");
     return Value();

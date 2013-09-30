@@ -165,9 +165,6 @@ bool ExecProcess(const CommandLine& cmdline,
       return false;
     case 0:  // child
       {
-#if defined(OS_MACOSX)
-        base::RestoreDefaultExceptionHandler();
-#endif
         // DANGER: no calls to malloc are allowed from now on:
         // http://crbug.com/36678
 

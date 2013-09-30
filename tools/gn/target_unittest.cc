@@ -18,7 +18,7 @@ class TargetTest : public testing::Test {
         toolchain_(Label(SourceDir("//tc/"), "tc")),
         settings_(&build_settings_, &toolchain_, std::string()) {
   }
-  ~TargetTest() {
+  virtual ~TargetTest() {
   }
 
  protected:

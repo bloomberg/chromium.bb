@@ -87,7 +87,8 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
   }
 
   std::string contents = file.str();
-  file_util::WriteFile(ninja_file, contents.c_str(), contents.size());
+  file_util::WriteFile(ninja_file, contents.c_str(),
+                       static_cast<int>(contents.size()));
 }
 
 void NinjaTargetWriter::WriteEnvironment() {
