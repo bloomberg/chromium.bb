@@ -768,6 +768,7 @@
         'wm/drag_window_resizer_unittest.cc',
         'wm/frame_painter_unittest.cc',
         'wm/lock_state_controller_impl2_unittest.cc',
+        'wm/mru_window_tracker_unittest.cc',
         'wm/overview/window_selector_unittest.cc',
         'wm/panels/panel_layout_manager_unittest.cc',
         'wm/panels/panel_window_resizer_unittest.cc',
