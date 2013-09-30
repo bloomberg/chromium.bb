@@ -111,6 +111,10 @@
 #include "chrome/installer/util/auto_launch_util.h"
 #endif  // defined(OS_WIN)
 
+#if defined(ENABLE_MDNS)
+#include "chrome/browser/local_discovery/privet_notifications.h"
+#endif
+
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadManager;
@@ -501,6 +505,8 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 bool cloud_print_mdns_options_shown =
     !CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisableDeviceDiscovery);
+values->SetBoolean("cloudPrintHideNotificationsCheckbox",
+                   !local_discovery::PrivetNotificationService::IsEnabled());
 #else
 bool cloud_print_mdns_options_shown = false;
 #endif
