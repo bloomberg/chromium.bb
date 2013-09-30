@@ -96,7 +96,7 @@ StackFrameMIPS* StackwalkerMIPS::GetCallerByCFIFrameInfo(
     CFIFrameInfo* cfi_frame_info) {
   StackFrameMIPS* last_frame = static_cast<StackFrameMIPS*>(frames.back());
 
-  unsigned long sp = 0, pc = 0;
+  uint32_t sp = 0, pc = 0;
 
   // Populate a dictionary with the valid register values in last_frame.
   CFIFrameInfo::RegisterValueMap<uint32_t> callee_registers;
