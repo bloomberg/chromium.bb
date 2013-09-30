@@ -181,13 +181,15 @@ class AppCacheStorageImpl::DatabaseTask
 void AppCacheStorageImpl::DatabaseTask::Schedule() {
   DCHECK(storage_);
   DCHECK(io_thread_->BelongsToCurrentThread());
+  if (!storage_->database_)
+    return;
+
   if (storage_->db_thread_->PostTask(
       FROM_HERE,
       base::Bind(&DatabaseTask::CallRun, this, base::TimeTicks::Now()))) {
     storage_->scheduled_database_tasks_.push_back(this);
   } else {
-    NOTREACHED() << "Thread for database tasks is not running. "
-                 << "This is not always the DB thread.";
+    NOTREACHED() << "Thread for database tasks is not running.";
   }
 }
 
@@ -1316,6 +1318,7 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
                      service()->force_keep_session_state()))) {
     delete database_;
   }
+  database_ = NULL;  // So no further database tasks can be scheduled.
 }
 
 void AppCacheStorageImpl::Initialize(const base::FilePath& cache_directory,
