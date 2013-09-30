@@ -69,6 +69,9 @@ struct TestResult {
 // which tests and how are run.
 class TestLauncherDelegate {
  public:
+  // Called at the start of each test iteration.
+  virtual void OnTestIterationStarting() = 0;
+
   // Called to get a test name for filtering purposes. Usually it's
   // test case's name and test's name joined by a dot (e.g.
   // "TestCaseName.TestName").

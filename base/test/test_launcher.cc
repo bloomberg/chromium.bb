@@ -546,6 +546,8 @@ void RunTestIteration(TestLauncherDelegate* launcher_delegate,
   // Special value "-1" means "repeat indefinitely".
   int new_cycles = (cycles == -1) ? cycles : cycles - 1;
 
+  launcher_delegate->OnTestIterationStarting();
+
   MessageLoop::current()->PostTask(
       FROM_HERE,
       Bind(&RunTests, launcher_delegate, total_shards, shard_index,

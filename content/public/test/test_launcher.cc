@@ -97,6 +97,7 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   }
 
   // base::TestLauncherDelegate:
+  virtual void OnTestIterationStarting() OVERRIDE;
   virtual std::string GetTestNameForFiltering(
       const testing::TestCase* test_case,
       const testing::TestInfo* test_info) OVERRIDE;
@@ -155,6 +156,10 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(WrapperTestLauncherDelegate);
 };
+
+void WrapperTestLauncherDelegate::OnTestIterationStarting() {
+  tests_to_run_.clear();
+}
 
 std::string WrapperTestLauncherDelegate::GetTestNameForFiltering(
     const testing::TestCase* test_case,

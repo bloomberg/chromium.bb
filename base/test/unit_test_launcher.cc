@@ -99,6 +99,10 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     TestResultCallback callback;
   };
 
+  virtual void OnTestIterationStarting() OVERRIDE {
+    // Nothing to do.
+  }
+
   virtual std::string GetTestNameForFiltering(
       const testing::TestCase* test_case,
       const testing::TestInfo* test_info) OVERRIDE {
