@@ -29,6 +29,7 @@ import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
+import org.chromium.android_webview.AwDevToolsServer;
 import org.chromium.android_webview.AwLayoutSizer;
 import org.chromium.android_webview.test.AwTestContainerView;
 import org.chromium.android_webview.test.NullContentsClient;
@@ -41,6 +42,7 @@ public class AwShellActivity extends Activity {
     private final static String PREFERENCES_NAME = "AwShellPrefs";
     private final static String INITIAL_URL = "about:blank";
     private AwBrowserContext mBrowserContext;
+    private AwDevToolsServer mDevToolsServer;
     private AwTestContainerView mAwTestContainerView;
     private EditText mUrlTextView;
     private ImageButton mPrevButton;
@@ -92,6 +94,10 @@ public class AwShellActivity extends Activity {
                 testContainerView.getInternalAccessDelegate(),
                 awContentsClient, false, new AwLayoutSizer(), true));
         testContainerView.getAwContents().getSettings().setJavaScriptEnabled(true);
+        if (mDevToolsServer == null) {
+            mDevToolsServer = new AwDevToolsServer();
+            mDevToolsServer.setRemoteDebuggingEnabled(true);
+        }
         return testContainerView;
     }
 
