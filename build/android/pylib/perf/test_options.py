@@ -11,4 +11,6 @@ PerfOptions = collections.namedtuple('PerfOptions', [
     'flaky_steps',
     'print_step',
     'no_timeout',
+    'test_filter',
+    'dry_run',
 ])

@@ -433,6 +433,13 @@ def AddPerfTestOptions(option_parser):
       '--no-timeout', action='store_true',
       help=('Do not impose a timeout. Each perf step is responsible for '
             'implementing the timeout logic.'))
+  option_parser.add_option(
+      '-f', '--test-filter',
+      help=('Test filter (will match against the names listed in --steps).'))
+  option_parser.add_option(
+      '--dry-run',
+      action='store_true',
+      help='Just print the steps without executing.')
   AddCommonOptions(option_parser)
 
 
@@ -451,7 +458,7 @@ def ProcessPerfTestOptions(options, error_func):
     error_func('Please specify --steps or --print-step')
   return perf_test_options.PerfOptions(
       options.steps, options.flaky_steps, options.print_step,
-      options.no_timeout)
+      options.no_timeout, options.test_filter, options.dry_run)
 
 
 def _RunGTests(options, error_func, devices):

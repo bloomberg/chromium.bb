@@ -20,7 +20,17 @@ graph data.
 with the step results previously saved. The buildbot will then process the graph
 data accordingly.
 
+
 The JSON steps file contains a dictionary in the format:
+[
+  ["step_name_foo", "script_to_execute foo"],
+  ["step_name_bar", "script_to_execute bar"]
+]
+
+This preserves the order in which the steps are executed.
+
+TODO(bulach): remove the old format.
+DEPRECATED:
 {
   "step_name_foo": "script_to_execute foo",
   "step_name_bar": "script_to_execute bar"
@@ -115,9 +125,12 @@ class TestRunner(base_test_runner.BaseTestRunner):
     timeout = 1800
     if self._options.no_timeout:
       timeout = None
+    full_cmd = cmd
+    if self._options.dry_run:
+      full_cmd = 'echo %s' % cmd
 
     output, exit_code = pexpect.run(
-        cmd, cwd=os.path.abspath(constants.DIR_SOURCE_ROOT),
+        full_cmd, cwd=os.path.abspath(constants.DIR_SOURCE_ROOT),
         withexitstatus=True, logfile=sys.stdout, timeout=timeout,
         env=os.environ)
     end_time = datetime.datetime.now()
