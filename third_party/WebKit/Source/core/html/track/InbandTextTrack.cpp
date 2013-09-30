@@ -28,7 +28,7 @@
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/html/track/TextTrackCueGeneric.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "wtf/UnusedParam.h"
 #include <math.h>

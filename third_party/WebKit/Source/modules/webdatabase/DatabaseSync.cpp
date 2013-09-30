@@ -34,7 +34,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "modules/webdatabase/DatabaseBackendContext.h"
 #include "modules/webdatabase/DatabaseBackendSync.h"
 #include "modules/webdatabase/DatabaseCallback.h"

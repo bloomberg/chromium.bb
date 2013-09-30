@@ -40,7 +40,7 @@
 #include "core/dom/DOMTokenList.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/track/WebVTTParser.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderObject.h"
 #include "wtf/MathExtras.h"

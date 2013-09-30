@@ -48,7 +48,7 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/platform/network/BlobData.h"
 #include "modules/websockets/CloseEvent.h"
 #include "modules/websockets/WebSocketChannel.h"

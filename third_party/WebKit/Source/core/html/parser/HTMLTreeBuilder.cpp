@@ -47,7 +47,7 @@
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/platform/LocalizedStrings.h"
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 #include "wtf/MainThread.h"
 #include "wtf/unicode/CharacterNames.h"
 

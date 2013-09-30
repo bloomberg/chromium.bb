@@ -31,7 +31,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/InspectorDatabaseInstrumentation.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "modules/webdatabase/AbstractDatabaseServer.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseBackend.h"

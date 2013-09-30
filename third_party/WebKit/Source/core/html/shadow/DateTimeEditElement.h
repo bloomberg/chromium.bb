@@ -29,7 +29,7 @@
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/forms/StepRange.h"
 #include "core/html/shadow/DateTimeFieldElement.h"
-#include "core/platform/DateComponents.h"
+#include "platform/DateComponents.h"
 
 namespace WebCore {
 

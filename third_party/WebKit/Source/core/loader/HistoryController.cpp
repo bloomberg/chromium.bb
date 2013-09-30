@@ -44,7 +44,7 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "wtf/text/CString.h"
 
 namespace WebCore {

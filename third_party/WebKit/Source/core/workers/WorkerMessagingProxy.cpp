@@ -43,7 +43,7 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/PageGroup.h"
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/Worker.h"

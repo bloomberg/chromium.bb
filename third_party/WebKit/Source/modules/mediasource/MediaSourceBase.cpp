@@ -36,7 +36,7 @@
 #include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/GenericEventQueue.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
 #include "wtf/text/WTFString.h"

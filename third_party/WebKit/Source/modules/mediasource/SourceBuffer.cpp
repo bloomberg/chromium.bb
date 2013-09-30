@@ -39,7 +39,7 @@
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/Stream.h"
 #include "core/html/TimeRanges.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"
 #include "modules/mediasource/MediaSource.h"
 #include "wtf/ArrayBuffer.h"

@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/platform/text/TextBreakIteratorInternalICU.h"
 
-#include "core/platform/Language.h"
+#include "platform/Language.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"

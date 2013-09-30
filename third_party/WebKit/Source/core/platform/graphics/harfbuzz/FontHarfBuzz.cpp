@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/graphics/Font.h"
 
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/GraphicsContext.h"

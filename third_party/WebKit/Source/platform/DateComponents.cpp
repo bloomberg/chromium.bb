@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/DateComponents.h"
+#include "platform/DateComponents.h"
 
 #include <limits.h>
 #include "wtf/ASCIICType.h"

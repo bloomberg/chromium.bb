@@ -47,7 +47,7 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/platform/network/SocketStreamError.h"
 #include "core/platform/network/SocketStreamHandle.h"
 #include "modules/websockets/WebSocketChannel.h"

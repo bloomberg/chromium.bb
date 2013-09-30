@@ -34,7 +34,7 @@
 #include "core/platform/graphics/FontCustomPlatformData.h"
 
 #include "core/platform/LayoutTestSupport.h"
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 #include "platform/SharedBuffer.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/opentype/OpenTypeSanitizer.h"

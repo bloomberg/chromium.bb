@@ -47,7 +47,7 @@
 #include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/HistogramSupport.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/GraphicsLayer.h"

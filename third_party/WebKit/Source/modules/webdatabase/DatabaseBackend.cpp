@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/webdatabase/DatabaseBackend.h"
 
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "modules/webdatabase/ChangeVersionData.h"
 #include "modules/webdatabase/ChangeVersionWrapper.h"
 #include "modules/webdatabase/DatabaseBackendContext.h"

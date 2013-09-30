@@ -27,7 +27,7 @@
 
 #include "core/platform/graphics/Extensions3D.h"
 
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "wtf/text/CString.h"

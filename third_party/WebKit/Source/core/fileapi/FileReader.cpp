@@ -37,7 +37,7 @@
 #include "core/events/ProgressEvent.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/File.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/CString.h"

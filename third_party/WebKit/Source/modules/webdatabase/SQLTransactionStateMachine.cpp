@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/webdatabase/SQLTransactionStateMachine.h"
 
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "wtf/Assertions.h"
 
 namespace WebCore {

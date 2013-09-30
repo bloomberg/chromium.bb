@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/Language.h"
+#include "platform/Language.h"
 
 #include "public/platform/Platform.h"
 #include "wtf/text/WTFString.h"

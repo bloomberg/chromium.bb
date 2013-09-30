@@ -71,7 +71,7 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/IntSize.h"

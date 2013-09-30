@@ -40,7 +40,7 @@
 #include "core/loader/CookieJar.h"
 #include "core/platform/Cookie.h"
 #include "core/platform/HistogramSupport.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/platform/network/HTTPHeaderMap.h"
 #include "core/platform/network/HTTPParsers.h"
 #include "weborigin/KURL.h"

@@ -68,7 +68,7 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/HistogramSupport.h"
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 #include "core/platform/Widget.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/plugins/PluginView.h"

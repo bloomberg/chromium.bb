@@ -19,7 +19,7 @@
 #include "core/html/HTMLMediaSource.h"
 #include "core/html/TimeRanges.h"
 #include "core/page/Frame.h"
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 #include "core/platform/audio/AudioBus.h"
 #include "core/platform/audio/AudioSourceProvider.h"
 #include "core/platform/audio/AudioSourceProviderClient.h"

@@ -33,12 +33,37 @@
     'blink_platform.gypi',
   ],
   'targets': [{
+    'target_name': 'blink_common',
+    'type': '<(component)',
+    'variables': { 'enable_wexit_time_destructors': 1 },
+    'dependencies': [
+      '../config.gyp:config',
+      '../wtf/wtf.gyp:wtf',
+      # FIXME: Can we remove the dependencies on V8 and Skia?
+      '<(DEPTH)/skia/skia.gyp:skia',
+      '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+    ],
+    'export_dependent_settings': [
+      '<(DEPTH)/skia/skia.gyp:skia',
+      '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+    ],
+    'defines': [
+      'BLINK_COMMON_IMPLEMENTATION=1',
+      'INSIDE_BLINK',
+    ],
+    'sources': [
+      'exported/WebCString.cpp',
+      'exported/WebString.cpp',
+      'exported/WebCommon.cpp',
+    ],
+  }, {
     'target_name': 'blink_platform',
     'type': '<(component)',
     'dependencies': [
       '../config.gyp:config',
-      '../weborigin/weborigin.gyp:weborigin',
       '../wtf/wtf.gyp:wtf',
+      '../weborigin/weborigin.gyp:weborigin',
+      'blink_common',
     ],
     'defines': [
       'BLINK_PLATFORM_IMPLEMENTATION=1',

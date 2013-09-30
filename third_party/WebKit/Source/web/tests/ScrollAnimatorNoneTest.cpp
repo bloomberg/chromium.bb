@@ -31,7 +31,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/ScrollableArea.h"
 #include "core/platform/graphics/FloatPoint.h"

@@ -47,7 +47,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 #include <limits>
 
 namespace WebCore {

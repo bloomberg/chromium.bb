@@ -37,7 +37,6 @@
             'type': 'none',
             'dependencies': [
                 '../Source/web/web.gyp:webkit',
-                # FIXME: Whis is this dependency needed here?
                 '../Source/platform/blink_platform.gyp:blink_platform',
                 'blink_minimal',
             ],
@@ -54,10 +53,10 @@
             'target_name': 'blink_minimal',
             'type': 'none',
             'dependencies': [
-                '../Source/web/web.gyp:blink_common',
+                '../Source/platform/blink_platform.gyp:blink_common',
             ],
             'export_dependent_settings': [
-                '../Source/web/web.gyp:blink_common',
+                '../Source/platform/blink_platform.gyp:blink_common',
             ],
         },
     ],

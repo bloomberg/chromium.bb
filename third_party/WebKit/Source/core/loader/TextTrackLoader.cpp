@@ -34,7 +34,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/TextTrackResource.h"
 #include "core/html/track/WebVTTParser.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
 #include "weborigin/SecurityOrigin.h"
 

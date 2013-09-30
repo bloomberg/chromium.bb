@@ -33,7 +33,7 @@
 
 #include <unicode/udat.h>
 #include <unicode/unum.h>
-#include "core/platform/DateComponents.h"
+#include "platform/DateComponents.h"
 #include "core/platform/text/PlatformLocale.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"

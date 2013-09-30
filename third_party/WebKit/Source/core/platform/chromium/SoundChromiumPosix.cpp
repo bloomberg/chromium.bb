@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/Sound.h"
 
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 
 namespace WebCore {
 

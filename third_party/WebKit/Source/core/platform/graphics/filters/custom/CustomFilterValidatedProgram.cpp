@@ -31,7 +31,7 @@
 
 #include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
 
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 #include "core/platform/graphics/ANGLEWebKitBridge.h"
 #include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"

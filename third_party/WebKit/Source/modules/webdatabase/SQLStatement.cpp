@@ -28,7 +28,7 @@
 #include "config.h"
 #include "modules/webdatabase/SQLStatement.h"
 
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/platform/sql/SQLValue.h"
 #include "core/platform/sql/SQLiteDatabase.h"
 #include "core/platform/sql/SQLiteStatement.h"

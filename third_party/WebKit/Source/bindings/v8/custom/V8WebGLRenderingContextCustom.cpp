@@ -73,7 +73,7 @@
 #include "bindings/v8/custom/V8Uint8ArrayCustom.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 #include "wtf/FastMalloc.h"
 #include <limits>
 

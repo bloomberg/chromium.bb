@@ -24,7 +24,7 @@
 
 #include "SVGNames.h"
 #include "core/dom/DOMImplementation.h"
-#include "core/platform/Language.h"
+#include "platform/Language.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGStringList.h"
 

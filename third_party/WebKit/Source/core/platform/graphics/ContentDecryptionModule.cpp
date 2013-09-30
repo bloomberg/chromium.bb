@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/graphics/ContentDecryptionModule.h"
 
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 #include "core/platform/graphics/ContentDecryptionModuleSession.h"
 #include "public/platform/Platform.h"
 

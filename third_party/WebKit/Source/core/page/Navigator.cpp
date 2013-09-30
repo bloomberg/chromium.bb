@@ -31,7 +31,7 @@
 #include "core/page/NavigatorID.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/Language.h"
+#include "platform/Language.h"
 #include "core/plugins/DOMMimeTypeArray.h"
 #include "core/plugins/DOMPluginArray.h"
 

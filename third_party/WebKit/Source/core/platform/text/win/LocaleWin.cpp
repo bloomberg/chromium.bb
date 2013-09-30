@@ -33,8 +33,8 @@
 
 #include <windows.h>
 #include <limits>
-#include "core/platform/DateComponents.h"
-#include "core/platform/Language.h"
+#include "platform/DateComponents.h"
+#include "platform/Language.h"
 #include "core/platform/LayoutTestSupport.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/DateTimeFormat.h"

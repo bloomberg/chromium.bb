@@ -26,16 +26,17 @@
 #ifndef Language_h
 #define Language_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-String defaultLanguage();
-Vector<String> userPreferredLanguages();
-Vector<String> userPreferredLanguagesOverride();
-void overrideUserPreferredLanguages(const Vector<String>&);
-size_t indexOfBestMatchingLanguageInList(const String& language, const Vector<String>& languageList);
+PLATFORM_EXPORT String defaultLanguage();
+PLATFORM_EXPORT Vector<String> userPreferredLanguages();
+PLATFORM_EXPORT Vector<String> userPreferredLanguagesOverride();
+PLATFORM_EXPORT void overrideUserPreferredLanguages(const Vector<String>&);
+PLATFORM_EXPORT size_t indexOfBestMatchingLanguageInList(const String& language, const Vector<String>& languageList);
 
 }
 

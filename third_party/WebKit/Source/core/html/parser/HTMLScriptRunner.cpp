@@ -37,7 +37,7 @@
 #include "core/html/parser/HTMLScriptRunnerHost.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
 #include "core/page/Frame.h"
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 
 namespace WebCore {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003, 2006 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2007 Apple Computer, Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,50 +23,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Logging_h
-#define Logging_h
+#ifndef NotImplemented_h
+#define NotImplemented_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Assertions.h"
-#include "wtf/Forward.h"
 
-#if !LOG_DISABLED
-
-#ifndef LOG_CHANNEL_PREFIX
-#define LOG_CHANNEL_PREFIX Log
-#endif
+#if LOG_DISABLED
+    #define notImplemented() ((void)0)
+#else
 
 namespace WebCore {
-
-    extern WTFLogChannel LogNotYetImplemented;
-    extern WTFLogChannel LogFrames;
-    extern WTFLogChannel LogLoading;
-    extern WTFLogChannel LogPopupBlocking;
-    extern WTFLogChannel LogEvents;
-    extern WTFLogChannel LogEditing;
-    extern WTFLogChannel LogLiveConnect;
-    extern WTFLogChannel LogIconDatabase;
-    extern WTFLogChannel LogSQLDatabase;
-    extern WTFLogChannel LogSpellingAndGrammar;
-    extern WTFLogChannel LogBackForward;
-    extern WTFLogChannel LogHistory;
-    extern WTFLogChannel LogPlatformLeaks;
-    extern WTFLogChannel LogResourceLoading;
-    extern WTFLogChannel LogNetwork;
-    extern WTFLogChannel LogFTP;
-    extern WTFLogChannel LogThreading;
-    extern WTFLogChannel LogStorageAPI;
-    extern WTFLogChannel LogMedia;
-    extern WTFLogChannel LogPlugins;
-    extern WTFLogChannel LogArchives;
-    extern WTFLogChannel LogProgress;
-    extern WTFLogChannel LogFileAPI;
-    extern WTFLogChannel LogWebAudio;
-    extern WTFLogChannel LogCompositing;
-    extern WTFLogChannel LogGamepad;
-
-    WTFLogChannel* getChannelFromName(const String& channelName);
+PLATFORM_EXPORT WTFLogChannel* notImplementedLoggingChannel();
 }
 
-#endif // !LOG_DISABLED
+#define notImplemented() do { \
+        static bool havePrinted = false; \
+        if (!havePrinted) { \
+            WTFLogVerbose(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, WebCore::notImplementedLoggingChannel(), "UNIMPLEMENTED: "); \
+            havePrinted = true; \
+        } \
+    } while (0)
 
-#endif // Logging_h
+#endif // NDEBUG
+
+#endif // NotImplemented_h

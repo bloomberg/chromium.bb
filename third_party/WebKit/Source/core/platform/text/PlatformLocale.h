@@ -26,8 +26,8 @@
 #ifndef PlatformLocale_h
 #define PlatformLocale_h
 
-#include "core/platform/DateComponents.h"
-#include "core/platform/Language.h"
+#include "platform/DateComponents.h"
+#include "platform/Language.h"
 #include "public/platform/WebLocalizedString.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"

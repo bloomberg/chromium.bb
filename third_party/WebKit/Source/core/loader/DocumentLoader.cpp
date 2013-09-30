@@ -56,7 +56,7 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/plugins/PluginData.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMimeRegistry.h"

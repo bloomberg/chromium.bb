@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/websockets/WebSocketDeflater.h"
 
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "wtf/FastMalloc.h"
 #include "wtf/HashMap.h"
 #include "wtf/StdLibExtras.h"

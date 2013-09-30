@@ -36,7 +36,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "core/html/forms/InputTypeNames.h"
-#include "core/platform/DateComponents.h"
+#include "platform/DateComponents.h"
 #include "core/platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"

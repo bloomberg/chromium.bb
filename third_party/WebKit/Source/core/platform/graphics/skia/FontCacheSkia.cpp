@@ -32,7 +32,7 @@
 
 #include "SkFontMgr.h"
 #include "SkTypeface.h"
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontDescription.h"

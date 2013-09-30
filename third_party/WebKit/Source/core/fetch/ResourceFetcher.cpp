@@ -59,7 +59,7 @@
 #include "core/page/Performance.h"
 #include "core/page/ResourceTimingInfo.h"
 #include "core/page/Settings.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"

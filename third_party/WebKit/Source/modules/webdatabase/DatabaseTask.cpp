@@ -28,7 +28,7 @@
 #include "config.h"
 #include "modules/webdatabase/DatabaseTask.h"
 
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseBackend.h"
 

@@ -101,7 +101,7 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/ColorChooser.h"
 #include "core/platform/Cursor.h"
-#include "core/platform/Language.h"
+#include "platform/Language.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/IntRect.h"

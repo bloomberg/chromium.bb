@@ -31,7 +31,7 @@
 #include "modules/webdatabase/DatabaseBackendBase.h"
 
 #include "core/dom/ExceptionCode.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/platform/sql/SQLiteStatement.h"
 #include "core/platform/sql/SQLiteTransaction.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"

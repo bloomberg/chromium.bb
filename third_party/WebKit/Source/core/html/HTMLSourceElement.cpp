@@ -30,7 +30,7 @@
 #include "core/events/Event.h"
 #include "core/events/EventNames.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 
 using namespace std;
 

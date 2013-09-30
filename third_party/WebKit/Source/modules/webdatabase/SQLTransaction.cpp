@@ -32,7 +32,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/VoidCallback.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "modules/webdatabase/AbstractSQLTransactionBackend.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"

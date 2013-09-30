@@ -33,7 +33,7 @@
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "platform/PurgeableBuffer.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/Platform.h"

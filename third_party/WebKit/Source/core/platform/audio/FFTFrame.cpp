@@ -36,7 +36,7 @@
 #include <stdio.h>
 #endif
 
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "wtf/Complex.h"
 #include "wtf/MathExtras.h"
 #include "wtf/OwnPtr.h"

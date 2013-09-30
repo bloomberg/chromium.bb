@@ -79,7 +79,7 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/page/WindowFeatures.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/network/HTTPParsers.h"

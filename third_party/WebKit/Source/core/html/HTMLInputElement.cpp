@@ -65,7 +65,7 @@
 #include "core/page/FrameView.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/DateTimeChooser.h"
-#include "core/platform/Language.h"
+#include "platform/Language.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderTextControlSingleLine.h"

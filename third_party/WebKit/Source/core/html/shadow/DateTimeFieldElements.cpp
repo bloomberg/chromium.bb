@@ -28,7 +28,7 @@
 #include "core/html/shadow/DateTimeFieldElements.h"
 
 #include "core/html/forms/DateTimeFieldsState.h"
-#include "core/platform/DateComponents.h"
+#include "platform/DateComponents.h"
 #include "core/platform/LocalizedStrings.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"

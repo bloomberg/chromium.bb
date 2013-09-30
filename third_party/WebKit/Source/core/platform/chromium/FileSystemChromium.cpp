@@ -32,7 +32,7 @@
 #include "core/platform/FileSystem.h"
 
 #include "core/platform/FileMetadata.h"
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileInfo.h"

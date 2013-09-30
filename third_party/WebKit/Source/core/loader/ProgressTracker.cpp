@@ -31,7 +31,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/platform/network/ResourceResponse.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/CString.h"

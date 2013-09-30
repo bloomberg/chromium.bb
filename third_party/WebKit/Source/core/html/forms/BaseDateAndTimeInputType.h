@@ -32,7 +32,7 @@
 #define BaseDateAndTimeInputType_h
 
 #include "core/html/forms/InputType.h"
-#include "core/platform/DateComponents.h"
+#include "platform/DateComponents.h"
 
 namespace WebCore {
 

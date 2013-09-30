@@ -27,7 +27,7 @@
 #include "core/platform/sql/SQLiteStatement.h"
 
 #include <sqlite3.h>
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/platform/sql/SQLValue.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/CString.h"

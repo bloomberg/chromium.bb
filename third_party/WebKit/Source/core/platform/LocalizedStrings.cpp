@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/LocalizedStrings.h"
 
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "wtf/text/WTFString.h"

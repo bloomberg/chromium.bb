@@ -46,7 +46,7 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/WorkerNavigator.h"
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerLocation.h"
 #include "core/workers/WorkerObjectProxy.h"

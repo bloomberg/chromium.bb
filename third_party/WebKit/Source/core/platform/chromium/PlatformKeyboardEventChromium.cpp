@@ -32,7 +32,7 @@
 #elif OS(MACOSX)
 #import <Carbon/Carbon.h>
 #else
-#include "core/platform/NotImplemented.h"
+#include "platform/NotImplemented.h"
 #endif
 
 namespace WebCore {

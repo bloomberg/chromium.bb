@@ -32,6 +32,7 @@
 #define DateComponents_h
 
 #include <limits>
+#include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 #include "wtf/unicode/Unicode.h"
 
@@ -43,7 +44,7 @@ namespace WebCore {
 // * Week type: year-week
 // * Time type: hour-minute-second-millisecond
 // * DateTime or DateTimeLocal type: year-month-day hour-minute-second-millisecond
-class DateComponents {
+class PLATFORM_EXPORT DateComponents {
 public:
     DateComponents()
         : m_millisecond(0)

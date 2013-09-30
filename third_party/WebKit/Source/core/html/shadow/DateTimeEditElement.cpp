@@ -34,7 +34,7 @@
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "core/html/shadow/DateTimeFieldElements.h"
 #include "core/html/shadow/ShadowElementNames.h"
-#include "core/platform/DateComponents.h"
+#include "platform/DateComponents.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/text/DateTimeFormat.h"
 #include "core/platform/text/PlatformLocale.h"

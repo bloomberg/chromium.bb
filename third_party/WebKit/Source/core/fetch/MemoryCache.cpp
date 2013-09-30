@@ -28,7 +28,7 @@
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/page/FrameView.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"

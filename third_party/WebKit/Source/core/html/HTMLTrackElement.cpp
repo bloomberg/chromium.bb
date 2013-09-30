@@ -32,7 +32,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "RuntimeEnabledFeatures.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 
 using namespace std;
 

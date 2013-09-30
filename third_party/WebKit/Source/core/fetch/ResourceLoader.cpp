@@ -33,7 +33,7 @@
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceLoaderHost.h"
 #include "core/fetch/ResourcePtr.h"
-#include "core/platform/Logging.h"
+#include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"

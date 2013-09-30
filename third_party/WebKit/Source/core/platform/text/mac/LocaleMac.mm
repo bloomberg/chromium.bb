@@ -33,7 +33,7 @@
 
 #import <Foundation/NSDateFormatter.h>
 #import <Foundation/NSLocale.h>
-#include "core/platform/Language.h"
+#include "platform/Language.h"
 #include "core/platform/LocalizedStrings.h"
 #include "wtf/DateMath.h"
 #include "wtf/PassOwnPtr.h"
