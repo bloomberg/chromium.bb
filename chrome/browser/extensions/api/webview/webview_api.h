@@ -164,7 +164,7 @@ class WebviewSetPermissionFunction : public WebviewExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(WebviewSetPermissionFunction);
 };
 
-class WebviewOverrideUserAgentFunction: public AsyncExtensionFunction {
+class WebviewOverrideUserAgentFunction: public WebviewExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webview.overrideUserAgent",
                              WEBVIEW_OVERRIDEUSERAGENT);
@@ -174,10 +174,10 @@ class WebviewOverrideUserAgentFunction: public AsyncExtensionFunction {
  protected:
   virtual ~WebviewOverrideUserAgentFunction();
 
-  // ExtensionFunction implementation.
-  virtual bool RunImpl() OVERRIDE;
-
  private:
+  // WebviewExtensionFunction implementation.
+  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+
   DISALLOW_COPY_AND_ASSIGN(WebviewOverrideUserAgentFunction);
 };
 

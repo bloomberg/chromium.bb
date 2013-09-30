@@ -231,10 +231,6 @@ WebviewReloadFunction::~WebviewReloadFunction() {
 
 bool WebviewReloadFunction::RunImplSafe(WebViewGuest* guest) {
   content::RecordAction(content::UserMetricsAction("WebView.Reload"));
-  scoped_ptr<webview::Reload::Params> params(
-      webview::Reload::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
   guest->Reload();
   return true;
 }
@@ -263,19 +259,12 @@ WebviewOverrideUserAgentFunction::WebviewOverrideUserAgentFunction() {
 WebviewOverrideUserAgentFunction::~WebviewOverrideUserAgentFunction() {
 }
 
-bool WebviewOverrideUserAgentFunction::RunImpl() {
+bool WebviewOverrideUserAgentFunction::RunImplSafe(WebViewGuest* guest) {
   scoped_ptr<extensions::api::webview::OverrideUserAgent::Params> params(
       extensions::api::webview::OverrideUserAgent::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  int instance_id = params->instance_id;
-  std::string user_agent_override = params->user_agent_override;
 
-  WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), instance_id);
-  if (!guest)
-    return false;
-
-  guest->SetUserAgentOverride(user_agent_override);
+  guest->SetUserAgentOverride(params->user_agent_override);
   return true;
 }
 
@@ -287,10 +276,6 @@ WebviewStopFunction::~WebviewStopFunction() {
 
 bool WebviewStopFunction::RunImplSafe(WebViewGuest* guest) {
   content::RecordAction(content::UserMetricsAction("WebView.Stop"));
-  scoped_ptr<webview::Stop::Params> params(
-      webview::Stop::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
   guest->Stop();
   return true;
 }
@@ -303,10 +288,6 @@ WebviewTerminateFunction::~WebviewTerminateFunction() {
 
 bool WebviewTerminateFunction::RunImplSafe(WebViewGuest* guest) {
   content::RecordAction(content::UserMetricsAction("WebView.Terminate"));
-  scoped_ptr<webview::Terminate::Params> params(
-      webview::Terminate::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
   guest->Terminate();
   return true;
 }
