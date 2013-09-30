@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "skia/ext/image_operations.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
@@ -56,13 +57,28 @@ void SetOverlayIcon(HWND hwnd, scoped_ptr<SkBitmap> bitmap) {
       // The image's size has changed. Resize what we have.
       source_bitmap = bitmap.get();
     }
-    // Since the target size is so small, we use our best resizer. Never pass
-    // windows a different size because it will badly hammer it to 16x16.
+
+    // Maintain aspect ratio on resize. It is assumed that the image is wider
+    // than it is tall.
+    const size_t kOverlayIconSize = 16;
+    size_t resized_height =
+        source_bitmap->height() * kOverlayIconSize / source_bitmap->width();
+    DCHECK_GE(kOverlayIconSize, resized_height);
+    // Since the target size is so small, we use our best resizer.
     SkBitmap sk_icon = skia::ImageOperations::Resize(
         *source_bitmap,
         skia::ImageOperations::RESIZE_LANCZOS3,
-        16, 16);
-    icon.Set(IconUtil::CreateHICONFromSkBitmap(sk_icon));
+        kOverlayIconSize, resized_height);
+
+    // Paint the resized icon onto a 16x16 canvas otherwise Windows will badly
+    // hammer it to 16x16.
+    scoped_ptr<SkCanvas> offscreen_canvas(
+        skia::CreateBitmapCanvas(kOverlayIconSize, kOverlayIconSize, false));
+    DCHECK(offscreen_canvas);
+    offscreen_canvas->drawBitmap(sk_icon, 0, kOverlayIconSize - resized_height);
+
+    icon.Set(IconUtil::CreateHICONFromSkBitmap(
+        offscreen_canvas->getDevice()->accessBitmap(false)));
     if (!icon.Get())
       return;
   }

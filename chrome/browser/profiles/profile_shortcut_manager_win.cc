@@ -65,10 +65,14 @@ const char16 kReservedCharacters[] = L"<>:\"/\\|?*\x01\x02\x03\x04\x05\x06\x07"
 // differently than it was when a shortcut was originally created.
 const int kMaxProfileShortcutFileNameLength = 64;
 
-const int kProfileAvatarBadgeSize = 28;
+// The avatar badge size needs to be half of the shortcut icon size because
+// the Windows taskbar icon is 32x32 and the avatar icon overlay is 16x16. So to
+// get the shortcut avatar badge and the avatar icon overlay to match up, we
+// need to preserve those ratios when creating the shortcut icon.
 const int kShortcutIconSize = 48;
+const int kProfileAvatarBadgeSize = kShortcutIconSize / 2;
 
-const int kCurrentProfileIconVersion = 1;
+const int kCurrentProfileIconVersion = 2;
 
 // 2x sized profile avatar icons. Mirrors |kDefaultAvatarIconResources| in
 // profile_info_cache.cc.
