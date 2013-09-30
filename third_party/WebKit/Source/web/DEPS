@@ -4,6 +4,7 @@ include_rules = [
     "+core",
     "+modules",
     "+painting",
+    "+platform",
     "+public",
     "+public/platform",
     "+skia",
