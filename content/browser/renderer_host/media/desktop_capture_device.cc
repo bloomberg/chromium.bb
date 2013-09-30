@@ -44,11 +44,9 @@ class DesktopCaptureDevice::Core
        scoped_ptr<webrtc::DesktopCapturer> capturer);
 
   // Implementation of VideoCaptureDevice methods.
-  void Allocate(const media::VideoCaptureCapability& capture_format,
-                VideoCaptureDevice::Client* client);
-  void Start();
-  void Stop();
-  void DeAllocate();
+  void AllocateAndStart(const media::VideoCaptureCapability& capture_format,
+                        scoped_ptr<Client> client);
+  void StopAndDeAllocate();
 
  private:
   friend class base::RefCountedThreadSafe<Core>;
@@ -60,10 +58,9 @@ class DesktopCaptureDevice::Core
 
   // Helper methods that run on the |task_runner_|. Posted from the
   // corresponding public methods.
-  void DoAllocate(const media::VideoCaptureCapability& capture_format);
-  void DoStart();
-  void DoStop();
-  void DoDeAllocate();
+  void DoAllocateAndStart(const media::VideoCaptureCapability& capture_format,
+                          scoped_ptr<Client> client);
+  void DoStopAndDeAllocate();
 
   // Chooses new output properties based on the supplied source size and the
   // properties requested to Allocate(), and dispatches OnFrameInfo[Changed]
@@ -86,11 +83,9 @@ class DesktopCaptureDevice::Core
   // The underlying DesktopCapturer instance used to capture frames.
   scoped_ptr<webrtc::DesktopCapturer> desktop_capturer_;
 
-  // |client_lock_| must be locked whenever |client_| is used. It's necessary
-  // because DeAllocate() needs to reset it on the calling thread to ensure
-  // that the client is not called once DeAllocate() returns.
-  base::Lock client_lock_;
-  VideoCaptureDevice::Client* client_;
+  // The device client which proxies device events to the controller. Accessed
+  // on the task_runner_ thread.
+  scoped_ptr<Client> client_;
 
   // Requested video capture format (width, height, frame rate, etc).
   media::VideoCaptureCapability requested_format_;
@@ -110,10 +105,6 @@ class DesktopCaptureDevice::Core
   // and/or letterboxed.
   webrtc::DesktopRect output_rect_;
 
-  // True between DoStart() and DoStop(). Can't just check |client_| because
-  // |client_| is used on the caller thread.
-  bool started_;
-
   // True when we have delayed OnCaptureTimer() task posted on
   // |task_runner_|.
   bool capture_task_posted_;
@@ -129,48 +120,30 @@ DesktopCaptureDevice::Core::Core(
     scoped_ptr<webrtc::DesktopCapturer> capturer)
     : task_runner_(task_runner),
       desktop_capturer_(capturer.Pass()),
-      client_(NULL),
-      started_(false),
       capture_task_posted_(false),
-      capture_in_progress_(false) {
-}
+      capture_in_progress_(false) {}
 
 DesktopCaptureDevice::Core::~Core() {
 }
 
-void DesktopCaptureDevice::Core::Allocate(
+void DesktopCaptureDevice::Core::AllocateAndStart(
     const media::VideoCaptureCapability& capture_format,
-    VideoCaptureDevice::Client* client) {
+    scoped_ptr<Client> client) {
   DCHECK_GT(capture_format.width, 0);
   DCHECK_GT(capture_format.height, 0);
   DCHECK_GT(capture_format.frame_rate, 0);
 
-  {
-    base::AutoLock auto_lock(client_lock_);
-    client_ = client;
-  }
-
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Core::DoAllocate, this, capture_format));
+      base::Bind(&Core::DoAllocateAndStart,
+                 this,
+                 capture_format,
+                 base::Passed(&client)));
 }
 
-void DesktopCaptureDevice::Core::Start() {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::DoStart, this));
-}
-
-void DesktopCaptureDevice::Core::Stop() {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::DoStop, this));
-}
-
-void DesktopCaptureDevice::Core::DeAllocate() {
-  {
-    base::AutoLock auto_lock(client_lock_);
-    client_ = NULL;
-  }
-  task_runner_->PostTask(FROM_HERE, base::Bind(&Core::DoDeAllocate, this));
+void DesktopCaptureDevice::Core::StopAndDeAllocate() {
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&Core::DoStopAndDeAllocate, this));
 }
 
 webrtc::SharedMemory*
@@ -191,13 +164,13 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
     return;
   }
 
+  if (!client_)
+    return;
+
   scoped_ptr<webrtc::DesktopFrame> owned_frame(frame);
 
   // Handle initial frame size and size changes.
   RefreshCaptureFormat(frame->size());
-
-  if (!started_)
-    return;
 
   webrtc::DesktopSize output_size(capture_format_.width,
                                   capture_format_.height);
@@ -234,18 +207,21 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
     output_data = output_frame_->data();
   }
 
-  base::AutoLock auto_lock(client_lock_);
   if (client_) {
     client_->OnIncomingCapturedFrame(output_data, output_bytes,
                                      base::Time::Now(), 0, false, false);
   }
 }
 
-void DesktopCaptureDevice::Core::DoAllocate(
-    const media::VideoCaptureCapability& capture_format) {
+void DesktopCaptureDevice::Core::DoAllocateAndStart(
+    const media::VideoCaptureCapability& capture_format,
+    scoped_ptr<Client> client) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(desktop_capturer_);
+  DCHECK(client.get());
+  DCHECK(!client_.get());
 
+  client_ = client.Pass();
   requested_format_ = capture_format;
 
   // Store requested frame rate and calculate expected delay.
@@ -266,29 +242,16 @@ void DesktopCaptureDevice::Core::DoAllocate(
 
   desktop_capturer_->Start(this);
 
-  // Capture first frame, so that we can call OnFrameInfo() callback.
   DoCapture();
-}
-
-void DesktopCaptureDevice::Core::DoStart() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  started_ = true;
-  if (!capture_task_posted_) {
+  if (!capture_task_posted_)
     ScheduleCaptureTimer();
-    DoCapture();
-  }
 }
 
-void DesktopCaptureDevice::Core::DoStop() {
+void DesktopCaptureDevice::Core::DoStopAndDeAllocate() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  started_ = false;
+  client_.reset();
   output_frame_.reset();
   previous_frame_size_.set(0, 0);
-}
-
-void DesktopCaptureDevice::Core::DoDeAllocate() {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  DoStop();
   desktop_capturer_.reset();
 }
 
@@ -320,15 +283,10 @@ void DesktopCaptureDevice::Core::RefreshCaptureFormat(
     capture_format_.width = output_rect_.width();
     capture_format_.height = output_rect_.height();
 
-    {
-      base::AutoLock auto_lock(client_lock_);
-      if (client_) {
-        if (previous_frame_size_.is_empty()) {
-          client_->OnFrameInfo(capture_format_);
-        } else {
-          client_->OnFrameInfoChanged(capture_format_);
-        }
-      }
+    if (previous_frame_size_.is_empty()) {
+      client_->OnFrameInfo(capture_format_);
+    } else {
+      client_->OnFrameInfoChanged(capture_format_);
     }
   } else {
     // Otherwise the output frame size cannot change, so just scale and
@@ -353,7 +311,7 @@ void DesktopCaptureDevice::Core::OnCaptureTimer() {
   DCHECK(capture_task_posted_);
   capture_task_posted_ = false;
 
-  if (!started_)
+  if (!client_)
     return;
 
   // Schedule a task for the next frame.
@@ -426,34 +384,20 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
 DesktopCaptureDevice::DesktopCaptureDevice(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     scoped_ptr<webrtc::DesktopCapturer> capturer)
-    : core_(new Core(task_runner, capturer.Pass())),
-      name_("", "") {
-}
+    : core_(new Core(task_runner, capturer.Pass())) {}
 
 DesktopCaptureDevice::~DesktopCaptureDevice() {
-  DeAllocate();
+  StopAndDeAllocate();
 }
 
-void DesktopCaptureDevice::Allocate(
+void DesktopCaptureDevice::AllocateAndStart(
     const media::VideoCaptureCapability& capture_format,
-    VideoCaptureDevice::Client* client) {
-  core_->Allocate(capture_format, client);
+    scoped_ptr<Client> client) {
+  core_->AllocateAndStart(capture_format, client.Pass());
 }
 
-void DesktopCaptureDevice::Start() {
-  core_->Start();
-}
-
-void DesktopCaptureDevice::Stop() {
-  core_->Stop();
-}
-
-void DesktopCaptureDevice::DeAllocate() {
-  core_->DeAllocate();
-}
-
-const media::VideoCaptureDevice::Name& DesktopCaptureDevice::device_name() {
-  return name_;
+void DesktopCaptureDevice::StopAndDeAllocate() {
+  core_->StopAndDeAllocate();
 }
 
 }  // namespace content

@@ -25,7 +25,7 @@ struct DesktopMediaID;
 // DesktopCaptureDevice implements VideoCaptureDevice for screens and windows.
 // It's essentially an adapter between webrtc::DesktopCapturer and
 // VideoCaptureDevice.
-class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice1 {
+class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
  public:
   // Creates capturer for the specified |source| and then creates
   // DesktopCaptureDevice for it. May return NULL in case of a failure (e.g. if
@@ -38,17 +38,14 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice1 {
   virtual ~DesktopCaptureDevice();
 
   // VideoCaptureDevice interface.
-  virtual void Allocate(const media::VideoCaptureCapability& capture_format,
-                        VideoCaptureDevice::Client* client) OVERRIDE;
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void DeAllocate() OVERRIDE;
-  virtual const Name& device_name() OVERRIDE;
+  virtual void AllocateAndStart(
+      const media::VideoCaptureCapability& capture_format,
+      scoped_ptr<Client> client) OVERRIDE;
+  virtual void StopAndDeAllocate() OVERRIDE;
 
  private:
   class Core;
   scoped_refptr<Core> core_;
-  Name name_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopCaptureDevice);
 };
