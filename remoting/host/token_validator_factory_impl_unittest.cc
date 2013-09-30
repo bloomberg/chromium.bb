@@ -93,7 +93,7 @@ TEST_F(TokenValidatorFactoryImplTest, Success) {
   net::FakeURLFetcherFactory factory(NULL);
   token_validator_ = token_validator_factory_->CreateTokenValidator(
       kLocalJid, kRemoteJid);
-  factory.SetFakeResponse(kTokenValidationUrl, CreateResponse(
+  factory.SetFakeResponse(GURL(kTokenValidationUrl), CreateResponse(
       token_validator_->token_scope()), true);
   token_validator_->ValidateThirdPartyToken(
       kToken, base::Bind(&TokenValidatorFactoryImplTest::SuccessCallback,
@@ -105,7 +105,7 @@ TEST_F(TokenValidatorFactoryImplTest, BadToken) {
   net::FakeURLFetcherFactory factory(NULL);
   token_validator_ = token_validator_factory_->CreateTokenValidator(
       kLocalJid, kRemoteJid);
-  factory.SetFakeResponse(kTokenValidationUrl, std::string(), false);
+  factory.SetFakeResponse(GURL(kTokenValidationUrl), std::string(), false);
   token_validator_->ValidateThirdPartyToken(
       kToken, base::Bind(&TokenValidatorFactoryImplTest::FailureCallback,
                              base::Unretained(this)));
@@ -116,7 +116,8 @@ TEST_F(TokenValidatorFactoryImplTest, BadScope) {
   net::FakeURLFetcherFactory factory(NULL);
   token_validator_ = token_validator_factory_->CreateTokenValidator(
       kLocalJid, kRemoteJid);
-  factory.SetFakeResponse(kTokenValidationUrl, CreateResponse(kBadScope), true);
+  factory.SetFakeResponse(
+      GURL(kTokenValidationUrl), CreateResponse(kBadScope), true);
   token_validator_->ValidateThirdPartyToken(
       kToken, base::Bind(&TokenValidatorFactoryImplTest::FailureCallback,
                          base::Unretained(this)));
@@ -127,7 +128,7 @@ TEST_F(TokenValidatorFactoryImplTest, DeleteOnFailure) {
   net::FakeURLFetcherFactory factory(NULL);
   token_validator_ = token_validator_factory_->CreateTokenValidator(
       kLocalJid, kRemoteJid);
-  factory.SetFakeResponse(kTokenValidationUrl, std::string(), false);
+  factory.SetFakeResponse(GURL(kTokenValidationUrl), std::string(), false);
   token_validator_->ValidateThirdPartyToken(
       kToken, base::Bind(
           &TokenValidatorFactoryImplTest::DeleteOnFailureCallback,

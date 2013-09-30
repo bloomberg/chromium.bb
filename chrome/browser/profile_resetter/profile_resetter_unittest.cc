@@ -29,6 +29,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "url/gurl.h"
 
 
 namespace {
@@ -649,7 +650,7 @@ TEST_F(ProfileResetterTest, ResetFewFlags) {
 
 // Tries to load unavailable config file.
 TEST_F(ConfigParserTest, NoConnectivity) {
-  const std::string url("http://test");
+  const GURL url("http://test");
   factory().SetFakeResponse(url, "", false);
 
   scoped_ptr<BrandcodeConfigFetcher> fetcher = WaitForRequest(GURL(url));
@@ -658,7 +659,7 @@ TEST_F(ConfigParserTest, NoConnectivity) {
 
 // Tries to load available config file.
 TEST_F(ConfigParserTest, ParseConfig) {
-  const std::string url("http://test");
+  const GURL url("http://test");
   std::string xml_config(kXmlConfig);
   ReplaceString(&xml_config, "placeholder_for_data", kDistributionConfig);
   ReplaceString(&xml_config,

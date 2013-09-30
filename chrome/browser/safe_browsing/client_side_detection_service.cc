@@ -367,7 +367,7 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
 
   net::URLFetcher* fetcher = net::URLFetcher::Create(
       0 /* ID used for testing */,
-      GURL(GetClientReportUrl(kClientReportPhishingUrl)),
+      GetClientReportUrl(kClientReportPhishingUrl),
       net::URLFetcher::POST, this);
 
   // Remember which callback and URL correspond to the current fetcher object.
@@ -417,7 +417,7 @@ void ClientSideDetectionService::StartClientReportMalwareRequest(
 
   net::URLFetcher* fetcher = net::URLFetcher::Create(
       0 /* ID used for testing */,
-      GURL(GetClientReportUrl(kClientReportMalwareUrl)),
+      GetClientReportUrl(kClientReportMalwareUrl),
       net::URLFetcher::POST, this);
 
   // Remember which callback and URL correspond to the current fetcher object.
@@ -706,14 +706,13 @@ bool ClientSideDetectionService::ModelHasValidHashIds(
 }
 
 // static
-std::string ClientSideDetectionService::GetClientReportUrl(
+GURL ClientSideDetectionService::GetClientReportUrl(
     const std::string& report_url) {
-  std::string url = report_url;
+  GURL url(report_url);
   std::string api_key = google_apis::GetAPIKey();
-  if (!api_key.empty()) {
-    base::StringAppendF(&url, "?key=%s",
-                        net::EscapeQueryParamValue(api_key, true).c_str());
-  }
+  if (!api_key.empty())
+    url = url.Resolve("?key=" + net::EscapeQueryParamValue(api_key, true));
+
   return url;
 }
 }  // namespace safe_browsing

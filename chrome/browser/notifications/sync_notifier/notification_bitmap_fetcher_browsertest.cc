@@ -104,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
 
   NotificationBitmapFetcher fetcher(url, &delegate);
 
-  url_fetcher_factory_->SetFakeResponse(url.spec(), image_string, true);
+  url_fetcher_factory_->SetFakeResponse(url, image_string, true);
 
   // We expect that the image decoder will get called and return
   // an image in a callback to OnImageDecoded().
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
 
   NotificationBitmapFetcher fetcher(url, &delegate);
 
-  url_fetcher_factory_->SetFakeResponse(url.spec(), std::string(), false);
+  url_fetcher_factory_->SetFakeResponse(url, std::string(), false);
 
   fetcher.Start(browser()->profile());
 
@@ -170,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
   NotificationBitmapFetcherTestDelegate delegate(kAsyncCall);
   NotificationBitmapFetcher fetcher(url, &delegate);
   url_fetcher_factory_->SetFakeResponse(
-      url.spec(), std::string("Not a real bitmap"), true);
+      url, std::string("Not a real bitmap"), true);
 
   fetcher.Start(browser()->profile());
 

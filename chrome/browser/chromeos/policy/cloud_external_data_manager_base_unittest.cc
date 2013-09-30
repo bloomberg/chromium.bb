@@ -102,9 +102,9 @@ net::URLFetcher* FakeURLFetcherFactory::CreateURLFetcher(
 
 }  // namespace
 
-class CouldExternalDataManagerBaseTest : public testing::Test {
+class CloudExternalDataManagerBaseTest : public testing::Test {
  protected:
-  CouldExternalDataManagerBaseTest();
+  CloudExternalDataManagerBaseTest();
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
@@ -123,6 +123,10 @@ class CouldExternalDataManagerBaseTest : public testing::Test {
 
   void FetchAll();
 
+  void SetFakeResponse(const std::string& url,
+                       const std::string& repsonse_data,
+                       bool success);
+
   base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<ResourceCache> resource_cache_;
@@ -134,13 +138,13 @@ class CouldExternalDataManagerBaseTest : public testing::Test {
 
   std::map<int, std::string*> callback_data_;
 
-  DISALLOW_COPY_AND_ASSIGN(CouldExternalDataManagerBaseTest);
+  DISALLOW_COPY_AND_ASSIGN(CloudExternalDataManagerBaseTest);
 };
 
-CouldExternalDataManagerBaseTest::CouldExternalDataManagerBaseTest() {
+CloudExternalDataManagerBaseTest::CloudExternalDataManagerBaseTest() {
 }
 
-void CouldExternalDataManagerBaseTest::SetUp() {
+void CloudExternalDataManagerBaseTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   resource_cache_.reset(new ResourceCache(temp_dir_.path(),
                                           message_loop_.message_loop_proxy()));
@@ -166,13 +170,13 @@ void CouldExternalDataManagerBaseTest::SetUp() {
       base::MessageLoopProxy::current());
 }
 
-void CouldExternalDataManagerBaseTest::TearDown() {
+void CloudExternalDataManagerBaseTest::TearDown() {
   external_data_manager_.reset();
   base::RunLoop().RunUntilIdle();
   ResetCallbackData();
 }
 
-void CouldExternalDataManagerBaseTest::SetUpExternalDataManager() {
+void CloudExternalDataManagerBaseTest::SetUpExternalDataManager() {
   external_data_manager_.reset(new CloudExternalDataManagerBase(
       &kPolicyDefinitionList,
       message_loop_.message_loop_proxy(),
@@ -185,7 +189,7 @@ void CouldExternalDataManagerBaseTest::SetUpExternalDataManager() {
 }
 
 scoped_ptr<base::DictionaryValue>
-    CouldExternalDataManagerBaseTest::ConstructMetadata(
+    CloudExternalDataManagerBaseTest::ConstructMetadata(
         const std::string& url,
         const std::string& hash) {
   scoped_ptr<base::DictionaryValue> metadata(new base::DictionaryValue);
@@ -195,7 +199,7 @@ scoped_ptr<base::DictionaryValue>
   return metadata.Pass();
 }
 
-void CouldExternalDataManagerBaseTest::SetExternalDataReference(
+void CloudExternalDataManagerBaseTest::SetExternalDataReference(
     const std::string& policy,
     scoped_ptr<base::DictionaryValue> metadata) {
   cloud_policy_store_.policy_map_.Set(
@@ -208,30 +212,37 @@ void CouldExternalDataManagerBaseTest::SetExternalDataReference(
 }
 
 ExternalDataFetcher::FetchCallback
-CouldExternalDataManagerBaseTest::ConstructFetchCallback(int id) {
-  return base::Bind(&CouldExternalDataManagerBaseTest::OnFetchDone,
+CloudExternalDataManagerBaseTest::ConstructFetchCallback(int id) {
+  return base::Bind(&CloudExternalDataManagerBaseTest::OnFetchDone,
                     base::Unretained(this),
                     id);
 }
 
-void CouldExternalDataManagerBaseTest::ResetCallbackData() {
+void CloudExternalDataManagerBaseTest::ResetCallbackData() {
   STLDeleteValues(&callback_data_);
 }
 
-void CouldExternalDataManagerBaseTest::OnFetchDone(
+void CloudExternalDataManagerBaseTest::OnFetchDone(
     int id,
     scoped_ptr<std::string> data) {
   delete callback_data_[id];
   callback_data_[id] = data.release();
 }
 
-void CouldExternalDataManagerBaseTest::FetchAll() {
+void CloudExternalDataManagerBaseTest::FetchAll() {
   external_data_manager_->FetchAll();
+}
+
+void CloudExternalDataManagerBaseTest::SetFakeResponse(
+    const std::string& url,
+    const std::string& response_data,
+    bool success) {
+  fetcher_factory_.SetFakeResponse(GURL(url), response_data, success);
 }
 
 // Verifies that when no valid external data reference has been set for a
 // policy, the attempt to retrieve the external data fails immediately.
-TEST_F(CouldExternalDataManagerBaseTest, FailToFetchInvalid) {
+TEST_F(CloudExternalDataManagerBaseTest, FailToFetchInvalid) {
   external_data_manager_->Connect(request_content_getter_);
 
   // Attempt to retrieve external data for |kStringPolicy|, which is a string
@@ -270,9 +281,9 @@ TEST_F(CouldExternalDataManagerBaseTest, FailToFetchInvalid) {
 // Verifies that external data referenced by a policy is downloaded and cached
 // when first requested. Subsequent requests are served from the cache without
 // further download attempts.
-TEST_F(CouldExternalDataManagerBaseTest, DownloadAndCache) {
+TEST_F(CloudExternalDataManagerBaseTest, DownloadAndCache) {
   // Serve valid external data for |k10BytePolicy|.
-  fetcher_factory_.SetFakeResponse(k10BytePolicyURL, k10ByteData, true);
+  SetFakeResponse(k10BytePolicyURL, k10ByteData, true);
   external_data_manager_->Connect(request_content_getter_);
 
   // Retrieve external data for |k10BytePolicy|. Verify that a download happens
@@ -325,10 +336,10 @@ TEST_F(CouldExternalDataManagerBaseTest, DownloadAndCache) {
 // Verifies that a request to download and cache all external data referenced by
 // policies is carried out correctly. Subsequent requests for the data are
 // served from the cache without further download attempts.
-TEST_F(CouldExternalDataManagerBaseTest, DownloadAndCacheAll) {
+TEST_F(CloudExternalDataManagerBaseTest, DownloadAndCacheAll) {
   // Serve valid external data for |k10BytePolicy| and |k20BytePolicy|.
-  fetcher_factory_.SetFakeResponse(k10BytePolicyURL, k10ByteData, true);
-  fetcher_factory_.SetFakeResponse(k20BytePolicyURL, k20ByteData, true);
+  SetFakeResponse(k10BytePolicyURL, k10ByteData, true);
+  SetFakeResponse(k20BytePolicyURL, k20ByteData, true);
   external_data_manager_->Connect(request_content_getter_);
 
   // Request that external data referenced by all policies be downloaded.
@@ -386,7 +397,7 @@ TEST_F(CouldExternalDataManagerBaseTest, DownloadAndCacheAll) {
 // Verifies that when the external data referenced by a policy is not present in
 // the cache and downloads are not allowed, a request to retrieve the data is
 // enqueued and carried out when downloads become possible.
-TEST_F(CouldExternalDataManagerBaseTest, DownloadAfterConnect) {
+TEST_F(CloudExternalDataManagerBaseTest, DownloadAfterConnect) {
   // Attempt to retrieve external data for |k10BytePolicy|. Verify that the
   // callback is not invoked as the request remains pending.
   external_data_manager_->Fetch(k10BytePolicy, ConstructFetchCallback(0));
@@ -396,7 +407,7 @@ TEST_F(CouldExternalDataManagerBaseTest, DownloadAfterConnect) {
 
   // Serve valid external data for |k10BytePolicy| and allow the
   // external_data_manager_ to perform downloads.
-  fetcher_factory_.SetFakeResponse(k10BytePolicyURL, k10ByteData, true);
+  SetFakeResponse(k10BytePolicyURL, k10ByteData, true);
   external_data_manager_->Connect(request_content_getter_);
 
   // Verify that a download happens and the callback is invoked with the
@@ -411,10 +422,10 @@ TEST_F(CouldExternalDataManagerBaseTest, DownloadAfterConnect) {
 // Verifies that when the external data referenced by a policy is not present in
 // the cache and cannot be downloaded at this time, a request to retrieve the
 // data is enqueued to be retried later.
-TEST_F(CouldExternalDataManagerBaseTest, DownloadError) {
+TEST_F(CloudExternalDataManagerBaseTest, DownloadError) {
   // Make attempts to download the external data for |k20BytePolicy| fail with
   // an error.
-  fetcher_factory_.SetFakeResponse(k20BytePolicyURL, std::string(), false);
+  SetFakeResponse(k20BytePolicyURL, std::string(), false);
   external_data_manager_->Connect(request_content_getter_);
 
   // Attempt to retrieve external data for |k20BytePolicy|. Verify that the
@@ -449,7 +460,7 @@ TEST_F(CouldExternalDataManagerBaseTest, DownloadError) {
 
   // Serve external data for |k20BytePolicy| that does not match the hash
   // specified in its current external data reference.
-  fetcher_factory_.SetFakeResponse(k20BytePolicyURL, k10ByteData, true);
+  SetFakeResponse(k20BytePolicyURL, k10ByteData, true);
 
   // Attempt to retrieve external data for |k20BytePolicy| again. Verify that
   // no callback is invoked still as the downloaded succeeds but returns data
@@ -487,7 +498,7 @@ TEST_F(CouldExternalDataManagerBaseTest, DownloadError) {
 // Verifies that when the external data referenced by a policy is present in the
 // cache, a request to retrieve it is served from the cache without any download
 // attempts.
-TEST_F(CouldExternalDataManagerBaseTest, LoadFromCache) {
+TEST_F(CloudExternalDataManagerBaseTest, LoadFromCache) {
   // Store valid external data for |k10BytePolicy| in the cache.
   external_data_manager_.reset();
   base::RunLoop().RunUntilIdle();
@@ -513,7 +524,7 @@ TEST_F(CouldExternalDataManagerBaseTest, LoadFromCache) {
 
 // Verifies that cache entries which do not correspond to the external data
 // referenced by any policy are pruned on startup.
-TEST_F(CouldExternalDataManagerBaseTest, PruneCacheOnStartup) {
+TEST_F(CloudExternalDataManagerBaseTest, PruneCacheOnStartup) {
   external_data_manager_.reset();
   base::RunLoop().RunUntilIdle();
   scoped_ptr<CloudExternalDataStore>
@@ -560,7 +571,7 @@ TEST_F(CouldExternalDataManagerBaseTest, PruneCacheOnStartup) {
 
 // Verifies that when the external data referenced by a policy is present in the
 // cache and the reference changes, the old data is pruned from the cache.
-TEST_F(CouldExternalDataManagerBaseTest, PruneCacheOnChange) {
+TEST_F(CloudExternalDataManagerBaseTest, PruneCacheOnChange) {
   // Store valid external data for |k20BytePolicy| in the cache.
   external_data_manager_.reset();
   base::RunLoop().RunUntilIdle();
@@ -596,7 +607,7 @@ TEST_F(CouldExternalDataManagerBaseTest, PruneCacheOnChange) {
 }
 
 // Verifies that corrupt cache entries are detected and deleted when accessed.
-TEST_F(CouldExternalDataManagerBaseTest, CacheCorruption) {
+TEST_F(CloudExternalDataManagerBaseTest, CacheCorruption) {
   external_data_manager_.reset();
   base::RunLoop().RunUntilIdle();
   scoped_ptr<CloudExternalDataStore>
@@ -618,7 +629,7 @@ TEST_F(CouldExternalDataManagerBaseTest, CacheCorruption) {
   SetUpExternalDataManager();
   // Serve external data for |k10BytePolicy| that exceeds the maximal external
   // data size allowed for that policy.
-  fetcher_factory_.SetFakeResponse(k10BytePolicyURL, k20ByteData, true);
+  SetFakeResponse(k10BytePolicyURL, k20ByteData, true);
   external_data_manager_->Connect(request_content_getter_);
 
   // Modify the external data reference for |k10BytePolicy| to match the
@@ -637,7 +648,7 @@ TEST_F(CouldExternalDataManagerBaseTest, CacheCorruption) {
   ResetCallbackData();
 
   // Serve valid external data for |k20BytePolicy|.
-  fetcher_factory_.SetFakeResponse(k20BytePolicyURL, k20ByteData, true);
+  SetFakeResponse(k20BytePolicyURL, k20ByteData, true);
 
   // Retrieve external data for |k20BytePolicy|. Verify that the callback is
   // invoked with the valid downloaded data, not the invalid data in the cache.
@@ -675,11 +686,11 @@ TEST_F(CouldExternalDataManagerBaseTest, CacheCorruption) {
 // Verifies that when the external data reference for a policy changes while a
 // download of the external data for that policy is pending, the download is
 // immediately retried using the new reference.
-TEST_F(CouldExternalDataManagerBaseTest, PolicyChangeWhileDownloadPending) {
+TEST_F(CloudExternalDataManagerBaseTest, PolicyChangeWhileDownloadPending) {
   // Make attempts to download the external data for |k10BytePolicy| and
   // |k20BytePolicy| fail with an error.
-  fetcher_factory_.SetFakeResponse(k10BytePolicyURL, std::string(), false);
-  fetcher_factory_.SetFakeResponse(k20BytePolicyURL, std::string(), false);
+  SetFakeResponse(k10BytePolicyURL, std::string(), false);
+  SetFakeResponse(k20BytePolicyURL, std::string(), false);
   external_data_manager_->Connect(request_content_getter_);
 
   // Attempt to retrieve external data for |k10BytePolicy| and |k20BytePolicy|.
@@ -704,7 +715,7 @@ TEST_F(CouldExternalDataManagerBaseTest, PolicyChangeWhileDownloadPending) {
 
   // Serve valid external data for |k20BytePolicy|.
   fetcher_factory_.ClearFakeResponses();
-  fetcher_factory_.SetFakeResponse(k20BytePolicyURL, k10ByteData, true);
+  SetFakeResponse(k20BytePolicyURL, k10ByteData, true);
 
   // Modify the external data reference for |k20BytePolicy| to match the
   // external data now being served. Verify that the callback is invoked with

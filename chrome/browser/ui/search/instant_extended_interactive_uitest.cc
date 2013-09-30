@@ -512,7 +512,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   content::WindowedNotificationObserver observer_2(
       chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
       content::NotificationService::AllSources());
-  SetOmniboxText(instant_url().spec() + "#q=puppies");
+  SetOmniboxText(instant_url().Resolve("#q=puppies").spec());
   PressEnterAndWaitForNavigation();
   observer_2.Wait();
 
@@ -918,7 +918,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, SetPrefetchQuery) {
   // Set the fake response for suggest request. Response has prefetch details.
   // Ensure that the page received the prefetch query.
   fake_factory()->SetFakeResponse(
-      instant_url().spec() + "#q=pupp",
+      instant_url().Resolve("#q=pupp"),
       "[\"pupp\",[\"puppy\", \"puppies\"],[],[],"
       "{\"google:clientdata\":{\"phi\": 0},"
           "\"google:suggesttype\":[\"QUERY\", \"QUERY\"],"
@@ -964,7 +964,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, ClearPrefetchedResults) {
   // details. Ensure that the page received a blank query to clear the
   // prefetched results.
   fake_factory()->SetFakeResponse(
-      instant_url().spec() + "#q=dogs",
+      instant_url().Resolve("#q=dogs"),
       "[\"dogs\",[\"https://dogs.com\"],[],[],"
           "{\"google:suggesttype\":[\"NAVIGATION\"],"
           "\"google:suggestrelevance\":[2]}]",

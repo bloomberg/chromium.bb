@@ -286,7 +286,7 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   static bool ModelHasValidHashIds(const ClientSideModel& model);
 
   // Returns the URL that will be used for phishing requests.
-  static std::string GetClientReportUrl(const std::string& report_url);
+  static GURL GetClientReportUrl(const std::string& report_url);
 
   // Whether the service is running or not.  When the service is not running,
   // it won't download the model nor report detected phishing URLs.
@@ -343,6 +343,6 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionService);
 };
-}  // namepsace safe_browsing
+}  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_CLIENT_SIDE_DETECTION_SERVICE_H_

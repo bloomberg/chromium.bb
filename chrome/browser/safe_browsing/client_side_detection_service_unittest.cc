@@ -23,10 +23,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::StrictMock;
+using ::testing::_;
 using content::BrowserThread;
 
 namespace safe_browsing {
@@ -106,7 +106,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
   }
 
   void SetModelFetchResponse(std::string response_data, bool success) {
-    factory_->SetFakeResponse(ClientSideDetectionService::kClientModelUrl,
+    factory_->SetFakeResponse(GURL(ClientSideDetectionService::kClientModelUrl),
                               response_data, success);
   }
 

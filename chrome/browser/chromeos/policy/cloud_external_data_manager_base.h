@@ -64,7 +64,7 @@ class CloudExternalDataManagerBase : public CloudExternalDataManager,
   static void SetMaxExternalDataSizeForTesting(int max_size);
 
  protected:
-  friend class CouldExternalDataManagerBaseTest;
+  friend class CloudExternalDataManagerBaseTest;
 
   // Try to download and cache all external data referenced by policies in
   // |policy_store_|.

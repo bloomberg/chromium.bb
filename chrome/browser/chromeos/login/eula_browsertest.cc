@@ -19,7 +19,8 @@ using ::testing::_;
 
 namespace {
 
-const char kEULAURL[] = "https://www.google.com/intl/en-US/chrome/eula_text.html";
+const char kEULAURL[] =
+    "https://www.google.com/intl/en-US/chrome/eula_text.html";
 const char kFakeOnlineEULA[] = "No obligations at all";
 const char kOfflineEULAWarning[] = "A copy of the Google Terms of Service";
 
@@ -56,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(TermsOfServiceProcessBrowserTest, LoadOnline) {
       NULL,
       base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
                  base::Unretained(&url_callback)));
-  factory.SetFakeResponse(kEULAURL, kFakeOnlineEULA, true);
+  factory.SetFakeResponse(GURL(kEULAURL), kFakeOnlineEULA, true);
   EXPECT_CALL(url_callback, OnRequestCreate(GURL(kEULAURL), _))
       .Times(Exactly(1))
       .WillRepeatedly(Invoke(AddMimeHeader));
@@ -76,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(TermsOfServiceProcessBrowserTest, LoadOnline) {
 // Make sure offline version is shown.
 IN_PROC_BROWSER_TEST_F(TermsOfServiceProcessBrowserTest, LoadOffline) {
   net::FakeURLFetcherFactory factory(NULL);
-  factory.SetFakeResponse(kEULAURL, "", false);
+  factory.SetFakeResponse(GURL(kEULAURL), "", false);
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUITermsURL));
   content::WebContents* web_contents =

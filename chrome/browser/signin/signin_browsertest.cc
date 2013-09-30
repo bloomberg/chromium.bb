@@ -28,7 +28,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 
 namespace {
-  const char kNonSigninURL[] = "www.google.com";
+const char kNonSigninURL[] = "www.google.com";
 }
 
 class SigninBrowserTest : public InProcessBrowserTest {
@@ -53,11 +53,11 @@ class SigninBrowserTest : public InProcessBrowserTest {
   virtual void SetUp() OVERRIDE {
     factory_.reset(new net::URLFetcherImplFactory());
     fake_factory_.reset(new net::FakeURLFetcherFactory(factory_.get()));
-    fake_factory_->SetFakeResponseForURL(
+    fake_factory_->SetFakeResponse(
         GaiaUrls::GetInstance()->service_login_url(),
         std::string(),
         true);
-    fake_factory_->SetFakeResponse(kNonSigninURL, std::string(), true);
+    fake_factory_->SetFakeResponse(GURL(kNonSigninURL), std::string(), true);
     // Yield control back to the InProcessBrowserTest framework.
     InProcessBrowserTest::SetUp();
   }

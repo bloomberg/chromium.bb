@@ -171,7 +171,7 @@ class DownloadProtectionService {
       std::vector<std::string>* whitelist_strings);
 
   // Returns the URL that will be used for download requests.
-  static std::string GetDownloadRequestUrl();
+  static GURL GetDownloadRequestUrl();
 
   // These pointers may be NULL if SafeBrowsing is disabled.
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
