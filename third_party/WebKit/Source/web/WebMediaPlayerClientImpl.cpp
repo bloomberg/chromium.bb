@@ -7,7 +7,6 @@
 
 #include "InbandTextTrackPrivateImpl.h"
 #include "MediaSourcePrivateImpl.h"
-#include "WebAudioSourceProvider.h"
 #include "WebDocument.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
@@ -30,6 +29,7 @@
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
+#include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebCString.h"

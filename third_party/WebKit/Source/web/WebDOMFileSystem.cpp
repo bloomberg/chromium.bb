@@ -34,7 +34,7 @@
 #include "V8DOMFileSystem.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "modules/filesystem/DOMFileSystem.h"
-#include "v8/include/v8.h"
+#include <v8.h>
 
 using namespace WebCore;
 

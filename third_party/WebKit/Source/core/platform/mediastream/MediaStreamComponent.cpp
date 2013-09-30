@@ -36,7 +36,7 @@
 #include "core/platform/UUID.h"
 #include "core/platform/audio/AudioBus.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
-#include "public/web/WebAudioSourceProvider.h"
+#include "public/platform/WebAudioSourceProvider.h"
 
 namespace WebCore {
 

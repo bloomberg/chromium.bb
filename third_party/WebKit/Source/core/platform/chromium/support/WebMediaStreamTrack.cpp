@@ -28,10 +28,10 @@
 
 #include "core/platform/mediastream/MediaStreamComponent.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
+#include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebString.h"
-#include "public/web/WebAudioSourceProvider.h"
 #include "wtf/Vector.h"
 
 using namespace WebCore;
