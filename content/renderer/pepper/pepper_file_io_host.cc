@@ -398,7 +398,8 @@ int32_t PepperFileIOHost::OnHostMsgRequestOSFileHandle(
     return PP_ERROR_FAILED;
 
   // Whitelist to make it privately accessible.
-  if (!GetContentClient()->renderer()->IsPluginAllowedToCallRequestOSFileHandle(
+  if (!host()->permissions().HasPermission(ppapi::PERMISSION_PRIVATE) &&
+      !GetContentClient()->renderer()->IsPluginAllowedToCallRequestOSFileHandle(
           renderer_ppapi_host_->GetContainerForInstance(pp_instance())))
     return PP_ERROR_NOACCESS;
 
