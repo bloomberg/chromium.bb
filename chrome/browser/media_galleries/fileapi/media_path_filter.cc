@@ -78,6 +78,7 @@ bool IsUnsupportedExtension(const base::FilePath::StringType& extension) {
 
 MediaPathFilter::MediaPathFilter()
     : initialized_(false) {
+  sequence_checker_.DetachFromSequence();
 }
 
 MediaPathFilter::~MediaPathFilter() {
@@ -91,13 +92,12 @@ bool MediaPathFilter::Match(const base::FilePath& path) {
 }
 
 void MediaPathFilter::EnsureInitialized() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (initialized_)
     return;
 
-  base::AutoLock lock(initialization_lock_);
-  if (initialized_)
-    return;
-
+  // This may require I/O, so doing this in the ctor and removing
+  // |initialized_| would result in a ThreadRestrictions failure.
   net::GetExtensionsForMimeType("image/*", &media_file_extensions_);
   net::GetExtensionsForMimeType("audio/*", &media_file_extensions_);
   net::GetExtensionsForMimeType("video/*", &media_file_extensions_);

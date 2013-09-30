@@ -8,11 +8,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/synchronization/lock.h"
-
-namespace base {
-class FilePath;
-}
+#include "base/sequence_checker.h"
 
 // This class holds the list of file path extensions that we should expose on
 // media filesystem.
@@ -27,8 +23,9 @@ class MediaPathFilter {
 
   void EnsureInitialized();
 
+  // Checks |initialized_| is only accessed on one sequence.
+  base::SequenceChecker sequence_checker_;
   bool initialized_;
-  base::Lock initialization_lock_;
   MediaFileExtensionList media_file_extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPathFilter);
