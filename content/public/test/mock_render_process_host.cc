@@ -26,6 +26,7 @@ MockRenderProcessHost::MockRenderProcessHost(
           factory_(NULL),
           id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
           browser_context_(browser_context),
+          prev_routing_id_(0),
           fast_shutdown_started_(false) {
   // Child process security operations can't be unit tested unless we add
   // ourselves as an existing child process.
@@ -51,8 +52,7 @@ bool MockRenderProcessHost::Init() {
 }
 
 int MockRenderProcessHost::GetNextRoutingID() {
-  static int prev_routing_id = 0;
-  return ++prev_routing_id;
+  return ++prev_routing_id_;
 }
 
 void MockRenderProcessHost::AddRoute(

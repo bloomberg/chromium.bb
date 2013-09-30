@@ -97,6 +97,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   BrowserContext* browser_context_;
 
   IDMap<RenderWidgetHost> render_widget_hosts_;
+  int prev_routing_id_;
   IDMap<IPC::Listener> listeners_;
   bool fast_shutdown_started_;
 
