@@ -9,7 +9,10 @@
 // HyperlinkTextView is an NSTextView subclass for unselectable, linkable text.
 // This subclass doesn't show the text caret or IBeamCursor, whereas the base
 // class NSTextView displays both with full keyboard accessibility enabled.
-@interface HyperlinkTextView : NSTextView
+@interface HyperlinkTextView : NSTextView {
+ @private
+  BOOL acceptsFirstResponder_;
+}
 
 // Convenience function that sets the |HyperlinkTextView| contents to the
 // specified |message| with a hypertext style |link| inserted at |linkOffset|.
@@ -32,4 +35,8 @@
 - (void)addLinkRange:(NSRange)range
             withName:(id)name
            linkColor:(NSColor*)linkColor;
+
+// This is YES (by default) if the view accepts first responder status.
+- (void)setAcceptsFirstResponder:(BOOL)acceptsFirstResponder;
+
 @end
