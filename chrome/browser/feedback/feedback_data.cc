@@ -32,6 +32,7 @@ const size_t kFeedbackMaxLength = 4 * 1024;
 const size_t kFeedbackMaxLineCount = 40;
 
 const char kTraceFilename[] = "tracing.log\n";
+const char kPerformanceCategoryTag[] = "Performance";
 
 // Converts the system logs into a string that we can compress and send
 // with the report. This method only converts those logs that we want in
@@ -138,6 +139,8 @@ void FeedbackData::OnGetTraceData(
   set_attached_filename(kTraceFilename);
   set_attached_filedata(data.Pass());
   trace_id_ = 0;
+
+  set_category_tag(kPerformanceCategoryTag);
 
   SendReport();
 }
