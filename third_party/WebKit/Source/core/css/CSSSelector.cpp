@@ -812,6 +812,7 @@ static bool validateSubSelector(const CSSSelector* selector)
     case CSSSelector::PseudoFirstOfType:
     case CSSSelector::PseudoLastOfType:
     case CSSSelector::PseudoOnlyOfType:
+    case CSSSelector::PseudoHost:
         return true;
     default:
         return false;
@@ -837,6 +838,18 @@ bool CSSSelector::isCompound() const
     }
 
     return true;
+}
+
+bool CSSSelector::hasHostPseudoClass() const
+{
+    if (!isCompound())
+        return false;
+
+    for (const CSSSelector* subSelector = this; subSelector; subSelector = subSelector->tagHistory()) {
+        if (subSelector->isHostPseudoClass())
+            return true;
+    }
+    return false;
 }
 
 bool CSSSelector::parseNth() const

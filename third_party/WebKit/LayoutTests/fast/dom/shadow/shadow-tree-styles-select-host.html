@@ -25,7 +25,7 @@ function cleanUp() {
     sandbox.innerHTML = '';
 }
 
-debug('Test that styles in a shadow tree match the shadow host.');
+debug('Test that selectors in a shadow tree cannot match without :host.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
@@ -36,7 +36,7 @@ sandbox.appendChild(
         createDOM('div', {'id': 'host-child'},
             document.createTextNode('Hello, Host!'))));
 
-shouldHaveBorderColor('host', 'rgb(0, 128, 0)');
+shouldHaveBorderColor('host', 'rgb(0, 0, 0)');
 shouldHaveBorderColor('host-child', 'rgb(0, 0, 0)');
 
 cleanUp();
@@ -45,12 +45,12 @@ debug('Test that styles in a containing treescope wins if specificities are the 
 
 sandbox.appendChild(
     createDOM('style', {},
-        document.createTextNode('div { border: 1px solid green; }')));
+        document.createTextNode('div:last-child { border: 1px solid green; }')));
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div { border: 1px solid red; }')),
+                document.createTextNode('div:host { border: 1px solid red; }')),
             createDOM('content', {})),
         createDOM('div', {'id': 'host-child'},
             document.createTextNode('Hello, Host!'))));
@@ -68,7 +68,7 @@ sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div#host { border: 1px solid green; }')),
+                document.createTextNode('div:host { border: 1px solid green; }')),
             createDOM('content', {})),
         createDOM('div', {'id': 'host-child'},
             document.createTextNode('Hello, Host!'))));
@@ -94,7 +94,7 @@ sandbox.appendChild(
 
 shouldHaveBorderColor('divA', 'rgb(0, 0, 0)');
 shouldHaveBorderColor('divA-child', 'rgb(0, 0, 0)');
-shouldHaveBorderColor('host', 'rgb(0, 128, 0)');
+shouldHaveBorderColor('host', 'rgb(0, 0, 0)');
 shouldHaveBorderColor('host/divC', 'rgb(255, 0, 0)');
 shouldHaveBorderColor('host-child', 'rgb(0, 0, 0)');
 
@@ -131,7 +131,7 @@ sandbox.appendChild(
             createDOM('div', {'id': 'target'},
                 createShadowRoot(
                     createDOM('style', {},
-                        document.createTextNode('div { border: 1px solid green; }')),
+                        document.createTextNode('div:host { border: 1px solid green; }')),
                     createDOM('content', {})),
                 createDOM('div', {'id': 'host-child'},
                     document.createTextNode('Hello, Host!'))))));
@@ -144,15 +144,15 @@ debug('Test the case where there exists a style scoped in a contanining treescop
 
 sandbox.appendChild(
     createDOM('style', {},
-        document.createTextNode('div { border: 1px solid blue; }')));
+        document.createTextNode('div:last-child { border: 1px solid blue; }')));
 sandbox.appendChild(
     createDOM('div', {},
         createDOM('style', {'scoped': 'scoped'},
-            document.createTextNode('div { border: 1px solid red }')),
+            document.createTextNode('div:last-child { border: 1px solid red }')),
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('style', {},
-                    document.createTextNode('div { border: 1px solid green; }')),
+                    document.createTextNode('div:host { border: 1px solid green; }')),
                 createDOM('content', {})),
             createDOM('div', {'id': 'host-child'},
                 document.createTextNode('Hello, Host!')))));
@@ -168,7 +168,7 @@ sandbox.appendChild(
     createDOM('div', {'id': 'hostA'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div { border: 1px solid red; }')),
+                document.createTextNode('div:host { border: 1px solid red; }')),
             createDOM('content', {})),
         createDOM('div', {})));
 
@@ -176,7 +176,7 @@ sandbox.appendChild(
     createDOM('div', {'id': 'hostB'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode('div { border: 1px solid green; }')),
+                document.createTextNode('div:host { border: 1px solid green; }')),
             createDOM('content', {})),
         createDOM('div', {})));
 

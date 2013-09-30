@@ -234,6 +234,8 @@ inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const Co
         return false;
     if (m_pseudoStyleRequest.pseudoId != NOPSEUDO && m_pseudoStyleRequest.pseudoId != dynamicPseudo)
         return false;
+    if (m_behaviorAtBoundary == SelectorChecker::ScopeIsShadowHost && scope == m_context.element() && !ruleData.selector()->hasHostPseudoClass())
+        return false;
     return true;
 }
 
