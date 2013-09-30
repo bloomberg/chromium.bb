@@ -60,28 +60,32 @@ private:
 
 class CSSAnimationUpdate FINAL {
 public:
-    void startAnimation(AtomicString& animationName, PassRefPtr<InertAnimation> animation)
+    void startAnimation(AtomicString& animationName, const HashSet<RefPtr<InertAnimation> >& animations)
     {
         NewAnimation newAnimation;
         newAnimation.name = animationName;
-        newAnimation.animation = animation;
+        newAnimation.animations = animations;
         m_newAnimations.append(newAnimation);
     }
     // Returns whether player has been cancelled and should be filtered during style application.
     bool isCancelled(const Player* player) const { return m_cancelledAnimationPlayers.contains(player); }
-    void cancelAnimation(const AtomicString& name, const Player* player)
+    void cancelAnimation(const AtomicString& name, const HashSet<RefPtr<Player> >& players)
     {
         m_cancelledAnimationNames.append(name);
-        m_cancelledAnimationPlayers.add(player);
+        for (HashSet<RefPtr<Player> >::const_iterator iter = players.begin(); iter != players.end(); ++iter)
+            m_cancelledAnimationPlayers.add(iter->get());
     }
     struct NewAnimation {
         AtomicString name;
-        RefPtr<InertAnimation> animation;
+        HashSet<RefPtr<InertAnimation> > animations;
     };
     const Vector<NewAnimation>& newAnimations() const { return m_newAnimations; }
     const Vector<AtomicString>& cancelledAnimationNames() const { return m_cancelledAnimationNames; }
 private:
-    // Order is significant since it defines the order in which new animations will be started.
+    // Order is significant since it defines the order in which new animations
+    // will be started. Note that there may be multiple animations present
+    // with the same name, due to the way in which we split up animations with
+    // incomplete keyframes.
     Vector<NewAnimation> m_newAnimations;
     Vector<AtomicString> m_cancelledAnimationNames;
     HashSet<const Player*> m_cancelledAnimationPlayers;
@@ -97,7 +101,11 @@ public:
     bool isEmpty() const { return m_animations.isEmpty() && !m_pendingUpdate; }
     void cancel();
 private:
-    typedef HashMap<AtomicString, RefPtr<Player> > AnimationMap;
+    // Note that a single animation name may map to multiple players due to
+    // the way in which we split up animations with incomplete keyframes.
+    // FIXME: Once the Web Animations model supports groups, we could use a
+    // ParGroup to drive multiple animations from a single Player.
+    typedef HashMap<AtomicString, HashSet<RefPtr<Player> > > AnimationMap;
     AnimationMap m_animations;
     OwnPtr<CSSAnimationUpdate> m_pendingUpdate;
     class EventDelegate FINAL : public TimedItem::EventDelegate {

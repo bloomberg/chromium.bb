@@ -184,8 +184,10 @@ PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const Element* ele
             if (!keyframes.isEmpty()) {
                 if (!update)
                     update = adoptPtr(new CSSAnimationUpdate());
+                HashSet<RefPtr<InertAnimation> > animations;
                 // FIXME: crbug.com/268791 - Keyframes are already normalized, perhaps there should be a flag on KeyframeAnimationEffect to skip normalization.
-                update->startAnimation(animationName, InertAnimation::create(KeyframeAnimationEffect::create(keyframes), timing).get());
+                animations.add(InertAnimation::create(KeyframeAnimationEffect::create(keyframes), timing));
+                update->startAnimation(animationName, animations);
             }
         }
     }
@@ -208,23 +210,33 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 
     OwnPtr<CSSAnimationUpdate> update = m_pendingUpdate.release();
 
-    for (Vector<AtomicString>::const_iterator iter = update->cancelledAnimationNames().begin(); iter != update->cancelledAnimationNames().end(); ++iter)
-        m_animations.take(*iter)->cancel();
+    for (Vector<AtomicString>::const_iterator iter = update->cancelledAnimationNames().begin(); iter != update->cancelledAnimationNames().end(); ++iter) {
+        const HashSet<RefPtr<Player> >& players = m_animations.take(*iter);
+        for (HashSet<RefPtr<Player> >::const_iterator iter = players.begin(); iter != players.end(); ++iter)
+            (*iter)->cancel();
+    }
 
     // FIXME: Apply updates to play-state.
 
     for (Vector<CSSAnimationUpdate::NewAnimation>::const_iterator iter = update->newAnimations().begin(); iter != update->newAnimations().end(); ++iter) {
         OwnPtr<CSSAnimations::EventDelegate> eventDelegate = adoptPtr(new EventDelegate(element, iter->name));
-        RefPtr<Animation> animation = Animation::create(element, iter->animation->effect(), iter->animation->specified(), eventDelegate.release());
-        RefPtr<Player> player = element->document().timeline()->play(animation.get());
-        m_animations.set(iter->name, player.get());
+        HashSet<RefPtr<Player> > players;
+        for (HashSet<RefPtr<InertAnimation> >::const_iterator animationsIter = iter->animations.begin(); animationsIter != iter->animations.end(); ++animationsIter) {
+            const InertAnimation* inertAnimation = animationsIter->get();
+            RefPtr<Animation> animation = Animation::create(element, inertAnimation->effect(), inertAnimation->specified(), eventDelegate.release());
+            players.add(element->document().timeline()->play(animation.get()));
+        }
+        m_animations.set(iter->name, players);
     }
 }
 
 void CSSAnimations::cancel()
 {
-    for (AnimationMap::iterator iter = m_animations.begin(); iter != m_animations.end(); ++iter)
-        iter->value->cancel();
+    for (AnimationMap::iterator iter = m_animations.begin(); iter != m_animations.end(); ++iter) {
+        const HashSet<RefPtr<Player> >& players = iter->value;
+        for (HashSet<RefPtr<Player> >::const_iterator animationsIter = players.begin(); animationsIter != players.end(); ++animationsIter)
+            (*animationsIter)->cancel();
+    }
 
     m_animations.clear();
     m_pendingUpdate = nullptr;

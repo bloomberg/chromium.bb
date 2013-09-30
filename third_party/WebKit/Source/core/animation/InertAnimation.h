@@ -42,7 +42,7 @@ class InertAnimation FINAL : public TimedItem {
 public:
     static PassRefPtr<InertAnimation> create(PassRefPtr<AnimationEffect>, const Timing&);
     PassOwnPtr<AnimationEffect::CompositableValueMap> sample();
-    AnimationEffect* effect() { return m_effect.get(); }
+    AnimationEffect* effect() const { return m_effect.get(); }
 
 protected:
     virtual void updateChildrenAndEffects(bool) const OVERRIDE { };

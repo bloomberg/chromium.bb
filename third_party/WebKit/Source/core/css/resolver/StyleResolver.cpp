@@ -1220,20 +1220,22 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Doc
     //     applyAnimatedProperties(state, resolved);
     const Vector<CSSAnimationUpdate::NewAnimation>& newAnimations = update->newAnimations();
     for (size_t i = 0; i < newAnimations.size(); ++i) {
-        RefPtr<InertAnimation> animation = newAnimations.at(i).animation;
-        OwnPtr<AnimationEffect::CompositableValueMap> compositableValues = animation->sample();
-        if (!compositableValues)
-            continue;
-        for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues->begin(); iter != compositableValues->end(); ++iter) {
-            CSSPropertyID property = iter->key;
-            if (!isPropertyForPass<pass>(property))
+        const HashSet<RefPtr<InertAnimation> >& animations = newAnimations.at(i).animations;
+        for (HashSet<RefPtr<InertAnimation> >::const_iterator animationsIter = animations.begin(); animationsIter != animations.end(); ++animationsIter) {
+            OwnPtr<AnimationEffect::CompositableValueMap> compositableValues = (*animationsIter)->sample();
+            if (!compositableValues)
                 continue;
-            RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(AnimatableValue::neutralValue());
-            if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
-                state.setLineHeightValue(toAnimatableNumber(animatableValue.get())->toCSSValue().get());
-            else
-                AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
-            didApply = true;
+            for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues->begin(); iter != compositableValues->end(); ++iter) {
+                CSSPropertyID property = iter->key;
+                if (!isPropertyForPass<pass>(property))
+                    continue;
+                RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(AnimatableValue::neutralValue());
+                if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
+                    state.setLineHeightValue(toAnimatableNumber(animatableValue.get())->toCSSValue().get());
+                else
+                    AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
+                didApply = true;
+            }
         }
     }
     return didApply;
