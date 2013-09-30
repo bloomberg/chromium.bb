@@ -1056,6 +1056,14 @@ def GetPreferredTrySlaves(project, change):
   if any(re.search('[/_](aura|chromeos)', f) for f in files):
     trybots += ['linux_chromeos_clang:compile', 'linux_chromeos_asan']
 
+  # If there are gyp changes to base, build, or chromeos, run a full cros build
+  # in addition to the shorter linux_chromeos build. Changes to high level gyp
+  # files have a much higher chance of breaking the cros build, which is
+  # differnt from the linux_chromeos build that most chrome developers test
+  # with.
+  if any(re.search('^(base|build|chromeos).*\.gypi?$', f) for f in files):
+    trybots += ['cros_x86']
+
   # The AOSP bot doesn't build the chrome/ layer, so ignore any changes to it
   # unless they're .gyp(i) files as changes to those files can break the gyp
   # step on that bot.
