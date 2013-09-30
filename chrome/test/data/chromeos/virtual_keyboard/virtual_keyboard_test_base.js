@@ -54,6 +54,7 @@ TestRunner.prototype = {
 
 var testRunner;
 var mockController;
+var mockTimer;
 
 /**
  * Create mocks for the virtualKeyboardPrivate API. Any tests that trigger API
@@ -62,6 +63,10 @@ var mockController;
 function setUp() {
   testRunner = new TestRunner();
   mockController = new MockController();
+  mockTimer = new MockTimer();
+
+  mockTimer.install();
+
   mockController.createFunctionMock(chrome.virtualKeyboardPrivate,
                                     'insertText');
 
@@ -97,6 +102,7 @@ function setUp() {
 function tearDown() {
   mockController.verifyMocks();
   mockController.reset();
+  mockTimer.uninstall();
 }
 
 /**

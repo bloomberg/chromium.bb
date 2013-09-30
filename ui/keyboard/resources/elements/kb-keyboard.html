@@ -514,7 +514,7 @@
         // Keyset transtion key.
         if (toKeyset) {
           this.keyset = toKeyset;
-          this.querySelector('#' + this.layout + '-' + this.keyset).nextKeyset =
+          this.querySelector('#' + this.activeKeysetId).nextKeyset =
               detail.nextKeyset;
 
           // Locks the keyset before removing active to prevent flicker.
@@ -560,10 +560,6 @@
             }
           }
         }
-        this.classList.remove('caps-locked');
-        this.shift = this.querySelector('kb-shift-key');
-        if(this.shift)
-          this.shift.reset();
       },
 
       /**
@@ -572,6 +568,14 @@
        */
       get initialized() {
         return this.isReady;
+      },
+
+      /**
+       * Id for the active keyset.
+       * @type {string}
+       */
+      get activeKeysetId() {
+        return this.layout + '-' + this.keyset;
       },
 
       /**
@@ -601,6 +605,10 @@
              keysetsLoaded = true;
              if (keysets[i].isDefault) {
                this.keyset = matches[REGEX_KEYSET_INDEX];
+               this.classList.remove('caps-locked');
+               this.shift = this.querySelector('kb-shift-key');
+               if (this.shift)
+                 this.shift.reset();
                this.isReady = true;
                this.fire('stateChange', {
                  state: 'keysetLoaded',
