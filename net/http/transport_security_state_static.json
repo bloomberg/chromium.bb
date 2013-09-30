@@ -645,6 +645,9 @@
     { "name": "crowdcurity.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "saturngames.co.uk", "include_subdomains": true, "mode": "force-https" },
     { "name": "strongest-privacy.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "ecosystem.atlassian.net", "include_subdomains": true, "mode": "force-https" },
+    { "name": "id.atlassian.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "bitbucket.org", "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
