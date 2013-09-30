@@ -1295,3 +1295,6 @@ crbug.com/299819 inspector/console/console-timeline.html [ Failure Pass Timeout 
 
 # Flaky.
 crbug.com/300025 [ Win7 Debug ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Timeout Pass ]
+
+# Crashing, appears to be the result of http://src.chromium.org/viewvc/blink?revision=158503
+crbug.com/301668 [ Debug ] accessibility/crash-adopt-node-from-new-document.html [ Crash ]
