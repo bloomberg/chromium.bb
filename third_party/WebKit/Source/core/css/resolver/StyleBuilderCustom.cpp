@@ -281,7 +281,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyLineHeight(StyleResolverState& 
         lineHeight = primitiveValue->computeLength<Length>(state.style(), state.rootElementStyle(), multiplier);
     } else if (primitiveValue->isPercentage()) {
         // FIXME: percentage should not be restricted to an integer here.
-        lineHeight = Length((state.style()->fontSize() * primitiveValue->getIntValue()) / 100, Fixed);
+        lineHeight = Length((state.style()->computedFontSize() * primitiveValue->getIntValue()) / 100.0, Fixed);
     } else if (primitiveValue->isNumber()) {
         // FIXME: number and percentage values should produce the same type of Length (ie. Fixed or Percent).
         lineHeight = Length(primitiveValue->getDoubleValue() * 100.0, Percent);
