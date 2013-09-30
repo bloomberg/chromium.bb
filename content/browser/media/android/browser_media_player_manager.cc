@@ -300,6 +300,7 @@ MediaDrmBridge* BrowserMediaPlayerManager::GetDrmBridge(int media_keys_id) {
 
 void BrowserMediaPlayerManager::DestroyAllMediaPlayers() {
   players_.clear();
+  drm_bridges_.clear();
   if (fullscreen_player_id_ != -1) {
     video_view_.reset();
     fullscreen_player_id_ = -1;
