@@ -34,7 +34,6 @@ extern const bool kBrowserAliveWithNoWindows;
 
 // Whether various menu items are shown.
 extern const bool kShowExitMenuItem;
-extern const bool kShowFeedbackMenuItem;
 extern const bool kShowHelpMenuItemIcon;
 extern const bool kShowUpgradeMenuItem;
 

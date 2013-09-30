@@ -34,14 +34,12 @@ const bool kShowExitMenuItem = true;
 #endif
 
 #if defined(OS_CHROMEOS)
-const bool kShowFeedbackMenuItem = true;
 const bool kShowHelpMenuItemIcon = true;
 const bool kShowUpgradeMenuItem = false;
 const bool kShowImportOnBookmarkBar = false;
 const bool kAlwaysOpenIncognitoWindow = true;
 const bool kAlwaysCreateTabbedBrowserOnSessionRestore = false;
 #else
-const bool kShowFeedbackMenuItem = false;
 const bool kShowHelpMenuItemIcon = false;
 const bool kShowUpgradeMenuItem = true;
 const bool kShowImportOnBookmarkBar = true;

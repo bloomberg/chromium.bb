@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/send_feedback_experiment.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -57,8 +56,6 @@ using base::ListValue;
 using content::BrowserThread;
 
 namespace {
-
-const char kResourceReportIssue[] = "reportAnIssue";
 
 // Returns the browser version as a string.
 string16 BuildBrowserVersionString() {
@@ -170,7 +167,7 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
     { "successfulChannelSwitch", IDS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH },
 #endif
     { "getHelpWithChrome", IDS_GET_HELP_USING_CHROME },
-    { kResourceReportIssue, IDS_REPORT_AN_ISSUE },
+    { "reportAnIssue", IDS_REPORT_AN_ISSUE },
 #if defined(OS_CHROMEOS)
     { "platform", IDS_PLATFORM_LABEL },
     { "firmware", IDS_ABOUT_PAGE_FIRMWARE },
@@ -213,16 +210,6 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
     { "learnMore", IDS_LEARN_MORE },
 #endif
   };
-
-  if (chrome::UseAlternateSendFeedbackText()) {
-    // Field trial to substitute "Report an Issue" with "Send Feedback".
-    // (crbug.com/169339)
-    std::string report_issue_key(kResourceReportIssue);
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resources); ++i) {
-      if (report_issue_key == resources[i].name)
-        resources[i].ids = IDS_SEND_FEEDBACK;
-    }
-  }
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resources); ++i) {
     source->AddString(resources[i].name,
