@@ -84,7 +84,6 @@ class FakeProfile : public Profile {
   virtual void ChangeAppLocale(
       const std::string& locale, AppLocaleChangedVia via) OVERRIDE;
   virtual void OnLogin() OVERRIDE;
-  virtual void SetupChromeOSEnterpriseExtensionObserver() OVERRIDE;
   virtual void InitChromeOSPreferences() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
 

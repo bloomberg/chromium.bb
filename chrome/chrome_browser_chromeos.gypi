@@ -293,8 +293,6 @@
         'browser/chromeos/drive/write_on_cache_file.h',
         'browser/chromeos/enrollment_dialog_view.cc',
         'browser/chromeos/enrollment_dialog_view.h',
-        'browser/chromeos/enterprise_extension_observer.cc',
-        'browser/chromeos/enterprise_extension_observer.h',
         'browser/chromeos/extensions/default_app_order.cc',
         'browser/chromeos/extensions/default_app_order.h',
         'browser/chromeos/extensions/echo_private_api.cc',

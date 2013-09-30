@@ -101,9 +101,6 @@ void ProfileHelper::ProfileStartup(Profile* profile, bool process_startup) {
   // GetOffTheRecordProfile() call above.
   profile->InitChromeOSPreferences();
 
-  if (process_startup)
-    profile->SetupChromeOSEnterpriseExtensionObserver();
-
   // Add observer so we can see when the first profile's session restore is
   // completed. After that, we won't need the default profile anymore.
   if (!IsSigninProfile(profile) &&

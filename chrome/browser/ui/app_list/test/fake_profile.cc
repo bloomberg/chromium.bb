@@ -161,7 +161,6 @@ void FakeProfile::set_last_selected_directory(const base::FilePath& path) {}
 void FakeProfile::ChangeAppLocale(
     const std::string& locale, AppLocaleChangedVia via) {}
 void FakeProfile::OnLogin() {}
-void FakeProfile::SetupChromeOSEnterpriseExtensionObserver() {}
 void FakeProfile::InitChromeOSPreferences() {}
 #endif  // defined(OS_CHROMEOS)
 

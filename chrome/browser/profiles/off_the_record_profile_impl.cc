@@ -390,10 +390,6 @@ Profile::ExitType OffTheRecordProfileImpl::GetLastSessionExitType() {
 }
 
 #if defined(OS_CHROMEOS)
-void OffTheRecordProfileImpl::SetupChromeOSEnterpriseExtensionObserver() {
-  profile_->SetupChromeOSEnterpriseExtensionObserver();
-}
-
 void OffTheRecordProfileImpl::InitChromeOSPreferences() {
   // The incognito profile shouldn't have Chrome OS's preferences.
   // The preferences are associated with the regular user profile.

@@ -285,8 +285,6 @@ class TestingProfile : public Profile {
   virtual void SetExitType(ExitType exit_type) OVERRIDE {}
   virtual ExitType GetLastSessionExitType() OVERRIDE;
 #if defined(OS_CHROMEOS)
-  virtual void SetupChromeOSEnterpriseExtensionObserver() OVERRIDE {
-  }
   virtual void InitChromeOSPreferences() OVERRIDE {
   }
   virtual void ChangeAppLocale(const std::string&,

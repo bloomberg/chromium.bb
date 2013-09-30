@@ -118,7 +118,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/enterprise_extension_observer.h"
 #include "chrome/browser/chromeos/locale_change_guard.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
@@ -1094,12 +1093,6 @@ void ProfileImpl::OnLogin() {
   if (locale_change_guard_ == NULL)
     locale_change_guard_.reset(new chromeos::LocaleChangeGuard(this));
   locale_change_guard_->OnLogin();
-}
-
-void ProfileImpl::SetupChromeOSEnterpriseExtensionObserver() {
-  DCHECK(!chromeos_enterprise_extension_observer_);
-  chromeos_enterprise_extension_observer_.reset(
-      new chromeos::EnterpriseExtensionObserver(this));
 }
 
 void ProfileImpl::InitChromeOSPreferences() {

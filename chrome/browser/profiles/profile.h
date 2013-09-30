@@ -296,9 +296,6 @@ class Profile : public content::BrowserContext {
   // Called after login.
   virtual void OnLogin() = 0;
 
-  // Creates ChromeOS's EnterpriseExtensionListener.
-  virtual void SetupChromeOSEnterpriseExtensionObserver() = 0;
-
   // Initializes Chrome OS's preferences.
   virtual void InitChromeOSPreferences() = 0;
 #endif  // defined(OS_CHROMEOS)

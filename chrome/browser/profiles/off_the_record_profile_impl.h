@@ -67,7 +67,6 @@ class OffTheRecordProfileImpl : public Profile {
   virtual ExitType GetLastSessionExitType() OVERRIDE;
 
 #if defined(OS_CHROMEOS)
-  virtual void SetupChromeOSEnterpriseExtensionObserver() OVERRIDE;
   virtual void InitChromeOSPreferences() OVERRIDE;
 
   virtual void ChangeAppLocale(const std::string& locale,

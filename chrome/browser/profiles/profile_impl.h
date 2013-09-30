@@ -27,7 +27,6 @@ class SSLConfigServiceManager;
 
 #if defined(OS_CHROMEOS)
 namespace chromeos {
-class EnterpriseExtensionObserver;
 class LocaleChangeGuard;
 class Preferences;
 }
@@ -129,7 +128,6 @@ class ProfileImpl : public Profile {
   virtual void ChangeAppLocale(const std::string& locale,
                                AppLocaleChangedVia) OVERRIDE;
   virtual void OnLogin() OVERRIDE;
-  virtual void SetupChromeOSEnterpriseExtensionObserver() OVERRIDE;
   virtual void InitChromeOSPreferences() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
 
@@ -245,9 +243,6 @@ class ProfileImpl : public Profile {
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::Preferences> chromeos_preferences_;
-
-  scoped_ptr<chromeos::EnterpriseExtensionObserver>
-      chromeos_enterprise_extension_observer_;
 
   scoped_ptr<chromeos::LocaleChangeGuard> locale_change_guard_;
 #endif
