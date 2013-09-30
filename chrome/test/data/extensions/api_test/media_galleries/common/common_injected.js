@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 // Valid WEBP image.
-// TODO(thestig) Maybe copy these files to a media gallery in the C++ setup
-// phase to avoid having this and webkitRequestFileSystem() below.
 var validWEBPImageCase = {
   filename: "valid.webp",
   blobString: "RIFF0\0\0\0WEBPVP8 $\0\0\0\xB2\x02\0\x9D\x01\x2A" +
@@ -77,6 +75,91 @@ function runCopyToTest(testCase, expectSucceed) {
     return function() {
       testImageFileEntry.copyTo(gallery.root, filename, onSuccess, onFailure);
     };
+  }
+}
+
+// The custom callback functions are options.
+// If they are undefined, the default callbacks and checks will be used.
+// If passed in, all 3 function arguments need to be valid.
+function runReadGalleriesTest(expectedGalleryCount, expectSucceed,
+                              customReadDirectoryCallback,
+                              customReadDirectoryErrorCallback,
+                              customGotGalleriesCallback) {
+  var galleries;
+  var readEntriesResults = [];
+  var readDirectoryCallback;
+  var readDirectoryErrorCallback;
+  var gotGalleriesCallback;
+
+  if (customReadDirectoryCallback && customReadDirectoryErrorCallback &&
+      customGotGalleriesCallback) {
+    chrome.test.assertEq(typeof(customReadDirectoryCallback), 'function');
+    chrome.test.assertEq(typeof(customReadDirectoryErrorCallback), 'function');
+    chrome.test.assertEq(typeof(customGotGalleriesCallback), 'function');
+    readDirectoryCallback = customReadDirectoryCallback;
+    readDirectoryErrorCallback = customReadDirectoryErrorCallback;
+    gotGalleriesCallback = customGotGalleriesCallback;
+  } else {
+    chrome.test.assertTrue(!customReadDirectoryCallback &&
+                           !customReadDirectoryErrorCallback &&
+                           !customGotGalleriesCallback);
+    readDirectoryCallback = defaultReadDirectoryCallback;
+    readDirectoryErrorCallback = defaultReadDirectoryErrorCallback;
+    gotGalleriesCallback = defaultGotGalleriesCallback;
+  }
+  chrome.mediaGalleries.getMediaFileSystems(testGalleries);
+
+  function testGalleries(results) {
+    gotGalleriesCallback(results);
+    chrome.test.assertEq(expectedGalleryCount, results.length,
+                         "Gallery count mismatch");
+    if (expectedGalleryCount == 0) {
+      chrome.test.succeed();
+      return;
+    }
+
+    for (var i = 0; i < results.length; i++) {
+      var dirReader = results[i].root.createReader();
+      dirReader.readEntries(readDirectoryCallback, readDirectoryErrorCallback);
+    }
+  }
+
+  function defaultGotGalleriesCallback(entries) {
+    galleries = entries;
+  }
+
+  function defaultReadDirectoryCallback(entries) {
+    var result = "";
+    if (!expectSucceed) {
+      result = "Unexpected readEntries success";
+    }
+    readEntriesResults.push(result);
+    checkReadEntriesFinished();
+  }
+
+  function defaultReadDirectoryErrorCallback(err) {
+    var result = "";
+    if (expectSucceed) {
+      result = "Unexpected readEntries failure: " + err;
+    }
+    readEntriesResults.push(result);
+    checkReadEntriesFinished();
+  }
+
+  function checkReadEntriesFinished() {
+    if (readEntriesResults.length != galleries.length)
+      return;
+    var success = true;
+    for (var i = 0; i < readEntriesResults.length; i++) {
+      if (readEntriesResults[i]) {
+        success = false;
+      }
+    }
+    if (success) {
+      chrome.test.succeed();
+      return;
+    }
+    chrome.test.fail(readEntriesResults);
   }
 }
 
