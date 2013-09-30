@@ -3,10 +3,28 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/test/test_suite.h"
+#include "base/test/unit_test_launcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_implementation.h"
+
+namespace {
+
+class NoAtExitBaseTestSuite : public base::TestSuite {
+ public:
+  NoAtExitBaseTestSuite(int argc, char** argv)
+      : base::TestSuite(argc, argv, false) {
+  }
+};
+
+int RunTestSuite(int argc, char** argv) {
+  return NoAtExitBaseTestSuite(argc, argv).Run();
+}
+
+}  // namespace
 
 int main(int argc, char** argv) {
   // On Android, AtExitManager is created in
@@ -18,5 +36,7 @@ int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);
   gfx::InitializeGLBindings(gfx::kGLImplementationMockGL);
   testing::InitGoogleMock(&argc, argv);
-  return RUN_ALL_TESTS();
+  return base::LaunchUnitTests(argc,
+                               argv,
+                               base::Bind(&RunTestSuite, argc, argv));
 }
