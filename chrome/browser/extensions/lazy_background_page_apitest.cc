@@ -503,5 +503,12 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, UpdateExtensionsPage) {
   EXPECT_TRUE(is_inactive);
 }
 
+// Tests that the lazy background page will be unloaded if the onSuspend event
+// handler calls an API function such as chrome.storage.local.set().
+// See: http://crbug.com/296834
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, OnSuspendUseStorageApi) {
+  EXPECT_TRUE(LoadExtensionAndWait("on_suspend"));
+}
+
 // TODO: background page with timer.
 // TODO: background page that interacts with popup.

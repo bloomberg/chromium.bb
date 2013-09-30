@@ -435,7 +435,12 @@ int ExtensionProcessManager::DecrementLazyKeepaliveCount(
 
   int& count = background_page_data_[extension->id()].lazy_keepalive_count;
   DCHECK_GT(count, 0);
-  if (--count == 0) {
+
+  // If we reach a zero keepalive count when the lazy background page is about
+  // to be closed, incrementing close_sequence_id will cancel the close
+  // sequence and cause the background page to linger. So check is_closing
+  // before initiating another close sequence.
+  if (--count == 0 && !background_page_data_[extension->id()].is_closing) {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ExtensionProcessManager::OnLazyBackgroundPageIdle,
