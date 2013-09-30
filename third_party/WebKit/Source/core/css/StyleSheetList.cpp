@@ -31,8 +31,8 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-StyleSheetList::StyleSheetList(Document* document)
-    : m_document(document)
+StyleSheetList::StyleSheetList(TreeScope* treeScope)
+    : m_treeScope(treeScope)
 {
 }
 
@@ -40,20 +40,20 @@ StyleSheetList::~StyleSheetList()
 {
 }
 
-inline const Vector<RefPtr<StyleSheet> >& StyleSheetList::styleSheets() const
+inline const Vector<RefPtr<StyleSheet> >& StyleSheetList::styleSheets()
 {
-    if (!m_document)
+    if (!m_treeScope)
         return m_detachedStyleSheets;
-    return m_document->styleEngine()->styleSheetsForStyleSheetList();
+    return document()->styleEngine()->styleSheetsForStyleSheetList(*m_treeScope);
 }
 
 void StyleSheetList::detachFromDocument()
 {
-    m_detachedStyleSheets = m_document->styleEngine()->styleSheetsForStyleSheetList();
-    m_document = 0;
+    m_detachedStyleSheets = document()->styleEngine()->styleSheetsForStyleSheetList(*m_treeScope);
+    m_treeScope = 0;
 }
 
-unsigned StyleSheetList::length() const
+unsigned StyleSheetList::length()
 {
     return styleSheets().size();
 }
@@ -66,7 +66,7 @@ StyleSheet* StyleSheetList::item(unsigned index)
 
 HTMLStyleElement* StyleSheetList::getNamedItem(const String& name) const
 {
-    if (!m_document)
+    if (!m_treeScope)
         return 0;
 
     // IE also supports retrieving a stylesheet by name, using the name/id of the <style> tag
@@ -75,7 +75,7 @@ HTMLStyleElement* StyleSheetList::getNamedItem(const String& name) const
     // and doesn't look for name attribute.
     // But unicity of stylesheet ids is good practice anyway ;)
     // FIXME: We should figure out if we should change this or fix the spec.
-    Element* element = m_document->getElementById(name);
+    Element* element = m_treeScope->getElementById(name);
     if (element && element->hasTagName(styleTag))
         return toHTMLStyleElement(element);
     return 0;

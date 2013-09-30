@@ -44,4 +44,6 @@
 
     Element elementFromPoint([Default=Undefined] optional long x,
                              [Default=Undefined] optional long y);
+
+    [EnabledAtRuntime=ShadowDOM] readonly attribute StyleSheetList styleSheets;
 };

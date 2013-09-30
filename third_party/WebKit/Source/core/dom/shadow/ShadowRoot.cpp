@@ -29,6 +29,7 @@
 
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/css/StyleSheetList.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleEngine.h"
@@ -79,6 +80,9 @@ ShadowRoot::~ShadowRoot()
 {
     ASSERT(!m_prev);
     ASSERT(!m_next);
+
+    if (m_shadowRootRareData && m_shadowRootRareData->styleSheets())
+        m_shadowRootRareData->styleSheets()->detachFromDocument();
 
     documentInternal()->styleEngine()->didRemoveShadowRoot(this);
 
@@ -409,6 +413,14 @@ const Vector<RefPtr<InsertionPoint> >& ShadowRoot::childInsertionPoints()
     ensureShadowRootRareData()->setChildInsertionPoints(insertionPoints);
 
     return m_shadowRootRareData->childInsertionPoints();
+}
+
+StyleSheetList* ShadowRoot::styleSheets()
+{
+    if (!ensureShadowRootRareData()->styleSheets())
+        m_shadowRootRareData->setStyleSheets(StyleSheetList::create(this));
+
+    return m_shadowRootRareData->styleSheets();
 }
 
 }

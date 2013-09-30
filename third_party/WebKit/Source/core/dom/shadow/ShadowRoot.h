@@ -60,21 +60,10 @@ public:
 
     void recalcStyle(StyleRecalcChange);
 
-    bool applyAuthorStyles() const { return m_applyAuthorStyles; }
-    void setApplyAuthorStyles(bool);
-    bool resetStyleInheritance() const { return m_resetStyleInheritance; }
-    void setResetStyleInheritance(bool);
-
     Element* host() const { return toElement(parentOrShadowHostNode()); }
     ElementShadow* owner() const { return host() ? host()->shadow() : 0; }
 
-    String innerHTML() const;
-    void setInnerHTML(const String&, ExceptionState&);
-
-    Element* activeElement() const;
-
     ShadowRoot* youngerShadowRoot() const { return prev(); }
-    ShadowRoot* olderShadowRoot() const { return next(); }
 
     ShadowRoot* bindingsOlderShadowRoot() const;
     bool shouldExposeToBindings() const { return type() == AuthorShadowRoot; }
@@ -108,8 +97,24 @@ public:
 
     ShadowRootType type() const { return static_cast<ShadowRootType>(m_type); }
 
+public:
+    Element* activeElement() const;
+
+    bool applyAuthorStyles() const { return m_applyAuthorStyles; }
+    void setApplyAuthorStyles(bool);
+
+    bool resetStyleInheritance() const { return m_resetStyleInheritance; }
+    void setResetStyleInheritance(bool);
+
+    ShadowRoot* olderShadowRoot() const { return next(); }
+
+    String innerHTML() const;
+    void setInnerHTML(const String&, ExceptionState&);
+
     PassRefPtr<Node> cloneNode(bool, ExceptionState&);
     PassRefPtr<Node> cloneNode(ExceptionState& es) { return cloneNode(true, es); }
+
+    StyleSheetList* styleSheets();
 
 private:
     ShadowRoot(Document*, ShadowRootType);

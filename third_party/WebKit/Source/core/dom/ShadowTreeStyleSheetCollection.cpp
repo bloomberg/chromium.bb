@@ -102,12 +102,10 @@ bool ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* collec
 
     bool requiresFullStyleRecalc = true;
 
-    // If we have already decided to destroy StyleResolver, we don't need to analyze. Reconstruction will take care.
+    StyleResolverUpdateType styleResolverUpdateType;
+    analyzeStyleSheetChange(updateMode, activeAuthorStyleSheets(), activeCSSStyleSheets, styleResolverUpdateType, requiresFullStyleRecalc);
+
     if (StyleResolver* styleResolver = document()->styleResolverIfExists()) {
-        StyleResolverUpdateType styleResolverUpdateType;
-
-        analyzeStyleSheetChange(updateMode, activeAuthorStyleSheets(), activeCSSStyleSheets, styleResolverUpdateType, requiresFullStyleRecalc);
-
         // FIXME: We might have already had styles in child treescope. In this case, we cannot use buildScopedStyleTreeInDocumentOrder.
         // Need to change "false" to some valid condition.
         styleResolver->setBuildScopedStyleTreeInDocumentOrder(false);
@@ -121,6 +119,9 @@ bool ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* collec
             styleResolver->appendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), activeCSSStyleSheets);
         }
     }
+    if (requiresFullStyleRecalc)
+        toShadowRoot(m_treeScope.rootNode())->host()->setNeedsStyleRecalc();
+
     m_scopingNodesForStyleScoped.didRemoveScopingNodes();
     m_activeAuthorStyleSheets.swap(activeCSSStyleSheets);
     m_styleSheetsForStyleSheetList.swap(styleSheets);

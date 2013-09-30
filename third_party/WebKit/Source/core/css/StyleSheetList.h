@@ -22,6 +22,7 @@
 #define StyleSheetList_h
 
 #include "core/css/CSSStyleSheet.h"
+#include "core/dom/TreeScope.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -29,30 +30,29 @@
 
 namespace WebCore {
 
-class Document;
 class HTMLStyleElement;
 class StyleSheet;
 
 class StyleSheetList : public RefCounted<StyleSheetList> {
 public:
-    static PassRefPtr<StyleSheetList> create(Document* document) { return adoptRef(new StyleSheetList(document)); }
+    static PassRefPtr<StyleSheetList> create(TreeScope* treeScope) { return adoptRef(new StyleSheetList(treeScope)); }
     ~StyleSheetList();
 
-    unsigned length() const;
+    unsigned length();
     StyleSheet* item(unsigned index);
 
     HTMLStyleElement* getNamedItem(const String&) const;
 
-    Document* document() { return m_document; }
+    Document* document() { return m_treeScope->documentScope(); }
 
     void detachFromDocument();
     CSSStyleSheet* anonymousNamedGetter(const AtomicString&);
 
 private:
-    StyleSheetList(Document*);
-    const Vector<RefPtr<StyleSheet> >& styleSheets() const;
+    StyleSheetList(TreeScope*);
+    const Vector<RefPtr<StyleSheet> >& styleSheets();
 
-    Document* m_document;
+    TreeScope* m_treeScope;
     Vector<RefPtr<StyleSheet> > m_detachedStyleSheets;
 };
 

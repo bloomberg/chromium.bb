@@ -130,9 +130,12 @@ StyleSheetCollection* StyleEngine::styleSheetCollectionFor(TreeScope& treeScope)
     return it->value.get();
 }
 
-const Vector<RefPtr<StyleSheet> >& StyleEngine::styleSheetsForStyleSheetList()
+const Vector<RefPtr<StyleSheet> >& StyleEngine::styleSheetsForStyleSheetList(TreeScope& treeScope)
 {
-    return m_documentStyleSheetCollection.styleSheetsForStyleSheetList();
+    if (&treeScope == &m_document)
+        return m_documentStyleSheetCollection.styleSheetsForStyleSheetList();
+
+    return ensureStyleSheetCollectionFor(treeScope)->styleSheetsForStyleSheetList();
 }
 
 const Vector<RefPtr<CSSStyleSheet> >& StyleEngine::activeAuthorStyleSheets() const

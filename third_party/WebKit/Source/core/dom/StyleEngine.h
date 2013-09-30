@@ -55,7 +55,7 @@ public:
 
     ~StyleEngine();
 
-    const Vector<RefPtr<StyleSheet> >& styleSheetsForStyleSheetList();
+    const Vector<RefPtr<StyleSheet> >& styleSheetsForStyleSheetList(TreeScope&);
     const Vector<RefPtr<CSSStyleSheet> >& activeAuthorStyleSheets() const;
 
     CSSStyleSheet* pageUserSheet();

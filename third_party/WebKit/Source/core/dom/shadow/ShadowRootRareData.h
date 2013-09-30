@@ -67,12 +67,16 @@ public:
     void setChildInsertionPoints(Vector<RefPtr<InsertionPoint> >& list) { m_childInsertionPoints.swap(list); }
     void clearChildInsertionPoints() { m_childInsertionPoints.clear(); }
 
+    StyleSheetList* styleSheets() { return m_styleSheetList.get(); }
+    void setStyleSheets(PassRefPtr<StyleSheetList> styleSheetList) { m_styleSheetList = styleSheetList; }
+
 private:
     RefPtr<InsertionPoint> m_insertionPoint;
     unsigned m_childShadowElementCount;
     unsigned m_childContentElementCount;
     unsigned m_childShadowRootCount;
     Vector<RefPtr<InsertionPoint> > m_childInsertionPoints;
+    RefPtr<StyleSheetList> m_styleSheetList;
 };
 
 inline void ShadowRootRareData::addInsertionPoint(InsertionPoint* point)
