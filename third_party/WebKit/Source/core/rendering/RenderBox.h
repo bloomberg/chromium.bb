@@ -216,7 +216,7 @@ public:
     virtual int pixelSnappedOffsetWidth() const OVERRIDE FINAL;
     virtual int pixelSnappedOffsetHeight() const OVERRIDE FINAL;
 
-    bool requiresLayoutToDetermineWidth() const;
+    bool canDetermineWidthWithoutLayout() const;
     LayoutUnit fixedOffsetWidth() const;
 
     // More IE extensions.  clientWidth and clientHeight represent the interior of an object

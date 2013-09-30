@@ -408,26 +408,32 @@ int RenderBox::pixelSnappedOffsetHeight() const
     return snapSizeToPixel(offsetHeight(), y() + clientTop());
 }
 
-bool RenderBox::requiresLayoutToDetermineWidth() const
+bool RenderBox::canDetermineWidthWithoutLayout() const
 {
-    RenderStyle* style = this->style();
-    return !style->width().isFixed()
-        || !style->minWidth().isFixed()
-        || (!style->maxWidth().isUndefined() && !style->maxWidth().isFixed())
-        || !style->paddingLeft().isFixed()
-        || !style->paddingRight().isFixed()
-        || style->resize() != RESIZE_NONE
-        || style->boxSizing() == BORDER_BOX
-        || !isRenderBlock()
-        || !isRenderBlockFlow()
+    // THIS OPTIMIZATION IS INCORRECT AS WRITTEN.
+    // FIXME: There are likely many subclasses of RenderBlockFlow which
+    // cannot determine their layout just from style!
+    // Perhaps we should create a "PlainRenderBlockFlow"
+    // and move this optimization there?
+    if (!isRenderBlockFlow()
+        // Flexbox items can be expanded beyond their width.
         || isFlexItemIncludingDeprecated()
-        // TableCells can expand beyond a specified width.
-        || isTableCell();
+        // Table Layout controls cell size and can expand beyond width.
+        || isTableCell())
+        return false;
+
+    RenderStyle* style = this->style();
+    return style->width().isFixed()
+        && style->minWidth().isFixed()
+        && (style->maxWidth().isUndefined() || style->maxWidth().isFixed())
+        && style->paddingLeft().isFixed()
+        && style->paddingRight().isFixed()
+        && style->boxSizing() == CONTENT_BOX;
 }
 
 LayoutUnit RenderBox::fixedOffsetWidth() const
 {
-    ASSERT(!requiresLayoutToDetermineWidth());
+    ASSERT(canDetermineWidthWithoutLayout());
 
     RenderStyle* style = this->style();
 
@@ -2088,7 +2094,9 @@ static float getMaxWidthListMarker(const RenderBox* renderer)
             if (!itemChild->isListMarker())
                 continue;
             RenderBox* itemMarker = toRenderBox(itemChild);
-            if (itemMarker->requiresLayoutToDetermineWidth() && itemMarker->needsLayout()) {
+            // FIXME: canDetermineWidthWithoutLayout expects us to use fixedOffsetWidth, which this code
+            // does not do! This check is likely wrong.
+            if (!itemMarker->canDetermineWidthWithoutLayout() && itemMarker->needsLayout()) {
                 // Make sure to compute the autosized width.
                 itemMarker->layout();
             }

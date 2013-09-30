@@ -589,7 +589,7 @@ int Element::offsetWidth()
     document().updateStyleForNodeIfNeeded(this);
 
     if (RenderBox* renderer = renderBox()) {
-        if (!renderer->requiresLayoutToDetermineWidth())
+        if (renderer->canDetermineWidthWithoutLayout())
             return adjustLayoutUnitForAbsoluteZoom(renderer->fixedOffsetWidth(), renderer).round();
     }
 
