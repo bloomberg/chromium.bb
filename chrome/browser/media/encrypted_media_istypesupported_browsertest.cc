@@ -896,9 +896,16 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedTest,
 // Since this test fixture does not register the CDMs on the command line, the
 // check for the CDMs in chrome_key_systems.cc should fail, and they should not
 // be registered with KeySystems.
+#if defined(OS_WIN)
+// Flaky on Windows: crbug.com/301571.
+#define MAYBE_PepperCDMsRegisteredButAdapterNotPresent DISABLED_PepperCDMsRegisteredButAdapterNotPresent
+#else
+#define MAYBE_PepperCDMsRegisteredButAdapterNotPresent PepperCDMsRegisteredButAdapterNotPresent
+#endif
+
 IN_PROC_BROWSER_TEST_F(
     EncryptedMediaIsTypeSupportedPepperCDMRegisteredWithWrongPathTest,
-    PepperCDMsRegisteredButAdapterNotPresent) {
+    MAYBE_PepperCDMsRegisteredButAdapterNotPresent) {
   EXPECT_FALSE(IsConcreteSupportedKeySystem(kExternalClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), kExternalClearKey));
