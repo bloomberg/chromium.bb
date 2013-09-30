@@ -109,7 +109,7 @@ function NavigationListModel(volumeManager, shortcutListModel) {
   this.shortcutListModel_ = shortcutListModel;
 
   var volumeInfoToModelItem = function(volumeInfo) {
-    if (volumeInfo.volumeType == VolumeManager.VolumeType.DRIVE) {
+    if (volumeInfo.volumeType == util.VolumeType.DRIVE) {
       // For drive volume, we assign the path to "My Drive".
       return NavigationModelItem.createFromPath(
           this.volumeManager_,

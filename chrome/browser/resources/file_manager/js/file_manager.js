@@ -1913,7 +1913,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.isDriveOnMeteredConnection = function() {
     var connection = this.volumeManager_.getDriveConnectionState();
-    return connection.type == VolumeManager.DriveConnectionType.METERED;
+    return connection.type == util.DriveConnectionType.METERED;
   };
 
   /**
@@ -1924,7 +1924,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.isDriveOffline = function() {
     var connection = this.volumeManager_.getDriveConnectionState();
-    return connection.type == VolumeManager.DriveConnectionType.OFFLINE;
+    return connection.type == util.DriveConnectionType.OFFLINE;
   };
 
   FileManager.prototype.isOnReadonlyDirectory = function() {
@@ -2434,7 +2434,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.dialogDom_.setAttribute('unformatted', '');
 
       var errorNode = this.dialogDom_.querySelector('#format-panel > .error');
-      if (volumeInfo.error == VolumeManager.Error.UNSUPPORTED_FILESYSTEM) {
+      if (volumeInfo.error == util.VolumeError.UNSUPPORTED_FILESYSTEM) {
         errorNode.textContent = str('UNSUPPORTED_FILESYSTEM_WARNING');
       } else {
         errorNode.textContent = str('UNKNOWN_FILESYSTEM_WARNING');

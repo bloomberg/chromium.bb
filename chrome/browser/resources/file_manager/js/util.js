@@ -1152,3 +1152,61 @@ util.getCurrentLocaleOrDefault = function() {
   // Instead, we pass it from C++-side with strings.
   return str('UI_LOCALE') || 'en';
 };
+
+/**
+ * Error type of VolumeManager.
+ * @enum {string}
+ */
+util.VolumeError = Object.freeze({
+  /* Internal errors */
+  NOT_MOUNTED: 'not_mounted',
+  TIMEOUT: 'timeout',
+
+  /* System events */
+  UNKNOWN: 'error_unknown',
+  INTERNAL: 'error_internal',
+  UNKNOWN_FILESYSTEM: 'error_unknown_filesystem',
+  UNSUPPORTED_FILESYSTEM: 'error_unsupported_filesystem',
+  INVALID_ARCHIVE: 'error_invalid_archive',
+  AUTHENTICATION: 'error_authentication',
+  PATH_UNMOUNTED: 'error_path_unmounted'
+});
+
+/**
+ * List of connection types of drive.
+ *
+ * Keep this in sync with the kDriveConnectionType* constants in
+ * file_browser_private_api.cc.
+ *
+ * @enum {string}
+ */
+util.DriveConnectionType = Object.freeze({
+  OFFLINE: 'offline',  // Connection is offline or drive is unavailable.
+  METERED: 'metered',  // Connection is metered. Should limit traffic.
+  ONLINE: 'online'     // Connection is online.
+});
+
+/**
+ * List of reasons of DriveConnectionType.
+ *
+ * Keep this in sync with the kDriveConnectionReason constants in
+ * file_browser_private_api.cc.
+ *
+ * @enum {string}
+ */
+util.DriveConnectionReason = Object.freeze({
+  NOT_READY: 'not_ready',    // Drive is not ready or authentication is failed.
+  NO_NETWORK: 'no_network',  // Network connection is unavailable.
+  NO_SERVICE: 'no_service'   // Drive service is unavailable.
+});
+
+/**
+ * The type of each volume.
+ * @enum {string}
+ */
+util.VolumeType = Object.freeze({
+  DRIVE: 'drive',
+  DOWNLOADS: 'downloads',
+  REMOVABLE: 'removable',
+  ARCHIVE: 'archive'
+});

@@ -168,13 +168,13 @@ VolumeManagerWrapper.prototype.ensureInitialized = function(callback) {
 };
 
 /**
- * @return {VolumeManager.DriveConnectionType} Current drive connection state.
+ * @return {util.DriveConnectionType} Current drive connection state.
  */
 VolumeManagerWrapper.prototype.getDriveConnectionState = function() {
   if (!this.driveEnabled_ || !this.volumeManager_) {
     return {
-      type: VolumeManager.DriveConnectionType.OFFLINE,
-      reasons: [VolumeManager.DriveConnectionType.NO_SERVICE]
+      type: util.DriveConnectionType.OFFLINE,
+      reasons: [util.DriveConnectionReason.NO_SERVICE]
     };
   }
 
@@ -201,7 +201,7 @@ VolumeManagerWrapper.prototype.getVolumeInfo = function(mountPath) {
  * Requests to mount the archive file.
  * @param {string} fileUrl The path to the archive file to be mounted.
  * @param {function(string)} successCallback Called with mount path on success.
- * @param {function(VolumeManager.Error)} errorCallback Called when an error
+ * @param {function(util.VolumeError)} errorCallback Called when an error
  *     occurs.
  */
 VolumeManagerWrapper.prototype.mountArchive = function(
@@ -220,7 +220,7 @@ VolumeManagerWrapper.prototype.mountArchive = function(
  * @param {string} mountPath The path to the mount location of the volume.
  * @param {function(string)} successCallback Called with the mount path
  *     on success.
- * @param {function(VolumeManager.Error)} errorCallback Called when an error
+ * @param {function(util.VolumeError)} errorCallback Called when an error
  *     occurs.
  */
 VolumeManagerWrapper.prototype.unmount = function(

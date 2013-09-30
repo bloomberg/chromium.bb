@@ -190,7 +190,7 @@ DirectoryModel.prototype.getCurrentMountPointUrl = function() {
  */
 DirectoryModel.prototype.isDriveOffline = function() {
   var connection = this.volumeManager_.getDriveConnectionState();
-  return connection.type == VolumeManager.DriveConnectionType.OFFLINE;
+  return connection.type == util.DriveConnectionType.OFFLINE;
 };
 
 /**
@@ -1056,7 +1056,7 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
             function(error) {});
       } else if (PathUtil.isSpecialSearchRoot(currentDirEntry.fullPath)) {
         for (var i = 0; i < event.added.length; i++) {
-          if (event.added[i].volumeType == VolumeManager.VolumeType.DRIVE) {
+          if (event.added[i].volumeType == util.VolumeType.DRIVE) {
             // If the Drive volume is newly mounted, rescan it.
             this.rescan();
             break;

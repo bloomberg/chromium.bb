@@ -8,7 +8,7 @@
  * Represents each volume, such as "drive", "download directory", each "USB
  * flush storage", or "mounted zip archive" etc.
  *
- * @param {VolumeManager.VolumeType} volumeType The type of the volume.
+ * @param {util.VolumeType} volumeType The type of the volume.
  * @param {string} mountPath Where the volume is mounted.
  * @param {DirectoryEntry} root The root directory entry of this volume.
  * @param {string} error The error if an error is found.
@@ -42,12 +42,12 @@ function VolumeInfo(
 var volumeManagerUtil = {};
 
 /**
- * Throws an Error when the given error is not in VolumeManager.Error.
- * @param {VolumeManager.Error} error Status string usually received from APIs.
+ * Throws an Error when the given error is not in util.VolumeError.
+ * @param {util.VolumeError} error Status string usually received from APIs.
  */
 volumeManagerUtil.validateError = function(error) {
-  for (var key in VolumeManager.Error) {
-    if (error == VolumeManager.Error[key])
+  for (var key in util.VolumeError) {
+    if (error == util.VolumeError[key])
       return;
   }
 
@@ -111,9 +111,9 @@ volumeManagerUtil.getRootEntry_ = function(
 
 /**
  * Builds the VolumeInfo data for mountPath.
- * @param {VolumeManager.VolumeType} volumeType The type of the volume.
+ * @param {util.VolumeType} volumeType The type of the volume.
  * @param {string} mountPath Path to the volume.
- * @param {VolumeManager.Error} error The error string if available.
+ * @param {util.VolumeError} error The error string if available.
  * @param {function(Object)} callback Called on completion.
  *     TODO(hidehiko): Replace the type from Object to its original type.
  */
@@ -130,7 +130,7 @@ volumeManagerUtil.createVolumeInfo = function(
       util.makeFilesystemUrl(mountPath),
       function(metadata) {
         if (chrome.runtime.lastError && !error)
-          error = VolumeManager.Error.UNKNOWN;
+          error = util.VolumeError.UNKNOWN;
 
         // TODO(hidehiko): These values should be merged into the result of
         // onMountCompleted's event object. crbug.com/284975.
@@ -165,7 +165,7 @@ volumeManagerUtil.createVolumeInfo = function(
               console.error('Root entry is not found: ' +
                   mountPath + ', ' + util.getFileErrorMnemonic(fileError.code));
               if (!error)
-                error = VolumeManager.Error.UNKNOWN;
+                error = util.VolumeError.UNKNOWN;
               callback(new VolumeInfo(
                   volumeType, mountPath, null, error, deviceType, isReadOnly));
             });
@@ -346,8 +346,8 @@ function VolumeManager() {
   // TODO(hidehiko): Remove them after the migration.
   this.driveStatus_ = VolumeManager.DriveStatus.UNMOUNTED;
   this.driveConnectionState_ = {
-    type: VolumeManager.DriveConnectionType.OFFLINE,
-    reasons: [VolumeManager.DriveConnectionType.NO_SERVICE]
+    type: util.DriveConnectionType.OFFLINE,
+    reasons: [util.DriveConnectionReason.NO_SERVICE]
   };
 
   chrome.fileBrowserPrivate.onDriveConnectionStatusChanged.addListener(
@@ -368,7 +368,7 @@ VolumeManager.prototype.onDriveConnectionStatusChanged_ = function() {
 
 /**
  * Returns the drive connection state.
- * @return {VolumeManager.DriveConnectionType} Connection type.
+ * @return {util.DriveConnectionType} Connection type.
  */
 VolumeManager.prototype.getDriveConnectionState = function() {
   return this.driveConnectionState_;
@@ -380,69 +380,13 @@ VolumeManager.prototype.getDriveConnectionState = function() {
 VolumeManager.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
- * @enum
- */
-VolumeManager.Error = {
-  /* Internal errors */
-  NOT_MOUNTED: 'not_mounted',
-  TIMEOUT: 'timeout',
-
-  /* System events */
-  UNKNOWN: 'error_unknown',
-  INTERNAL: 'error_internal',
-  UNKNOWN_FILESYSTEM: 'error_unknown_filesystem',
-  UNSUPPORTED_FILESYSTEM: 'error_unsupported_filesystem',
-  INVALID_ARCHIVE: 'error_invalid_archive',
-  AUTHENTICATION: 'error_authentication',
-  PATH_UNMOUNTED: 'error_path_unmounted'
-};
-
-/**
- * The type of each volume.
- * @enum {string}
- */
-VolumeManager.VolumeType = {
-  DRIVE: 'drive',
-  DOWNLOADS: 'downloads',
-  REMOVABLE: 'removable',
-  ARCHIVE: 'archive'
-};
-
-/**
+ * TODO(hidehiko): Remove this with "drive-status-changed".
  * @enum
  */
 VolumeManager.DriveStatus = {
   UNMOUNTED: 'unmounted',
   ERROR: 'error',
   MOUNTED: 'mounted'
-};
-
-/**
- * List of connection types of drive.
- *
- * Keep this in sync with the kDriveConnectionType* constants in
- * file_browser_private_api.cc.
- *
- * @enum {string}
- */
-VolumeManager.DriveConnectionType = {
-  OFFLINE: 'offline',  // Connection is offline or drive is unavailable.
-  METERED: 'metered',  // Connection is metered. Should limit traffic.
-  ONLINE: 'online'     // Connection is online.
-};
-
-/**
- * List of reasons of DriveConnectionType.
- *
- * Keep this in sync with the kDriveConnectionReason constants in
- * file_browser_private_api.cc.
- *
- * @enum {string}
- */
-VolumeManager.DriveConnectionReason = {
-  NOT_READY: 'not_ready',    // Drive is not ready or authentication is failed.
-  NO_NETWORK: 'no_network',  // Network connection is unavailable.
-  NO_SERVICE: 'no_service'   // Drive service is unavailable.
 };
 
 /**
@@ -586,7 +530,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     var mountPath = event.mountPath;
     volumeManagerUtil.validateMountPath(mountPath);
     var status = event.status;
-    if (status == VolumeManager.Error.PATH_UNMOUNTED) {
+    if (status == util.VolumeError.PATH_UNMOUNTED) {
       console.warn('Volume already unmounted: ', mountPath);
       status = 'success';
     }
@@ -631,7 +575,7 @@ VolumeManager.prototype.makeRequestKey_ = function(requestType,
 /**
  * @param {string} fileUrl File url to the archive file.
  * @param {function(string)} successCallback Success callback.
- * @param {function(VolumeManager.Error)} errorCallback Error callback.
+ * @param {function(util.VolumeError)} errorCallback Error callback.
  */
 VolumeManager.prototype.mountArchive = function(fileUrl, successCallback,
                                                 errorCallback) {
@@ -642,7 +586,7 @@ VolumeManager.prototype.mountArchive = function(fileUrl, successCallback,
  * Unmounts volume.
  * @param {string} mountPath Volume mounted path.
  * @param {function(string)} successCallback Success callback.
- * @param {function(VolumeManager.Error)} errorCallback Error callback.
+ * @param {function(util.VolumeError)} errorCallback Error callback.
  */
 VolumeManager.prototype.unmount = function(mountPath,
                                            successCallback,
@@ -656,7 +600,7 @@ VolumeManager.prototype.unmount = function(mountPath,
 
   var volumeInfo = this.volumeInfoList.find(mountPath);
   if (!volumeInfo) {
-    errorCallback(VolumeManager.Error.NOT_MOUNTED);
+    errorCallback(util.VolumeError.NOT_MOUNTED);
     return;
   }
 
@@ -701,7 +645,7 @@ VolumeManager.prototype.getVolumeInfo = function(mountPath) {
  * @param {'drive'|'archive'} volumeType Volume type for
  *     |fileBrowserPrivate.addMount|.
  * @param {function(string)} successCallback Success callback.
- * @param {function(VolumeManager.Error)} errorCallback Error callback.
+ * @param {function(util.VolumeError)} errorCallback Error callback.
  * @private
  */
 VolumeManager.prototype.mount_ = function(url, volumeType,
@@ -725,7 +669,7 @@ VolumeManager.prototype.mount_ = function(url, volumeType,
  * @param {string} key Key produced by |makeRequestKey_|.
  * @param {function(string)} successCallback To be called when request finishes
  *     successfully.
- * @param {function(VolumeManager.Error)} errorCallback To be called when
+ * @param {function(util.VolumeError)} errorCallback To be called when
  *     request fails.
  * @private
  */
@@ -753,13 +697,13 @@ VolumeManager.prototype.startRequest_ = function(key,
  */
 VolumeManager.prototype.onTimeout_ = function(key) {
   this.invokeRequestCallbacks_(this.requests_[key],
-                               VolumeManager.Error.TIMEOUT);
+                               util.VolumeError.TIMEOUT);
   delete this.requests_[key];
 };
 
 /**
  * @param {string} key Key produced by |makeRequestKey_|.
- * @param {VolumeManager.Error|'success'} status Status received from the API.
+ * @param {util.VolumeError|'success'} status Status received from the API.
  * @param {string=} opt_mountPath Mount path.
  * @private
  */
@@ -775,7 +719,7 @@ VolumeManager.prototype.finishRequest_ = function(key, status, opt_mountPath) {
 
 /**
  * @param {Object} request Structure created in |startRequest_|.
- * @param {VolumeManager.Error|string} status If status == 'success'
+ * @param {util.VolumeError|string} status If status == 'success'
  *     success callbacks are called.
  * @param {string=} opt_mountPath Mount path. Required if success.
  * @private
