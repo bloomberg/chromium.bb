@@ -21,6 +21,7 @@
 #include "chrome/browser/history/shortcuts_database.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -89,9 +90,11 @@ ShortcutsBackend::ShortcutsBackend(Profile* profile, bool suppress_db)
     db_ = new ShortcutsDatabase(profile);
   // |profile| can be NULL in tests.
   if (profile) {
-    notification_registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
+    notification_registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                                 content::Source<Profile>(profile));
     notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+                                content::Source<Profile>(profile));
+    notification_registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
                                 content::Source<Profile>(profile));
   }
 }
@@ -126,7 +129,7 @@ bool ShortcutsBackend::AddShortcut(const Shortcut& shortcut) {
 bool ShortcutsBackend::UpdateShortcut(const Shortcut& shortcut) {
   if (!initialized())
     return false;
-  GuidToShortcutsIteratorMap::iterator it = guid_map_.find(shortcut.id);
+  GuidMap::iterator it(guid_map_.find(shortcut.id));
   if (it != guid_map_.end())
     shortcuts_map_.erase(it->second);
   guid_map_[shortcut.id] = shortcuts_map_.insert(
@@ -143,7 +146,7 @@ bool ShortcutsBackend::DeleteShortcutsWithIds(
   if (!initialized())
     return false;
   for (size_t i = 0; i < shortcut_ids.size(); ++i) {
-    GuidToShortcutsIteratorMap::iterator it = guid_map_.find(shortcut_ids[i]);
+    GuidMap::iterator it(guid_map_.find(shortcut_ids[i]));
     if (it != guid_map_.end()) {
       shortcuts_map_.erase(it->second);
       guid_map_.erase(it);
@@ -157,24 +160,7 @@ bool ShortcutsBackend::DeleteShortcutsWithIds(
 }
 
 bool ShortcutsBackend::DeleteShortcutsWithUrl(const GURL& shortcut_url) {
-  if (!initialized())
-    return false;
-  std::vector<std::string> shortcut_ids;
-  for (GuidToShortcutsIteratorMap::iterator it = guid_map_.begin();
-       it != guid_map_.end();) {
-    if (it->second->second.url == shortcut_url) {
-      shortcut_ids.push_back(it->first);
-      shortcuts_map_.erase(it->second);
-      guid_map_.erase(it++);
-    } else {
-      ++it;
-    }
-  }
-  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
-                    OnShortcutsChanged());
-  return no_db_access_ || BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&ShortcutsDatabase::DeleteShortcutsWithUrl),
-                 db_.get(), shortcut_url.spec()));
+  return initialized() && DeleteShortcutsWithUrl(shortcut_url, true);
 }
 
 bool ShortcutsBackend::DeleteAllShortcuts() {
@@ -189,40 +175,37 @@ bool ShortcutsBackend::DeleteAllShortcuts() {
                  db_.get()));
 }
 
-ShortcutsBackend::~ShortcutsBackend() {}
-
-void ShortcutsBackend::InitInternal() {
-  DCHECK(current_state_ == INITIALIZING);
-  db_->Init();
-  ShortcutsDatabase::GuidToShortcutMap shortcuts;
-  db_->LoadShortcuts(&shortcuts);
-  temp_shortcuts_map_.reset(new ShortcutMap);
-  temp_guid_map_.reset(new GuidToShortcutsIteratorMap);
-  for (ShortcutsDatabase::GuidToShortcutMap::iterator it = shortcuts.begin();
-       it != shortcuts.end(); ++it) {
-    (*temp_guid_map_)[it->first] = temp_shortcuts_map_->insert(
-        std::make_pair(base::i18n::ToLower(it->second.text), it->second));
-  }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&ShortcutsBackend::InitCompleted, this));
+void ShortcutsBackend::AddObserver(ShortcutsBackendObserver* obs) {
+  observer_list_.AddObserver(obs);
 }
 
-void ShortcutsBackend::InitCompleted() {
-  temp_guid_map_->swap(guid_map_);
-  temp_shortcuts_map_->swap(shortcuts_map_);
-  temp_shortcuts_map_.reset(NULL);
-  temp_guid_map_.reset(NULL);
-  current_state_ = INITIALIZED;
-  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
-                    OnShortcutsLoaded());
+void ShortcutsBackend::RemoveObserver(ShortcutsBackendObserver* obs) {
+  observer_list_.RemoveObserver(obs);
 }
 
-// content::NotificationObserver:
+ShortcutsBackend::~ShortcutsBackend() {
+}
+
+void ShortcutsBackend::ShutdownOnUIThread() {
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  notification_registrar_.RemoveAll();
+}
+
 void ShortcutsBackend::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  if (current_state_ != INITIALIZED)
+  if (!initialized())
     return;
+
+  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
+    // When an extension is unloaded, we want to remove any Shortcuts associated
+    // with it.
+    DeleteShortcutsWithUrl(content::Details<extensions::UnloadedExtensionInfo>(
+        details)->extension->url(), false);
+    return;
+  }
+
   if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
     if (content::Details<const history::URLsDeletedDetails>(details)->
             all_history) {
@@ -232,8 +215,7 @@ void ShortcutsBackend::Observe(int type,
         content::Details<const history::URLsDeletedDetails>(details)->rows);
     std::vector<std::string> shortcut_ids;
 
-    for (GuidToShortcutsIteratorMap::iterator it = guid_map_.begin();
-         it != guid_map_.end(); ++it) {
+    for (GuidMap::iterator it(guid_map_.begin()); it != guid_map_.end(); ++it) {
       if (std::find_if(rows.begin(), rows.end(),
                        URLRow::URLRowHasURL(it->second->second.url)) !=
           rows.end())
@@ -253,22 +235,67 @@ void ShortcutsBackend::Observe(int type,
        it != shortcuts_map_.end() &&
            StartsWith(it->first, text_lowercase, true); ++it) {
     if (match.destination_url == it->second.url) {
-      UpdateShortcut(Shortcut(it->second.id, log->text, match.destination_url,
-          match.contents, match.contents_class, match.description,
-          match.description_class, base::Time::Now(),
-          it->second.number_of_hits + 1));
+      UpdateShortcut(Shortcut(
+          it->second.id, log->text, match.destination_url, match.contents,
+          match.contents_class, match.description, match.description_class,
+          base::Time::Now(), it->second.number_of_hits + 1));
       return;
     }
   }
   AddShortcut(Shortcut(base::GenerateGUID(), log->text, match.destination_url,
-      match.contents, match.contents_class, match.description,
-      match.description_class, base::Time::Now(), 1));
+                       match.contents, match.contents_class, match.description,
+                       match.description_class, base::Time::Now(), 1));
 }
 
-void ShortcutsBackend::ShutdownOnUIThread() {
-  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
-  notification_registrar_.RemoveAll();
+void ShortcutsBackend::InitInternal() {
+  DCHECK(current_state_ == INITIALIZING);
+  db_->Init();
+  ShortcutsDatabase::GuidToShortcutMap shortcuts;
+  db_->LoadShortcuts(&shortcuts);
+  temp_shortcuts_map_.reset(new ShortcutMap);
+  temp_guid_map_.reset(new GuidMap);
+  for (ShortcutsDatabase::GuidToShortcutMap::iterator it = shortcuts.begin();
+       it != shortcuts.end(); ++it) {
+    (*temp_guid_map_)[it->first] = temp_shortcuts_map_->insert(
+        std::make_pair(base::i18n::ToLower(it->second.text), it->second));
+  }
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&ShortcutsBackend::InitCompleted, this));
+}
+
+void ShortcutsBackend::InitCompleted() {
+  temp_guid_map_->swap(guid_map_);
+  temp_shortcuts_map_->swap(shortcuts_map_);
+  temp_shortcuts_map_.reset(NULL);
+  temp_guid_map_.reset(NULL);
+  current_state_ = INITIALIZED;
+  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
+                    OnShortcutsLoaded());
+}
+
+bool ShortcutsBackend::DeleteShortcutsWithUrl(const GURL& url,
+                                              bool exact_match) {
+  const std::string& url_spec = url.spec();
+  std::vector<std::string> shortcut_ids;
+  for (GuidMap::iterator it(guid_map_.begin()); it != guid_map_.end(); ) {
+    if (exact_match ?
+        (it->second->second.url == url) :
+        StartsWithASCII(it->second->second.url.spec(), url_spec, true)) {
+      shortcut_ids.push_back(it->first);
+      shortcuts_map_.erase(it->second);
+      guid_map_.erase(it++);
+    } else {
+      ++it;
+    }
+  }
+  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
+                    OnShortcutsChanged());
+  return no_db_access_ ||
+      BrowserThread::PostTask(
+          BrowserThread::DB, FROM_HERE,
+          base::Bind(
+              base::IgnoreResult(&ShortcutsDatabase::DeleteShortcutsWithUrl),
+              db_.get(), url_spec));
 }
 
 }  // namespace history

@@ -33,18 +33,14 @@
 
 namespace {
 
-class RemoveMatchPredicate {
+class DestinationURLEqualsURL {
  public:
-  explicit RemoveMatchPredicate(const std::set<GURL>& urls)
-      : urls_(urls) {
-  }
-  bool operator()(const AutocompleteMatch& match) {
-    return urls_.find(match.destination_url) != urls_.end();
+  explicit DestinationURLEqualsURL(const GURL& url) : url_(url) {}
+  bool operator()(const AutocompleteMatch& match) const {
+    return match.destination_url == url_;
   }
  private:
-  // Lifetime of the object is less than the lifetime of passed |urls|, so
-  // it is safe to store reference.
-  const std::set<GURL>& urls_;
+  const GURL url_;
 };
 
 }  // namespace
@@ -101,12 +97,15 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
 
   // When a user deletes a match, he probably means for the URL to disappear out
   // of history entirely. So nuke all shortcuts that map to this URL.
-  std::set<GURL> urls;
-  urls.insert(url);
-  // Immediately delete matches and shortcuts with the URL, so we can update the
-  // controller synchronously.
-  DeleteShortcutsWithURLs(urls);
-  DeleteMatchesWithURLs(urls);  // NOTE: |match| is now dead!
+  scoped_refptr<history::ShortcutsBackend> backend =
+      ShortcutsBackendFactory::GetForProfileIfExists(profile_);
+  if (backend)  // Can be NULL in Incognito.
+    backend->DeleteShortcutsWithUrl(url);
+  matches_.erase(std::remove_if(matches_.begin(), matches_.end(),
+                                DestinationURLEqualsURL(url)),
+                 matches_.end());
+  // NOTE: |match| is now dead!
+  listener_->OnProviderUpdate(true);
 
   // Delete the match from the history DB. This will eventually result in a
   // second call to DeleteShortcutsWithURLs(), which is harmless.
@@ -126,24 +125,6 @@ ShortcutsProvider::~ShortcutsProvider() {
 
 void ShortcutsProvider::OnShortcutsLoaded() {
   initialized_ = true;
-}
-
-void ShortcutsProvider::DeleteMatchesWithURLs(const std::set<GURL>& urls) {
-  matches_.erase(
-      std::remove_if(
-          matches_.begin(), matches_.end(), RemoveMatchPredicate(urls)),
-      matches_.end());
-  listener_->OnProviderUpdate(true);
-}
-
-void ShortcutsProvider::DeleteShortcutsWithURLs(const std::set<GURL>& urls) {
-  scoped_refptr<history::ShortcutsBackend> backend =
-      ShortcutsBackendFactory::GetForProfileIfExists(profile_);
-  if (!backend.get())
-    return;  // We are off the record.
-  for (std::set<GURL>::const_iterator url = urls.begin(); url != urls.end();
-       ++url)
-    backend->DeleteShortcutsWithUrl(*url);
 }
 
 void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {

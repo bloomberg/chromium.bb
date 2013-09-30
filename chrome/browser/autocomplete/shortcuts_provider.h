@@ -45,9 +45,6 @@ class ShortcutsProvider
   // ShortcutsBackendObserver:
   virtual void OnShortcutsLoaded() OVERRIDE;
 
-  void DeleteMatchesWithURLs(const std::set<GURL>& urls);
-  void DeleteShortcutsWithURLs(const std::set<GURL>& urls);
-
   // Performs the autocomplete matching and scoring.
   void GetMatches(const AutocompleteInput& input);
 

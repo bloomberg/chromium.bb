@@ -91,9 +91,10 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
   // multiple times - only the first call will be processed.
   bool Init();
 
-  bool initialized() const { return current_state_ == INITIALIZED; }
-
   // All of the public functions *must* be called on UI thread only!
+
+  bool initialized() const { return current_state_ == INITIALIZED; }
+  const ShortcutMap& shortcuts_map() const { return shortcuts_map_; }
 
   // Adds the Shortcut to the database.
   bool AddShortcut(const ShortcutsBackend::Shortcut& shortcut);
@@ -110,25 +111,30 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
   // Deletes all of the shortcuts.
   bool DeleteAllShortcuts();
 
-  const ShortcutMap& shortcuts_map() const {
-    return shortcuts_map_;
-  }
-
-  void AddObserver(ShortcutsBackendObserver* obs) {
-    observer_list_.AddObserver(obs);
-  }
-
-  void RemoveObserver(ShortcutsBackendObserver* obs) {
-    observer_list_.RemoveObserver(obs);
-  }
+  void AddObserver(ShortcutsBackendObserver* obs);
+  void RemoveObserver(ShortcutsBackendObserver* obs);
 
  private:
   friend class base::RefCountedThreadSafe<ShortcutsBackend>;
 
-  typedef std::map<std::string, ShortcutMap::iterator>
-      GuidToShortcutsIteratorMap;
+  enum CurrentState {
+    NOT_INITIALIZED,  // Backend created but not initialized.
+    INITIALIZING,     // Init() called, but not completed yet.
+    INITIALIZED,      // Initialization completed, all accessors can be safely
+                      // called.
+  };
+
+  typedef std::map<std::string, ShortcutMap::iterator> GuidMap;
 
   virtual ~ShortcutsBackend();
+
+  // RefcountedBrowserContextKeyedService:
+  virtual void ShutdownOnUIThread() OVERRIDE;
+
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Internal initialization of the back-end. Posted by Init() to the DB thread.
   // On completion posts InitCompleted() back to UI thread.
@@ -137,20 +143,9 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
   // Finishes initialization on UI thread, notifies all observers.
   void InitCompleted();
 
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // RefcountedBrowserContextKeyedService
-  virtual void ShutdownOnUIThread() OVERRIDE;
-
-  enum CurrentState {
-    NOT_INITIALIZED,  // Backend created but not initialized.
-    INITIALIZING,  // Init() called, but not completed yet.
-    INITIALIZED,  // Initialization completed, all accessors can be safely
-                  // called.
-  };
+  // Deletes all shortcuts whose URLs begin with |url|.  If |exact_match| is
+  // true, only shortcuts from exactly |url| are deleted.
+  bool DeleteShortcutsWithUrl(const GURL& url, bool exact_match);
 
   CurrentState current_state_;
   ObserverList<ShortcutsBackendObserver> observer_list_;
@@ -160,11 +155,11 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
   // between InitInternal() and InitComplete() to avoid doing a potentially huge
   // copy.
   scoped_ptr<ShortcutMap> temp_shortcuts_map_;
-  scoped_ptr<GuidToShortcutsIteratorMap> temp_guid_map_;
+  scoped_ptr<GuidMap> temp_guid_map_;
 
   ShortcutMap shortcuts_map_;
   // This is a helper map for quick access to a shortcut by guid.
-  GuidToShortcutsIteratorMap guid_map_;
+  GuidMap guid_map_;
 
   content::NotificationRegistrar notification_registrar_;
 

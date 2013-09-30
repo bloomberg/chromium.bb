@@ -22,13 +22,18 @@
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/shortcuts_backend.h"
 #include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/history/url_database.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_builder.h"
+#include "chrome/common/extensions/value_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,7 +45,7 @@ namespace {
 struct TestShortcutInfo {
   std::string guid;
   std::string url;
-  std::string title;  // The text that orginally was searched for.
+  std::string title;  // The text that originally was searched for.
   std::string contents;
   std::string contents_class;
   std::string description;
@@ -118,6 +123,10 @@ struct TestShortcutInfo {
     "http://www.daysagotest.com/d.html", "ago",
     "www.daysagotest.com/d.html", "0,1,8,3,11,1",
     "Test - site", "0,0", 1, 4},
+  { "BD85DBA2-8C29-49F9-84AE-48E1E90880F1",
+    "chrome-extension://cedabbhfglmiikkmdgcpjdkocfcmbkee/?q=echo", "echo echo",
+    "Run Echo command: echo", "0,0",
+    "Echo", "0,4", 1, 1},
 };
 
 }  // namespace
@@ -143,6 +152,8 @@ class ShortcutsProviderTest : public testing::Test,
     std::set<std::string> matches_;
   };
 
+  typedef std::vector<std::string> URLs;
+
   virtual void SetUp();
   virtual void TearDown();
 
@@ -153,7 +164,7 @@ class ShortcutsProviderTest : public testing::Test,
   // results' destination URLs match those provided. |expected_urls| does not
   // need to be in sorted order.
   void RunTest(const string16 text,
-               std::vector<std::string> expected_urls,
+               const URLs& expected_urls,
                std::string expected_top_result);
 
   base::MessageLoopForUI message_loop_;
@@ -222,10 +233,8 @@ void ShortcutsProviderTest::SetShouldContain::operator()(
 }
 
 void ShortcutsProviderTest::RunTest(const string16 text,
-                                   std::vector<std::string> expected_urls,
-                                   std::string expected_top_result) {
-  std::sort(expected_urls.begin(), expected_urls.end());
-
+                                    const URLs& expected_urls,
+                                    std::string expected_top_result) {
   base::MessageLoop::current()->RunUntilIdle();
   AutocompleteInput input(text, string16::npos, string16(), GURL(),
                           AutocompleteInput::INVALID_SPEC, false, false, true,
@@ -266,14 +275,14 @@ void ShortcutsProviderTest::RunTest(const string16 text,
 TEST_F(ShortcutsProviderTest, SimpleSingleMatch) {
   string16 text(ASCIIToUTF16("go"));
   std::string expected_url("http://www.google.com/");
-  std::vector<std::string> expected_urls;
+  URLs expected_urls;
   expected_urls.push_back(expected_url);
   RunTest(text, expected_urls, expected_url);
 }
 
 TEST_F(ShortcutsProviderTest, MultiMatch) {
   string16 text(ASCIIToUTF16("NEWS"));
-  std::vector<std::string> expected_urls;
+  URLs expected_urls;
   // Scores high because of completion length.
   expected_urls.push_back("http://slashdot.org/");
   // Scores high because of visit count.
@@ -286,7 +295,7 @@ TEST_F(ShortcutsProviderTest, MultiMatch) {
 
 TEST_F(ShortcutsProviderTest, TypedCountMatches) {
   string16 text(ASCIIToUTF16("just"));
-  std::vector<std::string> expected_urls;
+  URLs expected_urls;
   expected_urls.push_back("http://www.testsite.com/b.html");
   expected_urls.push_back("http://www.testsite.com/a.html");
   expected_urls.push_back("http://www.testsite.com/c.html");
@@ -295,7 +304,7 @@ TEST_F(ShortcutsProviderTest, TypedCountMatches) {
 
 TEST_F(ShortcutsProviderTest, FragmentLengthMatches) {
   string16 text(ASCIIToUTF16("just a"));
-  std::vector<std::string> expected_urls;
+  URLs expected_urls;
   expected_urls.push_back("http://www.testsite.com/d.html");
   expected_urls.push_back("http://www.testsite.com/e.html");
   expected_urls.push_back("http://www.testsite.com/f.html");
@@ -304,7 +313,7 @@ TEST_F(ShortcutsProviderTest, FragmentLengthMatches) {
 
 TEST_F(ShortcutsProviderTest, DaysAgoMatches) {
   string16 text(ASCIIToUTF16("ago"));
-  std::vector<std::string> expected_urls;
+  URLs expected_urls;
   expected_urls.push_back("http://www.daysagotest.com/a.html");
   expected_urls.push_back("http://www.daysagotest.com/b.html");
   expected_urls.push_back("http://www.daysagotest.com/c.html");
@@ -629,18 +638,22 @@ TEST_F(ShortcutsProviderTest, CalculateScore) {
 }
 
 TEST_F(ShortcutsProviderTest, DeleteMatch) {
-  TestShortcutInfo shortcuts_to_test_delete[3] = {
-    { "BD85DBA2-8C29-49F9-84AE-48E1E90880F1",
-      "http://www.deletetest.com/1.html", "delete",
-      "http://www.deletetest.com/1.html", "0,2",
+  TestShortcutInfo shortcuts_to_test_delete[] = {
+    { "BD85DBA2-8C29-49F9-84AE-48E1E90881F1",
+      "http://www.deletetest.com/1", "delete",
+      "http://www.deletetest.com/1", "0,2",
       "Erase this shortcut!", "0,0", 1, 1},
-    { "BD85DBA2-8C29-49F9-84AE-48E1E90880F2",
-      "http://www.deletetest.com/1.html", "erase",
-      "http://www.deletetest.com/1.html", "0,2",
+    { "BD85DBA2-8C29-49F9-84AE-48E1E90881F2",
+      "http://www.deletetest.com/1", "erase",
+      "http://www.deletetest.com/1", "0,2",
       "Erase this shortcut!", "0,0", 1, 1},
-    { "BD85DBA2-8C29-49F9-84AE-48E1E90880F3",
-      "http://www.deletetest.com/2.html", "delete",
-      "http://www.deletetest.com/2.html", "0,2",
+    { "BD85DBA2-8C29-49F9-84AE-48E1E90881F3",
+      "http://www.deletetest.com/1/2", "keep",
+      "http://www.deletetest.com/1/2", "0,2",
+      "Keep this shortcut!", "0,0", 1, 1},
+    { "BD85DBA2-8C29-49F9-84AE-48E1E90881F4",
+      "http://www.deletetest.com/2", "delete",
+      "http://www.deletetest.com/2", "0,2",
       "Erase this shortcut!", "0,0", 1, 1},
   };
 
@@ -648,7 +661,7 @@ TEST_F(ShortcutsProviderTest, DeleteMatch) {
 
   FillData(shortcuts_to_test_delete, arraysize(shortcuts_to_test_delete));
 
-  EXPECT_EQ(original_shortcuts_count + 3, backend_->shortcuts_map().size());
+  EXPECT_EQ(original_shortcuts_count + 4, backend_->shortcuts_map().size());
   EXPECT_FALSE(backend_->shortcuts_map().end() ==
                backend_->shortcuts_map().find(ASCIIToUTF16("delete")));
   EXPECT_FALSE(backend_->shortcuts_map().end() ==
@@ -663,20 +676,49 @@ TEST_F(ShortcutsProviderTest, DeleteMatch) {
 
   provider_->DeleteMatch(match);
 
-  // |shortcuts_to_test_delete[0]| and |shortcuts_to_test_delete[1]| should be
-  // deleted, but not |shortcuts_to_test_delete[2]| as it has different url.
-  EXPECT_EQ(original_shortcuts_count + 1, backend_->shortcuts_map().size());
+  // shortcuts_to_test_delete[0] and shortcuts_to_test_delete[1] should be
+  // deleted, but not shortcuts_to_test_delete[2] or
+  // shortcuts_to_test_delete[3], which have different URLs.
+  EXPECT_EQ(original_shortcuts_count + 2, backend_->shortcuts_map().size());
   EXPECT_FALSE(backend_->shortcuts_map().end() ==
                backend_->shortcuts_map().find(ASCIIToUTF16("delete")));
   EXPECT_TRUE(backend_->shortcuts_map().end() ==
               backend_->shortcuts_map().find(ASCIIToUTF16("erase")));
 
-  match.destination_url = GURL(shortcuts_to_test_delete[2].url);
-  match.contents = ASCIIToUTF16(shortcuts_to_test_delete[2].contents);
-  match.description = ASCIIToUTF16(shortcuts_to_test_delete[2].description);
+  match.destination_url = GURL(shortcuts_to_test_delete[3].url);
+  match.contents = ASCIIToUTF16(shortcuts_to_test_delete[3].contents);
+  match.description = ASCIIToUTF16(shortcuts_to_test_delete[3].description);
 
   provider_->DeleteMatch(match);
-  EXPECT_EQ(original_shortcuts_count, backend_->shortcuts_map().size());
+  EXPECT_EQ(original_shortcuts_count + 1, backend_->shortcuts_map().size());
   EXPECT_TRUE(backend_->shortcuts_map().end() ==
               backend_->shortcuts_map().find(ASCIIToUTF16("delete")));
+}
+
+TEST_F(ShortcutsProviderTest, Extension) {
+  // Try an input string that matches an extension URL.
+  string16 text(ASCIIToUTF16("echo"));
+  std::string expected_url(
+      "chrome-extension://cedabbhfglmiikkmdgcpjdkocfcmbkee/?q=echo");
+  URLs expected_urls;
+  expected_urls.push_back(expected_url);
+  RunTest(text, expected_urls, expected_url);
+
+  // Claim the extension has been unloaded.
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder()
+          .SetManifest(extensions::DictionaryBuilder()
+              .Set("name", "Echo")
+              .Set("version", "1.0"))
+          .SetID("cedabbhfglmiikkmdgcpjdkocfcmbkee")
+          .Build();
+  extensions::UnloadedExtensionInfo details(
+      extension.get(), extension_misc::UNLOAD_REASON_UNINSTALL);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_UNLOADED,
+      content::Source<Profile>(&profile_),
+      content::Details<extensions::UnloadedExtensionInfo>(&details));
+
+  // Now the URL should have disappeared.
+  RunTest(text, URLs(), std::string());
 }
