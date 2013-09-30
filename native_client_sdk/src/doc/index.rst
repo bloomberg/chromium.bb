@@ -36,6 +36,8 @@ Contents:
    community/application-gallery.rst
    community/middleware.rst
    peppercpp/index.rst
+   reference/index.rst
+   reference/nacl-manifest-format.rst
    faq.rst
    help.rst
    version.rst
