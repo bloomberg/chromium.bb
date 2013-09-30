@@ -305,22 +305,91 @@ class CaptureTestRenderViewHostFactory : public RenderViewHostFactory {
 
 // A stub consumer of captured video frames, which checks the output of
 // WebContentsVideoCaptureDevice.
-class StubConsumer : public media::VideoCaptureDevice::Client {
+class StubClient : public media::VideoCaptureDevice::Client {
  public:
-  StubConsumer()
-      : error_encountered_(false),
-        wait_color_yuv_(0xcafe1950) {
+  StubClient(const base::Callback<void(SkColor)>& color_callback,
+             const base::Closure& error_callback)
+      : color_callback_(color_callback),
+        error_callback_(error_callback) {
     buffer_pool_ = new VideoCaptureBufferPool(
         media::VideoFrame::AllocationSize(media::VideoFrame::I420,
                                           gfx::Size(kTestWidth, kTestHeight)),
         2);
     EXPECT_TRUE(buffer_pool_->Allocate());
   }
-  virtual ~StubConsumer() {}
+  virtual ~StubClient() {}
+
+  virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer() OVERRIDE {
+    return buffer_pool_->ReserveI420VideoFrame(gfx::Size(kTestWidth,
+                                                         kTestHeight),
+                                               0);
+  }
+
+  virtual void OnIncomingCapturedFrame(
+      const uint8* data,
+      int length,
+      base::Time timestamp,
+      int rotation,
+      bool flip_vert,
+      bool flip_horiz) OVERRIDE {
+    FAIL();
+  }
+
+  virtual void OnIncomingCapturedVideoFrame(
+      const scoped_refptr<media::VideoFrame>& frame,
+      base::Time timestamp) OVERRIDE {
+    EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), frame->coded_size());
+    EXPECT_EQ(media::VideoFrame::I420, frame->format());
+    EXPECT_LE(
+        0,
+        buffer_pool_->RecognizeReservedBuffer(frame->shared_memory_handle()));
+    uint8 yuv[3];
+    for (int plane = 0; plane < 3; ++plane) {
+      yuv[plane] = frame->data(plane)[0];
+    }
+    // TODO(nick): We just look at the first pixel presently, because if
+    // the analysis is too slow, the backlog of frames will grow without bound
+    // and trouble erupts. http://crbug.com/174519
+    color_callback_.Run((SkColorSetRGB(yuv[0], yuv[1], yuv[2])));
+  }
+
+  virtual void OnError() OVERRIDE {
+    error_callback_.Run();
+  }
+
+  virtual void OnFrameInfo(const media::VideoCaptureCapability& info) OVERRIDE {
+    EXPECT_EQ(kTestWidth, info.width);
+    EXPECT_EQ(kTestHeight, info.height);
+    EXPECT_EQ(kTestFramesPerSecond, info.frame_rate);
+    EXPECT_EQ(media::PIXEL_FORMAT_I420, info.color);
+  }
+
+ private:
+  scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
+  base::Callback<void(SkColor)> color_callback_;
+  base::Closure error_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(StubClient);
+};
+
+class StubClientObserver {
+ public:
+  StubClientObserver()
+      : error_encountered_(false),
+        wait_color_yuv_(0xcafe1950) {
+    client_.reset(new StubClient(
+        base::Bind(&StubClientObserver::OnColor, base::Unretained(this)),
+        base::Bind(&StubClientObserver::OnError, base::Unretained(this))));
+  }
+
+  virtual ~StubClientObserver() {}
+
+  scoped_ptr<media::VideoCaptureDevice::Client> PassClient() {
+    return client_.PassAs<media::VideoCaptureDevice::Client>();
+  }
 
   void QuitIfConditionMet(SkColor color) {
     base::AutoLock guard(lock_);
-
     if (wait_color_yuv_ == color || error_encountered_)
       base::MessageLoop::current()->Quit();
   }
@@ -356,67 +425,31 @@ class StubConsumer : public media::VideoCaptureDevice::Client {
     return error_encountered_;
   }
 
-  virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer() OVERRIDE {
-    return buffer_pool_->ReserveI420VideoFrame(gfx::Size(kTestWidth,
-                                                         kTestHeight),
-                                               0);
-  }
-
-  virtual void OnIncomingCapturedFrame(
-      const uint8* data,
-      int length,
-      base::Time timestamp,
-      int rotation,
-      bool flip_vert,
-      bool flip_horiz) OVERRIDE {
-    FAIL();
-  }
-
-  virtual void OnIncomingCapturedVideoFrame(
-      const scoped_refptr<media::VideoFrame>& frame,
-      base::Time timestamp) OVERRIDE {
-    EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), frame->coded_size());
-    EXPECT_EQ(media::VideoFrame::I420, frame->format());
-    EXPECT_LE(
-        0,
-        buffer_pool_->RecognizeReservedBuffer(frame->shared_memory_handle()));
-    uint8 yuv[3];
-    for (int plane = 0; plane < 3; ++plane) {
-      yuv[plane] = frame->data(plane)[0];
-    }
-    // TODO(nick): We just look at the first pixel presently, because if
-    // the analysis is too slow, the backlog of frames will grow without bound
-    // and trouble erupts. http://crbug.com/174519
-    PostColorOrError(SkColorSetRGB(yuv[0], yuv[1], yuv[2]));
-  }
-
-  void PostColorOrError(SkColor new_color) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-        &StubConsumer::QuitIfConditionMet, base::Unretained(this), new_color));
-  }
-
-  virtual void OnError() OVERRIDE {
+  void OnError() {
     {
       base::AutoLock guard(lock_);
       error_encountered_ = true;
     }
-    PostColorOrError(kNothingYet);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
+        &StubClientObserver::QuitIfConditionMet,
+        base::Unretained(this),
+        kNothingYet));
   }
 
-  virtual void OnFrameInfo(const media::VideoCaptureCapability& info) OVERRIDE {
-    EXPECT_EQ(kTestWidth, info.width);
-    EXPECT_EQ(kTestHeight, info.height);
-    EXPECT_EQ(kTestFramesPerSecond, info.frame_rate);
-    EXPECT_EQ(media::PIXEL_FORMAT_I420, info.color);
+  void OnColor(SkColor color) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
+        &StubClientObserver::QuitIfConditionMet,
+        base::Unretained(this),
+        color));
   }
 
  private:
   base::Lock lock_;
   bool error_encountered_;
   SkColor wait_color_yuv_;
-  scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
+  scoped_ptr<StubClient> client_;
 
-  DISALLOW_COPY_AND_ASSIGN(StubConsumer);
+  DISALLOW_COPY_AND_ASSIGN(StubClientObserver);
 };
 
 // Test harness that sets up a minimal environment with necessary stubs.
@@ -474,7 +507,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
     // CaptureTestSourceController when it finishes destruction.
     // Trigger this, and wait.
     if (device_) {
-      device_->DeAllocate();
+      device_->StopAndDeAllocate();
       device_.reset();
     }
 
@@ -493,8 +526,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
 
   // Accessors.
   CaptureTestSourceController* source() { return &controller_; }
-  media::VideoCaptureDevice1* device() { return device_.get(); }
-  StubConsumer* consumer() { return &consumer_; }
+  media::VideoCaptureDevice* device() { return device_.get(); }
 
   void SimulateDrawEvent() {
     if (source()->CanUseFrameSubscriber()) {
@@ -513,9 +545,12 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
 
   void DestroyVideoCaptureDevice() { device_.reset(); }
 
+  StubClientObserver* client_observer() {
+    return &client_observer_;
+  }
+
  private:
-  // The consumer is the ultimate recipient of captured pixel data.
-  StubConsumer consumer_;
+  StubClientObserver client_observer_;
 
   // The controller controls which pixel patterns to produce.
   CaptureTestSourceController controller_;
@@ -532,7 +567,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
   scoped_ptr<WebContents> web_contents_;
 
   // Finally, the WebContentsVideoCaptureDevice under test.
-  scoped_ptr<media::VideoCaptureDevice1> device_;
+  scoped_ptr<media::VideoCaptureDevice> device_;
 
   TestBrowserThreadBundle thread_bundle_;
 };
@@ -551,10 +586,10 @@ TEST_F(WebContentsVideoCaptureDeviceTest, InvalidInitialWebContentsError) {
       0,
       false,
       media::ConstantResolutionVideoCaptureDevice);
-  device()->Allocate(capture_format, consumer());
-  device()->Start();
-  ASSERT_NO_FATAL_FAILURE(consumer()->WaitForError());
-  device()->DeAllocate();
+  device()->AllocateAndStart(
+      capture_format, client_observer()->PassClient());
+  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForError());
+  device()->StopAndDeAllocate();
 }
 
 TEST_F(WebContentsVideoCaptureDeviceTest, WebContentsDestroyed) {
@@ -568,13 +603,12 @@ TEST_F(WebContentsVideoCaptureDeviceTest, WebContentsDestroyed) {
       0,
       false,
       media::ConstantResolutionVideoCaptureDevice);
-  device()->Allocate(capture_format, consumer());
-  device()->Start();
-
+  device()->AllocateAndStart(
+      capture_format, client_observer()->PassClient());
   // Do one capture to prove
   source()->SetSolidColor(SK_ColorRED);
   SimulateDrawEvent();
-  ASSERT_NO_FATAL_FAILURE(consumer()->WaitForNextColor(SK_ColorRED));
+  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColor(SK_ColorRED));
 
   base::RunLoop().RunUntilIdle();
 
@@ -583,8 +617,8 @@ TEST_F(WebContentsVideoCaptureDeviceTest, WebContentsDestroyed) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&WebContentsVideoCaptureDeviceTest::ResetWebContents,
                  base::Unretained(this)));
-  ASSERT_NO_FATAL_FAILURE(consumer()->WaitForError());
-  device()->DeAllocate();
+  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForError());
+  device()->StopAndDeAllocate();
 }
 
 TEST_F(WebContentsVideoCaptureDeviceTest,
@@ -597,11 +631,11 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
       0,
       false,
       media::ConstantResolutionVideoCaptureDevice);
-  device()->Allocate(capture_format, consumer());
-  device()->Start();
+  device()->AllocateAndStart(
+      capture_format, client_observer()->PassClient());
+
   // Make a point of not running the UI messageloop here.
-  device()->Stop();
-  device()->DeAllocate();
+  device()->StopAndDeAllocate();
   DestroyVideoCaptureDevice();
 
   // Currently, there should be CreateCaptureMachineOnUIThread() and
@@ -623,25 +657,19 @@ TEST_F(WebContentsVideoCaptureDeviceTest, StopWithRendererWorkToDo) {
       0,
       false,
       media::ConstantResolutionVideoCaptureDevice);
-  device()->Allocate(capture_format, consumer());
+  device()->AllocateAndStart(
+      capture_format, client_observer()->PassClient());
 
-  device()->Start();
-  // Make a point of not running the UI messageloop here.
-  // TODO(ajwong): Why do we care?
   base::RunLoop().RunUntilIdle();
 
   for (int i = 0; i < 10; ++i)
     SimulateDrawEvent();
 
-  device()->Stop();
-  device()->DeAllocate();
-  // Currently, there should be CreateCaptureMachineOnUIThread() and
-  // DestroyCaptureMachineOnUIThread() tasks pending on the current message
-  // loop. These should both succeed without crashing, and the machine should
-  // wind up in the idle state.
-  ASSERT_FALSE(consumer()->HasError());
+  ASSERT_FALSE(client_observer()->HasError());
+  device()->StopAndDeAllocate();
+  ASSERT_FALSE(client_observer()->HasError());
   base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(consumer()->HasError());
+  ASSERT_FALSE(client_observer()->HasError());
 }
 
 TEST_F(WebContentsVideoCaptureDeviceTest, DeviceRestart) {
@@ -653,33 +681,34 @@ TEST_F(WebContentsVideoCaptureDeviceTest, DeviceRestart) {
       0,
       false,
       media::ConstantResolutionVideoCaptureDevice);
-  device()->Allocate(capture_format, consumer());
-  device()->Start();
+  device()->AllocateAndStart(
+      capture_format, client_observer()->PassClient());
   base::RunLoop().RunUntilIdle();
   source()->SetSolidColor(SK_ColorRED);
   SimulateDrawEvent();
   SimulateDrawEvent();
-  ASSERT_NO_FATAL_FAILURE(consumer()->WaitForNextColor(SK_ColorRED));
+  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColor(SK_ColorRED));
   SimulateDrawEvent();
   SimulateDrawEvent();
   source()->SetSolidColor(SK_ColorGREEN);
   SimulateDrawEvent();
-  ASSERT_NO_FATAL_FAILURE(consumer()->WaitForNextColor(SK_ColorGREEN));
-  device()->Stop();
+  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColor(SK_ColorGREEN));
+  device()->StopAndDeAllocate();
 
   // Device is stopped, but content can still be animating.
   SimulateDrawEvent();
   SimulateDrawEvent();
   base::RunLoop().RunUntilIdle();
 
-  device()->Start();
+  StubClientObserver observer2;
+  device()->AllocateAndStart(capture_format, observer2.PassClient());
   source()->SetSolidColor(SK_ColorBLUE);
   SimulateDrawEvent();
-  ASSERT_NO_FATAL_FAILURE(consumer()->WaitForNextColor(SK_ColorBLUE));
+  ASSERT_NO_FATAL_FAILURE(observer2.WaitForNextColor(SK_ColorBLUE));
   source()->SetSolidColor(SK_ColorYELLOW);
   SimulateDrawEvent();
-  ASSERT_NO_FATAL_FAILURE(consumer()->WaitForNextColor(SK_ColorYELLOW));
-  device()->DeAllocate();
+  ASSERT_NO_FATAL_FAILURE(observer2.WaitForNextColor(SK_ColorYELLOW));
+  device()->StopAndDeAllocate();
 }
 
 // The "happy case" test.  No scaling is needed, so we should be able to change
@@ -695,9 +724,8 @@ TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
       0,
       false,
       media::ConstantResolutionVideoCaptureDevice);
-  device()->Allocate(capture_format, consumer());
-
-  device()->Start();
+  device()->AllocateAndStart(
+      capture_format, client_observer()->PassClient());
 
   for (int i = 0; i < 6; i++) {
     const char* name = NULL;
@@ -725,21 +753,21 @@ TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
 
     source()->SetSolidColor(SK_ColorRED);
     SimulateDrawEvent();
-    ASSERT_NO_FATAL_FAILURE(consumer()->WaitForNextColor(SK_ColorRED));
+    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColor(SK_ColorRED));
 
     source()->SetSolidColor(SK_ColorGREEN);
     SimulateDrawEvent();
-    ASSERT_NO_FATAL_FAILURE(consumer()->WaitForNextColor(SK_ColorGREEN));
+    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColor(SK_ColorGREEN));
 
     source()->SetSolidColor(SK_ColorBLUE);
     SimulateDrawEvent();
-    ASSERT_NO_FATAL_FAILURE(consumer()->WaitForNextColor(SK_ColorBLUE));
+    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColor(SK_ColorBLUE));
 
     source()->SetSolidColor(SK_ColorBLACK);
     SimulateDrawEvent();
-    ASSERT_NO_FATAL_FAILURE(consumer()->WaitForNextColor(SK_ColorBLACK));
+    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColor(SK_ColorBLACK));
   }
-  device()->DeAllocate();
+  device()->StopAndDeAllocate();
 }
 
 TEST_F(WebContentsVideoCaptureDeviceTest, RejectsInvalidAllocateParams) {
@@ -751,13 +779,20 @@ TEST_F(WebContentsVideoCaptureDeviceTest, RejectsInvalidAllocateParams) {
       0,
       false,
       media::ConstantResolutionVideoCaptureDevice);
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&media::VideoCaptureDevice1::Allocate,
-                                     base::Unretained(device()),
-                                     capture_format,
-                                     consumer()));
-  ASSERT_NO_FATAL_FAILURE(consumer()->WaitForError());
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&media::VideoCaptureDevice::AllocateAndStart,
+                 base::Unretained(device()),
+                 capture_format,
+                 base::Passed(client_observer()->PassClient())));
+  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForError());
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&media::VideoCaptureDevice::StopAndDeAllocate,
+                 base::Unretained(device())));
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(WebContentsVideoCaptureDeviceTest, BadFramesGoodFrames) {
@@ -769,12 +804,11 @@ TEST_F(WebContentsVideoCaptureDeviceTest, BadFramesGoodFrames) {
       0,
       false,
       media::ConstantResolutionVideoCaptureDevice);
-  device()->Allocate(capture_format, consumer());
-
   // 1x1 is too small to process; we intend for this to result in an error.
   source()->SetCopyResultSize(1, 1);
   source()->SetSolidColor(SK_ColorRED);
-  device()->Start();
+  device()->AllocateAndStart(
+      capture_format, client_observer()->PassClient());
 
   // These frames ought to be dropped during the Render stage. Let
   // several captures to happen.
@@ -787,12 +821,11 @@ TEST_F(WebContentsVideoCaptureDeviceTest, BadFramesGoodFrames) {
   // Now push some good frames through; they should be processed normally.
   source()->SetCopyResultSize(kTestWidth, kTestHeight);
   source()->SetSolidColor(SK_ColorGREEN);
-  ASSERT_NO_FATAL_FAILURE(consumer()->WaitForNextColor(SK_ColorGREEN));
+  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColor(SK_ColorGREEN));
   source()->SetSolidColor(SK_ColorRED);
-  ASSERT_NO_FATAL_FAILURE(consumer()->WaitForNextColor(SK_ColorRED));
+  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColor(SK_ColorRED));
 
-  device()->Stop();
-  device()->DeAllocate();
+  device()->StopAndDeAllocate();
 }
 
 }  // namespace

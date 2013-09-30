@@ -27,7 +27,7 @@ class RenderWidgetHost;
 // underlying render view to be swapped out (e.g., due to navigation or
 // crashes/reloads), without any interruption in capturing.
 class CONTENT_EXPORT WebContentsVideoCaptureDevice
-    : public media::VideoCaptureDevice1 {
+    : public media::VideoCaptureDevice {
  public:
   // Construct from a |device_id| string of the form:
   //   "virtual-media-stream://render_process_id:render_view_id", where
@@ -37,31 +37,21 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   // WebContentsVideoCaptureDevice is itself deleted.
   // TODO(miu): Passing a destroy callback suggests needing to revisit the
   // design philosophy of an asynchronous DeAllocate().  http://crbug.com/158641
-  static media::VideoCaptureDevice1* Create(const std::string& device_id);
+  static media::VideoCaptureDevice* Create(const std::string& device_id);
 
   virtual ~WebContentsVideoCaptureDevice();
 
   // VideoCaptureDevice implementation.
-  virtual void Allocate(const media::VideoCaptureCapability& capture_format,
-                        VideoCaptureDevice::Client* client) OVERRIDE;
-  virtual void Start() OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void DeAllocate() OVERRIDE;
-
-  // Note: The following is just a pass-through of the device_id provided to the
-  // constructor.  It does not change when the content of the page changes
-  // (e.g., due to navigation), or when the underlying RenderView is
-  // swapped-out.
-  virtual const Name& device_name() OVERRIDE;
+  virtual void AllocateAndStart(
+      const media::VideoCaptureCapability& capture_format,
+      scoped_ptr<Client> client) OVERRIDE;
+  virtual void StopAndDeAllocate() OVERRIDE;
 
  private:
   class Impl;
 
-  WebContentsVideoCaptureDevice(const Name& name,
-                                int render_process_id,
-                                int render_view_id);
+  WebContentsVideoCaptureDevice(int render_process_id, int render_view_id);
 
-  Name device_name_;
   const scoped_ptr<Impl> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsVideoCaptureDevice);
