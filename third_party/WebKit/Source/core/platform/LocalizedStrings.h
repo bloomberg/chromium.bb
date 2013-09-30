@@ -37,10 +37,6 @@ namespace WebCore {
     String searchableIndexIntroduction();
     String defaultDetailsSummaryText();
 
-    String searchMenuNoRecentSearchesText();
-    String searchMenuRecentSearchesText();
-    String searchMenuClearRecentSearchesText();
-
     String AXWebAreaText();
     String AXLinkText();
     String AXListMarkerText();

@@ -128,9 +128,9 @@ struct WebLocalizedString {
         PlaceholderForYearField,
         ResetButtonDefaultLabel,
         SearchableIndexIntroduction,
-        SearchMenuClearRecentSearchesText,
-        SearchMenuNoRecentSearchesText,
-        SearchMenuRecentSearchesText,
+        SearchMenuClearRecentSearchesText, // Deprecated.
+        SearchMenuNoRecentSearchesText, // Deprecated.
+        SearchMenuRecentSearchesText, // Deprecated.
         SubmitButtonDefaultLabel,
         ThisMonthButtonLabel,
         ThisWeekButtonLabel,

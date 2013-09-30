@@ -66,20 +66,6 @@ String defaultDetailsSummaryText()
     return query(WebLocalizedString::DetailsLabel);
 }
 
-String searchMenuNoRecentSearchesText()
-{
-    return query(WebLocalizedString::SearchMenuNoRecentSearchesText);
-}
-String searchMenuRecentSearchesText()
-{
-    return query(WebLocalizedString::SearchMenuRecentSearchesText);
-}
-
-String searchMenuClearRecentSearchesText()
-{
-    return query(WebLocalizedString::SearchMenuClearRecentSearchesText);
-}
-
 String AXWebAreaText()
 {
     return query(WebLocalizedString::AXWebAreaText);
