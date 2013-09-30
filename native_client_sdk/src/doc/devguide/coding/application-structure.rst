@@ -19,7 +19,7 @@ material presented in the :doc:`Technical Overview <../../overview>`.
 
   The "Hello, World" example is used here to illustrate basic
   Native Client programming techniques. You can find this code in the
-  */examples/hello_world* directory in the Native Client SDK download.
+  */getting_started/part1* directory in the Native Client SDK download.
 
 Application components
 ======================
@@ -33,8 +33,9 @@ A Native Client application typically contains the following components:
   separate .css files;
 * a Native Client manifest file (with a .nmf extension) that specifies how to
   load a Native Client module for different processors; and
-* a Native Client module, written in C or C++, and compiled into one or more
-  executable files (with a .nexe extension) for different processors.
+* a Native Client module, written in C or C++, and compiled into a portable
+  executable file (with a .pexe extension) or (if using the Chrome Web Store),
+  architecture-specific executable files (with .nexe extensions).
 
 
 Applications that are published in the `Chrome Web Store
@@ -46,15 +47,16 @@ Web Store manifest file ``(manifest.json)`` and one or more icon files.
 HTML file and the <embed> element
 =================================
 
-The ``<embed>`` element in an HTML file triggers the loading of a Native Client module and specifies the rectangle on the web page that is managed by the module. Here is the <embed> element from the "Hello, World" application:
+The ``<embed>`` element in an HTML file triggers the loading of a Native Client
+module and specifies the rectangle on the web page that is managed by the
+module. Here is the <embed> element from the "Hello, World" application:
 
 .. naclcode::
 
-  <embed name="nacl_module"
-    id="hello_world"
-    width=200 height=200
-    src="hello_world.nmf"
-    type="application/x-nacl" />
+  <embed id="hello_tutorial"
+    width=0 height=0
+    src="hello_tutorial.nmf"
+    type="application/x-pnacl" />
 
 In the ``<embed>`` element:
 
@@ -72,8 +74,9 @@ src
   which version of a module to load based on the architecture of the
   user's computer (see the following section for more information)
 type
-  specifies the MIME type of the embedded content; for Native Client
-  modules the type must be "application/x-nacl"
+  specifies the MIME type of the embedded content; for Portable Native Client
+  modules the type must be "application/x-pnacl". For architecture-specific
+  Native Client modules the type must be "application/x-nacl"
 
 
 .. _manifest_file:
@@ -92,43 +95,52 @@ Application <../distributing>`.  and the `Chrome Web Store manifest file format
 <http://code.google.com/chrome/extensions/manifest.html>`_.
 
 A **Native Client manifest file** is a file that specifies which Native Client
-module (executable) to load for each of the supported end-user computer
-architectures (for example, x86-32, x86-64, or ARM). This file is required for
-all Native Client applications. The extension for this file is .nmf.
+module (executable) to load. For PNaCl it specifies a single portable
+executable; otherwise it specifies one for each of the supported end-user
+computer architectures (for example x86-32, x86-64, or ARM). This file is
+required for all Native Client applications. The extension for this file is
+.nmf.
 
-The browser uses the Native Client manifest file to determine which compiled
-Native Client module to load for a given end-user computer architecture. In most
-cases, you can simply use the Python script provided with the SDK,
-``create_nmf.py``, to create a manifest file for your application as part of the
-compilation step (see the Makefile in any of the SDK examples for an
-illustration of how to do so).
+Manifest files for applications that use PNaCl are simple. Here is the manifest
+for the hello world example:
 
-Here's a sample manifest file for an application that uses the
-:ref:`newlib<c_libraries>` C library:
+.. naclcode::
+
+  {
+    "program": {
+      "portable": {
+        "pnacl-translate": {
+          "url": "hello_tutorial.pexe"
+        }
+      }
+    }
+  }
+
+
+For Chrome Web Store applications that do not use PNaCl, a typical manifest file
+contains a `JSON <http://www.json.org/>`_ dictionary with a single top-level
+key/value pair: the "program" key and a value consisting of a nested
+dictionary. The nested dictionary contains keys corresponding to the names of
+the supported computer architectures, and values referencing the file to load
+for a given architecture—specifically, the URL of the .nexe file, given by the
+``"url"`` key. URLs are specified relative to the location of the manifest file.
+Here is an example:
 
 .. naclcode::
 
   {
     "program": {
       "x86-32": {
-        "url": "hello_world_x86_32.nexe"
+        "url": "hello_tutorial_x86_32.nexe"
       },
       "x86-64": {
-        "url": "hello_world_x86_64.nexe"
+        "url": "hello_tutorial_x86_64.nexe"
       },
       "arm": {
-        "url": "hello_world_arm.nexe"
+        "url": "hello_tutorial_arm.nexe"
       }
     }
   }
-
-For applications that use the newlib library, a typical manifest file contains a
-`JSON <http://www.json.org/>`_ dictionary with a single top-level key/value
-pair: the "program" key and a value consisting of a nested dictionary. The
-nested dictionary contains keys corresponding to the names of the supported
-computer architectures, and values referencing the file to load for a given
-architecture—specifically, the URL of the .nexe file, given by the ``"url"``
-key. URLs are specified relative to the location of the manifest file.
 
 For applications that use the :ref:`glibc<c_libraries>`
 library, the manifest file must also contain a "files" key that specifies the
@@ -138,26 +150,28 @@ see some example manifest files, build some of the example applications in the
 SDK (run ``make`` in the example subdirectories) and look at the generated
 manifest files.
 
+In most cases, you can simply use the Python script provided with the SDK,
+``create_nmf.py``, to create a manifest file for your application as part of the
+compilation step (see the Makefile in any of the SDK examples for an
+illustration of how to do so). The manifest file format is also
+:doc:`documented<../../reference/nacl-manifest-format>`.
 
 Modules and instances
 =====================
 
-A Native Client **module** is C or C++ code compiled into an executable .nexe file.
+A Native Client **module** is C or C++ code compiled into a PNaCl .pexe file or
+a NaCl .nexe file.
 
 An **instance** is a rectangle on a web page that is managed by a module. An
 instance may have a dimension of width=0 and height=0, meaning that the instance
 does not have any visible component on the web page. An instance is created by
 including an ``<embed>`` element in a web page. The ``<embed>`` element
-references a Native Client manifest file that loads a version of the module
-compiled for the end-user's computer architecture. A module may be included in a
-web page multiple times by using multiple ``<embed>`` elements that refer to the
-module; in this case the Native Client runtime system loads the module once and
-creates multiple instances that are managed by the module.
-
-The "Hello, World" example has one instance of the ``hello_world`` module, i.e.,
-one ``<embed>`` element in ``hello_world.html``. The actual module that is
-loaded (``hello_world_x86_32.nexe`` or ``hello_world_x86_64.nexe``) depends on
-the end-user computer architecture.
+references a Native Client manifest file that loads the appropriate version of
+the module (either portable, or specific to the end-user's architecture).  A
+module may be included in a web page multiple times by using multiple
+``<embed>`` elements that refer to the module; in this case the Native Client
+runtime system loads the module once and creates multiple instances that are
+managed by the module.
 
 
 Native Client modules: A closer look
@@ -242,14 +256,3 @@ While the ``CreateModule()`` factory function, the ``Module`` class, and the
 samples shown above don't actually do anything. Subsequent chapters in the
 Developer's Guide build on these code samples and add more interesting
 functionality.
-
-
-Threading
-=========
-
-.. FIXME: link to pp:Core page for CallOnMainThread. But this is no longer
-   true anyway...
-
-Currently, calls to a Native Client module always execute on the main thread of
-the module. Similarly, all calls to the Pepper API (with the exception of
-pp::Core::CallOnMainThread()) must be made on the main thread of the module.
