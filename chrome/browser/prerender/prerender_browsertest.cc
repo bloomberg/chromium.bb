@@ -5,7 +5,9 @@
 #include <deque>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
@@ -40,6 +42,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
@@ -57,8 +60,10 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/test/net/url_request_mock_http_job.h"
 #include "extensions/common/switches.h"
 #include "grit/generated_resources.h"
+#include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -98,12 +103,12 @@ static const char* kPassTitle = "PASS";
 
 std::string CreateClientRedirect(const std::string& dest_url) {
   const char* const kClientRedirectBase = "client-redirect?";
-  return kClientRedirectBase + dest_url;
+  return kClientRedirectBase + net::EscapeQueryParamValue(dest_url, false);
 }
 
 std::string CreateServerRedirect(const std::string& dest_url) {
   const char* const kServerRedirectBase = "server-redirect?";
-  return kServerRedirectBase + dest_url;
+  return kServerRedirectBase + net::EscapeQueryParamValue(dest_url, false);
 }
 
 // Clears the specified data using BrowsingDataRemover.
@@ -629,6 +634,15 @@ void CreateNeverStartProtocolHandlerOnIO(const GURL& url) {
       url, never_respond_handler.Pass());
 }
 
+// Makes |url| respond to requests with the contents of |file|.
+void CreateMockProtocolHandlerOnIO(const GURL& url,
+                                   const base::FilePath& file) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  net::URLRequestFilter::GetInstance()->AddUrlProtocolHandler(
+      url, content::URLRequestMockHTTPJob::CreateProtocolHandlerForSingleFile(
+          file));
+}
+
 // A ContentBrowserClient that cancels all prerenderers on OpenURL.
 class TestContentBrowserClient : public chrome::ChromeContentBrowserClient {
  public:
@@ -647,6 +661,25 @@ class TestContentBrowserClient : public chrome::ChromeContentBrowserClient {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestContentBrowserClient);
+};
+
+// A ContentBrowserClient that forces cross-process navigations.
+class SwapProcessesContentBrowserClient
+    : public chrome::ChromeContentBrowserClient {
+ public:
+  SwapProcessesContentBrowserClient() {}
+  virtual ~SwapProcessesContentBrowserClient() {}
+
+  // chrome::ChromeContentBrowserClient implementation.
+  virtual bool ShouldSwapProcessesForRedirect(
+      content::ResourceContext* resource_context,
+      const GURL& current_url,
+      const GURL& new_url) OVERRIDE {
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SwapProcessesContentBrowserClient);
 };
 
 }  // namespace
@@ -2172,10 +2205,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // redirect to refresh from a fragment on the same page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderClientRedirectFromFragment) {
-  // The # needs to be percent-encoded. Otherwise it never gets sent
-  // to the server.
   PrerenderTestURL(
-      CreateClientRedirect("files/prerender/no_prerender_page.html%23fragment"),
+      CreateClientRedirect("files/prerender/no_prerender_page.html#fragment"),
       FINAL_STATUS_APP_TERMINATING,
       2);
   NavigateToURLWithDisposition(
@@ -2285,9 +2316,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorTopLevel) {
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.server_certificate =
       net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
-    net::SpawnedTestServer https_server(
-        net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   PrerenderTestURL(https_url,
@@ -2302,9 +2333,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorSubresource) {
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.server_certificate =
       net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
-    net::SpawnedTestServer https_server(
-        net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/image.jpeg");
   std::vector<net::SpawnedTestServer::StringPair> replacement_text;
@@ -2326,9 +2357,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorIframe) {
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.server_certificate =
       net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
-    net::SpawnedTestServer https_server(
-        net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL(
       "files/prerender/prerender_embedded_content.html");
@@ -2376,9 +2407,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertTopLevel) {
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
-    net::SpawnedTestServer https_server(
-        net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   PrerenderTestURL(https_url, FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED, 1);
@@ -2390,9 +2421,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderSSLClientCertSubresource) {
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
-    net::SpawnedTestServer https_server(
-        net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/image.jpeg");
   std::vector<net::SpawnedTestServer::StringPair> replacement_text;
@@ -2413,9 +2444,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertIframe) {
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
-    net::SpawnedTestServer https_server(
-        net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL(
       "files/prerender/prerender_embedded_content.html");
@@ -3063,6 +3094,44 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCapturedWebContents) {
   web_contents->IncrementCapturerCount();
   NavigateToDestURLWithDisposition(CURRENT_TAB, false);
   web_contents->DecrementCapturerCount();
+}
+
+// Checks that prerenders are aborted on cross-process navigation from
+// a server redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderCrossProcessServerRedirect) {
+  // Force everything to be a process swap.
+  SwapProcessesContentBrowserClient test_browser_client;
+  content::ContentBrowserClient* original_browser_client =
+      content::SetBrowserClientForTesting(&test_browser_client);
+
+  PrerenderTestURL(
+      CreateServerRedirect("files/prerender/prerender_page.html"),
+      FINAL_STATUS_OPEN_URL, 2);
+
+  content::SetBrowserClientForTesting(original_browser_client);
+}
+
+// Checks that prerenders are aborted on cross-process navigation from
+// a client redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderCrossProcessClientRedirect) {
+  // Cross-process navigation logic for renderer-initiated navigations
+  // is partially controlled by the renderer, namely
+  // ChromeContentRendererClient. This test instead relies on the Web
+  // Store triggering such navigations.
+  std::string webstore_url = extension_urls::GetWebstoreLaunchURL();
+
+  // Mock out requests to the Web Store.
+  base::FilePath file(FILE_PATH_LITERAL(
+      "chrome/test/data/prerender/prerender_page.html"));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreateMockProtocolHandlerOnIO,
+                 GURL(webstore_url), file));
+
+  PrerenderTestURL(CreateClientRedirect(webstore_url),
+                   FINAL_STATUS_OPEN_URL, 2);
 }
 
 }  // namespace prerender

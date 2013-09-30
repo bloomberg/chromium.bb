@@ -68,14 +68,6 @@ class PrerenderTracker : public base::NonThreadSafe,
   // been displayed or destroyed is still prerendering.
   bool IsPrerenderingOnIOThread(int child_id, int route_id) const;
 
-  // Updates the state for whether a RenderView is prerendering when a
-  // navigation is transferred from one RenderView to another in a different
-  // process.
-  void UpdatePrerenderStateForTransfer(int old_child_id,
-                                       int old_route_id,
-                                       int new_child_id,
-                                       int new_route_id);
-
  private:
   friend class PrerenderContents;
   FRIEND_TEST_ALL_PREFIXES(PrerenderTrackerTest, PrerenderTrackerNull);

@@ -331,11 +331,10 @@ void ChromeResourceDispatcherHostDelegate::WillTransferRequestToNewProcess(
     int new_child_id,
     int new_route_id,
     int new_request_id) {
-  if (prerender_tracker_->IsPrerenderingOnIOThread(old_child_id,
-                                                   old_route_id)) {
-    prerender_tracker_->UpdatePrerenderStateForTransfer(
-        old_child_id, old_route_id, new_child_id, new_route_id);
-  }
+  // If a prerender, it have should been aborted on cross-process
+  // navigation in PrerenderContents::WebContentsImpl::OpenURLFromTab.
+  DCHECK(!prerender_tracker_->IsPrerenderingOnIOThread(old_child_id,
+                                                       old_route_id));
 }
 
 void ChromeResourceDispatcherHostDelegate::DownloadStarting(

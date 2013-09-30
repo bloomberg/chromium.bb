@@ -37,7 +37,7 @@ class URLRequestMockHTTPJob : public net::URLRequestFileJob {
   // Respond to all HTTP requests of |hostname| with contents of the file
   // located at |file_path|.
   static void AddHostnameToFileHandler(const std::string& hostname,
-                                       const base::FilePath& file_path);
+                                       const base::FilePath& file);
 
   // Given the path to a file relative to the path passed to AddUrlHandler(),
   // construct a mock URL.
@@ -53,6 +53,12 @@ class URLRequestMockHTTPJob : public net::URLRequestFileJob {
   // HTTP server.
   static scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
   CreateProtocolHandler(const base::FilePath& base_path);
+
+  // Returns a net::URLRequestJobFactory::ProtocolHandler that serves
+  // URLRequestMockHTTPJob's responding like an HTTP server. It responds to all
+  // requests with the contents of |file|.
+  static scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+  CreateProtocolHandlerForSingleFile(const base::FilePath& file);
 
  private:
   virtual ~URLRequestMockHTTPJob();
