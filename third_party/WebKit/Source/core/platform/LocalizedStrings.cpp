@@ -61,11 +61,6 @@ String searchableIndexIntroduction()
     return query(WebLocalizedString::SearchableIndexIntroduction);
 }
 
-String defaultDetailsSummaryText()
-{
-    return query(WebLocalizedString::DetailsLabel);
-}
-
 String AXWebAreaText()
 {
     return query(WebLocalizedString::AXWebAreaText);

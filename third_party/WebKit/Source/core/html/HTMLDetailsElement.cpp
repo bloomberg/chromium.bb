@@ -27,7 +27,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLSummaryElement.h"
 #include "core/html/shadow/HTMLContentElement.h"
-#include "core/platform/LocalizedStrings.h"
+#include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderBlockFlow.h"
 
 namespace WebCore {
@@ -59,7 +59,7 @@ void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot* root)
     DEFINE_STATIC_LOCAL(AtomicString, summarySelector, ("summary:first-of-type", AtomicString::ConstructFromLiteral));
 
     RefPtr<HTMLSummaryElement> defaultSummary = HTMLSummaryElement::create(summaryTag, document());
-    defaultSummary->appendChild(Text::create(document(), defaultDetailsSummaryText()));
+    defaultSummary->appendChild(Text::create(document(), locale().queryString(WebKit::WebLocalizedString::DetailsLabel)));
 
     RefPtr<HTMLContentElement> content = HTMLContentElement::create(document());
     content->setAttribute(selectAttr, summarySelector);
