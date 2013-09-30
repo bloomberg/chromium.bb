@@ -27,7 +27,7 @@ class CHROMEOS_EXPORT MockIMEInputContextHandler
   MockIMEInputContextHandler();
   virtual ~MockIMEInputContextHandler();
 
-  virtual void CommitText(const IBusText& text) OVERRIDE;
+  virtual void CommitText(const std::string& text) OVERRIDE;
   virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode,
                                uint32 state) OVERRIDE;
   virtual void UpdatePreeditText(const IBusText& text,

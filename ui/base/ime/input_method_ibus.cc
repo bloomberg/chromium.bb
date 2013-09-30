@@ -560,8 +560,8 @@ void InputMethodIBus::AbandonAllPendingKeyEvents() {
   pending_key_events_.clear();
 }
 
-void InputMethodIBus::CommitText(const chromeos::IBusText& text) {
-  if (text.text().empty())
+void InputMethodIBus::CommitText(const std::string& text) {
+  if (text.empty())
     return;
 
   // We need to receive input method result even if the text input type is
@@ -570,7 +570,7 @@ void InputMethodIBus::CommitText(const chromeos::IBusText& text) {
   if (!GetTextInputClient())
     return;
 
-  const string16 utf16_text = UTF8ToUTF16(text.text());
+  const string16 utf16_text = UTF8ToUTF16(text);
   if (utf16_text.empty())
     return;
 
@@ -700,9 +700,7 @@ bool InputMethodIBus::ExecuteCharacterComposer(uint32 ibus_keyval,
    std::string commit_text =
       UTF16ToUTF8(character_composer_.composed_character());
   if (!commit_text.empty()) {
-    chromeos::IBusText ibus_text;
-    ibus_text.set_text(commit_text);
-    CommitText(ibus_text);
+    CommitText(commit_text);
   }
   return consumed;
 }

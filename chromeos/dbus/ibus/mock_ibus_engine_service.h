@@ -49,15 +49,11 @@ class MockIBusEngineService : public IBusEngineService {
   virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode,
                                uint32 state) OVERRIDE;
   virtual void RequireSurroundingText() OVERRIDE;
-  virtual void CommitText(const std::string& text) OVERRIDE;
   virtual void DeleteSurroundingText(int32 offset, uint32 length) OVERRIDE;
 
   IBusEngineHandlerInterface* GetEngine() const;
 
   void Clear();
-
-  int commit_text_call_count() const { return commit_text_call_count_; }
-  const std::string& last_commit_text() const { return last_commit_text_; }
 
   int update_preedit_call_count() const { return update_preedit_call_count_; }
   const UpdatePreeditArg& last_update_preedit_arg() const {
@@ -82,10 +78,8 @@ class MockIBusEngineService : public IBusEngineService {
   int update_preedit_call_count_;
   int update_auxiliary_text_call_count_;
   int forward_key_event_call_count_;
-  int commit_text_call_count_;
   int delete_surrounding_text_call_count_;
 
-  std::string last_commit_text_;
   scoped_ptr<UpdatePreeditArg> last_update_preedit_arg_;
   scoped_ptr<UpdateAuxiliaryTextArg> last_update_aux_text_arg_;
   scoped_ptr<DeleteSurroundingTextArg> last_delete_surrounding_text_arg_;

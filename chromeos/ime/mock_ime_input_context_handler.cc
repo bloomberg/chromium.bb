@@ -20,9 +20,9 @@ MockIMEInputContextHandler::MockIMEInputContextHandler()
 MockIMEInputContextHandler::~MockIMEInputContextHandler() {
 }
 
-void MockIMEInputContextHandler::CommitText(const IBusText& text) {
+void MockIMEInputContextHandler::CommitText(const std::string& text) {
   ++commit_text_call_count_;
-  last_commit_text_ = text.text();
+  last_commit_text_ = text;
 }
 
 void MockIMEInputContextHandler::ForwardKeyEvent(uint32 keyval,

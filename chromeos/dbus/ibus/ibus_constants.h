@@ -31,7 +31,6 @@ const char kExitMethod[] = "Exit";
 
 namespace input_context {
 const char kServiceInterface[] = "org.freedesktop.IBus.InputContext";
-const char kCommitTextSignal[] = "CommitText";
 const char kForwardKeyEventSignal[] = "ForwardKeyEvent";
 const char kHidePreeditTextSignal[] = "HidePreeditText";
 const char kShowPreeditTextSignal[] = "ShowPreeditText";

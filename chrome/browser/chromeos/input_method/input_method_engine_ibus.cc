@@ -215,7 +215,7 @@ bool InputMethodEngineIBus::CommitText(int context_id, const char* text,
     return false;
   }
 
-  GetCurrentService()->CommitText(text);
+  IBusBridge::Get()->GetInputContextHandler()->CommitText(text);
   return true;
 }
 

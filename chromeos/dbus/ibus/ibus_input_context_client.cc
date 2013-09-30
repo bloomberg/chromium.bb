@@ -231,20 +231,6 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
     error_callback.Run();
   }
 
-  // Handles CommitText signal.
-  void OnCommitText(dbus::Signal* signal) {
-    if (!handler_)
-      return;
-    dbus::MessageReader reader(signal);
-    IBusText ibus_text;
-    if (!PopIBusText(&reader, &ibus_text)) {
-      // The IBus message structure may be changed.
-      LOG(ERROR) << "Invalid signal: " << signal->ToString();
-      return;
-    }
-    handler_->CommitText(ibus_text);
-  }
-
   // Handles ForwardKeyEvetn signal.
   void OnForwardKeyEvent(dbus::Signal* signal) {
     if (!handler_)
@@ -311,14 +297,6 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
 
   // Connects signals to signal handlers.
   void ConnectSignals() {
-    proxy_->ConnectToSignal(
-        ibus::input_context::kServiceInterface,
-        ibus::input_context::kCommitTextSignal,
-        base::Bind(&IBusInputContextClientImpl::OnCommitText,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&IBusInputContextClientImpl::OnSignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
     proxy_->ConnectToSignal(
         ibus::input_context::kServiceInterface,
         ibus::input_context::kForwardKeyEventSignal,

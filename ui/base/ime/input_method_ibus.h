@@ -124,7 +124,7 @@ class UI_EXPORT InputMethodIBus
                                 uint32 ibus_state);
 
   // chromeos::IBusInputContextHandlerInterface overrides:
-  virtual void CommitText(const chromeos::IBusText& text) OVERRIDE;
+  virtual void CommitText(const std::string& text) OVERRIDE;
   virtual void ForwardKeyEvent(uint32 keyval,
                                uint32 keycode,
                                uint32 state) OVERRIDE;

@@ -21,7 +21,7 @@ class IBusLookupTable;
 class CHROMEOS_EXPORT IBusInputContextHandlerInterface {
  public:
   // Called when the engine commit a text.
-  virtual void CommitText(const IBusText& text) = 0;
+  virtual void CommitText(const std::string& text) = 0;
 
   // Called when the engine forward a key event.
   virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode, uint32 state) = 0;

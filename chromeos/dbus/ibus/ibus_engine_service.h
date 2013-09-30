@@ -54,8 +54,6 @@ class CHROMEOS_EXPORT IBusEngineService {
   virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode, uint32 state) = 0;
   // Emits RequireSurroundingText signal.
   virtual void RequireSurroundingText() = 0;
-  // Emits CommitText signal.
-  virtual void CommitText(const std::string& text) = 0;
   // Emits DeleteSurroundingText signal.
   virtual void DeleteSurroundingText(int32 offset, uint32 length) = 0;
 

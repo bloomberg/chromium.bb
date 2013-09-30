@@ -67,17 +67,6 @@ class IBusEngineServiceDaemonlessImpl : public IBusEngineService {
   }
 
   // IBusEngineService override.
-  virtual void CommitText(const std::string& text) OVERRIDE {
-    IBusInputContextHandlerInterface* input_context =
-        IBusBridge::Get()->GetInputContextHandler();
-    if (input_context) {
-      IBusText ibus_text;
-      ibus_text.set_text(text);
-      input_context->CommitText(ibus_text);
-    }
-  }
-
-  // IBusEngineService override.
   virtual void DeleteSurroundingText(int32 offset, uint32 length) OVERRIDE {
     IBusInputContextHandlerInterface* input_context =
         IBusBridge::Get()->GetInputContextHandler();

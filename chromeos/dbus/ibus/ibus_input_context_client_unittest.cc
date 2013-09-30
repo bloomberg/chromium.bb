@@ -50,7 +50,7 @@ const ibus::IBusPropertyState kPropertyState =
 
 class MockInputContextHandler : public IBusInputContextHandlerInterface {
  public:
-  MOCK_METHOD1(CommitText, void(const IBusText& text));
+  MOCK_METHOD1(CommitText, void(const std::string& text));
   MOCK_METHOD3(ForwardKeyEvent,
                void(uint32 keyval, uint32 keycode, uint32 state));
   MOCK_METHOD0(ShowPreeditText, void());
@@ -109,13 +109,6 @@ class IBusInputContextClientTest : public testing::Test {
     // Set expectations so mock_proxy's ConnectToSignal will use
     // OnConnectToSignal() to run the callback. The ConnectToSignal is called in
     // Initialize function.
-    EXPECT_CALL(*mock_proxy_.get(),
-                ConnectToSignal(ibus::input_context::kServiceInterface,
-                                ibus::input_context::kCommitTextSignal,
-                                _,
-                                _))
-        .WillRepeatedly(
-             Invoke(this, &IBusInputContextClientTest::OnConnectToSignal));
     EXPECT_CALL(*mock_proxy_.get(),
                 ConnectToSignal(ibus::input_context::kServiceInterface,
                                 ibus::input_context::kForwardKeyEventSignal,
@@ -353,31 +346,6 @@ class IBusInputContextClientTest : public testing::Test {
                                                  success));
   }
 };
-
-TEST_F(IBusInputContextClientTest, CommitTextHandler) {
-  const char kSampleText[] = "Sample Text";
-  IBusText ibus_text;
-  ibus_text.set_text(kSampleText);
-
-  // Set handler expectations.
-  MockInputContextHandler mock_handler;
-  EXPECT_CALL(mock_handler, CommitText(IBusTextEq(&ibus_text)));
-  client_->SetInputContextHandler(&mock_handler);
-  message_loop_.RunUntilIdle();
-
-  // Emit signal.
-  dbus::Signal signal(ibus::input_context::kServiceInterface,
-                      ibus::input_context::kCommitTextSignal);
-  dbus::MessageWriter writer(&signal);
-  AppendIBusText(ibus_text, &writer);
-  ASSERT_FALSE(
-      signal_callback_map_[ibus::input_context::kCommitTextSignal].is_null());
-  signal_callback_map_[ibus::input_context::kCommitTextSignal].Run(&signal);
-
-  // Unset the handler so expect not calling handler.
-  client_->SetInputContextHandler(NULL);
-  signal_callback_map_[ibus::input_context::kCommitTextSignal].Run(&signal);
-}
 
 TEST_F(IBusInputContextClientTest, ForwardKeyEventHandlerTest) {
   // Set handler expectations.
