@@ -862,154 +862,111 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kAuditAllHandles,
     switches::kAuditHandles,
     switches::kBlockCrossSiteDocuments,
-    switches::kDirectNPAPIRequests,
+    switches::kDefaultTileWidth,
+    switches::kDefaultTileHeight,
     switches::kDisable3DAPIs,
     switches::kDisableAcceleratedCompositing,
+    switches::kDisableAcceleratedFixedRootBackground,
     switches::kDisableAcceleratedVideoDecode,
     switches::kDisableApplicationCache,
     switches::kDisableAudio,
     switches::kDisableBreakpad,
+    switches::kDisableCompositingForFixedPosition,
+    switches::kDisableCompositingForTransition,
     switches::kDisableDatabases,
     switches::kDisableDeadlineScheduling,
     switches::kDisableDelegatedRenderer,
     switches::kDisableDesktopNotifications,
+    switches::kDisableDeviceMotion,
     switches::kDisableDeviceOrientation,
+    switches::kDisableDirectNPAPIRequests,
     switches::kDisableFileSystem,
+    switches::kDisableFullScreen,
     switches::kDisableGeolocation,
     switches::kDisableGLMultisampling,
-    switches::kDisableGpuVsync,
     switches::kDisableGpu,
     switches::kDisableGpuCompositing,
+    switches::kDisableGpuVsync,
     switches::kDisableHistogramCustomizer,
     switches::kDisableLocalStorage,
     switches::kDisableLogging,
+    switches::kDisablePinch,
+    switches::kDisablePrefixedEncryptedMedia,
     switches::kDisableSeccompFilterSandbox,
     switches::kDisableSessionStorage,
     switches::kDisableSharedWorkers,
     switches::kDisableSpeechInput,
+    switches::kDisableThreadedCompositing,
+    switches::kDisableTouchAdjustment,
     switches::kDisableTouchDragDrop,
     switches::kDisableTouchEditing,
-#if defined(OS_ANDROID)
-    switches::kDisableWebRTC,
-    switches::kEnableSpeechRecognition,
-#endif
+    switches::kDisableVp8AlphaPlayback,
     switches::kDisableWebAudio,
-#if defined(ENABLE_WEBRTC)
-    switches::kDisableDeviceEnumeration,
-    switches::kDisableSCTPDataChannels,
-    switches::kDisableWebRtcHWDecoding,
-    switches::kDisableWebRtcHWEncoding,
-    switches::kEnableWebRtcHWVp8Encoding,
-#endif
-    switches::kEnableWebAnimationsCSS,
-    switches::kEnableWebAnimationsSVG,
-    switches::kEnableWebMIDI,
-    switches::kEnableExperimentalCanvasFeatures,
-    switches::kEnableExperimentalWebSocket,
+    switches::kDisableWebKitMediaSource,
     switches::kDomAutomationController,
+    switches::kEnableAcceleratedFixedRootBackground,
+    switches::kEnableAcceleratedOverflowScroll,
     switches::kEnableAccessibilityLogging,
     switches::kEnableBeginFrameScheduling,
     switches::kEnableBrowserPluginForAllViewTypes,
     switches::kEnableBufferedInputRouter,
+    switches::kEnableCompositingForFixedPosition,
+    switches::kEnableCompositingForTransition,
     switches::kEnableDCHECK,
     switches::kEnableDeadlineScheduling,
-    switches::kEnableDelegatedRenderer,
-    switches::kEnableEncryptedMedia,
-    switches::kDisablePrefixedEncryptedMedia,
-    switches::kOverrideEncryptedMediaCanPlayType,
-#if defined(OS_ANDROID)
-    switches::kMediaDrmEnableNonCompositing,
-#endif
-    switches::kEnableExperimentalWebPlatformFeatures,
-    switches::kEnableFixedLayout,
     switches::kEnableDeferredImageDecoding,
-    switches::kEnableGPUServiceLogging,
+    switches::kEnableDelegatedRenderer,
+    switches::kEnableEac3Playback,
+    switches::kEnableEncryptedMedia,
+    switches::kEnableExperimentalCanvasFeatures,
+    switches::kEnableExperimentalWebPlatformFeatures,
+    switches::kEnableExperimentalWebSocket,
+    switches::kEnableFixedLayout,
+    switches::kEnableGpuBenchmarking,
     switches::kEnableGPUClientLogging,
     switches::kEnableGpuClientTracing,
-    switches::kEnableGpuBenchmarking,
-#if defined(OS_WIN)
-    switches::kEnableHighResolutionTime,
-#endif
+    switches::kEnableGPUServiceLogging,
+    switches::kEnableHighDpiCompositingForFixedPosition,
+    switches::kEnableHTMLImports,
+    switches::kEnableInbandTextTracks,
+    switches::kEnableInputModeAttribute,
+    switches::kEnableLogging,
     switches::kEnableMP3StreamParser,
     switches::kEnableMemoryBenchmarking,
+    switches::kEnableOpusPlayback,
     switches::kEnableOverlayFullscreenVideo,
     switches::kEnableOverlayScrollbars,
-    switches::kEnableSkiaBenchmarking,
-    switches::kEnableLogging,
-    switches::kEnableSpeechSynthesis,
-    switches::kEnableTouchDragDrop,
-    switches::kEnableTouchEditing,
-#if defined(ENABLE_WEBRTC)
-    switches::kEnableWebRtcAecRecordings,
-    switches::kEnableWebRtcTcpServerSocket,
-#endif
-    switches::kDisableWebKitMediaSource,
     switches::kEnableOverscrollNotifications,
-    switches::kEnableStrictSiteIsolation,
-    switches::kDisableFullScreen,
-#if defined(ENABLE_PLUGINS)
-    switches::kEnablePepperTesting,
-    switches::kDisablePepper3d,
-#endif
+    switches::kEnablePinch,
     switches::kEnablePreparsedJsCaching,
     switches::kEnablePruneGpuCommandBuffers,
-    switches::kEnablePinch,
-    switches::kDisablePinch,
-#if defined(OS_MACOSX)
-    // Allow this to be set when invoking the browser and relayed along.
-    switches::kEnableSandboxLogging,
-#endif
+    switches::kEnableSkiaBenchmarking,
     switches::kEnableSoftwareCompositing,
+    switches::kEnableSpeechSynthesis,
     switches::kEnableStatsTable,
+    switches::kEnableStrictSiteIsolation,
     switches::kEnableThreadedCompositing,
-    switches::kEnableCompositingForFixedPosition,
-    switches::kEnableHighDpiCompositingForFixedPosition,
-    switches::kDisableCompositingForFixedPosition,
-    switches::kEnableAcceleratedOverflowScroll,
-    switches::kEnableCompositingForTransition,
-    switches::kDisableCompositingForTransition,
-    switches::kEnableAcceleratedFixedRootBackground,
-    switches::kDisableAcceleratedFixedRootBackground,
-    switches::kDisableThreadedCompositing,
-    switches::kDisableTouchAdjustment,
-    switches::kDefaultTileWidth,
-    switches::kDefaultTileHeight,
-    switches::kMaxUntiledLayerWidth,
-    switches::kMaxUntiledLayerHeight,
+    switches::kEnableTouchDragDrop,
+    switches::kEnableTouchEditing,
     switches::kEnableViewport,
-    switches::kEnableInbandTextTracks,
-    switches::kEnableOpusPlayback,
-    switches::kDisableVp8AlphaPlayback,
-    switches::kEnableEac3Playback,
+    switches::kEnableVtune,
+    switches::kEnableWebAnimationsCSS,
+    switches::kEnableWebAnimationsSVG,
+    switches::kEnableWebGLDraftExtensions,
+    switches::kEnableWebMIDI,
     switches::kForceDeviceScaleFactor,
     switches::kFullMemoryCrashReport,
-#if defined(OS_ANDROID)
-    switches::kHideScrollbars,
-#endif
-#if !defined (GOOGLE_CHROME_BUILD)
-    // These are unsupported and not fully tested modes, so don't enable them
-    // for official Google Chrome builds.
-    switches::kInProcessPlugins,
-#endif  // GOOGLE_CHROME_BUILD
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,
+    switches::kMaxUntiledLayerWidth,
+    switches::kMaxUntiledLayerHeight,
     switches::kMemoryMetrics,
-#if defined(OS_ANDROID)
-    switches::kNetworkCountryIso,
-    switches::kDisableGestureRequirementForMediaPlayback,
-#endif
-#if defined(GOOGLE_TV)
-    switches::kUseExternalVideoSurfaceThresholdInPixels,
-#endif
     switches::kNoReferrers,
     switches::kNoSandbox,
-    switches::kEnableVtune,
+    switches::kOverrideEncryptedMediaCanPlayType,
     switches::kPpapiInProcess,
     switches::kRegisterPepperPlugins,
     switches::kRendererAssertTest,
-#if defined(OS_POSIX)
-    switches::kChildCleanExit,
-#endif
     switches::kRendererStartupDialog,
     switches::kShowPaintRects,
     switches::kSitePerProcess,
@@ -1017,6 +974,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kTestSandbox,
     switches::kTouchEvents,
     switches::kTraceStartup,
+    switches::kTraceToConsole,
     // This flag needs to be propagated to the renderer process for
     // --in-process-webgl.
     switches::kUseGL,
@@ -1026,11 +984,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kVideoThreads,
     switches::kVModule,
     switches::kWebCoreLogChannels,
-    switches::kEnableWebGLDraftExtensions,
-    switches::kEnableHTMLImports,
-    switches::kEnableInputModeAttribute,
-    switches::kTraceToConsole,
-    switches::kDisableDeviceMotion,
     // Please keep these in alphabetical order. Compositor switches here should
     // also be added to chrome/browser/chromeos/login/chrome_restart_request.cc.
     cc::switches::kBackgroundColorInsteadOfCheckerboard,
@@ -1066,6 +1019,45 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kTopControlsHideThreshold,
     cc::switches::kTopControlsShowThreshold,
     cc::switches::kTraceOverdraw,
+#if defined(ENABLE_PLUGINS)
+    switches::kEnablePepperTesting,
+    switches::kDisablePepper3d,
+#endif
+#if defined(ENABLE_WEBRTC)
+    switches::kDisableDeviceEnumeration,
+    switches::kDisableSCTPDataChannels,
+    switches::kDisableWebRtcHWDecoding,
+    switches::kDisableWebRtcHWEncoding,
+    switches::kEnableWebRtcAecRecordings,
+    switches::kEnableWebRtcHWVp8Encoding,
+    switches::kEnableWebRtcTcpServerSocket,
+#endif
+#if !defined (GOOGLE_CHROME_BUILD)
+    // These are unsupported and not fully tested modes, so don't enable them
+    // for official Google Chrome builds.
+    switches::kInProcessPlugins,
+#endif  // GOOGLE_CHROME_BUILD
+#if defined(GOOGLE_TV)
+    switches::kUseExternalVideoSurfaceThresholdInPixels,
+#endif
+#if defined(OS_ANDROID)
+    switches::kDisableGestureRequirementForMediaPlayback,
+    switches::kDisableWebRTC,
+    switches::kEnableSpeechRecognition,
+    switches::kHideScrollbars,
+    switches::kMediaDrmEnableNonCompositing,
+    switches::kNetworkCountryIso,
+#endif
+#if defined(OS_MACOSX)
+    // Allow this to be set when invoking the browser and relayed along.
+    switches::kEnableSandboxLogging,
+#endif
+#if defined(OS_POSIX)
+    switches::kChildCleanExit,
+#endif
+#if defined(OS_WIN)
+    switches::kEnableHighResolutionTime,
+#endif
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));
