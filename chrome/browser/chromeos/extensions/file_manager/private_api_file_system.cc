@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_file_system.h"
 
-#include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <sys/types.h>
 #include <utime.h>
@@ -162,22 +161,6 @@ size_t GetFileNameMaxLengthOnBlockingPool(const std::string& path) {
     return 255;
   }
   return stat.f_namemax;
-}
-
-// Sets last modified date.
-bool SetLastModifiedOnBlockingPool(const base::FilePath& local_path,
-                                   time_t timestamp) {
-  if (local_path.empty())
-    return false;
-
-  struct stat stat_buffer;
-  if (stat(local_path.value().c_str(), &stat_buffer) != 0)
-    return false;
-
-  struct utimbuf times;
-  times.actime = stat_buffer.st_atime;
-  times.modtime = timestamp;
-  return utime(local_path.value().c_str(), &times) == 0;
 }
 
 // Returns EventRouter for the |profile_id| if available.
@@ -485,26 +468,6 @@ void FileBrowserPrivateRemoveFileWatchFunction::PerformFileWatchOperation(
       file_manager::FileBrowserPrivateAPI::Get(profile_)->event_router();
   event_router->RemoveFileWatch(local_path, extension_id);
   Respond(true);
-}
-
-bool FileBrowserPrivateSetLastModifiedFunction::RunImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  using extensions::api::file_browser_private::SetLastModified::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  base::FilePath local_path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), profile(), GURL(params->file_url));
-
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&SetLastModifiedOnBlockingPool,
-                 local_path,
-                 strtoul(params->last_modified.c_str(), NULL, 0)),
-      base::Bind(&FileBrowserPrivateSetLastModifiedFunction::SendResponse,
-                 this));
-  return true;
 }
 
 bool FileBrowserPrivateGetSizeStatsFunction::RunImpl() {

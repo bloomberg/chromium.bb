@@ -118,21 +118,6 @@ class FileBrowserPrivateRemoveFileWatchFunction : public FileWatchFunctionBase {
       const std::string& extension_id) OVERRIDE;
 };
 
-// Implements the chrome.fileBrowserPrivate.setLastModified method.
-// Sets last modified date in seconds of local file
-class FileBrowserPrivateSetLastModifiedFunction
-    : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.setLastModified",
-                             FILEBROWSERPRIVATE_SETLASTMODIFIED)
-
- protected:
-  virtual ~FileBrowserPrivateSetLastModifiedFunction() {}
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-};
-
 // Implements the chrome.fileBrowserPrivate.getSizeStats method.
 class FileBrowserPrivateGetSizeStatsFunction
     : public LoggedAsyncExtensionFunction {
