@@ -476,6 +476,12 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
 
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
 
+  if (transaction_database_map_.find(host_transaction_id) !=
+      transaction_database_map_.end()) {
+    DLOG(ERROR) << "Duplicate host_transaction_id.";
+    return;
+  }
+
   connection->database()->CreateTransaction(
       host_transaction_id, connection, params.object_store_ids, params.mode);
   transaction_database_map_[host_transaction_id] = params.ipc_database_id;
