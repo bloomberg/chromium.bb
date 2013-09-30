@@ -10,6 +10,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
+#include "ui/webui/web_ui_util.h"
 
 namespace {
 
@@ -22,6 +23,9 @@ content::WebUIDataSource* CreateDataSource() {
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_FIRST_RUN_HTML);
   source->AddResourcePath(kFirstRunJSPath, IDR_FIRST_RUN_JS);
+  base::DictionaryValue localized_strings;
+  webui::SetFontAndTextDirection(&localized_strings);
+  source->AddLocalizedStrings(localized_strings);
   return source;
 }
 
