@@ -85,6 +85,13 @@
               'use_aura%': 1,
             }],
 
+            # Whether we're a traditional desktop unix.
+            ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") and chromeos==0', {
+              'desktop_linux%': 1,
+            }, {
+              'desktop_linux%': 0,
+            }],
+
             # Compute the architecture that we're building on.
             ['OS=="win" or OS=="mac" or OS=="ios"', {
               'host_arch%': 'ia32',
@@ -100,6 +107,7 @@
         },
         # Copy conditionally-set variables out one scope.
         'chromeos%': '<(chromeos)',
+        'desktop_linux%': '<(desktop_linux)',
         'use_aura%': '<(use_aura)',
         'use_ash%': '<(use_ash)',
         'use_cras%': '<(use_cras)',
@@ -137,17 +145,10 @@
           }],
 
           # Set toolkit_uses_gtk for the Chromium browser on Linux.
-          ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") and use_aura==0 and use_ozone==0', {
+          ['desktop_linux==1 and use_aura==0 and use_ozone==0', {
             'toolkit_uses_gtk%': 1,
           }, {
             'toolkit_uses_gtk%': 0,
-          }],
-
-          # Whether we're a traditional desktop unix.
-          ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") and chromeos==0', {
-            'desktop_linux%': 1,
-          }, {
-            'desktop_linux%': 0,
           }],
 
           # Enable HiDPI on Mac OS and Chrome OS.
@@ -160,8 +161,9 @@
             'enable_touch_ui%': 1,
           }],
 
-          # Enable App Launcher only on ChromeOS, Windows and OSX.
-          ['use_ash==1 or OS=="win" or OS=="mac"', {
+          # Enable App Launcher on ChromeOS, Windows and OSX.
+          # On Linux, enable App Launcher for the Aura build.
+          ['use_ash==1 or OS=="win" or OS=="mac" or (desktop_linux==1 and use_aura==1)', {
             'enable_app_list%': 1,
           }, {
             'enable_app_list%': 0,

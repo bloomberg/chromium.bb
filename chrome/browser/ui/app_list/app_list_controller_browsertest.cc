@@ -66,6 +66,8 @@ class AppListControllerBrowserTest : public InProcessBrowserTest {
 };
 
 // Test the CreateNewWindow function of the controller delegate.
+// TODO(mgiuca): Enable on Linux when supported.
+#if !defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, CreateNewWindow) {
   const chrome::HostDesktopType desktop = chrome::GetActiveDesktop();
   AppListService* service = AppListService::Get();
@@ -84,8 +86,10 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, CreateNewWindow) {
   EXPECT_EQ(1U, chrome::GetBrowserCount(
       browser()->profile()->GetOffTheRecordProfile(), desktop));
 }
+#endif  // !defined(OS_LINUX)
 
-#if !defined(OS_CHROMEOS)
+// TODO(mgiuca): Enable on Linux when supported.
+#if !defined(OS_CHROMEOS) && !defined(OS_LINUX)
 // Show the app list, then dismiss it.
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, ShowAndDismiss) {
   AppListService* service = AppListService::Get();
@@ -194,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(ShowAppListBrowserTest, ShowAppListFlag) {
   CreateBrowser(service->GetCurrentAppListProfile());
   service->DismissAppList();
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_LINUX)
 
 // Browser Test for AppListController that observes search result changes.
 class AppListControllerSearchResultsBrowserTest
@@ -273,6 +277,8 @@ class AppListControllerSearchResultsBrowserTest
 };
 
 // Test showing search results, and uninstalling one of them while displayed.
+// TODO(mgiuca): Enable on Linux when supported.
+#if !defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
                        UninstallSearchResult) {
   base::FilePath test_extension_path;
@@ -318,5 +324,6 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
   StopWatchingResults();
   service->DismissAppList();
 }
+#endif  // !defined(OS_LINUX)
 
 }  // namespace

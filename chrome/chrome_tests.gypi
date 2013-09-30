@@ -1335,6 +1335,7 @@
         'browser/ui/app_list/test/app_list_service_test_api.h',
         'browser/ui/app_list/test/app_list_service_test_api_ash.cc',
         'browser/ui/app_list/test/app_list_service_test_api_ash.h',
+        'browser/ui/app_list/test/app_list_service_test_api_linux.cc',
         'browser/ui/app_list/test/app_list_service_test_api_mac.mm',
         'browser/ui/app_list/test/app_list_service_test_api_win.cc',
         'browser/ui/ash/caps_lock_delegate_chromeos_browsertest.cc',
@@ -1651,6 +1652,7 @@
             'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
             'browser/service/service_process_control_browsertest.cc',
             'browser/signin/signin_browsertest.cc',
+            'browser/ui/app_list/test/app_list_service_test_api_linux.cc',
             # chromeos does not use cross-platform panels
             'browser/ui/panels/panel_extension_browsertest.cc',
             # chromeos does not use the desktop user manager
