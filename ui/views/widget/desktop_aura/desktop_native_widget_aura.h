@@ -168,7 +168,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual gfx::Size GetMaximumSize() const OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
-                               const gfx::Rect& new_bounds) OVERRIDE;
+                               const gfx::Rect& new_bounds) OVERRIDE {}
   virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool ShouldDescendIntoChildForEventHandling(
@@ -216,6 +216,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // Overridden from aura::RootWindowObserver:
   virtual void OnRootWindowHostCloseRequested(
       const aura::RootWindow* root) OVERRIDE;
+  virtual void OnRootWindowHostResized(const aura::RootWindow* root) OVERRIDE;
+  virtual void OnRootWindowHostMoved(const aura::RootWindow* root,
+                                     const gfx::Point& new_origin) OVERRIDE;
 
  private:
   // To save a clear on platforms where the window is never transparent, the

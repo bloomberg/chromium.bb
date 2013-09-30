@@ -370,8 +370,6 @@
         'widget/desktop_aura/desktop_factory_ozone.h',
         'widget/desktop_aura/desktop_focus_rules.cc',
         'widget/desktop_aura/desktop_focus_rules.h',
-        'widget/desktop_aura/desktop_layout_manager.cc',
-        'widget/desktop_aura/desktop_layout_manager.h',
         'widget/desktop_aura/desktop_native_cursor_manager.cc',
         'widget/desktop_aura/desktop_native_cursor_manager.h',
         'widget/desktop_aura/desktop_native_widget_aura.cc',

@@ -724,14 +724,8 @@ void DesktopRootWindowHostWin::HandleVisibilityChanged(bool visible) {
 
 void DesktopRootWindowHostWin::HandleClientSizeChanged(
     const gfx::Size& new_size) {
-  gfx::Size without_expansion(new_size.width() - window_expansion_.width(),
-                              new_size.height() - window_expansion_.height());
   if (root_window_host_delegate_)
     root_window_host_delegate_->OnHostResized(new_size);
-  // TODO(beng): replace with a layout manager??
-  gfx::Size dip_size = gfx::win::ScreenToDIPSize(without_expansion);
-  content_window_->SetBounds(gfx::Rect(dip_size));
-  native_widget_delegate_->OnNativeWidgetSizeChanged(dip_size);
 }
 
 void DesktopRootWindowHostWin::HandleFrameChanged() {

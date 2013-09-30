@@ -46,6 +46,10 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/window_reorderer.h"
 
+#if defined(OS_WIN)
+#include "ui/gfx/win/dpi.h"
+#endif
+
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(VIEWS_EXPORT,
                                       views::DesktopNativeWidgetAura*);
 
@@ -327,8 +331,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   content_window_container_->Init(ui::LAYER_NOT_DRAWN);
   content_window_container_->Show();
   content_window_container_->AddChild(window_);
-  content_window_container_->SetBounds(root_window_->bounds());
   root_window_->AddChild(content_window_container_);
+  OnRootWindowHostResized(root_window_.get());
 
   root_window_->AddRootWindowObserver(this);
 
@@ -520,7 +524,10 @@ gfx::Rect DesktopNativeWidgetAura::GetRestoredBounds() const {
 void DesktopNativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
   if (!window_)
     return;
-
+  // TODO(ananta)
+  // This code by default scales the bounds rectangle by 1.
+  // We could probably get rid of this and similar logic from
+  // the DesktopNativeWidgetAura::OnRootWindowHostResized function.
   float scale = 1;
   aura::RootWindow* root = root_window_.get();
   if (root) {
@@ -531,10 +538,6 @@ void DesktopNativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
       gfx::ToCeiledPoint(gfx::ScalePoint(bounds.origin(), scale)),
       gfx::ToFlooredSize(gfx::ScaleSize(bounds.size(), scale)));
   desktop_root_window_host_->AsRootWindowHost()->SetBounds(bounds_in_pixels);
-  if (content_window_container_) {
-    content_window_container_->SetBounds(
-        content_window_container_->GetRootWindow()->bounds());
-  }
 }
 
 void DesktopNativeWidgetAura::SetSize(const gfx::Size& size) {
@@ -762,18 +765,6 @@ gfx::Size DesktopNativeWidgetAura::GetMaximumSize() const {
   return native_widget_delegate_->GetMaximumSize();
 }
 
-void DesktopNativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
-                                              const gfx::Rect& new_bounds) {
-  if (old_bounds.origin() != new_bounds.origin())
-    native_widget_delegate_->OnNativeWidgetMove();
-  if (old_bounds.size() != new_bounds.size())
-    native_widget_delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
-  if (content_window_container_) {
-    content_window_container_->SetBounds(
-        content_window_container_->GetRootWindow()->bounds());
-  }
-}
-
 gfx::NativeCursor DesktopNativeWidgetAura::GetCursor(const gfx::Point& point) {
   return cursor_;
 }
@@ -983,6 +974,30 @@ int DesktopNativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event) {
 void DesktopNativeWidgetAura::OnRootWindowHostCloseRequested(
     const aura::RootWindow* root) {
   Close();
+}
+
+void DesktopNativeWidgetAura::OnRootWindowHostResized(
+    const aura::RootWindow* root) {
+  gfx::Rect new_bounds = gfx::Rect(root->bounds().size());
+  // TODO(ananta)
+  // This code by default scales the bounds rectangle by 1.
+  // We could probably get rid of this and similar logic from
+  // the DesktopNativeWidgetAura::SetBounds function.
+#if defined(OS_WIN)
+  gfx::Size dip_size = gfx::win::ScreenToDIPSize(new_bounds.size());
+  new_bounds = gfx::Rect(dip_size);
+#endif
+  window_->SetBounds(new_bounds);
+  // Can be NULL at start.
+  if (content_window_container_)
+    content_window_container_->SetBounds(new_bounds);
+  native_widget_delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
+}
+
+void DesktopNativeWidgetAura::OnRootWindowHostMoved(
+    const aura::RootWindow* root,
+    const gfx::Point& new_origin) {
+  native_widget_delegate_->OnNativeWidgetMove();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

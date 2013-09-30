@@ -37,7 +37,6 @@
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
 #include "ui/views/widget/desktop_aura/desktop_focus_rules.h"
-#include "ui/views/widget/desktop_aura/desktop_layout_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host_observer_x11.h"
@@ -917,7 +916,6 @@ aura::RootWindow* DesktopRootWindowHostX11::InitRootWindow(
   root_window_ = new aura::RootWindow(rw_params);
   root_window_->Init();
   root_window_->AddChild(content_window_);
-  root_window_->SetLayoutManager(new DesktopLayoutManager(root_window_));
   root_window_->SetProperty(kViewsWindowForRootWindow, content_window_);
   root_window_->SetProperty(kHostForRootWindow, this);
   root_window_host_delegate_ = root_window_;
