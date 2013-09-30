@@ -331,17 +331,6 @@ function VolumeManager() {
    */
   this.volumeInfoList = new VolumeInfoList();
 
-  /**
-   * True, if mount points have been initialized.
-   * TODO(hidehiko): Remove this by returning the VolumeManager instance
-   * after the initialization is done.
-   * @type {boolean}
-   * @private
-   */
-  this.ready_ = false;
-
-  this.initMountPoints_();
-
   // These status should be merged into VolumeManager.
   // TODO(hidehiko): Remove them after the migration.
   this.driveStatus_ = VolumeManager.DriveStatus.UNMOUNTED;
@@ -396,6 +385,13 @@ VolumeManager.DriveStatus = {
 VolumeManager.TIMEOUT = 15 * 60 * 1000;
 
 /**
+ * Queue to run getInstance sequentially.
+ * @type {AsyncUtil.Queue}
+ * @private
+ */
+VolumeManager.getInstanceQueue_ = new AsyncUtil.Queue();
+
+/**
  * The singleton instance of VolumeManager. Initialized by the first invocation
  * of getInstance().
  * @type {VolumeManager}
@@ -404,13 +400,25 @@ VolumeManager.TIMEOUT = 15 * 60 * 1000;
 VolumeManager.instance_ = null;
 
 /**
- * @param {function(VolumeManager)} callback Callback to obtain VolumeManager
+ * Returns the VolumeManager instance asynchronously. If it is not created or
+ * under initialization, it will waits for the finish of the initialization.
+ * @param {function(VolumeManager)} callback Called with the VolumeManager
  *     instance.
  */
 VolumeManager.getInstance = function(callback) {
-  if (!VolumeManager.instance_)
+  VolumeManager.getInstanceQueue_.run(function(continueCallback) {
+    if (VolumeManager.instance_) {
+      callback(VolumeManager.instance_);
+      continueCallback();
+      return;
+    }
+
     VolumeManager.instance_ = new VolumeManager();
-  callback(VolumeManager.instance_);
+    VolumeManager.instance_.initialize_(function() {
+      callback(VolumeManager.instance_);
+      continueCallback();
+    });
+  });
 };
 
 /**
@@ -425,18 +433,12 @@ VolumeManager.prototype.setDriveStatus_ = function(newStatus) {
 };
 
 /**
- * @return {boolean} True if already initialized.
- */
-VolumeManager.prototype.isReady = function() {
-  return this.ready_;
-};
-
-/**
- * Initialized mount points.
+ * Initializes mount points.
+ * @param {function()} callback Called upon the completion of the
+ *     initialization.
  * @private
  */
-VolumeManager.prototype.initMountPoints_ = function() {
-  this.deferredQueue_ = [];
+VolumeManager.prototype.initialize_ = function(callback) {
   chrome.fileBrowserPrivate.getMountPoints(function(mountPointList) {
     // According to the C++ implementation, getMountPoints only looks at
     // the connected devices (such as USB memory), and doesn't return anything
@@ -447,7 +449,7 @@ VolumeManager.prototype.initMountPoints_ = function() {
     // Create VolumeInfo for each mount point.
     var group = new AsyncUtil.Group();
     for (var i = 0; i < mountPointList.length; i++) {
-      group.add(function(mountPoint, callback) {
+      group.add(function(mountPoint, continueCallback) {
         var error = mountPoint.mountCondition ?
             'error_' + mountPoint.mountCondition : '';
         volumeManagerUtil.createVolumeInfo(
@@ -462,7 +464,7 @@ VolumeManager.prototype.initMountPoints_ = function() {
                                        VolumeManager.DriveStatus.MOUNTED);
                 this.onDriveConnectionStatusChanged_();
               }
-              callback();
+              continueCallback();
             }.bind(this));
       }.bind(this, mountPointList[i]));
     }
@@ -472,19 +474,7 @@ VolumeManager.prototype.initMountPoints_ = function() {
       // Subscribe to the mount completed event when mount points initialized.
       chrome.fileBrowserPrivate.onMountCompleted.addListener(
           this.onMountCompleted_.bind(this));
-
-      // Run pending tasks.
-      var deferredQueue = this.deferredQueue_;
-      this.deferredQueue_ = null;
-      for (var i = 0; i < deferredQueue.length; i++) {
-        deferredQueue[i]();
-      }
-
-      // Now, the initialization is completed. Set the state to the ready.
-      this.ready_ = true;
-
-      // Notify event listeners that the initialization is done.
-      cr.dispatchSimpleEvent(this, 'ready');
+      callback();
     }.bind(this));
   }.bind(this));
 };
@@ -592,12 +582,6 @@ VolumeManager.prototype.unmount = function(mountPath,
                                            successCallback,
                                            errorCallback) {
   volumeManagerUtil.validateMountPath(mountPath);
-  if (this.deferredQueue_) {
-    this.deferredQueue_.push(this.unmount.bind(this,
-        mountPath, successCallback, errorCallback));
-    return;
-  }
-
   var volumeInfo = this.volumeInfoList.find(mountPath);
   if (!volumeInfo) {
     errorCallback(util.VolumeError.NOT_MOUNTED);
@@ -650,12 +634,6 @@ VolumeManager.prototype.getVolumeInfo = function(mountPath) {
  */
 VolumeManager.prototype.mount_ = function(url, volumeType,
                                           successCallback, errorCallback) {
-  if (this.deferredQueue_) {
-    this.deferredQueue_.push(this.mount_.bind(this,
-        url, volumeType, successCallback, errorCallback));
-    return;
-  }
-
   chrome.fileBrowserPrivate.addMount(url, volumeType, {},
                                      function(sourcePath) {
     console.info('Mount request: url=' + url + '; volumeType=' + volumeType +

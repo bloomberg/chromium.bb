@@ -27,16 +27,7 @@ function VolumeManagerWrapper(driveEnabled) {
 
   // Start initialize the VolumeManager.
   VolumeManager.getInstance(function(volumeManager) {
-    if (volumeManager.isReady()) {
-      this.onReady_(volumeManager);
-    } else {
-      // Wait for the VolumeManager's initialization is done.
-      var onReady = function() {
-        volumeManager.removeEventListener('ready', onReady);
-        this.onReady_(volumeManager);
-      }.bind(this);
-      volumeManager.addEventListener('ready', onReady);
-    }
+    this.onReady_(volumeManager);
   }.bind(this));
 }
 
