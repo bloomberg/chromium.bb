@@ -478,6 +478,7 @@ cr.define('local_discovery', function() {
     } else {
       $('cloud-devices-loading').hidden = true;
       $('cloud-devices-unavailable').hidden = true;
+      clearElement($('cloud-devices'));
     }
 
     updateUIToReflectState();

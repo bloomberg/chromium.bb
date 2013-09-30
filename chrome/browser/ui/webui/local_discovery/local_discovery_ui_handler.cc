@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/local_discovery/cloud_print_account_manager.h"
 #include "chrome/browser/local_discovery/privet_confirm_api_flow.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
@@ -139,7 +141,6 @@ void LocalDiscoveryUIHandler::RegisterMessages() {
                    base::Unretained(this)));
   }
 #endif  // defined(ENABLE_FULL_PRINTING)
-
 }
 
 void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
@@ -164,6 +165,12 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
 #endif
 
   CheckUserLoggedIn();
+
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
+                              content::Source<Profile>(profile));
+  notification_registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
+                              content::Source<Profile>(profile));
 }
 
 void LocalDiscoveryUIHandler::HandleIsVisible(const base::ListValue* args) {
@@ -443,6 +450,19 @@ void LocalDiscoveryUIHandler::OnCloudPrintPrinterListUnavailable() {
       "local_discovery.onCloudDeviceListUnavailable");
 }
 
+void LocalDiscoveryUIHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL:
+    case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:
+      CheckUserLoggedIn();
+      break;
+    default:
+      NOTREACHED();
+  }
+}
 
 void LocalDiscoveryUIHandler::SendRegisterError() {
   web_ui()->CallJavascriptFunction("local_discovery.onRegistrationFailed");
