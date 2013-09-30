@@ -59,7 +59,6 @@
 #include "core/platform/KillRing.h"
 #include "core/platform/Pasteboard.h"
 #include "core/platform/Scrollbar.h"
-#include "core/platform/Sound.h"
 #include "core/rendering/RenderBox.h"
 #include "wtf/text/AtomicString.h"
 
@@ -1048,10 +1047,8 @@ static bool executeSelectToMark(Frame& frame, Event*, EditorCommandSource, const
 {
     RefPtr<Range> mark = frame.editor().mark().toNormalizedRange();
     RefPtr<Range> selection = frame.editor().selectedRange();
-    if (!mark || !selection) {
-        systemBeep();
+    if (!mark || !selection)
         return false;
-    }
     frame.selection().setSelectedRange(unionDOMRanges(mark.get(), selection.get()).get(), DOWNSTREAM, true);
     return true;
 }
@@ -1099,10 +1096,8 @@ static bool executeSwapWithMark(Frame& frame, Event*, EditorCommandSource, const
 {
     const VisibleSelection& mark = frame.editor().mark();
     const VisibleSelection& selection = frame.selection().selection();
-    if (mark.isNone() || selection.isNone()) {
-        systemBeep();
+    if (mark.isNone() || selection.isNone())
         return false;
-    }
     frame.selection().setSelection(mark);
     frame.editor().setMark(selection);
     return true;

@@ -74,7 +74,6 @@
 #include "core/page/Settings.h"
 #include "core/platform/KillRing.h"
 #include "core/platform/Pasteboard.h"
-#include "core/platform/Sound.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/text/TextCheckerClient.h"
 #include "core/rendering/HitTestResult.h"
@@ -924,10 +923,8 @@ void Editor::cut()
 {
     if (tryDHTMLCut())
         return; // DHTML did the whole operation
-    if (!canCut()) {
-        systemBeep();
+    if (!canCut())
         return;
-    }
     RefPtr<Range> selection = selectedRange();
     if (shouldDeleteRange(selection.get())) {
         updateMarkersForWordsAffectedByEditing(true);
@@ -946,11 +943,8 @@ void Editor::copy()
 {
     if (tryDHTMLCopy())
         return; // DHTML did the whole operation
-    if (!canCopy()) {
-        systemBeep();
+    if (!canCopy())
         return;
-    }
-
     if (enclosingTextFormControl(m_frame->selection().start())) {
         Pasteboard::generalPasteboard()->writePlainText(m_frame->selectedTextForClipboard(),
             canSmartCopyOrDelete() ? Pasteboard::CanSmartReplace : Pasteboard::CannotSmartReplace);
@@ -991,11 +985,8 @@ void Editor::pasteAsPlainText()
 
 void Editor::performDelete()
 {
-    if (!canDelete()) {
-        systemBeep();
+    if (!canDelete())
         return;
-    }
-
     addToKillRing(selectedRange().get(), false);
     deleteSelectionWithSmartDelete(canSmartCopyOrDelete());
 
