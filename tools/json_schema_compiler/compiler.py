@@ -38,15 +38,14 @@ def GenerateSchema(generator,
                    destdir,
                    root_namespace,
                    dart_overrides_dir):
-  schema_loader = SchemaLoader(os.path.dirname(os.path.relpath(
-      os.path.normpath(filenames[0]), root)))
+  schema_loader = SchemaLoader(
+      os.path.dirname(os.path.relpath(os.path.normpath(filenames[0]), root)),
+      os.path.dirname(filenames[0]))
   # Merge the source files into a single list of schemas.
   api_defs = []
   for filename in filenames:
     schema = os.path.normpath(filename)
-    schema_filename, schema_extension = os.path.splitext(schema)
-    path, short_filename = os.path.split(schema_filename)
-    api_def = schema_loader.LoadSchema(schema)
+    api_def = schema_loader.LoadSchema(os.path.split(schema)[1])
 
     # If compiling the C++ model code, delete 'nocompile' nodes.
     if generator == 'cpp':
