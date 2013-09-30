@@ -406,15 +406,22 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.refreshRemainingSpace_.bind(this,
                                          false /* Without loading caption. */));
     this.dialogDom_.querySelector('#gear-menu').menuItemSelector =
-      'menuitem, hr';
+        'menuitem, hr';
     cr.ui.decorate(this.gearButton_, cr.ui.MenuButton);
 
     if (this.dialogType == DialogType.FULL_PAGE) {
+      // This is to prevent the buttons from stealing focus on mouse down.
+      var preventFocus = function(event) {
+        event.preventDefault();
+      };
+
       var maximizeButton = this.dialogDom_.querySelector('#maximize-button');
       maximizeButton.addEventListener('click', this.onMaximize.bind(this));
+      maximizeButton.addEventListener('mousedown', preventFocus);
 
       var closeButton = this.dialogDom_.querySelector('#close-button');
       closeButton.addEventListener('click', this.onClose.bind(this));
+      closeButton.addEventListener('mousedown', preventFocus);
     }
 
     this.syncButton.checkable = true;
