@@ -257,7 +257,7 @@ test("walkHistory", 5, function() {
                         "another-test.html": {
                             "expected": "PASS",
                             "actual": "TEXT",
-                            "is_unexpected": true
+                            "is_unexpected": true,
                         }
                     },
                 },
@@ -268,13 +268,13 @@ test("walkHistory", 5, function() {
                     "userscripts": {
                         "user-script-video-document.html": {
                             "expected": "FAIL",
-                            "actual": "TEXT"
-                            "is_unexpected": false
+                            "actual": "TEXT",
+                            "is_unexpected": false,
                         },
                         "another-test.html": {
                             "expected": "PASS",
                             "actual": "TEXT",
-                            "is_unexpected": true
+                            "is_unexpected": true,
                         }
                     },
                 },
@@ -286,7 +286,7 @@ test("walkHistory", 5, function() {
                         "another-test.html": {
                             "expected": "PASS",
                             "actual": "TEXT",
-                            "is_unexpected": true
+                            "is_unexpected": true,
                         }
                     },
                 },
@@ -297,8 +297,8 @@ test("walkHistory", 5, function() {
                     "userscripts": {
                         "user-script-video-document.html": {
                             "expected": "FAIL",
-                            "actual": "TEXT"
-                            "is_unexpected": false
+                            "actual": "TEXT",
+                            "is_unexpected": false,
                         },
                     },
                 },
@@ -312,7 +312,7 @@ test("walkHistory", 5, function() {
                         "another-test.html": {
                             "expected": "PASS",
                             "actual": "TEXT",
-                            "is_unexpected": true
+                            "is_unexpected": true,
                         }
                     },
                 },

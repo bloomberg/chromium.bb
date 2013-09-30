@@ -50,31 +50,39 @@ function findBugID(message)
 
 }
 
+function findRevision(message)
+{
+    var regexp = /git-svn-id: svn:\/\/svn.chromium.org\/blink\/trunk@(\d+)/;
+    var svnRevision = parseInt(findUsingRegExp(message, regexp), 10);
+    return isNaN(svnRevision) ? null : svnRevision;
+}
+
 function parseCommitMessage(message) {
     var lines = message.split('\n');
-    var title = lines.shift();
+    var title = lines[1];
     var summary = lines.join('\n').trim();
     return {
         title: title,
         summary: summary,
         bugID: findBugID(summary),
         reviewer: findReviewer(summary),
+        revision: findRevision(summary),
     }
 }
 
 // FIXME: Consider exposing this method for unit testing.
 function parseCommitData(responseXML)
 {
-    var commits = Array.prototype.map.call(responseXML.getElementsByTagName('logentry'), function(logentry) {
-        var author = logentry.getElementsByTagName('author')[0].textContent;
-        var time = logentry.getElementsByTagName('date')[0].textContent;
+    var commits = Array.prototype.map.call(responseXML.getElementsByTagName('entry'), function(logentry) {
+        var author = $.trim(logentry.getElementsByTagName('author')[0].textContent);
+        var time = logentry.getElementsByTagName('published')[0].textContent;
 
         // FIXME: This isn't a very high-fidelity reproduction of the commit message,
         // but it's good enough for our purposes.
-        var message = parseCommitMessage(logentry.getElementsByTagName('msg')[0].textContent);
+        var message = parseCommitMessage(logentry.getElementsByTagName('content')[0].textContent);
 
         return {
-            'revision': logentry.getAttribute('revision'),
+            'revision': message.revision,
             'title': message.title,
             'time': time,
             'summary': message.title,
@@ -99,7 +107,7 @@ trac.changesetURL = function(revision)
 
 trac.recentCommitData = function(path, limit, callback)
 {
-    net.get('/svnlog', function(commitData) {
+    net.get('http://blink.lc/blink/atom', function(commitData) {
         callback(parseCommitData(commitData));
     });
 };

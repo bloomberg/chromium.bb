@@ -28,84 +28,148 @@
 module("svn-log");
 
 var kExampleCommitDataXML =
-    '<?xml version="1.0"?>\n' +
-    '<log>\n' +
-    '<logentry\n' +
-    '   revision="147744">\n' +
-    '<author>tkent@chromium.org</author>\n' +
-    '<date>2013-04-06T13:00:08.314281Z</date>\n' +
-    '<msg>Revert 147740 "Remove the ENABLE_QUOTA compile-time flag."\n' +
-    '\n' +
-    '&gt; Remove the ENABLE_QUOTA compile-time flag.\n' +
-    '&gt; \n' +
-    '&gt; This patch drops the ~20 occurances of \'#IFDEF ENABLE(QUOTA)\' from the\n' +
-    '&gt; codebase. It shouldn\'t effect any web-visible behavior, as the interesting\n' +
-    '&gt; bits are still hidden away behind the runtime flag, whose behavior\n' +
-    '&gt; is untouched by this patch.\n' +
-    '&gt; \n' +
-    '&gt; R=eseidel@chromium.org,kinuko@chromium.org\n' +
-    '&gt; \n' +
-    '&gt; Review URL: https://codereview.chromium.org/13529033\n' +
-    '\n' +
-    'TBR=mkwst@chromium.org\n' +
-    'Review URL: https://codereview.chromium.org/13462004</msg>\n' +
-    '</logentry>\n' +
-    '<logentry\n' +
-    '   revision="147743">\n' +
-    '<author>tkent@chromium.org</author>\n' +
-    '<date>2013-04-06T12:48:59.078499Z</date>\n' +
-    '<msg>Update test expectations.\n' +
-    '\n' +
-    'BUG=227354,227357</msg>\n' +
-    '</logentry>\n' +
-    '<logentry\n' +
-    '   revision="147742">\n' +
-    '<author>gavinp@chromium.org</author>\n' +
-    '<date>2013-04-06T12:40:34.111299Z</date>\n' +
-    '<msg>Guard &lt;link&gt; beforeload against recursion.\n' +
-    '\n' +
-    'The beforeload event on a link element can recurse if it mutates its\n' +
-    'firing link element. Now guard against this, only allowing the\n' +
-    'innermost (last!) change to run. This prevents multiple client\n' +
-    'registration and stops the crash in the bug report (which is\n' +
-    'reproduced in the test).\n' +
-    '\n' +
-    'BUG=174920\n' +
-    '\n' +
-    'Committed: https://src.chromium.org/viewvc/blink?view=rev&amp;revision=147738\n' +
-    '\n' +
-    'Review URL: https://codereview.chromium.org/13725004</msg>\n' +
-    '</logentry>\n' +
-    '</log>';
+   "<feed xmlns='http://www.w3.org/2005/Atom'>\n" +
+   "<title>blink, branch master</title>\n" +
+   "<subtitle>Mirror of the Chromium Blink repository.</subtitle>\n" +
+   "<link rel='alternate' type='text/html' href='http://blink.lc/blink/'/>\n" +
+   "<entry>\n" +
+   "<title>Throw SecurityError when setting 'Replaceable' properties cross-origin.</title>\n" +
+   "<updated>2013-09-30T20:22:01Z</updated>\n" +
+   "<author>\n" +
+   "<name>mkwst@chromium.org</name>\n" +
+   "</author>\n" +
+   "<published>2013-09-30T20:22:01Z</published>\n" +
+   "<link rel='alternate' type='text/html' href='http://blink.lc/blink/commit/?id=723e62a4a4e093435b4772b4839aa3fd7cf6b991'/>\n" +
+   "<id>723e62a4a4e093435b4772b4839aa3fd7cf6b991</id>\n" +
+   "<content type='text'>\n" +
+   "This matches Gecko's behavior for these types of properties.\n" +
+   "\n" +
+   "BUG=17325\n" +
+   "R=jochen@chromium.org\n" +
+   "CC=abarth@chromium.org\n" +
+   "\n" +
+   "Review URL: https://chromiumcodereview.appspot.com/25022002\n" +
+   "\n" +
+   "git-svn-id: svn://svn.chromium.org/blink/trunk@158545 bbb929c8-8fbe-4397-9dbb-9b2b20218538\n" +
+   "</content>\n" +
+   "<content type='xhtml'>\n" +
+   "<div xmlns='http://www.w3.org/1999/xhtml'>\n" +
+   "<pre>\n" +
+   "This matches Gecko's behavior for these types of properties.\n" +
+   "\n" +
+   "BUG=17325\n" +
+   "R=jochen@chromium.org\n" +
+   "CC=abarth@chromium.org\n" +
+   "\n" +
+   "Review URL: https://chromiumcodereview.appspot.com/25022002\n" +
+   "\n" +
+   "git-svn-id: svn://svn.chromium.org/blink/trunk@158545 bbb929c8-8fbe-4397-9dbb-9b2b20218538\n" +
+   "</pre>\n" +
+   "</div>\n" +
+   "</content>\n" +
+   "</entry>\n" +
+   "<entry>\n" +
+   "<title>Fix one more layering violation caught by check-blink-deps</title>\n" +
+   "<updated>2013-09-30T19:36:21Z</updated>\n" +
+   "<author>\n" +
+   "<name>eseidel@chromium.org</name>\n" +
+   "</author>\n" +
+   "<published>2013-09-30T19:36:21Z</published>\n" +
+   "<link rel='alternate' type='text/html' href='http://blink.lc/blink/commit/?id=51e5c70050dcb0980eb31f112d0cd948f3ece820'/>\n" +
+   "<id>51e5c70050dcb0980eb31f112d0cd948f3ece820</id>\n" +
+   "<content type='text'>\n" +
+   "core/platform may not depend on core/ even for testing.\n" +
+   "\n" +
+   "BUG=301947\n" +
+   "R=abarth@chromium.org, abarth\n" +
+   "\n" +
+   "Review URL: https://codereview.chromium.org/25284004\n" +
+   "\n" +
+   "git-svn-id: svn://svn.chromium.org/blink/trunk@158544 bbb929c8-8fbe-4397-9dbb-9b2b20218538\n" +
+   "</content>\n" +
+   "<content type='xhtml'>\n" +
+   "<div xmlns='http://www.w3.org/1999/xhtml'>\n" +
+   "<pre>\n" +
+   "core/platform may not depend on core/ even for testing.\n" +
+   "\n" +
+   "BUG=301947\n" +
+   "R=abarth@chromium.org, abarth\n" +
+   "\n" +
+   "Review URL: https://codereview.chromium.org/25284004\n" +
+   "\n" +
+   "git-svn-id: svn://svn.chromium.org/blink/trunk@158544 bbb929c8-8fbe-4397-9dbb-9b2b20218538\n" +
+   "</pre>\n" +
+   "</div>\n" +
+   "</content>\n" +
+   "</entry>\n" +
+   "<entry>\n" +
+   "<title>Update DEPS include_rules after addition of root-level platform directory</title>\n" +
+   "<updated>2013-09-30T19:28:49Z</updated>\n" +
+   "<author>\n" +
+   "<name>eseidel@chromium.org</name>\n" +
+   "</author>\n" +
+   "<published>2013-09-30T19:28:49Z</published>\n" +
+   "<link rel='alternate' type='text/html' href='http://blink.lc/blink/commit/?id=227add0156e8ab272abcd3368dfc0b5a91f35749'/>\n" +
+   "<id>227add0156e8ab272abcd3368dfc0b5a91f35749</id>\n" +
+   "<content type='text'>\n" +
+   "These were all failures noticed when running check-blink-deps\n" +
+   "\n" +
+   "R=abarth@chromium.org, abarth\n" +
+   "BUG=301947\n" +
+   "\n" +
+   "Review URL: https://codereview.chromium.org/25275005\n" +
+   "\n" +
+   "git-svn-id: svn://svn.chromium.org/blink/trunk@158543 bbb929c8-8fbe-4397-9dbb-9b2b20218538\n" +
+   "</content>\n" +
+   "<content type='xhtml'>\n" +
+   "<div xmlns='http://www.w3.org/1999/xhtml'>\n" +
+   "<pre>\n" +
+   "These were all failures noticed when running check-blink-deps\n" +
+   "\n" +
+   "R=abarth@chromium.org, abarth\n" +
+   "BUG=301947\n" +
+   "\n" +
+   "Review URL: https://codereview.chromium.org/25275005\n" +
+   "\n" +
+   "git-svn-id: svn://svn.chromium.org/blink/trunk@158543 bbb929c8-8fbe-4397-9dbb-9b2b20218538\n" +
+   "</pre>\n" +
+   "</div>\n" +
+   "</content>\n" +
+   "</entry>\n" +
+   "</feed>\n";
+
 
 var kExampleCommitDataList = [{
-    'revision': '147744',
-    'title': 'Revert 147740 "Remove the ENABLE_QUOTA compile-time flag."',
-    'time': '2013-04-06T13:00:08.314281Z',
-    'summary': 'Revert 147740 "Remove the ENABLE_QUOTA compile-time flag."',
-    'author': 'tkent@chromium.org',
-    'reviewer': 'eseidel@chromium',
-    'bugID': 0,
-    'revertedRevision': undefined
-  }, {
-    'revision': '147743',
-    'title': 'Update test expectations.',
-    'time': '2013-04-06T12:48:59.078499Z',
-    'summary': 'Update test expectations.',
-    'author': 'tkent@chromium.org',
-    'reviewer': null,
-    'bugID': 227354,
-    'revertedRevision': undefined
-  }, {
-    'revision': '147742',
-    'title': 'Guard <link> beforeload against recursion.',
-    'time': '2013-04-06T12:40:34.111299Z',
-    'summary': 'Guard <link> beforeload against recursion.',
-    'author': 'gavinp@chromium.org',
-    'reviewer': null,
-    'bugID': 174920,
-    'revertedRevision': undefined
-  }];
+    "revision": 158545,
+    "title": "This matches Gecko's behavior for these types of properties.",
+    "time": "2013-09-30T20:22:01Z",
+    "summary": "This matches Gecko's behavior for these types of properties.",
+    "author": "mkwst@chromium.org",
+    "reviewer": "jochen@chromium",
+    "bugID": 17325,
+    "revertedRevision": undefined
+  },
+  {
+    "revision": 158544,
+    "title": "core/platform may not depend on core/ even for testing.",
+    "time": "2013-09-30T19:36:21Z",
+    "summary": "core/platform may not depend on core/ even for testing.",
+    "author": "eseidel@chromium.org",
+    "reviewer": "abarth@chromium",
+    "bugID": 301947,
+    "revertedRevision": undefined
+  },
+  {
+    "revision": 158543,
+    "title": "These were all failures noticed when running check-blink-deps",
+    "time": "2013-09-30T19:28:49Z",
+    "summary": "These were all failures noticed when running check-blink-deps",
+    "author": "eseidel@chromium.org",
+    "reviewer": "abarth@chromium",
+    "bugID": 301947,
+    "revertedRevision": undefined
+  }
+];
 
 test("changesetURL", 1, function() {
     equals(trac.changesetURL(1234), "http://src.chromium.org/viewvc/blink?view=rev&revision=1234");
@@ -115,7 +179,7 @@ test("recentCommitData", 3, function() {
     var simulator = new NetworkSimulator();
     simulator.get = function(url, callback)
     {
-        equals(url, '/svnlog');
+        equals(url, 'http://blink.lc/blink/atom');
         simulator.scheduleCallback(function() {
             var parser = new DOMParser();
             var responseDOM = parser.parseFromString(kExampleCommitDataXML, "application/xml");

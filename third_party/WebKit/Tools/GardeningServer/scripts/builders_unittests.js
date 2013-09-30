@@ -728,7 +728,10 @@ test("buildersFailing", 3, function() {
                 ],
                 "WebKit Mac10.6": [
                     "webkit_gpu_tests"
-                ]
+                ],
+                "WebKit ASAN": [
+                    "webkit_gpu_tests"
+                ],
             });
         });
     });
@@ -737,6 +740,7 @@ test("buildersFailing", 3, function() {
       "http://build.chromium.org/p/chromium.webkit/json/builders",
       "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Linux/builds/11461",
       "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Mac10.6/builds/11460",
+      "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20ASAN/builds/11460",
     ]);
 });
 
@@ -761,6 +765,8 @@ test("buildersFailing (run-webkit-tests crash)", 3, function() {
                 callback(builderStatusJSON);
             else if (/WebKit%20Linux/.exec(url))
                 callback(failingBuildInfoJSON);
+            else if (/WebKit%20ASAN/.exec(url))
+                callback(failingBuildInfoJSON);
             else {
                 ok(false, "Unexpected URL: " + url);
                 callback();
@@ -776,7 +782,13 @@ test("buildersFailing (run-webkit-tests crash)", 3, function() {
                     "archive_webkit_tests_results",
                     "webkit_gpu_tests",
                     "archive_webkit_tests_gpu_results"
-                ]
+                ],
+                "WebKit ASAN": [
+                    "webkit_tests",
+                    "archive_webkit_tests_results",
+                    "webkit_gpu_tests",
+                    "archive_webkit_tests_gpu_results"
+                ],
             });
         });
     });
@@ -784,6 +796,8 @@ test("buildersFailing (run-webkit-tests crash)", 3, function() {
     deepEqual(requestedURLs, [
       "http://build.chromium.org/p/chromium.webkit/json/builders",
       "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Linux/builds/21460",
+      // FIXME: This looks wrong?  Why is ASAN here and with the wrong build number?
+      "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20ASAN/builds/11460"
     ]);
 });
 
@@ -808,6 +822,8 @@ test("buildersFailing (taskkill warning)", 3, function() {
                 callback(builderStatusJSON);
             else if (/WebKit%20Linux/.exec(url))
                 callback(failingBuildInfoJSON);
+            else if (/WebKit%20ASAN/.exec(url))
+                callback(failingBuildInfoJSON);
             else {
                 ok(false, "Unexpected URL: " + url);
                 callback();
@@ -824,6 +840,7 @@ test("buildersFailing (taskkill warning)", 3, function() {
     deepEqual(requestedURLs, [
       "http://build.chromium.org/p/chromium.webkit/json/builders",
       "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Linux/builds/21460",
+      "http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20ASAN/builds/11460",
     ]);
 });
 
