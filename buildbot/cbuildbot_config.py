@@ -49,7 +49,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'asan-informational',
     'refresh-packages',
     'platform2',
-    'stumpy_test_ap',
+    'test-ap',
     constants.BRANCH_UTIL_CONFIG,
 )
 
@@ -1177,7 +1177,7 @@ internal_pfq_branch.add_config('x86-alex-pre-flight-branch',
   boards=['x86-alex'],
 )
 
-stumpy_test_ap = internal.derive(
+internal.add_config('test-ap',
   vm_tests=None,
   description='stumpy image used for WiFi testing',
   boards=['stumpy'],
