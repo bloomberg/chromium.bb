@@ -226,6 +226,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style->transformOriginX(), style);
     case CSSPropertyWebkitTransformOriginY:
         return createFromLength(style->transformOriginY(), style);
+    case CSSPropertyWebkitTransformOriginZ:
+        return createFromDouble(style->transformOriginZ());
     case CSSPropertyWidth:
         return createFromLength(style->width(), style);
     case CSSPropertyWordSpacing:

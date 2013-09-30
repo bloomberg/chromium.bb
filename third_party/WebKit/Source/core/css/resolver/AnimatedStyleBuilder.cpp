@@ -253,6 +253,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyWebkitTransformOriginY:
         style->setTransformOriginY(animatableValueToLength(value, state));
         return;
+    case CSSPropertyWebkitTransformOriginZ:
+        style->setTransformOriginZ(toAnimatableNumber(value)->toDouble());
+        return;
     case CSSPropertyWidth:
         style->setWidth(animatableValueToLength(value, state));
         return;
