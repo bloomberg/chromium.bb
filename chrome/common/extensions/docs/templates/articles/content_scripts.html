@@ -66,7 +66,8 @@ using the <code>content_scripts</code> field,
 as in the following example.
 </p>
 
-<pre>{
+<pre data-filename="manifest.json">
+{
   "name": "My extension",
   ...
   <b>"content_scripts": [
@@ -77,7 +78,8 @@ as in the following example.
     }
   ]</b>,
   ...
-}</pre>
+}
+</pre>
 
 <p>
 If you want to inject the code only sometimes,
@@ -86,14 +88,16 @@ use the
 as described in <a href="#pi">Programmatic injection</a>.
 </p>
 
-<pre>{
+<pre data-filename="manifest.json">
+{
   "name": "My extension",
   ...
   <b>"permissions": [
     "tabs", "http://www.google.com/*"
   ]</b>,
   ...
-}</pre>
+}
+</pre>
 
 <p>
 Using the <code>content_scripts</code> field,
@@ -266,16 +270,16 @@ by inserting JavaScript into the current tab's page
 and executing the script.
 </p>
 
-<pre>
-<em>/* in background.html */</em>
+<pre data-filename="background.html">
 chrome.browserAction.onClicked.addListener(function(tab) {
-  chrome.tabs.executeScript(null,
-                           {code:"document.body.bgColor='red'"});
+  chrome.tabs.executeScript({
+    code: 'document.body.style.backgroundColor="red"'
+  }); 
 });
-
-<em>/* in manifest.json */</em>
+</pre>
+<pre data-filename="manifest.json">
 "permissions": [
-  "tabs", "http://*/*"
+  "activeTab"
 ],
 </pre>
 
@@ -303,8 +307,7 @@ You inject the file's contents like this:
 
 <p>For example, consider this simple page:
 
-<pre>hello.html
-==========
+<pre data-filename="hello.html">
 &lt;html&gt;
   &lt;button id="mybutton"&gt;click me&lt;/button&gt;
   &lt;script&gt;
@@ -315,12 +318,12 @@ You inject the file's contents like this:
       alert(greeting + button.person_name + ".");
     }, false);
   &lt;/script&gt;
-&lt;/html&gt;</pre>
+&lt;/html&gt;
+</pre>
 
 <p>Now, suppose this content script was injected into hello.html:
 
-<pre>contentscript.js
-================
+<pre data-filename="contentscript.js">
 var greeting = "hola, ";
 var button = document.getElementById("mybutton");
 button.person_name = "Roberto";
@@ -341,24 +344,24 @@ button.addEventListener("click", function() {
 
 <p>Although the execution environments of content scripts and the pages that host them are isolated from each other, they share access to the page's DOM. If the page wishes to communicate with the content script (or with the extension via the content script), it must do so through the shared DOM.</p>
 <p>An example can be accomplished using window.postMessage (or window.webkitPostMessage for Transferable objects):</p>
-<pre>contentscript.js
-================
+<pre data-filename="contentscript.js">
 var port = chrome.runtime.connect();
 
 window.addEventListener("message", function(event) {
-    // We only accept messages from ourselves
-    if (event.source != window)
-      return;
+  // We only accept messages from ourselves
+  if (event.source != window)
+    return;
 
-    if (event.data.type &amp;&amp; (event.data.type == "FROM_PAGE")) {
-      console.log("Content script received: " + event.data.text);
-      port.postMessage(event.data.text);
-    }
-}, false);</pre>
-<pre>http://foo.com/example.html
-===========================
-document.getElementById("theButton").addEventListener("click", function() {
-    window.postMessage({ type: "FROM_PAGE", text: "Hello from the webpage!" }, "*");
+  if (event.data.type &amp;&amp; (event.data.type == "FROM_PAGE")) {
+    console.log("Content script received: " + event.data.text);
+    port.postMessage(event.data.text);
+  }
+}, false);
+</pre>
+<pre data-filename="http://foo.com/example.html">
+document.getElementById("theButton").addEventListener("click",
+    function() {
+  window.postMessage({ type: "FROM_PAGE", text: "Hello from the webpage!" }, "*");
 }, false);</pre>
 <p>In the above example, example.html (which is not a part of the extension) posts messages to itself, which are intercepted and inspected by the content script, and then posted to the extension process. In this way, the page establishes a line of communication to the extension process. The reverse is possible through similar means.</p>
 
@@ -382,27 +385,23 @@ if the user is on a hostile network.</p>
 some protection from the web page, a malicious web page might still be able
 to attack your content script if you use content from the web page
 indiscriminately.  For example, the following patterns are dangerous:
-<pre>contentscript.js
-================
+<pre data-filename="contentscript.js">
 var data = document.getElementById("json-data")
 // WARNING! Might be evaluating an evil script!
 var parsed = eval("(" + data + ")")
-
-contentscript.js
-================
+</pre>
+<pre data-filename="contentscript.js">
 var elmt_id = ...
 // WARNING! elmt_id might be "); ... evil script ... //"!
 window.setTimeout("animate(" + elmt_id + ")", 200);
 </pre>
 <p>Instead, prefer safer APIs that do not run scripts:</p>
-<pre>contentscript.js
-================
+<pre data-filename="contentscript.js">
 var data = document.getElementById("json-data")
 // JSON.parse does not evaluate the attacker's scripts.
-var parsed = JSON.parse(data)
-
-contentscript.js
-================
+var parsed = JSON.parse(data);
+</pre>
+<pre data-filename="contentscript.js">
 var elmt_id = ...
 // The closure form of setTimeout does not evaluate scripts.
 window.setTimeout(function() {

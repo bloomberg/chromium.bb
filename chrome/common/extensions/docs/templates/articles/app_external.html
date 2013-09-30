@@ -41,7 +41,7 @@ To be able to do cross-origin XMLHttpRequests, you'll need to add a permission
 for the remote URL's host:
 </p>
 
-<pre>
+<pre data-filename="manifest.json">
 "permissions": [
     "...",
     "https://supersweetdomainbutnotcspfriendly.com/"
@@ -97,7 +97,9 @@ Your <code>webview</code> element must include the URL to the source content
 and specify its dimensions.
 </p>
 
-<pre>&lt;webview src="http://news.google.com/" width="640" height="480">&lt;/webview></pre>
+<pre data-filename="browser.html">
+&lt;webview src="http://news.google.com/" width="640" height="480">&lt;/webview>
+</pre>
 
 <h3 id="properties">Update properties</h3>
 
@@ -108,7 +110,7 @@ set those properties directly on the JavaScript object, or use the
 <code>setAttribute</code> DOM function.
 </p>
 
-<pre>
+<pre data-filename="browser.js">
 document.querySelector('#mywebview').src =
     'http://blog.chromium.org/';
 // or
@@ -143,7 +145,7 @@ Here's a sample sandboxed page
 which uses an inline script and <code>eval()</code>:
 </p>
 
-<pre>
+<pre data-filename="sandboxed.html">
 &lt;html>
   &lt;body>
     &lt;h1>Woot&lt;/h1>
@@ -162,7 +164,7 @@ You need to include the <code>sandbox</code> field in the manifest
 and list the app pages to be served in a sandbox:
 </p>
 
-<pre>
+<pre data-filename="manifest.json">
 "sandbox": {
   "pages": ["sandboxed.html"]
 }
@@ -188,7 +190,7 @@ and that the app.window.create call does not call the callback function
 with a window object. However, the sandbox page is created as a new window.
 </p>
 
-<pre>
+<pre data-filename="background.js">
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('window.html', {
     'bounds': {
@@ -215,7 +217,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
 <p>Sandboxed pages can also be embedded within another app page
   using an <code>iframe</code>:</p>
 
-<pre>
+<pre data-filename="window.html">
 &lt;!DOCTYPE html>
 &lt;html>
 &lt;head>
@@ -247,7 +249,7 @@ that posts a message to the sandboxed page it
 opens:
 </p>
 
-<pre>
+<pre data-filename="background.js">
 var myWin = null;
 
 chrome.app.runtime.onLaunched.addListener(function() {
@@ -286,7 +288,7 @@ Here's a sample message receiver
 that gets added to your sandboxed page:
 </p>
 
-<pre>
+<pre data-filename="sandboxed.html">
 var messageHandler = function(e) {
   console.log('Background script says hello.', e.data);
 };

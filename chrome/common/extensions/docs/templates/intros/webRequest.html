@@ -6,7 +6,8 @@ for any hosts whose network requests you want to access. If you want to
 use the web request API in a blocking fashion, you need to request
 the "webRequestBlocking" permission in addition.
 For example:</p>
-<pre>{
+<pre data-filename="manifest.json">
+{
   "name": "My extension",
   ...
   <b>"permissions": [
@@ -14,7 +15,8 @@ For example:</p>
     "*://*.google.com/"
   ]</b>,
   ...
-}</pre>
+}
+</pre>
 
 <h2 id="life_cycle">Life cycle of requests</h2>
 

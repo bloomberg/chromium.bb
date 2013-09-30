@@ -268,8 +268,8 @@ you need to use the
 to whitelist these resources so that external Web pages can use them:
 </p>
 
-<pre>
-{ // manifest file
+<pre data-filename="manifest.json">
+{ 
 ...
   "<strong>web_accessible_resources</strong>": [
     "images/image1.png",
@@ -295,14 +295,15 @@ There are two ways to do this:
     <li>You can relax the CSP in a limited way by whitelisting HTTPS origins
       in the “content_security_policy” section of your manifest.
       To include a library like Google Analytics, this is the approach to take:
-      <pre>
-        { // manifest file
-          ...,
-          "content_security_policy": "script-src 'self'
-          <strong>https://ssl.google-analytics.com</strong>; object-src 'self'",
-          ...
-        }
-      </pre></li>
+      <pre data-filename="manifest.json">
+{
+  ...,
+  "content_security_policy": "script-src 'self'
+  <strong>https://ssl.google-analytics.com</strong>; object-src 'self'",
+  ...
+}
+</pre>
+    </li>
 </ol>
 
 <h3 id="using">Using dynamic script evaluation</h3>

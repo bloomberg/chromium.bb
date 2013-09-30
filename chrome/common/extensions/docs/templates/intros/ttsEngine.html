@@ -17,7 +17,8 @@ send them as log messages to a remote server.</p>
 declare the "ttsEngine" permission and then declare all voices
 it provides in the extension manifest, like this:</p>
 
-<pre>{
+<pre data-filename="manifest.json">
+{
   "name": "My TTS Engine",
   "version": "1.0",
   <b>"permissions": ["ttsEngine"],
@@ -40,7 +41,8 @@ it provides in the extension manifest, like this:</p>
     "page": "background.html",
     "persistent": false
   }
-}</pre>
+}
+</pre>
 
 <p>An extension can specify any number of voices.</p>
 

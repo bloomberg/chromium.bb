@@ -196,7 +196,7 @@ Here's a typical manifest file for a browser action
 that uses information from google.com:
 </p>
 
-<pre>
+<pre data-filename="manifest.json">
 {
   "name": "My Extension",
   "version": "2.1",
@@ -451,10 +451,10 @@ you might write code like this:
 </p>
 
 <pre>
-   <b>//THIS CODE DOESN'T WORK</b>
-<span class="linenumber">1: </span>var tab = chrome.tabs.query({'active': true}); <b>//WRONG!!!</b>
-<span class="linenumber">2: </span>chrome.tabs.update(tab.id, {url:newUrl});
-<span class="linenumber">3: </span>someOtherFunction();
+<b>//THIS CODE DOESN'T WORK</b>
+var tab = chrome.tabs.query({'active': true}); <b>//WRONG!!!</b>
+chrome.tabs.update(tab.id, {url:newUrl});
+someOtherFunction();
 </pre>
 
 <p>
@@ -483,11 +483,11 @@ and calls <code>update()</code>.
 </p>
 
 <pre>
-   <b>//THIS CODE WORKS</b>
-<span class="linenumber">1: </span>chrome.tabs.query({'active': true}, <b>function(tabs) {</b>
-<span class="linenumber">2: </span>  chrome.tabs.update(tabs[0].id, {url: newUrl});
-<span class="linenumber">3: </span><b>}</b>);
-<span class="linenumber">4: </span>someOtherFunction();
+<b>//THIS CODE WORKS</b>
+chrome.tabs.query({'active': true}, <b>function(tabs) {</b>
+  chrome.tabs.update(tabs[0].id, {url: newUrl});
+<b>}</b>);
+someOtherFunction();
 </pre>
 
 <p>

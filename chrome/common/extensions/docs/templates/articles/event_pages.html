@@ -33,7 +33,8 @@ Register your event page in the
 </p>
 
 {{^is_apps}}
-<pre>{
+<pre data-filename="manifest.json">
+{
   "name": "My extension",
   ...
   <b>"background": {
@@ -41,7 +42,8 @@ Register your event page in the
     "persistent": false
   }</b>,
   ...
-}</pre>
+}
+</pre>
 
 <p>
 Notice that without the "persistent" key, you have
@@ -50,14 +52,16 @@ an event page from a background page.
 </p>
 {{/is_apps}}
 {{?is_apps}}
-<pre>{
+<pre data-filename="manifest.json">
+{
   "name": "My app",
   ...
   <b>"background": {
     "scripts": ["eventPage.js"]
   }</b>,
   ...
-}</pre>
+}
+</pre>
 {{/is_apps}}
 
 <h2 id="lifetime">Lifetime</h2>

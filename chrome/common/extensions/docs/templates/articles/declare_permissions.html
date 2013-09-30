@@ -29,8 +29,8 @@ declare the "storage" permission.
 Here's an example of the permissions part of a manifest file:
 </p>
 
+<pre data-filename="manifest.json">
 {{^is_apps}}
-<pre>
 "permissions": [
   "tabs",
   "bookmarks",
@@ -38,18 +38,16 @@ Here's an example of the permissions part of a manifest file:
   "http://*.google.com/",
   "unlimitedStorage"
 ],
-</pre>
 {{/is_apps}}
 
 {{?is_apps}}
-<pre>
 "permissions": [
   "serial",
   "storage",
   "videoCapture"
 ],
-</pre>
 {{/is_apps}}
+</pre>
 
 <p>
 The following table lists the currently available permissions:

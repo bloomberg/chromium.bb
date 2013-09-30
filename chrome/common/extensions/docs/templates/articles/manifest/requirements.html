@@ -20,11 +20,13 @@ You can list the 3D-related features your app requires,
 as demonstrated in the following example:
 </p>
 
-<pre class="prettyprint"><span class="str">"requirements"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
-  </span><span class="str">"3D"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
-    </span><span class="str">"features"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">[</span><span class="str">"webgl"</span><span class="pun">]</span><span class="pln">
-  </span><span class="pun">}</span><span class="pln">
-</span><span class="pun">}</span></pre>
+<pre data-filename="manifest.json">
+"requirements": {
+  "3D": {
+    "features": ["webgl"]
+  }
+}
+</pre>
 
 <p>
 The "plugins" requirement indicates
@@ -40,8 +42,10 @@ by setting NPAPI to true,
 as shown in this example:
 </p>
 
-<pre class="prettyprint"><span class="str">"requirements"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
-  </span><span class="str">"plugins"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
-    </span><span class="str">"npapi"</span><span class="pun">:</span><span class="pln"> </span><span class="kwd">true</span><span class="pln">
-  </span><span class="pun">}</span><span class="pln">
-</span><span class="pun">}</span></pre>
+<pre data-filename="manifest.json">
+"requirements": {
+  "plugins": {
+    "npapi": true
+  }
+}
+</pre>

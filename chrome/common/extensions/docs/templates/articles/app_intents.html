@@ -37,7 +37,7 @@ Web intents are no longer supported.
 You must supply the intent in the manifest:
 </p>
 
-<pre>
+<pre data-filename="manifest.json">
 "intents":{
  "http://webintents.org/edit" : [{
    "title" : "Best Image editing app",
@@ -70,7 +70,7 @@ and use the "http://webintents.org/view" action:
 <p>To be able declare your application's ability to view RSS and ATOM 
 feeds, you would add the following to your manifest.
 </p>
-<pre>
+<pre data-filename="manifest.json">
 "intents": {
  "http://webintents.org/view" : [{
    "title" : "RSS Feed Reader",
@@ -203,7 +203,7 @@ you can localize the title of your intent in the picker
 using the exact same infrastructure:
 </p>
 
-<pre>
+<pre data-filename="manifest.json">
 "intents": {
  "http://webintents.org/edit" : [{
    "title" : "__MSG_intent_title__",

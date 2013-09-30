@@ -26,7 +26,7 @@ you can create these three files with a click (Chrome -&gt; New App -&gt; Hello 
 create the manifest file: <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab2_basic/manifest.json">manifest.json</a>
 </p>
 
-<pre>
+<pre data-filename="manifest.json">
 {
   &quot;manifest_version&quot;: 2,
   &quot;name&quot;: &quot;My first app&quot;,
@@ -44,7 +44,7 @@ create the manifest file: <a href="https://github.com/GoogleChrome/chrome-app-co
 <p>In the same directory,
 create the background script: <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab2_basic/main.js">main.js</a>
 
-<pre>
+<pre data-filename="main.js">
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create(&#39;index.html&#39;, {
     bounds: {
@@ -59,7 +59,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
 <p>Create the user interface: <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab2_basic/index.html">index.html</a>
 
-<pre>
+<pre data-filename="index.html">
 &lt;html&gt;
   &lt;head&gt;
       &lt;meta charset=&quot;utf-8&quot;&gt;

@@ -78,13 +78,15 @@
   file cleverly named "sandbox.html". The manifest entry looks like this:
 </p>
 
-<pre>{
+<pre data-filename="manifest.json">
+{
   ...,
   "sandbox": {
      "pages": ["sandbox.html"]
   },
   ...
-}</pre>
+}
+</pre>
 
 <h3 id="load_file">Load the sandboxed file</h3>
 
@@ -103,14 +105,16 @@
   both in a moment.
 </p>
 
-<pre>chrome.browserAction.onClicked.addListener(function() {
+<pre data-filename="eventpage.js">
+chrome.browserAction.onClicked.addListener(function() {
  var iframe = document.getElementById('theFrame');
  var message = {
    command: 'render',
    context: {thing: 'world'}
  };
  iframe.contentWindow.postMessage(message, '*');
-});</pre>
+});
+</pre>
 
 <p class="note">
   For general information about the <code>postMessage</code> API, take a look at
@@ -128,17 +132,19 @@
   creates and compiles an inline template in the way Handlebars suggests:
 </p>
 
-<pre>&lt;script src="handlebars-1.0.0.beta.6.js"&gt;&lt;/script&gt;
- &lt;script id="hello-world-template" type="text/x-handlebars-template"&gt;
-   &lt;div class="entry"&gt;
-     &lt;h1&gt;Hello, &#123&#123thing&#125&#125!&lt;/h1&gt;
-   &lt;/div&gt;
- &lt;/script&gt;
- &lt;script&gt;
-   var templates = [];
-   var source = document.getElementById('hello-world-template').innerHTML;
-   templates['hello'] = Handlebars.compile(source);
- &lt;/script&gt;</pre>
+<pre data-filename="sandbox.html">
+&lt;script src="handlebars-1.0.0.beta.6.js"&gt;&lt;/script&gt;
+&lt;script id="hello-world-template" type="text/x-handlebars-template"&gt;
+  &lt;div class="entry"&gt;
+    &lt;h1&gt;Hello, &#123&#123thing&#125&#125!&lt;/h1&gt;
+  &lt;/div&gt;
+&lt;/script&gt;
+&lt;script&gt;
+  var templates = [];
+  var source = document.getElementById('hello-world-template').innerHTML;
+  templates['hello'] = Handlebars.compile(source);
+&lt;/script&gt;
+</pre>
 
 <p>
   This doesn't fail! Even though <code>Handlebars.compile</code> ends up using
@@ -158,21 +164,25 @@
   Page so the extension can do something useful with it later on:
 </p>
 
-<pre>window.addEventListener('message', function(event) {
-  var command = event.data.command;
-  var name = event.data.name || 'hello';
-  switch(command) {
-    case 'render':
-      event.source.postMessage({
-        name: name,
-        html: templates[name](event.data.context)
-      }, event.origin);
-      break;
-
-    // case 'somethingElse':
-    //   ...
-  }
-});</pre>
+<pre data-filename="sandbox.html">
+&lt;script&gt;
+  window.addEventListener('message', function(event) {
+    var command = event.data.command;
+    var name = event.data.name || 'hello';
+    switch(command) {
+      case 'render':
+        event.source.postMessage({
+          name: name,
+          html: templates[name](event.data.context)
+        }, event.origin);
+        break;
+  
+      // case 'somethingElse':
+      //   ...
+    }
+  });
+&lt;/script&gt;
+</pre>
 
 <p>
   Back in the Event Page, we'll receive this message, and do something

@@ -49,7 +49,7 @@ to make XHR requests to the Tasks service URL - for security reasons,
 you need to request explicit permission in the manifest for every URL you will call via XHR.
 </p>
 
-<pre>
+<pre data-filename="manifest.json">
 {
      ... ,
      &quot;permissions&quot;: [&quot;storage&quot;, &quot;experimental&quot;, &quot;https://www.googleapis.com/tasks/*&quot;]
@@ -83,7 +83,7 @@ authenticates the user and imports his Google tasks into the Todo list:
   <header tabindex="0" data-value="js">JavaScript</header>
 
   <content>
-    <pre>
+    <pre data-filename="controller.js">
 $scope.importFromGTasks = function() {
   var api = new TasksAPI();
   var clientId = &quot;&lt;GET_YOURS_AT_https://code.google.com/apis/console&gt;&quot;;
@@ -108,37 +108,38 @@ $scope.importFromGTasks = function() {
     </pre>
   </content>
   <content>
-    <pre>
-  document.getElementById('importGTasks').addEventListener('click', function() {
-    var api = new TasksAPI();
-    var clientId = &quot;&lt;GET_YOURS_AT_https://code.google.com/apis/console&gt;&quot;;
-    api.authenticate(clientId, function() {
-      api.getLists(function(result) {
-        console.log(result);
-        if (!result || !result.items || result.items.length==0) {
-          throw "No task lists available";
+    <pre data-filename="controller.js">
+document.getElementById('importGTasks').addEventListener('click',
+    function() {
+  var api = new TasksAPI();
+  var clientId = &quot;&lt;GET_YOURS_AT_https://code.google.com/apis/console&gt;&quot;;
+  api.authenticate(clientId, function() {
+    api.getLists(function(result) {
+      console.log(result);
+      if (!result || !result.items || result.items.length==0) {
+        throw "No task lists available";
+      }
+      var listId=result.items[0].id;
+      api.getTasks(listId, function(tasks) {
+        console.log(tasks);
+        for (var j=0; j&lt;tasks.items.length; j++) {
+          model.addTodo(tasks.items[j].title, tasks.items[j].status!='needsAction');
         }
-        var listId=result.items[0].id;
-        api.getTasks(listId, function(tasks) {
-          console.log(tasks);
-          for (var j=0; j&lt;tasks.items.length; j++) {
-            model.addTodo(tasks.items[j].title, tasks.items[j].status!='needsAction');
-          }
-        });
       });
     });
   });
+});
     </pre>
 
 </tabs>
 
 <p>Replace the following line in the code above:
-<pre>
+<pre data-filename="controller.js">
   var clientId = &quot;&lt;GET_YOURS_AT_https://code.google.com/apis/console&gt;&quot;;
 </pre>
 with your own project&#39;s Client ID that you got from the Google API Console.
 Should look like this:
-<pre>
+<pre data-filename="controller.js">
   var clientId = &quot;xxxxxxxxxxxxxx.apps.googleusercontent.com&quot;;
 </pre></p></li>
 <li><p>Now we just need a button that starts the import process. Update the <code>index.html</code> to include <code>gapi_tasks.js</code> and add a new button to call <code>importFromGTasks</code>:
@@ -150,14 +151,14 @@ Should look like this:
   <header tabindex="0" data-value="js">JavaScript</header>
 
   <content>
-    <pre>
+    <pre data-filename="index.html">
 &lt;script src=&quot;gapi_tasks.js&quot;&gt;&lt;/script&gt;
 ...
 &lt;button ng-click=&quot;importFromGTasks()&quot;&gt;import tasks from GTasks&lt;/button&gt;
     </pre>
   </content>
   <content>
-    <pre>
+    <pre data-filename="index.html">
 &lt;button id="importGTasks"&gt;import tasks from GTasks&lt;/button&gt;
 ...
 &lt;script src="gapi_tasks.js"&gt;&lt;/script&gt;

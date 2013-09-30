@@ -8,15 +8,17 @@ registers a Native Client module as the content handler
 for the OpenOffice spreadsheet MIME type.
 </p>
 
-<pre class="prettyprint"><span class="pun">{</span><span class="pln">
-  </span><span class="str">"name"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"Native Client OpenOffice Spreadsheet Viewer"</span><span class="pun">,</span><span class="pln">
-  </span><span class="str">"version"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"0.1"</span><span class="pun">,</span><span class="pln">
-  </span><span class="str">"description"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"Open OpenOffice spreadsheets, right in your browser."</span><span class="pun">,</span><span class="pln">
-  </span><b><span class="str">"nacl_modules"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">[{</span><span class="pln">
-    </span><span class="str">"path"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"OpenOfficeViewer.nmf"</span><span class="pun">,</span><span class="pln">
-    </span><span class="str">"mime_type"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"application/vnd.oasis.opendocument.spreadsheet"</span><span class="pln">
-  </span><span class="pun">}]</span></b><span class="pln">
-</span><span class="pun">}</span></pre>
+<pre data-filename="manifest.json">
+{
+  "name": "Native Client OpenOffice Spreadsheet Viewer",
+  "version": "0.1",
+  "description": "Open OpenOffice spreadsheets, right in your browser.",
+  <b>"nacl_modules": [{
+    "path": "OpenOfficeViewer.nmf",
+    "mime_type": "application/vnd.oasis.opendocument.spreadsheet"
+  }]</b>
+}
+</pre>
 
 <p>
 The value of "path" is the location of a Native Client manifest
@@ -34,23 +36,25 @@ with two <code>.nmf</code> files
 that handle three MIME types.
 </p>
 
-<pre class="prettyprint"><span class="pun">{</span><span class="pln">
-  </span><span class="str">"name"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"Spreadsheet Viewer"</span><span class="pun">,</span><span class="pln">
-  </span><span class="str">"version"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"0.1"</span><span class="pun">,</span><span class="pln">
-  </span><span class="str">"description"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"Open OpenOffice and Excel spreadsheets, right in your browser."</span><span class="pun">,</span><span class="pln">
-  </span><span class="str">"nacl_modules"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">[{</span><span class="pln">
-    </span><span class="str">"path"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"OpenOfficeViewer.nmf"</span><span class="pun">,</span><span class="pln">
-    </span><span class="str">"mime_type"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"application/vnd.oasis.opendocument.spreadsheet"</span><span class="pln">
-  </span><span class="pun">},</span><span class="pln">
-  </span><span class="pun">{</span><span class="pln">
-    </span><span class="str">"path"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"OpenOfficeViewer.nmf"</span><span class="pun">,</span><span class="pln">
-    </span><span class="str">"mime_type"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"application/vnd.oasis.opendocument.spreadsheet-template"</span><span class="pln">
-  </span><span class="pun">},</span><span class="pln">
-  </span><span class="pun">{</span><span class="pln">
-    </span><span class="str">"path"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"ExcelViewer.nmf"</span><span class="pun">,</span><span class="pln">
-    </span><span class="str">"mime_type"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"application/excel"</span><span class="pln">
-  </span><span class="pun">}]</span><span class="pln">
-</span><span class="pun">}</span></pre>
+<pre data-filename="manifest.json">
+{
+  "name": "Spreadsheet Viewer",
+  "version": "0.1",
+  "description": "Open OpenOffice and Excel spreadsheets, right in your browser.",
+  "nacl_modules": [{
+    "path": "OpenOfficeViewer.nmf",
+    "mime_type": "application/vnd.oasis.opendocument.spreadsheet"
+  },
+  {
+    "path": "OpenOfficeViewer.nmf",
+    "mime_type": "application/vnd.oasis.opendocument.spreadsheet-template"
+  },
+  {
+    "path": "ExcelViewer.nmf",
+    "mime_type": "application/excel"
+  }]
+}
+</pre>
 
 <p class="note">
 <strong>Note:</strong>

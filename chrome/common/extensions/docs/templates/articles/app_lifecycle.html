@@ -59,7 +59,7 @@ Any library scripts used by the event page need to be added
 to the "background" field first:
 </p>
 
-<pre>
+<pre data-filename="manifest.json">
 "background": {
   "scripts": [
     "foo.js",
@@ -74,7 +74,7 @@ This function is called
 when your application is launched in any way:
 </p>
 
-<pre>
+<pre data-filename="background.js">
 chrome.app.runtime.onLaunched.addListener(function() { 
   // Tell your app what to launch and how.
 });
@@ -95,7 +95,7 @@ not associated with any Chrome browser windows.
 
 <p>Here's a sample window created from <code>background.js</code>:</p>
 
-<pre>
+<pre data-filename="background.js">
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('main.html', {
     bounds: {
@@ -149,7 +149,7 @@ to store and update local settings
 (see also <a href="app_storage.html#options">Storage options</a>).
 </p>
 
-<pre>
+<pre data-filename="background.js">
 chrome.runtime.onInstalled.addListener(function() { 
   chrome.storage.local.set(object items, function callback);
 });
@@ -197,7 +197,7 @@ while handling this event are not guaranteed to complete.
 Keep the clean-up tasks synchronous and simple.
 </p>
 
-<pre>
+<pre data-filename="background.js">
 chrome.runtime.onSuspend.addListener(function() { 
   // Do some simple clean-up tasks.
 });

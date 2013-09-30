@@ -21,8 +21,17 @@
       (function() {
         // Auto syntax highlight all pre tags.
         var preElements = document.getElementsByTagName('pre');
-        for (var i = 0; i < preElements.length; i++)
-          preElements[i].classList.add('prettyprint');
+        for (var i = 0; i < preElements.length; i++) {
+          var preElement = preElements[i];
+          preElement.classList.add('prettyprint');
+          var datasetFilename = preElement.getAttribute('data-filename');
+          if (datasetFilename) {
+            var filename = document.createElement('div');
+            filename.className = 'filename nocode';
+            filename.textContent = datasetFilename;
+            preElement.insertBefore(filename, preElement.firstChild);
+          }
+        }
         prettyPrint();
       })();
     </script>

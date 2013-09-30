@@ -37,9 +37,7 @@ there is one.
 
 <p>
 Sending a request from a content script looks like this:
-<pre>
-contentscript.js
-================
+<pre data-filename="contentscript.js">
 chrome.runtime.sendMessage({greeting: "hello"}, function(response) {
   console.log(response.farewell);
 });
@@ -49,9 +47,7 @@ chrome.runtime.sendMessage({greeting: "hello"}, function(response) {
 Sending a request from the extension to a content script looks very similar,
 except that you need to specify which tab to send it to. This example
 demonstrates sending a message to the content script in the selected tab.
-<pre>
-background.html
-===============
+<pre data-filename="background.html">
 chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
   chrome.tabs.sendMessage(tabs[0].id, {greeting: "hello"}, function(response) {
     console.log(response.farewell);
@@ -109,9 +105,7 @@ connection.
 <p>
 Here is how you open a channel from a content script, and send and listen for
 messages:
-<pre>
-contentscript.js
-================
+<pre data-filename="contentscript.js">
 var port = chrome.runtime.connect({name: "knockknock"});
 port.postMessage({joke: "Knock knock"});
 port.onMessage.addListener(function(msg) {
@@ -227,7 +221,7 @@ To use this feature, you must first
 specify in your manifest.json which web sites you want to communicate with. For
 example:
 
-<pre>
+<pre data-filename="manifest.json">
 "externally_connectable": {
   "matches": ["*://*.example.com/*"]
 }
@@ -289,7 +283,8 @@ standard output streams.
 In order to register a native messaging host the application must install a
 manifest file that defines native messaging host configuration. Below is an
 example of the manifest file:
-<pre>{
+<pre data-filename="manifest.json">
+{
   "name": "com.my_company.my_application",
   "description": "My Application",
   "path": "C:\Program Files\My Application\chrome_native_messaging_host.exe",
@@ -402,15 +397,13 @@ href="http://en.wikipedia.org/wiki/Cross-site_scripting">cross-site
 scripting</a>.  Specifically, avoid using dangerous APIs such as the
 below:
 </p>
-<pre>background.html
-===============
+<pre data-filename="background.js">
 chrome.tabs.sendMessage(tab.id, {greeting: "hello"}, function(response) {
   // WARNING! Might be evaluating an evil script!
   var resp = eval("(" + response.farewell + ")");
 });
-
-background.html
-===============
+</pre>
+<pre data-filename="background.js">
 chrome.tabs.sendMessage(tab.id, {greeting: "hello"}, function(response) {
   // WARNING! Might be injecting a malicious script!
   document.getElementById("resp").innerHTML = response.farewell;
@@ -419,15 +412,13 @@ chrome.tabs.sendMessage(tab.id, {greeting: "hello"}, function(response) {
 <p>
 Instead, prefer safer APIs that do not run scripts:
 </p>
-<pre>background.html
-===============
+<pre data-filename="background.js">
 chrome.tabs.sendMessage(tab.id, {greeting: "hello"}, function(response) {
   // JSON.parse does not evaluate the attacker's scripts.
   var resp = JSON.parse(response.farewell);
 });
-
-background.html
-===============
+</pre>
+<pre data-filename="background.js">
 chrome.tabs.sendMessage(tab.id, {greeting: "hello"}, function(response) {
   // innerText does not let the attacker inject HTML elements.
   document.getElementById("resp").innerText = response.farewell;

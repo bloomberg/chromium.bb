@@ -35,7 +35,7 @@ in the drag-and-drop operations in a <code>webview</code> when the user clicks o
 <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab8_webresources/javascript/1_webview/manifest.json">JavaScript manifest.json</a> are the same:
 </p>
 
-<pre>
+<pre data-filename="manifest.json">
 &quot;permissions&quot;: [&quot;storage&quot;, &quot;webview&quot;]
 </pre>
 
@@ -52,7 +52,7 @@ in the drag-and-drop operations in a <code>webview</code> when the user clicks o
   <header tabindex="0" data-value="js">JavaScript</header>
 
   <content>
-    <pre>
+    <pre data-filename="index.html">
 &lt;!-- in TODO item: --&gt;
 &lt;a ng-show=&quot;todo.uri&quot; href=&quot;&quot; ng-click=&quot;showUri(todo.uri)&quot;&gt;(view url)&lt;/a&gt;
 &lt;!-- at the bottom, below the end of body: --&gt;
@@ -60,7 +60,7 @@ in the drag-and-drop operations in a <code>webview</code> when the user clicks o
     </pre>
   </content>
   <content>
-    <pre>
+    <pre data-filename="index.html">
 &lt;!-- right after the &quot;dropText&quot; div: --&gt;
 &lt;webview&gt;&lt;/webview&gt;
 &lt;!-- in the TODO template, right before the end of the li: --&gt;
@@ -78,7 +78,7 @@ the style sheet.
 <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab8_webresources/javascript/1_webview/todo.css">JavaScript todo.css</a> are the same:
 </p>
 
-<pre>
+<pre data-filename="todo.css">
 webview {
   width: 100%;
   height: 200px;
@@ -100,7 +100,7 @@ or an event handler, <code>showUrl</code>, to the
   <header tabindex="0" data-value="js">JavaScript</header>
 
   <content>
-    <pre>
+    <pre data-filename="controller.js">
 $scope.showUri = function(uri) {
   var webview=document.querySelector(&quot;webview&quot;);
   webview.src=uri;
@@ -108,7 +108,7 @@ $scope.showUri = function(uri) {
     </pre>
   </content>
   <content>
-    <pre>
+    <pre data-filename="controller.js">
 if(/^http:\/\/|https:\/\//.test(todoObj.text)) {
   var showUrl = el.querySelector('a');
   showUrl.addEventListener('click', function(e) {
@@ -161,7 +161,7 @@ Change
 <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab8_webresources/javascript/2_loading_resources/manifest.json">JavaScript manifest.json</a>:
 </p>
 
-<pre>
+<pre data-filename="manifest.json">
 &quot;permissions&quot;: [&quot;storage&quot;, &quot;webview&quot;, &quot;&lt;all_urls&gt;&quot;]
 </pre>
 
@@ -182,13 +182,13 @@ that will be shown while we are loading the proper image.</p>
   <header tabindex="0" data-value="js">JavaScript</header>
 
   <content>
-    <pre>
+    <pre data-filename="loader.js">
 &lt;img style=&quot;max-height: 48px; max-width: 120px;&quot; ng-show=&quot;todo.validImage&quot;
 ng-src=&quot;&#123;&#123;todo.imageUrl&#125;&#125;&quot;&gt;&lt;/img&gt;
     </pre>
   </content>
   <content>
-    <pre>
+    <pre data-filename="loader.js">
 &lt;img style=&quot;max-height: 48px; max-width: 120px;&quot;&gt;&lt;/img&gt;
     </pre>
   </content>
@@ -201,7 +201,7 @@ In the
 add a constant for the placeholder image:
 </p>
 
-<pre>
+<pre data-filename="controller.js">
 const PLACEHOLDER_IMAGE = "loading.gif";
 </pre>
 
@@ -218,7 +218,7 @@ that will start a XHR request and execute a callback with a Blob URL.
 <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab8_webresources/javascript/2_loading_resources/loader.js">JavaScript loader.js</a> are the same:
 </p>
 
-<pre>
+<pre data-filename="loader.js">
 var loadImage = function(uri, callback) {
   var xhr = new XMLHttpRequest();
   xhr.responseType = &#39;blob&#39;;
@@ -242,7 +242,7 @@ add a new method that will search the Todo list looking for images that are not 
   <header tabindex="0" data-value="js">JavaScript</header>
 
   <content>
-    <pre>
+    <pre data-filename="controller.js">
 // for each image with no imageUrl, start a new loader
 $scope.loadImages = function() {
   for (var i=0; i&lt;$scope.todos.length; i++) {
@@ -263,7 +263,7 @@ $scope.loadImages = function() {
     </pre>
   </content>
   <content>
-    <pre>
+    <pre data-filename="controller.js">
  var maybeStartImageLoader = function(el, todo) {
     var img = el.querySelector('img');
     if (todo['extras'] && todo.extras.validImage && todo.extras.imageUrl) {
@@ -295,7 +295,7 @@ in the
 to update the Todo list from the model:
 </p>
 
-<pre>
+<pre data-filename="controller.js">
 var updateTodo = function(model) {
   var todoElement = list.querySelector('li[data-id="'+model.id+'"]');
   if (todoElement) {
@@ -326,7 +326,7 @@ Feel free to have a better coverage in your code.
   <header tabindex="0" data-value="js">JavaScript</header>
 
   <content>
-    <pre>
+    <pre data-filename="controller.js">
 var uri=e.dataTransfer.getData(&quot;text/uri-list&quot;);
 var todo = {text:uri, done:false, uri: uri};
 if (/.png$/.test(uri) || /.jpg$/.test(uri)) {
@@ -341,7 +341,7 @@ $scope.loadImages();
     </pre>
   </content>
   <content>
-    <pre>
+    <pre data-filename="controller.js">
 var uri = e.dataTransfer.getData("text/uri-list");
 var extras = { uri: uri };
 if (/\.png$/.test(uri) || /\.jpg$/.test(uri)) {
@@ -367,7 +367,7 @@ will force the loadImages method to request them again:
   <header tabindex="0" data-value="js">JavaScript</header>
 
   <content>
-    <pre>
+    <pre data-filename="controller.js">
 // If there is saved data in storage, use it. Otherwise, bootstrap with sample todos
 $scope.load = function(value) {
   if (value &amp;&amp; value.todolist) {
@@ -387,7 +387,7 @@ $scope.load = function(value) {
     </pre>
   </content>
   <content>
-    <pre>
+    <pre data-filename="controller.js">
 /**
  * Listen to changes in the model and trigger the appropriate changes in the view
  **/

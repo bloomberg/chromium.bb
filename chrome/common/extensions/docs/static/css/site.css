@@ -108,15 +108,13 @@ pre b {
   background: yellow;
 }
 
-pre[data-filename]::after {
-  background-color: darkGray;
+pre[data-filename] .filename {
+  background-color: #777;
   color: #FFF;
-  content: attr(data-filename);
   font-size: 16px;
-  padding: 2px 25px;
+  padding: 2px 12px;
   position: absolute;
   right: 0;
-  text-transform: uppercase;
   top: 0;
 }
 
@@ -570,12 +568,13 @@ tabs {
 }
 tabs header {
   background: inherit;
-  border-bottom: 1px solid white;
   border: 1px solid #ccc;
+  border-bottom: 1px solid white;
   cursor: auto;
   display: inline-block;
   margin-bottom: 0;
   padding: 10px;
+  outline: none;
 }
 tabs header.unselected {
   background: #eee;

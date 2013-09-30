@@ -46,7 +46,7 @@ extension.</p>
   tracking API</a> (the modified line is bolded):
 </p>
 
-<pre>
+<pre data-filename="asyncTracking.js">
 (function() {
   var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
   <strong>ga.src = 'https://ssl.google-analytics.com/ga.js';</strong>
@@ -60,11 +60,13 @@ extension.</p>
   <a href="manifest.html"><code>manifest.json</code></a> might look like:
 </p>
 
-<pre>{
+<pre data-filename="manifest.json">
+{
   ...,
   "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
   ...
-}</pre>
+}
+</pre>
 
 <p>
   Here is a popup page (<code>popup.html</code>) which loads the asynchronous
@@ -72,21 +74,7 @@ extension.</p>
   tracks a single page view:
 </p>
 
-<pre>popup.js:
-=========
-
-var _gaq = _gaq || [];
-_gaq.push(['_setAccount', 'UA-XXXXXXXX-X']);
-_gaq.push(['_trackPageview']);
-
-(function() {
-  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-  ga.src = 'https://ssl.google-analytics.com/ga.js';
-  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-})();
-
-popup.html:
-===========
+<pre data-filename="popup.html">
 &lt;!DOCTYPE html>
 &lt;html>
  &lt;head>
@@ -97,6 +85,18 @@ popup.html:
    ...
  &lt;/body>
 &lt;/html>
+</pre>
+
+<pre data-filename="popup.js">
+var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-XXXXXXXX-X']);
+_gaq.push(['_trackPageview']);
+
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = 'https://ssl.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
 </pre>
 
 <p>

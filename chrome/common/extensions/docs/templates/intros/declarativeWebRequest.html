@@ -6,7 +6,8 @@ You must declare the "declarativeWebRequest" permission in the
 along with <a href="declare_permissions.html">host permissions</a>.
 </p>
 
-<pre>{
+<pre data-filename="manifest.json">
+{
   "name": "My extension",
   ...
 <b>  "permissions": [
@@ -14,7 +15,8 @@ along with <a href="declare_permissions.html">host permissions</a>.
     "*://*/*"
   ]</b>,
   ...
-}</pre>
+}
+</pre>
 
 <p>
 Note that certain types of non-sensitive actions do not require host

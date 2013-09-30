@@ -39,7 +39,7 @@ an HTML page packaged inside your extension.
 <h2 id="example">Example</h2>
 
 <p>First, declare the <code>notifications</code> permission in your manifest:</p>
-<pre>
+<pre data-filename="manifest.json">
 {
   "name": "My extension",
   "manifest_version": 2,
@@ -93,11 +93,10 @@ $ref:extension.getBackgroundPage and
 $ref:extension.getViews. For example:
 </p>
 
-<pre>
-// Inside a notification...
+<pre data-filename="notification.js">
 chrome.extension.getBackgroundPage().doThing();
-
-// From the background page...
+</pre>
+<pre data-filename="background.js">
 chrome.extension.getViews({type:"notification"}).forEach(function(win) {
   win.doOtherThing();
 });

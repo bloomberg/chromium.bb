@@ -23,7 +23,8 @@ Register your browser action in the
 like this:
 </p>
 
-<pre>{
+<pre data-filename="manifest.json">
+{
   "name": "My extension",
   ...
   <b>"browser_action": {
@@ -35,7 +36,8 @@ like this:
     "default_popup": "popup.html"        <em>// optional</em>
   }</b>,
   ...
-}</pre>
+}
+</pre>
 
 <p>
 If you only provide one of the 19px or 38px icon size, the extension system will
@@ -44,7 +46,8 @@ can lose detail or make it look fuzzy. The old syntax for registering the
 default icon is still supported:
 </p>
 
-<pre>{
+<pre data-filename="manifest.json">
+{
   "name": "My extension",
   ...
   <b>"browser_action": {
@@ -53,7 +56,8 @@ default icon is still supported:
     <em>// equivalent to "default_icon": { "19": "images/icon19.png" }</em>
   }</b>,
   ...
-}</pre>
+}
+</pre>
 
 <h2 id="ui">Parts of the UI</h2>
 

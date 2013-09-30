@@ -40,7 +40,7 @@ to be displayed on the button.
 For example:
 </p>
 
-<pre>
+<pre data-filename="manifest.json">
 {
   "name": "My extension",
   ...
@@ -62,7 +62,8 @@ For example:
              "48": "icon48.png",
             "128": "icon128.png" },
   ...
-}</pre>
+}
+</pre>
 
 <p class="note">
 <b>Note:</b>
@@ -84,8 +85,7 @@ to get access to the file contents.
 Here is an example:
 </p>
 
-<pre>
-<em>//In background.html:</em>
+<pre data-filename="background.js">
 chrome.fileBrowserHandler.onExecute.addListener(function(id, details) {
   if (id == 'upload') {
     var fileEntries = details.entries;

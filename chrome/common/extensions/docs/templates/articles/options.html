@@ -4,20 +4,45 @@
 
 <h2 id="step_1">Step 1: Declare your options page in the manifest</h2>
 
-<pre>{
+<pre data-filename="manifest.json">
+{
   "name": "My extension",
   ...
   <b>"options_page": "options.html"</b>,
   ...
-}</pre>
+}
+</pre>
 
 
 <h2 id="step_2">Step 2: Write your options page</h2>
 
 Here is an example options page:
 
-<pre>// Save this script as `options.js`
+<pre data-filename="options.html">
+&lt;html>
+&lt;head>&lt;title>My Test Extension Options&lt;/title>&lt;/head>
 
+&lt;body>
+
+Favorite Color:
+&lt;select id="color">
+ &lt;option value="red">red&lt;/option>
+ &lt;option value="green">green&lt;/option>
+ &lt;option value="blue">blue&lt;/option>
+ &lt;option value="yellow">yellow&lt;/option>
+&lt;/select>
+
+&lt;br>
+&lt;div id="status">&lt;/div>
+&lt;button id="save">Save&lt;/button>
+&lt;/body>
+
+&lt;script src="options.js">&lt;/script>
+
+&lt;/html>
+</pre>
+
+<pre data-filename="options.js">
 // Saves options to localStorage.
 function save_options() {
   var select = document.getElementById("color");
@@ -49,30 +74,6 @@ function restore_options() {
 }
 document.addEventListener('DOMContentLoaded', restore_options);
 document.querySelector('#save').addEventListener('click', save_options);
-</pre>
-
-<pre>
-&lt;html>
-&lt;head>&lt;title>My Test Extension Options&lt;/title>&lt;/head>
-
-&lt;body>
-
-Favorite Color:
-&lt;select id="color">
- &lt;option value="red">red&lt;/option>
- &lt;option value="green">green&lt;/option>
- &lt;option value="blue">blue&lt;/option>
- &lt;option value="yellow">yellow&lt;/option>
-&lt;/select>
-
-&lt;br>
-&lt;div id="status">&lt;/div>
-&lt;button id="save">Save&lt;/button>
-&lt;/body>
-
-&lt;script src="options.js">&lt;/script>
-
-&lt;/html>
 </pre>
 
 <h2 id="important_notes">Important notes</h2>

@@ -1,16 +1,5 @@
 <h1>Manifest Version</h1>
 
-<style type="text/css">
-#schedule h3 {
-  margin-bottom:0;
-}
-
-#schedule p {
-  margin-top:0;
-  margin-bottom:1em;
-}
-</style>
-
 <p>
   Applications are simply bundles of resources, wrapped
   up with a <a href="manifest.html"><code>manifest.json</code></a> file that
@@ -28,11 +17,13 @@
   <strong><code>'manifest_version': 2</code></strong>:
 </p>
 
-<pre>{
+<pre data-filename="manifest.json">
+{
   ...,
   "manifest_version": 2,
   ...
-}</pre>
+}
+</pre>
 
 <p>
   Manifest version 1 only applied to extensions and hosted apps, not

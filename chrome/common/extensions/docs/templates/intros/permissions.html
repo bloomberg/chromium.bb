@@ -40,14 +40,16 @@ Advantages of <em>optional</em> permissions:
   manifest</a> with the <code>optional_permissions</code> key, using the
   same format as the <a href="declare_permissions.html#manifest">permissions</a>
   field:
+</p>
 
-<pre>{
+<pre data-filename="manifest.json">
+{
   "name": "My extension",
   ...
   <b>"optional_permissions": [ "tabs", "http://www.google.com/" ],</b>
   ...
-}</pre>
-</p>
+}
+</pre>
 
 <p>
 You can specify any of the following as optional

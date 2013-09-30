@@ -57,7 +57,7 @@ the media player app uses the <a href="socket.html">socket API</a>
 to connect to a media server over the network.
 </p>
 
-<pre>
+<pre data-filename="manifest.json">
 {
     "name": "Video Player",
     "description": "Features network media discovery and playlist management",
@@ -100,7 +100,7 @@ The media player's main page, <code>index.html</code>,
 opens in a window with the specified dimensions:
 </p>
 
-<pre>
+<pre data-filename="background.js">
 chrome.app.runtime.onLaunched.addListener(function(launchData) {
     var opt = {
         width: 1000,
@@ -123,14 +123,14 @@ To comply with CSP and execute the app logic,
 the app's main page, <code>index.html</code>, creates an iframe
 that acts as a sandbox environment:
 
-<pre>
-&lt;iframe id="sandbox-frame" class="sandboxed" sandbox="allow-scripts" src="sandbox.html">&lt;/iframe>
+<pre data-filename="index.html">
+&lt;iframe id="sandbox-frame" sandbox="allow-scripts" src="sandbox.html">&lt;/iframe>
 </pre>
 
 <p>The iframe points to <a href="https://github.com/GoogleChrome/sencha-video-player-app/blob/master/sandbox.html">sandbox.html</a> which includes the files required for the Ext JS application:
 </p>
 
-<pre>
+<pre data-filename="sandbox.html">
 &lt;html>
 &lt;head>
     &lt;link rel="stylesheet" type="text/css" href="resources/css/app.css" />'
@@ -164,7 +164,7 @@ Unlike the sandboxed <code>app.js</code>,
 <code>index.js</code> creates the iframe:
 </p>
 
-<pre>
+<pre data-filename="index.js">
 var iframe = document.getElementById('sandbox-frame');
 
 iframeWindow = iframe.contentWindow;
@@ -174,7 +174,7 @@ iframeWindow = iframe.contentWindow;
 And listens for messages from the sandboxed files:
 </p>
 
-<pre>
+<pre data-filename="index.js">
 window.addEventListener('message', function(e) {
     var data= e.data,
         key = data.key;
@@ -218,7 +218,7 @@ In the following example,
 requesting the key 'extension-baseurl':
 </p>
 
-<pre>
+<pre data-filename="app.js">
 Ext.data.PostMessage.request({
     key: 'extension-baseurl',
     success: function(data) {
@@ -232,7 +232,7 @@ Ext.data.PostMessage.request({
 and replies by sending the Base URL back:
 </p>
 
-<pre>
+<pre data-filename="index.js">
 function extensionBaseUrl(data) {
     data.result = chrome.extension.getURL('/');
     iframeWindow.postMessage(data, '*');
@@ -266,14 +266,14 @@ The remainder of this section describes this workflow in more detail.
 
 <p>
 When a user clicks the Media Servers button in the center of the media player app,
-<code>MediaServers</code> calls <code>discoverServers()</code>.
+<code>MediaServers.js</code> calls <code>discoverServers()</code>.
 This function first checks for any outstanding discovery requests,
 and if true, aborts them so the new request can be initiated.
 Next, the controller posts a message to <code>index.js</code>
 with a key upnp-discovery, and two callback listeners:
 </p>
 
-<pre>
+<pre data-filename="MediaServers.js">
 me.activeDiscoverRequest = Ext.data.PostMessage.request({
     key: 'upnp-discover',
     success: function(data) {
@@ -365,7 +365,7 @@ into a document.
 and receives media data using the packaged app socket API:
 </p>
 
-<pre>
+<pre data-filename="Upnp.js">
 socket.create("udp", {}, function(info) {
     var socketId = info.socketId;
         
@@ -424,7 +424,7 @@ the controller posts a message to <code>index.js</code>
 with the 'play-media' key:
 </p>
 
-<pre>
+<pre data-filename="MediaExplorer.js">
 onFileDblClick: function(explorer, record) {
     var serverPanel, node,
         type    = record.get('type'),
@@ -450,7 +450,7 @@ onFileDblClick: function(explorer, record) {
 responds by calling <code>playMedia()</code>:
 </p>
 
-<pre>
+<pre data-filename="index.js">
 function playMedia(data) {
     var type        = data.params.type,
         url         = data.params.url,
@@ -518,7 +518,7 @@ and calls the <code>downloadMedia()</code> function
 to initiate the download process:
 </p>
 
-<pre>
+<pre data-filename="index.js">
 function downloadMedia(data) {
         DownloadProcess.run(data.params.files, function() {
             data.result = true;
@@ -534,7 +534,7 @@ This initiates the onload callback which checks the received content
 and saves the data locally using the <code>filer.js</code> function:
 </p>
 
-<pre>
+<pre data-filename="filer.js">
 filer.write(
     saveUrl,
     {

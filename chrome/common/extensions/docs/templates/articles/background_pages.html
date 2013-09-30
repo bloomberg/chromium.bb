@@ -45,7 +45,8 @@ implemented using JavaScript files alone,
 like this:
 </p>
 
-<pre>{
+<pre data-filename="manifest.json">
+{
   "name": "My extension",
   ...
   <b>"background": {
@@ -68,7 +69,8 @@ do that using the <code>page</code>
 property instead:
 </p>
 
-<pre>{
+<pre data-filename="manifest.json">
+{
   "name": "My extension",
   ...
   <b>"background": {
@@ -119,8 +121,7 @@ from a file named <code>image.html</code>.
 
 </p>
 
-<pre>
-<em>//In background.js:</em>
+<pre data-filename="background.js">
 // React when a browser action's icon is clicked.
 chrome.browserAction.onClicked.addListener(function(tab) {
   var viewTabUrl = chrome.extension.getURL('image.html');
@@ -141,8 +142,8 @@ chrome.browserAction.onClicked.addListener(function(tab) {
     }
   }
 });
-
-<em>//In image.html:</em>
+</pre>
+<pre data-filename="image.html">
 &lt;html>
   &lt;script>
     function setImageUrl(url) {

@@ -20,20 +20,22 @@ direct access to non-sandboxed pages (it may communicate with them via
   <p>For example, here's how to specify that two extension pages are to be
   served in a sandbox with a custom CSP:</p>
 
-  <pre class="prettyprint"><span class="pun">{</span><span class="pln">
-  </span><span class="pun">...</span><span class="pln">
-  </span><span class="str">"sandbox"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
-    </span><span class="str">"pages"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">[</span><span class="pln">
-      </span><span class="str">"page1.html"</span><span class="pun">,</span><span class="pln">
-      </span><span class="str">"directory/page2.html"</span><span class="pln">
-    </span><span class="pun">]</span><span class="pln">
-    </span><i><span class="com">// content_security_policy is optional.</span></i><span class="pln">
-    </span><span class="str">"content_security_policy"</span><span class="pun">:</span><span class="pln">
-        </span><span class="str">"sandbox allow-scripts; script-src https://www.google.com"</span><span class="pln">
-  </span><span class="pun">],</span><span class="pln">
-  </span><span class="pun">...</span><span class="pln">
-</span><span class="pun">}</span></pre>
-
+  <pre data-filename="manifest.json">
+{
+  ...
+  "sandbox": {
+    "pages": [
+      "page1.html",
+      "directory/page2.html"
+    ]
+    // content_security_policy is optional.
+    "content_security_policy":
+        "sandbox allow-scripts; script-src https://www.google.com"
+  ],
+  ...
+}
+</pre>
+  
   <p>
   If not specified, the default <code>content_security_policy</code> value is
   <code>sandbox allow-scripts allow-forms</code>. You can specify your CSP

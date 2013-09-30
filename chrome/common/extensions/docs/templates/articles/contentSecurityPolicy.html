@@ -29,11 +29,13 @@
   <a href="manifest.html"><code>manifest.json</code></a> file as follows:
 </p>
 
-<pre>{
+<pre data-filename="manifest.json">
+{
   ...,
   "content_security_policy": "[POLICY STRING GOES HERE]"
   ...
-}</pre>
+}
+</pre>
 
 <p class="note">
   For full details regarding CSP's syntax, please take a look at
@@ -100,7 +102,8 @@ function() { return foo && foo.bar && foo.bar.baz };
   <code>popup.html</code> containing:
 </p>
 
-<pre>&lt;!doctype html&gt;
+<pre data-filename="popup.html">
+&lt;!doctype html&gt;
 &lt;html&gt;
   &lt;head&gt;
     &lt;title&gt;My Awesome Popup!&lt;/title&gt;
@@ -159,9 +162,7 @@ function() { return foo && foo.bar && foo.bar.baz };
   Those changes might look something like the following:
 </p>
 
-<pre>popup.js:
-=========
-
+<pre data-filename="popup.js">
 function awesome() {
   // Do something awesome!
 }
@@ -191,9 +192,7 @@ function main() {
   main();
 });
 </pre>
-<pre>popup.html:
-===========
-
+<pre data-filename="popup.html">
 &lt;!doctype html&gt;
 &lt;html&gt;
   &lt;head&gt;
@@ -203,7 +202,8 @@ function main() {
   &lt;body&gt;
     &lt;button&gt;Click for awesomeness!&lt;/button&gt;
   &lt;/body&gt;
-&lt;/html&gt;</pre>
+&lt;/html&gt;
+</pre>
 
 <p>
 
@@ -223,7 +223,8 @@ function main() {
   your extension package. That is, instead of:
 </p>
 
-<pre>&lt;!doctype html&gt;
+<pre data-filename="popup.html">
+&lt;!doctype html&gt;
 &lt;html&gt;
   &lt;head&gt;
     &lt;title&gt;My Awesome Popup!&lt;/title&gt;
@@ -232,13 +233,15 @@ function main() {
   &lt;body&gt;
     &lt;button&gt;Click for awesomeness!&lt;/button&gt;
   &lt;/body&gt;
-&lt;/html&gt;</pre>
+&lt;/html&gt;
+</pre>
 
 <p>
   Download the file, include it in your package, and write:
 <p>
 
-<pre>&lt;!doctype html&gt;
+<pre data-filename="popup.html">
+&lt;!doctype html&gt;
 &lt;html&gt;
   &lt;head&gt;
     &lt;title&gt;My Awesome Popup!&lt;/title&gt;
@@ -295,7 +298,9 @@ function main() {
   <code>example.com</code> over HTTPS might look like:
 </p>
 
-<pre>"content_security_policy": "script-src 'self' https://example.com; object-src 'self'"</pre>
+<pre data-filename="manifest.json">
+"content_security_policy": "script-src 'self' https://example.com; object-src 'self'"
+</pre>
 
 <p class="note">
   Note that both <code>script-src</code> and <code>object-src</code> are defined
@@ -320,7 +325,9 @@ function main() {
   <code>'unsafe-eval'</code> to your policy:
 </p>
 
-<pre>"content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"</pre>
+<pre data-filename="manifest.json">
+"content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+</pre>
 
 <p>
   However, we strongly recommend against doing this. These functions are

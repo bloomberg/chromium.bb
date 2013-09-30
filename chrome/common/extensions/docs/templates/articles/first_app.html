@@ -42,7 +42,7 @@ First create your <code>manifest.json</code> file
 describes this manifest in detail):
 </p>
 
-<pre>
+<pre data-filename="manifest.json">
 {
   "name": "Hello World!",
   "description": "My first packaged app.",
@@ -69,7 +69,7 @@ Next create a new file called <code>background.js</code>
 with the following content:
 </p>
 
-<pre>
+<pre data-filename="background.js">
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('window.html', {
     'bounds': {
@@ -96,7 +96,7 @@ all of which are used by the event page to manage the app.
 Create your <code>window.html</code> file:
 </p>
 
-<pre>
+<pre data-filename="window.html">
 &lt;!DOCTYPE html>
 &lt;html>
   &lt;head>

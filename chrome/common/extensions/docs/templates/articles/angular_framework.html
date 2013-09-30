@@ -79,7 +79,7 @@ lists any special permissions the app needs to run.
 A stripped down version of the Uploader's manifest looks like this:
 </p>
 
-<pre>
+<pre data-filename="manifest.json">
 {
   "name": "Google Drive Uploader",
   "version": "0.0.1",
@@ -151,7 +151,7 @@ It also specifies a minimum height and width for the window
 so the content doesn't become too crunched: 
 </p>
 
-<pre>
+<pre data-filename="background.js">
 chrome.app.runtime.onLaunched.addListener(function(launchData) {
   chrome.app.window.create('../main.html', {
     bounds: {
@@ -191,7 +191,7 @@ To declutter the app a bit,
 the custom close button is hidden until the user interacts with this the area:
 </p>
 
-<pre>
+<pre data-filename="main.css">
 &lt;style>
 nav:hover #close-button {
   opacity: 1;
@@ -205,7 +205,8 @@ nav:hover #close-button {
   -webkit-transition: all 0.3s ease-in-out;
 }
 &lt;/style>
-
+</pre>
+<pre data-filename="main.html">
 &lt;button class="btn" id="close-button" title="Close">x&lt;/button>
 </pre>
 
@@ -240,7 +241,7 @@ For that, a simple &lt;ul> list makes sense.
 The Angular bits are highlighted in bold: 
 </p>
 
-<pre>
+<pre data-filename="main.html">
 &lt;ul>
   &lt;li <strong>data-ng-repeat="doc in docs"</strong>>
     &lt;img data-ng-src=<strong>"&#123;{doc.icon}&#125;"</strong>> &lt;a href=<strong>"&#123;{doc.alternateLink}&#125;"</strong>><strong>&#123;{doc.title}&#125;</strong>&lt;/a>
@@ -273,7 +274,7 @@ For that, we use the
 directive to tell the <code>DocsController</code> to have reign over the template &lt;body&gt;:
 </p>
 
-<pre>
+<pre data-filename="main.html">
 &lt;body <strong>data-ng-controller="DocsController"</strong>>
 &lt;section id="main">
   &lt;ul>
@@ -299,7 +300,7 @@ The typical way to do that is include the
 directive all the way up on &lt;html>:
 </p>
 
-<pre>
+<pre data-filename="main.html">
 &lt;html <strong>data-ng-app="gDriveApp"</strong>>
 </pre>
 
@@ -316,7 +317,7 @@ on the topmost element makes the entire page Angular-ready.
 The final product for <code>main.html</code> looks something like this:
 </p>
 
-<pre>
+<pre data-filename="main.html">
 &lt;html <strong>data-ng-app="gDriveApp"</strong>>
 &lt;head>
   …
@@ -357,7 +358,7 @@ This is done by including the
 directive alongside <a href="http://docs.angularjs.org/api/ng.directive:ngApp">ngApp</a>:
 </p>
 
-<pre>
+<pre data-filename="main.html">
 &lt;html data-ng-app data-ng-csp>
 </pre>
 
@@ -378,7 +379,7 @@ store the <code>accessToken</code>,
 which we can reuse for future calls to the Drive API.
 </p>
 
-<pre>
+<pre data-filename="gdocs.js">
 GDocs.prototype.auth = function(opt_callback) {
   try {
     <strong>chrome.experimental.identity.getAuthToken({interactive: false}, function(token) {</strong>
@@ -419,7 +420,7 @@ The "model" for the Uploader is a simple array (called docs)
 of objects that will get rendered as those &lt;li>s in the template:
 </p>
 
-<pre>
+<pre data-filename="app.js">
 var gDriveApp = angular.module('gDriveApp', []);
 
 gDriveApp.factory('gdocs', function() {
@@ -466,7 +467,7 @@ responsible for requesting the user's files and
 filing the docs array with data from API responses.
 </p>
 
-<pre>
+<pre data-filename="app.js">
 $scope.fetchDocs = function() {
   $scope.docs = []; // First, clear out any old results
 
@@ -569,7 +570,7 @@ Here's the updated <code>successCallback</code>
 with the added XHR code:
 </p>
 
-<pre>
+<pre data-filename="app.js">
 var successCallback = function(resp, status, headers, config) {
   var docs = [];
   var totalEntries = resp.feed.entry.length;
@@ -621,7 +622,7 @@ Every time, n images are fetched:
 </p>
 
 <img src="{{static}}/images/fetchedicon.png"
-     width="118"
+     width="180"
      height="19"
      alt="Console log 65: Fetched icon via XHR">
 
@@ -631,7 +632,7 @@ to add a caching layer.
 The additions are highlighted in bold:
 </p>
 
-<pre>
+<pre data-filename="app.js">
 $scope.fetchDocs = function() {
   ...
 
@@ -753,7 +754,7 @@ and have them uploaded to Google Drive.
 Simply adding this to the gdocs service does the job:
 </p>
 
-<pre>
+<pre data-filename="app.js">
 gDriveApp.factory('gdocs', function() {
   var gdocs = new GDocs();
   

@@ -118,7 +118,7 @@ Some notes about internationalizing:
     provides help to translators,
     who might not be able to see how the string is used in your extension.
     For example:
-<pre>
+<pre data-filename="messages.json">
 {
   "search_string": {
     "message": "hello%20world",
@@ -519,8 +519,8 @@ Here's how you'd supply and use a single string:
 <pre>
 <em>// In JavaScript code</em>
 status.innerText = chrome.i18n.getMessage("error", errorDetails);
-
-<em>// In messages.json</em>
+</pre>
+<pre data-filename="messages.json">
 "error": {
   "message": "Error: $details$",
   "description": "Generic error template. Expects error parameter to be passed in.",

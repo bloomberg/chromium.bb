@@ -9,16 +9,18 @@ any resources that interface requires (images, icons, stylesheets, scripts,
 etc.) as follows:
 </p>
 
-<pre class="prettyprint"><span class="pun">{</span><span class="pln">
-  </span><span class="pun">...</span><span class="pln">
-  </span><span class="str">"web_accessible_resources"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">[</span><span class="pln">
-    </span><span class="str">"images/my-awesome-image1.png"</span><span class="pun">,</span><span class="pln">
-    </span><span class="str">"images/my-amazing-icon1.png"</span><span class="pun">,</span><span class="pln">
-    </span><span class="str">"style/double-rainbow.css"</span><span class="pun">,</span><span class="pln">
-    </span><span class="str">"script/double-rainbow.js"</span><span class="pln">
-  </span><span class="pun">],</span><span class="pln">
-  </span><span class="pun">...</span><span class="pln">
-</span><span class="pun">}</span></pre>
+<pre data-filename="manifest.json">
+{
+  ...
+  "web_accessible_resources": [
+    "images/my-awesome-image1.png",
+    "images/my-amazing-icon1.png",
+    "style/double-rainbow.css",
+    "script/double-rainbow.js"
+  ],
+  ...
+}
+</pre>
 
 <p>
 These resources would then be available in a webpage via the URL

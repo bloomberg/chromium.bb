@@ -82,14 +82,16 @@ in the table below:</p>
 
 <p>Below is an example of a manifest file with mediaGalleries permissions:</p>
 
-<pre>{
+<pre data-filename="manifest.json">
+{
   "name": "My app",
   ...
   "permissions": [
     <b>{ "mediaGalleries": ["read", "allAutoDetected"] }</b>
   ],
   ...
-}</pre>
+}
+</pre>
 
 <p>This example manifest file will trigger an install-time permission prompt,
 and let the app read from all auto-detected media galleries on the

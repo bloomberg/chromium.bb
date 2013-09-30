@@ -12,7 +12,7 @@
     width: 334px;
   }
   #active-tab-after {
-    width: 265px;
+    width: 334px;
   }
 </style>
 
@@ -45,9 +45,7 @@ This serves as an alternative for many uses of <code>&lt;all_urls&gt;</code>, bu
 See the <a href="samples.html#page-redder">Page Redder</a> sample extension:
 </p>
 
-<h3 id="manifest.json">manifest.json</h3>
-<p>
-<pre>
+<pre data-filename="manifest.json">
 {
   "name": "Page Redder",
   "version": "2.0",
@@ -64,12 +62,8 @@ See the <a href="samples.html#page-redder">Page Redder</a> sample extension:
   "manifest_version": 2
 }
 </pre>
-</p>
 
-<h3 id="background.js">background.js</h3>
-
-<p>
-<pre>
+<pre data-filename="background.js">
 // Called when the user clicks on the browser action.
 chrome.browserAction.onClicked.addListener(function(tab) {
   // No tabs or host permissions needed!
@@ -79,7 +73,6 @@ chrome.browserAction.onClicked.addListener(function(tab) {
   }); 
 });
 </pre>
-</p>
 
 <h2 id="motivation">Motivation</h2>
 
