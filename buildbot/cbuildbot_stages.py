@@ -1032,22 +1032,12 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
         if not git.FindRepoDir(self.repo.directory):
           self.repo.Initialize()
 
-        pool = validation_pool.ValidationPool.AcquirePool(
+        self.pool = pool = validation_pool.ValidationPool.AcquirePool(
             self._build_config['overlays'], self.repo,
             self._options.buildnumber, self.builder_name,
             self._options.debug, check_tree_open=not self._options.debug,
             changes_query=self._options.cq_gerrit_override,
             change_filter=self.ChangeFilter)
-
-        # We only have work to do if there are changes to try.
-        try:
-          # Try our best to submit these but may have been overridden and won't
-          # let that stop us from continuing the build.
-          pool.SubmitNonManifestChanges()
-        except validation_pool.FailedToSubmitAllChangesException as e:
-          cros_build_lib.Warning(str(e))
-
-        self.pool = pool
 
       except validation_pool.TreeIsClosedException as e:
         cros_build_lib.Warning(str(e))
