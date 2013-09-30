@@ -8,20 +8,17 @@
 #@
 #@ SCons Test Usage:
 #@
-#@   test.sh test-<arch>-<mode> [extra_arguments_to_scons]
+#@   test.sh test-<arch>[-sbtc] [extra_arguments_to_scons]
 #@
-#@      Runs the SCons tests with selected arch and mode.
+#@      Runs the SCons tests with selected arch (optionally with sandboxed tc)
 #@      Valid arches:
 #@          x86-32
 #@          x86-64
 #@          arm
-#@      Available modes:
-#@          newlib (same as omitting mode)
-#@          pic
-#@          sbtc
-#@          glibc
 #@
-#@      For example: test.sh test-x86-32-glibc
+#@      Examples:
+#@          test.sh test-x86-32
+#@          test.sh test-arm-sbtc
 #@
 #@ The env variables: PNACL_CONCURRENCY, PNACL_BUILDBOT, PNACL_DEBUG
 #@ control behavior of this script
@@ -47,7 +44,7 @@ readonly NACL_ROOT="$(pwd)"
 readonly DRYRUN=${DRYRUN:-false}
 
 # This is only used by Spec2K test scripts.
-readonly PNACL_LIBMODE=${LIBMODE:-newlib}
+readonly PNACL_LIBMODE=newlib
 export PNACL_LIBMODE
 
 source pnacl/scripts/common-tools.sh
@@ -125,7 +122,7 @@ scons-clean () {
   local frontend=clang
   # Clear both the pexe and the nonpexe scons-out directory, since we run
   # a mix of both tests.
-  if [ "${mode}" == "newlib" ] ; then
+  if [ "${mode}" == "native" ] ; then
     Run rm -rf scons-out/nacl-${arch}-pnacl-${frontend}
     Run rm -rf scons-out/nacl-${arch}-pnacl-pexe-${frontend}
   else
@@ -141,43 +138,8 @@ build-sbtc-prerequisites() {
   RunScons ${arch} sel_ldr sel_universal irt_core
 }
 
-# TODO(pdox):
-# "mode" is presently a combination of multiple bits:
-# Newlib vs. GLibC, sandboxed vs unsandboxed, PIC vs non-PIC
-# These options should be isolated and kept separate.
-get-mode-flags() {
-  local mode="$1"
-  local modeflags=""
-  case ${mode} in
-  newlib)
-    ;;
-  sbtc)
-    modeflags="use_sandboxed_translator=1"
-    ;;
-  pic)
-    modeflags="nacl_pic=1"
-    ;;
-  glibc)
-    # Disable pexe mode with glibc for now. This will result in running the
-    # nonpexe tests twice but there aren't too many of them.
-    modeflags="--nacl_glibc pnacl_generate_pexe=0"
-    ;;
-  sbtc-glibc)
-    # Note "sbtc-glibc" just happens to be the order in which the modes
-    # are slapped onto the scons-out name. E.g.,
-    # nacl-x86-32-pnacl-sbtc-glibc-clang
-    # This affects the scons-clean() function.
-    modeflags="--nacl_glibc use_sandboxed_translator=1 pnacl_generate_pexe=0"
-    ;;
-  *)
-    echo "Unknown mode" 1>&2
-    exit -1
-  esac
-  echo ${modeflags}
-}
-
 #+ Run scons test under a certain configuration
-#+ scons-tests <arch> <mode={newlib,etc.}> [optional list of test names]
+#+ scons-tests <arch> <mode={sbtc|}> [optional list of test names]
 #+ If no optional tests are listed, we will build all the tests then
 #+ run the "smoke_tests" test suite.
 scons-tests () {
@@ -186,11 +148,12 @@ scons-tests () {
   shift 2
   scons-clean ${arch} ${mode}
 
+  local modeflags=""
   if [ ${mode} == "sbtc" ]; then
     build-sbtc-prerequisites "${arch}"
+    modeflags="use_sandboxed_translator=1"
   fi
 
-  local modeflags=$(get-mode-flags ${mode})
   if has-target-name "$@" ; then
     # By default this uses pexe mode (except where not supported) but this
     # can be overridden
@@ -210,13 +173,9 @@ scons-tests () {
 test-driver() {
   ${NACL_ROOT}/pnacl/driver/tests/driver_tests.py --platform="$1"
 }
-test-arm()        { test-driver arm && scons-tests arm newlib "$@" ; }
-test-x86-32()     { test-driver x86-32 && scons-tests x86-32 newlib "$@" ; }
-test-x86-64()     { test-driver x86-64 && scons-tests x86-64 newlib "$@" ; }
-
-# ARM PIC is tested independently because there is no GlibC for ARM yet.
-# BUG= http://code.google.com/p/nativeclient/issues/detail?id=1081
-test-arm-pic()    { scons-tests arm pic "$@" ; }
+test-arm()        { test-driver arm && scons-tests arm native "$@" ; }
+test-x86-32()     { test-driver x86-32 && scons-tests x86-32 native "$@" ; }
+test-x86-64()     { test-driver x86-64 && scons-tests x86-64 native "$@" ; }
 
 test-arm-sbtc()    { scons-tests arm sbtc "$@" ; }
 test-x86-32-sbtc() { scons-tests x86-32 sbtc "$@" ; }

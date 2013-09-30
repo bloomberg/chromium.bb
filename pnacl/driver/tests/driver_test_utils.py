@@ -73,7 +73,6 @@ def TestEnvReset(self):
   # TODO(jvoung): We may want a different way of overriding things.
   driver_env.Environment.reset(self)
   # The overrides.
-  self.set('LIBMODE', 'newlib')
   self.set('PNACL_RUNNING_UNITTESTS', '1')
   SetupNaClDir(self)
   SetupToolchainDir(self)

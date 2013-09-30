@@ -90,13 +90,7 @@ EXTRA_ENV = {
     '${CRTEND}',
 
   'DEFAULTLIBS': '${ALLOW_CXX_EXCEPTIONS ? ' +
-                 '${LIBGCC_EH}} -l:libgcc.a ${MISC_LIBS}',
-
-  'MISC_LIBS':
-    # TODO(pdox):
-    # Move libcrt_platform into the __pnacl namespace,
-    # with stubs to access it from newlib.
-    '${LIBMODE_NEWLIB ? -l:libcrt_platform.a} ',
+                 '${LIBGCC_EH}} -l:libgcc.a -l:libcrt_platform.a ',
 
   'TRIPLE'      : '${TRIPLE_%ARCH%}',
   'TRIPLE_ARM'  : 'armv7a-none-nacl-gnueabi',
@@ -200,9 +194,6 @@ TranslatorPatterns = [
   # improving translation speed at the expense of code quality.
   ( '-translate-fast',  "env.set('FAST_TRANSLATION', '1')"),
 
-  # If translating a .pexe which was linked statically against
-  # glibc, then you must do pnacl-translate -static. This will
-  # be removed once GLibC is actually statically linked.
   ( '-static',         "env.set('STATIC', '1')"),
   ( '-shared',         "env.set('SHARED', '1')"),
   ( '-nostdlib',       "env.set('USE_STDLIB', '0')"),

@@ -99,25 +99,18 @@ EXTRA_ENV = {
     '${BASE_USR}/include ' +
     '${BASE_SDK}/include ' +
     # This is used only for newlib bootstrapping.
-    '${BASE_LIBMODE}/sysroot/include',
+    '${BASE}/sysroot/include',
 
   'ISYSTEM_CLANG'  : '${BASE_LLVM}/lib/clang/3.3/include',
 
   'ISYSTEM_CXX' :
-    '${INCLUDE_CXX_HEADERS && STDINCCXX ? ${ISYSTEM_CXX_%LIBMODE%}}',
+    '${INCLUDE_CXX_HEADERS && STDINCCXX ? ${ISYSTEM_CXX_include_paths}}',
 
-  # TODO(pdox): This difference will go away as soon as we compile
-  #             libstdc++.so ourselves.
-  'ISYSTEM_CXX_newlib' :
+  'ISYSTEM_CXX_include_paths' :
     '${BASE_USR}/include/c++/${STDLIB_IDIR} ' +
     '${BASE_USR}/include/c++/${STDLIB_IDIR}/arm-none-linux-gnueabi ' +
     '${BASE_USR}/include/c++/${STDLIB_IDIR}/backward',
 
-
-  'ISYSTEM_CXX_glibc' :
-    '${BASE_USR}/include/c++/4.4.3 ' +
-    '${BASE_USR}/include/c++/4.4.3/x86_64-nacl ' +
-    '${BASE_USR}/include/c++/4.4.3/backward',
 
   # Only propagate opt level to linker if explicitly set, so that the
   # linker will know if an opt level was explicitly set or not.
@@ -131,8 +124,8 @@ EXTRA_ENV = {
 
   # Library Strings
   'EMITMODE'         : '${!USE_STDLIB ? nostdlib : ' +
-                       '${STATIC ? ${LIBMODE}_static : ' +
-                       '${SHARED ? ${LIBMODE}_shared : ${LIBMODE}_dynamic}}}',
+                       '${STATIC ? static : ' +
+                       '${SHARED ? shared : dynamic}}}',
 
   # This is setup so that LD_ARGS_xxx is evaluated lazily.
   'LD_ARGS' : '${LD_ARGS_%EMITMODE%}',
@@ -144,26 +137,19 @@ EXTRA_ENV = {
   # TODO(pdox): Pull all native objects out of here
   #             and into pnacl-translate.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
-  'LD_ARGS_newlib_static':
+  'LD_ARGS_static':
     '${ALLOW_CXX_EXCEPTIONS ? -l:crt1_for_eh.x : -l:crt1.x} ' +
     '-l:crti.bc -l:crtbegin.bc '
     '${!ALLOW_CXX_EXCEPTIONS ? -l:unwind_stubs.bc} ' +
     '${ld_inputs} ' +
     '--start-group ${STDLIBS} --end-group',
 
-  'LD_ARGS_newlib_shared':
+  'LD_ARGS_shared':
     '-l:crti.bc -l:crtbeginS.bc ${ld_inputs} ${STDLIBS}',
 
-  'LD_ARGS_newlib_dynamic':
+  'LD_ARGS_dynamic':
     '-l:crti.bc -l:crtbegin.bc ${ld_inputs} ' +
     '--start-group ${STDLIBS} --end-group',
-
-  'LD_ARGS_glibc_shared':
-    '-l:crti.bc -l:crtbeginS.bc ${ld_inputs} ${STDLIBS}',
-
-  'LD_ARGS_glibc_dynamic':
-    '-l:crt1.bc ' +
-    '-l:crti.bc -l:crtbegin.bc ${ld_inputs} ${STDLIBS}',
 
   'LLVM_PASSES_TO_DISABLE': '',
 
@@ -174,7 +160,7 @@ EXTRA_ENV = {
                 '${LIBSTDCPP} ${LIBPTHREAD} ${LIBNACL} ${LIBC}}',
   'LIBSTDCPP' : '${IS_CXX ? -l${STDLIB_TRUNC} -lm }',
   'LIBC'      : '-lc',
-  'LIBNACL'   : '${LIBMODE_NEWLIB ? -lnacl}',
+  'LIBNACL'   : '-lnacl',
   # Enabled/disabled by -pthreads
   'LIBPTHREAD': '${PTHREAD ? -lpthread}',
 
@@ -483,15 +469,13 @@ def main(argv):
   if len(unmatched) > 0:
     UnrecognizedOption(*unmatched)
 
-  libmode_newlib = env.getbool('LIBMODE_NEWLIB')
   is_shared = env.getbool('SHARED')
 
   if env.getbool('STATIC') and env.getbool('SHARED'):
     Log.Fatal("Can't handle both -static and -shared")
 
-  # default to static for newlib
-  if (env.getbool('LIBMODE_NEWLIB') and
-      not env.getbool('DYNAMIC') and
+  # default to static.
+  if (not env.getbool('DYNAMIC') and
       not env.getbool('SHARED')):
     env.set('STATIC', '1')
 

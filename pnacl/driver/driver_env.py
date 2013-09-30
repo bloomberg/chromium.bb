@@ -37,17 +37,13 @@ INITIAL_ENV = {
 
   'BASE_LIB_NATIVE' : '${BASE}/lib-',
 
-  # BASE_GLIBC still used by pnacl-ld...
-  'BASE_GLIBC'      : '${BASE}/glibc',
-  'BASE_LIBMODE'    : '${LIBMODE==newlib ? ${BASE} : ${BASE}/glibc }',
-
-  'BASE_USR'        : '${BASE_LIBMODE}/usr',
-  'BASE_SDK'        : '${BASE_LIBMODE}/sdk',
-  'BASE_LIB'        : '${BASE_LIBMODE}/lib',
+  'BASE_USR'        : '${BASE}/usr',
+  'BASE_SDK'        : '${BASE}/sdk',
+  'BASE_LIB'        : '${BASE}/lib',
   'BASE_USR_ARCH'   : '${BASE_USR_%BCLIB_ARCH%}',
-  'BASE_USR_X8664'   : '${BASE_LIBMODE}/usr-bc-x86-64',
+  'BASE_USR_X8664'   : '${BASE}/usr-bc-x86-64',
   'BASE_LIB_ARCH'   : '${BASE_LIB_%BCLIB_ARCH%}',
-  'BASE_LIB_X8664'   : '${BASE_LIBMODE}/lib-bc-x86-64',
+  'BASE_LIB_X8664'   : '${BASE}/lib-bc-x86-64',
 
   'BASE_LLVM_BIN'   : '${BASE_LLVM}/bin',
   'TRANSLATOR_BIN'  :
@@ -84,9 +80,6 @@ INITIAL_ENV = {
   'USE_BOOTSTRAP'       : '${BUILD_OS==linux ? 1 : 0}',
   # Args passed from one driver invocation to another
   'INHERITED_DRIVER_ARGS' : '',
-  'LIBMODE'             : '', # glibc or newlib (set by ReadConfig)
-  'LIBMODE_GLIBC'       : '${LIBMODE==glibc ? 1 : 0}',
-  'LIBMODE_NEWLIB'      : '${LIBMODE==newlib ? 1 : 0}',
 
   'BCLIB_ARCH'          : '',
   # Logging settings

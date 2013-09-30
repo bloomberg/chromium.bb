@@ -214,10 +214,6 @@ def ReadConfig():
     env.setraw(keyname, value)
   DriverClose(fp)
 
-  if env.getone('LIBMODE') not in ('newlib', 'glibc'):
-    Log.Fatal('Invalid LIBMODE in %s', pathtools.touser(driver_conf))
-
-
 @env.register
 def AddPrefix(prefix, varname):
   values = env.get(varname)

@@ -79,22 +79,7 @@ EXTRA_ENV = {
                          '  ${BASE_USR}/lib/ ' +
                          '  ${BASE_SDK}/lib/ ' +
                          '  ${BASE_LIB}/ ' +
-                         '  ${SEARCH_DIRS_NATIVE} ' +
                          '}',
-
-  # HACK-BEGIN
-  # Add glibc/lib-<arch>/ to the search path.
-  # These are here to let the bitcode link find native objects
-  # needed by the GLibC toolchain.
-  # TODO(pdox): Remove these when we have bitcode .pso stubs for GlibC.
-  'SEARCH_DIRS_NATIVE': '${LIBMODE_GLIBC ? ${LIBS_ARCH}/}',
-
-  'LIBS_ARCH'        : '${LIBS_%ARCH%}',
-  'LIBS_ARM'         : '${BASE_GLIBC}/lib-arm',
-  'LIBS_X8632'       : '${BASE_GLIBC}/lib-x86-32',
-  'LIBS_X8664'       : '${BASE_GLIBC}/lib-x86-64',
-  'LIBS_MIPS32'      : '${BASE_GLIBC}/lib-mips32',
-  # HACK-END
 
   'BCLD_OFORMAT'        : '${BCLD_OFORMAT_%ARCH%}',
   'BCLD_OFORMAT_ARM'    : 'elf32-littlearm',
@@ -361,14 +346,6 @@ def main(argv):
 
   inputs = ReorderPrivateLibs(inputs)
 
-  # Filter out object files which are currently used in the bitcode link.
-  # These don't actually need to be treated separately, since the
-  # translator includes them automatically. Eventually, these will
-  # be compiled to bitcode or replaced by bitcode stubs, and this list
-  # can go away.
-  if env.getbool('USE_STDLIB'):
-    native_objects = RemoveNativeStdLibs(native_objects)
-
   if env.getbool('SHARED'):
     bitcode_type = 'pso'
     native_type = 'so'
@@ -464,17 +441,6 @@ def main(argv):
     # Some versions of 'configure' expect this.
     SetExecutableMode(output)
   return 0
-
-def RemoveNativeStdLibs(objs):
-  # For newlib, all standard libraries are already bitcode.
-  if env.getbool('LIBMODE_NEWLIB'):
-    return objs
-
-  # GLibC standard libraries
-  defaultlibs = ['libc_nonshared.a', 'libpthread_nonshared.a',
-                 'libc.a', 'libstdc++.a', 'libc++.a', 'libgcc.a', 'libgcc_eh.a',
-                 'libm.a']
-  return [f for f in objs if pathtools.split(f)[1] not in defaultlibs]
 
 def UsePrivateLibraries(libs):
   """ Place libnacl_sys_private.a before libnacl.a

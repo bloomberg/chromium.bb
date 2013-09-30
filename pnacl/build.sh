@@ -2459,12 +2459,10 @@ libs-support-bitcode() {
   StepBanner "LIBS-SUPPORT" "Install ${arch} crti.bc"
   ${cc_cmd} -c crti.c -o "${build_dir}"/crti.bc
 
-  # Install crtbegin bitcode (__dso_handle/__cxa_finalize for C++)
-  StepBanner "LIBS-SUPPORT" "Install ${arch} crtbegin.bc / crtbeginS.bc"
-  # NOTE: we do not have "end" versions of these
+  # Install crtbegin bitcode (__cxa_finalize for C++)
+  StepBanner "LIBS-SUPPORT" "Install ${arch} crtbegin.bc"
+  # NOTE: we do not have an "end" version of ththis
   ${cc_cmd} -c crtbegin.c -o "${build_dir}"/crtbegin.bc
-  ${cc_cmd} -c crtbegin.c -o "${build_dir}"/crtbeginS.bc \
-            -DSHARED
 
   # Install unwind_stubs.bc (stubs for _Unwind_* functions when libgcc_eh
   # is not included in the native link).
@@ -2475,7 +2473,7 @@ libs-support-bitcode() {
 
   # Install to actual lib directories.
   spushd "${build_dir}"
-  local files="crti.bc crtbegin.bc crtbeginS.bc unwind_stubs.bc"
+  local files="crti.bc crtbegin.bc unwind_stubs.bc"
   mkdir -p "${INSTALL_LIB}"
   cp -f ${files} "${INSTALL_LIB}"
   spopd
@@ -2505,11 +2503,6 @@ libs-support-native() {
   ${cc_cmd} -c crtbegin.c -DLINKING_WITH_LIBGCC_EH \
             -o "${destdir}"/crtbegin_for_eh.o
   ${cc_cmd} -c crtend.c -o "${destdir}"/crtend.o
-
-  # Compile crtbeginS.o / crtendS.o
-  StepBanner "${label}" "Install crtbeginS.o / crtendS.o"
-  ${cc_cmd} -c crtbegin.c -fPIC -DSHARED -o "${destdir}"/crtbeginS.o
-  ${cc_cmd} -c crtend.c -fPIC -DSHARED -o "${destdir}"/crtendS.o
 
   # Make libcrt_platform.a
   StepBanner "${label}" "Install libcrt_platform.a"
@@ -2824,8 +2817,7 @@ driver-install() {
   driver-install-python "${destdir}" "pnacl-*.py"
 
   # Tell the driver the library mode and host arch
-  echo """LIBMODE=newlib
-HAS_FRONTEND=1
+  echo """HAS_FRONTEND=1
 HOST_ARCH=${HOST_ARCH}""" > "${destdir}"/driver.conf
 
   # On windows, copy the cygwin DLLs needed by the driver tools
@@ -2844,8 +2836,7 @@ driver-install-translator() {
 
   driver-install-python "${destdir}" pnacl-translate.py pnacl-nativeld.py
 
-  echo """LIBMODE=newlib
-HAS_FRONTEND=0""" > "${destdir}"/driver.conf
+  echo """HAS_FRONTEND=0""" > "${destdir}"/driver.conf
 }
 
 ######################################################################
