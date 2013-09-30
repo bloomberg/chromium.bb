@@ -232,7 +232,11 @@ public:
     void configureTextTrackGroup(const TrackGroup&);
 
     bool textTracksAreReady() const;
-    void configureTextTrackDisplay();
+    enum VisibilityChangeAssumption {
+        AssumeNoVisibleChange,
+        AssumeVisibleChange
+    };
+    void configureTextTrackDisplay(VisibilityChangeAssumption);
     void updateTextTrackDisplay();
 
     // TextTrackClient

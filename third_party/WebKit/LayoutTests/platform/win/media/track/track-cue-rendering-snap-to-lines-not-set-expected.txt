@@ -2,7 +2,7 @@ Test that TextTrack's cues are rendered correctly when the snap to lines flag is
 EVENT(canplaythrough)
 
 The track container and the media controls should completely cover the video element
-EXPECTED (cueDisplayContainer.offsetHeight + controlsPanelElement.offsetHeight == video.videoHeight == 'true'), OBSERVED 'false' FAIL
+EXPECTED (cueDisplayContainer.offsetHeight + controlsPanelElement.offsetHeight == video.videoHeight == 'true') OK
 EXPECTED (cueDisplayContainer.offsetWidth == video.videoWidth == 'true') OK
 
 ** Default **

@@ -1041,16 +1041,8 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
             activeSetChanged = true;
     }
 
-    if (!activeSetChanged) {
-        // Even though the active set has not changed, it is possible that the
-        // the mode of a track has changed from 'hidden' to 'showing' and the
-        // cues have not yet been rendered.
-        // Note: don't call updateTextTrackDisplay() unless we have controls because it will
-        // create them.
-        if (hasMediaControls())
-            updateTextTrackDisplay();
+    if (!activeSetChanged)
         return;
-    }
 
     // 7 - If the time was reached through the usual monotonic increase of the
     // current playback position during normal playback, and there are cues in
@@ -1251,8 +1243,7 @@ void HTMLMediaElement::textTrackModeChanged(TextTrack* track)
     } else if (track->trackType() == TextTrack::AddTrack && track->mode() != TextTrack::disabledKeyword())
         textTrackAddCues(track, track->cues());
 
-    configureTextTrackDisplay();
-    updateActiveTextTrackCues(currentTime());
+    configureTextTrackDisplay(AssumeVisibleChange);
 }
 
 void HTMLMediaElement::textTrackKindChanged(TextTrack* track)
@@ -3477,7 +3468,7 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
     m_loadState = WaitingForSource;
 
     if (m_textTracks)
-        configureTextTrackDisplay();
+        configureTextTrackDisplay(AssumeNoVisibleChange);
 }
 
 bool HTMLMediaElement::canSuspend() const
@@ -3738,7 +3729,7 @@ void HTMLMediaElement::configureMediaControls()
     mediaControls()->show();
 }
 
-void HTMLMediaElement::configureTextTrackDisplay()
+void HTMLMediaElement::configureTextTrackDisplay(VisibilityChangeAssumption assumption)
 {
     ASSERT(m_textTracks);
     LOG(Media, "HTMLMediaElement::configureTextTrackDisplay");
@@ -3754,8 +3745,11 @@ void HTMLMediaElement::configureTextTrackDisplay()
         }
     }
 
-    if (m_haveVisibleTextTrack == haveVisibleTextTrack)
+    if (assumption == AssumeNoVisibleChange
+        && m_haveVisibleTextTrack == haveVisibleTextTrack) {
+        updateActiveTextTrackCues(currentTime());
         return;
+    }
     m_haveVisibleTextTrack = haveVisibleTextTrack;
     m_closedCaptionsVisible = m_haveVisibleTextTrack;
 
@@ -3766,8 +3760,10 @@ void HTMLMediaElement::configureTextTrackDisplay()
 
     mediaControls()->changedClosedCaptionsVisibility();
 
-    if (RuntimeEnabledFeatures::videoTrackEnabled())
+    if (RuntimeEnabledFeatures::videoTrackEnabled()) {
+        updateActiveTextTrackCues(currentTime());
         updateTextTrackDisplay();
+    }
 }
 
 void HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured()
