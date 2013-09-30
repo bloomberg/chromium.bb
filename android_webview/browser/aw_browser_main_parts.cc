@@ -7,6 +7,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_result_codes.h"
 #include "base/android/build_info.h"
+#include "base/android/memory_pressure_listener_android.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "content/public/browser/android/compositor.h"
@@ -52,6 +53,9 @@ int AwBrowserMainParts::PreCreateThreads() {
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       pak_path.AppendASCII("webviewchromium.pak"),
       ui::SCALE_FACTOR_NONE);
+
+  base::android::MemoryPressureListenerAndroid::RegisterSystemCallback(
+      base::android::AttachCurrentThread());
 
   return content::RESULT_CODE_NORMAL_EXIT;
 }
