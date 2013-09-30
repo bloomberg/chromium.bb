@@ -1,0 +1,18 @@
+This tests Javascript modification of CSS variables in inline styles.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS div.style.cssText is "var-a: pass; var-b: pass; var-c: pass;"
+PASS div.style.var.size is 3
+PASS div.style.var.get("a") is "pass"
+PASS div.style.var.get("b") is "pass"
+PASS div.style.var.get("c") is "pass"
+PASS forEachIterations[0] is ["pass", "a", "[object CSSVariablesMap]"]
+PASS forEachIterations[1] is ["pass", "b", "[object CSSVariablesMap]"]
+PASS forEachIterations[2] is ["pass", "c", "[object CSSVariablesMap]"]
+PASS forEachIterations.length is 3
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

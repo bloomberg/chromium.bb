@@ -25,12 +25,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface CSSVariablesMap {
-    readonly attribute unsigned long size;
-    DOMString get(DOMString name);
-    boolean has(DOMString name);
-    [RaisesException] void set(DOMString name, DOMString value);
-    [ImplementedAs=remove] boolean delete(DOMString name);
-    [RaisesException] void clear();
-    void forEach(CSSVariablesMapForEachCallback callback, optional any thisArg);
+callback interface CSSVariablesMapForEachCallback {
+    [CallWith=ThisValue] boolean handleItem(DOMString value, DOMString name, CSSVariablesMap map);
+    boolean handleItem(DOMString value, DOMString name, CSSVariablesMap map);
 };

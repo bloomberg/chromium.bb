@@ -1,21 +1,31 @@
 <!doctype html>
+<head><script src="../../js/resources/js-test-pre.js"></script></head>
 
-<style>
-    div {
-        background-color: var(color);
-        border-style: var(border);
-    }
-</style>
-
-<div id="outer" style="var-color: darkred; var-border: dashed">
-    This div should be green with a solid border.
-    <div>This div should also be green with a solid border.</div>
-</div>
+<div id="test-target" style="var-a: fail; var-b: fail;"></div>
 
 <script>
-var outer = document.querySelector("#outer");
+description('This tests Javascript modification of CSS variables in inline styles.');
 
-outer.style.var.set("color", "green");
-outer.style.var.set("border", "solid");
+var div = document.querySelector('#test-target');
 
+div.style.var.set('a', 'pass');
+div.style.var.set('b', 'pass');
+div.style.var.set('c', 'pass');
+
+shouldBeEqualToString('div.style.cssText', 'var-a: pass; var-b: pass; var-c: pass;');
+shouldBe('div.style.var.size', '3');
+shouldBeEqualToString('div.style.var.get("a")', 'pass');
+shouldBeEqualToString('div.style.var.get("b")', 'pass');
+shouldBeEqualToString('div.style.var.get("c")', 'pass');
+
+var forEachIterations = [];
+div.style.var.forEach(function(value, name, map) {
+    forEachIterations.push([value, name, map.toString()]);
+});
+
+shouldBe('forEachIterations[0]', '["pass", "a", "[object CSSVariablesMap]"]');
+shouldBe('forEachIterations[1]', '["pass", "b", "[object CSSVariablesMap]"]');
+shouldBe('forEachIterations[2]', '["pass", "c", "[object CSSVariablesMap]"]');
+shouldBe('forEachIterations.length', '3');
 </script>
+<script src="../../js/resources/js-test-post.js"></script>

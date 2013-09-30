@@ -49,6 +49,23 @@ class StylePropertyShorthand;
 enum EUpdateLayout { DoNotUpdateLayout = false, UpdateLayout = true };
 
 class CSSComputedStyleDeclaration : public CSSStyleDeclaration {
+private:
+    class ComputedCSSVariablesIterator : public CSSVariablesIterator {
+    public:
+        virtual ~ComputedCSSVariablesIterator() { }
+        static PassRefPtr<ComputedCSSVariablesIterator> create(const HashMap<AtomicString, String>* variableMap) { return adoptRef(new ComputedCSSVariablesIterator(variableMap)); }
+    private:
+        explicit ComputedCSSVariablesIterator(const HashMap<AtomicString, String>* variableMap);
+        virtual void advance() OVERRIDE;
+        virtual bool atEnd() const OVERRIDE { return m_it == m_end; }
+        virtual AtomicString name() const OVERRIDE;
+        virtual String value() const OVERRIDE;
+        bool m_active;
+        typedef HashMap<AtomicString, String>::const_iterator VariablesMapIterator;
+        VariablesMapIterator m_it;
+        VariablesMapIterator m_end;
+    };
+
 public:
     static PassRefPtr<CSSComputedStyleDeclaration> create(PassRefPtr<Node> node, bool allowVisitedStyle = false, const String& pseudoElementName = String())
     {
@@ -103,9 +120,10 @@ private:
     const HashMap<AtomicString, String>* variableMap() const;
     virtual unsigned variableCount() const OVERRIDE;
     virtual String variableValue(const AtomicString& name) const OVERRIDE;
-    virtual void setVariableValue(const AtomicString& name, const String& value, ExceptionState&) OVERRIDE;
+    virtual bool setVariableValue(const AtomicString& name, const String& value, ExceptionState&) OVERRIDE;
     virtual bool removeVariable(const AtomicString& name) OVERRIDE;
-    virtual void clearVariables(ExceptionState&) OVERRIDE;
+    virtual bool clearVariables(ExceptionState&) OVERRIDE;
+    virtual PassRefPtr<CSSVariablesIterator> variablesIterator() const OVERRIDE { return ComputedCSSVariablesIterator::create(variableMap()); }
 
     virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const OVERRIDE;
 

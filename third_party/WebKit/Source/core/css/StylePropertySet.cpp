@@ -286,17 +286,18 @@ bool MutableStylePropertySet::setVariableValue(const AtomicString& name, const S
 
     size_t index = findVariableIndex(name);
     if (index != kNotFound) {
-        CSSValue* cssValue = m_propertyVector.at(index).value();
+        const CSSValue* cssValue = m_propertyVector.at(index).value();
         if (toCSSVariableValue(cssValue)->value() == value)
             return false;
     }
 
     CSSProperty property(CSSPropertyVariable, CSSVariableValue::create(name, value), important);
-    if (index == kNotFound)
+    if (index == kNotFound) {
         m_propertyVector.append(property);
-    else
-        m_propertyVector.at(index) = property;
-    return true;
+        return true;
+    }
+    m_propertyVector.at(index) = property;
+    return false;
 }
 
 void MutableStylePropertySet::appendPrefixingVariantProperty(const CSSProperty& property)
@@ -561,6 +562,58 @@ bool MutableStylePropertySet::clearVariables()
     ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
     CSSPropertyID variablesId = CSSPropertyVariable;
     return removePropertiesInSet(&variablesId, 1);
+}
+
+PassRefPtr<MutableStylePropertySet::VariablesIterator> MutableStylePropertySet::VariablesIterator::create(MutableStylePropertySet* propertySet)
+{
+    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
+    const size_t propertyCount = propertySet->propertyCount();
+    size_t variableCount = 0;
+    Vector<AtomicString> remainingNames(propertyCount);
+    for (int i = propertyCount; i--; ) {
+        const PropertyReference& property = propertySet->propertyAt(i);
+        if (property.id() == CSSPropertyVariable)
+            remainingNames[variableCount++] = toCSSVariableValue(property.value())->name();
+    }
+    remainingNames.shrink(variableCount);
+
+    RefPtr<VariablesIterator> iterator = adoptRef(new VariablesIterator(propertySet));
+    // FIXME: Make use of the Vector move constructor when rvalues are supported on all platforms.
+    iterator->takeRemainingNames(remainingNames);
+    return iterator.release();
+}
+
+void MutableStylePropertySet::VariablesIterator::addedVariable(const AtomicString& name)
+{
+    ASSERT(!m_remainingNames.contains(name));
+    ASSERT(!m_newNames.contains(name));
+    m_newNames.append(name);
+}
+
+void MutableStylePropertySet::VariablesIterator::removedVariable(const AtomicString& name)
+{
+    size_t index = m_remainingNames.find(name);
+    if (index != kNotFound)
+        m_remainingNames.remove(index);
+    index = m_newNames.find(name);
+    if (index != kNotFound)
+        m_newNames.remove(index);
+}
+
+void MutableStylePropertySet::VariablesIterator::clearedVariables()
+{
+    m_remainingNames.clear();
+    m_newNames.clear();
+}
+
+void MutableStylePropertySet::VariablesIterator::advance()
+{
+    if (!atEnd())
+        m_remainingNames.removeLast();
+    if (!m_newNames.isEmpty()) {
+        m_remainingNames.appendVector(m_newNames);
+        m_newNames.clear();
+    }
 }
 
 PassRefPtr<MutableStylePropertySet> StylePropertySet::mutableCopy() const

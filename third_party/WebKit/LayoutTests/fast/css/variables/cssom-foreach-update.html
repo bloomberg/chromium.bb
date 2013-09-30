@@ -1,0 +1,203 @@
+<!doctype html>
+<head><script src="../../js/resources/js-test-pre.js"></script></head>
+
+<div id="test"></div>
+
+<script>
+description('This tests expected behaviour when modifying variables in a CSSVariablesMap during a forEach() loop.');
+
+// Test adding variable in forEach: pass
+// Test deleting in forEach: pass
+// Test clearing in forEach: pass
+// Test adding then deleting in forEach: pass
+// Test adding then clearing in forEach: pass
+// Test deleting then adding in forEach: pass
+// Test clearing then adding in forEach: pass
+// Test updating visited variable in forEach: pass
+
+
+var div = document.querySelector('#test');
+var log;
+
+function logIteration(name, value, nested)
+{
+    if (nested)
+        log.push('Nested iteration (var-' + name + ': ' + value + ')');
+    else
+        log.push('Iteration (var-' + name + ': ' + value + ')');
+}
+
+debug('\nTest adding variable in forEach() over "var-existing: pass;"');
+log = [];
+div.style.var.set('existing', 'pass');
+div.style.var.forEach(function(value, name, varMap) {
+    logIteration(name, value);
+    if (name === 'existing') {
+        log.push('Add variable (var-added: pass)');
+        varMap.set('added', 'pass');
+    }
+});
+shouldBeEqualToString('log[0]', 'Iteration (var-existing: pass)');
+shouldBeEqualToString('log[1]', 'Add variable (var-added: pass)');
+shouldBeEqualToString('log[2]', 'Iteration (var-added: pass)');
+shouldBe('log.length', '3');
+
+debug('\nTest deleting variable in forEach() over "var-existing: pass; var-to-delete: fail;"');
+div.style.var.clear();
+div.style.var.set('existing', 'pass');
+div.style.var.set('to-delete', 'fail');
+log = [];
+div.style.var.forEach(function(value, name, varMap) {
+    logIteration(name, value);
+    if (name === 'existing') {
+        log.push('Delete variable (var-to-delete)');
+        varMap.delete('to-delete');
+    }
+});
+shouldBeEqualToString('log[0]', 'Iteration (var-existing: pass)');
+shouldBeEqualToString('log[1]', 'Delete variable (var-to-delete)');
+shouldBe('log.length', '2');
+
+debug('\nTest clearing variables in forEach() over "var-existing: pass; var-to-clear: fail;"');
+div.style.var.clear();
+div.style.var.set('existing', 'pass');
+div.style.var.set('to-clear', 'fail');
+log = [];
+div.style.var.forEach(function(value, name, varMap) {
+    logIteration(name, value);
+    if (name === 'existing') {
+        log.push('Clear variables');
+        varMap.clear();
+    }
+});
+shouldBeEqualToString('log[0]', 'Iteration (var-existing: pass)');
+shouldBeEqualToString('log[1]', 'Clear variables');
+shouldBe('log.length', '2');
+
+debug('\nTest adding then deleting in forEach() over "var-existing: pass;"');
+div.style.var.clear();
+div.style.var.set('existing', 'pass');
+log = [];
+div.style.var.forEach(function(value, name, varMap) {
+    logIteration(name, value);
+    if (name === 'existing') {
+        log.push('Add variable (var-to-delete: fail)');
+        varMap.set('to-delete', 'fail');
+        log.push('Delete variable (var-to-delete)');
+        varMap.delete('to-delete');
+    }
+});
+shouldBeEqualToString('log[0]', 'Iteration (var-existing: pass)');
+shouldBeEqualToString('log[1]', 'Add variable (var-to-delete: fail)');
+shouldBeEqualToString('log[2]', 'Delete variable (var-to-delete)');
+shouldBe('log.length', '3');
+
+debug('\nTest adding then clearing in forEach() over "var-existing: pass;"');
+div.style.var.clear();
+div.style.var.set('existing', 'pass');
+log = [];
+div.style.var.forEach(function(value, name, varMap) {
+    logIteration(name, value);
+    if (name === 'existing') {
+        log.push('Add variable (var-to-clear: fail)');
+        varMap.set('to-clear', 'fail');
+        log.push('Clear variables (var-to-clear)');
+        varMap.clear('to-clear');
+    }
+});
+shouldBeEqualToString('log[0]', 'Iteration (var-existing: pass)');
+shouldBeEqualToString('log[1]', 'Add variable (var-to-clear: fail)');
+shouldBeEqualToString('log[2]', 'Clear variables (var-to-clear)');
+shouldBe('log.length', '3');
+
+debug('\nTest deleting then adding in forEach() over "var-existing: pass; var-to-delete: fail;"');
+div.style.var.clear();
+div.style.var.set('existing', 'pass');
+div.style.var.set('to-delete', 'fail');
+log = [];
+div.style.var.forEach(function(value, name, varMap) {
+    logIteration(name, value);
+    if (name === 'existing') {
+        log.push('Delete variable (var-to-delete)');
+        varMap.delete('to-delete');
+        log.push('Add variable (var-added: pass)');
+        varMap.set('added', 'pass');
+    }
+});
+shouldBeEqualToString('log[0]', 'Iteration (var-existing: pass)');
+shouldBeEqualToString('log[1]', 'Delete variable (var-to-delete)');
+shouldBeEqualToString('log[2]', 'Add variable (var-added: pass)');
+shouldBeEqualToString('log[3]', 'Iteration (var-added: pass)');
+shouldBe('log.length', '4');
+
+debug('\nTest clearing then adding in forEach() over "var-existing: pass; var-to-clear: fail;"');
+div.style.var.clear();
+div.style.var.set('existing', 'pass');
+div.style.var.set('to-clear', 'fail');
+log = [];
+div.style.var.forEach(function(value, name, varMap) {
+    logIteration(name, value);
+    if (name === 'existing') {
+        log.push('Clear variables');
+        varMap.clear();
+        log.push('Add variable (var-added: pass)');
+        varMap.set('added', 'pass');
+    }
+});
+shouldBeEqualToString('log[0]', 'Iteration (var-existing: pass)');
+shouldBeEqualToString('log[1]', 'Clear variables');
+shouldBeEqualToString('log[2]', 'Add variable (var-added: pass)');
+shouldBeEqualToString('log[3]', 'Iteration (var-added: pass)');
+shouldBe('log.length', '4');
+
+debug('\nTest updating visited variable in forEach() over "var-existing-a: pass; var-existing-b: pass;"');
+div.style.var.clear();
+div.style.var.set('existing-a', 'pass');
+div.style.var.set('existing-b', 'pass');
+log = [];
+div.style.var.forEach(function(value, name, varMap) {
+    logIteration(name, value);
+    if (name === 'existing-b') {
+        log.push('Set variable (var-existing-a: fail)');
+        varMap.set('existing-a', 'fail');
+    }
+});
+shouldBeEqualToString('log[0]', 'Iteration (var-existing-a: pass)');
+shouldBeEqualToString('log[1]', 'Iteration (var-existing-b: pass)');
+shouldBeEqualToString('log[2]', 'Set variable (var-existing-a: fail)');
+shouldBe('log.length', '3');
+
+debug('\nTest nested forEach calls with addition and deletion() over "var-existing-a: pass; var-existing-b: pass;"');
+div.style.var.clear();
+div.style.var.set('existing-a', 'pass');
+div.style.var.set('existing-b', 'pass');
+log = [];
+div.style.var.forEach(function(value, name, varMap) {
+    logIteration(name, value);
+    log.push('Call forEach()');
+    varMap.forEach(function(innerValue, innerName) {
+        logIteration(innerName, innerValue, true);
+        if (name === 'existing-a' && innerName === 'existing-b') {
+            log.push('Delete variable (var-existing-b)');
+            varMap.delete('existing-b');
+            log.push('Add variable (var-inner-added: pass)');
+            varMap.set('inner-added', 'pass');
+        }
+    });
+});
+shouldBeEqualToString('log[0]', 'Iteration (var-existing-a: pass)');
+shouldBeEqualToString('log[1]', 'Call forEach()');
+shouldBeEqualToString('log[2]', 'Nested iteration (var-existing-a: pass)');
+shouldBeEqualToString('log[3]', 'Nested iteration (var-existing-b: pass)');
+shouldBeEqualToString('log[4]', 'Delete variable (var-existing-b)');
+shouldBeEqualToString('log[5]', 'Add variable (var-inner-added: pass)');
+shouldBeEqualToString('log[6]', 'Nested iteration (var-inner-added: pass)');
+shouldBeEqualToString('log[7]', 'Iteration (var-inner-added: pass)');
+shouldBeEqualToString('log[8]', 'Call forEach()');
+shouldBeEqualToString('log[9]', 'Nested iteration (var-existing-a: pass)');
+shouldBeEqualToString('log[10]', 'Nested iteration (var-inner-added: pass)');
+shouldBe('log.length', '11');
+
+debug('');
+</script>
+<script src="../../js/resources/js-test-post.js"></script>

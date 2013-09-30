@@ -266,7 +266,7 @@ bool V8TestCallback::callbackWithThisArg(ScriptValue thisValue, int param)
             CRASH();
         return true;
     }
-    ASSERT(thisHandle->isObject());
+    ASSERT(thisHandle->IsObject());
     v8::Handle<v8::Value> paramHandle = v8::Integer::New(param, isolate);
     if (paramHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())

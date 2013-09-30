@@ -3169,10 +3169,11 @@ String CSSComputedStyleDeclaration::variableValue(const AtomicString& name) cons
     return it->value;
 }
 
-void CSSComputedStyleDeclaration::setVariableValue(const AtomicString& name, const String&, ExceptionState& es)
+bool CSSComputedStyleDeclaration::setVariableValue(const AtomicString& name, const String&, ExceptionState& es)
 {
     ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
     es.throwDOMException(NoModificationAllowedError, "Failed to set the '" + name + "' property on a computed 'CSSStyleDeclaration': computed styles are read-only.");
+    return false;
 }
 
 bool CSSComputedStyleDeclaration::removeVariable(const AtomicString&)
@@ -3181,10 +3182,40 @@ bool CSSComputedStyleDeclaration::removeVariable(const AtomicString&)
     return false;
 }
 
-void CSSComputedStyleDeclaration::clearVariables(ExceptionState& es)
+bool CSSComputedStyleDeclaration::clearVariables(ExceptionState& es)
 {
     ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
     es.throwDOMException(NoModificationAllowedError, "Failed to clear variables from a computed 'CSSStyleDeclaration': computed styles are read-only.");
+    return false;
+}
+
+CSSComputedStyleDeclaration::ComputedCSSVariablesIterator::ComputedCSSVariablesIterator(const HashMap<AtomicString, String>* variables)
+    : m_active(variables)
+{
+    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
+    if (m_active) {
+        m_it = variables->begin();
+        m_end = variables->end();
+    }
+}
+
+void CSSComputedStyleDeclaration::ComputedCSSVariablesIterator::advance()
+{
+    ASSERT(m_active);
+    ++m_it;
+    m_active = !atEnd();
+}
+
+AtomicString CSSComputedStyleDeclaration::ComputedCSSVariablesIterator::name() const
+{
+    ASSERT(m_active);
+    return m_it->key;
+}
+
+String CSSComputedStyleDeclaration::ComputedCSSVariablesIterator::value() const
+{
+    ASSERT(m_active);
+    return m_it->value;
 }
 
 PassRefPtr<CSSValueList> CSSComputedStyleDeclaration::valuesForBackgroundShorthand() const

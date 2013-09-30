@@ -37,9 +37,11 @@ For details, see bug http://crbug.com/239771
 
 # FIXME: eliminate this file if possible
 
+import re
 import v8_types
 
 ACRONYMS = ['CSS', 'HTML', 'IME', 'JS', 'SVG', 'URL', 'WOFF', 'XML', 'XSLT']
+extended_attribute_value_separator_re = re.compile('[|&]')
 
 
 def cpp_implemented_as_name(definition_or_member):
@@ -85,3 +87,16 @@ def uncapitalize(name):
 
 def v8_class_name(interface):
     return v8_types.v8_type(interface.name)
+
+
+def has_extended_attribute_value(extended_attributes, key, value):
+    return key in extended_attributes and value in extended_attribute_values(extended_attributes, key)
+
+
+def extended_attribute_values(extended_attributes, key):
+    if key not in extended_attributes:
+        return None
+    values_string = extended_attributes[key]
+    if not values_string:
+        return []
+    return extended_attribute_value_separator_re.split(values_string)

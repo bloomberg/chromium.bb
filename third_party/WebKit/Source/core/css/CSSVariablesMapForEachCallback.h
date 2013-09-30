@@ -25,54 +25,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSVariablesMap_h
-#define CSSVariablesMap_h
+#ifndef CSSVariablesMapForEachCallback_h
+#define CSSVariablesMapForEachCallback_h
 
-#include "RuntimeEnabledFeatures.h"
-#include "core/css/CSSVariablesMapForEachCallback.h"
+#include "bindings/v8/ScriptValue.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class CSSStyleDeclaration;
-class CSSVariablesIterator;
-class ExceptionState;
+class CSSVariablesMap;
 
-class CSSVariablesMap : public RefCounted<CSSVariablesMap> {
+class CSSVariablesMapForEachCallback : public RefCounted<CSSVariablesMapForEachCallback> {
 public:
-    virtual ~CSSVariablesMap() { }
-
-    static PassRefPtr<CSSVariablesMap> create(CSSStyleDeclaration* styleDeclaration)
-    {
-        return adoptRef(new CSSVariablesMap(styleDeclaration));
-    }
-
-    unsigned size() const;
-    String get(const AtomicString& name) const;
-    bool has(const AtomicString& name) const;
-    void set(const AtomicString& name, const String& value, ExceptionState&);
-    bool remove(const AtomicString& name);
-    void clear(ExceptionState&);
-    void forEach(PassRefPtr<CSSVariablesMapForEachCallback>, ScriptValue& thisArg) const;
-    void forEach(PassRefPtr<CSSVariablesMapForEachCallback>) const;
-
-    void clearStyleDeclaration() { m_styleDeclaration = 0; }
-
-private:
-    explicit CSSVariablesMap(CSSStyleDeclaration* styleDeclaration)
-        : m_styleDeclaration(styleDeclaration)
-    {
-        ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    }
-
-    void forEach(PassRefPtr<CSSVariablesMapForEachCallback>, ScriptValue* thisArg) const;
-
-    CSSStyleDeclaration* m_styleDeclaration;
-    typedef Vector<CSSVariablesIterator*> Iterators;
-    mutable Iterators m_activeIterators;
+    virtual ~CSSVariablesMapForEachCallback() { }
+    virtual bool handleItem(ScriptValue thisValue, const String& value, const String& name, CSSVariablesMap*) = 0;
+    virtual bool handleItem(const String& value, const String& name, CSSVariablesMap*) = 0;
 };
 
 } // namespace WebCore
 
-#endif // CSSVariablesMap_h
+#endif // CSSVariablesMapForEachCallback_h

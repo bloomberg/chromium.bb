@@ -25,12 +25,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface CSSVariablesMap {
-    readonly attribute unsigned long size;
-    DOMString get(DOMString name);
-    boolean has(DOMString name);
-    [RaisesException] void set(DOMString name, DOMString value);
-    [ImplementedAs=remove] boolean delete(DOMString name);
-    [RaisesException] void clear();
-    void forEach(CSSVariablesMapForEachCallback callback, optional any thisArg);
+#ifndef CSSVariablesIterator_h
+#define CSSVariablesIterator_h
+
+#include "wtf/RefCounted.h"
+
+namespace WebCore {
+
+class CSSVariablesIterator : public RefCounted<CSSVariablesIterator> {
+public:
+    virtual ~CSSVariablesIterator() { }
+    virtual void advance() = 0;
+    virtual bool atEnd() const = 0;
+    virtual AtomicString name() const = 0;
+    virtual String value() const = 0;
+    virtual void addedVariable(const AtomicString& name) { }
+    virtual void removedVariable(const AtomicString& name) { }
+    virtual void clearedVariables() { }
 };
+
+}
+
+#endif // CSSVariablesIterator_h

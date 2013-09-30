@@ -70,9 +70,10 @@ private:
 
     virtual unsigned variableCount() const OVERRIDE;
     virtual String variableValue(const AtomicString& name) const OVERRIDE;
-    virtual void setVariableValue(const AtomicString& name, const String& value, ExceptionState&) OVERRIDE;
+    virtual bool setVariableValue(const AtomicString& name, const String& value, ExceptionState&) OVERRIDE;
     virtual bool removeVariable(const AtomicString& name) OVERRIDE;
-    virtual void clearVariables(ExceptionState&) OVERRIDE;
+    virtual bool clearVariables(ExceptionState&) OVERRIDE;
+    virtual PassRefPtr<CSSVariablesIterator> variablesIterator() const OVERRIDE;
 
     virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const OVERRIDE;
     virtual PassRefPtr<MutableStylePropertySet> copyProperties() const OVERRIDE;

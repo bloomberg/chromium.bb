@@ -55,23 +55,68 @@ bool CSSVariablesMap::has(const AtomicString& name) const
     return false;
 }
 
-void CSSVariablesMap::set(const AtomicString& name, const String& value, ExceptionState& es) const
+void CSSVariablesMap::set(const AtomicString& name, const String& value, ExceptionState& es)
 {
-    if (m_styleDeclaration)
-        m_styleDeclaration->setVariableValue(name, value, es);
+    if (!m_styleDeclaration)
+        return;
+    if (m_styleDeclaration->setVariableValue(name, value, es)) {
+        Iterators::iterator end = m_activeIterators.end();
+        for (Iterators::iterator it = m_activeIterators.begin(); it != end; ++it)
+            (*it)->addedVariable(name);
+    }
 }
 
-bool CSSVariablesMap::remove(const AtomicString& name) const
+bool CSSVariablesMap::remove(const AtomicString& name)
 {
-    if (m_styleDeclaration)
-        return m_styleDeclaration->removeVariable(name);
+    if (!m_styleDeclaration)
+        return false;
+    if (m_styleDeclaration->removeVariable(name)) {
+        Iterators::iterator end = m_activeIterators.end();
+        for (Iterators::iterator it = m_activeIterators.begin(); it != end; ++it)
+            (*it)->removedVariable(name);
+        return true;
+    }
     return false;
 }
 
-void CSSVariablesMap::clear(ExceptionState& es) const
+void CSSVariablesMap::clear(ExceptionState& es)
 {
-    if (m_styleDeclaration)
-        return m_styleDeclaration->clearVariables(es);
+    if (!m_styleDeclaration)
+        return;
+    if (m_styleDeclaration->clearVariables(es)) {
+        Iterators::iterator end = m_activeIterators.end();
+        for (Iterators::iterator it = m_activeIterators.begin(); it != end; ++it)
+            (*it)->clearedVariables();
+    }
+}
+
+void CSSVariablesMap::forEach(PassRefPtr<CSSVariablesMapForEachCallback> callback, ScriptValue& thisArg) const
+{
+    forEach(callback, &thisArg);
+}
+
+void CSSVariablesMap::forEach(PassRefPtr<CSSVariablesMapForEachCallback> callback) const
+{
+    forEach(callback, 0);
+}
+
+void CSSVariablesMap::forEach(PassRefPtr<CSSVariablesMapForEachCallback> callback, ScriptValue* thisArg) const
+{
+    if (!m_styleDeclaration)
+        return;
+    RefPtr<CSSVariablesIterator> iterator = m_styleDeclaration->variablesIterator();
+    m_activeIterators.append(iterator.get());
+    while (!iterator->atEnd()) {
+        String name = iterator->name();
+        String value = iterator->value();
+        if (thisArg)
+            callback->handleItem(*thisArg, value, name, const_cast<CSSVariablesMap*>(this));
+        else
+            callback->handleItem(value, name, const_cast<CSSVariablesMap*>(this));
+        iterator->advance();
+    }
+    ASSERT(m_activeIterators.last() == iterator.get());
+    m_activeIterators.removeLast();
 }
 
 } // namespace WebCore

@@ -1,70 +1,51 @@
-<script>
-if (window.testRunner)
-    testRunner.dumpAsText();
-</script>
+<!doctype html>
+<head><script src="../../js/resources/js-test-pre.js"></script></head>
 
 <style>
-pre {
+#test-target {
     var-stylesheet: pass;
 }
 </style>
 
 <body>
-
-<pre style="var-inherited: pass"><pre id="pre" style="var-inline: pass"></pre></pre>
-
+<div style="var-inherited: pass"><div id="test-target" style="var-inline: pass"></div></div>
 </body>
 
 <script>
-var pre = document.querySelector("#pre");
-var preStyle = getComputedStyle(pre);
-var bodyStyle = getComputedStyle(document.querySelector("body"));
-pre.innerText += "Computed variables declaration: " + preStyle.var + "\n";
+description('This tests Javascript access to CSS variables via getComputedStyle.');
 
-pre.innerText += "Create variable: ";
-try {
-    preStyle.var.set("create", "test");
-    pre.innerText += "No exception thrown.\n";
-}
-catch (exception) {
-    pre.innerText += exception + "\n";
-}
+var computedStyle = getComputedStyle(document.querySelector("#test-target"));
+var computedBodyStyle = getComputedStyle(document.querySelector("body"));
 
-pre.innerText += "Count variables: " + preStyle.var.size + "\n";
-pre.innerText += "Count empty variables: " + bodyStyle.var.size + "\n";
-pre.innerText += "Read stylesheet variable: " + preStyle.var.get("stylesheet") + "\n";
-pre.innerText += "Read inherited variable: " + preStyle.var.get("inherited") + "\n";
-pre.innerText += "Read inline variable: " + preStyle.var.get("inline") + "\n";
-pre.innerText += "Read non-existent variable: " + (bodyStyle.var.get("test") ? "fail" : "pass") + "\n";
+shouldBeEqualToString('computedStyle.var.toString()', '[object CSSVariablesMap]');
+shouldBe('computedStyle.var === computedStyle.var', 'true');
+shouldThrow('computedStyle.var.set("create", "test")', '"NoModificationAllowedError: Failed to set the \'create\' property on a computed \'CSSStyleDeclaration\': computed styles are read-only."');
+shouldBe('computedStyle.var.size', '3');
+shouldBe('computedBodyStyle.var.size', '0');
+shouldBeEqualToString('computedStyle.var.get("stylesheet")', 'pass');
+shouldBeEqualToString('computedStyle.var.get("inherited")', 'pass');
+shouldBeEqualToString('computedStyle.var.get("inline")', 'pass');
+shouldBeEqualToString('computedBodyStyle.var.get("non-existent")', '');
 
-pre.innerText += "Update variable: ";
-try {
-    preStyle.var.set("inline", "test");
-    pre.innerText += "No exception thrown (fail).\n";
-}
-catch (exception) {
-    pre.innerText += exception + "\n";
-}
+var forEachIterations = [];
+computedStyle.var.forEach(function(value, name, map) {
+    forEachIterations.push([value, name, map.toString()]);
+});
+forEachIterations.sort();
+shouldBe('forEachIterations[0]', '["pass", "inherited", "[object CSSVariablesMap]"]');
+shouldBe('forEachIterations[1]', '["pass", "inline", "[object CSSVariablesMap]"]');
+shouldBe('forEachIterations[2]', '["pass", "stylesheet", "[object CSSVariablesMap]"]');
+shouldBe('forEachIterations.length', '3');
 
-pre.innerText += "Delete variable: " + (preStyle.var.delete("inline") ? "Deleted" : "Not deleted") + "\n";
+var emptyVarForEachIterations = [];
+computedBodyStyle.var.forEach(function(value, name, map) {
+    emptyVarForEachIterations.push([value, name, map.toString()]);
+});
+shouldBe('emptyVarForEachIterations.length', '0');
 
-pre.innerText += "Clear variables: ";
-try {
-    preStyle.var.clear();
-    pre.innerText += "No exception thrown (fail).\n";
-}
-catch (exception) {
-    pre.innerText += exception + "\n";
-}
-
-pre.innerText += "Set cssText: ";
-try {
-    preStyle.cssText = "yay: !important;";
-    pre.innerText += "No exception thrown (fail).\n";
-}
-catch (exception) {
-    pre.innerText += exception + "\n";
-}
-
-pre.innerText += "Read deleted variable: " + preStyle.var.get("inline") + "\n";
+shouldThrow('computedStyle.var.set("inline", "fail")', '"NoModificationAllowedError: Failed to set the \'inline\' property on a computed \'CSSStyleDeclaration\': computed styles are read-only."');
+shouldThrow('computedStyle.var.clear()', '"NoModificationAllowedError: Failed to clear variables from a computed \'CSSStyleDeclaration\': computed styles are read-only."');
+shouldBe('computedStyle.var.delete("inline")', 'false');
+shouldBeEqualToString('computedStyle.var.get("inline")', 'pass');
 </script>
+<script src="../../js/resources/js-test-post.js"></script>

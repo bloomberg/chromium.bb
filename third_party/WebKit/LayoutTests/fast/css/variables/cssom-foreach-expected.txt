@@ -1,0 +1,24 @@
+This tests basic calling of forEach on a CSSVariablesMap object.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS div.style.var.forEach() threw exception TypeError: Failed to execute 'forEach' on 'CSSVariablesMap': 1 argument required, but only 0 present..
+PASS div.style.var.forEach("Not a function.") threw exception TypeError: Type error.
+
+Test calling forEach without thisArg specified:
+PASS log[0] is "[object CSSVariablesMap], a: apple, this == [object Window]"
+PASS log[1] is "[object CSSVariablesMap], b: banana, this == [object Window]"
+PASS log[2] is "[object CSSVariablesMap], c: carrot, this == [object Window]"
+PASS log.length is 3
+
+Test calling forEach with thisArg specified:
+PASS log[0] is "[object CSSVariablesMap], a: apple, this == {\"test\":\"pass\"}"
+PASS log[1] is "[object CSSVariablesMap], b: banana, this == {\"test\":\"pass\"}"
+PASS log[2] is "[object CSSVariablesMap], c: carrot, this == {\"test\":\"pass\"}"
+PASS log.length is 3
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -281,7 +281,7 @@ String PropertySetCSSStyleDeclaration::variableValue(const AtomicString& name) c
     return m_propertySet->variableValue(name);
 }
 
-void PropertySetCSSStyleDeclaration::setVariableValue(const AtomicString& name, const String& value, ExceptionState&)
+bool PropertySetCSSStyleDeclaration::setVariableValue(const AtomicString& name, const String& value, ExceptionState&)
 {
     ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
     StyleAttributeMutationScope mutationScope(this);
@@ -290,6 +290,7 @@ void PropertySetCSSStyleDeclaration::setVariableValue(const AtomicString& name, 
     didMutate(changed ? PropertyChanged : NoChanges);
     if (changed)
         mutationScope.enqueueMutationRecord();
+    return changed;
 }
 
 bool PropertySetCSSStyleDeclaration::removeVariable(const AtomicString& name)
@@ -304,7 +305,7 @@ bool PropertySetCSSStyleDeclaration::removeVariable(const AtomicString& name)
     return changed;
 }
 
-void PropertySetCSSStyleDeclaration::clearVariables(ExceptionState&)
+bool PropertySetCSSStyleDeclaration::clearVariables(ExceptionState&)
 {
     ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
     StyleAttributeMutationScope mutationScope(this);
@@ -313,6 +314,12 @@ void PropertySetCSSStyleDeclaration::clearVariables(ExceptionState&)
     didMutate(changed ? PropertyChanged : NoChanges);
     if (changed)
         mutationScope.enqueueMutationRecord();
+    return changed;
+}
+
+PassRefPtr<CSSVariablesIterator> PropertySetCSSStyleDeclaration::variablesIterator() const
+{
+    return m_propertySet->variablesIterator();
 }
 
 CSSValue* PropertySetCSSStyleDeclaration::cloneAndCacheForCSSOM(CSSValue* internalValue)

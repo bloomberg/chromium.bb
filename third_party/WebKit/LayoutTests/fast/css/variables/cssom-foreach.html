@@ -1,0 +1,37 @@
+<!doctype html>
+<head><script src="../../js/resources/js-test-pre.js"></script></head>
+
+<div id="test" style="var-a: apple; var-b: banana; var-c: carrot"></div>
+
+<script>
+description('This tests basic calling of forEach on a CSSVariablesMap object.');
+
+var div = document.querySelector('#test');
+var log;
+
+shouldThrow('div.style.var.forEach()', '"TypeError: Failed to execute \'forEach\' on \'CSSVariablesMap\': 1 argument required, but only 0 present."');
+shouldThrow('div.style.var.forEach("Not a function.")', '"TypeError: Type error"');
+
+debug('\nTest calling forEach without thisArg specified:');
+log = [];
+div.style.var.forEach(function(value, name, map) {
+    log.push(map + ', ' + name + ': ' + value + ', this == ' + this);
+});
+shouldBeEqualToString('log[0]', '[object CSSVariablesMap], a: apple, this == [object Window]');
+shouldBeEqualToString('log[1]', '[object CSSVariablesMap], b: banana, this == [object Window]');
+shouldBeEqualToString('log[2]', '[object CSSVariablesMap], c: carrot, this == [object Window]');
+shouldBe('log.length', '3');
+
+debug('\nTest calling forEach with thisArg specified:');
+log = [];
+div.style.var.forEach(function(value, name, map) {
+    log.push(map + ', ' + name + ': ' + value + ', this == ' + JSON.stringify(this));
+}, {test: 'pass'});
+shouldBeEqualToString('log[0]', '[object CSSVariablesMap], a: apple, this == {"test":"pass"}');
+shouldBeEqualToString('log[1]', '[object CSSVariablesMap], b: banana, this == {"test":"pass"}');
+shouldBeEqualToString('log[2]', '[object CSSVariablesMap], c: carrot, this == {"test":"pass"}');
+shouldBe('log.length', '3');
+
+debug('');
+</script>
+<script src="../../js/resources/js-test-post.js"></script>

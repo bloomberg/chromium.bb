@@ -1,41 +1,20 @@
 <!doctype html>
+<head><script src="../../js/resources/js-test-pre.js"></script></head>
 
-<pre style="var-a: override me; var-a: apple; var-b: banana;"></pre>
+<div id="test-target" style="var-a: override me; var-a: apple; var-b: banana;"></div>
 
 <script>
-if (window.testRunner) {
-    window.testRunner.dumpAsText();
-}
+description('This tests Javascript read access to CSS variables in inline styles.');
 
-var pre = document.querySelector("pre");
+var div = document.querySelector('#test-target');
 
-pre.innerText += "Inline style CSS text: " + pre.style.cssText + "\n";
-pre.innerText += "\n";
-
-pre.innerText += "Count vars: " + pre.style.var.size + "\n";
-pre.innerText += "\n";
-
-pre.innerText += "Access vars directly:\n";
-pre.innerText += "a: " + pre.style.var.get("a") + "\n";
-pre.innerText += "b: " + pre.style.var.get("b") + "\n";
-pre.innerText += "\n";
-
-pre.innerText += "Access non existent var:\n";
-pre.innerText += "z: " + pre.style.var.get("z") + "\n";
-pre.innerText += "\n";
-
-pre.innerText += "Setting c to carrot and d to dog...\n";
-pre.style.var.set("c", "carrot");
-pre.style.var.set("d", "dog");
-pre.innerText += "\n";
-
-pre.innerText += "Count vars: " + pre.style.var.size + "\n";
-pre.innerText += "\n";
-
-pre.innerText += "Access vars directly:\n";
-pre.innerText += "a: " + pre.style.var.get("a") + "\n";
-pre.innerText += "b: " + pre.style.var.get("b") + "\n";
-pre.innerText += "c: " + pre.style.var.get("c") + "\n";
-pre.innerText += "d: " + pre.style.var.get("d") + "\n";
+shouldBeEqualToString('div.style.var.toString()', '[object CSSVariablesMap]');
+shouldBe('div.style.var === div.style.var', 'true');
+shouldBeEqualToString('div.style.cssText', 'var-a: apple; var-b: banana;');
+shouldBe('div.style.var.size', '2');
+shouldBeEqualToString('div.style.var.get("a")', 'apple');
+shouldBeEqualToString('div.style.var.get("b")', 'banana');
+shouldBeEqualToString('div.style.var.get("nonexistant")', '');
 
 </script>
+<script src="../../js/resources/js-test-post.js"></script>

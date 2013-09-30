@@ -68,6 +68,15 @@ namespace WebCore {
 
     v8::Context::Scope scope(v8Context);
 
+{% if method.call_with_this_handle %}
+    v8::Handle<v8::Value> thisHandle = thisValue.v8Value();
+    if (thisHandle.IsEmpty()) {
+        if (!isScriptControllerTerminating())
+            CRASH();
+        return true;
+    }
+    ASSERT(thisHandle->IsObject());
+{% endif %}
 {% for argument in method.arguments %}
     {{argument.cpp_to_v8_conversion | indent}}
     if ({{argument.name}}Handle.IsEmpty()) {
@@ -83,7 +92,8 @@ namespace WebCore {
 {% endif %}
 
     bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), {{method.arguments | length}}, argv, callbackReturnValue, scriptExecutionContext(), isolate);
+{% set this_handle_parameter = 'v8::Handle<v8::Object>::Cast(thisHandle), ' if method.call_with_this_handle else '' %}
+    return !invokeCallback(m_callback.newLocal(isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv, callbackReturnValue, scriptExecutionContext(), isolate);
 }
 
 {% endif %}

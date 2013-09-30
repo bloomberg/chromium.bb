@@ -1,14 +1,27 @@
-Computed variables declaration: [object CSSVariablesMap]
-Create variable: NoModificationAllowedError: Failed to set the 'create' property on a computed 'CSSStyleDeclaration': computed styles are read-only.
-Count variables: 3
-Count empty variables: 0
-Read stylesheet variable: pass
-Read inherited variable: pass
-Read inline variable: pass
-Read non-existent variable: pass
-Update variable: NoModificationAllowedError: Failed to set the 'inline' property on a computed 'CSSStyleDeclaration': computed styles are read-only.
-Delete variable: Not deleted
-Clear variables: NoModificationAllowedError: Failed to clear variables from a computed 'CSSStyleDeclaration': computed styles are read-only.
-Set cssText: NoModificationAllowedError: Failed to set the 'cssText' property on a computed 'CSSStyleDeclaration': computed styles are read-only.
-Read deleted variable: pass
+This tests Javascript access to CSS variables via getComputedStyle.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS computedStyle.var.toString() is "[object CSSVariablesMap]"
+PASS computedStyle.var === computedStyle.var is true
+PASS computedStyle.var.set("create", "test") threw exception NoModificationAllowedError: Failed to set the 'create' property on a computed 'CSSStyleDeclaration': computed styles are read-only..
+PASS computedStyle.var.size is 3
+PASS computedBodyStyle.var.size is 0
+PASS computedStyle.var.get("stylesheet") is "pass"
+PASS computedStyle.var.get("inherited") is "pass"
+PASS computedStyle.var.get("inline") is "pass"
+PASS computedBodyStyle.var.get("non-existent") is ""
+PASS forEachIterations[0] is ["pass", "inherited", "[object CSSVariablesMap]"]
+PASS forEachIterations[1] is ["pass", "inline", "[object CSSVariablesMap]"]
+PASS forEachIterations[2] is ["pass", "stylesheet", "[object CSSVariablesMap]"]
+PASS forEachIterations.length is 3
+PASS emptyVarForEachIterations.length is 0
+PASS computedStyle.var.set("inline", "fail") threw exception NoModificationAllowedError: Failed to set the 'inline' property on a computed 'CSSStyleDeclaration': computed styles are read-only..
+PASS computedStyle.var.clear() threw exception NoModificationAllowedError: Failed to clear variables from a computed 'CSSStyleDeclaration': computed styles are read-only..
+PASS computedStyle.var.delete("inline") is false
+PASS computedStyle.var.get("inline") is "pass"
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

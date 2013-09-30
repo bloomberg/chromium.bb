@@ -1,0 +1,72 @@
+This tests expected behaviour when modifying variables in a CSSVariablesMap during a forEach() loop.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+
+Test adding variable in forEach() over "var-existing: pass;"
+PASS log[0] is "Iteration (var-existing: pass)"
+PASS log[1] is "Add variable (var-added: pass)"
+PASS log[2] is "Iteration (var-added: pass)"
+PASS log.length is 3
+
+Test deleting variable in forEach() over "var-existing: pass; var-to-delete: fail;"
+PASS log[0] is "Iteration (var-existing: pass)"
+PASS log[1] is "Delete variable (var-to-delete)"
+PASS log.length is 2
+
+Test clearing variables in forEach() over "var-existing: pass; var-to-clear: fail;"
+PASS log[0] is "Iteration (var-existing: pass)"
+PASS log[1] is "Clear variables"
+PASS log.length is 2
+
+Test adding then deleting in forEach() over "var-existing: pass;"
+PASS log[0] is "Iteration (var-existing: pass)"
+PASS log[1] is "Add variable (var-to-delete: fail)"
+PASS log[2] is "Delete variable (var-to-delete)"
+PASS log.length is 3
+
+Test adding then clearing in forEach() over "var-existing: pass;"
+PASS log[0] is "Iteration (var-existing: pass)"
+PASS log[1] is "Add variable (var-to-clear: fail)"
+PASS log[2] is "Clear variables (var-to-clear)"
+PASS log.length is 3
+
+Test deleting then adding in forEach() over "var-existing: pass; var-to-delete: fail;"
+PASS log[0] is "Iteration (var-existing: pass)"
+PASS log[1] is "Delete variable (var-to-delete)"
+PASS log[2] is "Add variable (var-added: pass)"
+PASS log[3] is "Iteration (var-added: pass)"
+PASS log.length is 4
+
+Test clearing then adding in forEach() over "var-existing: pass; var-to-clear: fail;"
+PASS log[0] is "Iteration (var-existing: pass)"
+PASS log[1] is "Clear variables"
+PASS log[2] is "Add variable (var-added: pass)"
+PASS log[3] is "Iteration (var-added: pass)"
+PASS log.length is 4
+
+Test updating visited variable in forEach() over "var-existing-a: pass; var-existing-b: pass;"
+PASS log[0] is "Iteration (var-existing-a: pass)"
+PASS log[1] is "Iteration (var-existing-b: pass)"
+PASS log[2] is "Set variable (var-existing-a: fail)"
+PASS log.length is 3
+
+Test nested forEach calls with addition and deletion() over "var-existing-a: pass; var-existing-b: pass;"
+PASS log[0] is "Iteration (var-existing-a: pass)"
+PASS log[1] is "Call forEach()"
+PASS log[2] is "Nested iteration (var-existing-a: pass)"
+PASS log[3] is "Nested iteration (var-existing-b: pass)"
+PASS log[4] is "Delete variable (var-existing-b)"
+PASS log[5] is "Add variable (var-inner-added: pass)"
+PASS log[6] is "Nested iteration (var-inner-added: pass)"
+PASS log[7] is "Iteration (var-inner-added: pass)"
+PASS log[8] is "Call forEach()"
+PASS log[9] is "Nested iteration (var-existing-a: pass)"
+PASS log[10] is "Nested iteration (var-inner-added: pass)"
+PASS log.length is 11
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -25,6 +25,7 @@
 #include "core/css/CSSParserMode.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSProperty.h"
+#include "core/css/CSSVariablesIterator.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/Vector.h"
@@ -174,6 +175,7 @@ inline const StylePropertyMetadata* ImmutableStylePropertySet::metadataArray() c
 
 class MutableStylePropertySet : public StylePropertySet {
 public:
+    ~MutableStylePropertySet() { }
     static PassRefPtr<MutableStylePropertySet> create(CSSParserMode = CSSQuirksMode);
     static PassRefPtr<MutableStylePropertySet> create(const CSSProperty* properties, unsigned count);
 
@@ -204,6 +206,8 @@ public:
     bool removeVariable(const AtomicString& name);
     bool clearVariables();
 
+    PassRefPtr<CSSVariablesIterator> variablesIterator() { return VariablesIterator::create(this); }
+
     void mergeAndOverrideOnConflict(const StylePropertySet*);
 
     void clear();
@@ -215,6 +219,26 @@ public:
     Vector<CSSProperty, 4> m_propertyVector;
 
 private:
+    class VariablesIterator : public CSSVariablesIterator {
+    public:
+        virtual ~VariablesIterator() { }
+        static PassRefPtr<VariablesIterator> create(MutableStylePropertySet*);
+    private:
+        explicit VariablesIterator(MutableStylePropertySet* propertySet) : m_propertySet(propertySet) { }
+        void takeRemainingNames(Vector<AtomicString>& remainingNames) { m_remainingNames.swap(remainingNames); }
+        virtual void advance() OVERRIDE;
+        virtual bool atEnd() const OVERRIDE { return m_remainingNames.isEmpty(); }
+        virtual AtomicString name() const OVERRIDE { return m_remainingNames.last(); }
+        virtual String value() const OVERRIDE { return m_propertySet->variableValue(name()); }
+        virtual void addedVariable(const AtomicString& name) OVERRIDE;
+        virtual void removedVariable(const AtomicString& name) OVERRIDE;
+        virtual void clearedVariables() OVERRIDE;
+
+        RefPtr<MutableStylePropertySet> m_propertySet;
+        Vector<AtomicString> m_remainingNames;
+        Vector<AtomicString> m_newNames;
+    };
+
     explicit MutableStylePropertySet(CSSParserMode);
     explicit MutableStylePropertySet(const StylePropertySet&);
     MutableStylePropertySet(const CSSProperty* properties, unsigned count);

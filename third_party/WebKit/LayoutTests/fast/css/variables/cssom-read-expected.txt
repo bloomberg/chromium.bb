@@ -1,21 +1,16 @@
-Inline style CSS text: var-a: apple; var-b: banana;
+This tests Javascript read access to CSS variables in inline styles.
 
-Count vars: 2
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-Access vars directly:
-a: apple
-b: banana
 
-Access non existent var:
-z: 
+PASS div.style.var.toString() is "[object CSSVariablesMap]"
+PASS div.style.var === div.style.var is true
+PASS div.style.cssText is "var-a: apple; var-b: banana;"
+PASS div.style.var.size is 2
+PASS div.style.var.get("a") is "apple"
+PASS div.style.var.get("b") is "banana"
+PASS div.style.var.get("nonexistant") is ""
+PASS successfullyParsed is true
 
-Setting c to carrot and d to dog...
-
-Count vars: 4
-
-Access vars directly:
-a: apple
-b: banana
-c: carrot
-d: dog
+TEST COMPLETE
 

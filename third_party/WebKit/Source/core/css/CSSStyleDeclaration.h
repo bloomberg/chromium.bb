@@ -23,6 +23,7 @@
 
 #include "CSSPropertyNames.h"
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/css/CSSVariablesIterator.h"
 #include "core/css/CSSVariablesMap.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -61,9 +62,10 @@ public:
     PassRefPtr<CSSVariablesMap> var();
     virtual unsigned variableCount() const = 0;
     virtual String variableValue(const AtomicString& name) const = 0;
-    virtual void setVariableValue(const AtomicString& name, const String& value, ExceptionState&) = 0;
+    virtual bool setVariableValue(const AtomicString& name, const String& value, ExceptionState&) = 0; // Return value indicates whether variable was added.
     virtual bool removeVariable(const AtomicString& name) = 0;
-    virtual void clearVariables(ExceptionState&) = 0;
+    virtual bool clearVariables(ExceptionState&) = 0;
+    virtual PassRefPtr<CSSVariablesIterator> variablesIterator() const = 0;
 
     // CSSPropertyID versions of the CSSOM functions to support bindings and editing.
     // Use the non-virtual methods in the concrete subclasses when possible.

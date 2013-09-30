@@ -4737,7 +4737,7 @@ END
                 $code .= "            CRASH();\n";
                 $code .= "        return true;\n";
                 $code .= "    }\n";
-                $code .= "    ASSERT(thisHandle->isObject());\n";
+                $code .= "    ASSERT(thisHandle->IsObject());\n";
                 $thisObjectHandle = "v8::Handle<v8::Object>::Cast(thisHandle), ";
             }
             @args = ();
