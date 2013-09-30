@@ -80,7 +80,6 @@ class PhoneObject {
   base::string16 number() const { return number_; }
 
   base::string16 GetFormattedNumber() const;
-  base::string16 GetNationallyFormattedNumber() const;
   base::string16 GetWholeNumber() const;
 
   PhoneObject& operator=(const PhoneObject& other);

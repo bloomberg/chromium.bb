@@ -90,10 +90,6 @@ class Address {
   // to the user together with DisplayName().
   base::string16 DisplayNameDetail() const;
 
-  // Returns the phone number as a string that is suitable for display to the
-  // user.
-  base::string16 DisplayPhoneNumber() const;
-
   // Returns data appropriate for |type|.
   base::string16 GetInfo(const AutofillType& type,
                          const std::string& app_locale) const;
