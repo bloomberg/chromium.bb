@@ -6,7 +6,6 @@ include_rules = [
   "-chrome/browser",
   "-chrome/common",
   "+chrome/browser/webdata",
-  "+components/encryptor",
 
   # TODO(caitkp, kaiwang): Bring this list to zero.
   # Do not add to the list of temporarily-allowed dependencies below,
