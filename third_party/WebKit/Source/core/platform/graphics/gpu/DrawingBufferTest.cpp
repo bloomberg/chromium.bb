@@ -33,7 +33,7 @@
 #include "core/platform/graphics/gpu/DrawingBuffer.h"
 
 #include "core/platform/graphics/GraphicsContext3D.h"
-#include "core/tests/FakeWebGraphicsContext3D.h"
+#include "core/platform/testing/FakeWebGraphicsContext3D.h"
 #include "public/platform/Platform.h"
 #include "wtf/RefPtr.h"
 

@@ -29,7 +29,7 @@
 #include "SkDevice.h"
 #include "SkSurface.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
-#include "core/tests/FakeWebGraphicsContext3D.h"
+#include "core/platform/testing/FakeWebGraphicsContext3D.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 

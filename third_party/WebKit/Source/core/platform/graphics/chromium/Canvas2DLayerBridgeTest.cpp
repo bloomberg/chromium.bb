@@ -29,7 +29,7 @@
 #include "SkDeferredCanvas.h"
 #include "SkSurface.h"
 #include "core/platform/graphics/ImageBuffer.h"
-#include "core/tests/FakeWebGraphicsContext3D.h"
+#include "core/platform/testing/FakeWebGraphicsContext3D.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "third_party/skia/include/core/SkDevice.h"
