@@ -141,7 +141,8 @@ class DeviceManagementServiceIntegrationTest
     std::string service_url((this->*(GetParam()))());
     service_.reset(new DeviceManagementService(
         g_browser_process->system_request_context(),
-        service_url));
+        service_url,
+        "UserAgent"));
     service_->ScheduleInitialization(0);
   }
 

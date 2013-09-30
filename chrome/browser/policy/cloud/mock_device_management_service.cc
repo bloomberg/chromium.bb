@@ -21,7 +21,7 @@ class MockRequestJobBase : public DeviceManagementRequestJob {
  public:
   MockRequestJobBase(JobType type,
                      MockDeviceManagementService* service)
-      : DeviceManagementRequestJob(type),
+      : DeviceManagementRequestJob(type, std::string()),
         service_(service) {}
   virtual ~MockRequestJobBase() {}
 
@@ -121,6 +121,7 @@ MockDeviceManagementJob::~MockDeviceManagementJob() {}
 MockDeviceManagementService::MockDeviceManagementService()
     : DeviceManagementService(new net::TestURLRequestContextGetter(
                                   base::MessageLoopProxy::current()),
+                              std::string(),
                               std::string()) {}
 
 MockDeviceManagementService::~MockDeviceManagementService() {}

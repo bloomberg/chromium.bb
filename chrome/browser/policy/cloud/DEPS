@@ -89,9 +89,6 @@ specific_include_rules = {
 
   r"device_management_service\.cc": [
     "+chrome/browser/net/basic_http_user_agent_settings.h",
-    "+chrome/browser/net/chrome_net_log.h",
-    "+chrome/common/chrome_version_info.h",
-    "+content/public/common/content_client.h",
     "+chrome/browser/chromeos/system/statistics_provider.h",
   ],
 

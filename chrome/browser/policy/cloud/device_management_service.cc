@@ -13,9 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "chrome/browser/net/basic_http_user_agent_settings.h"
-#include "chrome/browser/net/chrome_net_log.h"
-#include "chrome/common/chrome_version_info.h"
-#include "content/public/common/content_client.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -41,7 +38,6 @@ namespace policy {
 
 namespace {
 
-const char kValueAgent[] = "%s %s(%s)";
 const char kValuePlatform[] = "%s|%s|%s";
 
 const char kPostContentType[] = "application/protobuf";
@@ -148,19 +144,6 @@ const char* JobTypeToRequestType(DeviceManagementRequestJob::JobType type) {
   }
   NOTREACHED() << "Invalid job type " << type;
   return "";
-}
-
-const std::string& GetAgentString() {
-  CR_DEFINE_STATIC_LOCAL(std::string, agent, ());
-  if (!agent.empty())
-    return agent;
-
-  chrome::VersionInfo version_info;
-  agent = base::StringPrintf(kValueAgent,
-                             version_info.Name().c_str(),
-                             version_info.Version().c_str(),
-                             version_info.LastChange().c_str());
-  return agent;
 }
 
 const std::string& GetPlatformString() {
@@ -286,6 +269,7 @@ DeviceManagementRequestContextGetter::GetNetworkTaskRunner() const {
 class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
  public:
   DeviceManagementRequestJobImpl(JobType type,
+                                 const std::string& user_agent,
                                  DeviceManagementService* service);
   virtual ~DeviceManagementRequestJobImpl();
 
@@ -331,8 +315,9 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
 
 DeviceManagementRequestJobImpl::DeviceManagementRequestJobImpl(
     JobType type,
+    const std::string& user_agent,
     DeviceManagementService* service)
-    : DeviceManagementRequestJob(type),
+    : DeviceManagementRequestJob(type, user_agent),
       service_(service),
       bypass_proxy_(false),
       retries_count_(0) {}
@@ -509,11 +494,13 @@ em::DeviceManagementRequest* DeviceManagementRequestJob::GetRequest() {
   return &request_;
 }
 
-DeviceManagementRequestJob::DeviceManagementRequestJob(JobType type) {
+DeviceManagementRequestJob::DeviceManagementRequestJob(
+    JobType type,
+    const std::string& user_agent) {
   AddParameter(dm_protocol::kParamRequest, JobTypeToRequestType(type));
   AddParameter(dm_protocol::kParamDeviceType, dm_protocol::kValueDeviceType);
   AddParameter(dm_protocol::kParamAppType, dm_protocol::kValueAppType);
-  AddParameter(dm_protocol::kParamAgent, GetAgentString());
+  AddParameter(dm_protocol::kParamAgent, user_agent);
   AddParameter(dm_protocol::kParamPlatform, GetPlatformString());
 }
 
@@ -543,7 +530,7 @@ DeviceManagementService::~DeviceManagementService() {
 
 DeviceManagementRequestJob* DeviceManagementService::CreateJob(
     DeviceManagementRequestJob::JobType type) {
-  return new DeviceManagementRequestJobImpl(type, this);
+  return new DeviceManagementRequestJobImpl(type, user_agent_, this);
 }
 
 void DeviceManagementService::ScheduleInitialization(int64 delay_milliseconds) {
@@ -582,9 +569,11 @@ void DeviceManagementService::Shutdown() {
 
 DeviceManagementService::DeviceManagementService(
     scoped_refptr<net::URLRequestContextGetter> request_context,
-    const std::string& server_url)
+    const std::string& server_url,
+    const std::string& user_agent)
     : request_context_(request_context),
       server_url_(server_url),
+      user_agent_(user_agent),
       initialized_(false),
       weak_ptr_factory_(this) {
 }

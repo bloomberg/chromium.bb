@@ -18,6 +18,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/policy/policy_statistics_collector.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -117,6 +119,14 @@ base::FilePath GetManagedPolicyPath() {
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
+std::string GetUserAgent() {
+  chrome::VersionInfo version_info;
+  return base::StringPrintf("%s %s(%s)",
+                            version_info.Name().c_str(),
+                            version_info.Version().c_str(),
+                            version_info.LastChange().c_str());
+}
+
 }  // namespace
 
 BrowserPolicyConnector::BrowserPolicyConnector()
@@ -179,8 +189,8 @@ void BrowserPolicyConnector::Init(
   local_state_ = local_state;
   request_context_ = request_context;
 
-  device_management_service_.reset(
-      new DeviceManagementService(request_context, GetDeviceManagementUrl()));
+  device_management_service_.reset(new DeviceManagementService(
+      request_context, GetDeviceManagementUrl(), GetUserAgent()));
   device_management_service_->ScheduleInitialization(
       kServiceInitializationStartupDelay);
 
