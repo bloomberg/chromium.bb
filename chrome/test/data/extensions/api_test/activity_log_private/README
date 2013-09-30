@@ -43,7 +43,7 @@ Adding a new test:
 
         testCases.push({
           func: function triggerMyFunctionCall() {
-             chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
+             chrome.runtime.sendMessage(FRIEND_EXTENSION_ID,
                                         'my_function_call_id',
                                         function response() { });
           },
