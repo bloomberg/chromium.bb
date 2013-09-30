@@ -1,0 +1,16 @@
+CONSOLE MESSAGE: line 6: XHR loaded: 1
+Tests that XHR redirects preserve http-method.
+
+PUT http://127.0.0.1:8000/inspector/network/resources/redirect.cgi?status=301&ttl=3
+  actual http method was: PUT
+
+PUT http://127.0.0.1:8000/inspector/network/resources/redirect.cgi?status=301&ttl=2
+  actual http method was: PUT
+
+PUT http://127.0.0.1:8000/inspector/network/resources/redirect.cgi?status=301&ttl=1
+  actual http method was: PUT
+
+PUT http://127.0.0.1:8000/inspector/network/resources/redirect.cgi?status=301&ttl=0
+  actual http method was: PUT
+
+

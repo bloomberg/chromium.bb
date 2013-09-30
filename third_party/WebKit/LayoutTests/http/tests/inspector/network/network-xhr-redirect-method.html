@@ -1,0 +1,42 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+
+function test()
+{
+    var offset;
+    var requests = WebInspector.panel("network").requests;
+
+    InspectorTest.resetInspectorResourcesData(step1);
+
+    function step1()
+    {
+        offset = requests.length;
+        InspectorTest.makeSimpleXHR("PUT", "resources/redirect.cgi?status=301&ttl=3", true, step2);
+    }
+
+    function step2()
+    {
+        requests[offset].requestContent(step3);
+    }
+
+    function step3() {
+        for (var i = 0; i < requests.length; ++i) {
+            var request = requests[i];
+            var requestMethod = request.requestMethod;
+            var actualMethod = request.responseHeaderValue("request-method");
+            InspectorTest.addResult(requestMethod + " " + request.url);
+            InspectorTest.addResult("  actual http method was: " + actualMethod);
+            InspectorTest.addResult("");
+        }
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that XHR redirects preserve http-method.</p>
+</body>
+</html>
