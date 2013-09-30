@@ -12802,6 +12802,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         (default)
       </message>
 
+      <message name="IDS_FILE_BROWSER_VIEW_TYPE_LABEL" desc="In File Manager, the label for the button menu to switch view types (e.g., list view or thumbnail view)">
+        View
+      </message>
       <message name="IDS_FILE_BROWSER_DETAIL_VIEW_TOOLTIP" desc="Tooltip for the List View button.">
         List view
       </message>
