@@ -82,7 +82,8 @@ class QuicEndToEndTest : public PlatformTest {
         ssl_config_service_(new SSLConfigServiceDefaults),
         proxy_service_(ProxyService::CreateDirect()),
         auth_handler_factory_(
-            HttpAuthHandlerFactory::CreateDefault(&host_resolver_)) {
+            HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
+        strike_register_no_startup_period_(false) {
     request_.method = "GET";
     request_.url = GURL("http://www.google.com/");
     request_.load_flags = 0;
