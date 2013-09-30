@@ -9,7 +9,6 @@ Building
   :backlinks: none
   :depth: 2
 
-
 Introduction
 ============
 

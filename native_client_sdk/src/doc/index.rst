@@ -21,6 +21,7 @@ Contents:
    devguide/devcycle/building.rst
    devguide/devcycle/running.rst
    devguide/devcycle/debugging.rst
+   devguide/devcycle/vs-addin.rst
    devguide/devcycle/dynamic-loading.rst
    devguide/coding/3D-graphics.rst
    devguide/coding/audio.rst
