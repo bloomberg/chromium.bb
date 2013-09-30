@@ -179,10 +179,10 @@ fileOperationUtil.copyTo = function(
       return;
 
     switch (status.type) {
-      case 'begin_entry_copy':
+      case 'begin_copy_entry':
         break;
 
-      case 'end_entry_copy':
+      case 'end_copy_entry':
         entryChangedCallback(status.sourceUrl, status.destinationUrl);
         break;
 
@@ -246,6 +246,8 @@ fileOperationUtil.copyTo = function(
 };
 
 /**
+ * DEPRECATED: This method is no longer used.
+ * TODO(hidehiko): Remove this.
  * Copies source to parent with the name newName recursively.
  *
  * @param {Entry} source The entry to be copied.
@@ -1005,7 +1007,7 @@ FileOperationManager.CopyTask.processEntry_ = function(
           return;
         }
 
-        cancelCallback = fileOperationUtil.copyRecursively(
+        cancelCallback = fileOperationUtil.copyTo(
             sourceEntry, destinationEntry, destinationName,
             entryChangedCallback, progressCallback,
             function(entry) {
