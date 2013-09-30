@@ -2542,7 +2542,14 @@ weston_compositor_dpms(struct weston_compositor *compositor,
 WL_EXPORT void
 weston_compositor_wake(struct weston_compositor *compositor)
 {
-	switch (compositor->state) {
+	uint32_t old_state = compositor->state;
+
+	/* The state needs to be changed before emitting the wake
+	 * signal because that may try to schedule a repaint which
+	 * will not work if the compositor is still sleeping */
+	compositor->state = WESTON_COMPOSITOR_ACTIVE;
+
+	switch (old_state) {
 	case WESTON_COMPOSITOR_SLEEPING:
 		weston_compositor_dpms(compositor, WESTON_DPMS_ON);
 		/* fall through */
@@ -2551,7 +2558,6 @@ weston_compositor_wake(struct weston_compositor *compositor)
 		wl_signal_emit(&compositor->wake_signal, compositor);
 		/* fall through */
 	default:
-		compositor->state = WESTON_COMPOSITOR_ACTIVE;
 		wl_event_source_timer_update(compositor->idle_source,
 					     compositor->idle_time * 1000);
 	}
