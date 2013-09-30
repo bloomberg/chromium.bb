@@ -8,13 +8,17 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
-#include "chrome/browser/profiles/profile_loader.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_list/keep_alive_service.h"
+#include "chrome/browser/ui/app_list/profile_loader.h"
+
+class ProfileStore;
 
 namespace base {
 class FilePath;
@@ -26,36 +30,43 @@ class AppListServiceImpl : public AppListService,
  public:
   static void RecordAppListLaunch();
   static void RecordAppListAppLaunch();
-
- protected:
-  AppListServiceImpl();
   virtual ~AppListServiceImpl();
 
-  Profile* profile() const { return profile_; }
-  void SetProfile(Profile* new_profile);
-  void InvalidatePendingProfileLoads();
-  ProfileLoader& profile_loader() { return profile_loader_; }
-  const ProfileLoader& profile_loader() const { return profile_loader_; }
-
-  // Process command line flags shared between desktop implementations of the
-  // app list. Currently this allows for enabling or disabling the app list.
-  void HandleCommandLineFlags(Profile* initial_profile);
-
-  // Create a platform-specific shortcut for the app list.
-  virtual void CreateShortcut();
+  // Constructor used for testing.
+  AppListServiceImpl(const CommandLine& command_line,
+                     PrefService* local_state,
+                     scoped_ptr<ProfileStore> profile_store,
+                     scoped_ptr<KeepAliveService> keep_alive_service);
 
   // AppListService overrides:
   virtual void SetAppListNextPaintCallback(
       const base::Closure& callback) OVERRIDE;
   virtual void HandleFirstRun() OVERRIDE;
   virtual void Init(Profile* initial_profile) OVERRIDE;
-
-  // Returns the app list path configured in BrowserProcess::local_state().
   virtual base::FilePath GetProfilePath(
       const base::FilePath& user_data_dir) OVERRIDE;
   virtual void SetProfilePath(const base::FilePath& profile_path) OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void EnableAppList(Profile* initial_profile) OVERRIDE;
+
+ protected:
+  AppListServiceImpl();
+
+  Profile* profile() const { return profile_; }
+  void SetProfile(Profile* new_profile);
+  void InvalidatePendingProfileLoads();
+  ProfileLoader& profile_loader() { return *profile_loader_; }
+  const ProfileLoader& profile_loader() const { return *profile_loader_; }
+
+  // Process command line flags shared between desktop implementations of the
+  // app list. Currently this allows for enabling or disabling the app list.
+  void HandleCommandLineFlags(Profile* initial_profile);
+
+  // Records UMA stats that try to approximate usage after a delay.
+  void SendUsageStats();
+
+  // Create a platform-specific shortcut for the app list.
+  virtual void CreateShortcut();
 
  private:
   static void SendAppListStats();
@@ -76,16 +87,13 @@ class AppListServiceImpl : public AppListService,
 
   // The profile the AppList is currently displaying.
   Profile* profile_;
-
-  // Incremented to indicate that pending profile loads are no longer valid.
-  int profile_load_sequence_id_;
-
-  // How many profile loads are pending.
-  int pending_profile_loads_;
+  scoped_ptr<ProfileStore> profile_store_;
 
   base::WeakPtrFactory<AppListServiceImpl> weak_factory_;
 
-  ProfileLoader profile_loader_;
+  CommandLine command_line_;
+  PrefService* local_state_;
+  scoped_ptr<ProfileLoader> profile_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceImpl);
 };
