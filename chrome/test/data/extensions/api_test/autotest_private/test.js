@@ -17,6 +17,10 @@ chrome.test.runTests([
     chrome.autotestPrivate.shutdown(true);
     chrome.test.succeed();
   },
+  function lockScreen() {
+    chrome.autotestPrivate.lockScreen();
+    chrome.test.succeed();
+  },
   function simulateAsanMemoryBug() {
     chrome.autotestPrivate.simulateAsanMemoryBug();
     chrome.test.succeed();
