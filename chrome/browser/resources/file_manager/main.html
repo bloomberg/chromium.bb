@@ -154,9 +154,9 @@
                i18n-values="label:CREATE_FOLDER_SHORTCUT_BUTTON_LABEL">
       <command id="remove-folder-shortcut"
                i18n-values="label:REMOVE_FOLDER_SHORTCUT_BUTTON_LABEL">
-      <command id="newfolder" i18n-values="label:NEW_FOLDER_BUTTON_LABEL"
+      <command id="new-folder" i18n-values="label:NEW_FOLDER_BUTTON_LABEL"
                shortcut="U+0045-Ctrl">
-      <command id="newwindow" i18n-values="label:NEW_WINDOW_BUTTON_LABEL">
+      <command id="new-window" i18n-values="label:NEW_WINDOW_BUTTON_LABEL">
       <command id="change-default-app"
                i18n-values="label:CHANGE_DEFAULT_APP_BUTTON_LABEL" hidden>
 
@@ -215,7 +215,7 @@
       <menuitem command="#delete" i18n-content="DELETE_BUTTON_LABEL"></menuitem>
       <menuitem command="#zip-selection"></menuitem>
       <hr visibleif="saveas-file full-page">
-      <menuitem command="#newfolder"
+      <menuitem command="#new-folder"
                 visibleif="saveas-file full-page"></menuitem>
     </menu>
 
@@ -231,8 +231,8 @@
     </menu>
 
     <menu id="gear-menu" class="chrome-menu" showShortcuts>
-      <menuitem id="gear-menu-newwindow" command="#newwindow"></menuitem>
-      <menuitem id="gear-menu-newfolder" command="#newfolder"></menuitem>
+      <menuitem id="gear-menu-newwindow" command="#new-window"></menuitem>
+      <menuitem id="gear-menu-newfolder" command="#new-folder"></menuitem>
       <menuitem id="gear-menu-change-default-app"
                 command="#change-default-app"></menuitem>
       <hr id="drive-separator">
@@ -401,8 +401,8 @@
     <div class="dialog-footer progressable" tabindex="-1"
          visibleif="saveas-file folder">
       <div class="left">
-        <button id="new-folder" i18n-content="NEW_FOLDER_BUTTON_LABEL"
-                visibleif="saveas-file folder" command="#newfolder"
+        <button id="new-folder-button" i18n-content="NEW_FOLDER_BUTTON_LABEL"
+                visibleif="saveas-file folder" command="#new-folder"
                 tabindex="5">
         </button>
         <div id="filename-input-box">

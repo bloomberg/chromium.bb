@@ -29,7 +29,19 @@ function FileManager() {
 FileManager.THUMBNAIL_SHOW_DELAY = 100;
 
 FileManager.prototype = {
-  __proto__: cr.EventTarget.prototype
+  __proto__: cr.EventTarget.prototype,
+  get directoryModel() {
+    return this.directoryModel_;
+  },
+  get navigationList() {
+    return this.navigationList_;
+  },
+  get document() {
+    return this.document_;
+  },
+  get fileTransferController() {
+    return this.fileTransferController_;
+  }
 };
 
 /**
@@ -463,104 +475,25 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initCommands_ = function() {
+    var handler = new CommandHandler(this);
+
+    // TODO(hirono): Move the following block to the UI part.
     var commandButtons = this.dialogDom_.querySelectorAll('button[command]');
     for (var j = 0; j < commandButtons.length; j++)
       CommandButton.decorate(commandButtons[j]);
 
-    // TODO(dzvorygin): Here we use this hack, since 'hidden' is standard
-    // attribute and we can't use it's setter as usual.
-    cr.ui.Command.prototype.setHidden = function(value) {
-      this.__lookupSetter__('hidden').call(this, value);
-    };
-
-    var doc = this.document_;
-    var handler = new CommandHandler(doc);
-
-    // Required to handle the command outside of the container, on the footer.
-    // TODO(mtomasz): Remove after fixing crbug.com/275235.
-    handler.registerCommand('newfolder', Commands.newFolderCommand, this,
-                            this.directoryModel_);
-
-    handler.registerCommand('newwindow', Commands.newWindowCommand, this,
-                            this.directoryModel_);
-
-    handler.registerCommand('change-default-app',
-                            Commands.changeDefaultAppCommand, this);
-
-    handler.registerCommand('unmount', Commands.unmountCommand, this);
-
-    handler.registerCommand('import-photos', Commands.importCommand,
-                            this.navigationList_);
-
-    handler.registerCommand('format', Commands.formatCommand, this,
-                            this.directoryModel_);
-
-    handler.registerCommand('delete', Commands.deleteFileCommand, this);
-
-    handler.registerCommand('rename', Commands.renameFileCommand, this);
-
-    handler.registerCommand('volume-help', Commands.volumeHelpCommand, this);
-
-    handler.registerCommand('drive-buy-more-space',
-                            Commands.driveBuySpaceCommand, this);
-
-    handler.registerCommand('drive-clear-local-cache',
-                            Commands.driveClearCacheCommand, this);
-
-    handler.registerCommand('drive-go-to-drive',
-                            Commands.driveGoToDriveCommand, this);
-
-    handler.registerCommand('paste', Commands.pasteFileCommand, doc,
-                            this.fileTransferController_);
-
-    handler.registerCommand('open-with', Commands.openWithCommand, this);
-
-    handler.registerCommand('toggle-pinned', Commands.togglePinnedCommand,
-                            this);
-
-    handler.registerCommand('zip-selection', Commands.zipSelectionCommand,
-                            this);
-
-    handler.registerCommand('share', Commands.shareCommand, this);
-
-    handler.registerCommand('create-folder-shortcut',
-                            Commands.createFolderShortcutCommand, this);
-
-    handler.registerCommand('remove-folder-shortcut',
-                            Commands.removeFolderShortcutCommand, this);
-
-    handler.registerCommand('search', Commands.searchCommand, this,
-                            this.dialogDom_.querySelector('#search-box'));
-
-    // Register commands with CTRL-1..9 shortcuts for switching between
-    // volumes.
-    for (var i = 1; i <= 9; i++) {
-      handler.registerCommand('volume-switch-' + i,
-                              Commands.volumeSwitchCommand,
-                              this.navigationList_,
-                              i);
-    }
-
-    handler.registerCommand('zoom-in', Commands.zoomInCommand);
-    handler.registerCommand('zoom-out', Commands.zoomOutCommand);
-    handler.registerCommand('zoom-reset', Commands.zoomResetCommand);
-
-    handler.registerCommand('cut', Commands.defaultCommand, doc);
-    handler.registerCommand('copy', Commands.defaultCommand, doc);
-
     var inputs = this.dialogDom_.querySelectorAll(
         'input[type=text], input[type=search], textarea');
-
-    for (i = 0; i < inputs.length; i++) {
+    for (var i = 0; i < inputs.length; i++) {
       cr.ui.contextMenuHandler.setContextMenu(inputs[i], this.textContextMenu_);
       this.registerInputCommands_(inputs[i]);
     }
 
     cr.ui.contextMenuHandler.setContextMenu(this.renameInput_,
-        this.textContextMenu_);
+                                            this.textContextMenu_);
     this.registerInputCommands_(this.renameInput_);
-
-    doc.addEventListener('command', this.setNoHover_.bind(this, true));
+    this.document_.addEventListener('command',
+                                    this.setNoHover_.bind(this, true));
   };
 
   /**
@@ -570,7 +503,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.registerInputCommands_ = function(node) {
-    var defaultCommand = Commands.defaultCommand;
     CommandUtil.forceDefaultHandler(node, 'cut');
     CommandUtil.forceDefaultHandler(node, 'copy');
     CommandUtil.forceDefaultHandler(node, 'paste');
@@ -3698,7 +3630,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                                                    onDirectoryChanged);
           self.directoryModel_.selectEntry(entry.name);
           openIt();
-        }
+        };
         // changeDirectory() returns immediately. We should wait until the
         // directory scan is complete.
         self.directoryModel_.addEventListener('scan-completed',
