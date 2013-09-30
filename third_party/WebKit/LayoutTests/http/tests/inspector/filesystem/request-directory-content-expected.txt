@@ -3,7 +3,7 @@ Tests requestDirectoryContent command.
 errorCode: 2
 entries: (null)
 
-errorCode: 8
+errorCode: 5
 entries: (null)
 
 errorCode: 0

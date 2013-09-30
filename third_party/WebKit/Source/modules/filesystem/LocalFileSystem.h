@@ -47,8 +47,7 @@ class LocalFileSystemBase {
 public:
     virtual ~LocalFileSystemBase();
 
-    // Does not create the new file system if it doesn't exist, just reads it if available.
-    void readFileSystem(ScriptExecutionContext*, FileSystemType, PassOwnPtr<AsyncFileSystemCallbacks>);
+    void resolveURL(ScriptExecutionContext*, const KURL&, PassOwnPtr<AsyncFileSystemCallbacks>);
 
     void requestFileSystem(ScriptExecutionContext*, FileSystemType, long long size, PassOwnPtr<AsyncFileSystemCallbacks>);
 

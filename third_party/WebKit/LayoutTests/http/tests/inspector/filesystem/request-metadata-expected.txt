@@ -3,7 +3,7 @@ Tests requestMetadata command.
 errorCode: 2
 metadata: (null)
 
-errorCode: 8
+errorCode: 5
 metadata: (null)
 
 errorCode: 0
