@@ -270,10 +270,8 @@ void FrameLoader::clear(ClearOptions options)
     m_frame->editor().clear();
     m_frame->document()->cancelParsing();
     m_frame->document()->stopActiveDOMObjects();
-    if (m_frame->document()->confusingAndOftenMisusedAttached()) {
-        m_frame->document()->prepareForDestruction();
-        m_frame->document()->removeFocusedElementOfSubtree(m_frame->document());
-    }
+    m_frame->document()->prepareForDestruction();
+    m_frame->document()->removeFocusedElementOfSubtree(m_frame->document());
 
     // Do this after detaching the document so that the unload event works.
     if (options & ClearWindowProperties) {
