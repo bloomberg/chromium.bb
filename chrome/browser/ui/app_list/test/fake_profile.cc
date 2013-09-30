@@ -8,17 +8,12 @@ FakeProfile::FakeProfile(const std::string& name)
     : name_(name) {
 }
 
-FakeProfile::FakeProfile(const std::string& name, const base::FilePath& path)
-    : name_(name),
-      path_(path) {
-}
-
 std::string FakeProfile::GetProfileName() {
   return name_;
 }
 
 base::FilePath FakeProfile::GetPath() const {
-  return path_;
+  return base::FilePath();
 }
 
 bool FakeProfile::IsOffTheRecord() const {

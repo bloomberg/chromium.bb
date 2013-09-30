@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_KEEP_ALIVE_SERVICE_IMPL_H_
-#define CHROME_BROWSER_UI_APP_LIST_KEEP_ALIVE_SERVICE_IMPL_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_APP_LIST_KEEP_ALIVE_SERVICE_IMPL_H_
+#define CHROME_BROWSER_UI_VIEWS_APP_LIST_KEEP_ALIVE_SERVICE_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/app_list/keep_alive_service.h"
+#include "chrome/browser/ui/views/app_list/keep_alive_service.h"
 
 class ScopedKeepAlive {
  public:
@@ -35,4 +35,4 @@ class KeepAliveServiceImpl : public KeepAliveService {
 
 
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_KEEP_ALIVE_SERVICE_IMPL_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_APP_LIST_KEEP_ALIVE_SERVICE_IMPL_H_

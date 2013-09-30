@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/profile_loader.h"
+#include "chrome/browser/profiles/profile_loader.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -10,10 +10,8 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 
-ProfileLoader::ProfileLoader(ProfileStore* profile_store,
-                             scoped_ptr<KeepAliveService> keep_alive_service)
-  : profile_store_(profile_store),
-    keep_alive_service_(keep_alive_service.Pass()),
+ProfileLoader::ProfileLoader(ProfileManager* profile_manager)
+  : profile_manager_(profile_manager),
     profile_load_sequence_id_(0),
     pending_profile_loads_(0),
     weak_factory_(this) {
@@ -35,37 +33,67 @@ void ProfileLoader::LoadProfileInvalidatingOtherLoads(
     base::Callback<void(Profile*)> callback) {
   InvalidatePendingProfileLoads();
 
-  Profile* profile = profile_store_->GetProfileByPath(profile_file_path);
+  Profile* profile = GetProfileByPath(profile_file_path);
   if (profile) {
     callback.Run(profile);
     return;
   }
 
   IncrementPendingProfileLoads();
-  profile_store_->LoadProfileAsync(
+  CreateProfileAsync(
       profile_file_path,
       base::Bind(&ProfileLoader::OnProfileLoaded,
                  weak_factory_.GetWeakPtr(),
                  profile_load_sequence_id_,
-                 callback));
+                 callback),
+      string16(), string16(), std::string());
+}
+
+Profile* ProfileLoader::GetProfileByPath(const base::FilePath& path) {
+  return profile_manager_->GetProfileByPath(path);
+}
+
+void ProfileLoader::CreateProfileAsync(
+    const base::FilePath& profile_path,
+    const ProfileManager::CreateCallback& callback,
+    const string16& name,
+    const string16& icon_url,
+    const std::string& managed_user_id) {
+  profile_manager_->CreateProfileAsync(
+      profile_path, callback, name, icon_url, managed_user_id);
 }
 
 void ProfileLoader::OnProfileLoaded(int profile_load_sequence_id,
                                     base::Callback<void(Profile*)> callback,
-                                    Profile* profile) {
-  DecrementPendingProfileLoads();
-  if (profile_load_sequence_id == profile_load_sequence_id_)
-    callback.Run(profile);
+                                    Profile* profile,
+                                    Profile::CreateStatus status) {
+  switch (status) {
+    case Profile::CREATE_STATUS_CREATED:
+      break;
+    case Profile::CREATE_STATUS_INITIALIZED:
+      if (profile_load_sequence_id == profile_load_sequence_id_)
+        callback.Run(profile);
+      DecrementPendingProfileLoads();
+      break;
+    case Profile::CREATE_STATUS_LOCAL_FAIL:
+    case Profile::CREATE_STATUS_REMOTE_FAIL:
+    case Profile::CREATE_STATUS_CANCELED:
+      DecrementPendingProfileLoads();
+      break;
+    case Profile::MAX_CREATE_STATUS:
+      NOTREACHED();
+      break;
+  }
 }
 
 void ProfileLoader::IncrementPendingProfileLoads() {
   pending_profile_loads_++;
   if (pending_profile_loads_ == 1)
-    keep_alive_service_->EnsureKeepAlive();
+    chrome::StartKeepAlive();
 }
 
 void ProfileLoader::DecrementPendingProfileLoads() {
   pending_profile_loads_--;
   if (pending_profile_loads_ == 0)
-    keep_alive_service_->FreeKeepAlive();
+    chrome::EndKeepAlive();
 }

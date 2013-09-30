@@ -6,6 +6,7 @@
 
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/app_list/app_list_item_model.h"
+#include "ui/base/layout.h"
 #include "ui/gfx/image/image_skia_rep.h"
 
 namespace {
@@ -87,7 +88,7 @@ bool PickleImage(Pickle* pickle, const gfx::ImageSkia& image) {
   pickle->WriteInt(static_cast<int>(reps.size()));
   for (std::vector<gfx::ImageSkiaRep>::const_iterator it = reps.begin();
        it != reps.end(); ++it) {
-    pickle->WriteFloat(it->scale());
+    pickle->WriteInt(static_cast<int>(ui::GetSupportedScaleFactor(it->scale())));
     pickle->WriteInt(it->pixel_width());
     pickle->WriteInt(it->pixel_height());
     ImageFormat format = NONE;
@@ -110,8 +111,8 @@ bool UnpickleImage(PickleIterator* it, gfx::ImageSkia* out) {
 
   gfx::ImageSkia result;
   for (int i = 0; i < rep_count; ++i) {
-    float scale = 0.0f;
-    if (!it->ReadFloat(&scale))
+    int scale_factor = 0;
+    if (!it->ReadInt(&scale_factor))
       return false;
 
     int width = 0;
@@ -146,6 +147,7 @@ bool UnpickleImage(PickleIterator* it, gfx::ImageSkia* out) {
       SkAutoLockPixels lock(bitmap);
       memcpy(bitmap.getPixels(), pixels, bitmap.getSize());
     }
+    float scale = ui::GetImageScale(static_cast<ui::ScaleFactor>(scale_factor));
     result.AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
   }
 

@@ -32,10 +32,10 @@
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/app_list_service_win.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
-#include "chrome/browser/ui/app_list/keep_alive_service_impl.h"
 #include "chrome/browser/ui/apps/app_metro_infobar_delegate_win.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/views/app_list/keep_alive_service_impl.h"
 #include "chrome/browser/ui/views/app_list/win/activation_tracker.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_shower.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_view_factory.h"
@@ -654,7 +654,6 @@ void AppListController::Init(Profile* initial_profile) {
 
   MigrateAppLauncherEnabledPref();
   HandleCommandLineFlags(initial_profile);
-  SendUsageStats();
 }
 
 void AppListController::CreateForProfile(Profile* profile) {

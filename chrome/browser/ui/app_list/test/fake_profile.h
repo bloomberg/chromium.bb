@@ -26,7 +26,6 @@ class ResourceContext;
 class FakeProfile : public Profile {
  public:
   explicit FakeProfile(const std::string& name);
-  FakeProfile(const std::string& name, const base::FilePath& path);
 
   // Profile overrides.
   virtual std::string GetProfileName() OVERRIDE;
@@ -99,7 +98,6 @@ class FakeProfile : public Profile {
 
  private:
   std::string name_;
-  base::FilePath path_;
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_TEST_FAKE_PROFILE_H_

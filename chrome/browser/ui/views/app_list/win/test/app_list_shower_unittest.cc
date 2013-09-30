@@ -4,9 +4,8 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/keep_alive_service.h"
-#include "chrome/browser/ui/app_list/test/fake_keep_alive_service.h"
 #include "chrome/browser/ui/app_list/test/fake_profile.h"
+#include "chrome/browser/ui/views/app_list/keep_alive_service.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_shower.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_view_factory.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_view_win.h"
@@ -75,6 +74,26 @@ class FakeFactory : public AppListViewFactory {
   int views_created_;
 };
 
+class FakeKeepAliveService : public KeepAliveService {
+ public:
+  FakeKeepAliveService()
+      : keeping_alive(false) {
+  }
+
+  virtual ~FakeKeepAliveService() {
+  }
+
+  virtual void EnsureKeepAlive() OVERRIDE {
+    keeping_alive = true;
+  }
+
+  virtual void FreeKeepAlive() OVERRIDE {
+    keeping_alive = false;
+  }
+
+  bool keeping_alive;
+};
+
 class AppListShowerUnitTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
@@ -109,14 +128,14 @@ class AppListShowerUnitTest : public testing::Test {
 TEST_F(AppListShowerUnitTest, Preconditions) {
   EXPECT_FALSE(shower_->IsAppListVisible());
   EXPECT_FALSE(shower_->HasView());
-  EXPECT_FALSE(keep_alive_service_->is_keeping_alive());
+  EXPECT_FALSE(keep_alive_service_->keeping_alive);
 }
 
 TEST_F(AppListShowerUnitTest, ShowForProfilePutsViewOnScreen) {
   shower_->ShowForProfile(profile1_.get());
   EXPECT_TRUE(shower_->IsAppListVisible());
   EXPECT_TRUE(shower_->HasView());
-  EXPECT_TRUE(keep_alive_service_->is_keeping_alive());
+  EXPECT_TRUE(keep_alive_service_->keeping_alive);
 }
 
 TEST_F(AppListShowerUnitTest, HidingViewRemovesKeepalive) {
@@ -124,7 +143,7 @@ TEST_F(AppListShowerUnitTest, HidingViewRemovesKeepalive) {
   shower_->DismissAppList();
   EXPECT_FALSE(shower_->IsAppListVisible());
   EXPECT_TRUE(shower_->HasView());
-  EXPECT_FALSE(keep_alive_service_->is_keeping_alive());
+  EXPECT_FALSE(keep_alive_service_->keeping_alive);
 }
 
 TEST_F(AppListShowerUnitTest, HideAndShowReusesView) {
@@ -146,7 +165,7 @@ TEST_F(AppListShowerUnitTest, CloseRemovesView) {
   shower_->CloseAppList();
   EXPECT_FALSE(shower_->IsAppListVisible());
   EXPECT_FALSE(shower_->HasView());
-  EXPECT_FALSE(keep_alive_service_->is_keeping_alive());
+  EXPECT_FALSE(keep_alive_service_->keeping_alive);
 }
 
 TEST_F(AppListShowerUnitTest, SwitchingProfiles) {
