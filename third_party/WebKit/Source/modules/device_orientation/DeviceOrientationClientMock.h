@@ -23,50 +23,46 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/platform/mock/DeviceOrientationClientMock.h"
+#ifndef DeviceOrientationClientMock_h
+#define DeviceOrientationClientMock_h
 
-#include "core/dom/DeviceOrientationController.h"
+#include "core/dom/DeviceOrientationClient.h"
+#include "core/platform/Timer.h"
+#include "modules/device_orientation/DeviceOrientationData.h"
+
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-DeviceOrientationClientMock::DeviceOrientationClientMock()
-    : m_controller(0)
-    , m_timer(this, &DeviceOrientationClientMock::timerFired)
-    , m_isUpdating(false)
-{
-}
+class DeviceOrientationController;
 
-void DeviceOrientationClientMock::setController(DeviceOrientationController* controller)
-{
-    ASSERT(!m_controller);
-    m_controller = controller;
-    ASSERT(m_controller);
-}
+// A mock implementation of DeviceOrientationClient used to test the feature in
+// DumpRenderTree. Embedders should should configure the Page object to use this
+// client when running DumpRenderTree.
+// FIXME: This belongs in Source/testing/runner, not compiled into shipping Blink!
+class DeviceOrientationClientMock : public DeviceOrientationClient {
+public:
+    DeviceOrientationClientMock();
 
-void DeviceOrientationClientMock::startUpdating()
-{
-    m_isUpdating = true;
-}
+    // DeviceOrientationClient
+    virtual void setController(DeviceOrientationController*) OVERRIDE;
+    virtual void startUpdating() OVERRIDE;
+    virtual void stopUpdating() OVERRIDE;
+    virtual DeviceOrientationData* lastOrientation() const OVERRIDE { return m_orientation.get(); }
+    virtual void deviceOrientationControllerDestroyed() OVERRIDE { }
 
-void DeviceOrientationClientMock::stopUpdating()
-{
-    m_isUpdating = false;
-    m_timer.stop();
-}
+    void setOrientation(PassRefPtr<DeviceOrientationData>);
 
-void DeviceOrientationClientMock::setOrientation(PassRefPtr<DeviceOrientationData> orientation)
-{
-    m_orientation = orientation;
-    if (m_isUpdating && !m_timer.isActive())
-        m_timer.startOneShot(0);
-}
+private:
+    void timerFired(Timer<DeviceOrientationClientMock>*);
 
-void DeviceOrientationClientMock::timerFired(Timer<DeviceOrientationClientMock>* timer)
-{
-    ASSERT_UNUSED(timer, timer == &m_timer);
-    m_timer.stop();
-    m_controller->didChangeDeviceOrientation(m_orientation.get());
-}
+    RefPtr<DeviceOrientationData> m_orientation;
+    DeviceOrientationController* m_controller;
+    Timer<DeviceOrientationClientMock> m_timer;
+    bool m_isUpdating;
+};
 
 } // namespace WebCore
+
+#endif // DeviceOrientationClientMock_h

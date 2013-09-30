@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebMIDIClientMock.h"
 
-#include "core/platform/mock/MIDIClientMock.h"
 #include "modules/webmidi/MIDIAccess.h"
+#include "modules/webmidi/MIDIClientMock.h"
 #include "public/web/WebMIDIPermissionRequest.h"
 
 namespace WebKit {

@@ -28,7 +28,7 @@
 
 #include "WebDeviceOrientation.h"
 #include "WebDeviceOrientationController.h"
-#include "core/platform/mock/DeviceOrientationClientMock.h"
+#include "modules/device_orientation/DeviceOrientationClientMock.h"
 
 namespace WebKit {
 

@@ -35,6 +35,7 @@
 
 namespace WebCore {
 
+// FIXME: This belongs in Source/testing/runner, not compiled into shipping Blink!
 class MIDIClientMock : public MIDIClient {
 public:
     MIDIClientMock();
