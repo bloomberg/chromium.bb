@@ -23,8 +23,6 @@
 
 namespace chromeos {
 
-class NetworkState;
-
 // Class which observes network state changes and calls registered callbacks.
 // State is considered changed if connection or the active network has been
 // changed. Also, it answers to the requests about current network state.
@@ -93,9 +91,6 @@ class NetworkStateInformer
   void UpdateStateAndNotify();
 
   void SendStateToObservers(ErrorScreenActor::ErrorReason reason);
-
-  State GetNetworkState(const NetworkState* network);
-  bool IsProxyConfigured(const NetworkState* network);
 
   State state_;
   std::string network_path_;

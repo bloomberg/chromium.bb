@@ -19,6 +19,64 @@
 
 namespace chromeos {
 
+namespace {
+
+bool IsProxyConfigured(const NetworkState* network) {
+  DCHECK(network);
+  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+  scoped_ptr<ProxyConfigDictionary> proxy_dict =
+      proxy_config::GetProxyConfigForNetwork(
+          NULL, g_browser_process->local_state(), *network, &onc_source);
+  ProxyPrefs::ProxyMode mode;
+  return (proxy_dict && proxy_dict->GetMode(&mode) &&
+          mode == ProxyPrefs::MODE_FIXED_SERVERS);
+}
+
+NetworkStateInformer::State GetStateForDefaultNetwork() {
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+  if (!network)
+    return NetworkStateInformer::OFFLINE;
+
+  if (NetworkPortalDetector::IsEnabledInCommandLine() &&
+      NetworkPortalDetector::GetInstance()) {
+    NetworkPortalDetector::CaptivePortalState state =
+        NetworkPortalDetector::GetInstance()->GetCaptivePortalState(network);
+    NetworkPortalDetector::CaptivePortalStatus status = state.status;
+    if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
+        NetworkState::StateIsConnecting(network->connection_state())) {
+      return NetworkStateInformer::CONNECTING;
+    }
+    // For proxy-less networks rely on shill's online state if
+    // NetworkPortalDetector's state of current network is unknown.
+    if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE ||
+        (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
+         !IsProxyConfigured(network) &&
+         network->connection_state() == shill::kStateOnline)) {
+      return NetworkStateInformer::ONLINE;
+    }
+    if (status ==
+            NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED &&
+        IsProxyConfigured(network)) {
+      return NetworkStateInformer::PROXY_AUTH_REQUIRED;
+    }
+    if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL ||
+        (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
+         network->connection_state() == shill::kStatePortal))
+      return NetworkStateInformer::CAPTIVE_PORTAL;
+  } else {
+    if (NetworkState::StateIsConnecting(network->connection_state()))
+      return NetworkStateInformer::CONNECTING;
+    if (network->connection_state() == shill::kStateOnline)
+      return NetworkStateInformer::ONLINE;
+    if (network->connection_state() == shill::kStatePortal)
+      return NetworkStateInformer::CAPTIVE_PORTAL;
+  }
+  return NetworkStateInformer::OFFLINE;
+}
+
+}  // namespace
+
 NetworkStateInformer::NetworkStateInformer()
     : state_(OFFLINE),
       weak_ptr_factory_(this) {
@@ -92,11 +150,10 @@ void NetworkStateInformer::OnPortalDetected() {
 bool NetworkStateInformer::UpdateState() {
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  State new_state = OFFLINE;
+  State new_state = GetStateForDefaultNetwork();
   std::string new_network_path;
   std::string new_network_type;
   if (default_network) {
-    new_state = GetNetworkState(default_network);
     new_network_path = default_network->path();
     new_network_type = default_network->type();
   }
@@ -127,58 +184,6 @@ void NetworkStateInformer::SendStateToObservers(
     ErrorScreenActor::ErrorReason reason) {
   FOR_EACH_OBSERVER(NetworkStateInformerObserver, observers_,
       UpdateState(reason));
-}
-
-NetworkStateInformer::State NetworkStateInformer::GetNetworkState(
-    const NetworkState* network) {
-  DCHECK(network);
-  if (NetworkPortalDetector::IsEnabledInCommandLine() &&
-      NetworkPortalDetector::GetInstance()) {
-    NetworkPortalDetector::CaptivePortalState state =
-        NetworkPortalDetector::GetInstance()->GetCaptivePortalState(network);
-    NetworkPortalDetector::CaptivePortalStatus status = state.status;
-    if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
-        NetworkState::StateIsConnecting(network->connection_state())) {
-      return CONNECTING;
-    }
-    // For proxy-less networks rely on shill's online state if
-    // NetworkPortalDetector's state of current network is unknown.
-    if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE ||
-        (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
-         !IsProxyConfigured(network) &&
-         network->connection_state() == shill::kStateOnline)) {
-      return ONLINE;
-    }
-    if (status ==
-        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED &&
-        IsProxyConfigured(network)) {
-      return PROXY_AUTH_REQUIRED;
-    }
-    if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL ||
-        (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
-         network->connection_state() == shill::kStatePortal))
-      return CAPTIVE_PORTAL;
-  } else {
-    if (NetworkState::StateIsConnecting(network->connection_state()))
-      return CONNECTING;
-    if (network->connection_state() == shill::kStateOnline)
-      return ONLINE;
-    if (network->connection_state() == shill::kStatePortal)
-      return CAPTIVE_PORTAL;
-  }
-  return OFFLINE;
-}
-
-bool NetworkStateInformer::IsProxyConfigured(const NetworkState* network) {
-  DCHECK(network);
-  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
-  scoped_ptr<ProxyConfigDictionary> proxy_dict =
-      proxy_config::GetProxyConfigForNetwork(
-          NULL, g_browser_process->local_state(), *network, &onc_source);
-  ProxyPrefs::ProxyMode mode;
-  return (proxy_dict &&
-          proxy_dict->GetMode(&mode) &&
-          mode == ProxyPrefs::MODE_FIXED_SERVERS);
 }
 
 }  // namespace chromeos
