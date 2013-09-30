@@ -29,10 +29,10 @@ TEST(EncryptorTest, EncryptDecrypt) {
 
   EXPECT_LT(0U, ciphertext.size());
 
-  std::string decypted;
-  EXPECT_TRUE(encryptor.Decrypt(ciphertext, &decypted));
+  std::string decrypted;
+  EXPECT_TRUE(encryptor.Decrypt(ciphertext, &decrypted));
 
-  EXPECT_EQ(plaintext, decypted);
+  EXPECT_EQ(plaintext, decrypted);
 }
 
 TEST(EncryptorTest, DecryptWrongKey) {
@@ -84,7 +84,7 @@ TEST(EncryptorTest, DecryptWrongKey) {
               static_cast<unsigned char>(ciphertext[i]));
   }
 
-  std::string decypted;
+  std::string decrypted;
 
   // This wrong key causes the last padding byte to be 5, which is a valid
   // padding length, and the second to last padding byte to be 137, which is
@@ -95,7 +95,7 @@ TEST(EncryptorTest, DecryptWrongKey) {
 #if !defined(USE_NSS) && !defined(OS_WIN) && !defined(OS_MACOSX)
   crypto::Encryptor decryptor;
   EXPECT_TRUE(decryptor.Init(wrong_key.get(), crypto::Encryptor::CBC, iv));
-  EXPECT_FALSE(decryptor.Decrypt(ciphertext, &decypted));
+  EXPECT_FALSE(decryptor.Decrypt(ciphertext, &decrypted));
 #endif
 
   // This demonstrates that not all wrong keys can be detected by padding
@@ -103,13 +103,13 @@ TEST(EncryptorTest, DecryptWrongKey) {
   // a valid padding block of length 1.
   crypto::Encryptor decryptor2;
   EXPECT_TRUE(decryptor2.Init(wrong_key2.get(), crypto::Encryptor::CBC, iv));
-  EXPECT_TRUE(decryptor2.Decrypt(ciphertext, &decypted));
+  EXPECT_TRUE(decryptor2.Decrypt(ciphertext, &decrypted));
 
   // This wrong key causes the last padding byte to be 253, which should be
   // rejected by all implementations.
   crypto::Encryptor decryptor3;
   EXPECT_TRUE(decryptor3.Init(wrong_key3.get(), crypto::Encryptor::CBC, iv));
-  EXPECT_FALSE(decryptor3.Decrypt(ciphertext, &decypted));
+  EXPECT_FALSE(decryptor3.Decrypt(ciphertext, &decrypted));
 }
 
 namespace {
@@ -205,11 +205,11 @@ void TestAESCTREncrypt(
   EXPECT_EQ(ciphertext_size, encrypted.size());
   EXPECT_EQ(0, memcmp(encrypted.data(), ciphertext, encrypted.size()));
 
-  std::string decypted;
+  std::string decrypted;
   EXPECT_TRUE(encryptor.SetCounter(init_counter_str));
-  EXPECT_TRUE(encryptor.Decrypt(encrypted, &decypted));
+  EXPECT_TRUE(encryptor.Decrypt(encrypted, &decrypted));
 
-  EXPECT_EQ(plaintext_str, decypted);
+  EXPECT_EQ(plaintext_str, decrypted);
 }
 
 void TestAESCTRMultipleDecrypt(
@@ -236,12 +236,12 @@ void TestAESCTRMultipleDecrypt(
 
   int offset = 0;
   for (size_t i = 0; i < arraysize(kTestDecryptSizes); ++i) {
-    std::string decypted;
+    std::string decrypted;
     size_t len = kTestDecryptSizes[i];
     EXPECT_TRUE(
-        encryptor.Decrypt(ciphertext_str.substr(offset, len), &decypted));
-    EXPECT_EQ(len, decypted.size());
-    EXPECT_EQ(0, memcmp(decypted.data(), plaintext + offset, len));
+        encryptor.Decrypt(ciphertext_str.substr(offset, len), &decrypted));
+    EXPECT_EQ(len, decrypted.size());
+    EXPECT_EQ(0, memcmp(decrypted.data(), plaintext + offset, len));
     offset += len;
   }
 }
@@ -296,10 +296,10 @@ TEST(EncryptorTest, EncryptDecryptCTR) {
   EXPECT_TRUE(encryptor.Encrypt(plaintext, &ciphertext));
   EXPECT_LT(0U, ciphertext.size());
 
-  std::string decypted;
+  std::string decrypted;
   EXPECT_TRUE(encryptor.SetCounter(kInitialCounter));
-  EXPECT_TRUE(encryptor.Decrypt(ciphertext, &decypted));
-  EXPECT_EQ(plaintext, decypted);
+  EXPECT_TRUE(encryptor.Decrypt(ciphertext, &decrypted));
+  EXPECT_EQ(plaintext, decrypted);
 
   plaintext = "0123456789012345";
   EXPECT_TRUE(encryptor.SetCounter(kInitialCounter));
@@ -307,8 +307,8 @@ TEST(EncryptorTest, EncryptDecryptCTR) {
   EXPECT_LT(0U, ciphertext.size());
 
   EXPECT_TRUE(encryptor.SetCounter(kInitialCounter));
-  EXPECT_TRUE(encryptor.Decrypt(ciphertext, &decypted));
-  EXPECT_EQ(plaintext, decypted);
+  EXPECT_TRUE(encryptor.Decrypt(ciphertext, &decrypted));
+  EXPECT_EQ(plaintext, decrypted);
 }
 
 TEST(EncryptorTest, CTRCounter) {
@@ -422,10 +422,10 @@ TEST(EncryptorTest, EncryptAES256CBC) {
   EXPECT_EQ(sizeof(kRawCiphertext), ciphertext.size());
   EXPECT_EQ(0, memcmp(ciphertext.data(), kRawCiphertext, ciphertext.size()));
 
-  std::string decypted;
-  EXPECT_TRUE(encryptor.Decrypt(ciphertext, &decypted));
+  std::string decrypted;
+  EXPECT_TRUE(encryptor.Decrypt(ciphertext, &decrypted));
 
-  EXPECT_EQ(plaintext, decypted);
+  EXPECT_EQ(plaintext, decrypted);
 }
 
 // Expected output derived from the NSS implementation.
@@ -451,9 +451,9 @@ TEST(EncryptorTest, EncryptAES128CBCRegression) {
   EXPECT_EQ(expected_ciphertext_hex, base::HexEncode(ciphertext.data(),
                                                      ciphertext.size()));
 
-  std::string decypted;
-  EXPECT_TRUE(encryptor.Decrypt(ciphertext, &decypted));
-  EXPECT_EQ(plaintext, decypted);
+  std::string decrypted;
+  EXPECT_TRUE(encryptor.Decrypt(ciphertext, &decrypted));
+  EXPECT_EQ(plaintext, decrypted);
 }
 
 // Expected output derived from the NSS implementation.
@@ -477,9 +477,9 @@ TEST(EncryptorTest, EncryptAES192CBCRegression) {
   EXPECT_EQ(expected_ciphertext_hex, base::HexEncode(ciphertext.data(),
                                                      ciphertext.size()));
 
-  std::string decypted;
-  EXPECT_TRUE(encryptor.Decrypt(ciphertext, &decypted));
-  EXPECT_EQ(plaintext, decypted);
+  std::string decrypted;
+  EXPECT_TRUE(encryptor.Decrypt(ciphertext, &decrypted));
+  EXPECT_EQ(plaintext, decrypted);
 }
 
 // Not all platforms allow import/generation of symmetric keys with an
