@@ -181,8 +181,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_TRUE(observer.infobar_shown());
 }
 
+// Flaky: crbug.com/301547, observed on win and mac. Probably happens on all
+// platforms.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       PromptForDynamicForm) {
+                       DISABLED_PromptForDynamicForm) {
   NavigateToFile("/password/dynamic_password_form.html");
 
   // Fill the dynamic password form and submit.
