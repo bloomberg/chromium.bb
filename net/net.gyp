@@ -1909,6 +1909,7 @@
             'quic_base',
           ],
           'sources': [
+            'quic/quic_end_to_end_unittest.cc',
             'tools/balsa/balsa_frame_test.cc',
             'tools/balsa/balsa_headers_test.cc',
             'tools/flip_server/flip_test_utils.cc',

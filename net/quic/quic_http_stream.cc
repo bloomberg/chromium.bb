@@ -312,7 +312,9 @@ int QuicHttpStream::OnDataReceived(const char* data, int length) {
     memcpy(user_buffer_->data(), data, user_buffer_len_);
     int delta = length - user_buffer_len_;
     BufferResponseBody(data + user_buffer_len_, delta);
+    length = user_buffer_len_;
   }
+
   user_buffer_ = NULL;
   user_buffer_len_ = 0;
   DoCallback(length);
