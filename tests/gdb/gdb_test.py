@@ -58,6 +58,12 @@ def EnsurePortIsAvailable(addr=SEL_LDR_RSP_SOCKET_ADDR):
   sock.close()
 
 
+def DecodeNexeArgsForSubprocess(arg_list):
+  if arg_list is None:
+    return []
+  return arg_list.split(',')
+
+
 def LaunchSelLdr(sel_ldr_command, options, name):
   args = sel_ldr_command + ['-g', '-a']
   if options.irt is not None:
@@ -65,7 +71,9 @@ def LaunchSelLdr(sel_ldr_command, options, name):
   if options.ld_so is not None:
     args += ['--', options.ld_so,
              '--library-path', options.library_path]
-  args += [FilenameToUnix(options.nexe), name]
+  args += ([FilenameToUnix(options.nexe)] +
+           DecodeNexeArgsForSubprocess(options.nexe_args) +
+           [name])
   EnsurePortIsAvailable()
   return subprocess.Popen(args)
 
@@ -291,6 +299,7 @@ def RunTest(test_func, test_name):
                     help='Directory containing dynamic libraries, '
                     'if using dynamic linking (optional)')
   parser.add_option('--nexe', help='Filename of main NaCl executable')
+  parser.add_option('--nexe_args', help='Comma-separated list of arguments')
   options, sel_ldr_command = parser.parse_args()
 
   sel_ldr = LaunchSelLdr(sel_ldr_command, options, test_name)

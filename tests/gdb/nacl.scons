@@ -3,7 +3,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import atexit
+import os
+import tempfile
+
 Import('env')
+
+def MakeTempFile(prefix='gdb_mmap'):
+  temporary_file = tempfile.mkstemp(prefix=prefix)
+  os.close(temporary_file[0])
+  temporary_file = temporary_file[1]
+  def Cleanup():
+    try:
+      os.unlink(temporary_file)
+    except OSError:
+      pass
+  atexit.register(Cleanup)
+  return temporary_file
 
 if 'TRUSTED_ENV' not in env:
   Return()
@@ -48,17 +64,24 @@ extra_deps = [env.File('gdb_test.py')]
 
 test_suites = ['medium_tests', 'gdb_tests']
 
-
 gdb_test_guest = env.ComponentProgram(
     'gdb_test_guest', 'gdb_test_guest.c',
     EXTRA_LIBS=['${NONIRT_LIBS}'])
 gdb_test_guest = env.GetTranslatedNexe(gdb_test_guest)
 
+# TempFileArguments: gdb_test_guest-based tests below accept a
+# temporary file argument, and we encapsulate this here for brevity /
+# to avoid code duplication.
+def TempFileArguments():
+  return ','.join(['-f', MakeTempFile()])
+
 node = env.CommandTest(
     'gdb_stepi_after_break.out',
     extra_deps=extra_deps,
     command=['${PYTHON}', env.File('stepi_after_break.py'),
-             '--nexe', gdb_test_guest] + test_args)
+             '--nexe', gdb_test_guest,
+             '--nexe_args', TempFileArguments()] +
+            test_args)
 
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_stepi_after_break_test')
 env.TestBindsFixedTcpPort(node)
@@ -67,7 +90,8 @@ node = env.CommandTest(
     'gdb_invalid_memory.out',
     extra_deps=extra_deps,
     command=['${PYTHON}', env.File('invalid_memory.py'),
-             '--nexe', gdb_test_guest] + test_args)
+             '--nexe', gdb_test_guest,
+             '--nexe_args', TempFileArguments()] + test_args)
 
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_invalid_memory_test')
 env.TestBindsFixedTcpPort(node)
@@ -76,7 +100,8 @@ node = env.CommandTest(
     'gdb_print_symbol.out',
     extra_deps=extra_deps,
     command=['${PYTHON}', env.File('print_symbol.py'),
-             '--nexe', gdb_test_guest] + test_args)
+             '--nexe', gdb_test_guest,
+             '--nexe_args', TempFileArguments()] + test_args)
 
 # This fails on ARM+PNaCl. The set_global_var function appears to be
 # getting the wrong argument value (68K vs 1), so the value of
@@ -91,7 +116,8 @@ node = env.CommandTest(
     'gdb_stack_trace.out',
     extra_deps=extra_deps,
     command=['${PYTHON}', env.File('stack_trace.py'),
-             '--nexe', gdb_test_guest] + test_args)
+             '--nexe', gdb_test_guest,
+             '--nexe_args', TempFileArguments()] + test_args)
 
 # This fails on ARM+PNaCl because it gets an
 # unexpected value for a function argument from
@@ -106,7 +132,8 @@ node = env.CommandTest(
     'gdb_step_from_func_start.out',
     extra_deps=extra_deps,
     command=['${PYTHON}', env.File('step_from_func_start.py'),
-             '--nexe', gdb_test_guest] + test_args)
+             '--nexe', gdb_test_guest,
+             '--nexe_args', TempFileArguments()] + test_args)
 
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_step_from_func_start_test')
 env.TestBindsFixedTcpPort(node)
@@ -115,7 +142,8 @@ node = env.CommandTest(
     'gdb_call_from_gdb.out',
     extra_deps=extra_deps,
     command=['${PYTHON}', env.File('call_from_gdb.py'),
-             '--nexe', gdb_test_guest] + test_args)
+             '--nexe', gdb_test_guest,
+             '--nexe_args', TempFileArguments()] + test_args)
 
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_call_from_gdb_test')
 env.TestBindsFixedTcpPort(node)
@@ -124,7 +152,8 @@ node = env.CommandTest(
     'gdb_change_variable.out',
     extra_deps=extra_deps,
     command=['${PYTHON}', env.File('change_variable.py'),
-             '--nexe', gdb_test_guest] + test_args)
+             '--nexe', gdb_test_guest,
+             '--nexe_args', TempFileArguments()] + test_args)
 
 # This fails on ARM+PNaCl because it is reading
 # local_var before it has been initialised.
@@ -139,7 +168,8 @@ if not env.Bit('nacl_static_link'):
       'gdb_execute_nacl_manifest_twice.out',
       extra_deps=extra_deps,
       command=['${PYTHON}', env.File('execute_nacl_manifest_twice.py'),
-               '--nexe', gdb_test_guest] + test_args)
+               '--nexe', gdb_test_guest,
+               '--nexe_args', TempFileArguments()] + test_args)
 
   env.AddNodeToTestSuite(node, test_suites,
                          'run_gdb_execute_nacl_manifest_twice_test')
@@ -177,7 +207,8 @@ if env.Bit('target_x86') and not env.Bit('bitcode'):
       'gdb_mmap.out',
       extra_deps=extra_deps,
       command=['${PYTHON}', env.File('mmap.py'),
-               '--nexe', gdb_test_guest] + test_args)
+               '--nexe', gdb_test_guest,
+               '--nexe_args', TempFileArguments()] + test_args)
 
   env.AddNodeToTestSuite(node, test_suites, 'run_gdb_mmap_test')
   env.TestBindsFixedTcpPort(node)

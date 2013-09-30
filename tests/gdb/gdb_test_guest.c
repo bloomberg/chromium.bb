@@ -144,7 +144,7 @@ uintptr_t find_map_address_for_code(void) {
   return addr;
 }
 
-const char *const mmap_file_name = "gdb_test_mmap";
+const char *mmap_file_name = "gdb_test_mmap";
 
 void test_mmap(void) {
   int rc;
@@ -190,47 +190,66 @@ void test_mmap(void) {
   ASSERT_EQ(rc, 0);
 
   /*
-   * We can't delete the file since it is mapped to memory and unmapping
-   * code from memory is not allowed.
+   * We can't delete the file since it is mapped to memory and
+   * unmapping code from memory is not allowed.
    */
 }
 
 int main(int argc, char **argv) {
-  assert(argc >= 2);
+  int opt;
+  char const *test_command;
 
-  if (strcmp(argv[1], "break_inside_function") == 0) {
+  while (-1 != (opt = getopt(argc, argv, "f:"))) {
+    switch (opt) {
+      case 'f':
+        /*
+         * The test framework supplies the test file name, and is
+         * responsible for deleting the file after the test exits.
+         * See nacl.scons.
+         */
+        mmap_file_name = optarg;
+        break;
+      default:
+        fprintf(stderr, "Usage: gdb_test_guest [-f mmap_file] test-type\n");
+        return 1;
+    }
+  }
+  assert(argc - optind >= 1);
+  test_command = argv[optind];
+
+  if (strcmp(test_command, "break_inside_function") == 0) {
     test_two_line_function(1);
     return 0;
   }
-  if (strcmp(argv[1], "stepi_after_break") == 0) {
+  if (strcmp(test_command, "stepi_after_break") == 0) {
     test_stepi_after_break();
     return 0;
   }
-  if (strcmp(argv[1], "print_symbol") == 0) {
+  if (strcmp(test_command, "print_symbol") == 0) {
     return test_print_symbol();
   }
-  if (strcmp(argv[1], "stack_trace") == 0) {
+  if (strcmp(test_command, "stack_trace") == 0) {
     nested_calls(1);
     return 0;
   }
-  if (strcmp(argv[1], "step_from_func_start") == 0) {
+  if (strcmp(test_command, "step_from_func_start") == 0) {
     global_var = 0;
     test_step_from_function_start(2);
     return 0;
   }
-  if (strcmp(argv[1], "call_from_gdb") == 0) {
+  if (strcmp(test_command, "call_from_gdb") == 0) {
     /* Call function so that it doesn't get optimized away. */
     return test_call_from_gdb(0);
   }
-  if (strcmp(argv[1], "change_variable") == 0) {
+  if (strcmp(test_command, "change_variable") == 0) {
     global_var = 0;
     test_change_variable(1);
     return 0;
   }
-  if (strcmp(argv[1], "dummy") == 0) {
+  if (strcmp(test_command, "dummy") == 0) {
     return 0;
   }
-  if (strcmp(argv[1], "mmap") == 0) {
+  if (strcmp(test_command, "mmap") == 0) {
     test_mmap();
     return 0;
   }
