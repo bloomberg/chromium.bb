@@ -494,6 +494,12 @@ void MediaSourcePlayer::MediaDecoderCallback(
   if (status == MEDIA_CODEC_NO_KEY)
     return;
 
+  // If the status is MEDIA_CODEC_STOPPED, stop decoding new data. The player is
+  // in the middle of a seek or stop event and needs to wait for the IPCs to
+  // come.
+  if (status == MEDIA_CODEC_STOPPED)
+    return;
+
   if (status == MEDIA_CODEC_OK && is_clock_manager)
     StartStarvationCallback(presentation_timestamp);
 

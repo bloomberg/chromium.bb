@@ -623,6 +623,32 @@ TEST_F(MediaSourcePlayerTest, ReplayAfterInputEOS) {
   EXPECT_EQ(3, demuxer_.num_data_requests());
 }
 
+TEST_F(MediaSourcePlayerTest, NoRequestForDataAfterAbort) {
+  if (!MediaCodecBridge::IsAvailable()) {
+    LOG(INFO) << "Could not run test - not supported on device.";
+    return;
+  }
+
+  // Test that the decoder will request new data after receiving an aborted
+  // access unit.
+  StartAudioDecoderJob();
+  EXPECT_EQ(1, demuxer_.num_data_requests());
+
+  // Send an aborted access unit.
+  DemuxerData data;
+  data.type = DemuxerStream::AUDIO;
+  data.access_units.resize(1);
+  data.access_units[0].status = DemuxerStream::kAborted;
+  player_.OnDemuxerDataAvailable(data);
+  EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
+  // Wait for the decoder job to finish decoding.
+  while(GetMediaDecoderJob(true)->is_decoding())
+    message_loop_.RunUntilIdle();
+
+  // No request will be sent for new data.
+  EXPECT_EQ(1, demuxer_.num_data_requests());
+}
+
 // TODO(xhwang): Enable this test when the test devices are updated.
 TEST_F(MediaSourcePlayerTest, DISABLED_IsTypeSupported_Widevine) {
   if (!MediaCodecBridge::IsAvailable() || !MediaDrmBridge::IsAvailable()) {

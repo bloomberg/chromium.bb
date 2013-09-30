@@ -239,6 +239,13 @@ void MediaDecoderJob::DecodeInternal(
     }
   }
 
+  // For aborted access unit, just skip it and inform the player.
+  if (unit.status == DemuxerStream::kAborted) {
+    // TODO(qinmin): use a new enum instead of MEDIA_CODEC_STOPPED.
+    callback.Run(MEDIA_CODEC_STOPPED, start_presentation_timestamp, 0);
+    return;
+  }
+
   MediaCodecStatus input_status = MEDIA_CODEC_INPUT_END_OF_STREAM;
   if (!input_eos_encountered_) {
     input_status = QueueInputBuffer(unit);
@@ -307,7 +314,6 @@ void MediaDecoderJob::OnDecodeCompleted(
     MediaCodecStatus status, const base::TimeDelta& presentation_timestamp,
     size_t audio_output_bytes) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
-  DCHECK(status != MEDIA_CODEC_STOPPED || received_data_.access_units.empty());
 
   if (destroy_pending_) {
     delete this;
