@@ -73,7 +73,9 @@ class DeviceManagementRequestJob {
  protected:
   typedef std::vector<std::pair<std::string, std::string> > ParameterMap;
 
-  DeviceManagementRequestJob(JobType type, const std::string& user_agent);
+  DeviceManagementRequestJob(JobType type,
+                             const std::string& user_agent,
+                             const std::string& platform);
 
   // Appends a parameter to |query_params|.
   void AddParameter(const std::string& name, const std::string& value);
@@ -102,7 +104,8 @@ class DeviceManagementService : public net::URLFetcherDelegate {
   DeviceManagementService(
       scoped_refptr<net::URLRequestContextGetter> request_context,
       const std::string& server_url,
-      const std::string& user_agent);
+      const std::string& user_agent,
+      const std::string& platform);
   virtual ~DeviceManagementService();
 
   // The ID of URLFetchers created by the DeviceManagementService. This can be
@@ -155,6 +158,9 @@ class DeviceManagementService : public net::URLFetcherDelegate {
 
   // User-Agent reported in the "agent" query parameter.
   const std::string user_agent_;
+
+  // The platform reported in the "platform" query parameter.
+  const std::string platform_;
 
   // The request context we use. This is a wrapper of |request_context_|.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;

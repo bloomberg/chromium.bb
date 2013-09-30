@@ -31,6 +31,7 @@ namespace policy {
 
 const char kServiceUrl[] = "https://example.com/management_service";
 const char kUserAgent[] = "Chrome 1.2.3(456)";
+const char kPlatform[] = "Test|Unit|1.2.3";
 
 // Encoded empty response messages for testing the error code paths.
 const char kResponseEmpty[] = "\x08\x00";
@@ -62,8 +63,8 @@ class DeviceManagementServiceTestBase : public testing::Test {
   }
 
   void ResetService() {
-    service_.reset(
-        new DeviceManagementService(request_context_, kServiceUrl, kUserAgent));
+    service_.reset(new DeviceManagementService(
+        request_context_, kServiceUrl, kUserAgent, kPlatform));
   }
 
   void InitializeService() {

@@ -21,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/async_policy_provider.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
@@ -127,6 +128,41 @@ std::string GetUserAgent() {
                             version_info.LastChange().c_str());
 }
 
+std::string GetPlatformString() {
+  std::string os_name = base::SysInfo::OperatingSystemName();
+  std::string os_hardware = base::SysInfo::OperatingSystemArchitecture();
+
+#if defined(OS_CHROMEOS)
+  chromeos::system::StatisticsProvider* provider =
+      chromeos::system::StatisticsProvider::GetInstance();
+
+  std::string hwclass;
+  if (!provider->GetMachineStatistic(chromeos::system::kHardwareClass,
+                                     &hwclass)) {
+    LOG(ERROR) << "Failed to get machine information";
+  }
+  os_name += ",CrOS," + base::SysInfo::GetLsbReleaseBoard();
+  os_hardware += "," + hwclass;
+#endif
+
+  std::string os_version("-");
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  int32 os_major_version = 0;
+  int32 os_minor_version = 0;
+  int32 os_bugfix_version = 0;
+  base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
+                                               &os_minor_version,
+                                               &os_bugfix_version);
+  os_version = base::StringPrintf("%d.%d.%d",
+                                  os_major_version,
+                                  os_minor_version,
+                                  os_bugfix_version);
+#endif
+
+  return base::StringPrintf(
+      "%s|%s|%s", os_name.c_str(), os_hardware.c_str(), os_version.c_str());
+}
+
 }  // namespace
 
 BrowserPolicyConnector::BrowserPolicyConnector()
@@ -189,8 +225,11 @@ void BrowserPolicyConnector::Init(
   local_state_ = local_state;
   request_context_ = request_context;
 
-  device_management_service_.reset(new DeviceManagementService(
-      request_context, GetDeviceManagementUrl(), GetUserAgent()));
+  device_management_service_.reset(
+      new DeviceManagementService(request_context,
+                                  GetDeviceManagementUrl(),
+                                  GetUserAgent(),
+                                  GetPlatformString()));
   device_management_service_->ScheduleInitialization(
       kServiceInitializationStartupDelay);
 

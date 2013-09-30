@@ -142,7 +142,8 @@ class DeviceManagementServiceIntegrationTest
     service_.reset(new DeviceManagementService(
         g_browser_process->system_request_context(),
         service_url,
-        "UserAgent"));
+        "UserAgent",
+        "Platform"));
     service_->ScheduleInitialization(0);
   }
 

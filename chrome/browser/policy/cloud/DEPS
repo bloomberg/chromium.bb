@@ -89,7 +89,6 @@ specific_include_rules = {
 
   r"device_management_service\.cc": [
     "+chrome/browser/net/basic_http_user_agent_settings.h",
-    "+chrome/browser/chromeos/system/statistics_provider.h",
   ],
 
   r"test_request_interceptor\.cc": [

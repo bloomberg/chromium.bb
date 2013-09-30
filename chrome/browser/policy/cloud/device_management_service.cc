@@ -10,8 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
 #include "chrome/browser/net/basic_http_user_agent_settings.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -28,17 +26,11 @@
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/system/statistics_provider.h"
-#endif
-
 namespace em = enterprise_management;
 
 namespace policy {
 
 namespace {
-
-const char kValuePlatform[] = "%s|%s|%s";
 
 const char kPostContentType[] = "application/protobuf";
 
@@ -63,11 +55,6 @@ const int kPendingApproval = 412;
 const int kInternalServerError = 500;
 const int kServiceUnavailable = 503;
 const int kPolicyNotFound = 902;  // This error is not sent as HTTP status code.
-
-#if defined(OS_CHROMEOS)
-// Machine info keys.
-const char kMachineInfoHWClass[] = "hardware_class";
-#endif
 
 bool IsProxyError(const net::URLRequestStatus status) {
   switch (status.error()) {
@@ -144,46 +131,6 @@ const char* JobTypeToRequestType(DeviceManagementRequestJob::JobType type) {
   }
   NOTREACHED() << "Invalid job type " << type;
   return "";
-}
-
-const std::string& GetPlatformString() {
-  CR_DEFINE_STATIC_LOCAL(std::string, platform, ());
-  if (!platform.empty())
-    return platform;
-
-  std::string os_name(base::SysInfo::OperatingSystemName());
-  std::string os_hardware(base::SysInfo::OperatingSystemArchitecture());
-
-#if defined(OS_CHROMEOS)
-  chromeos::system::StatisticsProvider* provider =
-      chromeos::system::StatisticsProvider::GetInstance();
-
-  std::string hwclass;
-  if (!provider->GetMachineStatistic(kMachineInfoHWClass, &hwclass))
-    LOG(ERROR) << "Failed to get machine information";
-  os_name += ",CrOS," + base::SysInfo::GetLsbReleaseBoard();
-  os_hardware += "," + hwclass;
-#endif
-
-  std::string os_version("-");
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  int32 os_major_version = 0;
-  int32 os_minor_version = 0;
-  int32 os_bugfix_version = 0;
-  base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
-                                               &os_minor_version,
-                                               &os_bugfix_version);
-  os_version = base::StringPrintf("%d.%d.%d",
-                                  os_major_version,
-                                  os_minor_version,
-                                  os_bugfix_version);
-#endif
-
-  platform = base::StringPrintf(kValuePlatform,
-                                os_name.c_str(),
-                                os_hardware.c_str(),
-                                os_version.c_str());
-  return platform;
 }
 
 // Custom request context implementation that allows to override the user agent,
@@ -270,6 +217,7 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
  public:
   DeviceManagementRequestJobImpl(JobType type,
                                  const std::string& user_agent,
+                                 const std::string& platform,
                                  DeviceManagementService* service);
   virtual ~DeviceManagementRequestJobImpl();
 
@@ -316,8 +264,9 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
 DeviceManagementRequestJobImpl::DeviceManagementRequestJobImpl(
     JobType type,
     const std::string& user_agent,
+    const std::string& platform,
     DeviceManagementService* service)
-    : DeviceManagementRequestJob(type, user_agent),
+    : DeviceManagementRequestJob(type, user_agent, platform),
       service_(service),
       bypass_proxy_(false),
       retries_count_(0) {}
@@ -496,12 +445,13 @@ em::DeviceManagementRequest* DeviceManagementRequestJob::GetRequest() {
 
 DeviceManagementRequestJob::DeviceManagementRequestJob(
     JobType type,
-    const std::string& user_agent) {
+    const std::string& user_agent,
+    const std::string& platform) {
   AddParameter(dm_protocol::kParamRequest, JobTypeToRequestType(type));
   AddParameter(dm_protocol::kParamDeviceType, dm_protocol::kValueDeviceType);
   AddParameter(dm_protocol::kParamAppType, dm_protocol::kValueAppType);
   AddParameter(dm_protocol::kParamAgent, user_agent);
-  AddParameter(dm_protocol::kParamPlatform, GetPlatformString());
+  AddParameter(dm_protocol::kParamPlatform, platform);
 }
 
 void DeviceManagementRequestJob::SetRetryCallback(
@@ -530,7 +480,7 @@ DeviceManagementService::~DeviceManagementService() {
 
 DeviceManagementRequestJob* DeviceManagementService::CreateJob(
     DeviceManagementRequestJob::JobType type) {
-  return new DeviceManagementRequestJobImpl(type, user_agent_, this);
+  return new DeviceManagementRequestJobImpl(type, user_agent_, platform_, this);
 }
 
 void DeviceManagementService::ScheduleInitialization(int64 delay_milliseconds) {
@@ -570,10 +520,12 @@ void DeviceManagementService::Shutdown() {
 DeviceManagementService::DeviceManagementService(
     scoped_refptr<net::URLRequestContextGetter> request_context,
     const std::string& server_url,
-    const std::string& user_agent)
+    const std::string& user_agent,
+    const std::string& platform)
     : request_context_(request_context),
       server_url_(server_url),
       user_agent_(user_agent),
+      platform_(platform),
       initialized_(false),
       weak_ptr_factory_(this) {
 }
