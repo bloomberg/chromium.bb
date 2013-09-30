@@ -188,7 +188,7 @@ class SamplesDataSource(object):
     only the samples that use the API |api_name|. |key| is either 'apps' or
     'extensions'.
     '''
-    api_search = api_name + '_'
+    api_search = api_name.replace('.', '_') + '_'
     samples_list = []
     try:
       for sample in self.get(key):

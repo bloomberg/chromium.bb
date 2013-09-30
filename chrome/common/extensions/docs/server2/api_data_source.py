@@ -680,8 +680,10 @@ class APIDataSource(object):
     self._samples = samples
     self._disable_refs = disable_refs
 
-  def _GenerateHandlebarContext(self, handlebar_dict, path):
-    handlebar_dict['samples'] = _LazySamplesGetter(path, self._samples)
+  def _GenerateHandlebarContext(self, handlebar_dict):
+    handlebar_dict['samples'] = _LazySamplesGetter(
+        handlebar_dict['name'],
+        self._samples)
     return handlebar_dict
 
   def _GetAsSubdirectory(self, name):
@@ -712,5 +714,4 @@ class APIDataSource(object):
       cache, ext = ((self._idl_cache, '.idl') if (unix_name in idl_names) else
                     (self._json_cache, '.json'))
     return self._GenerateHandlebarContext(
-        cache.GetFromFile('%s/%s%s' % (self._base_path, unix_name, ext)),
-        path)
+        cache.GetFromFile('%s/%s%s' % (self._base_path, unix_name, ext)))

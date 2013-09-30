@@ -27,10 +27,12 @@
 </div>
 {{?samples_list}}
   <h2 id="samples">Sample {{title}} that use chrome.{{api.name}}</h2>
+  <ul>
   {{#samples_list}}
     <li><strong><a href="samples.html#{{id}}">{{name}}</a></strong>
     {{?description}}
     &ndash; {{description}}
     {{/description}}</li>
   {{/samples_list}}
+  </ul>
 {{/samples_list}}
