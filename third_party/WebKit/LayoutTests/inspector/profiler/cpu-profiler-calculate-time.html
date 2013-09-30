@@ -6,7 +6,7 @@
 
 function test()
 {
-    // Profile for 4280ms, 2140 samples.
+    // Profile for 1070ms, 2140 samples.
     var profileAndExpectations = {
         "head": {
             "functionName": "(root)",
@@ -90,18 +90,18 @@ function test()
         },
         "idleTime": 202.88199791684747,
         "startTime": 1375445600.000847,
-        "endTime": 1375445604.280847,
+        "endTime": 1375445601.070847,
         "samples": [ 1, 2 ]
     };
     WebInspector.showPanel("profiles");
     WebInspector.CPUProfileView.prototype._calculateTimes(profileAndExpectations);
     function checkExpectations(node)
     {
-        if (node.selfTime !== node.expectedSelfTime) {
+        if (Math.abs(node.selfTime - node.expectedSelfTime) > 0.0001) {
             InspectorTest.addResult("totalTime: " + node.totalTime + ", expected:" + node.expectedTotalTime);
             return false;
         }
-        if (node.totalTime !== node.expectedTotalTime) {
+        if (Math.abs(node.totalTime - node.expectedTotalTime) > 0.0001) {
             InspectorTest.addResult("totalTime: " + node.totalTime + ", expected:" + node.expectedTotalTime);
             return false;
         }
