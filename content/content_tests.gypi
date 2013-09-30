@@ -1152,7 +1152,7 @@
             'sources': [
               'common/gpu/media/android_video_decode_accelerator_unittest.cc',
               'common/gpu/media/rendering_helper.h',
-              'common/gpu/media/rendering_helper_gl.cc',
+              'common/gpu/media/rendering_helper.cc',
               'common/gpu/media/video_accelerator_unittest_helpers.h',
               'common/gpu/media/video_decode_accelerator_unittest.cc',
             ],
@@ -1160,7 +1160,7 @@
               ['OS=="android"', {
                 'sources/': [
                   ['exclude', '^common/gpu/media/rendering_helper.h'],
-                  ['exclude', '^common/gpu/media/rendering_helper_gl.cc'],
+                  ['exclude', '^common/gpu/media/rendering_helper.cc'],
                   ['exclude', '^common/gpu/media/video_decode_accelerator_unittest.cc'],
                 ],
                 'dependencies': [

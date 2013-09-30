@@ -1004,7 +1004,7 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
 #endif  // OS_WIN
 
   rendering_thread.StartWithOptions(options);
-  scoped_ptr<RenderingHelper> rendering_helper(RenderingHelper::Create());
+  RenderingHelper rendering_helper;
 
   base::WaitableEvent done(false, false);
   RenderingHelperParams helper_params;
@@ -1030,7 +1030,7 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   rendering_thread.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&RenderingHelper::Initialize,
-                 base::Unretained(rendering_helper.get()),
+                 base::Unretained(&rendering_helper),
                  helper_params,
                  &done));
   done.Wait();
@@ -1050,7 +1050,7 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
     }
 
     GLRenderingVDAClient* client =
-        new GLRenderingVDAClient(rendering_helper.get(),
+        new GLRenderingVDAClient(&rendering_helper,
                                  index,
                                  note,
                                  video_file->data_str,
@@ -1152,7 +1152,7 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
     rendering_thread.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&RenderingHelper::GetThumbnailsAsRGB,
-                 base::Unretained(rendering_helper.get()),
+                 base::Unretained(&rendering_helper),
                  &rgb, &alpha_solid, &done));
     done.Wait();
 
@@ -1218,7 +1218,7 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   rendering_thread.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&RenderingHelper::UnInitialize,
-                 base::Unretained(rendering_helper.get()),
+                 base::Unretained(&rendering_helper),
                  &done));
   done.Wait();
   rendering_thread.Stop();

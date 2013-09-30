@@ -1,34 +1,26 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/common/gpu/media/rendering_helper.h"
-
-#include <map>
 
 #include "base/bind.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringize_macros.h"
 #include "base/synchronization/waitable_event.h"
-#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_context_stub.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 
-#if !defined(OS_WIN) && defined(ARCH_CPU_X86_FAMILY)
-#define GL_VARIANT_GLX 1
+#ifdef GL_VARIANT_GLX
 typedef GLXWindow NativeWindowType;
-typedef GLXContext NativeContextType;
 struct ScopedPtrXFree {
   void operator()(void* x) const { ::XFree(x); }
 };
-#else
-#define GL_VARIANT_EGL 1
+#else  // EGL
 typedef EGLNativeWindowType NativeWindowType;
-typedef EGLContext NativeContextType;
-typedef EGLSurface NativeSurfaceType;
 #endif
 
 // Helper for Shader creation.
@@ -93,69 +85,7 @@ RenderingHelperParams::RenderingHelperParams() {}
 
 RenderingHelperParams::~RenderingHelperParams() {}
 
-class RenderingHelperGL : public RenderingHelper {
- public:
-  RenderingHelperGL();
-  virtual ~RenderingHelperGL();
-
-  // Implement RenderingHelper.
-  virtual void Initialize(const RenderingHelperParams& params,
-                          base::WaitableEvent* done) OVERRIDE;
-  virtual void UnInitialize(base::WaitableEvent* done) OVERRIDE;
-  virtual void CreateTexture(int window_id,
-                             uint32 texture_target,
-                             uint32* texture_id,
-                             base::WaitableEvent* done) OVERRIDE;
-  virtual void RenderTexture(uint32 texture_id) OVERRIDE;
-  virtual void DeleteTexture(uint32 texture_id) OVERRIDE;
-  virtual void* GetGLContext() OVERRIDE;
-  virtual void* GetGLDisplay() OVERRIDE;
-  virtual void GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
-                                  bool* alpha_solid,
-                                  base::WaitableEvent* done) OVERRIDE;
-
-  static const gfx::GLImplementation kGLImplementation;
-
- private:
-  void Clear();
-
-  // Make window_id's surface current w/ the GL context, or release the context
-  // if |window_id < 0|.
-  void MakeCurrent(int window_id);
-
-
-  base::MessageLoop* message_loop_;
-  std::vector<gfx::Size> window_dimensions_;
-  std::vector<gfx::Size> frame_dimensions_;
-
-  NativeContextType gl_context_;
-  std::map<uint32, int> texture_id_to_surface_index_;
-
-#if defined(GL_VARIANT_EGL)
-  EGLDisplay gl_display_;
-  std::vector<NativeSurfaceType> gl_surfaces_;
-#else
-  XVisualInfo* x_visual_;
-#endif
-
-#if defined(OS_WIN)
-  std::vector<HWND> windows_;
-#else
-  Display* x_display_;
-  std::vector<Window> x_windows_;
-#endif
-
-  bool render_as_thumbnails_;
-  int frame_count_;
-  GLuint thumbnails_fbo_id_;
-  GLuint thumbnails_texture_id_;
-  gfx::Size thumbnails_fbo_size_;
-  gfx::Size thumbnail_size_;
-  GLuint program_;
-};
-
-// static
-const gfx::GLImplementation RenderingHelperGL::kGLImplementation =
+static const gfx::GLImplementation kGLImplementation =
 #if defined(GL_VARIANT_GLX)
     gfx::kGLImplementationDesktopGL;
 #elif defined(GL_VARIANT_EGL)
@@ -165,22 +95,17 @@ const gfx::GLImplementation RenderingHelperGL::kGLImplementation =
 #error "Unknown GL implementation."
 #endif
 
-// static
-RenderingHelper* RenderingHelper::Create() {
-  return new RenderingHelperGL;
-}
-
-RenderingHelperGL::RenderingHelperGL() {
+RenderingHelper::RenderingHelper() {
   Clear();
 }
 
-RenderingHelperGL::~RenderingHelperGL() {
+RenderingHelper::~RenderingHelper() {
   CHECK_EQ(window_dimensions_.size(), 0U) <<
     "Must call UnInitialize before dtor.";
   Clear();
 }
 
-void RenderingHelperGL::MakeCurrent(int window_id) {
+void RenderingHelper::MakeCurrent(int window_id) {
 #if GL_VARIANT_GLX
   if (window_id < 0) {
     CHECK(glXMakeContextCurrent(x_display_, GLX_NONE, GLX_NONE, NULL));
@@ -200,8 +125,8 @@ void RenderingHelperGL::MakeCurrent(int window_id) {
 #endif
 }
 
-void RenderingHelperGL::Initialize(const RenderingHelperParams& params,
-                                   base::WaitableEvent* done) {
+void RenderingHelper::Initialize(const RenderingHelperParams& params,
+                                 base::WaitableEvent* done) {
   // Use window_dimensions_.size() != 0 as a proxy for the class having already
   // been Initialize()'d, and UnInitialize() before continuing.
   if (window_dimensions_.size()) {
@@ -210,7 +135,7 @@ void RenderingHelperGL::Initialize(const RenderingHelperParams& params,
     done.Wait();
   }
 
-  gfx::InitializeGLBindings(RenderingHelperGL::kGLImplementation);
+  gfx::InitializeGLBindings(kGLImplementation);
   scoped_refptr<GLContextStubWithExtensions> stub_context(
       new GLContextStubWithExtensions());
 
@@ -329,7 +254,7 @@ void RenderingHelperGL::Initialize(const RenderingHelperParams& params,
 #endif
 
 #if GL_VARIANT_EGL
-    NativeSurfaceType egl_surface =
+    EGLSurface egl_surface =
         eglCreateWindowSurface(gl_display_, egl_config, window, NULL);
     gl_surfaces_.push_back(egl_surface);
     CHECK_NE(egl_surface, EGL_NO_SURFACE);
@@ -449,7 +374,7 @@ void RenderingHelperGL::Initialize(const RenderingHelperParams& params,
   done->Signal();
 }
 
-void RenderingHelperGL::UnInitialize(base::WaitableEvent* done) {
+void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
   if (render_as_thumbnails_) {
     glDeleteTextures(1, &thumbnails_texture_id_);
@@ -470,10 +395,10 @@ void RenderingHelperGL::UnInitialize(base::WaitableEvent* done) {
   done->Signal();
 }
 
-void RenderingHelperGL::CreateTexture(int window_id,
-                                      uint32 texture_target,
-                                      uint32* texture_id,
-                                      base::WaitableEvent* done) {
+void RenderingHelper::CreateTexture(int window_id,
+                                    uint32 texture_target,
+                                    uint32* texture_id,
+                                    base::WaitableEvent* done) {
   if (base::MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
@@ -506,7 +431,7 @@ void RenderingHelperGL::CreateTexture(int window_id,
   done->Signal();
 }
 
-void RenderingHelperGL::RenderTexture(uint32 texture_id) {
+void RenderingHelper::RenderTexture(uint32 texture_id) {
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
   size_t window_id = texture_id_to_surface_index_[texture_id];
   MakeCurrent(window_id);
@@ -560,16 +485,16 @@ void RenderingHelperGL::RenderTexture(uint32 texture_id) {
 #endif
 }
 
-void RenderingHelperGL::DeleteTexture(uint32 texture_id) {
+void RenderingHelper::DeleteTexture(uint32 texture_id) {
   glDeleteTextures(1, &texture_id);
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
 
-void* RenderingHelperGL::GetGLContext() {
+void* RenderingHelper::GetGLContext() {
   return gl_context_;
 }
 
-void* RenderingHelperGL::GetGLDisplay() {
+void* RenderingHelper::GetGLDisplay() {
 #if GL_VARIANT_GLX
   return x_display_;
 #else  // EGL
@@ -577,7 +502,7 @@ void* RenderingHelperGL::GetGLDisplay() {
 #endif
 }
 
-void RenderingHelperGL::Clear() {
+void RenderingHelper::Clear() {
   window_dimensions_.clear();
   frame_dimensions_.clear();
   texture_id_to_surface_index_.clear();
@@ -609,9 +534,9 @@ void RenderingHelperGL::Clear() {
 #endif
 }
 
-void RenderingHelperGL::GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
-                                           bool* alpha_solid,
-                                           base::WaitableEvent* done) {
+void RenderingHelper::GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
+                                         bool* alpha_solid,
+                                         base::WaitableEvent* done) {
   CHECK(render_as_thumbnails_);
 
   const size_t num_pixels = thumbnails_fbo_size_.GetArea();
