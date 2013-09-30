@@ -225,13 +225,21 @@ bool DesktopBackgroundController::SetDefaultWallpaper(bool is_guest) {
       IDR_AURA_WALLPAPER_DEFAULT_SMALL;
   WallpaperLayout resource_layout = WALLPAPER_LAYOUT_TILE;
 
-  const char* switch_name = is_guest ?
-      (use_large ? switches::kAshDefaultGuestWallpaperLarge :
-       switches::kAshDefaultGuestWallpaperSmall) :
-      (use_large ? switches::kAshDefaultWallpaperLarge :
-       switches::kAshDefaultWallpaperSmall);
   CommandLine* command_line = command_line_for_testing_ ?
       command_line_for_testing_ : CommandLine::ForCurrentProcess();
+  const char* switch_name = NULL;
+  if (is_guest) {
+    switch_name = use_large ? switches::kAshDefaultGuestWallpaperLarge :
+        switches::kAshDefaultGuestWallpaperSmall;
+  } else {
+    const char* oem_switch_name = use_large ? switches::kAshOemWallpaperLarge :
+        switches::kAshOemWallpaperSmall;
+    const char* default_switch_name = use_large ?
+        switches::kAshDefaultWallpaperLarge :
+        switches::kAshDefaultWallpaperSmall;
+    switch_name = command_line->HasSwitch(oem_switch_name) ? oem_switch_name :
+        default_switch_name;
+  }
   file_path = command_line->GetSwitchValuePath(switch_name);
 
   if (DefaultWallpaperIsAlreadyLoadingOrLoaded(file_path, resource_id))

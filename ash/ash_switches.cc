@@ -156,6 +156,10 @@ const char kAshHostWindowBounds[] = "ash-host-window-bounds";
 const char kAshImmersiveHideTabIndicators[] =
     "ash-immersive-hide-tab-indicators";
 
+// OEM-supplied wallpaper (as paths to trusted, non-user-writable JPEG files).
+const char kAshOemWallpaperLarge[] = "ash-oem-wallpaper-large";
+const char kAshOemWallpaperSmall[] = "ash-oem-wallpaper-small";
+
 // Specifies the layout mode and offsets for the secondary display for
 // testing. The format is "<t|r|b|l>,<offset>" where t=TOP, r=RIGHT,
 // b=BOTTOM and L=LEFT. For example, 'r,-100' means the secondary display
