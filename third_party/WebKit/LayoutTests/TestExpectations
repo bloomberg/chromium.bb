@@ -845,7 +845,7 @@ crbug.com/237270 [ Debug ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html
 crbug.com/251129 [ Linux Win Debug ] http/tests/history/redirect-js-form-submit-0-seconds.html [ Failure Pass ]
 
 # Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
-crbug.com/14885 [ Mac Release ] fast/js/JSON-stringify.html [ Failure ]
+crbug.com/14885 [ Mac Debug ] fast/js/JSON-stringify.html [ Failure ]
 
 # started failing around the V8 roll in http://crrev.com/206035
 # started timing out around r154246..r154251
