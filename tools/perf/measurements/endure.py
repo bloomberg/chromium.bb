@@ -2,11 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import optparse
+import re
+import time
+
 from metrics import v8_object_stats
 from telemetry.page import page_measurement
-
-import optparse
-import time
 
 _V8_BYTES_COMMITTED = [
   'V8.MemoryNewSpaceBytesCommitted',
@@ -43,13 +44,27 @@ class Endure(page_measurement.PageMeasurement):
     # Timestamp of the last statistics sample.
     self._last_sample_time = 0
 
+    # Number of page repetitions that have currently been done.
+    self._iterations = 0
+    # Number of page repetitions at the point of the last statistics sample.
+    self._last_sample_iterations = 0
+
+    # One of these variables will be set when the perf stats interval option
+    # is parsed, and the other shall remain as None.
+    self._interval_seconds = None
+    self._interval_iterations = None
+
   def AddCommandLineOptions(self, parser):
+    # TODO(tdu): When ProcessCommandLine is added to replace this method,
+    # move the logic in _ParseIntervalOption there to ProcessCommandLine.
     group = optparse.OptionGroup(parser, 'Endure options')
     group.add_option('--perf-stats-interval',
                      dest='perf_stats_interval',
-                     default=20,
-                     type='int',
-                     help='Time interval between perf dumps (secs)')
+                     default='20s',
+                     type='string',
+                     help='Interval between sampling of statistics, either in '
+                          'seconds (specified by appending \'s\') or in number '
+                          'of iterations')
     parser.add_option_group(group)
 
   def DidStartBrowser(self, browser):
@@ -63,7 +78,8 @@ class Endure(page_measurement.PageMeasurement):
     return hasattr(page, 'endure')
 
   def WillRunPageRepeats(self, page, tab):
-    """Reset the starting time for each new page."""
+    """Set-up before starting a new page."""
+    # Reset the starting time for each new page.
     self._start_time = time.time()
 
     # Prefix the page name so it can be picked up by the buildbot script that
@@ -72,20 +88,53 @@ class Endure(page_measurement.PageMeasurement):
       page.name = 'endure_' + page.name
 
   def MeasurePage(self, page, tab, results):
-    """Dump perf information if we have gone past our interval time."""
-    now = time.time()
-    seconds_elapsed = int(round(now - self._last_sample_time))
-    if seconds_elapsed > self.options.perf_stats_interval:
-      self._last_sample_time = now
-      self._SampleStats(tab, results, now)
+    """Sample perf information if enough seconds or iterations have passed."""
+    # Parse the interval option, setting either or seconds or iterations.
+    # This is done here because self.options is not set when any of the above
+    # methods are run.
+    self._ParseIntervalOption()
 
-  def _SampleStats(self, tab, results, now):
+    # Check whether the sample interval is specified in seconds or iterations,
+    # and take a sample if it's time.
+    self._iterations += 1
+    if self._interval_seconds:
+      now = time.time()
+      seconds_elapsed = int(round(now - self._last_sample_time))
+      # Note: the time since last sample must be at least as many seconds
+      # as specified; it will usually be more, it will never be less.
+      if seconds_elapsed >= self._interval_seconds:
+        total_seconds = int(round(now - self._start_time))
+        self._SampleStats(tab, results, seconds=total_seconds)
+        self._last_sample_time = now
+    else:
+      iterations_elapsed = self._iterations - self._last_sample_iterations
+      if iterations_elapsed >= self._interval_iterations:
+        self._SampleStats(tab, results, iterations=self._iterations)
+        self._last_sample_iterations = self._iterations
+
+  def _ParseIntervalOption(self):
+    """Parse the perf stats interval option that was passed in."""
+    if self._interval_seconds or self._interval_iterations:
+      return
+    interval = self.options.perf_stats_interval
+    match = re.match('([0-9]+)([sS]?)$', interval)
+    assert match, ('Invalid value for --perf-stats-interval: %s' % interval)
+    if match.group(2):
+      self._interval_seconds = int(match.group(1))
+    else:
+      self._interval_iterations = int(match.group(1))
+    assert self._interval_seconds or self._interval_iterations
+
+  def _SampleStats(self, tab, results, seconds=None, iterations=None):
     """Record memory information and add it to the results."""
-    elapsed_time = int(round(now - self._start_time))
 
     def AddPoint(trace_name, units_y, value_y):
       """Add one data point to the results object."""
-      results.Add(trace_name + '_X', 'seconds', elapsed_time)
+      if seconds:
+        results.Add(trace_name + '_X', 'seconds', seconds)
+      else:
+        assert iterations, 'Neither seconds nor iterations given.'
+        results.Add(trace_name + '_X', 'iterations', iterations)
       results.Add(trace_name + '_Y', units_y, value_y)
 
     # DOM nodes and event listeners
