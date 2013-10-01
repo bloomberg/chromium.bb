@@ -25,12 +25,12 @@
  */
 
 #include "config.h"
-#include "core/platform/sql/SQLiteDatabase.h"
+#include "modules/webdatabase/sqlite/SQLiteDatabase.h"
 
 #include <sqlite3.h>
 #include "platform/Logging.h"
-#include "core/platform/sql/SQLiteFileSystem.h"
-#include "core/platform/sql/SQLiteStatement.h"
+#include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
+#include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"

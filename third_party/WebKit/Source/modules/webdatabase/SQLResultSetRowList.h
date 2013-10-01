@@ -30,7 +30,7 @@
 #define SQLResultSetRowList_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/platform/sql/SQLValue.h"
+#include "modules/webdatabase/sqlite/SQLValue.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 

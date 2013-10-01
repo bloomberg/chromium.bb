@@ -29,20 +29,27 @@
  */
 
 #include "config.h"
-#include "core/platform/sql/SQLiteFileSystem.h"
+#include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 
-#include <windows.h>
 #include <sqlite3.h>
 #include "public/platform/Platform.h"
 
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
+
 using namespace WebCore;
 
-// Defined in Chromium's codebase in third_party/sqlite/src/os_win.c
+// Defined in Chromium's codebase in third_party/sqlite/src/os_unix.c
 extern "C" {
-int chromium_sqlite3_initialize_win_sqlite3_file(sqlite3_file* file, HANDLE handle);
+void chromium_sqlite3_initialize_unix_sqlite3_file(sqlite3_file* file);
+int chromium_sqlite3_fill_in_unix_sqlite3_file(sqlite3_vfs* vfs, int fd, int dirfd, sqlite3_file* file, const char* fileName, int noLock);
+int chromium_sqlite3_get_reusable_file_handle(sqlite3_file* file, const char* fileName, int flags, int* fd);
+void chromium_sqlite3_update_reusable_file_handle(sqlite3_file* file, int fd, int flags);
+void chromium_sqlite3_destroy_reusable_file_handle(sqlite3_file* file);
 }
 
-// Chromium's Windows implementation of SQLite VFS
+// Chromium's Posix implementation of SQLite VFS
 namespace {
 
 // Opens a file.
@@ -52,26 +59,40 @@ namespace {
 // id - the structure that will manipulate the newly opened file.
 // desiredFlags - the desired open mode flags.
 // usedFlags - the actual open mode flags that were used.
-int chromiumOpen(sqlite3_vfs*, const char* fileName,
+int chromiumOpen(sqlite3_vfs* vfs, const char* fileName,
                  sqlite3_file* id, int desiredFlags, int* usedFlags)
 {
-    HANDLE h = WebKit::Platform::current()->databaseOpenFile(String(fileName), desiredFlags);
-    if (h == INVALID_HANDLE_VALUE) {
-        if (desiredFlags & SQLITE_OPEN_READWRITE) {
-            int newFlags = (desiredFlags | SQLITE_OPEN_READONLY) & ~SQLITE_OPEN_READWRITE;
-            return chromiumOpen(0, fileName, id, newFlags, usedFlags);
-        } else
-            return SQLITE_CANTOPEN;
+    chromium_sqlite3_initialize_unix_sqlite3_file(id);
+    int fd = -1;
+    int result = chromium_sqlite3_get_reusable_file_handle(id, fileName, desiredFlags, &fd);
+    if (result != SQLITE_OK)
+        return result;
+
+    if (fd < 0) {
+        fd = WebKit::Platform::current()->databaseOpenFile(String(fileName), desiredFlags);
+        if ((fd < 0) && (desiredFlags & SQLITE_OPEN_READWRITE)) {
+            int newFlags = (desiredFlags & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) | SQLITE_OPEN_READONLY;
+            fd = WebKit::Platform::current()->databaseOpenFile(String(fileName), newFlags);
+        }
     }
-    if (usedFlags) {
-        if (desiredFlags & SQLITE_OPEN_READWRITE)
-            *usedFlags = SQLITE_OPEN_READWRITE;
-        else
-            *usedFlags = SQLITE_OPEN_READONLY;
+    if (fd < 0) {
+        chromium_sqlite3_destroy_reusable_file_handle(id);
+        return SQLITE_CANTOPEN;
     }
 
-    chromium_sqlite3_initialize_win_sqlite3_file(id, h);
-    return SQLITE_OK;
+    if (usedFlags)
+        *usedFlags = desiredFlags;
+    chromium_sqlite3_update_reusable_file_handle(id, fd, desiredFlags);
+
+    fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | FD_CLOEXEC);
+
+    // The mask 0x00007F00 gives us the 7 bits that determine the type of the file SQLite is trying to open.
+    int fileType = desiredFlags & 0x00007F00;
+    int noLock = (fileType != SQLITE_OPEN_MAIN_DB);
+    result = chromium_sqlite3_fill_in_unix_sqlite3_file(vfs, fd, -1, id, fileName, noLock);
+    if (result != SQLITE_OK)
+        chromium_sqlite3_destroy_reusable_file_handle(id);
+    return result;
 }
 
 // Deletes the given file.
@@ -80,9 +101,9 @@ int chromiumOpen(sqlite3_vfs*, const char* fileName,
 // fileName - the name of the file.
 // syncDir - determines if the directory to which this file belongs
 //           should be synched after the file is deleted.
-int chromiumDelete(sqlite3_vfs*, const char* fileName, int)
+int chromiumDelete(sqlite3_vfs*, const char* fileName, int syncDir)
 {
-    return WebKit::Platform::current()->databaseDeleteFile(String(fileName), false);
+    return WebKit::Platform::current()->databaseDeleteFile(String(fileName), syncDir);
 }
 
 // Check the existance and status of the given file.
@@ -93,14 +114,21 @@ int chromiumDelete(sqlite3_vfs*, const char* fileName, int)
 // res - the result.
 int chromiumAccess(sqlite3_vfs*, const char* fileName, int flag, int* res)
 {
-    DWORD attr = WebKit::Platform::current()->databaseGetFileAttributes(String(fileName));
+    int attr = static_cast<int>(WebKit::Platform::current()->databaseGetFileAttributes(String(fileName)));
+    if (attr < 0) {
+        *res = 0;
+        return SQLITE_OK;
+    }
+
     switch (flag) {
-    case SQLITE_ACCESS_READ:
     case SQLITE_ACCESS_EXISTS:
-        *res = (attr != INVALID_FILE_ATTRIBUTES);
+        *res = 1;   // if the file doesn't exist, attr < 0
         break;
     case SQLITE_ACCESS_READWRITE:
-        *res = ((attr & FILE_ATTRIBUTE_READONLY) == 0);
+        *res = (attr & W_OK) && (attr & R_OK);
+        break;
+    case SQLITE_ACCESS_READ:
+        *res = (attr & R_OK);
         break;
     default:
         return SQLITE_ERROR;
@@ -142,26 +170,26 @@ namespace WebCore {
 
 void SQLiteFileSystem::registerSQLiteVFS()
 {
-    sqlite3_vfs* win32_vfs = sqlite3_vfs_find("win32");
+    sqlite3_vfs* unix_vfs = sqlite3_vfs_find("unix");
     static sqlite3_vfs chromium_vfs = {
         1,
-        win32_vfs->szOsFile,
-        win32_vfs->mxPathname,
+        unix_vfs->szOsFile,
+        unix_vfs->mxPathname,
         0,
         "chromium_vfs",
-        win32_vfs->pAppData,
+        unix_vfs->pAppData,
         chromiumOpen,
         chromiumDelete,
         chromiumAccess,
         chromiumFullPathname,
         chromiumDlOpen,
-        win32_vfs->xDlError,
-        win32_vfs->xDlSym,
-        win32_vfs->xDlClose,
-        win32_vfs->xRandomness,
-        win32_vfs->xSleep,
-        win32_vfs->xCurrentTime,
-        win32_vfs->xGetLastError
+        unix_vfs->xDlError,
+        unix_vfs->xDlSym,
+        unix_vfs->xDlClose,
+        unix_vfs->xRandomness,
+        unix_vfs->xSleep,
+        unix_vfs->xCurrentTime,
+        unix_vfs->xGetLastError
     };
     sqlite3_vfs_register(&chromium_vfs, 0);
 }

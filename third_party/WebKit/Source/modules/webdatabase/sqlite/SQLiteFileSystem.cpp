@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/sql/SQLiteFileSystem.h"
+#include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 
 #include <sqlite3.h>
 #include "public/platform/Platform.h"

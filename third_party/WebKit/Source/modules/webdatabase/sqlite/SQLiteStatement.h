@@ -26,7 +26,7 @@
 #ifndef SQLiteStatement_h
 #define SQLiteStatement_h
 
-#include "core/platform/sql/SQLiteDatabase.h"
+#include "modules/webdatabase/sqlite/SQLiteDatabase.h"
 
 struct sqlite3_stmt;
 

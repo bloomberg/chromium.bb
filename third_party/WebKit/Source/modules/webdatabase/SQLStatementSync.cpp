@@ -32,9 +32,9 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/platform/sql/SQLValue.h"
-#include "core/platform/sql/SQLiteDatabase.h"
-#include "core/platform/sql/SQLiteStatement.h"
+#include "modules/webdatabase/sqlite/SQLValue.h"
+#include "modules/webdatabase/sqlite/SQLiteDatabase.h"
+#include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/DatabaseSync.h"
 #include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLResultSet.h"

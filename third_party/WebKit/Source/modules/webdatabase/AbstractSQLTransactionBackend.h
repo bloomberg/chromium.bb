@@ -26,7 +26,7 @@
 #ifndef AbstractSQLTransactionBackend_h
 #define AbstractSQLTransactionBackend_h
 
-#include "core/platform/sql/SQLValue.h"
+#include "modules/webdatabase/sqlite/SQLValue.h"
 #include "modules/webdatabase/AbstractSQLStatement.h"
 #include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLTransactionState.h"

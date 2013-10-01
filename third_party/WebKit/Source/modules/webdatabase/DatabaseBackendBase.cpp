@@ -32,8 +32,8 @@
 
 #include "core/dom/ExceptionCode.h"
 #include "platform/Logging.h"
-#include "core/platform/sql/SQLiteStatement.h"
-#include "core/platform/sql/SQLiteTransaction.h"
+#include "modules/webdatabase/sqlite/SQLiteStatement.h"
+#include "modules/webdatabase/sqlite/SQLiteTransaction.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
 #include "modules/webdatabase/DatabaseBackendContext.h"
 #include "modules/webdatabase/DatabaseBase.h"

@@ -28,7 +28,7 @@
 #ifndef SQLStatement_h
 #define SQLStatement_h
 
-#include "core/platform/sql/SQLValue.h"
+#include "modules/webdatabase/sqlite/SQLValue.h"
 #include "modules/webdatabase/AbstractSQLStatement.h"
 #include "modules/webdatabase/SQLCallbackWrapper.h"
 #include "modules/webdatabase/SQLResultSet.h"

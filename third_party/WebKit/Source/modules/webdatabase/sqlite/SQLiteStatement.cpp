@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "core/platform/sql/SQLiteStatement.h"
+#include "modules/webdatabase/sqlite/SQLiteStatement.h"
 
 #include <sqlite3.h>
 #include "platform/Logging.h"
-#include "core/platform/sql/SQLValue.h"
+#include "modules/webdatabase/sqlite/SQLValue.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/CString.h"
 

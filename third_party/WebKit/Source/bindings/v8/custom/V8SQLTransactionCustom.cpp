@@ -36,7 +36,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/platform/sql/SQLValue.h"
+#include "modules/webdatabase/sqlite/SQLValue.h"
 #include "modules/webdatabase/Database.h"
 #include "wtf/Vector.h"
 

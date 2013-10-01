@@ -30,8 +30,8 @@
 #include "modules/webdatabase/SQLTransactionBackend.h"
 
 #include "platform/Logging.h"
-#include "core/platform/sql/SQLValue.h"
-#include "core/platform/sql/SQLiteTransaction.h"
+#include "modules/webdatabase/sqlite/SQLValue.h"
+#include "modules/webdatabase/sqlite/SQLiteTransaction.h"
 #include "modules/webdatabase/AbstractSQLTransaction.h"
 #include "modules/webdatabase/Database.h" // FIXME: Should only be used in the frontend.
 #include "modules/webdatabase/DatabaseAuthorizer.h"

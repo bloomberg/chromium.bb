@@ -32,7 +32,7 @@
 #include "modules/webdatabase/DatabaseTracker.h"
 
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/platform/sql/SQLiteFileSystem.h"
+#include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseBackendContext.h"
 #include "modules/webdatabase/DatabaseObserver.h"

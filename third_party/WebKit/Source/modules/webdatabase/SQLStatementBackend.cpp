@@ -29,9 +29,9 @@
 #include "modules/webdatabase/SQLStatementBackend.h"
 
 #include "platform/Logging.h"
-#include "core/platform/sql/SQLValue.h"
-#include "core/platform/sql/SQLiteDatabase.h"
-#include "core/platform/sql/SQLiteStatement.h"
+#include "modules/webdatabase/sqlite/SQLValue.h"
+#include "modules/webdatabase/sqlite/SQLiteDatabase.h"
+#include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/AbstractSQLStatement.h"
 #include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/SQLError.h"

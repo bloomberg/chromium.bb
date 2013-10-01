@@ -37,6 +37,7 @@
     'type': 'static_library',
     'dependencies': [
       '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
+      '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
       '../config.gyp:config',
       '../core/core.gyp:webcore',
     ],
