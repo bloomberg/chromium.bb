@@ -236,8 +236,8 @@ class WebViewInteractiveTest
 
     const testing::TestInfo* const test_info =
             testing::UnitTest::GetInstance()->current_test_info();
-    const std::string& prefix = "DragDropWithinWebView";
-    if (!strncmp(test_info->name(), prefix.c_str(), prefix.size())) {
+    const char* prefix = "DragDropWithinWebView";
+    if (!strncmp(test_info->name(), prefix, strlen(prefix))) {
       // In the drag drop test we add 20px padding to the page body because on
       // windows if we get too close to the edge of the window the resize cursor
       // appears and we start dragging the window edge.
