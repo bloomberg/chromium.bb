@@ -1618,19 +1618,28 @@ ErrorCode PthreadPolicyEquality(Sandbox *sandbox, int sysno, void *aux) {
     // uses the more modern flags, sets the TLS from the call to clone(), and
     // uses futexes to monitor threads. Android's C run-time library, doesn't
     // do any of this, but it sets the obsolete (and no-op) CLONE_DETACHED.
+    // More recent versions of Android don't set CLONE_DETACHED anymore, so
+    // the last case accounts for that.
     // The following policy is very strict. It only allows the exact masks
     // that we have seen in known implementations. It is probably somewhat
     // stricter than what we would want to do.
+    const uint64_t kGlibcCloneMask =
+        CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
+        CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS |
+        CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID;
+    const uint64_t kBaseAndroidCloneMask =
+        CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
+        CLONE_THREAD | CLONE_SYSVSEM;
     return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                         CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|
-                         CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|
-                         CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID,
+                         kGlibcCloneMask,
                          ErrorCode(ErrorCode::ERR_ALLOWED),
            sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                         CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|
-                         CLONE_THREAD|CLONE_SYSVSEM|CLONE_DETACHED,
+                         kBaseAndroidCloneMask | CLONE_DETACHED,
                          ErrorCode(ErrorCode::ERR_ALLOWED),
-                         sandbox->Trap(PthreadTrapHandler, aux)));
+           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                         kBaseAndroidCloneMask,
+                         ErrorCode(ErrorCode::ERR_ALLOWED),
+                         sandbox->Trap(PthreadTrapHandler, "Unknown mask"))));
   } else {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
