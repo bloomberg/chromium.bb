@@ -530,3 +530,29 @@ TEST(EncryptorTest, EmptyEncrypt) {
   EXPECT_EQ(expected_ciphertext_hex, base::HexEncode(ciphertext.data(),
                                                      ciphertext.size()));
 }
+
+TEST(EncryptorTest, CipherTextNotMultipleOfBlockSize) {
+  std::string key = "128=SixteenBytes";
+  std::string iv = "Sweet Sixteen IV";
+
+  scoped_ptr<crypto::SymmetricKey> sym_key(crypto::SymmetricKey::Import(
+      crypto::SymmetricKey::AES, key));
+  ASSERT_TRUE(sym_key.get());
+
+  crypto::Encryptor encryptor;
+  // The IV must be exactly as long a the cipher block size.
+  EXPECT_EQ(16U, iv.size());
+  EXPECT_TRUE(encryptor.Init(sym_key.get(), crypto::Encryptor::CBC, iv));
+
+  // Use a separately allocated array to improve the odds of the memory tools
+  // catching invalid accesses.
+  //
+  // Otherwise when using std::string as the other tests do, accesses several
+  // bytes off the end of the buffer may fall inside the reservation of
+  // the string and not be detected.
+  scoped_ptr<char[]> ciphertext(new char[1]);
+
+  std::string plaintext;
+  EXPECT_FALSE(
+      encryptor.Decrypt(base::StringPiece(ciphertext.get(), 1), &plaintext));
+}
