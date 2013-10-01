@@ -105,6 +105,7 @@ const char kAdbPagesField[] = "pages";
 const char kAdbPortStatus[] = "adbPortStatus";
 const char kAdbScreenWidthField[] = "adbScreenWidth";
 const char kAdbScreenHeightField[] = "adbScreenHeight";
+const char kAdbAttachedForeignField[]  = "adbAttachedForeign";
 const char kGuestList[] = "guests";
 
 DictionaryValue* BuildTargetDescriptor(
@@ -717,6 +718,8 @@ void InspectUI::RemoteDevicesChanged(
             browser->socket().c_str(),
             page->id().c_str());
         page_data->SetString(kAdbGlobalIdField, page_id);
+        page_data->SetBoolean(kAdbAttachedForeignField,
+            page->attached() && !page->HasDevToolsWindow());
         // Pass the screen size in the page object to make sure that
         // the caching logic does not prevent the page item from updating
         // when the screen size changes.

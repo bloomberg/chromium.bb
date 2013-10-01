@@ -466,7 +466,8 @@ function addTargetToList(data, list, properties) {
   actionBox.className = 'actions';
   subrowBox.appendChild(actionBox);
 
-  addActionLink(row, 'inspect', inspect.bind(null, data), data.hasNoUniqueId);
+  addActionLink(row, 'inspect', inspect.bind(null, data),
+      data.hasNoUniqueId || data.adbAttachedForeign);
 
   list.appendChild(row);
   return row;

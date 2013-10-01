@@ -97,6 +97,8 @@ class DevToolsAdbBridge
     std::string favicon_url() { return favicon_url_; }
     bool attached() { return debug_url_.empty(); }
 
+    bool HasDevToolsWindow();
+
     void Inspect(Profile* profile);
     void Activate();
     void Close();
@@ -126,6 +128,7 @@ class DevToolsAdbBridge
     std::string favicon_url_;
     std::string debug_url_;
     std::string frontend_url_;
+    std::string agent_id_;
     DISALLOW_COPY_AND_ASSIGN(RemotePage);
   };
 

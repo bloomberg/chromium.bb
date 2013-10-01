@@ -772,6 +772,14 @@ DevToolsAdbBridge::RemotePage::RemotePage(
     frontend_url_ = frontend_url_.substr(0, ws_param);
   if (frontend_url_.find("http:") == 0)
     frontend_url_ = "https:" + frontend_url_.substr(5);
+
+  agent_id_ = base::StringPrintf("%s:%s:%s",
+      device_->serial().c_str(), socket_.c_str(), id_.c_str());
+}
+
+bool DevToolsAdbBridge::RemotePage::HasDevToolsWindow() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return g_host_delegates.Get().find(agent_id_) != g_host_delegates.Get().end();
 }
 
 void DevToolsAdbBridge::RemotePage::Inspect(Profile* profile) {
@@ -831,15 +839,13 @@ void DevToolsAdbBridge::RemotePage::InspectOnHandlerThread(
 
 void DevToolsAdbBridge::RemotePage::InspectOnUIThread(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string agent_id = base::StringPrintf("%s:%s:%s",
-    device_->serial().c_str(), socket_.c_str(), id_.c_str());
   AgentHostDelegates::iterator it =
-      g_host_delegates.Get().find(agent_id);
+      g_host_delegates.Get().find(agent_id_);
   if (it != g_host_delegates.Get().end()) {
     it->second->OpenFrontend();
   } else if (!attached()) {
     new AgentHostDelegate(
-        agent_id, device_, socket_, debug_url_,
+        agent_id_, device_, socket_, debug_url_,
         frontend_url_, bridge_->GetAdbMessageLoop(), profile);
   }
 }
