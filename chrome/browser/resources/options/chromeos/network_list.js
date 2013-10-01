@@ -700,6 +700,8 @@ cr.define('options.network', function() {
         this.iconURL = this.data.iconURL;
       else if (this.data.iconType)
         this.iconType = this.data.iconType;
+      if (this.data.policyManaged)
+        this.showManagedNetworkIndicator();
     },
   };
 
@@ -976,7 +978,8 @@ cr.define('options.network', function() {
       networkList.update({key: 'ethernet',
                           subtitle: loadTimeData.getString('networkConnected'),
                           iconURL: ethernetConnection.iconURL,
-                          command: ethernetOptions});
+                          command: ethernetOptions,
+                          policyManaged: ethernetConnection.policyManaged});
     } else {
       networkList.deleteItem('ethernet');
     }

@@ -9,7 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
-#include "chromeos/network/network_state.h"
+#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/generated_resources.h"
 #include "net/proxy/proxy_config.h"
@@ -40,11 +40,11 @@ const char* ModeToString(UIProxyConfig::Mode mode) {
 // for this network.
 bool GetProxyConfig(const PrefService* profile_prefs,
                     const PrefService* local_state_prefs,
-                    const NetworkState& network,
+                    const FavoriteState& network,
                     net::ProxyConfig* proxy_config,
                     onc::ONCSource* onc_source) {
   scoped_ptr<ProxyConfigDictionary> proxy_dict =
-      proxy_config::GetProxyConfigForNetwork(
+      proxy_config::GetProxyConfigForFavoriteNetwork(
           profile_prefs, local_state_prefs, network, onc_source);
   if (!proxy_dict)
     return false;
@@ -79,11 +79,11 @@ void UIProxyConfigService::SetCurrentNetwork(
 }
 
 void UIProxyConfigService::UpdateFromPrefs() {
-  const NetworkState* network = NULL;
+  const FavoriteState* network = NULL;
   if (!current_ui_network_.empty()) {
-    network = NetworkHandler::Get()->network_state_handler()
-        ->GetNetworkState(current_ui_network_);
-    LOG_IF(ERROR, !network) << "Can't find requested network "
+    network = NetworkHandler::Get()->network_state_handler()->GetFavoriteState(
+        current_ui_network_);
+    LOG_IF(ERROR, !network) << "Couldn't find FavoriteState for network "
                             << current_ui_network_;
   }
   if (!network) {
@@ -108,11 +108,12 @@ void UIProxyConfigService::SetProxyConfig(const UIProxyConfig& config) {
   if (current_ui_network_.empty())
     return;
 
-  const NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->
-      GetNetworkState(current_ui_network_);
+  const FavoriteState* network =
+      NetworkHandler::Get()->network_state_handler()->GetFavoriteState(
+          current_ui_network_);
   if (!network) {
-    LOG(ERROR) << "Can't find requested network " << current_ui_network_;
+    LOG(ERROR) << "Couldn't find FavoriteState for network "
+               << current_ui_network_;
     return;
   }
 
@@ -124,12 +125,12 @@ void UIProxyConfigService::SetProxyConfig(const UIProxyConfig& config) {
   VLOG(1) << "Set proxy for " << current_ui_network_
           << " to " << *proxy_config_value;
 
-  proxy_config::SetProxyConfigForNetwork(proxy_config_dict, *network);
+  proxy_config::SetProxyConfigForFavoriteNetwork(proxy_config_dict, *network);
   current_ui_config_.state = ProxyPrefs::CONFIG_SYSTEM;
 }
 
 void UIProxyConfigService::DetermineEffectiveConfig(
-    const NetworkState& network) {
+    const FavoriteState& network) {
   DCHECK(local_state_prefs_);
 
   // The pref service to read proxy settings that apply to all networks.

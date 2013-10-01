@@ -64,9 +64,7 @@ class CHROMEOS_EXPORT NetworkUIData {
   const base::DictionaryValue* user_settings() const {
     return user_settings_.get();
   }
-  void set_user_settings(scoped_ptr<base::DictionaryValue> dict) {
-    user_settings_ = dict.Pass();
-  }
+  void set_user_settings(scoped_ptr<base::DictionaryValue> dict);
   const std::string& policy_guid() const {
     return policy_guid_;
   }

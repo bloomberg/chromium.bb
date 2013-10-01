@@ -8,11 +8,15 @@
 #include <string>
 #include <vector>
 
-#include "base/values.h"
 #include "chromeos/network/managed_state.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "url/gurl.h"
+
+namespace base {
+class DictionaryValue;
+class Value;
+}
 
 namespace chromeos {
 
@@ -50,7 +54,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   const std::string& error() const { return error_; }
   bool connectable() const { return connectable_; }
 
-  const base::DictionaryValue& proxy_config() const { return proxy_config_; }
   const NetworkUIData& ui_data() const { return ui_data_; }
 
   // IPConfig Properties. These require an extra call to ShillIPConfigClient,
@@ -82,9 +85,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Returns true if |connection_state_| is a connected/connecting state.
   bool IsConnectedState() const;
   bool IsConnectingState() const;
-
-  // Returns true if the ONC source is a device or user policy.
-  bool IsManaged() const;
 
   // Returns true if the network properties are stored in a user profile.
   bool IsPrivate() const;
@@ -122,10 +122,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string profile_path_;
   std::string error_;
   bool connectable_;
-
-  // TODO(pneubeck): Remove ProxyConfig once NetworkConfigurationHandler
-  // provides proxy configuration. crbug.com/241775
-  base::DictionaryValue proxy_config_;
 
   // This is convenient to keep cached for now, but shouldn't be necessary;
   // avoid using it if possible.

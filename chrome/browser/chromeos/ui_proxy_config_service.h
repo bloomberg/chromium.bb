@@ -14,7 +14,7 @@ class PrefService;
 
 namespace chromeos {
 
-class NetworkState;
+class FavoriteState;
 
 // This class is only accessed from the UI via Profile::GetProxyConfigTracker to
 // allow the user to read and modify the proxy configuration via
@@ -55,7 +55,7 @@ class UIProxyConfigService {
   // |network| and if user is using shared proxies.  The effective config is
   // stored in |current_ui_config_| but not activated on network stack, and
   // hence, not picked up by observers.
-  void DetermineEffectiveConfig(const NetworkState& network);
+  void DetermineEffectiveConfig(const FavoriteState& network);
 
   // Service path of network whose proxy configuration is being displayed or
   // edited via UI.

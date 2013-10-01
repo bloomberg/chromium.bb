@@ -21,12 +21,15 @@ namespace chromeos {
 
 namespace {
 
-bool IsProxyConfigured(const NetworkState* network) {
-  DCHECK(network);
+bool HasDefaultNetworkProxyConfigured() {
+  const FavoriteState* favorite =
+      NetworkHandler::Get()->network_state_handler()->DefaultFavoriteNetwork();
+  if (!favorite)
+    return false;
   onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
   scoped_ptr<ProxyConfigDictionary> proxy_dict =
-      proxy_config::GetProxyConfigForNetwork(
-          NULL, g_browser_process->local_state(), *network, &onc_source);
+      proxy_config::GetProxyConfigForFavoriteNetwork(
+          NULL, g_browser_process->local_state(), *favorite, &onc_source);
   ProxyPrefs::ProxyMode mode;
   return (proxy_dict && proxy_dict->GetMode(&mode) &&
           mode == ProxyPrefs::MODE_FIXED_SERVERS);
@@ -51,13 +54,13 @@ NetworkStateInformer::State GetStateForDefaultNetwork() {
     // NetworkPortalDetector's state of current network is unknown.
     if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE ||
         (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
-         !IsProxyConfigured(network) &&
+         !HasDefaultNetworkProxyConfigured() &&
          network->connection_state() == shill::kStateOnline)) {
       return NetworkStateInformer::ONLINE;
     }
     if (status ==
             NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED &&
-        IsProxyConfigured(network)) {
+        HasDefaultNetworkProxyConfigured()) {
       return NetworkStateInformer::PROXY_AUTH_REQUIRED;
     }
     if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL ||

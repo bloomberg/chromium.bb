@@ -5,10 +5,10 @@
 #include "chromeos/network/network_state.h"
 
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_util.h"
-#include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/shill_property_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -126,29 +126,6 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &roaming_);
   } else if (key == shill::kSecurityProperty) {
     return GetStringValue(key, value, &security_);
-  } else if (key == shill::kProxyConfigProperty) {
-    std::string proxy_config_str;
-    if (!value.GetAsString(&proxy_config_str)) {
-      NET_LOG_ERROR("Failed to parse " + key, path());
-      return false;
-    }
-
-    proxy_config_.Clear();
-    if (proxy_config_str.empty())
-      return true;
-
-    scoped_ptr<base::DictionaryValue> proxy_config_dict(
-        onc::ReadDictionaryFromJson(proxy_config_str));
-    if (proxy_config_dict) {
-      // Warning: The DictionaryValue returned from
-      // ReadDictionaryFromJson/JSONParser is an optimized derived class that
-      // doesn't allow releasing ownership of nested values. A Swap in the wrong
-      // order leads to memory access errors.
-      proxy_config_.MergeDictionary(proxy_config_dict.get());
-    } else {
-      NET_LOG_ERROR("Failed to parse " + key, path());
-    }
-    return true;
   } else if (key == shill::kUIDataProperty) {
     scoped_ptr<NetworkUIData> new_ui_data =
         shill_property_util::GetUIDataFromValue(value);
@@ -251,11 +228,6 @@ bool NetworkState::IsConnectedState() const {
 
 bool NetworkState::IsConnectingState() const {
   return StateIsConnecting(connection_state_);
-}
-
-bool NetworkState::IsManaged() const {
-  return ui_data_.onc_source() == onc::ONC_SOURCE_DEVICE_POLICY ||
-         ui_data_.onc_source() == onc::ONC_SOURCE_USER_POLICY;
 }
 
 bool NetworkState::IsPrivate() const {

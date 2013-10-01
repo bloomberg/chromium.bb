@@ -19,6 +19,7 @@
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
@@ -34,11 +35,11 @@ namespace {
 // proxy was configured for this network.
 bool GetProxyConfig(const PrefService* profile_prefs,
                     const PrefService* local_state_prefs,
-                    const NetworkState& network,
+                    const FavoriteState& network,
                     net::ProxyConfig* proxy_config,
                     onc::ONCSource* onc_source) {
   scoped_ptr<ProxyConfigDictionary> proxy_dict =
-      proxy_config::GetProxyConfigForNetwork(
+      proxy_config::GetProxyConfigForFavoriteNetwork(
           profile_prefs, local_state_prefs, network, onc_source);
   if (!proxy_dict)
     return false;
@@ -105,7 +106,6 @@ void ProxyConfigServiceImpl::DefaultNetworkChanged(
 
   VLOG(1) << "DefaultNetworkChanged to '" << new_network_path << "'.";
   VLOG_IF(1, new_network) << "New network: name=" << new_network->name()
-                          << ", proxy=" << new_network->proxy_config()
                           << ", profile=" << new_network->profile_path();
 
   // Even if the default network is the same, its proxy config (e.g. if private
@@ -160,8 +160,8 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
 }
 
 void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
-  const NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+  const FavoriteState* network = handler->DefaultFavoriteNetwork();
 
   // Get prefs proxy config if available.
   net::ProxyConfig pref_config;

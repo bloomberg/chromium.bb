@@ -188,6 +188,17 @@ const NetworkState* NetworkStateHandler::DefaultNetwork() const {
   return network;
 }
 
+const FavoriteState* NetworkStateHandler::DefaultFavoriteNetwork() const {
+  const NetworkState* default_network = DefaultNetwork();
+  if (!default_network)
+    return NULL;
+  const FavoriteState* default_favorite =
+      GetFavoriteState(default_network->path());
+  DCHECK(default_favorite);
+  DCHECK(default_favorite->update_received());
+  return default_favorite;
+}
+
 const NetworkState* NetworkStateHandler::ConnectedNetworkByType(
     const NetworkTypePattern& type) const {
   for (ManagedStateList::const_iterator iter = network_list_.begin();

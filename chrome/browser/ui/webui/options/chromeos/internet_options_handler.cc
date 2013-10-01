@@ -412,6 +412,22 @@ std::string ProviderTypeString(
   return l10n_util::GetStringUTF8(id);
 }
 
+bool HasPolicyForFavorite(const FavoriteState* favorite,
+                          const PrefService* profile_prefs) {
+  return onc::HasPolicyForFavoriteNetwork(
+      profile_prefs, g_browser_process->local_state(), *favorite);
+}
+
+bool HasPolicyForNetwork(const NetworkState* network,
+                         const PrefService* profile_prefs) {
+  const FavoriteState* favorite =
+      NetworkHandler::Get()->network_state_handler()->GetFavoriteState(
+          network->path());
+  if (!favorite)
+    return false;
+  return HasPolicyForFavorite(favorite, profile_prefs);
+}
+
 void SetCommonNetworkInfo(const ManagedState* state,
                           const gfx::ImageSkia& icon,
                           ui::ScaleFactor icon_scale_factor,
@@ -435,14 +451,16 @@ void SetCommonNetworkInfo(const ManagedState* state,
 // transferred to the caller.
 base::DictionaryValue* BuildNetworkDictionary(
     const NetworkState* network,
-    ui::ScaleFactor icon_scale_factor) {
+    ui::ScaleFactor icon_scale_factor,
+    const PrefService* profile_prefs) {
   scoped_ptr<base::DictionaryValue> network_info(new base::DictionaryValue());
   network_info->SetBoolean(kNetworkInfoKeyConnectable, network->connectable());
   network_info->SetBoolean(kNetworkInfoKeyConnected,
                            network->IsConnectedState());
   network_info->SetBoolean(kNetworkInfoKeyConnecting,
                            network->IsConnectingState());
-  network_info->SetBoolean(kNetworkInfoKeyPolicyManaged, network->IsManaged());
+  network_info->SetBoolean(kNetworkInfoKeyPolicyManaged,
+                           HasPolicyForNetwork(network, profile_prefs));
 
   gfx::ImageSkia icon = ash::network_icon::GetImageForNetwork(
       network, ash::network_icon::ICON_TYPE_LIST);
@@ -452,12 +470,14 @@ base::DictionaryValue* BuildNetworkDictionary(
 
 base::DictionaryValue* BuildFavoriteDictionary(
     const FavoriteState* favorite,
-    ui::ScaleFactor icon_scale_factor) {
+    ui::ScaleFactor icon_scale_factor,
+    const PrefService* profile_prefs) {
   scoped_ptr<base::DictionaryValue> network_info(new base::DictionaryValue());
   network_info->SetBoolean(kNetworkInfoKeyConnectable, false);
   network_info->SetBoolean(kNetworkInfoKeyConnected, false);
   network_info->SetBoolean(kNetworkInfoKeyConnecting, false);
-  network_info->SetBoolean(kNetworkInfoKeyPolicyManaged, favorite->IsManaged());
+  network_info->SetBoolean(kNetworkInfoKeyPolicyManaged,
+                           HasPolicyForFavorite(favorite, profile_prefs));
 
   gfx::ImageSkia icon = ash::network_icon::GetImageForDisconnectedNetwork(
       ash::network_icon::ICON_TYPE_LIST, favorite->type());
@@ -1929,7 +1949,9 @@ base::ListValue* InternetOptionsHandler::GetWiredList() {
   if (!network)
     return list;
   list->Append(
-      BuildNetworkDictionary(network, web_ui()->GetDeviceScaleFactor()));
+      BuildNetworkDictionary(network,
+                             web_ui()->GetDeviceScaleFactor(),
+                             Profile::FromWebUI(web_ui())->GetPrefs()));
   return list;
 }
 
@@ -1942,7 +1964,9 @@ base::ListValue* InternetOptionsHandler::GetWirelessList() {
   for (NetworkStateHandler::NetworkStateList::const_iterator iter =
            networks.begin(); iter != networks.end(); ++iter) {
     list->Append(
-        BuildNetworkDictionary(*iter, web_ui()->GetDeviceScaleFactor()));
+        BuildNetworkDictionary(*iter,
+                               web_ui()->GetDeviceScaleFactor(),
+                               Profile::FromWebUI(web_ui())->GetPrefs()));
   }
 
   return list;
@@ -1957,7 +1981,9 @@ base::ListValue* InternetOptionsHandler::GetVPNList() {
   for (NetworkStateHandler::NetworkStateList::const_iterator iter =
            networks.begin(); iter != networks.end(); ++iter) {
     list->Append(
-        BuildNetworkDictionary(*iter, web_ui()->GetDeviceScaleFactor()));
+        BuildNetworkDictionary(*iter,
+                               web_ui()->GetDeviceScaleFactor(),
+                               Profile::FromWebUI(web_ui())->GetPrefs()));
   }
 
   return list;
@@ -1975,7 +2001,9 @@ base::ListValue* InternetOptionsHandler::GetRememberedList() {
         favorite->type() != shill::kTypeVPN)
       continue;
     list->Append(
-        BuildFavoriteDictionary(favorite, web_ui()->GetDeviceScaleFactor()));
+        BuildFavoriteDictionary(favorite,
+                                web_ui()->GetDeviceScaleFactor(),
+                                Profile::FromWebUI(web_ui())->GetPrefs()));
   }
 
   return list;

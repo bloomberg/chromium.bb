@@ -113,6 +113,10 @@ NetworkUIData::NetworkUIData(const base::DictionaryValue& dict) {
 NetworkUIData::~NetworkUIData() {
 }
 
+void NetworkUIData::set_user_settings(scoped_ptr<base::DictionaryValue> dict) {
+  user_settings_ = dict.Pass();
+}
+
 void NetworkUIData::FillDictionary(base::DictionaryValue* dict) const {
   dict->Clear();
 

@@ -7,11 +7,14 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/ui_proxy_config.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
+#include "chrome/common/pref_names.h"
+#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_handler.h"
@@ -238,6 +241,101 @@ const base::DictionaryValue* FindPolicyForActiveUser(
   std::string username_hash = user ? user->username_hash() : std::string();
   return NetworkHandler::Get()->managed_network_configuration_handler()->
       FindPolicyByGUID(username_hash, guid, onc_source);
+}
+
+namespace {
+
+const base::DictionaryValue* GetNetworkConfigByGUID(
+    const base::ListValue& network_configs,
+    const std::string& guid) {
+  for (base::ListValue::const_iterator it = network_configs.begin();
+       it != network_configs.end(); ++it) {
+    const base::DictionaryValue* network = NULL;
+    (*it)->GetAsDictionary(&network);
+    std::string current_guid;
+    network->GetStringWithoutPathExpansion(onc::network_config::kGUID,
+                                           &current_guid);
+    if (current_guid == guid)
+      return network;
+  }
+  return NULL;
+}
+
+const base::DictionaryValue* GetPolicyForNetworkFromPref(
+    const PrefService* pref_service,
+    const char* pref_name,
+    const FavoriteState& favorite) {
+  if (!pref_service) {
+    VLOG(2) << "No pref service";
+    return NULL;
+  }
+
+  const PrefService::Preference* preference =
+      pref_service->FindPreference(pref_name);
+  if (!preference) {
+    VLOG(2) << "No preference " << pref_name;
+    // The preference may not exist in tests.
+    return NULL;
+  }
+
+  // User prefs are not stored in this Preference yet but only the policy.
+  //
+  // The policy server incorrectly configures the OpenNetworkConfiguration user
+  // policy as Recommended. To work around that, we handle the Recommended and
+  // the Mandatory value in the same way.
+  // TODO(pneubeck): Remove this workaround, once the server is fixed. See
+  // http://crbug.com/280553 .
+  if (preference->IsDefaultValue()) {
+    VLOG(2) << "Preference has no recommended or mandatory value.";
+    // No policy set.
+    return NULL;
+  }
+  VLOG(2) << "Preference with policy found.";
+  const base::Value* onc_policy_value = preference->GetValue();
+  DCHECK(onc_policy_value);
+
+  const base::ListValue* onc_policy = NULL;
+  onc_policy_value->GetAsList(&onc_policy);
+  DCHECK(onc_policy);
+
+  return GetNetworkConfigByGUID(*onc_policy, favorite.guid());
+}
+
+}  // namespace
+
+const base::DictionaryValue* GetPolicyForFavoriteNetwork(
+    const PrefService* profile_prefs,
+    const PrefService* local_state_prefs,
+    const FavoriteState& favorite,
+    onc::ONCSource* onc_source) {
+  VLOG(2) << "GetPolicyForFavorite: " << favorite.path();
+  *onc_source = onc::ONC_SOURCE_NONE;
+
+  const base::DictionaryValue* network_policy = GetPolicyForNetworkFromPref(
+      profile_prefs, prefs::kOpenNetworkConfiguration, favorite);
+  if (network_policy) {
+    VLOG(1) << "Network " << favorite.path() << " is managed by user policy.";
+    *onc_source = onc::ONC_SOURCE_USER_POLICY;
+    return network_policy;
+  }
+  network_policy = GetPolicyForNetworkFromPref(
+      local_state_prefs, prefs::kDeviceOpenNetworkConfiguration, favorite);
+  if (network_policy) {
+    VLOG(1) << "Network " << favorite.path() << " is managed by device policy.";
+    *onc_source = onc::ONC_SOURCE_DEVICE_POLICY;
+    return network_policy;
+  }
+  VLOG(2) << "Network " << favorite.path() << " is unmanaged.";
+  return NULL;
+}
+
+bool HasPolicyForFavoriteNetwork(const PrefService* profile_prefs,
+                                 const PrefService* local_state_prefs,
+                                 const FavoriteState& network) {
+  onc::ONCSource ignored_onc_source;
+  const base::DictionaryValue* policy = onc::GetPolicyForFavoriteNetwork(
+      profile_prefs, local_state_prefs, network, &ignored_onc_source);
+  return policy != NULL;
 }
 
 }  // namespace onc

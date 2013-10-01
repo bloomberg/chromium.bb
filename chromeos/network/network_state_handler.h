@@ -125,6 +125,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // This is equivalent to ConnectedNetworkByType(kMatchTypeDefault).
   const NetworkState* DefaultNetwork() const;
 
+  // Returns the FavoriteState associated to DefaultNetwork. Returns NULL if,
+  // and only if, DefaultNetwork returns NULL.
+  const FavoriteState* DefaultFavoriteNetwork() const;
+
   // Returns the primary connected network of matching |type|, otherwise NULL.
   const NetworkState* ConnectedNetworkByType(
       const NetworkTypePattern& type) const;

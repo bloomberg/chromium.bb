@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
