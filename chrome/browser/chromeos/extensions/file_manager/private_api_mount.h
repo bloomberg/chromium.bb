@@ -60,15 +60,15 @@ class FileBrowserPrivateRemoveMountFunction
       const std::vector<ui::SelectedFileInfo>& files);
 };
 
-// Implements chrome.fileBrowserPrivate.getMountPoints method.
-class FileBrowserPrivateGetMountPointsFunction
+// Implements chrome.fileBrowserPrivate.getVolumeMetadataList method.
+class FileBrowserPrivateGetVolumeMetadataListFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getMountPoints",
-                             FILEBROWSERPRIVATE_GETMOUNTPOINTS)
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getVolumeMetadataList",
+                             FILEBROWSERPRIVATE_GETVOLUMEMETADATALIST)
 
  protected:
-  virtual ~FileBrowserPrivateGetMountPointsFunction() {}
+  virtual ~FileBrowserPrivateGetVolumeMetadataListFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;

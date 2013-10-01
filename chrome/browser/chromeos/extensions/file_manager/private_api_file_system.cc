@@ -540,36 +540,6 @@ void FileBrowserPrivateGetSizeStatsFunction::GetSizeStatsCallback(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateGetVolumeMetadataFunction::RunImpl() {
-  using extensions::api::file_browser_private::GetVolumeMetadata::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), profile(), GURL(params->mount_url));
-  if (file_path.empty()) {
-    error_ = "Invalid mount path.";
-    return false;
-  }
-
-  results_.reset();
-
-  base::FilePath home_path;
-  // TODO(hidehiko): Return the volume info for Drive File System.
-  if (PathService::Get(base::DIR_HOME, &home_path) &&
-      file_path == home_path.AppendASCII("Downloads")) {
-    // Return simple (fake) volume metadata for Downloads volume.
-    SetResult(CreateDownloadsVolumeMetadata());
-  } else {
-    const DiskMountManager::Disk* volume = GetVolumeAsDisk(file_path.value());
-    if (volume)
-      SetResult(CreateValueFromDisk(profile_, extension_->id(), volume));
-  }
-
-  SendResponse(true);
-  return true;
-}
-
 bool FileBrowserPrivateValidatePathNameLengthFunction::RunImpl() {
   using extensions::api::file_browser_private::ValidatePathNameLength::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));

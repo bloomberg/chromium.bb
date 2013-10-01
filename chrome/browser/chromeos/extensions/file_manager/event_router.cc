@@ -166,23 +166,6 @@ bool IsGooglePhotosInstalled(Profile *profile) {
   return false;
 }
 
-// This method is temporarily introduced to make a change step by step.
-// After mounting logic is moved to VolumeManager, this should be removed.
-std::string MountTypeToString(chromeos::MountType type) {
-  switch (type) {
-    case chromeos::MOUNT_TYPE_INVALID:
-      return "";
-    case chromeos::MOUNT_TYPE_DEVICE:
-      return util::VolumeTypeToStringEnum(VOLUME_TYPE_REMOVABLE_DISK_PARTITION);
-    case chromeos::MOUNT_TYPE_ARCHIVE:
-      return util::VolumeTypeToStringEnum(VOLUME_TYPE_MOUNTED_ARCHIVE_FILE);
-    case chromeos::MOUNT_TYPE_GOOGLE_DRIVE:
-      return util::VolumeTypeToStringEnum(VOLUME_TYPE_GOOGLE_DRIVE);
-  }
-  NOTREACHED();
-  return "";
-}
-
 // Sends an event named |event_name| with arguments |event_args| to extensions.
 void BroadcastEvent(Profile* profile,
                     const std::string& event_name,
@@ -240,24 +223,6 @@ MountErrorToMountCompletedStatus(chromeos::MountError error) {
   return MountCompletedEvent::STATUS_NONE;
 }
 
-file_browser_private::MountCompletedEvent::VolumeType
-VolumeTypeToMountCompletedVolumeType(VolumeType volume_type) {
-  using file_browser_private::MountCompletedEvent;
-
-  switch (volume_type) {
-    case VOLUME_TYPE_GOOGLE_DRIVE:
-      return MountCompletedEvent::VOLUME_TYPE_DRIVE;
-    case VOLUME_TYPE_DOWNLOADS_DIRECTORY:
-      return MountCompletedEvent::VOLUME_TYPE_DOWNLOADS;
-    case VOLUME_TYPE_REMOVABLE_DISK_PARTITION:
-      return MountCompletedEvent::VOLUME_TYPE_REMOVABLE;
-    case VOLUME_TYPE_MOUNTED_ARCHIVE_FILE:
-      return MountCompletedEvent::VOLUME_TYPE_ARCHIVE;
-  }
-  NOTREACHED();
-  return MountCompletedEvent::VOLUME_TYPE_NONE;
-}
-
 void BroadcastMountCompletedEvent(
     Profile* profile,
     file_browser_private::MountCompletedEvent::EventType event_type,
@@ -266,22 +231,13 @@ void BroadcastMountCompletedEvent(
   file_browser_private::MountCompletedEvent event;
   event.event_type = event_type;
   event.status = MountErrorToMountCompletedStatus(error);
-  event.source_path = volume_info.source_path.AsUTF8Unsafe();
-  event.volume_type = VolumeTypeToMountCompletedVolumeType(volume_info.type);
+  util::VolumeInfoToVolumeMetadata(
+      profile, volume_info, &event.volume_metadata);
 
-  if (!volume_info.mount_path.empty()) {
-    // Convert mount point path to relative path with the external file system
-    // exposed within File API.
-    base::FilePath relative_mount_path;
-    if (util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
-            profile, kFileManagerAppId, base::FilePath(volume_info.mount_path),
-            &relative_mount_path)) {
-      event.mount_path.reset(
-          new std::string("/" + relative_mount_path.AsUTF8Unsafe()));
-    } else {
-      event.status = file_browser_private::MountCompletedEvent::
-          STATUS_ERROR_PATH_UNMOUNTED;
-    }
+  if (!volume_info.mount_path.empty() &&
+      event.volume_metadata.mount_path.empty()) {
+    event.status =
+        file_browser_private::MountCompletedEvent::STATUS_ERROR_PATH_UNMOUNTED;
   }
 
   BroadcastEvent(

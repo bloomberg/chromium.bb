@@ -110,66 +110,47 @@ volumeManagerUtil.getRootEntry_ = function(
 };
 
 /**
- * Builds the VolumeInfo data for mountPath.
- * @param {util.VolumeType} volumeType The type of the volume.
- * @param {string} mountPath Path to the volume.
- * @param {util.VolumeError} error The error string if available.
- * @param {function(Object)} callback Called on completion.
- *     TODO(hidehiko): Replace the type from Object to its original type.
+ * Builds the VolumeInfo data from VolumeMetadata.
+ * @param {VolumeMetadata} volumeMetadata Metadata instance for the volume.
+ * @param {function(VolumeInfo)} callback Called on completion.
  */
-volumeManagerUtil.createVolumeInfo = function(
-    volumeType, mountPath, error, callback) {
-  // Validation of the input.
-  volumeManagerUtil.validateMountPath(mountPath);
-  if (error)
-    volumeManagerUtil.validateError(error);
-
-  // TODO(hidehiko): Do we really need to create a volume info for error
-  // case?
-  chrome.fileBrowserPrivate.getVolumeMetadata(
-      util.makeFilesystemUrl(mountPath),
-      function(metadata) {
-        if (chrome.runtime.lastError && !error)
-          error = util.VolumeError.UNKNOWN;
-
-        // TODO(hidehiko): These values should be merged into the result of
-        // onMountCompleted's event object. crbug.com/284975.
-        var deviceType = null;
-        var isReadOnly = false;
-        if (metadata) {
-          deviceType = metadata.deviceType;
-          isReadOnly = metadata.isReadOnly;
+volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
+  volumeManagerUtil.getRootEntry_(
+      volumeMetadata.mountPath,
+      function(entry) {
+        if (volumeMetadata.volumeType === util.VolumeType.DRIVE) {
+          // After file system is mounted, we "read" drive grand root
+          // entry at first. This triggers full feed fetch on background.
+          // Note: we don't need to handle errors here, because even if
+          // it fails, accessing to some path later will just become
+          // a fast-fetch and it re-triggers full-feed fetch.
+          entry.createReader().readEntries(
+              function() { /* do nothing */ },
+              function(error) {
+                console.error(
+                    'Triggering full feed fetch is failed: ' +
+                        util.getFileErrorMnemonic(error.code));
+              });
         }
-
-        volumeManagerUtil.getRootEntry_(
-            mountPath,
-            function(entry) {
-              if (mountPath == RootDirectory.DRIVE) {
-                // After file system is mounted, we "read" drive grand root
-                // entry at first. This triggers full feed fetch on background.
-                // Note: we don't need to handle errors here, because even if
-                // it fails, accessing to some path later will just become
-                // a fast-fetch and it re-triggers full-feed fetch.
-                entry.createReader().readEntries(
-                    function() { /* do nothing */ },
-                    function(error) {
-                      console.error(
-                          'Triggering full feed fetch is failed: ' +
-                              util.getFileErrorMnemonic(error.code));
-                    });
-              }
-              callback(new VolumeInfo(
-                  volumeType, mountPath, entry, error, deviceType, isReadOnly));
-            },
-            function(fileError) {
-              console.error('Root entry is not found: ' +
-                  mountPath + ', ' + util.getFileErrorMnemonic(fileError.code));
-              if (!error)
-                error = util.VolumeError.UNKNOWN;
-              callback(new VolumeInfo(
-                  volumeType, mountPath, null, error, deviceType, isReadOnly));
-            });
-    });
+        callback(new VolumeInfo(
+            volumeMetadata.volumeType,
+            volumeMetadata.mountPath,
+            entry,
+            volumeMetadata.mountCondition,
+            volumeMetadata.deviceType,
+            volumeMetadata.isReadOnly));
+      },
+      function(fileError) {
+        console.error('Root entry is not found: ' +
+            mountPath + ', ' + util.getFileErrorMnemonic(fileError.code));
+        callback(new VolumeInfo(
+            volumeMetadata.volumeType,
+            volumeMetadata.mountPath,
+            null,  // Root entry is not found.
+            volumeMetadata.mountCondition,
+            volumeMetadata.deviceType,
+            volumeMetadata.isReadOnly));
+      });
 };
 
 /**
@@ -439,25 +420,16 @@ VolumeManager.prototype.setDriveStatus_ = function(newStatus) {
  * @private
  */
 VolumeManager.prototype.initialize_ = function(callback) {
-  chrome.fileBrowserPrivate.getMountPoints(function(mountPointList) {
-    // According to the C++ implementation, getMountPoints only looks at
-    // the connected devices (such as USB memory), and doesn't return anything
-    // about Drive, Downloads nor archives.
-    // TODO(hidehiko): Figure out the historical intention of the method,
-    // and clean them up.
-
-    // Create VolumeInfo for each mount point.
+  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeMetadataList) {
+    // Create VolumeInfo for each volume.
     var group = new AsyncUtil.Group();
-    for (var i = 0; i < mountPointList.length; i++) {
-      group.add(function(mountPoint, continueCallback) {
-        var error = mountPoint.mountCondition ?
-            'error_' + mountPoint.mountCondition : '';
+    for (var i = 0; i < volumeMetadataList.length; i++) {
+      group.add(function(volumeMetadata, continueCallback) {
         volumeManagerUtil.createVolumeInfo(
-            mountPoint.volumeType,
-            '/' + mountPoint.mountPath, error,
+            volumeMetadata,
             function(volumeInfo) {
               this.volumeInfoList.add(volumeInfo);
-              if (mountPoint.volumeType == 'drive') {
+              if (volumeMetadata.volumeType === util.VolumeType.DRIVE) {
                 // Set Drive status here.
                 this.setDriveStatus_(
                     volumeInfo.error ? VolumeManager.DriveStatus.ERROR :
@@ -466,7 +438,7 @@ VolumeManager.prototype.initialize_ = function(callback) {
               }
               continueCallback();
             }.bind(this));
-      }.bind(this, mountPointList[i]));
+      }.bind(this, volumeMetadataList[i]));
     }
 
     // Then, finalize the initialization.
@@ -485,24 +457,26 @@ VolumeManager.prototype.initialize_ = function(callback) {
  * @private
  */
 VolumeManager.prototype.onMountCompleted_ = function(event) {
-  if (event.eventType == 'mount') {
-    if (event.mountPath) {
+  if (event.eventType === 'mount') {
+    if (event.volumeMetadata.mountPath) {
       var requestKey = this.makeRequestKey_(
-          'mount', event.volumeType, event.sourcePath);
-      var error = event.status == 'success' ? '' : event.status;
+          'mount',
+          event.volumeMetadata.volumeType,
+          event.volumeMetadata.sourcePath);
+
+      var error = event.status === 'success' ? '' : event.status;
 
       volumeManagerUtil.createVolumeInfo(
-          event.volumeType, event.mountPath, error, function(volume) {
-            this.volumeInfoList.add(volume);
-            this.finishRequest_(requestKey, event.status, event.mountPath);
+          event.volumeMetadata,
+          function(volumeInfo) {
+            this.volumeInfoList.add(volumeInfo);
+            this.finishRequest_(requestKey, event.status, volumeInfo.mountPath);
 
-            // For mounting Drive File System, we need to update some
-            // VolumeManager's state.
-            if (event.volumeType == 'drive') {
+            if (volumeInfo.volumeType === util.VolumeType.DRIVE) {
               // Set Drive status here.
               this.setDriveStatus_(
-                  volume.error ? VolumeManager.DriveStatus.ERROR :
-                                 VolumeManager.DriveStatus.MOUNTED);
+                  volumeInfo.error ? VolumeManager.DriveStatus.ERROR :
+                                     VolumeManager.DriveStatus.MOUNTED);
               // Also update the network connection status, because until the
               // drive is initialized, the status is set to not ready.
               // TODO(hidehiko): The connection status should be migrated into
@@ -513,20 +487,20 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     } else {
       console.warn('No mount path.');
       this.finishRequest_(requestKey, event.status);
-      if (event.volumeType == 'drive')
+      if (event.volumeMetadata.volumeType === util.VolumeType.DRIVE)
         this.setDriveStatus_(VolumeManager.DriveStatus.ERROR);
     }
-  } else if (event.eventType == 'unmount') {
-    var mountPath = event.mountPath;
+  } else if (event.eventType === 'unmount') {
+    var mountPath = event.volumeMetadata.mountPath;
     volumeManagerUtil.validateMountPath(mountPath);
     var status = event.status;
-    if (status == util.VolumeError.PATH_UNMOUNTED) {
+    if (status === util.VolumeError.PATH_UNMOUNTED) {
       console.warn('Volume already unmounted: ', mountPath);
       status = 'success';
     }
-    var requestKey = this.makeRequestKey_('unmount', '', event.mountPath);
+    var requestKey = this.makeRequestKey_('unmount', '', mountPath);
     var requested = requestKey in this.requests_;
-    if (event.status == 'success' && !requested &&
+    if (event.status === 'success' && !requested &&
         this.volumeInfoList.find(mountPath)) {
       console.warn('Mounted volume without a request: ', mountPath);
       var e = new cr.Event('externally-unmounted');
@@ -535,13 +509,13 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     }
     this.finishRequest_(requestKey, status);
 
-    if (event.status == 'success') {
+    if (event.status === 'success') {
       this.volumeInfoList.remove(mountPath);
 
-      if (event.volumeType == 'drive')
+      if (event.volumeMetadata.volumeType === util.VolumeType.DRIVE)
         this.setDriveStatus_(VolumeManager.DriveStatus.UNMOUNTED);
     } else {
-      if (event.volumeType == 'drive')
+      if (event.volumeMetadata.volumeType === util.VolumeType.DRIVE)
         this.setDriveStatus_(VolumeManager.DriveStatus.ERROR);
     }
   }

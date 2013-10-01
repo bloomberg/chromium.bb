@@ -22,56 +22,12 @@
 
 using chromeos::disks::DiskMountManager;
 using content::BrowserThread;
-using extensions::api::file_browser_private::MountPointInfo;
+namespace file_browser_private = extensions::api::file_browser_private;
 
 namespace extensions {
-namespace {
-
-// Returns the Value of the |volume_info|.
-linked_ptr<MountPointInfo> CreateValueFromVolumeInfo(
-    const file_manager::VolumeInfo& volume_info,
-    Profile* profile,
-    const std::string& extension_id) {
-  linked_ptr<MountPointInfo> result(new MountPointInfo);
-
-  result->volume_type = MountPointInfo::VOLUME_TYPE_NONE;
-  switch (volume_info.type) {
-    case file_manager::VOLUME_TYPE_GOOGLE_DRIVE:
-      result->volume_type = MountPointInfo::VOLUME_TYPE_DRIVE;
-      break;
-    case file_manager::VOLUME_TYPE_DOWNLOADS_DIRECTORY:
-      result->volume_type = MountPointInfo::VOLUME_TYPE_DOWNLOADS;
-      break;
-    case file_manager::VOLUME_TYPE_REMOVABLE_DISK_PARTITION:
-      result->volume_type = MountPointInfo::VOLUME_TYPE_REMOVABLE;
-      break;
-    case file_manager::VOLUME_TYPE_MOUNTED_ARCHIVE_FILE:
-      result->volume_type = MountPointInfo::VOLUME_TYPE_ARCHIVE;
-      break;
-  }
-  DCHECK_NE(result->volume_type, MountPointInfo::VOLUME_TYPE_NONE);
-
-  if (!volume_info.source_path.empty())
-    result->source_path.reset(
-        new std::string(volume_info.source_path.AsUTF8Unsafe()));
-
-  // Convert mount point path to relative path with the external file system
-  // exposed within File API.
-  base::FilePath relative_path;
-  if (file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
-          profile, extension_id, volume_info.mount_path, &relative_path))
-    result->mount_path.reset(
-        new std::string(relative_path.AsUTF8Unsafe()));
-
-  result->mount_condition =
-      DiskMountManager::MountConditionToString(volume_info.mount_condition);
-  return result;
-}
-
-}  // namespace
 
 bool FileBrowserPrivateAddMountFunction::RunImpl() {
-  using extensions::api::file_browser_private::AddMount::Params;
+  using file_browser_private::AddMount::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -135,7 +91,7 @@ void FileBrowserPrivateAddMountFunction::OnMountedStateSet(
 }
 
 bool FileBrowserPrivateRemoveMountFunction::RunImpl() {
-  using extensions::api::file_browser_private::RemoveMount::Params;
+  using file_browser_private::RemoveMount::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -177,7 +133,7 @@ void FileBrowserPrivateRemoveMountFunction::GetSelectedFileInfoResponse(
   SendResponse(true);
 }
 
-bool FileBrowserPrivateGetMountPointsFunction::RunImpl() {
+bool FileBrowserPrivateGetVolumeMetadataListFunction::RunImpl() {
   if (args_->GetSize())
     return false;
 
@@ -185,11 +141,13 @@ bool FileBrowserPrivateGetMountPointsFunction::RunImpl() {
       file_manager::VolumeManager::Get(profile_)->GetVolumeInfoList();
 
   std::string log_string;
-  std::vector<linked_ptr<extensions::api::file_browser_private::
-                         MountPointInfo> > result;
+  std::vector<linked_ptr<file_browser_private::VolumeMetadata> > result;
   for (size_t i = 0; i < volume_info_list.size(); ++i) {
-    result.push_back(CreateValueFromVolumeInfo(
-        volume_info_list[i], profile(), extension_id()));
+    linked_ptr<file_browser_private::VolumeMetadata> volume_metadata(
+        new file_browser_private::VolumeMetadata);
+    file_manager::util::VolumeInfoToVolumeMetadata(
+        profile(), volume_info_list[i], volume_metadata.get());
+    result.push_back(volume_metadata);
     if (!log_string.empty())
       log_string += ", ";
     log_string += volume_info_list[i].mount_path.AsUTF8Unsafe();
@@ -200,8 +158,8 @@ bool FileBrowserPrivateGetMountPointsFunction::RunImpl() {
       "%s[%d] succeeded. (results: '[%s]', %" PRIuS " mount points)",
       name().c_str(), request_id(), log_string.c_str(), result.size());
 
-  results_ = extensions::api::file_browser_private::
-      GetMountPoints::Results::Create(result);
+  results_ =
+      file_browser_private::GetVolumeMetadataList::Results::Create(result);
   SendResponse(true);
   return true;
 }

@@ -12,6 +12,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "chromeos/dbus/cros_disks_client.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
 class Profile;
@@ -49,6 +50,9 @@ struct VolumeInfo {
   // The type of mounted volume.
   VolumeType type;
 
+  // The type of device. (e.g. USB, SD card, DVD etc.)
+  chromeos::DeviceType device_type;
+
   // The source path of the volume.
   // E.g.:
   // - /home/chronos/user/Downloads/zipfile_path.zip
@@ -74,6 +78,9 @@ struct VolumeInfo {
 
   // Is the device is a parent device (i.e. sdb rather than sdb1).
   bool is_parent;
+
+  // True if the volume is read only.
+  bool is_read_only;
 };
 
 // Manages "Volume"s for file manager. Here are "Volume"s.

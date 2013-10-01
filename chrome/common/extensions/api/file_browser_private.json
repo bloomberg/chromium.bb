@@ -77,33 +77,6 @@
         }
       },
       {
-        "id": "MountPointInfo",
-        "type": "object",
-        "description": "Mounted point information.",
-        "properties": {
-          "mountPath": {
-            "type": "string",
-            "optional": true,
-            "description": "Disk volume mount point path. The value corresponds to its Entry.fullPath in File API."
-          },
-          "sourcePath": {
-            "type": "string",
-            "optional": true,
-            "description": "The path to the mounted device, archive file or network resource."
-          },
-          "volumeType": {
-            "type": "string",
-            "optional": true,
-            "enum": ["drive", "downloads", "removable", "archive"],
-            "description": "Type of the mounted volume."
-          },
-          "mountCondition": {
-            "type": "string",
-            "description": "Additional data about mount, for example, that the filesystem is not supported."
-          }
-        }
-      },
-      {
         "id": "MountPointSizeStats",
         "type": "object",
         "description": "Information about total and remaining size on the mount point.",
@@ -127,60 +100,31 @@
             "type": "string",
             "description": "Disk volume mount point path."
           },
-          "devicePath": {
+          "sourcePath": {
             "type": "string",
             "optional": true,
-            "description": "Disk volume device path."
+            "description": "The path to the mounted device, archive file or network resource."
           },
-          "systemPath": {
+          "volumeType": {
             "type": "string",
-            "optional": true,
-            "description": "Disk volume system path."
-          },
-          "filePath": {
-            "type": "string",
-            "optional": true,
-            "description": "Disk volume file path."
-          },
-          "deviceLabel": {
-            "type": "string",
-            "optional": true,
-            "description": "Volume label."
-          },
-          "driveLabel": {
-            "type": "string",
-            "optional": true,
-            "description": "Volume's disk label."
+            "enum": ["drive", "downloads", "removable", "archive"],
+            "description": "Type of the mounted volume."
           },
           "deviceType": {
             "type": "string",
             "optional": true,
             "enum": ["usb", "sd", "optical", "mobile", "unknown"],
-            "description": "Device type."
-          },
-          "isParent": {
-            "type": "boolean",
-            "optional": true,
-            "description": "Flag that specifies if volume is a parent device."
+            "description": "Device type. Available if this is removable volume."
           },
           "isReadOnly": {
             "type": "boolean",
             "description": "Flag that specifies if volume is mounted in read-only mode."
           },
-          "hasMedia": {
-            "type": "boolean",
+          "mountCondition": {
+            "type": "string",
             "optional": true,
-            "description": "Flag that specifies if volume has any media."
-          },
-          "isOnBootDevice": {
-            "type": "boolean",
-            "optional": true,
-            "description": "Flag that specifies if volume is on boot device."
-          },
-          "totalSize": {
-            "type": "integer",
-            "optional": true,
-            "description": "Total disk volume size."
+            "enum": ["unknown", "unsupported"],
+            "description": "Additional data about mount, for example, that the filesystem is not supported."
           }
         }
       },
@@ -210,19 +154,9 @@
                      "error_path_unmounted"],
             "description": "Event type that tells listeners if mount was successful or an error occurred. It also specifies the error."
           },
-          "sourcePath": {
-            "type": "string",
-            "description": "Path that has been mounted."
-          },
-          "mountPath": {
-            "type": "string",
-            "optional": true,
-            "description": "Path that sourcePath was mounted to."
-          },
-          "volumeType": {
-            "type": "string",
-            "enum": ["drive", "downloads", "removable", "archive"],
-            "description": "Type of the mounted volume."
+          "volumeMetadata": {
+            "$ref": "VolumeMetadata",
+            "description": "Metadata of the mounted volume."
           }
         }
       },
@@ -637,29 +571,6 @@
         ]
       },
       {
-        "name": "getVolumeMetadata",
-        "description": "Requests volume's metadata",
-        "parameters": [
-          {
-            "name": "mountUrl",
-            "type": "string",
-            "description": "Mount url of the volume."
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "parameters": [
-              {
-                "name" : "volumeMetadata",
-                "$ref": "VolumeMetadata",
-                "optional": true,
-                "description": "A requested metadata dictionary object. undefined if there is no volume with selected devicePath"
-              }
-            ]
-          }
-        ]
-      },
-      {
         "name": "addMount",
         "description": "Mount a resource or a file.",
         "parameters": [
@@ -707,18 +618,18 @@
         ]
       },
       {
-        "name": "getMountPoints",
-        "description": "Get the list of mount points.",
+        "name": "getVolumeMetadataList",
+        "description": "Get the list of mounted volumes.",
         "parameters": [
           {
             "name": "callback",
             "type": "function",
             "parameters": [
               {
-                "name" : "mountPoints",
+                "name" : "volumeMetadataList",
                 "type": "array",
-                "items": {"$ref": "MountPointInfo"},
-                "description": "The list of MountPointInfo representing mounted devices."
+                "items": {"$ref": "VolumeMetadata"},
+                "description": "The list of VolumeMetadata representing mounted volumes."
               }
             ]
           }

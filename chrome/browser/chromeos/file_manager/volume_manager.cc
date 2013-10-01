@@ -53,10 +53,12 @@ VolumeInfo CreateDriveVolumeInfo() {
 
   VolumeInfo volume_info;
   volume_info.type = VOLUME_TYPE_GOOGLE_DRIVE;
+  volume_info.device_type = chromeos::DEVICE_TYPE_UNKNOWN;
   volume_info.source_path = drive_path;
   volume_info.mount_path = drive_path;
   volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
   volume_info.is_parent = false;
+  volume_info.is_read_only = false;
   return volume_info;
 }
 
@@ -64,10 +66,12 @@ VolumeInfo CreateDownloadsVolumeInfo(
     const base::FilePath& downloads_path) {
   VolumeInfo volume_info;
   volume_info.type = VOLUME_TYPE_DOWNLOADS_DIRECTORY;
+  volume_info.device_type = chromeos::DEVICE_TYPE_UNKNOWN;
   // Keep source_path empty.
   volume_info.mount_path = downloads_path;
   volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
   volume_info.is_parent = false;
+  volume_info.is_read_only = false;
   return volume_info;
 }
 
@@ -80,12 +84,16 @@ VolumeInfo CreateVolumeInfoFromMountPointInfo(
   volume_info.mount_path = base::FilePath(mount_point.mount_path);
   volume_info.mount_condition = mount_point.mount_condition;
   if (disk) {
+    volume_info.device_type = disk->device_type();
     volume_info.system_path_prefix =
         base::FilePath(disk->system_path_prefix());
     volume_info.drive_label = disk->drive_label();
     volume_info.is_parent = disk->is_parent();
+    volume_info.is_read_only = disk->is_read_only();
   } else {
+    volume_info.device_type = chromeos::DEVICE_TYPE_UNKNOWN;
     volume_info.is_parent = false;
+    volume_info.is_read_only = false;
   }
 
   return volume_info;

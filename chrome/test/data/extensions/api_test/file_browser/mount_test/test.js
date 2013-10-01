@@ -4,94 +4,59 @@
 
 // These have to be sync'd with file_browser_private_apitest.cc
 var expectedVolume1 = {
-  devicePath: 'device_path1',
-  mountPath: 'removable/mount_path1',
-  systemPath: 'system_path1',
-  filePath: 'file_path1',
-  deviceLabel: 'device_label1',
-  driveLabel: 'drive_label1',
+  mountPath: '/removable/mount_path1',
+  sourcePath: 'device_path1',
+  volumeType: 'removable',
   deviceType: 'usb',
-  totalSize: 1073741824,
-  isParent: false,
-  isReadOnly: false,
-  hasMedia: false,
-  isOnBootDevice: false
+  isReadOnly: false
 };
 
 var expectedVolume2 = {
-  devicePath: 'device_path2',
-  mountPath: 'removable/mount_path2',
-  systemPath: 'system_path2',
-  filePath: 'file_path2',
-  deviceLabel: 'device_label2',
-  driveLabel: 'drive_label2',
+  mountPath: '/removable/mount_path2',
+  sourcePath: 'device_path2',
+  volumeType: 'removable',
   deviceType: 'mobile',
-  totalSize: 47723,
-  isParent: true,
-  isReadOnly: true,
-  hasMedia: true,
-  isOnBootDevice: true
+  isReadOnly: true
 };
 
 var expectedVolume3 = {
-  devicePath: 'device_path3',
-  mountPath: 'removable/mount_path3',
-  systemPath: 'system_path3',
-  filePath: 'file_path3',
-  deviceLabel: 'device_label3',
-  driveLabel: 'drive_label3',
+  mountPath: '/removable/mount_path3',
+  sourcePath: 'device_path3',
+  volumeType: 'removable',
   deviceType: 'optical',
-  totalSize: 0,
-  isParent: true,
-  isReadOnly: false,
-  hasMedia: false,
-  isOnBootDevice: true
+  isReadOnly: false
 };
 
 var expectedDownloadsVolume = {
-  mountPath: 'Downloads',
-  isReadOnly: false,
+  mountPath: '/Downloads',
+  volumeType: 'downloads',
+  isReadOnly: false
+};
+
+var expectedDriveVolume = {
+  mountPath: '/drive',
+  sourcePath: '/special/drive',
+  volumeType: 'drive',
+  isReadOnly: false
+};
+
+var expectedArchiveVolume = {
+  mountPath: '/archive/archive_mount_path',
+  sourcePath: 'archive_path',
+  volumeType: 'archive',
+  isReadOnly: false
 };
 
 // List of expected mount points.
 // NOTE: this has to be synced with values in file_browser_private_apitest.cc
 //       and values sorted by mountPath.
-var expectedMountPoints = [
-  {
-    sourcePath: '/special/drive',
-    mountPath: 'drive',
-    volumeType: 'drive',
-    mountCondition: ''
-  },
-  {
-    mountPath: 'Downloads',
-    volumeType: 'downloads',
-    mountCondition: ''
-  },
-  {
-    sourcePath: 'archive_path',
-    mountPath: 'archive/archive_mount_path',
-    volumeType: 'archive',
-    mountCondition: ''
-  },
-  {
-    sourcePath: 'device_path1',
-    mountPath: 'removable/mount_path1',
-    volumeType: 'removable',
-    mountCondition: ''
-  },
-  {
-    sourcePath: 'device_path2',
-    mountPath: 'removable/mount_path2',
-    volumeType: 'removable',
-    mountCondition: ''
-  },
-  {
-    sourcePath: 'device_path3',
-    mountPath: 'removable/mount_path3',
-    volumeType: 'removable',
-    mountCondition: ''
-  }
+var expectedVolumeList = [
+  expectedDriveVolume,
+  expectedDownloadsVolume,
+  expectedArchiveVolume,
+  expectedVolume1,
+  expectedVolume2,
+  expectedVolume3,
 ];
 
 function validateObject(received, expected, name) {
@@ -103,8 +68,17 @@ function validateObject(received, expected, name) {
       return false;
     }
   }
-  if (Object.keys(expected).length != Object.keys(received).length) {
-    console.warn('Unexpected property found in returned volume');
+
+  var expectedKeys = Object.keys(expected);
+  var receivedKeys = Object.keys(received);
+  if (expectedKeys.length !== receivedKeys.length) {
+    var unexpectedKeys = [];
+    for (var i = 0; i < receivedKeys.length; i++) {
+      if (!(receivedKeys[i] in expected))
+        unexpectedKeys.push(receivedKeys[i]);
+    }
+
+    console.warn('Unexpected properties found: ' + unexpectedKeys);
     return false;
   }
   return true;
@@ -129,76 +103,15 @@ chrome.test.runTests([
     chrome.test.succeed();
   },
 
-  function getVolumeMetadataValid1() {
-    chrome.fileBrowserPrivate.getVolumeMetadata(
-        createFileUrl(expectedVolume1.mountPath),
+  function getVolumeMetadataList() {
+    chrome.fileBrowserPrivate.getVolumeMetadataList(
         chrome.test.callbackPass(function(result) {
-          chrome.test.assertTrue(
-              validateObject(result, expectedVolume1, 'volume'),
-              'getVolumeMetadata result for first volume not as expected');
-    }));
-  },
-
-  function getVolumeMetadataValid2() {
-    chrome.fileBrowserPrivate.getVolumeMetadata(
-        createFileUrl(expectedVolume2.mountPath),
-        chrome.test.callbackPass(function(result) {
-          chrome.test.assertTrue(
-              validateObject(result, expectedVolume2, 'volume'),
-              'getVolumeMetadata result for second volume not as expected');
-    }));
-  },
-
-  function getVolumeMetadataValid3() {
-    chrome.fileBrowserPrivate.getVolumeMetadata(
-        createFileUrl(expectedVolume3.mountPath),
-        chrome.test.callbackPass(function(result) {
-          chrome.test.assertTrue(
-              validateObject(result, expectedVolume3, 'volume'),
-              'getVolumeMetadata result for third volume not as expected');
-    }));
-  },
-
-  function getVolumeMetadataDownloads() {
-    chrome.fileBrowserPrivate.getVolumeMetadata(
-        createFileUrl(expectedDownloadsVolume.mountPath),
-        chrome.test.callbackPass(function(result) {
-          chrome.test.assertTrue(
-              validateObject(result, expectedDownloadsVolume, 'volume'),
-              'getVolumeMetadata result for downloads volume not as expected');
-        }));
-  },
-
-  function getVolumeMetadataNonExistentPath() {
-    chrome.fileBrowserPrivate.getVolumeMetadata(
-        createFileUrl('removable/non_existent_device_path'),
-        chrome.test.callbackPass(function(result) {
-          chrome.test.assertEq(undefined, result);
-    }));
-  },
-
-  function getVolumeMetadataArchive() {
-    chrome.fileBrowserPrivate.getVolumeMetadata(
-        createFileUrl('archive/archive_mount_path'),
-        chrome.test.callbackPass(function(result) {
-          chrome.test.assertEq(undefined, result);
-   }));
-  },
-
-  function getVolumeMetadataInvalidPath() {
-    chrome.fileBrowserPrivate.getVolumeMetadata(
-        'some path',
-        chrome.test.callbackFail('Invalid mount path.'));
-  },
-
-  function getMountPointsTest() {
-    chrome.fileBrowserPrivate.getMountPoints(
-        chrome.test.callbackPass(function(result) {
-          chrome.test.assertEq(result.length, expectedMountPoints.length,
+          chrome.test.assertEq(result.length, expectedVolumeList.length,
               'getMountPoints returned wrong number of mount points.');
-          for (var i = 0; i < expectedMountPoints.length; i++) {
+          for (var i = 0; i < expectedVolumeList.length; i++) {
             chrome.test.assertTrue(
-                validateObject(result[i], expectedMountPoints[i], 'mountPoint'),
+                validateObject(
+                    result[i], expectedVolumeList[i], 'volumeMetadata'),
                 'getMountPoints result[' + i + '] not as expected');
           }
     }));

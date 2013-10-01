@@ -140,21 +140,6 @@ class FileBrowserPrivateGetSizeStatsFunction
                             const uint64* remaining_size);
 };
 
-// Implements the chrome.fileBrowserPrivate.getVolumeMetadata method.
-// Retrieves devices meta-data. Expects volume's device path as an argument.
-class FileBrowserPrivateGetVolumeMetadataFunction
-    : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getVolumeMetadata",
-                             FILEBROWSERPRIVATE_GETVOLUMEMETADATA)
-
- protected:
-  virtual ~FileBrowserPrivateGetVolumeMetadataFunction() {}
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-};
-
 // Implements the chrome.fileBrowserPrivate.validatePathNameLength method.
 class FileBrowserPrivateValidatePathNameLengthFunction
     : public LoggedAsyncExtensionFunction {

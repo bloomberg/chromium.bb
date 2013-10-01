@@ -8,7 +8,6 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_UTIL_H_
 
 #include "base/callback_forward.h"
-#include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "url/gurl.h"
 
@@ -19,15 +18,30 @@ namespace content {
 class RenderViewHost;
 }
 
+namespace extensions {
+namespace api {
+namespace file_browser_private {
+struct VolumeMetadata;
+}
+}
+}
+
 namespace ui {
 struct SelectedFileInfo;
 }
 
 namespace file_manager {
+
+struct VolumeInfo;
+
 namespace util {
 
-// Converts VolumeType to a string enum (volumeType) used in the private API.
-std::string VolumeTypeToStringEnum(VolumeType type);
+// Converts the |volume_info| to VolumeMetadata to communicate with JavaScript
+// via private API.
+void VolumeInfoToVolumeMetadata(
+    Profile* profile,
+    const VolumeInfo& volume_info,
+    extensions::api::file_browser_private::VolumeMetadata* volume_metadata);
 
 // Returns the ID of the tab associated with the dispatcher. Returns 0 on
 // error.
