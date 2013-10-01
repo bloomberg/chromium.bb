@@ -17,13 +17,12 @@ class Image;
 
 class Browser;
 class ChromeLauncherController;
-class Profile;
 
 // Item controller for an browser shortcut.
 class BrowserShortcutLauncherItemController : public LauncherItemController {
  public:
-  BrowserShortcutLauncherItemController(ChromeLauncherController* controller,
-                                        Profile* profile);
+  explicit BrowserShortcutLauncherItemController(
+      ChromeLauncherController* controller);
 
   virtual ~BrowserShortcutLauncherItemController();
 
@@ -61,8 +60,6 @@ class BrowserShortcutLauncherItemController : public LauncherItemController {
   // Returns true when the given |browser| is listed in the browser application
   // list.
   bool IsBrowserRepresentedInBrowserList(Browser* browser);
-
-  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserShortcutLauncherItemController);
 };

@@ -46,7 +46,7 @@ class LauncherItemController {
   ash::LauncherID launcher_id() const { return launcher_id_; }
   void set_launcher_id(ash::LauncherID id) { launcher_id_ = id; }
   virtual const std::string& app_id() const;
-  ChromeLauncherController* launcher_controller() {
+  ChromeLauncherController* launcher_controller() const {
     return launcher_controller_;
   }
 

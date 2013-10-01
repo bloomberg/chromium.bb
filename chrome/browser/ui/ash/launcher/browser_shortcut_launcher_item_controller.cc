@@ -39,12 +39,10 @@
 #endif
 
 BrowserShortcutLauncherItemController::BrowserShortcutLauncherItemController(
-    ChromeLauncherController* launcher_controller,
-    Profile* profile)
+    ChromeLauncherController* launcher_controller)
     : LauncherItemController(TYPE_SHORTCUT,
                              extension_misc::kChromeAppId,
-                             launcher_controller),
-      profile_(profile) {
+                             launcher_controller) {
 }
 
 BrowserShortcutLauncherItemController::
@@ -125,7 +123,7 @@ bool BrowserShortcutLauncherItemController::IsOpen() const {
 
 bool BrowserShortcutLauncherItemController::IsVisible() const {
   Browser* last_browser = chrome::FindTabbedBrowser(
-      profile_,
+      launcher_controller()->profile(),
       true,
       chrome::HOST_DESKTOP_TYPE_ASH);
 
@@ -143,7 +141,7 @@ void BrowserShortcutLauncherItemController::Launch(ash::LaunchSource source,
 
 void BrowserShortcutLauncherItemController::Activate(ash::LaunchSource source) {
   Browser* last_browser = chrome::FindTabbedBrowser(
-      profile_,
+      launcher_controller()->profile(),
       true,
       chrome::HOST_DESKTOP_TYPE_ASH);
 
@@ -296,7 +294,7 @@ void BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
     if (i != items.end()) {
       browser = (++i == items.end()) ? items[0] : *i;
     } else {
-      browser = chrome::FindTabbedBrowser(profile_,
+      browser = chrome::FindTabbedBrowser(launcher_controller()->profile(),
                                           true,
                                           chrome::HOST_DESKTOP_TYPE_ASH);
       if (!browser ||

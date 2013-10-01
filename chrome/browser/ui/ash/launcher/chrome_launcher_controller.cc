@@ -1667,7 +1667,7 @@ ash::LauncherID ChromeLauncherController::CreateBrowserShortcutLauncherItem() {
   size_t index = GetChromeIconIndexForCreation();
   model_->AddAt(index, browser_shortcut);
   browser_item_controller_.reset(
-      new BrowserShortcutLauncherItemController(this, profile_));
+      new BrowserShortcutLauncherItemController(this));
   id_to_item_controller_map_[id] = browser_item_controller_.get();
   id_to_item_controller_map_[id]->set_launcher_id(id);
   return id;
