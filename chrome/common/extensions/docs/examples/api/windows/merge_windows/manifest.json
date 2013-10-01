@@ -1,6 +1,6 @@
 {
   "name": "Merge Windows",
-  "version": "1.0.1.0",
+  "version": "1.0.2",
   "description": "Merges all of the browser's windows into the current window",
   "icons": {
     "48": "merge_windows_48.png",
@@ -14,6 +14,5 @@
     "default_icon": "arrow_in.png",
     "default_title": "Merge Windows"
   },
-  "permissions": ["tabs"],
   "manifest_version": 2
 }

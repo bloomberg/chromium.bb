@@ -1,9 +1,8 @@
 {
   "name": "Live HTTP headers",
   "description": "Displays the live log with the http requests headers",
-  "version": "0.6",
+  "version": "0.7",
   "permissions": [
-    "tabs",
     "debugger"
   ],
   "background": {

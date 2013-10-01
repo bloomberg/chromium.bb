@@ -1,6 +1,6 @@
 {
   "name": "Test Screenshot Extension",
-  "version": "1.1",
+  "version": "1.2",
   "description": "Demonstrate screenshot functionality in the chrome.tabs api. Note: only works for code.google.com",
   "background": {
     "persistent": false,
@@ -11,7 +11,7 @@
     "default_title": "Take a screen shot!"
   },
   "permissions": [
-    "tabs", "*://code.google.com/"
+    "*://code.google.com/"
   ],
   "manifest_version": 2
 }

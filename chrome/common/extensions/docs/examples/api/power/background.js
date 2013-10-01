@@ -17,12 +17,6 @@ var StateEnum = {
 var STATE_KEY = 'state';
 
 /**
- * Should the old {chrome.experimental.power} API be used rather than
- * {chrome.power}?
- */
-var useOldApi = !chrome.power;
-
-/**
  * Loads the locally-saved state asynchronously.
  * @param {function} callback Callback invoked with the loaded {StateEnum}.
  */
@@ -47,21 +41,14 @@ function setState(newState) {
   var imagePrefix = 'night';
   var title = '';
 
-  // The old API doesn't support the "system" level.
-  if (useOldApi && newState == StateEnum.SYSTEM)
-    newState = StateEnum.DISPLAY;
-
   switch (newState) {
     case StateEnum.DISABLED:
-      (useOldApi ? chrome.experimental.power : chrome.power).releaseKeepAwake();
+      chrome.power.releaseKeepAwake();
       imagePrefix = 'night';
       title = chrome.i18n.getMessage('disabledTitle');
       break;
     case StateEnum.DISPLAY:
-      if (useOldApi)
-        chrome.experimental.power.requestKeepAwake(function() {});
-      else
-        chrome.power.requestKeepAwake('display');
+      chrome.power.requestKeepAwake('display');
       imagePrefix = 'day';
       title = chrome.i18n.getMessage('displayTitle');
       break;
@@ -94,7 +81,7 @@ chrome.browserAction.onClicked.addListener(function() {
         setState(StateEnum.DISPLAY);
         break;
       case StateEnum.DISPLAY:
-        setState(useOldApi ? StateEnum.DISABLED : StateEnum.SYSTEM);
+        setState(StateEnum.SYSTEM);
         break;
       case StateEnum.SYSTEM:
         setState(StateEnum.DISABLED);

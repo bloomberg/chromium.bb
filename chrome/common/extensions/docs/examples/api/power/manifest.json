@@ -3,7 +3,7 @@
 
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "1.6",
+  "version": "1.7",
   "icons": {
     "16": "images/icon-16.png",
     "48": "images/icon-48.png",
@@ -11,7 +11,6 @@
   },
 
   "permissions": [
-    "experimental",
     "power",
     "storage"
   ],
