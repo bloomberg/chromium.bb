@@ -3814,22 +3814,32 @@ public:
 
     void kickNoResults()
     {
-        kick(-1, -1);
+        kick(-1, -1, WebTextCheckingTypeSpelling);
     }
 
     void kick()
     {
-        kick(1, 8);
+        kick(1, 8, WebTextCheckingTypeSpelling);
+    }
+
+    void kickGrammar()
+    {
+        kick(1, 8, WebTextCheckingTypeGrammar);
+    }
+
+    void kickInCustomSpellcheckDictionary()
+    {
+        kick(1, 8, WebTextCheckingTypeInCustomSpellcheckDictionary);
     }
 
 private:
-    void kick(int misspellingStartOffset, int misspellingLength)
+    void kick(int misspellingStartOffset, int misspellingLength, WebTextCheckingType type)
     {
         if (!m_completion)
             return;
         Vector<WebTextCheckingResult> results;
         if (misspellingStartOffset >= 0 && misspellingLength > 0)
-            results.append(WebTextCheckingResult(WebTextCheckingTypeSpelling, misspellingStartOffset, misspellingLength));
+            results.append(WebTextCheckingResult(type, misspellingStartOffset, misspellingLength));
         m_completion->didFinishCheckingText(results);
         m_completion = 0;
     }
@@ -3916,6 +3926,47 @@ TEST_F(WebFrameTest, SpellcheckResultErasesMarkers)
 
     spellcheck.kickNoResults();
     EXPECT_EQ(0U, document->markers()->markers().size());
+}
+
+TEST_F(WebFrameTest, SpellcheckResultsSavedInDocument)
+{
+    registerMockedHttpURLLoad("spell.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
+
+    StubbornSpellCheckClient spellcheck;
+    webViewHelper.webView()->setSpellCheckClient(&spellcheck);
+
+    WebFrameImpl* frame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
+    WebInputElement webInputElement = frame->document().getElementById("data").to<WebInputElement>();
+    Document* document = frame->frame()->document();
+    Element* element = document->getElementById("data");
+
+    webViewHelper.webView()->settings()->setAsynchronousSpellCheckingEnabled(true);
+    webViewHelper.webView()->settings()->setUnifiedTextCheckerEnabled(true);
+    webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
+
+    element->focus();
+    document->execCommand("InsertText", false, "wellcome ");
+
+    spellcheck.kick();
+    ASSERT_EQ(1U, document->markers()->markers().size());
+    ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers()->markers()[0]);
+    EXPECT_EQ(DocumentMarker::Spelling, document->markers()->markers()[0]->type());
+
+    document->execCommand("InsertText", false, "wellcome ");
+
+    spellcheck.kickGrammar();
+    ASSERT_EQ(1U, document->markers()->markers().size());
+    ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers()->markers()[0]);
+    EXPECT_EQ(DocumentMarker::Grammar, document->markers()->markers()[0]->type());
+
+    document->execCommand("InsertText", false, "wellcome ");
+
+    spellcheck.kickInCustomSpellcheckDictionary();
+    ASSERT_EQ(1U, document->markers()->markers().size());
+    ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers()->markers()[0]);
+    EXPECT_EQ(DocumentMarker::InCustomSpellcheckDictionary, document->markers()->markers()[0]->type());
 }
 
 class TestAccessInitialDocumentWebFrameClient : public WebFrameClient {

@@ -1629,6 +1629,10 @@ void Editor::markAndReplaceFor(PassRefPtr<SpellCheckRequest> request, const Vect
                     badGrammarRange->startContainer()->document().markers()->addMarker(badGrammarRange.get(), DocumentMarker::Grammar, detail->userDescription, result->hash);
                 }
             }
+        } else if (result->type == TextCheckingTypeInCustomSpellcheckDictionary && resultLocation >= paragraph.checkingStart() && resultLocation + resultLength <= spellingRangeEndOffset) {
+            ASSERT(resultLength > 0 && resultLocation >= 0);
+            RefPtr<Range> inCustomSpellcheckDictionaryRange = paragraph.subrange(resultLocation, resultLength);
+            inCustomSpellcheckDictionaryRange->startContainer()->document().markers()->addMarker(inCustomSpellcheckDictionaryRange.get(), DocumentMarker::InCustomSpellcheckDictionary, result->replacement, result->hash);
         }
     }
 
