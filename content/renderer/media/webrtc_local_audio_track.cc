@@ -156,12 +156,6 @@ void WebRtcLocalAudioTrack::Capture(media::AudioBus* audio_source,
   scoped_refptr<ConfiguredBuffer> current_buffer;
   {
     base::AutoLock auto_lock(lock_);
-    // When the track is disabled, we simply return here.
-    // TODO(xians): Figure out if we should feed zero to sinks instead, in
-    // order to inject VAD data in such case.
-    if (!enabled())
-      return;
-
     capturer = capturer_;
     voe_channels = voe_channels_;
     current_buffer = buffer_;
@@ -173,13 +167,17 @@ void WebRtcLocalAudioTrack::Capture(media::AudioBus* audio_source,
 
   // Push the data to the fifo.
   current_buffer->Push(audio_source);
-  // Only turn off the audio processing when the constrain is set to false as
+  // Only turn off the audio processing when the constraint is set to false as
   // well as there is no correct delay value.
   bool need_audio_processing = need_audio_processing_ ?
       need_audio_processing_ : (audio_delay_milliseconds != 0);
   int current_volume = volume;
   while (current_buffer->Consume()) {
     // Feed the data to the sinks.
+    // TODO (jiayl): we should not pass the real audio data down if the track is
+    // disabled. This is currently done so to feed input to WebRTC typing
+    // detection and should be changed when audio processing is moved from
+    // WebRTC to the track.
     for (SinkList::const_iterator it = sinks.begin(); it != sinks.end(); ++it) {
       int new_volume = (*it)->CaptureData(voe_channels,
                                           current_buffer->buffer(),
