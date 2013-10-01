@@ -2743,6 +2743,8 @@ void WebContentsImpl::SetIsLoading(bool is_loading,
     TRACE_EVENT_ASYNC_BEGIN0("browser", "WebContentsImpl Loading", this);
   else
     TRACE_EVENT_ASYNC_END0("browser", "WebContentsImpl Loading", this);
+
+  // TODO(avi): Remove. http://crbug.com/170921
   int type = is_loading ? NOTIFICATION_LOAD_START : NOTIFICATION_LOAD_STOP;
   NotificationDetails det = NotificationService::NoDetails();
   if (details)
@@ -2848,9 +2850,12 @@ bool WebContentsImpl::UpdateTitleForEntry(NavigationEntryImpl* entry,
   // Lastly, set the title for the view.
   view_->SetPageTitle(final_title);
 
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    TitleWasSet(explicit_set));
+
+  // TODO(avi): Remove. http://crbug.com/170921
   std::pair<NavigationEntry*, bool> details =
       std::make_pair(entry, explicit_set);
-
   NotificationService::current()->Notify(
       NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
       Source<WebContents>(this),

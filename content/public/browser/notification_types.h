@@ -77,12 +77,14 @@ enum NotificationType {
   // A content load is starting.  The source will be a
   // Source<NavigationController> corresponding to the tab in which the load
   // is occurring.  No details are expected for this notification.
+  // DEPRECATED: Use WebContentsObserver::DidStartLoading()
   NOTIFICATION_LOAD_START,
 
   // A content load has stopped. The source will be a
   // Source<NavigationController> corresponding to the tab in which the load
   // is occurring.  Details in the form of a LoadNotificationDetails object
   // are optional.
+  // DEPRECATED: Use WebContentsObserver::DidStopLoading()
   NOTIFICATION_LOAD_STOP,
 
   // Content was loaded from an in-memory cache.  The source will be a
@@ -136,6 +138,7 @@ enum NotificationType {
   // This notification is sent after WebContents' title is updated. The source
   // is a Source<WebContents> with a pointer to the WebContents. The details
   // is a std::pair<NavigationEntry*, bool> that contains more information.
+  // DEPRECATED: Use WebContentsObserver::TitleWasSet()
   NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
 
   // Indicates a WebContents has been hidden or restored.  The source is

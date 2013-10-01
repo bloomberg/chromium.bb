@@ -17,6 +17,7 @@
 #include "base/strings/string16.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
@@ -187,8 +188,9 @@ bool SetCookie(BrowserContext* browser_context,
                const GURL& url,
                const std::string& value);
 
-// Watches title changes on a tab, blocking until an expected title is set.
-class TitleWatcher : public NotificationObserver {
+// Watches title changes on a WebContents, blocking until an expected title is
+// set.
+class TitleWatcher : public WebContentsObserver {
  public:
   // |web_contents| must be non-NULL and needs to stay alive for the
   // entire lifetime of |this|. |expected_title| is the title that |this|
@@ -201,26 +203,22 @@ class TitleWatcher : public NotificationObserver {
   void AlsoWaitForTitle(const string16& expected_title);
 
   // Waits until the title matches either expected_title or one of the titles
-  // added with  AlsoWaitForTitle.  Returns the value of the most recently
+  // added with AlsoWaitForTitle. Returns the value of the most recently
   // observed matching title.
   const string16& WaitAndGetTitle() WARN_UNUSED_RESULT;
 
  private:
-  // NotificationObserver
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+  // Overridden WebContentsObserver methods.
+  virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void TitleWasSet(bool explicit_set) OVERRIDE;
 
-  WebContents* web_contents_;
+  void TestTitle();
+
   std::vector<string16> expected_titles_;
-  NotificationRegistrar notification_registrar_;
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   // The most recently observed expected title, if any.
   string16 observed_title_;
-
-  bool expected_title_observed_;
-  bool quit_loop_on_observation_;
 
   DISALLOW_COPY_AND_ASSIGN(TitleWatcher);
 };
