@@ -12,6 +12,7 @@
 #include "cc/debug/debug_rect_history.h"
 #include "cc/debug/frame_rate_counter.h"
 #include "cc/debug/paint_time_counter.h"
+#include "cc/debug/traced_value.h"
 #include "cc/layers/quad_sink.h"
 #include "cc/output/renderer.h"
 #include "cc/quads/texture_draw_quad.h"
@@ -144,6 +145,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
 
   if (canvas_size.width() != content_bounds().width() ||
       canvas_size.width() != content_bounds().height() || !hud_canvas_) {
+    TRACE_EVENT0("cc", "ResizeHudCanvas");
     bool opaque = false;
     hud_canvas_ = make_scoped_ptr(skia::CreateBitmapCanvas(
         content_bounds().width(), content_bounds().height(), opaque));
@@ -151,14 +153,18 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
 
   UpdateHudContents();
 
-  hud_canvas_->clear(SkColorSetARGB(0, 0, 0, 0));
-  hud_canvas_->save();
-  hud_canvas_->scale(contents_scale_x(), contents_scale_y());
+  {
+    TRACE_EVENT0("cc", "DrawHudContents");
+    hud_canvas_->clear(SkColorSetARGB(0, 0, 0, 0));
+    hud_canvas_->save();
+    hud_canvas_->scale(contents_scale_x(), contents_scale_y());
 
-  DrawHudContents(hud_canvas_.get());
+    DrawHudContents(hud_canvas_.get());
 
-  hud_canvas_->restore();
+    hud_canvas_->restore();
+  }
 
+  TRACE_EVENT0("cc", "UploadHudTexture");
   const SkBitmap* bitmap = &hud_canvas_->getDevice()->accessBitmap(false);
   SkAutoLockPixels locker(*bitmap);
 

@@ -1321,8 +1321,10 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   // Because the contents of the HUD depend on everything else in the frame, the
   // contents of its texture are updated as the last thing before the frame is
   // drawn.
-  if (active_tree_->hud_layer())
+  if (active_tree_->hud_layer()) {
+    TRACE_EVENT0("cc", "DrawLayers.UpdateHudTexture");
     active_tree_->hud_layer()->UpdateHudTexture(resource_provider_.get());
+  }
 
   if (output_surface_->ForcedDrawToSoftwareDevice()) {
     bool allow_partial_swap = false;
