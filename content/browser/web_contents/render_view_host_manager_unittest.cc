@@ -17,6 +17,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/render_widget_host_iterator.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/javascript_message_type.h"
@@ -72,6 +73,21 @@ class RenderViewHostManagerTestWebUIControllerFactory
   bool should_create_webui_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostManagerTestWebUIControllerFactory);
+};
+
+class BeforeUnloadFiredWebContentsDelegate : public WebContentsDelegate {
+ public:
+  BeforeUnloadFiredWebContentsDelegate() {}
+  virtual ~BeforeUnloadFiredWebContentsDelegate() {}
+
+  virtual void BeforeUnloadFired(WebContents* web_contents,
+                                 bool proceed,
+                                 bool* proceed_to_fire_unload) OVERRIDE {
+    *proceed_to_fire_unload = proceed;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BeforeUnloadFiredWebContentsDelegate);
 };
 
 }  // namespace
@@ -1213,6 +1229,82 @@ TEST_F(RenderViewHostManagerTest, NoSwapOnGuestNavigations) {
   ASSERT_TRUE(host);
   EXPECT_EQ(static_cast<SiteInstanceImpl*>(host->GetSiteInstance()),
       instance);
+}
+
+// Test that we cancel a pending RVH if we close the tab while it's pending.
+// http://crbug.com/294697.
+TEST_F(RenderViewHostManagerTest, NavigateWithEarlyClose) {
+  TestNotificationTracker notifications;
+
+  SiteInstance* instance = SiteInstance::Create(browser_context());
+
+  BeforeUnloadFiredWebContentsDelegate delegate;
+  scoped_ptr<TestWebContents> web_contents(
+      TestWebContents::Create(browser_context(), instance));
+  web_contents->SetDelegate(&delegate);
+  notifications.ListenFor(
+      NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+      Source<NavigationController>(&web_contents->GetController()));
+
+  // Create.
+  RenderViewHostManager manager(web_contents.get(), web_contents.get(),
+                                web_contents.get());
+
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
+
+  // 1) The first navigation. --------------------------
+  const GURL kUrl1("http://www.google.com/");
+  NavigationEntryImpl entry1(NULL /* instance */, -1 /* page_id */, kUrl1,
+                             Referrer(), string16() /* title */,
+                             PAGE_TRANSITION_TYPED,
+                             false /* is_renderer_init */);
+  RenderViewHost* host = manager.Navigate(entry1);
+
+  // The RenderViewHost created in Init will be reused.
+  EXPECT_EQ(host, manager.current_host());
+  EXPECT_FALSE(manager.pending_render_view_host());
+
+  // We should observe a notification.
+  EXPECT_TRUE(notifications.Check1AndReset(
+      NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
+  notifications.Reset();
+
+  // Commit.
+  manager.DidNavigateMainFrame(host);
+
+  // Commit to SiteInstance should be delayed until RenderView commit.
+  EXPECT_EQ(host, manager.current_host());
+  EXPECT_FALSE(static_cast<SiteInstanceImpl*>(host->GetSiteInstance())->
+      HasSite());
+  static_cast<SiteInstanceImpl*>(host->GetSiteInstance())->SetSite(kUrl1);
+
+  // 2) Cross-site navigate to next site. -------------------------
+  const GURL kUrl2("http://www.example.com");
+  NavigationEntryImpl entry2(
+      NULL /* instance */, -1 /* page_id */, kUrl2, Referrer(),
+      string16() /* title */, PAGE_TRANSITION_TYPED,
+      false /* is_renderer_init */);
+  RenderViewHostImpl* host2 = static_cast<RenderViewHostImpl*>(
+      manager.Navigate(entry2));
+
+  // A new RenderViewHost should be created.
+  ASSERT_EQ(host2, manager.pending_render_view_host());
+  EXPECT_NE(host2, host);
+
+  EXPECT_EQ(host, manager.current_host());
+  EXPECT_FALSE(static_cast<RenderViewHostImpl*>(
+      manager.current_host())->is_swapped_out());
+  EXPECT_EQ(host2, manager.pending_render_view_host());
+
+  // 3) Close the tab. -------------------------
+  notifications.ListenFor(NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+                          Source<RenderWidgetHost>(host2));
+  manager.ShouldClosePage(false, true, base::TimeTicks());
+
+  EXPECT_TRUE(
+      notifications.Check1AndReset(NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED));
+  EXPECT_FALSE(manager.pending_render_view_host());
+  EXPECT_EQ(host, manager.current_host());
 }
 
 }  // namespace content

@@ -362,6 +362,14 @@ void RenderViewHostManager::ShouldClosePage(
                                                   &proceed_to_fire_unload);
 
     if (proceed_to_fire_unload) {
+      // If we're about to close the tab and there's a pending RVH, cancel it.
+      // Otherwise, if the navigation in the pending RVH completes before the
+      // close in the current RVH, we'll lose the tab close.
+      if (pending_render_view_host_) {
+        CancelPending();
+        cross_navigation_pending_ = false;
+      }
+
       // This is not a cross-site navigation, the tab is being closed.
       render_view_host_->ClosePage();
     }
