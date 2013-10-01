@@ -156,7 +156,7 @@ void ProfileOAuth2TokenService::Observe(
       // user goes on to set up sync, they will have to make two attempts:
       // One to surface the OAuth2 error, and a second one after signing in.
       // See crbug.com/276650.
-      if (!account_id.empty() && GetRefreshToken(account_id).empty()) {
+      if (!account_id.empty() && !RefreshTokenIsAvailable(account_id)) {
         UpdateAuthError(account_id, GoogleServiceAuthError(
             GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
       }
