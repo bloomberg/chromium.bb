@@ -1611,6 +1611,14 @@ void HTMLTreeBuilder::resetInsertionModeAppropriately()
         if (item->hasTagName(templateTag))
             return setInsertionMode(m_templateInsertionModes.last());
         if (item->hasTagName(selectTag)) {
+            if (!last) {
+                while (item->node() != m_tree.openElements()->rootNode() && !item->hasTagName(templateTag)) {
+                    nodeRecord = nodeRecord->next();
+                    item = nodeRecord->stackItem();
+                    if (isHTMLTableElement(item->node()))
+                        return setInsertionMode(InSelectInTableMode);
+                }
+            }
             return setInsertionMode(InSelectMode);
         }
         if (item->hasTagName(tdTag) || item->hasTagName(thTag))
