@@ -18,9 +18,8 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink_minimal',
         '<(DEPTH)/ui/events/events.gyp:events',
-        '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
-        '<(DEPTH)/ui/ui.gyp:ui',
+        '<(DEPTH)/ui/gl/gl.gyp:gl',
       ],
       'defines': [
         'CC_IMPLEMENTATION=1',
