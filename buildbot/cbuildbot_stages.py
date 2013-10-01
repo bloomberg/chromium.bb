@@ -771,6 +771,7 @@ class SyncStage(bs.BuilderStage):
 
     if not self.skip_sync:
       self.repo.Sync(next_manifest)
+
     print >> sys.stderr, self.repo.ExportManifest(
         mark_revision=self.output_manifest_sha1)
 
@@ -992,6 +993,7 @@ class MasterSlaveSyncStage(ManifestVersionedSyncStage):
   """Stage that generates a unique manifest file candidate, and sync's to it."""
 
   # TODO(mtennant): Turn this into self._run.attrs.sub_manager or similar.
+  # An instance of lkgm_manager.LKGMManager for slave builds.
   sub_manager = None
 
   def __init__(self, builder_run, **kwargs):
@@ -1001,7 +1003,14 @@ class MasterSlaveSyncStage(ManifestVersionedSyncStage):
     self.skip_sync = True
 
   def _GetInitializedManager(self, internal):
-    """Returns an initialized lkgm manager."""
+    """Returns an initialized lkgm manager.
+
+    Args:
+      internal: Boolean.  True if this is using an internal manifest.
+
+    Returns:
+      lkgm_manager.LKGMManager.
+    """
     increment = self.VersionIncrementType()
     return lkgm_manager.LKGMManager(
         source_repo=self.repo,
@@ -1064,7 +1073,7 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
 
     # The pool of patches to be picked up by the commit queue.
     # - For the master commit queue, it's initialized in GetNextManifest.
-    # - For slave commit queues, it's initialized in SetPoolFromManifest.
+    # - For slave commit queues, it's initialized in _SetPoolFromManifest.
     #
     # In all cases, the pool is saved to disk, and refreshed after bootstrapping
     # by HandleSkip.
@@ -1077,9 +1086,9 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
     if filename:
       self.pool = validation_pool.ValidationPool.Load(filename)
     else:
-      self.SetPoolFromManifest(self.manifest_manager.GetLocalManifest())
+      self._SetPoolFromManifest(self.manifest_manager.GetLocalManifest())
 
-  def ChangeFilter(self, pool, changes, non_manifest_changes):
+  def _ChangeFilter(self, pool, changes, non_manifest_changes):
     # First, look for changes that were tested by the Pre-CQ.
     changes_to_test = []
     for change in changes:
@@ -1095,11 +1104,11 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
 
     return changes_to_test, non_manifest_changes
 
-  def SetPoolFromManifest(self, manifest):
+  def _SetPoolFromManifest(self, manifest):
     """Sets validation pool based on manifest path passed in."""
     # Note that GetNextManifest() calls GetLatestCandidate() in this case,
     # so the repo will already be sync'd appropriately. This means that
-    # AcquirePoolFromManifest doesn't need to sync.
+    # AcquirePoolFromManifest does not need to sync.
     self.pool = validation_pool.ValidationPool.AcquirePoolFromManifest(
         manifest, self._run.config.overlays, self.repo,
         self._run.buildnumber, self.builder_name,
@@ -1124,7 +1133,8 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
             check_tree_open=not self._run.options.debug or
                             self._run.options.mock_tree_status,
             changes_query=self._run.options.cq_gerrit_override,
-            change_filter=self.ChangeFilter, throttled_ok=True)
+            change_filter=self._ChangeFilter, throttled_ok=True)
+
       except validation_pool.TreeIsClosedException as e:
         cros_build_lib.Warning(str(e))
         return None
@@ -1137,7 +1147,7 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
     else:
       manifest = self.manifest_manager.GetLatestCandidate()
       if manifest:
-        self.SetPoolFromManifest(manifest)
+        self._SetPoolFromManifest(manifest)
         self.pool.ApplyPoolIntoRepo()
 
       return manifest
@@ -1182,6 +1192,13 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
   def _FetchSlaveStatuses(self):
     """Fetch and return build status for this build and any of its slaves."""
+
+    # TODO(mtennant): When testing a master in debug mode, it is actually very
+    # helpful to allow this code to check on slave status IF the run was with
+    # a specified manifest version (--version argument).  In such a case, the
+    # master fetches the statuses of previously finished slaves (from the real
+    # runs, presumably completed earlier), nicely executing more of this code.
+    # I suggest allowing a master with --debug and --version to run this code.
     if self._run.options.debug:
       # In debug mode, nothing is uploaded to Google Storage, so we bypass
       # the extra hop and just look at what we have locally.
@@ -1196,6 +1213,9 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       manager = self._run.attrs.manifest_manager
       sub_manager = MasterSlaveSyncStage.sub_manager
       if sub_manager:
+        # TODO(build): There appears to be no reason the public and private
+        # statuses cannot be gathered at the same time.  This would avoid
+        # having two separate long timeout periods involved.
         public_builders = [b['name'] for b in builders if not b['internal']]
         statuses = sub_manager.GetBuildersStatus(public_builders)
         private_builders = [b['name'] for b in builders if b['internal']]
@@ -3193,6 +3213,97 @@ class DebugSymbolsStage(ArchivingStage):
       self.archive_stage.BreakpadSymbolsGenerated(success)
 
 
+class MasterUploadPrebuiltsStage(bs.BuilderStage):
+  """Syncs prebuilt binhost files across slaves."""
+  # TODO(mtennant): This class represents logic spun out from
+  # UploadPrebuiltsStage that is specific to a master builder.  It will
+  # be used by commit queue to start, but could be used by other master
+  # builders that upload prebuilts.  Current examples are
+  # x86-alex-pre-flight-branch and x86-generic-chromium-pfq.  When
+  # completed the UploadPrebuiltsStage code can be thinned significantly.
+  option_name = 'prebuilts'
+  config_name = 'prebuilts'
+
+  def _GenerateCommonArgs(self):
+    """Generate common prebuilt arguments."""
+    generated_args = []
+    if self._run.options.debug:
+      generated_args.append('--debug')
+
+    profile = self._run.options.profile or self._run.config['profile']
+    if profile:
+      generated_args.extend(['--profile', profile])
+
+    # Generate the version if we are a manifest_version build.
+    if self._run.config.manifest_version:
+      version = self._run.GetVersion()
+      generated_args.extend(['--set-version', version])
+
+    return generated_args
+
+  @staticmethod
+  def _AddOptionsForSlave(slave_config):
+    """Private helper method to add upload_prebuilts args for a slave builder.
+
+    Args:
+      slave_config: The build config of a slave builder.
+
+    Returns:
+      An array of options to add to upload_prebuilts array that allow a master
+      to submit prebuilt conf modifications on behalf of a slave.
+    """
+    args = []
+    if slave_config['prebuilts']:
+      for slave_board in slave_config['boards']:
+        args.extend(['--slave-board', slave_board])
+        slave_profile = slave_config['profile']
+        if slave_profile:
+          args.extend(['--slave-profile', slave_profile])
+
+    return args
+
+  def PerformStage(self):
+    """Syncs prebuilt binhosts for slave builders."""
+    # Common args we generate for all types of builds.
+    generated_args = self._GenerateCommonArgs()
+    # Args we specifically add for public/private build types.
+    public_args, private_args = [], []
+    # Gather public/private (slave) builders.
+    public_builders, private_builders = [], []
+
+    # Distributed builders that use manifest-versions to sync with one another
+    # share prebuilt logic by passing around versions.
+    assert cbuildbot_config.IsPFQType(self._prebuilt_type)
+    assert self._prebuilt_type != constants.CHROME_PFQ_TYPE
+
+    # Public pfqs should upload host preflight prebuilts.
+    public_args.append('--sync-host')
+
+    # Update all the binhost conf files.
+    generated_args.append('--sync-binhost-conf')
+    for slave_config in self._GetSlavesForMaster(self._run.config):
+      if slave_config['prebuilts'] == constants.PUBLIC:
+        public_builders.append(slave_config['name'])
+        public_args.extend(self._AddOptionsForSlave(slave_config))
+      elif slave_config['prebuilts'] == constants.PRIVATE:
+        private_builders.append(slave_config['name'])
+        private_args.extend(self._AddOptionsForSlave(slave_config))
+
+    # Upload the public prebuilts, if any.
+    if public_builders:
+      commands.UploadPrebuilts(
+          category=self._prebuilt_type, chrome_rev=self._chrome_rev,
+          private_bucket=False, buildroot=self._build_root, board=None,
+          extra_args=generated_args + public_args)
+
+    # Upload the private prebuilts, if any.
+    if private_builders:
+      commands.UploadPrebuilts(
+          category=self._prebuilt_type, chrome_rev=self._chrome_rev,
+          private_bucket=True, buildroot=self._build_root, board=None,
+          extra_args=generated_args + private_args)
+
+
 class UploadPrebuiltsStage(BoardSpecificBuilderStage):
   """Uploads binaries generated by this build for developer use."""
 
@@ -3201,6 +3312,7 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
 
   def __init__(self, builder_run, board, archive_stage, **kwargs):
     super(UploadPrebuiltsStage, self).__init__(builder_run, board, **kwargs)
+    # TODO(mtennant): I think this self._archive_stage is already unused.
     self._archive_stage = archive_stage
 
   def GenerateCommonArgs(self):
@@ -3227,23 +3339,26 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
     return generated_args
 
   @classmethod
-  def _AddOptionsForSlave(cls, builder, board):
-    """Inner helper method to add upload_prebuilts args for a slave builder.
+  def _AddOptionsForSlave(cls, slave_config, board):
+    """Private helper method to add upload_prebuilts args for a slave builder.
+
+    Args:
+      slave_config: The build config of a slave builder.
+      board: The name of the "master" board on the master builder.
 
     Returns:
       An array of options to add to upload_prebuilts array that allow a master
       to submit prebuilt conf modifications on behalf of a slave.
     """
     args = []
-    builder_config = cbuildbot_config.config[builder]
-    if builder_config['prebuilts']:
-      for slave_board in builder_config['boards']:
-        if builder_config['master'] and slave_board == board:
+    if slave_config['prebuilts']:
+      for slave_board in slave_config['boards']:
+        if slave_config['master'] and slave_board == board:
           # Ignore self.
           continue
 
         args.extend(['--slave-board', slave_board])
-        slave_profile = builder_config['profile']
+        slave_profile = slave_config['profile']
         if slave_profile:
           args.extend(['--slave-profile', slave_profile])
 
@@ -3255,7 +3370,7 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
     board = self._current_board
     binhosts = []
 
-    # Whether we publish public prebuilts.
+    # Whether we publish public or private prebuilts.
     public = self._run.config.prebuilts == constants.PUBLIC
     # Common args we generate for all types of builds.
     generated_args = self.GenerateCommonArgs()
@@ -3288,10 +3403,10 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
         for c in self._GetSlavesForMaster(self._run.config):
           if c['prebuilts'] == constants.PUBLIC:
             public_builders.append(c['name'])
-            public_args.extend(self._AddOptionsForSlave(c['name'], board))
+            public_args.extend(self._AddOptionsForSlave(c, board))
           elif c['prebuilts'] == constants.PRIVATE:
             private_builders.append(c['name'])
-            private_args.extend(self._AddOptionsForSlave(c['name'], board))
+            private_args.extend(self._AddOptionsForSlave(c, board))
 
     # Upload the public prebuilts, if any.
     if public_builders or public:

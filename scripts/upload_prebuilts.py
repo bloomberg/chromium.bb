@@ -135,6 +135,7 @@ def RevGitFile(filename, data, retries=5, dryrun=False):
     filename: file to modify that is in a git repo already
     data: A dict of key/values to update in |filename|
     retries: The number of times to retry before giving up, default: 5
+    dryrun: If True, do not actually commit the change.
   """
   prebuilt_branch = 'prebuilt_branch'
   cwd = os.path.abspath(os.path.dirname(filename))
@@ -164,8 +165,9 @@ def _GsUpload(local_file, remote_file, acl):
   """Upload to GS bucket.
 
   Args:
-    args: a tuple of three arguments that contains local_file, remote_file, and
-          the acl used for uploading the file.
+    local_file: The local file to be uploaded.
+    remote_file: The remote location to upload to.
+    acl: The ACL to use for uploading the file.
 
   Returns:
     Return the arg tuple of two if the upload failed
@@ -207,7 +209,7 @@ def GenerateUploadDict(base_local_path, base_remote_path, pkgs):
 
   Args:
     base_local_path: The base path to the files on the local hard drive.
-    remote_path: The base path to the remote paths.
+    base_remote_path: The base path to the remote paths.
     pkgs: The packages to upload.
 
   Returns:
@@ -303,7 +305,6 @@ def _GrabAllRemotePackageIndexes(binhost_urls):
   return pkg_indexes
 
 
-
 class PrebuiltUploader(object):
   """Synchronize host and board prebuilts."""
 
@@ -318,8 +319,9 @@ class PrebuiltUploader(object):
       upload_location: The upload location.
       acl: The canned acl used for uploading to Google Storage. acl can be one
            of: "public-read", "public-read-write", "authenticated-read",
-           "bucket-owner-read", "bucket-owner-full-control", or "private". If
-           we are not uploading to Google Storage, this parameter is unused.
+           "bucket-owner-read", "bucket-owner-full-control", "project-private",
+           or "private" (see "gsutil help acls"). If we are not uploading to
+           Google Storage, this parameter is unused.
       binhost_base_url: The URL used for downloading the prebuilts.
       pkg_indexes: Old uploaded prebuilts to compare against. Instead of
           uploading duplicate files, we just link to the old files.
@@ -511,7 +513,11 @@ class PrebuiltUploader(object):
       url_suffix = _REL_BOARD_PATH % {'target': target, 'version': version}
       packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
 
+      # Process the target board differently if it is the main --board.
       if self._target == target and not self._skip_upload and not self._debug:
+        # This strips "chroot" prefix because that is sometimes added as the
+        # --prepend-version argument (e.g. by chromiumos-sdk bot).
+        # TODO(build): Clean it up to be less hard-coded.
         version_str = version[len('chroot-'):]
 
         # Upload board tarballs in the background.
@@ -548,7 +554,9 @@ class PrebuiltUploader(object):
       if git_sync:
         git_file = DeterminePrebuiltConfFile(self._build_path, target)
         RevGitFile(git_file, {key: url_value}, dryrun=self._debug)
+
       if sync_binhost_conf:
+        # Update the binhost configuration file in git.
         binhost_conf = os.path.join(self._build_path, self._binhost_conf_dir,
             'target', '%s-%s.conf' % (target, key))
         UpdateBinhostConfFile(binhost_conf, key, url_value)
@@ -730,6 +738,7 @@ def main(_argv):
     version = options.set_version
   else:
     version = GetVersion()
+
   if options.prepend_version:
     version = '%s-%s' % (options.prepend_version, version)
 

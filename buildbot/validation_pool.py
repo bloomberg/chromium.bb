@@ -1394,7 +1394,8 @@ class ValidationPool(object):
                   change_filter=None, throttled_ok=False):
     """Acquires the current pool from Gerrit.
 
-    Polls Gerrit and checks for which change's are ready to be committed.
+    Polls Gerrit and checks for which changes are ready to be committed.
+    Should only be called from master builders.
 
     Args:
       overlays:  One of constants.VALID_OVERLAYS.

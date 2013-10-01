@@ -190,6 +190,7 @@ class BuilderStage(object):
 
     Args:
       envvar: The environment variable to get. E.g. 'PORTAGE_BINHOST'.
+      board: The board to apply, if any.  Specify None to use host.
 
     Returns:
       The value of the environment variable, as a string. If no such variable
@@ -209,6 +210,8 @@ class BuilderStage(object):
   def _GetSlavesForMaster(build_config, configs=None):
     """Gets the important slave builds corresponding to this master.
 
+    The master itself is eligible to be a slave (of itself) if it has boards.
+
     Args:
       build_config: A build config for a master builder.
       configs: Option override of cbuildbot_config.config for the list
@@ -227,6 +230,7 @@ class BuilderStage(object):
     for config in configs.itervalues():
       if (config['important'] and
           config['manifest_version'] and
+          (not config['master'] or config['boards']) and
           config['build_type'] == build_config['build_type'] and
           config['chrome_rev'] == build_config['chrome_rev'] and
           config['branch'] == build_config['branch']):

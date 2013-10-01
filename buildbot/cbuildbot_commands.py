@@ -51,7 +51,7 @@ UPLOADED_LIST_FILENAME = 'UPLOADED'
 
 
 class TestFailure(results_lib.StepFailure):
-  pass
+  """Raised if a test stage (e.g. VMTest) fails."""
 
 # =========================== Command Helpers =================================
 
@@ -562,7 +562,9 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
   independently.
 
   Args:
-    images_dir: Directory containing the VM disk images.
+    buildroot: Build root directory.
+    test_results_dir: Path from buildroot/chroot to find test results.
+      This must a subdir of /tmp.
     archive_path: Directory the tarballs should be written to.
 
   Returns:
@@ -950,7 +952,7 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot, **kwargs):
   """Upload Prebuilts for non-dev-installer use cases.
 
   Args:
-    category: Build type. Can be [binary|full|chrome].
+    category: Build type. Can be [binary|full|chrome|chroot|paladin].
     chrome_rev: Chrome_rev of type constants.VALID_CHROME_REVISIONS.
     private_bucket: True if we are uploading to a private bucket.
     buildroot: The root directory where the build occurs.
@@ -1093,7 +1095,7 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
   Args:
     buildroot: The root directory where the build occurs.
     board: Board type that was built on this machine
-    archive_dir: Directory where tarball should be stored.
+    archive_path: Directory where tarball should be stored.
     gdb_symbols: Include *.debug files for debugging core files with gdb.
 
   Returns:
@@ -1806,7 +1808,9 @@ class ChromeSDK(object):
       board: The board to run chrome-sdk for.
       extra_args: Extra args to pass in on the command line.
       chrome_src: Path to pass in with --chrome-src.
+      goma: If True, run using goma.
       debug_log: If set, run with debug log-level.
+      cache_dir: Specify non-default cache directory.
     """
     self.cwd = cwd
     self.board = board

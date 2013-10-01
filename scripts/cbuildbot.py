@@ -483,6 +483,12 @@ class SimpleBuilder(Builder):
     self._RunStage(stages.SetupBoardStage)
     self._RunStage(stages.RefreshPackageStatusStage)
 
+  def _RunMasterPaladinBuild(self):
+    """Runs through the stages of the paladin (commit queue) master build."""
+    self._RunStage(stages.InitSDKStage)
+    self._RunStage(stages.UprevStage)
+    self._RunStage(stages.MasterUploadPrebuiltsStage)
+
   def _RunDefaultTypeBuild(self):
     """Runs through the stages of a non-special-type build."""
     self._RunStage(stages.InitSDKStage)
@@ -552,6 +558,9 @@ class SimpleBuilder(Builder):
       self._RunChrootBuilderTypeBuild()
     elif self._run.config.build_type == constants.REFRESH_PACKAGES_TYPE:
       self._RunRefreshPackagesTypeBuild()
+    elif (self._run.config.build_type == constants.PALADIN_TYPE and
+          self._run.config.master):
+      self._RunMasterPaladinBuild()
     else:
       self._RunDefaultTypeBuild()
 
@@ -921,6 +930,7 @@ class CustomOption(commandline.FilteringOption):
 
 class CustomParser(commandline.FilteringParser):
   """Custom option parser which supports arguments passed-trhough to trybot"""
+
   DEFAULT_OPTION_CLASS = CustomOption
 
   def add_remote_option(self, *args, **kwargs):

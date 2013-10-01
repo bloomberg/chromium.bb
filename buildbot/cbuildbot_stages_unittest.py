@@ -484,6 +484,7 @@ class MasterSlaveSyncCompletionStage(AbstractStageTest):
         'chrome_rev': None,
         'branch': False,
         'internal': False,
+        'master': False,
     }
     test_config['test2'] = {
         'manifest_version': False,
@@ -493,6 +494,7 @@ class MasterSlaveSyncCompletionStage(AbstractStageTest):
         'chrome_rev': None,
         'branch': False,
         'internal': False,
+        'master': False,
     }
     test_config['test3'] = {
         'manifest_version': True,
@@ -502,6 +504,7 @@ class MasterSlaveSyncCompletionStage(AbstractStageTest):
         'chrome_rev': None,
         'branch': False,
         'internal': True,
+        'master': False,
     }
     test_config['test4'] = {
         'manifest_version': True,
@@ -511,6 +514,7 @@ class MasterSlaveSyncCompletionStage(AbstractStageTest):
         'chrome_rev': None,
         'branch': True,
         'internal': True,
+        'master': False,
     }
     test_config['test5'] = {
         'manifest_version': True,
@@ -520,6 +524,7 @@ class MasterSlaveSyncCompletionStage(AbstractStageTest):
         'chrome_rev': None,
         'branch': False,
         'internal': False,
+        'master': False,
     }
     return test_config
 
@@ -1408,12 +1413,85 @@ class UploadPrebuiltsStageTest(RunCommandAbstractStageTest):
     self._VerifyBoardMap('x86-generic-chromium-pfq', 9, board_map,
                          public_args=['--board', 'x86-generic'])
 
-  def testPaladinMasterUpload(self):
-    board_map = {'amd64-generic': True, 'x86-generic': True,
-                 'x86-alex': False, 'lumpy': False, 'daisy_spring': False}
-    self._VerifyBoardMap('x86-mario-paladin', 8, board_map,
-                         private_args=['--board', 'x86-mario'])
-    self.assertCommandContains([self.CMD, '--sync-host'])
+
+class MasterUploadPrebuiltsStageTest(RunCommandAbstractStageTest):
+  """Tests for the MasterUploadPrebuilts stage."""
+
+  CMD = './upload_prebuilts'
+  RELEASE_TAG = '1234.5.6'
+  VERSION = 'R%s-%s' % (DEFAULT_CHROME_BRANCH, RELEASE_TAG)
+
+  def setUp(self):
+    self.StartPatcher(BuilderRunMock())
+
+  def _Prepare(self, bot_id=None, **kwargs):
+    super(MasterUploadPrebuiltsStageTest, self)._Prepare(bot_id, **kwargs)
+
+    self.run.options.prebuilts = True
+
+  def ConstructStage(self):
+    return stages.MasterUploadPrebuiltsStage(self.run)
+
+  def _RunStage(self, bot_id):
+    """Run the stage under test with the given |bot_id| config.
+
+    Args:
+      bot_id: Builder config target name.
+    """
+    self._Prepare(bot_id)
+    self.RunStage()
+
+  def _VerifyResults(self, public_slave_boards=(), private_slave_boards=()):
+    """Verify that the expected prebuilt commands were run.
+
+    Do various assertions on the two RunCommands that were run by stage.
+    There should be one private (--private) and one public (default) run.
+
+    Args:
+      public_slave_boards: List of public slave boards.
+      private_slave_boards: List of private slave boards.
+    """
+    # TODO(mtennant): Add functionality in partial_mock to support more flexible
+    # asserting.  For example here, asserting that '--sync-host' appears in
+    # the command that did not include '--public'.
+
+    # Some args are expected for any public run.
+    if public_slave_boards:
+      # It would be nice to confirm that --private is not in command, but note
+      # that --sync-host should not appear in the --private command.
+      cmd = [self.CMD, '--sync-binhost-conf', '--sync-host']
+      self.assertCommandContains(cmd, expected=True)
+
+    # Some args are expected for any private run.
+    if private_slave_boards:
+      cmd = [self.CMD, '--sync-binhost-conf', '--private']
+      self.assertCommandContains(cmd, expected=True)
+
+    # Assert public slave boards are mentioned in public run.
+    for board in public_slave_boards:
+      # This check does not actually confirm that this board was in the public
+      # run rather than the private run, unfortunately.
+      cmd = [self.CMD, '--slave-board', board]
+      self.assertCommandContains(cmd, expected=True)
+
+    # Assert private slave boards are mentioned in private run.
+    for board in private_slave_boards:
+      cmd = [self.CMD, '--slave-board', board, '--private']
+      self.assertCommandContains(cmd, expected=True)
+
+    # We expect --set-version so long as build config has manifest_version=True.
+    self.assertCommandContains([self.CMD, '--set-version', self.VERSION],
+                               expected=self.run.config.manifest_version)
+
+  def testMasterPaladinUpload(self):
+    self._RunStage('master-paladin')
+
+    # Provide a sample of private/public slave boards that are expected.
+    public_slave_boards = ('amd64-generic', 'x86-generic')
+    private_slave_boards = ('x86-mario', 'x86-alex', 'lumpy', 'daisy_spring')
+
+    self._VerifyResults(public_slave_boards=public_slave_boards,
+                        private_slave_boards=private_slave_boards)
 
 
 class UploadDevInstallerPrebuiltsStageTest(AbstractStageTest):
@@ -2073,7 +2151,7 @@ class MasterCQSyncTest(BaseCQTest):
   Tests in this class should apply both to the paladin masters and to the
   Pre-CQ Launcher.
   """
-  BOT_ID = 'x86-mario-paladin'
+  BOT_ID = 'master-paladin'
 
   def setUp(self):
     """Setup patchers for specified bot id."""

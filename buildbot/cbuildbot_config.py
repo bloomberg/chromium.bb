@@ -209,6 +209,8 @@ _settings = dict(
   name=None,
 
 # boards -- A list of boards to build.
+# TODO(mtennant): Change default to [].  The unittests fail if any config
+# entry does not overwrite this value to at least an empty list.
   boards=None,
 
 # TODO(mtennant): The description sounds independent of anything to do with a
@@ -1303,24 +1305,11 @@ internal.add_config('test-ap',
 
 ### Master paladin (CQ builder).
 
-# We are heading toward a master paladin config named 'master-paladin'.
-# That config cannot be tested with a trybot until the trybot waterfall
-# recognizes 'master-paladin' as a valid target.  Create such a target
-# that does nothing in particular in the meantime.
 internal_paladin.add_config('master-paladin',
-  boards=['x86-mario'],
-  paladin_builder_name='Commit Queue Master',
-  vm_tests=None,
-  important=False,
-)
-
-# The real master paladin (for now).
-internal_paladin.add_config('x86-mario-paladin',
+  boards=[],
   master=True,
   push_overlays=constants.BOTH_OVERLAYS,
-  boards=['x86-mario'],
-  paladin_builder_name='x86-mario paladin',
-  vm_tests=constants.SIMPLE_AU_TEST_TYPE,
+  paladin_builder_name='Commit Queue Master',
   health_threshold=3,
   health_alert_recipients=['chromeos-build-alerts@google.com'],
   sanity_check_slaves=['link-tot-paladin']
@@ -1343,6 +1332,12 @@ internal_paladin.add_config('link-tot-paladin',
   paladin_builder_name='link ToT paladin',
   do_not_apply_cq_patches=True,
   prebuilts=False,
+)
+
+internal_paladin.add_config('x86-mario-paladin',
+  boards=['x86-mario'],
+  paladin_builder_name='x86-mario paladin',
+  vm_tests=constants.SIMPLE_AU_TEST_TYPE,
 )
 
 internal_paladin.add_config('x86-alex-paladin',
