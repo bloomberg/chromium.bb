@@ -298,17 +298,8 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
   }
 };
 
-#if defined(OS_MACOSX)
-// http://crbug.com/81451
-#define MAYBE_NormalKeyEvents DISABLED_NormalKeyEvents
-#elif defined(OS_LINUX)
-// http://crbug.com/129235
-#define MAYBE_NormalKeyEvents DISABLED_NormalKeyEvents
-#else
-#define MAYBE_NormalKeyEvents NormalKeyEvents
-#endif
-
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_NormalKeyEvents) {
+// Flaky: http://crbug.com/129235, http://crbug.com/81451.
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_NormalKeyEvents) {
   static const KeyEventTestData kTestNoInput[] = {
     // a
     { ui::VKEY_A, false, false, false, false,
