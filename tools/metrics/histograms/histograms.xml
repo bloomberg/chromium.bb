@@ -11021,6 +11021,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.NumPasswordsNotShown">
+  <summary>
+    The password manager only shows those credentials that are considered the
+    best match for a particular form. This stat keep track of the credentials
+    that were not as good of a match and were suppressed.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.OtherPossibleUsernamesUsage"
     enum="OtherPossibleUsernamesUsage">
   <summary>

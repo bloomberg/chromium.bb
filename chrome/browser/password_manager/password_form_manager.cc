@@ -359,6 +359,9 @@ void PasswordFormManager::OnRequestDone(
       best_matches_[it->username_value] = new PasswordForm(*it);
   }
 
+  UMA_HISTOGRAM_COUNTS("PasswordManager.NumPasswordsNotShown",
+                       logins_result.size() - best_matches_.size());
+
   // It is possible we have at least one match but have no preferred_match_,
   // because a user may have chosen to 'Forget' the preferred match. So we
   // just pick the first one and whichever the user selects for submit will
