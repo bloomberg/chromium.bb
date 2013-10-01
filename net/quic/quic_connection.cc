@@ -15,6 +15,7 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
@@ -247,7 +248,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
   if (FLAGS_fake_packet_loss_percentage > 0) {
     int64 seed = base::RandUint64();
     LOG(INFO) << ENDPOINT << "Seeding packet loss with " << seed;
-    srand(seed);
+    simple_random_.set_seed(seed);
   }
 }
 
@@ -1468,9 +1469,18 @@ bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
   return true;
 }
 
+uint64 QuicConnection::SimpleRandom::RandUint64() {
+  unsigned char hash[base::kSHA1Length];
+  base::SHA1HashBytes(reinterpret_cast<unsigned char*>(&seed_), sizeof(seed_),
+                      hash);
+  memcpy(&seed_, hash, sizeof(seed_));
+  return seed_;
+}
+
 bool QuicConnection::ShouldSimulateLostPacket() {
   return FLAGS_fake_packet_loss_percentage > 0 &&
-      rand() % 100 < FLAGS_fake_packet_loss_percentage;
+      simple_random_.RandUint64() % 100 <
+      static_cast<uint64>(FLAGS_fake_packet_loss_percentage);
 }
 
 void QuicConnection::UpdateSentPacketInfo(SentPacketInfo* sent_info) {

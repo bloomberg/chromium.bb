@@ -473,6 +473,23 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicFramer framer_;
 
  private:
+  // Simple random number generator used to compute random numbers suitable
+  // for pseudo-randomly dropping packets in tests.  It works by computing
+  // the sha1 hash of the current seed, and using the first 64 bits as
+  // the next random number, and the next seed.
+  class SimpleRandom {
+   public:
+    SimpleRandom() : seed_(0) {}
+
+    // Returns a random number in the range [0, kuint64max].
+    uint64 RandUint64();
+
+    void set_seed(uint64 seed) { seed_ = seed; }
+
+   private:
+    uint64 seed_;
+  };
+
   // Stores current batch state for connection, puts the connection
   // into batch mode, and destruction restores the stored batch state.
   // While the bundler is in scope, any generated frames are bundled
@@ -764,6 +781,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // all packets that a given block of data was sent in. The AckNotifierManager
   // maintains the currently active notifiers.
   AckNotifierManager ack_notifier_manager_;
+
+  // Only used to configure fake packet loss.
+  SimpleRandom simple_random_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };
