@@ -224,6 +224,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyRight:
         style->setRight(animatableValueToLength(value, state));
         return;
+    case CSSPropertyStrokeOpacity:
+        style->setStrokeOpacity(clampTo<float>(toAnimatableNumber(value)->toDouble(), 0, 1));
+        return;
     case CSSPropertyTextDecorationColor:
         style->setTextDecorationColor(toAnimatableColor(value)->color());
         style->setVisitedLinkTextDecorationColor(toAnimatableColor(value)->visitedLinkColor());

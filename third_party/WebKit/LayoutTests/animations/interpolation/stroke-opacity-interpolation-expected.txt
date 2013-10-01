@@ -1,0 +1,8 @@
+     
+FAIL: stroke-opacity from [0] to [1] was [-0.30000001192092896] at -0.3, expected [0]
+PASS: stroke-opacity from [0] to [1] was [0] at 0
+PASS: stroke-opacity from [0] to [1] was [0.3] at 0.3
+PASS: stroke-opacity from [0] to [1] was [0.6] at 0.6
+PASS: stroke-opacity from [0] to [1] was [1] at 1
+FAIL: stroke-opacity from [0] to [1] was [1.5] at 1.5, expected [1]
+
