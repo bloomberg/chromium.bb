@@ -18,6 +18,29 @@ class EndureCalendarForwardBackward(test.Test):
   }
 
 
+class EndureBrowserControl(test.Test):
+  test = endure.Endure
+  page_set = 'page_sets/browser_control.json'
+  options = {
+      'output_format': 'csv',
+      'skip_navigate_on_repeat': True,
+      'page_repeat_secs': 3600,
+      'perf_stats_interval': 30
+  }
+
+
+class EndureBrowserControlClick(test.Test):
+  test = endure.Endure
+  page_set = 'page_sets/browser_control_click.json'
+  options = {
+      'output_format': 'csv',
+      'skip_navigate_on_repeat': True,
+      'page_repeat_secs': 3600,
+      'perf_stats_interval': 30
+  }
+
+
+
 class EndureGmailAltThreadlistConversation(test.Test):
   test = endure.Endure
   page_set = 'page_sets/gmail_alt_threadlist_conversation.json'
@@ -43,6 +66,17 @@ class EndureGmailAltTwoLabels(test.Test):
 class EndureGmailExpandCollapseConversation(test.Test):
   test = endure.Endure
   page_set = 'page_sets/gmail_expand_collapse_conversation.json'
+  options = {
+      'output_format': 'csv',
+      'skip_navigate_on_repeat': True,
+      'page_repeat_secs': 3600,
+      'perf_stats_interval': 30
+  }
+
+
+class EndureIndexedDBOffline(test.Test):
+  test = endure.Endure
+  page_set = 'page_sets/indexeddb_offline.json'
   options = {
       'output_format': 'csv',
       'skip_navigate_on_repeat': True,
