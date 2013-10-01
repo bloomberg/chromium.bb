@@ -119,8 +119,8 @@ static const size_t kPartitionPageBaseMask = ~kPartitionPageOffsetMask;
 // never actually store objects there.
 static const size_t kSubPartitionPageSize = 1 << 12; // 4KB
 static const size_t kSubPartitionPageMask = kSubPartitionPageSize - 1;
-// Special bucket id for free page metadata.
-static const size_t kFreePageBucket = 0;
+// Special bucket id for internal metadata.
+static const size_t kInternalMetadataBucket = 0;
 
 struct PartitionRoot;
 struct PartitionBucket;
@@ -150,6 +150,20 @@ struct PartitionBucket {
     size_t numFullPages;
 };
 
+struct PartitionSuperPageExtentEntry {
+    char* superPageBase;
+    char* superPagesEnd;
+    PartitionSuperPageExtentEntry* next;
+};
+
+// This is used for sizeof() purposes only; we allocate both of these object
+// types out of the same fixed-sized bucket, so it has to accomodate the
+// large of the two. We're fine with wasting the space for the smaller.
+union PartitionMetadataBucketEntrySize {
+    PartitionFreepagelistEntry entryType1;
+    PartitionSuperPageExtentEntry entryType2;
+};
+
 // Never instantiate a PartitionRoot directly, instead use PartitionAlloc.
 struct PartitionRoot {
     int lock;
@@ -159,6 +173,8 @@ struct PartitionRoot {
     char* nextSuperPage;
     char* nextPartitionPage;
     char* nextPartitionPageEnd;
+    PartitionSuperPageExtentEntry* currentExtent;
+    PartitionSuperPageExtentEntry firstExtent;
     PartitionPageHeader seedPage;
     PartitionBucket seedBucket;
 
@@ -172,7 +188,7 @@ WTF_EXPORT NEVER_INLINE bool partitionAllocShutdown(PartitionRoot*);
 
 WTF_EXPORT NEVER_INLINE void* partitionAllocSlowPath(PartitionBucket*);
 WTF_EXPORT NEVER_INLINE void partitionFreeSlowPath(PartitionPageHeader*);
-WTF_EXPORT NEVER_INLINE void* partitionReallocGeneric(PartitionRoot*, void*, size_t oldSize, size_t newSize);
+WTF_EXPORT NEVER_INLINE void* partitionReallocGeneric(PartitionRoot*, void*, size_t);
 
 ALWAYS_INLINE PartitionFreelistEntry* partitionFreelistMask(PartitionFreelistEntry* ptr)
 {
@@ -191,8 +207,8 @@ ALWAYS_INLINE size_t partitionBucketSize(const PartitionBucket* bucket)
     PartitionRoot* root = bucket->root;
     size_t index = bucket - &root->buckets()[0];
     size_t size;
-    if (UNLIKELY(index == kFreePageBucket))
-        size = sizeof(PartitionFreepagelistEntry);
+    if (UNLIKELY(index == kInternalMetadataBucket))
+        size = sizeof(PartitionMetadataBucketEntrySize);
     else
         size = index << kBucketShift;
     return size;
@@ -248,12 +264,30 @@ ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPageHeader* page)
         partitionFreeSlowPath(page);
 }
 
+ALWAYS_INLINE bool partitionPointerIsValid(PartitionRoot* root, void* ptr)
+{
+    // Dominant case: the pointer is in the first extent, which grew without any collision.
+    if (LIKELY(ptr >= root->firstExtent.superPageBase) && LIKELY(ptr < root->firstExtent.superPagesEnd))
+        return true;
+
+    // Otherwise, scan through the extent list.
+    PartitionSuperPageExtentEntry* entry = root->firstExtent.next;
+    while (UNLIKELY(entry != 0)) {
+        if (ptr >= entry->superPageBase && ptr < entry->superPagesEnd)
+            return true;
+        entry = entry->next;
+    }
+
+    return false;
+}
+
 ALWAYS_INLINE void partitionFree(void* ptr)
 {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     free(ptr);
 #else
     PartitionPageHeader* page = partitionPointerToPage(ptr);
+    ASSERT(partitionPointerIsValid(page->bucket->root, ptr));
     partitionFreeWithPage(ptr, page);
 #endif
 }
@@ -282,12 +316,12 @@ ALWAYS_INLINE void* partitionAllocGeneric(PartitionRoot* root, size_t size)
 #endif
 }
 
-ALWAYS_INLINE void partitionFreeGeneric(PartitionRoot* root, void* ptr, size_t size)
+ALWAYS_INLINE void partitionFreeGeneric(PartitionRoot* root, void* ptr)
 {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     free(ptr);
 #else
-    if (LIKELY(size <= root->maxAllocation)) {
+    if (LIKELY(partitionPointerIsValid(root, ptr))) {
         PartitionPageHeader* page = partitionPointerToPage(ptr);
         spinLockLock(&root->lock);
         partitionFreeWithPage(ptr, page);

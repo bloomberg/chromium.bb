@@ -38,7 +38,10 @@
 #include <stdio.h>
 #endif
 
-COMPILE_ASSERT(WTF::kPartitionPageSize < WTF::kSuperPageSize, ok_partition_page_size);
+// A super page is at least 4 partition pages in order to make re-entrancy considerations simpler in partitionAllocPage().
+COMPILE_ASSERT(WTF::kPartitionPageSize * 4 <= WTF::kSuperPageSize, ok_partition_page_size);
+COMPILE_ASSERT(!(WTF::kSuperPageSize % WTF::kPartitionPageSize), ok_partition_page_multiple);
+COMPILE_ASSERT(!(WTF::kPartitionPageSize % WTF::kSubPartitionPageSize), ok_sub_partition_page_multiple);
 
 namespace WTF {
 
@@ -61,6 +64,10 @@ WTF_EXPORT void partitionAllocInit(PartitionRoot* root, size_t numBuckets, size_
     root->nextSuperPage = 0;
     root->nextPartitionPage = 0;
     root->nextPartitionPageEnd = 0;
+    root->currentExtent = &root->firstExtent;
+    root->firstExtent.superPageBase = 0;
+    root->firstExtent.superPagesEnd = 0;
+    root->firstExtent.next = 0;
     root->seedPage.numAllocatedSlots = 0;
     root->seedPage.bucket = &root->seedBucket;
     root->seedPage.freelistHead = 0;
@@ -127,17 +134,17 @@ bool partitionAllocShutdown(PartitionRoot* root)
     // different buckets.
     Vector<PartitionPageHeader*> superPages;
     size_t i;
-    // First, free the non-freepage buckets. Freeing the free pages in these
-    // buckets will depend on the freepage bucket.
+    // First, free the non-metadata buckets. Freeing the free pages in these
+    // buckets will depend on the metadata bucket.
     for (i = 0; i < root->numBuckets; ++i) {
-        if (i != kFreePageBucket) {
+        if (i != kInternalMetadataBucket) {
             PartitionBucket* bucket = &root->buckets()[i];
             if (!partitionAllocShutdownBucket(bucket, &superPages))
                 noLeaks = false;
         }
     }
     // Finally, free the freepage bucket.
-    (void) partitionAllocShutdownBucket(&root->buckets()[kFreePageBucket], &superPages);
+    (void) partitionAllocShutdownBucket(&root->buckets()[kInternalMetadataBucket], &superPages);
     // Now that we've examined all partition pages in all buckets, it's safe
     // to free all our super pages.
     for (Vector<PartitionPageHeader*>::iterator it = superPages.begin(); it != superPages.end(); ++it)
@@ -148,43 +155,69 @@ bool partitionAllocShutdown(PartitionRoot* root)
 
 static ALWAYS_INLINE PartitionPageHeader* partitionAllocPage(PartitionRoot* root)
 {
-    char* ret = 0;
     if (LIKELY(root->nextPartitionPage != 0)) {
         // In this case, we can still hand out pages from a previous
         // super page allocation.
-        ret = root->nextPartitionPage;
+        char* ret = root->nextPartitionPage;
         root->nextPartitionPage += kPartitionPageSize;
         if (UNLIKELY(root->nextPartitionPage == root->nextPartitionPageEnd)) {
             // We ran out, need to get more pages next time.
             root->nextPartitionPage = 0;
             root->nextPartitionPageEnd = 0;
         }
-    } else {
-        // Need a new super page.
-        // We need to put a guard page in front if either:
-        // a) This is the first super page allocation.
-        // b) The super page did not end up at our suggested address.
-        bool needsGuard = false;
-        if (!root->nextSuperPage) {
-            needsGuard = true;
-            root->nextSuperPage = getRandomSuperPageBase();
-        }
-        ret = reinterpret_cast<char*>(allocSuperPages(root->nextSuperPage, kSuperPageSize));
-        if (ret != root->nextSuperPage) {
-            needsGuard = true;
-            // Re-randomize the base location for next time just in case the
-            // underlying operating system picks lousy locations for mappings.
-            root->nextSuperPage = 0;
-        } else {
-            root->nextSuperPage = ret + kSuperPageSize;
-        }
-        root->nextPartitionPageEnd = ret + kSuperPageSize;
-        if (needsGuard) {
-            setSystemPagesInaccessible(ret, kPartitionPageSize);
-            ret += kPartitionPageSize;
-        }
-        root->nextPartitionPage = ret + kPartitionPageSize;
+        return reinterpret_cast<PartitionPageHeader*>(ret);
     }
+
+    // Need a new super page.
+    // We need to put a guard page in front if either:
+    // a) This is the first super page allocation.
+    // b) The super page did not end up at our suggested address.
+    bool needsGuard = false;
+    if (UNLIKELY(root->nextSuperPage == 0)) {
+        needsGuard = true;
+        root->nextSuperPage = getRandomSuperPageBase();
+    }
+    char* ret = reinterpret_cast<char*>(allocSuperPages(root->nextSuperPage, kSuperPageSize));
+    if (ret != root->nextSuperPage) {
+        needsGuard = true;
+        // Re-randomize the base location for next time just in case the
+        // underlying operating system picks lousy locations for mappings.
+        root->nextSuperPage = 0;
+    } else {
+        root->nextSuperPage = ret + kSuperPageSize;
+    }
+    root->nextPartitionPageEnd = ret + kSuperPageSize;
+    if (needsGuard) {
+        setSystemPagesInaccessible(ret, kPartitionPageSize);
+        ret += kPartitionPageSize;
+    }
+    root->nextPartitionPage = ret + kPartitionPageSize;
+
+    // We allocated a new super page so update super page metadata.
+    // First check if this is a new extent or not.
+    PartitionSuperPageExtentEntry* currentExtent = root->currentExtent;
+    if (UNLIKELY(needsGuard)) {
+        if (currentExtent->superPageBase) {
+            // We already have a super page, so need to allocate metadata in the linked list.
+            // It should be fine to re-enter the allocator here because:
+            // - A fresh partition page is still available, even if we already consumed a guard page and one partition page from the new super page.
+            // - Partition page metadata is consistent at this time.
+            // - We ASSERT that no surprising state change occurs.
+            PartitionSuperPageExtentEntry* newEntry = reinterpret_cast<PartitionSuperPageExtentEntry*>(partitionBucketAlloc(&root->buckets()[kInternalMetadataBucket]));
+            ASSERT(root->currentExtent == currentExtent);
+            newEntry->next = 0;
+            currentExtent->next = newEntry;
+            currentExtent = newEntry;
+            root->currentExtent = newEntry;
+        }
+        currentExtent->superPageBase = ret;
+        currentExtent->superPagesEnd = ret + kSuperPageSize;
+    } else {
+        // We allocated next to an existing extent so just nudge the size up a little.
+        currentExtent->superPagesEnd += kSuperPageSize;
+        ASSERT(ret >= currentExtent->superPageBase && ret < currentExtent->superPagesEnd);
+    }
+
     return reinterpret_cast<PartitionPageHeader*>(ret);
 }
 
@@ -350,7 +383,7 @@ void partitionFreeSlowPath(PartitionPageHeader* page)
 
         partitionUnlinkPage(page);
         partitionUnusePage(page);
-        PartitionFreepagelistEntry* entry = static_cast<PartitionFreepagelistEntry*>(partitionBucketAlloc(&bucket->root->buckets()[kFreePageBucket]));
+        PartitionFreepagelistEntry* entry = static_cast<PartitionFreepagelistEntry*>(partitionBucketAlloc(&bucket->root->buckets()[kInternalMetadataBucket]));
         entry->page = page;
         entry->next = bucket->freePages;
         bucket->freePages = entry;
@@ -364,14 +397,21 @@ void partitionFreeSlowPath(PartitionPageHeader* page)
     }
 }
 
-void* partitionReallocGeneric(PartitionRoot* root, void* ptr, size_t oldSize, size_t newSize)
+void* partitionReallocGeneric(PartitionRoot* root, void* ptr, size_t newSize)
 {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     return realloc(ptr, newSize);
 #else
-    size_t oldIndex = partitionAllocRoundup(oldSize) >> kBucketShift;
-    if (oldIndex > root->numBuckets)
+    bool oldPtrIsInPartition = partitionPointerIsValid(root, ptr);
+    size_t oldIndex;
+    if (LIKELY(partitionPointerIsValid(root, ptr))) {
+        PartitionBucket* bucket = partitionPointerToPage(ptr)->bucket;
+        ASSERT(bucket->root == root);
+        oldIndex = bucket - root->buckets();
+    } else {
         oldIndex = root->numBuckets;
+    }
+
     size_t newIndex = partitionAllocRoundup(newSize) >> kBucketShift;
     if (newIndex > root->numBuckets)
         newIndex = root->numBuckets;
@@ -385,11 +425,12 @@ void* partitionReallocGeneric(PartitionRoot* root, void* ptr, size_t oldSize, si
     }
     // This realloc cannot be resized in-place. Sadness.
     void* ret = partitionAllocGeneric(root, newSize);
+    size_t oldSize = oldIndex << kBucketShift;
     size_t copySize = oldSize;
     if (newSize < oldSize)
         copySize = newSize;
     memcpy(ret, ptr, copySize);
-    partitionFreeGeneric(root, ptr, oldSize);
+    partitionFreeGeneric(root, ptr);
     return ret;
 #endif
 }
