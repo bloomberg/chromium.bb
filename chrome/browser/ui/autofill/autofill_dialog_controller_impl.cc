@@ -398,71 +398,79 @@ scoped_ptr<DialogNotification> GetWalletError(
     return notification.Pass();
   }
 
+  int error_ids = 0;
+  int error_code = 0;
+
   switch (error_type) {
     case wallet::WalletClient::UNSUPPORTED_MERCHANT:
-      text = l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_WALLET_UNSUPPORTED_MERCHANT);
+      error_ids = IDS_AUTOFILL_WALLET_UNSUPPORTED_MERCHANT;
       break;
 
     case wallet::WalletClient::BAD_REQUEST:
-      text = l10n_util::GetStringFUTF16(
-          IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR,
-          ASCIIToUTF16("71"));
+      error_ids = IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR;
+      error_code = 71;
       break;
 
     case wallet::WalletClient::INVALID_PARAMS:
-      text = l10n_util::GetStringFUTF16(
-          IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR,
-          ASCIIToUTF16("42"));
+      error_ids = IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR;
+      error_code = 42;
       break;
 
     case wallet::WalletClient::BUYER_ACCOUNT_ERROR:
-      text = l10n_util::GetStringUTF16(IDS_AUTOFILL_WALLET_BUYER_ACCOUNT_ERROR);
+      error_ids = IDS_AUTOFILL_WALLET_BUYER_ACCOUNT_ERROR;
+      error_code = 12;
       break;
 
     case wallet::WalletClient::UNSUPPORTED_API_VERSION:
-      text = l10n_util::GetStringFUTF16(
-          IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR,
-          ASCIIToUTF16("43"));
+      error_ids = IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR;
+      error_code = 43;
       break;
 
     case wallet::WalletClient::SERVICE_UNAVAILABLE:
-      text = l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_WALLET_SERVICE_UNAVAILABLE_ERROR);
+      error_ids = IDS_AUTOFILL_WALLET_SERVICE_UNAVAILABLE_ERROR;
+      error_code = 61;
       break;
 
     case wallet::WalletClient::INTERNAL_ERROR:
-      text = l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR,
-                                        ASCIIToUTF16("62"));
+      error_ids = IDS_AUTOFILL_WALLET_UNKNOWN_ERROR;
+      error_code = 62;
       break;
 
     case wallet::WalletClient::MALFORMED_RESPONSE:
-      text = l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR,
-                                        ASCIIToUTF16("72"));
+      error_ids = IDS_AUTOFILL_WALLET_UNKNOWN_ERROR;
+      error_code = 72;
       break;
 
     case wallet::WalletClient::NETWORK_ERROR:
-      text = l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR,
-                                        ASCIIToUTF16("73"));
+      error_ids = IDS_AUTOFILL_WALLET_UNKNOWN_ERROR;
+      error_code = 73;
       break;
 
     case wallet::WalletClient::UNKNOWN_ERROR:
-      text = l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR,
-                                        ASCIIToUTF16("74"));
+      error_ids = IDS_AUTOFILL_WALLET_UNKNOWN_ERROR;
+      error_code = 74;
       break;
 
     default:
       break;
   }
 
-  DCHECK(!text.empty());
+  DCHECK_NE(0, error_ids);
 
   // The other error types are strings of the form "XXX. You can pay without
   // wallet."
-  return make_scoped_ptr(new DialogNotification(
+  scoped_ptr<DialogNotification> notification(new DialogNotification(
       DialogNotification::WALLET_ERROR,
       l10n_util::GetStringFUTF16(IDS_AUTOFILL_DIALOG_COMPLETE_WITHOUT_WALLET,
-                                 text)));
+                                 l10n_util::GetStringUTF16(error_ids))));
+
+  if (error_code) {
+    notification->set_tooltip_text(
+        l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_ERROR_CODE_TOOLTIP,
+                                   base::IntToString16(error_code)));
+  }
+
+  return notification.Pass();
 }
 
 gfx::Image GetGeneratedCardImage(const base::string16& card_number,
