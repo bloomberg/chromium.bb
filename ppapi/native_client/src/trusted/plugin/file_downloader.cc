@@ -33,7 +33,7 @@ struct NaClFileInfo NoFileInfo() {
   return info;
 }
 
-}
+}  // namespace
 
 namespace plugin {
 
@@ -212,18 +212,12 @@ int64_t FileDownloader::TimeSinceOpenMilliseconds() const {
   return (now - open_time_) / NACL_MICROS_PER_MILLI;
 }
 
-bool FileDownloader::InitialResponseIsValid(int32_t pp_error) {
-  if (pp_error != PP_OK) {  // Url loading failed.
-    file_open_notify_callback_.RunAndClear(pp_error);
-    return false;
-  }
-
+bool FileDownloader::InitialResponseIsValid() {
   // Process the response, validating the headers to confirm successful loading.
   url_response_ = url_loader_.GetResponseInfo();
   if (url_response_.is_null()) {
     PLUGIN_PRINTF((
         "FileDownloader::InitialResponseIsValid (url_response_=NULL)\n"));
-    file_open_notify_callback_.RunAndClear(PP_ERROR_FAILED);
     return false;
   }
 
@@ -231,7 +225,6 @@ bool FileDownloader::InitialResponseIsValid(int32_t pp_error) {
   if (!full_url.is_string()) {
     PLUGIN_PRINTF((
         "FileDownloader::InitialResponseIsValid (url is not a string)\n"));
-    file_open_notify_callback_.RunAndClear(PP_ERROR_FAILED);
     return false;
   }
   url_ = full_url.AsString();
@@ -259,28 +252,26 @@ bool FileDownloader::InitialResponseIsValid(int32_t pp_error) {
       status_ok = (status_code_ == NACL_HTTP_STATUS_OK);
       break;
   }
-
-  if (!status_ok) {
-    file_open_notify_callback_.RunAndClear(PP_ERROR_FAILED);
-    return false;
-  }
-
-  return true;
+  return status_ok;
 }
 
 void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
   PLUGIN_PRINTF(("FileDownloader::URLLoadStartNotify (pp_error=%"
                  NACL_PRId32")\n", pp_error));
+  if (pp_error != PP_OK) {
+    file_open_notify_callback_.RunAndClear(pp_error);
+    return;
+  }
 
-  if (!InitialResponseIsValid(pp_error)) {
-    // InitialResponseIsValid() calls file_open_notify_callback_ on errors.
+  if (!InitialResponseIsValid()) {
+    file_open_notify_callback_.RunAndClear(PP_ERROR_FAILED);
     return;
   }
 
   if (open_and_stream_)
     return FinishStreaming(file_open_notify_callback_);
 
-  file_open_notify_callback_.RunAndClear(pp_error);
+  file_open_notify_callback_.RunAndClear(PP_OK);
 }
 
 void FileDownloader::FinishStreaming(

@@ -165,7 +165,7 @@ class FileDownloader {
   // data is passed directly to the user instead of saved in a buffer.
   // The public Open*() functions start step 1), and the public FinishStreaming
   // function proceeds to step 2) and 3).
-  bool InitialResponseIsValid(int32_t pp_error);
+  bool InitialResponseIsValid();
   void URLLoadStartNotify(int32_t pp_error);
   void URLLoadFinishNotify(int32_t pp_error);
   void URLReadBodyNotify(int32_t pp_error);
