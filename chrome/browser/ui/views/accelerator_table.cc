@@ -46,6 +46,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
     IDC_DEV_TOOLS_CONSOLE },
   { ui::VKEY_C, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_DEV_TOOLS_INSPECT },
+  { ui::VKEY_O, ui::EF_CONTROL_DOWN, IDC_OPEN_FILE },
   { ui::VKEY_P, ui::EF_CONTROL_DOWN, IDC_PRINT},
   { ui::VKEY_P, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_ADVANCED_PRINT},
   { ui::VKEY_R, ui::EF_CONTROL_DOWN, IDC_RELOAD },
@@ -151,7 +152,6 @@ const AcceleratorMapping kAcceleratorMap[] = {
     IDC_NEW_INCOGNITO_WINDOW },
   { ui::VKEY_T, ui::EF_CONTROL_DOWN, IDC_NEW_TAB },
   { ui::VKEY_N, ui::EF_CONTROL_DOWN, IDC_NEW_WINDOW },
-  { ui::VKEY_O, ui::EF_CONTROL_DOWN, IDC_OPEN_FILE },
   { ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_RESTORE_TAB },
   { ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, IDC_TASK_MANAGER },
 #endif
@@ -174,9 +174,6 @@ const ChromeCmdId2AshActionId kChromeCmdId2AshActionId[] = {
   { IDC_NEW_INCOGNITO_WINDOW, ash::NEW_INCOGNITO_WINDOW },
   { IDC_NEW_TAB,              ash::NEW_TAB },
   { IDC_NEW_WINDOW,           ash::NEW_WINDOW },
-#if defined(OS_CHROMEOS)
-  { IDC_OPEN_FILE,            ash::OPEN_FILE_DIALOG },
-#endif
   { IDC_RESTORE_TAB,          ash::RESTORE_TAB },
   { IDC_TASK_MANAGER,         ash::SHOW_TASK_MANAGER },
 };

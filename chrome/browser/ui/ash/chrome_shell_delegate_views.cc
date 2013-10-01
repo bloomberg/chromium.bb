@@ -36,7 +36,7 @@ void ChromeShellDelegate::PreInit() {
 void ChromeShellDelegate::Shutdown() {
 }
 
-void ChromeShellDelegate::OpenFileManager(bool as_dialog) {
+void ChromeShellDelegate::OpenFileManager() {
 }
 
 void ChromeShellDelegate::OpenCrosh() {

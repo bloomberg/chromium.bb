@@ -87,7 +87,7 @@ void ShellDelegateImpl::ToggleMaximized() {
     window_state->ToggleMaximized();
 }
 
-void ShellDelegateImpl::OpenFileManager(bool as_dialog) {
+void ShellDelegateImpl::OpenFileManager() {
 }
 
 void ShellDelegateImpl::OpenCrosh() {

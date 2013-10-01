@@ -77,7 +77,7 @@ void TestShellDelegate::ToggleMaximized() {
 void TestShellDelegate::ToggleFullscreen() {
 }
 
-void TestShellDelegate::OpenFileManager(bool as_dialog) {
+void TestShellDelegate::OpenFileManager() {
 }
 
 void TestShellDelegate::OpenCrosh() {

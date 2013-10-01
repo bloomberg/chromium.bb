@@ -145,7 +145,7 @@ class ASH_EXPORT ShellDelegate {
   virtual void ToggleMaximized() = 0;
 
   // Invoked when an accelerator is used to open the file manager.
-  virtual void OpenFileManager(bool as_dialog) = 0;
+  virtual void OpenFileManager() = 0;
 
   // Invoked when the user opens Crosh.
   virtual void OpenCrosh() = 0;

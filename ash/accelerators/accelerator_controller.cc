@@ -173,8 +173,8 @@ bool HandleLock() {
   return true;
 }
 
-bool HandleFileManager(bool as_dialog) {
-  Shell::GetInstance()->delegate()->OpenFileManager(as_dialog);
+bool HandleFileManager() {
+  Shell::GetInstance()->delegate()->OpenFileManager();
   return true;
 }
 
@@ -571,10 +571,8 @@ bool AcceleratorController::PerformAction(int action,
       if (key_code == ui::VKEY_L)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_LOCK_SCREEN_L);
       return HandleLock();
-    case OPEN_FILE_DIALOG:
-      return HandleFileManager(true /* as_dialog */);
     case OPEN_FILE_MANAGER:
-      return HandleFileManager(false /* as_dialog */);
+      return HandleFileManager();
     case OPEN_CROSH:
       return HandleCrosh();
     case SILENCE_SPOKEN_FEEDBACK:

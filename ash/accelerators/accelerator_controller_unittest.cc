@@ -965,10 +965,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
       ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN)));
 
 #if defined(OS_CHROMEOS)
-  // Open 'open file' dialog
-  EXPECT_TRUE(ProcessWithContext(
-      ui::Accelerator(ui::VKEY_O, ui::EF_CONTROL_DOWN)));
-
   // Open file manager
   EXPECT_TRUE(ProcessWithContext(
       ui::Accelerator(ui::VKEY_M, ui::EF_SHIFT_DOWN  | ui::EF_ALT_DOWN)));
