@@ -43,7 +43,7 @@
         };
       });
 
-      window.onhashchange = function(e) {
+      var activateTabByHash = function() {
         var hash = window.location.hash;
 
         // Remove the first character '#'.
@@ -55,6 +55,9 @@
 
         $(id).selected = true;
       };
+
+      window.onhashchange = activateTabByHash;
+      activateTabByHash();
     }
 
     /**
