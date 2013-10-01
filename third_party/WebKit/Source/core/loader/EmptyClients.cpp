@@ -34,7 +34,7 @@
 #include "core/page/Frame.h"
 #include "core/platform/ColorChooser.h"
 #include "core/platform/DateTimeChooser.h"
-#include "core/platform/FileChooser.h"
+#include "platform/FileChooser.h"
 
 namespace WebCore {
 

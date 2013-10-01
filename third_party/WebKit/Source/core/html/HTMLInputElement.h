@@ -27,7 +27,7 @@
 
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/forms/StepRange.h"
-#include "core/platform/FileChooser.h"
+#include "platform/FileChooser.h"
 
 namespace WebCore {
 

@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "core/platform/FileChooser.h"
+#include "platform/FileChooser.h"
 
 namespace WebCore {
 

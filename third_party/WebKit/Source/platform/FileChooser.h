@@ -30,6 +30,7 @@
 #ifndef FileChooser_h
 #define FileChooser_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -60,10 +61,10 @@ struct FileChooserSettings {
 #endif
 
     // Returns a combined vector of acceptMIMETypes and acceptFileExtensions.
-    Vector<String> acceptTypes() const;
+    Vector<String> PLATFORM_EXPORT acceptTypes() const;
 };
 
-class FileChooserClient {
+class PLATFORM_EXPORT FileChooserClient {
 public:
     virtual void filesChosen(const Vector<FileChooserFileInfo>&) = 0;
     virtual ~FileChooserClient();
@@ -77,7 +78,7 @@ private:
     RefPtr<FileChooser> m_chooser;
 };
 
-class FileChooser : public RefCounted<FileChooser> {
+class PLATFORM_EXPORT FileChooser : public RefCounted<FileChooser> {
 public:
     static PassRefPtr<FileChooser> create(FileChooserClient*, const FileChooserSettings&);
     ~FileChooser();

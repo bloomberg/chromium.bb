@@ -2609,7 +2609,6 @@
             'platform/DragData.cpp',
             'platform/DragImage.cpp',
             'platform/EventTracer.cpp',
-            'platform/FileChooser.cpp',
             'platform/FileMetadata.h',
             'platform/FloatConversion.h',
             'platform/HashTools.h',
