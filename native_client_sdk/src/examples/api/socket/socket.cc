@@ -6,6 +6,8 @@
 #include <string.h>
 #include <sstream>
 
+#include "echo_server.h"
+
 #include "ppapi/cpp/host_resolver.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
@@ -20,16 +22,18 @@
 #pragma warning(disable : 4355)
 #endif
 
-static const int s_buffer_size = 1024;
-
 class ExampleInstance : public pp::Instance {
  public:
   explicit ExampleInstance(PP_Instance instance)
     : pp::Instance(instance),
       callback_factory_(this),
-      send_outstanding_(false) {}
+      send_outstanding_(false),
+      echo_server_(NULL) {}
 
-  virtual ~ExampleInstance() {}
+  virtual ~ExampleInstance() {
+    delete echo_server_;
+  }
+
   virtual void HandleMessage(const pp::Var& var_message);
 
  private:
@@ -52,14 +56,17 @@ class ExampleInstance : public pp::Instance {
   pp::UDPSocket udp_socket_;
   pp::HostResolver resolver_;
   pp::NetAddress remote_host_;
-  char receive_buffer_[s_buffer_size];
+
+  char receive_buffer_[kBufferSize];
   bool send_outstanding_;
+  EchoServer* echo_server_;
 };
 
 #define MSG_CREATE_TCP 't'
 #define MSG_CREATE_UDP 'u'
 #define MSG_SEND 's'
 #define MSG_CLOSE 'c'
+#define MSG_LISTEN 'l'
 
 void ExampleInstance::HandleMessage(const pp::Var& var_message) {
   if (!var_message.is_string())
@@ -85,10 +92,22 @@ void ExampleInstance::HandleMessage(const pp::Var& var_message) {
       // The command 'c' requests to close without any argument like "c;"
       Close();
       break;
+    case MSG_LISTEN:
+      {
+        // The command 'l' starts a listening socket (server).
+        int port = atoi(message.substr(2).c_str());
+        echo_server_ = new EchoServer(this, port);
+        break;
+      }
     case MSG_SEND:
       // The command 't' requests to send a message as a text frame. The
       // message passed as an argument like "t;message".
       Send(message.substr(2));
+      break;
+    default:
+      std::ostringstream status;
+      status << "Unhandled message from JavaScript: " << message;
+      PostMessage(status.str());
       break;
   }
 }
@@ -155,7 +174,7 @@ void ExampleInstance::Connect(const std::string& host, bool tcp) {
     port = atoi(host.substr(pos+1).c_str());
   }
 
-  pp::CompletionCallback callback = \
+  pp::CompletionCallback callback =
       callback_factory_.NewCallback(&ExampleInstance::OnResolveCompletion);
   PP_HostResolver_Hint hint = { PP_NETADDRESS_FAMILY_UNSPECIFIED, 0 };
   resolver_.Resolve(hostname.c_str(), port, hint, callback);
@@ -172,7 +191,7 @@ void ExampleInstance::OnResolveCompletion(int32_t result) {
   PostMessage(std::string("Resolved: ") +
               addr.DescribeAsString(true).AsString());
 
-  pp::CompletionCallback callback = \
+  pp::CompletionCallback callback =
       callback_factory_.NewCallback(&ExampleInstance::OnConnectCompletion);
 
   if (IsUDP()) {
@@ -216,7 +235,7 @@ void ExampleInstance::Send(const std::string& message) {
 
   uint32_t size = message.size();
   const char* data = message.c_str();
-  pp::CompletionCallback callback = \
+  pp::CompletionCallback callback =
       callback_factory_.NewCallback(&ExampleInstance::OnSendCompletion);
   int32_t result;
   if (IsUDP())
@@ -240,16 +259,16 @@ void ExampleInstance::Send(const std::string& message) {
 }
 
 void ExampleInstance::Receive() {
-  memset(receive_buffer_, 0, s_buffer_size);
+  memset(receive_buffer_, 0, kBufferSize);
   if (IsUDP()) {
-    pp::CompletionCallbackWithOutput<pp::NetAddress> callback = \
+    pp::CompletionCallbackWithOutput<pp::NetAddress> callback =
         callback_factory_.NewCallbackWithOutput(
             &ExampleInstance::OnReceiveFromCompletion);
-    udp_socket_.RecvFrom(receive_buffer_, s_buffer_size-1, callback);
+    udp_socket_.RecvFrom(receive_buffer_, kBufferSize, callback);
   } else {
-    pp::CompletionCallback callback = \
+    pp::CompletionCallback callback =
         callback_factory_.NewCallback(&ExampleInstance::OnReceiveCompletion);
-    tcp_socket_.Read(receive_buffer_, s_buffer_size-1, callback);
+    tcp_socket_.Read(receive_buffer_, kBufferSize, callback);
   }
 }
 
@@ -285,7 +304,7 @@ void ExampleInstance::OnReceiveCompletion(int32_t result) {
     return;
   }
 
-  PostMessage(std::string("Received: ") + receive_buffer_);
+  PostMessage(std::string("Received: ") + std::string(receive_buffer_, result));
   Receive();
 }
 

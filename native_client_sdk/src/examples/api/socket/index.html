@@ -16,6 +16,10 @@ found in the LICENSE file.
   <h1>{{title}}</h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
   <p>The socket example demonstrates how to use the TCP and UDP socket API.<br>
+     This API is normally only available to packaged apps with the requisite
+     socket permission, but can be enabled for debugging purposes using the
+     <code>--allow-nacl-socket-api=&lt;hostname&gt;</code> command line
+     flag.<br>
      First set a server address in the form of 'hostname:port', then push the
      "Connect" button to establish a connection.<br>
      "Send" button sends the message of the text area to the the remote host.
@@ -43,11 +47,11 @@ found in the LICENSE file.
 
   <button id="closeButton">Close</button>
 
-  <div id="createServer">
+  <div>
     <h2>Create a local server:</h2>
-    <p>The "Listen" button can be used create a local TCP or UDP echo server listenting
-       on the port specified.  This is implemented using the 'chrome.socket' javascript
-       API which will only work when this application is run as a packaged app.<br>
+    <p>The "Listen" button can be used create a local TCP or UDP echo server
+    listenting on the port specified. Once started this server can be connected
+    to by entering <code>localhost:&lt;port&gt;<br> above.
     </p>
     <p>
     <form id="listenForm">
