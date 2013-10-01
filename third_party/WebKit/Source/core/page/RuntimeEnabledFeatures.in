@@ -49,6 +49,7 @@ ExperimentalContentSecurityPolicyFeatures status=experimental
 FileSystem status=stable
 FontLoadEvents status=experimental
 Fullscreen status=stable
+FastTextAutosizing
 Gamepad status=stable
 Geolocation status=stable
 HTMLImports status=test
