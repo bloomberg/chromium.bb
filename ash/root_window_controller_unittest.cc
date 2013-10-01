@@ -594,5 +594,23 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   }
 }
 
+// Test for http://crbug.com/299787. RootWindowController should delete
+// the old container since the keyboard controller creates a new window in
+// GetWindowContainer().
+TEST_F(VirtualKeyboardRootWindowControllerTest,
+       DeleteOldContainerOnVirtualKeyboardInit) {
+  aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
+  aura::Window* keyboard_container = Shell::GetContainer(root_window,
+      internal::kShellWindowId_VirtualKeyboardContainer);
+  ASSERT_TRUE(keyboard_container);
+  // Track the keyboard container window.
+  aura::WindowTracker tracker;
+  tracker.Add(keyboard_container);
+  // Mock a login state change to reinitialize the keyboard.
+  ash::Shell::GetInstance()->OnLoginStateChanged(user::LOGGED_IN_OWNER);
+  // keyboard_container should no longer be present.
+  EXPECT_FALSE(tracker.Contains(keyboard_container));
+}
+
 }  // namespace test
 }  // namespace ash

@@ -531,6 +531,10 @@ void RootWindowController::InitKeyboard() {
     keyboard_controller_->AddObserver(shelf()->shelf_layout_manager());
     keyboard_controller_->AddObserver(panel_layout_manager_);
 
+    // Deletes the old container since |keyboard_controller_| creates a
+    // new container window in GetContainerWindow().
+    delete GetContainer(kShellWindowId_VirtualKeyboardContainer);
+
     aura::Window* keyboard_container =
         keyboard_controller_->GetContainerWindow();
     keyboard_container->set_id(kShellWindowId_VirtualKeyboardContainer);
