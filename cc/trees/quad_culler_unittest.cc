@@ -28,18 +28,10 @@ class TestOcclusionTrackerImpl : public OcclusionTrackerImpl {
  public:
   TestOcclusionTrackerImpl(gfx::Rect scissor_rect_in_screen,
                            bool record_metrics_for_frame = true)
-      : OcclusionTrackerImpl(scissor_rect_in_screen, record_metrics_for_frame),
-        scissor_rect_in_screen_(scissor_rect_in_screen) {}
-
- protected:
-  virtual gfx::Rect LayerScissorRectInTargetSurface(
-      const LayerImpl* layer) const {
-    return scissor_rect_in_screen_;
+      : OcclusionTrackerImpl(scissor_rect_in_screen, record_metrics_for_frame) {
   }
 
  private:
-  gfx::Rect scissor_rect_in_screen_;
-
   DISALLOW_COPY_AND_ASSIGN(TestOcclusionTrackerImpl);
 };
 
@@ -54,14 +46,13 @@ class QuadCullerTest : public testing::Test {
       : host_impl_(&proxy_),
         layer_id_(1) {}
 
-  scoped_ptr<TiledLayerImpl> MakeLayer(
-      TiledLayerImpl* parent,
-      const gfx::Transform& draw_transform,
-      gfx::Rect layer_rect,
-      float opacity,
-      bool opaque,
-      gfx::Rect layer_opaque_rect,
-      LayerImplList& surface_layer_list) {
+  scoped_ptr<TiledLayerImpl> MakeLayer(TiledLayerImpl* parent,
+                                       const gfx::Transform& draw_transform,
+                                       gfx::Rect layer_rect,
+                                       float opacity,
+                                       bool opaque,
+                                       gfx::Rect layer_opaque_rect,
+                                       LayerImplList& surface_layer_list) {
     scoped_ptr<TiledLayerImpl> layer =
         TiledLayerImpl::Create(host_impl_.active_tree(), layer_id_++);
     scoped_ptr<LayerTilingData> tiler = LayerTilingData::Create(
@@ -143,18 +134,17 @@ class QuadCullerTest : public testing::Test {
 TEST_F(QuadCullerTest, VerifyNoCulling) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
-  scoped_ptr<TiledLayerImpl> root_layer =
-      MakeLayer(NULL,
-                gfx::Transform(),
-                root_rect,
-                1,
-                true,
-                gfx::Rect(),
-                render_surface_layer_list);
+  scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
+                                                    gfx::Transform(),
+                                                    root_rect,
+                                                    1.f,
+                                                    true,
+                                                    gfx::Rect(),
+                                                    render_surface_layer_list);
   scoped_ptr<TiledLayerImpl> child_layer = MakeLayer(root_layer.get(),
                                                      gfx::Transform(),
                                                      child_rect,
-                                                     1,
+                                                     1.f,
                                                      false,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
@@ -171,7 +161,7 @@ TEST_F(QuadCullerTest, VerifyNoCulling) {
               root_layer.get(),
               &it,
               &occlusion_tracker);
-  EXPECT_EQ(quad_list.size(), 13u);
+  EXPECT_EQ(13u, quad_list.size());
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
   EXPECT_NEAR(occlusion_tracker.overdraw_metrics()->pixels_drawn_translucent(),
@@ -184,18 +174,17 @@ TEST_F(QuadCullerTest, VerifyNoCulling) {
 TEST_F(QuadCullerTest, VerifyCullChildLinesUpTopLeft) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
-  scoped_ptr<TiledLayerImpl> root_layer =
-      MakeLayer(NULL,
-                gfx::Transform(),
-                root_rect,
-                1,
-                true,
-                gfx::Rect(),
-                render_surface_layer_list);
+  scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
+                                                    gfx::Transform(),
+                                                    root_rect,
+                                                    1.f,
+                                                    true,
+                                                    gfx::Rect(),
+                                                    render_surface_layer_list);
   scoped_ptr<TiledLayerImpl> child_layer = MakeLayer(root_layer.get(),
                                                      gfx::Transform(),
                                                      child_rect,
-                                                     1,
+                                                     1.f,
                                                      true,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
@@ -212,7 +201,7 @@ TEST_F(QuadCullerTest, VerifyCullChildLinesUpTopLeft) {
               root_layer.get(),
               &it,
               &occlusion_tracker);
-  EXPECT_EQ(quad_list.size(), 9u);
+  EXPECT_EQ(9u, quad_list.size());
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
   EXPECT_NEAR(
@@ -225,14 +214,13 @@ TEST_F(QuadCullerTest, VerifyCullChildLinesUpTopLeft) {
 TEST_F(QuadCullerTest, VerifyCullWhenChildOpacityNotOne) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
-  scoped_ptr<TiledLayerImpl> root_layer =
-      MakeLayer(NULL,
-                gfx::Transform(),
-                root_rect,
-                1,
-                true,
-                gfx::Rect(),
-                render_surface_layer_list);
+  scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
+                                                    gfx::Transform(),
+                                                    root_rect,
+                                                    1.f,
+                                                    true,
+                                                    gfx::Rect(),
+                                                    render_surface_layer_list);
   scoped_ptr<TiledLayerImpl> child_layer = MakeLayer(root_layer.get(),
                                                      child_transform,
                                                      child_rect,
@@ -253,7 +241,7 @@ TEST_F(QuadCullerTest, VerifyCullWhenChildOpacityNotOne) {
               root_layer.get(),
               &it,
               &occlusion_tracker);
-  EXPECT_EQ(quad_list.size(), 13u);
+  EXPECT_EQ(13u, quad_list.size());
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
   EXPECT_NEAR(occlusion_tracker.overdraw_metrics()->pixels_drawn_translucent(),
@@ -266,18 +254,17 @@ TEST_F(QuadCullerTest, VerifyCullWhenChildOpacityNotOne) {
 TEST_F(QuadCullerTest, VerifyCullWhenChildOpaqueFlagFalse) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
-  scoped_ptr<TiledLayerImpl> root_layer =
-      MakeLayer(NULL,
-                gfx::Transform(),
-                root_rect,
-                1,
-                true,
-                gfx::Rect(),
-                render_surface_layer_list);
+  scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
+                                                    gfx::Transform(),
+                                                    root_rect,
+                                                    1.f,
+                                                    true,
+                                                    gfx::Rect(),
+                                                    render_surface_layer_list);
   scoped_ptr<TiledLayerImpl> child_layer = MakeLayer(root_layer.get(),
                                                      child_transform,
                                                      child_rect,
-                                                     1,
+                                                     1.f,
                                                      false,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
@@ -294,7 +281,7 @@ TEST_F(QuadCullerTest, VerifyCullWhenChildOpaqueFlagFalse) {
               root_layer.get(),
               &it,
               &occlusion_tracker);
-  EXPECT_EQ(quad_list.size(), 13u);
+  EXPECT_EQ(13u, quad_list.size());
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
   EXPECT_NEAR(occlusion_tracker.overdraw_metrics()->pixels_drawn_translucent(),
@@ -311,14 +298,14 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileOnly) {
   scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
                                                     gfx::Transform(),
                                                     root_rect,
-                                                    1,
+                                                    1.f,
                                                     true,
                                                     gfx::Rect(),
                                                     render_surface_layer_list);
   scoped_ptr<TiledLayerImpl> child_layer = MakeLayer(root_layer.get(),
                                                      child_transform,
                                                      child_rect,
-                                                     1,
+                                                     1.f,
                                                      true,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
@@ -338,19 +325,19 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileOnly) {
   ASSERT_EQ(quad_list.size(), 12u);
 
   gfx::Rect quad_visible_rect1 = quad_list[5]->visible_rect;
-  EXPECT_EQ(quad_visible_rect1.height(), 50);
+  EXPECT_EQ(50, quad_visible_rect1.height());
 
   gfx::Rect quad_visible_rect3 = quad_list[7]->visible_rect;
-  EXPECT_EQ(quad_visible_rect3.width(), 50);
+  EXPECT_EQ(50, quad_visible_rect3.width());
 
   // Next index is 8, not 9, since centre quad culled.
   gfx::Rect quad_visible_rect4 = quad_list[8]->visible_rect;
-  EXPECT_EQ(quad_visible_rect4.width(), 50);
-  EXPECT_EQ(quad_visible_rect4.x(), 250);
+  EXPECT_EQ(50, quad_visible_rect4.width());
+  EXPECT_EQ(250, quad_visible_rect4.x());
 
   gfx::Rect quad_visible_rect6 = quad_list[10]->visible_rect;
-  EXPECT_EQ(quad_visible_rect6.height(), 50);
-  EXPECT_EQ(quad_visible_rect6.y(), 250);
+  EXPECT_EQ(50, quad_visible_rect6.height());
+  EXPECT_EQ(250, quad_visible_rect6.y());
 
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 100000, 1);
@@ -377,14 +364,14 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileNonIntegralSize1) {
   scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
                                                     root_transform,
                                                     root_rect,
-                                                    1,
+                                                    1.f,
                                                     true,
                                                     gfx::Rect(),
                                                     render_surface_layer_list);
   scoped_ptr<TiledLayerImpl> child_layer = MakeLayer(root_layer.get(),
                                                      child_transform,
                                                      child_rect,
-                                                     1,
+                                                     1.f,
                                                      true,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
@@ -401,7 +388,7 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileNonIntegralSize1) {
               root_layer.get(),
               &it,
               &occlusion_tracker);
-  EXPECT_EQ(quad_list.size(), 2u);
+  EXPECT_EQ(2u, quad_list.size());
 
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 20363, 1);
@@ -428,14 +415,14 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileNonIntegralSize2) {
   scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
                                                     root_transform,
                                                     root_rect,
-                                                    1,
+                                                    1.f,
                                                     true,
                                                     gfx::Rect(),
                                                     render_surface_layer_list);
   scoped_ptr<TiledLayerImpl> child_layer = MakeLayer(root_layer.get(),
                                                      child_transform,
                                                      child_rect,
-                                                     1,
+                                                     1.f,
                                                      true,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
@@ -452,7 +439,7 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileNonIntegralSize2) {
               root_layer.get(),
               &it,
               &occlusion_tracker);
-  EXPECT_EQ(quad_list.size(), 2u);
+  EXPECT_EQ(2u, quad_list.size());
 
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 19643, 1);
@@ -469,14 +456,14 @@ TEST_F(QuadCullerTest, VerifyCullChildLinesUpBottomRight) {
   scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
                                                     gfx::Transform(),
                                                     root_rect,
-                                                    1,
+                                                    1.f,
                                                     true,
                                                     gfx::Rect(),
                                                     render_surface_layer_list);
   scoped_ptr<TiledLayerImpl> child_layer = MakeLayer(root_layer.get(),
                                                      child_transform,
                                                      child_rect,
-                                                     1,
+                                                     1.f,
                                                      true,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
@@ -493,7 +480,7 @@ TEST_F(QuadCullerTest, VerifyCullChildLinesUpBottomRight) {
               root_layer.get(),
               &it,
               &occlusion_tracker);
-  EXPECT_EQ(quad_list.size(), 9u);
+  EXPECT_EQ(9u, quad_list.size());
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
   EXPECT_NEAR(
@@ -510,7 +497,7 @@ TEST_F(QuadCullerTest, VerifyCullSubRegion) {
   scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
                                                     gfx::Transform(),
                                                     root_rect,
-                                                    1,
+                                                    1.f,
                                                     true,
                                                     gfx::Rect(),
                                                     render_surface_layer_list);
@@ -521,7 +508,7 @@ TEST_F(QuadCullerTest, VerifyCullSubRegion) {
   scoped_ptr<TiledLayerImpl> child_layer = MakeLayer(root_layer.get(),
                                                      child_transform,
                                                      child_rect,
-                                                     1,
+                                                     1.f,
                                                      false,
                                                      child_opaque_rect,
                                                      render_surface_layer_list);
@@ -538,7 +525,7 @@ TEST_F(QuadCullerTest, VerifyCullSubRegion) {
               root_layer.get(),
               &it,
               &occlusion_tracker);
-  EXPECT_EQ(quad_list.size(), 12u);
+  EXPECT_EQ(12u, quad_list.size());
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
   EXPECT_NEAR(occlusion_tracker.overdraw_metrics()->pixels_drawn_translucent(),
@@ -556,7 +543,7 @@ TEST_F(QuadCullerTest, VerifyCullSubRegion2) {
   scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
                                                     gfx::Transform(),
                                                     root_rect,
-                                                    1,
+                                                    1.f,
                                                     true,
                                                     gfx::Rect(),
                                                     render_surface_layer_list);
@@ -567,7 +554,7 @@ TEST_F(QuadCullerTest, VerifyCullSubRegion2) {
   scoped_ptr<TiledLayerImpl> child_layer = MakeLayer(root_layer.get(),
                                                      child_transform,
                                                      child_rect,
-                                                     1,
+                                                     1.f,
                                                      false,
                                                      child_opaque_rect,
                                                      render_surface_layer_list);
@@ -584,7 +571,7 @@ TEST_F(QuadCullerTest, VerifyCullSubRegion2) {
               root_layer.get(),
               &it,
               &occlusion_tracker);
-  EXPECT_EQ(quad_list.size(), 12u);
+  EXPECT_EQ(12u, quad_list.size());
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
   EXPECT_NEAR(occlusion_tracker.overdraw_metrics()->pixels_drawn_translucent(),
@@ -602,7 +589,7 @@ TEST_F(QuadCullerTest, VerifyCullSubRegionCheckOvercull) {
   scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
                                                     gfx::Transform(),
                                                     root_rect,
-                                                    1,
+                                                    1.f,
                                                     true,
                                                     gfx::Rect(),
                                                     render_surface_layer_list);
@@ -613,7 +600,7 @@ TEST_F(QuadCullerTest, VerifyCullSubRegionCheckOvercull) {
   scoped_ptr<TiledLayerImpl> child_layer = MakeLayer(root_layer.get(),
                                                      child_transform,
                                                      child_rect,
-                                                     1,
+                                                     1.f,
                                                      false,
                                                      child_opaque_rect,
                                                      render_surface_layer_list);
@@ -630,7 +617,7 @@ TEST_F(QuadCullerTest, VerifyCullSubRegionCheckOvercull) {
               root_layer.get(),
               &it,
               &occlusion_tracker);
-  EXPECT_EQ(quad_list.size(), 13u);
+  EXPECT_EQ(13u, quad_list.size());
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 90000, 1);
   EXPECT_NEAR(occlusion_tracker.overdraw_metrics()->pixels_drawn_translucent(),
@@ -650,14 +637,14 @@ TEST_F(QuadCullerTest, VerifyNonAxisAlignedQuadsDontOcclude) {
   scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
                                                     gfx::Transform(),
                                                     root_rect,
-                                                    1,
+                                                    1.f,
                                                     true,
                                                     gfx::Rect(),
                                                     render_surface_layer_list);
   scoped_ptr<TiledLayerImpl> child_layer = MakeLayer(root_layer.get(),
                                                      child_transform,
                                                      child_rect,
-                                                     1,
+                                                     1.f,
                                                      true,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
@@ -674,7 +661,7 @@ TEST_F(QuadCullerTest, VerifyNonAxisAlignedQuadsDontOcclude) {
               root_layer.get(),
               &it,
               &occlusion_tracker);
-  EXPECT_EQ(quad_list.size(), 13u);
+  EXPECT_EQ(13u, quad_list.size());
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 130000, 1);
   EXPECT_NEAR(
@@ -699,14 +686,14 @@ TEST_F(QuadCullerTest, VerifyNonAxisAlignedQuadsSafelyCulled) {
   scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
                                                     parent_transform,
                                                     root_rect,
-                                                    1,
+                                                    1.f,
                                                     true,
                                                     gfx::Rect(),
                                                     render_surface_layer_list);
   scoped_ptr<TiledLayerImpl> child_layer = MakeLayer(root_layer.get(),
                                                      gfx::Transform(),
                                                      child_rect,
-                                                     1,
+                                                     1.f,
                                                      true,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
@@ -723,7 +710,7 @@ TEST_F(QuadCullerTest, VerifyNonAxisAlignedQuadsSafelyCulled) {
               root_layer.get(),
               &it,
               &occlusion_tracker);
-  EXPECT_EQ(quad_list.size(), 12u);
+  EXPECT_EQ(12u, quad_list.size());
   EXPECT_NEAR(
       occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 100600, 1);
   EXPECT_NEAR(
@@ -895,23 +882,23 @@ TEST_F(QuadCullerTest, VerifyCullOutsideScissorOverNoTiles) {
 
 TEST_F(QuadCullerTest, VerifyWithoutMetrics) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
-  scoped_ptr<TiledLayerImpl> root_layer =
-      MakeLayer(NULL,
-                gfx::Transform(),
-                root_rect,
-                1,
-                true,
-                gfx::Rect(),
-                render_surface_layer_list);
+  scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
+                                                    gfx::Transform(),
+                                                    root_rect,
+                                                    1.f,
+                                                    true,
+                                                    gfx::Rect(),
+                                                    render_surface_layer_list);
   scoped_ptr<TiledLayerImpl> child_layer = MakeLayer(root_layer.get(),
                                                      gfx::Transform(),
                                                      child_rect,
-                                                     1,
+                                                     1.f,
                                                      true,
                                                      gfx::Rect(),
                                                      render_surface_layer_list);
+  bool record_metrics = false;
   TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(50, 50, 200, 200),
-                                             false);
+                                             record_metrics);
   LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
 
   AppendQuads(&quad_list,
@@ -924,13 +911,13 @@ TEST_F(QuadCullerTest, VerifyWithoutMetrics) {
               root_layer.get(),
               &it,
               &occlusion_tracker);
-  EXPECT_EQ(quad_list.size(), 9u);
-  EXPECT_NEAR(
-      occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque(), 0, 1);
-  EXPECT_NEAR(
-      occlusion_tracker.overdraw_metrics()->pixels_drawn_translucent(), 0, 1);
-  EXPECT_NEAR(
-      occlusion_tracker.overdraw_metrics()->pixels_culled_for_drawing(), 0, 1);
+  EXPECT_EQ(9u, quad_list.size());
+  EXPECT_EQ(0.f,
+            occlusion_tracker.overdraw_metrics()->pixels_drawn_opaque());
+  EXPECT_EQ(0.f,
+            occlusion_tracker.overdraw_metrics()->pixels_drawn_translucent());
+  EXPECT_EQ(0.f,
+            occlusion_tracker.overdraw_metrics()->pixels_culled_for_drawing());
 }
 
 }  // namespace
