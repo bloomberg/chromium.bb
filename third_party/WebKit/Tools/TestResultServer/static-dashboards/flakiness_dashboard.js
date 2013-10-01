@@ -226,7 +226,7 @@ function createResultsObjectForTest(test, builder)
         builder: builder,
         // HTML for display of the results in the flakiness column
         html: '',
-        flips: 0,
+        flipCount: 0,
         slowestTime: 0,
         isFlaky: false,
         bugs: [],
@@ -771,7 +771,7 @@ function sortTests(tests, column, order)
     var resultsProperty, sortFunctionGetter;
     if (column == 'flakiness') {
         sortFunctionGetter = numericSort;
-        resultsProperty = 'flips';
+        resultsProperty = 'flipCount';
     } else if (column == 'slowest') {
         sortFunctionGetter = numericSort;
         resultsProperty = 'slowestTime';
