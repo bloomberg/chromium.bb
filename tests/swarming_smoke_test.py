@@ -11,6 +11,9 @@ import unittest
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+ISOLATE_SERVER = 'https://isolateserver.appspot.com/'
+SWARMING_SERVER = 'https://chromium-swarm.appspot.com/'
+
 
 class TestSwarm(unittest.TestCase):
   def test_example(self):
@@ -20,7 +23,11 @@ class TestSwarm(unittest.TestCase):
       sys.executable,
       os.path.normpath(
           os.path.join(BASE_DIR, '..', 'example', 'run_example_swarm.py')),
+      '--isolate-server', ISOLATE_SERVER,
+      '--swarming', SWARMING_SERVER,
     ]
+    if '-v' in sys.argv:
+      cmd.append('--verbose')
     p = subprocess.Popen(
         cmd,
         stdin=subprocess.PIPE,

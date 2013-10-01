@@ -3,21 +3,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# pylint: disable=W0212
 # pylint: disable=W0223
 # pylint: disable=W0231
 
-import binascii
 import hashlib
 import json
 import logging
 import os
-import random
 import shutil
 import StringIO
 import sys
 import tempfile
 import threading
 import unittest
+import urllib
 import zlib
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -64,6 +64,47 @@ class TestCase(auto_stub.TestCase):
     self.fail('Unknown request %s' % url)
 
 
+class TestZipCompression(TestCase):
+  """Test zip_compress and zip_decompress generators."""
+
+  def test_compress_and_decompress(self):
+    """Test data === decompress(compress(data))."""
+    original = [str(x) for x in xrange(0, 1000)]
+    processed = isolateserver.zip_decompress(
+        isolateserver.zip_compress(original))
+    self.assertEqual(''.join(original), ''.join(processed))
+
+  def test_zip_bomb(self):
+    """Verify zip_decompress always returns small chunks."""
+    original = '\x00' * 100000
+    bomb = ''.join(isolateserver.zip_compress(original))
+    decompressed = []
+    chunk_size = 1000
+    for chunk in isolateserver.zip_decompress([bomb], chunk_size):
+      self.assertLessEqual(len(chunk), chunk_size)
+      decompressed.append(chunk)
+    self.assertEqual(original, ''.join(decompressed))
+
+  def test_bad_zip_file(self):
+    """Verify decompressing broken file raises IOError."""
+    with self.assertRaises(IOError):
+      ''.join(isolateserver.zip_decompress(['Im not a zip file']))
+
+
+class FakeItem(isolateserver.Item):
+  def __init__(self, data, is_isolated=False):
+    super(FakeItem, self).__init__(
+        ALGO(data).hexdigest(), len(data), is_isolated)
+    self.data = data
+
+  def content(self, _chunk_size):
+    return [self.data]
+
+  @property
+  def zipped(self):
+    return zlib.compress(self.data, self.compression_level)
+
+
 class StorageTest(TestCase):
   """Tests for Storage methods."""
 
@@ -73,105 +114,81 @@ class StorageTest(TestCase):
     class MockedStorageApi(isolateserver.StorageApi):
       def __init__(self):
         self.pushed = []
-      def push(self, item, expected_size, content_generator, push_urls=None):
-        self.pushed.append(
-          (item, expected_size, ''.join(content_generator), push_urls))
+      def push(self, item, content, size):
+        self.pushed.append((item, ''.join(content), size))
         if side_effect:
           side_effect()
     return MockedStorageApi()
 
-  def test_batch_files_for_check(self):
-    items = {
-      'foo': {'s': 12},
-      'bar': {},
-      'blow': {'s': 0},
-      'bizz': {'s': 1222},
-      'buzz': {'s': 1223},
-    }
-    expected = [
-      [
-        ('buzz', {'s': 1223}),
-        ('bizz', {'s': 1222}),
-        ('foo', {'s': 12}),
-        ('blow', {'s': 0}),
-      ],
+  def test_batch_items_for_check(self):
+    items = [
+      isolateserver.Item('foo', 12),
+      isolateserver.Item('blow', 0),
+      isolateserver.Item('bizz', 1222),
+      isolateserver.Item('buzz', 1223),
     ]
-    batches = list(isolateserver.Storage.batch_files_for_check(items))
+    expected = [
+      [items[3], items[2], items[0], items[1]],
+    ]
+    batches = list(isolateserver.Storage.batch_items_for_check(items))
     self.assertEqual(batches, expected)
 
-  def test_get_missing_files(self):
-    items = {
-      'foo': {'s': 12},
-      'bar': {},
-      'blow': {'s': 0},
-      'bizz': {'s': 1222},
-      'buzz': {'s': 1223},
-    }
-    missing = {
-      'bizz': {'s': 1222},
-      'buzz': {'s': 1223},
-    }
-    fake_upload_urls = ('a', 'b')
+  def test_get_missing_items(self):
+    items = [
+      isolateserver.Item('foo', 12),
+      isolateserver.Item('blow', 0),
+      isolateserver.Item('bizz', 1222),
+      isolateserver.Item('buzz', 1223),
+    ]
+    missing = [
+      [items[2], items[3]],
+    ]
 
     class MockedStorageApi(isolateserver.StorageApi):
-      def contains(self, files):
-        return [f + (fake_upload_urls,) for f in files if f[0] in missing]
+      def contains(self, _items):
+        return missing
     storage = isolateserver.Storage(MockedStorageApi(), use_zip=False)
 
-    # 'get_missing_files' is a generator, materialize its result in a list.
-    result = list(storage.get_missing_files(items))
-
-    # Ensure it's a list of triplets.
-    self.assertTrue(all(len(x) ==  3 for x in result))
-    # Verify upload urls are set.
-    self.assertTrue(all(x[2] == fake_upload_urls for x in result))
-    # 'get_missing_files' doesn't guarantee order of its results, so convert
-    # it to unordered dict and compare dicts.
-    self.assertEqual(dict(x[:2] for x in result), missing)
+    # 'get_missing_items' is a generator, materialize its result in a list.
+    result = list(storage.get_missing_items(items))
+    self.assertEqual(missing, result)
 
   def test_async_push(self):
-    data_to_push = '1234567'
-    digest = ALGO(data_to_push).hexdigest()
-    compression_level = 5
-    zipped = zlib.compress(data_to_push, compression_level)
-    push_urls = ('fake1', 'fake2')
-
     for use_zip in (False, True):
+      item = FakeItem('1234567')
       storage_api = self.mock_push()
       storage = isolateserver.Storage(storage_api, use_zip)
       channel = threading_utils.TaskChannel()
-      storage.async_push(
-          channel, 0, digest, len(data_to_push), [data_to_push],
-          compression_level, push_urls)
+      storage.async_push(channel, 0, item)
       # Wait for push to finish.
       pushed_item = channel.pull()
-      self.assertEqual(digest, pushed_item)
+      self.assertEqual(item, pushed_item)
       # StorageApi.push was called with correct arguments.
       if use_zip:
-        expected_data = zipped
+        expected_data = item.zipped
         expected_size = isolateserver.UNKNOWN_FILE_SIZE
       else:
-        expected_data = data_to_push
-        expected_size = len(data_to_push)
+        expected_data = item.data
+        expected_size = len(item.data)
       self.assertEqual(
-          [(digest, expected_size, expected_data, push_urls)],
+          [(item, expected_data, expected_size)],
           storage_api.pushed)
 
   def test_async_push_generator_errors(self):
     class FakeException(Exception):
       pass
 
-    def faulty_generator():
+    def faulty_generator(_chunk_size):
       yield 'Hi!'
       raise FakeException('fake exception')
 
     for use_zip in (False, True):
+      item = FakeItem('')
+      self.mock(item, 'content', faulty_generator)
       storage_api = self.mock_push()
       storage = isolateserver.Storage(storage_api, use_zip)
       channel = threading_utils.TaskChannel()
-      storage.async_push(
-          channel, 0, 'item', isolateserver.UNKNOWN_FILE_SIZE,
-          faulty_generator(), 0, None)
+      storage.async_push(channel, 0, item)
       with self.assertRaises(FakeException):
         channel.pull()
       # StorageApi's push should never complete when data can not be read.
@@ -179,10 +196,8 @@ class StorageTest(TestCase):
 
   def test_async_push_upload_errors(self):
     chunk = 'data_chunk'
-    compression_level = 5
-    zipped = zlib.compress(chunk, compression_level)
 
-    def _generator():
+    def _generator(_chunk_size):
       yield chunk
 
     def push_side_effect():
@@ -192,25 +207,26 @@ class StorageTest(TestCase):
     # broken now (it reuses same generator instance when retrying).
     content_sources = (
         # generator(),
-        [chunk],
+        lambda _chunk_size: [chunk],
     )
 
     for use_zip in (False, True):
       for source in content_sources:
+        item = FakeItem(chunk)
+        self.mock(item, 'content', source)
         storage_api = self.mock_push(push_side_effect)
         storage = isolateserver.Storage(storage_api, use_zip)
         channel = threading_utils.TaskChannel()
-        storage.async_push(
-            channel, 0, 'item', isolateserver.UNKNOWN_FILE_SIZE,
-            source, compression_level, None)
+        storage.async_push(channel, 0, item)
         with self.assertRaises(IOError):
           channel.pull()
         # First initial attempt + all retries.
         attempts = 1 + isolateserver.WorkerPool.RETRIES
         # Single push attempt parameters.
         expected_push = (
-            'item', isolateserver.UNKNOWN_FILE_SIZE,
-            zipped if use_zip else chunk, None)
+            item,
+            item.zipped if use_zip else item.data,
+            isolateserver.UNKNOWN_FILE_SIZE if use_zip else item.size)
         # Ensure all pushes are attempted.
         self.assertEqual(
             [expected_push] * attempts, storage_api.pushed)
@@ -231,12 +247,7 @@ class StorageTest(TestCase):
         'h': 'hash_c',
       },
     }
-    push_urls = {
-      'a': ('upload_a', 'finalize_a'),
-      'b': ('upload_b', None),
-      'c': ('upload_c', None),
-    }
-    files_data = dict((k, k * files[k]['s']) for k in files)
+    files_data = dict((k, 'x' * files[k]['s']) for k in files)
     missing = set(['a', 'b'])
 
     # Files read by mocked_file_read.
@@ -255,13 +266,12 @@ class StorageTest(TestCase):
     self.mock(isolateserver, 'file_read', mocked_file_read)
 
     class MockedStorageApi(isolateserver.StorageApi):
-      def contains(self, files):
-        contains_calls.append(files)
-        return [f + (push_urls[f[0]],) for f in files if f[0] in missing]
+      def contains(self, items):
+        contains_calls.append(items)
+        return [i for i in items if os.path.basename(i.path) in missing]
 
-      def push(self, item, expected_size, content_generator, push_urls=None):
-        push_calls.append(
-          (item, expected_size, ''.join(content_generator), push_urls))
+      def push(self, item, content, size):
+        push_calls.append((item, ''.join(content), size))
 
     storage_api = MockedStorageApi()
     storage = isolateserver.Storage(storage_api, use_zip=False)
@@ -270,209 +280,341 @@ class StorageTest(TestCase):
     # Was reading only missing files.
     self.assertEqual(missing, set(read_calls))
     # 'contains' checked for existence of all files.
-    self.assertEqual(files, dict(sum(contains_calls, [])))
+    self.assertEqual(
+        set(f['h'] for f in files.itervalues()),
+        set(i.digest for i in sum(contains_calls, [])))
     # Pushed only missing files.
     self.assertEqual(
       set(files[name]['h'] for name in missing),
-      set(call[0] for call in push_calls))
+      set(call[0].digest for call in push_calls))
     # Pushing with correct data, size and push urls.
-    for push_call in push_calls:
-      digest = push_call[0]
+    for pushed_item, pushed_content, pushed_size in push_calls:
       filenames = [
           name for name, metadata in files.iteritems()
-          if metadata['h'] == digest
+          if metadata['h'] == pushed_item.digest
       ]
       self.assertEqual(1, len(filenames))
       filename = filenames[0]
-      data = files_data[filename]
-      self.assertEqual(
-          (digest, len(data), data, push_urls[filename]),
-          push_call)
+      self.assertEqual(os.path.join(root, filename), pushed_item.path)
+      self.assertEqual(files_data[filename], pushed_content)
+      self.assertEqual(len(files_data[filename]), pushed_size)
 
 
-class IsolateServerArchiveTest(TestCase):
-  def setUp(self):
-    super(IsolateServerArchiveTest, self).setUp()
-    self.mock(isolateserver, 'randomness', lambda: 'not_really_random')
-    self.mock(sys, 'stdout', StringIO.StringIO())
-
-  def test_present(self):
-    files = [
-      os.path.join(BASE_PATH, 'isolateserver', f)
-      for f in ('small_file.txt', 'empty_file.txt')
-    ]
-    hash_encoded = ''.join(
-        binascii.unhexlify(isolateserver.hash_file(f, ALGO)) for f in files)
-    path = 'http://random/'
-    self._requests = [
-      (path + 'content/get_token', {}, 'foo bar'),
-      (
-        path + 'content/contains/default-gzip?token=foo%20bar',
-        {'data': hash_encoded, 'content_type': 'application/octet-stream'},
-        '\1\1',
-      ),
-    ]
-    result = isolateserver.main(['archive', '--isolate-server', path] + files)
-    self.assertEqual(0, result)
-
-  def test_missing(self):
-    files = [
-      os.path.join(BASE_PATH, 'isolateserver', f)
-      for f in ('small_file.txt', 'empty_file.txt')
-    ]
-    hashes = [isolateserver.hash_file(f, ALGO) for f in files]
-    hash_encoded = ''.join(map(binascii.unhexlify, hashes))
-    compressed = [
-        zlib.compress(
-            open(f, 'rb').read(),
-            isolateserver.get_zip_compression_level(f))
-        for f in files
-    ]
-    path = 'http://random/'
-    self._requests = [
-      (path + 'content/get_token', {}, 'foo bar'),
-      (
-        path + 'content/contains/default-gzip?token=foo%20bar',
-        {'data': hash_encoded, 'content_type': 'application/octet-stream'},
-        '\0\0',
-      ),
-      (
-        path + 'content/store/default-gzip/%s?token=foo%%20bar' % hashes[0],
-        {'data': compressed[0], 'content_type': 'application/octet-stream'},
-        'ok',
-      ),
-      (
-        path + 'content/store/default-gzip/%s?token=foo%%20bar' % hashes[1],
-        {'data': compressed[1], 'content_type': 'application/octet-stream'},
-        'ok',
-      ),
-    ]
-    result = isolateserver.main(['archive', '--isolate-server', path] + files)
-    self.assertEqual(0, result)
-
-  def test_large(self):
-    content = ''
-    compressed = ''
-    while (
-        len(compressed) <= isolateserver.MIN_SIZE_FOR_DIRECT_BLOBSTORE):
-      # The goal here is to generate a file, once compressed, is at least
-      # MIN_SIZE_FOR_DIRECT_BLOBSTORE.
-      content += ''.join(chr(random.randint(0, 255)) for _ in xrange(20*1024))
-      compressed = zlib.compress(
-          content, isolateserver.get_zip_compression_level('foo.txt'))
-
-    s = ALGO(content).hexdigest()
-    infiles = {
-      'foo.txt': {
-        's': len(content),
-        'h': s,
-      },
+class IsolateServerStorageApiTest(TestCase):
+  @staticmethod
+  def mock_handshake_request(server, token='fake token', error=None):
+    handshake_request = {
+      'client_app_version': isolateserver.__version__,
+      'fetcher': True,
+      'protocol_version': isolateserver.ISOLATE_PROTOCOL_VERSION,
+      'pusher': True,
     }
-    path = 'http://random/'
-    hash_encoded = binascii.unhexlify(s)
-    content_type, body = isolateserver.encode_multipart_formdata(
-                [('token', 'foo bar')], [('content', s, compressed)])
+    handshake_response = {
+      'access_token': token,
+      'error': error,
+      'protocol_version': isolateserver.ISOLATE_PROTOCOL_VERSION,
+      'server_app_version': 'mocked server T1000',
+    }
+    return (
+      server + '/content-gs/handshake',
+      {
+        'content_type': 'application/json',
+        'method': 'POST',
+        'data': json.dumps(handshake_request, separators=(',', ':')),
+      },
+      json.dumps(handshake_response),
+    )
 
+  @staticmethod
+  def mock_fetch_request(server, namespace, item, data):
+    return (
+      server + '/content-gs/retrieve/%s/%s' % (namespace, item),
+      {'retry_404': True, 'read_timeout': 60},
+      data,
+    )
+
+  @staticmethod
+  def mock_contains_request(server, namespace, token, request, response):
+    url = server + '/content-gs/pre-upload/%s?token=%s' % (
+        namespace, urllib.quote(token))
+    return (
+      url,
+      {
+        'data': json.dumps(request, separators=(',', ':')),
+        'content_type': 'application/json',
+        'method': 'POST',
+      },
+      json.dumps(response),
+    )
+
+  def test_server_capabilities_success(self):
+    server = 'http://example.com'
+    namespace = 'default'
+    access_token = 'fake token'
     self._requests = [
-      (path + 'content/get_token', {}, 'foo bar'),
+      self.mock_handshake_request(server, access_token),
+    ]
+    storage = isolateserver.IsolateServer(server, namespace)
+    caps = storage._server_capabilities
+    self.assertEqual(access_token, caps['access_token'])
+
+  def test_server_capabilities_network_failure(self):
+    self.mock(isolateserver.net, 'url_open', lambda *_args, **_kwargs: None)
+    with self.assertRaises(isolateserver.MappingError):
+      storage = isolateserver.IsolateServer('http://example.com', 'default')
+      _ = storage._server_capabilities
+
+  def test_server_capabilities_format_failure(self):
+    server = 'http://example.com'
+    namespace = 'default'
+    handshake_req = self.mock_handshake_request(server)
+    self._requests = [
+      (handshake_req[0], handshake_req[1], 'Im a bad response'),
+    ]
+    storage = isolateserver.IsolateServer(server, namespace)
+    with self.assertRaises(isolateserver.MappingError):
+      _ = storage._server_capabilities
+
+  def test_server_capabilities_respects_error(self):
+    server = 'http://example.com'
+    namespace = 'default'
+    error = 'Im sorry, Dave. Im afraid I cant do that.'
+    self._requests = [
+      self.mock_handshake_request(server, error=error)
+    ]
+    storage = isolateserver.IsolateServer(server, namespace)
+    with self.assertRaises(isolateserver.MappingError) as context:
+      _ = storage._server_capabilities
+    # Server error message should be reported to user.
+    self.assertIn(error, str(context.exception))
+
+  def test_fetch_success_default(self):
+    server = 'http://example.com'
+    namespace = 'default'
+    data = ''.join(str(x) for x in xrange(1000))
+    item = ALGO(data).hexdigest()
+    self._requests = [
+      self.mock_fetch_request(server, namespace, item, data),
+    ]
+    storage = isolateserver.IsolateServer(server, namespace)
+    fetched = ''.join(storage.fetch(item, len(data)))
+    self.assertEqual(data, fetched)
+
+  def test_fetch_success_default_gzip(self):
+    server = 'http://example.com'
+    namespace = 'default-gzip'
+    data = ''.join(str(x) for x in xrange(1000))
+    item = ALGO(data).hexdigest()
+    self._requests = [
+      self.mock_fetch_request(server, namespace, item, zlib.compress(data)),
+    ]
+    storage = isolateserver.IsolateServer(server, namespace)
+    fetched = ''.join(storage.fetch(item, len(data)))
+    self.assertEqual(data, fetched)
+
+  def test_fetch_failure_missing(self):
+    server = 'http://example.com'
+    namespace = 'default'
+    item = ALGO('something').hexdigest()
+    self._requests = [
+      self.mock_fetch_request(server, namespace, item, None),
+    ]
+    storage = isolateserver.IsolateServer(server, namespace)
+    with self.assertRaises(IOError):
+      _ = ''.join(storage.fetch(item, isolateserver.UNKNOWN_FILE_SIZE))
+
+  def test_fetch_failure_bad_size(self):
+    server = 'http://example.com'
+    namespace = 'default'
+    data = ''.join(str(x) for x in xrange(1000))
+    expected_size = len(data)
+    item = ALGO(data).hexdigest()
+    self._requests = [
+      self.mock_fetch_request(server, namespace, item, data[:100]),
+    ]
+    storage = isolateserver.IsolateServer(server, namespace)
+    with self.assertRaises(IOError):
+      _ = ''.join(storage.fetch(item, expected_size))
+
+  def test_fetch_failure_bad_zip(self):
+    server = 'http://example.com'
+    namespace = 'default-gzip'
+    item = ALGO('something').hexdigest()
+    self._requests = [
+      self.mock_fetch_request(server, namespace, item, 'Im not a zip'),
+    ]
+    storage = isolateserver.IsolateServer(server, namespace)
+    with self.assertRaises(IOError):
+      _ = ''.join(storage.fetch(item, isolateserver.UNKNOWN_FILE_SIZE))
+
+  def test_push_success(self):
+    server = 'http://example.com'
+    namespace = 'default'
+    token = 'fake token'
+    data = ''.join(str(x) for x in xrange(1000))
+    item = FakeItem(data)
+    push_urls = (server + '/push_here', server + '/call_this')
+    contains_request = [{'h': item.digest, 's': item.size, 'i': 0}]
+    contains_response = [push_urls]
+    self._requests = [
+      self.mock_handshake_request(server, token),
+      self.mock_contains_request(
+          server, namespace, token, contains_request, contains_response),
       (
-        path + 'content/contains/default-gzip?token=foo%20bar',
-        {'data': hash_encoded, 'content_type': 'application/octet-stream'},
-        '\0',
+        push_urls[0],
+        {
+          'data': data,
+          'content_type': 'application/octet-stream',
+          'method': 'PUT',
+        },
+        ''
       ),
       (
-        path + 'content/generate_blobstore_url/default-gzip/%s' % s,
-        {'data': [('token', 'foo bar')]},
-        'an_url/',
-      ),
-      (
-        'an_url/',
-        {'data': body, 'content_type': content_type, 'retry_50x': False},
-        'ok',
+        push_urls[1],
+        {
+          'data': '',
+          'content_type': 'application/json',
+          'method': 'POST',
+        },
+        ''
       ),
     ]
+    storage = isolateserver.IsolateServer(server, namespace)
+    missing = storage.contains([item])
+    self.assertEqual([item], missing)
+    storage.push(item, [data], len(data))
+    self.assertTrue(item.push_state.uploaded)
+    self.assertTrue(item.push_state.finalized)
 
-    # Setup mocks for zip_compress to return |compressed|.
-    self.mock(isolateserver, 'file_read', lambda *_: None)
-    self.mock(isolateserver, 'zip_compress', lambda *_: [compressed])
-    result = isolateserver.upload_tree(
-          base_url=path,
-          indir=os.getcwd(),
-          infiles=infiles,
-          namespace='default-gzip')
-
-    self.assertEqual(0, result)
-
-  def test_upload_blobstore_simple(self):
-    # A tad over 20kb so it triggers uploading to the blob store.
-    content = '0123456789' * 21*1024
-    s = ALGO(content).hexdigest()
-    path = 'http://example.com:80/'
-    data = [('token', 'a_token')]
-    content_type, body = isolateserver.encode_multipart_formdata(
-        data, [('content', s, content)])
+  def test_push_failure_upload(self):
+    server = 'http://example.com'
+    namespace = 'default'
+    token = 'fake token'
+    data = ''.join(str(x) for x in xrange(1000))
+    item = FakeItem(data)
+    push_urls = (server + '/push_here', server + '/call_this')
+    contains_request = [{'h': item.digest, 's': item.size, 'i': 0}]
+    contains_response = [push_urls]
     self._requests = [
+      self.mock_handshake_request(server, token),
+      self.mock_contains_request(
+          server, namespace, token, contains_request, contains_response),
       (
-        path + 'content/get_token',
-        {},
-        'a_token',
-      ),
-      (
-        path + 'content/generate_blobstore_url/x/' + s,
-        {'data': data[:]},
-        'http://example.com/an_url/',
-      ),
-      (
-        'http://example.com/an_url/',
-        {'data': body, 'content_type': content_type, 'retry_50x': False},
-        'ok42',
+        push_urls[0],
+        {
+          'data': data,
+          'content_type': 'application/octet-stream',
+          'method': 'PUT',
+        },
+        None
       ),
     ]
-    # |size| is currently ignored.
-    result = isolateserver.IsolateServer(path, 'x').push(s, -2, [content])
-    self.assertEqual('ok42', result)
+    storage = isolateserver.IsolateServer(server, namespace)
+    missing = storage.contains([item])
+    self.assertEqual([item], missing)
+    with self.assertRaises(IOError):
+      storage.push(item, [data], len(data))
+    self.assertFalse(item.push_state.uploaded)
+    self.assertFalse(item.push_state.finalized)
 
-  def test_upload_blobstore_retry_500(self):
-    # A tad over 20kb so it triggers uploading to the blob store.
-    content = '0123456789' * 21*1024
-    s = ALGO(content).hexdigest()
-    path = 'http://example.com:80/'
-    data = [('token', 'a_token')]
-    content_type, body = isolateserver.encode_multipart_formdata(
-        data, [('content', s, content)])
+  def test_push_failure_finalize(self):
+    server = 'http://example.com'
+    namespace = 'default'
+    token = 'fake token'
+    data = ''.join(str(x) for x in xrange(1000))
+    item = FakeItem(data)
+    push_urls = (server + '/push_here', server + '/call_this')
+    contains_request = [{'h': item.digest, 's': item.size, 'i': 0}]
+    contains_response = [push_urls]
     self._requests = [
+      self.mock_handshake_request(server, token),
+      self.mock_contains_request(
+          server, namespace, token, contains_request, contains_response),
       (
-        path + 'content/get_token',
-        {},
-        'a_token',
+        push_urls[0],
+        {
+          'data': data,
+          'content_type': 'application/octet-stream',
+          'method': 'PUT',
+        },
+        ''
       ),
       (
-        path + 'content/generate_blobstore_url/x/' + s,
-        {'data': data[:]},
-        'http://example.com/an_url/',
-      ),
-      (
-        'http://example.com/an_url/',
-        {'data': body, 'content_type': content_type, 'retry_50x': False},
-        # Let's say an HTTP 500 was returned.
-        None,
-      ),
-      # In that case, a new url must be generated since the last one may have
-      # been "consumed".
-      (
-        path + 'content/generate_blobstore_url/x/' + s,
-        {'data': data[:]},
-        'http://example.com/an_url_2/',
-      ),
-      (
-        'http://example.com/an_url_2/',
-        {'data': body, 'content_type': content_type, 'retry_50x': False},
-        'ok42',
+        push_urls[1],
+        {
+          'data': '',
+          'content_type': 'application/json',
+          'method': 'POST',
+        },
+        None
       ),
     ]
-    # |size| is currently ignored.
-    result = isolateserver.IsolateServer(path, 'x').push(s, -2, [content])
-    self.assertEqual('ok42', result)
+    storage = isolateserver.IsolateServer(server, namespace)
+    missing = storage.contains([item])
+    self.assertEqual([item], missing)
+    with self.assertRaises(IOError):
+      storage.push(item, [data], len(data))
+    self.assertTrue(item.push_state.uploaded)
+    self.assertFalse(item.push_state.finalized)
+
+  def test_contains_success(self):
+    server = 'http://example.com'
+    namespace = 'default'
+    token = 'fake token'
+    files = [
+      FakeItem('1', is_isolated=True),
+      FakeItem('2' * 100),
+      FakeItem('3' * 200),
+    ]
+    request = [
+      {'h': files[0].digest, 's': files[0].size, 'i': 1},
+      {'h': files[1].digest, 's': files[1].size, 'i': 0},
+      {'h': files[2].digest, 's': files[2].size, 'i': 0},
+    ]
+    response = [
+      None,
+      ['http://example/upload_here_1', None],
+      ['http://example/upload_here_2', 'http://example/call_this'],
+    ]
+    missing = [
+      files[1],
+      files[2],
+    ]
+    self._requests = [
+      self.mock_handshake_request(server, token),
+      self.mock_contains_request(server, namespace, token, request, response),
+    ]
+    storage = isolateserver.IsolateServer(server, namespace)
+    result = storage.contains(files)
+    self.assertEqual(missing, result)
+    self.assertEqual(
+      [x for x in response if x],
+      [[i.push_state.upload_url, i.push_state.finalize_url] for i in missing])
+
+  def test_contains_network_failure(self):
+    server = 'http://example.com'
+    namespace = 'default'
+    token = 'fake token'
+    req = self.mock_contains_request(server, namespace, token, [], [])
+    self._requests = [
+      self.mock_handshake_request(server, token),
+      (req[0], req[1], None),
+    ]
+    storage = isolateserver.IsolateServer(server, namespace)
+    with self.assertRaises(isolateserver.MappingError):
+      storage.contains([])
+
+  def test_contains_format_failure(self):
+    server = 'http://example.com'
+    namespace = 'default'
+    token = 'fake token'
+    self._requests = [
+      self.mock_handshake_request(server, token),
+      self.mock_contains_request(server, namespace, token, [], [1, 2, 3])
+    ]
+    storage = isolateserver.IsolateServer(server, namespace)
+    with self.assertRaises(isolateserver.MappingError):
+      storage.contains([])
 
 
 class IsolateServerDownloadTest(TestCase):
@@ -494,12 +636,12 @@ class IsolateServerDownloadTest(TestCase):
     server = 'http://example.com'
     self._requests = [
       (
-        server + '/content/retrieve/default-gzip/sha-1',
+        server + '/content-gs/retrieve/default-gzip/sha-1',
         {'read_timeout': 60, 'retry_404': True},
         zlib.compress('Coucou'),
       ),
       (
-        server + '/content/retrieve/default-gzip/sha-2',
+        server + '/content-gs/retrieve/default-gzip/sha-2',
         {'read_timeout': 60, 'retry_404': True},
         zlib.compress('Bye Bye'),
       ),
@@ -547,7 +689,7 @@ class IsolateServerDownloadTest(TestCase):
     requests.append((isolated_hash, isolated_data))
     self._requests = [
       (
-        server + '/content/retrieve/default-gzip/' + h,
+        server + '/content-gs/retrieve/default-gzip/' + h,
         {
           'read_timeout': isolateserver.DOWNLOAD_READ_TIMEOUT,
           'retry_404': True,

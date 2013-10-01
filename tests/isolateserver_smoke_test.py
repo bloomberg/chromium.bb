@@ -28,6 +28,10 @@ ISOLATE_SERVER = 'https://isolateserver.appspot.com/'
 TEST_DATA_DIR = os.path.join(ROOT_DIR, 'tests', 'isolateserver')
 
 
+# TODO(vadimsh): This test is a bit frankensteinish now. It uses new /content-gs
+# protocol for uploads via 'isolateserver.py archive', but uses old /content
+# protocol for validity check and fetches.
+
 class IsolateServerArchiveSmokeTest(unittest.TestCase):
   def setUp(self):
     # The namespace must end in '-gzip' since all files are now compressed
