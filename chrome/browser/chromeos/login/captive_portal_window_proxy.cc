@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
 
 #include "chrome/browser/chromeos/login/captive_portal_view.h"
-#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -15,12 +14,6 @@
 
 using web_modal::WebContentsModalDialogManager;
 using web_modal::WebContentsModalDialogManagerDelegate;
-
-namespace {
-
-int kMargin = 50;
-
-}  // namespace
 
 namespace chromeos {
 
@@ -75,10 +68,6 @@ void CaptivePortalWindowProxy::Show() {
       parent_,
       delegate->GetWebContentsModalDialogHost()->GetHostView());
   captive_portal_view->Init();
-
-  gfx::Rect bounds(CalculateScreenBounds(gfx::Size()));
-  bounds.Inset(kMargin, kMargin);
-  widget_->SetBounds(bounds);
 
   widget_->AddObserver(this);
   web_contents_modal_dialog_manager->ShowDialog(widget_->GetNativeView());

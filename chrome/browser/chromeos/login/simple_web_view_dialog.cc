@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
@@ -41,8 +42,10 @@ using views::GridLayout;
 namespace {
 
 const int kLocationBarHeight = 35;
+
 // Margin between screen edge and SimpleWebViewDialog border.
-const int kExternalMargin = 50;
+const int kExternalMargin = 60;
+
 // Margin between WebView and SimpleWebViewDialog border.
 const int kInnerMargin = 2;
 
@@ -225,6 +228,10 @@ void SimpleWebViewDialog::Init() {
 
   location_bar_->Init();
   UpdateReload(web_view_->web_contents()->IsLoading(), true);
+
+  gfx::Rect bounds(CalculateScreenBounds(gfx::Size()));
+  bounds.Inset(kExternalMargin, kExternalMargin);
+  layout->set_minimum_size(bounds.size());
 
   Layout();
 }
