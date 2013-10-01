@@ -31,6 +31,7 @@ Patches:
 
   * Add the SSL_PeerCertificateChain function
     patches/peercertchain.patch
+    patches/peercertchain2.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=731485
 
   * Add support for client auth with native crypto APIs on Mac and Windows

@@ -28,38 +28,43 @@ SSL_PeerCertificate(PRFileDesc *fd)
 }
 
 /* NEED LOCKS IN HERE.  */
-SECStatus
-SSL_PeerCertificateChain(PRFileDesc *fd, CERTCertificate **certs,
-			 unsigned int *numCerts, unsigned int maxNumCerts)
+CERTCertList *
+SSL_PeerCertificateChain(PRFileDesc *fd)
 {
     sslSocket *ss;
-    ssl3CertNode* cur;
+    CERTCertList *chain = NULL;
+    CERTCertificate *cert;
+    ssl3CertNode *cur;
 
     ss = ssl_FindSocket(fd);
     if (!ss) {
 	SSL_DBG(("%d: SSL[%d]: bad socket in PeerCertificateChain",
 		 SSL_GETPID(), fd));
-	return SECFailure;
+	return NULL;
     }
-    if (!ss->opt.useSecurity)
-	return SECFailure;
-
-    if (ss->sec.peerCert == NULL) {
-      *numCerts = 0;
-      return SECSuccess;
+    if (!ss->opt.useSecurity || !ss->sec.peerCert) {
+	PORT_SetError(SSL_ERROR_NO_CERTIFICATE);
+	return NULL;
     }
-
-    *numCerts = 1;  /* for the leaf certificate */
-    if (maxNumCerts > 0)
-	certs[0] = CERT_DupCertificate(ss->sec.peerCert);
-
+    chain = CERT_NewCertList();
+    if (!chain) {
+	return NULL;
+    }
+    cert = CERT_DupCertificate(ss->sec.peerCert);
+    if (CERT_AddCertToListTail(chain, cert) != SECSuccess) {
+	goto loser;
+    }
     for (cur = ss->ssl3.peerCertChain; cur; cur = cur->next) {
-	if (*numCerts < maxNumCerts)
-	    certs[*numCerts] = CERT_DupCertificate(cur->cert);
-	(*numCerts)++;
+	cert = CERT_DupCertificate(cur->cert);
+	if (CERT_AddCertToListTail(chain, cert) != SECSuccess) {
+	    goto loser;
+	}
     }
+    return chain;
 
-    return SECSuccess;
+loser:
+    CERT_DestroyCertList(chain);
+    return NULL;
 }
 
 /* NEED LOCKS IN HERE.  */

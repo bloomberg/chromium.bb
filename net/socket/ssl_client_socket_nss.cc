@@ -380,20 +380,16 @@ void PeerCertificateChain::Reset(PRFileDesc* nss_fd) {
   if (nss_fd == NULL)
     return;
 
-  unsigned int num_certs = 0;
-  SECStatus rv = SSL_PeerCertificateChain(nss_fd, NULL, &num_certs, 0);
-  DCHECK_EQ(SECSuccess, rv);
-
+  CERTCertList* list = SSL_PeerCertificateChain(nss_fd);
   // The handshake on |nss_fd| may not have completed.
-  if (num_certs == 0)
+  if (list == NULL)
     return;
 
-  certs_.resize(num_certs);
-  const unsigned int expected_num_certs = num_certs;
-  rv = SSL_PeerCertificateChain(nss_fd, vector_as_array(&certs_),
-                                &num_certs, expected_num_certs);
-  DCHECK_EQ(SECSuccess, rv);
-  DCHECK_EQ(expected_num_certs, num_certs);
+  for (CERTCertListNode* node = CERT_LIST_HEAD(list);
+       !CERT_LIST_END(node, list); node = CERT_LIST_NEXT(node)) {
+    certs_.push_back(CERT_DupCertificate(node->cert));
+  }
+  CERT_DestroyCertList(list);
 }
 
 std::vector<base::StringPiece>
