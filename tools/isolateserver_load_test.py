@@ -18,10 +18,8 @@ import logging
 import optparse
 import os
 import random
-import re
 import sys
 import time
-import urllib
 import zlib
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -32,7 +30,7 @@ from third_party import colorama
 
 import isolateserver
 
-from utils import net
+from utils import graph
 from utils import threading_utils
 
 
@@ -53,90 +51,6 @@ class Randomness(object):
     return data
 
 
-def gen_histo(data, buckets):
-  """Cheap histogram."""
-  if not data:
-    return {}
-
-  minimum = min(data)
-  maximum = max(data)
-  if minimum == maximum:
-    return {data[0]: len(data)}
-
-  buckets = min(len(data), buckets)
-  bucket_size = (maximum-minimum)/buckets
-  out = dict((i, 0) for i in xrange(buckets))
-  for i in data:
-    out[min(int((i-minimum)/bucket_size), buckets-1)] += 1
-  return dict(((k*bucket_size)+minimum, v) for k, v in out.iteritems())
-
-
-def graph_histo(data, columns, key_format):
-  """Graphs an histogram."""
-  # TODO(maruel): Add dots for tens.
-  if not data:
-    # Nothing to print.
-    return
-
-  width = columns - 10
-  assert width > 1
-
-  maxvalue = max(data.itervalues())
-  if all(isinstance(i, int) for i in data.itervalues()) and maxvalue < width:
-    width = maxvalue
-  norm = float(maxvalue) / width
-
-  for k in sorted(data):
-    length = int(data[k] / norm)
-    print((key_format + ': %s%s%s') % (
-      k,
-      colorama.Fore.GREEN, '*' * length, colorama.Fore.RESET))
-
-
-def to_units(number):
-  """Convert a string to numbers."""
-  UNITS = ('', 'k', 'm', 'g', 't', 'p', 'e', 'z', 'y')
-  unit = 0
-  while number >= 1024.:
-    unit += 1
-    number = number / 1024.
-    if unit == len(UNITS) - 1:
-      break
-  if unit:
-    return '%.2f%s' % (number, UNITS[unit])
-  return '%d' % number
-
-
-def from_units(text):
-  """Convert a text to numbers.
-
-  Example: from_unit('0.1k') == 102
-  """
-  UNITS = ('', 'k', 'm', 'g', 't', 'p', 'e', 'z', 'y')
-  match = re.match(r'^([0-9\.]+)(|[' + ''.join(UNITS[1:]) + r'])$', text)
-  if not match:
-    return None
-
-  number = float(match.group(1))
-  unit = match.group(2)
-  return int(number * 1024**UNITS.index(unit))
-
-
-def unit_arg(option, opt, value, parser):
-  """OptionParser callback that supports units like 10.5m or 20k."""
-  actual = from_units(value)
-  if actual is None:
-    parser.error('Invalid value \'%s\' for %s' % (value, opt))
-  setattr(parser.values, option.dest, actual)
-
-
-def unit_option(parser, *args, **kwargs):
-  """Add an option that uses unit_arg()."""
-  parser.add_option(
-      *args, type='str', metavar='N', action='callback', callback=unit_arg,
-      nargs=1, **kwargs)
-
-
 class Progress(threading_utils.Progress):
   def __init__(self, *args, **kwargs):
     super(Progress, self).__init__(*args, **kwargs)
@@ -155,14 +69,14 @@ class Progress(threading_utils.Progress):
     """
     if name:
       self.total += name
-      name = to_units(name)
+      name = graph.to_units(name)
 
     next_line = ('[%*d/%d] %6.2fs %8s %8s') % (
         len(str(self.size)), self.index,
         self.size,
         time.time() - self.start,
         name,
-        to_units(self.total))
+        graph.to_units(self.total))
     # Fill it with whitespace only if self.use_cr_only is set.
     prefix = ''
     if self.use_cr_only and self.last_printed_line:
@@ -180,21 +94,24 @@ def print_results(results, columns, buckets):
   sizes = [i[1] for i in results]
 
   print('%sSIZES%s (bytes):' % (colorama.Fore.RED, colorama.Fore.RESET))
-  graph_histo(gen_histo(sizes, buckets), columns, '%8d')
+  graph.print_histogram(
+      graph.generate_histogram(sizes, buckets), columns, '%d')
   print('')
   total_size = sum(sizes)
-  print('Total size  : %s' % to_units(total_size))
+  print('Total size  : %s' % graph.to_units(total_size))
   print('Total items : %d' % len(sizes))
-  print('Average size: %s' % to_units(total_size / len(sizes)))
-  print('Largest item: %s' % to_units(max(sizes)))
+  print('Average size: %s' % graph.to_units(total_size / len(sizes)))
+  print('Largest item: %s' % graph.to_units(max(sizes)))
   print('')
   print('%sDELAYS%s (seconds):' % (colorama.Fore.RED, colorama.Fore.RESET))
-  graph_histo(gen_histo(delays, buckets), columns, '%8.3f')
+  graph.print_histogram(
+      graph.generate_histogram(delays, buckets), columns, '%.3f')
 
   if failures:
     print('')
     print('%sFAILURES%s:' % (colorama.Fore.RED, colorama.Fore.RESET))
-    print('\n'.join('  %s (%s)' % (i[0], to_units(i[1])) for i in failures))
+    print(
+        '\n'.join('  %s (%s)' % (i[0], graph.to_units(i[1])) for i in failures))
 
 
 def gen_size(mid_size):
@@ -205,8 +122,7 @@ def gen_size(mid_size):
   return int(random.gammavariate(3, 2) * mid_size / 4)
 
 
-def send_and_receive(
-    random_pool, dry_run, isolate_server, namespace, token, progress, size):
+def send_and_receive(random_pool, dry_run, api, progress, size):
   """Sends a random file and gets it back.
 
   Returns (delay, size)
@@ -214,20 +130,25 @@ def send_and_receive(
   # Create a file out of the pool.
   start = time.time()
   content = random_pool.gen(size)
-  data = zlib.compress(content, 0)
+  compressed_content = zlib.compress(content, 0)
   hash_value = hashlib.sha1(content).hexdigest()
+  size = len(content)
   try:
     if not dry_run:
-      # 1 Upload.
-      isolateserver.upload_file(
-          isolate_server, namespace, data, hash_value, token)
+      logging.info('contains')
+      item = isolateserver.Item(hash_value, size)
+      item = api.contains([item])[0]
 
-      # 2 Download.
+      logging.info('upload')
+      # TODO(maruel): There's currently a mismatch between push() and fetch(),
+      # push() gets the data pre-compressed but fetch() decompresses on the fly.
+      api.push(item, [compressed_content], len(compressed_content))
+
+      logging.info('download')
       # Only count download time when not in dry run time.
       # TODO(maruel): Count the number of retries!
       start = time.time()
-      net.url_read(
-          isolate_server + '/content/retrieve/%s/%s' % (namespace, hash_value))
+      assert content == ''.join(api.fetch(hash_value, size))
     else:
       time.sleep(size / 10.)
     duration = max(0, time.time() - start)
@@ -240,14 +161,6 @@ def send_and_receive(
 def main():
   colorama.init()
 
-  try:
-    _, columns = os.popen('stty size', 'r').read().split()
-  except (IOError, OSError, ValueError):
-    columns = 80
-
-  # Effectively disable logging to reduce spew.
-  logging.basicConfig(level=logging.FATAL)
-
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option(
       '-I', '--isolate-server',
@@ -259,16 +172,16 @@ def main():
   parser.add_option(
       '--threads', type='int', default=16, metavar='N',
       help='Parallel worker threads to use, default:%default')
-  unit_option(
+  graph.unit_option(
       parser, '--items', default=0, help='Number of items to upload')
-  unit_option(
+  graph.unit_option(
       parser, '--max-size', default=0,
       help='Loop until this amount of data was transferred')
-  unit_option(
+  graph.unit_option(
       parser, '--mid-size', default=100*1024,
       help='Rough average size of each item, default:%default')
   parser.add_option(
-      '--columns', type='int', default=columns, metavar='N',
+      '--columns', type='int', default=graph.get_console_width(), metavar='N',
       help='For histogram display, default:%default')
   parser.add_option(
       '--buckets', type='int', default=20, metavar='N',
@@ -277,7 +190,11 @@ def main():
       '--dump', metavar='FOO.JSON', help='Dumps to json file')
   parser.add_option(
       '--dry-run', action='store_true', help='Do not send anything')
+  parser.add_option(
+      '-v', '--verbose', action='store_true', help='Enable logging')
   options, args = parser.parse_args()
+
+  logging.basicConfig(level=logging.INFO if options.verbose else logging.FATAL)
   if args:
     parser.error('Unsupported args: %s' % args)
   if bool(options.max_size) == bool(options.items):
@@ -298,23 +215,17 @@ def main():
     print(' - %sDRY RUN MODE%s' % (colorama.Fore.GREEN, colorama.Fore.RESET))
 
   start = time.time()
-  token = None
-  if not options.dry_run:
-    url = options.isolate_server + '/content/get_token?from_smoke_test=1'
-    token = urllib.quote(net.url_read(url))
-    print(' - Got token after %.1fs' % (time.time() - start))
 
   random_pool = Randomness()
   print(' - Generated pool after %.1fs' % (time.time() - start))
 
   progress = Progress(options.items)
+  api = isolateserver.get_storage_api(options.isolate_server, options.namespace)
   do_item = functools.partial(
       send_and_receive,
       random_pool,
       options.dry_run,
-      options.isolate_server,
-      options.namespace,
-      token,
+      api,
       progress)
 
   # TODO(maruel): Handle Ctrl-C should:
