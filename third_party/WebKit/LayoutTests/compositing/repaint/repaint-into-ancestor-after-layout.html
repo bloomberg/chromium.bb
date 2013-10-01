@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<style>
+
+#parent {
+    position: absolute;
+    z-index: 1;
+    top: 50px;
+    left: 50px;
+    width: 100px;
+    height: 100px;
+    overflow: auto;
+    background-color: lime;
+}
+
+<!-- hover to see how the test works/breaks when testing interactively -->
+#parent:hover {
+    top: 40px;
+}
+
+#child {
+    background-color: cyan;
+    width: 50px;
+    height: 50px;
+    -webkit-transform: translateZ(0);
+}
+</style>
+
+<script>
+    if (window.testRunner)
+        testRunner.dumpAsText();
+
+    function test()
+    {
+        document.body.offsetHeight;
+        if (window.internals)
+            window.internals.startTrackingRepaints(document);
+
+        if (window.internals) {
+            document.getElementById('parent').style.top = "10px";
+            document.getElementById('layers').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+        }
+    }
+</script>
+</head>
+
+<body onload="test()">
+  <!-- 
+       https://code.google.com/p/chromium/issues/detail?id=256200
+       The parent element is set up uniquely such that it is composited, but it
+       still paints into its composited ancestor.  When it works correctly, the
+       parent element should repaint correctly when its position is changed.
+    -->
+  <div id="parent">
+    <div id="child"></div>
+  </div>
+
+  <pre id="layers"></pre>
+</body>
+
+</html>

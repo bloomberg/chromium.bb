@@ -1392,7 +1392,7 @@ inline bool RenderLayer::shouldRepaintAfterLayout() const
     // Composited layers that were moved during a positioned movement only
     // layout, don't need to be repainted. They just need to be recomposited.
     ASSERT(m_repaintStatus == NeedsFullRepaintForPositionedMovementLayout);
-    return !isComposited();
+    return !isComposited() || (isComposited() && backing()->paintsIntoCompositedAncestor());
 }
 
 RenderLayer* RenderLayer::enclosingCompositingLayer(bool includeSelf) const
