@@ -21,12 +21,10 @@
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "third_party/WebKit/public/platform/WebIDBTypes.h"
+#include "third_party/WebKit/public/web/WebSerializedScriptValueVersion.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 using base::StringPiece;
-
-// TODO(jsbell): Make blink push the version during the open() call.
-static const uint32 kWireVersion = 2;
 
 namespace content {
 
@@ -209,7 +207,8 @@ WARN_UNUSED_RESULT static bool IsSchemaKnown(LevelDBDatabase* db, bool* known) {
     return true;
   }
 
-  const uint32 latest_known_data_version = kWireVersion;
+  const uint32 latest_known_data_version =
+      WebKit::kSerializedScriptValueVersion;
   int64 db_data_version = 0;
   ok = GetInt(db, DataVersionKey::Encode(), &db_data_version, &found);
   if (!ok)
@@ -231,7 +230,8 @@ WARN_UNUSED_RESULT static bool IsSchemaKnown(LevelDBDatabase* db, bool* known) {
 WARN_UNUSED_RESULT static bool SetUpMetadata(
     LevelDBDatabase* db,
     const std::string& origin_identifier) {
-  const uint32 latest_known_data_version = kWireVersion;
+  const uint32 latest_known_data_version =
+      WebKit::kSerializedScriptValueVersion;
   const std::string schema_version_key = SchemaVersionKey::Encode();
   const std::string data_version_key = DataVersionKey::Encode();
 
@@ -287,7 +287,7 @@ WARN_UNUSED_RESULT static bool SetUpMetadata(
     if (db_schema_version < 2) {
       db_schema_version = 2;
       PutInt(transaction.get(), schema_version_key, db_schema_version);
-      db_data_version = kWireVersion;
+      db_data_version = WebKit::kSerializedScriptValueVersion;
       PutInt(transaction.get(), data_version_key, db_data_version);
     }
   }
