@@ -23,6 +23,7 @@
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_resource_throttle.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -486,6 +487,13 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
                                                     resource_type);
   if (throttle)
     throttles->push_back(throttle);
+
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  if (prerender_tracker_->IsPrerenderingOnIOThread(info->GetChildID(),
+                                                   info->GetRouteID())) {
+    throttles->push_back(new prerender::PrerenderResourceThrottle(
+        request, prerender_tracker_));
+  }
 }
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)

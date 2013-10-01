@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/prerender/prerender_contents.h"
@@ -20,6 +21,7 @@
 namespace prerender {
 
 class PrerenderManager;
+class PrerenderResourceThrottle;
 struct RenderViewInfo;
 
 // PrerenderTracker is responsible for keeping track of all prerendering
@@ -34,7 +36,7 @@ class PrerenderTracker : public base::NonThreadSafe,
   // Attempts to set the status of the specified RenderViewHost to
   // FINAL_STATUS_USED.  Returns true on success.  Returns false if it has
   // already been cancelled for any reason or is no longer prerendering.
-  // Can only be called only on the IO thread.  This method will not call
+  // Can only be called only on the UI thread.  This method will not call
   // PrerenderContents::SetFinalStatus() on the corresponding PrerenderContents.
   //
   // If it returns true, all subsequent calls to TryCancel and TryUse for the
@@ -68,6 +70,13 @@ class PrerenderTracker : public base::NonThreadSafe,
   // been displayed or destroyed is still prerendering.
   bool IsPrerenderingOnIOThread(int child_id, int route_id) const;
 
+  // Called when a PrerenderResourceThrottle defers a request. Cancel
+  // or Resume will be called on |throttle| when the prerender is
+  // canceled or used, respectively.
+  void AddResourceThrottleOnIOThread(
+      int child_id, int route_id,
+      const base::WeakPtr<PrerenderResourceThrottle>& throttle);
+
  private:
   friend class PrerenderContents;
   FRIEND_TEST_ALL_PREFIXES(PrerenderTrackerTest, PrerenderTrackerNull);
@@ -80,8 +89,11 @@ class PrerenderTracker : public base::NonThreadSafe,
   typedef std::pair<int, int> ChildRouteIdPair;
   // Map of child/route id pairs to final statuses.
   typedef std::map<ChildRouteIdPair, RenderViewInfo> FinalStatusMap;
-  // Set of child/route id pairs that may be prerendering.
-  typedef std::set<ChildRouteIdPair> PossiblyPrerenderingChildRouteIdPairs;
+  // List of throttled requests.
+  typedef std::vector<base::WeakPtr<PrerenderResourceThrottle> >
+      ResourceThrottleList;
+  // Set of throttled requests.
+  typedef std::map<ChildRouteIdPair, ResourceThrottleList> ResourceThrottleMap;
 
   // From PrerenderContents::Observer:
   virtual void OnPrerenderStart(PrerenderContents* prerender_contents) OVERRIDE;
@@ -106,13 +118,15 @@ class PrerenderTracker : public base::NonThreadSafe,
   // Add/remove the specified pair to |possibly_prerendering_io_thread_set_| on
   // the IO Thread.
   void AddPrerenderOnIOThread(const ChildRouteIdPair& child_route_id_pair);
-  void RemovePrerenderOnIOThread(const ChildRouteIdPair& child_route_id_pair);
+  void RemovePrerenderOnIOThread(const ChildRouteIdPair& child_route_id_pair,
+                                 FinalStatus final_status);
 
   // Tasks posted to the IO Thread to call the above functions.
   static void AddPrerenderOnIOThreadTask(
       const ChildRouteIdPair& child_route_id_pair);
   static void RemovePrerenderOnIOThreadTask(
-      const ChildRouteIdPair& child_route_id_pair);
+      const ChildRouteIdPair& child_route_id_pair,
+      FinalStatus final_status);
 
   static PrerenderTracker* GetDefault();
 
@@ -123,10 +137,11 @@ class PrerenderTracker : public base::NonThreadSafe,
   // date.
   FinalStatusMap final_status_map_;
 
-  // Superset of child/route id pairs that are prerendering.  Can only access on
-  // the IO thread.  May contain entries that have since been displayed.  Only
-  // used to prevent locking when not needed.
-  PossiblyPrerenderingChildRouteIdPairs possibly_prerendering_io_thread_set_;
+  // Resources that are throttled, pending a prerender use.  The keys are a
+  // superset of child/route id pairs that are prerendering.  Can only access on
+  // the IO thread.  May contain entries that have since been displayed.  Used
+  // to prevent locking when not needed.
+  ResourceThrottleMap resource_throttle_io_thread_map_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderTracker);
 };

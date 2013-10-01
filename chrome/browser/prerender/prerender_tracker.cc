@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_resource_throttle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
@@ -134,9 +135,11 @@ void PrerenderTracker::OnPrerenderStop(
 
   ChildRouteIdPair child_route_id_pair(child_id, route_id);
 
+  DCHECK_LT(prerender_contents->final_status(), FINAL_STATUS_MAX);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&RemovePrerenderOnIOThreadTask, child_route_id_pair));
+      base::Bind(&RemovePrerenderOnIOThreadTask, child_route_id_pair,
+                 prerender_contents->final_status()));
 
   base::AutoLock lock(final_status_map_lock_);
   size_t num_erased = final_status_map_.erase(child_route_id_pair);
@@ -186,7 +189,20 @@ bool PrerenderTracker::IsPrerenderingOnIOThread(int child_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   ChildRouteIdPair child_route_id_pair(child_id, route_id);
-  return possibly_prerendering_io_thread_set_.count(child_route_id_pair) > 0;
+  return resource_throttle_io_thread_map_.count(child_route_id_pair) > 0;
+}
+
+void PrerenderTracker::AddResourceThrottleOnIOThread(
+    int child_id,
+    int route_id,
+    const base::WeakPtr<PrerenderResourceThrottle>& throttle) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  ChildRouteIdPair child_route_id_pair(child_id, route_id);
+  ResourceThrottleMap::iterator resource_throttle_map_it =
+      resource_throttle_io_thread_map_.find(child_route_id_pair);
+  DCHECK(resource_throttle_map_it != resource_throttle_io_thread_map_.end());
+  resource_throttle_map_it->second.push_back(throttle);
 }
 
 void PrerenderTracker::AddPrerenderOnIOThread(
@@ -195,16 +211,32 @@ void PrerenderTracker::AddPrerenderOnIOThread(
   DCHECK(!IsPrerenderingOnIOThread(child_route_id_pair.first,
                                    child_route_id_pair.second));
 
-  possibly_prerendering_io_thread_set_.insert(child_route_id_pair);
+  resource_throttle_io_thread_map_.insert(
+      std::make_pair(child_route_id_pair, ResourceThrottleList()));
 }
 
 void PrerenderTracker::RemovePrerenderOnIOThread(
-    const ChildRouteIdPair& child_route_id_pair) {
+    const ChildRouteIdPair& child_route_id_pair,
+    FinalStatus final_status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(IsPrerenderingOnIOThread(child_route_id_pair.first,
                                   child_route_id_pair.second));
 
-  possibly_prerendering_io_thread_set_.erase(child_route_id_pair);
+  // Cancel or resume all throttled resources.
+  ResourceThrottleMap::iterator resource_throttle_map_it =
+      resource_throttle_io_thread_map_.find(child_route_id_pair);
+  DCHECK(resource_throttle_map_it != resource_throttle_io_thread_map_.end());
+  ResourceThrottleList& throttles = resource_throttle_map_it->second;
+  for (size_t i = 0; i < throttles.size(); i++) {
+    if (throttles[i]) {
+      if (final_status == FINAL_STATUS_USED) {
+        throttles[i]->Resume();
+      } else {
+        throttles[i]->Cancel();
+      }
+    }
+  }
+  resource_throttle_io_thread_map_.erase(resource_throttle_map_it);
 }
 
 // static
@@ -220,8 +252,9 @@ void PrerenderTracker::AddPrerenderOnIOThreadTask(
 
 // static
 void PrerenderTracker::RemovePrerenderOnIOThreadTask(
-    const ChildRouteIdPair& child_route_id_pair) {
-  GetDefault()->RemovePrerenderOnIOThread(child_route_id_pair);
+    const ChildRouteIdPair& child_route_id_pair,
+    FinalStatus final_status) {
+  GetDefault()->RemovePrerenderOnIOThread(child_route_id_pair, final_status);
 }
 
 }  // namespace prerender

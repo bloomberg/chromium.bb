@@ -118,7 +118,8 @@ class ExtensionProtocolTest : public testing::Test {
                                                      resource_type,
                                                      &resource_context_,
                                                      -1,
-                                                     -1);
+                                                     -1,
+                                                     false);
     request->Start();
     base::MessageLoop::current()->Run();
   }

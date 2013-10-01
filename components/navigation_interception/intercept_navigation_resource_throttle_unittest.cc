@@ -121,28 +121,29 @@ class TestIOThreadState {
       : resource_context_(&test_url_request_context_),
         request_(url, NULL, resource_context_.GetRequestContext()) {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-      if (render_process_id != MSG_ROUTING_NONE &&
-          render_view_id != MSG_ROUTING_NONE) {
-        content::ResourceRequestInfo::AllocateForTesting(
-            &request_,
-            ResourceType::MAIN_FRAME,
-            &resource_context_,
-            render_process_id,
-            render_view_id);
-      }
-      throttle_.reset(new InterceptNavigationResourceThrottle(
+    if (render_process_id != MSG_ROUTING_NONE &&
+        render_view_id != MSG_ROUTING_NONE) {
+      content::ResourceRequestInfo::AllocateForTesting(
           &request_,
-          base::Bind(&MockInterceptCallbackReceiver::ShouldIgnoreNavigation,
-                     base::Unretained(callback_receiver))));
-      throttle_->set_controller_for_testing(&throttle_controller_);
-      request_.set_method(request_method);
+          ResourceType::MAIN_FRAME,
+          &resource_context_,
+          render_process_id,
+          render_view_id,
+          false);
+    }
+    throttle_.reset(new InterceptNavigationResourceThrottle(
+        &request_,
+        base::Bind(&MockInterceptCallbackReceiver::ShouldIgnoreNavigation,
+                   base::Unretained(callback_receiver))));
+    throttle_->set_controller_for_testing(&throttle_controller_);
+    request_.set_method(request_method);
 
-      if (redirect_mode == REDIRECT_MODE_302) {
-        net::HttpResponseInfo& response_info =
-            const_cast<net::HttpResponseInfo&>(request_.response_info());
-        response_info.headers = new net::HttpResponseHeaders(
-            "Status: 302 Found\0\0");
-      }
+    if (redirect_mode == REDIRECT_MODE_302) {
+      net::HttpResponseInfo& response_info =
+          const_cast<net::HttpResponseInfo&>(request_.response_info());
+      response_info.headers = new net::HttpResponseHeaders(
+          "Status: 302 Found\0\0");
+    }
   }
 
   void ThrottleWillStartRequest(bool* defer) {

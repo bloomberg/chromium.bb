@@ -103,7 +103,8 @@ class IframeSourceTest : public testing::Test {
                                                        ResourceType::SUB_FRAME,
                                                        &resource_context_,
                                                        render_process_id,
-                                                       render_view_id);
+                                                       render_view_id,
+                                                       false);
     }
     return request;
   }

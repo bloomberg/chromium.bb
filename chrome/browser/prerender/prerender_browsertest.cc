@@ -1180,7 +1180,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
       ASSERT_NE(static_cast<PrerenderContents*>(NULL), prerender_contents);
       EXPECT_EQ(FINAL_STATUS_MAX, prerender_contents->final_status());
 
-      if (call_javascript_ && expected_number_of_loads > 0) {
+      if (call_javascript_) {
         // Wait for the prerendered page to change title to signal it is ready
         // if required.
         prerender_contents->WaitForPrerenderToHaveReadyTitleIfRequired();
@@ -1492,6 +1492,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&CreateNeverStartProtocolHandlerOnIO, kNoCommitUrl));
+  DisableJavascriptCalls();
   PrerenderTestURL(kNoCommitUrl,
                    FINAL_STATUS_CANCELLED,
                    0);
@@ -1913,6 +1914,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExcessiveMemory) {
 
 // Checks shutdown code while a prerender is active.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderQuickQuit) {
+  DisableJavascriptCalls();
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_APP_TERMINATING,
                    0);
@@ -2785,6 +2787,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_ControlGroup) {
   RestorePrerenderMode restore_prerender_mode;
   PrerenderManager::SetMode(
       PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
+  DisableJavascriptCalls();
   PrerenderTestURL("files/prerender/prerender_alert_before_onload.html",
                    FINAL_STATUS_WOULD_HAVE_BEEN_USED, 0);
   NavigateToDestURL();
@@ -3132,6 +3135,56 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   PrerenderTestURL(CreateClientRedirect(webstore_url),
                    FINAL_STATUS_OPEN_URL, 2);
+}
+
+// Checks that a deferred redirect to an image is not loaded until the
+// page is visible.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredImage) {
+  // We do NOT wait for a load event, as the image will block the
+  // load. Instead, wait for the title to change.
+  PrerenderTestURL("files/prerender/prerender_deferred_image.html",
+                   FINAL_STATUS_USED, 0, true);
+  NavigateToDestURL();
+}
+
+// Checks that a deferred redirect to an image is not loaded until the
+// page is visible, even after another redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderDeferredImageAfterRedirect) {
+  // We do NOT wait for a load event, as the image will block the
+  // load. Instead, wait for the title to change.
+  PrerenderTestURL(
+      "files/prerender/prerender_deferred_image.html#double_redirect",
+      FINAL_STATUS_USED, 0, true);
+  NavigateToDestURL();
+}
+
+// Checks that deferred redirects in the main frame are followed.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredMainFrame) {
+  DisableJavascriptCalls();
+  PrerenderTestURL(
+      "files/prerender/image-deferred.png",
+      FINAL_STATUS_USED, 1);
+  NavigateToDestURL();
+}
+
+// Checks that deferred redirects in the main frame are followed, even
+// with a double-redirect.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderDeferredMainFrameAfterRedirect) {
+  DisableJavascriptCalls();
+  PrerenderTestURL(
+      CreateServerRedirect("files/prerender/image-deferred.png"),
+      FINAL_STATUS_USED, 1);
+  NavigateToDestURL();
+}
+
+// Checks that deferred redirects in a synchronous XHR abort the
+// prerender.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredSynchronousXHR) {
+  PrerenderTestURL("files/prerender/prerender_deferred_sync_xhr.html",
+                   FINAL_STATUS_BAD_DEFERRED_REDIRECT, 1);
+  NavigateToDestURL();
 }
 
 }  // namespace prerender

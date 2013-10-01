@@ -34,7 +34,8 @@ class ResourceRequestInfo {
       ResourceType::Type resource_type,
       ResourceContext* context,
       int render_process_id,
-      int render_view_id);
+      int render_view_id,
+      bool is_async);
 
   // Returns the associated RenderView for a given process. Returns false, if
   // there is no associated RenderView. This method does not rely on the

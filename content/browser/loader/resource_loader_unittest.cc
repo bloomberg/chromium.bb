@@ -201,7 +201,8 @@ TEST_F(ResourceLoaderTest, ClientCertStoreLookup) {
                                           ResourceType::MAIN_FRAME,
                                           &resource_context_,
                                           kRenderProcessId,
-                                          kRenderViewId);
+                                          kRenderViewId,
+                                          false);
 
   // Set up the test client cert store.
   net::CertificateList dummy_certs(1, scoped_refptr<net::X509Certificate>(

@@ -90,15 +90,15 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
   net::TestURLRequestContext context;
   net::TestURLRequest url_request_ok(
       GURL("http://www.example.com"), NULL, &context, NULL);
-  content::ResourceRequestInfo::AllocateForTesting(&url_request_ok,
-      ResourceType::SUB_FRAME, NULL, -1, -1);
+  content::ResourceRequestInfo::AllocateForTesting(
+      &url_request_ok, ResourceType::SUB_FRAME, NULL, -1, -1, false);
   EXPECT_TRUE(attribute->IsFulfilled(WebRequestData(&url_request_ok,
                                                     ON_BEFORE_REQUEST)));
 
   net::TestURLRequest url_request_fail(
       GURL("http://www.example.com"), NULL, &context, NULL);
-  content::ResourceRequestInfo::AllocateForTesting(&url_request_fail,
-      ResourceType::MAIN_FRAME, NULL, -1, -1);
+  content::ResourceRequestInfo::AllocateForTesting(
+      &url_request_fail, ResourceType::MAIN_FRAME, NULL, -1, -1, false);
   EXPECT_FALSE(attribute->IsFulfilled(WebRequestData(&url_request_fail,
                                                      ON_BEFORE_REQUEST)));
 }

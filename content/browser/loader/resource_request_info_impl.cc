@@ -28,7 +28,8 @@ void ResourceRequestInfo::AllocateForTesting(
     ResourceType::Type resource_type,
     ResourceContext* context,
     int render_process_id,
-    int render_view_id) {
+    int render_view_id,
+    bool is_async) {
   ResourceRequestInfoImpl* info =
       new ResourceRequestInfoImpl(
           PROCESS_TYPE_RENDERER,             // process_type
@@ -49,7 +50,7 @@ void ResourceRequestInfo::AllocateForTesting(
           WebKit::WebReferrerPolicyDefault,  // referrer_policy
           context,                           // context
           base::WeakPtr<ResourceMessageFilter>(),  // filter
-          false);                            // is_async
+          is_async);                         // is_async
   info->AssociateWithRequest(request);
 }
 

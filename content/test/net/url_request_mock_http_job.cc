@@ -153,6 +153,8 @@ void URLRequestMockHTTPJob::GetResponseInfoConst(
   if (!base::ReadFileToString(header_file, &raw_headers))
     return;
 
+  // Handle CRLF line-endings.
+  ReplaceSubstringsAfterOffset(&raw_headers, 0, "\r\n", "\n");
   // ParseRawHeaders expects \0 to end each header line.
   ReplaceSubstringsAfterOffset(&raw_headers, 0, "\n", std::string("\0", 1));
   info->headers = new net::HttpResponseHeaders(raw_headers);
