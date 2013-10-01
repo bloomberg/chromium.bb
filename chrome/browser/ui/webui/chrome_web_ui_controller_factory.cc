@@ -311,6 +311,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Downloads list on Android uses the built-in download manager.
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<DownloadsUI>;
+#if defined(ENABLE_ENHANCED_BOOKMARKS)
+  // Bookmarks are part of NTP on Android.
+  if (url.host() == chrome::kChromeUIEnhancedBookmarksHost)
+    return &NewWebUI<BookmarksUI>;
+#endif
   // Flash is not available on android.
   if (url.host() == chrome::kChromeUIFlashHost)
     return &NewWebUI<FlashUI>;

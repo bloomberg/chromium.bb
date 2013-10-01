@@ -86,6 +86,9 @@
         <include name="IDR_ABOUT_WELCOME_JS" file="resources\about_welcome_android\about_welcome_android.js" type="BINDATA" />
       </if>
       <include name="IDR_BOOKMARKS_MANIFEST" file="resources\bookmark_manager\manifest.json" type="BINDATA" />
+      <if expr="pp_ifdef('enable_enhanced_bookmarks')">
+        <include name="IDR_ENHANCED_BOOKMARKS_MANIFEST" file="resources\enhanced_bookmark_manager\manifest.json" type="BINDATA" />
+      </if>
       <include name="IDR_APPS_DEBUGGER_MANIFEST" file="resources\apps_debugger\manifest.json" type="BINDATA" />
       <if expr="is_posix and not is_macosx and not is_ios">
         <include name="IDR_CERTIFICATE_VIEWER_HTML" file="resources\certificate_viewer.html" type="BINDATA" />

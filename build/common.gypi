@@ -445,6 +445,7 @@
       'spdy_proxy_auth_property%' : '',
       'spdy_proxy_auth_value%' : '',
       'enable_mdns%' : 0,
+      'enable_enhanced_bookmarks%': 0,
 
       'conditions': [
         # A flag for POSIX platforms
@@ -895,6 +896,7 @@
     'spdy_proxy_auth_property%': '<(spdy_proxy_auth_property)',
     'spdy_proxy_auth_value%': '<(spdy_proxy_auth_value)',
     'enable_mdns%' : '<(enable_mdns)',
+    'enable_enhanced_bookmarks%' : '<(enable_enhanced_bookmarks)',
     'v8_optimized_debug': '<(v8_optimized_debug)',
     'proprietary_codecs%': '<(proprietary_codecs)',
 
@@ -1649,6 +1651,9 @@
       ['enable_mdns==1', {
         'grit_defines': ['-D', 'enable_mdns'],
       }],
+      ['enable_enhanced_bookmarks==1', {
+        'grit_defines': ['-D', 'enable_enhanced_bookmarks'],
+      }],
       ['clang_use_chrome_plugins==1 and OS!="win"', {
         'clang_chrome_plugins_flags': [
           '<!@(<(DEPTH)/tools/clang/scripts/plugin_flags.sh)'
@@ -2339,6 +2344,9 @@
       }],
       ['enable_mdns==1', {
         'defines': ['ENABLE_MDNS=1'],
+      }],
+      ['enable_enhanced_bookmarks==1', {
+        'defines': ['ENABLE_ENHANCED_BOOKMARKS=1'],
       }]
     ],  # conditions for 'target_defaults'
     'target_conditions': [

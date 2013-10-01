@@ -113,6 +113,7 @@ class ComponentLoader {
       bool skip_session_components);
   void AddFileManagerExtension();
   void AddImageLoaderExtension();
+  void AddBookmarksExtensions();
 
   void AddWithName(int manifest_resource_id,
                    const base::FilePath& root_directory,

@@ -13,6 +13,9 @@
   <release seq="1">
     <structures>
       <structure name="IDR_BOOKMARK_MANAGER_MAIN" file="bookmark_manager/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
+      <if expr="pp_ifdef('enable_enhanced_bookmarks')">
+        <structure name="IDR_ENHANCED_BOOKMARK_MANAGER_MAIN" file="enhanced_bookmark_manager/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
+      </if>
       <if expr="pp_ifdef('chromeos')">
         <structure name="IDR_WALLPAPER_MANAGER_MAIN" file="chromeos/wallpaper_manager/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
       </if>
@@ -26,6 +29,16 @@
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_DND_JS" file="bookmark_manager/js/dnd.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_JS" file="bookmark_manager/js/bmm.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_CSS_JS" file="bookmark_manager/css/bmm.css.js" type="BINDATA" />
+      <if expr="pp_ifdef('enable_enhanced_bookmarks')">
+        <include name="IDR_ENHANCED_BOOKMARK_MANAGER_BOOKMARK_MANAGER_SEARCH" file="enhanced_bookmark_manager/images/bookmark_manager_search.png" type="BINDATA" />
+        <include name="IDR_ENHANCED_BOOKMARK_MANAGER_BOOKMARK_MANAGER_SEARCH_RTL" file="enhanced_bookmark_manager/images/bookmark_manager_search_rtl.png" type="BINDATA" />
+        <include name="IDR_ENHANCED_BOOKMARK_MANAGER_BOOKMARK_MAIN_JS" file="enhanced_bookmark_manager/js/main.js" type="BINDATA" />
+        <include name="IDR_ENHANCED_BOOKMARK_MANAGER_BOOKMARK_BMM_LIST_JS" file="enhanced_bookmark_manager/js/bmm/bookmark_list.js" type="BINDATA" />
+        <include name="IDR_ENHANCED_BOOKMARK_MANAGER_BOOKMARK_BMM_TREE_JS" file="enhanced_bookmark_manager/js/bmm/bookmark_tree.js" type="BINDATA" />
+        <include name="IDR_ENHANCED_BOOKMARK_MANAGER_BOOKMARK_DND_JS" file="enhanced_bookmark_manager/js/dnd.js" type="BINDATA" />
+        <include name="IDR_ENHANCED_BOOKMARK_MANAGER_BOOKMARK_BMM_JS" file="enhanced_bookmark_manager/js/bmm.js" type="BINDATA" />
+        <include name="IDR_ENHANCED_BOOKMARK_MANAGER_BOOKMARK_CSS_JS" file="enhanced_bookmark_manager/css/bmm.css.js" type="BINDATA" />
+      </if>
       <!-- Gaia auth extension -->
       <include name="IDR_GAIA_AUTH_KEYBOARD_UI_CSS" file="gaia_auth/keyboard_ui.css" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_MAIN" file="gaia_auth/main.html" allowexternalscript="true" type="BINDATA" />

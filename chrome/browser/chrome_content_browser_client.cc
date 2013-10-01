@@ -360,6 +360,9 @@ bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
   if (chromeos::UserManager::Get()->IsLoggedInAsGuest()) {
     if (url->SchemeIs(chrome::kChromeUIScheme) &&
         (url->DomainIs(chrome::kChromeUIBookmarksHost) ||
+#if defined(ENABLE_ENHANCED_BOOKMARKS)
+         url->DomainIs(chrome::kChromeUIEnhancedBookmarksHost) ||
+#endif
          url->DomainIs(chrome::kChromeUIHistoryHost))) {
       // Rewrite with new tab URL
       *url = GURL(chrome::kChromeUINewTabURL);

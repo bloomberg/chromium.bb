@@ -1,0 +1,25 @@
+{
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDbKcYW5FseOsgJb3ZRtiVnkPMKHb7Tx3C225a2MWyLfdsSqyFTh8A7QuC5UyByn9nZzs0bv/EpZ0JTvpVxEMrtT0w3LaAbdlkCjvRwGbFN8pJLDsxKT0itcibgia87rISxN1Pmpkwp6cvMhwfYNrrSP7v/7XGSUCLzqgDv0nB1oQIDAQAB",
+  "name": "Enhanced Bookmark Manager",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Enhanced Bookmark Manager",
+  "icons": {
+    // The favicon is loaded directly from resources.pak.
+  },
+  "incognito" : "split",
+  "permissions": [
+    "bookmarks",
+    "bookmarkManagerPrivate",
+    "metricsPrivate",
+    "systemPrivate",
+    "tabs",
+    "chrome://favicon/",
+    "chrome://resources/"
+  ],
+  "chrome_url_overrides": {
+    "enhanced-bookmarks": "main.html"
+  },
+  "content_security_policy":
+    "object-src 'none'; script-src chrome://resources 'self'"
+}
