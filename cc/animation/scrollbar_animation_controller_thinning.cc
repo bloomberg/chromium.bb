@@ -34,6 +34,7 @@ ScrollbarAnimationControllerThinning::ScrollbarAnimationControllerThinning(
     : ScrollbarAnimationController(),
       scroll_layer_(scroll_layer),
       scroll_gesture_in_progress_(false),
+      mouse_is_over_scrollbar_(false),
       animation_delay_(animation_delay),
       animation_duration_(animation_duration),
       mouse_move_distance_to_trigger_animation_(100.f) {}
@@ -53,6 +54,10 @@ base::TimeDelta ScrollbarAnimationControllerThinning::DelayBeforeStart(
 }
 
 bool ScrollbarAnimationControllerThinning::Animate(base::TimeTicks now) {
+  if (mouse_is_over_scrollbar_) {
+    ApplyOpacityAndThumbThicknessScale(1, 1);
+    return false;
+  }
   float progress = AnimationProgressAtTime(now);
   float opacity = OpacityAtAnimationProgress(progress);
   float thumb_thickness_scale = ThumbThicknessScaleAtAnimationProgress(
@@ -75,6 +80,12 @@ void ScrollbarAnimationControllerThinning::DidScrollGestureEnd(
   scroll_gesture_in_progress_ = false;
 }
 
+void ScrollbarAnimationControllerThinning::DidMouseMoveOffScrollbar(
+    base::TimeTicks now) {
+  mouse_is_over_scrollbar_ = false;
+  DidScrollUpdate(now);
+}
+
 bool ScrollbarAnimationControllerThinning::DidScrollUpdate(
     base::TimeTicks now) {
   ApplyOpacityAndThumbThicknessScale(1, 1);
@@ -85,6 +96,11 @@ bool ScrollbarAnimationControllerThinning::DidScrollUpdate(
 
 bool ScrollbarAnimationControllerThinning::DidMouseMoveNear(
     base::TimeTicks now, float distance) {
+  if (distance == 0.0) {
+    mouse_is_over_scrollbar_ = true;
+    return false;
+  }
+
   if (distance < mouse_move_distance_to_trigger_animation_)
     return DidScrollUpdate(now);
 

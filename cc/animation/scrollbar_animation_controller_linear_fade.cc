@@ -65,6 +65,11 @@ void ScrollbarAnimationControllerLinearFade::DidScrollGestureEnd(
   scroll_gesture_in_progress_ = false;
 }
 
+void ScrollbarAnimationControllerLinearFade::DidMouseMoveOffScrollbar(
+    base::TimeTicks now) {
+  // Ignore mouse move events.
+}
+
 bool ScrollbarAnimationControllerLinearFade::DidScrollUpdate(
     base::TimeTicks now) {
   ApplyOpacityToScrollbars(1.0f);

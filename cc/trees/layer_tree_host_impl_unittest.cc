@@ -1259,6 +1259,8 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   // The scrollbar is on the right side.
   scoped_ptr<PaintedScrollbarLayerImpl> scrollbar =
       PaintedScrollbarLayerImpl::Create(host_impl_->active_tree(), 5, VERTICAL);
+  scrollbar->SetDrawsContent(true);
+  scrollbar->SetBounds(gfx::Size(15, viewport_size.height()));
   scrollbar->SetContentBounds(gfx::Size(15, viewport_size.height()));
   scrollbar->SetPosition(gfx::Point(285, 0));
   scroll->SetVerticalScrollbarLayer(scrollbar.get());
@@ -1293,6 +1295,15 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   did_request_redraw_ = false;
   host_impl_->MouseMoveAt(gfx::Point(184, 100));
   EXPECT_TRUE(did_request_redraw_);
+
+  did_request_redraw_ = false;
+  EXPECT_EQ(0, host_impl_->scroll_layer_id_when_mouse_over_scrollbar());
+  host_impl_->MouseMoveAt(gfx::Point(290, 100));
+  EXPECT_EQ(2, host_impl_->scroll_layer_id_when_mouse_over_scrollbar());
+  host_impl_->MouseMoveAt(gfx::Point(290, 120));
+  EXPECT_EQ(2, host_impl_->scroll_layer_id_when_mouse_over_scrollbar());
+  host_impl_->MouseMoveAt(gfx::Point(150, 120));
+  EXPECT_EQ(0, host_impl_->scroll_layer_id_when_mouse_over_scrollbar());
 }
 
 TEST_F(LayerTreeHostImplTest, MouseMoveAtWithDeviceScaleOf1) {

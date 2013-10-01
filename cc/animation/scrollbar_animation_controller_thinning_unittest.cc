@@ -181,5 +181,46 @@ TEST_F(ScrollbarAnimationControllerThinningTest, AwakenByProgrammaticScroll) {
   EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
 }
 
+TEST_F(ScrollbarAnimationControllerThinningTest, MouseOverAndOut) {
+  base::TimeTicks time;
+  time += base::TimeDelta::FromSeconds(1);
+  EXPECT_TRUE(scrollbar_controller_->DidScrollUpdate(time));
+  EXPECT_TRUE(scrollbar_controller_->IsAnimating());
+  EXPECT_EQ(2, scrollbar_controller_->DelayBeforeStart(time).InSeconds());
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  time += base::TimeDelta::FromSeconds(4);
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.6f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  scrollbar_controller_->DidMouseMoveNear(time, 0);
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  time += base::TimeDelta::FromSeconds(4);
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  scrollbar_controller_->DidMouseMoveOffScrollbar(time);
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  time += base::TimeDelta::FromSeconds(4);
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.6f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  time += base::TimeDelta::FromSeconds(1);
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
+}
+
 }  // namespace
 }  // namespace cc

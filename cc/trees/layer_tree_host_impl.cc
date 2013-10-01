@@ -198,6 +198,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       did_lock_scrolling_layer_(false),
       should_bubble_scrolls_(false),
       wheel_scrolling_(false),
+      scroll_layer_id_when_mouse_over_scrollbar_(0),
       tile_priorities_dirty_(false),
       root_layer_scroll_offset_delegate_(NULL),
       settings_(settings),
@@ -1904,18 +1905,10 @@ static LayerImpl* NextScrollLayer(LayerImpl* layer) {
   return layer->parent();
 }
 
-LayerImpl* LayerTreeHostImpl::FindScrollLayerForViewportPoint(
-    gfx::Point viewport_point, InputHandler::ScrollInputType type,
-    bool* scroll_on_main_thread) {
+LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
+    gfx::PointF device_viewport_point, InputHandler::ScrollInputType type,
+    LayerImpl* layer_impl, bool* scroll_on_main_thread) {
   DCHECK(scroll_on_main_thread);
-
-  gfx::PointF device_viewport_point = gfx::ScalePoint(viewport_point,
-                                                      device_scale_factor_);
-
-  // First find out which layer was hit from the saved list of visible layers
-  // in the most recent frame.
-  LayerImpl* layer_impl = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
-      device_viewport_point, active_tree_->RenderSurfaceLayerList());
 
   // Walk up the hierarchy and look for a scrollable layer.
   LayerImpl* potentially_scrolling_layer_impl = 0;
@@ -1968,9 +1961,15 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
   if (!EnsureRenderSurfaceLayerList())
     return ScrollIgnored;
 
+  gfx::PointF device_viewport_point = gfx::ScalePoint(viewport_point,
+                                                      device_scale_factor_);
+  LayerImpl* layer_impl = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
+      device_viewport_point,
+      active_tree_->RenderSurfaceLayerList());
   bool scroll_on_main_thread = false;
-  LayerImpl* potentially_scrolling_layer_impl = FindScrollLayerForViewportPoint(
-      viewport_point, type, &scroll_on_main_thread);
+  LayerImpl* potentially_scrolling_layer_impl =
+      FindScrollLayerForDeviceViewportPoint(device_viewport_point, type,
+          layer_impl, &scroll_on_main_thread);
 
   if (scroll_on_main_thread) {
     rendering_stats_instrumentation_->IncrementMainThreadScrolls();
@@ -2296,10 +2295,32 @@ void LayerTreeHostImpl::MouseMoveAt(gfx::Point viewport_point) {
   if (!EnsureRenderSurfaceLayerList())
     return;
 
-  // TODO(tony): What should happen if the mouse cursor is over the scrollbar?
+  gfx::PointF device_viewport_point = gfx::ScalePoint(viewport_point,
+                                                      device_scale_factor_);
+
+  LayerImpl* layer_impl = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
+      device_viewport_point,
+      active_tree_->RenderSurfaceLayerList());
+  if (HandleMouseOverScrollbar(layer_impl, device_viewport_point))
+    return;
+
+  if (scroll_layer_id_when_mouse_over_scrollbar_) {
+    LayerImpl* scroll_layer_impl = active_tree_->LayerById(
+        scroll_layer_id_when_mouse_over_scrollbar_);
+
+    ScrollbarAnimationController* animation_controller =
+        scroll_layer_impl->scrollbar_animation_controller();
+    if (animation_controller) {
+      animation_controller->DidMouseMoveOffScrollbar(
+          CurrentPhysicalTimeTicks());
+      StartScrollbarAnimation();
+    }
+    scroll_layer_id_when_mouse_over_scrollbar_ = 0;
+  }
+
   bool scroll_on_main_thread = false;
-  LayerImpl* scroll_layer_impl = FindScrollLayerForViewportPoint(
-      viewport_point, InputHandler::Gesture,
+  LayerImpl* scroll_layer_impl = FindScrollLayerForDeviceViewportPoint(
+      device_viewport_point, InputHandler::Gesture, layer_impl,
       &scroll_on_main_thread);
   if (scroll_on_main_thread || !scroll_layer_impl)
     return;
@@ -2309,8 +2330,6 @@ void LayerTreeHostImpl::MouseMoveAt(gfx::Point viewport_point) {
   if (!animation_controller)
     return;
 
-  gfx::PointF device_viewport_point = gfx::ScalePoint(viewport_point,
-                                                      device_scale_factor_);
   float distance_to_scrollbar = std::min(
       DeviceSpaceDistanceToLayer(device_viewport_point,
           scroll_layer_impl->horizontal_scrollbar_layer()),
@@ -2323,6 +2342,25 @@ void LayerTreeHostImpl::MouseMoveAt(gfx::Point viewport_point) {
     client_->SetNeedsRedrawOnImplThread();
     StartScrollbarAnimation();
   }
+}
+
+bool LayerTreeHostImpl::HandleMouseOverScrollbar(LayerImpl* layer_impl,
+    gfx::PointF device_viewport_point) {
+  if (layer_impl && layer_impl->ToScrollbarLayer()) {
+    int scroll_layer_id = layer_impl->ToScrollbarLayer()->ScrollLayerId();
+    layer_impl = active_tree_->LayerById(scroll_layer_id);
+    if (layer_impl && layer_impl->scrollbar_animation_controller()) {
+      scroll_layer_id_when_mouse_over_scrollbar_ = scroll_layer_id;
+      layer_impl->scrollbar_animation_controller()->DidMouseMoveNear(
+          CurrentPhysicalTimeTicks(), 0);
+    } else {
+      scroll_layer_id_when_mouse_over_scrollbar_ = 0;
+    }
+
+    return true;
+  }
+
+  return false;
 }
 
 void LayerTreeHostImpl::PinchGestureBegin() {

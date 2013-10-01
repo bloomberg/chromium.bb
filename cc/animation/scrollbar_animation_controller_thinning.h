@@ -37,6 +37,7 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
   virtual bool Animate(base::TimeTicks now) OVERRIDE;
   virtual void DidScrollGestureBegin() OVERRIDE;
   virtual void DidScrollGestureEnd(base::TimeTicks now) OVERRIDE;
+  virtual void DidMouseMoveOffScrollbar(base::TimeTicks now) OVERRIDE;
   virtual bool DidScrollUpdate(base::TimeTicks now) OVERRIDE;
   virtual bool DidMouseMoveNear(base::TimeTicks now, float distance) OVERRIDE;
 
@@ -58,6 +59,7 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
 
   base::TimeTicks last_awaken_time_;
   bool scroll_gesture_in_progress_;
+  bool mouse_is_over_scrollbar_;
 
   base::TimeDelta animation_delay_;
   base::TimeDelta animation_duration_;
