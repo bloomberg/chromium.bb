@@ -33,6 +33,7 @@
 
 #include <unicode/normlzr.h>
 #include "SkPaint.h"
+#include "SkPath.h"
 #include "SkTypeface.h"
 #include "SkTypes.h"
 #include "core/platform/graphics/FloatRect.h"
@@ -213,6 +214,27 @@ void SimpleFontData::determinePitch()
     m_treatAsFixedPitch = platformData().isFixedPitch();
 }
 
+static inline void getSkiaBoundsForGlyph(SkPaint& paint, Glyph glyph, SkRect& bounds)
+{
+    paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+
+    SkPath path;
+    paint.getTextPath(&glyph, sizeof(glyph), 0, 0, &path);
+    bounds = path.getBounds();
+
+    // FIXME(eae): getBounds currently returns an empty rect for bitmap
+    // fonts so fall back on the old behavior. Once fixed in Skia this
+    // fallback can go away.
+    if (bounds.isEmpty())
+        paint.measureText(&glyph, 2, &bounds);
+
+    if (!paint.isSubpixelText()) {
+        SkIRect ir;
+        bounds.round(&ir);
+        bounds.set(ir);
+    }
+}
+
 FloatRect SimpleFontData::platformBoundsForGlyph(Glyph glyph) const
 {
     if (!m_platformData.size())
@@ -221,17 +243,10 @@ FloatRect SimpleFontData::platformBoundsForGlyph(Glyph glyph) const
     SkASSERT(sizeof(glyph) == 2); // compile-time assert
 
     SkPaint paint;
-
     m_platformData.setupPaint(&paint);
 
-    paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
     SkRect bounds;
-    paint.measureText(&glyph, 2, &bounds);
-    if (!paint.isSubpixelText()) {
-        SkIRect ir;
-        bounds.round(&ir);
-        bounds.set(ir);
-    }
+    getSkiaBoundsForGlyph(paint, glyph, bounds);
     return FloatRect(bounds);
 }
 
