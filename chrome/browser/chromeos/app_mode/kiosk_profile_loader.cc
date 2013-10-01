@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/async_method_caller.h"
-#include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"

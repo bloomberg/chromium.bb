@@ -26,7 +26,6 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/cryptohome/async_method_caller.h"
-#include "chromeos/cryptohome/cryptohome_library.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
