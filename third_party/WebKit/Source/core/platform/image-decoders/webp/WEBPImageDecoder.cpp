@@ -190,6 +190,9 @@ float WEBPImageDecoder::frameDurationAtIndex(size_t index) const
 
 bool WEBPImageDecoder::updateDemuxer()
 {
+    if (failed())
+        return false;
+
     if (m_haveAlreadyParsedThisData)
         return true;
 

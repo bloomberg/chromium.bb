@@ -349,6 +349,29 @@ TEST_F(AnimatedWebPTests, invalidImage)
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
 }
 
+// Reproduce a crash that used to happen for a specific file with specific sequence of method calls.
+TEST_F(AnimatedWebPTests, reproCrash)
+{
+    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+
+    RefPtr<SharedBuffer> fullData = readFile("/LayoutTests/fast/images/resources/invalid_vp8_vp8x.webp");
+    ASSERT_TRUE(fullData.get());
+
+    // Parse partial data up to which error in bitstream is not detected.
+    const size_t partialSize = 32768;
+    ASSERT_GT(fullData->size(), partialSize);
+    RefPtr<SharedBuffer> data = SharedBuffer::create(fullData->data(), partialSize);
+    decoder->setData(data.get(), false);
+    EXPECT_EQ(1u, decoder->frameCount());
+
+    // Parse full data now. The error in bitstream should now be detected.
+    decoder->setData(fullData.get(), true);
+    EXPECT_EQ(0u, decoder->frameCount());
+    ImageFrame* frame = decoder->frameBufferAtIndex(0);
+    EXPECT_FALSE(frame);
+    EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
+}
+
 TEST_F(AnimatedWebPTests, progressiveDecode)
 {
     RefPtr<SharedBuffer> fullData = readFile("/LayoutTests/fast/images/resources/webp-animated.webp");
