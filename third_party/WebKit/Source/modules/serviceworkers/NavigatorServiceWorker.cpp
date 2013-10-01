@@ -87,7 +87,7 @@ ScriptPromise NavigatorServiceWorker::registerServiceWorker(ScriptExecutionConte
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptExecutionContext);
 
     if (peer)
-        peer->registerServiceWorker(pattern, scriptUrl, new CallbackPromiseAdapter(resolver));
+        peer->registerServiceWorker(pattern, scriptUrl, new CallbackPromiseAdapter(resolver, scriptExecutionContext));
     else
         resolver->reject(PassRefPtr<ServiceWorker>(0));
     // call here?
@@ -106,7 +106,7 @@ ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ScriptExecutionCon
     WebKit::WebServiceWorkerRegistry* peer = client->serviceWorkerRegistry();
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptExecutionContext);
     if (peer)
-        peer->unregisterServiceWorker(pattern, new CallbackPromiseAdapter(resolver));
+        peer->unregisterServiceWorker(pattern, new CallbackPromiseAdapter(resolver, scriptExecutionContext));
     else
         resolver->reject(PassRefPtr<ServiceWorker>(0));
     return resolver->promise();
