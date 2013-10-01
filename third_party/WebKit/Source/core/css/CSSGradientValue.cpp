@@ -61,12 +61,10 @@ PassRefPtr<Image> CSSGradientValue::image(RenderObject* renderer, const IntSize&
     // We need to create an image.
     RefPtr<Gradient> gradient;
 
-    if (isLinearGradient())
-        gradient = static_cast<CSSLinearGradientValue*>(this)->createGradient(renderer, size);
-    else {
-        ASSERT(isRadialGradient());
-        gradient = static_cast<CSSRadialGradientValue*>(this)->createGradient(renderer, size);
-    }
+    if (isLinearGradientValue())
+        gradient = toCSSLinearGradientValue(this)->createGradient(renderer, size);
+    else
+        gradient = toCSSRadialGradientValue(this)->createGradient(renderer, size);
 
     RefPtr<Image> newImage = GeneratorGeneratedImage::create(gradient, size);
     if (cacheable)
@@ -118,10 +116,10 @@ PassRefPtr<CSSGradientValue> CSSGradientValue::gradientWithStylesResolved(const 
     RefPtr<CSSGradientValue> result;
     if (!derived)
         result = this;
-    else if (isLinearGradient())
-        result = static_cast<CSSLinearGradientValue*>(this)->clone();
-    else if (isRadialGradient())
-        result = static_cast<CSSRadialGradientValue*>(this)->clone();
+    else if (isLinearGradientValue())
+        result = toCSSLinearGradientValue(this)->clone();
+    else if (isRadialGradientValue())
+        result = toCSSRadialGradientValue(this)->clone();
     else {
         ASSERT_NOT_REACHED();
         return 0;
@@ -166,9 +164,9 @@ void CSSGradientValue::addStops(Gradient* gradient, RenderObject* renderer, Rend
 
     FloatPoint gradientStart = gradient->p0();
     FloatPoint gradientEnd;
-    if (isLinearGradient())
+    if (isLinearGradientValue())
         gradientEnd = gradient->p1();
-    else if (isRadialGradient())
+    else if (isRadialGradientValue())
         gradientEnd = gradientStart + FloatSize(gradient->endRadius(), 0);
 
     for (size_t i = 0; i < numStops; ++i) {
@@ -269,7 +267,7 @@ void CSSGradientValue::addStops(Gradient* gradient, RenderObject* renderer, Rend
 
             // Radial gradients may need to extend further than the endpoints, because they have
             // to repeat out to the corners of the box.
-            if (isRadialGradient()) {
+            if (isRadialGradientValue()) {
                 if (!computedGradientLength) {
                     FloatSize gradientSize(gradientStart - gradientEnd);
                     gradientLength = gradientSize.diagonalLength();
@@ -327,7 +325,7 @@ void CSSGradientValue::addStops(Gradient* gradient, RenderObject* renderer, Rend
 
     // If the gradient goes outside the 0-1 range, normalize it by moving the endpoints, and adjusting the stops.
     if (numStops > 1 && (stops[0].offset < 0 || stops[numStops - 1].offset > 1)) {
-        if (isLinearGradient()) {
+        if (isLinearGradientValue()) {
             float firstOffset = stops[0].offset;
             float lastOffset = stops[numStops - 1].offset;
             float scale = lastOffset - firstOffset;
@@ -339,7 +337,7 @@ void CSSGradientValue::addStops(Gradient* gradient, RenderObject* renderer, Rend
             FloatPoint p1 = gradient->p1();
             gradient->setP0(FloatPoint(p0.x() + firstOffset * (p1.x() - p0.x()), p0.y() + firstOffset * (p1.y() - p0.y())));
             gradient->setP1(FloatPoint(p1.x() + (lastOffset - 1) * (p1.x() - p0.x()), p1.y() + (lastOffset - 1) * (p1.y() - p0.y())));
-        } else if (isRadialGradient()) {
+        } else if (isRadialGradientValue()) {
             // Rather than scaling the points < 0, we truncate them, so only scale according to the largest point.
             float firstOffset = 0;
             float lastOffset = stops[numStops - 1].offset;

@@ -45,7 +45,7 @@ PassRefPtr<StyleImage> ElementStyleResources::styleImage(const TextLinkColors& t
 
     if (value->isImageGeneratorValue()) {
         if (value->isGradientValue())
-            return generatedOrPendingFromValue(property, static_cast<CSSGradientValue*>(value)->gradientWithStylesResolved(textLinkColors, currentColor).get());
+            return generatedOrPendingFromValue(property, toCSSGradientValue(value)->gradientWithStylesResolved(textLinkColors, currentColor).get());
         return generatedOrPendingFromValue(property, static_cast<CSSImageGeneratorValue*>(value));
     }
 

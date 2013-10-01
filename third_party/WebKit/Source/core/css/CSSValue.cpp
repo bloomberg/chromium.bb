@@ -364,10 +364,10 @@ void CSSValue::destroy()
         delete toCSSFunctionValue(this);
         return;
     case LinearGradientClass:
-        delete static_cast<CSSLinearGradientValue*>(this);
+        delete toCSSLinearGradientValue(this);
         return;
     case RadialGradientClass:
-        delete static_cast<CSSRadialGradientValue*>(this);
+        delete toCSSRadialGradientValue(this);
         return;
     case CrossfadeClass:
         delete static_cast<CSSCrossfadeValue*>(this);

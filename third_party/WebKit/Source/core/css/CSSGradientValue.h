@@ -75,9 +75,6 @@ public:
 
     void sortStopsIfNeeded();
 
-    bool isLinearGradient() const { return classType() == LinearGradientClass; }
-    bool isRadialGradient() const { return classType() == RadialGradientClass; }
-
     bool isRepeating() const { return m_repeating; }
 
     CSSGradientType gradientType() const { return m_gradientType; }
@@ -134,6 +131,7 @@ protected:
     bool m_repeating;
 };
 
+DEFINE_CSS_VALUE_TYPE_CASTS(GradientValue);
 
 class CSSLinearGradientValue : public CSSGradientValue {
 public:
@@ -171,6 +169,8 @@ private:
 
     RefPtr<CSSPrimitiveValue> m_angle; // may be null.
 };
+
+DEFINE_CSS_VALUE_TYPE_CASTS(LinearGradientValue);
 
 class CSSRadialGradientValue : public CSSGradientValue {
 public:
@@ -232,6 +232,8 @@ private:
     RefPtr<CSSPrimitiveValue> m_endHorizontalSize;
     RefPtr<CSSPrimitiveValue> m_endVerticalSize;
 };
+
+DEFINE_CSS_VALUE_TYPE_CASTS(RadialGradientValue);
 
 } // namespace WebCore
 

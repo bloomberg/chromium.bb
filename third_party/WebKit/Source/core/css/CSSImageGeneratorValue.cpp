@@ -114,9 +114,9 @@ PassRefPtr<Image> CSSImageGeneratorValue::image(RenderObject* renderer, const In
     case CrossfadeClass:
         return static_cast<CSSCrossfadeValue*>(this)->image(renderer, size);
     case LinearGradientClass:
-        return static_cast<CSSLinearGradientValue*>(this)->image(renderer, size);
+        return toCSSLinearGradientValue(this)->image(renderer, size);
     case RadialGradientClass:
-        return static_cast<CSSRadialGradientValue*>(this)->image(renderer, size);
+        return toCSSRadialGradientValue(this)->image(renderer, size);
     default:
         ASSERT_NOT_REACHED();
     }
@@ -148,9 +148,9 @@ IntSize CSSImageGeneratorValue::fixedSize(const RenderObject* renderer)
     case CrossfadeClass:
         return static_cast<CSSCrossfadeValue*>(this)->fixedSize(renderer);
     case LinearGradientClass:
-        return static_cast<CSSLinearGradientValue*>(this)->fixedSize(renderer);
+        return toCSSLinearGradientValue(this)->fixedSize(renderer);
     case RadialGradientClass:
-        return static_cast<CSSRadialGradientValue*>(this)->fixedSize(renderer);
+        return toCSSRadialGradientValue(this)->fixedSize(renderer);
     default:
         ASSERT_NOT_REACHED();
     }
@@ -201,10 +201,10 @@ void CSSImageGeneratorValue::loadSubimages(ResourceFetcher* fetcher)
         static_cast<CSSCanvasValue*>(this)->loadSubimages(fetcher);
         break;
     case LinearGradientClass:
-        static_cast<CSSLinearGradientValue*>(this)->loadSubimages(fetcher);
+        toCSSLinearGradientValue(this)->loadSubimages(fetcher);
         break;
     case RadialGradientClass:
-        static_cast<CSSRadialGradientValue*>(this)->loadSubimages(fetcher);
+        toCSSRadialGradientValue(this)->loadSubimages(fetcher);
         break;
     default:
         ASSERT_NOT_REACHED();
