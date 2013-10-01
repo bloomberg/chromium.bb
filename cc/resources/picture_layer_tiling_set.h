@@ -69,6 +69,7 @@ class CC_EXPORT PictureLayerTilingSet {
       size_t max_tiles_for_interest_area);
 
   void DidBecomeActive();
+  void DidBecomeRecycled();
 
   // For a given rect, iterates through tiles that can fill it.  If no
   // set of tiles with resources can fill the rect, then it will iterate

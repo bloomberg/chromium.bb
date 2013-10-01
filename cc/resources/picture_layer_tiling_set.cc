@@ -343,6 +343,11 @@ void PictureLayerTilingSet::DidBecomeActive() {
     tilings_[i]->DidBecomeActive();
 }
 
+void PictureLayerTilingSet::DidBecomeRecycled() {
+  for (size_t i = 0; i < tilings_.size(); ++i)
+    tilings_[i]->DidBecomeRecycled();
+}
+
 scoped_ptr<base::Value> PictureLayerTilingSet::AsValue() const {
   scoped_ptr<base::ListValue> state(new base::ListValue());
   for (size_t i = 0; i < tilings_.size(); ++i)

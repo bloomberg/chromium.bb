@@ -620,6 +620,16 @@ void PictureLayerTiling::SetLiveTilesRect(
   live_tiles_rect_ = new_live_tiles_rect;
 }
 
+void PictureLayerTiling::DidBecomeRecycled() {
+  // DidBecomeActive below will set the active priority for tiles that are
+  // still in the tree. Calling this first on an active tiling that is becoming
+  // recycled takes care of tiles that are no longer in the active tree (eg.
+  // due to a pending invalidation).
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+    it->second->SetPriority(ACTIVE_TREE, TilePriority());
+  }
+}
+
 void PictureLayerTiling::DidBecomeActive() {
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     it->second->SetPriority(ACTIVE_TREE, it->second->priority(PENDING_TREE));

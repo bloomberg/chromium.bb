@@ -147,6 +147,13 @@ class CC_EXPORT PictureLayerTiling {
   // also updates the pile on each tile to be the current client's pile.
   void DidBecomeActive();
 
+  // Resets the active priority for all tiles in a tiling, when an active
+  // tiling is becoming recycled. This may include some tiles which are
+  // not in the the pending tiling (due to invalidations). This must
+  // be called before DidBecomeActive, as it resets the active priority
+  // while DidBecomeActive promotes pending priority on a similar set of tiles.
+  void DidBecomeRecycled();
+
   void UpdateTilesToCurrentPile();
 
   bool NeedsUpdateForFrameAtTime(double frame_time_in_seconds) {

@@ -65,10 +65,18 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   // It's possible this layer was never drawn or updated (e.g. because it was
   // a descendant of an opacity 0 layer).
   DoPostCommitInitializationIfNeeded();
+  PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
+
+  // We have already synced the important bits from the the active layer, and
+  // we will soon swap out its tilings and use them for recycling. However,
+  // there are now tiles in this layer's tilings that were unref'd and replaced
+  // with new tiles (due to invalidation). This resets all active priorities on
+  // the to-be-recycled tiling to ensure replaced tiles don't linger and take
+  // memory (due to a stale 'active' priority).
+  if (layer_impl->tilings_)
+    layer_impl->tilings_->DidBecomeRecycled();
 
   LayerImpl::PushPropertiesTo(base_layer);
-
-  PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
 
   // When the pending tree pushes to the active tree, the pending twin
   // disappears.
