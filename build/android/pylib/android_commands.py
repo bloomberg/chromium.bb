@@ -724,6 +724,17 @@ class AndroidCommands(object):
     start_line = m.group(0)
     return GetLogTimestamp(start_line, self.GetDeviceYear())
 
+  def BroadcastIntent(self, package, intent, *args):
+    """Send a broadcast intent.
+
+    Args:
+      package: Name of package containing the intent.
+      intent: Name of the intent.
+      args: Optional extra arguments for the intent.
+    """
+    cmd = 'am broadcast -a %s.%s %s' % (package, intent, ' '.join(args))
+    self.RunShellCommand(cmd)
+
   def GoHome(self):
     """Tell the device to return to the home screen. Blocks until completion."""
     self.RunShellCommand('am start -W '
@@ -1144,18 +1155,30 @@ class AndroidCommands(object):
     if logfile:
       logfile = NewLineNormalizer(logfile)
 
-    # Spawn logcat and syncronize with it.
+    # Spawn logcat and synchronize with it.
     for _ in range(4):
       self._logcat = pexpect.spawn(constants.ADB_PATH, args, timeout=10,
                                    logfile=logfile)
-      self.RunShellCommand('log startup_sync')
-      if self._logcat.expect(['startup_sync', pexpect.EOF,
-                              pexpect.TIMEOUT]) == 0:
+      if not clear or self.SyncLogCat():
         break
       self._logcat.close(force=True)
     else:
       logging.critical('Error reading from logcat: ' + str(self._logcat.match))
       sys.exit(1)
+
+  def SyncLogCat(self):
+    """Synchronize with logcat.
+
+    Synchronize with the monitored logcat so that WaitForLogMatch will only
+    consider new message that are received after this point in time.
+
+    Returns:
+      True if the synchronization succeeded.
+    """
+    assert self._logcat
+    tag = 'logcat_sync_%s' % time.time()
+    self.RunShellCommand('log ' + tag)
+    return self._logcat.expect([tag, pexpect.EOF, pexpect.TIMEOUT]) == 0
 
   def GetMonitoredLogCat(self):
     """Returns an "adb logcat" command as created by pexpected.spawn."""
@@ -1510,6 +1533,15 @@ class AndroidCommands(object):
       os.makedirs(host_dir)
     device_file = '%s/screenshot.png' % self.GetExternalStorage()
     self.RunShellCommand('/system/bin/screencap -p %s' % device_file)
+    self.PullFileFromDevice(device_file, host_file)
+
+  def PullFileFromDevice(self, device_file, host_file):
+    """Download |device_file| on the device from to |host_file| on the host.
+
+    Args:
+      device_file: Absolute path to the file to retrieve from the device.
+      host_file: Absolute path to the file to store on the host.
+    """
     assert self._adb.Pull(device_file, host_file)
     assert os.path.exists(host_file)
 
