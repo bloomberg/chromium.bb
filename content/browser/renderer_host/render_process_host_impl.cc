@@ -909,7 +909,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableAccessibilityLogging,
     switches::kEnableBeginFrameScheduling,
     switches::kEnableBrowserPluginForAllViewTypes,
-    switches::kEnableBufferedInputRouter,
     switches::kEnableCompositingForFixedPosition,
     switches::kEnableCompositingForTransition,
     switches::kEnableDCHECK,

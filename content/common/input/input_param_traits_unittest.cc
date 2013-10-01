@@ -4,7 +4,6 @@
 
 #include "content/common/input/input_param_traits.h"
 
-#include "content/common/input/event_packet.h"
 #include "content/common/input/input_event.h"
 #include "content/common/input/ipc_input_event_payload.h"
 #include "content/common/input/web_input_event_payload.h"
@@ -15,6 +14,12 @@
 
 namespace content {
 namespace {
+
+typedef ScopedVector<InputEvent> InputEvents;
+
+void AddTo(InputEvents& packet, scoped_ptr<InputEvent> event) {
+  packet.push_back(event.release());
+}
 
 class InputParamTraitsTest : public testing::Test {
  protected:
@@ -59,77 +64,60 @@ class InputParamTraitsTest : public testing::Test {
     Compare(a->payload(), b->payload());
   }
 
-  void Compare(const EventPacket* a, const EventPacket* b) {
-    EXPECT_EQ(a->id(), b->id());
-    ASSERT_EQ(a->size(), b->size());
+  void Compare(const InputEvents* a, const InputEvents* b) {
     for (size_t i = 0; i < a->size(); ++i)
-      Compare(a->events()[i], b->events()[i]);
+      Compare((*a)[i], (*b)[i]);
   }
 
-  void Verify(const EventPacket& packet_in) {
+  void Verify(const InputEvents& packet_in) {
     IPC::Message msg;
-    IPC::ParamTraits<EventPacket>::Write(&msg, packet_in);
+    IPC::ParamTraits<InputEvents>::Write(&msg, packet_in);
 
-    EventPacket packet_out;
+    InputEvents packet_out;
     PickleIterator iter(msg);
-    EXPECT_TRUE(IPC::ParamTraits<EventPacket>::Read(&msg, &iter, &packet_out));
+    EXPECT_TRUE(IPC::ParamTraits<InputEvents>::Read(&msg, &iter, &packet_out));
 
     Compare(&packet_in, &packet_out);
 
     // Perform a sanity check that logging doesn't explode.
     std::string packet_in_string;
-    IPC::ParamTraits<EventPacket>::Log(packet_in, &packet_in_string);
+    IPC::ParamTraits<InputEvents>::Log(packet_in, &packet_in_string);
     std::string packet_out_string;
-    IPC::ParamTraits<EventPacket>::Log(packet_out, &packet_out_string);
+    IPC::ParamTraits<InputEvents>::Log(packet_out, &packet_out_string);
     ASSERT_FALSE(packet_in_string.empty());
     EXPECT_EQ(packet_in_string, packet_out_string);
   }
 };
 
-TEST_F(InputParamTraitsTest, EventPacketEmpty) {
-  EventPacket packet_in;
-  IPC::Message msg;
-  IPC::ParamTraits<EventPacket>::Write(&msg, packet_in);
-
-  EventPacket packet_out;
-  PickleIterator iter(msg);
-  EXPECT_TRUE(IPC::ParamTraits<EventPacket>::Read(&msg, &iter, &packet_out));
-
-  Compare(&packet_in, &packet_out);
-}
-
-TEST_F(InputParamTraitsTest, EventPacketUninitializedEvents) {
-  EventPacket packet_in;
-  packet_in.set_id(1);
-  packet_in.Add(InputEvent::Create(1, WebInputEventPayload::Create()));
-  packet_in.Add(InputEvent::Create(2, IPCInputEventPayload::Create()));
+TEST_F(InputParamTraitsTest, UninitializedEvents) {
+  InputEvents packet_in;
+  AddTo(packet_in, InputEvent::Create(1, WebInputEventPayload::Create()));
+  AddTo(packet_in, InputEvent::Create(2, IPCInputEventPayload::Create()));
 
   IPC::Message msg;
-  IPC::ParamTraits<EventPacket>::Write(&msg, packet_in);
+  IPC::ParamTraits<InputEvents>::Write(&msg, packet_in);
 
-  EventPacket packet_out;
+  InputEvents packet_out;
   PickleIterator iter(msg);
-  EXPECT_FALSE(IPC::ParamTraits<EventPacket>::Read(&msg, &iter, &packet_out));
+  EXPECT_FALSE(IPC::ParamTraits<InputEvents>::Read(&msg, &iter, &packet_out));
 }
 
-TEST_F(InputParamTraitsTest, EventPacketIPCEvents) {
-  EventPacket packet_in;
-  packet_in.set_id(1);
+TEST_F(InputParamTraitsTest, IPCEvents) {
+  InputEvents packet_in;
 
-  packet_in.Add(
+  AddTo(packet_in,
       InputEvent::Create(1,
                          IPCInputEventPayload::Create(
                              scoped_ptr<IPC::Message>(new InputMsg_Undo(1)))));
-  packet_in.Add(InputEvent::Create(
+  AddTo(packet_in, InputEvent::Create(
       1,
       IPCInputEventPayload::Create(
           scoped_ptr<IPC::Message>(new InputMsg_SetFocus(2, true)))));
   Verify(packet_in);
 }
 
-TEST_F(InputParamTraitsTest, EventPacketWebInputEvents) {
-  EventPacket packet_in;
-  packet_in.set_id(1);
+TEST_F(InputParamTraitsTest, WebInputEvents) {
+  InputEvents packet_in;
 
   ui::LatencyInfo latency;
 
@@ -137,14 +125,14 @@ TEST_F(InputParamTraitsTest, EventPacketWebInputEvents) {
   WebKit::WebKeyboardEvent key_event;
   key_event.type = WebKit::WebInputEvent::RawKeyDown;
   key_event.nativeKeyCode = 5;
-  packet_in.Add(InputEvent::Create(
+  AddTo(packet_in, InputEvent::Create(
       ++next_event_id, WebInputEventPayload::Create(key_event, latency, true)));
 
   WebKit::WebMouseWheelEvent wheel_event;
   wheel_event.type = WebKit::WebInputEvent::MouseWheel;
   wheel_event.deltaX = 10;
   latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT, 1, 1);
-  packet_in.Add(InputEvent::Create(
+  AddTo(packet_in, InputEvent::Create(
       ++next_event_id,
       WebInputEventPayload::Create(wheel_event, latency, false)));
 
@@ -152,14 +140,14 @@ TEST_F(InputParamTraitsTest, EventPacketWebInputEvents) {
   mouse_event.type = WebKit::WebInputEvent::MouseDown;
   mouse_event.x = 10;
   latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 2, 2);
-  packet_in.Add(InputEvent::Create(
+  AddTo(packet_in, InputEvent::Create(
       ++next_event_id,
       WebInputEventPayload::Create(mouse_event, latency, false)));
 
   WebKit::WebGestureEvent gesture_event;
   gesture_event.type = WebKit::WebInputEvent::GestureScrollBegin;
   gesture_event.x = -1;
-  packet_in.Add(InputEvent::Create(
+  AddTo(packet_in, InputEvent::Create(
       ++next_event_id,
       WebInputEventPayload::Create(gesture_event, latency, false)));
 
@@ -167,42 +155,9 @@ TEST_F(InputParamTraitsTest, EventPacketWebInputEvents) {
   touch_event.type = WebKit::WebInputEvent::TouchStart;
   touch_event.touchesLength = 1;
   touch_event.touches[0].radiusX = 1;
-  packet_in.Add(InputEvent::Create(
+  AddTo(packet_in, InputEvent::Create(
       ++next_event_id,
       WebInputEventPayload::Create(touch_event, latency, false)));
-
-  Verify(packet_in);
-}
-
-TEST_F(InputParamTraitsTest, EventPacketMixedEvents) {
-  EventPacket packet_in;
-  packet_in.set_id(1);
-  int64 next_event_id = 1;
-
-  // Add a mix of IPC and WebInputEvents.
-  packet_in.Add(
-      InputEvent::Create(++next_event_id,
-                         IPCInputEventPayload::Create(
-                             scoped_ptr<IPC::Message>(new InputMsg_Undo(1)))));
-
-  ui::LatencyInfo latency;
-  WebKit::WebKeyboardEvent key_event;
-  key_event.type = WebKit::WebInputEvent::RawKeyDown;
-  key_event.nativeKeyCode = 5;
-  packet_in.Add(InputEvent::Create(
-      ++next_event_id, WebInputEventPayload::Create(key_event, latency, true)));
-
-  packet_in.Add(InputEvent::Create(
-      ++next_event_id,
-      IPCInputEventPayload::Create(
-          scoped_ptr<IPC::Message>(new InputMsg_SetFocus(2, true)))));
-
-  WebKit::WebMouseWheelEvent wheel_event;
-  wheel_event.type = WebKit::WebInputEvent::MouseWheel;
-  wheel_event.deltaX = 10;
-  packet_in.Add(InputEvent::Create(
-      ++next_event_id,
-      WebInputEventPayload::Create(wheel_event, latency, false)));
 
   Verify(packet_in);
 }

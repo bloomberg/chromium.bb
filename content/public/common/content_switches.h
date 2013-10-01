@@ -109,7 +109,6 @@ extern const char kEnableAudibleNotifications[];
 CONTENT_EXPORT extern const char kEnableBeginFrameScheduling[];
 CONTENT_EXPORT extern const char kEnableBrowserPluginForAllViewTypes[];
 CONTENT_EXPORT extern const char kEnableBrowserPluginDragDrop[];
-CONTENT_EXPORT extern const char kEnableBufferedInputRouter[];
 extern const char kEnableCompositedScrollingForFrames[];
 CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];
 CONTENT_EXPORT extern const char kEnableCompositingForTransition[];

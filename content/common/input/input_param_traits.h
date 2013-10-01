@@ -10,7 +10,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_param_traits_macros.h"
-#include "content/common/input/event_packet.h"
 #include "content/common/input/input_event.h"
 #include "content/common/input/web_input_event_payload.h"
 
@@ -50,14 +49,6 @@ struct ParamTraits<scoped_ptr<P> > {
     else
       l->append("NULL");
   }
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<content::EventPacket> {
-  typedef content::EventPacket param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
 };
 
 template <>

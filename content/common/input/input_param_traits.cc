@@ -5,7 +5,6 @@
 #include "content/common/input/input_param_traits.h"
 
 #include "content/common/content_param_traits.h"
-#include "content/common/input/input_event_disposition.h"
 #include "content/common/input/ipc_input_event_payload.h"
 #include "content/common/input/web_input_event_payload.h"
 #include "content/common/input_messages.h"
@@ -21,43 +20,6 @@ scoped_ptr<content::InputEvent::Payload> ReadPayload(const Message* m,
   return event.template PassAs<content::InputEvent::Payload>();
 }
 }  // namespace
-
-void ParamTraits<content::EventPacket>::Write(Message* m, const param_type& p) {
-  WriteParam(m, p.id());
-  WriteParam(m, p.events());
-}
-
-bool ParamTraits<content::EventPacket>::Read(const Message* m,
-                                             PickleIterator* iter,
-                                             param_type* p) {
-  int64 id;
-  content::EventPacket::InputEvents events;
-  if (!ReadParam(m, iter, &id) ||
-      !ReadParam(m, iter, &events))
-    return false;
-
-  p->set_id(id);
-  bool events_added_successfully = true;
-  for (size_t i = 0; i < events.size(); ++i) {
-    // Take ownership of all events.
-    scoped_ptr<content::InputEvent> event(events[i]);
-    if (!events_added_successfully)
-      continue;
-    if (!p->Add(event.Pass()))
-      events_added_successfully = false;
-  }
-  events.weak_clear();
-  return events_added_successfully;
-}
-
-void ParamTraits<content::EventPacket>::Log(const param_type& p,
-                                            std::string* l) {
-  l->append("EventPacket((");
-  LogParam(p.id(), l);
-  l->append("), Events(");
-  LogParam(p.events(), l);
-  l->append("))");
-}
 
 void ParamTraits<content::InputEvent>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.id());

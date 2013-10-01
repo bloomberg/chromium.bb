@@ -29,7 +29,6 @@
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/dip_util.h"
-#include "content/browser/renderer_host/input/buffered_input_router.h"
 #include "content/browser/renderer_host/input/immediate_input_router.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -226,7 +225,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
     g_created_callbacks.Get().at(i).Run(this);
 
-  input_router_ = CreateInputRouter();
+  input_router_.reset(
+      new ImmediateInputRouter(process_, this, this, routing_id_));
 
 #if defined(USE_AURA)
   bool overscroll_enabled = CommandLine::ForCurrentProcess()->
@@ -1280,7 +1280,8 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   waiting_for_screen_rects_ack_ = false;
 
   // Reset to ensure that input routing works with a new renderer.
-  input_router_ = CreateInputRouter();
+  input_router_.reset(
+      new ImmediateInputRouter(process_, this, this, routing_id_));
 
   if (overscroll_controller_)
     overscroll_controller_->Reset();
@@ -2468,17 +2469,6 @@ void RenderWidgetHostImpl::DelayedAutoResized() {
     return;
 
   OnRenderAutoResized(new_size);
-}
-
-scoped_ptr<InputRouter> RenderWidgetHostImpl::CreateInputRouter() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBufferedInputRouter)) {
-    return scoped_ptr<InputRouter>(
-        new BufferedInputRouter(process_, this, this, routing_id_));
-  } else {
-    return scoped_ptr<InputRouter>(
-        new ImmediateInputRouter(process_, this, this, routing_id_));
-  }
 }
 
 void RenderWidgetHostImpl::DetachDelegate() {

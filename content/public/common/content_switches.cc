@@ -337,9 +337,6 @@ const char kEnableBrowserPluginForAllViewTypes[] =
 // kEnableBrowserPluginGuestViews must also be set at this time.
 const char kEnableBrowserPluginDragDrop[]   = "enable-browser-plugin-drag-drop";
 
-// Batch and synchronize input event delivery to the renderer.
-const char kEnableBufferedInputRouter[]  = "enable-buffered-input-router";
-
 // Enables accelerated scrolling by the compositor for frames. Requires
 // kForceCompositingMode and kEnableAcceleratedScrollableFrames.
 const char kEnableCompositedScrollingForFrames[] =

@@ -764,9 +764,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // which may get in recursive loops).
   void DelayedAutoResized();
 
-  // Creates the proper InputRouter, either Buffered or Immediate.
-  scoped_ptr<InputRouter> CreateInputRouter();
-
   // Our delegate, which wants to know mainly about keyboard events.
   // It will remain non-NULL until DetachDelegate() is called.
   RenderWidgetHostDelegate* delegate_;
