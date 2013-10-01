@@ -32,11 +32,13 @@
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 
 #include "CSSValueKeywords.h"
+#include "core/animation/AnimatableClipPathOperation.h"
 #include "core/animation/AnimatableColor.h"
 #include "core/animation/AnimatableImage.h"
 #include "core/animation/AnimatableLengthBox.h"
 #include "core/animation/AnimatableLengthSize.h"
 #include "core/animation/AnimatableNumber.h"
+#include "core/animation/AnimatableShapeValue.h"
 #include "core/animation/AnimatableTransform.h"
 #include "core/animation/AnimatableUnknown.h"
 #include "core/animation/AnimatableVisibility.h"
@@ -226,6 +228,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromDouble(style->horizontalBorderSpacing());
     case CSSPropertyWebkitBorderVerticalSpacing:
         return createFromDouble(style->verticalBorderSpacing());
+    case CSSPropertyWebkitClipPath:
+        return AnimatableClipPathOperation::create(style->clipPath());
     case CSSPropertyWebkitColumnRuleColor:
         return createFromColor(property, style);
     case CSSPropertyWebkitColumnRuleWidth:
@@ -240,6 +244,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style->perspectiveOriginX(), style);
     case CSSPropertyWebkitPerspectiveOriginY:
         return createFromLength(style->perspectiveOriginY(), style);
+    case CSSPropertyWebkitShapeInside:
+        return AnimatableShapeValue::create(style->shapeInside());
     case CSSPropertyWebkitTextEmphasisColor:
         return createFromColor(property, style);
     case CSSPropertyWebkitTextFillColor:

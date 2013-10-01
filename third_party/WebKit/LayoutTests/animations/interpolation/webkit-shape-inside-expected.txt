@@ -1,0 +1,8 @@
+                                       
+PASS: -webkit-shape-inside from [rectangle(0px, 0px, 100px, 100px)] to [rectangle(25px, 25px, 50px, 50px)] was [rectangle(-7.5px, -7.5px, 115px, 115px)] at -0.3
+PASS: -webkit-shape-inside from [rectangle(0px, 0px, 100px, 100px)] to [rectangle(25px, 25px, 50px, 50px)] was [rectangle(0px, 0px, 100px, 100px)] at 0
+PASS: -webkit-shape-inside from [rectangle(0px, 0px, 100px, 100px)] to [rectangle(25px, 25px, 50px, 50px)] was [rectangle(7.5px, 7.5px, 85px, 85px)] at 0.3
+PASS: -webkit-shape-inside from [rectangle(0px, 0px, 100px, 100px)] to [rectangle(25px, 25px, 50px, 50px)] was [rectangle(15px, 15px, 70px, 70px)] at 0.6
+PASS: -webkit-shape-inside from [rectangle(0px, 0px, 100px, 100px)] to [rectangle(25px, 25px, 50px, 50px)] was [rectangle(25px, 25px, 50px, 50px)] at 1
+PASS: -webkit-shape-inside from [rectangle(0px, 0px, 100px, 100px)] to [rectangle(25px, 25px, 50px, 50px)] was [rectangle(37.5px, 37.5px, 25px, 25px)] at 1.5
+

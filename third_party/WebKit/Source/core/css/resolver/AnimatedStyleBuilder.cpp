@@ -31,11 +31,13 @@
 #include "config.h"
 #include "core/css/resolver/AnimatedStyleBuilder.h"
 
+#include "core/animation/AnimatableClipPathOperation.h"
 #include "core/animation/AnimatableColor.h"
 #include "core/animation/AnimatableImage.h"
 #include "core/animation/AnimatableLengthBox.h"
 #include "core/animation/AnimatableLengthSize.h"
 #include "core/animation/AnimatableNumber.h"
+#include "core/animation/AnimatableShapeValue.h"
 #include "core/animation/AnimatableTransform.h"
 #include "core/animation/AnimatableUnknown.h"
 #include "core/animation/AnimatableValue.h"
@@ -246,6 +248,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyWebkitBorderVerticalSpacing:
         style->setVerticalBorderSpacing(animatableValueRoundClampTo<unsigned short>(value));
         return;
+    case CSSPropertyWebkitClipPath:
+        style->setClipPath(toAnimatableClipPathOperation(value)->clipPathOperation());
+        return;
     case CSSPropertyWebkitColumnRuleColor:
         style->setColumnRuleColor(toAnimatableColor(value)->color());
         style->setVisitedLinkColumnRuleColor(toAnimatableColor(value)->visitedLinkColor());
@@ -267,6 +272,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyWebkitPerspectiveOriginY:
         style->setPerspectiveOriginY(animatableValueToLength(value, state));
+        return;
+    case CSSPropertyWebkitShapeInside:
+        style->setShapeInside(toAnimatableShapeValue(value)->shapeValue());
         return;
     case CSSPropertyWebkitTextEmphasisColor:
         style->setTextEmphasisColor(toAnimatableColor(value)->color());

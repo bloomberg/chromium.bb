@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<style>
+.target {
+  color: white;
+  width: 100px;
+  height: 100px;
+  background-color: black;
+  display: inline-block;
+  overflow: hidden;
+}
+.replica {
+  background-color: green;
+}
+.target div {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  background: orange;
+  margin: 1px;
+}
+</style>
+<body>
+<template id="target-template">
+<div></div><div></div>
+<div></div><div></div>
+<div></div><div></div>
+<div></div><div></div>
+</template>
+<script src="resources/interpolation-test.js"></script>
+<script>
+assertInterpolation({
+  property: '-webkit-shape-inside',
+  from: 'rectangle(0px, 0px, 100px, 100px)',
+  to: 'rectangle(25px, 25px, 50px, 50px)'
+}, [
+  {at: -0.3, is: 'rectangle(-7.5px, -7.5px, 115px, 115px)'},
+  {at: 0, is: 'rectangle(0px, 0px, 100px, 100px)'},
+  {at: 0.3, is: 'rectangle(7.5px, 7.5px, 85px, 85px)'},
+  {at: 0.6, is: 'rectangle(15px, 15px, 70px, 70px)'},
+  {at: 1, is: 'rectangle(25px, 25px, 50px, 50px)'},
+  {at: 1.5, is: 'rectangle(37.5px, 37.5px, 25px, 25px)'}
+]);
+</script>
+</body>
