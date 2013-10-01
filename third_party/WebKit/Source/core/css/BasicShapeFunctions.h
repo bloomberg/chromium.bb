@@ -38,8 +38,9 @@ class BasicShape;
 class CSSBasicShape;
 class CSSValue;
 class StyleResolverState;
+class RenderStyle;
 
-PassRefPtr<CSSValue> valueForBasicShape(const BasicShape*);
+PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle*, const BasicShape*);
 PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState&, const CSSBasicShape*);
 
 }
