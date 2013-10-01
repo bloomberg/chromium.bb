@@ -5,6 +5,9 @@
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
 
 #include "base/bind.h"
+#include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -62,7 +65,16 @@ AppPackUpdater::AppPackUpdater(net::URLRequestContextGetter* request_context,
     : weak_ptr_factory_(this),
       created_extension_loader_(false),
       install_attributes_(install_attributes),
-      external_cache_(kAppPackCacheDir, request_context, this, false, false) {
+      external_cache_(kAppPackCacheDir,
+                      request_context,
+                      content::BrowserThread::GetBlockingPool()->
+                          GetSequencedTaskRunnerWithShutdownBehavior(
+                              content::BrowserThread::GetBlockingPool()->
+                                  GetSequenceToken(),
+                              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN),
+                      this,
+                      false,
+                      false) {
   app_pack_subscription_ = chromeos::CrosSettings::Get()->AddSettingsObserver(
       chromeos::kAppPack,
       base::Bind(&AppPackUpdater::AppPackChanged, base::Unretained(this)));

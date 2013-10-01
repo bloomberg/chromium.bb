@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -33,25 +35,28 @@ const char kCRXFileExtension[] = ".crx";
 // Name of flag file that indicates that cache is ready (import finished).
 const char kCacheReadyFlagFileName[] = ".initialized";
 
-// Delay between checking cache ready flag file.
-const int64_t kCacheReadyDelayMs = 1000;
+// Delay between checks for flag file presence when waiting for the cache to
+// become ready.
+const int64_t kCacheStatusPollingDelayMs = 1000;
 
 }  // namespace
 
 ExternalCache::ExternalCache(const std::string& cache_dir,
                              net::URLRequestContextGetter* request_context,
+                             const scoped_refptr<base::SequencedTaskRunner>&
+                                 backend_task_runner,
                              Delegate* delegate,
                              bool always_check_updates,
-                             bool wait_cache_initialization)
+                             bool wait_for_cache_initialization)
     : cache_dir_(cache_dir),
       request_context_(request_context),
       delegate_(delegate),
+      shutdown_(false),
       always_check_updates_(always_check_updates),
-      wait_cache_initialization_(wait_cache_initialization),
+      wait_for_cache_initialization_(wait_for_cache_initialization),
       cached_extensions_(new base::DictionaryValue()),
-      weak_ptr_factory_(this),
-      worker_pool_token_(
-          content::BrowserThread::GetBlockingPool()->GetSequenceToken()) {
+      backend_task_runner_(backend_task_runner),
+      weak_ptr_factory_(this) {
   notification_registrar_.Add(
       this,
       chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
@@ -61,8 +66,19 @@ ExternalCache::ExternalCache(const std::string& cache_dir,
 ExternalCache::~ExternalCache() {
 }
 
+void ExternalCache::Shutdown(const base::Closure& callback) {
+  DCHECK(!shutdown_);
+  shutdown_ = true;
+  backend_task_runner_->PostTask(FROM_HERE,
+                                 base::Bind(&ExternalCache::BackendShudown,
+                                            callback));
+}
+
 void ExternalCache::UpdateExtensionsList(
     scoped_ptr<base::DictionaryValue> prefs) {
+  if (shutdown_)
+    return;
+
   extensions_ = prefs.Pass();
   if (extensions_->empty()) {
     // Don't check cache and clear it if there are no extensions in the list.
@@ -73,11 +89,14 @@ void ExternalCache::UpdateExtensionsList(
     cached_extensions_->Clear();
     UpdateExtensionLoader();
   } else {
-    CheckCacheNow();
+    CheckCache();
   }
 }
 
 void ExternalCache::OnDamagedFileDetected(const base::FilePath& path) {
+  if (shutdown_)
+    return;
+
   for (base::DictionaryValue::Iterator it(*cached_extensions_.get());
        !it.IsAtEnd(); it.Advance()) {
     const base::DictionaryValue* entry = NULL;
@@ -99,10 +118,11 @@ void ExternalCache::OnDamagedFileDetected(const base::FilePath& path) {
 
       // The file will be downloaded again on the next restart.
       if (base::FilePath(cache_dir_).IsParent(path)) {
-        // Don't delete files out of cache_dir_.
-        content::BrowserThread::PostTask(
-            content::BrowserThread::FILE, FROM_HERE,
-            base::Bind(base::IgnoreResult(base::DeleteFile), path, true));
+        backend_task_runner_->PostTask(
+            FROM_HERE,
+            base::Bind(base::IgnoreResult(base::DeleteFile),
+            path,
+            true));
       }
 
       // Don't try to DownloadMissingExtensions() from here,
@@ -116,6 +136,9 @@ void ExternalCache::OnDamagedFileDetected(const base::FilePath& path) {
 void ExternalCache::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
+  if (shutdown_)
+    return;
+
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
       extensions::CrxInstaller* installer =
@@ -134,6 +157,9 @@ void ExternalCache::OnExtensionDownloadFailed(
     extensions::ExtensionDownloaderDelegate::Error error,
     const extensions::ExtensionDownloaderDelegate::PingResult& ping_result,
     const std::set<int>& request_ids) {
+  if (shutdown_)
+    return;
+
   if (error == NO_UPDATE_AVAILABLE) {
     if (!cached_extensions_->HasKey(id)) {
       LOG(ERROR) << "ExternalCache extension " << id
@@ -152,15 +178,17 @@ void ExternalCache::OnExtensionDownloadFinished(
     const std::string& version,
     const extensions::ExtensionDownloaderDelegate::PingResult& ping_result,
     const std::set<int>& request_ids) {
-  // The explicit copy ctors are to make sure that Bind() binds a copy and not
-  // a reference to the arguments.
-  PostBlockingTask(FROM_HERE,
-                   base::Bind(&ExternalCache::BlockingInstallCacheEntry,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              std::string(cache_dir_),
-                              std::string(id),
-                              base::FilePath(path),
-                              std::string(version)));
+  if (shutdown_)
+    return;
+
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ExternalCache::BackendInstallCacheEntry,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 cache_dir_,
+                 id,
+                 path,
+                 version));
 }
 
 bool ExternalCache::IsExtensionPending(const std::string& id) {
@@ -179,57 +207,86 @@ bool ExternalCache::GetExtensionExistingVersion(const std::string& id,
   return false;
 }
 
-void ExternalCache::CheckCacheNow() {
-  scoped_ptr<DictionaryValue> prefs(extensions_->DeepCopy());
-  PostBlockingTask(FROM_HERE,
-                   base::Bind(&ExternalCache::BlockingCheckCache,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              worker_pool_token_,
-                              std::string(cache_dir_),
-                              base::Passed(&prefs),
-                              wait_cache_initialization_));
-}
-
 void ExternalCache::UpdateExtensionLoader() {
+  if (shutdown_)
+    return;
+
   VLOG(1) << "Notify ExternalCache delegate about cache update";
   if (delegate_)
     delegate_->OnExtensionListsUpdated(cached_extensions_.get());
 }
 
-// static
-void ExternalCache::BlockingCheckCache(
-    base::WeakPtr<ExternalCache> external_cache,
-    base::SequencedWorkerPool::SequenceToken sequence_token,
-    const std::string& cache_dir,
-    scoped_ptr<base::DictionaryValue> prefs,
-    bool wait_cache_initialization) {
-
-  base::FilePath dir(cache_dir);
-  if (wait_cache_initialization &&
-      !base::PathExists(dir.AppendASCII(kCacheReadyFlagFileName))) {
-    content::BrowserThread::GetBlockingPool()->PostDelayedSequencedWorkerTask(
-        sequence_token,
+void ExternalCache::CheckCache() {
+  if (wait_for_cache_initialization_) {
+    backend_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&ExternalCache::BlockingCheckCache,
-                   external_cache,
-                   sequence_token,
-                   std::string(cache_dir),
-                   base::Passed(&prefs),
-                   wait_cache_initialization),
-        base::TimeDelta::FromMilliseconds(kCacheReadyDelayMs));
-    return;
+        base::Bind(&ExternalCache::BackendCheckCacheStatus,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   cache_dir_));
+  } else {
+    CheckCacheContents();
   }
-
-  BlockingCheckCacheInternal(cache_dir, prefs.get());
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                          base::Bind(&ExternalCache::OnCacheUpdated,
-                                     external_cache,
-                                     base::Passed(&prefs)));
 }
 
 // static
-void ExternalCache::BlockingCheckCacheInternal(const std::string& cache_dir,
-                                               base::DictionaryValue* prefs) {
+void ExternalCache::BackendCheckCacheStatus(
+    base::WeakPtr<ExternalCache> external_cache,
+    const std::string& cache_dir) {
+  const base::FilePath dir(cache_dir);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&ExternalCache::OnCacheStatusChecked,
+                 external_cache,
+                 base::PathExists(dir.AppendASCII(kCacheReadyFlagFileName))));
+}
+
+void ExternalCache::OnCacheStatusChecked(bool ready) {
+  if (shutdown_)
+    return;
+
+  if (ready) {
+    CheckCacheContents();
+  } else {
+    content::BrowserThread::PostDelayedTask(
+        content::BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&ExternalCache::CheckCache,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kCacheStatusPollingDelayMs));
+  }
+}
+
+void ExternalCache::CheckCacheContents() {
+  if (shutdown_)
+    return;
+
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ExternalCache::BackendCheckCacheContents,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 cache_dir_,
+                 base::Passed(make_scoped_ptr(extensions_->DeepCopy()))));
+}
+
+// static
+void ExternalCache::BackendCheckCacheContents(
+    base::WeakPtr<ExternalCache> external_cache,
+    const std::string& cache_dir,
+    scoped_ptr<base::DictionaryValue> prefs) {
+  const base::FilePath dir(cache_dir);
+  BackendCheckCacheContentsInternal(cache_dir, prefs.get());
+  content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                   FROM_HERE,
+                                   base::Bind(&ExternalCache::OnCacheUpdated,
+                                              external_cache,
+                                              base::Passed(&prefs)));
+}
+
+// static
+void ExternalCache::BackendCheckCacheContentsInternal(
+    const std::string& cache_dir,
+    base::DictionaryValue* prefs) {
   // Start by verifying that the cache dir exists.
   base::FilePath dir(cache_dir);
   if (!base::DirectoryExists(dir)) {
@@ -350,6 +407,8 @@ void ExternalCache::BlockingCheckCacheInternal(const std::string& cache_dir,
 
 void ExternalCache::OnCacheUpdated(scoped_ptr<base::DictionaryValue> prefs) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (shutdown_)
+    return;
 
   // If request_context_ is missing we can't download anything.
   if (!downloader_ && request_context_) {
@@ -407,7 +466,7 @@ void ExternalCache::OnCacheUpdated(scoped_ptr<base::DictionaryValue> prefs) {
 }
 
 // static
-void ExternalCache::BlockingInstallCacheEntry(
+void ExternalCache::BackendInstallCacheEntry(
     base::WeakPtr<ExternalCache> external_cache,
     const std::string& app_cache_dir,
     const std::string& id,
@@ -448,17 +507,22 @@ void ExternalCache::BlockingInstallCacheEntry(
     return;
   }
 
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                          base::Bind(&ExternalCache::OnCacheEntryInstalled,
-                                     external_cache,
-                                     std::string(id),
-                                     cached_crx_path.value(),
-                                     std::string(version)));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&ExternalCache::OnCacheEntryInstalled,
+                 external_cache,
+                 id,
+                 cached_crx_path.value(),
+                 version));
 }
 
 void ExternalCache::OnCacheEntryInstalled(const std::string& id,
                                           const std::string& path,
                                           const std::string& version) {
+  if (shutdown_)
+    return;
+
   VLOG(1) << "AppPack installed a new extension in the cache: " << path;
 
   base::DictionaryValue* entry = NULL;
@@ -484,12 +548,11 @@ void ExternalCache::OnCacheEntryInstalled(const std::string& id,
   UpdateExtensionLoader();
 }
 
-void ExternalCache::PostBlockingTask(const tracked_objects::Location& location,
-                                     const base::Closure& task) {
-  content::BrowserThread::GetBlockingPool()->
-      PostSequencedWorkerTaskWithShutdownBehavior(
-          worker_pool_token_, location, task,
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+// static
+void ExternalCache::BackendShudown(const base::Closure& callback) {
+  content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                   FROM_HERE,
+                                   callback);
 }
 
 }  // namespace chromeos

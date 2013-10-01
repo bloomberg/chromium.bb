@@ -6,8 +6,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/external_cache.h"
@@ -73,7 +76,14 @@ class ExternalCacheDispatcher : public ExternalCache::Delegate {
   ExternalCacheDispatcher()
     : external_cache_(kPreinstalledAppsCacheDir,
                       g_browser_process->system_request_context(),
-                      this, true, true),
+                      content::BrowserThread::GetBlockingPool()->
+                          GetSequencedTaskRunnerWithShutdownBehavior(
+                              content::BrowserThread::GetBlockingPool()->
+                                  GetSequenceToken(),
+                              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN),
+                      this,
+                      true,
+                      true),
       base_path_id_(0),
       is_extensions_list_ready_(false) {
   }

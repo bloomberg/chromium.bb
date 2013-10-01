@@ -8,10 +8,12 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/extensions/updater/extension_downloader_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -28,13 +30,9 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace tracked_objects {
-class Location;
-}
-
 namespace chromeos {
 
-// The ExternalCache manages cache for external extensions.
+// The ExternalCache manages a cache for external extensions.
 class ExternalCache : public content::NotificationObserver,
                       public extensions::ExtensionDownloaderDelegate {
  public:
@@ -46,15 +44,19 @@ class ExternalCache : public content::NotificationObserver,
         const base::DictionaryValue* prefs) = 0;
   };
 
-  // The |request_context| is used for the update checks.
-  // By default updates are checked for the extensions with external_update_url.
-  // If |always_check_webstore| set, updates will be check for external_crx too.
-  // If |wait_cache_initialization|, cache will wait for flag file in cache dir.
+  // The |request_context| is used for update checks. All file I/O is done via
+  // the |backend_task_runner|. If |always_check_updates| is |false|, update
+  // checks are performed for extensions that have an |external_update_url|
+  // only. If |wait_for_cache_initialization| is |true|, the cache contents will
+  // not be read until a flag file appears in the cache directory, signaling
+  // that the cache is ready.
   ExternalCache(const std::string& cache_dir,
                 net::URLRequestContextGetter* request_context,
+                const scoped_refptr<base::SequencedTaskRunner>&
+                    backend_task_runner,
                 Delegate* delegate,
                 bool always_check_updates,
-                bool wait_cache_initialization);
+                bool wait_for_cache_initialization);
   virtual ~ExternalCache();
 
   // Returns already cached extensions.
@@ -62,8 +64,12 @@ class ExternalCache : public content::NotificationObserver,
     return cached_extensions_.get();
   }
 
-  // Update list of extensions in cache and force update check for them.
-  // ExternalCache gets ownership of |prefs|.
+  // Shut down the cache. The |callback| will be invoked when the cache has shut
+  // down completely and there are no more pending file I/O operations.
+  void Shutdown(const base::Closure& callback);
+
+  // Replace the list of extensions to cache with |prefs| and perform update
+  // checks for these.
   void UpdateExtensionsList(scoped_ptr<base::DictionaryValue> prefs);
 
   // If a user of one of the ExternalCache's extensions detects that
@@ -97,37 +103,53 @@ class ExternalCache : public content::NotificationObserver,
   virtual bool GetExtensionExistingVersion(const std::string& id,
                                            std::string* version) OVERRIDE;
 
-  // Starts a cache update check immediately.
-  void CheckCacheNow();
-
   // Notifies the that the cache has been updated, providing
   // extensions loader with an updated list of extensions.
   void UpdateExtensionLoader();
 
-  // Performs a cache update check on the blocking pool. |external_cache| is
-  // used to reply in the UI thread. |prefs| contains the list extensions
-  // anything else is invalid, and should be removed from the cache.
-  // Ownership of |prefs| is transferred to this function.
-  static void BlockingCheckCache(
-      base::WeakPtr<ExternalCache> external_cache,
-      base::SequencedWorkerPool::SequenceToken token,
-      const std::string& app_cache_dir,
-      scoped_ptr<base::DictionaryValue> prefs,
-      bool wait_cache_initialization);
+  // Checks the cache contents and deletes any entries no longer referenced by
+  // |extensions_|. If |wait_for_cache_initialization_| is |true|, waits for the
+  // cache to become ready first, as indicated by the presence of a flag file.
+  void CheckCache();
 
-  // Helper for BlockingCheckCache(), updates |prefs|.
-  static void BlockingCheckCacheInternal(
-      const std::string& app_cache_dir,
+  // Checks whether a flag file exists in the |cache_dir|, indicating that the
+  // cache is ready. This method is invoked via the |backend_task_runner_| and
+  // posts its result back to the |external_cache| on the UI thread.
+  static void BackendCheckCacheStatus(
+      base::WeakPtr<ExternalCache> external_cache,
+      const std::string& cache_dir);
+
+  // Invoked on the UI thread after checking whether the cache is ready. If the
+  // cache is not ready yet, posts a delayed task that will repeat the check,
+  // thus polling for cache readiness.
+  void OnCacheStatusChecked(bool ready);
+
+  // Checks the cache contents. This is a helper that invokes the actual check
+  // by posting to the |backend_task_runner_|.
+  void CheckCacheContents();
+
+  // Checks the cache contents, deleting any entries no longer referenced by
+  // |prefs|. This method is invoked via the |backend_task_runner_| and posts
+  // back a list of cache entries to the |external_cache| on the UI thread.
+  static void BackendCheckCacheContents(
+      base::WeakPtr<ExternalCache> external_cache,
+      const std::string& cache_dir,
+      scoped_ptr<base::DictionaryValue> prefs);
+
+  // Helper for BackendCheckCacheContents() that updates |prefs|.
+  static void BackendCheckCacheContentsInternal(
+      const std::string& cache_dir,
       base::DictionaryValue* prefs);
 
   // Invoked when the cache has been updated. |prefs| contains all the currently
   // valid crx files in the cache, ownerships is transfered to this function.
   void OnCacheUpdated(scoped_ptr<base::DictionaryValue> prefs);
 
-  // Invoked to install the downloaded crx file at |path| in the cache.
-  static void BlockingInstallCacheEntry(
+  // Installs the downloaded crx file at |path| in the |cache_dir|. This method
+  // is invoked via the |backend_task_runner_|.
+  static void BackendInstallCacheEntry(
       base::WeakPtr<ExternalCache> external_cache,
-      const std::string& app_cache_dir,
+      const std::string& cache_dir,
       const std::string& id,
       const base::FilePath& path,
       const std::string& version);
@@ -137,11 +159,12 @@ class ExternalCache : public content::NotificationObserver,
                              const std::string& path,
                              const std::string& version);
 
-  // Helper to post blocking IO tasks to the blocking pool.
-  void PostBlockingTask(const tracked_objects::Location& from_here,
-                        const base::Closure& task);
+  // Posted to the |backend_task_runner_| during cache shutdown so that it runs
+  // after all file I/O has been completed. Invokes |callback| on the UI thread
+  // to indicate that the cache has been shut down completely.
+  static void BackendShudown(const base::Closure& callback);
 
-  // Path to the dir where apps cache is stored.
+  // Path to the directory where the extension cache is stored.
   std::string cache_dir_;
 
   // Request context used by the |downloader_|.
@@ -150,11 +173,14 @@ class ExternalCache : public content::NotificationObserver,
   // Delegate that would like to get notifications about cache updates.
   Delegate* delegate_;
 
+  // Whether the cache shutdown has been initiated.
+  bool shutdown_;
+
   // Updates needs to be check for the extensions with external_crx too.
   bool always_check_updates_;
 
   // Set to true if cache should wait for initialization flag file.
-  bool wait_cache_initialization_;
+  bool wait_for_cache_initialization_;
 
   // This is the list of extensions currently configured.
   scoped_ptr<base::DictionaryValue> extensions_;
@@ -166,14 +192,14 @@ class ExternalCache : public content::NotificationObserver,
   // Used to download the extensions and to check for updates.
   scoped_ptr<extensions::ExtensionDownloader> downloader_;
 
-  base::WeakPtrFactory<ExternalCache> weak_ptr_factory_;
+  // Task runner for executing file I/O tasks.
+  scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   // Observes failures to install CRX files.
   content::NotificationRegistrar notification_registrar_;
 
-  // Unique sequence token so that tasks posted by the ExternalCache are
-  // executed sequentially in the blocking pool.
-  base::SequencedWorkerPool::SequenceToken worker_pool_token_;
+  // Weak factory for callbacks from the backend and delayed tasks.
+  base::WeakPtrFactory<ExternalCache> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalCache);
 };
