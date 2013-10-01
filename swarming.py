@@ -71,11 +71,11 @@ class Manifest(object):
   Also includes code to zip code and upload itself.
   """
   def __init__(
-      self, manifest_hash, test_name, shards, test_filter, slave_os,
+      self, isolated_hash, test_name, shards, test_filter, slave_os,
       working_dir, isolate_server, verbose, profile, priority, algo):
     """Populates a manifest object.
       Args:
-        manifest_hash - The manifest's sha-1 that the slave is going to fetch.
+        isolated_hash - The manifest's sha-1 that the slave is going to fetch.
         test_name - The name to give the test request.
         shards - The number of swarm shards to request.
         test_filter - The gtest filter to apply when running the test.
@@ -87,13 +87,13 @@ class Manifest(object):
         priority - int between 0 and 1000, lower the higher priority.
         algo - hashing algorithm used.
     """
-    self.manifest_hash = manifest_hash
+    self.isolated_hash = isolated_hash
     self.bundle = zip_package.ZipPackage(ROOT_DIR)
 
     self._test_name = test_name
     self._shards = shards
     self._test_filter = test_filter
-    self._target_platform = PLATFORM_MAPPING_SWARMING[slave_os]
+    self._target_platform = slave_os
     self._working_dir = working_dir
 
     self.isolate_server = isolate_server
@@ -109,7 +109,6 @@ class Manifest(object):
 
     self._zip_file_hash = ''
     self._tasks = []
-    self._files = {}
     self._token_cache = None
 
   def _token(self):
@@ -177,10 +176,7 @@ class Manifest(object):
     """
     test_case = {
       'test_case_name': self._test_name,
-      'data': [
-        [self._data_server_retrieval + urllib.quote(self._zip_file_hash),
-         'swarm_data.zip'],
-      ],
+      'data': [],
       'tests': self._tasks,
       'env_vars': {},
       'configurations': [
@@ -197,7 +193,12 @@ class Manifest(object):
       'cleanup': 'root',
       'priority': self.priority,
     }
-
+    if self._zip_file_hash:
+      test_case['data'].append(
+          [
+            self._data_server_retrieval + urllib.quote(self._zip_file_hash),
+            'swarm_data.zip',
+          ])
     # These flags are googletest specific.
     if self._test_filter and self._test_filter != '*':
       test_case['env_vars']['GTEST_FILTER'] = self._test_filter
@@ -239,7 +240,7 @@ def get_test_keys(swarm_base_url, test_name):
 
 def retrieve_results(base_url, test_key, timeout, should_stop):
   """Retrieves results for a single test_key."""
-  assert isinstance(timeout, float)
+  assert isinstance(timeout, float), timeout
   params = [('r', test_key)]
   result_url = '%s/get_result?%s' % (base_url, urllib.urlencode(params))
   start = now()
@@ -254,6 +255,8 @@ def retrieve_results(base_url, test_key, timeout, should_stop):
       # should_stop is polled more often.
       remaining = min(5, timeout - (now() - start)) if timeout else 5
       if remaining > 0:
+        if should_stop.get():
+          return {}
         net.sleep_before_retry(1, remaining)
     else:
       try:
@@ -324,7 +327,7 @@ def chromium_setup(manifest):
 
   run_cmd = [
     'python', run_test_name,
-    '--hash', manifest.manifest_hash,
+    '--hash', manifest.isolated_hash,
     '--isolate-server', manifest.isolate_server,
   ]
   if manifest.verbose or manifest.profile:
@@ -380,8 +383,17 @@ def process_manifest(
 
   try:
     manifest = Manifest(
-        file_hash, test_name, shards, test_filter, slave_os,
-        working_dir, isolate_server, verbose, profile, priority, algo)
+        file_hash,
+        test_name,
+        shards,
+        test_filter,
+        PLATFORM_MAPPING_SWARMING[slave_os],
+        working_dir,
+        isolate_server,
+        verbose,
+        profile,
+        priority,
+        algo)
   except ValueError as e:
     print >> sys.stderr, 'Unable to process %s: %s' % (test_name, e)
     return 1

@@ -319,7 +319,7 @@ class HttpService(object):
     into memory buffer before returning file-like object that reads from this
     memory buffer.
     """
-    assert urlpath and urlpath[0] == '/'
+    assert urlpath and urlpath[0] == '/', urlpath
 
     if data is not None:
       assert method in (None, 'POST', 'PUT')

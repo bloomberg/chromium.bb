@@ -416,7 +416,6 @@ def generate_expected_json(
     working_dir,
     isolate_server,
     profile):
-  retrieval_url = isolate_server + u'/content/retrieve/default/'
   os_value = unicode(swarming.PLATFORM_MAPPING_SWARMING[slave_os])
   expected = {
     u'cleanup': u'root',
@@ -429,7 +428,7 @@ def generate_expected_json(
         u'min_instances': shards,
       },
     ],
-    u'data': [[retrieval_url, u'swarm_data.zip']],
+    u'data': [],
     u'env_vars': {},
     u'restart_on_failure': True,
     u'test_case_name': TEST_NAME,
@@ -482,11 +481,11 @@ class ManifestTest(auto_stub.TestCase):
 
   def test_basic_manifest(self):
     manifest = swarming.Manifest(
-        manifest_hash=FILE_HASH,
+        isolated_hash=FILE_HASH,
         test_name=TEST_NAME,
         shards=2,
         test_filter='*',
-        slave_os='win32',
+        slave_os='Windows',
         working_dir='swarm_tests',
         isolate_server='http://localhost:8081',
         verbose=False,
@@ -510,11 +509,11 @@ class ManifestTest(auto_stub.TestCase):
        aren't used.
     """
     manifest = swarming.Manifest(
-        manifest_hash=FILE_HASH,
+        isolated_hash=FILE_HASH,
         test_name=TEST_NAME,
         shards=1,
         test_filter='*',
-        slave_os='linux2',
+        slave_os='Linux',
         working_dir='swarm_tests',
         isolate_server='http://localhost:8081',
         verbose=False,
@@ -535,11 +534,11 @@ class ManifestTest(auto_stub.TestCase):
 
   def test_basic_linux_profile(self):
     manifest = swarming.Manifest(
-        manifest_hash=FILE_HASH,
+        isolated_hash=FILE_HASH,
         test_name=TEST_NAME,
         shards=1,
         test_filter='*',
-        slave_os='linux2',
+        slave_os='Linux',
         working_dir='swarm_tests',
         isolate_server='http://localhost:8081',
         verbose=False,

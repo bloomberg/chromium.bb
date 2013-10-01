@@ -39,7 +39,13 @@ THIS_FILE_PATH = os.path.abspath(__file__) if __file__ else None
 BASE_DIR = os.path.dirname(THIS_FILE_PATH) if __file__ else None
 
 # Directory that contains currently running script file.
-MAIN_DIR = os.path.dirname(os.path.abspath(zip_package.get_main_script_path()))
+if zip_package.get_main_script_path():
+  MAIN_DIR = os.path.dirname(
+      os.path.abspath(zip_package.get_main_script_path()))
+else:
+  # This happens when 'import run_isolated' is executed at the python
+  # interactive prompt, in that case __file__ is undefined.
+  MAIN_DIR = None
 
 # Types of action accepted by link_file().
 HARDLINK, HARDLINK_WITH_FALLBACK, SYMLINK, COPY = range(1, 5)
@@ -514,8 +520,9 @@ def run_tha_test(isolated_hash, cache_dir, retriever, policies):
     # TODO(vadimsh): Pass it via 'env_vars' in manifest.
     # Add a rotating log file if one doesn't already exist.
     env = os.environ.copy()
-    env.setdefault('RUN_TEST_CASES_LOG_FILE',
-                  os.path.join(MAIN_DIR, RUN_TEST_CASES_LOG))
+    if MAIN_DIR:
+      env.setdefault('RUN_TEST_CASES_LOG_FILE',
+                    os.path.join(MAIN_DIR, RUN_TEST_CASES_LOG))
     try:
       with tools.Profiler('RunTest'):
         return subprocess.call(settings.command, cwd=cwd, env=env)

@@ -237,7 +237,7 @@ def get_main_script_path():
   """
   # If running from interactive console __file__ is not defined.
   main = sys.modules['__main__']
-  return get_module_zip_archive(main) or getattr(main, '__file__')
+  return get_module_zip_archive(main) or getattr(main, '__file__', None)
 
 
 def extract_resource(package, resource):
