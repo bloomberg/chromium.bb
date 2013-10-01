@@ -3416,7 +3416,7 @@ bool RenderBlock::positionNewFloats()
     return true;
 }
 
-void RenderBlock::newLine(EClear clear)
+void RenderBlock::clearFloats(EClear clear)
 {
     positionNewFloats();
     // set y position

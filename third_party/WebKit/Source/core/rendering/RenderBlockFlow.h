@@ -56,7 +56,7 @@ protected:
     {
         LayoutUnit repaintLogicalTop = 0;
         LayoutUnit repaintLogicalBottom = 0;
-        clearFloats();
+        rebuildFloatsFromIntruding();
         layoutInlineChildren(true, repaintLogicalTop, repaintLogicalBottom);
     }
 
@@ -68,7 +68,7 @@ private:
     void adjustPositionedBlock(RenderBox* child, const MarginInfo&);
     void adjustFloatingBlock(const MarginInfo&);
 
-    void clearFloats();
+    void rebuildFloatsFromIntruding();
 
 public:
     class MarginValues {
