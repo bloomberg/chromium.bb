@@ -17,9 +17,7 @@
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/net/predictor_tab_helper.h"
-#if !defined(OS_ANDROID)
 #include "chrome/browser/network_time/navigation_time_helper.h"
-#endif
 #include "chrome/browser/password_manager/password_generation_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
@@ -134,6 +132,7 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   HungPluginTabHelper::CreateForWebContents(web_contents);
   InfoBarService::CreateForWebContents(web_contents);
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
+  NavigationTimeHelper::CreateForWebContents(web_contents);
   PasswordGenerationManager::CreateForWebContents(web_contents);
   PasswordManagerDelegateImpl::CreateForWebContents(web_contents);
   PasswordManager::CreateForWebContentsAndDelegate(
@@ -154,9 +153,6 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   ThumbnailTabHelper::CreateForWebContents(web_contents);
   TranslateTabHelper::CreateForWebContents(web_contents);
   ZoomController::CreateForWebContents(web_contents);
-#if !defined(OS_ANDROID)
-  NavigationTimeHelper::CreateForWebContents(web_contents);
-#endif
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   captive_portal::CaptivePortalTabHelper::CreateForWebContents(web_contents);
