@@ -127,8 +127,6 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
       context_lost_callback_(NULL),
       context_lost_reason_(GL_NO_ERROR),
       attributes_(attributes),
-      cached_width_(0),
-      cached_height_(0),
       flush_id_(0) {
 }
 
@@ -237,12 +235,99 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::ClearContext() {
   // GLInProcessContext::MakeCurrent(NULL);
 }
 
-int WebGraphicsContext3DInProcessCommandBufferImpl::width() {
-  return cached_width_;
+// Helper macros to reduce the amount of code.
+
+#define DELEGATE_TO_GL(name, glname)                                    \
+void WebGraphicsContext3DInProcessCommandBufferImpl::name() {           \
+  ClearContext();                                                       \
+  gl_->glname();                                                        \
 }
 
-int WebGraphicsContext3DInProcessCommandBufferImpl::height() {
-  return cached_height_;
+#define DELEGATE_TO_GL_1(name, glname, t1)                              \
+void WebGraphicsContext3DInProcessCommandBufferImpl::name(t1 a1) {      \
+  ClearContext();                                                       \
+  gl_->glname(a1);                                                      \
+}
+
+#define DELEGATE_TO_GL_1R(name, glname, t1, rt)                         \
+rt WebGraphicsContext3DInProcessCommandBufferImpl::name(t1 a1) {        \
+  ClearContext();                                                       \
+  return gl_->glname(a1);                                               \
+}
+
+#define DELEGATE_TO_GL_1RB(name, glname, t1, rt)                        \
+rt WebGraphicsContext3DInProcessCommandBufferImpl::name(t1 a1) {        \
+  ClearContext();                                                       \
+  return gl_->glname(a1) ? true : false;                                \
+}
+
+#define DELEGATE_TO_GL_2(name, glname, t1, t2)                          \
+void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
+    t1 a1, t2 a2) {                                                     \
+  ClearContext();                                                       \
+  gl_->glname(a1, a2);                                                  \
+}
+
+#define DELEGATE_TO_GL_2R(name, glname, t1, t2, rt)                     \
+rt WebGraphicsContext3DInProcessCommandBufferImpl::name(t1 a1, t2 a2) { \
+  ClearContext();                                                       \
+  return gl_->glname(a1, a2);                                           \
+}
+
+#define DELEGATE_TO_GL_3(name, glname, t1, t2, t3)                      \
+void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
+    t1 a1, t2 a2, t3 a3) {                                              \
+  ClearContext();                                                       \
+  gl_->glname(a1, a2, a3);                                              \
+}
+
+#define DELEGATE_TO_GL_3R(name, glname, t1, t2, t3, rt)                 \
+rt WebGraphicsContext3DInProcessCommandBufferImpl::name(                \
+    t1 a1, t2 a2, t3 a3) {                                              \
+  ClearContext();                                                       \
+  return gl_->glname(a1, a2, a3);                                       \
+}
+
+#define DELEGATE_TO_GL_4(name, glname, t1, t2, t3, t4)                  \
+void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
+    t1 a1, t2 a2, t3 a3, t4 a4) {                                       \
+  ClearContext();                                                       \
+  gl_->glname(a1, a2, a3, a4);                                          \
+}
+
+#define DELEGATE_TO_GL_5(name, glname, t1, t2, t3, t4, t5)              \
+void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
+    t1 a1, t2 a2, t3 a3, t4 a4, t5 a5) {                                \
+  ClearContext();                                                       \
+  gl_->glname(a1, a2, a3, a4, a5);                                      \
+}
+
+#define DELEGATE_TO_GL_6(name, glname, t1, t2, t3, t4, t5, t6)          \
+void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
+    t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6) {                         \
+  ClearContext();                                                       \
+  gl_->glname(a1, a2, a3, a4, a5, a6);                                  \
+}
+
+#define DELEGATE_TO_GL_7(name, glname, t1, t2, t3, t4, t5, t6, t7)      \
+void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
+    t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7) {                  \
+  ClearContext();                                                       \
+  gl_->glname(a1, a2, a3, a4, a5, a6, a7);                              \
+}
+
+#define DELEGATE_TO_GL_8(name, glname, t1, t2, t3, t4, t5, t6, t7, t8)  \
+void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
+    t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7, t8 a8) {           \
+  ClearContext();                                                       \
+  gl_->glname(a1, a2, a3, a4, a5, a6, a7, a8);                          \
+}
+
+#define DELEGATE_TO_GL_9(name, glname, t1, t2, t3, t4, t5, t6, t7, t8, t9) \
+void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
+    t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7, t8 a8, t9 a9) {    \
+  ClearContext();                                                       \
+  gl_->glname(a1, a2, a3, a4, a5, a6, a7, a8, a9);                      \
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::prepareTexture() {
@@ -257,21 +342,7 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::postSubBufferCHROMIUM(
   gl_->PostSubBufferCHROMIUM(x, y, width, height);
 }
 
-void WebGraphicsContext3DInProcessCommandBufferImpl::reshape(
-    int width, int height) {
-  reshapeWithScaleFactor(width, height, 1.0f);
-}
-
-void WebGraphicsContext3DInProcessCommandBufferImpl::reshapeWithScaleFactor(
-    int width, int height, float scale_factor) {
-  cached_width_ = width;
-  cached_height_ = height;
-
-  // TODO(gmam): See if we can comment this in.
-  // ClearContext();
-
-  gl_->ResizeCHROMIUM(width, height, scale_factor);
-}
+DELEGATE_TO_GL_3(reshapeWithScaleFactor, ResizeCHROMIUM, int, int, float)
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::synthesizeGLError(
     WGC3Denum error) {
@@ -384,101 +455,6 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::
   ClearContext();
   gl_->RenderbufferStorageMultisampleEXT(
       target, samples, internalformat, width, height);
-}
-
-// Helper macros to reduce the amount of code.
-
-#define DELEGATE_TO_GL(name, glname)                                    \
-void WebGraphicsContext3DInProcessCommandBufferImpl::name() {           \
-  ClearContext();                                                       \
-  gl_->glname();                                                        \
-}
-
-#define DELEGATE_TO_GL_1(name, glname, t1)                              \
-void WebGraphicsContext3DInProcessCommandBufferImpl::name(t1 a1) {      \
-  ClearContext();                                                       \
-  gl_->glname(a1);                                                      \
-}
-
-#define DELEGATE_TO_GL_1R(name, glname, t1, rt)                         \
-rt WebGraphicsContext3DInProcessCommandBufferImpl::name(t1 a1) {        \
-  ClearContext();                                                       \
-  return gl_->glname(a1);                                               \
-}
-
-#define DELEGATE_TO_GL_1RB(name, glname, t1, rt)                        \
-rt WebGraphicsContext3DInProcessCommandBufferImpl::name(t1 a1) {        \
-  ClearContext();                                                       \
-  return gl_->glname(a1) ? true : false;                                \
-}
-
-#define DELEGATE_TO_GL_2(name, glname, t1, t2)                          \
-void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
-    t1 a1, t2 a2) {                                                     \
-  ClearContext();                                                       \
-  gl_->glname(a1, a2);                                                  \
-}
-
-#define DELEGATE_TO_GL_2R(name, glname, t1, t2, rt)                     \
-rt WebGraphicsContext3DInProcessCommandBufferImpl::name(t1 a1, t2 a2) { \
-  ClearContext();                                                       \
-  return gl_->glname(a1, a2);                                           \
-}
-
-#define DELEGATE_TO_GL_3(name, glname, t1, t2, t3)                      \
-void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
-    t1 a1, t2 a2, t3 a3) {                                              \
-  ClearContext();                                                       \
-  gl_->glname(a1, a2, a3);                                              \
-}
-
-#define DELEGATE_TO_GL_3R(name, glname, t1, t2, t3, rt)                 \
-rt WebGraphicsContext3DInProcessCommandBufferImpl::name(                \
-    t1 a1, t2 a2, t3 a3) {                                              \
-  ClearContext();                                                       \
-  return gl_->glname(a1, a2, a3);                                       \
-}
-
-#define DELEGATE_TO_GL_4(name, glname, t1, t2, t3, t4)                  \
-void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
-    t1 a1, t2 a2, t3 a3, t4 a4) {                                       \
-  ClearContext();                                                       \
-  gl_->glname(a1, a2, a3, a4);                                          \
-}
-
-#define DELEGATE_TO_GL_5(name, glname, t1, t2, t3, t4, t5)              \
-void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
-    t1 a1, t2 a2, t3 a3, t4 a4, t5 a5) {                                \
-  ClearContext();                                                       \
-  gl_->glname(a1, a2, a3, a4, a5);                                      \
-}
-
-#define DELEGATE_TO_GL_6(name, glname, t1, t2, t3, t4, t5, t6)          \
-void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
-    t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6) {                         \
-  ClearContext();                                                       \
-  gl_->glname(a1, a2, a3, a4, a5, a6);                                  \
-}
-
-#define DELEGATE_TO_GL_7(name, glname, t1, t2, t3, t4, t5, t6, t7)      \
-void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
-    t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7) {                  \
-  ClearContext();                                                       \
-  gl_->glname(a1, a2, a3, a4, a5, a6, a7);                              \
-}
-
-#define DELEGATE_TO_GL_8(name, glname, t1, t2, t3, t4, t5, t6, t7, t8)  \
-void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
-    t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7, t8 a8) {           \
-  ClearContext();                                                       \
-  gl_->glname(a1, a2, a3, a4, a5, a6, a7, a8);                          \
-}
-
-#define DELEGATE_TO_GL_9(name, glname, t1, t2, t3, t4, t5, t6, t7, t8, t9) \
-void WebGraphicsContext3DInProcessCommandBufferImpl::name(              \
-    t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7, t8 a8, t9 a9) {    \
-  ClearContext();                                                       \
-  gl_->glname(a1, a2, a3, a4, a5, a6, a7, a8, a9);                      \
 }
 
 DELEGATE_TO_GL_1(activeTexture, ActiveTexture, WGC3Denum)

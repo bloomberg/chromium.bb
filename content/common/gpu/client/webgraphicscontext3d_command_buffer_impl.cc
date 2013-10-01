@@ -231,8 +231,6 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       error_message_callback_(0),
       swapbuffers_complete_callback_(0),
       gpu_preference_(gfx::PreferIntegratedGpu),
-      cached_width_(0),
-      cached_height_(0),
       weak_ptr_factory_(this),
       initialized_(false),
       gl_(NULL),
@@ -510,14 +508,6 @@ uint32_t WebGraphicsContext3DCommandBufferImpl::lastFlushID() {
   return flush_id_;
 }
 
-int WebGraphicsContext3DCommandBufferImpl::width() {
-  return cached_width_;
-}
-
-int WebGraphicsContext3DCommandBufferImpl::height() {
-  return cached_height_;
-}
-
 DELEGATE_TO_GL_R(insertSyncPoint, InsertSyncPointCHROMIUM, unsigned int)
 
 void WebGraphicsContext3DCommandBufferImpl::Destroy() {
@@ -597,17 +587,7 @@ void WebGraphicsContext3DCommandBufferImpl::postSubBufferCHROMIUM(
       weak_ptr_factory_.GetWeakPtr()));
 }
 
-void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
-  reshapeWithScaleFactor(width, height, 1.f);
-}
-
-void WebGraphicsContext3DCommandBufferImpl::reshapeWithScaleFactor(
-    int width, int height, float scale_factor) {
-  cached_width_ = width;
-  cached_height_ = height;
-
-  gl_->ResizeCHROMIUM(width, height, scale_factor);
-}
+DELEGATE_TO_GL_3(reshapeWithScaleFactor, ResizeCHROMIUM, int, int, float)
 
 void WebGraphicsContext3DCommandBufferImpl::synthesizeGLError(
     WGC3Denum error) {

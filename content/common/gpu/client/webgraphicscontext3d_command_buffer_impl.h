@@ -144,9 +144,6 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual uint32_t lastFlushID();
 
-  virtual int width();
-  virtual int height();
-
   virtual unsigned int insertSyncPoint();
   virtual void waitSyncPoint(unsigned int sync_point);
   virtual void signalSyncPoint(unsigned sync_point,
@@ -156,7 +153,6 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual void loseContextCHROMIUM(WGC3Denum current, WGC3Denum other);
 
-  virtual void reshape(int width, int height);
   virtual void reshapeWithScaleFactor(
       int width, int height, float scale_factor);
 
@@ -741,7 +737,6 @@ class WebGraphicsContext3DCommandBufferImpl
 
   WebKit::WebGraphicsContext3D::Attributes attributes_;
   gfx::GpuPreference gpu_preference_;
-  int cached_width_, cached_height_;
 
   // Errors raised by synthesizeGLError().
   std::vector<WGC3Denum> synthetic_errors_;

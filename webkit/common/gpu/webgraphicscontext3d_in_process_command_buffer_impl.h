@@ -76,10 +76,6 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
 
   virtual uint32_t lastFlushID();
 
-  virtual int width();
-  virtual int height();
-
-  virtual void reshape(int width, int height);
   virtual void reshapeWithScaleFactor(int width, int height, float scaleFactor);
 
   virtual void prepareTexture();
@@ -585,7 +581,6 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   WGC3Denum context_lost_reason_;
 
   WebKit::WebGraphicsContext3D::Attributes attributes_;
-  int cached_width_, cached_height_;
 
   // Errors raised by synthesizeGLError().
   std::vector<WGC3Denum> synthetic_errors_;

@@ -25,17 +25,6 @@ bool FakeWebGraphicsContext3D::makeContextCurrent() {
   return true;
 }
 
-int FakeWebGraphicsContext3D::width() {
-  return 1;
-}
-
-int FakeWebGraphicsContext3D::height() {
-  return 1;
-}
-
-void FakeWebGraphicsContext3D::reshape(int width, int height) {
-}
-
 bool FakeWebGraphicsContext3D::isGLES2Compliant() {
   return false;
 }

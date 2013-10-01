@@ -23,11 +23,6 @@ class CC_EXPORT FakeWebGraphicsContext3D
 
   virtual bool makeContextCurrent();
 
-  virtual int width();
-  virtual int height();
-
-  virtual void reshape(int width, int height);
-
   virtual bool isGLES2Compliant();
 
   virtual WebKit::WebGLId getPlatformTextureId();

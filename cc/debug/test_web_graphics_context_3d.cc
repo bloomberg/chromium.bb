@@ -136,14 +136,6 @@ bool TestWebGraphicsContext3D::makeContextCurrent() {
   return !context_lost_;
 }
 
-int TestWebGraphicsContext3D::width() {
-  return width_;
-}
-
-int TestWebGraphicsContext3D::height() {
-  return height_;
-}
-
 void TestWebGraphicsContext3D::reshapeWithScaleFactor(
     int width, int height, float scale_factor) {
   width_ = width;
