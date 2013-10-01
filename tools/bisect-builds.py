@@ -829,8 +829,8 @@ def main():
       print DONE_MESSAGE_GOOD_MIN % (str(min_chromium_rev),
                                      str(max_chromium_rev))
     if min_blink_rev != max_blink_rev:
-      print ("NOTE: There is a blink roll in the range, "
-             "you might also want to do a blink bisect.")
+      print ("NOTE: There is a Blink roll in the range, "
+             "you might also want to do a Blink bisect.")
 
     print 'CHANGELOG URL:'
     if opts.official_builds:
