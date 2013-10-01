@@ -38,6 +38,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/url_constants.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/time.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -1130,9 +1131,11 @@ bool SessionModelAssociator::TabHasValidEntry(
        tab.GetPendingEntry() : tab.GetEntryAtIndex(i);
     if (!entry)
       return false;
-    if (entry->GetVirtualURL().is_valid() &&
-        !entry->GetVirtualURL().SchemeIs("chrome") &&
-        !entry->GetVirtualURL().SchemeIsFile()) {
+    const GURL& virtual_url = entry->GetVirtualURL();
+    if (virtual_url.is_valid() &&
+        !virtual_url.SchemeIs(chrome::kChromeUIScheme) &&
+        !virtual_url.SchemeIs(chrome::kChromeNativeScheme) &&
+        !virtual_url.SchemeIsFile()) {
       found_valid_url = true;
     }
   }

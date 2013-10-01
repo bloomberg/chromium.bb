@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/common/url_constants.h"
 
 namespace browser_sync {
 
@@ -25,9 +26,11 @@ bool ShouldSyncSessionTab(const SessionTab& tab) {
     return false;
   bool found_valid_url = false;
   for (size_t i = 0; i < tab.navigations.size(); ++i) {
-    if (tab.navigations.at(i).virtual_url().is_valid() &&
-        !tab.navigations.at(i).virtual_url().SchemeIs("chrome") &&
-        !tab.navigations.at(i).virtual_url().SchemeIsFile()) {
+    const GURL& virtual_url = tab.navigations.at(i).virtual_url();
+    if (virtual_url.is_valid() &&
+        !virtual_url.SchemeIs(chrome::kChromeUIScheme) &&
+        !virtual_url.SchemeIs(chrome::kChromeNativeScheme) &&
+        !virtual_url.SchemeIsFile()) {
       found_valid_url = true;
       break;
     }
