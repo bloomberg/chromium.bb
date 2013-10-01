@@ -136,8 +136,9 @@ class SimpleRootWindowTransformer : public RootWindowTransformer {
 // TODO(sky): nuke; used for debugging 275760.
 class MouseMovedTracker : public WindowObserver {
  public:
-  explicit MouseMovedTracker(Window* window)
-      : window_(window) {
+  MouseMovedTracker(MouseMovedHandlerSetReason reason, Window* window)
+      : reason_(reason),
+        window_(window) {
     window_->AddObserver(this);
   }
 
@@ -146,11 +147,14 @@ class MouseMovedTracker : public WindowObserver {
   }
 
   virtual void OnWindowDestroyed(Window* window) OVERRIDE {
+    const MouseMovedHandlerSetReason reason = reason_;
+    base::debug::Alias(&reason);
     CHECK(false);
   }
 
 
  private:
+  const MouseMovedHandlerSetReason reason_;
   Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseMovedTracker);
@@ -688,6 +692,12 @@ void RootWindow::UpdateCapture(Window* old_capture,
     gesture_recognizer_->CleanupStateForConsumer(old_capture);
   }
 
+  // |mouse_moved_handler_| may have been set to a Window in a different root
+  // (see below). Clear it here to ensure we don't end up referencing a stale
+  // Window.
+  if (mouse_moved_handler_ && !Contains(mouse_moved_handler_))
+    SetMouseMovedHandler(NULL, MOUSE_MOVED_HANDLER_SET_REASON_NULL);
+
   if (old_capture && old_capture->GetRootWindow() == this &&
       old_capture->delegate()) {
     // Send a capture changed event with bogus location data.
@@ -697,14 +707,6 @@ void RootWindow::UpdateCapture(Window* old_capture,
     ProcessEvent(old_capture, &event);
 
     old_capture->delegate()->OnCaptureLost();
-  }
-
-  // Reset the mouse_moved_handler_ if the mouse_moved_handler_ belongs
-  // to another root window when losing the capture.
-  if (mouse_moved_handler_ && old_capture &&
-      old_capture->Contains(mouse_moved_handler_) &&
-      old_capture->GetRootWindow() != this) {
-    SetMouseMovedHandler(NULL, MOUSE_MOVED_HANDLER_SET_REASON_NULL);
   }
 
   if (new_capture) {
@@ -739,7 +741,7 @@ void RootWindow::SetMouseMovedHandler(Window* window,
   mouse_moved_handler_ = window;
   mouse_moved_handler_set_reason_ = reason;
   if (window)
-    mouse_moved_handler_tracker_.reset(new MouseMovedTracker(window));
+    mouse_moved_handler_tracker_.reset(new MouseMovedTracker(reason, window));
   else
     mouse_moved_handler_tracker_.reset();
 }

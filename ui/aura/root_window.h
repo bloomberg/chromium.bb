@@ -53,6 +53,22 @@ class RootWindowObserver;
 class RootWindowTransformer;
 class TestScreen;
 
+// TODO(sky): nuke; used for debugging 275760.
+// Used for debugging.
+enum MouseMovedHandlerSetReason {
+  // |mouse_moved_handler_| set during capture.
+  MOUSE_MOVED_HANDLER_SET_REASON_CAPTURE = 1,
+
+  // |mouse_moved_handler_| set from a mouse event.
+  MOUSE_MOVED_HANDLER_SET_REASON_MOUSE_MOVED = 2,
+
+  // |mouse_moved_handler_| set from a synthesized mouse event.
+  MOUSE_MOVED_HANDLER_SET_REASON_MOUSE_MOVED_SYNTHESIZED = 3,
+
+  // |mouse_moved_handler_| set to NULL.
+  MOUSE_MOVED_HANDLER_SET_REASON_NULL = 4,
+};
+
 // RootWindow is responsible for hosting a set of windows.
 class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
                                public ui::CompositorObserver,
@@ -300,22 +316,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
     WINDOW_HIDDEN,     // Window is hidden.
     WINDOW_MOVING,     // Window is temporarily marked as hidden due to move
                        // across root windows.
-  };
-
-  // TODO(sky): nuke; used for debugging 275760.
-  // Used for debugging.
-  enum MouseMovedHandlerSetReason {
-    // |mouse_moved_handler_| set during capture.
-    MOUSE_MOVED_HANDLER_SET_REASON_CAPTURE = 1,
-
-    // |mouse_moved_handler_| set from a mouse event.
-    MOUSE_MOVED_HANDLER_SET_REASON_MOUSE_MOVED = 2,
-
-    // |mouse_moved_handler_| set from a synthesized mouse event.
-    MOUSE_MOVED_HANDLER_SET_REASON_MOUSE_MOVED_SYNTHESIZED = 3,
-
-    // |mouse_moved_handler_| set to NULL.
-    MOUSE_MOVED_HANDLER_SET_REASON_NULL = 4,
   };
 
   // TODO(sky): nuke; used for debugging 275760.
