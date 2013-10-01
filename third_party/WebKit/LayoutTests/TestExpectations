@@ -1291,3 +1291,7 @@ crbug.com/300025 [ Win7 Debug ] virtual/implsidepainting/inspector/timeline/time
 
 # Crashing, appears to be the result of http://src.chromium.org/viewvc/blink?revision=158503
 crbug.com/301668 [ Debug ] accessibility/crash-adopt-node-from-new-document.html [ Crash ]
+
+# This test is flaky on all platforms, and has image failures most of the time on
+# WebKit Win7 (dbg)
+crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ ImageOnlyFailure Pass ]
