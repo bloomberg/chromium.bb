@@ -633,6 +633,9 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertRaises(chromedriver.NoSuchSession,
                       self._driver.GetCurrentUrl)
 
+  def testDoesntHangOnDebugger(self):
+    self._driver.ExecuteScript('debugger;')
+
 
 class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes chromeOptions.args capabilities.

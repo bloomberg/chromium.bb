@@ -19,6 +19,7 @@ class ListValue;
 class Value;
 }
 
+class DebuggerTracker;
 class DevToolsClient;
 class DomTracker;
 class FrameTracker;
@@ -104,6 +105,7 @@ class WebViewImpl : public WebView {
   scoped_ptr<JavaScriptDialogManager> dialog_manager_;
   scoped_ptr<GeolocationOverrideManager> geolocation_override_manager_;
   scoped_ptr<HeapSnapshotTaker> heap_snapshot_taker_;
+  scoped_ptr<DebuggerTracker> debugger_;
   scoped_ptr<DevToolsClient> client_;
 };
 

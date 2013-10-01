@@ -13,6 +13,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/debugger_tracker.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/dom_tracker.h"
 #include "chrome/test/chromedriver/chrome/frame_tracker.h"
@@ -122,6 +123,7 @@ WebViewImpl::WebViewImpl(const std::string& id,
       geolocation_override_manager_(
           new GeolocationOverrideManager(client.get())),
       heap_snapshot_taker_(new HeapSnapshotTaker(client.get())),
+      debugger_(new DebuggerTracker(client.get())),
       client_(client.release()) {}
 
 WebViewImpl::~WebViewImpl() {}

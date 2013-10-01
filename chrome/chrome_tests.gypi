@@ -529,6 +529,8 @@
         'test/chromedriver/chrome/chrome_impl.h',
         'test/chromedriver/chrome/console_logger.cc',
         'test/chromedriver/chrome/console_logger.h',
+        'test/chromedriver/chrome/debugger_tracker.cc',
+        'test/chromedriver/chrome/debugger_tracker.h',
         'test/chromedriver/chrome/device_manager.cc',
         'test/chromedriver/chrome/device_manager.h',
         'test/chromedriver/chrome/devtools_client.h',
