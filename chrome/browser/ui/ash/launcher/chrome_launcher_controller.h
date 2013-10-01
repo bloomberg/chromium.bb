@@ -119,12 +119,17 @@ class ChromeLauncherController : public ash::LauncherDelegate,
     virtual ~AppTabHelper() {}
 
     // Returns the app id of the specified tab, or an empty string if there is
-    // no app.
+    // no app. All known profiles will be queried for this.
     virtual std::string GetAppID(content::WebContents* tab) = 0;
 
-    // Returns true if |id| is valid. Used during restore to ignore no longer
-    // valid extensions.
-    virtual bool IsValidID(const std::string& id) = 0;
+    // Returns true if |id| is valid for the currently active profile.
+    // Used during restore to ignore no longer valid extensions.
+    // Note that already running applications are ignored by the restore
+    // process.
+    virtual bool IsValidIDForCurrentUser(const std::string& id) = 0;
+
+    // Sets the currently active profile for the usage of |GetAppID|.
+    virtual void SetCurrentUser(Profile* profile) = 0;
   };
 
   ChromeLauncherController(Profile* profile, ash::LauncherModel* model);
@@ -211,9 +216,6 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   // Returns the launch type of app for the specified id.
   extensions::ExtensionPrefs::LaunchType GetLaunchType(ash::LauncherID id);
-
-  // Returns the id of the app for the specified tab.
-  std::string GetAppID(content::WebContents* tab);
 
   // Set the image for a specific launcher item (e.g. when set by the app).
   void SetLauncherItemImage(ash::LauncherID launcher_id,

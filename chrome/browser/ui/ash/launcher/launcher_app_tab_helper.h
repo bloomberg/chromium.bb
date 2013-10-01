@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_APP_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_APP_TAB_HELPER_H_
 
-#include <map>
 #include <string>
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -21,7 +20,8 @@ class LauncherAppTabHelper : public ChromeLauncherController::AppTabHelper {
 
   // AppTabHelper:
   virtual std::string GetAppID(content::WebContents* tab) OVERRIDE;
-  virtual bool IsValidID(const std::string& id) OVERRIDE;
+  virtual bool IsValidIDForCurrentUser(const std::string& id) OVERRIDE;
+  virtual void SetCurrentUser(Profile* profile) OVERRIDE;
 
  private:
   Profile* profile_;

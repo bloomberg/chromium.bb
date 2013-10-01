@@ -617,10 +617,6 @@ extensions::ExtensionPrefs::LaunchType
       extensions::ExtensionPrefs::LAUNCH_DEFAULT);
 }
 
-std::string ChromeLauncherController::GetAppID(content::WebContents* tab) {
-  return app_tab_helper_->GetAppID(tab);
-}
-
 ash::LauncherID ChromeLauncherController::GetLauncherIDForAppID(
     const std::string& app_id) {
   for (IDToItemControllerMap::const_iterator i =
@@ -851,7 +847,7 @@ void ChromeLauncherController::RemoveTabFromRunningApp(
 
 void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
                                               AppState app_state) {
-  std::string app_id = GetAppID(contents);
+  std::string app_id = app_tab_helper_->GetAppID(contents);
 
   // Check if the gMail app is loaded and it matches the given content.
   // This special treatment is needed to address crbug.com/234268.
@@ -1746,7 +1742,7 @@ ChromeLauncherController::GetListOfPinnedAppsAndBrowser() {
   // Adding the app list item to the list of items requires that the ID is not
   // a valid and known ID for the extension system. The ID was constructed that
   // way - but just to make sure...
-  DCHECK(!app_tab_helper_->IsValidID(kAppLauncherIdPlaceholder));
+  DCHECK(!app_tab_helper_->IsValidIDForCurrentUser(kAppLauncherIdPlaceholder));
 
   std::vector<std::string> pinned_apps;
 
@@ -1787,7 +1783,10 @@ ChromeLauncherController::GetListOfPinnedAppsAndBrowser() {
       } else if (app_id == kAppLauncherIdPlaceholder) {
         app_list_icon_added = true;
         pinned_apps.push_back(kAppLauncherIdPlaceholder);
-      } else if (app_tab_helper_->IsValidID(app_id)) {
+      } else if (app_tab_helper_->IsValidIDForCurrentUser(app_id)) {
+        // Note: In multi profile scenarios we only want to show pinnable apps
+        // here which is correct. Running applications from the other users will
+        // continue to run. So no need for multi profile modifications.
         pinned_apps.push_back(app_id);
       }
     }
@@ -1855,11 +1854,12 @@ void ChromeLauncherController::RegisterLauncherItemDelegate() {
 
 void ChromeLauncherController::AttachProfile(Profile* profile) {
   profile_ = profile;
-  // TODO(skuhne): The LauncherAppTabHelper cannot be multi user aware since
-  // that would break the UpdateAppLaunchersFromPref function. However - in
-  // other places it might be good to have it multi profile aware. Also: if
-  // running it needs to be recognized.
-  app_tab_helper_.reset(new LauncherAppTabHelper(profile_));
+  // Either add the profile to the list of known profiles and make it the active
+  // one for some functions of AppTabHelper or create a new one.
+  if (!app_tab_helper_.get())
+    app_tab_helper_.reset(new LauncherAppTabHelper(profile_));
+  else
+    app_tab_helper_->SetCurrentUser(profile_);
   // TODO(skuhne): The AppIconLoaderImpl has the same problem. Each loaded
   // image is associated with a profile (it's loader requires the profile).
   // Since icon size changes are possible, the icon could be requested to be

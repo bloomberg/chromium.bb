@@ -160,13 +160,17 @@ class TestAppTabHelperImpl : public ChromeLauncherController::AppTabHelper {
         std::string();
   }
 
-  virtual bool IsValidID(const std::string& id) OVERRIDE {
+  virtual bool IsValidIDForCurrentUser(const std::string& id) OVERRIDE {
     for (TabToStringMap::const_iterator i = tab_id_map_.begin();
          i != tab_id_map_.end(); ++i) {
       if (i->second == id)
         return true;
     }
     return false;
+  }
+
+  virtual void SetCurrentUser(Profile* profile) OVERRIDE {
+    // We can ignore this for now.
   }
 
  private:
