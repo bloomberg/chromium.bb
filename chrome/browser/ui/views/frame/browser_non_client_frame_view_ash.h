@@ -70,7 +70,7 @@ class BrowserNonClientFrameViewAsh
                            ImmersiveFullscreen);
 
   // Distance between top of window and client area.
-  int NonClientTopBorderHeight(bool force_restored) const;
+  int NonClientTopBorderHeight() const;
 
   // Returns true if we should use a short header, such as for popup windows.
   bool UseShortHeader() const;

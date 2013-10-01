@@ -4,37 +4,19 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
-#include "base/memory/scoped_ptr.h"
-
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/autocomplete/autocomplete_classifier.h"
-#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
-#include "chrome/browser/predictors/predictor_database.h"
-#include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
+#include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/scoped_testing_local_state.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_io_thread_state.h"
-#include "content/public/test/test_utils.h"
 #include "grit/theme_resources.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/single_split_view.h"
 #include "ui/views/controls/webview/webview.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
-#endif
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/frame/browser_frame_win.h"
@@ -53,107 +35,15 @@ gfx::Point ExpectedTabStripOrigin(BrowserView* browser_view) {
   return tabstrip_origin;
 }
 
-// Caller owns the returned service.
-BrowserContextKeyedService* CreateTemplateURLService(
-    content::BrowserContext* profile) {
-  return new TemplateURLService(static_cast<Profile*>(profile));
-}
-
-BrowserContextKeyedService* CreateAutocompleteClassifier(
-    content::BrowserContext* profile) {
-  return new AutocompleteClassifier(static_cast<Profile*>(profile));
-}
-
 }  // namespace
 
-class BrowserViewTest : public BrowserWithTestWindowTest {
- public:
-  BrowserViewTest();
-  virtual ~BrowserViewTest() {}
-
-  // BrowserWithTestWindowTest overrides:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
-  virtual TestingProfile* CreateProfile() OVERRIDE;
-  virtual BrowserWindow* CreateBrowserWindow() OVERRIDE;
-
-  void Init();
-  BrowserView* browser_view() { return browser_view_; }
-
- private:
-  BrowserView* browser_view_;  // Not owned.
-  scoped_ptr<ScopedTestingLocalState> local_state_;
-  scoped_ptr<predictors::PredictorDatabase> predictor_db_;
-  scoped_ptr<chrome::TestingIOThreadState> testing_io_thread_state_;
-  DISALLOW_COPY_AND_ASSIGN(BrowserViewTest);
-};
-
-BrowserViewTest::BrowserViewTest()
-    : browser_view_(NULL) {
-}
-
-void BrowserViewTest::SetUp() {
-  Init();
-  // Memory ownership is tricky here. BrowserView has taken ownership of
-  // |browser|, so BrowserWithTestWindowTest cannot continue to own it.
-  ASSERT_TRUE(release_browser());
-}
-
-void BrowserViewTest::TearDown() {
-  // Clean up any tabs we opened, otherwise Browser crashes in destruction.
-  browser_view_->browser()->tab_strip_model()->CloseAllTabs();
-  // Ensure the Browser is reset before BrowserWithTestWindowTest cleans up
-  // the Profile.
-  browser_view_->GetWidget()->CloseNow();
-  browser_view_ = NULL;
-  content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
-  BrowserWithTestWindowTest::TearDown();
-  testing_io_thread_state_.reset();
-  predictor_db_.reset();
-#if defined(OS_CHROMEOS)
-  chromeos::input_method::Shutdown();
-#endif
-  local_state_.reset(NULL);
-}
-
-TestingProfile* BrowserViewTest::CreateProfile() {
-  TestingProfile* profile = BrowserWithTestWindowTest::CreateProfile();
-  // TemplateURLService is normally NULL during testing. Instant extended
-  // needs this service so set a custom factory function.
-  TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
-      profile, &CreateTemplateURLService);
-  // TODO(jamescook): Eliminate this by introducing a mock toolbar or mock
-  // location bar.
-  AutocompleteClassifierFactory::GetInstance()->SetTestingFactory(
-      profile, &CreateAutocompleteClassifier);
-  return profile;
-}
-
-BrowserWindow* BrowserViewTest::CreateBrowserWindow() {
-  // Allow BrowserWithTestWindowTest to use Browser to create the default
-  // BrowserView and BrowserFrame.
-  return NULL;
-}
-
-void BrowserViewTest::Init() {
-  local_state_.reset(
-      new ScopedTestingLocalState(TestingBrowserProcess::GetGlobal()));
-#if defined(OS_CHROMEOS)
-  chromeos::input_method::InitializeForTesting(
-      new chromeos::input_method::MockInputMethodManager);
-#endif
-  testing_io_thread_state_.reset(new chrome::TestingIOThreadState());
-  BrowserWithTestWindowTest::SetUp();
-  predictor_db_.reset(new predictors::PredictorDatabase(GetProfile()));
-  browser_view_ = static_cast<BrowserView*>(browser()->window());
-}
+typedef TestWithBrowserView BrowserViewTest;
 
 // Test basic construction and initialization.
 TEST_F(BrowserViewTest, BrowserView) {
   // The window is owned by the native widget, not the test class.
   EXPECT_FALSE(window());
-  // |browser_view_| owns the Browser, not the test class.
-  EXPECT_FALSE(browser());
+
   EXPECT_TRUE(browser_view()->browser());
 
   // Test initial state.
@@ -277,7 +167,7 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
 // BrowserWithTestWindowTest::CreateBrowserWindow function override and add the
 // switcher button to the view. We also provide an incognito profile to ensure
 // that the switcher button is visible.
-class BrowserViewIncognitoSwitcherTest : public BrowserViewTest {
+class BrowserViewIncognitoSwitcherTest : public TestWithBrowserView {
  public:
   // Subclass of BrowserView, which overrides the GetRestoreBounds/IsMaximized
   // functions to return dummy values. This is needed because we create the
@@ -301,14 +191,11 @@ class BrowserViewIncognitoSwitcherTest : public BrowserViewTest {
       : browser_view_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
-    Init();
+    TestWithBrowserView::SetUp();
     browser_view_->Init(browser());
     (new BrowserFrame(browser_view_))->InitBrowserFrame();
     browser_view_->SetBounds(gfx::Rect(10, 10, 500, 500));
     browser_view_->Show();
-    // Memory ownership is tricky here. BrowserView has taken ownership of
-    // |browser|, so BrowserWithTestWindowTest cannot continue to own it.
-    ASSERT_TRUE(release_browser());
   }
 
   virtual void TearDown() OVERRIDE {

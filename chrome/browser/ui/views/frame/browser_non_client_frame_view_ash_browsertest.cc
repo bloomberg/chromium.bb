@@ -111,8 +111,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
   EXPECT_FALSE(browser_view->immersive_mode_controller()->IsEnabled());
   EXPECT_FALSE(frame_view->ShouldPaint());
 
-  // Frame abuts top of window.
-  EXPECT_EQ(0, frame_view->NonClientTopBorderHeight(false));
+  // The client view abuts top of the window.
+  EXPECT_EQ(0, frame_view->NonClientTopBorderHeight());
 
   // The frame should be painted again when fullscreen is exited and the caption
   // buttons should be visible.
@@ -168,9 +168,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   immersive_mode_controller->SetMouseHoveredForTest(false);
   EXPECT_FALSE(immersive_mode_controller->IsRevealed());
   EXPECT_FALSE(frame_view->ShouldPaint());
-
-  // Frame abuts top of window.
-  EXPECT_EQ(0, frame_view->NonClientTopBorderHeight(false));
 
   // Repeat test but with the tab light bar visible when the top-of-window views
   // are not revealed.

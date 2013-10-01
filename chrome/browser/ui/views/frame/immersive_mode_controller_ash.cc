@@ -365,8 +365,8 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
     delegate_->SetImmersiveStyle(false);
     SetRenderWindowTopInsetsForTouch(0);
 
-    // Relayout the root view because disabling immersive fullscreen may have
-    // changed the result of NonClientFrameView::GetBoundsForClientView().
+    // Layout the root view so that incognito avatar icon, if any, gets laid
+    // out.
     LayoutBrowserRootView();
   }
 }

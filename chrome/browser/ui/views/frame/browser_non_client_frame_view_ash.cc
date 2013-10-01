@@ -137,7 +137,25 @@ BrowserNonClientFrameViewAsh::GetTabStripInsets(bool force_restored) const {
       kTabstripRightSpacingAlternateCaptionButtonStyle :
       kTabstripRightSpacing;
   int right = frame_painter_->GetRightInset() + extra_right;
-  return TabStripInsets(NonClientTopBorderHeight(force_restored), left, right);
+
+  int top = NonClientTopBorderHeight();
+  if (force_restored)
+    top = kTabstripTopSpacingTall;
+
+  if (browser_view()->IsTabStripVisible() &&
+      !UseImmersiveLightbarHeaderStyle() &&
+      !force_restored) {
+    if (UseShortHeader()) {
+      if (ash::switches::UseAlternateFrameCaptionButtonStyle())
+        top += kTabstripTopSpacingShortAlternateCaptionButtonStyle;
+      else
+        top += kTabstripTopSpacingShort;
+    } else {
+      top += kTabstripTopSpacingTall;
+    }
+  }
+
+  return TabStripInsets(top, left, right);
 }
 
 int BrowserNonClientFrameViewAsh::GetThemeBackgroundXInset() const {
@@ -153,13 +171,13 @@ void BrowserNonClientFrameViewAsh::UpdateThrobber(bool running) {
 // views::NonClientFrameView overrides:
 
 gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForClientView() const {
-  int top_height = NonClientTopBorderHeight(false);
+  int top_height = NonClientTopBorderHeight();
   return frame_painter_->GetBoundsForClientView(top_height, bounds());
 }
 
 gfx::Rect BrowserNonClientFrameViewAsh::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
-  int top_height = NonClientTopBorderHeight(false);
+  int top_height = NonClientTopBorderHeight();
   return frame_painter_->GetWindowBoundsForClientBounds(top_height,
                                                         client_bounds);
 }
@@ -350,21 +368,10 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewAsh, private:
 
-int BrowserNonClientFrameViewAsh::NonClientTopBorderHeight(
-    bool force_restored) const {
-  if (force_restored)
-    return kTabstripTopSpacingTall;
-  if (!ShouldPaint() || UseImmersiveLightbarHeaderStyle())
+int BrowserNonClientFrameViewAsh::NonClientTopBorderHeight() const {
+  if (!ShouldPaint() || browser_view()->IsTabStripVisible())
     return 0;
-  // Windows with tab strips need a smaller non-client area.
-  if (browser_view()->IsTabStripVisible()) {
-    if (UseShortHeader()) {
-      if (ash::switches::UseAlternateFrameCaptionButtonStyle())
-        return kTabstripTopSpacingShortAlternateCaptionButtonStyle;
-      return kTabstripTopSpacingShort;
-    }
-    return kTabstripTopSpacingTall;
-  }
+
   // For windows without a tab strip (popups, etc.) ensure we have enough space
   // to see the window caption buttons.
   return caption_button_container_->bounds().bottom() - kContentShadowHeight;
@@ -395,7 +402,7 @@ bool BrowserNonClientFrameViewAsh::UseImmersiveLightbarHeaderStyle() const {
       browser_view()->immersive_mode_controller();
   return immersive_controller->IsEnabled() &&
       !immersive_controller->IsRevealed() &&
-      !immersive_controller->ShouldHideTabIndicators();
+      browser_view()->IsTabStripVisible();
 }
 
 void BrowserNonClientFrameViewAsh::LayoutAvatar() {
@@ -406,7 +413,7 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
       browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
   int avatar_restored_y = avatar_bottom - incognito_icon.height();
   int avatar_y = (frame()->IsMaximized() || frame()->IsFullscreen()) ?
-      NonClientTopBorderHeight(false) + kContentShadowHeight :
+      GetTabStripInsets(false).top + kContentShadowHeight :
       avatar_restored_y;
 
   // Hide the incognito icon in immersive fullscreen when the tab light bar is
@@ -427,16 +434,12 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
   if (!frame()->IsFullscreen())
     return true;
 
-  // There is nothing to paint for traditional (tab) fullscreen.
-  ImmersiveModeController* immersive_controller =
-      browser_view()->immersive_mode_controller();
-  if (!immersive_controller->IsEnabled())
-    return false;
-
-  // Need to paint during an immersive fullscreen reveal or when the immersive
-  // light bar is visible.
-  return immersive_controller->IsRevealed() ||
-      !immersive_controller->ShouldHideTabIndicators();
+  // We need to paint when in immersive fullscreen and either:
+  // - The top-of-window views are revealed.
+  // - The lightbar style tabstrip is visible.
+  // Because immersive fullscreen is only supported for tabbed browser windows,
+  // checking whether the tab strip is visible is sufficient.
+  return browser_view()->IsTabStripVisible();
 }
 
 void BrowserNonClientFrameViewAsh::PaintImmersiveLightbarStyleHeader(
