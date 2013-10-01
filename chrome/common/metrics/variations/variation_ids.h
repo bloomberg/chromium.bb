@@ -240,6 +240,8 @@ enum ReservedVariationID {
   ANDROID_NATIVE_NTP_CONTROL_1 = 3311922,
   ANDROID_NATIVE_NTP_TWO_URL_BARS = 3311923,
   ANDROID_NATIVE_NTP_ONE_URL_BAR = 3311924,
+  ANDROID_TABLET_NATIVE_NTP_CONTROL = 3311925,
+  ANDROID_TABLET_NATIVE_NTP_ONE_URL_BAR = 3311926,
 
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
