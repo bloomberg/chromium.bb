@@ -145,6 +145,8 @@
         'browser/chromeos/attestation/attestation_ca_client.h',
         'browser/chromeos/attestation/attestation_policy_observer.cc',
         'browser/chromeos/attestation/attestation_policy_observer.h',
+        'browser/chromeos/attestation/platform_verification_dialog.cc',
+        'browser/chromeos/attestation/platform_verification_dialog.h',
         'browser/chromeos/attestation/platform_verification_flow.cc',
         'browser/chromeos/attestation/platform_verification_flow.h',
         'browser/chromeos/audio/audio_devices_pref_handler_impl.cc',

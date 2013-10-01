@@ -447,6 +447,11 @@ const char kDoNotTrackLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_do_not_track";
 #endif
 
+#if defined(OS_CHROMEOS)
+const char kAttestationForContentProtectionLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=tpm";
+#endif
+
 const char kChromiumProjectURL[] = "http://www.chromium.org/";
 
 const char kLearnMoreReportingURL[] =

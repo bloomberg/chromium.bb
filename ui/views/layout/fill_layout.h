@@ -26,6 +26,7 @@ class VIEWS_EXPORT FillLayout : public LayoutManager {
   // Overridden from LayoutManager:
   virtual void Layout(View* host) OVERRIDE;
   virtual gfx::Size GetPreferredSize(View* host) OVERRIDE;
+  virtual int GetPreferredHeightForWidth(View* host, int width) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FillLayout);

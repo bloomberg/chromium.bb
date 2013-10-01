@@ -1,0 +1,120 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/chromeos/attestation/platform_verification_dialog.h"
+
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/common/url_constants.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
+#include "grit/generated_resources.h"
+#include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/views/border.h"
+#include "ui/views/controls/styled_label.h"
+#include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/layout_constants.h"
+#include "ui/views/widget/widget.h"
+
+namespace chromeos {
+namespace attestation {
+
+namespace {
+
+const int kDialogMaxWidthInPixel = 400;
+
+}  // namespace
+
+// static
+void PlatformVerificationDialog::ShowDialog(
+    content::WebContents* web_contents,
+    const PlatformVerificationFlow::Delegate::ConsentCallback& callback) {
+  PlatformVerificationDialog* dialog = new PlatformVerificationDialog(
+      chrome::FindBrowserWithWebContents(web_contents), callback);
+
+  // Sets up the dialog widget and shows it.
+  web_modal::WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
+  web_modal::WebContentsModalDialogManagerDelegate* modal_delegate =
+      web_contents_modal_dialog_manager->delegate();
+  views::Widget* widget = views::Widget::CreateWindowAsFramelessChild(
+      dialog, web_contents->GetView()->GetNativeView(),
+      modal_delegate->GetWebContentsModalDialogHost()->GetHostView());
+  web_contents_modal_dialog_manager->ShowDialog(widget->GetNativeView());
+  web_contents_modal_dialog_manager->SetCloseOnInterstitialWebUI(
+      widget->GetNativeView(), true);
+  widget->Show();
+}
+
+PlatformVerificationDialog::~PlatformVerificationDialog() {
+}
+
+PlatformVerificationDialog::PlatformVerificationDialog(
+    Browser* browser,
+    const PlatformVerificationFlow::Delegate::ConsentCallback& callback)
+    : callback_(callback),
+      browser_(browser) {
+  SetLayoutManager(new views::FillLayout());
+  set_border(views::Border::CreateEmptyBorder(
+      0, views::kButtonHEdgeMarginNew, 0, views::kButtonHEdgeMarginNew));
+  const base::string16 learn_more = l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+  size_t offset = 0;
+  base::string16 headline = l10n_util::GetStringFUTF16(
+      IDS_PLATFORM_VERIFICATION_DIALOG_HEADLINE, learn_more, &offset);
+  views::StyledLabel* headline_label = new views::StyledLabel(headline, this);
+  headline_label->AddStyleRange(
+      gfx::Range(offset, offset + learn_more.size()),
+      views::StyledLabel::RangeStyleInfo::CreateForLink());
+  AddChildView(headline_label);
+}
+
+bool PlatformVerificationDialog::Cancel() {
+  callback_.Run(PlatformVerificationFlow::CONSENT_RESPONSE_DENY);
+  return true;
+}
+
+bool PlatformVerificationDialog::Accept() {
+  callback_.Run(PlatformVerificationFlow::CONSENT_RESPONSE_ALLOW);
+  return true;
+}
+
+base::string16 PlatformVerificationDialog::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  int message_id = -1;
+  switch (button) {
+    case ui::DIALOG_BUTTON_OK:
+      message_id = IDS_PLATFORM_VERIFICATION_DIALOG_ALLOW;
+      break;
+    case ui::DIALOG_BUTTON_CANCEL:
+      message_id = IDS_PLATFORM_VERIFICATION_DIALOG_DENY;
+      break;
+    default:
+      NOTREACHED();
+      return base::string16();
+  }
+  return l10n_util::GetStringUTF16(message_id);
+}
+
+ui::ModalType PlatformVerificationDialog::GetModalType() const {
+  return ui::MODAL_TYPE_CHILD;
+}
+
+gfx::Size PlatformVerificationDialog::GetPreferredSize() {
+  return gfx::Size(kDialogMaxWidthInPixel,
+                   GetHeightForWidth(kDialogMaxWidthInPixel));
+}
+
+void PlatformVerificationDialog::StyledLabelLinkClicked(const gfx::Range& range,
+                                                        int event_flags) {
+  chrome::ShowSingletonTab(browser_, GURL(
+      chrome::kAttestationForContentProtectionLearnMoreURL));
+}
+
+}  // namespace attestation
+}  // namespace chromeos

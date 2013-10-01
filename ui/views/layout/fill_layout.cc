@@ -27,4 +27,11 @@ gfx::Size FillLayout::GetPreferredSize(View* host) {
   return rect.size();
 }
 
+int FillLayout::GetPreferredHeightForWidth(View* host, int width) {
+  DCHECK_EQ(1, host->child_count());
+  const gfx::Insets insets = host->GetInsets();
+  return host->child_at(0)->GetHeightForWidth(width - insets.width()) +
+      insets.height();
+}
+
 }  // namespace views

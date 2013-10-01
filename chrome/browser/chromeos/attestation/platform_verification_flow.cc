@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chrome/browser/chromeos/attestation/attestation_signed_data.pb.h"
+#include "chrome/browser/chromeos/attestation/platform_verification_dialog.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
@@ -21,6 +22,7 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -69,7 +71,7 @@ class DefaultDelegate : public PlatformVerificationFlow::Delegate {
       LOG(WARNING) << "PlatformVerificationFlow: Automatic approval enabled.";
       callback.Run(PlatformVerificationFlow::CONSENT_RESPONSE_ALLOW);
     } else {
-      NOTIMPLEMENTED();
+      PlatformVerificationDialog::ShowDialog(web_contents, callback);
     }
   }
 
@@ -224,8 +226,13 @@ void PlatformVerificationFlow::OnConsentResponse(
     }
     if (consent_response == CONSENT_RESPONSE_DENY) {
       LOG(INFO) << "PlatformVerificationFlow: User rejected request.";
+      content::RecordAction(
+          content::UserMetricsAction("PlatformVerificationRejected"));
       ReportError(callback, USER_REJECTED);
       return;
+    } else if (consent_response == CONSENT_RESPONSE_ALLOW) {
+      content::RecordAction(
+          content::UserMetricsAction("PlatformVerificationAccepted"));
     }
   }
 
