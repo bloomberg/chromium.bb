@@ -64,7 +64,7 @@
         '<(DEPTH)/base/base.gyp:test_support_base',
       ],
       'sources': [
-        'tests/RunAllTests.cpp',
+        'testing/RunAllTests.cpp',
       ]
     }
   ]
