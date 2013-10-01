@@ -3400,13 +3400,12 @@ void GLES2Implementation::GenMailboxCHROMIUM(
       << static_cast<const void*>(mailbox) << ")");
   TRACE_EVENT0("gpu", "GLES2::GenMailboxCHROMIUM");
 
-  helper_->GenMailboxCHROMIUM(kResultBucketId);
-
-  std::vector<GLbyte> result;
-  GetBucketContents(kResultBucketId, &result);
-
-  std::copy(result.begin(), result.end(), mailbox);
-  CheckGLError();
+  std::vector<gpu::Mailbox> names;
+  if (!gpu_control_->GenerateMailboxNames(1, &names)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glGenMailboxCHROMIUM", "Generate failed.");
+    return;
+  }
+  memcpy(mailbox, names[0].name, GL_MAILBOX_SIZE_CHROMIUM);
 }
 
 void GLES2Implementation::PushGroupMarkerEXT(

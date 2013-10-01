@@ -5,6 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_GPU_CONTROL_H_
 #define GPU_COMMAND_BUFFER_COMMON_GPU_CONTROL_H_
 
+#include <vector>
+
+#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/types.h"
 #include "gpu/gpu_export.h"
 
@@ -32,6 +35,11 @@ class GPU_EXPORT GpuControl {
 
   // Destroy a gpu memory buffer. The ID must be positive.
   virtual void DestroyGpuMemoryBuffer(int32 id) = 0;
+
+  // Generates n unique mailbox names that can be used with
+  // GL_texture_mailbox_CHROMIUM.
+  virtual bool GenerateMailboxNames(unsigned num,
+                                    std::vector<gpu::Mailbox>* names) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuControl);

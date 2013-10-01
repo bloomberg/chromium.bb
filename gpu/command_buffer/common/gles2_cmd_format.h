@@ -540,6 +540,13 @@ COMPILE_ASSERT(offsetof(GetUniformLocationBucket, location_shm_id) == 12,
 COMPILE_ASSERT(offsetof(GetUniformLocationBucket, location_shm_offset) == 16,
                OffsetOf_GetUniformLocationBucket_location_shm_offset_not_16);
 
+struct GenMailboxCHROMIUM {
+  typedef GenMailboxCHROMIUM ValueType;
+  static const CommandId kCmdId = kGenMailboxCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  CommandHeader header;
+};
+
 struct InsertSyncPointCHROMIUM {
   typedef InsertSyncPointCHROMIUM ValueType;
   static const CommandId kCmdId = kInsertSyncPointCHROMIUM;

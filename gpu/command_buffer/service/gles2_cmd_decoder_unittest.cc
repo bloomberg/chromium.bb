@@ -7339,25 +7339,6 @@ TEST_F(GLES2DecoderTest, BeginEndQueryEXTGetErrorQueryCHROMIUM) {
             static_cast<GLenum>(sync->result));
 }
 
-TEST_F(GLES2DecoderTest, GenMailboxCHROMIUM) {
-  const uint32 kBucketId = 123;
-
-  GenMailboxCHROMIUM gen_mailbox_cmd;
-  gen_mailbox_cmd.Init(kBucketId);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(gen_mailbox_cmd));
-
-  CommonDecoder::Bucket* bucket = decoder_->GetBucket(kBucketId);
-  ASSERT_TRUE(bucket != NULL);
-  ASSERT_EQ(static_cast<uint32>(GL_MAILBOX_SIZE_CHROMIUM), bucket->size());
-
-  static const GLbyte zero[GL_MAILBOX_SIZE_CHROMIUM] = {
-    0
-  };
-  EXPECT_NE(0, memcmp(zero,
-                      bucket->GetData(0, GL_MAILBOX_SIZE_CHROMIUM),
-                      sizeof(zero)));
-}
-
 TEST_F(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
   GLbyte mailbox[GL_MAILBOX_SIZE_CHROMIUM];
   group().mailbox_manager()->GenerateMailboxName(

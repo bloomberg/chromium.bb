@@ -94,6 +94,8 @@ class MockClientGpuControl : public GpuControl {
                                      unsigned internalformat,
                                      int32* id));
   MOCK_METHOD1(DestroyGpuMemoryBuffer, void(int32 id));
+  MOCK_METHOD2(GenerateMailboxNames, bool(unsigned num,
+                                          std::vector<gpu::Mailbox>* names));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientGpuControl);

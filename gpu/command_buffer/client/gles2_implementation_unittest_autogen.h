@@ -1735,6 +1735,7 @@ TEST_F(GLES2ImplementationTest, VertexAttribDivisorANGLE) {
   gl_->VertexAttribDivisorANGLE(1, 2);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+// TODO: Implement unit test for GenMailboxCHROMIUM
 
 TEST_F(GLES2ImplementationTest, ProduceTextureCHROMIUM) {
   GLbyte data[64] = {0};

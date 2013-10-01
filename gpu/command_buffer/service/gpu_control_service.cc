@@ -6,14 +6,17 @@
 
 #include "gpu/command_buffer/client/gpu_memory_buffer_factory.h"
 #include "gpu/command_buffer/service/gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
 
 namespace gpu {
 
 GpuControlService::GpuControlService(
     GpuMemoryBufferManagerInterface* gpu_memory_buffer_manager,
-    GpuMemoryBufferFactory* gpu_memory_buffer_factory)
+    GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+    gles2::MailboxManager* mailbox_manager)
     : gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
-      gpu_memory_buffer_factory_(gpu_memory_buffer_factory) {
+      gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
+      mailbox_manager_(mailbox_manager) {
 }
 
 GpuControlService::~GpuControlService() {
@@ -73,6 +76,18 @@ bool GpuControlService::RegisterGpuMemoryBuffer(
                                                              width,
                                                              height,
                                                              internalformat);
+}
+
+bool GpuControlService::GenerateMailboxNames(
+    unsigned num, std::vector<gpu::Mailbox>* names) {
+  DCHECK(names->empty());
+  names->resize(num);
+  for (unsigned i = 0; i < num; ++i) {
+    gles2::MailboxName name;
+    mailbox_manager_->GenerateMailboxName(&name);
+    (*names)[i].SetName(name.key);
+  }
+  return true;
 }
 
 }  // namespace gpu

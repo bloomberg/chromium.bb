@@ -133,7 +133,8 @@ void GLManager::Initialize(const GLManager::Options& options) {
 
   gpu_control_.reset(
       new GpuControlService(decoder_->GetContextGroup()->image_manager(),
-                            options.gpu_memory_buffer_factory));
+                            options.gpu_memory_buffer_factory,
+                            decoder_->GetContextGroup()->mailbox_manager()));
 
   gpu_scheduler_.reset(new GpuScheduler(command_buffer_.get(),
                                         decoder_.get(),

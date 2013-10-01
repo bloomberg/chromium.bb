@@ -1911,14 +1911,6 @@
     }
   }
 
-  void GenMailboxCHROMIUM(GLuint bucket_id) {
-    gles2::cmds::GenMailboxCHROMIUM* c =
-        GetCmdSpace<gles2::cmds::GenMailboxCHROMIUM>();
-    if (c) {
-      c->Init(bucket_id);
-    }
-  }
-
   void ProduceTextureCHROMIUM(
       GLenum target, uint32 mailbox_shm_id, uint32 mailbox_shm_offset) {
     gles2::cmds::ProduceTextureCHROMIUM* c =

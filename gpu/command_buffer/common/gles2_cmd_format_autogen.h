@@ -10145,42 +10145,6 @@ COMPILE_ASSERT(offsetof(VertexAttribDivisorANGLE, index) == 4,
 COMPILE_ASSERT(offsetof(VertexAttribDivisorANGLE, divisor) == 8,
                OffsetOf_VertexAttribDivisorANGLE_divisor_not_8);
 
-struct GenMailboxCHROMIUM {
-  typedef GenMailboxCHROMIUM ValueType;
-  static const CommandId kCmdId = kGenMailboxCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  typedef SizedResult<GLint> Result;
-
-  static uint32 ComputeSize() {
-    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(GLuint _bucket_id) {
-    SetHeader();
-    bucket_id = _bucket_id;
-  }
-
-  void* Set(void* cmd, GLuint _bucket_id) {
-    static_cast<ValueType*>(cmd)->Init(_bucket_id);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32 bucket_id;
-};
-
-COMPILE_ASSERT(sizeof(GenMailboxCHROMIUM) == 8,
-               Sizeof_GenMailboxCHROMIUM_is_not_8);
-COMPILE_ASSERT(offsetof(GenMailboxCHROMIUM, header) == 0,
-               OffsetOf_GenMailboxCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(GenMailboxCHROMIUM, bucket_id) == 4,
-               OffsetOf_GenMailboxCHROMIUM_bucket_id_not_4);
-
 struct ProduceTextureCHROMIUM {
   typedef ProduceTextureCHROMIUM ValueType;
   static const CommandId kCmdId = kProduceTextureCHROMIUM;

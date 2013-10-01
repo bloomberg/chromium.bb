@@ -117,6 +117,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
       unsigned internalformat,
       int32* id) OVERRIDE;
   virtual void DestroyGpuMemoryBuffer(int32 id) OVERRIDE;
+  virtual bool GenerateMailboxNames(unsigned num,
+                                    std::vector<gpu::Mailbox>* names) OVERRIDE;
 
   // The serializer interface to the GPU service (i.e. thread).
   class SchedulerClient {

@@ -406,7 +406,8 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
 
   gpu_control_.reset(
       new GpuControlService(decoder_->GetContextGroup()->image_manager(),
-                            g_gpu_memory_buffer_factory));
+                            g_gpu_memory_buffer_factory,
+                            decoder_->GetContextGroup()->mailbox_manager()));
   supports_gpu_memory_buffer_ = gpu_control_->SupportsGpuMemoryBuffer();
 
   decoder_->set_engine(gpu_scheduler_.get());
@@ -673,6 +674,13 @@ void InProcessCommandBuffer::DestroyGpuMemoryBuffer(int32 id) {
                                   id);
 
   QueueTask(task);
+}
+
+bool InProcessCommandBuffer::GenerateMailboxNames(
+    unsigned num, std::vector<gpu::Mailbox>* names) {
+  CheckSequencedThread();
+  base::AutoLock lock(command_buffer_lock_);
+  return gpu_control_->GenerateMailboxNames(num, names);
 }
 
 gpu::error::Error InProcessCommandBuffer::GetLastError() {

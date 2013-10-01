@@ -55,6 +55,8 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy
       unsigned internalformat,
       int32* id) OVERRIDE;
   virtual void DestroyGpuMemoryBuffer(int32 id) OVERRIDE;
+  virtual bool GenerateMailboxNames(unsigned num,
+                                    std::vector<gpu::Mailbox>* names) OVERRIDE;
 
  private:
   bool Send(IPC::Message* msg);
