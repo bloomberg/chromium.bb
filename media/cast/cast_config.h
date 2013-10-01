@@ -176,7 +176,6 @@ class PacketSender {
  public:
   // All packets to be sent to the network will be delivered via this function.
   virtual bool SendPacket(const uint8* packet, int length) = 0;
-  virtual bool SendPacket(const std::vector<uint8>& packet);
 
   virtual ~PacketSender() {}
 };
@@ -188,11 +187,7 @@ class PacketReceiver : public base::RefCountedThreadSafe<PacketReceiver> {
   virtual void ReceivedPacket(const uint8* packet, int length,
                               const base::Closure callback) = 0;
 
- protected:
   virtual ~PacketReceiver() {}
-
- private:
-  friend class base::RefCountedThreadSafe<PacketReceiver>;
 };
 
 class VideoEncoderController {

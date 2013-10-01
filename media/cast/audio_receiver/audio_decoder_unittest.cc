@@ -19,7 +19,7 @@ class AudioDecoderTest : public ::testing::Test {
  protected:
   AudioDecoderTest() {}
 
-  virtual ~AudioDecoderTest() {}
+  ~AudioDecoderTest() {}
 
   virtual void SetUp() {
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);

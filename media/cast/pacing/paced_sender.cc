@@ -42,7 +42,7 @@ bool PacedSender::SendPacket(const std::vector<uint8>& packet,
     return true;
   }
   ++packets_sent_in_burst_;
-  return transport_->SendPacket(packet);
+  return transport_->SendPacket(&(packet[0]), packet.size());
 }
 
 bool PacedSender::ResendPacket(const std::vector<uint8>& packet,
@@ -60,12 +60,12 @@ bool PacedSender::ResendPacket(const std::vector<uint8>& packet,
     return true;
   }
   ++packets_sent_in_burst_;
-  return transport_->SendPacket(packet);
+  return transport_->SendPacket(&(packet[0]), packet.size());
 }
 
 bool PacedSender::SendRtcpPacket(const std::vector<uint8>& packet) {
   // We pass the RTCP packets straight through.
-  return transport_->SendPacket(packet);
+  return transport_->SendPacket(&(packet[0]), packet.size());
 }
 
 void PacedSender::ScheduleNextSend() {
@@ -95,11 +95,11 @@ void PacedSender::SendStoredPacket() {
   if (!resend_packet_list_.empty()) {
     // Send our re-send packets first.
     const std::vector<uint8>& packet = resend_packet_list_.front();
-    transport_->SendPacket(packet);
+    transport_->SendPacket(&(packet[0]), packet.size());
     resend_packet_list_.pop_front();
   } else {
     const std::vector<uint8>& packet = packet_list_.front();
-    transport_->SendPacket(packet);
+    transport_->SendPacket(&(packet[0]), packet.size());
     packet_list_.pop_front();
 
     if (packet_list_.empty()) {

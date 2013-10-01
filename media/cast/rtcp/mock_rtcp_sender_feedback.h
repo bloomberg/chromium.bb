@@ -15,9 +15,6 @@ namespace cast {
 
 class MockRtcpSenderFeedback : public RtcpSenderFeedback {
  public:
-  MockRtcpSenderFeedback();
-  virtual ~MockRtcpSenderFeedback();
-
   MOCK_METHOD1(OnReceivedReportBlock,
                void(const RtcpReportBlock& report_block));
 

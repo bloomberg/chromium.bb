@@ -55,12 +55,7 @@ class LocalFrameInput : public FrameInput {
             audio_frame, recorded_time, callback));
   }
 
- protected:
-  virtual ~LocalFrameInput() {}
-
  private:
-  friend class base::RefCountedThreadSafe<LocalFrameInput>;
-
   scoped_refptr<CastThread> cast_thread_;
   base::WeakPtr<AudioSender> audio_sender_;
   base::WeakPtr<VideoSender> video_sender_;
@@ -105,6 +100,8 @@ class LocalCastSenderPacketReceiver : public PacketReceiver {
        ssrc_of_audio_sender_(ssrc_of_audio_sender),
        ssrc_of_video_sender_(ssrc_of_video_sender) {}
 
+  virtual ~LocalCastSenderPacketReceiver() {}
+
   virtual void ReceivedPacket(const uint8* packet,
                               int length,
                               const base::Closure callback) OVERRIDE {
@@ -135,12 +132,7 @@ class LocalCastSenderPacketReceiver : public PacketReceiver {
     }
   }
 
- protected:
-  virtual ~LocalCastSenderPacketReceiver() {}
-
  private:
-  friend class base::RefCountedThreadSafe<LocalCastSenderPacketReceiver>;
-
   scoped_refptr<CastThread> cast_thread_;
   base::WeakPtr<AudioSender> audio_sender_;
   base::WeakPtr<VideoSender> video_sender_;
@@ -179,14 +171,6 @@ CastSenderImpl::CastSenderImpl(
           video_config.incoming_feedback_ssrc)) {}
 
 CastSenderImpl::~CastSenderImpl() {}
-
-scoped_refptr<FrameInput> CastSenderImpl::frame_input() {
-  return frame_input_;
-}
-
-scoped_refptr<PacketReceiver> CastSenderImpl::packet_receiver() {
-  return packet_receiver_;
-}
 
 }  // namespace cast
 }  // namespace media

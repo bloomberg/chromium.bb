@@ -12,6 +12,7 @@
         '<(DEPTH)/third_party/',
       ],
       'sources': [
+        'rtp_parser_config.h',
         'rtp_parser.cc',
         'rtp_parser.h',
       ], # source

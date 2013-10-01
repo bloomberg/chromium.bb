@@ -52,10 +52,10 @@ class AudioReceiverTest : public ::testing::Test {
     receiver_->set_clock(&testing_clock_);
   }
 
-  virtual ~AudioReceiverTest() {}
+  ~AudioReceiverTest() {}
 
   virtual void SetUp() {
-    payload_.assign(kPacketSize, 0);
+  payload_.assign(kPacketSize, 0);
     // Always start with a key frame.
     rtp_header_.is_key_frame = true;
     rtp_header_.frame_id = 0;

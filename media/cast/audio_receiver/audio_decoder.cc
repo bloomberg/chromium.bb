@@ -13,9 +13,9 @@ namespace cast {
 
 AudioDecoder::AudioDecoder(scoped_refptr<CastThread> cast_thread,
                            const AudioReceiverConfig& audio_config)
-    : audio_decoder_(webrtc::AudioCodingModule::Create(0)),
-      have_received_packets_(false),
-      cast_thread_(cast_thread) {
+    : cast_thread_(cast_thread),
+      have_received_packets_(false) {
+  audio_decoder_ = webrtc::AudioCodingModule::Create(0);
   audio_decoder_->InitializeReceiver();
 
   webrtc::CodecInst receive_codec;
@@ -49,6 +49,7 @@ AudioDecoder::AudioDecoder(scoped_refptr<CastThread> cast_thread,
 }
 
 AudioDecoder::~AudioDecoder() {
+  webrtc::AudioCodingModule::Destroy(audio_decoder_);
 }
 
 bool AudioDecoder::GetRawAudioFrame(int number_of_10ms_blocks,
