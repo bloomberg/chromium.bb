@@ -104,8 +104,6 @@
         'audio/audio_power_monitor.cc',
         'audio/audio_power_monitor.h',
         'audio/audio_source_diverter.h',
-        'audio/audio_util.cc',
-        'audio/audio_util.h',
         'audio/clockless_audio_sink.cc',
         'audio/clockless_audio_sink.h',
         'audio/cras/audio_manager_cras.cc',
@@ -1475,7 +1473,7 @@
             'template_deps': ['video/capture/android/imageformat_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
-        },                  
+        },
       ],
     }],
     ['media_use_ffmpeg==1', {

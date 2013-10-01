@@ -8,12 +8,12 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "media/audio/audio_output_dispatcher_impl.h"
 #include "media/audio/audio_output_proxy.h"
 #include "media/audio/audio_output_resampler.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/audio/fake_audio_output_stream.h"
 #include "media/base/media_switches.h"
@@ -421,6 +421,17 @@ std::string AudioManagerBase::GetAssociatedOutputDeviceID(
 std::string AudioManagerBase::GetDefaultOutputDeviceID() {
   NOTIMPLEMENTED();
   return "";
+}
+
+int AudioManagerBase::GetUserBufferSize() {
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  int buffer_size = 0;
+  std::string buffer_size_str(cmd_line->GetSwitchValueASCII(
+      switches::kAudioBufferSize));
+  if (base::StringToInt(buffer_size_str, &buffer_size) && buffer_size > 0)
+    return buffer_size;
+
+  return 0;
 }
 
 }  // namespace media

@@ -10,7 +10,6 @@
 #include "media/audio/android/opensles_output.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_parameters.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/base/channel_layout.h"
 

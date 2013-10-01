@@ -13,7 +13,6 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "media/audio/audio_parameters.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/mac/audio_auhal_mac.h"
 #include "media/audio/mac/audio_input_mac.h"
 #include "media/audio/mac/audio_low_latency_input_mac.h"
@@ -35,23 +34,6 @@ static const int kDefaultLowLatencyBufferSize = 128;
 
 // Default sample-rate on most Apple hardware.
 static const int kFallbackSampleRate = 44100;
-
-static int ChooseBufferSize(int output_sample_rate) {
-  int buffer_size = kDefaultLowLatencyBufferSize;
-  const int user_buffer_size = GetUserBufferSize();
-  if (user_buffer_size) {
-    buffer_size = user_buffer_size;
-  } else if (output_sample_rate > 48000) {
-    // The default buffer size is too small for higher sample rates and may lead
-    // to glitching.  Adjust upwards by multiples of the default size.
-    if (output_sample_rate <= 96000)
-      buffer_size = 2 * kDefaultLowLatencyBufferSize;
-    else if (output_sample_rate <= 192000)
-      buffer_size = 4 * kDefaultLowLatencyBufferSize;
-  }
-
-  return buffer_size;
-}
 
 static bool HasAudioHardware(AudioObjectPropertySelector selector) {
   AudioDeviceID output_device_id = kAudioObjectUnknown;
@@ -720,6 +702,23 @@ void AudioManagerMac::HandleDeviceChanges() {
   current_sample_rate_ = new_sample_rate;
   current_output_device_ = new_output_device;
   NotifyAllOutputDeviceChangeListeners();
+}
+
+int AudioManagerMac::ChooseBufferSize(int output_sample_rate) {
+  int buffer_size = kDefaultLowLatencyBufferSize;
+  const int user_buffer_size = GetUserBufferSize();
+  if (user_buffer_size) {
+    buffer_size = user_buffer_size;
+  } else if (output_sample_rate > 48000) {
+    // The default buffer size is too small for higher sample rates and may lead
+    // to glitching.  Adjust upwards by multiples of the default size.
+    if (output_sample_rate <= 96000)
+      buffer_size = 2 * kDefaultLowLatencyBufferSize;
+    else if (output_sample_rate <= 192000)
+      buffer_size = 4 * kDefaultLowLatencyBufferSize;
+  }
+
+  return buffer_size;
 }
 
 AudioManager* CreateAudioManager() {

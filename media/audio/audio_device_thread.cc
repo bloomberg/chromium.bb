@@ -12,7 +12,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "media/audio/audio_util.h"
 #include "media/base/audio_bus.h"
 
 using base::PlatformThread;

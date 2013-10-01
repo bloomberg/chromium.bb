@@ -11,7 +11,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/shared_memory_util.h"
 #include "media/base/scoped_histogram_timer.h"
 

@@ -11,7 +11,6 @@
 #include "base/stl_util.h"
 #include "media/audio/audio_output_dispatcher.h"
 #include "media/audio/audio_parameters.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/pulse/pulse_output.h"
 #include "media/audio/pulse/pulse_stubs.h"
 #include "media/base/channel_layout.h"

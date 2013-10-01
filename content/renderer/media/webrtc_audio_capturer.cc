@@ -12,7 +12,6 @@
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/sample_rates.h"
 
 namespace content {

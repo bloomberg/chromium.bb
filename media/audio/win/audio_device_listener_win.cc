@@ -11,7 +11,6 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/windows_version.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/win/core_audio_util_win.h"
 
 using base::win::ScopedCoMem;

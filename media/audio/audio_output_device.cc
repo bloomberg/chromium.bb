@@ -10,7 +10,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "media/audio/audio_output_controller.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/shared_memory_util.h"
 #include "media/base/limits.h"
 

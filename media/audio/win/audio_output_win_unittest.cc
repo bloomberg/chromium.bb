@@ -14,7 +14,6 @@
 #include "base/win/windows_version.h"
 #include "media/base/limits.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/simple_sources.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -539,28 +538,22 @@ TEST(WinAudioTest, PCMWaveStreamPendingBytes) {
   EXPECT_CALL(source, OnMoreData(NotNull(),
                                  Field(&AudioBuffersState::pending_bytes, 0)))
       .WillOnce(Invoke(MockAudioSource::ClearData));
-  switch (NumberOfWaveOutBuffers()) {
-    case 2:
-      break;  // Calls are the same as at end of 3-buffer scheme.
-    case 3:
-      EXPECT_CALL(source, OnMoreData(NotNull(),
-                                     Field(&AudioBuffersState::pending_bytes,
-                                           bytes_100_ms)))
-          .WillOnce(Invoke(MockAudioSource::ClearData));
-      EXPECT_CALL(source, OnMoreData(NotNull(),
-                                     Field(&AudioBuffersState::pending_bytes,
-                                           2 * bytes_100_ms)))
-          .WillOnce(Invoke(MockAudioSource::ClearData));
-      EXPECT_CALL(source, OnMoreData(NotNull(),
-                                     Field(&AudioBuffersState::pending_bytes,
-                                           2 * bytes_100_ms)))
-          .Times(AnyNumber())
-          .WillRepeatedly(Return(0));
-      break;
-    default:
-      ASSERT_TRUE(false)
-          << "Unexpected number of buffers: " << NumberOfWaveOutBuffers();
-  }
+
+  // Note: If AudioManagerWin::NumberOfWaveOutBuffers() ever changes, or if this
+  // test is run on Vista, these expectations will fail.
+  EXPECT_CALL(source, OnMoreData(NotNull(),
+                                 Field(&AudioBuffersState::pending_bytes,
+                                       bytes_100_ms)))
+      .WillOnce(Invoke(MockAudioSource::ClearData));
+  EXPECT_CALL(source, OnMoreData(NotNull(),
+                                 Field(&AudioBuffersState::pending_bytes,
+                                       2 * bytes_100_ms)))
+      .WillOnce(Invoke(MockAudioSource::ClearData));
+  EXPECT_CALL(source, OnMoreData(NotNull(),
+                                 Field(&AudioBuffersState::pending_bytes,
+                                       2 * bytes_100_ms)))
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(0));
   EXPECT_CALL(source, OnMoreData(NotNull(),
                                  Field(&AudioBuffersState::pending_bytes,
                                        bytes_100_ms)))

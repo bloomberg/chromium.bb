@@ -12,7 +12,6 @@
 #include "base/time/time.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_output_proxy.h"
-#include "media/audio/audio_util.h"
 
 namespace media {
 

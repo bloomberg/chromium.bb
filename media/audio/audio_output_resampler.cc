@@ -14,7 +14,6 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_output_dispatcher_impl.h"
 #include "media/audio/audio_output_proxy.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/sample_rates.h"
 #include "media/base/audio_converter.h"
 #include "media/base/limits.h"
@@ -132,10 +131,8 @@ static AudioParameters SetupFallbackParams(
   // mode.  |kMinLowLatencyFrameSize| is arbitrarily based on Pepper Flash's
   // MAXIMUM frame size for low latency.
   static const int kMinLowLatencyFrameSize = 2048;
-  int frames_per_buffer = std::min(
-      std::max(input_params.frames_per_buffer(), kMinLowLatencyFrameSize),
-      static_cast<int>(
-          GetHighLatencyOutputBufferSize(input_params.sample_rate())));
+  const int frames_per_buffer =
+      std::max(input_params.frames_per_buffer(), kMinLowLatencyFrameSize);
 
   return AudioParameters(
       AudioParameters::AUDIO_PCM_LINEAR, input_params.channel_layout(),

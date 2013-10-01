@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
-#include "media/audio/audio_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)

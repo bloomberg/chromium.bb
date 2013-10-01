@@ -14,7 +14,6 @@
 #include "base/stl_util.h"
 #include "media/audio/audio_output_dispatcher.h"
 #include "media/audio/audio_parameters.h"
-#include "media/audio/audio_util.h"
 #if defined(USE_CRAS)
 #include "media/audio/cras/audio_manager_cras.h"
 #endif

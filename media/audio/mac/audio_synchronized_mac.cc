@@ -11,7 +11,6 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/mac/audio_manager_mac.h"
 #include "media/base/channel_mixer.h"
 

@@ -10,7 +10,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "media/audio/audio_util.h"
 
 namespace media {
 

@@ -20,8 +20,8 @@
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/win/windows_version.h"
 #include "media/audio/audio_parameters.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/win/audio_device_listener_win.h"
 #include "media/audio/win/audio_low_latency_input_win.h"
 #include "media/audio/win/audio_low_latency_output_win.h"
@@ -107,6 +107,24 @@ static string16 GetDeviceAndDriverInfo(HDEVINFO device_info,
                                 &old_device_install_params);
 
   return device_and_driver_info;
+}
+
+static int NumberOfWaveOutBuffers() {
+  // Use the user provided buffer count if provided.
+  int buffers = 0;
+  std::string buffers_str(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kWaveOutBuffers));
+  if (base::StringToInt(buffers_str, &buffers) && buffers > 0) {
+    return buffers;
+  }
+
+  // Use 4 buffers for Vista, 3 for everyone else:
+  //  - The entire Windows audio stack was rewritten for Windows Vista and wave
+  //    out performance was degraded compared to XP.
+  //  - The regression was fixed in Windows 7 and most configurations will work
+  //    with 2, but some (e.g., some Sound Blasters) still need 3.
+  //  - Some XP configurations (even multi-processor ones) also need 3.
+  return (base::win::GetVersion() == base::win::VERSION_VISTA) ? 4 : 3;
 }
 
 AudioManagerWin::AudioManagerWin() {

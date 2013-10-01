@@ -80,6 +80,8 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   void CreateDeviceListener();
   void DestroyDeviceListener();
 
+  int ChooseBufferSize(int output_sample_rate);
+
   scoped_ptr<AudioDeviceListenerMac> output_device_listener_;
 
   // Track the output sample-rate and the default output device

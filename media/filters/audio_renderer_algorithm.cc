@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "media/audio/audio_util.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
 #include "media/filters/wsola_internals.h"

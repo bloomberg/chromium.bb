@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/device_enumeration_win.h"
 
