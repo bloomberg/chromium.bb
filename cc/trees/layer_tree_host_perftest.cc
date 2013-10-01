@@ -285,7 +285,8 @@ class PageScaleImplSidePaintingPerfTest : public ImplSidePaintingPerfTest {
   base::TimeTicks start_time_;
 };
 
-TEST_F(PageScaleImplSidePaintingPerfTest, HeavyPage) {
+// TODO(enne): Make this less noisy.  See http://crbug.com/301964
+TEST_F(PageScaleImplSidePaintingPerfTest, DISABLED_HeavyPage) {
   measure_commit_cost_ = true;
   SetTestName("heavy_page_page_scale");
   ReadTestFile("heavy_layer_tree");
