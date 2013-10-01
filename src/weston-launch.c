@@ -577,7 +577,8 @@ launch_compositor(struct weston_launch *wl, int argc, char *argv[])
 	if (wl->new_user)
 		setup_session(wl);
 
-	drop_privileges(wl);
+	if (geteuid() == 0)
+		drop_privileges(wl);
 
 	setenv_fd("WESTON_TTY_FD", wl->tty);
 	setenv_fd("WESTON_LAUNCHER_SOCK", wl->sock[1]);
