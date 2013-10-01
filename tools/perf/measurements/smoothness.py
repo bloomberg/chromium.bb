@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 import logging
 
-from metrics import loading
 from metrics import smoothness
 from metrics.gpu_rendering_stats import GpuRenderingStats
 from telemetry.page import page_measurement
@@ -78,10 +77,6 @@ class Smoothness(page_measurement.PageMeasurement):
 
     if not (rendering_stats_deltas['numFramesSentToScreen'] > 0):
       raise DidNotScrollException()
-
-    loading.LoadingMetric().AddResults(tab, results)
-
-    smoothness.CalcFirstPaintTimeResults(results, tab)
 
     timeline = self._trace_result.AsTimelineModel()
     smoothness_marker = self.FindTimelineMarker(timeline,

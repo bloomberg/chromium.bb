@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import os
+import math
 
 from telemetry.core import util
 from metrics import discrepancy
@@ -116,6 +117,24 @@ def Median(values):
     median = 0.5 * (sorted_values[n/2] + sorted_values[n/2 - 1])
   return median
 
+def Percentile(values, percentile):
+  ''' Computed using linear interpolation between closest ranks. '''
+  if not values:
+    return 0.0
+  sorted_values = sorted(values)
+  n = len(values)
+  percentile /= 100.0
+  if percentile <= 0.5 / n:
+    return sorted_values[0]
+  elif percentile >= (n - 0.5) / n:
+    return sorted_values[-1]
+  else:
+    floor_index = int(math.floor(n * percentile -  0.5))
+    floor_value = sorted_values[floor_index]
+    ceil_value = sorted_values[floor_index+1]
+    alpha = n * percentile - 0.5 - floor_index
+    return floor_value + alpha * (ceil_value - floor_value)
+
 def CalcFirstPaintTimeResults(results, tab):
   if tab.browser.is_content_shell:
     results.Add('first_paint', 'ms', 'unsupported')
@@ -145,85 +164,14 @@ def CalcResults(benchmark_stats, results):
 
   # Scroll Results
   results.Add('frame_times', 'ms', frame_times)
+  # Arithmetic mean of frame times.
   results.Add('mean_frame_time', 'ms',
               Average(s.total_time, s.screen_frame_count, 1000, 3))
-  # Absolute discrepancy of frame time stamps (experimental)
-  results.Add('experimental_jank', '',
+  # Absolute discrepancy of frame time stamps.
+  results.Add('jank', '',
               round(discrepancy.FrameDiscrepancy(s.screen_frame_timestamps,
                                                  True), 4))
-  # Generalized mean frame time with exponent=2 (experimental)
-  results.Add('experimental_mean_frame_time', '',
-              round(GeneralizedMean(frame_times, 2.0), 2))
-  # Median frame time (experimental)
-  results.Add('experimental_median_frame_time', '',
-              round(Median(frame_times), 2))
-
-  results.Add('dropped_percent', '%',
-              Average(s.dropped_frame_count,
-                      s.screen_frame_count + s.dropped_frame_count, 100, 1),
-              data_type='unimportant')
-  results.Add('percent_impl_scrolled', '%',
-              Average(s.impl_thread_scroll_count,
-                      s.impl_thread_scroll_count +
-                      s.main_thread_scroll_count,
-                      100, 1),
-              data_type='unimportant')
-  results.Add('average_num_layers_drawn', '',
-              Average(s.drawn_layer_count, s.screen_frame_count, 1, 1),
-              data_type='unimportant')
-  results.Add('average_num_missing_tiles', '',
-              Average(s.missing_tile_count, s.screen_frame_count, 1, 1),
-              data_type='unimportant')
-
-  # Texture Upload Results
-  results.Add('average_commit_time', 'ms',
-              Average(s.commit_time, s.commit_count, 1000, 3),
-              data_type='unimportant')
-  results.Add('texture_upload_count', 'count',
-              Total(s.texture_upload_count))
-  results.Add('total_texture_upload_time', 'seconds',
-              Total(s.texture_upload_time))
-
-  # Image Decoding Results
-  results.Add('total_deferred_image_decode_count', 'count',
-              Total(s.deferred_image_decode_count),
-              data_type='unimportant')
-  results.Add('total_image_cache_hit_count', 'count',
-              Total(s.deferred_image_cache_hit_count),
-              data_type='unimportant')
-  results.Add('average_image_gathering_time', 'ms',
-              Average(s.image_gathering_time, s.image_gathering_count,
-                      1000, 3),
-              data_type='unimportant')
-  results.Add('total_deferred_image_decoding_time', 'seconds',
-              Total(s.deferred_image_decode_time),
-              data_type='unimportant')
-
-  # Tile Analysis Results
-  results.Add('total_tiles_analyzed', 'count',
-              Total(s.tile_analysis_count),
-              data_type='unimportant')
-  results.Add('solid_color_tiles_analyzed', 'count',
-              Total(s.solid_color_tile_analysis_count),
-              data_type='unimportant')
-  results.Add('average_tile_analysis_time', 'ms',
-              Average(s.tile_analysis_time, s.tile_analysis_count,
-                      1000, 3),
-              data_type='unimportant')
-
-  # Latency Results
-  results.Add('average_latency', 'ms',
-              Average(s.input_event_latency, s.input_event_count,
-                      1000, 3),
-              data_type='unimportant')
-  results.Add('average_touch_ui_latency', 'ms',
-              Average(s.touch_ui_latency, s.touch_ui_count, 1000, 3),
-              data_type='unimportant')
-  results.Add('average_touch_acked_latency', 'ms',
-              Average(s.touch_acked_latency, s.touch_acked_count,
-                      1000, 3),
-              data_type='unimportant')
-  results.Add('average_scroll_update_latency', 'ms',
-              Average(s.scroll_update_latency, s.scroll_update_count,
-                      1000, 3),
-              data_type='unimportant')
+  # Are we hitting 60 fps for 95 percent of all frames?
+  # We use 17ms as a slightly looser threshold, instead of 1000.0/60.0.
+  results.Add('mostly_smooth', '',
+              Percentile(frame_times, 95.0) < 17.0)
