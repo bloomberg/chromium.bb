@@ -111,7 +111,7 @@ class CertVerifyProcTest : public testing::Test {
   scoped_refptr<CertVerifyProc> verify_proc_;
 };
 
-TEST_F(CertVerifyProcTest, WithoutRevocationChecking) {
+TEST_F(CertVerifyProcTest, DISABLED_WithoutRevocationChecking) {
   // Check that verification without revocation checking works.
   CertificateList certs = CreateCertificateListFromFile(
       GetTestCertsDirectory(),
@@ -1051,7 +1051,7 @@ static const uint8 kCRLSetGoogleSerialBlocked[] = {
 
 // Test that CRLSets are effective in making a certificate appear to be
 // revoked.
-TEST_F(CertVerifyProcTest, CRLSet) {
+TEST_F(CertVerifyProcTest, DISABLED_CRLSet) {
   CertificateList certs = CreateCertificateListFromFile(
       GetTestCertsDirectory(),
       "googlenew.chain.pem",
