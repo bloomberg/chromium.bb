@@ -35,7 +35,7 @@ bool Vp8Decoder::Decode(const EncodedVideoFrame& input_image,
   vpx_image_t* img;
   if (vpx_codec_decode(decoder_.get(),
                        input_image.data.data(),
-                       input_image.data.size(),
+                       static_cast<unsigned int>(input_image.data.size()),
                        0,
                        1 /* real time*/)) {
     return false;

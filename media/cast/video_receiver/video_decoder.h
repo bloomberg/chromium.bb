@@ -21,8 +21,6 @@ class VideoDecoder : public base::RefCountedThreadSafe<VideoDecoder>{
  public:
   VideoDecoder(scoped_refptr<CastThread> cast_thread,
                const VideoReceiverConfig& video_config);
-  ~VideoDecoder();
-
 
   // Decode a video frame. Decoded (raw) frame will be returned in the
   // frame_decoded_callback.
@@ -31,7 +29,12 @@ class VideoDecoder : public base::RefCountedThreadSafe<VideoDecoder>{
                         const VideoFrameDecodedCallback& frame_decoded_callback,
                         base::Closure frame_release_callback);
 
+ protected:
+  virtual ~VideoDecoder();
+
  private:
+  friend class base::RefCountedThreadSafe<VideoDecoder>;
+
   void DecodeFrame(const EncodedVideoFrame* encoded_frame,
                    const base::TimeTicks render_time,
                    const VideoFrameDecodedCallback& frame_decoded_callback);

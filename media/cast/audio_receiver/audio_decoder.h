@@ -25,8 +25,6 @@ class AudioDecoder : public base::RefCountedThreadSafe<AudioDecoder> {
   explicit AudioDecoder(scoped_refptr<CastThread> cast_thread,
                         const AudioReceiverConfig& audio_config);
 
-  virtual ~AudioDecoder();
-
   // Extract a raw audio frame from the decoder.
   // Set the number of desired 10ms blocks and frequency.
   bool GetRawAudioFrame(int number_of_10ms_blocks,
@@ -39,9 +37,13 @@ class AudioDecoder : public base::RefCountedThreadSafe<AudioDecoder> {
                                int payload_size,
                                const RtpCastHeader& rtp_header);
 
+ protected:
+  virtual ~AudioDecoder();
+
  private:
-  // Can't use scoped_ptr due to protected constructor within webrtc.
-  webrtc::AudioCodingModule* audio_decoder_;
+  friend class base::RefCountedThreadSafe<AudioDecoder>;
+
+  scoped_ptr<webrtc::AudioCodingModule> audio_decoder_;
   bool have_received_packets_;
   scoped_refptr<CastThread> cast_thread_;
 

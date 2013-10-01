@@ -12,9 +12,9 @@ class FrameBufferTest : public ::testing::Test {
  protected:
   FrameBufferTest() {}
 
-  ~FrameBufferTest() {}
+  virtual ~FrameBufferTest() {}
 
-  void SetUp() {
+  virtual void SetUp() {
     payload_.assign(kIpPacketSize, 0);
 
     // Build a default one packet frame - populate webrtc header.

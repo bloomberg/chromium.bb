@@ -27,8 +27,6 @@ class VideoEncoder : public VideoEncoderController,
                const VideoSenderConfig& video_config,
                uint8 max_unacked_frames);
 
-  virtual ~VideoEncoder();
-
   // Called from the main cast thread. This function post the encode task to the
   // video encoder thread;
   // The video_frame must be valid until the closure callback is called.
@@ -42,6 +40,8 @@ class VideoEncoder : public VideoEncoderController,
                         const base::Closure frame_release_callback);
 
  protected:
+  virtual ~VideoEncoder();
+
   struct CodecDynamicConfig {
     bool key_frame_requested;
     uint8 latest_frame_id_to_reference;
@@ -64,6 +64,8 @@ class VideoEncoder : public VideoEncoderController,
   virtual int NumberOfSkippedFrames() const OVERRIDE;
 
  private:
+  friend class base::RefCountedThreadSafe<VideoEncoder>;
+
   const VideoSenderConfig video_config_;
   scoped_refptr<CastThread> cast_thread_;
   scoped_ptr<Vp8Encoder> vp8_encoder_;

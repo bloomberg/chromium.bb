@@ -102,9 +102,9 @@ class RtpPacketizerTest : public ::testing::Test {
         new RtpPacketizer(transport_.get(), &packet_storage_, config_));
   }
 
-  ~RtpPacketizerTest() {}
+  virtual ~RtpPacketizerTest() {}
 
-  void SetUp() {
+  virtual void SetUp() {
     video_frame_.key_frame = false;
     video_frame_.frame_id = kFrameId;
     video_frame_.last_referenced_frame_id = kFrameId - 1;

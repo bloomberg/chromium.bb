@@ -21,7 +21,7 @@
         'cast_audio_receiver',
         'cast_video_receiver',
         'framer/framer.gyp:cast_framer',
-        'pacing/paced_sender.gyp:paced_sender',
+        'pacing/paced_sender.gyp:cast_paced_sender',
       ],
     },
   ],
