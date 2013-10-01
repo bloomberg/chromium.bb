@@ -102,12 +102,10 @@ void ImplicitAnimation::getAnimatedStyle(RefPtr<RenderStyle>& animatedStyle)
     CSSPropertyAnimation::blendProperties(this, m_animatingProperty, animatedStyle.get(), m_fromStyle.get(), m_toStyle.get(), progress(1, 0, 0));
 }
 
-bool ImplicitAnimation::startAnimation(double timeOffset)
+void ImplicitAnimation::startAnimation(double timeOffset)
 {
     if (m_object && m_object->isComposited())
-        return toRenderBoxModelObject(m_object)->startTransition(timeOffset, m_animatingProperty, m_fromStyle.get(), m_toStyle.get());
-
-    return false;
+        m_isAccelerated = toRenderBoxModelObject(m_object)->startTransition(timeOffset, m_animatingProperty, m_fromStyle.get(), m_toStyle.get());
 }
 
 void ImplicitAnimation::pauseAnimation(double timeOffset)
@@ -115,7 +113,7 @@ void ImplicitAnimation::pauseAnimation(double timeOffset)
     if (!m_object)
         return;
 
-    if (m_object->isComposited())
+    if (m_object && m_object->isComposited() && isAccelerated())
         toRenderBoxModelObject(m_object)->transitionPaused(timeOffset, m_animatingProperty);
 
     // Restore the original (unanimated) style
@@ -125,8 +123,9 @@ void ImplicitAnimation::pauseAnimation(double timeOffset)
 
 void ImplicitAnimation::endAnimation()
 {
-    if (m_object && m_object->isComposited())
+    if (m_object && m_object->isComposited() && isAccelerated())
         toRenderBoxModelObject(m_object)->transitionFinished(m_animatingProperty);
+    m_isAccelerated = false;
 }
 
 void ImplicitAnimation::onAnimationEnd(double elapsedTime)

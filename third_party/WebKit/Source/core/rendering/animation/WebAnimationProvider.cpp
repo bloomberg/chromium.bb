@@ -58,8 +58,10 @@ AnimatedPropertyID cssToGraphicsLayerProperty(CSSPropertyID cssProperty)
     case CSSPropertyOpacity:
         return AnimatedPropertyOpacity;
     case CSSPropertyBackgroundColor:
+        ASSERT_NOT_REACHED();
         return AnimatedPropertyInvalid; // Chromium compositor cannot accelerate background color yet.
     case CSSPropertyWebkitFilter:
+        ASSERT_NOT_REACHED();
         return AnimatedPropertyInvalid; // Chromium compositor cannot accelerate filter yet.
     default:
         // It's fine if we see other css properties here; they are just not accelerated.
@@ -111,8 +113,7 @@ int WebAnimationProvider::getWebAnimationId(const String& animationName) const
 int WebAnimationProvider::getWebAnimationId(CSSPropertyID property) const
 {
     AnimatedPropertyID animatedProperty = cssToGraphicsLayerProperty(property);
-    if (animatedProperty == AnimatedPropertyInvalid)
-        return 0;
+    ASSERT(animatedProperty != AnimatedPropertyInvalid);
     return getWebAnimationId(animationNameForTransition(animatedProperty));
 }
 

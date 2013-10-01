@@ -1803,15 +1803,15 @@ bool RenderLayerBacking::startAnimation(double timeOffset, const CSSAnimationDat
 void RenderLayerBacking::animationPaused(double timeOffset, const String& animationName)
 {
     int animationId = m_animationProvider->getWebAnimationId(animationName);
-    if (animationId)
-        m_graphicsLayer->pauseAnimation(animationId, timeOffset);
+    ASSERT(animationId);
+    m_graphicsLayer->pauseAnimation(animationId, timeOffset);
 }
 
 void RenderLayerBacking::animationFinished(const String& animationName)
 {
     int animationId = m_animationProvider->getWebAnimationId(animationName);
-    if (animationId)
-        m_graphicsLayer->removeAnimation(animationId);
+    ASSERT(animationId);
+    m_graphicsLayer->removeAnimation(animationId);
 }
 
 bool RenderLayerBacking::startTransition(double timeOffset, CSSPropertyID property, const RenderStyle* fromStyle, const RenderStyle* toStyle)
@@ -1855,15 +1855,15 @@ bool RenderLayerBacking::startTransition(double timeOffset, CSSPropertyID proper
 void RenderLayerBacking::transitionPaused(double timeOffset, CSSPropertyID property)
 {
     int animationId = m_animationProvider->getWebAnimationId(property);
-    if (animationId)
-        m_graphicsLayer->pauseAnimation(animationId, timeOffset);
+    ASSERT(animationId);
+    m_graphicsLayer->pauseAnimation(animationId, timeOffset);
 }
 
 void RenderLayerBacking::transitionFinished(CSSPropertyID property)
 {
     int animationId = m_animationProvider->getWebAnimationId(property);
-    if (animationId)
-        m_graphicsLayer->removeAnimation(animationId);
+    ASSERT(animationId);
+    m_graphicsLayer->removeAnimation(animationId);
 }
 
 void RenderLayerBacking::notifyAnimationStarted(const GraphicsLayer*, double time)

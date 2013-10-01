@@ -64,7 +64,7 @@ protected:
     virtual void onAnimationStart(double elapsedTime);
     virtual void onAnimationIteration(double elapsedTime);
     virtual void onAnimationEnd(double elapsedTime);
-    virtual bool startAnimation(double timeOffset);
+    virtual void startAnimation(double timeOffset);
     virtual void pauseAnimation(double timeOffset);
     virtual void endAnimation();
 

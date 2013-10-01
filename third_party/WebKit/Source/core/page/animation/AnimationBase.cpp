@@ -173,20 +173,15 @@ void AnimationBase::updateStateMachine(AnimStateInput input, double param)
 
                 // Start the animation
                 if (overridden()) {
-                    // We won't try to start accelerated animations if we are overridden and
-                    // just move on to the next state.
                     m_animState = AnimationStateStartWaitResponse;
-                    m_isAccelerated = false;
                     updateStateMachine(AnimationStateInputStartTimeSet, beginAnimationUpdateTime());
                 } else {
                     double timeOffset = 0;
                     // If the value for 'animation-delay' is negative then the animation appears to have started in the past.
                     if (m_animation->delay() < 0)
                         timeOffset = -m_animation->delay();
-                    bool started = startAnimation(timeOffset);
-
-                    m_compAnim->animationController()->addToAnimationsWaitingForStartTimeResponse(this, started);
-                    m_isAccelerated = started;
+                    startAnimation(timeOffset);
+                    m_compAnim->animationController()->addToAnimationsWaitingForStartTimeResponse(this, isAccelerated());
                 }
             } else {
                 // We're waiting for the style to be available and we got a pause. Pause and wait
@@ -310,14 +305,10 @@ void AnimationBase::updateStateMachine(AnimStateInput input, double param)
 
                     // Start the animation
                     if (overridden()) {
-                        // We won't try to start accelerated animations if we are overridden and
-                        // just move on to the next state.
                         updateStateMachine(AnimationStateInputStartTimeSet, beginAnimationUpdateTime());
-                        m_isAccelerated = true;
                     } else {
-                        bool started = startAnimation(beginAnimationUpdateTime() - m_startTime);
-                        m_compAnim->animationController()->addToAnimationsWaitingForStartTimeResponse(this, started);
-                        m_isAccelerated = started;
+                        startAnimation(beginAnimationUpdateTime() - m_startTime);
+                        m_compAnim->animationController()->addToAnimationsWaitingForStartTimeResponse(this, isAccelerated());
                     }
                 }
                 break;
@@ -564,7 +555,8 @@ void AnimationBase::freezeAtTime(double t)
     else
         m_pauseTime = m_startTime + t - m_animation->delay();
 
-    if (m_object && m_object->isComposited())
+    // It is possible that m_isAccelerated is true and m_object->isComposited() is false, because of style change.
+    if (m_object && m_object->isComposited() && isAccelerated())
         toRenderBoxModelObject(m_object)->suspendAnimations(m_pauseTime);
 }
 
