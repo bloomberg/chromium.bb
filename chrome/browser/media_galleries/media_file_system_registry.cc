@@ -458,7 +458,9 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
     extension_host = new ExtensionGalleriesHost(
         file_system_context_.get(),
         base::Bind(&MediaFileSystemRegistry::OnExtensionGalleriesHostEmpty,
-                   base::Unretained(this), profile, extension->id()));
+                   base::Unretained(this),
+                   profile,
+                   extension->id()));
     extension_hosts_map_[profile][extension->id()] = extension_host;
   }
   extension_host->ReferenceFromRVH(rvh);
@@ -469,35 +471,12 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
 
 MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
     Profile* profile) {
-  MediaGalleriesPreferences* preferences =
-      MediaGalleriesPreferencesFactory::GetForProfile(profile);
-  if (ContainsKey(extension_hosts_map_, profile))
-    return preferences;
-
-  // Create an empty entry so the initialization code below only gets called
-  // once per profile.
-  extension_hosts_map_[profile] = ExtensionHostMap();
+  // Create an empty ExtensionHostMap for this profile on first initialization.
+  if (!ContainsKey(extension_hosts_map_, profile))
+    extension_hosts_map_[profile] = ExtensionHostMap();
   media_galleries::UsageCount(media_galleries::PROFILES_WITH_USAGE);
 
-  // TODO(gbillock): Move this stanza to MediaGalleriesPreferences init code.
-  StorageMonitor* monitor = StorageMonitor::GetInstance();
-  DCHECK(monitor->IsInitialized());
-  std::vector<StorageInfo> existing_devices =
-      monitor->GetAllAvailableStorages();
-  for (size_t i = 0; i < existing_devices.size(); i++) {
-    if (!(StorageInfo::IsMediaDevice(existing_devices[i].device_id()) &&
-          StorageInfo::IsRemovableDevice(existing_devices[i].device_id())))
-      continue;
-    preferences->AddGallery(existing_devices[i].device_id(),
-                            base::FilePath(),
-                            false,
-                            existing_devices[i].storage_label(),
-                            existing_devices[i].vendor_name(),
-                            existing_devices[i].model_name(),
-                            existing_devices[i].total_size_in_bytes(),
-                            base::Time::Now());
-  }
-  return preferences;
+  return MediaGalleriesPreferencesFactory::GetForProfile(profile);
 }
 
 void MediaFileSystemRegistry::OnRemovableStorageDetached(
@@ -516,6 +495,10 @@ void MediaFileSystemRegistry::OnRemovableStorageDetached(
        profile_it != extension_hosts_map_.end();
        ++profile_it) {
     MediaGalleriesPreferences* preferences = GetPreferences(profile_it->first);
+    // If |preferences| is not yet initialized, it won't contain any galleries.
+    if (!preferences->IsInitialized())
+      continue;
+
     InvalidatedGalleriesInfo invalid_galleries_in_profile;
     invalid_galleries_in_profile.pref_ids =
         preferences->LookUpGalleriesByDeviceId(info.device_id());
@@ -621,6 +604,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemContextImpl);
 };
 
+// Constructor in 'private' section because depends on private class definition.
 MediaFileSystemRegistry::MediaFileSystemRegistry()
     : file_system_context_(new MediaFileSystemContextImpl(this)) {
   StorageMonitor::GetInstance()->AddObserver(this);

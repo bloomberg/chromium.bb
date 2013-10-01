@@ -21,8 +21,8 @@
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
+#include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 #include "chrome/common/extensions/extension.h"
@@ -93,14 +93,18 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
     interactive = params->details->interactive;
   }
 
-  StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
-      &MediaGalleriesGetMediaFileSystemsFunction::OnStorageMonitorInit,
+  Profile* profile = Profile::FromBrowserContext(
+      render_view_host()->GetProcess()->GetBrowserContext());
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile);
+  preferences->EnsureInitialized(base::Bind(
+      &MediaGalleriesGetMediaFileSystemsFunction::OnPreferencesInit,
       this,
       interactive));
   return true;
 }
 
-void MediaGalleriesGetMediaFileSystemsFunction::OnStorageMonitorInit(
+void MediaGalleriesGetMediaFileSystemsFunction::OnPreferencesInit(
     MediaGalleries::GetMediaFileSystemsInteractivity interactive) {
   switch (interactive) {
     case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_YES: {
@@ -238,8 +242,8 @@ void MediaGalleriesGetMediaFileSystemsFunction::GetMediaFileSystemsForExtension(
     cb.Run(std::vector<MediaFileSystemInfo>());
     return;
   }
-
-  DCHECK(StorageMonitor::GetInstance()->IsInitialized());
+  DCHECK(g_browser_process->media_file_system_registry()->
+             GetPreferences(profile_)->IsInitialized());
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
   registry->GetMediaFileSystemsForExtension(

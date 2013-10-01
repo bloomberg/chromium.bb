@@ -80,7 +80,7 @@ void StorageMonitor::EnsureInitialized(base::Closure callback) {
   Init();
 }
 
-bool StorageMonitor::IsInitialized() {
+bool StorageMonitor::IsInitialized() const {
   return initialized_;
 }
 

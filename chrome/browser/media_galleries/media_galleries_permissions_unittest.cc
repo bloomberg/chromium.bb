@@ -3,13 +3,17 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_prefs_unittest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
+#include "chrome/browser/media_galleries/media_galleries_test_util.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -28,7 +32,9 @@ void AddGalleryPermission(MediaGalleryPrefId gallery,
 // Test the MediaGalleries permissions functions.
 class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
  protected:
-  MediaGalleriesPermissionsTest() {}
+  MediaGalleriesPermissionsTest()
+      : file_thread_(content::BrowserThread::FILE) {
+  }
   virtual ~MediaGalleriesPermissionsTest() {}
 
   // This is the same implementation as ExtensionPrefsTest::TearDown(), except
@@ -52,9 +58,15 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
   }
 
   virtual void Initialize() OVERRIDE {
+    file_thread_.Start();
+
     ASSERT_TRUE(TestStorageMonitor::CreateAndInstall());
     profile_.reset(new TestingProfile);
     gallery_prefs_.reset(new MediaGalleriesPreferences(profile_.get()));
+    base::RunLoop loop;
+    gallery_prefs_->EnsureInitialized(loop.QuitClosure());
+    loop.Run();
+
     gallery_prefs_->SetExtensionPrefsForTesting(prefs());
 
     extension1_id_ = prefs_.AddExtensionAndReturnId("test1");
@@ -133,6 +145,10 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
   std::vector<MediaGalleryPermission> extension2_expectation_;
   std::vector<MediaGalleryPermission> extension3_expectation_;
   std::vector<MediaGalleryPermission> extension4_expectation_;
+
+  // Needed for |gallery_prefs_| to initialize correctly.
+  EnsureMediaDirectoriesExists ensure_media_directories_exists_;
+  content::TestBrowserThread file_thread_;
 
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<MediaGalleriesPreferences> gallery_prefs_;

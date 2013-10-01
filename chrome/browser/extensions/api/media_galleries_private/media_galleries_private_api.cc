@@ -63,11 +63,10 @@ bool GetGalleryFilePathAndId(const std::string& gallery_id,
   MediaGalleryPrefId pref_id;
   if (!base::StringToUint64(gallery_id, &pref_id))
     return false;
-  MediaFileSystemRegistry* registry =
-      g_browser_process->media_file_system_registry();
-   base::FilePath file_path(
-      registry->GetPreferences(profile)->LookUpGalleryPathForExtension(
-          pref_id, extension, false));
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile);
+  base::FilePath file_path(
+      preferences->LookUpGalleryPathForExtension(pref_id, extension, false));
   if (file_path.empty())
     return false;
   *gallery_pref_id = pref_id;
@@ -122,12 +121,14 @@ MediaGalleriesPrivateAPI* MediaGalleriesPrivateAPI::Get(Profile* profile) {
 
 void MediaGalleriesPrivateAPI::OnListenerAdded(
     const EventListenerInfo& details) {
-  // Start the StorageMonitor if it is not already initialized. After that,
+  // Make sure MediaGalleriesPreferences is initialized. After that,
   // try to initialize the event router for the listener.
   // This method is called synchronously with the message handler for the
   // JS invocation.
 
-  StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile_);
+  preferences->EnsureInitialized(base::Bind(
       &MediaGalleriesPrivateAPI::MaybeInitializeEventRouterAndTracker,
       weak_ptr_factory_.GetWeakPtr()));
 }
@@ -148,7 +149,8 @@ void MediaGalleriesPrivateAPI::MaybeInitializeEventRouterAndTracker() {
     return;
   media_galleries_private_event_router_.reset(
       new MediaGalleriesPrivateEventRouter(profile_));
-  DCHECK(StorageMonitor::GetInstance()->IsInitialized());
+  DCHECK(g_browser_process->media_file_system_registry()->
+             GetPreferences(profile_)->IsInitialized());
   tracker_.reset(
       new GalleryWatchStateTracker(profile_));
 }
@@ -170,17 +172,18 @@ bool MediaGalleriesPrivateAddGalleryWatchFunction::RunImpl() {
       AddGalleryWatch::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
-      &MediaGalleriesPrivateAddGalleryWatchFunction::OnStorageMonitorInit,
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile_);
+  preferences->EnsureInitialized(base::Bind(
+      &MediaGalleriesPrivateAddGalleryWatchFunction::OnPreferencesInit,
       this,
       params->gallery_id));
 
   return true;
 }
 
-void MediaGalleriesPrivateAddGalleryWatchFunction::OnStorageMonitorInit(
+void MediaGalleriesPrivateAddGalleryWatchFunction::OnPreferencesInit(
     const std::string& pref_id) {
-  DCHECK(StorageMonitor::GetInstance()->IsInitialized());
   base::FilePath gallery_file_path;
   MediaGalleryPrefId gallery_pref_id = 0;
   if (!GetGalleryFilePathAndId(pref_id, profile_, GetExtension(),
@@ -222,7 +225,8 @@ void MediaGalleriesPrivateAddGalleryWatchFunction::HandleResponse(
   result.success = success;
   SetResult(result.ToValue().release());
   if (success) {
-    DCHECK(StorageMonitor::GetInstance()->IsInitialized());
+    DCHECK(g_browser_process->media_file_system_registry()->
+               GetPreferences(profile_)->IsInitialized());
     GalleryWatchStateTracker* state_tracker =
         MediaGalleriesPrivateAPI::Get(profile_)->GetGalleryWatchStateTracker();
     state_tracker->OnGalleryWatchAdded(extension_id(), gallery_id);
@@ -250,16 +254,17 @@ bool MediaGalleriesPrivateRemoveGalleryWatchFunction::RunImpl() {
       RemoveGalleryWatch::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
-      &MediaGalleriesPrivateRemoveGalleryWatchFunction::OnStorageMonitorInit,
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile_);
+  preferences->EnsureInitialized(base::Bind(
+      &MediaGalleriesPrivateRemoveGalleryWatchFunction::OnPreferencesInit,
       this,
       params->gallery_id));
   return true;
 }
 
-void MediaGalleriesPrivateRemoveGalleryWatchFunction::OnStorageMonitorInit(
+void MediaGalleriesPrivateRemoveGalleryWatchFunction::OnPreferencesInit(
     const std::string& pref_id) {
-  DCHECK(StorageMonitor::GetInstance()->IsInitialized());
 #if defined(OS_WIN)
   base::FilePath gallery_file_path;
   MediaGalleryPrefId gallery_pref_id = 0;
@@ -297,16 +302,17 @@ bool MediaGalleriesPrivateGetAllGalleryWatchFunction::RunImpl() {
   if (!render_view_host() || !render_view_host()->GetProcess())
     return false;
 
-  StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
-      &MediaGalleriesPrivateGetAllGalleryWatchFunction::OnStorageMonitorInit,
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile_);
+  preferences->EnsureInitialized(base::Bind(
+      &MediaGalleriesPrivateGetAllGalleryWatchFunction::OnPreferencesInit,
       this));
   return true;
 }
 
-void MediaGalleriesPrivateGetAllGalleryWatchFunction::OnStorageMonitorInit() {
+void MediaGalleriesPrivateGetAllGalleryWatchFunction::OnPreferencesInit() {
   std::vector<std::string> result;
 #if defined(OS_WIN)
-  DCHECK(StorageMonitor::GetInstance()->IsInitialized());
   GalleryWatchStateTracker* state_tracker =
       MediaGalleriesPrivateAPI::Get(profile_)->GetGalleryWatchStateTracker();
   MediaGalleryPrefIdSet gallery_ids =
@@ -333,19 +339,18 @@ bool MediaGalleriesPrivateRemoveAllGalleryWatchFunction::RunImpl() {
   if (!render_view_host() || !render_view_host()->GetProcess())
     return false;
 
-  StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
-      &MediaGalleriesPrivateRemoveAllGalleryWatchFunction::OnStorageMonitorInit,
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile_);
+  preferences->EnsureInitialized(base::Bind(
+      &MediaGalleriesPrivateRemoveAllGalleryWatchFunction::OnPreferencesInit,
       this));
   return true;
 }
 
-void
-MediaGalleriesPrivateRemoveAllGalleryWatchFunction::OnStorageMonitorInit() {
+void MediaGalleriesPrivateRemoveAllGalleryWatchFunction::OnPreferencesInit() {
 #if defined(OS_WIN)
-  DCHECK(StorageMonitor::GetInstance()->IsInitialized());
-  MediaFileSystemRegistry* registry =
-      g_browser_process->media_file_system_registry();
-  MediaGalleriesPreferences* preferences = registry->GetPreferences(profile_);
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile_);
   GalleryWatchStateTracker* state_tracker =
       MediaGalleriesPrivateAPI::Get(profile_)->GetGalleryWatchStateTracker();
   state_tracker->RemoveAllGalleryWatchersForExtension(

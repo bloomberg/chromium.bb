@@ -86,7 +86,7 @@ class MediaGalleriesPrivateAddGalleryWatchFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  void OnStorageMonitorInit(const std::string& pref_id);
+  void OnPreferencesInit(const std::string& pref_id);
 
   // Gallery watch request handler.
   void HandleResponse(MediaGalleryPrefId gallery_id, bool success);
@@ -106,7 +106,7 @@ class MediaGalleriesPrivateRemoveGalleryWatchFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  void OnStorageMonitorInit(const std::string& pref_id);
+  void OnPreferencesInit(const std::string& pref_id);
 };
 
 // Implements the chrome.mediaGalleriesPrivate.getAllGalleryWatch method.
@@ -122,7 +122,7 @@ class MediaGalleriesPrivateGetAllGalleryWatchFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  void OnStorageMonitorInit();
+  void OnPreferencesInit();
 };
 
 // Implements the chrome.mediaGalleriesPrivate.removeAllGalleryWatch method.
@@ -138,7 +138,7 @@ class MediaGalleriesPrivateRemoveAllGalleryWatchFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  void OnStorageMonitorInit();
+  void OnPreferencesInit();
 };
 
 // Implements the chrome.mediaGalleriesPrivate.getHandlers method.

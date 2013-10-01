@@ -76,13 +76,9 @@ class MediaFileSystemRegistry
       const extensions::Extension* extension,
       const MediaFileSystemsCallback& callback);
 
-  // Returns the initialized media galleries preferences for the specified
-  // |profile|. This method should be used instead of calling
-  // MediaGalleriesPreferences directly because this method also ensures that
-  // currently attached removable devices are added to the preferences.
-  // Called on the UI thread.
-  // Note: Caller must ensure that the storage monitor is initialized before
-  // calling this method.
+  // Returns the media galleries preferences for the specified |profile|.
+  // Called on the UI thread. Caller is responsible for ensuring that the
+  // preferences are initialized before use.
   MediaGalleriesPreferences* GetPreferences(Profile* profile);
 
   // RemovableStorageObserver implementation.

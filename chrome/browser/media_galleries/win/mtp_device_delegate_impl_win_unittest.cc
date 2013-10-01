@@ -83,7 +83,8 @@ void MTPDeviceDelegateImplWinTest::SetUp() {
   browser_process->SetStorageMonitor(monitor.Pass());
 
   base::RunLoop runloop;
-  monitor_->EnsureInitialized(runloop.QuitClosure());
+  browser_process->media_file_system_registry()->GetPreferences(profile())->
+      EnsureInitialized(runloop.QuitClosure());
   runloop.Run();
 
   extensions::TestExtensionSystem* extension_system(

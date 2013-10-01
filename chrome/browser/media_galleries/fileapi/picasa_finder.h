@@ -17,7 +17,8 @@ typedef base::Callback<void(const std::string&)> DeviceIDCallback;
 
 // Bounces to FILE thread to find Picasa database. If the platform supports
 // Picasa and a Picasa database is found, |callback| will be invoked on the
-// calling thread. Otherwise, |callback| is not invoked.
+// calling thread with the device ID. Otherwise, |callback| will be invoked
+// with an empty string.
 void FindPicasaDatabase(const DeviceIDCallback& callback);
 
 }

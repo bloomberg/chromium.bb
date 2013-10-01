@@ -82,16 +82,14 @@ GalleryWatchStateTracker::GalleryWatchStateTracker(Profile* profile)
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
   MediaGalleriesPreferences* preferences =
-      g_browser_process->media_file_system_registry()->GetPreferences(
-          profile);
+      g_browser_process->media_file_system_registry()->GetPreferences(profile);
   preferences->AddGalleryChangeObserver(this);
 }
 
 GalleryWatchStateTracker::~GalleryWatchStateTracker() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   MediaGalleriesPreferences* preferences =
-      g_browser_process->media_file_system_registry()->GetPreferences(
-          profile_);
+      g_browser_process->media_file_system_registry()->GetPreferences(profile_);
   preferences->RemoveGalleryChangeObserver(this);
 }
 

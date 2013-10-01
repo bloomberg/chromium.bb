@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -148,6 +149,19 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   explicit MediaGalleriesPreferences(Profile* profile);
   virtual ~MediaGalleriesPreferences();
 
+  // Ensures that the preferences is initialized. The provided callback, if
+  // non-null, will be called when initialization is complete. If initialization
+  // has already completed, this callback will be invoked in the calling stack.
+  // Before the callback is run, other calls may not return the correct results.
+  // Should be invoked on the UI thread; callbacks will be run on the UI thread.
+  // This call also ensures that the StorageMonitor is initialized.
+  // Note for unit tests: This requires an active FILE thread and
+  // EnsureMediaDirectoriesExists instance to complete reliably.
+  void EnsureInitialized(base::Closure callback);
+
+  // Return true if the storage monitor has already been initialized.
+  bool IsInitialized() const;
+
   Profile* profile();
 
   void AddGalleryChangeObserver(GalleryChangeObserver* observer);
@@ -203,9 +217,7 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
                                         MediaGalleryPrefId pref_id,
                                         bool has_permission);
 
-  const MediaGalleriesPrefInfoMap& known_galleries() const {
-    return known_galleries_;
-  }
+  const MediaGalleriesPrefInfoMap& known_galleries() const;
 
   // BrowserContextKeyedService implementation:
   virtual void Shutdown() OVERRIDE;
@@ -224,6 +236,10 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   typedef std::map<std::string /*device id*/, MediaGalleryPrefIdSet>
       DeviceIdPrefIdsMap;
 
+  // These must be called on the UI thread.
+  void OnInitializationCallbackReturned();
+  void FinishInitialization();
+
   // Populates the default galleries if this is a fresh profile.
   void AddDefaultGalleriesIfFreshProfile();
 
@@ -238,14 +254,8 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   // device id.  It returns true if the device id is up to date.
   bool UpdateDeviceIDForSingletonType(const std::string& device_id);
 
-  // Try to add an entry for the iTunes 'device'.
-  void OnITunesDeviceID(const std::string& device_id);
-
-  // Try to add an entry for the iPhoto 'device'.
-  void OnIPhotoDeviceID(const std::string& device_id);
-
-  // Try to add an entry for the Picasa 'device'.
-  void OnPicasaDeviceID(const std::string& device_id);
+  // Handle an iPhoto, iTunes, or Picasa finder returning a device ID to us.
+  void OnFinderDeviceID(const std::string& device_id);
 
   // Builds |known_galleries_| from the persistent store.
   void InitFromPrefs();
@@ -292,6 +302,10 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   void SetExtensionPrefsForTesting(extensions::ExtensionPrefs* extension_prefs);
 
   base::WeakPtrFactory<MediaGalleriesPreferences> weak_factory_;
+
+  bool initialized_;
+  std::vector<base::Closure> on_initialize_callbacks_;
+  int pre_initialization_callbacks_waiting_;
 
   // The profile that owns |this|.
   Profile* profile_;

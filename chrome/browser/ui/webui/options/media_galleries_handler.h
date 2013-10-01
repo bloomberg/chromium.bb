@@ -42,12 +42,12 @@ class MediaGalleriesHandler : public OptionsPageUIHandler,
   void OnGalleriesChanged();
 
   // Bottom half of |InitializePage()| after async call to initialize
-  // StorageMonitor.
-  void InitializeOnStorageMonitorInit();
+  // MediaGalleriesPreferences.
+  void InitializeOnMediaGalleriesPreferencesInit();
 
   // Bottom half of |RegisterMessages()| after async call to initialize
-  // StorageMonitor.
-  void RegisterOnStorageMonitorInit();
+  // MediaGalleriesPreferences.
+  void RegisterOnPreferencesInit();
 
   PrefChangeRegistrar pref_change_registrar_;
 

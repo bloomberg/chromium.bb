@@ -39,11 +39,10 @@ base::FilePath::CharType kDevicePath[] = FILE_PATH_LITERAL("/qux");
 // testing platforms with no default media galleries, such as CHROMEOS.
 void MakeFakeMediaGalleryForTest(Profile* profile, const base::FilePath& path) {
   base::RunLoop runloop;
-  StorageMonitor::GetInstance()->EnsureInitialized(runloop.QuitClosure());
-  runloop.Run();
-
   MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(profile);
+  preferences->EnsureInitialized(runloop.QuitClosure());
+  runloop.Run();
 
   MediaGalleryPrefInfo gallery_info;
   ASSERT_FALSE(preferences->LookUpGalleryByPath(path, &gallery_info));

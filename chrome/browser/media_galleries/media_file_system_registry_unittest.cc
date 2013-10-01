@@ -474,7 +474,12 @@ ProfileState::~ProfileState() {
 }
 
 MediaGalleriesPreferences* ProfileState::GetMediaGalleriesPrefs() {
-  return MediaGalleriesPreferencesFactory::GetForProfile(profile_.get());
+  MediaGalleriesPreferences* prefs =
+      MediaGalleriesPreferencesFactory::GetForProfile(profile_.get());
+  base::RunLoop loop;
+  prefs->EnsureInitialized(loop.QuitClosure());
+  loop.Run();
+  return prefs;
 }
 
 void ProfileState::CheckGalleries(
@@ -612,7 +617,11 @@ ProfileState* MediaFileSystemRegistryTest::GetProfileState(size_t i) {
 
 MediaGalleriesPreferences* MediaFileSystemRegistryTest::GetPreferences(
     Profile* profile) {
-  return registry()->GetPreferences(profile);
+  MediaGalleriesPreferences* prefs = registry()->GetPreferences(profile);
+  base::RunLoop loop;
+  prefs->EnsureInitialized(loop.QuitClosure());
+  loop.Run();
+  return prefs;
 }
 
 std::string MediaFileSystemRegistryTest::AddUserGallery(

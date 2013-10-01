@@ -46,9 +46,12 @@ base::FilePath FindPicasaDatabaseOnFileThread() {
 
 void FinishOnOriginalThread(const PicasaFinder::DeviceIDCallback& callback,
                             const base::FilePath& database_path) {
-  if (!database_path.empty())
-    callback.Run(StorageInfo::MakeDeviceId(StorageInfo::PICASA,
-                                           database_path.AsUTF8Unsafe()));
+  std::string device_id;
+  if (!database_path.empty()) {
+    device_id = StorageInfo::MakeDeviceId(StorageInfo::PICASA,
+                                          database_path.AsUTF8Unsafe());
+  }
+  callback.Run(device_id);
 }
 
 }  // namespace

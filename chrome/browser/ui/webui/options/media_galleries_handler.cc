@@ -48,12 +48,15 @@ void MediaGalleriesHandler::GetLocalizedValues(DictionaryValue* values) {
 }
 
 void MediaGalleriesHandler::InitializePage() {
-  StorageMonitor::GetInstance()->EnsureInitialized(
-      base::Bind(&MediaGalleriesHandler::InitializeOnStorageMonitorInit,
-                 weak_ptr_factory_.GetWeakPtr()));
+  Profile* profile = Profile::FromWebUI(web_ui());
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile);
+  preferences->EnsureInitialized(base::Bind(
+      &MediaGalleriesHandler::InitializeOnMediaGalleriesPreferencesInit,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void MediaGalleriesHandler::InitializeOnStorageMonitorInit() {
+void MediaGalleriesHandler::InitializeOnMediaGalleriesPreferencesInit() {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!MediaGalleriesPreferences::APIHasBeenUsed(profile))
     return;
@@ -70,12 +73,15 @@ void MediaGalleriesHandler::InitializeOnStorageMonitorInit() {
 }
 
 void MediaGalleriesHandler::RegisterMessages() {
-  StorageMonitor::GetInstance()->EnsureInitialized(
-      base::Bind(&MediaGalleriesHandler::RegisterOnStorageMonitorInit,
-                 weak_ptr_factory_.GetWeakPtr()));
+  Profile* profile = Profile::FromWebUI(web_ui());
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile);
+  preferences->EnsureInitialized(base::Bind(
+      &MediaGalleriesHandler::RegisterOnPreferencesInit,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void MediaGalleriesHandler::RegisterOnStorageMonitorInit() {
+void MediaGalleriesHandler::RegisterOnPreferencesInit() {
   web_ui()->RegisterMessageCallback(
       "addNewGallery",
       base::Bind(&MediaGalleriesHandler::HandleAddNewGallery,

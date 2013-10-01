@@ -36,7 +36,7 @@ class MediaTransferProtocolManager;
 // created during profile construction. The platform-specific initialization,
 // which can lead to calling registered listeners with notifications of
 // attached volumes, are done lazily at first use through the async
-// |Initialize()| method. That must be done before any of the registered
+// |EnsureInitialized()| method. That must be done before any of the registered
 // listeners will receive updates or calls to other API methods return
 // meaningful results.
 // A post-initialization |GetAttachedStorage()| call coupled with a
@@ -76,7 +76,7 @@ class StorageMonitor {
 
   virtual ~StorageMonitor();
 
-  // Ensures that the storage monitor is initialized. The provided callback, If
+  // Ensures that the storage monitor is initialized. The provided callback, if
   // non-null, will be called when initialization is complete. If initialization
   // has already completed, this callback will be invoked within the calling
   // stack. Before the callback is run, calls to |GetAllAvailableStorages| and
@@ -86,7 +86,7 @@ class StorageMonitor {
   void EnsureInitialized(base::Closure callback);
 
   // Return true if the storage monitor has already been initialized.
-  bool IsInitialized();
+  bool IsInitialized() const;
 
   // Finds the device that contains |path| and populates |device_info|.
   // Should be able to handle any path on the local system, not just removable
