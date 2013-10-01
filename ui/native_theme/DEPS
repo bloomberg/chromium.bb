@@ -4,5 +4,4 @@ include_rules = [
   "+third_party/skia",
   "+ui/base",
   "+ui/gfx",
-  "+ui/views",  # TODO(beng): BAD, circular dependency
 ]

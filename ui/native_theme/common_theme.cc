@@ -13,7 +13,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/sys_color_change_listener.h"
-#include "ui/views/controls/menu/menu_config.h"
 
 namespace {
 
