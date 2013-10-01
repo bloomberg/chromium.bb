@@ -78,10 +78,17 @@ class ResettableSettingsSnapshot {
   DISALLOW_COPY_AND_ASSIGN(ResettableSettingsSnapshot);
 };
 
+// The user of ResettableSettingsSnapshot. Don't modify the numeric values below
+// because they are serialized.
+enum SnapshotCaller {
+  PROFILE_RESET_WEBUI = 0,
+};
+
 // Serializes specified |snapshot| members to JSON format. |field_mask| is a bit
 // mask of ResettableSettingsSnapshot::Field values.
 std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
-                                    int field_mask);
+                                    int field_mask,
+                                    SnapshotCaller source);
 
 // Sends |report| as a feedback. |report| is supposed to be result of
 // SerializeSettingsReport().

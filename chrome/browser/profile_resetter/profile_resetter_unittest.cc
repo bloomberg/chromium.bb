@@ -773,7 +773,8 @@ TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
                  expand_this_test);
   for (int field_mask = 0; field_mask <= ResettableSettingsSnapshot::ALL_FIELDS;
        ++field_mask) {
-    std::string report = SerializeSettingsReport(nonorganic_snap, field_mask);
+    std::string report = SerializeSettingsReport(nonorganic_snap, field_mask,
+                                                 PROFILE_RESET_WEBUI);
     JSONStringValueSerializer json(report);
     std::string error;
     scoped_ptr<base::Value> root(json.Deserialize(NULL, &error));
@@ -789,6 +790,7 @@ TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
     bool homepage_is_ntp = true;
     std::string default_search_engine;
     ListValue* extensions;
+    int initiator = 0;
 
     EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::STARTUP_URLS),
               dict->GetList("startup_urls", &startup_urls));
@@ -802,6 +804,7 @@ TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
               dict->GetString("default_search_engine", &default_search_engine));
     EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::EXTENSIONS),
               dict->GetList("enabled_extensions", &extensions));
+    EXPECT_TRUE(dict->GetInteger("initiator", &initiator));
   }
 }
 

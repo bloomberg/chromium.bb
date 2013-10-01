@@ -29,6 +29,7 @@ const char kProfileResetFeedbackBucket[] = "ProfileResetReport";
 // Dictionary keys for feedback report.
 const char kDefaultSearchEnginePath[] = "default_search_engine";
 const char kEnabledExtensions[] = "enabled_extensions";
+const char kFeedbackCaller[] = "initiator";
 const char kHomepageIsNewTabPage[] = "homepage_is_ntp";
 const char kHomepagePath[] = "homepage";
 const char kStartupTypePath[] = "startup_type";
@@ -117,7 +118,8 @@ int ResettableSettingsSnapshot::FindDifferentFields(
 }
 
 std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
-                                    int field_mask) {
+                                    int field_mask,
+                                    SnapshotCaller source) {
   DictionaryValue dict;
 
   if (field_mask & ResettableSettingsSnapshot::STARTUP_URLS) {
@@ -157,6 +159,8 @@ std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
 
   COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 63,
                  serialize_new_field_here);
+
+  dict.SetInteger(kFeedbackCaller, source);
 
   std::string json;
   base::JSONWriter::Write(&dict, &json);
