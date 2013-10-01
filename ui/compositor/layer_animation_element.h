@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_events.h"
@@ -230,6 +231,8 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   int animation_group_id_;
 
   double last_progressed_fraction_;
+
+  base::WeakPtrFactory<LayerAnimationElement> weak_ptr_factory_;
 
   DISALLOW_ASSIGN(LayerAnimationElement);
 };

@@ -20,7 +20,8 @@ LayerAnimationSequence::LayerAnimationSequence()
       last_element_(0),
       waiting_for_group_start_(false),
       animation_group_id_(0),
-      last_progressed_fraction_(0.0) {
+      last_progressed_fraction_(0.0),
+      weak_ptr_factory_(this) {
 }
 
 LayerAnimationSequence::LayerAnimationSequence(LayerAnimationElement* element)
@@ -28,7 +29,8 @@ LayerAnimationSequence::LayerAnimationSequence(LayerAnimationElement* element)
       last_element_(0),
       waiting_for_group_start_(false),
       animation_group_id_(0),
-      last_progressed_fraction_(0.0) {
+      last_progressed_fraction_(0.0),
+      weak_ptr_factory_(this) {
   AddElement(element);
 }
 
@@ -81,8 +83,11 @@ void LayerAnimationSequence::Progress(base::TimeTicks now,
       animation_group_id_ = cc::AnimationIdProvider::NextGroupId();
       elements_[current_index]->Start(delegate, animation_group_id_);
     }
+    base::WeakPtr<LayerAnimationSequence> alive(weak_ptr_factory_.GetWeakPtr());
     if (elements_[current_index]->Progress(now, delegate))
       redraw_required = true;
+    if (!alive)
+      return;
     last_progressed_fraction_ =
         elements_[current_index]->last_progressed_fraction();
   }

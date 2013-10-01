@@ -182,6 +182,8 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   // element.
   double last_progressed_fraction_;
 
+  base::WeakPtrFactory<LayerAnimationSequence> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(LayerAnimationSequence);
 };
 

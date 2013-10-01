@@ -1899,6 +1899,68 @@ TEST(LayerAnimatorTest, ObserverDeletesAnimationsOnEnd) {
   animator->RemoveObserver(observer.get());
 }
 
+// Ensure that stopping animation in a bounds change does not crash and that
+// animation gets stopped correctly.
+// This scenario is possible when animation is restarted from inside a
+// callback triggered by the animation progress.
+TEST(LayerAnimatorTest, CallbackDeletesAnimationInProgress) {
+
+  class TestLayerAnimationDeletingDelegate : public TestLayerAnimationDelegate {
+   public:
+    TestLayerAnimationDeletingDelegate(LayerAnimator* animator, int max_width)
+      : animator_(animator),
+        max_width_(max_width) {
+    }
+
+    virtual void SetBoundsFromAnimation(const gfx::Rect& bounds) OVERRIDE {
+      TestLayerAnimationDelegate::SetBoundsFromAnimation(bounds);
+      if (bounds.width() > max_width_)
+        animator_->StopAnimating();
+    }
+   private:
+    LayerAnimator* animator_;
+    int max_width_;
+    // Allow copy and assign.
+  };
+
+  ScopedAnimationDurationScaleMode normal_duration_mode(
+      ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  scoped_refptr<LayerAnimator> animator(new TestLayerAnimator());
+  AnimationContainerElement* element = animator.get();
+  animator->set_disable_timer_for_test(true);
+  TestLayerAnimationDeletingDelegate delegate(animator.get(), 30);
+  animator->SetDelegate(&delegate);
+
+  gfx::Rect start_bounds(0, 0, 0, 0);
+  gfx::Rect target_bounds(5, 5, 50, 50);
+
+  delegate.SetBoundsFromAnimation(start_bounds);
+
+  base::TimeDelta bounds_delta1 = base::TimeDelta::FromMilliseconds(333);
+  base::TimeDelta bounds_delta2 = base::TimeDelta::FromMilliseconds(666);
+  base::TimeDelta bounds_delta = base::TimeDelta::FromMilliseconds(1000);
+  base::TimeDelta final_delta = base::TimeDelta::FromMilliseconds(1500);
+
+  animator->StartAnimation(new LayerAnimationSequence(
+      LayerAnimationElement::CreateBoundsElement(
+          target_bounds, bounds_delta)));
+  ASSERT_TRUE(animator->IsAnimatingProperty(LayerAnimationElement::BOUNDS));
+
+  base::TimeTicks start_time = animator->last_step_time();
+  ASSERT_NO_FATAL_FAILURE(element->Step(start_time + bounds_delta1));
+  ASSERT_TRUE(animator->IsAnimatingProperty(LayerAnimationElement::BOUNDS));
+
+  // The next step should change the animated bounds past the threshold and
+  // cause the animaton to stop.
+  ASSERT_NO_FATAL_FAILURE(element->Step(start_time + bounds_delta2));
+  ASSERT_FALSE(animator->IsAnimatingProperty(LayerAnimationElement::BOUNDS));
+  ASSERT_NO_FATAL_FAILURE(element->Step(start_time + final_delta));
+
+  // Completing the animation should have stopped the bounds
+  // animation.
+  ASSERT_FALSE(animator->IsAnimatingProperty(LayerAnimationElement::BOUNDS));
+}
+
 // Similar to the ObserverDeletesAnimationsOnEnd test above except that it
 // tests the behavior when the OnLayerAnimationAborted() callback causes
 // all of the animator's other animations to be deleted.
