@@ -78,27 +78,8 @@ MutableEntry::MutableEntry(WriteTransaction* trans,
 
 MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
                            const Id& id)
-    : ModelNeutralMutableEntry(trans), write_transaction_(trans) {
-  Entry same_id(trans, GET_BY_ID, id);
-  kernel_ = NULL;
-  if (same_id.good()) {
-    return;  // already have an item with this ID.
-  }
-  scoped_ptr<EntryKernel> kernel(new EntryKernel());
-
-  kernel->put(ID, id);
-  kernel->put(META_HANDLE, trans->directory_->NextMetahandle());
-  kernel->mark_dirty(&trans->directory_->kernel_->dirty_metahandles);
-  kernel->put(IS_DEL, true);
-  // We match the database defaults here
-  kernel->put(BASE_VERSION, CHANGES_VERSION);
-  if (!trans->directory()->InsertEntry(trans, kernel.get())) {
-    return;  // Failed inserting.
-  }
-  trans->TrackChangesTo(kernel.get());
-
-  kernel_ = kernel.release();
-}
+    : ModelNeutralMutableEntry(trans, CREATE_NEW_UPDATE_ITEM, id),
+      write_transaction_(trans) {}
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetById, const Id& id)
     : ModelNeutralMutableEntry(trans, GET_BY_ID, id),

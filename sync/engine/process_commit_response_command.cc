@@ -109,9 +109,9 @@ SyncerError ProcessCommitResponseCommand::ExecuteImpl(SyncSession* session) {
           LOG(FATAL) << "Bad return from ProcessSingleCommitResponse";
       }
     }
-  }
 
-  MarkDeletedChildrenSynced(dir, &deleted_folders);
+    MarkDeletedChildrenSynced(dir, &trans, &deleted_folders);
+  }
 
   int commit_count = static_cast<int>(commit_set_.Size());
   if (commit_count == successes) {

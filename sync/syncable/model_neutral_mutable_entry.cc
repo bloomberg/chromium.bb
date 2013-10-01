@@ -9,6 +9,7 @@
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/scoped_kernel_lock.h"
+#include "sync/syncable/syncable_changes_version.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/syncable/syncable_write_transaction.h"
 
@@ -17,6 +18,31 @@ using std::string;
 namespace syncer {
 
 namespace syncable {
+
+ModelNeutralMutableEntry::ModelNeutralMutableEntry(BaseWriteTransaction* trans,
+                                                   CreateNewUpdateItem,
+                                                   const Id& id)
+    : Entry(trans), base_write_transaction_(trans) {
+  Entry same_id(trans, GET_BY_ID, id);
+  kernel_ = NULL;
+  if (same_id.good()) {
+    return;  // already have an item with this ID.
+  }
+  scoped_ptr<EntryKernel> kernel(new EntryKernel());
+
+  kernel->put(ID, id);
+  kernel->put(META_HANDLE, trans->directory()->NextMetahandle());
+  kernel->mark_dirty(&trans->directory()->kernel_->dirty_metahandles);
+  kernel->put(IS_DEL, true);
+  // We match the database defaults here
+  kernel->put(BASE_VERSION, CHANGES_VERSION);
+  if (!trans->directory()->InsertEntry(trans, kernel.get())) {
+    return;  // Failed inserting.
+  }
+  trans->TrackChangesTo(kernel.get());
+
+  kernel_ = kernel.release();
+}
 
 ModelNeutralMutableEntry::ModelNeutralMutableEntry(
     BaseWriteTransaction* trans, GetById, const Id& id)

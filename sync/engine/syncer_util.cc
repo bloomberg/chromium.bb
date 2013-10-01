@@ -23,8 +23,10 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"
+#include "sync/syncable/model_neutral_mutable_entry.h"
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/syncable_changes_version.h"
+#include "sync/syncable/syncable_model_neutral_write_transaction.h"
 #include "sync/syncable/syncable_proto_util.h"
 #include "sync/syncable/syncable_read_transaction.h"
 #include "sync/syncable/syncable_util.h"
@@ -305,7 +307,7 @@ namespace {
 void UpdateBookmarkSpecifics(const std::string& singleton_tag,
                              const std::string& url,
                              const std::string& favicon_bytes,
-                             MutableEntry* local_entry) {
+                             syncable::ModelNeutralMutableEntry* local_entry) {
   // In the new-style protocol, the server no longer sends bookmark info for
   // the "google_chrome" folder.  Mimic that here.
   if (singleton_tag == "google_chrome")
@@ -319,8 +321,9 @@ void UpdateBookmarkSpecifics(const std::string& singleton_tag,
   local_entry->PutServerSpecifics(pb);
 }
 
-void UpdateBookmarkPositioning(const sync_pb::SyncEntity& update,
-                               MutableEntry* local_entry) {
+void UpdateBookmarkPositioning(
+    const sync_pb::SyncEntity& update,
+    syncable::ModelNeutralMutableEntry* local_entry) {
   // Update our unique bookmark tag.  In many cases this will be identical to
   // the tag we already have.  However, clients that have recently upgraded to
   // versions that support unique positions will have incorrect tags.  See the
@@ -348,7 +351,7 @@ void UpdateBookmarkPositioning(const sync_pb::SyncEntity& update,
 }  // namespace
 
 void UpdateServerFieldsFromUpdate(
-    MutableEntry* target,
+    syncable::ModelNeutralMutableEntry* target,
     const sync_pb::SyncEntity& update,
     const std::string& name) {
   if (update.deleted()) {
@@ -418,12 +421,14 @@ void UpdateServerFieldsFromUpdate(
 }
 
 // Creates a new Entry iff no Entry exists with the given id.
-void CreateNewEntry(syncable::WriteTransaction *trans,
+void CreateNewEntry(syncable::ModelNeutralWriteTransaction *trans,
                     const syncable::Id& id) {
-  syncable::MutableEntry entry(trans, GET_BY_ID, id);
+  syncable::Entry entry(trans, GET_BY_ID, id);
   if (!entry.good()) {
-    syncable::MutableEntry new_entry(trans, syncable::CREATE_NEW_UPDATE_ITEM,
-                                     id);
+    syncable::ModelNeutralMutableEntry new_entry(
+        trans,
+        syncable::CREATE_NEW_UPDATE_ITEM,
+        id);
   }
 }
 
@@ -481,6 +486,7 @@ VerifyCommitResult ValidateCommitEntry(syncable::Entry* entry) {
 
 void MarkDeletedChildrenSynced(
     syncable::Directory* dir,
+    syncable::BaseWriteTransaction* trans,
     std::set<syncable::Id>* deleted_folders) {
   // There's two options here.
   // 1. Scan deleted unsynced entries looking up their pre-delete tree for any
@@ -492,27 +498,22 @@ void MarkDeletedChildrenSynced(
   if (deleted_folders->empty())
     return;
   Directory::Metahandles handles;
-  {
-    syncable::ReadTransaction trans(FROM_HERE, dir);
-    dir->GetUnsyncedMetaHandles(&trans, &handles);
-  }
+  dir->GetUnsyncedMetaHandles(trans, &handles);
   if (handles.empty())
     return;
   Directory::Metahandles::iterator it;
   for (it = handles.begin() ; it != handles.end() ; ++it) {
-    // Single transaction / entry we deal with.
-    WriteTransaction trans(FROM_HERE, SYNCER, dir);
-    MutableEntry entry(&trans, GET_BY_HANDLE, *it);
+    syncable::ModelNeutralMutableEntry entry(trans, GET_BY_HANDLE, *it);
     if (!entry.GetIsUnsynced() || !entry.GetIsDel())
       continue;
     syncable::Id id = entry.GetParentId();
-    while (id != trans.root_id()) {
+    while (id != trans->root_id()) {
       if (deleted_folders->find(id) != deleted_folders->end()) {
         // We've synced the deletion of this deleted entries parent.
         entry.PutIsUnsynced(false);
         break;
       }
-      Entry parent(&trans, GET_BY_ID, id);
+      Entry parent(trans, GET_BY_ID, id);
       if (!parent.good() || !parent.GetIsDel())
         break;
       id = parent.GetParentId();
@@ -539,12 +540,12 @@ VerifyResult VerifyNewEntry(
 // Assumes we have an existing entry; check here for updates that break
 // consistency rules.
 VerifyResult VerifyUpdateConsistency(
-    syncable::WriteTransaction* trans,
+    syncable::ModelNeutralWriteTransaction* trans,
     const sync_pb::SyncEntity& update,
-    syncable::MutableEntry* target,
     const bool deleted,
     const bool is_directory,
-    ModelType model_type) {
+    ModelType model_type,
+    syncable::ModelNeutralMutableEntry* target) {
 
   CHECK(target->good());
   const syncable::Id& update_id = SyncableIdFromProto(update.id_string());
@@ -612,9 +613,9 @@ VerifyResult VerifyUpdateConsistency(
 
 // Assumes we have an existing entry; verify an update that seems to be
 // expressing an 'undelete'
-VerifyResult VerifyUndelete(syncable::WriteTransaction* trans,
+VerifyResult VerifyUndelete(syncable::ModelNeutralWriteTransaction* trans,
                             const sync_pb::SyncEntity& update,
-                            syncable::MutableEntry* target) {
+                            syncable::ModelNeutralMutableEntry* target) {
   // TODO(nick): We hit this path for items deleted items that the server
   // tells us to re-create; only deleted items with positive base versions
   // will hit this path.  However, it's not clear how such an undeletion

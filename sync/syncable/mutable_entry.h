@@ -20,10 +20,6 @@ enum Create {
   CREATE
 };
 
-enum CreateNewUpdateItem {
-  CREATE_NEW_UPDATE_ITEM
-};
-
 class WriteTransaction;
 
 // A mutable meta entry.  Changes get committed to the database when the

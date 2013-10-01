@@ -13,10 +13,10 @@
 #include "sync/engine/syncer_util.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/syncable/directory.h"
-#include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/model_neutral_mutable_entry.h"
+#include "sync/syncable/syncable_model_neutral_write_transaction.h"
 #include "sync/syncable/syncable_proto_util.h"
 #include "sync/syncable/syncable_util.h"
-#include "sync/syncable/syncable_write_transaction.h"
 #include "sync/util/cryptographer.h"
 
 using std::vector;
@@ -30,21 +30,6 @@ using syncable::GET_BY_ID;
 
 ProcessUpdatesCommand::ProcessUpdatesCommand() {}
 ProcessUpdatesCommand::~ProcessUpdatesCommand() {}
-
-std::set<ModelSafeGroup> ProcessUpdatesCommand::GetGroupsToChange(
-    const sessions::SyncSession& session) const {
-  std::set<ModelSafeGroup> groups_with_updates;
-
-  const sync_pb::GetUpdatesResponse& updates =
-      session.status_controller().updates_response().get_updates();
-  for (int i = 0; i < updates.entries().size(); i++) {
-    groups_with_updates.insert(
-        GetGroupForModelType(GetModelType(updates.entries(i)),
-                             session.context()->routing_info()));
-  }
-
-  return groups_with_updates;
-}
 
 namespace {
 
@@ -102,11 +87,11 @@ bool UpdateContainsNewVersion(syncable::BaseTransaction *trans,
 
 }  // namespace
 
-SyncerError ProcessUpdatesCommand::ModelChangingExecuteImpl(
-    SyncSession* session) {
+SyncerError ProcessUpdatesCommand::ExecuteImpl(SyncSession* session) {
   syncable::Directory* dir = session->context()->directory();
 
-  syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
+  syncable::ModelNeutralWriteTransaction trans(
+      FROM_HERE, syncable::SYNCER, dir);
 
   sessions::StatusController* status = session->mutable_status_controller();
   const sync_pb::GetUpdatesResponse& updates =
@@ -119,18 +104,6 @@ SyncerError ProcessUpdatesCommand::ModelChangingExecuteImpl(
   DVLOG(1) << update_count << " entries to verify";
   for (int i = 0; i < update_count; i++) {
     const sync_pb::SyncEntity& update = updates.entries(i);
-
-    // The current function gets executed on several different threads, but
-    // every call iterates over the same list of items that the server returned
-    // to us.  We're not allowed to process items unless we're on the right
-    // thread for that type.  This check will ensure we only touch the items
-    // that live on our current thread.
-    // TODO(tim): Don't allow access to objects in other ModelSafeGroups.
-    // See crbug.com/121521 .
-    ModelSafeGroup g = GetGroupForModelType(GetModelType(update),
-                                            session->context()->routing_info());
-    if (g != status->group_restriction())
-      continue;
 
     VerifyResult verify_result = VerifyUpdate(
         &trans, update, requested_types, session->context()->routing_info());
@@ -159,8 +132,9 @@ namespace {
 // will have refused to unify the update.
 // We should not attempt to apply it at all since it violates consistency
 // rules.
-VerifyResult VerifyTagConsistency(const sync_pb::SyncEntity& entry,
-                                  const syncable::MutableEntry& same_id) {
+VerifyResult VerifyTagConsistency(
+    const sync_pb::SyncEntity& entry,
+    const syncable::ModelNeutralMutableEntry& same_id) {
   if (entry.has_client_defined_unique_tag() &&
       entry.client_defined_unique_tag() !=
           same_id.GetUniqueClientTag()) {
@@ -172,7 +146,8 @@ VerifyResult VerifyTagConsistency(const sync_pb::SyncEntity& entry,
 }  // namespace
 
 VerifyResult ProcessUpdatesCommand::VerifyUpdate(
-    syncable::WriteTransaction* trans, const sync_pb::SyncEntity& entry,
+    syncable::ModelNeutralWriteTransaction* trans,
+    const sync_pb::SyncEntity& entry,
     ModelTypeSet requested_types,
     const ModelSafeRoutingInfo& routes) {
   syncable::Id id = SyncableIdFromProto(entry.id_string());
@@ -194,7 +169,7 @@ VerifyResult ProcessUpdatesCommand::VerifyUpdate(
     }
   }
 
-  syncable::MutableEntry same_id(trans, GET_BY_ID, id);
+  syncable::ModelNeutralMutableEntry same_id(trans, GET_BY_ID, id);
   result = VerifyNewEntry(entry, &same_id, deleted);
 
   ModelType placement_type = !deleted ? GetModelType(entry)
@@ -220,8 +195,8 @@ VerifyResult ProcessUpdatesCommand::VerifyUpdate(
   // If we have an existing entry, we check here for updates that break
   // consistency rules.
   if (VERIFY_UNDECIDED == result) {
-    result = VerifyUpdateConsistency(trans, entry, &same_id,
-                                     deleted, is_directory, model_type);
+    result = VerifyUpdateConsistency(trans, entry, deleted,
+                                     is_directory, model_type, &same_id);
   }
 
   if (VERIFY_UNDECIDED == result)
@@ -232,9 +207,9 @@ VerifyResult ProcessUpdatesCommand::VerifyUpdate(
 
 namespace {
 // Returns true if the entry is still ok to process.
-bool ReverifyEntry(syncable::WriteTransaction* trans,
+bool ReverifyEntry(syncable::ModelNeutralWriteTransaction* trans,
                    const sync_pb::SyncEntity& entry,
-                   syncable::MutableEntry* same_id) {
+                   syncable::ModelNeutralMutableEntry* same_id) {
 
   const bool deleted = entry.has_deleted() && entry.deleted();
   const bool is_directory = IsFolder(entry);
@@ -242,10 +217,10 @@ bool ReverifyEntry(syncable::WriteTransaction* trans,
 
   return VERIFY_SUCCESS == VerifyUpdateConsistency(trans,
                                                    entry,
-                                                   same_id,
                                                    deleted,
                                                    is_directory,
-                                                   model_type);
+                                                   model_type,
+                                                   same_id);
 }
 }  // namespace
 
@@ -253,7 +228,7 @@ bool ReverifyEntry(syncable::WriteTransaction* trans,
 ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
     const sync_pb::SyncEntity& update,
     const Cryptographer* cryptographer,
-    syncable::WriteTransaction* const trans) {
+    syncable::ModelNeutralWriteTransaction* const trans) {
   const syncable::Id& server_id = SyncableIdFromProto(update.id_string());
   const std::string name = SyncerProtoUtil::NameFromSyncEntity(update);
 
@@ -270,7 +245,7 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
 
   // We take a two step approach. First we store the entries data in the
   // server fields of a local entry and then move the data to the local fields
-  syncable::MutableEntry target_entry(trans, GET_BY_ID, local_id);
+  syncable::ModelNeutralMutableEntry target_entry(trans, GET_BY_ID, local_id);
 
   // We need to run the Verify checks again; the world could have changed
   // since we last verified.

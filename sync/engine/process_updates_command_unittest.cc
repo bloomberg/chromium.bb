@@ -81,25 +81,6 @@ class ProcessUpdatesCommandTest : public SyncerCommandTest {
   DISALLOW_COPY_AND_ASSIGN(ProcessUpdatesCommandTest);
 };
 
-TEST_F(ProcessUpdatesCommandTest, GroupsToChange) {
-  std::string root = syncable::GetNullId().GetServerId();
-
-  CreateLocalItem("p1", root, PREFERENCES);
-  CreateLocalItem("a1", root, AUTOFILL);
-
-  ExpectNoGroupsToChange(command_);
-
-  sync_pb::GetUpdatesResponse* updates =
-      session()->mutable_status_controller()->
-      mutable_updates_response()->mutable_get_updates();
-  AddUpdate(updates, "p1", root, PREFERENCES);
-  AddUpdate(updates, "a1", root, AUTOFILL);
-
-  ExpectGroupsToChange(command_, GROUP_UI, GROUP_DB);
-
-  command_.ExecuteImpl(session());
-}
-
 static const char kCacheGuid[] = "IrcjZ2jyzHDV9Io4+zKcXQ==";
 
 // Test that the bookmark tag is set on newly downloaded items.
@@ -118,7 +99,7 @@ TEST_F(ProcessUpdatesCommandTest, NewBookmarkTag) {
   e->set_originator_client_item_id(client_id.GetServerId());
   e->set_position_in_parent(0);
 
-  command_.ExecuteImpl(session());
+  command_.Execute(session());
 
   syncable::ReadTransaction trans(FROM_HERE, directory());
   syncable::Entry entry(&trans, syncable::GET_BY_ID, server_id);
@@ -150,7 +131,7 @@ TEST_F(ProcessUpdatesCommandTest, ReceiveServerCreatedBookmarkFolders) {
 
   EXPECT_FALSE(SyncerProtoUtil::ShouldMaintainPosition(*e));
 
-  command_.ExecuteImpl(session());
+  command_.Execute(session());
 
   syncable::ReadTransaction trans(FROM_HERE, directory());
   syncable::Entry entry(&trans, syncable::GET_BY_ID, server_id);
@@ -175,7 +156,7 @@ TEST_F(ProcessUpdatesCommandTest, ReceiveNonBookmarkItem) {
 
   EXPECT_FALSE(SyncerProtoUtil::ShouldMaintainPosition(*e));
 
-  command_.ExecuteImpl(session());
+  command_.Execute(session());
 
   syncable::ReadTransaction trans(FROM_HERE, directory());
   syncable::Entry entry(&trans, syncable::GET_BY_ID, server_id);

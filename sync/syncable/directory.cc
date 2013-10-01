@@ -343,12 +343,12 @@ EntryKernel* Directory::GetRootEntry() {
   return GetEntryById(Id());
 }
 
-bool Directory::InsertEntry(WriteTransaction* trans, EntryKernel* entry) {
+bool Directory::InsertEntry(BaseWriteTransaction* trans, EntryKernel* entry) {
   ScopedKernelLock lock(this);
   return InsertEntry(trans, entry, &lock);
 }
 
-bool Directory::InsertEntry(WriteTransaction* trans,
+bool Directory::InsertEntry(BaseWriteTransaction* trans,
                             EntryKernel* entry,
                             ScopedKernelLock* lock) {
   DCHECK(NULL != lock);

@@ -507,9 +507,9 @@ class SYNC_EXPORT Directory {
   void HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot);
 
   // For new entry creation only
-  bool InsertEntry(WriteTransaction* trans,
+  bool InsertEntry(BaseWriteTransaction* trans,
                    EntryKernel* entry, ScopedKernelLock* lock);
-  bool InsertEntry(WriteTransaction* trans, EntryKernel* entry);
+  bool InsertEntry(BaseWriteTransaction* trans, EntryKernel* entry);
 
   // Used by CheckTreeInvariants
   void GetAllMetaHandles(BaseTransaction* trans, MetahandleSet* result);

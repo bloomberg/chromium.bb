@@ -27,6 +27,7 @@ namespace syncer {
 
 namespace syncable {
 class BaseTransaction;
+class ModelNeutralWriteTransaction;
 }  // namespace syncable
 
 class Cryptographer;
@@ -66,12 +67,12 @@ std::string GetUniqueBookmarkTagFromUpdate(const sync_pb::SyncEntity& update);
 
 // Pass in name to avoid redundant UTF8 conversion.
 void UpdateServerFieldsFromUpdate(
-    syncable::MutableEntry* local_entry,
+    syncable::ModelNeutralMutableEntry* local_entry,
     const sync_pb::SyncEntity& server_entry,
     const std::string& name);
 
 // Creates a new Entry iff no Entry exists with the given id.
-void CreateNewEntry(syncable::WriteTransaction *trans,
+void CreateNewEntry(syncable::ModelNeutralWriteTransaction *trans,
                     const syncable::Id& id);
 
 // This function is called on an entry when we can update the user-facing data
@@ -87,21 +88,23 @@ VerifyResult VerifyNewEntry(const sync_pb::SyncEntity& update,
 
 // Assumes we have an existing entry; check here for updates that break
 // consistency rules.
-VerifyResult VerifyUpdateConsistency(syncable::WriteTransaction* trans,
-                                     const sync_pb::SyncEntity& update,
-                                     syncable::MutableEntry* target,
-                                     const bool deleted,
-                                     const bool is_directory,
-                                     ModelType model_type);
+VerifyResult VerifyUpdateConsistency(
+    syncable::ModelNeutralWriteTransaction* trans,
+    const sync_pb::SyncEntity& update,
+    const bool deleted,
+    const bool is_directory,
+    ModelType model_type,
+    syncable::ModelNeutralMutableEntry* target);
 
 // Assumes we have an existing entry; verify an update that seems to be
 // expressing an 'undelete'
-VerifyResult VerifyUndelete(syncable::WriteTransaction* trans,
+VerifyResult VerifyUndelete(syncable::ModelNeutralWriteTransaction* trans,
                             const sync_pb::SyncEntity& update,
-                            syncable::MutableEntry* target);
+                            syncable::ModelNeutralMutableEntry* target);
 
 void MarkDeletedChildrenSynced(
     syncable::Directory* dir,
+    syncable::BaseWriteTransaction* trans,
     std::set<syncable::Id>* deleted_folders);
 
 }  // namespace syncer

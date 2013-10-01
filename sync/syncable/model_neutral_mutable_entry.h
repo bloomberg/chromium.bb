@@ -16,6 +16,10 @@ namespace syncable {
 
 class BaseWriteTransaction;
 
+enum CreateNewUpdateItem {
+  CREATE_NEW_UPDATE_ITEM
+};
+
 // This Entry includes all the operations one can safely perform on the sync
 // thread.  In particular, it does not expose setters to make changes that need
 // to be communicated to the model (and the model's thread).  It is not possible
@@ -23,6 +27,9 @@ class BaseWriteTransaction;
 // entry.
 class SYNC_EXPORT_PRIVATE ModelNeutralMutableEntry : public Entry {
  public:
+  ModelNeutralMutableEntry(BaseWriteTransaction* trans,
+                           CreateNewUpdateItem,
+                           const Id& id);
   ModelNeutralMutableEntry(BaseWriteTransaction* trans, GetByHandle, int64);
   ModelNeutralMutableEntry(BaseWriteTransaction* trans, GetById, const Id&);
   ModelNeutralMutableEntry(
