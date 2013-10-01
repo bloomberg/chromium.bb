@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/input/gesture_event_filter.h"
 #include "content/browser/renderer_host/input/immediate_input_router.h"
+#include "content/browser/renderer_host/input/mock_web_input_event_builders.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
@@ -275,8 +276,8 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     gesture_event_filter()->debounce_interval_time_ms_ = delay_ms;
   }
 
-  size_t TouchEventQueueSize() {
-    return touch_event_queue()->GetQueueSize();
+  bool TouchEventQueueEmpty() const {
+    return touch_event_queue()->empty();
   }
 
   bool ScrollStateIsContentScrolling() const {
@@ -293,10 +294,6 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
   OverscrollController::ScrollState scroll_state() const {
     return overscroll_controller_->scroll_state_;
-  }
-
-  const WebTouchEvent& latest_event() const {
-    return touch_event_queue()->GetLatestEvent().event;
   }
 
   OverscrollMode overscroll_mode() const {
@@ -660,80 +657,56 @@ class RenderWidgetHostTest : public testing::Test {
   }
 
   void SimulateKeyboardEvent(WebInputEvent::Type type) {
-    NativeWebKeyboardEvent key_event;
-    key_event.type = type;
-    key_event.windowsKeyCode = ui::VKEY_L;  // non-null made up value.
-    host_->ForwardKeyboardEvent(key_event);
+    host_->ForwardKeyboardEvent(MockWebKeyboardEventBuilder::Build(type));
   }
 
   void SimulateMouseEvent(WebInputEvent::Type type) {
-    WebKit::WebMouseEvent mouse_event;
-    mouse_event.type = type;
-    host_->ForwardMouseEvent(mouse_event);
+    host_->ForwardMouseEvent(MockWebMouseEventBuilder::Build(type));
   }
 
   void SimulateWheelEvent(float dX, float dY, int modifiers, bool precise) {
-    WebMouseWheelEvent wheel_event;
-    wheel_event.type = WebInputEvent::MouseWheel;
-    wheel_event.deltaX = dX;
-    wheel_event.deltaY = dY;
-    wheel_event.modifiers = modifiers;
-    wheel_event.hasPreciseScrollingDeltas = precise;
-    host_->ForwardWheelEvent(wheel_event);
+    host_->ForwardWheelEvent(
+        MockWebMouseWheelEventBuilder::Build(dX, dY, modifiers, precise));
   }
 
   void SimulateMouseMove(int x, int y, int modifiers) {
-    WebKit::WebMouseEvent mouse_event;
-    mouse_event.type = WebInputEvent::MouseMove;
-    mouse_event.x = mouse_event.windowX = x;
-    mouse_event.y = mouse_event.windowY = y;
-    mouse_event.modifiers = modifiers;
-    host_->ForwardMouseEvent(mouse_event);
+    host_->ForwardMouseEvent(
+        MockWebMouseEventBuilder::Build(WebInputEvent::MouseMove,
+                                        x,
+                                        y,
+                                        modifiers));
   }
 
   void SimulateWheelEventWithPhase(WebMouseWheelEvent::Phase phase) {
-    WebMouseWheelEvent wheel_event;
-    wheel_event.type = WebInputEvent::MouseWheel;
-    wheel_event.phase = phase;
-    host_->ForwardWheelEvent(wheel_event);
+    host_->ForwardWheelEvent(MockWebMouseWheelEventBuilder::Build(phase));
   }
 
   // Inject provided synthetic WebGestureEvent instance.
-  void SimulateGestureEventCore(WebInputEvent::Type type,
-                            WebGestureEvent::SourceDevice sourceDevice,
-                            WebGestureEvent* gesture_event) {
-    gesture_event->type = type;
-    gesture_event->sourceDevice = sourceDevice;
-    host_->ForwardGestureEvent(*gesture_event);
+  void SimulateGestureEventCore(const WebGestureEvent& gesture_event) {
+    host_->ForwardGestureEvent(gesture_event);
   }
 
   // Inject simple synthetic WebGestureEvent instances.
   void SimulateGestureEvent(WebInputEvent::Type type,
                             WebGestureEvent::SourceDevice sourceDevice) {
-    WebGestureEvent gesture_event;
-    SimulateGestureEventCore(type, sourceDevice, &gesture_event);
+    SimulateGestureEventCore(
+        MockWebGestureEventBuilder::Build(type, sourceDevice));
   }
 
   void SimulateGestureScrollUpdateEvent(float dX, float dY, int modifiers) {
-    WebGestureEvent gesture_event;
-    gesture_event.data.scrollUpdate.deltaX = dX;
-    gesture_event.data.scrollUpdate.deltaY = dY;
-    gesture_event.modifiers = modifiers;
-    SimulateGestureEventCore(WebInputEvent::GestureScrollUpdate,
-                             WebGestureEvent::Touchscreen, &gesture_event);
+    SimulateGestureEventCore(
+        MockWebGestureEventBuilder::BuildScrollUpdate(dX, dY, modifiers));
   }
 
   void SimulateGesturePinchUpdateEvent(float scale,
                                        float anchorX,
                                        float anchorY,
                                        int modifiers) {
-    WebGestureEvent gesture_event;
-    gesture_event.data.pinchUpdate.scale = scale;
-    gesture_event.x = anchorX;
-    gesture_event.y = anchorY;
-    gesture_event.modifiers = modifiers;
-    SimulateGestureEventCore(WebInputEvent::GesturePinchUpdate,
-                             WebGestureEvent::Touchscreen, &gesture_event);
+    SimulateGestureEventCore(
+        MockWebGestureEventBuilder::BuildPinchUpdate(scale,
+                                                     anchorX,
+                                                     anchorY,
+                                                     modifiers));
   }
 
   // Inject synthetic GestureFlingStart events.
@@ -741,16 +714,15 @@ class RenderWidgetHostTest : public testing::Test {
       float velocityX,
       float velocityY,
       WebGestureEvent::SourceDevice sourceDevice) {
-    WebGestureEvent gesture_event;
-    gesture_event.data.flingStart.velocityX = velocityX;
-    gesture_event.data.flingStart.velocityY = velocityY;
-    SimulateGestureEventCore(WebInputEvent::GestureFlingStart, sourceDevice,
-                             &gesture_event);
+    SimulateGestureEventCore(
+        MockWebGestureEventBuilder::BuildFling(velocityX,
+                                               velocityY,
+                                               sourceDevice));
   }
 
   // Set the timestamp for the touch-event.
   void SetTouchTimestamp(base::TimeDelta timestamp) {
-    touch_event_.timeStampSeconds = timestamp.InSecondsF();
+    touch_event_.SetTimestamp(timestamp);
   }
 
   // Sends a touch event (irrespective of whether the page has a touch-event
@@ -758,50 +730,19 @@ class RenderWidgetHostTest : public testing::Test {
   void SendTouchEvent() {
     host_->ForwardTouchEventWithLatencyInfo(touch_event_, ui::LatencyInfo());
 
-    // Mark all the points as stationary. And remove the points that have been
-    // released.
-    int point = 0;
-    for (unsigned int i = 0; i < touch_event_.touchesLength; ++i) {
-      if (touch_event_.touches[i].state == WebKit::WebTouchPoint::StateReleased)
-        continue;
-
-      touch_event_.touches[point] = touch_event_.touches[i];
-      touch_event_.touches[point].state =
-          WebKit::WebTouchPoint::StateStationary;
-      ++point;
-    }
-    touch_event_.touchesLength = point;
-    touch_event_.type = WebInputEvent::Undefined;
+    touch_event_.ResetPoints();
   }
 
   int PressTouchPoint(int x, int y) {
-    if (touch_event_.touchesLength == touch_event_.touchesLengthCap)
-      return -1;
-    WebKit::WebTouchPoint& point =
-        touch_event_.touches[touch_event_.touchesLength];
-    point.id = touch_event_.touchesLength;
-    point.position.x = point.screenPosition.x = x;
-    point.position.y = point.screenPosition.y = y;
-    point.state = WebKit::WebTouchPoint::StatePressed;
-    point.radiusX = point.radiusY = 1.f;
-    ++touch_event_.touchesLength;
-    touch_event_.type = WebInputEvent::TouchStart;
-    return point.id;
+    return touch_event_.PressPoint(x, y);
   }
 
   void MoveTouchPoint(int index, int x, int y) {
-    CHECK(index >= 0 && index < touch_event_.touchesLengthCap);
-    WebKit::WebTouchPoint& point = touch_event_.touches[index];
-    point.position.x = point.screenPosition.x = x;
-    point.position.y = point.screenPosition.y = y;
-    touch_event_.touches[index].state = WebKit::WebTouchPoint::StateMoved;
-    touch_event_.type = WebInputEvent::TouchMove;
+    touch_event_.MovePoint(index, x, y);
   }
 
   void ReleaseTouchPoint(int index) {
-    CHECK(index >= 0 && index < touch_event_.touchesLengthCap);
-    touch_event_.touches[index].state = WebKit::WebTouchPoint::StateReleased;
-    touch_event_.type = WebInputEvent::TouchEnd;
+    touch_event_.ReleasePoint(index);
   }
 
   const WebInputEvent* GetInputEventFromMessage(const IPC::Message& message) {
@@ -825,7 +766,7 @@ class RenderWidgetHostTest : public testing::Test {
   bool handle_mouse_event_;
 
  private:
-  WebTouchEvent touch_event_;
+  MockWebTouchEvent touch_event_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
 };
@@ -1988,7 +1929,7 @@ TEST_F(RenderWidgetHostTest, OverscrollWithTouchEvents) {
   EXPECT_EQ(65.f, host_->overscroll_delta_x());
   EXPECT_EQ(15.f, host_->overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
-  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_TRUE(host_->TouchEventQueueEmpty());
   process_->sink().ClearMessages();
 
   // Send another touch event. The page should get the touch-move event, even
@@ -1996,7 +1937,7 @@ TEST_F(RenderWidgetHostTest, OverscrollWithTouchEvents) {
   MoveTouchPoint(0, 55, 5);
   SendTouchEvent();
   EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(1U, host_->TouchEventQueueSize());
+  EXPECT_FALSE(host_->TouchEventQueueEmpty());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
   EXPECT_EQ(65.f, host_->overscroll_delta_x());
@@ -2005,12 +1946,12 @@ TEST_F(RenderWidgetHostTest, OverscrollWithTouchEvents) {
 
   SendInputEventACK(WebInputEvent::TouchMove,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_TRUE(host_->TouchEventQueueEmpty());
   process_->sink().ClearMessages();
 
   SimulateGestureScrollUpdateEvent(-10, 0, 0);
   EXPECT_EQ(0U, process_->sink().message_count());
-  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_TRUE(host_->TouchEventQueueEmpty());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
   EXPECT_EQ(55.f, host_->overscroll_delta_x());
@@ -2020,14 +1961,14 @@ TEST_F(RenderWidgetHostTest, OverscrollWithTouchEvents) {
   MoveTouchPoint(0, 255, 5);
   SendTouchEvent();
   EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(1U, host_->TouchEventQueueSize());
+  EXPECT_FALSE(host_->TouchEventQueueEmpty());
   process_->sink().ClearMessages();
   SendInputEventACK(WebInputEvent::TouchMove,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
   SimulateGestureScrollUpdateEvent(200, 0, 0);
   EXPECT_EQ(0U, process_->sink().message_count());
-  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_TRUE(host_->TouchEventQueueEmpty());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
   EXPECT_EQ(255.f, host_->overscroll_delta_x());
@@ -2039,13 +1980,13 @@ TEST_F(RenderWidgetHostTest, OverscrollWithTouchEvents) {
   ReleaseTouchPoint(0);
   SendTouchEvent();
   EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(1U, host_->TouchEventQueueSize());
+  EXPECT_FALSE(host_->TouchEventQueueEmpty());
   process_->sink().ClearMessages();
 
   SendInputEventACK(WebInputEvent::TouchEnd,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(0U, process_->sink().message_count());
-  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_TRUE(host_->TouchEventQueueEmpty());
 
   SimulateGestureEvent(WebKit::WebInputEvent::GestureScrollEnd,
                        WebGestureEvent::Touchscreen);
@@ -2055,7 +1996,7 @@ TEST_F(RenderWidgetHostTest, OverscrollWithTouchEvents) {
       TimeDelta::FromMilliseconds(10));
   base::MessageLoop::current()->Run();
   EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_TRUE(host_->TouchEventQueueEmpty());
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->completed_mode());

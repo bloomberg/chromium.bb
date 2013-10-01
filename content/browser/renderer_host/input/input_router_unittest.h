@@ -9,6 +9,7 @@
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/mock_input_ack_handler.h"
 #include "content/browser/renderer_host/input/mock_input_router_client.h"
+#include "content/browser/renderer_host/input/mock_web_input_event_builders.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,9 +42,7 @@ class InputRouterTest : public testing::Test {
   void SimulateWheelEvent(float dX, float dY, int modifiers, bool precise);
   void SimulateMouseMove(int x, int y, int modifiers);
   void SimulateWheelEventWithPhase(WebKit::WebMouseWheelEvent::Phase phase);
-  void SimulateGestureEventCore(WebKit::WebInputEvent::Type type,
-                            WebKit::WebGestureEvent::SourceDevice sourceDevice,
-                            WebKit::WebGestureEvent* gesture_event);
+  void SimulateGestureEvent(const WebKit::WebGestureEvent& event);
   void SimulateGestureEvent(WebKit::WebInputEvent::Type type,
                             WebKit::WebGestureEvent::SourceDevice sourceDevice);
   void SimulateGestureScrollUpdateEvent(float dX, float dY, int modifiers);
@@ -73,7 +72,7 @@ class InputRouterTest : public testing::Test {
 
  private:
   base::MessageLoopForUI message_loop_;
-  WebKit::WebTouchEvent touch_event_;
+  MockWebTouchEvent touch_event_;
 
   scoped_ptr<TestBrowserContext> browser_context_;
 };

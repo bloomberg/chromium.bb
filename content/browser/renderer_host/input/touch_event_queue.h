@@ -20,7 +20,7 @@ class CoalescedWebTouchEvent;
 
 // Interface with which TouchEventQueue can forward touch events, and dispatch
 // touch event responses.
-class TouchEventQueueClient {
+class CONTENT_EXPORT TouchEventQueueClient {
  public:
   virtual ~TouchEventQueueClient() {}
 
@@ -33,7 +33,7 @@ class TouchEventQueueClient {
 };
 
 // A queue for throttling and coalescing touch-events.
-class TouchEventQueue {
+class CONTENT_EXPORT TouchEventQueue {
  public:
 
   // The |client| must outlive the TouchEventQueue.
@@ -64,13 +64,15 @@ class TouchEventQueue {
   void set_no_touch_move_to_renderer(bool value) {
     no_touch_move_to_renderer_ = value;
   }
+  bool no_touch_move_to_renderer() const {
+    return no_touch_move_to_renderer_;
+  }
 
  private:
-  friend class MockRenderWidgetHost;
-  friend class ImmediateInputRouterTest;
+  friend class TouchEventQueueTest;
 
-  CONTENT_EXPORT size_t GetQueueSize() const;
-  CONTENT_EXPORT const TouchEventWithLatencyInfo& GetLatestEvent() const;
+  size_t GetQueueSize() const;
+  const TouchEventWithLatencyInfo& GetLatestEvent() const;
 
   // Walks the queue, checking each event for |ShouldForwardToRenderer()|.
   // If true, forwards the touch event and stops processing further events.
