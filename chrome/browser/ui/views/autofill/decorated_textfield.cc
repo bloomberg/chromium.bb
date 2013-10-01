@@ -16,9 +16,6 @@ namespace {
 // Padding around icons inside DecoratedTextfields.
 const int kTextfieldIconPadding = 3;
 
-// Size of the triangular mark that indicates an invalid textfield (in pixels).
-const int kDogEarSize = 10;
-
 }  // namespace
 
 namespace autofill {
@@ -94,22 +91,6 @@ void DecoratedTextfield::OnPaint(gfx::Canvas* canvas) {
         bounds.right() - icon_.Width() - kTextfieldIconPadding;
     canvas->DrawImageInt(icon_.AsImageSkia(), x,
                          bounds.y() + (bounds.height() - icon_.Height()) / 2);
-  }
-
-  // Then the invalid indicator.
-  if (invalid_) {
-    if (base::i18n::IsRTL()) {
-      canvas->Translate(gfx::Vector2d(width(), 0));
-      canvas->Scale(-1, 1);
-    }
-
-    SkPath dog_ear;
-    dog_ear.moveTo(width() - kDogEarSize, 0);
-    dog_ear.lineTo(width(), 0);
-    dog_ear.lineTo(width(), kDogEarSize);
-    dog_ear.close();
-    canvas->ClipPath(dog_ear);
-    canvas->DrawColor(kWarningColor);
   }
 }
 
