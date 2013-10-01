@@ -56,31 +56,6 @@ static String query(WebLocalizedString::Name name, const WebString& parameter1, 
     return WebKit::Platform::current()->queryLocalizedString(name, parameter1, parameter2);
 }
 
-String AXWebAreaText()
-{
-    return query(WebLocalizedString::AXWebAreaText);
-}
-
-String AXLinkText()
-{
-    return query(WebLocalizedString::AXLinkText);
-}
-
-String AXListMarkerText()
-{
-    return query(WebLocalizedString::AXListMarkerText);
-}
-
-String AXImageMapText()
-{
-    return query(WebLocalizedString::AXImageMapText);
-}
-
-String AXHeadingText()
-{
-    return query(WebLocalizedString::AXHeadingText);
-}
-
 String AXButtonActionVerb()
 {
     return query(WebLocalizedString::AXButtonActionVerb);

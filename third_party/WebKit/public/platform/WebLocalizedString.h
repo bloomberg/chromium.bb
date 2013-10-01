@@ -40,12 +40,12 @@ struct WebLocalizedString {
         AXCheckedCheckBoxActionVerb,
         AXDateTimeFieldEmptyValueText,
         AXDayOfMonthFieldText,
-        AXHeadingText,
+        AXHeadingText, // Deprecated.
         AXHourFieldText,
-        AXImageMapText,
+        AXImageMapText, // Deprecated.
         AXLinkActionVerb,
-        AXLinkText,
-        AXListMarkerText,
+        AXLinkText, // Deprecated.
+        AXListMarkerText, // Deprecated.
         AXMediaAudioElement,
         AXMediaAudioElementHelp,
         AXMediaCurrentTimeDisplay,
@@ -92,7 +92,7 @@ struct WebLocalizedString {
         AXSecondFieldText,
         AXTextFieldActionVerb,
         AXUncheckedCheckBoxActionVerb,
-        AXWebAreaText,
+        AXWebAreaText, // Deprecated.
         AXWeekOfYearFieldText,
         AXYearFieldText,
         CalendarClear,
