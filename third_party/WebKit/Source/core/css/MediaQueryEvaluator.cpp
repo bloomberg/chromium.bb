@@ -37,9 +37,9 @@
 #include "core/css/MediaFeatureNames.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQuery.h"
-#include "core/css/MediaQueryExp.h"
-#include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/MediaQueryResult.h"
 #include "core/dom/NodeRenderStyle.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
@@ -117,7 +117,7 @@ static bool applyRestrictor(MediaQuery::Restrictor r, bool value)
     return r == MediaQuery::Not ? !value : value;
 }
 
-bool MediaQueryEvaluator::eval(const MediaQuerySet* querySet, StyleResolver* styleResolver) const
+bool MediaQueryEvaluator::eval(const MediaQuerySet* querySet, MediaQueryResultList* viewportDependentMediaQueryResults) const
 {
     if (!querySet)
         return true;
@@ -137,11 +137,8 @@ bool MediaQueryEvaluator::eval(const MediaQuerySet* querySet, StyleResolver* sty
             size_t j = 0;
             for (; j < expressions.size(); ++j) {
                 bool exprResult = eval(expressions.at(j).get());
-                // FIXME: Instead of storing these on StyleResolver, we should store them locally
-                // and then any client of this method can grab at them afterwords.
-                // Alternatively we could use an explicit out-parameter of this method.
-                if (styleResolver && expressions.at(j)->isViewportDependent())
-                    styleResolver->addViewportDependentMediaQueryResult(expressions.at(j).get(), exprResult);
+                if (viewportDependentMediaQueryResults && expressions.at(j)->isViewportDependent())
+                    viewportDependentMediaQueryResults->append(adoptPtr(new MediaQueryResult(*expressions.at(j), exprResult)));
                 if (!exprResult)
                     break;
             }

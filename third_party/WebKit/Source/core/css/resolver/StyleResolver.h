@@ -58,7 +58,6 @@ class ElementRuleCollector;
 class KeyframeList;
 class KeyframeValue;
 class MediaQueryEvaluator;
-class MediaQueryExp;
 class MediaQueryResult;
 class RenderRegion;
 class RuleData;
@@ -252,8 +251,8 @@ public:
     CSSFontSelector* fontSelector() const { return m_fontSelector.get(); }
     ViewportStyleResolver* viewportStyleResolver() { return m_viewportStyleResolver.get(); }
 
-    // FIXME: This logic belongs in MediaQueryEvaluator.
-    void addViewportDependentMediaQueryResult(const MediaQueryExp*, bool result);
+    typedef Vector<OwnPtr<MediaQueryResult> > MediaQueryResultList;
+    MediaQueryResultList* viewportDependentMediaQueryResults() { return &m_viewportDependentMediaQueryResults; }
     bool hasViewportDependentMediaQueries() const { return !m_viewportDependentMediaQueryResults.isEmpty(); }
     bool affectedByViewportChange() const;
 
@@ -337,6 +336,8 @@ private:
     MatchedPropertiesCache m_matchedPropertiesCache;
 
     OwnPtr<MediaQueryEvaluator> m_medium;
+    MediaQueryResultList m_viewportDependentMediaQueryResults;
+
     RefPtr<RenderStyle> m_rootDefaultStyle;
 
     Document& m_document;
@@ -345,7 +346,6 @@ private:
     bool m_matchAuthorAndUserStyles;
 
     RefPtr<CSSFontSelector> m_fontSelector;
-    Vector<OwnPtr<MediaQueryResult> > m_viewportDependentMediaQueryResults;
 
     RefPtr<ViewportStyleResolver> m_viewportStyleResolver;
 

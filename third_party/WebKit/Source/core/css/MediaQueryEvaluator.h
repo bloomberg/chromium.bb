@@ -33,9 +33,9 @@
 namespace WebCore {
 class Frame;
 class MediaQueryExp;
+class MediaQueryResult;
 class MediaQuerySet;
 class RenderStyle;
-class StyleResolver;
 
 /**
  * Class that evaluates css media queries as defined in
@@ -73,8 +73,9 @@ public:
     bool mediaTypeMatch(const AtomicString& mediaTypeToMatch) const;
     bool mediaTypeMatchSpecific(const char* mediaTypeToMatch) const;
 
+    typedef Vector<OwnPtr<MediaQueryResult> > MediaQueryResultList;
     /** Evaluates a list of media queries */
-    bool eval(const MediaQuerySet*, StyleResolver* = 0) const;
+    bool eval(const MediaQuerySet*, MediaQueryResultList* = 0) const;
 
     /** Evaluates media query subexpression, ie "and (media-feature: value)" part */
     bool eval(const MediaQueryExp*) const;

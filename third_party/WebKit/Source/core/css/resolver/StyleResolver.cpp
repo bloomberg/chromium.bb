@@ -186,7 +186,7 @@ void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefP
     for (unsigned i = firstNew; i < size; ++i) {
         CSSStyleSheet* cssSheet = styleSheets[i].get();
         ASSERT(!cssSheet->disabled());
-        if (cssSheet->mediaQueries() && !m_medium->eval(cssSheet->mediaQueries(), this))
+        if (cssSheet->mediaQueries() && !m_medium->eval(cssSheet->mediaQueries(), &m_viewportDependentMediaQueryResults))
             continue;
 
         StyleSheetContents* sheet = cssSheet->contents();
@@ -1613,11 +1613,6 @@ void StyleResolver::applyPropertiesToStyle(const CSSPropertyValue* properties, s
             StyleBuilder::applyProperty(properties[i].property, state, properties[i].value);
         }
     }
-}
-
-void StyleResolver::addViewportDependentMediaQueryResult(const MediaQueryExp* expr, bool result)
-{
-    m_viewportDependentMediaQueryResults.append(adoptPtr(new MediaQueryResult(*expr, result)));
 }
 
 bool StyleResolver::affectedByViewportChange() const
