@@ -206,7 +206,7 @@ function NavigationListModel(volumeManager, shortcutListModel) {
            oldListIndex < this.shortcutList_.length) {
       var shortcutPath = this.shortcutListModel_.item(modelIndex);
       var cmp = this.shortcutListModel_.compare(
-          shortcutPath, this.shortcutList_[oldListIndex]);
+          shortcutPath, this.shortcutList_[oldListIndex].path);
       if (cmp > 0) {
         // The shortcut at shortcutList_[oldListIndex] is removed.
         permutation.push(-1);
@@ -224,7 +224,7 @@ function NavigationListModel(volumeManager, shortcutListModel) {
         // There exists an old NavigationModelItem instance.
         if (isMounted) {
           // Reuse the old instance.
-          premutation.push(newList.length + this.volumeList_.length);
+          permutation.push(newList.length + this.volumeList_.length);
           newList.push(this.shortcutList_[oldListIndex]);
         } else {
           permutation.push(-1);
