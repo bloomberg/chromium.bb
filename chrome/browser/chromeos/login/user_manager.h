@@ -188,6 +188,11 @@ class UserManager {
   virtual const User* FindLocallyManagedUser(
       const string16& display_name) const = 0;
 
+  // Returns the locally managed user with the given |sync_id| if found in
+  // the persistent list. Returns |NULL| otherwise.
+  virtual const User* FindLocallyManagedUserBySyncId(
+      const std::string& sync_id) const = 0;
+
   // Returns the logged-in user.
   // TODO(nkostylev): Deprecate this call, move clients to GetActiveUser().
   // http://crbug.com/230852

@@ -37,6 +37,8 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD1(IsKnownUser, bool(const std::string&));
   MOCK_CONST_METHOD1(FindUser, const User*(const std::string&));
   MOCK_CONST_METHOD1(FindLocallyManagedUser, const User*(const string16&));
+  MOCK_CONST_METHOD1(FindLocallyManagedUserBySyncId,
+                     const User*(const std::string&));
   MOCK_METHOD2(SaveUserOAuthStatus, void(const std::string&,
                                          User::OAuthTokenStatus));
   MOCK_METHOD2(SaveUserDisplayName, void(const std::string&,

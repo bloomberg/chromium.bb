@@ -69,6 +69,8 @@ class FakeUserManager : public UserManager {
   virtual const User* FindUser(const std::string& email) const OVERRIDE;
   virtual const User* FindLocallyManagedUser(
       const string16& display_name) const OVERRIDE;
+  virtual const User* FindLocallyManagedUserBySyncId(
+      const std::string& sync_id) const OVERRIDE;
   virtual const User* GetLoggedInUser() const OVERRIDE;
   virtual User* GetLoggedInUser() OVERRIDE;
   virtual const User* GetPrimaryUser() const OVERRIDE;

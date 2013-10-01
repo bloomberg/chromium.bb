@@ -644,6 +644,19 @@ const User* UserManagerImpl::FindLocallyManagedUser(
   return NULL;
 }
 
+const User* UserManagerImpl::FindLocallyManagedUserBySyncId(
+    const std::string& sync_id) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  const UserList& users = GetUsers();
+  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+    if (((*it)->GetType() == User::USER_TYPE_LOCALLY_MANAGED) &&
+        (GetManagedUserSyncId((*it)->email()) == sync_id)) {
+      return *it;
+    }
+  }
+  return NULL;
+}
+
 const User* UserManagerImpl::GetLoggedInUser() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return active_user_;
