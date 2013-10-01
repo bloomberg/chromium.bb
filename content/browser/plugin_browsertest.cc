@@ -173,8 +173,14 @@ IN_PROC_BROWSER_TEST_F(PluginTest,
 }
 #endif
 
-// Flaky, http://crbug.com/60071.
-IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(GetURLRequest404Response)) {
+// Flaky, http://crbug.com/302274.
+#if defined(OS_MACOSX)
+#define MAYBE_GetURLRequest404Response DISABLED_GetURLRequest404Response
+#else
+#define MAYBE_GetURLRequest404Response MAYBE(GetURLRequest404Response)
+#endif
+
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE_GetURLRequest404Response) {
   GURL url(URLRequestMockHTTPJob::GetMockUrl(
       base::FilePath().AppendASCII("npapi").
                        AppendASCII("plugin_url_request_404.html")));
