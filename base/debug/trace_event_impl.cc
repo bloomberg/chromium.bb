@@ -1551,14 +1551,6 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
                            num_args, arg_names, arg_types, arg_values,
                            convertable_values, flags);
 
-    if (thread_local_event_buffer) {
-      thread_local_event_buffer->AddEvent(trace_event, &notifier);
-    } else {
-      AutoLock lock(lock_);
-      AddEventToMainBufferWhileLocked(trace_event);
-      CheckIfBufferIsFullWhileLocked(&notifier);
-    }
-
     if (trace_options() & ECHO_TO_CONSOLE) {
       AutoLock lock(lock_);
 
@@ -1593,6 +1585,14 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 
       if (phase == TRACE_EVENT_PHASE_BEGIN)
         thread_event_start_times_[thread_id].push(timestamp);
+    }
+
+    if (thread_local_event_buffer) {
+      thread_local_event_buffer->AddEvent(trace_event, &notifier);
+    } else {
+      AutoLock lock(lock_);
+      AddEventToMainBufferWhileLocked(trace_event);
+      CheckIfBufferIsFullWhileLocked(&notifier);
     }
   }
 
