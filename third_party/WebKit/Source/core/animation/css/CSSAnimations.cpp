@@ -227,6 +227,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         HashSet<RefPtr<Player> > players;
         for (HashSet<RefPtr<InertAnimation> >::const_iterator animationsIter = iter->animations.begin(); animationsIter != iter->animations.end(); ++animationsIter) {
             const InertAnimation* inertAnimation = animationsIter->get();
+            // The event delegate is set on the the first animation only. We
+            // rely on the behavior of OwnPtr::release() to achieve this.
             RefPtr<Animation> animation = Animation::create(element, inertAnimation->effect(), inertAnimation->specified(), eventDelegate.release());
             players.add(element->document().timeline()->play(animation.get()));
         }
