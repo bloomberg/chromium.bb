@@ -10,6 +10,7 @@
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
+        'events/events.gyp:events',
         'gfx/gfx.gyp:gfx',
       ],
       'sources': [
@@ -83,6 +84,7 @@
         '../third_party/libpng/libpng.gyp:libpng',
         '../url/url.gyp:url_lib',
         'base/strings/ui_strings.gyp:ui_strings',
+        'events/events.gyp:events',
         'keycode_converter',
         'run_ui_unittests',
         'shell_dialogs',

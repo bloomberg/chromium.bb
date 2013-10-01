@@ -5,12 +5,6 @@
 #ifndef UI_EVENTS_EVENTS_EXPORT_H_
 #define UI_EVENTS_EVENTS_EXPORT_H_
 
-// TODO: Remove this block when the dependency of events (i.e. gfx) is its own
-// component, and allows events to be its own component.
-#if defined(UI_IMPLEMENTATION)
-#define EVENTS_IMPLEMENTATION
-#endif
-
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
