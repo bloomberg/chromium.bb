@@ -328,12 +328,12 @@ void AppListController::OnGestureEvent(ui::GestureEvent* event) {
 
 void AppListController::OnWindowFocused(aura::Window* gained_focus,
                                         aura::Window* lost_focus) {
-  if (gained_focus && view_ && is_visible_) {
+  if (lost_focus && view_ && is_visible_) {
     aura::Window* applist_container =
-        GetRootWindowController(gained_focus->GetRootWindow())->GetContainer(
+        GetRootWindowController(lost_focus->GetRootWindow())->GetContainer(
             kShellWindowId_AppListContainer);
-    if (gained_focus->parent() != applist_container)
-      SetVisible(false, gained_focus);
+    if (applist_container->Contains(lost_focus))
+      SetVisible(false, lost_focus);
   }
 }
 

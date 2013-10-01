@@ -199,6 +199,30 @@ TEST_F(WindowSelectorTest, OverviewUndimsShelf) {
   EXPECT_TRUE(shelf->GetDimsShelf());
 }
 
+// Tests that beginning window selection hides the app list.
+TEST_F(WindowSelectorTest, SelectingHidesAppList) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  Shell::GetInstance()->ToggleAppList(NULL);
+  EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
+  ToggleOverview();
+  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
+  ToggleOverview();
+
+  // The app list uses an animation to fade out. If it is toggled on immediately
+  // after being removed the old widget is re-used and it does not gain focus.
+  // When running under normal circumstances this shouldn't be possible, but
+  // it is in a test without letting the message loop run.
+  RunAllPendingInMessageLoop();
+
+  Shell::GetInstance()->ToggleAppList(NULL);
+  EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
+  Cycle(WindowSelector::FORWARD);
+  EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
+  StopCycling();
+}
+
 // Tests entering overview mode with three windows and cycling through them.
 TEST_F(WindowSelectorTest, BasicCycle) {
   gfx::Rect bounds(0, 0, 400, 400);
