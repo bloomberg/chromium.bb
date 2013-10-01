@@ -163,6 +163,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setColor(toAnimatableColor(value)->color());
         style->setVisitedLinkColor(toAnimatableColor(value)->visitedLinkColor());
         return;
+    case CSSPropertyFillOpacity:
+        style->setFillOpacity(clampTo<float>(toAnimatableNumber(value)->toDouble(), 0, 1));
+        return;
     case CSSPropertyHeight:
         style->setHeight(animatableValueToLength(value, state));
         return;
