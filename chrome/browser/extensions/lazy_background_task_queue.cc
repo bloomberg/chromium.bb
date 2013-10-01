@@ -79,8 +79,13 @@ void LazyBackgroundTaskQueue::AddPendingTask(
       ExtensionProcessManager* pm =
           ExtensionSystem::Get(profile)->process_manager();
       pm->IncrementLazyKeepaliveCount(extension);
-      pm->CreateBackgroundHost(extension,
-                               BackgroundInfo::GetBackgroundURL(extension));
+      // Creating the background host may fail, e.g. if |profile| is incognito
+      // but the extension isn't enabled in incognito mode.
+      if (!pm->CreateBackgroundHost(
+            extension, BackgroundInfo::GetBackgroundURL(extension))) {
+        task.Run(NULL);
+        return;
+      }
     }
   } else {
     tasks_list = it->second.get();

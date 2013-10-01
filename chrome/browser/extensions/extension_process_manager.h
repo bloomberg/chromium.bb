@@ -77,8 +77,9 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   // Creates a new UI-less extension instance.  Like CreateViewHost, but not
   // displayed anywhere.
-  virtual void CreateBackgroundHost(const extensions::Extension* extension,
-                                    const GURL& url);
+  virtual extensions::ExtensionHost* CreateBackgroundHost(
+      const extensions::Extension* extension,
+      const GURL& url);
 
   // Gets the ExtensionHost for the background page for an extension, or NULL if
   // the extension isn't running or doesn't have a background page.
