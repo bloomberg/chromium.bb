@@ -752,5 +752,39 @@
         },
       ],
     }],  # OS=="android"
+    ['OS=="win" and fastbuild==0 and target_arch=="ia32"', {
+      'variables': {
+        'dest_dir': '<(PRODUCT_DIR)/syzygy',
+      },
+      'targets': [
+        {
+          'target_name': 'content_shell_syzyasan',
+          'type': 'none',
+          'sources' : [],
+          # Instrument content_shell with SyzyAsan.
+          'actions': [
+            {
+              'action_name': 'Instrument content_shell with SyzyAsan',
+              'msvs_cygwin_shell': 0,
+              'inputs': [
+                '<(PRODUCT_DIR)/content_shell.exe',
+              ],
+              'outputs': [
+                '<(dest_dir)/content_shell.exe',
+                '<(dest_dir)/content_shell.exe.pdb',
+              ],
+              'action': [
+                'python',
+                '<(DEPTH)/chrome/tools/build/win/syzygy_instrument.py',
+                '--mode', 'asan',
+                '--input_executable', '<(PRODUCT_DIR)/content_shell.exe',
+                '--input_symbol', '<(PRODUCT_DIR)/content_shell.exe.pdb',
+                '--destination_dir', '<(dest_dir)',
+              ],
+            },
+          ],
+        },
+      ],
+    }],  # OS=="win" and fastbuild==0 and target_arch=="ia32"
   ]
 }
