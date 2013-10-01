@@ -2715,6 +2715,7 @@ void LayerTreeHostImpl::SetDebugState(
     paint_time_counter_->ClearHistory();
 
   debug_state_ = new_debug_state;
+  UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
   SetFullRootLayerDamage();
 }
 

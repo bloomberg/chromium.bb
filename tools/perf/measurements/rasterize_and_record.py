@@ -48,7 +48,8 @@ class StatsCollector(object):
   def GatherRasterizeStats(self, frame_number):
     for event in self.renderer_process.IterAllSlicesOfName(
         "RasterWorkerPoolTaskImpl::RunRasterOnThread"):
-      if event.args["data"]["source_frame_number"] == frame_number:
+      if event.args["data"]["source_frame_number"] == frame_number and \
+         event.args['data']['resolution'] == 'HIGH_RESOLUTION':
         for raster_loop_event in event.GetAllSubSlicesOfName("RasterLoop"):
           best_rasterize_time = float("inf")
           for raster_event in raster_loop_event.GetAllSubSlicesOfName(
@@ -152,9 +153,9 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     self._metrics.Start()
 
     tab.ExecuteJavaScript("""
-        console.time("measureNextFrame");
         window.__rafFired = false;
         window.webkitRequestAnimationFrame(function() {
+          console.time("measureNextFrame");
           chrome.gpuBenchmarking.setNeedsDisplayOnAllLayers();
           window.__rafFired  = true;
         });
@@ -175,10 +176,10 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     rendering_stats = self._metrics.end_values
 
     results.Add('best_rasterize_time', 'seconds',
-                collector.total_best_rasterize_time / 1.e3,
+                collector.total_best_rasterize_time,
                 data_type='unimportant')
     results.Add('best_record_time', 'seconds',
-                collector.total_best_record_time / 1.e3,
+                collector.total_best_record_time,
                 data_type='unimportant')
     results.Add('total_pixels_rasterized', 'pixels',
                 collector.total_pixels_rasterized,
