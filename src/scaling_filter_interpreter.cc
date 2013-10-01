@@ -218,6 +218,13 @@ void ScalingFilterInterpreter::ConsumeGesture(const Gesture& gs) {
       copy.details.fling.ordinal_vx *= screen_x_scale_;
       copy.details.fling.ordinal_vy *= screen_y_scale_;
       break;
+    case kGestureTypeSwipe:
+      // Scale swipes, as we want them to follow the pointer speed.
+      copy.details.swipe.dx *= screen_x_scale_;
+      copy.details.swipe.dy *= screen_y_scale_;
+      copy.details.swipe.ordinal_dx *= screen_x_scale_;
+      copy.details.swipe.ordinal_dy *= screen_y_scale_;
+      break;
     default:
       break;
   }

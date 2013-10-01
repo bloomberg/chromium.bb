@@ -130,6 +130,22 @@ void AccelFilterInterpreter::ConsumeGesture(const Gesture& gs) {
   // The quantities to scale:
   float* scale_out_x = NULL;
   float* scale_out_y = NULL;
+  // We scale ordinal values of scroll/fling gestures as well because we use
+  // them in Chrome for history navigation (back/forward page gesture) and
+  // we will easily run out of the touchpad space if we just use raw values
+  // as they are. To estimate the length one needs to scroll on the touchpad
+  // to trigger the history navigation:
+  //
+  // Pixel:
+  // 1280 (screen width in DIPs) * 0.25 (overscroll threshold) /
+  // (133 / 25.4) (conversion factor from DIP to mm) = 61.1 mm
+  // Most other low-res devices:
+  // 1366 * 0.25 / (133 / 25.4) = 65.2 mm
+  //
+  // With current scroll output scaling factor (2.5), we can reduce the length
+  // required to about one inch on all devices.
+  float* scale_out_x_ordinal = NULL;
+  float* scale_out_y_ordinal = NULL;
 
   switch (copy.type) {
     case kGestureTypeMove:
@@ -161,9 +177,13 @@ void AccelFilterInterpreter::ConsumeGesture(const Gesture& gs) {
         mag = sqrtf(vx * vx + vy * vy);
         scale_out_x = &copy.details.fling.vx;
         scale_out_y = &copy.details.fling.vy;
+        scale_out_x_ordinal = &copy.details.fling.ordinal_vx;
+        scale_out_y_ordinal = &copy.details.fling.ordinal_vy;
       } else {
         scale_out_x = dx = &copy.details.scroll.dx;
         scale_out_y = dy = &copy.details.scroll.dy;
+        scale_out_x_ordinal = &copy.details.scroll.ordinal_dx;
+        scale_out_y_ordinal = &copy.details.scroll.ordinal_dy;
       }
       if (scroll_sensitivity_.val_ >= 1 && scroll_sensitivity_.val_ <= 5) {
         segs = scroll_curves_[scroll_sensitivity_.val_ - 1];
@@ -196,6 +216,13 @@ void AccelFilterInterpreter::ConsumeGesture(const Gesture& gs) {
     float ratio = segs[i].sqr_ * mag + segs[i].mul_ + segs[i].int_ / mag;
     *scale_out_x *= ratio * x_scale;
     *scale_out_y *= ratio * y_scale;
+    if (copy.type == kGestureTypeFling ||
+        copy.type == kGestureTypeScroll) {
+      // We don't accelerate the ordinal values as we do for normal ones
+      // because this is how the Chrome needs it.
+      *scale_out_x_ordinal *= x_scale;
+      *scale_out_y_ordinal *= y_scale;
+    }
     ProduceGesture(copy);
     return;
   }
