@@ -107,7 +107,6 @@ FileAPIMessageFilter::FileAPIMessageFilter(
 
 void FileAPIMessageFilter::OnChannelConnected(int32 peer_pid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserMessageFilter::OnChannelConnected(peer_pid);
 
   if (request_context_getter_.get()) {
     DCHECK(!request_context_);
@@ -124,7 +123,6 @@ void FileAPIMessageFilter::OnChannelConnected(int32 peer_pid) {
 
 void FileAPIMessageFilter::OnChannelClosing() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserMessageFilter::OnChannelClosing();
 
   // Unregister all the blob and stream URLs that are previously registered in
   // this process.

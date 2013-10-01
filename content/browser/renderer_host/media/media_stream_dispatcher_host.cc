@@ -125,7 +125,6 @@ bool MediaStreamDispatcherHost::OnMessageReceived(
 }
 
 void MediaStreamDispatcherHost::OnChannelClosing() {
-  BrowserMessageFilter::OnChannelClosing();
   DVLOG(1) << "MediaStreamDispatcherHost::OnChannelClosing";
 
   // Since the IPC channel is gone, close all requesting/requested streams.

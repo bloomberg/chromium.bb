@@ -531,7 +531,7 @@ bool RenderProcessHostImpl::Init() {
 
 void RenderProcessHostImpl::CreateMessageFilters() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  channel_->AddFilter(new ResourceSchedulerFilter(GetID()));
+  AddFilter(new ResourceSchedulerFilter(GetID()));
   MediaInternals* media_internals = MediaInternals::GetInstance();;
   media::AudioManager* audio_manager =
       BrowserMainLoop::GetInstance()->audio_manager();
@@ -540,7 +540,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   if (supports_browser_plugin_) {
     scoped_refptr<BrowserPluginMessageFilter> bp_message_filter(
         new BrowserPluginMessageFilter(GetID(), IsGuest()));
-    channel_->AddFilter(bp_message_filter.get());
+    AddFilter(bp_message_filter.get());
   }
 
   scoped_refptr<RenderMessageFilter> render_message_filter(
@@ -558,7 +558,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           audio_manager,
           media_internals,
           storage_partition_impl_->GetDOMStorageContext()));
-  channel_->AddFilter(render_message_filter.get());
+  AddFilter(render_message_filter.get());
   BrowserContext* browser_context = GetBrowserContext();
   ResourceContext* resource_context = browser_context->GetResourceContext();
 
@@ -578,86 +578,86 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       storage_partition_impl_->GetFileSystemContext(),
       get_contexts_callback);
 
-  channel_->AddFilter(resource_message_filter);
+  AddFilter(resource_message_filter);
   MediaStreamManager* media_stream_manager =
       BrowserMainLoop::GetInstance()->media_stream_manager();
-  channel_->AddFilter(new AudioInputRendererHost(
+  AddFilter(new AudioInputRendererHost(
       audio_manager,
       media_stream_manager,
       BrowserMainLoop::GetInstance()->audio_mirroring_manager(),
       BrowserMainLoop::GetInstance()->user_input_monitor()));
-  channel_->AddFilter(new AudioRendererHost(
+  AddFilter(new AudioRendererHost(
       GetID(),
       audio_manager,
       BrowserMainLoop::GetInstance()->audio_mirroring_manager(),
       media_internals,
       media_stream_manager));
-  channel_->AddFilter(
+  AddFilter(
       new MIDIHost(GetID(), BrowserMainLoop::GetInstance()->midi_manager()));
-  channel_->AddFilter(new MIDIDispatcherHost(GetID(), browser_context));
-  channel_->AddFilter(new VideoCaptureHost(media_stream_manager));
-  channel_->AddFilter(new AppCacheDispatcherHost(
+  AddFilter(new MIDIDispatcherHost(GetID(), browser_context));
+  AddFilter(new VideoCaptureHost(media_stream_manager));
+  AddFilter(new AppCacheDispatcherHost(
       storage_partition_impl_->GetAppCacheService(),
       GetID()));
-  channel_->AddFilter(new ClipboardMessageFilter);
-  channel_->AddFilter(new DOMStorageMessageFilter(
+  AddFilter(new ClipboardMessageFilter);
+  AddFilter(new DOMStorageMessageFilter(
       GetID(),
       storage_partition_impl_->GetDOMStorageContext()));
-  channel_->AddFilter(new IndexedDBDispatcherHost(
+  AddFilter(new IndexedDBDispatcherHost(
       GetID(),
       storage_partition_impl_->GetIndexedDBContext()));
-  channel_->AddFilter(new ServiceWorkerDispatcherHost(
+  AddFilter(new ServiceWorkerDispatcherHost(
       storage_partition_impl_->GetServiceWorkerContext()));
   if (IsGuest()) {
     if (!g_browser_plugin_geolocation_context.Get().get()) {
       g_browser_plugin_geolocation_context.Get() =
           new BrowserPluginGeolocationPermissionContext();
     }
-    channel_->AddFilter(GeolocationDispatcherHost::New(
+    AddFilter(GeolocationDispatcherHost::New(
         GetID(), g_browser_plugin_geolocation_context.Get().get()));
   } else {
-    channel_->AddFilter(GeolocationDispatcherHost::New(
+    AddFilter(GeolocationDispatcherHost::New(
         GetID(), browser_context->GetGeolocationPermissionContext()));
   }
   gpu_message_filter_ = new GpuMessageFilter(GetID(), widget_helper_.get());
-  channel_->AddFilter(gpu_message_filter_);
+  AddFilter(gpu_message_filter_);
 #if defined(ENABLE_WEBRTC)
-  channel_->AddFilter(new WebRTCIdentityServiceHost(
+  AddFilter(new WebRTCIdentityServiceHost(
       GetID(), storage_partition_impl_->GetWebRTCIdentityStore()));
   peer_connection_tracker_host_ = new PeerConnectionTrackerHost(GetID());
-  channel_->AddFilter(peer_connection_tracker_host_.get());
-  channel_->AddFilter(new MediaStreamDispatcherHost(
+  AddFilter(peer_connection_tracker_host_.get());
+  AddFilter(new MediaStreamDispatcherHost(
       GetID(), media_stream_manager));
-  channel_->AddFilter(
+  AddFilter(
       new DeviceRequestMessageFilter(resource_context, media_stream_manager));
 #endif
 #if defined(ENABLE_PLUGINS)
-  channel_->AddFilter(new PepperRendererConnection(GetID()));
+  AddFilter(new PepperRendererConnection(GetID()));
 #endif
 #if defined(ENABLE_INPUT_SPEECH)
-  channel_->AddFilter(new InputTagSpeechDispatcherHost(
+  AddFilter(new InputTagSpeechDispatcherHost(
       IsGuest(), GetID(), storage_partition_impl_->GetURLRequestContext()));
 #endif
-  channel_->AddFilter(new SpeechRecognitionDispatcherHost(
+  AddFilter(new SpeechRecognitionDispatcherHost(
       GetID(), storage_partition_impl_->GetURLRequestContext()));
-  channel_->AddFilter(new FileAPIMessageFilter(
+  AddFilter(new FileAPIMessageFilter(
       GetID(),
       storage_partition_impl_->GetURLRequestContext(),
       storage_partition_impl_->GetFileSystemContext(),
       ChromeBlobStorageContext::GetFor(browser_context),
       StreamContext::GetFor(browser_context)));
-  channel_->AddFilter(new OrientationMessageFilter());
-  channel_->AddFilter(new FileUtilitiesMessageFilter(GetID()));
-  channel_->AddFilter(new MimeRegistryMessageFilter());
-  channel_->AddFilter(new DatabaseMessageFilter(
+  AddFilter(new OrientationMessageFilter());
+  AddFilter(new FileUtilitiesMessageFilter(GetID()));
+  AddFilter(new MimeRegistryMessageFilter());
+  AddFilter(new DatabaseMessageFilter(
       storage_partition_impl_->GetDatabaseTracker()));
 #if defined(OS_MACOSX)
-  channel_->AddFilter(new TextInputClientMessageFilter(GetID()));
+  AddFilter(new TextInputClientMessageFilter(GetID()));
 #elif defined(OS_WIN)
   channel_->AddFilter(new FontCacheDispatcher());
 #elif defined(OS_ANDROID)
   browser_demuxer_android_ = new BrowserDemuxerAndroid();
-  channel_->AddFilter(browser_demuxer_android_);
+  AddFilter(browser_demuxer_android_);
 #endif
 
   SocketStreamDispatcherHost::GetRequestContextCallback
@@ -668,9 +668,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
       new SocketStreamDispatcherHost(
           GetID(), request_context_callback, resource_context);
-  channel_->AddFilter(socket_stream_dispatcher_host);
+  AddFilter(socket_stream_dispatcher_host);
 
-  channel_->AddFilter(new WorkerMessageFilter(
+  AddFilter(new WorkerMessageFilter(
       GetID(),
       resource_context,
       WorkerStoragePartition(
@@ -685,30 +685,30 @@ void RenderProcessHostImpl::CreateMessageFilters() {
                  base::Unretained(widget_helper_.get()))));
 
 #if defined(ENABLE_WEBRTC)
-  channel_->AddFilter(new P2PSocketDispatcherHost(
+  AddFilter(new P2PSocketDispatcherHost(
       resource_context,
       browser_context->GetRequestContextForRenderProcess(GetID())));
 #endif
 
-  channel_->AddFilter(new TraceMessageFilter());
-  channel_->AddFilter(new ResolveProxyMsgHelper(
+  AddFilter(new TraceMessageFilter());
+  AddFilter(new ResolveProxyMsgHelper(
       browser_context->GetRequestContextForRenderProcess(GetID())));
-  channel_->AddFilter(new QuotaDispatcherHost(
+  AddFilter(new QuotaDispatcherHost(
       GetID(),
       storage_partition_impl_->GetQuotaManager(),
       GetContentClient()->browser()->CreateQuotaPermissionContext()));
-  channel_->AddFilter(new GamepadBrowserMessageFilter());
-  channel_->AddFilter(new DeviceMotionMessageFilter());
-  channel_->AddFilter(new DeviceOrientationMessageFilter());
-  channel_->AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));
-  channel_->AddFilter(new HistogramMessageFilter());
+  AddFilter(new GamepadBrowserMessageFilter());
+  AddFilter(new DeviceMotionMessageFilter());
+  AddFilter(new DeviceOrientationMessageFilter());
+  AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));
+  AddFilter(new HistogramMessageFilter());
 #if defined(USE_TCMALLOC) && (defined(OS_LINUX) || defined(OS_ANDROID))
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableMemoryBenchmarking))
-    channel_->AddFilter(new MemoryBenchmarkMessageFilter());
+    AddFilter(new MemoryBenchmarkMessageFilter());
 #endif
 #if defined(OS_ANDROID)
-  channel_->AddFilter(new VibrationMessageFilter());
+  AddFilter(new VibrationMessageFilter());
 #endif
 }
 
@@ -1375,6 +1375,10 @@ void RenderProcessHostImpl::ResumeRequestsForView(int route_id) {
 
 IPC::ChannelProxy* RenderProcessHostImpl::GetChannel() {
   return channel_.get();
+}
+
+void RenderProcessHostImpl::AddFilter(BrowserMessageFilter* filter) {
+  channel_->AddFilter(filter->GetFilter());
 }
 
 bool RenderProcessHostImpl::FastShutdownForPageCount(size_t count) {

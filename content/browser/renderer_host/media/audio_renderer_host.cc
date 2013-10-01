@@ -128,10 +128,6 @@ AudioRendererHost::~AudioRendererHost() {
 }
 
 void AudioRendererHost::OnChannelClosing() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  BrowserMessageFilter::OnChannelClosing();
-
   // Since the IPC channel is gone, close all requested audio streams.
   while (!audio_entries_.empty()) {
     // Note: OnCloseStream() removes the entries from audio_entries_.

@@ -46,8 +46,6 @@ void DOMStorageMessageFilter::UninitializeInSequence() {
 }
 
 void DOMStorageMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserMessageFilter::OnFilterAdded(channel);
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE,
       DOMStorageTaskRunner::PRIMARY_SEQUENCE,
@@ -55,8 +53,6 @@ void DOMStorageMessageFilter::OnFilterAdded(IPC::Channel* channel) {
 }
 
 void DOMStorageMessageFilter::OnFilterRemoved() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserMessageFilter::OnFilterRemoved();
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE,
       DOMStorageTaskRunner::PRIMARY_SEQUENCE,

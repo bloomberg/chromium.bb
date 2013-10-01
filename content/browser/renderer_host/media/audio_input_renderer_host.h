@@ -79,6 +79,7 @@ class CONTENT_EXPORT AudioInputRendererHost
  private:
   // TODO(henrika): extend test suite (compare AudioRenderHost)
   friend class BrowserThread;
+  friend class TestAudioInputRendererHost;
   friend class base::DeleteHelper<AudioInputRendererHost>;
 
   struct AudioEntry;

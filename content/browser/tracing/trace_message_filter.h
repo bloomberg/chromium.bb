@@ -20,9 +20,6 @@ class TraceMessageFilter : public BrowserMessageFilter {
  public:
   TraceMessageFilter();
 
-  // BrowserMessageFilter override.
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
-
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,

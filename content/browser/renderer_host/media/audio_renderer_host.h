@@ -83,6 +83,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   friend class BrowserThread;
   friend class base::DeleteHelper<AudioRendererHost>;
   friend class MockAudioRendererHost;
+  friend class TestAudioRendererHost;
   FRIEND_TEST_ALL_PREFIXES(AudioRendererHostTest, CreateMockStream);
   FRIEND_TEST_ALL_PREFIXES(AudioRendererHostTest, MockStreamDataConversation);
 

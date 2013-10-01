@@ -16,10 +16,6 @@ namespace content {
 
 HistogramMessageFilter::HistogramMessageFilter() {}
 
-void HistogramMessageFilter::OnChannelConnected(int32 peer_pid) {
-  BrowserMessageFilter::OnChannelConnected(peer_pid);
-}
-
 bool HistogramMessageFilter::OnMessageReceived(const IPC::Message& message,
                                               bool* message_was_ok) {
   bool handled = true;

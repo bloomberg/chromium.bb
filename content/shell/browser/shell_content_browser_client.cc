@@ -79,7 +79,7 @@ void ShellContentBrowserClient::RenderProcessHostCreated(
     RenderProcessHost* host) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
-  host->GetChannel()->AddFilter(new ShellMessageFilter(
+  host->AddFilter(new ShellMessageFilter(
       host->GetID(),
       BrowserContext::GetDefaultStoragePartition(browser_context())
           ->GetDatabaseTracker(),

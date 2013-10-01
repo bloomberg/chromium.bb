@@ -46,12 +46,6 @@ MIDIHost::~MIDIHost() {
     midi_manager_->EndSession(this);
 }
 
-void MIDIHost::OnChannelClosing() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  BrowserMessageFilter::OnChannelClosing();
-}
-
 void MIDIHost::OnDestruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
 }

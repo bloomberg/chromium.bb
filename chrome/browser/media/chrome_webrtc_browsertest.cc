@@ -457,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   // 2. When the filter goes away post a task on the file thread to signal the
   //    event.
   base::WaitableEvent ipc_channel_closed(false, false);
-  left_tab->GetRenderProcessHost()->GetChannel()->AddFilter(
+  left_tab->GetRenderProcessHost()->AddFilter(
       new BrowserMessageFilter(base::Bind(
           &base::WaitableEvent::Signal,
           base::Unretained(&ipc_channel_closed))));

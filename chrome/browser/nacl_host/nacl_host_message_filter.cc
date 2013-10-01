@@ -48,7 +48,6 @@ NaClHostMessageFilter::~NaClHostMessageFilter() {
 
 void NaClHostMessageFilter::OnChannelClosing() {
   PnaclHost::GetInstance()->RendererClosing(render_process_id_);
-  BrowserMessageFilter::OnChannelClosing();
 }
 
 bool NaClHostMessageFilter::OnMessageReceived(const IPC::Message& message,

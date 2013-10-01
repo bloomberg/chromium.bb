@@ -32,8 +32,6 @@ ResourceMessageFilter::~ResourceMessageFilter() {
 }
 
 void ResourceMessageFilter::OnChannelClosing() {
-  BrowserMessageFilter::OnChannelClosing();
-
   // Unhook us from all pending network requests so they don't get sent to a
   // deleted object.
   ResourceDispatcherHostImpl::Get()->CancelRequestsForProcess(child_id_);

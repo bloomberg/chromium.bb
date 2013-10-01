@@ -205,6 +205,9 @@ IPC::ChannelProxy* MockRenderProcessHost::GetChannel() {
   return NULL;
 }
 
+void MockRenderProcessHost::AddFilter(BrowserMessageFilter* filter) {
+}
+
 int MockRenderProcessHost::GetActiveViewCount() {
   int num_active_views = 0;
   scoped_ptr<RenderWidgetHostIterator> widgets(

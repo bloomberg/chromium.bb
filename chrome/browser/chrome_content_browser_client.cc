@@ -833,41 +833,38 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   net::URLRequestContextGetter* context =
       profile->GetRequestContextForRenderProcess(id);
 
-  host->GetChannel()->AddFilter(new ChromeRenderMessageFilter(
-      id, profile, context));
+  host->AddFilter(new ChromeRenderMessageFilter(id, profile, context));
 #if defined(ENABLE_PLUGINS)
-  host->GetChannel()->AddFilter(new PluginInfoMessageFilter(id, profile));
+  host->AddFilter(new PluginInfoMessageFilter(id, profile));
 #endif
 #if defined(ENABLE_PRINTING)
-  host->GetChannel()->AddFilter(new PrintingMessageFilter(id, profile));
+  host->AddFilter(new PrintingMessageFilter(id, profile));
 #endif
-  host->GetChannel()->AddFilter(
-      new SearchProviderInstallStateMessageFilter(id, profile));
+  host->AddFilter(new SearchProviderInstallStateMessageFilter(id, profile));
 #if defined(ENABLE_SPELLCHECK)
-  host->GetChannel()->AddFilter(new SpellCheckMessageFilter(id));
+  host->AddFilter(new SpellCheckMessageFilter(id));
 #endif
 #if defined(OS_MACOSX)
-  host->GetChannel()->AddFilter(new SpellCheckMessageFilterMac(id));
+  host->AddFilter(new SpellCheckMessageFilterMac(id));
 #endif
-  host->GetChannel()->AddFilter(new ChromeNetBenchmarkingMessageFilter(
+  host->AddFilter(new ChromeNetBenchmarkingMessageFilter(
       id, profile, context));
-  host->GetChannel()->AddFilter(
-      new prerender::PrerenderMessageFilter(id, profile));
-  host->GetChannel()->AddFilter(new ValidationMessageMessageFilter(id));
-  host->GetChannel()->AddFilter(new TtsMessageFilter(id, profile));
+  host->AddFilter(new prerender::PrerenderMessageFilter(id, profile));
+  host->AddFilter(new ValidationMessageMessageFilter(id));
+  host->AddFilter(new TtsMessageFilter(id, profile));
 #if defined(ENABLE_WEBRTC)
-  host->GetChannel()->AddFilter(new WebRtcLoggingHandlerHost());
+  host->AddFilter(new WebRtcLoggingHandlerHost());
 #endif
 #if !defined(DISABLE_NACL)
   ExtensionInfoMap* extension_info_map =
       extensions::ExtensionSystem::Get(profile)->info_map();
-  host->GetChannel()->AddFilter(new NaClHostMessageFilter(
+  host->AddFilter(new NaClHostMessageFilter(
       id, profile->IsOffTheRecord(),
       profile->GetPath(), extension_info_map,
       context));
 #endif
 #if defined(OS_ANDROID)
-  host->GetChannel()->AddFilter(new EncryptedMediaMessageFilterAndroid());
+  host->AddFilter(new EncryptedMediaMessageFilterAndroid());
 #endif
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(

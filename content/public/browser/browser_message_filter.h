@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_MESSAGE_FILTER_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_MESSAGE_FILTER_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/process/process.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,22 +20,28 @@ class TaskRunner;
 }
 
 namespace content {
+struct BrowserMessageFilterTraits;
 
 // Base class for message filters in the browser process.  You can receive and
 // send messages on any thread.
 class CONTENT_EXPORT BrowserMessageFilter
-    : public IPC::ChannelProxy::MessageFilter,
+    : public base::RefCountedThreadSafe<
+          BrowserMessageFilter, BrowserMessageFilterTraits>,
       public IPC::Sender {
  public:
   BrowserMessageFilter();
 
-  // IPC::ChannelProxy::MessageFilter methods.  If you override them, make sure
-  // to call them as well.  These are always called on the IO thread.
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
-  virtual void OnChannelClosing() OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  // DON'T OVERRIDE THIS!  Override the other version below.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  // These match the corresponding IPC::ChannelProxy::MessageFilter methods and
+  // are always called on the IO thread.
+  virtual void OnFilterAdded(IPC::Channel* channel) {}
+  virtual void OnFilterRemoved() {}
+  virtual void OnChannelClosing() {}
+  virtual void OnChannelConnected(int32 peer_pid) {}
+
+  // Called when the message filter is about to be deleted.  This gives
+  // derived classes the option of controlling which thread they're deleted
+  // on etc.
+  virtual void OnDestruct() const;
 
   // IPC::Sender implementation.  Can be called on any thread.  Can't send sync
   // messages (since we don't want to block the browser on any other process).
@@ -49,7 +56,7 @@ class CONTENT_EXPORT BrowserMessageFilter
   // browser thread, change |thread| to the id of the target thread
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
-      BrowserThread::ID* thread);
+      BrowserThread::ID* thread) {}
 
   // If you want the message to be dispatched via the SequencedWorkerPool,
   // return a non-null task runner which will target tasks accordingly.
@@ -71,6 +78,10 @@ class CONTENT_EXPORT BrowserMessageFilter
   // Can be called on any thread, after OnChannelConnected is called.
   base::ProcessId peer_pid() const { return peer_pid_; }
 
+  void set_peer_pid_for_testing(base::ProcessId peer_pid) {
+    peer_pid_ = peer_pid;
+  }
+
   // Checks that the given message can be dispatched on the UI thread, depending
   // on the platform.  If not, returns false and an error ot the sender.
   static bool CheckCanDispatchOnUI(const IPC::Message& message,
@@ -84,8 +95,24 @@ class CONTENT_EXPORT BrowserMessageFilter
   virtual ~BrowserMessageFilter();
 
  private:
-  // Dispatches a message to the derived class.
-  bool DispatchMessage(const IPC::Message& message);
+  friend class base::RefCountedThreadSafe<BrowserMessageFilter,
+                                          BrowserMessageFilterTraits>;
+
+  class Internal;
+  friend class BrowserChildProcessHostImpl;
+  friend class BrowserPpapiHost;
+  friend class RenderProcessHostImpl;
+
+  // This is private because the only classes that need access to it are made
+  // friends above. This is only guaranteed to be valid on creation, after that
+  // this class could outlive the filter.
+  IPC::ChannelProxy::MessageFilter* GetFilter();
+
+  // This implements IPC::ChannelProxy::MessageFilter so that we can hide that
+  // from child classes. Internal keeps a reference to this class, which is why
+  // there's a weak pointer back. This class could outlive Internal based on
+  // what the child class does in its OnDestruct method.
+  Internal* internal_;
 
   IPC::Channel* channel_;
   base::ProcessId peer_pid_;
@@ -94,6 +121,12 @@ class CONTENT_EXPORT BrowserMessageFilter
   base::Lock peer_handle_lock_;
   base::ProcessHandle peer_handle_;
 #endif
+};
+
+struct BrowserMessageFilterTraits {
+  static void Destruct(const BrowserMessageFilter* filter) {
+    filter->OnDestruct();
+  }
 };
 
 }  // namespace content

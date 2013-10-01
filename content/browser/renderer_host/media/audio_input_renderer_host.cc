@@ -63,8 +63,6 @@ AudioInputRendererHost::~AudioInputRendererHost() {
 }
 
 void AudioInputRendererHost::OnChannelClosing() {
-  BrowserMessageFilter::OnChannelClosing();
-
   // Since the IPC channel is gone, close all requested audio streams.
   DeleteEntries();
 }

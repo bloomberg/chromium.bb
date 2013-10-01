@@ -155,7 +155,7 @@ class ChannelDestructionWatcher {
   }
 
   void WatchChannel(content::RenderProcessHost* host) {
-    host->GetChannel()->AddFilter(new DestructionMessageFilter(this));
+    host->AddFilter(new DestructionMessageFilter(this));
   }
 
   void WaitForChannelClose() {

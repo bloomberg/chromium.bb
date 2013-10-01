@@ -107,6 +107,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual void SetSuddenTerminationAllowed(bool enabled) OVERRIDE;
   virtual bool SuddenTerminationAllowed() const OVERRIDE;
   virtual IPC::ChannelProxy* GetChannel() OVERRIDE;
+  virtual void AddFilter(BrowserMessageFilter* filter) OVERRIDE;
   virtual bool FastShutdownForPageCount(size_t count) OVERRIDE;
   virtual bool FastShutdownStarted() const OVERRIDE;
   virtual base::TimeDelta GetChildProcessIdleTime() const OVERRIDE;

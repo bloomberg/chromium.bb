@@ -18,52 +18,87 @@ using content::BrowserMessageFilter;
 
 namespace content {
 
+class BrowserMessageFilter::Internal : public IPC::ChannelProxy::MessageFilter {
+ public:
+  explicit Internal(BrowserMessageFilter* filter) : filter_(filter) {}
+
+ private:
+  virtual ~Internal() {}
+
+  // IPC::ChannelProxy::MessageFilter implementation:
+  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
+    filter_->channel_ = channel;
+    filter_->OnFilterAdded(channel);
+  }
+
+  virtual void OnFilterRemoved() OVERRIDE {
+    filter_->OnFilterRemoved();
+  }
+
+  virtual void OnChannelClosing() OVERRIDE {
+    filter_->channel_ = NULL;
+    filter_->OnChannelClosing();
+  }
+
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE {
+    filter_->peer_pid_ = peer_pid;
+    filter_->OnChannelConnected(peer_pid);
+  }
+
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+    BrowserThread::ID thread = BrowserThread::IO;
+    filter_->OverrideThreadForMessage(message, &thread);
+
+    if (thread == BrowserThread::IO) {
+      scoped_refptr<base::TaskRunner> runner =
+          filter_->OverrideTaskRunnerForMessage(message);
+      if (runner.get()) {
+        runner->PostTask(
+            FROM_HERE,
+            base::Bind(
+                base::IgnoreResult(&Internal::DispatchMessage), this, message));
+        return true;
+      }
+      return DispatchMessage(message);
+    }
+
+    if (thread == BrowserThread::UI &&
+        !BrowserMessageFilter::CheckCanDispatchOnUI(message, filter_)) {
+      return true;
+    }
+
+    BrowserThread::PostTask(
+        thread, FROM_HERE,
+        base::Bind(
+            base::IgnoreResult(&Internal::DispatchMessage), this, message));
+    return true;
+  }
+
+  // Dispatches a message to the derived class.
+  bool DispatchMessage(const IPC::Message& message) {
+    bool message_was_ok = true;
+    bool rv = filter_->OnMessageReceived(message, &message_was_ok);
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) || rv) <<
+        "Must handle messages that were dispatched to another thread!";
+    if (!message_was_ok) {
+      content::RecordAction(UserMetricsAction("BadMessageTerminate_BMF"));
+      filter_->BadMessageReceived();
+    }
+
+    return rv;
+  }
+
+  scoped_refptr<BrowserMessageFilter> filter_;
+
+  DISALLOW_COPY_AND_ASSIGN(Internal);
+};
+
 BrowserMessageFilter::BrowserMessageFilter()
-    : channel_(NULL),
+    : internal_(NULL), channel_(NULL),
 #if defined(OS_WIN)
       peer_handle_(base::kNullProcessHandle),
 #endif
       peer_pid_(base::kNullProcessId) {
-}
-
-void BrowserMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  channel_ = channel;
-}
-
-void BrowserMessageFilter::OnChannelClosing() {
-  channel_ = NULL;
-}
-
-void BrowserMessageFilter::OnChannelConnected(int32 peer_pid) {
-  peer_pid_ = peer_pid;
-}
-
-bool BrowserMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  BrowserThread::ID thread = BrowserThread::IO;
-  OverrideThreadForMessage(message, &thread);
-
-  if (thread == BrowserThread::IO) {
-    scoped_refptr<base::TaskRunner> runner =
-        OverrideTaskRunnerForMessage(message);
-    if (runner.get()) {
-      runner->PostTask(
-          FROM_HERE,
-          base::Bind(base::IgnoreResult(&BrowserMessageFilter::DispatchMessage),
-                     this,
-                     message));
-      return true;
-    }
-    return DispatchMessage(message);
-  }
-
-  if (thread == BrowserThread::UI && !CheckCanDispatchOnUI(message, this))
-    return true;
-
-  BrowserThread::PostTask(
-      thread, FROM_HERE,
-      base::Bind(base::IgnoreResult(&BrowserMessageFilter::DispatchMessage),
-                 this, message));
-  return true;
 }
 
 base::ProcessHandle BrowserMessageFilter::PeerHandle() {
@@ -78,6 +113,11 @@ base::ProcessHandle BrowserMessageFilter::PeerHandle() {
   base::OpenPrivilegedProcessHandle(peer_pid_, &result);
   return result;
 #endif
+}
+
+
+void BrowserMessageFilter::OnDestruct() const {
+  delete this;
 }
 
 bool BrowserMessageFilter::Send(IPC::Message* message) {
@@ -104,10 +144,6 @@ bool BrowserMessageFilter::Send(IPC::Message* message) {
 
   delete message;
   return false;
-}
-
-void BrowserMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
-                                                    BrowserThread::ID* thread) {
 }
 
 base::TaskRunner* BrowserMessageFilter::OverrideTaskRunnerForMessage(
@@ -152,17 +188,12 @@ BrowserMessageFilter::~BrowserMessageFilter() {
 #endif
 }
 
-bool BrowserMessageFilter::DispatchMessage(const IPC::Message& message) {
-  bool message_was_ok = true;
-  bool rv = OnMessageReceived(message, &message_was_ok);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) || rv) <<
-      "Must handle messages that were dispatched to another thread!";
-  if (!message_was_ok) {
-    content::RecordAction(UserMetricsAction("BadMessageTerminate_BMF"));
-    BadMessageReceived();
-  }
-
-  return rv;
+IPC::ChannelProxy::MessageFilter* BrowserMessageFilter::GetFilter() {
+  // We create this on demand so that if a filter is used in a unit test but
+  // never attached to a channel, we don't leak Internal and this;
+  DCHECK(!internal_) << "Should only be called once.";
+  internal_ = new Internal(this);
+  return internal_;
 }
 
 }  // namespace content

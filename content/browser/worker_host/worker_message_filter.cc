@@ -30,8 +30,6 @@ WorkerMessageFilter::~WorkerMessageFilter() {
 }
 
 void WorkerMessageFilter::OnChannelClosing() {
-  BrowserMessageFilter::OnChannelClosing();
-
   MessagePortService::GetInstance()->OnWorkerMessageFilterClosing(this);
   WorkerServiceImpl::GetInstance()->OnWorkerMessageFilterClosing(this);
 }

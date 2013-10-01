@@ -20,8 +20,6 @@ VideoCaptureHost::VideoCaptureHost(MediaStreamManager* media_stream_manager)
 VideoCaptureHost::~VideoCaptureHost() {}
 
 void VideoCaptureHost::OnChannelClosing() {
-  BrowserMessageFilter::OnChannelClosing();
-
   // Since the IPC channel is gone, close all requested VideoCaptureDevices.
   for (EntryMap::iterator it = entries_.begin(); it != entries_.end(); it++) {
     const base::WeakPtr<VideoCaptureController>& controller = it->second;

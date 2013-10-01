@@ -47,7 +47,6 @@ DatabaseMessageFilter::DatabaseMessageFilter(
 }
 
 void DatabaseMessageFilter::OnChannelClosing() {
-  BrowserMessageFilter::OnChannelClosing();
   if (observer_added_) {
     observer_added_ = false;
     BrowserThread::PostTask(

@@ -221,27 +221,26 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       blob_storage_context,
       partition_.filesystem_context(),
       get_contexts_callback);
-  process_->GetHost()->AddFilter(resource_message_filter);
+  process_->AddFilter(resource_message_filter);
 
   worker_message_filter_ = new WorkerMessageFilter(
       render_process_id, resource_context_, partition_,
       base::Bind(&WorkerServiceImpl::next_worker_route_id,
                  base::Unretained(WorkerServiceImpl::GetInstance())));
-  process_->GetHost()->AddFilter(worker_message_filter_.get());
-  process_->GetHost()->AddFilter(new AppCacheDispatcherHost(
+  process_->AddFilter(worker_message_filter_.get());
+  process_->AddFilter(new AppCacheDispatcherHost(
       partition_.appcache_service(), process_->GetData().id));
-  process_->GetHost()->AddFilter(new FileAPIMessageFilter(
+  process_->AddFilter(new FileAPIMessageFilter(
       process_->GetData().id,
       url_request_context,
       partition_.filesystem_context(),
       blob_storage_context,
       stream_context));
-  process_->GetHost()->AddFilter(new FileUtilitiesMessageFilter(
+  process_->AddFilter(new FileUtilitiesMessageFilter(
       process_->GetData().id));
-  process_->GetHost()->AddFilter(new MimeRegistryMessageFilter());
-  process_->GetHost()->AddFilter(
-      new DatabaseMessageFilter(partition_.database_tracker()));
-  process_->GetHost()->AddFilter(new QuotaDispatcherHost(
+  process_->AddFilter(new MimeRegistryMessageFilter());
+  process_->AddFilter(new DatabaseMessageFilter(partition_.database_tracker()));
+  process_->AddFilter(new QuotaDispatcherHost(
       process_->GetData().id,
       partition_.quota_manager(),
       GetContentClient()->browser()->CreateQuotaPermissionContext()));
@@ -257,10 +256,9 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
           request_context_callback,
           resource_context_);
   socket_stream_dispatcher_host_ = socket_stream_dispatcher_host;
-  process_->GetHost()->AddFilter(socket_stream_dispatcher_host);
-  process_->GetHost()->AddFilter(
-      new WorkerDevToolsMessageFilter(process_->GetData().id));
-  process_->GetHost()->AddFilter(new IndexedDBDispatcherHost(
+  process_->AddFilter(socket_stream_dispatcher_host);
+  process_->AddFilter(new WorkerDevToolsMessageFilter(process_->GetData().id));
+  process_->AddFilter(new IndexedDBDispatcherHost(
       process_->GetData().id, partition_.indexed_db_context()));
 }
 

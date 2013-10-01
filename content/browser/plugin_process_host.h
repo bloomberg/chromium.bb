@@ -120,9 +120,6 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
   void AddWindow(HWND window);
 #endif
 
-  // Adds an IPC message filter.  A reference will be kept to the filter.
-  void AddFilter(IPC::ChannelProxy::MessageFilter* filter);
-
  private:
   // Sends a message to the plugin process to request creation of a new channel
   // for the given mime type.

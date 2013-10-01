@@ -179,7 +179,7 @@ class AudioRendererHostTest : public testing::Test {
         media_stream_manager_.get());
 
     // Simulate IPC channel connected.
-    host_->OnChannelConnected(base::GetCurrentProcId());
+    host_->set_peer_pid_for_testing(base::GetCurrentProcId());
   }
 
   virtual void TearDown() {

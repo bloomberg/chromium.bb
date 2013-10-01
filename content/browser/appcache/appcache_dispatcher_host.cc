@@ -21,7 +21,6 @@ AppCacheDispatcherHost::AppCacheDispatcherHost(
 }
 
 void AppCacheDispatcherHost::OnChannelConnected(int32 peer_pid) {
-  BrowserMessageFilter::OnChannelConnected(peer_pid);
   if (appcache_service_.get()) {
     backend_impl_.Initialize(
         appcache_service_.get(), &frontend_proxy_, process_id_);

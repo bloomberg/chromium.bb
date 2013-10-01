@@ -16,8 +16,6 @@ ProfilerMessageFilter::ProfilerMessageFilter(int process_type)
 }
 
 void ProfilerMessageFilter::OnChannelConnected(int32 peer_pid) {
-  BrowserMessageFilter::OnChannelConnected(peer_pid);
-
   tracked_objects::ThreadData::Status status =
       tracked_objects::ThreadData::status();
   Send(new ChildProcessMsg_SetProfilerStatus(status));

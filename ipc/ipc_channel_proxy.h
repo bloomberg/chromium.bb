@@ -54,12 +54,11 @@ class SendCallbackHelper;
 //
 class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
  public:
-  struct MessageFilterTraits;
 
   // A class that receives messages on the thread where the IPC channel is
   // running.  It can choose to prevent the default action for an IPC message.
   class IPC_EXPORT MessageFilter
-      : public base::RefCountedThreadSafe<MessageFilter, MessageFilterTraits> {
+      : public base::RefCountedThreadSafe<MessageFilter> {
    public:
     MessageFilter();
 
@@ -89,25 +88,12 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     // the message be handled in the default way.
     virtual bool OnMessageReceived(const Message& message);
 
-    // Called when the message filter is about to be deleted.  This gives
-    // derived classes the option of controlling which thread they're deleted
-    // on etc.
-    virtual void OnDestruct() const;
-
    protected:
     virtual ~MessageFilter();
 
    private:
-    friend class base::RefCountedThreadSafe<MessageFilter,
-                                            MessageFilterTraits>;
+    friend class base::RefCountedThreadSafe<MessageFilter>;
   };
-
-  struct MessageFilterTraits {
-    static void Destruct(const MessageFilter* filter) {
-      filter->OnDestruct();
-    }
-  };
-
 
   // Interface for a filter to be imposed on outgoing messages which can
   // re-write the message.  Used mainly for testing.

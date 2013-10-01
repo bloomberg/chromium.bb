@@ -100,9 +100,9 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
   data_.id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
 
   child_process_host_.reset(ChildProcessHost::Create(this));
-  child_process_host_->AddFilter(new TraceMessageFilter);
-  child_process_host_->AddFilter(new ProfilerMessageFilter(process_type));
-  child_process_host_->AddFilter(new HistogramMessageFilter());
+  AddFilter(new TraceMessageFilter);
+  AddFilter(new ProfilerMessageFilter(process_type));
+  AddFilter(new HistogramMessageFilter);
 
   g_child_process_list.Get().push_back(this);
   GetContentClient()->browser()->BrowserChildProcessHostCreated(this);
@@ -216,6 +216,10 @@ void BrowserChildProcessHostImpl::SetTerminateChildOnShutdown(
     bool terminate_on_shutdown) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   child_process_->SetTerminateChildOnShutdown(terminate_on_shutdown);
+}
+
+void BrowserChildProcessHostImpl::AddFilter(BrowserMessageFilter* filter) {
+  child_process_host_->AddFilter(filter->GetFilter());
 }
 
 void BrowserChildProcessHostImpl::NotifyProcessInstanceCreated(

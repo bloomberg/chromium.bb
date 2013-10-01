@@ -44,8 +44,6 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
 IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {}
 
 void IndexedDBDispatcherHost::OnChannelClosing() {
-  BrowserMessageFilter::OnChannelClosing();
-
   bool success = indexed_db_context_->TaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&IndexedDBDispatcherHost::ResetDispatcherHosts, this));

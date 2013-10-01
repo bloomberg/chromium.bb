@@ -321,7 +321,6 @@ RenderMessageFilter::~RenderMessageFilter() {
 }
 
 void RenderMessageFilter::OnChannelClosing() {
-  BrowserMessageFilter::OnChannelClosing();
 #if defined(ENABLE_PLUGINS)
   for (std::set<OpenChannelToNpapiPluginCallback*>::iterator it =
        plugin_host_clients_.begin(); it != plugin_host_clients_.end(); ++it) {
@@ -342,7 +341,6 @@ void RenderMessageFilter::OnChannelClosing() {
 }
 
 void RenderMessageFilter::OnChannelConnected(int32 peer_id) {
-  BrowserMessageFilter::OnChannelConnected(peer_id);
   base::ProcessHandle handle = PeerHandle();
 #if defined(OS_MACOSX)
   process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(handle,

@@ -176,7 +176,7 @@ class ForwardingFilter : public ResourceMessageFilter {
                    base::Unretained(this))),
       dest_(dest),
       resource_context_(resource_context) {
-    OnChannelConnected(base::GetCurrentProcId());
+    set_peer_pid_for_testing(base::GetCurrentProcId());
   }
 
   // ResourceMessageFilter override
@@ -1804,9 +1804,6 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
 
   // Make sure we don't hold onto the ResourceMessageFilter after it is deleted.
   GlobalRequestID first_global_request_id(first_child_id, request_id);
-  const ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(
-      host_.GetURLRequest(first_global_request_id));
-  EXPECT_FALSE(info->filter());
 
   // This second filter is used to emulate a second process.
   scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(

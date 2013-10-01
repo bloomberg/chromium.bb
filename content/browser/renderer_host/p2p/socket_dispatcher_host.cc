@@ -94,8 +94,6 @@ P2PSocketDispatcherHost::P2PSocketDispatcherHost(
 }
 
 void P2PSocketDispatcherHost::OnChannelClosing() {
-  BrowserMessageFilter::OnChannelClosing();
-
   // Since the IPC channel is gone, close pending connections.
   STLDeleteContainerPairSecondPointers(sockets_.begin(), sockets_.end());
   sockets_.clear();

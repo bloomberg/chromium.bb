@@ -45,13 +45,13 @@ class ScopedCOMInitializer;
 
 namespace content {
 
-class AudioInputRendererHost;
 class AudioMirroringManager;
-class AudioRendererHost;
 class ContentRendererClient;
 class MediaStreamManager;
 class RenderThreadImpl;
 class ResourceContext;
+class TestAudioInputRendererHost;
+class TestAudioRendererHost;
 class TestBrowserThread;
 class WebRtcAudioRenderer;
 class WebRTCMockRenderProcess;
@@ -174,8 +174,8 @@ class MAYBE_WebRTCAudioDeviceTest : public ::testing::Test,
   scoped_ptr<net::URLRequestContext> test_request_context_;
   scoped_ptr<ResourceContext> resource_context_;
   scoped_ptr<IPC::Channel> channel_;
-  scoped_refptr<AudioRendererHost> audio_render_host_;
-  scoped_refptr<AudioInputRendererHost> audio_input_renderer_host_;
+  scoped_refptr<TestAudioRendererHost> audio_render_host_;
+  scoped_refptr<TestAudioInputRendererHost> audio_input_renderer_host_;
 
   media::AudioHardwareConfig* audio_hardware_config_;  // Weak reference.
 

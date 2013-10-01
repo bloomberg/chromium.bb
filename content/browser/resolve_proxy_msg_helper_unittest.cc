@@ -27,6 +27,25 @@ class MockProxyConfigService : public net::ProxyConfigService {
   }
 };
 
+class TestResolveProxyMsgHelper : public ResolveProxyMsgHelper {
+ public:
+  TestResolveProxyMsgHelper(
+      net::ProxyService* proxy_service,
+      IPC::Listener* listener)
+      : ResolveProxyMsgHelper(proxy_service),
+        listener_(listener) {}
+  virtual bool Send(IPC::Message* message) OVERRIDE {
+    listener_->OnMessageReceived(*message);
+    delete message;
+    return true;
+  }
+
+ protected:
+  virtual ~TestResolveProxyMsgHelper() {}
+
+  IPC::Listener* listener_;
+};
+
 class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
  public:
   struct PendingResult {
@@ -43,11 +62,10 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
       : resolver_(new net::MockAsyncProxyResolver),
         service_(
             new net::ProxyService(new MockProxyConfigService, resolver_, NULL)),
-        helper_(new ResolveProxyMsgHelper(service_.get())),
+        helper_(new TestResolveProxyMsgHelper(service_.get(), this)),
         message_loop_(base::MessageLoop::TYPE_IO),
         io_thread_(BrowserThread::IO, &message_loop_) {
     test_sink_.AddFilter(this);
-    helper_->OnFilterAdded(&test_sink_);
   }
 
  protected:

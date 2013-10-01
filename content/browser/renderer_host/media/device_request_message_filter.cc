@@ -146,8 +146,6 @@ bool DeviceRequestMessageFilter::OnMessageReceived(const IPC::Message& message,
 }
 
 void DeviceRequestMessageFilter::OnChannelClosing() {
-  BrowserMessageFilter::OnChannelClosing();
-
   // Since the IPC channel is gone, cancel outstanding device requests.
   for (DeviceRequestList::iterator it = requests_.begin();
        it != requests_.end();

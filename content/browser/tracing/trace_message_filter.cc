@@ -15,15 +15,7 @@ TraceMessageFilter::TraceMessageFilter() :
     is_awaiting_buffer_percent_full_ack_(false) {
 }
 
-void TraceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  // Always on IO thread (BrowserMessageFilter guarantee).
-  BrowserMessageFilter::OnFilterAdded(channel);
-}
-
 void TraceMessageFilter::OnChannelClosing() {
-  // Always on IO thread (BrowserMessageFilter guarantee).
-  BrowserMessageFilter::OnChannelClosing();
-
   if (has_child_) {
     if (is_awaiting_end_ack_)
       OnEndTracingAck(std::vector<std::string>());
