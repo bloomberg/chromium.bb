@@ -1032,21 +1032,24 @@ void GpuDataManagerImplPrivate::InitializeImpl(
 
   if (!gpu_blacklist_json.empty()) {
     gpu_blacklist_.reset(gpu::GpuBlacklist::Create());
-    gpu_blacklist_->LoadList(
+    bool success = gpu_blacklist_->LoadList(
         browser_version_string, gpu_blacklist_json,
         gpu::GpuControlList::kCurrentOsOnly);
+    DCHECK(success);
   }
   if (!gpu_switching_list_json.empty()) {
     gpu_switching_list_.reset(gpu::GpuSwitchingList::Create());
-    gpu_switching_list_->LoadList(
+    bool success = gpu_switching_list_->LoadList(
         browser_version_string, gpu_switching_list_json,
         gpu::GpuControlList::kCurrentOsOnly);
+    DCHECK(success);
   }
   if (!gpu_driver_bug_list_json.empty()) {
     gpu_driver_bug_list_.reset(gpu::GpuDriverBugList::Create());
-    gpu_driver_bug_list_->LoadList(
+    bool success = gpu_driver_bug_list_->LoadList(
         browser_version_string, gpu_driver_bug_list_json,
         gpu::GpuControlList::kCurrentOsOnly);
+    DCHECK(success);
   }
 
   gpu_info_ = gpu_info;

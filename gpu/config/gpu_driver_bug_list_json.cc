@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.20",
+  "version": "2.21",
   "entries": [
     {
       "id": 1,
@@ -582,6 +582,21 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "gl_renderer": {
         "op": "=",
         "value": "PowerVR SGX 540"
+      },
+      "features": [
+        "disable_ext_discard_framebuffer"
+      ]
+    },
+    {
+      "id": 43,
+      "cr_bugs": [299494],
+      "description": "Framebuffer discarding doesn't accept trivial attachments on Vivante.",
+      "os": {
+        "type": "android"
+      },
+      "gl_extensions": {
+        "op": "contains",
+        "value": "GL_VIV_shader_binary"
       },
       "features": [
         "disable_ext_discard_framebuffer"
