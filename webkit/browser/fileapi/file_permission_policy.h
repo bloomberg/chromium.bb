@@ -11,8 +11,7 @@ namespace fileapi {
 
 WEBKIT_STORAGE_BROWSER_EXPORT extern const int kReadFilePermissions;
 WEBKIT_STORAGE_BROWSER_EXPORT extern const int kWriteFilePermissions;
-WEBKIT_STORAGE_BROWSER_EXPORT extern const int kCreateFilePermissions;
-WEBKIT_STORAGE_BROWSER_EXPORT extern const int kOpenPepperFilePermissions;
+WEBKIT_STORAGE_BROWSER_EXPORT extern const int kCreateNewFilePermissions;
 
 enum FilePermissionPolicy {
   // Any access should be always denied.

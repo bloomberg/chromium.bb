@@ -31,36 +31,16 @@ namespace content {
 
 namespace {
 
-const int kReadFilePermissions =
-    base::PLATFORM_FILE_OPEN |
-    base::PLATFORM_FILE_READ |
-    base::PLATFORM_FILE_EXCLUSIVE_READ |
-    base::PLATFORM_FILE_ASYNC;
+const int kEnumerateDirectoryPermissions = fileapi::kReadFilePermissions |
+                                           base::PLATFORM_FILE_ENUMERATE;
 
-const int kWriteFilePermissions =
-    base::PLATFORM_FILE_OPEN |
-    base::PLATFORM_FILE_WRITE |
-    base::PLATFORM_FILE_APPEND |
-    base::PLATFORM_FILE_EXCLUSIVE_WRITE |
-    base::PLATFORM_FILE_ASYNC |
-    base::PLATFORM_FILE_WRITE_ATTRIBUTES;
+const int kCreateOverwriteFilePermissions = base::PLATFORM_FILE_OPEN_ALWAYS |
+                                            base::PLATFORM_FILE_CREATE_ALWAYS;
 
-const int kCreateFilePermissions =
-    base::PLATFORM_FILE_CREATE;
-
-const int kEnumerateDirectoryPermissions =
-    kReadFilePermissions |
-    base::PLATFORM_FILE_ENUMERATE;
-
-// TODO(tommycli): These flag sets need some work to make more obvious.
-// Why for instance, does Create|Write != CreateWrite? http://crbug.com/263150
-const int kCreateReadWriteFilePermissions =
-    kReadFilePermissions |
-    kWriteFilePermissions |
-    kCreateFilePermissions |
-    base::PLATFORM_FILE_OPEN_ALWAYS |
-    base::PLATFORM_FILE_CREATE_ALWAYS |
-    base::PLATFORM_FILE_OPEN_TRUNCATED;
+const int kCreateReadWriteFilePermissions = fileapi::kReadFilePermissions |
+                                            fileapi::kWriteFilePermissions |
+                                            fileapi::kCreateNewFilePermissions |
+                                            kCreateOverwriteFilePermissions;
 
 }  // namespace
 
@@ -429,7 +409,7 @@ void ChildProcessSecurityPolicyImpl::GrantRequestSpecificFileURL(
 
 void ChildProcessSecurityPolicyImpl::GrantReadFile(int child_id,
                                                    const base::FilePath& file) {
-  GrantPermissionsForFile(child_id, file, kReadFilePermissions);
+  GrantPermissionsForFile(child_id, file, fileapi::kReadFilePermissions);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantCreateReadWriteFile(
@@ -466,18 +446,20 @@ void ChildProcessSecurityPolicyImpl::RevokeAllPermissionsForFile(
 
 void ChildProcessSecurityPolicyImpl::GrantReadFileSystem(
     int child_id, const std::string& filesystem_id) {
-  GrantPermissionsForFileSystem(child_id, filesystem_id, kReadFilePermissions);
+  GrantPermissionsForFileSystem(child_id, filesystem_id,
+                                fileapi::kReadFilePermissions);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantWriteFileSystem(
     int child_id, const std::string& filesystem_id) {
-  GrantPermissionsForFileSystem(child_id, filesystem_id, kWriteFilePermissions);
+  GrantPermissionsForFileSystem(child_id, filesystem_id,
+                                fileapi::kWriteFilePermissions);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantCreateFileForFileSystem(
     int child_id, const std::string& filesystem_id) {
   GrantPermissionsForFileSystem(child_id, filesystem_id,
-                                kCreateFilePermissions);
+                                fileapi::kCreateNewFilePermissions);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantCopyIntoFileSystem(
@@ -485,7 +467,7 @@ void ChildProcessSecurityPolicyImpl::GrantCopyIntoFileSystem(
   // TODO(tommycli): These granted permissions a bit too broad, but not abused.
   // We are fixing in http://crbug.com/262142 and associated CL.
   GrantPermissionsForFileSystem(child_id, filesystem_id,
-                                kCreateFilePermissions);
+                                fileapi::kCreateNewFilePermissions);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantSendMIDISysExMessage(int child_id) {
@@ -611,8 +593,9 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
 
 bool ChildProcessSecurityPolicyImpl::CanReadFile(int child_id,
                                                  const base::FilePath& file) {
-  return HasPermissionsForFile(child_id, file, kReadFilePermissions);
+  return HasPermissionsForFile(child_id, file, fileapi::kReadFilePermissions);
 }
+
 
 bool ChildProcessSecurityPolicyImpl::CanCreateReadWriteFile(
     int child_id,
@@ -631,15 +614,15 @@ bool ChildProcessSecurityPolicyImpl::CanReadFileSystem(
     int child_id, const std::string& filesystem_id) {
   return HasPermissionsForFileSystem(child_id,
                                      filesystem_id,
-                                     kReadFilePermissions);
+                                     fileapi::kReadFilePermissions);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanReadWriteFileSystem(
     int child_id, const std::string& filesystem_id) {
   return HasPermissionsForFileSystem(child_id,
                                      filesystem_id,
-                                     kReadFilePermissions |
-                                     kWriteFilePermissions);
+                                     fileapi::kReadFilePermissions |
+                                     fileapi::kWriteFilePermissions);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanCopyIntoFileSystem(
@@ -648,7 +631,7 @@ bool ChildProcessSecurityPolicyImpl::CanCopyIntoFileSystem(
   // We are fixing in http://crbug.com/262142 and associated CL.
   return HasPermissionsForFileSystem(child_id,
                                      filesystem_id,
-                                     kCreateFilePermissions);
+                                     fileapi::kCreateNewFilePermissions);
 }
 
 bool ChildProcessSecurityPolicyImpl::HasPermissionsForFile(
@@ -678,7 +661,7 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystemFile(
 
   // Any write access is disallowed on the root path.
   if (fileapi::VirtualPath::IsRootPath(url.path()) &&
-      (permissions & ~kReadFilePermissions)) {
+      (permissions & ~fileapi::kReadFilePermissions)) {
     return false;
   }
 
@@ -696,7 +679,7 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystemFile(
     return false;
 
   if ((found->second & fileapi::FILE_PERMISSION_READ_ONLY) &&
-      permissions & ~kReadFilePermissions) {
+      permissions & ~fileapi::kReadFilePermissions) {
     return false;
   }
 
@@ -712,19 +695,22 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystemFile(
 bool ChildProcessSecurityPolicyImpl::CanReadFileSystemFile(
     int child_id,
     const fileapi::FileSystemURL& url) {
-  return HasPermissionsForFileSystemFile(child_id, url, kReadFilePermissions);
+  return HasPermissionsForFileSystemFile(child_id, url,
+                                         fileapi::kReadFilePermissions);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanWriteFileSystemFile(
     int child_id,
     const fileapi::FileSystemURL& url) {
-  return HasPermissionsForFileSystemFile(child_id, url, kWriteFilePermissions);
+  return HasPermissionsForFileSystemFile(child_id, url,
+                                         fileapi::kWriteFilePermissions);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanCreateFileSystemFile(
     int child_id,
     const fileapi::FileSystemURL& url) {
-  return HasPermissionsForFileSystemFile(child_id, url, kCreateFilePermissions);
+  return HasPermissionsForFileSystemFile(child_id, url,
+                                         fileapi::kCreateNewFilePermissions);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanCreateReadWriteFileSystemFile(
