@@ -30,6 +30,21 @@ TEST_F(TranslateUtilTest, ToTranslateLanguageSynonym) {
   language = std::string("fil");
   TranslateUtil::ToTranslateLanguageSynonym(&language);
   EXPECT_EQ("tl", language);
+
+  // Preserve a sub code if the language has a synonym.
+  language = std::string("he-IL");
+  TranslateUtil::ToTranslateLanguageSynonym(&language);
+  EXPECT_EQ("iw-IL", language);
+
+  // Don't preserve a sub code if the language has just a similitude.
+  language = std::string("nb-NO");
+  TranslateUtil::ToTranslateLanguageSynonym(&language);
+  EXPECT_EQ("nb-NO", language);
+
+  // Preserve the argument if it doesn't have its synonym.
+  language = std::string("en");
+  TranslateUtil::ToTranslateLanguageSynonym(&language);
+  EXPECT_EQ("en", language);
 }
 
 // Tests that synonym language code is converted to one used in Chrome internal.
@@ -51,6 +66,21 @@ TEST_F(TranslateUtilTest, ToChromeLanguageSynonym) {
   language = std::string("tl");
   TranslateUtil::ToChromeLanguageSynonym(&language);
   EXPECT_EQ("fil", language);
+
+  // Preserve a sub code if the language has a synonym.
+  language = std::string("iw-IL");
+  TranslateUtil::ToChromeLanguageSynonym(&language);
+  EXPECT_EQ("he-IL", language);
+
+  // Don't preserve a sub code if the language has just a similitude.
+  language = std::string("no-NO");
+  TranslateUtil::ToChromeLanguageSynonym(&language);
+  EXPECT_EQ("no-NO", language);
+
+  // Preserve the argument if it doesn't have its synonym.
+  language = std::string("en");
+  TranslateUtil::ToChromeLanguageSynonym(&language);
+  EXPECT_EQ("en", language);
 }
 
 TEST_F(TranslateUtilTest, SecurityOrigin) {

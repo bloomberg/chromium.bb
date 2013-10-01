@@ -324,10 +324,21 @@ bool IsValidLanguageCode(const std::string& code) {
 
 bool IsSameOrSimilarLanguages(const std::string& page_language,
                               const std::string& cld_language) {
+  std::vector<std::string> chunks;
+
+  base::SplitString(page_language, '-', &chunks);
+  if (chunks.size() == 0)
+    return false;
+  std::string page_language_main_part = chunks[0];
+
+  base::SplitString(cld_language, '-', &chunks);
+  if (chunks.size() == 0)
+    return false;
+  std::string cld_language_main_part = chunks[0];
+
   // Language code part of |page_language| is matched to one of |cld_language|.
   // Country code is ignored here.
-  if (page_language.size() >= 2 &&
-      cld_language.find(page_language.c_str(), 0, 2) == 0) {
+  if (page_language_main_part == cld_language_main_part) {
     // Languages are matched strictly. Reports false to metrics, but returns
     // true.
     TranslateCommonMetrics::ReportSimilarLanguageMatch(false);

@@ -64,8 +64,19 @@ TEST_F(LanguageDetectionUtilTest, IsValidLanguageCode) {
 TEST_F(LanguageDetectionUtilTest, SimilarLanguageCode) {
   EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("en", "en"));
   EXPECT_FALSE(LanguageDetectionUtil::IsSameOrSimilarLanguages("en", "ja"));
-  EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("bs", "hr"));
+
+  // Language codes are same if the main parts are same. The synonyms should be
+  // took into account (ex: 'iw' and 'he').
   EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("sr-ME", "sr"));
+  EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("sr", "sr-ME"));
+  EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("he", "he-IL"));
+  EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("eng", "eng-US"));
+  EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("eng-US", "eng"));
+  EXPECT_FALSE(LanguageDetectionUtil::IsSameOrSimilarLanguages("eng", "enm"));
+
+  // Even though the main parts are different, some special language pairs are
+  // recognized as same languages.
+  EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("bs", "hr"));
   EXPECT_TRUE(LanguageDetectionUtil::IsSameOrSimilarLanguages("ne", "hi"));
   EXPECT_FALSE(LanguageDetectionUtil::IsSameOrSimilarLanguages("bs", "hi"));
 }
