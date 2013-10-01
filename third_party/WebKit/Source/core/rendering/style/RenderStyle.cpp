@@ -696,7 +696,7 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
         || rareInheritedData->textStrokeColor != other->rareInheritedData->textStrokeColor
         || rareInheritedData->textEmphasisColor != other->rareInheritedData->textEmphasisColor
         || rareInheritedData->textEmphasisFill != other->rareInheritedData->textEmphasisFill)
-        return StyleDifferenceRepaintIfText;
+        return StyleDifferenceRepaintIfTextOrColorChange;
 
     // Cursors are not checked, since they will be set appropriately in response to mouse events,
     // so they don't need to cause any repaint or layout.

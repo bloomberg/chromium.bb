@@ -1816,10 +1816,12 @@ void RenderObject::setPseudoStyle(PassRefPtr<RenderStyle> pseudoStyle)
     setStyle(pseudoStyle);
 }
 
-inline bool RenderObject::hasImmediateNonWhitespaceTextChild() const
+inline bool RenderObject::hasImmediateNonWhitespaceTextChildOrPropertiesDependentOnColor() const
 {
     for (const RenderObject* r = firstChild(); r; r = r->nextSibling()) {
         if (r->isText() && !toRenderText(r)->isAllCollapsibleWhitespace())
+            return true;
+        if (r->style()->hasOutline() || r->style()->hasBorder())
             return true;
     }
     return false;
@@ -1827,7 +1829,7 @@ inline bool RenderObject::hasImmediateNonWhitespaceTextChild() const
 
 inline bool RenderObject::shouldRepaintForStyleDifference(StyleDifference diff) const
 {
-    return diff == StyleDifferenceRepaint || (diff == StyleDifferenceRepaintIfText && hasImmediateNonWhitespaceTextChild());
+    return diff == StyleDifferenceRepaint || (diff == StyleDifferenceRepaintIfTextOrColorChange && hasImmediateNonWhitespaceTextChildOrPropertiesDependentOnColor());
 }
 
 void RenderObject::setStyle(PassRefPtr<RenderStyle> style)

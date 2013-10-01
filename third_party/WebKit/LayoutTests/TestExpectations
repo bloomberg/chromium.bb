@@ -794,6 +794,8 @@ webkit.org/b/112610 [ Win ] fast/text/word-space-with-kerning-3.html [ ImageOnly
 
 crbug.com/231154 fast/forms/textarea/textarea-appearance-basic.html [ Failure ImageOnlyFailure Pass ]
 
+crbug.com/278044 fast/repaint/hover-pseudo-borders.html [ NeedsRebaseline ]
+
 webkit.org/b/113487 [ Debug ] plugins/npruntime/npruntime-calls-with-null-npp.html [ Pass Timeout ]
 
 webkit.org/b/113555 fast/forms/state-restore-per-form.html [ Pass Timeout ]

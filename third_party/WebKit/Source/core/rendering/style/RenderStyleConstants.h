@@ -46,7 +46,7 @@ enum PrintColorAdjust {
 // (1) StyleDifferenceEqual - The two styles are identical.
 // (2) StyleDifferenceRecompositeLayer - The layer needs its position and transform updated, but no repaint.
 // (3) StyleDifferenceRepaint - The object just needs to be repainted.
-// (4) StyleDifferenceRepaintIfText - The object needs to be repainted if it contains text.
+// (4) StyleDifferenceRepaintIfTextOrColorChange - The object needs to be repainted if it contains text or properties dependent on color (e.g., border or outline).
 // (5) StyleDifferenceRepaintLayer - The layer and its descendant layers needs to be repainted.
 // (6) StyleDifferenceLayoutPositionedMovementOnly - Only the position of this positioned object has been updated.
 // (7) StyleDifferenceSimplifiedLayout - Only overflow needs to be recomputed.
@@ -56,7 +56,7 @@ enum StyleDifference {
     StyleDifferenceEqual,
     StyleDifferenceRecompositeLayer,
     StyleDifferenceRepaint,
-    StyleDifferenceRepaintIfText,
+    StyleDifferenceRepaintIfTextOrColorChange,
     StyleDifferenceRepaintLayer,
     StyleDifferenceLayoutPositionedMovementOnly,
     StyleDifferenceSimplifiedLayout,

@@ -1048,7 +1048,7 @@ private:
     void removeFromRenderFlowThreadRecursive(RenderFlowThread*);
 
     bool shouldRepaintForStyleDifference(StyleDifference) const;
-    bool hasImmediateNonWhitespaceTextChild() const;
+    bool hasImmediateNonWhitespaceTextChildOrPropertiesDependentOnColor() const;
 
     RenderStyle* cachedFirstLineStyle() const;
     StyleDifference adjustStyleDifference(StyleDifference, unsigned contextSensitiveProperties) const;
