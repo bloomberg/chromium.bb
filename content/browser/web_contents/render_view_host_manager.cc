@@ -395,6 +395,9 @@ void RenderViewHostManager::SwapOutOldPage() {
     return;
   DCHECK(pending_render_view_host_);
 
+  // First close any modal dialogs that would prevent us from swapping out.
+  delegate_->CancelModalDialogsForRenderManager();
+
   // Tell the old renderer it is being swapped out.  This will fire the unload
   // handler (without firing the beforeunload handler a second time).  When the
   // unload handler finishes and the navigation completes, we will send a

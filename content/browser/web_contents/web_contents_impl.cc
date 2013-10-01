@@ -3671,6 +3671,13 @@ void WebContentsImpl::UpdateRenderViewSizeForRenderManager() {
     view_->SizeContents(size);
 }
 
+void WebContentsImpl::CancelModalDialogsForRenderManager() {
+  // We need to cancel modal dialogs when doing a process swap, since the load
+  // deferrer would prevent us from swapping out.
+  if (dialog_manager_)
+    dialog_manager_->CancelActiveAndPendingDialogs(this);
+}
+
 void WebContentsImpl::NotifySwappedFromRenderManager(RenderViewHost* rvh) {
   NotifySwapped(rvh);
 

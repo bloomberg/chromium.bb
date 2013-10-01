@@ -493,6 +493,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void RenderProcessGoneFromRenderManager(
       RenderViewHost* render_view_host) OVERRIDE;
   virtual void UpdateRenderViewSizeForRenderManager() OVERRIDE;
+  virtual void CancelModalDialogsForRenderManager() OVERRIDE;
   virtual void NotifySwappedFromRenderManager(
       RenderViewHost* old_render_view_host) OVERRIDE;
   virtual int CreateOpenerRenderViewsForRenderManager(

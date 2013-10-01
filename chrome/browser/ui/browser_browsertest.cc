@@ -231,6 +231,9 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
   void Proceed() {
     interstitial_page_->Proceed();
   }
+  void DontProceed() {
+    interstitial_page_->DontProceed();
+  }
 
   virtual std::string GetHTMLContents() OVERRIDE {
     return "<h1>INTERSTITIAL</h1>";
@@ -458,6 +461,32 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_ThirtyFourTabs) {
   } else {
     EXPECT_LT(CountRenderProcessHosts(), kExpectedProcessCount);
   }
+}
+
+// Test for crbug.com/297289.  Ensure that modal dialogs are closed when a
+// cross-process navigation is ready to commit.
+IN_PROC_BROWSER_TEST_F(BrowserTest, CrossProcessNavCancelsDialogs) {
+  ASSERT_TRUE(test_server()->Start());
+  host_resolver()->AddRule("www.example.com", "127.0.0.1");
+  GURL url(test_server()->GetURL("empty.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  contents->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
+      string16(),
+      ASCIIToUTF16("alert('Dialog showing!');"));
+  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  EXPECT_TRUE(alert->IsValid());
+  AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
+  EXPECT_TRUE(dialog_queue->HasActiveDialog());
+
+  // A cross-site navigation should force the dialog to close.
+  GURL url2("http://www.example.com/empty.html");
+  ui_test_utils::NavigateToURL(browser(), url2);
+  EXPECT_FALSE(dialog_queue->HasActiveDialog());
+
+  // Make sure input events still work in the renderer process.
+  EXPECT_FALSE(contents->GetRenderProcessHost()->IgnoreInputEvents());
 }
 
 // Test for crbug.com/22004.  Reloading a page with a before unload handler and
@@ -1727,10 +1756,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialClosesDialogs) {
     InterstitialObserver observer(contents,
                                   base::Closure(),
                                   loop_runner->QuitClosure());
-    interstitial->Proceed();
+    interstitial->DontProceed();
     loop_runner->Run();
     // interstitial is deleted now.
   }
+
+  // Make sure input events still work in the renderer process.
+  EXPECT_FALSE(contents->GetRenderProcessHost()->IgnoreInputEvents());
 }
 
 
