@@ -242,9 +242,6 @@ deps = {
   "src/third_party/opus/src":
     "/trunk/deps/third_party/opus@185324",
 
-  "src/third_party/accessibility-developer-tools":
-    Var("chromium_git") + "/external/accessibility-developer-tools.git@2e3c9c8e49277a0ca1eeba510271eb03f9486d8f",
-
   "src/media/cdm/ppapi/api":
     "/trunk/deps/cdm@181763",
 
