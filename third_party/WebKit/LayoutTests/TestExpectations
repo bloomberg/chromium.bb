@@ -1101,7 +1101,7 @@ crbug.com/268692 [ SnowLeopard ] svg/custom/foreign-object-skew.svg [ ImageOnlyF
 
 crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-column-span-all.html [ Crash Pass ]
 
-crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
+crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Crash Failure ]
 
 crbug.com/277043 [ Mac ] fast/dom/adopt-node-crash-2.html [ Pass Failure ]
 
@@ -1284,6 +1284,7 @@ crbug.com/300025 [ Win7 Debug ] virtual/implsidepainting/inspector/timeline/time
 
 # Crashing, appears to be the result of http://src.chromium.org/viewvc/blink?revision=158503
 crbug.com/301668 [ Debug ] accessibility/crash-adopt-node-from-new-document.html [ Crash ]
+crbug.com/301668 [ Mac Linux ] http/tests/misc/acid3.html [ Crash Pass ]
 
 # This test is flaky on all platforms, and has image failures most of the time on
 # WebKit Win7 (dbg)
