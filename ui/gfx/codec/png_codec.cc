@@ -470,31 +470,6 @@ bool PNGCodec::Decode(const unsigned char* input, size_t input_size,
   return true;
 }
 
-// static
-SkBitmap* PNGCodec::CreateSkBitmapFromBGRAFormat(
-    const std::vector<unsigned char>& bgra, int width, int height) {
-  SkBitmap* bitmap = new SkBitmap();
-  bitmap->setConfig(SkBitmap::kARGB_8888_Config, width, height);
-  bitmap->allocPixels();
-
-  bool opaque = false;
-  unsigned char* bitmap_data =
-      reinterpret_cast<unsigned char*>(bitmap->getAddr32(0, 0));
-  for (int i = width * height * 4 - 4; i >= 0; i -= 4) {
-    unsigned char alpha = bgra[i + 3];
-    if (!opaque && alpha != 255) {
-      opaque = false;
-    }
-    bitmap_data[i + 3] = alpha;
-    bitmap_data[i] = (bgra[i] * alpha) >> 8;
-    bitmap_data[i + 1] = (bgra[i + 1] * alpha) >> 8;
-    bitmap_data[i + 2] = (bgra[i + 2] * alpha) >> 8;
-  }
-
-  bitmap->setIsOpaque(opaque);
-  return bitmap;
-}
-
 // Encoder --------------------------------------------------------------------
 //
 // This section of the code is based on nsPNGEncoder.cpp in Mozilla

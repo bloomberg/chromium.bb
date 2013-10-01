@@ -114,11 +114,6 @@ class GFX_EXPORT PNGCodec {
   static bool Decode(const unsigned char* input, size_t input_size,
                      SkBitmap* bitmap);
 
-  // Create a SkBitmap from a decoded BGRA DIB. The caller owns the returned
-  // SkBitmap.
-  static SkBitmap* CreateSkBitmapFromBGRAFormat(
-      const std::vector<unsigned char>& bgra, int width, int height);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(PNGCodec);
 };
