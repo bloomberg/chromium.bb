@@ -485,12 +485,30 @@
 
             # We refer to content_shell directly rather than all_webkit
             # because we don't want the _unittests binaries.
-            '../content/content.gyp:content_browsertests',
             '../content/content.gyp:content_shell',
-
-            '../net/net.gyp:dns_fuzz_stub',
-         ],
-       },
+          ],
+          'conditions': [
+            ['OS!="win"', {
+              'dependencies': [
+                '../content/content.gyp:content_browsertests',
+                '../net/net.gyp:dns_fuzz_stub',
+              ],
+            }],
+            ['OS=="win" and fastbuild==0 and target_arch=="ia32"', {
+              'dependencies': [
+                '../chrome/chrome_syzygy.gyp:chrome_dll_syzygy',
+                '../content/content.gyp:content_shell_syzyasan',
+              ],
+              'conditions': [
+                ['chrome_multiple_dll==1', {
+                  'dependencies': [
+                    '../chrome/chrome_syzygy.gyp:chrome_child_dll_syzygy',
+                  ],
+                }],
+              ],
+            }],
+          ],
+        },
       ],  # targets
     }],
     ['OS=="mac"', {
