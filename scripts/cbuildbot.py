@@ -435,6 +435,9 @@ class SimpleBuilder(Builder):
         elif suite_config.suite == constants.HWTEST_AU_SUITE:
           stage_list.append([stages.AUTestStage, board, archive_stage,
                              suite_config])
+        elif suite_config.suite == constants.HWTEST_QAV_SUITE:
+          stage_list.append([stages.QATestStage, board,
+                             archive_stage, suite_config])
         else:
           stage_list.append([stages.HWTestStage, board, archive_stage,
                              suite_config])

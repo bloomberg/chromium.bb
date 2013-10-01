@@ -481,13 +481,13 @@ class _JSONEncoder(json.JSONEncoder):
 
 
 class HWTestConfig(object):
-  """Config object for test suites.
+  """Config object for hardware tests suites.
 
   Members:
     copy_perf_results: If set to True, copy test results back from GS and send
                        them to the perf dashboard.
-    timeout: How long to wait before timing out waiting for results. Usually,
-             2 hours and ten minutes. This must be less than
+    timeout: Number of seconds to wait before timing out waiting for results.
+             Defaults to 2 hours and ten minutes. This must be less than
              lib.parallel._BackgroundTask.MINIMUM_SILENT_TIMEOUT.
     pool: Pool to use for hw testing.
     async: Fire-and-forget suite.
@@ -500,27 +500,38 @@ class HWTestConfig(object):
   DEFAULT_HW_TEST_TIMEOUT = 60 * 130
   # Number of tests running in parallel in the AU suite.
   AU_TESTS_NUM = 2
+  # Number of tests running in parallel in the QAV suite
+  QAV_TEST_NUM = 2
 
   @classmethod
   def DefaultList(cls, **dargs):
-    """Returns the default list of tests with overrides for optional args."""
-    # Set the number of machines for the au suite. If we are confined with the
-    # number of duts in the lab, only give 1 dut to the AU suite.
+    """Returns a default list of HWTestConfig's for a canary build, with
+    overrides for optional args."""
+    # Set the number of machines for the au and qav suites. If we are
+    # constrained in the number of duts in the lab, only give 1 dut to each.
     if (dargs.get('num', constants.HWTEST_DEFAULT_NUM) >=
         constants.HWTEST_DEFAULT_NUM):
       au_dict = dict(num=cls.AU_TESTS_NUM)
+      qav_dict = dict(num=cls.QAV_TEST_NUM)
     else:
       au_dict = dict(num=1)
+      qav_dict = dict(num=1)
 
     au_dargs = dargs.copy()
     au_dargs.update(au_dict)
+
+    qav_dargs = dargs.copy()
+    qav_dargs.update(qav_dict)
+
     # BVT + AU suite.
     return [cls(cls.DEFAULT_HW_TEST, **dargs),
-            cls(constants.HWTEST_AU_SUITE, **au_dargs)]
+            cls(constants.HWTEST_AU_SUITE, **au_dargs),
+            cls(constants.HWTEST_QAV_SUITE, **qav_dargs)]
 
   @classmethod
   def PGOList(cls, **dargs):
-    """Returns a list of tests to be run on the PGO'd image."""
+    """Returns a default list of HWTestConfig's for a PGO build, with overrides
+    for optional args."""
     pgo_dict = dict(pool=constants.HWTEST_CHROME_PERF_POOL,
                     timeout=90 * 60, num=1, async=True)
     pgo_dict.update(dargs)
@@ -529,7 +540,8 @@ class HWTestConfig(object):
 
   @classmethod
   def DefaultListCQ(cls, **dargs):
-    """Returns the default list for cq tests with overrides."""
+    """Returns a default list of HWTestConfig's for a CQ build,
+    with overrides for optional args."""
     default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=65 * 60,
                         fatal_timeouts=True, file_bugs=False)
     # Allows dargs overrides to default_dict for cq.

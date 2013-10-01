@@ -246,6 +246,7 @@ HWTEST_CHROME_PFQ_POOL = 'chromepfq'
 HWTEST_CHROME_PERF_POOL = 'chromeperf'
 HWTEST_TRYBOT_POOL = 'try-bot'
 HWTEST_AU_SUITE = 'au'
+HWTEST_QAV_SUITE = 'qav'
 
 # Defines VM Test types.
 FULL_AU_TEST_TYPE = 'full_suite'

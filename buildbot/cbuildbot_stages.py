@@ -2411,6 +2411,14 @@ class ASyncHWTestStage(HWTestStage, ForgivingBuilderStage):
     self.wait_for_results = False
 
 
+class QATestStage(HWTestStage, ForgivingBuilderStage):
+  """Stage that runs qav suite in lab, blocking build but forgiving failures.
+  """
+
+  def __init__(self, *args, **dargs):
+    super(QATestStage, self).__init__(*args, **dargs)
+
+
 class SDKPackageStage(bs.BuilderStage):
   """Stage that performs preparing and packaging SDK files"""
 
