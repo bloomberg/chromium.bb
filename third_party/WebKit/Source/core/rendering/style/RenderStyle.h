@@ -728,6 +728,7 @@ public:
     EBoxPack boxPack() const { return static_cast<EBoxPack>(rareNonInheritedData->m_deprecatedFlexibleBox->pack); }
 
     int order() const { return rareNonInheritedData->m_order; }
+    const Vector<String>& callbackSelectors() const { return rareNonInheritedData->m_callbackSelectors; }
     float flexGrow() const { return rareNonInheritedData->m_flexibleBox->m_flexGrow; }
     float flexShrink() const { return rareNonInheritedData->m_flexibleBox->m_flexShrink; }
     Length flexBasis() const { return rareNonInheritedData->m_flexibleBox->m_flexBasis; }
@@ -1188,6 +1189,7 @@ public:
     void setFlexShrink(float f) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexShrink, f); }
     void setFlexBasis(Length length) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexBasis, length); }
     void setOrder(int o) { SET_VAR(rareNonInheritedData, m_order, o); }
+    void addCallbackSelector(const String& selector);
     void setAlignContent(EAlignContent p) { SET_VAR(rareNonInheritedData, m_alignContent, p); }
     void setAlignItems(EAlignItems a) { SET_VAR(rareNonInheritedData, m_alignItems, a); }
     void setAlignSelf(EAlignItems a) { SET_VAR(rareNonInheritedData, m_alignSelf, a); }

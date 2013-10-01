@@ -740,6 +740,12 @@ void RenderStyle::clearCursorList()
         rareInheritedData.access()->cursorData = 0;
 }
 
+void RenderStyle::addCallbackSelector(const String& selector)
+{
+    if (!rareNonInheritedData->m_callbackSelectors.contains(selector))
+        rareNonInheritedData.access()->m_callbackSelectors.append(selector);
+}
+
 void RenderStyle::clearContent()
 {
     if (rareNonInheritedData->m_content)

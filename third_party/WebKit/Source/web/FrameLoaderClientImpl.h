@@ -107,6 +107,7 @@ public:
     virtual void didRunInsecureContent(WebCore::SecurityOrigin*, const WebCore::KURL& insecureURL);
     virtual void didDetectXSS(const WebCore::KURL&, bool didBlockEntirePage);
     virtual void didDispatchPingLoader(const WebCore::KURL&);
+    virtual void selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors);
     virtual PassRefPtr<WebCore::DocumentLoader> createDocumentLoader(
         const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
     virtual WTF::String userAgent(const WebCore::KURL&);

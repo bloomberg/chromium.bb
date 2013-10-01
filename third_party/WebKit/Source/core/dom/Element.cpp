@@ -44,6 +44,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Attr.h"
 #include "core/dom/Attribute.h"
+#include "core/dom/CSSSelectorWatch.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
 #include "core/dom/CustomElement.h"
@@ -1329,6 +1330,9 @@ void Element::attach(const AttachContext& context)
 
     NodeRenderingContext(this, context.resolvedStyle).createRendererForElementIfNeeded();
 
+    if (RenderStyle* style = renderStyle())
+        updateCallbackSelectors(0, style);
+
     createPseudoElementIfNeeded(BEFORE);
 
     // When a shadow root exists, it does the work of attaching the children.
@@ -1366,6 +1370,10 @@ void Element::detach(const AttachContext& context)
     WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
     unregisterNamedFlowContentNode();
     cancelFocusAppearanceUpdate();
+    if (RenderStyle* style = renderStyle()) {
+        if (!style->callbackSelectors().isEmpty())
+            updateCallbackSelectors(style, 0);
+    }
     if (hasRareData()) {
         ElementRareData* data = elementRareData();
         data->setPseudoElement(BEFORE, 0);
@@ -1472,6 +1480,18 @@ bool Element::recalcStyle(StyleRecalcChange change)
     return change == Reattach;
 }
 
+static bool callbackSelectorsDiffer(RenderStyle* style1, RenderStyle* style2)
+{
+    const Vector<String> emptyVector;
+    const Vector<String>& callbackSelectors1 = style1 ? style1->callbackSelectors() : emptyVector;
+    const Vector<String>& callbackSelectors2 = style2 ? style2->callbackSelectors() : emptyVector;
+    if (callbackSelectors1.isEmpty() && callbackSelectors2.isEmpty()) {
+        // Help the inliner with this common case.
+        return false;
+    }
+    return callbackSelectors1 != callbackSelectors2;
+}
+
 StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
 {
     ASSERT(document().inStyleRecalc());
@@ -1489,6 +1509,9 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     }
 
     InspectorInstrumentation::didRecalculateStyleForElement(this);
+
+    if (localChange != NoChange && callbackSelectorsDiffer(oldStyle.get(), newStyle.get()))
+        updateCallbackSelectors(oldStyle.get(), newStyle.get());
 
     if (RenderObject* renderer = this->renderer()) {
         if (localChange != NoChange || pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get()) || (change == Force && renderer->requiresForcedStyleRecalcPropagation()) || shouldNotifyRendererWithIdenticalStyles()) {
@@ -2432,6 +2455,15 @@ void Element::cancelFocusAppearanceUpdate()
         elementRareData()->setNeedsFocusAppearanceUpdateSoonAfterAttach(false);
     if (document().focusedElement() == this)
         document().cancelFocusAppearanceUpdate();
+}
+
+void Element::updateCallbackSelectors(RenderStyle* oldStyle, RenderStyle* newStyle)
+{
+    const Vector<String> emptyVector;
+    const Vector<String>& oldCallbackSelectors = oldStyle ? oldStyle->callbackSelectors() : emptyVector;
+    const Vector<String>& newCallbackSelectors = newStyle ? newStyle->callbackSelectors() : emptyVector;
+
+    CSSSelectorWatch::from(document()).updateSelectorMatches(oldCallbackSelectors, newCallbackSelectors);
 }
 
 void Element::normalizeAttributes()

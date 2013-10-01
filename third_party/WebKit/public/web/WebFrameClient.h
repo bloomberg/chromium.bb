@@ -131,6 +131,9 @@ public:
     // This frame's name has changed.
     virtual void didChangeName(WebFrame*, const WebString&) { }
 
+    // Called when a watched CSS selector matches or stops matching.
+    virtual void didMatchCSS(WebFrame*, const WebVector<WebString>& newlyMatchingSelectors, const WebVector<WebString>& stoppedMatchingSelectors) { }
+
     // Load commands -------------------------------------------------------
 
     // The client should handle the navigation externally.

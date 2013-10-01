@@ -63,6 +63,7 @@
 #include "core/css/resolver/StyleAdjuster.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
+#include "core/dom/CSSSelectorWatch.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
@@ -137,7 +138,7 @@ StyleResolver::StyleResolver(Document& document, bool matchAuthorAndUserStyles)
     m_styleTree.clear();
 
     StyleEngine* styleSheetCollection = document.styleEngine();
-    m_ruleSets.initUserStyle(styleSheetCollection, *m_medium, *this);
+    m_ruleSets.initUserStyle(styleSheetCollection, CSSSelectorWatch::from(document).watchedCallbackSelectors(), *m_medium, *this);
 
 #if ENABLE(SVG_FONTS)
     if (document.svgExtensions()) {
@@ -1334,6 +1335,7 @@ template <StyleResolver::StyleApplicationPass pass>
 void StyleResolver::applyProperties(StyleResolverState& state, const StylePropertySet* properties, StyleRule* rule, bool isImportant, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
 {
     ASSERT((propertyWhitelistType != PropertyWhitelistRegion) || state.regionForStyling());
+    state.setCurrentRule(rule);
 
     unsigned propertyCount = properties->propertyCount();
     for (unsigned i = 0; i < propertyCount; ++i) {

@@ -454,6 +454,7 @@ public:
     void removedStyleSheet(StyleSheet*, StyleResolverUpdateType type = RecalcStyleDeferred) { styleResolverChanged(type); }
     void addedStyleSheet(StyleSheet*, StyleResolverUpdateType type = RecalcStyleDeferred) { styleResolverChanged(type); }
     void modifiedStyleSheet(StyleSheet*, StyleResolverUpdateType type = RecalcStyleDeferred) { styleResolverChanged(type); }
+    void changedSelectorWatch() { styleResolverChanged(RecalcStyleDeferred); }
 
     void didAccessStyleResolver() { ++m_styleResolverAccessCount; }
 

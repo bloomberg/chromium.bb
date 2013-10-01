@@ -2819,6 +2819,9 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyBackgroundRepeatX:
         case CSSPropertyBackgroundRepeatY:
             break;
+        case CSSPropertyInternalCallback:
+            // This property is hidden from the web.
+            return 0;
 
         /* Unimplemented CSS 3 properties (including CSS3 shorthand properties) */
         case CSSPropertyWebkitTextEmphasis:

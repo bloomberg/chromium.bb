@@ -149,6 +149,10 @@ class FetchRequest;
         virtual void didDetectXSS(const KURL&, bool didBlockEntirePage) = 0;
         virtual void didDispatchPingLoader(const KURL&) = 0;
 
+        // Transmits the change in the set of watched CSS selectors property
+        // that match any element on the frame.
+        virtual void selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors) = 0;
+
         virtual PassRefPtr<DocumentLoader> createDocumentLoader(const ResourceRequest&, const SubstituteData&) = 0;
 
         virtual String userAgent(const KURL&) = 0;

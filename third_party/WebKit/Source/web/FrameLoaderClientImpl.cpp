@@ -534,6 +534,12 @@ void FrameLoaderClientImpl::didDispatchPingLoader(const KURL& url)
         m_webFrame->client()->didDispatchPingLoader(m_webFrame, url);
 }
 
+void FrameLoaderClientImpl::selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors)
+{
+    if (WebFrameClient* client = m_webFrame->client())
+        client->didMatchCSS(m_webFrame, WebVector<WebString>(addedSelectors), WebVector<WebString>(removedSelectors));
+}
+
 PassRefPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoader(
     const ResourceRequest& request,
     const SubstituteData& data)

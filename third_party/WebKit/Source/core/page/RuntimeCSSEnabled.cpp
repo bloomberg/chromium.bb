@@ -118,6 +118,9 @@ static void setPropertySwitchesFromRuntimeFeatures()
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyPaintOrder, RuntimeEnabledFeatures::svgPaintOrderEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyVariable, RuntimeEnabledFeatures::cssVariablesEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyMaskSourceType, RuntimeEnabledFeatures::cssMaskSourceTypeEnabled());
+
+    // InternalCallback is an implementation detail, rather than an experimental feature, and should never be exposed to the web.
+    RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyInternalCallback, false);
 }
 
 static BoolVector& propertySwitches()

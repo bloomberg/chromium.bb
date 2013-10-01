@@ -1753,6 +1753,7 @@
             'dom/Attr.cpp',
             'dom/CDATASection.cpp',
             'dom/CDATASection.h',
+            'dom/CSSSelectorWatch.cpp',
             'dom/CharacterData.cpp',
             'dom/ChildListMutationScope.cpp',
             'dom/ChildListMutationScope.h',

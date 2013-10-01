@@ -146,6 +146,8 @@ public:
 
     LengthPoint m_objectPosition;
 
+    Vector<String> m_callbackSelectors;
+
     AtomicString m_flowThread;
     AtomicString m_regionThread;
     unsigned m_regionFragment : 1; // RegionFragment

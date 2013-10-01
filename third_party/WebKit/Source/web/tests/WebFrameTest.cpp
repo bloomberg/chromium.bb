@@ -32,6 +32,7 @@
 
 #include "WebFrame.h"
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
 #include "RuntimeEnabledFeatures.h"
@@ -85,6 +86,7 @@
 #include "public/platform/WebURLResponse.h"
 #include "wtf/dtoa/utils.h"
 #include "wtf/Forward.h"
+#include <map>
 
 using namespace WebKit;
 using WebCore::Document;
@@ -283,6 +285,268 @@ TEST_F(WebFrameTest, ChromePageNoJavascript)
     // Now retrieve the frame's text and ensure it wasn't modified by running javascript.
     std::string content = std::string(webViewHelper.webView()->mainFrame()->contentAsText(1024).utf8().data());
     EXPECT_EQ(std::string::npos, content.find("Clobbered"));
+}
+
+class CSSCallbackWebFrameClient : public WebFrameClient {
+public:
+    CSSCallbackWebFrameClient() : m_updateCount(0) { }
+    virtual void didMatchCSS(WebFrame*, const WebVector<WebString>& newlyMatchingSelectors, const WebVector<WebString>& stoppedMatchingSelectors) OVERRIDE;
+
+    std::map<WebFrame*, std::set<std::string> > m_matchedSelectors;
+    int m_updateCount;
+};
+
+void CSSCallbackWebFrameClient::didMatchCSS(WebFrame* frame, const WebVector<WebString>& newlyMatchingSelectors, const WebVector<WebString>& stoppedMatchingSelectors)
+{
+    ++m_updateCount;
+    std::set<std::string>& frameSelectors = m_matchedSelectors[frame];
+    for (size_t i = 0; i < newlyMatchingSelectors.size(); ++i) {
+        std::string selector = newlyMatchingSelectors[i].utf8();
+        EXPECT_EQ(0U, frameSelectors.count(selector)) << selector;
+        frameSelectors.insert(selector);
+    }
+    for (size_t i = 0; i < stoppedMatchingSelectors.size(); ++i) {
+        std::string selector = stoppedMatchingSelectors[i].utf8();
+        EXPECT_EQ(1U, frameSelectors.count(selector)) << selector;
+        frameSelectors.erase(selector);
+    }
+}
+
+class WebFrameCSSCallbackTest : public testing::Test {
+protected:
+    WebFrameCSSCallbackTest()
+    {
+
+        m_frame = m_helper.initializeAndLoad("about:blank", true, &m_client)->mainFrame();
+    }
+
+    ~WebFrameCSSCallbackTest()
+    {
+        EXPECT_EQ(1U, m_client.m_matchedSelectors.size());
+    }
+
+    WebDocument doc() const
+    {
+        return m_frame->document();
+    }
+
+    int updateCount() const
+    {
+        return m_client.m_updateCount;
+    }
+
+    const std::set<std::string>& matchedSelectors()
+    {
+        return m_client.m_matchedSelectors[m_frame];
+    }
+
+    void loadHTML(const WebData& html)
+    {
+        m_frame->loadHTMLString(html, toKURL("about:blank"));
+        runPendingTasks();
+    }
+
+    void executeScript(const WebString& code)
+    {
+        m_frame->executeScript(WebScriptSource(code));
+        runPendingTasks();
+    }
+
+    CSSCallbackWebFrameClient m_client;
+    FrameTestHelpers::WebViewHelper m_helper;
+    WebFrame* m_frame;
+};
+
+TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet)
+{
+    loadHTML(
+        "<style>"
+        // This stylesheet checks that the internal property and value can't be
+        // set by a stylesheet, only WebDocument::watchCSSSelectors().
+        "div.initial_on { -internal-callback: none; }"
+        "div.initial_off { -internal-callback: -internal-presence; }"
+        "</style>"
+        "<div class=\"initial_on\"></div>"
+        "<div class=\"initial_off\"></div>");
+
+    std::vector<WebString> selectors;
+    selectors.push_back(WebString::fromUTF8("div.initial_on"));
+    m_frame->document().watchCSSSelectors(WebVector<WebString>(selectors));
+    runPendingTasks();
+    EXPECT_EQ(1, updateCount());
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("div.initial_on"));
+
+    // Check that adding a watched selector calls back for already-present nodes.
+    selectors.push_back(WebString::fromUTF8("div.initial_off"));
+    doc().watchCSSSelectors(WebVector<WebString>(selectors));
+    runPendingTasks();
+    EXPECT_EQ(2, updateCount());
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("div.initial_off", "div.initial_on"));
+
+    // Check that we can turn off callbacks for certain selectors.
+    doc().watchCSSSelectors(WebVector<WebString>());
+    runPendingTasks();
+    EXPECT_EQ(3, updateCount());
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre());
+}
+
+TEST_F(WebFrameCSSCallbackTest, SharedRenderStyle)
+{
+    // Check that adding an element calls back when it matches an existing rule.
+    std::vector<WebString> selectors;
+    selectors.push_back(WebString::fromUTF8("span"));
+    doc().watchCSSSelectors(WebVector<WebString>(selectors));
+
+    executeScript(
+        "i1 = document.createElement('span');"
+        "i1.id = 'first_span';"
+        "document.body.appendChild(i1)");
+    EXPECT_EQ(1, updateCount());
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
+
+    // Adding a second element that shares a RenderStyle shouldn't call back.
+    // We use <span>s to avoid default style rules that can set
+    // RenderStyle::unique().
+    executeScript(
+        "i2 = document.createElement('span');"
+        "i2.id = 'second_span';"
+        "i1 = document.getElementById('first_span');"
+        "i1.parentNode.insertBefore(i2, i1.nextSibling);");
+    EXPECT_EQ(1, updateCount());
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
+
+    // Removing the first element shouldn't call back.
+    executeScript(
+        "i1 = document.getElementById('first_span');"
+        "i1.parentNode.removeChild(i1);");
+    EXPECT_EQ(1, updateCount());
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
+
+    // But removing the second element *should* call back.
+    executeScript(
+        "i2 = document.getElementById('second_span');"
+        "i2.parentNode.removeChild(i2);");
+    EXPECT_EQ(2, updateCount());
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre());
+}
+
+TEST_F(WebFrameCSSCallbackTest, CatchesAttributeChange)
+{
+    loadHTML("<span></span>");
+
+    std::vector<WebString> selectors;
+    selectors.push_back(WebString::fromUTF8("span[attr=\"value\"]"));
+    doc().watchCSSSelectors(WebVector<WebString>(selectors));
+    runPendingTasks();
+
+    EXPECT_EQ(0, updateCount());
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre());
+
+    executeScript(
+        "document.querySelector('span').setAttribute('attr', 'value');");
+    EXPECT_EQ(1, updateCount());
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span[attr=\"value\"]"));
+}
+
+TEST_F(WebFrameCSSCallbackTest, DisplayNone)
+{
+    loadHTML("<div style='display:none'><span></span></div>");
+
+    std::vector<WebString> selectors;
+    selectors.push_back(WebString::fromUTF8("span"));
+    doc().watchCSSSelectors(WebVector<WebString>(selectors));
+    runPendingTasks();
+
+    EXPECT_EQ(0, updateCount()) << "Don't match elements in display:none trees.";
+
+    executeScript(
+        "d = document.querySelector('div');"
+        "d.style.display = 'block';");
+    EXPECT_EQ(1, updateCount()) << "Match elements when they become displayed.";
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
+
+    executeScript(
+        "d = document.querySelector('div');"
+        "d.style.display = 'none';");
+    EXPECT_EQ(2, updateCount()) << "Unmatch elements when they become undisplayed.";
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre());
+
+    executeScript(
+        "s = document.querySelector('span');"
+        "s.style.display = 'none';");
+    EXPECT_EQ(2, updateCount()) << "No effect from no-display'ing a span that's already undisplayed.";
+
+    executeScript(
+        "d = document.querySelector('div');"
+        "d.style.display = 'block';");
+    EXPECT_EQ(2, updateCount()) << "No effect from displaying a div whose span is display:none.";
+
+    executeScript(
+        "s = document.querySelector('span');"
+        "s.style.display = 'inline';");
+    EXPECT_EQ(3, updateCount()) << "Now the span is visible and produces a callback.";
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
+
+    executeScript(
+        "s = document.querySelector('span');"
+        "s.style.display = 'none';");
+    EXPECT_EQ(4, updateCount()) << "Undisplaying the span directly should produce another callback.";
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre());
+}
+
+TEST_F(WebFrameCSSCallbackTest, Reparenting)
+{
+    loadHTML(
+        "<div id='d1'><span></span></div>"
+        "<div id='d2'></div>");
+
+    std::vector<WebString> selectors;
+    selectors.push_back(WebString::fromUTF8("span"));
+    doc().watchCSSSelectors(WebVector<WebString>(selectors));
+    runPendingTasks();
+
+    EXPECT_EQ(1, updateCount());
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
+
+    executeScript(
+        "s = document.querySelector('span');"
+        "d2 = document.getElementById('d2');"
+        "d2.appendChild(s);");
+    EXPECT_EQ(1, updateCount()) << "Just moving an element that continues to match shouldn't send a spurious callback.";
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
+}
+
+TEST_F(WebFrameCSSCallbackTest, MultiSelector)
+{
+    loadHTML("<span></span>");
+
+    // Check that selector lists match as the whole list, not as each element
+    // independently.
+    std::vector<WebString> selectors;
+    selectors.push_back(WebString::fromUTF8("span"));
+    selectors.push_back(WebString::fromUTF8("span,p"));
+    doc().watchCSSSelectors(WebVector<WebString>(selectors));
+
+    runPendingTasks();
+    EXPECT_EQ(1, updateCount());
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span", "span, p"));
+}
+
+TEST_F(WebFrameCSSCallbackTest, InvalidSelector)
+{
+    loadHTML("<p><span></span></p>");
+
+    // Build a list with one valid selector and one invalid.
+    std::vector<WebString> selectors;
+    selectors.push_back(WebString::fromUTF8("span"));
+    selectors.push_back(WebString::fromUTF8("[")); // Invalid.
+    selectors.push_back(WebString::fromUTF8("p span")); // Not compound.
+    doc().watchCSSSelectors(WebVector<WebString>(selectors));
+
+    runPendingTasks();
+    EXPECT_EQ(1, updateCount());
+    EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"))
+        << "An invalid selector shouldn't prevent other selectors from matching.";
 }
 
 TEST_F(WebFrameTest, DispatchMessageEventWithOriginCheck)

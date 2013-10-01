@@ -751,6 +751,8 @@ private:
 
     virtual RenderStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) { return computedStyle(pseudoElementSpecifier); }
 
+    void updateCallbackSelectors(RenderStyle* oldStyle, RenderStyle* newStyle);
+
     // cloneNode is private so that non-virtual cloneElementWithChildren and cloneElementWithoutChildren
     // are used instead.
     virtual PassRefPtr<Node> cloneNode(bool deep) OVERRIDE;

@@ -46,6 +46,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/CSSParserMode.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/dom/CSSSelectorWatch.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
@@ -211,6 +212,14 @@ void WebDocument::insertUserStyleSheet(const WebString& sourceCode, UserStyleLev
         document->styleEngine()->addUserSheet(parsedSheet);
     else
         document->styleEngine()->addAuthorSheet(parsedSheet);
+}
+
+void WebDocument::watchCSSSelectors(const WebVector<WebString>& webSelectors)
+{
+    RefPtr<Document> document = unwrap<Document>();
+    Vector<String> selectors;
+    selectors.append(webSelectors.data(), webSelectors.size());
+    CSSSelectorWatch::from(*document).watchCSSSelectors(selectors);
 }
 
 void WebDocument::cancelFullScreen()

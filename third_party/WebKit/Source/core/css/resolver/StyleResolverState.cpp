@@ -37,6 +37,7 @@ StyleResolverState::StyleResolverState(Document& document, Element* element, Ren
     , m_applyPropertyToVisitedLinkStyle(false)
     , m_lineHeightValue(0)
     , m_styleMap(*this, m_elementStyleResources)
+    , m_currentRule(0)
 {
     m_regionForStyling = regionForStyling;
 

@@ -270,6 +270,7 @@ z-index
 -webkit-box-pack
 -webkit-box-reflect
 -webkit-box-shadow
+-internal-callback
 -webkit-column-axis
 -webkit-column-break-after
 -webkit-column-break-before

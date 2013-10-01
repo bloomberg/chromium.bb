@@ -497,6 +497,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyMaskSourceType: return 435;
     case CSSPropertyIsolation: return 436;
     case CSSPropertyObjectPosition: return 437;
+    case CSSPropertyInternalCallback: return 438;
 
     // Add new features above this line (don't change the assigned numbers of the existing
     // items) and update maximumCSSSampleId() with the new maximum value.
@@ -511,7 +512,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 437; }
+static int maximumCSSSampleId() { return 438; }
 
 UseCounter::UseCounter()
 {

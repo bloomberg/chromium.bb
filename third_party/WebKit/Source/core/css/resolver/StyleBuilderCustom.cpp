@@ -62,6 +62,7 @@
 #include "core/css/Rect.h"
 #include "core/css/ShadowValue.h"
 #include "core/css/StylePropertySet.h"
+#include "core/css/StyleRule.h"
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/css/resolver/FilterOperationResolver.h"
 #include "core/css/resolver/FontBuilder.h"
@@ -1631,6 +1632,15 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         Color col = state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->visitedDependentColor(CSSPropertyColor));
         state.style()->setTapHighlightColor(col);
         return;
+    }
+    case CSSPropertyInternalCallback: {
+        if (isInherit || isInitial)
+            return;
+        if (primitiveValue && primitiveValue->getValueID() == CSSValueInternalPresence) {
+            state.style()->addCallbackSelector(state.currentRule()->selectorList().selectorsText());
+            return;
+        }
+        break;
     }
     case CSSPropertyInvalid:
         return;

@@ -134,6 +134,11 @@ public:
     // WebView.
     BLINK_EXPORT void insertUserStyleSheet(const WebString& sourceCode, UserStyleLevel);
 
+    // Arranges to call WebFrameClient::didMatchCSS(frame(), ...) when one of
+    // the selectors matches or stops matching an element in this document.
+    // Each call to this method overrides any previous calls.
+    BLINK_EXPORT void watchCSSSelectors(const WebVector<WebString>& selectors);
+
     BLINK_EXPORT WebVector<WebDraggableRegion> draggableRegions() const;
 
     BLINK_EXPORT v8::Handle<v8::Value> registerEmbedderCustomElement(const WebString& name, v8::Handle<v8::Value> options, WebExceptionCode&);

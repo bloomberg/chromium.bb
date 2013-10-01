@@ -202,6 +202,7 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_visitedLinkBorderBottomColor == o.m_visitedLinkBorderBottomColor
         && m_order == o.m_order
         && m_objectPosition == o.m_objectPosition
+        && m_callbackSelectors == o.m_callbackSelectors
         && m_flowThread == o.m_flowThread
         && m_regionThread == o.m_regionThread
         && m_regionFragment == o.m_regionFragment
