@@ -13,8 +13,6 @@ PASS document.getElementById("mock-page-popup") is null
 PASS iframe.contentDocument.getElementById("test2").value is "2012-01"
 PASS testInput1.value is ""
 PASS testInput2.value is "2002-02"
-PASS highlightedEntry() is null
-PASS highlightedEntry() is "2012-01"
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -429,8 +429,6 @@ void FrameView::setFrameRect(const IntRect& newRect)
         if (renderView->usesCompositing())
             renderView->compositor()->frameViewDidChangeSize();
     }
-
-    sendResizeEventIfNeeded();
 }
 
 bool FrameView::scheduleAnimation()

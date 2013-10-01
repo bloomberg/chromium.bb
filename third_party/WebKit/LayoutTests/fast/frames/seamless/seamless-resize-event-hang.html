@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+</script>
+<p>This tests that we don't get into an infinite resize event loop with seamless iframes. Passes if it doesn't hang.</p>
+<iframe seamless srcdoc="<!DOCTYPE html>
+<script>
+function notifyDone() {
+    if (window.testRunner)
+        testRunner.notifyDone();
+}
+
+var timer;
+window.onresize = function() {
+    clearTimeout(timer);
+    // We sometimes yield to the event loop even in the hang case,
+    // so notifyDone on a setTimeout to avoid brief yields.
+    timer = setTimeout(notifyDone, 100);
+
+    document.body.style.height = (Math.random() * 450) + 'px';
+    document.body.offsetHeight;
+}
+</script>
+<body onload='window.onresize()'></body>"></iframe>
+<script>
+document.querySelector('iframe').offsetHeight;
+</script>
