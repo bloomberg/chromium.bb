@@ -71,6 +71,9 @@ public:
     BLINK_EXPORT static void enableExperimentalCanvasFeatures(bool);
     BLINK_EXPORT static bool isExperimentalCanvasFeaturesEnabled();
 
+    BLINK_EXPORT static void enableFastTextAutosizing(bool);
+    BLINK_EXPORT static bool isFastTextAutosizingEnabled();
+
     BLINK_EXPORT static void enableFileSystem(bool);
     BLINK_EXPORT static bool isFileSystemEnabled();
 

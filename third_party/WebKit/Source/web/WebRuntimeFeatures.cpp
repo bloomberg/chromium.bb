@@ -149,6 +149,16 @@ bool WebRuntimeFeatures::isExperimentalCanvasFeaturesEnabled()
     return RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
 }
 
+void WebRuntimeFeatures::enableFastTextAutosizing(bool enable)
+{
+    RuntimeEnabledFeatures::setFastTextAutosizingEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isFastTextAutosizingEnabled()
+{
+    return RuntimeEnabledFeatures::fastTextAutosizingEnabled();
+}
+
 void WebRuntimeFeatures::enableFileSystem(bool enable)
 {
     RuntimeEnabledFeatures::setFileSystemEnabled(enable);
