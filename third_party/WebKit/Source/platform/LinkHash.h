@@ -26,6 +26,7 @@
 #ifndef LinkHash_h
 #define LinkHash_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 #include "wtf/text/StringHash.h"
 
@@ -57,7 +58,7 @@ struct LinkHashHash {
 // base URL, and returns the hash of the string that will be used for visited
 // link coloring. It will return the special value of 0 if attributeURL does not
 // look like a relative URL.
-LinkHash visitedLinkHash(const KURL& base, const AtomicString& attributeURL);
+PLATFORM_EXPORT LinkHash visitedLinkHash(const KURL& base, const AtomicString& attributeURL);
 
 } // namespace WebCore
 

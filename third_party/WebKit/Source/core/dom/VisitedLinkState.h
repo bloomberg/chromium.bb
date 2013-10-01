@@ -31,8 +31,8 @@
 
 #include "XLinkNames.h"
 #include "core/dom/Element.h"
-#include "core/platform/LinkHash.h"
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "platform/LinkHash.h"
 #include "wtf/HashSet.h"
 
 namespace WebCore {

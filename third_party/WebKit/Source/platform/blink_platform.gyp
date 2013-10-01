@@ -63,6 +63,7 @@
       '../config.gyp:config',
       '../wtf/wtf.gyp:wtf',
       '../weborigin/weborigin.gyp:weborigin',
+      '<(DEPTH)/url/url.gyp:url_lib',
       'blink_common',
     ],
     'defines': [

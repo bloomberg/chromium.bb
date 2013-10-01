@@ -11,6 +11,8 @@
       'Decimal.h',
       'Language.cpp',
       'Language.h',
+      'LinkHash.cpp',
+      'LinkHash.h',
       'Logging.cpp',
       'Logging.h',
       'NotImplemented.cpp',

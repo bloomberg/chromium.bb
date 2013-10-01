@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/LinkHash.h"
+#include "platform/LinkHash.h"
 
 #include "public/platform/Platform.h"
 #include "weborigin/KURL.h"
