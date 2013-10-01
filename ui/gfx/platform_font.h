@@ -42,6 +42,9 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   // Returns the baseline, or ascent, of the font.
   virtual int GetBaseline() const = 0;
 
+  // Returns the cap height of the font.
+  virtual int GetCapHeight() const = 0;
+
   // Returns the average character width for the font.
   virtual int GetAverageCharacterWidth() const = 0;
 
@@ -76,4 +79,3 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
 }  // namespace gfx
 
 #endif  // UI_GFX_PLATFORM_FONT_H_
-

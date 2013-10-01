@@ -141,6 +141,10 @@ int PlatformFontWin::GetBaseline() const {
   return font_ref_->baseline();
 }
 
+int PlatformFontWin::GetCapHeight() const {
+  return font_ref_->cap_height();
+}
+
 int PlatformFontWin::GetAverageCharacterWidth() const {
   return font_ref_->ave_char_width();
 }
@@ -235,6 +239,8 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
 
   const int height = std::max<int>(1, font_metrics.tmHeight);
   const int baseline = std::max<int>(1, font_metrics.tmAscent);
+  const int cap_height =
+      std::max<int>(1, font_metrics.tmAscent - font_metrics.tmInternalLeading);
   const int ave_char_width = std::max<int>(1, font_metrics.tmAveCharWidth);
   const int font_size =
       std::max<int>(1, font_metrics.tmHeight - font_metrics.tmInternalLeading);
@@ -246,7 +252,8 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
   if (font_metrics.tmWeight >= kTextMetricWeightBold)
     style |= Font::BOLD;
 
-  return new HFontRef(font, font_size, height, baseline, ave_char_width, style);
+  return new HFontRef(font, font_size, height, baseline, cap_height,
+                      ave_char_width, style);
 }
 
 PlatformFontWin::PlatformFontWin(HFontRef* hfont_ref) : font_ref_(hfont_ref) {
@@ -256,15 +263,17 @@ PlatformFontWin::PlatformFontWin(HFontRef* hfont_ref) : font_ref_(hfont_ref) {
 // PlatformFontWin::HFontRef:
 
 PlatformFontWin::HFontRef::HFontRef(HFONT hfont,
-         int font_size,
-         int height,
-         int baseline,
-         int ave_char_width,
-         int style)
+                                    int font_size,
+                                    int height,
+                                    int baseline,
+                                    int cap_height,
+                                    int ave_char_width,
+                                    int style)
     : hfont_(hfont),
       font_size_(font_size),
       height_(height),
       baseline_(baseline),
+      cap_height_(cap_height),
       ave_char_width_(ave_char_width),
       style_(style),
       dlu_base_x_(-1),

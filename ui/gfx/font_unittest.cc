@@ -59,10 +59,10 @@ int ScopedMinimumFontSizeCallback::minimum_size_ = 0;
 TEST_F(FontTest, LoadArial) {
   Font cf("Arial", 16);
   NativeFont native = cf.GetNativeFont();
-  ASSERT_TRUE(native);
-  ASSERT_EQ(cf.GetStyle(), Font::NORMAL);
-  ASSERT_EQ(cf.GetFontSize(), 16);
-  ASSERT_EQ(cf.GetFontName(), "Arial");
+  EXPECT_TRUE(native);
+  EXPECT_EQ(cf.GetStyle(), Font::NORMAL);
+  EXPECT_EQ(cf.GetFontSize(), 16);
+  EXPECT_EQ(cf.GetFontName(), "Arial");
   FreeIfNecessary(native);
 }
 
@@ -70,45 +70,56 @@ TEST_F(FontTest, LoadArialBold) {
   Font cf("Arial", 16);
   Font bold(cf.DeriveFont(0, Font::BOLD));
   NativeFont native = bold.GetNativeFont();
-  ASSERT_TRUE(native);
-  ASSERT_EQ(bold.GetStyle(), Font::BOLD);
+  EXPECT_TRUE(native);
+  EXPECT_EQ(bold.GetStyle(), Font::BOLD);
   FreeIfNecessary(native);
 }
 
 TEST_F(FontTest, Ascent) {
   Font cf("Arial", 16);
-  ASSERT_GT(cf.GetBaseline(), 2);
-  ASSERT_LE(cf.GetBaseline(), 22);
+  EXPECT_GT(cf.GetBaseline(), 2);
+  EXPECT_LE(cf.GetBaseline(), 22);
 }
 
 TEST_F(FontTest, Height) {
   Font cf("Arial", 16);
-  ASSERT_GE(cf.GetHeight(), 16);
+  EXPECT_GE(cf.GetHeight(), 16);
   // TODO(akalin): Figure out why height is so large on Linux.
-  ASSERT_LE(cf.GetHeight(), 26);
+  EXPECT_LE(cf.GetHeight(), 26);
+}
+
+TEST_F(FontTest, CapHeight) {
+  Font cf("Arial", 16);
+  EXPECT_GT(cf.GetCapHeight(), 0);
+  EXPECT_GT(cf.GetCapHeight(), cf.GetHeight() / 2);
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  EXPECT_EQ(cf.GetCapHeight(), cf.GetHeight());
+#else
+  EXPECT_LT(cf.GetCapHeight(), cf.GetHeight());
+#endif
 }
 
 TEST_F(FontTest, AvgWidths) {
   Font cf("Arial", 16);
-  ASSERT_EQ(cf.GetExpectedTextWidth(0), 0);
-  ASSERT_GT(cf.GetExpectedTextWidth(1), cf.GetExpectedTextWidth(0));
-  ASSERT_GT(cf.GetExpectedTextWidth(2), cf.GetExpectedTextWidth(1));
-  ASSERT_GT(cf.GetExpectedTextWidth(3), cf.GetExpectedTextWidth(2));
+  EXPECT_EQ(cf.GetExpectedTextWidth(0), 0);
+  EXPECT_GT(cf.GetExpectedTextWidth(1), cf.GetExpectedTextWidth(0));
+  EXPECT_GT(cf.GetExpectedTextWidth(2), cf.GetExpectedTextWidth(1));
+  EXPECT_GT(cf.GetExpectedTextWidth(3), cf.GetExpectedTextWidth(2));
 }
 
 TEST_F(FontTest, AvgCharWidth) {
   Font cf("Arial", 16);
-  ASSERT_GT(cf.GetAverageCharacterWidth(), 0);
+  EXPECT_GT(cf.GetAverageCharacterWidth(), 0);
 }
 
 TEST_F(FontTest, Widths) {
   Font cf("Arial", 16);
-  ASSERT_EQ(cf.GetStringWidth(base::string16()), 0);
-  ASSERT_GT(cf.GetStringWidth(ASCIIToUTF16("a")),
+  EXPECT_EQ(cf.GetStringWidth(base::string16()), 0);
+  EXPECT_GT(cf.GetStringWidth(ASCIIToUTF16("a")),
             cf.GetStringWidth(base::string16()));
-  ASSERT_GT(cf.GetStringWidth(ASCIIToUTF16("ab")),
+  EXPECT_GT(cf.GetStringWidth(ASCIIToUTF16("ab")),
             cf.GetStringWidth(ASCIIToUTF16("a")));
-  ASSERT_GT(cf.GetStringWidth(ASCIIToUTF16("abc")),
+  EXPECT_GT(cf.GetStringWidth(ASCIIToUTF16("abc")),
             cf.GetStringWidth(ASCIIToUTF16("ab")));
 }
 

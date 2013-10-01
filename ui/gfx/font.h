@@ -69,6 +69,9 @@ class GFX_EXPORT Font {
   // Returns the baseline, or ascent, of the font.
   int GetBaseline() const;
 
+  // Returns the cap height of the font.
+  int GetCapHeight() const;
+
   // Returns the average character width for the font.
   int GetAverageCharacterWidth() const;
 

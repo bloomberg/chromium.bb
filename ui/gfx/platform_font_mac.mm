@@ -59,6 +59,10 @@ int PlatformFontMac::GetBaseline() const {
   return ascent_;
 }
 
+int PlatformFontMac::GetCapHeight() const {
+  return cap_height_;
+}
+
 int PlatformFontMac::GetAverageCharacterWidth() const {
   return average_width_;
 }
@@ -128,6 +132,7 @@ void PlatformFontMac::CalculateMetrics() {
       [[NSLayoutManager alloc] init]);
   height_ = [layout_manager defaultLineHeightForFont:font];
   ascent_ = [font ascender];
+  cap_height_ = [font capHeight];
   average_width_ =
       NSWidth([font boundingRectForGlyph:[font glyphWithName:@"x"]]);
 }
@@ -152,4 +157,3 @@ PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
 }
 
 }  // namespace gfx
-

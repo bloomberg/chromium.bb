@@ -177,6 +177,11 @@ int FontList::GetBaseline() const {
   return common_baseline_;
 }
 
+int FontList::GetCapHeight() const {
+  // Assume the primary font is used to render Latin characters.
+  return GetPrimaryFont().GetCapHeight();
+}
+
 int FontList::GetStringWidth(const base::string16& text) const {
   // Rely on the primary font metrics for the time being.
   // TODO(yukishiino): Not only the first font, all the fonts in the list should

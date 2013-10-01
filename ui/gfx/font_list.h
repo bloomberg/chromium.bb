@@ -81,6 +81,10 @@ class GFX_EXPORT FontList {
   // fonts in the font list.
   int GetBaseline() const;
 
+  // Returns the cap height of this font list.
+  // Currently returns the cap height of the primary font.
+  int GetCapHeight() const;
+
   // Returns the number of horizontal pixels needed to display |text|.
   int GetStringWidth(const base::string16& text) const;
 

@@ -57,6 +57,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   virtual Font DeriveFont(int size_delta, int style) const OVERRIDE;
   virtual int GetHeight() const OVERRIDE;
   virtual int GetBaseline() const OVERRIDE;
+  virtual int GetCapHeight() const OVERRIDE;
   virtual int GetAverageCharacterWidth() const OVERRIDE;
   virtual int GetStringWidth(const base::string16& text) const OVERRIDE;
   virtual int GetExpectedTextWidth(int length) const OVERRIDE;
@@ -84,6 +85,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
              int font_size,
              int height,
              int baseline,
+             int cap_height,
              int ave_char_width,
              int style);
 
@@ -91,6 +93,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
     HFONT hfont() const { return hfont_; }
     int height() const { return height_; }
     int baseline() const { return baseline_; }
+    int cap_height() const { return cap_height_; }
     int ave_char_width() const { return ave_char_width_; }
     int style() const { return style_; }
     const std::string& font_name() const { return font_name_; }
@@ -109,6 +112,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
     const int font_size_;
     const int height_;
     const int baseline_;
+    const int cap_height_;
     const int ave_char_width_;
     const int style_;
     // Average character width in dialog units. This is queried lazily from the
@@ -155,4 +159,3 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
 }  // namespace gfx
 
 #endif  // UI_GFX_PLATFORM_FONT_WIN_H_
-

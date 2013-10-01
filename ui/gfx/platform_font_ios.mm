@@ -51,6 +51,10 @@ int PlatformFontIOS::GetBaseline() const {
   return ascent_;
 }
 
+int PlatformFontIOS::GetCapHeight() const {
+  return cap_height_;
+}
+
 int PlatformFontIOS::GetAverageCharacterWidth() const {
   return average_width_;
 }
@@ -103,6 +107,7 @@ void PlatformFontIOS::CalculateMetrics() {
   UIFont* font = GetNativeFont();
   height_ = font.lineHeight;
   ascent_ = font.ascender;
+  cap_height_ = font.capHeight;
   average_width_ = [@"x" sizeWithFont:font].width;
 }
 

@@ -54,6 +54,10 @@ int Font::GetBaseline() const {
   return platform_font_->GetBaseline();
 }
 
+int Font::GetCapHeight() const {
+  return platform_font_->GetCapHeight();
+}
+
 int Font::GetAverageCharacterWidth() const {
   return platform_font_->GetAverageCharacterWidth();
 }

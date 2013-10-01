@@ -21,6 +21,7 @@ class PlatformFontMac : public PlatformFont {
   virtual Font DeriveFont(int size_delta, int style) const OVERRIDE;
   virtual int GetHeight() const OVERRIDE;
   virtual int GetBaseline() const OVERRIDE;
+  virtual int GetCapHeight() const OVERRIDE;
   virtual int GetAverageCharacterWidth() const OVERRIDE;
   virtual int GetStringWidth(const base::string16& text) const OVERRIDE;
   virtual int GetExpectedTextWidth(int length) const OVERRIDE;
@@ -48,6 +49,7 @@ class PlatformFontMac : public PlatformFont {
   // Cached metrics, generated at construction.
   int height_;
   int ascent_;
+  int cap_height_;
   int average_width_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformFontMac);
