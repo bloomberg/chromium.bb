@@ -290,6 +290,8 @@ public:
     virtual bool inspectorSetting(const WebString& key, WebString* value) const;
     virtual void setInspectorSetting(const WebString& key,
                                      const WebString& value);
+    virtual void setCompositorDeviceScaleFactorOverride(float);
+    virtual void setRootLayerScaleTransform(float);
     virtual WebDevToolsAgent* devToolsAgent();
     virtual WebAXObject accessibilityObject();
     virtual void applyAutofillSuggestions(

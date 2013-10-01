@@ -3481,6 +3481,14 @@ void WebViewImpl::setInspectorSetting(const WebString& key,
     client()->didUpdateInspectorSetting(key, value);
 }
 
+void WebViewImpl::setCompositorDeviceScaleFactorOverride(float deviceScaleFactor)
+{
+}
+
+void WebViewImpl::setRootLayerScaleTransform(float rootLayerScale)
+{
+}
+
 WebDevToolsAgent* WebViewImpl::devToolsAgent()
 {
     return m_devToolsAgent.get();

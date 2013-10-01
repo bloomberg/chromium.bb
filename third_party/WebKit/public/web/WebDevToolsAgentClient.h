@@ -37,6 +37,8 @@
 namespace WebKit {
 class WebString;
 struct WebDevToolsMessageData;
+struct WebRect;
+struct WebSize;
 
 class WebDevToolsAgentClient {
 public:
@@ -82,6 +84,17 @@ public:
         unsigned char flags);
 
     virtual void setTraceEventCallback(TraceEventCallback) { }
+
+    // Called to emulate device dimensions, scale factor and input. Window should
+    // occupy the whole device screen, while the view should be located at |viewRect|.
+    // With |fitToView| set, contents should be scaled down to fit into embedder window.
+    // All sizes are measured in device independent pixels.
+    virtual void enableDeviceEmulation(
+        const WebSize& screenSize, const WebRect& viewRect,
+        float deviceScaleFactor, bool fitToView) { }
+
+    // Cancel emulation started via |enableDeviceEmulation| call.
+    virtual void disableDeviceEmulation() { }
 
 protected:
     ~WebDevToolsAgentClient() { }

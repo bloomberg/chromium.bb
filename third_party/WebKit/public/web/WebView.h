@@ -402,6 +402,15 @@ public:
     virtual void setInspectorSetting(const WebString& key,
                                      const WebString& value) = 0;
 
+    // Set an override of device scale factor passed from WebView to
+    // compositor. Pass zero to cancel override. This is used to implement
+    // device metrics emulation.
+    virtual void setCompositorDeviceScaleFactorOverride(float) = 0;
+
+    // Set scaling transformation on the root composited layer. This is used
+    // to implement device metrics emulation.
+    virtual void setRootLayerScaleTransform(float) = 0;
+
     // The embedder may optionally engage a WebDevToolsAgent.  This may only
     // be set once per WebView.
     virtual WebDevToolsAgent* devToolsAgent() = 0;
