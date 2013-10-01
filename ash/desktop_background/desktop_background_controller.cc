@@ -229,8 +229,8 @@ bool DesktopBackgroundController::SetDefaultWallpaper(bool is_guest) {
       command_line_for_testing_ : CommandLine::ForCurrentProcess();
   const char* switch_name = NULL;
   if (is_guest) {
-    switch_name = use_large ? switches::kAshDefaultGuestWallpaperLarge :
-        switches::kAshDefaultGuestWallpaperSmall;
+    switch_name = use_large ? switches::kAshGuestWallpaperLarge :
+        switches::kAshGuestWallpaperSmall;
   } else {
     const char* oem_switch_name = use_large ? switches::kAshOemWallpaperLarge :
         switches::kAshOemWallpaperSmall;

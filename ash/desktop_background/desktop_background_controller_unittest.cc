@@ -236,14 +236,14 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
     ASSERT_TRUE(WriteJPEGFile(kLargeGuestPath, kWallpaperSize, kWallpaperSize,
                               kLargeGuestWallpaperColor));
     command_line_.AppendSwitchPath(
-        switches::kAshDefaultGuestWallpaperLarge, kLargeGuestPath);
+        switches::kAshGuestWallpaperLarge, kLargeGuestPath);
 
     const base::FilePath kSmallGuestPath =
         wallpaper_dir_->path().Append(FILE_PATH_LITERAL("guest_small.jpg"));
     ASSERT_TRUE(WriteJPEGFile(kSmallGuestPath, kWallpaperSize, kWallpaperSize,
                               kSmallGuestWallpaperColor));
     command_line_.AppendSwitchPath(
-        switches::kAshDefaultGuestWallpaperSmall, kSmallGuestPath);
+        switches::kAshGuestWallpaperSmall, kSmallGuestPath);
 
     controller_->set_command_line_for_testing(&command_line_);
   }

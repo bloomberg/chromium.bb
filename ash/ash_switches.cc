@@ -33,13 +33,6 @@ const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 const char kAshDebugShowPreferredNetworks[] =
     "ash-debug-show-preferred-networks";
 
-// Default wallpaper to use in guest mode (as paths to trusted,
-// non-user-writable JPEG files).
-const char kAshDefaultGuestWallpaperLarge[] =
-    "ash-default-guest-wallpaper-large";
-const char kAshDefaultGuestWallpaperSmall[] =
-    "ash-default-guest-wallpaper-small";
-
 // Default wallpaper to use (as paths to trusted, non-user-writable JPEG files).
 const char kAshDefaultWallpaperLarge[] = "ash-default-wallpaper-large";
 const char kAshDefaultWallpaperSmall[] = "ash-default-wallpaper-small";
@@ -139,6 +132,11 @@ const char kAshEnableTrayDragging[] = "ash-enable-tray-dragging";
 
 // Forces chrome to use mirror mode when an external display is connected.
 const char kAshForceMirrorMode[] = "ash-force-mirror-mode";
+
+// Wallpaper to use in guest mode (as paths to trusted, non-user-writable JPEG
+// files).
+const char kAshGuestWallpaperLarge[] = "ash-guest-wallpaper-large";
+const char kAshGuestWallpaperSmall[] = "ash-guest-wallpaper-small";
 
 // Hides notifications that are irrelevant to Chrome OS device factory testing,
 // such as battery level updates.

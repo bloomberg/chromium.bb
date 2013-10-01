@@ -146,13 +146,13 @@ std::string DeriveCommandLine(const GURL& start_url,
       ::switches::kDisableWebRtcHWEncoding,
       ::switches::kEnableWebRtcHWVp8Encoding,
 #endif
-      ash::switches::kAshDefaultGuestWallpaperLarge,
-      ash::switches::kAshDefaultGuestWallpaperSmall,
       ash::switches::kAshDefaultWallpaperLarge,
       ash::switches::kAshDefaultWallpaperSmall,
 #if defined(OS_CHROMEOS)
       ash::switches::kAshDisableAudioDeviceMenu,
 #endif
+      ash::switches::kAshGuestWallpaperLarge,
+      ash::switches::kAshGuestWallpaperSmall,
       ash::switches::kAshHostWindowBounds,
       ash::switches::kAshTouchHud,
       ash::switches::kAuraLegacyPowerButton,
