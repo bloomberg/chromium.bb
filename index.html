@@ -105,6 +105,16 @@ you press <code>&lt;up&gt;</code>, the result of
 <h3><a name="bugfix-cancelErrorNotNull">bugfix/cancelErrorNotNull</a> (Zhen Yin)</h3>
 <p>TODO</p>
 
+<h3><a name="bugfix-caretPosition">bugfix/caretPosition</a> (Tianyin Zhang; D38913437, D38277785)</h3>
+<p>This branch consists of multiple fixes that were merged together:</p>
+<ul><li><b>fixUndoSpellCaretPos (D38913437)</b><br>
+    Open <a href="repros/fixUndoSpellCaretPos.html">this link</a> in test shell. Enable AsynchronousSpellCheckEnabled bit, Spellchecker, and AutoCorrection. Assuming the Spellchecker will autocorrect all the 'tset' into 'test' and will auto capitalize first letter in a sentence which happens before the autocorrect. Now type 'tset' in the following DIV and hit space. Autocapitalize and autocorrection will happen in order and text gets replaced by 'Test '. Then hit 'Ctrl + Z' to undo this change. The first time it undid the autocorrection and produce 'Tset '. However the cursor position is not after the space but after the 't'. Hit space again we have 'tset ' and the cursor position is after the space. The correct behavior is that the cursor position should always be after the space when undo.
+    </li>
+    <li><b>restoreCaretPosition (D38277785)</b><br>
+    Open <a href="repros/restoreCaretPosition.html">this link</a> in test_shell. Enable AsynchronousSpellCheckEnabled bit, Spellchecker, and AutoCorrection. Assuming the Spellchecker will autocorrect all the 'tst' into 'test'. Now type really fast in the DIV[contenteditable] below. Make sure 'tsts' is typed multiple times.  Note that the caret position should always be at the end of this text flow.  Due to a bug in Editor, this could break when user types fast because it would reset the caret position after a replacement under some cases.
+    </li>
+</ul>
+
 <h3><a name="bugfix-cellInMulticol">bugfix/cellInMulticol</a> (Shezan Baig; D34079255)</h3>
 <p>Open <a href="repros/cellInMulticol.html">this link</a> in Chrome and keep
 resizing the window. You will see that the table cells get split when they
@@ -180,9 +190,6 @@ image twice.  There will be one level of indentation still left.</p>
 <p>Open <a href="repros/emptycellcaret.html">this link</a> in Chrome, and put
 the caret inside an empty table cell.  The caret's <code>y-position</code> is
 outside the <code>table-cell</code>.</p>
-
-<h3><a name="bugfix-fix-undo-spell-caret-pos.">bugfix/fixUndoSpellCaretPos</a> (Tianyin Zhang; D38913437)</h3>
-<p>Open <a href="repros/fixUndoSpellCaretPos.html">this link</a> in test shell. Enable AsynchronousSpellCheckEnabled bit, Spellchecker, and AutoCorrection. Assuming the Spellchecker will autocorrect all the 'tset' into 'test' and will auto capitalize first letter in a sentence which happens before the autocorrect. Now type 'tset' in the following DIV and hit space. Autocapitalize and autocorrection will happen in order and text gets replaced by 'Test '. Then hit 'Ctrl + Z' to undo this change. The first time it undid the autocorrection and produce 'Tset '. However the cursor position is not after the space but after the 't'. Hit space again we have 'tset ' and the cursor position is after the space. The correct behavior is that the cursor position should always be after the space when undo.</p>
 
 <h3><a name="bugfix-fix-modal-loop">bugfix/fix-modal-loop</a> (Imran Haider)</h3>
 <p>TODO</p>
@@ -291,9 +298,6 @@ button.  There are now a bunch of empty lines added in between.</p>
 
 <h3><a name="bugfix-removeSpellingMarker">bugfix/removeSpellingMarker</a> (Tianyin Zhang; D38695085;)</h3>
 <p>Open <a href="repros/removeSpellingMarker.html">this link</a> in chrome, place the cursor inside the contenteditable and make sure some mispelling markers show up. Then click on the button to switch the contenteditable to false. Note that the misspelling markers aren't removed. </p>
-
-<h3><a name="bugfix-restoreCaretPosition">bugfix/restoreCaretPosition</a> (Tianyin Zhang; D38277785)</h3>
-<p>Open <a href="repros/restoreCaretPosition.html">this link</a> in test_shell. Enable AsynchronousSpellCheckEnabled bit, Spellchecker, and AutoCorrection. Assuming the Spellchecker will autocorrect all the 'tst' into 'test'. Now type really fast in the DIV[contenteditable] below. Make sure 'tsts' is typed multiple times.  Note that the caret position should always be at the end of this text flow.  Due to a bug in Editor, this could break when user types fast because it would reset the caret position after a replacement under some cases.</p>
 
 <h3><a name="bugfix-scrollClipRect">bugfix/scrollClipRect</a> (Shezan Baig; D32861389)</h3>
 <p>This bug is somewhat hard to reproduce, the window size needs to be just
@@ -588,6 +592,10 @@ be fixed upstream).</p>
 <p>Retired as of the <code>23.0.1271.97</code> snapshot because the fix is
 available upstream.</p>
 
+<h3><a name="bugfix-fixUndoSpellCaretPos">bugfix/fixUndoSpellCaretPos</a> (Tianyin Zhang; D38913437)</h3>
+<p>Retired in favor of <code><a
+        href="#bugfix-caretPosition">bugfix/caretPosition</a></code></p>
+
 <h3><a name="bugfix-flexReplaced">bugfix/flexReplaced</a> (Shezan Baig; D34372405; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=94237">94237</a>)</h3>
 <p>Retired as of the <code>23.0.1271.97</code> snapshot because the fix is
 available upstream.</p>
@@ -619,6 +627,10 @@ available upstream.</p>
 <h3><a name="bugfix-offsetleft">bugfix/offsetleft</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=34875">34875</a>)</h3>
 <p>Retired as of the <code>21.0.1180.60</code> snapshot because the fix is
 available upstream.</p>
+
+<h3><a name="bugfix-restoreCaretPosition">bugfix/restoreCaretPosition</a> (Tianyin Zhang; D38277785)</h3>
+<p>Retired in favor of <code><a
+        href="#bugfix-caretPosition">bugfix/caretPosition</a></code></p>
 
 <h3><a name="bugfix-rowOutlines">bugfix/rowOutlines</a> (Shezan Baig; D34115441; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=94007">94007</a>)</h3>
 <p>Retired as of the <code>23.0.1271.97</code> snapshot because the fix is
