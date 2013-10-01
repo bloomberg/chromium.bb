@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "chromeos/login/login_state.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
@@ -373,8 +374,8 @@ bool VPNConfigView::Login() {
         shill::kProviderTypeProperty, GetProviderTypeString());
 
     SetConfigProperties(&properties);
-    ash::network_connect::CreateConfigurationAndConnect(
-        &properties, false /* not shared */);
+    bool shared = !LoginState::Get()->IsUserAuthenticated();
+    ash::network_connect::CreateConfigurationAndConnect(&properties, shared);
   } else {
     const NetworkState* vpn = NetworkHandler::Get()->network_state_handler()->
         GetNetworkState(service_path_);
