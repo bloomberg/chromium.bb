@@ -363,9 +363,7 @@ void MessagePopupCollection::OnNotificationRemoved(
     return;
 
   target_top_edge_ = (*iter)->bounds().y();
-  (*iter)->CloseWithAnimation(true);
-  if (by_user) {
-    RepositionWidgetsWithTarget();
+  if (by_user && !user_is_closing_toasts_by_clicking_) {
     // [Re] start a timeout after which the toasts re-position to their
     // normal locations after tracking the mouse pointer for easy deletion.
     // This provides a period of time when toasts are easy to remove because
@@ -373,11 +371,18 @@ void MessagePopupCollection::OnNotificationRemoved(
     // pointer. If the user continue to remove the toasts, the delay is reset.
     // Once user stopped removing the toasts, the toasts re-populate/rearrange
     // after the specified delay.
-    if (!user_is_closing_toasts_by_clicking_) {
-      user_is_closing_toasts_by_clicking_ = true;
-      IncrementDeferCounter();
-    }
+    user_is_closing_toasts_by_clicking_ = true;
+    IncrementDeferCounter();
   }
+
+  // CloseWithAnimation ultimately causes a call to RemoveToast, which calls
+  // OnMouseExited.  This means that |user_is_closing_toasts_by_clicking_| must
+  // have been set before this call, otherwise it will remain true even after
+  // the toast is closed, since the defer timer won't be started.
+  (*iter)->CloseWithAnimation(true);
+
+  if (by_user)
+    RepositionWidgetsWithTarget();
 }
 
 void MessagePopupCollection::OnDeferTimerExpired() {

@@ -377,6 +377,29 @@ TEST_F(MessagePopupCollectionTest, DetectMouseHover) {
 
 // TODO(dimich): Test repositioning - both normal one and when user is closing
 // the toasts.
+TEST_F(MessagePopupCollectionTest, DetectMouseHoverWithUserClose) {
+  std::string id0 = AddNotification();
+  std::string id1 = AddNotification();
+  WaitForTransitionsDone();
+
+  views::WidgetDelegateView* toast0 = GetToast(id0);
+  EXPECT_TRUE(toast0 != NULL);
+  views::WidgetDelegateView* toast1 = GetToast(id1);
+  ASSERT_TRUE(toast1 != NULL);
+
+  ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), 0);
+  toast1->OnMouseEntered(event);
+  static_cast<MessageCenterObserver*>(collection())->OnNotificationRemoved(
+      id1, true);
+
+  EXPECT_FALSE(MouseInCollection());
+  std::string id2 = AddNotification();
+
+  WaitForTransitionsDone();
+  views::WidgetDelegateView* toast2 = GetToast(id2);
+  EXPECT_TRUE(toast2 != NULL);
+}
+
 
 }  // namespace test
 }  // namespace message_center
