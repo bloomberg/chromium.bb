@@ -189,6 +189,7 @@
         'render_text_win.cc',
         'render_text_win.h',
         'safe_integer_conversions.h',
+        'scoped_canvas.h',
         'scoped_cg_context_save_gstate_mac.h',
         'scoped_ns_graphics_context_save_gstate_mac.h',
         'scoped_ns_graphics_context_save_gstate_mac.mm',

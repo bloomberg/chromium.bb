@@ -28,6 +28,7 @@
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
@@ -66,30 +67,6 @@ const bool kContextMenuOnMousePress = false;
 #else
 const bool kContextMenuOnMousePress = true;
 #endif
-
-// Saves the drawing state, and restores the state when going out of scope.
-class ScopedCanvas {
- public:
-  explicit ScopedCanvas(gfx::Canvas* canvas) : canvas_(canvas) {
-    if (canvas_)
-      canvas_->Save();
-  }
-  ~ScopedCanvas() {
-    if (canvas_)
-      canvas_->Restore();
-  }
-  void SetCanvas(gfx::Canvas* canvas) {
-    if (canvas_)
-      canvas_->Restore();
-    canvas_ = canvas;
-    canvas_->Save();
-  }
-
- private:
-  gfx::Canvas* canvas_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedCanvas);
-};
 
 // Returns the top view in |view|'s hierarchy.
 const views::View* GetHierarchyRoot(const views::View* view) {
@@ -781,7 +758,7 @@ void View::SchedulePaintInRect(const gfx::Rect& rect) {
 void View::Paint(gfx::Canvas* canvas) {
   TRACE_EVENT1("views", "View::Paint", "class", GetClassName());
 
-  ScopedCanvas scoped_canvas(canvas);
+  gfx::ScopedCanvas scoped_canvas(canvas);
 
   // Paint this View and its children, setting the clip rect to the bounds
   // of this View and translating the origin to the local bounds' top left
@@ -1742,7 +1719,7 @@ void View::PaintCommon(gfx::Canvas* canvas) {
     // The canvas mirroring is undone once the View is done painting so that we
     // don't pass the canvas with the mirrored transform to Views that didn't
     // request the canvas to be flipped.
-    ScopedCanvas scoped(canvas);
+    gfx::ScopedCanvas scoped(canvas);
     if (FlipCanvasOnPaintForRTLUI()) {
       canvas->Translate(gfx::Vector2d(width(), 0));
       canvas->Scale(-1, 1);

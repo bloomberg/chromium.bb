@@ -68,6 +68,11 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
     preferred_size_ = preferred_size;
   }
 
+  // Whether we should draw our images resources horizontally flipped.
+  void SetDrawImageMirrored(bool mirrored) {
+    draw_image_mirrored_ = mirrored;
+  }
+
  protected:
   // Returns the image to paint. This is invoked from paint and returns a value
   // from images.
@@ -95,6 +100,12 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   HorizontalAlignment h_alignment_;
   VerticalAlignment v_alignment_;
   gfx::Size preferred_size_;
+
+  // Whether we draw our resources horizontally flipped. This can happen in the
+  // linux titlebar, where image resources were designed to be flipped so a
+  // small curved corner in the close button designed to fit into the frame
+  // resources.
+  bool draw_image_mirrored_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageButton);
 };

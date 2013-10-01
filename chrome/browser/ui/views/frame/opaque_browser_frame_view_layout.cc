@@ -463,6 +463,13 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
   // button to the screen corner to obey Fitts' Law.
   bool is_maximized = delegate_->IsMaximized();
 
+  // When we are the first button on the leading side and are the close
+  // button, we must flip ourselves, because the close button assets have
+  // a little notch to fit in the rounded frame.
+  button->SetDrawImageMirrored(alignment == ALIGN_LEADING &&
+                               !has_leading_buttons_ &&
+                               button == close_button_);
+
   switch (alignment) {
     case ALIGN_LEADING: {
       if (has_leading_buttons_)

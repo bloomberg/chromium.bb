@@ -9,6 +9,7 @@
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -25,7 +26,8 @@ ImageButton::ImageButton(ButtonListener* listener)
     : CustomButton(listener),
       h_alignment_(ALIGN_LEFT),
       v_alignment_(ALIGN_TOP),
-      preferred_size_(kDefaultWidth, kDefaultHeight) {
+      preferred_size_(kDefaultWidth, kDefaultHeight),
+      draw_image_mirrored_(false) {
   // By default, we request that the gfx::Canvas passed to our View::OnPaint()
   // implementation is flipped horizontally so that the button's images are
   // mirrored when the UI directionality is right-to-left.
@@ -97,6 +99,12 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
   gfx::ImageSkia img = GetImageToPaint();
 
   if (!img.isNull()) {
+    gfx::ScopedCanvas scoped(canvas);
+    if (draw_image_mirrored_) {
+      canvas->Translate(gfx::Vector2d(width(), 0));
+      canvas->Scale(-1, 1);
+    }
+
     gfx::Point position = ComputeImagePaintPosition(img);
     if (!background_image_.isNull())
       canvas->DrawImageInt(background_image_, position.x(), position.y());
