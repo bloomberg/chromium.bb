@@ -49,7 +49,6 @@
 #include "core/events/MessageEvent.h"
 #include "core/dom/MessagePortChannel.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/dom/default/chromium/PlatformMessagePortChannelChromium.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/inspector/WorkerInspectorController.h"
@@ -178,7 +177,7 @@ void WebSharedWorkerImpl::postMessageTask(ScriptExecutionContext* context,
 
     WebMessagePortChannelArray webChannels(channels ? channels->size() : 0);
     for (size_t i = 0; i < webChannels.size(); ++i) {
-        webChannels[i] = (*channels)[i]->channel()->webChannelRelease();
+        webChannels[i] = (*channels)[i]->webChannelRelease();
         webChannels[i]->setClient(0);
     }
 
@@ -347,11 +346,8 @@ bool WebSharedWorkerImpl::isStarted()
 void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel, ConnectListener* listener)
 {
     // Convert the WebMessagePortChanel to a WebCore::MessagePortChannel.
-    RefPtr<PlatformMessagePortChannel> platform_channel =
-        PlatformMessagePortChannel::create(webChannel);
-    webChannel->setClient(platform_channel.get());
-    OwnPtr<MessagePortChannel> channel =
-        MessagePortChannel::create(platform_channel);
+    RefPtr<MessagePortChannel> channel = MessagePortChannel::create(webChannel);
+    webChannel->setClient(channel.get());
 
     workerThread()->runLoop().postTask(
         createCallbackTask(&connectTask, channel.release()));
@@ -359,7 +355,7 @@ void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel, ConnectList
         listener->connected();
 }
 
-void WebSharedWorkerImpl::connectTask(ScriptExecutionContext* context, PassOwnPtr<MessagePortChannel> channel)
+void WebSharedWorkerImpl::connectTask(ScriptExecutionContext* context, PassRefPtr<MessagePortChannel> channel)
 {
     // Wrap the passed-in channel in a MessagePort, and send it off via a connect event.
     RefPtr<MessagePort> port = MessagePort::create(*context);

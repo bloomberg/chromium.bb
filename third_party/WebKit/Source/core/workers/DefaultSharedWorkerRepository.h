@@ -56,10 +56,10 @@ namespace WebCore {
         WTF_MAKE_NONCOPYABLE(DefaultSharedWorkerRepository); WTF_MAKE_FAST_ALLOCATED;
     public:
         // Invoked once the worker script has been loaded to fire up the worker thread.
-        void workerScriptLoaded(SharedWorkerProxy&, const String& userAgent, const String& workerScript, PassOwnPtr<MessagePortChannel>, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType);
+        void workerScriptLoaded(SharedWorkerProxy&, const String& userAgent, const String& workerScript, PassRefPtr<MessagePortChannel>, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType);
 
         // Internal implementation of SharedWorkerRepository::connect()
-        void connectToWorker(PassRefPtr<SharedWorker>, PassOwnPtr<MessagePortChannel>, const KURL&, const String& name, ExceptionState&);
+        void connectToWorker(PassRefPtr<SharedWorker>, PassRefPtr<MessagePortChannel>, const KURL&, const String& name, ExceptionState&);
 
         // Notification that a document has been detached.
         void documentDetached(Document*);

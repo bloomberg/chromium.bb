@@ -43,7 +43,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessagePortChannel.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/dom/default/chromium/PlatformMessagePortChannelChromium.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/platform/network/ResourceResponse.h"
@@ -84,7 +83,7 @@ using WebKit::WebSharedWorkerRepository;
 // Callback class that keeps the SharedWorker and WebSharedWorker objects alive while loads are potentially happening, and also translates load errors into error events on the worker.
 class SharedWorkerScriptLoader : private WorkerScriptLoaderClient, private WebSharedWorker::ConnectListener {
 public:
-    SharedWorkerScriptLoader(PassRefPtr<SharedWorker> worker, const KURL& url, const String& name, PassOwnPtr<MessagePortChannel> port, PassOwnPtr<WebSharedWorker> webWorker)
+    SharedWorkerScriptLoader(PassRefPtr<SharedWorker> worker, const KURL& url, const String& name, PassRefPtr<MessagePortChannel> port, PassOwnPtr<WebSharedWorker> webWorker)
         : m_worker(worker)
         , m_url(url)
         , m_name(name)
@@ -116,7 +115,7 @@ private:
     KURL m_url;
     String m_name;
     OwnPtr<WebSharedWorker> m_webWorker;
-    OwnPtr<MessagePortChannel> m_port;
+    RefPtr<MessagePortChannel> m_port;
     RefPtr<WorkerScriptLoader> m_scriptLoader;
     bool m_loading;
     long long m_responseAppCacheID;
@@ -164,11 +163,10 @@ void SharedWorkerScriptLoader::load()
 }
 
 // Extracts a WebMessagePortChannel from a MessagePortChannel.
-static WebMessagePortChannel* getWebPort(PassOwnPtr<MessagePortChannel> port)
+static WebMessagePortChannel* getWebPort(PassRefPtr<MessagePortChannel> channel)
 {
     // Extract the WebMessagePortChannel to send to the worker.
-    PlatformMessagePortChannel* platformChannel = port->channel();
-    WebMessagePortChannel* webPort = platformChannel->webChannelRelease();
+    WebMessagePortChannel* webPort = channel->webChannelRelease();
     webPort->setClient(0);
     return webPort;
 }
@@ -218,7 +216,7 @@ static WebSharedWorkerRepository::DocumentID getId(void* document)
     return reinterpret_cast<WebSharedWorkerRepository::DocumentID>(document);
 }
 
-void SharedWorkerRepository::connect(PassRefPtr<SharedWorker> worker, PassOwnPtr<MessagePortChannel> port, const KURL& url, const String& name, ExceptionState& es)
+void SharedWorkerRepository::connect(PassRefPtr<SharedWorker> worker, PassRefPtr<MessagePortChannel> port, const KURL& url, const String& name, ExceptionState& es)
 {
     WebKit::WebSharedWorkerRepository* repository = WebKit::sharedWorkerRepository();
 

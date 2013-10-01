@@ -132,7 +132,7 @@ private:
     void initializeLoader(const WebURL&);
 
 
-    static void connectTask(WebCore::ScriptExecutionContext*, PassOwnPtr<WebCore::MessagePortChannel>);
+    static void connectTask(WebCore::ScriptExecutionContext*, PassRefPtr<WebCore::MessagePortChannel>);
     // Tasks that are run on the main thread.
     static void postMessageTask(
         WebCore::ScriptExecutionContext*,

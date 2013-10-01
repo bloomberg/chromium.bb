@@ -59,8 +59,8 @@ public:
     void start();
     void close();
 
-    void entangle(PassOwnPtr<MessagePortChannel>);
-    PassOwnPtr<MessagePortChannel> disentangle();
+    void entangle(PassRefPtr<MessagePortChannel>);
+    PassRefPtr<MessagePortChannel> disentangle();
 
     // Returns 0 if there is an exception, or if the passed-in array is 0/empty.
     static PassOwnPtr<MessagePortChannelArray> disentanglePorts(const MessagePortArray*, ExceptionState&);
@@ -91,11 +91,6 @@ public:
     }
     EventListener* onmessage(DOMWrapperWorld* world) { return getAttributeEventListener(eventNames().messageEvent, world); }
 
-    // Returns null if there is no entangled port, or if the entangled port is run by a different thread.
-    // This is used solely to enable a GC optimization. Some platforms may not be able to determine ownership
-    // of the remote port (since it may live cross-process) - those platforms may always return null.
-    MessagePort* locallyEntangledPort();
-
     // A port starts out its life entangled, and remains entangled until it is closed or is cloned.
     bool isEntangled() { return !m_closed && !isNeutered(); }
 
@@ -110,7 +105,7 @@ private:
     virtual EventTargetData* eventTargetData() OVERRIDE;
     virtual EventTargetData* ensureEventTargetData() OVERRIDE;
 
-    OwnPtr<MessagePortChannel> m_entangledChannel;
+    RefPtr<MessagePortChannel> m_entangledChannel;
 
     bool m_started;
     bool m_closed;

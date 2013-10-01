@@ -120,7 +120,6 @@
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/UserGestureIndicator.h"
-#include "core/dom/default/chromium/PlatformMessagePortChannelChromium.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
