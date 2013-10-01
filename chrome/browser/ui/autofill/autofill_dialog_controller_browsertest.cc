@@ -192,7 +192,7 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-#if defined(OS_MACOSX)
+#if !defined(OS_ANDROID)
     // OSX support for requestAutocomplete is still hidden behind a switch.
     // Pending resolution of http://crbug.com/157274
     CommandLine::ForCurrentProcess()->AppendSwitch(
