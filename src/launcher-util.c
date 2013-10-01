@@ -65,6 +65,26 @@ struct weston_launcher {
 	struct wl_event_source *vt_source;
 };
 
+#ifdef BUILD_DRM_COMPOSITOR
+static int
+drm_drop_master(int drm_fd)
+{
+	if (drm_fd != -1)
+		return drmDropMaster(drm_fd);
+	return -EBADF;
+}
+static int
+drm_set_master(int drm_fd)
+{
+	if (drm_fd != -1)
+		return drmSetMaster(drm_fd);
+	return -EBADF;
+}
+#else
+static int drm_drop_master(int drm_fd) {return 0;}
+static int drm_set_master(int drm_fd) {return 0;}
+#endif
+
 int
 weston_launcher_open(struct weston_launcher *launcher,
 		     const char *path, int flags)
@@ -81,7 +101,6 @@ weston_launcher_open(struct weston_launcher *launcher,
 
 	if (launcher->fd == -1) {
 		fd = open(path, flags | O_CLOEXEC);
-
 		if (fd == -1)
 			return -1;
 
@@ -90,8 +109,14 @@ weston_launcher_open(struct weston_launcher *launcher,
 			return -1;
 		}
 
-		if (major(s.st_rdev) == DRM_MAJOR)
+		if (major(s.st_rdev) == DRM_MAJOR) {
 			launcher->drm_fd = fd;
+			if (drm_set_master(fd) == -1) {
+				weston_log("could not set master on drm fd\n");
+				close(fd);
+				return -1;
+			}
+		}
 
 		return fd;
 	}
@@ -197,26 +222,6 @@ weston_launcher_data(int fd, uint32_t mask, void *data)
 
 	return 1;
 }
-
-#ifdef BUILD_DRM_COMPOSITOR
-static int
-drm_drop_master(int drm_fd)
-{
-	if (drm_fd != -1)
-		return drmDropMaster(drm_fd);
-	return -EBADF;
-}
-static int
-drm_set_master(int drm_fd)
-{
-	if (drm_fd != -1)
-		return drmSetMaster(drm_fd);
-	return -EBADF;
-}
-#else
-static int drm_drop_master(int drm_fd) {return 0;}
-static int drm_set_master(int drm_fd) {return 0;}
-#endif
 
 static int
 vt_handler(int signal_number, void *data)
