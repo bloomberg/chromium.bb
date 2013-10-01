@@ -690,6 +690,8 @@
     'browser/loader/sync_resource_handler.h',
     'browser/loader/throttling_resource_handler.cc',
     'browser/loader/throttling_resource_handler.h',
+    'browser/loader/transfer_navigation_resource_throttle.cc',
+    'browser/loader/transfer_navigation_resource_throttle.h',
     'browser/loader/upload_data_stream_builder.cc',
     'browser/loader/upload_data_stream_builder.h',
     'browser/mach_broker_mac.h',

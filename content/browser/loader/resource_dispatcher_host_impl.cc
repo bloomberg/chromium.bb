@@ -40,6 +40,7 @@
 #include "content/browser/loader/stream_resource_handler.h"
 #include "content/browser/loader/sync_resource_handler.h"
 #include "content/browser/loader/throttling_resource_handler.h"
+#include "content/browser/loader/transfer_navigation_resource_throttle.h"
 #include "content/browser/loader/upload_data_stream_builder.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -937,9 +938,6 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
                                                route_id,
                                                request_id);
   }
-
-  // We should have a CrossSiteResourceHandler to finish the transfer.
-  DCHECK(info->cross_site_handler());
 }
 
 void ResourceDispatcherHostImpl::BeginRequest(
@@ -1109,11 +1107,16 @@ void ResourceDispatcherHostImpl::BeginRequest(
         new RedirectToFileResourceHandler(handler.Pass(), request, this));
   }
 
-  // Install a CrossSiteResourceHandler for all main frame requests.  This will
-  // let us check whether a transfer is required and pause for the unload
-  // handler either if so or if a cross-process navigation is already under way.
- if (request_data.resource_type == ResourceType::MAIN_FRAME &&
-     process_type == PROCESS_TYPE_RENDERER) {
+  // Install a CrossSiteResourceHandler if this request is coming from a
+  // RenderViewHost with a pending cross-site request.  We only check this for
+  // MAIN_FRAME requests. Unblock requests only come from a blocked page, do
+  // not count as cross-site, otherwise it gets blocked indefinitely.
+  if (request_data.resource_type == ResourceType::MAIN_FRAME &&
+      process_type == PROCESS_TYPE_RENDERER &&
+      CrossSiteRequestManager::GetInstance()->
+          HasPendingCrossSiteRequest(child_id, route_id)) {
+    // Wrap the event handler to be sure the current page's onunload handler
+    // has a chance to run before we render the new page.
     handler.reset(new CrossSiteResourceHandler(handler.Pass(), request));
   }
 
@@ -1135,6 +1138,12 @@ void ResourceDispatcherHostImpl::BeginRequest(
   if (request->has_upload()) {
     // Block power save while uploading data.
     throttles.push_back(new PowerSaveBlockResourceThrottle());
+  }
+
+  if (request_data.resource_type == ResourceType::MAIN_FRAME) {
+    throttles.insert(
+        throttles.begin(),
+        new TransferNavigationResourceThrottle(request));
   }
 
   throttles.push_back(

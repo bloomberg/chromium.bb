@@ -9,7 +9,6 @@
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/loader/cross_site_resource_handler.h"
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
@@ -166,10 +165,10 @@ void ResourceLoader::MarkAsTransferring(const GURL& target_url) {
 }
 
 void ResourceLoader::CompleteTransfer() {
-  DCHECK_EQ(DEFERRED_READ, deferred_stage_);
+  DCHECK_EQ(DEFERRED_REDIRECT, deferred_stage_);
 
   is_transferring_ = false;
-  GetRequestInfo()->cross_site_handler()->ResumeResponse();
+  Resume();
 }
 
 ResourceRequestInfoImpl* ResourceLoader::GetRequestInfo() {
