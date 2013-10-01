@@ -15,10 +15,6 @@
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_ANDROID)
-#include "content/public/browser/android/content_view_core.h"
-#endif
-
 using content::RenderViewHost;
 using WebKit::WebAutofillClient;
 
