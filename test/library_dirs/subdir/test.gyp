@@ -51,9 +51,17 @@
         '<(abs_path_to_secret_library_location)',
       ],
       'link_settings': {
-        'libraries': [
-          '-lmylib',
-        ],
+        'conditions': [
+          ['OS=="linux"', {
+            'libraries': [
+              '-lmylib',
+            ],
+          }, { # else
+            'libraries': [
+              '<(STATIC_LIB_PREFIX)mylib<(STATIC_LIB_SUFFIX)',
+            ],
+          }],
+        ],  # conditions
       },
     },
   ],
