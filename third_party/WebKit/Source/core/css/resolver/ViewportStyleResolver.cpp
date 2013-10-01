@@ -50,13 +50,25 @@ ViewportStyleResolver::~ViewportStyleResolver()
 {
 }
 
-void ViewportStyleResolver::addViewportRule(StyleRuleViewport* viewportRule)
+void ViewportStyleResolver::collectViewportRules(RuleSet* rules, Origin origin)
+{
+    rules->compactRulesIfNeeded();
+
+    const Vector<StyleRuleViewport*>& viewportRules = rules->viewportRules();
+    for (size_t i = 0; i < viewportRules.size(); ++i)
+        addViewportRule(viewportRules[i], origin);
+}
+
+void ViewportStyleResolver::addViewportRule(StyleRuleViewport* viewportRule, Origin origin)
 {
     StylePropertySet* propertySet = viewportRule->mutableProperties();
 
     unsigned propertyCount = propertySet->propertyCount();
     if (!propertyCount)
         return;
+
+    if (origin == AuthorOrigin)
+        m_hasAuthorStyle = true;
 
     if (!m_propertySet) {
         m_propertySet = propertySet->mutableCopy();

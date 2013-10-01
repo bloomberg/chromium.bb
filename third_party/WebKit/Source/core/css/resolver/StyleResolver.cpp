@@ -1128,29 +1128,18 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 
 void StyleResolver::collectViewportRules()
 {
-    collectViewportRules(CSSDefaultStyleSheets::defaultStyle, UserAgentOrigin);
+    viewportStyleResolver()->collectViewportRules(CSSDefaultStyleSheets::defaultStyle, ViewportStyleResolver::UserAgentOrigin);
 
     if (document().isMobileDocument())
-        collectViewportRules(CSSDefaultStyleSheets::xhtmlMobileProfileStyle(), UserAgentOrigin);
+        viewportStyleResolver()->collectViewportRules(CSSDefaultStyleSheets::xhtmlMobileProfileStyle(), ViewportStyleResolver::UserAgentOrigin);
 
     if (m_ruleSets.userStyle())
-        collectViewportRules(m_ruleSets.userStyle(), UserAgentOrigin);
+        viewportStyleResolver()->collectViewportRules(m_ruleSets.userStyle(), ViewportStyleResolver::UserAgentOrigin);
 
     if (ScopedStyleResolver* scopedResolver = m_styleTree.scopedStyleResolverForDocument())
         scopedResolver->collectViewportRulesTo(this);
 
     viewportStyleResolver()->resolve();
-}
-
-void StyleResolver::collectViewportRules(RuleSet* rules, ViewportOrigin origin)
-{
-    rules->compactRulesIfNeeded();
-
-    const Vector<StyleRuleViewport*>& viewportRules = rules->viewportRules();
-    if (origin == AuthorOrigin && viewportRules.size())
-        viewportStyleResolver()->setHasAuthorStyle();
-    for (size_t i = 0; i < viewportRules.size(); ++i)
-        viewportStyleResolver()->addViewportRule(viewportRules[i]);
 }
 
 PassRefPtr<RenderStyle> StyleResolver::defaultStyleForElement()

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Empty @viewport not overriding Viewport Meta tag</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script>
+        if (window.testRunner) {
+            testRunner.enableFixedLayoutMode(true);
+            internals.settings.setViewportEnabled(true);
+        }
+    </script>
+    <meta name="viewport" content="width=5000">
+    <style>@viewport {}</style>
+</head>
+<body>
+    <div id="log"></div>
+    <script>
+        var rootWidth = document.documentElement.offsetWidth;
+        test(function(){
+            assert_equals(rootWidth, 5000, "documentElement.offsetWidth equals Meta viewport width.");
+        }, "Check that Meta viewport is not overridden by empty @viewport rule.");
+    </script>
+</body>
+</html>

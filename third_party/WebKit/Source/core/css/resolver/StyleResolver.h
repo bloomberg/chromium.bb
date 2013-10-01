@@ -269,12 +269,6 @@ public:
     // FIXME: StyleResolver should not have this member or method.
     InspectorCSSOMWrappers& inspectorCSSOMWrappers() { return m_inspectorCSSOMWrappers; }
 
-    enum ViewportOrigin { UserAgentOrigin, AuthorOrigin };
-
-    // Exposed for ScopedStyleResolver.
-    // FIXME: Likely belongs on viewportStyleResolver.
-    void collectViewportRules(RuleSet*, ViewportOrigin);
-
     const RuleFeatureSet& ruleFeatureSet() const { return m_features; }
 
     StyleSharingList& styleSharingList() { return m_styleSharingList; }

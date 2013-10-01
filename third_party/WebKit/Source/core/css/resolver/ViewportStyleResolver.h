@@ -31,6 +31,7 @@
 #define ViewportStyleResolver_h
 
 #include "CSSPropertyNames.h"
+#include "core/css/RuleSet.h"
 #include "core/platform/Length.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -50,14 +51,17 @@ public:
 
     ~ViewportStyleResolver();
 
-    void setHasAuthorStyle() { m_hasAuthorStyle = true; }
-    void addViewportRule(StyleRuleViewport*);
+    enum Origin { UserAgentOrigin, AuthorOrigin };
+
+    void collectViewportRules(RuleSet*, Origin);
 
     void clearDocument();
     void resolve();
 
 private:
     explicit ViewportStyleResolver(Document*);
+
+    void addViewportRule(StyleRuleViewport*, Origin);
 
     float viewportArgumentValue(CSSPropertyID) const;
     Length viewportLengthValue(CSSPropertyID) const;
