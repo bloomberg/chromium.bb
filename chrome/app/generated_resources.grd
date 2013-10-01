@@ -5940,11 +5940,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_WEBSOCKET_DESCRIPTION" desc="Description for the flag to enable experimental WebSocket implementation in chrome/net">
         Use the explemental WebSocket implementation.
       </message>
-      <message name="IDS_FLAGS_ENABLE_WALLET_PRODUCTION_SERVICE_NAME" desc="Title for the flag to enable using production Online Wallet.">
-        Enable Online Wallet production service
+      <message name="IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_NAME" desc="Title for the flag to use the Online Wallet sandbox servers (instead of production).">
+        Use Wallet sandbox servers
       </message>
-      <message name="IDS_FLAGS_ENABLE_WALLET_PRODUCTION_SERVICE_DESCRIPTION" desc="Description of the flag to enable using production Online Wallet.">
-        Use the production service for any Online Wallet API calls. This flag is only meaningful if a feature that uses Online Wallet is enabled. Production Online Wallet is also not yet enabled for all users.
+      <message name="IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_DESCRIPTION" desc="Description of the flag to use the Online Wallet sandbox servers.">
+        For developers: use the sandbox service for Wallet API calls for requestAutocomplete().
       </message>
       <message name="IDS_FLAGS_OVERSCROLL_HISTORY_NAVIGATION_NAME" desc="Title for the flag for history navigation from horizontal overscroll.">
         Overscroll history navigation

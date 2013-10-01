@@ -17,7 +17,7 @@ extern const char kEnableInteractiveAutocomplete[];
 extern const char kShowAutofillTypePredictions[];
 extern const char kWalletSecureServiceUrl[];
 extern const char kWalletServiceUrl[];
-extern const char kWalletServiceUseProd[];
+extern const char kWalletServiceUseSandbox[];
 
 }  // namespace switches
 }  // namespace autofill

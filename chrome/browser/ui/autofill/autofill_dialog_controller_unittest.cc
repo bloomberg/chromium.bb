@@ -1723,9 +1723,6 @@ TEST_F(AutofillDialogControllerTest, WalletServerSideValidationUnrecoverable) {
 // Test Wallet banners are show in the right situations. These banners promote
 // saving details into Wallet (i.e. "[x] Save details to Wallet").
 TEST_F(AutofillDialogControllerTest, WalletBanners) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kWalletServiceUseProd);
-
   // Simulate non-signed-in case.
   SetUpControllerWithFormData(DefaultFormData());
   GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
@@ -2093,13 +2090,23 @@ TEST_F(AutofillDialogControllerTest, NotProdNotification) {
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  ASSERT_FALSE(command_line->HasSwitch(switches::kWalletServiceUseProd));
-  EXPECT_FALSE(
-      NotificationsOfType(DialogNotification::DEVELOPER_WARNING).empty());
+  ASSERT_EQ(
+      "",
+      command_line->GetSwitchValueASCII(switches::kWalletServiceUseSandbox));
 
-  command_line->AppendSwitch(switches::kWalletServiceUseProd);
-  EXPECT_TRUE(
-      NotificationsOfType(DialogNotification::DEVELOPER_WARNING).empty());
+#if defined(OS_MACOSX)
+  // Default on Mac is to use sandbox (which shows a warning).
+  EXPECT_EQ(1U,
+            NotificationsOfType(DialogNotification::DEVELOPER_WARNING).size());
+#else
+  // Default everywhere else is to use prod (no warning).
+  EXPECT_EQ(0U,
+            NotificationsOfType(DialogNotification::DEVELOPER_WARNING).size());
+#endif
+
+  command_line->AppendSwitchASCII(switches::kWalletServiceUseSandbox, "1");
+  EXPECT_EQ(1U,
+            NotificationsOfType(DialogNotification::DEVELOPER_WARNING).size());
 }
 
 // Ensure Wallet instruments marked expired by the server are shown as invalid.

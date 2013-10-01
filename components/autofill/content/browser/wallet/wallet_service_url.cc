@@ -27,9 +27,16 @@ const char kSandboxWalletSecureServiceUrl[] =
     "https://wallet-web.sandbox.google.com/";
 
 bool IsWalletProductionEnabled() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(switches::kWalletServiceUseProd) ||
-      base::FieldTrialList::FindFullName("WalletProductionService") == "Yes";
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  std::string sandbox_enabled(
+      command_line->GetSwitchValueASCII(switches::kWalletServiceUseSandbox));
+  if (!sandbox_enabled.empty())
+    return sandbox_enabled != "1";
+#if defined(OS_MACOSX)
+  return false;
+#else
+  return true;
+#endif
 }
 
 GURL GetWalletHostUrl() {
