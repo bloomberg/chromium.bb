@@ -2683,8 +2683,6 @@
             'platform/ThreadTimers.cpp',
             'platform/ThreadTimers.h',
             'platform/Timer.cpp',
-            'platform/UUID.cpp',
-            'platform/UUID.h',
             'platform/Widget.cpp',
             'platform/Widget.h',
             'platform/animation/AnimationValue.h',

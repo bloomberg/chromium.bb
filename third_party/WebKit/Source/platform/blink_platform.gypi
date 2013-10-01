@@ -28,6 +28,8 @@
       'PurgeableBuffer.h',
       'SharedBuffer.cpp',
       'SharedBuffer.h',
+      'UUID.cpp',
+      'UUID.h',
     ],
     'platform_test_files': [
       'ClockTest.cpp',

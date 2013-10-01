@@ -32,7 +32,7 @@
 
 #include "core/fileapi/BlobURL.h"
 
-#include "core/platform/UUID.h"
+#include "platform/UUID.h"
 #include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/text/WTFString.h"
