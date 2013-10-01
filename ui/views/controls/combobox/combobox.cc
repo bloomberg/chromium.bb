@@ -98,12 +98,14 @@ Combobox::Combobox(ui::ComboboxModel* model)
       disclosure_arrow_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_MENU_DROPARROW).ToImageSkia()),
       dropdown_open_(false) {
+  model_->AddObserver(this);
   UpdateFromModel();
   set_focusable(true);
   set_border(text_border_);
 }
 
 Combobox::~Combobox() {
+  model_->RemoveObserver(this);
 }
 
 // static
@@ -325,6 +327,10 @@ void Combobox::GetAccessibleState(ui::AccessibleViewState* state) {
   state->value = model_->GetItemAt(selected_index_);
   state->index = selected_index_;
   state->count = model_->GetItemCount();
+}
+
+void Combobox::OnModelChanged() {
+  ModelChanged();
 }
 
 void Combobox::UpdateFromModel() {

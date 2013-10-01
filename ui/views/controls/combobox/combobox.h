@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/time/time.h"
+#include "ui/base/models/combobox_model_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/prefix_delegate.h"
@@ -28,7 +29,10 @@ class MenuRunner;
 class PrefixSelector;
 
 // A non-editable combobox (aka a drop-down list or selector).
-class VIEWS_EXPORT Combobox : public MenuDelegate, public PrefixDelegate {
+class VIEWS_EXPORT Combobox
+    : public MenuDelegate,
+      public PrefixDelegate,
+      public ui::ComboboxModelObserver {
  public:
   // The combobox's class name.
   static const char kViewClassName[];
@@ -86,6 +90,9 @@ class VIEWS_EXPORT Combobox : public MenuDelegate, public PrefixDelegate {
   virtual int GetSelectedRow() OVERRIDE;
   virtual void SetSelectedRow(int row) OVERRIDE;
   virtual string16 GetTextForRow(int row) OVERRIDE;
+
+  // Overriden from ComboboxModelObserver:
+  virtual void OnModelChanged() OVERRIDE;
 
  private:
   // Updates the combobox's content from its model.

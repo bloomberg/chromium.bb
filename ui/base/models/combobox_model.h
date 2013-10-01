@@ -10,6 +10,8 @@
 
 namespace ui {
 
+class ComboboxModelObserver;
+
 // A data model for a combo box.
 class UI_EXPORT ComboboxModel {
  public:
@@ -26,6 +28,10 @@ class UI_EXPORT ComboboxModel {
   // The index of the item that is selected by default (before user
   // interaction).
   virtual int GetDefaultIndex() const;
+
+  // Adds/removes an observer. Override if model supports mutation.
+  virtual void AddObserver(ComboboxModelObserver* observer) {}
+  virtual void RemoveObserver(ComboboxModelObserver* observer) {}
 
  protected:
   virtual ~ComboboxModel() {}
