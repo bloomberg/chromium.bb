@@ -181,8 +181,6 @@ class NonAllocatingMap {
         if (!entries_[i].is_active()) {
           entry = &entries_[i];
 
-          assert(strlen(key) < key_size);
-
           strncpy(entry->key, key, key_size);
           entry->key[key_size - 1] = '\0';
 
@@ -205,7 +203,6 @@ class NonAllocatingMap {
     assert(count == 1);
 #endif
 
-    assert(strlen(value) < value_size);
     strncpy(entry->value, value, value_size);
     entry->value[value_size - 1] = '\0';
   }

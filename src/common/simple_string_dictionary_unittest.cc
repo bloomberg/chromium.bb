@@ -290,18 +290,6 @@ TEST(NonAllocatingMapTest, OutOfSpace) {
 
 #ifndef NDEBUG
 
-TEST(NonAllocatingMapTest, KeyTooLong) {
-  NonAllocatingMap<3, 10, 12> map;
-  map.SetKeyValue("ab", "cdefghi");
-  ASSERT_DEATH(map.SetKeyValue("abcdef", "1"), "");
-}
-
-TEST(NonAllocatingMapTest, ValueTooLong) {
-  NonAllocatingMap<9, 3, 8> map;
-  map.SetKeyValue("abcd", "ab");
-  ASSERT_DEATH(map.SetKeyValue("abcd", "abc"), "");
-}
-
 TEST(NonAllocatingMapTest, NullKey) {
   NonAllocatingMap<4, 6, 6> map;
   ASSERT_DEATH(map.SetKeyValue(NULL, "hello"), "");
