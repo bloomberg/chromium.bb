@@ -33,7 +33,10 @@ import os
 from idl_definitions import IdlDefinitions, IdlInterface, IdlException, IdlOperation, IdlCallbackFunction, IdlArgument, IdlAttribute, IdlConstant, IdlEnum, IdlTypedef, IdlUnionType
 
 SPECIAL_KEYWORD_LIST = ['GETTER', 'SETTER', 'DELETER']
-
+STANDARD_TYPEDEFS = {
+    # http://www.w3.org/TR/WebIDL/#common-DOMTimeStamp
+    'DOMTimeStamp': IdlTypedef(data_type='unsigned long long'),
+}
 
 def build_idl_definitions_from_ast(node):
     if node is None:
@@ -49,7 +52,7 @@ def file_node_to_idl_definitions(node):
     enumerations = {}
     exceptions = {}
     interfaces = {}
-    typedefs = {}
+    typedefs = STANDARD_TYPEDEFS
 
     # FIXME: only needed for Perl, remove later
     file_name = os.path.abspath(node.GetName())

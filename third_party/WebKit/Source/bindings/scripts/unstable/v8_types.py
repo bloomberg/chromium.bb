@@ -70,7 +70,6 @@ BASIC_TYPES = set([
     'void',
 ])
 NON_WRAPPER_TYPES = set([
-    'DOMTimeStamp',
     'NodeFilter',
     'SerializedScriptValue',
 ])
@@ -350,11 +349,9 @@ def v8_value_to_cpp_value_statement(idl_type, extended_attributes, v8_value, var
 
 def preprocess_type_and_value(idl_type, cpp_value, extended_attributes):
     """Returns type and value, with preliminary type conversions applied."""
-    if idl_type in ['long long', 'unsigned long long', 'DOMTimeStamp']:
+    if idl_type in ['long long', 'unsigned long long']:
         # long long and unsigned long long are not representable in ECMAScript;
         # we represent them as doubles.
-        # Also, DOMTimeStamp is a typedef for unsigned long long:
-        # http://dev.w3.org/2006/webapi/WebIDL/#common-DOMTimeStamp
         idl_type = 'double'
         cpp_value = 'static_cast<double>(%s)' % cpp_value
     # HTML5 says that unsigned reflected attributes should be in the range
