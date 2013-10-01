@@ -71,7 +71,7 @@ class PRINTING_EXPORT PrintingContext {
   // like IPC message processing! Some printers have side-effects on this call
   // like virtual printers that ask the user for the path of the saved document;
   // for example a PDF printer.
-  virtual Result NewDocument(const string16& document_name) = 0;
+  virtual Result NewDocument(const base::string16& document_name) = 0;
 
   // Starts a new page.
   virtual Result NewPage() = 0;
@@ -128,6 +128,7 @@ class PRINTING_EXPORT PrintingContext {
   // The application locale.
   std::string app_locale_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(PrintingContext);
 };
 

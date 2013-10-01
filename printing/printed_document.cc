@@ -176,18 +176,20 @@ void PrintedDocument::DebugDump(const PrintedPage& page) {
   if (!g_debug_dump_info.Get().enabled)
     return;
 
-  string16 filename;
+  base::string16 filename;
   filename += name();
-  filename += ASCIIToUTF16("_");
-  filename += ASCIIToUTF16(base::StringPrintf("%02d", page.page_number()));
+  filename += base::ASCIIToUTF16("_");
+  filename += base::ASCIIToUTF16(
+      base::StringPrintf("%02d", page.page_number()));
 #if defined(OS_WIN)
-  filename += ASCIIToUTF16("_.emf");
+  filename += base::ASCIIToUTF16("_.emf");
   page.metafile()->SaveTo(
       g_debug_dump_info.Get().debug_dump_path.Append(filename));
 #else  // OS_WIN
-  filename += ASCIIToUTF16("_.pdf");
+  filename += base::ASCIIToUTF16("_.pdf");
   page.metafile()->SaveTo(
-      g_debug_dump_info.Get().debug_dump_path.Append(UTF16ToUTF8(filename)));
+      g_debug_dump_info.Get().debug_dump_path.Append(
+          base::UTF16ToUTF8(filename)));
 #endif  // OS_WIN
 }
 

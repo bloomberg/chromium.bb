@@ -90,7 +90,7 @@ class PRINTING_EXPORT PrintedDocument
 
   // Getters. All these items are immutable hence thread-safe.
   const PrintSettings& settings() const { return immutable_.settings_; }
-  const string16& name() const { return immutable_.name_; }
+  const base::string16& name() const { return immutable_.name_; }
   int cookie() const { return immutable_.cookie_; }
 
   // Sets a path where to dump printing output files for debugging. If never set
@@ -149,7 +149,7 @@ class PRINTING_EXPORT PrintedDocument
     base::MessageLoop* source_message_loop_;
 
     // Document name. Immutable.
-    string16 name_;
+    base::string16 name_;
 
     // Cookie to uniquely identify this document. It is used to make sure that a
     // PrintedPage is correctly belonging to the PrintedDocument. Since

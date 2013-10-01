@@ -13,7 +13,7 @@ namespace printing {
 class PrintedPagesSource {
  public:
   // Returns the document title.
-  virtual string16 RenderSourceName() = 0;
+  virtual base::string16 RenderSourceName() = 0;
 
  protected:
   virtual ~PrintedPagesSource() {}

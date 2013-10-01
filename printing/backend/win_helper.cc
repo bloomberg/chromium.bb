@@ -139,7 +139,7 @@ bool XPSModule::InitImpl() {
   return true;
 }
 
-HRESULT XPSModule::OpenProvider(const string16& printer_name,
+HRESULT XPSModule::OpenProvider(const base::string16& printer_name,
                                 DWORD version,
                                 HPTPROVIDER* provider) {
   return g_open_provider_proc(printer_name.c_str(), version, provider);

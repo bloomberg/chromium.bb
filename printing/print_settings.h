@@ -48,14 +48,14 @@ class PRINTING_EXPORT PrintSettings {
   bool Equals(const PrintSettings& rhs) const;
 
   void set_landscape(bool landscape) { landscape_ = landscape; }
-  void set_printer_name(const string16& printer_name) {
+  void set_printer_name(const base::string16& printer_name) {
     printer_name_ = printer_name;
   }
-  const string16& printer_name() const { return printer_name_; }
-  void set_device_name(const string16& device_name) {
+  const base::string16& printer_name() const { return printer_name_; }
+  void set_device_name(const base::string16& device_name) {
     device_name_ = device_name;
   }
-  const string16& device_name() const { return device_name_; }
+  const base::string16& device_name() const { return device_name_; }
   void set_dpi(int dpi) { dpi_ = dpi; }
   int dpi() const { return dpi_; }
   void set_supports_alpha_blend(bool supports_alpha_blend) {
@@ -109,9 +109,9 @@ class PRINTING_EXPORT PrintSettings {
   void SetOrientation(bool landscape);
 
   // Strings to be printed as headers and footers if requested by the user.
-  string16 date;
-  string16 title;
-  string16 url;
+  base::string16 date;
+  base::string16 title;
+  base::string16 url;
 
   // True if the user wants headers and footers to be displayed.
   bool display_header_footer;
@@ -124,10 +124,10 @@ class PRINTING_EXPORT PrintSettings {
   // Settings that can't be changed without side-effects.
 
   // Printer name as shown to the user.
-  string16 printer_name_;
+  base::string16 printer_name_;
 
   // Printer device name as opened by the OS.
-  string16 device_name_;
+  base::string16 device_name_;
 
   // Page setup in device units.
   PageSetup page_setup_device_units_;

@@ -72,7 +72,7 @@ class PRINTING_EXPORT XPSModule {
   // All the other methods can ONLY be called after a successful call to Init.
   // Init can be called many times and by multiple threads.
   static bool Init();
-  static HRESULT OpenProvider(const string16& printer_name,
+  static HRESULT OpenProvider(const base::string16& printer_name,
                               DWORD version,
                               HPTPROVIDER* provider);
   static HRESULT GetPrintCapabilities(HPTPROVIDER provider,

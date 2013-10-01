@@ -25,7 +25,7 @@ void PrintSettingsInitializerGtk::InitPrintSettings(
   DCHECK(page_setup);
   DCHECK(print_settings);
 
-  string16 name(UTF8ToUTF16(static_cast<const char*>(
+  base::string16 name(base::UTF8ToUTF16(static_cast<const char*>(
       gtk_print_settings_get_printer(settings))));
   print_settings->set_printer_name(name);
   print_settings->set_device_name(print_settings->printer_name());

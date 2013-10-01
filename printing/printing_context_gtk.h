@@ -42,7 +42,7 @@ class PRINTING_EXPORT PrintingContextGtk : public PrintingContext {
       const base::DictionaryValue& job_settings,
       const PageRanges& ranges) OVERRIDE;
   virtual Result InitWithSettings(const PrintSettings& settings) OVERRIDE;
-  virtual Result NewDocument(const string16& document_name) OVERRIDE;
+  virtual Result NewDocument(const base::string16& document_name) OVERRIDE;
   virtual Result NewPage() OVERRIDE;
   virtual Result PageDone() OVERRIDE;
   virtual Result DocumentDone() OVERRIDE;
@@ -51,7 +51,7 @@ class PRINTING_EXPORT PrintingContextGtk : public PrintingContext {
   virtual gfx::NativeDrawingContext context() const OVERRIDE;
 
  private:
-  string16 document_name_;
+  base::string16 document_name_;
   PrintDialogGtkInterface* print_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintingContextGtk);

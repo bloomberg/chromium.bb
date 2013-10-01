@@ -104,7 +104,7 @@ PrintingContext::Result PrintingContextNoSystemDialog::InitWithSettings(
 }
 
 PrintingContext::Result PrintingContextNoSystemDialog::NewDocument(
-    const string16& document_name) {
+    const base::string16& document_name) {
   DCHECK(!in_print_job_);
   in_print_job_ = true;
 

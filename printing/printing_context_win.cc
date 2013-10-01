@@ -319,7 +319,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   bool is_cloud_dialog;
   int copies;
   int duplex_mode;
-  string16 device_name;
+  base::string16 device_name;
 
   if (!job_settings.GetBoolean(kSettingLandscape, &landscape) ||
       !job_settings.GetBoolean(kSettingCollate, &collate) ||
@@ -456,7 +456,7 @@ PrintingContext::Result PrintingContextWin::InitWithSettings(
 }
 
 PrintingContext::Result PrintingContextWin::NewDocument(
-    const string16& document_name) {
+    const base::string16& document_name) {
   DCHECK(!in_print_job_);
   if (!context_)
     return OnError();

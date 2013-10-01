@@ -21,12 +21,10 @@
 #include "ui/gfx/text_elider.h"
 #include "url/gurl.h"
 
-using base::DictionaryValue;
-
 namespace printing {
 
 void PrintSettingsInitializer::InitHeaderFooterStrings(
-      const DictionaryValue& job_settings,
+      const base::DictionaryValue& job_settings,
       PrintSettings* print_settings) {
   if (!job_settings.GetBoolean(kSettingHeaderFooterEnabled,
                                &print_settings->display_header_footer)) {
@@ -35,9 +33,9 @@ void PrintSettingsInitializer::InitHeaderFooterStrings(
   if (!print_settings->display_header_footer)
     return;
 
-  string16 date = base::TimeFormatShortDateNumeric(base::Time::Now());
-  string16 title;
-  string16 url;
+  base::string16 date = base::TimeFormatShortDateNumeric(base::Time::Now());
+  base::string16 title;
+  base::string16 url;
   if (!job_settings.GetString(kSettingHeaderFooterTitle, &title) ||
       !job_settings.GetString(kSettingHeaderFooterURL, &url)) {
     NOTREACHED();

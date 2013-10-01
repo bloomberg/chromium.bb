@@ -132,9 +132,9 @@ void PrintSettings::Clear() {
   max_shrink = 2.;
   desired_dpi = 72;
   selection_only = false;
-  date = string16();
-  title = string16();
-  url = string16();
+  date = base::string16();
+  title = base::string16();
+  url = base::string16();
   display_header_footer = false;
   printer_name_.clear();
   device_name_.clear();
