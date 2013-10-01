@@ -89,9 +89,18 @@ ManagedTileState::~ManagedTileState() {
 }
 
 scoped_ptr<base::Value> ManagedTileState::AsValue() const {
+  bool has_resource = false;
+  bool has_active_task = false;
+  for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
+    has_resource |= (tile_versions[mode].resource_.get() != 0);
+    has_active_task |= !tile_versions[mode].raster_task_.is_null();
+  }
+
+  bool is_using_gpu_memory = has_resource || has_active_task;
+
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-  state->SetBoolean("has_resource",
-                    tile_versions[raster_mode].resource_.get() != 0);
+  state->SetBoolean("has_resource", has_resource);
+  state->SetBoolean("is_using_gpu_memory", is_using_gpu_memory);
   state->Set("tree_bin.0",
              ManagedTileBinAsValue(tree_bin[ACTIVE_TREE]).release());
   state->Set("tree_bin.1",
