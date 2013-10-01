@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/child/npapi/plugin_instance.h"
+#include "content/child/npapi/webplugin_delegate_impl.h"
 #include "content/child/plugin_messages.h"
 #include "content/common/plugin_process_messages.h"
 #include "content/plugin/plugin_thread.h"
@@ -263,6 +264,7 @@ bool PluginChannel::OnControlMessageReceived(const IPC::Message& msg) {
                                     OnDestroyInstance)
     IPC_MESSAGE_HANDLER(PluginMsg_GenerateRouteID, OnGenerateRouteID)
     IPC_MESSAGE_HANDLER(PluginProcessMsg_ClearSiteData, OnClearSiteData)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_DidAbortLoading, OnDidAbortLoading)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
@@ -329,6 +331,15 @@ void PluginChannel::OnClearSiteData(const std::string& site,
     }
   }
   Send(new PluginProcessHostMsg_ClearSiteDataResult(success));
+}
+
+void PluginChannel::OnDidAbortLoading(int render_view_id) {
+  for (size_t i = 0; i < plugin_stubs_.size(); ++i) {
+    if (plugin_stubs_[i]->webplugin()->host_render_view_routing_id() ==
+            render_view_id) {
+      plugin_stubs_[i]->delegate()->instance()->CloseStreams();
+    }
+  }
 }
 
 }  // namespace content

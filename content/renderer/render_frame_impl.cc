@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/child/appcache/appcache_dispatcher.h"
+#include "content/child/plugin_messages.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/request_extra_data.h"
 #include "content/common/socket_stream_handle_data.h"
@@ -22,6 +23,7 @@
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/internal_document_state_data.h"
+#include "content/renderer/npapi/plugin_channel_host.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
@@ -703,6 +705,13 @@ void RenderFrameImpl::didRunInsecureContent(
       render_view_->GetRoutingID(),
       origin.toString().utf8(),
       target));
+}
+
+void RenderFrameImpl::didAbortLoading(WebKit::WebFrame* frame) {
+#if defined(ENABLE_PLUGINS)
+  PluginChannelHost::Broadcast(
+      new PluginHostMsg_DidAbortLoading(render_view_->GetRoutingID()));
+#endif
 }
 
 void RenderFrameImpl::didExhaustMemoryAvailableForScript(

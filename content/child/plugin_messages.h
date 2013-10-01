@@ -192,6 +192,9 @@ IPC_MESSAGE_CONTROL1(PluginMsg_ResetModalDialogEvent,
 IPC_MESSAGE_ROUTED1(PluginMsg_FetchURL,
                     PluginMsg_FetchURL_Params)
 
+IPC_MESSAGE_CONTROL1(PluginHostMsg_DidAbortLoading,
+                     int /* render_view_id */)
+
 #if defined(OS_WIN)
 IPC_MESSAGE_ROUTED4(PluginMsg_ImeCompositionUpdated,
                     string16 /* text */,
