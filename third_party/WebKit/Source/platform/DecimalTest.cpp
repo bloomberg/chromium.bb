@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/Decimal.h"
+#include "platform/Decimal.h"
 
 #include "wtf/MathExtras.h"
 #include "wtf/text/CString.h"

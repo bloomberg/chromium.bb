@@ -21,7 +21,7 @@
 #ifndef StepRange_h
 #define StepRange_h
 
-#include "core/platform/Decimal.h"
+#include "platform/Decimal.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

@@ -7,6 +7,8 @@
       'Clock.h',
       'DateComponents.cpp',
       'DateComponents.h',
+      'Decimal.cpp',
+      'Decimal.h',
       'Language.cpp',
       'Language.h',
       'Logging.cpp',
@@ -20,6 +22,7 @@
     ],
     'platform_test_files': [
       'ClockTest.cpp',
+      'DecimalTest.cpp',
       'SharedBufferTest.cpp',
     ],
   },

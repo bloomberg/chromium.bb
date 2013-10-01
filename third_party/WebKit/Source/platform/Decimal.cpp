@@ -29,15 +29,15 @@
  */
 
 #include "config.h"
-#include "core/platform/Decimal.h"
-
-#include <float.h>
-#include <algorithm>
+#include "platform/Decimal.h"
 
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/StringBuilder.h"
+
+#include <algorithm>
+#include <float.h>
 
 namespace WebCore {
 
@@ -92,12 +92,12 @@ SpecialValueHandler::HandleResult SpecialValueHandler::handle()
     if (lhsClass == Decimal::EncodedData::ClassNaN) {
         m_result = ResultIsLHS;
         return EitherNaN;
-     }
+    }
 
     if (rhsClass == Decimal::EncodedData::ClassNaN) {
         m_result = ResultIsRHS;
         return EitherNaN;
-     }
+    }
 
     if (lhsClass == Decimal::EncodedData::ClassInfinity)
         return rhsClass == Decimal::EncodedData::ClassInfinity ? BothInfinity : LHSIsInfinity;
@@ -582,9 +582,9 @@ Decimal::AlignedOperands Decimal::alignOperands(const Decimal& lhs, const Decima
         if (numberOfLHSDigits) {
             const int lhsShiftAmount = lhsExponent - rhsExponent;
             const int overflow = numberOfLHSDigits + lhsShiftAmount - Precision;
-            if (overflow <= 0)
+            if (overflow <= 0) {
                 lhsCoefficient = scaleUp(lhsCoefficient, lhsShiftAmount);
-            else {
+            } else {
                 lhsCoefficient = scaleUp(lhsCoefficient, lhsShiftAmount - overflow);
                 rhsCoefficient = scaleDown(rhsCoefficient, overflow);
                 exponent += overflow;
@@ -596,9 +596,9 @@ Decimal::AlignedOperands Decimal::alignOperands(const Decimal& lhs, const Decima
         if (numberOfRHSDigits) {
             const int rhsShiftAmount = rhsExponent - lhsExponent;
             const int overflow = numberOfRHSDigits + rhsShiftAmount - Precision;
-            if (overflow <= 0)
+            if (overflow <= 0) {
                 rhsCoefficient = scaleUp(rhsCoefficient, rhsShiftAmount);
-            else {
+            } else {
                 rhsCoefficient = scaleUp(rhsCoefficient, rhsShiftAmount - overflow);
                 lhsCoefficient = scaleDown(lhsCoefficient, overflow);
                 exponent += overflow;
@@ -732,8 +732,9 @@ Decimal Decimal::fromString(const String& str)
                     ++numberOfDigits;
                     accumulator *= 10;
                     accumulator += ch - '0';
-                } else
+                } else {
                     ++numberOfExtraDigits;
+                }
                 break;
             }
 
