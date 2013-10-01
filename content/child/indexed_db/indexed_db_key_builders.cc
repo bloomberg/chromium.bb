@@ -54,6 +54,7 @@ IndexedDBKey IndexedDBKeyBuilder::Build(const WebKit::WebIDBKey& key) {
     case WebIDBKeyTypeInvalid:
       return IndexedDBKey(key.keyType());
     case WebIDBKeyTypeMin:
+    default:
       NOTREACHED();
       return IndexedDBKey();
   }
@@ -82,6 +83,7 @@ WebIDBKey WebIDBKeyBuilder::Build(const IndexedDBKey& key) {
     case WebIDBKeyTypeNull:
       return WebIDBKey::createNull();
     case WebIDBKeyTypeMin:
+    default:
       NOTREACHED();
       return WebIDBKey::createInvalid();
   }

@@ -286,7 +286,8 @@ void EncodeIDBKey(const IndexedDBKey& value, std::string* into) {
   switch (value.type()) {
     case WebIDBKeyTypeNull:
     case WebIDBKeyTypeInvalid:
-    case WebIDBKeyTypeMin: {
+    case WebIDBKeyTypeMin:
+    default: {
       NOTREACHED();
       EncodeByte(kIndexedDBKeyNullTypeByte, into);
       return;

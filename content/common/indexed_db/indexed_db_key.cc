@@ -103,6 +103,7 @@ int IndexedDBKey::Compare(const IndexedDBKey& other) const {
     case WebIDBKeyTypeInvalid:
     case WebIDBKeyTypeNull:
     case WebIDBKeyTypeMin:
+    default:
       NOTREACHED();
       return 0;
   }

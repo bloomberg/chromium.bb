@@ -48,6 +48,7 @@ void ParamTraits<IndexedDBKey>::Write(Message* m, const param_type& p) {
     case WebIDBKeyTypeNull:
       return;
     case WebIDBKeyTypeMin:
+    default:
       NOTREACHED();
       return;
   }
@@ -89,6 +90,7 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
       *r = IndexedDBKey(web_type);
       return true;
     case WebIDBKeyTypeMin:
+    default:
       NOTREACHED();
       return false;
   }
