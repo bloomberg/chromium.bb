@@ -90,7 +90,7 @@ public:
     T* get() const { return m_ref ? m_ref->get() : 0; }
 
     typedef RefPtr<WeakReference<T> > (WeakPtr::*UnspecifiedBoolType);
-    operator UnspecifiedBoolType() const { return m_ref.get() ? &WeakPtr::m_ref : 0; }
+    operator UnspecifiedBoolType() const { return get() ? &WeakPtr::m_ref : 0; }
 
 private:
     RefPtr<WeakReference<T> > m_ref;
