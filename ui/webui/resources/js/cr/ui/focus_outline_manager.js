@@ -64,7 +64,7 @@ cr.define('cr.ui', function() {
         this.classList_.remove(CLASS_NAME);
     },
     get visible() {
-      this.classList_.contains(CLASS_NAME);
+      return this.classList_.contains(CLASS_NAME);
     }
   };
 
