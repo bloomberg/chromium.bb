@@ -4,9 +4,12 @@
 
 #include "ui/gl/gl_surface.h"
 
+#include <dwmapi.h>
+
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/win/windows_version.h"
 #include "third_party/mesa/src/include/GL/osmesa.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
@@ -37,6 +40,37 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   HDC device_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceOSMesa);
+};
+
+class DWMVSyncProvider : public VSyncProvider {
+ public:
+  explicit DWMVSyncProvider() {}
+
+  virtual ~DWMVSyncProvider() {}
+
+  virtual void GetVSyncParameters(const UpdateVSyncCallback& callback) {
+    TRACE_EVENT0("gpu", "DWMVSyncProvider::GetVSyncParameters");
+    DWM_TIMING_INFO timing_info;
+    timing_info.cbSize = sizeof(timing_info);
+    HRESULT result = DwmGetCompositionTimingInfo(NULL, &timing_info);
+    if (result != S_OK)
+      return;
+
+    base::TimeTicks timebase = base::TimeTicks::FromQPCValue(
+        static_cast<LONGLONG>(timing_info.qpcVBlank));
+    // Swap the numerator/denominator to convert frequency to period.
+    if (timing_info.rateRefresh.uiDenominator > 0 &&
+        timing_info.rateRefresh.uiNumerator > 0) {
+      base::TimeDelta interval = base::TimeDelta::FromMicroseconds(
+          timing_info.rateRefresh.uiDenominator *
+          base::Time::kMicrosecondsPerSecond /
+          timing_info.rateRefresh.uiNumerator);
+      callback.Run(timebase, interval);
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DWMVSyncProvider);
 };
 
 // Helper routine that does one-off initialization like determining the
@@ -185,8 +219,12 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
       return surface;
     }
     case kGLImplementationEGLGLES2: {
-      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceEGL(window));
-      if (!surface->Initialize())
+      scoped_refptr<NativeViewGLSurfaceEGL> surface(
+          new NativeViewGLSurfaceEGL(window));
+      DWMVSyncProvider* sync_provider = NULL;
+      if (base::win::GetVersion() >= base::win::VERSION_VISTA)
+        sync_provider = new DWMVSyncProvider;
+      if (!surface->Initialize(sync_provider))
         return NULL;
 
       return surface;

@@ -225,6 +225,7 @@ bool NativeViewGLSurfaceEGL::Initialize() {
 
 bool NativeViewGLSurfaceEGL::Initialize(VSyncProvider* sync_provider) {
   DCHECK(!surface_);
+  scoped_ptr<VSyncProvider> vsync_provider(sync_provider);
 
   if (window_ == kNullAcceleratedWidget) {
     LOG(ERROR) << "Trying to create surface without window.";
@@ -265,7 +266,7 @@ bool NativeViewGLSurfaceEGL::Initialize(VSyncProvider* sync_provider) {
   supports_post_sub_buffer_ = (surfaceVal && retVal) == EGL_TRUE;
 
   if (sync_provider)
-    vsync_provider_.reset(sync_provider);
+    vsync_provider_.swap(vsync_provider);
   else if (g_egl_sync_control_supported)
     vsync_provider_.reset(new EGLSyncControlVSyncProvider(surface_));
   return true;

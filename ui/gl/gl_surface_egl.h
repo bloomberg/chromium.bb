@@ -67,6 +67,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   virtual VSyncProvider* GetVSyncProvider() OVERRIDE;
 
   // Create a NativeViewGLSurfaceEGL with an externally provided VSyncProvider.
+  // Takes ownership of the VSyncProvider.
   virtual bool Initialize(VSyncProvider* sync_provider);
 
  protected:
