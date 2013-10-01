@@ -64,10 +64,10 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/HTMLShadowElement.h"
 #include "core/page/Page.h"
-#include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
 #include "core/platform/text/TextBreakIterator.h"
 #include "core/rendering/RenderTheme.h"
+#include "platform/LocalizedStrings.h"
 
 namespace WebCore {
 

@@ -45,9 +45,9 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/page/Frame.h"
-#include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderTextControlMultiLine.h"
+#include "platform/LocalizedStrings.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 

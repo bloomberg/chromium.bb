@@ -29,7 +29,7 @@
 
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "platform/DateComponents.h"
-#include "core/platform/LocalizedStrings.h"
+#include "platform/LocalizedStrings.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
 

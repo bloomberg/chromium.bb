@@ -33,11 +33,11 @@
 
 #include <windows.h>
 #include <limits>
+#include "core/platform/LayoutTestSupport.h"
+#include "core/platform/text/DateTimeFormat.h"
 #include "platform/DateComponents.h"
 #include "platform/Language.h"
-#include "core/platform/LayoutTestSupport.h"
-#include "core/platform/LocalizedStrings.h"
-#include "core/platform/text/DateTimeFormat.h"
+#include "platform/LocalizedStrings.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
 #include "wtf/HashMap.h"

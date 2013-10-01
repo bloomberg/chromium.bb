@@ -27,6 +27,7 @@
 #ifndef LocalizedStrings_h
 #define LocalizedStrings_h
 
+#include "platform/PlatformExport.h"
 #include "public/platform/WebLocalizedString.h"
 #include "wtf/Forward.h"
 
@@ -34,34 +35,34 @@ namespace WebCore {
 
     // FIXME: Use Locale::queryString instead of the following functions.
 
-    String AXButtonActionVerb();
-    String AXRadioButtonActionVerb();
-    String AXTextFieldActionVerb();
-    String AXCheckedCheckBoxActionVerb();
-    String AXUncheckedCheckBoxActionVerb();
-    String AXMenuListActionVerb();
-    String AXMenuListPopupActionVerb();
-    String AXLinkActionVerb();
+PLATFORM_EXPORT String AXButtonActionVerb();
+PLATFORM_EXPORT String AXRadioButtonActionVerb();
+PLATFORM_EXPORT String AXTextFieldActionVerb();
+PLATFORM_EXPORT String AXCheckedCheckBoxActionVerb();
+PLATFORM_EXPORT String AXUncheckedCheckBoxActionVerb();
+PLATFORM_EXPORT String AXMenuListActionVerb();
+PLATFORM_EXPORT String AXMenuListPopupActionVerb();
+PLATFORM_EXPORT String AXLinkActionVerb();
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-    String AXAMPMFieldText();
-    String AXDayOfMonthFieldText();
-    String AXDateTimeFieldEmptyValueText();
-    String AXHourFieldText();
-    String AXMillisecondFieldText();
-    String AXMinuteFieldText();
-    String AXMonthFieldText();
-    String AXSecondFieldText();
-    String AXWeekOfYearFieldText();
-    String AXYearFieldText();
+PLATFORM_EXPORT String AXAMPMFieldText();
+PLATFORM_EXPORT String AXDayOfMonthFieldText();
+PLATFORM_EXPORT String AXDateTimeFieldEmptyValueText();
+PLATFORM_EXPORT String AXHourFieldText();
+PLATFORM_EXPORT String AXMillisecondFieldText();
+PLATFORM_EXPORT String AXMinuteFieldText();
+PLATFORM_EXPORT String AXMonthFieldText();
+PLATFORM_EXPORT String AXSecondFieldText();
+PLATFORM_EXPORT String AXWeekOfYearFieldText();
+PLATFORM_EXPORT String AXYearFieldText();
 #endif
 
-    String missingPluginText();
-    String blockedPluginByContentSecurityPolicyText();
+PLATFORM_EXPORT String missingPluginText();
+PLATFORM_EXPORT String blockedPluginByContentSecurityPolicyText();
 
-    String localizedMediaControlElementString(const String&);
-    String localizedMediaControlElementHelpText(const String&);
-    String localizedMediaTimeDescription(float);
+PLATFORM_EXPORT String localizedMediaControlElementString(const String&);
+PLATFORM_EXPORT String localizedMediaControlElementHelpText(const String&);
+PLATFORM_EXPORT String localizedMediaTimeDescription(float);
 
 } // namespace WebCore
 

@@ -2624,8 +2624,6 @@
             'platform/LifecycleNotifier.h',
             'platform/LifecycleObserver.cpp',
             'platform/LifecycleObserver.h',
-            'platform/LocalizedStrings.cpp',
-            'platform/LocalizedStrings.h',
             'platform/MIMETypeFromURL.cpp',
             'platform/MIMETypeFromURL.h',
             'platform/ParsingUtilities.h',

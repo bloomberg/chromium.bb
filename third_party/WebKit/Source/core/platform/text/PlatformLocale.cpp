@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/platform/text/PlatformLocale.h"
 
-#include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/DateTimeFormat.h"
+#include "platform/LocalizedStrings.h"
 #include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
 #include "wtf/text/StringBuilder.h"

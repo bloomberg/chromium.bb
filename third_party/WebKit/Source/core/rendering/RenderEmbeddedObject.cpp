@@ -30,7 +30,6 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/LocalizedStrings.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontSelector.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -40,6 +39,7 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
+#include "platform/LocalizedStrings.h"
 
 namespace WebCore {
 

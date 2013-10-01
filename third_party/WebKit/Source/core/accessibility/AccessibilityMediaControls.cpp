@@ -31,7 +31,7 @@
 
 #include "core/accessibility/AccessibilityMediaControls.h"
 
-#include "core/platform/LocalizedStrings.h"
+#include "platform/LocalizedStrings.h"
 
 namespace WebCore {
 

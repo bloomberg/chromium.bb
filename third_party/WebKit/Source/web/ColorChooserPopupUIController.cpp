@@ -33,8 +33,8 @@
 #include "WebViewImpl.h"
 #include "core/page/FrameView.h"
 #include "core/platform/ColorChooserClient.h"
-#include "core/platform/LocalizedStrings.h"
 #include "core/platform/graphics/IntRect.h"
+#include "platform/LocalizedStrings.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLocalizedString.h"
 

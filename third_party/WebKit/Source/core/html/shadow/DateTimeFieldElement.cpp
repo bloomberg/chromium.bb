@@ -30,8 +30,8 @@
 #include "HTMLNames.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/dom/Text.h"
-#include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
+#include "platform/LocalizedStrings.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

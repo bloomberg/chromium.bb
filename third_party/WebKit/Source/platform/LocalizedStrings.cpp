@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/LocalizedStrings.h"
+#include "platform/LocalizedStrings.h"
 
 #include "platform/NotImplemented.h"
 #include "public/platform/Platform.h"

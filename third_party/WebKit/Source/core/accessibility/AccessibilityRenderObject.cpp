@@ -51,7 +51,6 @@
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/platform/LocalizedStrings.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderFileUploadControl.h"
 #include "core/rendering/RenderHTMLCanvas.h"
@@ -67,6 +66,7 @@
 #include "core/svg/SVGDocument.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
+#include "platform/LocalizedStrings.h"
 #include "wtf/StdLibExtras.h"
 
 using namespace std;

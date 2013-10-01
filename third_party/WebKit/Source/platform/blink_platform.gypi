@@ -18,6 +18,8 @@
       'LayoutUnit.h',
       'LinkHash.cpp',
       'LinkHash.h',
+      'LocalizedStrings.cpp',
+      'LocalizedStrings.h',
       'Logging.cpp',
       'Logging.h',
       'NotImplemented.cpp',

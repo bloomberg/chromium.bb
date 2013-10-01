@@ -35,10 +35,10 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/page/Frame.h"
-#include "core/platform/LocalizedStrings.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
+#include "platform/LocalizedStrings.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
 
