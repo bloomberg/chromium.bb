@@ -678,8 +678,7 @@ TEST(PicturePileImplTest, PixelRefIteratorMultiplePictures) {
           gfx::Rect(x * 128 + 10, y * 128 + 10, 64, 64));
       pictures[y][x]->Record(
           &content_layer_clients[y][x],
-          tile_grid_info,
-          &stats_instrumentation);
+          tile_grid_info);
       pictures[y][x]->GatherPixelRefs(tile_grid_info, &stats_instrumentation);
       pile->AddPictureToRecording(0, 0, pictures[y][x]);
     }

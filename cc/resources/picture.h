@@ -60,8 +60,7 @@ class CC_EXPORT Picture
   // Record a paint operation. To be able to safely use this SkPicture for
   // playback on a different thread this can only be called once.
   void Record(ContentLayerClient* client,
-              const SkTileGridPicture::TileGridInfo& tile_grid_info,
-              RenderingStatsInstrumentation* stats_instrumentation);
+              const SkTileGridPicture::TileGridInfo& tile_grid_info);
 
   // Gather pixel refs from recording.
   void GatherPixelRefs(const SkTileGridPicture::TileGridInfo& tile_grid_info,

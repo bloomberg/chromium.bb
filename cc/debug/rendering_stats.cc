@@ -37,6 +37,8 @@ void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
                         main_stats.paint_time.InSecondsF());
   enumerator->AddDouble("totalRecordTimeInSeconds",
                         main_stats.record_time.InSecondsF());
+  enumerator->AddDouble("totalBestRecordTimeInSeconds",
+                        main_stats.best_record_time.InSecondsF());
   enumerator->AddDouble("totalCommitTimeInSeconds",
                         main_stats.commit_time.InSecondsF());
   enumerator->AddInt64("totalCommitCount", main_stats.commit_count);
@@ -93,6 +95,8 @@ MainThreadRenderingStats::AsTraceableData() const {
                          paint_time.InSecondsF());
   record_data->SetDouble("record_time",
                          record_time.InSecondsF());
+  record_data->SetDouble("best_record_time",
+                         best_record_time.InSecondsF());
   record_data->SetDouble("commit_time",
                          commit_time.InSecondsF());
   record_data->SetInteger("commit_count",
@@ -160,6 +164,7 @@ void MainThreadRenderingStats::Add(const MainThreadRenderingStats& other) {
   screen_frame_count += other.screen_frame_count;
   paint_time += other.paint_time;
   record_time += other.record_time;
+  best_record_time += other.best_record_time;
   commit_time += other.commit_time;
   commit_count += other.commit_count;
   painted_pixel_count += other.painted_pixel_count;

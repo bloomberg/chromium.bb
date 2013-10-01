@@ -26,6 +26,7 @@ class GpuRenderingStats(object):
     self.screen_frame_timestamps = []
     self.paint_time = []
     self.record_time = []
+    self.best_record_time = []
     self.commit_time = []
     self.commit_count = []
     self.painted_pixel_count = []
@@ -104,6 +105,11 @@ class GpuRenderingStats(object):
             event.args['data']['paint_time'])
         self.record_time.append(
             event.args['data']['record_time'])
+        # TODO(ernstm): Remove this check when CL with best_record_time has
+        # been picked up by the reference build.
+        if 'best_record_time' in event.args['data']:
+          self.best_record_time.append(
+              event.args['data']['best_record_time'])
         self.commit_time.append(
             event.args['data']['commit_time'])
         self.commit_count.append(

@@ -33,7 +33,6 @@ TEST(PictureTest, AsBase64String) {
   tile_grid_info.fOffset.setZero();
 
   FakeContentLayerClient content_layer_client;
-  FakeRenderingStatsInstrumentation stats_instrumentation;
 
   scoped_ptr<base::Value> tmp;
 
@@ -52,8 +51,7 @@ TEST(PictureTest, AsBase64String) {
   content_layer_client.add_draw_rect(layer_rect, red_paint);
   scoped_refptr<Picture> one_rect_picture = Picture::Create(layer_rect);
   one_rect_picture->Record(&content_layer_client,
-                           tile_grid_info,
-                           &stats_instrumentation);
+                           tile_grid_info);
   scoped_ptr<base::Value> serialized_one_rect(
       one_rect_picture->AsValue());
 
@@ -79,8 +77,7 @@ TEST(PictureTest, AsBase64String) {
   content_layer_client.add_draw_rect(gfx::Rect(25, 25, 50, 50), green_paint);
   scoped_refptr<Picture> two_rect_picture = Picture::Create(layer_rect);
   two_rect_picture->Record(&content_layer_client,
-                           tile_grid_info,
-                           &stats_instrumentation);
+                           tile_grid_info);
 
   scoped_ptr<base::Value> serialized_two_rect(
       two_rect_picture->AsValue());
@@ -139,8 +136,7 @@ TEST(PictureTest, PixelRefIterator) {
 
   scoped_refptr<Picture> picture = Picture::Create(layer_rect);
   picture->Record(&content_layer_client,
-                  tile_grid_info,
-                  &stats_instrumentation);
+                  tile_grid_info);
   picture->GatherPixelRefs(tile_grid_info, &stats_instrumentation);
 
   // Default iterator does not have any pixel refs
@@ -237,8 +233,7 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
 
   scoped_refptr<Picture> picture = Picture::Create(layer_rect);
   picture->Record(&content_layer_client,
-                  tile_grid_info,
-                  &stats_instrumentation);
+                  tile_grid_info);
   picture->GatherPixelRefs(tile_grid_info, &stats_instrumentation);
 
   // Default iterator does not have any pixel refs
@@ -359,8 +354,7 @@ TEST(PictureTest, PixelRefIteratorOnePixelQuery) {
 
   scoped_refptr<Picture> picture = Picture::Create(layer_rect);
   picture->Record(&content_layer_client,
-                  tile_grid_info,
-                  &stats_instrumentation);
+                  tile_grid_info);
   picture->GatherPixelRefs(tile_grid_info, &stats_instrumentation);
 
   for (int y = 0; y < 4; ++y) {
@@ -389,7 +383,6 @@ TEST(PictureTest, CreateFromSkpValue) {
   tile_grid_info.fOffset.setZero();
 
   FakeContentLayerClient content_layer_client;
-  FakeRenderingStatsInstrumentation stats_instrumentation;
 
   scoped_ptr<base::Value> tmp;
 
@@ -408,8 +401,7 @@ TEST(PictureTest, CreateFromSkpValue) {
   content_layer_client.add_draw_rect(layer_rect, red_paint);
   scoped_refptr<Picture> one_rect_picture = Picture::Create(layer_rect);
   one_rect_picture->Record(&content_layer_client,
-                           tile_grid_info,
-                           &stats_instrumentation);
+                           tile_grid_info);
   scoped_ptr<base::Value> serialized_one_rect(
       one_rect_picture->AsValue());
 

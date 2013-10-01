@@ -66,7 +66,7 @@ void FakePicturePileImpl::AddRecordingAt(int x, int y) {
   FakeRenderingStatsInstrumentation stats_instrumentation;
 
   scoped_refptr<Picture> picture(Picture::Create(bounds));
-  picture->Record(&client_, tile_grid_info_, &stats_instrumentation);
+  picture->Record(&client_, tile_grid_info_);
   picture->GatherPixelRefs(tile_grid_info_, &stats_instrumentation);
   picture_list_map_[std::pair<int, int>(x, y)].push_back(picture);
   EXPECT_TRUE(HasRecordingAt(x, y));

@@ -87,7 +87,11 @@ def Average(numerator, denominator, scale = None, precision = None):
   avg = numerator_total / denominator_total
   if scale:
     avg *= scale
-  if precision:
+  if precision == None:
+    pass
+  elif precision == 0:
+    avg = int(avg)
+  else:
     avg = round(avg, precision)
   return avg
 

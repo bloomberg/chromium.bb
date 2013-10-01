@@ -36,6 +36,7 @@ struct CC_EXPORT MainThreadRenderingStats {
   int64 screen_frame_count;
   base::TimeDelta paint_time;
   base::TimeDelta record_time;
+  base::TimeDelta best_record_time;
   base::TimeDelta commit_time;
   int64 commit_count;
   int64 painted_pixel_count;

@@ -119,7 +119,8 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     # best run, effectively excluding cache effects and time when the thread is
     # de-scheduled.
     options.AppendExtraBrowserArgs([
-        '--slow-down-raster-scale-factor=%d' % options.raster_record_repeat,
+        '--slow-down-raster-scale-factor=%d' % int(
+            options.raster_record_repeat),
         # Enable impl-side-painting. Current version of benchmark only works for
         # this mode.
         '--enable-impl-side-painting',

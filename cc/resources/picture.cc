@@ -204,8 +204,7 @@ void Picture::CloneForDrawing(int num_threads) {
 }
 
 void Picture::Record(ContentLayerClient* painter,
-                     const SkTileGridPicture::TileGridInfo& tile_grid_info,
-                     RenderingStatsInstrumentation* stats_instrumentation) {
+                     const SkTileGridPicture::TileGridInfo& tile_grid_info) {
   TRACE_EVENT1(benchmark_instrumentation::kCategory,
                benchmark_instrumentation::kPictureRecord,
                benchmark_instrumentation::kData, AsTraceableRecordData());
@@ -231,13 +230,8 @@ void Picture::Record(ContentLayerClient* painter,
   canvas->clipRect(layer_skrect);
 
   gfx::RectF opaque_layer_rect;
-  base::TimeTicks start_time = stats_instrumentation->StartRecording();
 
   painter->PaintContents(canvas, layer_rect_, &opaque_layer_rect);
-
-  base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
-  stats_instrumentation->AddRecord(duration,
-                                   layer_rect_.width() * layer_rect_.height());
 
   canvas->restore();
   picture_->endRecording();

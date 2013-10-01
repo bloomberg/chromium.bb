@@ -105,12 +105,14 @@ void RenderingStatsInstrumentation::AddPaint(base::TimeDelta duration,
 }
 
 void RenderingStatsInstrumentation::AddRecord(base::TimeDelta duration,
+                                              base::TimeDelta best_duration,
                                               int64 pixels) {
   if (!record_rendering_stats_)
     return;
 
   base::AutoLock scoped_lock(lock_);
   main_stats_.record_time += duration;
+  main_stats_.best_record_time += best_duration;
   main_stats_.recorded_pixel_count += pixels;
 }
 
