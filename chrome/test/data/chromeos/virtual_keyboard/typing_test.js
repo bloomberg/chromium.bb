@@ -44,8 +44,13 @@ function mockTypeCharacter(label, keyCode, shiftModifier, opt_unicode) {
  *     be zero for characters not found on a QWERTY keyboard.
  * @param {boolean} shiftModifier Indicates the state of the shift key when
  *     entering the character.
+ * @param {Object.<string, boolean>=} opt_variant Optional test variant.
  */
-function mockLongPressType(label, candidateLabel, keyCode, shiftModifier) {
+function mockLongPressType(label,
+                           candidateLabel,
+                           keyCode,
+                           shiftModifier,
+                           opt_variant) {
   // Verify that candidates popup window is initally hidden.
   var keyset = keyboard.querySelector('#' + keyboard.activeKeysetId);
   assertTrue(!!keyset, 'Unable to find active keyset.');
@@ -56,44 +61,58 @@ function mockLongPressType(label, candidateLabel, keyCode, shiftModifier) {
 
   // Show candidate window of alternate keys on a long press.
   var key = findKey(label);
+  var altKey = null;
   assertTrue(!!key, 'Unable to find key labelled "' + label + '".');
   key.down();
   mockTimer.tick(1000);
-  assertFalse(candidatesPopup.hidden, 'Candidate popup should be visible.');
+  if (opt_variant && opt_variant.noCandidates) {
+    assertTrue(candidatesPopup.hidden, 'Candidate popup should remain hidden.');
+  } else {
+    assertFalse(candidatesPopup.hidden, 'Candidate popup should be visible.');
 
-  // Verify that the popup window contains the candidate key.
-  var altKey = undefined;
-  var candidates = candidatesPopup.querySelectorAll('kb-altkey');
-  for (var i = 0; i < candidates.length; i++) {
-     if (candidates[i].innerText == candidateLabel) {
-       altKey = candidates[i];
-       break;
-     }
+    // Verify that the popup window contains the candidate key.
+    var candidates = candidatesPopup.querySelectorAll('kb-altkey');
+    for (var i = 0; i < candidates.length; i++) {
+       if (candidates[i].innerText == candidateLabel) {
+         altKey = candidates[i];
+         break;
+       }
+    }
+    assertTrue(!!altKey, 'Unable to find key in candidate list.');
   }
-  assertTrue(!!altKey, 'Unable to find key in candidate list.');
 
-  // Verify that the candidate key is typed on release of the longpress.
-  var send = chrome.virtualKeyboardPrivate.sendKeyEvent;
-  var unicodeValue = candidateLabel.charCodeAt(0);
-  send.addExpectation({
-    type: 'keydown',
-    charValue: unicodeValue,
-    keyCode: keyCode,
-    shiftKey: shiftModifier
-  });
-  send.addExpectation({
-    type: 'keyup',
-    charValue: unicodeValue,
-    keyCode: keyCode,
-    shiftKey: shiftModifier
-  });
-  altKey.over({relatedTarget: altKey});
-  altKey.up();
+  var abortSelection = opt_variant && opt_variant.abortSelection;
+  if (!abortSelection) {
+    // Verify that the candidate key is typed on release of the longpress.
+    var send = chrome.virtualKeyboardPrivate.sendKeyEvent;
+    var unicodeValue = candidateLabel.charCodeAt(0);
+    send.addExpectation({
+      type: 'keydown',
+      charValue: unicodeValue,
+      keyCode: keyCode,
+      shiftKey: shiftModifier
+    });
+    send.addExpectation({
+      type: 'keyup',
+      charValue: unicodeValue,
+      keyCode: keyCode,
+      shiftKey: shiftModifier
+    });
+  }
+  if (altKey) {
+    altKey.over({relatedTarget: altKey});
+    if (abortSelection)
+      altKey.out({relatedTarget: altKey});
+    else
+      altKey.up();
 
-  // Verify that the candidate list is hidden on a pointer up event.
-  candidatesPopup.up();
-  assertTrue(candidatesPopup.hidden,
-             'Candidate popup should be hidden after inserting a character.');
+    // Verify that the candidate list is hidden on a pointer up event.
+    candidatesPopup.up();
+    assertTrue(candidatesPopup.hidden,
+               'Candidate popup should be hidden after inserting a character.');
+  } else {
+    key.up();
+  }
 }
 
 /**
@@ -135,6 +154,13 @@ function testLongPressTypeAccentedCharacterAsync(testDoneCallback) {
     mockLongPressType('e', '\u00E9', 0, false);
     // Type the digit '3' (hintText on the 'e' key).
     mockLongPressType('e', '3', 0x33, false);
+
+    // Mock longpress typing a character that does not have alternate
+    // candidates.
+    mockLongPressType('z', 'z', 0x5A, false, {noCandidates: true});
+
+    // Mock aborting a longpress selection.
+    mockLongPressType('e', '3', 0x33, false, {abortSelection: true});
   };
   onKeyboardReady('testLongPressTypeAccentedCharacterAsync',
                   runTest,
