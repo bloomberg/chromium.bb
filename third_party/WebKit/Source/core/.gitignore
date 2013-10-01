@@ -1,9 +1,0 @@
-*.Makefile
-*.mk
-*.rules
-*.sln
-*.tmp
-*.vcproj*
-*.vcxproj*
-core.xcodeproj
-core_derived_sources.xcodeproj
