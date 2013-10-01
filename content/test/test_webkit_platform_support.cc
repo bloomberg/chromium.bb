@@ -204,7 +204,7 @@ WebKit::WebString TestWebKitPlatformSupport::defaultLocale() {
 #if defined(OS_WIN) || defined(OS_MACOSX)
 void TestWebKitPlatformSupport::SetThemeEngine(WebKit::WebThemeEngine* engine) {
   active_theme_engine_ = engine ?
-      engine : WebKitPlatformSupportImpl::themeEngine();
+      engine : WebKitPlatformSupportChildImpl::themeEngine();
 }
 
 WebKit::WebThemeEngine* TestWebKitPlatformSupport::themeEngine() {

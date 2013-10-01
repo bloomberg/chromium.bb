@@ -47,7 +47,7 @@ class TestWebKitPlatformSupport :
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   void SetThemeEngine(WebKit::WebThemeEngine* engine);
-  virtual WebKit::WebThemeEngine *themeEngine();
+  virtual WebKit::WebThemeEngine* themeEngine();
 #endif
 
   virtual WebKit::WebCompositorSupport* compositorSupport();
