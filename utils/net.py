@@ -385,6 +385,8 @@ class HttpService(object):
             if self.authenticator and self.authenticator.authenticate():
               # Success! Run request again immediately.
               attempt.skip_sleep = True
+              # Also refresh cookies used by request engine.
+              self.engine.reload_cookies()
               continue
           # Authentication attempt was unsuccessful.
           logging.error(
@@ -506,6 +508,11 @@ class RequestEngine(object):
     """
     raise NotImplementedError()
 
+  def reload_cookies(self):
+    """Reloads cookies from original cookie jar."""
+    # This method is optional.
+    pass
+
 
 class Authenticator(object):
   """Base class for objects that know how to authenticate into http services."""
@@ -558,6 +565,7 @@ class RequestsLibEngine(RequestEngine):
   def __init__(self, cookie_jar, ca_certs):
     super(RequestsLibEngine, self).__init__()
     self.session = requests.Session()
+    self.cookie_jar = cookie_jar
     # Configure session.
     self.session.trust_env = False
     if cookie_jar:
@@ -593,6 +601,10 @@ class RequestsLibEngine(RequestEngine):
       raise HttpError(e.response.status_code, e)
     except (requests.ConnectionError, socket.timeout, ssl.SSLError) as e:
       raise ConnectionError(e)
+
+  def reload_cookies(self):
+    if self.cookie_jar:
+      self.session.cookies = self.cookie_jar
 
 
 class AppEngineAuthenticator(Authenticator):
