@@ -38,6 +38,7 @@ Contents:
    peppercpp/index.rst
    reference/index.rst
    reference/nacl-manifest-format.rst
+   publications-and-presentations.rst
    faq.rst
    help.rst
    version.rst

@@ -308,5 +308,3 @@ def setup(app):
 
   # "Production mode" for local testing vs. on-server documentation.
   app.add_config_value('devsite_production_mode', default='1', rebuild='html')
-
-
