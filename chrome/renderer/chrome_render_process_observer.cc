@@ -268,7 +268,7 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
   }
 
 #if defined(ENABLE_AUTOFILL_DIALOG)
-#if !defined(OS_ANDROID)
+#if defined(OS_MACOSX)
   // Interactive autocomplete is on by default for Dev/Canary, off by default
   // for Beta/Stable.
   bool enable_autofill = command_line.HasSwitch(
