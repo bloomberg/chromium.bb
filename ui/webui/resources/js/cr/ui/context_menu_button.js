@@ -67,6 +67,20 @@ cr.define('cr.ui', function() {
           break;
       }
       MenuButton.prototype.handleEvent.call(this, e);
+    },
+
+    /**
+     * Override MenuButton showMenu to allow the mousedown to be fully handled
+     * before the menu is shown. This is important in case the mousedown
+     * triggers command changes.
+     * @param {boolean} shouldSetFocus Whether the menu should be focused after
+     *     the menu is shown.
+     */
+    showMenu: function(shouldSetFocus) {
+      var self = this;
+      window.setTimeout(function() {
+        MenuButton.prototype.showMenu.call(self, shouldSetFocus);
+      });
     }
   };
 
