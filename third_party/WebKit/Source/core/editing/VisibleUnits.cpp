@@ -560,7 +560,8 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
     searchRange->selectNodeContents(boundary, IGNORE_EXCEPTION);
     searchRange->setStart(start.deprecatedNode(), start.deprecatedEditingOffset(), IGNORE_EXCEPTION);
     TextIterator it(searchRange.get(), TextIteratorEmitsCharactersBetweenAllVisiblePositions);
-    unsigned next = 0;
+    const unsigned invalidOffset = static_cast<unsigned>(-1);
+    unsigned next = invalidOffset;
     bool inTextSecurityMode = start.deprecatedNode() && start.deprecatedNode()->renderer() && start.deprecatedNode()->renderer()->style()->textSecurity() != TSNONE;
     bool needMoreContext = false;
     while (!it.atEnd()) {
@@ -588,7 +589,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
 
     if (it.atEnd() && next == string.size()) {
         pos = it.range()->startPosition();
-    } else if (next != prefixLength) {
+    } else if (next != invalidOffset && next != prefixLength) {
         // Use the character iterator to translate the next value into a DOM position.
         CharacterIterator charIt(searchRange.get(), TextIteratorEmitsCharactersBetweenAllVisiblePositions);
         charIt.advance(next - prefixLength - 1);
