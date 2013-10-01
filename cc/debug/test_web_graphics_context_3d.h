@@ -30,8 +30,8 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
   virtual bool makeContextCurrent();
 
-  virtual int width();
-  virtual int height();
+  virtual int width() OVERRIDE;
+  virtual int height() OVERRIDE;
 
   virtual void reshapeWithScaleFactor(
       int width, int height, float scale_factor);
