@@ -635,6 +635,11 @@ void DesktopRootWindowHostWin::HandleAppDeactivated() {
 }
 
 void DesktopRootWindowHostWin::HandleActivationChanged(bool active) {
+  // This can be invoked from HWNDMessageHandler::Init(), at which point we're
+  // not in a good state and need to ignore it.
+  if (!root_window_host_delegate_)
+    return;
+
   if (active)
     root_window_host_delegate_->OnHostActivated();
   desktop_native_widget_aura_->HandleActivationChanged(active);
