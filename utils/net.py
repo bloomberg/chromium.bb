@@ -33,6 +33,20 @@ upload.logging = logging.getLogger('upload')
 upload.logging.setLevel(logging.WARNING)  # pylint: disable=E1103
 
 
+# TODO(vadimsh): Remove this once we don't have to support python 2.6 anymore.
+def monkey_patch_httplib():
+  """Patch httplib.HTTPConnection to have '_tunnel_host' attribute.
+
+  'requests' library (>= v2) accesses 'HTTPConnection._tunnel_host' attribute
+  added only in python 2.6.3. This function patches HTTPConnection to have it
+  on python 2.6.2 as well.
+  """
+  conn = httplib.HTTPConnection('example.com')
+  if not hasattr(conn, '_tunnel_host'):
+    httplib.HTTPConnection._tunnel_host = None
+monkey_patch_httplib()
+
+
 # Big switch that controls what API to use to make HTTP requests.
 # It's temporary here to simplify benchmarking of old vs new implementation.
 USE_REQUESTS_LIB = True
