@@ -55,8 +55,15 @@ stage_install_debian() {
 
   if [ "$CHANNEL" != "stable" ]; then
     # Avoid file collisions between channels.
-    local PACKAGE="${PACKAGE}-${CHANNEL}"
-    local INSTALLDIR="${INSTALLDIR}-${CHANNEL}"
+    # TODO(phajdan.jr): Do that for all packages for SxS,
+    # http://crbug.com/38598 .
+    # We can't do this for now for all packages because of
+    # http://crbug.com/295103 , and ultimately http://crbug.com/22703 .
+    # Also see https://groups.google.com/a/chromium.org/d/msg/chromium-dev/DBEqOORaRiw/pE0bNI6h0kcJ .
+    if [ "$CHANNEL" = "trunk" ] || [ "$CHANNEL" = "asan" ]; then
+      local PACKAGE="${PACKAGE}-${CHANNEL}"
+      local INSTALLDIR="${INSTALLDIR}-${CHANNEL}"
+    fi
 
     # Make it possible to distinguish between menu entries
     # for different channels.
