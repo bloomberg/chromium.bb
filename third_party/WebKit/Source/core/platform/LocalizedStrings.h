@@ -71,12 +71,6 @@ namespace WebCore {
     String localizedMediaControlElementHelpText(const String&);
     String localizedMediaTimeDescription(float);
 
-    String clickToExitFullScreenText();
-
-    String textTrackSubtitlesText();
-    String textTrackOffText();
-    String textTrackNoLabelText();
-
 } // namespace WebCore
 
 #endif // LocalizedStrings_h

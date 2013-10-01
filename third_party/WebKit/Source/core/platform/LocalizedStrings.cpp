@@ -189,11 +189,6 @@ String blockedPluginByContentSecurityPolicyText()
     return String();
 }
 
-String textTrackClosedCaptionsText() { return String(); }
-String textTrackSubtitlesText() { return String(); }
-String textTrackOffText() { return String(); }
-String textTrackNoLabelText() { return String(); }
-
 String localizedMediaControlElementString(const String& name)
 {
     if (name == "AudioElement")
