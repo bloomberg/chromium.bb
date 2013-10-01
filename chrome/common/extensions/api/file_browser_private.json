@@ -579,20 +579,6 @@
             "type": "string",
             "description": "Mount point source. For compressed files it is relative file path within external file system"
           },
-	  // TODO(hidehiko): After the refactoring, we won't need to request
-	  // mounting the Drive. Then remove this param.
-          {
-            "name": "volumeType",
-            "type": "string",
-            "enum": ["drive", "archive"],
-            "description": "Type of the mounted volume"
-          },
-          {
-            "name": "options",
-            "type": "object",
-            "additionalProperties": { "type": "any" },
-            "description": "Name/value pairs for source specific options"
-          },
           {
             "name": "callback",
             "type": "function",

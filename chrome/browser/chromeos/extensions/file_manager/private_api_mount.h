@@ -34,10 +34,11 @@ class FileBrowserPrivateAddMountFunction : public LoggedAsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // A callback method to handle the result of MarkCacheAsMounted.
-  void OnMountedStateSet(const base::FilePath::StringType& file_name,
-                         drive::FileError error,
-                         const base::FilePath& file_path);
+  // Part of Run(). Called after MarkCacheFielAsMounted for Drive File System.
+  // (or directly called from RunImpl() for other file system).
+  void RunAfterMarkCacheFileAsMounted(const base::FilePath& display_name,
+                                      drive::FileError error,
+                                      const base::FilePath& file_path);
 };
 
 // Implements chrome.fileBrowserPrivate.removeMount method.

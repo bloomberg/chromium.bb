@@ -32,25 +32,17 @@ bool FileBrowserPrivateAddMountFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   drive::util::Log(logging::LOG_INFO,
-                   "%s[%d] called. (source: '%s', type:'%s')",
+                   "%s[%d] called. (source: '%s')",
                    name().c_str(),
                    request_id(),
-                   params->source.empty() ? "(none)" : params->source.c_str(),
-                   Params::ToString(params->volume_type).c_str());
+                   params->source.empty() ? "(none)" : params->source.c_str());
   set_log_on_completion(true);
-
-  if (params->volume_type != Params::VOLUME_TYPE_ARCHIVE) {
-    error_ = "Invalid mount type";
-    return false;
-  }
 
   const base::FilePath path = file_manager::util::GetLocalPathFromURL(
       render_view_host(), profile(), GURL(params->source));
 
   if (path.empty())
     return false;
-
-  const base::FilePath::StringType display_name = path.BaseName().value();
 
   // Check if the source path is under Drive cache directory.
   if (drive::util::IsUnderDriveMountPoint(path)) {
@@ -61,16 +53,18 @@ bool FileBrowserPrivateAddMountFunction::RunImpl() {
 
     file_system->MarkCacheFileAsMounted(
         drive::util::ExtractDrivePath(path),
-        base::Bind(&FileBrowserPrivateAddMountFunction::OnMountedStateSet,
-                   this, display_name));
+        base::Bind(
+            &FileBrowserPrivateAddMountFunction::RunAfterMarkCacheFileAsMounted,
+            this, path.BaseName()));
   } else {
-    OnMountedStateSet(display_name, drive::FILE_ERROR_OK, path);
+    RunAfterMarkCacheFileAsMounted(
+        path.BaseName(), drive::FILE_ERROR_OK, path);
   }
   return true;
 }
 
-void FileBrowserPrivateAddMountFunction::OnMountedStateSet(
-    const base::FilePath::StringType& file_name,
+void FileBrowserPrivateAddMountFunction::RunAfterMarkCacheFileAsMounted(
+    const base::FilePath& display_name,
     drive::FileError error,
     const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -80,14 +74,17 @@ void FileBrowserPrivateAddMountFunction::OnMountedStateSet(
     return;
   }
 
-  DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   // Pass back the actual source path of the mount point.
-  SetResult(new base::StringValue(file_path.value()));
+  SetResult(new base::StringValue(file_path.AsUTF8Unsafe()));
   SendResponse(true);
+
   // MountPath() takes a std::string.
+  DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   disk_mount_manager->MountPath(
-      file_path.AsUTF8Unsafe(), base::FilePath(file_name).Extension(),
-      file_name, chromeos::MOUNT_TYPE_ARCHIVE);
+      file_path.AsUTF8Unsafe(),
+      base::FilePath(display_name.Extension()).AsUTF8Unsafe(),
+      display_name.AsUTF8Unsafe(),
+      chromeos::MOUNT_TYPE_ARCHIVE);
 }
 
 bool FileBrowserPrivateRemoveMountFunction::RunImpl() {

@@ -461,7 +461,6 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     if (event.volumeMetadata.mountPath) {
       var requestKey = this.makeRequestKey_(
           'mount',
-          event.volumeMetadata.volumeType,
           event.volumeMetadata.sourcePath);
 
       var error = event.status === 'success' ? '' : event.status;
@@ -498,7 +497,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
       console.warn('Volume already unmounted: ', mountPath);
       status = 'success';
     }
-    var requestKey = this.makeRequestKey_('unmount', '', mountPath);
+    var requestKey = this.makeRequestKey_('unmount', mountPath);
     var requested = requestKey in this.requests_;
     if (event.status === 'success' && !requested &&
         this.volumeInfoList.find(mountPath)) {
@@ -523,17 +522,15 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
 
 /**
  * Creates string to match mount events with requests.
- * @param {string} requestType 'mount' | 'unmount'.
- * @param {string} volumeType 'drive' | 'downloads' | 'removable' | 'archive'.
- * @param {string} mountOrSourcePath Source path provided by API after
- *     resolving mount request or mountPath for unmount request.
+ * @param {string} requestType 'mount' | 'unmount'. TODO(hidehiko): Replace by
+ *     enum.
+ * @param {string} path Source path provided by API for mount request, or
+ *     mount path for unmount request.
  * @return {string} Key for |this.requests_|.
  * @private
  */
-VolumeManager.prototype.makeRequestKey_ = function(requestType,
-                                                   volumeType,
-                                                   mountOrSourcePath) {
-  return requestType + ':' + volumeType + ':' + mountOrSourcePath;
+VolumeManager.prototype.makeRequestKey_ = function(requestType, path) {
+  return requestType + ':' + path;
 };
 
 /**
@@ -541,9 +538,14 @@ VolumeManager.prototype.makeRequestKey_ = function(requestType,
  * @param {function(string)} successCallback Success callback.
  * @param {function(util.VolumeError)} errorCallback Error callback.
  */
-VolumeManager.prototype.mountArchive = function(fileUrl, successCallback,
-                                                errorCallback) {
-  this.mount_(fileUrl, 'archive', successCallback, errorCallback);
+VolumeManager.prototype.mountArchive = function(
+    fileUrl, successCallback, errorCallback) {
+  chrome.fileBrowserPrivate.addMount(fileUrl, function(sourcePath) {
+    console.info(
+        'Mount request: url=' + fileUrl + '; sourceUrl=' + sourcePath);
+    var requestKey = this.makeRequestKey_('mount', sourcePath);
+    this.startRequest_(requestKey, successCallback, errorCallback);
+  }.bind(this));
 };
 
 /**
@@ -563,7 +565,7 @@ VolumeManager.prototype.unmount = function(mountPath,
   }
 
   chrome.fileBrowserPrivate.removeMount(util.makeFilesystemUrl(mountPath));
-  var requestKey = this.makeRequestKey_('unmount', '', volumeInfo.mountPath);
+  var requestKey = this.makeRequestKey_('unmount', volumeInfo.mountPath);
   this.startRequest_(requestKey, successCallback, errorCallback);
 };
 
@@ -596,25 +598,6 @@ VolumeManager.prototype.resolvePath = function(
 VolumeManager.prototype.getVolumeInfo = function(mountPath) {
   volumeManagerUtil.validateMountPath(mountPath);
   return this.volumeInfoList.find(mountPath);
-};
-
-/**
- * @param {string} url URL for for |fileBrowserPrivate.addMount|.
- * @param {'drive'|'archive'} volumeType Volume type for
- *     |fileBrowserPrivate.addMount|.
- * @param {function(string)} successCallback Success callback.
- * @param {function(util.VolumeError)} errorCallback Error callback.
- * @private
- */
-VolumeManager.prototype.mount_ = function(url, volumeType,
-                                          successCallback, errorCallback) {
-  chrome.fileBrowserPrivate.addMount(url, volumeType, {},
-                                     function(sourcePath) {
-    console.info('Mount request: url=' + url + '; volumeType=' + volumeType +
-                 '; sourceUrl=' + sourcePath);
-    var requestKey = this.makeRequestKey_('mount', volumeType, sourcePath);
-    this.startRequest_(requestKey, successCallback, errorCallback);
-  }.bind(this));
 };
 
 /**
