@@ -1433,8 +1433,6 @@
             'rendering/RenderMedia.h',
             'rendering/RenderMediaControlElements.cpp',
             'rendering/RenderMediaControlElements.h',
-            'rendering/RenderMediaControls.cpp',
-            'rendering/RenderMediaControls.h',
             'rendering/RenderMediaControlsChromium.cpp',
             'rendering/RenderMediaControlsChromium.h',
             'rendering/RenderMenuList.cpp',

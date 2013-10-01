@@ -52,7 +52,6 @@
 #import "core/rendering/PaintInfo.h"
 #import "core/rendering/RenderLayer.h"
 #import "core/rendering/RenderMedia.h"
-#import "core/rendering/RenderMediaControls.h"
 #import "core/rendering/RenderMediaControlsChromium.h"
 #import "core/rendering/RenderMeter.h"
 #import "core/rendering/RenderProgress.h"
