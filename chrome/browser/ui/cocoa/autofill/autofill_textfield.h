@@ -24,6 +24,7 @@
 @interface AutofillTextFieldCell : NSTextFieldCell<AutofillInputCell> {
  @private
   BOOL invalid_;
+  NSString* defaultValue_;
   base::scoped_nsobject<NSImage> icon_;
 }
 

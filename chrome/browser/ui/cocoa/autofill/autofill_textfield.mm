@@ -60,6 +60,18 @@ const CGFloat kGap = 6.0;  // gap between icon and text.
   [[self cell] setFieldValue:fieldValue];
 }
 
+- (NSString*)defaultValue {
+  return [[self cell] defaultValue];
+}
+
+- (void)setDefaultValue:(NSString*)defaultValue {
+  [[self cell] setDefaultValue:defaultValue];
+}
+
+- (BOOL)isDefault {
+  return [[[self cell] fieldValue] isEqualToString:[[self cell] defaultValue]];
+}
+
 - (NSString*)validityMessage {
   return validityMessage_;
 }
@@ -79,6 +91,7 @@ const CGFloat kGap = 6.0;  // gap between icon and text.
 @implementation AutofillTextFieldCell
 
 @synthesize invalid = invalid_;
+@synthesize defaultValue = defaultValue_;
 
 - (NSImage*) icon{
   return icon_;

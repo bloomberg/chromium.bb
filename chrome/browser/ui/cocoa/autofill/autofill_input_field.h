@@ -14,6 +14,7 @@
 
 @property(nonatomic, assign) BOOL invalid;
 @property(nonatomic, copy) NSString* fieldValue;
+@property(nonatomic, copy) NSString* defaultValue;
 
 @end
 
@@ -41,6 +42,10 @@
 @property(nonatomic, assign) id<AutofillInputDelegate> delegate;
 
 @property(nonatomic, copy) NSString* fieldValue;
+@property(nonatomic, copy) NSString* defaultValue;
+
+// Indicates if the field is at its default setting.
+@property(nonatomic, readonly) BOOL isDefault;
 
 // Indicates if the field is valid. Empty string or nil indicates a valid
 // field, everything else is a message to be displayed to the user when the

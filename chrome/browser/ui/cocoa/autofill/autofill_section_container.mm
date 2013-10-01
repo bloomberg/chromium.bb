@@ -473,8 +473,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 
     [field setEnabled:iter->editable];
 
-    // TODO(groby): For comboboxes, "empty" means "set to default index"
-    if (shouldClobber || [[field fieldValue] length] == 0) {
+    if (shouldClobber || [field isDefault]) {
       [field setFieldValue:base::SysUTF16ToNSString(iter->initial_value)];
       AutofillTextField* textField =
           base::mac::ObjCCast<AutofillTextField>(field);
@@ -538,33 +537,35 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   for (size_t i = 0; i < detailInputs_.size(); ++i) {
     const autofill::DetailInput& input = *detailInputs_[i];
     int kColumnSetId = input.row_id;
-    ColumnSet* column_set = layout->GetColumnSet(kColumnSetId);
-    if (!column_set) {
+    ColumnSet* columnSet = layout->GetColumnSet(kColumnSetId);
+    if (!columnSet) {
       // Create a new column set and row.
-      column_set = layout->AddColumnSet(kColumnSetId);
+      columnSet = layout->AddColumnSet(kColumnSetId);
       if (i != 0 && kColumnSetId != -1)
         layout->AddPaddingRow(kRelatedControlVerticalSpacing);
       layout->StartRow(0, kColumnSetId);
     } else {
       // Add a new column to existing row.
-      column_set->AddPaddingColumn(kRelatedControlHorizontalSpacing);
+      columnSet->AddPaddingColumn(kRelatedControlHorizontalSpacing);
       // Must explicitly skip the padding column since we've already started
       // adding views.
       layout->SkipColumns(1);
     }
 
-    column_set->AddColumn(input.expand_weight ? input.expand_weight : 1.0f);
+    columnSet->AddColumn(input.expand_weight ? input.expand_weight : 1.0f);
 
-    ui::ComboboxModel* input_model =
+    ui::ComboboxModel* inputModel =
         delegate_->ComboboxModelForAutofillType(input.type);
     base::scoped_nsprotocol<NSControl<AutofillInputField>*> control;
-    if (input_model) {
+    if (inputModel) {
       base::scoped_nsobject<AutofillPopUpButton> popup(
           [[AutofillPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO]);
-      for (int i = 0; i < input_model->GetItemCount(); ++i) {
-        [popup addItemWithTitle:
-            base::SysUTF16ToNSString(input_model->GetItemAt(i))];
+      for (int i = 0; i < inputModel->GetItemCount(); ++i) {
+         [popup addItemWithTitle:
+             base::SysUTF16ToNSString(inputModel->GetItemAt(i))];
       }
+      [popup setDefaultValue:base::SysUTF16ToNSString(
+          inputModel->GetItemAt(inputModel->GetDefaultIndex()))];
       control.reset(popup.release());
     } else {
       base::scoped_nsobject<AutofillTextField> field(
@@ -574,6 +575,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
       [[field cell] setIcon:
           delegate_->IconForField(
               input.type, input.initial_value).AsNSImage()];
+      [field setDefaultValue:@""];
       control.reset(field.release());
     }
     [control setFieldValue:base::SysUTF16ToNSString(input.initial_value)];

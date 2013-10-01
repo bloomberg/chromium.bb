@@ -21,6 +21,7 @@
 @interface AutofillPopUpCell : NSPopUpButtonCell<AutofillInputCell> {
  @private
   BOOL invalid_;
+  NSString* defaultValue_;
 }
 
 @end
