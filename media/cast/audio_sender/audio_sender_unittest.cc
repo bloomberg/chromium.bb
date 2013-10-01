@@ -47,7 +47,7 @@ class AudioSenderTest : public ::testing::Test {
     audio_sender_->set_clock(&testing_clock_);
   }
 
-  ~AudioSenderTest() {}
+  virtual ~AudioSenderTest() {}
 
   base::SimpleTestTickClock testing_clock_;
   MockPacedPacketSender mock_transport_;

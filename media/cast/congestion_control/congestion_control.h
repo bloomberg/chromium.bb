@@ -21,7 +21,7 @@ class CongestionControl {
                     uint32 min_bitrate_configured,
                     uint32 start_bitrate);
 
-  virtual ~CongestionControl() {}
+  virtual ~CongestionControl();
 
   // Don't call OnAck if the same message contain a NACK.
   // Returns true if the bitrate have changed.

@@ -33,7 +33,13 @@ class TestVideoReceiverCallback :
     ++num_called_;
   }
   int number_times_called() { return num_called_;}
+
+ protected:
+  virtual ~TestVideoReceiverCallback() {}
+
  private:
+  friend class base::RefCountedThreadSafe<TestVideoReceiverCallback>;
+
   int num_called_;
 };
 
@@ -65,7 +71,7 @@ class VideoReceiverTest : public ::testing::Test {
     receiver_->set_clock(&testing_clock_);
   }
 
-  ~VideoReceiverTest() {}
+  virtual ~VideoReceiverTest() {}
 
   virtual void SetUp() {
     payload_.assign(kPacketSize, 0);

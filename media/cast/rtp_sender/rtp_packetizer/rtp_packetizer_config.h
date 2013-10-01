@@ -12,15 +12,7 @@ namespace media {
 namespace cast {
 
 struct RtpPacketizerConfig {
-  RtpPacketizerConfig() {
-    ssrc = 0;
-    max_payload_length = kIpPacketSize - 28;   // Default is IP-v4/UDP.
-    audio = false;
-    frequency = 8000;
-    payload_type = -1;
-    sequence_number = 0;
-    rtp_timestamp = 0;
-  }
+  RtpPacketizerConfig();
 
   // General.
   bool audio;

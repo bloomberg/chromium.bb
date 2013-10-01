@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      'target_name': 'paced_sender',
+      'target_name': 'cast_paced_sender',
       'type': 'static_library',
       'include_dirs': [
         '<(DEPTH)/',

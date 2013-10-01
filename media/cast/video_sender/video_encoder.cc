@@ -85,26 +85,26 @@ void VideoEncoder::EncodeVideoFrameEncoderThread(
 }
 
 // Inform the encoder about the new target bit rate.
-void VideoEncoder::SetBitRate(int new_bit_rate) OVERRIDE {
+void VideoEncoder::SetBitRate(int new_bit_rate) {
   dynamic_config_.bit_rate = new_bit_rate;
 }
 
 // Inform the encoder to not encode the next frame.
-void VideoEncoder::SkipNextFrame(bool skip_next_frame) OVERRIDE {
+void VideoEncoder::SkipNextFrame(bool skip_next_frame) {
   skip_next_frame_ = skip_next_frame;
 }
 
 // Inform the encoder to encode the next frame as a key frame.
-void VideoEncoder::GenerateKeyFrame() OVERRIDE {
+void VideoEncoder::GenerateKeyFrame() {
   dynamic_config_.key_frame_requested = true;
 }
 
 // Inform the encoder to only reference frames older or equal to frame_id;
-void VideoEncoder::LatestFrameIdToReference(uint8 frame_id) OVERRIDE {
+void VideoEncoder::LatestFrameIdToReference(uint8 frame_id) {
   dynamic_config_.latest_frame_id_to_reference = frame_id;
 }
 
-int VideoEncoder::NumberOfSkippedFrames() const OVERRIDE {
+int VideoEncoder::NumberOfSkippedFrames() const {
   return skip_count_;
 }
 

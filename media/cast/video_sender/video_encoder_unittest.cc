@@ -46,7 +46,12 @@ class TestVideoEncoderCallback :
     EXPECT_EQ(expected_capture_time_, capture_time);
   }
 
+ protected:
+  virtual ~TestVideoEncoderCallback() {}
+
  private:
+  friend class base::RefCountedThreadSafe<TestVideoEncoderCallback>;
+
   bool expected_key_frame_;
   uint8 expected_frame_id_;
   uint8 expected_last_referenced_frame_id_;
@@ -85,7 +90,7 @@ class VideoEncoderTest : public ::testing::Test {
     video_frame_.v_plane.data = &(pixels_[0]);
   }
 
-  ~VideoEncoderTest() {}
+  virtual ~VideoEncoderTest() {}
 
   virtual void SetUp() {
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);

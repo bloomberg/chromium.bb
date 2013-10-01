@@ -32,13 +32,8 @@ class CastSenderImpl : public CastSender {
 
   virtual ~CastSenderImpl();
 
-  virtual scoped_refptr<FrameInput> frame_input() OVERRIDE  {
-    return frame_input_;
-  }
-
-  virtual scoped_refptr<PacketReceiver> packet_receiver() OVERRIDE {
-    return packet_receiver_;
-  }
+  virtual scoped_refptr<FrameInput> frame_input() OVERRIDE;
+  virtual scoped_refptr<PacketReceiver> packet_receiver() OVERRIDE;
 
  private:
   PacedSender pacer_;

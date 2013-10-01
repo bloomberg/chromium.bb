@@ -30,8 +30,6 @@ class AudioEncoder : public base::RefCountedThreadSafe<AudioEncoder> {
   AudioEncoder(scoped_refptr<CastThread> cast_thread,
                const AudioSenderConfig& audio_config);
 
-  virtual ~AudioEncoder();
-
   // The audio_frame must be valid until the closure callback is called.
   // The closure callback is called from the main cast thread as soon as
   // the encoder is done with the frame; it does not mean that the encoded frame
@@ -41,7 +39,12 @@ class AudioEncoder : public base::RefCountedThreadSafe<AudioEncoder> {
                            const FrameEncodedCallback& frame_encoded_callback,
                            const base::Closure callback);
 
+ protected:
+  virtual ~AudioEncoder();
+
  private:
+  friend class base::RefCountedThreadSafe<AudioEncoder>;
+
   void EncodeAudioFrameThread(
       const PcmAudioFrame* audio_frame,
       const base::TimeTicks& recorded_time,
@@ -49,8 +52,7 @@ class AudioEncoder : public base::RefCountedThreadSafe<AudioEncoder> {
       const base::Closure release_callback);
 
   scoped_refptr<CastThread> cast_thread_;
-  // Can't use scoped_ptr due to protected constructor within webrtc.
-  webrtc::AudioCodingModule* audio_encoder_;
+  scoped_ptr<webrtc::AudioCodingModule> audio_encoder_;
   scoped_ptr<WebrtEncodedDataCallback> webrtc_encoder_callback_;
   uint32 timestamp_;
 

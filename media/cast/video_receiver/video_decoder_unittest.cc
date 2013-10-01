@@ -36,7 +36,13 @@ class TestVideoDecoderCallback :
   }
 
   int number_times_called() {return num_called_;}
+
+ protected:
+  virtual ~TestVideoDecoderCallback() {}
+
  private:
+  friend class base::RefCountedThreadSafe<TestVideoDecoderCallback>;
+
   int num_called_;
 };
 
@@ -49,7 +55,7 @@ class VideoDecoderTest : public ::testing::Test {
     video_decoder_callback_ = new TestVideoDecoderCallback();
   }
 
-  ~VideoDecoderTest() {}
+  virtual ~VideoDecoderTest() {}
   virtual void SetUp() {
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
     cast_thread_ = new CastThread(task_runner_, NULL, NULL,
