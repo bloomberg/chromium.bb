@@ -49,6 +49,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/EventHandler.h"
+#include "core/page/FocusController.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
@@ -206,7 +207,8 @@ void RenderLayerScrollableArea::invalidateScrollCornerRect(const IntRect& rect)
 
 bool RenderLayerScrollableArea::isActive() const
 {
-    return layer()->isActive();
+    Page* page = m_box->frame()->page();
+    return page && page->focusController().isActive();
 }
 
 bool RenderLayerScrollableArea::isScrollCornerVisible() const
@@ -308,7 +310,8 @@ IntPoint RenderLayerScrollableArea::convertFromContainingViewToScrollbar(const S
 
 int RenderLayerScrollableArea::scrollSize(ScrollbarOrientation orientation) const
 {
-    return layer()->scrollSize(orientation);
+    IntSize scrollDimensions = maximumScrollPosition() - minimumScrollPosition();
+    return (orientation == HorizontalScrollbar) ? scrollDimensions.width() : scrollDimensions.height();
 }
 
 void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
@@ -407,12 +410,12 @@ IntRect RenderLayerScrollableArea::visibleContentRect(VisibleContentRectIncludes
 
 int RenderLayerScrollableArea::visibleHeight() const
 {
-    return layer()->visibleHeight();
+    return layer()->m_layerSize.height();
 }
 
 int RenderLayerScrollableArea::visibleWidth() const
 {
-    return layer()->visibleWidth();
+    return layer()->m_layerSize.width();
 }
 
 IntSize RenderLayerScrollableArea::contentsSize() const
@@ -422,42 +425,58 @@ IntSize RenderLayerScrollableArea::contentsSize() const
 
 IntSize RenderLayerScrollableArea::overhangAmount() const
 {
-    return layer()->overhangAmount();
+    return IntSize();
 }
 
 IntPoint RenderLayerScrollableArea::lastKnownMousePosition() const
 {
-    return layer()->lastKnownMousePosition();
+    return m_box->frame() ? m_box->frame()->eventHandler()->lastKnownMousePosition() : IntPoint();
 }
 
 bool RenderLayerScrollableArea::shouldSuspendScrollAnimations() const
 {
-    return layer()->shouldSuspendScrollAnimations();
+    RenderView* view = m_box->view();
+    if (!view)
+        return true;
+    return view->frameView()->shouldSuspendScrollAnimations();
 }
 
 bool RenderLayerScrollableArea::scrollbarsCanBeActive() const
 {
-    return layer()->scrollbarsCanBeActive();
+    RenderView* view = m_box->view();
+    if (!view)
+        return false;
+    return view->frameView()->scrollbarsCanBeActive();
 }
 
 IntRect RenderLayerScrollableArea::scrollableAreaBoundingBox() const
 {
-    return layer()->scrollableAreaBoundingBox();
+    return m_box->absoluteBoundingBoxRect();
 }
 
 bool RenderLayerScrollableArea::userInputScrollable(ScrollbarOrientation orientation) const
 {
-    return layer()->userInputScrollable(orientation);
+    if (m_box->isIntristicallyScrollable(orientation))
+        return true;
+
+    EOverflow overflowStyle = (orientation == HorizontalScrollbar) ?
+        m_box->style()->overflowX() : m_box->style()->overflowY();
+    return (overflowStyle == OSCROLL || overflowStyle == OAUTO || overflowStyle == OOVERLAY);
 }
 
 bool RenderLayerScrollableArea::shouldPlaceVerticalScrollbarOnLeft() const
 {
-    return layer()->shouldPlaceVerticalScrollbarOnLeft();
+    return m_box->style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft();
 }
 
 int RenderLayerScrollableArea::pageStep(ScrollbarOrientation orientation) const
 {
-    return layer()->pageStep(orientation);
+    int length = (orientation == HorizontalScrollbar) ?
+        m_box->pixelSnappedClientWidth() : m_box->pixelSnappedClientHeight();
+    int minPageStep = static_cast<float>(length) * ScrollableArea::minFractionToStepWhenPaging();
+    int pageStep = max(minPageStep, length - ScrollableArea::maxOverlapBetweenPages());
+
+    return max(pageStep, 1);
 }
 
 RenderLayer* RenderLayerScrollableArea::layer() const
@@ -866,7 +885,6 @@ void RenderLayerScrollableArea::updateScrollCornerStyle()
     }
 }
 
-// FIXME: Move m_cachedOverlayScrollbarOffset.
 void RenderLayerScrollableArea::paintOverflowControls(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect, bool paintingOverlayControls)
 {
     // Don't do anything if we have no overflow.
@@ -875,7 +893,7 @@ void RenderLayerScrollableArea::paintOverflowControls(GraphicsContext* context, 
 
     IntPoint adjustedPaintOffset = paintOffset;
     if (paintingOverlayControls)
-        adjustedPaintOffset = layer()->m_cachedOverlayScrollbarOffset;
+        adjustedPaintOffset = m_cachedOverlayScrollbarOffset;
 
     // Move the scrollbar widgets if necessary. We normally move and resize widgets during layout,
     // but sometimes widgets can move without layout occurring (most notably when you scroll a
@@ -889,7 +907,7 @@ void RenderLayerScrollableArea::paintOverflowControls(GraphicsContext* context, 
     // and we'll paint the scrollbars then. In the meantime, cache tx and ty so that the
     // second pass doesn't need to re-enter the RenderTree to get it right.
     if (hasOverlayScrollbars() && !paintingOverlayControls) {
-        layer()->m_cachedOverlayScrollbarOffset = paintOffset;
+        m_cachedOverlayScrollbarOffset = paintOffset;
         // It's not necessary to do the second pass if the scrollbars paint into layers.
         if ((m_hBar && layerForHorizontalScrollbar()) || (m_vBar && layerForVerticalScrollbar()))
             return;

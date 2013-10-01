@@ -54,7 +54,6 @@
 #include "core/html/HTMLFrameElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/EventHandler.h"
-#include "core/page/FocusController.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
@@ -1334,42 +1333,6 @@ RenderLayer* RenderLayer::enclosingScrollableLayer() const
     return 0;
 }
 
-IntRect RenderLayer::scrollableAreaBoundingBox() const
-{
-    return renderer()->absoluteBoundingBoxRect();
-}
-
-bool RenderLayer::userInputScrollable(ScrollbarOrientation orientation) const
-{
-    RenderBox* box = renderBox();
-    ASSERT(box);
-
-    if (box->isIntristicallyScrollable(orientation))
-        return true;
-
-    EOverflow overflowStyle = (orientation == HorizontalScrollbar) ?
-        renderer()->style()->overflowX() : renderer()->style()->overflowY();
-    return (overflowStyle == OSCROLL || overflowStyle == OAUTO || overflowStyle == OOVERLAY);
-}
-
-bool RenderLayer::shouldPlaceVerticalScrollbarOnLeft() const
-{
-    return renderer()->style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft();
-}
-
-int RenderLayer::pageStep(ScrollbarOrientation orientation) const
-{
-    RenderBox* box = renderBox();
-    ASSERT(box);
-
-    int length = (orientation == HorizontalScrollbar) ?
-        box->pixelSnappedClientWidth() : box->pixelSnappedClientHeight();
-    int minPageStep = static_cast<float>(length) * ScrollableArea::minFractionToStepWhenPaging();
-    int pageStep = max(minPageStep, length - ScrollableArea::maxOverlapBetweenPages());
-
-    return max(pageStep, 1);
-}
-
 RenderLayer* RenderLayer::enclosingTransformedAncestor() const
 {
     RenderLayer* curr = parent();
@@ -2455,54 +2418,6 @@ void RenderLayer::autoscroll(const IntPoint& position)
 
     IntPoint currentDocumentPosition = frameView->windowToContents(position);
     scrollRectToVisible(LayoutRect(currentDocumentPosition, LayoutSize(1, 1)), ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
-}
-
-int RenderLayer::scrollSize(ScrollbarOrientation orientation) const
-{
-    IntSize scrollDimensions = scrollableArea()->maximumScrollPosition() - scrollableArea()->minimumScrollPosition();
-    return (orientation == HorizontalScrollbar) ? scrollDimensions.width() : scrollDimensions.height();
-}
-
-IntSize RenderLayer::overhangAmount() const
-{
-    return IntSize();
-}
-
-bool RenderLayer::isActive() const
-{
-    Page* page = renderer()->frame()->page();
-    return page && page->focusController().isActive();
-}
-
-int RenderLayer::visibleHeight() const
-{
-    return m_layerSize.height();
-}
-
-int RenderLayer::visibleWidth() const
-{
-    return m_layerSize.width();
-}
-
-bool RenderLayer::shouldSuspendScrollAnimations() const
-{
-    RenderView* view = renderer()->view();
-    if (!view)
-        return true;
-    return view->frameView()->shouldSuspendScrollAnimations();
-}
-
-bool RenderLayer::scrollbarsCanBeActive() const
-{
-    RenderView* view = renderer()->view();
-    if (!view)
-        return false;
-    return view->frameView()->scrollbarsCanBeActive();
-}
-
-IntPoint RenderLayer::lastKnownMousePosition() const
-{
-    return renderer()->frame() ? renderer()->frame()->eventHandler()->lastKnownMousePosition() : IntPoint();
 }
 
 ScrollableArea* RenderLayer::enclosingScrollableArea() const
@@ -5514,16 +5429,6 @@ void RenderLayer::addLayerHitTestRects(LayerHitTestRects& rects) const
 
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
         child->addLayerHitTestRects(rects);
-}
-
-const IntPoint& RenderLayer::scrollOrigin() const
-{
-    if (!m_scrollableArea) {
-        static IntPoint emptyPoint = IntPoint::zero();
-        return emptyPoint;
-    }
-
-    return m_scrollableArea->scrollOrigin();
 }
 
 int RenderLayer::scrollXOffset() const

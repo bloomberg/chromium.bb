@@ -763,25 +763,9 @@ public:
     friend IntSize RenderBox::scrolledContentOffset() const;
     IntSize scrolledContentOffset() const;
     IntSize adjustedScrollOffset() const { return IntSize(scrollXOffset(), scrollYOffset()); }
-
-private:
-    bool isActive() const;
-    int scrollSize(ScrollbarOrientation) const;
-    int visibleHeight() const;
-    int visibleWidth() const;
-    IntSize overhangAmount() const;
-    IntPoint lastKnownMousePosition() const;
-    bool shouldSuspendScrollAnimations() const;
-    bool scrollbarsCanBeActive() const;
-    IntRect scrollableAreaBoundingBox() const;
-    bool userInputScrollable(ScrollbarOrientation) const;
-    bool shouldPlaceVerticalScrollbarOnLeft() const;
-    int pageStep(ScrollbarOrientation) const;
     // End of ScrollableArea interface
 
-    // FIXME: This should be removed once we have transitioned to RenderLayerScrollableArea.
-    const IntPoint& scrollOrigin() const;
-
+private:
     // Rectangle encompassing the scroll corner and resizer rect.
     IntRect scrollCornerAndResizerRect() const;
 
@@ -950,8 +934,6 @@ protected:
     OwnPtr<Vector<RenderLayer*> > m_normalFlowList;
 
     OwnPtr<ClipRectsCache> m_clipRectsCache;
-
-    IntPoint m_cachedOverlayScrollbarOffset;
 
     // Cached normal flow values for absolute positioned elements with static left/top values.
     LayoutUnit m_staticInlinePosition;

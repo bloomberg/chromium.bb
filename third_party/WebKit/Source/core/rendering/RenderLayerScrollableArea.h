@@ -198,6 +198,8 @@ private:
     // This is the (scroll) offset from scrollOrigin().
     IntSize m_scrollOffset;
 
+    IntPoint m_cachedOverlayScrollbarOffset;
+
     // For areas with overflow, we have a pair of scrollbars.
     RefPtr<Scrollbar> m_hBar;
     RefPtr<Scrollbar> m_vBar;

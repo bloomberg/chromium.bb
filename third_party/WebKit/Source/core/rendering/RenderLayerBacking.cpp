@@ -731,7 +731,7 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
             bool scrollingCoordinatorHandlesOffset = compositor()->scrollingLayerDidChange(m_owningLayer);
 
             if (scrollingCoordinatorHandlesOffset)
-                m_scrollingContentsLayer->setPosition(-m_owningLayer->scrollOrigin());
+                m_scrollingContentsLayer->setPosition(-m_owningLayer->scrollableArea()->scrollOrigin());
             else
                 m_scrollingContentsLayer->setPosition(FloatPoint(-adjustedScrollOffset));
         }
