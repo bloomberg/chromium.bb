@@ -30,6 +30,7 @@ class SocketFactory : public net::PlatformSocketFactory {
     Reset();
     socket_v4_ = socket_v4;
     socket_v6_ = socket_v6;
+    VLOG(1) << "SetSockets: " << socket_v4_ << " " << socket_v6_;
   }
 
   void Reset() {
@@ -162,6 +163,7 @@ void ServiceDiscoveryMessageHandler::InitializeMdns() {
     // Temporarily redirect network code to use pre-created sockets.
     ScopedSocketFactorySetter socket_factory_setter;
     if (!mdns_client_->StartListening()) {
+      VLOG(1) << "Failed to start MDnsClient";
       Send(new LocalDiscoveryHostMsg_Error());
       return;
     }
@@ -357,7 +359,6 @@ void ServiceDiscoveryMessageHandler::DestroyLocalDomainResolver(uint64 id) {
 }
 
 void ServiceDiscoveryMessageHandler::ShutdownLocalDiscovery() {
-  VLOG(1) << "ShutdownLocalDiscovery";
   discovery_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ServiceDiscoveryMessageHandler::ShutdownOnIOThread,
@@ -369,6 +370,7 @@ void ServiceDiscoveryMessageHandler::ShutdownLocalDiscovery() {
 }
 
 void ServiceDiscoveryMessageHandler::ShutdownOnIOThread() {
+  VLOG(1) << "ShutdownLocalDiscovery";
   service_watchers_.clear();
   service_resolvers_.clear();
   local_domain_resolvers_.clear();
