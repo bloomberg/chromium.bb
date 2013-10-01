@@ -43,11 +43,20 @@ WebKit::WebCryptoAlgorithm CreateHmacAlgorithm(
       new WebKit::WebCryptoHmacParams(CreateAlgorithm(hashId)));
 }
 
+// Returns a pointer to the start of |data|, or NULL if it is empty. This is a
+// convenience function for getting the pointer, and should not be used beyond
+// the expected lifetime of |data|.
+const uint8* Start(const std::vector<uint8>& data) {
+  if (data.empty())
+    return NULL;
+  return &data[0];
+}
+
 WebKit::WebCryptoAlgorithm CreateAesCbcAlgorithm(
     const std::vector<uint8>& iv) {
   return WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
       WebKit::WebCryptoAlgorithmIdAesCbc,
-      new WebKit::WebCryptoAesCbcParams(&iv[0], iv.size()));
+      new WebKit::WebCryptoAesCbcParams(Start(iv), iv.size()));
 }
 
 }  // namespace
@@ -66,7 +75,7 @@ class WebCryptoImplTest : public testing::Test {
     std::vector<uint8> key_raw = HexStringToBytes(key_hex);
 
     EXPECT_TRUE(crypto_.ImportKeyInternal(WebKit::WebCryptoKeyFormatRaw,
-                                          &key_raw[0],
+                                          Start(key_raw),
                                           key_raw.size(),
                                           algorithm,
                                           usage,
@@ -85,31 +94,34 @@ class WebCryptoImplTest : public testing::Test {
 
   bool DigestInternal(
       const WebKit::WebCryptoAlgorithm& algorithm,
-      const unsigned char* data,
-      unsigned data_size,
+      const std::vector<uint8>& data,
       WebKit::WebArrayBuffer* buffer) {
-    return crypto_.DigestInternal(algorithm, data, data_size, buffer);
+    return crypto_.DigestInternal(algorithm, Start(data), data.size(), buffer);
   }
 
   bool ImportKeyInternal(
       WebKit::WebCryptoKeyFormat format,
-      const unsigned char* key_data,
-      unsigned key_data_size,
+      const std::vector<uint8>& key_data,
       const WebKit::WebCryptoAlgorithm& algorithm,
       WebKit::WebCryptoKeyUsageMask usage_mask,
       scoped_ptr<WebKit::WebCryptoKeyHandle>* handle,
       WebKit::WebCryptoKeyType* type) {
-    return crypto_.ImportKeyInternal(
-        format, key_data, key_data_size, algorithm, usage_mask, handle, type);
+    return crypto_.ImportKeyInternal(format,
+                                     Start(key_data),
+                                     key_data.size(),
+                                     algorithm,
+                                     usage_mask,
+                                     handle,
+                                     type);
   }
 
   bool SignInternal(
       const WebKit::WebCryptoAlgorithm& algorithm,
       const WebKit::WebCryptoKey& key,
-      const unsigned char* data,
-      unsigned data_size,
+      const std::vector<uint8>& data,
       WebKit::WebArrayBuffer* buffer) {
-    return crypto_.SignInternal(algorithm, key, data, data_size, buffer);
+    return crypto_.SignInternal(
+        algorithm, key, Start(data), data.size(), buffer);
   }
 
   bool VerifySignatureInternal(
@@ -117,15 +129,14 @@ class WebCryptoImplTest : public testing::Test {
       const WebKit::WebCryptoKey& key,
       const unsigned char* signature,
       unsigned signature_size,
-      const unsigned char* data,
-      unsigned data_size,
+      const std::vector<uint8>& data,
       bool* signature_match) {
     return crypto_.VerifySignatureInternal(algorithm,
                                            key,
                                            signature,
                                            signature_size,
-                                           data,
-                                           data_size,
+                                           Start(data),
+                                           data.size(),
                                            signature_match);
   }
 
@@ -136,6 +147,33 @@ class WebCryptoImplTest : public testing::Test {
       unsigned data_size,
       WebKit::WebArrayBuffer* buffer) {
     return crypto_.EncryptInternal(algorithm, key, data, data_size, buffer);
+  }
+
+  bool EncryptInternal(
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      const WebKit::WebCryptoKey& key,
+      const std::vector<uint8>& data,
+      WebKit::WebArrayBuffer* buffer) {
+    return crypto_.EncryptInternal(
+        algorithm, key, Start(data), data.size(), buffer);
+  }
+
+  bool DecryptInternal(
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      const WebKit::WebCryptoKey& key,
+      const unsigned char* data,
+      unsigned data_size,
+      WebKit::WebArrayBuffer* buffer) {
+    return crypto_.DecryptInternal(algorithm, key, data, data_size, buffer);
+  }
+
+  bool DecryptInternal(
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      const WebKit::WebCryptoKey& key,
+      const std::vector<uint8>& data,
+      WebKit::WebArrayBuffer* buffer) {
+    return crypto_.DecryptInternal(
+        algorithm, key, Start(data), data.size(), buffer);
   }
 
  private:
@@ -218,7 +256,7 @@ TEST_F(WebCryptoImplTest, DigestSampleSets) {
     std::vector<uint8> input = HexStringToBytes(test.hex_input);
 
     WebKit::WebArrayBuffer output;
-    ASSERT_TRUE(DigestInternal(algorithm, &input[0], input.size(), &output));
+    ASSERT_TRUE(DigestInternal(algorithm, input, &output));
     ExpectArrayBufferMatchesHex(test.hex_result, output);
   }
 }
@@ -325,8 +363,7 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
 
     WebKit::WebArrayBuffer output;
 
-    ASSERT_TRUE(SignInternal(
-        algorithm, key, &message_raw[0], message_raw.size(), &output));
+    ASSERT_TRUE(SignInternal(algorithm, key, message_raw, &output));
 
     ExpectArrayBufferMatchesHex(test.mac, output);
 
@@ -336,8 +373,7 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
         key,
         static_cast<const unsigned char*>(output.data()),
         output.byteLength(),
-        &message_raw[0],
-        message_raw.size(),
+        message_raw,
         &signature_match));
     EXPECT_TRUE(signature_match);
 
@@ -347,8 +383,7 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
         key,
         static_cast<const unsigned char*>(output.data()),
         output.byteLength() - 1,
-        &message_raw[0],
-        message_raw.size(),
+        message_raw,
         &signature_match));
     EXPECT_FALSE(signature_match);
 
@@ -359,14 +394,13 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
         key,
         kLongSignature,
         sizeof(kLongSignature),
-        &message_raw[0],
-        message_raw.size(),
+        message_raw,
         &signature_match));
     EXPECT_FALSE(signature_match);
   }
 }
 
-TEST_F(WebCryptoImplTest, AesCbcEncryptionFailures) {
+TEST_F(WebCryptoImplTest, AesCbcFailures) {
   WebKit::WebCryptoKey key = ImportSecretKeyFromRawHexString(
       "2b7e151628aed2a6abf7158809cf4f3c",
       CreateAlgorithm(WebKit::WebCryptoAlgorithmIdAesCbc),
@@ -376,24 +410,22 @@ TEST_F(WebCryptoImplTest, AesCbcEncryptionFailures) {
 
   // Use an invalid |iv| (fewer than 16 bytes)
   {
-    std::vector<uint8> plain_text(33);
+    std::vector<uint8> input(32);
     std::vector<uint8> iv;
-    EXPECT_FALSE(EncryptInternal(CreateAesCbcAlgorithm(iv),
-                                 key,
-                                 &plain_text[0],
-                                 plain_text.size(),
-                                 &output));
+    EXPECT_FALSE(
+        EncryptInternal(CreateAesCbcAlgorithm(iv), key, input, &output));
+    EXPECT_FALSE(
+        DecryptInternal(CreateAesCbcAlgorithm(iv), key, input, &output));
   }
 
   // Use an invalid |iv| (more than 16 bytes)
   {
-    std::vector<uint8> plain_text(33);
+    std::vector<uint8> input(32);
     std::vector<uint8> iv(17);
-    EXPECT_FALSE(EncryptInternal(CreateAesCbcAlgorithm(iv),
-                                 key,
-                                 &plain_text[0],
-                                 plain_text.size(),
-                                 &output));
+    EXPECT_FALSE(
+        EncryptInternal(CreateAesCbcAlgorithm(iv), key, input, &output));
+    EXPECT_FALSE(
+        DecryptInternal(CreateAesCbcAlgorithm(iv), key, input, &output));
   }
 
   // Give an input that is too large (would cause integer overflow when
@@ -404,11 +436,13 @@ TEST_F(WebCryptoImplTest, AesCbcEncryptionFailures) {
     // Pretend the input is large. Don't pass data pointer as NULL in case that
     // is special cased; the implementation shouldn't actually dereference the
     // data.
-    const unsigned char* plain_text = &iv[0];
-    unsigned plain_text_len = INT_MAX - 3;
+    const unsigned char* input = &iv[0];
+    unsigned input_len = INT_MAX - 3;
 
     EXPECT_FALSE(EncryptInternal(
-        CreateAesCbcAlgorithm(iv), key, plain_text, plain_text_len, &output));
+        CreateAesCbcAlgorithm(iv), key, input, input_len, &output));
+    EXPECT_FALSE(DecryptInternal(
+        CreateAesCbcAlgorithm(iv), key, input, input_len, &output));
   }
 
   // Fail importing the key (too few bytes specified)
@@ -420,8 +454,7 @@ TEST_F(WebCryptoImplTest, AesCbcEncryptionFailures) {
     std::vector<uint8> iv(16);
 
     EXPECT_FALSE(ImportKeyInternal(WebKit::WebCryptoKeyFormatRaw,
-                                   &key_raw[0],
-                                   key_raw.size(),
+                                   key_raw,
                                    CreateAesCbcAlgorithm(iv),
                                    WebKit::WebCryptoKeyUsageDecrypt,
                                    &handle,
@@ -521,13 +554,42 @@ TEST_F(WebCryptoImplTest, AesCbcSampleSets) {
 
     WebKit::WebArrayBuffer output;
 
+    // Test encryption.
     EXPECT_TRUE(EncryptInternal(CreateAesCbcAlgorithm(iv),
                                 key,
-                                &plain_text[0],
-                                plain_text.size(),
+                                plain_text,
                                 &output));
-
     ExpectArrayBufferMatchesHex(test.cipher_text, output);
+
+    // Test decryption.
+    std::vector<uint8> cipher_text = HexStringToBytes(test.cipher_text);
+    EXPECT_TRUE(DecryptInternal(CreateAesCbcAlgorithm(iv),
+                                key,
+                                cipher_text,
+                                &output));
+    ExpectArrayBufferMatchesHex(test.plain_text, output);
+
+    const unsigned kAesCbcBlockSize = 16;
+
+    // Decrypt with a padding error by stripping the last block. This also ends
+    // up testing decryption over empty cipher text.
+    if (cipher_text.size() >= kAesCbcBlockSize) {
+      EXPECT_FALSE(DecryptInternal(CreateAesCbcAlgorithm(iv),
+                                   key,
+                                   &cipher_text[0],
+                                   cipher_text.size() - kAesCbcBlockSize,
+                                   &output));
+    }
+
+    // Decrypt cipher text which is not a multiple of block size by stripping
+    // a few bytes off the cipher text.
+    if (cipher_text.size() > 3) {
+      EXPECT_FALSE(DecryptInternal(CreateAesCbcAlgorithm(iv),
+                                   key,
+                                   &cipher_text[0],
+                                   cipher_text.size() - 3,
+                                   &output));
+    }
   }
 }
 
