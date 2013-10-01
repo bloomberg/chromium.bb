@@ -56,6 +56,13 @@ cr.define('options', function() {
    */
   var SPELL_CHECK_DICTIONARY_PREF = 'spellcheck.dictionary';
 
+  /**
+   * The preference that indicates if the Translate feature is enabled.
+   * @type {string}
+   * @const
+   */
+  var ENABLE_TRANSLATE = 'translate.enabled';
+
   /////////////////////////////////////////////////////////////////////////////
   // LanguageOptions class:
 
@@ -141,6 +148,13 @@ cr.define('options', function() {
     languageCodeToInputMethodIdsMap_: {},
 
     /**
+     * The value that indicates if Translate feature is enabled or not.
+     * @type {boolean}
+     * @private
+     */
+    enableTranslate_: false,
+
+    /**
      * Initializes LanguageOptions page.
      * Calls base class implementation to start preference initialization.
      */
@@ -174,6 +188,8 @@ cr.define('options', function() {
           this.handleTranslateBlockedLanguagesPrefChange_.bind(this));
       Preferences.getInstance().addEventListener(SPELL_CHECK_DICTIONARY_PREF,
           this.handleSpellCheckDictionaryPrefChange_.bind(this));
+      Preferences.getInstance().addEventListener(ENABLE_TRANSLATE,
+          this.handleEnableTranslatePrefChange_.bind(this));
       this.translateSupportedLanguages_ =
           loadTimeData.getValue('translateSupportedLanguages');
 
@@ -659,6 +675,12 @@ cr.define('options', function() {
 
       var checkbox = $('offer-to-translate-in-this-language');
 
+      if (!this.enableTranslate_) {
+        checkbox.disabled = true;
+        checkbox.checked = false;
+        return;
+      }
+
       // If the language corresponds to the default target language (in most
       // cases, the user's locale language), "Offer to translate" checkbox
       // should be always unchecked.
@@ -862,10 +884,9 @@ cr.define('options', function() {
      * @private
      */
     handleTranslateBlockedLanguagesPrefChange_: function(e) {
-      var languageOptionsList = $('language-options-list');
-      var selectedLanguageCode = languageOptionsList.getSelectedLanguageCode();
       this.translateBlockedLanguages_ = e.value.value;
-      this.updateOfferToTranslateCheckbox_(selectedLanguageCode);
+      this.updateOfferToTranslateCheckbox_(
+          $('language-options-list').getSelectedLanguageCode());
     },
 
     /**
@@ -876,10 +897,22 @@ cr.define('options', function() {
     handleSpellCheckDictionaryPrefChange_: function(e) {
       var languageCode = e.value.value;
       this.spellCheckDictionary_ = languageCode;
-      var languageOptionsList = $('language-options-list');
-      var selectedLanguageCode = languageOptionsList.getSelectedLanguageCode();
-      if (!cr.isMac)
-        this.updateSpellCheckLanguageButton_(selectedLanguageCode);
+      if (!cr.isMac) {
+        this.updateSpellCheckLanguageButton_(
+            $('language-options-list').getSelectedLanguageCode());
+      }
+    },
+
+    /**
+     * Handles translate.enabled change.
+     * @param {Event} e Change event.
+     * @private
+     */
+    handleEnableTranslatePrefChange_: function(e) {
+      var enabled = e.value.value;
+      this.enableTranslate_ = enabled;
+      this.updateOfferToTranslateCheckbox_(
+          $('language-options-list').getSelectedLanguageCode());
     },
 
     /**
