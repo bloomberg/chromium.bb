@@ -342,6 +342,10 @@ void ProfileImpl::RegisterProfilePrefs(
       true,
 #endif
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kForceEphemeralProfiles,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // Initialize the cache prefs.
   registry->RegisterFilePathPref(

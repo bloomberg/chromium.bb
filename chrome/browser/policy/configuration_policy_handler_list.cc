@@ -389,6 +389,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSupervisedUserCreationEnabled,
     prefs::kManagedUserCreationAllowed,
     Value::TYPE_BOOLEAN },
+  { key::kForceEphemeralProfiles,
+    prefs::kForceEphemeralProfiles,
+    Value::TYPE_BOOLEAN },
 
 #if !defined(OS_MACOSX)
   { key::kFullscreenAllowed,

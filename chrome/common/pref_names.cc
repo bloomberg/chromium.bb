@@ -84,6 +84,10 @@ const char kRestoreOnStartupMigrated[] = "session.restore_on_startup_migrated";
 // are only restored on startup if kRestoreOnStartup is 4.
 const char kURLsToRestoreOnStartup[] = "session.urls_to_restore_on_startup";
 
+// If set to true profiles are created in ephemeral mode and do not store their
+// data in the profile folder on disk but only in memory.
+const char kForceEphemeralProfiles[] = "profile.ephemeral_mode";
+
 // The application locale.
 // For OS_CHROMEOS we maintain kApplicationLocale property in both local state
 // and user's profile.  Global property determines locale of login screen,
