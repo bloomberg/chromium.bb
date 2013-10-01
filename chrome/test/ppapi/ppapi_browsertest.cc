@@ -858,11 +858,9 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, FileRef) {
       LIST_TEST(FileRef_QueryAndTouchFile)
       LIST_TEST(FileRef_DeleteFileAndDirectory)
       LIST_TEST(FileRef_RenameFileAndDirectory)
-      // TODO(teravest): Add in-process support.
-      // LIST_TEST(FileRef_Query)
+      LIST_TEST(FileRef_Query)
       LIST_TEST(FileRef_FileNameEscaping)
-      // TODO(teravest): Add in-process support.
-      // LIST_TEST(FileRef_ReadDirectoryEntries)
+      LIST_TEST(FileRef_ReadDirectoryEntries)
   );
 }
 // OutOfProcessPPAPITest.FileRef times out fairly often.

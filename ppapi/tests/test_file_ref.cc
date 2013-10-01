@@ -115,13 +115,9 @@ void TestFileRef::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestFileRef, QueryAndTouchFile, filter);
   RUN_CALLBACK_TEST(TestFileRef, DeleteFileAndDirectory, filter);
   RUN_CALLBACK_TEST(TestFileRef, RenameFileAndDirectory, filter);
-  // FileRef::Query is out-of-process only.
-  if (testing_interface_->IsOutOfProcess())
-    RUN_CALLBACK_TEST(TestFileRef, Query, filter);
+  RUN_CALLBACK_TEST(TestFileRef, Query, filter);
   RUN_CALLBACK_TEST(TestFileRef, FileNameEscaping, filter);
-  // FileRef::ReadDirectoryEntries is out-of-process only.
-  if (testing_interface_->IsOutOfProcess())
-    RUN_CALLBACK_TEST(TestFileRef, ReadDirectoryEntries, filter);
+  RUN_CALLBACK_TEST(TestFileRef, ReadDirectoryEntries, filter);
 }
 
 std::string TestFileRef::TestCreate() {
