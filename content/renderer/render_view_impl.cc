@@ -3640,8 +3640,16 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
     return;
   }
 
-  if (RenderThreadImpl::current()->layout_test_mode())
+  // Allow the embedder to suppress an error page.
+  if (GetContentClient()->renderer()->ShouldSuppressErrorPage(
+          error.unreachableURL)) {
     return;
+  }
+
+  if (RenderThreadImpl::current() &&
+      RenderThreadImpl::current()->layout_test_mode()) {
+    return;
+  }
 
   // Make sure we never show errors in view source mode.
   frame->enableViewSourceMode(false);

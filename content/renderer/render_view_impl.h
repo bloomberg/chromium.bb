@@ -832,6 +832,8 @@ class CONTENT_EXPORT RenderViewImpl
                            ShouldUpdateSelectionTextFromContextMenuParams);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, BasicRenderFrame);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, TextInputTypeWithPepper);
+  FRIEND_TEST_ALL_PREFIXES(SuppressErrorPageTest, Suppresses);
+  FRIEND_TEST_ALL_PREFIXES(SuppressErrorPageTest, DoesNotSuppress);
 
   typedef std::map<GURL, double> HostZoomLevels;
 

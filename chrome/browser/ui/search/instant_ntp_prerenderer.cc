@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/search_urls.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -261,7 +262,7 @@ void InstantNTPPrerenderer::ResetNTP(const std::string& instant_url) {
 bool InstantNTPPrerenderer::PageIsCurrent() const {
   const std::string& instant_url = GetInstantURL();
   if (instant_url.empty() ||
-      !chrome::MatchesOriginAndPath(GURL(ntp()->instant_url()),
+      !search::MatchesOriginAndPath(GURL(ntp()->instant_url()),
                                     GURL(instant_url)))
     return false;
 

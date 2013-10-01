@@ -385,6 +385,8 @@
         'common/safe_browsing/zip_analyzer.h',
         'common/search_provider.h',
         'common/search_types.h',
+        'common/search_urls.cc',
+        'common/search_urls.h',
         'common/service_messages.h',
         'common/service_process_util.cc',
         'common/service_process_util.h',

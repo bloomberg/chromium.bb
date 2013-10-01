@@ -756,6 +756,12 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SetVoiceSearchSupported,
                     int /* page_id */,
                     bool /* supported */)
 
+// Tells the renderer a list of URLs which should be bounced back to the browser
+// process so that they can be assigned to an Instant renderer.
+IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetSearchURLs,
+                     std::vector<GURL> /* search_urls */,
+                     GURL /* new_tab_page_url */)
+
 // Tells listeners that a detailed message was reported to the console by
 // WebKit.
 IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_DetailedConsoleMessageAdded,

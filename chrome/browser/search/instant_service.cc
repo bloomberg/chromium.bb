@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -72,6 +73,9 @@ InstantService::InstantService(Profile* profile)
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
     return;
 
+  registrar_.Add(this,
+                 content::NOTIFICATION_RENDERER_PROCESS_CREATED,
+                 content::NotificationService::AllSources());
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllSources());
@@ -233,21 +237,14 @@ void InstantService::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
-      int process_id =
-          content::Source<content::RenderProcessHost>(source)->GetID();
-      process_ids_.erase(process_id);
-
-      if (instant_io_context_.get()) {
-        BrowserThread::PostTask(
-            BrowserThread::IO,
-            FROM_HERE,
-            base::Bind(&InstantIOContext::RemoveInstantProcessOnIO,
-                       instant_io_context_,
-                       process_id));
-      }
+    case content::NOTIFICATION_RENDERER_PROCESS_CREATED:
+      SendSearchURLsToRenderer(
+          content::Source<content::RenderProcessHost>(source).ptr());
       break;
-    }
+    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
+      OnRendererProcessTerminated(
+          content::Source<content::RenderProcessHost>(source)->GetID());
+      break;
     case chrome::NOTIFICATION_TOP_SITES_CHANGED: {
       history::TopSites* top_sites = profile_->GetTopSites();
       if (top_sites) {
@@ -281,6 +278,24 @@ void InstantService::Observe(int type,
     }
     default:
       NOTREACHED() << "Unexpected notification type in InstantService.";
+  }
+}
+
+void InstantService::SendSearchURLsToRenderer(content::RenderProcessHost* rph) {
+  rph->Send(new ChromeViewMsg_SetSearchURLs(
+      chrome::GetSearchURLs(profile_), chrome::GetNewTabPageURL(profile_)));
+}
+
+void InstantService::OnRendererProcessTerminated(int process_id) {
+  process_ids_.erase(process_id);
+
+  if (instant_io_context_.get()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&InstantIOContext::RemoveInstantProcessOnIO,
+                   instant_io_context_,
+                   process_id));
   }
 }
 

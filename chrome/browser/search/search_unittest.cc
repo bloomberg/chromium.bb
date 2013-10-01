@@ -26,6 +26,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
+#include "url/gurl.h"
 
 namespace chrome {
 
@@ -878,6 +879,13 @@ TEST_F(SearchTest, IsNTPURL) {
   EXPECT_FALSE(chrome::IsNTPURL(remote_ntp_url, NULL));
   EXPECT_FALSE(chrome::IsNTPURL(search_url_with_search_terms, NULL));
   EXPECT_FALSE(chrome::IsNTPURL(search_url_without_search_terms, NULL));
+}
+
+TEST_F(SearchTest, GetSearchURLs) {
+  std::vector<GURL> search_urls = GetSearchURLs(profile());
+  EXPECT_EQ(2U, search_urls.size());
+  EXPECT_EQ("http://foo.com/alt#quux=", search_urls[0].spec());
+  EXPECT_EQ("http://foo.com/url?bar=", search_urls[1].spec());
 }
 
 }  // namespace chrome

@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/search_urls.h"
 #include "chrome/common/url_constants.h"
 #include "components/sessions/serialized_navigation_entry.h"
 #include "content/public/browser/navigation_entry.h"
@@ -156,7 +157,7 @@ void InstantController::InstantPageLoadFailed(content::WebContents* contents) {
   GURL instant_url = chrome::GetInstantURL(profile(),
                                            chrome::kDisableStartMargin);
   if (instant_tab_->IsLocal() ||
-      !chrome::MatchesOriginAndPath(instant_url, current_url) ||
+      !search::MatchesOriginAndPath(instant_url, current_url) ||
       !current_url.ref().empty() ||
       contents->GetController().CanGoForward())
     return;

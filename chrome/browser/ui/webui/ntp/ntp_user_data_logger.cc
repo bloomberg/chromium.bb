@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/common/search_urls.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_details.h"
 
@@ -68,7 +69,7 @@ void NTPUserDataLogger::NavigationEntryCommitted(
   if (!load_details.previous_url.is_valid())
     return;
 
-  if (chrome::MatchesOriginAndPath(ntp_url_, load_details.previous_url)) {
+  if (search::MatchesOriginAndPath(ntp_url_, load_details.previous_url)) {
     EmitMouseoverCount();
     // Only log thumbnail error rates for Instant NTP pages, as we do not have
     // this data for non-Instant NTPs.

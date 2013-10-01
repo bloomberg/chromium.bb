@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_TEST_MOCK_RENDER_THREAD_H_
 
 #include "base/memory/shared_memory.h"
+#include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_test_sink.h"
@@ -109,6 +110,9 @@ class MockRenderThread : public RenderThread {
   // overriding this should first delegate to this implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
+  // Dispatches control messages to observers.
+  bool OnControlMessageReceived(const IPC::Message& msg);
+
   // The Widget expects to be returned valid route_id.
   void OnCreateWidget(int opener_id,
                       WebKit::WebPopupType popup_type,
@@ -155,6 +159,9 @@ class MockRenderThread : public RenderThread {
 
   // A list of message filters added to this thread.
   std::vector<scoped_refptr<IPC::ChannelProxy::MessageFilter> > filters_;
+
+  // Observers to notify.
+  ObserverList<RenderProcessObserver> observers_;
 };
 
 }  // namespace content

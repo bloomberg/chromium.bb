@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/search_urls.h"
 #include "chrome/common/url_constants.h"
 #include "components/sessions/serialized_navigation_entry.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -129,25 +130,19 @@ GURL TemplateURLRefToGURL(const TemplateURLRef& ref,
   return GURL(ref.ReplaceSearchTerms(search_terms_args));
 }
 
-bool MatchesOrigin(const GURL& my_url, const GURL& other_url) {
-  return my_url.host() == other_url.host() &&
-         my_url.port() == other_url.port() &&
-         (my_url.scheme() == other_url.scheme() ||
-          (my_url.SchemeIs(content::kHttpsScheme) &&
-           other_url.SchemeIs(content::kHttpScheme)));
-}
-
 bool MatchesAnySearchURL(const GURL& url, TemplateURL* template_url) {
   GURL search_url =
       TemplateURLRefToGURL(template_url->url_ref(), kDisableStartMargin, false);
-  if (search_url.is_valid() && MatchesOriginAndPath(url, search_url))
+  if (search_url.is_valid() &&
+      search::MatchesOriginAndPath(url, search_url))
     return true;
 
   // "URLCount() - 1" because we already tested url_ref above.
   for (size_t i = 0; i < template_url->URLCount() - 1; ++i) {
     TemplateURLRef ref(template_url, i);
     search_url = TemplateURLRefToGURL(ref, kDisableStartMargin, false);
-    if (search_url.is_valid() && MatchesOriginAndPath(url, search_url))
+    if (search_url.is_valid() &&
+        search::MatchesOriginAndPath(url, search_url))
       return true;
   }
 
@@ -209,7 +204,8 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
     return false;
 
   const GURL new_tab_url(GetNewTabPageURL(profile));
-  if (new_tab_url.is_valid() && MatchesOriginAndPath(url, new_tab_url))
+  if (new_tab_url.is_valid() &&
+      search::MatchesOriginAndPath(url, new_tab_url))
     return true;
 
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
@@ -225,7 +221,7 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
   if (!instant_url.is_valid())
     return false;
 
-  if (MatchesOriginAndPath(url, instant_url))
+  if (search::MatchesOriginAndPath(url, instant_url))
     return true;
 
   return !ShouldSuppressInstantExtendedOnSRP() &&
@@ -394,7 +390,7 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
   if (ShouldUseCacheableNTP()) {
     GURL new_tab_url(GetNewTabPageURL(profile));
     return new_tab_url.is_valid() &&
-        MatchesOriginAndPath(entry->GetURL(), new_tab_url);
+        search::MatchesOriginAndPath(entry->GetURL(), new_tab_url);
   }
 
   return IsInstantURL(entry->GetVirtualURL(), profile) &&
@@ -430,6 +426,32 @@ GURL GetInstantURL(Profile* profile, int start_margin) {
   const std::string secure_scheme(content::kHttpsScheme);
   replacements.SetSchemeStr(secure_scheme);
   return instant_url.ReplaceComponents(replacements);
+}
+
+// Returns URLs associated with the default search engine for |profile|.
+std::vector<GURL> GetSearchURLs(Profile* profile) {
+  std::vector<GURL> result;
+  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+  for (size_t i = 0; i < template_url->URLCount(); ++i) {
+    TemplateURLRef ref(template_url, i);
+    result.push_back(TemplateURLRefToGURL(ref, kDisableStartMargin, false));
+  }
+  return result;
+}
+
+GURL GetNewTabPageURL(Profile* profile) {
+  if (!ShouldUseCacheableNTP())
+    return GURL();
+
+  if (!profile || !IsSuggestPrefEnabled(profile))
+    return GURL();
+
+  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+  if (!template_url)
+    return GURL();
+
+  return TemplateURLRefToGURL(template_url->new_tab_url_ref(),
+                              kDisableStartMargin, false);
 }
 
 GURL GetLocalInstantURL(Profile* profile) {
@@ -508,10 +530,6 @@ bool ShouldSuppressInstantExtendedOnSRP() {
   return false;
 }
 
-bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url) {
-  return MatchesOrigin(my_url, other_url) && my_url.path() == other_url.path();
-}
-
 GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
   CHECK(ShouldAssignURLToInstantRenderer(url, profile))
       << "Error granting Instant access.";
@@ -534,7 +552,8 @@ GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
   if (template_url) {
     const GURL instant_url = TemplateURLRefToGURL(
         template_url->instant_url_ref(), kDisableStartMargin, false);
-    if (instant_url.is_valid() && MatchesOriginAndPath(url, instant_url)) {
+    if (instant_url.is_valid() &&
+        search::MatchesOriginAndPath(url, instant_url)) {
       replacements.SetHost(online_ntp_host.c_str(),
                            url_parse::Component(0, online_ntp_host.length()));
     }
@@ -606,7 +625,8 @@ bool HandleNewTabURLReverseRewrite(GURL* url,
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   GURL new_tab_url(GetNewTabPageURL(profile));
-  if (!new_tab_url.is_valid() || !MatchesOriginAndPath(new_tab_url, *url))
+  if (!new_tab_url.is_valid() ||
+      !search::MatchesOriginAndPath(new_tab_url, *url))
     return false;
 
   *url = GURL(chrome::kChromeUINewTabURL);
@@ -737,21 +757,6 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
                                     bool default_value,
                                     const FieldTrialFlags& flags) {
   return !!GetUInt64ValueForFlagWithDefault(flag, default_value ? 1 : 0, flags);
-}
-
-GURL GetNewTabPageURL(Profile* profile) {
-  if (!ShouldUseCacheableNTP())
-    return GURL();
-
-  if (!profile || !IsSuggestPrefEnabled(profile))
-    return GURL();
-
-  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
-  if (!template_url)
-    return GURL();
-
-  return TemplateURLRefToGURL(template_url->new_tab_url_ref(),
-                              kDisableStartMargin, false);
 }
 
 void ResetInstantExtendedOptInStateGateForTest() {

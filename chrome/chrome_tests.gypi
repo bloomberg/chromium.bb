@@ -1464,6 +1464,7 @@
         'common/mac/mock_launchd.cc',
         'common/mac/mock_launchd.h',
         'common/time_format_browsertest.cc',
+        'renderer/chrome_content_renderer_client_browsertest.cc',
         'renderer/autofill/autofill_renderer_browsertest.cc',
         'renderer/autofill/form_autocomplete_browsertest.cc',
         'renderer/autofill/form_autofill_browsertest.cc',

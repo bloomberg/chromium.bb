@@ -4,9 +4,12 @@
 
 #include "chrome/renderer/chrome_content_renderer_client.h"
 
+#include <vector>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
+#include "chrome/renderer/searchbox/search_bouncer.h"
 #include "content/public/common/webplugininfo.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -376,6 +379,15 @@ TEST_F(ChromeContentRendererClientTest, AllowPepperMediaStreamAPI) {
       GURL("http://talkgadget.google.com")));
   EXPECT_FALSE(test.AllowPepperMediaStreamAPI(
       GURL("https://talkgadget.evil.com")));
+}
+
+TEST_F(ChromeContentRendererClientTest, ShouldSuppressErrorPage) {
+  ChromeContentRendererClient client;
+  client.search_bouncer_.reset(new SearchBouncer);
+  client.search_bouncer_->OnSetSearchURLs(
+      std::vector<GURL>(), GURL("http://example.com/n"));
+  EXPECT_FALSE(client.ShouldSuppressErrorPage(GURL("http://example.com")));
+  EXPECT_TRUE(client.ShouldSuppressErrorPage(GURL("http://example.com/n")));
 }
 
 }  // namespace chrome

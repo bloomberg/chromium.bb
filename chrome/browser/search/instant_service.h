@@ -29,6 +29,8 @@
 class GURL;
 class InstantIOContext;
 class InstantServiceObserver;
+class InstantTestBase;
+class InstantServiceTest;
 class Profile;
 class ThemeService;
 
@@ -102,6 +104,9 @@ class InstantService : public BrowserContextKeyedService,
   // object. Used to destroy the preloaded InstantNTP.
   void OnBrowserInstantControllerDestroyed();
 
+  // Sends the current set of search URLs to a renderer process.
+  void SendSearchURLsToRenderer(content::RenderProcessHost* rph);
+
  private:
   friend class InstantExtendedTest;
   friend class InstantServiceTest;
@@ -115,6 +120,7 @@ class InstantService : public BrowserContextKeyedService,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
                            MANUAL_SearchesFromFakebox);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
+  FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, SendsSearchURLsToRenderer);
 
   // Overridden from BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
@@ -123,6 +129,9 @@ class InstantService : public BrowserContextKeyedService,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Called when a renderer process is terminated.
+  void OnRendererProcessTerminated(int process_id);
 
   // Called when we get new most visited items from TopSites, registered as an
   // async callback. Parses them and sends them to the renderer via

@@ -52,6 +52,7 @@ void InstantUnitTestBase::SetDefaultSearchProvider(
   data.SetURL(base_url + "url?bar={searchTerms}");
   data.instant_url = base_url + "instant?"
                      "{google:omniboxStartMarginParameter}foo=foo#foo=foo&strk";
+  data.new_tab_url = base_url + "newtab";
   data.alternate_urls.push_back(base_url + "alt#quux={searchTerms}");
   data.search_terms_replacement_key = "strk";
 

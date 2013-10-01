@@ -288,12 +288,14 @@ void BrowserInstantController::ReloadTabsInInstantProcess() {
     if (!contents)
       continue;
 
-    if (!instant_service->IsInstantProcess(
-            contents->GetRenderProcessHost()->GetID()))
-      continue;
+    // Send new search URLs to the renderer.
+    content::RenderProcessHost* rph = contents->GetRenderProcessHost();
+    instant_service->SendSearchURLsToRenderer(rph);
 
     // Reload the contents to ensure that it gets assigned to a non-priviledged
     // renderer.
+    if (!instant_service->IsInstantProcess(rph->GetID()))
+      continue;
     contents->GetController().Reload(false);
   }
 }

@@ -94,7 +94,19 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
   EXPECT_EQ(url, entry->GetVirtualURL());
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
+class InstantNTPURLRewriteTest : public ChromeContentBrowserClientBrowserTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // browsertest initially spins up a non-Instant renderer for about:blank.
+    // In a real browser, navigating this renderer to the Instant new tab page
+    // forks a new privileged Instant render process, but that warps
+    // browsertest's fragile little mind; it just never navigates. We aren't
+    // trying to test the process model here, so turn it off.
+    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kSingleProcess);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(InstantNTPURLRewriteTest,
                        UberURLHandler_InstantExtendedNewTabPage) {
   const GURL url_original("chrome://newtab");
   const GURL url_rewritten("http://example.com/newtab");
@@ -113,6 +125,8 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
                        UberURLHandler_InstantExtendedNewTabPageDisabled) {
+  // Don't do the kSingleProcess shenanigans here (see the dual test) because
+  // otherwise RenderViewImpl crashes in a paranoid fit on startup.
   const GURL url_original("chrome://newtab");
   const GURL url_rewritten("http://example.com/newtab");
   InstallTemplateURLWithNewTabPage(url_rewritten);

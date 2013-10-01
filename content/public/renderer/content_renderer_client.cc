@@ -37,6 +37,10 @@ bool ContentRendererClient::HasErrorPage(int http_status_code,
   return false;
 }
 
+bool ContentRendererClient::ShouldSuppressErrorPage(const GURL& url) {
+  return false;
+}
+
 void ContentRendererClient::DeferMediaLoad(RenderView* render_view,
                                            const base::Closure& closure) {
   closure.Run();

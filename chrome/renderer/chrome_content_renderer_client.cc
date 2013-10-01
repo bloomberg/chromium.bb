@@ -59,6 +59,7 @@
 #include "chrome/renderer/printing/print_web_view_helper.h"
 #include "chrome/renderer/safe_browsing/malware_dom_details.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
+#include "chrome/renderer/searchbox/search_bouncer.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "chrome/renderer/tts_dispatcher.h"
@@ -231,15 +232,25 @@ ChromeContentRendererClient::~ChromeContentRendererClient() {
 }
 
 void ChromeContentRendererClient::RenderThreadStarted() {
+  RenderThread* thread = RenderThread::Get();
+
   chrome_observer_.reset(new ChromeRenderProcessObserver(this));
-  extension_dispatcher_.reset(new extensions::Dispatcher());
+  // ChromeRenderViewTest::SetUp() creates its own ExtensionDispatcher and
+  // injects it using SetExtensionDispatcher(). Don't overwrite it.
+  if (!extension_dispatcher_)
+    extension_dispatcher_.reset(new extensions::Dispatcher());
   permissions_policy_delegate_.reset(
       new extensions::RendererPermissionsPolicyDelegate(
           extension_dispatcher_.get()));
   prescient_networking_dispatcher_.reset(new PrescientNetworkingDispatcher());
   net_predictor_.reset(new RendererNetPredictor());
 #if defined(ENABLE_SPELLCHECK)
-  spellcheck_.reset(new SpellCheck());
+  // ChromeRenderViewTest::SetUp() creates a Spellcheck and injects it using
+  // SetSpellcheck(). Don't overwrite it.
+  if (!spellcheck_) {
+    spellcheck_.reset(new SpellCheck());
+    thread->AddObserver(spellcheck_.get());
+  }
 #endif
   visited_link_slave_.reset(new visitedlink::VisitedLinkSlave());
 #if defined(FULL_SAFE_BROWSING)
@@ -250,19 +261,16 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   webrtc_logging_message_filter_ = new WebRtcLoggingMessageFilter(
       content::RenderThread::Get()->GetIOMessageLoopProxy());
 #endif
-
-  RenderThread* thread = RenderThread::Get();
+  search_bouncer_.reset(new SearchBouncer());
 
   thread->AddObserver(chrome_observer_.get());
   thread->AddObserver(extension_dispatcher_.get());
 #if defined(FULL_SAFE_BROWSING)
   thread->AddObserver(phishing_classifier_.get());
 #endif
-#if defined(ENABLE_SPELLCHECK)
-  thread->AddObserver(spellcheck_.get());
-#endif
   thread->AddObserver(visited_link_slave_.get());
   thread->AddObserver(prerender_dispatcher_.get());
+  thread->AddObserver(search_bouncer_.get());
 
 #if defined(ENABLE_WEBRTC)
   thread->AddFilter(webrtc_logging_message_filter_.get());
@@ -861,6 +869,11 @@ bool ChromeContentRendererClient::HasErrorPage(int http_status_code,
   return true;
 }
 
+bool ChromeContentRendererClient::ShouldSuppressErrorPage(const GURL& url) {
+  // Do not flash an error page if the Instant new tab page fails to load.
+  return search_bouncer_.get() && search_bouncer_->IsNewTabPage(url);
+}
+
 void ChromeContentRendererClient::GetNavigationErrorStrings(
     WebKit::WebFrame* frame,
     const WebKit::WebURLRequest& failed_request,
@@ -942,8 +955,11 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
 
   // If this is the Instant process, fork all navigations originating from the
   // renderer.  The destination page will then be bucketed back to this Instant
-  // process if it is an Instant url, or to another process if not.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInstantProcess)) {
+  // process if it is an Instant url, or to another process if not.  Conversely,
+  // fork if this is a non-Instant process navigating to an Instant url, so that
+  // such navigations can also be bucketed into an Instant renderer.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInstantProcess) ||
+      (search_bouncer_.get() && search_bouncer_->ShouldFork(url))) {
     *send_referrer = true;
     return true;
   }

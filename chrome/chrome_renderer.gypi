@@ -310,6 +310,8 @@
         'renderer/safe_browsing/phishing_url_feature_extractor.h',
         'renderer/safe_browsing/scorer.cc',
         'renderer/safe_browsing/scorer.h',
+        'renderer/searchbox/search_bouncer.cc',
+        'renderer/searchbox/search_bouncer.h',
         'renderer/searchbox/searchbox.cc',
         'renderer/searchbox/searchbox.h',
         'renderer/searchbox/searchbox_extension.cc',
