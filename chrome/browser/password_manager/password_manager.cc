@@ -72,6 +72,8 @@ void PasswordManager::RegisterProfilePrefs(
       prefs::kPasswordManagerAllowShowPasswords,
       true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kPasswordManagerGroupsForDomains,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static
@@ -226,7 +228,8 @@ void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
                             failure, MAX_FAILURE_VALUE);
 
   std::string group_name = password_manager_metrics_util::GroupIdToString(
-      password_manager_metrics_util::MonitoredDomainGroupId(form_origin));
+      password_manager_metrics_util::MonitoredDomainGroupId(
+          form_origin, delegate_->GetProfile()->GetPrefs()));
   if (!group_name.empty()) {
     password_manager_metrics_util::LogUMAHistogramEnumeration(
         "PasswordManager.ProvisionalSaveFailure_" + group_name, failure,

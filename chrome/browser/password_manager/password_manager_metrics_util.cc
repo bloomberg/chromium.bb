@@ -6,71 +6,79 @@
 
 #include "base/basictypes.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
+#include "base/safe_numerics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "base/values.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/common/pref_names.h"
 #include "url/gurl.h"
+
+using base::ListValue;
+using base::FundamentalValue;
 
 namespace password_manager_metrics_util {
 
 namespace {
 
 // The number of domain groups.
-const size_t kNumGroups = 2 * kGroupsPerDomain;
+const size_t kNumGroups = 2u * kGroupsPerDomain;
 
-// The group index used to determine the group id attributed to the user
-// in order to report the behaviour of the save password prompt. When
-// |g_random_group_index| is equal to |kGroupsPerDomain| the index is
-// generated randomly in range [0, |kGroupsPerDomain|). The user keeps his
-// group index till the end of each session.
-size_t g_random_group_index = kGroupsPerDomain;
-
-// Contains a monitored domain name and all the group IDs which contain
-// domain name.
+// |kDomainMapping| contains each monitored website together with all ids of
+// groups which contain the website. Each website appears in
+// |kGroupsPerDomain| groups, and each group includes an equal number of
+// websites, so that no two websites have the same set of groups that they
+// belong to. All ids are in the range [1, |kNumGroups|].
+// For more information about the algorithm used see http://goo.gl/vUuFd5.
 struct DomainGroupsPair {
   const char* const domain_name;
   const size_t group_ids[kGroupsPerDomain];
 };
+const DomainGroupsPair kDomainMapping[] = {
+    {"google.com", {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}},
+    {"yahoo.com", {1, 2, 3, 4, 5, 11, 12, 13, 14, 15}},
+    {"baidu.com", {1, 2, 3, 4, 6, 7, 11, 12, 16, 17}},
+    {"wikipedia.org", {1, 2, 3, 4, 5, 6, 11, 12, 16, 18}},
+    {"linkedin.com", {1, 6, 8, 11, 13, 14, 15, 16, 17, 19}},
+    {"twitter.com", {5, 6, 7, 8, 9, 11, 13, 17, 19, 20}},
+    {"facebook.com", {7, 8, 9, 10, 13, 14, 16, 17, 18, 20}},
+    {"amazon.com", {2, 5, 9, 10, 12, 14, 15, 18, 19, 20}},
+    {"ebay.com", {3, 7, 9, 10, 14, 15, 17, 18, 19, 20}},
+    {"tumblr.com", {4, 8, 10, 12, 13, 15, 16, 18, 19, 20}},
+};
+const size_t kNumDomains = arraysize(kDomainMapping);
 
-// Generate a group index in range [0, |kGroupsPerDomain|).
-// If the |g_random_group_index| is not equal to its initial value
-// (|kGroupsPerDomain|), the value of |g_random_group_index| is not changed.
-void GenerateRandomIndex() {
-  // For each session, the user uses only one group for each website.
-  if (g_random_group_index == kGroupsPerDomain)
-    g_random_group_index = base::RandGenerator(kGroupsPerDomain);
+// For every monitored domain, this function chooses which of the groups
+// containing that domain should be used for reporting. That number is chosen
+// randomly and stored in the user's preferences.
+size_t GetGroupIndex(size_t domain_index, PrefService* pref_service) {
+  DCHECK_LT(domain_index, kNumDomains);
+
+  const ListValue* group_indices =
+      pref_service->GetList(prefs::kPasswordManagerGroupsForDomains);
+  int result = 0;
+  if (!group_indices->GetInteger(domain_index, &result)) {
+    ListPrefUpdate group_indices_updater(
+        pref_service, prefs::kPasswordManagerGroupsForDomains);
+    // This value has not been generated yet.
+    result =
+        base::checked_numeric_cast<int>(base::RandGenerator(kGroupsPerDomain));
+    group_indices_updater->Set(domain_index, new FundamentalValue(result));
+  }
+  return base::checked_numeric_cast<size_t>(result);
 }
 
 }  // namespace
 
-size_t MonitoredDomainGroupId(const std::string& url_host) {
-  // This array contains each monitored website together with all ids of
-  // groups which contain the website. Each website appears in
-  // |kGroupsPerDomain| groups, and each group includes an equal number of
-  // websites, so that no two websites have the same set of groups that they
-  // belong to. All ids are in the range [1, |kNumGroups|].
-  // For more information about the algorithm used see http://goo.gl/vUuFd5.
-  static const DomainGroupsPair kDomainMapping[] = {
-      {"google.com", {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}},
-      {"yahoo.com", {1, 2, 3, 4, 5, 11, 12, 13, 14, 15}},
-      {"baidu.com", {1, 2, 3, 4, 6, 7, 11, 12, 16, 17}},
-      {"wikipedia.org", {1, 2, 3, 4, 5, 6, 11, 12, 16, 18}},
-      {"linkedin.com", {1, 6, 8, 11, 13, 14, 15, 16, 17, 19}},
-      {"twitter.com", {5, 6, 7, 8, 9, 11, 13, 17, 19, 20}},
-      {"facebook.com", {7, 8, 9, 10, 13, 14, 16, 17, 18, 20}},
-      {"amazon.com", {2, 5, 9, 10, 12, 14, 15, 18, 19, 20}},
-      {"ebay.com", {3, 7, 9, 10, 14, 15, 17, 18, 19, 20}},
-      {"tumblr.com", {4, 8, 10, 12, 13, 15, 16, 18, 19, 20}},
-  };
-  const size_t kDomainMappingLength = arraysize(kDomainMapping);
-
-  GenerateRandomIndex();
-
+size_t MonitoredDomainGroupId(const std::string& url_host,
+                              PrefService* pref_service) {
   GURL url(url_host);
-  for (size_t i = 0; i < kDomainMappingLength; ++i) {
+  for (size_t i = 0; i < kNumDomains; ++i) {
     if (url.DomainIs(kDomainMapping[i].domain_name))
-      return kDomainMapping[i].group_ids[g_random_group_index];
+      return kDomainMapping[i].group_ids[GetGroupIndex(i, pref_service)];
   }
   return 0;
 }
@@ -98,10 +106,6 @@ void LogUMAHistogramBoolean(const std::string& name, bool sample) {
           name,
           base::Histogram::kNoFlags);
           histogram->AddBoolean(sample);
-}
-
-void SetRandomIndexForTesting(size_t value) {
-  g_random_group_index = value;
 }
 
 std::string GroupIdToString(size_t group_id) {

@@ -8,17 +8,27 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/values.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
+class PasswordManagerMetricsUtilTest : public testing::Test {
+ public:
+  PasswordManagerMetricsUtilTest() {}
 
-bool IsMonitored(const char* url_host) {
-  return password_manager_metrics_util::MonitoredDomainGroupId(url_host) > 0;
-}
+ protected:
+  bool IsMonitored(const char* url_host) {
+    size_t group_id = password_manager_metrics_util::MonitoredDomainGroupId(
+        url_host, profile_.GetPrefs());
+    return group_id > 0;
+  }
 
-}  // namespace
+  TestingProfile profile_;
+};
 
-TEST(PasswordManagerMetricsUtilTest, MonitoredDomainGroupAssigmentTest) {
+TEST_F(PasswordManagerMetricsUtilTest, MonitoredDomainGroupAssigmentTest) {
   const char* const kMonitoredWebsites[] = {
       "https://www.google.com",
       "https://www.yahoo.com",
@@ -42,9 +52,14 @@ TEST(PasswordManagerMetricsUtilTest, MonitoredDomainGroupAssigmentTest) {
   for (size_t i = 0; i < kMonitoredWebsitesLength; ++i) {
     for (size_t j = 0; j < password_manager_metrics_util::kGroupsPerDomain;
          ++j) {
-      password_manager_metrics_util::SetRandomIndexForTesting(j);
+      {  // Set the group index for domain |i| to |j|.
+        ListPrefUpdate group_indices(profile_.GetPrefs(),
+                                     prefs::kPasswordManagerGroupsForDomains);
+        group_indices->Set(i, new base::FundamentalValue(static_cast<int>(j)));
+      }  // At the end of the scope the prefs get updated.
+
       ++groups[password_manager_metrics_util::MonitoredDomainGroupId(
-            kMonitoredWebsites[i])];
+            kMonitoredWebsites[i], profile_.GetPrefs())];
     }
   }
 
@@ -56,7 +71,7 @@ TEST(PasswordManagerMetricsUtilTest, MonitoredDomainGroupAssigmentTest) {
   }
 }
 
-TEST(PasswordManagerMetricsUtilTest, MonitoredDomainGroupTest) {
+TEST_F(PasswordManagerMetricsUtilTest, MonitoredDomainGroupTest) {
   EXPECT_TRUE(IsMonitored("https://www.linkedin.com"));
   EXPECT_TRUE(IsMonitored("https://www.amazon.com"));
   EXPECT_TRUE(IsMonitored("https://www.facebook.com"));
