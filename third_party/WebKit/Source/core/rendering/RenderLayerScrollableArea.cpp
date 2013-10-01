@@ -1087,6 +1087,9 @@ bool RenderLayerScrollableArea::isPointInResizeControl(const IntPoint& absoluteP
 
 bool RenderLayerScrollableArea::hitTestResizerInFragments(const LayerFragments& layerFragments, const HitTestLocation& hitTestLocation) const
 {
+    if (!m_box->canResize())
+        return false;
+
     if (layerFragments.isEmpty())
         return false;
 

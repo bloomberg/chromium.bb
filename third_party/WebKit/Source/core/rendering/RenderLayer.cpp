@@ -3678,7 +3678,7 @@ RenderLayer* RenderLayer::hitTestLayer(RenderLayer* rootLayer, RenderLayer* cont
     LayerFragments layerFragments;
     collectFragments(layerFragments, rootLayer, hitTestLocation.region(), hitTestRect, RootRelativeClipRects, IncludeOverlayScrollbarSize);
 
-    if (renderer()->canResize() && m_scrollableArea->hitTestResizerInFragments(layerFragments, hitTestLocation)) {
+    if (m_scrollableArea && m_scrollableArea->hitTestResizerInFragments(layerFragments, hitTestLocation)) {
         renderer()->updateHitTestResult(result, hitTestLocation.point());
         return this;
     }

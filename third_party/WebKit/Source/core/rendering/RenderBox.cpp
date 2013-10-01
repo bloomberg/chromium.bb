@@ -579,6 +579,14 @@ void RenderBox::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& add
         rects.append(pixelSnappedIntRect(additionalOffset, size()));
 }
 
+bool RenderBox::canResize() const
+{
+    // We need a special case for <iframe> because they never have
+    // hasOverflowClip(). However, they do "implicitly" clip their contents, so
+    // we want to allow resizing them also.
+    return (hasOverflowClip() || isRenderIFrame()) && style()->resize() != RESIZE_NONE;
+}
+
 void RenderBox::addLayerHitTestRects(LayerHitTestRects& layerRects, const RenderLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
 {
     LayoutPoint adjustedLayerOffset = layerOffset + locationOffset();
