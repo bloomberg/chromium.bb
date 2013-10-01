@@ -28,7 +28,8 @@ namespace options {
 
 PasswordManagerHandler::PasswordManagerHandler()
     : populater_(this),
-      exception_populater_(this) {
+      exception_populater_(this),
+      is_user_authenticated_(false) {
 }
 
 PasswordManagerHandler::~PasswordManagerHandler() {
@@ -95,6 +96,9 @@ void PasswordManagerHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("removePasswordException",
       base::Bind(&PasswordManagerHandler::RemovePasswordException,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("requestShowPassword",
+      base::Bind(&PasswordManagerHandler::RequestShowPassword,
+                 base::Unretained(this)));
 }
 
 void PasswordManagerHandler::OnLoginsChanged() {
@@ -146,6 +150,25 @@ void PasswordManagerHandler::RemovePasswordException(
   }
 }
 
+void PasswordManagerHandler::RequestShowPassword(const ListValue* args) {
+  int index;
+  if (!ExtractIntegerValue(args, &index)) {
+    NOTREACHED();
+    return;
+  }
+
+  if (!is_user_authenticated_) {
+    // TODO(dubroy): Insert actual authentication code here.
+    is_user_authenticated_ = true;
+  }
+
+  // Call back the front end to reveal the password.
+  web_ui()->CallJavascriptFunction(
+      "PasswordManager.showPassword",
+      base::FundamentalValue(index),
+      StringValue(password_list_[index]->password_value));
+}
+
 void PasswordManagerHandler::SetPasswordList() {
   // Due to the way that handlers are (re)initialized under certain types of
   // navigation, we may not be initialized yet. (See bugs 88986 and 86448.)
@@ -155,15 +178,15 @@ void PasswordManagerHandler::SetPasswordList() {
     InitializeHandler();
 
   ListValue entries;
-  bool show_passwords = *show_passwords_;
-  string16 empty;
+  bool show_passwords = *show_passwords_ && is_user_authenticated_;
+  string16 placeholder(ASCIIToUTF16("        "));
   for (size_t i = 0; i < password_list_.size(); ++i) {
     ListValue* entry = new ListValue();
     entry->Append(new StringValue(net::FormatUrl(password_list_[i]->origin,
                                                  languages_)));
     entry->Append(new StringValue(password_list_[i]->username_value));
     entry->Append(new StringValue(
-        show_passwords ? password_list_[i]->password_value : empty));
+        show_passwords ? password_list_[i]->password_value : placeholder));
     entries.Append(entry);
   }
 

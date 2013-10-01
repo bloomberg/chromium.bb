@@ -182,6 +182,23 @@ cr.define('options', function() {
       this.passwordExceptionsList_.dataModel = new ArrayDataModel(entries);
       this.updateListVisibility_(this.passwordExceptionsList_);
     },
+
+    /**
+     * Reveals the password for a saved password entry. This is called by the
+     * backend after it has authenticated the user.
+     * @param {number} index The index of the entry.
+     * @param {string} password The saved password.
+     */
+    showPassword_: function(index, password) {
+      // Update the data model.
+      var model = this.savedPasswordsList_.dataModel;
+      model.item(index)[2] = password;
+      model.updateIndex(index);
+
+      // Reveal the password in the UI.
+      var item = this.savedPasswordsList_.getListItemByIndex(index);
+      item.showPassword();
+    },
   };
 
   /**
@@ -200,13 +217,21 @@ cr.define('options', function() {
       chrome.send('removePasswordException', [String(rowIndex)]);
   };
 
-  PasswordManager.setSavedPasswordsList = function(entries) {
-    PasswordManager.getInstance().setSavedPasswordsList_(entries);
+  PasswordManager.requestShowPassword = function(index) {
+    chrome.send('requestShowPassword', [index]);
   };
 
-  PasswordManager.setPasswordExceptionsList = function(entries) {
-    PasswordManager.getInstance().setPasswordExceptionsList_(entries);
-  };
+  // Forward public APIs to private implementations on the singleton instance.
+  [
+    'setSavedPasswordsList',
+    'setPasswordExceptionsList',
+    'showPassword'
+   ].forEach(function(name) {
+     PasswordManager[name] = function() {
+      var instance = PasswordManager.getInstance();
+      return instance[name + '_'].apply(instance, arguments);
+    };
+  });
 
   // Export
   return {

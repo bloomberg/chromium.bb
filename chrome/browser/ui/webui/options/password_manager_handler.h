@@ -55,9 +55,9 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
   // Remove All password exceptions
   void RemoveAllPasswordExceptions(const ListValue* args);
 
-  // Get password value for the selected entry.
-  // @param value the selected entry index.
-  void ShowSelectedPassword(const ListValue* args);
+  // Request the plain text password for an entry to be revealed.
+  // @param index The index of the entry.
+  void RequestShowPassword(const ListValue* args);
 
   // Sets the password and exception list contents to the given data.
   // We take ownership of the PasswordForms in the vector.
@@ -122,6 +122,10 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
 
   // Whether to show stored passwords or not.
   BooleanPrefMember show_passwords_;
+
+  // Indicates whether or not the user has recently been authenticated.
+  // Used to determine whether or not to reveal plain text passwords.
+  bool is_user_authenticated_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerHandler);
 };

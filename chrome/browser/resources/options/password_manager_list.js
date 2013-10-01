@@ -10,14 +10,18 @@ cr.define('options.passwordManager', function() {
 
   /**
    * Creates a new passwords list item.
+   * @param {ArrayDataModel} dataModel The data model that contains this item.
    * @param {Array} entry An array of the form [url, username, password]. When
    *     the list has been filtered, a fourth element [index] may be present.
+   * @param {boolean} showPasswords If true, add a button to the element to
+   *     allow the user to reveal the saved password.
    * @constructor
    * @extends {cr.ui.ListItem}
    */
-  function PasswordListItem(entry, showPasswords) {
+  function PasswordListItem(dataModel, entry, showPasswords) {
     var el = cr.doc.createElement('div');
     el.dataItem = entry;
+    el.dataModel = dataModel;
     el.__proto__ = PasswordListItem.prototype;
     el.decorate(showPasswords);
 
@@ -65,6 +69,7 @@ cr.define('options.passwordManager', function() {
       passwordInput.readOnly = true;
       passwordInput.value = showPasswords ? this.password : '********';
       passwordInputDiv.appendChild(passwordInput);
+      this.passwordField = passwordInput;
 
       // The show/hide button.
       if (showPasswords) {
@@ -72,8 +77,9 @@ cr.define('options.passwordManager', function() {
         button.hidden = true;
         button.className = 'list-inline-button custom-appearance';
         button.textContent = loadTimeData.getString('passwordShowButton');
-        button.addEventListener('click', this.onClick_, true);
+        button.addEventListener('click', this.onClick_.bind(this), true);
         passwordInputDiv.appendChild(button);
+        this.passwordShowButton = button;
       }
 
       this.contentElement.appendChild(passwordInputDiv);
@@ -81,13 +87,12 @@ cr.define('options.passwordManager', function() {
 
     /** @override */
     selectionChanged: function() {
-      var passwordInput = this.querySelector('input[type=password]');
-      var textInput = this.querySelector('input[type=text]');
-      var input = passwordInput || textInput;
-      var button = input.nextSibling;
-      // |button| doesn't exist when passwords can't be shown.
+      var input = this.passwordField;
+      var button = this.passwordShowButton;
+      // The button doesn't exist when passwords can't be shown.
       if (!button)
         return;
+
       if (this.selected) {
         input.classList.remove('inactive-password');
         button.hidden = false;
@@ -98,20 +103,47 @@ cr.define('options.passwordManager', function() {
     },
 
     /**
+     * Reveals the plain text password of this entry.
+     */
+    showPassword: function() {
+      this.passwordField.type = 'text';
+
+      var button = this.passwordShowButton;
+      if (button)
+        button.textContent = loadTimeData.getString('passwordHideButton');
+    },
+
+    /**
+     * Hides the plain text password of this entry.
+     */
+    hidePassword: function() {
+      this.passwordField.type = 'password';
+
+      var button = this.passwordShowButton;
+      if (button)
+        button.textContent = loadTimeData.getString('passwordShowButton');
+    },
+
+    /**
+     * Get the index of this item in the list.
+     * @return {number} The index.
+     * @private
+     */
+    getIndex_: function() {
+      return this.dataModel.indexOf(this.dataItem);
+    },
+
+    /**
      * On-click event handler. Swaps the type of the input field from password
      * to text and back.
      * @private
      */
     onClick_: function(event) {
-      // The password is the input element previous to the button.
-      var button = event.currentTarget;
-      var passwordInput = button.previousSibling;
-      if (passwordInput.type == 'password') {
-        passwordInput.type = 'text';
-        button.textContent = loadTimeData.getString('passwordHideButton');
+      if (this.passwordField.type == 'password') {
+        // After the user is authenticated, showPassword() will be called.
+        PasswordManager.requestShowPassword(this.getIndex_());
       } else {
-        passwordInput.type = 'password';
-        button.textContent = loadTimeData.getString('passwordShowButton');
+        this.hidePassword();
       }
     },
 
@@ -239,7 +271,7 @@ cr.define('options.passwordManager', function() {
 
     /** @override */
     createItem: function(entry) {
-      return new PasswordListItem(entry, this.showPasswords_);
+      return new PasswordListItem(this.dataModel, entry, this.showPasswords_);
     },
 
     /** @override */
