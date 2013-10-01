@@ -59,11 +59,9 @@ bool MediaSourcePlayer::IsTypeSupported(
 MediaSourcePlayer::MediaSourcePlayer(
     int player_id,
     MediaPlayerManager* manager,
-    int demuxer_client_id,
-    DemuxerAndroid* demuxer)
+    scoped_ptr<DemuxerAndroid> demuxer)
     : MediaPlayerAndroid(player_id, manager),
-      demuxer_client_id_(demuxer_client_id),
-      demuxer_(demuxer),
+      demuxer_(demuxer.Pass()),
       pending_event_(NO_EVENT_PENDING),
       width_(0),
       height_(0),
@@ -83,11 +81,10 @@ MediaSourcePlayer::MediaSourcePlayer(
       reconfig_video_decoder_(false),
       weak_this_(this),
       drm_bridge_(NULL) {
-  demuxer_->AddDemuxerClient(demuxer_client_id_, this);
+  demuxer_->Initialize(this);
 }
 
 MediaSourcePlayer::~MediaSourcePlayer() {
-  demuxer_->RemoveDemuxerClient(demuxer_client_id_);
   Release();
 }
 
@@ -411,7 +408,7 @@ void MediaSourcePlayer::ProcessPendingEvents() {
   if (IsEventPending(SEEK_EVENT_PENDING)) {
     DVLOG(1) << __FUNCTION__ << " : Handling SEEK_EVENT";
     ClearDecodingData();
-    demuxer_->RequestDemuxerSeek(demuxer_client_id_, GetCurrentTime());
+    demuxer_->RequestDemuxerSeek(GetCurrentTime());
     return;
   }
 
@@ -419,7 +416,7 @@ void MediaSourcePlayer::ProcessPendingEvents() {
   if (IsEventPending(CONFIG_CHANGE_EVENT_PENDING)) {
     DVLOG(1) << __FUNCTION__ << " : Handling CONFIG_CHANGE_EVENT.";
     DCHECK(reconfig_audio_decoder_ || reconfig_video_decoder_);
-    demuxer_->RequestDemuxerConfigs(demuxer_client_id_);
+    demuxer_->RequestDemuxerConfigs();
     return;
   }
 
@@ -599,8 +596,7 @@ void MediaSourcePlayer::ConfigureAudioDecoderJob() {
       audio_codec_, sampling_rate_, num_channels_, &audio_extra_data_[0],
       audio_extra_data_.size(), media_crypto.obj(),
       base::Bind(&DemuxerAndroid::RequestDemuxerData,
-                 base::Unretained(demuxer_), demuxer_client_id_,
-                 DemuxerStream::AUDIO)));
+                 base::Unretained(demuxer_.get()), DemuxerStream::AUDIO)));
 
   if (audio_decoder_job_) {
     SetVolumeInternal();
@@ -636,8 +632,7 @@ void MediaSourcePlayer::ConfigureVideoDecoderJob() {
                               surface_.j_surface().obj(),
                               media_crypto.obj(),
                               base::Bind(&DemuxerAndroid::RequestDemuxerData,
-                                         base::Unretained(demuxer_),
-                                         demuxer_client_id_,
+                                         base::Unretained(demuxer_.get()),
                                          DemuxerStream::VIDEO)));
   if (video_decoder_job_)
     reconfig_video_decoder_ = false;

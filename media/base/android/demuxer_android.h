@@ -16,35 +16,23 @@ class DemuxerAndroidClient;
 struct DemuxerConfigs;
 struct DemuxerData;
 
-// Defines a demuxer with ID-based asynchronous operations.
-//
-// TODO(scherkus): Remove |demuxer_client_id| and Add/RemoveDemuxerClient().
-// It's required in the interim as the Android Media Source implementation uses
-// the MediaPlayerAndroid interface and associated IPC messages.
+// Defines a demuxer with asynchronous operations.
 class MEDIA_EXPORT DemuxerAndroid {
  public:
-  // Associates |client| with the demuxer using |demuxer_client_id| as the
-  // identifier. Must be called prior to calling any other methods.
-  virtual void AddDemuxerClient(int demuxer_client_id,
-                                DemuxerAndroidClient* client) = 0;
+  virtual ~DemuxerAndroid() {}
 
-  // Removes the association created by AddClient(). Must be called when the
-  // client no longer wants to receive updates.
-  virtual void RemoveDemuxerClient(int demuxer_client_id) = 0;
+  // Initializes this demuxer with |client| as the callback handler.
+  // Must be called prior to calling any other methods.
+  virtual void Initialize(DemuxerAndroidClient* client) = 0;
 
   // Called to request the current audio/video decoder configurations.
-  virtual void RequestDemuxerConfigs(int demuxer_client_id) = 0;
+  virtual void RequestDemuxerConfigs() = 0;
 
   // Called to request additiona data from the demuxer.
-  virtual void RequestDemuxerData(int demuxer_client_id,
-                                  media::DemuxerStream::Type type) = 0;
+  virtual void RequestDemuxerData(media::DemuxerStream::Type type) = 0;
 
   // Called to request the demuxer to seek to a particular media time.
-  virtual void RequestDemuxerSeek(int demuxer_client_id,
-                                  const base::TimeDelta& time_to_seek) = 0;
-
- protected:
-  virtual ~DemuxerAndroid() {}
+  virtual void RequestDemuxerSeek(const base::TimeDelta& time_to_seek) = 0;
 };
 
 // Defines the client callback interface.

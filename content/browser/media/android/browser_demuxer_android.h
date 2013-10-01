@@ -11,13 +11,12 @@
 
 namespace content {
 
-// Represents the browser process half of an IPC-based implementation of
-// media::DemuxerAndroid.
+// Represents the browser process half of an IPC-based demuxer proxy.
+// It vends out media::DemuxerAndroid instances that are registered with an
+// end point in the renderer process.
 //
 // Refer to RendererDemuxerAndroid for the renderer process half.
-class CONTENT_EXPORT BrowserDemuxerAndroid
-    : public BrowserMessageFilter,
-      public media::DemuxerAndroid {
+class CONTENT_EXPORT BrowserDemuxerAndroid : public BrowserMessageFilter {
  public:
   BrowserDemuxerAndroid();
 
@@ -27,21 +26,25 @@ class CONTENT_EXPORT BrowserDemuxerAndroid
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
-  // media::DemuxerAndroid implementation.
-  virtual void AddDemuxerClient(int demuxer_client_id,
-                                media::DemuxerAndroidClient* client) OVERRIDE;
-  virtual void RemoveDemuxerClient(int demuxer_client_id) OVERRIDE;
-  virtual void RequestDemuxerConfigs(int demuxer_client_id) OVERRIDE;
-  virtual void RequestDemuxerData(int demuxer_client_id,
-                                  media::DemuxerStream::Type type) OVERRIDE;
-  virtual void RequestDemuxerSeek(int demuxer_client_id,
-                                  const base::TimeDelta& time_to_seek) OVERRIDE;
+  // Returns an uninitialized demuxer implementation associated with
+  // |demuxer_client_id|, which can be used to communicate with the real demuxer
+  // in the renderer process.
+  scoped_ptr<media::DemuxerAndroid> CreateDemuxer(int demuxer_client_id);
 
  protected:
   friend class base::RefCountedThreadSafe<BrowserDemuxerAndroid>;
   virtual ~BrowserDemuxerAndroid();
 
  private:
+  class Internal;
+
+  // Called by internal demuxer implementations to add/remove a client
+  // association.
+  void AddDemuxerClient(int demuxer_client_id,
+                        media::DemuxerAndroidClient* client);
+  void RemoveDemuxerClient(int demuxer_client_id);
+
+  // IPC message handlers.
   void OnDemuxerReady(int demuxer_client_id,
                       const media::DemuxerConfigs& configs);
   void OnReadFromDemuxerAck(int demuxer_client_id,

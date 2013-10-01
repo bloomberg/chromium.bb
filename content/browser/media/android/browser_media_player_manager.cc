@@ -59,7 +59,7 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
     int demuxer_client_id,
     bool hide_url_log,
     MediaPlayerManager* manager,
-    media::DemuxerAndroid* demuxer) {
+    BrowserDemuxerAndroid* demuxer) {
   switch (type) {
     case MEDIA_PLAYER_TYPE_URL: {
       MediaPlayerBridge* media_player_bridge = new MediaPlayerBridge(
@@ -70,7 +70,7 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
 
     case MEDIA_PLAYER_TYPE_MEDIA_SOURCE: {
       return new MediaSourcePlayer(
-          player_id, manager, demuxer_client_id, demuxer);
+          player_id, manager, demuxer->CreateDemuxer(demuxer_client_id));
     }
   }
 

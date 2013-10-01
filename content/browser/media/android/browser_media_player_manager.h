@@ -28,7 +28,7 @@ class MediaDrmBridge;
 }
 
 namespace content {
-
+class BrowserDemuxerAndroid;
 class WebContents;
 
 // This class manages all the MediaPlayerAndroid objects. It receives
@@ -185,7 +185,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
       int demuxer_client_id,
       bool hide_url_log,
       media::MediaPlayerManager* manager,
-      media::DemuxerAndroid* demuxer);
+      BrowserDemuxerAndroid* demuxer);
 
   // An array of managed players.
   ScopedVector<media::MediaPlayerAndroid> players_;
