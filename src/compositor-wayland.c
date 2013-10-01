@@ -97,7 +97,7 @@ create_border(struct wayland_compositor *c)
 
 	image = load_image(DATADIR "/weston/border.png");
 	if (!image) {
-		weston_log("could'nt load border image\n");
+		weston_log("couldn't load border image\n");
 		return;
 	}
 
