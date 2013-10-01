@@ -65,8 +65,8 @@ bool CanOpenWithPepperFlags(int pp_open_flags, int child_id,
                             const base::FilePath& file) {
   return CanOpenFileWithPepperFlags(
       &ChildProcessSecurityPolicyImpl::CanReadFile,
-      &ChildProcessSecurityPolicyImpl::CanWriteFile,
-      &ChildProcessSecurityPolicyImpl::CanCreateFile,
+      &ChildProcessSecurityPolicyImpl::CanCreateReadWriteFile,
+      &ChildProcessSecurityPolicyImpl::CanCreateReadWriteFile,
       &ChildProcessSecurityPolicyImpl::CanCreateReadWriteFile,
       pp_open_flags, child_id, file);
 }

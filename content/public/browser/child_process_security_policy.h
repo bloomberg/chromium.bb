@@ -58,8 +58,6 @@ class ChildProcessSecurityPolicy {
   // browser should call this method to determine whether the process has the
   // capability to upload the requested file.
   virtual bool CanReadFile(int child_id, const base::FilePath& file) = 0;
-  virtual bool CanWriteFile(int child_id, const base::FilePath& file) = 0;
-  virtual bool CanCreateFile(int child_id, const base::FilePath& file) = 0;
   virtual bool CanCreateReadWriteFile(int child_id,
                                       const base::FilePath& file) = 0;
 

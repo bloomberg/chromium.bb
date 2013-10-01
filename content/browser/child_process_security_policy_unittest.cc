@@ -382,8 +382,6 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissionGrantingAndRevoking) {
 
   // Test initially having no permissions.
   EXPECT_FALSE(p->CanReadFile(kRendererID, file));
-  EXPECT_FALSE(p->CanWriteFile(kRendererID, file));
-  EXPECT_FALSE(p->CanCreateFile(kRendererID, file));
   EXPECT_FALSE(p->CanCreateReadWriteFile(kRendererID, file));
   EXPECT_FALSE(p->CanReadFileSystemFile(kRendererID, url));
   EXPECT_FALSE(p->CanWriteFileSystemFile(kRendererID, url));
@@ -393,8 +391,6 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissionGrantingAndRevoking) {
   // Testing every combination of permissions granting and revoking.
   p->GrantReadFile(kRendererID, file);
   EXPECT_TRUE(p->CanReadFile(kRendererID, file));
-  EXPECT_FALSE(p->CanWriteFile(kRendererID, file));
-  EXPECT_FALSE(p->CanCreateFile(kRendererID, file));
   EXPECT_FALSE(p->CanCreateReadWriteFile(kRendererID, file));
   EXPECT_TRUE(p->CanReadFileSystemFile(kRendererID, url));
   EXPECT_FALSE(p->CanWriteFileSystemFile(kRendererID, url));
@@ -402,8 +398,6 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissionGrantingAndRevoking) {
   EXPECT_FALSE(p->CanCreateReadWriteFileSystemFile(kRendererID, url));
   p->RevokeAllPermissionsForFile(kRendererID, file);
   EXPECT_FALSE(p->CanReadFile(kRendererID, file));
-  EXPECT_FALSE(p->CanWriteFile(kRendererID, file));
-  EXPECT_FALSE(p->CanCreateFile(kRendererID, file));
   EXPECT_FALSE(p->CanCreateReadWriteFile(kRendererID, file));
   EXPECT_FALSE(p->CanReadFileSystemFile(kRendererID, url));
   EXPECT_FALSE(p->CanWriteFileSystemFile(kRendererID, url));
@@ -412,8 +406,6 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissionGrantingAndRevoking) {
 
   p->GrantCreateReadWriteFile(kRendererID, file);
   EXPECT_TRUE(p->CanReadFile(kRendererID, file));
-  EXPECT_TRUE(p->CanWriteFile(kRendererID, file));
-  EXPECT_TRUE(p->CanCreateFile(kRendererID, file));
   EXPECT_TRUE(p->CanCreateReadWriteFile(kRendererID, file));
   EXPECT_TRUE(p->CanReadFileSystemFile(kRendererID, url));
   EXPECT_TRUE(p->CanWriteFileSystemFile(kRendererID, url));
@@ -421,8 +413,6 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissionGrantingAndRevoking) {
   EXPECT_TRUE(p->CanCreateReadWriteFileSystemFile(kRendererID, url));
   p->RevokeAllPermissionsForFile(kRendererID, file);
   EXPECT_FALSE(p->CanReadFile(kRendererID, file));
-  EXPECT_FALSE(p->CanWriteFile(kRendererID, file));
-  EXPECT_FALSE(p->CanCreateFile(kRendererID, file));
   EXPECT_FALSE(p->CanCreateReadWriteFile(kRendererID, file));
   EXPECT_FALSE(p->CanReadFileSystemFile(kRendererID, url));
   EXPECT_FALSE(p->CanWriteFileSystemFile(kRendererID, url));
@@ -432,8 +422,6 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissionGrantingAndRevoking) {
   // Test revoke permissions on renderer ID removal.
   p->GrantCreateReadWriteFile(kRendererID, file);
   EXPECT_TRUE(p->CanReadFile(kRendererID, file));
-  EXPECT_TRUE(p->CanWriteFile(kRendererID, file));
-  EXPECT_TRUE(p->CanCreateFile(kRendererID, file));
   EXPECT_TRUE(p->CanCreateReadWriteFile(kRendererID, file));
   EXPECT_TRUE(p->CanReadFileSystemFile(kRendererID, url));
   EXPECT_TRUE(p->CanWriteFileSystemFile(kRendererID, url));
@@ -441,8 +429,6 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissionGrantingAndRevoking) {
   EXPECT_TRUE(p->CanCreateReadWriteFileSystemFile(kRendererID, url));
   p->Remove(kRendererID);
   EXPECT_FALSE(p->CanReadFile(kRendererID, file));
-  EXPECT_FALSE(p->CanWriteFile(kRendererID, file));
-  EXPECT_FALSE(p->CanCreateFile(kRendererID, file));
   EXPECT_FALSE(p->CanCreateReadWriteFile(kRendererID, file));
   EXPECT_FALSE(p->CanReadFileSystemFile(kRendererID, url));
   EXPECT_FALSE(p->CanWriteFileSystemFile(kRendererID, url));
@@ -452,8 +438,6 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissionGrantingAndRevoking) {
   // Test having no permissions upon re-adding same renderer ID.
   p->Add(kRendererID);
   EXPECT_FALSE(p->CanReadFile(kRendererID, file));
-  EXPECT_FALSE(p->CanWriteFile(kRendererID, file));
-  EXPECT_FALSE(p->CanCreateFile(kRendererID, file));
   EXPECT_FALSE(p->CanCreateReadWriteFile(kRendererID, file));
   EXPECT_FALSE(p->CanReadFileSystemFile(kRendererID, url));
   EXPECT_FALSE(p->CanWriteFileSystemFile(kRendererID, url));

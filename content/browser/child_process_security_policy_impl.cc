@@ -614,16 +614,6 @@ bool ChildProcessSecurityPolicyImpl::CanReadFile(int child_id,
   return HasPermissionsForFile(child_id, file, kReadFilePermissions);
 }
 
-bool ChildProcessSecurityPolicyImpl::CanWriteFile(int child_id,
-                                                  const base::FilePath& file) {
-  return HasPermissionsForFile(child_id, file, kWriteFilePermissions);
-}
-
-bool ChildProcessSecurityPolicyImpl::CanCreateFile(int child_id,
-                                                   const base::FilePath& file) {
-  return HasPermissionsForFile(child_id, file, kCreateFilePermissions);
-}
-
 bool ChildProcessSecurityPolicyImpl::CanCreateReadWriteFile(
     int child_id,
     const base::FilePath& file) {

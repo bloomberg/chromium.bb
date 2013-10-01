@@ -31,16 +31,9 @@ bool CanRead(int process_id, const base::FilePath& path) {
       CanReadFile(process_id, path);
 }
 
-bool CanWrite(int process_id, const base::FilePath& path) {
+bool CanCreateReadWrite(int process_id, const base::FilePath& path) {
   return ChildProcessSecurityPolicyImpl::GetInstance()->
-      CanWriteFile(process_id, path);
-}
-
-bool CanReadWrite(int process_id, const base::FilePath& path) {
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  return policy->CanReadFile(process_id, path) &&
-      policy->CanWriteFile(process_id, path);
+      CanCreateReadWriteFile(process_id, path);
 }
 
 }  // namespace
@@ -163,9 +156,9 @@ int32_t PepperFlashFileMessageFilter::OnRenameFile(
     const ppapi::PepperFilePath& from_path,
     const ppapi::PepperFilePath& to_path) {
   base::FilePath from_full_path = ValidateAndConvertPepperFilePath(
-      from_path, base::Bind(&CanWrite));
+      from_path, base::Bind(&CanCreateReadWrite));
   base::FilePath to_full_path = ValidateAndConvertPepperFilePath(
-      to_path, base::Bind(&CanWrite));
+      to_path, base::Bind(&CanCreateReadWrite));
   if (from_full_path.empty() || to_full_path.empty()) {
     return ppapi::PlatformFileErrorToPepperError(
         base::PLATFORM_FILE_ERROR_ACCESS_DENIED);
@@ -181,7 +174,7 @@ int32_t PepperFlashFileMessageFilter::OnDeleteFileOrDir(
     const ppapi::PepperFilePath& path,
     bool recursive) {
   base::FilePath full_path = ValidateAndConvertPepperFilePath(
-      path, base::Bind(&CanWrite));
+      path, base::Bind(&CanCreateReadWrite));
   if (full_path.empty()) {
     return ppapi::PlatformFileErrorToPepperError(
         base::PLATFORM_FILE_ERROR_ACCESS_DENIED);
@@ -195,7 +188,7 @@ int32_t PepperFlashFileMessageFilter::OnCreateDir(
     ppapi::host::HostMessageContext* context,
     const ppapi::PepperFilePath& path) {
   base::FilePath full_path = ValidateAndConvertPepperFilePath(
-      path, base::Bind(&CanWrite));
+      path, base::Bind(&CanCreateReadWrite));
   if (full_path.empty()) {
     return ppapi::PlatformFileErrorToPepperError(
         base::PLATFORM_FILE_ERROR_ACCESS_DENIED);
@@ -257,7 +250,7 @@ int32_t PepperFlashFileMessageFilter::OnCreateTemporaryFile(
   ppapi::PepperFilePath dir_path(
       ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL, base::FilePath());
   base::FilePath validated_dir_path = ValidateAndConvertPepperFilePath(
-      dir_path, base::Bind(&CanReadWrite));
+      dir_path, base::Bind(&CanCreateReadWrite));
   if (validated_dir_path.empty() ||
       (!base::DirectoryExists(validated_dir_path) &&
        !file_util::CreateDirectory(validated_dir_path))) {

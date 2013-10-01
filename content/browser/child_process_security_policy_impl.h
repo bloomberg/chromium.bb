@@ -59,8 +59,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
       const std::string& filesystem_id) OVERRIDE;
   virtual void GrantScheme(int child_id, const std::string& scheme) OVERRIDE;
   virtual bool CanReadFile(int child_id, const base::FilePath& file) OVERRIDE;
-  virtual bool CanWriteFile(int child_id, const base::FilePath& file) OVERRIDE;
-  virtual bool CanCreateFile(int child_id, const base::FilePath& file) OVERRIDE;
   virtual bool CanCreateReadWriteFile(int child_id,
                                       const base::FilePath& file) OVERRIDE;
   virtual bool CanReadFileSystem(int child_id,
