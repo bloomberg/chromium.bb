@@ -10,6 +10,7 @@
 #include <X11/Xregion.h>
 #include <X11/Xutil.h>
 
+#include "base/basictypes.h"
 #include "base/message_loop/message_pump_x11.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -499,7 +500,8 @@ bool DesktopRootWindowHostX11::IsFullscreen() const {
 void DesktopRootWindowHostX11::SetOpacity(unsigned char opacity) {
   // X server opacity is in terms of 32 bit unsigned int space, and counts from
   // the opposite direction.
-  unsigned int cardinality = opacity * 0x1010101;
+  // XChangeProperty() expects "cardinality" to be long.
+  unsigned long cardinality = opacity * 0x1010101;
 
   if (cardinality == 0xffffffff) {
     XDeleteProperty(xdisplay_, xwindow_,
@@ -869,7 +871,9 @@ void DesktopRootWindowHostX11::InitX11Window(
 
   // Likewise, the X server needs to know this window's pid so it knows which
   // program to kill if the window hangs.
-  pid_t pid = getpid();
+  // XChangeProperty() expects "pid" to be long.
+  COMPILE_ASSERT(sizeof(long) >= sizeof(pid_t), pid_t_bigger_than_long);
+  long pid = getpid();
   XChangeProperty(xdisplay_,
                   xwindow_,
                   atom_cache_.GetAtom("_NET_WM_PID"),
