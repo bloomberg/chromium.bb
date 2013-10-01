@@ -215,6 +215,8 @@ apps, by using the ``make run_package`` command::
 You can use ``TOOLCHAIN`` and ``CONFIG`` parameters as above to run with a
 different toolchain or configuration.
 
+.. _debugging_the_sdk_examples:
+
 Debugging the SDK examples
 --------------------------
 
