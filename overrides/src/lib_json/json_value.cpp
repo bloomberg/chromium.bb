@@ -27,8 +27,14 @@
 namespace Json {
 
 // This is a walkaround to avoid the static initialization of Value::null.
-// const Value Value::null;
-static const unsigned char kNull[sizeof(Value)] = { 0 };
+// kNull must be word-aligned to avoid crashing on ARM.  We use an alignment of
+// 8 (instead of 4) as a bit of future-proofing.
+#if defined(__ARMEL__)
+#define ALIGNAS(byte_alignment) __attribute__((aligned(byte_alignment)))
+#else
+#define ALIGNAS(byte_alignment)
+#endif
+static const unsigned char ALIGNAS(8) kNull[sizeof(Value)] = {0};
 const Value& Value::null = reinterpret_cast<const Value&>(kNull);
 
 const Int Value::minInt = Int( ~(UInt(-1)/2) );
