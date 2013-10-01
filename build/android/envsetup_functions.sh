@@ -279,7 +279,7 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}"
 #############################################################################
 webview_build_init() {
   # Use the latest API in the AOSP prebuilts directory (change with AOSP roll).
-  export ANDROID_SDK_VERSION=17
+  export ANDROID_SDK_VERSION=18
 
   # For the WebView build we always use the NDK and SDK in the Android tree,
   # and we don't touch ANDROID_TOOLCHAIN which is already set by Android.
