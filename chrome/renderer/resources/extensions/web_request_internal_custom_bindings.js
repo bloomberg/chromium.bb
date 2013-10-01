@@ -8,9 +8,13 @@ var binding = require('binding').Binding.create('webRequestInternal');
 var eventBindings = require('event_bindings');
 var sendRequest = require('sendRequest').sendRequest;
 var validate = require('schemaUtils').validate;
-var webRequestNatives = requireNative('web_request');
+var idGeneratorNatives = requireNative('id_generator');
 
 var webRequestInternal;
+
+function GetUniqueSubEventName(eventName) {
+  return eventName + "/" + idGeneratorNatives.GetNextId();
+}
 
 // WebRequestEvent object. This is used for special webRequest events with
 // extra parameters. Each invocation of addListener creates a new named
@@ -64,7 +68,7 @@ WebRequestEvent.prototype.addListener =
   // NOTE(benjhayden) New APIs should not use this subEventName trick! It does
   // not play well with event pages. See downloads.onDeterminingFilename and
   // ExtensionDownloadsEventRouter for an alternative approach.
-  var subEventName = webRequestNatives.GetUniqueSubEventName(this.eventName_);
+  var subEventName = GetUniqueSubEventName(this.eventName_);
   // Note: this could fail to validate, in which case we would not add the
   // subEvent listener.
   validate($Array.slice(arguments, 1), this.extraArgSchemas_);

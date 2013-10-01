@@ -16,7 +16,7 @@ var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
 var WebRequestSchema =
     requireNative('schema_registry').GetSchema('webRequest');
 var WebView = require('binding').Binding.create('webview').generate();
-var WebViewNatives = requireNative('webview_natives');
+var idGenerator = requireNative('id_generator');
 
 // This secret enables hiding <webview> private members from the outside scope.
 // Outside of this file, |secret| is inaccessible. The only way to access the
@@ -552,7 +552,7 @@ WebViewInternal.prototype.handleSizeChangedEvent_ =
  */
 WebViewInternal.prototype.setupWebviewNodeEvents_ = function() {
   var self = this;
-  this.viewInstanceId_ = WebViewNatives.GetNextInstanceID();
+  this.viewInstanceId_ = idGenerator.GetNextId();
   var onInstanceIdAllocated = function(e) {
     var detail = e.detail ? JSON.parse(e.detail) : {};
     self.instanceId_ = detail.windowId;

@@ -6,8 +6,7 @@
 
 var binding = require('binding').Binding.create('tts');
 
-var ttsNatives = requireNative('tts');
-var GetNextTTSEventId = ttsNatives.GetNextTTSEventId;
+var idGenerator = requireNative('id_generator');
 var sendRequest = require('sendRequest').sendRequest;
 var lazyBG = requireNative('lazy_background_page');
 
@@ -43,7 +42,7 @@ binding.registerCustomHook(function(api) {
   apiFunctions.setHandleRequest('speak', function() {
     var args = arguments;
     if (args.length > 1 && args[1] && args[1].onEvent) {
-      var id = GetNextTTSEventId();
+      var id = idGenerator.GetNextId();
       args[1].srcId = id;
       handlers[id] = args[1].onEvent;
       // Keep the page alive until the event finishes.
