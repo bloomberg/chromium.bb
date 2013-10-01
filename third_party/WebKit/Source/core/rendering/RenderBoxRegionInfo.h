@@ -27,7 +27,7 @@
 #ifndef RenderBoxRegionInfo_h
 #define RenderBoxRegionInfo_h
 
-#include "core/platform/LayoutUnit.h"
+#include "platform/LayoutUnit.h"
 #include "wtf/FastAllocBase.h"
 
 namespace WebCore {

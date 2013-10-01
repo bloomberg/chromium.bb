@@ -22,11 +22,11 @@
 #include "config.h"
 #include "core/rendering/FixedTableLayout.h"
 
-#include "core/platform/LayoutUnit.h"
 #include "core/rendering/RenderTable.h"
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTableCol.h"
 #include "core/rendering/RenderTableSection.h"
+#include "platform/LayoutUnit.h"
 
 /*
   The text below is from the CSS 2.1 specs.

@@ -26,8 +26,8 @@
 #ifndef AnimationUtilities_h
 #define AnimationUtilities_h
 
-#include "core/platform/LayoutUnit.h"
 #include "core/platform/graphics/IntPoint.h"
+#include "platform/LayoutUnit.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {

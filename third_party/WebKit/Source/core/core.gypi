@@ -3832,7 +3832,6 @@
             'platform/text/DateTimeFormatTest.cpp',
             'rendering/RenderOverflowTest.cpp',
             'tests/ArenaTestHelpers.h',
-            'tests/LayoutUnit.cpp',
             'tests/LinkRelAttribute.cpp',
             'tests/PODArenaTest.cpp',
             'tests/PODFreeListArenaTest.cpp',

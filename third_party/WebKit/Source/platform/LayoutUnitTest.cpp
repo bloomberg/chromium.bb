@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/LayoutUnit.h"
+#include "platform/LayoutUnit.h"
 
 #include <gtest/gtest.h>
 #include <limits.h>

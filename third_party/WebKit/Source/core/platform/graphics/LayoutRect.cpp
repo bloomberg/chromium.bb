@@ -32,8 +32,8 @@
 #include "core/platform/graphics/LayoutRect.h"
 
 #include <algorithm>
-#include "core/platform/LayoutUnit.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "platform/LayoutUnit.h"
 
 using std::max;
 using std::min;

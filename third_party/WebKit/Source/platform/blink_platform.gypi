@@ -13,6 +13,7 @@
       'JSONValues.h',
       'Language.cpp',
       'Language.h',
+      'LayoutUnit.h',
       'LinkHash.cpp',
       'LinkHash.h',
       'Logging.cpp',
@@ -27,6 +28,7 @@
     'platform_test_files': [
       'ClockTest.cpp',
       'DecimalTest.cpp',
+      'LayoutUnitTest.cpp',
       'SharedBufferTest.cpp',
     ],
   },
