@@ -83,12 +83,12 @@ using WebKit::WebSharedWorkerRepository;
 // Callback class that keeps the SharedWorker and WebSharedWorker objects alive while loads are potentially happening, and also translates load errors into error events on the worker.
 class SharedWorkerScriptLoader : private WorkerScriptLoaderClient, private WebSharedWorker::ConnectListener {
 public:
-    SharedWorkerScriptLoader(PassRefPtr<SharedWorker> worker, const KURL& url, const String& name, PassRefPtr<MessagePortChannel> port, PassOwnPtr<WebSharedWorker> webWorker)
+    SharedWorkerScriptLoader(PassRefPtr<SharedWorker> worker, const KURL& url, const String& name, PassRefPtr<MessagePortChannel> channel, PassOwnPtr<WebSharedWorker> webWorker)
         : m_worker(worker)
         , m_url(url)
         , m_name(name)
         , m_webWorker(webWorker)
-        , m_port(port)
+        , m_channel(channel)
         , m_scriptLoader(WorkerScriptLoader::create())
         , m_loading(false)
         , m_responseAppCacheID(0)
@@ -115,7 +115,7 @@ private:
     KURL m_url;
     String m_name;
     OwnPtr<WebSharedWorker> m_webWorker;
-    RefPtr<MessagePortChannel> m_port;
+    RefPtr<MessagePortChannel> m_channel;
     RefPtr<WorkerScriptLoader> m_scriptLoader;
     bool m_loading;
     long long m_responseAppCacheID;
@@ -162,15 +162,6 @@ void SharedWorkerScriptLoader::load()
     }
 }
 
-// Extracts a WebMessagePortChannel from a MessagePortChannel.
-static WebMessagePortChannel* getWebPort(PassRefPtr<MessagePortChannel> channel)
-{
-    // Extract the WebMessagePortChannel to send to the worker.
-    WebMessagePortChannel* webPort = channel->webChannelRelease();
-    webPort->setClient(0);
-    return webPort;
-}
-
 void SharedWorkerScriptLoader::didReceiveResponse(unsigned long identifier, const ResourceResponse& response)
 {
     m_responseAppCacheID = response.appCacheID();
@@ -195,8 +186,10 @@ void SharedWorkerScriptLoader::notifyFinished()
 
 void SharedWorkerScriptLoader::sendConnect()
 {
+    WebMessagePortChannel* webChannel = m_channel->webChannelRelease();
+    m_channel.clear();
     // Send the connect event off, and linger until it is done sending.
-    m_webWorker->connect(getWebPort(m_port.release()), this);
+    m_webWorker->connect(webChannel, this);
 }
 
 void SharedWorkerScriptLoader::connected()

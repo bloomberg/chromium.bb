@@ -129,9 +129,8 @@ void MessagePort::entangle(PassRefPtr<MessagePortChannel> remote)
     ASSERT(!m_entangledChannel);
     ASSERT(m_scriptExecutionContext);
 
-    // Don't entangle the ports if the channel is closed.
-    if (remote->entangleIfOpen(this))
-        m_entangledChannel = remote;
+    remote->entangle(this);
+    m_entangledChannel = remote;
 }
 
 void MessagePort::contextDestroyed()

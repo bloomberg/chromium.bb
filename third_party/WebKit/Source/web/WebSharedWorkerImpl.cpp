@@ -176,10 +176,8 @@ void WebSharedWorkerImpl::postMessageTask(ScriptExecutionContext* context,
         return;
 
     WebMessagePortChannelArray webChannels(channels ? channels->size() : 0);
-    for (size_t i = 0; i < webChannels.size(); ++i) {
+    for (size_t i = 0; i < webChannels.size(); ++i)
         webChannels[i] = (*channels)[i]->webChannelRelease();
-        webChannels[i]->setClient(0);
-    }
 
     thisPtr->client()->postMessageToWorkerObject(message, webChannels);
 }
@@ -345,10 +343,7 @@ bool WebSharedWorkerImpl::isStarted()
 
 void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel, ConnectListener* listener)
 {
-    // Convert the WebMessagePortChanel to a WebCore::MessagePortChannel.
     RefPtr<MessagePortChannel> channel = MessagePortChannel::create(webChannel);
-    webChannel->setClient(channel.get());
-
     workerThread()->runLoop().postTask(
         createCallbackTask(&connectTask, channel.release()));
     if (listener)

@@ -63,8 +63,7 @@ public:
     virtual ~MessagePortChannel();
 
     // Entangles the channel with a port (called when a port has been cloned, after the clone has been marshaled to its new owning thread and is ready to receive messages).
-    // Returns false if the entanglement failed because the port was closed.
-    bool entangleIfOpen(MessagePort*);
+    void entangle(MessagePort*);
 
     // Disentangles the channel from a given port so it no longer forwards messages to the port. Called when the port is being cloned and no new owning thread has yet been established.
     void disentangle();
@@ -88,7 +87,6 @@ public:
     WebKit::WebMessagePortChannel* webChannelRelease();
 
 private:
-    MessagePortChannel();
     explicit MessagePortChannel(WebKit::WebMessagePortChannel*);
 
     void setEntangledChannel(PassRefPtr<MessagePortChannel>);

@@ -47,8 +47,8 @@ PassRefPtr<MessagePortChannel> MessagePortChannel::create(WebKit::WebMessagePort
 void MessagePortChannel::createChannel(MessagePort* port1, MessagePort* port2)
 {
     // Create proxies for each endpoint.
-    RefPtr<MessagePortChannel> channel1 = adoptRef(new MessagePortChannel());
-    RefPtr<MessagePortChannel> channel2 = adoptRef(new MessagePortChannel());
+    RefPtr<MessagePortChannel> channel1 = create(WebKit::Platform::current()->createMessagePortChannel());
+    RefPtr<MessagePortChannel> channel2 = create(WebKit::Platform::current()->createMessagePortChannel());
 
     // Entangle the two endpoints.
     channel1->setEntangledChannel(channel2);
@@ -59,18 +59,12 @@ void MessagePortChannel::createChannel(MessagePort* port1, MessagePort* port2)
     port2->entangle(channel1.release());
 }
 
-MessagePortChannel::MessagePortChannel()
-    : m_localPort(0)
-{
-    m_webChannel = WebKit::Platform::current()->createMessagePortChannel();
-    if (m_webChannel)
-        m_webChannel->setClient(this);
-}
-
 MessagePortChannel::MessagePortChannel(WebKit::WebMessagePortChannel* channel)
     : m_localPort(0)
     , m_webChannel(channel)
 {
+    ASSERT(m_webChannel);
+    m_webChannel->setClient(this);
 }
 
 MessagePortChannel::~MessagePortChannel()
@@ -79,11 +73,10 @@ MessagePortChannel::~MessagePortChannel()
         m_webChannel->destroy();
 }
 
-bool MessagePortChannel::entangleIfOpen(MessagePort* port)
+void MessagePortChannel::entangle(MessagePort* port)
 {
     MutexLocker lock(m_mutex);
     m_localPort = port;
-    return true;
 }
 
 void MessagePortChannel::disentangle()
@@ -101,11 +94,8 @@ void MessagePortChannel::postMessageToRemote(PassRefPtr<SerializedScriptValue> m
     WebKit::WebMessagePortChannelArray* webChannels = 0;
     if (channels && channels->size()) {
         webChannels = new WebKit::WebMessagePortChannelArray(channels->size());
-        for (size_t i = 0; i < channels->size(); ++i) {
-            MessagePortChannel* channel = (*channels)[i].get();
-            (*webChannels)[i] = channel->webChannelRelease();
-            (*webChannels)[i]->setClient(0);
-        }
+        for (size_t i = 0; i < channels->size(); ++i)
+            (*webChannels)[i] = (*channels)[i]->webChannelRelease();
     }
     m_webChannel->postMessage(messageString, webChannels);
 }
@@ -121,11 +111,8 @@ bool MessagePortChannel::tryGetMessageFromRemote(RefPtr<SerializedScriptValue>& 
     if (rv) {
         if (webChannels.size()) {
             channels = adoptPtr(new MessagePortChannelArray(webChannels.size()));
-            for (size_t i = 0; i < webChannels.size(); ++i) {
-                RefPtr<MessagePortChannel> channel = MessagePortChannel::create(webChannels[i]);
-                webChannels[i]->setClient(channel.get());
-                (*channels)[i] = channel.release();
-            }
+            for (size_t i = 0; i < webChannels.size(); ++i)
+                (*channels)[i] = MessagePortChannel::create(webChannels[i]);
         }
         serializedMessage = SerializedScriptValue::createFromWire(message);
     }
@@ -145,6 +132,7 @@ void MessagePortChannel::close()
 bool MessagePortChannel::isConnectedTo(MessagePort* port)
 {
     MutexLocker lock(m_mutex);
+    // FIXME: Shouldn't the access to m_entangledChannel->m_localPort be protected by m_entangledChannel->m_mutex?
     return m_entangledChannel && m_entangledChannel->m_localPort == port;
 }
 
@@ -163,8 +151,8 @@ void MessagePortChannel::messageAvailable()
 
 void MessagePortChannel::setEntangledChannel(PassRefPtr<MessagePortChannel> remote)
 {
-    if (m_webChannel)
-        m_webChannel->entangle(remote->m_webChannel);
+    ASSERT(m_webChannel);
+    m_webChannel->entangle(remote->m_webChannel);
 
     MutexLocker lock(m_mutex);
     m_entangledChannel = remote;
@@ -172,9 +160,11 @@ void MessagePortChannel::setEntangledChannel(PassRefPtr<MessagePortChannel> remo
 
 WebKit::WebMessagePortChannel* MessagePortChannel::webChannelRelease()
 {
-    WebKit::WebMessagePortChannel* rv = m_webChannel;
+    ASSERT(m_webChannel);
+    WebKit::WebMessagePortChannel* webChannel = m_webChannel;
     m_webChannel = 0;
-    return rv;
+    webChannel->setClient(0);
+    return webChannel;
 }
 
 } // namespace WebCore
