@@ -102,6 +102,10 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
 
   // Create all the tab helpers.
 
+  // ** Warning: This file is not used on Android. On Android, tab helpers are
+  // ** instantiated in chrome/browser/android/tab_android.cc. Please make sure
+  // ** to add the tab helper there too if appropriate.
+
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
