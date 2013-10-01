@@ -34,8 +34,6 @@ namespace WebCore {
 
     // FIXME: Use Locale::queryString instead of the following functions.
 
-    String searchableIndexIntroduction();
-
     String AXWebAreaText();
     String AXLinkText();
     String AXListMarkerText();

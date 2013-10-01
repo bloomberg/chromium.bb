@@ -34,6 +34,7 @@
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/DateTimeFormat.h"
 #include "public/platform/Platform.h"
+#include "wtf/MainThread.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
@@ -183,6 +184,7 @@ String DateTimeStringBuilder::toString()
 Locale* Locale::defaultLocale()
 {
     static Locale* locale = Locale::create(defaultLanguage()).leakPtr();
+    ASSERT(isMainThread());
     return locale;
 }
 

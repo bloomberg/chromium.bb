@@ -56,11 +56,6 @@ static String query(WebLocalizedString::Name name, const WebString& parameter1, 
     return WebKit::Platform::current()->queryLocalizedString(name, parameter1, parameter2);
 }
 
-String searchableIndexIntroduction()
-{
-    return query(WebLocalizedString::SearchableIndexIntroduction);
-}
-
 String AXWebAreaText()
 {
     return query(WebLocalizedString::AXWebAreaText);

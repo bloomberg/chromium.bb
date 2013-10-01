@@ -46,7 +46,7 @@
 #include "core/html/parser/HTMLStackItem.h"
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/HTMLTokenizer.h"
-#include "core/platform/LocalizedStrings.h"
+#include "core/platform/text/PlatformLocale.h"
 #include "platform/NotImplemented.h"
 #include "wtf/MainThread.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -501,7 +501,7 @@ void HTMLTreeBuilder::processIsindexStartTagForInBody(AtomicHTMLToken* token)
     if (promptAttribute)
         processFakeCharacters(promptAttribute->value());
     else
-        processFakeCharacters(searchableIndexIntroduction());
+        processFakeCharacters(Locale::defaultLocale()->queryString(WebKit::WebLocalizedString::SearchableIndexIntroduction));
     processFakeStartTag(inputTag, attributesForIsindexInput(token));
     notImplemented(); // This second set of characters may be needed by non-english locales.
     processFakeEndTag(labelTag);
