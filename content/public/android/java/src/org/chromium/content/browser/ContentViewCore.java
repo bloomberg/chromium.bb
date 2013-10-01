@@ -25,7 +25,6 @@ import android.os.Handler;
 import android.os.ResultReceiver;
 import android.provider.Browser;
 import android.provider.Settings;
-import android.provider.Settings.Secure;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.util.Log;
@@ -2565,15 +2564,19 @@ import java.util.Map;
     @SuppressWarnings("unused")
     @CalledByNative
     private void onWebContentsConnected() {
-        if (mImeAdapter != null &&
-                !mImeAdapter.isNativeImeAdapterAttached() && mNativeContentViewCore != 0) {
-            mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore));
-        }
+        attachImeAdapter();
     }
 
     @SuppressWarnings("unused")
     @CalledByNative
     private void onWebContentsSwapped() {
+        attachImeAdapter();
+    }
+
+    /**
+     * Attaches the native ImeAdapter object to the java ImeAdapter to allow communication via JNI.
+     */
+    public void attachImeAdapter() {
         if (mImeAdapter != null && mNativeContentViewCore != 0) {
             mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore));
         }

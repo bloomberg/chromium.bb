@@ -78,7 +78,7 @@ public abstract class TabBase implements NavigationClient {
     private ContentViewClient mContentViewClient;
     private WebContentsObserverAndroid mWebContentsObserver;
     private TabBaseChromeWebContentsDelegateAndroid mWebContentsDelegate;
-    private ObserverList<TabObserver> mObservers = new ObserverList<TabObserver>();
+    private final ObserverList<TabObserver> mObservers = new ObserverList<TabObserver>();
 
     /**
      * A basic {@link ChromeWebContentsDelegateAndroid} that forwards some calls to the registered
@@ -553,8 +553,8 @@ public abstract class TabBase implements NavigationClient {
     private void swapWebContents(final int newWebContents) {
         destroyContentView(false);
         initContentView(newWebContents);
-
         mContentViewCore.onShow();
+        mContentViewCore.attachImeAdapter();
         for (TabObserver observer : mObservers) observer.onContentChanged(this);
     }
 
