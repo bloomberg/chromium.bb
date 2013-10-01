@@ -250,6 +250,8 @@ setup_tty(struct weston_launcher *launcher)
 	if (fstat(STDIN_FILENO, &buf) == -1 ||
 	    major(buf.st_rdev) != TTY_MAJOR || minor(buf.st_rdev) == 0) {
 		weston_log("stdin not a vt\n");
+		weston_log("if running weston from ssh, "
+			   "use --tty to specify a tty\n");
 		return -1;
 	}
 
@@ -319,7 +321,10 @@ weston_launcher_connect(struct weston_compositor *compositor)
 			return NULL;
 		}
 	} else if (geteuid() == 0) {
-		setup_tty(launcher);
+		if (setup_tty(launcher) == -1) {
+			free(launcher);
+			return NULL;
+		}
 	} else {
 		free(launcher);
 		return NULL;
