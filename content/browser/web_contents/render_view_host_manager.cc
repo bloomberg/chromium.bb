@@ -33,12 +33,21 @@
 
 namespace content {
 
-RenderViewHostManager::PendingNavigationParams::PendingNavigationParams() {
+RenderViewHostManager::PendingNavigationParams::PendingNavigationParams()
+    : is_transfer(false), frame_id(-1) {
 }
 
 RenderViewHostManager::PendingNavigationParams::PendingNavigationParams(
-    const GlobalRequestID& global_request_id)
-    : global_request_id(global_request_id) {
+    const GlobalRequestID& global_request_id,
+    bool is_transfer,
+    const GURL& transfer_url,
+    Referrer referrer,
+    int64 frame_id)
+    : global_request_id(global_request_id),
+      is_transfer(is_transfer),
+      transfer_url(transfer_url),
+      referrer(referrer),
+      frame_id(frame_id) {
 }
 
 RenderViewHostManager::RenderViewHostManager(
@@ -239,8 +248,24 @@ void RenderViewHostManager::SwappedOut(RenderViewHost* render_view_host) {
     return;
   }
 
-  // Now that the unload handler has run, we need to resume the paused response.
-  if (pending_render_view_host_) {
+  // Now that the unload handler has run, we need to either initiate the
+  // pending transfer (if there is one) or resume the paused response (if not).
+  // TODO(creis): The blank swapped out page is visible during this time, but
+  // we can shorten this by delivering the response directly, rather than
+  // forcing an identical request to be made.
+  if (pending_nav_params_->is_transfer) {
+    // We don't know whether the original request had |user_action| set to true.
+    // However, since we force the navigation to be in the current tab, it
+    // doesn't matter.
+    render_view_host->GetDelegate()->RequestTransferURL(
+        pending_nav_params_->transfer_url,
+        pending_nav_params_->referrer,
+        CURRENT_TAB,
+        pending_nav_params_->frame_id,
+        pending_nav_params_->global_request_id,
+        false,
+        true);
+  } else if (pending_render_view_host_) {
     RenderProcessHostImpl* pending_process =
         static_cast<RenderProcessHostImpl*>(
             pending_render_view_host_->GetProcess());
@@ -378,22 +403,32 @@ void RenderViewHostManager::ShouldClosePage(
 
 void RenderViewHostManager::OnCrossSiteResponse(
     RenderViewHost* pending_render_view_host,
-    const GlobalRequestID& global_request_id) {
-  // This should be called when the pending RVH is ready to commit.
-  DCHECK_EQ(pending_render_view_host_, pending_render_view_host);
+    const GlobalRequestID& global_request_id,
+    bool is_transfer,
+    const GURL& transfer_url,
+    const Referrer& referrer,
+    int64 frame_id) {
+  // This should be called either when the pending RVH is ready to commit or
+  // when we realize that the current RVH's request requires a transfer.
+  DCHECK(
+      pending_render_view_host == pending_render_view_host_ ||
+      pending_render_view_host == render_view_host_);
 
-  // Remember the request ID until the unload handler has run.
-  pending_nav_params_.reset(new PendingNavigationParams(global_request_id));
+  // TODO(creis): Eventually we will want to check all navigation responses
+  // here, but currently we pass information for a transfer if
+  // ShouldSwapProcessesForRedirect returned true in the network stack.
+  // In that case, we should set up a transfer after the unload handler runs.
+  // If is_transfer is false, we will just run the unload handler and resume.
+  pending_nav_params_.reset(new PendingNavigationParams(
+      global_request_id, is_transfer, transfer_url, referrer, frame_id));
 
   // Run the unload handler of the current page.
   SwapOutOldPage();
 }
 
 void RenderViewHostManager::SwapOutOldPage() {
-  // Should only see this while we have a pending renderer.
-  if (!cross_navigation_pending_)
-    return;
-  DCHECK(pending_render_view_host_);
+  // Should only see this while we have a pending renderer or transfer.
+  CHECK(cross_navigation_pending_ || pending_nav_params_.get());
 
   // Tell the old renderer it is being swapped out.  This will fire the unload
   // handler (without firing the beforeunload handler a second time).  When the
@@ -406,7 +441,8 @@ void RenderViewHostManager::SwapOutOldPage() {
   // means it is not a download or unsafe page, and we are going to perform the
   // navigation.  Thus, we no longer need to remember that the RenderViewHost
   // is part of a pending cross-site request.
-  pending_render_view_host_->SetHasPendingCrossSiteRequest(false);
+  if (pending_render_view_host_)
+    pending_render_view_host_->SetHasPendingCrossSiteRequest(false);
 }
 
 void RenderViewHostManager::Observe(
@@ -924,7 +960,12 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
     DCHECK(!pending_render_view_host_->are_navigations_suspended());
     bool is_transfer =
         entry.transferred_global_request_id() != GlobalRequestID();
-    if (!is_transfer) {
+    if (is_transfer) {
+      // We don't need to stop the old renderer or run beforeunload/unload
+      // handlers, because those have already been done.
+      DCHECK(pending_nav_params_->global_request_id ==
+                entry.transferred_global_request_id());
+    } else {
       // Also make sure the old render view stops, in case a load is in
       // progress.  (We don't want to do this for transfers, since it will
       // interrupt the transfer with an unexpected DidStopLoading.)
@@ -933,12 +974,12 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
 
       pending_render_view_host_->SetNavigationsSuspended(true,
                                                          base::TimeTicks());
-    }
 
-    // Tell the CrossSiteRequestManager that this RVH has a pending cross-site
-    // request, so that ResourceDispatcherHost will know to tell us to run the
-    // old page's unload handler before it sends the response.
-    pending_render_view_host_->SetHasPendingCrossSiteRequest(true);
+      // Tell the CrossSiteRequestManager that this RVH has a pending cross-site
+      // request, so that ResourceDispatcherHost will know to tell us to run the
+      // old page's unload handler before it sends the response.
+      pending_render_view_host_->SetHasPendingCrossSiteRequest(true);
+    }
 
     // We now have a pending RVH.
     DCHECK(!cross_navigation_pending_);
