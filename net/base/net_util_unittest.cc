@@ -3307,9 +3307,8 @@ TEST(NetUtilTest, GetNetworkList) {
         break;
       }
     }
-    // TODO(vitalybuka): Revert after run on XP test bot.
-    LOG(INFO) << IPAddressToString(it->address) << "/" << it->network_prefix;
     EXPECT_FALSE(all_zeroes);
+    EXPECT_GT(it->network_prefix, 1u);
     EXPECT_LE(it->network_prefix, it->address.size() * 8);
   }
 }

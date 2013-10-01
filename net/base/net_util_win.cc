@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
 #include "net/base/escape.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -129,21 +130,19 @@ bool FileURLToFilePath(const GURL& url, base::FilePath* file_path) {
 bool GetNetworkList(NetworkInterfaceList* networks) {
   // GetAdaptersAddresses() may require IO operations.
   base::ThreadRestrictions::AssertIOAllowed();
-
-  IP_ADAPTER_ADDRESSES info_temp;
+  bool is_xp = base::win::GetVersion() < base::win::VERSION_VISTA;
   ULONG len = 0;
-
+  ULONG flags = is_xp ? GAA_FLAG_INCLUDE_PREFIX : 0;
   // First get number of networks.
-  ULONG result = GetAdaptersAddresses(AF_UNSPEC, 0, NULL, &info_temp, &len);
+  ULONG result = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, NULL, &len);
   if (result != ERROR_BUFFER_OVERFLOW) {
     // There are 0 networks.
     return true;
   }
-
   scoped_ptr<char[]> buf(new char[len]);
   IP_ADAPTER_ADDRESSES *adapters =
       reinterpret_cast<IP_ADAPTER_ADDRESSES *>(buf.get());
-  result = GetAdaptersAddresses(AF_UNSPEC, 0, NULL, adapters, &len);
+  result = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, adapters, &len);
   if (result != NO_ERROR) {
     LOG(ERROR) << "GetAdaptersAddresses failed: " << result;
     return false;
@@ -160,17 +159,39 @@ bool GetNetworkList(NetworkInterfaceList* networks) {
       continue;
     }
 
-    IP_ADAPTER_UNICAST_ADDRESS* address;
-    for (address = adapter->FirstUnicastAddress; address != NULL;
-         address = address->Next) {
+    std::string name = adapter->AdapterName;
+
+    for (IP_ADAPTER_UNICAST_ADDRESS* address = adapter->FirstUnicastAddress;
+         address; address = address->Next) {
       int family = address->Address.lpSockaddr->sa_family;
       if (family == AF_INET || family == AF_INET6) {
         IPEndPoint endpoint;
         if (endpoint.FromSockAddr(address->Address.lpSockaddr,
                                   address->Address.iSockaddrLength)) {
-          std::string name = adapter->AdapterName;
-          networks->push_back(NetworkInterface(name, endpoint.address(),
-                                               address->OnLinkPrefixLength));
+          // XP has no OnLinkPrefixLength field.
+          size_t net_prefix = is_xp ? 0 : address->OnLinkPrefixLength;
+          if (is_xp) {
+            // Prior to Windows Vista the FirstPrefix pointed to the list with
+            // single prefix for each IP address assigned to the adapter.
+            // Order of FirstPrefix does not match order of FirstUnicastAddress,
+            // so we need to find corresponding prefix.
+            for (IP_ADAPTER_PREFIX* prefix = adapter->FirstPrefix; prefix;
+                 prefix = prefix->Next) {
+              int prefix_family = prefix->Address.lpSockaddr->sa_family;
+              IPEndPoint network_endpoint;
+              if (prefix_family == family &&
+                  network_endpoint.FromSockAddr(prefix->Address.lpSockaddr,
+                      prefix->Address.iSockaddrLength) &&
+                  IPNumberMatchesPrefix(endpoint.address(),
+                                        network_endpoint.address(),
+                                        prefix->PrefixLength)) {
+                net_prefix = std::max<size_t>(net_prefix, prefix->PrefixLength);
+              }
+            }
+          }
+          networks->push_back(
+              NetworkInterface(adapter->AdapterName, endpoint.address(),
+                               net_prefix));
         }
       }
     }
