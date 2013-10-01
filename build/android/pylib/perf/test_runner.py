@@ -143,8 +143,11 @@ class TestRunner(base_test_runner.BaseTestRunner):
     if exit_code == 0:
       result_type = base_test_result.ResultType.PASS
     if test_name in self._flaky_tests:
+      # The exit_code is used at the second stage when printing the
+      # test output. If the test is flaky, force to "0" to get that step green
+      # whilst still gathering data to the perf dashboards.
+      # The result_type is used by the test_dispatcher to retry the test.
       exit_code = 0
-      result_type = base_test_result.ResultType.PASS
 
     persisted_result = {
         'name': test_name,
