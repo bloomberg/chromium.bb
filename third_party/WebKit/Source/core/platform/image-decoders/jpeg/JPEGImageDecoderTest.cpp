@@ -64,9 +64,9 @@ PassOwnPtr<JPEGImageDecoder> createDecoder(size_t maxDecodedBytes)
 
 } // namespace
 
-void downsample(size_t maxDecodedBytes, unsigned* outputWidth, unsigned* outputHeight)
+void downsample(size_t maxDecodedBytes, unsigned* outputWidth, unsigned* outputHeight, const char* imageFilePath)
 {
-    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/lenna.jpg");
+    RefPtr<SharedBuffer> data = readFile(imageFilePath);
     ASSERT_TRUE(data.get());
 
     OwnPtr<JPEGImageDecoder> decoder = createDecoder(maxDecodedBytes);
@@ -87,52 +87,99 @@ TEST(JPEGImageDecoderTest, tooBig)
     EXPECT_TRUE(decoder->failed());
 }
 
-// Tests that JPEG decoder can downsample from 1/8 to 7/8.
-TEST(JPEGImageDecoderTest, downsample1Over8To7Over8)
+// Tests that JPEG decoder can downsample image whose width and height are multiple of 8,
+// to ensure we compute the correct decodedSize and pass correct parameters to libjpeg to
+// output image with the expected size.
+TEST(JPEGImageDecoderTest, downsampleImageSizeMultipleOf8)
 {
+    const char* jpegFile = "/LayoutTests/fast/images/resources/lenna.jpg"; // 256x256
     unsigned outputWidth, outputHeight;
 
     // 1/8 downsample.
-    downsample(40 * 40 * 4, &outputWidth, &outputHeight);
+    downsample(40 * 40 * 4, &outputWidth, &outputHeight, jpegFile);
     EXPECT_EQ(32u, outputWidth);
     EXPECT_EQ(32u, outputHeight);
 
     // 2/8 downsample.
-    downsample(70 * 70 * 4, &outputWidth, &outputHeight);
+    downsample(70 * 70 * 4, &outputWidth, &outputHeight, jpegFile);
     EXPECT_EQ(64u, outputWidth);
     EXPECT_EQ(64u, outputHeight);
 
     // 3/8 downsample.
-    downsample(100 * 100 * 4, &outputWidth, &outputHeight);
+    downsample(100 * 100 * 4, &outputWidth, &outputHeight, jpegFile);
     EXPECT_EQ(96u, outputWidth);
     EXPECT_EQ(96u, outputHeight);
 
     // 4/8 downsample.
-    downsample(130 * 130 * 4, &outputWidth, &outputHeight);
+    downsample(130 * 130 * 4, &outputWidth, &outputHeight, jpegFile);
     EXPECT_EQ(128u, outputWidth);
     EXPECT_EQ(128u, outputHeight);
 
     // 5/8 downsample.
-    downsample(170 * 170 * 4, &outputWidth, &outputHeight);
+    downsample(170 * 170 * 4, &outputWidth, &outputHeight, jpegFile);
     EXPECT_EQ(160u, outputWidth);
     EXPECT_EQ(160u, outputHeight);
 
     // 6/8 downsample.
-    downsample(200 * 200 * 4, &outputWidth, &outputHeight);
+    downsample(200 * 200 * 4, &outputWidth, &outputHeight, jpegFile);
     EXPECT_EQ(192u, outputWidth);
     EXPECT_EQ(192u, outputHeight);
 
     // 7/8 downsample.
-    downsample(230 * 230 * 4, &outputWidth, &outputHeight);
+    downsample(230 * 230 * 4, &outputWidth, &outputHeight, jpegFile);
     EXPECT_EQ(224u, outputWidth);
     EXPECT_EQ(224u, outputHeight);
+}
+
+// Tests that JPEG decoder can downsample image whose width and height are not multiple of 8.
+// Ensures that we round decodedSize and scale_num using the same algorithm as that of libjpeg.
+TEST(JPEGImageDecoderTest, downsampleImageSizeNotMultipleOf8)
+{
+    const char* jpegFile = "/LayoutTests/fast/images/resources/icc-v2-gbr.jpg"; // 275x207
+    unsigned outputWidth, outputHeight;
+
+    // 1/8 downsample.
+    downsample(40 * 40 * 4, &outputWidth, &outputHeight, jpegFile);
+    EXPECT_EQ(35u, outputWidth);
+    EXPECT_EQ(26u, outputHeight);
+
+    // 2/8 downsample.
+    downsample(70 * 70 * 4, &outputWidth, &outputHeight, jpegFile);
+    EXPECT_EQ(69u, outputWidth);
+    EXPECT_EQ(52u, outputHeight);
+
+    // 3/8 downsample.
+    downsample(100 * 100 * 4, &outputWidth, &outputHeight, jpegFile);
+    EXPECT_EQ(104u, outputWidth);
+    EXPECT_EQ(78u, outputHeight);
+
+    // 4/8 downsample.
+    downsample(130 * 130 * 4, &outputWidth, &outputHeight, jpegFile);
+    EXPECT_EQ(138u, outputWidth);
+    EXPECT_EQ(104u, outputHeight);
+
+    // 5/8 downsample.
+    downsample(170 * 170 * 4, &outputWidth, &outputHeight, jpegFile);
+    EXPECT_EQ(172u, outputWidth);
+    EXPECT_EQ(130u, outputHeight);
+
+    // 6/8 downsample.
+    downsample(200 * 200 * 4, &outputWidth, &outputHeight, jpegFile);
+    EXPECT_EQ(207u, outputWidth);
+    EXPECT_EQ(156u, outputHeight);
+
+    // 7/8 downsample.
+    downsample(230 * 230 * 4, &outputWidth, &outputHeight, jpegFile);
+    EXPECT_EQ(241u, outputWidth);
+    EXPECT_EQ(182u, outputHeight);
 }
 
 // Tests that upsampling is not allowed.
 TEST(JPEGImageDecoderTest, upsample)
 {
+    const char* jpegFile = "/LayoutTests/fast/images/resources/lenna.jpg"; // 256x256
     unsigned outputWidth, outputHeight;
-    downsample(1000 * 1000, &outputWidth, &outputHeight);
+    downsample(1000 * 1000, &outputWidth, &outputHeight, jpegFile);
     EXPECT_EQ(256u, outputWidth);
     EXPECT_EQ(256u, outputHeight);
 }

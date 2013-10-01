@@ -631,7 +631,8 @@ bool JPEGImageDecoder::setSize(unsigned width, unsigned height)
     unsigned scaleNumerator = static_cast<unsigned>(floor(sqrt(
         // MSVC needs explicit parameter type for sqrt().
         static_cast<float>(m_maxDecodedBytes * scaleDenominator * scaleDenominator / originalBytes))));
-    m_decodedSize = IntSize(scaleNumerator * width / scaleDenominator, scaleNumerator * height / scaleDenominator);
+    m_decodedSize = IntSize((scaleNumerator * width + scaleDenominator - 1) / scaleDenominator,
+        (scaleNumerator * height + scaleDenominator - 1) / scaleDenominator);
 
     // The image is too big to be downsampled by libjpeg.
     // FIXME: Post-process to downsample the image.
@@ -725,6 +726,9 @@ bool JPEGImageDecoder::outputScanlines()
     // Initialize the framebuffer if needed.
     ImageFrame& buffer = m_frameBufferCache[0];
     if (buffer.status() == ImageFrame::FrameEmpty) {
+        ASSERT(info->output_width == m_decodedSize.width());
+        ASSERT(info->output_height == m_decodedSize.height());
+
         if (!buffer.setSize(info->output_width, info->output_height))
             return setFailed();
         buffer.setStatus(ImageFrame::FramePartial);
