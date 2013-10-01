@@ -3,17 +3,18 @@ description(
 );
 
 function foo(x) {
-    return x.status;
+    return x.responseText;
 }
 
 function baz(x) {
     return foo(x);
 }
 
-function bar(doOpen) {
+function bar(binary) {
     var x = new XMLHttpRequest();
-    if (doOpen)
-        x.open("GET", "http://foo.bar.com/");
+    x.open("GET", "http://foo.bar.com/");
+    if (binary)
+        x.responseType = "arraybuffer";
     try {
         return "Returned result: " + baz(x);
     } catch (e) {
@@ -22,7 +23,7 @@ function bar(doOpen) {
 }
 
 for (var i = 0; i < 200; ++i) {
-    shouldBe("bar(i >= 100)", i >= 100 ? "\"Threw exception: InvalidStateError: Failed to read the 'status' property from 'XMLHttpRequest': the object's state must not be OPENED.\"" : "\"Returned result: 0\"");
+    shouldBe("bar(i >= 100)", i >= 100 ? "\"Threw exception: InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': the value is only accessible if the object's 'responseType' is '' or 'text' (was 'arraybuffer').\"" : "\"Returned result: \"");
 }
 
 

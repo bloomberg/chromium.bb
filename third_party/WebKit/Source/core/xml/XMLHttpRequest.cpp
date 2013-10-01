@@ -1101,27 +1101,22 @@ bool XMLHttpRequest::responseIsXML() const
 
 int XMLHttpRequest::status(ExceptionState& es) const
 {
+    if (m_state == UNSENT || m_state == OPENED || m_error)
+        return 0;
+
     if (m_response.httpStatusCode())
         return m_response.httpStatusCode();
-
-    if (m_state == OPENED) {
-        // Firefox only raises an exception in this state; we match it.
-        // Note the case of local file requests, where we have no HTTP response code! Firefox never raises an exception for those, but we match HTTP case for consistency.
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToGet("status", "XMLHttpRequest", "the object's state must not be OPENED."));
-    }
 
     return 0;
 }
 
 String XMLHttpRequest::statusText(ExceptionState& es) const
 {
+    if (m_state == UNSENT || m_state == OPENED || m_error)
+        return String();
+
     if (!m_response.httpStatusText().isNull())
         return m_response.httpStatusText();
-
-    if (m_state == OPENED) {
-        // See comments in status() above.
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToGet("statusText", "XMLHttpRequest", "the object's state must not be OPENED."));
-    }
 
     return String();
 }

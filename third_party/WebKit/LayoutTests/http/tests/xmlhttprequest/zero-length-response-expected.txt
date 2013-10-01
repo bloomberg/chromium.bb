@@ -8,14 +8,14 @@ after creation: Uninitialized
   ResponseXML serialized: n/a
 after setting onreadystatechange: Uninitialized
 onreadystatechange: Open
-  Exception getting status: Failed to read the 'status' property from 'XMLHttpRequest': the object's state must not be OPENED.
-  Exception getting StatusText: Failed to read the 'statusText' property from 'XMLHttpRequest': the object's state must not be OPENED.
+  Status: 0
+  StatusText: ""
   ResponseText: ""
   ResponseXML: null
   ResponseXML serialized: n/a
 after open(): Open
-  Exception getting status: Failed to read the 'status' property from 'XMLHttpRequest': the object's state must not be OPENED.
-  Exception getting StatusText: Failed to read the 'statusText' property from 'XMLHttpRequest': the object's state must not be OPENED.
+  Status: 0
+  StatusText: ""
   ResponseText: ""
   ResponseXML: null
   ResponseXML serialized: n/a
