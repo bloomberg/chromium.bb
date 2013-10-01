@@ -21,6 +21,7 @@ class ViewObserversAccessor {
 
  private:
   View* view_;
+
   DISALLOW_COPY_AND_ASSIGN(ViewObserversAccessor);
 };
 
@@ -122,6 +123,8 @@ class ScopedTreeNotifier {
 ////////////////////////////////////////////////////////////////////////////////
 // View, public:
 
+// Creation, configuration -----------------------------------------------------
+
 View::View() : visible_(false), owned_by_parent_(true), parent_(NULL) {
 }
 
@@ -152,6 +155,14 @@ void View::AddObserver(ViewObserver* observer) {
 
 void View::RemoveObserver(ViewObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void View::SetPainter(Painter* painter) {
+  painter_.reset(painter);
+}
+
+void View::SetLayout(Layout* layout) {
+  layout_.reset(layout);
 }
 
 // Disposition -----------------------------------------------------------------

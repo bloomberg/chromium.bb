@@ -60,6 +60,7 @@ class V2_EXPORT ViewObserver {
 
   virtual void OnViewVisibilityChanging() {}
   virtual void OnViewVisibilityChanged() {}
+
  protected:
   virtual ~ViewObserver() {}
 };

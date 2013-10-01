@@ -20,8 +20,6 @@
         '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
-        '../ui.gyp:ui',
-        '../ui.gyp:ui_resources',
       ],
       'defines': [
         'V2_IMPLEMENTATION',

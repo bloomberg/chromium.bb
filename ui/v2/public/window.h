@@ -18,11 +18,11 @@ class V2_EXPORT Window : public View {
   Window();
   virtual ~Window();
 
-  View* view() { return view_.get(); }
+  View* contents() { return contents_.get(); }
 
  private:
   // Nested view hierarchy.
-  scoped_ptr<View> view_;
+  scoped_ptr<View> contents_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

@@ -34,10 +34,10 @@ class V2_EXPORT View /* : public EventTarget */ {
   }
 
   // View takes ownership.
-  void set_painter(Painter* painter) { painter_.reset(painter); }
+  void SetPainter(Painter* painter);
 
   // View takes ownership.
-  void set_layout(Layout* layout) { layout_.reset(layout); }
+  void SetLayout(Layout* layout);
 
   // Observation.
 
