@@ -45,6 +45,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // to/from the page.
     virtual bool ShouldProcessSetVoiceSearchSupport() = 0;
     virtual bool ShouldSendSetDisplayInstantResults() = 0;
+    virtual bool ShouldSendSetSuggestionToPrefetch() = 0;
     virtual bool ShouldSendMostVisitedItems() = 0;
     virtual bool ShouldSendThemeBackgroundInfo() = 0;
   };
@@ -67,6 +68,9 @@ class SearchIPCRouter : public content::WebContentsObserver {
   // Tells the renderer about the current theme background.
   void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);
 
+  // Tells the page the suggestion to be prefetched if any.
+  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
+
  private:
   friend class SearchIPCRouterTest;
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
@@ -80,7 +84,9 @@ class SearchIPCRouter : public content::WebContentsObserver {
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            SendSetDisplayInstantResults);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           DoNotSetDisplayInstantResultsForIncognitoPage);
+                           SendSetSuggestionToPrefetch);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotSendSetMessagesForIncognitoPage);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendMostVisitedItems);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotSendMostVisitedItems);

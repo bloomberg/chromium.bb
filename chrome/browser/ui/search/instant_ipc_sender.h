@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_SEARCH_INSTANT_IPC_SENDER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/instant_types.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -38,9 +37,6 @@ class InstantIPCSender : public content::WebContentsObserver {
 
   // Tells the page information it needs to display promos.
   virtual void SetPromoInformation(bool is_app_launcher_enabled) {}
-
-  // Tells the page the suggestion to be prefetched if any.
-  virtual void SetSuggestionToPrefetch(const InstantSuggestion& suggestion) {}
 
   // Tells the page that the omnibox focus has changed.
   virtual void FocusChanged(OmniboxFocusState state,

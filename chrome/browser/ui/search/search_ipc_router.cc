@@ -50,6 +50,15 @@ void SearchIPCRouter::SendMostVisitedItems(
       routing_id(), items));
 }
 
+void SearchIPCRouter::SetSuggestionToPrefetch(
+    const InstantSuggestion& suggestion) {
+  if (!policy_->ShouldSendSetSuggestionToPrefetch())
+    return;
+
+  Send(new ChromeViewMsg_SearchBoxSetSuggestionToPrefetch(routing_id(),
+                                                          suggestion));
+}
+
 bool SearchIPCRouter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SearchIPCRouter, message)

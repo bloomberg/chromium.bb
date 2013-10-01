@@ -183,6 +183,11 @@ bool SearchTabHelper::SupportsInstant() const {
   return model_.instant_support() == INSTANT_SUPPORT_YES;
 }
 
+void SearchTabHelper::SetSuggestionToPrefetch(
+    const InstantSuggestion& suggestion) {
+  ipc_router_.SetSuggestionToPrefetch(suggestion);
+}
+
 void SearchTabHelper::Observe(
     int type,
     const content::NotificationSource& source,

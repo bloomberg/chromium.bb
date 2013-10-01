@@ -125,8 +125,10 @@ void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
 
 void InstantController::SetSuggestionToPrefetch(
     const InstantSuggestion& suggestion) {
-  if (instant_tab_ && search_mode_.is_search())
-    instant_tab_->sender()->SetSuggestionToPrefetch(suggestion);
+  if (instant_tab_ && search_mode_.is_search()) {
+    SearchTabHelper::FromWebContents(instant_tab_->contents())->
+        SetSuggestionToPrefetch(suggestion);
+  }
 }
 
 void InstantController::ToggleVoiceSearch() {

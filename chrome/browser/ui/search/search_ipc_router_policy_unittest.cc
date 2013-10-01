@@ -28,7 +28,7 @@ TEST_F(SearchIPCRouterPolicyTest, ProcessVoiceSearchSupportMsg) {
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-  ASSERT_TRUE(search_tab_helper->ipc_router().policy()->
+  EXPECT_TRUE(search_tab_helper->ipc_router().policy()->
       ShouldProcessSetVoiceSearchSupport());
 }
 
@@ -37,12 +37,21 @@ TEST_F(SearchIPCRouterPolicyTest, SendSetDisplayInstantResults) {
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-  ASSERT_TRUE(search_tab_helper->ipc_router().policy()->
+  EXPECT_TRUE(search_tab_helper->ipc_router().policy()->
       ShouldSendSetDisplayInstantResults());
 }
 
+TEST_F(SearchIPCRouterPolicyTest, SendSetSuggestionToPrefetch) {
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(web_contents());
+  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+  EXPECT_TRUE(search_tab_helper->ipc_router().policy()->
+      ShouldSendSetSuggestionToPrefetch());
+}
+
 TEST_F(SearchIPCRouterPolicyTest,
-       DoNotSetDisplayInstantResultsForIncognitoPage) {
+       DoNotSendSetMessagesForIncognitoPage) {
   NavigateAndCommit(GURL("chrome-search://foo/bar"));
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
@@ -51,7 +60,10 @@ TEST_F(SearchIPCRouterPolicyTest,
       static_cast<SearchIPCRouterPolicyImpl*>(
           search_tab_helper->ipc_router().policy());
   policy->set_is_incognito(true);
-  ASSERT_FALSE(search_tab_helper->ipc_router().policy()->
+
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
+      ShouldSendSetSuggestionToPrefetch());
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldSendSetDisplayInstantResults());
 }
 
@@ -60,7 +72,7 @@ TEST_F(SearchIPCRouterPolicyTest, SendMostVisitedItems) {
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-  ASSERT_TRUE(search_tab_helper->ipc_router().policy()->
+  EXPECT_TRUE(search_tab_helper->ipc_router().policy()->
       ShouldSendMostVisitedItems());
 }
 
@@ -70,7 +82,7 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotSendMostVisitedItems) {
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-  ASSERT_FALSE(search_tab_helper->ipc_router().policy()->
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldSendMostVisitedItems());
 }
 
@@ -83,7 +95,7 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotSendMostVisitedItemsForIncognitoPage) {
       static_cast<SearchIPCRouterPolicyImpl*>(
           search_tab_helper->ipc_router().policy());
   policy->set_is_incognito(true);
-  ASSERT_FALSE(search_tab_helper->ipc_router().policy()->
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldSendMostVisitedItems());
 }
 
@@ -92,7 +104,7 @@ TEST_F(SearchIPCRouterPolicyTest, SendThemeBackgroundInfo) {
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-  ASSERT_TRUE(search_tab_helper->ipc_router().policy()->
+  EXPECT_TRUE(search_tab_helper->ipc_router().policy()->
       ShouldSendThemeBackgroundInfo());
 }
 
@@ -103,7 +115,7 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotSendThemeBackgroundInfo) {
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-  ASSERT_FALSE(search_tab_helper->ipc_router().policy()->
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldSendThemeBackgroundInfo());
 }
 
@@ -117,6 +129,6 @@ TEST_F(SearchIPCRouterPolicyTest,
       static_cast<SearchIPCRouterPolicyImpl*>(
           search_tab_helper->ipc_router().policy());
   policy->set_is_incognito(true);
-  ASSERT_FALSE(search_tab_helper->ipc_router().policy()->
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldSendThemeBackgroundInfo());
 }

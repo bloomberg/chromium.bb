@@ -49,6 +49,10 @@ bool SearchIPCRouterPolicyImpl::ShouldSendSetDisplayInstantResults() {
   return !is_incognito_;
 }
 
+bool SearchIPCRouterPolicyImpl::ShouldSendSetSuggestionToPrefetch() {
+  return !is_incognito_;
+}
+
 bool SearchIPCRouterPolicyImpl::ShouldSendMostVisitedItems() {
   return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
 }

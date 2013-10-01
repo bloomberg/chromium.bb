@@ -41,6 +41,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
 
   MOCK_METHOD0(ShouldProcessSetVoiceSearchSupport, bool());
   MOCK_METHOD0(ShouldSendSetDisplayInstantResults, bool());
+  MOCK_METHOD0(ShouldSendSetSuggestionToPrefetch, bool());
   MOCK_METHOD0(ShouldSendMostVisitedItems, bool());
   MOCK_METHOD0(ShouldSendThemeBackgroundInfo, bool());
 };
@@ -142,7 +143,7 @@ TEST_F(SearchIPCRouterTest, SendSetDisplayInstantResultsMsg) {
       .WillOnce(testing::Return(true));
 
   GetSearchTabHelper(web_contents())->ipc_router().SetDisplayInstantResults();
-  ASSERT_TRUE(MessageWasSent(
+  EXPECT_TRUE(MessageWasSent(
       ChromeViewMsg_SearchBoxSetDisplayInstantResults::ID));
 }
 
@@ -157,8 +158,40 @@ TEST_F(SearchIPCRouterTest, DoNotSendSetDisplayInstantResultsMsg) {
       .WillOnce(testing::Return(false));
 
   GetSearchTabHelper(web_contents())->ipc_router().SetDisplayInstantResults();
-  ASSERT_FALSE(MessageWasSent(
+  EXPECT_FALSE(MessageWasSent(
       ChromeViewMsg_SearchBoxSetDisplayInstantResults::ID));
+}
+
+TEST_F(SearchIPCRouterTest, SendSetSuggestionToPrefetch) {
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+  EXPECT_CALL(*policy, ShouldSendSetSuggestionToPrefetch()).Times(1)
+      .WillOnce(testing::Return(true));
+
+  GetSearchTabHelper(web_contents())->SetSuggestionToPrefetch(
+      InstantSuggestion());
+  EXPECT_TRUE(MessageWasSent(
+      ChromeViewMsg_SearchBoxSetSuggestionToPrefetch::ID));
+}
+
+TEST_F(SearchIPCRouterTest, DoNotSendSetSuggestionToPrefetch) {
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  process()->sink().ClearMessages();
+
+  SetupMockDelegateAndPolicy(web_contents());
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(web_contents());
+  EXPECT_CALL(*policy, ShouldSendSetSuggestionToPrefetch()).Times(1)
+      .WillOnce(testing::Return(false));
+
+  GetSearchTabHelper(web_contents())->SetSuggestionToPrefetch(
+      InstantSuggestion());
+  EXPECT_FALSE(MessageWasSent(
+      ChromeViewMsg_SearchBoxSetSuggestionToPrefetch::ID));
 }
 
 TEST_F(SearchIPCRouterTest, SendMostVisitedItemsMsg) {
@@ -173,7 +206,7 @@ TEST_F(SearchIPCRouterTest, SendMostVisitedItemsMsg) {
 
   GetSearchTabHelper(web_contents())->ipc_router().SendMostVisitedItems(
       std::vector<InstantMostVisitedItem>());
-  ASSERT_TRUE(MessageWasSent(
+  EXPECT_TRUE(MessageWasSent(
       ChromeViewMsg_SearchBoxMostVisitedItemsChanged::ID));
 }
 
@@ -189,7 +222,7 @@ TEST_F(SearchIPCRouterTest, DoNotSendMostVisitedItemsMsg) {
 
   GetSearchTabHelper(web_contents())->ipc_router().SendMostVisitedItems(
       std::vector<InstantMostVisitedItem>());
-  ASSERT_FALSE(MessageWasSent(
+  EXPECT_FALSE(MessageWasSent(
       ChromeViewMsg_SearchBoxMostVisitedItemsChanged::ID));
 }
 
@@ -205,7 +238,7 @@ TEST_F(SearchIPCRouterTest, SendThemeBackgroundInfoMsg) {
 
   GetSearchTabHelper(web_contents())->ipc_router().SendThemeBackgroundInfo(
       ThemeBackgroundInfo());
-  ASSERT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxThemeChanged::ID));
+  EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxThemeChanged::ID));
 }
 
 TEST_F(SearchIPCRouterTest, DoNotSendThemeBackgroundInfoMsg) {
@@ -220,5 +253,5 @@ TEST_F(SearchIPCRouterTest, DoNotSendThemeBackgroundInfoMsg) {
 
   GetSearchTabHelper(web_contents())->ipc_router().SendThemeBackgroundInfo(
       ThemeBackgroundInfo());
-  ASSERT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxThemeChanged::ID));
+  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxThemeChanged::ID));
 }

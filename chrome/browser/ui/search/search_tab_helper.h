@@ -66,6 +66,9 @@ class SearchTabHelper : public content::NotificationObserver,
   // not determined or if the page does not support instant returns false.
   bool SupportsInstant() const;
 
+  // Sends the current SearchProvider suggestion to the Instant page if any.
+  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
+
  private:
   friend class content::WebContentsUserData<SearchTabHelper>;
   friend class InstantPageTest;
@@ -81,7 +84,9 @@ class SearchTabHelper : public content::NotificationObserver,
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            SendSetDisplayInstantResults);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           DoNotSetDisplayInstantResultsForIncognitoPage);
+                           SendSetSuggestionToPrefetch);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotSendSetMessagesForIncognitoPage);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendMostVisitedItems);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotSendMostVisitedItems);

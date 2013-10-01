@@ -29,12 +29,6 @@ class InstantIPCSenderImpl : public InstantIPCSender {
         routing_id(), is_app_launcher_enabled));
   }
 
-  virtual void SetSuggestionToPrefetch(
-      const InstantSuggestion& suggestion) OVERRIDE {
-    Send(new ChromeViewMsg_SearchBoxSetSuggestionToPrefetch(routing_id(),
-                                                            suggestion));
-  }
-
   virtual void FocusChanged(OmniboxFocusState state,
                     OmniboxFocusChangeReason reason) OVERRIDE {
     Send(new ChromeViewMsg_SearchBoxFocusChanged(routing_id(), state, reason));

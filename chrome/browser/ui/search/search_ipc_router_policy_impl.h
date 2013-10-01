@@ -24,7 +24,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            SendSetDisplayInstantResults);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           DoNotSetDisplayInstantResultsForIncognitoPage);
+                           DoNotSendSetMessagesForIncognitoPage);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotSendMostVisitedItemsForIncognitoPage);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
@@ -33,6 +33,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   // Overridden from SearchIPCRouter::Policy:
   virtual bool ShouldProcessSetVoiceSearchSupport() OVERRIDE;
   virtual bool ShouldSendSetDisplayInstantResults() OVERRIDE;
+  virtual bool ShouldSendSetSuggestionToPrefetch() OVERRIDE;
   virtual bool ShouldSendMostVisitedItems() OVERRIDE;
   virtual bool ShouldSendThemeBackgroundInfo() OVERRIDE;
 
