@@ -20,7 +20,6 @@ class Bus;
 namespace chromeos {
 
 class IBusComponent;
-class IBusInputContextClient;
 
 // A class to make the actual DBus calls for IBusBus service.
 // This class only makes calls, result/error handling should be done by

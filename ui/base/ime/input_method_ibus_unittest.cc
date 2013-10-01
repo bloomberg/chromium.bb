@@ -67,8 +67,6 @@ enum KeyEventHandlerBehavior {
 }  // namespace
 
 
-using chromeos::IBusInputContextClient;
-
 class TestableInputMethodIBus : public InputMethodIBus {
  public:
   explicit TestableInputMethodIBus(internal::InputMethodDelegate* delegate)
