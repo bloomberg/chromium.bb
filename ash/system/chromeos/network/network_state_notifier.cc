@@ -248,7 +248,7 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
       shill_properties.GetStringWithoutPathExpansion(
           shill::kErrorProperty, &network_error);
     }
-    error = network_connect::ErrorString(network_error);
+    error = network_connect::ErrorString(network_error, service_path);
     if (error.empty())
       error = l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
   }

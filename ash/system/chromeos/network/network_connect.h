@@ -60,7 +60,8 @@ ASH_EXPORT void CreateConfigurationAndConnect(base::DictionaryValue* properties,
                                               bool shared);
 
 // Returns the localized string for shill error string |error|.
-ASH_EXPORT base::string16 ErrorString(const std::string& error);
+ASH_EXPORT base::string16 ErrorString(const std::string& error,
+                                      const std::string& service_path);
 
 // Shows the settings for the network specified by |service_path|. If empty,
 // or no matching network exists, shows the general internet settings page.

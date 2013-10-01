@@ -260,6 +260,11 @@ void ConfigureSetProfileSucceeded(
       base::Bind(&SetPropertiesFailed, "SetProperties", service_path));
 }
 
+const NetworkState* GetNetworkState(const std::string& service_path) {
+  return NetworkHandler::Get()->network_state_handler()->
+      GetNetworkState(service_path);
+}
+
 }  // namespace
 
 namespace network_connect {
@@ -274,9 +279,7 @@ const char kErrorActivateFailed[] = "activate-failed";
 void ConnectToNetwork(const std::string& service_path,
                       gfx::NativeWindow owning_window) {
   NET_LOG_USER("ConnectToNetwork", service_path);
-  const NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->
-      GetNetworkState(service_path);
+  const NetworkState* network = GetNetworkState(service_path);
   if (network && !network->error().empty()) {
     NET_LOG_USER("Configure: " + network->error(), service_path);
     // If the network is in an error state, show the configuration UI directly
@@ -342,9 +345,7 @@ void SetTechnologyEnabled(const NetworkTypePattern& technology,
 
 void ActivateCellular(const std::string& service_path) {
   NET_LOG_USER("ActivateCellular", service_path);
-  const NetworkState* cellular =
-      NetworkHandler::Get()->network_state_handler()->
-      GetNetworkState(service_path);
+  const NetworkState* cellular = GetNetworkState(service_path);
   if (!cellular || cellular->type() != shill::kTypeCellular) {
     NET_LOG_ERROR("ActivateCellular with no Service", service_path);
     return;
@@ -439,7 +440,8 @@ void CreateConfigurationAndConnect(base::DictionaryValue* properties,
       base::Bind(&OnConfigureFailed));
 }
 
-string16 ErrorString(const std::string& error) {
+string16 ErrorString(const std::string& error,
+                     const std::string& service_path) {
   if (error.empty())
     return string16();
   if (error == shill::kErrorOutOfRange)
@@ -482,10 +484,22 @@ string16 ErrorString(const std::string& error) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_IPSEC_PSK_AUTH_FAILED);
   }
-  if (error == shill::kErrorIpsecCertAuthFailed ||
-      error == shill::kErrorEapAuthenticationFailed) {
+  if (error == shill::kErrorIpsecCertAuthFailed) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_CERT_AUTH_FAILED);
+  }
+  if (error == shill::kErrorEapAuthenticationFailed) {
+    const NetworkState* network = GetNetworkState(service_path);
+    // TLS always requires a client certificate, so show a cert auth
+    // failed message for TLS. Other EAP methods do not generally require
+    // a client certicate.
+    if (network && network->eap_method() == shill::kEapMethodTLS) {
+      return l10n_util::GetStringUTF16(
+          IDS_CHROMEOS_NETWORK_ERROR_CERT_AUTH_FAILED);
+    } else {
+      return l10n_util::GetStringUTF16(
+          IDS_CHROMEOS_NETWORK_ERROR_EAP_AUTH_FAILED);
+    }
   }
   if (error == shill::kErrorEapLocalTlsFailed) {
     return l10n_util::GetStringUTF16(

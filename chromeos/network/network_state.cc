@@ -126,6 +126,8 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &roaming_);
   } else if (key == shill::kSecurityProperty) {
     return GetStringValue(key, value, &security_);
+  } else if (key == shill::kEapMethodProperty) {
+    return GetStringValue(key, value, &eap_method_);
   } else if (key == shill::kUIDataProperty) {
     scoped_ptr<NetworkUIData> new_ui_data =
         shill_property_util::GetUIDataFromValue(value);
@@ -196,6 +198,8 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
                                             roaming_);
   dictionary->SetStringWithoutPathExpansion(shill::kSecurityProperty,
                                             security_);
+  dictionary->SetStringWithoutPathExpansion(shill::kEapMethodProperty,
+                                            eap_method_);
   // Proxy config and ONC source are intentionally omitted: These properties are
   // placed in NetworkState to transition ProxyConfigServiceImpl from
   // NetworkLibrary to the new network stack. The networking extension API

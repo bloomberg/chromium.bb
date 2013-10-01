@@ -47,6 +47,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
 
   // Accessors
   const std::string& security() const { return security_; }
+  const std::string& eap_method() const { return eap_method_; }
   const std::string& device_path() const { return device_path_; }
   const std::string& guid() const { return guid_; }
   const std::string& connection_state() const { return connection_state_; }
@@ -116,6 +117,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Instead use NetworkConfigurationHandler::GetProperties() to asynchronously
   // request properties from Shill.
   std::string security_;
+  std::string eap_method_;  // Needed for WiFi EAP networks
   std::string device_path_;
   std::string guid_;
   std::string connection_state_;

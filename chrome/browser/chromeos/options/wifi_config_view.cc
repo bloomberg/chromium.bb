@@ -582,7 +582,8 @@ void WifiConfigView::UpdateErrorLabel() {
     const NetworkState* wifi = NetworkHandler::Get()->network_state_handler()->
         GetNetworkState(service_path_);
     if (wifi && wifi->connection_state() == shill::kStateFailure)
-      error_msg = ash::network_connect::ErrorString(wifi->error());
+      error_msg = ash::network_connect::ErrorString(
+          wifi->error(), wifi->path());
   }
   if (!error_msg.empty()) {
     error_label_->SetText(error_msg);

@@ -1611,8 +1611,9 @@ void PopulateConnectionDetails(const NetworkState* network,
   dictionary->SetString(kTagConnectionState,
                         ConnectionStateString(network->connection_state()));
   dictionary->SetString(kTagNetworkName, network->name());
-  dictionary->SetString(kTagErrorState,
-                        ash::network_connect::ErrorString(network->error()));
+  dictionary->SetString(
+      kTagErrorState,
+      ash::network_connect::ErrorString(network->error(), network->path()));
 
   dictionary->SetBoolean(kTagRemembered, !network->profile_path().empty());
   bool shared = !network->IsPrivate();
@@ -1640,13 +1641,8 @@ void PopulateWifiDetails(const NetworkState* wifi,
                          base::DictionaryValue* dictionary) {
   dictionary->SetString(kTagSsid, wifi->name());
   dictionary->SetInteger(kTagStrength, wifi->signal_strength());
-
-  std::string security, eap_method;
-  shill_properties.GetStringWithoutPathExpansion(
-      shill::kSecurityProperty, &security);
-  shill_properties.GetStringWithoutPathExpansion(
-      shill::kEapMethodProperty, &eap_method);
-  dictionary->SetString(kTagEncryption, EncryptionString(security, eap_method));
+  dictionary->SetString(kTagEncryption,
+                        EncryptionString(wifi->security(), wifi->eap_method()));
   CopyStringFromDictionary(shill_properties, shill::kWifiBSsid,
                            kTagBssid, dictionary);
   CopyIntegerFromDictionary(shill_properties, shill::kWifiFrequency,
