@@ -49,18 +49,10 @@ void V8Document::locationAttributeSetterCustom(v8::Local<v8::String> name, v8::L
     if (!document->frame())
         return;
 
-    DOMWindow* active = activeDOMWindow();
-    if (!active)
-        return;
-
-    DOMWindow* first = firstDOMWindow();
-    if (!first)
-        return;
-
     DOMWindow* window = document->domWindow();
     if (Location* location = window->location()) {
         V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringValue, value);
-        location->setHref(active, first, stringValue);
+        location->setHref(activeDOMWindow(), firstDOMWindow(), stringValue);
     }
 }
 

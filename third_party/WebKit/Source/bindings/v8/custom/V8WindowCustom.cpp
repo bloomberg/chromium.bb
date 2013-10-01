@@ -205,17 +205,9 @@ void V8Window::locationAttributeSetterCustom(v8::Local<v8::String> name, v8::Loc
 {
     DOMWindow* imp = V8Window::toNative(info.Holder());
 
-    DOMWindow* active = activeDOMWindow();
-    if (!active)
-        return;
-
-    DOMWindow* first = firstDOMWindow();
-    if (!first)
-        return;
-
     if (Location* location = imp->location()) {
         V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, href, value);
-        location->setHref(active, first, href);
+        location->setHref(activeDOMWindow(), firstDOMWindow(), href);
     }
 }
 

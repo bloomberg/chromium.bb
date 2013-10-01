@@ -85,7 +85,12 @@ static void reportFatalErrorInMainThread(const char* location, const char* messa
 
 static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Handle<v8::Value> data)
 {
-    DOMWindow* firstWindow = firstDOMWindow();
+    // If called during context initialization, there will be no entered context.
+    v8::Handle<v8::Context> enteredContext = v8::Context::GetEntered();
+    if (enteredContext.IsEmpty())
+        return;
+
+    DOMWindow* firstWindow = toDOMWindow(enteredContext);
     if (!firstWindow->isCurrentlyDisplayedInFrame())
         return;
 
@@ -115,6 +120,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
 
     // This method might be called while we're creating a new context. In this case, we
     // avoid storing the exception object, as we can't create a wrapper during context creation.
+    // FIXME: Can we even get here during initialization now that we bail out when GetEntered returns an empty handle?
     DOMWrapperWorld* world = DOMWrapperWorld::current();
     Frame* frame = firstWindow->document()->frame();
     if (world && frame && frame->script()->existingWindowShell(world))
