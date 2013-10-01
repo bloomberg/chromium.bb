@@ -571,7 +571,7 @@ bool ExtensionInstalledBubbleView::MaybeShowNow() {
   // Default case.
   if (reference_view == NULL)
     reference_view = browser_view->GetToolbarView()->app_menu();
-  set_anchor_view(reference_view);
+  SetAnchorView(reference_view);
 
   set_arrow(bubble_.type() == bubble_.OMNIBOX_KEYWORD ?
             views::BubbleBorder::TOP_LEFT :

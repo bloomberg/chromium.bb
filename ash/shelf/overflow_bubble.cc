@@ -82,7 +82,7 @@ class OverflowBubbleView : public views::BubbleDelegateView {
 
   ShelfLayoutManager* GetShelfLayoutManagerForLauncher() const {
     return ShelfLayoutManager::ForLauncher(
-        anchor_view()->GetWidget()->GetNativeView());
+        GetAnchorView()->GetWidget()->GetNativeView());
   }
 
   LauncherView* launcher_view_;  // Owned by views hierarchy.
@@ -102,7 +102,7 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
                                             LauncherView* launcher_view) {
   // set_anchor_view needs to be called before GetShelfLayoutManagerForLauncher
   // can be called.
-  set_anchor_view(anchor);
+  SetAnchorView(anchor);
   set_arrow(GetBubbleArrow());
   set_background(NULL);
   set_color(SkColorSetARGB(kLauncherBackgroundAlpha, 0, 0, 0));

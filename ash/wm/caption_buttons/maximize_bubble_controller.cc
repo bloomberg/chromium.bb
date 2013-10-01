@@ -416,7 +416,7 @@ MaximizeBubbleController::Bubble::Bubble(
   SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   bubble_widget_->non_client_view()->frame_view()->set_background(NULL);
 
-  bubble_border_ = new MaximizeBubbleBorder(this, anchor_view());
+  bubble_border_ = new MaximizeBubbleBorder(this, GetAnchorView());
   GetBubbleFrameView()->SetBubbleBorder(bubble_border_);
   GetBubbleFrameView()->set_background(NULL);
 

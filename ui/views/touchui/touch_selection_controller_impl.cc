@@ -422,8 +422,8 @@ void TouchSelectionControllerImpl::ExecuteCommand(int command_id,
 
 void TouchSelectionControllerImpl::OpenContextMenu() {
   // Context menu should appear centered on top of the selected region.
-  gfx::Point anchor(context_menu_->anchor_rect().CenterPoint().x(),
-                    context_menu_->anchor_rect().y());
+  const gfx::Rect rect = context_menu_->GetAnchorRect();
+  const gfx::Point anchor(rect.CenterPoint().x(), rect.y());
   HideContextMenu();
   client_view_->OpenContextMenu(anchor);
 }

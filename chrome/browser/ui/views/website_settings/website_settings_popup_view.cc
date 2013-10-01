@@ -751,7 +751,8 @@ void WebsiteSettingsPopupView::HandleLinkClickedAsync(views::Link* source) {
     new CollectedCookiesViews(web_contents_);
   } else if (source == certificate_dialog_link_) {
     gfx::NativeWindow parent =
-        anchor_view() ? anchor_view()->GetWidget()->GetNativeWindow() : NULL;
+        GetAnchorView() ? GetAnchorView()->GetWidget()->GetNativeWindow() :
+            NULL;
     ShowCertificateViewerByID(web_contents_, parent, cert_id_);
   } else if (source == help_center_link_) {
     browser_->OpenURL(content::OpenURLParams(

@@ -327,7 +327,7 @@ TrayBubbleView::TrayBubbleView(gfx::NativeView parent_window,
   set_notify_enter_exit_on_child(true);
   set_close_on_deactivate(init_params.close_on_deactivate);
   set_margins(gfx::Insets());
-  bubble_border_ = new TrayBubbleBorder(this, anchor_view(), params_);
+  bubble_border_ = new TrayBubbleBorder(this, GetAnchorView(), params_);
   if (get_use_acceleration_when_possible()) {
     SetPaintToLayer(true);
     SetFillsBoundsOpaquely(true);

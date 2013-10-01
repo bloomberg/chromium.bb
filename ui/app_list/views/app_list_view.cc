@@ -71,7 +71,7 @@ void AppListView::InitAsBubbleAttachedToAnchor(
     const gfx::Vector2d& anchor_offset,
     views::BubbleBorder::Arrow arrow,
     bool border_accepts_events) {
-  set_anchor_view(anchor);
+  SetAnchorView(anchor);
   InitAsBubbleInternal(
       parent, pagination_model, arrow, border_accepts_events, anchor_offset);
 }
@@ -82,7 +82,7 @@ void AppListView::InitAsBubbleAtFixedLocation(
     const gfx::Point& anchor_point_in_screen,
     views::BubbleBorder::Arrow arrow,
     bool border_accepts_events) {
-  set_anchor_view(NULL);
+  SetAnchorView(NULL);
   set_anchor_rect(gfx::Rect(anchor_point_in_screen, gfx::Size()));
   InitAsBubbleInternal(
       parent, pagination_model, arrow, border_accepts_events, gfx::Vector2d());

@@ -56,7 +56,7 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
   // is equal to |auto_close|, the bubble can be reused and only the label text
   // needs to be updated.
   if (zoom_bubble_ &&
-      zoom_bubble_->anchor_view() == anchor_view &&
+      zoom_bubble_->GetAnchorView() == anchor_view &&
       zoom_bubble_->auto_close_ == auto_close) {
     zoom_bubble_->Refresh();
   } else {
@@ -135,7 +135,7 @@ ZoomBubbleView::~ZoomBubbleView() {
 }
 
 void ZoomBubbleView::AdjustForFullscreen(const gfx::Rect& screen_bounds) {
-  if (anchor_view())
+  if (GetAnchorView())
     return;
 
   // TODO(dbeam): should RTL logic be done in views::BubbleDelegateView?

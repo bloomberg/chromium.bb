@@ -586,8 +586,8 @@ void ImmersiveModeControllerAsh::OnAddTransientChild(aura::Window* window,
                                                      aura::Window* transient) {
   views::BubbleDelegateView* bubble_delegate = AsBubbleDelegate(transient);
   if (bubble_delegate &&
-      bubble_delegate->anchor_view() &&
-      top_container_->Contains(bubble_delegate->anchor_view())) {
+      bubble_delegate->GetAnchorView() &&
+      top_container_->Contains(bubble_delegate->GetAnchorView())) {
     // Observe the aura::Window because the BubbleDelegateView may not be
     // parented to the widget's root view yet so |bubble_delegate->GetWidget()|
     // may still return NULL.
@@ -837,10 +837,13 @@ void ImmersiveModeControllerAsh::UpdateFocusRevealedLock() {
         native_window_->GetRootWindow())->GetActiveWindow();
     views::BubbleDelegateView* bubble_delegate =
         AsBubbleDelegate(active_window);
-    if (bubble_delegate && bubble_delegate->anchor_view()) {
+    if (bubble_delegate && bubble_delegate->anchor_widget()) {
       // BubbleManager will already have locked the top-of-window views if the
       // bubble is anchored to a child of |top_container_|. Don't acquire
       // |focus_revealed_lock_| here for the sake of simplicity.
+      // Note: Instead of checking for the existence of the |anchor_view|,
+      // the existence of the |anchor_widget| is performed to avoid the case
+      // where the view is already gone (and the widget is still running).
     } else {
       // The currently active window is not |native_window_| and it is not a
       // bubble with an anchor view. The top-of-window views should be revealed
@@ -1170,8 +1173,8 @@ void ImmersiveModeControllerAsh::RecreateBubbleManager() {
     views::BubbleDelegateView* bubble_delegate =
         AsBubbleDelegate(transient_child);
     if (bubble_delegate &&
-        bubble_delegate->anchor_view() &&
-        top_container_->Contains(bubble_delegate->anchor_view())) {
+        bubble_delegate->GetAnchorView() &&
+        top_container_->Contains(bubble_delegate->GetAnchorView())) {
       bubble_manager_->StartObserving(transient_child);
     }
   }

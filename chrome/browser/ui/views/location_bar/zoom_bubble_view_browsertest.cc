@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, MAYBE_NonImmersiveFullscreen) {
   ZoomBubbleView::ShowBubble(web_contents, true);
   ASSERT_TRUE(ZoomBubbleView::IsShowing());
   const ZoomBubbleView* zoom_bubble = ZoomBubbleView::GetZoomBubbleForTest();
-  EXPECT_TRUE(zoom_bubble->anchor_view());
+  EXPECT_TRUE(zoom_bubble->GetAnchorView());
 
   // Entering fullscreen should close the bubble. (We enter into tab fullscreen
   // here because tab fullscreen is non-immersive even when
@@ -69,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, MAYBE_NonImmersiveFullscreen) {
   ZoomBubbleView::ShowBubble(web_contents, true);
   ASSERT_TRUE(ZoomBubbleView::IsShowing());
   zoom_bubble = ZoomBubbleView::GetZoomBubbleForTest();
-  EXPECT_FALSE(zoom_bubble->anchor_view());
+  EXPECT_FALSE(zoom_bubble->GetAnchorView());
 
   // Exit fullscreen before ending the test for the sake of sanity.
   {
@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
   ZoomBubbleView::ShowBubble(web_contents, true);
   ASSERT_TRUE(ZoomBubbleView::IsShowing());
   const ZoomBubbleView* zoom_bubble = ZoomBubbleView::GetZoomBubbleForTest();
-  EXPECT_FALSE(zoom_bubble->anchor_view());
+  EXPECT_FALSE(zoom_bubble->GetAnchorView());
 
   // An immersive reveal should hide the zoom bubble.
   scoped_ptr<ImmersiveRevealedLock> immersive_reveal_lock(
@@ -126,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
   ZoomBubbleView::ShowBubble(web_contents, true);
   ASSERT_TRUE(ZoomBubbleView::IsShowing());
   zoom_bubble = ZoomBubbleView::GetZoomBubbleForTest();
-  EXPECT_TRUE(zoom_bubble->anchor_view());
+  EXPECT_TRUE(zoom_bubble->GetAnchorView());
 
   // The top-of-window views should not hide till the zoom bubble hides. (It
   // would be weird if the view to which the zoom bubble is anchored hid while

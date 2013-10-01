@@ -9,6 +9,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -128,7 +129,7 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble) {
 BubbleDelegateView::BubbleDelegateView()
     : close_on_esc_(true),
       close_on_deactivate_(true),
-      anchor_view_(NULL),
+      anchor_view_storage_id_(ViewStorage::GetInstance()->CreateStorageID()),
       anchor_widget_(NULL),
       move_with_anchor_(false),
       arrow_(BubbleBorder::TOP_LEFT),
@@ -151,7 +152,7 @@ BubbleDelegateView::BubbleDelegateView(
     BubbleBorder::Arrow arrow)
     : close_on_esc_(true),
       close_on_deactivate_(true),
-      anchor_view_(anchor_view),
+      anchor_view_storage_id_(ViewStorage::GetInstance()->CreateStorageID()),
       anchor_widget_(NULL),
       move_with_anchor_(false),
       arrow_(arrow),
@@ -165,26 +166,20 @@ BubbleDelegateView::BubbleDelegateView(
       border_accepts_events_(true),
       adjust_if_offscreen_(true),
       parent_window_(NULL) {
+  SetAnchorView(anchor_view);
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   UpdateColorsFromTheme(GetNativeTheme());
 }
 
 BubbleDelegateView::~BubbleDelegateView() {
-  if (anchor_widget() != NULL)
-    anchor_widget()->RemoveObserver(this);
-  anchor_widget_ = NULL;
-  anchor_view_ = NULL;
+  SetAnchorView(NULL);
 }
 
 // static
 Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate) {
   bubble_delegate->Init();
-  // Determine the anchor widget from the anchor view at bubble creation time.
-  bubble_delegate->anchor_widget_ = bubble_delegate->anchor_view() ?
-      bubble_delegate->anchor_view()->GetWidget() : NULL;
-  if (bubble_delegate->anchor_widget())
-    bubble_delegate->anchor_widget()->AddObserver(bubble_delegate);
-
+  // Get the latest anchor widget from the anchor view at bubble creation time.
+  bubble_delegate->SetAnchorView(bubble_delegate->GetAnchorView());
   Widget* bubble_widget = CreateBubbleWidget(bubble_delegate);
 
 #if defined(OS_WIN)
@@ -231,11 +226,8 @@ NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView(
 }
 
 void BubbleDelegateView::OnWidgetDestroying(Widget* widget) {
-  if (anchor_widget() == widget) {
-    anchor_widget_->RemoveObserver(this);
-    anchor_view_ = NULL;
-    anchor_widget_ = NULL;
-  }
+  if (anchor_widget() == widget)
+    SetAnchorView(NULL);
 }
 
 void BubbleDelegateView::OnWidgetVisibilityChanging(Widget* widget,
@@ -267,12 +259,17 @@ void BubbleDelegateView::OnWidgetBoundsChanged(Widget* widget,
     SizeToContents();
 }
 
+View* BubbleDelegateView::GetAnchorView() const {
+  return ViewStorage::GetInstance()->RetrieveView(anchor_view_storage_id_);
+}
+
 gfx::Rect BubbleDelegateView::GetAnchorRect() {
-  if (!anchor_view())
+  if (!GetAnchorView())
     return anchor_rect_;
-  gfx::Rect anchor_bounds = anchor_view()->GetBoundsInScreen();
-  anchor_bounds.Inset(anchor_view_insets_);
-  return anchor_bounds;
+
+  anchor_rect_ = GetAnchorView()->GetBoundsInScreen();
+  anchor_rect_.Inset(anchor_view_insets_);
+  return anchor_rect_;
 }
 
 void BubbleDelegateView::StartFade(bool fade_in) {
@@ -369,6 +366,30 @@ void BubbleDelegateView::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 void BubbleDelegateView::Init() {}
+
+void BubbleDelegateView::SetAnchorView(View* anchor_view) {
+  // When the anchor view gets set the associated anchor widget might
+  // change as well.
+  if (!anchor_view || anchor_widget() != anchor_view->GetWidget()) {
+    if (anchor_widget()) {
+      anchor_widget_->RemoveObserver(this);
+      anchor_widget_ = NULL;
+    }
+    if (anchor_view) {
+      anchor_widget_ = anchor_view->GetWidget();
+      if (anchor_widget_)
+        anchor_widget_->AddObserver(this);
+    }
+  }
+
+  // Remove the old storage item and set the new (if there is one).
+  ViewStorage* view_storage = ViewStorage::GetInstance();
+  if (view_storage->RetrieveView(anchor_view_storage_id_))
+    view_storage->RemoveView(anchor_view_storage_id_);
+
+  if (anchor_view)
+    view_storage->StoreView(anchor_view_storage_id_, anchor_view);
+}
 
 void BubbleDelegateView::SizeToContents() {
 #if defined(OS_WIN) && !defined(USE_AURA)
