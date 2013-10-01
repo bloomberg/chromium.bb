@@ -9,7 +9,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/lock_state_controller_impl2.h"
+#include "ash/wm/lock_state_controller.h"
 #include "ash/wm/resize_shadow.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/window_state.h"
@@ -464,9 +464,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
 
 // Tests that a gesture cannot minimize a window in login/lock screen.
 TEST_F(ToplevelWindowEventHandlerTest, GestureDragMinimizeLoginScreen) {
-  LockStateControllerImpl2* state_controller =
-      static_cast<LockStateControllerImpl2*>
-          (Shell::GetInstance()->lock_state_controller());
+  LockStateController* state_controller =
+      Shell::GetInstance()->lock_state_controller();
   state_controller->OnLoginStateChanged(user::LOGGED_IN_NONE);
   state_controller->OnLockStateChanged(false);
   SetUserLoggedIn(false);

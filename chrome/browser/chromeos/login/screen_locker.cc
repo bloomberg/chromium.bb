@@ -231,19 +231,14 @@ void ScreenLocker::OnLoginSuccess(
   authentication_capture_->pending_requests = pending_requests;
   authentication_capture_->using_oauth = using_oauth;
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(ash::switches::kAshDisableNewLockAnimations)) {
-    UnlockOnLoginSuccess();
-  } else {
-    // Add guard for case when something get broken in call chain to unlock
-    // for sure.
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ScreenLocker::UnlockOnLoginSuccess,
-            weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(kUnlockGuardTimeoutMs));
-    delegate_->AnimateAuthenticationSuccess();
-  }
+  // Add guard for case when something get broken in call chain to unlock
+  // for sure.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ScreenLocker::UnlockOnLoginSuccess,
+          weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kUnlockGuardTimeoutMs));
+  delegate_->AnimateAuthenticationSuccess();
 }
 
 void ScreenLocker::UnlockOnLoginSuccess() {

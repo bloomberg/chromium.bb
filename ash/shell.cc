@@ -55,7 +55,6 @@
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/event_rewriter_event_filter.h"
 #include "ash/wm/lock_state_controller.h"
-#include "ash/wm/lock_state_controller_impl2.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -63,7 +62,6 @@
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/screen_dimmer.h"
-#include "ash/wm/session_state_controller_impl.h"
 #include "ash/wm/system_gesture_event_filter.h"
 #include "ash/wm/system_modal_container_event_filter.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
@@ -493,10 +491,7 @@ void Shell::Init() {
   if (keyboard::IsKeyboardEnabled())
     keyboard::InitializeKeyboard();
 
-  if (command_line->HasSwitch(ash::switches::kAshDisableNewLockAnimations))
-    lock_state_controller_.reset(new SessionStateControllerImpl);
-  else
-    lock_state_controller_.reset(new LockStateControllerImpl2);
+  lock_state_controller_.reset(new LockStateController);
   power_button_controller_.reset(new PowerButtonController(
       lock_state_controller_.get()));
   AddShellObserver(lock_state_controller_.get());

@@ -20,14 +20,14 @@
   background-image: url('chrome://theme/IDR_LAUNCHER_BACKGROUND');
 }
 
-html[screen=lock][lockanimations=new] .login-header-bar-hidden {
+html[screen=lock] .login-header-bar-hidden {
   opacity: 0;
 }
-html[screen=lock][lockanimations=new] .login-header-bar-animate-fast {
+html[screen=lock] .login-header-bar-animate-fast {
   -webkit-transition: opacity 200ms ease-out;
 }
 
-html[screen=lock][lockanimations=new] .login-header-bar-animate-slow {
+html[screen=lock] .login-header-bar-animate-slow {
   -webkit-transition: opacity 2s ease-out;
 }
 

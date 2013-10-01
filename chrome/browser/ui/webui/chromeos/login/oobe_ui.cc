@@ -375,12 +375,6 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString("buildType", "chromium");
 #endif
 
-  if (CommandLine::ForCurrentProcess()->
-          HasSwitch(ash::switches::kAshDisableNewLockAnimations))
-    localized_strings->SetString("lockAnimationsType", "old");
-  else
-    localized_strings->SetString("lockAnimationsType", "new");
-
   // If we're not doing boot animation then WebUI should trigger
   // wallpaper load on boot.
   if (CommandLine::ForCurrentProcess()->HasSwitch(

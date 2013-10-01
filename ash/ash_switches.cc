@@ -61,9 +61,6 @@ const char kAshDisableAutoMaximizing[] = "ash-disable-auto-maximizing";
 const char kAshDisableDisplayChangeLimiter[] =
     "ash-disable-display-change-limiter";
 
-// If present new lock animations are enabled.
-const char kAshDisableNewLockAnimations[] = "ash-disable-new-lock-animations";
-
 // Disable immersive fullscreen mode, regardless of default setting.
 const char kAshDisableImmersiveFullscreen[] =
     "ash-disable-immersive-fullscreen";

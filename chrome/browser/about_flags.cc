@@ -1139,13 +1139,6 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kChromeCaptivePortalDetectionChoices),
   },
   {
-    "disable-new-lock-animations",
-    IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS,
-    IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshDisableNewLockAnimations),
-  },
-  {
     "file-manager-show-checkboxes",
     IDS_FLAGS_FILE_MANAGER_SHOW_CHECKBOXES_NAME,
     IDS_FLAGS_FILE_MANAGER_SHOW_CHECKBOXES_DESCRIPTION,
