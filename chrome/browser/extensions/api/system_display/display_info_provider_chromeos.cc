@@ -355,14 +355,10 @@ bool SetInfoImpl(const std::string& display_id_str,
 
 }  // namespace
 
-void DisplayInfoProvider::SetInfo(const std::string& display_id,
+bool DisplayInfoProvider::SetInfo(const std::string& display_id,
                                   const DisplayProperties& info,
-                                  const SetInfoCallback& callback) {
-  std::string error;
-  bool success = SetInfoImpl(display_id, info, &error);
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, success, error));
+                                  std::string* error) {
+  return SetInfoImpl(display_id, info, error);
 }
 
 void DisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(

@@ -6,13 +6,11 @@
 
 namespace extensions {
 
-void DisplayInfoProvider::SetInfo(
-    const std::string& display_id,
+bool DisplayInfoProvider::SetInfo(const std::string& display_id,
     const api::system_display::DisplayProperties& info,
-    const SetInfoCallback& callback) {
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, false, "Not implemented"));
+    std::string* error) {
+  *error = "Not Implemented";
+  return false;
 }
 
 void DisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(

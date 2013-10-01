@@ -27,11 +27,9 @@ int RotationToDegrees(gfx::Display::Rotation rotation) {
   return 0;
 }
 
-// Creates new DisplayUnitInfo struct for |display| and adds it at the end of
-// |list|.
+// Creates new DisplayUnitInfo struct for |display|.
 extensions::api::system_display::DisplayUnitInfo*
-CreateDisplayUnitInfo(const gfx::Display& display,
-               int64 primary_display_id) {
+CreateDisplayUnitInfo(const gfx::Display& display, int64 primary_display_id) {
   extensions::api::system_display::DisplayUnitInfo* unit =
       new extensions::api::system_display::DisplayUnitInfo();
   const gfx::Rect& bounds = display.bounds();
@@ -52,59 +50,40 @@ CreateDisplayUnitInfo(const gfx::Display& display,
   return unit;
 }
 
+DisplayInfoProvider* g_display_info_provider = NULL;
+
 }  // namespace
 
-DisplayInfoProvider::DisplayInfoProvider() {
-}
 
-DisplayInfoProvider::~DisplayInfoProvider() {
-}
+DisplayInfoProvider::DisplayInfoProvider() {}
 
-// Static member intialization.
-base::LazyInstance<scoped_refptr<DisplayInfoProvider > >
-    DisplayInfoProvider::provider_ = LAZY_INSTANCE_INITIALIZER;
+DisplayInfoProvider::~DisplayInfoProvider() {}
 
-const DisplayInfo& DisplayInfoProvider::display_info() const {
-  return info_;
+DisplayInfoProvider* DisplayInfoProvider::Get() {
+  if (g_display_info_provider == NULL)
+    g_display_info_provider = new DisplayInfoProvider();
+  return g_display_info_provider;
 }
 
 void DisplayInfoProvider::InitializeForTesting(
-    scoped_refptr<DisplayInfoProvider> provider) {
-  DCHECK(provider.get() != NULL);
-  provider_.Get() = provider;
+    DisplayInfoProvider* display_info_provider) {
+  DCHECK(display_info_provider);
+  g_display_info_provider = display_info_provider;
 }
 
-void DisplayInfoProvider::RequestInfo(const RequestInfoCallback& callback) {
-  bool success = QueryInfo();
-
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, success));
-}
-
-#if !defined(OS_WIN)
-bool DisplayInfoProvider::QueryInfo() {
-  info_.clear();
-
+DisplayInfo DisplayInfoProvider::GetAllDisplaysInfo() {
   // TODO(scottmg): Native is wrong http://crbug.com/133312
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();
   int64 primary_id = screen->GetPrimaryDisplay().id();
   std::vector<gfx::Display> displays = screen->GetAllDisplays();
+  DisplayInfo all_displays;
   for (int i = 0; i < screen->GetNumDisplays(); ++i) {
     linked_ptr<extensions::api::system_display::DisplayUnitInfo> unit(
         CreateDisplayUnitInfo(displays[i], primary_id));
     UpdateDisplayUnitInfoForPlatform(displays[i], unit.get());
-    info_.push_back(unit);
+    all_displays.push_back(unit);
   }
-  return true;
-}
-#endif
-
-// static
-DisplayInfoProvider* DisplayInfoProvider::Get() {
-  if (provider_.Get().get() == NULL)
-    provider_.Get() = new DisplayInfoProvider();
-  return provider_.Get();
+  return all_displays;
 }
 
 }  // namespace extensions

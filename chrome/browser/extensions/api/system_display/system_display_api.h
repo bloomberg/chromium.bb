@@ -7,12 +7,11 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/api/system_display/display_info_provider.h"
 #include "chrome/browser/extensions/extension_function.h"
 
 namespace extensions {
 
-class SystemDisplayGetInfoFunction : public AsyncExtensionFunction {
+class SystemDisplayGetInfoFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.getInfo",
                              SYSTEM_DISPLAY_GETINFO);
@@ -20,13 +19,10 @@ class SystemDisplayGetInfoFunction : public AsyncExtensionFunction {
  protected:
   virtual ~SystemDisplayGetInfoFunction() {}
   virtual bool RunImpl() OVERRIDE;
-
- private:
-  void OnGetDisplayInfoCompleted(bool success);
 };
 
 class SystemDisplaySetDisplayPropertiesFunction
-    : public AsyncExtensionFunction {
+    : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.setDisplayProperties",
                              SYSTEM_DISPLAY_SETDISPLAYPROPERTIES);
@@ -34,9 +30,6 @@ class SystemDisplaySetDisplayPropertiesFunction
  protected:
   virtual ~SystemDisplaySetDisplayPropertiesFunction() {}
   virtual bool RunImpl() OVERRIDE;
-
- private:
-  void OnPropertiesSet(bool success, const std::string& error);
 };
 
 }  // namespace extensions

@@ -18,19 +18,6 @@
 namespace extensions {
 namespace {
 
-void BindRequestDisplayInfoResult(DisplayInfo* target, bool success) {
-  ASSERT_TRUE(success);
-  *target = DisplayInfoProvider::Get()->display_info();
-}
-
-void BindSetDisplayUnitInfoResult(bool* success,
-                                  std::string* error,
-                                  bool success_in,
-                                  const std::string& error_in) {
-  *success = success_in;
-  *error = error_in;
-}
-
 class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
  public:
   DisplayInfoProviderChromeosTest() {}
@@ -38,20 +25,14 @@ class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
   virtual ~DisplayInfoProviderChromeosTest() {}
 
  protected:
-  void CallRequestDisplayInfo(DisplayInfo* result) {
-    DisplayInfoProvider::Get()->RequestInfo(
-        base::Bind(&BindRequestDisplayInfoResult, result));
-    RunAllPendingInMessageLoop();
-  }
-
   void CallSetDisplayUnitInfo(
       const std::string& display_id,
       const api::system_display::DisplayProperties& info,
       bool* success,
       std::string* error) {
-    DisplayInfoProvider::Get()->SetInfo(display_id, info,
-        base::Bind(&BindSetDisplayUnitInfoResult, success, error));
-    RunAllPendingInMessageLoop();
+    // Reset error messsage.
+    (*error).clear();
+    *success = DisplayInfoProvider::Get()->SetInfo(display_id, info, error);
   }
 
   bool DisplayExists(int64 display_id) const {
@@ -87,8 +68,7 @@ class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
 
 TEST_F(DisplayInfoProviderChromeosTest, GetBasic) {
   UpdateDisplay("500x600,400x520");
-  DisplayInfo result;
-  CallRequestDisplayInfo(&result);
+  DisplayInfo result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
 
@@ -127,8 +107,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBasic) {
 
 TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
   UpdateDisplay("500x600/r");
-  DisplayInfo result;
-  CallRequestDisplayInfo(&result);
+  DisplayInfo result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(1u, result.size());
 
@@ -142,7 +121,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
 
   GetDisplayManager()->SetDisplayRotation(display_id, gfx::Display::ROTATE_270);
 
-  CallRequestDisplayInfo(&result);
+  result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(1u, result.size());
 
@@ -152,7 +131,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
 
   GetDisplayManager()->SetDisplayRotation(display_id, gfx::Display::ROTATE_180);
 
-  CallRequestDisplayInfo(&result);
+  result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(1u, result.size());
 
@@ -162,7 +141,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
 
   GetDisplayManager()->SetDisplayRotation(display_id, gfx::Display::ROTATE_0);
 
-  CallRequestDisplayInfo(&result);
+  result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(1u, result.size());
 
@@ -174,7 +153,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
 TEST_F(DisplayInfoProviderChromeosTest, GetHiDPI) {
   UpdateDisplay("500x600,400x520*2");
   DisplayInfo result;
-  CallRequestDisplayInfo(&result);
+  result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
 
@@ -189,7 +168,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetHiDPI) {
 
   GetDisplayController()->SwapPrimaryDisplay();
 
-  CallRequestDisplayInfo(&result);
+  result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
 
@@ -206,7 +185,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetHiDPI) {
 TEST_F(DisplayInfoProviderChromeosTest, GetVisibleArea) {
   UpdateDisplay("640x720*2/o, 400x520/o");
   DisplayInfo result;
-  CallRequestDisplayInfo(&result);
+  result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
 
@@ -223,7 +202,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetVisibleArea) {
 
   GetDisplayManager()->SetOverscanInsets(display_id,
                                          gfx::Insets(20, 30, 50, 60));
-  CallRequestDisplayInfo(&result);
+  result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
 
@@ -243,7 +222,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetVisibleArea) {
 
   GetDisplayManager()->SetOverscanInsets(display_id,
                                          gfx::Insets(10, 20, 30, 40));
-  CallRequestDisplayInfo(&result);
+  result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
 
@@ -256,7 +235,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetVisibleArea) {
 TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
   UpdateDisplay("600x600, 400x520/o");
   DisplayInfo result;
-  CallRequestDisplayInfo(&result);
+  result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
 
@@ -279,7 +258,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
   GetDisplayManager()->SetMirrorMode(true);
   ASSERT_TRUE(GetDisplayManager()->IsMirrored());
 
-  CallRequestDisplayInfo(&result);
+  result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(1u, result.size());
   EXPECT_EQ(base::Int64ToString(display_id_primary), result[0]->id);
@@ -289,7 +268,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
   GetDisplayManager()->SetMirrorMode(false);
   ASSERT_FALSE(GetDisplayManager()->IsMirrored());
 
-  CallRequestDisplayInfo(&result);
+  result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
   EXPECT_EQ(base::Int64ToString(display_id_primary), result[0]->id);
@@ -303,8 +282,8 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
   GetDisplayController()->SetLayoutForCurrentDisplays(
       ash::DisplayLayout::FromInts(ash::DisplayLayout::LEFT, -40));
 
-  DisplayInfo result;
-  CallRequestDisplayInfo(&result);
+  DisplayInfo result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
+
   ASSERT_EQ(2u, result.size());
   EXPECT_EQ("0,0 600x600", SystemInfoDisplayBoundsToString(result[0]->bounds));
   EXPECT_EQ("-400,-40 400x520",
@@ -313,7 +292,8 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
   GetDisplayController()->SetLayoutForCurrentDisplays(
       ash::DisplayLayout::FromInts(ash::DisplayLayout::TOP, 40));
 
-  CallRequestDisplayInfo(&result);
+  result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
+
   ASSERT_EQ(2u, result.size());
   EXPECT_EQ("0,0 600x600", SystemInfoDisplayBoundsToString(result[0]->bounds));
   EXPECT_EQ("40,-520 400x520",
@@ -322,7 +302,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
   GetDisplayController()->SetLayoutForCurrentDisplays(
       ash::DisplayLayout::FromInts(ash::DisplayLayout::BOTTOM, 80));
 
-  CallRequestDisplayInfo(&result);
+  result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
   ASSERT_EQ(2u, result.size());
   EXPECT_EQ("0,0 600x600", SystemInfoDisplayBoundsToString(result[0]->bounds));
   EXPECT_EQ("80,600 400x520",

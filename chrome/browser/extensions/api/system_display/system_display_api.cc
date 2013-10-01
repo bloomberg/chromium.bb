@@ -4,8 +4,15 @@
 
 #include "chrome/browser/extensions/api/system_display/system_display_api.h"
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
+#include "chrome/browser/extensions/api/system_display/display_info_provider.h"
+#include "chrome/common/extensions/api/system_display.h"
 #include "chrome/common/extensions/manifest_handlers/kiosk_mode_info.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 
 namespace extensions {
 
@@ -13,23 +20,14 @@ using api::system_display::DisplayUnitInfo;
 
 namespace SetDisplayProperties = api::system_display::SetDisplayProperties;
 
-bool SystemDisplayGetInfoFunction::RunImpl() {
-  DisplayInfoProvider::Get()->RequestInfo(
-      base::Bind(
-          &SystemDisplayGetInfoFunction::OnGetDisplayInfoCompleted,
-          this));
-  return true;
-}
+typedef std::vector<linked_ptr<
+    api::system_display::DisplayUnitInfo> > DisplayInfo;
 
-void SystemDisplayGetInfoFunction::OnGetDisplayInfoCompleted(
-    bool success) {
-  if (success) {
-    results_ = api::system_display::GetInfo::Results::Create(
-                   DisplayInfoProvider::Get()->display_info());
-  } else {
-    SetError("Error occurred when querying display information.");
-  }
-  SendResponse(success);
+bool SystemDisplayGetInfoFunction::RunImpl() {
+  DisplayInfo all_displays_info =
+      DisplayInfoProvider::Get()->GetAllDisplaysInfo();
+  results_ = api::system_display::GetInfo::Results::Create(all_displays_info);
+  return true;
 }
 
 bool SystemDisplaySetDisplayPropertiesFunction::RunImpl() {
@@ -41,22 +39,16 @@ bool SystemDisplaySetDisplayPropertiesFunction::RunImpl() {
     SetError("The extension needs to be kiosk enabled to use the function.");
     return false;
   }
-
+  std::string error;
   scoped_ptr<SetDisplayProperties::Params> params(
       SetDisplayProperties::Params::Create(*args_));
-  DisplayInfoProvider::Get()->SetInfo(params->id, params->info,
-      base::Bind(
-          &SystemDisplaySetDisplayPropertiesFunction::OnPropertiesSet,
-          this));
-  return true;
-#endif
-}
-
-void SystemDisplaySetDisplayPropertiesFunction::OnPropertiesSet(
-    bool success, const std::string& error) {
+  bool success = DisplayInfoProvider::Get()->SetInfo(params->id,
+                                                     params->info,
+                                                     &error);
   if (!success)
     SetError(error);
-  SendResponse(success);
+  return true;
+#endif
 }
 
 }  // namespace extensions

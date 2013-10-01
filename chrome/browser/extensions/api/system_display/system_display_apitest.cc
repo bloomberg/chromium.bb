@@ -8,6 +8,14 @@
 #include "chrome/browser/extensions/api/system_display/display_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/display_observer.h"
+#include "ui/gfx/screen.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/screen_ash.h"
+#include "ash/shell.h"
+#endif
 
 namespace utils = extension_function_test_utils;
 
@@ -15,53 +23,109 @@ namespace extensions {
 
 using api::system_display::Bounds;
 using api::system_display::DisplayUnitInfo;
+using gfx::Screen;
+
+#if defined(OS_CHROMEOS)
+class MockScreen : public ash::ScreenAsh {
+ public:
+  MockScreen() {
+    for (int i = 0; i < 4; i++) {
+      gfx::Rect bounds(0, 0, 1280, 720);
+      gfx::Rect work_area(0, 0, 960, 720);
+      gfx::Display display(i, bounds);
+      display.set_work_area(work_area);
+      displays_.push_back(display);
+    }
+  }
+  virtual ~MockScreen() {}
+
+ protected:
+  // Overridden from gfx::Screen:
+  virtual int GetNumDisplays() const OVERRIDE {
+    return displays_.size();
+  }
+  virtual std::vector<gfx::Display> GetAllDisplays() const OVERRIDE {
+    return displays_;
+  }
+  virtual gfx::Display GetPrimaryDisplay() const OVERRIDE {
+    return displays_[0];
+  }
+ private:
+  std::vector<gfx::Display> displays_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockScreen);
+};
+#else
+class MockScreen : public Screen {
+ public:
+  MockScreen() {
+    for (int i = 0; i < 4; i++) {
+      gfx::Rect bounds(0, 0, 1280, 720);
+      gfx::Rect work_area(0, 0, 960, 720);
+      gfx::Display display(i, bounds);
+      display.set_work_area(work_area);
+      displays_.push_back(display);
+    }
+  }
+  virtual ~MockScreen() {}
+
+ protected:
+  // Overridden from gfx::Screen:
+  virtual bool IsDIPEnabled() OVERRIDE { return true; }
+  virtual gfx::Point GetCursorScreenPoint() OVERRIDE  { return gfx::Point(); }
+  virtual gfx::NativeWindow GetWindowUnderCursor() OVERRIDE {
+    return gfx::NativeWindow();
+  }
+  virtual gfx::NativeWindow GetWindowAtScreenPoint(
+      const gfx::Point& point) OVERRIDE {
+    return gfx::NativeWindow();
+  }
+  virtual int GetNumDisplays() const OVERRIDE {
+    return displays_.size();
+  }
+  virtual std::vector<gfx::Display> GetAllDisplays() const OVERRIDE {
+    return displays_;
+  }
+  virtual gfx::Display GetDisplayNearestWindow(
+      gfx::NativeView window) const OVERRIDE {
+    return gfx::Display(0);
+  }
+  virtual gfx::Display GetDisplayNearestPoint(
+      const gfx::Point& point) const OVERRIDE {
+    return gfx::Display(0);
+  }
+  virtual gfx::Display GetDisplayMatching(
+      const gfx::Rect& match_rect) const OVERRIDE {
+    return gfx::Display(0);
+  }
+  virtual gfx::Display GetPrimaryDisplay() const OVERRIDE {
+    return displays_[0];
+  }
+  virtual void AddObserver(gfx::DisplayObserver* observer) OVERRIDE {}
+  virtual void RemoveObserver(gfx::DisplayObserver* observer) OVERRIDE {}
+
+ private:
+  std::vector<gfx::Display> displays_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockScreen);
+};
+#endif
 
 class MockDisplayInfoProvider : public DisplayInfoProvider {
  public:
   MockDisplayInfoProvider() {}
 
-  virtual bool QueryInfo() OVERRIDE {
-    info_.clear();
-    for (int i = 0; i < 4; i++) {
-      linked_ptr<DisplayUnitInfo> unit(new DisplayUnitInfo());
-      unit->id = base::IntToString(i);
-      unit->name = "DISPLAY NAME FOR " + unit->id;
-      if (i == 1)
-        unit->mirroring_source_id = "0";
-      unit->is_primary = i == 0 ? true : false;
-      unit->is_internal = i == 0 ? true : false;
-      unit->is_enabled = true;
-      unit->rotation = (90 * i) % 360;
-      unit->dpi_x = 96.0;
-      unit->dpi_y = 96.0;
-      unit->bounds.left = 0;
-      unit->bounds.top = 0;
-      unit->bounds.width = 1280;
-      unit->bounds.height = 720;
-      if (i == 0) {
-        unit->overscan.left = 20;
-        unit->overscan.top = 40;
-        unit->overscan.right = 60;
-        unit->overscan.bottom = 80;
-      }
-      unit->work_area.left = 0;
-      unit->work_area.top = 0;
-      unit->work_area.width = 960;
-      unit->work_area.height = 720;
-      info_.push_back(unit);
-    }
-    return true;
-  }
+  virtual ~MockDisplayInfoProvider() {}
 
-  virtual void SetInfo(
+  virtual bool SetInfo(
       const std::string& display_id,
       const api::system_display::DisplayProperties& params,
-      const SetInfoCallback& callback) OVERRIDE {
+      std::string* error) OVERRIDE {
     // Should get called only once per test case.
     EXPECT_FALSE(set_info_value_);
     set_info_value_ = params.ToValue();
     set_info_display_id_ = display_id;
-    callback.Run(true, std::string());
+    return true;
   }
 
   scoped_ptr<base::DictionaryValue> GetSetInfoValue() {
@@ -73,7 +137,28 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
   }
 
  private:
-  virtual ~MockDisplayInfoProvider() {}
+  // Update the content of the |unit| obtained for |display| using
+  // platform specific method.
+  virtual void UpdateDisplayUnitInfoForPlatform(
+      const gfx::Display& display,
+      extensions::api::system_display::DisplayUnitInfo* unit) OVERRIDE {
+    int64 id = display.id();
+    unit->name = "DISPLAY NAME FOR " + base::Int64ToString(id);
+    if (id == 1)
+      unit->mirroring_source_id = "0";
+    unit->is_primary = id == 0 ? true : false;
+    unit->is_internal = id == 0 ? true : false;
+    unit->is_enabled = true;
+    unit->rotation = (90 * id) % 360;
+    unit->dpi_x = 96.0;
+    unit->dpi_y = 96.0;
+    if (id == 0) {
+      unit->overscan.left = 20;
+      unit->overscan.top = 40;
+      unit->overscan.right = 60;
+      unit->overscan.bottom = 80;
+    }
+  }
 
   scoped_ptr<base::DictionaryValue> set_info_value_;
   std::string set_info_display_id_;
@@ -83,24 +168,28 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
 
 class SystemDisplayApiTest: public ExtensionApiTest {
  public:
-  SystemDisplayApiTest() {}
+  SystemDisplayApiTest() : provider_(new MockDisplayInfoProvider),
+                           screen_(new MockScreen) {}
+
   virtual ~SystemDisplayApiTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
     ExtensionApiTest::SetUpOnMainThread();
-    provider_ = new MockDisplayInfoProvider();
-    // The |provider| will be co-owned by the singleton instance.
-    DisplayInfoProvider::InitializeForTesting(provider_);
+    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
+    DisplayInfoProvider::InitializeForTesting(provider_.get());
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
-    // Has to be released before the main thread is gone.
-    provider_ = NULL;
+#if defined(OS_CHROMEOS)
+    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
+                                   ash::Shell::GetInstance()->screen());
+#endif
     ExtensionApiTest::CleanUpOnMainThread();
   }
 
  protected:
-  scoped_refptr<MockDisplayInfoProvider> provider_;
+  scoped_ptr<MockDisplayInfoProvider> provider_;
+  scoped_ptr<gfx::Screen> screen_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemDisplayApiTest);
 };
