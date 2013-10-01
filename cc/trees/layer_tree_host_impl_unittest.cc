@@ -210,16 +210,17 @@ class LayerTreeHostImplTest : public testing::Test,
     ASSERT_EQ(0, times_encountered);
   }
 
-  LayerImpl* SetupScrollAndContentsLayers(gfx::Size content_size) {
+  LayerImpl* CreateScrollAndContentsLayers(LayerTreeImpl* layer_tree_impl,
+                                           gfx::Size content_size) {
     scoped_ptr<LayerImpl> root =
-        LayerImpl::Create(host_impl_->active_tree(), 1);
+        LayerImpl::Create(layer_tree_impl, 1);
     root->SetBounds(content_size);
     root->SetContentBounds(content_size);
     root->SetPosition(gfx::PointF());
     root->SetAnchorPoint(gfx::PointF());
 
     scoped_ptr<LayerImpl> scroll =
-        LayerImpl::Create(host_impl_->active_tree(), 2);
+        LayerImpl::Create(layer_tree_impl, 2);
     LayerImpl* scroll_layer = scroll.get();
     scroll->SetScrollable(true);
     scroll->SetScrollOffset(gfx::Vector2d());
@@ -231,7 +232,7 @@ class LayerTreeHostImplTest : public testing::Test,
     scroll->SetAnchorPoint(gfx::PointF());
 
     scoped_ptr<LayerImpl> contents =
-        LayerImpl::Create(host_impl_->active_tree(), 3);
+        LayerImpl::Create(layer_tree_impl, 3);
     contents->SetDrawsContent(true);
     contents->SetBounds(content_size);
     contents->SetContentBounds(content_size);
@@ -241,7 +242,13 @@ class LayerTreeHostImplTest : public testing::Test,
     scroll->AddChild(contents.Pass());
     root->AddChild(scroll.Pass());
 
-    host_impl_->active_tree()->SetRootLayer(root.Pass());
+    layer_tree_impl->SetRootLayer(root.Pass());
+    return scroll_layer;
+  }
+
+  LayerImpl* SetupScrollAndContentsLayers(gfx::Size content_size) {
+    LayerImpl* scroll_layer = CreateScrollAndContentsLayers(
+        host_impl_->active_tree(), content_size);
     host_impl_->active_tree()->DidBecomeActive();
     return scroll_layer;
   }
@@ -2510,6 +2517,14 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   EXPECT_EQ(current_offset + scroll_delta,
             scroll_delegate.last_set_scroll_offset());
   host_impl_->ScrollEnd();
+
+  // Forces a full tree synchronization and ensures that the scroll delegate
+  // sees the correct size of the new tree.
+  gfx::Size new_size(42, 24);
+  host_impl_->CreatePendingTree();
+  CreateScrollAndContentsLayers(host_impl_->pending_tree(), new_size);
+  host_impl_->ActivatePendingTree();
+  EXPECT_EQ(new_size, scroll_delegate.scrollable_size());
 
   // Un-setting the delegate should propagate the delegate's current offset to
   // the root scrollable layer.

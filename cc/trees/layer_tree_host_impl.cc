@@ -1513,9 +1513,9 @@ void LayerTreeHostImpl::ActivatePendingTree() {
   // next sync.
   pending_tree_.swap(recycle_tree_);
 
+  active_tree_->DidBecomeActive();
   active_tree_->SetRootLayerScrollOffsetDelegate(
       root_layer_scroll_offset_delegate_);
-  active_tree_->DidBecomeActive();
 
   // Reduce wasted memory now that unlinked resources are guaranteed not
   // to be used.
