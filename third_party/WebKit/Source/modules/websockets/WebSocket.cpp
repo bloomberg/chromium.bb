@@ -149,17 +149,10 @@ WebSocket::~WebSocket()
         m_channel->disconnect();
 }
 
-PassRefPtr<WebSocket> WebSocket::create(ScriptExecutionContext* context)
-{
-    RefPtr<WebSocket> webSocket(adoptRef(new WebSocket(context)));
-    webSocket->suspendIfNeeded();
-    return webSocket.release();
-}
-
 PassRefPtr<WebSocket> WebSocket::create(ScriptExecutionContext* context, const String& url, ExceptionState& es)
 {
     Vector<String> protocols;
-    return WebSocket::create(context, url, protocols, es);
+    return create(context, url, protocols, es);
 }
 
 PassRefPtr<WebSocket> WebSocket::create(ScriptExecutionContext* context, const String& url, const Vector<String>& protocols, ExceptionState& es)
@@ -183,7 +176,7 @@ PassRefPtr<WebSocket> WebSocket::create(ScriptExecutionContext* context, const S
 {
     Vector<String> protocols;
     protocols.append(protocol);
-    return WebSocket::create(context, url, protocols, es);
+    return create(context, url, protocols, es);
 }
 
 void WebSocket::connect(const String& url, ExceptionState& es)

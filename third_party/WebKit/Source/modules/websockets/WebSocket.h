@@ -52,7 +52,6 @@ class ExceptionState;
 class WebSocket : public RefCounted<WebSocket>, public ScriptWrappable, public EventTarget, public ActiveDOMObject, public WebSocketChannelClient {
 public:
     static const char* subProtocolSeperator();
-    static PassRefPtr<WebSocket> create(ScriptExecutionContext*);
     static PassRefPtr<WebSocket> create(ScriptExecutionContext*, const String& url, ExceptionState&);
     static PassRefPtr<WebSocket> create(ScriptExecutionContext*, const String& url, const String& protocol, ExceptionState&);
     static PassRefPtr<WebSocket> create(ScriptExecutionContext*, const String& url, const Vector<String>& protocols, ExceptionState&);
