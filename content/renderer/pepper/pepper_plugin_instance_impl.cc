@@ -117,6 +117,10 @@
 #include "v8/include/v8.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
+#if defined(OS_CHROMEOS)
+#include "ui/events/keycodes/keyboard_codes_posix.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "printing/metafile_impl.h"
 #endif  // defined(OS_MACOSX)
@@ -331,6 +335,33 @@ scoped_ptr<const char*[]> StringVectorToArgArray(
   for (size_t i = 0; i < vector.size(); ++i)
     array[i] = vector[i].c_str();
   return array.Pass();
+}
+
+// Returns true if this is a "system reserved" key which should not be sent to
+// a plugin. Some poorly behaving plugins (like Flash) incorrectly report that
+// they handle all keys sent to them. This can prevent keystrokes from working
+// for things like screen brightness and volume control.
+bool IsReservedSystemInputEvent(const WebKit::WebInputEvent& event) {
+#if defined(OS_CHROMEOS)
+  if (event.type != WebInputEvent::KeyDown &&
+      event.type != WebInputEvent::KeyUp)
+    return false;
+  const WebKit::WebKeyboardEvent& key_event =
+      static_cast<const WebKit::WebKeyboardEvent&>(event);
+  switch (key_event.windowsKeyCode) {
+    case ui::VKEY_BRIGHTNESS_DOWN:
+    case ui::VKEY_BRIGHTNESS_UP:
+    case ui::VKEY_KBD_BRIGHTNESS_DOWN:
+    case ui::VKEY_KBD_BRIGHTNESS_UP:
+    case ui::VKEY_VOLUME_MUTE:
+    case ui::VKEY_VOLUME_DOWN:
+    case ui::VKEY_VOLUME_UP:
+      return true;
+    default:
+      return false;
+  }
+#endif  // defined(OS_CHROMEOS)
+  return false;
 }
 
 class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
@@ -958,6 +989,10 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
 
   // Don't dispatch input events to crashed plugins.
   if (module()->is_crashed())
+    return false;
+
+  // Don't send reserved system key events to plugins.
+  if (IsReservedSystemInputEvent(event))
     return false;
 
   // Keep a reference on the stack. See NOTE above.
