@@ -128,7 +128,7 @@ def Load(build_files, format, default_variables={},
   # Process the input specific to this generator.
   result = gyp.input.Load(build_files, default_variables, includes[:],
                           depth, generator_input_info, check, circular_check,
-                          params['parallel'], params['root_targets'])
+                          params['parallel'])
   return [generator] + result
 
 def NameValueListToDict(name_value_list):
@@ -337,9 +337,6 @@ def gyp_main(args):
   parser.add_option('--toplevel-dir', dest='toplevel_dir', action='store',
                     default=None, metavar='DIR', type='path',
                     help='directory to use as the root of the source tree')
-  parser.add_option('-R', '--root-target', dest='root_targets',
-                    action='append', metavar='TARGET',
-                    help='include only TARGET and its deep dependencies')
 
   options, build_files_arg = parser.parse_args(args)
   build_files = build_files_arg
@@ -509,8 +506,7 @@ def gyp_main(args):
               'build_files_arg': build_files_arg,
               'gyp_binary': sys.argv[0],
               'home_dot_gyp': home_dot_gyp,
-              'parallel': options.parallel,
-              'root_targets': options.root_targets}
+              'parallel': options.parallel}
 
     # Start with the default variables from the command line.
     [generator, flat_list, targets, data] = Load(build_files, format,

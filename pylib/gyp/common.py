@@ -44,14 +44,6 @@ def ExceptionAppend(e, msg):
     e.args = (str(e.args[0]) + ' ' + msg,) + e.args[1:]
 
 
-def FindQualifiedTargets(target, qualified_list):
-  """
-  Given a list of qualified targets, return the qualified targets for the
-  specified |target|.
-  """
-  return [t for t in qualified_list if ParseQualifiedTarget(t)[1] == target]
-
-
 def ParseQualifiedTarget(target):
   # Splits a qualified target into a build file, target name and toolset.
 
