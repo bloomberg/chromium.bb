@@ -310,6 +310,29 @@ TEST(DhcpProxyScriptAdapterFetcher, MockDhcpRealFetch) {
             client.fetcher_->GetPacURL());
 }
 
+#define BASE_URL "http://corpserver/proxy.pac"
+
+TEST(DhcpProxyScriptAdapterFetcher, SanitizeDhcpApiString) {
+  const size_t kBaseUrlLen = strlen(BASE_URL);
+
+  // Default case.
+  EXPECT_EQ(BASE_URL,
+            DhcpProxyScriptAdapterFetcher::SanitizeDhcpApiString(
+                BASE_URL, kBaseUrlLen));
+
+  // Trailing \n and no null-termination.
+  EXPECT_EQ(BASE_URL,
+            DhcpProxyScriptAdapterFetcher::SanitizeDhcpApiString(
+                BASE_URL "\nblablabla", kBaseUrlLen + 1));
+
+  // Embedded NULLs.
+  EXPECT_EQ(BASE_URL,
+            DhcpProxyScriptAdapterFetcher::SanitizeDhcpApiString(
+                BASE_URL "\0foo\0blat", kBaseUrlLen + 9));
+}
+
+#undef BASE_URL
+
 }  // namespace
 
 }  // namespace net

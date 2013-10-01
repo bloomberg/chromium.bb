@@ -79,6 +79,10 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptAdapterFetcher
   // DHCP client API.
   static std::string GetPacURLFromDhcp(const std::string& adapter_name);
 
+  // Sanitizes a string returned via the DHCP API.
+  static std::string SanitizeDhcpApiString(const char* data,
+                                           size_t count_bytes);
+
  protected:
   // This is the state machine for fetching from a given adapter.
   //
