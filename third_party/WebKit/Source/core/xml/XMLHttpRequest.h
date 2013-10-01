@@ -178,9 +178,14 @@ private:
     void callReadyStateChangeListener();
     void dropProtectionSoon();
     void dropProtection(Timer<XMLHttpRequest>* = 0);
+    // Clears variables used only while the resource is being loaded.
+    void clearVariablesForLoading();
     // Returns false iff reentry happened and a new load is started.
     bool internalAbort(DropProtection = DropProtectionSync);
+    // Clears variables holding response header and body data. If it's needed
+    // to keep response header data, use clearResponseBuffers().
     void clearResponse();
+    // Clears variables holding response body data.
     void clearResponseBuffers();
     void clearRequest();
 
@@ -220,6 +225,8 @@ private:
     RefPtr<TextResourceDecoder> m_decoder;
 
     ScriptString m_responseText;
+    // Used to skip m_responseDocument creation if it's done previously. We need
+    // this separate flag since m_responseDocument can be 0 for some cases.
     mutable bool m_createdDocument;
     mutable RefPtr<Document> m_responseDocument;
 

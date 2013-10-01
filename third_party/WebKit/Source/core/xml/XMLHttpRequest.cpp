@@ -837,13 +837,20 @@ void XMLHttpRequest::abort()
     }
 }
 
+void XMLHttpRequest::clearVariablesForLoading()
+{
+    // FIXME: when we add the support for multi-part XHR, we will have to think be careful with this initialization.
+    m_receivedLength = 0;
+    m_decoder = 0;
+
+    m_responseEncoding = String();
+}
+
 bool XMLHttpRequest::internalAbort(DropProtection async)
 {
     m_error = true;
 
-    // FIXME: when we add the support for multi-part XHR, we will have to think be careful with this initialization.
-    m_receivedLength = 0;
-    m_decoder = 0;
+    clearVariablesForLoading();
 
     InspectorInstrumentation::didFailXHRLoading(scriptExecutionContext(), this);
 
@@ -887,11 +894,16 @@ void XMLHttpRequest::clearResponse()
 void XMLHttpRequest::clearResponseBuffers()
 {
     m_responseText.clear();
-    m_responseEncoding = String();
+
     m_createdDocument = false;
     m_responseDocument = 0;
+
     m_responseBlob = 0;
+
     m_responseStream = 0;
+
+    // These variables may referred by the response accessors. So, we can clear
+    // this only when we clear the response holder variables above.
     m_binaryResponseBuilder.clear();
     m_responseArrayBuffer.clear();
 }
@@ -1153,6 +1165,8 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
     if (m_decoder)
         m_responseText = m_responseText.concatenateWith(m_decoder->flush());
 
+    clearVariablesForLoading();
+
     if (m_responseStream)
         m_responseStream->finalize();
 
@@ -1167,8 +1181,6 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
     }
 
     changeState(DONE);
-    m_responseEncoding = String();
-    m_decoder = 0;
 }
 
 void XMLHttpRequest::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
@@ -1245,21 +1257,24 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
         m_responseStream->addData(data, len);
     }
 
-    if (!m_error) {
+    if (m_error)
+        return;
+
+    m_receivedLength += len;
+
+    if (m_async) {
         long long expectedLength = m_response.expectedContentLength();
-        m_receivedLength += len;
+        bool lengthComputable = expectedLength > 0 && m_receivedLength <= expectedLength;
+        unsigned long long total = lengthComputable ? expectedLength : 0;
 
-        if (m_async) {
-            bool lengthComputable = expectedLength > 0 && m_receivedLength <= expectedLength;
-            unsigned long long total = lengthComputable ? expectedLength : 0;
-            m_progressEventThrottle.dispatchProgressEvent(lengthComputable, m_receivedLength, total);
-        }
+        m_progressEventThrottle.dispatchProgressEvent(lengthComputable, m_receivedLength, total);
+    }
 
-        if (m_state != LOADING)
-            changeState(LOADING);
-        else
-            // Firefox calls readyStateChanged every time it receives data, 4449442
-            callReadyStateChangeListener();
+    if (m_state != LOADING) {
+        changeState(LOADING);
+    } else {
+        // Firefox calls readyStateChanged every time it receives data, 4449442
+        callReadyStateChangeListener();
     }
 }
 
