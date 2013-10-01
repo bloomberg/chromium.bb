@@ -66,7 +66,6 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/owner_key_util.h"
-#include "chrome/browser/chromeos/swap_metrics.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
@@ -663,10 +662,6 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- immediately after ChildProcess::WaitForDebugger().
 
-  // Swap metrics watcher must be installed before browser is activated.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoSwapMetrics))
-    swap_metrics_.reset(new SwapMetrics);
-
   // Start the out-of-memory priority manager here so that we give the most
   // amount of time for the other services to start up before we start
   // adjusting the oom priority.
@@ -690,8 +685,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   BootTimesLoader::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
   g_browser_process->platform_part()->oom_priority_manager()->Stop();
-
-  swap_metrics_.reset();
 
   // Stops all in-flight OAuth2 token fetchers before the IO thread stops.
   DeviceOAuth2TokenServiceFactory::Shutdown();

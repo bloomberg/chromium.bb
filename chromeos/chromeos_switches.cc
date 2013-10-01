@@ -178,10 +178,6 @@ const char kNaturalScrollDefault[]          = "enable-natural-scroll-default";
 // out-of-memory process killer.
 const char kNoDiscardTabs[]                 = "no-discard-tabs";
 
-// Disables recording of swap and CPU utilization metrics logging after tab
-// switch and scroll events.
-const char kNoSwapMetrics[]                 = "no-swap-metrics";
-
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
 

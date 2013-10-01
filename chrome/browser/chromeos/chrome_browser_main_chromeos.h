@@ -83,7 +83,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<UserActivityNotifier> user_activity_notifier_;
   scoped_ptr<VideoActivityNotifier> video_activity_notifier_;
   scoped_ptr<IdleActionWarningObserver> idle_action_warning_observer_;
-  scoped_ptr<SwapMetrics> swap_metrics_;
 
   scoped_ptr<internal::DBusServices> dbus_services_;
 

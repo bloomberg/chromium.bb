@@ -96,59 +96,6 @@ void SetupProgressiveScanFieldTrial() {
   }
 }
 
-// Finds out if we're on a 2GB Parrot.
-bool Is2GBParrot() {
-  if (base::SysInfo::GetLsbReleaseBoard() != "parrot")
-    return false;
-  // There are 2GB and 4GB models.
-  return base::SysInfo::AmountOfPhysicalMemory() <= 2LL * 1024 * 1024 * 1024;
-}
-
-// Sets up field trial for measuring swap and CPU metrics after tab switch
-// and scroll events. crbug.com/253994
-void SetupSwapJankFieldTrial() {
-  const char name_of_experiment[] = "SwapJank64vs32Parrot";
-
-  // Determine if this is a 32 or 64 bit build of Chrome.
-  bool is_chrome_64 = sizeof(void*) == 8;
-
-  // Determine if this is a 32 or 64 bit kernel.
-  bool is_kernel_64 = base::SysInfo::OperatingSystemArchitecture() == "x86_64";
-
-  // A 32 bit kernel requires 32 bit Chrome.
-  DCHECK(is_kernel_64 || !is_chrome_64);
-
-  // Find out if we're on a 2GB Parrot.
-  bool is_parrot = Is2GBParrot();
-
-  // All groups are either on or off.
-  const base::FieldTrial::Probability kTotalProbability = 1;
-  scoped_refptr<base::FieldTrial> trial =
-      base::FieldTrialList::FactoryGetFieldTrial(
-          name_of_experiment, kTotalProbability, "default", 2013, 12, 31,
-          base::FieldTrial::SESSION_RANDOMIZED, NULL);
-
-  // Assign probability of 1 to this Chrome's group.  Assign 0 to all other
-  // choices.
-  trial->AppendGroup("kernel_64_chrome_64",
-                     is_parrot && is_kernel_64 && is_chrome_64 ?
-                     kTotalProbability : 0);
-  trial->AppendGroup("kernel_64_chrome_32",
-                     is_parrot && is_kernel_64 && !is_chrome_64 ?
-                     kTotalProbability : 0);
-  trial->AppendGroup("kernel_32_chrome_32",
-                     is_parrot && !is_kernel_64 && !is_chrome_64 ?
-                     kTotalProbability : 0);
-  trial->AppendGroup("not_parrot",
-                     !is_parrot ? kTotalProbability : 0);
-
-  // Announce the experiment to any listeners (especially important is the UMA
-  // software, which will append the group names to UMA statistics).
-  trial->group();
-  DVLOG(1) << "Configured in group '" << trial->group_name() << "' for "
-           << name_of_experiment << " field trial";
-}
-
 }  // namespace
 
 // The interval between external metrics collections in seconds
@@ -404,7 +351,6 @@ void ExternalMetrics::SetupFieldTrialsOnFileThread() {
   // Field trials that do not read from files can be initialized in
   // ExternalMetrics::Start() above.
   SetupProgressiveScanFieldTrial();
-  SetupSwapJankFieldTrial();
 
   ScheduleCollector();
 }
