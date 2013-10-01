@@ -665,8 +665,6 @@ public:
 
     void viewport(GC3Dint x, GC3Dint y, GC3Dsizei width, GC3Dsizei height);
 
-    void reshape(int width, int height);
-
     void markContextChanged();
     void markLayerComposited();
     bool layerComposited() const;

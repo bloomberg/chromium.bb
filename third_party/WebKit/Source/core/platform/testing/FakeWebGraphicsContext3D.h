@@ -42,11 +42,6 @@ public:
 
     virtual bool makeContextCurrent() { return true; }
 
-    virtual int width() { return 0; }
-    virtual int height() { return 0; }
-
-    virtual void reshape(int width, int height) { }
-
     virtual void prepareTexture() { }
 
     virtual void postSubBufferCHROMIUM(int x, int y, int width, int height) { }

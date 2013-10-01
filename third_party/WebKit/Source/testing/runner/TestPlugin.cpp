@@ -254,7 +254,7 @@ void TestPlugin::updateGeometry(const WebRect& frameRect, const WebRect& clipRec
     if (m_rect.isEmpty())
         return;
 
-    m_context->reshape(m_rect.width, m_rect.height);
+    m_context->reshapeWithScaleFactor(m_rect.width, m_rect.height, 1.f);
     m_context->viewport(0, 0, m_rect.width, m_rect.height);
 
     m_context->bindTexture(GL_TEXTURE_2D, m_colorTexture);

@@ -68,15 +68,10 @@ namespace {
 void getDrawingParameters(DrawingBuffer* drawingBuffer, WebKit::WebGraphicsContext3D* graphicsContext3D,
                           Platform3DObject* frameBufferId, int* width, int* height)
 {
-    if (drawingBuffer) {
-        *frameBufferId = drawingBuffer->framebuffer();
-        *width = drawingBuffer->size().width();
-        *height = drawingBuffer->size().height();
-    } else {
-        *frameBufferId = 0;
-        *width = graphicsContext3D->width();
-        *height = graphicsContext3D->height();
-    }
+    ASSERT(drawingBuffer);
+    *frameBufferId = drawingBuffer->framebuffer();
+    *width = drawingBuffer->size().width();
+    *height = drawingBuffer->size().height();
 }
 
 } // anonymous namespace
@@ -571,14 +566,6 @@ DELEGATE_TO_WEBCONTEXT_2(vertexAttrib4fv, GC3Duint, GC3Dfloat*)
 DELEGATE_TO_WEBCONTEXT_6(vertexAttribPointer, GC3Duint, GC3Dint, GC3Denum, GC3Dboolean, GC3Dsizei, GC3Dintptr)
 
 DELEGATE_TO_WEBCONTEXT_4(viewport, GC3Dint, GC3Dint, GC3Dsizei, GC3Dsizei)
-
-void GraphicsContext3D::reshape(int width, int height)
-{
-    if (width == m_impl->width() && height == m_impl->height())
-        return;
-
-    m_impl->reshape(width, height);
-}
 
 void GraphicsContext3D::markContextChanged()
 {
