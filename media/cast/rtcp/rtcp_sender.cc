@@ -490,7 +490,7 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast,
   int number_of_loss_fields = 0;
   int max_number_of_loss_fields =
        std::min<int>(kRtcpMaxCastLossFields,
-                     kIpPacketSize - static_cast<int>(packet->size()) / 4);
+                     (kIpPacketSize - static_cast<int>(packet->size())) / 4);
 
   std::map<uint8, std::set<uint16> >::const_iterator frame_it =
       cast->missing_frames_and_packets_.begin();
