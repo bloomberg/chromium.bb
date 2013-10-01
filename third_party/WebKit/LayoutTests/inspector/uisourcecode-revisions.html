@@ -13,10 +13,14 @@ function test()
         var project = workspace.addProject(projectDelegate);
         project.requestFileContent = function(uri, callback)
         {
-            callback("<script content>", false, "text/javascript");
+            callback("<script content>");
         }
         project.setFileContent = function(uri, newContent, callback)
         {
+        }
+        project.fileMimeType = function(uri)
+        {
+            return "text/javascript";
         }
 
         return project;
