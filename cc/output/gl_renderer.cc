@@ -732,7 +732,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
                                     const RenderPassDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
-  CachedResource* contents_texture =
+  ScopedResource* contents_texture =
       render_pass_textures_.get(quad->render_pass_id);
   if (!contents_texture || !contents_texture->id())
     return;

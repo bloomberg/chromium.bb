@@ -380,8 +380,7 @@ void TiledLayer::MarkOcclusionsAndRequestTextures(
                                            draw_transform(),
                                            draw_transform_is_animating(),
                                            is_clipped(),
-                                           clip_rect(),
-                                           NULL)) {
+                                           clip_rect())) {
         tile->occluded = true;
         occluded_tile_count++;
       } else {

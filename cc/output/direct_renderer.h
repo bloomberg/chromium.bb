@@ -29,8 +29,6 @@ class CC_EXPORT DirectRenderer : public Renderer {
   virtual bool CanReadPixels() const OVERRIDE;
   virtual void DecideRenderPassAllocationsForFrame(
       const RenderPassList& render_passes_in_draw_order) OVERRIDE;
-  virtual bool HaveCachedResourcesForRenderPassId(RenderPass::Id id) const
-      OVERRIDE;
   virtual bool HasAllocatedResourcesForTesting(RenderPass::Id id) const
       OVERRIDE;
   virtual void DrawFrame(RenderPassList* render_passes_in_draw_order,
@@ -61,28 +59,6 @@ class CC_EXPORT DirectRenderer : public Renderer {
                  const LayerTreeSettings* settings,
                  OutputSurface* output_surface,
                  ResourceProvider* resource_provider);
-
-  class CachedResource : public ScopedResource {
-   public:
-    static scoped_ptr<CachedResource> Create(
-        ResourceProvider* resource_provider) {
-      return make_scoped_ptr(new CachedResource(resource_provider));
-    }
-    virtual ~CachedResource() {}
-
-    bool is_complete() const { return is_complete_; }
-    void set_is_complete(bool is_complete) { is_complete_ = is_complete; }
-
-   protected:
-    explicit CachedResource(ResourceProvider* resource_provider)
-        : ScopedResource(resource_provider),
-          is_complete_(false) {}
-
-   private:
-    bool is_complete_;
-
-    DISALLOW_COPY_AND_ASSIGN(CachedResource);
-  };
 
   static gfx::RectF QuadVertexRect();
   static void QuadRectTransform(gfx::Transform* quad_rect_transform,
@@ -138,7 +114,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
       DrawingFrame* frame,
       scoped_ptr<CopyOutputRequest> request) = 0;
 
-  base::ScopedPtrHashMap<RenderPass::Id, CachedResource> render_pass_textures_;
+  base::ScopedPtrHashMap<RenderPass::Id, ScopedResource> render_pass_textures_;
   OutputSurface* output_surface_;
   ResourceProvider* resource_provider_;
 

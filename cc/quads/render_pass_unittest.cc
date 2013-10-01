@@ -30,7 +30,6 @@ struct RenderPassSize {
   gfx::Rect output_rect;
   gfx::RectF damage_rect;
   bool has_transparent_background;
-  bool has_occlusion_from_outside_target_surface;
   ScopedPtrVector<CopyOutputRequest> copy_callbacks;
 };
 
@@ -41,15 +40,13 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   gfx::Rect damage_rect(56, 123, 19, 43);
   bool has_transparent_background = true;
-  bool has_occlusion_from_outside_target_surface = true;
 
   scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
   pass->SetAll(id,
                output_rect,
                damage_rect,
                transform_to_root,
-               has_transparent_background,
-               has_occlusion_from_outside_target_surface);
+               has_transparent_background);
   pass->copy_requests.push_back(CopyOutputRequest::CreateEmptyRequest());
 
   // Stick a quad in the pass, this should not get copied.
@@ -72,8 +69,6 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   EXPECT_EQ(pass->transform_to_root_target, copy->transform_to_root_target);
   EXPECT_RECT_EQ(pass->damage_rect, copy->damage_rect);
   EXPECT_EQ(pass->has_transparent_background, copy->has_transparent_background);
-  EXPECT_EQ(pass->has_occlusion_from_outside_target_surface,
-            copy->has_occlusion_from_outside_target_surface);
   EXPECT_EQ(0u, copy->quad_list.size());
 
   // The copy request should not be copied/duplicated.
@@ -92,15 +87,13 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   gfx::Rect damage_rect(56, 123, 19, 43);
   bool has_transparent_background = true;
-  bool has_occlusion_from_outside_target_surface = true;
 
   scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
   pass->SetAll(id,
                output_rect,
                damage_rect,
                transform_to_root,
-               has_transparent_background,
-               has_occlusion_from_outside_target_surface);
+               has_transparent_background);
 
   // Two quads using one shared state.
   scoped_ptr<SharedQuadState> shared_state1 = SharedQuadState::Create();
@@ -145,15 +138,13 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   gfx::Rect contrib_damage_rect(11, 16, 10, 15);
   bool contrib_has_transparent_background = true;
-  bool contrib_has_occlusion_from_outside_target_surface = true;
 
   scoped_ptr<TestRenderPass> contrib = TestRenderPass::Create();
   contrib->SetAll(contrib_id,
                   contrib_output_rect,
                   contrib_damage_rect,
                   contrib_transform_to_root,
-                  contrib_has_transparent_background,
-                  contrib_has_occlusion_from_outside_target_surface);
+                  contrib_has_transparent_background);
 
   scoped_ptr<SharedQuadState> contrib_shared_state = SharedQuadState::Create();
   contrib_shared_state->SetAll(
@@ -197,8 +188,6 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
     EXPECT_RECT_EQ(pass->damage_rect, copy->damage_rect);
     EXPECT_EQ(pass->has_transparent_background,
               copy->has_transparent_background);
-    EXPECT_EQ(pass->has_occlusion_from_outside_target_surface,
-              copy->has_occlusion_from_outside_target_surface);
 
     EXPECT_EQ(pass->shared_quad_state_list.size(),
               copy->shared_quad_state_list.size());

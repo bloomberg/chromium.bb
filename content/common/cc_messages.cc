@@ -352,7 +352,6 @@ void ParamTraits<cc::RenderPass>::Write(
   WriteParam(m, p.damage_rect);
   WriteParam(m, p.transform_to_root_target);
   WriteParam(m, p.has_transparent_background);
-  WriteParam(m, p.has_occlusion_from_outside_target_surface);
   WriteParam(m, p.shared_quad_state_list.size());
   WriteParam(m, p.quad_list.size());
 
@@ -444,7 +443,6 @@ bool ParamTraits<cc::RenderPass>::Read(
   gfx::RectF damage_rect;
   gfx::Transform transform_to_root_target;
   bool has_transparent_background;
-  bool has_occlusion_from_outside_target_surface;
   size_t shared_quad_state_list_size;
   size_t quad_list_size;
 
@@ -453,7 +451,6 @@ bool ParamTraits<cc::RenderPass>::Read(
       !ReadParam(m, iter, &damage_rect) ||
       !ReadParam(m, iter, &transform_to_root_target) ||
       !ReadParam(m, iter, &has_transparent_background) ||
-      !ReadParam(m, iter, &has_occlusion_from_outside_target_surface) ||
       !ReadParam(m, iter, &shared_quad_state_list_size) ||
       !ReadParam(m, iter, &quad_list_size))
     return false;
@@ -462,8 +459,7 @@ bool ParamTraits<cc::RenderPass>::Read(
             output_rect,
             damage_rect,
             transform_to_root_target,
-            has_transparent_background,
-            has_occlusion_from_outside_target_surface);
+            has_transparent_background);
 
   for (size_t i = 0; i < shared_quad_state_list_size; ++i) {
     scoped_ptr<cc::SharedQuadState> state(cc::SharedQuadState::Create());
@@ -547,8 +543,6 @@ void ParamTraits<cc::RenderPass>::Log(
   LogParam(p.transform_to_root_target, l);
   l->append(", ");
   LogParam(p.has_transparent_background, l);
-  l->append(", ");
-  LogParam(p.has_occlusion_from_outside_target_surface, l);
   l->append(", ");
 
   l->append("[");

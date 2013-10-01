@@ -46,8 +46,6 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->damage_rect.ToString(), b->damage_rect.ToString());
     EXPECT_EQ(a->transform_to_root_target, b->transform_to_root_target);
     EXPECT_EQ(a->has_transparent_background, b->has_transparent_background);
-    EXPECT_EQ(a->has_occlusion_from_outside_target_surface,
-              b->has_occlusion_from_outside_target_surface);
   }
 
   void Compare(const SharedQuadState* a, const SharedQuadState* b) {
@@ -404,8 +402,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                   arbitrary_rect1,
                   arbitrary_rectf1,
                   arbitrary_matrix,
-                  arbitrary_bool1,
-                  arbitrary_bool2);
+                  arbitrary_bool1);
 
   pass_in->shared_quad_state_list.push_back(shared_state1_in.Pass());
   pass_in->quad_list.push_back(checkerboard_in.PassAs<DrawQuad>());
@@ -425,8 +422,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                    arbitrary_rect1,
                    arbitrary_rectf1,
                    arbitrary_matrix,
-                   arbitrary_bool1,
-                   arbitrary_bool2);
+                   arbitrary_bool1);
 
   pass_cmp->shared_quad_state_list.push_back(shared_state1_cmp.Pass());
   pass_cmp->quad_list.push_back(checkerboard_cmp.PassAs<DrawQuad>());

@@ -55,8 +55,7 @@ class CC_EXPORT OcclusionTrackerBase {
                 const gfx::Transform& draw_transform,
                 bool impl_draw_transform_is_unknown,
                 bool is_clipped,
-                gfx::Rect clip_rect_in_target,
-                bool* has_occlusion_from_outside_target_surface) const;
+                gfx::Rect clip_rect_in_target) const;
 
   // Gives an unoccluded sub-rect of |content_rect| in the content space of a
   // layer. Used when considering occlusion for a layer that paints/draws
@@ -69,8 +68,7 @@ class CC_EXPORT OcclusionTrackerBase {
       const gfx::Transform& draw_transform,
       bool impl_draw_transform_is_unknown,
       bool is_clipped,
-      gfx::Rect clip_rect_in_target,
-      bool* has_occlusion_from_outside_target_surface) const;
+      gfx::Rect clip_rect_in_target) const;
 
   // Gives an unoccluded sub-rect of |content_rect| in the content space of the
   // render_target owned by the layer. Used when considering occlusion for a
@@ -78,8 +76,7 @@ class CC_EXPORT OcclusionTrackerBase {
   gfx::Rect UnoccludedContributingSurfaceContentRect(
       const LayerType* layer,
       bool for_replica,
-      gfx::Rect content_rect,
-      bool* has_occlusion_from_outside_target_surface) const;
+      gfx::Rect content_rect) const;
 
   // Report operations for recording overdraw metrics.
   OverdrawMetrics* overdraw_metrics() const {

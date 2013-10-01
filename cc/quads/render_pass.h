@@ -83,8 +83,7 @@ class CC_EXPORT RenderPass {
               gfx::Rect output_rect,
               gfx::RectF damage_rect,
               const gfx::Transform& transform_to_root_target,
-              bool has_transparent_background,
-              bool has_occlusion_from_outside_target_surface);
+              bool has_transparent_background);
 
   scoped_ptr<base::Value> AsValue() const;
 
@@ -101,10 +100,6 @@ class CC_EXPORT RenderPass {
 
   // If false, the pixels in the render pass' texture are all opaque.
   bool has_transparent_background;
-
-  // If true, then there may be pixels in the render pass' texture that are not
-  // complete, since they are occluded.
-  bool has_occlusion_from_outside_target_surface;
 
   // If non-empty, the renderer should produce a copy of the render pass'
   // contents as a bitmap, and give a copy of the bitmap to each callback in

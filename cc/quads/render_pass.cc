@@ -26,8 +26,7 @@ scoped_ptr<RenderPass> RenderPass::Create() {
 
 RenderPass::RenderPass()
     : id(Id(-1, -1)),
-      has_transparent_background(true),
-      has_occlusion_from_outside_target_surface(false) {}
+      has_transparent_background(true) {}
 
 RenderPass::~RenderPass() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
@@ -41,8 +40,7 @@ scoped_ptr<RenderPass> RenderPass::Copy(Id new_id) const {
                     output_rect,
                     damage_rect,
                     transform_to_root_target,
-                    has_transparent_background,
-                    has_occlusion_from_outside_target_surface);
+                    has_transparent_background);
   return copy_pass.Pass();
 }
 
@@ -61,8 +59,7 @@ void RenderPass::CopyAll(const ScopedPtrVector<RenderPass>& in,
                       source->output_rect,
                       source->damage_rect,
                       source->transform_to_root_target,
-                      source->has_transparent_background,
-                      source->has_occlusion_from_outside_target_surface);
+                      source->has_transparent_background);
     for (size_t i = 0; i < source->shared_quad_state_list.size(); ++i) {
       copy_pass->shared_quad_state_list.push_back(
           source->shared_quad_state_list[i]->Copy());
@@ -112,8 +109,7 @@ void RenderPass::SetAll(Id id,
                         gfx::Rect output_rect,
                         gfx::RectF damage_rect,
                         const gfx::Transform& transform_to_root_target,
-                        bool has_transparent_background,
-                        bool has_occlusion_from_outside_target_surface) {
+                        bool has_transparent_background) {
   DCHECK_GT(id.layer_id, 0);
   DCHECK_GE(id.index, 0);
 
@@ -122,8 +118,6 @@ void RenderPass::SetAll(Id id,
   this->damage_rect = damage_rect;
   this->transform_to_root_target = transform_to_root_target;
   this->has_transparent_background = has_transparent_background;
-  this->has_occlusion_from_outside_target_surface =
-      has_occlusion_from_outside_target_surface;
 
   DCHECK(quad_list.empty());
   DCHECK(shared_quad_state_list.empty());
@@ -134,8 +128,6 @@ scoped_ptr<base::Value> RenderPass::AsValue() const {
   value->Set("output_rect", MathUtil::AsValue(output_rect).release());
   value->Set("damage_rect", MathUtil::AsValue(damage_rect).release());
   value->SetBoolean("has_transparent_background", has_transparent_background);
-  value->SetBoolean("has_occlusion_from_outside_target_surface",
-                    has_occlusion_from_outside_target_surface);
   value->SetInteger("copy_requests", copy_requests.size());
   scoped_ptr<base::ListValue> shared_states_value(new base::ListValue());
   for (size_t i = 0; i < shared_quad_state_list.size(); ++i) {

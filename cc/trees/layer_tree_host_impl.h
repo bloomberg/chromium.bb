@@ -345,26 +345,6 @@ class CC_EXPORT LayerTreeHostImpl
   void SetDebugState(const LayerTreeDebugState& new_debug_state);
   const LayerTreeDebugState& debug_state() const { return debug_state_; }
 
-  class CC_EXPORT CullRenderPassesWithCachedTextures {
- public:
-    bool ShouldRemoveRenderPass(const RenderPassDrawQuad& quad,
-                                const FrameData& frame) const;
-
-    // Iterates from the root first, in order to remove the surfaces closest
-    // to the root with cached textures, and all surfaces that draw into
-    // them.
-    size_t RenderPassListBegin(const RenderPassList& list) const {
-      return list.size() - 1;
-    }
-    size_t RenderPassListEnd(const RenderPassList& list) const { return 0 - 1; }
-    size_t RenderPassListNext(size_t it) const { return it - 1; }
-
-    explicit CullRenderPassesWithCachedTextures(Renderer* renderer)
-        : renderer_(renderer) {}
- private:
-    Renderer* renderer_;
-  };
-
   class CC_EXPORT CullRenderPassesWithNoQuads {
  public:
     bool ShouldRemoveRenderPass(const RenderPassDrawQuad& quad,

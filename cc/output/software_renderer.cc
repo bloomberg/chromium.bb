@@ -415,7 +415,7 @@ void SoftwareRenderer::DrawTileQuad(const DrawingFrame* frame,
 
 void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
                                           const RenderPassDrawQuad* quad) {
-  CachedResource* content_texture =
+  ScopedResource* content_texture =
       render_pass_textures_.get(quad->render_pass_id);
   if (!content_texture || !content_texture->id())
     return;

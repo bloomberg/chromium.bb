@@ -762,19 +762,15 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
                                        &append_quads_data);
     } else if (it.represents_itself() &&
                !it->visible_content_rect().IsEmpty()) {
-      bool has_occlusion_from_outside_target_surface;
       bool impl_draw_transform_is_unknown = false;
-      if (occlusion_tracker.Occluded(
+      bool occluded = occlusion_tracker.Occluded(
               it->render_target(),
               it->visible_content_rect(),
               it->draw_transform(),
               impl_draw_transform_is_unknown,
               it->is_clipped(),
-              it->clip_rect(),
-              &has_occlusion_from_outside_target_surface)) {
-        append_quads_data.had_occlusion_from_outside_target_surface |=
-            has_occlusion_from_outside_target_surface;
-      } else if (it->WillDraw(draw_mode, resource_provider_.get())) {
+              it->clip_rect());
+      if (!occluded && it->WillDraw(draw_mode, resource_provider_.get())) {
         DCHECK_EQ(active_tree_, it->layer_tree_impl());
 
         frame->will_draw_layers.push_back(*it);
@@ -806,9 +802,6 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
       ++layers_drawn;
     }
-
-    if (append_quads_data.had_occlusion_from_outside_target_surface)
-      target_render_pass->has_occlusion_from_outside_target_surface = true;
 
     if (append_quads_data.num_missing_tiles) {
       rendering_stats_instrumentation_->AddMissingTiles(
@@ -860,8 +853,6 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
   RemoveRenderPasses(CullRenderPassesWithNoQuads(), frame);
   renderer_->DecideRenderPassAllocationsForFrame(frame->render_passes);
-  RemoveRenderPasses(CullRenderPassesWithCachedTextures(renderer_.get()),
-                     frame);
 
   // Any copy requests left in the tree are not going to get serviced, and
   // should be aborted.
@@ -959,24 +950,6 @@ static void RemoveRenderPassesRecursive(RenderPass::Id remove_render_pass_id,
   }
 }
 
-bool LayerTreeHostImpl::CullRenderPassesWithCachedTextures::
-    ShouldRemoveRenderPass(const RenderPassDrawQuad& quad,
-                           const FrameData& frame) const {
-  DCHECK(renderer_);
-  bool quad_has_damage = !quad.contents_changed_since_last_frame.IsEmpty();
-  bool quad_has_cached_resource =
-      renderer_->HaveCachedResourcesForRenderPassId(quad.render_pass_id);
-  if (quad_has_damage) {
-    TRACE_EVENT0("cc", "CullRenderPassesWithCachedTextures have damage");
-    return false;
-  } else if (!quad_has_cached_resource) {
-    TRACE_EVENT0("cc", "CullRenderPassesWithCachedTextures have no texture");
-    return false;
-  }
-  TRACE_EVENT0("cc", "CullRenderPassesWithCachedTextures dropped!");
-  return true;
-}
-
 bool LayerTreeHostImpl::CullRenderPassesWithNoQuads::ShouldRemoveRenderPass(
     const RenderPassDrawQuad& quad, const FrameData& frame) const {
   const RenderPass* render_pass =
@@ -1004,9 +977,6 @@ bool LayerTreeHostImpl::CullRenderPassesWithNoQuads::ShouldRemoveRenderPass(
 }
 
 // Defined for linking tests.
-template CC_EXPORT void LayerTreeHostImpl::RemoveRenderPasses<
-  LayerTreeHostImpl::CullRenderPassesWithCachedTextures>(
-      CullRenderPassesWithCachedTextures culler, FrameData* frame);
 template CC_EXPORT void LayerTreeHostImpl::RemoveRenderPasses<
   LayerTreeHostImpl::CullRenderPassesWithNoQuads>(
       CullRenderPassesWithNoQuads culler, FrameData*);

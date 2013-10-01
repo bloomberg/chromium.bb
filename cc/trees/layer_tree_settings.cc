@@ -21,7 +21,6 @@ LayerTreeSettings::LayerTreeSettings()
       using_synchronous_renderer_compositor(false),
       per_tile_painting_enabled(false),
       partial_swap_enabled(false),
-      cache_render_pass_contents(true),
       accelerated_animation_enabled(true),
       background_color_instead_of_checkerboard(false),
       show_overdraw_in_tracing(false),
@@ -60,9 +59,6 @@ LayerTreeSettings::LayerTreeSettings()
       ignore_root_layer_flings(false),
       use_rgba_4444_textures(false),
       always_overscroll(false) {
-  // TODO(danakj): Renable surface caching when we can do it more realiably.
-  // crbug.com/170713
-  cache_render_pass_contents = false;
 }
 
 LayerTreeSettings::~LayerTreeSettings() {}

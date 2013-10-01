@@ -42,7 +42,6 @@ class CC_EXPORT Renderer {
 
   virtual void DecideRenderPassAllocationsForFrame(
       const RenderPassList& render_passes_in_draw_order) {}
-  virtual bool HaveCachedResourcesForRenderPassId(RenderPass::Id id) const;
   virtual bool HasAllocatedResourcesForTesting(RenderPass::Id id) const;
 
   // This passes ownership of the render passes to the renderer. It should

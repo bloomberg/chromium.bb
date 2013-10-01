@@ -154,7 +154,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order[i]->id, render_passes_in_draw_order[i]));
 
   std::vector<RenderPass::Id> passes_to_delete;
-  base::ScopedPtrHashMap<RenderPass::Id, CachedResource>::const_iterator
+  base::ScopedPtrHashMap<RenderPass::Id, ScopedResource>::const_iterator
       pass_iter;
   for (pass_iter = render_pass_textures_.begin();
        pass_iter != render_pass_textures_.end();
@@ -170,7 +170,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
     gfx::Size required_size = RenderPassTextureSize(render_pass_in_frame);
     ResourceFormat required_format =
         RenderPassTextureFormat(render_pass_in_frame);
-    CachedResource* texture = pass_iter->second;
+    ScopedResource* texture = pass_iter->second;
     DCHECK(texture);
 
     bool size_appropriate = texture->size().width() >= required_size.width() &&
@@ -187,8 +187,8 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 
   for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i) {
     if (!render_pass_textures_.contains(render_passes_in_draw_order[i]->id)) {
-      scoped_ptr<CachedResource> texture =
-          CachedResource::Create(resource_provider_);
+      scoped_ptr<ScopedResource> texture =
+          ScopedResource::create(resource_provider_);
       render_pass_textures_.set(render_passes_in_draw_order[i]->id,
                               texture.Pass());
     }
@@ -381,12 +381,6 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
       DoDrawQuad(frame, *it);
   }
   FinishDrawingQuadList();
-
-  CachedResource* texture = render_pass_textures_.get(render_pass->id);
-  if (texture) {
-    texture->set_is_complete(
-        !render_pass->has_occlusion_from_outside_target_surface);
-  }
 }
 
 bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
@@ -406,7 +400,7 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
   if (!resource_provider_)
     return false;
 
-  CachedResource* texture = render_pass_textures_.get(render_pass->id);
+  ScopedResource* texture = render_pass_textures_.get(render_pass->id);
   DCHECK(texture);
 
   gfx::Size size = RenderPassTextureSize(render_pass);
@@ -421,18 +415,9 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
   return BindFramebufferToTexture(frame, texture, render_pass->output_rect);
 }
 
-bool DirectRenderer::HaveCachedResourcesForRenderPassId(RenderPass::Id id)
-    const {
-  if (!settings_->cache_render_pass_contents)
-    return false;
-
-  CachedResource* texture = render_pass_textures_.get(id);
-  return texture && texture->id() && texture->is_complete();
-}
-
 bool DirectRenderer::HasAllocatedResourcesForTesting(RenderPass::Id id)
     const {
-  CachedResource* texture = render_pass_textures_.get(id);
+  ScopedResource* texture = render_pass_textures_.get(id);
   return texture && texture->id();
 }
 
