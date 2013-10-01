@@ -120,8 +120,15 @@ void StatisticsProviderImpl::Init() {
 
 bool StatisticsProviderImpl::GetMachineStatistic(
     const std::string& name, std::string* result) {
-  DCHECK(initialized_);
-  DCHECK(load_statistics_started_);
+  // TODO(stevenjb): These should be fatal once fixed. crbug.com/302798.
+  if (!initialized_) {
+    LOG(ERROR) << "GetMachineStatistic called before initialized: " << name;
+    return false;
+  }
+  if (!load_statistics_started_) {
+    LOG(ERROR) << "GetMachineStatistic called before load started: " << name;
+    return false;
+  }
 
   VLOG(1) << "Statistic is requested for " << name;
   // Block if the statistics are not loaded yet. Per LOG(WARNING) below,
