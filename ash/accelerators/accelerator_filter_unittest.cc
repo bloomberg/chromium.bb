@@ -5,10 +5,10 @@
 #include "ash/accelerators/accelerator_filter.h"
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/test_screenshot_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,36 +23,6 @@ namespace test {
 
 namespace {
 
-class DummyScreenshotDelegate : public ScreenshotDelegate {
- public:
-  DummyScreenshotDelegate() : handle_take_screenshot_count_(0) {
-  }
-  virtual ~DummyScreenshotDelegate() {}
-
-  // Overridden from ScreenshotDelegate:
-  virtual void HandleTakeScreenshotForAllRootWindows() OVERRIDE {
-    ++handle_take_screenshot_count_;
-  }
-
-  virtual void HandleTakePartialScreenshot(
-      aura::Window* window, const gfx::Rect& rect) OVERRIDE {
-    // Do nothing because it's not tested yet.
-  }
-
-  virtual bool CanTakeScreenshot() OVERRIDE {
-    return true;
-  }
-
-  int handle_take_screenshot_count() const {
-    return handle_take_screenshot_count_;
-  }
-
- private:
-  int handle_take_screenshot_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(DummyScreenshotDelegate);
-};
-
 AcceleratorController* GetController() {
   return Shell::GetInstance()->accelerator_controller();
 }
@@ -63,9 +33,7 @@ typedef AshTestBase AcceleratorFilterTest;
 
 // Tests if AcceleratorFilter works without a focused window.
 TEST_F(AcceleratorFilterTest, TestFilterWithoutFocus) {
-  DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
-  GetController()->SetScreenshotDelegate(
-      scoped_ptr<ScreenshotDelegate>(delegate).Pass());
+  const TestScreenshotDelegate* delegate = GetScreenshotDelegate();
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
@@ -86,9 +54,7 @@ TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
       gfx::Rect()));
   wm::ActivateWindow(window.get());
 
-  DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
-  GetController()->SetScreenshotDelegate(
-      scoped_ptr<ScreenshotDelegate>(delegate).Pass());
+  const TestScreenshotDelegate* delegate = GetScreenshotDelegate();
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
   // AcceleratorFilter should ignore the key events since the root window is
@@ -105,9 +71,7 @@ TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
 
 // Tests if AcceleratorFilter ignores the flag for Caps Lock.
 TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
-  DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
-  GetController()->SetScreenshotDelegate(
-      scoped_ptr<ScreenshotDelegate>(delegate).Pass());
+  const TestScreenshotDelegate* delegate = GetScreenshotDelegate();
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());

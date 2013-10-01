@@ -273,6 +273,10 @@ void AshTestBase::RunAllPendingInMessageLoop() {
   ash_test_helper_->RunAllPendingInMessageLoop();
 }
 
+TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {
+  return ash_test_helper_->test_screenshot_delegate();
+}
+
 void AshTestBase::SetSessionStarted(bool session_started) {
   ash_test_helper_->test_shell_delegate()->test_session_state_delegate()->
       SetActiveUserSessionStarted(session_started);

@@ -7,7 +7,6 @@
 #include "ash/caps_lock_delegate.h"
 #include "ash/display/display_manager.h"
 #include "ash/ime_control_delegate.h"
-#include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/brightness_control_delegate.h"
@@ -15,6 +14,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
+#include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/window_state.h"
@@ -63,36 +63,6 @@ class ReleaseAccelerator : public ui::Accelerator {
       : ui::Accelerator(keycode, modifiers) {
     set_type(ui::ET_KEY_RELEASED);
   }
-};
-
-class DummyScreenshotDelegate : public ScreenshotDelegate {
- public:
-  DummyScreenshotDelegate()
-      : handle_take_screenshot_count_(0) {
-  }
-  virtual ~DummyScreenshotDelegate() {}
-
-  // Overridden from ScreenshotDelegate:
-  virtual void HandleTakeScreenshotForAllRootWindows() OVERRIDE {
-    ++handle_take_screenshot_count_;
-  }
-
-  virtual void HandleTakePartialScreenshot(
-      aura::Window* window, const gfx::Rect& rect) OVERRIDE {
-  }
-
-  virtual bool CanTakeScreenshot() OVERRIDE {
-    return true;
-  }
-
-  int handle_take_screenshot_count() const {
-    return handle_take_screenshot_count_;
-  }
-
- private:
-  int handle_take_screenshot_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(DummyScreenshotDelegate);
 };
 
 class DummyVolumeControlDelegate : public VolumeControlDelegate {
@@ -681,6 +651,8 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // Take screenshot / partial screenshot
   // True should always be returned regardless of the existence of the delegate.
   {
+    test::TestScreenshotDelegate* delegate = GetScreenshotDelegate();
+    delegate->set_can_take_screenshot(false);
     EXPECT_TRUE(ProcessWithContext(
         ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN)));
     EXPECT_TRUE(ProcessWithContext(
@@ -688,9 +660,8 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_TRUE(ProcessWithContext(
         ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1,
                         ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
-    DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
-    GetController()->SetScreenshotDelegate(
-        scoped_ptr<ScreenshotDelegate>(delegate).Pass());
+
+    delegate->set_can_take_screenshot(true);
     EXPECT_EQ(0, delegate->handle_take_screenshot_count());
     EXPECT_TRUE(ProcessWithContext(
         ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN)));
@@ -1227,6 +1198,8 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   //
   // Screenshot
   {
+    test::TestScreenshotDelegate* delegate = GetScreenshotDelegate();
+    delegate->set_can_take_screenshot(false);
     EXPECT_TRUE(ProcessWithContext(
         ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN)));
     EXPECT_TRUE(ProcessWithContext(
@@ -1234,9 +1207,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
     EXPECT_TRUE(ProcessWithContext(
         ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1,
                         ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
-    DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
-    GetController()->SetScreenshotDelegate(
-        scoped_ptr<ScreenshotDelegate>(delegate).Pass());
+    delegate->set_can_take_screenshot(true);
     EXPECT_EQ(0, delegate->handle_take_screenshot_count());
     EXPECT_TRUE(ProcessWithContext(
         ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN)));

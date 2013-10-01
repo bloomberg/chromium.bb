@@ -23,6 +23,7 @@ class ScopedAnimationDurationScaleMode;
 namespace ash {
 namespace test {
 
+class TestScreenshotDelegate;
 class TestShellDelegate;
 
 // A helper class that does common initialization required for Ash. Creates a
@@ -49,11 +50,17 @@ class AshTestHelper {
 
   base::MessageLoopForUI* message_loop() { return message_loop_; }
   TestShellDelegate* test_shell_delegate() { return test_shell_delegate_; }
+  TestScreenshotDelegate* test_screenshot_delegate() {
+    return test_screenshot_delegate_;
+  }
 
  private:
   base::MessageLoopForUI* message_loop_;  // Not owned.
   TestShellDelegate* test_shell_delegate_;  // Owned by ash::Shell.
   scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
+
+  // Owned by ash::AcceleratorController
+  TestScreenshotDelegate* test_screenshot_delegate_;
 
   // true, if NetworkHandler was initialized by this instance.
   bool tear_down_network_handler_;

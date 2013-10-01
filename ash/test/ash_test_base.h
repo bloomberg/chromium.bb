@@ -38,6 +38,7 @@ class DisplayManager;
 namespace test {
 
 class AshTestHelper;
+class TestScreenshotDelegate;
 #if defined(OS_WIN)
 class TestMetroViewerProcessHost;
 #endif
@@ -113,6 +114,8 @@ class AshTestBase : public testing::Test {
   void set_start_session(bool start_session) { start_session_ = start_session; }
 
   void RunAllPendingInMessageLoop();
+
+  TestScreenshotDelegate* GetScreenshotDelegate();
 
   // Utility methods to emulate user logged in or not, session started or not
   // and user able to lock screen or not cases.

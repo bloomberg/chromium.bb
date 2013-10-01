@@ -624,6 +624,8 @@
         'test/test_user_wallpaper_delegate.h',
         'test/test_launcher_delegate.cc',
         'test/test_launcher_delegate.h',
+        'test/test_screenshot_delegate.cc',
+        'test/test_screenshot_delegate.cc',
         'test/test_session_state_delegate.cc',
         'test/test_session_state_delegate.cc',
         'test/test_shell_delegate.cc',

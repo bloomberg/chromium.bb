@@ -8,35 +8,11 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/test_screenshot_delegate.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 
 namespace ash {
-
-class FakeScreenshotDelegate : public ScreenshotDelegate {
- public:
-  FakeScreenshotDelegate() : screenshot_count_(0) {}
-
-  virtual void HandleTakeScreenshotForAllRootWindows() OVERRIDE {}
-  virtual void HandleTakePartialScreenshot(aura::Window* window,
-                                           const gfx::Rect& rect) OVERRIDE {
-    rect_ = rect;
-    screenshot_count_++;
-  }
-
-  virtual bool CanTakeScreenshot() OVERRIDE {
-    return true;
-  }
-
-  const gfx::Rect& rect() const { return rect_; };
-  int screenshot_count() const { return screenshot_count_; };
-
- private:
-  gfx::Rect rect_;
-  int screenshot_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeScreenshotDelegate);
-};
 
 class PartialScreenshotViewTest : public test::AshTestBase {
  public:
@@ -45,16 +21,14 @@ class PartialScreenshotViewTest : public test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     test::AshTestBase::SetUp();
-    delegate_.reset(new FakeScreenshotDelegate());
     std::vector<PartialScreenshotView*> views =
-        PartialScreenshotView::StartPartialScreenshot(delegate_.get());
+        PartialScreenshotView::StartPartialScreenshot(GetScreenshotDelegate());
     ASSERT_EQ(1u, views.size());
     view_ = views[0];
   }
 
  protected:
   PartialScreenshotView* view_;
-  scoped_ptr<FakeScreenshotDelegate> delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PartialScreenshotViewTest);
@@ -74,8 +48,8 @@ TEST_F(PartialScreenshotViewTest, BasicMouse) {
 
   generator.ReleaseLeftButton();
   EXPECT_FALSE(view_->is_dragging_);
-  EXPECT_EQ("100,100 100x100", delegate_->rect().ToString());
-  EXPECT_EQ(1, delegate_->screenshot_count());
+  EXPECT_EQ("100,100 100x100", GetScreenshotDelegate()->last_rect().ToString());
+  EXPECT_EQ(1, GetScreenshotDelegate()->handle_take_partial_screenshot_count());
 }
 
 TEST_F(PartialScreenshotViewTest, BasicTouch) {
@@ -84,7 +58,7 @@ TEST_F(PartialScreenshotViewTest, BasicTouch) {
   generator.set_current_location(gfx::Point(100,100));
   generator.GestureTapDownAndUp(gfx::Point(100,100));
   EXPECT_FALSE(view_->is_dragging_);
-  EXPECT_EQ(0, delegate_->screenshot_count());
+  EXPECT_EQ(0, GetScreenshotDelegate()->handle_take_partial_screenshot_count());
 
   generator.PressTouch();
   EXPECT_FALSE(view_->is_dragging_);
@@ -96,8 +70,8 @@ TEST_F(PartialScreenshotViewTest, BasicTouch) {
 
   generator.ReleaseTouch();
   EXPECT_FALSE(view_->is_dragging_);
-  EXPECT_EQ(1, delegate_->screenshot_count());
-  EXPECT_EQ("100,100 100x100", delegate_->rect().ToString());
+  EXPECT_EQ(1, GetScreenshotDelegate()->handle_take_partial_screenshot_count());
+  EXPECT_EQ("100,100 100x100", GetScreenshotDelegate()->last_rect().ToString());
 }
 
 }  // namespace ash

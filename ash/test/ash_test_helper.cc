@@ -4,10 +4,12 @@
 
 #include "ash/test/ash_test_helper.h"
 
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/shell_test_api.h"
+#include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
@@ -33,6 +35,7 @@ namespace test {
 AshTestHelper::AshTestHelper(base::MessageLoopForUI* message_loop)
     : message_loop_(message_loop),
       test_shell_delegate_(NULL),
+      test_screenshot_delegate_(NULL),
       tear_down_network_handler_(false) {
   CHECK(message_loop_);
 #if defined(USE_X11)
@@ -82,11 +85,16 @@ void AshTestHelper::SetUp(bool start_session) {
   test::DisplayManagerTestApi(shell->display_manager()).
       DisableChangeDisplayUponHostResize();
   ShellTestApi(shell).DisableOutputConfiguratorAnimation();
+
+  test_screenshot_delegate_ = new TestScreenshotDelegate();
+  shell->accelerator_controller()->SetScreenshotDelegate(
+      scoped_ptr<ScreenshotDelegate>(test_screenshot_delegate_));
 }
 
 void AshTestHelper::TearDown() {
   // Tear down the shell.
   Shell::DeleteInstance();
+  test_screenshot_delegate_ = NULL;
 
   // Remove global message center state.
   message_center::MessageCenter::Shutdown();
