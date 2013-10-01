@@ -1638,6 +1638,7 @@ Tab* TabStrip::CreateTab() {
 }
 
 void TabStrip::StartInsertTabAnimation(int model_index) {
+  CHECK_LT(model_index, tabs_.view_size());
   PrepareForAnimation();
 
   // The TabStrip can now use its entire width to lay out Tabs.
@@ -1645,7 +1646,7 @@ void TabStrip::StartInsertTabAnimation(int model_index) {
   available_width_for_tabs_ = -1;
 
   GenerateIdealBounds();
-
+  CHECK_LT(model_index, tabs_.view_size());
   Tab* tab = tab_at(model_index);
   if (model_index == 0) {
     tab->SetBounds(0, ideal_bounds(model_index).y(), 0,
