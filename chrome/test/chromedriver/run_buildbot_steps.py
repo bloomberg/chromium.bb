@@ -272,7 +272,7 @@ def _MaybeUploadReleaseNotes():
   with open(temp_notes_fname, 'w') as f:
     f.write(new_notes)
 
-  if slave_utils.GSUtilCopy(temp_notes_fname, notes_url):
+  if slave_utils.GSUtilCopy(temp_notes_fname, notes_url, mimetype='text/plain'):
     util.MarkBuildStepError()
 
 
