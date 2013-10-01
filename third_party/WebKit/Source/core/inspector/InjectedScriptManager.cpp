@@ -149,8 +149,13 @@ bool InjectedScriptManager::canAccessInspectedWorkerGlobalScope(ScriptState*)
 
 void InjectedScriptManager::releaseObjectGroup(const String& objectGroup)
 {
-    for (IdToInjectedScriptMap::iterator it = m_idToInjectedScript.begin(); it != m_idToInjectedScript.end(); ++it)
-        it->value.releaseObjectGroup(objectGroup);
+    Vector<int> keys;
+    keys.appendRange(m_idToInjectedScript.keys().begin(), m_idToInjectedScript.keys().end());
+    for (Vector<int>::iterator k = keys.begin(); k != keys.end(); ++k) {
+        IdToInjectedScriptMap::iterator s = m_idToInjectedScript.find(*k);
+        if (s != m_idToInjectedScript.end())
+            s->value.releaseObjectGroup(objectGroup); // m_idToInjectedScript may change here.
+    }
 }
 
 String InjectedScriptManager::injectedScriptSource()
