@@ -11,45 +11,59 @@ class CpuMetric(Metric):
     super(CpuMetric, self).__init__()
     self._results = None
     self._browser = browser
-    self.start_cpu = None
+    self._start_cpu = None
 
   def DidStartBrowser(self, browser):
-    # Save the browser for cpu_stats.
+    # Save the browser object so that cpu_stats can be accessed later.
     self._browser = browser
 
   def Start(self, page, tab):
-    self.start_cpu = self._browser.cpu_stats
+    self._start_cpu = self._browser.cpu_stats
 
   def Stop(self, page, tab):
-    assert self.start_cpu != None, 'Must call Start() first'
+    assert self._start_cpu, 'Must call Start() first'
     self._results = CpuMetric.SubtractCpuStats(self._browser.cpu_stats,
                                          self.start_cpu)
 
+  # Optional argument trace_name is not in base class Metric.
   # pylint: disable=W0221
   def AddResults(self, tab, results, trace_name='cpu_utilization'):
-    assert self._results != None, 'Must call Stop() first'
+    assert self._results, 'Must call Stop() first'
+    # Add a result for each process type.
     for process_type in self._results:
-      results.Add(trace_name + '_%s' % process_type.lower(),
-                  '%',
-                  self._results[process_type]['CpuPercent'],
-                  chart_name='cpu_utilization',
+      trace_name = '%s_%s' % (trace_name, process_type.lower())
+      cpu_percent = 100 * self._results[process_type]
+      results.Add(trace_name, '%', cpu_percent, chart_name='cpu_utilization',
                   data_type='unimportant')
 
-  @staticmethod
-  def SubtractCpuStats(cpu_stats, start_cpu_stats):
-    """Returns difference of a previous cpu_stats from a cpu_stats."""
-    diff = {}
-    for process_type in cpu_stats:
-      assert process_type in start_cpu_stats, 'Mismatching process types'
-      # Skip any process_types that are empty.
-      if (not len(cpu_stats[process_type]) or
-          not len(start_cpu_stats[process_type])):
-        continue
-      cpu_process_time = (cpu_stats[process_type]['CpuProcessTime'] -
-                          start_cpu_stats[process_type]['CpuProcessTime'])
-      total_time = (cpu_stats[process_type]['TotalTime'] -
-                    start_cpu_stats[process_type]['TotalTime'])
-      assert total_time > 0
-      cpu_percent = 100 * cpu_process_time / total_time
-      diff[process_type] = {'CpuPercent': cpu_percent}
-    return diff
+
+def _SubtractCpuStats(cpu_stats, start_cpu_stats):
+  """Computes average cpu usage over a time period for different process types.
+
+  Each of the two cpu_stats arguments is a dict with the following format:
+      {'Browser': {'CpuProcessTime': ..., 'TotalTime': ...},
+       'Renderer': {'CpuProcessTime': ..., 'TotalTime': ...}
+       'Gpu': {'CpuProcessTime': ..., 'TotalTime': ...}}
+
+  The 'CpuProcessTime' fields represent the number of seconds of CPU time
+  spent in each process, and total time is the number of real seconds
+  that have passed (this may be a Unix timestamp).
+
+  Returns:
+    A dict of process type names (Browser, Renderer, etc.) to ratios of cpu
+    time used to total time elapsed.
+  """
+  cpu_usage = {}
+  for process_type in cpu_stats:
+    assert process_type in start_cpu_stats, 'Mismatching process types'
+    # Skip any process_types that are empty.
+    if (not cpu_stats[process_type]) or (not start_cpu_stats[process_type]):
+      continue
+    cpu_process_time = (cpu_stats[process_type]['CpuProcessTime'] -
+                        start_cpu_stats[process_type]['CpuProcessTime'])
+    total_time = (cpu_stats[process_type]['TotalTime'] -
+                  start_cpu_stats[process_type]['TotalTime'])
+    assert total_time > 0
+    cpu_usage[process_type] = float(cpu_process_time) / total_time
+  return cpu_usage
+
