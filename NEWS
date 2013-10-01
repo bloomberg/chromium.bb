@@ -9,6 +9,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
    - Fixed several problems with back-translation. A slash within a
      number and strings such as 5-inch-diameter and 25-year-old-man
      should now back-translate correctly. Thanks to John Boyer.
+   - Fixed a problem with syllable opcode. Thanks to John Boyer.
 
 ** Braille Table Improvements
    - fr-bfu-comp8.utb: corrections, zero was wrongly displayed in some
@@ -32,9 +33,10 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
      - Corrected mathematical forall symbol.
      - Modified emphasis dot combinations to follow UEB standard.
      - Corrected the display of period when used as a midword.
-   - Bulgarian bg.ctb: updated to meet modern standards (added latinn letters,
-     corrected punctuation/mathematical symbols, misc typos). Thanks to Rumiana
-     Kamenska
+   - Bulgarian bg.ctb: updated to meet modern standards (added latin
+     letters, corrected punctuation/mathematical symbols, misc typos).
+     Thanks to Rumiana Kamenska
+   - en-gb-g1.utb: Fixes thanks to Paul Wood
 
 ** Backwards incompatible changes
    - Delete the table chardefs-ueb.cti as these rules are now
