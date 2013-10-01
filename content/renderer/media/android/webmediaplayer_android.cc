@@ -340,13 +340,21 @@ void WebMediaPlayerAndroid::seek(double seconds) {
   base::TimeDelta new_seek_time = ConvertSecondsToTimestamp(seconds);
 
   if (seeking_) {
-    // Suppress redundant seek to same microsecond as current seek. Also clear
-    // any pending seek in this case. For example, seek(1), seek(2), seek(1)
-    // without any intervening seek completion should result in only a current
-    // seek to (1) without any left-over pending seek.
     if (new_seek_time == seek_time_) {
-      pending_seek_ = false;
-      return;
+      if (media_source_delegate_) {
+        if (!pending_seek_) {
+          // If using media source demuxer, only suppress redundant seeks if
+          // there is no pending seek. This enforces that any pending seek that
+          // results in a demuxer seek is preceded by matching
+          // CancelPendingSeek() and StartWaitingForSeek() calls.
+          return;
+        }
+      } else {
+        // Suppress all redundant seeks if unrestricted by media source
+        // demuxer API.
+        pending_seek_ = false;
+        return;
+      }
     }
 
     pending_seek_ = true;
