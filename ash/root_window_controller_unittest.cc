@@ -51,6 +51,7 @@ class TestDelegate : public views::WidgetDelegateView {
 
  private:
   bool system_modal_;
+
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
@@ -526,6 +527,69 @@ TEST_F(RootWindowControllerTest, FocusBlockedWindow) {
     EXPECT_FALSE(session_window->HasFocus());
     UnblockUserSession();
   }
+}
+
+// Tracks whether OnWindowDestroying() has been invoked.
+class DestroyedWindowObserver : public aura::WindowObserver {
+ public:
+  DestroyedWindowObserver() : destroyed_(false), window_(NULL) {}
+  virtual ~DestroyedWindowObserver() {
+    Shutdown();
+  }
+
+  void SetWindow(Window* window) {
+    window_ = window;
+    window->AddObserver(this);
+  }
+
+  bool destroyed() const { return destroyed_; }
+
+  // WindowObserver overrides:
+  virtual void OnWindowDestroying(Window* window) OVERRIDE {
+    destroyed_ = true;
+    window->RemoveObserver(this);
+  }
+
+ private:
+  void Shutdown() {
+    if (!window_)
+      return;
+    window_->RemoveObserver(this);
+    window_ = NULL;
+  }
+
+  bool destroyed_;
+  Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(DestroyedWindowObserver);
+};
+
+// Verifies shutdown doesn't delete windows that are not owned by the parent.
+TEST_F(RootWindowControllerTest, DontDeleteWindowsNotOwnedByParent) {
+  DestroyedWindowObserver observer1;
+  aura::test::TestWindowDelegate delegate1;
+  aura::Window* window1 = new aura::Window(&delegate1);
+  window1->SetType(aura::client::WINDOW_TYPE_CONTROL);
+  window1->set_owned_by_parent(false);
+  observer1.SetWindow(window1);
+  window1->Init(ui::LAYER_NOT_DRAWN);
+  window1->SetDefaultParentByRootWindow(
+      Shell::GetInstance()->GetPrimaryRootWindow(), gfx::Rect());
+
+  DestroyedWindowObserver observer2;
+  aura::Window* window2 = new aura::Window(NULL);
+  window2->set_owned_by_parent(false);
+  observer2.SetWindow(window2);
+  window2->Init(ui::LAYER_NOT_DRAWN);
+  Shell::GetInstance()->GetPrimaryRootWindow()->AddChild(window2);
+
+  Shell::GetInstance()->GetPrimaryRootWindowController()->CloseChildWindows();
+
+  ASSERT_FALSE(observer1.destroyed());
+  delete window1;
+
+  ASSERT_FALSE(observer2.destroyed());
+  delete window2;
 }
 
 typedef test::NoSessionAshTestBase NoSessionRootWindowControllerTest;
