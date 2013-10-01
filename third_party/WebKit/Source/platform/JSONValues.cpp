@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 
 #include "wtf/DecimalNumber.h"
 #include "wtf/dtoa.h"

@@ -32,7 +32,7 @@
 #include "bindings/v8/ScriptHeapSnapshot.h"
 
 #include "bindings/v8/V8Binding.h"
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 #include <v8.h>
 #include <v8-profiler.h>
 #include "wtf/PassRefPtr.h"

@@ -43,7 +43,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 

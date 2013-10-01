@@ -38,7 +38,7 @@
 #include "core/inspector/InspectorDatabaseAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 
 #include "wtf/RefPtr.h"
 #include "wtf/text/StringBuilder.h"

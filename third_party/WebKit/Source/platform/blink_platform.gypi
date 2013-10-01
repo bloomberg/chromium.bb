@@ -9,6 +9,8 @@
       'DateComponents.h',
       'Decimal.cpp',
       'Decimal.h',
+      'JSONValues.cpp',
+      'JSONValues.h',
       'Language.cpp',
       'Language.h',
       'LinkHash.cpp',

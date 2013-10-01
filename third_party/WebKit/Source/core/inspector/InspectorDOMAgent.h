@@ -34,8 +34,8 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "core/platform/JSONValues.h"
 #include "core/rendering/RenderLayer.h"
+#include "platform/JSONValues.h"
 
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

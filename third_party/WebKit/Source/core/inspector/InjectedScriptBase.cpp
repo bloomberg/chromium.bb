@@ -35,7 +35,7 @@
 
 #include "bindings/v8/ScriptFunctionCall.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 #include "wtf/text/WTFString.h"
 
 using WebCore::TypeBuilder::Runtime::RemoteObject;

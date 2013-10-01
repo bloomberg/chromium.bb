@@ -35,7 +35,7 @@
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/MessagePort.h"
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 #include "wtf/ArrayBuffer.h"
 
 namespace WebCore {

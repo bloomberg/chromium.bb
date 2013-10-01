@@ -39,7 +39,7 @@
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 #include "wtf/text/StringBuilder.h"
 
 #include <v8-debug.h>

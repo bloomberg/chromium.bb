@@ -33,7 +33,7 @@
 
 
 #include "core/inspector/InspectorTimelineAgent.h"
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 #include "wtf/HashMap.h"
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"

@@ -31,7 +31,7 @@
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorStyleSheet.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"

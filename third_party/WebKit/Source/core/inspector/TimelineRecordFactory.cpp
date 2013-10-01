@@ -34,11 +34,11 @@
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/events/Event.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/platform/JSONValues.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "platform/JSONValues.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {

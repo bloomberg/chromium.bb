@@ -42,10 +42,10 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
-#include "core/platform/JSONValues.h"
 #include "core/storage/Storage.h"
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
+#include "platform/JSONValues.h"
 #include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {

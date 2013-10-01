@@ -44,8 +44,8 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/platform/JSONValues.h"
 #include "core/platform/text/RegularExpression.h"
+#include "platform/JSONValues.h"
 #include "wtf/text/WTFString.h"
 
 using WebCore::TypeBuilder::Array;

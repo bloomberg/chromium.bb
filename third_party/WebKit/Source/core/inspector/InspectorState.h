@@ -32,7 +32,7 @@
 #define InspectorState_h
 
 
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 

@@ -32,8 +32,8 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"
 #include "core/page/Frame.h"
-#include "core/platform/JSONValues.h"
 #include "core/platform/network/FormData.h"
+#include "platform/JSONValues.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 

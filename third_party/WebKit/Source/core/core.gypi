@@ -2609,8 +2609,6 @@
             'platform/FileMetadata.h',
             'platform/FloatConversion.h',
             'platform/HashTools.h',
-            'platform/JSONValues.cpp',
-            'platform/JSONValues.h',
             'platform/KillRing.h',
             'platform/KillRingNone.cpp',
             'platform/LayoutTestSupport.cpp',

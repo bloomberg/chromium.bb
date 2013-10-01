@@ -101,7 +101,7 @@ frontend_h = (
 #define InspectorFrontend_h
 
 #include "InspectorTypeBuilder.h"
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -214,7 +214,7 @@ backend_cpp = (
 #include "core/inspector/InspectorAgent.h"
 #include "core/inspector/InspectorFrontendChannel.h"
 #include "core/inspector/JSONParser.h"
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
@@ -516,7 +516,7 @@ frontend_cpp = (
 #include "InspectorFrontend.h"
 
 #include "core/inspector/InspectorFrontendChannel.h"
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
@@ -537,7 +537,7 @@ typebuilder_h = (
 #ifndef InspectorTypeBuilder_h
 #define InspectorTypeBuilder_h
 
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 

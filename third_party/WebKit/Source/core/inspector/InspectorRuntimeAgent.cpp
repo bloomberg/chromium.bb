@@ -33,7 +33,7 @@
 
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 
 
 #include "bindings/v8/ScriptDebugServer.h"

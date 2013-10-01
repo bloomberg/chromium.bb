@@ -36,7 +36,7 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/JSONParser.h"
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/inspector/JSONParser.h"
 
-#include "core/platform/JSONValues.h"
+#include "platform/JSONValues.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

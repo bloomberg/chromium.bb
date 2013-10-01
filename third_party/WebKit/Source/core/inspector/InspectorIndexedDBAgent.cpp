@@ -42,7 +42,6 @@
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/page/Frame.h"
-#include "core/platform/JSONValues.h"
 #include "modules/indexeddb/DOMWindowIndexedDatabase.h"
 #include "modules/indexeddb/IDBCursor.h"
 #include "modules/indexeddb/IDBCursorWithValue.h"
@@ -58,6 +57,7 @@
 #include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBTransaction.h"
+#include "platform/JSONValues.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/Vector.h"
 

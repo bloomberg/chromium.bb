@@ -56,8 +56,8 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorDOMAgent.h"
-#include "core/platform/JSONValues.h"
 #include "modules/webdatabase/Database.h"
+#include "platform/JSONValues.h"
 
 namespace WebCore {
 

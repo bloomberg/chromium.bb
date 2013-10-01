@@ -31,6 +31,7 @@
 #ifndef JSONValues_h
 #define JSONValues_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefCounted.h"
@@ -43,7 +44,7 @@ namespace WebCore {
 class JSONArray;
 class JSONObject;
 
-class JSONValue : public RefCounted<JSONValue> {
+class PLATFORM_EXPORT JSONValue : public RefCounted<JSONValue> {
 public:
     static const int maxDepth = 1000;
 
@@ -91,7 +92,7 @@ private:
     Type m_type;
 };
 
-class JSONBasicValue : public JSONValue {
+class PLATFORM_EXPORT JSONBasicValue : public JSONValue {
 public:
 
     static PassRefPtr<JSONBasicValue> create(bool value)
@@ -129,7 +130,7 @@ private:
     };
 };
 
-class JSONString : public JSONValue {
+class PLATFORM_EXPORT JSONString : public JSONValue {
 public:
     static PassRefPtr<JSONString> create(const String& value)
     {
@@ -152,7 +153,7 @@ private:
     String m_stringValue;
 };
 
-class JSONObjectBase : public JSONValue {
+class PLATFORM_EXPORT JSONObjectBase : public JSONValue {
 private:
     typedef HashMap<String, RefPtr<JSONValue> > Dictionary;
 
@@ -209,7 +210,7 @@ private:
     Vector<String> m_order;
 };
 
-class JSONObject : public JSONObjectBase {
+class PLATFORM_EXPORT JSONObject : public JSONObjectBase {
 public:
     static PassRefPtr<JSONObject> create()
     {
@@ -242,7 +243,7 @@ public:
 };
 
 
-class JSONArrayBase : public JSONValue {
+class PLATFORM_EXPORT JSONArrayBase : public JSONValue {
 public:
     typedef Vector<RefPtr<JSONValue> >::iterator iterator;
     typedef Vector<RefPtr<JSONValue> >::const_iterator const_iterator;
@@ -280,7 +281,7 @@ private:
     Vector<RefPtr<JSONValue> > m_data;
 };
 
-class JSONArray : public JSONArrayBase {
+class PLATFORM_EXPORT JSONArray : public JSONArrayBase {
 public:
     static PassRefPtr<JSONArray> create()
     {
