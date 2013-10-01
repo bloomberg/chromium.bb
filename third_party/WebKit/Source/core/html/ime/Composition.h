@@ -32,36 +32,30 @@
 #define Composition_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class Composition : public RefCounted<Composition>, public ScriptWrappable {
+class InputMethodContext;
+
+class Composition : public ScriptWrappable {
 public:
-    static PassRefPtr<Composition> create();
+    static PassOwnPtr<Composition> create(InputMethodContext*);
     ~Composition();
 
-    String text() const { return m_text; }
-    void setText(const String& text) { m_text = text; }
+    void ref();
+    void deref();
 
-    int selectionStart() const { return m_selectionStart; }
-    void setSelectionStart(int selectionStart) { selectionStart = m_selectionStart; }
-
-    int selectionEnd() const { return m_selectionEnd; }
-    void setSelectionEnd(int selectionEnd) { selectionEnd = m_selectionEnd; }
-
+    String text() const;
+    int selectionStart() const;
+    int selectionEnd() const;
     const Vector<unsigned>& getSegments() const;
 
 private:
-    Composition();
+    explicit Composition(InputMethodContext*);
 
-    String m_text;
-    int m_selectionStart;
-    int m_selectionEnd;
-    Vector<unsigned> m_segments;
+    InputMethodContext* m_inputMethodContext;
 };
 
 } // namespace WebCore

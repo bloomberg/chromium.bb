@@ -1,0 +1,69 @@
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<input id="input"><input id="input2"><input id="input3">
+<script>
+description('This tests composition attribute of InputMethodContext.');
+
+var input = document.getElementById('input');
+var input2 = document.getElementById('input2');
+
+var context = input.inputMethodContext;
+var composition = context.composition;
+shouldBeEqualToString('composition.text', '');
+
+var context2 = input2.inputMethodContext;
+var composition2 = context2.composition;
+shouldBeEqualToString('composition2.text', '');
+
+debug('Testing IME on an input element.');
+input.focus();
+textInputController.setMarkedText('abcde', 1, 3);
+shouldBeEqualToString('composition.text', 'abcde');
+shouldBeEqualToString('composition2.text', '');
+shouldEvaluateTo('composition.selectionStart', 1);
+shouldEvaluateTo('composition.selectionEnd', 4);
+shouldEvaluateTo('composition.getSegments().length', 3);
+textInputController.setMarkedText('abcde', 0, 3);
+shouldEvaluateTo('composition.getSegments().length', 2);
+textInputController.setMarkedText('abcde', 2, 3);
+shouldEvaluateTo('composition.getSegments().length', 2);
+context.confirmComposition();
+shouldBeEqualToString('composition.text', '');
+shouldEvaluateTo('composition.getSegments().length', 0);
+shouldBeEqualToString('input.value', 'abcde');
+shouldBeEqualToString('input2.value', '');
+
+debug('Testing IME on another input element.');
+input2.focus();
+shouldBeEqualToString('input.value', 'abcde');
+shouldBeEqualToString('input2.value', '');
+textInputController.setComposition('fghij');
+shouldEvaluateTo('composition.getSegments().length', 0);
+shouldEvaluateTo('composition2.getSegments().length', 1);
+shouldBeEqualToString('input.value', 'abcde');
+shouldBeEqualToString('input2.value', 'fghij');
+shouldBeEqualToString('composition.text', '');
+shouldBeEqualToString('composition2.text', 'fghij');
+context2.confirmComposition();
+shouldBeEqualToString('composition2.text', '');
+shouldBeEqualToString('input.value', 'abcde');
+shouldBeEqualToString('input2.value', 'fghij');
+
+debug('Testing when context is obtained after some IME input.');
+var input3 = document.getElementById('input3');
+input3.focus();
+shouldBeEqualToString('input3.value', '');
+textInputController.setComposition('klmno');
+shouldBeEqualToString('input3.value', 'klmno');
+var context3 = input3.inputMethodContext;
+var composition3 = context3.composition;
+shouldBeEqualToString('composition3.text', 'klmno');
+context3.confirmComposition();
+shouldBeEqualToString('composition3.text', '');
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

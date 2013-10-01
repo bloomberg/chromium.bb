@@ -1,0 +1,25 @@
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<input id="input">
+<script>
+description('This tests a case that a Composition object outlives InputMethodContext.');
+
+var input = document.getElementById('input');
+var context = input.inputMethodContext;
+var composition = context.composition;
+
+context = null;
+document.body.removeChild(input);
+input = null;
+gc();
+
+shouldEvaluateTo('composition.selectionEnd', 0);
+composition = null;
+gc();
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>
