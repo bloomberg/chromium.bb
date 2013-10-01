@@ -770,12 +770,22 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         dom.querySelector('#progress-center'));
     var initialItems = this.backgroundPage_.progressCenter.applicationItems;
     for (var i = 0; i < initialItems.length; i++) {
-      this.progressCenterPanel.addItem(initialItems[i]);
+      this.progressCenterPanel_.addItem(initialItems[i]);
     }
     this.backgroundPage_.progressCenter.addEventListener(
         ProgressCenterEvent.ITEM_ADDED,
         function(event) {
           this.progressCenterPanel_.addItem(event.item);
+        }.bind(this));
+    this.backgroundPage_.progressCenter.addEventListener(
+        ProgressCenterEvent.ITEM_UPDATED,
+        function(event) {
+          this.progressCenterPanel_.updateItem(event.item);
+        }.bind(this));
+    this.backgroundPage_.progressCenter.addEventListener(
+        ProgressCenterEvent.ITEM_REMOVED,
+        function(event) {
+          this.progressCenterPanel_.removeItem(event.itemId);
         }.bind(this));
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));

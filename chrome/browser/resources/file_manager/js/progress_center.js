@@ -57,7 +57,6 @@ ProgressCenter.prototype = {
 /**
  * Adds an item to the progress center.
  * @param {ProgressItem} item Item to be added.
- * @return {string} Progress item ID.
  */
 ProgressCenter.prototype.addItem = function(item) {
   // If application window is opening, the item is displayed in the window.
@@ -65,30 +64,43 @@ ProgressCenter.prototype.addItem = function(item) {
   item.id = this.idCounter_++;
   item.container = this.targetContainer_;
   this.items_.push(item);
+
   var event = new cr.Event(ProgressCenterEvent.ITEM_ADDED);
   event.item = item;
   this.dispatchEvent(event);
-  return item.id;
 };
 
 /**
  * Updates the item in the progress center.
  *
- * TODO(hirono): Implement the method.
- *
- * @param {string} id ID of the item to be updated.
  * @param {ProgressCenterItem} item New contents of the item.
  */
-ProgressCenter.prototype.updateItem = function(id, item) {};
+ProgressCenter.prototype.updateItem = function(item) {
+  var index = this.getItemIndex_(item.id);
+  if (index === -1)
+    return;
+  this.items_[index] = item;
+
+  var event = new cr.Event(ProgressCenterEvent.ITEM_UPDATED);
+  event.item = item;
+  this.dispatchEvent(event);
+};
 
 /**
  * Removes the item in the progress center.
  *
- * TODO(hirono): Implement the method.
- *
- * @param {string} id ID of the item to be removed.
+ * @param {number} id ID of the item to be removed.
  */
-ProgressCenter.prototype.removeItem = function(id) {};
+ProgressCenter.prototype.removeItem = function(id) {
+  var index = this.getItemIndex_(id);
+  if (index === -1)
+    return;
+  this.items_.splice(index, 1);
+
+  var event = new cr.Event(ProgressCenterEvent.ITEM_REMOVED);
+  event.itemId = id;
+  this.dispatchEvent(event);
+};
 
 /**
  * Switches the default container.
@@ -96,7 +108,7 @@ ProgressCenter.prototype.removeItem = function(id) {};
  *     container.
  */
 ProgressCenter.prototype.switchContainer = function(newContainer) {
-  if (this.targetContainer_ == newContainer)
+  if (this.targetContainer_ === newContainer)
     return;
 
   // Current items to be moved to the notification center.
@@ -116,6 +128,20 @@ ProgressCenter.prototype.switchContainer = function(newContainer) {
 };
 
 /**
+ * Obtains item index that have the specifing ID.
+ * @param {number} id Item ID.
+ * @return {number} Item index. Returns -1 If the item is not found.
+ * @private
+ */
+ProgressCenter.prototype.getItemIndex_ = function(id) {
+  for (var i = 0; i < this.items_.length; i++) {
+    if (this.items_[i].id === id)
+      return i;
+  }
+  return -1;
+};
+
+/**
  * Passes the item to the ChromeOS's message center.
  *
  * TODO(hirono): Implement the method.
@@ -124,4 +150,113 @@ ProgressCenter.prototype.switchContainer = function(newContainer) {
  */
 ProgressCenter.prototype.passItemsToNotification_ = function() {
 
+};
+
+/**
+ * An event handler for progress center.
+ * @param {FileOperationManager} fileOperationManager File operation manager.
+ * @param {ProgressCenter} progressCenter Progress center.
+ * @constructor
+ */
+var ProgressCenterHandler = function(fileOperationManager, progressCenter) {
+  /**
+   * Copying progress item.
+   * @type {ProgressCenterItem}
+   * @private
+   */
+  this.copyingItem_ = null;
+
+  /**
+   * Deleting progress item.
+   * @type {ProgressCenterItem}
+   * @private
+   */
+  this.deletingItem_ = null;
+
+  // Seal the object.
+  Object.seal(this);
+
+  // Register event.
+  fileOperationManager.addEventListener('copy-progress',
+                                        this.onCopyProgress_.bind(this));
+  fileOperationManager.addEventListener('delete',
+                                        this.onDeleteProgress_.bind(this));
+};
+
+/**
+ * Handles the copy-progress event.
+ * @param {Event} event The copy-progress event.
+ * @private
+ */
+ProgressCenterHandler.prototype.onCopyProgress_ = function(event) {
+  switch (event.reason) {
+    case 'BEGIN':
+      if (this.copyingItem_) {
+        console.error('Previous copy is not completed.');
+        return;
+      }
+      this.copyingItem_ = new ProgressCenterItem();
+      // TODO(hirono): Specifying the correct message.
+      this.copyingItem_.message = 'Copying ...';
+      this.copyingItem_.progressMax = event.status.totalBytes;
+      this.copyingItem_.progressValue = event.status.processedBytes;
+      progressCenter.addItem(this.copyingItem_);
+      break;
+
+    case 'PROGRESS':
+      if (!this.copyingItem_) {
+        console.error('Cannot find copying item.');
+        return;
+      }
+      this.copyingItem_.progressValue = event.status.processedBytes;
+      progressCenter.updateItem(this.copyingItem_);
+      break;
+
+    case 'SUCCESS':
+      if (!this.copyingItem_) {
+        console.error('Cannot find copying item.');
+        return;
+      }
+      this.copyingItem_.progressValue = this.copyingItem_.progressMax;
+      progressCenter.removeItem(this.copyingItem_.id);
+      this.copyingItem_ = null;
+      break;
+  }
+};
+
+/**
+ * Handles the delete event.
+ * @param {Event} event The delete event.
+ * @private
+ */
+ProgressCenterHandler.prototype.onDeleteProgress_ = function(event) {
+  switch (event.reason) {
+    case 'BEGIN':
+      if (this.deletingItem_) {
+        console.error('Previous delete is not completed.');
+        return;
+      }
+      this.deletingItem_ = new ProgressCenterItem();
+      // TODO(hirono): Specifying the correct message.
+      this.deletingItem_.message = 'Deleting...';
+      progressCenter.addItem(this.deletingItem_);
+      break;
+
+    case 'PROGRESS':
+      if (!this.deletingItem_) {
+        console.error('Cannot find deleting item.');
+        return;
+      }
+      progressCenter.updateItem(this.deletingItem_);
+      break;
+
+    case 'SUCCESS':
+      if (!this.deletingItem_) {
+        console.error('Cannot find deleting item.');
+        return;
+      }
+      progressCenter.removeItem(this.deletingItem_.id);
+      this.deletingItem_ = null;
+      break;
+  }
 };

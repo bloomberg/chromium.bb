@@ -36,16 +36,15 @@ ProgressCenterPanel.prototype.addItem = function(item) {
 
 /**
  * Updates an item to the progress center panel.
- * @param {number} id progress item ID.
  * @param {ProgressCenterItem} item Item including new contents.
  */
-ProgressCenterPanel.prototype.updateItem = function(id, item) {
-  var oldItemElement = this.getItemElement_(id);
+ProgressCenterPanel.prototype.updateItem = function(item) {
+  var oldItemElement = this.getItemElement_(item.id);
   if (!oldItemElement) {
     console.error('Invalid progress ID.');
     return;
   }
-  this.element_.replaceChild(this.createElement_(item), oldItemElement);
+  this.element_.replaceChild(this.createItemElement_(item), oldItemElement);
 };
 
 /**

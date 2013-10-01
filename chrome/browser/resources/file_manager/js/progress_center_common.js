@@ -42,6 +42,13 @@ var ProgressCenterEvent = Object.freeze({
  */
 var ProgressCenterItem = function() {
   /**
+   * Item ID.
+   * @type {?number}
+   * @private
+   */
+  this.id_ = null;
+
+  /**
    * Message of the progress item.
    * @type {string}
    */
@@ -66,4 +73,25 @@ var ProgressCenterItem = function() {
   this.container = ProgressItemContainer.CLIENT;
 
   Object.seal(this);
+};
+
+ProgressCenterItem.prototype = {
+  /**
+   * Setter of Item ID.
+   * @param {number} value New value of ID.
+   */
+  set id(value) {
+    if (!this.id_)
+      this.id_ = value;
+    else
+      console.error('The ID is already set. (current ID: ' + this.id_ + ')');
+  },
+
+  /**
+   * Getter of Item ID.
+   * @return {number} Item ID.
+   */
+  get id() {
+    return this.id_;
+  }
 };

@@ -601,3 +601,11 @@ initApp();
  * @type {ProgressCenter}
  */
 window.progressCenter = new ProgressCenter();
+
+/**
+ * Event handler for progress center.
+ * @type {ProgressCenter}
+ */
+var progressCenterHandler = new ProgressCenterHandler(
+    FileOperationManager.getInstance(),
+    window.progressCenter);
