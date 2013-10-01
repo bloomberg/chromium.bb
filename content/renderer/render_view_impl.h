@@ -506,7 +506,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual WebKit::WebSpeechInputController* speechInputController(
       WebKit::WebSpeechInputListener* listener);
   virtual WebKit::WebSpeechRecognizer* speechRecognizer();
-  virtual WebKit::WebDeviceOrientationClient* deviceOrientationClient();
   virtual void zoomLimitsChanged(double minimum_level, double maximum_level);
   virtual void zoomLevelChanged();
   virtual double zoomLevelToZoomFactor(double zoom_level) const;

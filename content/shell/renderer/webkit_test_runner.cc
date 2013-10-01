@@ -50,7 +50,6 @@
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgent.h"
-#include "third_party/WebKit/public/web/WebDeviceOrientation.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -69,7 +68,6 @@ using WebKit::WebContextMenuData;
 using WebKit::WebDevToolsAgent;
 using WebKit::WebDeviceMotionData;
 using WebKit::WebDeviceOrientationData;
-using WebKit::WebDeviceOrientation;
 using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebGamepads;

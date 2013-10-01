@@ -75,7 +75,6 @@
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager_impl.h"
 #include "content/renderer/context_menu_params_builder.h"
-#include "content/renderer/device_orientation_dispatcher.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/disambiguation_popup_helper.h"
 #include "content/renderer/dom_automation_controller.h"
@@ -802,7 +801,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       geolocation_dispatcher_(NULL),
       input_tag_speech_dispatcher_(NULL),
       speech_recognition_dispatcher_(NULL),
-      device_orientation_dispatcher_(NULL),
       media_stream_dispatcher_(NULL),
       browser_plugin_manager_(NULL),
       media_stream_client_(NULL),
@@ -6131,12 +6129,6 @@ WebKit::WebSpeechRecognizer* RenderViewImpl::speechRecognizer() {
   if (!speech_recognition_dispatcher_)
     speech_recognition_dispatcher_ = new SpeechRecognitionDispatcher(this);
   return speech_recognition_dispatcher_;
-}
-
-WebKit::WebDeviceOrientationClient* RenderViewImpl::deviceOrientationClient() {
-  if (!device_orientation_dispatcher_)
-    device_orientation_dispatcher_ = new DeviceOrientationDispatcher(this);
-  return device_orientation_dispatcher_;
 }
 
 void RenderViewImpl::zoomLimitsChanged(double minimum_level,

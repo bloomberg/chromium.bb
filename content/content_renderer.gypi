@@ -81,8 +81,6 @@
     'renderer/android/synchronous_compositor_factory.h',
     'renderer/cursor_utils.cc',
     'renderer/cursor_utils.h',
-    'renderer/device_orientation_dispatcher.cc',
-    'renderer/device_orientation_dispatcher.h',
     'renderer/device_orientation/device_motion_event_pump.cc',
     'renderer/device_orientation/device_motion_event_pump.h',
     'renderer/device_orientation/device_orientation_event_pump.cc',
