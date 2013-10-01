@@ -180,8 +180,8 @@ public:
     void autoscroll(const IntPoint&);
 
     void resize(const PlatformEvent&, const LayoutSize&);
-    bool inResizeMode() const { return m_inResizeMode; }
-    void setInResizeMode(bool b) { m_inResizeMode = b; }
+    bool inResizeMode() const;
+    void setInResizeMode(bool);
 
     bool isRootLayer() const { return m_isRootLayer; }
 
@@ -726,7 +726,6 @@ private:
 
     bool hitTestContents(const HitTestRequest&, HitTestResult&, const LayoutRect& layerBounds, const HitTestLocation&, HitTestFilter) const;
     bool hitTestContentsForFragments(const LayerFragments&, const HitTestRequest&, HitTestResult&, const HitTestLocation&, HitTestFilter, bool& insideClipRect) const;
-    bool hitTestResizerInFragments(const LayerFragments&, const HitTestLocation&) const;
     RenderLayer* hitTestTransformedLayerInFragments(RenderLayer* rootLayer, RenderLayer* containerLayer, const HitTestRequest&, HitTestResult&,
         const LayoutRect& hitTestRect, const HitTestLocation&, const HitTestingTransformState* = 0, double* zOffset = 0);
 
@@ -766,10 +765,7 @@ public:
     IntSize adjustedScrollOffset() const { return IntSize(scrollXOffset(), scrollYOffset()); }
 
 private:
-    void invalidateScrollCornerRect(const IntRect&);
     bool isActive() const;
-    bool isScrollCornerVisible() const;
-    IntRect scrollCornerRect() const;
     int scrollSize(ScrollbarOrientation) const;
     int visibleHeight() const;
     int visibleWidth() const;
@@ -796,7 +792,6 @@ private:
     bool requiresScrollableArea() const { return renderBox(); }
     void updateScrollableArea();
 
-    void updateResizerAreaSet();
     void updateScrollableAreaSet(bool hasOverflow);
 
     void dirtyAncestorChainVisibleDescendantStatus();
@@ -833,9 +828,6 @@ private:
     LayoutPoint absoluteToContents(const LayoutPoint&) const;
 
     void positionOverflowControls(const IntSize&);
-    void updateResizerStyle();
-
-    void drawPlatformResizerImage(GraphicsContext*, IntRect resizerCornerRect);
 
     void updatePagination();
 
@@ -858,9 +850,6 @@ private:
     bool overflowControlsIntersectRect(const IntRect& localRect) const;
 
 protected:
-    // Keeps track of whether the layer is currently resizing, so events can cause resizing to start and stop.
-    unsigned m_inResizeMode : 1;
-
     unsigned m_zOrderListsDirty : 1;
     unsigned m_normalFlowListDirty: 1;
     unsigned m_isNormalFlowOnly : 1;
@@ -972,9 +961,6 @@ protected:
 
     // May ultimately be extended to many replicas (with their own paint order).
     RenderReplica* m_reflection;
-
-    // Renderers to hold our custom resizer.
-    RenderScrollbarPart* m_resizer;
 
     // Pointer to the enclosing RenderLayer that caused us to be paginated. It is 0 if we are not paginated.
     RenderLayer* m_enclosingPaginationLayer;

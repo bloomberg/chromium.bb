@@ -64,11 +64,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/HistogramSupport.h"
 #include "core/platform/Partitions.h"
-#include "core/platform/PlatformGestureEvent.h"
-#include "core/platform/PlatformMouseEvent.h"
-#include "core/platform/ScrollAnimator.h"
-#include "core/platform/Scrollbar.h"
-#include "core/platform/ScrollbarTheme.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/FloatPoint3D.h"
 #include "core/platform/graphics/FloatRect.h"
@@ -111,13 +106,8 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-const int MinimumWidthWhileResizing = 100;
-const int MinimumHeightWhileResizing = 40;
-const int ResizerControlExpandRatioForTouch = 2;
-
 RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
-    : m_inResizeMode(false)
-    , m_normalFlowListDirty(true)
+    : m_normalFlowListDirty(true)
     , m_hasSelfPaintingLayerDescendant(false)
     , m_hasSelfPaintingLayerDescendantDirty(false)
     , m_hasOutOfFlowPositionedDescendant(false)
@@ -157,7 +147,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_staticInlinePosition(0)
     , m_staticBlockPosition(0)
     , m_reflection(0)
-    , m_resizer(0)
     , m_enclosingPaginationLayer(0)
     , m_forceNeedsCompositedScrolling(DoNotForceCompositedScrolling)
 {
@@ -174,23 +163,10 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     }
 
     updateScrollableArea();
-    updateResizerAreaSet();
 }
 
 RenderLayer::~RenderLayer()
 {
-    if (inResizeMode() && !renderer()->documentBeingDestroyed()) {
-        if (Frame* frame = renderer()->frame())
-            frame->eventHandler()->resizeLayerDestroyed();
-    }
-
-    if (Frame* frame = renderer()->frame()) {
-        if (FrameView* frameView = frame->view()) {
-            if (RenderBox* box = renderBox())
-                frameView->removeResizerArea(box);
-        }
-    }
-
     if (!m_renderer->documentBeingDestroyed())
         compositor()->removeOutOfFlowPositionedLayer(this);
 
@@ -208,9 +184,6 @@ RenderLayer::~RenderLayer()
     // we don't need to delete them ourselves.
 
     clearBacking(true);
-
-    if (m_resizer)
-        m_resizer->destroy();
 }
 
 String RenderLayer::debugName() const
@@ -2484,86 +2457,6 @@ void RenderLayer::autoscroll(const IntPoint& position)
     scrollRectToVisible(LayoutRect(currentDocumentPosition, LayoutSize(1, 1)), ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
 }
 
-void RenderLayer::resize(const PlatformEvent& evt, const LayoutSize& oldOffset)
-{
-    // FIXME: This should be possible on generated content but is not right now.
-    if (!inResizeMode() || !renderer()->canResize() || !renderer()->node())
-        return;
-
-    ASSERT(renderer()->node()->isElementNode());
-    Element* element = toElement(renderer()->node());
-    RenderBox* renderer = toRenderBox(element->renderer());
-
-    Document& document = element->document();
-
-    IntPoint pos;
-    const PlatformGestureEvent* gevt = 0;
-
-    switch (evt.type()) {
-    case PlatformEvent::MouseMoved:
-        if (!document.frame()->eventHandler()->mousePressed())
-            return;
-        pos = static_cast<const PlatformMouseEvent*>(&evt)->position();
-        break;
-    case PlatformEvent::GestureScrollUpdate:
-    case PlatformEvent::GestureScrollUpdateWithoutPropagation:
-        pos = static_cast<const PlatformGestureEvent*>(&evt)->position();
-        gevt = static_cast<const PlatformGestureEvent*>(&evt);
-        pos = gevt->position();
-        pos.move(gevt->deltaX(), gevt->deltaY());
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-    }
-
-    float zoomFactor = renderer->style()->effectiveZoom();
-
-    LayoutSize newOffset = offsetFromResizeCorner(document.view()->windowToContents(pos));
-    newOffset.setWidth(newOffset.width() / zoomFactor);
-    newOffset.setHeight(newOffset.height() / zoomFactor);
-
-    LayoutSize currentSize = LayoutSize(renderer->width() / zoomFactor, renderer->height() / zoomFactor);
-    LayoutSize minimumSize = element->minimumSizeForResizing().shrunkTo(currentSize);
-    element->setMinimumSizeForResizing(minimumSize);
-
-    LayoutSize adjustedOldOffset = LayoutSize(oldOffset.width() / zoomFactor, oldOffset.height() / zoomFactor);
-    if (renderer->style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
-        newOffset.setWidth(-newOffset.width());
-        adjustedOldOffset.setWidth(-adjustedOldOffset.width());
-    }
-
-    LayoutSize difference = (currentSize + newOffset - adjustedOldOffset).expandedTo(minimumSize) - currentSize;
-
-    bool isBoxSizingBorder = renderer->style()->boxSizing() == BORDER_BOX;
-
-    EResize resize = renderer->style()->resize();
-    if (resize != RESIZE_VERTICAL && difference.width()) {
-        if (element->isFormControlElement()) {
-            // Make implicit margins from the theme explicit (see <http://bugs.webkit.org/show_bug.cgi?id=9547>).
-            element->setInlineStyleProperty(CSSPropertyMarginLeft, renderer->marginLeft() / zoomFactor, CSSPrimitiveValue::CSS_PX);
-            element->setInlineStyleProperty(CSSPropertyMarginRight, renderer->marginRight() / zoomFactor, CSSPrimitiveValue::CSS_PX);
-        }
-        LayoutUnit baseWidth = renderer->width() - (isBoxSizingBorder ? LayoutUnit() : renderer->borderAndPaddingWidth());
-        baseWidth = baseWidth / zoomFactor;
-        element->setInlineStyleProperty(CSSPropertyWidth, roundToInt(baseWidth + difference.width()), CSSPrimitiveValue::CSS_PX);
-    }
-
-    if (resize != RESIZE_HORIZONTAL && difference.height()) {
-        if (element->isFormControlElement()) {
-            // Make implicit margins from the theme explicit (see <http://bugs.webkit.org/show_bug.cgi?id=9547>).
-            element->setInlineStyleProperty(CSSPropertyMarginTop, renderer->marginTop() / zoomFactor, CSSPrimitiveValue::CSS_PX);
-            element->setInlineStyleProperty(CSSPropertyMarginBottom, renderer->marginBottom() / zoomFactor, CSSPrimitiveValue::CSS_PX);
-        }
-        LayoutUnit baseHeight = renderer->height() - (isBoxSizingBorder ? LayoutUnit() : renderer->borderAndPaddingHeight());
-        baseHeight = baseHeight / zoomFactor;
-        element->setInlineStyleProperty(CSSPropertyHeight, roundToInt(baseHeight + difference.height()), CSSPrimitiveValue::CSS_PX);
-    }
-
-    document.updateLayout();
-
-    // FIXME (Radar 4118564): We should also autoscroll the window as necessary to keep the point under the cursor in view.
-}
-
 int RenderLayer::scrollSize(ScrollbarOrientation orientation) const
 {
     IntSize scrollDimensions = scrollableArea()->maximumScrollPosition() - scrollableArea()->minimumScrollPosition();
@@ -2579,88 +2472,6 @@ bool RenderLayer::isActive() const
 {
     Page* page = renderer()->frame()->page();
     return page && page->focusController().isActive();
-}
-
-static int cornerStart(const RenderStyle* style, int minX, int maxX, int thickness)
-{
-    if (style->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-        return minX + style->borderLeftWidth();
-    return maxX - thickness - style->borderRightWidth();
-}
-
-static IntRect cornerRect(const RenderStyle* style, const Scrollbar* horizontalScrollbar, const Scrollbar* verticalScrollbar, const IntRect& bounds)
-{
-    int horizontalThickness;
-    int verticalThickness;
-    if (!verticalScrollbar && !horizontalScrollbar) {
-        // FIXME: This isn't right.  We need to know the thickness of custom scrollbars
-        // even when they don't exist in order to set the resizer square size properly.
-        horizontalThickness = ScrollbarTheme::theme()->scrollbarThickness();
-        verticalThickness = horizontalThickness;
-    } else if (verticalScrollbar && !horizontalScrollbar) {
-        horizontalThickness = verticalScrollbar->width();
-        verticalThickness = horizontalThickness;
-    } else if (horizontalScrollbar && !verticalScrollbar) {
-        verticalThickness = horizontalScrollbar->height();
-        horizontalThickness = verticalThickness;
-    } else {
-        horizontalThickness = verticalScrollbar->width();
-        verticalThickness = horizontalScrollbar->height();
-    }
-    return IntRect(cornerStart(style, bounds.x(), bounds.maxX(), horizontalThickness),
-                   bounds.maxY() - verticalThickness - style->borderBottomWidth(),
-                   horizontalThickness, verticalThickness);
-}
-
-IntRect RenderLayer::scrollCornerRect() const
-{
-    // We have a scrollbar corner when a scrollbar is visible and not filling the entire length of the box.
-    // This happens when:
-    // (a) A resizer is present and at least one scrollbar is present
-    // (b) Both scrollbars are present.
-    bool hasHorizontalBar = horizontalScrollbar();
-    bool hasVerticalBar = verticalScrollbar();
-    bool hasResizer = renderer()->style()->resize() != RESIZE_NONE;
-    if ((hasHorizontalBar && hasVerticalBar) || (hasResizer && (hasHorizontalBar || hasVerticalBar)))
-        return cornerRect(renderer()->style(), horizontalScrollbar(), verticalScrollbar(), renderBox()->pixelSnappedBorderBoxRect());
-    return IntRect();
-}
-
-IntRect RenderLayer::resizerCornerRect(const IntRect& bounds, ResizerHitTestType resizerHitTestType) const
-{
-    ASSERT(renderer()->isBox());
-    if (renderer()->style()->resize() == RESIZE_NONE)
-        return IntRect();
-    IntRect corner = cornerRect(renderer()->style(), horizontalScrollbar(), verticalScrollbar(), bounds);
-
-    if (resizerHitTestType == ResizerForTouch) {
-        // We make the resizer virtually larger for touch hit testing. With the
-        // expanding ratio k = ResizerControlExpandRatioForTouch, we first move
-        // the resizer rect (of width w & height h), by (-w * (k-1), -h * (k-1)),
-        // then expand the rect by new_w/h = w/h * k.
-        int expand_ratio = ResizerControlExpandRatioForTouch - 1;
-        corner.move(-corner.width() * expand_ratio, -corner.height() * expand_ratio);
-        corner.expand(corner.width() * expand_ratio, corner.height() * expand_ratio);
-    }
-
-    return corner;
-}
-
-IntRect RenderLayer::scrollCornerAndResizerRect() const
-{
-    RenderBox* box = renderBox();
-    if (!box)
-        return IntRect();
-    IntRect scrollCornerAndResizer = scrollCornerRect();
-    if (scrollCornerAndResizer.isEmpty())
-        scrollCornerAndResizer = resizerCornerRect(box->pixelSnappedBorderBoxRect(), ResizerForPointer);
-    return scrollCornerAndResizer;
-}
-
-bool RenderLayer::isScrollCornerVisible() const
-{
-    ASSERT(renderer()->isBox());
-    return !scrollCornerRect().isEmpty();
 }
 
 int RenderLayer::visibleHeight() const
@@ -2694,25 +2505,6 @@ IntPoint RenderLayer::lastKnownMousePosition() const
     return renderer()->frame() ? renderer()->frame()->eventHandler()->lastKnownMousePosition() : IntPoint();
 }
 
-void RenderLayer::invalidateScrollCornerRect(const IntRect& rect)
-{
-    if (m_resizer)
-        m_resizer->repaintRectangle(rect);
-}
-
-// FIXME: This function is temporarily duplicated in RenderLayerScrollableArea.
-static inline RenderObject* rendererForScrollbar(RenderObject* renderer)
-{
-    if (Node* node = renderer->node()) {
-        if (ShadowRoot* shadowRoot = node->containingShadowRoot()) {
-            if (shadowRoot->type() == ShadowRoot::UserAgentShadowRoot)
-                return shadowRoot->host()->renderer();
-        }
-    }
-
-    return renderer;
-}
-
 ScrollableArea* RenderLayer::enclosingScrollableArea() const
 {
     if (RenderLayer* scrollableLayer = enclosingScrollableLayer())
@@ -2723,40 +2515,29 @@ ScrollableArea* RenderLayer::enclosingScrollableArea() const
     return 0;
 }
 
+void RenderLayer::resize(const PlatformEvent& evt, const LayoutSize& oldOffset)
+{
+    m_scrollableArea->resize(evt, oldOffset);
+}
+
+bool RenderLayer::inResizeMode() const
+{
+    return m_scrollableArea->inResizeMode();
+}
+
+void RenderLayer::setInResizeMode(bool inResizeMode)
+{
+    return m_scrollableArea->setInResizeMode(inResizeMode);
+}
+
 IntSize RenderLayer::offsetFromResizeCorner(const IntPoint& absolutePoint) const
 {
-    // Currently the resize corner is either the bottom right corner or the bottom left corner.
-    // FIXME: This assumes the location is 0, 0. Is this guaranteed to always be the case?
-    IntSize elementSize = size();
-    if (renderer()->style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-        elementSize.setWidth(0);
-    IntPoint resizerPoint = IntPoint(elementSize);
-    IntPoint localPoint = roundedIntPoint(absoluteToContents(absolutePoint));
-    return localPoint - resizerPoint;
+    return m_scrollableArea->offsetFromResizeCorner(absolutePoint);
 }
 
 bool RenderLayer::hasOverflowControls() const
 {
     return m_scrollableArea && (m_scrollableArea->hasScrollbar() || m_scrollableArea->hasScrollCorner() || renderer()->style()->resize() != RESIZE_NONE);
-}
-
-void RenderLayer::positionOverflowControls(const IntSize& offsetFromRoot)
-{
-    if (!m_scrollableArea->hasScrollbar() && !renderer()->canResize())
-        return;
-
-    RenderBox* box = renderBox();
-    if (!box)
-        return;
-
-    m_scrollableArea->positionOverflowControls(offsetFromRoot);
-
-    const IntRect borderBox = box->pixelSnappedBorderBoxRect();
-    if (m_resizer)
-        m_resizer->setFrameRect(resizerCornerRect(borderBox, ResizerForPointer));
-
-    if (isComposited())
-        backing()->positionOverflowControlsLayers(offsetFromRoot);
 }
 
 int RenderLayer::scrollWidth() const
@@ -2780,154 +2561,6 @@ void RenderLayer::updateScrollInfoAfterLayout()
     // Composited scrolling may need to be enabled or disabled if the amount of overflow changed.
     if (renderer()->view() && compositor()->updateLayerCompositingState(this))
         compositor()->setCompositingLayersNeedRebuild();
-}
-
-bool RenderLayer::overflowControlsIntersectRect(const IntRect& localRect) const
-{
-    const IntRect borderBox = renderBox()->pixelSnappedBorderBoxRect();
-
-    if (m_scrollableArea->rectForHorizontalScrollbar(borderBox).intersects(localRect))
-        return true;
-
-    if (m_scrollableArea->rectForVerticalScrollbar(borderBox).intersects(localRect))
-        return true;
-
-    if (scrollCornerRect().intersects(localRect))
-        return true;
-
-    if (resizerCornerRect(borderBox, ResizerForPointer).intersects(localRect))
-        return true;
-
-    return false;
-}
-
-void RenderLayer::paintOverflowControls(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect, bool paintingOverlayControls)
-{
-    // Don't do anything if we have no overflow.
-    if (!renderer()->hasOverflowClip())
-        return;
-
-    IntPoint adjustedPaintOffset = paintOffset;
-    if (paintingOverlayControls)
-        adjustedPaintOffset = m_cachedOverlayScrollbarOffset;
-
-    // Move the scrollbar widgets if necessary.  We normally move and resize widgets during layout, but sometimes
-    // widgets can move without layout occurring (most notably when you scroll a document that
-    // contains fixed positioned elements).
-    positionOverflowControls(toIntSize(adjustedPaintOffset));
-
-    m_scrollableArea->paintOverflowControls(context, paintOffset, damageRect, paintingOverlayControls);
-
-    if (layerForScrollCorner())
-        return;
-
-    // Paint our resizer last, since it sits on top of the scroll corner.
-    paintResizer(context, adjustedPaintOffset, damageRect);
-}
-
-void RenderLayer::paintScrollCorner(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect)
-{
-    m_scrollableArea->paintScrollCorner(context, paintOffset, damageRect);
-}
-
-void RenderLayer::drawPlatformResizerImage(GraphicsContext* context, IntRect resizerCornerRect)
-{
-    float deviceScaleFactor = WebCore::deviceScaleFactor(renderer()->frame());
-
-    RefPtr<Image> resizeCornerImage;
-    IntSize cornerResizerSize;
-    if (deviceScaleFactor >= 2) {
-        DEFINE_STATIC_LOCAL(Image*, resizeCornerImageHiRes, (Image::loadPlatformResource("textAreaResizeCorner@2x").leakRef()));
-        resizeCornerImage = resizeCornerImageHiRes;
-        cornerResizerSize = resizeCornerImage->size();
-        cornerResizerSize.scale(0.5f);
-    } else {
-        DEFINE_STATIC_LOCAL(Image*, resizeCornerImageLoRes, (Image::loadPlatformResource("textAreaResizeCorner").leakRef()));
-        resizeCornerImage = resizeCornerImageLoRes;
-        cornerResizerSize = resizeCornerImage->size();
-    }
-
-    if (renderer()->style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
-        context->save();
-        context->translate(resizerCornerRect.x() + cornerResizerSize.width(), resizerCornerRect.y() + resizerCornerRect.height() - cornerResizerSize.height());
-        context->scale(FloatSize(-1.0, 1.0));
-        context->drawImage(resizeCornerImage.get(), IntRect(IntPoint(), cornerResizerSize));
-        context->restore();
-        return;
-    }
-    IntRect imageRect(resizerCornerRect.maxXMaxYCorner() - cornerResizerSize, cornerResizerSize);
-    context->drawImage(resizeCornerImage.get(), imageRect);
-}
-
-void RenderLayer::paintResizer(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect)
-{
-    if (renderer()->style()->resize() == RESIZE_NONE)
-        return;
-
-    RenderBox* box = renderBox();
-    ASSERT(box);
-
-    IntRect absRect = resizerCornerRect(box->pixelSnappedBorderBoxRect(), ResizerForPointer);
-    absRect.moveBy(paintOffset);
-    if (!absRect.intersects(damageRect))
-        return;
-
-    if (context->updatingControlTints()) {
-        updateResizerStyle();
-        return;
-    }
-
-    if (m_resizer) {
-        m_resizer->paintIntoRect(context, paintOffset, absRect);
-        return;
-    }
-
-    drawPlatformResizerImage(context, absRect);
-
-    // Draw a frame around the resizer (1px grey line) if there are any scrollbars present.
-    // Clipping will exclude the right and bottom edges of this frame.
-    if (!hasOverlayScrollbars() && m_scrollableArea->hasScrollbar()) {
-        GraphicsContextStateSaver stateSaver(*context);
-        context->clip(absRect);
-        IntRect largerCorner = absRect;
-        largerCorner.setSize(IntSize(largerCorner.width() + 1, largerCorner.height() + 1));
-        context->setStrokeColor(Color(217, 217, 217));
-        context->setStrokeThickness(1.0f);
-        context->setFillColor(Color::transparent);
-        context->drawRect(largerCorner);
-    }
-}
-
-bool RenderLayer::isPointInResizeControl(const IntPoint& absolutePoint,
-                                         ResizerHitTestType resizerHitTestType) const
-{
-    if (!renderer()->canResize())
-        return false;
-
-    RenderBox* box = renderBox();
-    ASSERT(box);
-
-    IntPoint localPoint = roundedIntPoint(absoluteToContents(absolutePoint));
-    IntRect localBounds (0, 0, box->pixelSnappedWidth(), box->pixelSnappedHeight());
-    return resizerCornerRect(localBounds, resizerHitTestType).contains(localPoint);
-}
-
-bool RenderLayer::hitTestOverflowControls(HitTestResult& result, const IntPoint& localPoint)
-{
-    if (!m_scrollableArea->hasScrollbar() && !renderer()->canResize())
-        return false;
-
-    RenderBox* box = renderBox();
-    ASSERT(box);
-
-    IntRect resizeControlRect;
-    if (renderer()->style()->resize() != RESIZE_NONE) {
-        resizeControlRect = resizerCornerRect(box->pixelSnappedBorderBoxRect(), ResizerForPointer);
-        if (resizeControlRect.contains(localPoint))
-            return true;
-    }
-
-    return m_scrollableArea->hitTestOverflowControls(result, localPoint, resizeControlRect);
 }
 
 bool RenderLayer::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier)
@@ -4045,7 +3678,7 @@ RenderLayer* RenderLayer::hitTestLayer(RenderLayer* rootLayer, RenderLayer* cont
     LayerFragments layerFragments;
     collectFragments(layerFragments, rootLayer, hitTestLocation.region(), hitTestRect, RootRelativeClipRects, IncludeOverlayScrollbarSize);
 
-    if (renderer()->canResize() && hitTestResizerInFragments(layerFragments, hitTestLocation)) {
+    if (renderer()->canResize() && m_scrollableArea->hitTestResizerInFragments(layerFragments, hitTestLocation)) {
         renderer()->updateHitTestResult(result, hitTestLocation.point());
         return this;
     }
@@ -4114,20 +3747,6 @@ bool RenderLayer::hitTestContentsForFragments(const LayerFragments& layerFragmen
             continue;
         insideClipRect = true;
         if (hitTestContents(request, result, fragment.layerBounds, hitTestLocation, hitTestFilter))
-            return true;
-    }
-
-    return false;
-}
-
-bool RenderLayer::hitTestResizerInFragments(const LayerFragments& layerFragments, const HitTestLocation& hitTestLocation) const
-{
-    if (layerFragments.isEmpty())
-        return false;
-
-    for (int i = layerFragments.size() - 1; i >= 0; --i) {
-        const LayerFragment& fragment = layerFragments.at(i);
-        if (fragment.backgroundRect.intersects(hitTestLocation) && resizerCornerRect(pixelSnappedIntRect(fragment.layerBounds), ResizerForPointer).contains(hitTestLocation.roundedPoint()))
             return true;
     }
 
@@ -5609,7 +5228,6 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
 {
     updateIsNormalFlowOnly();
 
-    updateResizerAreaSet();
     if (m_scrollableArea)
         m_scrollableArea->updateAfterStyleChange(oldStyle);
     updateStackingContextsAfterStyleChange(oldStyle);
@@ -5627,8 +5245,6 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
         UseCounter::count(&renderer()->document(), UseCounter::Reflection);
         updateReflectionStyle();
     }
-
-    updateResizerStyle();
 
     updateDescendantDependentFlags();
     updateTransform();
@@ -5650,19 +5266,6 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
         compositor()->setCompositingLayersNeedRebuild();
     else if (isComposited())
         backing()->updateGraphicsLayerGeometry();
-}
-
-void RenderLayer::updateResizerAreaSet() {
-    Frame* frame = renderer()->frame();
-    if (!frame)
-        return;
-    FrameView* frameView = frame->view();
-    if (!frameView)
-        return;
-    if (renderer()->canResize())
-        frameView->addResizerArea(renderBox());
-    else if (RenderBox* box = renderBox())
-        frameView->removeResizerArea(box);
 }
 
 void RenderLayer::updateScrollableAreaSet(bool hasOverflow)
@@ -5706,22 +5309,6 @@ void RenderLayer::updateScrollableAreaSet(bool hasOverflow)
             compositor()->setNeedsUpdateCompositingRequirementsState();
         else
             setNeedsCompositedScrolling(false);
-    }
-}
-
-void RenderLayer::updateResizerStyle()
-{
-    RenderObject* actualRenderer = rendererForScrollbar(renderer());
-    RefPtr<RenderStyle> resizer = renderer()->hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(RESIZER), actualRenderer->style()) : PassRefPtr<RenderStyle>(0);
-    if (resizer) {
-        if (!m_resizer) {
-            m_resizer = RenderScrollbarPart::createAnonymous(&renderer()->document());
-            m_resizer->setParent(renderer());
-        }
-        m_resizer->setStyle(resizer.release());
-    } else if (m_resizer) {
-        m_resizer->destroy();
-        m_resizer = 0;
     }
 }
 
@@ -6005,6 +5592,70 @@ int RenderLayer::horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy relevan
         return 0;
 
     return m_scrollableArea->horizontalScrollbarHeight(relevancy);
+}
+
+IntRect RenderLayer::scrollCornerAndResizerRect() const
+{
+    if (!m_scrollableArea)
+        return IntRect();
+
+    return m_scrollableArea->scrollCornerAndResizerRect();
+}
+
+void RenderLayer::positionOverflowControls(const IntSize& offsetFromRoot)
+{
+    if (m_scrollableArea)
+        m_scrollableArea->positionOverflowControls(offsetFromRoot);
+}
+
+void RenderLayer::paintScrollCorner(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect)
+{
+    if (m_scrollableArea)
+        m_scrollableArea->paintScrollCorner(context, paintOffset, damageRect);
+}
+
+IntRect RenderLayer::resizerCornerRect(const IntRect& bounds, ResizerHitTestType resizerHitTestType) const
+{
+    if (!m_scrollableArea)
+        return IntRect();
+
+    return m_scrollableArea->resizerCornerRect(bounds, resizerHitTestType);
+}
+
+bool RenderLayer::isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType resizerHitTestType) const
+{
+    if (!m_scrollableArea)
+        return false;
+
+    return m_scrollableArea->isPointInResizeControl(absolutePoint, resizerHitTestType);
+}
+
+void RenderLayer::paintOverflowControls(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect, bool paintingOverlayControls)
+{
+    if (m_scrollableArea)
+        return m_scrollableArea->paintOverflowControls(context, paintOffset, damageRect, paintingOverlayControls);
+}
+
+bool RenderLayer::hitTestOverflowControls(HitTestResult& result, const IntPoint& localPoint)
+{
+    if (!m_scrollableArea)
+        return false;
+
+    return m_scrollableArea->hitTestOverflowControls(result, localPoint);
+}
+
+void RenderLayer::paintResizer(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect)
+{
+    if (m_scrollableArea)
+        m_scrollableArea->paintResizer(context, paintOffset, damageRect);
+}
+
+bool RenderLayer::overflowControlsIntersectRect(const IntRect& localRect) const
+{
+    if (!m_scrollableArea)
+        return false;
+
+    return m_scrollableArea->overflowControlsIntersectRect(localRect);
 }
 
 } // namespace WebCore

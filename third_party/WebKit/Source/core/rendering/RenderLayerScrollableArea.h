@@ -58,6 +58,7 @@ enum ScrollOffsetClamping {
     ScrollOffsetClamped
 };
 
+class PlatformEvent;
 class RenderBox;
 class RenderLayer;
 class RenderScrollbarPart;
@@ -125,6 +126,12 @@ public:
     // FIXME: This should be removed.
     bool hasScrollCorner() const { return m_scrollCorner; }
 
+    void resize(const PlatformEvent&, const LayoutSize&);
+    IntSize offsetFromResizeCorner(const IntPoint& absolutePoint) const;
+
+    bool inResizeMode() const { return m_inResizeMode; }
+    void setInResizeMode(bool inResizeMode) { m_inResizeMode = inResizeMode; }
+
 private:
     bool hasHorizontalOverflow() const;
     bool hasVerticalOverflow() const;
@@ -163,11 +170,24 @@ private:
     void updateScrollCornerStyle();
     void paintOverflowControls(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect, bool paintingOverlayControls);
     void paintScrollCorner(GraphicsContext*, const IntPoint&, const IntRect& damageRect);
-    bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint, const IntRect&);
+    bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
+
+    IntRect resizerCornerRect(const IntRect&, ResizerHitTestType) const;
+    IntRect scrollCornerAndResizerRect() const;
+    bool overflowControlsIntersectRect(const IntRect& localRect) const;
+    void paintResizer(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect);
+    bool isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType) const;
+    bool hitTestResizerInFragments(const LayerFragments&, const HitTestLocation&) const;
+    void updateResizerAreaSet();
+    void updateResizerStyle();
+    void drawPlatformResizerImage(GraphicsContext*, IntRect resizerCornerRect);
 
     RenderLayer* layer() const;
 
     RenderBox* m_box;
+
+    // Keeps track of whether the layer is currently resizing, so events can cause resizing to start and stop.
+    unsigned m_inResizeMode : 1;
 
     unsigned m_scrollDimensionsDirty : 1;
     unsigned m_inOverflowRelayout : 1;
@@ -184,6 +204,9 @@ private:
 
     // Renderers to hold our custom scroll corner.
     RenderScrollbarPart* m_scrollCorner;
+
+    // Renderers to hold our custom resizer.
+    RenderScrollbarPart* m_resizer;
 };
 
 } // Namespace WebCore
