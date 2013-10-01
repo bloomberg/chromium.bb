@@ -48,6 +48,11 @@ prep_staging_debian() {
 
 # Put the package contents in the staging area.
 stage_install_debian() {
+  # Always use a different name for /usr/bin symlink depending on channel.
+  # First, to avoid file collisions. Second, to make it possible to
+  # use update-alternatives for /usr/bin/google-chrome.
+  local USR_BIN_SYMLINK_NAME="${PACKAGE}-${CHANNEL}"
+
   if [ "$CHANNEL" != "stable" ]; then
     # Avoid file collisions between channels.
     local PACKAGE="${PACKAGE}-${CHANNEL}"

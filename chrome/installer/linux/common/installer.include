@@ -77,6 +77,7 @@ process_template() (
     -e "s#@@FULLDESC@@#${FULLDESC}#g" \
     -e "s#@@DEFAULT_FLAGS@@#${DEFAULT_FLAGS:-}#g" \
     -e "s#@@SXS_USER_DATA_DIR@@#${SXS_USER_DATA_DIR:-}#g" \
+    -e "s#@@USR_BIN_SYMLINK_NAME@@#${USR_BIN_SYMLINK_NAME:-}#g" \
     > "$TMPLOUT" <<< "$TMPLINCL"
 )
 
@@ -212,9 +213,8 @@ stage_install_common() {
   process_template "${BUILDDIR}/installer/common/wrapper" \
     "${STAGEDIR}/${INSTALLDIR}/${PACKAGE}"
   chmod 755 "${STAGEDIR}/${INSTALLDIR}/${PACKAGE}"
-  pushd "${STAGEDIR}/usr/bin/"
-  ln -snf "${INSTALLDIR}/${PACKAGE}" "${PACKAGE}"
-  popd
+  ln -snf "${INSTALLDIR}/${PACKAGE}" \
+    "${STAGEDIR}/usr/bin/${USR_BIN_SYMLINK_NAME}"
 
   # app icons
   install -m 644 \

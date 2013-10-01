@@ -85,7 +85,7 @@ rm -rf "$RPM_BUILD_ROOT"
 # Be explicit about the files we scatter throughout the system we don't
 # accidentally "own" stuff that's not ours (crbug.com/123990).
 /etc/cron.daily/@@PACKAGE_FILENAME@@
-/usr/bin/@@PACKAGE_FILENAME@@
+/usr/bin/@@USR_BIN_SYMLINK_NAME@@
 /usr/share/gnome-control-center/default-apps/@@PACKAGE_FILENAME@@.xml
 %docdir /usr/share/man/man1
 /usr/share/man/man1/@@PACKAGE_FILENAME@@.1

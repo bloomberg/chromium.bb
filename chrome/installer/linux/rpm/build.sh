@@ -34,6 +34,8 @@ prep_staging_rpm() {
 
 # Put the package contents in the staging area.
 stage_install_rpm() {
+  local USR_BIN_SYMLINK_NAME="${PACKAGE}-${CHANNEL}"
+
   # Trunk packages need to install to a custom path and with custom filenames
   # (e.g. not /usr/bin/google-chrome) so they don't conflict with release
   # channel packages.

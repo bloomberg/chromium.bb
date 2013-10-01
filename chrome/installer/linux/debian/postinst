@@ -45,9 +45,12 @@ case $CHANNEL in
 esac
 
 update-alternatives --install /usr/bin/x-www-browser x-www-browser \
-  /usr/bin/@@PACKAGE@@ $PRIORITY
+  /usr/bin/@@USR_BIN_SYMLINK_NAME@@ $PRIORITY
 update-alternatives --install /usr/bin/gnome-www-browser gnome-www-browser \
-  /usr/bin/@@PACKAGE@@ $PRIORITY
+  /usr/bin/@@USR_BIN_SYMLINK_NAME@@ $PRIORITY
+
+update-alternatives --install /usr/bin/google-chrome google-chrome \
+  /usr/bin/@@USR_BIN_SYMLINK_NAME@@ $PRIORITY
 
 @@include@@../common/apt.include
 
