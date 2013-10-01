@@ -161,7 +161,7 @@ private:
     mutable bool m_willValidateInitialized: 1;
     mutable bool m_willValidate : 1;
 
-    // Cache of validity()->valid().
+    // Cache of valid().
     // But "candidate for constraint validation" doesn't affect m_isValid.
     bool m_isValid : 1;
 
