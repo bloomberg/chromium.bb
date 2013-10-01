@@ -339,24 +339,15 @@ public:
     LayoutUnit adjustContentBoxLogicalHeightForBoxSizing(LayoutUnit height) const;
 
     struct ComputedMarginValues {
-        ComputedMarginValues()
-            : m_before(0)
-            , m_after(0)
-            , m_start(0)
-            , m_end(0)
-        {
-        }
+        ComputedMarginValues() { }
+
         LayoutUnit m_before;
         LayoutUnit m_after;
         LayoutUnit m_start;
         LayoutUnit m_end;
     };
     struct LogicalExtentComputedValues {
-        LogicalExtentComputedValues()
-            : m_extent(0)
-            , m_position(0)
-        {
-        }
+        LogicalExtentComputedValues() { }
 
         LayoutUnit m_extent;
         LayoutUnit m_position;

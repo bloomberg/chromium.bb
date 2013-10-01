@@ -58,7 +58,7 @@ public:
     void setWidth(LayoutUnit width) { m_width = width; }
     void setHeight(LayoutUnit height) { m_height = height; }
 
-    bool isEmpty() const { return m_width <= 0 || m_height <= 0; }
+    bool isEmpty() const { return m_width.rawValue() <= 0 || m_height.rawValue() <= 0; }
     bool isZero() const { return !m_width && !m_height; }
 
     float aspectRatio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
