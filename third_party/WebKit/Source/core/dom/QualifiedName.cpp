@@ -33,6 +33,7 @@
 #include "core/dom/QualifiedName.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashSet.h"
+#include "wtf/MainThread.h"
 #include "wtf/StaticConstructors.h"
 
 namespace WebCore {
@@ -47,7 +48,15 @@ struct QualifiedNameHashTraits : public HashTraits<QualifiedName::QualifiedNameI
     static const int minimumTableSize = WTF::HashTableCapacityForSize<staticQualifiedNamesCount>::value;
 };
 
-typedef HashSet<QualifiedName::QualifiedNameImpl*, QualifiedNameHash, QualifiedNameHashTraits> QNameSet;
+typedef HashSet<QualifiedName::QualifiedNameImpl*, QualifiedNameHash, QualifiedNameHashTraits> QualifiedNameCache;
+
+static QualifiedNameCache& qualifiedNameCache()
+{
+    // This code is lockless and thus assumes it all runs on one thread!
+    ASSERT(isMainThread());
+    static QualifiedNameCache* gNameCache = new QualifiedNameCache;
+    return *gNameCache;
+}
 
 struct QNameComponentsTranslator {
     static unsigned hash(const QualifiedNameComponents& components)
@@ -64,14 +73,10 @@ struct QNameComponentsTranslator {
     }
 };
 
-static QNameSet* gNameCache;
-
 QualifiedName::QualifiedName(const AtomicString& p, const AtomicString& l, const AtomicString& n)
 {
-    if (!gNameCache)
-        gNameCache = new QNameSet;
     QualifiedNameComponents components = { p.impl(), l.impl(), n.isEmpty() ? nullAtom.impl() : n.impl() };
-    QNameSet::AddResult addResult = gNameCache->add<QNameComponentsTranslator>(components);
+    QualifiedNameCache::AddResult addResult = qualifiedNameCache().add<QNameComponentsTranslator>(components);
     m_impl = *addResult.iterator;
     if (!addResult.isNewEntry)
         m_impl->ref();
@@ -94,7 +99,7 @@ void QualifiedName::deref()
 
 QualifiedName::QualifiedNameImpl::~QualifiedNameImpl()
 {
-    gNameCache->remove(this);
+    qualifiedNameCache().remove(this);
 }
 
 String QualifiedName::toString() const
