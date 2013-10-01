@@ -1175,8 +1175,6 @@
             'page/DeviceClient.h',
             'page/DeviceController.cpp',
             'page/DeviceController.h',
-            'page/DiagnosticLoggingKeys.cpp',
-            'page/DiagnosticLoggingKeys.h',
             'page/DOMPoint.h',
             'page/DOMSecurityPolicy.cpp',
             'page/DOMSelection.cpp',
