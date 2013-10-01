@@ -230,6 +230,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return AnimatableImage::create(style->maskBoxImageSource());
     case CSSPropertyWebkitMaskImage:
         return AnimatableImage::create(style->maskImage());
+    case CSSPropertyWebkitPerspective:
+        return createFromDouble(style->perspective());
     case CSSPropertyWebkitPerspectiveOriginX:
         return createFromLength(style->perspectiveOriginX(), style);
     case CSSPropertyWebkitPerspectiveOriginY:

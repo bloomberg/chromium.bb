@@ -253,6 +253,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyWebkitMaskImage:
         style->setMaskImage(toAnimatableImage(value)->toStyleImage());
         return;
+    case CSSPropertyWebkitPerspective:
+        style->setPerspective(clampTo<float>(toAnimatableNumber(value)->toDouble()));
+        return;
     case CSSPropertyWebkitPerspectiveOriginX:
         style->setPerspectiveOriginX(animatableValueToLength(value, state));
         return;
