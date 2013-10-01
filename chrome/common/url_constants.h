@@ -335,6 +335,9 @@ extern const char kChromeSyncLearnMoreURL[];
 // "Learn more" URL for the enterprise sign-in confirmation dialog.
 extern const char kChromeEnterpriseSignInLearnMoreURL[];
 
+// "Learn more" URL for resetting profile preferences.
+extern const char kResetProfileSettingsLearnMoreURL[];
+
 // Management URL for the supervised users.
 extern const char kSupervisedUserManagementURL[];
 

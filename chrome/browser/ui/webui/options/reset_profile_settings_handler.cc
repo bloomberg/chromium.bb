@@ -17,17 +17,11 @@
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-const char kResetProfileSettingsLearnMoreUrl[] =
-    "https://support.google.com/chrome/?p=ui_reset_settings";
-
-}  // namespace
 
 namespace options {
 
@@ -65,8 +59,7 @@ void ResetProfileSettingsHandler::GetLocalizedValues(
                 IDS_RESET_PROFILE_SETTINGS_TITLE);
   localized_strings->SetString(
       "resetProfileSettingsLearnMoreUrl",
-      google_util::StringAppendGoogleLocaleParam(
-          kResetProfileSettingsLearnMoreUrl));
+      chrome::kResetProfileSettingsLearnMoreURL);
 }
 
 void ResetProfileSettingsHandler::RegisterMessages() {

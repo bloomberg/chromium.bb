@@ -203,6 +203,7 @@
 #define IDC_EXTERNAL_EXTENSION_ALERT    40238
 #define IDC_RECENT_TABS_MENU            40239
 #define IDC_RECENT_TABS_NO_DEVICE_TABS  40240
+#define IDC_SHOW_SETTINGS_RESET_BUBBLE  40241
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

@@ -15320,6 +15320,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SettingsResetBubble.NumNoThanksPerReset">
+  <summary>
+    Counts the number of times the user clicked on the No Thanks button of the
+    settings reset bubble before clicking on the Reset button in the same Chrome
+    session.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.App.CheckCRCResult" enum="CheckCRCResult">
   <summary>
     Whether or not the CRC was checked at the moment when the last reference to

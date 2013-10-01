@@ -384,6 +384,9 @@ const char kChromeSyncLearnMoreURL[] =
 const char kChromeEnterpriseSignInLearnMoreURL[] =
   "http://support.google.com/chromeos/bin/answer.py?hl=en&answer=1331549";
 
+const char kResetProfileSettingsLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=ui_reset_settings";
+
 const char kSupervisedUserManagementURL[] = "https://www.chrome.com/manage";
 
 const char kSupervisedUserManagementDisplayURL[] = "www.chrome.com/manage";

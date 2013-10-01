@@ -1449,6 +1449,8 @@
         'browser/ui/search_engines/template_url_fetcher_ui_callbacks.h',
         'browser/ui/search_engines/template_url_table_model.cc',
         'browser/ui/search_engines/template_url_table_model.h',
+        'browser/ui/show_profile_reset_bubble.h',
+        'browser/ui/show_profile_reset_bubble_stub.cc',
         'browser/ui/simple_message_box.h',
         'browser/ui/singleton_tabs.cc',
         'browser/ui/singleton_tabs.h',
@@ -1929,6 +1931,8 @@
         'browser/ui/views/pdf_password_dialog.cc',
         'browser/ui/views/profile_chooser_view.cc',
         'browser/ui/views/profile_chooser_view.h',
+        'browser/ui/views/profile_reset_bubble_view.cc',
+        'browser/ui/views/profile_reset_bubble_view.h',
         'browser/ui/views/user_manager_view.cc',
         'browser/ui/views/user_manager_view.h',
         'browser/ui/views/reload_button.cc',
@@ -2609,6 +2613,11 @@
             'browser/ui/tabs/tab_strip_layout_type.h',
             'browser/ui/tabs/tab_strip_layout_type_prefs.cc',
             'browser/ui/tabs/tab_strip_layout_type_prefs.h',
+          ],
+        }],
+        ['toolkit_views == 1', {
+          'sources!': [
+            'browser/ui/show_profile_reset_bubble_stub.cc',
           ],
         }],
         ['OS=="linux"', {
