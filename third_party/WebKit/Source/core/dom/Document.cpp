@@ -1325,11 +1325,8 @@ void Document::setTitle(const String& title)
 
     updateTitle(title);
 
-    if (m_titleElement) {
-        ASSERT(isHTMLTitleElement(m_titleElement.get()));
-        if (isHTMLTitleElement(m_titleElement.get()))
-            toHTMLTitleElement(m_titleElement.get())->setText(title);
-    }
+    if (m_titleElement && isHTMLTitleElement(m_titleElement.get()))
+        toHTMLTitleElement(m_titleElement.get())->setText(title);
 }
 
 void Document::setTitleElement(const String& title, Element* titleElement)

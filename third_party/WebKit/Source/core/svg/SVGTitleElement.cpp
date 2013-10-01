@@ -43,6 +43,7 @@ Node::InsertionNotificationRequest SVGTitleElement::insertedInto(ContainerNode* 
     SVGElement::insertedInto(rootParent);
     if (!rootParent->inDocument())
         return InsertionDone;
+    // FIXME: It's possible to register SVGTitleElement to an HTMLDocument.
     if (firstChild())
         document().setTitleElement(textContent(), this);
     return InsertionDone;
