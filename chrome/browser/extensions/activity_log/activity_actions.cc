@@ -165,6 +165,7 @@ scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
 
   result->extension_id.reset(new std::string(extension_id()));
   result->time.reset(new double(time().ToJsTime()));
+  result->count.reset(new double(count()));
   result->api_call.reset(new std::string(api_name()));
   result->args.reset(new std::string(Serialize(args())));
   if (page_url().is_valid()) {
