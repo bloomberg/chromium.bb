@@ -310,6 +310,12 @@ class CppStyleTestBase(unittest.TestCase):
         unit_test_config = {cpp_style.INCLUDE_IO_INJECTION_KEY: io}
         return self.perform_lint(code, filename, basic_error_rules, unit_test_config)
 
+    def perform_avoid_static_cast_of_objects(self, code, filename='foo.cpp', io=codecs):
+        basic_error_rules = ('-',
+                             '+runtime/casting')
+        unit_test_config = {cpp_style.INCLUDE_IO_INJECTION_KEY: io}
+        return self.perform_lint(code, filename, basic_error_rules, unit_test_config)
+
     # Perform lint and compare the error message with "expected_message".
     def assert_lint(self, code, expected_message, file_name='foo.cpp'):
         self.assertEqual(expected_message, self.perform_single_line_lint(code, file_name))
@@ -764,13 +770,24 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_language_rules_check('foo.cpp', statement, error_message)
         self.assert_language_rules_check('foo.h', statement, error_message)
 
-    # Test for static_cast readability.
-    def test_static_cast_readability(self):
-        self.assert_lint(
-            'Text* x = static_cast<Text*>(foo);',
-            'Consider using toText helper function in WebCore/dom/Text.h '
-            'instead of static_cast<Text*>'
-            '  [readability/check] [4]')
+    # Tests for static_cast readability.
+    def test_static_cast_on_objects_with_toFoo(self):
+        mock_header_contents = ['inline Foo* toFoo(Bar* bar)']
+        message = self.perform_avoid_static_cast_of_objects(
+            'Foo* x = static_cast<Foo*>(bar);',
+            filename='casting.cpp',
+            io=MockIo(mock_header_contents))
+        self.assertEqual(message, 'static_cast of class objects is not allowed. Use toFoo defined in Foo.h.'
+                                  '  [runtime/casting] [4]')
+
+    def test_static_cast_on_objects_without_toFoo(self):
+        mock_header_contents = ['inline FooBar* toFooBar(Bar* bar)']
+        message = self.perform_avoid_static_cast_of_objects(
+            'Foo* x = static_cast<Foo*>(bar);',
+            filename='casting.cpp',
+            io=MockIo(mock_header_contents))
+        self.assertEqual(message, 'static_cast of class objects is not allowed. Add toFoo in Foo.h and use it instead.'
+                                  '  [runtime/casting] [4]')
 
     # We cannot test this functionality because of difference of
     # function definitions.  Anyway, we may never enable this.
