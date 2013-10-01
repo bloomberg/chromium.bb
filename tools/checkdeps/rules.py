@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -21,13 +21,21 @@ class Rule(object):
   DISALLOW = '-'
   TEMP_ALLOW = '!'
 
-  def __init__(self, allow, directory, source):
+  def __init__(self, allow, directory, dependent_directory, source):
     self.allow = allow
     self._dir = directory
+    self._dependent_dir = dependent_directory
     self._source = source
 
   def __str__(self):
     return '"%s%s" from %s.' % (self.allow, self._dir, self._source)
+
+  def AsDependencyTuple(self):
+    """Returns a tuple (allow, dependent dir, dependee dir) for this rule,
+    which is fully self-sufficient to answer the question whether the dependent
+    is allowed to depend on the dependee, without knowing the external
+    context."""
+    return (self.allow, self._dependent_dir or '.', self._dir or '.')
 
   def ParentOrMatch(self, other):
     """Returns true if the input string is an exact match or is a parent
@@ -46,7 +54,7 @@ class MessageRule(Rule):
   """
 
   def __init__(self, reason):
-    super(MessageRule, self).__init__(Rule.DISALLOW, '', '')
+    super(MessageRule, self).__init__(Rule.DISALLOW, '', '', '')
     self._reason = reason
 
   def __str__(self):
@@ -102,13 +110,32 @@ class Rules(object):
     result.append('  }')
     return '\n'.join(result)
 
-  def AddRule(self, rule_string, source, dependee_regexp=None):
+  def AsDependencyTuples(self, include_general_rules, include_specific_rules):
+    """Returns a list of tuples (allow, dependent dir, dependee dir) for the
+    specified rules (general/specific). Currently only general rules are
+    supported."""
+    def AddDependencyTuplesImpl(deps, rules, extra_dependent_suffix=""):
+      for rule in rules:
+        (allow, dependent, dependee) = rule.AsDependencyTuple()
+        tup = (allow, dependent + extra_dependent_suffix, dependee)
+        deps.add(tup)
+
+    deps = set()
+    if include_general_rules:
+      AddDependencyTuplesImpl(deps, self._general_rules)
+    if include_specific_rules:
+      for regexp, rules in self._specific_rules.iteritems():
+        AddDependencyTuplesImpl(deps, rules, "/" + regexp)
+    return deps
+
+  def AddRule(self, rule_string, dependent_dir, source, dependee_regexp=None):
     """Adds a rule for the given rule string.
 
     Args:
       rule_string: The include_rule string read from the DEPS file to apply.
       source: A string representing the location of that string (filename, etc.)
               so that we can give meaningful errors.
+      dependent_dir: The directory to which this rule applies.
       dependee_regexp: The rule will only be applied to dependee files
                        whose filename (last component of their path)
                        matches the expression. None to match all
@@ -128,7 +155,7 @@ class Rules(object):
     # passed "foo", we should remove "foo", "foo/bar", but not "foobar".
     rules_to_update = [x for x in rules_to_update
                        if not x.ParentOrMatch(rule_dir)]
-    rules_to_update.insert(0, Rule(rule_type, rule_dir, source))
+    rules_to_update.insert(0, Rule(rule_type, rule_dir, dependent_dir, source))
 
     if not dependee_regexp:
       self._general_rules = rules_to_update
