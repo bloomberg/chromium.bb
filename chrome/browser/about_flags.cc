@@ -1764,15 +1764,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE("")
 #endif
   },
-#if defined(OS_ANDROID)
-  {
-    "enable-cast",
-    IDS_FLAGS_ENABLE_CAST_NAME,
-    IDS_FLAGS_ENABLE_CAST_DESCRIPTION,
-    kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kEnableCast)
-  },
-#endif
 #if defined(OS_CHROMEOS)
   {
     "enable-first-run-ui",
