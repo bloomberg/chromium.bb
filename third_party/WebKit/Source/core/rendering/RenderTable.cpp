@@ -454,6 +454,11 @@ void RenderTable::layout()
         } else if (child->isRenderTableCol()) {
             child->layoutIfNeeded();
             ASSERT(!child->needsLayout());
+        } else {
+            // FIXME: We should never have other type of children (they should be wrapped in an
+            // anonymous table section) but our code is too crazy and this can happen in practice.
+            // Until this is fixed, let's make sure we don't leave non laid out children in the tree.
+            child->layoutIfNeeded();
         }
     }
 
