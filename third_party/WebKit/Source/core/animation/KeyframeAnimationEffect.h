@@ -60,6 +60,7 @@ public:
     void setComposite(AnimationEffect::CompositeOperation composite) { m_composite = composite; }
     AnimationEffect::CompositeOperation composite() const { return m_composite; }
     void setPropertyValue(CSSPropertyID, const AnimatableValue*);
+    void clearPropertyValue(CSSPropertyID);
     const AnimatableValue* propertyValue(CSSPropertyID) const;
     PropertySet properties() const;
     PassRefPtr<Keyframe> cloneWithOffset(double offset) const;

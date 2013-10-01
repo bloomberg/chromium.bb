@@ -124,6 +124,11 @@ void Keyframe::setPropertyValue(CSSPropertyID property, const AnimatableValue* v
     m_propertyValues.add(property, const_cast<AnimatableValue*>(value));
 }
 
+void Keyframe::clearPropertyValue(CSSPropertyID property)
+{
+    m_propertyValues.remove(property);
+}
+
 const AnimatableValue* Keyframe::propertyValue(CSSPropertyID property) const
 {
     ASSERT(m_propertyValues.contains(property));

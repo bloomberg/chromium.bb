@@ -179,14 +179,18 @@ PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const Element* ele
 
             Timing timing;
             RefPtr<TimingFunction> defaultTimingFunction = timingFromAnimationData(animationData, timing);
-            KeyframeAnimationEffect::KeyframeVector keyframes;
-            resolver->resolveKeyframes(element, style, animationName, defaultTimingFunction.get(), keyframes, timing.timingFunction);
-            if (!keyframes.isEmpty()) {
+            Vector<std::pair<KeyframeAnimationEffect::KeyframeVector, RefPtr<TimingFunction> > > keyframesAndTimingFunctions;
+            resolver->resolveKeyframes(element, style, animationName, defaultTimingFunction.get(), keyframesAndTimingFunctions);
+            if (!keyframesAndTimingFunctions.isEmpty()) {
                 if (!update)
                     update = adoptPtr(new CSSAnimationUpdate());
                 HashSet<RefPtr<InertAnimation> > animations;
-                // FIXME: crbug.com/268791 - Keyframes are already normalized, perhaps there should be a flag on KeyframeAnimationEffect to skip normalization.
-                animations.add(InertAnimation::create(KeyframeAnimationEffect::create(keyframes), timing));
+                for (size_t j = 0; j < keyframesAndTimingFunctions.size(); ++j) {
+                    ASSERT(!keyframesAndTimingFunctions[j].first.isEmpty());
+                    timing.timingFunction = keyframesAndTimingFunctions[j].second;
+                    // FIXME: crbug.com/268791 - Keyframes are already normalized, perhaps there should be a flag on KeyframeAnimationEffect to skip normalization.
+                    animations.add(InertAnimation::create(KeyframeAnimationEffect::create(keyframesAndTimingFunctions[j].first), timing));
+                }
                 update->startAnimation(animationName, animations);
             }
         }
