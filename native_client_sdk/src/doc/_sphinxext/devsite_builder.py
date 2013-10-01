@@ -145,6 +145,20 @@ class DevsiteHTMLTranslator(HTMLTranslator):
       node['uri'] = '/native-client/' + node['uri']
     HTMLTranslator.visit_image(self, node)
 
+  def visit_reference(self, node):
+    # In "kill_internal_links" mode, we don't emit the actual links for internal
+    # nodes.
+    if self.builder.kill_internal_links and node.get('internal'):
+      pass
+    else:
+      HTMLTranslator.visit_reference(self, node)
+
+  def depart_reference(self, node):
+    if self.builder.kill_internal_links and node.get('internal'):
+      pass
+    else:
+      HTMLTranslator.depart_reference(self, node)
+
   def visit_title(self, node):
     # Why this?
     #
@@ -221,6 +235,7 @@ class DevsiteBuilder(StandaloneHTMLBuilder):
 
   def init(self):
     self.devsite_production_mode = int(self.config.devsite_production_mode) == 1
+    self.kill_internal_links = int(self.config.kill_internal_links) == 1
     print "----> Devsite builder with production mode = %d" % (
         self.devsite_production_mode,)
     self.config_hash = ''
@@ -308,3 +323,5 @@ def setup(app):
 
   # "Production mode" for local testing vs. on-server documentation.
   app.add_config_value('devsite_production_mode', default='1', rebuild='html')
+
+  app.add_config_value('kill_internal_links', default='0', rebuild='html')
