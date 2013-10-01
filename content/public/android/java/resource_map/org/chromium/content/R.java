@@ -17,10 +17,6 @@ package org.chromium.content;
  */
 public final class R {
     public static final class attr {
-        // TODO(benm): remove these once gone downstream.
-        public static int action_mode_share_drawable;
-        public static int action_mode_web_search_drawable;
-
         public static int select_dialog_multichoice;
         public static int select_dialog_singlechoice;
     }
@@ -85,9 +81,6 @@ public final class R {
         public static int week_picker_dialog_title;
     }
     public static final class style {
-        // TODO(benm): Remove once downstream dependency is removed.
-        public static int ContentActionBar;
-
         public static int SelectPopupDialog;
     }
 }
