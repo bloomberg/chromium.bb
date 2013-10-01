@@ -106,10 +106,10 @@ class WallpaperManager: public content::NotificationObserver {
   // Clears ONLINE and CUSTOM wallpaper cache.
   void ClearWallpaperCache();
 
-  // Returns custom wallpaper path. Append |sub_dir|, |email| and |file| to
-  // custom wallpaper directory.
+  // Returns custom wallpaper path. Append |sub_dir|, |user_id_hash| and |file|
+  // to custom wallpaper directory.
   base::FilePath GetCustomWallpaperPath(const char* sub_dir,
-                                        const std::string& email,
+                                        const std::string& user_id_hash,
                                         const std::string& file);
 
   // Gets encoded wallpaper from cache. Returns true if success.
@@ -155,6 +155,7 @@ class WallpaperManager: public content::NotificationObserver {
   // Saves custom wallpaper to file, post task to generate thumbnail and updates
   // local state preferences.
   void SetCustomWallpaper(const std::string& username,
+                          const std::string& user_id_hash,
                           const std::string& file,
                           ash::WallpaperLayout layout,
                           User::WallpaperType type,
@@ -219,11 +220,13 @@ class WallpaperManager: public content::NotificationObserver {
   // Deletes a list of wallpaper files in |file_list|.
   void DeleteWallpaperInList(const std::vector<base::FilePath>& file_list);
 
-  // Deletes all |email| related custom or converted wallpapers.
-  void DeleteUserWallpapers(const std::string& email);
+  // Deletes all |email| related custom wallpapers and directories.
+  void DeleteUserWallpapers(const std::string& email,
+                            const std::string& path_to_file);
 
-  // Creates all new custom wallpaper directories for |email| if not exist.
-  void EnsureCustomWallpaperDirectories(const std::string& email);
+  // Creates all new custom wallpaper directories for |user_id_hash| if not
+  // exist.
+  void EnsureCustomWallpaperDirectories(const std::string& user_id_hash);
 
   // Gets the CommandLine representing the current process's command line.
   CommandLine* GetComandLine();
@@ -237,6 +240,22 @@ class WallpaperManager: public content::NotificationObserver {
   void LoadWallpaper(const std::string& email,
                      const WallpaperInfo& info,
                      bool update_wallpaper);
+
+  // Moves custom wallpapers from |email| directory to |user_id_hash|
+  // directory.
+  void MoveCustomWallpapersOnWorker(const std::string& email,
+                                    const std::string& user_id_hash);
+
+  // Called when the original custom wallpaper is moved to the new place.
+  // Updates the corresponding user wallpaper info.
+  void MoveCustomWallpapersSuccess(const std::string& email,
+                                   const std::string& user_id_hash);
+
+  // Moves custom wallpaper to a new place. Email address was used as directory
+  // name in the old system, this is not safe. New directory system uses
+  // user_id_hash instead of email. This must be called after user_id_hash is
+  // ready.
+  void MoveLoggedInUserCustomWallpaper();
 
   // Gets |email|'s custom wallpaper at |wallpaper_path|. Falls back on original
   // custom wallpaper. When |update_wallpaper| is true, sets wallpaper to the
@@ -260,7 +279,7 @@ class WallpaperManager: public content::NotificationObserver {
   // Generates thumbnail of custom wallpaper on wallpaper sequenced worker
   // thread. If |persistent| is true, saves original custom image and resized
   // images to disk.
-  void ProcessCustomWallpaper(const std::string& email,
+  void ProcessCustomWallpaper(const std::string& user_id_hash,
                               bool persistent,
                               const WallpaperInfo& info,
                               scoped_ptr<gfx::ImageSkia> image,
@@ -271,7 +290,7 @@ class WallpaperManager: public content::NotificationObserver {
 
   // Saves original custom wallpaper to |path| (absolute path) on filesystem
   // and starts resizing operation of the custom wallpaper if necessary.
-  void SaveCustomWallpaper(const std::string& email,
+  void SaveCustomWallpaper(const std::string& user_id_hash,
                            const base::FilePath& path,
                            ash::WallpaperLayout layout,
                            const UserImage& wallpaper);

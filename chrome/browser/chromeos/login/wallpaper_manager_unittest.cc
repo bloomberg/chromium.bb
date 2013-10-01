@@ -33,6 +33,7 @@ using namespace ash;
 namespace {
 
 const char kTestUser1[] = "test-user@example.com";
+const char kTestUser1Hash[] = "test-user@example.com-hash";
 
 const int kLargeWallpaperResourceId = IDR_AURA_WALLPAPER_DEFAULT_LARGE;
 const int kSmallWallpaperResourceId = IDR_AURA_WALLPAPER_DEFAULT_SMALL;
@@ -105,14 +106,13 @@ class WallpaperManagerTest : public test::AshTestBase {
 // Test for crbug.com/260755. If this test fails, it is probably because the
 // wallpaper of last logged in user is set as guest wallpaper.
 TEST_F(WallpaperManagerTest, GuestUserUseGuestWallpaper) {
-  UserManager::Get()->UserLoggedIn(kTestUser1, kTestUser1, false);
+  UserManager::Get()->UserLoggedIn(kTestUser1, kTestUser1Hash, false);
 
-  base::FilePath old_wallpaper_path = WallpaperManager::Get()->
-      GetOriginalWallpaperPathForUser(kTestUser1);
-
+  std::string relative_path =
+      base::FilePath(kTestUser1Hash).Append(FILE_PATH_LITERAL("DUMMY")).value();
   // Saves wallpaper info to local state for user |kTestUser1|.
   WallpaperInfo info = {
-      "DUMMY",
+      relative_path,
       WALLPAPER_LAYOUT_CENTER_CROPPED,
       User::CUSTOMIZED,
       base::Time::Now().LocalMidnight()

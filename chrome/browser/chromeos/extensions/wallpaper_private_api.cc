@@ -243,12 +243,15 @@ bool WallpaperPrivateSetWallpaperIfExistsFunction::RunImpl() {
   } else {
     type_ = chromeos::User::CUSTOMIZED;
     file_name = urlOrFile_;
+    std::string username_hash =
+      chromeos::UserManager::Get()->GetLoggedInUser()->username_hash();
     const char* sub_dir = (resolution == ash::WALLPAPER_RESOLUTION_SMALL) ?
         chromeos::kSmallWallpaperSubDir : chromeos::kLargeWallpaperSubDir;
     wallpaper_path = chromeos::WallpaperManager::Get()->GetCustomWallpaperPath(
-        sub_dir, email, file_name);
+        sub_dir, username_hash, file_name);
+
     fallback_path = chromeos::WallpaperManager::Get()->GetCustomWallpaperPath(
-        chromeos::kOriginalWallpaperSubDir, email, file_name);
+        chromeos::kOriginalWallpaperSubDir, username_hash, file_name);
   }
 
   sequence_token_ = BrowserThread::GetBlockingPool()->
@@ -468,8 +471,10 @@ bool WallpaperPrivateSetCustomWallpaperFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(3, &file_name_));
   EXTENSION_FUNCTION_VALIDATE(!file_name_.empty());
 
-  // Gets email address while at UI thread.
+  // Gets email address and username hash while at UI thread.
   email_ = chromeos::UserManager::Get()->GetLoggedInUser()->email();
+  user_id_hash_ =
+      chromeos::UserManager::Get()->GetLoggedInUser()->username_hash();
 
   image_data_.assign(input->GetBuffer(), input->GetSize());
   StartDecode(image_data_);
@@ -485,7 +490,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
                                           image_data_.end());
   chromeos::UserImage image(wallpaper, raw_image);
   base::FilePath thumbnail_path = wallpaper_manager->GetCustomWallpaperPath(
-      chromeos::kThumbnailWallpaperSubDir, email_, file_name_);
+      chromeos::kThumbnailWallpaperSubDir, user_id_hash_, file_name_);
 
   sequence_token_ = BrowserThread::GetBlockingPool()->
       GetNamedSequenceToken(chromeos::kWallpaperSequenceTokenName);
@@ -494,9 +499,10 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
           GetSequencedTaskRunnerWithShutdownBehavior(sequence_token_,
               base::SequencedWorkerPool::BLOCK_SHUTDOWN);
 
-  // In the new wallpaper picker UI, we do not depend on WallpaperDelegate
-  // to refresh thumbnail. Uses a null delegate here.
-  wallpaper_manager->SetCustomWallpaper(email_, file_name_, layout_,
+  wallpaper_manager->SetCustomWallpaper(email_,
+                                        user_id_hash_,
+                                        file_name_,
+                                        layout_,
                                         chromeos::User::CUSTOMIZED,
                                         image);
   unsafe_wallpaper_decoder_ = NULL;
@@ -629,8 +635,11 @@ bool WallpaperPrivateGetThumbnailFunction::RunImpl() {
     thumbnail_path = thumbnail_path.Append(file_name);
   } else {
     file_name = urlOrFile;
+    std::string username_hash =
+        chromeos::UserManager::Get()->GetLoggedInUser()->username_hash();
     thumbnail_path = chromeos::WallpaperManager::Get()->
-        GetCustomWallpaperPath(chromeos::kThumbnailWallpaperSubDir, email,
+        GetCustomWallpaperPath(chromeos::kThumbnailWallpaperSubDir,
+                               username_hash,
                                file_name);
   }
 

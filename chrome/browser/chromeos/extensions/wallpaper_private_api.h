@@ -162,6 +162,9 @@ class WallpaperPrivateSetCustomWallpaperFunction
   // Email address of logged in user.
   std::string email_;
 
+  // User id hash of the logged in user.
+  std::string user_id_hash_;
+
   // String representation of downloaded wallpaper.
   std::string image_data_;
 

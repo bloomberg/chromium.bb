@@ -11,7 +11,7 @@
 
 // Implementation of chrome.wallpaper.setWallpaper API.
 // After this API being called, a jpeg encoded wallpaper will be saved to
-// /home/chronos/custom_wallpaper/{resolution}/{username}/file_name. The
+// /home/chronos/custom_wallpaper/{resolution}/{user_id_hash}/file_name. The
 // wallpaper can then persistent after Chrome restart. New call to this API
 // will replace the previous saved wallpaper with new one.
 // Note: For security reason, the original encoded wallpaper image is not saved
@@ -51,9 +51,10 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
   std::string file_name_;
 
   // Email address of logged in user.
-  // TODO(bshe): User's email should not be used as part of wallpaper file path.
-  // http://crbug.com/287020
   std::string email_;
+
+  // User id hash of the logged in user.
+  std::string user_id_hash_;
 
   // String representation of downloaded wallpaper.
   std::string image_data_;

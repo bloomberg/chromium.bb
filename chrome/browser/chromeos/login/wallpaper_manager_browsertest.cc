@@ -42,6 +42,7 @@ int kSmallWallpaperWidth = 256;
 int kSmallWallpaperHeight = ash::kSmallWallpaperMaxHeight;
 
 const char kTestUser1[] = "test@domain.com";
+const char kTestUser1Hash[] = "test@domain.com-hash";
 
 }  // namespace
 
@@ -91,10 +92,12 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest,
  protected:
   // Return custom wallpaper path. Create directory if not exist.
   base::FilePath GetCustomWallpaperPath(const char* sub_dir,
-                                        const std::string& email,
+                                        const std::string& username_hash,
                                         const std::string& id) {
     base::FilePath wallpaper_path =
-        WallpaperManager::Get()->GetCustomWallpaperPath(sub_dir, email, id);
+        WallpaperManager::Get()->GetCustomWallpaperPath(sub_dir,
+                                                        username_hash,
+                                                        id);
     if (!base::DirectoryExists(wallpaper_path.DirName()))
       file_util::CreateDirectory(wallpaper_path.DirName());
 
@@ -102,8 +105,8 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest,
   }
 
   // Logs in |username|.
-  void LogIn(const std::string& username) {
-    UserManager::Get()->UserLoggedIn(username, username, false);
+  void LogIn(const std::string& username, const std::string& username_hash) {
+    UserManager::Get()->UserLoggedIn(username, username_hash, false);
   }
 
   // Saves bitmap |resource_id| to disk.
@@ -136,17 +139,17 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest,
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        LoadCustomLargeWallpaperForLargeExternalScreen) {
   WallpaperManager* wallpaper_manager = WallpaperManager::Get();
-  LogIn(kTestUser1);
+  LogIn(kTestUser1, kTestUser1Hash);
   // Wait for default wallpaper loaded.
   WaitAsyncWallpaperLoad();
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
   base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
       kSmallWallpaperSubDir,
-      kTestUser1,
+      kTestUser1Hash,
       id);
   base::FilePath large_wallpaper_path = GetCustomWallpaperPath(
       kLargeWallpaperSubDir,
-      kTestUser1,
+      kTestUser1Hash,
       id);
 
   // Saves the small/large resolution wallpapers to small/large custom
@@ -158,9 +161,10 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                         large_wallpaper_path,
                         kLargeWallpaperResourceId);
 
+  std::string relative_path = base::FilePath(kTestUser1Hash).Append(id).value();
   // Saves wallpaper info to local state for user |kTestUser1|.
   WallpaperInfo info = {
-      id,
+      relative_path,
       WALLPAPER_LAYOUT_CENTER_CROPPED,
       User::CUSTOMIZED,
       base::Time::Now().LocalMidnight()
@@ -216,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        PreventReloadingSameWallpaper) {
   WallpaperManager* wallpaper_manager = WallpaperManager::Get();
   // New user log in, a default wallpaper is loaded.
-  LogIn(kTestUser1);
+  LogIn(kTestUser1, kTestUser1Hash);
   EXPECT_EQ(1, LoadedWallpapers());
   // Loads the same wallpaper before the initial one finished. It should be
   // prevented.
@@ -233,15 +237,16 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
   base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
       kSmallWallpaperSubDir,
-      kTestUser1,
+      kTestUser1Hash,
       id);
   SaveUserWallpaperData(kTestUser1,
                         small_wallpaper_path,
                         kSmallWallpaperResourceId);
 
+  std::string relative_path = base::FilePath(kTestUser1Hash).Append(id).value();
   // Saves wallpaper info to local state for user |kTestUser1|.
   WallpaperInfo info = {
-      id,
+      relative_path,
       WALLPAPER_LAYOUT_CENTER_CROPPED,
       User::CUSTOMIZED,
       base::Time::Now().LocalMidnight()
@@ -266,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        PRE_UseMigratedWallpaperInfo) {
   // New user log in, a default wallpaper is loaded.
-  LogIn(kTestUser1);
+  LogIn(kTestUser1, kTestUser1Hash);
   WaitAsyncWallpaperLoad();
   // Old wallpaper migration code doesn't exist in codebase anymore. Modify user
   // wallpaper info directly to simulate the wallpaper migration. See
@@ -282,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        UseMigratedWallpaperInfo) {
-  LogIn(kTestUser1);
+  LogIn(kTestUser1, kTestUser1Hash);
   WaitAsyncWallpaperLoad();
   // This test should finish normally. If timeout, it is probably because
   // migrated wallpaper is somehow not loaded. Bad things can happen if
@@ -294,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        PRE_UsePreMigrationWallpaperInfo) {
   // New user log in, a default wallpaper is loaded.
-  LogIn(kTestUser1);
+  LogIn(kTestUser1, kTestUser1Hash);
   WaitAsyncWallpaperLoad();
   // Old wallpaper migration code doesn't exist in codebase anymore. So if
   // user's profile is not migrated, it is the same as no wallpaper info. To
@@ -304,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        UsePreMigrationWallpaperInfo) {
-  LogIn(kTestUser1);
+  LogIn(kTestUser1, kTestUser1Hash);
   WaitAsyncWallpaperLoad();
   // This test should finish normally. If timeout, it is probably because chrome
   // can not handle pre migrated user profile (M21 profile or older).
@@ -341,7 +346,7 @@ class WallpaperManagerBrowserTestNoAnimation
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
                        PRE_UseMigratedWallpaperInfo) {
   // New user log in, a default wallpaper is loaded.
-  LogIn(kTestUser1);
+  LogIn(kTestUser1, kTestUser1Hash);
   WaitAsyncWallpaperLoad();
   // Old wallpaper migration code doesn't exist in codebase anymore. Modify user
   // wallpaper info directly to simulate the wallpaper migration. See
@@ -357,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
                        UseMigratedWallpaperInfo) {
-  LogIn(kTestUser1);
+  LogIn(kTestUser1, kTestUser1Hash);
   WaitAsyncWallpaperLoad();
   // This test should finish normally. If timeout, it is probably because
   // migrated wallpaper is somehow not loaded. Bad things can happen if
@@ -369,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
                        PRE_UsePreMigrationWallpaperInfo) {
   // New user log in, a default wallpaper is loaded.
-  LogIn(kTestUser1);
+  LogIn(kTestUser1, kTestUser1Hash);
   WaitAsyncWallpaperLoad();
   // Old wallpaper migration code doesn't exist in codebase anymore. So if
   // user's profile is not migrated, it is the same as no wallpaper info. To
@@ -379,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
                        UsePreMigrationWallpaperInfo) {
-  LogIn(kTestUser1);
+  LogIn(kTestUser1, kTestUser1Hash);
   WaitAsyncWallpaperLoad();
   // This test should finish normally. If timeout, it is probably because chrome
   // can not handle pre migrated user profile (M21 profile or older).
@@ -400,7 +405,7 @@ class WallpaperManagerBrowserTestCrashRestore
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCrashRestore,
                        PRE_RestoreWallpaper) {
-  LogIn(kTestUser1);
+  LogIn(kTestUser1, kTestUser1Hash);
 }
 
 // Test for crbug.com/270278. It simulates a browser crash and verifies if user
