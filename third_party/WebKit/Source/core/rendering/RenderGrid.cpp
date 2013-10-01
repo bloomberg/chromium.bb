@@ -168,6 +168,7 @@ RenderGrid::RenderGrid(Element* element)
     : RenderBlock(element)
     , m_gridIsDirty(true)
     , m_orderIterator(this)
+    , m_gridItemOverflowGridArea(false)
 {
     // All of our children must be block level.
     setChildrenInline(false);
@@ -898,6 +899,10 @@ void RenderGrid::layoutGridItems()
 
         child->setLogicalLocation(findChildLogicalPosition(child, sizingData));
 
+        // For correctness, we disable some painting optimizations if we have a child overflowing its grid area.
+        m_gridItemOverflowGridArea = child->logicalHeight() > overrideContainingBlockContentLogicalHeight
+            || child->logicalWidth() > overrideContainingBlockContentLogicalWidth;
+
         // If the child moved, we have to repaint it as well as any floating/positioned
         // descendants. An exception is if we need a layout. In this case, we know we're going to
         // repaint ourselves (and the child) anyway.
@@ -1171,9 +1176,20 @@ static GridSpan dirtiedGridAreas(const Vector<LayoutUnit>& coordinates, LayoutUn
     return GridSpan(startGridAreaIndex, endGridAreaIndex);
 }
 
+void RenderGrid::paintChildrenSlowCase(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+{
+    for (RenderBox* child = m_orderIterator.first(); child; child = m_orderIterator.next())
+        paintChild(child, paintInfo, paintOffset);
+}
+
 void RenderGrid::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!gridIsDirty());
+
+    if (m_gridItemOverflowGridArea) {
+        paintChildrenSlowCase(paintInfo, paintOffset);
+        return;
+    }
 
     LayoutRect localRepaintRect = paintInfo.rect;
     localRepaintRect.moveBy(-paintOffset);
