@@ -471,9 +471,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 // expected when Autofill is used to fill text inputs.
 //
 // Flaky on Win7, WinXP, and Win Aura.  http://crbug.com/270314.
-// TODO(groby): Enable this test on mac once AutofillDialogCocoa handles
-// comboboxes for GetTextContentsForInput. http://crbug.com/270205
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_WIN)
 #define MAYBE_FillComboboxFromAutofill DISABLED_FillComboboxFromAutofill
 #else
 #define MAYBE_FillComboboxFromAutofill FillComboboxFromAutofill
