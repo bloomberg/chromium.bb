@@ -41,14 +41,14 @@ class ThreadPool(object):
     """Immediately starts |initial_threads| threads.
 
     Arguments:
-    - initial_threads: Number of threads to start immediately. Can be 0 if it is
+      initial_threads: Number of threads to start immediately. Can be 0 if it is
                        uncertain that threads will be needed.
-    - max_threads: Maximum number of threads that will be started when all the
+      max_threads: Maximum number of threads that will be started when all the
                    threads are busy working. Often the number of CPU cores.
-    - queue_size: Maximum number of tasks to buffer in the queue. 0 for
+      queue_size: Maximum number of tasks to buffer in the queue. 0 for
                   unlimited queue. A non-zero value may make add_task()
                   blocking.
-    - prefix: Prefix to use for thread names. Pool's threads will be
+      prefix: Prefix to use for thread names. Pool's threads will be
               named '<prefix>-<thread index>'.
     """
     prefix = prefix or 'tp-0x%0x' % id(self)
@@ -282,8 +282,8 @@ class AutoRetryThreadPool(ThreadPool):
   def __init__(self, exceptions, retries, *args, **kwargs):
     """
     Arguments:
-    - exceptions: list of exception classes that can be retried on.
-    - retries: maximum number of retries to do.
+      exceptions: list of exception classes that can be retried on.
+      retries: maximum number of retries to do.
     """
     assert exceptions and all(issubclass(e, Exception) for e in exceptions), (
         exceptions)
@@ -361,20 +361,23 @@ class Progress(object):
     self.index = 0
     self.start = time.time()
     self.size = size
-    self.size_changed = True
+    # Setting it to True forces a print on the first print_update() call.
+    self.value_changed = True
     self.use_cr_only = True
     self.unfinished_commands = set()
 
     # To be used in all threads.
     self.queued_lines = Queue.Queue()
 
-  def update_item(self, name, index=True, size=False):
+  def update_item(self, name, index=False, size=False, raw=False):
     """Queue information to print out.
 
-    |index| notes that the index should be incremented.
-    |size| note that the total size should be incremented.
+    Arguments:
+      index: index should be incremented.
+      size: total size should be incremented.
+      raw: if True, prints the data without the header.
     """
-    self.queued_lines.put((name, index, size))
+    self.queued_lines.put((name, index, size, raw))
 
   def print_update(self):
     """Prints the current status."""
@@ -385,33 +388,37 @@ class Progress(object):
     got_one = False
     while True:
       try:
-        name, index, size = self.queued_lines.get_nowait()
+        name, index, size, raw = self.queued_lines.get_nowait()
       except Queue.Empty:
         break
 
       if size:
         self.size += 1
-        self.size_changed = True
+        self.value_changed = True
       if index:
         self.index += 1
+        self.value_changed = True
       if not name:
+        # Even if raw=True, there's nothing to print.
         continue
 
       got_one = True
-      if not index:
+      if raw:
+        # Prints the data as-is.
         self.last_printed_line = ''
         sys.stdout.write('\n%s\n' % name.strip('\n'))
       else:
         line, self.last_printed_line = self.gen_line(name)
         sys.stdout.write(line)
 
-    if not got_one and self.size_changed:
+    if not got_one and self.value_changed:
+      # Make sure a line is printed in that case where statistics changes.
       line, self.last_printed_line = self.gen_line('')
       sys.stdout.write(line)
       got_one = True
-    self.size_changed = False
+    self.value_changed = False
     if got_one:
-      # Ensure that all the output is flush to prevent it from getting mixed
+      # Ensure that all the output is flushed to prevent it from getting mixed
       # with other output streams (like the logging streams).
       sys.stdout.flush()
 

@@ -142,11 +142,11 @@ class Progress(threading_utils.Progress):
     super(Progress, self).__init__(*args, **kwargs)
     self.total = 0
 
-  def update_item(self, name):  # pylint: disable=W0221
-    super(Progress, self).update_item(name, True, False)
+  def increment_index(self, name):
+    self.update_item(name, index=True)
 
   def increment_count(self):
-    super(Progress, self).update_item(None, False, True)
+    self.update_item('', size=True)
 
   def gen_line(self, name):
     """Generates the line to be printed.
@@ -233,7 +233,7 @@ def send_and_receive(
     duration = max(0, time.time() - start)
   except isolateserver.MappingError as e:
     duration = str(e)
-  progress.update_item(size if isinstance(duration, float) else 0)
+  progress.increment_index(size if isinstance(duration, float) else 0)
   return (duration, size)
 
 

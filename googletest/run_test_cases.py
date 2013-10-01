@@ -864,7 +864,7 @@ class GoogleTestRunner(object):
         #   detect that a test has been successfully retried).
         if i['output']:
           line += '\n' + i['output']
-      self.progress.update_item(line, True, need_to_retry)
+      self.progress.update_item(line, index=True, size=need_to_retry)
 
       if need_to_retry:
         priority = self._retry(priority, i['test_case'], try_count)
@@ -886,10 +886,10 @@ class GoogleTestRunner(object):
           # Print all the output as one shot when not verbose to be sure the
           # potential stack trace is printed.
           output = ''.join(i['output'] for i in results)
-          self.progress.update_item(output, False, False)
+          self.progress.update_item(output, raw=True)
         for i in results:
           priority = self._retry(priority, i['test_case'], try_count)
-          self.progress.update_item('', False, True)
+          self.progress.update_item('', size=True)
 
     # Only yield once the process completed when there is only one test case as
     # a safety precaution.
@@ -1214,8 +1214,7 @@ def run_test_cases(
 
     # Retry any failed tests serially.
     if not serial_tasks.empty():
-      progress.update_item('\n'.join(running_serial_warning()), index=False,
-                           size=False)
+      progress.update_item('\n'.join(running_serial_warning()), raw=True)
       progress.print_update()
 
       while not serial_tasks.empty():
