@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_output_protection_private.idl,
- *   modified Sat Aug 31 03:18:39 2013.
+ *   modified Mon Sep 30 18:24:12 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_OUTPUT_PROTECTION_PRIVATE_H_
@@ -148,9 +148,12 @@ struct PPB_OutputProtection_Private_0_1 {
    * @param[in] desired_protection_mask The desired protection methods, which
    * is a bit-mask of the <code>PP_OutputProtectionMethod_Private</code>
    * values.
-   * @param[in] callback A <code>PP_CompletionCallback</code> to be called when
-   * the protection request has been made. This may be before the protection
-   * have actually been applied. Call QueryStatus to get protection status.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called with
+   * <code>PP_OK</code> when the protection request has been made. This may be
+   * before the protection have actually been applied. Call QueryStatus to get
+   * protection status. If it failed to make the protection request, the
+   * callback is called with <code>PP_ERROR_FAILED</code> and there is no need
+   * to call QueryStatus().
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    */
