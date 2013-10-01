@@ -56,8 +56,10 @@ public:
 
     void setValue(PropertyType& value)
     {
-        if (m_valueIsCopy)
+        if (m_valueIsCopy) {
+            detachChildren();
             delete m_value;
+        }
         m_valueIsCopy = false;
         m_value = &value;
     }
