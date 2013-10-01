@@ -51,7 +51,6 @@
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
 #include "chrome/browser/browser_process.h"
 #endif
 
@@ -103,17 +102,15 @@ OmniboxState::~OmniboxState() {}
 // application language, and set the input type accordingly.
 ui::TextInputType DetermineTextInputType() {
 #if defined(OS_WIN)
-  if (base::win::IsTSFAwareRequired()) {
-    DCHECK(g_browser_process);
-    const std::string& locale = g_browser_process->GetApplicationLocale();
-    const std::string& language = locale.substr(0, 2);
-    // Assume CJK + Thai users are using an IME.
-    if (language == "ja" ||
-        language == "ko" ||
-        language == "th" ||
-        language == "zh")
-      return ui::TEXT_INPUT_TYPE_SEARCH;
-  }
+  DCHECK(g_browser_process);
+  const std::string& locale = g_browser_process->GetApplicationLocale();
+  const std::string& language = locale.substr(0, 2);
+  // Assume CJK + Thai users are using an IME.
+  if (language == "ja" ||
+      language == "ko" ||
+      language == "th" ||
+      language == "zh")
+    return ui::TEXT_INPUT_TYPE_SEARCH;
 #endif
   return ui::TEXT_INPUT_TYPE_URL;
 }
