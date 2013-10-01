@@ -51,7 +51,7 @@ class HostGlobals : public ppapi::PpapiGlobals {
                                       const std::string& source,
                                       const std::string& value) OVERRIDE;
   virtual ppapi::MessageLoopShared* GetCurrentMessageLoop() OVERRIDE;
-  virtual base::TaskRunner* GetFileTaskRunner(PP_Instance instance) OVERRIDE;
+  virtual base::TaskRunner* GetFileTaskRunner() OVERRIDE;
 
   HostVarTracker* host_var_tracker() {
     return &host_var_tracker_;

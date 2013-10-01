@@ -154,7 +154,7 @@ int32_t FileIOResource::Query(PP_FileInfo* info,
   // For the non-blocking case, post a task to the file thread and add a
   // completion task to write the result.
   base::PostTaskAndReplyWithResult(
-      PpapiGlobals::Get()->GetFileTaskRunner(pp_instance()),
+      PpapiGlobals::Get()->GetFileTaskRunner(),
       FROM_HERE,
       Bind(&FileIOResource::QueryOp::DoWork, query_op),
       RunWhileLocked(Bind(&TrackedCallback::Run, callback)));
@@ -317,7 +317,7 @@ int32_t FileIOResource::ReadValidated(int64_t offset,
 
   // For the non-blocking case, post a task to the file thread.
   base::PostTaskAndReplyWithResult(
-      PpapiGlobals::Get()->GetFileTaskRunner(pp_instance()),
+      PpapiGlobals::Get()->GetFileTaskRunner(),
       FROM_HERE,
       Bind(&FileIOResource::ReadOp::DoWork, read_op),
       RunWhileLocked(Bind(&TrackedCallback::Run, callback)));
@@ -331,7 +331,7 @@ void FileIOResource::CloseFileHandle() {
   if (file_handle_ != base::kInvalidPlatformFileValue) {
     // Close our local fd on the file thread.
     base::TaskRunner* file_task_runner =
-        PpapiGlobals::Get()->GetFileTaskRunner(pp_instance());
+        PpapiGlobals::Get()->GetFileTaskRunner();
     file_task_runner->PostTask(FROM_HERE,
                                base::Bind(&DoClose, file_handle_));
 

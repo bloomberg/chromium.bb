@@ -72,7 +72,7 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
                                       const std::string& source,
                                       const std::string& value) OVERRIDE;
   virtual MessageLoopShared* GetCurrentMessageLoop() OVERRIDE;
-  base::TaskRunner* GetFileTaskRunner(PP_Instance instance) OVERRIDE;
+  base::TaskRunner* GetFileTaskRunner() OVERRIDE;
 
   // Returns the channel for sending to the browser.
   IPC::Sender* GetBrowserSender();

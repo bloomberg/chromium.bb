@@ -177,7 +177,7 @@ void HostGlobals::BroadcastLogWithSource(PP_Module pp_module,
      (*i)->element().document().frame()->addMessageToConsole(message);
 }
 
-base::TaskRunner* HostGlobals::GetFileTaskRunner(PP_Instance instance) {
+base::TaskRunner* HostGlobals::GetFileTaskRunner() {
   return RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get();
 }
 

@@ -71,7 +71,7 @@ MessageLoopShared* TestGlobals::GetCurrentMessageLoop() {
   return NULL;
 }
 
-base::TaskRunner* TestGlobals::GetFileTaskRunner(PP_Instance instance) {
+base::TaskRunner* TestGlobals::GetFileTaskRunner() {
   return NULL;
 }
 

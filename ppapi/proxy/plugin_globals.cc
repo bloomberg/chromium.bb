@@ -150,7 +150,7 @@ MessageLoopShared* PluginGlobals::GetCurrentMessageLoop() {
   return MessageLoopResource::GetCurrent();
 }
 
-base::TaskRunner* PluginGlobals::GetFileTaskRunner(PP_Instance instance) {
+base::TaskRunner* PluginGlobals::GetFileTaskRunner() {
   if (!file_thread_.get()) {
     file_thread_.reset(new base::Thread("Plugin::File"));
     base::Thread::Options options;
