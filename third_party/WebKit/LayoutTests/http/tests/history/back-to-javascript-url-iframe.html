@@ -1,0 +1,25 @@
+<body onload="setTimeout(test, 25);">
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+var a=document.createElement("iframe");
+a.src="javascript:''";
+document.body.appendChild(a);
+a.contentWindow.location.replace('')
+
+function test() {
+    if (sessionStorage.getItem("javascript-url-iframe") == null) {
+        sessionStorage.setItem("javascript-url-iframe", "1");
+        location.href = "resources/back.html";
+    } else {
+        sessionStorage.removeItem("javascript-url-iframe");
+        if (window.testRunner)
+            testRunner.notifyDone();
+    }
+}
+</script>
+</body>
+
