@@ -1,0 +1,45 @@
+<style>
+input { 
+    padding:1px; /* The evil cause of the bug */
+    /*padding:0px; /* Works fine on every browser */
+}
+
+.scroller {
+    border: 1px black solid; 
+    width: 400px;
+    margin: 15px 0;
+}
+
+.overflow-hidden {
+    overflow: hidden; 
+}
+
+.big-panel {
+    width: 850px;
+}
+    
+.inline-scrollable {
+    border: 1px red solid; 
+    width: 400px; 
+    display: inline-block; 
+}
+
+.inner {
+    display: block;
+}
+</style>
+        <div class="overflow-hidden scroller">
+            <div class="big-panel">
+                <div class="inline-scrollable">
+                    <div class="inner">
+                        Default behavior <input type="text" value="abcdef">
+                    </div>
+                </div>                
+                <div class="inline-scrollable">
+                    <div class="inner">
+                        Field 2 <input type="text">
+                    </div>
+                </div>                
+            </div>
+        </div>
+

@@ -269,6 +269,11 @@ mouse wheel to scroll the contents of the iframe.</p>
 iframe scrolls.  This is because the clipRect is not being calculated correctly
 due to the scale transform being applied.</p>
 
+<h3><a name="bugfix-scrollOverflowHidden">bugfix/scrollOverflowHidden</a> (Antonio Gomes <tonikitoo@webkit.org>; D42789626; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=119760">119760</a>)</h3>
+<p>Open <a href="repros/scrollOverflowHidden.html">this link</a> in Chrome, and
+click inside the "abcdef" entry, and drag to the far right.  The elements will
+start scrolling unexpectedly.</p>
+
 <h3><a name="bugfix-selectionGapTransform">bugfix/selectionGapTransform</a> (Shezan Baig)</h3>
 <p>This bug is a little hard to reproduce programatically, so you may need to
 play around with selection after the file has loaded.</p>
