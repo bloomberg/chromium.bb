@@ -12,9 +12,8 @@ namespace cast {
 
 static const uint32 kMaxSequenceNumber = 65536;
 
-ReceiverStats::ReceiverStats(uint32 ssrc)
-    : ssrc_(ssrc),
-      min_sequence_number_(0),
+ReceiverStats::ReceiverStats()
+    : min_sequence_number_(0),
       max_sequence_number_(0),
       total_number_packets_(0),
       sequence_number_cycles_(0),
@@ -66,7 +65,7 @@ void ReceiverStats::GetStatistics(uint8* fraction_lost,
   *extended_high_sequence_number = (sequence_number_cycles_ << 16) +
       max_sequence_number_;
 
-  *jitter = static_cast<uint32>(abs(jitter_.InMilliseconds()));
+  *jitter = static_cast<uint32>(abs(jitter_.InMillisecondsRoundedUp()));
 
   // Reset interval values.
   interval_min_sequence_number_ = 0;
@@ -75,8 +74,6 @@ void ReceiverStats::GetStatistics(uint8* fraction_lost,
 }
 
 void ReceiverStats::UpdateStatistics(const RtpCastHeader& header) {
-  if (ssrc_ != header.webrtc.header.ssrc) return;
-
   uint16 new_seq_num = header.webrtc.header.sequenceNumber;
 
   if (interval_number_packets_ == 0) {
@@ -105,7 +102,7 @@ void ReceiverStats::UpdateStatistics(const RtpCastHeader& header) {
   if (total_number_packets_ > 0) {
     // Update jitter.
     base::TimeDelta delta = (now - last_received_packet_time_) -
-        ((delta_new_timestamp - last_received_timestamp_) / 90000);
+        ((delta_new_timestamp - last_received_timestamp_) / 90);
     jitter_ += (delta - jitter_) / 16;
   }
   last_received_timestamp_ = delta_new_timestamp;

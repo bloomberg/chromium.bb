@@ -38,7 +38,6 @@ class RtpDataTest : public RtpData {
                                      const RtpCastHeader* rtpHeader) OVERRIDE {
     VerifyCommonHeader(*rtpHeader);
     VerifyCastHeader(*rtpHeader);
-    // TODO(mikhal): Add data verification.
   }
 
   void VerifyCommonHeader(const RtpCastHeader& parsed_header) {

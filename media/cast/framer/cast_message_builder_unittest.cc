@@ -38,8 +38,15 @@ class NackFeedbackVerification : public RtpPayloadFeedback {
     // Keep track of the number of missing packets per frame.
     missing_packets_.clear();
     while (frame_it != cast_feedback.missing_frames_and_packets_.end()) {
+      // Check for complete frame lost.
+      if ((frame_it->second.size() == 1) &&
+          (*frame_it->second.begin() == kRtcpCastAllPacketsLost)) {
+        missing_packets_.insert(
+          std::make_pair(frame_it->first, kRtcpCastAllPacketsLost));
+      } else {
       missing_packets_.insert(
           std::make_pair(frame_it->first, frame_it->second.size()));
+      }
       ++frame_it;
     }
     triggered_ = true;
@@ -168,7 +175,6 @@ TEST_F(CastMessageBuilderTest, OneFrameNackList) {
 }
 
 TEST_F(CastMessageBuilderTest, CompleteFrameMissing) {
-  // TODO(mikhal): Add indication.
   SetFrameId(0);
   SetPacketId(2);
   SetMaxPacketId(5);
@@ -179,6 +185,8 @@ TEST_F(CastMessageBuilderTest, CompleteFrameMissing) {
   SetPacketId(2);
   SetMaxPacketId(5);
   InsertPacket();
+  EXPECT_TRUE(feedback_.triggered());
+  EXPECT_EQ(kRtcpCastAllPacketsLost, feedback_.num_missing_packets(1));
 }
 
 TEST_F(CastMessageBuilderTest, FastForwardAck) {

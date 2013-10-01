@@ -19,8 +19,10 @@ class RtpHeaderParser {
 
   bool Parse(RtpCastHeader* parsed_packet) const;
  private:
+  bool ParseCommon(RtpCastHeader* parsed_packet) const;
+  bool ParseCast(RtpCastHeader* parsed_packet) const;
   const uint8* const rtp_data_begin_;
-  const uint8* const rtp_data_end_;
+  int length_;
 
   DISALLOW_COPY_AND_ASSIGN(RtpHeaderParser);
 };

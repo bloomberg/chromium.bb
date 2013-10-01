@@ -14,12 +14,11 @@ namespace cast {
 
 static const int64 kStartMillisecond = 123456789;
 static const uint32 kStdTimeIncrementMs = 33;
-static const uint32 kSsrc = 0x1234;
 
 class ReceiverStatsTest : public ::testing::Test {
  protected:
   ReceiverStatsTest()
-      : stats_(kSsrc),
+      : stats_(),
         rtp_header_(),
         fraction_lost_(0),
         cumulative_lost_(0),
@@ -28,6 +27,7 @@ class ReceiverStatsTest : public ::testing::Test {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     start_time_ =  testing_clock_.NowTicks();
+    stats_.set_clock(&testing_clock_);
     delta_increments_ = base::TimeDelta::FromMilliseconds(kStdTimeIncrementMs);
   }
   virtual ~ReceiverStatsTest() {}
@@ -35,7 +35,6 @@ class ReceiverStatsTest : public ::testing::Test {
   virtual void SetUp() {
     rtp_header_.webrtc.header.sequenceNumber = 0;
     rtp_header_.webrtc.header.timestamp = 0;
-    rtp_header_.webrtc.header.ssrc = kSsrc;
   }
 
   uint32 ExpectedJitter(uint32 const_interval, int num_packets) {
@@ -47,11 +46,6 @@ class ReceiverStatsTest : public ::testing::Test {
       jitter += (float_interval - jitter) / 16;
     }
     return static_cast<uint32>(jitter + 0.5f);
-  }
-
-  uint32 Timestamp() {
-    base::TimeDelta delta = testing_clock_.NowTicks() - start_time_;
-    return static_cast<uint32>(delta.InMilliseconds() * 90);
   }
 
   ReceiverStats stats_;
@@ -79,7 +73,7 @@ TEST_F(ReceiverStatsTest, LossCount) {
     if (i % 4)
       stats_.UpdateStatistics(rtp_header_);
     if (i % 3) {
-      rtp_header_.webrtc.header.timestamp = Timestamp();
+      rtp_header_.webrtc.header.timestamp += 33 * 90;
     }
     ++rtp_header_.webrtc.header.sequenceNumber;
     testing_clock_.Advance(delta_increments_);
@@ -98,7 +92,7 @@ TEST_F(ReceiverStatsTest, NoLossWrap) {
   for (int i = 0; i < 300; ++i) {
       stats_.UpdateStatistics(rtp_header_);
     if (i % 3) {
-      rtp_header_.webrtc.header.timestamp = Timestamp();
+      rtp_header_.webrtc.header.timestamp += 33 * 90;
     }
     ++rtp_header_.webrtc.header.sequenceNumber;
     testing_clock_.Advance(delta_increments_);
@@ -135,8 +129,7 @@ TEST_F(ReceiverStatsTest, LossCountWrap) {
   EXPECT_EQ(extended_seq_num, extended_high_sequence_number_);
 }
 
-TEST_F(ReceiverStatsTest, Jitter) {
-  rtp_header_.webrtc.header.timestamp = Timestamp();
+TEST_F(ReceiverStatsTest, BasicJitter) {
   for (int i = 0; i < 300; ++i) {
     stats_.UpdateStatistics(rtp_header_);
     ++rtp_header_.webrtc.header.sequenceNumber;
@@ -151,6 +144,27 @@ TEST_F(ReceiverStatsTest, Jitter) {
   uint32 extended_seq_num = rtp_header_.webrtc.header.sequenceNumber - 1;
   EXPECT_EQ(extended_seq_num, extended_high_sequence_number_);
   EXPECT_EQ(ExpectedJitter(kStdTimeIncrementMs, 300), jitter_);
+}
+
+TEST_F(ReceiverStatsTest, NonTrivialJitter) {
+  const int kAdditionalIncrement = 5;
+  for (int i = 0; i < 300; ++i) {
+    stats_.UpdateStatistics(rtp_header_);
+    ++rtp_header_.webrtc.header.sequenceNumber;
+    rtp_header_.webrtc.header.timestamp += 33 * 90;
+    base::TimeDelta additional_delta =
+        base::TimeDelta::FromMilliseconds(kAdditionalIncrement);
+    testing_clock_.Advance(delta_increments_ + additional_delta);
+  }
+  stats_.GetStatistics(&fraction_lost_, &cumulative_lost_,
+      &extended_high_sequence_number_, &jitter_);
+  EXPECT_FALSE(fraction_lost_);
+  EXPECT_FALSE(cumulative_lost_);
+  // Build extended sequence number (one wrap cycle).
+  uint32 extended_seq_num = rtp_header_.webrtc.header.sequenceNumber - 1;
+  EXPECT_EQ(extended_seq_num, extended_high_sequence_number_);
+  EXPECT_EQ(
+      ExpectedJitter(kStdTimeIncrementMs + kAdditionalIncrement, 300), jitter_);
 }
 
 }  // namespace cast

@@ -23,7 +23,6 @@ static const int kTimeOffset = 22222;
 static const int kMaxPacketLength = 1500;
 static const bool kMarkerBit = true;
 static const int kSsrc = 0x12345;
-static const uint8 kFrameId = 1;
 static const unsigned int kFrameSize = 5000;
 static const int kTotalHeaderLength = 19;
 static const int kMaxPacketStorageTimeMs = 300;
@@ -34,7 +33,9 @@ class TestRtpPacketTransport : public PacedPacketSender {
        : config_(config),
          sequence_number_(kSeqNum),
          packets_sent_(0),
-         expected_number_of_packets_(0) {}
+         expected_number_of_packets_(0),
+         expected_packet_id_(0),
+         expected_frame_id_(0) {}
 
   void VerifyRtpHeader(const RtpCastHeader& rtp_header) {
     VerifyCommonRtpHeader(rtp_header);
@@ -52,7 +53,13 @@ class TestRtpPacketTransport : public PacedPacketSender {
   }
 
   void VerifyCastRtpHeader(const RtpCastHeader& rtp_header) {
-    // TODO(mikhal)
+    EXPECT_FALSE(rtp_header.is_key_frame);
+    EXPECT_EQ(expected_frame_id_, rtp_header.frame_id);
+    EXPECT_EQ(expected_packet_id_, rtp_header.packet_id);
+    EXPECT_EQ(expected_number_of_packets_ - 1, rtp_header.max_packet_id);
+    EXPECT_TRUE(rtp_header.is_reference);
+    EXPECT_EQ(static_cast<uint8>(expected_frame_id_ - 1),
+        rtp_header.reference_frame_id);
   }
 
   virtual bool SendPacket(const std::vector<uint8>& packet,
@@ -64,6 +71,7 @@ class TestRtpPacketTransport : public PacedPacketSender {
     parser.Parse(&rtp_header);
     VerifyRtpHeader(rtp_header);
     ++sequence_number_;
+    ++expected_packet_id_;
     return true;
   }
 
@@ -86,6 +94,9 @@ class TestRtpPacketTransport : public PacedPacketSender {
   uint32 sequence_number_;
   int packets_sent_;
   int expected_number_of_packets_;
+  // Assuming packets arrive in sequence.
+  int expected_packet_id_;
+  int expected_frame_id_;
 };
 
 class RtpPacketizerTest : public ::testing::Test {
@@ -106,8 +117,7 @@ class RtpPacketizerTest : public ::testing::Test {
 
   virtual void SetUp() {
     video_frame_.key_frame = false;
-    video_frame_.frame_id = kFrameId;
-    video_frame_.last_referenced_frame_id = kFrameId - 1;
+    video_frame_.last_referenced_frame_id = 255;
     video_frame_.data.assign(kFrameSize, 123);
   }
 
@@ -124,7 +134,7 @@ TEST_F(RtpPacketizerTest, SendStandardPackets) {
 
   base::TimeTicks time;
   time += base::TimeDelta::FromMilliseconds(kTimestampMs);
-    rtp_packetizer_->IncomingEncodedVideoFrame(&video_frame_,time);
+  rtp_packetizer_->IncomingEncodedVideoFrame(&video_frame_, time);
 }
 
 TEST_F(RtpPacketizerTest, Stats) {

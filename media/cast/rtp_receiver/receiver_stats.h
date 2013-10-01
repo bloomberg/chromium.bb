@@ -15,7 +15,7 @@ namespace cast {
 
 class ReceiverStats {
  public:
-  explicit ReceiverStats(uint32 ssrc);
+  ReceiverStats();
   ~ReceiverStats();
   void GetStatistics(uint8* fraction_lost,
                      uint32* cumulative_lost,  // 24 bits valid.
@@ -28,8 +28,6 @@ class ReceiverStats {
   }
 
  private:
-  const uint32 ssrc_;
-
   // Global metrics.
   uint16 min_sequence_number_;
   uint16 max_sequence_number_;

@@ -29,7 +29,7 @@ RtpReceiver::RtpReceiver(const AudioReceiverConfig* audio_config,
     config.payload_type = video_config->rtp_payload_type;
     config.video_codec = video_config->codec;
   }
-  stats_.reset(new ReceiverStats(config.ssrc));
+  stats_.reset(new ReceiverStats());
   parser_.reset(new RtpParser(incoming_payload_callback, config));
 }
 

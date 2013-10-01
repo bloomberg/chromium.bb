@@ -21,7 +21,7 @@ using testing::_;
 const int kFrameSize = 2345;
 
 static void ReleaseFrame(const EncodedVideoFrame* encoded_frame) {
-  // Empty since we in this test send in the same frame.
+  // Empty since we send in the same frame.
 }
 
 class TestVideoDecoderCallback :
@@ -29,7 +29,6 @@ class TestVideoDecoderCallback :
  public:
   TestVideoDecoderCallback()
       : num_called_(0) {}
-  // TODO(mikhal): Set and check expectations.
   void DecodeComplete(scoped_ptr<I420VideoFrame> frame,
       const base::TimeTicks render_time) {
     num_called_++;
@@ -72,7 +71,6 @@ class VideoDecoderTest : public ::testing::Test {
   scoped_refptr<TestVideoDecoderCallback> video_decoder_callback_;
 };
 
-// TODO(pwestin): Test decoding a real frame.
 TEST_F(VideoDecoderTest, SizeZero) {
   encoded_frame_.codec = kVp8;
   base::TimeTicks render_time;

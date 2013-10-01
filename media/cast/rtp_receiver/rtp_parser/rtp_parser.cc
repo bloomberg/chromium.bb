@@ -57,6 +57,8 @@ bool RtpParser::ParseCommon(const uint8* packet,
   big_endian_reader.ReadU32(&rtp_timestamp);
   big_endian_reader.ReadU32(&ssrc);
 
+  if (ssrc != parser_config_.ssrc) return false;
+
   rtp_header->webrtc.header.markerBit      = marker;
   rtp_header->webrtc.header.payloadType    = payload_type;
   rtp_header->webrtc.header.sequenceNumber = sequence_number;

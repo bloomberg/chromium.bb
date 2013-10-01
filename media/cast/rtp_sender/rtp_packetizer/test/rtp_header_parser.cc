@@ -11,21 +11,27 @@
 namespace media {
 namespace cast {
 
+static const uint8 kCastKeyFrameBitMask = 0x80;
+static const uint8 kCastReferenceFrameIdBitMask = 0x40;
+static const int kRtpCommonHeaderLength = 12;
+static const int kRtpCastHeaderLength = 12;
+
+
 RtpHeaderParser::RtpHeaderParser(const uint8* rtp_data,
                                  const uint32 rtp_data_length)
   : rtp_data_begin_(rtp_data),
-    rtp_data_end_(rtp_data ? (rtp_data + rtp_data_length) : NULL) {
-}
+    length_(rtp_data_length) {}
 
 RtpHeaderParser::~RtpHeaderParser() {}
 
 bool RtpHeaderParser::Parse(RtpCastHeader* parsed_packet) const {
-  const ptrdiff_t length = rtp_data_end_ - rtp_data_begin_;
-
-  if (length < 12) {
+  if (length_ <  kRtpCommonHeaderLength + kRtpCastHeaderLength)
     return false;
-  }
+  if (!ParseCommon(parsed_packet)) return false;
+  return ParseCast(parsed_packet);
+}
 
+bool RtpHeaderParser::ParseCommon(RtpCastHeader* parsed_packet) const {
   const uint8 version  = rtp_data_begin_[0] >> 6;
   if (version != 2) {
     return false;
@@ -41,16 +47,12 @@ bool RtpHeaderParser::Parse(RtpCastHeader* parsed_packet) const {
 
   const uint8* ptr = &rtp_data_begin_[4];
 
-  net::BigEndianReader big_endian_reader(ptr, 64);
+  net::BigEndianReader big_endian_reader(ptr, 8);
   uint32 rtp_timestamp, ssrc;
   big_endian_reader.ReadU32(&rtp_timestamp);
   big_endian_reader.ReadU32(&ssrc);
 
   const uint8 csrc_octs = num_csrcs * 4;
-
-  if ((ptr + csrc_octs) > rtp_data_end_) {
-    return false;
-  }
 
   parsed_packet->webrtc.header.markerBit      = marker;
   parsed_packet->webrtc.header.payloadType    = payload_type;
@@ -63,6 +65,22 @@ bool RtpHeaderParser::Parse(RtpCastHeader* parsed_packet) const {
       parsed_packet->webrtc.header.numCSRCs;
 
   parsed_packet->webrtc.header.headerLength   = 12 + csrc_octs;
+  return true;
+}
+
+bool RtpHeaderParser::ParseCast(RtpCastHeader* parsed_packet) const {
+  const uint8* data = rtp_data_begin_ + kRtpCommonHeaderLength;
+  parsed_packet->is_key_frame = (data[0] & kCastKeyFrameBitMask);
+  parsed_packet->is_reference = (data[0] & kCastReferenceFrameIdBitMask);
+  parsed_packet->frame_id = data[1];
+
+  net::BigEndianReader big_endian_reader(data + 2, 8);
+  big_endian_reader.ReadU16(&parsed_packet->packet_id);
+  big_endian_reader.ReadU16(&parsed_packet->max_packet_id);
+
+  if (parsed_packet->is_reference) {
+    parsed_packet->reference_frame_id = data[6];
+  }
   return true;
 }
 

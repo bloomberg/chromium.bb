@@ -4,10 +4,10 @@
 
 #include "media/cast/framer/cast_message_builder.h"
 
+#include "media/cast/cast_defines.h"
+
 namespace media {
 namespace cast {
-
-static const uint16 kCompleteFrameLost = 0xffff;
 
 CastMessageBuilder::CastMessageBuilder(
     RtpPayloadFeedback* incoming_payload_feedback,
@@ -183,7 +183,7 @@ void CastMessageBuilder::BuildPacketList() {
       }
     } else {
       time_last_nacked_map_[next_expected_frame_id] = now;
-      missing.insert(kCompleteFrameLost);
+      missing.insert(kRtcpCastAllPacketsLost);
       cast_msg_.missing_frames_and_packets_[next_expected_frame_id] = missing;
     }
   }
