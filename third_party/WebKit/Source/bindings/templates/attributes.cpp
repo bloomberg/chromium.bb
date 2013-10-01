@@ -5,6 +5,14 @@ static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const 
     {% if not attribute.is_static %}
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
     {% endif %}
+    {% if attribute.is_nullable %}
+    bool isNull = false;
+    {{attribute.cpp_type}} value = {{attribute.cpp_value_original}};
+    if (isNull) {
+        v8SetReturnValueNull(info);
+        return;
+    }
+    {% endif %}
     {% if attribute.is_keep_alive_for_gc %}
     {{attribute.cpp_type}} result = {{attribute.cpp_value}};
     if (result.get() && DOMDataStore::setReturnValueFromWrapper<{{attribute.v8_type}}>(info.GetReturnValue(), result.get()))

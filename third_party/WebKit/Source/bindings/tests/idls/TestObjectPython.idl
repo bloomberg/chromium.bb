@@ -29,6 +29,8 @@
  */
 
 interface TestObjectPython {
+    // TestInterfaceEmpty is used as a stub interface type, for testing behavior
+    // that should not depend on particular type (beyond "interface or not").
     readonly attribute Date readonlyDateAttribute;
     readonly attribute boolean readonlyBooleanAttribute;
     readonly attribute byte readonlyByteAttribute;
@@ -42,7 +44,7 @@ interface TestObjectPython {
     readonly attribute unsigned long long readonlyUnsignedLongLongAttribute;
     readonly attribute unsigned short readonlyUnsignedShortAttribute;
     // Non-wrapper types
-    readonly attribute DOMString readonlyDOMStringAttribute;
+    readonly attribute DOMString readonlyStringAttribute;
     readonly attribute DOMTimeStamp readonlyDOMTimeStampAttribute;
     readonly attribute SerializedScriptValue readonlySerializedScriptValueAttribute;
     readonly attribute any readonlyAnyAttribute;
@@ -55,11 +57,14 @@ interface TestObjectPython {
     readonly attribute Node readonlyNodeAttribute;
     readonly attribute ShadowRoot readonlyShadowRootAttribute;
     // Exceptions for is_keep_alive_for_gc
-    readonly attribute BarProp self;
+    readonly attribute TestInterfaceEmpty self;
     readonly attribute SerializedScriptValue readonlySerializedScriptValueAttribute;
     readonly attribute Window readonlyWindowAttribute;
     readonly attribute HTMLCollection readonlyHTMLCollectionAttribute;
     readonly attribute HTMLElement readonlyHTMLElementAttribute;
+    // nullable attributes
+    readonly attribute DOMString? readonlyNullableStringAttribute;
+    readonly attribute long? readonlyNullableLongAttribute;
     // static attributes (Blink extension)
     static readonly attribute DOMString staticReadonlyStringAttribute;
     static readonly attribute long staticReadonlyLongAttribute;

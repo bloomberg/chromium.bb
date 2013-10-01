@@ -895,10 +895,10 @@ static void attrWithGetterExceptionAttributeGetter(v8::Local<v8::String> name, c
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     ExceptionState es(info.GetIsolate());
-    int v = imp->attrWithGetterException(es);
+    int value = imp->attrWithGetterException(es);
     if (UNLIKELY(es.throwIfNeeded()))
         return;
-    v8SetReturnValueInt(info, v);
+    v8SetReturnValueInt(info, value);
     return;
 }
 
@@ -959,10 +959,10 @@ static void stringAttrWithGetterExceptionAttributeGetter(v8::Local<v8::String> n
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     ExceptionState es(info.GetIsolate());
-    String v = imp->stringAttrWithGetterException(es);
+    String value = imp->stringAttrWithGetterException(es);
     if (UNLIKELY(es.throwIfNeeded()))
         return;
-    v8SetReturnValueString(info, v, info.GetIsolate());
+    v8SetReturnValueString(info, value, info.GetIsolate());
     return;
 }
 
@@ -1140,14 +1140,14 @@ static void withScriptStateAttributeRaisesAttributeGetter(v8::Local<v8::String> 
     if (!currentState)
         return v8Undefined();
     ScriptState& state = *currentState;
-    RefPtr<TestObj> v = imp->withScriptStateAttributeRaises(&state, es);
+    RefPtr<TestObj> value = imp->withScriptStateAttributeRaises(&state, es);
     if (UNLIKELY(es.throwIfNeeded()))
         return;
     if (state.hadException()) {
         throwError(state.exception(), info.GetIsolate());
         return;
     }
-    v8SetReturnValueFast(info, v.release(), imp);
+    v8SetReturnValueFast(info, value.release(), imp);
     return;
 }
 
@@ -1184,10 +1184,10 @@ static void withScriptExecutionContextAttributeRaisesAttributeGetter(v8::Local<v
     TestObj* imp = V8TestObject::toNative(info.Holder());
     ExceptionState es(info.GetIsolate());
     ScriptExecutionContext* scriptContext = getScriptExecutionContext();
-    RefPtr<TestObj> v = imp->withScriptExecutionContextAttributeRaises(scriptContext, es);
+    RefPtr<TestObj> value = imp->withScriptExecutionContextAttributeRaises(scriptContext, es);
     if (UNLIKELY(es.throwIfNeeded()))
         return;
-    v8SetReturnValueFast(info, v.release(), imp);
+    v8SetReturnValueFast(info, value.release(), imp);
     return;
 }
 
@@ -1264,14 +1264,14 @@ static void withScriptExecutionContextAndScriptStateAttributeRaisesAttributeGett
         return v8Undefined();
     ScriptState& state = *currentState;
     ScriptExecutionContext* scriptContext = getScriptExecutionContext();
-    RefPtr<TestObj> v = imp->withScriptExecutionContextAndScriptStateAttributeRaises(&state, scriptContext, es);
+    RefPtr<TestObj> value = imp->withScriptExecutionContextAndScriptStateAttributeRaises(&state, scriptContext, es);
     if (UNLIKELY(es.throwIfNeeded()))
         return;
     if (state.hadException()) {
         throwError(state.exception(), info.GetIsolate());
         return;
     }
-    v8SetReturnValueFast(info, v.release(), imp);
+    v8SetReturnValueFast(info, value.release(), imp);
     return;
 }
 
@@ -2094,12 +2094,12 @@ static void nullableDoubleAttributeAttributeGetter(v8::Local<v8::String> name, c
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     bool isNull = false;
-    double v = imp->nullableDoubleAttribute(isNull);
+    double value = imp->nullableDoubleAttribute(isNull);
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValue(info, v);
+    v8SetReturnValue(info, value);
     return;
 }
 
@@ -2114,12 +2114,12 @@ static void nullableLongAttributeAttributeGetter(v8::Local<v8::String> name, con
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     bool isNull = false;
-    int v = imp->nullableLongAttribute(isNull);
+    int value = imp->nullableLongAttribute(isNull);
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValueInt(info, v);
+    v8SetReturnValueInt(info, value);
     return;
 }
 
@@ -2134,12 +2134,12 @@ static void nullableBooleanAttributeAttributeGetter(v8::Local<v8::String> name, 
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     bool isNull = false;
-    bool v = imp->nullableBooleanAttribute(isNull);
+    bool value = imp->nullableBooleanAttribute(isNull);
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValueBool(info, v);
+    v8SetReturnValueBool(info, value);
     return;
 }
 
@@ -2154,12 +2154,12 @@ static void nullableStringAttributeAttributeGetter(v8::Local<v8::String> name, c
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     bool isNull = false;
-    String v = imp->nullableStringAttribute(isNull);
+    String value = imp->nullableStringAttribute(isNull);
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValueString(info, v, info.GetIsolate());
+    v8SetReturnValueString(info, value, info.GetIsolate());
     return;
 }
 
@@ -2174,12 +2174,12 @@ static void nullableLongSettableAttributeAttributeGetter(v8::Local<v8::String> n
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     bool isNull = false;
-    int v = imp->nullableLongSettableAttribute(isNull);
+    int value = imp->nullableLongSettableAttribute(isNull);
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValueInt(info, v);
+    v8SetReturnValueInt(info, value);
     return;
 }
 
@@ -2210,14 +2210,14 @@ static void nullableStringValueAttributeGetter(v8::Local<v8::String> name, const
     TestObj* imp = V8TestObject::toNative(info.Holder());
     ExceptionState es(info.GetIsolate());
     bool isNull = false;
-    int v = imp->nullableStringValue(isNull, es);
+    int value = imp->nullableStringValue(isNull, es);
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
     if (UNLIKELY(es.throwIfNeeded()))
         return;
-    v8SetReturnValueInt(info, v);
+    v8SetReturnValueInt(info, value);
     return;
 }
 

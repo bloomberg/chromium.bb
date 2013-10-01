@@ -1495,7 +1495,7 @@ END
         if ($nativeType =~ /^V8StringResource/) {
             $code .= "    " . ConvertToV8StringResource($attribute, $nativeType, "v", $getterString) . ";\n";
         } else {
-            $code .= "    $nativeType v = $getterString;\n";
+            $code .= "    $nativeType value = $getterString;\n";
         }
 
         if ($isNullable) {
@@ -1519,7 +1519,7 @@ END
             }
         }
 
-        $expression = "v";
+        $expression = "value";
         $expression .= ".release()" if (IsRefPtrType($returnType));
     } else {
         # Can inline the function call into the return statement to avoid overhead of using a Ref<> temporary

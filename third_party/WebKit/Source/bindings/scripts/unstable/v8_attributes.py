@@ -64,18 +64,28 @@ def generate_attributes_common(interface):
 
 def generate_attribute_and_includes(interface, attribute):
     idl_type = attribute.data_type
-    this_getter_name = getter_name(interface, attribute)
-    cpp_value = '%s()' % this_getter_name
     this_is_keep_alive_for_gc = is_keep_alive_for_gc(attribute)
     contents = {
         'conditional_string': generate_conditional_string(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
-        'cpp_value': cpp_value,
         'is_keep_alive_for_gc': this_is_keep_alive_for_gc,
+        'is_nullable': attribute.is_nullable,
         'is_static': attribute.is_static,
         'name': attribute.name,
         'v8_type': v8_types.v8_type(idl_type),
     }
+
+    cpp_value = getter_expression(interface, attribute)
+    if attribute.is_nullable:
+        # Normally we can inline the function call into the return statement to
+        # avoid the overhead of using a Ref<> temporary, but for Nullable types
+        # (or if there are exceptions), we need to use a local variable.
+        # FIXME: check if compilers are smart enough to inline this, and if so,
+        # always use a local variable (for readability and CG simplicity).
+        contents['cpp_value_original'] = cpp_value
+        cpp_value = 'value'
+    contents['cpp_value'] = cpp_value
+
     if this_is_keep_alive_for_gc:
         includes = v8_types.includes_for_type(idl_type)
         includes.add('bindings/v8/V8HiddenPropertyName.h')
@@ -83,6 +93,14 @@ def generate_attribute_and_includes(interface, attribute):
         return_v8_value_statement, includes = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='info', isolate='info.GetIsolate()', extended_attributes=attribute.extended_attributes, script_wrappable='imp')
         contents['return_v8_value_statement'] = return_v8_value_statement
     return contents, includes
+
+
+def getter_expression(interface, attribute):
+    this_getter_name = getter_name(interface, attribute)
+    arguments = []
+    if attribute.is_nullable:
+        arguments.append('isNull')
+    return '%s(%s)' % (this_getter_name, ', '.join(arguments))
 
 
 def getter_name(interface, attribute):

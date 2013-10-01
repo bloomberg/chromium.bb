@@ -130,10 +130,10 @@ static void attrWithGetterExceptionAttributeGetter(v8::Local<v8::String> name, c
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     ExceptionState es(info.GetIsolate());
-    int v = imp->attrWithGetterException(es);
+    int value = imp->attrWithGetterException(es);
     if (UNLIKELY(es.throwIfNeeded()))
         return;
-    v8SetReturnValueInt(info, v);
+    v8SetReturnValueInt(info, value);
     return;
 }
 
@@ -194,10 +194,10 @@ static void stringAttrWithGetterExceptionAttributeGetter(v8::Local<v8::String> n
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     ExceptionState es(info.GetIsolate());
-    String v = imp->stringAttrWithGetterException(es);
+    String value = imp->stringAttrWithGetterException(es);
     if (UNLIKELY(es.throwIfNeeded()))
         return;
-    v8SetReturnValueString(info, v, info.GetIsolate());
+    v8SetReturnValueString(info, value, info.GetIsolate());
     return;
 }
 
