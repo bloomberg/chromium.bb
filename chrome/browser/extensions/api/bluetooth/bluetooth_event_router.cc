@@ -163,7 +163,7 @@ void ExtensionBluetoothEventRouter::SetSendDiscoveryEvents(bool should_send) {
 }
 
 void ExtensionBluetoothEventRouter::DispatchDeviceEvent(
-    const char* event_name, const bluetooth::Device& device) {
+    const std::string& event_name, const bluetooth::Device& device) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(device.ToValue().release());
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));

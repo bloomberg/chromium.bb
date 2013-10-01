@@ -342,7 +342,8 @@ void ProcessesEventRouter::OnItemsChanged(int start, int length) {
   for (int i = start; i < start + length; i++) {
     if (model_->IsResourceFirstInGroup(i)) {
       int id = model_->GetUniqueChildProcessId(i);
-      base::DictionaryValue* process = CreateProcessFromModel(id, model_, i, true);
+      base::DictionaryValue* process = CreateProcessFromModel(id, model_, i,
+                                                              true);
       processes_map.AddWithID(process, i);
     }
   }
@@ -466,7 +467,7 @@ void ProcessesEventRouter::ProcessClosedEvent(
 }
 
 void ProcessesEventRouter::DispatchEvent(
-    const char* event_name,
+    const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
   if (extensions::ExtensionSystem::Get(profile_)->event_router()) {
     scoped_ptr<extensions::Event> event(new extensions::Event(

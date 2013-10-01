@@ -60,7 +60,7 @@ class BookmarkEventRouter : public BookmarkModelObserver {
 
  private:
   // Helper to actually dispatch an event to extension listeners.
-  void DispatchEvent(const char* event_name,
+  void DispatchEvent(const std::string& event_name,
                      scoped_ptr<base::ListValue> event_args);
 
   Profile* profile_;

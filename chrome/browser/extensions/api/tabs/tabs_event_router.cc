@@ -412,7 +412,7 @@ void TabsEventRouter::FaviconUrlUpdated(WebContents* contents) {
 
 void TabsEventRouter::DispatchEvent(
     Profile* profile,
-    const char* event_name,
+    const std::string& event_name,
     scoped_ptr<ListValue> args,
     EventRouter::UserGestureState user_gesture) {
   if (!profile_->IsSameProfile(profile) ||
@@ -426,7 +426,7 @@ void TabsEventRouter::DispatchEvent(
 }
 
 void TabsEventRouter::DispatchSimpleBrowserEvent(
-    Profile* profile, const int window_id, const char* event_name) {
+    Profile* profile, const int window_id, const std::string& event_name) {
   if (!profile_->IsSameProfile(profile))
     return;
 

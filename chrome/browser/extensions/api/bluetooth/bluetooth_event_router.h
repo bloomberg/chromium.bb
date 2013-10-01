@@ -85,7 +85,7 @@ class ExtensionBluetoothEventRouter
 
   // Dispatch an event that takes a device as a parameter to all renderers.
   void DispatchDeviceEvent(
-      const char* event_name,
+      const std::string& event_name,
       const extensions::api::bluetooth::Device& device);
 
   // Dispatch an event that takes a connection socket as a parameter to the

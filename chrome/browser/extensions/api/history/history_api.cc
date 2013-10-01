@@ -193,7 +193,7 @@ void HistoryEventRouter::HistoryUrlsRemoved(
 
 void HistoryEventRouter::DispatchEvent(
     Profile* profile,
-    const char* event_name,
+    const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
   if (profile && extensions::ExtensionSystem::Get(profile)->event_router()) {
     scoped_ptr<extensions::Event> event(new extensions::Event(

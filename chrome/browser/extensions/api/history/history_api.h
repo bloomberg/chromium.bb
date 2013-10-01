@@ -45,7 +45,7 @@ class HistoryEventRouter : public content::NotificationObserver {
                           const history::URLsDeletedDetails* details);
 
   void DispatchEvent(Profile* profile,
-                     const char* event_name,
+                     const std::string& event_name,
                      scoped_ptr<base::ListValue> event_args);
 
   // Used for tracking registrations to history service notifications.

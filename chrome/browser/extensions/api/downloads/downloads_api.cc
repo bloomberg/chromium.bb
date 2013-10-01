@@ -1832,7 +1832,7 @@ void ExtensionDownloadsEventRouter::OnDownloadRemoved(
 }
 
 void ExtensionDownloadsEventRouter::DispatchEvent(
-    const char* event_name,
+    const std::string& event_name,
     bool include_incognito,
     const extensions::Event::WillDispatchCallback& will_dispatch_callback,
     base::Value* arg) {
