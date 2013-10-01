@@ -162,6 +162,8 @@ InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatch
                 continue;
             if (section.rule && excludeMatched)
                 continue;
+            if (section.element && section.element.classList.contains("user-rule") && !WebInspector.settings.showUserAgentStyles.get())
+                continue;
             if (section.element.previousSibling && section.element.previousSibling.className === "sidebar-separator")
                 InspectorTest.addResult("======== " + section.element.previousSibling.textContent + " ========");
             InspectorTest.addResult((section.expanded ? "[expanded] " : "[collapsed] ") + (section.noAffect ? "[no-affect] " : ""));
