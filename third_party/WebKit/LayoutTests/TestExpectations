@@ -39,7 +39,6 @@ crbug.com/24182 jquery/manipulation.html [ Pass Timeout ]
 crbug.com/24182 [ Win ] http/tests/xmlhttprequest/simple-cross-origin-progress-events.html [ Pass Timeout ]
 crbug.com/24182 [ Win ] http/tests/xmlhttprequest/supported-xml-content-types.html [ Pass Timeout ]
 
-crbug.com/24182 [ Debug ] html5lib/webkit-resumer.html [ Pass Timeout ]
 crbug.com/24182 [ Win Debug ] http/tests/cache/stopped-revalidation.html [ Pass Timeout ]
 crbug.com/24182 http/tests/navigation/slowtimerredirect-basic.html [ Pass Timeout ]
 crbug.com/24182 [ Win ] http/tests/history/back-to-post.html [ Pass Timeout ]
@@ -773,10 +772,6 @@ crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.ht
 crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure Pass ]
 crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
 crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
-
-# The html5lib tests are all too slow to run in Debug, largely due to v8 per-document boot-up.
-# V8 bug: https://code.google.com/p/v8/issues/detail?id=2567
-webkit.org/b/110876 [ Debug ] html5lib/generated/ [ Skip ]
 
 webkit.org/b/111524 [ Debug ] fast/dom/HTMLDocument/document-special-properties.html [ Pass Timeout ]
 
