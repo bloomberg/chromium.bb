@@ -42,6 +42,8 @@
 #include "core/events/EventNames.h"
 #include "core/inspector/InspectorCounters.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "public/platform/Platform.h"
+#include "wtf/CurrentTime.h"
 
 namespace WebCore {
 
@@ -113,8 +115,10 @@ void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context
     v8::Local<v8::Value> returnValue;
 
     // In beforeunload/unload handlers, we want to avoid sleeps which do tight loops of calling Date.getTime().
-    if (event->type() == eventNames().beforeunloadEvent || event->type() == eventNames().unloadEvent)
+    if (DateExtension::get() && (event->type() == eventNames().beforeunloadEvent || event->type() == eventNames().unloadEvent))
         DateExtension::get()->setAllowSleep(false, v8Context->GetIsolate());
+
+    double eventStart = currentTime();
 
     {
         // Catch exceptions thrown in the event handler so they do not propagate to javascript code that caused the event to fire.
@@ -148,8 +152,12 @@ void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context
         tryCatch.Reset();
     }
 
-    if (event->type() == eventNames().beforeunloadEvent || event->type() == eventNames().unloadEvent)
-        DateExtension::get()->setAllowSleep(true, v8Context->GetIsolate());
+    if (event->type() == eventNames().beforeunloadEvent || event->type() == eventNames().unloadEvent) {
+        double eventEnd = currentTime();
+        WebKit::Platform::current()->histogramCustomCounts("Renderer.unloadEventsDurationMS", (eventEnd - eventStart) * 1000, 0, 5000, 30);
+        if (DateExtension::get())
+            DateExtension::get()->setAllowSleep(true, v8Context->GetIsolate());
+    }
 
     ASSERT(!handleOutOfMemory() || returnValue.IsEmpty());
 

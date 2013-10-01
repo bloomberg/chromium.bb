@@ -34,6 +34,7 @@ CSS3TextDecorations status=experimental
 CustomElements status=experimental
 Database status=stable
 DataListElement status=stable
+DateExtension status=stable
 DeviceMotion status=stable
 DeviceOrientation status=stable
 DevicePixelRatioIncludesZoom status=stable

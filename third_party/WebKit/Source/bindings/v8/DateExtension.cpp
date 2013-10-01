@@ -31,6 +31,7 @@
 #include "config.h"
 #include "bindings/v8/DateExtension.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8ScriptRunner.h"
@@ -69,6 +70,8 @@ DateExtension::DateExtension() : v8::Extension(dateExtensionName, dateExtensionS
 
 DateExtension* DateExtension::get()
 {
+    if (!RuntimeEnabledFeatures::dateExtensionEnabled())
+        return 0;
     if (!extension)
         extension = new DateExtension();
     return extension;

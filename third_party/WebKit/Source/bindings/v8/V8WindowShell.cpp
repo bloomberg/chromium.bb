@@ -268,7 +268,8 @@ void V8WindowShell::createContext()
     double contextCreationStartInSeconds = currentTime();
 
     // Used to avoid sleep calls in unload handlers.
-    ScriptController::registerExtensionIfNeeded(DateExtension::get());
+    if (DateExtension::get())
+        ScriptController::registerExtensionIfNeeded(DateExtension::get());
 
     // Dynamically tell v8 about our extensions now.
     const V8Extensions& extensions = ScriptController::registeredExtensions();
