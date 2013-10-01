@@ -41,6 +41,15 @@ Quotes (``<blockquote>``) are created by indenting the paragraph:
 
 Here's an en-dash -- and an m-dash --- too.
 
+Unicode samples
+---------------
+
+Copyright sign |copy|, and uacute |Uacute|.
+
+.. |copy| unicode:: 0xA9 .. copyright
+.. |Uacute| unicode:: U+000DA
+
+
 Images
 ======
 

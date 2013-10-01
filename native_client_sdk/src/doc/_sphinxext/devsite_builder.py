@@ -23,6 +23,7 @@ PAGE_TEMPLATE = string.Template(r'''
 ${devsite_prefix}
 <html devsite>
   <head>
+    ${nonprod_meta_head}
     <title>${doc_title}</title>
     <meta name="project_path" value="/native-client/_project.yaml" />
     <meta name="book_path" value="/native-client/_book.yaml" />
@@ -54,6 +55,7 @@ DEVSITE_BUTTERBAR = '{{butterbar}}'
 # testing purposes only.
 NONPROD_CSS = '<link href="/_static/css/local_extensions.css"'\
               'rel="stylesheet" type="text/css"/>'
+NONPROD_META_HEAD = '<meta charset="utf-8" />'
 
 
 class DevsiteHTMLTranslator(HTMLTranslator):
@@ -269,6 +271,7 @@ class DevsiteBuilder(StandaloneHTMLBuilder):
         doc_title=context.get('title', ''),
         doc_body=context.get('body'),
         nonprod_css=self._conditional_nonprod(NONPROD_CSS),
+        nonprod_meta_head=self._conditional_nonprod(NONPROD_META_HEAD),
         devsite_prefix=self._conditional_devsite(DEVSITE_PREFIX),
         devsite_butterbar=self._conditional_devsite(DEVSITE_BUTTERBAR)))
 
