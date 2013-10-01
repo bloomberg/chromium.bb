@@ -64,7 +64,7 @@ class ExtensionActionAPI : public ProfileKeyedAPI {
   // The DispatchEvent methods forward events to the |profile|'s event router.
   static void DispatchEventToExtension(Profile* profile,
                                        const std::string& extension_id,
-                                       const char* event_name,
+                                       const std::string& event_name,
                                        scoped_ptr<base::ListValue> event_args);
 
   // Called to dispatch a deprecated style page action click event that was

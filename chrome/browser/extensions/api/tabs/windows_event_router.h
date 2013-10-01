@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_TABS_WINDOWS_EVENT_ROUTER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_TABS_WINDOWS_EVENT_ROUTER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/window_controller_list_observer.h"
@@ -61,7 +63,7 @@ class WindowsEventRouter : public WindowControllerListObserver,
   void OnActiveWindowChanged(WindowController* window_controller);
 
  private:
-  void DispatchEvent(const char* event_name,
+  void DispatchEvent(const std::string& event_name,
                      Profile* profile,
                      scoped_ptr<base::ListValue> args);
 

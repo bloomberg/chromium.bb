@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_WEB_NAVIGATION_WEB_NAVIGATION_API_HELPERS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_WEB_NAVIGATION_WEB_NAVIGATION_API_HELPERS_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "content/public/common/page_transition_types.h"
 
@@ -33,7 +35,7 @@ void DispatchOnBeforeNavigate(content::WebContents* web_contents,
                               bool parent_is_main_frame,
                               const GURL& validated_url);
 
-void DispatchOnCommitted(const char* event_name,
+void DispatchOnCommitted(const std::string& event_name,
                          content::WebContents* web_contents,
                          int64 frame_id,
                          bool is_main_frame,

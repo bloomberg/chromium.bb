@@ -38,7 +38,7 @@ double MilliSecondsFromTime(const base::Time& time) {
 
 // Dispatches events to the extension message service.
 void DispatchEvent(content::BrowserContext* browser_context,
-                   const char* event_name,
+                   const std::string& event_name,
                    scoped_ptr<base::ListValue> args,
                    const GURL& url) {
   EventFilteringInfo info;
@@ -86,7 +86,7 @@ void DispatchOnBeforeNavigate(content::WebContents* web_contents,
 
 // Constructs and dispatches an onCommitted or onReferenceFragmentUpdated
 // event.
-void DispatchOnCommitted(const char* event_name,
+void DispatchOnCommitted(const std::string& event_name,
                          content::WebContents* web_contents,
                          int64 frame_id,
                          bool is_main_frame,

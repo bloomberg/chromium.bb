@@ -151,7 +151,7 @@ void WindowsEventRouter::OnActiveWindowChanged(
   ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
 }
 
-void WindowsEventRouter::DispatchEvent(const char* event_name,
+void WindowsEventRouter::DispatchEvent(const std::string& event_name,
                                       Profile* profile,
                                       scoped_ptr<base::ListValue> args) {
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));

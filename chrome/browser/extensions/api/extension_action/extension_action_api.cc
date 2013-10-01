@@ -312,7 +312,7 @@ void ExtensionActionAPI::ScriptBadgeExecuted(
 void ExtensionActionAPI::DispatchEventToExtension(
     Profile* profile,
     const std::string& extension_id,
-    const char* event_name,
+    const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
   if (!extensions::ExtensionSystem::Get(profile)->event_router())
     return;

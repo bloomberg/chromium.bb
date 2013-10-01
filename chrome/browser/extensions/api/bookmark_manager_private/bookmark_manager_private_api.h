@@ -43,10 +43,11 @@ class BookmarkManagerPrivateEventRouter
 
  private:
   // Helper to actually dispatch an event to extension listeners.
-  void DispatchEvent(const char* event_name,
+  void DispatchEvent(const std::string& event_name,
                      scoped_ptr<base::ListValue> args);
 
-  void DispatchDragEvent(const BookmarkNodeData& data, const char* event_name);
+  void DispatchDragEvent(const BookmarkNodeData& data,
+                         const std::string& event_name);
 
   Profile* profile_;
   content::WebContents* web_contents_;

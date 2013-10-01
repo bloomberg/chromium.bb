@@ -178,7 +178,7 @@ BookmarkManagerPrivateEventRouter::~BookmarkManagerPrivateEventRouter() {
 }
 
 void BookmarkManagerPrivateEventRouter::DispatchEvent(
-    const char* event_name,
+    const std::string& event_name,
     scoped_ptr<base::ListValue> args) {
   if (!ExtensionSystem::Get(profile_)->event_router())
     return;
@@ -189,7 +189,7 @@ void BookmarkManagerPrivateEventRouter::DispatchEvent(
 
 void BookmarkManagerPrivateEventRouter::DispatchDragEvent(
     const BookmarkNodeData& data,
-    const char* event_name) {
+    const std::string& event_name) {
   if (data.size() == 0)
     return;
 
