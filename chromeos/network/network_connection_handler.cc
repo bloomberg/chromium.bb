@@ -47,30 +47,23 @@ bool IsAuthenticationError(const std::string& error) {
           error == shill::kErrorEapAuthenticationFailed);
 }
 
-bool VPNIsConfigured(const std::string& service_path,
-                     const std::string& provider_type,
-                     const base::DictionaryValue& provider_properties) {
+bool VPNRequiresCredentials(const std::string& service_path,
+                           const std::string& provider_type,
+                           const base::DictionaryValue& provider_properties) {
   if (provider_type == shill::kProviderOpenVpn) {
-    std::string hostname;
-    provider_properties.GetStringWithoutPathExpansion(
-        shill::kHostProperty, &hostname);
-    if (hostname.empty()) {
-      NET_LOG_EVENT("OpenVPN: No hostname", service_path);
-      return false;
-    }
     std::string username;
     provider_properties.GetStringWithoutPathExpansion(
         shill::kOpenVPNUserProperty, &username);
     if (username.empty()) {
       NET_LOG_EVENT("OpenVPN: No username", service_path);
-      return false;
+      return true;
     }
     bool passphrase_required = false;
     provider_properties.GetBooleanWithoutPathExpansion(
         shill::kPassphraseRequiredProperty, &passphrase_required);
     if (passphrase_required) {
       NET_LOG_EVENT("OpenVPN: Passphrase Required", service_path);
-      return false;
+      return true;
     }
     NET_LOG_EVENT("OpenVPN Is Configured", service_path);
   } else {
@@ -80,11 +73,11 @@ bool VPNIsConfigured(const std::string& service_path,
         shill::kL2tpIpsecPskRequiredProperty, &passphrase_required);
     if (passphrase_required) {
       NET_LOG_EVENT("VPN: PSK Required", service_path);
-      return false;
+      return true;
     }
     NET_LOG_EVENT("VPN Is Configured", service_path);
   }
-  return true;
+  return false;
 }
 
 }  // namespace
@@ -347,11 +340,11 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
 
   // Get VPN provider type and host (required for configuration) and ensure
   // that required VPN non-cert properties are set.
+  const base::DictionaryValue* provider_properties = NULL;
   std::string vpn_provider_type, vpn_provider_host;
   if (type == shill::kTypeVPN) {
     // VPN Provider values are read from the "Provider" dictionary, not the
     // "Provider.Type", etc keys (which are used only to set the values).
-    const base::DictionaryValue* provider_properties;
     if (service_properties.GetDictionaryWithoutPathExpansion(
             shill::kProviderProperty, &provider_properties)) {
       provider_properties->GetStringWithoutPathExpansion(
@@ -360,13 +353,6 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
           shill::kHostProperty, &vpn_provider_host);
     }
     if (vpn_provider_type.empty() || vpn_provider_host.empty()) {
-      ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
-      return;
-    }
-    // VPN requires a host and username to be set.
-    if (!VPNIsConfigured(
-            service_path, vpn_provider_type, *provider_properties)) {
-      NET_LOG_ERROR("VPN Not Configured", service_path);
       ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
       return;
     }
@@ -438,6 +424,18 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
                                       cert_loader_->tpm_user_pin(),
                                       pkcs11_id.empty() ? NULL : &pkcs11_id,
                                       &config_properties);
+    }
+  }
+
+  if (type == shill::kTypeVPN) {
+    // VPN may require a username, and/or passphrase to be set. (Check after
+    // ensuring that any required certificates are configured).
+    DCHECK(provider_properties);
+    if (VPNRequiresCredentials(
+            service_path, vpn_provider_type, *provider_properties)) {
+      NET_LOG_USER("VPN Requires Credentials", service_path);
+      ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
+      return;
     }
   }
 
