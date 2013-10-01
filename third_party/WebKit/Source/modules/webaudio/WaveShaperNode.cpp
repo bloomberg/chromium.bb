@@ -28,6 +28,7 @@
 
 #include "modules/webaudio/WaveShaperNode.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "wtf/MainThread.h"
@@ -64,14 +65,20 @@ void WaveShaperNode::setOversample(const String& type, ExceptionState& es)
     // initialize() and uninitialize().
     AudioContext::AutoLocker contextLocker(context());
 
-    if (type == "none")
+    if (type == "none") {
         waveShaperProcessor()->setOversample(WaveShaperProcessor::OverSampleNone);
-    else if (type == "2x")
+    } else if (type == "2x") {
         waveShaperProcessor()->setOversample(WaveShaperProcessor::OverSample2x);
-    else if (type == "4x")
+    } else if (type == "4x") {
         waveShaperProcessor()->setOversample(WaveShaperProcessor::OverSample4x);
-    else
-        es.throwUninformativeAndGenericDOMException(InvalidStateError);
+    } else {
+        es.throwDOMException(
+            InvalidStateError,
+            ExceptionMessages::failedToSet(
+                "oversample",
+                "WaveShaperNode",
+                "invalid oversample '" + type + "': must be 'none', '2x', or '4x'."));
+    }
 }
 
 String WaveShaperNode::oversample() const

@@ -28,6 +28,7 @@
 
 #include "modules/webaudio/AnalyserNode.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioNodeInput.h"
@@ -75,8 +76,17 @@ void AnalyserNode::reset()
 
 void AnalyserNode::setFftSize(unsigned size, ExceptionState& es)
 {
-    if (!m_analyser.setFftSize(size))
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+    if (!m_analyser.setFftSize(size)) {
+        es.throwDOMException(
+            NotSupportedError,
+            ExceptionMessages::failedToSet(
+                "fftSize",
+                "AnalyserNode",
+                "FFT size (" + String::number(size)
+                + ") must be a power of two between "
+                + String::number(RealtimeAnalyser::MinFFTSize) + " and "
+                + String::number(RealtimeAnalyser::MaxFFTSize) + ", inclusive"));
+    }
 }
 
 } // namespace WebCore

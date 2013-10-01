@@ -28,6 +28,7 @@
 
 #include "modules/webaudio/DefaultAudioDestinationNode.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/Logging.h"
@@ -119,7 +120,14 @@ void DefaultAudioDestinationNode::setChannelCount(unsigned long channelCount, Ex
     ASSERT(isMainThread());
 
     if (!maxChannelCount() || channelCount > maxChannelCount()) {
-        es.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwDOMException(
+            InvalidStateError,
+            ExceptionMessages::failedToSet(
+                "channelCount",
+                "AudioDestinationNode",
+                "channel count (" + String::number(channelCount)
+                + ") must be between 1 and "
+                + String::number(maxChannelCount()) + "."));
         return;
     }
 

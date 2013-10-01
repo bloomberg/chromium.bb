@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="../fast/js/resources/js-test-style.css"/>
+<script src="resources/audio-testing.js"></script>
+<script src="../fast/js/resources/js-test-pre.js"></script>
+<script src="resources/biquad-testing.js"></script>
+</head>
+
+<body>
+
+<div id="description"></div>
+<div id="console"></div>
+<script>
+description("Tests DOM exception messages");
+
+var context;
+var otherContext;
+var node;
+var node2;
+var mode;
+
+function runTest() {
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+    }
+    
+    context = new webkitAudioContext();
+    otherContext = new webkitAudioContext();
+
+    // Test createion of various objects
+
+    // Invalid number of channels
+    shouldThrow("context.createBuffer(99, 1, context.sampleRate)");
+    // Invalid sample rate
+    shouldThrow("context.createBuffer(1, 1, 1)");
+    shouldThrow("context.createBuffer(1, 1, 1e6)");
+    // Invalid ArrayBuffer
+    shouldThrow("context.createBuffer(new ArrayBuffer(100), true)");
+    // Invalid ArrayBuffer
+    shouldThrow("context.decodeAudioData(null, function() {}, function () {})");
+    // Invalid sources
+    shouldThrow("context.createMediaElementSource(null)");
+    shouldThrow("context.createMediaStreamSource(null)");
+    // Invalid buffer size
+    shouldThrow("context.createScriptProcessor(1, 1, 1)");
+    // Invalid number of inputs and outputs
+    shouldThrow("context.createScriptProcessor(4096, 100, 1)");
+    shouldThrow("context.createScriptProcessor(4096, 1, 100)");
+    // Invalid number of channels
+    shouldThrow("context.createChannelSplitter(0)");
+    shouldThrow("context.createChannelSplitter(99)");
+    shouldThrow("context.createChannelMerger(0)");
+    shouldThrow("context.createChannelMerger(99)");
+    // Invalid real/imag arrays
+    shouldThrow("context.createPeriodicWave(null, null)");
+    shouldThrow("context.createPeriodicWave(new Float32Array(10), null)");
+    // Real and imaginary arrays must have the same size
+    shouldThrow("context.createPeriodicWave(new Float32Array(10), new Float32Array(7))");
+
+    // Analysers
+    node = context.createAnalyser();
+    // Invalid fftSize
+    shouldThrow("node.fftSize = 42");
+
+    // AudioBuffers
+    node = context.createBuffer(1,1, context.sampleRate);
+    // Invalid channel index
+    shouldThrow("node.getChannelData(2)");
+
+    // AudioNode connections
+    node = context.createGain();
+    node2 = context.createGain();
+    // Invalid destination node
+    shouldThrow("node.connect(null, 0, 0)");
+    // Invalid input or output index
+    shouldThrow("node.connect(context.destination, 100, 0)");
+    shouldThrow("node.connect(context.destination, 0, 100)");
+    shouldThrow("node.connect(node2.gain, 100)");
+    shouldThrow("node.disconnect(99)");
+    // Can't connect to a different context
+    shouldThrow("node.connect(otherContext.destination)");
+
+    // Invalid channel count
+    shouldThrow("node.channelCount = 99");
+    // Invalid mode or interpretation
+    mode = "fancy";
+    shouldThrow("node.channelCountMode = mode");
+    shouldThrow("node.channelInterpretation = mode");
+
+    // Destination
+    shouldThrow("context.destination.channelCount = 99");
+
+    // Delay nodes are tested elsewhere, so don't duplicate that work here.
+
+    // OfflineAudioContext
+    // Invalid number of channels
+    shouldThrow("new webkitOfflineAudioContext(99, 100, context.sampleRate)");
+    // Invalid sample rate.
+    shouldThrow("new webkitOfflineAudioContext(1, 100, 1)");
+    shouldThrow("new webkitOfflineAudioContext(1, 100, 1e6)");
+
+}
+
+runTest();
+successfullyParsed = true;
+
+</script>    
+<script src="../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>

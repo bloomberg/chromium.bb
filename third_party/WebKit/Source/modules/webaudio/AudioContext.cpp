@@ -28,6 +28,7 @@
 
 #include "modules/webaudio/AudioContext.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -293,7 +294,28 @@ PassRefPtr<AudioBuffer> AudioContext::createBuffer(unsigned numberOfChannels, si
 {
     RefPtr<AudioBuffer> audioBuffer = AudioBuffer::create(numberOfChannels, numberOfFrames, sampleRate);
     if (!audioBuffer.get()) {
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        if (numberOfChannels > AudioContext::maxNumberOfChannels()) {
+            es.throwDOMException(
+                SyntaxError,
+                ExceptionMessages::failedToConstruct(
+                    "AudioBuffer",
+                    "requested number of channels (" + String::number(numberOfChannels) + ") exceeds maximum (" + String::number(AudioContext::maxNumberOfChannels()) + ")"));
+        } else if (sampleRate < AudioBuffer::minAllowedSampleRate() || sampleRate > AudioBuffer::maxAllowedSampleRate()) {
+            es.throwDOMException(
+                SyntaxError,
+                ExceptionMessages::failedToConstruct(
+                    "AudioBuffer",
+                    "requested sample rate (" + String::number(sampleRate)
+                    + ") does not lie in the allowed range of "
+                    + String::number(AudioBuffer::minAllowedSampleRate())
+                    + "-" + String::number(AudioBuffer::maxAllowedSampleRate()) + " Hz"));
+        } else {
+            es.throwDOMException(
+                SyntaxError,
+                ExceptionMessages::failedToConstruct(
+                    "AudioBuffer",
+                    "invalid number of channels, frames, or sample rate."));
+        }
         return 0;
     }
 
@@ -304,13 +326,21 @@ PassRefPtr<AudioBuffer> AudioContext::createBuffer(ArrayBuffer* arrayBuffer, boo
 {
     ASSERT(arrayBuffer);
     if (!arrayBuffer) {
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwDOMException(
+            SyntaxError,
+            ExceptionMessages::failedToConstruct(
+                "AudioBuffer",
+                "invalid ArrayBuffer."));
         return 0;
     }
 
     RefPtr<AudioBuffer> audioBuffer = AudioBuffer::createFromAudioFileData(arrayBuffer->data(), arrayBuffer->byteLength(), mixToMono, sampleRate());
     if (!audioBuffer.get()) {
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwDOMException(
+            SyntaxError,
+            ExceptionMessages::failedToConstruct(
+                "AudioBuffer",
+                "invalid audio data in ArrayBuffer."));
         return 0;
     }
 
@@ -320,7 +350,12 @@ PassRefPtr<AudioBuffer> AudioContext::createBuffer(ArrayBuffer* arrayBuffer, boo
 void AudioContext::decodeAudioData(ArrayBuffer* audioData, PassRefPtr<AudioBufferCallback> successCallback, PassRefPtr<AudioBufferCallback> errorCallback, ExceptionState& es)
 {
     if (!audioData) {
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwDOMException(
+            SyntaxError,
+            ExceptionMessages::failedToExecute(
+                "decodeAudioData",
+                "AudioContext",
+                "invalid ArrayBuffer for audioData."));
         return;
     }
     m_audioDecoder.decodeAsync(audioData, sampleRate(), successCallback, errorCallback);
@@ -341,9 +376,12 @@ PassRefPtr<AudioBufferSourceNode> AudioContext::createBufferSource()
 
 PassRefPtr<MediaElementAudioSourceNode> AudioContext::createMediaElementSource(HTMLMediaElement* mediaElement, ExceptionState& es)
 {
-    ASSERT(mediaElement);
     if (!mediaElement) {
-        es.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwDOMException(
+            InvalidStateError,
+            ExceptionMessages::failedToConstruct(
+                "MediaElementAudioSourceNode",
+                "invalid HTMLMedialElement."));
         return 0;
     }
 
@@ -352,7 +390,11 @@ PassRefPtr<MediaElementAudioSourceNode> AudioContext::createMediaElementSource(H
 
     // First check if this media element already has a source node.
     if (mediaElement->audioSourceNode()) {
-        es.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwDOMException(
+            InvalidStateError,
+            ExceptionMessages::failedToConstruct(
+                "MediaElementAudioSourceNode",
+                "invalid HTMLMediaElement."));
         return 0;
     }
 
@@ -366,9 +408,12 @@ PassRefPtr<MediaElementAudioSourceNode> AudioContext::createMediaElementSource(H
 
 PassRefPtr<MediaStreamAudioSourceNode> AudioContext::createMediaStreamSource(MediaStream* mediaStream, ExceptionState& es)
 {
-    ASSERT(mediaStream);
     if (!mediaStream) {
-        es.throwUninformativeAndGenericDOMException(InvalidStateError);
+        es.throwDOMException(
+            InvalidStateError,
+            ExceptionMessages::failedToConstruct(
+                "MediaStreamAudioSourceNode",
+                "invalid MediaStream source"));
         return 0;
     }
 
@@ -423,7 +468,36 @@ PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(size_t buffe
     RefPtr<ScriptProcessorNode> node = ScriptProcessorNode::create(this, m_destinationNode->sampleRate(), bufferSize, numberOfInputChannels, numberOfOutputChannels);
 
     if (!node.get()) {
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        if (!numberOfInputChannels && !numberOfOutputChannels) {
+            es.throwDOMException(
+                SyntaxError,
+                ExceptionMessages::failedToConstruct(
+                    "ScriptProcessorNode",
+                    "number of input channels and output channels cannot both be zero."));
+        } else if (numberOfInputChannels > AudioContext::maxNumberOfChannels()) {
+            es.throwDOMException(
+                SyntaxError,
+                ExceptionMessages::failedToConstruct(
+                    "ScriptProcessorNode",
+                    "number of input channels (" + String::number(numberOfInputChannels)
+                    + ") exceeds maximum ("
+                    + String::number(AudioContext::maxNumberOfChannels()) + ")."));
+        } else if (numberOfOutputChannels > AudioContext::maxNumberOfChannels()) {
+            es.throwDOMException(
+                SyntaxError,
+                ExceptionMessages::failedToConstruct(
+                    "ScriptProcessorNode",
+                    "number of output channels (" + String::number(numberOfInputChannels)
+                    + ") exceeds maximum ("
+                    + String::number(AudioContext::maxNumberOfChannels()) + ")."));
+        } else {
+            es.throwDOMException(
+                SyntaxError,
+                ExceptionMessages::failedToConstruct(
+                    "ScriptProcessorNode",
+                    "buffer size (" + String::number(bufferSize)
+                    + ") must be a power of two between 256 and 16384."));
+        }
         return 0;
     }
 
@@ -510,7 +584,13 @@ PassRefPtr<ChannelSplitterNode> AudioContext::createChannelSplitter(size_t numbe
     RefPtr<ChannelSplitterNode> node = ChannelSplitterNode::create(this, m_destinationNode->sampleRate(), numberOfOutputs);
 
     if (!node.get()) {
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwDOMException(
+            SyntaxError,
+            ExceptionMessages::failedToConstruct(
+                "ChannelSplitterNode",
+                "number of outputs (" + String::number(numberOfOutputs)
+                + ") must be between 1 and "
+                + String::number(AudioContext::maxNumberOfChannels()) + "."));
         return 0;
     }
 
@@ -531,7 +611,13 @@ PassRefPtr<ChannelMergerNode> AudioContext::createChannelMerger(size_t numberOfI
     RefPtr<ChannelMergerNode> node = ChannelMergerNode::create(this, m_destinationNode->sampleRate(), numberOfInputs);
 
     if (!node.get()) {
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwDOMException(
+            SyntaxError,
+            ExceptionMessages::failedToConstruct(
+                "ChannelMergerNode",
+                "number of inputs (" + String::number(numberOfInputs)
+                + ") must be between 1 and "
+                + String::number(AudioContext::maxNumberOfChannels()) + "."));
         return 0;
     }
 
@@ -556,8 +642,32 @@ PassRefPtr<PeriodicWave> AudioContext::createPeriodicWave(Float32Array* real, Fl
 {
     ASSERT(isMainThread());
 
-    if (!real || !imag || (real->length() != imag->length())) {
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+    if (!real) {
+        es.throwDOMException(
+            SyntaxError,
+            ExceptionMessages::failedToConstruct(
+                "PeriodicWave",
+                "invalid real array"));
+        return 0;
+    }
+
+    if (!imag) {
+        es.throwDOMException(
+            SyntaxError,
+            ExceptionMessages::failedToConstruct(
+                "PeriodicWave",
+                "invalid imaginary array"));
+        return 0;
+    }
+
+    if (real->length() != imag->length()) {
+        es.throwDOMException(
+            SyntaxError,
+            ExceptionMessages::failedToConstruct(
+                "PeriodicWave",
+                "length of real array (" + String::number(real->length())
+                + ") and length of imaginary array (" +  String::number(imag->length())
+                + ") must match."));
         return 0;
     }
 

@@ -68,6 +68,8 @@ public:
     // Careful! Only call this when the page unloads, after the AudioContext is no longer processing.
     void releaseMemory();
 
+    static float minAllowedSampleRate();
+    static float maxAllowedSampleRate();
 protected:
     AudioBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
     explicit AudioBuffer(AudioBus*);

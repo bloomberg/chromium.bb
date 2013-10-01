@@ -28,6 +28,7 @@
 
 #include "modules/webaudio/DelayNode.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 
@@ -40,7 +41,13 @@ DelayNode::DelayNode(AudioContext* context, float sampleRate, double maxDelayTim
 {
     ScriptWrappable::init(this);
     if (maxDelayTime <= 0 || maxDelayTime >= maximumAllowedDelayTime) {
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwDOMException(
+            NotSupportedError,
+            ExceptionMessages::failedToConstruct(
+                "DelayNode",
+                "max delay time (" + String::number(maxDelayTime)
+                + ") must be between 0 and " + String::number(maximumAllowedDelayTime)
+                + ", exclusive."));
         return;
     }
     m_processor = adoptPtr(new DelayProcessor(context, sampleRate, 1, maxDelayTime));

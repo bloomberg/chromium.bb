@@ -28,6 +28,7 @@
 
 #include "modules/webaudio/OfflineAudioContext.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -39,14 +40,29 @@ PassRefPtr<OfflineAudioContext> OfflineAudioContext::create(ScriptExecutionConte
 {
     // FIXME: add support for workers.
     if (!context || !context->isDocument()) {
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        es.throwDOMException(
+            NotSupportedError,
+            ExceptionMessages::failedToConstruct("OfflineAudioContext"));
         return 0;
     }
 
     Document* document = toDocument(context);
 
-    if (numberOfChannels > 10 || !isSampleRateRangeGood(sampleRate)) {
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+    if (numberOfChannels > 10) {
+        es.throwDOMException(
+            SyntaxError,
+            ExceptionMessages::failedToConstruct(
+                "OfflineAudioContext",
+                "number of channels (" + String::number(numberOfChannels) + ") exceeds maximum (10)."));
+        return 0;
+    }
+
+    if (!isSampleRateRangeGood(sampleRate)) {
+        es.throwDOMException(
+            SyntaxError,
+            ExceptionMessages::failedToConstruct(
+                "OfflineAudioContext",
+                "sample rate (" + String::number(sampleRate) + ") must be in the range 44100-96000 Hz."));
         return 0;
     }
 

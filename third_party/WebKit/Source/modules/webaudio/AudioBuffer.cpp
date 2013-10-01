@@ -32,6 +32,7 @@
 
 #include "modules/webaudio/AudioBuffer.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/platform/audio/AudioBus.h"
@@ -40,9 +41,19 @@
 
 namespace WebCore {
 
+float AudioBuffer::minAllowedSampleRate()
+{
+    return 22050;
+}
+
+float AudioBuffer::maxAllowedSampleRate()
+{
+    return 96000;
+}
+
 PassRefPtr<AudioBuffer> AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
 {
-    if (sampleRate < 22050 || sampleRate > 96000 || numberOfChannels > AudioContext::maxNumberOfChannels() || !numberOfFrames)
+    if (sampleRate < minAllowedSampleRate() || sampleRate > maxAllowedSampleRate() || numberOfChannels > AudioContext::maxNumberOfChannels() || !numberOfFrames)
         return 0;
 
     return adoptRef(new AudioBuffer(numberOfChannels, numberOfFrames, sampleRate));
@@ -97,7 +108,12 @@ void AudioBuffer::releaseMemory()
 PassRefPtr<Float32Array> AudioBuffer::getChannelData(unsigned channelIndex, ExceptionState& es)
 {
     if (channelIndex >= m_channels.size()) {
-        es.throwUninformativeAndGenericDOMException(SyntaxError);
+        es.throwDOMException(
+            SyntaxError,
+            ExceptionMessages::failedToExecute(
+                "getChannelData",
+                "AudioBuffer",
+                "channel index (" + String::number(channelIndex) + ") exceeds number of channels (" + String::number(m_channels.size()) + ")"));
         return 0;
     }
 
