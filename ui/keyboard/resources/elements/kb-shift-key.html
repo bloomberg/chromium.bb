@@ -6,7 +6,7 @@
 
 <polymer-element name="kb-shift-key"
     attributes="lowerCaseKeysetId upperCaseKeysetId"
-    class="shift dark" char="Shift" extends="kb-key">
+    class="shift dark" char="Shift" on-pointerout="out" extends="kb-key">
   <script>
     (function () {
 
@@ -24,6 +24,12 @@
         TAPPED: "tapped", // Key-down followed by key-up.
         CHORDING: "chording" // Key-down followed by other keys.
       };
+
+      /**
+       * The id of the shift key that may trigger chording.
+       * @type {int}
+       */
+      var chordingId = undefined;
 
       /**
        * Uses a closure to define one long press timer among all shift keys
@@ -53,15 +59,21 @@
           } else if (state == KEY_STATES.CHORDING) {
             // Leaves chording only if the shift key that triggered 
             // it is released.
-            // TODO (rsadam@): Fix edge case: If we enter chording while
-            // pressing another key, will not leave chording upon shift
-            // release.
-            if (event.isPrimary)
+            if (event.pointerId == chordingId)
               state = KEY_STATES.UNLOCKED;
             else
               return;
           }
           this.super();
+        },
+
+        out: function(event) {
+          // Sliding off the shift key while chording is treated as a key-up.
+          if (state == KEY_STATES.CHORDING && event.pointerId == chordingId) {
+            state = KEY_STATES.UNLOCKED;
+            var detail = this.populateDetails();
+            this.fire("key-out", detail);
+          }
         },
 
         down: function(event) {
@@ -84,6 +96,7 @@
               console.error("Undefined shift key state: " + state);
               break;
           }
+          chordingId = event.pointerId;
           // Trigger parent behaviour.
           this.super();
           this.fire('enable-sel');

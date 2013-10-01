@@ -7,7 +7,7 @@
 <polymer-element name="kb-keyboard" on-key-over="keyOver" on-key-up="keyUp"
     on-key-down="keyDown" on-key-longpress="keyLongpress" on-pointerup="up"
     on-pointerdown="down" on-enable-sel="enableSel"
-    on-enable-dbl="enableDbl"
+    on-enable-dbl="enableDbl"  on-key-out="keyOut"
     attributes="keyset layout rows inputType inputTypeToLayoutMap">
   <template>
     <style>
@@ -351,6 +351,22 @@
       },
 
       /**
+       * Handles key-out event that is sent by kb-shift-key.
+       * @param {CustomEvent} event The key-out event dispatched by
+       *     kb-shift-key.
+       * @param {Object} detail The detail of pressed kb-shift-key.
+       */
+      keyOut: function(event, detail) {
+        var toKeyset = detail.toKeyset;
+        if (toKeyset) {
+          this.keyset = toKeyset;
+          this.querySelector('#' + this.layout + '-' + this.keyset).nextKeyset =
+              detail.nextKeyset;
+          return;
+        }
+      },
+
+      /**
        * Enable/start double click/tap event recognition.
        * @param {CustomEvent} event The enable-dbl event dispatched by
        *     kb-shift-key.
@@ -462,7 +478,7 @@
           enterUpperOnSpace = false;
           if (char == ' ') {
             // If shift key defined in layout.
-            if(this.shift) {
+            if (this.shift) {
               var shiftDetail = this.shift.onSpaceAfterPunctuation();
               var toKeyset = shiftDetail.toKeyset;
               // Check if transition defined.
