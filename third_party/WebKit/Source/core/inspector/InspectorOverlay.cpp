@@ -558,9 +558,9 @@ void InspectorOverlay::drawNodeHighlight()
         }
         if (pseudoElement) {
             if (pseudoElement->pseudoId() == BEFORE)
-                classNames.append(":before");
+                classNames.append("::before");
             else if (pseudoElement->pseudoId() == AFTER)
-                classNames.append(":after");
+                classNames.append("::after");
         }
         if (!classNames.isEmpty())
             elementInfo->setString("className", classNames.toString());

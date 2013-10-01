@@ -5,13 +5,13 @@ Running: dumpOriginalTree
 Original elements tree:
 - <div id="container">
     - <div id="inspected">
-          :before
+          ::before
           "Text"
-          :after
+          ::after
       </div>
     - <div id="empty">
-          :before
-          :after
+          ::before
+          ::after
       </div>
   </div>
 
@@ -60,12 +60,12 @@ content: "AFTER";
 Running: removeAfter
 - <div id="container">
     - <div id="inspected">
-          :before
+          ::before
           "Text"
       </div>
     - <div id="empty">
-          :before
-          :after
+          ::before
+          ::after
       </div>
   </div>
 
@@ -75,8 +75,8 @@ Running: removeBefore
           "Text"
       </div>
     - <div id="empty">
-          :before
-          :after
+          ::before
+          ::after
       </div>
   </div>
 
@@ -84,57 +84,57 @@ Running: addAfter
 - <div id="container">
     - <div id="inspected">
           "Text"
-          :after
+          ::after
       </div>
     - <div id="empty">
-          :before
-          :after
+          ::before
+          ::after
       </div>
   </div>
 
 Running: addBefore
 - <div id="container">
     - <div id="inspected">
-          :before
+          ::before
           "Text"
-          :after
+          ::after
       </div>
     - <div id="empty">
-          :before
-          :after
+          ::before
+          ::after
       </div>
   </div>
 
 Running: modifyTextContent
 - <div id="container">
     - <div id="inspected">
-          :before
+          ::before
           "bar"
-          :after
+          ::after
       </div>
     - <div id="empty">
-          :before
-          :after
+          ::before
+          ::after
       </div>
   </div>
 
 Running: clearTextContent
 - <div id="container">
     - <div id="inspected">
-          :before
-          :after
+          ::before
+          ::after
       </div>
     - <div id="empty">
-          :before
-          :after
+          ::before
+          ::after
       </div>
   </div>
 
 Running: removeNodeAndCheckPseudoElementsUnbound
 - <div id="container">
     - <div id="empty">
-          :before
-          :after
+          ::before
+          ::after
       </div>
   </div>
 inspected:before DOMNode in DOMAgent: false
