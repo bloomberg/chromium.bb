@@ -35,7 +35,7 @@ class SpeechRecognitionManager {
   static CONTENT_EXPORT SpeechRecognitionManager* GetInstance();
 
   // Singleton manager setter useful for tests.
-  static void CONTENT_EXPORT SetManagerForTests(
+  static void CONTENT_EXPORT SetManagerForTesting(
       SpeechRecognitionManager* manager);
 
   // Creates a new recognition session.

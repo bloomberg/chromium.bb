@@ -337,12 +337,12 @@ void GoogleStreamingRemoteEngineTest::TearDown() {
 
 TestURLFetcher* GoogleStreamingRemoteEngineTest::GetUpstreamFetcher() {
   return url_fetcher_factory_.GetFetcherByID(
-        GoogleStreamingRemoteEngine::kUpstreamUrlFetcherIdForTests);
+        GoogleStreamingRemoteEngine::kUpstreamUrlFetcherIdForTesting);
 }
 
 TestURLFetcher* GoogleStreamingRemoteEngineTest::GetDownstreamFetcher() {
   return url_fetcher_factory_.GetFetcherByID(
-        GoogleStreamingRemoteEngine::kDownstreamUrlFetcherIdForTests);
+        GoogleStreamingRemoteEngine::kDownstreamUrlFetcherIdForTesting);
 }
 
 // Starts recognition on the engine, ensuring that both stream fetchers are

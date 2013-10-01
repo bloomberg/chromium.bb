@@ -86,8 +86,8 @@ std::string GetAPIKey() {
 
 }  // namespace
 
-const int GoogleStreamingRemoteEngine::kUpstreamUrlFetcherIdForTests = 0;
-const int GoogleStreamingRemoteEngine::kDownstreamUrlFetcherIdForTests = 1;
+const int GoogleStreamingRemoteEngine::kUpstreamUrlFetcherIdForTesting = 0;
+const int GoogleStreamingRemoteEngine::kDownstreamUrlFetcherIdForTesting = 1;
 const int GoogleStreamingRemoteEngine::kWebserviceStatusNoError = 0;
 const int GoogleStreamingRemoteEngine::kWebserviceStatusErrorNoMatch = 5;
 
@@ -324,7 +324,8 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
                       JoinString(downstream_args, '&'));
 
   downstream_fetcher_.reset(URLFetcher::Create(
-      kDownstreamUrlFetcherIdForTests, downstream_url, URLFetcher::GET, this));
+      kDownstreamUrlFetcherIdForTesting, downstream_url, URLFetcher::GET,
+      this));
   downstream_fetcher_->SetRequestContext(url_context_.get());
   downstream_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                                     net::LOAD_DO_NOT_SEND_COOKIES |
@@ -363,7 +364,7 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
                     JoinString(upstream_args, '&'));
 
   upstream_fetcher_.reset(URLFetcher::Create(
-      kUpstreamUrlFetcherIdForTests, upstream_url, URLFetcher::POST, this));
+      kUpstreamUrlFetcherIdForTesting, upstream_url, URLFetcher::POST, this));
   upstream_fetcher_->SetChunkedUpload(encoder_->mime_type());
   upstream_fetcher_->SetRequestContext(url_context_.get());
   upstream_fetcher_->SetReferrer(config_.origin_url);

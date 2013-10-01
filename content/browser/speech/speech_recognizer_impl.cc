@@ -802,7 +802,7 @@ void SpeechRecognizerImpl::UpdateSignalAndNoiseLevels(const float& rms,
       session_id(), clip_detected ? 1.0f : audio_level_, noise_level);
 }
 
-void SpeechRecognizerImpl::SetAudioManagerForTests(
+void SpeechRecognizerImpl::SetAudioManagerForTesting(
     AudioManager* audio_manager) {
   audio_manager_for_tests_ = audio_manager;
 }

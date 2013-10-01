@@ -70,8 +70,8 @@ class CONTENT_EXPORT GoogleStreamingRemoteEngine
   friend class GoogleStreamingRemoteEngineTest;
 
   // IDs passed to URLFetcher::Create(). Used for testing.
-  static const int kUpstreamUrlFetcherIdForTests;
-  static const int kDownstreamUrlFetcherIdForTests;
+  static const int kUpstreamUrlFetcherIdForTesting;
+  static const int kDownstreamUrlFetcherIdForTesting;
 
   // Response status codes from the speech recognition webservice.
   static const int kWebserviceStatusNoError;

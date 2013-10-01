@@ -23,7 +23,7 @@ class SpeechRecognitionTest : public extensions::PlatformAppBrowserTest {
       fake_speech_recognition_manager_->set_should_send_fake_response(true);
       // Inject the fake manager factory so that the test result is returned to
       // the web page.
-      content::SpeechRecognitionManager::SetManagerForTests(
+      content::SpeechRecognitionManager::SetManagerForTesting(
           fake_speech_recognition_manager_.get());
     }
 

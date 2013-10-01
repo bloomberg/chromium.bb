@@ -37,7 +37,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   static const int kNoSpeechTimeoutMs;
   static const int kEndpointerEstimationTimeMs;
 
-  static void SetAudioManagerForTests(media::AudioManager* audio_manager);
+  static void SetAudioManagerForTesting(media::AudioManager* audio_manager);
 
   SpeechRecognizerImpl(SpeechRecognitionEventListener* listener,
                        int session_id,

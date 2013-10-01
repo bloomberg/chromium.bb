@@ -79,7 +79,7 @@ class InputTagSpeechBrowserTest : public ContentBrowserTest {
 
     // Inject the fake manager factory so that the test result is returned to
     // the web page.
-    SpeechRecognitionManager::SetManagerForTests(speech_recognition_manager_);
+    SpeechRecognitionManager::SetManagerForTesting(speech_recognition_manager_);
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
