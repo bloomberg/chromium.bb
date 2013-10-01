@@ -88,6 +88,8 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
     if (handleOutOfMemory())
         return v8::Local<v8::Value>();
 
+    RELEASE_ASSERT(!context->isIteratingOverObservers());
+
     // Run the script and keep track of the current recursion depth.
     v8::Local<v8::Value> result;
     {
@@ -127,6 +129,8 @@ v8::Local<v8::Value> V8ScriptRunner::callFunction(v8::Handle<v8::Function> funct
     if (V8RecursionScope::recursionLevel() >= kMaxRecursionDepth)
         return handleMaxRecursionDepthExceeded(isolate);
 
+    RELEASE_ASSERT(!context->isIteratingOverObservers());
+
     V8RecursionScope recursionScope(context);
     v8::Local<v8::Value> result = function->Call(receiver, argc, args);
     crashIfV8IsDead();
@@ -147,6 +151,7 @@ v8::Local<v8::Value> V8ScriptRunner::callAsFunction(v8::Handle<v8::Object> objec
 {
     TRACE_EVENT0("v8", "v8.callFunction");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "Execution");
+
     V8RecursionScope::MicrotaskSuppression recursionScope;
     v8::Local<v8::Value> result = object->CallAsFunction(receiver, argc, args);
     crashIfV8IsDead();
@@ -157,6 +162,7 @@ v8::Local<v8::Value> V8ScriptRunner::callAsConstructor(v8::Handle<v8::Object> ob
 {
     TRACE_EVENT0("v8", "v8.callFunction");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "Execution");
+
     V8RecursionScope::MicrotaskSuppression recursionScope;
     v8::Local<v8::Value> result = object->CallAsConstructor(argc, args);
     crashIfV8IsDead();
@@ -167,6 +173,7 @@ v8::Local<v8::Object> V8ScriptRunner::instantiateObject(v8::Handle<v8::ObjectTem
 {
     TRACE_EVENT0("v8", "v8.newInstance");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "Execution");
+
     V8RecursionScope::MicrotaskSuppression scope;
     v8::Local<v8::Object> result = objectTemplate->NewInstance();
     crashIfV8IsDead();
@@ -177,6 +184,7 @@ v8::Local<v8::Object> V8ScriptRunner::instantiateObject(v8::Handle<v8::Function>
 {
     TRACE_EVENT0("v8", "v8.newInstance");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "Execution");
+
     V8RecursionScope::MicrotaskSuppression scope;
     v8::Local<v8::Object> result = function->NewInstance(argc, argv);
     crashIfV8IsDead();
