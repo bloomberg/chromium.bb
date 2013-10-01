@@ -23,7 +23,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
-#include "chrome/common/child_process_logging.h"
 #include "content/public/common/content_switches.h"
 #include "components/breakpad/breakpad_client.h"
 #include "policy/policy_constants.h"
@@ -250,7 +249,7 @@ void InitCrashReporter() {
     // Get the guid from the command line switch.
     std::string guid =
         command_line->GetSwitchValueASCII(switches::kEnableCrashReporter);
-    child_process_logging::SetClientId(guid);
+    breakpad::GetBreakpadClient()->SetClientID(guid);
   }
 
   logging::SetLogMessageHandler(&FatalMessageHandler);

@@ -78,10 +78,10 @@ class GoogleUpdateSettings {
 
   // Returns the metrics id set in the registry (that can be used in crash
   // reports). If none found, returns empty string.
-  static bool GetMetricsId(std::wstring* metrics_id);
+  static bool GetMetricsId(std::string* metrics_id);
 
   // Sets the metrics id to be used in crash reports.
-  static bool SetMetricsId(const std::wstring& metrics_id);
+  static bool SetMetricsId(const std::string& metrics_id);
 
   // Sets the machine-wide EULA consented flag required on OEM installs.
   // Returns false if the setting could not be recorded.

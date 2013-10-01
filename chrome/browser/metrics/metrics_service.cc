@@ -190,10 +190,10 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
-#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/common/metrics/caching_permuted_entropy_provider.h"
 #include "chrome/common/metrics/metrics_log_manager.h"
 #include "chrome/common/net/test_server_locations.h"
@@ -591,7 +591,7 @@ void MetricsService::EnableRecording() {
   recording_active_ = true;
 
   ForceClientIdCreation();
-  child_process_logging::SetClientId(client_id_);
+  crash_keys::SetClientID(client_id_);
   if (!log_manager_.current_log())
     OpenNewLog();
 

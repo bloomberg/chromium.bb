@@ -59,6 +59,10 @@ ChromeBreakpadClient::ChromeBreakpadClient() {}
 
 ChromeBreakpadClient::~ChromeBreakpadClient() {}
 
+void ChromeBreakpadClient::SetClientID(const std::string& client_id) {
+  crash_keys::SetClientID(client_id);
+}
+
 #if defined(OS_WIN)
 bool ChromeBreakpadClient::GetAlternativeCrashDumpLocation(
     base::FilePath* crash_dir) {
@@ -149,12 +153,6 @@ bool ChromeBreakpadClient::AboutToRestart() {
 
   env->SetVar(env_vars::kShowRestart, "1");
   return true;
-}
-
-base::string16 ChromeBreakpadClient::GetCrashGUID() {
-  std::wstring guid;
-  GoogleUpdateSettings::GetMetricsId(&guid);
-  return base::WideToUTF16(guid);
 }
 
 bool ChromeBreakpadClient::GetDeferredUploadsSupported(

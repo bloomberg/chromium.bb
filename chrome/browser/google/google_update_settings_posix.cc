@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 
 namespace google_update {
@@ -56,16 +57,24 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
   return true;
 }
 
-bool GoogleUpdateSettings::SetMetricsId(const std::wstring& client_id) {
+// static
+bool GoogleUpdateSettings::GetMetricsId(std::string* metrics_id) {
+  *metrics_id = google_update::posix_guid();
+  return true;
+}
+
+// static
+bool GoogleUpdateSettings::SetMetricsId(const std::string& client_id) {
   // Make sure that user has consented to send crashes.
   base::FilePath consent_dir;
   PathService::Get(chrome::DIR_USER_DATA, &consent_dir);
   if (!base::DirectoryExists(consent_dir) ||
-      !GoogleUpdateSettings::GetCollectStatsConsent())
+      !GoogleUpdateSettings::GetCollectStatsConsent()) {
     return false;
+  }
 
   // Since user has consented, write the metrics id to the file.
-  google_update::posix_guid() = WideToASCII(client_id);
+  google_update::posix_guid() = client_id;
   return GoogleUpdateSettings::SetCollectStatsConsent(true);
 }
 

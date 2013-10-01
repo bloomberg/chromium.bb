@@ -42,6 +42,10 @@ class BreakpadClient {
   BreakpadClient();
   virtual ~BreakpadClient();
 
+  // Sets the Breakpad client ID, which is a unique identifier for the client
+  // that is sending crash reports. After it is set, it should not be changed.
+  virtual void SetClientID(const std::string& client_id);
+
 #if defined(OS_WIN)
   // Returns true if an alternative location to store the minidump files was
   // specified. Returns true if |crash_dir| was set.
@@ -66,9 +70,6 @@ class BreakpadClient {
   // Returns true if it is ok to restart the application. Invoked right before
   // restarting after a crash.
   virtual bool AboutToRestart();
-
-  // Returns a GUID to embed in the crash report.
-  virtual base::string16 GetCrashGUID();
 
   // Returns true if the crash report uploader supports deferred uploads.
   virtual bool GetDeferredUploadsSupported(bool is_per_user_install);

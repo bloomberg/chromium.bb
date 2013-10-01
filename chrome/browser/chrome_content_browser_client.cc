@@ -89,7 +89,6 @@
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
 #include "chrome/browser/validation_message_message_filter.h"
-#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -107,6 +106,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "chromeos/chromeos_constants.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -1322,18 +1322,17 @@ std::string ChromeContentBrowserClient::GetCanonicalEncodingNameByAliasName(
 
 void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     CommandLine* command_line, int child_process_id) {
-#if defined(OS_MACOSX)
+#if defined(OS_POSIX)
   if (IsCrashReporterEnabled()) {
+    std::string enable_crash_reporter;
+    GoogleUpdateSettings::GetMetricsId(&enable_crash_reporter);
+#if !defined(OS_MACOSX)
+    enable_crash_reporter += "," + base::GetLinuxDistro();
+#endif
     command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
-                                    child_process_logging::GetClientId());
+        enable_crash_reporter);
   }
-#elif defined(OS_POSIX)
-  if (IsCrashReporterEnabled()) {
-    command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
-        child_process_logging::GetClientId() + "," + base::GetLinuxDistro());
-  }
-
-#endif  // OS_MACOSX
+#endif  // OS_POSIX
 
   if (logging::DialogsAreSuppressed())
     command_line->AppendSwitch(switches::kNoErrorDialogs);

@@ -72,8 +72,6 @@
         'common/cancelable_task_tracker.cc',
         'common/cancelable_task_tracker.h',
         'common/child_process_logging.h',
-        'common/child_process_logging_mac.mm',
-        'common/child_process_logging_posix.cc',
         'common/child_process_logging_win.cc',
         'common/chrome_content_client.cc',
         'common/chrome_content_client.h',

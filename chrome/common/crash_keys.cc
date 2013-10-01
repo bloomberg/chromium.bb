@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/installer/util/google_update_settings.h"
 
 #if defined(OS_MACOSX)
 #include "breakpad/src/common/simple_string_dictionary.h"
@@ -50,6 +51,8 @@ COMPILE_ASSERT(kSmallSize <= kSingleChunkLength,
 COMPILE_ASSERT(kMediumSize <= kSingleChunkLength,
                mac_has_medium_size_crash_key_chunks);
 #endif
+
+const char kClientID[] = "guid";
 
 const char kChannel[] = "channel";
 
@@ -108,6 +111,7 @@ size_t RegisterChromeCrashKeys() {
   // The following keys may be chunked by the underlying crash logging system,
   // but ultimately constitute a single key-value pair.
   base::debug::CrashKey fixed_keys[] = {
+    { kClientID, kSmallSize },
     { kChannel, kSmallSize },
     { kActiveURL, kLargeSize },
     { kNumSwitches, kSmallSize },
@@ -206,6 +210,17 @@ size_t RegisterChromeCrashKeys() {
 
   return base::debug::InitCrashKeys(&keys.at(0), keys.size(),
                                     kSingleChunkLength);
+}
+
+void SetClientID(const std::string& client_id) {
+  std::string guid(client_id);
+  // Remove all instance of '-' char from the GUID. So BCD-WXY becomes BCDWXY.
+  ReplaceSubstringsAfterOffset(&guid, 0, "-", "");
+  if (guid.empty())
+    return;
+
+  base::debug::SetCrashKeyValue(kClientID, guid);
+  GoogleUpdateSettings::SetMetricsId(guid);
 }
 
 static bool IsBoringSwitch(const std::string& flag) {

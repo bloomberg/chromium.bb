@@ -2637,6 +2637,7 @@
             # TODO(ios): Add files here as they are updated to compile on iOS.
             ['include', '^browser/browser_process\\.cc$'],
             ['include', '^browser/browser_process_platform_part_base\\.cc$'],
+            ['include', '^browser/google/'],
           ],
           'link_settings': {
             'libraries': [

@@ -27,6 +27,9 @@ BreakpadClient* GetBreakpadClient() {
 BreakpadClient::BreakpadClient() {}
 BreakpadClient::~BreakpadClient() {}
 
+void BreakpadClient::SetClientID(const std::string& client_id) {
+}
+
 #if defined(OS_WIN)
 bool BreakpadClient::GetAlternativeCrashDumpLocation(
     base::FilePath* crash_dir) {
@@ -48,10 +51,6 @@ bool BreakpadClient::ShouldShowRestartDialog(base::string16* title,
 
 bool BreakpadClient::AboutToRestart() {
   return true;
-}
-
-base::string16 BreakpadClient::GetCrashGUID() {
-  return base::string16();
 }
 
 bool BreakpadClient::GetDeferredUploadsSupported(bool is_per_usr_install) {

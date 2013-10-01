@@ -99,7 +99,6 @@ typedef NTSTATUS (WINAPI* NtTerminateProcessPtr)(HANDLE ProcessHandle,
                                                  NTSTATUS ExitStatus);
 char* g_real_terminate_process_stub = NULL;
 
-static size_t g_client_id_offset = 0;
 static size_t g_dynamic_keys_offset = 0;
 typedef std::map<std::wstring, google_breakpad::CustomInfoEntry*>
     DynamicEntriesMap;
@@ -393,15 +392,6 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
     g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
         L"special", UTF16ToWide(special_build).c_str()));
 
-  // Read the id from registry. If reporting has never been enabled
-  // the result will be empty string. Its OK since when user enables reporting
-  // we will insert the new value at this location.
-  std::wstring guid =
-      base::UTF16ToWide(breakpad::GetBreakpadClient()->GetCrashGUID());
-  g_client_id_offset = g_custom_entries->size();
-  g_custom_entries->push_back(
-      google_breakpad::CustomInfoEntry(L"guid", guid.c_str()));
-
   if (type == L"plugin" || type == L"ppapi") {
     std::wstring plugin_path =
         CommandLine::ForCurrentProcess()->GetSwitchValueNative("plugin-path");
@@ -527,19 +517,6 @@ long WINAPI ChromeExceptionFilter(EXCEPTION_POINTERS* info) {
 long WINAPI ServiceExceptionFilter(EXCEPTION_POINTERS* info) {
   DumpDoneCallback(NULL, NULL, NULL, info, NULL, false);
   return EXCEPTION_EXECUTE_HANDLER;
-}
-
-extern "C" void __declspec(dllexport) __cdecl SetClientId(
-    const wchar_t* client_id) {
-  if (client_id == NULL)
-    return;
-
-  if (!g_custom_entries)
-    return;
-
-  base::wcslcpy((*g_custom_entries)[g_client_id_offset].value,
-                client_id,
-                google_breakpad::CustomInfoEntry::kValueMaxLength);
 }
 
 // NOTE: This function is used by SyzyASAN to annotate crash reports. If you

@@ -38,7 +38,6 @@
 #include "breakpad/src/common/linux/linux_libc_support.h"
 #include "breakpad/src/common/memory.h"
 #include "chrome/app/breakpad_linux_impl.h"
-#include "chrome/common/child_process_logging.h"
 #include "components/breakpad/breakpad_client.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
@@ -192,19 +191,12 @@ size_t LengthWithoutTrailingSpaces(const char* str, size_t len) {
   return len;
 }
 
-// Populates the passed in allocated strings and their sizes with the GUID
-// and distro of the crashing process.
-// The passed strings are expected to be at least kGuidSize
-// and kDistroSize bytes long respectively.
-void PopulateGUIDAndDistro(char* guid, size_t* guid_len_param,
-                           char* distro, size_t* distro_len_param) {
-  size_t guid_len = std::min(my_strlen(child_process_logging::g_client_id),
-                             kGuidSize);
+// Populates the passed in allocated string and its size with the distro of
+// the crashing process.
+// The passed string is expected to be at least kDistroSize bytes long.
+void PopulateDistro(char* distro, size_t* distro_len_param) {
   size_t distro_len = std::min(my_strlen(base::g_linux_distro), kDistroSize);
-  memcpy(guid, child_process_logging::g_client_id, guid_len);
   memcpy(distro, base::g_linux_distro, distro_len);
-  if (guid_len_param)
-    *guid_len_param = guid_len;
   if (distro_len_param)
     *distro_len_param = distro_len;
 }
@@ -215,10 +207,11 @@ void SetClientIdFromCommandLine(const CommandLine& command_line) {
       command_line.GetSwitchValueASCII(switches::kEnableCrashReporter);
   size_t separator = switch_value.find(",");
   if (separator != std::string::npos) {
-    child_process_logging::SetClientId(switch_value.substr(0, separator));
+    breakpad::GetBreakpadClient()->SetClientID(
+        switch_value.substr(0, separator));
     base::SetLinuxDistro(switch_value.substr(separator + 1));
   } else {
-    child_process_logging::SetClientId(switch_value);
+    breakpad::GetBreakpadClient()->SetClientID(switch_value);
   }
 }
 
@@ -587,8 +580,6 @@ bool CrashDone(const MinidumpDescriptor& minidump,
 #endif
   info.process_type = "browser";
   info.process_type_length = 7;
-  info.guid = child_process_logging::g_client_id;
-  info.guid_length = my_strlen(child_process_logging::g_client_id);
   info.distro = base::g_linux_distro;
   info.distro_length = my_strlen(base::g_linux_distro);
   info.upload = upload;
@@ -690,18 +681,14 @@ bool CrashDoneInProcessNoUpload(
   }
 
   // Start constructing the message to send to the browser.
-  char guid[kGuidSize + 1] = {0};
   char distro[kDistroSize + 1] = {0};
-  size_t guid_length = 0;
   size_t distro_length = 0;
-  PopulateGUIDAndDistro(guid, &guid_length, distro, &distro_length);
+  PopulateDistro(distro, &distro_length);
   BreakpadInfo info = {0};
   info.filename = NULL;
   info.fd = descriptor.fd();
   info.process_type = g_process_type;
   info.process_type_length = my_strlen(g_process_type);
-  info.guid = guid;
-  info.guid_length = guid_length;
   info.distro = distro;
   info.distro_length = distro_length;
   info.upload = false;
@@ -757,9 +744,8 @@ bool NonBrowserCrashHandler(const void* crash_context,
   }
 
   // Start constructing the message to send to the browser.
-  char guid[kGuidSize + 1] = {0};
   char distro[kDistroSize + 1] = {0};
-  PopulateGUIDAndDistro(guid, NULL, distro, NULL);
+  PopulateDistro(distro, NULL);
 
   char b;  // Dummy variable for sys_read below.
   const char* b_addr = &b;  // Get the address of |b| so we can create the
@@ -776,26 +762,24 @@ bool NonBrowserCrashHandler(const void* crash_context,
   struct kernel_iovec iov[kCrashIovSize];
   iov[0].iov_base = const_cast<void*>(crash_context);
   iov[0].iov_len = crash_context_size;
-  iov[1].iov_base = guid;
-  iov[1].iov_len = kGuidSize + 1;
-  iov[2].iov_base = distro;
-  iov[2].iov_len = kDistroSize + 1;
-  iov[3].iov_base = &b_addr;
-  iov[3].iov_len = sizeof(b_addr);
-  iov[4].iov_base = &fds[0];
-  iov[4].iov_len = sizeof(fds[0]);
-  iov[5].iov_base = &g_process_start_time;
-  iov[5].iov_len = sizeof(g_process_start_time);
-  iov[6].iov_base = &base::g_oom_size;
-  iov[6].iov_len = sizeof(base::g_oom_size);
+  iov[1].iov_base = distro;
+  iov[1].iov_len = kDistroSize + 1;
+  iov[2].iov_base = &b_addr;
+  iov[2].iov_len = sizeof(b_addr);
+  iov[3].iov_base = &fds[0];
+  iov[3].iov_len = sizeof(fds[0]);
+  iov[4].iov_base = &g_process_start_time;
+  iov[4].iov_len = sizeof(g_process_start_time);
+  iov[5].iov_base = &base::g_oom_size;
+  iov[5].iov_len = sizeof(base::g_oom_size);
   google_breakpad::SerializedNonAllocatingMap* serialized_map;
-  iov[7].iov_len = g_crash_keys->Serialize(
+  iov[6].iov_len = g_crash_keys->Serialize(
       const_cast<const google_breakpad::SerializedNonAllocatingMap**>(
           &serialized_map));
-  iov[7].iov_base = serialized_map;
+  iov[6].iov_base = serialized_map;
 #if defined(ADDRESS_SANITIZER)
-  iov[8].iov_base = const_cast<char*>(g_asan_report_str);
-  iov[8].iov_len = kMaxAsanReportSize + 1;
+  iov[7].iov_base = const_cast<char*>(g_asan_report_str);
+  iov[7].iov_len = kMaxAsanReportSize + 1;
 #endif
 
   msg.msg_iov = iov;
@@ -1138,9 +1122,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
   //   Content-Disposition: form-data; name="ver" \r\n \r\n
   //   1.2.3.4 \r\n
   //   BOUNDARY \r\n
-  //   Content-Disposition: form-data; name="guid" \r\n \r\n
-  //   1.2.3.4 \r\n
-  //   BOUNDARY \r\n
   //
   //   zero or one:
   //   Content-Disposition: form-data; name="ptime" \r\n \r\n
@@ -1188,8 +1169,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
     writer.AddPairString("prod", product_name.c_str());
     writer.AddBoundary();
     writer.AddPairString("ver", version.c_str());
-    writer.AddBoundary();
-    writer.AddPairString("guid", info.guid);
     writer.AddBoundary();
     if (info.pid > 0) {
       char pid_value_buf[kUint64StringSize];
