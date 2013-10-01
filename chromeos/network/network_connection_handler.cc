@@ -553,23 +553,24 @@ void NetworkConnectionHandler::CheckPendingRequest(
   }
 
   // Network is neither connecting or connected; an error occurred.
-  std::string error_name, error_detail;
+  std::string error_name;  // 'Canceled' or 'Failed'
+  // If network->error() is empty here, we will look it up later, but we
+  // need to preserve it in case Shill clears it before then. crbug.com/302020.
+  std::string shill_error = network->error();
   if (network->connection_state() == shill::kStateIdle &&
       pending_requests_.size() > 1) {
     // Another connect request canceled this one.
     error_name = kErrorConnectCanceled;
-    error_detail = "";
   } else {
     error_name = shill::kErrorConnectFailed;
-    error_detail = network->error();
-    if (error_detail.empty()) {
-      if (network->connection_state() == shill::kStateFailure)
-        error_detail = shill::kUnknownString;
-      else
-        error_detail = "Unexpected State: " + network->connection_state();
+    if (network->connection_state() != shill::kStateFailure) {
+      NET_LOG_ERROR("Unexpected State: " + network->connection_state(),
+                    service_path);
     }
   }
-  std::string error_msg = error_name + ": " + error_detail;
+  std::string error_msg = error_name;
+  if (!shill_error.empty())
+    error_msg += ": " + shill_error;
   NET_LOG_ERROR(error_msg, service_path);
 
   network_handler::ErrorCallback error_callback = request->error_callback;
@@ -577,7 +578,7 @@ void NetworkConnectionHandler::CheckPendingRequest(
   if (error_callback.is_null())
     return;
   scoped_ptr<base::DictionaryValue> error_data(
-      network_handler::CreateErrorData(service_path, error_name, error_detail));
+      network_handler::CreateErrorData(service_path, error_name, shill_error));
   error_callback.Run(error_name, error_data.Pass());
 }
 
