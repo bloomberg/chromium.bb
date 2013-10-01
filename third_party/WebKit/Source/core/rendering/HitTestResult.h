@@ -57,9 +57,9 @@ public:
     ~HitTestResult();
     HitTestResult& operator=(const HitTestResult&);
 
-    Node* innerNode() const { return m_innerNode.get(); }
+    Node* innerNode() const;
     Element* innerElement() const;
-    Node* innerNonSharedNode() const { return m_innerNonSharedNode.get(); }
+    Node* innerNonSharedNode() const;
     Element* URLElement() const { return m_innerURLElement.get(); }
     Scrollbar* scrollbar() const { return m_scrollbar.get(); }
     bool isOverWidget() const { return m_isOverWidget; }
@@ -80,6 +80,7 @@ public:
     const LayoutPoint& localPoint() const { return m_localPoint; }
     void setLocalPoint(const LayoutPoint& p) { m_localPoint = p; }
 
+    void allowPseudoElements() { m_allowPseudoElements = true; }
     void setToNodesInDocumentTreeScope();
     void setToShadowHostIfInUserAgentShadowRoot();
 
@@ -134,6 +135,7 @@ private:
     RefPtr<Element> m_innerURLElement;
     RefPtr<Scrollbar> m_scrollbar;
     bool m_isOverWidget; // Returns true if we are over a widget (and not in the border/padding area of a RenderWidget for example).
+    bool m_allowPseudoElements;
 
     mutable OwnPtr<NodeSet> m_rectBasedTestResult;
 };

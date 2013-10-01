@@ -50,6 +50,7 @@ using namespace HTMLNames;
 
 HitTestResult::HitTestResult()
     : m_isOverWidget(false)
+    , m_allowPseudoElements(false)
 {
 }
 
@@ -57,6 +58,7 @@ HitTestResult::HitTestResult(const LayoutPoint& point)
     : m_hitTestLocation(point)
     , m_pointInInnerNodeFrame(point)
     , m_isOverWidget(false)
+    , m_allowPseudoElements(false)
 {
 }
 
@@ -64,6 +66,7 @@ HitTestResult::HitTestResult(const LayoutPoint& centerPoint, unsigned topPadding
     : m_hitTestLocation(centerPoint, topPadding, rightPadding, bottomPadding, leftPadding)
     , m_pointInInnerNodeFrame(centerPoint)
     , m_isOverWidget(false)
+    , m_allowPseudoElements(false)
 {
 }
 
@@ -71,18 +74,20 @@ HitTestResult::HitTestResult(const HitTestLocation& other)
     : m_hitTestLocation(other)
     , m_pointInInnerNodeFrame(m_hitTestLocation.point())
     , m_isOverWidget(false)
+    , m_allowPseudoElements(false)
 {
 }
 
 HitTestResult::HitTestResult(const HitTestResult& other)
     : m_hitTestLocation(other.m_hitTestLocation)
-    , m_innerNode(other.innerNode())
-    , m_innerNonSharedNode(other.innerNonSharedNode())
+    , m_innerNode(other.m_innerNode)
+    , m_innerNonSharedNode(other.m_innerNonSharedNode)
     , m_pointInInnerNodeFrame(other.m_pointInInnerNodeFrame)
     , m_localPoint(other.localPoint())
     , m_innerURLElement(other.URLElement())
     , m_scrollbar(other.scrollbar())
     , m_isOverWidget(other.isOverWidget())
+    , m_allowPseudoElements(other.m_allowPseudoElements)
 {
     // Only copy the NodeSet in case of rect hit test.
     m_rectBasedTestResult = adoptPtr(other.m_rectBasedTestResult ? new NodeSet(*other.m_rectBasedTestResult) : 0);
@@ -95,13 +100,14 @@ HitTestResult::~HitTestResult()
 HitTestResult& HitTestResult::operator=(const HitTestResult& other)
 {
     m_hitTestLocation = other.m_hitTestLocation;
-    m_innerNode = other.innerNode();
-    m_innerNonSharedNode = other.innerNonSharedNode();
+    m_innerNode = other.m_innerNode;
+    m_innerNonSharedNode = other.m_innerNonSharedNode;
     m_pointInInnerNodeFrame = other.m_pointInInnerNodeFrame;
     m_localPoint = other.localPoint();
     m_innerURLElement = other.URLElement();
     m_scrollbar = other.scrollbar();
     m_isOverWidget = other.isOverWidget();
+    m_allowPseudoElements |= other.m_allowPseudoElements; // Do not lose the pseudo element tracking if allowed.
 
     // Only copy the NodeSet in case of rect hit test.
     m_rectBasedTestResult = adoptPtr(other.m_rectBasedTestResult ? new NodeSet(*other.m_rectBasedTestResult) : 0);
@@ -141,15 +147,11 @@ void HitTestResult::setToShadowHostIfInUserAgentShadowRoot()
 
 void HitTestResult::setInnerNode(Node* n)
 {
-    if (n && n->isPseudoElement())
-        n = n->parentOrShadowHostNode();
     m_innerNode = n;
 }
 
 void HitTestResult::setInnerNonSharedNode(Node* n)
 {
-    if (n && n->isPseudoElement())
-        n = n->parentOrShadowHostNode();
     m_innerNonSharedNode = n;
 }
 
@@ -437,9 +439,9 @@ void HitTestResult::append(const HitTestResult& other)
 {
     ASSERT(isRectBasedTest() && other.isRectBasedTest());
 
-    if (!m_innerNode && other.innerNode()) {
-        m_innerNode = other.innerNode();
-        m_innerNonSharedNode = other.innerNonSharedNode();
+    if (!m_innerNode && other.m_innerNode) {
+        m_innerNode = other.m_innerNode;
+        m_innerNonSharedNode = other.m_innerNonSharedNode;
         m_localPoint = other.localPoint();
         m_pointInInnerNodeFrame = other.m_pointInInnerNodeFrame;
         m_innerURLElement = other.URLElement();
@@ -481,6 +483,16 @@ Node* HitTestResult::targetNode() const
         return element;
 
     return node;
+}
+
+Node* HitTestResult::innerNode() const
+{
+    return m_innerNode && !m_allowPseudoElements && m_innerNode->isPseudoElement() ? m_innerNode->parentOrShadowHostNode() : m_innerNode.get();
+}
+
+Node* HitTestResult::innerNonSharedNode() const
+{
+    return m_innerNonSharedNode && !m_allowPseudoElements && m_innerNonSharedNode->isPseudoElement() ? m_innerNonSharedNode->parentOrShadowHostNode() : m_innerNonSharedNode.get();
 }
 
 Element* HitTestResult::innerElement() const

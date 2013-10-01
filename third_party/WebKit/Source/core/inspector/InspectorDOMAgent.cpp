@@ -157,6 +157,7 @@ static Node* hoveredNodeForPoint(Frame* frame, const IntPoint& point, bool ignor
         hitType |= HitTestRequest::IgnorePointerEventsNone;
     HitTestRequest request(hitType);
     HitTestResult result(frame->view()->windowToContents(point));
+    result.allowPseudoElements();
     frame->contentRenderer()->hitTest(request, result);
     Node* node = result.innerNode();
     while (node && node->nodeType() == Node::TEXT_NODE)
