@@ -65,7 +65,9 @@
       "channel": "stable",
       "extension_types": ["extension"],
       "whitelist": [
-        "mppnpdlheglhdfmldimlhpnegondlapf"  // http://crbug.com/292856
+        // http://crbug.com/292856
+        "mppnpdlheglhdfmldimlhpnegondlapf",
+        "bepbmhgboaologfdajaanbcjmnhjmhfn"
       ]
     }
   ],
@@ -737,7 +739,9 @@
       "channel": "stable",
       "extension_types": ["extension"],
       "whitelist": [
-        "mppnpdlheglhdfmldimlhpnegondlapf"  // http://crbug.com/292856
+        // http://crbug.com/292856
+        "mppnpdlheglhdfmldimlhpnegondlapf",
+        "bepbmhgboaologfdajaanbcjmnhjmhfn"
       ]
     }
   ],
