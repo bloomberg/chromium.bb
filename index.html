@@ -85,16 +85,6 @@ we will probably not be able to send <em>everything</em> upstream.</p>
 The selection gaps after "hello" and "world" do not honor the selection
 background color specified in the CSS.</p>
 
-<h3><a name="bugfix-backspaceIntoTable">bugfix/backspaceIntoTable</a> (Shezan Baig; D32947240)</h3>
-<p>Open <a href="repros/backspaceIntoTable.html">this link</a> in Chrome, and
-put the cursor between 'T' and 'e' in "Testing", and hit backspace twice.  The
-rest of the text will go into the last cell.</p>
-<p>It is unclear whether this is a bug that can be upstreamed or not, because
-the comment in the code specifically mentions that this is the intended
-behavior, and has been since at least 2007.  However, we changed this behavior
-in our product to match what Firefox does, which is to make the second
-backspace a no-op.</p>
-
 <h3><a name="bugfix-badquerycommand">bugfix/badquerycommand</a> (Shezan Baig; D32128551)</h3>
 <p>Open <a href="repros/badquerycommand.html">this link</a> in Chrome, click
 the yellow div and hit <code>&lt;enter&gt;</code> a bunch of times. Then
@@ -181,6 +171,32 @@ contenteditable.  However, a proper fix would be to make the last line scroll
 completely, taking the padding into account.  We haven't gotten around to this
 yet.</p>
 
+<h3><a name="bugfix-deleteBackspace">bugfix/deleteBackspace</a> (Shezan Baig; D32947240)</h3>
+<p>This branch consists of multiple fixes that were merged together:</p>
+<ul><li><b>backspaceIntoTable (D32947240)</b><br>
+    Open <a href="repros/backspaceIntoTable.html">this link</a> in Chrome, and
+    put the cursor between 'T' and 'e' in "Testing", and hit backspace twice.  The
+    rest of the text will go into the last cell.
+    </li>
+    <li><b>nonemptycellbackspace</b><br>
+    Open <a href="repros/nonemptycellbackspace.html">this link</a> in Chrome,
+    and put the cursor in the beginning of the second or third cell and start
+    backspacing.  Note that the issue does not happen when the cell is
+    empty.<br>
+    <i>Note that this has been fixed upstream since the
+    <code>28.0.1500.95</code> snapshot.</i>
+    </li>
+    <li><b>nonemptycelldelete</b><br>
+    Open <a href="repros/nonemptycelldelete.html">this link</a> in Chrome, and
+    put the cursor at the end of the first cell, after the 'c' and start deleting.
+    The table in the next cell will be highlighted on the first press, and deleted
+    on the second press.  Note that the issue does not happen when the cell is
+    empty.<br>
+    <i>Note that this has been fixed upstream since the
+    <code>28.0.1500.95</code> snapshot.</i>
+    </li>
+</ul>
+
 <h3><a name="bugfix-doubleindent">bugfix/doubleindent</a> (Shezan Baig; D32165963)</h3>
 <p>Open <a href="repros/doubleindent.html">this link</a> in Chrome, and
 position the cursor before the logo.  Indent the image twice, then outdent the
@@ -247,31 +263,6 @@ send this upstream.</p>
 <p>This branch removes the assumption that every V8 context has a <code>DOMWindow</code>
 associated with it.  This is necessary for our product because we have multiple
 V8 contexts living in the same process that need to share data with each other.</p>
-
-<h3><a name="bugfix-nonemptycellbackspace">bugfix/nonemptycellbackspace</a> (Shezan Baig)</h3>
-<p>Note: This branch has been miscategorized as a bugfix, it is actually a
-feature that we wanted specifically for our product, so it is unlikely that we
-will send this upstream.</p>
-<p>This branch makes it so that hitting <code>&lt;backspace&gt;</code> when the
-cursor is at the beginning of a table cell will be a no-op.  The default
-behavior in WebKit is to move into the previous cell and start deleting from
-there.</p>
-<p>Open <a href="repros/nonemptycellbackspace.html">this link</a> in Chrome,
-and put the cursor in the beginning of the second or third cell and start
-backspacing.  Note that the issue does not happen when the cell is empty.</p>
-
-<h3><a name="bugfix-nonemptycelldelete">bugfix/nonemptycelldelete</a> (Shezan Baig)</h3>
-<p>Note: This branch has been miscategorized as a bugfix, it is actually a
-feature that we wanted specifically for our product, so it is unlikely that we
-will send this upstream.</p>
-<p>This branch makes it so that hitting <code>&lt;delete&gt;</code> when the
-cursor is at the end of a table cell will be a no-op.  The default behavior in
-WebKit is to move into the next cell and start deleting from there.</p>
-<p>Open <a href="repros/nonemptycelldelete.html">this link</a> in Chrome, and
-put the cursor at the end of the first cell, after the 'c' and start deleting.
-The table in the next cell will be highlighted on the first press, and deleted
-on the second press.  Note that the issue does not happen when the cell is
-empty.</p>
 
 <h3><a name="bugfix-outdentWithBR">bugfix/outdentWithBR</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=92130">92130</a>)</h3>
 <p>Open <a href="repros/outdentWithBR.html">this link</a> in Chrome.  The
@@ -580,6 +571,10 @@ longer matches whatever is upstream.</p>
 <p>Retired as of the <code>23.0.1271.97</code> snapshot because the fix is
 available upstream.</p>
 
+<h3><a name="bugfix-backspaceIntoTable">bugfix/backspaceIntoTable</a> (Shezan Baig; D32947240)</h3>
+<p>Retired in favor of <code><a
+        href="#bugfix-deleteBackspace">bugfix/deleteBackspace</a></code></p>
+
 <h3><a name="bugfix-cleanWarnings">bugfix/cleanWarnings</a> (Shezan Baig)</h3>
 <p>Retired as of the <code>25.0.1364.84</code> snapshot because we no longer
 need it.</p>
@@ -623,6 +618,14 @@ available upstream.</p>
 <h3><a name="bugfix-listMarkerSelection">bugfix/listMarkerSelection</a> (Shezan Baig; D32422051)</h3>
 <p>Retired in favor of <code><a
         href="#feature-listMarkerEnhancements">feature/listMarkerEnhancements</a></code></p>
+
+<h3><a name="bugfix-nonemptycellbackspace">bugfix/nonemptycellbackspace</a> (Shezan Baig)</h3>
+<p>Retired in favor of <code><a
+        href="#bugfix-deleteBackspace">bugfix/deleteBackspace</a></code></p>
+
+<h3><a name="bugfix-nonemptycelldelete">bugfix/nonemptycelldelete</a> (Shezan Baig)</h3>
+<p>Retired in favor of <code><a
+        href="#bugfix-deleteBackspace">bugfix/deleteBackspace</a></code></p>
 
 <h3><a name="bugfix-offsetleft">bugfix/offsetleft</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=34875">34875</a>)</h3>
 <p>Retired as of the <code>21.0.1180.60</code> snapshot because the fix is
