@@ -28,6 +28,7 @@
 
 #include "FetchInitiatorTypeNames.h"
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "XMLNSNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
@@ -1155,6 +1156,10 @@ void XMLDocumentParser::processingInstruction(const String& target, const String
 
     if (pi->isCSS())
         m_sawCSS = true;
+
+    if (!RuntimeEnabledFeatures::xsltEnabled())
+        return;
+
     m_sawXSLTransform = !m_sawFirstElement && pi->isXSL();
     if (m_sawXSLTransform && !document()->transformSourceDocument())
         stopParsing();

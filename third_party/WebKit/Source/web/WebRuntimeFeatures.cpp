@@ -381,6 +381,11 @@ bool WebRuntimeFeatures::isHTMLImportsEnabled()
     return RuntimeEnabledFeatures::htmlImportsEnabled();
 }
 
+void WebRuntimeFeatures::enableXSLT(bool enable)
+{
+    RuntimeEnabledFeatures::setXSLTEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableEmbedderCustomElements(bool enable)
 {
     RuntimeEnabledFeatures::setEmbedderCustomElementsEnabled(enable);

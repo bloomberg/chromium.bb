@@ -104,3 +104,4 @@ WebGLDraftExtensions status=experimental
 WebMIDI status=test
 WebKitMediaSource status=stable
 WOFF2 status=experimental
+XSLT status=stable

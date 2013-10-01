@@ -140,6 +140,8 @@ public:
     BLINK_EXPORT static void enableHTMLImports(bool);
     BLINK_EXPORT static bool isHTMLImportsEnabled();
 
+    BLINK_EXPORT static void enableXSLT(bool);
+
     BLINK_EXPORT static void enableEmbedderCustomElements(bool);
 
     BLINK_EXPORT static void enableOverlayScrollbars(bool);

@@ -28,6 +28,7 @@
 #include "core/dom/DocumentStyleSheetCollection.h"
 
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -67,7 +68,7 @@ void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* collections, 
             // We don't support linking to embedded CSS stylesheets, see <https://bugs.webkit.org/show_bug.cgi?id=49281> for discussion.
             ProcessingInstruction* pi = toProcessingInstruction(n);
             // Don't apply XSL transforms to already transformed documents -- <rdar://problem/4132806>
-            if (pi->isXSL() && !document()->transformSourceDocument()) {
+            if (RuntimeEnabledFeatures::xsltEnabled() && pi->isXSL() && !document()->transformSourceDocument()) {
                 // Don't apply XSL transforms until loading is finished.
                 if (!document()->parsing() && !pi->isLoading())
                     document()->applyXSLTransform(pi);
