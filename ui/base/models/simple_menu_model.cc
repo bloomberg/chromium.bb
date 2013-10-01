@@ -238,6 +238,11 @@ void SimpleMenuModel::InsertSubMenuWithStringIdAt(
                   model);
 }
 
+void SimpleMenuModel::RemoveItemAt(int index) {
+  items_.erase(items_.begin() + ValidateItemIndex(index));
+  MenuItemsChanged();
+}
+
 void SimpleMenuModel::SetIcon(int index, const gfx::Image& icon) {
   items_[ValidateItemIndex(index)].icon = icon;
   MenuItemsChanged();

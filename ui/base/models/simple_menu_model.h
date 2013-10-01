@@ -121,6 +121,9 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   void InsertSubMenuWithStringIdAt(
       int index, int command_id, int string_id, MenuModel* model);
 
+  // Remove item at specified index from the model.
+  void RemoveItemAt(int index);
+
   // Sets the icon for the item at |index|.
   void SetIcon(int index, const gfx::Image& icon);
 

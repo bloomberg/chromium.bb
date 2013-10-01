@@ -49,6 +49,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
@@ -1222,7 +1223,8 @@ MenuItemView* WrenchMenu::AppendMenuItem(MenuItemView* parent,
     parent->GetSubmenu()->AddChildView(menu_item);
   } else {
     // For all other cases we use the more generic way to add menu items.
-    menu_item = parent->AppendMenuItemFromModel(model, index, id);
+    menu_item = views::MenuModelAdapter::AppendMenuItemFromModel(
+        model, index, parent, id);
   }
 
   if (menu_item) {

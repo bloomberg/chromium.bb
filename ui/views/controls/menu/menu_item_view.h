@@ -215,12 +215,6 @@ class VIEWS_EXPORT MenuItemView : public View {
                                        const string16& label,
                                        const gfx::ImageSkia& icon);
 
-  // Creates a menu item for the specified entry in the model and appends it as
-  // a child.
-  MenuItemView* AppendMenuItemFromModel(ui::MenuModel* model,
-                                        int index,
-                                        int id);
-
   // All the AppendXXX methods funnel into this.
   MenuItemView* AppendMenuItemImpl(int item_id,
                                    const string16& label,

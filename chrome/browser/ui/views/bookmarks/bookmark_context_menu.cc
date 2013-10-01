@@ -13,6 +13,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
 
@@ -51,8 +52,8 @@ BookmarkContextMenu::BookmarkContextMenu(
 
   ui::SimpleMenuModel* menu_model = controller_->menu_model();
   for (int i = 0; i < menu_model->GetItemCount(); ++i) {
-    menu_->AppendMenuItemFromModel(
-        menu_model, i, menu_model->GetCommandIdAt(i));
+    views::MenuModelAdapter::AppendMenuItemFromModel(
+        menu_model, i, menu_, menu_model->GetCommandIdAt(i));
   }
 }
 

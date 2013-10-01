@@ -38,6 +38,21 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate {
   }
   int triggerable_event_flags() const { return triggerable_event_flags_; }
 
+  // Creates a menu item for the specified entry in the model and adds it as
+  // a child to |menu| at the specified |menu_index|.
+  static MenuItemView* AddMenuItemFromModelAt(ui::MenuModel* model,
+                                              int model_index,
+                                              MenuItemView* menu,
+                                              int menu_index,
+                                              int item_id);
+
+  // Creates a menu item for the specified entry in the model and appends it as
+  // a child to |menu|.
+  static MenuItemView* AppendMenuItemFromModel(ui::MenuModel* model,
+                                               int model_index,
+                                               MenuItemView* menu,
+                                               int item_id);
+
  protected:
   // Create and add a menu item to |menu| for the item at index |index| in
   // |model|. Subclasses override this to allow custom items to be added to the
