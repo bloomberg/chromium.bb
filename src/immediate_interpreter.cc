@@ -983,7 +983,8 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
                                    0.1),
       right_click_second_finger_age_(prop_reg,
                                      "Right Click Second Finger Age Thresh",
-                                     0.5) {
+                                     0.5),
+      quick_acceleration_factor_(prop_reg, "Quick Acceleration Factor", 0.0) {
   InitName();
   requires_metrics_ = true;
 }
@@ -2438,6 +2439,8 @@ void ImmediateInterpreter::FillResultGesture(
       // Find corresponding finger id in previous state
       const FingerState* prev =
           state_buffer_.Get(1)->GetFingerState(current->tracking_id);
+      const FingerState* prev2 = !state_buffer_.Get(2) ? NULL :
+          state_buffer_.Get(2)->GetFingerState(current->tracking_id);
       if (!prev || !current)
         return;
       if (current->flags & GESTURES_FINGER_MERGE)
@@ -2445,6 +2448,19 @@ void ImmediateInterpreter::FillResultGesture(
       bool high_pressure_change =
         scroll_manager_.StationaryFingerPressureChangingSignificantly(
             state_buffer_, *current);
+      if (quick_acceleration_factor_.val_ && prev2) {
+        stime_t dt = hwstate.timestamp - state_buffer_.Get(1)->timestamp;
+        stime_t dt2 =
+            state_buffer_.Get(1)->timestamp - state_buffer_.Get(2)->timestamp;
+        float dist_sq = DistSq(*current, *prev);
+        float dist_sq2 = DistSq(*prev, *prev2);
+        if (dist_sq2 * dt &&  // have prev dist and current time
+            dist_sq2 * dt * dt *
+            quick_acceleration_factor_.val_ * quick_acceleration_factor_.val_ <
+            dist_sq * dt2 * dt2) {
+          return;
+        }
+      }
       if (high_pressure_change) {
         scroll_manager_.prev_result_high_pressure_change_ = true;
         return;

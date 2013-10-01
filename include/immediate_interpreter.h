@@ -756,6 +756,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Second finger comes down for a while then button clicks down that indicates
   // a right click
   DoubleProperty right_click_second_finger_age_;
+  // Suppress moves with a speed more than this much times the previous speed.
+  DoubleProperty quick_acceleration_factor_;
 };
 
 bool AnyGesturingFingerLeft(const HardwareState& state,
