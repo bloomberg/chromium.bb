@@ -1291,3 +1291,5 @@ crbug.com/300025 [ Win7 Debug ] virtual/implsidepainting/inspector/timeline/time
 
 # Crashing, appears to be the result of http://src.chromium.org/viewvc/blink?revision=158503
 crbug.com/301668 [ Debug ] accessibility/crash-adopt-node-from-new-document.html [ Crash ]
+
+crbug.com/277378 [ Mac ] rubberbanding/momentum-reset.html [ NeedsRebaseline ]

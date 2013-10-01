@@ -184,8 +184,13 @@ bool ScrollElasticityController::handleWheelEvent(const PlatformWheelEvent& whee
     PlatformWheelEventPhase momentumPhase = wheelEvent.momentumPhase();
 
     // If we are starting momentum scrolling then do some setup.
-    if (!m_momentumScrollInProgress && (momentumPhase == PlatformWheelEventPhaseBegan || momentumPhase == PlatformWheelEventPhaseChanged))
+    if (!m_momentumScrollInProgress && (momentumPhase == PlatformWheelEventPhaseBegan || momentumPhase == PlatformWheelEventPhaseChanged)) {
         m_momentumScrollInProgress = true;
+        // Start the snap rubber band timer if it's not running. This is needed to
+        // snap back from the over scroll caused by momentum events.
+        if (!m_snapRubberbandTimerIsActive && m_startTime == 0)
+            snapRubberBand();
+    }
 
     CFTimeInterval timeDelta = wheelEvent.timestamp() - m_lastMomentumScrollTimestamp;
     if (m_inScrollGesture || m_momentumScrollInProgress) {

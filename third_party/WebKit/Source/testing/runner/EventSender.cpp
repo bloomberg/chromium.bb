@@ -279,6 +279,9 @@ EventSender::EventSender(TestInterfaces* interfaces)
     bindMethod("mouseUp", &EventSender::mouseUp);
     bindMethod("mouseDragBegin", &EventSender::mouseDragBegin);
     bindMethod("mouseDragEnd", &EventSender::mouseDragEnd);
+    bindMethod("mouseMomentumBegin", &EventSender::mouseMomentumBegin);
+    bindMethod("mouseMomentumScrollBy", &EventSender::mouseMomentumScrollBy);
+    bindMethod("mouseMomentumEnd", &EventSender::mouseMomentumEnd);
     bindMethod("releaseTouchPoint", &EventSender::releaseTouchPoint);
     bindMethod("scheduleAsynchronousClick", &EventSender::scheduleAsynchronousClick);
     bindMethod("scheduleAsynchronousKeyDown", &EventSender::scheduleAsynchronousKeyDown);
@@ -804,12 +807,16 @@ void EventSender::setPageScaleFactor(const CppArgumentList& arguments, CppVarian
 
 void EventSender::mouseScrollBy(const CppArgumentList& arguments, CppVariant* result)
 {
-    handleMouseWheel(arguments, result, false);
+    WebMouseWheelEvent event;
+    initMouseWheelEvent(arguments, result, false, &event);
+    webview()->handleInputEvent(event);
 }
 
 void EventSender::continuousMouseScrollBy(const CppArgumentList& arguments, CppVariant* result)
 {
-    handleMouseWheel(arguments, result, true);
+    WebMouseWheelEvent event;
+    initMouseWheelEvent(arguments, result, true, &event);
+    webview()->handleInputEvent(event);
 }
 
 void EventSender::replaySavedEvents()
@@ -1105,7 +1112,34 @@ void EventSender::mouseDragEnd(const CppArgumentList& arguments, CppVariant* res
     webview()->handleInputEvent(event);
 }
 
-void EventSender::handleMouseWheel(const CppArgumentList& arguments, CppVariant* result, bool continuous)
+void EventSender::mouseMomentumBegin(const CppArgumentList& arguments, CppVariant* result)
+{
+    WebMouseWheelEvent event;
+    initMouseEvent(WebInputEvent::MouseWheel, WebMouseEvent::ButtonNone, lastMousePos, &event, getCurrentEventTimeSec(m_delegate));
+    event.momentumPhase = WebMouseWheelEvent::PhaseBegan;
+    event.hasPreciseScrollingDeltas = true;
+    webview()->handleInputEvent(event);
+}
+
+void EventSender::mouseMomentumScrollBy(const CppArgumentList& arguments, CppVariant* result)
+{
+    WebMouseWheelEvent event;
+    initMouseWheelEvent(arguments, result, true, &event);
+    event.momentumPhase = WebMouseWheelEvent::PhaseChanged;
+    event.hasPreciseScrollingDeltas = true;
+    webview()->handleInputEvent(event);
+}
+
+void EventSender::mouseMomentumEnd(const CppArgumentList& arguments, CppVariant* result)
+{
+    WebMouseWheelEvent event;
+    initMouseEvent(WebInputEvent::MouseWheel, WebMouseEvent::ButtonNone, lastMousePos, &event, getCurrentEventTimeSec(m_delegate));
+    event.momentumPhase = WebMouseWheelEvent::PhaseEnded;
+    event.hasPreciseScrollingDeltas = true;
+    webview()->handleInputEvent(event);
+}
+
+void EventSender::initMouseWheelEvent(const CppArgumentList& arguments, CppVariant* result, bool continuous, WebMouseWheelEvent* event)
 {
     result->setNull();
 
@@ -1129,23 +1163,21 @@ void EventSender::handleMouseWheel(const CppArgumentList& arguments, CppVariant*
     if (arguments.size() > 3 && arguments[3].isBool())
         hasPreciseScrollingDeltas = arguments[3].toBoolean();
 
-    WebMouseWheelEvent event;
-    initMouseEvent(WebInputEvent::MouseWheel, pressedButton, lastMousePos, &event, getCurrentEventTimeSec(m_delegate));
-    event.wheelTicksX = static_cast<float>(horizontal);
-    event.wheelTicksY = static_cast<float>(vertical);
-    event.deltaX = event.wheelTicksX;
-    event.deltaY = event.wheelTicksY;
-    event.scrollByPage = paged;
-    event.hasPreciseScrollingDeltas = hasPreciseScrollingDeltas;
+    initMouseEvent(WebInputEvent::MouseWheel, pressedButton, lastMousePos, event, getCurrentEventTimeSec(m_delegate));
+    event->wheelTicksX = static_cast<float>(horizontal);
+    event->wheelTicksY = static_cast<float>(vertical);
+    event->deltaX = event->wheelTicksX;
+    event->deltaY = event->wheelTicksY;
+    event->scrollByPage = paged;
+    event->hasPreciseScrollingDeltas = hasPreciseScrollingDeltas;
 
     if (continuous) {
-        event.wheelTicksX /= scrollbarPixelsPerTick;
-        event.wheelTicksY /= scrollbarPixelsPerTick;
+        event->wheelTicksX /= scrollbarPixelsPerTick;
+        event->wheelTicksY /= scrollbarPixelsPerTick;
     } else {
-        event.deltaX *= scrollbarPixelsPerTick;
-        event.deltaY *= scrollbarPixelsPerTick;
+        event->deltaX *= scrollbarPixelsPerTick;
+        event->deltaY *= scrollbarPixelsPerTick;
     }
-    webview()->handleInputEvent(event);
 }
 
 void EventSender::touchEnd(const CppArgumentList&, CppVariant* result)

@@ -91,6 +91,9 @@ public:
 
     void mouseDragBegin(const CppArgumentList&, CppVariant*);
     void mouseDragEnd(const CppArgumentList&, CppVariant*);
+    void mouseMomentumBegin(const CppArgumentList&, CppVariant*);
+    void mouseMomentumScrollBy(const CppArgumentList&, CppVariant*);
+    void mouseMomentumEnd(const CppArgumentList&, CppVariant*);
     void mouseScrollBy(const CppArgumentList&, CppVariant*);
     void continuousMouseScrollBy(const CppArgumentList&, CppVariant*);
     void scheduleAsynchronousClick(const CppArgumentList&, CppVariant*);
@@ -179,8 +182,8 @@ private:
     // Compose a touch event from the current touch points and send it.
     void sendCurrentTouchEvent(const WebKit::WebInputEvent::Type);
 
-    // Handle a request to send a wheel event.
-    void handleMouseWheel(const CppArgumentList&, CppVariant*, bool continuous);
+    // Init a mouse wheel event from the given args.
+    void initMouseWheelEvent(const CppArgumentList&, CppVariant*, bool continuous, WebKit::WebMouseWheelEvent*);
 
     WebTaskList m_taskList;
 
