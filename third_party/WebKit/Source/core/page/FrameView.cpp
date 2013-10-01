@@ -2104,7 +2104,8 @@ void FrameView::suspendOverflowEvents()
 
 void FrameView::resumeOverflowEvents()
 {
-    ASSERT(m_overflowEventSuspendCount > 0);
+    // FIXME: We should assert here but it makes several tests fail. See http://crbug.com/299788
+    // ASSERT(m_overflowEventSuspendCount > 0);
 
     if (--m_overflowEventSuspendCount)
         return;

@@ -1283,10 +1283,6 @@ crbug.com/254989 virtual/android/fullscreen/full-screen-stacking-context.html [ 
 crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure ]
 crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ Failure ]
 
-crbug.com/299788 [ Mac Linux ] virtual/android/fullscreen/full-screen-fixed-pos-parent.html [ Crash ]
-crbug.com/299788 [ Mac Linux ] virtual/android/fullscreen/full-screen-with-flex-item.html [ Crash ]
-crbug.com/299788 [ Mac Linux ] css3/viewport-percentage-lengths/viewport-percentage-lengths-scaled-overlay-scrollbars.html [ Crash ]
-crbug.com/299788 [ Mac Linux ] fast/dom/partial-layout-block.html [ Crash ]
 crbug.com/301189 fast/url/idna2003.html [ Failure ]
 crbug.com/301189 fast/url/idna2008.html [ Failure ]
 
