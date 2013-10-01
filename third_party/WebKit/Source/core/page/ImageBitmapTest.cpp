@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/page/ImageBitmap.h"
 
+#include "SkPixelRef.h"
 #include "core/dom/Document.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
@@ -42,7 +43,6 @@
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/platform/network/ResourceRequest.h"
-#include "third_party/skia/include/core/SkPixelRef.h"
 #include "wtf/OwnPtr.h"
 
 #include <gtest/gtest.h>

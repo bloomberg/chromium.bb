@@ -32,22 +32,22 @@
 #include "config.h"
 #include "core/platform/graphics/FontPlatformData.h"
 
-#include <windows.h>
-#include <mlang.h>
-#include <objidl.h>
+#include "SkPaint.h"
+#include "SkTypeface.h"
+#include "SkTypeface_win.h"
 #include "core/platform/LayoutTestSupport.h"
-#include "platform/SharedBuffer.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/skia/SkiaFontWin.h"
 #include "core/platform/win/HWndDC.h"
+#include "platform/SharedBuffer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/win/WebSandboxSupport.h"
-#include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkTypeface.h"
-#include "third_party/skia/include/ports/SkTypeface_win.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
+#include <mlang.h>
+#include <objidl.h>
+#include <windows.h>
 
 namespace WebCore {
 

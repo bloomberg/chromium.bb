@@ -34,12 +34,12 @@
 
 #include "config.h"
 
-#include "../ports/SkTypeface_win.h"
 #include "SkPaint.h"
 #include "SkTypeface.h"
-#include "platform/SharedBuffer.h"
+#include "SkTypeface_win.h"
 #include "core/platform/graphics/FontOrientation.h"
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
+#include "platform/SharedBuffer.h"
 #include "wtf/Forward.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/OwnPtr.h"
