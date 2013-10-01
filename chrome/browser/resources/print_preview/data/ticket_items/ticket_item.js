@@ -136,13 +136,15 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @param {!Object} Value to set as the value of the ticket item. */
     updateValue: function(value) {
-      if (!this.isValueEqual(value)) {
-        this.updateValueInternal(value);
-        if (this.appState_) {
-          this.appState_.persistField(this.field_, value);
-        }
-        cr.dispatchSimpleEvent(this, TicketItem.EventType.CHANGE);
+      // Use comparison with capabilities for event.
+      var sendUpdateEvent = !this.isValueEqual(value);
+      // Don't lose requested value if capability is not available.
+      this.updateValueInternal(value);
+      if (this.appState_) {
+        this.appState_.persistField(this.field_, value);
       }
+      if (sendUpdateEvent)
+        cr.dispatchSimpleEvent(this, TicketItem.EventType.CHANGE);
     },
 
     /**

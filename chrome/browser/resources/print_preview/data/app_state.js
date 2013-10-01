@@ -127,6 +127,12 @@ cr.define('print_preview', function() {
         // Set some state defaults.
         this.state_[AppState.Field.IS_GCP_PROMO_DISMISSED] = false;
       }
+    },
+
+    /**
+     * Sets to initialized state. Now object will accept persist requests.
+     */
+    setInitialized: function() {
       this.isInitialized_ = true;
     },
 
@@ -136,6 +142,8 @@ cr.define('print_preview', function() {
      * @param {Object} value Value of field to persist.
      */
     persistField: function(field, value) {
+      if (!this.isInitialized_)
+        return;
       if (field == AppState.Field.CUSTOM_MARGINS) {
         this.state_[field] = value ? value.serialize() : null;
       } else {
@@ -149,6 +157,8 @@ cr.define('print_preview', function() {
      * @param {!print_preview.Destination} dest Destination to persist.
      */
     persistSelectedDestination: function(dest) {
+      if (!this.isInitialized_)
+        return;
       this.state_[AppState.Field.SELECTED_DESTINATION_ID] = dest.id;
       this.state_[AppState.Field.SELECTED_DESTINATION_ORIGIN] = dest.origin;
       this.persist_();
@@ -160,6 +170,8 @@ cr.define('print_preview', function() {
      *     dismissed.
      */
     persistIsGcpPromoDismissed: function(isGcpPromoDismissed) {
+      if (!this.isInitialized_)
+        return;
       this.state_[AppState.Field.IS_GCP_PROMO_DISMISSED] = isGcpPromoDismissed;
       this.persist_();
     },
@@ -169,10 +181,8 @@ cr.define('print_preview', function() {
      * @private
      */
     persist_: function() {
-      if (this.isInitialized_) {
-        chrome.send(AppState.NATIVE_FUNCTION_NAME_,
-                    [JSON.stringify(this.state_)]);
-      }
+      chrome.send(AppState.NATIVE_FUNCTION_NAME_,
+                  [JSON.stringify(this.state_)]);
     }
   };
 

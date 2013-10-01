@@ -270,15 +270,6 @@ cr.define('print_preview', function() {
       this.selectionOnly_.updateValue(selectionOnly);
 
       // Initialize ticket with user's previous values.
-      if (this.appState_.hasField(print_preview.AppState.Field.MARGINS_TYPE)) {
-        this.marginsType_.updateValue(
-            this.appState_.getField(print_preview.AppState.Field.MARGINS_TYPE));
-      }
-      if (this.appState_.hasField(
-          print_preview.AppState.Field.CUSTOM_MARGINS)) {
-        this.customMargins_.updateValue(this.appState_.getField(
-            print_preview.AppState.Field.CUSTOM_MARGINS));
-      }
       if (this.appState_.hasField(
           print_preview.AppState.Field.IS_COLOR_ENABLED)) {
         this.color_.updateValue(this.appState_.getField(
@@ -290,14 +281,24 @@ cr.define('print_preview', function() {
             print_preview.AppState.Field.IS_DUPLEX_ENABLED));
       }
       if (this.appState_.hasField(
-          print_preview.AppState.Field.IS_HEADER_FOOTER_ENABLED)) {
-        this.headerFooter_.updateValue(this.appState_.getField(
-            print_preview.AppState.Field.IS_HEADER_FOOTER_ENABLED));
-      }
-      if (this.appState_.hasField(
           print_preview.AppState.Field.IS_LANDSCAPE_ENABLED)) {
         this.landscape_.updateValue(this.appState_.getField(
             print_preview.AppState.Field.IS_LANDSCAPE_ENABLED));
+      }
+      // Initialize margins after landscape because landscape may reset margins.
+      if (this.appState_.hasField(print_preview.AppState.Field.MARGINS_TYPE)) {
+        this.marginsType_.updateValue(
+            this.appState_.getField(print_preview.AppState.Field.MARGINS_TYPE));
+      }
+      if (this.appState_.hasField(
+          print_preview.AppState.Field.CUSTOM_MARGINS)) {
+        this.customMargins_.updateValue(this.appState_.getField(
+            print_preview.AppState.Field.CUSTOM_MARGINS));
+      }
+      if (this.appState_.hasField(
+          print_preview.AppState.Field.IS_HEADER_FOOTER_ENABLED)) {
+        this.headerFooter_.updateValue(this.appState_.getField(
+            print_preview.AppState.Field.IS_HEADER_FOOTER_ENABLED));
       }
       if (this.appState_.hasField(
           print_preview.AppState.Field.IS_COLLATE_ENABLED)) {

@@ -501,6 +501,7 @@ cr.define('print_preview', function() {
           settings.unitType,
           settings.selectionOnly);
       this.destinationStore_.init(settings.systemDefaultDestinationId);
+      this.appState_.setInitialized();
     },
 
     /**
