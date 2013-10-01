@@ -2562,6 +2562,26 @@ def TurnIntIntoStrInList(the_list):
       TurnIntIntoStrInList(item)
 
 
+def PruneUnwantedTargets(targets, flat_list, dependency_nodes, root_targets):
+  """Return only the targets that are deep dependencies of |root_targets|."""
+  qualified_root_targets = []
+  for target in root_targets:
+    target = target.strip()
+    qualified_targets = gyp.common.FindQualifiedTargets(target, flat_list)
+    if not qualified_targets:
+      raise GypError("Could not find target %s" % target)
+    qualified_root_targets.extend(qualified_targets)
+
+  wanted_targets = {}
+  for target in qualified_root_targets:
+    wanted_targets[target] = targets[target]
+    for dependency in dependency_nodes[target].DeepDependencies():
+      wanted_targets[dependency] = targets[dependency]
+
+  wanted_flat_list = [t for t in flat_list if t in wanted_targets]
+  return wanted_targets, wanted_flat_list
+
+
 def VerifyNoCollidingTargets(targets):
   """Verify that no two targets in the same directory share the same name.
 
@@ -2590,7 +2610,7 @@ def VerifyNoCollidingTargets(targets):
 
 
 def Load(build_files, variables, includes, depth, generator_input_info, check,
-         circular_check, parallel):
+         circular_check, parallel, root_targets):
   # Set up path_sections and non_configuration_keys with the default data plus
   # the generator-specifc data.
   global path_sections
@@ -2677,6 +2697,12 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
     VerifyNoGYPFileCircularDependencies(targets)
 
   [dependency_nodes, flat_list] = BuildDependencyList(targets)
+
+  if root_targets:
+    # Remove, from |targets| and |flat_list|, the targets that are not deep
+    # dependencies of the targets specified in |root_targets|.
+    targets, flat_list = PruneUnwantedTargets(
+        targets, flat_list, dependency_nodes, root_targets)
 
   # Check that no two targets in the same directory have the same name.
   VerifyNoCollidingTargets(flat_list)
